@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.26730.12
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "AltCover.Recorder", "AltCover.Recorder\AltCover.Recorder.fsproj", "{02192B55-3A50-4AD2-B519-560F30C14DD4}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "AltCover", "AltCover\AltCover.fsproj", "{B766260F-6551-4CA8-B2CB-25D2D5092801}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{02192B55-3A50-4AD2-B519-560F30C14DD4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{02192B55-3A50-4AD2-B519-560F30C14DD4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{02192B55-3A50-4AD2-B519-560F30C14DD4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{02192B55-3A50-4AD2-B519-560F30C14DD4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B766260F-6551-4CA8-B2CB-25D2D5092801}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B766260F-6551-4CA8-B2CB-25D2D5092801}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B766260F-6551-4CA8-B2CB-25D2D5092801}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B766260F-6551-4CA8-B2CB-25D2D5092801}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {9BBC0EFA-53F6-4254-B7D9-EF1BAC0AD19E}
+	EndGlobalSection
+EndGlobal
