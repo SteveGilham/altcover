@@ -32,4 +32,16 @@ type ProgramDatabaseTests() = class
          let filename = file.Name
          Assert.That(name, Does.EndWith("\\" + filename), x + " -> " + name)
     )
+
+  [<Test>]
+  member self.CheckPdbLoading() =
+    // Hack for running while instrumented
+    let where = Assembly.GetExecutingAssembly().Location;
+    let dir = match AltCover.ProgramDatabase.PdbPath(where) with
+              | None -> "\\.."
+              | _ -> String.Empty
+    let path = Path.Combine(Directory.GetCurrentDirectory() + dir, "BaseTests.dll")
+    let symbols = AltCover.ProgramDatabase.LoadAssembly(path)
+    Assert.That(symbols.Symbols, Is.Not.Empty, "should be some symbols")
+    
 end    

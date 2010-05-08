@@ -1,9 +1,10 @@
 ﻿namespace AltCover
 
 open System
-open System.Diagnostics.CodeAnalysis
+open System.Collections.Generic
 open System.IO
 
+open Microsoft.Cci.Pdb
 open Mono.Cecil
 
 /// <summary>
@@ -11,12 +12,14 @@ open Mono.Cecil
 /// </summary>
 type CodeSegment = {
          Line : UInt32;
-         Column : UInt32;
+         Column : UInt16;
          EndLine : UInt32;
-         EndColumn : UInt32;
+         EndColumn : UInt16;
          Document : string }
          
-    
+type AssemblyModel = {
+         Assembly : AssemblyDefinition;
+         Symbols : Dictionary<UInt32, PdbFunction> }    
 
 module ProgramDatabase =
   let (>?>) (arg : option<'TAny>) ( operation : 'TAny -> option<'TAnother> ) =
@@ -118,3 +121,42 @@ module ProgramDatabase =
     >?> Unpick reader
     >?> GetPdbOffset reader
     >?> GetPdbNameFromOffset reader
+
+  let LoadSymbols path =
+    let innate = PdbPath path
+    let pdbpath = match innate with
+                  | Some x when File.Exists(x) -> x
+                  | _ -> Path.ChangeExtension(path, ".pdb")
+                  
+    let symbols = new Dictionary<UInt32, PdbFunction>()
+    if File.Exists(pdbpath) then 
+      use stream = File.OpenRead(pdbpath)
+      PdbFile.LoadFunctions(stream, true)
+                 |> Seq.iter (fun func -> symbols.Add(func.Token, func))
+                      
+    symbols
+
+  let LoadAssembly (path:string) =
+    { Assembly = AssemblyDefinition.ReadAssembly(path);
+      Symbols = LoadSymbols path }
+      
+  let GetCodeSegmentsForMethod (assembly : AssemblyModel) (methodDef : MethodDefinition) =
+    let segments = new Dictionary<UInt32, CodeSegment>()
+    let token = methodDef.MetadataToken.ToUInt32()
+    let symbols = assembly.Symbols
+    if symbols.ContainsKey(token) && symbols.[token] <> null then
+      let value = symbols.[token]
+      seq { for x in value.Lines do 
+              for y in x.Lines do
+                if y.lineBegin <> 0xfeefeeu then
+                   yield (x.FileName, y) }
+      |> Seq.iter (fun pair -> 
+         let z = snd pair
+         segments.Add( z.offset, 
+            {         
+            Line = z.lineBegin;
+            Column = z.colBegin;
+            EndLine = z.lineEnd;
+            EndColumn = z.colEnd;
+            Document = fst pair }))
+    segments
