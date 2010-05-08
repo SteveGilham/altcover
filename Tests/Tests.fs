@@ -43,5 +43,6 @@ type ProgramDatabaseTests() = class
     let path = Path.Combine(Path.GetDirectoryName(where) + dir, "Sample1.exe")
     let symbols = AltCover.ProgramDatabase.LoadAssembly(path)
     Assert.That(symbols.Symbols, Is.Not.Empty, "should be some symbols")
+    Assert.That(symbols.Symbols.Keys.Count, Is.EqualTo(1), "the number we expect from NCoverExplorer")
     
 end    
