@@ -1,3 +1,10 @@
-﻿// Learn more about F# at http://fsharp.net
+﻿namespace AltCover
 
-System.Console.WriteLine("placeholder")
+open System
+
+module Main =
+
+  [<EntryPoint>]
+  let Main arguments =
+    System.Console.WriteLine("placeholder")
+    0
