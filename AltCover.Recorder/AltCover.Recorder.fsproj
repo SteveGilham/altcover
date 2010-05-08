@@ -61,6 +61,9 @@
     <Compile Include="..\_Generated\AssemblyVersion.fs">
       <Link>AssemblyVersion.fs</Link>
     </Compile>
+    <Compile Include="..\_Generated\VisibleToTest.fs">
+      <Link>VisibleToTest.fs</Link>
+    </Compile>
     <Compile Include="Recorder.fs" />
   </ItemGroup>
   <ItemGroup>
