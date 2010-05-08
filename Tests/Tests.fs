@@ -33,7 +33,7 @@ type ProgramDatabaseTests() = class
          Assert.That(name, Does.EndWith("\\" + filename), x + " -> " + name)
     )
 
-  [<Test>]
+  [<Test; Ignore("awaits refactoring")>]
   member self.CheckPdbLoading() =
     // Hack for running while instrumented
     let where = Assembly.GetExecutingAssembly().Location;

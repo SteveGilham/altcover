@@ -6,7 +6,6 @@ namespace AltCover.Recorder
 open System
 open System.Collections.Generic
 open System.IO
-open System.Linq
 open System.Xml
 open System.Xml.Linq
 
@@ -26,12 +25,12 @@ module Instance =
   /// Gets the location of coverage xml file
   /// This property's IL code is modified to store actual file location
   /// </summary>
-  let ReportFile = "C:\Windows\Temp\Coverage.Default.xml"
+  let private ReportFile = "C:\Windows\Temp\Coverage.Default.xml"
   
   /// <summary>
   /// Accumulation of visit records
   /// </summary>  
-  let Visits = new Dictionary<int, Dictionary<int, int>>();
+  let private Visits = new Dictionary<int, Dictionary<int, int>>();
   
   /// <summary>
   /// Interlock for report instances
