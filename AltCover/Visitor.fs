@@ -16,8 +16,9 @@ type internal Node =
      | Module of ModuleDefinition * int * AssemblyModel * bool
      | Type of TypeDefinition * bool * AssemblyModel
      | Method of MethodDefinition * bool * AssemblyModel
-     | MethodPoint of Instruction * CodeSegment * int
+     | MethodPoint of Instruction * CodeSegment * int * bool
      | AfterMethod of MethodDefinition
+     | AfterModule
      | AfterAssembly of AssemblyDefinition
      | Finish
      
@@ -45,6 +46,7 @@ module Visitor =
     match node with
     | Start _ -> ToSeq Finish
     | Assembly (a,_) -> AfterAssembly a.Assembly |> ToSeq
+    | Module _ -> AfterModule |> ToSeq
     | Method (m,_,_) -> AfterMethod m |> ToSeq
     | _ -> Seq.empty<Node> 
     
@@ -92,7 +94,7 @@ module Visitor =
                          let i = PointNumber + 1
                          PointNumber <- i
                          match x with 
-                         | Some a, Some b, _ -> MethodPoint (b, a.Value, i)
+                         | Some a, Some b, _ -> MethodPoint (b, a.Value, i, true) // TODO
                          | _ -> failwith "unexpected None value")
 
     | _ -> Seq.empty<Node>                     
