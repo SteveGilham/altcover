@@ -5,6 +5,9 @@ open System.Xml.Linq
 
 module Report =
 
+  let mutable private document : XDocument = null
+  let GetDocument () = document
+
   let internal ReportGenerator () =
     let stack = ref List.empty<XElement>
     
@@ -20,10 +23,9 @@ module Report =
                           new XAttribute(X "startTime", DateTime.MaxValue.ToString("o", System.Globalization.CultureInfo.InvariantCulture)),
                           new XAttribute(X "measureTime", DateTime.MinValue.ToString("o", System.Globalization.CultureInfo.InvariantCulture)))
 
-          let document = new XDocument()
-          document.Add(new XDeclaration("1.0", "utf-8", "yes"))
-          document.Add(new XProcessingInstruction("xml-stylesheet", "type='text/xsl' href='coverage.xsl'"))
-          document.Add(element)
+          let data : array<Object> = [|new XProcessingInstruction("xml-stylesheet", "type='text/xsl' href='coverage.xsl'");
+                                       element|]
+          document <- new XDocument(new XDeclaration("1.0", "utf-8", "yes"), data)
           stack := element :: !stack
 
       | Module (moduleDef, moduleId,_,_) ->

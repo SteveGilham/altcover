@@ -1,12 +1,20 @@
 ﻿using System;
 
-namespace Sample1
+namespace TouchTest
 {
     class Program
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            var now = DateTime.Now;
+            if (now.Year > 2000)
+            {
+                Console.WriteLine("Where is my rocket pack?");
+            }
+            else
+            {
+                Console.WriteLine("Twentieth Century, boy!");
+            }
         }
     }
 }
