@@ -83,7 +83,7 @@ type AltCoverTests() = class
                     match a1.Name.ToString() with
                     | "startTime"
                     | "measureTime" -> ()
-                    | "document" -> Assert.That(a1.Value.EndsWith(a2.Value), 
+                    | "document" -> Assert.That(a1.Value, Does.EndWith(a2.Value), 
                                       a1.Name.ToString() + " : " + r.ToString() + " -> document")
                     | "visitcount" -> let expected = if zero then "0" else a2.Value 
                                       Assert.That(a1.Value, Is.EqualTo(expected), r.ToString() + " -> visitcount")
@@ -105,7 +105,7 @@ type AltCoverTests() = class
     
     Visitor.Visit (Visitor.ToSeq visitor) (Visitor.ToSeq path)
   
-    let doc = Report.GetDocument()
+    let doc = Report.ReportDocument()
     Console.WriteLine(doc.ToString())
     let baseline = XDocument.Load(new System.IO.StringReader(AltCoverTests.TTBaseline))
     let result = doc.Elements()

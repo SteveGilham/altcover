@@ -6,7 +6,7 @@ open System.Xml.Linq
 module Report =
 
   let mutable private document : XDocument = null
-  let GetDocument () = document
+  let ReportDocument () = document
 
   let internal ReportGenerator () =
     let stack = ref List.empty<XElement>
@@ -37,7 +37,7 @@ module Report =
           stack.Value.Head.Add(element)              
           stack := element :: !stack
           
-      | Method (methodDef, included, model) ->
+      | Method (methodDef, included, _) ->
           let element = new XElement(X "method",
                           new XAttribute(X "name", methodDef.Name),
                           new XAttribute(X "excluded", (not included).ToString().ToLowerInvariant()),
@@ -49,7 +49,7 @@ module Report =
           stack.Value.Head.Add(element)              
           stack := element :: !stack
           
-      | MethodPoint (instruction, codeSegment, index, included) ->          
+      | MethodPoint (_, codeSegment, _, included) ->          
           let element = new XElement(X "seqpnt",
                           new XAttribute(X "visitcount", 0),
                           new XAttribute(X "line", codeSegment.Line),
