@@ -2,16 +2,23 @@
 
 // Functional Visitor pattern
 
+open System
+open System.Collections.Generic
+open System.Linq
+
 open Mono.Cecil
 open Mono.Cecil.Cil
+open Mono.Cecil.Rocks
 
 type internal Node = 
-     | Assembly of AssemblyDefinition * bool
+     | Start of seq<string>
+     | Assembly of AssemblyModel * bool
+     | Module of ModuleDefinition * int * AssemblyModel * bool
+     | Type of TypeDefinition * bool * AssemblyModel
+     | Method of MethodDefinition * bool * AssemblyModel
+     | MethodPoint of Instruction * CodeSegment * int
+     | AfterMethod of MethodDefinition
      | AfterAssembly of AssemblyDefinition
-     | Module of ModuleDefinition * Node // TODO -- can we do any better?
-     | Type of TypeDefinition
-     | Method of MethodDefinition
-     | MethodPoint of Instruction * CodeSegment
      | Finish
      
 module Visitor =
@@ -24,33 +31,77 @@ module Visitor =
     visitors |> 
     Seq.iter (fun v -> v node)
     
-  let internal GetModules a =
-    match a with
-    | Assembly(a, b) -> a.Modules |> Seq.cast
-    | _ -> Seq.empty<ModuleDefinition>
+  let ToSeq node =
+    seq {yield node} 
     
-  // TODO
-  let internal VisitModule (visitors : seq<Node -> unit>) m =
-    ()
-
-  let internal Visit (visitors : seq<Node -> unit>) (assemblies : seq<string>) =
-    let outerVisit = assemblies
+  let rec PopInstructions (key:UInt32) (list : list<Instruction>) =
+    match list with
+    | [] -> ([], None)
+    | h::t when h.Offset > int key || h.Offset = 0 -> PopInstructions key t
+    | h::t when h.Offset = int key -> (t, Some h)
+    | _ -> (list, None)
+    
+  let internal After node =
+    match node with
+    | Start _ -> ToSeq Finish
+    | Assembly (a,_) -> AfterAssembly a.Assembly |> ToSeq
+    | Method (m,_,_) -> AfterMethod m |> ToSeq
+    | _ -> Seq.empty<Node> 
+    
+  let mutable private PointNumber : int = 0
+    
+  let internal Deeper node =
+    match node with 
+    | Start paths -> paths
                      |> Seq.filter IsIncluded
-                     |> Seq.map (fun x -> AssemblyDefinition.ReadAssembly(x))
-                     |> Seq.map (fun x -> Assembly(x, IsIncluded x))
-                     
-    outerVisit                     
+                     |> Seq.map (fun x -> ProgramDatabase.LoadAssembly(x))
+                     |> Seq.map (fun x -> Assembly(x, IsIncluded x.Assembly))  
+    | Assembly (a, b) -> a.Assembly.Modules 
+                         |> Seq.cast
+                         |> Seq.mapi (fun i x -> Module (x, i, a, b))
+                         
+    | Module (x, _, a, _) -> PointNumber <- 0
+                             x.GetAllTypes() 
+                             |> Seq.cast  
+                             |> Seq.map (fun t -> Type (t, IsIncluded t, a))    
+                             
+    | Type (t, _, a) -> t.Methods
+                     |> Seq.cast
+                     |> Seq.filter (fun (m : MethodDefinition) -> not m.IsAbstract 
+                                                                  && not m.IsRuntime
+                                                                  && not m.IsPInvokeImpl)
+                     |> Seq.map (fun m -> Method (m, IsIncluded m, a))                     
+    | Method (m, _, a) -> 
+            let segments = ProgramDatabase.GetCodeSegmentsForMethod a m
+            let instructions = m.Body.Instructions
+                               |> Seq.cast
+                               |> Seq.toList
+                               |> List.rev
+            
+            segments.OrderByDescending(fun p -> p.Key)
+            |> Seq.cast
+            |> Seq.scan (fun state (p:KeyValuePair<UInt32, CodeSegment>) -> 
+                            let _, _, list = state
+                            let newlist, inst = PopInstructions p.Key list
+                            (Some p, inst, newlist))
+                            (None, None, instructions)
+            |> Seq.filter (fun x ->
+                            let a,b,_ = x
+                            a <> None && b <> None)
+            |> Seq.map (fun x ->
+                         let i = PointNumber + 1
+                         PointNumber <- i
+                         match x with 
+                         | Some a, Some b, _ -> MethodPoint (b, a.Value, i)
+                         | _ -> failwith "unexpected None value")
+
+    | _ -> Seq.empty<Node>                     
+                             
+                             
+  let internal BuildSequence node =
+    Seq.concat [ ToSeq node ; Deeper node ; After node ]
+                         
+  let internal Visit (visitors : seq<Node -> unit>) (assemblies : seq<string>) =
+    Start assemblies
+    |> BuildSequence
     |> Seq.iter (apply visitors)
-                     
-    seq { for x in outerVisit do
-           for y in GetModules x do
-             yield Module(y, x) } 
-    |> Seq.iter (VisitModule visitors)                               
-                     
-    outerVisit
-    |> Seq.iter (fun x -> 
-                 match x with 
-                 | Assembly(a, b) -> apply visitors (AfterAssembly(a))
-                 | _ -> ())                     
-                     
-    apply visitors Finish
