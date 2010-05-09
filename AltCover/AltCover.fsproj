@@ -66,6 +66,7 @@
       <Link>VisibleToTest.fs</Link>
     </Compile>
     <Compile Include="ProgramDatabase.fs" />
+    <Compile Include="Filter.fs" />
     <Compile Include="Visitor.fs" />
     <Compile Include="Report.fs" />
     <Compile Include="AltCover.fs" />

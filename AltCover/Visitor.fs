@@ -1,4 +1,7 @@
-﻿namespace AltCover
+﻿// Based upon C# code by Sergiy Sakharov (sakharov@gmail.com)
+// http://code.google.com/p/dot-net-coverage/source/browse/trunk/Coverage.Counter/Coverage.Counter.csproj
+
+namespace AltCover
 
 // Functional Visitor pattern
 
@@ -24,10 +27,11 @@ type internal Node =
      
 module Visitor =
 
-  // TODO
-  let IsIncluded _ =
-    true
-    
+  let internal NameFilters = new List<FilterClass>();
+
+  let IsIncluded (nameProvider:Object) =
+    not (NameFilters |> Seq.exists (Filter.Match nameProvider))
+
   let internal apply (visitors : seq<Node -> unit>) (node : Node) =
     visitors |> 
     Seq.iter (fun v -> v node)
