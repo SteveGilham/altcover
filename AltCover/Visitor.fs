@@ -67,13 +67,13 @@ module Visitor =
                      |> Seq.filter IsIncluded
                      |> Seq.map (fun x -> ProgramDatabase.LoadAssembly(x))
                      |> Seq.map (fun x -> Assembly(x, IsIncluded x.Assembly))  
-                     |> Seq.map (fun x -> Nest x)
+                     |> Seq.map (fun x -> BuildSequence x)
                      |> Seq.concat
 
     | Assembly (a, b) -> a.Assembly.Modules 
                          |> Seq.cast
                          |> Seq.mapi (fun i x -> Module (x, i, a, b))
-                         |> Seq.map (fun x -> Nest x)
+                         |> Seq.map (fun x -> BuildSequence x)
                          |> Seq.concat
 
                          
@@ -81,7 +81,7 @@ module Visitor =
                              x.GetAllTypes() 
                              |> Seq.cast  
                              |> Seq.map (fun t -> Type (t, IsIncluded t, a))
-                             |> Seq.map (fun x -> Nest x)
+                             |> Seq.map (fun x -> BuildSequence x)
                              |> Seq.concat
                              
     | Type (t, _, a) -> t.Methods
@@ -90,7 +90,7 @@ module Visitor =
                                                                   && not m.IsRuntime
                                                                   && not m.IsPInvokeImpl)
                      |> Seq.map (fun m -> Method (m, IsIncluded m, a))
-                     |> Seq.map (fun x -> Nest x)
+                     |> Seq.map (fun x -> BuildSequence x)
                      |> Seq.concat
       
     | Method (m, _, a) -> 
@@ -117,10 +117,9 @@ module Visitor =
                          | Some a, Some b, _ -> MethodPoint (b, a.Value, i, true) // TODO
                          | _ -> failwith "unexpected None value")
 
-    | _ -> defaultReturn                     
-                             
-                             
-  let internal BuildSequence node =
+    | _ -> Seq.empty<Node>                    
+  
+  and internal BuildSequence node =
     Seq.concat [ ToSeq node ; Deeper node ; After node ]
                          
   let internal Visit (visitors : seq<Node -> unit>) (assemblies : seq<string>) =
