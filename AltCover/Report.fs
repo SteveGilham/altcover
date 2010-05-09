@@ -30,7 +30,7 @@ module Report =
 
       | Module (moduleDef, moduleId,_,_) ->
           let element = new XElement(X "module",
-                          new XAttribute(X "moduleId", moduleId),
+                          new XAttribute(X "moduleId", moduleId + 1),
                           new XAttribute(X "name", moduleDef.Name),
                           new XAttribute(X "assembly", moduleDef.Assembly.Name.Name),
                           new XAttribute(X "assemblyIdentity", moduleDef.Assembly.Name.FullName));
@@ -62,6 +62,11 @@ module Report =
           stack.Value.Head.Add(element)              
 
       | AfterMethod _ ->
+          let m = stack.Value.Head
+          let c = m.Descendants()
+                  |> Seq.cast
+                  |> Seq.length
+          if c = 0 then m.Remove()
           stack := stack.Value.Tail
           
       | AfterModule _ ->

@@ -38,6 +38,7 @@ module Visitor =
   let rec PopInstructions (key:UInt32) (list : list<Instruction>) =
     match list with
     | [] -> ([], None)
+    | h::[] when h.Offset = int key -> ([], Some h)
     | h::t when h.Offset > int key || h.Offset = 0 -> PopInstructions key t
     | h::t when h.Offset = int key -> (t, Some h)
     | _ -> (list, None)
@@ -52,27 +53,42 @@ module Visitor =
     
   let mutable private PointNumber : int = 0
     
-  let internal Deeper node =
+  let rec internal Deeper node =
+    let defaultReturn = Seq.empty<Node>  // To move Nest inside the code
+    let Nest node =
+      Seq.concat [ ToSeq node ; Deeper node ; After node ]
+
     match node with 
     | Start paths -> paths
                      |> Seq.filter IsIncluded
                      |> Seq.map (fun x -> ProgramDatabase.LoadAssembly(x))
                      |> Seq.map (fun x -> Assembly(x, IsIncluded x.Assembly))  
+                     |> Seq.map (fun x -> Nest x)
+                     |> Seq.concat
+
     | Assembly (a, b) -> a.Assembly.Modules 
                          |> Seq.cast
                          |> Seq.mapi (fun i x -> Module (x, i, a, b))
+                         |> Seq.map (fun x -> Nest x)
+                         |> Seq.concat
+
                          
     | Module (x, _, a, _) -> PointNumber <- 0
                              x.GetAllTypes() 
                              |> Seq.cast  
-                             |> Seq.map (fun t -> Type (t, IsIncluded t, a))    
+                             |> Seq.map (fun t -> Type (t, IsIncluded t, a))
+                             |> Seq.map (fun x -> Nest x)
+                             |> Seq.concat
                              
     | Type (t, _, a) -> t.Methods
                      |> Seq.cast
                      |> Seq.filter (fun (m : MethodDefinition) -> not m.IsAbstract 
                                                                   && not m.IsRuntime
                                                                   && not m.IsPInvokeImpl)
-                     |> Seq.map (fun m -> Method (m, IsIncluded m, a))                     
+                     |> Seq.map (fun m -> Method (m, IsIncluded m, a))
+                     |> Seq.map (fun x -> Nest x)
+                     |> Seq.concat
+      
     | Method (m, _, a) -> 
             let segments = ProgramDatabase.GetCodeSegmentsForMethod a m
             let instructions = m.Body.Instructions
@@ -97,7 +113,7 @@ module Visitor =
                          | Some a, Some b, _ -> MethodPoint (b, a.Value, i, true) // TODO
                          | _ -> failwith "unexpected None value")
 
-    | _ -> Seq.empty<Node>                     
+    | _ -> defaultReturn                     
                              
                              
   let internal BuildSequence node =

@@ -53,16 +53,16 @@ type AltCoverTests() = class
 <coverage profilerVersion=\"0\" driverVersion=\"0\" startTime=\"\" measureTime=\"\">
 <module moduleId=\"1\" name=\"TouchTest.exe\" assembly=\"TouchTest\" assemblyIdentity=\"TouchTest, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null\">
 <method name=\"Main\" excluded=\"false\" instrumented=\"true\" class=\"TouchTest.Program\">
-<seqpnt visitcount=\"1\" line=\"21\" column=\"9\"  endline=\"21\" endcolumn=\"10\" excluded=\"false\" document=\"TouchTest\\Program.cs\" />
-<seqpnt visitcount=\"0\" line=\"20\" column=\"13\" endline=\"20\" endcolumn=\"14\" excluded=\"false\" document=\"TouchTest\\Program.cs\" />
-<seqpnt visitcount=\"0\" line=\"19\" column=\"17\" endline=\"19\" endcolumn=\"62\" excluded=\"false\" document=\"TouchTest\\Program.cs\" />
-<seqpnt visitcount=\"0\" line=\"18\" column=\"13\" endline=\"18\" endcolumn=\"14\" excluded=\"false\" document=\"TouchTest\\Program.cs\" />
-<seqpnt visitcount=\"1\" line=\"16\" column=\"13\" endline=\"16\" endcolumn=\"14\" excluded=\"false\" document=\"TouchTest\\Program.cs\" />
-<seqpnt visitcount=\"1\" line=\"15\" column=\"17\" endline=\"15\" endcolumn=\"63\" excluded=\"false\" document=\"TouchTest\\Program.cs\" />
-<seqpnt visitcount=\"1\" line=\"14\" column=\"13\" endline=\"14\" endcolumn=\"14\" excluded=\"false\" document=\"TouchTest\\Program.cs\" />
-<seqpnt visitcount=\"1\" line=\"13\" column=\"13\" endline=\"13\" endcolumn=\"33\" excluded=\"false\" document=\"TouchTest\\Program.cs\" />
-<seqpnt visitcount=\"1\" line=\"12\" column=\"13\" endline=\"12\" endcolumn=\"36\" excluded=\"false\" document=\"TouchTest\\Program.cs\" />
-<seqpnt visitcount=\"1\" line=\"11\" column=\"9\"  endline=\"11\" endcolumn=\"10\" excluded=\"false\" document=\"TouchTest\\Program.cs\" />
+<seqpnt visitcount=\"1\" line=\"21\" column=\"9\"  endline=\"21\" endcolumn=\"10\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
+<seqpnt visitcount=\"0\" line=\"20\" column=\"13\" endline=\"20\" endcolumn=\"14\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
+<seqpnt visitcount=\"0\" line=\"19\" column=\"17\" endline=\"19\" endcolumn=\"62\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
+<seqpnt visitcount=\"0\" line=\"18\" column=\"13\" endline=\"18\" endcolumn=\"14\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
+<seqpnt visitcount=\"1\" line=\"16\" column=\"13\" endline=\"16\" endcolumn=\"14\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
+<seqpnt visitcount=\"1\" line=\"15\" column=\"17\" endline=\"15\" endcolumn=\"63\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
+<seqpnt visitcount=\"1\" line=\"14\" column=\"13\" endline=\"14\" endcolumn=\"14\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
+<seqpnt visitcount=\"1\" line=\"13\" column=\"13\" endline=\"13\" endcolumn=\"33\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
+<seqpnt visitcount=\"1\" line=\"12\" column=\"13\" endline=\"12\" endcolumn=\"36\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
+<seqpnt visitcount=\"1\" line=\"11\" column=\"9\"  endline=\"11\" endcolumn=\"10\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
 </method>
 </module>
 </coverage>"
@@ -75,7 +75,7 @@ type AltCoverTests() = class
     Assert.That(rcount, Is.EqualTo(ecount), "Mismatch at depth " + depth.ToString())
     
     Seq.zip result expected |> Seq.iter (fun ((r:XElement), (e:XElement)) -> 
-            Assert.That(r.Name, Is.EqualTo(e.Name))
+            Assert.That(r.Name, Is.EqualTo(e.Name), "Expected name " + e.Name.ToString())
             let ra = r.Attributes()
             let ea = e.Attributes()
             Seq.zip ra ea |> Seq.iter (fun ((a1:XAttribute), (a2:XAttribute)) ->
@@ -84,17 +84,16 @@ type AltCoverTests() = class
                     | "startTime"
                     | "measureTime" -> ()
                     | "document" -> Assert.That(a1.Value.EndsWith(a2.Value), 
-                                      a1.Name.ToString() + " : " + r.ToString())
+                                      a1.Name.ToString() + " : " + r.ToString() + " -> document")
                     | "visitcount" -> let expected = if zero then "0" else a2.Value 
-                                      Assert.That(a1.Value, Is.EqualTo(expected), r.ToString())
-                    | _ -> Assert.That(a1.Value, Is.EqualTo(a2.Value), r.ToString())
+                                      Assert.That(a1.Value, Is.EqualTo(expected), r.ToString() + " -> visitcount")
+                    | _ -> Assert.That(a1.Value, Is.EqualTo(a2.Value), r.ToString() + " -> " + a1.Name.ToString())
                 )
-            
-            
+
             AltCoverTests.RecursiveValidate (r.Elements()) (e.Elements()) (depth+1) zero)
   
 
-  [<Test>]
+  [<Test; Ignore("awaits refactoring")>]
   member self.ValidateTouchTestReportOnly() =
     let visitor = Report.ReportGenerator()
     // Hack for running while instrumented
