@@ -1,4 +1,4 @@
 ﻿namespace AltCover
 
 module Instrument =
-  let placeholder = ()
+  let Placeholder = ()

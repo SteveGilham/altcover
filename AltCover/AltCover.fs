@@ -1,10 +1,83 @@
 ﻿namespace AltCover
 
 open System
+open System.Collections.Generic
+
+open Mono.Options
 
 module Main =
 
+  let mutable private inputDirectory = "."
+  let mutable private outputDirectory = ".\\Instrumented"
+  let mutable private keyPath = String.Empty
+  let mutable private reportPath = ".\\coverage.xml"
+  let mutable private help = false
+  
+  let Usage (intro:string) (options:OptionSet) =
+    Console.Error.WriteLine(intro)
+    options.WriteOptionDescriptions(Console.Error);  
+    Environment.Exit(-1)
+  
+  let (!+) (option: string * string * (string->unit)) (options:OptionSet) =
+    let prototype, help, action = option
+    options.Add(prototype, help, new System.Action<string>(action))
+
   [<EntryPoint>]
   let Main arguments =
-    System.Console.WriteLine("placeholder")
-    0
+    let options = new OptionSet()
+                    |> !+ (
+                        "i|inputDirectory=", 
+                        "Optional: The folder containing assemblies to instrument (default: current directory)",
+                        (fun x -> inputDirectory <- x))
+                    |> !+ (
+                        "o|outputDirectory=", 
+                        "Optional: The folder to receive the instrumented assemblies and their companions (default: sub-folder 'Instrumented' current directory)",
+                        (fun x -> outputDirectory <- x))
+                    |> !+ (
+                        "sn|strongNameKey=", 
+                        "Optional: The strong naming key to apply to instrumented assemblies (default: None)",
+                        (fun x -> keyPath <- x))
+                    |> !+ (
+                        "x|xmlReport=", 
+                        "Optional: The output report template file (default: coverage.xml in the current directory)",
+                        (fun x -> reportPath <- x))
+                    |> !+ (
+                        "f|fileFilter=", 
+                        "Optional: file name to exclude from instrumentation (may repeat)",
+                        (fun x -> Visitor.NameFilters.Add(FilterClass.File(x))))
+                    |> !+ (
+                        "s|assemblyFilter=", 
+                        "Optional: assembly name to exclude from instrumentation (may repeat)",
+                        (fun x -> Visitor.NameFilters.Add(FilterClass.Assembly(x))))
+                    |> !+ (
+                        "t|typeFilter=", 
+                        "Optional: type name to exclude from instrumentation (may repeat)",
+                        (fun x -> Visitor.NameFilters.Add(FilterClass.Type(x))))
+                    |> !+ (
+                        "m|methodFilter=", 
+                        "Optional: method name to exclude from instrumentation (may repeat)",
+                        (fun x -> Visitor.NameFilters.Add(FilterClass.Method(x))))
+                    |> !+ (
+                        "a|attributeFilter=", 
+                        "Optional: attribute name to exclude from instrumentation (may repeat)",
+                        (fun x -> Visitor.NameFilters.Add(FilterClass.Attribute(x))))
+                        
+                    |> !+ (                    
+                        "?|help|h",
+                         "Prints out the options.",
+                          (fun x -> help <- x <> null))
+    try
+      options.Parse(arguments) |> ignore
+    with
+    | :? OptionException -> Usage "Error - usage is:" options
+             
+    if help then 
+      let intro = "AltCover [/i[nputDirectory]=VALUE] [/o[utputDirectory]=VALUE] " +
+                  "[/sn|strongNameKey=VALUE] [/x[mlReport]=VALUE] [/f[ileFilter]=VALUE] " +
+                  "[/s|assemblyFilter=VALUE] [/t|typeFilter=VALUE] [/m|methodFilter=VALUE] " +
+                  "[/a|attributeFilter=VALUE] [/?|h[elp]]"
+      Usage intro options
+      
+    // TODO -- some more pruning of arguments then useful work
+    Console.WriteLine(Visitor.NameFilters.Count)
+    0     
