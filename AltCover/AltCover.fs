@@ -22,6 +22,9 @@ module Main =
     let prototype, help, action = option
     options.Add(prototype, help, new System.Action<string>(action))
 
+  let UntilPartition argument =
+    not (String.Equals("/exe", argument, StringComparison.OrdinalIgnoreCase))
+
   [<EntryPoint>]
   let Main arguments =
     let options = new OptionSet()
@@ -66,8 +69,17 @@ module Main =
                         "?|help|h",
                          "Prints out the options.",
                           (fun x -> help <- x <> null))
+
+    let coverage =
+      arguments
+      |> Seq.takeWhile UntilPartition
+    let rest = 
+      arguments
+      |> Seq.skipWhile UntilPartition
+      |> Seq.toList      
+
     try
-      options.Parse(arguments) |> ignore
+      options.Parse(coverage) |> ignore
     with
     | :? OptionException -> Usage "Error - usage is:" options
              
@@ -80,4 +92,13 @@ module Main =
       
     // TODO -- some more pruning of arguments then useful work
     Console.WriteLine(Visitor.NameFilters.Count)
+    
+    // If we have some arguments in rest execute that command line
+    match rest with
+    | [] -> ()
+    | _::[] -> ()
+    | _::cmd::t-> 
+       let args = String.Join(" ", (List.toArray t))
+       () // TODO -- Spawn process, echoing asynchronously
+    
     0     
