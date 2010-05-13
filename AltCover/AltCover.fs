@@ -22,9 +22,6 @@ module Main =
     let prototype, help, action = option
     options.Add(prototype, help, new System.Action<string>(action))
 
-  let UntilPartition argument =
-    not (String.Equals("/exe", argument, StringComparison.OrdinalIgnoreCase))
-
   [<EntryPoint>]
   let Main arguments =
     let options = new OptionSet()
@@ -64,25 +61,20 @@ module Main =
                         "a|attributeFilter=", 
                         "Optional: attribute name to exclude from instrumentation (may repeat)",
                         (fun x -> Visitor.NameFilters.Add(FilterClass.Attribute(x))))
-                        
                     |> !+ (                    
                         "?|help|h",
                          "Prints out the options.",
                           (fun x -> help <- x <> null))
-
-    let coverage =
-      arguments
-      |> Seq.takeWhile UntilPartition
-    let rest = 
-      arguments
-      |> Seq.skipWhile UntilPartition
-      |> Seq.toList      
-
-    try
-      options.Parse(coverage) |> ignore
-    with
-    | :? OptionException -> Usage "Error - usage is:" options
-             
+                    |> !+ (                    
+                        "<>",
+                        String.Empty,
+                          (fun x -> ()))                          
+    let rest = try
+                    options.Parse(arguments)
+               with
+                | :? OptionException -> 
+                  Usage "Error - usage is:" options
+                  new List<String>()
     if help then 
       let intro = "AltCover [/i[nputDirectory]=VALUE] [/o[utputDirectory]=VALUE] " +
                   "[/sn|strongNameKey=VALUE] [/x[mlReport]=VALUE] [/f[ileFilter]=VALUE] " +
@@ -94,7 +86,7 @@ module Main =
     Console.WriteLine(Visitor.NameFilters.Count)
     
     // If we have some arguments in rest execute that command line
-    match rest with
+    match rest |> Seq.toList with
     | [] -> ()
     | _::[] -> ()
     | _::cmd::t-> 
