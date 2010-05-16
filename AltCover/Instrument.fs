@@ -11,8 +11,13 @@ open System.IO
 open Mono.Cecil
 
 module Instrument =
+  // Needs more monadic state
+
   let private IntrumentedAssemblies = List<string>()
   let private recorder = ref<AssemblyDefinition> (null)
+  let private recorderMethod = ref<MethodDefinition>(null)
+  let private recorderMethodRef = ref<MethodReference>(null)
+  let mutable private referenceUpdates : Dictionary<String, String> = null
 
   let DefineRecordingAssembly () =
     let recorder = typeof<AltCover.Recorder.Tracer>
@@ -31,7 +36,17 @@ module Instrument =
     | null -> recorder := DefineRecordingAssembly()
               !recorder
     | _ -> !recorder
-                  
+  
+  let GetRecordingMethod () =
+    match !recorderMethod with
+    | null -> let trace  = typeof<AltCover.Recorder.Tracer>
+              let other = trace.Assembly.GetExportedTypes()
+                          |> Seq.find (fun (t:Type) -> t.Name.Contains("Instance"))
+              let token = other.GetMethod("Visit").MetadataToken
+              recorderMethod := GetRecordingAssembly().MainModule.LookupToken(token) :?> MethodDefinition 
+              !recorderMethod
+    | _ -> !recorderMethod  
+    
   let UpdateStrongReferences (assembly : AssemblyDefinition) =
     let assemblyReferenceSubstitutions = new Dictionary<String, String>()
     let effectiveKey = if assembly.Name.HasPublicKey then None else Visitor.strongNameKey
@@ -94,24 +109,28 @@ module Instrument =
   let internal InstrumentationVisitor (node:Node) = 
      match node with
      | Start _ -> ()
-     | Assembly (model, included) ->  //of AssemblyModel * bool
+     | Assembly (model, included) ->
          let updates = UpdateStrongReferences model.Assembly
          SubstituteAttributeScopeReferences updates model.Assembly.CustomAttributes
          if included then 
              model.Assembly.MainModule.AssemblyReferences.Add(GetRecordingAssembly().Name)
-     | Module (m, i, am, b) -> () //of ModuleDefinition * int * AssemblyModel * bool
+         referenceUpdates <- updates
+     | Module (m, i, am, included) -> //of ModuleDefinition * int * AssemblyModel * bool
+         if included then 
+             recorderMethodRef := m.Import(GetRecordingMethod())
+         SubstituteAttributeScopeReferences referenceUpdates m.CustomAttributes
      | Type (t,b,m) -> () //of TypeDefinition * bool * AssemblyModel
      | Method (m,b,a) -> () //of MethodDefinition * bool * AssemblyModel
      | MethodPoint (instruction, segment, i, b) -> () //of Instruction * CodeSegment * int * bool
      | AfterMethod m -> () //of MethodDefinition
      | AfterModule -> ()
-     | AfterAssembly a ->  //of AssemblyDefinition
+     | AfterAssembly assembly ->
          if not (Directory.Exists(Visitor.outputDirectory)) then
                 System.Console.WriteLine("Creating folder " + Visitor.outputDirectory);
                 Directory.CreateDirectory(Visitor.outputDirectory) |> ignore
 
-         let name = new FileInfo(a.Name.Name)
+         let name = new FileInfo(assembly.Name.Name)
          let path = Path.Combine(Visitor.outputDirectory, name.Name)
-         WriteAssembly a path
+         WriteAssembly assembly path
      | Finish -> let counterAssemblyFile = Path.Combine(Visitor.outputDirectory, GetRecordingAssembly().Name.Name + ".dll")
                  WriteAssembly (GetRecordingAssembly()) counterAssemblyFile
