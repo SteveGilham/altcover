@@ -83,21 +83,21 @@ module Visitor =
                          |> Seq.concat
 
                          
-    | Module (x, _, a, _) -> PointNumber <- 0
-                             x.GetAllTypes() 
-                             |> Seq.cast  
-                             |> Seq.map (fun t -> Type (t, IsIncluded t, a))
-                             |> Seq.map (fun x -> BuildSequence x)
-                             |> Seq.concat
+    | Module (x, _, a, included) -> PointNumber <- 0
+                                    x.GetAllTypes() 
+                                    |> Seq.cast  
+                                    |> Seq.map (fun t -> Type (t, included && IsIncluded t, a))
+                                    |> Seq.map (fun x -> BuildSequence x)
+                                    |> Seq.concat
                              
-    | Type (t, _, a) -> t.Methods
-                     |> Seq.cast
-                     |> Seq.filter (fun (m : MethodDefinition) -> not m.IsAbstract 
-                                                                  && not m.IsRuntime
-                                                                  && not m.IsPInvokeImpl)
-                     |> Seq.map (fun m -> Method (m, IsIncluded m, a))
-                     |> Seq.map (fun x -> BuildSequence x)
-                     |> Seq.concat
+    | Type (t, included, a) -> t.Methods
+                               |> Seq.cast
+                               |> Seq.filter (fun (m : MethodDefinition) -> not m.IsAbstract 
+                                                                            && not m.IsRuntime
+                                                                            && not m.IsPInvokeImpl)
+                               |> Seq.map (fun m -> Method (m, included && IsIncluded m, a))
+                               |> Seq.map (fun x -> BuildSequence x)
+                               |> Seq.concat
       
     | Method (m, _, a) -> 
             let segments = ProgramDatabase.GetCodeSegmentsForMethod a m
