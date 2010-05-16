@@ -2,15 +2,13 @@
 
 open System
 open System.Collections.Generic
+open System.IO
+open System.Reflection
 
 open Mono.Options
 
 module Main =
 
-  let mutable private inputDirectory = "."
-  let mutable private outputDirectory = ".\\Instrumented"
-  let mutable private keyPath = String.Empty
-  let mutable private reportPath = ".\\coverage.xml"
   let mutable private help = false
   
   let Usage (intro:string) (options:OptionSet) =
@@ -28,19 +26,28 @@ module Main =
                     |> !+ (
                         "i|inputDirectory=", 
                         "Optional: The folder containing assemblies to instrument (default: current directory)",
-                        (fun x -> inputDirectory <- x))
+                        (fun x -> Visitor.inputDirectory <- x))
                     |> !+ (
                         "o|outputDirectory=", 
                         "Optional: The folder to receive the instrumented assemblies and their companions (default: sub-folder 'Instrumented' current directory)",
-                        (fun x -> outputDirectory <- x))
+                        (fun x -> Visitor.outputDirectory <- x))
                     |> !+ (
                         "sn|strongNameKey=", 
                         "Optional: The strong naming key to apply to instrumented assemblies (default: None)",
-                        (fun x -> keyPath <- x))
+                        (fun x -> 
+                            if not (String.IsNullOrEmpty(x)) && File.Exists(x) then
+                              try 
+                                  use stream = new System.IO.FileStream(x, System.IO.FileMode.Open)
+                                  let pair = new StrongNameKeyPair(stream)
+                                  Visitor.strongNameKey <- Some (pair)
+                              with
+                              | :? IOException as io -> Console.WriteLine(io.Message)
+                              | :? System.Security.SecurityException as s -> Console.WriteLine(s.Message)
+                        ))
                     |> !+ (
                         "x|xmlReport=", 
                         "Optional: The output report template file (default: coverage.xml in the current directory)",
-                        (fun x -> reportPath <- x))
+                        (fun x -> Visitor.reportPath <- x))
                     |> !+ (
                         "f|fileFilter=", 
                         "Optional: file name to exclude from instrumentation (may repeat)",

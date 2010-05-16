@@ -8,6 +8,7 @@ namespace AltCover
 open System
 open System.Collections.Generic
 open System.Linq
+open System.Reflection
 
 open Mono.Cecil
 open Mono.Cecil.Cil
@@ -28,6 +29,11 @@ type internal Node =
 module Visitor =
 
   let internal NameFilters = new List<FilterClass>();
+
+  let mutable internal inputDirectory = "."
+  let mutable internal outputDirectory = ".\\Instrumented"
+  let mutable internal reportPath = ".\\coverage.xml"
+  let mutable internal strongNameKey : option<StrongNameKeyPair> = None
 
   let IsIncluded (nameProvider:Object) =
     not (NameFilters |> Seq.exists (Filter.Match nameProvider))
