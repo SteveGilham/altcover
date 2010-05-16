@@ -6,11 +6,13 @@ namespace AltCover
 
 open System
 open System.Collections.Generic
+open System.IO
 
 open Mono.Cecil
 
 module Instrument =
   let private IntrumentedAssemblies = List<string>()
+  let private recorder = ref<AssemblyDefinition> (null)
 
   let DefineRecordingAssembly () =
     let recorder = typeof<AltCover.Recorder.Tracer>
@@ -22,6 +24,13 @@ module Instrument =
               definition.Name.PublicKeyToken <- null
     | Some key -> definition.Name.HasPublicKey <- true
                   definition.Name.PublicKey <- key.PublicKey
+    definition
+                  
+  let GetRecordingAssembly () =
+    match !recorder with
+    | null -> recorder := DefineRecordingAssembly()
+              !recorder
+    | _ -> !recorder
                   
   let UpdateStrongReferences (assembly : AssemblyDefinition) =
     let assemblyReferenceSubstitutions = new Dictionary<String, String>()
@@ -75,18 +84,34 @@ module Instrument =
                      SubstituteAttributeParameterScopeReferences updates x.ConstructorArguments
                      SubstituteAttributeParameterScopeReferences updates x.Properties)
                      
+  let WriteAssembly (assembly:AssemblyDefinition) (path:string) =
+    match Visitor.strongNameKey with
+    | None -> assembly.Write(path)
+    | Some key -> let pkey = new Mono.Cecil.WriterParameters()
+                  pkey.StrongNameKeyPair <- key
+                  assembly.Write(path, pkey)
+                     
   let internal InstrumentationVisitor (node:Node) = 
      match node with
      | Start _ -> ()
-     | Assembly (m,b) ->  //of AssemblyModel * bool
-         let updates = UpdateStrongReferences m.Assembly
-         SubstituteAttributeScopeReferences updates m.Assembly.CustomAttributes
-         ()
+     | Assembly (model, included) ->  //of AssemblyModel * bool
+         let updates = UpdateStrongReferences model.Assembly
+         SubstituteAttributeScopeReferences updates model.Assembly.CustomAttributes
+         if included then 
+             model.Assembly.MainModule.AssemblyReferences.Add(GetRecordingAssembly().Name)
      | Module (m, i, am, b) -> () //of ModuleDefinition * int * AssemblyModel * bool
      | Type (t,b,m) -> () //of TypeDefinition * bool * AssemblyModel
      | Method (m,b,a) -> () //of MethodDefinition * bool * AssemblyModel
      | MethodPoint (instruction, segment, i, b) -> () //of Instruction * CodeSegment * int * bool
      | AfterMethod m -> () //of MethodDefinition
      | AfterModule -> ()
-     | AfterAssembly a -> () //of AssemblyDefinition
-     | Finish -> ()
+     | AfterAssembly a ->  //of AssemblyDefinition
+         if not (Directory.Exists(Visitor.outputDirectory)) then
+                System.Console.WriteLine("Creating folder " + Visitor.outputDirectory);
+                Directory.CreateDirectory(Visitor.outputDirectory) |> ignore
+
+         let name = new FileInfo(a.Name.Name)
+         let path = Path.Combine(Visitor.outputDirectory, name.Name)
+         WriteAssembly a path
+     | Finish -> let counterAssemblyFile = Path.Combine(Visitor.outputDirectory, GetRecordingAssembly().Name.Name + ".dll")
+                 WriteAssembly (GetRecordingAssembly()) counterAssemblyFile
