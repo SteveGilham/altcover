@@ -69,7 +69,7 @@ module Visitor =
       Seq.concat [ ToSeq node ; Deeper node ; After node ]
 
     match node with 
-    | Start paths -> paths
+    | Start paths -> paths // TODO -- filter non-assemblies
                      |> Seq.filter IsIncluded
                      |> Seq.map (fun x -> ProgramDatabase.LoadAssembly(x))
                      |> Seq.map (fun x -> Assembly(x, IsIncluded x.Assembly))  
