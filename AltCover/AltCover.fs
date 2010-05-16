@@ -2,6 +2,7 @@
 
 open System
 open System.Collections.Generic
+open System.Diagnostics
 open System.IO
 open System.Reflection
 
@@ -19,6 +20,35 @@ module Main =
   let (!+) (option: string * string * (string->unit)) (options:OptionSet) =
     let prototype, help, action = option
     options.Add(prototype, help, new System.Action<string>(action))
+
+  let Launch cmd args =
+    let psi = new ProcessStartInfo(cmd,args)
+    psi.WorkingDirectory <- Visitor.outputDirectory
+    psi.CreateNoWindow <- true
+    psi.UseShellExecute <- false
+    psi.RedirectStandardError <- true
+    psi.RedirectStandardOutput <- true
+    let proc = new Process()
+    proc.StartInfo <- psi
+    
+    let Write (writer:TextWriter) colour data =
+      if not(String.IsNullOrEmpty(data)) then 
+         let original = Console.ForegroundColor
+         try 
+           Console.ForegroundColor <- colour
+           writer.WriteLine(data)
+         finally
+           Console.ForegroundColor <- original
+           
+    let err (e:DataReceivedEventArgs) =
+      Write Console.Error ConsoleColor.Yellow e.Data
+    let out (e:DataReceivedEventArgs) =
+      Write Console.Out ConsoleColor.White e.Data
+      
+    proc.ErrorDataReceived.Add(err)
+    proc.OutputDataReceived.Add(out)
+    proc.Start() |> ignore
+    proc.WaitForExit()          
 
   [<EntryPoint>]
   let Main arguments =
@@ -95,9 +125,8 @@ module Main =
     // If we have some arguments in rest execute that command line
     match rest |> Seq.toList with
     | [] -> ()
-    | _::[] -> ()
-    | _::cmd::t-> 
+    | cmd::t-> 
        let args = String.Join(" ", (List.toArray t))
-       () // TODO -- Spawn process, echoing asynchronously
+       Launch cmd args // Spawn process, echoing asynchronously
     
     0     
