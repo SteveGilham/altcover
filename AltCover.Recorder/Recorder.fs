@@ -9,6 +9,10 @@ open System.IO
 open System.Xml
 open System.Xml.Linq
 
+type Tracer =
+  | Active
+  | Inactive
+
 module Instance =
 
    /// <summary>
