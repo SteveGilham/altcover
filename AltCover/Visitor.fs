@@ -129,6 +129,13 @@ module Visitor =
     Seq.concat [ ToSeq node ; Deeper node ; After node ]
                          
   let internal Visit (visitors : seq<Node -> unit>) (assemblies : seq<string>) =
+    (*let rec fix f = f (fun x -> fix f x)
+    let a apply b = apply b
+    let application = fix a
+    Start assemblies
+    |> BuildSequence
+    |> Seq.fold application visitors *)
+    
     Start assemblies
     |> BuildSequence
     |> Seq.iter (apply visitors)
