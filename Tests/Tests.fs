@@ -111,7 +111,7 @@ type AltCoverTests() = class
               | _ -> String.Empty
     let path = Path.Combine(Path.GetDirectoryName(where) + dir, "Sample1.exe")
     
-    Visitor.Visit (Visitor.ToSeq visitor) (Visitor.ToSeq path)
+    Visitor.Visit [ visitor ] (Visitor.ToSeq path)
   
     let doc = Report.ReportDocument()
     Console.WriteLine(doc.ToString())

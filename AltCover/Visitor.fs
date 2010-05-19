@@ -36,11 +36,7 @@ module Visitor =
   let mutable internal strongNameKey : option<StrongNameKeyPair> = None
 
   let IsIncluded (nameProvider:Object) =
-    not (NameFilters |> Seq.exists (Filter.Match nameProvider))
-
-  let internal apply (visitors : seq<Node -> unit>) (node : Node) =
-    visitors |> 
-    Seq.iter (fun v -> v node)
+    not (NameFilters |> Seq.exists (Filter.Match nameProvider))  
     
   let ToSeq node =
     seq {yield node} 
@@ -128,14 +124,17 @@ module Visitor =
   and internal BuildSequence node =
     Seq.concat [ ToSeq node ; Deeper node ; After node ]
                          
-  let internal Visit (visitors : seq<Node -> unit>) (assemblies : seq<string>) =
-    (*let rec fix f = f (fun x -> fix f x)
-    let a apply b = apply b
-    let application = fix a
+  type Fix<'T> = delegate of 'T -> Fix<'T>
+  
+  let internal invoke (node : Node) (visitor:Fix<Node>)  =
+    visitor.Invoke(node)
+
+  let internal apply (visitors : list<Fix<Node>>) (node : Node) =
+    visitors |> 
+    List.map (invoke node) 
+
+  let internal Visit (visitors : list<Fix<Node>>) (assemblies : seq<string>) =
     Start assemblies
     |> BuildSequence
-    |> Seq.fold application visitors *)
-    
-    Start assemblies
-    |> BuildSequence
-    |> Seq.iter (apply visitors)
+    |> Seq.fold apply visitors
+    |> ignore

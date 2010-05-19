@@ -9,12 +9,12 @@ module Report =
   let ReportDocument () = document
 
   let internal ReportGenerator () =
-    let stack = ref List.empty<XElement>
+    let initialState = List.empty<XElement>   
     
     let X name =
       XName.Get(name)
     
-    let ReportVisitor (node:Node) = 
+    let ReportVisitor (s : list<XElement>) (node:Node) = 
       match node with
       | Start _ -> 
           let element = new XElement(X "coverage",
@@ -26,7 +26,7 @@ module Report =
           let data : array<Object> = [|new XProcessingInstruction("xml-stylesheet", "type='text/xsl' href='coverage.xsl'");
                                        element|]
           document <- new XDocument(new XDeclaration("1.0", "utf-8", "yes"), data)
-          stack := element :: !stack
+          element :: s
 
       | Module (moduleDef, moduleId,_,_) ->
           let element = new XElement(X "module",
@@ -34,9 +34,9 @@ module Report =
                           new XAttribute(X "name", moduleDef.Name),
                           new XAttribute(X "assembly", moduleDef.Assembly.Name.Name),
                           new XAttribute(X "assemblyIdentity", moduleDef.Assembly.Name.FullName));
-          stack.Value.Head.Add(element)              
-          stack := element :: !stack
-          
+          s.Head.Add(element)   
+          element :: s     
+
       | Method (methodDef, included, _) ->
           let element = new XElement(X "method",
                           new XAttribute(X "name", methodDef.Name),
@@ -45,9 +45,8 @@ module Report =
                           //// Mono.Cecil emits names in the form outer/inner rather than outer+inner
                           new XAttribute(X "class", methodDef.DeclaringType.FullName.Replace('/', '+')),
                           new XAttribute(X "fullname", methodDef.FullName.Replace('/', '+')));
-      
-          stack.Value.Head.Add(element)              
-          stack := element :: !stack
+          s.Head.Add(element)   
+          element :: s       
           
       | MethodPoint (_, codeSegment, _, included) ->          
           let element = new XElement(X "seqpnt",
@@ -58,23 +57,30 @@ module Report =
                           new XAttribute(X "endcolumn", codeSegment.EndColumn),
                           new XAttribute(X "excluded", (not included).ToString().ToLowerInvariant()),
                           new XAttribute(X "document", codeSegment.Document));
-      
-          stack.Value.Head.Add(element)              
-
+          s.Head.Add(element)               
+          s         
+          
       | AfterMethod _ ->
-          let m = stack.Value.Head
+          let m = s.Head
           let c = m.Descendants()
                   |> Seq.cast
                   |> Seq.length
           if c = 0 then m.Remove()
-          stack := stack.Value.Tail
+          s.Tail
           
       | AfterModule _ ->
-          stack := stack.Value.Tail
+          s.Tail
           
-      | Finish ->
-          ()
-          
-      | _ -> ()
+      | Finish -> s
+
+      | _ -> s
       
-    ReportVisitor
+    //ReportVisitor
+    let rec state l = new Visitor.Fix<Node> (
+                        fun (node:Node) -> 
+                        let next = ReportVisitor l node
+                        state next
+      )
+     
+    let result = state initialState
+    result 
