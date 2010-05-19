@@ -103,7 +103,7 @@ type AltCoverTests() = class
 
   [<Test; Ignore("awaits refactoring")>]
   member self.ValidateTouchTestReportOnly() =
-    let visitor = Report.ReportGenerator()
+    let visitor, document = Report.ReportGenerator()
     // Hack for running while instrumented
     let where = Assembly.GetExecutingAssembly().Location;
     let dir = match AltCover.ProgramDatabase.PdbPath(where) with
@@ -112,11 +112,9 @@ type AltCoverTests() = class
     let path = Path.Combine(Path.GetDirectoryName(where) + dir, "Sample1.exe")
     
     Visitor.Visit [ visitor ] (Visitor.ToSeq path)
-  
-    let doc = Report.ReportDocument()
-    Console.WriteLine(doc.ToString())
+
     let baseline = XDocument.Load(new System.IO.StringReader(AltCoverTests.TTBaseline))
-    let result = doc.Elements()
+    let result = document.Elements()
     let expected = baseline.Elements()
     AltCoverTests.RecursiveValidate result expected 0 true
     

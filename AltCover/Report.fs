@@ -5,11 +5,15 @@ open System.Xml.Linq
 
 module Report =
 
-  let mutable private document : XDocument = null
-  let ReportDocument () = document
-
   let internal ReportGenerator () =
-    let initialState = List.empty<XElement>   
+    let initialState = List.empty<XElement>
+    let data = new XProcessingInstruction(
+                   "xml-stylesheet",
+                   "type='text/xsl' href='coverage.xsl'") :> Object
+                   
+    // The internal state of the document is mutated by the 
+    // operation of the visitor.  Everything else should now be pure
+    let document = new XDocument(new XDeclaration("1.0", "utf-8", "yes"), [|data|])
     
     let X name =
       XName.Get(name)
@@ -22,10 +26,7 @@ module Report =
                           new XAttribute(X "driverVersion", 0),
                           new XAttribute(X "startTime", DateTime.MaxValue.ToString("o", System.Globalization.CultureInfo.InvariantCulture)),
                           new XAttribute(X "measureTime", DateTime.MinValue.ToString("o", System.Globalization.CultureInfo.InvariantCulture)))
-
-          let data : array<Object> = [|new XProcessingInstruction("xml-stylesheet", "type='text/xsl' href='coverage.xsl'");
-                                       element|]
-          document <- new XDocument(new XDeclaration("1.0", "utf-8", "yes"), data)
+          document.Add(element)
           element :: s
 
       | Module (moduleDef, moduleId,_,_) ->
@@ -75,12 +76,10 @@ module Report =
 
       | _ -> s
       
-    //ReportVisitor
     let rec state l = new Visitor.Fix<Node> (
-                        fun (node:Node) -> 
-                        let next = ReportVisitor l node
-                        state next
-      )
-     
-    let result = state initialState
-    result 
+                          fun (node:Node) -> 
+                          let next = ReportVisitor l node     
+                          state next)
+
+    let result = state List.empty<XElement>   
+    (result, document)
