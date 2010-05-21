@@ -76,10 +76,5 @@ module Report =
 
       | _ -> s
       
-    let rec state l = new Visitor.Fix<Node> (
-                          fun (node:Node) -> 
-                          let next = ReportVisitor l node     
-                          state next)
-
-    let result = state List.empty<XElement>   
+    let result = Visitor.EncloseState ReportVisitor List.empty<XElement>  
     (result, document)
