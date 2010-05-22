@@ -11,13 +11,12 @@ open System.IO
 open Mono.Cecil
 
 module Instrument =
-  // Needs more monadic state
-
-  let private IntrumentedAssemblies = List<string>()
-  let private recorder = ref<AssemblyDefinition> (null)
-  let private recorderMethod = ref<MethodDefinition>(null)
-  let private recorderMethodRef = ref<MethodReference>(null)
-  let mutable private referenceUpdates : Dictionary<String, String> = null
+  type internal Context = {
+         InstrumentedAssemblies : string list;
+         RenameTable : Dictionary<String, String>;
+         RecordingAssembly : AssemblyDefinition;
+         RecordingMethod : MethodDefinition;
+         RecordingMethodRef : MethodReference }
 
   let DefineRecordingAssembly () =
     let recorder = typeof<AltCover.Recorder.Tracer>
@@ -31,23 +30,14 @@ module Instrument =
                   definition.Name.PublicKey <- key.PublicKey
     definition
                   
-  let RecordingAssembly () =
-    match !recorder with
-    | null -> recorder := DefineRecordingAssembly()
-              !recorder
-    | _ -> !recorder
-  
-  let RecordingMethod () =
-    match !recorderMethod with
-    | null -> let trace  = typeof<AltCover.Recorder.Tracer>
-              let other = trace.Assembly.GetExportedTypes()
-                          |> Seq.find (fun (t:Type) -> t.Name.Contains("Instance"))
-              let token = other.GetMethod("Visit").MetadataToken
-              recorderMethod := RecordingAssembly().MainModule.LookupToken(token) :?> MethodDefinition 
-              !recorderMethod
-    | _ -> !recorderMethod  
+  let RecordingMethod (recordingAssembly : AssemblyDefinition) =
+    let trace  = typeof<AltCover.Recorder.Tracer>
+    let other = trace.Assembly.GetExportedTypes()
+                           |> Seq.find (fun (t:Type) -> t.Name.Contains("Instance"))
+    let token = other.GetMethod("Visit").MetadataToken
+    recordingAssembly.MainModule.LookupToken(token) :?> MethodDefinition 
     
-  let UpdateStrongReferences (assembly : AssemblyDefinition) =
+  let UpdateStrongReferences (assembly : AssemblyDefinition) (assemblies : string list) =
     let assemblyReferenceSubstitutions = new Dictionary<String, String>()
     let effectiveKey = if assembly.Name.HasPublicKey then None else Visitor.strongNameKey
     match effectiveKey with
@@ -59,7 +49,8 @@ module Instrument =
                   
     assembly.MainModule.AssemblyReferences                  
     |> Seq.cast<AssemblyNameReference>
-    |> Seq.filter (fun x -> not (IntrumentedAssemblies.Contains(x.Name)))
+    |> Seq.filter (fun x -> assemblies 
+                            |> List.forall (fun y -> not <| y.Equals(x.Name)))
     |> Seq.iter (fun x ->
       let original = x.ToString()
       // HasPublicKey may not be set even if PublicKeyToken is!
@@ -73,7 +64,9 @@ module Instrument =
                 x.PublicKeyToken <- null
       | Some key -> x.HasPublicKey <- true
                     x.PublicKey <- key.PublicKey
-      assemblyReferenceSubstitutions.[original] <- x.ToString()              
+      match x.ToString() with
+      | value when value = original -> ()
+      | _ -> assemblyReferenceSubstitutions.[original] <- x.ToString()             
      )     
     assemblyReferenceSubstitutions
     
@@ -107,24 +100,34 @@ module Instrument =
                   pkey.StrongNameKeyPair <- key
                   assembly.Write(path, pkey)
                      
-  let internal InstrumentationVisitor (node:Node) = 
+  let internal InstrumentationVisitor (state : Context) (node:Node) = 
      match node with
-     | Start _ -> ()
+     | Start _ -> state
      | Assembly (model, included) ->
-         let updates = UpdateStrongReferences model.Assembly
+         let updates = UpdateStrongReferences model.Assembly state.InstrumentedAssemblies
          SubstituteAttributeScopeReferences updates model.Assembly.CustomAttributes
          if included then 
-             model.Assembly.MainModule.AssemblyReferences.Add(RecordingAssembly().Name)
-         referenceUpdates <- updates
+             model.Assembly.MainModule.AssemblyReferences.Add(state.RecordingAssembly.Name)
+         { state with RenameTable = updates }
      | Module (m, i, am, included) -> //of ModuleDefinition * int * AssemblyModel * bool
-         if included then 
-             recorderMethodRef := m.Import(RecordingMethod())
-         SubstituteAttributeScopeReferences referenceUpdates m.CustomAttributes
-     | Type _ -> () //of TypeDefinition * bool * AssemblyModel
-     | Method _ -> () //of MethodDefinition * bool * AssemblyModel
-     | MethodPoint _ -> () //of Instruction * CodeSegment * int * bool
-     | AfterMethod _ -> () //of MethodDefinition
-     | AfterModule -> ()
+         let restate = match included with
+                       | true -> 
+                         let recordingMethod = match state.RecordingMethod with
+                                               | null -> RecordingMethod state.RecordingAssembly
+                                               | _ -> state.RecordingMethod
+                       
+                         { state with 
+                               RecordingMethodRef = m.Import(recordingMethod); 
+                               RecordingMethod = recordingMethod }
+                       | _ -> state
+         SubstituteAttributeScopeReferences state.RenameTable m.CustomAttributes
+         restate
+
+     | Type _ -> state //of TypeDefinition * bool * AssemblyModel
+     | Method _ -> state //of MethodDefinition * bool * AssemblyModel
+     | MethodPoint _ -> state //of Instruction * CodeSegment * int * bool
+     | AfterMethod _ -> state //of MethodDefinition
+     | AfterModule -> state
      | AfterAssembly assembly ->
          if not (Directory.Exists(Visitor.outputDirectory)) then
                 System.Console.WriteLine("Creating folder " + Visitor.outputDirectory);
@@ -133,5 +136,7 @@ module Instrument =
          let name = new FileInfo(assembly.Name.Name)
          let path = Path.Combine(Visitor.outputDirectory, name.Name)
          WriteAssembly assembly path
-     | Finish -> let counterAssemblyFile = Path.Combine(Visitor.outputDirectory, RecordingAssembly().Name.Name + ".dll")
-                 WriteAssembly (RecordingAssembly()) counterAssemblyFile
+         state
+     | Finish -> let counterAssemblyFile = Path.Combine(Visitor.outputDirectory, state.RecordingAssembly.Name.Name + ".dll")
+                 WriteAssembly (state.RecordingAssembly) counterAssemblyFile
+                 state

@@ -25,6 +25,8 @@ type internal Node =
      | AfterModule
      | AfterAssembly of AssemblyDefinition
      | Finish
+
+type Fix<'T> = delegate of 'T -> Fix<'T>
      
 module Visitor =
 
@@ -123,8 +125,6 @@ module Visitor =
   
   and internal BuildSequence node =
     Seq.concat [ ToSeq node ; Deeper node ; After node ]
-                         
-  type Fix<'T> = delegate of 'T -> Fix<'T>
   
   let internal invoke (node : Node) (visitor:Fix<Node>)  =
     visitor.Invoke(node)
