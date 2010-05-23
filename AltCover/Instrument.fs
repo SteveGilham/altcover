@@ -219,7 +219,7 @@ module Instrument =
 
        | AfterModule -> state
        | AfterAssembly assembly ->
-           let name = new FileInfo(assembly.Name.Name)
+           let name = new FileInfo(assembly.MainModule.Name)
            let path = Path.Combine(Visitor.outputDirectory, name.Name)
            WriteAssembly assembly path
            state
