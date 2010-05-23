@@ -141,10 +141,13 @@ module Main =
         |> Seq.fold (fun (accumulator : string list) (info:FileInfo) ->
              let assemblyPdb = ProgramDatabase.PdbPathExists info.FullName
              let target = Path.Combine (toInfo.FullName, info.Name)
+             File.Copy(info.FullName, target, true) 
              match assemblyPdb with
-             | None -> File.Copy(info.FullName, target, true)
-                       accumulator
-             | _ -> info.FullName :: accumulator
+             | None -> accumulator
+             | _ -> if Visitor.IsIncluded info.FullName then
+                        info.FullName :: accumulator
+                    else
+                        accumulator
           ) []
         
     let assemblyNames = 

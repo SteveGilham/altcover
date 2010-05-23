@@ -67,7 +67,7 @@ module Instrument =
     
     let UpdateStrongReferences (assembly : AssemblyDefinition) (assemblies : string list) =
       let assemblyReferenceSubstitutions = new Dictionary<String, String>()
-      let effectiveKey = if assembly.Name.HasPublicKey then None else Visitor.strongNameKey
+      let effectiveKey = if assembly.Name.HasPublicKey then Visitor.strongNameKey else None
       match effectiveKey with
       | None -> assembly.Name.HasPublicKey <- false
                 assembly.Name.PublicKey <- null
@@ -78,7 +78,7 @@ module Instrument =
       assembly.MainModule.AssemblyReferences                  
       |> Seq.cast<AssemblyNameReference>
       |> Seq.filter (fun x -> assemblies 
-                              |> List.forall (fun y -> not <| y.Equals(x.Name)))
+                              |> List.exists (fun y -> y.Equals(x.Name)))
       |> Seq.iter (fun x ->
         let original = x.ToString()
         // HasPublicKey may not be set even if PublicKeyToken is!
@@ -124,11 +124,12 @@ module Instrument =
     *)
     
     let WriteAssembly (assembly:AssemblyDefinition) (path:string) =
-      match Visitor.strongNameKey with
-      | None -> assembly.Write(path)
-      | Some key -> let pkey = new Mono.Cecil.WriterParameters()
-                    pkey.StrongNameKeyPair <- key
-                    assembly.Write(path, pkey)
+      match (Visitor.strongNameKey, assembly.Name.HasPublicKey) with
+      | (Some key, true) -> let pkey = new Mono.Cecil.WriterParameters()
+                            pkey.StrongNameKeyPair <- key
+                            assembly.Write(path, pkey)
+      | _ -> assembly.Write(path)
+ 
                      
     /// <summary>
     /// Adjust the IL for exception handling
