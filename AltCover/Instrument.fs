@@ -31,7 +31,12 @@ module Instrument =
              RecordingMethod = null;
              RecordingMethodRef = null;
              MethodBody = null;
-             MethodWorker = null } 
+             MethodWorker = null }
+
+    let RecorderInstanceType () =
+      let trace  = typeof<AltCover.Recorder.Tracer>
+      trace.Assembly.GetExportedTypes()
+                            |> Seq.find (fun (t:Type) -> t.Name.Contains("Instance"))
 
     let DefineRecordingAssembly () =
       let recorder = typeof<AltCover.Recorder.Tracer>
@@ -43,12 +48,20 @@ module Instrument =
                 definition.Name.PublicKeyToken <- null
       | Some key -> definition.Name.HasPublicKey <- true
                     definition.Name.PublicKey <- key.PublicKey
+                    
+      // set the coverage file path  
+      let other = RecorderInstanceType()
+      let token = other.GetMethod("get_ReportFile").MetadataToken
+      let pathGetterDef = definition.MainModule.LookupToken(token) :?> MethodDefinition
+
+      let worker = pathGetterDef.Body.GetILProcessor();
+      worker.InsertBefore(pathGetterDef.Body.Instructions.[0], worker.Create(OpCodes.Ret));
+      worker.InsertBefore(pathGetterDef.Body.Instructions.[0], worker.Create(OpCodes.Ldstr, Visitor.reportPath));
+                        
       definition
                   
     let RecordingMethod (recordingAssembly : AssemblyDefinition) =
-      let trace  = typeof<AltCover.Recorder.Tracer>
-      let other = trace.Assembly.GetExportedTypes()
-                             |> Seq.find (fun (t:Type) -> t.Name.Contains("Instance"))
+      let other = RecorderInstanceType()
       let token = other.GetMethod("Visit").MetadataToken
       recordingAssembly.MainModule.LookupToken(token) :?> MethodDefinition 
     

@@ -29,7 +29,7 @@ module Instance =
   /// Gets the location of coverage xml file
   /// This property's IL code is modified to store actual file location
   /// </summary>
-  let private ReportFile = "C:\Windows\Temp\Coverage.Default.xml"
+  let ReportFile = "C:\Windows\Temp\Coverage.Default.xml"
   
   /// <summary>
   /// Accumulation of visit records

@@ -77,7 +77,7 @@ module Main =
                     |> !+ (
                         "x|xmlReport=", 
                         "Optional: The output report template file (default: coverage.xml in the current directory)",
-                        (fun x -> Visitor.reportPath <- x))
+                        (fun x -> Visitor.reportPath <- Path.Combine(Directory.GetCurrentDirectory(), x)))
                     |> !+ (
                         "f|fileFilter=", 
                         "Optional: file name to exclude from instrumentation (may repeat)",
