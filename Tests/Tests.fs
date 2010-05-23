@@ -46,15 +46,6 @@ type AltCoverTests() = class
     let symbols = AltCover.ProgramDatabase.LoadAssembly(path)
     Assert.That(symbols.Symbols, Is.Not.Empty, "should be some symbols")
     Assert.That(symbols.Symbols.Keys.Count, Is.EqualTo(1), "the number we expect from NCoverExplorer")
-    
-  [<Test; Explicit>] // Until we instrument recorder
-  member self.FindVisitMethod() =
-    let trace  = typeof<AltCover.Recorder.Tracer>
-    let other = trace.Assembly.GetExportedTypes()
-                |> Seq.find (fun (t:Type) -> t.Name.Contains("Instance"))
-    Assert.That(other.FullName, Is.EqualTo("AltCover.Recorder.Instance"))
-    let v = other.GetMethod("Visit")
-    Assert.That(v, Is.Not.Null)
 
   static member TTBaseline = "<?xml version=\"1.0\" encoding=\"utf-8\"?>
 <?xml-stylesheet href=\"coverage.xsl\" type=\"text/xsl\"?>

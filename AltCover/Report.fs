@@ -31,7 +31,7 @@ module Report =
 
       | Module (moduleDef, moduleId,_,_) ->
           let element = new XElement(X "module",
-                          new XAttribute(X "moduleId", moduleId + 1),
+                          new XAttribute(X "moduleId", moduleId),
                           new XAttribute(X "name", moduleDef.Name),
                           new XAttribute(X "assembly", moduleDef.Assembly.Name.Name),
                           new XAttribute(X "assemblyIdentity", moduleDef.Assembly.Name.FullName));

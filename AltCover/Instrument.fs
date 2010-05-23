@@ -191,7 +191,7 @@ module Instrument =
                                  RecordingMethod = recordingMethod }
                          | _ -> state
            ////SubstituteAttributeScopeReferences state.RenameTable m.CustomAttributes
-           { restate with ModuleId = id + 1}
+           { restate with ModuleId = id }
          
        | Type ( _(*typedef*),_,_) -> //of TypeDefinition * bool * AssemblyModel
            ////SubstituteAttributeScopeReferences state.RenameTable typedef.CustomAttributes

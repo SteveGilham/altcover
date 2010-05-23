@@ -60,14 +60,15 @@ module Visitor =
     | _ -> Seq.empty<Node> 
     
   let mutable private PointNumber : int = 0
-    
+  let mutable private ModuleNumber : int = 0
+
   let rec internal Deeper node =
     let defaultReturn = Seq.empty<Node>  // To move Nest inside the code
     let Nest node =
       Seq.concat [ ToSeq node ; Deeper node ; After node ]
 
     match node with 
-    | Start paths -> paths // TODO -- filter non-assemblies
+    | Start paths -> paths
                      |> Seq.filter IsIncluded
                      |> Seq.map (fun x -> ProgramDatabase.LoadAssembly(x))
                      |> Seq.map (fun x -> Assembly(x, IsIncluded x.Assembly))  
@@ -76,7 +77,11 @@ module Visitor =
 
     | Assembly (a, b) -> a.Assembly.Modules 
                          |> Seq.cast
-                         |> Seq.mapi (fun i x -> Module (x, i, a, b))
+                         |> Seq.map (fun x -> 
+                                     let i = ModuleNumber + 1
+                                     ModuleNumber <- i
+                                     Module (x, i, a, b))
+
                          |> Seq.map (fun x -> BuildSequence x)
                          |> Seq.concat
 
@@ -134,6 +139,8 @@ module Visitor =
     List.map (invoke node) 
 
   let internal Visit (visitors : list<Fix<Node>>) (assemblies : seq<string>) =
+    PointNumber <- 0
+    ModuleNumber <- 0
     Start assemblies
     |> BuildSequence
     |> Seq.fold apply visitors
