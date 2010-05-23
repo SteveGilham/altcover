@@ -21,9 +21,10 @@ module Main =
     let prototype, help, action = option
     options.Add(prototype, help, new System.Action<string>(action))
 
-  let Launch cmd args =
+  let Launch cmd args toDirectory =
+    Directory.SetCurrentDirectory(toDirectory)
     let psi = new ProcessStartInfo(cmd,args)
-    psi.WorkingDirectory <- Visitor.outputDirectory
+    psi.WorkingDirectory <- toDirectory
     psi.CreateNoWindow <- true
     psi.UseShellExecute <- false
     psi.RedirectStandardError <- true
@@ -48,6 +49,8 @@ module Main =
     proc.ErrorDataReceived.Add(err)
     proc.OutputDataReceived.Add(out)
     proc.Start() |> ignore
+    proc.BeginErrorReadLine()
+    proc.BeginOutputReadLine()
     proc.WaitForExit()          
 
   [<EntryPoint>]
@@ -160,6 +163,6 @@ module Main =
     | [] -> ()
     | cmd::t-> 
        let args = String.Join(" ", (List.toArray t))
-       Launch cmd args // Spawn process, echoing asynchronously
+       Launch cmd args toDirectory // Spawn process, echoing asynchronously
     
     0     
