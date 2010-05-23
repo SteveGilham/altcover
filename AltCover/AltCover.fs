@@ -122,6 +122,9 @@ module Main =
     // Check that the directories are distinct
     let fromDirectory = Path.Combine(Directory.GetCurrentDirectory(), Visitor.inputDirectory)
     let toDirectory = Path.Combine(Directory.GetCurrentDirectory(), Visitor.outputDirectory)
+    if not (Directory.Exists(toDirectory)) then
+      System.Console.WriteLine("Creating folder " + toDirectory);
+      Directory.CreateDirectory(toDirectory) |> ignore
     let fromInfo = new DirectoryInfo(fromDirectory)
     let toInfo = new DirectoryInfo(toDirectory)
     if fromInfo = toInfo then

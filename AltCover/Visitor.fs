@@ -33,7 +33,7 @@ module Visitor =
   let internal NameFilters = new List<FilterClass>();
 
   let mutable internal inputDirectory = "."
-  let mutable internal outputDirectory = ".\\Instrumented"
+  let mutable internal outputDirectory = ".\\__Instrumented"
   let mutable internal reportPath = ".\\coverage.xml"
   let mutable internal strongNameKey : option<StrongNameKeyPair> = None
 

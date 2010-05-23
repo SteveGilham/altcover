@@ -186,14 +186,15 @@ module ProgramDatabase =
       seq { for x in lines do 
               let lines'' = x.GetType().GetField("lines", BindingFlags.Instance ||| BindingFlags.NonPublic ||| BindingFlags.Public)
               let xlines = lines''.GetValue(x) :?> obj[]
-              for y in xlines do
-                let lineBegin' = y.GetType().GetField("lineBegin", BindingFlags.Instance ||| BindingFlags.NonPublic ||| BindingFlags.Public)
-                let yLineBegin = lineBegin'.GetValue(y) :?> UInt32
-                if yLineBegin <> 0xfeefeeu then
-                    let file' = x.GetType().GetField("file", BindingFlags.Instance ||| BindingFlags.NonPublic ||| BindingFlags.Public)
-                    let file = file'.GetValue(x)
-                    let name' = file.GetType().GetField("name", BindingFlags.Instance ||| BindingFlags.NonPublic ||| BindingFlags.Public)
-                    yield (name'.GetValue(file) :?> string, y) }
+              if xlines <> null then 
+                  for y in xlines do
+                    let lineBegin' = y.GetType().GetField("lineBegin", BindingFlags.Instance ||| BindingFlags.NonPublic ||| BindingFlags.Public)
+                    let yLineBegin = lineBegin'.GetValue(y) :?> UInt32
+                    if yLineBegin <> 0xfeefeeu then
+                        let file' = x.GetType().GetField("file", BindingFlags.Instance ||| BindingFlags.NonPublic ||| BindingFlags.Public)
+                        let file = file'.GetValue(x)
+                        let name' = file.GetType().GetField("name", BindingFlags.Instance ||| BindingFlags.NonPublic ||| BindingFlags.Public)
+                        yield (name'.GetValue(file) :?> string, y) }
       |> Seq.iter (fun pair -> 
          let z = snd pair
          let offset' = z.GetType().GetField("offset", BindingFlags.Instance ||| BindingFlags.NonPublic ||| BindingFlags.Public)

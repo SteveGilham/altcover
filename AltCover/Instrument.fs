@@ -86,7 +86,7 @@ module Instrument =
        )     
       assemblyReferenceSubstitutions
     
-    // Simply ported from source -- probably doesn't work with the current Mono.Cecil
+    (*// Simply ported from source -- probably doesn't work with the current Mono.Cecil
     // TODO -- fix this
     let SubstituteAttributeParameterScopeReferences (updates:Dictionary<String,String>) (values:System.Collections.IList)  =
       values 
@@ -105,10 +105,11 @@ module Instrument =
     let SubstituteAttributeScopeReferences updates attributes =
       attributes
       |> Seq.cast<CustomAttribute>
-      |> Seq.iter (fun x -> 
+      |> Seq.iter ignore (*fun x -> 
                        SubstituteAttributeParameterScopeReferences updates x.ConstructorArguments
-                       SubstituteAttributeParameterScopeReferences updates x.Properties)
-                     
+                       SubstituteAttributeParameterScopeReferences updates x.Properties*)
+    *)
+    
     let WriteAssembly (assembly:AssemblyDefinition) (path:string) =
       match Visitor.strongNameKey with
       | None -> assembly.Write(path)
@@ -160,7 +161,7 @@ module Instrument =
        | Start _ -> { state with RecordingAssembly = DefineRecordingAssembly() }
        | Assembly (model, included) ->
            let updates = UpdateStrongReferences model.Assembly state.InstrumentedAssemblies
-           SubstituteAttributeScopeReferences updates model.Assembly.CustomAttributes
+           ////SubstituteAttributeScopeReferences updates model.Assembly.CustomAttributes
            if included then 
                model.Assembly.MainModule.AssemblyReferences.Add(state.RecordingAssembly.Name)
            { state with RenameTable = updates }
@@ -175,14 +176,14 @@ module Instrument =
                                  RecordingMethodRef = m.Import(recordingMethod); 
                                  RecordingMethod = recordingMethod }
                          | _ -> state
-           SubstituteAttributeScopeReferences state.RenameTable m.CustomAttributes
+           ////SubstituteAttributeScopeReferences state.RenameTable m.CustomAttributes
            { restate with ModuleId = id }
          
-       | Type (typedef,_,_) -> //of TypeDefinition * bool * AssemblyModel
-           SubstituteAttributeScopeReferences state.RenameTable typedef.CustomAttributes
+       | Type ( _(*typedef*),_,_) -> //of TypeDefinition * bool * AssemblyModel
+           ////SubstituteAttributeScopeReferences state.RenameTable typedef.CustomAttributes
            state 
        | Method (m,  included,_) -> //of MethodDefinition * bool * AssemblyModel
-           SubstituteAttributeScopeReferences state.RenameTable m.CustomAttributes
+           ////SubstituteAttributeScopeReferences state.RenameTable m.CustomAttributes
            match included with
            | true ->
              { state with 
@@ -218,10 +219,6 @@ module Instrument =
 
        | AfterModule -> state
        | AfterAssembly assembly ->
-           if not (Directory.Exists(Visitor.outputDirectory)) then
-                  System.Console.WriteLine("Creating folder " + Visitor.outputDirectory);
-                  Directory.CreateDirectory(Visitor.outputDirectory) |> ignore
-
            let name = new FileInfo(assembly.Name.Name)
            let path = Path.Combine(Visitor.outputDirectory, name.Name)
            WriteAssembly assembly path
