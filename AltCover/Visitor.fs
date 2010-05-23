@@ -21,7 +21,7 @@ type internal Node =
      | Type of TypeDefinition * bool * AssemblyModel
      | Method of MethodDefinition * bool * AssemblyModel
      | MethodPoint of Instruction * CodeSegment * int * bool
-     | AfterMethod of MethodDefinition
+     | AfterMethod of bool
      | AfterModule
      | AfterAssembly of AssemblyDefinition
      | Finish
@@ -56,7 +56,7 @@ module Visitor =
     | Start _ -> ToSeq Finish
     | Assembly (a,_) -> AfterAssembly a.Assembly |> ToSeq
     | Module _ -> AfterModule |> ToSeq
-    | Method (m,_,_) -> AfterMethod m |> ToSeq
+    | Method (_,included,_) -> AfterMethod included |> ToSeq
     | _ -> Seq.empty<Node> 
     
   let mutable private PointNumber : int = 0

@@ -36,8 +36,14 @@ module ProgramDatabase =
 
   let Seek (reader: BinaryReader) offset mark =
     reader.BaseStream.Seek(offset, mark) |> ignore
+
+  let SignatureCheck reader =    
+    Seek reader 0L SeekOrigin.Begin
+    if reader.ReadByte() <> byte 'M' then None
+    elif reader.ReadByte() <> byte 'Z' then None
+    else Some reader.BaseStream.Position
     
-  let CommonObjectFileFormatHeader reader =    
+  let CommonObjectFileFormatHeader reader (two:int64) =    
     let PESignatureOffsetLoc = 0x3CL
     // Find the address of the PE Header
     Seek reader PESignatureOffsetLoc SeekOrigin.Begin
@@ -46,11 +52,12 @@ module ProgramDatabase =
     // Start of PE Signature
     if reader.ReadByte() <> byte 'P' then None
     elif reader.ReadByte() <> byte 'E' then None
-    elif reader.ReadByte() <> byte 0 then None
-    elif reader.ReadByte() <> byte 0 then None
+    elif reader.ReadByte() <> 0uy then None
+    elif reader.ReadByte() <> 0uy then None
+    elif reader.ReadUInt16() <> 0x014cus then None
     else
       // Start of CommonObjectFileFormat Header
-      Some reader.BaseStream.Position
+      Some ( reader.BaseStream.Position - 2L )
       
 
   let Unpick reader headerOffset =
@@ -68,11 +75,20 @@ module ProgramDatabase =
     Seek reader PEHeaderStart SeekOrigin.Begin
 
     let PEFormat = int <| reader.ReadInt16()
+    Seek reader (PEHeaderStart + 92L) SeekOrigin.Begin
+    let dataDirectoryCount = int <| reader.ReadInt32()
+    
+    // Check for the existance of a non-null CLI header.
+    // If found, this is an assembly of some kind, otherwise
+    // it's a native PE file of one kind or another.
+    Seek reader (PEHeaderStart + 208L) SeekOrigin.Begin
+    let rvaCLIHeader = int <| reader.ReadInt32()  // Partition II, 24.2.3.3, CLI Header (rva)
     
     // PEHeader fields vary based upon the PE_Format setting
-    match PEFormat with
-    | 0x010B -> Some(PEHeaderStart + int64 0x90, StartOfSections, int NumberOfSections)
-    | 0x020B -> Some(PEHeaderStart + int64 0xA0, StartOfSections, int NumberOfSections)
+    match (PEFormat, dataDirectoryCount, rvaCLIHeader) with
+    | _, _, 0 -> None
+    | 0x010B, 0x10, _ -> Some(PEHeaderStart + int64 0x90, StartOfSections, int NumberOfSections)
+    | 0x020B, 0x10, _  -> Some(PEHeaderStart + int64 0xA0, StartOfSections, int NumberOfSections)
     | _ -> None
 
   let GetRelativeVirtualAddress reader debugDirectoryOffset =
@@ -122,11 +138,18 @@ module ProgramDatabase =
     use raw = new FileStream(path, FileMode.Open, FileAccess.Read)
     use reader = new BinaryReader(raw)
     reader 
-    |> CommonObjectFileFormatHeader
+    |> SignatureCheck  
+    >?> CommonObjectFileFormatHeader reader
     >?> Unpick reader
     >?> GetPdbOffset reader
     >?> GetPdbNameFromOffset reader
 
+  let PdbPathExists path =
+    match PdbPath path with
+    | None -> None
+    | Some x when File.Exists(x) -> Some x
+    | _ -> None
+    
   let LoadSymbols (m:ModuleDefinition) path =
     let innate = PdbPath path
     let pdbpath = match innate with

@@ -119,8 +119,38 @@ module Main =
                   "[/a|attributeFilter=VALUE] [/?|h[elp]]"
       Usage intro options
       
-    // TODO -- some more pruning of arguments then useful work
-    Console.WriteLine(Visitor.NameFilters.Count)
+    // Check that the directories are distinct
+    let fromDirectory = Path.Combine(Directory.GetCurrentDirectory(), Visitor.inputDirectory)
+    let toDirectory = Path.Combine(Directory.GetCurrentDirectory(), Visitor.outputDirectory)
+    let fromInfo = new DirectoryInfo(fromDirectory)
+    let toInfo = new DirectoryInfo(toDirectory)
+    if fromInfo = toInfo then
+      Console.WriteLine("From and to directories are identical")
+      
+    let files = fromInfo.GetFiles()
+    
+    // Copy all the files that aren't symbol-bearing assemblies into the target directory
+    let assemblies = 
+        files 
+        |> Seq.fold (fun (accumulator : string list) (info:FileInfo) ->
+             let assemblyPdb = ProgramDatabase.PdbPathExists info.FullName
+             let target = Path.Combine (toInfo.FullName, info.Name)
+             match assemblyPdb with
+             | None -> File.Copy(info.FullName, target, true)
+                       accumulator
+             | _ -> info.FullName :: accumulator
+          ) []
+        
+    let assemblyNames = 
+        assemblies 
+        |> Seq.map (fun path -> Path.GetFileNameWithoutExtension(path))
+        |> Seq.toList
+
+    let reporter, document = Report.ReportGenerator ()
+    let visitors = [ reporter ; Instrument.InstrumentGenerator assemblyNames ]
+    Visitor.Visit visitors assemblies
+    document.Save(Visitor.reportPath)
+    
     
     // If we have some arguments in rest execute that command line
     match rest |> Seq.toList with
