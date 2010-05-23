@@ -115,8 +115,8 @@ module Visitor =
                             let a,b,_ = x
                             a <> None && b <> None)
             |> Seq.map (fun x ->
-                         let i = PointNumber + 1
-                         PointNumber <- i
+                         let i = PointNumber
+                         PointNumber <- i + 1
                          match x with 
                          | Some a, Some b, _ -> MethodPoint (b, a.Value, i, true) // TODO
                          | _ -> failwith "unexpected None value")
