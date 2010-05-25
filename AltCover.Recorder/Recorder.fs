@@ -68,12 +68,14 @@ module Instance =
       |> Seq.iter (fun (pair : KeyValuePair<int, Dictionary<int,int>>) ->
           let moduleId = pair.Key;
           let moduleHits = pair.Value;
-          let affectedModule = 
+          let affectedModules = 
               coverageDocument.Descendants(XName.Get("module"))
               |> Seq.filter (fun el -> el.Attribute(XName.Get("moduleId")).Value.Equals(moduleId.ToString(System.Globalization.CultureInfo.InvariantCulture)))
-              |> Seq.head
+              |> Seq.truncate 1 // at most 1
 
-          affectedModule.Descendants(XName.Get("seqpnt"))
+          affectedModules
+          |> Seq.iter (fun affectedModule ->
+            affectedModule.Descendants(XName.Get("seqpnt"))
           |> Seq.mapi (fun counter pt -> (counter, pt))
           |> Seq.filter (fun x -> moduleHits.ContainsKey(fst x))
           |> Seq.iter (fun x ->
@@ -81,7 +83,7 @@ module Instance =
               let counter = fst x
               let visits = Int32.Parse(pt.Attribute(XName.Get("visitcount")).Value,
                                      System.Globalization.CultureInfo.InvariantCulture);
-              pt.SetAttributeValue(XName.Get("visitcount"), visits + moduleHits.[counter])))
+              pt.SetAttributeValue(XName.Get("visitcount"), visits + moduleHits.[counter]))))
                     
       // Save modified xml to a file
       coverageFile.Seek(0L, SeekOrigin.Begin) |> ignore
@@ -99,14 +101,12 @@ module Instance =
   /// </summary>
   let private FlushCounter _ =
     lock Visits (fun () ->
-      let counts = Visits |> Seq.toArray
-      Visits.Clear()
-      measureTime <- DateTime.Now
-      match counts.Length with
+      match Visits.Count with
       | 0 -> ()
-      | _ -> UpdateReport(counts)
-    )
-    
+      | _ -> let counts = Visits |> Seq.toArray
+             Visits.Clear()
+             measureTime <- DateTime.Now
+             UpdateReport(counts))
     
   /// <summary>
   /// This method is executed from instrumented assemblies.
@@ -121,7 +121,7 @@ module Instance =
         Visits.[moduleId].Add(hitPointId, 1)
       else
         Visits.[moduleId].[hitPointId] <- 1 + Visits.[moduleId].[hitPointId])
-   
+    AppDomain.CurrentDomain.DomainUnload.Add(fun x -> Console.WriteLine("unloaded"))   
   // Register event handling 
   do 
     AppDomain.CurrentDomain.DomainUnload.Add(FlushCounter)
