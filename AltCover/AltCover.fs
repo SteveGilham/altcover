@@ -155,6 +155,9 @@ module Main =
         |> Seq.map (fun path -> Path.GetFileNameWithoutExtension(path))
         |> Seq.toList
 
+    // Ensure we always have an absolute file path here.
+    Visitor.reportPath <- Path.Combine(Directory.GetCurrentDirectory(), Visitor.reportPath)
+
     let reporter, document = Report.ReportGenerator ()
     let visitors = [ reporter ; Instrument.InstrumentGenerator assemblyNames ]
     Visitor.Visit visitors assemblies

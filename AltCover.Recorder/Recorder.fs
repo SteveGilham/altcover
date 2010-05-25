@@ -87,7 +87,7 @@ module Instance =
                     
       // Save modified xml to a file
       coverageFile.Seek(0L, SeekOrigin.Begin) |> ignore
-      let writer = XmlWriter.Create(coverageFile)
+      use writer = XmlWriter.Create(coverageFile)
       coverageDocument.WriteTo(writer)
       writer.Flush()
     finally
