@@ -81,8 +81,10 @@ module Instance =
           |> Seq.iter (fun x ->
               let pt = snd x
               let counter = fst x
-              let visits = Int32.Parse(pt.Attribute(XName.Get("visitcount")).Value,
-                                     System.Globalization.CultureInfo.InvariantCulture);
+              // Treat -ve visit counts (an exemption added in analysis) as zero
+              let visits = max 0 (Int32.Parse(pt.Attribute(XName.Get("visitcount")).Value,
+                                     System.Globalization.CultureInfo.InvariantCulture))
+
               pt.SetAttributeValue(XName.Get("visitcount"), visits + moduleHits.[counter]))))
                     
       // Save modified xml to a file
