@@ -50,7 +50,7 @@ type AltCoverTests() = class
   static member TTBaseline = "<?xml version=\"1.0\" encoding=\"utf-8\"?>
 <?xml-stylesheet href=\"coverage.xsl\" type=\"text/xsl\"?>
 <coverage profilerVersion=\"0\" driverVersion=\"0\" startTime=\"\" measureTime=\"\">
-<module moduleId=\"1\" name=\"TouchTest.exe\" assembly=\"TouchTest\" assemblyIdentity=\"TouchTest, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null\">
+<module moduleId=\"\" name=\"TouchTest.exe\" assembly=\"TouchTest\" assemblyIdentity=\"TouchTest, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null\">
 <method name=\"Main\" excluded=\"false\" instrumented=\"true\" class=\"TouchTest.Program\">
 <seqpnt visitcount=\"1\" line=\"21\" column=\"9\"  endline=\"21\" endcolumn=\"10\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
 <seqpnt visitcount=\"0\" line=\"20\" column=\"13\" endline=\"20\" endcolumn=\"14\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
@@ -80,6 +80,7 @@ type AltCoverTests() = class
             Seq.zip ra ea |> Seq.iter (fun ((a1:XAttribute), (a2:XAttribute)) ->
                     Assert.That(a1.Name, Is.EqualTo(a2.Name))
                     match a1.Name.ToString() with
+                    | "moduleId"
                     | "startTime"
                     | "measureTime" -> ()
                     | "document" -> Assert.That(a1.Value, Does.EndWith(a2.Value), 

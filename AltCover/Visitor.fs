@@ -17,7 +17,7 @@ open Mono.Cecil.Rocks
 type internal Node = 
      | Start of seq<string>
      | Assembly of AssemblyModel * bool
-     | Module of ModuleDefinition * int * AssemblyModel * bool
+     | Module of ModuleDefinition * AssemblyModel * bool
      | Type of TypeDefinition * bool * AssemblyModel
      | Method of MethodDefinition * bool * AssemblyModel
      | MethodPoint of Instruction * CodeSegment * int * bool
@@ -60,7 +60,6 @@ module Visitor =
     | _ -> Seq.empty<Node> 
     
   let mutable private PointNumber : int = 0
-  let mutable private ModuleNumber : int = 0
 
   let rec internal Deeper node =
     let defaultReturn = Seq.empty<Node>  // To move Nest inside the code
@@ -77,21 +76,17 @@ module Visitor =
 
     | Assembly (a, b) -> a.Assembly.Modules 
                          |> Seq.cast
-                         |> Seq.map (fun x -> 
-                                     let i = ModuleNumber + 1
-                                     ModuleNumber <- i
-                                     Module (x, i, a, b))
-
+                         |> Seq.map (fun x -> Module (x, a, b))
                          |> Seq.map (fun x -> BuildSequence x)
                          |> Seq.concat
 
                          
-    | Module (x, _, a, included) -> PointNumber <- 0
-                                    x.GetAllTypes() 
-                                    |> Seq.cast  
-                                    |> Seq.map (fun t -> Type (t, included && IsIncluded t, a))
-                                    |> Seq.map (fun x -> BuildSequence x)
-                                    |> Seq.concat
+    | Module (x, a, included) -> PointNumber <- 0
+                                 x.GetAllTypes() 
+                                 |> Seq.cast  
+                                 |> Seq.map (fun t -> Type (t, included && IsIncluded t, a))
+                                 |> Seq.map (fun x -> BuildSequence x)
+                                 |> Seq.concat
                              
     | Type (t, included, a) -> t.Methods
                                |> Seq.cast
@@ -140,7 +135,6 @@ module Visitor =
 
   let internal Visit (visitors : list<Fix<Node>>) (assemblies : seq<string>) =
     PointNumber <- 0
-    ModuleNumber <- 0
     Start assemblies
     |> BuildSequence
     |> Seq.fold apply visitors

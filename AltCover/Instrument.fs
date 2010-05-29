@@ -15,7 +15,7 @@ open Mono.Cecil.Rocks
 module Instrument =
   type private Context = { InstrumentedAssemblies : string list;
                            RenameTable : Dictionary<String, String>;
-                           ModuleId : int;
+                           ModuleId : Guid;
                            RecordingAssembly : AssemblyDefinition;
                            RecordingMethod : MethodDefinition;
                            RecordingMethodRef : MethodReference;
@@ -26,7 +26,7 @@ module Instrument =
     let initialState = {
              InstrumentedAssemblies = assemblies;
              RenameTable = null;
-             ModuleId = 0;
+             ModuleId = Guid.Empty;
              RecordingAssembly = null;
              RecordingMethod = null;
              RecordingMethodRef = null;
@@ -179,7 +179,7 @@ module Instrument =
            if included then 
                model.Assembly.MainModule.AssemblyReferences.Add(state.RecordingAssembly.Name)
            { state with RenameTable = updates }
-       | Module (m, id, _, included) -> //of ModuleDefinition * int * AssemblyModel * bool
+       | Module (m, _, included) -> //of ModuleDefinition * AssemblyModel * bool
            let restate = match included with
                          | true -> 
                            let recordingMethod = match state.RecordingMethod with
@@ -191,7 +191,7 @@ module Instrument =
                                  RecordingMethod = recordingMethod }
                          | _ -> state
            ////SubstituteAttributeScopeReferences state.RenameTable m.CustomAttributes
-           { restate with ModuleId = id }
+           { restate with ModuleId = m.Mvid }
          
        | Type ( _(*typedef*),_,_) -> //of TypeDefinition * bool * AssemblyModel
            ////SubstituteAttributeScopeReferences state.RenameTable typedef.CustomAttributes
@@ -208,7 +208,7 @@ module Instrument =
        | MethodPoint (instruction, _, point, included) -> //of Instruction * CodeSegment * int * bool
          if included then
               let counterMethodCall = state.MethodWorker.Create(OpCodes.Call, state.RecordingMethodRef);
-              let instrLoadModuleId = state.MethodWorker.Create(OpCodes.Ldc_I4, state.ModuleId);
+              let instrLoadModuleId = state.MethodWorker.Create(OpCodes.Ldstr, state.ModuleId.ToString())
               let instrLoadPointId = state.MethodWorker.Create(OpCodes.Ldc_I4, point);
    
               state.MethodWorker.InsertBefore(instruction, instrLoadModuleId);

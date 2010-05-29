@@ -29,9 +29,9 @@ module Report =
           document.Add(element)
           element :: s
 
-      | Module (moduleDef, moduleId,_,_) ->
+      | Module (moduleDef, _, _) ->
           let element = new XElement(X "module",
-                          new XAttribute(X "moduleId", moduleId),
+                          new XAttribute(X "moduleId", moduleDef.Mvid.ToString()),
                           new XAttribute(X "name", moduleDef.Name),
                           new XAttribute(X "assembly", moduleDef.Assembly.Name.Name),
                           new XAttribute(X "assemblyIdentity", moduleDef.Assembly.Name.FullName));

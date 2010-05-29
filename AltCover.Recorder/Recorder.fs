@@ -34,7 +34,7 @@ module Instance =
   /// <summary>
   /// Accumulation of visit records
   /// </summary>  
-  let private Visits = new Dictionary<int, Dictionary<int, int>>();
+  let private Visits = new Dictionary<string, Dictionary<int, int>>();
   
   /// <summary>
   /// Interlock for report instances
@@ -65,7 +65,7 @@ module Instance =
       measureTimeAttr.SetValue(measureTime.ToString("o", System.Globalization.CultureInfo.InvariantCulture));
 
       counts
-      |> Seq.iter (fun (pair : KeyValuePair<int, Dictionary<int,int>>) ->
+      |> Seq.iter (fun (pair : KeyValuePair<string, Dictionary<int,int>>) ->
           let moduleId = pair.Key;
           let moduleHits = pair.Value;
           let affectedModules = 
