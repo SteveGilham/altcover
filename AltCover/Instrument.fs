@@ -12,7 +12,14 @@ open Mono.Cecil
 open Mono.Cecil.Cil
 open Mono.Cecil.Rocks
 
+/// <summary>
+/// Module to handle instrumentation visitor
+/// </summary>
 module Instrument =
+
+  /// <summary>
+  /// State object passed from visit to visit
+  /// </summary>
   type private Context = { InstrumentedAssemblies : string list;
                            RenameTable : Dictionary<String, String>;
                            ModuleId : Guid;
@@ -22,6 +29,11 @@ module Instrument =
                            MethodBody : MethodBody;
                            MethodWorker :ILProcessor }
 
+  /// <summary>
+  /// Higher-order function that returns a visitor
+  /// </summary>
+  /// <param name="assemblies">List of assembly paths to visit</param>
+  /// <returns>Stateful visitor function</returns>
   let internal InstrumentGenerator (assemblies : string list) =
     let initialState = {
              InstrumentedAssemblies = assemblies;
@@ -33,11 +45,20 @@ module Instrument =
              MethodBody = null;
              MethodWorker = null }
 
+    /// <summary>
+    /// Workround for not being able to take typeof<SomeModule> even across
+    /// assembly boundaries -- start with a pure type then iterate to the module
+    /// </summary>
+    /// <returns>A representation of the type used to record all coverage visits.</returns>
     let RecorderInstanceType () =
       let trace  = typeof<AltCover.Recorder.Tracer>
       trace.Assembly.GetExportedTypes()
                             |> Seq.find (fun (t:Type) -> t.Name.Contains("Instance"))
 
+    /// <summary>
+    /// Create the new assembly that will record visits, based on the prototype.
+    /// </summary>
+    /// <returns>A representation of the assembly used to record all coverage visits.</returns>
     let DefineRecordingAssembly () =
       let recorder = typeof<AltCover.Recorder.Tracer>
       let definition = AssemblyDefinition.ReadAssembly(recorder.Assembly.Location)
@@ -59,12 +80,25 @@ module Instrument =
       worker.InsertBefore(pathGetterDef.Body.Instructions.[0], worker.Create(OpCodes.Ldstr, Visitor.reportPath));
                         
       definition
-                  
+
+    /// <summary>
+    /// Locate the method that must be called to register a code point for coverage visit.
+    /// </summary>
+    /// <param name="assembly">The assembly containing the recorder method</param>
+    /// <returns>A representation of the method to call to signal a coverage visit.</returns>
     let RecordingMethod (recordingAssembly : AssemblyDefinition) =
       let other = RecorderInstanceType()
       let token = other.GetMethod("Visit").MetadataToken
       recordingAssembly.MainModule.LookupToken(token) :?> MethodDefinition 
-    
+
+    /// <summary>
+    /// Determine new names for input strongnamed assemblies; if we have a key and
+    /// the assembly was already strongnamed then give it the new key token, otherwise
+    /// set that there is no strongname.
+    /// </summary>
+    /// <param name="assembly">The assembly object being operated upon</param>
+    /// <param name="path">The names of all assemblies of interest</param>
+    /// <returns>Map from input to output names</returns>
     let UpdateStrongReferences (assembly : AssemblyDefinition) (assemblies : string list) =
       let assemblyReferenceSubstitutions = new Dictionary<String, String>()
       let effectiveKey = if assembly.Name.HasPublicKey then Visitor.strongNameKey else None
@@ -99,30 +133,11 @@ module Instrument =
        )     
       assemblyReferenceSubstitutions
     
-    (*// Simply ported from source -- probably doesn't work with the current Mono.Cecil
-    // TODO -- fix this
-    let SubstituteAttributeParameterScopeReferences (updates:Dictionary<String,String>) (values:System.Collections.IList)  =
-      values 
-      |> Seq.cast
-      |> Seq.iteri (fun i x ->
-         let parameter = ref (x.ToString())
-         match !parameter with
-         | null -> ()
-         | _ -> updates.Keys 
-                |> Seq.cast<String>
-                |> Seq.filter (!parameter).Contains
-                |> Seq.iter (fun o ->
-                  parameter := (!parameter).Replace(o, updates.[o]))
-         )
-    
-    let SubstituteAttributeScopeReferences updates attributes =
-      attributes
-      |> Seq.cast<CustomAttribute>
-      |> Seq.iter ignore (*fun x -> 
-                       SubstituteAttributeParameterScopeReferences updates x.ConstructorArguments
-                       SubstituteAttributeParameterScopeReferences updates x.Properties*)
-    *)
-    
+    /// <summary>
+    /// Commit an instrumented assembly to disk
+    /// </summary>
+    /// <param name="assembly">The instrumented assembly object</param>
+    /// <param name="path">The full path of the output file</param>
     let WriteAssembly (assembly:AssemblyDefinition) (path:string) =
       match (Visitor.strongNameKey, assembly.Name.HasPublicKey) with
       | (Some key, true) -> let pkey = new Mono.Cecil.WriterParameters()
@@ -170,12 +185,17 @@ module Instrument =
         else ()
       | _ -> ()
 
+    /// <summary>
+    /// Perform visitor operations
+    /// </summary>
+    /// <param name="state">Contextual information for the visit</param>
+    /// <param name="node">The node being visited</param>
+    /// <returns>Updated state</returns>
     let InstrumentationVisitor (state : Context) (node:Node) = 
        match node with
        | Start _ -> { state with RecordingAssembly = DefineRecordingAssembly() }
        | Assembly (model, included) ->
            let updates = UpdateStrongReferences model.Assembly state.InstrumentedAssemblies
-           ////SubstituteAttributeScopeReferences updates model.Assembly.CustomAttributes
            if included then 
                model.Assembly.MainModule.AssemblyReferences.Add(state.RecordingAssembly.Name)
            { state with RenameTable = updates }
@@ -190,14 +210,11 @@ module Instrument =
                                  RecordingMethodRef = m.Import(recordingMethod); 
                                  RecordingMethod = recordingMethod }
                          | _ -> state
-           ////SubstituteAttributeScopeReferences state.RenameTable m.CustomAttributes
            { restate with ModuleId = m.Mvid }
-         
-       | Type ( _(*typedef*),_,_) -> //of TypeDefinition * bool * AssemblyModel
-           ////SubstituteAttributeScopeReferences state.RenameTable typedef.CustomAttributes
+
+       | Type _ -> //of TypeDefinition * bool * AssemblyModel
            state 
        | Method (m,  included,_) -> //of MethodDefinition * bool * AssemblyModel
-           ////SubstituteAttributeScopeReferences state.RenameTable m.CustomAttributes
            match included with
            | true ->
              { state with 
