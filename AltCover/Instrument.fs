@@ -138,6 +138,8 @@ module Instrument =
     /// </summary>
     /// <param name="assembly">The instrumented assembly object</param>
     /// <param name="path">The full path of the output file</param>
+    /// <remark>Can raise "System.Security.Cryptography.CryptographicException: Keyset does not exist" at random
+    /// when asked to strongname.</remark>
     let WriteAssembly (assembly:AssemblyDefinition) (path:string) =
       match (Visitor.strongNameKey, assembly.Name.HasPublicKey) with
       | (Some key, true) -> let pkey = new Mono.Cecil.WriterParameters()

@@ -141,9 +141,8 @@ module Visitor =
     |> ignore
 
   let EncloseState (visitor : 'State -> 'T -> 'State) (current : 'State) =
-    let bootstrap = current // fudge fun-hoisting bug in analysis
     let rec stateful l = new Fix<'T> (
                            fun (node:'T) -> 
                            let next = visitor l node
                            stateful next)
-    stateful bootstrap
+    stateful current
