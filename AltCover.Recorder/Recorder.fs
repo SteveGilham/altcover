@@ -70,7 +70,7 @@ module Instance =
           let moduleHits = pair.Value;
           let affectedModules = 
               coverageDocument.Descendants(XName.Get("module"))
-              |> Seq.filter (fun el -> el.Attribute(XName.Get("moduleId")).Value.Equals(moduleId.ToString(System.Globalization.CultureInfo.InvariantCulture)))
+              |> Seq.filter (fun el -> el.Attribute(XName.Get("moduleId")).Value.Equals(moduleId))
               |> Seq.truncate 1 // at most 1
 
           affectedModules

@@ -15,7 +15,7 @@ module Main =
   let Usage (intro:string) (options:OptionSet) =
     Console.Error.WriteLine(intro)
     options.WriteOptionDescriptions(Console.Error);  
-    Environment.Exit(-1)
+    Environment.Exit(1)
   
   let (!+) (option: string * string * (string->unit)) (options:OptionSet) =
     let prototype, help, action = option
@@ -29,7 +29,7 @@ module Main =
     psi.UseShellExecute <- false
     psi.RedirectStandardError <- true
     psi.RedirectStandardOutput <- true
-    let proc = new Process()
+    use proc = new Process()
     proc.StartInfo <- psi
     
     let Write (writer:TextWriter) colour data =
