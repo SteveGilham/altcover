@@ -46,10 +46,12 @@ module Report =
                           //// Mono.Cecil emits names in the form outer/inner rather than outer+inner
                           new XAttribute(X "class", methodDef.DeclaringType.FullName.Replace('/', '+')),                          
                           new XAttribute(X "fullname", methodDef.FullName.
-                              Replace('/', '+').
-                              Replace('&','@'). // HTML encoding workaround and more like FxCop
-                              Replace('<', '{').Replace('>', '}') // HTML encoding workaround
-                              ));
+                              Replace('/', '+').Replace("::", "."). // Mono -> .net
+                              Replace('<', '{').Replace('>', '}'). // HTML
+                              Replace('&','@').Replace("()", String.Empty) // HTML, fudgefactor
+                              ),
+                          new XAttribute(X "metadataToken", methodDef.MetadataToken.ToUInt32().ToString()
+                              ))
 
           s.Head.Add(element)   
           element :: s       
