@@ -41,16 +41,15 @@ module Report =
       | Method (methodDef, included, _) ->
           let element = new XElement(X "method",
                           new XAttribute(X "name", methodDef.Name),
+                          //// Mono.Cecil emits names in the form outer/inner rather than outer+inner
+                          new XAttribute(X "class", methodDef.DeclaringType.FullName.Replace('/', '+')), 
+                          new XAttribute(X "metadataToken", methodDef.MetadataToken.ToUInt32().ToString()),                         
                           new XAttribute(X "excluded", (not included).ToString().ToLowerInvariant()), //TODO -- replace lowering
                           new XAttribute(X "instrumented", included.ToString().ToLowerInvariant()),
-                          //// Mono.Cecil emits names in the form outer/inner rather than outer+inner
-                          new XAttribute(X "class", methodDef.DeclaringType.FullName.Replace('/', '+')),                          
                           new XAttribute(X "fullname", methodDef.FullName.
                               Replace('/', '+').Replace("::", "."). // Mono -> .net
                               Replace('<', '{').Replace('>', '}'). // HTML
                               Replace('&','@').Replace("()", String.Empty) // HTML, fudgefactor
-                              ),
-                          new XAttribute(X "metadataToken", methodDef.MetadataToken.ToUInt32().ToString()
                               ))
 
           s.Head.Add(element)   
