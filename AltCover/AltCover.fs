@@ -62,7 +62,7 @@ module Main =
                         (fun x -> Visitor.inputDirectory <- x))
                     |> !+ (
                         "o|outputDirectory=", 
-                        "Optional: The folder to receive the instrumented assemblies and their companions (default: sub-folder 'Instrumented' current directory)",
+                        "Optional: The folder to receive the instrumented assemblies and their companions (default: sub-folder '.\\__Instrumented' current directory)",
                         (fun x -> Visitor.outputDirectory <- x))
                     |> !+ (
                         "sn|strongNameKey=", 
@@ -70,7 +70,7 @@ module Main =
                         (fun x -> 
                             if not (String.IsNullOrEmpty(x)) && File.Exists(x) then
                               try 
-                                  use stream = new System.IO.FileStream(x, System.IO.FileMode.Open)
+                                  use stream = new System.IO.FileStream(x, System.IO.FileMode.Open, System.IO.FileAccess.Read)
                                   let pair = new StrongNameKeyPair(stream)
                                   Visitor.strongNameKey <- Some (pair)
                               with

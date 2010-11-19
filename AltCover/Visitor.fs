@@ -118,7 +118,7 @@ module Visitor =
                          let i = PointNumber
                          PointNumber <- i + 1
                          match x with 
-                         | Some a, Some b, _ -> MethodPoint (b, a.Value, i, true) // TODO
+                         | Some a, Some b, _ -> MethodPoint (b, a.Value, i, true)
                          | _ -> failwith "unexpected None value")
 
     | _ -> Seq.empty<Node>                    
