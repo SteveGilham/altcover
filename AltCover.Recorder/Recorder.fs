@@ -6,6 +6,7 @@ namespace AltCover.Recorder
 open System
 open System.Collections.Generic
 open System.IO
+open System.Runtime.CompilerServices
 open System.Xml
 open System.Xml.Linq
 
@@ -29,6 +30,7 @@ module Instance =
   /// Gets the location of coverage xml file
   /// This property's IL code is modified to store actual file location
   /// </summary>
+  [<MethodImplAttribute(MethodImplOptions.NoInlining)>] 
   let ReportFile = "C:\Windows\Temp\Coverage.Default.xml"
   
   /// <summary>
