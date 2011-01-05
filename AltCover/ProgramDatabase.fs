@@ -134,21 +134,27 @@ module ProgramDatabase =
   let PdbPath path =
     use raw = new FileStream(path, FileMode.Open, FileAccess.Read)
     use reader = new BinaryReader(raw)
-    option {
-      let! sigChecked = SignatureCheck reader
-      let! coff = CommonObjectFileFormatHeader reader sigChecked
-      let! unpicked = Unpick reader coff
-      let! offset = GetPdbOffset reader unpicked
-      return! GetPdbNameFromOffset reader offset
-    }
 
-  let PdbPathExists path = (PdbPath path).filter File.Exists
+    (*option {
+       let! sigChecked = SignatureCheck reader
+       let! coff = CommonObjectFileFormatHeader reader sigChecked
+       let! unpicked = Unpick reader coff
+       let! offset = GetPdbOffset reader unpicked
+       return! GetPdbNameFromOffset reader offset
+    }*)
+    reader
+     |> SignatureCheck  
+     |> Option.bind (CommonObjectFileFormatHeader reader)
+     |> Option.bind (Unpick reader)
+     |> Option.bind (GetPdbOffset reader)
+     |> Option.bind (GetPdbNameFromOffset reader)
+
+  let PdbPathExists path = path |> PdbPath |> Option.filter File.Exists
     
   let LoadSymbols (m:ModuleDefinition) path =
-    let innate = PdbPath path
-    let pdbpath = match innate with
-                  | Some x when File.Exists(x) -> x
-                  | _ -> Path.ChangeExtension(path, ".pdb")
+    let pdbpath = path
+                  |> PdbPathExists
+                  |> Option.getOrElse (Path.ChangeExtension(path, ".pdb"))
                   
     if File.Exists(pdbpath) then 
       use stream = File.OpenRead(pdbpath)

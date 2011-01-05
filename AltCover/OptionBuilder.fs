@@ -10,7 +10,21 @@ module Monads =
   let option = OptionBuilder()
   
 module Augment =   
-  type Option<'T> with
-      member self.filter (f : 'T -> bool) =
-        self |>
-        Option.bind (fun x -> if f(x) then Some(x) else None)
+  type Microsoft.FSharp.Core.Option<'T> with
+      static member filter (f : 'T -> bool) (x : option<'T>) =
+        match x with
+        | Some v when f(v) -> Some v
+        | _ -> None
+        
+      static member getOrElse (fallback : 'T) (x : option<'T>) =
+        match x with
+        | Some v -> v
+        | _ -> fallback
+        
+      static member select (f : 'T -> bool) (x : 'T) =
+        if f(x) then Some x
+        else None
+        
+      static member nullable (x : 'a when 'a : null) : option<'a> =
+        if x <> null then Some x
+        else None
