@@ -20,18 +20,29 @@ Target "SetVersion" (fun _ ->
     let fraction = diff.Subtract(TimeSpan.FromDays(float diff.Days))  
     let revision= ((int fraction.TotalSeconds) / 3)  
     let version = sprintf "0.0.%d.%d" diff.Days revision
+    let copy = sprintf "© 2010-%d by Steve Gilham <SteveGilham@users.noreply.github.com>" now.Year
 
     CreateFSharpAssemblyInfo "./_Generated/AssemblyVersion.fs"
         [Attribute.Version "0.0.0.0"
-         Attribute.FileVersion version]
+         Attribute.FileVersion version
+         Attribute.Company "Steve Gilham"
+         Attribute.Product "AltCover"
+         Attribute.Trademark ""
+         Attribute.Copyright copy
+         ]
 
-    let template ="#light
-namespace Altcover
+    let template ="namespace AltCover
+open System.Reflection
 open System.Runtime.CompilerServices
+#if DEBUG
+[<assembly: AssemblyConfiguration(\"Debug {0}\")>]
+#else
+[<assembly: AssemblyConfiguration(\"Release {0}\")>]
+#endif
 [<assembly: InternalsVisibleTo(\"AltCover.Tests, PublicKey=0024000004800000940000000602000000240000525341310004000001000100916443a2ee1d294e8cfa7666fb3f512d998d7ceac4909e35edb2ac1e104de68890a93716d1d1931f7228aac0523cacf50fd82cdb4ccf4ff4bf0ded95e3a383f4f371e3b82c45502ce74d7d572583495208c1905e0f1e8a3cce66c4c75e4ca32e9a8f8dee64e059c0dc0266e8d2cb6d7ebd464b47e062f80b63d390e389217fb7\")>]
 ()
 "
-    let file = String.Format(System.Globalization.CultureInfo.InvariantCulture, template) //, token)
+    let file = String.Format(System.Globalization.CultureInfo.InvariantCulture, template, version) //, token)
     let path = @"_Generated\VisibleToTest.fs"
     // Update the file only if it would change
     let old = if File.Exists(path) then File.ReadAllText(path) else String.Empty

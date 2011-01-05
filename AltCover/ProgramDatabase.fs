@@ -6,6 +6,9 @@ open System.Collections.Generic
 open System.IO
 open System.Reflection
 
+open AltCover.Monads
+open AltCover.Augment
+
 open Mono.Cecil
 open Mono.Cecil.Cil
 open Mono.Cecil.Pdb
@@ -114,11 +117,10 @@ module ProgramDatabase =
     let SizeOfDebugInfo = 0x18L
     let debugDirectoryOffset, StartOfSections, NumberOfSections = triplet
     let DebugRelativeVirtualAddress = GetRelativeVirtualAddress reader debugDirectoryOffset
-    match GetVirtualAddressForRelativeVirtualAddress reader (DebugRelativeVirtualAddress, StartOfSections, NumberOfSections) with
-    | None -> None
-    | Some va -> 
+    GetVirtualAddressForRelativeVirtualAddress reader (DebugRelativeVirtualAddress, StartOfSections, NumberOfSections)
+    |> Option.bind (fun va -> 
       let DebugInfoFilePointer = (int64 DebugRelativeVirtualAddress) - (int64 va) + StartOfSections + SizeOfSection * (int64 NumberOfSections) + 0x10L
-      Some (DebugInfoFilePointer + SizeOfDebugDirectory + SizeOfDebugInfo)
+      Some (DebugInfoFilePointer + SizeOfDebugDirectory + SizeOfDebugInfo))
 
   let GetPdbNameFromOffset reader offset =
     Seek reader offset SeekOrigin.Begin
@@ -132,17 +134,15 @@ module ProgramDatabase =
   let PdbPath path =
     use raw = new FileStream(path, FileMode.Open, FileAccess.Read)
     use reader = new BinaryReader(raw)
-    reader 
-    |> SignatureCheck  
-    |> Option.bind (CommonObjectFileFormatHeader reader)
-    |> Option.bind (Unpick reader)
-    |> Option.bind (GetPdbOffset reader)
-    |> Option.bind (GetPdbNameFromOffset reader)
+    option {
+      let! sigChecked = SignatureCheck reader
+      let! coff = CommonObjectFileFormatHeader reader sigChecked
+      let! unpicked = Unpick reader coff
+      let! offset = GetPdbOffset reader unpicked
+      return! GetPdbNameFromOffset reader offset
+    }
 
-  let PdbPathExists path =
-    match PdbPath path with
-    | Some x when File.Exists(x) -> Some x
-    | _ -> None
+  let PdbPathExists path = (PdbPath path).filter File.Exists
     
   let LoadSymbols (m:ModuleDefinition) path =
     let innate = PdbPath path

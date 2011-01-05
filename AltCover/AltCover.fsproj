@@ -65,6 +65,7 @@
     <Compile Include="..\_Generated\VisibleToTest.fs">
       <Link>VisibleToTest.fs</Link>
     </Compile>
+    <Compile Include="OptionBuilder.fs" />
     <Compile Include="ProgramDatabase.fs" />
     <Compile Include="Filter.fs" />
     <Compile Include="Visitor.fs" />
