@@ -27,11 +27,6 @@ type AssemblyModel = {
 module ProgramDatabase =
   open Mono.Cecil.Cil
 
-  let (>?>) (arg : option<'TAny>) ( operation : 'TAny -> option<'TAnother> ) =
-    match arg with 
-    | None -> None
-    | Some x -> operation x
-
   let SizeOfSection = 0x28L
 
   let Seek (reader: BinaryReader) offset mark =
@@ -139,14 +134,13 @@ module ProgramDatabase =
     use reader = new BinaryReader(raw)
     reader 
     |> SignatureCheck  
-    >?> CommonObjectFileFormatHeader reader
-    >?> Unpick reader
-    >?> GetPdbOffset reader
-    >?> GetPdbNameFromOffset reader
+    |> Option.bind (CommonObjectFileFormatHeader reader)
+    |> Option.bind (Unpick reader)
+    |> Option.bind (GetPdbOffset reader)
+    |> Option.bind (GetPdbNameFromOffset reader)
 
   let PdbPathExists path =
     match PdbPath path with
-    | None -> None
     | Some x when File.Exists(x) -> Some x
     | _ -> None
     
