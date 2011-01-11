@@ -16,10 +16,7 @@ module Augment =
         | Some v when f(v) -> Some v
         | _ -> None
         
-      static member getOrElse (fallback : 'T) (x : option<'T>) =
-        match x with
-        | Some v -> v
-        | _ -> fallback
+      static member getOrElse (fallback : 'T) (x : option<'T>) = defaultArg x fallback
         
       static member select (f : 'T -> bool) (x : 'T) =
         if f(x) then Some x
