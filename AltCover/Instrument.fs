@@ -196,11 +196,11 @@ module Instrument =
     let InstrumentationVisitor (state : Context) (node:Node) = 
        match node with
        | Start _ -> { state with RecordingAssembly = DefineRecordingAssembly() }
-       | Assembly (model, included) ->
-           let updates = UpdateStrongReferences model.Assembly state.InstrumentedAssemblies
-           if included then 
-               model.Assembly.MainModule.AssemblyReferences.Add(state.RecordingAssembly.Name)
-           { state with RenameTable = updates }
+       | Assembly (assembly, included) ->
+            let updates = UpdateStrongReferences assembly state.InstrumentedAssemblies
+            if included then 
+               assembly.MainModule.AssemblyReferences.Add(state.RecordingAssembly.Name)
+            { state with RenameTable = updates }
        | Module (m, _, included) -> //of ModuleDefinition * AssemblyModel * bool
            let restate = match included with
                          | true -> 

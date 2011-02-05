@@ -55,15 +55,15 @@ module Report =
           s.Head.Add(element)   
           element :: s       
           
-      | MethodPoint (_, codeSegment, _, included) ->          
+      | MethodPoint (_, codeSegment, _, included) ->
           let element = new XElement(X "seqpnt",
                           new XAttribute(X "visitcount", 0),
-                          new XAttribute(X "line", codeSegment.Line),
-                          new XAttribute(X "column", codeSegment.Column),
+                          new XAttribute(X "line", codeSegment.StartLine),
+                          new XAttribute(X "column", codeSegment.StartColumn),
                           new XAttribute(X "endline", codeSegment.EndLine),
                           new XAttribute(X "endcolumn", codeSegment.EndColumn),
                           new XAttribute(X "excluded", (not included).ToString().ToLowerInvariant()),
-                          new XAttribute(X "document", codeSegment.Document));
+                          new XAttribute(X "document", codeSegment.Document.Url));
           s.Head.Add(element)               
           s         
           

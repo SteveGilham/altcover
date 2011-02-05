@@ -35,18 +35,6 @@ type AltCoverTests() = class
          Assert.That(name, Does.EndWith("\\" + filename), x + " -> " + name)
     )
 
-  [<Test; Ignore("awaits refactoring")>]
-  member self.CheckPdbLoading() =
-    // Hack for running while instrumented
-    let where = Assembly.GetExecutingAssembly().Location;
-    let dir = match AltCover.ProgramDatabase.PdbPath(where) with
-              | None -> "\\.."
-              | _ -> String.Empty
-    let path = Path.Combine(Path.GetDirectoryName(where) + dir, "Sample1.exe")
-    let symbols = AltCover.ProgramDatabase.LoadAssembly(path)
-    Assert.That(symbols.Symbols, Is.Not.Empty, "should be some symbols")
-    Assert.That(symbols.Symbols.Keys.Count, Is.EqualTo(1), "the number we expect from NCoverExplorer")
-
   static member TTBaseline = "<?xml version=\"1.0\" encoding=\"utf-8\"?>
 <?xml-stylesheet href=\"coverage.xsl\" type=\"text/xsl\"?>
 <coverage profilerVersion=\"0\" driverVersion=\"0\" startTime=\"\" measureTime=\"\">

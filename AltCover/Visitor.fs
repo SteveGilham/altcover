@@ -16,11 +16,11 @@ open Mono.Cecil.Rocks
 
 type internal Node = 
      | Start of seq<string>
-     | Assembly of AssemblyModel * bool
-     | Module of ModuleDefinition * AssemblyModel * bool
-     | Type of TypeDefinition * bool * AssemblyModel
-     | Method of MethodDefinition * bool * AssemblyModel
-     | MethodPoint of Instruction * CodeSegment * int * bool
+     | Assembly of AssemblyDefinition * bool
+     | Module of ModuleDefinition * AssemblyDefinition * bool
+     | Type of TypeDefinition * bool * AssemblyDefinition
+     | Method of MethodDefinition * bool * AssemblyDefinition
+     | MethodPoint of Instruction * SequencePoint * int * bool
      | AfterMethod of bool
      | AfterModule
      | AfterAssembly of AssemblyDefinition
@@ -43,7 +43,7 @@ module Visitor =
   let ToSeq node =
     seq {yield node} 
     
-  let rec PopInstructions (key:UInt32) (list : list<Instruction>) =
+  let rec PopInstructions (key:int) (list : list<Instruction>) =
     match list with
     | [] -> ([], None)
     | h::[] when h.Offset = int key -> ([], Some h)
@@ -54,7 +54,7 @@ module Visitor =
   let internal After node =
     match node with
     | Start _ -> ToSeq Finish
-    | Assembly (a,_) -> AfterAssembly a.Assembly |> ToSeq
+    | Assembly (a,_) -> AfterAssembly a |> ToSeq
     | Module _ -> AfterModule |> ToSeq
     | Method (_,included,_) -> AfterMethod included |> ToSeq
     | _ -> Seq.empty<Node> 
@@ -70,11 +70,11 @@ module Visitor =
     | Start paths -> paths
                      |> Seq.filter IsIncluded
                      |> Seq.map (fun x -> ProgramDatabase.LoadAssembly(x))
-                     |> Seq.map (fun x -> Assembly(x, IsIncluded x.Assembly))  
+                     |> Seq.map (fun x -> Assembly(x, IsIncluded x))  
                      |> Seq.map (fun x -> BuildSequence x)
                      |> Seq.concat
 
-    | Assembly (a, b) -> a.Assembly.Modules 
+    | Assembly (a, b) -> a.Modules 
                          |> Seq.cast
                          |> Seq.map (fun x -> Module (x, a, b))
                          |> Seq.map (fun x -> BuildSequence x)
@@ -98,15 +98,20 @@ module Visitor =
                                |> Seq.concat
       
     | Method (m, _, a) -> 
-            let segments = ProgramDatabase.GetCodeSegmentsForMethod a m
+            let segments = new Dictionary<int, SequencePoint>()
             let instructions = m.Body.Instructions
                                |> Seq.cast
                                |> Seq.toList
                                |> List.rev
+                         
+            instructions
+            |> List.iter (fun (x:Instruction) -> 
+                                if x.SequencePoint <> null && x.SequencePoint.StartLine <> 0xfeefee then
+                                    segments.Add(x.Offset, x.SequencePoint))
             
             segments.OrderByDescending(fun p -> p.Key)
             |> Seq.cast
-            |> Seq.scan (fun state (p:KeyValuePair<UInt32, CodeSegment>) -> 
+            |> Seq.scan (fun state (p:KeyValuePair<int, SequencePoint>) -> 
                             let _, _, list = state
                             let newlist, inst = PopInstructions p.Key list
                             (Some p, inst, newlist))

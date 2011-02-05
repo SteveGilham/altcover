@@ -12,20 +12,10 @@ open AltCover.Augment
 open Mono.Cecil
 open Mono.Cecil.Cil
 open Mono.Cecil.Pdb
-
-/// <summary>
-/// Source code segment location.
-/// </summary>
-type CodeSegment = {
-         Line : UInt32;
-         Column : UInt16;
-         EndLine : UInt32;
-         EndColumn : UInt16;
-         Document : string }
          
 type AssemblyModel = {
          Assembly : AssemblyDefinition;
-         Symbols : IDictionary }    
+         Symbols : ISymbolReader }    
 
 module ProgramDatabase =
   open Mono.Cecil.Cil
@@ -134,13 +124,16 @@ module ProgramDatabase =
   let PdbPath path =
     use raw = new FileStream(path, FileMode.Open, FileAccess.Read)
     use reader = new BinaryReader(raw)
-
-    (*option {
+    (* We can do this as a computation expression
+       
+      option {
        let! sigChecked = SignatureCheck reader
        let! coff = CommonObjectFileFormatHeader reader sigChecked
        let! unpicked = Unpick reader coff
        let! offset = GetPdbOffset reader unpicked
        return! GetPdbNameFromOffset reader offset
+      
+       Or we could make "|> Option.bind" into a combinator e.g. (>?>=)      
     }*)
     reader
      |> SignatureCheck  
@@ -151,68 +144,20 @@ module ProgramDatabase =
 
   let PdbPathExists path = path |> PdbPath |> Option.filter File.Exists
     
-  let LoadSymbols (m:ModuleDefinition) path =
+  let GetSymbolsPath path =
     let pdbpath = path
                   |> PdbPathExists
                   |> Option.getOrElse (Path.ChangeExtension(path, ".pdb"))
                   
-    if File.Exists(pdbpath) then 
-      use stream = File.OpenRead(pdbpath)
-      let reader = PdbReaderProvider().GetSymbolReader(m, stream)
-      let header = Array.create<byte> 24 0uy
-      let dir = ImageDebugDirectory()
-      if reader.ProcessDebugHeader(dir, header) then
-            // reflective hack.  Don't worry, a proper refactoring 
-            // is ahead of us, but that's several replays down the line
-            let field = typeof<PdbReader>.GetField("functions", BindingFlags.Instance ||| BindingFlags.NonPublic)
-            field.GetValue(reader) :?> IDictionary
-      else Hashtable() :> IDictionary
-    else Hashtable() :> IDictionary                  
+    if File.Exists(pdbpath) then pdbpath else String.Empty                 
 
+  // Ensure that we read symbols from the .pdb path we discovered.
+  // TODO -- discover how much of this can I get Cecil to do rather
+  // than reinventing the wheel.
   let LoadAssembly (path:string) =
     let assembly = AssemblyDefinition.ReadAssembly(path)
-    { Assembly = assembly;
-      Symbols = LoadSymbols assembly.MainModule path }
-      
-  let GetCodeSegmentsForMethod (assembly : AssemblyModel) (methodDef : MethodDefinition) =
-    let segments = new Dictionary<UInt32, CodeSegment>()
-    let token = methodDef.MetadataToken.ToUInt32()
-    // reflective hack.  Don't worry, a proper refactoring 
-    // is ahead of us, but that's several replays down the line
-    let value = assembly.Symbols.[token]
-    if value <> null then
-      let lines' = value.GetType().GetField("lines", BindingFlags.Instance ||| BindingFlags.NonPublic ||| BindingFlags.Public)
-      let lines = lines'.GetValue(value) :?> obj[]
-      seq { for x in lines do 
-              let lines'' = x.GetType().GetField("lines", BindingFlags.Instance ||| BindingFlags.NonPublic ||| BindingFlags.Public)
-              let xlines = lines''.GetValue(x) :?> obj[]
-              if xlines <> null then 
-                  for y in xlines do
-                    let lineBegin' = y.GetType().GetField("lineBegin", BindingFlags.Instance ||| BindingFlags.NonPublic ||| BindingFlags.Public)
-                    let yLineBegin = lineBegin'.GetValue(y) :?> UInt32
-                    if yLineBegin <> 0xfeefeeu then
-                        let file' = x.GetType().GetField("file", BindingFlags.Instance ||| BindingFlags.NonPublic ||| BindingFlags.Public)
-                        let file = file'.GetValue(x)
-                        let name' = file.GetType().GetField("name", BindingFlags.Instance ||| BindingFlags.NonPublic ||| BindingFlags.Public)
-                        yield (name'.GetValue(file) :?> string, y) }
-      |> Seq.iter (fun pair -> 
-         let z = snd pair
-         let offset' = z.GetType().GetField("offset", BindingFlags.Instance ||| BindingFlags.NonPublic ||| BindingFlags.Public)
-         let offset = offset'.GetValue(z) :?> UInt32
-         let lineBegin' = z.GetType().GetField("lineBegin", BindingFlags.Instance ||| BindingFlags.NonPublic ||| BindingFlags.Public)
-         let lineBegin = lineBegin'.GetValue(z) :?> UInt32
-         let lineEnd' = z.GetType().GetField("lineEnd", BindingFlags.Instance ||| BindingFlags.NonPublic ||| BindingFlags.Public)
-         let lineEnd = lineEnd'.GetValue(z) :?> UInt32
-         let colBegin' = z.GetType().GetField("colBegin", BindingFlags.Instance ||| BindingFlags.NonPublic ||| BindingFlags.Public)
-         let colBegin = colBegin'.GetValue(z) :?> UInt16
-         let colEnd' = z.GetType().GetField("colEnd", BindingFlags.Instance ||| BindingFlags.NonPublic ||| BindingFlags.Public)
-         let colEnd = colEnd'.GetValue(z) :?> UInt16
-
-         segments.Add( offset, 
-            {         
-            Line = lineBegin;
-            Column = colBegin;
-            EndLine = lineEnd;
-            EndColumn = colEnd;
-            Document = fst pair }))
-    segments
+    let pdbpath = GetSymbolsPath path
+    let provider = new PdbReaderProvider()
+    let reader = provider.GetSymbolReader(assembly.MainModule, pdbpath)
+    assembly.MainModule.ReadSymbols(reader)
+    assembly
