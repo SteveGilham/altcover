@@ -97,10 +97,12 @@ module Visitor =
                                |> Seq.filter (fun (x:Instruction) -> x.SequencePoint <> null && x.SequencePoint.StartLine <> 0xfeefee)
                                |> Seq.toList
 
+            let number = instructions.Count();
+            let point = PointNumber
+            PointNumber <- point + number
+            
             instructions.OrderByDescending(fun (x:Instruction) -> x.Offset)
-            |> Seq.map (fun x -> let i = PointNumber
-                                 PointNumber <- i + 1
-                                 MethodPoint (x, x.SequencePoint, i, true))
+            |> Seq.mapi (fun i x -> MethodPoint (x, x.SequencePoint, i+point, true))
 
     | _ -> Seq.empty<Node>                    
   

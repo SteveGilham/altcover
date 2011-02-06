@@ -64,15 +64,13 @@ module Report =
                           new XAttribute(X "endcolumn", codeSegment.EndColumn),
                           new XAttribute(X "excluded", (not included).ToString().ToLowerInvariant()),
                           new XAttribute(X "document", codeSegment.Document.Url));
-          s.Head.Add(element)               
+          if s.Head.IsEmpty then s.Head.Add(element)
+          else s.Head.FirstNode.AddBeforeSelf(element)                
           s         
           
       | AfterMethod _ ->
           let m = s.Head
-          let c = m.Descendants()
-                  |> Seq.cast
-                  |> Seq.length
-          if c = 0 then m.Remove()
+          if m.IsEmpty then m.Remove()
           s.Tail
           
       | AfterModule _ ->
