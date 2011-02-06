@@ -6,6 +6,7 @@ open System.Diagnostics
 open System.IO
 open System.Reflection
 
+open Mono.Cecil
 open Mono.Options
 
 module Main =
@@ -139,15 +140,22 @@ module Main =
     let assemblies = 
         files 
         |> Seq.fold (fun (accumulator : string list) (info:FileInfo) ->
-             let assemblyPdb = ProgramDatabase.PdbPathExists info.FullName
              let target = Path.Combine (toInfo.FullName, info.Name)
              File.Copy(info.FullName, target, true) 
-             match assemblyPdb with
-             | None -> accumulator
-             | _ -> if Visitor.IsIncluded info.FullName then
+             if Visitor.IsIncluded info.FullName then
+                 try 
+                   let def = AssemblyDefinition.ReadAssembly(info.FullName)
+                   let assemblyPdb = ProgramDatabase.GetPdbWithFallback def
+                   if Option.isSome assemblyPdb then
+
                         info.FullName :: accumulator
-                    else
+                   else
                         accumulator
+                 with 
+                   | :? BadImageFormatException -> accumulator
+                   | :? IOException -> accumulator
+             else
+               accumulator
           ) []
         
     let assemblyNames = 

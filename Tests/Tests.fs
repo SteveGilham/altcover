@@ -10,22 +10,34 @@ open NUnit.Framework
 
 [<TestFixture>]
 type AltCoverTests() = class
+  // Hack for running while instrumented
+  static member private Hack () =
+    let where = Assembly.GetExecutingAssembly().Location;
+    let def = Mono.Cecil.AssemblyDefinition.ReadAssembly(where)
+    let pdb = AltCover.ProgramDatabase.GetPdbFromImage(def)
+    match pdb with
+    | None -> "\\.."
+    | _ -> String.Empty
+
   [<Test>]
   member self.CheckPdbMapping() =
     // Hack for running while instrumented
     let where = Assembly.GetExecutingAssembly().Location;
-    let dir = match AltCover.ProgramDatabase.PdbPath(where) with
-              | None -> "\\.."
-              | _ -> String.Empty
-  
-    let files = Directory.GetFiles(Path.GetDirectoryName(where) + dir)
+    let files = Directory.GetFiles(Path.GetDirectoryName(where) + AltCoverTests.Hack())
     files 
     |> Seq.filter (fun x -> x.EndsWith(".dll", StringComparison.OrdinalIgnoreCase) 
                             || x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
     |> Seq.filter (fun x -> not (x.EndsWith("nunit.framework.dll", StringComparison.OrdinalIgnoreCase))
+                         && not (x.EndsWith("FSharp.Core.dll", StringComparison.OrdinalIgnoreCase))
+                         && not (x.EndsWith("Mono.Cecil.dll", StringComparison.OrdinalIgnoreCase))
+                         && not (x.EndsWith("Mono.Cecil.Mdb.dll", StringComparison.OrdinalIgnoreCase))
+                         && not (x.EndsWith("Mono.Cecil.Pdb.dll", StringComparison.OrdinalIgnoreCase))
+                         && not (x.EndsWith("Mono.Cecil.Rocks.dll", StringComparison.OrdinalIgnoreCase))
+                         && not (x.EndsWith("Mono.Options.dll", StringComparison.OrdinalIgnoreCase))
                          && not (x.EndsWith("Microsoft.Cci.dll", StringComparison.OrdinalIgnoreCase)))
     |> Seq.iter( fun x ->
-      let pdb = AltCover.ProgramDatabase.PdbPath(x)
+      let def = Mono.Cecil.AssemblyDefinition.ReadAssembly(x)
+      let pdb = AltCover.ProgramDatabase.GetPdbFromImage(def)
       match pdb with
       | None -> Assert.Fail("No .pdb for " + x)
       | Some name -> 
@@ -86,10 +98,7 @@ type AltCoverTests() = class
     let visitor, document = Report.ReportGenerator()
     // Hack for running while instrumented
     let where = Assembly.GetExecutingAssembly().Location;
-    let dir = match AltCover.ProgramDatabase.PdbPath(where) with
-              | None -> "\\.."
-              | _ -> String.Empty
-    let path = Path.Combine(Path.GetDirectoryName(where) + dir, "Sample1.exe")
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample1.exe")
     
     Visitor.Visit [ visitor ] (Visitor.ToSeq path)
 
