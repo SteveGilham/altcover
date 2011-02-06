@@ -30,15 +30,16 @@ module ProgramDatabase =
         getDebugHeaderInfo.Invoke(image, oa) |> ignore
         let SizeOfDebugInfo = 0x18
         let header = oa.[0] :?> byte array
-        let name = header
-                    |> Seq.skip SizeOfDebugInfo
-                    |> Seq.takeWhile (fun x -> x <> byte 0)
-                    |> Seq.map (fun x -> char x)
-                    |> Seq.toArray
-        let name' = new String(name)
-        Option.select (fun (s:String) -> s.Length > 0) name'
+        if null = header then None
+        else
+          let name = header
+                     |> Seq.skip SizeOfDebugInfo
+                     |> Seq.takeWhile (fun x -> x <> byte 0)
+                     |> Seq.toArray
+          Option.select (fun (s:String) -> s.Length > 0) <| System.Text.Encoding.UTF8.GetString(name)
     with 
         | :? TargetInvocationException -> None
+        | :? InvalidCastException -> None
 
     |> Option.bind (Option.select File.Exists)
     
