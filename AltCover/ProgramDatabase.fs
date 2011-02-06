@@ -144,18 +144,33 @@ module ProgramDatabase =
 
   let PdbPathExists path = path |> PdbPath |> Option.filter File.Exists
     
-  let GetSymbolsPath path =
-    let pdbpath = path
-                  |> PdbPathExists
-                  |> Option.getOrElse (Path.ChangeExtension(path, ".pdb"))
-                  
-    if File.Exists(pdbpath) then pdbpath else String.Empty                 
+  
+  // Violate Cecil encapsulation to get the PDB path
+  let GetPdbFromImage (assembly:AssemblyDefinition) =
+    let m = assembly.MainModule
+    let imageField = typeof<ModuleDefinition>.GetField("Image", BindingFlags.Instance ||| BindingFlags.NonPublic)
+    let image = imageField.GetValue(m)
+    let getDebugHeaderInfo = image.GetType().GetMethod("GetDebugHeader")
+    let ba = [| 0y |]
+    let oa = [| ba :> Object |]
+    getDebugHeaderInfo.Invoke(image, oa) |> ignore
+    let SizeOfDebugInfo = 0x18
+    let header = oa.[0] :?> byte array
+    let name = header
+                |> Seq.skip SizeOfDebugInfo
+                |> Seq.takeWhile (fun x -> x <> byte 0)
+                |> Seq.map (fun x -> char x)
+                |> Seq.toArray             
+    let pdbpath = new String(name)
+    if File.Exists(pdbpath) then pdbpath 
+    else let fallback = Path.ChangeExtension(m.FullyQualifiedName, ".pdb")
+         if File.Exists(fallback) then fallback else String.Empty        
 
   // Ensure that we read symbols from the .pdb path we discovered.
   // Cecil currently only does the Path.ChangeExtension(path, ".pdb") fallback if left to its own devices
   // Will fail  with InvalidOperationException if there is a malformed file with the expected name
   let ReadSymbols (assembly:AssemblyDefinition) =
-    let pdbpath = GetSymbolsPath assembly.MainModule.FullyQualifiedName
+    let pdbpath = GetPdbFromImage assembly
 
     if not <| String.IsNullOrEmpty(pdbpath) then 
         let provider = new PdbReaderProvider()
