@@ -159,5 +159,10 @@ module ProgramDatabase =
     let pdbpath = GetSymbolsPath path
     let provider = new PdbReaderProvider()
     let reader = provider.GetSymbolReader(assembly.MainModule, pdbpath)
-    assembly.MainModule.ReadSymbols(reader)
+    if String.IsNullOrEmpty(pdbpath) then 
+        // Guaranteed to exist
+        let reader = provider.GetSymbolReader(assembly.MainModule, pdbpath)
+        assembly.MainModule.ReadSymbols(reader)
+    else
+        assembly.MainModule.ReadSymbols()
     assembly

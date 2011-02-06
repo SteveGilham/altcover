@@ -97,7 +97,7 @@ module Visitor =
                                |> Seq.map (fun x -> BuildSequence x)
                                |> Seq.concat
       
-    | Method (m, _, a) -> 
+    | Method (m, _, _) -> 
             let segments = new Dictionary<int, SequencePoint>()
             let instructions = m.Body.Instructions
                                |> Seq.cast
