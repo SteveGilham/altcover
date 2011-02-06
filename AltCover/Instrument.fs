@@ -7,6 +7,7 @@ namespace AltCover
 open System
 open System.Collections.Generic
 open System.IO
+open System.Reflection
 
 open Mono.Cecil
 open Mono.Cecil.Cil
@@ -54,6 +55,19 @@ module Instrument =
       let trace  = typeof<AltCover.Recorder.Tracer>
       trace.Assembly.GetExportedTypes()
                             |> Seq.find (fun (t:Type) -> t.Name.Contains("Instance"))
+                            
+    /// <summary>
+    /// Applies a new key to an assembly name
+    /// </summary>
+    /// <param name="assemblyName">The name to update</param>
+    /// <param name="key">The possibly empty key to use</param>
+    let UpdateStrongNaming (assemblyName:AssemblyNameDefinition) (key:StrongNameKeyPair option) =
+      match key with
+      | None -> assemblyName.HasPublicKey <- false
+                assemblyName.PublicKey <- null
+                assemblyName.PublicKeyToken <- null
+      | Some key' -> assemblyName.HasPublicKey <- true
+                     assemblyName.PublicKey <- key'.PublicKey
 
     /// <summary>
     /// Create the new assembly that will record visits, based on the prototype.
@@ -63,12 +77,7 @@ module Instrument =
       let recorder = typeof<AltCover.Recorder.Tracer>
       let definition = AssemblyDefinition.ReadAssembly(recorder.Assembly.Location)
       definition.Name.Name <- definition.Name.Name + ".g"
-      match Visitor.strongNameKey with
-      | None -> definition.Name.HasPublicKey <- false
-                definition.Name.PublicKey <- null
-                definition.Name.PublicKeyToken <- null
-      | Some key -> definition.Name.HasPublicKey <- true
-                    definition.Name.PublicKey <- key.PublicKey
+      UpdateStrongNaming definition.Name Visitor.defaultStrongNameKey
                     
       // set the coverage file path  
       let other = RecorderInstanceType()
@@ -92,6 +101,28 @@ module Instrument =
       recordingAssembly.MainModule.LookupToken(token) :?> MethodDefinition 
 
     /// <summary>
+    /// Locate the key, if any, which was used to name this assembly.
+    /// </summary>
+    /// <param name="named">The key used for the name of the assembly</param>
+    /// <returns>A key, if we have a match.</returns>
+    let SameKey (named:byte[]) (key:StrongNameKeyPair) =
+      (named.Length = key.PublicKey.Length) &&
+        Array.forall2 (fun x y -> x = y) named key.PublicKey 
+      
+    /// <summary>
+    /// Locate the key, if any, which was used to name this assembly.
+    /// </summary>
+    /// <param name="name">The name of the assembly</param>
+    /// <returns>A key, if we have a match.</returns>
+    let KnownKey (name:AssemblyNameDefinition) =
+        if not name.HasPublicKey then
+          None
+        else
+          Visitor.Keys()
+          |> Seq.toList
+          |> List.tryFind (SameKey name.PublicKey)
+                     
+    /// <summary>
     /// Determine new names for input strongnamed assemblies; if we have a key and
     /// the assembly was already strongnamed then give it the new key token, otherwise
     /// set that there is no strongname.
@@ -101,36 +132,35 @@ module Instrument =
     /// <returns>Map from input to output names</returns>
     let UpdateStrongReferences (assembly : AssemblyDefinition) (assemblies : string list) =
       let assemblyReferenceSubstitutions = new Dictionary<String, String>()
-      let effectiveKey = if assembly.Name.HasPublicKey then Visitor.strongNameKey else None
-      match effectiveKey with
-      | None -> assembly.Name.HasPublicKey <- false
-                assembly.Name.PublicKey <- null
-                assembly.Name.PublicKeyToken <- null
-      | Some key -> assembly.Name.HasPublicKey <- true
-                    assembly.Name.PublicKey <- key.PublicKey
-                
-      assembly.MainModule.AssemblyReferences                  
-      |> Seq.cast<AssemblyNameReference>
-      |> Seq.filter (fun x -> assemblies 
-                              |> List.exists (fun y -> y.Equals(x.Name)))
-      |> Seq.iter (fun x ->
-        let original = x.ToString()
-        // HasPublicKey may not be set even if PublicKeyToken is!
-        let theKey = if (x.HasPublicKey || x.PublicKeyToken <> null) then
-                        Visitor.strongNameKey
-                     else
-                        None
-        match theKey with
-        | None -> x.HasPublicKey <- false
-                  x.PublicKey <- null
-                  x.PublicKeyToken <- null
-        | Some key -> x.HasPublicKey <- true
-                      x.PublicKey <- key.PublicKey
-               
-        let updated = x.ToString() 
-        if  updated <> original then 
-          assemblyReferenceSubstitutions.[original] <- x.ToString()              
-       )     
+      
+      // if the assembly is strong-named and the key is in our known list, we do nothing
+      if (not assembly.Name.HasPublicKey) || (KnownKey assembly.Name).IsNone then
+          let effectiveKey = if assembly.Name.HasPublicKey then Visitor.defaultStrongNameKey else None
+          
+          UpdateStrongNaming assembly.Name effectiveKey
+                        
+          assembly.MainModule.AssemblyReferences                  
+          |> Seq.cast<AssemblyNameReference>
+          |> Seq.filter (fun x -> assemblies 
+                                  |> List.exists (fun y -> y.Equals(x.Name)))
+          |> Seq.iter (fun x ->
+            let original = x.ToString()
+            // HasPublicKey may not be set even if PublicKeyToken is!
+            let theKey = if (x.HasPublicKey || x.PublicKeyToken <> null) then
+                            Visitor.defaultStrongNameKey
+                         else
+                            None
+            match theKey with
+            | None -> x.HasPublicKey <- false
+                      x.PublicKey <- null
+                      x.PublicKeyToken <- null
+            | Some key -> x.HasPublicKey <- true
+                          x.PublicKey <- key.PublicKey
+                   
+            let updated = x.ToString() 
+            if  updated <> original then 
+              assemblyReferenceSubstitutions.[original] <- x.ToString()              
+           )     
       assemblyReferenceSubstitutions
     
     /// <summary>
@@ -141,10 +171,10 @@ module Instrument =
     /// <remark>Can raise "System.Security.Cryptography.CryptographicException: Keyset does not exist" at random
     /// when asked to strongname.</remark>
     let WriteAssembly (assembly:AssemblyDefinition) (path:string) =
-      match (Visitor.strongNameKey, assembly.Name.HasPublicKey) with
-      | (Some key, true) -> let pkey = new Mono.Cecil.WriterParameters()
-                            pkey.StrongNameKeyPair <- key
-                            assembly.Write(path, pkey)
+      match KnownKey assembly.Name with
+      | Some key -> let pkey = new Mono.Cecil.WriterParameters()
+                    pkey.StrongNameKeyPair <- key
+                    assembly.Write(path, pkey)
       | _ -> assembly.Write(path)
  
                      

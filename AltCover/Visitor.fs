@@ -35,7 +35,12 @@ module Visitor =
   let mutable internal inputDirectory = "."
   let mutable internal outputDirectory = ".\\__Instrumented"
   let mutable internal reportPath = ".\\coverage.xml"
-  let mutable internal strongNameKey : option<StrongNameKeyPair> = None
+  let mutable internal defaultStrongNameKey : option<StrongNameKeyPair> = None
+  let private keys = new List<StrongNameKeyPair>()
+  
+  let internal Add (key:StrongNameKeyPair) = keys.Add(key)
+  
+  let internal Keys() = keys |> Seq.toList
 
   let IsIncluded (nameProvider:Object) =
     not (NameFilters |> Seq.exists (Filter.Match nameProvider))  

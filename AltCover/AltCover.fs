@@ -66,14 +66,28 @@ module Main =
                         "Optional: The folder to receive the instrumented assemblies and their companions (default: sub-folder '.\\__Instrumented' current directory)",
                         (fun x -> Visitor.outputDirectory <- x))
                     |> !+ (
-                        "sn|strongNameKey=", 
-                        "Optional: The strong naming key to apply to instrumented assemblies (default: None)",
+                        "k|key=", 
+                        "Optional, multiple: any other strong-name key to use",
                         (fun x -> 
                             if not (String.IsNullOrEmpty(x)) && File.Exists(x) then
                               try 
                                   use stream = new System.IO.FileStream(x, System.IO.FileMode.Open, System.IO.FileAccess.Read)
                                   let pair = new StrongNameKeyPair(stream)
-                                  Visitor.strongNameKey <- Some (pair)
+                                  Visitor.Add pair
+                              with
+                              | :? IOException as io -> Console.WriteLine(io.Message)
+                              | :? System.Security.SecurityException as s -> Console.WriteLine(s.Message)
+                        ))
+                    |> !+ (
+                        "sn|strongNameKey=", 
+                        "Optional: The default strong naming key to apply to instrumented assemblies (default: None)",
+                        (fun x -> 
+                            if not (String.IsNullOrEmpty(x)) && File.Exists(x) then
+                              try 
+                                  use stream = new System.IO.FileStream(x, System.IO.FileMode.Open, System.IO.FileAccess.Read)
+                                  let pair = new StrongNameKeyPair(stream)
+                                  Visitor.defaultStrongNameKey <- Some (pair)
+                                  Visitor.Add pair
                               with
                               | :? IOException as io -> Console.WriteLine(io.Message)
                               | :? System.Security.SecurityException as s -> Console.WriteLine(s.Message)
