@@ -17,9 +17,9 @@ open Mono.Cecil.Rocks
 type internal Node = 
      | Start of seq<string>
      | Assembly of AssemblyDefinition * bool
-     | Module of ModuleDefinition * AssemblyDefinition * bool
-     | Type of TypeDefinition * bool * AssemblyDefinition
-     | Method of MethodDefinition * bool * AssemblyDefinition
+     | Module of ModuleDefinition * bool
+     | Type of TypeDefinition * bool
+     | Method of MethodDefinition * bool
      | MethodPoint of Instruction * SequencePoint * int * bool
      | AfterMethod of bool
      | AfterModule
@@ -43,20 +43,12 @@ module Visitor =
   let ToSeq node =
     seq {yield node} 
     
-  let rec PopInstructions (key:int) (list : list<Instruction>) =
-    match list with
-    | [] -> ([], None)
-    | h::[] when h.Offset = int key -> ([], Some h)
-    | h::t when h.Offset > int key || h.Offset = 0 -> PopInstructions key t
-    | h::t when h.Offset = int key -> (t, Some h)
-    | _ -> (list, None)
-    
   let internal After node =
     match node with
     | Start _ -> ToSeq Finish
     | Assembly (a,_) -> AfterAssembly a |> ToSeq
     | Module _ -> AfterModule |> ToSeq
-    | Method (_,included,_) -> AfterMethod included |> ToSeq
+    | Method (_, included) -> AfterMethod included |> ToSeq
     | _ -> Seq.empty<Node> 
     
   let mutable private PointNumber : int = 0
@@ -74,57 +66,39 @@ module Visitor =
                      |> Seq.map (fun x -> BuildSequence x)
                      |> Seq.concat
 
-    | Assembly (a, b) -> a.Modules 
-                         |> Seq.cast
-                         |> Seq.map (fun x -> Module (x, a, b))
-                         |> Seq.map (fun x -> BuildSequence x)
-                         |> Seq.concat
+    | Assembly (a, included) ->  a.Modules 
+                                 |> Seq.cast
+                                 |> Seq.map (fun x -> Module (x, included))
+                                 |> Seq.map (fun x -> BuildSequence x)
+                                 |> Seq.concat                         
 
-                         
-    | Module (x, a, included) -> PointNumber <- 0
+    | Module (x, included) ->    PointNumber <- 0
                                  x.GetAllTypes() 
                                  |> Seq.cast  
-                                 |> Seq.map (fun t -> Type (t, included && IsIncluded t, a))
+                                 |> Seq.map (fun t -> Type (t, included && IsIncluded t))
                                  |> Seq.map (fun x -> BuildSequence x)
                                  |> Seq.concat
                              
-    | Type (t, included, a) -> t.Methods
+    | Type (t, included) ->    t.Methods
                                |> Seq.cast
                                |> Seq.filter (fun (m : MethodDefinition) -> not m.IsAbstract 
                                                                             && not m.IsRuntime
                                                                             && not m.IsPInvokeImpl)
-                               |> Seq.map (fun m -> Method (m, included && IsIncluded m, a))
+                               |> Seq.map (fun m -> Method (m, included && IsIncluded m))
                                |> Seq.map (fun x -> BuildSequence x)
                                |> Seq.concat
       
-    | Method (m, _, _) -> 
+    | Method (m, _) -> 
             let segments = new Dictionary<int, SequencePoint>()
             let instructions = m.Body.Instructions
                                |> Seq.cast
+                               |> Seq.filter (fun (x:Instruction) -> x.SequencePoint <> null && x.SequencePoint.StartLine <> 0xfeefee)
                                |> Seq.toList
-                               |> List.rev
-                         
-            instructions
-            |> List.iter (fun (x:Instruction) -> 
-                                if x.SequencePoint <> null && x.SequencePoint.StartLine <> 0xfeefee then
-                                    segments.Add(x.Offset, x.SequencePoint))
-            
-            segments.OrderByDescending(fun p -> p.Key)
-            |> Seq.cast
-            |> Seq.scan (fun state (p:KeyValuePair<int, SequencePoint>) -> 
-                            let _, _, list = state
-                            let newlist, inst = PopInstructions p.Key list
-                            (Some p, inst, newlist))
-                            (None, None, instructions)
-            |> Seq.filter (fun x ->
-                            let a,b,_ = x
-                            a <> None && b <> None)
-            |> Seq.map (fun x ->
-                         let i = PointNumber
-                         PointNumber <- i + 1
-                         match x with 
-                         | Some a, Some b, _ -> MethodPoint (b, a.Value, i, true)
-                         | _ -> failwith "unexpected None value")
+
+            instructions.OrderByDescending(fun (x:Instruction) -> x.Offset)
+            |> Seq.map (fun x -> let i = PointNumber
+                                 PointNumber <- i + 1
+                                 MethodPoint (x, x.SequencePoint, i, true))
 
     | _ -> Seq.empty<Node>                    
   

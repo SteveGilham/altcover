@@ -29,7 +29,7 @@ module Report =
           document.Add(element)
           element :: s
 
-      | Module (moduleDef, _, _) ->
+      | Module (moduleDef, _) ->
           let element = new XElement(X "module",
                           new XAttribute(X "moduleId", moduleDef.Mvid.ToString()),
                           new XAttribute(X "name", moduleDef.Name),
@@ -38,7 +38,7 @@ module Report =
           s.Head.Add(element)   
           element :: s     
 
-      | Method (methodDef, included, _) ->
+      | Method (methodDef, included) ->
           let element = new XElement(X "method",
                           new XAttribute(X "name", methodDef.Name),
                           //// Mono.Cecil emits names in the form outer/inner rather than outer+inner

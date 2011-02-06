@@ -201,7 +201,7 @@ module Instrument =
             if included then 
                assembly.MainModule.AssemblyReferences.Add(state.RecordingAssembly.Name)
             { state with RenameTable = updates }
-       | Module (m, _, included) -> //of ModuleDefinition * AssemblyModel * bool
+       | Module (m, included) -> //of ModuleDefinition * bool
            let restate = match included with
                          | true -> 
                            let recordingMethod = match state.RecordingMethod with
@@ -216,7 +216,7 @@ module Instrument =
 
        | Type _ -> //of TypeDefinition * bool * AssemblyModel
            state 
-       | Method (m,  included,_) -> //of MethodDefinition * bool * AssemblyModel
+       | Method (m,  included) -> //of MethodDefinition * bool
            match included with
            | true ->
              { state with 
