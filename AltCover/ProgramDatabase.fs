@@ -152,17 +152,13 @@ module ProgramDatabase =
     if File.Exists(pdbpath) then pdbpath else String.Empty                 
 
   // Ensure that we read symbols from the .pdb path we discovered.
-  // TODO -- discover how much of this can I get Cecil to do rather
-  // than reinventing the wheel.
+  // Cecil currently only does the Path.ChangeExtension(path, ".pdb") fallback if left to its own devices
+  // Will fail  with InvalidOperationException if there is a malformed file with the expected name
   let LoadAssembly (path:string) =
-    let assembly = AssemblyDefinition.ReadAssembly(path)
     let pdbpath = GetSymbolsPath path
-    let provider = new PdbReaderProvider()
-    let reader = provider.GetSymbolReader(assembly.MainModule, pdbpath)
-    if String.IsNullOrEmpty(pdbpath) then 
-        // Guaranteed to exist
+    let assembly = AssemblyDefinition.ReadAssembly(path)
+    if not <| String.IsNullOrEmpty(pdbpath) then 
+        let provider = new PdbReaderProvider()
         let reader = provider.GetSymbolReader(assembly.MainModule, pdbpath)
         assembly.MainModule.ReadSymbols(reader)
-    else
-        assembly.MainModule.ReadSymbols()
     assembly
