@@ -173,13 +173,14 @@ module Instrument =
     /// <param name="assembly">The instrumented assembly object</param>
     /// <param name="path">The full path of the output file</param>
     /// <remark>Can raise "System.Security.Cryptography.CryptographicException: Keyset does not exist" at random
-    /// when asked to strongname.</remark>
+    /// when asked to strongname.  This writes a new .pdb alongside the instrumented assembly</remark>
     let WriteAssembly (assembly:AssemblyDefinition) (path:string) =
-      match KnownKey assembly.Name with
-      | Some key -> let pkey = new Mono.Cecil.WriterParameters()
-                    pkey.StrongNameKeyPair <- key
-                    assembly.Write(path, pkey)
-      | _ -> assembly.Write(path)
+      let pkey = new Mono.Cecil.WriterParameters()
+      pkey.WriteSymbols <- true
+      pkey.SymbolWriterProvider <- new Mono.Cecil.Pdb.PdbWriterProvider()
+      KnownKey assembly.Name
+      |> Option.iter (fun key -> pkey.StrongNameKeyPair <- key)
+      assembly.Write(path, pkey)
  
                      
     /// <summary>
