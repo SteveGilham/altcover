@@ -105,14 +105,32 @@ module Instrument =
       recordingAssembly.MainModule.LookupToken(token) :?> MethodDefinition 
 
     /// <summary>
-    /// Locate the key, if any, which was used to name this assembly.
+    /// Does this array match the key material.
+    /// </summary>
+    /// <param name="named">The key used for the name of the assembly</param>
+    /// <returns>A key, if we have a match.</returns>
+    let SameArray (named:byte[]) (key:byte[]) =
+      (named.Length = key.Length) &&
+        Array.forall2 (fun x y -> x = y) named key
+      
+    /// <summary>
+    /// Does this array match the key material.
     /// </summary>
     /// <param name="named">The key used for the name of the assembly</param>
     /// <returns>A key, if we have a match.</returns>
     let SameKey (named:byte[]) (key:StrongNameKeyPair) =
-      (named.Length = key.PublicKey.Length) &&
-        Array.forall2 (fun x y -> x = y) named key.PublicKey 
-      
+        SameArray named key.PublicKey
+        
+    /// <summary>
+    /// Does this array match the key material.
+    /// </summary>
+    /// <param name="named">The key used for the name of the assembly</param>
+    /// <returns>A key, if we have a match.</returns>
+    let SameToken (named:byte[]) (key:StrongNameKeyPair) =
+       match Visitor.Token(key) with
+       | None -> false
+       | Some token -> SameArray named token       
+        
     /// <summary>
     /// Locate the key, if any, which was used to name this assembly.
     /// </summary>
@@ -125,7 +143,20 @@ module Instrument =
           Visitor.Keys()
           |> Seq.toList
           |> List.tryFind (SameKey name.PublicKey)
-                     
+          
+    /// <summary>
+    /// Locate the key, if any, which was used to name this assembly.
+    /// </summary>
+    /// <param name="name">The name of the assembly</param>
+    /// <returns>A key, if we have a match.</returns>
+    let KnownToken (name:AssemblyNameReference) =
+        if name.PublicKeyToken = null then
+          None
+        else
+          Visitor.Keys()
+          |> Seq.toList
+          |> List.tryFind (SameToken name.PublicKeyToken)
+                    
     /// <summary>
     /// Determine new names for input strongnamed assemblies; if we have a key and
     /// the assembly was already strongnamed then give it the new key token, otherwise
@@ -137,34 +168,31 @@ module Instrument =
     let UpdateStrongReferences (assembly : AssemblyDefinition) (assemblies : string list) =
       let assemblyReferenceSubstitutions = new Dictionary<String, String>()
       
-      // if the assembly is strong-named and the key is in our known list, we do nothing
-      if (not assembly.Name.HasPublicKey) || (KnownKey assembly.Name).IsNone then
-          let effectiveKey = if assembly.Name.HasPublicKey then Visitor.defaultStrongNameKey else None
-          
-          UpdateStrongNaming assembly.Name effectiveKey
-                        
-          assembly.MainModule.AssemblyReferences                  
-          |> Seq.cast<AssemblyNameReference>
-          |> Seq.filter (fun x -> assemblies 
-                                  |> List.exists (fun y -> y.Equals(x.Name)))
-          |> Seq.iter (fun x ->
-            let original = x.ToString()
-            // HasPublicKey may not be set even if PublicKeyToken is!
-            let theKey = if (x.HasPublicKey || x.PublicKeyToken <> null) then
-                            Visitor.defaultStrongNameKey
-                         else
-                            None
-            match theKey with
-            | None -> x.HasPublicKey <- false
-                      x.PublicKey <- null
-                      x.PublicKeyToken <- null
-            | Some key -> x.HasPublicKey <- true
-                          x.PublicKey <- key.PublicKey
-                   
-            let updated = x.ToString() 
-            if  updated <> original then 
-              assemblyReferenceSubstitutions.[original] <- x.ToString()              
-           )     
+      let interestingReferences =  assembly.MainModule.AssemblyReferences                  
+                                   |> Seq.cast<AssemblyNameReference>
+                                   |> Seq.filter (fun x -> assemblies |> List.exists (fun y -> y.Equals(x.Name)))
+                                   
+      interestingReferences
+      |> Seq.iter (fun r -> let original = r.ToString()
+                            let token = KnownToken r
+                            let effectiveKey = match token with
+                                               | None -> Visitor.defaultStrongNameKey
+                                               | key -> key
+                            
+                            match effectiveKey with
+                            | None -> r.HasPublicKey <- false
+                                      r.PublicKeyToken <- null
+                                      r.PublicKey <- null
+                            | Some key -> r.HasPublicKey <- true
+                                          r.PublicKey <- key.PublicKey
+                                          match Visitor.Token key with
+                                          | Some token -> r.PublicKeyToken <- token
+                                          | None -> ()
+                            let updated = r.ToString() 
+                            if  not <| updated.Equals(original, StringComparison.Ordinal) then 
+                              assemblyReferenceSubstitutions.[original] <- updated             
+                    )
+    
       assemblyReferenceSubstitutions
     
     /// <summary>
@@ -239,7 +267,7 @@ module Instrument =
             let updates = UpdateStrongReferences assembly state.InstrumentedAssemblies
             if included then 
                assembly.MainModule.AssemblyReferences.Add(state.RecordingAssembly.Name)
-            { state with RenameTable = updates }
+            { state with RenameTable = updates } // TODO use this (attribute mappings IIRC)
        | Module (m, included) -> //of ModuleDefinition * bool
            let restate = match included with
                          | true -> 

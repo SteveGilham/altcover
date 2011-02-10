@@ -36,11 +36,23 @@ module Visitor =
   let mutable internal outputDirectory = ".\\__Instrumented"
   let mutable internal reportPath = ".\\coverage.xml"
   let mutable internal defaultStrongNameKey : option<StrongNameKeyPair> = None
-  let private keys = new List<StrongNameKeyPair>()
+  let private keys = new Dictionary<StrongNameKeyPair, byte array>()
+  let private hash = new System.Security.Cryptography.SHA1CryptoServiceProvider()
+
+  let internal Add (key:StrongNameKeyPair) = 
+    let token = hash.ComputeHash(key.PublicKey)
+                |> Array.rev
+                |> Seq.take 8
+                |> Seq.toArray
+    keys.[key] <- token
   
-  let internal Add (key:StrongNameKeyPair) = keys.Add(key)
+  let internal Keys() = keys.Keys |> Seq.toList
   
-  let internal Keys() = keys |> Seq.toList
+  let internal Token (key:StrongNameKeyPair) =
+    match keys.TryGetValue(key) with
+    | (false, _) -> None
+    | (_, token) -> Some token
+
 
   let IsIncluded (nameProvider:Object) =
     not (NameFilters |> Seq.exists (Filter.Match nameProvider))  
