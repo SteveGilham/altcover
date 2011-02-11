@@ -102,34 +102,7 @@ module Instrument =
     let RecordingMethod (recordingAssembly : AssemblyDefinition) =
       let other = RecorderInstanceType()
       let token = other.GetMethod("Visit").MetadataToken
-      recordingAssembly.MainModule.LookupToken(token) :?> MethodDefinition 
-
-    /// <summary>
-    /// Does this array match the key material.
-    /// </summary>
-    /// <param name="named">The key used for the name of the assembly</param>
-    /// <returns>A key, if we have a match.</returns>
-    let SameArray (named:byte[]) (key:byte[]) =
-      (named.Length = key.Length) &&
-        Array.forall2 (fun x y -> x = y) named key
-      
-    /// <summary>
-    /// Does this array match the key material.
-    /// </summary>
-    /// <param name="named">The key used for the name of the assembly</param>
-    /// <returns>A key, if we have a match.</returns>
-    let SameKey (named:byte[]) (key:StrongNameKeyPair) =
-        SameArray named key.PublicKey
-        
-    /// <summary>
-    /// Does this array match the key material.
-    /// </summary>
-    /// <param name="named">The key used for the name of the assembly</param>
-    /// <returns>A key, if we have a match.</returns>
-    let SameToken (named:byte[]) (key:StrongNameKeyPair) =
-       match Visitor.Token(key) with
-       | None -> false
-       | Some token -> SameArray named token       
+      recordingAssembly.MainModule.LookupToken(token) :?> MethodDefinition      
         
     /// <summary>
     /// Locate the key, if any, which was used to name this assembly.
@@ -140,9 +113,10 @@ module Instrument =
         if not name.HasPublicKey then
           None
         else
-          Visitor.Keys()
-          |> Seq.toList
-          |> List.tryFind (SameKey name.PublicKey)
+          let index = KeyStore.ArrayToIndex name.PublicKey
+          match Visitor.keys.TryGetValue(index) with
+          | (false, _ ) -> None
+          | (_, record) -> Some record.Pair
           
     /// <summary>
     /// Locate the key, if any, which was used to name this assembly.
@@ -153,9 +127,10 @@ module Instrument =
         if name.PublicKeyToken = null then
           None
         else
-          Visitor.Keys()
-          |> Seq.toList
-          |> List.tryFind (SameToken name.PublicKeyToken)
+          let index = KeyStore.TokenAsULong name.PublicKeyToken
+          match Visitor.keys.TryGetValue(index) with
+          | (false, _ ) -> None
+          | (_, record) -> Some record
                     
     /// <summary>
     /// Determine new names for input strongnamed assemblies; if we have a key and
@@ -166,6 +141,7 @@ module Instrument =
     /// <param name="path">The names of all assemblies of interest</param>
     /// <returns>Map from input to output names</returns>
     let UpdateStrongReferences (assembly : AssemblyDefinition) (assemblies : string list) =
+      // TODO -- is this still lookup table of any use??
       let assemblyReferenceSubstitutions = new Dictionary<String, String>()
       
       let interestingReferences =  assembly.MainModule.AssemblyReferences                  
@@ -177,6 +153,7 @@ module Instrument =
                             let token = KnownToken r
                             let effectiveKey = match token with
                                                | None -> Visitor.defaultStrongNameKey
+                                                         |> Option.map KeyStore.KeyToRecord 
                                                | key -> key
                             
                             match effectiveKey with
@@ -184,10 +161,9 @@ module Instrument =
                                       r.PublicKeyToken <- null
                                       r.PublicKey <- null
                             | Some key -> r.HasPublicKey <- true
-                                          r.PublicKey <- key.PublicKey
-                                          match Visitor.Token key with
-                                          | Some token -> r.PublicKeyToken <- token
-                                          | None -> ()
+                                          r.PublicKey <- key.Pair.PublicKey
+                                          r.PublicKeyToken <- key.Token 
+
                             let updated = r.ToString() 
                             if  not <| updated.Equals(original, StringComparison.Ordinal) then 
                               assemblyReferenceSubstitutions.[original] <- updated             

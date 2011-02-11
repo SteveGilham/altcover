@@ -26,6 +26,39 @@ type internal Node =
      | AfterAssembly of AssemblyDefinition
      | Finish
 
+type KeyRecord = {
+         Pair : StrongNameKeyPair;
+         Token : byte[] }
+         
+module KeyStore =
+    let private hash = new System.Security.Cryptography.SHA1CryptoServiceProvider()
+
+    let internal TokenOfArray (key:byte array) = 
+        hash.ComputeHash(key)
+            |> Array.rev
+            |> Seq.take 8
+            |> Seq.toArray    
+
+    let internal TokenOfKey (key:StrongNameKeyPair) = 
+        TokenOfArray key.PublicKey
+
+    let internal TokenAsULong (token:byte array) =
+      BitConverter.ToUInt64(token, 0)
+      
+    let internal KeyToIndex (key:StrongNameKeyPair) =
+      key
+      |> TokenOfKey
+      |> TokenAsULong
+
+    let internal ArrayToIndex (key:byte array) =
+      key
+      |> TokenOfArray
+      |> TokenAsULong
+      
+    let internal KeyToRecord (key:StrongNameKeyPair) =
+      { Pair = key
+        Token = TokenOfKey key }
+
 type Fix<'T> = delegate of 'T -> Fix<'T>
      
 module Visitor =
@@ -36,24 +69,12 @@ module Visitor =
   let mutable internal outputDirectory = ".\\__Instrumented"
   let mutable internal reportPath = ".\\coverage.xml"
   let mutable internal defaultStrongNameKey : option<StrongNameKeyPair> = None
-  let private keys = new Dictionary<StrongNameKeyPair, byte array>()
-  let private hash = new System.Security.Cryptography.SHA1CryptoServiceProvider()
+  let internal keys = new Dictionary<UInt64, KeyRecord>()
 
   let internal Add (key:StrongNameKeyPair) = 
-    let token = hash.ComputeHash(key.PublicKey)
-                |> Array.rev
-                |> Seq.take 8
-                |> Seq.toArray
-    keys.[key] <- token
+    let index = KeyStore.KeyToIndex key
+    keys.[index] <- KeyStore.KeyToRecord key
   
-  let internal Keys() = keys.Keys |> Seq.toList
-  
-  let internal Token (key:StrongNameKeyPair) =
-    match keys.TryGetValue(key) with
-    | (false, _) -> None
-    | (_, token) -> Some token
-
-
   let IsIncluded (nameProvider:Object) =
     not (NameFilters |> Seq.exists (Filter.Match nameProvider))  
     
