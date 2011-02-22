@@ -1,16 +1,13 @@
 ﻿namespace AltCover
 
 open System
-open System.Collections
-open System.Collections.Generic
 open System.IO
-open System.Reflection
 
-open AltCover.Monads
 open AltCover.Augment
 
 open Mono.Cecil
 open Mono.Cecil.Cil
+open Mono.Cecil.Mdb
 open Mono.Cecil.Pdb
          
 type AssemblyModel = {
@@ -36,7 +33,10 @@ module ProgramDatabase =
   let GetPdbWithFallback (assembly:AssemblyDefinition) =
     match GetPdbFromImage assembly with
     | None -> let fallback = Path.ChangeExtension(assembly.MainModule.FullyQualifiedName, ".pdb")
-              if File.Exists(fallback) then Some fallback else None
+              if File.Exists(fallback) 
+                then Some fallback 
+                else let fallback2 = assembly.MainModule.FullyQualifiedName + ".mdb"
+                     if File.Exists(fallback2) then Some assembly.MainModule.FullyQualifiedName else None
     | pdbpath -> pdbpath
 
 
@@ -46,6 +46,9 @@ module ProgramDatabase =
   let ReadSymbols (assembly:AssemblyDefinition) =
     GetPdbWithFallback assembly
     |> Option.iter (fun pdbpath -> 
-                        let provider = new PdbReaderProvider()
+                        let provider : ISymbolReaderProvider = if pdbpath.EndsWith(".pdb", StringComparison.OrdinalIgnoreCase) then 
+                                                                   new PdbReaderProvider() :> ISymbolReaderProvider
+                                                               else new MdbReaderProvider() :> ISymbolReaderProvider
+
                         let reader = provider.GetSymbolReader(assembly.MainModule, pdbpath)
                         assembly.MainModule.ReadSymbols(reader))
