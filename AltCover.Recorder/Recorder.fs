@@ -118,6 +118,7 @@ module Instance =
   /// <param name="moduleId">Assembly being visited</param>
   /// <param name="hitPointId">Sequence Point identifier</param>
   let Visit moduleId hitPointId =
+   if not <| String.IsNullOrEmpty(moduleId) then
     lock Visits (fun () ->
       if not (Visits.ContainsKey(moduleId))
         then Visits.[moduleId] <- new Dictionary<int, int>()
