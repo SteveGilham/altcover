@@ -53,7 +53,7 @@ module Instance =
     try
       use coverageFile = new FileStream(ReportFile, FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.SequentialScan)
       // Edit xml report to store new hits
-      let coverageDocument = XDocument.Load(new XmlTextReader(coverageFile))
+      let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
 
       let startTimeAttr = coverageDocument.Root.Attribute(XName.Get("startTime"))
       let measureTimeAttr = coverageDocument.Root.Attribute(XName.Get("measureTime"))
