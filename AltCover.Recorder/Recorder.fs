@@ -77,7 +77,14 @@ module Instance =
 
           affectedModules
           |> Seq.iter (fun affectedModule ->
-            affectedModule.Descendants(XName.Get("seqpnt"))
+          // Don't do this in one leap like -- 
+          // affectedModule.Descendants(XName.Get(seqpnt))
+          // Get the methods, then flip their
+          // contents before concatenating          
+          affectedModule.Descendants(XName.Get("method"))
+          |> Seq.map (fun (``method``:XElement) -> ``method``.Descendants(XName.Get("seqpnt"))
+                                                   |> Seq.toList |> List.rev)
+          |> Seq.concat
           |> Seq.mapi (fun counter pt -> (counter, pt))
           |> Seq.filter (fun x -> moduleHits.ContainsKey(fst x))
           |> Seq.iter (fun x ->
