@@ -59,6 +59,12 @@
   <Import Project="$(FSharpTargetsPath)" Condition="Exists('$(FSharpTargetsPath)')" />
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
+    <Compile Include="..\_Generated\AssemblyVersion.fs">
+      <Link>AssemblyVersion.fs</Link>
+    </Compile>
+    <Compile Include="..\_Generated\VisibleToTest.fs">
+      <Link>VisibleToTest.fs</Link>
+    </Compile>
     <Compile Include="ProgramDatabase.fs" />
     <Compile Include="AltCover.fs" />
     <Content Include="packages.config" />

@@ -50,3 +50,6 @@ _Intermediate/
 Backu*/
 UpgradeLo*.htm
 packages/
+_Generated/
+.fake/
+fake.bat

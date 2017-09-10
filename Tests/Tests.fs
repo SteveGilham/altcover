@@ -30,6 +30,6 @@ type ProgramDatabaseTests() = class
          let probe = Path.ChangeExtension(x, ".pdb")
          let file = new FileInfo(probe)
          let filename = file.Name
-         Assert.That(name.EndsWith("\\" + filename, StringComparison.OrdinalIgnoreCase), x + " -> " + name)
+         Assert.That(name, Does.EndWith("\\" + filename), x + " -> " + name)
     )
 end    
