@@ -53,3 +53,4 @@ packages/
 _Generated/
 .fake/
 fake.bat
+_Reports/
