@@ -4,8 +4,9 @@ open System
 open System.Collections.Generic
 open System.IO
 
-open Microsoft.Cci.Pdb
 open Mono.Cecil
+open Mono.Cecil.Cil
+open Mono.Cecil.Pdb
 
 /// <summary>
 /// Source code segment location.
@@ -19,9 +20,11 @@ type CodeSegment = {
          
 type AssemblyModel = {
          Assembly : AssemblyDefinition;
-         Symbols : Dictionary<UInt32, PdbFunction> }    
+         Symbols : Option<ISymbolReader> }    
 
 module ProgramDatabase =
+  open Mono.Cecil.Cil
+
   let (>?>) (arg : option<'TAny>) ( operation : 'TAny -> option<'TAnother> ) =
     match arg with 
     | None -> None
@@ -122,28 +125,32 @@ module ProgramDatabase =
     >?> GetPdbOffset reader
     >?> GetPdbNameFromOffset reader
 
-  let LoadSymbols path =
+  let LoadSymbols (m:ModuleDefinition) path =
     let innate = PdbPath path
     let pdbpath = match innate with
                   | Some x when File.Exists(x) -> x
                   | _ -> Path.ChangeExtension(path, ".pdb")
                   
-    let symbols = new Dictionary<UInt32, PdbFunction>()
     if File.Exists(pdbpath) then 
       use stream = File.OpenRead(pdbpath)
-      PdbFile.LoadFunctions(stream, true)
-                 |> Seq.iter (fun func -> symbols.Add(func.Token, func))
-                      
-    symbols
+      let reader = PdbReaderProvider().GetSymbolReader(m, stream)
+      let header = Array.create<byte> 24 0uy
+      let dir = ImageDebugDirectory()
+      if reader.ProcessDebugHeader(dir, header) then
+        Some reader
+      else None
+    else None                  
 
   let LoadAssembly (path:string) =
-    { Assembly = AssemblyDefinition.ReadAssembly(path);
-      Symbols = LoadSymbols path }
+    let assembly = AssemblyDefinition.ReadAssembly(path)
+    { Assembly = assembly;
+      Symbols = LoadSymbols assembly.MainModule path }
       
   let GetCodeSegmentsForMethod (assembly : AssemblyModel) (methodDef : MethodDefinition) =
     let segments = new Dictionary<UInt32, CodeSegment>()
     let token = methodDef.MetadataToken.ToUInt32()
     let symbols = assembly.Symbols
+    // TODO -- reflect over private `functions` member
     if symbols.ContainsKey(token) && symbols.[token] <> null then
       let value = symbols.[token]
       seq { for x in value.Lines do 
