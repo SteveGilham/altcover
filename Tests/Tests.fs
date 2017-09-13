@@ -20,7 +20,7 @@ type AltCoverTests() = class
     | _ -> String.Empty
 
   [<Test>]
-  member self.CheckPdbMapping() =
+  member self.ShouldGetPdbFromImage() =
     // Hack for running while instrumented
     let where = Assembly.GetExecutingAssembly().Location;
     let files = Directory.GetFiles(Path.GetDirectoryName(where) + AltCoverTests.Hack())
@@ -47,10 +47,30 @@ type AltCoverTests() = class
          Assert.That(name, Does.EndWith("\\" + filename), x + " -> " + name)
     )
 
+  [<Test>]
+  member self.ShouldGetPdbWithFallback() =
+    // Hack for running while instrumented
+    let where = Assembly.GetExecutingAssembly().Location;
+    let files = Directory.GetFiles(Path.GetDirectoryName(where) + AltCoverTests.Hack())
+    files 
+    |> Seq.filter (fun x -> x.EndsWith(".dll", StringComparison.OrdinalIgnoreCase) 
+                            || x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
+    |> Seq.iter( fun x ->
+      let def = Mono.Cecil.AssemblyDefinition.ReadAssembly(x)
+      let pdb = AltCover.ProgramDatabase.GetPdbWithFallback(def)
+      match pdb with
+      | None -> Assert.That(File.Exists(Path.ChangeExtension(x, ".pdb")), Is.Not.True, "No .pdb for " + x)
+      | Some name -> 
+         let probe = Path.ChangeExtension(x, ".pdb")
+         let file = new FileInfo(probe)
+         let filename = file.Name
+         Assert.That(name, Does.EndWith("\\" + filename), x + " -> " + name)
+    )
+
   static member TTBaseline = "<?xml version=\"1.0\" encoding=\"utf-8\"?>
 <?xml-stylesheet href=\"coverage.xsl\" type=\"text/xsl\"?>
 <coverage profilerVersion=\"0\" driverVersion=\"0\" startTime=\"\" measureTime=\"\">
-<module moduleId=\"\" name=\"TouchTest.exe\" assembly=\"TouchTest\" assemblyIdentity=\"TouchTest, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null\">
+<module moduleId=\"\" name=\"Sample1.exe\" assembly=\"Sample1\" assemblyIdentity=\"Sample1, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null\">
 <method name=\"Main\" class=\"TouchTest.Program\" metadataToken=\"0\" excluded=\"false\" instrumented=\"true\" >
 <seqpnt visitcount=\"1\" line=\"11\" column=\"9\"  endline=\"11\" endcolumn=\"10\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
 <seqpnt visitcount=\"1\" line=\"12\" column=\"13\" endline=\"12\" endcolumn=\"36\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
@@ -81,6 +101,7 @@ type AltCoverTests() = class
                     Assert.That(a1.Name, Is.EqualTo(a2.Name))
                     match a1.Name.ToString() with
                     | "moduleId"
+                    | "metadataToken"
                     | "startTime"
                     | "measureTime" -> ()
                     | "document" -> Assert.That(a1.Value, Does.EndWith(a2.Value), 
@@ -91,10 +112,9 @@ type AltCoverTests() = class
                 )
 
             AltCoverTests.RecursiveValidate (r.Elements()) (e.Elements()) (depth+1) zero)
-  
 
-  [<Test; Ignore("awaits refactoring")>]
-  member self.ValidateTouchTestReportOnly() =
+  [<Test>]
+  member self.ShouldGenerateExpectedXmlReport() =
     let visitor, document = Report.ReportGenerator()
     // Hack for running while instrumented
     let where = Assembly.GetExecutingAssembly().Location;

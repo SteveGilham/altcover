@@ -18,29 +18,16 @@ type AssemblyModel = {
          Symbols : ISymbolReader }    
 
 module ProgramDatabase =
-  // Violate Cecil encapsulation to get the PDB path
+  // We no longer have to violate Cecil encapsulation to get the PDB path!
   let GetPdbFromImage (assembly:AssemblyDefinition) =
-    let m = assembly.MainModule
-    let imageField = typeof<ModuleDefinition>.GetField("Image", BindingFlags.Instance ||| BindingFlags.NonPublic)
-    let image = imageField.GetValue(m)
-    let getDebugHeaderInfo = image.GetType().GetMethod("GetDebugHeader")
-    let ba = [| 0y |]
-    let oa = [| ba :> Object |]
-    try 
-        getDebugHeaderInfo.Invoke(image, oa) |> ignore
-        let SizeOfDebugInfo = 0x18
-        let header = oa.[0] :?> byte array
-        if null = header then None
-        else
-          let name = header
-                     |> Seq.skip SizeOfDebugInfo
-                     |> Seq.takeWhile (fun x -> x <> byte 0)
-                     |> Seq.toArray
-          Option.select (fun (s:String) -> s.Length > 0) <| System.Text.Encoding.UTF8.GetString(name)
-    with 
-        | :? TargetInvocationException -> None
-        | :? InvalidCastException -> None
-
+    let mutable header = [| 0uy |]
+    assembly.MainModule.GetDebugHeader(&header) |> ignore
+    let name = header // header is followed by UTF-8 nul terminated string
+                    |> Seq.skip 0x18  // size of the debug header
+                    |> Seq.takeWhile (fun x -> x <> byte 0)
+                    |> Seq.toArray
+    System.Text.Encoding.UTF8.GetString(name)
+    |> Option.select (fun (s:String) -> s.Length > 0)
     |> Option.bind (Option.select File.Exists)
     
   let GetPdbWithFallback (assembly:AssemblyDefinition) =

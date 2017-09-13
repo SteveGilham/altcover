@@ -1,5 +1,8 @@
 ﻿using System;
 
+// test program
+// for report generation
+
 namespace TouchTest
 {
     class Program
