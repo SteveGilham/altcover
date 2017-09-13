@@ -1,8 +1,10 @@
 ﻿namespace AltCover
 
 open System
+open System.Collections
 open System.Collections.Generic
 open System.IO
+open System.Reflection
 
 open Mono.Cecil
 open Mono.Cecil.Cil
@@ -20,7 +22,7 @@ type CodeSegment = {
          
 type AssemblyModel = {
          Assembly : AssemblyDefinition;
-         Symbols : Option<ISymbolReader> }    
+         Symbols : IDictionary }    
 
 module ProgramDatabase =
   open Mono.Cecil.Cil
@@ -137,9 +139,12 @@ module ProgramDatabase =
       let header = Array.create<byte> 24 0uy
       let dir = ImageDebugDirectory()
       if reader.ProcessDebugHeader(dir, header) then
-        Some reader
-      else None
-    else None                  
+            // reflective hack.  Don't worry, a proper refactoring 
+            // is ahead of us, but that's several replays down the line
+            let field = typeof<PdbReader>.GetField("functions", BindingFlags.Instance ||| BindingFlags.NonPublic)
+            field.GetValue(reader) :?> IDictionary
+      else Hashtable() :> IDictionary
+    else Hashtable() :> IDictionary                  
 
   let LoadAssembly (path:string) =
     let assembly = AssemblyDefinition.ReadAssembly(path)
@@ -149,21 +154,41 @@ module ProgramDatabase =
   let GetCodeSegmentsForMethod (assembly : AssemblyModel) (methodDef : MethodDefinition) =
     let segments = new Dictionary<UInt32, CodeSegment>()
     let token = methodDef.MetadataToken.ToUInt32()
-    let symbols = assembly.Symbols
-    // TODO -- reflect over private `functions` member
-    if symbols.ContainsKey(token) && symbols.[token] <> null then
-      let value = symbols.[token]
-      seq { for x in value.Lines do 
-              for y in x.Lines do
-                if y.lineBegin <> 0xfeefeeu then
-                   yield (x.FileName, y) }
+    // reflective hack.  Don't worry, a proper refactoring 
+    // is ahead of us, but that's several replays down the line
+    let value = assembly.Symbols.[token]
+    if value <> null then
+      let lines' = value.GetType().GetField("lines", BindingFlags.Instance ||| BindingFlags.NonPublic ||| BindingFlags.Public)
+      let lines = lines'.GetValue(value) :?> obj[]
+      seq { for x in lines do 
+              let lines'' = x.GetType().GetField("lines", BindingFlags.Instance ||| BindingFlags.NonPublic ||| BindingFlags.Public)
+              let xlines = lines''.GetValue(x) :?> obj[]
+              for y in xlines do
+                let lineBegin' = y.GetType().GetField("lineBegin", BindingFlags.Instance ||| BindingFlags.NonPublic ||| BindingFlags.Public)
+                let yLineBegin = lineBegin'.GetValue(y) :?> UInt32
+                if yLineBegin <> 0xfeefeeu then
+                    let file' = x.GetType().GetField("file", BindingFlags.Instance ||| BindingFlags.NonPublic ||| BindingFlags.Public)
+                    let file = file'.GetValue(x)
+                    let name' = file.GetType().GetField("name", BindingFlags.Instance ||| BindingFlags.NonPublic ||| BindingFlags.Public)
+                    yield (name'.GetValue(file) :?> string, y) }
       |> Seq.iter (fun pair -> 
          let z = snd pair
-         segments.Add( z.offset, 
+         let offset' = z.GetType().GetField("offset", BindingFlags.Instance ||| BindingFlags.NonPublic ||| BindingFlags.Public)
+         let offset = offset'.GetValue(z) :?> UInt32
+         let lineBegin' = z.GetType().GetField("lineBegin", BindingFlags.Instance ||| BindingFlags.NonPublic ||| BindingFlags.Public)
+         let lineBegin = lineBegin'.GetValue(z) :?> UInt32
+         let lineEnd' = z.GetType().GetField("lineEnd", BindingFlags.Instance ||| BindingFlags.NonPublic ||| BindingFlags.Public)
+         let lineEnd = lineEnd'.GetValue(z) :?> UInt32
+         let colBegin' = z.GetType().GetField("colBegin", BindingFlags.Instance ||| BindingFlags.NonPublic ||| BindingFlags.Public)
+         let colBegin = colBegin'.GetValue(z) :?> UInt16
+         let colEnd' = z.GetType().GetField("colEnd", BindingFlags.Instance ||| BindingFlags.NonPublic ||| BindingFlags.Public)
+         let colEnd = colEnd'.GetValue(z) :?> UInt16
+
+         segments.Add( offset, 
             {         
-            Line = z.lineBegin;
-            Column = z.colBegin;
-            EndLine = z.lineEnd;
-            EndColumn = z.colEnd;
+            Line = lineBegin;
+            Column = colBegin;
+            EndLine = lineEnd;
+            EndColumn = colEnd;
             Document = fst pair }))
     segments

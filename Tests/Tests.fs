@@ -40,7 +40,7 @@ type ProgramDatabaseTests() = class
     let dir = match AltCover.ProgramDatabase.PdbPath(where) with
               | None -> "\\.."
               | _ -> String.Empty
-    let path = Path.Combine(Directory.GetCurrentDirectory() + dir, "BaseTests.dll")
+    let path = Path.Combine(Path.GetDirectoryName(where) + dir, "Sample1.exe")
     let symbols = AltCover.ProgramDatabase.LoadAssembly(path)
     Assert.That(symbols.Symbols, Is.Not.Empty, "should be some symbols")
     

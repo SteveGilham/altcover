@@ -95,9 +95,19 @@
     <Reference Include="System.Numerics" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\AltCover.Recorder\AltCover.Recorder.fsproj">
+      <Name>AltCover.Recorder</Name>
+      <Project>{02192b55-3a50-4ad2-b519-560f30c14dd4}</Project>
+      <Private>True</Private>
+    </ProjectReference>
     <ProjectReference Include="..\AltCover\AltCover.fsproj">
       <Name>AltCover</Name>
       <Project>{b766260f-6551-4ca8-b2cb-25d2d5092801}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\Sample1\Sample1.csproj">
+      <Name>Sample1</Name>
+      <Project>{25f279c3-2032-4ae1-aceb-eabe5efc739b}</Project>
       <Private>True</Private>
     </ProjectReference>
   </ItemGroup>

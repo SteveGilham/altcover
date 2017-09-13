@@ -54,3 +54,4 @@ _Generated/
 .fake/
 fake.bat
 _Reports/
+.vs/
