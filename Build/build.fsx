@@ -62,7 +62,7 @@ Target "BuildDebug" (fun _ ->
 )
 
 Target "TestCover" (fun _ ->
-    ensureDirectory "./_Reports"
+    ensureDirectory "./_Reports/_UnitTest"
     OpenCover (fun p -> { p with ExePath = findToolInSubPath "OpenCover.Console.exe" "."
                                  WorkingDir = "."
                                  TestRunnerExePath = findToolInSubPath "nunit3-console.exe" "."
@@ -70,9 +70,9 @@ Target "TestCover" (fun _ ->
                                  MergeByHash = true
                                  Register = RegisterType.RegisterUser
                                  Output = "_Reports/OpenCoverReport.xml" }) 
-        "_Binaries/AltCover.Tests/Debug+AnyCPU/AltCover.Tests.dll --result=./_Reports/NUnit3Report.xml"
-    ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "Reportgenerator.exe" "."
-                                       TargetDir = "_Reports"})
+        "_Binaries/AltCover.Tests/Debug+AnyCPU/AltCover.Tests.dll --result=./_Reports/NUnit3ReportOpenCovered.xml"
+    ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
+                                       TargetDir = "_Reports/_UnitTest"})
         ["./_Reports/OpenCoverReport.xml"]
 )             
 
@@ -82,7 +82,63 @@ Target "Test" (fun _ ->
     |> NUnit3 (fun p -> { p with ToolPath = findToolInSubPath "nunit3-console.exe" "."
                                  WorkingDir = "."
                                  ResultSpecs = ["./_Reports/NUnit3Report.xml"] })
-)             
+)      
+
+Target "SelfTest" (fun _ ->
+    let targetDir = "_Binaries/AltCover.Tests/Debug+AnyCPU"
+    let reports = FullName "./_Reports"
+    let altReport = Path.Combine(reports, "AltCoverage.xml")
+
+    ensureDirectory "./_Reports/_Instrumented"
+    ensureDirectory <| Path.Combine(targetDir, "__Instrumented")
+
+    // Self-instrument under OpenCover
+    OpenCover (fun p -> { p with ExePath = findToolInSubPath "OpenCover.Console.exe" "."
+                                 WorkingDir = targetDir
+                                 TestRunnerExePath = findToolInSubPath "AltCover.exe" targetDir
+                                 Filter = "+[AltCove*]*"
+                                 MergeByHash = true
+                                 Register = RegisterType.RegisterUser
+                                 Output = Path.Combine(reports, "OpenCoverInstrumentationReport.xml") }) 
+        ("/sn=_Tools\Infrastructure.snk -f=Mono. -f=.Recorder -f=Sample. -f=nunit. -x=" + altReport)
+    ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
+                                       TargetDir = "_Reports/_Instrumented"})
+        ["./_Reports/OpenCoverInstrumentationReport.xml"]
+
+    // Re-instrument everything
+    ensureDirectory "./_Reports/_AltReport"
+    let altReport2 = Path.Combine(reports, "AltCoverage2.xml")
+    let result = ExecProcess (fun info -> info.FileName <- "_Binaries/AltCover.Tests/Debug+AnyCPU/__Instrumented/AltCover.exe"
+                                          info.WorkingDirectory <- "_Binaries/AltCover.Tests/Debug+AnyCPU"
+                                          info.Arguments <- ("/sn=_Tools\Infrastructure.snk -f=Mono. -f=.Recorder -f=Sample. -f=nunit. -x=" + altReport2)) (TimeSpan.FromMinutes 5.0)
+    ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
+                                       TargetDir = "_Reports/_AltReport"})
+        [altReport]
+
+    if result <> 0 then failwithf "Re-instrument returned with a non-zero exit code"    
+
+    // Unit test instrumented code
+    ensureDirectory "./_Reports"
+    !! (@"_Binaries\*Tests\Debug+AnyCPU\__Instrumented\*.Tests.dll")
+    |> NUnit3 (fun p -> { p with ToolPath = findToolInSubPath "nunit3-console.exe" "."
+                                 WorkingDir = "."
+                                 ResultSpecs = ["./_Reports/NUnit3ReportInstrumented.xml"] })
+
+    // Unit-test instrumented code under OpenCover
+    ensureDirectory "./_Reports/_UnitTestInstrumented"
+    OpenCover (fun p -> { p with ExePath = findToolInSubPath "OpenCover.Console.exe" "."
+                                 WorkingDir = "."
+                                 TestRunnerExePath = findToolInSubPath "nunit3-console.exe" "."
+                                 Filter = "+[AltCove*]*"
+                                 MergeByHash = true
+                                 Register = RegisterType.RegisterUser
+                                 Output = "_Reports/OpenCoverReportAltCovered.xml" }) 
+        "_Binaries/AltCover.Tests/Debug+AnyCPU/__Instrumented/AltCover.Tests.dll --result=./_Reports/NUnit3ReportAltCovered.xml"
+    ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
+                                       TargetDir = "_Reports/_UnitTestInstrumented"})
+        ["./_Reports/OpenCoverReportAltCovered.xml"]
+)
+
 
 // This defaults to Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\FxCopCmd.exe
 Target "FxCop" (fun _ ->
@@ -106,9 +162,8 @@ Target "FxCop" (fun _ ->
 
 "BuildDebug"
 ==> "Test"
-
-"BuildDebug"
 ==> "TestCover"
+==> "SelfTest"
 
 "BuildDebug"
 ==> "FxCop"
