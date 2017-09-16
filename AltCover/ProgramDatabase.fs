@@ -21,14 +21,17 @@ module ProgramDatabase =
   // We no longer have to violate Cecil encapsulation to get the PDB path!
   let GetPdbFromImage (assembly:AssemblyDefinition) =
     let mutable header = [| 0uy |]
-    assembly.MainModule.GetDebugHeader(&header) |> ignore
-    let name = header // header is followed by UTF-8 nul terminated string
-                    |> Seq.skip 0x18  // size of the debug header
-                    |> Seq.takeWhile (fun x -> x <> byte 0)
-                    |> Seq.toArray
-    System.Text.Encoding.UTF8.GetString(name)
-    |> Option.select (fun (s:String) -> s.Length > 0)
-    |> Option.bind (Option.select File.Exists)
+    if assembly.MainModule.HasDebugHeader then
+      assembly.MainModule.GetDebugHeader(&header) |> ignore
+      let name = header // header is followed by UTF-8 nul terminated string
+                      |> Seq.skip 0x18  // size of the debug header
+                      |> Seq.takeWhile (fun x -> x <> byte 0)
+                      |> Seq.toArray
+      System.Text.Encoding.UTF8.GetString(name)
+      |> Option.select (fun (s:String) -> s.Length > 0)
+      |> Option.bind (Option.select File.Exists)
+    else
+      None
     
   let GetPdbWithFallback (assembly:AssemblyDefinition) =
     match GetPdbFromImage assembly with
