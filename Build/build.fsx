@@ -88,48 +88,49 @@ Target "SelfTest" (fun _ ->
     let targetDir = "_Binaries/AltCover.Tests/Debug+AnyCPU"
     let reports = FullName "./_Reports"
     let altReport = Path.Combine(reports, "AltCoverage.xml")
+    let keyfile = FullName "_Tools\Infrastructure.snk"
 
     ensureDirectory "./_Reports/_Instrumented"
     ensureDirectory <| Path.Combine(targetDir, "__Instrumented")
 
-    // Self-instrument under OpenCover
+    printfn "Self-instrument under OpenCover"
     OpenCover (fun p -> { p with ExePath = findToolInSubPath "OpenCover.Console.exe" "."
                                  WorkingDir = targetDir
                                  TestRunnerExePath = findToolInSubPath "AltCover.exe" targetDir
-                                 Filter = "+[AltCove*]*"
+                                 Filter = "+[AltCove*]* -[*]Microsoft.* -[*]System.*"
                                  MergeByHash = true
                                  Register = RegisterType.RegisterUser
                                  Output = Path.Combine(reports, "OpenCoverInstrumentationReport.xml") }) 
-        ("/sn=_Tools\Infrastructure.snk -f=Mono. -f=.Recorder -f=Sample. -f=nunit. -x=" + altReport)
+        ("/sn=" + keyfile + " -f=Mono. -f=.Recorder -f=Sample. -f=nunit. -x=" + altReport)
     ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
                                        TargetDir = "_Reports/_Instrumented"})
         ["./_Reports/OpenCoverInstrumentationReport.xml"]
 
-    // Re-instrument everything
+    printfn "Re-instrument everything"
     ensureDirectory "./_Reports/_AltReport"
     let altReport2 = Path.Combine(reports, "AltCoverage2.xml")
     let result = ExecProcess (fun info -> info.FileName <- "_Binaries/AltCover.Tests/Debug+AnyCPU/__Instrumented/AltCover.exe"
                                           info.WorkingDirectory <- "_Binaries/AltCover.Tests/Debug+AnyCPU"
-                                          info.Arguments <- ("/sn=_Tools\Infrastructure.snk -f=Mono. -f=.Recorder -f=Sample. -f=nunit. -x=" + altReport2)) (TimeSpan.FromMinutes 5.0)
+                                          info.Arguments <- ("/sn=" + keyfile + " -f=Mono. -f=.Recorder -f=Sample. -f=nunit.  /o=.\__ReInstrument -x=" + altReport2)) (TimeSpan.FromMinutes 5.0)
     ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
                                        TargetDir = "_Reports/_AltReport"})
         [altReport]
 
     if result <> 0 then failwithf "Re-instrument returned with a non-zero exit code"    
 
-    // Unit test instrumented code
+    printfn "Unit test instrumented code"
     ensureDirectory "./_Reports"
     !! (@"_Binaries\*Tests\Debug+AnyCPU\__Instrumented\*.Tests.dll")
     |> NUnit3 (fun p -> { p with ToolPath = findToolInSubPath "nunit3-console.exe" "."
                                  WorkingDir = "."
                                  ResultSpecs = ["./_Reports/NUnit3ReportInstrumented.xml"] })
 
-    // Unit-test instrumented code under OpenCover
+    printfn "Unit-test instrumented code under OpenCover"
     ensureDirectory "./_Reports/_UnitTestInstrumented"
     OpenCover (fun p -> { p with ExePath = findToolInSubPath "OpenCover.Console.exe" "."
                                  WorkingDir = "."
                                  TestRunnerExePath = findToolInSubPath "nunit3-console.exe" "."
-                                 Filter = "+[AltCove*]*"
+                                 Filter = "+[AltCove*]* -[*]Microsoft.* -[*]System.*"
                                  MergeByHash = true
                                  Register = RegisterType.RegisterUser
                                  Output = "_Reports/OpenCoverReportAltCovered.xml" }) 
@@ -138,7 +139,6 @@ Target "SelfTest" (fun _ ->
                                        TargetDir = "_Reports/_UnitTestInstrumented"})
         ["./_Reports/OpenCoverReportAltCovered.xml"]
 )
-
 
 // This defaults to Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\FxCopCmd.exe
 Target "FxCop" (fun _ ->
