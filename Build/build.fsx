@@ -1,4 +1,7 @@
 #r @"FakeLib.dll" // include Fake lib
+#I @"../packages/FSharpLint.Fake.0.8.0/tools"
+#r @"../packages/FSharpLint.Fake.0.8.0/tools/FSharpLint.Fake.dll"
+
 open System
 open System.IO
 
@@ -7,6 +10,12 @@ open Fake.AssemblyInfoFile
 open Fake.Testing
 open Fake.OpenCoverHelper
 open Fake.ReportGeneratorHelper
+open FSharpLint.Fake
+
+Target "Lint" (fun _ ->
+    !! "**/*.fsproj"
+        |> Seq.map (fun x -> printfn "%A" x; x)
+        |> Seq.iter (FSharpLint (fun options -> { options with FailBuildIfAnyWarnings = true }) ))
 
 // The clean target cleans the build and deploy folders
 Target "Clean" (fun _ ->

@@ -46,8 +46,8 @@ module ProgramDatabase =
     GetPdbWithFallback assembly
     |> Option.iter (fun pdbpath ->
                         let provider : ISymbolReaderProvider = if pdbpath.EndsWith(".pdb", StringComparison.OrdinalIgnoreCase) then
-                                                                   new PdbReaderProvider() :> ISymbolReaderProvider
-                                                               else new MdbReaderProvider() :> ISymbolReaderProvider
+                                                                   PdbReaderProvider() :> ISymbolReaderProvider
+                                                               else MdbReaderProvider() :> ISymbolReaderProvider
 
                         let reader = provider.GetSymbolReader(assembly.MainModule, pdbpath)
                         assembly.MainModule.ReadSymbols(reader))

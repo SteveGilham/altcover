@@ -24,7 +24,7 @@ module Main =
 
   let Launch cmd args toDirectory =
     Directory.SetCurrentDirectory(toDirectory)
-    let psi = new ProcessStartInfo(cmd,args)
+    let psi = ProcessStartInfo(cmd,args)
     psi.WorkingDirectory <- toDirectory
     psi.CreateNoWindow <- true
     psi.UseShellExecute <- false
@@ -56,7 +56,7 @@ module Main =
 
   [<EntryPoint>]
   let Main arguments =
-    let options = new OptionSet()
+    let options = OptionSet()
                     |> !+ (
                         "i|inputDirectory=",
                         "Optional: The folder containing assemblies to instrument (default: current directory)",
@@ -72,7 +72,7 @@ module Main =
                             if not (String.IsNullOrEmpty(x)) && File.Exists(x) then
                               try
                                   use stream = new System.IO.FileStream(x, System.IO.FileMode.Open, System.IO.FileAccess.Read)
-                                  let pair = new StrongNameKeyPair(stream)
+                                  let pair = StrongNameKeyPair(stream)
                                   Visitor.Add pair
                               with
                               | :? IOException as io -> Console.WriteLine(io.Message)
@@ -85,7 +85,7 @@ module Main =
                             if not (String.IsNullOrEmpty(x)) && File.Exists(x) then
                               try
                                   use stream = new System.IO.FileStream(x, System.IO.FileMode.Open, System.IO.FileAccess.Read)
-                                  let pair = new StrongNameKeyPair(stream)
+                                  let pair = StrongNameKeyPair(stream)
                                   Visitor.defaultStrongNameKey <- Some (pair)
                                   Visitor.Add pair
                               with
@@ -119,11 +119,11 @@ module Main =
                     |> !+ (
                         "?|help|h",
                          "Prints out the options.",
-                          (fun x -> help <- x <> null))
+                          (fun x -> help <- not (isNull x)))
                     |> !+ (
                         "<>",
                         String.Empty,
-                          (fun x -> ()))
+                          ignore)
     let rest = try
                     options.Parse(arguments)
                with
@@ -143,8 +143,8 @@ module Main =
     if not (Directory.Exists(toDirectory)) then
       System.Console.WriteLine("Creating folder " + toDirectory);
       Directory.CreateDirectory(toDirectory) |> ignore
-    let fromInfo = new DirectoryInfo(fromDirectory)
-    let toInfo = new DirectoryInfo(toDirectory)
+    let fromInfo = DirectoryInfo(fromDirectory)
+    let toInfo = DirectoryInfo(toDirectory)
     if fromInfo = toInfo then
       Console.WriteLine("From and to directories are identical")
 

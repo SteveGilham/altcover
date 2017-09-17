@@ -23,5 +23,5 @@ module Augment =
         else None
 
       static member nullable (x : 'a when 'a : null) : option<'a> =
-        if x <> null then Some x
-        else None
+        if isNull x then None
+        else Some x

@@ -103,20 +103,20 @@ module Visitor =
                      |> Seq.map (fun x -> let included = IsIncluded x
                                           if included then ProgramDatabase.ReadSymbols(x)
                                           Assembly(x, included))
-                     |> Seq.map (fun x -> BuildSequence x)
+                     |> Seq.map BuildSequence
                      |> Seq.concat
 
     | Assembly (a, included) ->  a.Modules
                                  |> Seq.cast
                                  |> Seq.map (fun x -> Module (x, included))
-                                 |> Seq.map (fun x -> BuildSequence x)
+                                 |> Seq.map BuildSequence
                                  |> Seq.concat
 
     | Module (x, included) ->    PointNumber <- 0
                                  x.GetAllTypes()
                                  |> Seq.cast
                                  |> Seq.map (fun t -> Type (t, included && IsIncluded t))
-                                 |> Seq.map (fun x -> BuildSequence x)
+                                 |> Seq.map BuildSequence
                                  |> Seq.concat
 
     | Type (t, included) ->    t.Methods
@@ -125,7 +125,7 @@ module Visitor =
                                                                             && not m.IsRuntime
                                                                             && not m.IsPInvokeImpl)
                                |> Seq.map (fun m -> Method (m, included && IsIncluded m))
-                               |> Seq.map (fun x -> BuildSequence x)
+                               |> Seq.map BuildSequence
                                |> Seq.concat
 
     | Method (m, _) ->
