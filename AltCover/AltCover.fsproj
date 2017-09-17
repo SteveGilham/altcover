@@ -73,6 +73,9 @@
     <Compile Include="Instrument.fs" />
     <Compile Include="AltCover.fs" />
     <Content Include="packages.config" />
+    <EmbeddedResource Include="..\_Tools\Recorder.snk">
+      <Link>Recorder.snk</Link>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <Reference Include="FSharp.Core, Version=$(TargetFSharpCoreVersion), Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">

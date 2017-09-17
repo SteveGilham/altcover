@@ -77,7 +77,11 @@ module Instrument =
       let recorder = typeof<AltCover.Recorder.Tracer>
       let definition = AssemblyDefinition.ReadAssembly(recorder.Assembly.Location)
       definition.Name.Name <- definition.Name.Name + ".g"
-      UpdateStrongNaming definition.Name Visitor.defaultStrongNameKey
+      use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Recorder.snk")
+      use buffer = new MemoryStream()
+      stream.CopyTo(buffer)
+      let pair = StrongNameKeyPair(buffer.ToArray())
+      UpdateStrongNaming definition.Name (Some pair)
                     
       // set the coverage file path  
       let other = RecorderInstanceType()
