@@ -198,6 +198,7 @@ Target "FxCop" (fun _ ->
 =?> ("BuildDebug", (not(File.Exists("./_Generated/AssemblyVersion.fs"))))
 
 "BuildDebug"
+==> "Lint"
 ==> "Test"
 ==> "TestCover"
 ==> "SelfTest"

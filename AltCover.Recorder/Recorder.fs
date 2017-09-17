@@ -82,11 +82,10 @@ module Instance =
           // Get the methods, then flip their
           // contents before concatenating          
           affectedModule.Descendants(XName.Get("method"))
-          |> Seq.map (fun (``method``:XElement) -> ``method``.Descendants(XName.Get("seqpnt"))
-                                                   |> Seq.toList |> List.rev)
-          |> Seq.concat
+          |> Seq.collect (fun (``method``:XElement) -> ``method``.Descendants(XName.Get("seqpnt"))
+                                                       |> Seq.toList |> List.rev)
           |> Seq.mapi (fun counter pt -> (counter, pt))
-          |> Seq.filter (fun x -> moduleHits.ContainsKey(fst x))
+          |> Seq.filter (fst >> moduleHits.ContainsKey)
           |> Seq.iter (fun x ->
               let pt = snd x
               let counter = fst x
@@ -102,7 +101,7 @@ module Instance =
       coverageDocument.WriteTo(writer)
       writer.Flush()
     finally
-        let delta = new TimeSpan(DateTime.Now.Ticks - flushStart.Ticks)
+        let delta = TimeSpan(DateTime.Now.Ticks - flushStart.Ticks)
         mutex.ReleaseMutex()
         Console.WriteLine("Coverage statistics flushing took {0:N} seconds", delta.TotalSeconds)
     

@@ -98,37 +98,30 @@ module Visitor =
     let Nest node =
       Seq.concat [ ToSeq node ; Deeper node ; After node ]
 
+    // The pattern here is map x |> map y |> map x |> concat => collect (x >> y >> z) 
     match node with
     | Start paths -> paths
                      |> Seq.filter IsIncluded
-                     |> Seq.map (fun x -> AssemblyDefinition.ReadAssembly(x))
-                     |> Seq.map (fun x -> let included = IsIncluded x
-                                          if included then ProgramDatabase.ReadSymbols(x)
-                                          Assembly(x, included))
-                     |> Seq.map BuildSequence
-                     |> Seq.concat
+                     |> Seq.collect ((fun x -> AssemblyDefinition.ReadAssembly(x)) >>
+                                     (fun x -> let included = IsIncluded x
+                                               if included then ProgramDatabase.ReadSymbols(x)
+                                               Assembly(x, included)) >> BuildSequence)
 
     | Assembly (a, included) ->  a.Modules
                                  |> Seq.cast
-                                 |> Seq.map (fun x -> Module (x, included))
-                                 |> Seq.map BuildSequence
-                                 |> Seq.concat
+                                 |> Seq.collect ((fun x -> Module (x, included)) >> BuildSequence)
 
     | Module (x, included) ->    PointNumber <- 0
                                  x.GetAllTypes()
                                  |> Seq.cast
-                                 |> Seq.map (fun t -> Type (t, included && IsIncluded t))
-                                 |> Seq.map BuildSequence
-                                 |> Seq.concat
+                                 |> Seq.collect ((fun t -> Type (t, included && IsIncluded t)) >> BuildSequence)
 
     | Type (t, included) ->    t.Methods
                                |> Seq.cast
                                |> Seq.filter (fun (m : MethodDefinition) -> not m.IsAbstract
                                                                             && not m.IsRuntime
                                                                             && not m.IsPInvokeImpl)
-                               |> Seq.map (fun m -> Method (m, included && IsIncluded m))
-                               |> Seq.map BuildSequence
-                               |> Seq.concat
+                               |> Seq.collect ((fun m -> Method (m, included && IsIncluded m)) >> BuildSequence)
 
     | Method (m, _) ->
             let segments = new Dictionary<int, SequencePoint>()

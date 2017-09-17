@@ -42,7 +42,7 @@ type AltCoverTests() = class
       | None -> Assert.Fail("No .pdb for " + x)
       | Some name ->
          let probe = Path.ChangeExtension(x, ".pdb")
-         let file = new FileInfo(probe)
+         let file = FileInfo(probe)
          let filename = file.Name
          Assert.That(name, Does.EndWith("\\" + filename), x + " -> " + name)
     )
@@ -62,7 +62,7 @@ type AltCoverTests() = class
       | None -> Assert.That(File.Exists(Path.ChangeExtension(x, ".pdb")), Is.Not.True, "No .pdb for " + x)
       | Some name ->
          let probe = Path.ChangeExtension(x, ".pdb")
-         let file = new FileInfo(probe)
+         let file = FileInfo(probe)
          let filename = file.Name
          Assert.That(name, Does.EndWith("\\" + filename), x + " -> " + name)
     )
