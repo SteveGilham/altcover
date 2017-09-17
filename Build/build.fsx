@@ -66,7 +66,7 @@ Target "TestCover" (fun _ ->
     OpenCover (fun p -> { p with ExePath = findToolInSubPath "OpenCover.Console.exe" "."
                                  WorkingDir = "."
                                  TestRunnerExePath = findToolInSubPath "nunit3-console.exe" "."
-                                 Filter = "+[AltCove*]*"
+                                 Filter = "+[AltCove*]* -[*]Microsoft.* -[*]System.*"
                                  MergeByHash = true
                                  Register = RegisterType.RegisterUser
                                  Output = "_Reports/OpenCoverReport.xml" }) 
@@ -101,7 +101,7 @@ Target "SelfTest" (fun _ ->
                                  MergeByHash = true
                                  Register = RegisterType.RegisterUser
                                  Output = Path.Combine(reports, "OpenCoverInstrumentationReport.xml") }) 
-        ("/sn=" + keyfile + " -f=Mono. -f=.Recorder -f=Sample. -f=nunit. -x=" + altReport)
+        ("/sn=" + keyfile + " -f=Mono. -f=.Recorder -f=Sample. -f=nunit. -t=System. -x=" + altReport)
     ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
                                        TargetDir = "_Reports/_Instrumented"})
         ["./_Reports/OpenCoverInstrumentationReport.xml"]
@@ -111,7 +111,7 @@ Target "SelfTest" (fun _ ->
     let altReport2 = Path.Combine(reports, "AltCoverage2.xml")
     let result = ExecProcess (fun info -> info.FileName <- "_Binaries/AltCover.Tests/Debug+AnyCPU/__Instrumented/AltCover.exe"
                                           info.WorkingDirectory <- "_Binaries/AltCover.Tests/Debug+AnyCPU"
-                                          info.Arguments <- ("/sn=" + keyfile + " -f=Mono. -f=.Recorder -f=Sample. -f=nunit.  /o=.\__ReInstrument -x=" + altReport2)) (TimeSpan.FromMinutes 5.0)
+                                          info.Arguments <- ("/sn=" + keyfile + " -f=Mono. -f=.Recorder -f=Sample. -f=nunit. -t=System. /o=.\__ReInstrument -x=" + altReport2)) (TimeSpan.FromMinutes 5.0)
     ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
                                        TargetDir = "_Reports/_AltReport"})
         [altReport]
@@ -145,7 +145,7 @@ Target "SimpleInstrumentation" (fun _ ->
     let simpleReport = Path.Combine(FullName "./_Reports", "SimpleCoverage.xml")
     let result = ExecProcess (fun info -> info.FileName <- "_Binaries/AltCover/Debug+AnyCPU/AltCover.exe"
                                           info.WorkingDirectory <- "_Binaries/Sample1/Debug+AnyCPU"
-                                          info.Arguments <- ("-x=" + simpleReport)) (TimeSpan.FromMinutes 5.0)
+                                          info.Arguments <- ("-t=System. -x=" + simpleReport)) (TimeSpan.FromMinutes 5.0)
     if result <> 0 then failwith "Simple instrumentation failed"
     let result2 = ExecProcess (fun info -> info.FileName <- "_Binaries/Sample1/Debug+AnyCPU/__Instrumented/Sample1.exe"
                                            info.WorkingDirectory <- "_Binaries/Sample1/Debug+AnyCPU/__Instrumented"
