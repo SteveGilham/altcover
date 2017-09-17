@@ -78,7 +78,7 @@ module Instance =
           affectedModules
           |> Seq.iter (fun affectedModule ->
           // Don't do this in one leap like -- 
-          // affectedModule.Descendants(XName.Get(seqpnt))
+          // affectedModule.Descendants(XName.Get("seqpnt"))
           // Get the methods, then flip their
           // contents before concatenating          
           affectedModule.Descendants(XName.Get("method"))
