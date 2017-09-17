@@ -71,6 +71,8 @@ module Visitor =
   let mutable internal defaultStrongNameKey : option<StrongNameKeyPair> = None
   let internal keys = new Dictionary<UInt64, KeyRecord>()
 
+  let inline isNotNull x = not (isNull x)
+
   let internal Add (key:StrongNameKeyPair) =
     let index = KeyStore.KeyToIndex key
     keys.[index] <- KeyStore.KeyToRecord key
@@ -132,7 +134,7 @@ module Visitor =
             let segments = new Dictionary<int, SequencePoint>()
             let instructions = m.Body.Instructions
                                |> Seq.cast
-                               |> Seq.filter (fun (x:Instruction) -> x.SequencePoint <> null && x.SequencePoint.StartLine <> 0xfeefee)
+                               |> Seq.filter (fun (x:Instruction) -> isNotNull x.SequencePoint && x.SequencePoint.StartLine <> 0xfeefee)
                                |> Seq.toList
 
             let number = instructions.Count();

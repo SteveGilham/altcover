@@ -7,13 +7,13 @@ module Report =
 
   let internal ReportGenerator () =
     let initialState = List.empty<XElement>
-    let data = new XProcessingInstruction(
+    let data = XProcessingInstruction(
                    "xml-stylesheet",
                    "type='text/xsl' href='coverage.xsl'") :> Object
 
     // The internal state of the document is mutated by the
     // operation of the visitor.  Everything else should now be pure
-    let document = new XDocument(new XDeclaration("1.0", "utf-8", "yes"), [|data|])
+    let document = XDocument(XDeclaration("1.0", "utf-8", "yes"), [|data|])
 
     let X name =
       XName.Get(name)

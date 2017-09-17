@@ -14,7 +14,6 @@ open FSharpLint.Fake
 
 Target "Lint" (fun _ ->
     !! "**/*.fsproj"
-        |> Seq.map (fun x -> printfn "%A" x; x)
         |> Seq.iter (FSharpLint (fun options -> { options with FailBuildIfAnyWarnings = true }) ))
 
 // The clean target cleans the build and deploy folders

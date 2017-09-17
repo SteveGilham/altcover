@@ -7,6 +7,8 @@ open Mono.Cecil
 
 module Naming =
 
+    let inline isNotNull x = not (isNull x)
+
     let TypeName (def : TypeDefinition) =
         if String.IsNullOrWhiteSpace def.Name then String.Empty else def.Name
 
@@ -14,11 +16,11 @@ module Naming =
         if String.IsNullOrWhiteSpace def.Name then String.Empty else def.Name
 
     let rec FullTypeName (def : TypeDefinition) =
-        if def.DeclaringType <> null then (FullTypeName def.DeclaringType) + "+" + (TypeName def)
+        if isNotNull def.DeclaringType then (FullTypeName def.DeclaringType) + "+" + (TypeName def)
         else if String.IsNullOrWhiteSpace def.Namespace then TypeName def else def.Namespace + "." + TypeName def
 
     let rec FullTypeRefName (def : TypeReference) =
-        if def.DeclaringType <> null then (FullTypeRefName def.DeclaringType) + "+" + (TypeRefName def)
+        if isNotNull def.DeclaringType then (FullTypeRefName def.DeclaringType) + "+" + (TypeRefName def)
         else if String.IsNullOrWhiteSpace def.Namespace then TypeRefName def else def.Namespace + "." + TypeRefName def
 
     let MethodName (def : MethodDefinition) =
@@ -27,14 +29,14 @@ module Naming =
     let FullMethodName (def : MethodDefinition) =
         let builder = StringBuilder()
         let parameters = String.Join(",", def.Parameters
-                                        |> Seq.filter (fun p -> p <> null)
+                                        |> Seq.filter isNotNull
                                         |> Seq.map (fun p -> p.ParameterType)
-                                        |> Seq.filter (fun p -> p <> null)
+                                        |> Seq.filter isNotNull
                                         |> Seq.map FullTypeRefName)
 
         let tparameters = if def.HasGenericParameters then
                                 String.Join(",", def.GenericParameters
-                                        |> Seq.filter (fun p -> p <> null)
+                                        |> Seq.filter isNotNull
                                         |> Seq.map FullTypeRefName)
                           else String.Empty
 
