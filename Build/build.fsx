@@ -88,7 +88,7 @@ Target "SelfTest" (fun _ ->
     let targetDir = "_Binaries/AltCover.Tests/Debug+AnyCPU"
     let reports = FullName "./_Reports"
     let altReport = Path.Combine(reports, "AltCoverage.xml")
-    let keyfile = FullName "_Tools\Infrastructure.snk"
+    let keyfile = FullName "_Tools\SelfTest.snk"
 
     ensureDirectory "./_Reports/_Instrumented"
     ensureDirectory <| Path.Combine(targetDir, "__Instrumented")
