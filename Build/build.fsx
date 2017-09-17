@@ -140,6 +140,26 @@ Target "SelfTest" (fun _ ->
         ["./_Reports/OpenCoverReportAltCovered.xml"]
 )
 
+Target "SimpleInstrumentation" (fun _ ->
+    printfn "Instrument a simple executable"
+    let simpleReport = Path.Combine(FullName "./_Reports", "SimpleCoverage.xml")
+    let result = ExecProcess (fun info -> info.FileName <- "_Binaries/AltCover/Debug+AnyCPU/AltCover.exe"
+                                          info.WorkingDirectory <- "_Binaries/Sample1/Debug+AnyCPU"
+                                          info.Arguments <- ("-x=" + simpleReport)) (TimeSpan.FromMinutes 5.0)
+    if result <> 0 then failwith "Simple instrumentation failed"
+    let result2 = ExecProcess (fun info -> info.FileName <- "_Binaries/Sample1/Debug+AnyCPU/__Instrumented/Sample1.exe"
+                                           info.WorkingDirectory <- "_Binaries/Sample1/Debug+AnyCPU/__Instrumented"
+                                           info.Arguments <- "") (TimeSpan.FromMinutes 5.0)
+    if result2 <> 0 then failwith "Instrumented .exe failed"
+    
+    ensureDirectory "./_Reports/_SimpleReport"
+    ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
+                                       TargetDir = "_Reports/_SimpleReport"})
+        [simpleReport]
+
+)
+
+
 // This defaults to Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\FxCopCmd.exe
 Target "FxCop" (fun _ ->
     let fxCop = combinePaths (environVar "VS150COMNTOOLS") "../../Team Tools/Static Analysis Tools/FxCop/FxCopCmd.exe"
@@ -164,6 +184,7 @@ Target "FxCop" (fun _ ->
 ==> "Test"
 ==> "TestCover"
 ==> "SelfTest"
+==> "SimpleInstrumentation"
 
 "BuildDebug"
 ==> "FxCop"
