@@ -156,7 +156,16 @@ Target "SimpleInstrumentation" (fun _ ->
     ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
                                        TargetDir = "_Reports/_SimpleReport"})
         [simpleReport]
+)
 
+Target "BulkReport" (fun _ ->
+    printfn "Overall coverage reporting"
+    ensureDirectory "./_Reports/_BulkReport"
+    !! "./_Reports/*cover*.xml"
+    |> Seq.filter (fun f -> not <| f.Contains("NUnit"))
+    |> Seq.toList
+    |> ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
+                                          TargetDir = "_Reports/_BulkReport"})
 )
 
 
@@ -185,6 +194,7 @@ Target "FxCop" (fun _ ->
 ==> "TestCover"
 ==> "SelfTest"
 ==> "SimpleInstrumentation"
+==> "BulkReport"
 
 "BuildDebug"
 ==> "FxCop"
