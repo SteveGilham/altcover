@@ -12,12 +12,12 @@ open Mono.Options
 module Main =
 
   let mutable private help = false
-  
+
   let Usage (intro:string) (options:OptionSet) =
     Console.Error.WriteLine(intro)
-    options.WriteOptionDescriptions(Console.Error);  
+    options.WriteOptionDescriptions(Console.Error);
     Environment.Exit(1)
-  
+
   let (!+) (option: string * string * (string->unit)) (options:OptionSet) =
     let prototype, help, action = option
     options.Add(prototype, help, new System.Action<string>(action))
@@ -32,45 +32,45 @@ module Main =
     psi.RedirectStandardOutput <- true
     use proc = new Process()
     proc.StartInfo <- psi
-    
+
     let Write (writer:TextWriter) colour data =
-      if not(String.IsNullOrEmpty(data)) then 
+      if not(String.IsNullOrEmpty(data)) then
          let original = Console.ForegroundColor
-         try 
+         try
            Console.ForegroundColor <- colour
            writer.WriteLine(data)
          finally
            Console.ForegroundColor <- original
-           
+
     let err (e:DataReceivedEventArgs) =
       Write Console.Error ConsoleColor.Yellow e.Data
     let out (e:DataReceivedEventArgs) =
       Write Console.Out ConsoleColor.White e.Data
-      
+
     proc.ErrorDataReceived.Add(err)
     proc.OutputDataReceived.Add(out)
     proc.Start() |> ignore
     proc.BeginErrorReadLine()
     proc.BeginOutputReadLine()
-    proc.WaitForExit()          
+    proc.WaitForExit()
 
   [<EntryPoint>]
   let Main arguments =
     let options = new OptionSet()
                     |> !+ (
-                        "i|inputDirectory=", 
+                        "i|inputDirectory=",
                         "Optional: The folder containing assemblies to instrument (default: current directory)",
                         (fun x -> Visitor.inputDirectory <- x))
                     |> !+ (
-                        "o|outputDirectory=", 
+                        "o|outputDirectory=",
                         "Optional: The folder to receive the instrumented assemblies and their companions (default: sub-folder '.\\__Instrumented' current directory)",
                         (fun x -> Visitor.outputDirectory <- x))
                     |> !+ (
-                        "k|key=", 
+                        "k|key=",
                         "Optional, multiple: any other strong-name key to use",
-                        (fun x -> 
+                        (fun x ->
                             if not (String.IsNullOrEmpty(x)) && File.Exists(x) then
-                              try 
+                              try
                                   use stream = new System.IO.FileStream(x, System.IO.FileMode.Open, System.IO.FileAccess.Read)
                                   let pair = new StrongNameKeyPair(stream)
                                   Visitor.Add pair
@@ -79,11 +79,11 @@ module Main =
                               | :? System.Security.SecurityException as s -> Console.WriteLine(s.Message)
                         ))
                     |> !+ (
-                        "sn|strongNameKey=", 
+                        "sn|strongNameKey=",
                         "Optional: The default strong naming key to apply to instrumented assemblies (default: None)",
-                        (fun x -> 
+                        (fun x ->
                             if not (String.IsNullOrEmpty(x)) && File.Exists(x) then
-                              try 
+                              try
                                   use stream = new System.IO.FileStream(x, System.IO.FileMode.Open, System.IO.FileAccess.Read)
                                   let pair = new StrongNameKeyPair(stream)
                                   Visitor.defaultStrongNameKey <- Some (pair)
@@ -93,50 +93,50 @@ module Main =
                               | :? System.Security.SecurityException as s -> Console.WriteLine(s.Message)
                         ))
                     |> !+ (
-                        "x|xmlReport=", 
+                        "x|xmlReport=",
                         "Optional: The output report template file (default: coverage.xml in the current directory)",
                         (fun x -> Visitor.reportPath <- Path.Combine(Directory.GetCurrentDirectory(), x)))
                     |> !+ (
-                        "f|fileFilter=", 
+                        "f|fileFilter=",
                         "Optional: file name to exclude from instrumentation (may repeat)",
                         (fun x -> Visitor.NameFilters.Add(FilterClass.File(x))))
                     |> !+ (
-                        "s|assemblyFilter=", 
+                        "s|assemblyFilter=",
                         "Optional: assembly name to exclude from instrumentation (may repeat)",
                         (fun x -> Visitor.NameFilters.Add(FilterClass.Assembly(x))))
                     |> !+ (
-                        "t|typeFilter=", 
+                        "t|typeFilter=",
                         "Optional: type name to exclude from instrumentation (may repeat)",
                         (fun x -> Visitor.NameFilters.Add(FilterClass.Type(x))))
                     |> !+ (
-                        "m|methodFilter=", 
+                        "m|methodFilter=",
                         "Optional: method name to exclude from instrumentation (may repeat)",
                         (fun x -> Visitor.NameFilters.Add(FilterClass.Method(x))))
                     |> !+ (
-                        "a|attributeFilter=", 
+                        "a|attributeFilter=",
                         "Optional: attribute name to exclude from instrumentation (may repeat)",
                         (fun x -> Visitor.NameFilters.Add(FilterClass.Attribute(x))))
-                    |> !+ (                    
+                    |> !+ (
                         "?|help|h",
                          "Prints out the options.",
                           (fun x -> help <- x <> null))
-                    |> !+ (                    
+                    |> !+ (
                         "<>",
                         String.Empty,
-                          (fun x -> ()))                          
+                          (fun x -> ()))
     let rest = try
                     options.Parse(arguments)
                with
-                | :? OptionException -> 
+                | :? OptionException ->
                   Usage "Error - usage is:" options
                   new List<String>()
-    if help then 
+    if help then
       let intro = "AltCover [/i[nputDirectory]=VALUE] [/o[utputDirectory]=VALUE] " +
                   "[/sn|strongNameKey=VALUE] [/x[mlReport]=VALUE] [/f[ileFilter]=VALUE] " +
                   "[/s|assemblyFilter=VALUE] [/t|typeFilter=VALUE] [/m|methodFilter=VALUE] " +
                   "[/a|attributeFilter=VALUE] [/?|h[elp]]"
       Usage intro options
-      
+
     // Check that the directories are distinct
     let fromDirectory = Path.Combine(Directory.GetCurrentDirectory(), Visitor.inputDirectory)
     let toDirectory = Path.Combine(Directory.GetCurrentDirectory(), Visitor.outputDirectory)
@@ -147,17 +147,17 @@ module Main =
     let toInfo = new DirectoryInfo(toDirectory)
     if fromInfo = toInfo then
       Console.WriteLine("From and to directories are identical")
-      
+
     let files = fromInfo.GetFiles()
-    
+
     // Copy all the files that aren't symbol-bearing assemblies into the target directory
-    let assemblies = 
-        files 
+    let assemblies =
+        files
         |> Seq.fold (fun (accumulator : string list) (info:FileInfo) ->
              let target = Path.Combine (toInfo.FullName, info.Name)
-             File.Copy(info.FullName, target, true) 
+             File.Copy(info.FullName, target, true)
              if Visitor.IsIncluded info.FullName then
-                 try 
+                 try
                    let def = AssemblyDefinition.ReadAssembly(info.FullName)
                    let assemblyPdb = ProgramDatabase.GetPdbWithFallback def
                    if Option.isSome assemblyPdb then
@@ -165,15 +165,15 @@ module Main =
                         info.FullName :: accumulator
                    else
                         accumulator
-                 with 
+                 with
                    | :? BadImageFormatException -> accumulator
                    | :? IOException -> accumulator
              else
                accumulator
           ) []
-        
-    let assemblyNames = 
-        assemblies 
+
+    let assemblyNames =
+        assemblies
         |> Seq.map (fun path -> Path.GetFileNameWithoutExtension(path))
         |> Seq.toList
 
@@ -184,13 +184,12 @@ module Main =
     let visitors = [ reporter ; Instrument.InstrumentGenerator assemblyNames ]
     Visitor.Visit visitors assemblies
     document.Save(Visitor.reportPath)
-    
-    
+
     // If we have some arguments in rest execute that command line
     match rest |> Seq.toList with
     | [] -> ()
-    | cmd::t-> 
+    | cmd::t->
        let args = String.Join(" ", (List.toArray t))
        Launch cmd args toDirectory // Spawn process, echoing asynchronously
-    
+
     0     

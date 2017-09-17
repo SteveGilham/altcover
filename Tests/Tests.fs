@@ -4,7 +4,7 @@ open System
 open System.IO
 open System.Reflection
 open System.Xml.Linq
- 
+
 open AltCover
 open NUnit.Framework
 
@@ -24,8 +24,8 @@ type AltCoverTests() = class
     // Hack for running while instrumented
     let where = Assembly.GetExecutingAssembly().Location;
     let files = Directory.GetFiles(Path.GetDirectoryName(where) + AltCoverTests.Hack())
-    files 
-    |> Seq.filter (fun x -> x.EndsWith(".dll", StringComparison.OrdinalIgnoreCase) 
+    files
+    |> Seq.filter (fun x -> x.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)
                             || x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
     |> Seq.filter (fun x -> not (x.EndsWith("nunit.framework.dll", StringComparison.OrdinalIgnoreCase))
                          && not (x.EndsWith("FSharp.Core.dll", StringComparison.OrdinalIgnoreCase))
@@ -40,7 +40,7 @@ type AltCoverTests() = class
       let pdb = AltCover.ProgramDatabase.GetPdbFromImage(def)
       match pdb with
       | None -> Assert.Fail("No .pdb for " + x)
-      | Some name -> 
+      | Some name ->
          let probe = Path.ChangeExtension(x, ".pdb")
          let file = new FileInfo(probe)
          let filename = file.Name
@@ -52,15 +52,15 @@ type AltCoverTests() = class
     // Hack for running while instrumented
     let where = Assembly.GetExecutingAssembly().Location;
     let files = Directory.GetFiles(Path.GetDirectoryName(where) + AltCoverTests.Hack())
-    files 
-    |> Seq.filter (fun x -> x.EndsWith(".dll", StringComparison.OrdinalIgnoreCase) 
+    files
+    |> Seq.filter (fun x -> x.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)
                             || x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
     |> Seq.iter( fun x ->
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly(x)
       let pdb = AltCover.ProgramDatabase.GetPdbWithFallback(def)
       match pdb with
       | None -> Assert.That(File.Exists(Path.ChangeExtension(x, ".pdb")), Is.Not.True, "No .pdb for " + x)
-      | Some name -> 
+      | Some name ->
          let probe = Path.ChangeExtension(x, ".pdb")
          let file = new FileInfo(probe)
          let filename = file.Name
@@ -85,15 +85,14 @@ type AltCoverTests() = class
 </method>
 </module>
 </coverage>"
-  
-    
+
   static member private RecursiveValidate result expected depth zero =
     let rcount = result |> Seq.length
     let ecount = expected |> Seq.length
-    
+
     Assert.That(rcount, Is.EqualTo(ecount), "Mismatch at depth " + depth.ToString())
-    
-    Seq.zip result expected |> Seq.iter (fun ((r:XElement), (e:XElement)) -> 
+
+    Seq.zip result expected |> Seq.iter (fun ((r:XElement), (e:XElement)) ->
             Assert.That(r.Name, Is.EqualTo(e.Name), "Expected name " + e.Name.ToString())
             let ra = r.Attributes()
             let ea = e.Attributes()
@@ -104,9 +103,9 @@ type AltCoverTests() = class
                     | "metadataToken"
                     | "startTime"
                     | "measureTime" -> ()
-                    | "document" -> Assert.That(a1.Value, Does.EndWith(a2.Value), 
+                    | "document" -> Assert.That(a1.Value, Does.EndWith(a2.Value),
                                       a1.Name.ToString() + " : " + r.ToString() + " -> document")
-                    | "visitcount" -> let expected = if zero then "0" else a2.Value 
+                    | "visitcount" -> let expected = if zero then "0" else a2.Value
                                       Assert.That(a1.Value, Is.EqualTo(expected), r.ToString() + " -> visitcount")
                     | _ -> Assert.That(a1.Value, Is.EqualTo(a2.Value), r.ToString() + " -> " + a1.Name.ToString())
                 )
@@ -119,12 +118,12 @@ type AltCoverTests() = class
     // Hack for running while instrumented
     let where = Assembly.GetExecutingAssembly().Location;
     let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample1.exe")
-    
+
     Visitor.Visit [ visitor ] (Visitor.ToSeq path)
 
     let baseline = XDocument.Load(new System.IO.StringReader(AltCoverTests.TTBaseline))
     let result = document.Elements()
     let expected = baseline.Elements()
     AltCoverTests.RecursiveValidate result expected 0 true
-    
-end    
+
+end

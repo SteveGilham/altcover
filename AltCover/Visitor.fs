@@ -14,7 +14,7 @@ open Mono.Cecil
 open Mono.Cecil.Cil
 open Mono.Cecil.Rocks
 
-type internal Node = 
+type internal Node =
      | Start of seq<string>
      | Assembly of AssemblyDefinition * bool
      | Module of ModuleDefinition * bool
@@ -29,22 +29,22 @@ type internal Node =
 type KeyRecord = {
          Pair : StrongNameKeyPair;
          Token : byte[] }
-         
+
 module KeyStore =
     let private hash = new System.Security.Cryptography.SHA1CryptoServiceProvider()
 
-    let internal TokenOfArray (key:byte array) = 
+    let internal TokenOfArray (key:byte array) =
         hash.ComputeHash(key)
             |> Array.rev
             |> Seq.take 8
-            |> Seq.toArray    
+            |> Seq.toArray
 
-    let internal TokenOfKey (key:StrongNameKeyPair) = 
+    let internal TokenOfKey (key:StrongNameKeyPair) =
         TokenOfArray key.PublicKey
 
     let internal TokenAsULong (token:byte array) =
       BitConverter.ToUInt64(token, 0)
-      
+
     let internal KeyToIndex (key:StrongNameKeyPair) =
       key
       |> TokenOfKey
@@ -54,13 +54,13 @@ module KeyStore =
       key
       |> TokenOfArray
       |> TokenAsULong
-      
+
     let internal KeyToRecord (key:StrongNameKeyPair) =
       { Pair = key
         Token = TokenOfKey key }
 
 type Fix<'T> = delegate of 'T -> Fix<'T>
-     
+
 module Visitor =
 
   let internal NameFilters = new List<FilterClass>();
@@ -71,24 +71,24 @@ module Visitor =
   let mutable internal defaultStrongNameKey : option<StrongNameKeyPair> = None
   let internal keys = new Dictionary<UInt64, KeyRecord>()
 
-  let internal Add (key:StrongNameKeyPair) = 
+  let internal Add (key:StrongNameKeyPair) =
     let index = KeyStore.KeyToIndex key
     keys.[index] <- KeyStore.KeyToRecord key
-  
+
   let IsIncluded (nameProvider:Object) =
-    not (NameFilters |> Seq.exists (Filter.Match nameProvider))  
-    
+    not (NameFilters |> Seq.exists (Filter.Match nameProvider))
+
   let ToSeq node =
-    seq {yield node} 
-    
+    seq {yield node}
+
   let internal After node =
     match node with
     | Start _ -> ToSeq Finish
     | Assembly (a,_) -> AfterAssembly a |> ToSeq
     | Module _ -> AfterModule |> ToSeq
     | Method (_, included) -> AfterMethod included |> ToSeq
-    | _ -> Seq.empty<Node> 
-    
+    | _ -> Seq.empty<Node>
+
   let mutable private PointNumber : int = 0
 
   let rec internal Deeper node =
@@ -96,7 +96,7 @@ module Visitor =
     let Nest node =
       Seq.concat [ ToSeq node ; Deeper node ; After node ]
 
-    match node with 
+    match node with
     | Start paths -> paths
                      |> Seq.filter IsIncluded
                      |> Seq.map (fun x -> AssemblyDefinition.ReadAssembly(x))
@@ -106,29 +106,29 @@ module Visitor =
                      |> Seq.map (fun x -> BuildSequence x)
                      |> Seq.concat
 
-    | Assembly (a, included) ->  a.Modules 
+    | Assembly (a, included) ->  a.Modules
                                  |> Seq.cast
                                  |> Seq.map (fun x -> Module (x, included))
                                  |> Seq.map (fun x -> BuildSequence x)
-                                 |> Seq.concat                         
+                                 |> Seq.concat
 
     | Module (x, included) ->    PointNumber <- 0
-                                 x.GetAllTypes() 
-                                 |> Seq.cast  
+                                 x.GetAllTypes()
+                                 |> Seq.cast
                                  |> Seq.map (fun t -> Type (t, included && IsIncluded t))
                                  |> Seq.map (fun x -> BuildSequence x)
                                  |> Seq.concat
-                             
+
     | Type (t, included) ->    t.Methods
                                |> Seq.cast
-                               |> Seq.filter (fun (m : MethodDefinition) -> not m.IsAbstract 
+                               |> Seq.filter (fun (m : MethodDefinition) -> not m.IsAbstract
                                                                             && not m.IsRuntime
                                                                             && not m.IsPInvokeImpl)
                                |> Seq.map (fun m -> Method (m, included && IsIncluded m))
                                |> Seq.map (fun x -> BuildSequence x)
                                |> Seq.concat
-      
-    | Method (m, _) -> 
+
+    | Method (m, _) ->
             let segments = new Dictionary<int, SequencePoint>()
             let instructions = m.Body.Instructions
                                |> Seq.cast
@@ -138,21 +138,21 @@ module Visitor =
             let number = instructions.Count();
             let point = PointNumber
             PointNumber <- point + number
-            
+
             instructions.OrderByDescending(fun (x:Instruction) -> x.Offset)
             |> Seq.mapi (fun i x -> MethodPoint (x, x.SequencePoint, i+point, true))
 
-    | _ -> Seq.empty<Node>                    
-  
+    | _ -> Seq.empty<Node>
+
   and internal BuildSequence node =
     Seq.concat [ ToSeq node ; Deeper node ; After node ]
-  
+
   let internal invoke (node : Node) (visitor:Fix<Node>)  =
     visitor.Invoke(node)
 
   let internal apply (visitors : list<Fix<Node>>) (node : Node) =
-    visitors |> 
-    List.map (invoke node) 
+    visitors |>
+    List.map (invoke node)
 
   let internal Visit (visitors : list<Fix<Node>>) (assemblies : seq<string>) =
     PointNumber <- 0
@@ -163,7 +163,7 @@ module Visitor =
 
   let EncloseState (visitor : 'State -> 'T -> 'State) (current : 'State) =
     let rec stateful l = new Fix<'T> (
-                           fun (node:'T) -> 
+                           fun (node:'T) ->
                            let next = visitor l node
                            stateful next)
     stateful current

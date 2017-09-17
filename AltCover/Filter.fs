@@ -17,7 +17,7 @@ module Filter =
   let internal Match (nameProvider:Object) (filter:FilterClass) =
     match nameProvider with
     | :? string as fileName ->
-         match filter with 
+         match filter with
          | File name -> Path.GetFileName(fileName).Contains(name)
          | _ -> false
     | :? AssemblyDefinition as assembly ->

@@ -9,10 +9,10 @@ open Mono.Cecil
 open Mono.Cecil.Cil
 open Mono.Cecil.Mdb
 open Mono.Cecil.Pdb
-         
+
 type AssemblyModel = {
          Assembly : AssemblyDefinition;
-         Symbols : ISymbolReader }    
+         Symbols : ISymbolReader }
 
 module ProgramDatabase =
   // We no longer have to violate Cecil encapsulation to get the PDB path!
@@ -29,24 +29,23 @@ module ProgramDatabase =
       |> Option.bind (Option.select File.Exists)
     else
       None
-    
+
   let GetPdbWithFallback (assembly:AssemblyDefinition) =
     match GetPdbFromImage assembly with
     | None -> let fallback = Path.ChangeExtension(assembly.MainModule.FullyQualifiedName, ".pdb")
-              if File.Exists(fallback) 
-                then Some fallback 
+              if File.Exists(fallback)
+                then Some fallback
                 else let fallback2 = assembly.MainModule.FullyQualifiedName + ".mdb"
                      if File.Exists(fallback2) then Some assembly.MainModule.FullyQualifiedName else None
     | pdbpath -> pdbpath
-
 
   // Ensure that we read symbols from the .pdb path we discovered.
   // Cecil currently only does the Path.ChangeExtension(path, ".pdb") fallback if left to its own devices
   // Will fail  with InvalidOperationException if there is a malformed file with the expected name
   let ReadSymbols (assembly:AssemblyDefinition) =
     GetPdbWithFallback assembly
-    |> Option.iter (fun pdbpath -> 
-                        let provider : ISymbolReaderProvider = if pdbpath.EndsWith(".pdb", StringComparison.OrdinalIgnoreCase) then 
+    |> Option.iter (fun pdbpath ->
+                        let provider : ISymbolReaderProvider = if pdbpath.EndsWith(".pdb", StringComparison.OrdinalIgnoreCase) then
                                                                    new PdbReaderProvider() :> ISymbolReaderProvider
                                                                else new MdbReaderProvider() :> ISymbolReaderProvider
 

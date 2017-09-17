@@ -5,7 +5,7 @@ open System.Text
 
 open Mono.Cecil
 
-module Naming = 
+module Naming =
 
     let TypeName (def : TypeDefinition) =
         if String.IsNullOrWhiteSpace def.Name then String.Empty else def.Name
@@ -24,7 +24,7 @@ module Naming =
     let MethodName (def : MethodDefinition) =
         if String.IsNullOrWhiteSpace def.Name then String.Empty else def.Name
 
-    let FullMethodName (def : MethodDefinition) = 
+    let FullMethodName (def : MethodDefinition) =
         let builder = StringBuilder()
         let parameters = String.Join(",", def.Parameters
                                         |> Seq.filter (fun p -> p <> null)
@@ -32,7 +32,7 @@ module Naming =
                                         |> Seq.filter (fun p -> p <> null)
                                         |> Seq.map FullTypeRefName)
 
-        let tparameters = if def.HasGenericParameters then 
+        let tparameters = if def.HasGenericParameters then
                                 String.Join(",", def.GenericParameters
                                         |> Seq.filter (fun p -> p <> null)
                                         |> Seq.map FullTypeRefName)
@@ -48,4 +48,3 @@ module Naming =
                .Append(parameters)
                .Append(")")
                .ToString()
-

@@ -55,7 +55,7 @@ module Instrument =
       let trace  = typeof<AltCover.Recorder.Tracer>
       trace.Assembly.GetExportedTypes()
                             |> Seq.find (fun (t:Type) -> t.Name.Contains("Instance"))
-                            
+
     /// <summary>
     /// Applies a new key to an assembly name
     /// </summary>
@@ -82,8 +82,8 @@ module Instrument =
       stream.CopyTo(buffer)
       let pair = StrongNameKeyPair(buffer.ToArray())
       UpdateStrongNaming definition.Name (Some pair)
-                    
-      // set the coverage file path  
+
+      // set the coverage file path
       let other = RecorderInstanceType()
       let token = other.GetMethod("get_ReportFile").MetadataToken
       let pathGetterDef = definition.MainModule.LookupToken(token) :?> MethodDefinition
@@ -91,7 +91,7 @@ module Instrument =
       let worker = pathGetterDef.Body.GetILProcessor();
       worker.InsertBefore(pathGetterDef.Body.Instructions.[0], worker.Create(OpCodes.Ret));
       worker.InsertBefore(pathGetterDef.Body.Instructions.[0], worker.Create(OpCodes.Ldstr, Visitor.reportPath));
-                        
+
       definition
 
     /// <summary>
@@ -102,8 +102,8 @@ module Instrument =
     let RecordingMethod (recordingAssembly : AssemblyDefinition) =
       let other = RecorderInstanceType()
       let token = other.GetMethod("Visit").MetadataToken
-      recordingAssembly.MainModule.LookupToken(token) :?> MethodDefinition      
-        
+      recordingAssembly.MainModule.LookupToken(token) :?> MethodDefinition
+
     /// <summary>
     /// Locate the key, if any, which was used to name this assembly.
     /// </summary>
@@ -117,7 +117,7 @@ module Instrument =
           match Visitor.keys.TryGetValue(index) with
           | (false, _ ) -> None
           | (_, record) -> Some record.Pair
-          
+
     /// <summary>
     /// Locate the key, if any, which was used to name this assembly.
     /// </summary>
@@ -131,7 +131,7 @@ module Instrument =
           match Visitor.keys.TryGetValue(index) with
           | (false, _ ) -> None
           | (_, record) -> Some record
-                    
+
     /// <summary>
     /// Determine new names for input strongnamed assemblies; if we have a key and
     /// the assembly was already strongnamed then give it the new key token, otherwise
@@ -143,34 +143,34 @@ module Instrument =
     let UpdateStrongReferences (assembly : AssemblyDefinition) (assemblies : string list) =
       // TODO -- is this still lookup table of any use??
       let assemblyReferenceSubstitutions = new Dictionary<String, String>()
-      
-      let interestingReferences =  assembly.MainModule.AssemblyReferences                  
+
+      let interestingReferences =  assembly.MainModule.AssemblyReferences
                                    |> Seq.cast<AssemblyNameReference>
                                    |> Seq.filter (fun x -> assemblies |> List.exists (fun y -> y.Equals(x.Name)))
-                                   
+
       interestingReferences
       |> Seq.iter (fun r -> let original = r.ToString()
                             let token = KnownToken r
                             let effectiveKey = match token with
                                                | None -> Visitor.defaultStrongNameKey
-                                                         |> Option.map KeyStore.KeyToRecord 
+                                                         |> Option.map KeyStore.KeyToRecord
                                                | key -> key
-                            
+
                             match effectiveKey with
                             | None -> r.HasPublicKey <- false
                                       r.PublicKeyToken <- null
                                       r.PublicKey <- null
                             | Some key -> r.HasPublicKey <- true
                                           r.PublicKey <- key.Pair.PublicKey
-                                          r.PublicKeyToken <- key.Token 
+                                          r.PublicKeyToken <- key.Token
 
-                            let updated = r.ToString() 
-                            if  not <| updated.Equals(original, StringComparison.Ordinal) then 
-                              assemblyReferenceSubstitutions.[original] <- updated             
+                            let updated = r.ToString()
+                            if  not <| updated.Equals(original, StringComparison.Ordinal) then
+                              assemblyReferenceSubstitutions.[original] <- updated
                     )
-    
+
       assemblyReferenceSubstitutions
-    
+
     /// <summary>
     /// Commit an instrumented assembly to disk
     /// </summary>
@@ -185,8 +185,7 @@ module Instrument =
       KnownKey assembly.Name
       |> Option.iter (fun key -> pkey.StrongNameKeyPair <- key)
       assembly.Write(path, pkey)
- 
-                     
+
     /// <summary>
     /// Adjust the IL for exception handling
     /// </summary>
@@ -236,43 +235,43 @@ module Instrument =
     /// <param name="state">Contextual information for the visit</param>
     /// <param name="node">The node being visited</param>
     /// <returns>Updated state</returns>
-    let InstrumentationVisitor (state : Context) (node:Node) = 
+    let InstrumentationVisitor (state : Context) (node:Node) =
        match node with
        | Start _ -> { state with RecordingAssembly = DefineRecordingAssembly() }
        | Assembly (assembly, included) ->
             let updates = UpdateStrongReferences assembly state.InstrumentedAssemblies
-            if included then 
+            if included then
                assembly.MainModule.AssemblyReferences.Add(state.RecordingAssembly.Name)
             { state with RenameTable = updates } // TODO use this (attribute mappings IIRC)
        | Module (m, included) -> //of ModuleDefinition * bool
            let restate = match included with
-                         | true -> 
+                         | true ->
                            let recordingMethod = match state.RecordingMethod with
                                                  | null -> RecordingMethod state.RecordingAssembly
                                                  | _ -> state.RecordingMethod
-                         
-                           { state with 
-                                 RecordingMethodRef = m.Import(recordingMethod); 
+
+                           { state with
+                                 RecordingMethodRef = m.Import(recordingMethod);
                                  RecordingMethod = recordingMethod }
                          | _ -> state
            { restate with ModuleId = m.Mvid }
 
        | Type _ -> //of TypeDefinition * bool * AssemblyModel
-           state 
+           state
        | Method (m,  included) -> //of MethodDefinition * bool
            match included with
            | true ->
-             { state with 
+             { state with
                 MethodBody = m.Body;
                 MethodWorker = m.Body.GetILProcessor() }
            | _ -> state
-         
+
        | MethodPoint (instruction, _, point, included) -> //of Instruction * CodeSegment * int * bool
          if included then
               let counterMethodCall = state.MethodWorker.Create(OpCodes.Call, state.RecordingMethodRef);
               let instrLoadModuleId = state.MethodWorker.Create(OpCodes.Ldstr, state.ModuleId.ToString())
               let instrLoadPointId = state.MethodWorker.Create(OpCodes.Ldc_I4, point);
-   
+
               state.MethodWorker.InsertBefore(instruction, instrLoadModuleId);
               state.MethodWorker.InsertAfter(instrLoadModuleId, instrLoadPointId);
               state.MethodWorker.InsertAfter(instrLoadPointId, counterMethodCall);
@@ -280,11 +279,11 @@ module Instrument =
               // Change references in operands from "instruction" to first counter invocation instruction (instrLoadModuleId)
               state.MethodBody.Instructions
               |> Seq.iter (fun x -> SubstituteInstructionOperand x instruction instrLoadModuleId)
-              
+
               state.MethodBody.ExceptionHandlers
               |> Seq.iter (fun x -> SubstituteExceptionBoundary x instruction instrLoadModuleId)
-       
-         state 
+
+         state
        | AfterMethod included -> //of MethodDefinition * bool
            if included then
               // changes conditional (br.s, brtrue.s ...) operators to corresponding "long" ones (br, brtrue)
@@ -303,4 +302,4 @@ module Instrument =
                    WriteAssembly (state.RecordingAssembly) counterAssemblyFile
                    state
 
-    Visitor.EncloseState InstrumentationVisitor initialState 
+    Visitor.EncloseState InstrumentationVisitor initialState
