@@ -44,13 +44,10 @@ module Report =
                           //// Mono.Cecil emits names in the form outer/inner rather than outer+inner
                           new XAttribute(X "class", methodDef.DeclaringType.FullName.Replace('/', '+')), 
                           new XAttribute(X "metadataToken", methodDef.MetadataToken.ToUInt32().ToString()),                         
-                          new XAttribute(X "excluded", (not included).ToString().ToLowerInvariant()), //TODO -- replace lowering
-                          new XAttribute(X "instrumented", included.ToString().ToLowerInvariant()),
-                          new XAttribute(X "fullname", methodDef.FullName.
-                              Replace('/', '+').Replace("::", "."). // Mono -> .net
-                              Replace('<', '{').Replace('>', '}'). // HTML
-                              Replace('&','@').Replace("()", String.Empty) // HTML, fudgefactor
-                              ))
+                          new XAttribute(X "excluded", if included then "false" else "true"),
+                          new XAttribute(X "instrumented", if included then "true" else "false"),
+                          new XAttribute(X "fullname", Naming.FullMethodName methodDef)
+                              )
 
           s.Head.Add(element)   
           element :: s       

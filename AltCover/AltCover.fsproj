@@ -69,6 +69,7 @@
     <Compile Include="ProgramDatabase.fs" />
     <Compile Include="Filter.fs" />
     <Compile Include="Visitor.fs" />
+    <Compile Include="Naming.fs" />
     <Compile Include="Report.fs" />
     <Compile Include="Instrument.fs" />
     <Compile Include="AltCover.fs" />
