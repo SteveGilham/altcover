@@ -99,23 +99,23 @@ module Main =
                     |> !+ (
                         "f|fileFilter=",
                         "Optional: file name to exclude from instrumentation (may repeat)",
-                        (fun x -> Visitor.NameFilters.Add(FilterClass.File(x))))
+                        FilterClass.File >> Visitor.NameFilters.Add)
                     |> !+ (
                         "s|assemblyFilter=",
                         "Optional: assembly name to exclude from instrumentation (may repeat)",
-                        (fun x -> Visitor.NameFilters.Add(FilterClass.Assembly(x))))
+                        FilterClass.Assembly >> Visitor.NameFilters.Add)
                     |> !+ (
                         "t|typeFilter=",
                         "Optional: type name to exclude from instrumentation (may repeat)",
-                        (fun x -> Visitor.NameFilters.Add(FilterClass.Type(x))))
+                        FilterClass.Type >> Visitor.NameFilters.Add)
                     |> !+ (
                         "m|methodFilter=",
                         "Optional: method name to exclude from instrumentation (may repeat)",
-                        (fun x -> Visitor.NameFilters.Add(FilterClass.Method(x))))
+                        FilterClass.Method >> Visitor.NameFilters.Add)
                     |> !+ (
                         "a|attributeFilter=",
                         "Optional: attribute name to exclude from instrumentation (may repeat)",
-                        (fun x -> Visitor.NameFilters.Add(FilterClass.Attribute(x))))
+                        FilterClass.Attribute >> Visitor.NameFilters.Add)
                     |> !+ (
                         "?|help|h",
                          "Prints out the options.",
