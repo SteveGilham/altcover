@@ -36,8 +36,7 @@ module KeyStore =
     let internal TokenOfArray (key:byte array) =
         hash.ComputeHash(key)
             |> Array.rev
-            |> Seq.take 8
-            |> Seq.toArray
+            |> Array.take 8
 
     let internal TokenOfKey (key:StrongNameKeyPair) =
         TokenOfArray key.PublicKey

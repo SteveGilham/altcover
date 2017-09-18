@@ -67,7 +67,7 @@ module Instrument =
                 assemblyName.PublicKey <- null
                 assemblyName.PublicKeyToken <- null
       | Some key' -> assemblyName.HasPublicKey <- true
-                     assemblyName.PublicKey <- key'.PublicKey
+                     assemblyName.PublicKey <- key'.PublicKey // sets token implicitly
 
     /// <summary>
     /// Create the new assembly that will record visits, based on the prototype.
@@ -141,6 +141,9 @@ module Instrument =
     /// <param name="path">The names of all assemblies of interest</param>
     /// <returns>Map from input to output names</returns>
     let UpdateStrongReferences (assembly : AssemblyDefinition) (assemblies : string list) =
+      let effectiveKey = if assembly.Name.HasPublicKey then Visitor.defaultStrongNameKey else None
+      UpdateStrongNaming assembly.Name effectiveKey
+
       // TODO -- is this still lookup table of any use??
       let assemblyReferenceSubstitutions = new Dictionary<String, String>()
 
@@ -161,8 +164,7 @@ module Instrument =
                                       r.PublicKeyToken <- null
                                       r.PublicKey <- null
                             | Some key -> r.HasPublicKey <- true
-                                          r.PublicKey <- key.Pair.PublicKey
-                                          r.PublicKeyToken <- key.Token
+                                          r.PublicKey <- key.Pair.PublicKey // implicitly sets token
 
                             let updated = r.ToString()
                             if  not <| updated.Equals(original, StringComparison.Ordinal) then
