@@ -130,7 +130,7 @@ Target "SelfTest" (fun _ ->
     let altReport2 = Path.Combine(reports, "AltCoverage2.xml")
     let result = ExecProcess (fun info -> info.FileName <- "_Binaries/AltCover.Tests/Debug+AnyCPU/__Instrumented/AltCover.exe"
                                           info.WorkingDirectory <- "_Binaries/AltCover.Tests/Debug+AnyCPU"
-                                          info.Arguments <- ("/sn=" + keyfile + " -f=Mono. -f=.Recorder -f=Sample. -f=nunit. -t=System. /o=.\__ReInstrument -x=" + altReport2)) (TimeSpan.FromMinutes 5.0)
+                                          info.Arguments <- ("/sn=" + keyfile + @" -f=Mono. -f=.Recorder -f=Sample. -f=nunit. -t=System. /o=.\__ReInstrument -x=" + altReport2)) (TimeSpan.FromMinutes 5.0)
     ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
                                        TargetDir = "_Reports/_AltReport"})
         [altReport]
@@ -159,23 +159,30 @@ Target "SelfTest" (fun _ ->
         ["./_Reports/OpenCoverReportAltCovered.xml"]
 )
 
-Target "SimpleInstrumentation" (fun _ ->
+let SimpleInstrumentingRun (binaryPath:string) (reportSigil:string) = 
     printfn "Instrument a simple executable"
-    let simpleReport = Path.Combine(FullName "./_Reports", "SimpleCoverage.xml")
-    let result = ExecProcess (fun info -> info.FileName <- "_Binaries/AltCover/Debug+AnyCPU/AltCover.exe"
-                                          info.WorkingDirectory <- "_Binaries/Sample1/Debug+AnyCPU"
-                                          info.Arguments <- ("-t=System. -x=" + simpleReport)) (TimeSpan.FromMinutes 5.0)
+    let simpleReport = Path.Combine(FullName "./_Reports", "SimpleCoverage" + reportSigil + ".xml")
+    let binRoot = FullName binaryPath
+    let sampleRoot = FullName "_Binaries/Sample1/Debug+AnyCPU"
+    let instrumented = "__Instrumented" + reportSigil
+    let result = ExecProcess (fun info -> info.FileName <- Path.Combine(binRoot, "AltCover.exe")
+                                          info.WorkingDirectory <- sampleRoot
+                                          info.Arguments <- ("-t=System. -x=" + simpleReport + " /o=./" + instrumented)) (TimeSpan.FromMinutes 5.0)
     if result <> 0 then failwith "Simple instrumentation failed"
-    let result2 = ExecProcess (fun info -> info.FileName <- "_Binaries/Sample1/Debug+AnyCPU/__Instrumented/Sample1.exe"
-                                           info.WorkingDirectory <- "_Binaries/Sample1/Debug+AnyCPU/__Instrumented"
+    let result2 = ExecProcess (fun info -> info.FileName <- Path.Combine(sampleRoot, instrumented + "/Sample1.exe")
+                                           info.WorkingDirectory <- Path.Combine(sampleRoot, instrumented)
                                            info.Arguments <- "") (TimeSpan.FromMinutes 5.0)
     if result2 <> 0 then failwith "Instrumented .exe failed"
     
-    ensureDirectory "./_Reports/_SimpleReport"
+    ensureDirectory ("./_Reports/_SimpleReport" + reportSigil)
     ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
-                                       TargetDir = "_Reports/_SimpleReport"})
+                                       TargetDir = "_Reports/_SimpleReport" + reportSigil})
         [simpleReport]
+
+Target "SimpleInstrumentation" (fun _ ->
+   SimpleInstrumentingRun "_Binaries/AltCover/Debug+AnyCPU" String.Empty
 )
+
 
 Target "BulkReport" (fun _ ->
     printfn "Overall coverage reporting"
