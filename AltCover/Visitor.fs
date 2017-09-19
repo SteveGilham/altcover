@@ -97,7 +97,7 @@ module Visitor =
     let Nest node =
       Seq.concat [ ToSeq node ; Deeper node ; After node ]
 
-    // The pattern here is map x |> map y |> map x |> concat => collect (x >> y >> z) 
+    // The pattern here is map x |> map y |> map x |> concat => collect (x >> y >> z)
     match node with
     | Start paths -> paths
                      |> Seq.filter IsIncluded
