@@ -13,6 +13,9 @@ open Fake.OpenCoverHelper
 open Fake.ReportGeneratorHelper
 open FSharpLint.Fake
 
+let Copyright  = ref String.Empty
+let Version = ref String.Empty
+
 Target "Lint" (fun _ ->
     !! "**/*.fsproj"
         |> Seq.iter (FSharpLint (fun options -> { options with FailBuildIfAnyWarnings = true }) ))
@@ -29,7 +32,9 @@ Target "SetVersion" (fun _ ->
     let fraction = diff.Subtract(TimeSpan.FromDays(float diff.Days))  
     let revision= ((int fraction.TotalSeconds) / 3)  
     let version = sprintf "0.0.%d.%d" diff.Days revision
+    Version := version
     let copy = sprintf "© 2010-%d by Steve Gilham <SteveGilham@users.noreply.github.com>" now.Year
+    Copyright := "Copyright " + copy
 
     let stream2 = new System.IO.FileStream("./_Tools/SelfTest.snk", System.IO.FileMode.Open, System.IO.FileAccess.Read)
     let pair2 = new StrongNameKeyPair(stream2)
@@ -208,9 +213,33 @@ Target "FxCop" (fun _ ->
 )
 
 
+Target "Package"  (fun _ ->
+    ensureDirectory "./_Binaries/Packaging"
+    ensureDirectory "./_Packaging"
+    let altcover = FullName "_Binaries/AltCover/Release+AnyCPU/AltCover.exe"
+    let recorder = FullName "_Binaries/AltCover/Release+AnyCPU/AltCover.Recorder.dll"
+
+    NuGet (fun p -> 
+    {p with
+        Authors = ["Steve Gilham"]
+        Project = "AltCover"
+        Description = "A pre-instrumented code coverage tool for .net"                            
+        OutputPath = "./_Packaging"
+        WorkingDir = "./_Binaries/Packaging"
+        Files = [
+                        (altcover, Some "tools", None)
+                        (recorder, Some "tools", None)
+                ]
+        Version = !Version
+        Copyright = !Copyright
+        Publish = false }) 
+        "./Build/AltCover.nuspec"
+)
+
 "Clean"
 ==> "SetVersion"
 ==> "BuildRelease"
+==> "Package"
 
 "SetVersion"
 =?> ("BuildDebug", (not(File.Exists("./_Generated/AssemblyVersion.fs"))))
