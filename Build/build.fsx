@@ -39,11 +39,11 @@ Target "SetVersion" (fun _ ->
     let copy = sprintf "© 2010-%d by Steve Gilham <SteveGilham@users.noreply.github.com>" now.Year
     Copyright := "Copyright " + copy
 
-    let stream2 = new System.IO.FileStream("./_Tools/SelfTest.snk", System.IO.FileMode.Open, System.IO.FileAccess.Read)
+    let stream2 = new System.IO.FileStream("./Build/SelfTest.snk", System.IO.FileMode.Open, System.IO.FileAccess.Read)
     let pair2 = new StrongNameKeyPair(stream2)
     let key2 = BitConverter.ToString pair2.PublicKey
 
-    let stream = new System.IO.FileStream("./_Tools/Infrastructure.snk", System.IO.FileMode.Open, System.IO.FileAccess.Read)
+    let stream = new System.IO.FileStream("./Build/Infrastructure.snk", System.IO.FileMode.Open, System.IO.FileAccess.Read)
     let pair = new StrongNameKeyPair(stream)
     let key = BitConverter.ToString pair.PublicKey
 
@@ -115,7 +115,7 @@ Target "SelfTest" (fun _ ->
     let targetDir = "_Binaries/AltCover.Tests/Debug+AnyCPU"
     let reports = FullName "./_Reports"
     let altReport = Path.Combine(reports, "AltCoverage.xml")
-    let keyfile = FullName "_Tools\SelfTest.snk"
+    let keyfile = FullName "Build\SelfTest.snk"
 
     ensureDirectory "./_Reports/_Instrumented"
     ensureDirectory <| Path.Combine(targetDir, "__Instrumented")

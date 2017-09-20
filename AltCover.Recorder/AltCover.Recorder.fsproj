@@ -27,7 +27,7 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <WarningsAsErrors>
     </WarningsAsErrors>
-    <OtherFlags>--keyfile:$(SolutionDir)\_Tools\Infrastructure.snk --standalone</OtherFlags>
+    <OtherFlags>--keyfile:$(SolutionDir)\Build\Infrastructure.snk --standalone</OtherFlags>
     <DefineConstants>TRACE;DEBUG;CODE_ANALYSIS</DefineConstants>
     <WarningLevel>4</WarningLevel>
     <NoWarn>2009</NoWarn>
@@ -41,7 +41,7 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <WarningsAsErrors>
     </WarningsAsErrors>
-    <OtherFlags>--keyfile:$(SolutionDir)\_Tools\Infrastructure.snk --standalone</OtherFlags>
+    <OtherFlags>--keyfile:$(SolutionDir)\Build\Infrastructure.snk --standalone</OtherFlags>
     <DefineConstants>TRACE</DefineConstants>
     <WarningLevel>4</WarningLevel>
     <NoWarn>2009</NoWarn>

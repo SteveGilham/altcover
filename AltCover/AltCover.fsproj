@@ -27,7 +27,7 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <WarningsAsErrors>
     </WarningsAsErrors>
-    <OtherFlags>--keyfile:$(SolutionDir)_Tools\Infrastructure.snk</OtherFlags>
+    <OtherFlags>--keyfile:$(SolutionDir)Build\Infrastructure.snk</OtherFlags>
     <DefineConstants>TRACE;DEBUG;CODE_ANALYSIS</DefineConstants>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -40,7 +40,7 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <WarningsAsErrors>
     </WarningsAsErrors>
-    <OtherFlags>--keyfile:$(SolutionDir)_Tools\Infrastructure.snk --standalone</OtherFlags>
+    <OtherFlags>--keyfile:$(SolutionDir)Build\Infrastructure.snk --standalone</OtherFlags>
     <DefineConstants>TRACE</DefineConstants>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -74,7 +74,7 @@
     <Compile Include="Instrument.fs" />
     <Compile Include="AltCover.fs" />
     <Content Include="packages.config" />
-    <EmbeddedResource Include="..\_Tools\Recorder.snk">
+    <EmbeddedResource Include="..\Build\Recorder.snk">
       <Link>Recorder.snk</Link>
     </EmbeddedResource>
   </ItemGroup>
