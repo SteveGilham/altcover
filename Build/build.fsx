@@ -1,9 +1,12 @@
 #r @"FakeLib.dll" // include Fake lib
 #I @"../packages/FSharpLint.Fake.0.8.0/tools"
 #r @"../packages/FSharpLint.Fake.0.8.0/tools/FSharpLint.Fake.dll"
+#I @"../packages/ZipStorer.3.4.0/lib/net20"
+#r @"../packages/ZipStorer.3.4.0/lib/net20/ZipStorer.dll"
 
 open System
 open System.IO
+open System.IO.Compression
 open System.Reflection
 
 open Fake
@@ -218,6 +221,7 @@ Target "Package"  (fun _ ->
     ensureDirectory "./_Packaging"
     let altcover = FullName "_Binaries/AltCover/Release+AnyCPU/AltCover.exe"
     let recorder = FullName "_Binaries/AltCover/Release+AnyCPU/AltCover.Recorder.dll"
+    let folder = FullName "_Binaries/AltCover/Release+AnyCPU/"
 
     NuGet (fun p -> 
     {p with
@@ -229,6 +233,7 @@ Target "Package"  (fun _ ->
         Files = [
                         (altcover, Some "tools", None)
                         (recorder, Some "tools", None)
+                        (folder + "Mono*.dll", Some "tools", None)
                 ]
         Version = !Version
         Copyright = !Copyright
@@ -236,10 +241,25 @@ Target "Package"  (fun _ ->
         "./Build/AltCover.nuspec"
 )
 
+Target "SimpleReleaseTest" (fun _ ->
+   let nugget = !! "./_Packaging/*.nupkg" |> Seq.last
+   // should work but doesn't ZipFile.ExtractToDirectory(nugget, "_Packaging/Unpack")
+   // so do this
+   let zip = ZipStorer.Open(nugget, FileAccess.Read)
+   let unpack = FullName "_Packaging/Unpack"
+   zip.ReadCentralDir()
+    |> Seq.filter (fun entry -> Path.GetFileName(entry.FilenameInZip).StartsWith("AltCover.", StringComparison.OrdinalIgnoreCase) ||
+                                Path.GetFileName(entry.FilenameInZip).StartsWith("Mono.", StringComparison.OrdinalIgnoreCase) )
+    |> Seq.iter (fun entry -> zip.ExtractFile(entry, Path.Combine(unpack, Path.GetFileName(entry.FilenameInZip))) |> ignore)
+
+   SimpleInstrumentingRun unpack ".R"
+)
+
 "Clean"
 ==> "SetVersion"
 ==> "BuildRelease"
 ==> "Package"
+==> "SimpleReleaseTest"
 
 "SetVersion"
 =?> ("BuildDebug", (not(File.Exists("./_Generated/AssemblyVersion.fs"))))
@@ -251,6 +271,7 @@ Target "Package"  (fun _ ->
 ==> "SelfTest"
 ==> "SimpleInstrumentation"
 ==> "BulkReport"
+==> "SimpleReleaseTest"
 
 "BuildDebug"
 ==> "FxCop"

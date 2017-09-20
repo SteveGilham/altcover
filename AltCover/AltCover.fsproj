@@ -40,7 +40,7 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <WarningsAsErrors>
     </WarningsAsErrors>
-    <OtherFlags>--keyfile:$(SolutionDir)_Tools\Infrastructure.snk</OtherFlags>
+    <OtherFlags>--keyfile:$(SolutionDir)_Tools\Infrastructure.snk --standalone</OtherFlags>
     <DefineConstants>TRACE</DefineConstants>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
