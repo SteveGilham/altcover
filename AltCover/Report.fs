@@ -6,7 +6,7 @@ open System.Xml.Linq
 module Report =
 
   let internal ReportGenerator () =
-    let initialState = List.empty<XElement>
+
     let data = XProcessingInstruction(
                    "xml-stylesheet",
                    "type='text/xsl' href='coverage.xsl'") :> Object

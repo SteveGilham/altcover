@@ -39,7 +39,7 @@ Target "SetVersion" (fun _ ->
     let diff = now.Subtract(epoch)  
     let fraction = diff.Subtract(TimeSpan.FromDays(float diff.Days))  
     let revision= ((int fraction.TotalSeconds) / 3)  
-    let version = sprintf "0.0.%d.%d" diff.Days revision
+    let version = sprintf "0.1.%d.%d" diff.Days revision
     Version := version
     let copy = sprintf "© 2010-%d by Steve Gilham <SteveGilham@users.noreply.github.com>" now.Year
     Copyright := "Copyright " + copy
@@ -53,7 +53,7 @@ Target "SetVersion" (fun _ ->
     let key = BitConverter.ToString pair.PublicKey
 
     CreateFSharpAssemblyInfo "./_Generated/AssemblyVersion.fs"
-        [Attribute.Version "0.0.0.0"
+        [Attribute.Version "0.1.0.0"
          Attribute.FileVersion version
          Attribute.Company "Steve Gilham"
          Attribute.Product "AltCover"
@@ -220,6 +220,7 @@ Target "BulkReport" (fun _ ->
 
 // This defaults to Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\FxCopCmd.exe
 Target "FxCop" (fun _ ->
+    ensureDirectory "./_Reports"
     let fxCop = combinePaths (environVar "VS150COMNTOOLS") "../../Team Tools/Static Analysis Tools/FxCop/FxCopCmd.exe"
     !! (@"_Binaries\*Tests\Debug+AnyCPU/Altcove*.*") 
     |> Seq.filter (fun n -> not (n.EndsWith(".Tests.dll")))
@@ -227,7 +228,30 @@ Target "FxCop" (fun _ ->
     |> FxCop (fun p -> { p with ToolPath = fxCop
                                 WorkingDir = "."
                                 Verbose = false
-                                ReportFileName = "_Reports/FxCopReport.xml"})
+                                ReportFileName = "_Reports/FxCopReport.xml"
+                                TypeList = ["AltCover.Augment"
+                                            "AltCover.Filter"
+                                            "AltCover.Instrument"
+                                            "AltCover.KeyStore"
+                                            "AltCover.Main"
+                                            "AltCover.Naming"
+                                            "AltCover.ProgramDatabase"
+                                            "AltCover.Recorder.Instance"
+                                            "AltCover.Report"
+                                            "AltCover.Visitor"
+                                            ]
+                                Rules = ["-Microsoft.Design#CA1004"
+                                         "-Microsoft.Design#CA1006"
+                                         "-Microsoft.Design#CA1011" // maybe sometimes
+                                         "-Microsoft.Design#CA1062" // null checks,  In F#!
+                                         "-Microsoft.Globalization#CA1303" // TODO
+                                         "-Microsoft.Maintainability#CA1506"
+                                         "-Microsoft.Naming#CA1704"
+                                         "-Microsoft.Naming#CA1707"
+                                         "-Microsoft.Naming#CA1709"
+                                         "-Microsoft.Naming#CA1715"
+                                          ]
+                                IgnoreGeneratedCode  = true})
 )
 
 
@@ -282,13 +306,10 @@ Target "SimpleReleaseTest" (fun _ ->
 ==> "Lint"
 ==> "Test"
 ==> "TestCover"
+==> "FxCop"
 ==> "SelfTest"
 ==> "SimpleInstrumentation"
 ==> "BulkReport"
 ==> "SimpleReleaseTest"
 
-"BuildDebug"
-==> "FxCop"
-
-
-RunTargetOrDefault "TestCover"
+RunTargetOrDefault "SimpleReleaseTest"

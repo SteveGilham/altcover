@@ -80,7 +80,7 @@ module Visitor =
     not (NameFilters |> Seq.exists (Filter.Match nameProvider))
 
   let ToSeq node =
-    seq {yield node}
+    List.toSeq [ node ]
 
   let internal After node =
     match node with
@@ -93,10 +93,6 @@ module Visitor =
   let mutable private PointNumber : int = 0
 
   let rec internal Deeper node =
-    let defaultReturn = Seq.empty<Node>  // To move Nest inside the code
-    let Nest node =
-      Seq.concat [ ToSeq node ; Deeper node ; After node ]
-
     // The pattern here is map x |> map y |> map x |> concat => collect (x >> y >> z)
     match node with
     | Start paths -> paths
@@ -123,7 +119,6 @@ module Visitor =
                                |> Seq.collect ((fun m -> Method (m, included && IsIncluded m)) >> BuildSequence)
 
     | Method (m, _) ->
-            let segments = new Dictionary<int, SequencePoint>()
             let instructions = m.Body.Instructions
                                |> Seq.cast
                                |> Seq.filter (fun (x:Instruction) -> isNotNull x.SequencePoint && x.SequencePoint.StartLine <> 0xfeefee)
