@@ -217,8 +217,6 @@ Target "BulkReport" (fun _ ->
                                           TargetDir = "_Reports/_BulkReport"})
 )
 
-
-// This defaults to Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\FxCopCmd.exe
 Target "FxCop" (fun _ ->
     ensureDirectory "./_Reports"
     let fxCop = combinePaths (environVar "VS150COMNTOOLS") "../../Team Tools/Static Analysis Tools/FxCop/FxCopCmd.exe"
@@ -252,6 +250,14 @@ Target "FxCop" (fun _ ->
                                          "-Microsoft.Naming#CA1715"
                                           ]
                                 IgnoreGeneratedCode  = true})
+)
+
+Target "Gendarme" (fun _ ->
+    ExecProcess (fun info -> info.FileName <- (findToolInSubPath "gendarme.exe" ".\packages")
+                             info.WorkingDirectory <- "."
+                             info.Arguments <- "--console --html ./_Reports/gendarme.html  _Binaries/AltCover.Tests/Debug+AnyCPU/Altcover.exe  _Binaries/AltCover.Tests/Debug+AnyCPU/Altcover.Recorder.dll") (TimeSpan.FromMinutes 5.0)
+    |> ignore
+                                
 )
 
 
