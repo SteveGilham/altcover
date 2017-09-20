@@ -25,7 +25,12 @@ Target "Lint" (fun _ ->
 
 // The clean target cleans the build and deploy folders
 Target "Clean" (fun _ ->
-    CleanDirs ["./_Binaries/"; "./_Intermediate/"; "./_Generated/"; "./_Reports"]
+    printfn "Cleaning" 
+    subDirectories (directoryInfo ".")
+    |> Seq.filter (fun x -> x.Name.StartsWith "_" )
+    |> Seq.map (fun x -> x.FullName)
+    |> Seq.toList
+    |> DeleteDirs
 )
 
 Target "SetVersion" (fun _ ->
@@ -80,6 +85,16 @@ Target "BuildRelease" (fun _ ->
    !! "*.sln"
      |> MSBuildRelease "" ""
      |> Log "AppBuild-Output: "
+
+   ILMerge (fun p -> { p with DebugInfo = true
+                              TargetKind = TargetKind.Exe
+                              KeyFile = "./Build/Infrastructure.snk"
+                              Version = !Version
+                              Internalize = InternalizeTypes.Internalize
+                              Libraries = !! "./_Binaries/AltCover/Release+AnyCPU/Mono.C*.dll"
+                              AttributeFile = "./_Binaries/AltCover/Release+AnyCPU/AltCover.exe"})
+                              "./_Binaries/AltCover/AltCover.exe"
+                              "./_Binaries/AltCover/Release+AnyCPU/AltCover.exe"
 )
 
 Target "BuildDebug" (fun _ ->
@@ -219,9 +234,8 @@ Target "FxCop" (fun _ ->
 Target "Package"  (fun _ ->
     ensureDirectory "./_Binaries/Packaging"
     ensureDirectory "./_Packaging"
-    let altcover = FullName "_Binaries/AltCover/Release+AnyCPU/AltCover.exe"
+    let altcover = FullName "_Binaries/AltCover/AltCover.exe"
     let recorder = FullName "_Binaries/AltCover/Release+AnyCPU/AltCover.Recorder.dll"
-    let folder = FullName "_Binaries/AltCover/Release+AnyCPU/"
 
     NuGet (fun p -> 
     {p with
@@ -233,7 +247,6 @@ Target "Package"  (fun _ ->
         Files = [
                         (altcover, Some "tools", None)
                         (recorder, Some "tools", None)
-                        (folder + "Mono*.dll", Some "tools", None)
                 ]
         Version = !Version
         Copyright = !Copyright
@@ -248,8 +261,7 @@ Target "SimpleReleaseTest" (fun _ ->
    let zip = ZipStorer.Open(nugget, FileAccess.Read)
    let unpack = FullName "_Packaging/Unpack"
    zip.ReadCentralDir()
-    |> Seq.filter (fun entry -> Path.GetFileName(entry.FilenameInZip).StartsWith("AltCover.", StringComparison.OrdinalIgnoreCase) ||
-                                Path.GetFileName(entry.FilenameInZip).StartsWith("Mono.", StringComparison.OrdinalIgnoreCase) )
+    |> Seq.filter (fun entry -> Path.GetFileName(entry.FilenameInZip).StartsWith("AltCover.", StringComparison.OrdinalIgnoreCase) )
     |> Seq.iter (fun entry -> zip.ExtractFile(entry, Path.Combine(unpack, Path.GetFileName(entry.FilenameInZip))) |> ignore)
 
    SimpleInstrumentingRun unpack ".R"
