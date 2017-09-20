@@ -261,7 +261,9 @@ Target "SimpleReleaseTest" (fun _ ->
    let zip = ZipStorer.Open(nugget, FileAccess.Read)
    let unpack = FullName "_Packaging/Unpack"
    zip.ReadCentralDir()
-    |> Seq.filter (fun entry -> Path.GetFileName(entry.FilenameInZip).StartsWith("AltCover.", StringComparison.OrdinalIgnoreCase) )
+    |> Seq.filter (fun entry -> let name = Path.GetFileName(entry.FilenameInZip)
+                                name.StartsWith("AltCover.", StringComparison.OrdinalIgnoreCase) &&
+                                    (Path.GetExtension(name).Length = 4))
     |> Seq.iter (fun entry -> zip.ExtractFile(entry, Path.Combine(unpack, Path.GetFileName(entry.FilenameInZip))) |> ignore)
 
    SimpleInstrumentingRun unpack ".R"
