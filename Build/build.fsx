@@ -220,7 +220,7 @@ Target "BulkReport" (fun _ ->
 Target "FxCop" (fun _ ->
     ensureDirectory "./_Reports"
     let fxCop = combinePaths (environVar "VS150COMNTOOLS") "../../Team Tools/Static Analysis Tools/FxCop/FxCopCmd.exe"
-    !! (@"_Binaries\*Tests\Debug+AnyCPU/Altcove*.*") 
+    ["_Binaries/AltCover/Debug+AnyCPU/AltCover.exe"; "_Binaries/AltCover.Shadow/Debug+AnyCPU/AltCover.Shadow.dll"]
     |> Seq.filter (fun n -> not (n.EndsWith(".Tests.dll")))
     |> Seq.filter (fun n -> not (n.EndsWith(".pdb")))
     |> FxCop (fun p -> { p with ToolPath = fxCop
@@ -255,7 +255,7 @@ Target "FxCop" (fun _ ->
 Target "Gendarme" (fun _ ->
     ExecProcess (fun info -> info.FileName <- (findToolInSubPath "gendarme.exe" ".\packages")
                              info.WorkingDirectory <- "."
-                             info.Arguments <- "--console --html ./_Reports/gendarme.html  _Binaries/AltCover.Tests/Debug+AnyCPU/Altcover.exe  _Binaries/AltCover.Tests/Debug+AnyCPU/Altcover.Recorder.dll") (TimeSpan.FromMinutes 5.0)
+                             info.Arguments <- "--console --html ./_Reports/gendarme.html  _Binaries/AltCover/Debug+AnyCPU/AltCover.exe  _Binaries/AltCover.Shadow/Debug+AnyCPU/AltCover.Shadow.dll") (TimeSpan.FromMinutes 5.0)
     |> ignore
                                 
 )
@@ -264,7 +264,7 @@ Target "Gendarme" (fun _ ->
 Target "Package"  (fun _ ->
     ensureDirectory "./_Binaries/Packaging"
     ensureDirectory "./_Packaging"
-    let altcover = FullName "_Binaries/AltCover/AltCover.exe"
+    let AltCover = FullName "_Binaries/AltCover/AltCover.exe"
     let recorder = FullName "_Binaries/AltCover/Release+AnyCPU/AltCover.Recorder.dll"
 
     NuGet (fun p -> 
@@ -275,7 +275,7 @@ Target "Package"  (fun _ ->
         OutputPath = "./_Packaging"
         WorkingDir = "./_Binaries/Packaging"
         Files = [
-                        (altcover, Some "tools", None)
+                        (AltCover, Some "tools", None)
                         (recorder, Some "tools", None)
                 ]
         Version = !Version
