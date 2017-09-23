@@ -76,6 +76,7 @@ module Instrument =
     let DefineRecordingAssembly () =
       let recorder = typeof<AltCover.Recorder.Tracer>
       let definition = AssemblyDefinition.ReadAssembly(recorder.Assembly.Location)
+      ProgramDatabase.ReadSymbols definition
       definition.Name.Name <- definition.Name.Name + ".g"
       use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Recorder.snk")
       use buffer = new MemoryStream()
@@ -195,7 +196,6 @@ module Instrument =
     /// <param name="oldBoundary">The uninstrumented location</param>
     /// <param name="newBoundary">Where it has moved to</param>
     let SubstituteExceptionBoundary (handler:ExceptionHandler) (oldBoundary:Instruction)( newBoundary : Instruction ) =
-      //if handler.FilterEnd = oldBoundary then handler.FilterEnd <- newBoundary // ?? Obsolete
       if handler.FilterStart = oldBoundary then handler.FilterStart <- newBoundary
       if handler.HandlerEnd = oldBoundary then handler.HandlerEnd <- newBoundary
       if handler.HandlerStart = oldBoundary then handler.HandlerStart <- newBoundary
