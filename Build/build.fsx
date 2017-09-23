@@ -3,11 +3,15 @@
 #r @"../packages/FSharpLint.Fake.0.8.0/tools/FSharpLint.Fake.dll"
 #I @"../packages/ZipStorer.3.4.0/lib/net20"
 #r @"../packages/ZipStorer.3.4.0/lib/net20/ZipStorer.dll"
+#r "System.Xml"
+#r "System.Xml.Linq"
 
 open System
 open System.IO
 open System.IO.Compression
 open System.Reflection
+open System.Xml
+open System.Xml.Linq
 
 open Fake
 open Fake.AssemblyInfoFile
@@ -148,6 +152,15 @@ Target "SelfTest" (fun _ ->
                                        TargetDir = "_Reports/_Instrumented"})
         ["./_Reports/OpenCoverInstrumentationReport.xml"]
 
+    // get recorder details from here
+    use coverageFile = new FileStream("./_Reports/OpenCoverInstrumentationReport.xml", FileMode.Open, FileAccess.Read, FileShare.None, 4096, FileOptions.SequentialScan)
+    // Edit xml report to store new hits
+    let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
+    let recorder = coverageDocument.Descendants(XName.Get("Module"))
+                   |> Seq.filter (fun el -> el.Descendants(XName.Get("ModulePath")).Nodes() 
+                                            |> Seq.exists (fun n -> n.ToString().EndsWith("AltCover.Recorder.dll")))
+                   |> Seq.head
+   
     printfn "Re-instrument everything"
     ensureDirectory "./_Reports/_AltReport"
     let altReport2 = Path.Combine(reports, "AltCoverage2.xml")
@@ -177,6 +190,29 @@ Target "SelfTest" (fun _ ->
                                  Register = RegisterType.RegisterUser
                                  Output = "_Reports/OpenCoverReportAltCovered.xml" }) 
         "_Binaries/AltCover.Tests/Debug+AnyCPU/__Instrumented/AltCover.Tests.dll --result=./_Reports/NUnit3ReportAltCovered.xml"
+
+    use coverageFile2 = new FileStream("./_Reports/OpenCoverReportAltCovered.xml", FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.SequentialScan)
+    let coverageDocument2 = XDocument.Load(XmlReader.Create(coverageFile2))
+    let recorder2 = coverageDocument2.Descendants(XName.Get("Module"))
+                    |> Seq.filter (fun el -> el.Descendants(XName.Get("ModulePath")).Nodes() 
+                                             |> Seq.exists (fun n -> n.ToString().EndsWith("AltCover.Recorder.g.dll")))
+                    |> Seq.head // at most 1
+    recorder2.SetAttributeValue(XName.Get("hash"), recorder.Attribute(XName.Get("hash")).Value)
+
+    ["ModulePath"; "ModuleTime"; "ModuleName"] 
+    |> Seq.iter (fun name -> let from = recorder.Descendants(XName.Get(name)).Nodes() |> Seq.head :?> XText
+                             let to' = recorder2.Descendants(XName.Get(name)).Nodes() |> Seq.head :?> XText
+                             to'.Value <- from.Value)
+
+    // Save modified xml to a file
+    coverageFile2.Seek(0L, SeekOrigin.Begin) |> ignore
+    coverageFile2.SetLength(int64 0) // truncate it all because the rewrite ends up one line shorter for some reason and leaves a dangling tag
+    use writer = System.Xml.XmlWriter.Create(coverageFile2)
+    coverageDocument2.WriteTo(writer)
+    writer.Flush()
+    writer.Close()
+    coverageFile2.Close()
+
     ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
                                        TargetDir = "_Reports/_UnitTestInstrumented"})
         ["./_Reports/OpenCoverReportAltCovered.xml"]
