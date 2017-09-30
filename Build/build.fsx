@@ -39,7 +39,7 @@ Target "Clean" (fun _ ->
 
 Target "SetVersion" (fun _ ->
     let now = DateTimeOffset.UtcNow  
-    let epoch = new DateTimeOffset(2000, 1, 1, 0, 0, 0, new TimeSpan(int64 0))  
+    let epoch = DateTimeOffset(2000, 1, 1, 0, 0, 0, TimeSpan(int64 0))  
     let diff = now.Subtract(epoch)  
     let fraction = diff.Subtract(TimeSpan.FromDays(float diff.Days))  
     let revision= ((int fraction.TotalSeconds) / 3)  
@@ -49,11 +49,11 @@ Target "SetVersion" (fun _ ->
     Copyright := "Copyright " + copy
 
     let stream2 = new System.IO.FileStream("./Build/SelfTest.snk", System.IO.FileMode.Open, System.IO.FileAccess.Read)
-    let pair2 = new StrongNameKeyPair(stream2)
+    let pair2 = StrongNameKeyPair(stream2)
     let key2 = BitConverter.ToString pair2.PublicKey
 
     let stream = new System.IO.FileStream("./Build/Infrastructure.snk", System.IO.FileMode.Open, System.IO.FileAccess.Read)
-    let pair = new StrongNameKeyPair(stream)
+    let pair = StrongNameKeyPair(stream)
     let key = BitConverter.ToString pair.PublicKey
 
     CreateFSharpAssemblyInfo "./_Generated/AssemblyVersion.fs"
@@ -218,11 +218,22 @@ Target "SelfTest" (fun _ ->
         ["./_Reports/OpenCoverReportAltCovered.xml"]
 )
 
-let SimpleInstrumentingRun (binaryPath:string) (reportSigil:string) = 
+Target "BuildMonoSamples" (fun _ ->
+    ensureDirectory "./_Mono/Sample1"
+    let pf = environVar "ProgramFiles"
+    let mcs = pf @@ @"Mono\bin\mcs.bat"
+
+    let result = ExecProcess (fun info -> info.FileName <- mcs
+                                          info.WorkingDirectory <- "."
+                                          info.Arguments <- (@"-debug -out:./_Mono/Sample1/Sample1.exe  .\Sample1\Program.cs")) (TimeSpan.FromMinutes 5.0)
+    if result <> 0 then failwith "Mono compilation failed"
+)
+
+let SimpleInstrumentingRun' (samplePath:string) (binaryPath:string) (reportSigil:string) = 
     printfn "Instrument a simple executable"
     let simpleReport = Path.Combine(FullName "./_Reports", "SimpleCoverage" + reportSigil + ".xml")
     let binRoot = FullName binaryPath
-    let sampleRoot = FullName "_Binaries/Sample1/Debug+AnyCPU"
+    let sampleRoot = FullName samplePath
     let instrumented = "__Instrumented" + reportSigil
     let result = ExecProcess (fun info -> info.FileName <- Path.Combine(binRoot, "AltCover.exe")
                                           info.WorkingDirectory <- sampleRoot
@@ -238,10 +249,11 @@ let SimpleInstrumentingRun (binaryPath:string) (reportSigil:string) =
                                        TargetDir = "_Reports/_SimpleReport" + reportSigil})
         [simpleReport]
 
+let SimpleInstrumentingRun = SimpleInstrumentingRun' "_Binaries/Sample1/Debug+AnyCPU"
+
 Target "SimpleInstrumentation" (fun _ ->
    SimpleInstrumentingRun "_Binaries/AltCover/Debug+AnyCPU" String.Empty
 )
-
 
 Target "BulkReport" (fun _ ->
     printfn "Overall coverage reporting"
@@ -335,11 +347,20 @@ Target "SimpleReleaseTest" (fun _ ->
    SimpleInstrumentingRun unpack ".R"
 )
 
+Target "SimpleMonoReleaseTest" (fun _ ->
+   let unpack = FullName "_Packaging/Unpack"
+   SimpleInstrumentingRun' "_Mono/Sample1" unpack ".MR"
+)
+
 "Clean"
 ==> "SetVersion"
 ==> "BuildRelease"
 ==> "Package"
 ==> "SimpleReleaseTest"
+==> "SimpleMonoReleaseTest"
+
+"BuildMonoSamples"
+==> "SimpleMonoReleaseTest"
 
 "SetVersion"
 =?> ("BuildDebug", (not(File.Exists("./_Generated/AssemblyVersion.fs"))))
@@ -354,4 +375,4 @@ Target "SimpleReleaseTest" (fun _ ->
 ==> "BulkReport"
 ==> "SimpleReleaseTest"
 
-RunTargetOrDefault "SimpleReleaseTest"
+RunTargetOrDefault "SimpleMonoReleaseTest"
