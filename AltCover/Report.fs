@@ -53,12 +53,16 @@ module Report =
           element :: s
 
       | MethodPoint (_, codeSegment, _, included) ->
+          // quick fix for .mdb lack of end line/column information
+          let end' = match (codeSegment.EndLine, codeSegment.EndColumn) with
+                     | (-1, _) -> (codeSegment.StartLine, codeSegment.StartColumn + 1)
+                     | endPair -> endPair
           let element = XElement(X "seqpnt",
                           XAttribute(X "visitcount", 0),
                           XAttribute(X "line", codeSegment.StartLine),
                           XAttribute(X "column", codeSegment.StartColumn),
-                          XAttribute(X "endline", codeSegment.EndLine),
-                          XAttribute(X "endcolumn", codeSegment.EndColumn),
+                          XAttribute(X "endline", fst end'),
+                          XAttribute(X "endcolumn", snd end'),
                           XAttribute(X "excluded", (not included).ToString().ToLowerInvariant()),
                           XAttribute(X "document", codeSegment.Document.Url));
           if s.Head.IsEmpty then s.Head.Add(element)
