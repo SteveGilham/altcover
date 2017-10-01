@@ -10,10 +10,6 @@ open Mono.Cecil.Cil
 open Mono.Cecil.Mdb
 open Mono.Cecil.Pdb
 
-type AssemblyModel = {
-         Assembly : AssemblyDefinition;
-         Symbols : ISymbolReader }
-
 module ProgramDatabase =
   // We no longer have to violate Cecil encapsulation to get the PDB path!
   let GetPdbFromImage (assembly:AssemblyDefinition) =

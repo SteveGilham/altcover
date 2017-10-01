@@ -121,6 +121,7 @@ module Visitor =
     | Method (m, _) ->
             let instructions = m.Body.Instructions
                                |> Seq.cast
+                               |> Seq.distinctBy(fun (x:Instruction) -> x.Offset)
                                |> Seq.filter (fun (x:Instruction) -> isNotNull x.SequencePoint && x.SequencePoint.StartLine <> 0xfeefee)
                                |> Seq.toList
 

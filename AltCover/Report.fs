@@ -42,7 +42,7 @@ module Report =
           let element = XElement(X "method",
                           XAttribute(X "name", methodDef.Name),
                           //// Mono.Cecil emits names in the form outer/inner rather than outer+inner
-                          XAttribute(X "class", methodDef.DeclaringType.FullName.Replace('/', '+')),
+                          XAttribute(X "class", Naming.FullTypeName methodDef.DeclaringType),
                           XAttribute(X "metadataToken", methodDef.MetadataToken.ToUInt32().ToString()),
                           XAttribute(X "excluded", if included then "false" else "true"),
                           XAttribute(X "instrumented", if included then "true" else "false"),
