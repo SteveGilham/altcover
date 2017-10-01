@@ -1,14 +1,5 @@
 ﻿namespace AltCover
 
-type OptionBuilder() =
-    member self.Bind(input, operation) = Option.bind operation input
-    member self.Delay (operation:(unit -> option<'T>)) = operation ()
-    member self.Return input = Some input
-    member self.ReturnFrom (input : option<'T>) = input
-
-module Monads =
-  let option = OptionBuilder()
-
 module Augment =
   type Microsoft.FSharp.Core.Option<'T> with
       static member filter (f : 'T -> bool) (x : option<'T>) =
