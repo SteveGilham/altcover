@@ -40,9 +40,11 @@ module Naming =
                                         |> Seq.map FullTypeRefName)
                           else String.Empty
 
-        builder.Append(FullTypeName def.DeclaringType)
+        builder.Append(FullTypeRefName def.ReturnType)
+               .Append(" ")
+               .Append(FullTypeName def.DeclaringType)
                .Append(".")
-               .Append(if def.IsConstructor then "#ctor" else MethodName def)
+               .Append(if def.IsConstructor && (not def.IsStatic) then "#ctor" else MethodName def)
                .Append(if def.HasGenericParameters then "<" else String.Empty)
                .Append(tparameters)
                .Append(if def.HasGenericParameters then ">" else String.Empty)
