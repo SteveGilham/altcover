@@ -271,6 +271,34 @@ let SimpleInstrumentingRun (samplePath:string) (binaryPath:string) (reportSigil:
                                        TargetDir = "_Reports/_SimpleReport" + reportSigil})
         [simpleReport]
 
+    // get recorder details from here
+    use coverageFile = new FileStream(simpleReport, FileMode.Open, FileAccess.Read, FileShare.None, 4096, FileOptions.SequentialScan)
+    // Edit xml report to store new hits
+    let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
+    let recorded = coverageDocument.Descendants(XName.Get("seqpnt"))
+                   |> Seq.toList
+
+    let zero = recorded 
+               |> Seq.filter (fun x -> x.Attribute(XName.Get("visitcount")).Value = "0")
+               |> Seq.map (fun x -> x.Attribute(XName.Get("line")).Value)
+               |> Seq.sort
+               |> Seq.toList
+    let ones = recorded 
+               |> Seq.filter (fun x -> x.Attribute(XName.Get("visitcount")).Value = "1")
+               |> Seq.map (fun x -> x.Attribute(XName.Get("line")).Value)
+               |> Seq.sort
+               |> Seq.toList
+
+    if (List.length ones) + (List.length zero) <> (List.length recorded) then failwith "unexpected visits"
+
+    if Seq.zip ["18"; "19"; "20"]  (zero |> Seq.distinct)
+       |> Seq.filter (fun (x,y) -> x <> y)
+       |> Seq.isEmpty |> not  then failwith "wrong unvisited"
+
+    if Seq.zip ["11"; "12"; "13"; "14"; "15"; "16"; "21"] (ones |> Seq.distinct)
+       |> Seq.filter (fun (x,y) -> x <> y)
+       |> Seq.isEmpty |> not  then failwith "wrong number of visited"
+
 Target "SimpleInstrumentation" (fun _ ->
    SimpleInstrumentingRun "_Binaries/Sample1/Debug+AnyCPU" "_Binaries/AltCover/Debug+AnyCPU" String.Empty
 )
@@ -368,7 +396,7 @@ Target "SimpleReleaseTest" (fun _ ->
                                     (Path.GetExtension(name).Length = 4))
     |> Seq.iter (fun entry -> zip.ExtractFile(entry, unpack @@ Path.GetFileName(entry.FilenameInZip)) |> ignore)
 
-   SimpleInstrumentingRun "_Binaries/Sample1/Release+AnyCPU" unpack ".R"
+   SimpleInstrumentingRun "_Binaries/Sample1/Debug+AnyCPU" unpack ".R"
 )
 
 Target "SimpleMonoReleaseTest" (fun _ ->
