@@ -92,6 +92,9 @@ module Visitor =
 
   let mutable private PointNumber : int = 0
 
+  let significant (m : MethodDefinition) = 
+    (not << Filter.IsFSharpInternal) m
+
   let rec internal Deeper node =
     // The pattern here is map x |> map y |> map x |> concat => collect (x >> y >> z)
     match node with
@@ -115,7 +118,8 @@ module Visitor =
                                |> Seq.cast
                                |> Seq.filter (fun (m : MethodDefinition) -> not m.IsAbstract
                                                                             && not m.IsRuntime
-                                                                            && not m.IsPInvokeImpl)
+                                                                            && not m.IsPInvokeImpl
+                                                                            && significant m)
                                |> Seq.collect ((fun m -> Method (m, included && IsIncluded m)) >> BuildSequence)
 
     | Method (m, _) ->

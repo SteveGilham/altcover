@@ -1,9 +1,12 @@
 ﻿namespace AltCover
 
 open System
+open System.Diagnostics
 open System.IO
+open System.Runtime.CompilerServices
 
 open Mono.Cecil
+open AltCover.Augment
 
 type internal FilterClass =
   | File of string
@@ -41,3 +44,53 @@ module Filter =
                                 attr.Constructor.DeclaringType.FullName.Contains(name))
          | _ -> false
     | _ -> false
+
+  let internal IsFSharpInternal (m:MethodDefinition) =
+
+    // Discriminated Union/Sum/Algebraic data types are implemented as
+    // subtypes nested in the base type
+    // Algebraic types have debug proxies nested in the base type which are not attributed at the type level
+    let baseType = Option.nullable m.DeclaringType.DeclaringType
+                  |> Option.filter (fun t -> t.HasCustomAttributes)
+                  |> Option.map (fun t -> t.CustomAttributes |> Seq.map id)
+                  |> Option.filter (fun x -> not (Seq.isEmpty x))
+                  |> Option.getOrElse Seq.empty<CustomAttribute>
+
+    let thisType = Some m.DeclaringType
+                  |> Option.filter (fun t -> t.HasCustomAttributes)
+                  |> Option.map (fun t -> t.CustomAttributes |> Seq.map id)
+                  |> Option.filter (fun x -> not (Seq.isEmpty x))
+                  |> Option.getOrElse Seq.empty<CustomAttribute>
+
+    // Use string literals since Mono doesn't return a Type
+    let mappings = Seq.concat [baseType; thisType]
+                   |> Seq.filter (fun x -> x.AttributeType.FullName = "Microsoft.FSharp.Core.CompilationMappingAttribute")
+                   |> Seq.filter (fun x -> let arg1 = x.ConstructorArguments |> Seq.head
+                                           match arg1.Value :?> SourceConstructFlags with
+                                           | SourceConstructFlags.SumType
+                                           | SourceConstructFlags.RecordType -> true
+                                           | _ -> false)
+                   |> Seq.toList
+
+    // record type has getters marked as field
+    let fieldGetter = match m.IsGetter with
+                      | false -> false
+                      | _ -> let owner = m.DeclaringType.Properties
+                                         |> Seq.filter (fun x -> x.GetMethod = m)
+                                         |> Seq.head
+                             if owner.HasCustomAttributes then
+                                owner.CustomAttributes
+                                |> Seq.filter (fun x -> x.AttributeType.FullName = "Microsoft.FSharp.Core.CompilationMappingAttribute")
+                                |> Seq.filter (fun x -> let arg1 = x.ConstructorArguments |> Seq.head
+                                                        match arg1.Value :?> SourceConstructFlags with
+                                                        | SourceConstructFlags.Field -> true
+                                                        | _ -> false)
+                                |> Seq.isEmpty |> not
+                             else false
+
+    (not (Seq.isEmpty mappings)) &&
+      (fieldGetter || m.IsConstructor || 
+         (m.HasCustomAttributes && m.CustomAttributes
+                                   |> Seq.exists (fun x -> x.AttributeType.FullName = typeof<CompilerGeneratedAttribute>.FullName ||
+                                                           x.AttributeType.FullName = typeof<DebuggerNonUserCodeAttribute>.FullName ||
+                                                           x.AttributeType.FullName = typeof<CompilationMappingAttribute>.FullName)))

@@ -120,7 +120,28 @@ Target "TestCover" (fun _ ->
     ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
                                        TargetDir = "_Reports/_UnitTest"})
         ["./_Reports/OpenCoverReport.xml"]
-)             
+) 
+
+Target "FSharpTypes" ( fun _ ->
+    ensureDirectory "./_Reports"
+    let simpleReport = (FullName "./_Reports") @@ ( "FSharpTypes.xml")
+    let binRoot = FullName "_Binaries/AltCover/Debug+AnyCPU"
+    let sampleRoot = FullName "_Binaries/Sample2/Debug+AnyCPU"
+    let instrumented = "__Instrumented"
+    let result = ExecProcess (fun info -> info.FileName <- binRoot @@ "AltCover.exe"
+                                          info.WorkingDirectory <- sampleRoot
+                                          info.Arguments <- ("-t=System. -tMicrosoft. -x=" + simpleReport + " /o=./" + instrumented)) (TimeSpan.FromMinutes 5.0)
+    use coverageFile = new FileStream(simpleReport, FileMode.Open, FileAccess.Read, FileShare.None, 4096, FileOptions.SequentialScan)
+    // Edit xml report to store new hits
+    let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
+    let recorded = coverageDocument.Descendants(XName.Get("method"))
+                   |> Seq.map (fun x -> x.Attribute(XName.Get("name")).Value)
+                   |> Seq.sort
+                   |> Seq.toList
+    let expected = "[\"as_bar\"; \"bytes\"; \"makeThing\"; \"returnBar\"; \"returnFoo\"; \"testMakeThing\";\n \"testMakeUnion\"]"
+    if recorded.Length <> 7 then failwith (sprintf "Bad method list length %A" recorded)
+    if (sprintf "%A" recorded) <> expected then failwith (sprintf "Bad method list %A" recorded)
+    )
 
 Target "Test" (fun _ ->
     ensureDirectory "./_Reports"
@@ -393,7 +414,8 @@ Target "All" (fun _ -> ())
 ==> "SimpleInstrumentation"
 "BuildDebug"
 ==> "SimpleMonoTest"
-
+"BuildDebug"
+==> "FSharpTypes"
 
 "TestCover"
 ==> "BulkReport"
@@ -411,6 +433,9 @@ Target "All" (fun _ -> ())
 ==> "All"
 
 "SimpleMonoTest"
+==> "All"
+
+"FSharpTypes"
 ==> "All"
 
 RunTargetOrDefault "All"

@@ -6,6 +6,8 @@ open System.Reflection
 open System.Xml.Linq
 
 open AltCover
+open Mono.Cecil
+open N
 open NUnit.Framework
 
 [<TestFixture>]
@@ -18,6 +20,44 @@ type AltCoverTests() = class
     match pdb with
     | None -> "\\.."
     | _ -> String.Empty
+
+  [<Test>]
+  member self.CanIdentifyExcludedFSharpMethods() =
+    let tracer = DU.returnFoo 23
+    let location = tracer.GetType().Assembly.Location
+    let sourceAssembly = AssemblyDefinition.ReadAssembly(location)
+
+    let direct = sourceAssembly.MainModule.Types
+                 |> Seq.filter (fun x -> x.Namespace = "N" )
+                 |> Seq.toList
+    let indirect = direct
+                   |> Seq.filter (fun t-> t.HasNestedTypes)
+                   |> Seq.collect (fun t -> t.NestedTypes)
+                   |> Seq.toList // MyUnion, MyThing
+    let indirect2 = indirect
+                   |> Seq.filter (fun t-> t.HasNestedTypes)
+                   |> Seq.collect (fun t -> t.NestedTypes)
+                   |> Seq.toList // Foo, Bar, ...
+    
+    let indirect3 = indirect2
+                    |> Seq.filter (fun t-> t.HasNestedTypes)
+                    |> Seq.collect (fun t -> t.NestedTypes)
+                    |> Seq.map (fun t -> t.FullName)
+                    |> Seq.toList
+
+    Assert.That (indirect3
+                   |> Seq.isEmpty, sprintf "Third order types found %A" indirect3)
+
+    let pass = Seq.concat [direct; indirect; indirect2]
+               |> Seq.collect (fun t -> t.Methods)
+               |> Seq.filter (not << Filter.IsFSharpInternal)
+               |> Seq.map (fun x -> x.Name)
+               |> Seq.sort
+               |> Seq.toList
+
+    let expected = [ "as_bar"; "bytes"; "makeThing"; "returnBar"; "returnFoo"; "testMakeThing"; "testMakeUnion" ]
+
+    Assert.That(pass, Is.EquivalentTo(expected), sprintf "Got sequence %A" pass);
 
   [<Test>]
   member self.ShouldGetPdbFromImage() =
