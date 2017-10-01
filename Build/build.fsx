@@ -133,11 +133,11 @@ Target "Test" (fun _ ->
 Target "SelfTest" (fun _ ->
     let targetDir = "_Binaries/AltCover.Tests/Debug+AnyCPU"
     let reports = FullName "./_Reports"
-    let altReport = Path.Combine(reports, "AltCoverage.xml")
+    let altReport = reports @@ "AltCoverage.xml"
     let keyfile = FullName "Build\SelfTest.snk"
 
     ensureDirectory "./_Reports/_Instrumented"
-    ensureDirectory <| Path.Combine(targetDir, "__Instrumented")
+    ensureDirectory (targetDir @@ "__Instrumented")
 
     printfn "Self-instrument under OpenCover"
     OpenCover (fun p -> { p with ExePath = findToolInSubPath "OpenCover.Console.exe" "."
@@ -146,7 +146,7 @@ Target "SelfTest" (fun _ ->
                                  Filter = "+[AltCove*]* -[*]Microsoft.* -[*]System.*"
                                  MergeByHash = true
                                  Register = RegisterType.RegisterUser
-                                 Output = Path.Combine(reports, "OpenCoverInstrumentationReport.xml") }) 
+                                 Output = reports @@ "OpenCoverInstrumentationReport.xml" }) 
         ("/sn=" + keyfile + " -f=Mono. -f=.Recorder -f=Sample. -f=nunit. -t=System. -x=" + altReport)
     ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
                                        TargetDir = "_Reports/_Instrumented"})
@@ -163,7 +163,7 @@ Target "SelfTest" (fun _ ->
    
     printfn "Re-instrument everything"
     ensureDirectory "./_Reports/_AltReport"
-    let altReport2 = Path.Combine(reports, "AltCoverage2.xml")
+    let altReport2 = reports @@ "AltCoverage2.xml"
     let result = ExecProcess (fun info -> info.FileName <- "_Binaries/AltCover.Tests/Debug+AnyCPU/__Instrumented/AltCover.exe"
                                           info.WorkingDirectory <- "_Binaries/AltCover.Tests/Debug+AnyCPU"
                                           info.Arguments <- ("/sn=" + keyfile + @" -f=Mono. -f=.Recorder -f=Sample. -f=nunit. -t=System. /o=.\__ReInstrument -x=" + altReport2)) (TimeSpan.FromMinutes 5.0)
@@ -229,18 +229,19 @@ Target "BuildMonoSamples" (fun _ ->
     if result <> 0 then failwith "Mono compilation failed"
 )
 
-let SimpleInstrumentingRun' (samplePath:string) (binaryPath:string) (reportSigil:string) = 
+let SimpleInstrumentingRun (samplePath:string) (binaryPath:string) (reportSigil:string) = 
     printfn "Instrument a simple executable"
-    let simpleReport = Path.Combine(FullName "./_Reports", "SimpleCoverage" + reportSigil + ".xml")
+    ensureDirectory "./_Reports"
+    let simpleReport = (FullName "./_Reports") @@ ( "SimpleCoverage" + reportSigil + ".xml")
     let binRoot = FullName binaryPath
     let sampleRoot = FullName samplePath
     let instrumented = "__Instrumented" + reportSigil
-    let result = ExecProcess (fun info -> info.FileName <- Path.Combine(binRoot, "AltCover.exe")
+    let result = ExecProcess (fun info -> info.FileName <- binRoot @@ "AltCover.exe"
                                           info.WorkingDirectory <- sampleRoot
                                           info.Arguments <- ("-t=System. -x=" + simpleReport + " /o=./" + instrumented)) (TimeSpan.FromMinutes 5.0)
     if result <> 0 then failwith "Simple instrumentation failed"
-    let result2 = ExecProcess (fun info -> info.FileName <- Path.Combine(sampleRoot, instrumented + "/Sample1.exe")
-                                           info.WorkingDirectory <- Path.Combine(sampleRoot, instrumented)
+    let result2 = ExecProcess (fun info -> info.FileName <- sampleRoot @@ (instrumented + "/Sample1.exe")
+                                           info.WorkingDirectory <- (sampleRoot @@ instrumented)
                                            info.Arguments <- "") (TimeSpan.FromMinutes 5.0)
     if result2 <> 0 then failwith "Instrumented .exe failed"
     
@@ -249,10 +250,12 @@ let SimpleInstrumentingRun' (samplePath:string) (binaryPath:string) (reportSigil
                                        TargetDir = "_Reports/_SimpleReport" + reportSigil})
         [simpleReport]
 
-let SimpleInstrumentingRun = SimpleInstrumentingRun' "_Binaries/Sample1/Debug+AnyCPU"
-
 Target "SimpleInstrumentation" (fun _ ->
-   SimpleInstrumentingRun "_Binaries/AltCover/Debug+AnyCPU" String.Empty
+   SimpleInstrumentingRun "_Binaries/Sample1/Debug+AnyCPU" "_Binaries/AltCover/Debug+AnyCPU" String.Empty
+)
+
+Target "SimpleMonoTest" (fun _ ->
+   SimpleInstrumentingRun "_Mono/Sample1" "_Binaries/AltCover/Debug+AnyCPU" ".M"
 )
 
 Target "BulkReport" (fun _ ->
@@ -342,15 +345,17 @@ Target "SimpleReleaseTest" (fun _ ->
     |> Seq.filter (fun entry -> let name = Path.GetFileName(entry.FilenameInZip)
                                 name.StartsWith("AltCover.", StringComparison.OrdinalIgnoreCase) &&
                                     (Path.GetExtension(name).Length = 4))
-    |> Seq.iter (fun entry -> zip.ExtractFile(entry, Path.Combine(unpack, Path.GetFileName(entry.FilenameInZip))) |> ignore)
+    |> Seq.iter (fun entry -> zip.ExtractFile(entry, unpack @@ Path.GetFileName(entry.FilenameInZip)) |> ignore)
 
-   SimpleInstrumentingRun unpack ".R"
+   SimpleInstrumentingRun "_Binaries/Sample1/Release+AnyCPU" unpack ".R"
 )
 
 Target "SimpleMonoReleaseTest" (fun _ ->
    let unpack = FullName "_Packaging/Unpack"
-   SimpleInstrumentingRun' "_Mono/Sample1" unpack ".MR"
+   SimpleInstrumentingRun "_Mono/Sample1" unpack ".MR"
 )
+
+Target "All" (fun _ -> ())
 
 "Clean"
 ==> "SetVersion"
@@ -362,17 +367,50 @@ Target "SimpleMonoReleaseTest" (fun _ ->
 "BuildMonoSamples"
 ==> "SimpleMonoReleaseTest"
 
+"BuildMonoSamples"
+==> "SimpleMonoTest"
+
 "SetVersion"
 =?> ("BuildDebug", (not(File.Exists("./_Generated/AssemblyVersion.fs"))))
 
+"SetVersion"
+?=> "BuildDebug"
+
+"Clean"
+?=> "BuildDebug"
+
 "BuildDebug"
 ==> "Lint"
+"BuildDebug"
 ==> "Test"
+"BuildDebug"
 ==> "TestCover"
+"BuildDebug"
 ==> "FxCop"
+"BuildDebug"
 ==> "SelfTest"
+"BuildDebug"
 ==> "SimpleInstrumentation"
-==> "BulkReport"
-==> "SimpleReleaseTest"
+"BuildDebug"
+==> "SimpleMonoTest"
 
-RunTargetOrDefault "SimpleMonoReleaseTest"
+
+"TestCover"
+==> "BulkReport"
+
+"SelfTest"
+==> "BulkReport"
+
+"SimpleInstrumentation"
+==> "BulkReport"
+
+"BulkReport"
+==> "All"
+
+"SimpleMonoReleaseTest"
+==> "All"
+
+"SimpleMonoTest"
+==> "All"
+
+RunTargetOrDefault "All"
