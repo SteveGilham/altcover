@@ -45,6 +45,12 @@ module Filter =
          | _ -> false
     | _ -> false
 
+  let internal IsCSharpAutoProperty (m:MethodDefinition) =
+      (m.IsSetter || m.IsGetter) && m.HasCustomAttributes &&
+        m.CustomAttributes
+        |> Seq.filter (fun x -> x.AttributeType.FullName = typeof<CompilerGeneratedAttribute>.FullName)
+        |> Seq.isEmpty |> not
+
   let internal IsFSharpInternal (m:MethodDefinition) =
 
     // Discriminated Union/Sum/Algebraic data types are implemented as

@@ -112,6 +112,11 @@
       <Project>{0a513aa9-84d8-46e1-bab7-08c73ace5fca}</Project>
       <Private>True</Private>
     </ProjectReference>
+    <ProjectReference Include="..\Sample3\Sample3.csproj">
+      <Name>Sample3</Name>
+      <Project>{a27e8b50-4862-4e8a-8248-ed34c2503d2b}</Project>
+      <Private>True</Private>
+    </ProjectReference>
   </ItemGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

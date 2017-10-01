@@ -93,7 +93,11 @@ module Visitor =
   let mutable private PointNumber : int = 0
 
   let significant (m : MethodDefinition) = 
-    (not << Filter.IsFSharpInternal) m
+    [Filter.IsFSharpInternal
+     Filter.IsCSharpAutoProperty] 
+    |> Seq.map (fun f -> f m)
+    |> Seq.filter id
+    |> Seq.isEmpty
 
   let rec internal Deeper node =
     // The pattern here is map x |> map y |> map x |> concat => collect (x >> y >> z)

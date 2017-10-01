@@ -60,6 +60,40 @@ type AltCoverTests() = class
     Assert.That(pass, Is.EquivalentTo(expected), sprintf "Got sequence %A" pass);
 
   [<Test>]
+  member self.CanIdentifyExcludedCSharpAutoProperties() =
+    let location = typeof<Sample3.Class1>.Assembly.Location
+    let sourceAssembly = AssemblyDefinition.ReadAssembly(location)
+
+    let direct = sourceAssembly.MainModule.Types
+                 |> Seq.filter (fun x -> x.Name = "Class1" )
+                 |> Seq.head
+    let pass = direct.Methods
+               |> Seq.filter (not << Filter.IsCSharpAutoProperty)
+               |> Seq.map (fun x -> x.Name)
+               |> Seq.sort
+               |> Seq.toList
+
+    let expected = [".ctor"]
+    Assert.That(pass, Is.EquivalentTo(expected), sprintf "Got sequence %A" pass);
+
+  [<Test>]
+  member self.CanIdentifyIncludedCSharpProperties() =
+    let location = typeof<Sample3.Class1>.Assembly.Location
+    let sourceAssembly = AssemblyDefinition.ReadAssembly(location)
+
+    let direct = sourceAssembly.MainModule.Types
+                 |> Seq.filter (fun x -> x.Name = "Class2" )
+                 |> Seq.head
+    let pass = direct.Methods
+               |> Seq.filter (not << Filter.IsCSharpAutoProperty)
+               |> Seq.map (fun x -> x.Name)
+               |> Seq.sort
+               |> Seq.toList
+
+    let expected = [".ctor"; "get_Property"; "set_Property"]
+    Assert.That(pass, Is.EquivalentTo(expected), sprintf "Got sequence %A" pass);
+
+  [<Test>]
   member self.ShouldGetPdbFromImage() =
     // Hack for running while instrumented
     let where = Assembly.GetExecutingAssembly().Location;
