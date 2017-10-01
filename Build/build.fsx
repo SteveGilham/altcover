@@ -23,6 +23,9 @@ open FSharpLint.Fake
 let Copyright  = ref String.Empty
 let Version = ref String.Empty
 
+let OpenCoverFilter = "+[AltCove*]* -[*]Microsoft.* -[*]System.* +[*]N.*"
+let AltCoverFilter= " -f=Mono. -f=.Recorder -f=Sample. -f=nunit. -t=System. -t=Sample3.Class2 "
+
 Target "Lint" (fun _ ->
     !! "**/*.fsproj"
         |> Seq.iter (FSharpLint (fun options -> { options with FailBuildIfAnyWarnings = true }) ))
@@ -112,11 +115,11 @@ Target "TestCover" (fun _ ->
     OpenCover (fun p -> { p with ExePath = findToolInSubPath "OpenCover.Console.exe" "."
                                  WorkingDir = "."
                                  TestRunnerExePath = findToolInSubPath "nunit3-console.exe" "."
-                                 Filter = "+[AltCove*]* -[*]Microsoft.* -[*]System.*"
+                                 Filter = OpenCoverFilter
                                  MergeByHash = true
                                  Register = RegisterType.RegisterUser
                                  Output = "_Reports/OpenCoverReport.xml" }) 
-        "_Binaries/AltCover.Tests/Debug+AnyCPU/AltCover.Tests.dll --result=./_Reports/NUnit3ReportOpenCovered.xml"
+        "_Binaries/AltCover.Tests/Debug+AnyCPU/AltCover.Tests.dll _Binaries/AltCover.Tests/Debug+AnyCPU/Sample2.dll --result=./_Reports/NUnit3ReportOpenCovered.xml"
     ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
                                        TargetDir = "_Reports/_UnitTest"})
         ["./_Reports/OpenCoverReport.xml"]
@@ -164,11 +167,11 @@ Target "SelfTest" (fun _ ->
     OpenCover (fun p -> { p with ExePath = findToolInSubPath "OpenCover.Console.exe" "."
                                  WorkingDir = targetDir
                                  TestRunnerExePath = findToolInSubPath "AltCover.exe" targetDir
-                                 Filter = "+[AltCove*]* -[*]Microsoft.* -[*]System.*"
+                                 Filter = OpenCoverFilter
                                  MergeByHash = true
                                  Register = RegisterType.RegisterUser
                                  Output = reports @@ "OpenCoverInstrumentationReport.xml" }) 
-        ("/sn=" + keyfile + " -f=Mono. -f=.Recorder -f=Sample. -f=nunit. -t=System. -x=" + altReport)
+        ("/sn=" + keyfile + AltCoverFilter + "-x=" + altReport)
     ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
                                        TargetDir = "_Reports/_Instrumented"})
         ["./_Reports/OpenCoverInstrumentationReport.xml"]
@@ -187,7 +190,7 @@ Target "SelfTest" (fun _ ->
     let altReport2 = reports @@ "AltCoverage2.xml"
     let result = ExecProcess (fun info -> info.FileName <- "_Binaries/AltCover.Tests/Debug+AnyCPU/__Instrumented/AltCover.exe"
                                           info.WorkingDirectory <- "_Binaries/AltCover.Tests/Debug+AnyCPU"
-                                          info.Arguments <- ("/sn=" + keyfile + @" -f=Mono. -f=.Recorder -f=Sample. -f=nunit. -t=System. /o=.\__ReInstrument -x=" + altReport2)) (TimeSpan.FromMinutes 5.0)
+                                          info.Arguments <- ("/sn=" + keyfile + AltCoverFilter + @"/o=.\__ReInstrument -x=" + altReport2)) (TimeSpan.FromMinutes 5.0)
     ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
                                        TargetDir = "_Reports/_AltReport"})
         [altReport]
@@ -206,11 +209,11 @@ Target "SelfTest" (fun _ ->
     OpenCover (fun p -> { p with ExePath = findToolInSubPath "OpenCover.Console.exe" "."
                                  WorkingDir = "."
                                  TestRunnerExePath = findToolInSubPath "nunit3-console.exe" "."
-                                 Filter = "+[AltCove*]* -[*]Microsoft.* -[*]System.*"
+                                 Filter = OpenCoverFilter
                                  MergeByHash = true
                                  Register = RegisterType.RegisterUser
                                  Output = "_Reports/OpenCoverReportAltCovered.xml" }) 
-        "_Binaries/AltCover.Tests/Debug+AnyCPU/__Instrumented/AltCover.Tests.dll --result=./_Reports/NUnit3ReportAltCovered.xml"
+        "_Binaries/AltCover.Tests/Debug+AnyCPU/__Instrumented/AltCover.Tests.dll _Binaries/AltCover.Tests/Debug+AnyCPU/__Instrumented/Sample2.dll --result=./_Reports/NUnit3ReportAltCovered.xml"
 
     use coverageFile2 = new FileStream("./_Reports/OpenCoverReportAltCovered.xml", FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.SequentialScan)
     let coverageDocument2 = XDocument.Load(XmlReader.Create(coverageFile2))
@@ -465,5 +468,14 @@ Target "All" (fun _ -> ())
 
 "FSharpTypes"
 ==> "All"
+
+"FxCop"
+==> "All"
+
+"Lint"
+==> "All"
+
+"Test"
+==> "TestCover"
 
 RunTargetOrDefault "All"

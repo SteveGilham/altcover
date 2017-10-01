@@ -95,9 +95,8 @@ module Visitor =
   let significant (m : MethodDefinition) = 
     [Filter.IsFSharpInternal
      Filter.IsCSharpAutoProperty] 
-    |> Seq.map (fun f -> f m)
-    |> Seq.filter id
-    |> Seq.isEmpty
+    |> Seq.exists (fun f -> f m)
+    |> not
 
   let rec internal Deeper node =
     // The pattern here is map x |> map y |> map x |> concat => collect (x >> y >> z)
@@ -126,7 +125,7 @@ module Visitor =
                                                                             && significant m)
                                |> Seq.collect ((fun m -> Method (m, included && IsIncluded m)) >> BuildSequence)
 
-    | Method (m, _) ->
+    | Method (m, included) ->
             let instructions = m.Body.Instructions
                                |> Seq.cast
                                |> Seq.distinctBy(fun (x:Instruction) -> x.Offset)
@@ -138,7 +137,7 @@ module Visitor =
             PointNumber <- point + number
 
             instructions.OrderByDescending(fun (x:Instruction) -> x.Offset)
-            |> Seq.mapi (fun i x -> MethodPoint (x, x.SequencePoint, i+point, true))
+            |> Seq.mapi (fun i x -> MethodPoint (x, x.SequencePoint, i+point, included))
 
     | _ -> Seq.empty<Node>
 
