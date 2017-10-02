@@ -293,14 +293,12 @@ let SimpleInstrumentingRun (samplePath:string) (binaryPath:string) (reportSigil:
                |> Seq.toList
 
     if (List.length ones) + (List.length zero) <> (List.length recorded) then failwith "unexpected visits"
+    let zero' = zero |> Seq.distinct |> Seq.toList
 
-    if Seq.zip ["18"; "19"; "20"]  (zero |> Seq.distinct)
-       |> Seq.filter (fun (x,y) -> x <> y)
-       |> Seq.isEmpty |> not  then failwith "wrong unvisited"
+    if ["18"; "19"; "20"] <> zero' then failwith "wrong unvisited"
 
-    if Seq.zip ["11"; "12"; "13"; "14"; "15"; "16"; "21"] (ones |> Seq.distinct)
-       |> Seq.filter (fun (x,y) -> x <> y)
-       |> Seq.isEmpty |> not  then failwith "wrong number of visited"
+    let ones' = ones |> Seq.distinct |> Seq.toList
+    if ["11"; "12"; "13"; "14"; "15"; "16"; "21"] <> ones' then failwith "wrong number of visited"
 
 Target "SimpleInstrumentation" (fun _ ->
    SimpleInstrumentingRun "_Binaries/Sample1/Debug+AnyCPU" "_Binaries/AltCover/Debug+AnyCPU" String.Empty
@@ -414,7 +412,7 @@ Target "SimpleMonoReleaseTest" (fun _ ->
    SimpleInstrumentingRun "_Mono/Sample1" unpack ".MR"
 )
 
-Target "All" (fun _ -> ())
+Target "All" ignore
 
 "Clean"
 ==> "SetVersion"
