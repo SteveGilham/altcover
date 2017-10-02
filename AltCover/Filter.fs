@@ -94,6 +94,7 @@ module Filter =
     mappings &&
       (fieldGetter || m.IsConstructor || 
          (m.HasCustomAttributes && m.CustomAttributes
-                                   |> Seq.exists (fun x -> x.AttributeType.FullName = typeof<CompilerGeneratedAttribute>.FullName ||
-                                                           x.AttributeType.FullName = typeof<DebuggerNonUserCodeAttribute>.FullName ||
-                                                           x.AttributeType.FullName = typeof<CompilationMappingAttribute>.FullName)))
+                                   |> Seq.exists (fun x -> let fullName = x.AttributeType.FullName
+                                                           fullName = typeof<CompilerGeneratedAttribute>.FullName ||
+                                                           fullName = typeof<DebuggerNonUserCodeAttribute>.FullName ||
+                                                           fullName = typeof<CompilationMappingAttribute>.FullName)))

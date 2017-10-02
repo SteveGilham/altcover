@@ -19,6 +19,7 @@ module Report =
       XName.Get(name)
 
     let ReportVisitor (s : list<XElement>) (node:Node) =
+      let head = if List.isEmpty s then null else s.Head
       match node with
       | Start _ ->
           let element = XElement(X "coverage",
@@ -35,7 +36,7 @@ module Report =
                           XAttribute(X "name", moduleDef.Name),
                           XAttribute(X "assembly", moduleDef.Assembly.Name.Name),
                           XAttribute(X "assemblyIdentity", moduleDef.Assembly.Name.FullName));
-          s.Head.Add(element)
+          head.Add(element)
           element :: s
 
       | Method (methodDef, included) ->
@@ -49,7 +50,7 @@ module Report =
                           XAttribute(X "fullname", Naming.FullMethodName methodDef)
                               )
 
-          s.Head.Add(element)
+          head.Add(element)
           element :: s
 
       | MethodPoint (_, codeSegment, _, included) ->
@@ -65,13 +66,12 @@ module Report =
                           XAttribute(X "endcolumn", snd end'),
                           XAttribute(X "excluded", (not included).ToString().ToLowerInvariant()),
                           XAttribute(X "document", codeSegment.Document.Url));
-          if s.Head.IsEmpty then s.Head.Add(element)
-          else s.Head.FirstNode.AddBeforeSelf(element)
+          if head.IsEmpty then head.Add(element)
+          else head.FirstNode.AddBeforeSelf(element)
           s
 
       | AfterMethod _ ->
-          let m = s.Head
-          if m.IsEmpty then m.Remove()
+          if head.IsEmpty then head.Remove()
           s.Tail
 
       | AfterModule _ ->

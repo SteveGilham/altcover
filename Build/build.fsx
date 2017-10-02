@@ -356,11 +356,18 @@ Target "FxCop" (fun _ ->
 )
 
 Target "Gendarme" (fun _ ->
+(*
+  --severity [all | [[audit | low | medium | high | critical][+|-]]],...
+                        Filter defects for the specified severity levels.
+                        Default is 'medium+'
+  --confidence [all | [[low | normal | high | total][+|-]],...
+                        Filter defects for the specified confidence levels.
+                        Default is 'normal+'
+  *)
     ExecProcess (fun info -> info.FileName <- (findToolInSubPath "gendarme.exe" ".\packages")
                              info.WorkingDirectory <- "."
-                             info.Arguments <- "--console --html ./_Reports/gendarme.html  _Binaries/AltCover/Debug+AnyCPU/AltCover.exe  _Binaries/AltCover.Shadow/Debug+AnyCPU/AltCover.Shadow.dll") (TimeSpan.FromMinutes 5.0)
-    |> ignore
-                                
+                             info.Arguments <- "--severity all --confidence all --config ./Build/rules.xml --console --html ./_Reports/gendarme.html  _Binaries/AltCover/Debug+AnyCPU/AltCover.exe  _Binaries/AltCover.Shadow/Debug+AnyCPU/AltCover.Shadow.dll") (TimeSpan.FromMinutes 5.0)
+    |> ignore                          
 )
 
 
@@ -447,6 +454,8 @@ Target "All" (fun _ -> ())
 ==> "SimpleMonoTest"
 "BuildDebug"
 ==> "FSharpTypes"
+"BuildDebug"
+==> "Gendarme"
 
 "TestCover"
 ==> "BulkReport"

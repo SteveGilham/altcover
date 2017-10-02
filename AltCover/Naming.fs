@@ -33,8 +33,8 @@ module Naming =
                                         |> Seq.map (fun p -> p.ParameterType)
                                         |> Seq.filter isNotNull
                                         |> Seq.map FullTypeRefName)
-
-        let tparameters = if def.HasGenericParameters then
+        let generic = def.HasGenericParameters
+        let tparameters = if generic then
                                 String.Join(",", def.GenericParameters
                                         |> Seq.filter isNotNull
                                         |> Seq.map FullTypeRefName)
@@ -45,9 +45,9 @@ module Naming =
                .Append(FullTypeName def.DeclaringType)
                .Append(".")
                .Append(if def.IsConstructor && (not def.IsStatic) then "#ctor" else MethodName def)
-               .Append(if def.HasGenericParameters then "<" else String.Empty)
+               .Append(if generic then "<" else String.Empty)
                .Append(tparameters)
-               .Append(if def.HasGenericParameters then ">" else String.Empty)
+               .Append(if generic then ">" else String.Empty)
                .Append("(")
                .Append(parameters)
                .Append(")")

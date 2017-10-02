@@ -154,15 +154,15 @@ module Main =
     let assemblies =
         files
         |> Seq.fold (fun (accumulator : string list) (info:FileInfo) ->
+             let fullName = info.FullName
              let target = Path.Combine (toInfo.FullName, info.Name)
-             File.Copy(info.FullName, target, true)
-             if Visitor.IsIncluded info.FullName then
+             File.Copy(fullName, target, true)
+             if Visitor.IsIncluded fullName then
                  try
-                   let def = AssemblyDefinition.ReadAssembly(info.FullName)
+                   let def = AssemblyDefinition.ReadAssembly(fullName)
                    let assemblyPdb = ProgramDatabase.GetPdbWithFallback def
                    if Option.isSome assemblyPdb then
-
-                        info.FullName :: accumulator
+                        fullName :: accumulator
                    else
                         accumulator
                  with
