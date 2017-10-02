@@ -482,6 +482,9 @@ Target "All" ignore
 "Lint"
 ==> "All"
 
+"Gendarme"
+==> "All"
+
 "Test"
 ==> "TestCover"
 

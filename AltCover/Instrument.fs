@@ -225,11 +225,11 @@ module Instrument =
         // (in other words - it will be a switch operator's operand)
         else if instruction.OpCode.OperandType = OperandType.InlineSwitch then
            let operands = instruction.Operand :?> Instruction array
-           let indices = operands
+           for i in operands
                            |> Seq.mapi (fun i x -> (i,x))
                            |> Seq.filter (fun (i,x) -> x = oldOperand)
                            |> Seq.map (fun (i,x) -> i)
-           for i in indices do
+               do
                 Array.blit [|newOperand|] 0 operands i 1
         else ()
       | _ -> ()

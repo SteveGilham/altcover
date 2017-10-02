@@ -1,8 +1,8 @@
 <gendarme>
 	<ruleset name="default">
 		<rules include="*" 
-                exclude="AvoidAssemblyVersionMismatchRule"
-                from="Gendarme.Rules.BadPractice.dll"/>
+               exclude="AvoidAssemblyVersionMismatchRule"
+               from="Gendarme.Rules.BadPractice.dll"/>
 		<rules include="*" from="Gendarme.Rules.Concurrency.dll" />
 		<rules include="*" 
                exclude="CheckParametersNullityInVisibleMethodsRule | MethodCanBeMadeStaticRule "
@@ -20,8 +20,8 @@
 		<rules include="*" from="Gendarme.Rules.Interoperability.dll"/>
 		<rules include="*" from="Gendarme.Rules.Interoperability.Com.dll"/>
 		<rules include="*" 
-                exclude="UseCorrectSuffixRule | UsePreferredTermsRule | AvoidNonAlphanumericIdentifierRule | ParameterNamesShouldMatchOverriddenMethodRule | UseCorrectCasingRule | UseCorrectPrefixRule | AvoidDeepNamespaceHierarchyRule "
-                from="Gendarme.Rules.Naming.dll"/>
+               exclude="UseCorrectSuffixRule | AvoidNonAlphanumericIdentifierRule | ParameterNamesShouldMatchOverriddenMethodRule | UseCorrectCasingRule | UseCorrectPrefixRule | AvoidDeepNamespaceHierarchyRule "
+               from="Gendarme.Rules.Naming.dll"/>
 		<rules include="*" 
                exclude="AvoidUnneededUnboxingRule | AvoidUnsealedUninheritedInternalTypeRule | AvoidUncalledPrivateCodeRule"
                from="Gendarme.Rules.Performance.dll" />
