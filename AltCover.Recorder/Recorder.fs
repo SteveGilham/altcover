@@ -10,9 +10,7 @@ open System.Runtime.CompilerServices
 open System.Xml
 open System.Xml.Linq
 
-type Tracer =
-  | Active
-  | Inactive
+type Tracer = { Tracer : string }
 
 module Instance =
 
@@ -90,8 +88,10 @@ module Instance =
               let pt = snd x
               let counter = fst x
               // Treat -ve visit counts (an exemption added in analysis) as zero
-              let visits = max 0 (Int32.Parse(pt.Attribute(XName.Get("visitcount")).Value,
-                                     System.Globalization.CultureInfo.InvariantCulture))
+              let vc = Int32.TryParse(pt.Attribute(XName.Get("visitcount")).Value,
+                                      System.Globalization.NumberStyles.Integer,
+                                      System.Globalization.CultureInfo.InvariantCulture)
+              let visits = max 0 (if fst vc then snd vc else 0)
 
               pt.SetAttributeValue(XName.Get("visitcount"), visits + moduleHits.[counter]))))
                     

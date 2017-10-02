@@ -132,7 +132,7 @@ module Visitor =
                                |> Seq.filter (fun (x:Instruction) -> isNotNull x.SequencePoint && x.SequencePoint.StartLine <> 0xfeefee)
                                |> Seq.toList
 
-            let number = instructions.Count();
+            let number = instructions.Length
             let point = PointNumber
             PointNumber <- point + number
 
