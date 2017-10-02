@@ -28,7 +28,7 @@ type internal Node =
 
 type KeyRecord = {
          Pair : StrongNameKeyPair;
-         Token : byte[] }
+         Token : byte list }
 
 module KeyStore =
     let private hash = new System.Security.Cryptography.SHA1CryptoServiceProvider()
@@ -39,7 +39,7 @@ module KeyStore =
             |> Array.take 8
 
     let internal TokenOfKey (key:StrongNameKeyPair) =
-        TokenOfArray key.PublicKey
+        TokenOfArray key.PublicKey |> Array.toList
 
     let internal TokenAsULong (token:byte array) =
       BitConverter.ToUInt64(token, 0)
@@ -47,6 +47,7 @@ module KeyStore =
     let internal KeyToIndex (key:StrongNameKeyPair) =
       key
       |> TokenOfKey
+      |> List.toArray
       |> TokenAsULong
 
     let internal ArrayToIndex (key:byte array) =

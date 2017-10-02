@@ -5,13 +5,13 @@
                 from="Gendarme.Rules.BadPractice.dll"/>
 		<rules include="*" from="Gendarme.Rules.Concurrency.dll" />
 		<rules include="*" 
-               exclude="CheckParametersNullityInVisibleMethodsRule"
+               exclude="CheckParametersNullityInVisibleMethodsRule | MethodCanBeMadeStaticRule "
                from="Gendarme.Rules.Correctness.dll"/>
 		<rules include="*" 
-               exclude="ImplementIComparableCorrectlyRule"
+               exclude="ImplementIComparableCorrectlyRule | ConsiderConvertingMethodToPropertyRule"
                from="Gendarme.Rules.Design.dll"/>
 		<rules include="*" 
-               exclude="AvoidDeclaringCustomDelegatesRule | DoNotExposeNestedGenericSignaturesRule"
+               exclude="AvoidMethodWithUnusedGenericTypeRule | AvoidDeclaringCustomDelegatesRule | DoNotExposeNestedGenericSignaturesRule"
                from="Gendarme.Rules.Design.Generic.dll"/>
 		<rules include="*" 
                exclude="AvoidMethodWithUnusedGenericTypeRule"
@@ -23,7 +23,7 @@
                 exclude="UseCorrectSuffixRule | UsePreferredTermsRule | AvoidNonAlphanumericIdentifierRule | ParameterNamesShouldMatchOverriddenMethodRule | UseCorrectCasingRule | UseCorrectPrefixRule | AvoidDeepNamespaceHierarchyRule "
                 from="Gendarme.Rules.Naming.dll"/>
 		<rules include="*" 
-               exclude="AvoidUnsealedUninheritedInternalTypeRule | AvoidUncalledPrivateCodeRule"
+               exclude="AvoidUnneededUnboxingRule | AvoidUnsealedUninheritedInternalTypeRule | AvoidUncalledPrivateCodeRule"
                from="Gendarme.Rules.Performance.dll" />
 		<rules include="*" from="Gendarme.Rules.Portability.dll" />
 		<rules include="*" from="Gendarme.Rules.Security.dll" />
@@ -31,7 +31,9 @@
 		<rules include="*" 
                exclude="MarkAllNonSerializableFieldsRule" 
                from="Gendarme.Rules.Serialization.dll" />
-		<rules include="*" from="Gendarme.Rules.Smells.dll"/>
+		<rules include="*" 
+		       exclude="AvoidLongParameterListsRule | AvoidSwitchStatementsRule | AvoidSpeculativeGeneralityRule"
+		       from="Gendarme.Rules.Smells.dll"/>
 		<rules include="*" from="Gendarme.Rules.Ui.dll" />
 		<rules include="*" 
                exclude="AvoidUnnecessarySpecializationRule | VariableNamesShouldNotMatchFieldNamesRule"
