@@ -55,7 +55,7 @@ module Main =
     proc.WaitForExit()
 
   [<EntryPoint>]
-  let Main arguments =
+  let private Main arguments =
     let options = OptionSet()
                     |> !+ (
                         "i|inputDirectory=",
