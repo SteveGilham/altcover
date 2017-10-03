@@ -32,7 +32,7 @@ Target "Lint" (fun _ ->
 
 // The clean target cleans the build and deploy folders
 Target "Clean" (fun _ ->
-    printfn "Cleaning" 
+    printfn "Cleaning"
     subDirectories (directoryInfo ".")
     |> Seq.filter (fun x -> x.Name.StartsWith "_" )
     |> Seq.map (fun x -> x.FullName)
@@ -41,11 +41,11 @@ Target "Clean" (fun _ ->
 )
 
 Target "SetVersion" (fun _ ->
-    let now = DateTimeOffset.UtcNow  
-    let epoch = DateTimeOffset(2000, 1, 1, 0, 0, 0, TimeSpan(int64 0))  
-    let diff = now.Subtract(epoch)  
-    let fraction = diff.Subtract(TimeSpan.FromDays(float diff.Days))  
-    let revision= ((int fraction.TotalSeconds) / 3)  
+    let now = DateTimeOffset.UtcNow
+    let epoch = DateTimeOffset(2000, 1, 1, 0, 0, 0, TimeSpan(int64 0))
+    let diff = now.Subtract(epoch)
+    let fraction = diff.Subtract(TimeSpan.FromDays(float diff.Days))
+    let revision= ((int fraction.TotalSeconds) / 3)
     let version = sprintf "0.1.%d.%d" diff.Days revision
     Version := version
     let copy = sprintf "© 2010-%d by Steve Gilham <SteveGilham@users.noreply.github.com>" now.Year
@@ -86,7 +86,7 @@ open System.Runtime.CompilerServices
     // Update the file only if it would change
     let old = if File.Exists(path) then File.ReadAllText(path) else String.Empty
     if not (old.Equals(file)) then File.WriteAllText(path, file)
-)         
+)
 
 Target "BuildRelease" (fun _ ->
    !! "*.sln"
@@ -118,12 +118,12 @@ Target "TestCover" (fun _ ->
                                  Filter = OpenCoverFilter
                                  MergeByHash = true
                                  Register = RegisterType.RegisterUser
-                                 Output = "_Reports/OpenCoverReport.xml" }) 
+                                 Output = "_Reports/OpenCoverReport.xml" })
         "_Binaries/AltCover.Tests/Debug+AnyCPU/AltCover.Tests.dll _Binaries/AltCover.Tests/Debug+AnyCPU/Sample2.dll --result=./_Reports/NUnit3ReportOpenCovered.xml"
     ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
                                        TargetDir = "_Reports/_UnitTest"})
         ["./_Reports/OpenCoverReport.xml"]
-) 
+)
 
 Target "FSharpTypes" ( fun _ ->
     ensureDirectory "./_Reports"
@@ -152,7 +152,7 @@ Target "Test" (fun _ ->
     |> NUnit3 (fun p -> { p with ToolPath = findToolInSubPath "nunit3-console.exe" "."
                                  WorkingDir = "."
                                  ResultSpecs = ["./_Reports/NUnit3Report.xml"] })
-)      
+)
 
 Target "SelfTest" (fun _ ->
     let targetDir = "_Binaries/AltCover.Tests/Debug+AnyCPU"
@@ -170,7 +170,7 @@ Target "SelfTest" (fun _ ->
                                  Filter = OpenCoverFilter
                                  MergeByHash = true
                                  Register = RegisterType.RegisterUser
-                                 Output = reports @@ "OpenCoverInstrumentationReport.xml" }) 
+                                 Output = reports @@ "OpenCoverInstrumentationReport.xml" })
         ("/sn=" + keyfile + AltCoverFilter + "-x=" + altReport)
     ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
                                        TargetDir = "_Reports/_Instrumented"})
@@ -181,13 +181,13 @@ Target "SelfTest" (fun _ ->
     // Edit xml report to store new hits
     let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
     let recorder = coverageDocument.Descendants(XName.Get("Module"))
-                   |> Seq.filter (fun el -> el.Descendants(XName.Get("ModulePath")).Nodes() 
+                   |> Seq.filter (fun el -> el.Descendants(XName.Get("ModulePath")).Nodes()
                                             |> Seq.exists (fun n -> n.ToString().EndsWith("AltCover.Recorder.dll")))
                    |> Seq.head
-   
+
     printfn "Re-instrument everything"
     ensureDirectory "./_Reports/_AltReport"
-    let altReport2 = reports @@ "AltCoverage2.xml"
+    let altReport2 = reports @@ "AltSelfTestCoverage.xml"
     let result = ExecProcess (fun info -> info.FileName <- "_Binaries/AltCover.Tests/Debug+AnyCPU/__Instrumented/AltCover.exe"
                                           info.WorkingDirectory <- "_Binaries/AltCover.Tests/Debug+AnyCPU"
                                           info.Arguments <- ("/sn=" + keyfile + AltCoverFilter + @"/o=.\__ReInstrument -x=" + altReport2)) (TimeSpan.FromMinutes 5.0)
@@ -195,14 +195,19 @@ Target "SelfTest" (fun _ ->
                                        TargetDir = "_Reports/_AltReport"})
         [altReport]
 
-    if result <> 0 then failwithf "Re-instrument returned with a non-zero exit code"    
+    if result <> 0 then failwithf "Re-instrument returned with a non-zero exit code"
 
     printfn "Unit test instrumented code"
     ensureDirectory "./_Reports"
-    !! (@"_Binaries\*Tests\Debug+AnyCPU\__Instrumented\*.Tests.dll")
+    [ !! "_Binaries/AltCover.Tests/Debug+AnyCPU/__ReInstrument/*.Tests.dll"
+      !! "_Binaries/AltCover.Tests/Debug+AnyCPU/__ReInstrument/*ple2.dll"]
+    |> Seq.concat |> Seq.distinct
     |> NUnit3 (fun p -> { p with ToolPath = findToolInSubPath "nunit3-console.exe" "."
                                  WorkingDir = "."
                                  ResultSpecs = ["./_Reports/NUnit3ReportInstrumented.xml"] })
+    ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
+                                       TargetDir = "_Reports/_SelfTestReport"})
+        [altReport2]
 
     printfn "Unit-test instrumented code under OpenCover"
     ensureDirectory "./_Reports/_UnitTestInstrumented"
@@ -212,18 +217,18 @@ Target "SelfTest" (fun _ ->
                                  Filter = OpenCoverFilter
                                  MergeByHash = true
                                  Register = RegisterType.RegisterUser
-                                 Output = "_Reports/OpenCoverReportAltCovered.xml" }) 
+                                 Output = "_Reports/OpenCoverReportAltCovered.xml" })
         "_Binaries/AltCover.Tests/Debug+AnyCPU/__Instrumented/AltCover.Tests.dll _Binaries/AltCover.Tests/Debug+AnyCPU/__Instrumented/Sample2.dll --result=./_Reports/NUnit3ReportAltCovered.xml"
 
     use coverageFile2 = new FileStream("./_Reports/OpenCoverReportAltCovered.xml", FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.SequentialScan)
     let coverageDocument2 = XDocument.Load(XmlReader.Create(coverageFile2))
     let recorder2 = coverageDocument2.Descendants(XName.Get("Module"))
-                    |> Seq.filter (fun el -> el.Descendants(XName.Get("ModulePath")).Nodes() 
+                    |> Seq.filter (fun el -> el.Descendants(XName.Get("ModulePath")).Nodes()
                                              |> Seq.exists (fun n -> n.ToString().EndsWith("AltCover.Recorder.g.dll")))
                     |> Seq.head // at most 1
     recorder2.SetAttributeValue(XName.Get("hash"), recorder.Attribute(XName.Get("hash")).Value)
 
-    ["ModulePath"; "ModuleTime"; "ModuleName"] 
+    ["ModulePath"; "ModuleTime"; "ModuleName"]
     |> Seq.iter (fun name -> let from = recorder.Descendants(XName.Get(name)).Nodes() |> Seq.head :?> XText
                              let to' = recorder2.Descendants(XName.Get(name)).Nodes() |> Seq.head :?> XText
                              to'.Value <- from.Value)
@@ -253,7 +258,7 @@ Target "BuildMonoSamples" (fun _ ->
     if result <> 0 then failwith "Mono compilation failed"
 )
 
-let SimpleInstrumentingRun (samplePath:string) (binaryPath:string) (reportSigil:string) = 
+let SimpleInstrumentingRun (samplePath:string) (binaryPath:string) (reportSigil:string) =
     printfn "Instrument a simple executable"
     ensureDirectory "./_Reports"
     let simpleReport = (FullName "./_Reports") @@ ( "SimpleCoverage" + reportSigil + ".xml")
@@ -268,7 +273,7 @@ let SimpleInstrumentingRun (samplePath:string) (binaryPath:string) (reportSigil:
                                            info.WorkingDirectory <- (sampleRoot @@ instrumented)
                                            info.Arguments <- "") (TimeSpan.FromMinutes 5.0)
     if result2 <> 0 then failwith "Instrumented .exe failed"
-    
+
     ensureDirectory ("./_Reports/_SimpleReport" + reportSigil)
     ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
                                        TargetDir = "_Reports/_SimpleReport" + reportSigil})
@@ -280,12 +285,12 @@ let SimpleInstrumentingRun (samplePath:string) (binaryPath:string) (reportSigil:
     let recorded = coverageDocument.Descendants(XName.Get("seqpnt"))
                    |> Seq.toList
 
-    let zero = recorded 
+    let zero = recorded
                |> Seq.filter (fun x -> x.Attribute(XName.Get("visitcount")).Value = "0")
                |> Seq.map (fun x -> x.Attribute(XName.Get("line")).Value)
                |> Seq.sort
                |> Seq.toList
-    let ones = recorded 
+    let ones = recorded
                |> Seq.filter (fun x -> x.Attribute(XName.Get("visitcount")).Value = "1")
                |> Seq.map (fun x -> x.Attribute(XName.Get("line")).Value)
                |> Seq.sort
@@ -351,16 +356,15 @@ Target "FxCop" (fun _ ->
                                          "-Microsoft.Naming#CA1715"
                                           ]
                                 IgnoreGeneratedCode  = true})
-    if fileExists "_Reports/FxCopReport.xml" then failwith "FxCop Errors were detected" 
+    if fileExists "_Reports/FxCopReport.xml" then failwith "FxCop Errors were detected"
 )
 
 Target "Gendarme" (fun _ ->
     let r = ExecProcess (fun info -> info.FileName <- (findToolInSubPath "gendarme.exe" ".\packages")
                                      info.WorkingDirectory <- "."
                                      info.Arguments <- "--severity all --confidence all --config ./Build/rules.xml --console --html ./_Reports/gendarme.html _Binaries/AltCover/Debug+AnyCPU/AltCover.exe  _Binaries/AltCover.Shadow/Debug+AnyCPU/AltCover.Shadow.dll") (TimeSpan.FromMinutes 5.0)
-    if r <> 0 then failwith  "Gendarme Errors were detected" 
+    if r <> 0 then failwith  "Gendarme Errors were detected"
 )
-
 
 Target "Package"  (fun _ ->
     ensureDirectory "./_Binaries/Packaging"
@@ -368,11 +372,11 @@ Target "Package"  (fun _ ->
     let AltCover = FullName "_Binaries/AltCover/AltCover.exe"
     let recorder = FullName "_Binaries/AltCover/Release+AnyCPU/AltCover.Recorder.dll"
 
-    NuGet (fun p -> 
+    NuGet (fun p ->
     {p with
         Authors = ["Steve Gilham"]
         Project = "AltCover"
-        Description = "A pre-instrumented code coverage tool for .net"                            
+        Description = "A pre-instrumented code coverage tool for .net"
         OutputPath = "./_Packaging"
         WorkingDir = "./_Binaries/Packaging"
         Files = [
@@ -381,7 +385,7 @@ Target "Package"  (fun _ ->
                 ]
         Version = !Version
         Copyright = !Copyright
-        Publish = false }) 
+        Publish = false })
         "./Build/AltCover.nuspec"
 )
 
