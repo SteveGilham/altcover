@@ -14,6 +14,7 @@ type Tracer = { Tracer : string }
 
 // Abstract out compact bits of F# that expand into
 // enough under-the-covers code to make Gendarme spot duplication
+// with a generic try/finally block.  *sigh*
 
 
 module Locking =
