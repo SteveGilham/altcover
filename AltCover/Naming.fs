@@ -1,7 +1,6 @@
 ﻿namespace AltCover
 
 open System
-open System.Text
 
 open Mono.Cecil
 
@@ -34,7 +33,6 @@ module Naming =
         if String.IsNullOrWhiteSpace name then String.Empty else name
 
     let FullMethodName (def : MethodDefinition) =
-        let builder = StringBuilder()
         let parameters = String.Join(",", def.Parameters
                                         |> Seq.filter isNotNull
                                         |> Seq.map (fun p -> p.ParameterType)
@@ -47,15 +45,16 @@ module Naming =
                                         |> Seq.map FullTypeRefName)
                           else String.Empty
 
-        builder.Append(FullTypeRefName def.ReturnType)
-               .Append(" ")
-               .Append(FullTypeName def.DeclaringType)
-               .Append(".")
-               .Append(if def.IsConstructor && (not def.IsStatic) then "#ctor" else MethodName def)
-               .Append(if generic then "<" else String.Empty)
-               .Append(tparameters)
-               .Append(if generic then ">" else String.Empty)
-               .Append("(")
-               .Append(parameters)
-               .Append(")")
-               .ToString()
+        let return' = FullTypeRefName def.ReturnType
+
+        String.Join(String.Empty, [return'
+                                   " "
+                                   FullTypeName def.DeclaringType
+                                   "."
+                                   (if def.IsConstructor && (not def.IsStatic) then "#ctor" else MethodName def)
+                                   (if generic then "<" else String.Empty)
+                                   tparameters
+                                   (if generic then ">" else String.Empty)
+                                   "("
+                                   parameters
+                                   ")"])

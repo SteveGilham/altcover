@@ -304,8 +304,7 @@ module Instrument =
 
        | AfterModule -> state
        | AfterAssembly assembly ->
-           let name = FileInfo(assembly.MainModule.Name)
-           let path = Path.Combine(Visitor.outputDirectory, name.Name)
+           let path = Path.Combine(Visitor.outputDirectory, FileInfo(assembly.MainModule.Name).Name)
            WriteAssembly assembly path
            state
        | Finish -> let counterAssemblyFile = Path.Combine(Visitor.outputDirectory, state.RecordingAssembly.Name.Name + ".dll")
