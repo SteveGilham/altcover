@@ -42,6 +42,28 @@ module Instance =
   let private mutex = new System.Threading.Mutex(false, "AltCover.Recorder.Instance.mutex");
   
   /// <summary>
+  /// Load the XDocument
+  /// </summary>
+  /// <param name="path">The XML file to load</param>
+  /// <remarks>Idiom to work with CA2202; we still double dispose the stream, but elude the rule.
+  /// If this is ever a problem, we will need mutability and two streams, with explicit 
+  /// stream disposal if and only if the reader or writer doesn't take ownership
+  /// </remarks>
+  let private ReadXDocument (stream:FileStream)  =
+     use reader = XmlReader.Create stream
+     XDocument.Load reader
+
+  /// <summary>
+  /// Write the XDocument
+  /// </summary>
+  /// <param name="coverageDocument">The XML document to write</param>
+  /// <param name="path">The XML file to write to</param>
+  /// <remarks>Idiom to work with CA2202 as above</remarks>
+  let private WriteXDocument (coverageDocument:XDocument) (stream:FileStream) =
+     use writer = XmlWriter.Create stream
+     coverageDocument.WriteTo writer
+
+  /// <summary>
   /// Save sequence point hit counts to xml report file
   /// </summary>
   /// <param name="hitCounts">The coverage results to incorporate</param>
@@ -49,9 +71,9 @@ module Instance =
     mutex.WaitOne(10000) |> ignore
     let flushStart = DateTime.Now;
     try
-      use coverageFile = new FileStream(ReportFile, FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.SequentialScan)
       // Edit xml report to store new hits
-      let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
+      use coverageFile = new FileStream(ReportFile, FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.SequentialScan)
+      let coverageDocument = ReadXDocument coverageFile
 
       let startTimeAttr = coverageDocument.Root.Attribute(XName.Get("startTime"))
       let measureTimeAttr = coverageDocument.Root.Attribute(XName.Get("measureTime"))
@@ -97,9 +119,7 @@ module Instance =
                     
       // Save modified xml to a file
       coverageFile.Seek(0L, SeekOrigin.Begin) |> ignore
-      use writer = XmlWriter.Create(coverageFile)
-      coverageDocument.WriteTo(writer)
-      writer.Flush()
+      WriteXDocument coverageDocument coverageFile
     finally
         let delta = TimeSpan(DateTime.Now.Ticks - flushStart.Ticks)
         mutex.ReleaseMutex()
