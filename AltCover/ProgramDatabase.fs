@@ -20,9 +20,9 @@ module ProgramDatabase =
                       |> Seq.skip 0x18  // size of the debug header
                       |> Seq.takeWhile (fun x -> x <> byte 0)
                       |> Seq.toArray
-      System.Text.Encoding.UTF8.GetString(name)
-      |> Option.select (fun (s:String) -> s.Length > 0)
-      |> Option.bind (Option.select File.Exists)
+      Some (System.Text.Encoding.UTF8.GetString name)
+      |> Option.filter (fun (s:String) -> s.Length > 0)
+      |> Option.filter File.Exists
     else
       None
 
