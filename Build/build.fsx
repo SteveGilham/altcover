@@ -326,6 +326,7 @@ Target "FxCop" (fun _ ->
     |> Seq.filter (fun n -> not (n.EndsWith(".pdb")))
     |> FxCop (fun p -> { p with ToolPath = fxCop
                                 WorkingDir = "."
+                                UseGACSwitch = true
                                 Verbose = false
                                 ReportFileName = "_Reports/FxCopReport.xml"
                                 TypeList = ["AltCover.Augment"
@@ -351,6 +352,7 @@ Target "FxCop" (fun _ ->
                                          "-Microsoft.Naming#CA1715"
                                           ]
                                 IgnoreGeneratedCode  = true})
+    if fileExists "_Reports/FxCopReport.xml" then failwith "FxCop Errors were detected" 
 )
 
 Target "Gendarme" (fun _ ->
