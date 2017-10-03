@@ -23,19 +23,19 @@ module Instance =
   /// Thime taken to perform coverage run
   /// </summary>
   let mutable private measureTime = DateTime.Now
-  
+
   /// <summary>
   /// Gets the location of coverage xml file
   /// This property's IL code is modified to store actual file location
   /// </summary>
-  [<MethodImplAttribute(MethodImplOptions.NoInlining)>] 
-  let ReportFile = "C:\Windows\Temp\Coverage.Default.xml"
-  
+  [<MethodImplAttribute(MethodImplOptions.NoInlining)>]
+  let ReportFile = "Coverage.Default.xml"
+
   /// <summary>
   /// Accumulation of visit records
-  /// </summary>  
+  /// </summary>
   let private Visits = new Dictionary<string, Dictionary<int, int>>();
-  
+
   /// <summary>
   /// Interlock for report instances
   /// </summary>
@@ -79,7 +79,7 @@ module Instance =
       let measureTimeAttr = coverageDocument.Root.Attribute(XName.Get("measureTime"))
       let oldStartTime = DateTime.ParseExact(startTimeAttr.Value, "o", null)
       let oldMeasureTime = DateTime.ParseExact(measureTimeAttr.Value, "o", null)
-      
+
       startTime <- if startTime < oldStartTime then startTime else oldStartTime // Min
       measureTime <- if measureTime > oldMeasureTime then measureTime else oldMeasureTime // Max
 
@@ -90,17 +90,17 @@ module Instance =
       |> Seq.iter (fun (pair : KeyValuePair<string, Dictionary<int,int>>) ->
           let moduleId = pair.Key;
           let moduleHits = pair.Value;
-          let affectedModules = 
+          let affectedModules =
               coverageDocument.Descendants(XName.Get("module"))
               |> Seq.filter (fun el -> el.Attribute(XName.Get("moduleId")).Value.Equals(moduleId))
               |> Seq.truncate 1 // at most 1
 
           affectedModules
           |> Seq.iter (fun affectedModule ->
-          // Don't do this in one leap like -- 
+          // Don't do this in one leap like --
           // affectedModule.Descendants(XName.Get("seqpnt"))
           // Get the methods, then flip their
-          // contents before concatenating          
+          // contents before concatenating
           affectedModule.Descendants(XName.Get("method"))
           |> Seq.collect (fun (``method``:XElement) -> ``method``.Descendants(XName.Get("seqpnt"))
                                                        |> Seq.toList |> List.rev)
@@ -116,15 +116,14 @@ module Instance =
               let visits = max 0 (if fst vc then snd vc else 0)
 
               pt.SetAttributeValue(XName.Get("visitcount"), visits + moduleHits.[counter]))))
-                    
+
       // Save modified xml to a file
       coverageFile.Seek(0L, SeekOrigin.Begin) |> ignore
       WriteXDocument coverageDocument coverageFile
     finally
         let delta = TimeSpan(DateTime.Now.Ticks - flushStart.Ticks)
         mutex.ReleaseMutex()
-        Console.WriteLine("Coverage statistics flushing took {0:N} seconds", delta.TotalSeconds)
-    
+        Console.Out.WriteLine("Coverage statistics flushing took {0:N} seconds", delta.TotalSeconds)
 
   /// <summary>
   /// This method flushes hit count buffers.
@@ -137,7 +136,7 @@ module Instance =
              Visits.Clear()
              measureTime <- DateTime.Now
              UpdateReport(counts))
-    
+
   /// <summary>
   /// This method is executed from instrumented assemblies.
   /// </summary>
@@ -152,8 +151,8 @@ module Instance =
         Visits.[moduleId].Add(hitPointId, 1)
       else
         Visits.[moduleId].[hitPointId] <- 1 + Visits.[moduleId].[hitPointId])
-    AppDomain.CurrentDomain.DomainUnload.Add(fun x -> Console.WriteLine("unloaded"))   
-  // Register event handling 
-  do 
+    AppDomain.CurrentDomain.DomainUnload.Add(fun x -> Console.Out.WriteLine("unloaded"))
+  // Register event handling
+  do
     AppDomain.CurrentDomain.DomainUnload.Add(FlushCounter)
     AppDomain.CurrentDomain.ProcessExit.Add(FlushCounter)

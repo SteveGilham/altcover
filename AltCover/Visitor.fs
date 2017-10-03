@@ -66,8 +66,8 @@ module Visitor =
   let internal NameFilters = new List<FilterClass>();
 
   let mutable internal inputDirectory = "."
-  let mutable internal outputDirectory = ".\\__Instrumented"
-  let mutable internal reportPath = ".\\coverage.xml"
+  let mutable internal outputDirectory = "__Instrumented"
+  let mutable internal reportPath = "coverage.xml"
   let mutable internal defaultStrongNameKey : option<StrongNameKeyPair> = None
   let internal keys = new Dictionary<UInt64, KeyRecord>()
 
