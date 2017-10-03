@@ -1,8 +1,8 @@
-#r @"FakeLib.dll" // include Fake lib
+#r @"../packages/FAKE.4.63.2/tools/FakeLib.dll" // include Fake lib
 #I @"../packages/FSharpLint.Fake.0.8.0/tools"
-#r @"../packages/FSharpLint.Fake.0.8.0/tools/FSharpLint.Fake.dll"
+#r @"FSharpLint.Fake.dll"
 #I @"../packages/ZipStorer.3.4.0/lib/net20"
-#r @"../packages/ZipStorer.3.4.0/lib/net20/ZipStorer.dll"
+#r @"ZipStorer.dll"
 #r "System.Xml"
 #r "System.Xml.Linq"
 
@@ -15,7 +15,7 @@ open System.Xml.Linq
 
 open Fake
 open Fake.AssemblyInfoFile
-open Fake.Testing // yes, really -- for NUnit3
+open Fake.Testing
 open Fake.OpenCoverHelper
 open Fake.ReportGeneratorHelper
 open FSharpLint.Fake
@@ -274,9 +274,8 @@ let SimpleInstrumentingRun (samplePath:string) (binaryPath:string) (reportSigil:
                                        TargetDir = "_Reports/_SimpleReport" + reportSigil})
         [simpleReport]
 
-    // get recorder details from here
+    // get recorded details from here
     use coverageFile = new FileStream(simpleReport, FileMode.Open, FileAccess.Read, FileShare.None, 4096, FileOptions.SequentialScan)
-    // Edit xml report to store new hits
     let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
     let recorded = coverageDocument.Descendants(XName.Get("seqpnt"))
                    |> Seq.toList
@@ -356,18 +355,10 @@ Target "FxCop" (fun _ ->
 )
 
 Target "Gendarme" (fun _ ->
-(*
-  --severity [all | [[audit | low | medium | high | critical][+|-]]],...
-                        Filter defects for the specified severity levels.
-                        Default is 'medium+'
-  --confidence [all | [[low | normal | high | total][+|-]],...
-                        Filter defects for the specified confidence levels.
-                        Default is 'normal+'
-  *)
-    ExecProcess (fun info -> info.FileName <- (findToolInSubPath "gendarme.exe" ".\packages")
-                             info.WorkingDirectory <- "."
-                             info.Arguments <- "--severity all --confidence all --config ./Build/rules.xml --console --html ./_Reports/gendarme.html  _Binaries/AltCover/Debug+AnyCPU/AltCover.exe  _Binaries/AltCover.Shadow/Debug+AnyCPU/AltCover.Shadow.dll") (TimeSpan.FromMinutes 5.0)
-    |> ignore                          
+    let r = ExecProcess (fun info -> info.FileName <- (findToolInSubPath "gendarme.exe" ".\packages")
+                                     info.WorkingDirectory <- "."
+                                     info.Arguments <- "--severity all --confidence all --config ./Build/rules.xml --console --html ./_Reports/gendarme.html _Binaries/AltCover/Debug+AnyCPU/AltCover.exe  _Binaries/AltCover.Shadow/Debug+AnyCPU/AltCover.Shadow.dll") (TimeSpan.FromMinutes 5.0)
+    if r <> 0 then failwith  "Gendarme Errors were detected" 
 )
 
 
@@ -478,14 +469,20 @@ Target "All" ignore
 "FSharpTypes"
 ==> "All"
 
-"FxCop"
+"Lint"
 ==> "All"
 
-"Lint"
+"FxCop"
 ==> "All"
 
 "Gendarme"
 ==> "All"
+
+"Lint"
+?=> "FxCop"
+
+"FxCop"
+?=> "Gendarme"
 
 "Test"
 ==> "TestCover"

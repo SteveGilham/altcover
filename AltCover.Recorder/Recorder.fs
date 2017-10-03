@@ -12,6 +12,28 @@ open System.Xml.Linq
 
 type Tracer = { Tracer : string }
 
+// These types abstract out compact bits of F# that expand into
+// enough under-the-covers code to make Gendarme spot the duplication
+
+module Disposal =
+  /// <summary>
+  /// Proto-disposable monad
+  /// </summary>
+  /// <param name="f">Use a disposable</param>
+  /// <param name="g">Create a disposable</param>
+  /// <remarks>f (g ()) with disposal of the result of g()</remarks>
+  let internal DoWith<'a, 'T when 'T :> System.IDisposable> (f : 'T -> 'a) (g : unit -> 'T) =
+    use disposable = g()
+    f disposable
+
+module Locking =
+  /// <summary>
+  /// Synchronize an action on an object
+  /// </summary>
+  /// <param name="f">The actiuon to perform</param>
+  let internal WithLockerLocked (locker:'a) (f: unit -> unit) =
+    lock locker f
+
 module Instance =
 
    /// <summary>
@@ -40,7 +62,7 @@ module Instance =
   /// Interlock for report instances
   /// </summary>
   let private mutex = new System.Threading.Mutex(false, "AltCover.Recorder.Instance.mutex");
-  
+
   /// <summary>
   /// Load the XDocument
   /// </summary>
@@ -50,8 +72,7 @@ module Instance =
   /// stream disposal if and only if the reader or writer doesn't take ownership
   /// </remarks>
   let private ReadXDocument (stream:FileStream)  =
-     use reader = XmlReader.Create stream
-     XDocument.Load reader
+    Disposal.DoWith (fun (reader:XmlReader) -> XDocument.Load(reader)) (fun () -> XmlReader.Create stream)
 
   /// <summary>
   /// Write the XDocument
@@ -60,8 +81,7 @@ module Instance =
   /// <param name="path">The XML file to write to</param>
   /// <remarks>Idiom to work with CA2202 as above</remarks>
   let private WriteXDocument (coverageDocument:XDocument) (stream:FileStream) =
-     use writer = XmlWriter.Create stream
-     coverageDocument.WriteTo writer
+    Disposal.DoWith coverageDocument.WriteTo (fun () -> XmlWriter.Create stream)
 
   /// <summary>
   /// Save sequence point hit counts to xml report file
@@ -126,10 +146,16 @@ module Instance =
         Console.Out.WriteLine("Coverage statistics flushing took {0:N} seconds", delta.TotalSeconds)
 
   /// <summary>
+  /// Synchronize an action on the visits table
+  /// </summary>
+  let private WithVisitsLocked =
+    Locking.WithLockerLocked Visits
+
+  /// <summary>
   /// This method flushes hit count buffers.
   /// </summary>
   let private FlushCounter _ =
-    lock Visits (fun () ->
+     WithVisitsLocked (fun () ->
       match Visits.Count with
       | 0 -> ()
       | _ -> let counts = Visits |> Seq.toArray
@@ -144,13 +170,12 @@ module Instance =
   /// <param name="hitPointId">Sequence Point identifier</param>
   let Visit moduleId hitPointId =
    if not <| String.IsNullOrEmpty(moduleId) then
-    lock Visits (fun () ->
-      if not (Visits.ContainsKey(moduleId))
-        then Visits.[moduleId] <- new Dictionary<int, int>()
-      if not (Visits.[moduleId].ContainsKey(hitPointId)) then
-        Visits.[moduleId].Add(hitPointId, 1)
-      else
-        Visits.[moduleId].[hitPointId] <- 1 + Visits.[moduleId].[hitPointId])
+    WithVisitsLocked (fun () -> if not (Visits.ContainsKey moduleId)
+                                    then Visits.[moduleId] <- new Dictionary<int, int>()
+                                if not (Visits.[moduleId].ContainsKey hitPointId) then
+                                    Visits.[moduleId].Add(hitPointId, 1)
+                                else
+                                    Visits.[moduleId].[hitPointId] <- 1 + Visits.[moduleId].[hitPointId])
     AppDomain.CurrentDomain.DomainUnload.Add(fun x -> Console.Out.WriteLine("unloaded"))
   // Register event handling
   do
