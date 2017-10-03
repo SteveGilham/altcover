@@ -90,9 +90,11 @@ module Instrument =
       let token = other.GetMethod("get_ReportFile").MetadataToken
       let pathGetterDef = definition.MainModule.LookupToken(token) :?> MethodDefinition
 
-      let worker = pathGetterDef.Body.GetILProcessor();
-      worker.InsertBefore(pathGetterDef.Body.Instructions.[0], worker.Create(OpCodes.Ret));
-      worker.InsertBefore(pathGetterDef.Body.Instructions.[0], worker.Create(OpCodes.Ldstr, Visitor.reportPath));
+      let body = pathGetterDef.Body
+      let worker = body.GetILProcessor();
+      let head = body.Instructions.[0]
+      worker.InsertBefore(head, worker.Create(OpCodes.Ldstr, Visitor.reportPath));
+      worker.InsertBefore(head, worker.Create(OpCodes.Ret));
 
       definition
 
@@ -126,10 +128,11 @@ module Instrument =
     /// <param name="name">The name of the assembly</param>
     /// <returns>A key, if we have a match.</returns>
     let KnownToken (name:AssemblyNameReference) =
-        if isNull name.PublicKeyToken then
+        let pktoken = name.PublicKeyToken
+        if isNull pktoken then
           None
         else
-          let index = KeyStore.TokenAsULong name.PublicKeyToken
+          let index = KeyStore.TokenAsULong pktoken
           match Visitor.keys.TryGetValue(index) with
           | (false, _ ) -> None
           | (_, record) -> Some record
@@ -266,9 +269,10 @@ module Instrument =
        | Method (m,  included) -> //of MethodDefinition * bool
            match included with
            | true ->
+             let body = m.Body
              { state with
-                MethodBody = m.Body;
-                MethodWorker = m.Body.GetILProcessor() }
+                MethodBody = body;
+                MethodWorker = body.GetILProcessor() }
            | _ -> state
 
        | MethodPoint (instruction, _, point, included) -> //of Instruction * CodeSegment * int * bool
@@ -291,10 +295,11 @@ module Instrument =
          state
        | AfterMethod included -> //of MethodDefinition * bool
            if included then
+              let body = state.MethodBody
               // changes conditional (br.s, brtrue.s ...) operators to corresponding "long" ones (br, brtrue)
-              state.MethodBody.SimplifyMacros()
+              body.SimplifyMacros()
               // changes "long" conditional operators to their short representation where possible
-              state.MethodBody.OptimizeMacros()
+              body.OptimizeMacros()
            state
 
        | AfterModule -> state

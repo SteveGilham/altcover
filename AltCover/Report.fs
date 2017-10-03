@@ -20,6 +20,7 @@ module Report =
 
     let ReportVisitor (s : list<XElement>) (node:Node) =
       let head = if List.isEmpty s then null else s.Head
+      let tail = if List.isEmpty s then [] else s.Tail
       match node with
       | Start _ ->
           let element = XElement(X "coverage",
@@ -72,10 +73,10 @@ module Report =
 
       | AfterMethod _ ->
           if head.IsEmpty then head.Remove()
-          s.Tail
+          tail
 
       | AfterModule _ ->
-          s.Tail
+          tail
 
       | Finish -> s
 

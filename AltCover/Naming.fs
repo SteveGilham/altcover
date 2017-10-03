@@ -10,21 +10,28 @@ module Naming =
     let inline isNotNull x = not (isNull x)
 
     let TypeName (def : TypeDefinition) =
-        if String.IsNullOrWhiteSpace def.Name then String.Empty else def.Name
+        let name = def.Name
+        if String.IsNullOrWhiteSpace name then String.Empty else name
 
     let TypeRefName (def : TypeReference) =
-        if String.IsNullOrWhiteSpace def.Name then String.Empty else def.Name
+        let name = def.Name
+        if String.IsNullOrWhiteSpace name then String.Empty else name
 
     let rec FullTypeName (def : TypeDefinition) =
-        if isNotNull def.DeclaringType then (FullTypeName def.DeclaringType) + "+" + (TypeName def)
-        else if String.IsNullOrWhiteSpace def.Namespace then TypeName def else def.Namespace + "." + TypeName def
+        let deft = def.DeclaringType
+        if isNotNull deft then (FullTypeName deft) + "+" + (TypeName def)
+        else let ns = def.Namespace
+             if String.IsNullOrWhiteSpace ns then TypeName def else ns + "." + TypeName def
 
     let rec FullTypeRefName (def : TypeReference) =
-        if isNotNull def.DeclaringType then (FullTypeRefName def.DeclaringType) + "+" + (TypeRefName def)
-        else if String.IsNullOrWhiteSpace def.Namespace then TypeRefName def else def.Namespace + "." + TypeRefName def
+        let deft = def.DeclaringType
+        if isNotNull deft then (FullTypeRefName deft) + "+" + (TypeRefName def)
+        else let ns = def.Namespace
+             if String.IsNullOrWhiteSpace ns then TypeRefName def else ns + "." + TypeRefName def
 
     let MethodName (def : MethodDefinition) =
-        if String.IsNullOrWhiteSpace def.Name then String.Empty else def.Name
+        let name = def.Name
+        if String.IsNullOrWhiteSpace name then String.Empty else name
 
     let FullMethodName (def : MethodDefinition) =
         let builder = StringBuilder()

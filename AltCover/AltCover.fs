@@ -14,8 +14,9 @@ module Main =
   let mutable private help = false
 
   let Usage (intro:string) (options:OptionSet) =
-    Console.Error.WriteLine(intro)
-    options.WriteOptionDescriptions(Console.Error);
+    let stderr = Console.Error
+    stderr.WriteLine(intro)
+    options.WriteOptionDescriptions(stderr);
     Environment.Exit(1)
 
   let (!+) (option: string * string * (string->unit)) (options:OptionSet) =
