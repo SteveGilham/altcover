@@ -12,19 +12,9 @@ open System.Xml.Linq
 
 type Tracer = { Tracer : string }
 
-// These types abstract out compact bits of F# that expand into
-// enough under-the-covers code to make Gendarme spot the duplication
+// Abstract out compact bits of F# that expand into
+// enough under-the-covers code to make Gendarme spot duplication
 
-module Disposal =
-  /// <summary>
-  /// Proto-disposable monad
-  /// </summary>
-  /// <param name="f">Use a disposable</param>
-  /// <param name="g">Create a disposable</param>
-  /// <remarks>f (g ()) with disposal of the result of g()</remarks>
-  let internal DoWith<'a, 'T when 'T :> System.IDisposable> (f : 'T -> 'a) (g : unit -> 'T) =
-    use disposable = g()
-    f disposable
 
 module Locking =
   /// <summary>
@@ -72,7 +62,7 @@ module Instance =
   /// stream disposal if and only if the reader or writer doesn't take ownership
   /// </remarks>
   let private ReadXDocument (stream:FileStream)  =
-    Disposal.DoWith (fun (reader:XmlReader) -> XDocument.Load(reader)) (fun () -> XmlReader.Create stream)
+    using (XmlReader.Create stream) (fun (reader:XmlReader) -> XDocument.Load(reader)) 
 
   /// <summary>
   /// Write the XDocument
@@ -81,7 +71,7 @@ module Instance =
   /// <param name="path">The XML file to write to</param>
   /// <remarks>Idiom to work with CA2202 as above</remarks>
   let private WriteXDocument (coverageDocument:XDocument) (stream:FileStream) =
-    Disposal.DoWith coverageDocument.WriteTo (fun () -> XmlWriter.Create stream)
+    using (XmlWriter.Create stream) coverageDocument.WriteTo 
 
   /// <summary>
   /// Save sequence point hit counts to xml report file
