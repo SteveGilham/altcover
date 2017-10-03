@@ -6,31 +6,28 @@ open Mono.Cecil
 
 module Naming =
 
-    let inline isNotNull x = not (isNull x)
+    let isNotNull x = (not << isNull) x
+    let emptyIfIsNullOrWhiteSpace name = if String.IsNullOrWhiteSpace name then String.Empty else name
+    let prefixIfNotIsNullOrWhiteSpace name prefix = if String.IsNullOrWhiteSpace name then String.Empty else (name+prefix)
 
     let TypeName (def : TypeDefinition) =
-        let name = def.Name
-        if String.IsNullOrWhiteSpace name then String.Empty else name
+        emptyIfIsNullOrWhiteSpace def.Name
 
     let TypeRefName (def : TypeReference) =
-        let name = def.Name
-        if String.IsNullOrWhiteSpace name then String.Empty else name
+        emptyIfIsNullOrWhiteSpace def.Name
 
     let rec FullTypeName (def : TypeDefinition) =
         let deft = def.DeclaringType
         if isNotNull deft then (FullTypeName deft) + "+" + (TypeName def)
-        else let ns = def.Namespace
-             if String.IsNullOrWhiteSpace ns then TypeName def else ns + "." + TypeName def
+        else (prefixIfNotIsNullOrWhiteSpace def.Namespace  ".") + TypeName def
 
     let rec FullTypeRefName (def : TypeReference) =
         let deft = def.DeclaringType
         if isNotNull deft then (FullTypeRefName deft) + "+" + (TypeRefName def)
-        else let ns = def.Namespace
-             if String.IsNullOrWhiteSpace ns then TypeRefName def else ns + "." + TypeRefName def
+        else (prefixIfNotIsNullOrWhiteSpace def.Namespace  ".") + TypeRefName def
 
     let MethodName (def : MethodDefinition) =
-        let name = def.Name
-        if String.IsNullOrWhiteSpace name then String.Empty else name
+        emptyIfIsNullOrWhiteSpace def.Name
 
     let FullMethodName (def : MethodDefinition) =
         let parameters = String.Join(",", def.Parameters
