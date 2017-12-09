@@ -7,6 +7,7 @@ build_script:
     .\Build\get-nuget.ps1
 
     .\fake.bat
+test: off
 artifacts:
 - path: _Packaging\*.nupkg
   name: AltCover
