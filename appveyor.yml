@@ -1,0 +1,12 @@
+version: 0.1.{build}
+image: Visual Studio 2017
+nuget:
+  disable_publish_on_pr: true
+build_script:
+- ps: >-
+    .\Build\get-nuget.ps1
+
+    .\fake.bat
+artifacts:
+- path: _Packaging\*.nupkg
+  name: AltCover
