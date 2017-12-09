@@ -16,8 +16,8 @@
     <TargetFrameworkProfile />
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
-    <UseStandardResourceNames>True</UseStandardResourceNames>
-    <Win32Resource>$(ProjectDir)Resource.res</Win32Resource>
+    <!-- UseStandardResourceNames>True</UseStandardResourceNames -->
+    <!-- Win32Resource>$(ProjectDir)Resource.res</Win32Resource -->
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
