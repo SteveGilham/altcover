@@ -6,9 +6,9 @@
     <authors>@authors@</authors>
     <owners>@authors@</owners>
     <summary>@summary@</summary>
-    <!-- licenseUrl>TBD</licenseUrl -->
+    <licenseUrl>https://raw.githubusercontent.com/SteveGilham/altcover/master/LICENSE</licenseUrl>
     <projectUrl>https://github.com/SteveGilham/altcover/</projectUrl>
-    <!-- iconUrl>TBD</iconUrl -->
+    <iconUrl>https://raw.githubusercontent.com/SteveGilham/altcover/master/AltCover/AltCover.ico</iconUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>@description@</description>
     <releaseNotes>@releaseNotes@</releaseNotes>
