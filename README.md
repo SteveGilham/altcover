@@ -30,7 +30,7 @@ In detail
 * `o|outputDirectory=` : The folder to receive the instrumented assemblies and their companions (default: sub-folder `.\\__Instrumented` of the current directory)"
 * `sn|strongNameKey=` : The default strong naming key to apply to the instrumented rewrites of strong-named imput assemblies (default: None)
 * `k|key=` : any other strong-name key to use (default: None; may repeat)
-* `x|xmlReport=` : The output report template (traditional NCover format) file (default: coverage.xml in the current directory)
+* `x|xmlReport=` : The output report template (traditional NCover format) file (default: `coverage.xml` in the current directory)
 * `f|fileFilter=` : file name to exclude from instrumentation (may repeat)
 * `s|assemblyFilter=` : assembly name to exclude from instrumentation (may repeat)
 * `t|typeFilter=` : type name to exclude from instrumentation (may repeat)
