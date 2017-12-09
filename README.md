@@ -1,5 +1,5 @@
 # altcover
-Instrumenting coverage tool for .net, reimplemented and extended from [dot-net-coverage](https://github.com/SteveGilham/dot-net-coverage)
+Instrumenting coverage tool for .net and Mono, reimplemented and extended from [dot-net-coverage](https://github.com/SteveGilham/dot-net-coverage)
 
 ## Why altcover?
 As the name suggests, it's an alternative coverage approach.  Rather than working by hooking the .net profiling API at run-time, it works by weaving the same sort of extra IL into the assemblies of interest ahead of execution.  This means that it should work pretty much everywhere, so long as the executing process has write access to the results file.
