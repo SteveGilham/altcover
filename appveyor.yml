@@ -1,4 +1,7 @@
 version: 0.1.{build}
+branches:
+  except:
+  - develop.*
 image: Visual Studio 2017
 nuget:
   disable_publish_on_pr: true

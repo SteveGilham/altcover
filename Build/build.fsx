@@ -1,5 +1,5 @@
 #r @"../packages/FAKE.4.63.2/tools/FakeLib.dll" // include Fake lib
-#I @"../packages/FSharpLint.Fake.0.8.0/tools"
+#I @"../packages/FSharpLint.Fake.0.8.1/tools"
 #r @"FSharpLint.Fake.dll"
 #I @"../packages/ZipStorer.3.4.0/lib/net20"
 #r @"ZipStorer.dll"
