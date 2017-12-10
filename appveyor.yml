@@ -1,7 +1,7 @@
 version: 0.1.{build}
 branches:
   except:
-  - develop.*
+  - /develop.*/
 image: Visual Studio 2017
 environment:
   COVERALLS_REPO_TOKEN:
