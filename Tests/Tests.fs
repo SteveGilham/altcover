@@ -107,6 +107,7 @@ type AltCoverTests() = class
                          && not (x.EndsWith("Mono.Cecil.Mdb.dll", StringComparison.OrdinalIgnoreCase))
                          && not (x.EndsWith("Mono.Cecil.Pdb.dll", StringComparison.OrdinalIgnoreCase))
                          && not (x.EndsWith("Mono.Cecil.Rocks.dll", StringComparison.OrdinalIgnoreCase))
+                         && not (x.EndsWith("Mono.CSharp.dll", StringComparison.OrdinalIgnoreCase))
                          && not (x.EndsWith("Mono.Options.dll", StringComparison.OrdinalIgnoreCase))
                          && not (x.EndsWith("Microsoft.Cci.dll", StringComparison.OrdinalIgnoreCase)))
     |> Seq.iter( fun x ->

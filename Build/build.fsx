@@ -259,14 +259,11 @@ Target "SelfTest" (fun _ ->
 
 Target "BuildMonoSamples" (fun _ ->
     ensureDirectory "./_Mono/Sample1"
-    let pf = environVar "ProgramFiles"
-    let mcs = pf @@ @"Mono\bin\mcs.bat"
-
-    if File.Exists(mcs) then
-        let result = ExecProcess (fun info -> info.FileName <- mcs
-                                              info.WorkingDirectory <- "."
-                                              info.Arguments <- (@"-debug -out:./_Mono/Sample1/Sample1.exe  .\Sample1\Program.cs")) (TimeSpan.FromMinutes 5.0)
-        if result <> 0 then failwith "Mono compilation failed"
+    let mcs = findToolInSubPath "mcs.exe" ".."
+    let result = ExecProcess (fun info -> info.FileName <- mcs
+                                          info.WorkingDirectory <- "."
+                                          info.Arguments <- (@"-debug -out:./_Mono/Sample1/Sample1.exe  .\Sample1\Program.cs")) (TimeSpan.FromMinutes 5.0)
+    if result <> 0 then failwith "Mono compilation failed"
 )
 
 let SimpleInstrumentingRun (samplePath:string) (binaryPath:string) (reportSigil:string) =
@@ -320,11 +317,7 @@ Target "SimpleInstrumentation" (fun _ ->
 )
 
 Target "SimpleMonoTest" (fun _ ->
-    let pf = environVar "ProgramFiles"
-    let mcs = pf @@ @"Mono\bin\mcs.bat"
-
-    if File.Exists(mcs) then
-        SimpleInstrumentingRun "_Mono/Sample1" "_Binaries/AltCover/Debug+AnyCPU" ".M"
+    SimpleInstrumentingRun "_Mono/Sample1" "_Binaries/AltCover/Debug+AnyCPU" ".M"
 )
 
 Target "BulkReport" (fun _ ->
@@ -421,12 +414,9 @@ Target "SimpleReleaseTest" (fun _ ->
 )
 
 Target "SimpleMonoReleaseTest" (fun _ ->
-    let pf = environVar "ProgramFiles"
-    let mcs = pf @@ @"Mono\bin\mcs.bat"
 
-    if File.Exists(mcs) then
-        let unpack = FullName "_Packaging/Unpack"
-        SimpleInstrumentingRun "_Mono/Sample1" unpack ".MR"
+    let unpack = FullName "_Packaging/Unpack"
+    SimpleInstrumentingRun "_Mono/Sample1" unpack ".MR"
 )
 
 Target "All" ignore
@@ -466,7 +456,7 @@ Target "All" ignore
 "BuildDebug"
 ==> "SimpleInstrumentation"
 "BuildDebug"
-==> "SimpleMonoTest"
+==> "BuildMonoSamples"
 "BuildDebug"
 ==> "FSharpTypes"
 "BuildDebug"
