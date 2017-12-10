@@ -7,6 +7,7 @@ shallow_clone: true
 environment:
   COVERALLS_REPO_TOKEN:
     secure: qgIIfE76i59qTVO64mT7QwKcAUUYCQLie4XdUdlnt7MXLhrwqTbcfGUsCss/TmLg
+cache: packages -> **\packages.config
 nuget:
   disable_publish_on_pr: true
 build_script:
@@ -27,4 +28,4 @@ notifications:
     secure: yzKiNN5snmI7Vzh12NWUEKC+V/w5wGI1ZMUGPT8p5WRefjAbB6DSgYkmWnzNADq9SurhbgIE2hlcCQivCQJ5gQE3AEGFpe+V7Dh/Up/jV0U=
   on_build_success: true
   on_build_failure: true
-  on_build_status_changed: true
+  on_build_status_changed: false
