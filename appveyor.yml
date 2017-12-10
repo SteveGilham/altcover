@@ -3,6 +3,9 @@ branches:
   except:
   - develop.*
 image: Visual Studio 2017
+environment:
+  COVERALLS_REPO_TOKEN:
+    secure: qgIIfE76i59qTVO64mT7QwKcAUUYCQLie4XdUdlnt7MXLhrwqTbcfGUsCss/TmLg
 nuget:
   disable_publish_on_pr: true
 build_script:
@@ -13,4 +16,4 @@ build_script:
 test: off
 artifacts:
 - path: _Packaging\*.nupkg
-  name: AltCover
+  name: NuGet

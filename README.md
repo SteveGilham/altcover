@@ -46,8 +46,9 @@ Coverage statistics are written to the file nominated by the `x|xmlReport=` para
 | | |
 | --- | --- |
 | **Build** | [![Build status](https://img.shields.io/appveyor/ci/SteveGilham/altcover.svg)](https://ci.appveyor.com/project/SteveGilham/altcover) |
-
+| **Coverage** | Coveralls [![Coverage Status](https://coveralls.io/repos/github/SteveGilham/altcover/badge.svg?branch=master)](https://coveralls.io/github/SteveGilham/altcover?branch=master) |
 
 ## Thanks to
 
 * [AppVeyor](https://ci.appveyor.com/project/SteveGilham/altcover) for allowing free build CI services for Open Source projects,
+* [Coveralls](https://coveralls.io/r/SteveGilham/altcover) for allowing free services for Open Source projects,
