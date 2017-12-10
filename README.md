@@ -46,7 +46,7 @@ Coverage statistics are written to the file nominated by the `x|xmlReport=` para
 | | |
 | --- | --- |
 | **Build** | [![Build status](https://img.shields.io/appveyor/ci/SteveGilham/altcover.svg)](https://ci.appveyor.com/project/SteveGilham/altcover) |
-| **Coverage** | Coveralls [![Coverage Status](https://coveralls.io/repos/github/SteveGilham/altcover/badge.svg?branch=master)](https://coveralls.io/github/SteveGilham/altcover?branch=master) |
+| **Unit test coverage** | <sup>Coveralls</sup> [![Coverage Status](https://coveralls.io/repos/github/SteveGilham/altcover/badge.svg?branch=master)](https://coveralls.io/github/SteveGilham/altcover?branch=master) |
 
 ## Thanks to
 

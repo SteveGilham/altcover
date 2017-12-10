@@ -126,6 +126,13 @@ Target "TestCover" (fun _ ->
                                        ReportTypes = [ ReportGeneratorReportType.Html; ReportGeneratorReportType.Badges ]
                                        TargetDir = "_Reports/_UnitTest"})
         ["./_Reports/OpenCoverReport.xml"]
+
+    if not <| String.IsNullOrWhiteSpace (environVar "APPVEYOR_BUILD_NUMBER") then
+            ExecProcess (fun info -> info.FileName <- findToolInSubPath "coveralls.net.exe" "."
+                                     info.WorkingDirectory <- "_Reports"
+                                     info.Arguments <- "--opencover OpenCoverReport.xml") (TimeSpan.FromMinutes 5.0)
+            |> ignore
+
 )
 
 Target "FSharpTypes" ( fun _ ->
