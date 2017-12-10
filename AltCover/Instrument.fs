@@ -79,7 +79,7 @@ module Instrument =
       let definition = AssemblyDefinition.ReadAssembly(recorder.Assembly.Location)
       ProgramDatabase.ReadSymbols definition
       definition.Name.Name <- definition.Name.Name + ".g"
-      use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Recorder.snk")
+      use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Recorder.snk")
       use buffer = new MemoryStream()
       stream.CopyTo(buffer)
       let pair = StrongNameKeyPair(buffer.ToArray())
