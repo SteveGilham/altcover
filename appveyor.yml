@@ -13,7 +13,10 @@ build_script:
     .\Build\get-nuget.ps1
 
     .\fake.bat
-test: off
+test:
+  assemblies:
+    only:
+    - _Binaries\AltCover.Tests\Debug+AnyCPU\*.dll
 artifacts:
 - path: _Packaging\*.nupkg
   name: NuGet
