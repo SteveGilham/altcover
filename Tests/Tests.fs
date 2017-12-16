@@ -144,8 +144,11 @@ type AltCoverTests() = class
       Assert.That (def.MainModule.HasSymbols, def.MainModule.FullyQualifiedName)
     )
 
-
   // Filter.fs
+
+  [<Test>]
+  member self.FiltersCanBeCompared() = // This works around OpenCover issue #615
+     Assert.That ((FilterClass.Type "23").Equals(FilterClass.Attribute "42"), Is.False)
 
   [<Test>]
   member self.NoneOfTheAboveMatchesNoType() =
@@ -230,10 +233,27 @@ type AltCoverTests() = class
      |> Seq.filter (fun t -> t.IsPublic)  // exclude the many compiler generted chaff classes
      |> Seq.iter (fun t -> Assert.That (Match t (FilterClass.Attribute "Fix"), Is.True))
 
+  [<Test>]
+  member self.Sample3Class1IsCSharpAutoproperty() =
+     let sample2 = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Sample2.dll")
+     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly (sample2)
+     def.MainModule.Types
+     |> Seq.filter(fun t -> t.Name = "Class1")
+     |> Seq.collect (fun t -> t.Methods)
+     |> Seq.filter (fun m -> m.IsGetter || m.IsSetter)
+     |> Seq.iter (IsCSharpAutoProperty >> Assert.That)
 
-//========================================================
-(*
-  [<Test;Ignore("Temporarily disable")>]
+  [<Test>]
+  member self.Sample3Class2IsNotCSharpAutoproperty() =
+     let sample2 = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Sample2.dll")
+     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly (sample2)
+     def.MainModule.Types
+     |> Seq.filter(fun t -> t.Name = "Class2")
+     |> Seq.collect (fun t -> t.Methods)
+     |> Seq.filter (fun m -> m.IsGetter || m.IsSetter)
+     |> Seq.iter (fun m -> Assert.That(IsCSharpAutoProperty m, Is.False))
+ 
+  [<Test>]
   member self.CanIdentifyExcludedFSharpMethods() =
     let tracer = DU.returnFoo 23
     let location = tracer.GetType().Assembly.Location
@@ -267,11 +287,11 @@ type AltCoverTests() = class
                |> Seq.sort
                |> Seq.toList
 
-    let expected = [ "as_bar"; "bytes"; "makeThing"; "returnBar"; "returnFoo"; "testMakeThing"; "testMakeUnion" ]
+    let expected = [  ".ctor" ; "Invoke"; "as_bar"; "bytes"; "get_MyBar" ; "makeThing"; "returnBar"; "returnFoo"; "testMakeThing"; "testMakeUnion" ]
 
     Assert.That(pass, Is.EquivalentTo(expected), sprintf "Got sequence %A" pass);
 
-  [<Test;Ignore("Temporarily disable")>]
+  [<Test>]
   member self.CanIdentifyExcludedCSharpAutoProperties() =
     let location = typeof<Sample3.Class1>.Assembly.Location
     let sourceAssembly = AssemblyDefinition.ReadAssembly(location)
@@ -288,7 +308,7 @@ type AltCoverTests() = class
     let expected = [".ctor"]
     Assert.That(pass, Is.EquivalentTo(expected), sprintf "Got sequence %A" pass);
 
-  [<Test;Ignore("Temporarily disable")>]
+  [<Test>]
   member self.CanIdentifyIncludedCSharpProperties() =
     let location = typeof<Sample3.Class1>.Assembly.Location
     let sourceAssembly = AssemblyDefinition.ReadAssembly(location)
@@ -305,6 +325,14 @@ type AltCoverTests() = class
     let expected = [".ctor"; "get_Property"; "set_Property"]
     Assert.That(pass, Is.EquivalentTo(expected), sprintf "Got sequence %A" pass);
 
+  // Visitor.fs
+
+  [<Test>]
+  member self.NodesCanBeCompared() = // This works around OpenCover issue #615
+     Assert.That ((Node.AfterModule).Equals(Node.Finish), Is.False)
+
+
+(*
   static member TTBaseline = "<?xml version=\"1.0\" encoding=\"utf-8\"?>
 <?xml-stylesheet href=\"coverage.xsl\" type=\"text/xsl\"?>
 <coverage profilerVersion=\"0\" driverVersion=\"0\" startTime=\"\" measureTime=\"\">

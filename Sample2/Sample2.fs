@@ -17,6 +17,7 @@ module DU =
     with member this.as_bar() = match this with
                                 | Foo n -> Bar (string n)
                                 | bar -> bar
+         member this.MyBar = this.as_bar
 
     let returnFoo v = Foo v
 

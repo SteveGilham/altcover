@@ -117,7 +117,7 @@ Target "TestCover" (fun _ ->
     OpenCover (fun p -> { p with ExePath = findToolInSubPath "OpenCover.Console.exe" "."
                                  WorkingDir = "."
                                  TestRunnerExePath = findToolInSubPath "nunit3-console.exe" "."
-                                 Filter = OpenCoverFilter
+                                 Filter = "+[AltCove*]* -[*]Microsoft.* -[*]System.* -[Sample*]*"
                                  MergeByHash = true
                                  Register = RegisterType.RegisterUser
                                  Output = "_Reports/OpenCoverReport.xml" })
@@ -150,8 +150,8 @@ Target "FSharpTypes" ( fun _ ->
                    |> Seq.map (fun x -> x.Attribute(XName.Get("name")).Value)
                    |> Seq.sort
                    |> Seq.toList
-    let expected = "[\"as_bar\"; \"bytes\"; \"makeThing\"; \"returnBar\"; \"returnFoo\"; \"testMakeThing\";\n \"testMakeUnion\"]"
-    if recorded.Length <> 7 then failwith (sprintf "Bad method list length %A" recorded)
+    let expected = "[\"Invoke\"; \"as_bar\"; \"bytes\"; \"get_MyBar\"; \"makeThing\"; \"returnBar\"; \"returnFoo\";\n \"testMakeThing\"; \"testMakeUnion\"]"
+    if recorded.Length <> 9 then failwith (sprintf "Bad method list length %A" recorded)
     if (sprintf "%A" recorded) <> expected then failwith (sprintf "Bad method list %A" recorded)
     )
 
