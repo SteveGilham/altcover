@@ -67,7 +67,7 @@ type AltCoverTests() = class
     |> Seq.filter (fun x -> x.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)
                             || x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
     |> Seq.iter( fun x ->
-      let def = Mono.Cecil.AssemblyDefinition.ReadAssembly(x)
+      let def = Mono.Cecil.AssemblyDefinition.ReadAssembly x
       let pdb = AltCover.ProgramDatabase.GetPdbWithFallback(def)
       match pdb with
       | None -> Assert.That(File.Exists(Path.ChangeExtension(x, ".pdb")), Is.Not.True, "No .pdb for " + x)
@@ -87,7 +87,7 @@ type AltCoverTests() = class
     |> Seq.filter (fun x -> x.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)
                             || x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
     |> Seq.iter( fun x ->
-      let def = Mono.Cecil.AssemblyDefinition.ReadAssembly(x)
+      let def = Mono.Cecil.AssemblyDefinition.ReadAssembly x
       let mdb = AltCover.ProgramDatabase.GetPdbWithFallback(def)
       match mdb with
       | None -> Assert.That(File.Exists(x + ".mdb"), Is.Not.True, "No .mdb for " + x)
@@ -139,13 +139,96 @@ type AltCoverTests() = class
     |> Seq.filter (fun x -> x.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)
                             || x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
     |> Seq.iter( fun x ->
-      let def = Mono.Cecil.AssemblyDefinition.ReadAssembly(x)
+      let def = Mono.Cecil.AssemblyDefinition.ReadAssembly x
       AltCover.ProgramDatabase.ReadSymbols def
       Assert.That (def.MainModule.HasSymbols, def.MainModule.FullyQualifiedName)
     )
 
 
   // Filter.fs
+
+  [<Test>]
+  member self.NoneOfTheAboveMatchesNoType() =
+     Assert.That (Match () (FilterClass.Type "23"), Is.False)
+
+  [<Test>]
+  member self.NoneOfTheAboveMatchesNoAttribute() =
+     Assert.That (Match () (FilterClass.Attribute "23"), Is.False)
+
+  [<Test>]
+  member self.NoneOfTheAboveMatchesNoAssembly() =
+     Assert.That (Match () (FilterClass.Assembly "23"), Is.False)
+
+  [<Test>]
+  member self.NoneOfTheAboveMatchesNoFile() =
+     Assert.That (Match () (FilterClass.File "23"), Is.False)
+
+  [<Test>]
+  member self.NoneOfTheAboveMatchesNoMethod() =
+     Assert.That (Match () (FilterClass.Method "23"), Is.False)
+
+  [<Test>]
+  member self.FileDoesNotMatchNonFileClass() =
+     Assert.That (Match (Assembly.GetExecutingAssembly().Location) (FilterClass.Type "23"), Is.False)
+
+  [<Test>]
+  member self.FileDoesMatchFileClass() =
+     Assert.That (Match (Assembly.GetExecutingAssembly().Location) (FilterClass.File "Cove"), Is.True)
+
+  [<Test>]
+  member self.AssemblyDoesNotMatchNonAssemblyClass() =
+     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly (Assembly.GetExecutingAssembly().Location)
+     Assert.That (Match def (FilterClass.Type "23"), Is.False)
+
+  [<Test>]
+  member self.AssemblyDoesMatchAssemblyClass() =
+     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly (Assembly.GetExecutingAssembly().Location)
+     Assert.That (Match def (FilterClass.Assembly "Cove"), Is.True)
+
+  [<Test>]
+  member self.TypeDoesNotMatchNonTypeClass() =
+     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly (Assembly.GetExecutingAssembly().Location)
+     def.MainModule.Types
+     |> Seq.iter (fun t -> Assert.That (Match t (FilterClass.File "23"), Is.False))
+
+  [<Test>]
+  member self.TypeDoesMatchTypeClass() =
+     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly (Assembly.GetExecutingAssembly().Location)
+     def.MainModule.Types
+     |> Seq.filter (fun t -> t.IsPublic)  // exclude the many compiler generted chaff classes
+     |> Seq.iter (fun t -> Assert.That (Match t (FilterClass.Type "Cove"), Is.True))
+
+  [<Test>]
+  member self.MethodDoesNotMatchNonMethodClass() =
+     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly (Assembly.GetExecutingAssembly().Location)
+     def.MainModule.Types
+     |> Seq.filter (fun t -> t.IsPublic) 
+     |> Seq.collect (fun t -> t.Methods)
+     |> Seq.iter (fun m -> Assert.That (Match m (FilterClass.Type "23"), Is.False))
+
+  [<Test>]
+  member self.MethodDoesMatchMethodClass() =
+     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly (Assembly.GetExecutingAssembly().Location)
+     Assert.That(def.MainModule.Types
+                 |> Seq.filter (fun t -> t.IsPublic)  // exclude the many compiler generted chaff classes
+                 |> Seq.collect (fun t -> t.Methods)
+                 |> Seq.filter (fun m -> m.IsPublic && (not m.IsConstructor))
+                 |> Seq.filter (fun m -> Match m (FilterClass.Method "Augment"))
+                 |> Seq.length,
+                 Is.EqualTo(2))
+
+  [<Test>]
+  member self.AttributeDoesNotMatchNonAttributeClass() =
+     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly (Assembly.GetExecutingAssembly().Location)
+     def.MainModule.Types
+     |> Seq.iter (fun t -> Assert.That (Match t.CustomAttributes (FilterClass.File "23"), Is.False))
+
+  [<Test>]
+  member self.AttributeDoesMatchAttributeClass() =
+     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly (Assembly.GetExecutingAssembly().Location)
+     def.MainModule.Types
+     |> Seq.filter (fun t -> t.IsPublic)  // exclude the many compiler generted chaff classes
+     |> Seq.iter (fun t -> Assert.That (Match t (FilterClass.Attribute "Fix"), Is.True))
 
 
 //========================================================

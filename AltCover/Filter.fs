@@ -18,32 +18,27 @@ type internal FilterClass =
 module Filter =
 
   let internal Match (nameProvider:Object) (filter:FilterClass) =
-    match nameProvider with
-    | :? string as fileName ->
-         match filter with
-         | File name -> Path.GetFileName(fileName).Contains(name)
-         | _ -> false
-    | :? AssemblyDefinition as assembly ->
-         match filter with
-         | Assembly name -> assembly.Name.Name.Contains(name)
-         | _ -> false
-    | :? TypeDefinition as typeDef ->
-         match filter with
-         | Type name -> typeDef.FullName.Contains(name)
-         | _ -> false
-    | :? MethodDefinition as methodDef ->
-         match filter with
-         | Method name -> methodDef.Name.Contains(name)
-         | _ -> false
-    | :? ICustomAttributeProvider as attributeProvider ->
-         match filter with
-         | Attribute name -> attributeProvider.HasCustomAttributes &&
-                             attributeProvider.CustomAttributes
-                             |> Seq.cast<CustomAttribute>
-                             |> Seq.exists (fun attr ->
-                                attr.Constructor.DeclaringType.FullName.Contains(name))
-         | _ -> false
-    | _ -> false
+    match filter with
+    | File name -> match nameProvider with
+                   | :? string as fileName -> Path.GetFileName(fileName).Contains(name)
+                   | _ -> false
+    | Assembly name -> match nameProvider with
+                       | :? AssemblyDefinition as assembly -> assembly.Name.Name.Contains(name)
+                       | _ -> false
+    | Type name -> match nameProvider with
+                   | :? TypeDefinition as typeDef -> typeDef.FullName.Contains(name)
+                   | _ -> false
+    | Method name -> match nameProvider with
+                     | :? MethodDefinition as methodDef -> methodDef.Name.Contains(name)
+                     | _ -> false
+    | Attribute name -> match nameProvider with
+                        | :? ICustomAttributeProvider as attributeProvider ->
+                            attributeProvider.HasCustomAttributes &&
+                                 attributeProvider.CustomAttributes
+                                 |> Seq.cast<CustomAttribute>
+                                 |> Seq.exists (fun attr ->
+                                    attr.Constructor.DeclaringType.FullName.Contains(name))
+                        | _ -> false
 
   let internal IsCSharpAutoProperty (m:MethodDefinition) =
       (m.IsSetter || m.IsGetter) && m.HasCustomAttributes &&
