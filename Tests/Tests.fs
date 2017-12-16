@@ -21,7 +21,7 @@ type AltCoverTests() = class
     | None -> "\\.."
     | _ -> String.Empty
 
-  [<Test>]
+  [<Test;Ignore("Temporarily disable")>]
   member self.CanIdentifyExcludedFSharpMethods() =
     let tracer = DU.returnFoo 23
     let location = tracer.GetType().Assembly.Location
@@ -59,7 +59,7 @@ type AltCoverTests() = class
 
     Assert.That(pass, Is.EquivalentTo(expected), sprintf "Got sequence %A" pass);
 
-  [<Test>]
+  [<Test;Ignore("Temporarily disable")>]
   member self.CanIdentifyExcludedCSharpAutoProperties() =
     let location = typeof<Sample3.Class1>.Assembly.Location
     let sourceAssembly = AssemblyDefinition.ReadAssembly(location)
@@ -76,7 +76,7 @@ type AltCoverTests() = class
     let expected = [".ctor"]
     Assert.That(pass, Is.EquivalentTo(expected), sprintf "Got sequence %A" pass);
 
-  [<Test>]
+  [<Test;Ignore("Temporarily disable")>]
   member self.CanIdentifyIncludedCSharpProperties() =
     let location = typeof<Sample3.Class1>.Assembly.Location
     let sourceAssembly = AssemblyDefinition.ReadAssembly(location)
@@ -93,7 +93,7 @@ type AltCoverTests() = class
     let expected = [".ctor"; "get_Property"; "set_Property"]
     Assert.That(pass, Is.EquivalentTo(expected), sprintf "Got sequence %A" pass);
 
-  [<Test>]
+  [<Test;Ignore("Temporarily disable")>]
   member self.ShouldGetPdbFromImage() =
     // Hack for running while instrumented
     let where = Assembly.GetExecutingAssembly().Location;
@@ -122,7 +122,7 @@ type AltCoverTests() = class
          Assert.That(name, Does.EndWith("\\" + filename), x + " -> " + name)
     )
 
-  [<Test>]
+  [<Test;Ignore("Temporarily disable")>]
   member self.ShouldGetPdbWithFallback() =
     // Hack for running while instrumented
     let where = Assembly.GetExecutingAssembly().Location;
@@ -187,7 +187,7 @@ type AltCoverTests() = class
 
             AltCoverTests.RecursiveValidate (r.Elements()) (e.Elements()) (depth+1) zero)
 
-  [<Test>]
+  [<Test;Ignore("Temporarily disable")>]
   member self.ShouldGenerateExpectedXmlReport() =
     let visitor, document = Report.ReportGenerator()
     // Hack for running while instrumented

@@ -121,7 +121,7 @@ Target "TestCover" (fun _ ->
                                  MergeByHash = true
                                  Register = RegisterType.RegisterUser
                                  Output = "_Reports/OpenCoverReport.xml" })
-        "_Binaries/AltCover.Tests/Debug+AnyCPU/AltCover.Tests.dll _Binaries/AltCover.Tests/Debug+AnyCPU/Sample2.dll --result=./_Reports/NUnit3ReportOpenCovered.xml"
+        "_Binaries/AltCover.Tests/Debug+AnyCPU/AltCover.Tests.dll --result=./_Reports/NUnit3ReportOpenCovered.xml"
     ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
                                        ReportTypes = [ ReportGeneratorReportType.Html; ReportGeneratorReportType.Badges ]
                                        TargetDir = "_Reports/_UnitTest"})
@@ -132,7 +132,6 @@ Target "TestCover" (fun _ ->
                                      info.WorkingDirectory <- "_Reports"
                                      info.Arguments <- "--opencover OpenCoverReport.xml") (TimeSpan.FromMinutes 5.0)
             |> ignore
-
 )
 
 Target "FSharpTypes" ( fun _ ->
