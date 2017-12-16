@@ -6,6 +6,8 @@ open System.Reflection
 open System.Xml.Linq
 
 open AltCover
+open AltCover.Augment
+open AltCover.Filter
 open Mono.Cecil
 open N
 open NUnit.Framework
@@ -21,6 +23,133 @@ type AltCoverTests() = class
     | None -> "\\.."
     | _ -> String.Empty
 
+  // Augment.fs
+
+  [<Test>]
+  member self.AugmentNullableDetectNulls() =
+    let input = [ "string"; null; "another string" ]
+    let nulls = input |> Seq.map (Option.nullable >> Option.isNone)
+    Assert.That(nulls, Is.EquivalentTo([false; true; false]))
+
+  [<Test>]
+  member self.AugmentGetOrElseFillsInNone() =
+    let input = [ "string"; null; "another string" ]
+    let strings = input |> Seq.map (Option.nullable >> (Option.getOrElse "fallback"))
+    Assert.That(strings, Is.EquivalentTo([ "string"; "fallback"; "another string" ]))
+
+  // ProgramDatabase.fs
+
+  [<Test>]
+  member self.ShouldGetPdbFromImage() =
+    // Hack for running while instrumented
+    let where = Assembly.GetExecutingAssembly().Location
+    let files = Directory.GetFiles(Path.GetDirectoryName(where) + AltCoverTests.Hack())
+    files
+    |> Seq.filter (fun x -> x.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)
+                            || x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
+    |> Seq.map (fun x -> (x, Mono.Cecil.AssemblyDefinition.ReadAssembly x))
+    |> Seq.filter (fun x -> (snd x).FullName.EndsWith("PublicKeyToken=c02b1a9f5b7cade8", StringComparison.OrdinalIgnoreCase))
+    |> Seq.iter( fun x ->let pdb = AltCover.ProgramDatabase.GetPdbFromImage (snd x)
+                         match pdb with
+                         | None -> Assert.Fail("No .pdb for " + (fst x))
+                         | Some name ->
+                            let probe = Path.ChangeExtension((fst x), ".pdb")
+                            let file = FileInfo(probe)
+                            let filename = file.Name
+                            Assert.That(name, Does.EndWith("\\" + filename), (fst x) + " -> " + name) )
+
+  [<Test>]
+  member self.ShouldGetPdbWithFallback() =
+    // Hack for running while instrumented
+    let where = Assembly.GetExecutingAssembly().Location
+    let files = Directory.GetFiles(Path.GetDirectoryName(where) + AltCoverTests.Hack())
+    files
+    |> Seq.filter (fun x -> x.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)
+                            || x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
+    |> Seq.iter( fun x ->
+      let def = Mono.Cecil.AssemblyDefinition.ReadAssembly(x)
+      let pdb = AltCover.ProgramDatabase.GetPdbWithFallback(def)
+      match pdb with
+      | None -> Assert.That(File.Exists(Path.ChangeExtension(x, ".pdb")), Is.Not.True, "No .pdb for " + x)
+      | Some name ->
+         let probe = Path.ChangeExtension(x, ".pdb")
+         let file = FileInfo(probe)
+         let filename = file.Name
+         Assert.That(name, Does.EndWith("\\" + filename), x + " -> " + name)
+    )
+
+  [<Test>]
+  member self.ShouldGetMdbWithFallback() =
+    // Hack for running while instrumented
+    let where = Assembly.GetExecutingAssembly().Location
+    let files = Directory.GetFiles(where.Substring(0, where.IndexOf("_Binaries")) + "_Mono\\Sample1")
+    files
+    |> Seq.filter (fun x -> x.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)
+                            || x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
+    |> Seq.iter( fun x ->
+      let def = Mono.Cecil.AssemblyDefinition.ReadAssembly(x)
+      let mdb = AltCover.ProgramDatabase.GetPdbWithFallback(def)
+      match mdb with
+      | None -> Assert.That(File.Exists(x + ".mdb"), Is.Not.True, "No .mdb for " + x)
+      | Some name ->
+         let probe = x + ".mdb"
+         let file = FileInfo(probe)
+         let filename = file.Name
+         Assert.That(name + ".mdb", Does.EndWith("\\" + filename), x + " -> " + name)
+    )
+
+  [<Test>]
+  member self.ShouldGetSymbolsFromPdb() =
+    // Hack for running while instrumented
+    let where = Assembly.GetExecutingAssembly().Location
+    let files = Directory.GetFiles(Path.GetDirectoryName(where) + AltCoverTests.Hack())
+    files
+    |> Seq.filter (fun x -> x.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)
+                            || x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
+    |> Seq.map Mono.Cecil.AssemblyDefinition.ReadAssembly
+    |> Seq.filter (fun x -> x.FullName.EndsWith("PublicKeyToken=c02b1a9f5b7cade8", StringComparison.OrdinalIgnoreCase))
+    |> Seq.iter (fun def ->
+      AltCover.ProgramDatabase.ReadSymbols def
+      Assert.That (def.MainModule.HasSymbols, def.MainModule.FullyQualifiedName)
+    )
+
+  [<Test>]
+  member self.ShouldNotGetSymbolsWhenNoPdb() =
+    // Hack for running while instrumented
+    let where = Assembly.GetExecutingAssembly().Location
+    let files = Directory.GetFiles(Path.GetDirectoryName(where) + AltCoverTests.Hack())
+    files
+    |> Seq.filter (fun x -> x.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)
+                            || x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
+    |> Seq.filter (fun x -> Path.GetFileName(x).StartsWith("FSharp", StringComparison.OrdinalIgnoreCase))
+    |> Seq.map Mono.Cecil.AssemblyDefinition.ReadAssembly
+    |> Seq.filter (fun x -> not <| x.FullName.EndsWith("PublicKeyToken=c02b1a9f5b7cade8", StringComparison.OrdinalIgnoreCase))
+    |> Seq.iter (fun def ->
+      AltCover.ProgramDatabase.ReadSymbols def
+      printfn "%A" def.MainModule.FullyQualifiedName
+      Assert.That (not def.MainModule.HasSymbols, def.MainModule.FullyQualifiedName)
+    )
+
+  [<Test>]
+  member self.ShouldGetSymbolsFromMdb() =
+    // Hack for running while instrumented
+    let where = Assembly.GetExecutingAssembly().Location
+    let files = Directory.GetFiles(where.Substring(0, where.IndexOf("_Binaries")) + "_Mono\\Sample1")
+    files
+    |> Seq.filter (fun x -> x.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)
+                            || x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
+    |> Seq.iter( fun x ->
+      let def = Mono.Cecil.AssemblyDefinition.ReadAssembly(x)
+      AltCover.ProgramDatabase.ReadSymbols def
+      Assert.That (def.MainModule.HasSymbols, def.MainModule.FullyQualifiedName)
+    )
+
+
+  // Filter.fs
+
+
+//========================================================
+(*
   [<Test;Ignore("Temporarily disable")>]
   member self.CanIdentifyExcludedFSharpMethods() =
     let tracer = DU.returnFoo 23
@@ -93,55 +222,6 @@ type AltCoverTests() = class
     let expected = [".ctor"; "get_Property"; "set_Property"]
     Assert.That(pass, Is.EquivalentTo(expected), sprintf "Got sequence %A" pass);
 
-  [<Test;Ignore("Temporarily disable")>]
-  member self.ShouldGetPdbFromImage() =
-    // Hack for running while instrumented
-    let where = Assembly.GetExecutingAssembly().Location;
-    let files = Directory.GetFiles(Path.GetDirectoryName(where) + AltCoverTests.Hack())
-    files
-    |> Seq.filter (fun x -> x.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)
-                            || x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
-    |> Seq.filter (fun x -> not (x.EndsWith("nunit.framework.dll", StringComparison.OrdinalIgnoreCase))
-                         && not (x.EndsWith("FSharp.Core.dll", StringComparison.OrdinalIgnoreCase))
-                         && not (x.EndsWith("Mono.Cecil.dll", StringComparison.OrdinalIgnoreCase))
-                         && not (x.EndsWith("Mono.Cecil.Mdb.dll", StringComparison.OrdinalIgnoreCase))
-                         && not (x.EndsWith("Mono.Cecil.Pdb.dll", StringComparison.OrdinalIgnoreCase))
-                         && not (x.EndsWith("Mono.Cecil.Rocks.dll", StringComparison.OrdinalIgnoreCase))
-                         && not (x.EndsWith("Mono.CSharp.dll", StringComparison.OrdinalIgnoreCase))
-                         && not (x.EndsWith("Mono.Options.dll", StringComparison.OrdinalIgnoreCase))
-                         && not (x.EndsWith("Microsoft.Cci.dll", StringComparison.OrdinalIgnoreCase)))
-    |> Seq.iter( fun x ->
-      let def = Mono.Cecil.AssemblyDefinition.ReadAssembly(x)
-      let pdb = AltCover.ProgramDatabase.GetPdbFromImage(def)
-      match pdb with
-      | None -> Assert.Fail("No .pdb for " + x)
-      | Some name ->
-         let probe = Path.ChangeExtension(x, ".pdb")
-         let file = FileInfo(probe)
-         let filename = file.Name
-         Assert.That(name, Does.EndWith("\\" + filename), x + " -> " + name)
-    )
-
-  [<Test;Ignore("Temporarily disable")>]
-  member self.ShouldGetPdbWithFallback() =
-    // Hack for running while instrumented
-    let where = Assembly.GetExecutingAssembly().Location;
-    let files = Directory.GetFiles(Path.GetDirectoryName(where) + AltCoverTests.Hack())
-    files
-    |> Seq.filter (fun x -> x.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)
-                            || x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
-    |> Seq.iter( fun x ->
-      let def = Mono.Cecil.AssemblyDefinition.ReadAssembly(x)
-      let pdb = AltCover.ProgramDatabase.GetPdbWithFallback(def)
-      match pdb with
-      | None -> Assert.That(File.Exists(Path.ChangeExtension(x, ".pdb")), Is.Not.True, "No .pdb for " + x)
-      | Some name ->
-         let probe = Path.ChangeExtension(x, ".pdb")
-         let file = FileInfo(probe)
-         let filename = file.Name
-         Assert.That(name, Does.EndWith("\\" + filename), x + " -> " + name)
-    )
-
   static member TTBaseline = "<?xml version=\"1.0\" encoding=\"utf-8\"?>
 <?xml-stylesheet href=\"coverage.xsl\" type=\"text/xsl\"?>
 <coverage profilerVersion=\"0\" driverVersion=\"0\" startTime=\"\" measureTime=\"\">
@@ -200,5 +280,5 @@ type AltCoverTests() = class
     let result = document.Elements()
     let expected = baseline.Elements()
     AltCoverTests.RecursiveValidate result expected 0 true
-
+*)
 end

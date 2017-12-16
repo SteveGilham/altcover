@@ -438,7 +438,7 @@ Target "All" ignore
 ==> "SimpleMonoReleaseTest"
 
 "BuildMonoSamples"
-==> "SimpleMonoTest"
+==> "Test"
 
 "SetVersion"
 =?> ("BuildDebug", (not(File.Exists("./_Generated/AssemblyVersion.fs"))))

@@ -32,6 +32,7 @@ module ProgramDatabase =
               if File.Exists(fallback)
                 then Some fallback
                 else let fallback2 = assembly.MainModule.FullyQualifiedName + ".mdb"
+                     // Note -- the assembly path, not the mdb path, because GetSymbolReader wants the assembly path for Mono
                      if File.Exists(fallback2) then Some assembly.MainModule.FullyQualifiedName else None
     | pdbpath -> pdbpath
 
