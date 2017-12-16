@@ -235,18 +235,18 @@ type AltCoverTests() = class
 
   [<Test>]
   member self.Sample3Class1IsCSharpAutoproperty() =
-     let sample2 = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Sample2.dll")
-     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly (sample2)
+     let sample3 = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Sample3.dll")
+     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly (sample3)
      def.MainModule.Types
      |> Seq.filter(fun t -> t.Name = "Class1")
-     |> Seq.collect (fun t -> t.Methods)
+     |> Seq.collect (fun t ->t.Methods)
      |> Seq.filter (fun m -> m.IsGetter || m.IsSetter)
      |> Seq.iter (IsCSharpAutoProperty >> Assert.That)
 
   [<Test>]
   member self.Sample3Class2IsNotCSharpAutoproperty() =
-     let sample2 = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Sample2.dll")
-     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly (sample2)
+     let sample3 = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Sample3.dll")
+     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly (sample3)
      def.MainModule.Types
      |> Seq.filter(fun t -> t.Name = "Class2")
      |> Seq.collect (fun t -> t.Methods)
@@ -373,6 +373,76 @@ type AltCoverTests() = class
     let token = KeyStore.KeyToRecord <| pair
     Assert.That (token, Is.EqualTo({Pair = pair; Token = BitConverter.GetBytes(0xe8ad7c5b9f1a2bc0UL) |> Array.toList}))
  
+  [<Test>]
+  member self.VisitorDetectNulls() =
+    let input = [ "string"; null; "another string" ]
+    let nulls = input |> Seq.map (Visitor.isNotNull >> not)
+    Assert.That(nulls, Is.EquivalentTo([false; true; false]))
+
+  [<Test>]
+  member self.KeyHasExpectedPlaceInIndex() = 
+    try
+      Assert.That (Visitor.keys.Keys.Count, Is.EqualTo(0))
+      let pair = AltCoverTests.ProvideKeyPair ()
+      Visitor.Add(pair)
+      Assert.That(Visitor.keys.ContainsKey(0xe8ad7c5b9f1a2bc0UL))
+      Assert.That(Visitor.keys.[0xe8ad7c5b9f1a2bc0UL], Is.EqualTo({Pair = pair; Token = BitConverter.GetBytes(0xe8ad7c5b9f1a2bc0UL) |> Array.toList}))
+    finally
+      Visitor.keys.Clear()
+
+  [<Test>]
+  member self.EmptyFiltersPassAll() = 
+    Assert.That (Visitor.NameFilters.Count, Is.EqualTo(0))
+    Assert.That (Visitor.IsIncluded self)
+
+  [<Test>]
+  member self.NonEmptyFiltersCatchAnExpectedValue() = 
+    try
+      Assert.That (Visitor.NameFilters.Count, Is.EqualTo(0))
+      Visitor.NameFilters.AddRange([ FilterClass.File "Cove"; FilterClass.Method "Augment"])
+      Assert.That (Visitor.IsIncluded (Assembly.GetExecutingAssembly().Location), Is.False)
+    finally
+      Visitor.NameFilters.Clear()
+
+  [<Test>]
+  member self.NonEmptyFiltersPassAnExpectedValue() = 
+    try
+      Assert.That (Visitor.NameFilters.Count, Is.EqualTo(0))
+      Visitor.NameFilters.AddRange([ FilterClass.File "System"; FilterClass.Method "Augment"])
+      Assert.That (Visitor.IsIncluded (Assembly.GetExecutingAssembly().Location))
+    finally
+      Visitor.NameFilters.Clear()
+
+  [<Test>]
+  member self.AfterProcessingYieldsAnExpectedValue() = 
+    let def = Mono.Cecil.AssemblyDefinition.ReadAssembly (Assembly.GetExecutingAssembly().Location)
+    let inputs = [ Node.Start [] ; Node.Assembly (def, true) ; Node.Module (null, false) ; Node.Type (null, true) ;
+                   Node.Method (null, false) ; Node.MethodPoint ( null, null, 0, true ) ;
+                   Node.AfterMethod false ; Node.AfterModule ; Node.AfterAssembly def; Node.Finish ]
+    let outputs = inputs |> Seq.map (Visitor.After >> Seq.toList)
+    let expected = [ [Finish]; [AfterAssembly def]; [AfterModule]; []; [AfterMethod false]; []; []; []; []; []]
+    Assert.That (outputs, Is.EquivalentTo (expected))
+
+  [<Test>]
+  member self.Sample3Class1PropertyIsNotSignificant() =
+     let sample3 = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Sample3.dll")
+     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly (sample3)
+     def.MainModule.Types
+     |> Seq.filter(fun t -> t.Name = "Class1")
+     |> Seq.collect (fun t -> t.Methods)
+     |> Seq.filter (fun m -> m.IsGetter || m.IsSetter)
+     |> Seq.iter (fun m -> Assert.That(Visitor.significant m, Is.False))
+
+  [<Test>]
+  member self.Sample3Class2IPropertyIsSignificant() =
+     let sample3 = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Sample3.dll")
+     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly (sample3)
+     def.MainModule.Types
+     |> Seq.filter(fun t -> t.Name = "Class2")
+     |> Seq.collect (fun t -> t.Methods)
+     |> Seq.filter (fun m -> m.IsGetter || m.IsSetter)
+     |> Seq.iter (Visitor.significant >> Assert.That)
+
 
 (*
   static member TTBaseline = "<?xml version=\"1.0\" encoding=\"utf-8\"?>
