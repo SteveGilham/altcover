@@ -117,7 +117,7 @@ Target "TestCover" (fun _ ->
     OpenCover (fun p -> { p with ExePath = findToolInSubPath "OpenCover.Console.exe" "."
                                  WorkingDir = "."
                                  TestRunnerExePath = findToolInSubPath "nunit3-console.exe" "."
-                                 Filter = "+[AltCove*]* -[*]Microsoft.* -[*]System.* -[Sample*]*"
+                                 Filter = "+[AltCover]* -[*]Microsoft.* -[*]System.* -[Sample*]*"
                                  MergeByHash = true
                                  Register = RegisterType.RegisterUser
                                  Output = "_Reports/OpenCoverReport.xml" })
