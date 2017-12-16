@@ -331,6 +331,48 @@ type AltCoverTests() = class
   member self.NodesCanBeCompared() = // This works around OpenCover issue #615
      Assert.That ((Node.AfterModule).Equals(Node.Finish), Is.False)
 
+  [<Test>]
+  member self.KeyRecordsCanBeCompared() = // This works around OpenCover issue #615
+     let record1 = { Pair = null; Token = [] }
+     let record2 = { Pair = null; Token = [ 23uy ] }
+     Assert.That (record1.Equals(record2), Is.False)
+
+  [<Test>]
+  member self.EmptyArrayHasExpectedHash() = 
+    Assert.That ((KeyStore.TokenOfArray [| |]), Is.EquivalentTo [|9uy; 7uy; 216uy; 175uy; 144uy; 24uy; 96uy; 149uy|])
+
+  static member private ProvideKeyPair () =
+      use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Infrastructure.snk")
+      use buffer = new MemoryStream()
+      stream.CopyTo(buffer)
+      StrongNameKeyPair(buffer.ToArray())
+
+  [<Test>]
+  member self.KeyHasExpectedToken() = 
+    let token = KeyStore.TokenOfKey <| AltCoverTests.ProvideKeyPair ()
+    let token' = String.Join(String.Empty, token |> List.map (fun x -> x.ToString("x2")))
+    Assert.That (token', Is.EqualTo("c02b1a9f5b7cade8"))
+
+  [<Test>]
+  member self.TokenGeneratesExpectedULong() =
+    let token = [|1uy; 0uy; 0uy; 0uy; 0uy; 0uy; 0uy; 0uy|]
+    Assert.That (KeyStore.TokenAsULong token, Is.EqualTo(1UL))
+
+  [<Test>]
+  member self.KeyHasExpectedIndex() = 
+    let token = KeyStore.KeyToIndex <| AltCoverTests.ProvideKeyPair ()
+    Assert.That (token, Is.EqualTo(0xe8ad7c5b9f1a2bc0UL))
+
+  [<Test>]
+  member self.EmptyArrayHasExpectedIndex() = 
+    Assert.That ((KeyStore.ArrayToIndex [| |]), Is.EqualTo(0x95601890afd80709UL))
+
+  [<Test>]
+  member self.KeyHasExpectedRecord() = 
+    let pair = AltCoverTests.ProvideKeyPair ()
+    let token = KeyStore.KeyToRecord <| pair
+    Assert.That (token, Is.EqualTo({Pair = pair; Token = BitConverter.GetBytes(0xe8ad7c5b9f1a2bc0UL) |> Array.toList}))
+ 
 
 (*
   static member TTBaseline = "<?xml version=\"1.0\" encoding=\"utf-8\"?>
