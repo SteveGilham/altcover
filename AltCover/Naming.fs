@@ -8,7 +8,7 @@ module Naming =
 
     let isNotNull x = (not << isNull) x
     let emptyIfIsNullOrWhiteSpace name = if String.IsNullOrWhiteSpace name then String.Empty else name
-    let prefixIfNotIsNullOrWhiteSpace name prefix = if String.IsNullOrWhiteSpace name then String.Empty else (name+prefix)
+    let suffixIfNotIsNullOrWhiteSpace name suffix = if String.IsNullOrWhiteSpace name then String.Empty else (name+suffix)
 
     let TypeName (def : TypeDefinition) =
         emptyIfIsNullOrWhiteSpace def.Name
@@ -19,12 +19,12 @@ module Naming =
     let rec FullTypeName (def : TypeDefinition) =
         let deft = def.DeclaringType
         if isNotNull deft then (FullTypeName deft) + "+" + (TypeName def)
-        else (prefixIfNotIsNullOrWhiteSpace def.Namespace  ".") + TypeName def
+        else (suffixIfNotIsNullOrWhiteSpace def.Namespace  ".") + TypeName def
 
     let rec FullTypeRefName (def : TypeReference) =
         let deft = def.DeclaringType
         if isNotNull deft then (FullTypeRefName deft) + "+" + (TypeRefName def)
-        else (prefixIfNotIsNullOrWhiteSpace def.Namespace  ".") + TypeRefName def
+        else (suffixIfNotIsNullOrWhiteSpace def.Namespace  ".") + TypeRefName def
 
     let MethodName (def : MethodDefinition) =
         emptyIfIsNullOrWhiteSpace def.Name

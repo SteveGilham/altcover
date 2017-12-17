@@ -9,6 +9,8 @@ open AltCover
 open AltCover.Augment
 open AltCover.Filter
 open Mono.Cecil
+open Mono.Cecil.Cil
+open Mono.Cecil.Rocks
 open N
 open NUnit.Framework
 
@@ -372,12 +374,6 @@ type AltCoverTests() = class
     let pair = AltCoverTests.ProvideKeyPair ()
     let token = KeyStore.KeyToRecord <| pair
     Assert.That (token, Is.EqualTo({Pair = pair; Token = BitConverter.GetBytes(0xe8ad7c5b9f1a2bc0UL) |> Array.toList}))
- 
-  [<Test>]
-  member self.VisitorDetectNulls() =
-    let input = [ "string"; null; "another string" ]
-    let nulls = input |> Seq.map (Visitor.isNotNull >> not)
-    Assert.That(nulls, Is.EquivalentTo([false; true; false]))
 
   [<Test>]
   member self.KeyHasExpectedPlaceInIndex() = 
@@ -574,9 +570,106 @@ type AltCoverTests() = class
     let expected = List.concat [ [Start[path]; assembly]; (Visitor.Deeper >> Seq.toList) assembly; [AfterAssembly def; Finish]]
     Assert.That (accumulator, Is.EquivalentTo expected)
 
+  // Naming.fs
 
+  [<Test>]
+  member self.NamingDetectNulls() =
+    let input = [ "string"; null; "another string" ]
+    let nulls = input |> Seq.map Naming.isNotNull
+    Assert.That(nulls, Is.EquivalentTo([true; false; true]))
 
-(*
+  [<Test>]
+  member self.NamingDetectEmpties() =
+    let input = [ "string"; null; "another string"; "             " ]
+    let nulls = input |> Seq.map Naming.emptyIfIsNullOrWhiteSpace
+    Assert.That(nulls, Is.EquivalentTo([ "string"; String.Empty; "another string"; String.Empty ]))
+
+  [<Test>]
+  member self.NamingSuffixDetectEmpties() =
+    let input = [ "string"; null; "another string"; "             " ]
+    let nulls = input |> Seq.map (fun n -> Naming.suffixIfNotIsNullOrWhiteSpace n "*")
+    Assert.That(nulls, Is.EquivalentTo([ "string*"; String.Empty; "another string*"; String.Empty ]))
+
+  [<Test>]
+  member self.TypeNamesAreExtracted() = 
+    let where = Assembly.GetExecutingAssembly().Location;
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample3.dll")
+    let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    let names = def.MainModule.GetAllTypes()
+                |> Seq.map Naming.TypeName
+                |> Seq.toList
+    let expected = ["<Module>"; "Class1"; "Class2"; "Class3"; "Class4" ]
+    Assert.That(names, Is.EquivalentTo expected)
+
+  [<Test>]
+  member self.FullTypeNamesAreExtracted() = 
+    let where = Assembly.GetExecutingAssembly().Location;
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample3.dll")
+    let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    let names = def.MainModule.GetAllTypes()
+                |> Seq.map Naming.FullTypeName
+                |> Seq.toList
+    let expected = ["<Module>"; "Sample3.Class1"; "Sample3.Class2"; "Sample3.Class3"; "Sample3.Class3+Class4"]
+    Assert.That(names, Is.EquivalentTo expected)
+
+  [<Test>]
+  member self.TypeRefNamesAreExtracted() = 
+    let where = Assembly.GetExecutingAssembly().Location;
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample3.dll")
+    let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    let names = def.MainModule.GetAllTypes()
+                |> Seq.map (fun td -> Naming.TypeRefName(TypeReference(td.Namespace, td.Name, def.MainModule, null)))
+                |> Seq.toList
+    let expected = ["<Module>"; "Class1"; "Class2"; "Class3"; "Class4" ]
+    Assert.That(names, Is.EquivalentTo expected)
+
+  [<Test>]
+  member self.FullTypeRefNamesAreExtracted() = 
+    let where = Assembly.GetExecutingAssembly().Location;
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample3.dll")
+    let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    let names = def.MainModule.GetAllTypes()
+                |> Seq.map (fun td -> let tr = TypeReference(td.Namespace, td.Name, def.MainModule, null)
+                                      if Naming.isNotNull td.DeclaringType then
+                                         tr.DeclaringType <- TypeReference(td.DeclaringType.Namespace, td.DeclaringType.Name, def.MainModule, null)
+                                      Naming.FullTypeRefName(tr))
+                |> Seq.toList
+    let expected = ["<Module>"; "Sample3.Class1"; "Sample3.Class2"; "Sample3.Class3"; "Sample3.Class3+Class4"]
+    Assert.That(names, Is.EquivalentTo expected)
+
+  [<Test>]
+  member self.MethodNamesAreExtracted() = 
+    let where = Assembly.GetExecutingAssembly().Location;
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample3.dll")
+    let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    let names = def.MainModule.GetAllTypes()
+                |> Seq.collect (fun t -> t.Methods)
+                |> Seq.map Naming.MethodName
+                |> Seq.toList
+    let expected = ["get_Property"; "set_Property"; ".ctor"; "get_Property"; "set_Property";
+                      ".ctor"; ".ctor"; "get_Property"; "set_Property"; "ToList"; ".ctor" ]
+    Assert.That(names, Is.EquivalentTo expected)
+
+  [<Test>]
+  member self.FullMethodNamesAreExtracted() = 
+    let where = Assembly.GetExecutingAssembly().Location;
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample3.dll")
+    let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    let names = def.MainModule.GetAllTypes()
+                |> Seq.collect (fun t -> t.Methods)
+                |> Seq.map Naming.FullMethodName
+                |> Seq.toList
+    let expected = ["System.Int32 Sample3.Class1.get_Property()"; "System.Void Sample3.Class1.set_Property(System.Int32)";
+                    "System.Void Sample3.Class1.#ctor()"; "System.Int32 Sample3.Class2.get_Property()";
+                    "System.Void Sample3.Class2.set_Property(System.Int32)"; "System.Void Sample3.Class2.#ctor()";
+                    "System.Void Sample3.Class3.#ctor()"; "Sample3.Class1 Sample3.Class3+Class4.get_Property()";
+                    "System.Void Sample3.Class3+Class4.set_Property(Sample3.Class1)";
+                    "System.Collections.Generic.List`1 Sample3.Class3+Class4.ToList<T>(T)";
+                    "System.Void Sample3.Class3+Class4.#ctor()" ]
+    Assert.That(names, Is.EquivalentTo expected)
+
+  // Report.fs
+
   static member TTBaseline = "<?xml version=\"1.0\" encoding=\"utf-8\"?>
 <?xml-stylesheet href=\"coverage.xsl\" type=\"text/xsl\"?>
 <coverage profilerVersion=\"0\" driverVersion=\"0\" startTime=\"\" measureTime=\"\">
@@ -594,6 +687,27 @@ type AltCoverTests() = class
 <seqpnt visitcount=\"1\" line=\"21\" column=\"9\"  endline=\"21\" endcolumn=\"10\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
 </method>
 </module>
+</coverage>"
+
+  static member MonoBaseline = "<?xml-stylesheet type='text/xsl' href='coverage.xsl'?>
+<coverage profilerVersion=\"0\" driverVersion=\"0\" startTime=\"\" measureTime=\"\">
+  <module moduleId=\"\" name=\"Sample1.exe\" assembly=\"Sample1\" assemblyIdentity=\"Sample1, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null\">
+    <method name=\"Main\" class=\"TouchTest.Program\" metadataToken=\"0\" excluded=\"false\" instrumented=\"true\" fullname=\"System.Void TouchTest.Program.Main(System.String[])\">
+      <seqpnt visitcount=\"0\" line=\"11\" column=\"9\" endline=\"11\" endcolumn=\"10\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
+      <seqpnt visitcount=\"0\" line=\"12\" column=\"32\" endline=\"12\" endcolumn=\"33\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
+      <seqpnt visitcount=\"0\" line=\"13\" column=\"13\" endline=\"13\" endcolumn=\"14\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
+      <seqpnt visitcount=\"0\" line=\"13\" column=\"21\" endline=\"13\" endcolumn=\"22\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
+      <seqpnt visitcount=\"0\" line=\"14\" column=\"13\" endline=\"14\" endcolumn=\"14\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
+      <seqpnt visitcount=\"0\" line=\"15\" column=\"17\" endline=\"15\" endcolumn=\"18\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
+      <seqpnt visitcount=\"0\" line=\"15\" column=\"25\" endline=\"15\" endcolumn=\"26\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
+      <seqpnt visitcount=\"0\" line=\"16\" column=\"13\" endline=\"16\" endcolumn=\"14\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
+      <seqpnt visitcount=\"0\" line=\"18\" column=\"13\" endline=\"18\" endcolumn=\"14\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
+      <seqpnt visitcount=\"0\" line=\"19\" column=\"17\" endline=\"19\" endcolumn=\"18\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
+      <seqpnt visitcount=\"0\" line=\"19\" column=\"25\" endline=\"19\" endcolumn=\"26\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
+      <seqpnt visitcount=\"0\" line=\"20\" column=\"13\" endline=\"20\" endcolumn=\"14\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
+      <seqpnt visitcount=\"0\" line=\"21\" column=\"9\" endline=\"21\" endcolumn=\"10\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
+    </method>
+  </module>
 </coverage>"
 
   static member private RecursiveValidate result expected depth zero =
@@ -622,8 +736,8 @@ type AltCoverTests() = class
 
             AltCoverTests.RecursiveValidate (r.Elements()) (e.Elements()) (depth+1) zero)
 
-  [<Test;Ignore("Temporarily disable")>]
-  member self.ShouldGenerateExpectedXmlReport() =
+  [<Test>]
+  member self.ShouldGenerateExpectedXmlReportFromDotNet() =
     let visitor, document = Report.ReportGenerator()
     // Hack for running while instrumented
     let where = Assembly.GetExecutingAssembly().Location;
@@ -635,5 +749,25 @@ type AltCoverTests() = class
     let result = document.Elements()
     let expected = baseline.Elements()
     AltCoverTests.RecursiveValidate result expected 0 true
-*)
+
+  [<Test>]
+  member self.ShouldGenerateExpectedXmlReportFromMono() =
+    let visitor, document = Report.ReportGenerator()
+    // Hack for running while instrumented
+    let where = Assembly.GetExecutingAssembly().Location;
+    let path = Path.Combine(where.Substring(0, where.IndexOf("_Binaries")) + "_Mono\\Sample1", "Sample1.exe")
+
+    Visitor.Visit [ visitor ] (Visitor.ToSeq path)
+
+    let baseline = XDocument.Load(new System.IO.StringReader(AltCoverTests.MonoBaseline))
+    let result = document.Elements()
+    let expected = baseline.Elements()
+    AltCoverTests.RecursiveValidate result expected 0 true
+
+  // Instrument.fs
+
+
+  // AltCover.fs
+
+
 end
