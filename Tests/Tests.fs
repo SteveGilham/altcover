@@ -153,7 +153,8 @@ type AltCoverTests() = class
      let v1 = (FilterClass.Type "23").GetHashCode()
      let v2 = (FilterClass.Type "23").GetHashCode()
      Assert.That (v1, Is.EqualTo(v2))
-
+     Assert.That ((FilterClass.Type "23").Equals(FilterClass.Attribute "42"), Is.False)
+ 
   [<Test>]
   member self.NoneOfTheAboveMatchesNoType() =
      Assert.That (Match () (FilterClass.Type "23"), Is.False)
@@ -336,12 +337,15 @@ type AltCoverTests() = class
      let v1 = Node.AfterModule.GetHashCode()
      let v2 = Node.AfterModule.GetHashCode()
      Assert.That (v1, Is.EqualTo(v2))
+     Assert.That ((Node.AfterModule).Equals(Node.Finish), Is.False)
 
   [<Test>]
   member self.KeyRecordsCanBeCompared() = // This works around OpenCover issue #615
      let record1 = { Pair = null; Token = [] }
+     let record2 = { Pair = null; Token = [ 23uy ] }
      let v1 = record1.GetHashCode()
      let v2 = record1.GetHashCode()
+     Assert.That (record1.Equals(record2), Is.False)
      Assert.That (v1, Is.EqualTo(v2))
 
 
