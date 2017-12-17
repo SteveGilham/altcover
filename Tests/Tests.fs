@@ -443,6 +443,138 @@ type AltCoverTests() = class
      |> Seq.filter (fun m -> m.IsGetter || m.IsSetter)
      |> Seq.iter (Visitor.significant >> Assert.That)
 
+  [<Test>]
+  member self.TerminalCasesGoNoDeeper() = 
+    let def = Mono.Cecil.AssemblyDefinition.ReadAssembly (Assembly.GetExecutingAssembly().Location)
+    let inputs = [ Node.MethodPoint ( null, null, 0, true ) ;
+                   Node.AfterMethod false ; Node.AfterModule ; Node.AfterAssembly def; Node.Finish ]
+    let outputs = inputs |> Seq.map (Visitor.Deeper>> Seq.toList)
+    let expected = [[]; []; []; []; []]
+    Assert.That (outputs, Is.EquivalentTo (expected))
+
+  [<Test>]
+  member self.MethodPointsAreDeeperThanMethods() = 
+    let where = Assembly.GetExecutingAssembly().Location;
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample1.exe")
+    let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    ProgramDatabase.ReadSymbols def
+    let method = (def.MainModule.Types |> Seq.skipWhile (fun t -> t.Name.StartsWith("<"))|> Seq.head).Methods |> Seq.head
+    Visitor.Visit [] [] // cheat reset
+    let deeper = Visitor.Deeper <| Node.Method (method, false)
+                 |> Seq.toList
+    deeper 
+    |> List.iteri (fun i node -> match node with 
+                                 | (MethodPoint (_, _, n, b)) ->Assert.That(n, Is.EqualTo i); Assert.That (b, Is.False)
+                                 | _ -> Assert.Fail())
+
+  [<Test>]
+  member self.MethodsAreDeeperThanTypes() = 
+    let where = Assembly.GetExecutingAssembly().Location;
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample1.exe")
+    let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    ProgramDatabase.ReadSymbols def
+    let type' = (def.MainModule.Types |> Seq.skipWhile (fun t -> t.Name.StartsWith("<"))|> Seq.head)
+    Visitor.Visit [] [] // cheat reset
+    let deeper = Visitor.Deeper <| Node.Type (type', false)
+                 |> Seq.toList
+    Visitor.Visit [] [] // cheat reset
+    let expected = type'.Methods
+                |> Seq.map (fun m -> let node = Node.Method (m,false)
+                                     List.concat [ [node]; (Visitor.Deeper >> Seq.toList) node;  [Node.AfterMethod false]])
+                |> List.concat
+    Assert.That (deeper, Is.EquivalentTo expected)
+
+  [<Test>]
+  member self.TypesAreDeeperThanModules() = 
+    let where = Assembly.GetExecutingAssembly().Location;
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample1.exe")
+    let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    ProgramDatabase.ReadSymbols def
+    let module' = def.MainModule
+    Visitor.Visit [] [] // cheat reset
+    let deeper = Visitor.Deeper <| Node.Module (module', false)
+                 |> Seq.toList
+    Visitor.Visit [] [] // cheat reset
+    let expected = module'.Types // we have no nested types in this test
+                |> Seq.map (fun t -> let node = Node.Type (t,false)
+                                     List.concat [ [node]; (Visitor.Deeper >> Seq.toList) node])
+                |> List.concat
+    Assert.That (deeper, Is.EquivalentTo expected)
+
+  [<Test>]
+  member self.ModulesAreDeeperThanAssemblies() = 
+    let where = Assembly.GetExecutingAssembly().Location;
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample1.exe")
+    let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    ProgramDatabase.ReadSymbols def
+    Visitor.Visit [] [] // cheat reset
+    let deeper = Visitor.Deeper <| Node.Assembly (def, false)
+                 |> Seq.toList
+    Visitor.Visit [] [] // cheat reset
+    let expected = def.Modules // we have no nested types in this test
+                |> Seq.map (fun t -> let node = Node.Module (t,false)     
+                                     List.concat [ [node]; (Visitor.Deeper >> Seq.toList) node; [AfterModule]])
+                |> List.concat
+    Assert.That (deeper, Is.EquivalentTo expected)
+
+  [<Test>]
+  member self.AssembliesAreDeeperThanPaths() = 
+    let where = Assembly.GetExecutingAssembly().Location;
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample1.exe")
+    let deeper = Visitor.Deeper <| Node.Start [path]
+                 |> Seq.toList
+    // assembly definitions care about being separate references in equality tests
+    let def = match Seq.head deeper with
+              | Node.Assembly (def', true) -> def'
+              | _ -> Assert.Fail(); null
+
+    let assembly = Node.Assembly (def, true)
+    let expected = List.concat [ [assembly]; (Visitor.Deeper >> Seq.toList) assembly; [AfterAssembly def]]
+    Assert.That (deeper, Is.EquivalentTo expected)
+
+  [<Test>]
+  member self.TestFixPointInvoke() = 
+    let mutable called = 0
+    let rec stateful l = new Fix<'T> (
+                           fun (node:'T) ->
+                           let next = node
+                           called <- called + 1
+                           stateful next)
+    let fix = Visitor.invoke (Start[]) (stateful (Start[]))
+    Assert.That (called, Is.EqualTo 1)
+    Assert.That (fix, Is.Not.Null)
+
+  [<Test>]
+  member self.TestFixPointApply() = 
+    let mutable called = 0
+    let rec stateful l = new Fix<'T> (
+                           fun (node:'T) ->
+                           let next = node
+                           called <- called + 1
+                           stateful next)
+
+    let list = [stateful (Start[]); stateful (Start[])]
+    let fix = Visitor.apply list (Start[])
+    Assert.That (called, Is.EqualTo 2)
+    Assert.That (Seq.length fix, Is.EqualTo 2)
+
+  [<Test>]
+  member self.PathsAreDeeperThanAVisit() = 
+    let where = Assembly.GetExecutingAssembly().Location;
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample1.exe")
+    let accumulator = System.Collections.Generic.List<Node>()
+    let fix = Visitor.EncloseState (fun (x:System.Collections.Generic.List<Node>) t -> x.Add t; x) accumulator
+    Visitor.Visit [fix] [path]
+    // assembly definitions care about being separate references in equality tests
+    let def = match accumulator.[1] with
+              | Node.Assembly (def', true) -> def'
+              | _ -> Assert.Fail(); null
+
+    let assembly = Node.Assembly (def, true)
+    let expected = List.concat [ [Start[path]; assembly]; (Visitor.Deeper >> Seq.toList) assembly; [AfterAssembly def; Finish]]
+    Assert.That (accumulator, Is.EquivalentTo expected)
+
+
 
 (*
   static member TTBaseline = "<?xml version=\"1.0\" encoding=\"utf-8\"?>

@@ -104,7 +104,7 @@ module Visitor =
     match node with
     | Start paths -> paths
                      |> Seq.filter IsIncluded
-                     |> Seq.collect ((fun x -> AssemblyDefinition.ReadAssembly(x)) >>
+                     |> Seq.collect (AssemblyDefinition.ReadAssembly >>
                                      (fun x -> let included = IsIncluded x
                                                if included then ProgramDatabase.ReadSymbols(x)
                                                Assembly(x, included)) >> BuildSequence)
