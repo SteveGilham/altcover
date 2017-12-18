@@ -62,7 +62,7 @@ Target "SetVersion" (fun _ ->
     let key = BitConverter.ToString pair.PublicKey
 
     CreateFSharpAssemblyInfo "./_Generated/AssemblyVersion.fs"
-        [Attribute.Version "0.1.0.0"
+        [Attribute.Version "0.5.0.0"
          Attribute.FileVersion version
          Attribute.Company "Steve Gilham"
          Attribute.Product "AltCover"
