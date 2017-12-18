@@ -47,7 +47,7 @@ Target "SetVersion" (fun _ ->
     let fraction = diff.Subtract(TimeSpan.FromDays(float diff.Days))
     let revision= ((int fraction.TotalSeconds) / 3)
     let appveyor = environVar "APPVEYOR_BUILD_NUMBER"
-    let majmin = "0.1"
+    let majmin = "0.5"
     let version = if String.IsNullOrWhiteSpace appveyor then sprintf "%s.%d.%d" majmin diff.Days revision else sprintf "%s.%s.0" majmin appveyor
     Version := version
     let copy = sprintf "© 2010-%d by Steve Gilham <SteveGilham@users.noreply.github.com>" now.Year
@@ -62,7 +62,7 @@ Target "SetVersion" (fun _ ->
     let key = BitConverter.ToString pair.PublicKey
 
     CreateFSharpAssemblyInfo "./_Generated/AssemblyVersion.fs"
-        [Attribute.Version "0.5.0.0"
+        [Attribute.Version (majmin + ".0.0")
          Attribute.FileVersion version
          Attribute.Company "Steve Gilham"
          Attribute.Product "AltCover"
