@@ -19,10 +19,9 @@ type AltCoverTests() = class
   // Hack for running while instrumented
   static member private Hack () =
     let where = Assembly.GetExecutingAssembly().Location;
-    let def = Mono.Cecil.AssemblyDefinition.ReadAssembly(where)
-    let pdb = AltCover.ProgramDatabase.GetPdbFromImage(def)
-    match pdb with
-    | None -> "\\.."
+    let dir = where |> Path.GetDirectoryName |> Path.GetFileName
+    match dir.IndexOf "__" with
+    | 0 -> "\\.."
     | _ -> String.Empty
 
   // Augment.fs
@@ -468,6 +467,7 @@ type AltCoverTests() = class
     Visitor.Visit [] [] // cheat reset
     let deeper = Visitor.Deeper <| Node.Method (method, false)
                  |> Seq.toList
+    Assert.That (deeper.Length, Is.EqualTo 10)
     deeper 
     |> List.iteri (fun i node -> match node with 
                                  | (MethodPoint (_, _, n, b)) ->Assert.That(n, Is.EqualTo i); Assert.That (b, Is.False)
@@ -488,6 +488,7 @@ type AltCoverTests() = class
                 |> Seq.map (fun m -> let node = Node.Method (m,false)
                                      List.concat [ [node]; (Visitor.Deeper >> Seq.toList) node;  [Node.AfterMethod false]])
                 |> List.concat
+    Assert.That (deeper.Length, Is.EqualTo 14)
     Assert.That (deeper, Is.EquivalentTo expected)
 
   [<Test>]
@@ -505,6 +506,7 @@ type AltCoverTests() = class
                 |> Seq.map (fun t -> let node = Node.Type (t,false)
                                      List.concat [ [node]; (Visitor.Deeper >> Seq.toList) node])
                 |> List.concat
+    Assert.That (deeper.Length, Is.EqualTo 16)
     Assert.That (deeper, Is.EquivalentTo expected)
 
   [<Test>]
@@ -521,6 +523,7 @@ type AltCoverTests() = class
                 |> Seq.map (fun t -> let node = Node.Module (t,false)     
                                      List.concat [ [node]; (Visitor.Deeper >> Seq.toList) node; [AfterModule]])
                 |> List.concat
+    Assert.That (deeper.Length, Is.EqualTo 18)
     Assert.That (deeper, Is.EquivalentTo expected)
 
   [<Test>]
@@ -536,6 +539,7 @@ type AltCoverTests() = class
 
     let assembly = Node.Assembly (def, true)
     let expected = List.concat [ [assembly]; (Visitor.Deeper >> Seq.toList) assembly; [AfterAssembly def]]
+    Assert.That (deeper.Length, Is.EqualTo 20)
     Assert.That (deeper, Is.EquivalentTo expected)
 
   [<Test>]

@@ -24,7 +24,7 @@ let Copyright  = ref String.Empty
 let Version = ref String.Empty
 
 let OpenCoverFilter = "+[AltCove*]* -[*]Microsoft.* -[*]System.* +[*]N.*"
-let AltCoverFilter= " -f=Mono. -f=.Recorder -f=Sample. -f=nunit. -t=System. -t=Sample3.Class2 "
+let AltCoverFilter= " -s=Mono -s=.Recorder -s=Sample -s=nunit -t=System. -t=Sample3.Class2 "
 
 Target "Lint" (fun _ ->
     !! "**/*.fsproj"
