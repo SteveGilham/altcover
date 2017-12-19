@@ -81,9 +81,7 @@ module Filter =
                                 owner.CustomAttributes
                                 |> Seq.filter (fun x -> x.AttributeType.FullName = "Microsoft.FSharp.Core.CompilationMappingAttribute")
                                 |> Seq.exists (fun x -> let arg1 = x.ConstructorArguments |> Seq.head
-                                                        match (arg1.Value :?> SourceConstructFlags) &&& SourceConstructFlags.KindMask with
-                                                        | SourceConstructFlags.Field -> true
-                                                        | _ -> false)
+                                                        (arg1.Value :?> SourceConstructFlags) &&& SourceConstructFlags.KindMask = SourceConstructFlags.Field)
                              else false
 
     mappings &&
