@@ -879,6 +879,78 @@ type AltCoverTests() = class
     Assert.That (token1, Is.Not.Null)
     Assert.That (token1, Is.Not.EqualTo(token0))
 
+  [<Test>]
+  member self.NoKnownKeyInEmptyIndex() = 
+    try
+      Visitor.keys.Clear()
+      let where = Assembly.GetExecutingAssembly().Location;
+      let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample3.dll")
+      let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+      Assert.That (Option.isNone(Instrument.KnownKey def.Name))
+    finally
+      Visitor.keys.Clear()
+
+  [<Test>]
+  member self.KnownKeyMatchedInIndex() = 
+    try
+      Visitor.keys.Clear()
+      let where = Assembly.GetExecutingAssembly().Location;
+      let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample3.dll")
+      let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+      AltCoverTests.ProvideKeyPair() |> Visitor.Add
+      Assert.That (Option.isSome(Instrument.KnownKey def.Name))
+    finally
+      Visitor.keys.Clear()
+
+  [<Test>]
+  member self.NoKnownKeyIfAssemblyHasNone() = 
+    try
+      Visitor.keys.Clear()
+      let where = Assembly.GetExecutingAssembly().Location;
+      let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample3.dll")
+      let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+      AltCover.Instrument.UpdateStrongNaming def.Name None
+      AltCoverTests.ProvideKeyPair() |> Visitor.Add
+      Assert.That (Option.isNone(Instrument.KnownKey def.Name))
+    finally
+      Visitor.keys.Clear()
+
+  [<Test>]
+  member self.NoKnownTokenInEmptyIndex() = 
+    try
+      Visitor.keys.Clear()
+      let where = Assembly.GetExecutingAssembly().Location;
+      let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample3.dll")
+      let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+      Assert.That (Option.isNone(Instrument.KnownToken def.Name))
+    finally
+      Visitor.keys.Clear()
+
+  [<Test>]
+  member self.KnownTokenMatchedInIndex() = 
+    try
+      Visitor.keys.Clear()
+      let where = Assembly.GetExecutingAssembly().Location;
+      let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample3.dll")
+      let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+      AltCoverTests.ProvideKeyPair() |> Visitor.Add
+      Assert.That (Option.isSome(Instrument.KnownToken def.Name))
+    finally
+      Visitor.keys.Clear()
+
+  [<Test>]
+  member self.NoKnownTokenIfAssemblyHasNone() = 
+    try
+      Visitor.keys.Clear()
+      let where = Assembly.GetExecutingAssembly().Location;
+      let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample3.dll")
+      let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+      AltCover.Instrument.UpdateStrongNaming def.Name None
+      AltCoverTests.ProvideKeyPair() |> Visitor.Add
+      Assert.That (Option.isNone(Instrument.KnownToken def.Name))
+    finally
+      Visitor.keys.Clear()
+
 
   // AltCover.fs
 
