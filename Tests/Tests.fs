@@ -820,6 +820,10 @@ type AltCoverTests() = class
 
   // Instrument.fs
 
+  [<Test>]
+  member self.ShouldBeAbleToGetTheDefaultReportFileName () =
+    let recorder = AltCover.Instrument.RecorderInstanceType()
+    Assert.That(recorder.GetProperty("ReportFile").GetValue(null), Is.EqualTo "Coverage.Default.xml")
 
   // AltCover.fs
 

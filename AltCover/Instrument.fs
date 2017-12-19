@@ -30,6 +30,15 @@ module Instrument =
                            RecordingMethodRef : MethodReference;
                            MethodBody : MethodBody;
                            MethodWorker :ILProcessor }
+  /// <summary>
+  /// Workround for not being able to take typeof<SomeModule> even across
+  /// assembly boundaries -- start with a pure type then iterate to the module
+  /// </summary>
+  /// <returns>A representation of the type used to record all coverage visits.</returns>
+  let RecorderInstanceType () =
+    let trace  = typeof<AltCover.Recorder.Tracer>
+    trace.Assembly.GetExportedTypes()
+                          |> Seq.find (fun (t:Type) -> t.Name.Contains("Instance"))
 
   /// <summary>
   /// Higher-order function that returns a visitor
@@ -46,16 +55,6 @@ module Instrument =
              RecordingMethodRef = null;
              MethodBody = null;
              MethodWorker = null }
-
-    /// <summary>
-    /// Workround for not being able to take typeof<SomeModule> even across
-    /// assembly boundaries -- start with a pure type then iterate to the module
-    /// </summary>
-    /// <returns>A representation of the type used to record all coverage visits.</returns>
-    let RecorderInstanceType () =
-      let trace  = typeof<AltCover.Recorder.Tracer>
-      trace.Assembly.GetExportedTypes()
-                            |> Seq.find (fun (t:Type) -> t.Name.Contains("Instance"))
 
     /// <summary>
     /// Applies a new key to an assembly name
