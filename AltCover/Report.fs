@@ -65,7 +65,7 @@ module Report =
                           XAttribute(X "column", codeSegment.StartColumn),
                           XAttribute(X "endline", fst end'),
                           XAttribute(X "endcolumn", snd end'),
-                          XAttribute(X "excluded", (not included).ToString().ToLowerInvariant()),
+                          XAttribute(X "excluded", if included then "false" else "true"),
                           XAttribute(X "document", codeSegment.Document.Url));
           if head.IsEmpty then head.Add(element)
           else head.FirstNode.AddBeforeSelf(element)

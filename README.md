@@ -6,17 +6,13 @@ As the name suggests, it's an alternative coverage approach.  Rather than workin
 
 In particular, this approach supports Mono, as long as suitable `.mdb` symbols are available.  The major limitation here is that the `.mdb` format only stores the start location in the source of any code sequence point, and not the end; consequently nicely coloured reports may be a bit patchy.
 
-## Building
+## Continuous Integration
 
-You will need Visual Studio VS2017 (Community Edition) v15.5 or later with F# language support.  The NUnit3 Test Runner will simplify the basic in-IDE development cycle
-
-### Bootstrapping
-
-Running `.\Build\get-nuget.ps1` pre-installs all the NuGet packages, including, most importantly, the Fake build system.
-
-### Normal builds
-
-Running `.\fake.bat` performs a full build/test/package process.
+| | |
+| --- | --- |
+| **Build** | [![Build status](https://img.shields.io/appveyor/ci/SteveGilham/altcover/master.svg)](https://ci.appveyor.com/project/SteveGilham/altcover) [![Test status](https://img.shields.io/appveyor/tests/SteveGilham/altcover/master.svg)](https://ci.appveyor.com/project/SteveGilham/altcover) |
+| **Unit Test coverage** | <sup>Coveralls</sup> [![Coverage Status](https://img.shields.io/coveralls/github/SteveGilham/altcover/master.svg)](https://coveralls.io/github/SteveGilham/altcover?branch=master) |
+| **Nuget** | [![Nuget](https://img.shields.io/nuget/v/AltCover.svg)](http://nuget.org/packages/AltCover) |
 
 ## Usage
 
@@ -41,12 +37,19 @@ In detail
 
 Coverage statistics are written to the file nominated by the `x|xmlReport=` parameter as instrumented assemblies are unloaded from an executing AppDomain, even if this is days or weeks later.  In practice the instrumented assemblies should be deleted after the relevant testing has been run, and the report file will thus be freed up.
 
-## Continuous Integration
+[Known issue](https://github.com/SteveGilham/altcover/projects/3#card-6169040) with the `/a|attributeFilter=` parameter in the current codebase : there is no compensation for places where the compiler creates new methods under the covers.  This means that constructs like lambdas, `yield return` and `async`/`await` will leave some code that is apparently excluded-by-attribute in the source actually included and instrumented because it falls in a different method (maybe even in a different type) in the compiled code.
 
-| | |
-| --- | --- |
-| **Build** | [![Build status](https://img.shields.io/appveyor/ci/SteveGilham/altcover/master.svg)](https://ci.appveyor.com/project/SteveGilham/altcover) [![Test status](https://img.shields.io/appveyor/tests/SteveGilham/altcover/master.svg)](https://ci.appveyor.com/project/SteveGilham/altcover) |
-| **Unit Test coverage** | <sup>Coveralls</sup> [![Coverage Status](https://img.shields.io/coveralls/github/SteveGilham/altcover/master.svg)](https://coveralls.io/github/SteveGilham/altcover?branch=master) |
+## Building
+
+You will need Visual Studio VS2017 (Community Edition) v15.5 or later with F# language support.  The NUnit3 Test Runner will simplify the basic in-IDE development cycle
+
+### Bootstrapping
+
+Running `.\Build\get-nuget.ps1` pre-installs all the NuGet packages, including, most importantly, the Fake build system.
+
+### Normal builds
+
+Running `.\fake.bat` performs a full build/test/package process.
 
 ## Thanks to
 

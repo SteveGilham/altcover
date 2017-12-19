@@ -276,7 +276,8 @@ module Instrument =
            | _ -> state
 
        | MethodPoint (instruction, _, point, included) -> //of Instruction * CodeSegment * int * bool
-         if included then
+         if included && (not(isNull instruction.SequencePoint)) &&
+                        (Visitor.IsIncluded instruction.SequencePoint.Document.Url) then
               let counterMethodCall = state.MethodWorker.Create(OpCodes.Call, state.RecordingMethodRef);
               let instrLoadModuleId = state.MethodWorker.Create(OpCodes.Ldstr, state.ModuleId.ToString())
               let instrLoadPointId = state.MethodWorker.Create(OpCodes.Ldc_I4, point);

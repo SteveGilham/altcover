@@ -151,26 +151,24 @@ module Main =
 
     let files = fromInfo.GetFiles()
 
-    // Copy all the files that aren't symbol-bearing assemblies into the target directory
+    // Copy all the files into the target directory
+    // Track the symbol-bearing assemblies 
     let assemblies =
         files
         |> Seq.fold (fun (accumulator : string list) (info:FileInfo) ->
              let fullName = info.FullName
              let target = Path.Combine (toInfo.FullName, info.Name)
              File.Copy(fullName, target, true)
-             if Visitor.IsIncluded fullName then
-                 try
-                   let def = AssemblyDefinition.ReadAssembly(fullName)
-                   let assemblyPdb = ProgramDatabase.GetPdbWithFallback def
-                   if Option.isSome assemblyPdb then
-                        fullName :: accumulator
-                   else
-                        accumulator
-                 with
-                   | :? BadImageFormatException -> accumulator
-                   | :? IOException -> accumulator
-             else
-               accumulator
+             try
+                 let def = AssemblyDefinition.ReadAssembly(fullName)
+                 let assemblyPdb = ProgramDatabase.GetPdbWithFallback def
+                 if Option.isSome assemblyPdb then
+                    fullName :: accumulator
+                 else
+                    accumulator
+             with
+             | :? BadImageFormatException -> accumulator
+             | :? IOException -> accumulator
           ) []
 
     let assemblyNames =

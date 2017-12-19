@@ -101,7 +101,6 @@ module Visitor =
     // The pattern here is map x |> map y |> map x |> concat => collect (x >> y >> z)
     match node with
     | Start paths -> paths
-                     |> Seq.filter IsIncluded
                      |> Seq.collect (AssemblyDefinition.ReadAssembly >>
                                      (fun x -> let included = IsIncluded x
                                                if included then ProgramDatabase.ReadSymbols(x)
@@ -136,7 +135,7 @@ module Visitor =
             PointNumber <- point + number
 
             instructions.OrderByDescending(fun (x:Instruction) -> x.Offset)
-            |> Seq.mapi (fun i x -> MethodPoint (x, x.SequencePoint, i+point, included))
+            |> Seq.mapi (fun i x -> MethodPoint (x, x.SequencePoint, i+point, included && (IsIncluded x.SequencePoint.Document.Url)))
 
     | _ -> Seq.empty<Node>
 
