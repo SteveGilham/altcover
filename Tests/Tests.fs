@@ -465,14 +465,18 @@ type AltCoverTests() = class
     ProgramDatabase.ReadSymbols def
     let method = (def.MainModule.Types |> Seq.skipWhile (fun t -> t.Name.StartsWith("<"))|> Seq.head).Methods |> Seq.head
     Visitor.Visit [] [] // cheat reset
-    let deeper = Visitor.Deeper <| Node.Method (method, false)
-                 |> Seq.toList
-    Assert.That (deeper.Length, Is.EqualTo 10)
-    deeper 
-    |> List.iteri (fun i node -> match node with 
-                                 | (MethodPoint (_, _, n, b)) ->Assert.That(n, Is.EqualTo i); Assert.That (b, Is.False)
-                                 | _ -> Assert.Fail())
-
+    try
+        "Program" |> (FilterClass.File >> Visitor.NameFilters.Add)
+        let deeper = Visitor.Deeper <| Node.Method (method, true)
+                     |> Seq.toList
+        Assert.That (deeper.Length, Is.EqualTo 10)
+        deeper 
+        |> List.iteri (fun i node -> match node with 
+                                     | (MethodPoint (_, _, n, b)) ->Assert.That(n, Is.EqualTo i); Assert.That (b, Is.False)
+                                     | _ -> Assert.Fail())
+    finally
+      Visitor.NameFilters.Clear()
+      
   [<Test>]
   member self.MethodsAreDeeperThanTypes() = 
     let where = Assembly.GetExecutingAssembly().Location;
@@ -481,15 +485,20 @@ type AltCoverTests() = class
     ProgramDatabase.ReadSymbols def
     let type' = (def.MainModule.Types |> Seq.skipWhile (fun t -> t.Name.StartsWith("<"))|> Seq.head)
     Visitor.Visit [] [] // cheat reset
-    let deeper = Visitor.Deeper <| Node.Type (type', false)
-                 |> Seq.toList
-    Visitor.Visit [] [] // cheat reset
-    let expected = type'.Methods
-                |> Seq.map (fun m -> let node = Node.Method (m,false)
-                                     List.concat [ [node]; (Visitor.Deeper >> Seq.toList) node;  [Node.AfterMethod false]])
-                |> List.concat
-    Assert.That (deeper.Length, Is.EqualTo 14)
-    Assert.That (deeper, Is.EquivalentTo expected)
+    try
+        "Main" |> (FilterClass.Method >> Visitor.NameFilters.Add)
+        let deeper = Visitor.Deeper <| Node.Type (type', true)
+                     |> Seq.toList
+        Visitor.Visit [] [] // cheat reset
+        let expected = type'.Methods
+                    |> Seq.map (fun m -> let flag = m.Name = ".ctor"
+                                         let node = Node.Method (m, flag)
+                                         List.concat [ [node]; (Visitor.Deeper >> Seq.toList) node;  [Node.AfterMethod flag]])
+                    |> List.concat
+        Assert.That (deeper.Length, Is.EqualTo 14)
+        Assert.That (deeper, Is.EquivalentTo expected)
+    finally
+      Visitor.NameFilters.Clear()
 
   [<Test>]
   member self.TypesAreDeeperThanModules() = 
@@ -499,15 +508,20 @@ type AltCoverTests() = class
     ProgramDatabase.ReadSymbols def
     let module' = def.MainModule
     Visitor.Visit [] [] // cheat reset
-    let deeper = Visitor.Deeper <| Node.Module (module', false)
-                 |> Seq.toList
-    Visitor.Visit [] [] // cheat reset
-    let expected = module'.Types // we have no nested types in this test
-                |> Seq.map (fun t -> let node = Node.Type (t,false)
-                                     List.concat [ [node]; (Visitor.Deeper >> Seq.toList) node])
-                |> List.concat
-    Assert.That (deeper.Length, Is.EqualTo 16)
-    Assert.That (deeper, Is.EquivalentTo expected)
+    try
+        "Program" |> (FilterClass.Type >> Visitor.NameFilters.Add)
+        let deeper = Visitor.Deeper <| Node.Module (module', true)
+                     |> Seq.toList
+        Visitor.Visit [] [] // cheat reset
+        let expected = module'.Types // we have no nested types in this test
+                    |> Seq.map (fun t -> let flag = t.Name <> "Program"
+                                         let node = Node.Type (t,flag)
+                                         List.concat [ [node]; (Visitor.Deeper >> Seq.toList) node])
+                    |> List.concat
+        Assert.That (deeper.Length, Is.EqualTo 16)
+        Assert.That (deeper, Is.EquivalentTo expected)
+    finally
+      Visitor.NameFilters.Clear()
 
   [<Test>]
   member self.ModulesAreDeeperThanAssemblies() = 
@@ -516,11 +530,11 @@ type AltCoverTests() = class
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
     ProgramDatabase.ReadSymbols def
     Visitor.Visit [] [] // cheat reset
-    let deeper = Visitor.Deeper <| Node.Assembly (def, false)
+    let deeper = Visitor.Deeper <| Node.Assembly (def, true)
                  |> Seq.toList
     Visitor.Visit [] [] // cheat reset
     let expected = def.Modules // we have no nested types in this test
-                |> Seq.map (fun t -> let node = Node.Module (t,false)     
+                |> Seq.map (fun t -> let node = Node.Module (t, true)     
                                      List.concat [ [node]; (Visitor.Deeper >> Seq.toList) node; [AfterModule]])
                 |> List.concat
     Assert.That (deeper.Length, Is.EqualTo 18)
@@ -530,17 +544,39 @@ type AltCoverTests() = class
   member self.AssembliesAreDeeperThanPaths() = 
     let where = Assembly.GetExecutingAssembly().Location;
     let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample1.exe")
+
     let deeper = Visitor.Deeper <| Node.Start [path]
-                 |> Seq.toList
+                    |> Seq.toList
     // assembly definitions care about being separate references in equality tests
     let def = match Seq.head deeper with
-              | Node.Assembly (def', true) -> def'
-              | _ -> Assert.Fail(); null
+                | Node.Assembly (def', true) -> def'
+                | _ -> Assert.Fail(); null
 
     let assembly = Node.Assembly (def, true)
     let expected = List.concat [ [assembly]; (Visitor.Deeper >> Seq.toList) assembly; [AfterAssembly def]]
     Assert.That (deeper.Length, Is.EqualTo 20)
     Assert.That (deeper, Is.EquivalentTo expected)
+
+  [<Test>]
+  member self.FilteredAssembliesDoNotHaveSequencePoints() = 
+    let where = Assembly.GetExecutingAssembly().Location;
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample1.exe")
+    try
+        "Sample" |> (FilterClass.Assembly >> Visitor.NameFilters.Add)
+        let deeper = Visitor.Deeper <| Node.Start [path]
+                     |> Seq.toList
+        // assembly definitions care about being separate references in equality tests
+        let def = match Seq.head deeper with
+                  | Node.Assembly (def', false) -> def'
+                  | _ -> Assert.Fail(); null
+
+        let assembly = Node.Assembly (def, false)
+        let expected = List.concat [ [assembly]; (Visitor.Deeper >> Seq.toList) assembly; [AfterAssembly def]]
+        Assert.That (deeper.Length, Is.EqualTo 10)
+        Assert.That (deeper, Is.EquivalentTo expected)
+    finally
+      Visitor.NameFilters.Clear()
+
 
   [<Test>]
   member self.TestFixPointInvoke() = 
@@ -688,17 +724,17 @@ type AltCoverTests() = class
 <?xml-stylesheet href=\"coverage.xsl\" type=\"text/xsl\"?>
 <coverage profilerVersion=\"0\" driverVersion=\"0\" startTime=\"\" measureTime=\"\">
 <module moduleId=\"\" name=\"Sample1.exe\" assembly=\"Sample1\" assemblyIdentity=\"Sample1, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null\">
-<method name=\"Main\" class=\"TouchTest.Program\" metadataToken=\"0\" excluded=\"false\" instrumented=\"true\" >
-<seqpnt visitcount=\"1\" line=\"11\" column=\"9\"  endline=\"11\" endcolumn=\"10\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
-<seqpnt visitcount=\"1\" line=\"12\" column=\"13\" endline=\"12\" endcolumn=\"36\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
-<seqpnt visitcount=\"1\" line=\"13\" column=\"13\" endline=\"13\" endcolumn=\"33\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
-<seqpnt visitcount=\"1\" line=\"14\" column=\"13\" endline=\"14\" endcolumn=\"14\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
-<seqpnt visitcount=\"1\" line=\"15\" column=\"17\" endline=\"15\" endcolumn=\"63\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
-<seqpnt visitcount=\"1\" line=\"16\" column=\"13\" endline=\"16\" endcolumn=\"14\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
-<seqpnt visitcount=\"0\" line=\"18\" column=\"13\" endline=\"18\" endcolumn=\"14\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
-<seqpnt visitcount=\"0\" line=\"19\" column=\"17\" endline=\"19\" endcolumn=\"62\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
-<seqpnt visitcount=\"0\" line=\"20\" column=\"13\" endline=\"20\" endcolumn=\"14\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
-<seqpnt visitcount=\"1\" line=\"21\" column=\"9\"  endline=\"21\" endcolumn=\"10\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
+<method name=\"Main\" class=\"TouchTest.Program\" metadataToken=\"0\" excluded=\"true\" instrumented=\"false\" >
+<seqpnt visitcount=\"1\" line=\"11\" column=\"9\"  endline=\"11\" endcolumn=\"10\" excluded=\"true\" document=\"Sample1\\Program.cs\" />
+<seqpnt visitcount=\"1\" line=\"12\" column=\"13\" endline=\"12\" endcolumn=\"36\" excluded=\"true\" document=\"Sample1\\Program.cs\" />
+<seqpnt visitcount=\"1\" line=\"13\" column=\"13\" endline=\"13\" endcolumn=\"33\" excluded=\"true\" document=\"Sample1\\Program.cs\" />
+<seqpnt visitcount=\"1\" line=\"14\" column=\"13\" endline=\"14\" endcolumn=\"14\" excluded=\"true\" document=\"Sample1\\Program.cs\" />
+<seqpnt visitcount=\"1\" line=\"15\" column=\"17\" endline=\"15\" endcolumn=\"63\" excluded=\"true\" document=\"Sample1\\Program.cs\" />
+<seqpnt visitcount=\"1\" line=\"16\" column=\"13\" endline=\"16\" endcolumn=\"14\" excluded=\"true\" document=\"Sample1\\Program.cs\" />
+<seqpnt visitcount=\"0\" line=\"18\" column=\"13\" endline=\"18\" endcolumn=\"14\" excluded=\"true\" document=\"Sample1\\Program.cs\" />
+<seqpnt visitcount=\"0\" line=\"19\" column=\"17\" endline=\"19\" endcolumn=\"62\" excluded=\"true\" document=\"Sample1\\Program.cs\" />
+<seqpnt visitcount=\"0\" line=\"20\" column=\"13\" endline=\"20\" endcolumn=\"14\" excluded=\"true\" document=\"Sample1\\Program.cs\" />
+<seqpnt visitcount=\"1\" line=\"21\" column=\"9\"  endline=\"21\" endcolumn=\"10\" excluded=\"true\" document=\"Sample1\\Program.cs\" />
 </method>
 </module>
 </coverage>"
@@ -757,12 +793,16 @@ type AltCoverTests() = class
     let where = Assembly.GetExecutingAssembly().Location;
     let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample1.exe")
 
-    Visitor.Visit [ visitor ] (Visitor.ToSeq path)
+    try
+        "Main" |> (FilterClass.Method >> Visitor.NameFilters.Add)
+        Visitor.Visit [ visitor ] (Visitor.ToSeq path)
 
-    let baseline = XDocument.Load(new System.IO.StringReader(AltCoverTests.TTBaseline))
-    let result = document.Elements()
-    let expected = baseline.Elements()
-    AltCoverTests.RecursiveValidate result expected 0 true
+        let baseline = XDocument.Load(new System.IO.StringReader(AltCoverTests.TTBaseline))
+        let result = document.Elements()
+        let expected = baseline.Elements()
+        AltCoverTests.RecursiveValidate result expected 0 true
+    finally
+      Visitor.NameFilters.Clear()
 
   [<Test>]
   member self.ShouldGenerateExpectedXmlReportFromMono() =
