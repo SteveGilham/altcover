@@ -37,6 +37,14 @@ In detail
 
 Coverage statistics are written to the file nominated by the `x|xmlReport=` parameter as instrumented assemblies are unloaded from an executing AppDomain, even if this is days or weeks later.  In practice the instrumented assemblies should be deleted after the relevant testing has been run, and the report file will thus be freed up.
 
+### Use Case : Unit tests
+
+In the case of a single unit test assembly, then executing AltCover with `/i=<unit test output directory>` to pick up the tests and dependencies, with a strongname replacement `/sn=<my component key>` will usually be sufficient, as framework assemblies without symbols will be ignored.  The test execution can then happen in the context of the output directory.
+
+If there are symbol-bearing third-party assemblies (e.g. from NuGet packages such as Mono.Options.Signed as in this project), then those can be excluded with an extra `/s=<identifying substring of third party name>`
+
+### Other Remarks
+
 [Known issue](https://github.com/SteveGilham/altcover/projects/3#card-6169040) with the `/a|attributeFilter=` parameter in the current codebase : there is no compensation for places where the compiler creates new methods under the covers.  This means that constructs like lambdas, `yield return` and `async`/`await` will leave some code that is apparently excluded-by-attribute in the source actually included and instrumented because it falls in a different method (maybe even in a different type) in the compiled code.
 
 ## Building

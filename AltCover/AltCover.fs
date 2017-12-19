@@ -155,15 +155,15 @@ module Main =
     // Track the symbol-bearing assemblies 
     let assemblies =
         files
-        |> Seq.fold (fun (accumulator : string list) (info:FileInfo) ->
+        |> Seq.fold (fun (accumulator : (string*string) list) (info:FileInfo) ->
              let fullName = info.FullName
              let target = Path.Combine (toInfo.FullName, info.Name)
              File.Copy(fullName, target, true)
              try
                  let def = AssemblyDefinition.ReadAssembly(fullName)
                  let assemblyPdb = ProgramDatabase.GetPdbWithFallback def
-                 if Option.isSome assemblyPdb then
-                    fullName :: accumulator
+                 if Visitor.IsIncluded def && Option.isSome assemblyPdb then
+                    (fullName, def.Name.Name) :: accumulator
                  else
                     accumulator
              with
@@ -171,17 +171,16 @@ module Main =
              | :? IOException -> accumulator
           ) []
 
-    let assemblyNames =
+    let assemblyNames = 
         assemblies
-        |> Seq.map (fun path -> Path.GetFileNameWithoutExtension(path))
-        |> Seq.toList
+        |> List.map snd
 
     // Ensure we always have an absolute file path here.
     Visitor.reportPath <- Path.Combine(Directory.GetCurrentDirectory(), Visitor.reportPath)
 
     let reporter, document = Report.ReportGenerator ()
     let visitors = [ reporter ; Instrument.InstrumentGenerator assemblyNames ]
-    Visitor.Visit visitors assemblies
+    Visitor.Visit visitors (assemblies |> Seq.map fst)
     document.Save(Visitor.reportPath)
 
     // If we have some arguments in rest execute that command line
