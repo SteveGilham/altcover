@@ -581,28 +581,32 @@ type AltCoverTests() = class
   [<Test>]
   member self.TestFixPointInvoke() = 
     let mutable called = 0
-    let rec stateful l = new Fix<'T> (
-                           fun (node:'T) ->
-                           let next = node
+    let rec stateful l = new Fix<Node> (
+                           fun node ->
                            called <- called + 1
-                           stateful next)
-    let fix = Visitor.invoke (Start[]) (stateful (Start[]))
+                           stateful node)
+
+    let input = stateful (Start[])
+    let fix = Visitor.invoke (Start[]) input
     Assert.That (called, Is.EqualTo 1)
     Assert.That (fix, Is.Not.Null)
+    Assert.That (fix.GetType(), Is.EqualTo(input.GetType()))
 
   [<Test>]
   member self.TestFixPointApply() = 
     let mutable called = 0
-    let rec stateful l = new Fix<'T> (
-                           fun (node:'T) ->
-                           let next = node
+    let rec stateful l = new Fix<Node> (
+                           fun node ->
                            called <- called + 1
-                           stateful next)
+                           stateful node)
 
     let list = [stateful (Start[]); stateful (Start[])]
     let fix = Visitor.apply list (Start[])
+              |> Seq.toList
     Assert.That (called, Is.EqualTo 2)
     Assert.That (Seq.length fix, Is.EqualTo 2)
+    Assert.That (fix.[0].GetType(), Is.EqualTo(list.[0].GetType()))
+    Assert.That (fix.[1].GetType(), Is.EqualTo(list.[1].GetType()))
 
   [<Test>]
   member self.PathsAreDeeperThanAVisit() = 

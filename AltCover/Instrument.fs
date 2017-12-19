@@ -64,6 +64,34 @@ module Instrument =
                    assemblyName.PublicKey <- key'.PublicKey // sets token implicitly
 
   /// <summary>
+  /// Locate the key, if any, which was used to name this assembly.
+  /// </summary>
+  /// <param name="name">The name of the assembly</param>
+  /// <returns>A key, if we have a match.</returns>
+  let KnownKey (name:AssemblyNameDefinition) =
+      if not name.HasPublicKey then
+        None
+      else
+        let index = KeyStore.ArrayToIndex name.PublicKey
+        match Visitor.keys.TryGetValue(index) with
+        | (false, _ ) -> None
+        | (_, record) -> Some record.Pair
+   /// <summary>
+   /// Locate the key, if any, which was used to name this assembly.
+  /// </summary>
+  /// <param name="name">The name of the assembly</param>
+  /// <returns>A key, if we have a match.</returns>
+  let KnownToken (name:AssemblyNameReference) =
+    let pktoken = name.PublicKeyToken
+    if isNull pktoken then
+        None
+    else
+        let index = KeyStore.TokenAsULong pktoken
+        match Visitor.keys.TryGetValue(index) with
+        | (false, _ ) -> None
+        | (_, record) -> Some record
+
+  /// <summary>
   /// Higher-order function that returns a visitor
   /// </summary>
   /// <param name="assemblies">List of assembly paths to visit</param>
@@ -106,35 +134,6 @@ module Instrument =
       worker.InsertBefore(head, worker.Create(OpCodes.Ret));
 
       definition
-
-    /// <summary>
-    /// Locate the key, if any, which was used to name this assembly.
-    /// </summary>
-    /// <param name="name">The name of the assembly</param>
-    /// <returns>A key, if we have a match.</returns>
-    let KnownKey (name:AssemblyNameDefinition) =
-        if not name.HasPublicKey then
-          None
-        else
-          let index = KeyStore.ArrayToIndex name.PublicKey
-          match Visitor.keys.TryGetValue(index) with
-          | (false, _ ) -> None
-          | (_, record) -> Some record.Pair
-
-    /// <summary>
-    /// Locate the key, if any, which was used to name this assembly.
-    /// </summary>
-    /// <param name="name">The name of the assembly</param>
-    /// <returns>A key, if we have a match.</returns>
-    let KnownToken (name:AssemblyNameReference) =
-        let pktoken = name.PublicKeyToken
-        if isNull pktoken then
-          None
-        else
-          let index = KeyStore.TokenAsULong pktoken
-          match Visitor.keys.TryGetValue(index) with
-          | (false, _ ) -> None
-          | (_, record) -> Some record
 
     /// <summary>
     /// Determine new names for input strongnamed assemblies; if we have a key and
