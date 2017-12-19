@@ -83,7 +83,7 @@ module Instrument =
   /// <returns>A key, if we have a match.</returns>
   let KnownToken (name:AssemblyNameReference) =
     let pktoken = name.PublicKeyToken
-    if isNull pktoken || pktoken.Length <> 8  then
+    if pktoken.Length <> 8  then
         None
     else
         let index = KeyStore.TokenAsULong pktoken
