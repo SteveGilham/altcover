@@ -825,6 +825,57 @@ type AltCoverTests() = class
     let recorder = AltCover.Instrument.RecorderInstanceType()
     Assert.That(recorder.GetProperty("ReportFile").GetValue(null), Is.EqualTo "Coverage.Default.xml")
 
+  [<Test>]
+  member self.ShouldBeAbleToGetTheVisitReportMethod () =
+    let where = Assembly.GetExecutingAssembly().Location;
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "AltCover.Recorder.dll")
+    let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    let recorder = AltCover.Instrument.RecordingMethod def
+    Assert.That(Naming.FullMethodName recorder, Is.EqualTo "System.Void AltCover.Recorder.Instance.Visit(System.String,System.Int32)")
+
+  [<Test>]
+  member self.ShouldBeAbleToClearTheStrongNameKey () =
+    let where = Assembly.GetExecutingAssembly().Location;
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample3.dll")
+    let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    Assert.That (def.Name.HasPublicKey)
+    let key0 = def.Name.PublicKey
+    Assert.That (key0, Is.Not.Null)
+    let token0 = def.Name.PublicKeyToken
+    Assert.That (token0, Is.Not.Null)
+    AltCover.Instrument.UpdateStrongNaming def.Name None
+    Assert.That (def.Name.HasPublicKey, Is.False)
+    let key1 = def.Name.PublicKey
+    Assert.That (key1, Is.Empty)
+    let token1 = def.Name.PublicKeyToken
+    Assert.That (token1, Is.Empty)
+
+  [<Test>]
+  member self.ShouldBeAbleToUpdateTheStrongNameKey () =
+    let where = Assembly.GetExecutingAssembly().Location;
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample3.dll")
+    let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    Assert.That (def.Name.HasPublicKey)
+    let key0 = def.Name.PublicKey
+    Assert.That (key0, Is.Not.Null)
+    let token0 = def.Name.PublicKeyToken
+    Assert.That (token0, Is.Not.Null)
+
+    use stream = typeof<AltCover.Node>.Assembly.GetManifestResourceStream("AltCover.Recorder.snk")
+    use buffer = new MemoryStream()
+    stream.CopyTo(buffer)
+    let key = StrongNameKeyPair(buffer.ToArray())
+
+    AltCover.Instrument.UpdateStrongNaming def.Name (Some key)
+    Assert.That (def.Name.HasPublicKey)
+    let key1 = def.Name.PublicKey
+    Assert.That (key1, Is.Not.Null)
+    Assert.That (key1, Is.Not.EqualTo(key0))
+    let token1 = def.Name.PublicKeyToken
+    Assert.That (token1, Is.Not.Null)
+    Assert.That (token1, Is.Not.EqualTo(token0))
+
+
   // AltCover.fs
 
 

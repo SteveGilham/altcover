@@ -40,6 +40,29 @@ module Instrument =
     trace.Assembly.GetExportedTypes()
                           |> Seq.find (fun (t:Type) -> t.Name.Contains("Instance"))
 
+    /// <summary>
+    /// Locate the method that must be called to register a code point for coverage visit.
+    /// </summary>
+    /// <param name="assembly">The assembly containing the recorder method</param>
+    /// <returns>A representation of the method to call to signal a coverage visit.</returns>
+  let RecordingMethod (recordingAssembly : AssemblyDefinition) =
+    let other = RecorderInstanceType()
+    let token = other.GetMethod("Visit").MetadataToken
+    recordingAssembly.MainModule.LookupToken(token) :?> MethodDefinition
+
+  /// <summary>
+  /// Applies a new key to an assembly name
+  /// </summary>
+  /// <param name="assemblyName">The name to update</param>
+  /// <param name="key">The possibly empty key to use</param>
+  let UpdateStrongNaming (assemblyName:AssemblyNameDefinition) (key:StrongNameKeyPair option) =
+    match key with
+    | None -> assemblyName.HasPublicKey <- false
+              assemblyName.PublicKey <- null
+              assemblyName.PublicKeyToken <- null
+    | Some key' -> assemblyName.HasPublicKey <- true
+                   assemblyName.PublicKey <- key'.PublicKey // sets token implicitly
+
   /// <summary>
   /// Higher-order function that returns a visitor
   /// </summary>
@@ -55,19 +78,6 @@ module Instrument =
              RecordingMethodRef = null;
              MethodBody = null;
              MethodWorker = null }
-
-    /// <summary>
-    /// Applies a new key to an assembly name
-    /// </summary>
-    /// <param name="assemblyName">The name to update</param>
-    /// <param name="key">The possibly empty key to use</param>
-    let UpdateStrongNaming (assemblyName:AssemblyNameDefinition) (key:StrongNameKeyPair option) =
-      match key with
-      | None -> assemblyName.HasPublicKey <- false
-                assemblyName.PublicKey <- null
-                assemblyName.PublicKeyToken <- null
-      | Some key' -> assemblyName.HasPublicKey <- true
-                     assemblyName.PublicKey <- key'.PublicKey // sets token implicitly
 
     /// <summary>
     /// Create the new assembly that will record visits, based on the prototype.
@@ -96,16 +106,6 @@ module Instrument =
       worker.InsertBefore(head, worker.Create(OpCodes.Ret));
 
       definition
-
-    /// <summary>
-    /// Locate the method that must be called to register a code point for coverage visit.
-    /// </summary>
-    /// <param name="assembly">The assembly containing the recorder method</param>
-    /// <returns>A representation of the method to call to signal a coverage visit.</returns>
-    let RecordingMethod (recordingAssembly : AssemblyDefinition) =
-      let other = RecorderInstanceType()
-      let token = other.GetMethod("Visit").MetadataToken
-      recordingAssembly.MainModule.LookupToken(token) :?> MethodDefinition
 
     /// <summary>
     /// Locate the key, if any, which was used to name this assembly.
