@@ -91,7 +91,7 @@ open System.Runtime.CompilerServices
 )
 
 Target "BuildRelease" (fun _ ->
-   !! "*.sln"
+   !! "AltCove*.sln"
      |> MSBuildRelease "" ""
      |> Log "AppBuild-Output: "
 
@@ -107,7 +107,7 @@ Target "BuildRelease" (fun _ ->
 )
 
 Target "BuildDebug" (fun _ ->
-   !! "*.sln"
+   !! "**/AltCove*.sln"  // include demo projects
      |> MSBuildDebug "" ""
      |> Log "AppBuild-Output: "
 )
