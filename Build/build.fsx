@@ -390,7 +390,7 @@ Target "Package"  (fun _ ->
     NuGet (fun p ->
     {p with
         Authors = ["Steve Gilham"]
-        Project = "AltCover"
+        Project = "altcover"
         Description = "A pre-instrumented code coverage tool for .net"
         OutputPath = "./_Packaging"
         WorkingDir = "./_Binaries/Packaging"
@@ -400,7 +400,8 @@ Target "Package"  (fun _ ->
                 ]
         Version = !Version
         Copyright = !Copyright
-        Publish = false })
+        Publish = false
+        ReleaseNotes = "Functional release, usable but minimalist implementation.   Still working the wrinkles out of the deployment chain."})
         "./Build/AltCover.nuspec"
 )
 
