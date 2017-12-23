@@ -32,6 +32,7 @@ module Instrument =
                            RecordingMethodRef : MethodReference;
                            MethodBody : MethodBody;
                            MethodWorker :ILProcessor }
+
   /// <summary>
   /// Workround for not being able to take typeof<SomeModule> even across
   /// assembly boundaries -- start with a pure type then iterate to the module
@@ -92,6 +93,49 @@ module Instrument =
         match Visitor.keys.TryGetValue(index) with
         | (false, _ ) -> None
         | (_, record) -> Some record
+
+  type internal SubstituteInstruction (oldValue:Instruction, newValue:Instruction) =
+    /// <summary>
+    /// Adjust the IL for exception handling
+    /// </summary>
+    /// <param name="handler">The exception handler</param>
+    /// <param name="oldBoundary">The uninstrumented location</param>
+    /// <param name="newBoundary">Where it has moved to</param>
+    member this.SubstituteExceptionBoundary (handler:ExceptionHandler) =
+      if handler.FilterStart = oldValue then handler.FilterStart <- newValue
+      if handler.HandlerEnd = oldValue then handler.HandlerEnd <- newValue
+      if handler.HandlerStart = oldValue then handler.HandlerStart <- newValue
+      if handler.TryEnd = oldValue then handler.TryEnd <- newValue
+      if handler.TryStart = oldValue then handler.TryStart <- newValue
+
+    /// <summary>
+    /// Adjust the IL to substitute an opcode
+    /// </summary>
+    /// <param name="instruction">Instruction being processed</param>
+    /// <param name="oldOperand">Type we are looking for</param>
+    /// <param name="newOperand">Type to replace it with</param>
+    member this.SubstituteInstructionOperand(instruction:Instruction) =
+      // Performance reasons - only 3 types of operators have operands of Instruction types
+      // instruction.Operand getter - is rather slow to execute it for every operator
+      match instruction.OpCode.OperandType with
+      | OperandType.InlineBrTarget
+      | OperandType.ShortInlineBrTarget
+      | OperandType.InlineSwitch ->
+        if instruction.Operand = (oldValue :> Object) then
+           instruction.Operand <- newValue
+        // At this point instruction.Operand will be either Operand != oldOperand
+        // or instruction.Operand will be of type Instruction[]
+        // (in other words - it will be a switch operator's operand)
+        else if instruction.OpCode.OperandType = OperandType.InlineSwitch then
+           let operands = instruction.Operand :?> Instruction array
+           let offset = operands
+                        |> Seq.tryFindIndex (fun x -> x = oldValue)
+           match offset with
+           | Some i -> // operands.[i] <- newValue : fails with "This expression was expected to have type    ''a [] * int * 'a'    but here has type    'Instruction array'"
+                       Array.blit [| newValue |] 0 operands i 1 // so mutate the array like this instead
+           | _ -> ()
+        else ()
+      | _ -> ()
 
   /// <summary>
   /// Higher-order function that returns a visitor
@@ -186,47 +230,15 @@ module Instrument =
       |> Option.iter (fun key -> pkey.StrongNameKeyPair <- key)
       assembly.Write(path, pkey)
 
-    /// <summary>
-    /// Adjust the IL for exception handling
-    /// </summary>
-    /// <param name="handler">The exception handler</param>
-    /// <param name="oldBoundary">The uninstrumented location</param>
-    /// <param name="newBoundary">Where it has moved to</param>
-    let SubstituteExceptionBoundary (handler:ExceptionHandler) (oldBoundary:Instruction)( newBoundary : Instruction ) =
-      if handler.FilterStart = oldBoundary then handler.FilterStart <- newBoundary
-      if handler.HandlerEnd = oldBoundary then handler.HandlerEnd <- newBoundary
-      if handler.HandlerStart = oldBoundary then handler.HandlerStart <- newBoundary
-      if handler.TryEnd = oldBoundary then handler.TryEnd <- newBoundary
-      if handler.TryStart = oldBoundary then handler.TryStart <- newBoundary
+    let InsertVisit (instruction:Instruction) (methodWorker:ILProcessor) (recordingMethodRef:MethodReference) (moduleId:string) (point:int) =
+        let counterMethodCall = methodWorker.Create(OpCodes.Call, recordingMethodRef);
+        let instrLoadModuleId = methodWorker.Create(OpCodes.Ldstr, moduleId)
+        let instrLoadPointId = methodWorker.Create(OpCodes.Ldc_I4, point);
 
-    /// <summary>
-    /// Adjust the IL to substitute an opcode
-    /// </summary>
-    /// <param name="instruction">Instruction being processed</param>
-    /// <param name="oldOperand">Type we are looking for</param>
-    /// <param name="newOperand">Type to replace it with</param>
-    let SubstituteInstructionOperand(instruction:Instruction) (oldOperand:Instruction) (newOperand:Instruction) =
-      // Performance reasons - only 3 types of operators have operands of Instruction types
-      // instruction.Operand getter - is rather slow to execute it for every operator
-      match instruction.OpCode.OperandType with
-      | OperandType.InlineBrTarget
-      | OperandType.ShortInlineBrTarget
-      | OperandType.InlineSwitch ->
-        if instruction.Operand = (oldOperand :> Object) then
-           instruction.Operand <- newOperand
-        // At this point instruction.Operand will be either Operand != oldOperand
-        // or instruction.Operand will be of type Instruction[]
-        // (in other words - it will be a switch operator's operand)
-        else if instruction.OpCode.OperandType = OperandType.InlineSwitch then
-           let operands = instruction.Operand :?> Instruction array
-           for i in operands
-                           |> Seq.mapi (fun i x -> (i,x))
-                           |> Seq.filter (fun (i,x) -> x = oldOperand)
-                           |> Seq.map (fun (i,x) -> i)
-               do
-                Array.blit [|newOperand|] 0 operands i 1
-        else ()
-      | _ -> ()
+        methodWorker.InsertBefore(instruction, instrLoadModuleId);
+        methodWorker.InsertAfter(instrLoadModuleId, instrLoadPointId);
+        methodWorker.InsertAfter(instrLoadPointId, counterMethodCall);
+        instrLoadModuleId
 
     /// <summary>
     /// Perform visitor operations
@@ -269,20 +281,15 @@ module Instrument =
        | MethodPoint (instruction, _, point, included) -> //of Instruction * CodeSegment * int * bool
          if included && (not(isNull instruction.SequencePoint)) &&
                         (Visitor.IsIncluded instruction.SequencePoint.Document.Url) then
-              let counterMethodCall = state.MethodWorker.Create(OpCodes.Call, state.RecordingMethodRef);
-              let instrLoadModuleId = state.MethodWorker.Create(OpCodes.Ldstr, state.ModuleId.ToString())
-              let instrLoadPointId = state.MethodWorker.Create(OpCodes.Ldc_I4, point);
-
-              state.MethodWorker.InsertBefore(instruction, instrLoadModuleId);
-              state.MethodWorker.InsertAfter(instrLoadModuleId, instrLoadPointId);
-              state.MethodWorker.InsertAfter(instrLoadPointId, counterMethodCall);
+              let instrLoadModuleId = InsertVisit instruction state.MethodWorker state.RecordingMethodRef (state.ModuleId.ToString()) point
 
               // Change references in operands from "instruction" to first counter invocation instruction (instrLoadModuleId)
+              let subs = SubstituteInstruction (instruction, instrLoadModuleId)
               state.MethodBody.Instructions
-              |> Seq.iter (fun x -> SubstituteInstructionOperand x instruction instrLoadModuleId)
+              |> Seq.iter subs.SubstituteInstructionOperand
 
               state.MethodBody.ExceptionHandlers
-              |> Seq.iter (fun x -> SubstituteExceptionBoundary x instruction instrLoadModuleId)
+              |> Seq.iter subs.SubstituteExceptionBoundary
 
          state
        | AfterMethod included -> //of MethodDefinition * bool
