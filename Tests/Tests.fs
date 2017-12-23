@@ -676,7 +676,8 @@ type AltCoverTests() = class
                 |> Seq.map Naming.MethodName
                 |> Seq.toList
     let expected = ["get_Property"; "set_Property"; ".ctor"; "get_Property"; "set_Property";
-                      ".ctor"; ".ctor"; "get_Property"; "set_Property"; "ToList"; ".ctor" ]
+                      ".ctor"; ".ctor"; "get_Property"; "set_Property"; "get_ReportFile";
+                      "set_ReportFile"; "ToList"; ".ctor" ]
     Assert.That(names, Is.EquivalentTo expected)
 
   [<Test>]
@@ -693,6 +694,8 @@ type AltCoverTests() = class
                     "System.Void Sample3.Class2.set_Property(System.Int32)"; "System.Void Sample3.Class2.#ctor()";
                     "System.Void Sample3.Class3.#ctor()"; "Sample3.Class1 Sample3.Class3+Class4.get_Property()";
                     "System.Void Sample3.Class3+Class4.set_Property(Sample3.Class1)";
+                    "System.String Sample3.Class3+Class4.get_ReportFile()";
+                    "System.Void Sample3.Class3+Class4.set_ReportFile(System.String)";
                     "System.Collections.Generic.List`1 Sample3.Class3+Class4.ToList<T>(T)";
                     "System.Void Sample3.Class3+Class4.#ctor()" ]
     Assert.That(names, Is.EquivalentTo expected)
@@ -849,10 +852,10 @@ type AltCoverTests() = class
     Assert.That (def.Name.HasPublicKey)
     let key1 = def.Name.PublicKey
     Assert.That (key1, Is.Not.Null)
-    Assert.That (key1, Is.Not.EqualTo(key0))
+    Assert.That (key1, Is.Not.EquivalentTo(key0))
     let token1 = def.Name.PublicKeyToken
     Assert.That (token1, Is.Not.Null)
-    Assert.That (token1, Is.Not.EqualTo(token0))
+    Assert.That (token1, Is.Not.EquivalentTo(token0))
 
   [<Test>]
   member self.NoKnownKeyInEmptyIndex() = 
@@ -926,7 +929,28 @@ type AltCoverTests() = class
     finally
       Visitor.keys.Clear()
 
+  [<Test>]
+  member self.ShouldBeAbleToPrepareTheAssembly () =
+    let where = Assembly.GetExecutingAssembly().Location;
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample3.dll")
+    let prepared = Instrument.PrepareAssembly path
+    let raw = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    ProgramDatabase.ReadSymbols raw
+    Assert.That (prepared.Name.Name, Is.EqualTo (raw.Name.Name + ".g"))
+    Assert.That (prepared.Name.HasPublicKey)
+    Assert.That (prepared.Name.PublicKey, Is.Not.EquivalentTo(raw.Name.PublicKey))
 
+    let before = raw.MainModule.GetTypes() |> Seq.filter (fun t -> t.Name = "Class4") |> Seq.toList
+    Assert.That (before.Length = 1)
+    let before' = before.[0].Methods |> Seq.filter (fun t -> t.Name = "get_ReportFile") |> Seq.toList
+    Assert.That (before'.Length = 1)
+
+    let after = prepared.MainModule.GetTypes() |> Seq.filter (fun t -> t.Name = "Class4") |> Seq.toList
+    Assert.That (after.Length = 1)
+    let after' = after.[0].Methods |> Seq.filter (fun t -> t.Name = "get_ReportFile") |> Seq.toList
+    Assert.That (after'.Length = 1)
+
+    Assert.That (after'.[0].Body.Instructions.Count, Is.EqualTo(2 + before'.[0].Body.Instructions.Count))
   // AltCover.fs
 
 

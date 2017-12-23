@@ -94,6 +94,35 @@ module Instrument =
         | (false, _ ) -> None
         | (_, record) -> Some record
 
+  /// <summary>
+  /// Create the new assembly that will record visits, based on the prototype.
+  /// </summary>
+  /// <returns>A representation of the assembly used to record all coverage visits.</returns>
+  let PrepareAssembly (location:string) =
+    let definition = AssemblyDefinition.ReadAssembly(location)
+    ProgramDatabase.ReadSymbols definition
+    definition.Name.Name <- definition.Name.Name + ".g"
+    use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Recorder.snk")
+    use buffer = new MemoryStream()
+    stream.CopyTo(buffer)
+    let pair = StrongNameKeyPair(buffer.ToArray())
+    UpdateStrongNaming definition.Name (Some pair)
+
+    // set the coverage file path
+    let pathGetterDef = definition.MainModule.GetTypes()
+                        |> Seq.collect (fun t -> t.Methods)
+                        |> Seq.filter (fun m -> m.Name = "get_ReportFile")
+                        |> Seq.head
+    
+    let body = pathGetterDef.Body
+    let worker = body.GetILProcessor();
+    let head = body.Instructions.[0]
+    worker.InsertBefore(head, worker.Create(OpCodes.Ldstr, Visitor.reportPath));
+    worker.InsertBefore(head, worker.Create(OpCodes.Ret));
+
+    definition
+
+
   type internal SubstituteInstruction (oldValue:Instruction, newValue:Instruction) =
     /// <summary>
     /// Adjust the IL for exception handling
@@ -150,27 +179,7 @@ module Instrument =
     /// <returns>A representation of the assembly used to record all coverage visits.</returns>
     let DefineRecordingAssembly () =
       let recorder = typeof<AltCover.Recorder.Tracer>
-      let definition = AssemblyDefinition.ReadAssembly(recorder.Assembly.Location)
-      ProgramDatabase.ReadSymbols definition
-      definition.Name.Name <- definition.Name.Name + ".g"
-      use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Recorder.snk")
-      use buffer = new MemoryStream()
-      stream.CopyTo(buffer)
-      let pair = StrongNameKeyPair(buffer.ToArray())
-      UpdateStrongNaming definition.Name (Some pair)
-
-      // set the coverage file path
-      let other = RecorderInstanceType()
-      let token = other.GetMethod("get_ReportFile").MetadataToken
-      let pathGetterDef = definition.MainModule.LookupToken(token) :?> MethodDefinition
-
-      let body = pathGetterDef.Body
-      let worker = body.GetILProcessor();
-      let head = body.Instructions.[0]
-      worker.InsertBefore(head, worker.Create(OpCodes.Ldstr, Visitor.reportPath));
-      worker.InsertBefore(head, worker.Create(OpCodes.Ret));
-
-      definition
+      PrepareAssembly(recorder.Assembly.Location)
 
     /// <summary>
     /// Determine new names for input strongnamed assemblies; if we have a key and

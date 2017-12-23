@@ -22,6 +22,8 @@ namespace Sample3
             {
                 return new List<T> { item };
             }
+
+            public string ReportFile { get; set; }
         }
     }
 }
