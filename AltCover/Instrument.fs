@@ -6,6 +6,7 @@ namespace AltCover
 
 open System
 open System.Collections.Generic
+open System.Diagnostics.CodeAnalysis
 open System.IO
 open System.Reflection
 
@@ -22,6 +23,7 @@ module Instrument =
   /// <summary>
   /// State object passed from visit to visit
   /// </summary>
+  [<ExcludeFromCodeCoverage>]
   type private Context = { InstrumentedAssemblies : string list;
                            RenameTable : Dictionary<String, String>;
                            ModuleId : Guid;
@@ -35,7 +37,7 @@ module Instrument =
   /// assembly boundaries -- start with a pure type then iterate to the module
   /// </summary>
   /// <returns>A representation of the type used to record all coverage visits.</returns>
-  let RecorderInstanceType () =
+  let internal RecorderInstanceType () =
     let trace  = typeof<AltCover.Recorder.Tracer>
     trace.Assembly.GetExportedTypes()
                           |> Seq.find (fun (t:Type) -> t.Name.Contains("Instance"))
@@ -45,7 +47,7 @@ module Instrument =
     /// </summary>
     /// <param name="assembly">The assembly containing the recorder method</param>
     /// <returns>A representation of the method to call to signal a coverage visit.</returns>
-  let RecordingMethod (recordingAssembly : AssemblyDefinition) =
+  let internal RecordingMethod (recordingAssembly : AssemblyDefinition) =
     let other = RecorderInstanceType()
     let token = other.GetMethod("Visit").MetadataToken
     recordingAssembly.MainModule.LookupToken(token) :?> MethodDefinition
@@ -55,7 +57,7 @@ module Instrument =
   /// </summary>
   /// <param name="assemblyName">The name to update</param>
   /// <param name="key">The possibly empty key to use</param>
-  let UpdateStrongNaming (assemblyName:AssemblyNameDefinition) (key:StrongNameKeyPair option) =
+  let internal UpdateStrongNaming (assemblyName:AssemblyNameDefinition) (key:StrongNameKeyPair option) =
     match key with
     | None -> assemblyName.HasPublicKey <- false
               assemblyName.PublicKey <- null
@@ -68,7 +70,7 @@ module Instrument =
   /// </summary>
   /// <param name="name">The name of the assembly</param>
   /// <returns>A key, if we have a match.</returns>
-  let KnownKey (name:AssemblyNameDefinition) =
+  let internal KnownKey (name:AssemblyNameDefinition) =
       if not name.HasPublicKey then
         None
       else
@@ -81,7 +83,7 @@ module Instrument =
   /// </summary>
   /// <param name="name">The name of the assembly</param>
   /// <returns>A key, if we have a match.</returns>
-  let KnownToken (name:AssemblyNameReference) =
+  let internal KnownToken (name:AssemblyNameReference) =
     let pktoken = name.PublicKeyToken
     if pktoken.Length <> 8  then
         None
@@ -97,15 +99,6 @@ module Instrument =
   /// <param name="assemblies">List of assembly paths to visit</param>
   /// <returns>Stateful visitor function</returns>
   let internal InstrumentGenerator (assemblies : string list) =
-    let initialState = {
-             InstrumentedAssemblies = assemblies;
-             RenameTable = null;
-             ModuleId = Guid.Empty;
-             RecordingAssembly = null;
-             RecordingMethod = null;
-             RecordingMethodRef = null;
-             MethodBody = null;
-             MethodWorker = null }
 
     /// <summary>
     /// Create the new assembly that will record visits, based on the prototype.
@@ -310,4 +303,12 @@ module Instrument =
                    WriteAssembly (state.RecordingAssembly) counterAssemblyFile
                    state
 
-    Visitor.EncloseState InstrumentationVisitor initialState
+    Visitor.EncloseState InstrumentationVisitor { InstrumentedAssemblies = assemblies;
+                                                  RenameTable = null;
+                                                  ModuleId = Guid.Empty;
+                                                  RecordingAssembly = null;
+                                                  RecordingMethod = null;
+                                                  RecordingMethodRef = null;
+                                                  MethodBody = null;
+                                                  MethodWorker = null }
+

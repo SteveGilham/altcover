@@ -119,6 +119,7 @@ Target "TestCover" (fun _ ->
                                  TestRunnerExePath = findToolInSubPath "nunit3-console.exe" "."
                                  Filter = "+[AltCover]* -[*]Microsoft.* -[*]System.* -[Sample*]*"
                                  MergeByHash = true
+                                 OptionalArguments = "-excludebyattribute:*ExcludeFromCodeCoverageAttribute"
                                  Register = RegisterType.RegisterUser
                                  Output = "_Reports/OpenCoverReport.xml" })
         "_Binaries/AltCover.Tests/Debug+AnyCPU/AltCover.Tests.dll --result=./_Reports/NUnit3ReportOpenCovered.xml"

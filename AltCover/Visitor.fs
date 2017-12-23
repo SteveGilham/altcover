@@ -7,6 +7,7 @@ namespace AltCover
 
 open System
 open System.Collections.Generic
+open System.Diagnostics.CodeAnalysis
 open System.Linq
 open System.Reflection
 
@@ -14,6 +15,7 @@ open Mono.Cecil
 open Mono.Cecil.Cil
 open Mono.Cecil.Rocks
 
+[<ExcludeFromCodeCoverage>]
 type internal Node =
      | Start of seq<string>
      | Assembly of AssemblyDefinition * bool
@@ -26,6 +28,7 @@ type internal Node =
      | AfterAssembly of AssemblyDefinition
      | Finish
 
+[<ExcludeFromCodeCoverage>]
 type KeyRecord = {
          Pair : StrongNameKeyPair;
          Token : byte list }
@@ -59,6 +62,7 @@ module KeyStore =
       { Pair = key
         Token = TokenOfKey key }
 
+[<ExcludeFromCodeCoverage>]
 type Fix<'T> = delegate of 'T -> Fix<'T>
 
 module Visitor =

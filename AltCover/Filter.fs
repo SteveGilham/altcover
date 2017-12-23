@@ -2,12 +2,14 @@
 
 open System
 open System.Diagnostics
+open System.Diagnostics.CodeAnalysis
 open System.IO
 open System.Runtime.CompilerServices
 
 open Mono.Cecil
 open AltCover.Augment
 
+[<ExcludeFromCodeCoverage>]
 type internal FilterClass =
   | File of string
   | Assembly of string
