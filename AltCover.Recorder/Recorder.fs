@@ -49,7 +49,7 @@ module Instance =
   /// <summary>
   /// Accumulation of visit records
   /// </summary>
-  let private Visits = new Dictionary<string, Dictionary<int, int>>();
+  let internal Visits = new Dictionary<string, Dictionary<int, int>>();
 
   /// <summary>
   /// Interlock for report instances
