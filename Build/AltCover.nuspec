@@ -13,7 +13,7 @@
     <description>@description@</description>
     <releaseNotes>@releaseNotes@</releaseNotes>
     <copyright>@copyright@</copyright>
-    <tags>codecoverage .net</tags>
+    <tags>codecoverage .net Mono</tags>
     @dependencies@
     @references@
   </metadata>
