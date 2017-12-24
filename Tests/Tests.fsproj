@@ -72,30 +72,6 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="CSharpFormat">
-      <HintPath>..\packages\FSharp.Formatting.2.14.4\lib\net40\CSharpFormat.dll</HintPath>
-    </Reference>
-    <Reference Include="FSharp.CodeFormat">
-      <HintPath>..\packages\FSharp.Formatting.2.14.4\lib\net40\FSharp.CodeFormat.dll</HintPath>
-    </Reference>
-    <Reference Include="FSharp.Compiler.Service">
-      <HintPath>..\packages\FSharp.Compiler.Service.2.0.0.6\lib\net45\FSharp.Compiler.Service.dll</HintPath>
-    </Reference>
-    <Reference Include="FSharp.Formatting.Common">
-      <HintPath>..\packages\FSharp.Formatting.2.14.4\lib\net40\FSharp.Formatting.Common.dll</HintPath>
-    </Reference>
-    <Reference Include="FSharp.Literate">
-      <HintPath>..\packages\FSharp.Formatting.2.14.4\lib\net40\FSharp.Literate.dll</HintPath>
-    </Reference>
-    <Reference Include="FSharp.Markdown">
-      <HintPath>..\packages\FSharp.Formatting.2.14.4\lib\net40\FSharp.Markdown.dll</HintPath>
-    </Reference>
-    <Reference Include="FSharp.MetadataFormat">
-      <HintPath>..\packages\FSharp.Formatting.2.14.4\lib\net40\FSharp.MetadataFormat.dll</HintPath>
-    </Reference>
-    <Reference Include="FSharpVSPowerTools.Core">
-      <HintPath>..\packages\FSharpVSPowerTools.Core.2.3.0\lib\net45\FSharpVSPowerTools.Core.dll</HintPath>
-    </Reference>
     <Reference Include="Mono.Cecil">
       <HintPath>..\packages\Mono.Cecil.0.9.6.4\lib\net45\Mono.Cecil.dll</HintPath>
     </Reference>
@@ -117,15 +93,9 @@
     <Reference Include="nunit.framework">
       <HintPath>..\packages\NUnit.3.9.0\lib\net45\nunit.framework.dll</HintPath>
     </Reference>
-    <Reference Include="RazorEngine">
-      <HintPath>..\packages\FSharp.Formatting.2.14.4\lib\net40\RazorEngine.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Numerics" />
-    <Reference Include="System.Web.Razor">
-      <HintPath>..\packages\FSharp.Formatting.2.14.4\lib\net40\System.Web.Razor.dll</HintPath>
-    </Reference>
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
     <ProjectReference Include="..\AltCover\AltCover.fsproj">

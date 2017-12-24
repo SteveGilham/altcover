@@ -44,11 +44,13 @@ type AltCoverTests() = class
     // Hack for running while instrumented
     let where = Assembly.GetExecutingAssembly().Location
     let files = Directory.GetFiles(Path.GetDirectoryName(where) + AltCoverTests.Hack())
+                |> Seq.filter (fun x -> x.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)
+                                        || x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
+                |> Seq.map (fun x -> (x, Mono.Cecil.AssemblyDefinition.ReadAssembly x))
+                |> Seq.filter (fun x -> (snd x).FullName.EndsWith("PublicKeyToken=c02b1a9f5b7cade8", StringComparison.OrdinalIgnoreCase))
+                |> Seq.toList
+    Assert.That(files, Is.Not.Empty)
     files
-    |> Seq.filter (fun x -> x.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)
-                            || x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
-    |> Seq.map (fun x -> (x, Mono.Cecil.AssemblyDefinition.ReadAssembly x))
-    |> Seq.filter (fun x -> (snd x).FullName.EndsWith("PublicKeyToken=c02b1a9f5b7cade8", StringComparison.OrdinalIgnoreCase))
     |> Seq.iter( fun x ->let pdb = AltCover.ProgramDatabase.GetPdbFromImage (snd x)
                          match pdb with
                          | None -> Assert.Fail("No .pdb for " + (fst x))
