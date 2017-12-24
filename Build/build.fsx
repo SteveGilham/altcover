@@ -44,6 +44,7 @@ Target "Clean" (fun _ ->
     |> Seq.filter (fun x -> x.Name.StartsWith "_" )
     |> Seq.map (fun x -> x.FullName)
     |> Seq.toList
+    |> List.sortBy (fun d -> -1 * d.Length) // so leaves get deleted first, avoiding "does not exist" warnings
     |> DeleteDirs
 )
 
