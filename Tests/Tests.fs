@@ -9,6 +9,7 @@ open AltCover
 open AltCover.Augment
 open AltCover.Filter
 open Mono.Cecil
+open Mono.Cecil.Cil
 open Mono.Cecil.Rocks
 open N
 open NUnit.Framework
@@ -1020,7 +1021,40 @@ type AltCoverTests() = class
     finally
       Visitor.keys.Clear()
 
+  [<Test>]
+  member self.ShouldUpdateHandlerOK ([<Range(0,31)>] selection) =
+    let where = Assembly.GetExecutingAssembly().Location;
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample1.exe")
+    let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    ProgramDatabase.ReadSymbols def
+
+    let program = def.MainModule.GetType("TouchTest.Program")
+    let main = program.GetMethods() |> Seq.find (fun x -> x.Name = "Main")
+    let oldValue = main.Body.Instructions.[0]
+    let proc = main.Body.GetILProcessor()
+    let newValue = proc.Create(OpCodes.Ldc_I4, 23)
+    let other = main.Body.Instructions.[1]
+
+    let subject = Instrument.SubstituteInstruction (oldValue, newValue)
+
+    let handler = ExceptionHandler(ExceptionHandlerType())
+
+    handler.FilterStart <- if selection &&& 1 = 1 then oldValue else other
+    handler.HandlerStart <- if selection &&& 2 = 2 then oldValue else other
+    handler.HandlerEnd <- if selection &&& 4 = 4 then oldValue else other
+    handler.TryStart <- if selection &&& 8 = 8 then oldValue else other
+    handler.TryEnd <- if selection &&& 16 = 16 then oldValue else other
+
+    subject.SubstituteExceptionBoundary handler
+
+    Assert.That (handler.FilterStart, Is.EqualTo (if selection &&& 1 = 1 then newValue else other))
+    Assert.That (handler.HandlerStart, Is.EqualTo (if selection &&& 2 = 2 then newValue else other))
+    Assert.That (handler.HandlerEnd, Is.EqualTo (if selection &&& 4 = 4 then newValue else other))
+    Assert.That (handler.TryStart, Is.EqualTo (if selection &&& 8 = 8 then newValue else other))
+    Assert.That (handler.TryEnd, Is.EqualTo (if selection &&& 16 = 16 then newValue else other))
+
   // AltCover.fs
 
+  // Recorder.fs
 
 end
