@@ -1055,6 +1055,31 @@ type AltCoverTests() = class
 
   // AltCover.fs
 
+  [<Test>]
+  member self.ShouldLaunchWithExpectedOutput() =
+    // Hack for running while instrumented
+    let where = Assembly.GetExecutingAssembly().Location
+    let files = Directory.GetFiles(where.Substring(0, where.IndexOf("_Binaries")) + "_Mono\\Sample1")
+    let program = files
+                  |> Seq.filter (fun x -> x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
+                  |> Seq.head
+
+    let saved = (Console.Out, Console.Error)
+    try 
+      use stdout = new StringWriter()
+      use stderr = new StringWriter()
+      Console.SetOut stdout
+      Console.SetError stderr
+
+      Main.Launch program (String.Empty) (Path.GetDirectoryName (Assembly.GetExecutingAssembly().Location))
+
+      Assert.That(stderr.ToString(), Is.Empty)
+      Assert.That(stdout.ToString(), Is.EqualTo("Where is my rocket pack?\r\n"))
+    finally
+      Console.SetOut (fst saved)
+      Console.SetError (snd saved)
+
+
   // Recorder.fs
 
 end

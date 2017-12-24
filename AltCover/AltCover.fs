@@ -121,10 +121,7 @@ module Main =
                         "?|help|h",
                          "Prints out the options.",
                           (fun x -> help <- not (isNull x)))
-                    |> !+ (
-                        "<>",
-                        String.Empty,
-                          ignore)
+
     let rest = try
                     options.Parse(arguments)
                with
