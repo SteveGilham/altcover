@@ -98,7 +98,7 @@ module Instrument =
   /// Create the new assembly that will record visits, based on the prototype.
   /// </summary>
   /// <returns>A representation of the assembly used to record all coverage visits.</returns>
-  let PrepareAssembly (location:string) =
+  let internal PrepareAssembly (location:string) =
     let definition = AssemblyDefinition.ReadAssembly(location)
     ProgramDatabase.ReadSymbols definition
     definition.Name.Name <- definition.Name.Name + ".g"
@@ -122,6 +122,22 @@ module Instrument =
 
     definition
 
+  /// <summary>
+  /// Commit an instrumented assembly to disk
+  /// </summary>
+  /// <param name="assembly">The instrumented assembly object</param>
+  /// <param name="path">The full path of the output file</param>
+  /// <remark>Can raise "System.Security.Cryptography.CryptographicException: Keyset does not exist" at random
+  /// when asked to strongname.  This writes a new .pdb/.mdb alongside the instrumented assembly</remark>
+  let internal WriteAssembly (assembly:AssemblyDefinition) (path:string) =
+    let pkey = Mono.Cecil.WriterParameters()
+    pkey.WriteSymbols <- true
+    pkey.SymbolWriterProvider <- match Path.GetExtension (Option.getOrElse String.Empty (ProgramDatabase.GetPdbWithFallback assembly)) with
+                                 | ".mdb" -> Mono.Cecil.Mdb.MdbWriterProvider() :> ISymbolWriterProvider
+                                 | _ -> Mono.Cecil.Pdb.PdbWriterProvider() :> ISymbolWriterProvider
+    KnownKey assembly.Name
+    |> Option.iter (fun key -> pkey.StrongNameKeyPair <- key)
+    assembly.Write(path, pkey)
 
   type internal SubstituteInstruction (oldValue:Instruction, newValue:Instruction) =
     /// <summary>
@@ -221,23 +237,6 @@ module Instrument =
                     )
 
       assemblyReferenceSubstitutions
-
-    /// <summary>
-    /// Commit an instrumented assembly to disk
-    /// </summary>
-    /// <param name="assembly">The instrumented assembly object</param>
-    /// <param name="path">The full path of the output file</param>
-    /// <remark>Can raise "System.Security.Cryptography.CryptographicException: Keyset does not exist" at random
-    /// when asked to strongname.  This writes a new .pdb/.mdb alongside the instrumented assembly</remark>
-    let WriteAssembly (assembly:AssemblyDefinition) (path:string) =
-      let pkey = Mono.Cecil.WriterParameters()
-      pkey.WriteSymbols <- true
-      pkey.SymbolWriterProvider <- match Path.GetExtension (Option.getOrElse String.Empty (ProgramDatabase.GetPdbWithFallback assembly)) with
-                                   | ".mdb" -> Mono.Cecil.Mdb.MdbWriterProvider() :> ISymbolWriterProvider
-                                   | _ -> Mono.Cecil.Pdb.PdbWriterProvider() :> ISymbolWriterProvider
-      KnownKey assembly.Name
-      |> Option.iter (fun key -> pkey.StrongNameKeyPair <- key)
-      assembly.Write(path, pkey)
 
     let InsertVisit (instruction:Instruction) (methodWorker:ILProcessor) (recordingMethodRef:MethodReference) (moduleId:string) (point:int) =
         let counterMethodCall = methodWorker.Create(OpCodes.Call, recordingMethodRef);

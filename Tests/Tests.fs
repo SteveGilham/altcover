@@ -13,6 +13,26 @@ open Mono.Cecil.Rocks
 open N
 open NUnit.Framework
 
+type ProxyObject() = 
+   inherit MarshalByRefObject()
+
+   member val Type : Type option = None with get, set
+   member val Object = null with get, set
+   member this.InstantiateObject(assemblyPath:string, typeName:string, args:obj[]) =
+        let assembly = Assembly.LoadFrom(assemblyPath) //LoadFrom loads dependent DLLs (assuming they are in the app domain's base directory
+        let t = assembly.ExportedTypes 
+                |> Seq.filter (fun t -> t.FullName = typeName)
+        this.Type <- Seq.tryHead t
+        match this.Type with
+        | None -> ()
+        | Some t -> this.Object <- Activator.CreateInstance(t, args)
+
+   member this.InvokeMethod(methodName:string, args:obj[]) =
+        match this.Type with
+        | None -> null
+        | Some t -> let  methodinfo = t.GetMethod(methodName)
+                    methodinfo.Invoke(this.Object, args)
+
 [<TestFixture>]
 type AltCoverTests() = class
   // Hack for running while instrumented
@@ -190,14 +210,14 @@ type AltCoverTests() = class
   member self.TypeDoesNotMatchNonTypeClass() =
      let def = Mono.Cecil.AssemblyDefinition.ReadAssembly (Assembly.GetExecutingAssembly().Location)
      def.MainModule.Types
-     |> Seq.iter (fun t -> Assert.That (Match t (FilterClass.File "23"), Is.False))
+     |> Seq.iter (fun t -> Assert.That (Match t (FilterClass.File "23"), Is.False, t.FullName))
 
   [<Test>]
   member self.TypeDoesMatchTypeClass() =
      let def = Mono.Cecil.AssemblyDefinition.ReadAssembly (Assembly.GetExecutingAssembly().Location)
      def.MainModule.Types
-     |> Seq.filter (fun t -> t.IsPublic)  // exclude the many compiler generted chaff classes
-     |> Seq.iter (fun t -> Assert.That (Match t (FilterClass.Type "Cove"), Is.True))
+     |> Seq.filter (fun t -> t.IsPublic && t.Name.Contains("AltCover"))  // exclude the many compiler generted chaff classes
+     |> Seq.iter (fun t -> Assert.That (Match t (FilterClass.Type "Cove"), Is.True, t.FullName))
 
   [<Test>]
   member self.MethodDoesNotMatchNonMethodClass() =
@@ -222,14 +242,14 @@ type AltCoverTests() = class
   member self.AttributeDoesNotMatchNonAttributeClass() =
      let def = Mono.Cecil.AssemblyDefinition.ReadAssembly (Assembly.GetExecutingAssembly().Location)
      def.MainModule.Types
-     |> Seq.iter (fun t -> Assert.That (Match t.CustomAttributes (FilterClass.File "23"), Is.False))
+     |> Seq.iter (fun t -> Assert.That (Match t.CustomAttributes (FilterClass.File "23"), Is.False, t.FullName))
 
   [<Test>]
   member self.AttributeDoesMatchAttributeClass() =
      let def = Mono.Cecil.AssemblyDefinition.ReadAssembly (Assembly.GetExecutingAssembly().Location)
      def.MainModule.Types
-     |> Seq.filter (fun t -> t.IsPublic)  // exclude the many compiler generted chaff classes
-     |> Seq.iter (fun t -> Assert.That (Match t (FilterClass.Attribute "Fix"), Is.True))
+     |> Seq.filter (fun t -> t.IsPublic && t.Name.Contains("AltCover"))  // exclude the many compiler generted chaff classes
+     |> Seq.iter (fun t -> Assert.That (Match t (FilterClass.Attribute "Fix"), Is.True, t.FullName))
 
   [<Test>]
   member self.Sample3Class1IsCSharpAutoproperty() =
@@ -935,28 +955,71 @@ type AltCoverTests() = class
 
   [<Test>]
   member self.ShouldBeAbleToPrepareTheAssembly () =
-    let where = Assembly.GetExecutingAssembly().Location;
-    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample3.dll")
-    let prepared = Instrument.PrepareAssembly path
-    let raw = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-    ProgramDatabase.ReadSymbols raw
-    Assert.That (prepared.Name.Name, Is.EqualTo (raw.Name.Name + ".g"))
-    Assert.That (prepared.Name.HasPublicKey)
-    Assert.That (prepared.Name.PublicKey, Is.Not.EquivalentTo(raw.Name.PublicKey))
-    let token' = String.Join(String.Empty, prepared.Name.PublicKeyToken|> Seq.map (fun x -> x.ToString("x2")))
-    Assert.That (token', Is.EqualTo("4ebffcaabf10ce6a"))
+    try
+      Visitor.keys.Clear()
+      let where = Assembly.GetExecutingAssembly().Location;
+      let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample3.dll")
+      let prepared = Instrument.PrepareAssembly path
+      let raw = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+      ProgramDatabase.ReadSymbols raw
+      Assert.That (prepared.Name.Name, Is.EqualTo (raw.Name.Name + ".g"))
+      Assert.That (prepared.Name.HasPublicKey)
+      Assert.That (prepared.Name.PublicKey, Is.Not.EquivalentTo(raw.Name.PublicKey))
+      let token' = String.Join(String.Empty, prepared.Name.PublicKeyToken|> Seq.map (fun x -> x.ToString("x2")))
+      Assert.That (token', Is.EqualTo("4ebffcaabf10ce6a"))
 
-    let before = raw.MainModule.GetTypes() |> Seq.filter (fun t -> t.Name = "Class4") |> Seq.toList
-    Assert.That (before.Length = 1)
-    let before' = before.[0].Methods |> Seq.filter (fun t -> t.Name = "get_ReportFile") |> Seq.toList
-    Assert.That (before'.Length = 1)
+      let before = raw.MainModule.GetTypes() |> Seq.filter (fun t -> t.Name = "Class4") |> Seq.toList
+      Assert.That (before.Length = 1)
+      let before' = before.[0].Methods |> Seq.filter (fun t -> t.Name = "get_ReportFile") |> Seq.toList
+      Assert.That (before'.Length = 1)
 
-    let after = prepared.MainModule.GetTypes() |> Seq.filter (fun t -> t.Name = "Class4") |> Seq.toList
-    Assert.That (after.Length = 1)
-    let after' = after.[0].Methods |> Seq.filter (fun t -> t.Name = "get_ReportFile") |> Seq.toList
-    Assert.That (after'.Length = 1)
+      let after = prepared.MainModule.GetTypes() |> Seq.filter (fun t -> t.Name = "Class4") |> Seq.toList
+      Assert.That (after.Length = 1)
+      let after' = after.[0].Methods |> Seq.filter (fun t -> t.Name = "get_ReportFile") |> Seq.toList
+      Assert.That (after'.Length = 1)
 
-    Assert.That (after'.[0].Body.Instructions.Count, Is.EqualTo(2 + before'.[0].Body.Instructions.Count))
+      Assert.That (after'.[0].Body.Instructions.Count, Is.EqualTo(2 + before'.[0].Body.Instructions.Count))
+    finally
+      Visitor.keys.Clear()
+
+  [<Test>]
+  member self.ShouldGetNewFilePathFromPreparedAssembly () =
+    try
+      Visitor.keys.Clear()
+      let where = Assembly.GetExecutingAssembly().Location;
+      let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample3.dll")
+      let unique = Guid.NewGuid().ToString()
+      let output = Path.GetTempFileName()
+      let outputdll = output + ".dll"
+      let save = Visitor.reportPath
+      try
+        Visitor.reportPath <- unique
+        let prepared = Instrument.PrepareAssembly path
+        Instrument.WriteAssembly prepared outputdll
+        let raw = Mono.Cecil.AssemblyDefinition.ReadAssembly outputdll
+        Assert.That raw.Name.HasPublicKey
+
+        // Assert.That (Option.isSome <| Instrument.KnownKey raw.Name) <- not needed
+        let token' = String.Join(String.Empty, raw.Name.PublicKeyToken|> Seq.map (fun x -> x.ToString("x2")))
+        Assert.That (token', Is.EqualTo("4ebffcaabf10ce6a"))
+
+        let setup = AppDomainSetup()
+        setup.ApplicationBase <- Path.GetDirectoryName(where)
+        let ad = AppDomain.CreateDomain("ShouldGetNewFilePathFromPreparedAssembly", null, setup)
+        try
+          let proxyObject = ad.CreateInstanceFromAndUnwrap(typeof<ProxyObject>.Assembly.Location,"Tests.ProxyObject") :?> ProxyObject
+          proxyObject.InstantiateObject(outputdll,"Sample3.Class3+Class4",[||])
+          let report = proxyObject.InvokeMethod("get_ReportFile",[||]).ToString()
+          Assert.That (report, Is.EqualTo unique)
+        finally
+          AppDomain.Unload(ad)
+      finally
+        Visitor.reportPath <- save
+        File.Delete output
+        if File.Exists outputdll then File.Delete outputdll
+    finally
+      Visitor.keys.Clear()
+
   // AltCover.fs
 
 
