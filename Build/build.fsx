@@ -1,8 +1,10 @@
-#r @"../packages/FAKE.4.64.3/tools/FakeLib.dll" // include Fake lib
-#I @"../packages/FSharpLint.Fake.0.8.1/tools"
-#r @"FSharpLint.Fake.dll"
-#I @"../packages/ZipStorer.3.4.0/lib/net20"
-#r @"ZipStorer.dll"
+#r "../packages/FAKE.4.64.3/tools/FakeLib.dll" // include Fake lib
+#I "../packages/FSharpLint.Fake.0.8.1/tools"
+#r "FSharpLint.Fake.dll"
+#I "../packages/ZipStorer.3.4.0/lib/net20"
+#r "ZipStorer.dll"
+#I "../packages/FSharp.Formatting.2.14.4/lib/net40"
+#r "FSharp.Markdown.dll"
 #r "System.Xml"
 #r "System.Xml.Linq"
 
@@ -18,6 +20,8 @@ open Fake.AssemblyInfoFile
 open Fake.Testing
 open Fake.OpenCoverHelper
 open Fake.ReportGeneratorHelper
+open FSharp.Markdown
+
 open FSharpLint.Fake
 
 let Copyright  = ref String.Empty
@@ -385,22 +389,60 @@ Target "Gendarme" (fun _ ->
 Target "Package"  (fun _ ->
     ensureDirectory "./_Binaries/Packaging"
     ensureDirectory "./_Packaging"
+
+    let packingCopyright = (!Copyright).Replace("©", "&#xa9;").Replace("<","&lt;").Replace(">", "&gt;")
+    printfn "%s" packingCopyright
     let AltCover = FullName "_Binaries/AltCover/AltCover.exe"
     let recorder = FullName "_Binaries/AltCover/Release+AnyCPU/AltCover.Recorder.dll"
+    let readme = FullName "README.md"
+    let document = File.ReadAllText readme
+    let docHtml = """<?xml version="1.0"  encoding="utf-8"?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>AltCover README</title>
+</head>
+<body>
+"""               + (Markdown.TransformHtml document) + """
+<footer><p style="text-align: center">""" + packingCopyright + """</p>
+</footer>
+</body>
+</html>
+"""
+    let xmlform = XDocument.Parse docHtml
+    let body = xmlform.Descendants(XName.Get "body")
+    let eliminate = [ "Continuous Integration"; "Building"; "Thanks to" ]
+    let keep = ref true
+
+    let kill = body.Elements() 
+               |> Seq.map (fun x -> match x.Name.LocalName with
+                                    | "h2" -> keep := (List.tryFind (fun e -> e = String.Concat(x.Nodes())) eliminate) |> Option.isNone
+                                    | "footer" -> keep := true
+                                    | _ -> ()
+                                    if !keep then None else Some x)
+               |> Seq.toList
+    kill |> 
+    Seq.iter (fun q -> match q with 
+                       | Some x -> x.Remove()
+                       | _ -> ())
+
+    let packable = FullName "./_Binaries/README.html"
+    xmlform.Save packable
 
     NuGet (fun p ->
     {p with
         Authors = ["Steve Gilham"]
         Project = "altcover"
-        Description = "A pre-instrumented code coverage tool for .net"
+        Description = "A pre-instrumented code coverage tool for .net and Mono"
         OutputPath = "./_Packaging"
         WorkingDir = "./_Binaries/Packaging"
         Files = [
                         (AltCover, Some "tools", None)
                         (recorder, Some "tools", None)
+                        (packable, Some "", None)
                 ]
         Version = !Version
-        Copyright = !Copyright
+        Copyright = packingCopyright
         Publish = false
         ReleaseNotes = "Functional release, usable but minimalist implementation.   Still working the wrinkles out of the deployment chain."})
         "./Build/AltCover.nuspec"
