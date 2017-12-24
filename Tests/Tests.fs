@@ -1080,6 +1080,6 @@ type AltCoverTests() = class
       Console.SetError (snd saved)
 
 
-  // Recorder.fs
+  // Recorder.fs => Shadow.Tests
 
 end

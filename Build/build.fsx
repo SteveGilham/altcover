@@ -87,6 +87,8 @@ open System.Runtime.CompilerServices
 #endif
 [<assembly: InternalsVisibleTo(\"AltCover.Tests, PublicKey={1}\")>]
 [<assembly: InternalsVisibleTo(\"AltCover.Tests, PublicKey={2}\")>]
+[<assembly: InternalsVisibleTo(\"AltCover.Shadow.Tests, PublicKey={1}\")>]
+[<assembly: InternalsVisibleTo(\"AltCover.Shadow.Tests, PublicKey={2}\")>]
 ()
 "
     let file = String.Format(System.Globalization.CultureInfo.InvariantCulture,
@@ -124,12 +126,12 @@ Target "TestCover" (fun _ ->
     OpenCover (fun p -> { p with ExePath = findToolInSubPath "OpenCover.Console.exe" "."
                                  WorkingDir = "."
                                  TestRunnerExePath = findToolInSubPath "nunit3-console.exe" "."
-                                 Filter = "+[AltCover]* +[AltCover.Recorder]* -[*]Microsoft.* -[*]System.* -[Sample*]*"
+                                 Filter = "+[AltCover]* +[AltCover.Shadow]* -[*]Microsoft.* -[*]System.* -[Sample*]*"
                                  MergeByHash = true
                                  OptionalArguments = "-excludebyattribute:*ExcludeFromCodeCoverageAttribute"
                                  Register = RegisterType.RegisterUser
                                  Output = "_Reports/OpenCoverReport.xml" })
-        "_Binaries/AltCover.Tests/Debug+AnyCPU/AltCover.Tests.dll --result=./_Reports/NUnit3ReportOpenCovered.xml"
+        "_Binaries/AltCover.Tests/Debug+AnyCPU/AltCover.Tests.dll _Binaries/AltCover.Shadow.Tests/Debug+AnyCPU/AltCover.Shadow.Tests.dll --result=./_Reports/NUnit3ReportOpenCovered.xml"
     ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
                                        ReportTypes = [ ReportGeneratorReportType.Html; ReportGeneratorReportType.Badges ]
                                        TargetDir = "_Reports/_UnitTest"})
@@ -226,6 +228,21 @@ Target "SelfTest" (fun _ ->
                                        TargetDir = "_Reports/_SelfTestReport"})
         [altReport2]
 
+    printfn "Instrument and run the shadow tests"
+    let shadowDir = "_Binaries/AltCover.Shadow.Tests/Debug+AnyCPU"
+    ensureDirectory "./_Reports/_ShadowReport"
+    let altReport3 = reports @@ "ShadowSelfTestCoverage.xml"
+    let result = ExecProcess (fun info -> info.FileName <- "_Binaries/AltCover/Debug+AnyCPU/AltCover.exe"
+                                          info.WorkingDirectory <- "_Binaries/AltCover.Shadow.Tests/Debug+AnyCPU"
+                                          info.Arguments <- ("/sn=" + keyfile + AltCoverFilter + @"/o=.\__Instrument -x=" + altReport3)) (TimeSpan.FromMinutes 5.0)
+    !! (@"_Binaries\AltCover.Shadow.Tests\Debug+AnyCPU\__Instrument\*.Tests.dll")
+    |> NUnit3 (fun p -> { p with ToolPath = findToolInSubPath "nunit3-console.exe" "."
+                                 WorkingDir = "."
+                                 ResultSpecs = ["./_Reports/NUnit3ReportShadow.xml"] })
+    ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
+                                       TargetDir = "_Reports/_TotalSelfTestReport"})
+        [altReport2; altReport3]
+    
     printfn "Unit-test instrumented code under OpenCover"
     ensureDirectory "./_Reports/_UnitTestInstrumented"
     OpenCover (fun p -> { p with ExePath = findToolInSubPath "OpenCover.Console.exe" "."
@@ -394,7 +411,6 @@ Target "Package"  (fun _ ->
     ensureDirectory "./_Packaging"
 
     let packingCopyright = (!Copyright).Replace("©", "&#xa9;").Replace("<","&lt;").Replace(">", "&gt;")
-    printfn "%s" packingCopyright
     let AltCover = FullName "_Binaries/AltCover/AltCover.exe"
     let recorder = FullName "_Binaries/AltCover/Release+AnyCPU/AltCover.Recorder.dll"
     let readme = FullName "README.md"
