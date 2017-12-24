@@ -856,6 +856,8 @@ type AltCoverTests() = class
     let token1 = def.Name.PublicKeyToken
     Assert.That (token1, Is.Not.Null)
     Assert.That (token1, Is.Not.EquivalentTo(token0))
+    let token' = String.Join(String.Empty, token1|> Seq.map (fun x -> x.ToString("x2")))
+    Assert.That (token', Is.EqualTo("4ebffcaabf10ce6a"))
 
   [<Test>]
   member self.NoKnownKeyInEmptyIndex() = 
@@ -939,6 +941,8 @@ type AltCoverTests() = class
     Assert.That (prepared.Name.Name, Is.EqualTo (raw.Name.Name + ".g"))
     Assert.That (prepared.Name.HasPublicKey)
     Assert.That (prepared.Name.PublicKey, Is.Not.EquivalentTo(raw.Name.PublicKey))
+    let token' = String.Join(String.Empty, prepared.Name.PublicKeyToken|> Seq.map (fun x -> x.ToString("x2")))
+    Assert.That (token', Is.EqualTo("4ebffcaabf10ce6a"))
 
     let before = raw.MainModule.GetTypes() |> Seq.filter (fun t -> t.Name = "Class4") |> Seq.toList
     Assert.That (before.Length = 1)
