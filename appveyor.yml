@@ -18,7 +18,8 @@ build_script:
 test:
   assemblies:
     only:
-    - _Binaries\AltCover.Tests\Debug+AnyCPU\*.dll
+    - _Binaries\AltCover.Tests\Debug+AnyCPU\*.Tests.dll
+    - _Binaries\AltCover.Shadow.Tests\Debug+AnyCPU\*.Tests.dll
 artifacts:
 - path: _Packaging\*.nupkg
   name: NuGet
