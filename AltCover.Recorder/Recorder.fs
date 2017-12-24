@@ -5,11 +5,13 @@ namespace AltCover.Recorder
 
 open System
 open System.Collections.Generic
+open System.Diagnostics.CodeAnalysis
 open System.IO
 open System.Runtime.CompilerServices
 open System.Xml
 open System.Xml.Linq
 
+[<ExcludeFromCodeCoverage>]
 type Tracer = { Tracer : string }
 
 // Abstract out compact bits of F# that expand into
