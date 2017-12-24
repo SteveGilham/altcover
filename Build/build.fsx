@@ -38,6 +38,9 @@ Target "Lint" (fun _ ->
 Target "Clean" (fun _ ->
     printfn "Cleaning"
     subDirectories (directoryInfo ".")
+    |> Seq.map (fun d -> [ [|d|]; subDirectories d])
+    |> Seq.concat 
+    |> Seq.collect id
     |> Seq.filter (fun x -> x.Name.StartsWith "_" )
     |> Seq.map (fun x -> x.FullName)
     |> Seq.toList
@@ -444,7 +447,9 @@ Target "Package"  (fun _ ->
         Version = !Version
         Copyright = packingCopyright
         Publish = false
-        ReleaseNotes = "Functional release, usable but minimalist implementation.   Still working the wrinkles out of the deployment chain."})
+        ReleaseNotes = FullName "ReleaseNotes.md"
+                       |> File.ReadAllText 
+        })
         "./Build/AltCover.nuspec"
 )
 
