@@ -19,10 +19,6 @@ module Main =
     options.WriteOptionDescriptions(stderr);
     Environment.Exit(1)
 
-  let (!+) (option: string * string * (string->unit)) (options:OptionSet) =
-    let prototype, help, action = option
-    options.Add(prototype, help, new System.Action<string>(action))
-
   let Launch cmd args toDirectory =
     Directory.SetCurrentDirectory(toDirectory)
     let psi = ProcessStartInfo(cmd,args)
@@ -57,19 +53,15 @@ module Main =
 
   [<EntryPoint>]
   let private Main arguments =
-    let options = OptionSet()
-                    |> !+ (
-                        "i|inputDirectory=",
-                        "Optional: The folder containing assemblies to instrument (default: current directory)",
-                        (fun x -> Visitor.inputDirectory <- x))
-                    |> !+ (
-                        "o|outputDirectory=",
-                        "Optional: The folder to receive the instrumented assemblies and their companions (default: sub-folder '.\\__Instrumented' current directory)",
-                        (fun x -> Visitor.outputDirectory <- x))
-                    |> !+ (
-                        "k|key=",
-                        "Optional, multiple: any other strong-name key to use",
-                        (fun x ->
+    let options = [ ("i|inputDirectory=",
+                     "Optional: The folder containing assemblies to instrument (default: current directory)",
+                     (fun x -> Visitor.inputDirectory <- x))
+                    ("o|outputDirectory=",
+                     "Optional: The folder to receive the instrumented assemblies and their companions (default: sub-folder '.\\__Instrumented' current directory)",
+                     (fun x -> Visitor.outputDirectory <- x))
+                    ("k|key=",
+                     "Optional, multiple: any other strong-name key to use",
+                     (fun x ->
                             if not (String.IsNullOrEmpty(x)) && File.Exists(x) then
                               try
                                   use stream = new System.IO.FileStream(x, System.IO.FileMode.Open, System.IO.FileAccess.Read)
@@ -79,10 +71,9 @@ module Main =
                               | :? IOException as io -> Console.WriteLine(io.Message)
                               | :? System.Security.SecurityException as s -> Console.WriteLine(s.Message)
                         ))
-                    |> !+ (
-                        "sn|strongNameKey=",
-                        "Optional: The default strong naming key to apply to instrumented assemblies (default: None)",
-                        (fun x ->
+                    ("sn|strongNameKey=",
+                     "Optional: The default strong naming key to apply to instrumented assemblies (default: None)",
+                     (fun x ->
                             if not (String.IsNullOrEmpty(x)) && File.Exists(x) then
                               try
                                   use stream = new System.IO.FileStream(x, System.IO.FileMode.Open, System.IO.FileAccess.Read)
@@ -93,34 +84,28 @@ module Main =
                               | :? IOException as io -> Console.WriteLine(io.Message)
                               | :? System.Security.SecurityException as s -> Console.WriteLine(s.Message)
                         ))
-                    |> !+ (
-                        "x|xmlReport=",
-                        "Optional: The output report template file (default: coverage.xml in the current directory)",
-                        (fun x -> Visitor.reportPath <- Path.Combine(Directory.GetCurrentDirectory(), x)))
-                    |> !+ (
-                        "f|fileFilter=",
-                        "Optional: file name to exclude from instrumentation (may repeat)",
-                        FilterClass.File >> Visitor.NameFilters.Add)
-                    |> !+ (
-                        "s|assemblyFilter=",
-                        "Optional: assembly name to exclude from instrumentation (may repeat)",
-                        FilterClass.Assembly >> Visitor.NameFilters.Add)
-                    |> !+ (
-                        "t|typeFilter=",
-                        "Optional: type name to exclude from instrumentation (may repeat)",
-                        FilterClass.Type >> Visitor.NameFilters.Add)
-                    |> !+ (
-                        "m|methodFilter=",
-                        "Optional: method name to exclude from instrumentation (may repeat)",
-                        FilterClass.Method >> Visitor.NameFilters.Add)
-                    |> !+ (
-                        "a|attributeFilter=",
-                        "Optional: attribute name to exclude from instrumentation (may repeat)",
-                        FilterClass.Attribute >> Visitor.NameFilters.Add)
-                    |> !+ (
-                        "?|help|h",
-                         "Prints out the options.",
-                          (fun x -> help <- not (isNull x)))
+                    ("x|xmlReport=",
+                     "Optional: The output report template file (default: coverage.xml in the current directory)",
+                     (fun x -> Visitor.reportPath <- Path.Combine(Directory.GetCurrentDirectory(), x)))
+                    ("f|fileFilter=",
+                     "Optional: file name to exclude from instrumentation (may repeat)",
+                     FilterClass.File >> Visitor.NameFilters.Add)
+                    ("s|assemblyFilter=",
+                     "Optional: assembly name to exclude from instrumentation (may repeat)",
+                     FilterClass.Assembly >> Visitor.NameFilters.Add)
+                    ("t|typeFilter=",
+                     "Optional: type name to exclude from instrumentation (may repeat)",
+                     FilterClass.Type >> Visitor.NameFilters.Add)
+                    ("m|methodFilter=",
+                     "Optional: method name to exclude from instrumentation (may repeat)",
+                     FilterClass.Method >> Visitor.NameFilters.Add)
+                    ("a|attributeFilter=",
+                     "Optional: attribute name to exclude from instrumentation (may repeat)",
+                     FilterClass.Attribute >> Visitor.NameFilters.Add)
+                    ("?|help|h",
+                      "Prints out the options.",
+                       (fun x -> help <- not (isNull x))) ]
+                  |> List.fold (fun (o:OptionSet) (p,d,a) -> o.Add(p, d, new System.Action<string>(a))) (OptionSet())
 
     let rest = try
                     options.Parse(arguments)

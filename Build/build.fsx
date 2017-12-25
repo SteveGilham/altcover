@@ -231,7 +231,7 @@ Target "SelfTest" (fun _ ->
 
     printfn "Instrument and run the shadow tests"
     let shadowDir = "_Binaries/AltCover.Shadow.Tests/Debug+AnyCPU"
-    ensureDirectory "./_Reports/_ShadowReport"
+    ensureDirectory "./_Reports/_TotalSelfTestReport"
     let altReport3 = reports @@ "ShadowSelfTestCoverage.xml"
     let result = ExecProcess (fun info -> info.FileName <- "_Binaries/AltCover/Debug+AnyCPU/AltCover.exe"
                                           info.WorkingDirectory <- "_Binaries/AltCover.Shadow.Tests/Debug+AnyCPU"
