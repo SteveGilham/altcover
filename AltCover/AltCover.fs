@@ -5,6 +5,7 @@ open System.Collections.Generic
 open System.Diagnostics
 open System.IO
 open System.Reflection
+open System.Resources
 
 open Mono.Cecil
 open Mono.Options
@@ -12,6 +13,7 @@ open Mono.Options
 module Main =
 
   let mutable private help = false
+  let private resources = ResourceManager("AltCover.Strings", Assembly.GetExecutingAssembly())
 
   let Usage (intro:string) (options:OptionSet) =
     let stderr = Console.Error
@@ -54,13 +56,10 @@ module Main =
   [<EntryPoint>]
   let private Main arguments =
     let options = [ ("i|inputDirectory=",
-                     "Optional: The folder containing assemblies to instrument (default: current directory)",
                      (fun x -> Visitor.inputDirectory <- x))
                     ("o|outputDirectory=",
-                     "Optional: The folder to receive the instrumented assemblies and their companions (default: sub-folder '.\\__Instrumented' current directory)",
                      (fun x -> Visitor.outputDirectory <- x))
                     ("k|key=",
-                     "Optional, multiple: any other strong-name key to use",
                      (fun x ->
                             if not (String.IsNullOrEmpty(x)) && File.Exists(x) then
                               try
@@ -72,7 +71,6 @@ module Main =
                               | :? System.Security.SecurityException as s -> Console.WriteLine(s.Message)
                         ))
                     ("sn|strongNameKey=",
-                     "Optional: The default strong naming key to apply to instrumented assemblies (default: None)",
                      (fun x ->
                             if not (String.IsNullOrEmpty(x)) && File.Exists(x) then
                               try
@@ -85,27 +83,20 @@ module Main =
                               | :? System.Security.SecurityException as s -> Console.WriteLine(s.Message)
                         ))
                     ("x|xmlReport=",
-                     "Optional: The output report template file (default: coverage.xml in the current directory)",
                      (fun x -> Visitor.reportPath <- Path.Combine(Directory.GetCurrentDirectory(), x)))
                     ("f|fileFilter=",
-                     "Optional: file name to exclude from instrumentation (may repeat)",
                      FilterClass.File >> Visitor.NameFilters.Add)
                     ("s|assemblyFilter=",
-                     "Optional: assembly name to exclude from instrumentation (may repeat)",
                      FilterClass.Assembly >> Visitor.NameFilters.Add)
                     ("t|typeFilter=",
-                     "Optional: type name to exclude from instrumentation (may repeat)",
                      FilterClass.Type >> Visitor.NameFilters.Add)
                     ("m|methodFilter=",
-                     "Optional: method name to exclude from instrumentation (may repeat)",
                      FilterClass.Method >> Visitor.NameFilters.Add)
                     ("a|attributeFilter=",
-                     "Optional: attribute name to exclude from instrumentation (may repeat)",
                      FilterClass.Attribute >> Visitor.NameFilters.Add)
                     ("?|help|h",
-                      "Prints out the options.",
                        (fun x -> help <- not (isNull x))) ]
-                  |> List.fold (fun (o:OptionSet) (p,d,a) -> o.Add(p, d, new System.Action<string>(a))) (OptionSet())
+                  |> List.fold (fun (o:OptionSet) (p, a) -> o.Add(p, resources.GetString(p), new System.Action<string>(a))) (OptionSet())
 
     let rest = try
                     options.Parse(arguments)
