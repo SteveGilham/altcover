@@ -98,42 +98,48 @@ module Main =
          (fun x -> help <- not (isNull x))) ]
       |> List.fold (fun (o:OptionSet) (p, a) -> o.Add(p, resources.GetString(p), new System.Action<string>(a))) (OptionSet())
 
+  let internal ParseCommandLine (arguments:string array) (options:OptionSet) =
+      try
+          Right (options.Parse(arguments), options)
+       with
+       | :? OptionException -> Left ("UsageError", options)
+
+  let internal ProcessHelpOption (parse:(Either<string*OptionSet, List<string>*OptionSet>)) =
+    match parse with
+    | Right (_, options) -> if help then Left ("HelpText", options) else parse
+    | fail -> fail
+
+  let internal ProcessOutputLocation (action:(Either<string*OptionSet, List<string>*OptionSet>)) =
+    match action with 
+    | Right (rest, options) -> 
+        try 
+           // Check that the directories are distinct
+           let fromDirectory = Path.Combine(Directory.GetCurrentDirectory(), Visitor.inputDirectory)
+           let toDirectory = Path.Combine(Directory.GetCurrentDirectory(), Visitor.outputDirectory)
+           if not (Directory.Exists(toDirectory)) then
+              WriteOut <| String.Format(CultureInfo.CurrentCulture, 
+                       (resources.GetString "CreateFolder"),
+                       toDirectory)
+              Directory.CreateDirectory(toDirectory) |> ignore
+           let fromInfo = DirectoryInfo(fromDirectory)
+           let toInfo = DirectoryInfo(toDirectory)
+           if fromInfo = toInfo then
+              WriteErr (resources.GetString "NotInPlace")
+              Left ("UsageError", options)
+           else Right (rest, fromInfo, toInfo)
+        with
+        |  :? IOException as x -> WriteErr x.Message
+                                  Left ("UsageError", options)
+    | Left intro -> Left intro
+
   [<EntryPoint>]
   let private Main arguments =
-    let options = DeclareOptions ()
-    let parse = try
-                    Right <| options.Parse(arguments)
-                with
-                | :? OptionException ->
-                    Left "UsageError"
-    let action = match parse with
-                 | Right _ -> if help then Left "HelpText" else parse
-                 | fail -> fail
-
-    let check1 = match action with 
-                 | Right rest -> 
-                     try 
-                        // Check that the directories are distinct
-                        let fromDirectory = Path.Combine(Directory.GetCurrentDirectory(), Visitor.inputDirectory)
-                        let toDirectory = Path.Combine(Directory.GetCurrentDirectory(), Visitor.outputDirectory)
-                        if not (Directory.Exists(toDirectory)) then
-                           WriteOut <| String.Format(CultureInfo.CurrentCulture, 
-                                    (resources.GetString "CreateFolder"),
-                                    toDirectory)
-                           Directory.CreateDirectory(toDirectory) |> ignore
-                        let fromInfo = DirectoryInfo(fromDirectory)
-                        let toInfo = DirectoryInfo(toDirectory)
-                        if fromInfo = toInfo then
-                           WriteErr (resources.GetString "NotInPlace")
-                           Left "UsageError"
-                        else Right (rest, fromInfo, toInfo)
-                     with
-                     | x -> WriteErr x.Message
-                            Left "UsageError"
-                 | Left intro -> Left intro
-
+    let check1 = DeclareOptions ()
+                 |> ParseCommandLine arguments
+                 |> ProcessHelpOption
+                 |> ProcessOutputLocation
     match check1 with
-    | Left intro -> Usage intro options
+    | Left (intro, options) -> Usage intro options
     | Right (rest, fromInfo, toInfo) -> 
       try
         let files = fromInfo.GetFiles()
@@ -177,6 +183,6 @@ module Main =
            let args = String.Join(" ", (List.toArray t))
            Launch cmd args toInfo.FullName // Spawn process, echoing asynchronously
       with
-      | x -> WriteErr x.Message
+      | :? IOException as x -> WriteErr x.Message
 
     0                     

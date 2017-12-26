@@ -23,7 +23,7 @@
                exclude="UseCorrectSuffixRule | AvoidNonAlphanumericIdentifierRule | ParameterNamesShouldMatchOverriddenMethodRule | UseCorrectCasingRule | UseCorrectPrefixRule | AvoidDeepNamespaceHierarchyRule "
                from="Gendarme.Rules.Naming.dll"/>
 		<rules include="*" 
-               exclude="AvoidUnneededUnboxingRule | AvoidUnsealedUninheritedInternalTypeRule | AvoidUncalledPrivateCodeRule"
+               exclude="AvoidRepetitiveCastsRule | AvoidUnneededUnboxingRule | AvoidUnsealedUninheritedInternalTypeRule | AvoidUncalledPrivateCodeRule"
                from="Gendarme.Rules.Performance.dll" />
 		<rules include="*" from="Gendarme.Rules.Portability.dll" />
 		<rules include="*" from="Gendarme.Rules.Security.dll" />
