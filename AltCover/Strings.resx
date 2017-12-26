@@ -165,4 +165,13 @@
   <data name="&quot;&lt;&gt;&quot;" xml:space="preserve">
     <value>"n/a"</value>
   </data>
+  <data name="instrumentingfrom" xml:space="preserve">
+    <value>Instrumenting files from {0}</value>
+  </data>
+  <data name="instrumentingto" xml:space="preserve">
+    <value>Writing files to {0}</value>
+  </data>
+  <data name="reportingto" xml:space="preserve">
+    <value>Coverage Report: {0}</value>
+  </data>
 </root>

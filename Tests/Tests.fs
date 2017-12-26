@@ -994,7 +994,7 @@ type AltCoverTests() = class
       let outputdll = output + ".dll"
       let save = Visitor.reportPath
       try
-        Visitor.reportPath <- unique
+        Visitor.reportPath <- Some unique
         let prepared = Instrument.PrepareAssembly path
         Instrument.WriteAssembly prepared outputdll
         let raw = Mono.Cecil.AssemblyDefinition.ReadAssembly outputdll
@@ -1011,7 +1011,7 @@ type AltCoverTests() = class
           let proxyObject = ad.CreateInstanceFromAndUnwrap(typeof<ProxyObject>.Assembly.Location,"Tests.ProxyObject") :?> ProxyObject
           proxyObject.InstantiateObject(outputdll,"Sample3.Class3+Class4",[||])
           let report = proxyObject.InvokeMethod("get_ReportFile",[||]).ToString()
-          Assert.That (report, Is.EqualTo unique)
+          Assert.That (report, Is.EqualTo (Path.GetFullPath unique))
         finally
           AppDomain.Unload(ad)
       finally
@@ -1114,6 +1114,289 @@ type AltCoverTests() = class
     | Left _ -> Assert.Fail()
     | Right (x, y) -> Assert.That (x, Is.EquivalentTo (input |> Seq.skip 1))
                       Assert.That (y, Is.SameAs options)
+
+  [<Test>]
+  member self.ParsingHelpGivesHelp() =
+    let options = Main.DeclareOptions ()
+    let input = [| "--?" |]
+    let parse = Main.ParseCommandLine input options
+    match parse with
+    | Left _ -> Assert.Fail()
+    | Right (x, y) -> Assert.That (y, Is.SameAs options)
+
+    match Main.ProcessHelpOption parse with
+    | Right _ -> Assert.Fail()
+    | Left (x, y) -> Assert.That (x, Is.EqualTo "HelpText")
+                     Assert.That (y, Is.SameAs options)
+
+    // a "not sticky" test
+    match Main.ParseCommandLine [| "/t"; "x" |] options
+          |> Main.ProcessHelpOption with
+    | Left _ -> Assert.Fail()
+    | Right (x, y) -> Assert.That (y, Is.SameAs options)
+                      Assert.That (x, Is.Empty)
+   
+  [<Test>]
+  member self.ParsingAttributesGivesAttributes() =
+    try
+      Visitor.NameFilters.Clear()
+      let options = Main.DeclareOptions ()
+      let input = [| "-a"; "1"; "--a"; "2"; "/a"; "3"; "-a=4"; "--a=5"; "/a=6" |]
+      let parse = Main.ParseCommandLine input options
+      match parse with
+      | Left _ -> Assert.Fail()
+      | Right (x, y) -> Assert.That (y, Is.SameAs options)
+                        Assert.That (x, Is.Empty)
+
+      Assert.That (Visitor.NameFilters.Count, Is.EqualTo 6)
+      Assert.That (Visitor.NameFilters |> Seq.forall (fun x -> match x with
+                                                               | FilterClass.Attribute _ -> true
+                                                               | _ -> false))
+      Assert.That (Visitor.NameFilters |> Seq.map (fun x -> match x with
+                                                            | FilterClass.Attribute i -> i
+                                                            | _ -> "*"),
+                   Is.EquivalentTo [| "1"; "2"; "3"; "4"; "5"; "6" |])
+    finally
+      Visitor.NameFilters.Clear()
+
+   
+  [<Test>]
+  member self.ParsingMethodsGivesMethods() =
+    try
+      Visitor.NameFilters.Clear()
+      let options = Main.DeclareOptions ()
+      let input = [| "-m"; "1"; "--m"; "2"; "/m"; "3"; "-m=4"; "--m=5"; "/m=6" |]
+      let parse = Main.ParseCommandLine input options
+      match parse with
+      | Left _ -> Assert.Fail()
+      | Right (x, y) -> Assert.That (y, Is.SameAs options)
+                        Assert.That (x, Is.Empty)
+
+      Assert.That (Visitor.NameFilters.Count, Is.EqualTo 6)
+      Assert.That (Visitor.NameFilters |> Seq.forall (fun x -> match x with
+                                                               | FilterClass.Method _ -> true
+                                                               | _ -> false))
+      Assert.That (Visitor.NameFilters |> Seq.map (fun x -> match x with
+                                                            | FilterClass.Method i -> i
+                                                            | _ -> "*"),
+                   Is.EquivalentTo [| "1"; "2"; "3"; "4"; "5"; "6" |])
+    finally
+      Visitor.NameFilters.Clear()
+ 
+  [<Test>]
+  member self.ParsingTypesGivesTypes() =
+    try
+      Visitor.NameFilters.Clear()
+      let options = Main.DeclareOptions ()
+      let input = [| "-t"; "1"; "--t"; "2"; "/t"; "3"; "-t=4"; "--t=5"; "/t=6" |]
+      let parse = Main.ParseCommandLine input options
+      match parse with
+      | Left _ -> Assert.Fail()
+      | Right (x, y) -> Assert.That (y, Is.SameAs options)
+                        Assert.That (x, Is.Empty)
+
+      Assert.That (Visitor.NameFilters.Count, Is.EqualTo 6)
+      Assert.That (Visitor.NameFilters |> Seq.forall (fun x -> match x with
+                                                               | FilterClass.Type _ -> true
+                                                               | _ -> false))
+      Assert.That (Visitor.NameFilters |> Seq.map (fun x -> match x with
+                                                            | FilterClass.Type i -> i
+                                                            | _ -> "*"),
+                   Is.EquivalentTo [| "1"; "2"; "3"; "4"; "5"; "6" |])
+    finally
+      Visitor.NameFilters.Clear()
+
+  [<Test>]
+  member self.ParsingAssembliesGivesAssemblies() =
+    try
+      Visitor.NameFilters.Clear()
+      let options = Main.DeclareOptions ()
+      let input = [| "-s"; "1"; "--s"; "2"; "/s"; "3"; "-s=4"; "--s=5"; "/s=6" |]
+      let parse = Main.ParseCommandLine input options
+      match parse with
+      | Left _ -> Assert.Fail()
+      | Right (x, y) -> Assert.That (y, Is.SameAs options)
+                        Assert.That (x, Is.Empty)
+
+      Assert.That (Visitor.NameFilters.Count, Is.EqualTo 6)
+      Assert.That (Visitor.NameFilters |> Seq.forall (fun x -> match x with
+                                                               | FilterClass.Assembly _ -> true
+                                                               | _ -> false))
+      Assert.That (Visitor.NameFilters |> Seq.map (fun x -> match x with
+                                                            | FilterClass.Assembly i -> i
+                                                            | _ -> "*"),
+                   Is.EquivalentTo [| "1"; "2"; "3"; "4"; "5"; "6" |])
+    finally
+      Visitor.NameFilters.Clear()
+
+  [<Test>]
+  member self.ParsingFilesGivesFiles() =
+    try
+      Visitor.NameFilters.Clear()
+      let options = Main.DeclareOptions ()
+      let input = [| "-f"; "1"; "--f"; "2"; "/f"; "3"; "-f=4"; "--f=5"; "/f=6" |]
+      let parse = Main.ParseCommandLine input options
+      match parse with
+      | Left _ -> Assert.Fail()
+      | Right (x, y) -> Assert.That (y, Is.SameAs options)
+                        Assert.That (x, Is.Empty)
+
+      Assert.That (Visitor.NameFilters.Count, Is.EqualTo 6)
+      Assert.That (Visitor.NameFilters |> Seq.forall (fun x -> match x with
+                                                               | FilterClass.File _ -> true
+                                                               | _ -> false))
+      Assert.That (Visitor.NameFilters |> Seq.map (fun x -> match x with
+                                                            | FilterClass.File i -> i
+                                                            | _ -> "*"),
+                   Is.EquivalentTo [| "1"; "2"; "3"; "4"; "5"; "6" |])
+    finally
+      Visitor.NameFilters.Clear()
+
+  [<Test>]
+  member self.ParsingXmlGivesXml() =
+    try
+      Visitor.reportPath <- None
+      let options = Main.DeclareOptions ()
+      let unique = Guid.NewGuid().ToString()
+      let input = [| "-x"; unique |]
+      let parse = Main.ParseCommandLine input options
+      match parse with
+      | Left _ -> Assert.Fail()
+      | Right (x, y) -> Assert.That (y, Is.SameAs options)
+                        Assert.That (x, Is.Empty)
+
+      match Visitor.reportPath with
+      | None -> Assert.Fail()
+      | Some x -> Assert.That(Path.GetFileName x, Is.EqualTo unique)
+    finally
+      Visitor.reportPath <- None
+
+  [<Test>]
+  member self.ParsingMultipleXmlGivesFailure() =
+    try
+      Visitor.reportPath <- None
+      let options = Main.DeclareOptions ()
+      let unique = Guid.NewGuid().ToString()
+      let input = [| "-x"; unique; "/x"; unique.Replace("-", "+") |]
+      let parse = Main.ParseCommandLine input options
+      match parse with
+      | Right _ -> Assert.Fail()
+      | Left (x, y) -> Assert.That (y, Is.SameAs options)
+                       Assert.That (x, Is.EqualTo "UsageError")
+    finally
+      Visitor.reportPath <- None
+
+  [<Test>]
+  member self.ParsingBadXmlGivesFailure() =
+    try
+      Visitor.reportPath <- None
+      let options = Main.DeclareOptions ()
+      let unique = Guid.NewGuid().ToString()
+      let input = [| "-x"; unique.Replace("-", ":") |]
+      let parse = Main.ParseCommandLine input options
+      match parse with
+      | Right _ -> Assert.Fail()
+      | Left (x, y) -> Assert.That (y, Is.SameAs options)
+                       Assert.That (x, Is.EqualTo "UsageError")
+    finally
+      Visitor.inputDirectory <- None
+
+  [<Test>]
+  member self.ParsingInputGivesInput() =
+    try
+      Visitor.inputDirectory <- None
+      let options = Main.DeclareOptions ()
+      let unique = Path.GetFullPath(".")
+      let input = [| "-i"; unique |]
+      let parse = Main.ParseCommandLine input options
+      match parse with
+      | Left _ -> Assert.Fail()
+      | Right (x, y) -> Assert.That (y, Is.SameAs options)
+                        Assert.That (x, Is.Empty)
+
+      match Visitor.inputDirectory with
+      | None -> Assert.Fail()
+      | Some x -> Assert.That(x, Is.EqualTo unique)
+    finally
+      Visitor.inputDirectory <- None
+
+  [<Test>]
+  member self.ParsingMultipleInputGivesFailure() =
+    try
+      Visitor.inputDirectory <- None
+      let options = Main.DeclareOptions ()
+      let input = [| "-i"; Path.GetFullPath("."); "/i"; Path.GetFullPath("..") |]
+      let parse = Main.ParseCommandLine input options
+      match parse with
+      | Right _ -> Assert.Fail()
+      | Left (x, y) -> Assert.That (y, Is.SameAs options)
+                       Assert.That (x, Is.EqualTo "UsageError")
+    finally
+      Visitor.inputDirectory <- None
+
+  [<Test>]
+  member self.ParsingBadInputGivesFailure() =
+    try
+      Visitor.inputDirectory <- None
+      let options = Main.DeclareOptions ()
+      let unique = Guid.NewGuid().ToString().Replace("-", "*")
+      let input = [| "-i"; unique |]
+      let parse = Main.ParseCommandLine input options
+      match parse with
+      | Right _ -> Assert.Fail()
+      | Left (x, y) -> Assert.That (y, Is.SameAs options)
+                       Assert.That (x, Is.EqualTo "UsageError")
+    finally
+      Visitor.inputDirectory <- None
+
+  [<Test>]
+  member self.ParsingOutputGivesOutput() =
+    try
+      Visitor.outputDirectory <- None
+      let options = Main.DeclareOptions ()
+      let unique = Guid.NewGuid().ToString()
+      let input = [| "-o"; unique |]
+      let parse = Main.ParseCommandLine input options
+      match parse with
+      | Left _ -> Assert.Fail()
+      | Right (x, y) -> Assert.That (y, Is.SameAs options)
+                        Assert.That (x, Is.Empty)
+
+      match Visitor.outputDirectory with
+      | None -> Assert.Fail()
+      | Some x -> Assert.That(Path.GetFileName x, Is.EqualTo unique)
+    finally
+      Visitor.outputDirectory <- None
+
+  [<Test>]
+  member self.ParsingMultipleOutputGivesFailure() =
+    try
+      Visitor.outputDirectory <- None
+      let options = Main.DeclareOptions ()
+      let unique = Guid.NewGuid().ToString()
+      let input = [| "-o"; unique; "/o"; unique.Replace("-", "+") |]
+      let parse = Main.ParseCommandLine input options
+      match parse with
+      | Right _ -> Assert.Fail()
+      | Left (x, y) -> Assert.That (y, Is.SameAs options)
+                       Assert.That (x, Is.EqualTo "UsageError")
+    finally
+      Visitor.outputDirectory <- None
+
+  [<Test>]
+  member self.ParsingBadOutputGivesFailure() =
+    try
+      Visitor.outputDirectory <- None
+      let options = Main.DeclareOptions ()
+      let unique = Guid.NewGuid().ToString()
+      let input = [| "-o"; unique.Replace("-", ":") |]
+      let parse = Main.ParseCommandLine input options
+      match parse with
+      | Right _ -> Assert.Fail()
+      | Left (x, y) -> Assert.That (y, Is.SameAs options)
+                       Assert.That (x, Is.EqualTo "UsageError")
+    finally
+      Visitor.outputDirectory <- None
 
 
   // Recorder.fs => Shadow.Tests

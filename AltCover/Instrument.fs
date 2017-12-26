@@ -117,7 +117,7 @@ module Instrument =
     let body = pathGetterDef.Body
     let worker = body.GetILProcessor();
     let head = body.Instructions.[0]
-    worker.InsertBefore(head, worker.Create(OpCodes.Ldstr, Visitor.reportPath));
+    worker.InsertBefore(head, worker.Create(OpCodes.Ldstr, Visitor.ReportPath()));
     worker.InsertBefore(head, worker.Create(OpCodes.Ret));
 
     definition
@@ -311,10 +311,10 @@ module Instrument =
 
        | AfterModule -> state
        | AfterAssembly assembly ->
-           let path = Path.Combine(Visitor.outputDirectory, FileInfo(assembly.MainModule.Name).Name)
+           let path = Path.Combine(Visitor.OutputDirectory(), FileInfo(assembly.MainModule.Name).Name)
            WriteAssembly assembly path
            state
-       | Finish -> let counterAssemblyFile = Path.Combine(Visitor.outputDirectory, state.RecordingAssembly.Name.Name + ".dll")
+       | Finish -> let counterAssemblyFile = Path.Combine(Visitor.OutputDirectory(), state.RecordingAssembly.Name.Name + ".dll")
                    WriteAssembly (state.RecordingAssembly) counterAssemblyFile
                    state
 

@@ -57,9 +57,25 @@ module Main =
 
   let internal DeclareOptions () =
     [ ("i|inputDirectory=",
-       (fun x -> Visitor.inputDirectory <- x))
+       (fun x -> if not (String.IsNullOrEmpty(x)) && Directory.Exists(x) then
+                    if Option.isSome Visitor.inputDirectory then
+                      error <- true
+                    else 
+                      Visitor.inputDirectory <- Some (Path.GetFullPath x)
+                 else error <- true))
       ("o|outputDirectory=",
-       (fun x -> Visitor.outputDirectory <- x))
+       (fun x -> if not (String.IsNullOrEmpty(x)) then
+                    if Option.isSome Visitor.outputDirectory then
+                      error <- true
+                    else 
+                      try
+                        Visitor.outputDirectory <- Some (Path.GetFullPath x)
+                      with
+                      | :? ArgumentException
+                      | :? NotSupportedException
+                      | :? PathTooLongException -> error <- true
+                      | :? System.Security.SecurityException as s -> WriteErr s.Message
+                 else error <- true))
       ("k|key=",
        (fun x ->
              if not (String.IsNullOrEmpty(x)) && File.Exists(x) then
@@ -77,14 +93,26 @@ module Main =
                try
                    use stream = new System.IO.FileStream(x, System.IO.FileMode.Open, System.IO.FileAccess.Read)
                    let pair = StrongNameKeyPair(stream)
-                   Visitor.defaultStrongNameKey <- Some pair
+                   if Option.isSome Visitor.defaultStrongNameKey then error <- true
+                   else Visitor.defaultStrongNameKey <- Some pair
                    Visitor.Add pair
                 with
                 | :? IOException as io -> WriteErr io.Message
                 | :? System.Security.SecurityException as s -> WriteErr s.Message
                         ))
       ("x|xmlReport=",
-       (fun x -> Visitor.reportPath <- Path.Combine(Directory.GetCurrentDirectory(), x)))
+       (fun x -> if not (String.IsNullOrEmpty(x)) then
+                    if Option.isSome Visitor.reportPath then
+                      error <- true
+                    else 
+                      try
+                        Visitor.reportPath <- Some (Path.GetFullPath x)
+                      with
+                      | :? ArgumentException
+                      | :? NotSupportedException
+                      | :? PathTooLongException -> error <- true
+                      | :? System.Security.SecurityException as s -> WriteErr s.Message
+                 else error <- true))
       ("f|fileFilter=",
        FilterClass.File >> Visitor.NameFilters.Add)
       ("s|assemblyFilter=",
@@ -100,6 +128,8 @@ module Main =
       |> List.fold (fun (o:OptionSet) (p, a) -> o.Add(p, resources.GetString(p), new System.Action<string>(a))) (OptionSet())
 
   let internal ParseCommandLine (arguments:string array) (options:OptionSet) =
+      help <- false
+      error <- false
       try
           let before = arguments
                        |> Array.takeWhile (fun x -> x <> "--")
@@ -125,8 +155,8 @@ module Main =
     | Right (rest, options) -> 
         try 
            // Check that the directories are distinct
-           let fromDirectory = Path.Combine(Directory.GetCurrentDirectory(), Visitor.inputDirectory)
-           let toDirectory = Path.Combine(Directory.GetCurrentDirectory(), Visitor.outputDirectory)
+           let fromDirectory = Visitor.InputDirectory()
+           let toDirectory = Visitor.OutputDirectory()
            if not (Directory.Exists(toDirectory)) then
               WriteOut <| String.Format(CultureInfo.CurrentCulture, 
                        (resources.GetString "CreateFolder"),
@@ -137,7 +167,15 @@ module Main =
            if fromInfo = toInfo then
               WriteErr (resources.GetString "NotInPlace")
               Left ("UsageError", options)
-           else Right (rest, fromInfo, toInfo)
+           else 
+               WriteOut <| String.Format(CultureInfo.CurrentCulture, 
+                                         (resources.GetString "instrumentingfrom"),
+                                         fromDirectory)
+               WriteOut <| String.Format(CultureInfo.CurrentCulture, 
+                                         (resources.GetString "instrumentingto"),
+                                         toDirectory)
+               Right (rest, fromInfo, toInfo)
+
         with
         |  :? IOException as x -> WriteErr x.Message
                                   Left ("UsageError", options)
@@ -179,13 +217,13 @@ module Main =
           assemblies
           |> List.map snd
 
-        // Ensure we always have an absolute file path here.
-        Visitor.reportPath <- Path.Combine(Directory.GetCurrentDirectory(), Visitor.reportPath)
-
+        WriteOut <| String.Format(CultureInfo.CurrentCulture, 
+                                         (resources.GetString "reportingto"),
+                                         Visitor.ReportPath())
         let reporter, document = Report.ReportGenerator ()
         let visitors = [ reporter ; Instrument.InstrumentGenerator assemblyNames ]
         Visitor.Visit visitors (assemblies |> Seq.map fst)
-        document.Save(Visitor.reportPath)
+        document.Save(Visitor.ReportPath())
 
         // If we have some arguments in rest execute that command line
         match rest |> Seq.toList with

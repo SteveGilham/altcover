@@ -8,9 +8,11 @@ namespace AltCover
 open System
 open System.Collections.Generic
 open System.Diagnostics.CodeAnalysis
+open System.IO
 open System.Linq
 open System.Reflection
 
+open AltCover.Augment
 open Mono.Cecil
 open Mono.Cecil.Cil
 open Mono.Cecil.Rocks
@@ -69,9 +71,18 @@ module Visitor =
 
   let internal NameFilters = new List<FilterClass>();
 
-  let mutable internal inputDirectory = "."
-  let mutable internal outputDirectory = "__Instrumented"
-  let mutable internal reportPath = "coverage.xml"
+  let mutable internal inputDirectory : Option<string> = None 
+  let private defaultInputDirectory = "."
+  let InputDirectory () = Path.GetFullPath (Option.getOrElse defaultInputDirectory inputDirectory)
+
+  let mutable internal outputDirectory : Option<string> = None 
+  let private defaultOutputDirectory = "__Instrumented"
+  let OutputDirectory () = Path.GetFullPath (Option.getOrElse defaultOutputDirectory outputDirectory)
+
+  let mutable internal reportPath : Option<string> = None 
+  let defaultReportPath = "coverage.xml"
+  let ReportPath () = Path.GetFullPath (Option.getOrElse defaultReportPath reportPath)
+
   let mutable internal defaultStrongNameKey : option<StrongNameKeyPair> = None
   let internal keys = new Dictionary<UInt64, KeyRecord>()
 
