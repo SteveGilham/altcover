@@ -1135,6 +1135,29 @@ type AltCoverTests() = class
     | Left _ -> Assert.Fail()
     | Right (x, y) -> Assert.That (y, Is.SameAs options)
                       Assert.That (x, Is.Empty)
+
+  [<Test>]
+  member self.ParsingErrorHelpGivesHelp() =
+    let options = Main.DeclareOptions ()
+    let input = [| "--o"; "--?" |]
+    let parse = Main.ParseCommandLine input options
+    match parse with
+    | Right _ -> Assert.Fail()
+    | Left (x, y) -> Assert.That (x, Is.EqualTo "UsageError")
+                     Assert.That (y, Is.SameAs options)
+
+    match Main.ProcessHelpOption parse with
+    | Right _ -> Assert.Fail()
+    | Left (x, y) -> Assert.That (x, Is.EqualTo "UsageError")
+                     Assert.That (y, Is.SameAs options)
+
+    // a "not sticky" test
+    match Main.ParseCommandLine [| "/t"; "x" |] options
+          |> Main.ProcessHelpOption with
+    | Left _ -> Assert.Fail()
+    | Right (x, y) -> Assert.That (y, Is.SameAs options)
+                      Assert.That (x, Is.Empty)
+
    
   [<Test>]
   member self.ParsingAttributesGivesAttributes() =
@@ -1302,6 +1325,21 @@ type AltCoverTests() = class
       Visitor.inputDirectory <- None
 
   [<Test>]
+  member self.ParsingNoXmlGivesFailure() =
+    try
+      Visitor.reportPath <- None
+      let options = Main.DeclareOptions ()
+      let unique = Guid.NewGuid().ToString()
+      let input = [| "-x" |]
+      let parse = Main.ParseCommandLine input options
+      match parse with
+      | Right _ -> Assert.Fail()
+      | Left (x, y) -> Assert.That (y, Is.SameAs options)
+                       Assert.That (x, Is.EqualTo "UsageError")
+    finally
+      Visitor.inputDirectory <- None
+
+  [<Test>]
   member self.ParsingInputGivesInput() =
     try
       Visitor.inputDirectory <- None
@@ -1341,6 +1379,20 @@ type AltCoverTests() = class
       let options = Main.DeclareOptions ()
       let unique = Guid.NewGuid().ToString().Replace("-", "*")
       let input = [| "-i"; unique |]
+      let parse = Main.ParseCommandLine input options
+      match parse with
+      | Right _ -> Assert.Fail()
+      | Left (x, y) -> Assert.That (y, Is.SameAs options)
+                       Assert.That (x, Is.EqualTo "UsageError")
+    finally
+      Visitor.inputDirectory <- None
+  [<Test>]
+
+  member self.ParsingNoInputGivesFailure() =
+    try
+      Visitor.inputDirectory <- None
+      let options = Main.DeclareOptions ()
+      let input = [| "-i" |]
       let parse = Main.ParseCommandLine input options
       match parse with
       | Right _ -> Assert.Fail()
@@ -1398,6 +1450,198 @@ type AltCoverTests() = class
     finally
       Visitor.outputDirectory <- None
 
+  [<Test>]
+  member self.ParsingNoOutputGivesFailure() =
+    try
+      Visitor.outputDirectory <- None
+      let options = Main.DeclareOptions ()
+      let input = [| "-o" |]
+      let parse = Main.ParseCommandLine input options
+      match parse with
+      | Right _ -> Assert.Fail()
+      | Left (x, y) -> Assert.That (y, Is.SameAs options)
+                       Assert.That (x, Is.EqualTo "UsageError")
+    finally
+      Visitor.outputDirectory <- None
+
+  member private self.IsolateRootPath () =
+    let where = Assembly.GetExecutingAssembly().Location
+    where.Substring(0, where.IndexOf("_Binaries"))
+
+  [<Test>]
+  member self.ParsingStrongNameGivesStrongName() =
+    try
+      Visitor.defaultStrongNameKey <- None
+      Visitor.keys.Clear()
+      let options = Main.DeclareOptions ()
+      let input = [| "-sn"; Path.Combine(self.IsolateRootPath(), "Build/Infrastructure.snk") |]
+      let parse = Main.ParseCommandLine input options
+      match parse with
+      | Left _ -> Assert.Fail()
+      | Right (x, y) -> Assert.That (y, Is.SameAs options)
+                        Assert.That (x, Is.Empty)
+
+      match Visitor.defaultStrongNameKey with
+      | None -> Assert.Fail()
+      | Some x -> let token = x
+                              |> KeyStore.TokenOfKey
+                              |> List.map (fun x -> x.ToString("x2"))
+                              
+                  Assert.That (String.Join (String.Empty, token), Is.EqualTo("c02b1a9f5b7cade8"))
+    finally
+      Visitor.defaultStrongNameKey <- None
+      Visitor.keys.Clear()
+
+  [<Test>]
+  member self.ParsingMultipleStrongNameGivesFailure() =
+    try
+      Visitor.defaultStrongNameKey <- None
+      Visitor.keys.Clear()
+      let options = Main.DeclareOptions ()
+      let path = self.IsolateRootPath()
+
+      let input = [| "-sn"; Path.Combine(path, "Build/Infrastructure.snk") ; "/sn"; Path.GetFullPath("Build/Recorder.snk") |]
+      let parse = Main.ParseCommandLine input options
+      match parse with
+      | Right _ -> Assert.Fail()
+      | Left (x, y) -> Assert.That (y, Is.SameAs options)
+                       Assert.That (x, Is.EqualTo "UsageError")
+    finally
+      Visitor.defaultStrongNameKey <- None
+      Visitor.keys.Clear()
+ 
+  [<Test>]
+  member self.ParsingBadStrongNameGivesFailure() =
+    try
+      Visitor.defaultStrongNameKey <- None
+      Visitor.keys.Clear()
+      let options = Main.DeclareOptions ()
+      let unique = Guid.NewGuid().ToString().Replace("-", "*")
+      let input = [| "-sn"; unique |]
+      let parse = Main.ParseCommandLine input options
+      match parse with
+      | Right _ -> Assert.Fail()
+      | Left (x, y) -> Assert.That (y, Is.SameAs options)
+                       Assert.That (x, Is.EqualTo "UsageError")
+    finally
+      Visitor.defaultStrongNameKey <- None
+      Visitor.keys.Clear()
+
+  [<Test>]
+  member self.ParsingNoStrongNameGivesFailure() =
+    try
+      Visitor.defaultStrongNameKey <- None
+      Visitor.keys.Clear()
+      let options = Main.DeclareOptions ()
+      let input = [| "-sn" |]
+      let parse = Main.ParseCommandLine input options
+      match parse with
+      | Right _ -> Assert.Fail()
+      | Left (x, y) -> Assert.That (y, Is.SameAs options)
+                       Assert.That (x, Is.EqualTo "UsageError")
+    finally
+      Visitor.defaultStrongNameKey <- None
+      Visitor.keys.Clear()
+
+  [<Test>]
+  member self.ParsingMultipleAltStrongNameIsOk() =
+    try
+      Visitor.defaultStrongNameKey <- None
+      Visitor.keys.Clear()
+      let options = Main.DeclareOptions ()
+      let path = self.IsolateRootPath()
+
+      let input = [| "-k"; Path.Combine(path, "Build/Infrastructure.snk");
+                     "/k"; Path.Combine(path, "Build/Recorder.snk") |]
+      let parse = Main.ParseCommandLine input options
+      match parse with
+      | Left _ -> Assert.Fail()
+      | Right (x, y) -> Assert.That (y, Is.SameAs options)
+                        Assert.That (x, Is.Empty)
+
+      let expected = Visitor.keys.Keys 
+                     |> Seq.map (fun x -> String.Join(String.Empty, 
+                                                      BitConverter.GetBytes(x)
+                                                      |> Seq.map (fun x -> x.ToString("x2"))))
+                     |> Seq.sort
+      Assert.That (String.Join(" ", expected), Is.EqualTo ("4ebffcaabf10ce6a c02b1a9f5b7cade8"))
+    finally
+      Visitor.defaultStrongNameKey <- None
+      Visitor.keys.Clear()
+
+  member self.ParsingNoAltStrongNameGivesFailure() =
+    try
+      Visitor.defaultStrongNameKey <- None
+      Visitor.keys.Clear()
+      let options = Main.DeclareOptions ()
+      let input = [| "-k" |]
+      let parse = Main.ParseCommandLine input options
+      match parse with
+      | Right _ -> Assert.Fail()
+      | Left (x, y) -> Assert.That (y, Is.SameAs options)
+                       Assert.That (x, Is.EqualTo "UsageError")
+    finally
+      Visitor.defaultStrongNameKey <- None
+      Visitor.keys.Clear()
+
+  [<Test>]
+  member self.ParsingBadAltStrongNameGivesFailure() =
+    try
+      Visitor.defaultStrongNameKey <- None
+      Visitor.keys.Clear()
+      let options = Main.DeclareOptions ()
+      let unique = Guid.NewGuid().ToString().Replace("-", "*")
+      let input = [| "-k"; unique |]
+      let parse = Main.ParseCommandLine input options
+      match parse with
+      | Right _ -> Assert.Fail()
+      | Left (x, y) -> Assert.That (y, Is.SameAs options)
+                       Assert.That (x, Is.EqualTo "UsageError")
+    finally
+      Visitor.defaultStrongNameKey <- None
+      Visitor.keys.Clear()
+
+  [<Test>]
+  member self.UsageIsAsExpected() =
+    let options = Main.DeclareOptions ()
+    let saved = Console.Error
+
+    try 
+      use stderr = new StringWriter()
+      Console.SetError stderr
+      Main.Usage "UsageError" options
+      let result = stderr.ToString()
+      let expected = """Error - usage is:
+  -i, --inputDirectory=VALUE Optional: The folder containing assemblies to
+                               instrument (default: current directory)
+  -o, --outputDirectory=VALUE
+                             Optional: The folder to receive the instrumented
+                               assemblies and their companions (default: sub-
+                               folder '__Instrumented' of the current directory)
+  -k, --key=VALUE            Optional, multiple: any other strong-name key to
+                               use
+      --sn, --strongNameKey=VALUE
+                             Optional: The default strong naming key to apply
+                               to instrumented assemblies (default: None)
+  -x, --xmlReport=VALUE      Optional: The output report template file (default:
+                                coverage.xml in the current directory)
+  -f, --fileFilter=VALUE     Optional: source file name to exclude from
+                               instrumentation (may repeat)
+  -s, --assemblyFilter=VALUE Optional: assembly name to exclude from
+                               instrumentation (may repeat)
+  -t, --typeFilter=VALUE     Optional: type name to exclude from
+                               instrumentation (may repeat)
+  -m, --methodFilter=VALUE   Optional: method name to exclude from
+                               instrumentation (may repeat)
+  -a, --attributeFilter=VALUE
+                             Optional: attribute name to exclude from
+                               instrumentation (may repeat)
+  -?, --help, -h             Prints out the options.
+"""
+
+      Assert.That (result, Is.EqualTo expected)
+
+    finally Console.SetError saved
 
   // Recorder.fs => Shadow.Tests
 

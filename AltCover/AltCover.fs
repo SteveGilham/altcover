@@ -18,19 +18,21 @@ module Main =
   let mutable private error = false
   let private resources = ResourceManager("AltCover.Strings", Assembly.GetExecutingAssembly())
 
-  let internal Usage (intro:string) (options:OptionSet) =
-    let stderr = Console.Error
-    stderr.WriteLine (resources.GetString intro)
-    options.WriteOptionDescriptions(stderr);
-
-  let internal Write (writer:TextWriter) colour data =
-    if not(String.IsNullOrEmpty(data)) then
+  let internal WriteColoured (writer:TextWriter) colour operation =
        let original = Console.ForegroundColor
        try
          Console.ForegroundColor <- colour
-         writer.WriteLine(data)
+         operation writer
        finally
          Console.ForegroundColor <- original
+
+  let internal Usage (intro:string) (options:OptionSet) =
+    WriteColoured Console.Error ConsoleColor.Yellow (fun w ->  w.WriteLine (resources.GetString intro)
+                                                               options.WriteOptionDescriptions(w))
+
+  let internal Write (writer:TextWriter) colour data =
+    if not(String.IsNullOrEmpty(data)) then
+      WriteColoured writer colour (fun w -> w.WriteLine(data))
 
   let internal WriteErr line =
       Write Console.Error ConsoleColor.Yellow line
@@ -86,6 +88,7 @@ module Main =
                with
                | :? IOException as io -> WriteErr io.Message
                | :? System.Security.SecurityException as s -> WriteErr s.Message
+             else error <- true
          ))
       ("sn|strongNameKey=",
        (fun x ->
@@ -99,7 +102,7 @@ module Main =
                 with
                 | :? IOException as io -> WriteErr io.Message
                 | :? System.Security.SecurityException as s -> WriteErr s.Message
-                        ))
+             else error <- true  ))
       ("x|xmlReport=",
        (fun x -> if not (String.IsNullOrEmpty(x)) then
                     if Option.isSome Visitor.reportPath then
