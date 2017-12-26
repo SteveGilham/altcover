@@ -15,6 +15,7 @@ module Main =
   open System.Globalization
 
   let mutable private help = false
+  let mutable private error = false
   let private resources = ResourceManager("AltCover.Strings", Assembly.GetExecutingAssembly())
 
   let internal Usage (intro:string) (options:OptionSet) =
@@ -94,22 +95,32 @@ module Main =
        FilterClass.Method >> Visitor.NameFilters.Add)
       ("a|attributeFilter=",
        FilterClass.Attribute >> Visitor.NameFilters.Add)
-      ("?|help|h",
-         (fun x -> help <- not (isNull x))) ]
+      ("?|help|h", (fun x -> help <- not (isNull x)))
+      ("<>", (fun x -> error <- true))         ]// default end stop
       |> List.fold (fun (o:OptionSet) (p, a) -> o.Add(p, resources.GetString(p), new System.Action<string>(a))) (OptionSet())
 
   let internal ParseCommandLine (arguments:string array) (options:OptionSet) =
       try
-          Right (options.Parse(arguments), options)
+          let before = arguments
+                       |> Array.takeWhile (fun x -> x <> "--")
+          let after = arguments 
+                      |> Seq.skipWhile (fun x -> x <> "--")
+                      |> Seq.skipWhile (fun x -> x = "--")
+                      |> Seq.toList
+          let parse = options.Parse(before)
+          if error || (parse.Count <> 0) then
+             Left ("UsageError", options)
+          else
+             Right (after, options)
        with
        | :? OptionException -> Left ("UsageError", options)
 
-  let internal ProcessHelpOption (parse:(Either<string*OptionSet, List<string>*OptionSet>)) =
+  let internal ProcessHelpOption (parse:(Either<string*OptionSet, string list*OptionSet>)) =
     match parse with
     | Right (_, options) -> if help then Left ("HelpText", options) else parse
     | fail -> fail
 
-  let internal ProcessOutputLocation (action:(Either<string*OptionSet, List<string>*OptionSet>)) =
+  let internal ProcessOutputLocation (action:(Either<string*OptionSet, string list*OptionSet>)) =
     match action with 
     | Right (rest, options) -> 
         try 

@@ -1079,6 +1079,42 @@ type AltCoverTests() = class
       Console.SetOut (fst saved)
       Console.SetError (snd saved)
 
+  [<Test>]
+  member self.ShouldHaveExpectedOptions() =
+    let options = Main.DeclareOptions ()
+    Assert.That (options.Count, Is.EqualTo 12)
+    Assert.That(options |> Seq.filter (fun x -> x.Prototype <> "<>")
+                        |> Seq.forall (fun x -> (String.IsNullOrWhiteSpace >> not) x.Description))
+    Assert.That (options |> Seq.filter (fun x -> x.Prototype = "<>") |> Seq.length, Is.EqualTo 1)
+
+  [<Test>]
+  member self.ParsingJunkIsAnError() =
+    let options = Main.DeclareOptions ()
+    let parse = Main.ParseCommandLine [| "/@thisIsNotAnOption" |] options
+    match parse with
+    | Right _ -> Assert.Fail()
+    | Left (x, y) -> Assert.That (x, Is.EqualTo "UsageError")
+                     Assert.That (y, Is.SameAs options)
+
+  [<Test>]
+  member self.ParsingJunkBeforeSeparatorIsAnError() =
+    let options = Main.DeclareOptions ()
+    let parse = Main.ParseCommandLine [| "/@thisIsNotAnOption"; "--";  "this should be OK" |] options
+    match parse with
+    | Right _ -> Assert.Fail()
+    | Left (x, y) -> Assert.That (x, Is.EqualTo "UsageError")
+                     Assert.That (y, Is.SameAs options)
+
+  [<Test>]
+  member self.ParsingJunkAfterSeparatorIsExpected() =
+    let options = Main.DeclareOptions ()
+    let input = [| "--";  "/@thisIsNotAnOption"; "this should be OK" |]
+    let parse = Main.ParseCommandLine input options
+    match parse with
+    | Left _ -> Assert.Fail()
+    | Right (x, y) -> Assert.That (x, Is.EquivalentTo (input |> Seq.skip 1))
+                      Assert.That (y, Is.SameAs options)
+
 
   // Recorder.fs => Shadow.Tests
 
