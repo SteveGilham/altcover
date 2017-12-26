@@ -1610,7 +1610,7 @@ type AltCoverTests() = class
       use stderr = new StringWriter()
       Console.SetError stderr
       Main.Usage "UsageError" options
-      let result = stderr.ToString()
+      let result = stderr.ToString().Replace("\r\n", "\n")
       let expected = """Error - usage is:
   -i, --inputDirectory=VALUE Optional: The folder containing assemblies to
                                instrument (default: current directory)
@@ -1639,7 +1639,7 @@ type AltCoverTests() = class
   -?, --help, -h             Prints out the options.
 """
 
-      Assert.That (result, Is.EqualTo expected)
+      Assert.That (result, Is.EqualTo (expected.Replace("\r\n", "\n")))
 
     finally Console.SetError saved
 
