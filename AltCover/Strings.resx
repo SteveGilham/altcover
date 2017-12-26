@@ -150,4 +150,16 @@
   <data name="?|help|h" xml:space="preserve">
     <value>Prints out the options.</value>
   </data>
+  <data name="CreateFolder" xml:space="preserve">
+    <value>Creating folder {0}</value>
+  </data>
+  <data name="HelpText" xml:space="preserve">
+    <value>AltCover [/i[nputDirectory]=VALUE] [/o[utputDirectory]=VALUE] [/sn|strongNameKey=VALUE] [/x[mlReport]=VALUE] [/f[ileFilter]=VALUE] [/s|assemblyFilter=VALUE] [/t|typeFilter=VALUE] [/m|methodFilter=VALUE] [/a|attributeFilter=VALUE] [/?|h[elp]]</value>
+  </data>
+  <data name="NotInPlace" xml:space="preserve">
+    <value>From and to directories are identical</value>
+  </data>
+  <data name="UsageError" xml:space="preserve">
+    <value>Error - usage is:</value>
+  </data>
 </root>
