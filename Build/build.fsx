@@ -389,7 +389,6 @@ Target "FxCop" (fun _ ->
                                          "-Microsoft.Design#CA1006"
                                          "-Microsoft.Design#CA1011" // maybe sometimes
                                          "-Microsoft.Design#CA1062" // null checks,  In F#!
-                                         "-Microsoft.Globalization#CA1303" // TODO
                                          "-Microsoft.Maintainability#CA1506"
                                          "-Microsoft.Naming#CA1704"
                                          "-Microsoft.Naming#CA1707"
@@ -414,6 +413,7 @@ Target "Package"  (fun _ ->
     let packingCopyright = (!Copyright).Replace("©", "&#xa9;").Replace("<","&lt;").Replace(">", "&gt;")
     let AltCover = FullName "_Binaries/AltCover/AltCover.exe"
     let recorder = FullName "_Binaries/AltCover/Release+AnyCPU/AltCover.Recorder.dll"
+    let resources = filesInDirMatchingRecursive "AltCover.resources.dll" (directoryInfo (FullName "_Binaries/AltCover/Release+AnyCPU")) 
     let readme = FullName "README.md"
     let document = File.ReadAllText readme
     let docHtml = """<?xml version="1.0"  encoding="utf-8"?>
@@ -449,6 +449,16 @@ Target "Package"  (fun _ ->
     let packable = FullName "./_Binaries/README.html"
     xmlform.Save packable
 
+    let applicationFiles = [
+                            (AltCover, Some "tools", None)
+                            (recorder, Some "tools", None)
+                            (packable, Some "", None)
+                           ]
+    let resourceFiles = resources
+                        |> Seq.map (fun x -> x.FullName)
+                        |> Seq.map (fun x -> (x, Some ("tools/" + Path.GetFileName(Path.GetDirectoryName(x))), None))
+                        |> Seq.toList
+
     NuGet (fun p ->
     {p with
         Authors = ["Steve Gilham"]
@@ -456,11 +466,7 @@ Target "Package"  (fun _ ->
         Description = "A pre-instrumented code coverage tool for .net and Mono"
         OutputPath = "./_Packaging"
         WorkingDir = "./_Binaries/Packaging"
-        Files = [
-                        (AltCover, Some "tools", None)
-                        (recorder, Some "tools", None)
-                        (packable, Some "", None)
-                ]
+        Files = List.concat [applicationFiles; resourceFiles]
         Version = !Version
         Copyright = packingCopyright
         Publish = false
