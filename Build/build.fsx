@@ -43,8 +43,13 @@ Target "Clean" (fun _ ->
     |> Seq.collect id
     |> Seq.filter (fun x -> x.Name.StartsWith "_" )
     |> Seq.map (fun x -> x.FullName)
+    // arrnage so leaves get deleted first, avoiding "does not exist" warnings
+    |> Seq.groupBy (fun x -> x |> Seq.filter (fun c -> c='\\' || c = '/') |> Seq.length)
+    |> Seq.map (fun (n,x) -> (n, x |> Seq.sort))
+    |> Seq.sortBy (fun (n,x) -> -1 * n)
+    |> Seq.map (fun (n,x) -> x)
+    |> Seq.concat
     |> Seq.toList
-    |> List.sortBy (fun d -> -1 * d.Length) // so leaves get deleted first, avoiding "does not exist" warnings
     |> DeleteDirs
 )
 
