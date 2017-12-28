@@ -714,7 +714,7 @@ type AltCoverTests() = class
     let expected = ["System.Int32 Sample3.Class1.get_Property()"; "System.Void Sample3.Class1.set_Property(System.Int32)";
                     "System.Void Sample3.Class1.#ctor()"; "System.Int32 Sample3.Class2.get_Property()";
                     "System.Void Sample3.Class2.set_Property(System.Int32)"; "System.Void Sample3.Class2.#ctor()";
-                    "System.Collections.Generic.List`1 Sample3.Class3.get_Visits()" 
+                    "System.Collections.Generic.List`1 Sample3.Class3.get_Visits()"
                     "System.Void Sample3.Class3.Log(System.String,System.Int32)"
                     "System.Void Sample3.Class3.#ctor()"; "System.Void Sample3.Class3..cctor()"
                     "Sample3.Class1 Sample3.Class3+Class4.get_Property()";
@@ -1117,7 +1117,7 @@ type AltCoverTests() = class
 
           let proxyObject' = ad.CreateInstanceFromAndUnwrap(typeof<ProxyObject>.Assembly.Location,"Tests.ProxyObject") :?> ProxyObject
           proxyObject'.InstantiateObject(outputdll,"Sample3.Class3",[||])
-          let log = proxyObject'.InvokeMethod("get_Visits",[||]) :?> seq<Tuple<string, int>> 
+          let log = proxyObject'.InvokeMethod("get_Visits",[||]) :?> seq<Tuple<string, int>>
           Assert.That (log, Is.EquivalentTo[(unique, 42)])
 
         finally
@@ -1128,7 +1128,6 @@ type AltCoverTests() = class
         if File.Exists outputdll then File.Delete outputdll
     finally
       Visitor.keys.Clear()
-
 
   [<Test>]
   member self.ShouldUpdateHandlerOK ([<Range(0,31)>] selection) =
@@ -1304,7 +1303,6 @@ type AltCoverTests() = class
     let input = Instrument.Context.Build []
     let output = Instrument.InstrumentationVisitor input AfterModule
     Assert.That (output, Is.SameAs input)
-
 
   // AltCover.fs
 

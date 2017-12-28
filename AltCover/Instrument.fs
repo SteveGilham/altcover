@@ -32,7 +32,7 @@ module Instrument =
                             RecordingMethodRef : MethodReference
                             MethodBody : MethodBody
                             MethodWorker : ILProcessor }
-  with static member Build assemblies = 
+  with static member Build assemblies =
                     { InstrumentedAssemblies = assemblies;
                       RenameTable = null;
                       ModuleId = Guid.Empty;
@@ -254,7 +254,6 @@ module Instrument =
     if included then
              assembly.MainModule.AssemblyReferences.Add(state.RecordingAssembly.Name)
     { state with RenameTable = updates } // TODO use this (attribute mappings IIRC)
-
 
   let private DoAfterAssembly (state : Context) (assembly:AssemblyDefinition) =
      let path = Path.Combine(Visitor.OutputDirectory(), assembly.MainModule.Name)
