@@ -1661,6 +1661,21 @@ type AltCoverTests() = class
       Visitor.inputDirectory <- None
 
   [<Test>]
+  member self.ParsingEmptyXmlGivesFailure() =
+    try
+      Visitor.reportPath <- None
+      let options = Main.DeclareOptions ()
+      let unique = Guid.NewGuid().ToString()
+      let input = [| "-x"; " " |]
+      let parse = Main.ParseCommandLine input options
+      match parse with
+      | Right _ -> Assert.Fail()
+      | Left (x, y) -> Assert.That (y, Is.SameAs options)
+                       Assert.That (x, Is.EqualTo "UsageError")
+    finally
+      Visitor.inputDirectory <- None
+
+  [<Test>]
   member self.ParsingInputGivesInput() =
     try
       Visitor.inputDirectory <- None
@@ -1777,6 +1792,20 @@ type AltCoverTests() = class
       Visitor.outputDirectory <- None
       let options = Main.DeclareOptions ()
       let input = [| "-o" |]
+      let parse = Main.ParseCommandLine input options
+      match parse with
+      | Right _ -> Assert.Fail()
+      | Left (x, y) -> Assert.That (y, Is.SameAs options)
+                       Assert.That (x, Is.EqualTo "UsageError")
+    finally
+      Visitor.outputDirectory <- None
+
+  [<Test>]
+  member self.ParsingEmptyOutputGivesFailure() =
+    try
+      Visitor.outputDirectory <- None
+      let options = Main.DeclareOptions ()
+      let input = [| "-o"; " " |]
       let parse = Main.ParseCommandLine input options
       match parse with
       | Right _ -> Assert.Fail()

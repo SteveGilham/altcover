@@ -59,14 +59,14 @@ module Main =
 
   let internal DeclareOptions () =
     [ ("i|inputDirectory=",
-       (fun x -> if not (String.IsNullOrEmpty(x)) && Directory.Exists(x) then
+       (fun x -> if not (String.IsNullOrWhiteSpace(x)) && Directory.Exists(x) then
                     if Option.isSome Visitor.inputDirectory then
                       error <- true
                     else
                       Visitor.inputDirectory <- Some (Path.GetFullPath x)
                  else error <- true))
       ("o|outputDirectory=",
-       (fun x -> if not (String.IsNullOrEmpty(x)) then
+       (fun x -> if not (String.IsNullOrWhiteSpace(x)) then
                     if Option.isSome Visitor.outputDirectory then
                       error <- true
                     else
@@ -80,7 +80,7 @@ module Main =
                  else error <- true))
       ("k|key=",
        (fun x ->
-             if not (String.IsNullOrEmpty(x)) && File.Exists(x) then
+             if not (String.IsNullOrWhiteSpace(x)) && File.Exists(x) then
                try
                    use stream = new System.IO.FileStream(x, System.IO.FileMode.Open, System.IO.FileAccess.Read)
                    let pair = StrongNameKeyPair(stream)
@@ -92,7 +92,7 @@ module Main =
          ))
       ("sn|strongNameKey=",
        (fun x ->
-             if not (String.IsNullOrEmpty(x)) && File.Exists(x) then
+             if not (String.IsNullOrWhiteSpace(x)) && File.Exists(x) then
                try
                    use stream = new System.IO.FileStream(x, System.IO.FileMode.Open, System.IO.FileAccess.Read)
                    let pair = StrongNameKeyPair(stream)
@@ -104,7 +104,7 @@ module Main =
                 | :? System.Security.SecurityException as s -> WriteErr s.Message
              else error <- true  ))
       ("x|xmlReport=",
-       (fun x -> if not (String.IsNullOrEmpty(x)) then
+       (fun x -> if not (String.IsNullOrWhiteSpace(x)) then
                     if Option.isSome Visitor.reportPath then
                       error <- true
                     else
