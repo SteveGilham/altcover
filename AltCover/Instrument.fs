@@ -32,6 +32,15 @@ module Instrument =
                             RecordingMethodRef : MethodReference
                             MethodBody : MethodBody
                             MethodWorker : ILProcessor }
+  with static member Build assemblies = 
+                    { InstrumentedAssemblies = assemblies;
+                      RenameTable = null;
+                      ModuleId = Guid.Empty;
+                      RecordingAssembly = null;
+                      RecordingMethod = null;
+                      RecordingMethodRef = null;
+                      MethodBody = null;
+                      MethodWorker = null }
 
   /// <summary>
   /// Workround for not being able to take typeof<SomeModule> even across
@@ -79,8 +88,9 @@ module Instrument =
         match Visitor.keys.TryGetValue(index) with
         | (false, _ ) -> None
         | (_, record) -> Some record.Pair
-   /// <summary>
-   /// Locate the key, if any, which was used to name this assembly.
+
+  /// <summary>
+  /// Locate the key, if any, which was used to name this assembly.
   /// </summary>
   /// <param name="name">The name of the assembly</param>
   /// <returns>A key, if we have a match.</returns>
@@ -94,6 +104,10 @@ module Instrument =
         | (false, _ ) -> None
         | (_, record) -> Some record
 
+  // This trivial extraction appeases Gendarme
+  let private extractName (assembly: AssemblyDefinition) =
+     assembly.Name.Name
+
   /// <summary>
   /// Create the new assembly that will record visits, based on the prototype.
   /// </summary>
@@ -101,7 +115,7 @@ module Instrument =
   let internal PrepareAssembly (location:string) =
     let definition = AssemblyDefinition.ReadAssembly(location)
     ProgramDatabase.ReadSymbols definition
-    definition.Name.Name <- definition.Name.Name + ".g"
+    definition.Name.Name <- (extractName definition) + ".g"
     use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Recorder.snk")
     use buffer = new MemoryStream()
     stream.CopyTo(buffer)
@@ -191,129 +205,132 @@ module Instrument =
       instrLoadModuleId
 
   /// <summary>
+  /// Determine new names for input strongnamed assemblies; if we have a key and
+  /// the assembly was already strongnamed then give it the new key token, otherwise
+  /// set that there is no strongname.
+  /// </summary>
+  /// <param name="assembly">The assembly object being operated upon</param>
+  /// <param name="path">The names of all assemblies of interest</param>
+  /// <returns>Map from input to output names</returns>
+  let internal UpdateStrongReferences (assembly : AssemblyDefinition) (assemblies : string list) =
+    let effectiveKey = if assembly.Name.HasPublicKey then Visitor.defaultStrongNameKey else None
+    UpdateStrongNaming assembly.Name effectiveKey
+
+    // TODO -- is this still lookup table of any use??
+    let assemblyReferenceSubstitutions = new Dictionary<String, String>()
+
+    let interestingReferences =  assembly.MainModule.AssemblyReferences
+                                 |> Seq.cast<AssemblyNameReference>
+                                 |> Seq.filter (fun x -> assemblies |> List.exists (fun y -> y.Equals(x.Name)))
+
+    interestingReferences
+    |> Seq.iter (fun r -> let original = r.ToString()
+                          let token = KnownToken r
+                          let effectiveKey = match token with
+                                             | None -> Visitor.defaultStrongNameKey
+                                                       |> Option.map KeyStore.KeyToRecord
+                                             | key -> key
+
+                          match effectiveKey with
+                          | None -> r.HasPublicKey <- false
+                                    r.PublicKeyToken <- null
+                                    r.PublicKey <- null
+                          | Some key -> r.HasPublicKey <- true
+                                        r.PublicKey <- key.Pair.PublicKey // implicitly sets token
+
+                          let updated = r.ToString()
+                          if  not <| updated.Equals(original, StringComparison.Ordinal) then
+                            assemblyReferenceSubstitutions.[original] <- updated
+                  )
+
+    assemblyReferenceSubstitutions
+
+  let private DoStart (state : Context) =
+    let recorder = typeof<AltCover.Recorder.Tracer>
+    { state with RecordingAssembly = PrepareAssembly(recorder.Assembly.Location) }
+
+  let private DoAssembly (state : Context) assembly included =
+    let updates = UpdateStrongReferences assembly state.InstrumentedAssemblies
+    if included then
+             assembly.MainModule.AssemblyReferences.Add(state.RecordingAssembly.Name)
+    { state with RenameTable = updates } // TODO use this (attribute mappings IIRC)
+
+
+  let private DoAfterAssembly (state : Context) (assembly:AssemblyDefinition) =
+     let path = Path.Combine(Visitor.OutputDirectory(), assembly.MainModule.Name)
+     WriteAssembly assembly path
+     state
+
+  let private DoFinish (state : Context) =
+    let counterAssemblyFile = Path.Combine(Visitor.OutputDirectory(), (extractName state.RecordingAssembly) + ".dll")
+    WriteAssembly (state.RecordingAssembly) counterAssemblyFile
+    state
+
+  /// <summary>
+  /// Perform visitor operations
+  /// </summary>
+  /// <param name="state">Contextual information for the visit</param>
+  /// <param name="node">The node being visited</param>
+  /// <returns>Updated state</returns>
+  let internal InstrumentationVisitor (state : Context) (node:Node) =
+     match node with
+     | Start _ ->  DoStart(state)
+     | Assembly (assembly, included) ->
+          DoAssembly state assembly included
+     | Module (m, included) -> //of ModuleDefinition * bool
+         let restate = match included with
+                       | true ->
+                         let recordingMethod = match state.RecordingMethod with
+                                               | null -> RecordingMethod state.RecordingAssembly
+                                               | _ -> state.RecordingMethod
+
+                         { state with
+                               RecordingMethodRef = m.Import(recordingMethod);
+                               RecordingMethod = recordingMethod }
+                       | _ -> state
+         { restate with ModuleId = m.Mvid }
+
+     | Type _ -> //of TypeDefinition * bool
+         state
+     | Method (m,  included) -> //of MethodDefinition * bool
+         match included with
+         | true ->
+           let body = m.Body
+           { state with
+              MethodBody = body;
+              MethodWorker = body.GetILProcessor() }
+         | _ -> state
+
+     | MethodPoint (instruction, _, point, included) -> //of Instruction * CodeSegment * int * bool
+       if included && (not(isNull instruction.SequencePoint)) &&
+                      (Visitor.IsIncluded instruction.SequencePoint.Document.Url) then
+            let instrLoadModuleId = InsertVisit instruction state.MethodWorker state.RecordingMethodRef (state.ModuleId.ToString()) point
+
+            // Change references in operands from "instruction" to first counter invocation instruction (instrLoadModuleId)
+            let subs = SubstituteInstruction (instruction, instrLoadModuleId)
+            state.MethodBody.Instructions
+            |> Seq.iter subs.SubstituteInstructionOperand
+
+            state.MethodBody.ExceptionHandlers
+            |> Seq.iter subs.SubstituteExceptionBoundary
+
+       state
+     | AfterMethod included -> //of MethodDefinition * bool
+         if included then
+            let body = state.MethodBody
+            // changes conditional (br.s, brtrue.s ...) operators to corresponding "long" ones (br, brtrue)
+            body.SimplifyMacros()
+            // changes "long" conditional operators to their short representation where possible
+            body.OptimizeMacros()
+         state
+
+     | AfterModule -> state
+     | AfterAssembly assembly -> DoAfterAssembly state assembly
+     | Finish -> DoFinish state
+  /// <summary>
   /// Higher-order function that returns a visitor
   /// </summary>
   /// <param name="assemblies">List of assembly paths to visit</param>
   /// <returns>Stateful visitor function</returns>
   let internal InstrumentGenerator (assemblies : string list) =
-
-    /// <summary>
-    /// Determine new names for input strongnamed assemblies; if we have a key and
-    /// the assembly was already strongnamed then give it the new key token, otherwise
-    /// set that there is no strongname.
-    /// </summary>
-    /// <param name="assembly">The assembly object being operated upon</param>
-    /// <param name="path">The names of all assemblies of interest</param>
-    /// <returns>Map from input to output names</returns>
-    let UpdateStrongReferences (assembly : AssemblyDefinition) (assemblies : string list) =
-      let effectiveKey = if assembly.Name.HasPublicKey then Visitor.defaultStrongNameKey else None
-      UpdateStrongNaming assembly.Name effectiveKey
-
-      // TODO -- is this still lookup table of any use??
-      let assemblyReferenceSubstitutions = new Dictionary<String, String>()
-
-      let interestingReferences =  assembly.MainModule.AssemblyReferences
-                                   |> Seq.cast<AssemblyNameReference>
-                                   |> Seq.filter (fun x -> assemblies |> List.exists (fun y -> y.Equals(x.Name)))
-
-      interestingReferences
-      |> Seq.iter (fun r -> let original = r.ToString()
-                            let token = KnownToken r
-                            let effectiveKey = match token with
-                                               | None -> Visitor.defaultStrongNameKey
-                                                         |> Option.map KeyStore.KeyToRecord
-                                               | key -> key
-
-                            match effectiveKey with
-                            | None -> r.HasPublicKey <- false
-                                      r.PublicKeyToken <- null
-                                      r.PublicKey <- null
-                            | Some key -> r.HasPublicKey <- true
-                                          r.PublicKey <- key.Pair.PublicKey // implicitly sets token
-
-                            let updated = r.ToString()
-                            if  not <| updated.Equals(original, StringComparison.Ordinal) then
-                              assemblyReferenceSubstitutions.[original] <- updated
-                    )
-
-      assemblyReferenceSubstitutions
-
-    /// <summary>
-    /// Perform visitor operations
-    /// </summary>
-    /// <param name="state">Contextual information for the visit</param>
-    /// <param name="node">The node being visited</param>
-    /// <returns>Updated state</returns>
-    let InstrumentationVisitor (state : Context) (node:Node) =
-       match node with
-       | Start _ ->  let recorder = typeof<AltCover.Recorder.Tracer>
-                     { state with RecordingAssembly = PrepareAssembly(recorder.Assembly.Location) }
-       | Assembly (assembly, included) ->
-            let updates = UpdateStrongReferences assembly state.InstrumentedAssemblies
-            if included then
-               assembly.MainModule.AssemblyReferences.Add(state.RecordingAssembly.Name)
-            { state with RenameTable = updates } // TODO use this (attribute mappings IIRC)
-       | Module (m, included) -> //of ModuleDefinition * bool
-           let restate = match included with
-                         | true ->
-                           let recordingMethod = match state.RecordingMethod with
-                                                 | null -> RecordingMethod state.RecordingAssembly
-                                                 | _ -> state.RecordingMethod
-
-                           { state with
-                                 RecordingMethodRef = m.Import(recordingMethod);
-                                 RecordingMethod = recordingMethod }
-                         | _ -> state
-           { restate with ModuleId = m.Mvid }
-
-       | Type _ -> //of TypeDefinition * bool * AssemblyModel
-           state
-       | Method (m,  included) -> //of MethodDefinition * bool
-           match included with
-           | true ->
-             let body = m.Body
-             { state with
-                MethodBody = body;
-                MethodWorker = body.GetILProcessor() }
-           | _ -> state
-
-       | MethodPoint (instruction, _, point, included) -> //of Instruction * CodeSegment * int * bool
-         if included && (not(isNull instruction.SequencePoint)) &&
-                        (Visitor.IsIncluded instruction.SequencePoint.Document.Url) then
-              let instrLoadModuleId = InsertVisit instruction state.MethodWorker state.RecordingMethodRef (state.ModuleId.ToString()) point
-
-              // Change references in operands from "instruction" to first counter invocation instruction (instrLoadModuleId)
-              let subs = SubstituteInstruction (instruction, instrLoadModuleId)
-              state.MethodBody.Instructions
-              |> Seq.iter subs.SubstituteInstructionOperand
-
-              state.MethodBody.ExceptionHandlers
-              |> Seq.iter subs.SubstituteExceptionBoundary
-
-         state
-       | AfterMethod included -> //of MethodDefinition * bool
-           if included then
-              let body = state.MethodBody
-              // changes conditional (br.s, brtrue.s ...) operators to corresponding "long" ones (br, brtrue)
-              body.SimplifyMacros()
-              // changes "long" conditional operators to their short representation where possible
-              body.OptimizeMacros()
-           state
-
-       | AfterModule -> state
-       | AfterAssembly assembly ->
-           let path = Path.Combine(Visitor.OutputDirectory(), FileInfo(assembly.MainModule.Name).Name)
-           WriteAssembly assembly path
-           state
-       | Finish -> let counterAssemblyFile = Path.Combine(Visitor.OutputDirectory(), state.RecordingAssembly.Name.Name + ".dll")
-                   WriteAssembly (state.RecordingAssembly) counterAssemblyFile
-                   state
-
-    Visitor.EncloseState InstrumentationVisitor { InstrumentedAssemblies = assemblies;
-                                                  RenameTable = null;
-                                                  ModuleId = Guid.Empty;
-                                                  RecordingAssembly = null;
-                                                  RecordingMethod = null;
-                                                  RecordingMethodRef = null;
-                                                  MethodBody = null;
-                                                  MethodWorker = null }
+    Visitor.EncloseState InstrumentationVisitor (Context.Build assemblies)

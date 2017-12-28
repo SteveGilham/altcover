@@ -1288,6 +1288,24 @@ type AltCoverTests() = class
                                    subject.SubstituteInstructionOperand i
                                    Assert.That (i.Operand, Is.SameAs before))
 
+  [<Test>]
+  member self.StartShouldLoadRecordingAssembly () =
+    let def = Instrument.InstrumentationVisitor (Instrument.Context.Build []) (Start [])
+    Assert.That (def.RecordingAssembly.Name.Name, Is.EqualTo "AltCover.Recorder.g")
+
+  [<Test>]
+  member self.TypeShouldNotChangeState () =
+    let input = Instrument.Context.Build []
+    let output = Instrument.InstrumentationVisitor input (Node.Type (null,false))
+    Assert.That (output, Is.SameAs input)
+
+  [<Test>]
+  member self.AfterModuleShouldNotChangeState () =
+    let input = Instrument.Context.Build []
+    let output = Instrument.InstrumentationVisitor input AfterModule
+    Assert.That (output, Is.SameAs input)
+
+
   // AltCover.fs
 
   [<Test>]
