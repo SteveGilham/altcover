@@ -180,6 +180,16 @@ module Instrument =
            | _ -> ()
       | _ -> ()
 
+  let internal InsertVisit (instruction:Instruction) (methodWorker:ILProcessor) (recordingMethodRef:MethodReference) (moduleId:string) (point:int) =
+      let counterMethodCall = methodWorker.Create(OpCodes.Call, recordingMethodRef);
+      let instrLoadModuleId = methodWorker.Create(OpCodes.Ldstr, moduleId)
+      let instrLoadPointId = methodWorker.Create(OpCodes.Ldc_I4, point);
+
+      methodWorker.InsertBefore(instruction, instrLoadModuleId);
+      methodWorker.InsertAfter(instrLoadModuleId, instrLoadPointId);
+      methodWorker.InsertAfter(instrLoadPointId, counterMethodCall);
+      instrLoadModuleId
+
   /// <summary>
   /// Higher-order function that returns a visitor
   /// </summary>
@@ -235,16 +245,6 @@ module Instrument =
                     )
 
       assemblyReferenceSubstitutions
-
-    let InsertVisit (instruction:Instruction) (methodWorker:ILProcessor) (recordingMethodRef:MethodReference) (moduleId:string) (point:int) =
-        let counterMethodCall = methodWorker.Create(OpCodes.Call, recordingMethodRef);
-        let instrLoadModuleId = methodWorker.Create(OpCodes.Ldstr, moduleId)
-        let instrLoadPointId = methodWorker.Create(OpCodes.Ldc_I4, point);
-
-        methodWorker.InsertBefore(instruction, instrLoadModuleId);
-        methodWorker.InsertAfter(instrLoadModuleId, instrLoadPointId);
-        methodWorker.InsertAfter(instrLoadPointId, counterMethodCall);
-        instrLoadModuleId
 
     /// <summary>
     /// Perform visitor operations

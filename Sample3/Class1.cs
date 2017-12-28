@@ -28,9 +28,17 @@ namespace Sample3
             public string ReportFile { get; set; }
         }
 
-        public static List<Tuple<string, int>> log = new List<Tuple<string, int>>();
+        private static List<Tuple<string, int>> log = new List<Tuple<string, int>>();
 
-        public void Log(string id, int num)
+        public List<Tuple<string, int>> Visits
+        {
+            get
+            {
+                return log;
+            }
+        }
+
+        public static void Log(string id, int num)
         {
             log.Add(Tuple.Create(id, num));
         }

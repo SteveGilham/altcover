@@ -149,7 +149,6 @@ type AltCoverTests() = class
     |> Seq.filter (fun x -> not <| x.FullName.EndsWith("PublicKeyToken=c02b1a9f5b7cade8", StringComparison.OrdinalIgnoreCase))
     |> Seq.iter (fun def ->
       AltCover.ProgramDatabase.ReadSymbols def
-      printfn "%A" def.MainModule.FullyQualifiedName
       Assert.That (not def.MainModule.HasSymbols, def.MainModule.FullyQualifiedName)
     )
 
@@ -698,7 +697,8 @@ type AltCoverTests() = class
                 |> Seq.map Naming.MethodName
                 |> Seq.toList
     let expected = ["get_Property"; "set_Property"; "#ctor"; "get_Property"; "set_Property";
-                      "#ctor"; "Log"; "#ctor"; ".cctor"; "get_Property"; "set_Property"; "get_ReportFile";
+                      "#ctor"; "get_Visits"; "Log"; "#ctor"; ".cctor";
+                      "get_Property"; "set_Property"; "get_ReportFile";
                       "set_ReportFile"; "ToList"; "#ctor" ]
     Assert.That(names, Is.EquivalentTo expected)
 
@@ -714,6 +714,7 @@ type AltCoverTests() = class
     let expected = ["System.Int32 Sample3.Class1.get_Property()"; "System.Void Sample3.Class1.set_Property(System.Int32)";
                     "System.Void Sample3.Class1.#ctor()"; "System.Int32 Sample3.Class2.get_Property()";
                     "System.Void Sample3.Class2.set_Property(System.Int32)"; "System.Void Sample3.Class2.#ctor()";
+                    "System.Collections.Generic.List`1 Sample3.Class3.get_Visits()" 
                     "System.Void Sample3.Class3.Log(System.String,System.Int32)"
                     "System.Void Sample3.Class3.#ctor()"; "System.Void Sample3.Class3..cctor()"
                     "Sample3.Class1 Sample3.Class3+Class4.get_Property()";
@@ -1069,6 +1070,65 @@ type AltCoverTests() = class
     finally
       Visitor.keys.Clear()
       Visitor.defaultStrongNameKey <- None
+
+  [<Test>]
+  member self.ShouldGetVisitFromWrittenAssembly () =
+    try
+      Visitor.keys.Clear()
+      let where = Assembly.GetExecutingAssembly().Location;
+      let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample3.dll")
+      let unique = Guid.NewGuid().ToString()
+      let output = Path.GetTempFileName()
+      let outputdll = output + ".dll"
+      let save = Visitor.reportPath
+      try
+        let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+        ProgramDatabase.ReadSymbols def
+
+        let clazz = def.MainModule.GetType("Sample3.Class1")
+        let func = clazz.GetMethods() |> Seq.find (fun x -> x.Name = "get_Property")
+
+        let clazz' = def.MainModule.GetType("Sample3.Class3")
+        let func' = clazz'.GetMethods() |> Seq.find (fun x -> x.Name = "Log")
+
+        let newValue = Instrument.InsertVisit (func.Body.Instructions.[0]) (func.Body.GetILProcessor()) func' unique 42
+        Assert.That (newValue.Operand, Is.EqualTo unique)
+        Assert.That (newValue.OpCode, Is.EqualTo OpCodes.Ldstr)
+
+        Instrument.WriteAssembly def outputdll
+        Assert.That (File.Exists (outputdll.Replace(".dll",".pdb")))
+        let raw = Mono.Cecil.AssemblyDefinition.ReadAssembly outputdll
+        Assert.That raw.Name.HasPublicKey
+
+        // Assert.That (Option.isSome <| Instrument.KnownKey raw.Name) <- not needed
+        let token' = String.Join(String.Empty, raw.Name.PublicKeyToken|> Seq.map (fun x -> x.ToString("x2")))
+        Assert.That (token', Is.EqualTo("c02b1a9f5b7cade8"))
+
+        let setup = AppDomainSetup()
+        setup.ApplicationBase <- Path.GetDirectoryName(where)
+        let ad = AppDomain.CreateDomain("ShouldGetNewFilePathFromPreparedAssembly", null, setup)
+        try
+          let proxyObject = ad.CreateInstanceFromAndUnwrap(typeof<ProxyObject>.Assembly.Location,"Tests.ProxyObject") :?> ProxyObject
+          proxyObject.InstantiateObject(outputdll,"Sample3.Class1",[||])
+          let setting = proxyObject.InvokeMethod("set_Property",[| 17 |])
+          Assert.That (setting, Is.Null)
+          let getting = proxyObject.InvokeMethod("get_Property",[||]) :?> int
+          Assert.That (getting, Is.EqualTo 17)
+
+          let proxyObject' = ad.CreateInstanceFromAndUnwrap(typeof<ProxyObject>.Assembly.Location,"Tests.ProxyObject") :?> ProxyObject
+          proxyObject'.InstantiateObject(outputdll,"Sample3.Class3",[||])
+          let log = proxyObject'.InvokeMethod("get_Visits",[||]) :?> seq<Tuple<string, int>> 
+          Assert.That (log, Is.EquivalentTo[(unique, 42)])
+
+        finally
+          AppDomain.Unload(ad)
+      finally
+        Visitor.reportPath <- save
+        File.Delete output
+        if File.Exists outputdll then File.Delete outputdll
+    finally
+      Visitor.keys.Clear()
+
 
   [<Test>]
   member self.ShouldUpdateHandlerOK ([<Range(0,31)>] selection) =
