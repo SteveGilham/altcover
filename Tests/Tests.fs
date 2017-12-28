@@ -419,7 +419,7 @@ type AltCoverTests() = class
   member self.AfterProcessingYieldsAnExpectedValue() =
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly (Assembly.GetExecutingAssembly().Location)
     let inputs = [ Node.Start [] ; Node.Assembly (def, true) ; Node.Module (null, false) ; Node.Type (null, true) ;
-                   Node.Method (null, false) ; Node.MethodPoint ( null, null, 0, true ) ;
+                   Node.Method (null, false) ; Node.MethodPoint ( null, 0, true ) ;
                    Node.AfterMethod false ; Node.AfterModule ; Node.AfterAssembly def; Node.Finish ]
     let outputs = inputs |> Seq.map (Visitor.After >> Seq.toList)
     let expected = [ [Finish]; [AfterAssembly def]; [AfterModule]; []; [AfterMethod false]; []; []; []; []; []]
@@ -448,7 +448,7 @@ type AltCoverTests() = class
   [<Test>]
   member self.TerminalCasesGoNoDeeper() =
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly (Assembly.GetExecutingAssembly().Location)
-    let inputs = [ Node.MethodPoint ( null, null, 0, true ) ;
+    let inputs = [ Node.MethodPoint ( null, 0, true ) ;
                    Node.AfterMethod false ; Node.AfterModule ; Node.AfterAssembly def; Node.Finish ]
     let outputs = inputs |> Seq.map (Visitor.Deeper>> Seq.toList)
     let expected = [[]; []; []; []; []]
@@ -469,7 +469,7 @@ type AltCoverTests() = class
         Assert.That (deeper.Length, Is.EqualTo 10)
         deeper
         |> List.iteri (fun i node -> match node with
-                                     | (MethodPoint (_, _, n, b)) ->Assert.That(n, Is.EqualTo i); Assert.That (b, Is.False)
+                                     | (MethodPoint (_, n, b)) ->Assert.That(n, Is.EqualTo i); Assert.That (b, Is.False)
                                      | _ -> Assert.Fail())
     finally
       Visitor.NameFilters.Clear()

@@ -54,7 +54,8 @@ module Report =
           head.Add(element)
           element :: s
 
-      | MethodPoint (_, codeSegment, _, included) ->
+      | MethodPoint (instruction, _, included) ->
+          let codeSegment = instruction.SequencePoint
           // quick fix for .mdb lack of end line/column information
           let end' = match (codeSegment.EndLine, codeSegment.EndColumn) with
                      | (-1, _) -> (codeSegment.StartLine, codeSegment.StartColumn + 1)

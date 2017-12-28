@@ -245,26 +245,6 @@ module Instrument =
 
     assemblyReferenceSubstitutions
 
-  let private DoStart (state : Context) =
-    let recorder = typeof<AltCover.Recorder.Tracer>
-    { state with RecordingAssembly = PrepareAssembly(recorder.Assembly.Location) }
-
-  let private DoAssembly (state : Context) assembly included =
-    let updates = UpdateStrongReferences assembly state.InstrumentedAssemblies
-    if included then
-             assembly.MainModule.AssemblyReferences.Add(state.RecordingAssembly.Name)
-    { state with RenameTable = updates } // TODO use this (attribute mappings IIRC)
-
-  let private DoAfterAssembly (state : Context) (assembly:AssemblyDefinition) =
-     let path = Path.Combine(Visitor.OutputDirectory(), assembly.MainModule.Name)
-     WriteAssembly assembly path
-     state
-
-  let private DoFinish (state : Context) =
-    let counterAssemblyFile = Path.Combine(Visitor.OutputDirectory(), (extractName state.RecordingAssembly) + ".dll")
-    WriteAssembly (state.RecordingAssembly) counterAssemblyFile
-    state
-
   /// <summary>
   /// Perform visitor operations
   /// </summary>
@@ -273,9 +253,12 @@ module Instrument =
   /// <returns>Updated state</returns>
   let internal InstrumentationVisitor (state : Context) (node:Node) =
      match node with
-     | Start _ ->  DoStart(state)
-     | Assembly (assembly, included) ->
-          DoAssembly state assembly included
+     | Start _ -> let recorder = typeof<AltCover.Recorder.Tracer>
+                  { state with RecordingAssembly = PrepareAssembly(recorder.Assembly.Location) }
+     | Assembly (assembly, included) -> let updates = UpdateStrongReferences assembly state.InstrumentedAssemblies
+                                        if included then
+                                           assembly.MainModule.AssemblyReferences.Add(state.RecordingAssembly.Name)
+                                        { state with RenameTable = updates } // TODO use this (attribute mappings IIRC)
      | Module (m, included) -> //of ModuleDefinition * bool
          let restate = match included with
                        | true ->
@@ -300,7 +283,7 @@ module Instrument =
               MethodWorker = body.GetILProcessor() }
          | _ -> state
 
-     | MethodPoint (instruction, _, point, included) -> //of Instruction * CodeSegment * int * bool
+     | MethodPoint (instruction, point, included) -> //of Instruction * int * bool
        if included && (not(isNull instruction.SequencePoint)) &&
                       (Visitor.IsIncluded instruction.SequencePoint.Document.Url) then
             let instrLoadModuleId = InsertVisit instruction state.MethodWorker state.RecordingMethodRef (state.ModuleId.ToString()) point
@@ -324,8 +307,13 @@ module Instrument =
          state
 
      | AfterModule -> state
-     | AfterAssembly assembly -> DoAfterAssembly state assembly
-     | Finish -> DoFinish state
+     | AfterAssembly assembly -> let path = Path.Combine(Visitor.OutputDirectory(), assembly.MainModule.Name)
+                                 WriteAssembly assembly path
+                                 state
+     | Finish -> let counterAssemblyFile = Path.Combine(Visitor.OutputDirectory(), (extractName state.RecordingAssembly) + ".dll")
+                 WriteAssembly (state.RecordingAssembly) counterAssemblyFile
+                 state
+
   /// <summary>
   /// Higher-order function that returns a visitor
   /// </summary>

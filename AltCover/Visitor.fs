@@ -24,7 +24,7 @@ type internal Node =
      | Module of ModuleDefinition * bool
      | Type of TypeDefinition * bool
      | Method of MethodDefinition * bool
-     | MethodPoint of Instruction * SequencePoint * int * bool
+     | MethodPoint of Instruction * int * bool
      | AfterMethod of bool
      | AfterModule
      | AfterAssembly of AssemblyDefinition
@@ -150,7 +150,7 @@ module Visitor =
             PointNumber <- point + number
 
             instructions.OrderByDescending(fun (x:Instruction) -> x.Offset)
-            |> Seq.mapi (fun i x -> MethodPoint (x, x.SequencePoint, i+point, included && (IsIncluded x.SequencePoint.Document.Url)))
+            |> Seq.mapi (fun i x -> MethodPoint (x, i+point, included && (IsIncluded x.SequencePoint.Document.Url)))
 
     | _ -> Seq.empty<Node>
 
