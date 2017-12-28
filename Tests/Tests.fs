@@ -697,9 +697,9 @@ type AltCoverTests() = class
                 |> Seq.collect (fun t -> t.Methods)
                 |> Seq.map Naming.MethodName
                 |> Seq.toList
-    let expected = ["get_Property"; "set_Property"; ".ctor"; "get_Property"; "set_Property";
-                      ".ctor"; ".ctor"; "get_Property"; "set_Property"; "get_ReportFile";
-                      "set_ReportFile"; "ToList"; ".ctor" ]
+    let expected = ["get_Property"; "set_Property"; "#ctor"; "get_Property"; "set_Property";
+                      "#ctor"; "Log"; "#ctor"; ".cctor"; "get_Property"; "set_Property"; "get_ReportFile";
+                      "set_ReportFile"; "ToList"; "#ctor" ]
     Assert.That(names, Is.EquivalentTo expected)
 
   [<Test>]
@@ -714,7 +714,9 @@ type AltCoverTests() = class
     let expected = ["System.Int32 Sample3.Class1.get_Property()"; "System.Void Sample3.Class1.set_Property(System.Int32)";
                     "System.Void Sample3.Class1.#ctor()"; "System.Int32 Sample3.Class2.get_Property()";
                     "System.Void Sample3.Class2.set_Property(System.Int32)"; "System.Void Sample3.Class2.#ctor()";
-                    "System.Void Sample3.Class3.#ctor()"; "Sample3.Class1 Sample3.Class3+Class4.get_Property()";
+                    "System.Void Sample3.Class3.Log(System.String,System.Int32)"
+                    "System.Void Sample3.Class3.#ctor()"; "System.Void Sample3.Class3..cctor()"
+                    "Sample3.Class1 Sample3.Class3+Class4.get_Property()";
                     "System.Void Sample3.Class3+Class4.set_Property(Sample3.Class1)";
                     "System.String Sample3.Class3+Class4.get_ReportFile()";
                     "System.Void Sample3.Class3+Class4.set_ReportFile(System.String)";

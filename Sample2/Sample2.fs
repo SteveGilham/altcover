@@ -1,5 +1,7 @@
 ﻿namespace N
+open System
 open NUnit.Framework
+
 module M =
   type Thing = { Thing: string } with
     member this.bytes () = System.Text.Encoding.UTF8.GetBytes(this.Thing)
@@ -14,9 +16,13 @@ module DU =
     type MyUnion =
         | Foo of int
         | Bar of string
+        | Baz of double
+        | Bop of DateTime
     with member this.as_bar() = match this with
                                 | Foo n -> Bar (string n)
-                                | bar -> bar
+                                | Bar bar -> this
+                                | Baz d -> Bar (string d)
+                                | Bop t -> Bar (string t)
          member this.MyBar = this.as_bar
 
     let returnFoo v = Foo v

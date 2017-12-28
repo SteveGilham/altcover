@@ -27,7 +27,9 @@ module Naming =
         else (suffixIfNotIsNullOrWhiteSpace def.Namespace  ".") + TypeRefName def
 
     let MethodName (def : MethodDefinition) =
-        emptyIfIsNullOrWhiteSpace def.Name
+        if def.IsConstructor && (not def.IsStatic) 
+        then "#ctor" 
+        else emptyIfIsNullOrWhiteSpace def.Name
 
     let FullMethodName (def : MethodDefinition) =
         let parameters = String.Join(",", def.Parameters
@@ -48,7 +50,7 @@ module Naming =
                                    " "
                                    FullTypeName def.DeclaringType
                                    "."
-                                   (if def.IsConstructor && (not def.IsStatic) then "#ctor" else MethodName def)
+                                   MethodName def
                                    (if generic then "<" else String.Empty)
                                    tparameters
                                    (if generic then ">" else String.Empty)

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Sample3
 {
@@ -25,6 +26,13 @@ namespace Sample3
             }
 
             public string ReportFile { get; set; }
+        }
+
+        public static List<Tuple<string, int>> log = new List<Tuple<string, int>>();
+
+        public void Log(string id, int num)
+        {
+            log.Add(Tuple.Create(id, num));
         }
     }
 }
