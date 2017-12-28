@@ -164,14 +164,13 @@ module Instrument =
       // instruction.Operand getter - is rather slow to execute it for every operator
       match instruction.OpCode.OperandType with
       | OperandType.InlineBrTarget
-      | OperandType.ShortInlineBrTarget
-      | OperandType.InlineSwitch ->
+      | OperandType.ShortInlineBrTarget ->
         if instruction.Operand = (oldValue :> Object) then
            instruction.Operand <- newValue
         // At this point instruction.Operand will be either Operand != oldOperand
         // or instruction.Operand will be of type Instruction[]
         // (in other words - it will be a switch operator's operand)
-        else if instruction.OpCode.OperandType = OperandType.InlineSwitch then
+      | OperandType.InlineSwitch ->
            let operands = instruction.Operand :?> Instruction array
            let offset = operands
                         |> Seq.tryFindIndex (fun x -> x = oldValue)
@@ -179,7 +178,6 @@ module Instrument =
            | Some i -> // operands.[i] <- newValue : fails with "This expression was expected to have type    ''a [] * int * 'a'    but here has type    'Instruction array'"
                        Array.blit [| newValue |] 0 operands i 1 // so mutate the array like this instead
            | _ -> ()
-        else ()
       | _ -> ()
 
   /// <summary>

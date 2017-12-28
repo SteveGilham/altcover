@@ -1054,6 +1054,133 @@ type AltCoverTests() = class
     Assert.That (handler.TryStart, Is.EqualTo (if selection &&& 8 = 8 then newValue else other))
     Assert.That (handler.TryEnd, Is.EqualTo (if selection &&& 16 = 16 then newValue else other))
 
+  [<Test>]
+  member self.ShouldSubstituteInstructionOperand () =
+    let where = Assembly.GetExecutingAssembly().Location;
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
+    let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    ProgramDatabase.ReadSymbols def
+
+    let module' = def.MainModule.GetType("N.DU")
+    let du = module'.NestedTypes |> Seq.filter (fun t -> t.Name = "MyUnion") |> Seq.head
+    let main = du.GetMethods() |> Seq.find (fun x -> x.Name = "as_bar")
+    let proc = main.Body.GetILProcessor()
+    let newValue = proc.Create(OpCodes.Ldc_I4, 23)
+
+    main.Body.Instructions
+    |> Seq.filter (fun i -> match i.Operand with
+                            | :? Instruction -> true
+                            | _ -> false)
+    |> Seq.iter (fun i -> let subject = Instrument.SubstituteInstruction (i.Operand :?> Instruction, newValue)
+                          subject.SubstituteInstructionOperand i
+                          Assert.That (i.Operand, Is.EqualTo newValue))
+
+  [<Test>]
+  member self.ShouldNotSubstituteDifferentInstructionOperand () =
+    let where = Assembly.GetExecutingAssembly().Location;
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
+    let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    ProgramDatabase.ReadSymbols def
+
+    let module' = def.MainModule.GetType("N.DU")
+    let du = module'.NestedTypes |> Seq.filter (fun t -> t.Name = "MyUnion") |> Seq.head
+    let main = du.GetMethods() |> Seq.find (fun x -> x.Name = "as_bar")
+    let proc = main.Body.GetILProcessor()
+    let newValue = proc.Create(OpCodes.Ldc_I4, 23)
+
+    main.Body.Instructions
+    |> Seq.filter (fun i -> match i.Operand with
+                            | :? Instruction -> true
+                            | _ -> false)
+    |> Seq.iter (fun i -> let subject = Instrument.SubstituteInstruction (i, newValue)
+                          let before = i.Operand
+                          subject.SubstituteInstructionOperand i
+                          Assert.That (i.Operand, Is.SameAs before))
+
+
+  // work around weird compiler error with array indexing
+  member private self.AsIArray (x:obj) (i:int)=
+      (x :?> Instruction[])
+      |> Seq.mapi (fun index instr -> (index, instr))
+      |> Seq.filter (fun (x,y) -> x = i)
+      |> Seq.map snd
+      |> Seq.head
+
+  [<Test>]
+  member self.ShouldSubstituteIntoInstructionOperandArray () =
+    let where = Assembly.GetExecutingAssembly().Location;
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
+    let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    ProgramDatabase.ReadSymbols def
+
+    let module' = def.MainModule.GetType("N.DU")
+    let du = module'.NestedTypes |> Seq.filter (fun t -> t.Name = "MyUnion") |> Seq.head
+    let main = du.GetMethods() |> Seq.find (fun x -> x.Name = "as_bar")
+    let proc = main.Body.GetILProcessor()
+    let newValue = proc.Create(OpCodes.Ldc_I4, 23)
+
+    main.Body.Instructions
+    |> Seq.filter (fun i -> match i.Operand with
+                            | :? (Instruction[]) -> true
+                            | _ -> false)
+    |> Seq.collect (fun i -> i.Operand :?> Instruction[]
+                             |> Seq.mapi (fun o t -> (i,o,t)))
+    |> Seq.iter (fun (i,o,t) -> let subject = Instrument.SubstituteInstruction (t, newValue)
+                                Assert.That (self.AsIArray i.Operand o, (Is.SameAs t))
+                                Assert.That (t, Is.Not.EqualTo newValue)
+                                subject.SubstituteInstructionOperand i
+                                let t' = self.AsIArray i.Operand
+                                Assert.That (t' o, Is.EqualTo newValue))
+
+  [<Test>]
+  member self.ShouldNotSubstituteOutsideInstructionOperandArray () =
+    let where = Assembly.GetExecutingAssembly().Location;
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
+    let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    ProgramDatabase.ReadSymbols def
+
+    let module' = def.MainModule.GetType("N.DU")
+    let du = module'.NestedTypes |> Seq.filter (fun t -> t.Name = "MyUnion") |> Seq.head
+    let main = du.GetMethods() |> Seq.find (fun x -> x.Name = "as_bar")
+    let proc = main.Body.GetILProcessor()
+    let newValue = proc.Create(OpCodes.Ldc_I4, 23)
+
+    main.Body.Instructions
+    |> Seq.filter (fun i -> match i.Operand with
+                            | :? (Instruction[]) -> true
+                            | _ -> false)
+    |> Seq.iter (fun i -> let subject = Instrument.SubstituteInstruction (i, newValue)
+                          let before = (i.Operand :?> Instruction[])
+                                       |> Seq.toList
+                          subject.SubstituteInstructionOperand i
+                          Seq.zip (i.Operand :?> Instruction[]) before
+                          |> Seq.iter (fun (after, before) -> Assert.That (after, Is.SameAs before)))
+
+  [<Test>]
+  member self.ShouldNotSubstituteOtherOperand () =
+    let where = Assembly.GetExecutingAssembly().Location;
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
+    let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    ProgramDatabase.ReadSymbols def
+
+    let module' = def.MainModule.GetType("N.DU")
+    let du = module'.NestedTypes |> Seq.filter (fun t -> t.Name = "MyUnion") |> Seq.head
+    let main = du.GetMethods() |> Seq.find (fun x -> x.Name = "as_bar")
+    let proc = main.Body.GetILProcessor()
+    let newValue = proc.Create(OpCodes.Ldc_I4, 23)
+
+    main.Body.Instructions
+    |> Seq.filter (fun i -> match i.Operand with
+                            | :? Instruction
+                            | :? (Instruction[]) -> false
+                            | _ -> true)
+    |> Seq.collect (fun i -> main.Body.Instructions
+                             |> Seq.map (fun other -> (i,other)))
+    |> Seq.iter (fun (i, other) -> let subject = Instrument.SubstituteInstruction (other, newValue)
+                                   let before = i.Operand
+                                   subject.SubstituteInstructionOperand i
+                                   Assert.That (i.Operand, Is.SameAs before))
+
   // AltCover.fs
 
   [<Test>]
