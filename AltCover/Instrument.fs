@@ -113,7 +113,7 @@ module Instrument =
                         |> Seq.collect (fun t -> t.Methods)
                         |> Seq.filter (fun m -> m.Name = "get_ReportFile")
                         |> Seq.head
-    
+
     let body = pathGetterDef.Body
     let worker = body.GetILProcessor();
     let head = body.Instructions.[0]
@@ -326,4 +326,3 @@ module Instrument =
                                                   RecordingMethodRef = null;
                                                   MethodBody = null;
                                                   MethodWorker = null }
-

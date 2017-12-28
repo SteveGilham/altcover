@@ -87,7 +87,7 @@ module Filter =
                              else false
 
     mappings &&
-      (fieldGetter || m.IsConstructor || 
+      (fieldGetter || m.IsConstructor ||
          (m.HasCustomAttributes && m.CustomAttributes
                                    |> Seq.exists (fun x -> let fullName = x.AttributeType.FullName
                                                            fullName = typeof<CompilerGeneratedAttribute>.FullName ||

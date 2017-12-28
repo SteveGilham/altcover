@@ -14,14 +14,14 @@ open Mono.Cecil.Rocks
 open N
 open NUnit.Framework
 
-type ProxyObject() = 
+type ProxyObject() =
    inherit MarshalByRefObject()
 
    member val Type : Type option = None with get, set
    member val Object = null with get, set
    member this.InstantiateObject(assemblyPath:string, typeName:string, args:obj[]) =
         let assembly = Assembly.LoadFrom(assemblyPath) //LoadFrom loads dependent DLLs (assuming they are in the app domain's base directory
-        let t = assembly.ExportedTypes 
+        let t = assembly.ExportedTypes
                 |> Seq.filter (fun t -> t.FullName = typeName)
         this.Type <- Seq.tryHead t
         match this.Type with
@@ -224,7 +224,7 @@ type AltCoverTests() = class
   member self.MethodDoesNotMatchNonMethodClass() =
      let def = Mono.Cecil.AssemblyDefinition.ReadAssembly (Assembly.GetExecutingAssembly().Location)
      def.MainModule.Types
-     |> Seq.filter (fun t -> t.IsPublic) 
+     |> Seq.filter (fun t -> t.IsPublic)
      |> Seq.collect (fun t -> t.Methods)
      |> Seq.iter (fun m -> Assert.That (Match m (FilterClass.Type "23"), Is.False))
 
@@ -271,7 +271,7 @@ type AltCoverTests() = class
      |> Seq.collect (fun t -> t.Methods)
      |> Seq.filter (fun m -> m.IsGetter || m.IsSetter)
      |> Seq.iter (fun m -> Assert.That(IsCSharpAutoProperty m, Is.False))
- 
+
   [<Test>]
   member self.CanIdentifyExcludedFSharpMethods() =
     let tracer = DU.returnFoo 23
@@ -289,7 +289,7 @@ type AltCoverTests() = class
                    |> Seq.filter (fun t-> t.HasNestedTypes)
                    |> Seq.collect (fun t -> t.NestedTypes)
                    |> Seq.toList // Foo, Bar, ...
-    
+
     let indirect3 = indirect2
                     |> Seq.filter (fun t-> t.HasNestedTypes)
                     |> Seq.collect (fun t -> t.NestedTypes)
@@ -347,7 +347,7 @@ type AltCoverTests() = class
   // Visitor.fs
 
   [<Test>]
-  member self.EmptyArrayHasExpectedHash() = 
+  member self.EmptyArrayHasExpectedHash() =
     Assert.That ((KeyStore.TokenOfArray [| |]), Is.EquivalentTo [|9uy; 7uy; 216uy; 175uy; 144uy; 24uy; 96uy; 149uy|])
 
   static member private ProvideKeyPair () =
@@ -357,7 +357,7 @@ type AltCoverTests() = class
       StrongNameKeyPair(buffer.ToArray())
 
   [<Test>]
-  member self.KeyHasExpectedToken() = 
+  member self.KeyHasExpectedToken() =
     let token = KeyStore.TokenOfKey <| AltCoverTests.ProvideKeyPair ()
     let token' = String.Join(String.Empty, token |> List.map (fun x -> x.ToString("x2")))
     Assert.That (token', Is.EqualTo("c02b1a9f5b7cade8"))
@@ -368,22 +368,22 @@ type AltCoverTests() = class
     Assert.That (KeyStore.TokenAsULong token, Is.EqualTo(1UL))
 
   [<Test>]
-  member self.KeyHasExpectedIndex() = 
+  member self.KeyHasExpectedIndex() =
     let token = KeyStore.KeyToIndex <| AltCoverTests.ProvideKeyPair ()
     Assert.That (token, Is.EqualTo(0xe8ad7c5b9f1a2bc0UL))
 
   [<Test>]
-  member self.EmptyArrayHasExpectedIndex() = 
+  member self.EmptyArrayHasExpectedIndex() =
     Assert.That ((KeyStore.ArrayToIndex [| |]), Is.EqualTo(0x95601890afd80709UL))
 
   [<Test>]
-  member self.KeyHasExpectedRecord() = 
+  member self.KeyHasExpectedRecord() =
     let pair = AltCoverTests.ProvideKeyPair ()
     let token = KeyStore.KeyToRecord <| pair
     Assert.That (token, Is.EqualTo({Pair = pair; Token = BitConverter.GetBytes(0xe8ad7c5b9f1a2bc0UL) |> Array.toList}))
 
   [<Test>]
-  member self.KeyHasExpectedPlaceInIndex() = 
+  member self.KeyHasExpectedPlaceInIndex() =
     try
       Assert.That (Visitor.keys.Keys.Count, Is.EqualTo(0))
       let pair = AltCoverTests.ProvideKeyPair ()
@@ -394,12 +394,12 @@ type AltCoverTests() = class
       Visitor.keys.Clear()
 
   [<Test>]
-  member self.EmptyFiltersPassAll() = 
+  member self.EmptyFiltersPassAll() =
     Assert.That (Visitor.NameFilters.Count, Is.EqualTo(0))
     Assert.That (Visitor.IsIncluded self)
 
   [<Test>]
-  member self.NonEmptyFiltersCatchAnExpectedValue() = 
+  member self.NonEmptyFiltersCatchAnExpectedValue() =
     try
       Assert.That (Visitor.NameFilters.Count, Is.EqualTo(0))
       Visitor.NameFilters.AddRange([ FilterClass.File "Cove"; FilterClass.Method "Augment"])
@@ -408,7 +408,7 @@ type AltCoverTests() = class
       Visitor.NameFilters.Clear()
 
   [<Test>]
-  member self.NonEmptyFiltersPassAnExpectedValue() = 
+  member self.NonEmptyFiltersPassAnExpectedValue() =
     try
       Assert.That (Visitor.NameFilters.Count, Is.EqualTo(0))
       Visitor.NameFilters.AddRange([ FilterClass.File "System"; FilterClass.Method "Augment"])
@@ -417,7 +417,7 @@ type AltCoverTests() = class
       Visitor.NameFilters.Clear()
 
   [<Test>]
-  member self.AfterProcessingYieldsAnExpectedValue() = 
+  member self.AfterProcessingYieldsAnExpectedValue() =
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly (Assembly.GetExecutingAssembly().Location)
     let inputs = [ Node.Start [] ; Node.Assembly (def, true) ; Node.Module (null, false) ; Node.Type (null, true) ;
                    Node.Method (null, false) ; Node.MethodPoint ( null, null, 0, true ) ;
@@ -447,7 +447,7 @@ type AltCoverTests() = class
      |> Seq.iter (Visitor.significant >> Assert.That)
 
   [<Test>]
-  member self.TerminalCasesGoNoDeeper() = 
+  member self.TerminalCasesGoNoDeeper() =
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly (Assembly.GetExecutingAssembly().Location)
     let inputs = [ Node.MethodPoint ( null, null, 0, true ) ;
                    Node.AfterMethod false ; Node.AfterModule ; Node.AfterAssembly def; Node.Finish ]
@@ -456,7 +456,7 @@ type AltCoverTests() = class
     Assert.That (outputs, Is.EquivalentTo (expected))
 
   [<Test>]
-  member self.MethodPointsAreDeeperThanMethods() = 
+  member self.MethodPointsAreDeeperThanMethods() =
     let where = Assembly.GetExecutingAssembly().Location;
     let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample1.exe")
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
@@ -468,15 +468,15 @@ type AltCoverTests() = class
         let deeper = Visitor.Deeper <| Node.Method (method, true)
                      |> Seq.toList
         Assert.That (deeper.Length, Is.EqualTo 10)
-        deeper 
-        |> List.iteri (fun i node -> match node with 
+        deeper
+        |> List.iteri (fun i node -> match node with
                                      | (MethodPoint (_, _, n, b)) ->Assert.That(n, Is.EqualTo i); Assert.That (b, Is.False)
                                      | _ -> Assert.Fail())
     finally
       Visitor.NameFilters.Clear()
-      
+
   [<Test>]
-  member self.MethodsAreDeeperThanTypes() = 
+  member self.MethodsAreDeeperThanTypes() =
     let where = Assembly.GetExecutingAssembly().Location;
     let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample1.exe")
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
@@ -499,7 +499,7 @@ type AltCoverTests() = class
       Visitor.NameFilters.Clear()
 
   [<Test>]
-  member self.TypesAreDeeperThanModules() = 
+  member self.TypesAreDeeperThanModules() =
     let where = Assembly.GetExecutingAssembly().Location;
     let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample1.exe")
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
@@ -522,7 +522,7 @@ type AltCoverTests() = class
       Visitor.NameFilters.Clear()
 
   [<Test>]
-  member self.ModulesAreDeeperThanAssemblies() = 
+  member self.ModulesAreDeeperThanAssemblies() =
     let where = Assembly.GetExecutingAssembly().Location;
     let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample1.exe")
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
@@ -532,14 +532,14 @@ type AltCoverTests() = class
                  |> Seq.toList
     Visitor.Visit [] [] // cheat reset
     let expected = def.Modules // we have no nested types in this test
-                |> Seq.map (fun t -> let node = Node.Module (t, true)     
+                |> Seq.map (fun t -> let node = Node.Module (t, true)
                                      List.concat [ [node]; (Visitor.Deeper >> Seq.toList) node; [AfterModule]])
                 |> List.concat
     Assert.That (deeper.Length, Is.EqualTo 18)
     Assert.That (deeper, Is.EquivalentTo expected)
 
   [<Test>]
-  member self.AssembliesAreDeeperThanPaths() = 
+  member self.AssembliesAreDeeperThanPaths() =
     let where = Assembly.GetExecutingAssembly().Location;
     let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample1.exe")
 
@@ -556,7 +556,7 @@ type AltCoverTests() = class
     Assert.That (deeper, Is.EquivalentTo expected)
 
   [<Test>]
-  member self.FilteredAssembliesDoNotHaveSequencePoints() = 
+  member self.FilteredAssembliesDoNotHaveSequencePoints() =
     let where = Assembly.GetExecutingAssembly().Location;
     let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample1.exe")
     try
@@ -575,9 +575,8 @@ type AltCoverTests() = class
     finally
       Visitor.NameFilters.Clear()
 
-
   [<Test>]
-  member self.TestFixPointInvoke() = 
+  member self.TestFixPointInvoke() =
     let mutable called = 0
     let rec stateful l = new Fix<Node> (
                            fun node ->
@@ -591,7 +590,7 @@ type AltCoverTests() = class
     Assert.That (fix.GetType(), Is.EqualTo(input.GetType()))
 
   [<Test>]
-  member self.TestFixPointApply() = 
+  member self.TestFixPointApply() =
     let mutable called = 0
     let rec stateful l = new Fix<Node> (
                            fun node ->
@@ -607,7 +606,7 @@ type AltCoverTests() = class
     Assert.That (fix.[1].GetType(), Is.EqualTo(list.[1].GetType()))
 
   [<Test>]
-  member self.PathsAreDeeperThanAVisit() = 
+  member self.PathsAreDeeperThanAVisit() =
     let where = Assembly.GetExecutingAssembly().Location;
     let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample1.exe")
     let accumulator = System.Collections.Generic.List<Node>()
@@ -643,7 +642,7 @@ type AltCoverTests() = class
     Assert.That(nulls, Is.EquivalentTo([ "string*"; String.Empty; "another string*"; String.Empty ]))
 
   [<Test>]
-  member self.TypeNamesAreExtracted() = 
+  member self.TypeNamesAreExtracted() =
     let where = Assembly.GetExecutingAssembly().Location;
     let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample3.dll")
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
@@ -654,7 +653,7 @@ type AltCoverTests() = class
     Assert.That(names, Is.EquivalentTo expected)
 
   [<Test>]
-  member self.FullTypeNamesAreExtracted() = 
+  member self.FullTypeNamesAreExtracted() =
     let where = Assembly.GetExecutingAssembly().Location;
     let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample3.dll")
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
@@ -665,7 +664,7 @@ type AltCoverTests() = class
     Assert.That(names, Is.EquivalentTo expected)
 
   [<Test>]
-  member self.TypeRefNamesAreExtracted() = 
+  member self.TypeRefNamesAreExtracted() =
     let where = Assembly.GetExecutingAssembly().Location;
     let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample3.dll")
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
@@ -676,7 +675,7 @@ type AltCoverTests() = class
     Assert.That(names, Is.EquivalentTo expected)
 
   [<Test>]
-  member self.FullTypeRefNamesAreExtracted() = 
+  member self.FullTypeRefNamesAreExtracted() =
     let where = Assembly.GetExecutingAssembly().Location;
     let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample3.dll")
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
@@ -690,7 +689,7 @@ type AltCoverTests() = class
     Assert.That(names, Is.EquivalentTo expected)
 
   [<Test>]
-  member self.MethodNamesAreExtracted() = 
+  member self.MethodNamesAreExtracted() =
     let where = Assembly.GetExecutingAssembly().Location;
     let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample3.dll")
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
@@ -704,7 +703,7 @@ type AltCoverTests() = class
     Assert.That(names, Is.EquivalentTo expected)
 
   [<Test>]
-  member self.FullMethodNamesAreExtracted() = 
+  member self.FullMethodNamesAreExtracted() =
     let where = Assembly.GetExecutingAssembly().Location;
     let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample3.dll")
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
@@ -883,7 +882,7 @@ type AltCoverTests() = class
     Assert.That (token', Is.EqualTo("4ebffcaabf10ce6a"))
 
   [<Test>]
-  member self.NoKnownKeyInEmptyIndex() = 
+  member self.NoKnownKeyInEmptyIndex() =
     try
       Visitor.keys.Clear()
       let where = Assembly.GetExecutingAssembly().Location;
@@ -894,7 +893,7 @@ type AltCoverTests() = class
       Visitor.keys.Clear()
 
   [<Test>]
-  member self.KnownKeyMatchedInIndex() = 
+  member self.KnownKeyMatchedInIndex() =
     try
       Visitor.keys.Clear()
       let where = Assembly.GetExecutingAssembly().Location;
@@ -906,7 +905,7 @@ type AltCoverTests() = class
       Visitor.keys.Clear()
 
   [<Test>]
-  member self.NoKnownKeyIfAssemblyHasNone() = 
+  member self.NoKnownKeyIfAssemblyHasNone() =
     try
       Visitor.keys.Clear()
       let where = Assembly.GetExecutingAssembly().Location;
@@ -919,7 +918,7 @@ type AltCoverTests() = class
       Visitor.keys.Clear()
 
   [<Test>]
-  member self.NoKnownTokenInEmptyIndex() = 
+  member self.NoKnownTokenInEmptyIndex() =
     try
       Visitor.keys.Clear()
       let where = Assembly.GetExecutingAssembly().Location;
@@ -930,7 +929,7 @@ type AltCoverTests() = class
       Visitor.keys.Clear()
 
   [<Test>]
-  member self.KnownTokenMatchedInIndex() = 
+  member self.KnownTokenMatchedInIndex() =
     try
       Visitor.keys.Clear()
       let where = Assembly.GetExecutingAssembly().Location;
@@ -942,7 +941,7 @@ type AltCoverTests() = class
       Visitor.keys.Clear()
 
   [<Test>]
-  member self.NoKnownTokenIfAssemblyHasNone() = 
+  member self.NoKnownTokenIfAssemblyHasNone() =
     try
       Visitor.keys.Clear()
       let where = Assembly.GetExecutingAssembly().Location;
@@ -1065,7 +1064,7 @@ type AltCoverTests() = class
                   |> Seq.head
 
     let saved = (Console.Out, Console.Error)
-    try 
+    try
       use stdout = new StringWriter()
       use stderr = new StringWriter()
       Console.SetOut stdout
@@ -1158,7 +1157,6 @@ type AltCoverTests() = class
     | Right (x, y) -> Assert.That (y, Is.SameAs options)
                       Assert.That (x, Is.Empty)
 
-   
   [<Test>]
   member self.ParsingAttributesGivesAttributes() =
     try
@@ -1182,7 +1180,6 @@ type AltCoverTests() = class
     finally
       Visitor.NameFilters.Clear()
 
-   
   [<Test>]
   member self.ParsingMethodsGivesMethods() =
     try
@@ -1205,7 +1202,7 @@ type AltCoverTests() = class
                    Is.EquivalentTo [| "1"; "2"; "3"; "4"; "5"; "6" |])
     finally
       Visitor.NameFilters.Clear()
- 
+
   [<Test>]
   member self.ParsingTypesGivesTypes() =
     try
@@ -1486,7 +1483,7 @@ type AltCoverTests() = class
       | Some x -> let token = x
                               |> KeyStore.TokenOfKey
                               |> List.map (fun x -> x.ToString("x2"))
-                              
+
                   Assert.That (String.Join (String.Empty, token), Is.EqualTo("c02b1a9f5b7cade8"))
     finally
       Visitor.defaultStrongNameKey <- None
@@ -1509,7 +1506,7 @@ type AltCoverTests() = class
     finally
       Visitor.defaultStrongNameKey <- None
       Visitor.keys.Clear()
- 
+
   [<Test>]
   member self.ParsingBadStrongNameGivesFailure() =
     try
@@ -1559,8 +1556,8 @@ type AltCoverTests() = class
       | Right (x, y) -> Assert.That (y, Is.SameAs options)
                         Assert.That (x, Is.Empty)
 
-      let expected = Visitor.keys.Keys 
-                     |> Seq.map (fun x -> String.Join(String.Empty, 
+      let expected = Visitor.keys.Keys
+                     |> Seq.map (fun x -> String.Join(String.Empty,
                                                       BitConverter.GetBytes(x)
                                                       |> Seq.map (fun x -> x.ToString("x2"))))
                      |> Seq.sort
@@ -1606,7 +1603,7 @@ type AltCoverTests() = class
     let options = Main.DeclareOptions ()
     let saved = Console.Error
 
-    try 
+    try
       use stderr = new StringWriter()
       Console.SetError stderr
       Main.Usage "UsageError" options

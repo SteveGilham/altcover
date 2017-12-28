@@ -18,7 +18,6 @@ type Tracer = { Tracer : string }
 // enough under-the-covers code to make Gendarme spot duplication
 // with a generic try/finally block.  *sigh*
 
-
 module Locking =
   /// <summary>
   /// Synchronize an action on an object
@@ -61,11 +60,11 @@ module Instance =
   /// </summary>
   /// <param name="path">The XML file to load</param>
   /// <remarks>Idiom to work with CA2202; we still double dispose the stream, but elude the rule.
-  /// If this is ever a problem, we will need mutability and two streams, with explicit 
+  /// If this is ever a problem, we will need mutability and two streams, with explicit
   /// stream disposal if and only if the reader or writer doesn't take ownership
   /// </remarks>
   let private ReadXDocument (stream:FileStream)  =
-    using (XmlReader.Create stream) (fun (reader:XmlReader) -> XDocument.Load(reader)) 
+    using (XmlReader.Create stream) (fun (reader:XmlReader) -> XDocument.Load(reader))
 
   /// <summary>
   /// Write the XDocument
@@ -74,7 +73,7 @@ module Instance =
   /// <param name="path">The XML file to write to</param>
   /// <remarks>Idiom to work with CA2202 as above</remarks>
   let private WriteXDocument (coverageDocument:XDocument) (stream:FileStream) =
-    using (XmlWriter.Create stream) coverageDocument.WriteTo 
+    using (XmlWriter.Create stream) coverageDocument.WriteTo
 
   /// <summary>
   /// Save sequence point hit counts to xml report file

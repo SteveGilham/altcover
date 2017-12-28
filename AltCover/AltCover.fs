@@ -62,14 +62,14 @@ module Main =
        (fun x -> if not (String.IsNullOrEmpty(x)) && Directory.Exists(x) then
                     if Option.isSome Visitor.inputDirectory then
                       error <- true
-                    else 
+                    else
                       Visitor.inputDirectory <- Some (Path.GetFullPath x)
                  else error <- true))
       ("o|outputDirectory=",
        (fun x -> if not (String.IsNullOrEmpty(x)) then
                     if Option.isSome Visitor.outputDirectory then
                       error <- true
-                    else 
+                    else
                       try
                         Visitor.outputDirectory <- Some (Path.GetFullPath x)
                       with
@@ -107,7 +107,7 @@ module Main =
        (fun x -> if not (String.IsNullOrEmpty(x)) then
                     if Option.isSome Visitor.reportPath then
                       error <- true
-                    else 
+                    else
                       try
                         Visitor.reportPath <- Some (Path.GetFullPath x)
                       with
@@ -136,7 +136,7 @@ module Main =
       try
           let before = arguments
                        |> Array.takeWhile (fun x -> x <> "--")
-          let after = arguments 
+          let after = arguments
                       |> Seq.skipWhile (fun x -> x <> "--")
                       |> Seq.skipWhile (fun x -> x = "--")
                       |> Seq.toList
@@ -154,14 +154,14 @@ module Main =
     | fail -> fail
 
   let internal ProcessOutputLocation (action:(Either<string*OptionSet, string list*OptionSet>)) =
-    match action with 
-    | Right (rest, options) -> 
-        try 
+    match action with
+    | Right (rest, options) ->
+        try
            // Check that the directories are distinct
            let fromDirectory = Visitor.InputDirectory()
            let toDirectory = Visitor.OutputDirectory()
            if not (Directory.Exists(toDirectory)) then
-              WriteOut <| String.Format(CultureInfo.CurrentCulture, 
+              WriteOut <| String.Format(CultureInfo.CurrentCulture,
                        (resources.GetString "CreateFolder"),
                        toDirectory)
               Directory.CreateDirectory(toDirectory) |> ignore
@@ -170,11 +170,11 @@ module Main =
            if fromInfo = toInfo then
               WriteErr (resources.GetString "NotInPlace")
               Left ("UsageError", options)
-           else 
-               WriteOut <| String.Format(CultureInfo.CurrentCulture, 
+           else
+               WriteOut <| String.Format(CultureInfo.CurrentCulture,
                                          (resources.GetString "instrumentingfrom"),
                                          fromDirectory)
-               WriteOut <| String.Format(CultureInfo.CurrentCulture, 
+               WriteOut <| String.Format(CultureInfo.CurrentCulture,
                                          (resources.GetString "instrumentingto"),
                                          toDirectory)
                Right (rest, fromInfo, toInfo)
@@ -192,12 +192,12 @@ module Main =
                  |> ProcessOutputLocation
     match check1 with
     | Left (intro, options) -> Usage intro options
-    | Right (rest, fromInfo, toInfo) -> 
+    | Right (rest, fromInfo, toInfo) ->
       try
         let files = fromInfo.GetFiles()
 
         // Copy all the files into the target directory
-        // Track the symbol-bearing assemblies 
+        // Track the symbol-bearing assemblies
         let assemblies =
           files
           |> Seq.fold (fun (accumulator : (string*string) list) (info:FileInfo) ->
@@ -216,11 +216,11 @@ module Main =
                | :? IOException -> accumulator
             ) []
 
-        let assemblyNames = 
+        let assemblyNames =
           assemblies
           |> List.map snd
 
-        WriteOut <| String.Format(CultureInfo.CurrentCulture, 
+        WriteOut <| String.Format(CultureInfo.CurrentCulture,
                                          (resources.GetString "reportingto"),
                                          Visitor.ReportPath())
         let reporter, document = Report.ReportGenerator ()

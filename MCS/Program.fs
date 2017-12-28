@@ -1,7 +1,7 @@
 ﻿open System.Reflection
 
 [<EntryPoint>]
-let main argv = 
+let main argv =
     let settings = Mono.CSharp.CompilerSettings()
     let assembly = settings.GetType().Assembly
     let driver = assembly.GetTypes()

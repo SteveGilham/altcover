@@ -71,15 +71,15 @@ module Visitor =
 
   let internal NameFilters = new List<FilterClass>();
 
-  let mutable internal inputDirectory : Option<string> = None 
+  let mutable internal inputDirectory : Option<string> = None
   let private defaultInputDirectory = "."
   let InputDirectory () = Path.GetFullPath (Option.getOrElse defaultInputDirectory inputDirectory)
 
-  let mutable internal outputDirectory : Option<string> = None 
+  let mutable internal outputDirectory : Option<string> = None
   let private defaultOutputDirectory = "__Instrumented"
   let OutputDirectory () = Path.GetFullPath (Option.getOrElse defaultOutputDirectory outputDirectory)
 
-  let mutable internal reportPath : Option<string> = None 
+  let mutable internal reportPath : Option<string> = None
   let defaultReportPath = "coverage.xml"
   let ReportPath () = Path.GetFullPath (Option.getOrElse defaultReportPath reportPath)
 
@@ -106,9 +106,9 @@ module Visitor =
 
   let mutable private PointNumber : int = 0
 
-  let significant (m : MethodDefinition) = 
+  let significant (m : MethodDefinition) =
     [Filter.IsFSharpInternal
-     Filter.IsCSharpAutoProperty] 
+     Filter.IsCSharpAutoProperty]
     |> Seq.exists (fun f -> f m)
     |> not
 

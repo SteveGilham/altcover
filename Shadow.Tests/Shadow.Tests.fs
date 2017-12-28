@@ -81,5 +81,4 @@ type AltCoverTests() = class
     finally
       Instance.Visits.Clear()
 
-
 end
