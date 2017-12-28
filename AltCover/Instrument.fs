@@ -24,14 +24,14 @@ module Instrument =
   /// State object passed from visit to visit
   /// </summary>
   [<ExcludeFromCodeCoverage>]
-  type private Context = { InstrumentedAssemblies : string list;
-                           RenameTable : Dictionary<String, String>;
-                           ModuleId : Guid;
-                           RecordingAssembly : AssemblyDefinition;
-                           RecordingMethod : MethodDefinition;
-                           RecordingMethodRef : MethodReference;
-                           MethodBody : MethodBody;
-                           MethodWorker :ILProcessor }
+  type internal Context = { InstrumentedAssemblies : string list
+                            RenameTable : Dictionary<String, String>
+                            ModuleId : Guid
+                            RecordingAssembly : AssemblyDefinition
+                            RecordingMethod : MethodDefinition
+                            RecordingMethodRef : MethodReference
+                            MethodBody : MethodBody
+                            MethodWorker : ILProcessor }
 
   /// <summary>
   /// Workround for not being able to take typeof<SomeModule> even across
@@ -41,7 +41,7 @@ module Instrument =
   let internal RecorderInstanceType () =
     let trace  = typeof<AltCover.Recorder.Tracer>
     trace.Assembly.GetExportedTypes()
-                          |> Seq.find (fun (t:Type) -> t.Name.Contains("Instance"))
+    |> Seq.find (fun (t:Type) -> t.FullName = "AltCover.Recorder.Instance")
 
     /// <summary>
     /// Locate the method that must be called to register a code point for coverage visit.
@@ -198,14 +198,6 @@ module Instrument =
   let internal InstrumentGenerator (assemblies : string list) =
 
     /// <summary>
-    /// Create the new assembly that will record visits, based on the prototype.
-    /// </summary>
-    /// <returns>A representation of the assembly used to record all coverage visits.</returns>
-    let DefineRecordingAssembly () =
-      let recorder = typeof<AltCover.Recorder.Tracer>
-      PrepareAssembly(recorder.Assembly.Location)
-
-    /// <summary>
     /// Determine new names for input strongnamed assemblies; if we have a key and
     /// the assembly was already strongnamed then give it the new key token, otherwise
     /// set that there is no strongname.
@@ -254,7 +246,8 @@ module Instrument =
     /// <returns>Updated state</returns>
     let InstrumentationVisitor (state : Context) (node:Node) =
        match node with
-       | Start _ -> { state with RecordingAssembly = DefineRecordingAssembly() }
+       | Start _ ->  let recorder = typeof<AltCover.Recorder.Tracer>
+                     { state with RecordingAssembly = PrepareAssembly(recorder.Assembly.Location) }
        | Assembly (assembly, included) ->
             let updates = UpdateStrongReferences assembly state.InstrumentedAssemblies
             if included then
