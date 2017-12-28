@@ -22,18 +22,18 @@ The full command line is
 
 In detail
 
-* `i|inputDirectory=` : The folder containing assemblies to instrument (default: current directory)
-* `o|outputDirectory=` : The folder to receive the instrumented assemblies and their companions (default: sub-folder `.\\__Instrumented` of the current directory)"
-* `sn|strongNameKey=` : The default strong naming key to apply to the instrumented rewrites of strong-named imput assemblies (default: None)
-* `k|key=` : any other strong-name key to use (default: None; may repeat)
-* `x|xmlReport=` : The output report template (traditional NCover format) file (default: `coverage.xml` in the current directory)
-* `f|fileFilter=` : file name to exclude from instrumentation (may repeat)
-* `s|assemblyFilter=` : assembly name to exclude from instrumentation (may repeat)
-* `t|typeFilter=` : type name to exclude from instrumentation (may repeat)
-* `m|methodFilter=` : method name to exclude from instrumentation (may repeat)
-* `a|attributeFilter=` : attribute name to exclude from instrumentation (may repeat)
-* `?|help|h` : Prints out the options."
-* `--` : the rest of the command line is treated as a command to execute after performing instrumentation
+*  -i, --inputDirectory=VALUE  Optional: The folder containing assemblies to instrument (default: current directory)
+*  -o, --outputDirectory=VALUE Optional: The folder to receive the instrumented assemblies and their companions (default: sub-folder '__Instrumented' of the current directory)
+*  -k, --key=VALUE             Optional, multiple: any other strong-name key to use
+*  --sn, --strongNameKey=VALUE Optional: The default strong naming key to apply to instrumented assemblies (default: None)
+*  -x, --xmlReport=VALUE       Optional: The output report template file (default: coverage.xml in the current directory)
+*  -f, --fileFilter=VALUE      Optional: source file name to exclude from instrumentation (may repeat)
+*  -s, --assemblyFilter=VALUE  Optional: assembly name to exclude from instrumentation (may repeat)
+*  -t, --typeFilter=VALUE      Optional: type name to exclude from instrumentation (may repeat)
+*  -m, --methodFilter=VALUE    Optional: method name to exclude from instrumentation (may repeat)
+*  -a, --attributeFilter=VALUE Optional: attribute name to exclude from instrumentation (may repeat)
+*  -?, --help, -h              Prints out the options.
+* `--`                         the rest of the command line is treated as a command to execute after performing instrumentation
 
 Coverage statistics are written to the file nominated by the `x|xmlReport=` parameter as instrumented assemblies are unloaded from an executing AppDomain, even if this is days or weeks later.  In practice the instrumented assemblies should be deleted after the relevant testing has been run, and the report file will thus be freed up.
 
