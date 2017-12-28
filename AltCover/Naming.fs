@@ -27,8 +27,8 @@ module Naming =
         else (suffixIfNotIsNullOrWhiteSpace def.Namespace  ".") + TypeRefName def
 
     let MethodName (def : MethodDefinition) =
-        if def.IsConstructor && (not def.IsStatic) 
-        then "#ctor" 
+        if def.IsConstructor && (not def.IsStatic)
+        then "#ctor"
         else emptyIfIsNullOrWhiteSpace def.Name
 
     let FullMethodName (def : MethodDefinition) =
