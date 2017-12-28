@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Sample3
 {
@@ -22,7 +23,14 @@ namespace Sample3
 
             public List<T> ToList<T>(T item)
             {
-                return new List<T> { item };
+                try
+                {
+                    return new List<T> { item };
+                }
+                catch (NullReferenceException)
+                {
+                    return Enumerable.Empty<T>().ToList();
+                }
             }
 
             public string ReportFile { get; set; }
