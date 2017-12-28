@@ -301,6 +301,21 @@ Target "BuildMonoSamples" (fun _ ->
     let symbols = System.IO.File.ReadAllBytes("./_Mono/Sample1/Sample1.exe.mdb")
     mvid|> Array.iteri (fun i x -> symbols.[i+16] <- x)
     System.IO.File.WriteAllBytes("./_Mono/Sample1/Sample1.exe.mdb", symbols)
+
+    ensureDirectory "./_Mono/Sample3"
+    let mcs = findToolInSubPath "mcs.exe" ".."
+    let result = ExecProcess (fun info -> info.FileName <- mcs
+                                          info.WorkingDirectory <- "."
+                                          info.Arguments <- (@"-target:library -debug -out:./_Mono/Sample3/Sample3.dll  .\Sample3\Class1.cs")) (TimeSpan.FromMinutes 5.0)
+    if result <> 0 then failwith "Mono compilation failed"
+
+    // Fix up symbol file to have the MVId emitted by the System.Reflection.Emit code
+    let assembly = System.Reflection.Assembly.ReflectionOnlyLoadFrom (FullName "./_Mono/Sample3/Sample3.dll")
+    let mvid = assembly.ManifestModule.ModuleVersionId.ToByteArray();
+    let symbols = System.IO.File.ReadAllBytes("./_Mono/Sample3/Sample3.dll.mdb")
+    mvid|> Array.iteri (fun i x -> symbols.[i+16] <- x)
+    System.IO.File.WriteAllBytes("./_Mono/Sample3/Sample3.dll.mdb", symbols)
+    
 )
 
 let SimpleInstrumentingRun (samplePath:string) (binaryPath:string) (reportSigil:string) =

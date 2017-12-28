@@ -998,6 +998,7 @@ type AltCoverTests() = class
         Visitor.reportPath <- Some unique
         let prepared = Instrument.PrepareAssembly path
         Instrument.WriteAssembly prepared outputdll
+        Assert.That (File.Exists (outputdll.Replace(".dll",".pdb")))
         let raw = Mono.Cecil.AssemblyDefinition.ReadAssembly outputdll
         Assert.That raw.Name.HasPublicKey
 
@@ -1021,6 +1022,53 @@ type AltCoverTests() = class
         if File.Exists outputdll then File.Delete outputdll
     finally
       Visitor.keys.Clear()
+
+  [<Test>]
+  member self.ShouldWriteMonoAssemblyOK () =
+    try
+      Visitor.keys.Clear()
+      let where = Assembly.GetExecutingAssembly().Location
+      let path = Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "_Mono/Sample3/Sample3.dll")
+      let unique = Guid.NewGuid().ToString()
+      let output = Path.GetTempFileName()
+      let outputdll = output + ".dll"
+      let save = Visitor.reportPath
+      use stream = typeof<AltCover.Node>.Assembly.GetManifestResourceStream("AltCover.Recorder.snk")
+      use buffer = new MemoryStream()
+      stream.CopyTo(buffer)
+      let key = StrongNameKeyPair(buffer.ToArray())
+      Visitor.defaultStrongNameKey <- Some key
+      Visitor.Add key
+      try
+        Visitor.reportPath <- Some unique
+        let prepared = Instrument.PrepareAssembly path
+        let symbols = ProgramDatabase.GetPdbWithFallback prepared
+        Instrument.WriteAssembly prepared outputdll
+        Assert.That (File.Exists (outputdll + ".mdb"))
+        let raw = Mono.Cecil.AssemblyDefinition.ReadAssembly outputdll
+        Assert.That raw.Name.HasPublicKey
+
+        // Assert.That (Option.isSome <| Instrument.KnownKey raw.Name) <- not needed
+        let token' = String.Join(String.Empty, raw.Name.PublicKeyToken|> Seq.map (fun x -> x.ToString("x2")))
+        Assert.That (token', Is.EqualTo("4ebffcaabf10ce6a"))
+
+        let setup = AppDomainSetup()
+        setup.ApplicationBase <- Path.GetDirectoryName(where)
+        let ad = AppDomain.CreateDomain("ShouldGetNewFilePathFromPreparedAssembly", null, setup)
+        try
+          let proxyObject = ad.CreateInstanceFromAndUnwrap(typeof<ProxyObject>.Assembly.Location,"Tests.ProxyObject") :?> ProxyObject
+          proxyObject.InstantiateObject(outputdll,"Sample3.Class3+Class4",[||])
+          let report = proxyObject.InvokeMethod("get_ReportFile",[||]).ToString()
+          Assert.That (report, Is.EqualTo (Path.GetFullPath unique))
+        finally
+          AppDomain.Unload(ad)
+      finally
+        Visitor.reportPath <- save
+        File.Delete output
+        if File.Exists outputdll then File.Delete outputdll
+    finally
+      Visitor.keys.Clear()
+      Visitor.defaultStrongNameKey <- None
 
   [<Test>]
   member self.ShouldUpdateHandlerOK ([<Range(0,31)>] selection) =
@@ -1096,7 +1144,6 @@ type AltCoverTests() = class
                           let before = i.Operand
                           subject.SubstituteInstructionOperand i
                           Assert.That (i.Operand, Is.SameAs before))
-
 
   // work around weird compiler error with array indexing
   member private self.AsIArray (x:obj) (i:int)=

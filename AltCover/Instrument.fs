@@ -133,8 +133,8 @@ module Instrument =
     let pkey = Mono.Cecil.WriterParameters()
     pkey.WriteSymbols <- true
     pkey.SymbolWriterProvider <- match Path.GetExtension (Option.getOrElse String.Empty (ProgramDatabase.GetPdbWithFallback assembly)) with
-                                 | ".mdb" -> Mono.Cecil.Mdb.MdbWriterProvider() :> ISymbolWriterProvider
-                                 | _ -> Mono.Cecil.Pdb.PdbWriterProvider() :> ISymbolWriterProvider
+                                 | ".pdb" -> Mono.Cecil.Pdb.PdbWriterProvider() :> ISymbolWriterProvider
+                                 | _ -> Mono.Cecil.Mdb.MdbWriterProvider() :> ISymbolWriterProvider
     KnownKey assembly.Name
     |> Option.iter (fun key -> pkey.StrongNameKeyPair <- key)
     assembly.Write(path, pkey)
