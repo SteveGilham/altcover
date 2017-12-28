@@ -28,18 +28,18 @@ module Instrument =
                             RenameTable : Dictionary<String, String>
                             ModuleId : Guid
                             RecordingAssembly : AssemblyDefinition
-                            RecordingMethod : MethodDefinition
-                            RecordingMethodRef : MethodReference
+                            RecordingMethod : MethodDefinition // initialised once
+                            RecordingMethodRef : MethodReference // updated each module
                             MethodBody : MethodBody
-                            MethodWorker : ILProcessor }
+                            MethodWorker : ILProcessor } // to save fetching repeatedly
   with static member Build assemblies =
-                    { InstrumentedAssemblies = assemblies;
-                      RenameTable = null;
-                      ModuleId = Guid.Empty;
-                      RecordingAssembly = null;
-                      RecordingMethod = null;
-                      RecordingMethodRef = null;
-                      MethodBody = null;
+                    { InstrumentedAssemblies = assemblies
+                      RenameTable = null
+                      ModuleId = Guid.Empty
+                      RecordingAssembly = null
+                      RecordingMethod = null
+                      RecordingMethodRef = null
+                      MethodBody = null
                       MethodWorker = null }
 
   /// <summary>

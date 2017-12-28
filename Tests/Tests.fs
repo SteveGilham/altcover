@@ -1299,6 +1299,78 @@ type AltCoverTests() = class
     Assert.That (output, Is.SameAs input)
 
   [<Test>]
+  member self.ExcludedMethodShouldNotChangeState () =
+    let input = Instrument.Context.Build []
+    let output = Instrument.InstrumentationVisitor input (Node.Method (null,false))
+    Assert.That (output, Is.SameAs input)
+
+  [<Test>]
+  member self.IncludedMethodShouldChangeState () =
+    let where = Assembly.GetExecutingAssembly().Location;
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
+    let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    ProgramDatabase.ReadSymbols def
+
+    let module' = def.MainModule.GetType("N.DU")
+    let du = module'.NestedTypes |> Seq.filter (fun t -> t.Name = "MyUnion") |> Seq.head
+    let func = du.GetMethods() |> Seq.find (fun x -> x.Name = "as_bar")
+    let input = Instrument.Context.Build []
+    let output = Instrument.InstrumentationVisitor input (Node.Method (func, true))
+    Assert.That (output.MethodBody, Is.SameAs func.Body)
+
+  [<Test>]
+  member self.ExcludedAfterMethodShouldNotChangeState () =
+    let where = Assembly.GetExecutingAssembly().Location;
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
+    let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    ProgramDatabase.ReadSymbols def
+
+    let module' = def.MainModule.GetType("N.DU")
+    let du = module'.NestedTypes |> Seq.filter (fun t -> t.Name = "MyUnion") |> Seq.head
+    let func = du.GetMethods() |> Seq.find (fun x -> x.Name = "as_bar")
+
+    let opcodes = func.Body.Instructions
+                   |> Seq.map (fun i -> i.OpCode)
+                   |> Seq.toList
+    let input = { Instrument.Context.Build [] with MethodBody = func.Body }
+    input.MethodBody.SimplifyMacros()
+
+    let paired = Seq.zip opcodes input.MethodBody.Instructions |> Seq.toList
+    Assert.That (paired |> Seq.exists (fun (i,j) -> i <> j.OpCode))
+    let diff = paired
+               |> List.map (fun (i,j) -> (i, i=j.OpCode))
+
+    let output = Instrument.InstrumentationVisitor input (Node.AfterMethod false)
+    Assert.That (output, Is.SameAs input)
+    let paired' = Seq.zip diff input.MethodBody.Instructions
+    Assert.That (paired' |> Seq.forall (fun ((i,x),j) -> x = (i = j.OpCode)))
+
+  [<Test>]
+  member self.IncludedAfterMethodShouldRewriteMethod () =
+    let where = Assembly.GetExecutingAssembly().Location;
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
+    let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    ProgramDatabase.ReadSymbols def
+
+    let module' = def.MainModule.GetType("N.DU")
+    let du = module'.NestedTypes |> Seq.filter (fun t -> t.Name = "MyUnion") |> Seq.head
+    let func = du.GetMethods() |> Seq.find (fun x -> x.Name = "as_bar")
+
+    let opcodes = func.Body.Instructions
+                   |> Seq.map (fun i -> i.OpCode)
+                   |> Seq.toList
+    let input = { Instrument.Context.Build [] with MethodBody = func.Body }
+    input.MethodBody.SimplifyMacros()
+
+    let paired = Seq.zip opcodes input.MethodBody.Instructions
+    Assert.That (paired |> Seq.exists (fun (i,j) -> i <> j.OpCode))
+
+    let output = Instrument.InstrumentationVisitor input (Node.AfterMethod true)
+    Assert.That (output, Is.SameAs input)
+    let paired' = Seq.zip opcodes input.MethodBody.Instructions
+    Assert.That (paired' |> Seq.forall (fun (i,j) -> i = j.OpCode))
+
+  [<Test>]
   member self.AfterModuleShouldNotChangeState () =
     let input = Instrument.Context.Build []
     let output = Instrument.InstrumentationVisitor input AfterModule
