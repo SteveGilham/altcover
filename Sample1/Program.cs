@@ -12,7 +12,7 @@ namespace TouchTest
             var now = DateTime.Now;
             if (now.Year > 2000)
             {
-                Console.WriteLine("Where is my rocket pack?");
+                Console.WriteLine("Where is my rocket pack? " + String.Join("*", args));
             }
             else
             {

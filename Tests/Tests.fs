@@ -736,7 +736,7 @@ type AltCoverTests() = class
 <seqpnt visitcount=\"1\" line=\"12\" column=\"13\" endline=\"12\" endcolumn=\"36\" excluded=\"true\" document=\"Sample1\\Program.cs\" />
 <seqpnt visitcount=\"1\" line=\"13\" column=\"13\" endline=\"13\" endcolumn=\"33\" excluded=\"true\" document=\"Sample1\\Program.cs\" />
 <seqpnt visitcount=\"1\" line=\"14\" column=\"13\" endline=\"14\" endcolumn=\"14\" excluded=\"true\" document=\"Sample1\\Program.cs\" />
-<seqpnt visitcount=\"1\" line=\"15\" column=\"17\" endline=\"15\" endcolumn=\"63\" excluded=\"true\" document=\"Sample1\\Program.cs\" />
+<seqpnt visitcount=\"1\" line=\"15\" column=\"17\" endline=\"15\" endcolumn=\"89\" excluded=\"true\" document=\"Sample1\\Program.cs\" />
 <seqpnt visitcount=\"1\" line=\"16\" column=\"13\" endline=\"16\" endcolumn=\"14\" excluded=\"true\" document=\"Sample1\\Program.cs\" />
 <seqpnt visitcount=\"0\" line=\"18\" column=\"13\" endline=\"18\" endcolumn=\"14\" excluded=\"true\" document=\"Sample1\\Program.cs\" />
 <seqpnt visitcount=\"0\" line=\"19\" column=\"17\" endline=\"19\" endcolumn=\"62\" excluded=\"true\" document=\"Sample1\\Program.cs\" />
@@ -756,6 +756,7 @@ type AltCoverTests() = class
       <seqpnt visitcount=\"0\" line=\"13\" column=\"21\" endline=\"13\" endcolumn=\"22\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
       <seqpnt visitcount=\"0\" line=\"14\" column=\"13\" endline=\"14\" endcolumn=\"14\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
       <seqpnt visitcount=\"0\" line=\"15\" column=\"17\" endline=\"15\" endcolumn=\"18\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
+      <seqpnt visitcount=\"0\" line=\"15\" column=\"72\" endline=\"15\" endcolumn=\"73\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
       <seqpnt visitcount=\"0\" line=\"15\" column=\"25\" endline=\"15\" endcolumn=\"26\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
       <seqpnt visitcount=\"0\" line=\"16\" column=\"13\" endline=\"16\" endcolumn=\"14\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
       <seqpnt visitcount=\"0\" line=\"18\" column=\"13\" endline=\"18\" endcolumn=\"14\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
@@ -1400,7 +1401,7 @@ type AltCoverTests() = class
       Main.Launch program (String.Empty) (Path.GetDirectoryName (Assembly.GetExecutingAssembly().Location))
 
       Assert.That(stderr.ToString(), Is.Empty)
-      Assert.That(stdout.ToString(), Is.EqualTo("Where is my rocket pack?\r\n"))
+      Assert.That(stdout.ToString(), Is.EqualTo("Where is my rocket pack? \r\n"))
     finally
       Console.SetOut (fst saved)
       Console.SetError (snd saved)
@@ -2087,6 +2088,59 @@ type AltCoverTests() = class
     finally
       Console.SetOut (fst saved)
       Console.SetError (snd saved)
+
+  [<Test>]
+  member self.PreparingNewPlaceShouldCopyEverything() =
+    let here = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
+    let there = Path.Combine(here, Guid.NewGuid().ToString())
+    let toInfo = Directory.CreateDirectory there
+    let fromInfo = DirectoryInfo(here)
+    let (x,y) = Main.PrepareTargetFiles fromInfo toInfo
+    Assert.That (toInfo.EnumerateFiles()
+                 |> Seq.map (fun x -> x.Name),
+                 Is.EquivalentTo (fromInfo.EnumerateFiles() 
+                 |>Seq.map (fun x -> x.Name)))
+    Assert.That (x,
+                 Is.EquivalentTo (fromInfo.EnumerateFiles() 
+                 |> Seq.map (fun x -> x.FullName)
+                 |> Seq.filter (fun f -> f.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) || 
+                                         f.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
+                 |> Seq.filter (fun f -> File.Exists(Path.ChangeExtension(f, ".pdb"))  )))
+    Assert.That (y, 
+                 Is.EquivalentTo (x
+                 |> Seq.map Path.GetFileNameWithoutExtension))
+                
+  [<Test>]
+  member self.ShouldProcessTrailingArguments() =
+    // Hack for running while instrumented
+    let where = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
+    let files = Directory.GetFiles(where.Substring(0, where.IndexOf("_Binaries")) + "_Mono\\Sample1")
+    let program = files
+                  |> Seq.filter (fun x -> x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
+                  |> Seq.head
+
+    let saved = (Console.Out, Console.Error)
+    try
+      use stdout = new StringWriter()
+      use stderr = new StringWriter()
+      Console.SetOut stdout
+      Console.SetError stderr
+
+      let u1 = Guid.NewGuid().ToString()
+      let u2 = Guid.NewGuid().ToString()
+
+      Main.ProcessTrailingArguments [program; u1; u2] 
+                                     (DirectoryInfo(where))
+
+      Assert.That(stderr.ToString(), Is.Empty)
+      Assert.That(stdout.ToString(), Is.EqualTo("Where is my rocket pack? " +
+                                                u1 + "*" + u2 + "\r\n"))
+    finally
+      Console.SetOut (fst saved)
+      Console.SetError (snd saved)
+
+
+
 
 
   [<Test>]

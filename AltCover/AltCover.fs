@@ -186,6 +186,39 @@ module Main =
                                   Left ("UsageError", options)
     | Left intro -> Left intro
 
+
+  let internal PrepareTargetFiles (fromInfo:DirectoryInfo) (toInfo:DirectoryInfo) =
+    // Copy all the files into the target directory
+    // Track the symbol-bearing assemblies
+    let assemblies =
+      fromInfo.GetFiles()
+      |> Seq.fold (fun (accumulator : (string*string) list) info ->
+           let fullName = info.FullName
+           let target = Path.Combine (toInfo.FullName, info.Name)
+           File.Copy(fullName, target, true)
+           try
+             let def = AssemblyDefinition.ReadAssembly(fullName)
+             let assemblyPdb = ProgramDatabase.GetPdbWithFallback def
+             if Visitor.IsIncluded def && Option.isSome assemblyPdb then
+                (fullName, def.Name.Name) :: accumulator
+             else
+                accumulator
+           with
+           | :? BadImageFormatException -> accumulator
+           | :? IOException -> accumulator
+        ) []
+
+    List.unzip assemblies
+
+  let internal ProcessTrailingArguments (rest: string list) (toInfo:DirectoryInfo) =
+    // If we have some arguments in rest execute that command line
+        match rest |> Seq.toList with
+        | [] -> ()
+        | cmd::t->
+           let args = String.Join(" ", (List.toArray t))
+           Launch cmd args toInfo.FullName // Spawn process, echoing asynchronously
+
+
   [<EntryPoint>]
   let private Main arguments =
     let check1 = DeclareOptions ()
@@ -196,46 +229,16 @@ module Main =
     | Left (intro, options) -> Usage intro options
     | Right (rest, fromInfo, toInfo) ->
       try
-        let files = fromInfo.GetFiles()
-
-        // Copy all the files into the target directory
-        // Track the symbol-bearing assemblies
-        let assemblies =
-          files
-          |> Seq.fold (fun (accumulator : (string*string) list) (info:FileInfo) ->
-               let fullName = info.FullName
-               let target = Path.Combine (toInfo.FullName, info.Name)
-               File.Copy(fullName, target, true)
-               try
-                 let def = AssemblyDefinition.ReadAssembly(fullName)
-                 let assemblyPdb = ProgramDatabase.GetPdbWithFallback def
-                 if Visitor.IsIncluded def && Option.isSome assemblyPdb then
-                    (fullName, def.Name.Name) :: accumulator
-                 else
-                    accumulator
-               with
-               | :? BadImageFormatException -> accumulator
-               | :? IOException -> accumulator
-            ) []
-
-        let assemblyNames =
-          assemblies
-          |> List.map snd
-
+        let (assemblies, assemblyNames) = PrepareTargetFiles fromInfo toInfo
         WriteOut <| String.Format(CultureInfo.CurrentCulture,
                                          (resources.GetString "reportingto"),
                                          Visitor.ReportPath())
         let reporter, document = Report.ReportGenerator ()
         let visitors = [ reporter ; Instrument.InstrumentGenerator assemblyNames ]
-        Visitor.Visit visitors (assemblies |> Seq.map fst)
+        Visitor.Visit visitors (assemblies )
         document.Save(Visitor.ReportPath())
 
-        // If we have some arguments in rest execute that command line
-        match rest |> Seq.toList with
-        | [] -> ()
-        | cmd::t->
-           let args = String.Join(" ", (List.toArray t))
-           Launch cmd args toInfo.FullName // Spawn process, echoing asynchronously
+        ProcessTrailingArguments rest toInfo
       with
       | :? IOException as x -> WriteErr x.Message
 
