@@ -102,7 +102,7 @@ type AltCoverTests() = class
     let after = XDocument.Load worker
     let startTimeAttr = after.Root.Attribute(XName.Get("startTime"))
     let startTime = DateTime.ParseExact(startTimeAttr.Value, "o", null)
-    Assert.That (startTime, Is.LessThan epoch)
+    Assert.That (startTime.ToUniversalTime(), Is.LessThan epoch)
     Assert.That (startTime.ToUniversalTime(), Is.EqualTo (Instance.startTime.ToUniversalTime()))
 
   [<Test>]
@@ -119,7 +119,7 @@ type AltCoverTests() = class
     let after = XDocument.Load worker
     let startTimeAttr = after.Root.Attribute(XName.Get("startTime"))
     let startTime = DateTime.ParseExact(startTimeAttr.Value, "o", null)
-    Assert.That (startTime, Is.EqualTo epoch)
+    Assert.That (startTime.ToUniversalTime(), Is.EqualTo epoch)
     Assert.That (startTime.ToUniversalTime(), Is.EqualTo (Instance.startTime.ToUniversalTime()))
 
   [<Test>]
@@ -136,7 +136,7 @@ type AltCoverTests() = class
     let after = XDocument.Load worker
     let startTimeAttr = after.Root.Attribute(XName.Get("measureTime"))
     let startTime = DateTime.ParseExact(startTimeAttr.Value, "o", null)
-    Assert.That (startTime, Is.GreaterThan epoch)
+    Assert.That (startTime.ToUniversalTime(), Is.GreaterThan epoch)
     Assert.That (startTime.ToUniversalTime(), Is.EqualTo (Instance.measureTime.ToUniversalTime()))
 
   [<Test>]
@@ -153,7 +153,7 @@ type AltCoverTests() = class
     let after = XDocument.Load worker
     let startTimeAttr = after.Root.Attribute(XName.Get("measureTime"))
     let startTime = DateTime.ParseExact(startTimeAttr.Value, "o", null)
-    Assert.That (startTime, Is.EqualTo epoch)
+    Assert.That (startTime.ToUniversalTime(), Is.EqualTo epoch)
     Assert.That (startTime.ToUniversalTime(), Is.EqualTo (Instance.measureTime.ToUniversalTime()))
 
   [<Test>]
