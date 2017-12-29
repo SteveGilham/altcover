@@ -107,7 +107,7 @@ type AltCoverTests() = class
 
   [<Test>]
   member self.NewDocumentStartIsMadeEarlier() =
-    let epoch = DateTime (1970, 1, 1)
+    let epoch = DateTime (1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)
     Instance.startTime <- epoch
     use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Shadow.Tests.SimpleCoverage.xml")
     use worker = new MemoryStream()
@@ -124,7 +124,7 @@ type AltCoverTests() = class
 
   [<Test>]
   member self.NewDocumentMeasureIsNotMadeEarlier() =
-    let epoch = DateTime (1970, 1, 1)
+    let epoch = DateTime (1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)
     Instance.measureTime <- epoch
     use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Shadow.Tests.SimpleCoverage.xml")
     use worker = new MemoryStream()

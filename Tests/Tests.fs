@@ -1069,7 +1069,9 @@ type AltCoverTests() = class
         Visitor.reportPath <- save
         Directory.EnumerateFiles(Path.GetDirectoryName output,
                                  (Path.GetFileNameWithoutExtension output) + ".*")
-        |> Seq.iter File.Delete
+        |> Seq.iter (fun f -> try File.Delete f
+                              with // occasionally the mdb file is locked by another process
+                              | :? IOException -> ())
     finally
       Visitor.keys.Clear()
       Visitor.defaultStrongNameKey <- None
