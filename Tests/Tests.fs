@@ -1019,8 +1019,9 @@ type AltCoverTests() = class
           AppDomain.Unload(ad)
       finally
         Visitor.reportPath <- save
-        File.Delete output
-        if File.Exists outputdll then File.Delete outputdll
+        Directory.EnumerateFiles(Path.GetDirectoryName output, 
+                                 (Path.GetFileNameWithoutExtension output) + ".*")
+        |> Seq.iter File.Delete
     finally
       Visitor.keys.Clear()
 
@@ -1065,8 +1066,9 @@ type AltCoverTests() = class
           AppDomain.Unload(ad)
       finally
         Visitor.reportPath <- save
-        File.Delete output
-        if File.Exists outputdll then File.Delete outputdll
+        Directory.EnumerateFiles(Path.GetDirectoryName output, 
+                                 (Path.GetFileNameWithoutExtension output) + ".*")
+        |> Seq.iter File.Delete
     finally
       Visitor.keys.Clear()
       Visitor.defaultStrongNameKey <- None
@@ -1124,8 +1126,9 @@ type AltCoverTests() = class
           AppDomain.Unload(ad)
       finally
         Visitor.reportPath <- save
-        File.Delete output
-        if File.Exists outputdll then File.Delete outputdll
+        Directory.EnumerateFiles(Path.GetDirectoryName output, 
+                                 (Path.GetFileNameWithoutExtension output) + ".*")
+        |> Seq.iter File.Delete
     finally
       Visitor.keys.Clear()
 
@@ -1878,6 +1881,23 @@ type AltCoverTests() = class
       Visitor.keys.Clear()
 
   [<Test>]
+  member self.ParsingNonStrongNameGivesFailure() =
+    try
+      Visitor.defaultStrongNameKey <- None
+      Visitor.keys.Clear()
+      let options = Main.DeclareOptions ()
+      let unique = Assembly.GetExecutingAssembly().Location
+      let input = [| "-sn"; unique |]
+      let parse = Main.ParseCommandLine input options
+      match parse with
+      | Right _ -> Assert.Fail()
+      | Left (x, y) -> Assert.That (y, Is.SameAs options)
+                       Assert.That (x, Is.EqualTo "UsageError")
+    finally
+      Visitor.defaultStrongNameKey <- None
+      Visitor.keys.Clear()
+
+  [<Test>]
   member self.ParsingNoStrongNameGivesFailure() =
     try
       Visitor.defaultStrongNameKey <- None
@@ -1950,6 +1970,124 @@ type AltCoverTests() = class
     finally
       Visitor.defaultStrongNameKey <- None
       Visitor.keys.Clear()
+
+  [<Test>]
+  member self.ParsingNonAltsStrongNameGivesFailure() =
+    try
+      Visitor.defaultStrongNameKey <- None
+      Visitor.keys.Clear()
+      let options = Main.DeclareOptions ()
+      let unique = Assembly.GetExecutingAssembly().Location
+      let input = [| "-k"; unique |]
+      let parse = Main.ParseCommandLine input options
+      match parse with
+      | Right _ -> Assert.Fail()
+      | Left (x, y) -> Assert.That (y, Is.SameAs options)
+                       Assert.That (x, Is.EqualTo "UsageError")
+    finally
+      Visitor.defaultStrongNameKey <- None
+      Visitor.keys.Clear()
+
+  [<Test>]
+  member self.OutputLeftPassesThrough() =
+    let arg = (Guid.NewGuid().ToString(),Main.DeclareOptions())
+    let fail = Left arg
+    match Main.ProcessOutputLocation fail with
+    | Right _ -> Assert.Fail()
+    | Left x -> Assert.That (x, Is.SameAs arg)
+
+  [<Test>]
+  member self.OutputInPlaceFails() =
+    let options = Main.DeclareOptions ()
+    let saved = (Console.Out, Console.Error)
+    try
+      use stdout = new StringWriter()
+      use stderr = new StringWriter()
+      Console.SetOut stdout
+      Console.SetError stderr
+
+      Visitor.inputDirectory <- Some (Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location))
+      Visitor.outputDirectory <- Visitor.inputDirectory
+
+      let arg = ([], options)
+      let fail = Right arg
+      match Main.ProcessOutputLocation fail with
+      | Right _ -> Assert.Fail()
+      | Left (x,y) -> Assert.That (y, Is.SameAs options)
+                      Assert.That (x, Is.EqualTo "UsageError")
+                      Assert.That (stderr.ToString().Replace("\r",String.Empty),
+                                   Is.EqualTo "From and to directories are identical\n")
+                      Assert.That (stdout.ToString(), Is.Empty)
+    finally
+      Console.SetOut (fst saved)
+      Console.SetError (snd saved)
+    
+  [<Test>]
+  member self.OutputToNewPlaceIsOK() =
+    let options = Main.DeclareOptions ()
+    let saved = (Console.Out, Console.Error)
+    try
+      use stdout = new StringWriter()
+      use stderr = new StringWriter()
+      Console.SetOut stdout
+      Console.SetError stderr
+
+      let here = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
+      Visitor.inputDirectory <- Some here
+      Visitor.outputDirectory <- Some (Path.GetDirectoryName here)
+
+      let rest = [Guid.NewGuid().ToString()]
+      let arg = (rest, options)
+      let ok = Right arg
+      match Main.ProcessOutputLocation ok with
+      | Left _ -> Assert.Fail()
+      | Right (x,y,z) -> Assert.That (x, Is.SameAs rest)
+                         Assert.That (y.FullName, Is.EqualTo here)
+                         Assert.That (z.FullName, Is.EqualTo (Path.GetDirectoryName here))
+                         Assert.That (stdout.ToString().Replace("\r",String.Empty), 
+                                      Is.EqualTo ("Instrumenting files from " +
+                                                  here + "\nWriting files to " +
+                                                  (Path.GetDirectoryName here) + "\n"))
+                         Assert.That (stderr.ToString(), Is.Empty)
+    finally
+      Console.SetOut (fst saved)
+      Console.SetError (snd saved)
+
+  [<Test>]
+  member self.OutputToReallyNewPlaceIsOK() =
+    let options = Main.DeclareOptions ()
+    let saved = (Console.Out, Console.Error)
+    try
+      use stdout = new StringWriter()
+      use stderr = new StringWriter()
+      Console.SetOut stdout
+      Console.SetError stderr
+
+      let here = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
+      let there = Path.Combine(here, Guid.NewGuid().ToString())
+      Visitor.inputDirectory <- Some here
+      Visitor.outputDirectory <- Some there
+
+      let rest = [Guid.NewGuid().ToString()]
+      let arg = (rest, options)
+      let ok = Right arg
+      Assert.That (Directory.Exists there, Is.False)
+      match Main.ProcessOutputLocation ok with
+      | Left _ -> Assert.Fail()
+      | Right (x,y,z) -> Assert.That (x, Is.SameAs rest)
+                         Assert.That (y.FullName, Is.EqualTo here)
+                         Assert.That (z.FullName, Is.EqualTo there)
+                         Assert.That (stdout.ToString().Replace("\r",String.Empty), 
+                                      Is.EqualTo ("Creating folder " + there +
+                                                  "\nInstrumenting files from " +
+                                                  here + "\nWriting files to " +
+                                                  there + "\n"))
+                         Assert.That (stderr.ToString(), Is.Empty)
+                         Assert.That (Directory.Exists there)
+    finally
+      Console.SetOut (fst saved)
+      Console.SetError (snd saved)
+
 
   [<Test>]
   member self.UsageIsAsExpected() =

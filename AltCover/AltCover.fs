@@ -86,7 +86,9 @@ module Main =
                    let pair = StrongNameKeyPair(stream)
                    Visitor.Add pair
                with
-               | :? IOException as io -> WriteErr io.Message
+               | :? IOException 
+               | :? ArgumentException
+               | :? NotSupportedException -> error <- true
                | :? System.Security.SecurityException as s -> WriteErr s.Message
              else error <- true
          ))
@@ -100,7 +102,9 @@ module Main =
                    else Visitor.defaultStrongNameKey <- Some pair
                    Visitor.Add pair
                 with
-                | :? IOException as io -> WriteErr io.Message
+                | :? IOException 
+                | :? ArgumentException
+                | :? NotSupportedException -> error <- true
                 | :? System.Security.SecurityException as s -> WriteErr s.Message
              else error <- true  ))
       ("x|xmlReport=",
@@ -165,9 +169,7 @@ module Main =
                        (resources.GetString "CreateFolder"),
                        toDirectory)
               Directory.CreateDirectory(toDirectory) |> ignore
-           let fromInfo = DirectoryInfo(fromDirectory)
-           let toInfo = DirectoryInfo(toDirectory)
-           if fromInfo = toInfo then
+           if fromDirectory = toDirectory then
               WriteErr (resources.GetString "NotInPlace")
               Left ("UsageError", options)
            else
@@ -177,7 +179,7 @@ module Main =
                WriteOut <| String.Format(CultureInfo.CurrentCulture,
                                          (resources.GetString "instrumentingto"),
                                          toDirectory)
-               Right (rest, fromInfo, toInfo)
+               Right (rest, DirectoryInfo(fromDirectory), DirectoryInfo(toDirectory))
 
         with
         |  :? IOException as x -> WriteErr x.Message
