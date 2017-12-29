@@ -31,12 +31,12 @@ module Instance =
    /// <summary>
    /// The time at which coverage run began
    /// </summary>
-  let mutable internal startTime = DateTime.Now
+  let mutable internal startTime = DateTime.UtcNow
 
   /// <summary>
   /// Thime taken to perform coverage run
   /// </summary>
-  let mutable internal measureTime = DateTime.Now
+  let mutable internal measureTime = DateTime.UtcNow
 
   /// <summary>
   /// Gets the location of coverage xml file
@@ -82,7 +82,7 @@ module Instance =
   /// <param name="coverageFile">The coverage file to update as a stream</param>
   let internal UpdateReport counts coverageFile =
     mutex.WaitOne(10000) |> ignore
-    let flushStart = DateTime.Now;
+    let flushStart = DateTime.UtcNow;
     try
       // Edit xml report to store new hits
       let coverageDocument = ReadXDocument coverageFile
@@ -152,10 +152,10 @@ module Instance =
       | 0 -> ()
       | _ -> let counts = Visits |> Seq.toArray
              Visits.Clear()
-             measureTime <- DateTime.Now
+             measureTime <- DateTime.UtcNow
              use coverageFile = new FileStream(ReportFile, FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.SequentialScan)
              let flushStart = UpdateReport counts coverageFile
-             let delta = TimeSpan(DateTime.Now.Ticks - flushStart.Ticks)
+             let delta = TimeSpan(DateTime.UtcNow.Ticks - flushStart.Ticks)
              Console.Out.WriteLine("Coverage statistics flushing took {0:N} seconds", delta.TotalSeconds))
 
   /// <summary>

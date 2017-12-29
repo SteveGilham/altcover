@@ -90,7 +90,7 @@ type AltCoverTests() = class
 
   [<Test>]
   member self.OldDocumentStartIsNotUpdated() =
-    let epoch = DateTime.Now
+    let epoch = DateTime.UtcNow
     Instance.startTime <- epoch
     use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Shadow.Tests.SimpleCoverage.xml")
     use worker = new MemoryStream()
@@ -141,7 +141,7 @@ type AltCoverTests() = class
 
   [<Test>]
   member self.OldDocumentMeasureIsUpdated() =
-    let epoch = DateTime.Now
+    let epoch = DateTime.UtcNow
     Instance.measureTime <- epoch
     use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Shadow.Tests.SimpleCoverage.xml")
     use worker = new MemoryStream()
