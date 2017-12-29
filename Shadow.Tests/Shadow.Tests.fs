@@ -120,7 +120,7 @@ type AltCoverTests() = class
     let startTimeAttr = after.Root.Attribute(XName.Get("startTime"))
     let startTime = DateTime.ParseExact(startTimeAttr.Value, "o", null)
     Assert.That (startTime.ToUniversalTime(), Is.EqualTo epoch)
-    Assert.That (startTime, Is.EqualTo Instance.startTime)
+    Assert.That (startTime.ToUniversalTime(), Is.EqualTo (Instance.startTime.ToUniversalTime()))
 
   [<Test>]
   member self.NewDocumentMeasureIsNotMadeEarlier() =
