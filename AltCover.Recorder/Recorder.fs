@@ -92,8 +92,8 @@ module Instance =
       let oldStartTime = DateTime.ParseExact(startTimeAttr.Value, "o", null)
       let oldMeasureTime = DateTime.ParseExact(measureTimeAttr.Value, "o", null)
 
-      startTime <- if startTime < oldStartTime then startTime else oldStartTime // Min
-      measureTime <- if measureTime > oldMeasureTime then measureTime else oldMeasureTime // Max
+      startTime <- (if startTime < oldStartTime then startTime else oldStartTime).ToUniversalTime() // Min
+      measureTime <- (if measureTime > oldMeasureTime then measureTime else oldMeasureTime).ToUniversalTime() // Max
 
       startTimeAttr.SetValue(startTime.ToString("o", System.Globalization.CultureInfo.InvariantCulture));
       measureTimeAttr.SetValue(measureTime.ToString("o", System.Globalization.CultureInfo.InvariantCulture));
