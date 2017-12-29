@@ -222,5 +222,59 @@ type AltCoverTests() = class
                  |> Seq.map (fun x -> x.Attribute(XName.Get("visitcount")).Value),
                  Is.EquivalentTo [ "11"; "10"; "9"; "8"; "7"; "6"; "4"; "3"; "2"; "1"])
 
+  [<Test>]
+  member self.EmptyFlushLeavesNoTrace() =
+    let saved = Console.Out
+    try
+      Instance.Visits.Clear()
+      use stdout = new StringWriter()
+      Console.SetOut stdout
+
+      Instance.FlushCounter ()
+      Assert.That (stdout.ToString(), Is.Empty)
+    finally
+      Instance.Visits.Clear()
+      Console.SetOut saved
+
+  [<Test>]
+  member self.FlushLeavesExpectedTraces() =
+    let saved = Console.Out
+    let here = Directory.GetCurrentDirectory()
+    try
+      Instance.Visits.Clear()
+      use stdout = new StringWriter()
+      Console.SetOut stdout
+      Directory.SetCurrentDirectory(Environment.GetEnvironmentVariable("TEMP"))
+
+      Instance.measureTime <- DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
+      use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Shadow.Tests.SimpleCoverage.xml")
+      Assert.That(File.Exists Instance.ReportFile, Is.False)
+      do
+        use worker = new FileStream(Instance.ReportFile, FileMode.CreateNew)
+        stream.CopyTo worker
+        ()
+     
+      let payload = Dictionary<int,int>()
+      [0..9 ]
+      |> Seq.iter(fun i -> payload.[i] <- (i+1))
+      Instance.Visits.["f6e3edb3-fb20-44b3-817d-f69d1a22fc2f"] <- payload
+
+      Instance.FlushCounter ()
+
+      let head = "Coverage statistics flushing took "
+      let tail = " seconds\n"
+      let recorded = stdout.ToString().Replace("\r\n","\n")
+      Assert.That (recorded.StartsWith(head, StringComparison.Ordinal))
+      Assert.That (recorded.EndsWith(tail, StringComparison.Ordinal))
+      use worker' = new FileStream(Instance.ReportFile, FileMode.Open)
+      let after = XDocument.Load worker'
+      Assert.That( after.Descendants(XName.Get("seqpnt"))
+                   |> Seq.map (fun x -> x.Attribute(XName.Get("visitcount")).Value),
+                   Is.EquivalentTo [ "11"; "10"; "9"; "8"; "7"; "6"; "4"; "3"; "2"; "1"])
+    finally
+      if File.Exists Instance.ReportFile then File.Delete Instance.ReportFile
+      Instance.Visits.Clear()
+      Console.SetOut saved
+      Directory.SetCurrentDirectory(here)
 
 end
