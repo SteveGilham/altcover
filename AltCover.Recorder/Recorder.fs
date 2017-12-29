@@ -31,12 +31,12 @@ module Instance =
    /// <summary>
    /// The time at which coverage run began
    /// </summary>
-  let mutable private startTime = DateTime.Now
+  let mutable internal startTime = DateTime.Now
 
   /// <summary>
   /// Thime taken to perform coverage run
   /// </summary>
-  let mutable private measureTime = DateTime.Now
+  let mutable internal measureTime = DateTime.Now
 
   /// <summary>
   /// Gets the location of coverage xml file
@@ -63,7 +63,7 @@ module Instance =
   /// If this is ever a problem, we will need mutability and two streams, with explicit
   /// stream disposal if and only if the reader or writer doesn't take ownership
   /// </remarks>
-  let private ReadXDocument (stream:FileStream)  =
+  let private ReadXDocument (stream:Stream)  =
     using (XmlReader.Create stream) (fun (reader:XmlReader) -> XDocument.Load(reader))
 
   /// <summary>
@@ -72,19 +72,19 @@ module Instance =
   /// <param name="coverageDocument">The XML document to write</param>
   /// <param name="path">The XML file to write to</param>
   /// <remarks>Idiom to work with CA2202 as above</remarks>
-  let private WriteXDocument (coverageDocument:XDocument) (stream:FileStream) =
+  let private WriteXDocument (coverageDocument:XDocument) (stream:Stream) =
     using (XmlWriter.Create stream) coverageDocument.WriteTo
 
   /// <summary>
   /// Save sequence point hit counts to xml report file
   /// </summary>
   /// <param name="hitCounts">The coverage results to incorporate</param>
-  let private UpdateReport counts =
+  /// <param name="coverageFile">The coverage file to update as a stream</param>
+  let internal UpdateReport counts coverageFile =
     mutex.WaitOne(10000) |> ignore
     let flushStart = DateTime.Now;
     try
       // Edit xml report to store new hits
-      use coverageFile = new FileStream(ReportFile, FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.SequentialScan)
       let coverageDocument = ReadXDocument coverageFile
 
       let startTimeAttr = coverageDocument.Root.Attribute(XName.Get("startTime"))
@@ -131,11 +131,11 @@ module Instance =
 
       // Save modified xml to a file
       coverageFile.Seek(0L, SeekOrigin.Begin) |> ignore
+      coverageFile.SetLength 0L
       WriteXDocument coverageDocument coverageFile
+      flushStart
     finally
-        let delta = TimeSpan(DateTime.Now.Ticks - flushStart.Ticks)
         mutex.ReleaseMutex()
-        Console.Out.WriteLine("Coverage statistics flushing took {0:N} seconds", delta.TotalSeconds)
 
   /// <summary>
   /// Synchronize an action on the visits table
@@ -146,14 +146,17 @@ module Instance =
   /// <summary>
   /// This method flushes hit count buffers.
   /// </summary>
-  let private FlushCounter _ =
+  let internal FlushCounter _ =
      WithVisitsLocked (fun () ->
       match Visits.Count with
       | 0 -> ()
       | _ -> let counts = Visits |> Seq.toArray
              Visits.Clear()
              measureTime <- DateTime.Now
-             UpdateReport(counts))
+             use coverageFile = new FileStream(ReportFile, FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.SequentialScan)
+             let flushStart = UpdateReport counts coverageFile
+             let delta = TimeSpan(DateTime.Now.Ticks - flushStart.Ticks)
+             Console.Out.WriteLine("Coverage statistics flushing took {0:N} seconds", delta.TotalSeconds))
 
   /// <summary>
   /// This method is executed from instrumented assemblies.

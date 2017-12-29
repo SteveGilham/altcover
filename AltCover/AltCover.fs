@@ -86,7 +86,7 @@ module Main =
                    let pair = StrongNameKeyPair(stream)
                    Visitor.Add pair
                with
-               | :? IOException 
+               | :? IOException
                | :? ArgumentException
                | :? NotSupportedException -> error <- true
                | :? System.Security.SecurityException as s -> WriteErr s.Message
@@ -102,7 +102,7 @@ module Main =
                    else Visitor.defaultStrongNameKey <- Some pair
                    Visitor.Add pair
                 with
-                | :? IOException 
+                | :? IOException
                 | :? ArgumentException
                 | :? NotSupportedException -> error <- true
                 | :? System.Security.SecurityException as s -> WriteErr s.Message
@@ -186,7 +186,6 @@ module Main =
                                   Left ("UsageError", options)
     | Left intro -> Left intro
 
-
   let internal PrepareTargetFiles (fromInfo:DirectoryInfo) (toInfo:DirectoryInfo) =
     // Copy all the files into the target directory
     // Track the symbol-bearing assemblies
@@ -217,7 +216,6 @@ module Main =
         | cmd::t->
            let args = String.Join(" ", (List.toArray t))
            Launch cmd args toInfo.FullName // Spawn process, echoing asynchronously
-
 
   [<EntryPoint>]
   let private Main arguments =

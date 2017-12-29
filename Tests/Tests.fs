@@ -1020,7 +1020,7 @@ type AltCoverTests() = class
           AppDomain.Unload(ad)
       finally
         Visitor.reportPath <- save
-        Directory.EnumerateFiles(Path.GetDirectoryName output, 
+        Directory.EnumerateFiles(Path.GetDirectoryName output,
                                  (Path.GetFileNameWithoutExtension output) + ".*")
         |> Seq.iter File.Delete
     finally
@@ -1067,7 +1067,7 @@ type AltCoverTests() = class
           AppDomain.Unload(ad)
       finally
         Visitor.reportPath <- save
-        Directory.EnumerateFiles(Path.GetDirectoryName output, 
+        Directory.EnumerateFiles(Path.GetDirectoryName output,
                                  (Path.GetFileNameWithoutExtension output) + ".*")
         |> Seq.iter File.Delete
     finally
@@ -1127,7 +1127,7 @@ type AltCoverTests() = class
           AppDomain.Unload(ad)
       finally
         Visitor.reportPath <- save
-        Directory.EnumerateFiles(Path.GetDirectoryName output, 
+        Directory.EnumerateFiles(Path.GetDirectoryName output,
                                  (Path.GetFileNameWithoutExtension output) + ".*")
         |> Seq.iter File.Delete
     finally
@@ -2022,7 +2022,7 @@ type AltCoverTests() = class
     finally
       Console.SetOut (fst saved)
       Console.SetError (snd saved)
-    
+
   [<Test>]
   member self.OutputToNewPlaceIsOK() =
     let options = Main.DeclareOptions ()
@@ -2045,7 +2045,7 @@ type AltCoverTests() = class
       | Right (x,y,z) -> Assert.That (x, Is.SameAs rest)
                          Assert.That (y.FullName, Is.EqualTo here)
                          Assert.That (z.FullName, Is.EqualTo (Path.GetDirectoryName here))
-                         Assert.That (stdout.ToString().Replace("\r",String.Empty), 
+                         Assert.That (stdout.ToString().Replace("\r",String.Empty),
                                       Is.EqualTo ("Instrumenting files from " +
                                                   here + "\nWriting files to " +
                                                   (Path.GetDirectoryName here) + "\n"))
@@ -2078,7 +2078,7 @@ type AltCoverTests() = class
       | Right (x,y,z) -> Assert.That (x, Is.SameAs rest)
                          Assert.That (y.FullName, Is.EqualTo here)
                          Assert.That (z.FullName, Is.EqualTo there)
-                         Assert.That (stdout.ToString().Replace("\r",String.Empty), 
+                         Assert.That (stdout.ToString().Replace("\r",String.Empty),
                                       Is.EqualTo ("Creating folder " + there +
                                                   "\nInstrumenting files from " +
                                                   here + "\nWriting files to " +
@@ -2098,18 +2098,18 @@ type AltCoverTests() = class
     let (x,y) = Main.PrepareTargetFiles fromInfo toInfo
     Assert.That (toInfo.EnumerateFiles()
                  |> Seq.map (fun x -> x.Name),
-                 Is.EquivalentTo (fromInfo.EnumerateFiles() 
+                 Is.EquivalentTo (fromInfo.EnumerateFiles()
                  |>Seq.map (fun x -> x.Name)))
     Assert.That (x,
-                 Is.EquivalentTo (fromInfo.EnumerateFiles() 
+                 Is.EquivalentTo (fromInfo.EnumerateFiles()
                  |> Seq.map (fun x -> x.FullName)
-                 |> Seq.filter (fun f -> f.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) || 
+                 |> Seq.filter (fun f -> f.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) ||
                                          f.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
                  |> Seq.filter (fun f -> File.Exists(Path.ChangeExtension(f, ".pdb"))  )))
-    Assert.That (y, 
+    Assert.That (y,
                  Is.EquivalentTo (x
                  |> Seq.map Path.GetFileNameWithoutExtension))
-                
+
   [<Test>]
   member self.ShouldProcessTrailingArguments() =
     // Hack for running while instrumented
@@ -2129,7 +2129,7 @@ type AltCoverTests() = class
       let u1 = Guid.NewGuid().ToString()
       let u2 = Guid.NewGuid().ToString()
 
-      Main.ProcessTrailingArguments [program; u1; u2] 
+      Main.ProcessTrailingArguments [program; u1; u2]
                                      (DirectoryInfo(where))
 
       Assert.That(stderr.ToString(), Is.Empty)
@@ -2138,10 +2138,6 @@ type AltCoverTests() = class
     finally
       Console.SetOut (fst saved)
       Console.SetError (snd saved)
-
-
-
-
 
   [<Test>]
   member self.UsageIsAsExpected() =

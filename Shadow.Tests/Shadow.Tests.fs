@@ -1,10 +1,13 @@
 ﻿namespace Shadow.Tests
 
 open System
+open System.IO
 open System.Reflection
+open System.Xml.Linq
 
 open AltCover.Recorder
 open NUnit.Framework
+open System.Collections.Generic
 
 [<TestFixture>]
 type AltCoverTests() = class
@@ -80,5 +83,105 @@ type AltCoverTests() = class
       Assert.That (Instance.Visits.[key].[23], Is.EqualTo 2)
     finally
       Instance.Visits.Clear()
+
+  member private self.UpdateReport a b =
+    Instance.UpdateReport a b
+    |> ignore
+
+  [<Test>]
+  member self.OldDocumentStartIsNotUpdated() =
+    let epoch = DateTime.Now
+    Instance.startTime <- epoch
+    use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Shadow.Tests.SimpleCoverage.xml")
+    use worker = new MemoryStream()
+    stream.CopyTo worker
+    worker.Position <- 0L
+    let before = XDocument.Load (Assembly.GetExecutingAssembly().GetManifestResourceStream("Shadow.Tests.SimpleCoverage.xml"))
+    self.UpdateReport [] worker
+    worker.Position <- 0L
+    let after = XDocument.Load worker
+    let startTimeAttr = after.Root.Attribute(XName.Get("startTime"))
+    let startTime = DateTime.ParseExact(startTimeAttr.Value, "o", null)
+    Assert.That (startTime, Is.LessThan epoch)
+    Assert.That (startTime, Is.EqualTo Instance.startTime)
+
+  [<Test>]
+  member self.NewDocumentStartIsMadeEarlier() =
+    let epoch = DateTime (1970, 1, 1)
+    Instance.startTime <- epoch
+    use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Shadow.Tests.SimpleCoverage.xml")
+    use worker = new MemoryStream()
+    stream.CopyTo worker
+    worker.Position <- 0L
+    let before = XDocument.Load (Assembly.GetExecutingAssembly().GetManifestResourceStream("Shadow.Tests.SimpleCoverage.xml"))
+    self.UpdateReport [] worker
+    worker.Position <- 0L
+    let after = XDocument.Load worker
+    let startTimeAttr = after.Root.Attribute(XName.Get("startTime"))
+    let startTime = DateTime.ParseExact(startTimeAttr.Value, "o", null)
+    Assert.That (startTime, Is.EqualTo epoch)
+    Assert.That (startTime, Is.EqualTo Instance.startTime)
+
+  [<Test>]
+  member self.NewDocumentMeasureIsNotMadeEarlier() =
+    let epoch = DateTime (1970, 1, 1)
+    Instance.measureTime <- epoch
+    use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Shadow.Tests.SimpleCoverage.xml")
+    use worker = new MemoryStream()
+    stream.CopyTo worker
+    worker.Position <- 0L
+    let before = XDocument.Load (Assembly.GetExecutingAssembly().GetManifestResourceStream("Shadow.Tests.SimpleCoverage.xml"))
+    self.UpdateReport [] worker
+    worker.Position <- 0L
+    let after = XDocument.Load worker
+    let startTimeAttr = after.Root.Attribute(XName.Get("measureTime"))
+    let startTime = DateTime.ParseExact(startTimeAttr.Value, "o", null)
+    Assert.That (startTime, Is.GreaterThan epoch)
+    Assert.That (startTime, Is.EqualTo Instance.measureTime)
+
+  [<Test>]
+  member self.OldDocumentMeasureIsUpdated() =
+    let epoch = DateTime.Now
+    Instance.measureTime <- epoch
+    use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Shadow.Tests.SimpleCoverage.xml")
+    use worker = new MemoryStream()
+    stream.CopyTo worker
+    worker.Position <- 0L
+    let before = XDocument.Load (Assembly.GetExecutingAssembly().GetManifestResourceStream("Shadow.Tests.SimpleCoverage.xml"))
+    self.UpdateReport [] worker
+    worker.Position <- 0L
+    let after = XDocument.Load worker
+    let startTimeAttr = after.Root.Attribute(XName.Get("measureTime"))
+    let startTime = DateTime.ParseExact(startTimeAttr.Value, "o", null)
+    Assert.That (startTime, Is.EqualTo epoch)
+    Assert.That (startTime, Is.EqualTo Instance.measureTime)
+
+  [<Test>]
+  member self.UnknownModuleMakesNoChange() =
+    Instance.measureTime <- DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
+    use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Shadow.Tests.SimpleCoverage.xml")
+    use worker = new MemoryStream()
+    stream.CopyTo worker
+    worker.Position <- 0L
+    use before = new StreamReader (Assembly.GetExecutingAssembly().GetManifestResourceStream("Shadow.Tests.SimpleCoverage.xml"))
+    let item = KeyValuePair<string, Dictionary<int,int>>("not a guid", null)
+    self.UpdateReport [item] worker
+    worker.Position <- 0L
+    let after = new StreamReader(worker)
+    Assert.That (after.ReadToEnd(), Is.EqualTo (before.ReadToEnd()))
+
+  [<Test>]
+  member self.KnownModuleWithNothingMakesNoChange() =
+    Instance.measureTime <- DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
+    use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Shadow.Tests.SimpleCoverage.xml")
+    use worker = new MemoryStream()
+    stream.CopyTo worker
+    worker.Position <- 0L
+    use before = new StreamReader (Assembly.GetExecutingAssembly().GetManifestResourceStream("Shadow.Tests.SimpleCoverage.xml"))
+    let item = KeyValuePair<string, Dictionary<int,int>>("f6e3edb3-fb20-44b3-817d-f69d1a22fc2f", Dictionary<int,int>())
+    self.UpdateReport [item] worker
+    worker.Position <- 0L
+    let after = new StreamReader(worker)
+    Assert.That (after.ReadToEnd(), Is.EqualTo (before.ReadToEnd()))
 
 end
