@@ -34,7 +34,7 @@ deploy:
   api_key:
     secure: fR1kSlwEcdI9M2yyPlwK44QlFCOOpTU52ysj/hgcGxTMxNDtCW21zNeF4+o0fFtf
   on:
-    branch: /release.*/
+    branch: /releasechoco/.*/
 notifications:
 - provider: Slack
   incoming_webhook: 
