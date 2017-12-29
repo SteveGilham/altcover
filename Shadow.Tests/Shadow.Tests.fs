@@ -184,4 +184,40 @@ type AltCoverTests() = class
     let after = new StreamReader(worker)
     Assert.That (after.ReadToEnd(), Is.EqualTo (before.ReadToEnd()))
 
+  [<Test>]
+  member self.KnownModuleWithNothingInRangeMakesNoChange() =
+    Instance.measureTime <- DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
+    use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Shadow.Tests.SimpleCoverage.xml")
+    use worker = new MemoryStream()
+    stream.CopyTo worker
+    worker.Position <- 0L
+    use before = new StreamReader (Assembly.GetExecutingAssembly().GetManifestResourceStream("Shadow.Tests.SimpleCoverage.xml"))
+    let payload = Dictionary<int,int>()
+    payload.[-1] <- 10
+    payload.[100] <- 10
+    let item = KeyValuePair<string, Dictionary<int,int>>("f6e3edb3-fb20-44b3-817d-f69d1a22fc2f", payload)
+    self.UpdateReport [item] worker
+    worker.Position <- 0L
+    let after = new StreamReader(worker)
+    Assert.That (after.ReadToEnd(), Is.EqualTo (before.ReadToEnd()))
+
+  [<Test>]
+  member self.KnownModuleWithPayloadMakesExpectedChange() =
+    Instance.measureTime <- DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
+    use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Shadow.Tests.SimpleCoverage.xml")
+    use worker = new MemoryStream()
+    stream.CopyTo worker
+    worker.Position <- 0L
+    let payload = Dictionary<int,int>()
+    [0..9 ]
+    |> Seq.iter(fun i -> payload.[i] <- (i+1))
+    let item = KeyValuePair<string, Dictionary<int,int>>("f6e3edb3-fb20-44b3-817d-f69d1a22fc2f", payload)
+    self.UpdateReport [item] worker
+    worker.Position <- 0L
+    let after = XDocument.Load worker
+    Assert.That( after.Descendants(XName.Get("seqpnt"))
+                 |> Seq.map (fun x -> x.Attribute(XName.Get("visitcount")).Value),
+                 Is.EquivalentTo [ "11"; "10"; "9"; "8"; "7"; "6"; "4"; "3"; "2"; "1"])
+
+
 end
