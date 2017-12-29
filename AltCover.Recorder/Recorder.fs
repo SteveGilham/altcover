@@ -121,10 +121,14 @@ module Instance =
           |> Seq.iter (fun x ->
               let pt = snd x
               let counter = fst x
-              // Treat -ve visit counts (an exemption added in analysis) as zero
-              let vc = Int32.TryParse(pt.Attribute(XName.Get("visitcount")).Value,
+              let attribute = pt.Attribute(XName.Get("visitcount"))
+              let value = match attribute with
+                          | null -> "0" 
+                          | x -> x.Value
+              let vc = Int32.TryParse(value,
                                       System.Globalization.NumberStyles.Integer,
                                       System.Globalization.CultureInfo.InvariantCulture)
+              // Treat -ve visit counts (an exemption added in analysis) as zero
               let visits = max 0 (if fst vc then snd vc else 0)
 
               pt.SetAttributeValue(XName.Get("visitcount"), visits + moduleHits.[counter]))))

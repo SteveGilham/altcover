@@ -51,6 +51,9 @@ Target "Clean" (fun _ ->
     |> Seq.concat
     |> Seq.toList
     |> DeleteDirs
+
+    !! ((environVar "TEMP") @@ "*.tmp.dll.mdb")
+    |> DeleteFiles
 )
 
 Target "SetVersion" (fun _ ->
