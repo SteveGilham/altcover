@@ -103,7 +103,7 @@ type AltCoverTests() = class
     let startTimeAttr = after.Root.Attribute(XName.Get("startTime"))
     let startTime = DateTime.ParseExact(startTimeAttr.Value, "o", null)
     Assert.That (startTime, Is.LessThan epoch)
-    Assert.That (startTime, Is.EqualTo (Instance.startTime.ToUniversalTime()))
+    Assert.That (startTime.ToUniversalTime(), Is.EqualTo (Instance.startTime.ToUniversalTime()))
 
   [<Test>]
   member self.NewDocumentStartIsMadeEarlier() =
@@ -120,7 +120,7 @@ type AltCoverTests() = class
     let startTimeAttr = after.Root.Attribute(XName.Get("startTime"))
     let startTime = DateTime.ParseExact(startTimeAttr.Value, "o", null)
     Assert.That (startTime, Is.EqualTo epoch)
-    Assert.That (startTime, Is.EqualTo (Instance.startTime.ToUniversalTime()))
+    Assert.That (startTime.ToUniversalTime(), Is.EqualTo (Instance.startTime.ToUniversalTime()))
 
   [<Test>]
   member self.NewDocumentMeasureIsNotMadeEarlier() =
@@ -137,7 +137,7 @@ type AltCoverTests() = class
     let startTimeAttr = after.Root.Attribute(XName.Get("measureTime"))
     let startTime = DateTime.ParseExact(startTimeAttr.Value, "o", null)
     Assert.That (startTime, Is.GreaterThan epoch)
-    Assert.That (startTime, Is.EqualTo (Instance.measureTime.ToUniversalTime()))
+    Assert.That (startTime.ToUniversalTime(), Is.EqualTo (Instance.measureTime.ToUniversalTime()))
 
   [<Test>]
   member self.OldDocumentMeasureIsUpdated() =
@@ -154,7 +154,7 @@ type AltCoverTests() = class
     let startTimeAttr = after.Root.Attribute(XName.Get("measureTime"))
     let startTime = DateTime.ParseExact(startTimeAttr.Value, "o", null)
     Assert.That (startTime, Is.EqualTo epoch)
-    Assert.That (startTime, Is.EqualTo (Instance.measureTime.ToUniversalTime()))
+    Assert.That (startTime.ToUniversalTime(), Is.EqualTo (Instance.measureTime.ToUniversalTime()))
 
   [<Test>]
   member self.UnknownModuleMakesNoChange() =
