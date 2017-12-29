@@ -168,7 +168,8 @@ type AltCoverTests() = class
     self.UpdateReport [item] worker
     worker.Position <- 0L
     let after = new StreamReader(worker)
-    Assert.That (after.ReadToEnd(), Is.EqualTo (before.ReadToEnd()))
+    Assert.That (after.ReadToEnd().Replace("\r\n", "\n"),
+                 Is.EqualTo (before.ReadToEnd().Replace("\r\n", "\n")))
 
   [<Test>]
   member self.KnownModuleWithNothingMakesNoChange() =
@@ -182,7 +183,8 @@ type AltCoverTests() = class
     self.UpdateReport [item] worker
     worker.Position <- 0L
     let after = new StreamReader(worker)
-    Assert.That (after.ReadToEnd(), Is.EqualTo (before.ReadToEnd()))
+    Assert.That (after.ReadToEnd().Replace("\r\n", "\n"),
+                 Is.EqualTo (before.ReadToEnd().Replace("\r\n", "\n")))
 
   [<Test>]
   member self.KnownModuleWithNothingInRangeMakesNoChange() =
@@ -199,7 +201,8 @@ type AltCoverTests() = class
     self.UpdateReport [item] worker
     worker.Position <- 0L
     let after = new StreamReader(worker)
-    Assert.That (after.ReadToEnd(), Is.EqualTo (before.ReadToEnd()))
+    Assert.That (after.ReadToEnd().Replace("\r\n", "\n"),
+                 Is.EqualTo (before.ReadToEnd().Replace("\r\n", "\n")))
 
   [<Test>]
   member self.KnownModuleWithPayloadMakesExpectedChange() =
