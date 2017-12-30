@@ -37,6 +37,8 @@ In detail
 
 Coverage statistics are written to the file nominated by the `x|xmlReport=` parameter as instrumented assemblies are unloaded from an executing AppDomain, even if this is days or weeks later.  In practice the instrumented assemblies should be deleted after the relevant testing has been run, and the report file will thus be freed up.
 
+Given a filter string, if that string is contained within the name of the file/assembly/type/method/attribute type names, then the ietm and everything within it are excluded from the coverage.
+
 ### Use Case : Unit tests
 
 In the case of a single unit test assembly, then executing AltCover with `/i=<unit test output directory>` to pick up the tests and dependencies, with a strongname replacement `/sn=<my component key>` will usually be sufficient, as framework assemblies without symbols will be ignored.  The test execution can then happen in the context of the output directory.
@@ -59,7 +61,7 @@ Alternatively, the binaries could be instrumented as a build step, and included,
 
 ## Building
 
-You will need Visual Studio VS2017 (Community Edition) v15.5 or later with F# language support.  The NUnit3 Test Runner will simplify the basic in-IDE development cycle
+You will need Visual Studio VS2017 (Community Edition) v15.5 or later with F# language support.  The NUnit3 Test Runner will simplify the basic in-IDE development cycle.  Note that some of the unit tests expect that the separate build of an assembly under Mono has taken place; there will be half a dozen file-not-found failures when running the unit tests in Visual Studio from clean.
 
 ### Bootstrapping
 
