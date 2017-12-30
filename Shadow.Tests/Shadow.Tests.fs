@@ -255,7 +255,7 @@ type AltCoverTests() = class
         use worker = new FileStream(Instance.ReportFile, FileMode.CreateNew)
         stream.CopyTo worker
         ()
-     
+
       let payload = Dictionary<int,int>()
       [0..9 ]
       |> Seq.iter(fun i -> payload.[i] <- (i+1))
@@ -294,7 +294,7 @@ type AltCoverTests() = class
     let flush = "System.Void AltCover.Recorder.Instance::FlushCounter<System.EventArgs>(a)"
     let handlers = shadow.MainModule.Types
                    |> Seq.collect (fun t -> t.NestedTypes)
-                   |> Seq.filter (fun t -> t.Methods 
+                   |> Seq.filter (fun t -> t.Methods
                                            |> Seq.exists (fun m -> m.Name = "Invoke" &&
                                                                    m.Body.Instructions
                                                                    |> Seq.filter (fun i -> i.OpCode = Cil.OpCodes.Call)
@@ -307,8 +307,8 @@ type AltCoverTests() = class
                                         f.Substring(0, f.Length - 1) + g)
 
     Assert.That (targets
-                 |> Array.tryFind (fun x -> handlers 
-                                            |> Seq.tryFind (fun h -> h = x) 
+                 |> Array.tryFind (fun x -> handlers
+                                            |> Seq.tryFind (fun h -> h = x)
                                             |> Option.isSome)
                  |> Option.isSome,
                  sprintf "%A" targets)
@@ -327,7 +327,7 @@ type AltCoverTests() = class
     let flush = "System.Void AltCover.Recorder.Instance::FlushCounter<System.EventArgs>(a)"
     let handlers = shadow.MainModule.Types
                    |> Seq.collect (fun t -> t.NestedTypes)
-                   |> Seq.filter (fun t -> t.Methods 
+                   |> Seq.filter (fun t -> t.Methods
                                            |> Seq.exists (fun m -> m.Name = "Invoke" &&
                                                                    m.Body.Instructions
                                                                    |> Seq.filter (fun i -> i.OpCode = Cil.OpCodes.Call)
@@ -340,11 +340,10 @@ type AltCoverTests() = class
                                         f.Substring(0, f.Length - 1) + g)
 
     Assert.That (targets
-                 |> Array.tryFind (fun x -> handlers 
-                                            |> Seq.tryFind (fun h -> h = x) 
+                 |> Array.tryFind (fun x -> handlers
+                                            |> Seq.tryFind (fun h -> h = x)
                                             |> Option.isSome)
                  |> Option.isSome,
                  sprintf "%A" targets)
-
 
 end
