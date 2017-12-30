@@ -123,7 +123,7 @@ module Instance =
               let counter = fst x
               let attribute = pt.Attribute(XName.Get("visitcount"))
               let value = match attribute with
-                          | null -> "0" 
+                          | null -> "0"
                           | x -> x.Value
               let vc = Int32.TryParse(value,
                                       System.Globalization.NumberStyles.Integer,
