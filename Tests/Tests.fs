@@ -1482,6 +1482,78 @@ type AltCoverTests() = class
     Assert.That (def.MainModule.AssemblyReferences, Is.EquivalentTo (refs @ [fake.Name]))
 
   [<Test>]
+  member self.ExcludedModuleJustRecordsMVid () =
+    let where = Assembly.GetExecutingAssembly().Location;
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
+    let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    ProgramDatabase.ReadSymbols def
+    let visited = Node.Module (def.MainModule, false)
+    let state = Instrument.Context.Build ["nunit.framework"; "nonesuch"]
+    let result = Instrument.InstrumentationVisitor  state visited
+    Assert.That (result, Is.EqualTo  { state with ModuleId = def.MainModule.Mvid })
+
+  [<Test>]
+  member self.IncludedModuleEnsuresRecorder () =
+    let where = Assembly.GetExecutingAssembly().Location;
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
+    let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    ProgramDatabase.ReadSymbols def
+    let visited = Node.Module (def.MainModule, true)
+    let state = Instrument.Context.Build ["nunit.framework"; "nonesuch"]
+
+    let path' = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(),
+                             "AltCover.Recorder.dll")
+    let def' = Mono.Cecil.AssemblyDefinition.ReadAssembly path'
+    let visit = def'.MainModule.GetAllTypes()
+                |> Seq.collect (fun t -> t.Methods)
+                |> Seq.filter (fun m -> m.Name = "Visit")
+                |> Seq.head
+
+    let state' = { state with RecordingAssembly = def' }
+    let result = Instrument.InstrumentationVisitor state' visited
+    Assert.That (result.RecordingMethodRef.Module,
+                Is.EqualTo ( def.MainModule))
+    Assert.That (string result.RecordingMethodRef,
+                Is.EqualTo (string visit))
+    Assert.That ({ result with RecordingMethodRef = null},
+                 Is.EqualTo  { state' with ModuleId = def.MainModule.Mvid
+                                                      RecordingMethod = visit
+                                                      RecordingMethodRef = null })
+
+  [<Test>]
+  member self.IncludedModuleDoesNotChangeRecorderJustTheReference () =
+    let where = Assembly.GetExecutingAssembly().Location;
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
+    let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    ProgramDatabase.ReadSymbols def
+    let visited = Node.Module (def.MainModule, true)
+    let state = Instrument.Context.Build ["nunit.framework"; "nonesuch"]
+
+    let path' = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(),
+                             "AltCover.Recorder.dll")
+    let def' = Mono.Cecil.AssemblyDefinition.ReadAssembly path'
+    let visit = def'.MainModule.GetAllTypes()
+                |> Seq.collect (fun t -> t.Methods)
+                |> Seq.filter (fun m -> m.Name = "Visit")
+                |> Seq.head
+    let def'' = Mono.Cecil.AssemblyDefinition.ReadAssembly where
+
+    let state' = { state with RecordingAssembly = def'
+                              RecordingMethod = visit
+                              RecordingMethodRef = def''.MainModule.Import visit}
+    let result = Instrument.InstrumentationVisitor state' visited
+    let ref'' = def.MainModule.Import visit
+
+    Assert.That (result.RecordingMethodRef.Module,
+                Is.EqualTo ( def.MainModule))
+    Assert.That (string result.RecordingMethodRef,
+                Is.EqualTo (string visit))
+    Assert.That ({ result with RecordingMethodRef = null},
+                 Is.EqualTo  { state' with ModuleId = def.MainModule.Mvid
+                                                      RecordingMethod = visit
+                                                      RecordingMethodRef = null })
+
+  [<Test>]
   member self.AfterModuleShouldNotChangeState () =
     let input = Instrument.Context.Build []
     let output = Instrument.InstrumentationVisitor input AfterModule
