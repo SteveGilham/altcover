@@ -62,9 +62,9 @@ Target "SetVersion" (fun _ ->
     let diff = now.Subtract(epoch)
     let fraction = diff.Subtract(TimeSpan.FromDays(float diff.Days))
     let revision= ((int fraction.TotalSeconds) / 3)
-    let appveyor = environVar "APPVEYOR_BUILD_NUMBER"
-    let majmin = "1.4"
-    let version = if String.IsNullOrWhiteSpace appveyor then sprintf "%s.%d.%d" majmin diff.Days revision else sprintf "%s.%s.0" majmin appveyor
+    let appveyor = environVar "APPVEYOR_BUILD_VERSION"
+    let majmin = if String.IsNullOrWhiteSpace appveyor then "1.4" else String.Join(".", appveyor.Split('.') |> Seq.take 2) // TODO read YAML
+    let version = if String.IsNullOrWhiteSpace appveyor then sprintf "%s.%d.%d" majmin diff.Days revision else appveyor
     Version := version
     let copy = sprintf "© 2010-%d by Steve Gilham <SteveGilham@users.noreply.github.com>" now.Year
     Copyright := "Copyright " + copy
@@ -116,7 +116,7 @@ Target "BuildRelease" (fun _ ->
    ILMerge (fun p -> { p with DebugInfo = true
                               TargetKind = TargetKind.Exe
                               KeyFile = "./Build/Infrastructure.snk"
-                              Version = !Version
+                              Version = (!Version).Split('-') |> Seq.head
                               Internalize = InternalizeTypes.Internalize
                               Libraries = !! "./_Binaries/AltCover/Release+AnyCPU/Mono.C*.dll"
                               AttributeFile = "./_Binaries/AltCover/Release+AnyCPU/AltCover.exe"})
