@@ -1377,6 +1377,63 @@ type AltCoverTests() = class
     Assert.That (paired' |> Seq.forall (fun (i,j) -> i = j.OpCode))
 
   [<Test>]
+  member self.UpdateStrongReferencesShouldChangeSigningKey () =
+    let where = Assembly.GetExecutingAssembly().Location;
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
+    let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    ProgramDatabase.ReadSymbols def
+    let token0 = def.Name.PublicKeyToken
+
+    use stream = typeof<AltCover.Node>.Assembly.GetManifestResourceStream("AltCover.Recorder.snk")
+    use buffer = new MemoryStream()
+    stream.CopyTo(buffer)
+    Visitor.defaultStrongNameKey <- Some (StrongNameKeyPair(buffer.ToArray()))
+
+    let result = Instrument.UpdateStrongReferences def []
+    let token1 = def.Name.PublicKeyToken
+    Assert.That (token1, Is.Not.Null)
+    Assert.That (token1, Is.Not.EquivalentTo(token0))
+    let token' = String.Join(String.Empty, token1|> Seq.map (fun x -> x.ToString("x2")))
+    Assert.That (token', Is.EqualTo("4ebffcaabf10ce6a"))
+    Assert.That (result, Is.Empty)
+
+  [<Test>]
+  member self.UpdateStrongReferencesShouldNotAddASigningKey () =
+    let where = Assembly.GetExecutingAssembly().Location;
+    let path = Path.Combine(where.Substring(0, where.IndexOf("_Binaries")) + "_Mono\\Sample1", "Sample1.exe")
+    let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    ProgramDatabase.ReadSymbols def
+
+    use stream = typeof<AltCover.Node>.Assembly.GetManifestResourceStream("AltCover.Recorder.snk")
+    use buffer = new MemoryStream()
+    stream.CopyTo(buffer)
+    Visitor.defaultStrongNameKey <- Some (StrongNameKeyPair(buffer.ToArray()))
+
+    let result = Instrument.UpdateStrongReferences def []
+    let token1 = def.Name.PublicKeyToken
+    Assert.That (token1, Is.Empty)
+    Assert.That (result, Is.Empty)
+
+  [<Test>]
+  member self.UpdateStrongReferencesShouldTrackReferences () =
+    let where = Assembly.GetExecutingAssembly().Location;
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
+    let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    ProgramDatabase.ReadSymbols def
+
+    use stream = typeof<AltCover.Node>.Assembly.GetManifestResourceStream("AltCover.Recorder.snk")
+    use buffer = new MemoryStream()
+    stream.CopyTo(buffer)
+    Visitor.defaultStrongNameKey <- Some (StrongNameKeyPair(buffer.ToArray()))
+
+    let result = Instrument.UpdateStrongReferences def ["nunit.framework"; "nonesuch"]
+    Assert.That (result.Count, Is.EqualTo 1)
+    Assert.That (result.Values |> Seq.head, Does.EndWith "PublicKeyToken=4ebffcaabf10ce6a")
+    let key = result.Keys |> Seq.head
+    Assert.That (result.Values |> Seq.head, 
+                 Is.EqualTo (key.Substring(0, key.Length - 16) + "4ebffcaabf10ce6a"))
+
+  [<Test>]
   member self.AfterModuleShouldNotChangeState () =
     let input = Instrument.Context.Build []
     let output = Instrument.InstrumentationVisitor input AfterModule
