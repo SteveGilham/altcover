@@ -1377,6 +1377,216 @@ type AltCoverTests() = class
     Assert.That (paired' |> Seq.forall (fun (i,j) -> i = j.OpCode))
 
   [<Test>]
+  member self.UpdateStrongReferencesShouldChangeSigningKey () =
+    let where = Assembly.GetExecutingAssembly().Location;
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
+    let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    ProgramDatabase.ReadSymbols def
+    let token0 = def.Name.PublicKeyToken
+
+    use stream = typeof<AltCover.Node>.Assembly.GetManifestResourceStream("AltCover.Recorder.snk")
+    use buffer = new MemoryStream()
+    stream.CopyTo(buffer)
+    Visitor.defaultStrongNameKey <- Some (StrongNameKeyPair(buffer.ToArray()))
+
+    let result = Instrument.UpdateStrongReferences def []
+    let token1 = def.Name.PublicKeyToken
+    Assert.That (token1, Is.Not.Null)
+    Assert.That (token1, Is.Not.EquivalentTo(token0))
+    let token' = String.Join(String.Empty, token1|> Seq.map (fun x -> x.ToString("x2")))
+    Assert.That (token', Is.EqualTo("4ebffcaabf10ce6a"))
+    Assert.That (result, Is.Empty)
+
+  [<Test>]
+  member self.UpdateStrongReferencesShouldNotAddASigningKey () =
+    let where = Assembly.GetExecutingAssembly().Location;
+    let path = Path.Combine(where.Substring(0, where.IndexOf("_Binaries")) + "_Mono\\Sample1", "Sample1.exe")
+    let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    ProgramDatabase.ReadSymbols def
+
+    use stream = typeof<AltCover.Node>.Assembly.GetManifestResourceStream("AltCover.Recorder.snk")
+    use buffer = new MemoryStream()
+    stream.CopyTo(buffer)
+    Visitor.defaultStrongNameKey <- Some (StrongNameKeyPair(buffer.ToArray()))
+
+    let result = Instrument.UpdateStrongReferences def []
+    let token1 = def.Name.PublicKeyToken
+    Assert.That (token1, Is.Empty)
+    Assert.That (result, Is.Empty)
+
+  [<Test>]
+  member self.UpdateStrongReferencesShouldTrackReferences () =
+    let where = Assembly.GetExecutingAssembly().Location;
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
+    let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    ProgramDatabase.ReadSymbols def
+
+    use stream = typeof<AltCover.Node>.Assembly.GetManifestResourceStream("AltCover.Recorder.snk")
+    use buffer = new MemoryStream()
+    stream.CopyTo(buffer)
+    Visitor.defaultStrongNameKey <- Some (StrongNameKeyPair(buffer.ToArray()))
+
+    let result = Instrument.UpdateStrongReferences def ["nunit.framework"; "nonesuch"]
+    Assert.That (result.Count, Is.EqualTo 1)
+    Assert.That (result.Values |> Seq.head, Does.EndWith "PublicKeyToken=4ebffcaabf10ce6a")
+    let key = result.Keys |> Seq.head
+    Assert.That (result.Values |> Seq.head,
+                 Is.EqualTo (key.Substring(0, key.Length - 16) + "4ebffcaabf10ce6a"))
+
+  [<Test>]
+  member self.ExcludedAssemblyRefsAreNotUpdated () =
+    let where = Assembly.GetExecutingAssembly().Location;
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
+    let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    ProgramDatabase.ReadSymbols def
+    let refs = def.MainModule.AssemblyReferences |> Seq.toList
+
+    use stream = typeof<AltCover.Node>.Assembly.GetManifestResourceStream("AltCover.Recorder.snk")
+    use buffer = new MemoryStream()
+    stream.CopyTo(buffer)
+    Visitor.defaultStrongNameKey <- Some (StrongNameKeyPair(buffer.ToArray()))
+    let fake = Mono.Cecil.AssemblyDefinition.ReadAssembly (Assembly.GetExecutingAssembly().Location)
+    let state = Instrument.Context.Build ["nunit.framework"; "nonesuch"]
+    let visited = Node.Assembly (def, false)
+
+    let result = Instrument.InstrumentationVisitor {state with RecordingAssembly = fake } visited
+    Assert.That (result.RenameTable.Count, Is.EqualTo 1)
+    Assert.That (result.RenameTable.Values |> Seq.head, Does.EndWith "PublicKeyToken=4ebffcaabf10ce6a")
+    let key = result.RenameTable.Keys |> Seq.head
+    Assert.That (result.RenameTable.Values |> Seq.head,
+                 Is.EqualTo (key.Substring(0, key.Length - 16) + "4ebffcaabf10ce6a"))
+    Assert.That (def.MainModule.AssemblyReferences, Is.EquivalentTo refs)
+
+  [<Test>]
+  member self.IncludedAssemblyRefsAreUpdated () =
+    let where = Assembly.GetExecutingAssembly().Location;
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
+    let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    ProgramDatabase.ReadSymbols def
+    let refs = def.MainModule.AssemblyReferences |> Seq.toList
+
+    use stream = typeof<AltCover.Node>.Assembly.GetManifestResourceStream("AltCover.Recorder.snk")
+    use buffer = new MemoryStream()
+    stream.CopyTo(buffer)
+    Visitor.defaultStrongNameKey <- Some (StrongNameKeyPair(buffer.ToArray()))
+    let fake = Mono.Cecil.AssemblyDefinition.ReadAssembly (Assembly.GetExecutingAssembly().Location)
+    let state = Instrument.Context.Build ["nunit.framework"; "nonesuch"]
+    let visited = Node.Assembly (def, true)
+
+    let result = Instrument.InstrumentationVisitor {state with RecordingAssembly = fake } visited
+    Assert.That (result.RenameTable.Count, Is.EqualTo 1)
+    Assert.That (result.RenameTable.Values |> Seq.head, Does.EndWith "PublicKeyToken=4ebffcaabf10ce6a")
+    let key = result.RenameTable.Keys |> Seq.head
+    Assert.That (result.RenameTable.Values |> Seq.head,
+                 Is.EqualTo (key.Substring(0, key.Length - 16) + "4ebffcaabf10ce6a"))
+    Assert.That (def.MainModule.AssemblyReferences, Is.EquivalentTo (refs @ [fake.Name]))
+
+  [<Test>]
+  member self.ExcludedModuleJustRecordsMVid () =
+    let where = Assembly.GetExecutingAssembly().Location;
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
+    let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    ProgramDatabase.ReadSymbols def
+    let visited = Node.Module (def.MainModule, false)
+    let state = Instrument.Context.Build ["nunit.framework"; "nonesuch"]
+    let result = Instrument.InstrumentationVisitor  state visited
+    Assert.That (result, Is.EqualTo  { state with ModuleId = def.MainModule.Mvid })
+
+  [<Test>]
+  member self.IncludedModuleEnsuresRecorder () =
+    let where = Assembly.GetExecutingAssembly().Location;
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
+    let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    ProgramDatabase.ReadSymbols def
+    let visited = Node.Module (def.MainModule, true)
+    let state = Instrument.Context.Build ["nunit.framework"; "nonesuch"]
+
+    let path' = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(),
+                             "AltCover.Recorder.dll")
+    let def' = Mono.Cecil.AssemblyDefinition.ReadAssembly path'
+    let visit = def'.MainModule.GetAllTypes()
+                |> Seq.collect (fun t -> t.Methods)
+                |> Seq.filter (fun m -> m.Name = "Visit")
+                |> Seq.head
+
+    let state' = { state with RecordingAssembly = def' }
+    let result = Instrument.InstrumentationVisitor state' visited
+    Assert.That (result.RecordingMethodRef.Module,
+                Is.EqualTo ( def.MainModule))
+    Assert.That (string result.RecordingMethodRef,
+                Is.EqualTo (string visit))
+    Assert.That ({ result with RecordingMethodRef = null},
+                 Is.EqualTo  { state' with ModuleId = def.MainModule.Mvid
+                                                      RecordingMethod = visit
+                                                      RecordingMethodRef = null })
+
+  [<Test>]
+  member self.ExcludedMethodPointIsPassThrough () =
+    let where = Assembly.GetExecutingAssembly().Location;
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
+    let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    ProgramDatabase.ReadSymbols def
+    let visited = Node.MethodPoint (null, 0, false)
+    let state = Instrument.Context.Build []
+    let result = Instrument.InstrumentationVisitor state visited
+    Assert.That (result, Is.SameAs state)
+
+  [<Test>]
+  member self.IncludedMethodPointInsertsVisit () =
+    let where = Assembly.GetExecutingAssembly().Location;
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
+    let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    ProgramDatabase.ReadSymbols def
+    let module' = def.MainModule.GetType("N.DU")
+    let du = module'.NestedTypes |> Seq.filter (fun t -> t.Name = "MyUnion") |> Seq.head
+    let main = du.GetMethods() |> Seq.find (fun x -> x.Name = "as_bar")
+    let proc = main.Body.GetILProcessor()
+    let target = main.Body.Instructions
+                 |> Seq.filter (fun i -> not (isNull i.SequencePoint))
+                 |> Seq.head
+    let visited = Node.MethodPoint (target, 32767, true)
+    Assert.That (target.Previous, Is.Null)
+    let state = { (Instrument.Context.Build []) with MethodWorker = proc
+                                                     MethodBody = main.Body
+                                                     RecordingMethodRef = def.MainModule.Import main}
+    let result = Instrument.InstrumentationVisitor state visited
+    Assert.That (result, Is.SameAs state)
+    Assert.That (target.Previous.OpCode, Is.EqualTo OpCodes.Call)
+
+  [<Test>]
+  member self.IncludedModuleDoesNotChangeRecorderJustTheReference () =
+    let where = Assembly.GetExecutingAssembly().Location;
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
+    let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    ProgramDatabase.ReadSymbols def
+    let visited = Node.Module (def.MainModule, true)
+    let state = Instrument.Context.Build ["nunit.framework"; "nonesuch"]
+
+    let path' = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(),
+                             "AltCover.Recorder.dll")
+    let def' = Mono.Cecil.AssemblyDefinition.ReadAssembly path'
+    let visit = def'.MainModule.GetAllTypes()
+                |> Seq.collect (fun t -> t.Methods)
+                |> Seq.filter (fun m -> m.Name = "Visit")
+                |> Seq.head
+    let def'' = Mono.Cecil.AssemblyDefinition.ReadAssembly where
+
+    let state' = { state with RecordingAssembly = def'
+                              RecordingMethod = visit
+                              RecordingMethodRef = def''.MainModule.Import visit}
+    let result = Instrument.InstrumentationVisitor state' visited
+    let ref'' = def.MainModule.Import visit
+
+    Assert.That (result.RecordingMethodRef.Module,
+                Is.EqualTo ( def.MainModule))
+    Assert.That (string result.RecordingMethodRef,
+                Is.EqualTo (string visit))
+    Assert.That ({ result with RecordingMethodRef = null},
+                 Is.EqualTo  { state' with ModuleId = def.MainModule.Mvid
+                                                      RecordingMethod = visit
+                                                      RecordingMethodRef = null })
+
+  [<Test>]
   member self.AfterModuleShouldNotChangeState () =
     let input = Instrument.Context.Build []
     let output = Instrument.InstrumentationVisitor input AfterModule
