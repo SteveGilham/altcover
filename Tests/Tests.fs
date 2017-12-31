@@ -1521,6 +1521,39 @@ type AltCoverTests() = class
                                                       RecordingMethodRef = null })
 
   [<Test>]
+  member self.ExcludedMethodPointIsPassThrough () =
+    let where = Assembly.GetExecutingAssembly().Location;
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
+    let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    ProgramDatabase.ReadSymbols def
+    let visited = Node.MethodPoint (null, 0, false)
+    let state = Instrument.Context.Build []
+    let result = Instrument.InstrumentationVisitor state visited
+    Assert.That (result, Is.SameAs state)
+
+  [<Test>]
+  member self.IncludedMethodPointInsertsVisit () =
+    let where = Assembly.GetExecutingAssembly().Location;
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
+    let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    ProgramDatabase.ReadSymbols def
+    let module' = def.MainModule.GetType("N.DU")
+    let du = module'.NestedTypes |> Seq.filter (fun t -> t.Name = "MyUnion") |> Seq.head
+    let main = du.GetMethods() |> Seq.find (fun x -> x.Name = "as_bar")
+    let proc = main.Body.GetILProcessor()
+    let target = main.Body.Instructions
+                 |> Seq.filter (fun i -> not (isNull i.SequencePoint))
+                 |> Seq.head
+    let visited = Node.MethodPoint (target, 32767, true)
+    Assert.That (target.Previous, Is.Null)
+    let state = { (Instrument.Context.Build []) with MethodWorker = proc
+                                                     MethodBody = main.Body
+                                                     RecordingMethodRef = def.MainModule.Import main}
+    let result = Instrument.InstrumentationVisitor state visited
+    Assert.That (result, Is.SameAs state)
+    Assert.That (target.Previous.OpCode, Is.EqualTo OpCodes.Call)
+
+  [<Test>]
   member self.IncludedModuleDoesNotChangeRecorderJustTheReference () =
     let where = Assembly.GetExecutingAssembly().Location;
     let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
