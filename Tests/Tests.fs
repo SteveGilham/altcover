@@ -1430,7 +1430,7 @@ type AltCoverTests() = class
     Assert.That (result.Count, Is.EqualTo 1)
     Assert.That (result.Values |> Seq.head, Does.EndWith "PublicKeyToken=4ebffcaabf10ce6a")
     let key = result.Keys |> Seq.head
-    Assert.That (result.Values |> Seq.head, 
+    Assert.That (result.Values |> Seq.head,
                  Is.EqualTo (key.Substring(0, key.Length - 16) + "4ebffcaabf10ce6a"))
 
   [<Test>]
@@ -1453,7 +1453,7 @@ type AltCoverTests() = class
     Assert.That (result.RenameTable.Count, Is.EqualTo 1)
     Assert.That (result.RenameTable.Values |> Seq.head, Does.EndWith "PublicKeyToken=4ebffcaabf10ce6a")
     let key = result.RenameTable.Keys |> Seq.head
-    Assert.That (result.RenameTable.Values |> Seq.head, 
+    Assert.That (result.RenameTable.Values |> Seq.head,
                  Is.EqualTo (key.Substring(0, key.Length - 16) + "4ebffcaabf10ce6a"))
     Assert.That (def.MainModule.AssemblyReferences, Is.EquivalentTo refs)
 
@@ -1477,10 +1477,9 @@ type AltCoverTests() = class
     Assert.That (result.RenameTable.Count, Is.EqualTo 1)
     Assert.That (result.RenameTable.Values |> Seq.head, Does.EndWith "PublicKeyToken=4ebffcaabf10ce6a")
     let key = result.RenameTable.Keys |> Seq.head
-    Assert.That (result.RenameTable.Values |> Seq.head, 
+    Assert.That (result.RenameTable.Values |> Seq.head,
                  Is.EqualTo (key.Substring(0, key.Length - 16) + "4ebffcaabf10ce6a"))
     Assert.That (def.MainModule.AssemblyReferences, Is.EquivalentTo (refs @ [fake.Name]))
-
 
   [<Test>]
   member self.AfterModuleShouldNotChangeState () =
