@@ -1434,6 +1434,55 @@ type AltCoverTests() = class
                  Is.EqualTo (key.Substring(0, key.Length - 16) + "4ebffcaabf10ce6a"))
 
   [<Test>]
+  member self.ExcludedAssemblyRefsAreNotUpdated () =
+    let where = Assembly.GetExecutingAssembly().Location;
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
+    let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    ProgramDatabase.ReadSymbols def
+    let refs = def.MainModule.AssemblyReferences |> Seq.toList
+
+    use stream = typeof<AltCover.Node>.Assembly.GetManifestResourceStream("AltCover.Recorder.snk")
+    use buffer = new MemoryStream()
+    stream.CopyTo(buffer)
+    Visitor.defaultStrongNameKey <- Some (StrongNameKeyPair(buffer.ToArray()))
+    let fake = Mono.Cecil.AssemblyDefinition.ReadAssembly (Assembly.GetExecutingAssembly().Location)
+    let state = Instrument.Context.Build ["nunit.framework"; "nonesuch"]
+    let visited = Node.Assembly (def, false)
+
+    let result = Instrument.InstrumentationVisitor {state with RecordingAssembly = fake } visited
+    Assert.That (result.RenameTable.Count, Is.EqualTo 1)
+    Assert.That (result.RenameTable.Values |> Seq.head, Does.EndWith "PublicKeyToken=4ebffcaabf10ce6a")
+    let key = result.RenameTable.Keys |> Seq.head
+    Assert.That (result.RenameTable.Values |> Seq.head, 
+                 Is.EqualTo (key.Substring(0, key.Length - 16) + "4ebffcaabf10ce6a"))
+    Assert.That (def.MainModule.AssemblyReferences, Is.EquivalentTo refs)
+
+  [<Test>]
+  member self.IncludedAssemblyRefsAreUpdated () =
+    let where = Assembly.GetExecutingAssembly().Location;
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
+    let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    ProgramDatabase.ReadSymbols def
+    let refs = def.MainModule.AssemblyReferences |> Seq.toList
+
+    use stream = typeof<AltCover.Node>.Assembly.GetManifestResourceStream("AltCover.Recorder.snk")
+    use buffer = new MemoryStream()
+    stream.CopyTo(buffer)
+    Visitor.defaultStrongNameKey <- Some (StrongNameKeyPair(buffer.ToArray()))
+    let fake = Mono.Cecil.AssemblyDefinition.ReadAssembly (Assembly.GetExecutingAssembly().Location)
+    let state = Instrument.Context.Build ["nunit.framework"; "nonesuch"]
+    let visited = Node.Assembly (def, true)
+
+    let result = Instrument.InstrumentationVisitor {state with RecordingAssembly = fake } visited
+    Assert.That (result.RenameTable.Count, Is.EqualTo 1)
+    Assert.That (result.RenameTable.Values |> Seq.head, Does.EndWith "PublicKeyToken=4ebffcaabf10ce6a")
+    let key = result.RenameTable.Keys |> Seq.head
+    Assert.That (result.RenameTable.Values |> Seq.head, 
+                 Is.EqualTo (key.Substring(0, key.Length - 16) + "4ebffcaabf10ce6a"))
+    Assert.That (def.MainModule.AssemblyReferences, Is.EquivalentTo (refs @ [fake.Name]))
+
+
+  [<Test>]
   member self.AfterModuleShouldNotChangeState () =
     let input = Instrument.Context.Build []
     let output = Instrument.InstrumentationVisitor input AfterModule
