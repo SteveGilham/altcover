@@ -62,10 +62,9 @@ Target "SetVersion" (fun _ ->
     let diff = now.Subtract(epoch)
     let fraction = diff.Subtract(TimeSpan.FromDays(float diff.Days))
     let revision= ((int fraction.TotalSeconds) / 3)
-    let appveyor = environVar "APPVEYOR_BUILD_NUMBER"
-    let majmin = "1.0"
-    let version = if String.IsNullOrWhiteSpace appveyor then sprintf "%s.%d.%d" majmin diff.Days revision else sprintf "%s.%s.0" majmin appveyor
-    Version := version
+    let appveyor = environVar "APPVEYOR_BUILD_VERSION"
+    let majmin = if String.IsNullOrWhiteSpace appveyor then "1.4" else String.Join(".", appveyor.Split('.') |> Seq.take 2) // TODO read YAML
+    Version := if String.IsNullOrWhiteSpace appveyor then sprintf "%s.%d.%d" majmin diff.Days revision else appveyor
     let copy = sprintf "© 2010-%d by Steve Gilham <SteveGilham@users.noreply.github.com>" now.Year
     Copyright := "Copyright " + copy
 
@@ -79,7 +78,7 @@ Target "SetVersion" (fun _ ->
 
     CreateFSharpAssemblyInfo "./_Generated/AssemblyVersion.fs"
         [Attribute.Version (majmin + ".0.0")
-         Attribute.FileVersion version
+         Attribute.FileVersion (!Version)
          Attribute.Company "Steve Gilham"
          Attribute.Product "AltCover"
          Attribute.Trademark ""
@@ -101,7 +100,7 @@ open System.Runtime.CompilerServices
 ()
 "
     let file = String.Format(System.Globalization.CultureInfo.InvariantCulture,
-                template, version, key.Replace("-", String.Empty), key2.Replace("-", String.Empty))
+                template, (!Version), key.Replace("-", String.Empty), key2.Replace("-", String.Empty))
     let path = @"_Generated\VisibleToTest.fs"
     // Update the file only if it would change
     let old = if File.Exists(path) then File.ReadAllText(path) else String.Empty
@@ -116,7 +115,7 @@ Target "BuildRelease" (fun _ ->
    ILMerge (fun p -> { p with DebugInfo = true
                               TargetKind = TargetKind.Exe
                               KeyFile = "./Build/Infrastructure.snk"
-                              Version = !Version
+                              Version = (String.Join(".", (!Version).Split('.') |> Seq.take 2) + ".0.0")
                               Internalize = InternalizeTypes.Internalize
                               Libraries = !! "./_Binaries/AltCover/Release+AnyCPU/Mono.C*.dll"
                               AttributeFile = "./_Binaries/AltCover/Release+AnyCPU/AltCover.exe"})
