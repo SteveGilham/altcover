@@ -63,7 +63,7 @@ Target "SetVersion" (fun _ ->
     let fraction = diff.Subtract(TimeSpan.FromDays(float diff.Days))
     let revision= ((int fraction.TotalSeconds) / 3)
     let appveyor = environVar "APPVEYOR_BUILD_VERSION"
-    let majmin = if String.IsNullOrWhiteSpace appveyor then "1.4" else String.Join(".", appveyor.Split('.') |> Seq.take 2) // TODO read YAML
+    let majmin = if String.IsNullOrWhiteSpace appveyor then "1.0" else String.Join(".", appveyor.Split('.') |> Seq.take 2) // TODO read YAML
     Version := if String.IsNullOrWhiteSpace appveyor then sprintf "%s.%d.%d" majmin diff.Days revision else appveyor
     let copy = sprintf "© 2010-%d by Steve Gilham <SteveGilham@users.noreply.github.com>" now.Year
     Copyright := "Copyright " + copy
