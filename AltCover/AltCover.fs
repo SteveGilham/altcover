@@ -217,8 +217,7 @@ module Main =
            let args = String.Join(" ", (List.toArray t))
            Launch cmd args toInfo.FullName // Spawn process, echoing asynchronously
 
-  [<EntryPoint>]
-  let private Main arguments =
+  let internal DoInstrumentation arguments =
     let check1 = DeclareOptions ()
                  |> ParseCommandLine arguments
                  |> ProcessHelpOption
@@ -240,4 +239,7 @@ module Main =
       with
       | :? IOException as x -> WriteErr x.Message
 
-    0                     
+  [<EntryPoint>]
+  let private Main arguments =
+    DoInstrumentation arguments
+    0

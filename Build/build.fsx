@@ -423,6 +423,8 @@ Target "FxCop" (fun _ ->
 )
 
 Target "Gendarme" (fun _ ->
+    ensureDirectory "./_Reports"
+
     let r = ExecProcess (fun info -> info.FileName <- (findToolInSubPath "gendarme.exe" ".\packages")
                                      info.WorkingDirectory <- "."
                                      info.Arguments <- "--severity all --confidence all --config ./Build/rules.xml --console --html ./_Reports/gendarme.html _Binaries/AltCover/Debug+AnyCPU/AltCover.exe  _Binaries/AltCover.Shadow/Debug+AnyCPU/AltCover.Shadow.dll") (TimeSpan.FromMinutes 5.0)
