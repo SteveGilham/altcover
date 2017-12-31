@@ -197,6 +197,7 @@ Target "SelfTest" (fun _ ->
                                  TestRunnerExePath = findToolInSubPath "AltCover.exe" targetDir
                                  Filter = OpenCoverFilter
                                  MergeByHash = true
+                                 OptionalArguments = "-excludebyattribute:*ExcludeFromCodeCoverageAttribute"
                                  Register = RegisterType.RegisterUser
                                  Output = reports @@ "OpenCoverInstrumentationReport.xml" })
         ("/sn=" + keyfile + AltCoverFilter + "-x=" + altReport)
@@ -259,6 +260,7 @@ Target "SelfTest" (fun _ ->
                                  TestRunnerExePath = findToolInSubPath "nunit3-console.exe" "."
                                  Filter = OpenCoverFilter
                                  MergeByHash = true
+                                 OptionalArguments = "-excludebyattribute:*ExcludeFromCodeCoverageAttribute"
                                  Register = RegisterType.RegisterUser
                                  Output = "_Reports/OpenCoverReportAltCovered.xml" })
         "_Binaries/AltCover.Tests/Debug+AnyCPU/__Instrumented/AltCover.Tests.dll _Binaries/AltCover.Tests/Debug+AnyCPU/__Instrumented/Sample2.dll --result=./_Reports/NUnit3ReportAltCovered.xml"
