@@ -4,7 +4,7 @@ Instrumenting coverage tool for .net and Mono, reimplemented and extended from [
 ## Why altcover?
 As the name suggests, it's an alternative coverage approach.  Rather than working by hooking the .net profiling API at run-time, it works by weaving the same sort of extra IL into the assemblies of interest ahead of execution.  This means that it should work pretty much everywhere, so long as the executing process has write access to the results file.
 
-In particular, this approach supports Mono, as long as suitable `.mdb` symbols are available.  The major limitation here is that the `.mdb` format only stores the start location in the source of any code sequence point, and not the end; consequently nicely coloured reports may be a bit patchy.
+In particular, this approach supports Mono, as long as suitable `.mdb` symbols are available.  The major limitation here is that the `.mdb` format only stores the start location in the source of any code sequence point, and not the end; consequently any nicely coloured reports that take that information into account may show a bit strangely.
 
 ## Continuous Integration
 
@@ -33,7 +33,7 @@ In detail
 *  -m, --methodFilter=VALUE    Optional: method name to exclude from instrumentation (may repeat)
 *  -a, --attributeFilter=VALUE Optional: attribute name to exclude from instrumentation (may repeat)
 *  -?, --help, -h              Prints out the options.
-* `--`                         the rest of the command line is treated as a command to execute after performing instrumentation
+* --                           the rest of the command line is treated as a command to execute after performing instrumentation
 
 Coverage statistics are written to the file nominated by the `x|xmlReport=` parameter as instrumented assemblies are unloaded from an executing AppDomain, even if this is days or weeks later.  In practice the instrumented assemblies should be deleted after the relevant testing has been run, and the report file will thus be freed up.
 
@@ -70,6 +70,10 @@ Running `.\Build\get-nuget.ps1` pre-installs all the NuGet packages, including, 
 ### Normal builds
 
 Running `.\fake.bat` performs a full build/test/package process.
+
+### Unit Tests
+
+The tests in the `Tests.fs` file are ordered in the same dependency order as the code within the AltCover project.  While working on any given layer, it would make sense to comment out all the tests for later files so as to show what is and isn't being covered by explicit testing, rather than merely being cascaded through.
 
 ## Thanks to
 
