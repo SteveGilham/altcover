@@ -2,6 +2,7 @@ version: 1.0.{build}
 branches:
   except:
   - /develop.*/
+skip_tags: true
 image: Visual Studio 2017
 shallow_clone: true
 environment:
