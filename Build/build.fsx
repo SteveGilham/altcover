@@ -5,6 +5,8 @@
 #r "ZipStorer.dll"
 #I "../packages/FSharp.Formatting.2.14.4/lib/net40"
 #r "FSharp.Markdown.dll"
+#I "../packages/YamlDotNet.4.2.3/lib/net35/"
+#r "YamlDotNet.dll"
 #r "System.Xml"
 #r "System.Xml.Linq"
 
@@ -21,8 +23,8 @@ open Fake.Testing
 open Fake.OpenCoverHelper
 open Fake.ReportGeneratorHelper
 open FSharp.Markdown
-
 open FSharpLint.Fake
+open YamlDotNet.RepresentationModel
 
 let Copyright  = ref String.Empty
 let Version = ref String.Empty
@@ -62,9 +64,16 @@ Target "SetVersion" (fun _ ->
     let diff = now.Subtract(epoch)
     let fraction = diff.Subtract(TimeSpan.FromDays(float diff.Days))
     let revision= ((int fraction.TotalSeconds) / 3)
-    let appveyor = environVar "APPVEYOR_BUILD_VERSION"
-    let majmin = if String.IsNullOrWhiteSpace appveyor then "1.4" else String.Join(".", appveyor.Split('.') |> Seq.take 2) // TODO read YAML
+    use yaml = new FileStream("appveyor.yml", FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.SequentialScan)
+    use yreader = new StreamReader(yaml)
+    let ystream = new YamlStream()
+    ystream.Load(yreader)
+    let mapping = ystream.Documents.[0].RootNode :?> YamlMappingNode
+    let version = (string mapping.Children.[YamlScalarNode("version")])
+    let majmin = String.Join(".", version.Split('.') |> Seq.take 2)
+    let appveyor = environVar "APPVEYOR_BUILD_VERSION"    
     Version := if String.IsNullOrWhiteSpace appveyor then sprintf "%s.%d.%d" majmin diff.Days revision else appveyor
+    printfn "Build version : %s" (!Version)
     let copy = sprintf "© 2010-%d by Steve Gilham <SteveGilham@users.noreply.github.com>" now.Year
     Copyright := "Copyright " + copy
 

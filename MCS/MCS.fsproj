@@ -109,6 +109,9 @@
       <HintPath>..\packages\FSharp.Formatting.2.14.4\lib\net40\System.Web.Razor.dll</HintPath>
     </Reference>
     <Reference Include="System.Xml" />
+    <Reference Include="YamlDotNet">
+      <HintPath>..\packages\YamlDotNet.4.2.3\lib\net35\YamlDotNet.dll</HintPath>
+    </Reference>
     <Reference Include="ZipStorer">
       <HintPath>..\packages\ZipStorer.3.4.0\lib\net452\ZipStorer.dll</HintPath>
     </Reference>
