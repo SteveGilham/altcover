@@ -436,7 +436,7 @@ Target "Package"  (fun _ ->
     ensureDirectory "./_Binaries/Packaging"
     ensureDirectory "./_Packaging"
 
-    let packingCopyright = (!Copyright).Replace("©", "(c)"))
+    let packingCopyright = (!Copyright).Replace("©", "&#xa9;").Replace("<","&lt;").Replace(">", "&gt;")
     let AltCover = FullName "_Binaries/AltCover/AltCover.exe"
     let recorder = FullName "_Binaries/AltCover/Release+AnyCPU/AltCover.Recorder.dll"
     let resources = filesInDirMatchingRecursive "AltCover.resources.dll" (directoryInfo (FullName "_Binaries/AltCover/Release+AnyCPU")) 
