@@ -24,6 +24,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build Items", "Build Items", "{B9D49110-CE75-418C-BF97-1F94D741EA19}"
 	ProjectSection(SolutionItems) = preProject
 		Build\AltCover.nuspec = Build\AltCover.nuspec
+		appveyor.yml = appveyor.yml
 		Build\build.fsx = Build\build.fsx
 		Build\get-nuget.ps1 = Build\get-nuget.ps1
 		Build\Infrastructure.snk = Build\Infrastructure.snk
