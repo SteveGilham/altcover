@@ -494,7 +494,7 @@ Target "Package"  (fun _ ->
         WorkingDir = "./_Binaries/Packaging"
         Files = List.concat [applicationFiles; resourceFiles]
         Version = !Version
-        Copyright = packingCopyright
+        Copyright = (!Copyright).Replace("©", "(c)")
         Publish = false
         ReleaseNotes = FullName "ReleaseNotes.md"
                        |> File.ReadAllText 
