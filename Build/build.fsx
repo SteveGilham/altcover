@@ -145,7 +145,7 @@ Target "TestCover" (fun _ ->
                                  TestRunnerExePath = findToolInSubPath "nunit3-console.exe" "."
                                  Filter = "+[AltCover]* +[AltCover.Shadow]* -[*]Microsoft.* -[*]System.* -[Sample*]*"
                                  MergeByHash = true
-                                 OptionalArguments = "-excludebyattribute:*ExcludeFromCodeCoverageAttribute"
+                                 OptionalArguments = "-excludebyattribute:*ExcludeFromCodeCoverageAttribute;*ProgIdAttribute"
                                  Register = RegisterType.RegisterUser
                                  Output = "_Reports/OpenCoverReport.xml" })
         "_Binaries/AltCover.Tests/Debug+AnyCPU/AltCover.Tests.dll _Binaries/AltCover.Shadow.Tests/Debug+AnyCPU/AltCover.Shadow.Tests.dll --result=./_Reports/NUnit3ReportOpenCovered.xml"
@@ -205,7 +205,7 @@ Target "SelfTest" (fun _ ->
                                  TestRunnerExePath = findToolInSubPath "AltCover.exe" targetDir
                                  Filter = OpenCoverFilter
                                  MergeByHash = true
-                                 OptionalArguments = "-excludebyattribute:*ExcludeFromCodeCoverageAttribute"
+                                 OptionalArguments = "-excludebyattribute:*ExcludeFromCodeCoverageAttribute;*ProgIdAttribute"
                                  Register = RegisterType.RegisterUser
                                  Output = reports @@ "OpenCoverInstrumentationReport.xml" })
         ("/sn=" + keyfile + AltCoverFilter + "-x=" + altReport)
@@ -268,7 +268,7 @@ Target "SelfTest" (fun _ ->
                                  TestRunnerExePath = findToolInSubPath "nunit3-console.exe" "."
                                  Filter = OpenCoverFilter
                                  MergeByHash = true
-                                 OptionalArguments = "-excludebyattribute:*ExcludeFromCodeCoverageAttribute"
+                                 OptionalArguments = "-excludebyattribute:*ExcludeFromCodeCoverageAttribute;*ProgIdAttribute"
                                  Register = RegisterType.RegisterUser
                                  Output = "_Reports/OpenCoverReportAltCovered.xml" })
         "_Binaries/AltCover.Tests/Debug+AnyCPU/__Instrumented/AltCover.Tests.dll _Binaries/AltCover.Tests/Debug+AnyCPU/__Instrumented/Sample2.dll --result=./_Reports/NUnit3ReportAltCovered.xml"
@@ -399,9 +399,7 @@ Target "BulkReport" (fun _ ->
 Target "FxCop" (fun _ ->
     ensureDirectory "./_Reports"
     let fxCop = combinePaths (environVar "VS150COMNTOOLS") "../../Team Tools/Static Analysis Tools/FxCop/FxCopCmd.exe"
-    ["_Binaries/AltCover/Debug+AnyCPU/AltCover.exe"; "_Binaries/AltCover.Shadow/Debug+AnyCPU/AltCover.Shadow.dll"]
-    |> Seq.filter (fun n -> not (n.EndsWith(".Tests.dll")))
-    |> Seq.filter (fun n -> not (n.EndsWith(".pdb")))
+    ["_Binaries/AltCover/Debug+AnyCPU/AltCover.exe"]
     |> FxCop (fun p -> { p with ToolPath = fxCop
                                 WorkingDir = "."
                                 UseGACSwitch = true
@@ -414,7 +412,6 @@ Target "FxCop" (fun _ ->
                                             "AltCover.Main"
                                             "AltCover.Naming"
                                             "AltCover.ProgramDatabase"
-                                            "AltCover.Recorder.Instance"
                                             "AltCover.Report"
                                             "AltCover.Visitor"
                                             ]
@@ -430,6 +427,27 @@ Target "FxCop" (fun _ ->
                                           ]
                                 IgnoreGeneratedCode  = true})
     if fileExists "_Reports/FxCopReport.xml" then failwith "FxCop Errors were detected"
+
+    ["_Binaries/AltCover.Shadow/Debug+AnyCPU/AltCover.Shadow.dll"]
+    |> FxCop (fun p -> { p with ToolPath = fxCop
+                                WorkingDir = "."
+                                UseGACSwitch = true
+                                Verbose = false
+                                ReportFileName = "_Reports/FxCopReport.xml"
+                                TypeList = ["AltCover.Recorder.Instance"]
+                                Rules = ["-Microsoft.Design#CA1004"
+                                         "-Microsoft.Design#CA1006"
+                                         "-Microsoft.Design#CA1011" // maybe sometimes
+                                         "-Microsoft.Design#CA1062" // null checks,  In F#!
+                                         "-Microsoft.Maintainability#CA1506"
+                                         "-Microsoft.Naming#CA1704"
+                                         "-Microsoft.Naming#CA1707"
+                                         "-Microsoft.Naming#CA1709"
+                                         "-Microsoft.Naming#CA1715"
+                                          ]
+                                IgnoreGeneratedCode  = true})
+    if fileExists "_Reports/FxCopReport.xml" then failwith "FxCop Errors were detected"
+    
 )
 
 Target "Gendarme" (fun _ ->

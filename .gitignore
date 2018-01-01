@@ -61,3 +61,4 @@ _Packaging/
 _Mono/
 Demo/Service/Service/bin/
 Demo/Service/Service/obj/
+*.suo

@@ -5,13 +5,12 @@ namespace AltCover.Recorder
 
 open System
 open System.Collections.Generic
-open System.Diagnostics.CodeAnalysis
 open System.IO
 open System.Runtime.CompilerServices
+open System.Runtime.InteropServices
 open System.Xml
-open System.Xml.Linq
 
-[<ExcludeFromCodeCoverage>]
+[<ProgId("ExcludeFromCodeCoverage")>] // HACK HACK HACK
 type Tracer = { Tracer : string }
 
 // Abstract out compact bits of F# that expand into
@@ -22,11 +21,12 @@ module Locking =
   /// <summary>
   /// Synchronize an action on an object
   /// </summary>
-  /// <param name="f">The actiuon to perform</param>
+  /// <param name="f">The action to perform</param>
   let internal WithLockerLocked (locker:'a) (f: unit -> unit) =
     lock locker f
 
 module Instance =
+  open System.Globalization
 
    /// <summary>
    /// The time at which coverage run began
@@ -64,7 +64,9 @@ module Instance =
   /// stream disposal if and only if the reader or writer doesn't take ownership
   /// </remarks>
   let private ReadXDocument (stream:Stream)  =
-    using (XmlReader.Create stream) (fun (reader:XmlReader) -> XDocument.Load(reader))
+    let doc = XmlDocument()
+    doc.Load(stream)
+    doc
 
   /// <summary>
   /// Write the XDocument
@@ -72,8 +74,8 @@ module Instance =
   /// <param name="coverageDocument">The XML document to write</param>
   /// <param name="path">The XML file to write to</param>
   /// <remarks>Idiom to work with CA2202 as above</remarks>
-  let private WriteXDocument (coverageDocument:XDocument) (stream:Stream) =
-    using (XmlWriter.Create stream) coverageDocument.WriteTo
+  let private WriteXDocument (coverageDocument:XmlDocument) (stream:Stream) =
+    coverageDocument.Save(stream)
 
   /// <summary>
   /// Save sequence point hit counts to xml report file
@@ -86,25 +88,29 @@ module Instance =
     try
       // Edit xml report to store new hits
       let coverageDocument = ReadXDocument coverageFile
+      let root = coverageDocument.DocumentElement
 
-      let startTimeAttr = coverageDocument.Root.Attribute(XName.Get("startTime"))
-      let measureTimeAttr = coverageDocument.Root.Attribute(XName.Get("measureTime"))
-      let oldStartTime = DateTime.ParseExact(startTimeAttr.Value, "o", null)
-      let oldMeasureTime = DateTime.ParseExact(measureTimeAttr.Value, "o", null)
+      let startTimeAttr = root.GetAttribute("startTime")
+      let measureTimeAttr = root.GetAttribute("measureTime")
+      let oldStartTime = DateTime.ParseExact(startTimeAttr, "o", null)
+      let oldMeasureTime = DateTime.ParseExact(measureTimeAttr, "o", null)
 
       startTime <- (if startTime < oldStartTime then startTime else oldStartTime).ToUniversalTime() // Min
       measureTime <- (if measureTime > oldMeasureTime then measureTime else oldMeasureTime).ToUniversalTime() // Max
 
-      startTimeAttr.SetValue(startTime.ToString("o", System.Globalization.CultureInfo.InvariantCulture));
-      measureTimeAttr.SetValue(measureTime.ToString("o", System.Globalization.CultureInfo.InvariantCulture));
+      root.SetAttribute("startTime",
+                         startTime.ToString("o", System.Globalization.CultureInfo.InvariantCulture));
+      root.SetAttribute("measureTime",
+                        measureTime.ToString("o", System.Globalization.CultureInfo.InvariantCulture));
 
       counts
       |> Seq.iter (fun (pair : KeyValuePair<string, Dictionary<int,int>>) ->
           let moduleId = pair.Key;
           let moduleHits = pair.Value;
           let affectedModules =
-              coverageDocument.Descendants(XName.Get("module"))
-              |> Seq.filter (fun el -> el.Attribute(XName.Get("moduleId")).Value.Equals(moduleId))
+              coverageDocument.SelectNodes("//module")
+              |> Seq.cast<XmlElement>
+              |> Seq.filter (fun el -> el.GetAttribute("moduleId").Equals(moduleId))
               |> Seq.truncate 1 // at most 1
 
           affectedModules
@@ -113,25 +119,24 @@ module Instance =
           // affectedModule.Descendants(XName.Get("seqpnt"))
           // Get the methods, then flip their
           // contents before concatenating
-          affectedModule.Descendants(XName.Get("method"))
-          |> Seq.collect (fun (``method``:XElement) -> ``method``.Descendants(XName.Get("seqpnt"))
-                                                       |> Seq.toList |> List.rev)
+          affectedModule.SelectNodes("method")
+          |> Seq.cast<XmlElement>
+          |> Seq.collect (fun (``method``:XmlElement) -> ``method``.SelectNodes("seqpnt")
+                                                           |> Seq.cast<XmlElement>
+                                                           |> Seq.toList |> List.rev)
           |> Seq.mapi (fun counter pt -> (counter, pt))
           |> Seq.filter (fst >> moduleHits.ContainsKey)
           |> Seq.iter (fun x ->
               let pt = snd x
               let counter = fst x
-              let attribute = pt.Attribute(XName.Get("visitcount"))
-              let value = match attribute with
-                          | null -> "0"
-                          | x -> x.Value
+              let attribute = pt.GetAttribute("visitcount")
+              let value = if String.IsNullOrEmpty attribute then "0" else attribute
               let vc = Int32.TryParse(value,
                                       System.Globalization.NumberStyles.Integer,
                                       System.Globalization.CultureInfo.InvariantCulture)
               // Treat -ve visit counts (an exemption added in analysis) as zero
-              let visits = max 0 (if fst vc then snd vc else 0)
-
-              pt.SetAttributeValue(XName.Get("visitcount"), visits + moduleHits.[counter]))))
+              let visits = moduleHits.[counter] + (max 0 (if fst vc then snd vc else 0))
+              pt.SetAttribute("visitcount", visits.ToString(CultureInfo.InvariantCulture)))))
 
       // Save modified xml to a file
       coverageFile.Seek(0L, SeekOrigin.Begin) |> ignore
