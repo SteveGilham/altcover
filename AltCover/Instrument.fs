@@ -114,7 +114,7 @@ module Instrument =
   /// <returns>A representation of the assembly used to record all coverage visits.</returns>
   let internal PrepareAssembly (location:string) =
     let definition = AssemblyDefinition.ReadAssembly(location)
-    ProgramDatabase.ReadSymbols definition
+    ProgramDatabase.ReadSymbols definition |> ignore
     definition.Name.Name <- (extractName definition) + ".g"
     use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Recorder.snk")
     use buffer = new MemoryStream()
@@ -255,11 +255,11 @@ module Instrument =
      match node with
      | Start _ -> let recorder = typeof<AltCover.Recorder.Tracer>
                   { state with RecordingAssembly = PrepareAssembly(recorder.Assembly.Location) }
-     | Assembly (assembly, included) -> let updates = UpdateStrongReferences assembly state.InstrumentedAssemblies
-                                        if included then
-                                           assembly.MainModule.AssemblyReferences.Add(state.RecordingAssembly.Name)
-                                        { state with RenameTable = updates } // TODO use this (attribute mappings IIRC)
-     | Module (m, included) -> //of ModuleDefinition * bool
+     | Assembly (assembly, _, included) -> let updates = UpdateStrongReferences assembly state.InstrumentedAssemblies
+                                           if included then
+                                              assembly.MainModule.AssemblyReferences.Add(state.RecordingAssembly.Name)
+                                           { state with RenameTable = updates } // TODO use this (attribute mappings IIRC)
+     | Module (m, _, included) -> //of ModuleDefinition * bool
          let restate = match included with
                        | true ->
                          let recordingMethod = match state.RecordingMethod with
@@ -274,7 +274,7 @@ module Instrument =
 
      | Type _ -> //of TypeDefinition * bool
          state
-     | Method (m,  included) -> //of MethodDefinition * bool
+     | Method (m, _,  included) -> //of MethodDefinition * bool
          match included with
          | true ->
            let body = m.Body

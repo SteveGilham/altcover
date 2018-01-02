@@ -13,11 +13,12 @@ open Mono.Cecil.Pdb
 module ProgramDatabase =
   // We no longer have to violate Cecil encapsulation to get the PDB path!
   let GetPdbFromImage (assembly:AssemblyDefinition) =
-    let mutable header = [| 0uy |]
+    let mutable header0 = [| 0uy |]
     if assembly.MainModule.HasDebugHeader then
-      let header' = assembly.MainModule.GetDebugHeader()
-      printfn "%A" header' // TODO
-      let name = header // header is followed by UTF-8 nul terminated string
+      let header = assembly.MainModule.GetDebugHeader()
+      let entry = header.Entries // header is followed by UTF-8 nul terminated string
+                  |> Seq.head
+      let name = entry.Data
                       |> Seq.skip 0x18  // size of the debug header
                       |> Seq.takeWhile (fun x -> x <> byte 0)
                       |> Seq.toArray
@@ -42,10 +43,11 @@ module ProgramDatabase =
   // Will fail  with InvalidOperationException if there is a malformed file with the expected name
   let ReadSymbols (assembly:AssemblyDefinition) =
     GetPdbWithFallback assembly
-    |> Option.iter (fun pdbpath ->
+    |> Option.map (fun pdbpath ->
                         let provider : ISymbolReaderProvider = if pdbpath.EndsWith(".pdb", StringComparison.OrdinalIgnoreCase) then
                                                                    PdbReaderProvider() :> ISymbolReaderProvider
                                                                else MdbReaderProvider() :> ISymbolReaderProvider
 
                         let reader = provider.GetSymbolReader(assembly.MainModule, pdbpath)
-                        assembly.MainModule.ReadSymbols(reader))
+                        assembly.MainModule.ReadSymbols(reader)
+                        reader)
