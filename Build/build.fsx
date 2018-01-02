@@ -34,6 +34,7 @@ let AltCoverFilter= " -s=Mono -s=.Recorder -s=Sample -s=nunit -t=System. -t=Samp
 
 Target "Lint" (fun _ ->
     !! "**/*.fsproj"
+        |> Seq.filter (fun n -> n.IndexOf(".core.") = -1)
         |> Seq.iter (FSharpLint (fun options -> { options with FailBuildIfAnyWarnings = true }) ))
 
 // The clean target cleans the build and deploy folders
@@ -119,7 +120,7 @@ open System.Runtime.CompilerServices
 )
 
 Target "BuildRelease" (fun _ ->
-   !! "AltCove*.sln"
+   [ "AltCover.sln" ]
      |> MSBuildRelease "" ""
      |> Log "AppBuild-Output: "
 
@@ -136,6 +137,7 @@ Target "BuildRelease" (fun _ ->
 
 Target "BuildDebug" (fun _ ->
    !! "**/AltCove*.sln"  // include demo projects
+     |> Seq.filter (fun n -> n.IndexOf(".core.") = -1)
      |> MSBuildDebug "" ""
      |> Log "AppBuild-Output: "
 )

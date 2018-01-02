@@ -999,6 +999,9 @@ type AltCoverTests() = class
     finally
       Visitor.keys.Clear()
 
+#if NETSTANDARD2_0
+// TODO
+#else
   [<Test>]
   member self.ShouldGetNewFilePathFromPreparedAssembly () =
     try
@@ -1151,6 +1154,7 @@ type AltCoverTests() = class
                               | :? IOException -> ())
     finally
       Visitor.keys.Clear()
+#endif
 
   [<Test>]
   member self.ShouldUpdateHandlerOK ([<Range(0,31)>] selection) =

@@ -152,8 +152,11 @@ module Instrument =
                                  | _ ->
                                    pkey.WriteSymbols <- false // TODO
                                    null // Mono.Cecil.Mdb.MdbWriterProvider() :> ISymbolWriterProvider
+#if NETSTANDARD2_0
+#else
     KnownKey assembly.Name
     |> Option.iter (fun key -> pkey.StrongNameKeyPair <- key)
+#endif
     assembly.Write(path, pkey)
 
   type internal SubstituteInstruction (oldValue:Instruction, newValue:Instruction) =
