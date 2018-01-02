@@ -106,6 +106,8 @@ open System.Runtime.CompilerServices
 [<assembly: InternalsVisibleTo(\"AltCover.Tests, PublicKey={2}\")>]
 [<assembly: InternalsVisibleTo(\"AltCover.Shadow.Tests, PublicKey={1}\")>]
 [<assembly: InternalsVisibleTo(\"AltCover.Shadow.Tests, PublicKey={2}\")>]
+[<assembly: InternalsVisibleTo(\"AltCover.Shadow.Tests2, PublicKey={1}\")>]
+[<assembly: InternalsVisibleTo(\"AltCover.Shadow.Tests2, PublicKey={2}\")>]
 ()
 "
     let file = String.Format(System.Globalization.CultureInfo.InvariantCulture,
@@ -148,7 +150,7 @@ Target "TestCover" (fun _ ->
                                  OptionalArguments = "-excludebyattribute:*ExcludeFromCodeCoverageAttribute;*ProgIdAttribute"
                                  Register = RegisterType.RegisterUser
                                  Output = "_Reports/OpenCoverReport.xml" })
-        "_Binaries/AltCover.Tests/Debug+AnyCPU/AltCover.Tests.dll _Binaries/AltCover.Shadow.Tests/Debug+AnyCPU/AltCover.Shadow.Tests.dll --result=./_Reports/NUnit3ReportOpenCovered.xml"
+        "_Binaries/AltCover.Tests/Debug+AnyCPU/AltCover.Tests.dll _Binaries/AltCover.Shadow.Tests/Debug+AnyCPU/AltCover.Shadow.Tests.dll _Binaries/AltCover.Shadow.Tests/Debug+AnyCPU/AltCover.Shadow.Tests2.dll --result=./_Reports/NUnit3ReportOpenCovered.xml"
     ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
                                        ReportTypes = [ ReportGeneratorReportType.Html; ReportGeneratorReportType.Badges ]
                                        TargetDir = "_Reports/_UnitTest"})
@@ -159,6 +161,14 @@ Target "TestCover" (fun _ ->
                                      info.WorkingDirectory <- "_Reports"
                                      info.Arguments <- "--opencover OpenCoverReport.xml") (TimeSpan.FromMinutes 5.0)
             |> ignore
+)
+
+Target "Test" (fun _ ->
+    ensureDirectory "./_Reports"
+    !! (@"_Binaries\*Tests\Debug+AnyCPU\*.Test*.dll")
+    |> NUnit3 (fun p -> { p with ToolPath = findToolInSubPath "nunit3-console.exe" "."
+                                 WorkingDir = "."
+                                 ResultSpecs = ["./_Reports/NUnit3Report.xml"] })
 )
 
 Target "FSharpTypes" ( fun _ ->
@@ -181,14 +191,6 @@ Target "FSharpTypes" ( fun _ ->
     if recorded.Length <> 9 then failwith (sprintf "Bad method list length %A" recorded)
     if (sprintf "%A" recorded) <> expected then failwith (sprintf "Bad method list %A" recorded)
     )
-
-Target "Test" (fun _ ->
-    ensureDirectory "./_Reports"
-    !! (@"_Binaries\*Tests\Debug+AnyCPU\*.Tests.dll")
-    |> NUnit3 (fun p -> { p with ToolPath = findToolInSubPath "nunit3-console.exe" "."
-                                 WorkingDir = "."
-                                 ResultSpecs = ["./_Reports/NUnit3Report.xml"] })
-)
 
 Target "SelfTest" (fun _ ->
     let targetDir = "_Binaries/AltCover.Tests/Debug+AnyCPU"
@@ -253,7 +255,7 @@ Target "SelfTest" (fun _ ->
     let result = ExecProcess (fun info -> info.FileName <- "_Binaries/AltCover/Debug+AnyCPU/AltCover.exe"
                                           info.WorkingDirectory <- "_Binaries/AltCover.Shadow.Tests/Debug+AnyCPU"
                                           info.Arguments <- ("/sn=" + keyfile + AltCoverFilter + @"/o=.\__Instrument -x=" + altReport3)) (TimeSpan.FromMinutes 5.0)
-    !! (@"_Binaries\AltCover.Shadow.Tests\Debug+AnyCPU\__Instrument\*.Tests.dll")
+    !! (@"_Binaries\AltCover.Shadow.Tests\Debug+AnyCPU\__Instrument\*.Test*.dll")
     |> NUnit3 (fun p -> { p with ToolPath = findToolInSubPath "nunit3-console.exe" "."
                                  WorkingDir = "."
                                  ResultSpecs = ["./_Reports/NUnit3ReportShadow.xml"] })

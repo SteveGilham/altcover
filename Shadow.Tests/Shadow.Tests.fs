@@ -1,9 +1,15 @@
-﻿namespace Shadow.Tests
+﻿#if NET4
+namespace Shadow.Tests
+#else
+namespace Shadow.Tests2
+#endif
 
 open System
 open System.IO
 open System.Reflection
+#if NET4
 open System.Xml.Linq
+#endif
 
 open AltCover.Recorder
 open Mono.Cecil
@@ -19,7 +25,13 @@ type AltCoverTests() = class
     let locker = { Tracer = String.Empty }
     Assert.That(locker.GetType().Assembly.GetName().Name, Is.EqualTo "AltCover.Shadow")
 
-  [<Test;Ignore("Need to fix the visibility of the method")>]
+  // Doesn't work across framework boundaries, as the unit -> unit type
+  // is rooted in a different runtime.  But the locking code gets executed
+  // incidentally anyway in later tests.
+#if NET4
+#else
+  [<Test>]
+#endif
   member self.ShouldBeExecutingTheCorrectCopyOfThisCode() =
     let mutable where = ""
     Locking.WithLockerLocked self (fun () -> where <- Assembly.GetCallingAssembly().GetName().Name)
@@ -93,6 +105,7 @@ type AltCoverTests() = class
     Instance.UpdateReport a b
     |> ignore
 
+#if NET4
   [<Test>]
   member self.OldDocumentStartIsNotUpdated() =
     let epoch = DateTime.UtcNow
@@ -226,6 +239,7 @@ type AltCoverTests() = class
     Assert.That( after.Descendants(XName.Get("seqpnt"))
                  |> Seq.map (fun x -> x.Attribute(XName.Get("visitcount")).Value),
                  Is.EquivalentTo [ "11"; "10"; "9"; "8"; "7"; "6"; "4"; "3"; "2"; "1"])
+#endif 
 
   [<Test>]
   member self.EmptyFlushLeavesNoTrace() =
@@ -241,6 +255,7 @@ type AltCoverTests() = class
       Instance.Visits.Clear()
       Console.SetOut saved
 
+#if NET4
   [<Test>]
   member self.FlushLeavesExpectedTraces() =
     let saved = Console.Out
@@ -281,6 +296,7 @@ type AltCoverTests() = class
       Instance.Visits.Clear()
       Console.SetOut saved
       Directory.SetCurrentDirectory(here)
+#endif
 
   [<Test>]
   member self.FlushShouldBeRegisteredForUnload() =

@@ -62,3 +62,4 @@ _Mono/
 Demo/Service/Service/bin/
 Demo/Service/Service/obj/
 *.suo
+Shadow.Tests2/obj/
