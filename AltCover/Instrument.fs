@@ -154,8 +154,11 @@ module Instrument =
                                    null // Mono.Cecil.Mdb.MdbWriterProvider() :> ISymbolWriterProvider
 #if NETSTANDARD2_0
 #else
+#if NETCOREAPP2_0
+#else
     KnownKey assembly.Name
     |> Option.iter (fun key -> pkey.StrongNameKeyPair <- key)
+#endif
 #endif
     assembly.Write(path, pkey)
 

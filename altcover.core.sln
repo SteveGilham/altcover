@@ -4,6 +4,8 @@ VisualStudioVersion = 15.0.27130.2003
 MinimumVisualStudioVersion = 15.0.26124.0
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.core", "AltCover\altcover.core.fsproj", "{26C01B27-9A3E-4460-BB43-5383C8E818FB}"
 EndProject
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.core.lib", "altcover.core.lib\altcover.core.lib.fsproj", "{75BEE734-20F3-4E04-81B9-160D7500021C}"
+EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.recorder.core", "AltCover.Recorder\altcover.recorder.core.fsproj", "{7054B26A-95AA-4194-AAC9-E5E430695FBA}"
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.tests.core", "Tests\altcover.tests.core.fsproj", "{440A79BE-7038-44EA-B683-3ED8EFAEC39C}"
@@ -36,6 +38,18 @@ Global
 		{26C01B27-9A3E-4460-BB43-5383C8E818FB}.Release|x64.Build.0 = Release|Any CPU
 		{26C01B27-9A3E-4460-BB43-5383C8E818FB}.Release|x86.ActiveCfg = Release|Any CPU
 		{26C01B27-9A3E-4460-BB43-5383C8E818FB}.Release|x86.Build.0 = Release|Any CPU
+		{75BEE734-20F3-4E04-81B9-160D7500021C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{75BEE734-20F3-4E04-81B9-160D7500021C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{75BEE734-20F3-4E04-81B9-160D7500021C}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{75BEE734-20F3-4E04-81B9-160D7500021C}.Debug|x64.Build.0 = Debug|Any CPU
+		{75BEE734-20F3-4E04-81B9-160D7500021C}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{75BEE734-20F3-4E04-81B9-160D7500021C}.Debug|x86.Build.0 = Debug|Any CPU
+		{75BEE734-20F3-4E04-81B9-160D7500021C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{75BEE734-20F3-4E04-81B9-160D7500021C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{75BEE734-20F3-4E04-81B9-160D7500021C}.Release|x64.ActiveCfg = Release|Any CPU
+		{75BEE734-20F3-4E04-81B9-160D7500021C}.Release|x64.Build.0 = Release|Any CPU
+		{75BEE734-20F3-4E04-81B9-160D7500021C}.Release|x86.ActiveCfg = Release|Any CPU
+		{75BEE734-20F3-4E04-81B9-160D7500021C}.Release|x86.Build.0 = Release|Any CPU
 		{7054B26A-95AA-4194-AAC9-E5E430695FBA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{7054B26A-95AA-4194-AAC9-E5E430695FBA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7054B26A-95AA-4194-AAC9-E5E430695FBA}.Debug|x64.ActiveCfg = Debug|Any CPU

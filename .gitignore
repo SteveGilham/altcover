@@ -77,3 +77,6 @@ Shadow.Tests/obj/
 Tests/obj/
 Tests/Infrastructure.snk
 Shadow.Tests/Infrastructure.snk
+altcover.core.lib/Infrastructure.snk
+altcover.core.lib/bin/
+altcover.core.lib/obj/

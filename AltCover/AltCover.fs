@@ -239,7 +239,10 @@ module Main =
       with
       | :? IOException as x -> WriteErr x.Message
 
+#if NETSTANDARD2_0
+#else
   [<EntryPoint>]
   let private Main arguments =
     DoInstrumentation arguments
     0
+#endif
