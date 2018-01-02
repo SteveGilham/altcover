@@ -13,7 +13,6 @@ open Mono.Cecil.Pdb
 module ProgramDatabase =
   // We no longer have to violate Cecil encapsulation to get the PDB path!
   let GetPdbFromImage (assembly:AssemblyDefinition) =
-    let mutable header0 = [| 0uy |]
     if assembly.MainModule.HasDebugHeader then
       let header = assembly.MainModule.GetDebugHeader()
       if header.HasEntries then

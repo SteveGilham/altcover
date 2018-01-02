@@ -145,10 +145,13 @@ module Instrument =
   /// when asked to strongname.  This writes a new .pdb/.mdb alongside the instrumented assembly</remark>
   let internal WriteAssembly (assembly:AssemblyDefinition) (path:string) =
     let pkey = Mono.Cecil.WriterParameters()
-    pkey.WriteSymbols <- true
     pkey.SymbolWriterProvider <- match Path.GetExtension (Option.getOrElse String.Empty (ProgramDatabase.GetPdbWithFallback assembly)) with
-                                 | ".pdb" -> Mono.Cecil.Pdb.PdbWriterProvider() :> ISymbolWriterProvider
-                                 | _ -> Mono.Cecil.Mdb.MdbWriterProvider() :> ISymbolWriterProvider
+                                 | ".pdb" ->
+                                   pkey.WriteSymbols <- true
+                                   Mono.Cecil.Pdb.PdbWriterProvider() :> ISymbolWriterProvider
+                                 | _ ->
+                                   pkey.WriteSymbols <- false // TODO
+                                   null // Mono.Cecil.Mdb.MdbWriterProvider() :> ISymbolWriterProvider
     KnownKey assembly.Name
     |> Option.iter (fun key -> pkey.StrongNameKeyPair <- key)
     assembly.Write(path, pkey)

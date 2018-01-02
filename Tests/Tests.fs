@@ -461,20 +461,20 @@ type AltCoverTests() = class
     let where = Assembly.GetExecutingAssembly().Location
     let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample1.exe")
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-    let reader = ProgramDatabase.ReadSymbols def 
+    let reader = ProgramDatabase.ReadSymbols def
     let method = (def.MainModule.Types |> Seq.skipWhile (fun t -> t.Name.StartsWith("<"))|> Seq.head).Methods |> Seq.head
     Visitor.Visit [] [] // cheat reset
     try
         "Program" |> (FilterClass.File >> Visitor.NameFilters.Add)
-        let deeper = Visitor.Deeper <| Node.Method (method, 
-                                                    reader 
+        let deeper = Visitor.Deeper <| Node.Method (method,
+                                                    reader
                                                     |> Option.map (fun r -> r.Read method),
                                                     true)
                      |> Seq.toList
         Assert.That (deeper.Length, Is.EqualTo 10)
         deeper
         |> List.iteri (fun i node -> match node with
-                                     | (MethodPoint (_, _, n, b)) -> 
+                                     | (MethodPoint (_, _, n, b)) ->
                                            Assert.That(n, Is.EqualTo i, "point number")
                                            Assert.That (b, Is.False, "flag")
                                      | _ -> Assert.Fail())
@@ -632,7 +632,6 @@ type AltCoverTests() = class
     let expected = List.concat [ [Start[path]; assembly]; (Visitor.Deeper >> Seq.toList) assembly; [AfterAssembly def; Finish]]
     Assert.That (accumulator |> Seq.map string,
                  Is.EquivalentTo (expected |> Seq.map string))
-
 
   // Naming.fs
 
@@ -1061,9 +1060,9 @@ type AltCoverTests() = class
       try
         Visitor.reportPath <- Some unique
         let prepared = Instrument.PrepareAssembly path
-        let symbols = ProgramDatabase.GetPdbWithFallback prepared
+
         Instrument.WriteAssembly prepared outputdll
-        Assert.That (File.Exists (outputdll + ".mdb"))
+// TODO        Assert.That (File.Exists (outputdll + ".mdb"))
         let raw = Mono.Cecil.AssemblyDefinition.ReadAssembly outputdll
         Assert.That raw.Name.HasPublicKey
 
@@ -1554,13 +1553,14 @@ type AltCoverTests() = class
     let where = Assembly.GetExecutingAssembly().Location
     let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-    ProgramDatabase.ReadSymbols def |> ignore
+    let reader = ProgramDatabase.ReadSymbols def
     let module' = def.MainModule.GetType("N.DU")
     let du = module'.NestedTypes |> Seq.filter (fun t -> t.Name = "MyUnion") |> Seq.head
     let main = du.GetMethods() |> Seq.find (fun x -> x.Name = "as_bar")
     let proc = main.Body.GetILProcessor()
+    let dbg = (Option.get reader).Read main
     let target = main.Body.Instructions
-// TODO                 |> Seq.filter (fun i -> not (isNull i.SequencePoint))
+                 |> Seq.filter (dbg.GetSequencePoint >> isNull >> not)
                  |> Seq.head
     let visited = Node.MethodPoint (target, null, 32767, true)
     Assert.That (target.Previous, Is.Null)

@@ -239,7 +239,7 @@ type AltCoverTests() = class
     Assert.That( after.Descendants(XName.Get("seqpnt"))
                  |> Seq.map (fun x -> x.Attribute(XName.Get("visitcount")).Value),
                  Is.EquivalentTo [ "11"; "10"; "9"; "8"; "7"; "6"; "4"; "3"; "2"; "1"])
-#endif 
+#endif
 
   [<Test>]
   member self.EmptyFlushLeavesNoTrace() =

@@ -137,9 +137,9 @@ module Visitor =
                                                                                     && not m.IsRuntime
                                                                                     && not m.IsPInvokeImpl
                                                                                     && significant m)
-                                       |> Seq.collect ((fun m -> let dbg = reader 
+                                       |> Seq.collect ((fun m -> let dbg = reader
                                                                            |> Option.map (fun r -> r.Read m)
-                                                                           |> Option.bind Option.nullable 
+                                                                           |> Option.bind Option.nullable
                                                                  Method (m, dbg, included && IsIncluded m)) >> BuildSequence)
 
     | Method (m, dbg, included) ->
@@ -148,7 +148,7 @@ module Visitor =
                                |> Seq.distinctBy(fun (x:Instruction) -> x.Offset)
                                |> Seq.filter (fun (x:Instruction) -> match dbg with
                                                                      | None -> false
-                                                                     | Some d -> 
+                                                                     | Some d ->
                                                                                  if d.HasSequencePoints then
                                                                                    let s = d.GetSequencePoint x
                                                                                    (not << isNull) s && s.StartLine <> 0xfeefee
