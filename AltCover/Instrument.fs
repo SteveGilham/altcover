@@ -267,7 +267,7 @@ module Instrument =
                                                | _ -> state.RecordingMethod
 
                          { state with
-                               RecordingMethodRef = m.Import(recordingMethod);
+                               RecordingMethodRef = m.ImportReference(recordingMethod);
                                RecordingMethod = recordingMethod }
                        | _ -> state
          { restate with ModuleId = m.Mvid }
@@ -284,8 +284,8 @@ module Instrument =
          | _ -> state
 
      | MethodPoint (instruction, point, included) -> //of Instruction * int * bool
-       if included && (not(isNull instruction.SequencePoint)) &&
-                      (Visitor.IsIncluded instruction.SequencePoint.Document.Url) then
+       if included (*&& TODO (not(isNull instruction.SequencePoint)) &&
+                      (Visitor.IsIncluded instruction.SequencePoint.Document.Url) *) then
             let instrLoadModuleId = InsertVisit instruction state.MethodWorker state.RecordingMethodRef (state.ModuleId.ToString()) point
 
             // Change references in operands from "instruction" to first counter invocation instruction (instrLoadModuleId)

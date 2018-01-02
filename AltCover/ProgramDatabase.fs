@@ -15,7 +15,8 @@ module ProgramDatabase =
   let GetPdbFromImage (assembly:AssemblyDefinition) =
     let mutable header = [| 0uy |]
     if assembly.MainModule.HasDebugHeader then
-      assembly.MainModule.GetDebugHeader(&header) |> ignore
+      let header' = assembly.MainModule.GetDebugHeader()
+      printfn "%A" header' // TODO
       let name = header // header is followed by UTF-8 nul terminated string
                       |> Seq.skip 0x18  // size of the debug header
                       |> Seq.takeWhile (fun x -> x <> byte 0)
@@ -28,12 +29,12 @@ module ProgramDatabase =
 
   let GetPdbWithFallback (assembly:AssemblyDefinition) =
     match GetPdbFromImage assembly with
-    | None -> let fallback = Path.ChangeExtension(assembly.MainModule.FullyQualifiedName, ".pdb")
+    | None -> let fallback = Path.ChangeExtension(assembly.MainModule.FileName, ".pdb")
               if File.Exists(fallback)
                 then Some fallback
-                else let fallback2 = assembly.MainModule.FullyQualifiedName + ".mdb"
+                else let fallback2 = assembly.MainModule.FileName + ".mdb"
                      // Note -- the assembly path, not the mdb path, because GetSymbolReader wants the assembly path for Mono
-                     if File.Exists(fallback2) then Some assembly.MainModule.FullyQualifiedName else None
+                     if File.Exists(fallback2) then Some assembly.MainModule.FileName else None
     | pdbpath -> pdbpath
 
   // Ensure that we read symbols from the .pdb path we discovered.

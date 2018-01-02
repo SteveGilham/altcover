@@ -142,7 +142,7 @@ module Visitor =
             let instructions = m.Body.Instructions
                                |> Seq.cast
                                |> Seq.distinctBy(fun (x:Instruction) -> x.Offset)
-                               |> Seq.filter (fun (x:Instruction) -> (not << isNull) x.SequencePoint && x.SequencePoint.StartLine <> 0xfeefee)
+// TODO                               |> Seq.filter (fun (x:Instruction) -> (not << isNull) x.SequencePoint && x.SequencePoint.StartLine <> 0xfeefee)
                                |> Seq.toList
 
             let number = instructions.Length
@@ -150,7 +150,7 @@ module Visitor =
             PointNumber <- point + number
 
             instructions.OrderByDescending(fun (x:Instruction) -> x.Offset)
-            |> Seq.mapi (fun i x -> MethodPoint (x, i+point, included && (IsIncluded x.SequencePoint.Document.Url)))
+            |> Seq.mapi (fun i x -> MethodPoint (x, i+point, included && (IsIncluded (*x.SequencePoint.Document.Url*) m.FullName))) //TODO
 
     | _ -> Seq.empty<Node>
 

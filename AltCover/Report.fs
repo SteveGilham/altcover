@@ -55,7 +55,7 @@ module Report =
           element :: s
 
       | MethodPoint (instruction, _, included) ->
-          let codeSegment = instruction.SequencePoint
+          let codeSegment = Mono.Cecil.Cil.SequencePoint(instruction, null) // TODO  instruction.SequencePoint
           // quick fix for .mdb lack of end line/column information
           let end' = match (codeSegment.EndLine, codeSegment.EndColumn) with
                      | (-1, _) -> (codeSegment.StartLine, codeSegment.StartColumn + 1)

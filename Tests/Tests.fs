@@ -133,7 +133,7 @@ type AltCoverTests() = class
     |> Seq.filter (fun x -> x.FullName.EndsWith("PublicKeyToken=c02b1a9f5b7cade8", StringComparison.OrdinalIgnoreCase))
     |> Seq.iter (fun def ->
       AltCover.ProgramDatabase.ReadSymbols def
-      Assert.That (def.MainModule.HasSymbols, def.MainModule.FullyQualifiedName)
+      Assert.That (def.MainModule.HasSymbols, def.MainModule.FileName)
     )
 
   [<Test>]
@@ -149,7 +149,7 @@ type AltCoverTests() = class
     |> Seq.filter (fun x -> not <| x.FullName.EndsWith("PublicKeyToken=c02b1a9f5b7cade8", StringComparison.OrdinalIgnoreCase))
     |> Seq.iter (fun def ->
       AltCover.ProgramDatabase.ReadSymbols def
-      Assert.That (not def.MainModule.HasSymbols, def.MainModule.FullyQualifiedName)
+      Assert.That (not def.MainModule.HasSymbols, def.MainModule.FileName)
     )
 
   [<Test>]
@@ -163,7 +163,7 @@ type AltCoverTests() = class
     |> Seq.iter( fun x ->
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly x
       AltCover.ProgramDatabase.ReadSymbols def
-      Assert.That (def.MainModule.HasSymbols, def.MainModule.FullyQualifiedName)
+      Assert.That (def.MainModule.HasSymbols, def.MainModule.FileName)
     )
 
   // Filter.fs
@@ -1542,13 +1542,13 @@ type AltCoverTests() = class
     let main = du.GetMethods() |> Seq.find (fun x -> x.Name = "as_bar")
     let proc = main.Body.GetILProcessor()
     let target = main.Body.Instructions
-                 |> Seq.filter (fun i -> not (isNull i.SequencePoint))
+// TODO                 |> Seq.filter (fun i -> not (isNull i.SequencePoint))
                  |> Seq.head
     let visited = Node.MethodPoint (target, 32767, true)
     Assert.That (target.Previous, Is.Null)
     let state = { (Instrument.Context.Build []) with MethodWorker = proc
                                                      MethodBody = main.Body
-                                                     RecordingMethodRef = def.MainModule.Import main}
+                                                     RecordingMethodRef = def.MainModule.ImportReference main}
     let result = Instrument.InstrumentationVisitor state visited
     Assert.That (result, Is.SameAs state)
     Assert.That (target.Previous.OpCode, Is.EqualTo OpCodes.Call)
@@ -1573,9 +1573,9 @@ type AltCoverTests() = class
 
     let state' = { state with RecordingAssembly = def'
                               RecordingMethod = visit
-                              RecordingMethodRef = def''.MainModule.Import visit}
+                              RecordingMethodRef = def''.MainModule.ImportReference visit}
     let result = Instrument.InstrumentationVisitor state' visited
-    let ref'' = def.MainModule.Import visit
+    let ref'' = def.MainModule.ImportReference visit
 
     Assert.That (result.RecordingMethodRef.Module,
                 Is.EqualTo ( def.MainModule))
