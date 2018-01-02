@@ -283,9 +283,8 @@ module Instrument =
               MethodWorker = body.GetILProcessor() }
          | _ -> state
 
-     | MethodPoint (instruction, point, included) -> //of Instruction * int * bool
-       if included (*&& TODO (not(isNull instruction.SequencePoint)) &&
-                      (Visitor.IsIncluded instruction.SequencePoint.Document.Url) *) then
+     | MethodPoint (instruction, _, point, included) -> //of Instruction * int * bool
+       if included then // by construction the sequence point is included
             let instrLoadModuleId = InsertVisit instruction state.MethodWorker state.RecordingMethodRef (state.ModuleId.ToString()) point
 
             // Change references in operands from "instruction" to first counter invocation instruction (instrLoadModuleId)

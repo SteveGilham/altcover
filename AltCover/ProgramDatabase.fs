@@ -16,15 +16,18 @@ module ProgramDatabase =
     let mutable header0 = [| 0uy |]
     if assembly.MainModule.HasDebugHeader then
       let header = assembly.MainModule.GetDebugHeader()
-      let entry = header.Entries // header is followed by UTF-8 nul terminated string
-                  |> Seq.head
-      let name = entry.Data
-                      |> Seq.skip 0x18  // size of the debug header
-                      |> Seq.takeWhile (fun x -> x <> byte 0)
-                      |> Seq.toArray
-      Some (System.Text.Encoding.UTF8.GetString name)
-      |> Option.filter (fun (s:String) -> s.Length > 0)
-      |> Option.filter File.Exists
+      if header.HasEntries then
+          let entry = header.Entries // header is followed by UTF-8 nul terminated string
+                      |> Seq.head
+          let name = entry.Data
+                          |> Seq.skip 0x18  // size of the debug header
+                          |> Seq.takeWhile (fun x -> x <> byte 0)
+                          |> Seq.toArray
+          Some (System.Text.Encoding.UTF8.GetString name)
+          |> Option.filter (fun (s:String) -> s.Length > 0)
+          |> Option.filter File.Exists
+      else
+        None // TODO -- built-in mdb path for Mono
     else
       None
 

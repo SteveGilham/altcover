@@ -24,7 +24,7 @@ type internal Node =
      | Module of ModuleDefinition * ISymbolReader option * bool
      | Type of TypeDefinition * ISymbolReader option  * bool
      | Method of MethodDefinition * MethodDebugInformation option * bool
-     | MethodPoint of Instruction * int * bool
+     | MethodPoint of Instruction * SequencePoint * int * bool
      | AfterMethod of bool
      | AfterModule
      | AfterAssembly of AssemblyDefinition
@@ -139,6 +139,7 @@ module Visitor =
                                                                                     && significant m)
                                        |> Seq.collect ((fun m -> let dbg = reader 
                                                                            |> Option.map (fun r -> r.Read m)
+                                                                           |> Option.bind Option.nullable 
                                                                  Method (m, dbg, included && IsIncluded m)) >> BuildSequence)
 
     | Method (m, dbg, included) ->
@@ -147,7 +148,8 @@ module Visitor =
                                |> Seq.distinctBy(fun (x:Instruction) -> x.Offset)
                                |> Seq.filter (fun (x:Instruction) -> match dbg with
                                                                      | None -> false
-                                                                     | Some d -> if d.HasSequencePoints then
+                                                                     | Some d -> 
+                                                                                 if d.HasSequencePoints then
                                                                                    let s = d.GetSequencePoint x
                                                                                    (not << isNull) s && s.StartLine <> 0xfeefee
                                                                                  else false)
@@ -158,7 +160,8 @@ module Visitor =
             PointNumber <- point + number
 
             instructions.OrderByDescending(fun (x:Instruction) -> x.Offset)
-            |> Seq.mapi (fun i x -> MethodPoint (x, i+point, included && (IsIncluded (*x.SequencePoint.Document.Url*) m.FullName))) //TODO
+            |> Seq.mapi (fun i x -> let s = (Option.get dbg).GetSequencePoint(x)
+                                    MethodPoint (x, s, i+point, included && (IsIncluded s.Document.Url)))
 
     | _ -> Seq.empty<Node>
 
