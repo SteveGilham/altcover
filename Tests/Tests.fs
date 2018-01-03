@@ -81,6 +81,27 @@ type AltCoverTests() = class
                             let filename = file.Name
                             Assert.That(name, Does.EndWith("\\" + filename), (fst x) + " -> " + name) )
 
+  // TODO [<Test>]
+  member self.ShouldGetPdbFromMonoImage() =
+    // Hack for running while instrumented
+    let where = Assembly.GetExecutingAssembly().Location
+    let files = Directory.GetFiles(where.Substring(0, where.IndexOf("_Binaries")) + "_Mono\\Sample1")
+                |> Seq.filter (fun x -> x.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)
+                                        || x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
+                |> Seq.map (fun x -> (x, Mono.Cecil.AssemblyDefinition.ReadAssembly x))
+                |> Seq.toList
+    Assert.That(files, Is.Not.Empty)
+    files
+    |> Seq.iter( fun x ->let pdb = AltCover.ProgramDatabase.GetPdbFromImage (snd x)
+                         match pdb with
+                         | None -> Assert.Fail("No .mdb for " + (fst x))
+                         | Some name ->
+                            let probe = (fst x) + ".mdb"
+                            let file = FileInfo(probe)
+                            let filename = file.Name
+                            Assert.That(name, Does.EndWith("\\" + filename), (fst x) + " -> " + name) )
+
+
   [<Test>]
   member self.ShouldGetPdbWithFallback() =
     // Hack for running while instrumented
