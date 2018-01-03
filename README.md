@@ -37,9 +37,9 @@ In detail
 *  -?, --help, -h              Prints out the options.
 * --                           the rest of the command line is treated as a command to execute after performing instrumentation
 
-Coverage statistics are written to the file nominated by the `x|xmlReport=` parameter as instrumented assemblies are unloaded from an executing AppDomain, even if this is days or weeks later.  In practice the instrumented assemblies should be deleted after the relevant testing has been run, and the report file will thus be freed up.
+Filter values are semi-colon separated regular expressions, applied by type in the order as they are defined in the command line; any item whose name matches the expression will be excluded from the coverage reporting.  In the simplest case, with no special regex items, this means that a name containing the filter item as a sub-string will be excluded.
 
-Given a filter string, if that string is contained within the name of the file/assembly/type/method/attribute type names, then the ietm and everything within it are excluded from the coverage.
+Coverage statistics are written to the file nominated by the `x|xmlReport=` parameter as instrumented assemblies are unloaded from an executing AppDomain, even if this is days or weeks later.  In practice the instrumented assemblies should be deleted after the relevant testing has been run, and the report file will thus be freed up.
 
 ### Use Case : Unit tests
 

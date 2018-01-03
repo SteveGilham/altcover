@@ -1,5 +1,6 @@
 # 1.4-alpha (Araiguma preview releases)
 * .net 2.0 support : Building the recorder assembly against .net 2.0 so that it can be used with down-version code as required
+* Extended filtering : values are extened from being single substring for matching to a semi-colon separated list of regexes; the only backwards incompatibility will be '.' characters which would need to be escaped.
 
 # 1.0
 * Expanded user documentation
