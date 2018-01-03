@@ -14,6 +14,7 @@
     <UseStandardResourceNames>true</UseStandardResourceNames>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Name>Shadow.Tests</Name>
+    <ResolveNuGetPackages>false</ResolveNuGetPackages>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
