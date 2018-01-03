@@ -5,33 +5,34 @@ open System.Diagnostics
 open System.Diagnostics.CodeAnalysis
 open System.IO
 open System.Runtime.CompilerServices
+open System.Text.RegularExpressions
 
 open Mono.Cecil
 open AltCover.Augment
 
 [<ExcludeFromCodeCoverage>]
 type internal FilterClass =
-  | File of string
-  | Assembly of string
-  | Type of string
-  | Method of string
-  | Attribute of string
+  | File of Regex
+  | Assembly of Regex
+  | Type of Regex
+  | Method of Regex
+  | Attribute of Regex
 
 module Filter =
 
   let internal Match (nameProvider:Object) (filter:FilterClass) =
     match filter with
     | File name -> match nameProvider with
-                   | :? string as fileName -> Path.GetFileName(fileName).Contains(name)
+                   | :? string as fileName -> name.IsMatch(Path.GetFileName(fileName))
                    | _ -> false
     | Assembly name -> match nameProvider with
-                       | :? AssemblyDefinition as assembly -> assembly.Name.Name.Contains(name)
+                       | :? AssemblyDefinition as assembly -> name.IsMatch assembly.Name.Name
                        | _ -> false
     | Type name -> match nameProvider with
-                   | :? TypeDefinition as typeDef -> typeDef.FullName.Contains(name)
+                   | :? TypeDefinition as typeDef -> name.IsMatch typeDef.FullName
                    | _ -> false
     | Method name -> match nameProvider with
-                     | :? MethodDefinition as methodDef -> methodDef.Name.Contains(name)
+                     | :? MethodDefinition as methodDef -> name.IsMatch methodDef.Name
                      | _ -> false
     | Attribute name -> match nameProvider with
                         | :? ICustomAttributeProvider as attributeProvider ->
@@ -39,7 +40,7 @@ module Filter =
                                  attributeProvider.CustomAttributes
                                  |> Seq.cast<CustomAttribute>
                                  |> Seq.exists (fun attr ->
-                                    attr.Constructor.DeclaringType.FullName.Contains(name))
+                                    name.IsMatch attr.Constructor.DeclaringType.FullName)
                         | _ -> false
 
   let internal IsCSharpAutoProperty (m:MethodDefinition) =

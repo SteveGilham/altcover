@@ -3,6 +3,7 @@
 open System
 open System.IO
 open System.Reflection
+open System.Text.RegularExpressions
 open System.Xml.Linq
 
 open AltCover
@@ -191,54 +192,54 @@ type AltCoverTests() = class
 
   [<Test>]
   member self.NoneOfTheAboveMatchesNoType() =
-     Assert.That (Match () (FilterClass.Type "23"), Is.False)
+     Assert.That (Match () (FilterClass.Type (Regex "23")), Is.False)
 
   [<Test>]
   member self.NoneOfTheAboveMatchesNoAttribute() =
-     Assert.That (Match () (FilterClass.Attribute "23"), Is.False)
+     Assert.That (Match () (FilterClass.Attribute (Regex "23")), Is.False)
 
   [<Test>]
   member self.NoneOfTheAboveMatchesNoAssembly() =
-     Assert.That (Match () (FilterClass.Assembly "23"), Is.False)
+     Assert.That (Match () (FilterClass.Assembly (Regex "23")), Is.False)
 
   [<Test>]
   member self.NoneOfTheAboveMatchesNoFile() =
-     Assert.That (Match () (FilterClass.File "23"), Is.False)
+     Assert.That (Match () (FilterClass.File (Regex "23")), Is.False)
 
   [<Test>]
   member self.NoneOfTheAboveMatchesNoMethod() =
-     Assert.That (Match () (FilterClass.Method "23"), Is.False)
+     Assert.That (Match () (FilterClass.Method (Regex "23")), Is.False)
 
   [<Test>]
   member self.FileDoesNotMatchNonFileClass() =
-     Assert.That (Match (Assembly.GetExecutingAssembly().Location) (FilterClass.Type "23"), Is.False)
+     Assert.That (Match (Assembly.GetExecutingAssembly().Location) (FilterClass.Type (Regex "23")), Is.False)
 
   [<Test>]
   member self.FileDoesMatchFileClass() =
-     Assert.That (Match (Assembly.GetExecutingAssembly().Location) (FilterClass.File "Cove"), Is.True)
+     Assert.That (Match (Assembly.GetExecutingAssembly().Location) (FilterClass.File (Regex "Cove")), Is.True)
 
   [<Test>]
   member self.AssemblyDoesNotMatchNonAssemblyClass() =
      let def = Mono.Cecil.AssemblyDefinition.ReadAssembly (Assembly.GetExecutingAssembly().Location)
-     Assert.That (Match def (FilterClass.Type "23"), Is.False)
+     Assert.That (Match def (FilterClass.Type (Regex "23")), Is.False)
 
   [<Test>]
   member self.AssemblyDoesMatchAssemblyClass() =
      let def = Mono.Cecil.AssemblyDefinition.ReadAssembly (Assembly.GetExecutingAssembly().Location)
-     Assert.That (Match def (FilterClass.Assembly "Cove"), Is.True)
+     Assert.That (Match def (FilterClass.Assembly (Regex "Cove")), Is.True)
 
   [<Test>]
   member self.TypeDoesNotMatchNonTypeClass() =
      let def = Mono.Cecil.AssemblyDefinition.ReadAssembly (Assembly.GetExecutingAssembly().Location)
      def.MainModule.Types
-     |> Seq.iter (fun t -> Assert.That (Match t (FilterClass.File "23"), Is.False, t.FullName))
+     |> Seq.iter (fun t -> Assert.That (Match t (FilterClass.File (Regex "23")), Is.False, t.FullName))
 
   [<Test>]
   member self.TypeDoesMatchTypeClass() =
      let def = Mono.Cecil.AssemblyDefinition.ReadAssembly (Assembly.GetExecutingAssembly().Location)
      def.MainModule.Types
      |> Seq.filter (fun t -> t.IsPublic && t.Name.Contains("AltCover"))  // exclude the many compiler generted chaff classes
-     |> Seq.iter (fun t -> Assert.That (Match t (FilterClass.Type "Cove"), Is.True, t.FullName))
+     |> Seq.iter (fun t -> Assert.That (Match t (FilterClass.Type (Regex "Cove")), Is.True, t.FullName))
 
   [<Test>]
   member self.MethodDoesNotMatchNonMethodClass() =
@@ -246,7 +247,7 @@ type AltCoverTests() = class
      def.MainModule.Types
      |> Seq.filter (fun t -> t.IsPublic)
      |> Seq.collect (fun t -> t.Methods)
-     |> Seq.iter (fun m -> Assert.That (Match m (FilterClass.Type "23"), Is.False))
+     |> Seq.iter (fun m -> Assert.That (Match m (FilterClass.Type (Regex "23")), Is.False))
 
   [<Test>]
   member self.MethodDoesMatchMethodClass() =
@@ -255,7 +256,7 @@ type AltCoverTests() = class
                  |> Seq.filter (fun t -> t.IsPublic)  // exclude the many compiler generted chaff classes
                  |> Seq.collect (fun t -> t.Methods)
                  |> Seq.filter (fun m -> m.IsPublic && (not m.IsConstructor))
-                 |> Seq.filter (fun m -> Match m (FilterClass.Method "Augment"))
+                 |> Seq.filter (fun m -> Match m (FilterClass.Method (Regex "Augment")))
                  |> Seq.length,
                  Is.EqualTo(2))
 
@@ -263,14 +264,14 @@ type AltCoverTests() = class
   member self.AttributeDoesNotMatchNonAttributeClass() =
      let def = Mono.Cecil.AssemblyDefinition.ReadAssembly (Assembly.GetExecutingAssembly().Location)
      def.MainModule.Types
-     |> Seq.iter (fun t -> Assert.That (Match t.CustomAttributes (FilterClass.File "23"), Is.False, t.FullName))
+     |> Seq.iter (fun t -> Assert.That (Match t.CustomAttributes (FilterClass.File (Regex "23")), Is.False, t.FullName))
 
   [<Test>]
   member self.AttributeDoesMatchAttributeClass() =
      let def = Mono.Cecil.AssemblyDefinition.ReadAssembly (Assembly.GetExecutingAssembly().Location)
      def.MainModule.Types
      |> Seq.filter (fun t -> t.IsPublic && t.Name.Contains("AltCover"))  // exclude the many compiler generted chaff classes
-     |> Seq.iter (fun t -> Assert.That (Match t (FilterClass.Attribute "Fix"), Is.True, t.FullName))
+     |> Seq.iter (fun t -> Assert.That (Match t (FilterClass.Attribute (Regex "Fix")), Is.True, t.FullName))
 
   [<Test>]
   member self.Sample3Class1IsCSharpAutoproperty() =
@@ -422,7 +423,8 @@ type AltCoverTests() = class
   member self.NonEmptyFiltersCatchAnExpectedValue() =
     try
       Assert.That (Visitor.NameFilters.Count, Is.EqualTo(0))
-      Visitor.NameFilters.AddRange([ FilterClass.File "Cove"; FilterClass.Method "Augment"])
+      Visitor.NameFilters.AddRange([ FilterClass.File (Regex "Cove")
+                                     FilterClass.Method (Regex "Augment")])
       Assert.That (Visitor.IsIncluded (Assembly.GetExecutingAssembly().Location), Is.False)
     finally
       Visitor.NameFilters.Clear()
@@ -431,7 +433,8 @@ type AltCoverTests() = class
   member self.NonEmptyFiltersPassAnExpectedValue() =
     try
       Assert.That (Visitor.NameFilters.Count, Is.EqualTo(0))
-      Visitor.NameFilters.AddRange([ FilterClass.File "System"; FilterClass.Method "Augment"])
+      Visitor.NameFilters.AddRange([ FilterClass.File (Regex "System")
+                                     FilterClass.Method (Regex "Augment")])
       Assert.That (Visitor.IsIncluded (Assembly.GetExecutingAssembly().Location))
     finally
       Visitor.NameFilters.Clear()
@@ -484,7 +487,7 @@ type AltCoverTests() = class
     let method = (def.MainModule.Types |> Seq.skipWhile (fun t -> t.Name.StartsWith("<"))|> Seq.head).Methods |> Seq.head
     Visitor.Visit [] [] // cheat reset
     try
-        "Program" |> (FilterClass.File >> Visitor.NameFilters.Add)
+        "Program" |> (Regex >> FilterClass.File >> Visitor.NameFilters.Add)
         let deeper = Visitor.Deeper <| Node.Method (method, true)
                      |> Seq.toList
         Assert.That (deeper.Length, Is.EqualTo 10)
@@ -504,7 +507,7 @@ type AltCoverTests() = class
     let type' = (def.MainModule.Types |> Seq.skipWhile (fun t -> t.Name.StartsWith("<"))|> Seq.head)
     Visitor.Visit [] [] // cheat reset
     try
-        "Main" |> (FilterClass.Method >> Visitor.NameFilters.Add)
+        "Main" |> (Regex >> FilterClass.Method >> Visitor.NameFilters.Add)
         let deeper = Visitor.Deeper <| Node.Type (type', true)
                      |> Seq.toList
         Visitor.Visit [] [] // cheat reset
@@ -527,7 +530,7 @@ type AltCoverTests() = class
     let module' = def.MainModule
     Visitor.Visit [] [] // cheat reset
     try
-        "Program" |> (FilterClass.Type >> Visitor.NameFilters.Add)
+        "Program" |> (Regex >> FilterClass.Type >> Visitor.NameFilters.Add)
         let deeper = Visitor.Deeper <| Node.Module (module', true)
                      |> Seq.toList
         Visitor.Visit [] [] // cheat reset
@@ -580,7 +583,7 @@ type AltCoverTests() = class
     let where = Assembly.GetExecutingAssembly().Location
     let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample1.exe")
     try
-        "Sample" |> (FilterClass.Assembly >> Visitor.NameFilters.Add)
+        "Sample" |> (Regex >> FilterClass.Assembly >> Visitor.NameFilters.Add)
         let deeper = Visitor.Deeper <| Node.Start [path]
                      |> Seq.toList
         // assembly definitions care about being separate references in equality tests
@@ -823,7 +826,7 @@ type AltCoverTests() = class
     let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample1.exe")
 
     try
-        "Main" |> (FilterClass.Method >> Visitor.NameFilters.Add)
+        "Main" |> (Regex >> FilterClass.Method >> Visitor.NameFilters.Add)
         Visitor.Visit [ visitor ] (Visitor.ToSeq path)
 
         let baseline = XDocument.Load(new System.IO.StringReader(AltCoverTests.TTBaseline))
@@ -1782,7 +1785,7 @@ type AltCoverTests() = class
                                                                | FilterClass.Attribute _ -> true
                                                                | _ -> false))
       Assert.That (Visitor.NameFilters |> Seq.map (fun x -> match x with
-                                                            | FilterClass.Attribute i -> i
+                                                            | FilterClass.Attribute i -> i.ToString()
                                                             | _ -> "*"),
                    Is.EquivalentTo [| "1"; "2"; "3"; "4"; "5"; "6" |])
     finally
@@ -1805,7 +1808,7 @@ type AltCoverTests() = class
                                                                | FilterClass.Method _ -> true
                                                                | _ -> false))
       Assert.That (Visitor.NameFilters |> Seq.map (fun x -> match x with
-                                                            | FilterClass.Method i -> i
+                                                            | FilterClass.Method i -> i.ToString()
                                                             | _ -> "*"),
                    Is.EquivalentTo [| "1"; "2"; "3"; "4"; "5"; "6" |])
     finally
@@ -1828,7 +1831,7 @@ type AltCoverTests() = class
                                                                | FilterClass.Type _ -> true
                                                                | _ -> false))
       Assert.That (Visitor.NameFilters |> Seq.map (fun x -> match x with
-                                                            | FilterClass.Type i -> i
+                                                            | FilterClass.Type i -> i.ToString()
                                                             | _ -> "*"),
                    Is.EquivalentTo [| "1"; "2"; "3"; "4"; "5"; "6" |])
     finally
@@ -1851,7 +1854,7 @@ type AltCoverTests() = class
                                                                | FilterClass.Assembly _ -> true
                                                                | _ -> false))
       Assert.That (Visitor.NameFilters |> Seq.map (fun x -> match x with
-                                                            | FilterClass.Assembly i -> i
+                                                            | FilterClass.Assembly i -> i.ToString()
                                                             | _ -> "*"),
                    Is.EquivalentTo [| "1"; "2"; "3"; "4"; "5"; "6" |])
     finally
@@ -1874,7 +1877,7 @@ type AltCoverTests() = class
                                                                | FilterClass.File _ -> true
                                                                | _ -> false))
       Assert.That (Visitor.NameFilters |> Seq.map (fun x -> match x with
-                                                            | FilterClass.File i -> i
+                                                            | FilterClass.File i -> i.ToString()
                                                             | _ -> "*"),
                    Is.EquivalentTo [| "1"; "2"; "3"; "4"; "5"; "6" |])
     finally
