@@ -133,21 +133,24 @@ type AltCoverTests() = class
     Assert.That (startTime.ToUniversalTime(), Is.LessThan epoch)
     Assert.That (startTime.ToUniversalTime(), Is.EqualTo (Instance.startTime.ToUniversalTime()))
 
-#if NET4
   [<Test>]
   member self.NewDocumentStartIsMadeEarlier() =
     let epoch = DateTime (1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)
     Instance.startTime <- epoch
-    use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Shadow.Tests.SimpleCoverage.xml")
-    use worker = new MemoryStream()
-    stream.CopyTo worker
+    use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(self.resource)
+    let size = int stream.Length
+    let buffer = Array.create size 0uy 
+    Assert.That (stream.Read(buffer, 0, size), Is.EqualTo size)
+    use worker = new MemoryStream(buffer)
     worker.Position <- 0L
-    let before = XDocument.Load (Assembly.GetExecutingAssembly().GetManifestResourceStream("Shadow.Tests.SimpleCoverage.xml"))
+    let before = XmlDocument()
+    before.Load (Assembly.GetExecutingAssembly().GetManifestResourceStream(self.resource))
     self.UpdateReport [] worker
     worker.Position <- 0L
-    let after = XDocument.Load worker
-    let startTimeAttr = after.Root.Attribute(XName.Get("startTime"))
-    let startTime = DateTime.ParseExact(startTimeAttr.Value, "o", null)
+    let after = XmlDocument()
+    after.Load worker
+    let startTimeAttr = after.DocumentElement.GetAttribute("startTime")
+    let startTime = DateTime.ParseExact(startTimeAttr, "o", null)
     Assert.That (startTime.ToUniversalTime(), Is.EqualTo epoch)
     Assert.That (startTime.ToUniversalTime(), Is.EqualTo (Instance.startTime.ToUniversalTime()))
 
@@ -155,16 +158,20 @@ type AltCoverTests() = class
   member self.NewDocumentMeasureIsNotMadeEarlier() =
     let epoch = DateTime (1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)
     Instance.measureTime <- epoch
-    use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Shadow.Tests.SimpleCoverage.xml")
-    use worker = new MemoryStream()
-    stream.CopyTo worker
+    use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(self.resource)
+    let size = int stream.Length
+    let buffer = Array.create size 0uy 
+    Assert.That (stream.Read(buffer, 0, size), Is.EqualTo size)
+    use worker = new MemoryStream(buffer)
     worker.Position <- 0L
-    let before = XDocument.Load (Assembly.GetExecutingAssembly().GetManifestResourceStream("Shadow.Tests.SimpleCoverage.xml"))
+    let before = XmlDocument()
+    before.Load (Assembly.GetExecutingAssembly().GetManifestResourceStream(self.resource))
     self.UpdateReport [] worker
     worker.Position <- 0L
-    let after = XDocument.Load worker
-    let startTimeAttr = after.Root.Attribute(XName.Get("measureTime"))
-    let startTime = DateTime.ParseExact(startTimeAttr.Value, "o", null)
+    let after = XmlDocument()
+    after.Load worker
+    let startTimeAttr = after.DocumentElement.GetAttribute("measureTime")
+    let startTime = DateTime.ParseExact(startTimeAttr, "o", null)
     Assert.That (startTime.ToUniversalTime(), Is.GreaterThan epoch)
     Assert.That (startTime.ToUniversalTime(), Is.EqualTo (Instance.measureTime.ToUniversalTime()))
 
@@ -172,27 +179,33 @@ type AltCoverTests() = class
   member self.OldDocumentMeasureIsUpdated() =
     let epoch = DateTime.UtcNow
     Instance.measureTime <- epoch
-    use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Shadow.Tests.SimpleCoverage.xml")
-    use worker = new MemoryStream()
-    stream.CopyTo worker
+    use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(self.resource)
+    let size = int stream.Length
+    let buffer = Array.create size 0uy 
+    Assert.That (stream.Read(buffer, 0, size), Is.EqualTo size)
+    use worker = new MemoryStream(buffer)
     worker.Position <- 0L
-    let before = XDocument.Load (Assembly.GetExecutingAssembly().GetManifestResourceStream("Shadow.Tests.SimpleCoverage.xml"))
+    let before = XmlDocument()
+    before.Load (Assembly.GetExecutingAssembly().GetManifestResourceStream(self.resource))
     self.UpdateReport [] worker
     worker.Position <- 0L
-    let after = XDocument.Load worker
-    let startTimeAttr = after.Root.Attribute(XName.Get("measureTime"))
-    let startTime = DateTime.ParseExact(startTimeAttr.Value, "o", null)
+    let after = XmlDocument()
+    after.Load worker
+    let startTimeAttr = after.DocumentElement.GetAttribute("measureTime")
+    let startTime = DateTime.ParseExact(startTimeAttr, "o", null)
     Assert.That (startTime.ToUniversalTime(), Is.EqualTo epoch)
     Assert.That (startTime.ToUniversalTime(), Is.EqualTo (Instance.measureTime.ToUniversalTime()))
 
   [<Test>]
   member self.UnknownModuleMakesNoChange() =
     Instance.measureTime <- DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
-    use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Shadow.Tests.SimpleCoverage.xml")
-    use worker = new MemoryStream()
-    stream.CopyTo worker
+    use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(self.resource)
+    let size = int stream.Length
+    let buffer = Array.create size 0uy 
+    Assert.That (stream.Read(buffer, 0, size), Is.EqualTo size)
+    use worker = new MemoryStream(buffer)
     worker.Position <- 0L
-    use before = new StreamReader (Assembly.GetExecutingAssembly().GetManifestResourceStream("Shadow.Tests.SimpleCoverage.xml"))
+    use before = new StreamReader (Assembly.GetExecutingAssembly().GetManifestResourceStream(self.resource))
     let item = KeyValuePair<string, Dictionary<int,int>>("not a guid", null)
     self.UpdateReport [item] worker
     worker.Position <- 0L
@@ -203,11 +216,13 @@ type AltCoverTests() = class
   [<Test>]
   member self.KnownModuleWithNothingMakesNoChange() =
     Instance.measureTime <- DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
-    use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Shadow.Tests.SimpleCoverage.xml")
-    use worker = new MemoryStream()
-    stream.CopyTo worker
+    use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(self.resource)
+    let size = int stream.Length
+    let buffer = Array.create size 0uy 
+    Assert.That (stream.Read(buffer, 0, size), Is.EqualTo size)
+    use worker = new MemoryStream(buffer)
     worker.Position <- 0L
-    use before = new StreamReader (Assembly.GetExecutingAssembly().GetManifestResourceStream("Shadow.Tests.SimpleCoverage.xml"))
+    use before = new StreamReader (Assembly.GetExecutingAssembly().GetManifestResourceStream(self.resource))
     let item = KeyValuePair<string, Dictionary<int,int>>("f6e3edb3-fb20-44b3-817d-f69d1a22fc2f", Dictionary<int,int>())
     self.UpdateReport [item] worker
     worker.Position <- 0L
@@ -218,11 +233,13 @@ type AltCoverTests() = class
   [<Test>]
   member self.KnownModuleWithNothingInRangeMakesNoChange() =
     Instance.measureTime <- DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
-    use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Shadow.Tests.SimpleCoverage.xml")
-    use worker = new MemoryStream()
-    stream.CopyTo worker
+    use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(self.resource)
+    let size = int stream.Length
+    let buffer = Array.create size 0uy 
+    Assert.That (stream.Read(buffer, 0, size), Is.EqualTo size)
+    use worker = new MemoryStream(buffer)
     worker.Position <- 0L
-    use before = new StreamReader (Assembly.GetExecutingAssembly().GetManifestResourceStream("Shadow.Tests.SimpleCoverage.xml"))
+    use before = new StreamReader (Assembly.GetExecutingAssembly().GetManifestResourceStream(self.resource))
     let payload = Dictionary<int,int>()
     payload.[-1] <- 10
     payload.[100] <- 10
@@ -236,9 +253,11 @@ type AltCoverTests() = class
   [<Test>]
   member self.KnownModuleWithPayloadMakesExpectedChange() =
     Instance.measureTime <- DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
-    use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Shadow.Tests.SimpleCoverage.xml")
-    use worker = new MemoryStream()
-    stream.CopyTo worker
+    use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(self.resource)
+    let size = int stream.Length
+    let buffer = Array.create (size+100) 0uy // include expansion space
+    Assert.That (stream.Read(buffer, 0, size), Is.EqualTo size)
+    use worker = new MemoryStream(buffer)
     worker.Position <- 0L
     let payload = Dictionary<int,int>()
     [0..9 ]
@@ -246,11 +265,12 @@ type AltCoverTests() = class
     let item = KeyValuePair<string, Dictionary<int,int>>("f6e3edb3-fb20-44b3-817d-f69d1a22fc2f", payload)
     self.UpdateReport [item] worker
     worker.Position <- 0L
-    let after = XDocument.Load worker
-    Assert.That( after.Descendants(XName.Get("seqpnt"))
-                 |> Seq.map (fun x -> x.Attribute(XName.Get("visitcount")).Value),
-                 Is.EquivalentTo [ "11"; "10"; "9"; "8"; "7"; "6"; "4"; "3"; "2"; "1"])
-#endif 
+    let after = XmlDocument()
+    after.Load worker
+    Assert.That( after.SelectNodes("//seqpnt")
+                 |> Seq.cast<XmlElement>
+                 |> Seq.map (fun x -> x.GetAttribute("visitcount")),
+                 Is.EquivalentTo [ "11"; "10"; "9"; "8"; "7"; "6"; "4"; "3"; "2"; "1"]) 
 
   [<Test>]
   member self.EmptyFlushLeavesNoTrace() =
@@ -266,23 +286,26 @@ type AltCoverTests() = class
       Instance.Visits.Clear()
       Console.SetOut saved
 
-#if NET4
   [<Test>]
   member self.FlushLeavesExpectedTraces() =
     let saved = Console.Out
     let here = Directory.GetCurrentDirectory()
+    let unique = Path.Combine(Environment.GetEnvironmentVariable("TEMP"), Guid.NewGuid().ToString())
     try
       Instance.Visits.Clear()
       use stdout = new StringWriter()
       Console.SetOut stdout
-      Directory.SetCurrentDirectory(Environment.GetEnvironmentVariable("TEMP"))
+      Directory.CreateDirectory(unique) |> ignore
+      Directory.SetCurrentDirectory(unique)
 
       Instance.measureTime <- DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
-      use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Shadow.Tests.SimpleCoverage.xml")
-      if File.Exists Instance.ReportFile then File.Delete Instance.ReportFile
+      use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(self.resource)
+      let size = int stream.Length
+      let buffer = Array.create size 0uy 
+      Assert.That (stream.Read(buffer, 0, size), Is.EqualTo size)
       do
         use worker = new FileStream(Instance.ReportFile, FileMode.CreateNew)
-        stream.CopyTo worker
+        worker.Write(buffer, 0, size)
         ()
 
       let payload = Dictionary<int,int>()
@@ -298,16 +321,18 @@ type AltCoverTests() = class
       Assert.That (recorded.StartsWith(head, StringComparison.Ordinal))
       Assert.That (recorded.EndsWith(tail, StringComparison.Ordinal))
       use worker' = new FileStream(Instance.ReportFile, FileMode.Open)
-      let after = XDocument.Load worker'
-      Assert.That( after.Descendants(XName.Get("seqpnt"))
-                   |> Seq.map (fun x -> x.Attribute(XName.Get("visitcount")).Value),
+      let after = XmlDocument()
+      after.Load worker'
+      Assert.That( after.SelectNodes("//seqpnt")
+                   |> Seq.cast<XmlElement>
+                   |> Seq.map (fun x -> x.GetAttribute("visitcount")),
                    Is.EquivalentTo [ "11"; "10"; "9"; "8"; "7"; "6"; "4"; "3"; "2"; "1"])
     finally
       if File.Exists Instance.ReportFile then File.Delete Instance.ReportFile
       Instance.Visits.Clear()
       Console.SetOut saved
       Directory.SetCurrentDirectory(here)
-#endif
+      Directory.Delete(unique)
 
   [<Test>]
   member self.FlushShouldBeRegisteredForUnload() =
