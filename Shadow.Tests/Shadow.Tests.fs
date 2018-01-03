@@ -120,7 +120,8 @@ type AltCoverTests() = class
     let size = int stream.Length
     let buffer = Array.create size 0uy 
     Assert.That (stream.Read(buffer, 0, size), Is.EqualTo size)
-    use worker = new MemoryStream(buffer)
+    use worker = new MemoryStream()
+    worker.Write (buffer, 0, size)
     worker.Position <- 0L
     let before = XmlDocument()
     before.Load (Assembly.GetExecutingAssembly().GetManifestResourceStream(self.resource))
@@ -141,7 +142,8 @@ type AltCoverTests() = class
     let size = int stream.Length
     let buffer = Array.create size 0uy 
     Assert.That (stream.Read(buffer, 0, size), Is.EqualTo size)
-    use worker = new MemoryStream(buffer)
+    use worker = new MemoryStream()
+    worker.Write (buffer, 0, size)
     worker.Position <- 0L
     let before = XmlDocument()
     before.Load (Assembly.GetExecutingAssembly().GetManifestResourceStream(self.resource))
@@ -162,7 +164,8 @@ type AltCoverTests() = class
     let size = int stream.Length
     let buffer = Array.create size 0uy 
     Assert.That (stream.Read(buffer, 0, size), Is.EqualTo size)
-    use worker = new MemoryStream(buffer)
+    use worker = new MemoryStream()
+    worker.Write (buffer, 0, size)
     worker.Position <- 0L
     let before = XmlDocument()
     before.Load (Assembly.GetExecutingAssembly().GetManifestResourceStream(self.resource))
@@ -183,7 +186,8 @@ type AltCoverTests() = class
     let size = int stream.Length
     let buffer = Array.create size 0uy 
     Assert.That (stream.Read(buffer, 0, size), Is.EqualTo size)
-    use worker = new MemoryStream(buffer)
+    use worker = new MemoryStream()
+    worker.Write (buffer, 0, size)
     worker.Position <- 0L
     let before = XmlDocument()
     before.Load (Assembly.GetExecutingAssembly().GetManifestResourceStream(self.resource))
@@ -203,7 +207,8 @@ type AltCoverTests() = class
     let size = int stream.Length
     let buffer = Array.create size 0uy 
     Assert.That (stream.Read(buffer, 0, size), Is.EqualTo size)
-    use worker = new MemoryStream(buffer)
+    use worker = new MemoryStream()
+    worker.Write (buffer, 0, size)
     worker.Position <- 0L
     use before = new StreamReader (Assembly.GetExecutingAssembly().GetManifestResourceStream(self.resource))
     let item = KeyValuePair<string, Dictionary<int,int>>("not a guid", null)
@@ -220,7 +225,8 @@ type AltCoverTests() = class
     let size = int stream.Length
     let buffer = Array.create size 0uy 
     Assert.That (stream.Read(buffer, 0, size), Is.EqualTo size)
-    use worker = new MemoryStream(buffer)
+    use worker = new MemoryStream()
+    worker.Write (buffer, 0, size)
     worker.Position <- 0L
     use before = new StreamReader (Assembly.GetExecutingAssembly().GetManifestResourceStream(self.resource))
     let item = KeyValuePair<string, Dictionary<int,int>>("f6e3edb3-fb20-44b3-817d-f69d1a22fc2f", Dictionary<int,int>())
@@ -237,7 +243,8 @@ type AltCoverTests() = class
     let size = int stream.Length
     let buffer = Array.create size 0uy 
     Assert.That (stream.Read(buffer, 0, size), Is.EqualTo size)
-    use worker = new MemoryStream(buffer)
+    use worker = new MemoryStream()
+    worker.Write (buffer, 0, size)
     worker.Position <- 0L
     use before = new StreamReader (Assembly.GetExecutingAssembly().GetManifestResourceStream(self.resource))
     let payload = Dictionary<int,int>()
@@ -255,9 +262,10 @@ type AltCoverTests() = class
     Instance.measureTime <- DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
     use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(self.resource)
     let size = int stream.Length
-    let buffer = Array.create (size+100) 0uy // include expansion space
+    let buffer = Array.create size 0uy 
     Assert.That (stream.Read(buffer, 0, size), Is.EqualTo size)
-    use worker = new MemoryStream(buffer)
+    use worker = new MemoryStream()
+    worker.Write (buffer, 0, size)
     worker.Position <- 0L
     let payload = Dictionary<int,int>()
     [0..9 ]
