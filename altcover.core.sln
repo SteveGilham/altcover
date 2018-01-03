@@ -16,6 +16,20 @@ Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "sample2.core", "Sample2\sam
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "sample3.core", "Sample3\sample3.core.csproj", "{D4FE2C23-980A-46B0-8ECC-DD27FDF11C28}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build Items", "Build Items", "{97367D43-64EF-48E1-B6B4-D951C783E6E1}"
+	ProjectSection(SolutionItems) = preProject
+		Build\AltCover.nuspec = Build\AltCover.nuspec
+		appveyor.yml = appveyor.yml
+		Build\build.fsx = Build\build.fsx
+		Build\get-nuget.ps1 = Build\get-nuget.ps1
+		Build\Infrastructure.snk = Build\Infrastructure.snk
+		Build\Recorder.snk = Build\Recorder.snk
+		Build\rules.xml = Build\rules.xml
+		Build\SelfTest.snk = Build\SelfTest.snk
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{2837CE07-B91F-4B8A-89B5-E7BE39A8F340}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -113,6 +127,10 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{FB3B5250-DF9C-478B-BAD4-1D28D89D437A} = {2837CE07-B91F-4B8A-89B5-E7BE39A8F340}
+		{D4FE2C23-980A-46B0-8ECC-DD27FDF11C28} = {2837CE07-B91F-4B8A-89B5-E7BE39A8F340}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C31111CF-68A2-403F-9B06-9625FCBD48E3}

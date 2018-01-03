@@ -17,7 +17,11 @@ module Main =
 
   let mutable private help = false
   let mutable private error = false
+#if NETCOREAPP2_0
+  let private resources = ResourceManager("altcover.core.Strings", Assembly.GetExecutingAssembly())
+#else
   let private resources = ResourceManager("AltCover.Strings", Assembly.GetExecutingAssembly())
+#endif
 
   let internal WriteColoured (writer:TextWriter) colour operation =
        let original = Console.ForegroundColor
