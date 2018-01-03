@@ -122,15 +122,20 @@ module Main =
                       | :? System.Security.SecurityException as s -> WriteErr s.Message
                  else error <- true))
       ("f|fileFilter=",
-       Regex >> FilterClass.File >> Visitor.NameFilters.Add)
+       (fun x -> x.Split([|";"|], StringSplitOptions.RemoveEmptyEntries)
+                 |> Seq.iter (Regex >> FilterClass.File >> Visitor.NameFilters.Add)))
       ("s|assemblyFilter=",
-       Regex >> FilterClass.Assembly >> Visitor.NameFilters.Add)
+       (fun x -> x.Split([|";"|], StringSplitOptions.RemoveEmptyEntries)
+                 |> Seq.iter (Regex >> FilterClass.Assembly >> Visitor.NameFilters.Add)))
       ("t|typeFilter=",
-       Regex >> FilterClass.Type >> Visitor.NameFilters.Add)
+       (fun x -> x.Split([|";"|], StringSplitOptions.RemoveEmptyEntries)
+                 |> Seq.iter (Regex >> FilterClass.Type >> Visitor.NameFilters.Add)))
       ("m|methodFilter=",
-       Regex >> FilterClass.Method >> Visitor.NameFilters.Add)
+       (fun x -> x.Split([|";"|], StringSplitOptions.RemoveEmptyEntries)
+                 |> Seq.iter (Regex >> FilterClass.Method >> Visitor.NameFilters.Add)))
       ("a|attributeFilter=",
-       Regex >> FilterClass.Attribute >> Visitor.NameFilters.Add)
+       (fun x -> x.Split([|";"|], StringSplitOptions.RemoveEmptyEntries)
+                 |> Seq.iter (Regex >> FilterClass.Attribute >> Visitor.NameFilters.Add)))
       ("?|help|h", (fun x -> help <- not (isNull x)))
       ("<>", (fun x -> error <- true))         ]// default end stop
       |> List.fold (fun (o:OptionSet) (p, a) -> o.Add(p, resources.GetString(p), new System.Action<string>(a))) (OptionSet())

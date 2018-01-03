@@ -1773,21 +1773,21 @@ type AltCoverTests() = class
     try
       Visitor.NameFilters.Clear()
       let options = Main.DeclareOptions ()
-      let input = [| "-a"; "1"; "--a"; "2"; "/a"; "3"; "-a=4"; "--a=5"; "/a=6" |]
+      let input = [| "-a"; "1;a"; "--a"; "2"; "/a"; "3"; "-a=4"; "--a=5"; "/a=6" |]
       let parse = Main.ParseCommandLine input options
       match parse with
       | Left _ -> Assert.Fail()
       | Right (x, y) -> Assert.That (y, Is.SameAs options)
                         Assert.That (x, Is.Empty)
 
-      Assert.That (Visitor.NameFilters.Count, Is.EqualTo 6)
+      Assert.That (Visitor.NameFilters.Count, Is.EqualTo 7)
       Assert.That (Visitor.NameFilters |> Seq.forall (fun x -> match x with
                                                                | FilterClass.Attribute _ -> true
                                                                | _ -> false))
       Assert.That (Visitor.NameFilters |> Seq.map (fun x -> match x with
                                                             | FilterClass.Attribute i -> i.ToString()
                                                             | _ -> "*"),
-                   Is.EquivalentTo [| "1"; "2"; "3"; "4"; "5"; "6" |])
+                   Is.EquivalentTo [| "1"; "a"; "2"; "3"; "4"; "5"; "6" |])
     finally
       Visitor.NameFilters.Clear()
 
@@ -1796,21 +1796,21 @@ type AltCoverTests() = class
     try
       Visitor.NameFilters.Clear()
       let options = Main.DeclareOptions ()
-      let input = [| "-m"; "1"; "--m"; "2"; "/m"; "3"; "-m=4"; "--m=5"; "/m=6" |]
+      let input = [| "-m"; "1"; "--m"; "2;b;c"; "/m"; "3"; "-m=4"; "--m=5"; "/m=6" |]
       let parse = Main.ParseCommandLine input options
       match parse with
       | Left _ -> Assert.Fail()
       | Right (x, y) -> Assert.That (y, Is.SameAs options)
                         Assert.That (x, Is.Empty)
 
-      Assert.That (Visitor.NameFilters.Count, Is.EqualTo 6)
+      Assert.That (Visitor.NameFilters.Count, Is.EqualTo 8)
       Assert.That (Visitor.NameFilters |> Seq.forall (fun x -> match x with
                                                                | FilterClass.Method _ -> true
                                                                | _ -> false))
       Assert.That (Visitor.NameFilters |> Seq.map (fun x -> match x with
                                                             | FilterClass.Method i -> i.ToString()
                                                             | _ -> "*"),
-                   Is.EquivalentTo [| "1"; "2"; "3"; "4"; "5"; "6" |])
+                   Is.EquivalentTo [| "1"; "2"; "b"; "c"; "3"; "4"; "5"; "6" |])
     finally
       Visitor.NameFilters.Clear()
 
@@ -1819,21 +1819,21 @@ type AltCoverTests() = class
     try
       Visitor.NameFilters.Clear()
       let options = Main.DeclareOptions ()
-      let input = [| "-t"; "1"; "--t"; "2"; "/t"; "3"; "-t=4"; "--t=5"; "/t=6" |]
+      let input = [| "-t"; "1"; "--t"; "2"; "/t"; "3;x;y;z"; "-t=4"; "--t=5"; "/t=6" |]
       let parse = Main.ParseCommandLine input options
       match parse with
       | Left _ -> Assert.Fail()
       | Right (x, y) -> Assert.That (y, Is.SameAs options)
                         Assert.That (x, Is.Empty)
 
-      Assert.That (Visitor.NameFilters.Count, Is.EqualTo 6)
+      Assert.That (Visitor.NameFilters.Count, Is.EqualTo 9)
       Assert.That (Visitor.NameFilters |> Seq.forall (fun x -> match x with
                                                                | FilterClass.Type _ -> true
                                                                | _ -> false))
       Assert.That (Visitor.NameFilters |> Seq.map (fun x -> match x with
                                                             | FilterClass.Type i -> i.ToString()
                                                             | _ -> "*"),
-                   Is.EquivalentTo [| "1"; "2"; "3"; "4"; "5"; "6" |])
+                   Is.EquivalentTo [| "1"; "2"; "3"; "x"; "y"; "z"; "4"; "5"; "6" |])
     finally
       Visitor.NameFilters.Clear()
 
@@ -1842,21 +1842,21 @@ type AltCoverTests() = class
     try
       Visitor.NameFilters.Clear()
       let options = Main.DeclareOptions ()
-      let input = [| "-s"; "1"; "--s"; "2"; "/s"; "3"; "-s=4"; "--s=5"; "/s=6" |]
+      let input = [| "-s"; "1"; "--s"; "2"; "/s"; "3"; "-s=4;p;q"; "--s=5"; "/s=6" |]
       let parse = Main.ParseCommandLine input options
       match parse with
       | Left _ -> Assert.Fail()
       | Right (x, y) -> Assert.That (y, Is.SameAs options)
                         Assert.That (x, Is.Empty)
 
-      Assert.That (Visitor.NameFilters.Count, Is.EqualTo 6)
+      Assert.That (Visitor.NameFilters.Count, Is.EqualTo 8)
       Assert.That (Visitor.NameFilters |> Seq.forall (fun x -> match x with
                                                                | FilterClass.Assembly _ -> true
                                                                | _ -> false))
       Assert.That (Visitor.NameFilters |> Seq.map (fun x -> match x with
                                                             | FilterClass.Assembly i -> i.ToString()
                                                             | _ -> "*"),
-                   Is.EquivalentTo [| "1"; "2"; "3"; "4"; "5"; "6" |])
+                   Is.EquivalentTo [| "1"; "2"; "3"; "4"; "p"; "q"; "5"; "6" |])
     finally
       Visitor.NameFilters.Clear()
 
@@ -1865,21 +1865,21 @@ type AltCoverTests() = class
     try
       Visitor.NameFilters.Clear()
       let options = Main.DeclareOptions ()
-      let input = [| "-f"; "1"; "--f"; "2"; "/f"; "3"; "-f=4"; "--f=5"; "/f=6" |]
+      let input = [| "-f"; "1"; "--f"; "2"; "/f"; "3"; "-f=4"; "--f=5;m;n"; "/f=6" |]
       let parse = Main.ParseCommandLine input options
       match parse with
       | Left _ -> Assert.Fail()
       | Right (x, y) -> Assert.That (y, Is.SameAs options)
                         Assert.That (x, Is.Empty)
 
-      Assert.That (Visitor.NameFilters.Count, Is.EqualTo 6)
+      Assert.That (Visitor.NameFilters.Count, Is.EqualTo 8)
       Assert.That (Visitor.NameFilters |> Seq.forall (fun x -> match x with
                                                                | FilterClass.File _ -> true
                                                                | _ -> false))
       Assert.That (Visitor.NameFilters |> Seq.map (fun x -> match x with
                                                             | FilterClass.File i -> i.ToString()
                                                             | _ -> "*"),
-                   Is.EquivalentTo [| "1"; "2"; "3"; "4"; "5"; "6" |])
+                   Is.EquivalentTo [| "1"; "2"; "3"; "4"; "5"; "m"; "n"; "6" |])
     finally
       Visitor.NameFilters.Clear()
 
