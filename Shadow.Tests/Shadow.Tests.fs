@@ -42,7 +42,6 @@ type AltCoverTests() = class
     Assert.That(where, Is.EqualTo "AltCover.Shadow")
 #endif
 
-
   [<Test>]
   member self.NullIdShouldNotGiveACount() =
     try
@@ -115,9 +114,9 @@ type AltCoverTests() = class
    member self.resource = "Shadow.Tests.SimpleCoverage.xml"
 #else
 #if ALTCOVER_TEST
-  member self.resource = "altcover.recorder.tests.core.SimpleCoverage.xml"    
+  member self.resource = "altcover.recorder.tests.core.SimpleCoverage.xml"
 #else
-  member self.resource = "SimpleCoverage.xml"    
+  member self.resource = "SimpleCoverage.xml"
 #endif
 #endif
 
@@ -127,7 +126,7 @@ type AltCoverTests() = class
     Instance.startTime <- epoch
     use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(self.resource)
     let size = int stream.Length
-    let buffer = Array.create size 0uy 
+    let buffer = Array.create size 0uy
     Assert.That (stream.Read(buffer, 0, size), Is.EqualTo size)
     use worker = new MemoryStream()
     worker.Write (buffer, 0, size)
@@ -149,7 +148,7 @@ type AltCoverTests() = class
     Instance.startTime <- epoch
     use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(self.resource)
     let size = int stream.Length
-    let buffer = Array.create size 0uy 
+    let buffer = Array.create size 0uy
     Assert.That (stream.Read(buffer, 0, size), Is.EqualTo size)
     use worker = new MemoryStream()
     worker.Write (buffer, 0, size)
@@ -171,7 +170,7 @@ type AltCoverTests() = class
     Instance.measureTime <- epoch
     use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(self.resource)
     let size = int stream.Length
-    let buffer = Array.create size 0uy 
+    let buffer = Array.create size 0uy
     Assert.That (stream.Read(buffer, 0, size), Is.EqualTo size)
     use worker = new MemoryStream()
     worker.Write (buffer, 0, size)
@@ -193,7 +192,7 @@ type AltCoverTests() = class
     Instance.measureTime <- epoch
     use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(self.resource)
     let size = int stream.Length
-    let buffer = Array.create size 0uy 
+    let buffer = Array.create size 0uy
     Assert.That (stream.Read(buffer, 0, size), Is.EqualTo size)
     use worker = new MemoryStream()
     worker.Write (buffer, 0, size)
@@ -214,7 +213,7 @@ type AltCoverTests() = class
     Instance.measureTime <- DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
     use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(self.resource)
     let size = int stream.Length
-    let buffer = Array.create size 0uy 
+    let buffer = Array.create size 0uy
     Assert.That (stream.Read(buffer, 0, size), Is.EqualTo size)
     use worker = new MemoryStream()
     worker.Write (buffer, 0, size)
@@ -232,7 +231,7 @@ type AltCoverTests() = class
     Instance.measureTime <- DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
     use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(self.resource)
     let size = int stream.Length
-    let buffer = Array.create size 0uy 
+    let buffer = Array.create size 0uy
     Assert.That (stream.Read(buffer, 0, size), Is.EqualTo size)
     use worker = new MemoryStream()
     worker.Write (buffer, 0, size)
@@ -250,7 +249,7 @@ type AltCoverTests() = class
     Instance.measureTime <- DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
     use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(self.resource)
     let size = int stream.Length
-    let buffer = Array.create size 0uy 
+    let buffer = Array.create size 0uy
     Assert.That (stream.Read(buffer, 0, size), Is.EqualTo size)
     use worker = new MemoryStream()
     worker.Write (buffer, 0, size)
@@ -271,7 +270,7 @@ type AltCoverTests() = class
     Instance.measureTime <- DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
     use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(self.resource)
     let size = int stream.Length
-    let buffer = Array.create size 0uy 
+    let buffer = Array.create size 0uy
     Assert.That (stream.Read(buffer, 0, size), Is.EqualTo size)
     use worker = new MemoryStream()
     worker.Write (buffer, 0, size)
@@ -287,7 +286,7 @@ type AltCoverTests() = class
     Assert.That( after.SelectNodes("//seqpnt")
                  |> Seq.cast<XmlElement>
                  |> Seq.map (fun x -> x.GetAttribute("visitcount")),
-                 Is.EquivalentTo [ "11"; "10"; "9"; "8"; "7"; "6"; "4"; "3"; "2"; "1"]) 
+                 Is.EquivalentTo [ "11"; "10"; "9"; "8"; "7"; "6"; "4"; "3"; "2"; "1"])
 
   [<Test>]
   member self.EmptyFlushLeavesNoTrace() =
@@ -318,7 +317,7 @@ type AltCoverTests() = class
       Instance.measureTime <- DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
       use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(self.resource)
       let size = int stream.Length
-      let buffer = Array.create size 0uy 
+      let buffer = Array.create size 0uy
       Assert.That (stream.Read(buffer, 0, size), Is.EqualTo size)
       do
         use worker = new FileStream(Instance.ReportFile, FileMode.CreateNew)

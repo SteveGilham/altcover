@@ -102,7 +102,6 @@ type AltCoverTests() = class
                             let filename = file.Name
                             Assert.That(name, Does.EndWith("\\" + filename), (fst x) + " -> " + name) )
 
-
   [<Test>]
   member self.ShouldGetPdbWithFallback() =
     // Hack for running while instrumented
