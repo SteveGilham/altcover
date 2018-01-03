@@ -135,11 +135,46 @@ Target "BuildRelease" (fun _ ->
                               "./_Binaries/AltCover/Release+AnyCPU/AltCover.exe"
 )
 
+Target "BuildDotNetRelease" (fun _ ->
+    DotNetCli.Build
+        (fun p -> 
+            { p with 
+                Configuration = "Release"
+                Project =  "./altcover.core.sln"})
+)
+
 Target "BuildDebug" (fun _ ->
    !! "**/AltCove*.sln"  // include demo projects
      |> Seq.filter (fun n -> n.IndexOf(".core.") = -1)
      |> MSBuildDebug "" ""
      |> Log "AppBuild-Output: "
+)
+
+Target "BuildDotNetDebug" (fun _ ->
+    DotNetCli.Build
+        (fun p -> 
+            { p with 
+                Configuration = "Debug"
+                Project =  "./altcover.core.sln"})
+)
+
+Target "Test" (fun _ ->
+    ensureDirectory "./_Reports"
+    !! (@"_Binaries\*Tests\Debug+AnyCPU\*.Test*.dll")
+    |> NUnit3 (fun p -> { p with ToolPath = findToolInSubPath "nunit3-console.exe" "."
+                                 WorkingDir = "."
+                                 ResultSpecs = ["./_Reports/NUnit3Report.xml"] })
+)
+
+Target "TestDotNet" (fun _ ->
+    ensureDirectory "./_Reports"
+    !! (@".\*Tests\*.tests.core.fsproj")
+    |> Seq.iter (fun f -> printfn "Testing %s" f
+                          DotNetCli.Test
+                             (fun p -> 
+                                  { p with 
+                                      Configuration = "Debug"
+                                      Project =  f}))
 )
 
 Target "TestCover" (fun _ ->
@@ -163,14 +198,6 @@ Target "TestCover" (fun _ ->
                                      info.WorkingDirectory <- "_Reports"
                                      info.Arguments <- "--opencover OpenCoverReport.xml") (TimeSpan.FromMinutes 5.0)
             |> ignore
-)
-
-Target "Test" (fun _ ->
-    ensureDirectory "./_Reports"
-    !! (@"_Binaries\*Tests\Debug+AnyCPU\*.Test*.dll")
-    |> NUnit3 (fun p -> { p with ToolPath = findToolInSubPath "nunit3-console.exe" "."
-                                 WorkingDir = "."
-                                 ResultSpecs = ["./_Reports/NUnit3Report.xml"] })
 )
 
 Target "FSharpTypes" ( fun _ ->
@@ -554,6 +581,8 @@ Target "SimpleMonoReleaseTest" (fun _ ->
     SimpleInstrumentingRun "_Mono/Sample1" unpack ".MR"
 )
 
+Target "dotnet" ignore
+
 Target "All" ignore
 
 "Clean"
@@ -563,20 +592,37 @@ Target "All" ignore
 ==> "SimpleReleaseTest"
 ==> "SimpleMonoReleaseTest"
 
+"Clean"
+==> "SetVersion"
+==> "BuildDotNetRelease"
+==> "dotnet"
+
 "BuildMonoSamples"
 ==> "SimpleMonoReleaseTest"
 
 "BuildMonoSamples"
 ==> "Test"
 
+"BuildMonoSamples"
+==> "TestDotNet"
+
 "SetVersion"
 =?> ("BuildDebug", (not(File.Exists("./_Generated/AssemblyVersion.fs"))))
+
+"SetVersion"
+=?> ("BuildDotNetDebug", (not(File.Exists("./_Generated/AssemblyVersion.fs"))))
+
+"SetVersion"
+?=> "BuildDotNetDebug"
 
 "SetVersion"
 ?=> "BuildDebug"
 
 "Clean"
 ?=> "BuildDebug"
+
+"Clean"
+?=> "BuildDotNetDebug"
 
 "BuildDebug"
 ==> "Lint"
@@ -596,6 +642,9 @@ Target "All" ignore
 ==> "FSharpTypes"
 "BuildDebug"
 ==> "Gendarme"
+
+"BuildDotNetDebug"
+==> "TestDotNet"
 
 "TestCover"
 ==> "BulkReport"
@@ -635,5 +684,9 @@ Target "All" ignore
 
 "Test"
 ==> "TestCover"
+
+"TestDotNet"
+==> "dotnet"
+
 
 RunTargetOrDefault "All"

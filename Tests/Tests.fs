@@ -1023,7 +1023,7 @@ type AltCoverTests() = class
     finally
       Visitor.keys.Clear()
 
-#if NETSTANDARD2_0
+#if NETCOREAPP2_0
 // TODO
 #else
   [<Test>]

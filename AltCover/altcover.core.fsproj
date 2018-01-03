@@ -49,8 +49,4 @@
     <PackageReference Update="FSharp.Core" Version="4.2.3" />
   </ItemGroup>
 
-  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
-    <Exec Command="copy /Y /B &quot;$(ProjectDir)..\Build\Infrastructure.snk&quot; $(ProjectDir)" />
-  </Target>
-
 </Project>
