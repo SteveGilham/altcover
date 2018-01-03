@@ -18,7 +18,11 @@ module Main =
   let mutable private help = false
   let mutable private error = false
 #if NETCOREAPP2_0
+#if ALTCOVER_TEST
+  let private resources = ResourceManager("altcover.tests.core.Strings", Assembly.GetExecutingAssembly())
+#else
   let private resources = ResourceManager("altcover.core.Strings", Assembly.GetExecutingAssembly())
+#endif
 #else
   let private resources = ResourceManager("AltCover.Strings", Assembly.GetExecutingAssembly())
 #endif
@@ -249,7 +253,7 @@ module Main =
       with
       | :? IOException as x -> WriteErr x.Message
 
-#if NETSTANDARD2_0
+#if ALTCOVER_TEST
 #else
   [<EntryPoint>]
   let private Main arguments =

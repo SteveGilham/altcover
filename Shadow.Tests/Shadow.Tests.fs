@@ -21,15 +21,13 @@ open Mono.Cecil.Cil
 [<TestFixture>]
 type AltCoverTests() = class
 
+#if ALTCOVER_TEST
+  // Not meaningful when we aren't calling across an assembly boundary
+#else
   [<Test>]
   member self.ShouldBeLinkingTheCorrectCopyOfThisCode() =
     let locker = { Tracer = String.Empty }
-    Assert.That(locker.GetType().Assembly.GetName().Name, Is.EqualTo 
-#if NETCOREAPP2_0    
-    "AltCover.Recorder")
-#else
-    "AltCover.Shadow")
-#endif
+    Assert.That(locker.GetType().Assembly.GetName().Name, Is.EqualTo "AltCover.Shadow")
 
 #if NET4
   // Doesn't work across framework boundaries, as the unit -> unit type
@@ -42,6 +40,8 @@ type AltCoverTests() = class
     let mutable where = ""
     Locking.WithLockerLocked self (fun () -> where <- Assembly.GetCallingAssembly().GetName().Name)
     Assert.That(where, Is.EqualTo "AltCover.Shadow")
+#endif
+
 
   [<Test>]
   member self.NullIdShouldNotGiveACount() =
@@ -114,7 +114,11 @@ type AltCoverTests() = class
 #if NET4
    member self.resource = "Shadow.Tests.SimpleCoverage.xml"
 #else
+#if ALTCOVER_TEST
+  member self.resource = "altcover.recorder.tests.core.SimpleCoverage.xml"    
+#else
   member self.resource = "SimpleCoverage.xml"    
+#endif
 #endif
 
   [<Test>]
@@ -347,6 +351,9 @@ type AltCoverTests() = class
       Directory.SetCurrentDirectory(here)
       Directory.Delete(unique)
 
+#if ALTCOVER_TEST
+  // The hack doesn't work in .net core
+#else
   [<Test>]
   member self.FlushShouldBeRegisteredForUnload() =
     Instance.Visits.Clear()
@@ -413,5 +420,5 @@ type AltCoverTests() = class
                                             |> Option.isSome)
                  |> Option.isSome,
                  sprintf "%A" targets)
-
+#endif
 end
