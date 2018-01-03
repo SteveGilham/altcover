@@ -52,12 +52,21 @@
   <Import Project="$(FSharpTargetsPath)" Condition="Exists('$(FSharpTargetsPath)')" />
   <ItemGroup>
     <Content Include="packages.config" />
+    <Compile Include="..\Shadow.Tests\AssemblyInfo.fs">
+      <Link>AssemblyInfo.fs</Link>
+    </Compile>
+    <Compile Include="..\_Generated\AssemblyVersion.fs">
+      <Link>AssemblyVersion.fs</Link>
+    </Compile>
     <Compile Include="..\_Generated\VisibleToTest.fs">
       <Link>VisibleToTest.fs</Link>
     </Compile>
     <Compile Include="..\Shadow.Tests\Shadow.Tests.fs">
       <Link>Shadow.Tests.fs</Link>
     </Compile>
+    <EmbeddedResource Include="..\Shadow.Tests\SimpleCoverage.xml">
+      <Link>SimpleCoverage.xml</Link>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <Reference Include="FSharp.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
@@ -80,6 +89,7 @@
       <HintPath>..\packages\NUnit.3.9.0\lib\net20\NUnit.System.Linq.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\AltCover.Recorder\AltCover.Shadow.fsproj">

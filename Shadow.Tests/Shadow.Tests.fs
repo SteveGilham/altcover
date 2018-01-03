@@ -7,6 +7,7 @@ namespace Shadow.Tests2
 open System
 open System.IO
 open System.Reflection
+open System.Xml
 #if NET4
 open System.Xml.Linq
 #endif
@@ -25,10 +26,10 @@ type AltCoverTests() = class
     let locker = { Tracer = String.Empty }
     Assert.That(locker.GetType().Assembly.GetName().Name, Is.EqualTo "AltCover.Shadow")
 
+#if NET4
   // Doesn't work across framework boundaries, as the unit -> unit type
   // is rooted in a different runtime.  But the locking code gets executed
   // incidentally anyway in later tests.
-#if NET4
 #else
   [<Test>]
 #endif
@@ -106,23 +107,33 @@ type AltCoverTests() = class
     |> ignore
 
 #if NET4
+   member self.resource = "Shadow.Tests.SimpleCoverage.xml"
+#else
+  member self.resource = "SimpleCoverage.xml"    
+#endif
+
   [<Test>]
   member self.OldDocumentStartIsNotUpdated() =
     let epoch = DateTime.UtcNow
     Instance.startTime <- epoch
-    use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Shadow.Tests.SimpleCoverage.xml")
-    use worker = new MemoryStream()
-    stream.CopyTo worker
+    use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(self.resource)
+    let size = int stream.Length
+    let buffer = Array.create size 0uy 
+    Assert.That (stream.Read(buffer, 0, size), Is.EqualTo size)
+    use worker = new MemoryStream(buffer)
     worker.Position <- 0L
-    let before = XDocument.Load (Assembly.GetExecutingAssembly().GetManifestResourceStream("Shadow.Tests.SimpleCoverage.xml"))
+    let before = XmlDocument()
+    before.Load (Assembly.GetExecutingAssembly().GetManifestResourceStream(self.resource))
     self.UpdateReport [] worker
     worker.Position <- 0L
-    let after = XDocument.Load worker
-    let startTimeAttr = after.Root.Attribute(XName.Get("startTime"))
-    let startTime = DateTime.ParseExact(startTimeAttr.Value, "o", null)
+    let after = XmlDocument()
+    after.Load worker
+    let startTimeAttr = after.DocumentElement.GetAttribute("startTime")
+    let startTime = DateTime.ParseExact(startTimeAttr, "o", null)
     Assert.That (startTime.ToUniversalTime(), Is.LessThan epoch)
     Assert.That (startTime.ToUniversalTime(), Is.EqualTo (Instance.startTime.ToUniversalTime()))
 
+#if NET4
   [<Test>]
   member self.NewDocumentStartIsMadeEarlier() =
     let epoch = DateTime (1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)
