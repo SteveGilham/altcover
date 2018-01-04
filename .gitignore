@@ -81,3 +81,4 @@ altcover.core.lib/Infrastructure.snk
 altcover.core.lib/bin/
 altcover.core.lib/obj/
 __Instrumented/
+Sample1/obj/

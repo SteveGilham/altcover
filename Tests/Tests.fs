@@ -482,7 +482,11 @@ type AltCoverTests() = class
   [<Test>]
   member self.MethodPointsAreDeeperThanMethods() =
     let where = Assembly.GetExecutingAssembly().Location
+#if ALTCOVER_TEST
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample1.dll")
+#else
     let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample1.exe")
+#endif
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
     let reader = ProgramDatabase.ReadSymbols def
     let method = (def.MainModule.Types |> Seq.skipWhile (fun t -> t.Name.StartsWith("<"))|> Seq.head).Methods |> Seq.head
