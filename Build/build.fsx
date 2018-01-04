@@ -374,10 +374,10 @@ let SimpleInstrumentingRun (samplePath:string) (binaryPath:string) (reportSigil:
     if (List.length ones) + (List.length zero) <> (List.length recorded) then failwith "unexpected visits"
     let zero' = zero |> Seq.distinct |> Seq.toList
 
-    if ["18"; "19"; "20"] <> zero' then failwith "wrong unvisited"
+    if ["18"; "19"; "20"] <> zero' then failwith ("wrong unvisited : " + (sprintf "%A" zero'))
 
     let ones' = ones |> Seq.distinct |> Seq.toList
-    if ["11"; "12"; "13"; "14"; "15"; "16"; "21"] <> ones' then failwith "wrong number of visited"
+    if ["11"; "12"; "13"; "14"; "15"; "16"; "21"] <> ones' then failwith ("wrong number of visited : " + (sprintf "%A" ones'))
 
 Target "SimpleInstrumentation" (fun _ ->
    SimpleInstrumentingRun "_Binaries/Sample1/Debug+AnyCPU" "_Binaries/AltCover/Debug+AnyCPU" String.Empty
