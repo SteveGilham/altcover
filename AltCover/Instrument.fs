@@ -108,6 +108,9 @@ module Instrument =
   let private extractName (assembly: AssemblyDefinition) =
      assembly.Name.Name
 
+  let recorderSnk = Assembly.GetExecutingAssembly().GetManifestResourceNames()
+                    |> Seq.find (fun n -> n.EndsWith(".Recorder.snk", StringComparison.Ordinal))
+
   /// <summary>
   /// Create the new assembly that will record visits, based on the prototype.
   /// </summary>
@@ -116,7 +119,7 @@ module Instrument =
     let definition = AssemblyDefinition.ReadAssembly(location)
     ProgramDatabase.ReadSymbols definition |> ignore
     definition.Name.Name <- (extractName definition) + ".g"
-    use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Recorder.snk")
+    use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(recorderSnk)
     use buffer = new MemoryStream()
     stream.CopyTo(buffer)
     let pair = StrongNameKeyPair(buffer.ToArray())

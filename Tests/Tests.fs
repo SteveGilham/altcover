@@ -41,9 +41,15 @@ type AltCoverTests() = class
 #if ALTCOVER_TEST
   let sample1 = "Sample1.dll"
   let monoSample1 = "../_Mono/Sample1"
+  let recorderSnk = Assembly.GetExecutingAssembly().GetManifestResourceNames()
+                    |> Seq.find (fun n -> n.EndsWith(".Recorder.snk", StringComparison.Ordinal))
+  let infrastructureSnk = Assembly.GetExecutingAssembly().GetManifestResourceNames()
+                          |> Seq.find (fun n -> n.EndsWith(".Infrastructure.snk", StringComparison.Ordinal))
 #else
   let sample1 = "Sample1.exe"
   let monoSample1 = "_Mono\\Sample1"
+  let recorderSnk = "AltCover.Recorder.snk"
+  let infrastructureSnk ="Infrastructure.snk"
 #endif
 
   // Hack for running while instrumented
@@ -381,15 +387,15 @@ type AltCoverTests() = class
   member self.EmptyArrayHasExpectedHash() =
     Assert.That ((KeyStore.TokenOfArray [| |]), Is.EquivalentTo [|9uy; 7uy; 216uy; 175uy; 144uy; 24uy; 96uy; 149uy|])
 
-  static member private ProvideKeyPair () =
-      use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Infrastructure.snk")
+  member private self.ProvideKeyPair () =
+      use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(infrastructureSnk)
       use buffer = new MemoryStream()
       stream.CopyTo(buffer)
       StrongNameKeyPair(buffer.ToArray())
 
   [<Test>]
   member self.KeyHasExpectedToken() =
-    let token = KeyStore.TokenOfKey <| AltCoverTests.ProvideKeyPair ()
+    let token = KeyStore.TokenOfKey <| self.ProvideKeyPair ()
     let token' = String.Join(String.Empty, token |> List.map (fun x -> x.ToString("x2")))
     Assert.That (token', Is.EqualTo("c02b1a9f5b7cade8"))
 
@@ -400,7 +406,7 @@ type AltCoverTests() = class
 
   [<Test>]
   member self.KeyHasExpectedIndex() =
-    let token = KeyStore.KeyToIndex <| AltCoverTests.ProvideKeyPair ()
+    let token = KeyStore.KeyToIndex <| self.ProvideKeyPair ()
     Assert.That (token, Is.EqualTo(0xe8ad7c5b9f1a2bc0UL))
 
   [<Test>]
@@ -409,7 +415,7 @@ type AltCoverTests() = class
 
   [<Test>]
   member self.KeyHasExpectedRecord() =
-    let pair = AltCoverTests.ProvideKeyPair ()
+    let pair = self.ProvideKeyPair ()
     let token = KeyStore.KeyToRecord <| pair
     Assert.That (token, Is.EqualTo({Pair = pair; Token = BitConverter.GetBytes(0xe8ad7c5b9f1a2bc0UL) |> Array.toList}))
 
@@ -417,7 +423,7 @@ type AltCoverTests() = class
   member self.KeyHasExpectedPlaceInIndex() =
     try
       Assert.That (Visitor.keys.Keys.Count, Is.EqualTo(0))
-      let pair = AltCoverTests.ProvideKeyPair ()
+      let pair = self.ProvideKeyPair ()
       Visitor.Add(pair)
       Assert.That(Visitor.keys.ContainsKey(0xe8ad7c5b9f1a2bc0UL))
       Assert.That(Visitor.keys.[0xe8ad7c5b9f1a2bc0UL], Is.EqualTo({Pair = pair; Token = BitConverter.GetBytes(0xe8ad7c5b9f1a2bc0UL) |> Array.toList}))
@@ -851,10 +857,11 @@ type AltCoverTests() = class
         Visitor.Visit [ visitor ] (Visitor.ToSeq path)
 
         let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-        let xml = AltCoverTests.TTBaseline.Replace ("Version=1.0.0.0", 
-                                                    "Version=" + def.Name.Version.ToString())
+        let xml = AltCoverTests.TTBaseline
+        let xml' = xml.Replace ("Version=1.0.0.0", "Version=" + def.Name.Version.ToString())
+        let xml'' = xml'.Replace("name=\"Sample1.exe\"", "name=\"" + sample1 + "\"")
 
-        let baseline = XDocument.Load(new System.IO.StringReader(xml))
+        let baseline = XDocument.Load(new System.IO.StringReader(xml''))
         let result = document.Elements()
         let expected = baseline.Elements()
         AltCoverTests.RecursiveValidate result expected 0 true
@@ -918,7 +925,7 @@ type AltCoverTests() = class
     let token0 = def.Name.PublicKeyToken
     Assert.That (token0, Is.Not.Null)
 
-    use stream = typeof<AltCover.Node>.Assembly.GetManifestResourceStream("AltCover.Recorder.snk")
+    use stream = typeof<AltCover.Node>.Assembly.GetManifestResourceStream(recorderSnk)
     use buffer = new MemoryStream()
     stream.CopyTo(buffer)
     let key = StrongNameKeyPair(buffer.ToArray())
@@ -952,7 +959,7 @@ type AltCoverTests() = class
       let where = Assembly.GetExecutingAssembly().Location
       let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample3.dll")
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-      AltCoverTests.ProvideKeyPair() |> Visitor.Add
+      self.ProvideKeyPair() |> Visitor.Add
       Assert.That (Option.isSome(Instrument.KnownKey def.Name))
     finally
       Visitor.keys.Clear()
@@ -965,7 +972,7 @@ type AltCoverTests() = class
       let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample3.dll")
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
       AltCover.Instrument.UpdateStrongNaming def.Name None
-      AltCoverTests.ProvideKeyPair() |> Visitor.Add
+      self.ProvideKeyPair() |> Visitor.Add
       Assert.That (Option.isNone(Instrument.KnownKey def.Name))
     finally
       Visitor.keys.Clear()
@@ -988,7 +995,7 @@ type AltCoverTests() = class
       let where = Assembly.GetExecutingAssembly().Location
       let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample3.dll")
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-      AltCoverTests.ProvideKeyPair() |> Visitor.Add
+      self.ProvideKeyPair() |> Visitor.Add
       Assert.That (Option.isSome(Instrument.KnownToken def.Name))
     finally
       Visitor.keys.Clear()
@@ -1001,7 +1008,7 @@ type AltCoverTests() = class
       let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample3.dll")
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
       AltCover.Instrument.UpdateStrongNaming def.Name None
-      AltCoverTests.ProvideKeyPair() |> Visitor.Add
+      self.ProvideKeyPair() |> Visitor.Add
       Assert.That (Option.isNone(Instrument.KnownToken def.Name))
     finally
       Visitor.keys.Clear()
@@ -1090,7 +1097,7 @@ type AltCoverTests() = class
       let output = Path.GetTempFileName()
       let outputdll = output + ".dll"
       let save = Visitor.reportPath
-      use stream = typeof<AltCover.Node>.Assembly.GetManifestResourceStream("AltCover.Recorder.snk")
+      use stream = typeof<AltCover.Node>.Assembly.GetManifestResourceStream(recorderSnk)
       use buffer = new MemoryStream()
       stream.CopyTo(buffer)
       let key = StrongNameKeyPair(buffer.ToArray())
@@ -1441,7 +1448,7 @@ type AltCoverTests() = class
     ProgramDatabase.ReadSymbols def |> ignore
     let token0 = def.Name.PublicKeyToken
 
-    use stream = typeof<AltCover.Node>.Assembly.GetManifestResourceStream("AltCover.Recorder.snk")
+    use stream = typeof<AltCover.Node>.Assembly.GetManifestResourceStream(recorderSnk)
     use buffer = new MemoryStream()
     stream.CopyTo(buffer)
     Visitor.defaultStrongNameKey <- Some (StrongNameKeyPair(buffer.ToArray()))
@@ -1461,7 +1468,7 @@ type AltCoverTests() = class
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
     ProgramDatabase.ReadSymbols def |> ignore
 
-    use stream = typeof<AltCover.Node>.Assembly.GetManifestResourceStream("AltCover.Recorder.snk")
+    use stream = typeof<AltCover.Node>.Assembly.GetManifestResourceStream(recorderSnk)
     use buffer = new MemoryStream()
     stream.CopyTo(buffer)
     Visitor.defaultStrongNameKey <- Some (StrongNameKeyPair(buffer.ToArray()))
@@ -1478,7 +1485,7 @@ type AltCoverTests() = class
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
     ProgramDatabase.ReadSymbols def |> ignore
 
-    use stream = typeof<AltCover.Node>.Assembly.GetManifestResourceStream("AltCover.Recorder.snk")
+    use stream = typeof<AltCover.Node>.Assembly.GetManifestResourceStream(recorderSnk)
     use buffer = new MemoryStream()
     stream.CopyTo(buffer)
     Visitor.defaultStrongNameKey <- Some (StrongNameKeyPair(buffer.ToArray()))
@@ -1498,7 +1505,7 @@ type AltCoverTests() = class
     ProgramDatabase.ReadSymbols def |> ignore
     let refs = def.MainModule.AssemblyReferences |> Seq.toList
 
-    use stream = typeof<AltCover.Node>.Assembly.GetManifestResourceStream("AltCover.Recorder.snk")
+    use stream = typeof<AltCover.Node>.Assembly.GetManifestResourceStream(recorderSnk)
     use buffer = new MemoryStream()
     stream.CopyTo(buffer)
     Visitor.defaultStrongNameKey <- Some (StrongNameKeyPair(buffer.ToArray()))
@@ -1522,7 +1529,7 @@ type AltCoverTests() = class
     ProgramDatabase.ReadSymbols def |> ignore
     let refs = def.MainModule.AssemblyReferences |> Seq.toList
 
-    use stream = typeof<AltCover.Node>.Assembly.GetManifestResourceStream("AltCover.Recorder.snk")
+    use stream = typeof<AltCover.Node>.Assembly.GetManifestResourceStream(recorderSnk)
     use buffer = new MemoryStream()
     stream.CopyTo(buffer)
     Visitor.defaultStrongNameKey <- Some (StrongNameKeyPair(buffer.ToArray()))

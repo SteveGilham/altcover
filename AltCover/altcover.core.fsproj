@@ -31,6 +31,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="..\Build\Recorder.snk" Link="Recorder.snk" />
     <None Include="Resource.rc" />
     <None Include="Resource.res" />
   </ItemGroup>
