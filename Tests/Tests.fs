@@ -37,6 +37,15 @@ type ProxyObject() =
 
 [<TestFixture>]
 type AltCoverTests() = class
+
+#if ALTCOVER_TEST
+  let sample1 = "Sample1.dll"
+  let monoSample1 = "../_Mono/Sample1"
+#else
+  let sample1 = "Sample1.exe"
+  let monoSample1 = "_Mono\\Sample1"
+#endif
+
   // Hack for running while instrumented
   static member private Hack () =
     let where = Assembly.GetExecutingAssembly().Location
@@ -86,7 +95,7 @@ type AltCoverTests() = class
   member self.ShouldGetPdbFromMonoImage() =
     // Hack for running while instrumented
     let where = Assembly.GetExecutingAssembly().Location
-    let files = Directory.GetFiles(where.Substring(0, where.IndexOf("_Binaries")) + "_Mono\\Sample1")
+    let files = Directory.GetFiles(where.Substring(0, where.IndexOf("_Binaries")) + monoSample1)
                 |> Seq.filter (fun x -> x.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)
                                         || x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
                 |> Seq.map (fun x -> (x, Mono.Cecil.AssemblyDefinition.ReadAssembly x))
@@ -126,7 +135,7 @@ type AltCoverTests() = class
   member self.ShouldGetMdbWithFallback() =
     // Hack for running while instrumented
     let where = Assembly.GetExecutingAssembly().Location
-    let files = Directory.GetFiles(where.Substring(0, where.IndexOf("_Binaries")) + "_Mono\\Sample1")
+    let files = Directory.GetFiles(where.Substring(0, where.IndexOf("_Binaries")) + monoSample1)
     files
     |> Seq.filter (fun x -> x.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)
                             || x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
@@ -179,7 +188,7 @@ type AltCoverTests() = class
   member self.ShouldGetSymbolsFromMdb() =
     // Hack for running while instrumented
     let where = Assembly.GetExecutingAssembly().Location
-    let files = Directory.GetFiles(where.Substring(0, where.IndexOf("_Binaries")) + "_Mono\\Sample1")
+    let files = Directory.GetFiles(where.Substring(0, where.IndexOf("_Binaries")) + monoSample1)
     files
     |> Seq.filter (fun x -> x.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)
                             || x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
@@ -482,11 +491,7 @@ type AltCoverTests() = class
   [<Test>]
   member self.MethodPointsAreDeeperThanMethods() =
     let where = Assembly.GetExecutingAssembly().Location
-#if ALTCOVER_TEST
-    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample1.dll")
-#else
-    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample1.exe")
-#endif
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), sample1)
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
     let reader = ProgramDatabase.ReadSymbols def
     let method = (def.MainModule.Types |> Seq.skipWhile (fun t -> t.Name.StartsWith("<"))|> Seq.head).Methods |> Seq.head
@@ -511,7 +516,7 @@ type AltCoverTests() = class
   [<Test>]
   member self.MethodsAreDeeperThanTypes() =
     let where = Assembly.GetExecutingAssembly().Location
-    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample1.exe")
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), sample1)
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
     let rdr = ProgramDatabase.ReadSymbols def
     let type' = (def.MainModule.Types |> Seq.skipWhile (fun t -> t.Name.StartsWith("<"))|> Seq.head)
@@ -536,7 +541,7 @@ type AltCoverTests() = class
   [<Test>]
   member self.TypesAreDeeperThanModules() =
     let where = Assembly.GetExecutingAssembly().Location
-    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample1.exe")
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), sample1)
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
     let rdr = ProgramDatabase.ReadSymbols def
     let module' = def.MainModule
@@ -560,7 +565,7 @@ type AltCoverTests() = class
   [<Test>]
   member self.ModulesAreDeeperThanAssemblies() =
     let where = Assembly.GetExecutingAssembly().Location
-    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample1.exe")
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), sample1)
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
     let rdr = ProgramDatabase.ReadSymbols def
     Visitor.Visit [] [] // cheat reset
@@ -578,7 +583,7 @@ type AltCoverTests() = class
   [<Test>]
   member self.AssembliesAreDeeperThanPaths() =
     let where = Assembly.GetExecutingAssembly().Location
-    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample1.exe")
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), sample1)
 
     let deeper = Visitor.Deeper <| Node.Start [path]
                     |> Seq.toList
@@ -596,7 +601,7 @@ type AltCoverTests() = class
   [<Test>]
   member self.FilteredAssembliesDoNotHaveSequencePoints() =
     let where = Assembly.GetExecutingAssembly().Location
-    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample1.exe")
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), sample1)
     try
         "Sample" |> (Regex >> FilterClass.Assembly >> Visitor.NameFilters.Add)
         let deeper = Visitor.Deeper <| Node.Start [path]
@@ -646,7 +651,7 @@ type AltCoverTests() = class
   [<Test>]
   member self.PathsAreDeeperThanAVisit() =
     let where = Assembly.GetExecutingAssembly().Location
-    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample1.exe")
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), sample1)
     let accumulator = System.Collections.Generic.List<Node>()
     let fix = Visitor.EncloseState (fun (x:System.Collections.Generic.List<Node>) t -> x.Add t; x) accumulator
     Visitor.Visit [fix] [path]
@@ -839,13 +844,17 @@ type AltCoverTests() = class
     let visitor, document = Report.ReportGenerator()
     // Hack for running while instrumented
     let where = Assembly.GetExecutingAssembly().Location
-    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample1.exe")
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), sample1)
 
     try
         "Main" |> (Regex >> FilterClass.Method >> Visitor.NameFilters.Add)
         Visitor.Visit [ visitor ] (Visitor.ToSeq path)
 
-        let baseline = XDocument.Load(new System.IO.StringReader(AltCoverTests.TTBaseline))
+        let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+        let xml = AltCoverTests.TTBaseline.Replace ("Version=1.0.0.0", 
+                                                    "Version=" + def.Name.Version.ToString())
+
+        let baseline = XDocument.Load(new System.IO.StringReader(xml))
         let result = document.Elements()
         let expected = baseline.Elements()
         AltCoverTests.RecursiveValidate result expected 0 true
@@ -857,7 +866,7 @@ type AltCoverTests() = class
     let visitor, document = Report.ReportGenerator()
     // Hack for running while instrumented
     let where = Assembly.GetExecutingAssembly().Location
-    let path = Path.Combine(where.Substring(0, where.IndexOf("_Binaries")) + "_Mono\\Sample1", "Sample1.exe")
+    let path = Path.Combine(where.Substring(0, where.IndexOf("_Binaries")) + monoSample1, "Sample1.exe")
 
     Visitor.Visit [ visitor ] (Visitor.ToSeq path)
 
@@ -1186,7 +1195,7 @@ type AltCoverTests() = class
   [<Test>]
   member self.ShouldUpdateHandlerOK ([<Range(0,31)>] selection) =
     let where = Assembly.GetExecutingAssembly().Location
-    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample1.exe")
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), sample1)
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
     ProgramDatabase.ReadSymbols def |> ignore
 
@@ -1448,7 +1457,7 @@ type AltCoverTests() = class
   [<Test>]
   member self.UpdateStrongReferencesShouldNotAddASigningKey () =
     let where = Assembly.GetExecutingAssembly().Location
-    let path = Path.Combine(where.Substring(0, where.IndexOf("_Binaries")) + "_Mono\\Sample1", "Sample1.exe")
+    let path = Path.Combine(where.Substring(0, where.IndexOf("_Binaries")) + monoSample1, "Sample1.exe")
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
     ProgramDatabase.ReadSymbols def |> ignore
 
@@ -1694,7 +1703,7 @@ type AltCoverTests() = class
   member self.ShouldLaunchWithExpectedOutput() =
     // Hack for running while instrumented
     let where = Assembly.GetExecutingAssembly().Location
-    let files = Directory.GetFiles(where.Substring(0, where.IndexOf("_Binaries")) + "_Mono\\Sample1")
+    let files = Directory.GetFiles(where.Substring(0, where.IndexOf("_Binaries")) + monoSample1)
     let program = files
                   |> Seq.filter (fun x -> x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
                   |> Seq.head
@@ -2422,7 +2431,7 @@ type AltCoverTests() = class
   member self.ShouldProcessTrailingArguments() =
     // Hack for running while instrumented
     let where = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
-    let files = Directory.GetFiles(where.Substring(0, where.IndexOf("_Binaries")) + "_Mono\\Sample1")
+    let files = Directory.GetFiles(where.Substring(0, where.IndexOf("_Binaries")) + monoSample1)
     let program = files
                   |> Seq.filter (fun x -> x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
                   |> Seq.head
