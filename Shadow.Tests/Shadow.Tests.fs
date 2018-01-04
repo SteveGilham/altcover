@@ -8,9 +8,6 @@ open System
 open System.IO
 open System.Reflection
 open System.Xml
-#if NET4
-open System.Xml.Linq
-#endif
 
 open AltCover.Recorder
 open Mono.Cecil
@@ -110,15 +107,8 @@ type AltCoverTests() = class
     Instance.UpdateReport a b
     |> ignore
 
-#if NET4
-   member self.resource = "Shadow.Tests.SimpleCoverage.xml"
-#else
-#if ALTCOVER_TEST
-  member self.resource = "altcover.recorder.tests.core.SimpleCoverage.xml"
-#else
-  member self.resource = "SimpleCoverage.xml"
-#endif
-#endif
+   member self.resource = Assembly.GetExecutingAssembly().GetManifestResourceNames()
+                         |> Seq.find (fun n -> n.EndsWith("SimpleCoverage.xml", StringComparison.Ordinal))
 
   [<Test>]
   member self.OldDocumentStartIsNotUpdated() =

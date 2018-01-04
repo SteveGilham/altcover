@@ -152,6 +152,8 @@ module Instrument =
                                  | _ ->
                                    pkey.WriteSymbols <- false // TODO
                                    null // Mono.Cecil.Mdb.MdbWriterProvider() :> ISymbolWriterProvider
+
+  // No strongnames in .net core??
 #if NETSTANDARD2_0
 #else
 #if NETCOREAPP2_0

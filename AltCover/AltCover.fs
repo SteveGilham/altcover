@@ -17,15 +17,13 @@ module Main =
 
   let mutable private help = false
   let mutable private error = false
-#if NETCOREAPP2_0
-#if ALTCOVER_TEST
-  let private resources = ResourceManager("altcover.tests.core.Strings", Assembly.GetExecutingAssembly())
-#else
-  let private resources = ResourceManager("altcover.core.Strings", Assembly.GetExecutingAssembly())
-#endif
-#else
-  let private resources = ResourceManager("AltCover.Strings", Assembly.GetExecutingAssembly())
-#endif
+
+  // Can't hard-code what with .net-core and .net-core tests as well as classic .net
+  // all giving this a different namespace
+  let private resource = Assembly.GetExecutingAssembly().GetManifestResourceNames()
+                         |> Seq.map (fun s -> s.Substring(0, s.Length - 10)) // trim ".resources"
+                         |> Seq.find (fun n -> n.EndsWith(".Strings", StringComparison.Ordinal))
+  let private resources = ResourceManager(resource , Assembly.GetExecutingAssembly())
 
   let internal WriteColoured (writer:TextWriter) colour operation =
        let original = Console.ForegroundColor
