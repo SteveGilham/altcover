@@ -85,6 +85,8 @@ module Main =
                       | :? PathTooLongException -> error <- true
                       | :? System.Security.SecurityException as s -> WriteErr s.Message
                  else error <- true))
+#if NETCOREAPP2_0
+#else
       ("k|key=",
        (fun x ->
              if not (String.IsNullOrWhiteSpace(x)) && File.Exists(x) then
@@ -114,6 +116,7 @@ module Main =
                 | :? NotSupportedException -> error <- true
                 | :? System.Security.SecurityException as s -> WriteErr s.Message
              else error <- true  ))
+#endif
       ("x|xmlReport=",
        (fun x -> if not (String.IsNullOrWhiteSpace(x)) then
                     if Option.isSome Visitor.reportPath then
@@ -251,10 +254,7 @@ module Main =
       with
       | :? IOException as x -> WriteErr x.Message
 
-#if ALTCOVER_TEST
-#else
   [<EntryPoint>]
   let private Main arguments =
     DoInstrumentation arguments
     0
-#endif

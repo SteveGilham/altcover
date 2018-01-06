@@ -10,12 +10,10 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <OutputPath>$(SolutionDir)_Binaries/$(AssemblyName)/$(Configuration)+$(Platform)/</OutputPath>
     <IntermediateOutputPath>$(SolutionDir)_Intermediate/$(AssemblyName)/$(Configuration)+$(Platform)/</IntermediateOutputPath>
-    <DefineConstants>TRACE;DEBUG;NETCOREAPP2_0;ALTCOVER_TEST</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <OutputPath>$(SolutionDir)_Binaries/$(AssemblyName)/$(Configuration)+$(Platform)/</OutputPath>
     <IntermediateOutputPath>$(SolutionDir)_Intermediate/$(AssemblyName)/$(Configuration)+$(Platform)/</IntermediateOutputPath>
-    <DefineConstants>TRACE;RELEASE;NETCOREAPP2_0;ALTCOVER_TEST</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
@@ -26,10 +24,6 @@
 
   <ItemGroup>
     <EmbeddedResource Include="..\AltCover\Strings.resx" Link="Strings.resx" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Include="..\Build\Recorder.snk" Link="Recorder.snk" />
   </ItemGroup>
 
   <ItemGroup>

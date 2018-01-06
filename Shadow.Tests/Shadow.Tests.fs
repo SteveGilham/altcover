@@ -346,7 +346,7 @@ type AltCoverTests() = class
       Directory.SetCurrentDirectory(here)
       Directory.Delete(unique)
 
-#if ALTCOVER_TEST
+#if NETCOREAPP2_0
   // The hack doesn't work in .net core
 #else
   [<Test>]

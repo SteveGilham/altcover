@@ -68,12 +68,16 @@ module Instrument =
   /// <param name="assemblyName">The name to update</param>
   /// <param name="key">The possibly empty key to use</param>
   let internal UpdateStrongNaming (assemblyName:AssemblyNameDefinition) (key:StrongNameKeyPair option) =
+#if NETCOREAPP2_0
+    ()
+#else
     match key with
     | None -> assemblyName.HasPublicKey <- false
               assemblyName.PublicKey <- null
               assemblyName.PublicKeyToken <- null
     | Some key' -> assemblyName.HasPublicKey <- true
                    assemblyName.PublicKey <- key'.PublicKey // sets token implicitly
+#endif                
 
   /// <summary>
   /// Locate the key, if any, which was used to name this assembly.
@@ -232,7 +236,8 @@ module Instrument =
 
     // TODO -- is this still lookup table of any use??
     let assemblyReferenceSubstitutions = new Dictionary<String, String>()
-
+#if NETCOREAPP2_0
+#else
     let interestingReferences =  assembly.MainModule.AssemblyReferences
                                  |> Seq.cast<AssemblyNameReference>
                                  |> Seq.filter (fun x -> assemblies |> List.exists (fun y -> y.Equals(x.Name)))
@@ -245,6 +250,7 @@ module Instrument =
                                                        |> Option.map KeyStore.KeyToRecord
                                              | key -> key
 
+
                           match effectiveKey with
                           | None -> r.HasPublicKey <- false
                                     r.PublicKeyToken <- null
@@ -256,7 +262,7 @@ module Instrument =
                           if  not <| updated.Equals(original, StringComparison.Ordinal) then
                             assemblyReferenceSubstitutions.[original] <- updated
                   )
-
+#endif
     assemblyReferenceSubstitutions
 
   /// <summary>

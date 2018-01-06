@@ -38,13 +38,20 @@ type KeyRecord = {
 module KeyStore =
     let private hash = new System.Security.Cryptography.SHA1CryptoServiceProvider()
 
+    let private publicKeyOfKey (key:StrongNameKeyPair) =
+#if NETCOREAPP2_0
+      [||]
+#else 
+      key.PublicKey
+#endif
+
     let internal TokenOfArray (key:byte array) =
         hash.ComputeHash(key)
             |> Array.rev
             |> Array.take 8
 
     let internal TokenOfKey (key:StrongNameKeyPair) =
-        TokenOfArray key.PublicKey |> Array.toList
+        key |> publicKeyOfKey |> TokenOfArray |> Array.toList
 
     let internal TokenAsULong (token:byte array) =
       BitConverter.ToUInt64(token, 0)
