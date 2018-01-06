@@ -44,9 +44,13 @@ Target "Clean" (fun _ ->
     |> Seq.map (fun d -> [ [|d|]; subDirectories d])
     |> Seq.concat 
     |> Seq.collect id
-    |> Seq.filter (fun x -> x.Name.StartsWith "_" )
+    |> Seq.map (fun d -> [ [|d|]; subDirectories d])
+    |> Seq.concat 
+    |> Seq.collect id
+    |> Seq.filter (fun x -> x.Name.StartsWith "_" || x.Name = "bin" || x.Name = "obj")
     |> Seq.map (fun x -> x.FullName)
-    // arrnage so leaves get deleted first, avoiding "does not exist" warnings
+    |> Seq.distinct
+    // arrange so leaves get deleted first, avoiding "does not exist" warnings
     |> Seq.groupBy (fun x -> x |> Seq.filter (fun c -> c='\\' || c = '/') |> Seq.length)
     |> Seq.map (fun (n,x) -> (n, x |> Seq.sort))
     |> Seq.sortBy (fun (n,x) -> -1 * n)
@@ -103,12 +107,21 @@ open System.Runtime.CompilerServices
 #else
 [<assembly: AssemblyConfiguration(\"Release {0}\")>]
 #endif
+#if NETSTANDARD2_0
+[<assembly: InternalsVisibleTo(\"AltCover.Shadow.Tests\")>]
+#else
+#if NETCOREAPP2_0
+[<assembly: InternalsVisibleTo(\"AltCover.Tests\")>]
+
+#else
 [<assembly: InternalsVisibleTo(\"AltCover.Tests, PublicKey={1}\")>]
 [<assembly: InternalsVisibleTo(\"AltCover.Tests, PublicKey={2}\")>]
 [<assembly: InternalsVisibleTo(\"AltCover.Shadow.Tests, PublicKey={1}\")>]
 [<assembly: InternalsVisibleTo(\"AltCover.Shadow.Tests, PublicKey={2}\")>]
 [<assembly: InternalsVisibleTo(\"AltCover.Shadow.Tests2, PublicKey={1}\")>]
 [<assembly: InternalsVisibleTo(\"AltCover.Shadow.Tests2, PublicKey={2}\")>]
+#endif
+#endif
 ()
 "
     let file = String.Format(System.Globalization.CultureInfo.InvariantCulture,
@@ -261,7 +274,7 @@ Target "SelfTest" (fun _ ->
                                           info.Arguments <- ("/sn=" + keyfile + AltCoverFilter + @"/o=.\__ReInstrument -x=" + altReport2)) (TimeSpan.FromMinutes 5.0)
     ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
                                        TargetDir = "_Reports/_AltReport"})
-        [altReport]
+        [altReport2]
 
     if result <> 0 then failwithf "Re-instrument returned with a non-zero exit code"
 

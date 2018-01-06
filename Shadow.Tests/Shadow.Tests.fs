@@ -18,13 +18,15 @@ open Mono.Cecil.Cil
 [<TestFixture>]
 type AltCoverTests() = class
 
-#if ALTCOVER_TEST
-  // Not meaningful when we aren't calling across an assembly boundary
-#else
   [<Test>]
   member self.ShouldBeLinkingTheCorrectCopyOfThisCode() =
     let locker = { Tracer = String.Empty }
-    Assert.That(locker.GetType().Assembly.GetName().Name, Is.EqualTo "AltCover.Shadow")
+    Assert.That(locker.GetType().Assembly.GetName().Name, Is.EqualTo 
+#if NETCOREAPP2_0
+    "AltCover.Recorder")
+#else
+    "AltCover.Shadow")
+#endif
 
 #if NET4
   // Doesn't work across framework boundaries, as the unit -> unit type
@@ -36,7 +38,11 @@ type AltCoverTests() = class
   member self.ShouldBeExecutingTheCorrectCopyOfThisCode() =
     let mutable where = ""
     Locking.WithLockerLocked self (fun () -> where <- Assembly.GetCallingAssembly().GetName().Name)
-    Assert.That(where, Is.EqualTo "AltCover.Shadow")
+    Assert.That(where, Is.EqualTo 
+#if NETCOREAPP2_0
+    "AltCover.Recorder")
+#else
+    "AltCover.Shadow")
 #endif
 
   [<Test>]

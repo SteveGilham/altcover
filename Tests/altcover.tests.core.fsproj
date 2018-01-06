@@ -19,15 +19,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="AssemblyInfo.fs" />
-    <Compile Include="..\AltCover\Augment.fs" Link="Augment.fs" />
-    <Compile Include="..\AltCover\ProgramDatabase.fs" Link="ProgramDatabase.fs" />
-    <Compile Include="..\AltCover\Filter.fs" Link="Filter.fs" />
-    <Compile Include="..\AltCover\Visitor.fs" Link="Visitor.fs" />
-    <Compile Include="..\AltCover\Naming.fs" Link="Naming.fs" />
-    <Compile Include="..\AltCover\Report.fs" Link="Report.fs" />
-    <Compile Include="..\AltCover\Instrument.fs" Link="Instrument.fs" />
-    <Compile Include="..\AltCover\AltCover.fs" Link="AltCover.fs" />    
+    <Compile Include="AssemblyInfo.fs" />    
     <Compile Include="Tests.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
@@ -54,6 +46,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\AltCover.Recorder\altcover.recorder.core.fsproj" />
+    <ProjectReference Include="..\AltCover\altcover.core.fsproj" />
     <ProjectReference Include="..\Sample1\sample1.core.csproj" />
     <ProjectReference Include="..\Sample2\sample2.core.fsproj" />
     <ProjectReference Include="..\Sample3\sample3.core.csproj" />
