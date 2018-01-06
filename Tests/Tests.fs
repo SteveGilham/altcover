@@ -145,7 +145,14 @@ type AltCoverTests() = class
   member self.ShouldGetMdbWithFallback() =
     // Hack for running while instrumented
     let where = Assembly.GetExecutingAssembly().Location
-    let files = Directory.GetFiles(where.Substring(0, where.IndexOf("_Binaries")) + "_Mono\\Sample1")
+    let path = Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "_Mono\\Sample1")
+#if NETCOREAPP2_0
+    let path' = if Directory.Exists path then path
+                else Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), monoSample1)
+#else
+    let path' = path
+#endif
+    let files = Directory.GetFiles(path')
     files
     |> Seq.filter (fun x -> x.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)
                             || x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
@@ -198,7 +205,15 @@ type AltCoverTests() = class
   member self.ShouldGetSymbolsFromMdb() =
     // Hack for running while instrumented
     let where = Assembly.GetExecutingAssembly().Location
-    let files = Directory.GetFiles(where.Substring(0, where.IndexOf("_Binaries")) + "_Mono\\Sample1")
+    let path = Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "_Mono\\Sample1")
+#if NETCOREAPP2_0
+    let path' = if Directory.Exists path then path
+                else Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), monoSample1)
+#else
+    let path' = path
+#endif
+
+    let files = Directory.GetFiles(path')
     files
     |> Seq.filter (fun x -> x.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)
                             || x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
@@ -903,8 +918,14 @@ type AltCoverTests() = class
     // Hack for running while instrumented
     let where = Assembly.GetExecutingAssembly().Location
     let path = Path.Combine(where.Substring(0, where.IndexOf("_Binaries")) + "_Mono\\Sample1", "Sample1.exe")
+#if NETCOREAPP2_0
+    let path' = if File.Exists path then path
+                else Path.Combine(where.Substring(0, where.IndexOf("_Binaries")) + monoSample1, "Sample1.exe")
+#else
+    let path' = path
+#endif
 
-    Visitor.Visit [ visitor ] (Visitor.ToSeq path)
+    Visitor.Visit [ visitor ] (Visitor.ToSeq path')
 
     let baseline = XDocument.Load(new System.IO.StringReader(AltCoverTests.MonoBaseline))
     let result = document.Elements()
@@ -1527,7 +1548,13 @@ type AltCoverTests() = class
   member self.UpdateStrongReferencesShouldNotAddASigningKey () =
     let where = Assembly.GetExecutingAssembly().Location
     let path = Path.Combine(where.Substring(0, where.IndexOf("_Binaries")) + "_Mono\\Sample1", "Sample1.exe")
-    let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+#if NETCOREAPP2_0
+    let path' = if File.Exists path then path
+                else Path.Combine(where.Substring(0, where.IndexOf("_Binaries")) + monoSample1, "Sample1.exe")
+#else
+    let path' = path
+#endif
+    let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path'
     ProgramDatabase.ReadSymbols def |> ignore
 
     use stream = typeof<AltCover.Node>.Assembly.GetManifestResourceStream(recorderSnk)
@@ -1750,8 +1777,10 @@ type AltCoverTests() = class
       Assert.That (result, Is.SameAs input)
       let created = Path.Combine (output, "Sample2.dll")
       Assert.That (File.Exists created)
+#if NETCOREAPP2_0
+#else
       Assert.That (File.Exists (Path.ChangeExtension(created, ".pdb")))
-
+#endif
     finally
       Visitor.outputDirectory <- saved
 
@@ -1773,8 +1802,10 @@ type AltCoverTests() = class
       Assert.That (result, Is.SameAs input)
       let created = Path.Combine (output, "Sample2.dll")
       Assert.That (File.Exists created)
+#if NETCOREAPP2_0
+#else
       Assert.That (File.Exists (Path.ChangeExtension(created, ".pdb")))
-
+#endif
     finally
       Visitor.outputDirectory <- saved
 
@@ -1784,7 +1815,14 @@ type AltCoverTests() = class
   member self.ShouldLaunchWithExpectedOutput() =
     // Hack for running while instrumented
     let where = Assembly.GetExecutingAssembly().Location
-    let files = Directory.GetFiles(where.Substring(0, where.IndexOf("_Binaries")) + "_Mono\\Sample1")
+    let path = Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "_Mono\\Sample1")
+#if NETCOREAPP2_0
+    let path' = if Directory.Exists path then path
+                else Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), monoSample1)
+#else
+    let path' = path
+#endif
+    let files = Directory.GetFiles(path')
     let program = files
                   |> Seq.filter (fun x -> x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
                   |> Seq.head
@@ -2520,7 +2558,14 @@ type AltCoverTests() = class
   member self.ShouldProcessTrailingArguments() =
     // Hack for running while instrumented
     let where = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
-    let files = Directory.GetFiles(where.Substring(0, where.IndexOf("_Binaries")) + "_Mono\\Sample1")
+    let path = Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "_Mono\\Sample1")
+#if NETCOREAPP2_0
+    let path' = if Directory.Exists path then path
+                else Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), monoSample1)
+#else
+    let path' = path
+#endif
+    let files = Directory.GetFiles(path')
     let program = files
                   |> Seq.filter (fun x -> x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
                   |> Seq.head
@@ -2548,8 +2593,17 @@ type AltCoverTests() = class
   [<Test>]
   member self.ADryRunLooksAsExpected() =
     let where = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
-    let input = Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "_Mono/Sample1")
-    let key = Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "Build/SelfTest.snk")
+    let path = Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "_Mono\\Sample1")
+    let key0 = Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "Build/SelfTest.snk")
+#if NETCOREAPP2_0
+    let input = if Directory.Exists path then path
+                else Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), monoSample1)
+    let key = if File.Exists key0 then key0
+              else Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "../Build/SelfTest.snk")
+#else
+    let input = path
+    let key = key0
+#endif
     let unique = Guid.NewGuid().ToString()
     let unique' = Path.Combine (where, Guid.NewGuid().ToString())
     Directory.CreateDirectory unique' |> ignore
@@ -2570,13 +2624,16 @@ type AltCoverTests() = class
       let args = [| "-i"; input
                     "-o"; output
                     "-x"; report
+#if NETCOREAPP2_0
+#else
                     "-sn"; key
+#endif
                  |]
       Main.DoInstrumentation args
       Assert.That (stderr.ToString(), Is.Empty)
 
       let expected = "Creating folder " + output +
-                     "\nInstrumenting files from " + input +
+                     "\nInstrumenting files from " + (Path.GetFullPath input) +
                      "\nWriting files to " + output +
                      "\nCoverage Report: " + report + "\n"
 
@@ -2585,7 +2642,7 @@ type AltCoverTests() = class
 
       Assert.That (Visitor.OutputDirectory(), Is.EqualTo output)
       Assert.That (Visitor.InputDirectory().Replace("\\", "/"),
-                   Is.EqualTo (input.Replace("\\", "/")))
+                   Is.EqualTo ((Path.GetFullPath input).Replace("\\", "/")))
       Assert.That (Visitor.ReportPath (), Is.EqualTo report)
 
       use stream = new FileStream(key, FileMode.Open)
@@ -2593,15 +2650,22 @@ type AltCoverTests() = class
       stream.CopyTo(buffer)
       let snk = StrongNameKeyPair(buffer.ToArray())
 
+#if NETCOREAPP2_0
+      Assert.That (Visitor.keys.Count, Is.EqualTo 0)
+#else
       Assert.That (Visitor.keys.ContainsKey(KeyStore.KeyToIndex snk))
       Assert.That (Visitor.keys.Count, Is.EqualTo 1)
+#endif
 
       Assert.That (File.Exists report)
 
       Assert.That (Directory.GetFiles(output)
                    |> Seq.map Path.GetFileName,
                    Is.EquivalentTo ["AltCover.Recorder.g.dll"
+#if NETCOREAPP2_0
+#else
                                     "AltCover.Recorder.g.pdb"
+#endif
                                     "Sample1.exe"
                                     "Sample1.exe.mdb"])
 
