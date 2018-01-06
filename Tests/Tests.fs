@@ -462,7 +462,7 @@ type AltCoverTests() = class
       Assert.That (Visitor.keys.Keys.Count, Is.EqualTo(0))
       let pair = self.ProvideKeyPair ()
       Visitor.Add(pair)
-      let key = 
+      let key =
 #if NETCOREAPP2_0
                                     0x95601890afd80709UL
 #else
@@ -1845,7 +1845,7 @@ type AltCoverTests() = class
   [<Test>]
   member self.ShouldHaveExpectedOptions() =
     let options = Main.DeclareOptions ()
-    Assert.That (options.Count, Is.EqualTo 
+    Assert.That (options.Count, Is.EqualTo
 #if NETCOREAPP2_0
                                             10
 #else
@@ -2699,7 +2699,7 @@ type AltCoverTests() = class
                              Optional: The folder to receive the instrumented
                                assemblies and their companions (default: sub-
                                folder '__Instrumented' of the current directory)
-""" 
+"""
 #if NETCOREAPP2_0
 #else
                      + """  -k, --key=VALUE            Optional, multiple: any other strong-name key to

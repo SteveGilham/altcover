@@ -68,7 +68,7 @@ module Filter =
     // Use string literals since Mono doesn't return a Type
     let mappings = Seq.concat [baseType; thisType]
                    |> Seq.filter (fun x -> x.AttributeType.FullName = "Microsoft.FSharp.Core.CompilationMappingAttribute")
-                   |> Seq.exists (fun x -> let arg1 = Enum.ToObject(typeof<SourceConstructFlags>, x.GetBlob() |> Seq.skip 2 |> Seq.head)   // (x.ConstructorArguments |> Seq.head).Value 
+                   |> Seq.exists (fun x -> let arg1 = Enum.ToObject(typeof<SourceConstructFlags>, x.GetBlob() |> Seq.skip 2 |> Seq.head)   // (x.ConstructorArguments |> Seq.head).Value
                                            match (arg1 :?> SourceConstructFlags) &&& SourceConstructFlags.KindMask with
                                            | SourceConstructFlags.SumType
                                            | SourceConstructFlags.RecordType -> true
@@ -83,7 +83,7 @@ module Filter =
                              if owner.HasCustomAttributes then
                                 owner.CustomAttributes
                                 |> Seq.filter (fun x -> x.AttributeType.FullName = "Microsoft.FSharp.Core.CompilationMappingAttribute")
-                                |> Seq.exists (fun x -> let arg1 = Enum.ToObject(typeof<SourceConstructFlags>, x.GetBlob() |> Seq.skip 2 |> Seq.head)   // (x.ConstructorArguments |> Seq.head).Value 
+                                |> Seq.exists (fun x -> let arg1 = Enum.ToObject(typeof<SourceConstructFlags>, x.GetBlob() |> Seq.skip 2 |> Seq.head)   // (x.ConstructorArguments |> Seq.head).Value
                                                         (arg1 :?> SourceConstructFlags) &&& SourceConstructFlags.KindMask = SourceConstructFlags.Field)
                              else false
 

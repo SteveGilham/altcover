@@ -77,7 +77,7 @@ module Instrument =
               assemblyName.PublicKeyToken <- null
     | Some key' -> assemblyName.HasPublicKey <- true
                    assemblyName.PublicKey <- key'.PublicKey // sets token implicitly
-#endif                
+#endif
 
   /// <summary>
   /// Locate the key, if any, which was used to name this assembly.
@@ -250,7 +250,6 @@ module Instrument =
                                              | None -> Visitor.defaultStrongNameKey
                                                        |> Option.map KeyStore.KeyToRecord
                                              | key -> key
-
 
                           match effectiveKey with
                           | None -> r.HasPublicKey <- false

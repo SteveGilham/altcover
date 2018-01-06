@@ -21,7 +21,7 @@ type AltCoverTests() = class
   [<Test>]
   member self.ShouldBeLinkingTheCorrectCopyOfThisCode() =
     let locker = { Tracer = String.Empty }
-    Assert.That(locker.GetType().Assembly.GetName().Name, Is.EqualTo 
+    Assert.That(locker.GetType().Assembly.GetName().Name, Is.EqualTo
 #if NETCOREAPP2_0
     "AltCover.Recorder")
 #else
@@ -38,7 +38,7 @@ type AltCoverTests() = class
   member self.ShouldBeExecutingTheCorrectCopyOfThisCode() =
     let mutable where = ""
     Locking.WithLockerLocked self (fun () -> where <- Assembly.GetCallingAssembly().GetName().Name)
-    Assert.That(where, Is.EqualTo 
+    Assert.That(where, Is.EqualTo
 #if NETCOREAPP2_0
     "AltCover.Recorder")
 #else

@@ -41,7 +41,7 @@ module KeyStore =
     let private publicKeyOfKey (key:StrongNameKeyPair) =
 #if NETCOREAPP2_0
       [||]
-#else 
+#else
       key.PublicKey
 #endif
 
