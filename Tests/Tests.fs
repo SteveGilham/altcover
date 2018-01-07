@@ -2663,6 +2663,7 @@ type AltCoverTests() = class
                    |> Seq.map Path.GetFileName,
                    Is.EquivalentTo ["AltCover.Recorder.g.dll"
 #if NETCOREAPP2_0
+                                    "FSharp.Core.dll"
 #else
                                     "AltCover.Recorder.g.pdb"
 #endif

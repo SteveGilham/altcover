@@ -331,6 +331,13 @@ module Instrument =
                                  state
      | Finish -> let counterAssemblyFile = Path.Combine(Visitor.OutputDirectory(), (extractName state.RecordingAssembly) + ".dll")
                  WriteAssembly (state.RecordingAssembly) counterAssemblyFile
+#if NETCOREAPP2_0
+                 let fsharplib = Path.Combine(Visitor.OutputDirectory(), "FSharp.Core.dll")
+                 if not (File.Exists fsharplib) then
+                   use fsharpbytes = Assembly.GetExecutingAssembly().GetManifestResourceStream("altcover.core.FSharp.Core.dll")
+                   use libstream = new FileStream(fsharplib, FileMode.Create)
+                   fsharpbytes.CopyTo libstream
+#endif
                  state
 
   /// <summary>
