@@ -189,6 +189,48 @@ Target "TestDotNet" (fun _ ->
                                       Configuration = "Debug"
                                       Project =  f}))
 )
+Target "TestDotNetOnMono" (fun _ ->
+    ensureDirectory "./_Reports"
+    DotNetCli.RunCommand id "run --project ./AltCover/altcover.core.fsproj -- -t \"System.\" -x \"./_Reports/TestDotNetOnMono.xml\" -o \"./_Mono/_DotNetInstrumented\" -i \"./_Mono/Sample1\""
+
+    let sampleRoot = "./_Mono/_DotNetInstrumented"
+    let result2 = ExecProcess (fun info -> info.FileName <- sampleRoot @@ "/Sample1.exe"
+                                           info.WorkingDirectory <- sampleRoot
+                                           info.Arguments <- "") (TimeSpan.FromMinutes 5.0)
+    if result2 <> 0 then failwith "Instrumented .exe failed"
+
+    let reportSigil = "dotnet"
+    let simpleReport = "./_Reports/TestDotNetOnMono.xml"
+    ensureDirectory ("./_Reports/_SimpleReport" + reportSigil)
+    ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
+                                       TargetDir = "_Reports/_SimpleReport" + reportSigil})
+        [simpleReport]
+
+    // get recorded details from here
+    use coverageFile = new FileStream(simpleReport, FileMode.Open, FileAccess.Read, FileShare.None, 4096, FileOptions.SequentialScan)
+    let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
+    let recorded = coverageDocument.Descendants(XName.Get("seqpnt"))
+                   |> Seq.toList
+
+    let zero = recorded
+               |> Seq.filter (fun x -> x.Attribute(XName.Get("visitcount")).Value = "0")
+               |> Seq.map (fun x -> x.Attribute(XName.Get("line")).Value)
+               |> Seq.sort
+               |> Seq.toList
+    let ones = recorded
+               |> Seq.filter (fun x -> x.Attribute(XName.Get("visitcount")).Value = "1")
+               |> Seq.map (fun x -> x.Attribute(XName.Get("line")).Value)
+               |> Seq.sort
+               |> Seq.toList
+
+    if (List.length ones) + (List.length zero) <> (List.length recorded) then failwith "unexpected visits"
+    let zero' = zero |> Seq.distinct |> Seq.toList
+
+    if ["18"; "19"; "20"] <> zero' then failwith ("wrong unvisited : " + (sprintf "%A" zero'))
+
+    let ones' = ones |> Seq.distinct |> Seq.toList
+    if ["11"; "12"; "13"; "14"; "15"; "16"; "21"] <> ones' then failwith ("wrong number of visited : " + (sprintf "%A" ones'))
+)
 
 Target "TestCover" (fun _ ->
     ensureDirectory "./_Reports/_UnitTest"
@@ -699,6 +741,9 @@ Target "All" ignore
 ==> "TestCover"
 
 "TestDotNet"
+==> "TestDotNetOnMono"
+
+"TestDotNetOnMono"
 ==> "dotnet"
 
 
