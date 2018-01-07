@@ -154,6 +154,31 @@ Target "BuildDotNetRelease" (fun _ ->
             { p with 
                 Configuration = "Release"
                 Project =  "./altcover.core.sln"})
+
+    ensureDirectory "./_Binaries/netcoreapp2.0"
+    !! (@"_Binaries\AltCover\Release+AnyCPU\netcoreapp2.0\*")
+    |> (Copy "./_Binaries/netcoreapp2.0")
+(*
+    ensureDirectory "./_Binaries/netcoreapp2.0/ILMerge"
+    !! ("./_Binaries/netcoreapp2.0/AltCover.Recorder.*")
+    |> Seq.map string
+    |> Seq.iter (MoveFile "./_Binaries/netcoreapp2.0/ILMerge")
+
+Fails with
+An exception occurred during merging:
+ILMerge.Merge:  There were errors reported in AltCover.Recorder's metadata.
+        Array dimensions exceeded supported range.
+   at ILMerging.ILMerge.Merge()
+   at ILMerging.ILMerge.Main(String[] args)
+
+    ILMerge (fun p -> { p with DebugInfo = true
+                               TargetKind = TargetKind.Library
+                               Version = (String.Join(".", (!Version).Split('.') |> Seq.take 2) + ".0.0")
+                               Internalize = InternalizeTypes.Internalize
+                               Libraries = !! "./_Binaries/AltCover.Recorder/Debug+AnyCPU/FS*.dll"
+                               AttributeFile = "./_Binaries/netcoreapp2.0/ILMerge/AltCover.Recorder.dll"})
+                               "./_Binaries/netcoreapp2.0/AltCover.Recorder.dll"
+                               "./_Binaries/netcoreapp2.0/ILMerge/AltCover.Recorder.dll" *)
 )
 
 Target "BuildDebug" (fun _ ->
@@ -691,6 +716,8 @@ Target "All" ignore
 ==> "SelfTest"
 "BuildDebug"
 ==> "SimpleInstrumentation"
+"BuildDebug"
+==> "BuildDotNetRelease"
 "BuildDebug"
 ==> "BuildMonoSamples"
 "BuildDebug"
