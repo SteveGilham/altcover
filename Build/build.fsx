@@ -240,7 +240,7 @@ Target "TestDotNetOnMono" (fun _ ->
 
 Target "TestDotNetOnDotNet" (fun _ ->
     ensureDirectory "./_Reports"
-    DotNetCli.RunCommand id "run --project ./AltCover/altcover.core.fsproj -- -t \"System.\" -x \"./_Reports/TestDotNetOnDotNet.xml\" -o \"./_Binaries/Sample1/_DotNetInstrumented\" -i \"./_Binaries/Sample1/Debug+AnyCPU/netcoreapp2.0\""
+    DotNetCli.RunCommand id "_Binaries/AltCover/Debug+AnyCPU/netcoreapp2.0/AltCover.dll -t \"System.\" -x \"./_Reports/TestDotNetOnDotNet.xml\" -o \"./_Binaries/Sample1/_DotNetInstrumented\" -i \"./_Binaries/Sample1/Debug+AnyCPU/netcoreapp2.0\""
 
     let sampleRoot = "./_Binaries/Sample1/_DotNetInstrumented"
     DotNetCli.RunCommand id (sampleRoot @@ "Sample1.dll")
