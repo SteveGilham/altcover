@@ -1803,6 +1803,7 @@ type AltCoverTests() = class
       let created = Path.Combine (output, "Sample2.dll")
       Assert.That (File.Exists created)
 #if NETCOREAPP2_0
+      Assert.That (File.Exists (Path.Combine(output, "FSharp.Core.dll")))
 #else
       Assert.That (File.Exists (Path.ChangeExtension(created, ".pdb")))
 #endif
