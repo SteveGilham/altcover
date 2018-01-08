@@ -1,8 +1,11 @@
 open System
 open System.IO
 open System.Reflection
+open System.Xml
+open System.Xml.Linq
 
 open Fake
+open YamlDotNet.RepresentationModel
 
 module Actions =
   let Clean ()  =
@@ -65,6 +68,14 @@ open System.Runtime.CompilerServices
     let old = if File.Exists(path) then File.ReadAllText(path) else String.Empty
     if not (old.Equals(file)) then File.WriteAllText(path, file)
   
+  let GetVersionFromYaml () =
+    use yaml = new FileStream("appveyor.yml", FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.SequentialScan)
+    use yreader = new StreamReader(yaml)
+    let ystream = new YamlStream()
+    ystream.Load(yreader)
+    let mapping = ystream.Documents.[0].RootNode :?> YamlMappingNode
+    string mapping.Children.[YamlScalarNode("version")]
+
   let LocalVersion appveyor (version:string) =
     let now = DateTimeOffset.UtcNow
     let epoch = DateTimeOffset(2000, 1, 1, 0, 0, 0, TimeSpan(int64 0))
@@ -85,3 +96,15 @@ open System.Runtime.CompilerServices
                           let symbols = System.IO.File.ReadAllBytes(f + ".mdb")
                           mvid |> Array.iteri (fun i x -> symbols.[i+16] <- x)
                           System.IO.File.WriteAllBytes(f + ".mdb", symbols))
+
+  let ValidateFSharpTypes simpleReport = 
+    use coverageFile = new FileStream(simpleReport, FileMode.Open, FileAccess.Read, FileShare.None, 4096, FileOptions.SequentialScan)
+    // Edit xml report to store new hits
+    let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
+    let recorded = coverageDocument.Descendants(XName.Get("method"))
+                   |> Seq.map (fun x -> x.Attribute(XName.Get("name")).Value)
+                   |> Seq.sort
+                   |> Seq.toList
+    let expected = "[\"Invoke\"; \"as_bar\"; \"bytes\"; \"get_MyBar\"; \"makeThing\"; \"returnBar\"; \"returnFoo\";\n \"testMakeThing\"; \"testMakeUnion\"]"
+    if recorded.Length <> 9 then failwith (sprintf "Bad method list length %A" recorded)
+    if (sprintf "%A" recorded) <> expected then failwith (sprintf "Bad method list %A" recorded)
