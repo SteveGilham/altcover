@@ -1,21 +1,11 @@
-#r "../packages/FAKE.4.64.3/tools/FakeLib.dll" // include Fake lib
-#I "../packages/FSharpLint.Fake.0.8.1/tools"
-#r "FSharpLint.Fake.dll"
-#I "../packages/ZipStorer.3.4.0/lib/net20"
-#r "ZipStorer.dll"
-#I "../packages/FSharp.Formatting.2.14.4/lib/net40"
-#r "FSharp.Markdown.dll"
-#I "../packages/YamlDotNet.4.2.3/lib/net35/"
-#r "YamlDotNet.dll"
-#r "System.Xml"
-#r "System.Xml.Linq"
 
 open System
 open System.IO
 open System.IO.Compression
-open System.Reflection
 open System.Xml
 open System.Xml.Linq
+
+open Actions
 
 open Fake
 open Fake.AssemblyInfoFile
@@ -32,64 +22,28 @@ let Version = ref String.Empty
 let OpenCoverFilter = "+[AltCove*]* -[*]Microsoft.* -[*]System.* +[*]N.*"
 let AltCoverFilter= @" -s=Mono -s=\.Recorder -s=Sample -s=nunit -t=System. -t=Sample3\.Class2 "
 
-Target "Lint" (fun _ ->
-    !! "**/*.fsproj"
-        |> Seq.filter (fun n -> n.IndexOf(".core.") = -1)
-        |> Seq.iter (FSharpLint (fun options -> { options with FailBuildIfAnyWarnings = true }) ))
-
-// The clean target cleans the build and deploy folders
-Target "Clean" (fun _ ->
-    printfn "Cleaning"
-    subDirectories (directoryInfo ".")
-    |> Seq.map (fun d -> [ [|d|]; subDirectories d])
-    |> Seq.concat 
-    |> Seq.collect id
-    |> Seq.map (fun d -> [ [|d|]; subDirectories d])
-    |> Seq.concat 
-    |> Seq.collect id
-    |> Seq.filter (fun x -> x.Name.StartsWith "_" || x.Name = "bin" || x.Name = "obj")
-    |> Seq.map (fun x -> x.FullName)
-    |> Seq.distinct
-    // arrange so leaves get deleted first, avoiding "does not exist" warnings
-    |> Seq.groupBy (fun x -> x |> Seq.filter (fun c -> c='\\' || c = '/') |> Seq.length)
-    |> Seq.map (fun (n,x) -> (n, x |> Seq.sort))
-    |> Seq.sortBy (fun (n,x) -> -1 * n)
-    |> Seq.map (fun (n,x) -> x)
-    |> Seq.concat
-    |> Seq.toList
-    |> DeleteDirs
-
-    !! ((environVar "TEMP") @@ "*.tmp.dll.mdb")
-    |> DeleteFiles
-)
-
-Target "SetVersion" (fun _ ->
-    let now = DateTimeOffset.UtcNow
-    let epoch = DateTimeOffset(2000, 1, 1, 0, 0, 0, TimeSpan(int64 0))
-    let diff = now.Subtract(epoch)
-    let fraction = diff.Subtract(TimeSpan.FromDays(float diff.Days))
-    let revision= ((int fraction.TotalSeconds) / 3)
+let GetVersionFromYaml () =
     use yaml = new FileStream("appveyor.yml", FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.SequentialScan)
     use yreader = new StreamReader(yaml)
     let ystream = new YamlStream()
     ystream.Load(yreader)
     let mapping = ystream.Documents.[0].RootNode :?> YamlMappingNode
-    let version = (string mapping.Children.[YamlScalarNode("version")])
-    let majmin = String.Join(".", version.Split('.') |> Seq.take 2)
-    let appveyor = environVar "APPVEYOR_BUILD_VERSION"    
-    Version := if String.IsNullOrWhiteSpace appveyor then sprintf "%s.%d.%d" majmin diff.Days revision else appveyor
-    printfn "Build version : %s" (!Version)
-    let copy = sprintf "© 2010-%d by Steve Gilham <SteveGilham@users.noreply.github.com>" now.Year
+    string mapping.Children.[YamlScalarNode("version")]
+
+// The clean target cleans the build and deploy folders
+Target "Clean" (fun _ ->
+    printfn "Cleaning"
+    Actions.Clean ()
+)
+
+Target "SetVersion" (fun _ ->
+    let (v, majmin, y) = Actions.LocalVersion (environVar "APPVEYOR_BUILD_VERSION") (GetVersionFromYaml ())
+    Version := v
+    let copy = sprintf "© 2010-%d by Steve Gilham <SteveGilham@users.noreply.github.com>" y
     Copyright := "Copyright " + copy
 
-    let stream2 = new System.IO.FileStream("./Build/SelfTest.snk", System.IO.FileMode.Open, System.IO.FileAccess.Read)
-    let pair2 = StrongNameKeyPair(stream2)
-    let key2 = BitConverter.ToString pair2.PublicKey
-
-    let stream = new System.IO.FileStream("./Build/Infrastructure.snk", System.IO.FileMode.Open, System.IO.FileAccess.Read)
-    let pair = StrongNameKeyPair(stream)
-    let key = BitConverter.ToString pair.PublicKey
-
+    ensureDirectory "./_Generated"
+    Actions.InternalsVisibleTo (!Version)
     CreateFSharpAssemblyInfo "./_Generated/AssemblyVersion.fs"
         [Attribute.Version (majmin + ".0.0")
          Attribute.FileVersion (!Version)
@@ -98,78 +52,43 @@ Target "SetVersion" (fun _ ->
          Attribute.Trademark ""
          Attribute.Copyright copy
          ]
-
-    let template ="namespace AltCover
-open System.Reflection
-open System.Runtime.CompilerServices
-#if DEBUG
-[<assembly: AssemblyConfiguration(\"Debug {0}\")>]
-#else
-[<assembly: AssemblyConfiguration(\"Release {0}\")>]
-#endif
-#if NETSTANDARD2_0
-[<assembly: InternalsVisibleTo(\"AltCover.Shadow.Tests\")>]
-#else
-#if NETCOREAPP2_0
-[<assembly: InternalsVisibleTo(\"AltCover.Tests\")>]
-
-#else
-[<assembly: InternalsVisibleTo(\"AltCover.Tests, PublicKey={1}\")>]
-[<assembly: InternalsVisibleTo(\"AltCover.Tests, PublicKey={2}\")>]
-[<assembly: InternalsVisibleTo(\"AltCover.Shadow.Tests, PublicKey={1}\")>]
-[<assembly: InternalsVisibleTo(\"AltCover.Shadow.Tests, PublicKey={2}\")>]
-[<assembly: InternalsVisibleTo(\"AltCover.Shadow.Tests2, PublicKey={1}\")>]
-[<assembly: InternalsVisibleTo(\"AltCover.Shadow.Tests2, PublicKey={2}\")>]
-#endif
-#endif
-()
-"
-    let file = String.Format(System.Globalization.CultureInfo.InvariantCulture,
-                template, (!Version), key.Replace("-", String.Empty), key2.Replace("-", String.Empty))
-    let path = @"_Generated\VisibleToTest.fs"
-    // Update the file only if it would change
-    let old = if File.Exists(path) then File.ReadAllText(path) else String.Empty
-    if not (old.Equals(file)) then File.WriteAllText(path, file)
 )
 
 Target "BuildRelease" (fun _ ->
-   [ "AltCover.sln" ]
+    [ "AltCover.sln" ]
      |> MSBuildRelease "" ""
      |> Log "AppBuild-Output: "
 
-   ILMerge (fun p -> { p with DebugInfo = true
-                              TargetKind = TargetKind.Exe
-                              KeyFile = "./Build/Infrastructure.snk"
-                              Version = (String.Join(".", (!Version).Split('.') |> Seq.take 2) + ".0.0")
-                              Internalize = InternalizeTypes.Internalize
-                              Libraries = !! "./_Binaries/AltCover/Release+AnyCPU/Mono.C*.dll"
-                              AttributeFile = "./_Binaries/AltCover/Release+AnyCPU/AltCover.exe"})
-                              "./_Binaries/AltCover/AltCover.exe"
-                              "./_Binaries/AltCover/Release+AnyCPU/AltCover.exe"
-)
-
-Target "BuildDotNetRelease" (fun _ ->
     DotNetCli.Build
         (fun p -> 
             { p with 
                 Configuration = "Release"
                 Project =  "./altcover.core.sln"})
+)     
 
-    ensureDirectory "./_Binaries/netcoreapp2.0"
-    !! (@"_Binaries\AltCover\Release+AnyCPU\netcoreapp2.0\*")
-    |> (Copy "./_Binaries/netcoreapp2.0")
+Target "Lint" (fun _ ->
+    !! "**/*.fsproj"
+        |> Seq.filter (fun n -> n.IndexOf(".core.") = -1)
+        |> Seq.iter (FSharpLint (fun options -> { options with FailBuildIfAnyWarnings = true }) ))
 
-)
+
+//   ILMerge (fun p -> { p with DebugInfo = true
+//                              TargetKind = TargetKind.Exe
+//                              KeyFile = "./Build/Infrastructure.snk"
+//                              Version = (String.Join(".", (!Version).Split('.') |> Seq.take 2) + ".0.0")
+//                              Internalize = InternalizeTypes.Internalize
+//                              Libraries = !! "./_Binaries/AltCover/Release+AnyCPU/Mono.C*.dll"
+//                              AttributeFile = "./_Binaries/AltCover/Release+AnyCPU/AltCover.exe"})
+//                              "./_Binaries/AltCover/AltCover.exe"
+//                              "./_Binaries/AltCover/Release+AnyCPU/AltCover.exe"
 
 Target "BuildDebug" (fun _ ->
    !! "**/AltCove*.sln"  // include demo projects
      |> Seq.filter (fun n -> n.IndexOf(".core.") = -1)
      |> MSBuildDebug "" ""
      |> Log "AppBuild-Output: "
-)
 
-Target "BuildDotNetDebug" (fun _ ->
-    DotNetCli.Build
+   DotNetCli.Build
         (fun p -> 
             { p with 
                 Configuration = "Debug"
@@ -433,34 +352,21 @@ Target "SelfTest" (fun _ ->
 )
 
 Target "BuildMonoSamples" (fun _ ->
-    ensureDirectory "./_Mono/Sample1"
     let mcs = findToolInSubPath "mcs.exe" ".."
+
+    ensureDirectory "./_Mono/Sample1"
     let result = ExecProcess (fun info -> info.FileName <- mcs
                                           info.WorkingDirectory <- "."
                                           info.Arguments <- (@"-debug -out:./_Mono/Sample1/Sample1.exe  .\Sample1\Program.cs")) (TimeSpan.FromMinutes 5.0)
-    if result <> 0 then failwith "Mono compilation failed"
-
-    // Fix up symbol file to have the MVId emitted by the System.Reflection.Emit code
-    let assembly = System.Reflection.Assembly.ReflectionOnlyLoadFrom (FullName "./_Mono/Sample1/Sample1.exe")
-    let mvid = assembly.ManifestModule.ModuleVersionId.ToByteArray();
-    let symbols = System.IO.File.ReadAllBytes("./_Mono/Sample1/Sample1.exe.mdb")
-    mvid|> Array.iteri (fun i x -> symbols.[i+16] <- x)
-    System.IO.File.WriteAllBytes("./_Mono/Sample1/Sample1.exe.mdb", symbols)
+    if result <> 0 then failwith "Mono compilation of Sample1 failed"
 
     ensureDirectory "./_Mono/Sample3"
-    let mcs = findToolInSubPath "mcs.exe" ".."
     let result = ExecProcess (fun info -> info.FileName <- mcs
                                           info.WorkingDirectory <- "."
                                           info.Arguments <- (@"-target:library -debug -out:./_Mono/Sample3/Sample3.dll  .\Sample3\Class1.cs")) (TimeSpan.FromMinutes 5.0)
-    if result <> 0 then failwith "Mono compilation failed"
-
-    // Fix up symbol file to have the MVId emitted by the System.Reflection.Emit code
-    let assembly = System.Reflection.Assembly.ReflectionOnlyLoadFrom (FullName "./_Mono/Sample3/Sample3.dll")
-    let mvid = assembly.ManifestModule.ModuleVersionId.ToByteArray();
-    let symbols = System.IO.File.ReadAllBytes("./_Mono/Sample3/Sample3.dll.mdb")
-    mvid|> Array.iteri (fun i x -> symbols.[i+16] <- x)
-    System.IO.File.WriteAllBytes("./_Mono/Sample3/Sample3.dll.mdb", symbols)
+    if result <> 0 then failwith "Mono compilation of Sample3 failed"
     
+    Actions.FixMVId ["./_Mono/Sample1/Sample1.exe"; "./_Mono/Sample3/Sample3.dll"]
 )
 
 let SimpleInstrumentingRun (samplePath:string) (binaryPath:string) (reportSigil:string) =
@@ -686,16 +592,28 @@ Target "dotnet" ignore
 
 Target "All" ignore
 
+// Debug chain
+"SetVersion"
+=?> ("BuildDebug", (not(File.Exists("./_Generated/AssemblyVersion.fs"))))
+"SetVersion"
+?=> "BuildDebug"
+"Clean"
+?=> "BuildDebug"
+
 "Clean"
 ==> "SetVersion"
 ==> "BuildRelease"
-==> "Package"
+
+"BuildRelease"
+==> "BuildMonoSamples"
+
+
+(*
 ==> "SimpleReleaseTest"
 ==> "SimpleMonoReleaseTest"
 
 "Clean"
 ==> "SetVersion"
-==> "BuildDotNetRelease"
 ==> "dotnet"
 
 "BuildMonoSamples"
@@ -707,23 +625,6 @@ Target "All" ignore
 "BuildMonoSamples"
 ==> "TestDotNet"
 
-"SetVersion"
-=?> ("BuildDebug", (not(File.Exists("./_Generated/AssemblyVersion.fs"))))
-
-"SetVersion"
-=?> ("BuildDotNetDebug", (not(File.Exists("./_Generated/AssemblyVersion.fs"))))
-
-"SetVersion"
-?=> "BuildDotNetDebug"
-
-"SetVersion"
-?=> "BuildDebug"
-
-"Clean"
-?=> "BuildDebug"
-
-"Clean"
-?=> "BuildDotNetDebug"
 
 "BuildDebug"
 ==> "Lint"
@@ -737,17 +638,11 @@ Target "All" ignore
 ==> "SelfTest"
 "BuildDebug"
 ==> "SimpleInstrumentation"
-"BuildDebug"
-==> "BuildDotNetRelease"
-"BuildDebug"
-==> "BuildMonoSamples"
+
 "BuildDebug"
 ==> "FSharpTypes"
 "BuildDebug"
 ==> "Gendarme"
-
-"BuildDotNetDebug"
-==> "TestDotNet"
 
 "TestCover"
 ==> "BulkReport"
@@ -800,6 +695,6 @@ Target "All" ignore
 
 "TestDotNetOnMono"
 ==> "dotnet"
-
+*)
 
 RunTargetOrDefault "All"
