@@ -31,15 +31,21 @@ exit /b %errorlevel%
 "@
 Set-Content -Value $bat -Path (Join-Path $SolutionRoot "fake.bat")
 
+$fakelib = (dir -recurse "$solutionRoot/*akeLib.dll") | % { $_.FullName } | Select-Object -First 1
+$lintlib = (dir -recurse "$solutionRoot/*SharpLint.Fake.dll") | % { $_.FullName } | Select-Object -First 1
+$ziplib = (dir -recurse "$solutionRoot/*ipStorer.dll") | % { $_.FullName } | ? { $_ -like "*net20*" } | Select-Object -First 1
+$mdlib = (dir -recurse "$solutionRoot/*Sharp.Markdown.dll") | % { $_.FullName } | ? { $_ -like "*net40*" } | Select-Object -First 1
+$ylib = (dir -recurse "$solutionRoot/*amlDotNet.dll") | % { $_.FullName } | ? { $_ -like "*net35*" } | Select-Object -First 1
+
 $build = @"
-#r "../packages/FAKE.4.64.3/tools/FakeLib.dll" // include Fake lib
-#I "../packages/FSharpLint.Fake.0.8.1/tools"
+#r "$($fakelib.Replace('\', '/'))" // include Fake lib
+#I "$((Split-Path -Parent $lintlib).Replace('\', '/'))"
 #r "FSharpLint.Fake.dll"
-#I "../packages/ZipStorer.3.4.0/lib/net20"
+#I "$((Split-Path -Parent $ziplib).Replace('\', '/'))"
 #r "ZipStorer.dll"
-#I "../packages/FSharp.Formatting.2.14.4/lib/net40"
+#I "$((Split-Path -Parent $mdlib).Replace('\', '/'))"
 #r "FSharp.Markdown.dll"
-#I "../packages/YamlDotNet.4.2.3/lib/net35/"
+#I "$((Split-Path -Parent $ylib).Replace('\', '/'))"
 #r "YamlDotNet.dll"
 #r "System.Xml"
 #r "System.Xml.Linq"
