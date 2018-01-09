@@ -270,7 +270,6 @@ Target "FSharpTypesDotNet" ( fun _ ->
     let project = FullName "./AltCover/altcover.core.fsproj"
     let simpleReport = (FullName "./_Reports") @@ ( "AltCoverFSharpTypesDotNet.xml")
     let sampleRoot = FullName "_Binaries/Sample2/Release+AnyCPU/netstandard2.0"
-    //"_Binaries/Sample2/Debug+AnyCPU"
     let instrumented = "__DotNet"
     DotNetCli.RunCommand (fun p -> {p with WorkingDir = sampleRoot}) 
                          ("run --project " + project + " -- -t \"System\\.\" -t \"Microsoft\\.\" -x \"" + simpleReport + "\" /o \"./" + instrumented + "\"")

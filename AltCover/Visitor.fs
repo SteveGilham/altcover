@@ -11,6 +11,7 @@ open System.Diagnostics.CodeAnalysis
 open System.IO
 open System.Linq
 open System.Reflection
+open System.Text.RegularExpressions
 
 open AltCover.Augment
 open Mono.Cecil
@@ -77,6 +78,7 @@ type Fix<'T> = delegate of 'T -> Fix<'T>
 module Visitor =
 
   let internal NameFilters = new List<FilterClass>();
+  let private specialCaseFilters = [ @"^CompareTo\$cont\@\d+\-?\d$" |> Regex |> FilterClass.Method ]
 
   let mutable internal inputDirectory : Option<string> = None
   let private defaultInputDirectory = "."
@@ -115,7 +117,10 @@ module Visitor =
 
   let significant (m : MethodDefinition) =
     [Filter.IsFSharpInternal
-     Filter.IsCSharpAutoProperty]
+     Filter.IsCSharpAutoProperty
+     (fun m -> specialCaseFilters 
+               |> Seq.exists (Filter.Match m))
+     ]
     |> Seq.exists (fun f -> f m)
     |> not
 
