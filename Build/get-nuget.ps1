@@ -6,7 +6,8 @@ if (-not (Test-Path $nugetPath)) {
     Invoke-WebRequest $sourceNugetExe -OutFile $nugetPath
 }
 $solutionRoot = Resolve-Path (Join-Path $PSScriptRoot "..")
-& $nugetPath restore $solutionRoot
+$solution = Join-Path $SolutionRoot "AltCover.sln"
+& $nugetPath restore $solution
 $fake = (dir -recurse "$solutionRoot\*ake.exe") | % { $_.FullName } | Select-Object -First 1
 
 ## establish vsvars
@@ -29,3 +30,25 @@ SET PATH="$($env:path);$(Split-Path -Parent $fake)"
 exit /b %errorlevel%
 "@
 Set-Content -Value $bat -Path (Join-Path $SolutionRoot "fake.bat")
+
+$fakelib = (dir -recurse "$solutionRoot/*akeLib.dll") | % { $_.FullName } | Select-Object -First 1
+$lintlib = (dir -recurse "$solutionRoot/*SharpLint.Fake.dll") | % { $_.FullName } | Select-Object -First 1
+$mdlib = (dir -recurse "$solutionRoot/*Sharp.Markdown.dll") | % { $_.FullName } | ? { $_ -like "*net40*" } | Select-Object -First 1
+$ylib = (dir -recurse "$solutionRoot/*amlDotNet.dll") | % { $_.FullName } | ? { $_ -like "*net35*" } | Select-Object -First 1
+
+$build = @"
+#r "$($fakelib.Replace('\', '/'))" // include Fake lib
+#I "$((Split-Path -Parent $lintlib).Replace('\', '/'))"
+#r "FSharpLint.Fake.dll"
+#I "$((Split-Path -Parent $mdlib).Replace('\', '/'))"
+#r "FSharp.Markdown.dll"
+#I "$((Split-Path -Parent $ylib).Replace('\', '/'))"
+#r "YamlDotNet.dll"
+#r "System.IO.Compression.FileSystem.dll"
+#r "System.Xml"
+#r "System.Xml.Linq"
+
+#load "actions.fsx"
+#load "targets.fsx"
+"@
+Set-Content -Value $build -Path (Join-Path $SolutionRoot ".\build\build.fsx")

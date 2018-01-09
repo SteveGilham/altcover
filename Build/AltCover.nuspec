@@ -8,7 +8,7 @@
     <summary>@summary@</summary>
     <licenseUrl> https://cdn.rawgit.com/SteveGilham/altcover/master/LICENSE</licenseUrl>
     <projectUrl>https://github.com/SteveGilham/altcover/</projectUrl>
-    <iconUrl> https://cdn.rawgit.com/SteveGilham/altcover/master/Build/AltCover_128.png</iconUrl>
+    <iconUrl>https://cdn.rawgit.com/SteveGilham/altcover/master/Build/AltCover_128.png</iconUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>@description@</description>
     <releaseNotes>@releaseNotes@</releaseNotes>
