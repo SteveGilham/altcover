@@ -64,6 +64,7 @@ Target "BuildRelease" (fun _ ->
 Target "BuildDebug" (fun _ ->
    !! "**/AltCove*.sln"  // include demo projects
      |> Seq.filter (fun n -> n.IndexOf(".core.") = -1)
+     |> Seq.filter (fun n -> n.IndexOf(".dotnet.") = -1)
      |> MSBuildDebug "" ""
      |> Log "AppBuild-Output: "
 
@@ -377,9 +378,20 @@ Target "Packaging" (fun _ ->
                         |> Seq.map (fun x -> (x, Some ("tools/net45/" + Path.GetFileName(Path.GetDirectoryName(x))), None))
                         |> Seq.toList
 
-    let netcoreFiles = !! (@"_Binaries\altcover.core\*")
-                       |> Seq.map (fun n-> (n, Some "tools/netcoreapp2.0", None))
-                       |> Seq.toList
+    let root = (FullName ".").Length
+    let netcoreFiles = [
+                         [FullName "./altcover.dotnet.sln"];
+                         ((!! "./AltCover/*")
+                          |> Seq.filter (fun n -> n.EndsWith(".fs") || n.EndsWith(".resx") || n.EndsWith(".core.fsproj"))
+                          |> Seq.toList);
+                         ((!! "./AltCover.Recorder/*")
+                          |> Seq.filter (fun n -> n.EndsWith(".fs") || n.EndsWith(".core.fsproj"))
+                          |> Seq.toList);
+                         ((!! "./_Generated/*")
+                          |> Seq.toList)                          
+                       ]
+                       |> List.concat
+                       |> List.map (fun x -> (x, Some ("tools/netcoreapp2.0" + Path.GetDirectoryName(x).Substring(root).Replace("\\","/")), None))
 
     NuGet (fun p ->
     {p with
@@ -444,10 +456,11 @@ Target "SimpleMonoReleaseTest" (fun _ ->
     Actions.SimpleInstrumentingRun "_Mono/Sample1" unpack "SimpleMonoReleaseTest"
 )
 
-Target "ReleaseMonoWithDotNet" (fun _ -> // TODO
+Target "ReleaseMonoWithDotNet" (fun _ ->
     ensureDirectory "./_Reports"
-    let unpack = FullName "_Packaging/Unpack/tools/netcoreapp2.0/AltCover.dll"
-    DotNetCli.RunCommand id (unpack +  " -t \"System.\" -x \"./_Reports/ReleaseMonoWithDotNet.xml\" -o \"./_Mono/__Instrumented.ReleaseMonoWithDotNet\" -i \"./_Mono/Sample1\"")
+    let unpack = FullName "_Packaging/Unpack/tools/netcoreapp2.0/AltCover"
+    DotNetCli.RunCommand (fun info -> {info with WorkingDir = unpack })  
+                          ("run --project altcover.core.fsproj -- -x \"./_Reports/ReleaseMonoWithDotNet.xml\" -o \"./_Mono/__Instrumented.ReleaseMonoWithDotNet\" -i \"./_Mono/Sample1\"")
 
     let sampleRoot = "_Mono/__Instrumented.ReleaseMonoWithDotNet"
     let result2 = ExecProcess (fun info -> info.FileName <- sampleRoot @@ "/Sample1.exe"
@@ -460,8 +473,9 @@ Target "ReleaseMonoWithDotNet" (fun _ -> // TODO
 
 Target "ReleaseDotNetWithDotNet" (fun _ -> // TODO
     ensureDirectory "./_Reports"
-    let unpack = FullName "_Packaging/Unpack/tools/netcoreapp2.0/AltCover.dll"
-    DotNetCli.RunCommand id (unpack +  " -t \"System.\" -x \"./_Reports/ReleaseDotNetWithDotNet.xml\" -o \"./_Binaries/Sample1/__Instrumented.ReleaseDotNetWithDotNet\" -i \"./_Binaries/Sample1/Debug+AnyCPU/netcoreapp2.0\"")
+    let unpack = FullName "_Packaging/Unpack/tools/netcoreapp2.0/AltCover"
+    DotNetCli.RunCommand (fun info -> {info with WorkingDir = unpack })  
+                          ("run --project altcover.core.fsproj -- -x \"./_Reports/ReleaseDotNetWithDotNet.xml\" -o \"./_Binaries/Sample1/__Instrumented.ReleaseDotNetWithDotNet\" -i \"./_Binaries/Sample1/Debug+AnyCPU/netcoreapp2.0\"")
 
     let sampleRoot = "_Binaries/Sample1/__Instrumented.ReleaseDotNetWithDotNet"
     DotNetCli.RunCommand id (sampleRoot @@ "Sample1.dll")
