@@ -118,7 +118,7 @@ module Visitor =
   let significant (m : MethodDefinition) =
     [Filter.IsFSharpInternal
      Filter.IsCSharpAutoProperty
-     (fun m -> specialCaseFilters 
+     (fun m -> specialCaseFilters
                |> Seq.exists (Filter.Match m))
      ]
     |> Seq.exists (fun f -> f m)

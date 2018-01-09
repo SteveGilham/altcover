@@ -1,7 +1,5 @@
-
 open System
 open System.IO
-open System.IO.Compression
 open System.Xml
 open System.Xml.Linq
 
@@ -12,7 +10,6 @@ open Fake.AssemblyInfoFile
 open Fake.Testing
 open Fake.OpenCoverHelper
 open Fake.ReportGeneratorHelper
-open FSharp.Markdown
 open FSharpLint.Fake
 
 let Copyright  = ref String.Empty
@@ -277,115 +274,45 @@ Target "FSharpTypesDotNet" ( fun _ ->
     Actions.ValidateFSharpTypes simpleReport
 )
 
+Target "BasicCSharp" (fun _ ->
+   Actions.SimpleInstrumentingRun "_Binaries/Sample1/Debug+AnyCPU" "_Binaries/AltCover/Debug+AnyCPU" "BasicCSharp"
+)
 
+Target "BasicCSharpMono" (fun _ ->
+    Actions.SimpleInstrumentingRun "_Mono/Sample1" "_Binaries/AltCover/Debug+AnyCPU" "BasicCSharpMono"
+)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Target "TestDotNetOnMono" (fun _ ->
+Target "CSharpMonoWithDotNet" (fun _ ->
     ensureDirectory "./_Reports"
-    DotNetCli.RunCommand id "run --project ./AltCover/altcover.core.fsproj -- -t \"System.\" -x \"./_Reports/TestDotNetOnMono.xml\" -o \"./_Mono/_DotNetInstrumented\" -i \"./_Mono/Sample1\""
+    DotNetCli.RunCommand id "run --project ./AltCover/altcover.core.fsproj -- -t \"System.\" -x \"./_Reports/CSharpMonoWithDotNet.xml\" -o \"./_Mono/__Instrumented.CSharpMonoWithDotNet\" -i \"./_Mono/Sample1\""
 
-    let sampleRoot = "./_Mono/_DotNetInstrumented"
+    let sampleRoot = "_Mono/__Instrumented.CSharpMonoWithDotNet"
     let result2 = ExecProcess (fun info -> info.FileName <- sampleRoot @@ "/Sample1.exe"
                                            info.WorkingDirectory <- sampleRoot
                                            info.Arguments <- "") (TimeSpan.FromMinutes 5.0)
     if result2 <> 0 then failwith "Instrumented .exe failed"
 
-    let reportSigil = "dotnet"
-    let simpleReport = "./_Reports/TestDotNetOnMono.xml"
-    ensureDirectory ("./_Reports/_SimpleReport" + reportSigil)
-    ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
-                                       TargetDir = "_Reports/_SimpleReport" + reportSigil})
-        [simpleReport]
-
-    // get recorded details from here
-    use coverageFile = new FileStream(simpleReport, FileMode.Open, FileAccess.Read, FileShare.None, 4096, FileOptions.SequentialScan)
-    let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
-    let recorded = coverageDocument.Descendants(XName.Get("seqpnt"))
-                   |> Seq.toList
-
-    let zero = recorded
-               |> Seq.filter (fun x -> x.Attribute(XName.Get("visitcount")).Value = "0")
-               |> Seq.map (fun x -> x.Attribute(XName.Get("line")).Value)
-               |> Seq.sort
-               |> Seq.toList
-    let ones = recorded
-               |> Seq.filter (fun x -> x.Attribute(XName.Get("visitcount")).Value = "1")
-               |> Seq.map (fun x -> x.Attribute(XName.Get("line")).Value)
-               |> Seq.sort
-               |> Seq.toList
-
-    if (List.length ones) + (List.length zero) <> (List.length recorded) then failwith "unexpected visits"
-    let zero' = zero |> Seq.distinct |> Seq.toList
-
-    if ["18"; "19"; "20"] <> zero' then failwith ("wrong unvisited : " + (sprintf "%A" zero'))
-
-    let ones' = ones |> Seq.distinct |> Seq.toList
-    if ["11"; "12"; "13"; "14"; "15"; "16"; "21"] <> ones' then failwith ("wrong number of visited : " + (sprintf "%A" ones'))
+    Actions.ValidateSample1 "./_Reports/CSharpMonoWithDotNet.xml" "CSharpMonoWithDotNet"
 )
 
-Target "TestDotNetOnDotNet" (fun _ ->
+Target "CSharpDotNetWithDotNet" (fun _ -> // TODO
     ensureDirectory "./_Reports"
-    DotNetCli.RunCommand id "_Binaries/AltCover/Debug+AnyCPU/netcoreapp2.0/AltCover.dll -t \"System.\" -x \"./_Reports/TestDotNetOnDotNet.xml\" -o \"./_Binaries/Sample1/_DotNetInstrumented\" -i \"./_Binaries/Sample1/Debug+AnyCPU/netcoreapp2.0\""
+    DotNetCli.RunCommand id "_Binaries/AltCover/Debug+AnyCPU/netcoreapp2.0/AltCover.dll -t \"System.\" -x \"./_Reports/CSharpDotNetWithDotNet.xml\" -o \"./_Binaries/Sample1/__Instrumented.CSharpDotNetWithDotNet\" -i \"./_Binaries/Sample1/Debug+AnyCPU/netcoreapp2.0\""
 
-    let sampleRoot = "./_Binaries/Sample1/_DotNetInstrumented"
+    let sampleRoot = "_Binaries/Sample1/__Instrumented.CSharpDotNetWithDotNet"
     DotNetCli.RunCommand id (sampleRoot @@ "Sample1.dll")
 
-    let reportSigil = "dotnet2"
-    let simpleReport = "./_Reports/TestDotNetOnDotNet.xml"
-    ensureDirectory ("./_Reports/_SimpleReport" + reportSigil)
-    ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
-                                       TargetDir = "_Reports/_SimpleReport" + reportSigil})
-        [simpleReport]
-
-    // get recorded details from here
-    use coverageFile = new FileStream(simpleReport, FileMode.Open, FileAccess.Read, FileShare.None, 4096, FileOptions.SequentialScan)
-    let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
-    let recorded = coverageDocument.Descendants(XName.Get("seqpnt"))
-                   |> Seq.toList
-
-    let zero = recorded
-               |> Seq.filter (fun x -> x.Attribute(XName.Get("visitcount")).Value = "0")
-               |> Seq.map (fun x -> x.Attribute(XName.Get("line")).Value)
-               |> Seq.sort
-               |> Seq.toList
-    let ones = recorded
-               |> Seq.filter (fun x -> x.Attribute(XName.Get("visitcount")).Value = "1")
-               |> Seq.map (fun x -> x.Attribute(XName.Get("line")).Value)
-               |> Seq.sort
-               |> Seq.toList
-
-    if (List.length ones) + (List.length zero) <> (List.length recorded) then failwith "unexpected visits"
-    let zero' = zero |> Seq.distinct |> Seq.toList
-
-    if ["18"; "19"; "20"] <> zero' then failwith ("wrong unvisited : " + (sprintf "%A" zero'))
-
-    let ones' = ones |> Seq.distinct |> Seq.toList
-    if ["11"; "12"; "13"; "14"; "15"; "16"; "21"] <> ones' then failwith ("wrong number of visited : " + (sprintf "%A" ones'))
+    Actions.ValidateSample1 "./_Reports/CSharpDotNetWithDotNet.xml" "CSharpDotNetWithDotNet"
 )
 
 Target "SelfTest" (fun _ ->
+    ensureDirectory "./_Reports/_Instrumented"
     let targetDir = "_Binaries/AltCover.Tests/Debug+AnyCPU"
     let reports = FullName "./_Reports"
-    let altReport = reports @@ "AltCoverage.xml"
+    let report = reports @@ "OpenCoverSelfTest.xml"
+    let altReport = reports @@ "AltCoverSelfTest.xml"
     let keyfile = FullName "Build\SelfTest.snk"
 
-    ensureDirectory "./_Reports/_Instrumented"
-    ensureDirectory (targetDir @@ "__Instrumented")
 
     printfn "Self-instrument under OpenCover"
     OpenCover (fun p -> { p with ExePath = findToolInSubPath "OpenCover.Console.exe" "."
@@ -395,232 +322,49 @@ Target "SelfTest" (fun _ ->
                                  MergeByHash = true
                                  OptionalArguments = "-excludebyattribute:*ExcludeFromCodeCoverageAttribute;*ProgIdAttribute"
                                  Register = RegisterType.RegisterUser
-                                 Output = reports @@ "OpenCoverInstrumentationReport.xml" })
-        ("/sn=" + keyfile + AltCoverFilter + "-x=" + altReport)
+                                 Output = report })
+        ("/sn=" + keyfile + AltCoverFilter + "-x=" + altReport + " -o __SelfTest")
     ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
-                                       TargetDir = "_Reports/_Instrumented"})
-        ["./_Reports/OpenCoverInstrumentationReport.xml"]
-
-    // get recorder details from here
-    use coverageFile = new FileStream("./_Reports/OpenCoverInstrumentationReport.xml", FileMode.Open, FileAccess.Read, FileShare.None, 4096, FileOptions.SequentialScan)
-    // Edit xml report to store new hits
-    let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
-    let recorder = coverageDocument.Descendants(XName.Get("Module"))
-                   |> Seq.filter (fun el -> el.Descendants(XName.Get("ModulePath")).Nodes()
-                                            |> Seq.exists (fun n -> n.ToString().EndsWith("AltCover.Recorder.dll")))
-                   |> Seq.head
+                                       TargetDir = "_Reports/_OpenCoverSelfTest"})
+        [report]
 
     printfn "Re-instrument everything"
-    ensureDirectory "./_Reports/_AltReport"
-    let altReport2 = reports @@ "AltSelfTestCoverage.xml"
-    let result = ExecProcess (fun info -> info.FileName <- "_Binaries/AltCover.Tests/Debug+AnyCPU/__Instrumented/AltCover.exe"
+    let altReport2 = reports @@ "AltCoverSelfTestDummy.xml"
+    let result = ExecProcess (fun info -> info.FileName <- "_Binaries/AltCover.Tests/Debug+AnyCPU/__SelfTest/AltCover.exe"
                                           info.WorkingDirectory <- "_Binaries/AltCover.Tests/Debug+AnyCPU"
-                                          info.Arguments <- ("/sn=" + keyfile + AltCoverFilter + @"/o=.\__ReInstrument -x=" + altReport2)) (TimeSpan.FromMinutes 5.0)
-    ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
-                                       TargetDir = "_Reports/_AltReport"})
-        [altReport2]
-
+                                          info.Arguments <- ("/sn=" + keyfile + AltCoverFilter + @"/o=.\__SelfTestDummy -x=" + altReport2)) (TimeSpan.FromMinutes 5.0)
     if result <> 0 then failwithf "Re-instrument returned with a non-zero exit code"
 
-    printfn "Unit test instrumented code"
-    ensureDirectory "./_Reports"
-    [ !! "_Binaries/AltCover.Tests/Debug+AnyCPU/__ReInstrument/*.Tests.dll"
-      !! "_Binaries/AltCover.Tests/Debug+AnyCPU/__ReInstrument/*ple2.dll"]
-    |> Seq.concat |> Seq.distinct
-    |> NUnit3 (fun p -> { p with ToolPath = findToolInSubPath "nunit3-console.exe" "."
-                                 WorkingDir = "."
-                                 ResultSpecs = ["./_Reports/NUnit3ReportInstrumented.xml"] })
     ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
-                                       TargetDir = "_Reports/_SelfTestReport"})
-        [altReport2]
-
-    printfn "Instrument and run the shadow tests"
-    let shadowDir = "_Binaries/AltCover.Shadow.Tests/Debug+AnyCPU"
-    ensureDirectory "./_Reports/_TotalSelfTestReport"
-    let altReport3 = reports @@ "ShadowSelfTestCoverage.xml"
-    let result = ExecProcess (fun info -> info.FileName <- "_Binaries/AltCover/Debug+AnyCPU/AltCover.exe"
-                                          info.WorkingDirectory <- "_Binaries/AltCover.Shadow.Tests/Debug+AnyCPU"
-                                          info.Arguments <- ("/sn=" + keyfile + AltCoverFilter + @"/o=.\__Instrument -x=" + altReport3)) (TimeSpan.FromMinutes 5.0)
-    !! (@"_Binaries\AltCover.Shadow.Tests\Debug+AnyCPU\__Instrument\*.Test*.dll")
-    |> NUnit3 (fun p -> { p with ToolPath = findToolInSubPath "nunit3-console.exe" "."
-                                 WorkingDir = "."
-                                 ResultSpecs = ["./_Reports/NUnit3ReportShadow.xml"] })
-    ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
-                                       TargetDir = "_Reports/_TotalSelfTestReport"})
-        [altReport2; altReport3]
-    
-    printfn "Unit-test instrumented code under OpenCover"
-    ensureDirectory "./_Reports/_UnitTestInstrumented"
-    OpenCover (fun p -> { p with ExePath = findToolInSubPath "OpenCover.Console.exe" "."
-                                 WorkingDir = "."
-                                 TestRunnerExePath = findToolInSubPath "nunit3-console.exe" "."
-                                 Filter = OpenCoverFilter
-                                 MergeByHash = true
-                                 OptionalArguments = "-excludebyattribute:*ExcludeFromCodeCoverageAttribute;*ProgIdAttribute"
-                                 Register = RegisterType.RegisterUser
-                                 Output = "_Reports/OpenCoverReportAltCovered.xml" })
-        "_Binaries/AltCover.Tests/Debug+AnyCPU/__Instrumented/AltCover.Tests.dll _Binaries/AltCover.Tests/Debug+AnyCPU/__Instrumented/Sample2.dll --result=./_Reports/NUnit3ReportAltCovered.xml"
-
-    use coverageFile2 = new FileStream("./_Reports/OpenCoverReportAltCovered.xml", FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.SequentialScan)
-    let coverageDocument2 = XDocument.Load(XmlReader.Create(coverageFile2))
-    let recorder2 = coverageDocument2.Descendants(XName.Get("Module"))
-                    |> Seq.filter (fun el -> el.Descendants(XName.Get("ModulePath")).Nodes()
-                                             |> Seq.exists (fun n -> n.ToString().EndsWith("AltCover.Recorder.g.dll")))
-                    |> Seq.head // at most 1
-    recorder2.SetAttributeValue(XName.Get("hash"), recorder.Attribute(XName.Get("hash")).Value)
-
-    ["ModulePath"; "ModuleTime"; "ModuleName"]
-    |> Seq.iter (fun name -> let from = recorder.Descendants(XName.Get(name)).Nodes() |> Seq.head :?> XText
-                             let to' = recorder2.Descendants(XName.Get(name)).Nodes() |> Seq.head :?> XText
-                             to'.Value <- from.Value)
-
-    // Save modified xml to a file
-    coverageFile2.Seek(0L, SeekOrigin.Begin) |> ignore
-    coverageFile2.SetLength(int64 0) // truncate it all because the rewrite ends up one line shorter for some reason and leaves a dangling tag
-    use writer = System.Xml.XmlWriter.Create(coverageFile2)
-    coverageDocument2.WriteTo(writer)
-    writer.Flush()
-    writer.Close()
-    coverageFile2.Close()
-
-    ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
-                                       TargetDir = "_Reports/_UnitTestInstrumented"})
-        ["./_Reports/OpenCoverReportAltCovered.xml"]
+                                       TargetDir = "_Reports/_AltCoverSelfTest"})
+        [altReport]
 )
 
+// Packaging 
 
-let SimpleInstrumentingRun (samplePath:string) (binaryPath:string) (reportSigil:string) =
-    printfn "Instrument a simple executable"
-    ensureDirectory "./_Reports"
-    let simpleReport = (FullName "./_Reports") @@ ( "SimpleCoverage" + reportSigil + ".xml")
-    let binRoot = FullName binaryPath
-    let sampleRoot = FullName samplePath
-    let instrumented = "__Instrumented" + reportSigil
-    let result = ExecProcess (fun info -> info.FileName <- binRoot @@ "AltCover.exe"
-                                          info.WorkingDirectory <- sampleRoot
-                                          info.Arguments <- ("-t=System. -x=" + simpleReport + " /o=./" + instrumented)) (TimeSpan.FromMinutes 5.0)
-    if result <> 0 then failwith "Simple instrumentation failed"
-    let result2 = ExecProcess (fun info -> info.FileName <- sampleRoot @@ (instrumented + "/Sample1.exe")
-                                           info.WorkingDirectory <- (sampleRoot @@ instrumented)
-                                           info.Arguments <- "") (TimeSpan.FromMinutes 5.0)
-    if result2 <> 0 then failwith "Instrumented .exe failed"
-
-    ensureDirectory ("./_Reports/_SimpleReport" + reportSigil)
-    ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
-                                       TargetDir = "_Reports/_SimpleReport" + reportSigil})
-        [simpleReport]
-
-    // get recorded details from here
-    use coverageFile = new FileStream(simpleReport, FileMode.Open, FileAccess.Read, FileShare.None, 4096, FileOptions.SequentialScan)
-    let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
-    let recorded = coverageDocument.Descendants(XName.Get("seqpnt"))
-                   |> Seq.toList
-
-    let zero = recorded
-               |> Seq.filter (fun x -> x.Attribute(XName.Get("visitcount")).Value = "0")
-               |> Seq.map (fun x -> x.Attribute(XName.Get("line")).Value)
-               |> Seq.sort
-               |> Seq.toList
-    let ones = recorded
-               |> Seq.filter (fun x -> x.Attribute(XName.Get("visitcount")).Value = "1")
-               |> Seq.map (fun x -> x.Attribute(XName.Get("line")).Value)
-               |> Seq.sort
-               |> Seq.toList
-
-    if (List.length ones) + (List.length zero) <> (List.length recorded) then failwith "unexpected visits"
-    let zero' = zero |> Seq.distinct |> Seq.toList
-
-    if ["18"; "19"; "20"] <> zero' then failwith ("wrong unvisited : " + (sprintf "%A" zero'))
-
-    let ones' = ones |> Seq.distinct |> Seq.toList
-    if ["11"; "12"; "13"; "14"; "15"; "16"; "21"] <> ones' then failwith ("wrong number of visited : " + (sprintf "%A" ones'))
-
-Target "SimpleInstrumentation" (fun _ ->
-   SimpleInstrumentingRun "_Binaries/Sample1/Debug+AnyCPU" "_Binaries/AltCover/Debug+AnyCPU" String.Empty
-)
-
-Target "SimpleMonoTest" (fun _ ->
-    SimpleInstrumentingRun "_Mono/Sample1" "_Binaries/AltCover/Debug+AnyCPU" ".M"
-)
-
-Target "BulkReport" (fun _ ->
-    printfn "Overall coverage reporting"
-    ensureDirectory "./_Reports/_BulkReport"
-    !! "./_Reports/*cover*.xml"
-    |> Seq.filter (fun f -> not <| f.Contains("NUnit"))
-    |> Seq.toList
-    |> ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
-                                          ReportTypes = [ ReportGeneratorReportType.Html; ReportGeneratorReportType.Badges ]
-                                          TargetDir = "_Reports/_BulkReport"})
-)
-
-
-//   ILMerge (fun p -> { p with DebugInfo = true
-//                              TargetKind = TargetKind.Exe
-//                              KeyFile = "./Build/Infrastructure.snk"
-//                              Version = (String.Join(".", (!Version).Split('.') |> Seq.take 2) + ".0.0")
-//                              Internalize = InternalizeTypes.Internalize
-//                              Libraries = !! "./_Binaries/AltCover/Release+AnyCPU/Mono.C*.dll"
-//                              AttributeFile = "./_Binaries/AltCover/Release+AnyCPU/AltCover.exe"})
-//                              "./_Binaries/AltCover/AltCover.exe"
-//                              "./_Binaries/AltCover/Release+AnyCPU/AltCover.exe"
-
-//ensureDirectory "./_Binaries/netcoreapp2.0"
-//    !! (@"_Binaries\AltCover\Release+AnyCPU\netcoreapp2.0\*")
-//|> (Copy "./_Binaries/netcoreapp2.0")
-
-Target "Package"  (fun _ ->
+Target "Packaging" (fun _ ->
     ensureDirectory "./_Binaries/Packaging"
     ensureDirectory "./_Packaging"
 
-    let packingCopyright = (!Copyright).Replace("©", "&#xa9;").Replace("<","&lt;").Replace(">", "&gt;")
     let AltCover = FullName "_Binaries/AltCover/AltCover.exe"
     let recorder = FullName "_Binaries/AltCover/Release+AnyCPU/AltCover.Recorder.dll"
-    let resources = filesInDirMatchingRecursive "AltCover.resources.dll" (directoryInfo (FullName "_Binaries/AltCover/Release+AnyCPU")) 
-    let readme = FullName "README.md"
-    let document = File.ReadAllText readme
-    let docHtml = """<?xml version="1.0"  encoding="utf-8"?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<title>AltCover README</title>
-</head>
-<body>
-"""               + (Markdown.TransformHtml document) + """
-<footer><p style="text-align: center">""" + packingCopyright + """</p>
-</footer>
-</body>
-</html>
-"""
-    let xmlform = XDocument.Parse docHtml
-    let body = xmlform.Descendants(XName.Get "body")
-    let eliminate = [ "Continuous Integration"; "Building"; "Thanks to" ]
-    let keep = ref true
-
-    let kill = body.Elements() 
-               |> Seq.map (fun x -> match x.Name.LocalName with
-                                    | "h2" -> keep := (List.tryFind (fun e -> e = String.Concat(x.Nodes())) eliminate) |> Option.isNone
-                                    | "footer" -> keep := true
-                                    | _ -> ()
-                                    if !keep then None else Some x)
-               |> Seq.toList
-    kill |> 
-    Seq.iter (fun q -> match q with 
-                       | Some x -> x.Remove()
-                       | _ -> ())
-
     let packable = FullName "./_Binaries/README.html"
-    xmlform.Save packable
+    let resources = filesInDirMatchingRecursive "AltCover.resources.dll" (directoryInfo (FullName "_Binaries/AltCover/Release+AnyCPU")) 
 
     let applicationFiles = [
-                            (AltCover, Some "tools", None)
-                            (recorder, Some "tools", None)
+                            (AltCover, Some "tools/net45", None)
+                            (recorder, Some "tools/net45", None)
                             (packable, Some "", None)
                            ]
     let resourceFiles = resources
                         |> Seq.map (fun x -> x.FullName)
-                        |> Seq.map (fun x -> (x, Some ("tools/" + Path.GetFileName(Path.GetDirectoryName(x))), None))
+                        |> Seq.map (fun x -> (x, Some ("tools/net45/" + Path.GetFileName(Path.GetDirectoryName(x))), None))
                         |> Seq.toList
+
+    let netcoreFiles = !! (@"_Binaries\AltCover\Release+AnyCPU\netcoreapp2.0\*")
+                       |> Seq.filter (fun n -> not (n.Contains(".runtimeconfig.") ))
+                       |> Seq.map (fun n-> (n, Some "tools/netcoreapp2.0", None))
+                       |> Seq.toList
 
     NuGet (fun p ->
     {p with
@@ -629,7 +373,7 @@ Target "Package"  (fun _ ->
         Description = "A pre-instrumented code coverage tool for .net and Mono"
         OutputPath = "./_Packaging"
         WorkingDir = "./_Binaries/Packaging"
-        Files = List.concat [applicationFiles; resourceFiles]
+        Files = List.concat [applicationFiles; resourceFiles; netcoreFiles]
         Version = !Version
         Copyright = (!Copyright).Replace("©", "(c)")
         Publish = false
@@ -639,28 +383,78 @@ Target "Package"  (fun _ ->
         "./Build/AltCover.nuspec"
 )
 
-Target "SimpleReleaseTest" (fun _ ->
-   let nugget = !! "./_Packaging/*.nupkg" |> Seq.last
-   // should work but doesn't ZipFile.ExtractToDirectory(nugget, "_Packaging/Unpack")
-   // so do this
-   let zip = ZipStorer.Open(nugget, FileAccess.Read)
-   let unpack = FullName "_Packaging/Unpack"
-   zip.ReadCentralDir()
-    |> Seq.filter (fun entry -> let name = Path.GetFileName(entry.FilenameInZip)
-                                name.StartsWith("AltCover.", StringComparison.OrdinalIgnoreCase) &&
-                                    (Path.GetExtension(name).Length = 4))
-    |> Seq.iter (fun entry -> zip.ExtractFile(entry, unpack @@ Path.GetFileName(entry.FilenameInZip)) |> ignore)
+Target "PrepareFrameworkBuild" (fun _ ->
+   ILMerge (fun p -> { p with DebugInfo = true
+                              TargetKind = TargetKind.Exe
+                              KeyFile = "./Build/Infrastructure.snk"
+                              Version = (String.Join(".", (!Version).Split('.') |> Seq.take 2) + ".0.0")
+                              Internalize = InternalizeTypes.Internalize
+                              Libraries = !! "./_Binaries/AltCover/Release+AnyCPU/Mono.C*.dll"
+                              AttributeFile = "./_Binaries/AltCover/Release+AnyCPU/AltCover.exe"})
+                              "./_Binaries/AltCover/AltCover.exe"
+                              "./_Binaries/AltCover/Release+AnyCPU/AltCover.exe"
+)
 
-   SimpleInstrumentingRun "_Binaries/Sample1/Debug+AnyCPU" unpack ".R"
+Target "PrepareReadMe" (fun _ ->
+    Actions.PrepareReadMe ((!Copyright).Replace("©", "&#xa9;").Replace("<","&lt;").Replace(">", "&gt;"))
+)
+
+// Post-packaging deployment touch test
+
+Target "Deployment" ignore
+
+Target "Unpack" (fun _ ->
+  let nugget = !! "./_Packaging/*.nupkg" |> Seq.last
+  let unpack = FullName "_Packaging/Unpack"
+  System.IO.Compression.ZipFile.ExtractToDirectory (nugget, unpack)
+)
+
+Target "SimpleReleaseTest" (fun _ ->
+    let unpack = FullName "_Packaging/Unpack/tools/net45"
+    Actions.SimpleInstrumentingRun "_Binaries/Sample1/Debug+AnyCPU" unpack "SimpleReleaseTest"
 )
 
 Target "SimpleMonoReleaseTest" (fun _ ->
-
-    let unpack = FullName "_Packaging/Unpack"
-    SimpleInstrumentingRun "_Mono/Sample1" unpack ".MR"
+    let unpack = FullName "_Packaging/Unpack/tools/net45"
+    Actions.SimpleInstrumentingRun "_Mono/Sample1" unpack "SimpleMonoReleaseTest"
 )
 
-Target "dotnet" ignore
+Target "ReleaseMonoWithDotNet" (fun _ -> // TODO
+    let unpack = FullName "_Packaging/Unpack/tools/netcoreapp2.0/AltCover.dll"
+    DotNetCli.RunCommand id (unpack +  " -t \"System.\" -x \"./_Reports/ReleaseMonoWithDotNet.xml\" -o \"./_Mono/__Instrumented.ReleaseMonoWithDotNet\" -i \"./_Mono/Sample1\"")
+
+    let sampleRoot = "_Mono/__Instrumented.ReleaseMonoWithDotNet"
+    let result2 = ExecProcess (fun info -> info.FileName <- sampleRoot @@ "/Sample1.exe"
+                                           info.WorkingDirectory <- sampleRoot
+                                           info.Arguments <- "") (TimeSpan.FromMinutes 5.0)
+    if result2 <> 0 then failwith "Instrumented .exe failed"
+
+    Actions.ValidateSample1 "./_Reports/ReleaseMonoWithDotNet.xml" "ReleaseMonoWithDotNet"
+)
+
+Target "ReleaseDotNetWithDotNet" (fun _ -> // TODO
+    let unpack = FullName "_Packaging/Unpack/tools/netcoreapp2.0/AltCover.dll"
+    DotNetCli.RunCommand id (unpack +  " -t \"System.\" -x \"./_Reports/ReleaseDotNetWithDotNet.xml\" -o \"./_Binaries/Sample1/__Instrumented.ReleaseDotNetWithDotNet\" -i \"./_Binaries/Sample1/Debug+AnyCPU/netcoreapp2.0\"")
+
+    let sampleRoot = "_Binaries/Sample1/__Instrumented.ReleaseDotNetWithDotNet"
+    DotNetCli.RunCommand id (sampleRoot @@ "Sample1.dll")
+
+    Actions.ValidateSample1 "./_Reports/ReleaseDotNetWithDotNet.xml" "ReleaseDotNetWithDotNet"
+)
+
+// AOB
+
+Target "BulkReport" (fun _ ->
+    printfn "Overall coverage reporting"
+    ensureDirectory "./_Reports/_BulkReport"
+
+    !! "./_Reports/*.xml"
+    |> Seq.filter (fun f -> not <| f.EndsWith("Report.xml", StringComparison.OrdinalIgnoreCase))
+    |> Seq.toList
+    |> ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
+                                          ReportTypes = [ ReportGeneratorReportType.Html; ReportGeneratorReportType.Badges ]
+                                          TargetDir = "_Reports/_BulkReport"})
+)
 
 Target "All" ignore
 
@@ -717,6 +511,67 @@ Target "All" ignore
 ==> "FSharpTypesDotNet"
 ==> "OperationalTest"
 
+"Compilation"
+==> "BasicCSharp"
+==> "OperationalTest"
+
+"Compilation"
+==> "BasicCSharpMono"
+==> "OperationalTest"
+
+"Compilation"
+==> "CSharpMonoWithDotNet"
+==> "OperationalTest"
+
+"Compilation"
+// TODO ==> "CSharpDotNetWithDotNet"
+==> "OperationalTest"
+
+"Compilation"
+==> "SelfTest"
+==> "OperationalTest"
+
+"Compilation"
+==> "PrepareFrameworkBuild"
+==> "Packaging"
+
+"Compilation"
+==> "PrepareReadMe"
+==> "Packaging"
+
+
+"Packaging"
+==> "Unpack"
+
+"Unpack"
+==> "SimpleReleaseTest"
+==> "Deployment"
+
+"Unpack"
+==> "SimpleMonoReleaseTest"
+==> "Deployment"
+
+"Unpack"
+// ==> "ReleaseMonoWithDotNet"
+==> "Deployment"
+
+"Unpack"
+// ==> "ReleaseDotNetWithDotNet"
+==> "Deployment"
+
+"Analysis"
+==> "All"
+
+"UnitTest"
+==> "All"
+
+"OperationalTest"
+==> "All"
+
+"Deployment"
+==> "BulkReport"
+==> "All"
+
 (*
 // Debug chain
 "SetVersion"
@@ -725,105 +580,6 @@ Target "All" ignore
 ?=> "BuildDebug"
 "Clean"
 ?=> "BuildDebug"
-
-"Clean"
-==> "SetVersion"
-==> "BuildRelease"
-
-"BuildRelease"
-==> "BuildMonoSamples"
-==> "All"
-
-"BuildRelease"
-==> "Lint"
-==> "All"
-
-==> "SimpleReleaseTest"
-==> "SimpleMonoReleaseTest"
-
-"Clean"
-==> "SetVersion"
-==> "dotnet"
-
-"BuildMonoSamples"
-==> "SimpleMonoReleaseTest"
-
-"BuildMonoSamples"
-==> "Test"
-
-"BuildMonoSamples"
-==> "TestDotNet"
-
-
-"BuildDebug"
-==> "Lint"
-"BuildDebug"
-==> "Test"
-"BuildDebug"
-==> "TestCover"
-"BuildDebug"
-==> "FxCop"
-"BuildDebug"
-==> "SelfTest"
-"BuildDebug"
-==> "SimpleInstrumentation"
-
-"BuildDebug"
-==> "FSharpTypes"
-"BuildDebug"
-==> "Gendarme"
-
-"TestCover"
-==> "BulkReport"
-
-"SelfTest"
-==> "BulkReport"
-
-"SimpleInstrumentation"
-==> "BulkReport"
-
-"BulkReport"
-==> "All"
-
-"SimpleMonoReleaseTest"
-==> "All"
-
-"SimpleMonoTest"
-==> "All"
-
-"FSharpTypes"
-==> "All"
-
-"Lint"
-==> "All"
-
-"FxCop"
-==> "All"
-
-"Gendarme"
-==> "All"
-
-"dotnet"
-==> "All"
-
-"Lint"
-?=> "FxCop"
-
-"FxCop"
-?=> "Gendarme"
-
-"Test"
-==> "TestCover"
-
-"TestDotNet"
-==> "TestDotNetOnMono"
-==> "TestDotNetOnDotNet"
-
-//"TestDotNetOnDotNet"
-//==> "dotnet"
-
-"TestDotNetOnMono"
-==> "dotnet"
 *)
 
 RunTargetOrDefault "All"

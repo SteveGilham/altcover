@@ -5,6 +5,7 @@ open System.Xml
 open System.Xml.Linq
 
 open Fake
+open FSharp.Markdown
 open YamlDotNet.RepresentationModel
 
 module Actions =
@@ -108,3 +109,83 @@ open System.Runtime.CompilerServices
     let expected = "[\"Invoke\"; \"as_bar\"; \"bytes\"; \"get_MyBar\"; \"makeThing\"; \"returnBar\"; \"returnFoo\";\n \"testMakeThing\"; \"testMakeUnion\"]"
     if recorded.Length <> 9 then failwith (sprintf "Bad method list length %A" recorded)
     if (sprintf "%A" recorded) <> expected then failwith (sprintf "Bad method list %A" recorded)
+
+  let ValidateSample1 simpleReport sigil = 
+    // get recorded details from here
+    use coverageFile = new FileStream(simpleReport, FileMode.Open, FileAccess.Read, FileShare.None, 4096, FileOptions.SequentialScan)
+    let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
+    let recorded = coverageDocument.Descendants(XName.Get("seqpnt"))
+                   |> Seq.toList
+
+    let zero = recorded
+               |> Seq.filter (fun x -> x.Attribute(XName.Get("visitcount")).Value = "0")
+               |> Seq.map (fun x -> x.Attribute(XName.Get("line")).Value)
+               |> Seq.sort
+               |> Seq.toList
+    let ones = recorded
+               |> Seq.filter (fun x -> x.Attribute(XName.Get("visitcount")).Value = "1")
+               |> Seq.map (fun x -> x.Attribute(XName.Get("line")).Value)
+               |> Seq.sort
+               |> Seq.toList
+
+    if (List.length ones) + (List.length zero) <> (List.length recorded) then failwith ("unexpected visits in " + sigil)
+    let zero' = zero |> Seq.distinct |> Seq.toList
+
+    if ["18"; "19"; "20"] <> zero' then failwith ("wrong unvisited in " + sigil + " : " + (sprintf "%A" zero'))
+
+    let ones' = ones |> Seq.distinct |> Seq.toList
+    if ["11"; "12"; "13"; "14"; "15"; "16"; "21"] <> ones' then failwith ("wrong number of visited  in " + sigil + " : " + (sprintf "%A" ones'))
+
+  let SimpleInstrumentingRun (samplePath:string) (binaryPath:string) (reportSigil:string) =
+    printfn "Instrument and run a simple executable"
+    ensureDirectory "./_Reports"
+    let simpleReport = (FullName "./_Reports") @@ ( reportSigil + ".xml")
+    let binRoot = FullName binaryPath
+    let sampleRoot = FullName samplePath
+    let instrumented = "__Instrumented." + reportSigil
+    let result = ExecProcess (fun info -> info.FileName <- binRoot @@ "AltCover.exe"
+                                          info.WorkingDirectory <- sampleRoot
+                                          info.Arguments <- ("-t=System. -x=" + simpleReport + " /o=./" + instrumented)) (TimeSpan.FromMinutes 5.0)
+    if result <> 0 then failwith "Simple instrumentation failed"
+    let result2 = ExecProcess (fun info -> info.FileName <- sampleRoot @@ (instrumented + "/Sample1.exe")
+                                           info.WorkingDirectory <- (sampleRoot @@ instrumented)
+                                           info.Arguments <- "") (TimeSpan.FromMinutes 5.0)
+    if result2 <> 0 then failwith "Instrumented .exe failed"
+    ValidateSample1 simpleReport reportSigil
+
+let PrepareReadMe packingCopyright =
+    let readme = FullName "README.md"
+    let document = File.ReadAllText readme
+    let docHtml = """<?xml version="1.0"  encoding="utf-8"?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>AltCover README</title>
+</head>
+<body>
+"""               + (Markdown.TransformHtml document) + """
+<footer><p style="text-align: center">""" + packingCopyright + """</p>
+</footer>
+</body>
+</html>
+"""
+    let xmlform = XDocument.Parse docHtml
+    let body = xmlform.Descendants(XName.Get "body")
+    let eliminate = [ "Continuous Integration"; "Building"; "Thanks to" ]
+    let keep = ref true
+
+    let kill = body.Elements() 
+               |> Seq.map (fun x -> match x.Name.LocalName with
+                                    | "h2" -> keep := (List.tryFind (fun e -> e = String.Concat(x.Nodes())) eliminate) |> Option.isNone
+                                    | "footer" -> keep := true
+                                    | _ -> ()
+                                    if !keep then None else Some x)
+               |> Seq.toList
+    kill |> 
+    Seq.iter (fun q -> match q with 
+                       | Some x -> x.Remove()
+                       | _ -> ())
+
+    let packable = FullName "./_Binaries/README.html"
+    xmlform.Save packable
+
