@@ -255,7 +255,7 @@ Target "FSharpTypes" ( fun _ ->
     let simpleReport = (FullName "./_Reports") @@ ( "AltCoverFSharpTypes.xml")
     let binRoot = FullName "_Binaries/AltCover/Release+AnyCPU"
     let sampleRoot = FullName "_Binaries/Sample2/Debug+AnyCPU"
-    let instrumented = "__Framework"
+    let instrumented = "__FSharpTypes"
     let result = ExecProcess (fun info -> info.FileName <- binRoot @@ "AltCover.exe"
                                           info.WorkingDirectory <- sampleRoot
                                           info.Arguments <- ("-t=System\. -t=Microsoft\. -x=" + simpleReport + " /o=./" + instrumented)) (TimeSpan.FromMinutes 5.0)
@@ -267,7 +267,7 @@ Target "FSharpTypesDotNet" ( fun _ ->
     let project = FullName "./AltCover/altcover.core.fsproj"
     let simpleReport = (FullName "./_Reports") @@ ( "AltCoverFSharpTypesDotNet.xml")
     let sampleRoot = FullName "_Binaries/Sample2/Release+AnyCPU/netstandard2.0"
-    let instrumented = "__DotNet"
+    let instrumented = "__FSharpTypesDotNet"
     DotNetCli.RunCommand (fun p -> {p with WorkingDir = sampleRoot}) 
                          ("run --project " + project + " -- -t \"System\\.\" -t \"Microsoft\\.\" -x \"" + simpleReport + "\" /o \"./" + instrumented + "\"")
 
@@ -303,6 +303,22 @@ Target "CSharpDotNetWithDotNet" (fun _ -> // TODO
     DotNetCli.RunCommand id (sampleRoot @@ "Sample1.dll")
 
     Actions.ValidateSample1 "./_Reports/CSharpDotNetWithDotNet.xml" "CSharpDotNetWithDotNet"
+)
+
+Target "CSharpDotNetWithFramework" (fun _ -> // TODO
+    ensureDirectory "./_Reports"
+    let simpleReport = (FullName "./_Reports") @@ ( "CSharpDotNetWithFramework.xml")
+    let binRoot = FullName "_Binaries/AltCover/Release+AnyCPU"
+    let sampleRoot = FullName "_Binaries/Sample1/Debug+AnyCPU"
+    let instrumented = "__CSharpDotNetWithFramework"
+    let result = ExecProcess (fun info -> info.FileName <- binRoot @@ "AltCover.exe"
+                                          info.WorkingDirectory <- sampleRoot
+                                          info.Arguments <- ("-t=System\. -t=Microsoft\. -x=" + simpleReport + " /o=./" + instrumented)) (TimeSpan.FromMinutes 5.0)
+
+    let sampleRoot = "_Binaries/Sample1/__Instrumented.CSharpDotNetWithFramework"
+    DotNetCli.RunCommand id (sampleRoot @@ "Sample1.dll")
+
+    Actions.ValidateSample1 "./_Reports/CSharpDotNetWithFramework.xml" "CSharpDotNetWithFramework"
 )
 
 Target "SelfTest" (fun _ ->
@@ -361,8 +377,7 @@ Target "Packaging" (fun _ ->
                         |> Seq.map (fun x -> (x, Some ("tools/net45/" + Path.GetFileName(Path.GetDirectoryName(x))), None))
                         |> Seq.toList
 
-    let netcoreFiles = !! (@"_Binaries\AltCover\Release+AnyCPU\netcoreapp2.0\*")
-                       |> Seq.filter (fun n -> not (n.Contains(".runtimeconfig.") ))
+    let netcoreFiles = !! (@"_Binaries\altcover.core\*")
                        |> Seq.map (fun n-> (n, Some "tools/netcoreapp2.0", None))
                        |> Seq.toList
 
@@ -384,15 +399,25 @@ Target "Packaging" (fun _ ->
 )
 
 Target "PrepareFrameworkBuild" (fun _ ->
-   ILMerge (fun p -> { p with DebugInfo = true
-                              TargetKind = TargetKind.Exe
-                              KeyFile = "./Build/Infrastructure.snk"
-                              Version = (String.Join(".", (!Version).Split('.') |> Seq.take 2) + ".0.0")
-                              Internalize = InternalizeTypes.Internalize
-                              Libraries = !! "./_Binaries/AltCover/Release+AnyCPU/Mono.C*.dll"
-                              AttributeFile = "./_Binaries/AltCover/Release+AnyCPU/AltCover.exe"})
-                              "./_Binaries/AltCover/AltCover.exe"
-                              "./_Binaries/AltCover/Release+AnyCPU/AltCover.exe"
+    ILMerge (fun p -> { p with DebugInfo = true
+                               TargetKind = TargetKind.Exe
+                               KeyFile = "./Build/Infrastructure.snk"
+                               Version = (String.Join(".", (!Version).Split('.') |> Seq.take 2) + ".0.0")
+                               Internalize = InternalizeTypes.Internalize
+                               Libraries = !! "./_Binaries/AltCover/Release+AnyCPU/Mono.C*.dll"
+                               AttributeFile = "./_Binaries/AltCover/Release+AnyCPU/AltCover.exe"})
+                               "./_Binaries/AltCover/AltCover.exe"
+                               "./_Binaries/AltCover/Release+AnyCPU/AltCover.exe"
+)
+
+Target "PrepareDotNetBuild" (fun _ ->
+    DotNetCli.Publish
+      (fun p -> 
+           { p with 
+                WorkingDir =  FullName "./AltCover"
+                Project = "altcover.core.fsproj"
+                Output = FullName "./_Binaries/altcover.core"
+                Configuration = "Release" })                       
 )
 
 Target "PrepareReadMe" (fun _ ->
@@ -420,6 +445,7 @@ Target "SimpleMonoReleaseTest" (fun _ ->
 )
 
 Target "ReleaseMonoWithDotNet" (fun _ -> // TODO
+    ensureDirectory "./_Reports"
     let unpack = FullName "_Packaging/Unpack/tools/netcoreapp2.0/AltCover.dll"
     DotNetCli.RunCommand id (unpack +  " -t \"System.\" -x \"./_Reports/ReleaseMonoWithDotNet.xml\" -o \"./_Mono/__Instrumented.ReleaseMonoWithDotNet\" -i \"./_Mono/Sample1\"")
 
@@ -433,6 +459,7 @@ Target "ReleaseMonoWithDotNet" (fun _ -> // TODO
 )
 
 Target "ReleaseDotNetWithDotNet" (fun _ -> // TODO
+    ensureDirectory "./_Reports"
     let unpack = FullName "_Packaging/Unpack/tools/netcoreapp2.0/AltCover.dll"
     DotNetCli.RunCommand id (unpack +  " -t \"System.\" -x \"./_Reports/ReleaseDotNetWithDotNet.xml\" -o \"./_Binaries/Sample1/__Instrumented.ReleaseDotNetWithDotNet\" -i \"./_Binaries/Sample1/Debug+AnyCPU/netcoreapp2.0\"")
 
@@ -441,6 +468,22 @@ Target "ReleaseDotNetWithDotNet" (fun _ -> // TODO
 
     Actions.ValidateSample1 "./_Reports/ReleaseDotNetWithDotNet.xml" "ReleaseDotNetWithDotNet"
 )
+
+Target "ReleaseDotNetWithFramework" (fun _ -> // TODO
+    ensureDirectory "./_Reports"
+    let unpack = FullName "_Packaging/Unpack/tools/net45"
+    let simpleReport = (FullName "./_Reports") @@ ( "ReleaseDotNetWithFramework.xml")
+    let sampleRoot = FullName "./_Binaries/Sample1/Debug+AnyCPU/netcoreapp2.0"
+    let instrumented = FullName "__Instrumented.ReleaseDotNetWithFramework"
+    let result = ExecProcess (fun info -> info.FileName <- unpack @@ "AltCover.exe"
+                                          info.WorkingDirectory <- sampleRoot
+                                          info.Arguments <- ("-t=System\. -t=Microsoft\. -x=" + simpleReport + " /o=" + instrumented)) (TimeSpan.FromMinutes 5.0)
+
+    DotNetCli.RunCommand (fun info -> { info with WorkingDir = instrumented }) "Sample1.dll"
+
+    Actions.ValidateSample1 "./_Reports/ReleaseDotNetWithFramework.xml" "ReleaseDotNetWithFramework"
+)
+
 
 // AOB
 
@@ -528,11 +571,19 @@ Target "All" ignore
 ==> "OperationalTest"
 
 "Compilation"
+// TODO ==> "CSharpDotNetWithFramework"
+==> "OperationalTest"
+
+"Compilation"
 ==> "SelfTest"
 ==> "OperationalTest"
 
 "Compilation"
 ==> "PrepareFrameworkBuild"
+==> "Packaging"
+
+"Compilation"
+==> "PrepareDotNetBuild"
 ==> "Packaging"
 
 "Compilation"
@@ -552,11 +603,19 @@ Target "All" ignore
 ==> "Deployment"
 
 "Unpack"
-// ==> "ReleaseMonoWithDotNet"
+==> "ReleaseMonoWithDotNet"
 ==> "Deployment"
 
+// Unhandled Exception: System.IO.FileNotFoundException: Could not load file or assembly 
+// 'AltCover.Recorder.g, Version=1.4.0.0, Culture=neutral, PublicKeyToken=4ebffcaabf10ce6a'. The system cannot find the file specified.
 "Unpack"
 // ==> "ReleaseDotNetWithDotNet"
+==> "Deployment"
+
+// Unhandled Exception: System.IO.FileNotFoundException: Could not load file or assembly 
+// 'AltCover.Recorder.g, Version=1.4.0.0, Culture=neutral, PublicKeyToken=4ebffcaabf10ce6a'. The system cannot find the file specified.
+"Unpack"
+// ==> "ReleaseDotNetWithFramework"
 ==> "Deployment"
 
 "Analysis"
