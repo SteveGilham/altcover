@@ -380,7 +380,11 @@ Target "Packaging" (fun _ ->
 
     let root = (FullName ".").Length
     let netcoreFiles = [
-                         [FullName "./altcover.dotnet.sln"];
+                         [
+                             FullName "./altcover.dotnet.sln"
+                             FullName "./Build/Recorder.snk"
+                             FullName "./_Binaries/FSharp.Core.dll"
+                         ];
                          ((!! "./AltCover/*")
                           |> Seq.filter (fun n -> n.EndsWith(".fs") || n.EndsWith(".resx") || n.EndsWith(".core.fsproj"))
                           |> Seq.toList);
@@ -459,8 +463,11 @@ Target "SimpleMonoReleaseTest" (fun _ ->
 Target "ReleaseMonoWithDotNet" (fun _ ->
     ensureDirectory "./_Reports"
     let unpack = FullName "_Packaging/Unpack/tools/netcoreapp2.0/AltCover"
+    let x = FullName "./_Reports/ReleaseMonoWithDotNet.xml"
+    let o = FullName "./_Mono/__Instrumented.ReleaseMonoWithDotNet"
+    let i = FullName "./_Mono/Sample1"
     DotNetCli.RunCommand (fun info -> {info with WorkingDir = unpack })  
-                          ("run --project altcover.core.fsproj -- -x \"./_Reports/ReleaseMonoWithDotNet.xml\" -o \"./_Mono/__Instrumented.ReleaseMonoWithDotNet\" -i \"./_Mono/Sample1\"")
+                          ("run --project altcover.core.fsproj -- -x \"" + x + "\" -o \"" + o + "\" -i \"" + i + "\"")
 
     let sampleRoot = "_Mono/__Instrumented.ReleaseMonoWithDotNet"
     let result2 = ExecProcess (fun info -> info.FileName <- sampleRoot @@ "/Sample1.exe"
