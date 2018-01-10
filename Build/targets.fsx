@@ -285,11 +285,13 @@ Target "BasicCSharpMono" (fun _ ->
 
 Target "CSharpMonoWithDotNet" (fun _ ->
     ensureDirectory "./_Reports"
-    DotNetCli.RunCommand id "run --project ./AltCover/altcover.core.fsproj -- -t \"System.\" -x \"./_Reports/CSharpMonoWithDotNet.xml\" -o \"./_Mono/__Instrumented.CSharpMonoWithDotNet\" -i \"./_Mono/Sample1\""
+    let x = FullName "./_Reports/CSharpMonoWithDotNet.xml"
+    let o = FullName "./_Mono/__Instrumented.CSharpMonoWithDotNet"
+    let i = FullName "./_Mono/Sample1"
+    DotNetCli.RunCommand id ("run --project ./AltCover/altcover.core.fsproj -- -t \"System.\" -x \"" + x + "\" -o \"" + o + "\" -i \"" + i + "\"")
 
-    let sampleRoot = "_Mono/__Instrumented.CSharpMonoWithDotNet"
-    let result2 = ExecProcess (fun info -> info.FileName <- sampleRoot @@ "/Sample1.exe"
-                                           info.WorkingDirectory <- sampleRoot
+    let result2 = ExecProcess (fun info -> info.FileName <- o @@ "/Sample1.exe"
+                                           info.WorkingDirectory <- o
                                            info.Arguments <- "") (TimeSpan.FromMinutes 5.0)
     if result2 <> 0 then failwith "Instrumented .exe failed"
 
@@ -298,10 +300,12 @@ Target "CSharpMonoWithDotNet" (fun _ ->
 
 Target "CSharpDotNetWithDotNet" (fun _ -> // TODO
     ensureDirectory "./_Reports"
-    DotNetCli.RunCommand id "_Binaries/AltCover/Debug+AnyCPU/netcoreapp2.0/AltCover.dll -t \"System.\" -x \"./_Reports/CSharpDotNetWithDotNet.xml\" -o \"./_Binaries/Sample1/__Instrumented.CSharpDotNetWithDotNet\" -i \"./_Binaries/Sample1/Debug+AnyCPU/netcoreapp2.0\""
+    let x = FullName "./_Reports/CSharpDotNetWithDotNet.xml"
+    let o = FullName "../_Binaries/Sample1/__Instrumented.CSharpDotNetWithDotNet"
+    let i = FullName "./_Binaries/Sample1/Debug+AnyCPU/netcoreapp2.0"
+    DotNetCli.RunCommand id ("_Binaries/AltCover/Debug+AnyCPU/netcoreapp2.0/AltCover.dll -t \"System.\" -x \"" + x + "\" -o \"" + o + "\" -i \"" + i + "\"")
 
-    let sampleRoot = "_Binaries/Sample1/__Instrumented.CSharpDotNetWithDotNet"
-    DotNetCli.RunCommand id (sampleRoot @@ "Sample1.dll")
+    DotNetCli.RunCommand id (o @@ "Sample1.dll")
 
     Actions.ValidateSample1 "./_Reports/CSharpDotNetWithDotNet.xml" "CSharpDotNetWithDotNet"
 )
@@ -310,14 +314,13 @@ Target "CSharpDotNetWithFramework" (fun _ -> // TODO
     ensureDirectory "./_Reports"
     let simpleReport = (FullName "./_Reports") @@ ( "CSharpDotNetWithFramework.xml")
     let binRoot = FullName "_Binaries/AltCover/Release+AnyCPU"
-    let sampleRoot = FullName "_Binaries/Sample1/Debug+AnyCPU"
-    let instrumented = "__CSharpDotNetWithFramework"
+    let sampleRoot = FullName "_Binaries/Sample1/Debug+AnyCPU/netcoreapp2.0"
+    let instrumented = FullName "_Binaries/Sample1/__Instrumented.CSharpDotNetWithFramework"
     let result = ExecProcess (fun info -> info.FileName <- binRoot @@ "AltCover.exe"
                                           info.WorkingDirectory <- sampleRoot
-                                          info.Arguments <- ("-t=System\. -t=Microsoft\. -x=" + simpleReport + " /o=./" + instrumented)) (TimeSpan.FromMinutes 5.0)
+                                          info.Arguments <- ("-t=System\. -t=Microsoft\. -x=" + simpleReport + " /o=" + instrumented)) (TimeSpan.FromMinutes 5.0)
 
-    let sampleRoot = "_Binaries/Sample1/__Instrumented.CSharpDotNetWithFramework"
-    DotNetCli.RunCommand id (sampleRoot @@ "Sample1.dll")
+    DotNetCli.RunCommand id (instrumented @@ "Sample1.dll")
 
     Actions.ValidateSample1 "./_Reports/CSharpDotNetWithFramework.xml" "CSharpDotNetWithFramework"
 )
@@ -481,8 +484,11 @@ Target "ReleaseMonoWithDotNet" (fun _ ->
 Target "ReleaseDotNetWithDotNet" (fun _ -> // TODO
     ensureDirectory "./_Reports"
     let unpack = FullName "_Packaging/Unpack/tools/netcoreapp2.0/AltCover"
+    let x = FullName "./_Reports/ReleaseDotNetWithDotNet.xml"
+    let o = FullName "./_Binaries/Sample1/__Instrumented.ReleaseDotNetWithDotNet"
+    let i = FullName "./_Binaries/Sample1/Debug+AnyCPU/netcoreapp2.0"
     DotNetCli.RunCommand (fun info -> {info with WorkingDir = unpack })  
-                          ("run --project altcover.core.fsproj -- -x \"./_Reports/ReleaseDotNetWithDotNet.xml\" -o \"./_Binaries/Sample1/__Instrumented.ReleaseDotNetWithDotNet\" -i \"./_Binaries/Sample1/Debug+AnyCPU/netcoreapp2.0\"")
+                          ("run --project altcover.core.fsproj -- -x \"" + x + "\" -o \"" + o + "\" -i \"" + i + "\"")
 
     let sampleRoot = "_Binaries/Sample1/__Instrumented.ReleaseDotNetWithDotNet"
     DotNetCli.RunCommand id (sampleRoot @@ "Sample1.dll")
@@ -587,10 +593,14 @@ Target "All" ignore
 ==> "CSharpMonoWithDotNet"
 ==> "OperationalTest"
 
+// Unhandled Exception: System.IO.FileNotFoundException: Could not load file or assembly 
+// 'AltCover.Recorder.g, Version=1.4.0.0, Culture=neutral, PublicKeyToken=4ebffcaabf10ce6a'. The system cannot find the file specified.
 "Compilation"
 // TODO ==> "CSharpDotNetWithDotNet"
 ==> "OperationalTest"
 
+// Unhandled Exception: System.IO.FileNotFoundException: Could not load file or assembly 
+// 'AltCover.Recorder.g, Version=1.4.0.0, Culture=neutral, PublicKeyToken=4ebffcaabf10ce6a'. The system cannot find the file specified.
 "Compilation"
 // TODO ==> "CSharpDotNetWithFramework"
 ==> "OperationalTest"
