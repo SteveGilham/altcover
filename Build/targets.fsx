@@ -499,7 +499,7 @@ Target "ReleaseDotNetWithFramework" (fun _ -> // TODO
     let unpack = FullName "_Packaging/Unpack/tools/net45"
     let simpleReport = (FullName "./_Reports") @@ ( "ReleaseDotNetWithFramework.xml")
     let sampleRoot = FullName "./_Binaries/Sample1/Debug+AnyCPU/netcoreapp2.0"
-    let instrumented = FullName "__Instrumented.ReleaseDotNetWithFramework"
+    let instrumented = sampleRoot @@ "__Instrumented.ReleaseDotNetWithFramework"
     let result = ExecProcess (fun info -> info.FileName <- unpack @@ "AltCover.exe"
                                           info.WorkingDirectory <- sampleRoot
                                           info.Arguments <- ("-t=System\. -t=Microsoft\. -x=" + simpleReport + " /o=" + instrumented)) (TimeSpan.FromMinutes 5.0)
@@ -597,10 +597,8 @@ Target "All" ignore
 // TODO ==> "CSharpDotNetWithDotNet"
 ==> "OperationalTest"
 
-// Unhandled Exception: System.IO.FileNotFoundException: Could not load file or assembly 
-// 'AltCover.Recorder.g, Version=1.4.0.0, Culture=neutral, PublicKeyToken=4ebffcaabf10ce6a'. The system cannot find the file specified.
 "Compilation"
-// TODO ==> "CSharpDotNetWithFramework"
+==> "CSharpDotNetWithFramework"
 ==> "OperationalTest"
 
 "Compilation"
@@ -641,10 +639,8 @@ Target "All" ignore
 // ==> "ReleaseDotNetWithDotNet"
 ==> "Deployment"
 
-// Unhandled Exception: System.IO.FileNotFoundException: Could not load file or assembly 
-// 'AltCover.Recorder.g, Version=1.4.0.0, Culture=neutral, PublicKeyToken=4ebffcaabf10ce6a'. The system cannot find the file specified.
 "Unpack"
-// ==> "ReleaseDotNetWithFramework"
+==> "ReleaseDotNetWithFramework"
 ==> "Deployment"
 
 "Analysis"

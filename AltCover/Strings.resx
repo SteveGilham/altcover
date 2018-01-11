@@ -174,4 +174,29 @@
   <data name="reportingto" xml:space="preserve">
     <value>Coverage Report: {0}</value>
   </data>
+  <data name="frameworkDependencies" xml:space="preserve">
+    <value>{
+        "dependencies": {
+          "AltCover.Recorder.g": "version" 
+        }
+}</value>
+  </data>
+  <data name="frameworkLibraries" xml:space="preserve">
+    <value>{
+    "AltCover.Recorder.g/version": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+}</value>
+  </data>
+  <data name="frameworkRuntime" xml:space="preserve">
+    <value>{
+      "AltCover.Recorder.g/version": {
+        "runtime": {
+          "AltCover.Recorder.g.dll": {}
+        }
+      }
+}</value>
+  </data>
 </root>

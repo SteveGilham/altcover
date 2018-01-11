@@ -238,7 +238,7 @@ module Main =
                  |> ProcessHelpOption
                  |> ProcessOutputLocation
     match check1 with
-    | Left (intro, options) -> 
+    | Left (intro, options) ->
         String.Join (" ", arguments |> Seq.map (sprintf "%A"))
         |> WriteErr
         Usage intro options

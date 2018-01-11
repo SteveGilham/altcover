@@ -9,11 +9,13 @@ open System.Collections.Generic
 open System.Diagnostics.CodeAnalysis
 open System.IO
 open System.Reflection
+open System.Resources
 
 open AltCover.Augment
 open Mono.Cecil
 open Mono.Cecil.Cil
 open Mono.Cecil.Rocks
+open Newtonsoft.Json.Linq
 
 /// <summary>
 /// Module to handle instrumentation visitor
@@ -41,6 +43,13 @@ module Instrument =
                       RecordingMethodRef = null
                       MethodBody = null
                       MethodWorker = null }
+
+  // Can't hard-code what with .net-core and .net-core tests as well as classic .net
+  // all giving this a different namespace
+  let private resource = Assembly.GetExecutingAssembly().GetManifestResourceNames()
+                         |> Seq.map (fun s -> s.Substring(0, s.Length - 10)) // trim ".resources"
+                         |> Seq.find (fun n -> n.EndsWith(".Strings", StringComparison.Ordinal))
+  let private resources = ResourceManager(resource , Assembly.GetExecutingAssembly())
 
   /// <summary>
   /// Workround for not being able to take typeof<SomeModule> even across
@@ -332,6 +341,54 @@ module Instrument =
                                  state
      | Finish -> let counterAssemblyFile = Path.Combine(Visitor.OutputDirectory(), (extractName state.RecordingAssembly) + ".dll")
                  WriteAssembly (state.RecordingAssembly) counterAssemblyFile
+                 Directory.GetFiles(Visitor.OutputDirectory(), "*.deps.json", SearchOption.TopDirectoryOnly)
+                 |> Seq.iter (fun f -> let version = typeof<AltCover.Recorder.Tracer>.Assembly.GetName().Version.ToString()
+                                       let dependencies = (resources.GetString "frameworkDependencies").Replace("version",
+                                                                                                                version)
+                                       let runtime = (resources.GetString "frameworkRuntime").Replace("AltCover.Recorder.g/version",
+                                                                                                      "AltCover.Recorder.g/" + version)
+
+                                       let newLibraries = (resources.GetString "frameworkLibraries").Replace("AltCover.Recorder.g/version",
+                                                                                                             "AltCover.Recorder.g/" + version)
+
+                                       let json = File.ReadAllText(f)
+                                       printfn "%s" json
+                                       let o = JObject.Parse json
+
+                                       let target = ((o.Property "runtimeTarget").Value :?> JObject).Property("name").Value.ToString()
+
+                                       let targets = (o.Properties()
+                                                      |> Seq.find (fun p -> p.Name = "targets")).Value :?> JObject
+                                       let targeted = (targets.Properties()
+                                                       |> Seq.find (fun p -> p.Name= target)).Value :?> JObject
+
+                                       let app = (targeted.PropertyValues() |> Seq.head)  :?> JObject
+                                       app.Properties()
+                                       |> Seq.iter (fun p -> printfn "%A" p.Name)
+
+                                       let rawDependencies = (JObject.Parse dependencies).Properties()
+                                                              |> Seq.find (fun p -> p.Name = "dependencies")
+                                       match app.Properties() |> Seq.tryFind (fun p -> p.Name = "dependencies") with
+                                       | None -> app.AddFirst(rawDependencies)
+                                       | Some p -> (rawDependencies.Value :?> JObject).Properties()
+                                                   |> Seq.iter (fun r -> printfn "Adding %s to %s" r.Name p.Name
+                                                                         (p.Value :?> JObject).Add(r))
+
+                                       let rt = JObject.Parse runtime
+                                       rt.Properties()
+                                       |> Seq.iter (fun r -> targeted.Add(r))
+
+                                       let libraries = (o.Properties()
+                                                        |> Seq.find (fun p -> p.Name = "libraries")).Value :?> JObject
+                                       (JObject.Parse newLibraries).Properties()
+                                       |> Seq.rev
+                                       |> Seq.iter (libraries.AddFirst)
+
+                                       printfn "-----------"
+                                       printfn "%s" (o.ToString())
+
+                                       File.WriteAllText(f, o.ToString())
+                                       )
 #if NETCOREAPP2_0
                  let fsharplib = Path.Combine(Visitor.OutputDirectory(), "FSharp.Core.dll")
                  if not (File.Exists fsharplib) then
