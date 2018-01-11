@@ -386,7 +386,6 @@ Target "Packaging" (fun _ ->
                          [
                              FullName "./altcover.dotnet.sln"
                              FullName "./Build/Recorder.snk"
-                             FullName "./_Binaries/FSharp.Core.dll"
                          ];
                          ((!! "./AltCover/*")
                           |> Seq.filter (fun n -> n.EndsWith(".fs") || n.EndsWith(".resx") || n.EndsWith(".core.fsproj"))

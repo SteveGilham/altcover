@@ -32,7 +32,6 @@
 
   <ItemGroup>
     <EmbeddedResource Include="..\Build\Recorder.snk" Link="Recorder.snk" />
-    <EmbeddedResource Include="..\_Binaries\FSharp.Core.dll" Link="FSharp.Core.dll" />
     <None Include="Resource.rc" />
     <None Include="Resource.res" />
   </ItemGroup>

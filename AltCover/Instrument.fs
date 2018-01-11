@@ -334,7 +334,7 @@ module Instrument =
 #if NETCOREAPP2_0
                  let fsharplib = Path.Combine(Visitor.OutputDirectory(), "FSharp.Core.dll")
                  if not (File.Exists fsharplib) then
-                   use fsharpbytes = Assembly.GetExecutingAssembly().GetManifestResourceStream("altcover.core.FSharp.Core.dll")
+                   use fsharpbytes = new FileStream(AltCover.Recorder.Tracer.Core(), FileMode.Open, FileAccess.Read)
                    use libstream = new FileStream(fsharplib, FileMode.Create)
                    fsharpbytes.CopyTo libstream
 #endif
