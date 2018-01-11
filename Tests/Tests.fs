@@ -44,10 +44,10 @@ type AltCoverTests() = class
 #else
   let sample1 = "Sample1.exe"
   let monoSample1 = "_Mono\\Sample1"
-#endif
-
   let recorderSnk = typeof<AltCover.Node>.Assembly.GetManifestResourceNames()
                     |> Seq.find (fun n -> n.EndsWith(".Recorder.snk", StringComparison.Ordinal))
+#endif
+
   let infrastructureSnk = Assembly.GetExecutingAssembly().GetManifestResourceNames()
                           |> Seq.find (fun n -> n.EndsWith("Infrastructure.snk", StringComparison.Ordinal))
 
@@ -984,7 +984,11 @@ type AltCoverTests() = class
     Assert.That (token0, Is.Not.Empty)
 #endif
 
+#if NETCOREAPP2_0
+    use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(infrastructureSnk)
+#else
     use stream = typeof<AltCover.Node>.Assembly.GetManifestResourceStream(recorderSnk)
+#endif
     use buffer = new MemoryStream()
     stream.CopyTo(buffer)
     let key = StrongNameKeyPair(buffer.ToArray())
@@ -1523,7 +1527,11 @@ type AltCoverTests() = class
     ProgramDatabase.ReadSymbols def |> ignore
     let token0 = def.Name.PublicKeyToken
 
+#if NETCOREAPP2_0
+    use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(infrastructureSnk)
+#else
     use stream = typeof<AltCover.Node>.Assembly.GetManifestResourceStream(recorderSnk)
+#endif
     use buffer = new MemoryStream()
     stream.CopyTo(buffer)
     Visitor.defaultStrongNameKey <- Some (StrongNameKeyPair(buffer.ToArray()))
@@ -1557,7 +1565,11 @@ type AltCoverTests() = class
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path'
     ProgramDatabase.ReadSymbols def |> ignore
 
+#if NETCOREAPP2_0
+    use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(infrastructureSnk)
+#else
     use stream = typeof<AltCover.Node>.Assembly.GetManifestResourceStream(recorderSnk)
+#endif
     use buffer = new MemoryStream()
     stream.CopyTo(buffer)
     Visitor.defaultStrongNameKey <- Some (StrongNameKeyPair(buffer.ToArray()))
@@ -1574,7 +1586,11 @@ type AltCoverTests() = class
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
     ProgramDatabase.ReadSymbols def |> ignore
 
+#if NETCOREAPP2_0
+    use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(infrastructureSnk)
+#else
     use stream = typeof<AltCover.Node>.Assembly.GetManifestResourceStream(recorderSnk)
+#endif
     use buffer = new MemoryStream()
     stream.CopyTo(buffer)
     Visitor.defaultStrongNameKey <- Some (StrongNameKeyPair(buffer.ToArray()))
@@ -1598,7 +1614,11 @@ type AltCoverTests() = class
     ProgramDatabase.ReadSymbols def |> ignore
     let refs = def.MainModule.AssemblyReferences |> Seq.toList
 
+#if NETCOREAPP2_0
+    use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(infrastructureSnk)
+#else
     use stream = typeof<AltCover.Node>.Assembly.GetManifestResourceStream(recorderSnk)
+#endif
     use buffer = new MemoryStream()
     stream.CopyTo(buffer)
     Visitor.defaultStrongNameKey <- Some (StrongNameKeyPair(buffer.ToArray()))
@@ -1626,7 +1646,11 @@ type AltCoverTests() = class
     ProgramDatabase.ReadSymbols def |> ignore
     let refs = def.MainModule.AssemblyReferences |> Seq.toList
 
+#if NETCOREAPP2_0
+    use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(infrastructureSnk)
+#else
     use stream = typeof<AltCover.Node>.Assembly.GetManifestResourceStream(recorderSnk)
+#endif
     use buffer = new MemoryStream()
     stream.CopyTo(buffer)
     Visitor.defaultStrongNameKey <- Some (StrongNameKeyPair(buffer.ToArray()))

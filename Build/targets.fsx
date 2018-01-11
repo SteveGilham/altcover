@@ -385,10 +385,9 @@ Target "Packaging" (fun _ ->
     let netcoreFiles = [
                          [
                              FullName "./altcover.dotnet.sln"
-                             FullName "./Build/Recorder.snk"
                          ];
                          ((!! "./AltCover/*")
-                          |> Seq.filter (fun n -> n.EndsWith(".fs") || n.EndsWith(".resx") || n.EndsWith(".core.fsproj"))
+                          |> Seq.filter (fun n -> n.EndsWith(".fs") || n.EndsWith(".core.fsproj") || n.EndsWith(".resx"))
                           |> Seq.toList);
                          ((!! "./AltCover.Recorder/*")
                           |> Seq.filter (fun n -> n.EndsWith(".fs") || n.EndsWith(".core.fsproj"))
