@@ -423,7 +423,7 @@ Target "PrepareFrameworkBuild" (fun _ ->
                                KeyFile = "./Build/Infrastructure.snk"
                                Version = (String.Join(".", (!Version).Split('.') |> Seq.take 2) + ".0.0")
                                Internalize = InternalizeTypes.Internalize
-                               Libraries = !! "./_Binaries/AltCover/Release+AnyCPU/Mono.C*.dll"
+                               Libraries = Seq.concat [!! "./_Binaries/AltCover/Release+AnyCPU/Mono.C*.dll"; !! "./_Binaries/AltCover/Release+AnyCPU/Newton*.dll"]
                                AttributeFile = "./_Binaries/AltCover/Release+AnyCPU/AltCover.exe"})
                                "./_Binaries/AltCover/AltCover.exe"
                                "./_Binaries/AltCover/Release+AnyCPU/AltCover.exe"
