@@ -25,6 +25,8 @@
   <ItemGroup>
     <EmbeddedResource Include="Sample1.deps.json" />
     <EmbeddedResource Include="Sample1.deps.ncafter.json" />
+    <EmbeddedResource Include="Sample2.deps.json" />
+    <EmbeddedResource Include="Sample2.deps.ncafter.json" />
   </ItemGroup>
 
   <ItemGroup>

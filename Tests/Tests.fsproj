@@ -73,6 +73,8 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Sample1.deps.json" />
     <EmbeddedResource Include="Sample1.deps.after.json" />
+    <EmbeddedResource Include="Sample2.deps.after.json" />
+    <EmbeddedResource Include="Sample2.deps.json" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Mono.Cecil">
