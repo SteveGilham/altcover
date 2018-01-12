@@ -48,7 +48,7 @@ module Instrument =
   // all giving this a different namespace
   let private resource = Assembly.GetExecutingAssembly().GetManifestResourceNames()
                          |> Seq.map (fun s -> s.Substring(0, s.Length - 10)) // trim ".resources"
-                         |> Seq.find (fun n -> n.EndsWith(".Strings", StringComparison.Ordinal))
+                         |> Seq.find (fun n -> n.EndsWith(".JSONFragments", StringComparison.Ordinal))
   let private resources = ResourceManager(resource , Assembly.GetExecutingAssembly())
 
   /// <summary>
