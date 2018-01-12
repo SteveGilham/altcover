@@ -1834,6 +1834,37 @@ type AltCoverTests() = class
     finally
       Visitor.outputDirectory <- saved
 
+  [<Test>]
+  member self.JSONInjectionTransformsFileAsExpected () =
+    let inputName = infrastructureSnk.Replace("Infrastructure.snk", "Sample1.deps.json")
+#if NETCOREAPP2_0
+    let resultName = infrastructureSnk.Replace("Infrastructure.snk", "Sample1.deps.ncafter.json")
+#else
+    let resultName = infrastructureSnk.Replace("Infrastructure.snk", "Sample1.deps.after.json")
+#endif
+    use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(inputName)
+    use reader = new StreamReader(stream)
+    let result = Instrument.injectJSON <| reader.ReadToEnd()
+    use stream' = Assembly.GetExecutingAssembly().GetManifestResourceStream(resultName)
+    use reader' = new StreamReader(stream')
+    let expected = reader'.ReadToEnd()
+    Assert.That (result.Replace("\r\n","\n"),
+                 Is.EqualTo(expected.Replace("\r\n","\n")))
+
+  [<Test>]
+  member self.JSONInjectionIsIdempotent () =
+#if NETCOREAPP2_0
+    let resultName = infrastructureSnk.Replace("Infrastructure.snk", "Sample1.deps.ncafter.json")
+#else
+    let resultName = infrastructureSnk.Replace("Infrastructure.snk", "Sample1.deps.after.json")
+#endif
+    use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resultName)
+    use reader = new StreamReader(stream)
+    let expected = reader.ReadToEnd()
+    let result = Instrument.injectJSON <| expected
+    Assert.That (result.Replace("\r\n","\n"),
+                 Is.EqualTo(expected.Replace("\r\n","\n")))
+
   // AltCover.fs
 
   [<Test>]

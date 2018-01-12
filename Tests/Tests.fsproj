@@ -71,6 +71,8 @@
     <EmbeddedResource Include="..\Build\Infrastructure.snk">
       <Link>Infrastructure.snk</Link>
     </EmbeddedResource>
+    <EmbeddedResource Include="Sample1.deps.json" />
+    <EmbeddedResource Include="Sample1.deps.after.json" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Mono.Cecil">

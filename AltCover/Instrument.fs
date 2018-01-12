@@ -50,6 +50,22 @@ module Instrument =
                          |> Seq.map (fun s -> s.Substring(0, s.Length - 10)) // trim ".resources"
                          |> Seq.find (fun n -> n.EndsWith(".JSONFragments", StringComparison.Ordinal))
   let private resources = ResourceManager(resource , Assembly.GetExecutingAssembly())
+  let version = typeof<AltCover.Recorder.Tracer>.Assembly.GetName().Version.ToString()
+#if NETCOREAPP2_0
+  let dependencies = (resources.GetString "netcoreDependencies").Replace("version",
+                                                                          version)
+  let runtime = (resources.GetString "netcoreRuntime").Replace("AltCover.Recorder.g/version",
+                                                               "AltCover.Recorder.g/" + version)
+  let newLibraries = (resources.GetString "netcoreLibraries").Replace("AltCover.Recorder.g/version",
+                                                                      "AltCover.Recorder.g/" + version)
+#else
+  let dependencies = (resources.GetString "frameworkDependencies").Replace("version",
+                                                                            version)
+  let runtime = (resources.GetString "frameworkRuntime").Replace("AltCover.Recorder.g/version",
+                                                                  "AltCover.Recorder.g/" + version)
+  let newLibraries = (resources.GetString "frameworkLibraries").Replace("AltCover.Recorder.g/version",
+                                                                          "AltCover.Recorder.g/" + version)
+#endif
 
   /// <summary>
   /// Workround for not being able to take typeof<SomeModule> even across
@@ -275,6 +291,45 @@ module Instrument =
 #endif
     assemblyReferenceSubstitutions
 
+  let internal injectJSON json =
+    let o = JObject.Parse json
+
+    let target = ((o.Property "runtimeTarget").Value :?> JObject).Property("name").Value.ToString()
+    let targets = (o.Properties()
+                    |> Seq.find (fun p -> p.Name = "targets")).Value :?> JObject
+    let targeted = (targets.Properties()
+                    |> Seq.find (fun p -> p.Name= target)).Value :?> JObject
+
+    let app = (targeted.PropertyValues() |> Seq.head)  :?> JObject
+
+    let existingDependencies = app.Properties() |> Seq.tryFind (fun p -> p.Name = "dependencies")
+    let prior = match existingDependencies with
+                | None -> Set.empty<string>
+                | Some p -> (p.Value :?> JObject).Properties()
+                            |> Seq.map (fun p -> p.Name)
+                            |> Set.ofSeq
+
+    let rawDependencies = (JObject.Parse dependencies).Properties()
+                           |> Seq.find (fun p -> p.Name = "dependencies")
+    match app.Properties() |> Seq.tryFind (fun p -> p.Name = "dependencies") with
+    | None -> app.AddFirst(rawDependencies)
+    | Some p -> (rawDependencies.Value :?> JObject).Properties()
+                |> Seq.filter (fun r -> prior |> Set.contains r.Name |> not)
+                |> Seq.iter (fun r -> (p.Value :?> JObject).Add(r))
+
+    let rt = JObject.Parse runtime
+    rt.Properties()
+    |> Seq.filter (fun r -> prior |> Set.contains (r.Name.Split('/') |> Seq.head) |> not)
+    |> Seq.iter (fun r -> targeted.Add(r))
+
+    let libraries = (o.Properties()
+                    |> Seq.find (fun p -> p.Name = "libraries")).Value :?> JObject
+    (JObject.Parse newLibraries).Properties()
+    |> Seq.filter (fun r -> prior |> Set.contains (r.Name.Split('/') |> Seq.head) |> not)
+    |> Seq.rev
+    |> Seq.iter (libraries.AddFirst)
+    o.ToString()
+
   /// <summary>
   /// Perform visitor operations
   /// </summary>
@@ -342,64 +397,7 @@ module Instrument =
      | Finish -> let counterAssemblyFile = Path.Combine(Visitor.OutputDirectory(), (extractName state.RecordingAssembly) + ".dll")
                  WriteAssembly (state.RecordingAssembly) counterAssemblyFile
                  Directory.GetFiles(Visitor.OutputDirectory(), "*.deps.json", SearchOption.TopDirectoryOnly)
-                 |> Seq.iter (fun f -> let version = typeof<AltCover.Recorder.Tracer>.Assembly.GetName().Version.ToString()
-#if NETCOREAPP2_0
-                                       let dependencies = (resources.GetString "netcoreDependencies").Replace("version",
-                                                                                                              version)
-                                       let runtime = (resources.GetString "netcoreRuntime").Replace("AltCover.Recorder.g/version",
-                                                                                                    "AltCover.Recorder.g/" + version)
-                                       let newLibraries = (resources.GetString "netcoreLibraries").Replace("AltCover.Recorder.g/version",
-                                                                                                             "AltCover.Recorder.g/" + version)
-#else
-                                       let dependencies = (resources.GetString "frameworkDependencies").Replace("version",
-                                                                                                                version)
-                                       let runtime = (resources.GetString "frameworkRuntime").Replace("AltCover.Recorder.g/version",
-                                                                                                      "AltCover.Recorder.g/" + version)
-                                       let newLibraries = (resources.GetString "frameworkLibraries").Replace("AltCover.Recorder.g/version",
-                                                                                                             "AltCover.Recorder.g/" + version)
-#endif
-
-                                       let json = File.ReadAllText(f)
-                                       let o = JObject.Parse json
-
-                                       let target = ((o.Property "runtimeTarget").Value :?> JObject).Property("name").Value.ToString()
-
-                                       let targets = (o.Properties()
-                                                      |> Seq.find (fun p -> p.Name = "targets")).Value :?> JObject
-                                       let targeted = (targets.Properties()
-                                                       |> Seq.find (fun p -> p.Name= target)).Value :?> JObject
-
-                                       let app = (targeted.PropertyValues() |> Seq.head)  :?> JObject
-
-                                       let existingDependencies = app.Properties() |> Seq.tryFind (fun p -> p.Name = "dependencies")
-                                       let prior = match existingDependencies with
-                                                   | None -> Set.empty<string>
-                                                   | Some p -> (p.Value :?> JObject).Properties()
-                                                               |> Seq.map (fun p -> p.Name)
-                                                               |> Set.ofSeq
-
-                                       let rawDependencies = (JObject.Parse dependencies).Properties()
-                                                              |> Seq.find (fun p -> p.Name = "dependencies")
-                                       match app.Properties() |> Seq.tryFind (fun p -> p.Name = "dependencies") with
-                                       | None -> app.AddFirst(rawDependencies)
-                                       | Some p -> (rawDependencies.Value :?> JObject).Properties()
-                                                   |> Seq.filter (fun r -> prior |> Set.contains r.Name |> not)
-                                                   |> Seq.iter (fun r -> (p.Value :?> JObject).Add(r))
-
-                                       let rt = JObject.Parse runtime
-                                       rt.Properties()
-                                       |> Seq.filter (fun r -> prior |> Set.contains (r.Name.Split('/') |> Seq.head) |> not)
-                                       |> Seq.iter (fun r -> targeted.Add(r))
-
-                                       let libraries = (o.Properties()
-                                                        |> Seq.find (fun p -> p.Name = "libraries")).Value :?> JObject
-                                       (JObject.Parse newLibraries).Properties()
-                                       |> Seq.filter (fun r -> prior |> Set.contains (r.Name.Split('/') |> Seq.head) |> not)
-                                       |> Seq.rev
-                                       |> Seq.iter (libraries.AddFirst)
-
-                                       File.WriteAllText(f, o.ToString())
-                                       )
+                 |> Seq.iter (fun f -> File.WriteAllText(f, (f |> File.ReadAllText |> injectJSON))                                       )
 #if NETCOREAPP2_0
                  let fsharplib = Path.Combine(Visitor.OutputDirectory(), "FSharp.Core.dll")
                  if not (File.Exists fsharplib) then

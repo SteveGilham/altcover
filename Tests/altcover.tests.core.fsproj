@@ -23,6 +23,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Sample1.deps.json" />
+    <EmbeddedResource Include="Sample1.deps.ncafter.json" />
+  </ItemGroup>
+
+  <ItemGroup>
     <EmbeddedResource Include="..\AltCover\Strings.resx" Link="Strings.resx" />
   </ItemGroup>
 
