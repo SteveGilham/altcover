@@ -592,9 +592,10 @@ Target "All" ignore
 ==> "OperationalTest"
 
 // Unhandled Exception: System.IO.FileNotFoundException: Could not load file or assembly 
-// 'AltCover.Recorder.g, Version=1.4.0.0, Culture=neutral, PublicKeyToken=4ebffcaabf10ce6a'. The system cannot find the file specified.
+// 'FSharp.Core, Version=4.4.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'. The system cannot find the file specified.
 "Compilation"
-// TODO ==> "CSharpDotNetWithDotNet"
+// TODO
+ ==> "CSharpDotNetWithDotNet"
 ==> "OperationalTest"
 
 "Compilation"
@@ -634,9 +635,10 @@ Target "All" ignore
 ==> "Deployment"
 
 // Unhandled Exception: System.IO.FileNotFoundException: Could not load file or assembly 
-// 'AltCover.Recorder.g, Version=1.4.0.0, Culture=neutral, PublicKeyToken=4ebffcaabf10ce6a'. The system cannot find the file specified.
+// 'FSharp.Core, Version=4.4.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'. The system cannot find the file specified.
 "Unpack"
-// ==> "ReleaseDotNetWithDotNet"
+// 
+==> "ReleaseDotNetWithDotNet"
 ==> "Deployment"
 
 "Unpack"

@@ -343,16 +343,23 @@ module Instrument =
                  WriteAssembly (state.RecordingAssembly) counterAssemblyFile
                  Directory.GetFiles(Visitor.OutputDirectory(), "*.deps.json", SearchOption.TopDirectoryOnly)
                  |> Seq.iter (fun f -> let version = typeof<AltCover.Recorder.Tracer>.Assembly.GetName().Version.ToString()
+#if NETCOREAPP2_0
+                                       let dependencies = (resources.GetString "netcoreDependencies").Replace("version",
+                                                                                                              version)
+                                       let runtime = (resources.GetString "netcoreRuntime").Replace("AltCover.Recorder.g/version",
+                                                                                                    "AltCover.Recorder.g/" + version)
+                                       let newLibraries = (resources.GetString "netcoreLibraries").Replace("AltCover.Recorder.g/version",
+                                                                                                             "AltCover.Recorder.g/" + version)
+#else
                                        let dependencies = (resources.GetString "frameworkDependencies").Replace("version",
                                                                                                                 version)
                                        let runtime = (resources.GetString "frameworkRuntime").Replace("AltCover.Recorder.g/version",
                                                                                                       "AltCover.Recorder.g/" + version)
-
                                        let newLibraries = (resources.GetString "frameworkLibraries").Replace("AltCover.Recorder.g/version",
                                                                                                              "AltCover.Recorder.g/" + version)
+#endif
 
                                        let json = File.ReadAllText(f)
-                                       printfn "%s" json
                                        let o = JObject.Parse json
 
                                        let target = ((o.Property "runtimeTarget").Value :?> JObject).Property("name").Value.ToString()
@@ -363,29 +370,33 @@ module Instrument =
                                                        |> Seq.find (fun p -> p.Name= target)).Value :?> JObject
 
                                        let app = (targeted.PropertyValues() |> Seq.head)  :?> JObject
-                                       app.Properties()
-                                       |> Seq.iter (fun p -> printfn "%A" p.Name)
+
+                                       let existingDependencies = app.Properties() |> Seq.tryFind (fun p -> p.Name = "dependencies")
+                                       let prior = match existingDependencies with
+                                                   | None -> Set.empty<string>
+                                                   | Some p -> (p.Value :?> JObject).Properties()
+                                                               |> Seq.map (fun p -> p.Name)
+                                                               |> Set.ofSeq
 
                                        let rawDependencies = (JObject.Parse dependencies).Properties()
                                                               |> Seq.find (fun p -> p.Name = "dependencies")
                                        match app.Properties() |> Seq.tryFind (fun p -> p.Name = "dependencies") with
                                        | None -> app.AddFirst(rawDependencies)
                                        | Some p -> (rawDependencies.Value :?> JObject).Properties()
-                                                   |> Seq.iter (fun r -> printfn "Adding %s to %s" r.Name p.Name
-                                                                         (p.Value :?> JObject).Add(r))
+                                                   |> Seq.filter (fun r -> prior |> Set.contains r.Name |> not)
+                                                   |> Seq.iter (fun r -> (p.Value :?> JObject).Add(r))
 
                                        let rt = JObject.Parse runtime
                                        rt.Properties()
+                                       |> Seq.filter (fun r -> prior |> Set.contains (r.Name.Split('/') |> Seq.head) |> not)
                                        |> Seq.iter (fun r -> targeted.Add(r))
 
                                        let libraries = (o.Properties()
                                                         |> Seq.find (fun p -> p.Name = "libraries")).Value :?> JObject
                                        (JObject.Parse newLibraries).Properties()
+                                       |> Seq.filter (fun r -> prior |> Set.contains (r.Name.Split('/') |> Seq.head) |> not)
                                        |> Seq.rev
                                        |> Seq.iter (libraries.AddFirst)
-
-                                       printfn "-----------"
-                                       printfn "%s" (o.ToString())
 
                                        File.WriteAllText(f, o.ToString())
                                        )
