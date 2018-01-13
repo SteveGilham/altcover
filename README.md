@@ -37,6 +37,8 @@ In detail
 *  -?, --help, -h              Prints out the options.
 * --                           the rest of the command line is treated as a command to execute after performing instrumentation
 
+The strong-name key arguments (`-k`, `--sn`) are not available in the .net core build, as the Mono.Cecil beta on that platform (and maybe the whole platform?), does not currently support strong-naming even though it can consume strong-named assemblies.
+
 Filter values are semi-colon separated regular expressions, applied by type in the order as they are defined in the command line; any item whose name matches the expression will be excluded from the coverage reporting.  In the simplest case, with no special regex items, this means that a name containing the filter item as a sub-string will be excluded.
 
 Coverage statistics are written to the file nominated by the `x|xmlReport=` parameter as instrumented assemblies are unloaded from an executing AppDomain, even if this is days or weeks later.  In practice the instrumented assemblies should be deleted after the relevant testing has been run, and the report file will thus be freed up.
