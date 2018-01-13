@@ -19,12 +19,9 @@ addons:
     - dotnet-sharedframework-microsoft.netcore.app-1.1.2
 
 install:
-  - dotnet restore ./altcover.core.sln
+  - printenv
   - nuget restore ./AltCover.sln
-  - mkdir _Generated
-  - cp ./Build/*.fs ./_Generated
+
 script:
-  - xbuild AltCover.sln
-  - dotnet build ./altcover.core.sln -c Release
-  - dotnet test ./Tests/altcover.tests.core.fsproj -c Release
-  - dotnet test ./Shadow.Tests/altcover.recorder.tests.core.fsproj -c Release
+  - packages/FAKE.4.64.3/tools/FAKE.exe build\build-project.fsx
+
