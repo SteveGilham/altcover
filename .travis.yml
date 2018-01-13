@@ -23,5 +23,6 @@ install:
   - nuget restore ./AltCover.sln
 
 script:
+  - chmod +x packages/FAKE.4.64.3/tools/FAKE.exe
   - packages/FAKE.4.64.3/tools/FAKE.exe build\build-project.fsx
 

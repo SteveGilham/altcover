@@ -10,6 +10,8 @@
     <RootNamespace>Shadow.Tests2</RootNamespace>
     <AssemblyName>AltCover.Shadow.Tests2</AssemblyName>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
+    <TargetFSharpCoreVersion Condition="'$(TRAVIS)' == 'true'">4.4.1.0</TargetFSharpCoreVersion>
+    <TargetFSharpCoreVersion Condition="'$(TRAVIS)' != 'true'">2.3.0.0</TargetFSharpCoreVersion>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Name>Shadow.Tests2</Name>
   </PropertyGroup>
@@ -69,7 +71,7 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="FSharp.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <Reference Include="FSharp.Core, Version=$(TargetFSharpCoreVersion), Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
       <Private>True</Private>
     </Reference>
     <Reference Include="Mono.Cecil">

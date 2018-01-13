@@ -10,6 +10,8 @@
     <RootNamespace>AltCover.Shadow</RootNamespace>
     <AssemblyName>AltCover.Shadow</AssemblyName>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
+    <TargetFSharpCoreVersion Condition="'$(TRAVIS)' == 'true'">4.4.1.0</TargetFSharpCoreVersion>
+    <TargetFSharpCoreVersion Condition="'$(TRAVIS)' != 'true'">2.3.0.0</TargetFSharpCoreVersion>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Name>AltCover.Shadow</Name>
     <ResolveNuGetPackages>false</ResolveNuGetPackages>
@@ -63,7 +65,7 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />
-    <Reference Include="FSharp.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <Reference Include="FSharp.Core, Version=$(TargetFSharpCoreVersion), Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
