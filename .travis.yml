@@ -8,7 +8,7 @@ solution: altcover.core.sln
 git:
   depth: false
 
-if: NOT branch =~ ^develop/.*$
+# if: NOT branch =~ ^develop/.*$
 
 addons:
   apt:
@@ -20,7 +20,7 @@ addons:
 
 install:
   - dotnet restore ./altcover.core.sln
-  - md _Generated
+  - mkdir _Generated
   - cp ./Build/*.fs ./_Generated
 script:
   - dotnet build ./altcover.core.sln -c Release
