@@ -64,7 +64,7 @@ open System.Runtime.CompilerServices
     let file = String.Format(System.Globalization.CultureInfo.InvariantCulture,
                 template, version, key.Replace("-", String.Empty), key2.Replace("-", String.Empty))
 
-    let path = "_Generated\VisibleToTest.fs"
+    let path = "_Generated/VisibleToTest.fs"
     // Update the file only if it would change
     let old = if File.Exists(path) then File.ReadAllText(path) else String.Empty
     if not (old.Equals(file)) then File.WriteAllText(path, file)
@@ -106,9 +106,9 @@ open System.Runtime.CompilerServices
                    |> Seq.map (fun x -> x.Attribute(XName.Get("name")).Value)
                    |> Seq.sort
                    |> Seq.toList
-    let expected = "[\"Invoke\"; \"as_bar\"; \"bytes\"; \"get_MyBar\"; \"makeThing\"; \"returnBar\"; \"returnFoo\";\n \"testMakeThing\"; \"testMakeUnion\"]"
+    let expected = "Invoke as_bar bytes get_MyBar makeThing returnBar returnFoo testMakeThing testMakeUnion"
     if recorded.Length <> 9 then failwith (sprintf "Bad method list length %A" recorded)
-    if (sprintf "%A" recorded) <> expected then failwith (sprintf "Bad method list %A" recorded)
+    if String.Join(" ", recorded) <> expected then failwith (sprintf "Bad method list %A" recorded)
 
   let ValidateSample1 simpleReport sigil = 
     // get recorded details from here

@@ -103,7 +103,7 @@ Target "Lint" (fun _ ->
 Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standalone which contaminates everything
     ensureDirectory "./_Reports"
 
-    let r = ExecProcess (fun info -> info.FileName <- (findToolInSubPath "gendarme.exe" ".\packages")
+    let r = ExecProcess (fun info -> info.FileName <- (findToolInSubPath "gendarme.exe" "./packages")
                                      info.WorkingDirectory <- "."
                                      info.Arguments <- "--severity all --confidence all --config ./Build/rules.xml --console --html ./_Reports/gendarme.html _Binaries/AltCover/Debug+AnyCPU/AltCover.exe  _Binaries/AltCover.Shadow/Debug+AnyCPU/AltCover.Shadow.dll") (TimeSpan.FromMinutes 5.0)
     if r <> 0 then failwith  "Gendarme Errors were detected"
@@ -147,7 +147,7 @@ Target "FxCop" (fun _ -> // Needs debug because release is compiled --standalone
 // Unit Test
 
 Target "UnitTest" (fun _ ->
-  !! (@"_Reports\*\Summary.xml") 
+  !! (@"_Reports/*/Summary.xml") 
   |> Seq.iter (fun f -> let xml = XDocument.Load f
                         xml.Descendants(XName.Get("Linecoverage"))
                         |> Seq.iter (fun e -> let coverage = e.Value.Replace("%", String.Empty)
@@ -161,7 +161,7 @@ Target "UnitTest" (fun _ ->
 
 Target "JustUnitTest" (fun _ ->
     ensureDirectory "./_Reports"
-    !! (@"_Binaries\*Tests\Debug+AnyCPU\*.Test*.dll") // Need to figure out why it doesn't build in Release
+    !! (@"_Binaries/*Tests/Debug+AnyCPU/*.Test*.dll") // Need to figure out why it doesn't build in Release
     |> NUnit3 (fun p -> { p with ToolPath = findToolInSubPath "nunit3-console.exe" "."
                                  WorkingDir = "."
                                  ResultSpecs = ["./_Reports/JustUnitTestReport.xml"] })
@@ -169,7 +169,7 @@ Target "JustUnitTest" (fun _ ->
 
 Target "UnitTestDotNet" (fun _ ->
     ensureDirectory "./_Reports"
-    !! (@".\*Tests\*.tests.core.fsproj")
+    !! (@"./*Tests/*.tests.core.fsproj")
     |> Seq.iter (fun f -> printfn "Testing %s" f
                           DotNetCli.Test
                              (fun p -> 
@@ -179,8 +179,9 @@ Target "UnitTestDotNet" (fun _ ->
 )
 
 Target "UnitTestWithOpenCover" (fun _ ->
+  if not (String.IsNullOrWhiteSpace(environVar "TRAVIS")) then
     ensureDirectory "./_Reports/_UnitTestWithOpenCover"
-    let testFiles = !! (@"_Binaries\*Tests\Debug+AnyCPU\*.Test*.dll") 
+    let testFiles = !! (@"_Binaries/*Tests/Debug+AnyCPU/*.Test*.dll") 
                     //|> Seq.map (fun f -> f.FullName)
     let coverage = FullName "_Reports/UnitTestWithOpenCover.xml"
 
@@ -210,14 +211,14 @@ Target "UnitTestWithOpenCover" (fun _ ->
 
 Target "UnitTestWithAltCover" (fun _ ->
     ensureDirectory "./_Reports/_UnitTestWithAltCover"
-    let keyfile = FullName "Build\SelfTest.snk"
+    let keyfile = FullName "Build/SelfTest.snk"
     let reports = FullName "./_Reports"
 
     let altReport = reports @@ "UnitTestWithAltCover.xml"
     printfn "Instrumented the code"
     let result = ExecProcess (fun info -> info.FileName <- "_Binaries/AltCover/Debug+AnyCPU/AltCover.exe"
                                           info.WorkingDirectory <- "_Binaries/AltCover.Tests/Debug+AnyCPU"
-                                          info.Arguments <- ("/sn=" + keyfile + AltCoverFilter + @"/o=.\__UnitTestWithAltCover -x=" + altReport)) (TimeSpan.FromMinutes 5.0)
+                                          info.Arguments <- ("/sn=" + keyfile + AltCoverFilter + @"/o=./__UnitTestWithAltCover -x=" + altReport)) (TimeSpan.FromMinutes 5.0)
     if result <> 0 then failwithf "Re-instrument returned with a non-zero exit code"
 
     printfn "Unit test the instrumented code"
@@ -233,7 +234,7 @@ Target "UnitTestWithAltCover" (fun _ ->
     let shadowReport = reports @@ "ShadowTestWithAltCover.xml"
     let result = ExecProcess (fun info -> info.FileName <- "_Binaries/AltCover/Debug+AnyCPU/AltCover.exe"
                                           info.WorkingDirectory <- "_Binaries/AltCover.Shadow.Tests/Debug+AnyCPU"
-                                          info.Arguments <- ("/sn=" + keyfile + AltCoverFilter + @"/o=.\__ShadowTestWithAltCover -x=" + shadowReport)) (TimeSpan.FromMinutes 5.0)
+                                          info.Arguments <- ("/sn=" + keyfile + AltCoverFilter + @"/o=./__ShadowTestWithAltCover -x=" + shadowReport)) (TimeSpan.FromMinutes 5.0)
 
     printfn "Execute the shadow tests"
     !! ("_Binaries/AltCover.Shadow.Tests/Debug+AnyCPU/__ShadowTestWithAltCover/*.Test*.dll")
@@ -326,12 +327,13 @@ Target "CSharpDotNetWithFramework" (fun _ -> // TODO
 )
 
 Target "SelfTest" (fun _ ->
+  if not (String.IsNullOrWhiteSpace(environVar "TRAVIS")) then
     ensureDirectory "./_Reports/_Instrumented"
     let targetDir = "_Binaries/AltCover.Tests/Debug+AnyCPU"
     let reports = FullName "./_Reports"
     let report = reports @@ "OpenCoverSelfTest.xml"
     let altReport = reports @@ "AltCoverSelfTest.xml"
-    let keyfile = FullName "Build\SelfTest.snk"
+    let keyfile = FullName "Build/SelfTest.snk"
 
 
     printfn "Self-instrument under OpenCover"
@@ -352,7 +354,7 @@ Target "SelfTest" (fun _ ->
     let altReport2 = reports @@ "AltCoverSelfTestDummy.xml"
     let result = ExecProcess (fun info -> info.FileName <- "_Binaries/AltCover.Tests/Debug+AnyCPU/__SelfTest/AltCover.exe"
                                           info.WorkingDirectory <- "_Binaries/AltCover.Tests/Debug+AnyCPU"
-                                          info.Arguments <- ("/sn=" + keyfile + AltCoverFilter + @"/o=.\__SelfTestDummy -x=" + altReport2)) (TimeSpan.FromMinutes 5.0)
+                                          info.Arguments <- ("/sn=" + keyfile + AltCoverFilter + @"/o=./__SelfTestDummy -x=" + altReport2)) (TimeSpan.FromMinutes 5.0)
     if result <> 0 then failwithf "Re-instrument returned with a non-zero exit code"
 
     ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."

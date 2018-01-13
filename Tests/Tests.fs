@@ -44,7 +44,7 @@ type AltCoverTests() = class
   let monoSample1 = "../_Mono/Sample1"
 #else
   let sample1 = "Sample1.exe"
-  let monoSample1 = "_Mono\\Sample1"
+  let monoSample1 = "_Mono/Sample1"
   let recorderSnk = typeof<AltCover.Node>.Assembly.GetManifestResourceNames()
                     |> Seq.find (fun n -> n.EndsWith(".Recorder.snk", StringComparison.Ordinal))
 #endif
@@ -57,7 +57,7 @@ type AltCoverTests() = class
     let where = Assembly.GetExecutingAssembly().Location
     let dir = where |> Path.GetDirectoryName |> Path.GetFileName
     match dir.IndexOf "__" with
-    | 0 -> "\\.."
+    | 0 -> "/.."
     | _ -> String.Empty
 
   // Augment.fs
@@ -99,8 +99,8 @@ type AltCoverTests() = class
                          | Some name ->
                             let probe = Path.ChangeExtension((fst x), ".pdb")
                             let file = FileInfo(probe)
-                            let filename = file.Name
-                            Assert.That(name, Does.EndWith("\\" + filename), (fst x) + " -> " + name) )
+                            let filename = file.Name.Replace("\\","/")
+                            Assert.That(name.Replace("\\","/"), Does.EndWith("/" + filename), (fst x) + " -> " + name) )
 
   // TODO [<Test>]
   member self.ShouldGetPdbFromMonoImage() =
@@ -119,8 +119,8 @@ type AltCoverTests() = class
                          | Some name ->
                             let probe = (fst x) + ".mdb"
                             let file = FileInfo(probe)
-                            let filename = file.Name
-                            Assert.That(name, Does.EndWith("\\" + filename), (fst x) + " -> " + name) )
+                            let filename = file.Name.Replace("\\","/")
+                            Assert.That(name, Does.EndWith("/" + filename), (fst x) + " -> " + name) )
 
   [<Test>]
   member self.ShouldGetPdbWithFallback() =
@@ -138,15 +138,15 @@ type AltCoverTests() = class
       | Some name ->
          let probe = Path.ChangeExtension(x, ".pdb")
          let file = FileInfo(probe)
-         let filename = file.Name
-         Assert.That(name, Does.EndWith("\\" + filename), x + " -> " + name)
+         let filename = file.Name.Replace("\\","/")
+         Assert.That(name.Replace("\\","/"), Does.EndWith("/" + filename), x + " -> " + name)
     )
 
   [<Test>]
   member self.ShouldGetMdbWithFallback() =
     // Hack for running while instrumented
     let where = Assembly.GetExecutingAssembly().Location
-    let path = Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "_Mono\\Sample1")
+    let path = Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "_Mono/Sample1")
 #if NETCOREAPP2_0
     let path' = if Directory.Exists path then path
                 else Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), monoSample1)
@@ -165,8 +165,8 @@ type AltCoverTests() = class
       | Some name ->
          let probe = x + ".mdb"
          let file = FileInfo(probe)
-         let filename = file.Name
-         Assert.That(name + ".mdb", Does.EndWith("\\" + filename), x + " -> " + name)
+         let filename = file.Name.Replace("\\","/")
+         Assert.That(name.Replace("\\","/") + ".mdb", Does.EndWith("/" + filename), x + " -> " + name)
     )
 
   [<Test>]
@@ -206,7 +206,7 @@ type AltCoverTests() = class
   member self.ShouldGetSymbolsFromMdb() =
     // Hack for running while instrumented
     let where = Assembly.GetExecutingAssembly().Location
-    let path = Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "_Mono\\Sample1")
+    let path = Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "_Mono/Sample1")
 #if NETCOREAPP2_0
     let path' = if Directory.Exists path then path
                 else Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), monoSample1)
@@ -918,7 +918,7 @@ type AltCoverTests() = class
     let visitor, document = Report.ReportGenerator()
     // Hack for running while instrumented
     let where = Assembly.GetExecutingAssembly().Location
-    let path = Path.Combine(where.Substring(0, where.IndexOf("_Binaries")) + "_Mono\\Sample1", "Sample1.exe")
+    let path = Path.Combine(where.Substring(0, where.IndexOf("_Binaries")) + "_Mono/Sample1", "Sample1.exe")
 #if NETCOREAPP2_0
     let path' = if File.Exists path then path
                 else Path.Combine(where.Substring(0, where.IndexOf("_Binaries")) + monoSample1, "Sample1.exe")
@@ -1556,7 +1556,7 @@ type AltCoverTests() = class
   [<Test>]
   member self.UpdateStrongReferencesShouldNotAddASigningKey () =
     let where = Assembly.GetExecutingAssembly().Location
-    let path = Path.Combine(where.Substring(0, where.IndexOf("_Binaries")) + "_Mono\\Sample1", "Sample1.exe")
+    let path = Path.Combine(where.Substring(0, where.IndexOf("_Binaries")) + "_Mono/Sample1", "Sample1.exe")
 #if NETCOREAPP2_0
     let path' = if File.Exists path then path
                 else Path.Combine(where.Substring(0, where.IndexOf("_Binaries")) + monoSample1, "Sample1.exe")

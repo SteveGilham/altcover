@@ -13,7 +13,6 @@
     <TargetFSharpCoreVersion Condition="'$(TRAVIS)' == 'true'">4.4.1.0</TargetFSharpCoreVersion>
     <TargetFSharpCoreVersion Condition="'$(TRAVIS)' != 'true'">2.3.0.0</TargetFSharpCoreVersion>
     <Name>AltCover.Recorder</Name>
-    <TargetFSharpCoreVersion>4.3.0.0</TargetFSharpCoreVersion>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>
     <TargetFrameworkProfile>
     </TargetFrameworkProfile>
