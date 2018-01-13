@@ -1,9 +1,9 @@
 language: csharp
-mono: none
+mono: latest
 dotnet: 2.1.3
 dist: trusty
 sudo: false
-solution: altcover.core.sln
+solution: AltCover.sln
 
 git:
   depth: false
@@ -20,9 +20,11 @@ addons:
 
 install:
   - dotnet restore ./altcover.core.sln
+  - nuget restore ./AltCover.sln
   - mkdir _Generated
   - cp ./Build/*.fs ./_Generated
 script:
+  - xbuild AltCover.sln
   - dotnet build ./altcover.core.sln -c Release
   - dotnet test ./Tests/altcover.tests.core.fsproj -c Release
   - dotnet test ./Shadow.Tests/altcover.recorder.tests.core.fsproj -c Release
