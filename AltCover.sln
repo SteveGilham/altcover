@@ -23,6 +23,7 @@ Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "AltCover.Shadow", "AltCover
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build Items", "Build Items", "{B9D49110-CE75-418C-BF97-1F94D741EA19}"
 	ProjectSection(SolutionItems) = preProject
+		.travis.yml = .travis.yml
 		Build\AltCover.nuspec = Build\AltCover.nuspec
 		appveyor.yml = appveyor.yml
 		Build\build.fsx = Build\build.fsx

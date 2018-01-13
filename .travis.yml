@@ -1,0 +1,20 @@
+language: csharp
+mono: none
+dotnet: 2.1.3
+dist: trusty
+sudo: false
+
+addons:
+  apt:
+    sources:
+    - sourceline: 'deb [arch=amd64] https://packages.microsoft.com/repos/microsoft-ubuntu-trusty-prod trusty main'
+      key_url: 'https://packages.microsoft.com/keys/microsoft.asc'
+    packages:
+    - dotnet-sharedframework-microsoft.netcore.app-1.1.2
+
+install:
+  - dotnet restore ./altcover.core.sln
+script:
+  - dotnet build ./altcover.core.sln -c Release
+  - dotnet test ./Tests/altcover.tests.core.fsproj -c Release
+  - dotnet test ./Shadow.Tests/altcover.recorder.tests.core.fsproj -c Release

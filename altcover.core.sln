@@ -18,6 +18,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "sample3.core", "Sample3\sam
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build Items", "Build Items", "{97367D43-64EF-48E1-B6B4-D951C783E6E1}"
 	ProjectSection(SolutionItems) = preProject
+		.travis.yml = .travis.yml
 		Build\AltCover.nuspec = Build\AltCover.nuspec
 		appveyor.yml = appveyor.yml
 		Build\build.fsx = Build\build.fsx
