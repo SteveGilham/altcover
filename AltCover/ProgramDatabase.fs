@@ -18,13 +18,18 @@ module ProgramDatabase =
       if header.HasEntries then
           let entry = header.Entries // header is followed by UTF-8 nul terminated string
                       |> Seq.head
-          let name = entry.Data
-                          |> Seq.skip 0x18  // size of the debug header
-                          |> Seq.takeWhile (fun x -> x <> byte 0)
-                          |> Seq.toArray
-          Some (System.Text.Encoding.UTF8.GetString name)
-          |> Option.filter (fun (s:String) -> s.Length > 0)
-          |> Option.filter File.Exists
+          if entry.Data.Length > 0x18 then 
+              let name = entry.Data
+                              |> Seq.skip 0x18  // size of the debug header
+                              |> Seq.takeWhile (fun x -> x <> byte 0)
+                              |> Seq.toArray
+              Some (System.Text.Encoding.UTF8.GetString name)
+              |> Option.filter (fun (s:String) -> s.Length > 0)
+              |> Option.filter File.Exists
+          else 
+              printfn "%d entries" header.Entries.Length
+              printfn "%A" entry.Data
+              None
       else
         None // TODO -- built-in mdb path for Mono
     else
