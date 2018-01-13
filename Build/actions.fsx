@@ -23,8 +23,10 @@ module Actions =
     |> Seq.iter (fun n -> printfn "Deleting %s" n
                           Directory.Delete(n, true))
 
-    Directory.GetFiles(Environment.GetEnvironmentVariable("TEMP"), "*.tmp.dll.mdb")
-    |> Seq.iter File.Delete
+    let temp = Environment.GetEnvironmentVariable("TEMP")
+    if not <| String.IsNullOrWhiteSpace temp then
+      Directory.GetFiles(temp, "*.tmp.dll.mdb")
+      |> Seq.iter File.Delete
   
   let template ="""namespace AltCover
 open System.Reflection

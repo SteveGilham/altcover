@@ -26,6 +26,7 @@ install:
   - nuget restore ./AltCover.sln
 
 script:
+  - printenv
   - chmod +x packages/FAKE.4.64.3/tools/FAKE.exe
   - mono packages/FAKE.4.64.3/tools/FAKE.exe Build/prebuild.fsx
   - mono packages/FAKE.4.64.3/tools/FAKE.exe Build/build.fsx
