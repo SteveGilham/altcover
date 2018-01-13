@@ -9,6 +9,7 @@ git:
   depth: false
 
 # if: NOT branch =~ ^develop/.*$
+if: branch = develop/hardening
 
 cache:
   directories:
