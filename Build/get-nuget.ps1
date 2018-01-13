@@ -37,7 +37,8 @@ $mdlib = (dir -recurse "$solutionRoot/*Sharp.Markdown.dll") | % { $_.FullName } 
 $ylib = (dir -recurse "$solutionRoot/*amlDotNet.dll") | % { $_.FullName } | ? { $_ -like "*net35*" } | Select-Object -First 1
 
 $build = @"
-#r "$($fakelib.Replace('\', '/'))" // include Fake lib
+#I "$((Split-Path -Parent $fakelib).Replace('\', '/'))" // include Fake lib
+#r "FakeLib.dll"
 #I "$((Split-Path -Parent $lintlib).Replace('\', '/'))"
 #r "FSharpLint.Fake.dll"
 #I "$((Split-Path -Parent $mdlib).Replace('\', '/'))"
