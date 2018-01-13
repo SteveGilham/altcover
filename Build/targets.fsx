@@ -109,6 +109,7 @@ Target "Lint" (fun _ ->
         |> Seq.iter (FSharpLint (fun options -> { options with FailBuildIfAnyWarnings = true }) ))
 
 Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standalone which contaminates everything
+  if String.IsNullOrWhiteSpace(environVar "TRAVIS_JOB_NUMBER") then
     ensureDirectory "./_Reports"
 
     let r = ExecProcess (fun info -> info.FileName <- (findToolInSubPath "gendarme.exe" "./packages")
@@ -116,6 +117,32 @@ Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standal
                                      info.Arguments <- "--severity all --confidence all --config ./Build/rules.xml --console --html ./_Reports/gendarme.html _Binaries/AltCover/Debug+AnyCPU/AltCover.exe  _Binaries/AltCover.Shadow/Debug+AnyCPU/AltCover.Shadow.dll") (TimeSpan.FromMinutes 5.0)
     if r <> 0 then failwith  "Gendarme Errors were detected"
 )
+
+// Travis TODO
+(*
+------------------------------------------------------------
+1. AvoidLongMethodsRule
+Problem: Long methods are usually hard to understand and maintain.  This method can cause problems because it contains more code than the maximum allowed.
+* Severity: High, Confidence: Normal
+* Target:   AltCover.Instrument/Context AltCover.Instrument::InstrumentationVisitor(AltCover.Instrument/Context,AltCover.Node)
+* Details:  Method IL Size: 324. Maximum Size: 165
+Solution: You should apply an Extract Method refactoring, but there are other solutions.
+More info available at: https://github.com/spouliot/gendarme/wiki/Gendarme.Rules.Smells.AvoidLongMethodsRule(2.10)
+2. AvoidLongMethodsRule
+Problem: Long methods are usually hard to understand and maintain.  This method can cause problems because it contains more code than the maximum allowed.
+* Severity: High, Confidence: Normal
+* Target:   Microsoft.FSharp.Collections.FSharpList`1<System.Xml.Linq.XElement> AltCover.Report/ReportVisitor@22::Invoke(Microsoft.FSharp.Collections.FSharpList`1<System.Xml.Linq.XElement>,AltCover.Node)
+* Details:  Method IL Size: 419. Maximum Size: 165
+Solution: You should apply an Extract Method refactoring, but there are other solutions.
+More info available at: https://github.com/spouliot/gendarme/wiki/Gendarme.Rules.Smells.AvoidLongMethodsRule(2.10)
+3. AvoidLongMethodsRule
+Problem: Long methods are usually hard to understand and maintain.  This method can cause problems because it contains more code than the maximum allowed.
+* Severity: High, Confidence: Normal
+* Target:   System.Collections.Generic.IEnumerable`1<AltCover.Node> AltCover.Visitor::Deeper(AltCover.Node)
+* Details:  Method IL Size: 182. Maximum Size: 165
+Solution: You should apply an Extract Method refactoring, but there are other solutions.
+More info available at: https://github.com/spouliot/gendarme/wiki/Gendarme.Rules.Smells.AvoidLongMethodsRule(2.10)
+*)
 
 Target "FxCop" (fun _ -> // Needs debug because release is compiled --standalone which contaminates everything
   if String.IsNullOrWhiteSpace(environVar "TRAVIS_JOB_NUMBER") then
