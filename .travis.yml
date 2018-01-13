@@ -23,10 +23,10 @@ addons:
     - dotnet-sharedframework-microsoft.netcore.app-1.1.2
 
 install:
-  - printenv
   - nuget restore ./AltCover.sln
 
 script:
   - chmod +x packages/FAKE.4.64.3/tools/FAKE.exe
+  - mono packages/FAKE.4.64.3/tools/FAKE.exe Build/prebuild.fsx
   - mono packages/FAKE.4.64.3/tools/FAKE.exe Build/build.fsx
 

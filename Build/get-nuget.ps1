@@ -26,30 +26,9 @@ $bat = @"
 @echo off
 IF '"%VS150COMNTOOLS%"' == '""' CALL "$batchFile"
 SET PATH="$($env:path);$(Split-Path -Parent $fake)"
-"$fake" ".\build\build.fsx" "%1"
+"$fake" ".\Build\build.fsx" "%1"
 exit /b %errorlevel%
 "@
 Set-Content -Value $bat -Path (Join-Path $SolutionRoot "fake.bat")
 
-$fakelib = (dir -recurse "$solutionRoot/*akeLib.dll") | % { $_.FullName } | Select-Object -First 1
-$lintlib = (dir -recurse "$solutionRoot/*SharpLint.Fake.dll") | % { $_.FullName } | Select-Object -First 1
-$mdlib = (dir -recurse "$solutionRoot/*Sharp.Markdown.dll") | % { $_.FullName } | ? { $_ -like "*net40*" } | Select-Object -First 1
-$ylib = (dir -recurse "$solutionRoot/*amlDotNet.dll") | % { $_.FullName } | ? { $_ -like "*net35*" } | Select-Object -First 1
-
-$build = @"
-#I "$((Split-Path -Parent $fakelib).Replace('\', '/'))" // include Fake lib
-#r "FakeLib.dll"
-#I "$((Split-Path -Parent $lintlib).Replace('\', '/'))"
-#r "FSharpLint.Fake.dll"
-#I "$((Split-Path -Parent $mdlib).Replace('\', '/'))"
-#r "FSharp.Markdown.dll"
-#I "$((Split-Path -Parent $ylib).Replace('\', '/'))"
-#r "YamlDotNet.dll"
-#r "System.IO.Compression.FileSystem.dll"
-#r "System.Xml"
-#r "System.Xml.Linq"
-
-#load "actions.fsx"
-#load "targets.fsx"
-"@
-Set-Content -Value $build -Path (Join-Path $SolutionRoot ".\build\build.fsx")
+& "$fake" ".\Build\prebuild.fsx"
