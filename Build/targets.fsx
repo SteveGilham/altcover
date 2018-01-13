@@ -118,6 +118,7 @@ Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standal
 )
 
 Target "FxCop" (fun _ -> // Needs debug because release is compiled --standalone which contaminates everything
+  if String.IsNullOrWhiteSpace(environVar "TRAVIS_JOB_NUMBER") then
     ensureDirectory "./_Reports"
     let fxCop = combinePaths (environVar "VS150COMNTOOLS") "../../Team Tools/Static Analysis Tools/FxCop/FxCopCmd.exe"
     let rules = ["-Microsoft.Design#CA1004"
@@ -187,7 +188,7 @@ Target "UnitTestDotNet" (fun _ ->
 )
 
 Target "UnitTestWithOpenCover" (fun _ ->
-  if not (String.IsNullOrWhiteSpace(environVar "TRAVIS")) then
+  if String.IsNullOrWhiteSpace(environVar "TRAVIS_JOB_NUMBER") then
     ensureDirectory "./_Reports/_UnitTestWithOpenCover"
     let testFiles = !! (@"_Binaries/*Tests/Debug+AnyCPU/*.Test*.dll") 
                     //|> Seq.map (fun f -> f.FullName)
@@ -335,7 +336,7 @@ Target "CSharpDotNetWithFramework" (fun _ -> // TODO
 )
 
 Target "SelfTest" (fun _ ->
-  if not (String.IsNullOrWhiteSpace(environVar "TRAVIS")) then
+  if String.IsNullOrWhiteSpace(environVar "TRAVIS_JOB_NUMBER") then
     ensureDirectory "./_Reports/_Instrumented"
     let targetDir = "_Binaries/AltCover.Tests/Debug+AnyCPU"
     let reports = FullName "./_Reports"
