@@ -881,7 +881,7 @@ type AltCoverTests() = class
                     | "metadataToken"
                     | "startTime"
                     | "measureTime" -> ()
-                    | "document" -> Assert.That(a1.Value, Does.EndWith(a2.Value),
+                    | "document" -> Assert.That(a1.Value.Replace("\\","/"), Does.EndWith(a2.Value.Replace("\\","/")),
                                       a1.Name.ToString() + " : " + r.ToString() + " -> document")
                     | "visitcount" -> let expected = if zero then "0" else a2.Value
                                       Assert.That(a1.Value, Is.EqualTo(expected), r.ToString() + " -> visitcount")
@@ -1889,7 +1889,7 @@ type AltCoverTests() = class
   member self.ShouldLaunchWithExpectedOutput() =
     // Hack for running while instrumented
     let where = Assembly.GetExecutingAssembly().Location
-    let path = Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "_Mono\\Sample1")
+    let path = Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "_Mono/Sample1")
 #if NETCOREAPP2_0
     let path' = if Directory.Exists path then path
                 else Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), monoSample1)
@@ -2632,7 +2632,7 @@ type AltCoverTests() = class
   member self.ShouldProcessTrailingArguments() =
     // Hack for running while instrumented
     let where = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
-    let path = Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "_Mono\\Sample1")
+    let path = Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "_Mono/Sample1")
 #if NETCOREAPP2_0
     let path' = if Directory.Exists path then path
                 else Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), monoSample1)
@@ -2667,7 +2667,7 @@ type AltCoverTests() = class
   [<Test>]
   member self.ADryRunLooksAsExpected() =
     let where = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
-    let path = Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "_Mono\\Sample1")
+    let path = Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "_Mono/Sample1")
     let key0 = Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "Build/SelfTest.snk")
 #if NETCOREAPP2_0
     let input = if Directory.Exists path then path
