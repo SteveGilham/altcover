@@ -13,6 +13,7 @@ open Mono.Cecil
 open Mono.Cecil.Cil
 open Mono.Cecil.Rocks
 open N
+open Newtonsoft.Json.Linq
 open NUnit.Framework
 
 type ProxyObject() =
@@ -2756,7 +2757,6 @@ type AltCoverTests() = class
       Console.SetError (snd saved)
       Visitor.keys.Clear()
 
-
   [<Test>]
   member self.ADotNetDryRunLooksAsExpected() =
     let where = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
@@ -2837,19 +2837,6 @@ type AltCoverTests() = class
                                     "Sample2.dll"
                                     "Sample2.pdb"])
 
-
-
-#if NETCOREAPP2_0
-      let resultName = infrastructureSnk.Replace("Infrastructure.snk", "Sample2.deps.ncafter.json")
-#else
-      let resultName = infrastructureSnk.Replace("Infrastructure.snk", "Sample2.deps.after.json")
-#endif
-      use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resultName)
-      use reader = new StreamReader(stream)
-      let expected = reader.ReadToEnd().Replace("\r\n", "\n")
-      let recorded = File.ReadAllText(Path.Combine(output, "Sample2.deps.json")).Replace("\r\n", "\n")
-      Assert.That (recorded, Is.EqualTo expected)
-
     finally
       Visitor.outputDirectory <- outputSaved
       Visitor.inputDirectory <- inputSaved
@@ -2859,7 +2846,33 @@ type AltCoverTests() = class
       Console.SetError (snd saved)
       Visitor.keys.Clear()
 
+    let before = File.ReadAllText(Path.Combine(input, "Sample2.deps.json"))
+    Assert.That(before.IndexOf("AltCover.Recorder.g"), Is.EqualTo -1)
 
+    let o = JObject.Parse (File.ReadAllText(Path.Combine(output, "Sample2.deps.json")))
+    let target = ((o.Property "runtimeTarget").Value :?> JObject).Property("name").Value.ToString()
+    let targets = (o.Properties()
+                    |> Seq.find (fun p -> p.Name = "targets")).Value :?> JObject
+    let targeted = (targets.Properties()
+                    |> Seq.find (fun p -> p.Name= target)).Value :?> JObject
+    let app = (targeted.PropertyValues() |> Seq.head)  :?> JObject
+    let existingDependencies = app.Properties() |> Seq.tryFind (fun p -> p.Name = "dependencies")
+    let reset = match existingDependencies with
+                | None -> Set.empty<string>
+                | Some p -> (p.Value :?> JObject).Properties()
+                            |> Seq.map (fun p -> p.Name)
+                            |> Set.ofSeq
+    Assert.That(reset |> Set.contains "AltCover.Recorder.g")
+    let aux = targeted.Properties()
+              |> Seq.map (fun p -> p.Name)
+              |> Set.ofSeq
+    Assert.That(aux |> Set.contains "AltCover.Recorder.g/1.4.0.0")
+    let libraries = (o.Properties()
+                    |> Seq.find (fun p -> p.Name = "libraries")).Value :?> JObject
+    let lib = libraries.Properties()
+              |> Seq.map (fun p -> p.Name)
+              |> Set.ofSeq
+    Assert.That(lib |> Set.contains "AltCover.Recorder.g/1.4.0.0")
 
   [<Test>]
   member self.UsageIsAsExpected() =
@@ -2954,7 +2967,6 @@ type AltCoverTests() = class
       Assert.That (result, Is.EqualTo (expected.Replace("\r\n", "\n")))
 
     finally Console.SetError saved
-
 
   // Recorder.fs => Shadow.Tests
 
