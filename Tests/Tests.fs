@@ -2846,8 +2846,8 @@ type AltCoverTests() = class
 #endif
       use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resultName)
       use reader = new StreamReader(stream)
-      let expected = reader.ReadToEnd().Replace("\\", "/")
-      let recorded = File.ReadAllText(Path.Combine(output, "Sample2.deps.json")).Replace("\\", "/")
+      let expected = reader.ReadToEnd().Replace("\r\n", "\n")
+      let recorded = File.ReadAllText(Path.Combine(output, "Sample2.deps.json")).Replace("\r\n", "\n")
       Assert.That (recorded, Is.EqualTo expected)
 
     finally
