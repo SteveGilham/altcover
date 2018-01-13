@@ -3,6 +3,10 @@ mono: none
 dotnet: 2.1.3
 dist: trusty
 sudo: false
+solution: altcover.core.sln
+
+
+if: NOT branch =~ ^develop/.*$
 
 addons:
   apt:
@@ -14,6 +18,8 @@ addons:
 
 install:
   - dotnet restore ./altcover.core.sln
+  - md _Generated
+  - cp ./Build/*.fs ./_Generated
 script:
   - dotnet build ./altcover.core.sln -c Release
   - dotnet test ./Tests/altcover.tests.core.fsproj -c Release
