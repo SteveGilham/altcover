@@ -5,6 +5,8 @@ dist: trusty
 sudo: false
 solution: altcover.core.sln
 
+git:
+  depth: false
 
 if: NOT branch =~ ^develop/.*$
 
