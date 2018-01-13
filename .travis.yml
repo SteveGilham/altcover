@@ -10,6 +10,10 @@ git:
 
 # if: NOT branch =~ ^develop/.*$
 
+cache:
+  directories:
+  - $HOME/packages
+
 addons:
   apt:
     sources:
@@ -24,5 +28,5 @@ install:
 
 script:
   - chmod +x packages/FAKE.4.64.3/tools/FAKE.exe
-  - packages/FAKE.4.64.3/tools/FAKE.exe build\build-project.fsx
+  - mono packages/FAKE.4.64.3/tools/FAKE.exe build\build.fsx
 

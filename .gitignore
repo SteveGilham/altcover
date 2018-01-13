@@ -62,4 +62,3 @@ _Mono/
 **/bin/
 **/obj/
 *.suo
-Build/build.fsx
