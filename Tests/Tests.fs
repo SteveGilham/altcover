@@ -2756,6 +2756,111 @@ type AltCoverTests() = class
       Console.SetError (snd saved)
       Visitor.keys.Clear()
 
+
+  [<Test>]
+  member self.ADotNetDryRunLooksAsExpected() =
+    let where = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
+    let path = Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "_Binaries/Sample2/Debug+AnyCPU/netstandard2.0")
+    let key0 = Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "Build/SelfTest.snk")
+#if NETCOREAPP2_0
+    let input = if Directory.Exists path then path
+                else Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "../_Binaries/Sample2/Debug+AnyCPU/netstandard2.0")
+    let key = if File.Exists key0 then key0
+              else Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "../Build/SelfTest.snk")
+#else
+    let input = path
+    let key = key0
+#endif
+    let unique = Guid.NewGuid().ToString()
+    let unique' = Path.Combine (where, Guid.NewGuid().ToString())
+    Directory.CreateDirectory unique' |> ignore
+    let report = Path.Combine(unique', "ADotNetDryRunLooksAsExpected.xml")
+    let output = Path.Combine(Path.GetDirectoryName(where), unique)
+    let outputSaved = Visitor.outputDirectory
+    let inputSaved = Visitor.inputDirectory
+    let reportSaved = Visitor.reportPath
+    let keySaved = Visitor.defaultStrongNameKey
+    let saved = (Console.Out, Console.Error)
+    Visitor.keys.Clear()
+    try
+      use stdout = new StringWriter()
+      use stderr = new StringWriter()
+      Console.SetOut stdout
+      Console.SetError stderr
+
+      let args = [| "-i"; input
+                    "-o"; output
+                    "-x"; report
+#if NETCOREAPP2_0
+#else
+                    "-sn"; key
+#endif
+                 |]
+      Main.DoInstrumentation args
+      Assert.That (stderr.ToString(), Is.Empty)
+
+      let expected = "Creating folder " + output +
+                     "\nInstrumenting files from " + (Path.GetFullPath input) +
+                     "\nWriting files to " + output +
+                     "\nCoverage Report: " + report + "\n"
+
+      Assert.That (stdout.ToString().Replace("\r\n", "\n").Replace("\\", "/"),
+                   Is.EqualTo (expected.Replace("\\", "/")))
+      Assert.That (Visitor.OutputDirectory(), Is.EqualTo output)
+      Assert.That (Visitor.InputDirectory().Replace("\\", "/"),
+                   Is.EqualTo ((Path.GetFullPath input).Replace("\\", "/")))
+      Assert.That (Visitor.ReportPath (), Is.EqualTo report)
+
+      use stream = new FileStream(key, FileMode.Open)
+      use buffer = new MemoryStream()
+      stream.CopyTo(buffer)
+      let snk = StrongNameKeyPair(buffer.ToArray())
+
+#if NETCOREAPP2_0
+      Assert.That (Visitor.keys.Count, Is.EqualTo 0)
+#else
+      Assert.That (Visitor.keys.ContainsKey(KeyStore.KeyToIndex snk))
+      Assert.That (Visitor.keys.Count, Is.EqualTo 1)
+#endif
+
+      Assert.That (File.Exists report)
+
+      Assert.That (Directory.GetFiles(output)
+                   |> Seq.map Path.GetFileName,
+                   Is.EquivalentTo ["AltCover.Recorder.g.dll"
+#if NETCOREAPP2_0
+                                    "FSharp.Core.dll"
+#else
+                                    "AltCover.Recorder.g.pdb"
+#endif
+                                    "Sample2.deps.json"
+                                    "Sample2.dll"
+                                    "Sample2.pdb"])
+
+
+
+#if NETCOREAPP2_0
+      let resultName = infrastructureSnk.Replace("Infrastructure.snk", "Sample2.deps.ncafter.json")
+#else
+      let resultName = infrastructureSnk.Replace("Infrastructure.snk", "Sample2.deps.after.json")
+#endif
+      use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resultName)
+      use reader = new StreamReader(stream)
+      let expected = reader.ReadToEnd().Replace("\\", "/")
+      let recorded = File.ReadAllText(Path.Combine(output, "Sample2.deps.json")).Replace("\\", "/")
+      Assert.That (recorded, Is.EqualTo expected)
+
+    finally
+      Visitor.outputDirectory <- outputSaved
+      Visitor.inputDirectory <- inputSaved
+      Visitor.reportPath <- reportSaved
+      Visitor.defaultStrongNameKey <- keySaved
+      Console.SetOut (fst saved)
+      Console.SetError (snd saved)
+      Visitor.keys.Clear()
+
+
+
   [<Test>]
   member self.UsageIsAsExpected() =
     let options = Main.DeclareOptions ()
@@ -2802,6 +2907,54 @@ type AltCoverTests() = class
       Assert.That (result, Is.EqualTo (expected.Replace("\r\n", "\n")))
 
     finally Console.SetError saved
+
+  [<Test>]
+  member self.ErrorResponseIsAsExpected() =
+    let saved = Console.Error
+    try
+      use stderr = new StringWriter()
+      Console.SetError stderr
+      let unique = Guid.NewGuid().ToString()
+      Main.DoInstrumentation [| "-i"; unique |]
+      let result = stderr.ToString().Replace("\r\n", "\n")
+      let expected = "\"-i\" \"" + unique + "\"\n" +
+                       """Error - usage is:
+  -i, --inputDirectory=VALUE Optional: The folder containing assemblies to
+                               instrument (default: current directory)
+  -o, --outputDirectory=VALUE
+                             Optional: The folder to receive the instrumented
+                               assemblies and their companions (default: sub-
+                               folder '__Instrumented' of the current directory)
+"""
+#if NETCOREAPP2_0
+#else
+                     + """  -k, --key=VALUE            Optional, multiple: any other strong-name key to
+                               use
+      --sn, --strongNameKey=VALUE
+                             Optional: The default strong naming key to apply
+                               to instrumented assemblies (default: None)
+"""
+#endif
+                     + """  -x, --xmlReport=VALUE      Optional: The output report template file (default:
+                                coverage.xml in the current directory)
+  -f, --fileFilter=VALUE     Optional: source file name to exclude from
+                               instrumentation (may repeat)
+  -s, --assemblyFilter=VALUE Optional: assembly name to exclude from
+                               instrumentation (may repeat)
+  -t, --typeFilter=VALUE     Optional: type name to exclude from
+                               instrumentation (may repeat)
+  -m, --methodFilter=VALUE   Optional: method name to exclude from
+                               instrumentation (may repeat)
+  -a, --attributeFilter=VALUE
+                             Optional: attribute name to exclude from
+                               instrumentation (may repeat)
+  -?, --help, -h             Prints out the options.
+"""
+
+      Assert.That (result, Is.EqualTo (expected.Replace("\r\n", "\n")))
+
+    finally Console.SetError saved
+
 
   // Recorder.fs => Shadow.Tests
 
