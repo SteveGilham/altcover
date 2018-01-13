@@ -53,13 +53,26 @@ Target "BuildRelease" (fun _ ->
     [ "AltCover.sln" ]
      |> MSBuildRelease "" ""
      |> Log "AppBuild-Output: "
+
+    DotNetCli.Build
+        (fun p -> 
+            { p with 
+                Configuration = "Release"
+                Project =  "./altcover.core.sln"})
 )
 
 Target "BuildDebug" (fun _ ->
    !! "**/AltCove*.sln"  // include demo projects
      |> Seq.filter (fun n -> n.IndexOf(".core.") = -1)
+     |> Seq.filter (fun n -> n.IndexOf(".dotnet.") = -1)
      |> MSBuildDebug "" ""
      |> Log "AppBuild-Output: "
+
+   DotNetCli.Build
+        (fun p -> 
+            { p with 
+                Configuration = "Debug"
+                Project =  "./altcover.core.sln"})
 )
 
 Target "BuildMonoSamples" (fun _ ->
@@ -154,6 +167,17 @@ Target "JustUnitTest" (fun _ ->
                                  ResultSpecs = ["./_Reports/JustUnitTestReport.xml"] })
 )
 
+Target "UnitTestDotNet" (fun _ ->
+    ensureDirectory "./_Reports"
+    !! (@".\*Tests\*.tests.core.fsproj")
+    |> Seq.iter (fun f -> printfn "Testing %s" f
+                          DotNetCli.Test
+                             (fun p -> 
+                                  { p with 
+                                      Configuration = "Debug"
+                                      Project =  f}))
+)
+
 Target "UnitTestWithOpenCover" (fun _ ->
     ensureDirectory "./_Reports/_UnitTestWithOpenCover"
     let testFiles = !! (@"_Binaries\*Tests\Debug+AnyCPU\*.Test*.dll") 
@@ -232,10 +256,22 @@ Target "FSharpTypes" ( fun _ ->
     let simpleReport = (FullName "./_Reports") @@ ( "AltCoverFSharpTypes.xml")
     let binRoot = FullName "_Binaries/AltCover/Release+AnyCPU"
     let sampleRoot = FullName "_Binaries/Sample2/Debug+AnyCPU"
-    let instrumented = "__Framework"
+    let instrumented = "__FSharpTypes"
     let result = ExecProcess (fun info -> info.FileName <- binRoot @@ "AltCover.exe"
                                           info.WorkingDirectory <- sampleRoot
                                           info.Arguments <- ("-t=System\. -t=Microsoft\. -x=" + simpleReport + " /o=./" + instrumented)) (TimeSpan.FromMinutes 5.0)
+    Actions.ValidateFSharpTypes simpleReport
+)
+
+Target "FSharpTypesDotNet" ( fun _ ->
+    ensureDirectory "./_Reports"
+    let project = FullName "./AltCover/altcover.core.fsproj"
+    let simpleReport = (FullName "./_Reports") @@ ( "AltCoverFSharpTypesDotNet.xml")
+    let sampleRoot = FullName "_Binaries/Sample2/Release+AnyCPU/netstandard2.0"
+    let instrumented = "__FSharpTypesDotNet"
+    DotNetCli.RunCommand (fun p -> {p with WorkingDir = sampleRoot}) 
+                         ("run --project " + project + " -- -t \"System\\.\" -t \"Microsoft\\.\" -x \"" + simpleReport + "\" /o \"./" + instrumented + "\"")
+
     Actions.ValidateFSharpTypes simpleReport
 )
 
@@ -245,6 +281,48 @@ Target "BasicCSharp" (fun _ ->
 
 Target "BasicCSharpMono" (fun _ ->
     Actions.SimpleInstrumentingRun "_Mono/Sample1" "_Binaries/AltCover/Debug+AnyCPU" "BasicCSharpMono"
+)
+
+Target "CSharpMonoWithDotNet" (fun _ ->
+    ensureDirectory "./_Reports"
+    let x = FullName "./_Reports/CSharpMonoWithDotNet.xml"
+    let o = FullName "./_Mono/__Instrumented.CSharpMonoWithDotNet"
+    let i = FullName "./_Mono/Sample1"
+    DotNetCli.RunCommand id ("run --project ./AltCover/altcover.core.fsproj -- -t \"System.\" -x \"" + x + "\" -o \"" + o + "\" -i \"" + i + "\"")
+
+    let result2 = ExecProcess (fun info -> info.FileName <- o @@ "/Sample1.exe"
+                                           info.WorkingDirectory <- o
+                                           info.Arguments <- "") (TimeSpan.FromMinutes 5.0)
+    if result2 <> 0 then failwith "Instrumented .exe failed"
+
+    Actions.ValidateSample1 "./_Reports/CSharpMonoWithDotNet.xml" "CSharpMonoWithDotNet"
+)
+
+Target "CSharpDotNetWithDotNet" (fun _ -> // TODO
+    ensureDirectory "./_Reports"
+    let x = FullName "./_Reports/CSharpDotNetWithDotNet.xml"
+    let o = FullName "../_Binaries/Sample1/__Instrumented.CSharpDotNetWithDotNet"
+    let i = FullName "./_Binaries/Sample1/Debug+AnyCPU/netcoreapp2.0"
+    DotNetCli.RunCommand id ("_Binaries/AltCover/Debug+AnyCPU/netcoreapp2.0/AltCover.dll -t \"System.\" -x \"" + x + "\" -o \"" + o + "\" -i \"" + i + "\"")
+
+    DotNetCli.RunCommand id (o @@ "Sample1.dll")
+
+    Actions.ValidateSample1 "./_Reports/CSharpDotNetWithDotNet.xml" "CSharpDotNetWithDotNet"
+)
+
+Target "CSharpDotNetWithFramework" (fun _ -> // TODO
+    ensureDirectory "./_Reports"
+    let simpleReport = (FullName "./_Reports") @@ ( "CSharpDotNetWithFramework.xml")
+    let binRoot = FullName "_Binaries/AltCover/Release+AnyCPU"
+    let sampleRoot = FullName "_Binaries/Sample1/Debug+AnyCPU/netcoreapp2.0"
+    let instrumented = FullName "_Binaries/Sample1/__Instrumented.CSharpDotNetWithFramework"
+    let result = ExecProcess (fun info -> info.FileName <- binRoot @@ "AltCover.exe"
+                                          info.WorkingDirectory <- sampleRoot
+                                          info.Arguments <- ("-t=System\. -t=Microsoft\. -x=" + simpleReport + " /o=" + instrumented)) (TimeSpan.FromMinutes 5.0)
+
+    DotNetCli.RunCommand id (instrumented @@ "Sample1.dll")
+
+    Actions.ValidateSample1 "./_Reports/CSharpDotNetWithFramework.xml" "CSharpDotNetWithFramework"
 )
 
 Target "SelfTest" (fun _ ->
@@ -294,14 +372,31 @@ Target "Packaging" (fun _ ->
     let resources = filesInDirMatchingRecursive "AltCover.resources.dll" (directoryInfo (FullName "_Binaries/AltCover/Release+AnyCPU")) 
 
     let applicationFiles = [
-                            (AltCover, Some "tools", None)
-                            (recorder, Some "tools", None)
+                            (AltCover, Some "tools/net45", None)
+                            (recorder, Some "tools/net45", None)
                             (packable, Some "", None)
                            ]
     let resourceFiles = resources
                         |> Seq.map (fun x -> x.FullName)
-                        |> Seq.map (fun x -> (x, Some ("tools/" + Path.GetFileName(Path.GetDirectoryName(x))), None))
+                        |> Seq.map (fun x -> (x, Some ("tools/net45/" + Path.GetFileName(Path.GetDirectoryName(x))), None))
                         |> Seq.toList
+
+    let root = (FullName ".").Length
+    let netcoreFiles = [
+                         [
+                             FullName "./altcover.dotnet.sln"
+                         ];
+                         ((!! "./AltCover/*")
+                          |> Seq.filter (fun n -> n.EndsWith(".fs") || n.EndsWith(".core.fsproj") || n.EndsWith(".resx"))
+                          |> Seq.toList);
+                         ((!! "./AltCover.Recorder/*")
+                          |> Seq.filter (fun n -> n.EndsWith(".fs") || n.EndsWith(".core.fsproj"))
+                          |> Seq.toList);
+                         ((!! "./_Generated/*")
+                          |> Seq.toList)                          
+                       ]
+                       |> List.concat
+                       |> List.map (fun x -> (x, Some ("tools/netcoreapp2.0" + Path.GetDirectoryName(x).Substring(root).Replace("\\","/")), None))
 
     NuGet (fun p ->
     {p with
@@ -310,7 +405,7 @@ Target "Packaging" (fun _ ->
         Description = "A pre-instrumented code coverage tool for .net and Mono"
         OutputPath = "./_Packaging"
         WorkingDir = "./_Binaries/Packaging"
-        Files = List.concat [applicationFiles; resourceFiles]
+        Files = List.concat [applicationFiles; resourceFiles; netcoreFiles]
         Version = !Version
         Copyright = (!Copyright).Replace("©", "(c)")
         Publish = false
@@ -321,15 +416,25 @@ Target "Packaging" (fun _ ->
 )
 
 Target "PrepareFrameworkBuild" (fun _ ->
-   ILMerge (fun p -> { p with DebugInfo = true
-                              TargetKind = TargetKind.Exe
-                              KeyFile = "./Build/Infrastructure.snk"
-                              Version = (String.Join(".", (!Version).Split('.') |> Seq.take 2) + ".0.0")
-                              Internalize = InternalizeTypes.Internalize
-                              Libraries = !! "./_Binaries/AltCover/Release+AnyCPU/Mono.C*.dll"
-                              AttributeFile = "./_Binaries/AltCover/Release+AnyCPU/AltCover.exe"})
-                              "./_Binaries/AltCover/AltCover.exe"
-                              "./_Binaries/AltCover/Release+AnyCPU/AltCover.exe"
+    ILMerge (fun p -> { p with DebugInfo = true
+                               TargetKind = TargetKind.Exe
+                               KeyFile = "./Build/Infrastructure.snk"
+                               Version = (String.Join(".", (!Version).Split('.') |> Seq.take 2) + ".0.0")
+                               Internalize = InternalizeTypes.Internalize
+                               Libraries = Seq.concat [!! "./_Binaries/AltCover/Release+AnyCPU/Mono.C*.dll"; !! "./_Binaries/AltCover/Release+AnyCPU/Newton*.dll"]
+                               AttributeFile = "./_Binaries/AltCover/Release+AnyCPU/AltCover.exe"})
+                               "./_Binaries/AltCover/AltCover.exe"
+                               "./_Binaries/AltCover/Release+AnyCPU/AltCover.exe"
+)
+
+Target "PrepareDotNetBuild" (fun _ ->
+    DotNetCli.Publish
+      (fun p -> 
+           { p with 
+                WorkingDir =  FullName "./AltCover"
+                Project = "altcover.core.fsproj"
+                Output = FullName "./_Binaries/altcover.core"
+                Configuration = "Release" })                       
 )
 
 Target "PrepareReadMe" (fun _ ->
@@ -347,14 +452,63 @@ Target "Unpack" (fun _ ->
 )
 
 Target "SimpleReleaseTest" (fun _ ->
-    let unpack = FullName "_Packaging/Unpack/tools"
+    let unpack = FullName "_Packaging/Unpack/tools/net45"
     Actions.SimpleInstrumentingRun "_Binaries/Sample1/Debug+AnyCPU" unpack "SimpleReleaseTest"
 )
 
 Target "SimpleMonoReleaseTest" (fun _ ->
-    let unpack = FullName "_Packaging/Unpack/tools"
+    let unpack = FullName "_Packaging/Unpack/tools/net45"
     Actions.SimpleInstrumentingRun "_Mono/Sample1" unpack "SimpleMonoReleaseTest"
 )
+
+Target "ReleaseMonoWithDotNet" (fun _ ->
+    ensureDirectory "./_Reports"
+    let unpack = FullName "_Packaging/Unpack/tools/netcoreapp2.0/AltCover"
+    let x = FullName "./_Reports/ReleaseMonoWithDotNet.xml"
+    let o = FullName "./_Mono/__Instrumented.ReleaseMonoWithDotNet"
+    let i = FullName "./_Mono/Sample1"
+    DotNetCli.RunCommand (fun info -> {info with WorkingDir = unpack })  
+                          ("run --project altcover.core.fsproj -- -x \"" + x + "\" -o \"" + o + "\" -i \"" + i + "\"")
+
+    let sampleRoot = "_Mono/__Instrumented.ReleaseMonoWithDotNet"
+    let result2 = ExecProcess (fun info -> info.FileName <- sampleRoot @@ "/Sample1.exe"
+                                           info.WorkingDirectory <- sampleRoot
+                                           info.Arguments <- "") (TimeSpan.FromMinutes 5.0)
+    if result2 <> 0 then failwith "Instrumented .exe failed"
+
+    Actions.ValidateSample1 "./_Reports/ReleaseMonoWithDotNet.xml" "ReleaseMonoWithDotNet"
+)
+
+Target "ReleaseDotNetWithDotNet" (fun _ -> // TODO
+    ensureDirectory "./_Reports"
+    let unpack = FullName "_Packaging/Unpack/tools/netcoreapp2.0/AltCover"
+    let x = FullName "./_Reports/ReleaseDotNetWithDotNet.xml"
+    let o = FullName "./_Binaries/Sample1/__Instrumented.ReleaseDotNetWithDotNet"
+    let i = FullName "./_Binaries/Sample1/Debug+AnyCPU/netcoreapp2.0"
+    DotNetCli.RunCommand (fun info -> {info with WorkingDir = unpack })  
+                          ("run --project altcover.core.fsproj -- -x \"" + x + "\" -o \"" + o + "\" -i \"" + i + "\"")
+
+    let sampleRoot = "_Binaries/Sample1/__Instrumented.ReleaseDotNetWithDotNet"
+    DotNetCli.RunCommand id (sampleRoot @@ "Sample1.dll")
+
+    Actions.ValidateSample1 "./_Reports/ReleaseDotNetWithDotNet.xml" "ReleaseDotNetWithDotNet"
+)
+
+Target "ReleaseDotNetWithFramework" (fun _ -> // TODO
+    ensureDirectory "./_Reports"
+    let unpack = FullName "_Packaging/Unpack/tools/net45"
+    let simpleReport = (FullName "./_Reports") @@ ( "ReleaseDotNetWithFramework.xml")
+    let sampleRoot = FullName "./_Binaries/Sample1/Debug+AnyCPU/netcoreapp2.0"
+    let instrumented = sampleRoot @@ "__Instrumented.ReleaseDotNetWithFramework"
+    let result = ExecProcess (fun info -> info.FileName <- unpack @@ "AltCover.exe"
+                                          info.WorkingDirectory <- sampleRoot
+                                          info.Arguments <- ("-t=System\. -t=Microsoft\. -x=" + simpleReport + " /o=" + instrumented)) (TimeSpan.FromMinutes 5.0)
+
+    DotNetCli.RunCommand (fun info -> { info with WorkingDir = instrumented }) "Sample1.dll"
+
+    Actions.ValidateSample1 "./_Reports/ReleaseDotNetWithFramework.xml" "ReleaseDotNetWithFramework"
+)
+
 
 // AOB
 
@@ -406,6 +560,10 @@ Target "All" ignore
 ==> "UnitTest"
 
 "Compilation"
+==> "UnitTestDotNet"
+==> "UnitTest"
+
+"Compilation"
 ==> "UnitTestWithOpenCover"
 ==> "UnitTest"
 
@@ -418,6 +576,10 @@ Target "All" ignore
 ==> "OperationalTest"
 
 "Compilation"
+==> "FSharpTypesDotNet"
+==> "OperationalTest"
+
+"Compilation"
 ==> "BasicCSharp"
 ==> "OperationalTest"
 
@@ -426,11 +588,30 @@ Target "All" ignore
 ==> "OperationalTest"
 
 "Compilation"
+==> "CSharpMonoWithDotNet"
+==> "OperationalTest"
+
+// Unhandled Exception: System.IO.FileNotFoundException: Could not load file or assembly 
+// 'FSharp.Core, Version=4.4.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'. The system cannot find the file specified.
+"Compilation"
+// TODO
+ ==> "CSharpDotNetWithDotNet"
+==> "OperationalTest"
+
+"Compilation"
+==> "CSharpDotNetWithFramework"
+==> "OperationalTest"
+
+"Compilation"
 ==> "SelfTest"
 ==> "OperationalTest"
 
 "Compilation"
 ==> "PrepareFrameworkBuild"
+==> "Packaging"
+
+"Compilation"
+==> "PrepareDotNetBuild"
 ==> "Packaging"
 
 "Compilation"
@@ -447,6 +628,21 @@ Target "All" ignore
 
 "Unpack"
 ==> "SimpleMonoReleaseTest"
+==> "Deployment"
+
+"Unpack"
+==> "ReleaseMonoWithDotNet"
+==> "Deployment"
+
+// Unhandled Exception: System.IO.FileNotFoundException: Could not load file or assembly 
+// 'FSharp.Core, Version=4.4.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'. The system cannot find the file specified.
+"Unpack"
+// 
+==> "ReleaseDotNetWithDotNet"
+==> "Deployment"
+
+"Unpack"
+==> "ReleaseDotNetWithFramework"
 ==> "Deployment"
 
 "Analysis"

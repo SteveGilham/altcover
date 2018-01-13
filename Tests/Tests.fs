@@ -37,6 +37,20 @@ type ProxyObject() =
 
 [<TestFixture>]
 type AltCoverTests() = class
+
+#if NETCOREAPP2_0
+  let sample1 = "Sample1.dll"
+  let monoSample1 = "../_Mono/Sample1"
+#else
+  let sample1 = "Sample1.exe"
+  let monoSample1 = "_Mono\\Sample1"
+  let recorderSnk = typeof<AltCover.Node>.Assembly.GetManifestResourceNames()
+                    |> Seq.find (fun n -> n.EndsWith(".Recorder.snk", StringComparison.Ordinal))
+#endif
+
+  let infrastructureSnk = Assembly.GetExecutingAssembly().GetManifestResourceNames()
+                          |> Seq.find (fun n -> n.EndsWith("Infrastructure.snk", StringComparison.Ordinal))
+
   // Hack for running while instrumented
   static member private Hack () =
     let where = Assembly.GetExecutingAssembly().Location
@@ -69,7 +83,12 @@ type AltCoverTests() = class
                 |> Seq.filter (fun x -> x.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)
                                         || x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
                 |> Seq.map (fun x -> (x, Mono.Cecil.AssemblyDefinition.ReadAssembly x))
+#if NETCOREAPP2_0
+                |> Seq.filter (fun x -> not <| (snd x).FullName.StartsWith("Mono.", StringComparison.OrdinalIgnoreCase))
+                |> Seq.filter (fun x -> not <| (snd x).FullName.StartsWith("nunit", StringComparison.OrdinalIgnoreCase))
+#else
                 |> Seq.filter (fun x -> (snd x).FullName.EndsWith("PublicKeyToken=c02b1a9f5b7cade8", StringComparison.OrdinalIgnoreCase))
+#endif
                 |> Seq.toList
     Assert.That(files, Is.Not.Empty)
     files
@@ -86,7 +105,7 @@ type AltCoverTests() = class
   member self.ShouldGetPdbFromMonoImage() =
     // Hack for running while instrumented
     let where = Assembly.GetExecutingAssembly().Location
-    let files = Directory.GetFiles(where.Substring(0, where.IndexOf("_Binaries")) + "_Mono\\Sample1")
+    let files = Directory.GetFiles(where.Substring(0, where.IndexOf("_Binaries")) + monoSample1)
                 |> Seq.filter (fun x -> x.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)
                                         || x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
                 |> Seq.map (fun x -> (x, Mono.Cecil.AssemblyDefinition.ReadAssembly x))
@@ -126,7 +145,14 @@ type AltCoverTests() = class
   member self.ShouldGetMdbWithFallback() =
     // Hack for running while instrumented
     let where = Assembly.GetExecutingAssembly().Location
-    let files = Directory.GetFiles(where.Substring(0, where.IndexOf("_Binaries")) + "_Mono\\Sample1")
+    let path = Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "_Mono\\Sample1")
+#if NETCOREAPP2_0
+    let path' = if Directory.Exists path then path
+                else Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), monoSample1)
+#else
+    let path' = path
+#endif
+    let files = Directory.GetFiles(path')
     files
     |> Seq.filter (fun x -> x.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)
                             || x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
@@ -153,8 +179,9 @@ type AltCoverTests() = class
     |> Seq.map Mono.Cecil.AssemblyDefinition.ReadAssembly
     |> Seq.filter (fun x -> x.FullName.EndsWith("PublicKeyToken=c02b1a9f5b7cade8", StringComparison.OrdinalIgnoreCase))
     |> Seq.iter (fun def ->
-      AltCover.ProgramDatabase.ReadSymbols def
-      Assert.That (def.MainModule.HasSymbols, def.MainModule.FullyQualifiedName)
+      let reader = AltCover.ProgramDatabase.ReadSymbols def
+      Assert.That (def.MainModule.HasSymbols, def.MainModule.FileName)
+      Assert.That (Option.isSome reader, def.MainModule.FileName)
     )
 
   [<Test>]
@@ -169,22 +196,31 @@ type AltCoverTests() = class
     |> Seq.map Mono.Cecil.AssemblyDefinition.ReadAssembly
     |> Seq.filter (fun x -> not <| x.FullName.EndsWith("PublicKeyToken=c02b1a9f5b7cade8", StringComparison.OrdinalIgnoreCase))
     |> Seq.iter (fun def ->
-      AltCover.ProgramDatabase.ReadSymbols def
-      Assert.That (not def.MainModule.HasSymbols, def.MainModule.FullyQualifiedName)
+      let reader = AltCover.ProgramDatabase.ReadSymbols def
+      Assert.That (not def.MainModule.HasSymbols, def.MainModule.FileName)
+      Assert.That (Option.isNone reader, def.MainModule.FileName)
     )
 
   [<Test>]
   member self.ShouldGetSymbolsFromMdb() =
     // Hack for running while instrumented
     let where = Assembly.GetExecutingAssembly().Location
-    let files = Directory.GetFiles(where.Substring(0, where.IndexOf("_Binaries")) + "_Mono\\Sample1")
+    let path = Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "_Mono\\Sample1")
+#if NETCOREAPP2_0
+    let path' = if Directory.Exists path then path
+                else Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), monoSample1)
+#else
+    let path' = path
+#endif
+
+    let files = Directory.GetFiles(path')
     files
     |> Seq.filter (fun x -> x.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)
                             || x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
     |> Seq.iter( fun x ->
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly x
-      AltCover.ProgramDatabase.ReadSymbols def
-      Assert.That (def.MainModule.HasSymbols, def.MainModule.FullyQualifiedName)
+      AltCover.ProgramDatabase.ReadSymbols def |> ignore
+      Assert.That (def.MainModule.HasSymbols, def.MainModule.FileName)
     )
 
   // Filter.fs
@@ -370,17 +406,23 @@ type AltCoverTests() = class
   member self.EmptyArrayHasExpectedHash() =
     Assert.That ((KeyStore.TokenOfArray [| |]), Is.EquivalentTo [|9uy; 7uy; 216uy; 175uy; 144uy; 24uy; 96uy; 149uy|])
 
-  static member private ProvideKeyPair () =
-      use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Infrastructure.snk")
+  member private self.ProvideKeyPair () =
+      use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(infrastructureSnk)
       use buffer = new MemoryStream()
       stream.CopyTo(buffer)
       StrongNameKeyPair(buffer.ToArray())
 
   [<Test>]
   member self.KeyHasExpectedToken() =
-    let token = KeyStore.TokenOfKey <| AltCoverTests.ProvideKeyPair ()
+    let token = KeyStore.TokenOfKey <| self.ProvideKeyPair ()
     let token' = String.Join(String.Empty, token |> List.map (fun x -> x.ToString("x2")))
-    Assert.That (token', Is.EqualTo("c02b1a9f5b7cade8"))
+    Assert.That (token', Is.EqualTo(//"c02b1a9f5b7cade8"))
+#if NETCOREAPP2_0
+                                    "0907d8af90186095"
+#else
+                                    "c02b1a9f5b7cade8"
+#endif
+    ), token')
 
   [<Test>]
   member self.TokenGeneratesExpectedULong() =
@@ -389,8 +431,14 @@ type AltCoverTests() = class
 
   [<Test>]
   member self.KeyHasExpectedIndex() =
-    let token = KeyStore.KeyToIndex <| AltCoverTests.ProvideKeyPair ()
-    Assert.That (token, Is.EqualTo(0xe8ad7c5b9f1a2bc0UL))
+    let token = KeyStore.KeyToIndex <| self.ProvideKeyPair ()
+    Assert.That (token, Is.EqualTo(
+#if NETCOREAPP2_0
+                                    0x95601890afd80709UL
+#else
+                                    0xe8ad7c5b9f1a2bc0UL
+#endif
+    ), sprintf "%x" token)
 
   [<Test>]
   member self.EmptyArrayHasExpectedIndex() =
@@ -398,23 +446,36 @@ type AltCoverTests() = class
 
   [<Test>]
   member self.KeyHasExpectedRecord() =
-    let pair = AltCoverTests.ProvideKeyPair ()
+    let pair = self.ProvideKeyPair ()
     let token = KeyStore.KeyToRecord <| pair
-    Assert.That (token, Is.EqualTo({Pair = pair; Token = BitConverter.GetBytes(0xe8ad7c5b9f1a2bc0UL) |> Array.toList}))
+    Assert.That (token, Is.EqualTo({Pair = pair; Token = BitConverter.GetBytes(
+#if NETCOREAPP2_0
+                                                                               0x95601890afd80709UL
+#else
+                                                                               0xe8ad7c5b9f1a2bc0UL
+#endif
+                                                                               ) |> Array.toList}))
 
   [<Test>]
   member self.KeyHasExpectedPlaceInIndex() =
     try
       Assert.That (Visitor.keys.Keys.Count, Is.EqualTo(0))
-      let pair = AltCoverTests.ProvideKeyPair ()
+      let pair = self.ProvideKeyPair ()
       Visitor.Add(pair)
-      Assert.That(Visitor.keys.ContainsKey(0xe8ad7c5b9f1a2bc0UL))
-      Assert.That(Visitor.keys.[0xe8ad7c5b9f1a2bc0UL], Is.EqualTo({Pair = pair; Token = BitConverter.GetBytes(0xe8ad7c5b9f1a2bc0UL) |> Array.toList}))
+      let key =
+#if NETCOREAPP2_0
+                                    0x95601890afd80709UL
+#else
+                                    0xe8ad7c5b9f1a2bc0UL
+#endif
+      Assert.That(Visitor.keys.ContainsKey(key))
+      Assert.That(Visitor.keys.[key], Is.EqualTo({Pair = pair; Token = BitConverter.GetBytes(key) |> Array.toList}))
     finally
       Visitor.keys.Clear()
 
   [<Test>]
   member self.EmptyFiltersPassAll() =
+    Visitor.NameFilters.Clear()
     Assert.That (Visitor.NameFilters.Count, Is.EqualTo(0))
     Assert.That (Visitor.IsIncluded self)
 
@@ -441,8 +502,8 @@ type AltCoverTests() = class
   [<Test>]
   member self.AfterProcessingYieldsAnExpectedValue() =
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly (Assembly.GetExecutingAssembly().Location)
-    let inputs = [ Node.Start [] ; Node.Assembly (def, true) ; Node.Module (null, false) ; Node.Type (null, true) ;
-                   Node.Method (null, false) ; Node.MethodPoint ( null, 0, true ) ;
+    let inputs = [ Node.Start [] ; Node.Assembly (def, None, true) ; Node.Module (null, None, false) ; Node.Type (null, None, true) ;
+                   Node.Method (null, None, false) ; Node.MethodPoint (null, null, 0, true ) ;
                    Node.AfterMethod false ; Node.AfterModule ; Node.AfterAssembly def; Node.Finish ]
     let outputs = inputs |> Seq.map (Visitor.After >> Seq.toList)
     let expected = [ [Finish]; [AfterAssembly def]; [AfterModule]; []; [AfterMethod false]; []; []; []; []; []]
@@ -471,7 +532,7 @@ type AltCoverTests() = class
   [<Test>]
   member self.TerminalCasesGoNoDeeper() =
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly (Assembly.GetExecutingAssembly().Location)
-    let inputs = [ Node.MethodPoint ( null, 0, true ) ;
+    let inputs = [ Node.MethodPoint (null, null, 0, true ) ;
                    Node.AfterMethod false ; Node.AfterModule ; Node.AfterAssembly def; Node.Finish ]
     let outputs = inputs |> Seq.map (Visitor.Deeper>> Seq.toList)
     let expected = [[]; []; []; []; []]
@@ -480,19 +541,24 @@ type AltCoverTests() = class
   [<Test>]
   member self.MethodPointsAreDeeperThanMethods() =
     let where = Assembly.GetExecutingAssembly().Location
-    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample1.exe")
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), sample1)
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-    ProgramDatabase.ReadSymbols def
+    let reader = ProgramDatabase.ReadSymbols def
     let method = (def.MainModule.Types |> Seq.skipWhile (fun t -> t.Name.StartsWith("<"))|> Seq.head).Methods |> Seq.head
     Visitor.Visit [] [] // cheat reset
     try
         "Program" |> (Regex >> FilterClass.File >> Visitor.NameFilters.Add)
-        let deeper = Visitor.Deeper <| Node.Method (method, true)
+        let deeper = Visitor.Deeper <| Node.Method (method,
+                                                    reader
+                                                    |> Option.map (fun r -> r.Read method),
+                                                    true)
                      |> Seq.toList
         Assert.That (deeper.Length, Is.EqualTo 10)
         deeper
         |> List.iteri (fun i node -> match node with
-                                     | (MethodPoint (_, n, b)) ->Assert.That(n, Is.EqualTo i); Assert.That (b, Is.False)
+                                     | (MethodPoint (_, _, n, b)) ->
+                                           Assert.That(n, Is.EqualTo i, "point number")
+                                           Assert.That (b, Is.False, "flag")
                                      | _ -> Assert.Fail())
     finally
       Visitor.NameFilters.Clear()
@@ -500,97 +566,102 @@ type AltCoverTests() = class
   [<Test>]
   member self.MethodsAreDeeperThanTypes() =
     let where = Assembly.GetExecutingAssembly().Location
-    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample1.exe")
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), sample1)
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-    ProgramDatabase.ReadSymbols def
+    let rdr = ProgramDatabase.ReadSymbols def
     let type' = (def.MainModule.Types |> Seq.skipWhile (fun t -> t.Name.StartsWith("<"))|> Seq.head)
     Visitor.Visit [] [] // cheat reset
     try
         "Main" |> (Regex >> FilterClass.Method >> Visitor.NameFilters.Add)
-        let deeper = Visitor.Deeper <| Node.Type (type', true)
+        let deeper = Visitor.Deeper <| Node.Type (type', rdr, true)
                      |> Seq.toList
         Visitor.Visit [] [] // cheat reset
+        let dbg = Option.get rdr
         let expected = type'.Methods
                     |> Seq.map (fun m -> let flag = m.Name = ".ctor"
-                                         let node = Node.Method (m, flag)
+                                         let node = Node.Method (m, Option.nullable (dbg.Read m), flag)
                                          List.concat [ [node]; (Visitor.Deeper >> Seq.toList) node;  [Node.AfterMethod flag]])
                     |> List.concat
         Assert.That (deeper.Length, Is.EqualTo 14)
-        Assert.That (deeper, Is.EquivalentTo expected)
+        Assert.That (deeper |> Seq.map string,
+                     Is.EquivalentTo (expected |> Seq.map string))
     finally
       Visitor.NameFilters.Clear()
 
   [<Test>]
   member self.TypesAreDeeperThanModules() =
     let where = Assembly.GetExecutingAssembly().Location
-    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample1.exe")
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), sample1)
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-    ProgramDatabase.ReadSymbols def
+    let rdr = ProgramDatabase.ReadSymbols def
     let module' = def.MainModule
     Visitor.Visit [] [] // cheat reset
     try
         "Program" |> (Regex >> FilterClass.Type >> Visitor.NameFilters.Add)
-        let deeper = Visitor.Deeper <| Node.Module (module', true)
+        let deeper = Visitor.Deeper <| Node.Module (module', rdr, true)
                      |> Seq.toList
         Visitor.Visit [] [] // cheat reset
         let expected = module'.Types // we have no nested types in this test
                     |> Seq.map (fun t -> let flag = t.Name <> "Program"
-                                         let node = Node.Type (t,flag)
+                                         let node = Node.Type (t, rdr, flag)
                                          List.concat [ [node]; (Visitor.Deeper >> Seq.toList) node])
                     |> List.concat
         Assert.That (deeper.Length, Is.EqualTo 16)
-        Assert.That (deeper, Is.EquivalentTo expected)
+        Assert.That (deeper |> Seq.map string,
+                     Is.EquivalentTo (expected |> Seq.map string))
     finally
       Visitor.NameFilters.Clear()
 
   [<Test>]
   member self.ModulesAreDeeperThanAssemblies() =
     let where = Assembly.GetExecutingAssembly().Location
-    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample1.exe")
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), sample1)
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-    ProgramDatabase.ReadSymbols def
+    let rdr = ProgramDatabase.ReadSymbols def
     Visitor.Visit [] [] // cheat reset
-    let deeper = Visitor.Deeper <| Node.Assembly (def, true)
+    let deeper = Visitor.Deeper <| Node.Assembly (def, rdr, true)
                  |> Seq.toList
     Visitor.Visit [] [] // cheat reset
     let expected = def.Modules // we have no nested types in this test
-                |> Seq.map (fun t -> let node = Node.Module (t, true)
+                |> Seq.map (fun t -> let node = Node.Module (t, rdr, true)
                                      List.concat [ [node]; (Visitor.Deeper >> Seq.toList) node; [AfterModule]])
                 |> List.concat
     Assert.That (deeper.Length, Is.EqualTo 18)
-    Assert.That (deeper, Is.EquivalentTo expected)
+    Assert.That (deeper |> Seq.map string,
+                 Is.EquivalentTo (expected |> Seq.map string))
 
   [<Test>]
   member self.AssembliesAreDeeperThanPaths() =
     let where = Assembly.GetExecutingAssembly().Location
-    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample1.exe")
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), sample1)
 
     let deeper = Visitor.Deeper <| Node.Start [path]
                     |> Seq.toList
     // assembly definitions care about being separate references in equality tests
-    let def = match Seq.head deeper with
-                | Node.Assembly (def', true) -> def'
-                | _ -> Assert.Fail(); null
+    let (def, rdr) = match Seq.head deeper with
+                     | Node.Assembly (def', Some rdr', true) -> (def', rdr')
+                     | _ -> Assert.Fail(); (null, null)
 
-    let assembly = Node.Assembly (def, true)
+    let assembly = Node.Assembly (def, Some rdr, true)
     let expected = List.concat [ [assembly]; (Visitor.Deeper >> Seq.toList) assembly; [AfterAssembly def]]
     Assert.That (deeper.Length, Is.EqualTo 20)
-    Assert.That (deeper, Is.EquivalentTo expected)
+    Assert.That (deeper |> Seq.map string,
+                 Is.EquivalentTo (expected |> Seq.map string))
 
   [<Test>]
   member self.FilteredAssembliesDoNotHaveSequencePoints() =
     let where = Assembly.GetExecutingAssembly().Location
-    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample1.exe")
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), sample1)
     try
         "Sample" |> (Regex >> FilterClass.Assembly >> Visitor.NameFilters.Add)
         let deeper = Visitor.Deeper <| Node.Start [path]
                      |> Seq.toList
         // assembly definitions care about being separate references in equality tests
         let def = match Seq.head deeper with
-                  | Node.Assembly (def', false) -> def'
+                  | Node.Assembly (def', None, false) -> def'
                   | _ -> Assert.Fail(); null
 
-        let assembly = Node.Assembly (def, false)
+        let assembly = Node.Assembly (def, None, false)
         let expected = List.concat [ [assembly]; (Visitor.Deeper >> Seq.toList) assembly; [AfterAssembly def]]
         Assert.That (deeper.Length, Is.EqualTo 10)
         Assert.That (deeper, Is.EquivalentTo expected)
@@ -630,18 +701,19 @@ type AltCoverTests() = class
   [<Test>]
   member self.PathsAreDeeperThanAVisit() =
     let where = Assembly.GetExecutingAssembly().Location
-    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample1.exe")
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), sample1)
     let accumulator = System.Collections.Generic.List<Node>()
     let fix = Visitor.EncloseState (fun (x:System.Collections.Generic.List<Node>) t -> x.Add t; x) accumulator
     Visitor.Visit [fix] [path]
     // assembly definitions care about being separate references in equality tests
-    let def = match accumulator.[1] with
-              | Node.Assembly (def', true) -> def'
-              | _ -> Assert.Fail(); null
+    let (def, rdr) = match accumulator.[1] with
+                     | Node.Assembly (def', Some rdr', true) -> (def', rdr')
+                     | _ -> Assert.Fail(); (null, null)
 
-    let assembly = Node.Assembly (def, true)
+    let assembly = Node.Assembly (def, Some rdr, true)
     let expected = List.concat [ [Start[path]; assembly]; (Visitor.Deeper >> Seq.toList) assembly; [AfterAssembly def; Finish]]
-    Assert.That (accumulator, Is.EquivalentTo expected)
+    Assert.That (accumulator |> Seq.map string,
+                 Is.EquivalentTo (expected |> Seq.map string))
 
   // Naming.fs
 
@@ -822,13 +894,18 @@ type AltCoverTests() = class
     let visitor, document = Report.ReportGenerator()
     // Hack for running while instrumented
     let where = Assembly.GetExecutingAssembly().Location
-    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample1.exe")
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), sample1)
 
     try
         "Main" |> (Regex >> FilterClass.Method >> Visitor.NameFilters.Add)
         Visitor.Visit [ visitor ] (Visitor.ToSeq path)
 
-        let baseline = XDocument.Load(new System.IO.StringReader(AltCoverTests.TTBaseline))
+        let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+        let xml = AltCoverTests.TTBaseline
+        let xml' = xml.Replace ("Version=1.0.0.0", "Version=" + def.Name.Version.ToString())
+        let xml'' = xml'.Replace("name=\"Sample1.exe\"", "name=\"" + sample1 + "\"")
+
+        let baseline = XDocument.Load(new System.IO.StringReader(xml''))
         let result = document.Elements()
         let expected = baseline.Elements()
         AltCoverTests.RecursiveValidate result expected 0 true
@@ -841,8 +918,14 @@ type AltCoverTests() = class
     // Hack for running while instrumented
     let where = Assembly.GetExecutingAssembly().Location
     let path = Path.Combine(where.Substring(0, where.IndexOf("_Binaries")) + "_Mono\\Sample1", "Sample1.exe")
+#if NETCOREAPP2_0
+    let path' = if File.Exists path then path
+                else Path.Combine(where.Substring(0, where.IndexOf("_Binaries")) + monoSample1, "Sample1.exe")
+#else
+    let path' = path
+#endif
 
-    Visitor.Visit [ visitor ] (Visitor.ToSeq path)
+    Visitor.Visit [ visitor ] (Visitor.ToSeq path')
 
     let baseline = XDocument.Load(new System.IO.StringReader(AltCoverTests.MonoBaseline))
     let result = document.Elements()
@@ -869,11 +952,14 @@ type AltCoverTests() = class
     let where = Assembly.GetExecutingAssembly().Location
     let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample3.dll")
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+#if NETCOREAPP2_0
+#else
     Assert.That (def.Name.HasPublicKey)
     let key0 = def.Name.PublicKey
-    Assert.That (key0, Is.Not.Null)
+    Assert.That (key0, Is.Not.Empty)
     let token0 = def.Name.PublicKeyToken
-    Assert.That (token0, Is.Not.Null)
+    Assert.That (token0, Is.Not.Empty)
+#endif
     AltCover.Instrument.UpdateStrongNaming def.Name None
     Assert.That (def.Name.HasPublicKey, Is.False)
     let key1 = def.Name.PublicKey
@@ -882,22 +968,35 @@ type AltCoverTests() = class
     Assert.That (token1, Is.Empty)
 
   [<Test>]
-  member self.ShouldBeAbleToUpdateTheStrongNameKey () =
+  member self.ShouldBeAbleToUpdateTheStrongNameKeyWherePossible () =
     let where = Assembly.GetExecutingAssembly().Location
     let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample3.dll")
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-    Assert.That (def.Name.HasPublicKey)
     let key0 = def.Name.PublicKey
-    Assert.That (key0, Is.Not.Null)
     let token0 = def.Name.PublicKeyToken
-    Assert.That (token0, Is.Not.Null)
+#if NETCOREAPP2_0
+    Assert.That (def.Name.HasPublicKey, Is.False)
+    Assert.That (key0, Is.Empty)
+    Assert.That (token0, Is.Empty)
+#else
+    Assert.That (def.Name.HasPublicKey)
+    Assert.That (key0, Is.Not.Empty)
+    Assert.That (token0, Is.Not.Empty)
+#endif
 
-    use stream = typeof<AltCover.Node>.Assembly.GetManifestResourceStream("AltCover.Recorder.snk")
+#if NETCOREAPP2_0
+    use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(infrastructureSnk)
+#else
+    use stream = typeof<AltCover.Node>.Assembly.GetManifestResourceStream(recorderSnk)
+#endif
     use buffer = new MemoryStream()
     stream.CopyTo(buffer)
     let key = StrongNameKeyPair(buffer.ToArray())
 
     AltCover.Instrument.UpdateStrongNaming def.Name (Some key)
+#if NETCOREAPP2_0
+    Assert.That (def.Name.HasPublicKey, Is.False)
+#else
     Assert.That (def.Name.HasPublicKey)
     let key1 = def.Name.PublicKey
     Assert.That (key1, Is.Not.Null)
@@ -907,6 +1006,7 @@ type AltCoverTests() = class
     Assert.That (token1, Is.Not.EquivalentTo(token0))
     let token' = String.Join(String.Empty, token1|> Seq.map (fun x -> x.ToString("x2")))
     Assert.That (token', Is.EqualTo("4ebffcaabf10ce6a"))
+#endif
 
   [<Test>]
   member self.NoKnownKeyInEmptyIndex() =
@@ -926,8 +1026,12 @@ type AltCoverTests() = class
       let where = Assembly.GetExecutingAssembly().Location
       let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample3.dll")
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-      AltCoverTests.ProvideKeyPair() |> Visitor.Add
+      self.ProvideKeyPair() |> Visitor.Add
+#if NETCOREAPP2_0
+      Assert.That (Option.isNone(Instrument.KnownKey def.Name))
+#else
       Assert.That (Option.isSome(Instrument.KnownKey def.Name))
+#endif
     finally
       Visitor.keys.Clear()
 
@@ -939,7 +1043,7 @@ type AltCoverTests() = class
       let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample3.dll")
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
       AltCover.Instrument.UpdateStrongNaming def.Name None
-      AltCoverTests.ProvideKeyPair() |> Visitor.Add
+      self.ProvideKeyPair() |> Visitor.Add
       Assert.That (Option.isNone(Instrument.KnownKey def.Name))
     finally
       Visitor.keys.Clear()
@@ -962,8 +1066,12 @@ type AltCoverTests() = class
       let where = Assembly.GetExecutingAssembly().Location
       let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample3.dll")
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-      AltCoverTests.ProvideKeyPair() |> Visitor.Add
+      self.ProvideKeyPair() |> Visitor.Add
+#if NETCOREAPP2_0
+      Assert.That (Option.isNone(Instrument.KnownToken def.Name))
+#else
       Assert.That (Option.isSome(Instrument.KnownToken def.Name))
+#endif
     finally
       Visitor.keys.Clear()
 
@@ -975,7 +1083,7 @@ type AltCoverTests() = class
       let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample3.dll")
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
       AltCover.Instrument.UpdateStrongNaming def.Name None
-      AltCoverTests.ProvideKeyPair() |> Visitor.Add
+      self.ProvideKeyPair() |> Visitor.Add
       Assert.That (Option.isNone(Instrument.KnownToken def.Name))
     finally
       Visitor.keys.Clear()
@@ -988,12 +1096,16 @@ type AltCoverTests() = class
       let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample3.dll")
       let prepared = Instrument.PrepareAssembly path
       let raw = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-      ProgramDatabase.ReadSymbols raw
+      ProgramDatabase.ReadSymbols raw |> ignore
       Assert.That (prepared.Name.Name, Is.EqualTo (raw.Name.Name + ".g"))
+#if NETCOREAPP2_0
+      Assert.That (prepared.Name.HasPublicKey, Is.False)
+#else
       Assert.That (prepared.Name.HasPublicKey)
       Assert.That (prepared.Name.PublicKey, Is.Not.EquivalentTo(raw.Name.PublicKey))
       let token' = String.Join(String.Empty, prepared.Name.PublicKeyToken|> Seq.map (fun x -> x.ToString("x2")))
       Assert.That (token', Is.EqualTo("4ebffcaabf10ce6a"))
+#endif
 
       let before = raw.MainModule.GetTypes() |> Seq.filter (fun t -> t.Name = "Class4") |> Seq.toList
       Assert.That (before.Length = 1)
@@ -1009,6 +1121,9 @@ type AltCoverTests() = class
     finally
       Visitor.keys.Clear()
 
+#if NETCOREAPP2_0
+// TODO
+#else
   [<Test>]
   member self.ShouldGetNewFilePathFromPreparedAssembly () =
     try
@@ -1045,7 +1160,9 @@ type AltCoverTests() = class
         Visitor.reportPath <- save
         Directory.EnumerateFiles(Path.GetDirectoryName output,
                                  (Path.GetFileNameWithoutExtension output) + ".*")
-        |> Seq.iter File.Delete
+        |> Seq.iter (fun f -> try File.Delete f
+                              with // occasionally the dll file is locked by another process
+                              | :? IOException -> ())
     finally
       Visitor.keys.Clear()
 
@@ -1059,7 +1176,7 @@ type AltCoverTests() = class
       let output = Path.GetTempFileName()
       let outputdll = output + ".dll"
       let save = Visitor.reportPath
-      use stream = typeof<AltCover.Node>.Assembly.GetManifestResourceStream("AltCover.Recorder.snk")
+      use stream = typeof<AltCover.Node>.Assembly.GetManifestResourceStream(recorderSnk)
       use buffer = new MemoryStream()
       stream.CopyTo(buffer)
       let key = StrongNameKeyPair(buffer.ToArray())
@@ -1068,9 +1185,9 @@ type AltCoverTests() = class
       try
         Visitor.reportPath <- Some unique
         let prepared = Instrument.PrepareAssembly path
-        let symbols = ProgramDatabase.GetPdbWithFallback prepared
+
         Instrument.WriteAssembly prepared outputdll
-        Assert.That (File.Exists (outputdll + ".mdb"))
+// TODO        Assert.That (File.Exists (outputdll + ".mdb"))
         let raw = Mono.Cecil.AssemblyDefinition.ReadAssembly outputdll
         Assert.That raw.Name.HasPublicKey
 
@@ -1111,7 +1228,7 @@ type AltCoverTests() = class
       let save = Visitor.reportPath
       try
         let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-        ProgramDatabase.ReadSymbols def
+        ProgramDatabase.ReadSymbols def |> ignore
 
         let clazz = def.MainModule.GetType("Sample3.Class1")
         let func = clazz.GetMethods() |> Seq.find (fun x -> x.Name = "get_Property")
@@ -1154,16 +1271,19 @@ type AltCoverTests() = class
         Visitor.reportPath <- save
         Directory.EnumerateFiles(Path.GetDirectoryName output,
                                  (Path.GetFileNameWithoutExtension output) + ".*")
-        |> Seq.iter File.Delete
+        |> Seq.iter (fun f -> try File.Delete f
+                              with // occasionally the dll file is locked by another process
+                              | :? IOException -> ())
     finally
       Visitor.keys.Clear()
+#endif
 
   [<Test>]
   member self.ShouldUpdateHandlerOK ([<Range(0,31)>] selection) =
     let where = Assembly.GetExecutingAssembly().Location
-    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample1.exe")
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), sample1)
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-    ProgramDatabase.ReadSymbols def
+    ProgramDatabase.ReadSymbols def |> ignore
 
     let program = def.MainModule.GetType("TouchTest.Program")
     let main = program.GetMethods() |> Seq.find (fun x -> x.Name = "Main")
@@ -1195,7 +1315,7 @@ type AltCoverTests() = class
     let where = Assembly.GetExecutingAssembly().Location
     let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-    ProgramDatabase.ReadSymbols def
+    ProgramDatabase.ReadSymbols def |> ignore
 
     let module' = def.MainModule.GetType("N.DU")
     let du = module'.NestedTypes |> Seq.filter (fun t -> t.Name = "MyUnion") |> Seq.head
@@ -1216,7 +1336,7 @@ type AltCoverTests() = class
     let where = Assembly.GetExecutingAssembly().Location
     let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-    ProgramDatabase.ReadSymbols def
+    ProgramDatabase.ReadSymbols def |> ignore
 
     let module' = def.MainModule.GetType("N.DU")
     let du = module'.NestedTypes |> Seq.filter (fun t -> t.Name = "MyUnion") |> Seq.head
@@ -1246,7 +1366,7 @@ type AltCoverTests() = class
     let where = Assembly.GetExecutingAssembly().Location
     let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-    ProgramDatabase.ReadSymbols def
+    ProgramDatabase.ReadSymbols def |> ignore
 
     let module' = def.MainModule.GetType("N.DU")
     let du = module'.NestedTypes |> Seq.filter (fun t -> t.Name = "MyUnion") |> Seq.head
@@ -1272,7 +1392,7 @@ type AltCoverTests() = class
     let where = Assembly.GetExecutingAssembly().Location
     let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-    ProgramDatabase.ReadSymbols def
+    ProgramDatabase.ReadSymbols def |> ignore
 
     let module' = def.MainModule.GetType("N.DU")
     let du = module'.NestedTypes |> Seq.filter (fun t -> t.Name = "MyUnion") |> Seq.head
@@ -1296,7 +1416,7 @@ type AltCoverTests() = class
     let where = Assembly.GetExecutingAssembly().Location
     let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-    ProgramDatabase.ReadSymbols def
+    ProgramDatabase.ReadSymbols def |> ignore
 
     let module' = def.MainModule.GetType("N.DU")
     let du = module'.NestedTypes |> Seq.filter (fun t -> t.Name = "MyUnion") |> Seq.head
@@ -1324,13 +1444,13 @@ type AltCoverTests() = class
   [<Test>]
   member self.TypeShouldNotChangeState () =
     let input = Instrument.Context.Build []
-    let output = Instrument.InstrumentationVisitor input (Node.Type (null,false))
+    let output = Instrument.InstrumentationVisitor input (Node.Type (null, None, false))
     Assert.That (output, Is.SameAs input)
 
   [<Test>]
   member self.ExcludedMethodShouldNotChangeState () =
     let input = Instrument.Context.Build []
-    let output = Instrument.InstrumentationVisitor input (Node.Method (null,false))
+    let output = Instrument.InstrumentationVisitor input (Node.Method (null, None, false))
     Assert.That (output, Is.SameAs input)
 
   [<Test>]
@@ -1338,13 +1458,13 @@ type AltCoverTests() = class
     let where = Assembly.GetExecutingAssembly().Location
     let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-    ProgramDatabase.ReadSymbols def
+    ProgramDatabase.ReadSymbols def |> ignore
 
     let module' = def.MainModule.GetType("N.DU")
     let du = module'.NestedTypes |> Seq.filter (fun t -> t.Name = "MyUnion") |> Seq.head
     let func = du.GetMethods() |> Seq.find (fun x -> x.Name = "as_bar")
     let input = Instrument.Context.Build []
-    let output = Instrument.InstrumentationVisitor input (Node.Method (func, true))
+    let output = Instrument.InstrumentationVisitor input (Node.Method (func, None, true))
     Assert.That (output.MethodBody, Is.SameAs func.Body)
 
   [<Test>]
@@ -1352,7 +1472,7 @@ type AltCoverTests() = class
     let where = Assembly.GetExecutingAssembly().Location
     let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-    ProgramDatabase.ReadSymbols def
+    ProgramDatabase.ReadSymbols def |> ignore
 
     let module' = def.MainModule.GetType("N.DU")
     let du = module'.NestedTypes |> Seq.filter (fun t -> t.Name = "MyUnion") |> Seq.head
@@ -1379,7 +1499,7 @@ type AltCoverTests() = class
     let where = Assembly.GetExecutingAssembly().Location
     let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-    ProgramDatabase.ReadSymbols def
+    ProgramDatabase.ReadSymbols def |> ignore
 
     let module' = def.MainModule.GetType("N.DU")
     let du = module'.NestedTypes |> Seq.filter (fun t -> t.Name = "MyUnion") |> Seq.head
@@ -1400,14 +1520,18 @@ type AltCoverTests() = class
     Assert.That (paired' |> Seq.forall (fun (i,j) -> i = j.OpCode))
 
   [<Test>]
-  member self.UpdateStrongReferencesShouldChangeSigningKey () =
+  member self.UpdateStrongReferencesShouldChangeSigningKeyWherePossile () =
     let where = Assembly.GetExecutingAssembly().Location
     let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-    ProgramDatabase.ReadSymbols def
+    ProgramDatabase.ReadSymbols def |> ignore
     let token0 = def.Name.PublicKeyToken
 
-    use stream = typeof<AltCover.Node>.Assembly.GetManifestResourceStream("AltCover.Recorder.snk")
+#if NETCOREAPP2_0
+    use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(infrastructureSnk)
+#else
+    use stream = typeof<AltCover.Node>.Assembly.GetManifestResourceStream(recorderSnk)
+#endif
     use buffer = new MemoryStream()
     stream.CopyTo(buffer)
     Visitor.defaultStrongNameKey <- Some (StrongNameKeyPair(buffer.ToArray()))
@@ -1415,19 +1539,37 @@ type AltCoverTests() = class
     let result = Instrument.UpdateStrongReferences def []
     let token1 = def.Name.PublicKeyToken
     Assert.That (token1, Is.Not.Null)
+#if NETCOREAPP2_0
+    Assert.That (token1, Is.EquivalentTo(token0))
+#else
     Assert.That (token1, Is.Not.EquivalentTo(token0))
+#endif
     let token' = String.Join(String.Empty, token1|> Seq.map (fun x -> x.ToString("x2")))
-    Assert.That (token', Is.EqualTo("4ebffcaabf10ce6a"))
+#if NETCOREAPP2_0
+    Assert.That (token', Is.EqualTo String.Empty)
+#else
+    Assert.That (token', Is.EqualTo "4ebffcaabf10ce6a" )
+#endif
     Assert.That (result, Is.Empty)
 
   [<Test>]
   member self.UpdateStrongReferencesShouldNotAddASigningKey () =
     let where = Assembly.GetExecutingAssembly().Location
     let path = Path.Combine(where.Substring(0, where.IndexOf("_Binaries")) + "_Mono\\Sample1", "Sample1.exe")
-    let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-    ProgramDatabase.ReadSymbols def
+#if NETCOREAPP2_0
+    let path' = if File.Exists path then path
+                else Path.Combine(where.Substring(0, where.IndexOf("_Binaries")) + monoSample1, "Sample1.exe")
+#else
+    let path' = path
+#endif
+    let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path'
+    ProgramDatabase.ReadSymbols def |> ignore
 
-    use stream = typeof<AltCover.Node>.Assembly.GetManifestResourceStream("AltCover.Recorder.snk")
+#if NETCOREAPP2_0
+    use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(infrastructureSnk)
+#else
+    use stream = typeof<AltCover.Node>.Assembly.GetManifestResourceStream(recorderSnk)
+#endif
     use buffer = new MemoryStream()
     stream.CopyTo(buffer)
     Visitor.defaultStrongNameKey <- Some (StrongNameKeyPair(buffer.ToArray()))
@@ -1442,42 +1584,58 @@ type AltCoverTests() = class
     let where = Assembly.GetExecutingAssembly().Location
     let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-    ProgramDatabase.ReadSymbols def
+    ProgramDatabase.ReadSymbols def |> ignore
 
-    use stream = typeof<AltCover.Node>.Assembly.GetManifestResourceStream("AltCover.Recorder.snk")
+#if NETCOREAPP2_0
+    use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(infrastructureSnk)
+#else
+    use stream = typeof<AltCover.Node>.Assembly.GetManifestResourceStream(recorderSnk)
+#endif
     use buffer = new MemoryStream()
     stream.CopyTo(buffer)
     Visitor.defaultStrongNameKey <- Some (StrongNameKeyPair(buffer.ToArray()))
 
     let result = Instrument.UpdateStrongReferences def ["nunit.framework"; "nonesuch"]
+#if NETCOREAPP2_0
+    Assert.That (result.Count, Is.EqualTo 0)
+#else
     Assert.That (result.Count, Is.EqualTo 1)
     Assert.That (result.Values |> Seq.head, Does.EndWith "PublicKeyToken=4ebffcaabf10ce6a")
     let key = result.Keys |> Seq.head
     Assert.That (result.Values |> Seq.head,
                  Is.EqualTo (key.Substring(0, key.Length - 16) + "4ebffcaabf10ce6a"))
+#endif
 
   [<Test>]
   member self.ExcludedAssemblyRefsAreNotUpdated () =
     let where = Assembly.GetExecutingAssembly().Location
     let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-    ProgramDatabase.ReadSymbols def
+    ProgramDatabase.ReadSymbols def |> ignore
     let refs = def.MainModule.AssemblyReferences |> Seq.toList
 
-    use stream = typeof<AltCover.Node>.Assembly.GetManifestResourceStream("AltCover.Recorder.snk")
+#if NETCOREAPP2_0
+    use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(infrastructureSnk)
+#else
+    use stream = typeof<AltCover.Node>.Assembly.GetManifestResourceStream(recorderSnk)
+#endif
     use buffer = new MemoryStream()
     stream.CopyTo(buffer)
     Visitor.defaultStrongNameKey <- Some (StrongNameKeyPair(buffer.ToArray()))
     let fake = Mono.Cecil.AssemblyDefinition.ReadAssembly (Assembly.GetExecutingAssembly().Location)
     let state = Instrument.Context.Build ["nunit.framework"; "nonesuch"]
-    let visited = Node.Assembly (def, false)
+    let visited = Node.Assembly (def, None, false)
 
     let result = Instrument.InstrumentationVisitor {state with RecordingAssembly = fake } visited
+#if NETCOREAPP2_0
+    Assert.That (result.RenameTable.Count, Is.EqualTo 0)
+#else
     Assert.That (result.RenameTable.Count, Is.EqualTo 1)
     Assert.That (result.RenameTable.Values |> Seq.head, Does.EndWith "PublicKeyToken=4ebffcaabf10ce6a")
     let key = result.RenameTable.Keys |> Seq.head
     Assert.That (result.RenameTable.Values |> Seq.head,
                  Is.EqualTo (key.Substring(0, key.Length - 16) + "4ebffcaabf10ce6a"))
+#endif
     Assert.That (def.MainModule.AssemblyReferences, Is.EquivalentTo refs)
 
   [<Test>]
@@ -1485,23 +1643,31 @@ type AltCoverTests() = class
     let where = Assembly.GetExecutingAssembly().Location
     let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-    ProgramDatabase.ReadSymbols def
+    ProgramDatabase.ReadSymbols def |> ignore
     let refs = def.MainModule.AssemblyReferences |> Seq.toList
 
-    use stream = typeof<AltCover.Node>.Assembly.GetManifestResourceStream("AltCover.Recorder.snk")
+#if NETCOREAPP2_0
+    use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(infrastructureSnk)
+#else
+    use stream = typeof<AltCover.Node>.Assembly.GetManifestResourceStream(recorderSnk)
+#endif
     use buffer = new MemoryStream()
     stream.CopyTo(buffer)
     Visitor.defaultStrongNameKey <- Some (StrongNameKeyPair(buffer.ToArray()))
     let fake = Mono.Cecil.AssemblyDefinition.ReadAssembly (Assembly.GetExecutingAssembly().Location)
     let state = Instrument.Context.Build ["nunit.framework"; "nonesuch"]
-    let visited = Node.Assembly (def, true)
+    let visited = Node.Assembly (def, None, true)
 
     let result = Instrument.InstrumentationVisitor {state with RecordingAssembly = fake } visited
+#if NETCOREAPP2_0
+    Assert.That (result.RenameTable.Count, Is.EqualTo 0)
+#else
     Assert.That (result.RenameTable.Count, Is.EqualTo 1)
     Assert.That (result.RenameTable.Values |> Seq.head, Does.EndWith "PublicKeyToken=4ebffcaabf10ce6a")
     let key = result.RenameTable.Keys |> Seq.head
     Assert.That (result.RenameTable.Values |> Seq.head,
                  Is.EqualTo (key.Substring(0, key.Length - 16) + "4ebffcaabf10ce6a"))
+#endif
     Assert.That (def.MainModule.AssemblyReferences, Is.EquivalentTo (refs @ [fake.Name]))
 
   [<Test>]
@@ -1509,8 +1675,8 @@ type AltCoverTests() = class
     let where = Assembly.GetExecutingAssembly().Location
     let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-    ProgramDatabase.ReadSymbols def
-    let visited = Node.Module (def.MainModule, false)
+    ProgramDatabase.ReadSymbols def |> ignore
+    let visited = Node.Module (def.MainModule, None, false)
     let state = Instrument.Context.Build ["nunit.framework"; "nonesuch"]
     let result = Instrument.InstrumentationVisitor  state visited
     Assert.That (result, Is.EqualTo  { state with ModuleId = def.MainModule.Mvid })
@@ -1520,8 +1686,8 @@ type AltCoverTests() = class
     let where = Assembly.GetExecutingAssembly().Location
     let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-    ProgramDatabase.ReadSymbols def
-    let visited = Node.Module (def.MainModule, true)
+    ProgramDatabase.ReadSymbols def |> ignore
+    let visited = Node.Module (def.MainModule, None, true)
     let state = Instrument.Context.Build ["nunit.framework"; "nonesuch"]
 
     let path' = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(),
@@ -1548,8 +1714,8 @@ type AltCoverTests() = class
     let where = Assembly.GetExecutingAssembly().Location
     let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-    ProgramDatabase.ReadSymbols def
-    let visited = Node.MethodPoint (null, 0, false)
+    ProgramDatabase.ReadSymbols def |> ignore
+    let visited = Node.MethodPoint (null, null, 0, false)
     let state = Instrument.Context.Build []
     let result = Instrument.InstrumentationVisitor state visited
     Assert.That (result, Is.SameAs state)
@@ -1559,19 +1725,20 @@ type AltCoverTests() = class
     let where = Assembly.GetExecutingAssembly().Location
     let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-    ProgramDatabase.ReadSymbols def
+    let reader = ProgramDatabase.ReadSymbols def
     let module' = def.MainModule.GetType("N.DU")
     let du = module'.NestedTypes |> Seq.filter (fun t -> t.Name = "MyUnion") |> Seq.head
     let main = du.GetMethods() |> Seq.find (fun x -> x.Name = "as_bar")
     let proc = main.Body.GetILProcessor()
+    let dbg = (Option.get reader).Read main
     let target = main.Body.Instructions
-                 |> Seq.filter (fun i -> not (isNull i.SequencePoint))
+                 |> Seq.filter (dbg.GetSequencePoint >> isNull >> not)
                  |> Seq.head
-    let visited = Node.MethodPoint (target, 32767, true)
+    let visited = Node.MethodPoint (target, null, 32767, true)
     Assert.That (target.Previous, Is.Null)
     let state = { (Instrument.Context.Build []) with MethodWorker = proc
                                                      MethodBody = main.Body
-                                                     RecordingMethodRef = def.MainModule.Import main}
+                                                     RecordingMethodRef = def.MainModule.ImportReference main}
     let result = Instrument.InstrumentationVisitor state visited
     Assert.That (result, Is.SameAs state)
     Assert.That (target.Previous.OpCode, Is.EqualTo OpCodes.Call)
@@ -1581,8 +1748,8 @@ type AltCoverTests() = class
     let where = Assembly.GetExecutingAssembly().Location
     let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-    ProgramDatabase.ReadSymbols def
-    let visited = Node.Module (def.MainModule, true)
+    ProgramDatabase.ReadSymbols def |> ignore
+    let visited = Node.Module (def.MainModule, None, true)
     let state = Instrument.Context.Build ["nunit.framework"; "nonesuch"]
 
     let path' = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(),
@@ -1596,9 +1763,9 @@ type AltCoverTests() = class
 
     let state' = { state with RecordingAssembly = def'
                               RecordingMethod = visit
-                              RecordingMethodRef = def''.MainModule.Import visit}
+                              RecordingMethodRef = def''.MainModule.ImportReference visit}
     let result = Instrument.InstrumentationVisitor state' visited
-    let ref'' = def.MainModule.Import visit
+    let ref'' = def.MainModule.ImportReference visit
 
     Assert.That (result.RecordingMethodRef.Module,
                 Is.EqualTo ( def.MainModule))
@@ -1620,7 +1787,7 @@ type AltCoverTests() = class
     let where = Assembly.GetExecutingAssembly().Location
     let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-    ProgramDatabase.ReadSymbols def
+    ProgramDatabase.ReadSymbols def |> ignore
 
     let unique = Guid.NewGuid().ToString()
     let output = Path.Combine(Path.GetDirectoryName(where), unique)
@@ -1634,8 +1801,10 @@ type AltCoverTests() = class
       Assert.That (result, Is.SameAs input)
       let created = Path.Combine (output, "Sample2.dll")
       Assert.That (File.Exists created)
+#if NETCOREAPP2_0
+#else
       Assert.That (File.Exists (Path.ChangeExtension(created, ".pdb")))
-
+#endif
     finally
       Visitor.outputDirectory <- saved
 
@@ -1644,7 +1813,7 @@ type AltCoverTests() = class
     let where = Assembly.GetExecutingAssembly().Location
     let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-    ProgramDatabase.ReadSymbols def
+    ProgramDatabase.ReadSymbols def |> ignore
 
     let unique = Guid.NewGuid().ToString()
     let output = Path.Combine(Path.GetDirectoryName(where), unique)
@@ -1657,10 +1826,61 @@ type AltCoverTests() = class
       Assert.That (result, Is.SameAs input)
       let created = Path.Combine (output, "Sample2.dll")
       Assert.That (File.Exists created)
+#if NETCOREAPP2_0
+      Assert.That (File.Exists (Path.Combine(output, "FSharp.Core.dll")))
+#else
       Assert.That (File.Exists (Path.ChangeExtension(created, ".pdb")))
-
+#endif
     finally
       Visitor.outputDirectory <- saved
+
+  [<Test>]
+  member self.JSONInjectionTransformsStandaloneFileAsExpected () =
+    let inputName = infrastructureSnk.Replace("Infrastructure.snk", "Sample1.deps.json")
+#if NETCOREAPP2_0
+    let resultName = infrastructureSnk.Replace("Infrastructure.snk", "Sample1.deps.ncafter.json")
+#else
+    let resultName = infrastructureSnk.Replace("Infrastructure.snk", "Sample1.deps.after.json")
+#endif
+    use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(inputName)
+    use reader = new StreamReader(stream)
+    let result = Instrument.injectJSON <| reader.ReadToEnd()
+    use stream' = Assembly.GetExecutingAssembly().GetManifestResourceStream(resultName)
+    use reader' = new StreamReader(stream')
+    let expected = reader'.ReadToEnd()
+    Assert.That (result.Replace("\r\n","\n"),
+                 Is.EqualTo(expected.Replace("\r\n","\n")))
+
+  [<Test>]
+  member self.JSONInjectionTransformsDependencyFileAsExpected () =
+    let inputName = infrastructureSnk.Replace("Infrastructure.snk", "Sample2.deps.json")
+#if NETCOREAPP2_0
+    let resultName = infrastructureSnk.Replace("Infrastructure.snk", "Sample2.deps.ncafter.json")
+#else
+    let resultName = infrastructureSnk.Replace("Infrastructure.snk", "Sample2.deps.after.json")
+#endif
+    use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(inputName)
+    use reader = new StreamReader(stream)
+    let result = Instrument.injectJSON <| reader.ReadToEnd()
+    use stream' = Assembly.GetExecutingAssembly().GetManifestResourceStream(resultName)
+    use reader' = new StreamReader(stream')
+    let expected = reader'.ReadToEnd()
+    Assert.That (result.Replace("\r\n","\n"),
+                 Is.EqualTo(expected.Replace("\r\n","\n")))
+
+  [<Test>]
+  member self.JSONInjectionIsIdempotent () =
+#if NETCOREAPP2_0
+    let resultName = infrastructureSnk.Replace("Infrastructure.snk", "Sample1.deps.ncafter.json")
+#else
+    let resultName = infrastructureSnk.Replace("Infrastructure.snk", "Sample1.deps.after.json")
+#endif
+    use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resultName)
+    use reader = new StreamReader(stream)
+    let expected = reader.ReadToEnd()
+    let result = Instrument.injectJSON <| expected
+    Assert.That (result.Replace("\r\n","\n"),
+                 Is.EqualTo(expected.Replace("\r\n","\n")))
 
   // AltCover.fs
 
@@ -1668,7 +1888,14 @@ type AltCoverTests() = class
   member self.ShouldLaunchWithExpectedOutput() =
     // Hack for running while instrumented
     let where = Assembly.GetExecutingAssembly().Location
-    let files = Directory.GetFiles(where.Substring(0, where.IndexOf("_Binaries")) + "_Mono\\Sample1")
+    let path = Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "_Mono\\Sample1")
+#if NETCOREAPP2_0
+    let path' = if Directory.Exists path then path
+                else Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), monoSample1)
+#else
+    let path' = path
+#endif
+    let files = Directory.GetFiles(path')
     let program = files
                   |> Seq.filter (fun x -> x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
                   |> Seq.head
@@ -1691,7 +1918,13 @@ type AltCoverTests() = class
   [<Test>]
   member self.ShouldHaveExpectedOptions() =
     let options = Main.DeclareOptions ()
-    Assert.That (options.Count, Is.EqualTo 12)
+    Assert.That (options.Count, Is.EqualTo
+#if NETCOREAPP2_0
+                                            10
+#else
+                                            12
+#endif
+                 )
     Assert.That(options |> Seq.filter (fun x -> x.Prototype <> "<>")
                         |> Seq.forall (fun x -> (String.IsNullOrWhiteSpace >> not) x.Description))
     Assert.That (options |> Seq.filter (fun x -> x.Prototype = "<>") |> Seq.length, Is.EqualTo 1)
@@ -2104,6 +2337,8 @@ type AltCoverTests() = class
     let where = Assembly.GetExecutingAssembly().Location
     where.Substring(0, where.IndexOf("_Binaries"))
 
+#if NETCOREAPP2_0
+#else
   [<Test>]
   member self.ParsingStrongNameGivesStrongName() =
     try
@@ -2122,7 +2357,6 @@ type AltCoverTests() = class
       | Some x -> let token = x
                               |> KeyStore.TokenOfKey
                               |> List.map (fun x -> x.ToString("x2"))
-
                   Assert.That (String.Join (String.Empty, token), Is.EqualTo("c02b1a9f5b7cade8"))
     finally
       Visitor.defaultStrongNameKey <- None
@@ -2270,6 +2504,7 @@ type AltCoverTests() = class
     finally
       Visitor.defaultStrongNameKey <- None
       Visitor.keys.Clear()
+#endif
 
   [<Test>]
   member self.OutputLeftPassesThrough() =
@@ -2396,7 +2631,14 @@ type AltCoverTests() = class
   member self.ShouldProcessTrailingArguments() =
     // Hack for running while instrumented
     let where = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
-    let files = Directory.GetFiles(where.Substring(0, where.IndexOf("_Binaries")) + "_Mono\\Sample1")
+    let path = Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "_Mono\\Sample1")
+#if NETCOREAPP2_0
+    let path' = if Directory.Exists path then path
+                else Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), monoSample1)
+#else
+    let path' = path
+#endif
+    let files = Directory.GetFiles(path')
     let program = files
                   |> Seq.filter (fun x -> x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
                   |> Seq.head
@@ -2424,8 +2666,17 @@ type AltCoverTests() = class
   [<Test>]
   member self.ADryRunLooksAsExpected() =
     let where = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
-    let input = Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "_Mono/Sample1")
-    let key = Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "Build/SelfTest.snk")
+    let path = Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "_Mono\\Sample1")
+    let key0 = Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "Build/SelfTest.snk")
+#if NETCOREAPP2_0
+    let input = if Directory.Exists path then path
+                else Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), monoSample1)
+    let key = if File.Exists key0 then key0
+              else Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "../Build/SelfTest.snk")
+#else
+    let input = path
+    let key = key0
+#endif
     let unique = Guid.NewGuid().ToString()
     let unique' = Path.Combine (where, Guid.NewGuid().ToString())
     Directory.CreateDirectory unique' |> ignore
@@ -2446,13 +2697,16 @@ type AltCoverTests() = class
       let args = [| "-i"; input
                     "-o"; output
                     "-x"; report
+#if NETCOREAPP2_0
+#else
                     "-sn"; key
+#endif
                  |]
       Main.DoInstrumentation args
       Assert.That (stderr.ToString(), Is.Empty)
 
       let expected = "Creating folder " + output +
-                     "\nInstrumenting files from " + input +
+                     "\nInstrumenting files from " + (Path.GetFullPath input) +
                      "\nWriting files to " + output +
                      "\nCoverage Report: " + report + "\n"
 
@@ -2461,7 +2715,7 @@ type AltCoverTests() = class
 
       Assert.That (Visitor.OutputDirectory(), Is.EqualTo output)
       Assert.That (Visitor.InputDirectory().Replace("\\", "/"),
-                   Is.EqualTo (input.Replace("\\", "/")))
+                   Is.EqualTo ((Path.GetFullPath input).Replace("\\", "/")))
       Assert.That (Visitor.ReportPath (), Is.EqualTo report)
 
       use stream = new FileStream(key, FileMode.Open)
@@ -2469,15 +2723,23 @@ type AltCoverTests() = class
       stream.CopyTo(buffer)
       let snk = StrongNameKeyPair(buffer.ToArray())
 
+#if NETCOREAPP2_0
+      Assert.That (Visitor.keys.Count, Is.EqualTo 0)
+#else
       Assert.That (Visitor.keys.ContainsKey(KeyStore.KeyToIndex snk))
       Assert.That (Visitor.keys.Count, Is.EqualTo 1)
+#endif
 
       Assert.That (File.Exists report)
 
       Assert.That (Directory.GetFiles(output)
                    |> Seq.map Path.GetFileName,
                    Is.EquivalentTo ["AltCover.Recorder.g.dll"
+#if NETCOREAPP2_0
+                                    "FSharp.Core.dll"
+#else
                                     "AltCover.Recorder.g.pdb"
+#endif
                                     "Sample1.exe"
                                     "Sample1.exe.mdb"])
 
@@ -2493,6 +2755,111 @@ type AltCoverTests() = class
       Console.SetOut (fst saved)
       Console.SetError (snd saved)
       Visitor.keys.Clear()
+
+
+  [<Test>]
+  member self.ADotNetDryRunLooksAsExpected() =
+    let where = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
+    let path = Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "_Binaries/Sample2/Debug+AnyCPU/netstandard2.0")
+    let key0 = Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "Build/SelfTest.snk")
+#if NETCOREAPP2_0
+    let input = if Directory.Exists path then path
+                else Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "../_Binaries/Sample2/Debug+AnyCPU/netstandard2.0")
+    let key = if File.Exists key0 then key0
+              else Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "../Build/SelfTest.snk")
+#else
+    let input = path
+    let key = key0
+#endif
+    let unique = Guid.NewGuid().ToString()
+    let unique' = Path.Combine (where, Guid.NewGuid().ToString())
+    Directory.CreateDirectory unique' |> ignore
+    let report = Path.Combine(unique', "ADotNetDryRunLooksAsExpected.xml")
+    let output = Path.Combine(Path.GetDirectoryName(where), unique)
+    let outputSaved = Visitor.outputDirectory
+    let inputSaved = Visitor.inputDirectory
+    let reportSaved = Visitor.reportPath
+    let keySaved = Visitor.defaultStrongNameKey
+    let saved = (Console.Out, Console.Error)
+    Visitor.keys.Clear()
+    try
+      use stdout = new StringWriter()
+      use stderr = new StringWriter()
+      Console.SetOut stdout
+      Console.SetError stderr
+
+      let args = [| "-i"; input
+                    "-o"; output
+                    "-x"; report
+#if NETCOREAPP2_0
+#else
+                    "-sn"; key
+#endif
+                 |]
+      Main.DoInstrumentation args
+      Assert.That (stderr.ToString(), Is.Empty)
+
+      let expected = "Creating folder " + output +
+                     "\nInstrumenting files from " + (Path.GetFullPath input) +
+                     "\nWriting files to " + output +
+                     "\nCoverage Report: " + report + "\n"
+
+      Assert.That (stdout.ToString().Replace("\r\n", "\n").Replace("\\", "/"),
+                   Is.EqualTo (expected.Replace("\\", "/")))
+      Assert.That (Visitor.OutputDirectory(), Is.EqualTo output)
+      Assert.That (Visitor.InputDirectory().Replace("\\", "/"),
+                   Is.EqualTo ((Path.GetFullPath input).Replace("\\", "/")))
+      Assert.That (Visitor.ReportPath (), Is.EqualTo report)
+
+      use stream = new FileStream(key, FileMode.Open)
+      use buffer = new MemoryStream()
+      stream.CopyTo(buffer)
+      let snk = StrongNameKeyPair(buffer.ToArray())
+
+#if NETCOREAPP2_0
+      Assert.That (Visitor.keys.Count, Is.EqualTo 0)
+#else
+      Assert.That (Visitor.keys.ContainsKey(KeyStore.KeyToIndex snk))
+      Assert.That (Visitor.keys.Count, Is.EqualTo 1)
+#endif
+
+      Assert.That (File.Exists report)
+
+      Assert.That (Directory.GetFiles(output)
+                   |> Seq.map Path.GetFileName,
+                   Is.EquivalentTo ["AltCover.Recorder.g.dll"
+#if NETCOREAPP2_0
+                                    "FSharp.Core.dll"
+#else
+                                    "AltCover.Recorder.g.pdb"
+#endif
+                                    "Sample2.deps.json"
+                                    "Sample2.dll"
+                                    "Sample2.pdb"])
+
+
+
+#if NETCOREAPP2_0
+      let resultName = infrastructureSnk.Replace("Infrastructure.snk", "Sample2.deps.ncafter.json")
+#else
+      let resultName = infrastructureSnk.Replace("Infrastructure.snk", "Sample2.deps.after.json")
+#endif
+      use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resultName)
+      use reader = new StreamReader(stream)
+      let expected = reader.ReadToEnd().Replace("\\", "/")
+      let recorded = File.ReadAllText(Path.Combine(output, "Sample2.deps.json")).Replace("\\", "/")
+      Assert.That (recorded, Is.EqualTo expected)
+
+    finally
+      Visitor.outputDirectory <- outputSaved
+      Visitor.inputDirectory <- inputSaved
+      Visitor.reportPath <- reportSaved
+      Visitor.defaultStrongNameKey <- keySaved
+      Console.SetOut (fst saved)
+      Console.SetError (snd saved)
+      Visitor.keys.Clear()
+
+
 
   [<Test>]
   member self.UsageIsAsExpected() =
@@ -2511,12 +2878,17 @@ type AltCoverTests() = class
                              Optional: The folder to receive the instrumented
                                assemblies and their companions (default: sub-
                                folder '__Instrumented' of the current directory)
-  -k, --key=VALUE            Optional, multiple: any other strong-name key to
+"""
+#if NETCOREAPP2_0
+#else
+                     + """  -k, --key=VALUE            Optional, multiple: any other strong-name key to
                                use
       --sn, --strongNameKey=VALUE
                              Optional: The default strong naming key to apply
                                to instrumented assemblies (default: None)
-  -x, --xmlReport=VALUE      Optional: The output report template file (default:
+"""
+#endif
+                     + """  -x, --xmlReport=VALUE      Optional: The output report template file (default:
                                 coverage.xml in the current directory)
   -f, --fileFilter=VALUE     Optional: source file name to exclude from
                                instrumentation (may repeat)
@@ -2535,6 +2907,54 @@ type AltCoverTests() = class
       Assert.That (result, Is.EqualTo (expected.Replace("\r\n", "\n")))
 
     finally Console.SetError saved
+
+  [<Test>]
+  member self.ErrorResponseIsAsExpected() =
+    let saved = Console.Error
+    try
+      use stderr = new StringWriter()
+      Console.SetError stderr
+      let unique = Guid.NewGuid().ToString()
+      Main.DoInstrumentation [| "-i"; unique |]
+      let result = stderr.ToString().Replace("\r\n", "\n")
+      let expected = "\"-i\" \"" + unique + "\"\n" +
+                       """Error - usage is:
+  -i, --inputDirectory=VALUE Optional: The folder containing assemblies to
+                               instrument (default: current directory)
+  -o, --outputDirectory=VALUE
+                             Optional: The folder to receive the instrumented
+                               assemblies and their companions (default: sub-
+                               folder '__Instrumented' of the current directory)
+"""
+#if NETCOREAPP2_0
+#else
+                     + """  -k, --key=VALUE            Optional, multiple: any other strong-name key to
+                               use
+      --sn, --strongNameKey=VALUE
+                             Optional: The default strong naming key to apply
+                               to instrumented assemblies (default: None)
+"""
+#endif
+                     + """  -x, --xmlReport=VALUE      Optional: The output report template file (default:
+                                coverage.xml in the current directory)
+  -f, --fileFilter=VALUE     Optional: source file name to exclude from
+                               instrumentation (may repeat)
+  -s, --assemblyFilter=VALUE Optional: assembly name to exclude from
+                               instrumentation (may repeat)
+  -t, --typeFilter=VALUE     Optional: type name to exclude from
+                               instrumentation (may repeat)
+  -m, --methodFilter=VALUE   Optional: method name to exclude from
+                               instrumentation (may repeat)
+  -a, --attributeFilter=VALUE
+                             Optional: attribute name to exclude from
+                               instrumentation (may repeat)
+  -?, --help, -h             Prints out the options.
+"""
+
+      Assert.That (result, Is.EqualTo (expected.Replace("\r\n", "\n")))
+
+    finally Console.SetError saved
+
 
   // Recorder.fs => Shadow.Tests
 

@@ -8,9 +8,6 @@ open System
 open System.IO
 open System.Reflection
 open System.Xml
-#if NET4
-open System.Xml.Linq
-#endif
 
 open AltCover.Recorder
 open Mono.Cecil
@@ -24,7 +21,12 @@ type AltCoverTests() = class
   [<Test>]
   member self.ShouldBeLinkingTheCorrectCopyOfThisCode() =
     let locker = { Tracer = String.Empty }
-    Assert.That(locker.GetType().Assembly.GetName().Name, Is.EqualTo "AltCover.Shadow")
+    Assert.That(locker.GetType().Assembly.GetName().Name, Is.EqualTo
+#if NETCOREAPP2_0
+    "AltCover.Recorder")
+#else
+    "AltCover.Shadow")
+#endif
 
 #if NET4
   // Doesn't work across framework boundaries, as the unit -> unit type
@@ -36,7 +38,12 @@ type AltCoverTests() = class
   member self.ShouldBeExecutingTheCorrectCopyOfThisCode() =
     let mutable where = ""
     Locking.WithLockerLocked self (fun () -> where <- Assembly.GetCallingAssembly().GetName().Name)
-    Assert.That(where, Is.EqualTo "AltCover.Shadow")
+    Assert.That(where, Is.EqualTo
+#if NETCOREAPP2_0
+    "AltCover.Recorder")
+#else
+    "AltCover.Shadow")
+#endif
 
   [<Test>]
   member self.NullIdShouldNotGiveACount() =
@@ -106,11 +113,8 @@ type AltCoverTests() = class
     Instance.UpdateReport a b
     |> ignore
 
-#if NET4
-   member self.resource = "Shadow.Tests.SimpleCoverage.xml"
-#else
-  member self.resource = "SimpleCoverage.xml"
-#endif
+   member self.resource = Assembly.GetExecutingAssembly().GetManifestResourceNames()
+                         |> Seq.find (fun n -> n.EndsWith("SimpleCoverage.xml", StringComparison.Ordinal))
 
   [<Test>]
   member self.OldDocumentStartIsNotUpdated() =
@@ -342,6 +346,9 @@ type AltCoverTests() = class
       Directory.SetCurrentDirectory(here)
       Directory.Delete(unique)
 
+#if NETCOREAPP2_0
+  // The hack doesn't work in .net core
+#else
   [<Test>]
   member self.FlushShouldBeRegisteredForUnload() =
     Instance.Visits.Clear()
@@ -408,5 +415,5 @@ type AltCoverTests() = class
                                             |> Option.isSome)
                  |> Option.isSome,
                  sprintf "%A" targets)
-
+#endif
 end

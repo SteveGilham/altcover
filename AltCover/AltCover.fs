@@ -17,7 +17,13 @@ module Main =
 
   let mutable private help = false
   let mutable private error = false
-  let private resources = ResourceManager("AltCover.Strings", Assembly.GetExecutingAssembly())
+
+  // Can't hard-code what with .net-core and .net-core tests as well as classic .net
+  // all giving this a different namespace
+  let private resource = Assembly.GetExecutingAssembly().GetManifestResourceNames()
+                         |> Seq.map (fun s -> s.Substring(0, s.Length - 10)) // trim ".resources"
+                         |> Seq.find (fun n -> n.EndsWith(".Strings", StringComparison.Ordinal))
+  let private resources = ResourceManager(resource , Assembly.GetExecutingAssembly())
 
   let internal WriteColoured (writer:TextWriter) colour operation =
        let original = Console.ForegroundColor
@@ -79,6 +85,8 @@ module Main =
                       | :? PathTooLongException -> error <- true
                       | :? System.Security.SecurityException as s -> WriteErr s.Message
                  else error <- true))
+#if NETCOREAPP2_0
+#else
       ("k|key=",
        (fun x ->
              if not (String.IsNullOrWhiteSpace(x)) && File.Exists(x) then
@@ -108,6 +116,7 @@ module Main =
                 | :? NotSupportedException -> error <- true
                 | :? System.Security.SecurityException as s -> WriteErr s.Message
              else error <- true  ))
+#endif
       ("x|xmlReport=",
        (fun x -> if not (String.IsNullOrWhiteSpace(x)) then
                     if Option.isSome Visitor.reportPath then
@@ -229,7 +238,7 @@ module Main =
                  |> ProcessHelpOption
                  |> ProcessOutputLocation
     match check1 with
-    | Left (intro, options) -> 
+    | Left (intro, options) ->
         String.Join (" ", arguments |> Seq.map (sprintf "%A"))
         |> WriteErr
         Usage intro options

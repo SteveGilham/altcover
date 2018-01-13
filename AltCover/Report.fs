@@ -31,7 +31,7 @@ module Report =
           document.Add(element)
           element :: s
 
-      | Module (moduleDef, _) ->
+      | Module (moduleDef,_, _) ->
           let element = XElement(X "module",
                           XAttribute(X "moduleId", moduleDef.Mvid.ToString()),
                           XAttribute(X "name", moduleDef.Name),
@@ -40,7 +40,7 @@ module Report =
           head.Add(element)
           element :: s
 
-      | Method (methodDef, included) ->
+      | Method (methodDef, _, included) ->
           let element = XElement(X "method",
                           XAttribute(X "name", methodDef.Name),
                           //// Mono.Cecil emits names in the form outer/inner rather than outer+inner
@@ -54,8 +54,7 @@ module Report =
           head.Add(element)
           element :: s
 
-      | MethodPoint (instruction, _, included) ->
-          let codeSegment = instruction.SequencePoint
+      | MethodPoint (_, codeSegment,  _, included) ->
           // quick fix for .mdb lack of end line/column information
           let end' = match (codeSegment.EndLine, codeSegment.EndColumn) with
                      | (-1, _) -> (codeSegment.StartLine, codeSegment.StartColumn + 1)

@@ -9,11 +9,13 @@ open System.Collections.Generic
 open System.Diagnostics.CodeAnalysis
 open System.IO
 open System.Reflection
+open System.Resources
 
 open AltCover.Augment
 open Mono.Cecil
 open Mono.Cecil.Cil
 open Mono.Cecil.Rocks
+open Newtonsoft.Json.Linq
 
 /// <summary>
 /// Module to handle instrumentation visitor
@@ -42,6 +44,29 @@ module Instrument =
                       MethodBody = null
                       MethodWorker = null }
 
+  // Can't hard-code what with .net-core and .net-core tests as well as classic .net
+  // all giving this a different namespace
+  let private resource = Assembly.GetExecutingAssembly().GetManifestResourceNames()
+                         |> Seq.map (fun s -> s.Substring(0, s.Length - 10)) // trim ".resources"
+                         |> Seq.find (fun n -> n.EndsWith(".JSONFragments", StringComparison.Ordinal))
+  let private resources = ResourceManager(resource , Assembly.GetExecutingAssembly())
+  let version = typeof<AltCover.Recorder.Tracer>.Assembly.GetName().Version.ToString()
+#if NETCOREAPP2_0
+  let dependencies = (resources.GetString "netcoreDependencies").Replace("version",
+                                                                          version)
+  let runtime = (resources.GetString "netcoreRuntime").Replace("AltCover.Recorder.g/version",
+                                                               "AltCover.Recorder.g/" + version)
+  let newLibraries = (resources.GetString "netcoreLibraries").Replace("AltCover.Recorder.g/version",
+                                                                      "AltCover.Recorder.g/" + version)
+#else
+  let dependencies = (resources.GetString "frameworkDependencies").Replace("version",
+                                                                            version)
+  let runtime = (resources.GetString "frameworkRuntime").Replace("AltCover.Recorder.g/version",
+                                                                  "AltCover.Recorder.g/" + version)
+  let newLibraries = (resources.GetString "frameworkLibraries").Replace("AltCover.Recorder.g/version",
+                                                                          "AltCover.Recorder.g/" + version)
+#endif
+
   /// <summary>
   /// Workround for not being able to take typeof<SomeModule> even across
   /// assembly boundaries -- start with a pure type then iterate to the module
@@ -68,12 +93,16 @@ module Instrument =
   /// <param name="assemblyName">The name to update</param>
   /// <param name="key">The possibly empty key to use</param>
   let internal UpdateStrongNaming (assemblyName:AssemblyNameDefinition) (key:StrongNameKeyPair option) =
+#if NETCOREAPP2_0
+    ()
+#else
     match key with
     | None -> assemblyName.HasPublicKey <- false
               assemblyName.PublicKey <- null
               assemblyName.PublicKeyToken <- null
     | Some key' -> assemblyName.HasPublicKey <- true
                    assemblyName.PublicKey <- key'.PublicKey // sets token implicitly
+#endif
 
   /// <summary>
   /// Locate the key, if any, which was used to name this assembly.
@@ -114,13 +143,17 @@ module Instrument =
   /// <returns>A representation of the assembly used to record all coverage visits.</returns>
   let internal PrepareAssembly (location:string) =
     let definition = AssemblyDefinition.ReadAssembly(location)
-    ProgramDatabase.ReadSymbols definition
+    ProgramDatabase.ReadSymbols definition |> ignore
     definition.Name.Name <- (extractName definition) + ".g"
+#if NETCOREAPP2_0
+    let pair = None
+#else
     use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Recorder.snk")
     use buffer = new MemoryStream()
     stream.CopyTo(buffer)
-    let pair = StrongNameKeyPair(buffer.ToArray())
-    UpdateStrongNaming definition.Name (Some pair)
+    let pair = Some (StrongNameKeyPair(buffer.ToArray()))
+#endif
+    UpdateStrongNaming definition.Name (pair)
 
     // set the coverage file path
     let pathGetterDef = definition.MainModule.GetTypes()
@@ -145,12 +178,24 @@ module Instrument =
   /// when asked to strongname.  This writes a new .pdb/.mdb alongside the instrumented assembly</remark>
   let internal WriteAssembly (assembly:AssemblyDefinition) (path:string) =
     let pkey = Mono.Cecil.WriterParameters()
-    pkey.WriteSymbols <- true
+#if NETSTANDARD2_0
+#else
+#if NETCOREAPP2_0
+#else
+    // Fails in .net core
     pkey.SymbolWriterProvider <- match Path.GetExtension (Option.getOrElse String.Empty (ProgramDatabase.GetPdbWithFallback assembly)) with
-                                 | ".pdb" -> Mono.Cecil.Pdb.PdbWriterProvider() :> ISymbolWriterProvider
-                                 | _ -> Mono.Cecil.Mdb.MdbWriterProvider() :> ISymbolWriterProvider
+                                 | ".pdb" ->
+                                   pkey.WriteSymbols <- true
+                                   Mono.Cecil.Pdb.PdbWriterProvider() :> ISymbolWriterProvider
+                                 | _ ->
+                                   pkey.WriteSymbols <- false // TODO
+                                   null // Mono.Cecil.Mdb.MdbWriterProvider() :> ISymbolWriterProvider
+
+    // No strongnames in .net core
     KnownKey assembly.Name
     |> Option.iter (fun key -> pkey.StrongNameKeyPair <- key)
+#endif
+#endif
     assembly.Write(path, pkey)
 
   type internal SubstituteInstruction (oldValue:Instruction, newValue:Instruction) =
@@ -218,7 +263,8 @@ module Instrument =
 
     // TODO -- is this still lookup table of any use??
     let assemblyReferenceSubstitutions = new Dictionary<String, String>()
-
+#if NETCOREAPP2_0
+#else
     let interestingReferences =  assembly.MainModule.AssemblyReferences
                                  |> Seq.cast<AssemblyNameReference>
                                  |> Seq.filter (fun x -> assemblies |> List.exists (fun y -> y.Equals(x.Name)))
@@ -242,8 +288,47 @@ module Instrument =
                           if  not <| updated.Equals(original, StringComparison.Ordinal) then
                             assemblyReferenceSubstitutions.[original] <- updated
                   )
-
+#endif
     assemblyReferenceSubstitutions
+
+  let internal injectJSON json =
+    let o = JObject.Parse json
+
+    let target = ((o.Property "runtimeTarget").Value :?> JObject).Property("name").Value.ToString()
+    let targets = (o.Properties()
+                    |> Seq.find (fun p -> p.Name = "targets")).Value :?> JObject
+    let targeted = (targets.Properties()
+                    |> Seq.find (fun p -> p.Name= target)).Value :?> JObject
+
+    let app = (targeted.PropertyValues() |> Seq.head)  :?> JObject
+
+    let existingDependencies = app.Properties() |> Seq.tryFind (fun p -> p.Name = "dependencies")
+    let prior = match existingDependencies with
+                | None -> Set.empty<string>
+                | Some p -> (p.Value :?> JObject).Properties()
+                            |> Seq.map (fun p -> p.Name)
+                            |> Set.ofSeq
+
+    let rawDependencies = (JObject.Parse dependencies).Properties()
+                           |> Seq.find (fun p -> p.Name = "dependencies")
+    match app.Properties() |> Seq.tryFind (fun p -> p.Name = "dependencies") with
+    | None -> app.AddFirst(rawDependencies)
+    | Some p -> (rawDependencies.Value :?> JObject).Properties()
+                |> Seq.filter (fun r -> prior |> Set.contains r.Name |> not)
+                |> Seq.iter (fun r -> (p.Value :?> JObject).Add(r))
+
+    let rt = JObject.Parse runtime
+    rt.Properties()
+    |> Seq.filter (fun r -> prior |> Set.contains (r.Name.Split('/') |> Seq.head) |> not)
+    |> Seq.iter (fun r -> targeted.Add(r))
+
+    let libraries = (o.Properties()
+                    |> Seq.find (fun p -> p.Name = "libraries")).Value :?> JObject
+    (JObject.Parse newLibraries).Properties()
+    |> Seq.filter (fun r -> prior |> Set.contains (r.Name.Split('/') |> Seq.head) |> not)
+    |> Seq.rev
+    |> Seq.iter (libraries.AddFirst)
+    o.ToString()
 
   /// <summary>
   /// Perform visitor operations
@@ -255,11 +340,11 @@ module Instrument =
      match node with
      | Start _ -> let recorder = typeof<AltCover.Recorder.Tracer>
                   { state with RecordingAssembly = PrepareAssembly(recorder.Assembly.Location) }
-     | Assembly (assembly, included) -> let updates = UpdateStrongReferences assembly state.InstrumentedAssemblies
-                                        if included then
-                                           assembly.MainModule.AssemblyReferences.Add(state.RecordingAssembly.Name)
-                                        { state with RenameTable = updates } // TODO use this (attribute mappings IIRC)
-     | Module (m, included) -> //of ModuleDefinition * bool
+     | Assembly (assembly, _, included) -> let updates = UpdateStrongReferences assembly state.InstrumentedAssemblies
+                                           if included then
+                                              assembly.MainModule.AssemblyReferences.Add(state.RecordingAssembly.Name)
+                                           { state with RenameTable = updates } // TODO use this (attribute mappings IIRC)
+     | Module (m, _, included) -> //of ModuleDefinition * bool
          let restate = match included with
                        | true ->
                          let recordingMethod = match state.RecordingMethod with
@@ -267,14 +352,14 @@ module Instrument =
                                                | _ -> state.RecordingMethod
 
                          { state with
-                               RecordingMethodRef = m.Import(recordingMethod);
+                               RecordingMethodRef = m.ImportReference(recordingMethod);
                                RecordingMethod = recordingMethod }
                        | _ -> state
          { restate with ModuleId = m.Mvid }
 
      | Type _ -> //of TypeDefinition * bool
          state
-     | Method (m,  included) -> //of MethodDefinition * bool
+     | Method (m, _,  included) -> //of MethodDefinition * bool
          match included with
          | true ->
            let body = m.Body
@@ -283,9 +368,8 @@ module Instrument =
               MethodWorker = body.GetILProcessor() }
          | _ -> state
 
-     | MethodPoint (instruction, point, included) -> //of Instruction * int * bool
-       if included && (not(isNull instruction.SequencePoint)) &&
-                      (Visitor.IsIncluded instruction.SequencePoint.Document.Url) then
+     | MethodPoint (instruction, _, point, included) -> //of Instruction * int * bool
+       if included then // by construction the sequence point is included
             let instrLoadModuleId = InsertVisit instruction state.MethodWorker state.RecordingMethodRef (state.ModuleId.ToString()) point
 
             // Change references in operands from "instruction" to first counter invocation instruction (instrLoadModuleId)
@@ -312,6 +396,15 @@ module Instrument =
                                  state
      | Finish -> let counterAssemblyFile = Path.Combine(Visitor.OutputDirectory(), (extractName state.RecordingAssembly) + ".dll")
                  WriteAssembly (state.RecordingAssembly) counterAssemblyFile
+                 Directory.GetFiles(Visitor.OutputDirectory(), "*.deps.json", SearchOption.TopDirectoryOnly)
+                 |> Seq.iter (fun f -> File.WriteAllText(f, (f |> File.ReadAllText |> injectJSON))                                       )
+#if NETCOREAPP2_0
+                 let fsharplib = Path.Combine(Visitor.OutputDirectory(), "FSharp.Core.dll")
+                 if not (File.Exists fsharplib) then
+                   use fsharpbytes = new FileStream(AltCover.Recorder.Tracer.Core(), FileMode.Open, FileAccess.Read)
+                   use libstream = new FileStream(fsharplib, FileMode.Create)
+                   fsharpbytes.CopyTo libstream
+#endif
                  state
 
   /// <summary>

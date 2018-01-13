@@ -12,6 +12,10 @@ open System.Xml
 
 [<ProgId("ExcludeFromCodeCoverage")>] // HACK HACK HACK
 type Tracer = { Tracer : string }
+#if NETSTANDARD2_0
+   with static member Core () =
+             typeof<Microsoft.FSharp.Core.CompilationMappingAttribute>.Assembly.Location
+#endif
 
 // Abstract out compact bits of F# that expand into
 // enough under-the-covers code to make Gendarme spot duplication

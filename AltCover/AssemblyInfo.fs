@@ -1,7 +1,7 @@
 ﻿namespace AltCover
 
 open System
-open System.Runtime.CompilerServices
+open System.Reflection
 open System.Runtime.InteropServices
 
 [<assembly: CLSCompliant(true)>]
