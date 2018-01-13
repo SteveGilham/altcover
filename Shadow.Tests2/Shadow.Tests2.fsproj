@@ -10,8 +10,8 @@
     <RootNamespace>Shadow.Tests2</RootNamespace>
     <AssemblyName>AltCover.Shadow.Tests2</AssemblyName>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
-    <TargetFSharpCoreVersion Condition="'$(TRAVIS)' == 'true'">4.4.1.0</TargetFSharpCoreVersion>
-    <TargetFSharpCoreVersion Condition="'$(TRAVIS)' != 'true'">2.3.0.0</TargetFSharpCoreVersion>
+    <TargetFSharpCoreVersion Condition="'$(TRAVIS)' == 'true'">FSharp.Core</TargetFSharpCoreVersion>
+    <TargetFSharpCoreVersion Condition="'$(TRAVIS)' != 'true'">FSharp.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</TargetFSharpCoreVersion>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Name>Shadow.Tests2</Name>
   </PropertyGroup>
@@ -71,8 +71,9 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="FSharp.Core, Version=$(TargetFSharpCoreVersion), Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-      <Private>True</Private>
+    <Reference Include="$(TargetFSharpCoreVersion)">
+      <Private Condition="'$(TRAVIS)' != 'true'">True</Private>
+      <HintPath Condition="'$(TRAVIS)' == 'true'">..\packages\FSharp.Core.4.2.3\lib\net45\FSharp.Core.dll</HintPath>
     </Reference>
     <Reference Include="Mono.Cecil">
       <HintPath>..\packages\Mono.Cecil.0.9.6.4\lib\net20\Mono.Cecil.dll</HintPath>
