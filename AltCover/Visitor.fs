@@ -127,33 +127,23 @@ module Visitor =
   let rec internal Deeper node =
     // The pattern here is map x |> map y |> map x |> concat => collect (x >> y >> z)
     match node with
-    | Start paths -> paths |> Seq.iter (fun s -> (Augment.logsink.AppendFormat("Path: {0}", s)) |> ignore)
-                     paths
+    | Start paths -> paths
                      |> Seq.collect (AssemblyDefinition.ReadAssembly >>
                                      (fun x -> let included = IsIncluded x
                                                let reader = if included then ProgramDatabase.ReadSymbols(x)
                                                             else None
                                                Assembly(x, reader, included)) >> BuildSequence)
 
-    | Assembly (a, reader, included) ->  Augment.logsink.AppendFormat ("Assembly {0} included {1}",
-                                                                       a.FullName.ToString(),
-                                                                       included) |> ignore
-                                         a.Modules
+    | Assembly (a, reader, included) ->  a.Modules
                                          |> Seq.cast
                                          |> Seq.collect ((fun x -> Module (x, reader, included)) >> BuildSequence)
 
-    | Module (x, reader, included) ->    Augment.logsink.AppendFormat ("Module {0} included {1}",
-                                                                       x.FileName.ToString(),
-                                                                       included) |> ignore
-                                         PointNumber <- 0
+    | Module (x, reader, included) ->    PointNumber <- 0
                                          x.GetAllTypes()
                                          |> Seq.cast
                                          |> Seq.collect ((fun t -> Type (t, reader, included && IsIncluded t)) >> BuildSequence)
 
-    | Type (t, reader, included) ->    Augment.logsink.AppendFormat ("Type {0} included {1}",
-                                                                       t.FullName.ToString(),
-                                                                       included) |> ignore
-                                       t.Methods
+    | Type (t, reader, included) ->    t.Methods
                                        |> Seq.cast
                                        |> Seq.filter (fun (m : MethodDefinition) -> not m.IsAbstract
                                                                                     && not m.IsRuntime

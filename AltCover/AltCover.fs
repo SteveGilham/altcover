@@ -209,14 +209,11 @@ module Main =
       |> Seq.fold (fun (accumulator : (string*string) list) info ->
            let fullName = info.FullName
            let target = Path.Combine (toInfo.FullName, info.Name)
-           Augment.logsink.AppendFormat("Copy {0} to {1}{2}", fullName, target, Environment.NewLine) |> ignore
-
            File.Copy(fullName, target, true)
            try
              let def = AssemblyDefinition.ReadAssembly(fullName)
              let assemblyPdb = ProgramDatabase.GetPdbWithFallback def
              if Visitor.IsIncluded def && Option.isSome assemblyPdb then
-                Augment.logsink.AppendFormat("Symbols {0} {1}", Option.get assemblyPdb, Environment.NewLine) |> ignore
                 (fullName, def.Name.Name) :: accumulator
              else
                 accumulator
@@ -236,7 +233,6 @@ module Main =
            Launch cmd args toInfo.FullName // Spawn process, echoing asynchronously
 
   let internal DoInstrumentation arguments =
-    Augment.logsink.AppendFormat("Time: {0}{1}", DateTime.UtcNow, Environment.NewLine) |> ignore
     let check1 = DeclareOptions ()
                  |> ParseCommandLine arguments
                  |> ProcessHelpOption
@@ -256,9 +252,6 @@ module Main =
         let visitors = [ reporter ; Instrument.InstrumentGenerator assemblyNames ]
         Visitor.Visit visitors (assemblies )
         document.Save(Visitor.ReportPath())
-
-        File.WriteAllText(Path.ChangeExtension(Assembly.GetExecutingAssembly().Location, ".log"),
-                          Augment.logsink.ToString())
 
         ProcessTrailingArguments rest toInfo
       with

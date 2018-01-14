@@ -12,5 +12,3 @@ module Augment =
   let  Right x :Either<'a,'b> = Choice1Of2 x
   let  Left  x :Either<'a,'b> = Choice2Of2 x
   let  (|Right|Left|) = function Choice1Of2 x -> Right x | Choice2Of2 x -> Left x
-
-  let logsink = System.Text.StringBuilder()

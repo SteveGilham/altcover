@@ -63,4 +63,3 @@ _Mono/
 **/obj/
 *.suo
 Build/build.fsx
-AltCover.log
