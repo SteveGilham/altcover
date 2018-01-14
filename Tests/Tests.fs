@@ -2695,8 +2695,7 @@ type AltCoverTests() = class
     finally
       Console.SetOut (fst saved)
       Console.SetError (snd saved)
-
-    printfn "result = '%s' length %d" probe probe.Length
+      printfn "result = '%s' length %d" probe probe.Length
 
 
   [<Test>]
