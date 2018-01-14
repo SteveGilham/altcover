@@ -249,10 +249,11 @@ Target "UnitTestWithAltCover" (fun _ ->
     ensureDirectory "./_Reports/_UnitTestWithAltCover"
     let keyfile = FullName "Build/SelfTest.snk"
     let reports = FullName "./_Reports"
+    let altcover = findToolInSubPath "AltCover.exe" "./_Binaries"
 
     let altReport = reports @@ "UnitTestWithAltCover.xml"
     printfn "Instrumented the code"
-    let result = ExecProcess (fun info -> info.FileName <- findToolInSubPath "AltCover.exe" "./_Binaries"
+    let result = ExecProcess (fun info -> info.FileName <- altcover
                                           info.WorkingDirectory <- FullName "_Binaries/AltCover.Tests/Debug+AnyCPU"
                                           info.Arguments <- ("/sn=" + keyfile + AltCoverFilter + @"/o=./__UnitTestWithAltCover -x=" + altReport)) (TimeSpan.FromMinutes 5.0)
     if result <> 0 then failwithf "Re-instrument returned with a non-zero exit code"
@@ -268,8 +269,8 @@ Target "UnitTestWithAltCover" (fun _ ->
     printfn "Instrument the shadow tests"
     let shadowDir = "_Binaries/AltCover.Shadow.Tests/Debug+AnyCPU"
     let shadowReport = reports @@ "ShadowTestWithAltCover.xml"
-    let result = ExecProcess (fun info -> info.FileName <- "_Binaries/AltCover/Debug+AnyCPU/AltCover.exe"
-                                          info.WorkingDirectory <- "_Binaries/AltCover.Shadow.Tests/Debug+AnyCPU"
+    let result = ExecProcess (fun info -> info.FileName <- altcover
+                                          info.WorkingDirectory <- FullName "_Binaries/AltCover.Shadow.Tests/Debug+AnyCPU"
                                           info.Arguments <- ("/sn=" + keyfile + AltCoverFilter + @"/o=./__ShadowTestWithAltCover -x=" + shadowReport)) (TimeSpan.FromMinutes 5.0)
 
     printfn "Execute the shadow tests"
