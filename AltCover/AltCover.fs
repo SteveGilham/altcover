@@ -253,6 +253,8 @@ module Main =
         Visitor.Visit visitors (assemblies )
         document.Save(Visitor.ReportPath())
 
+        File.WriteAllText("AltCover.log", Augment.logsink.ToString())
+
         ProcessTrailingArguments rest toInfo
       with
       | :? IOException as x -> WriteErr x.Message

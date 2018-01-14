@@ -266,6 +266,7 @@ Target "UnitTestWithAltCover" (fun _ ->
                                  WorkingDir = "."
                                  ResultSpecs = ["./_Reports/UnitTestWithAltCoverReport.xml"] })
 
+    printfn "%s" (File.ReadAllText (FullName "_Binaries/AltCover.Tests/Debug+AnyCPU/AltCover.log"))
     printfn "%s" (File.ReadAllText altReport)                                 
 
     printfn "Instrument the shadow tests"
@@ -283,10 +284,9 @@ Target "UnitTestWithAltCover" (fun _ ->
 
     printfn "%s" (File.ReadAllText shadowReport)                                                                  
 
-    if String.IsNullOrWhiteSpace(environVar "TRAVIS_JOB_NUMBER") then  // TODO
-      ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
-                                         ReportTypes = [ ReportGeneratorReportType.Html; ReportGeneratorReportType.Badges; ReportGeneratorReportType.XmlSummary ]
-                                         TargetDir = "_Reports/_UnitTestWithAltCover"})
+    ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
+                                       ReportTypes = [ ReportGeneratorReportType.Html; ReportGeneratorReportType.Badges; ReportGeneratorReportType.XmlSummary ]
+                                       TargetDir = "_Reports/_UnitTestWithAltCover"})
         [altReport; shadowReport]
 )
 
