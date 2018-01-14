@@ -1923,6 +1923,8 @@ type AltCoverTests() = class
       Console.SetError stderr
 
       Main.Launch program (String.Empty) (Path.GetDirectoryName (Assembly.GetExecutingAssembly().Location))
+      stderr.Flush()
+      stdout.Flush()
 
       Assert.That(stderr.ToString(), Is.Empty)
       let result = stdout.ToString()
@@ -2676,6 +2678,8 @@ type AltCoverTests() = class
 
       Main.ProcessTrailingArguments [program; u1; u2]
                                      (DirectoryInfo(where))
+      stderr.Flush()
+      stdout.Flush()
 
       Assert.That(stderr.ToString(), Is.Empty)
       let result = stdout.ToString()
@@ -2874,9 +2878,6 @@ type AltCoverTests() = class
                          "Sample2.deps.json"
                          "Sample2.dll"
                          "Sample2.pdb"]
-
-
-
 
       Assert.That (Directory.GetFiles(output)
                    |> Seq.map Path.GetFileName,
