@@ -34,7 +34,7 @@ Target "SetVersion" (fun _ ->
     let ci = if String.IsNullOrWhiteSpace appveyor then
                if  String.IsNullOrWhiteSpace travis then
                  String.Empty
-               else version + "." + travis + "-travis"
+               else version.Replace("{build}", travis + "-travis")
              else appveyor
     let (v, majmin, y) = Actions.LocalVersion ci version
     Version := v
