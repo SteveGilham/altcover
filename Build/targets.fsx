@@ -458,6 +458,7 @@ Target "Packaging" (fun _ ->
 
 Target "PrepareFrameworkBuild" (fun _ ->
     let toolpath = findToolInSubPath "ILMerge.exe" "./packages"
+    let here = Directory.GetCurrentDirectory()
 
     ILMerge (fun p -> { p with DebugInfo = true
                                ToolPath = toolpath
@@ -466,6 +467,7 @@ Target "PrepareFrameworkBuild" (fun _ ->
                                Version = (String.Join(".", (!Version).Split('.') |> Seq.take 2) + ".0.0")
                                Internalize = InternalizeTypes.Internalize
                                Libraries = Seq.concat [!! "./_Binaries/AltCover/Release+AnyCPU/Mono.C*.dll"; !! "./_Binaries/AltCover/Release+AnyCPU/Newton*.dll"]
+                                           |> Seq.map (fun f -> f.Replace(here, "."))
                                AttributeFile = "./_Binaries/AltCover/Release+AnyCPU/AltCover.exe"})
                                "./_Binaries/AltCover/AltCover.exe"
                                "./_Binaries/AltCover/Release+AnyCPU/AltCover.exe"
