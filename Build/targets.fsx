@@ -283,9 +283,10 @@ Target "UnitTestWithAltCover" (fun _ ->
 
     printfn "%s" (File.ReadAllText shadowReport)                                                                  
 
-    ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
-                                       ReportTypes = [ ReportGeneratorReportType.Html; ReportGeneratorReportType.Badges; ReportGeneratorReportType.XmlSummary ]
-                                       TargetDir = "_Reports/_UnitTestWithAltCover"})
+    if String.IsNullOrWhiteSpace(environVar "TRAVIS_JOB_NUMBER") then  // TODO
+      ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
+                                         ReportTypes = [ ReportGeneratorReportType.Html; ReportGeneratorReportType.Badges; ReportGeneratorReportType.XmlSummary ]
+                                         TargetDir = "_Reports/_UnitTestWithAltCover"})
         [altReport; shadowReport]
 )
 
