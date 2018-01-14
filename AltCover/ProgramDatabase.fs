@@ -13,27 +13,20 @@ open Mono.Cecil.Pdb
 module ProgramDatabase =
   // We no longer have to violate Cecil encapsulation to get the PDB path!
   let GetPdbFromImage (assembly:AssemblyDefinition) =
-    if assembly.MainModule.HasDebugHeader then
-      let header = assembly.MainModule.GetDebugHeader()
-      if header.HasEntries then
-          let entry = header.Entries // header is followed by UTF-8 nul terminated string
-                      |> Seq.head
-          if entry.Data.Length > 0x18 then 
-              let name = entry.Data
-                              |> Seq.skip 0x18  // size of the debug header
-                              |> Seq.takeWhile (fun x -> x <> byte 0)
-                              |> Seq.toArray
-              Some (System.Text.Encoding.UTF8.GetString name)
-              |> Option.filter (fun (s:String) -> s.Length > 0)
-              |> Option.filter File.Exists
-          else 
-              printfn "%d entries" header.Entries.Length
-              printfn "%A" entry.Data
-              None
-      else
-        None // TODO -- built-in mdb path for Mono
-    else
-      None
+    Some assembly.MainModule
+    |> Option.filter (fun x -> x.HasDebugHeader)
+    |> Option.map (fun x -> x.GetDebugHeader())
+    |> Option.filter (fun x -> x.HasEntries)
+    |> Option.bind (fun x -> x.Entries |> Seq.tryFind (fun t -> true))
+    |> Option.map (fun x -> x.Data)
+    |> Option.filter (fun x -> x.Length > 0x18)
+    |> Option.map (fun x -> x
+                            |> Seq.skip 0x18  // size of the debug header
+                            |> Seq.takeWhile (fun x -> x <> byte 0)
+                            |> Seq.toArray
+                            |> System.Text.Encoding.UTF8.GetString)
+    |> Option.filter (fun s -> s.Length > 0)
+    |> Option.filter File.Exists
 
   let GetPdbWithFallback (assembly:AssemblyDefinition) =
     match GetPdbFromImage assembly with
