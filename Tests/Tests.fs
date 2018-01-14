@@ -218,17 +218,16 @@ type AltCoverTests() = class
 #endif
     let files = Directory.GetFiles(path')
 
-    if File.Exists(pdb) then
-      files
-      |> Seq.filter (fun x -> x.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)
-                              || x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
-      |> Seq.iter( fun x ->
-        let def = Mono.Cecil.AssemblyDefinition.ReadAssembly x
-        AltCover.ProgramDatabase.ReadSymbols def |> ignore
-        Assert.That (def.MainModule.HasSymbols, def.MainModule.FileName)
-      )
-    else
-      printf "%A" files
+    files
+    |> Seq.filter (fun x -> x.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)
+                            || x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
+    |> Seq.iter( fun x ->
+      let def = Mono.Cecil.AssemblyDefinition.ReadAssembly x
+      printfn "%A" def
+      let reader = AltCover.ProgramDatabase.ReadSymbols def
+      printfn "%A" reader
+      Assert.That (def.MainModule.HasSymbols, def.MainModule.FileName)
+    )
 
   // Filter.fs
 
@@ -1915,15 +1914,20 @@ type AltCoverTests() = class
 
     let saved = (Console.Out, Console.Error)
     try
-      use stdout = new StringWriter()
+      use mem = new MemoryStream()
+      use stdout = new StreamWriter(mem, System.Text.Encoding.Unicode)
       use stderr = new StringWriter()
       Console.SetOut stdout
       Console.SetError stderr
 
       Main.Launch program (String.Empty) (Path.GetDirectoryName (Assembly.GetExecutingAssembly().Location))
 
+      stdout.Flush()
+      stderr.Flush()
+
       Assert.That(stderr.ToString(), Is.Empty)
-      Assert.That(stdout.ToString(), Is.EqualTo("Where is my rocket pack? \r\n"))
+      let result = System.Text.Encoding.Unicode.GetString(mem.ToArray())
+      Assert.That(result.Substring(1), Is.EqualTo "Where is my rocket pack? \r\n")
     finally
       Console.SetOut (fst saved)
       Console.SetError (snd saved)
@@ -2658,7 +2662,8 @@ type AltCoverTests() = class
 
     let saved = (Console.Out, Console.Error)
     try
-      use stdout = new StringWriter()
+      use mem = new MemoryStream()
+      use stdout = new StreamWriter(mem, System.Text.Encoding.Unicode)
       use stderr = new StringWriter()
       Console.SetOut stdout
       Console.SetError stderr
@@ -2669,8 +2674,12 @@ type AltCoverTests() = class
       Main.ProcessTrailingArguments [program; u1; u2]
                                      (DirectoryInfo(where))
 
+      stdout.Flush()
+      stderr.Flush()
+
       Assert.That(stderr.ToString(), Is.Empty)
-      Assert.That(stdout.ToString(), Is.EqualTo("Where is my rocket pack? " +
+      let result = System.Text.Encoding.Unicode.GetString(mem.ToArray())
+      Assert.That(result.Substring(1), Is.EqualTo("Where is my rocket pack? " +
                                                 u1 + "*" + u2 + "\r\n"))
     finally
       Console.SetOut (fst saved)
@@ -2861,9 +2870,6 @@ type AltCoverTests() = class
                          "Sample2.deps.json"
                          "Sample2.dll"
                          "Sample2.pdb"]
-
-
-
 
       Assert.That (Directory.GetFiles(output)
                    |> Seq.map Path.GetFileName,
