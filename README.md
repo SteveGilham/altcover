@@ -6,7 +6,7 @@ The latest releases can be downloaded from [releases](https://github.com/SteveGi
 ## Why altcover?
 As the name suggests, it's an alternative coverage approach.  Rather than working by hooking the .net profiling API at run-time, it works by weaving the same sort of extra IL into the assemblies of interest ahead of execution.  This means that it should work pretty much everywhere, so long as the executing process has write access to the results file.
 
-In particular, this approach supports Mono, as long as suitable `.mdb` symbols are available.  The major limitation here is that the `.mdb` format only stores the start location in the source of any code sequence point, and not the end; consequently any nicely coloured reports that take that information into account may show a bit strangely.
+In particular, this approach supports Mono, as long as suitable `.mdb` (or `.pdb`, in recent versions) symbols are available.  One major limitation here is that the `.mdb` format only stores the start location in the source of any code sequence point, and not the end; consequently any nicely coloured reports that take that information into account may show a bit strangely.  Another limitation with Mono, at least as experienced using FAKE to build projects under Mono on Linux in the travis-ci build, is that F# projects seem to generate no symbols, even when C# projects do -- and without symbols, such assemblies cannot be instrumented.
 
 ## Continuous Integration
 
@@ -82,4 +82,5 @@ The tests in the `Tests.fs` file are ordered in the same dependency order as the
 ## Thanks to
 
 * [AppVeyor](https://ci.appveyor.com/project/SteveGilham/altcover) for allowing free build CI services for Open Source projects
+* [travis-ci](https://travis-ci.org/SteveGilham/altcover) for allowing free build CI services for Open Source projects
 * [Coveralls](https://coveralls.io/r/SteveGilham/altcover) for allowing free services for Open Source projects
