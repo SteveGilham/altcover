@@ -508,9 +508,8 @@ Target "ReleaseMonoWithDotNet" (fun _ ->
     DotNetCli.RunCommand (fun info -> {info with WorkingDir = unpack })
                           ("run --project altcover.core.fsproj -- -x \"" + x + "\" -o \"" + o + "\" -i \"" + i + "\"")
 
-    let sampleRoot = "_Mono/__Instrumented.ReleaseMonoWithDotNet"
-    let result2 = ExecProcess (fun info -> info.FileName <- sampleRoot @@ "/Sample1.exe"
-                                           info.WorkingDirectory <- sampleRoot
+    let result2 = ExecProcess (fun info -> info.FileName <- o @@ "Sample1.exe"
+                                           info.WorkingDirectory <- o
                                            info.Arguments <- "") (TimeSpan.FromMinutes 5.0)
     if result2 <> 0 then failwith "Instrumented .exe failed"
 
@@ -526,8 +525,7 @@ Target "ReleaseDotNetWithDotNet" (fun _ ->
     DotNetCli.RunCommand (fun info -> {info with WorkingDir = unpack })
                           ("run --project altcover.core.fsproj -- -x \"" + x + "\" -o \"" + o + "\" -i \"" + i + "\"")
 
-    let sampleRoot = "_Binaries/Sample1/__Instrumented.ReleaseDotNetWithDotNet"
-    DotNetCli.RunCommand id (sampleRoot @@ "Sample1.dll")
+    DotNetCli.RunCommand id (o @@ "Sample1.dll")
 
     Actions.ValidateSample1 "./_Reports/ReleaseDotNetWithDotNet.xml" "ReleaseDotNetWithDotNet"
 )
