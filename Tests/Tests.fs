@@ -2683,6 +2683,7 @@ type AltCoverTests() = class
 
       Assert.That(stderr.ToString(), Is.Empty)
       let result = stdout.ToString()
+      printfn "result = '%s'" result
       // hack for Mono
       let computed = if result.Length = 50 then
                        result |> Encoding.Unicode.GetBytes |> Array.takeWhile (fun c -> c <> 0uy)|> Encoding.UTF8.GetString
