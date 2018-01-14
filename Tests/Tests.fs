@@ -78,8 +78,10 @@ type AltCoverTests() = class
 
   [<Test>]
   member self.ShouldGetPdbFromImage() =
+   let where = Assembly.GetExecutingAssembly().Location
+   let pdb = Path.ChangeExtension(where, ".pdb")
+   if File.Exists(pdb) then
     // Hack for running while instrumented
-    let where = Assembly.GetExecutingAssembly().Location
     let files = Directory.GetFiles(Path.GetDirectoryName(where) + AltCoverTests.Hack())
                 |> Seq.filter (fun x -> x.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)
                                         || x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
@@ -204,8 +206,9 @@ type AltCoverTests() = class
 
   [<Test>]
   member self.ShouldGetSymbolsFromMdb() =
-    // Hack for running while instrumented
     let where = Assembly.GetExecutingAssembly().Location
+    let pdb = Path.ChangeExtension(where, ".pdb")
+    // Hack for running while instrumented
     let path = Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "_Mono/Sample1")
 #if NETCOREAPP2_0
     let path' = if Directory.Exists path then path
@@ -213,16 +216,19 @@ type AltCoverTests() = class
 #else
     let path' = path
 #endif
-
     let files = Directory.GetFiles(path')
-    files
-    |> Seq.filter (fun x -> x.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)
-                            || x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
-    |> Seq.iter( fun x ->
-      let def = Mono.Cecil.AssemblyDefinition.ReadAssembly x
-      AltCover.ProgramDatabase.ReadSymbols def |> ignore
-      Assert.That (def.MainModule.HasSymbols, def.MainModule.FileName)
-    )
+
+    if File.Exists(pdb) then
+      files
+      |> Seq.filter (fun x -> x.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)
+                              || x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
+      |> Seq.iter( fun x ->
+        let def = Mono.Cecil.AssemblyDefinition.ReadAssembly x
+        AltCover.ProgramDatabase.ReadSymbols def |> ignore
+        Assert.That (def.MainModule.HasSymbols, def.MainModule.FileName)
+      )
+    else
+      printf "%A" files
 
   // Filter.fs
 
@@ -1723,7 +1729,9 @@ type AltCoverTests() = class
 
   [<Test>]
   member self.IncludedMethodPointInsertsVisit () =
-    let where = Assembly.GetExecutingAssembly().Location
+   let where = Assembly.GetExecutingAssembly().Location
+   let pdb = Path.ChangeExtension(where, ".pdb")
+   if File.Exists(pdb) then
     let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
     let reader = ProgramDatabase.ReadSymbols def
@@ -1804,7 +1812,9 @@ type AltCoverTests() = class
       Assert.That (File.Exists created, created + " not found")
 #if NETCOREAPP2_0
 #else
-      Assert.That (File.Exists (Path.ChangeExtension(created, ".pdb")))
+      let pdb = Path.ChangeExtension(Assembly.GetExecutingAssembly().Location, ".pdb")
+      if File.Exists pdb then
+        Assert.That (File.Exists (Path.ChangeExtension(created, ".pdb")), created + " pdb not found")
 #endif
     finally
       Visitor.outputDirectory <- saved
@@ -1830,7 +1840,9 @@ type AltCoverTests() = class
 #if NETCOREAPP2_0
       Assert.That (File.Exists (Path.Combine(output, "FSharp.Core.dll")), "Core not found")
 #else
-      Assert.That (File.Exists (Path.ChangeExtension(created, ".pdb")), created + " pdb not found")
+      let pdb = Path.ChangeExtension(Assembly.GetExecutingAssembly().Location, ".pdb")
+      if File.Exists pdb then
+        Assert.That (File.Exists (Path.ChangeExtension(created, ".pdb")), created + " pdb not found")
 #endif
     finally
       Visitor.outputDirectory <- saved
