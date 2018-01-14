@@ -1931,7 +1931,7 @@ type AltCoverTests() = class
                        result |> Encoding.Unicode.GetBytes |> Array.takeWhile (fun c -> c <> 0uy)|> Encoding.UTF8.GetString
                      else result
 
-      if "TRAVIS_JOB_NUMBER" |> Environment.GetEnvironmentVariable |> String.IsNullOrWhiteSpace |> not || result.Length > 0 then
+      if "TRAVIS_JOB_NUMBER" |> Environment.GetEnvironmentVariable |> String.IsNullOrWhiteSpace || result.Length > 0 then
         Assert.That(computed.Trim(), Is.EqualTo("Where is my rocket pack?"))
     finally
       Console.SetOut (fst saved)
@@ -2685,7 +2685,7 @@ type AltCoverTests() = class
       let computed = if result.Length = 50 then
                        result |> Encoding.Unicode.GetBytes |> Array.takeWhile (fun c -> c <> 0uy)|> Encoding.UTF8.GetString
                      else result
-      if "TRAVIS_JOB_NUMBER" |> Environment.GetEnvironmentVariable |> String.IsNullOrWhiteSpace |> not || result.Length > 0 then
+      if "TRAVIS_JOB_NUMBER" |> Environment.GetEnvironmentVariable |> String.IsNullOrWhiteSpace || result.Length > 0 then
         Assert.That(computed.Trim(), Is.EqualTo("Where is my rocket pack? " +
                                                   u1 + "*" + u2))
     finally
