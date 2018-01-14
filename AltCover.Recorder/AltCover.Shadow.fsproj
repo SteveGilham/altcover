@@ -11,8 +11,8 @@
     <AssemblyName>AltCover.Shadow</AssemblyName>
     <TargetFrameworkVersion Condition="'$(TRAVIS_JOB_NUMBER)' == ''">v2.0</TargetFrameworkVersion>
     <TargetFrameworkVersion Condition="'$(TRAVIS_JOB_NUMBER)' != ''">v4.7</TargetFrameworkVersion>
-    <TargetFSharpCoreVersion Condition="'$(TRAVIS_JOB_NUMBER)' != ''">FSharp.Core</TargetFSharpCoreVersion>
-    <TargetFSharpCoreVersion Condition="'$(TRAVIS_JOB_NUMBER)' == ''">FSharp.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</TargetFSharpCoreVersion>
+    <TargetFSharpCoreVersion Condition="'$(TRAVIS_JOB_NUMBER)' != ''">4.4.1.0</TargetFSharpCoreVersion>
+    <TargetFSharpCoreVersion Condition="'$(TRAVIS_JOB_NUMBER)' == ''">2.3.0.0</TargetFSharpCoreVersion>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Name>AltCover.Shadow</Name>
     <ResolveNuGetPackages>false</ResolveNuGetPackages>
@@ -66,9 +66,8 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />
-    <Reference Include="$(TargetFSharpCoreVersion)">
-      <Private Condition="'$(TRAVIS_JOB_NUMBER)' == ''">True</Private>
-      <HintPath Condition="'$(TRAVIS_JOB_NUMBER)' != ''">..\packages\FSharp.Core.4.2.3\lib\net45\FSharp.Core.dll</HintPath>
+    <Reference Include="FSharp.Core, Version=$(TargetFSharpCoreVersion), Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+      <Private>True</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Xml" />
