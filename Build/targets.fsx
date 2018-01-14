@@ -457,7 +457,10 @@ Target "Packaging" (fun _ ->
 )
 
 Target "PrepareFrameworkBuild" (fun _ ->
+    let toolpath = findToolInSubPath "ILMerge.exe" "./packages"
+
     ILMerge (fun p -> { p with DebugInfo = true
+                               ToolPath = toolpath
                                TargetKind = TargetKind.Exe
                                KeyFile = "./Build/Infrastructure.snk"
                                Version = (String.Join(".", (!Version).Split('.') |> Seq.take 2) + ".0.0")
