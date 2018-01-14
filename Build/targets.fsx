@@ -252,8 +252,8 @@ Target "UnitTestWithAltCover" (fun _ ->
 
     let altReport = reports @@ "UnitTestWithAltCover.xml"
     printfn "Instrumented the code"
-    let result = ExecProcess (fun info -> info.FileName <- "_Binaries/AltCover/Debug+AnyCPU/AltCover.exe"
-                                          info.WorkingDirectory <- "_Binaries/AltCover.Tests/Debug+AnyCPU"
+    let result = ExecProcess (fun info -> info.FileName <- findToolInSubPath "AltCover.exe" "./_Binaries"
+                                          info.WorkingDirectory <- FullName "_Binaries/AltCover.Tests/Debug+AnyCPU"
                                           info.Arguments <- ("/sn=" + keyfile + AltCoverFilter + @"/o=./__UnitTestWithAltCover -x=" + altReport)) (TimeSpan.FromMinutes 5.0)
     if result <> 0 then failwithf "Re-instrument returned with a non-zero exit code"
 
