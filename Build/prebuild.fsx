@@ -1,9 +1,6 @@
 open System
 open System.IO
 
-printfn "Hello World!"
-printfn "%A" (Directory.GetCurrentDirectory())
-
 let here = Directory.GetCurrentDirectory()
 let fakelib = Directory.GetFiles(here, "*akeLib.dll", SearchOption.AllDirectories) 
               |> Seq.head
