@@ -250,12 +250,14 @@ Target "UnitTestWithAltCover" (fun _ ->
     let keyfile = FullName "Build/SelfTest.snk"
     let reports = FullName "./_Reports"
     let altcover = findToolInSubPath "AltCover.exe" "./_Binaries"
+    let input1 = FullName "_Binaries/AltCover.Tests/Debug+AnyCPU"
+    let output1 = input1 @@ "__UnitTestWithAltCover"
 
     let altReport = reports @@ "UnitTestWithAltCover.xml"
     printfn "Instrumented the code"
     let result = ExecProcess (fun info -> info.FileName <- altcover
-                                          info.WorkingDirectory <- FullName "_Binaries/AltCover.Tests/Debug+AnyCPU"
-                                          info.Arguments <- ("/sn=" + keyfile + AltCoverFilter + @"/o=./__UnitTestWithAltCover -x=" + altReport)) (TimeSpan.FromMinutes 5.0)
+                                          info.WorkingDirectory <- input1
+                                          info.Arguments <- ("/sn=" + keyfile + AltCoverFilter + "/o=" + output1 + " -x=" + altReport + " /i=" + input1)) (TimeSpan.FromMinutes 5.0)
     if result <> 0 then failwithf "Re-instrument returned with a non-zero exit code"
 
     printfn "Unit test the instrumented code"
@@ -266,15 +268,18 @@ Target "UnitTestWithAltCover" (fun _ ->
                                  WorkingDir = "."
                                  ResultSpecs = ["./_Reports/UnitTestWithAltCoverReport.xml"] })
 
-    printfn "%s" (File.ReadAllText (FullName "_Binaries/AltCover.Tests/Debug+AnyCPU/AltCover.log"))
-    printfn "%s" (File.ReadAllText altReport)                                 
+    printfn "%s" (File.ReadAllText (Path.ChangeExtension(altcover, ".log")))
+    // printfn "%s" (File.ReadAllText altReport)                                 
 
     printfn "Instrument the shadow tests"
     let shadowDir = "_Binaries/AltCover.Shadow.Tests/Debug+AnyCPU"
     let shadowReport = reports @@ "ShadowTestWithAltCover.xml"
+    let input2 = FullName "_Binaries/AltCover.Shadow.Tests/Debug+AnyCPU"
+    let output2 = input2 @@ "__ShadowTestWithAltCover"
+
     let result = ExecProcess (fun info -> info.FileName <- altcover
-                                          info.WorkingDirectory <- FullName "_Binaries/AltCover.Shadow.Tests/Debug+AnyCPU"
-                                          info.Arguments <- ("/sn=" + keyfile + AltCoverFilter + @"/o=./__ShadowTestWithAltCover -x=" + shadowReport)) (TimeSpan.FromMinutes 5.0)
+                                          info.WorkingDirectory <- input2
+                                          info.Arguments <- ("/sn=" + keyfile + AltCoverFilter + @"/o=" + output2 + " -x=" + shadowReport + " /i=" + input2)) (TimeSpan.FromMinutes 5.0)
 
     printfn "Execute the shadow tests"
     !! ("_Binaries/AltCover.Shadow.Tests/Debug+AnyCPU/__ShadowTestWithAltCover/*.Test*.dll")
