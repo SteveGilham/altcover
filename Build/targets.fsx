@@ -266,6 +266,8 @@ Target "UnitTestWithAltCover" (fun _ ->
                                  WorkingDir = "."
                                  ResultSpecs = ["./_Reports/UnitTestWithAltCoverReport.xml"] })
 
+    printfn "%s" (File.ReadAllText altReport)                                 
+
     printfn "Instrument the shadow tests"
     let shadowDir = "_Binaries/AltCover.Shadow.Tests/Debug+AnyCPU"
     let shadowReport = reports @@ "ShadowTestWithAltCover.xml"
@@ -278,6 +280,8 @@ Target "UnitTestWithAltCover" (fun _ ->
     |> NUnit3 (fun p -> { p with ToolPath = findToolInSubPath "nunit3-console.exe" "."
                                  WorkingDir = "."
                                  ResultSpecs = ["./_Reports/ShadowTestWithAltCoverReport.xml"] })
+
+    printfn "%s" (File.ReadAllText shadowReport)                                                                  
 
     ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
                                        ReportTypes = [ ReportGeneratorReportType.Html; ReportGeneratorReportType.Badges; ReportGeneratorReportType.XmlSummary ]
