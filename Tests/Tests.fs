@@ -1799,9 +1799,9 @@ type AltCoverTests() = class
       let visited = Node.AfterAssembly def
       let input = Instrument.Context.Build []
       let result = Instrument.InstrumentationVisitor input visited
-      Assert.That (result, Is.SameAs input)
+      Assert.That (result, Is.SameAs input, "result differs")
       let created = Path.Combine (output, "Sample2.dll")
-      Assert.That (File.Exists created)
+      Assert.That (File.Exists created, created + " not found")
 #if NETCOREAPP2_0
 #else
       Assert.That (File.Exists (Path.ChangeExtension(created, ".pdb")))
@@ -1824,13 +1824,13 @@ type AltCoverTests() = class
       Visitor.outputDirectory <- Some output
       let input = { Instrument.Context.Build [] with RecordingAssembly = def }
       let result = Instrument.InstrumentationVisitor input Finish
-      Assert.That (result, Is.SameAs input)
+      Assert.That (result, Is.SameAs input, "results differ")
       let created = Path.Combine (output, "Sample2.dll")
-      Assert.That (File.Exists created)
+      Assert.That (File.Exists created, created + " not found")
 #if NETCOREAPP2_0
-      Assert.That (File.Exists (Path.Combine(output, "FSharp.Core.dll")))
+      Assert.That (File.Exists (Path.Combine(output, "FSharp.Core.dll")), "Core not found")
 #else
-      Assert.That (File.Exists (Path.ChangeExtension(created, ".pdb")))
+      Assert.That (File.Exists (Path.ChangeExtension(created, ".pdb")), created + " pdb not found")
 #endif
     finally
       Visitor.outputDirectory <- saved
@@ -2732,17 +2732,25 @@ type AltCoverTests() = class
 #endif
 
       Assert.That (File.Exists report)
+      let pdb = Path.ChangeExtension(Assembly.GetExecutingAssembly().Location, ".pdb")
+
+      let expected = if File.Exists(pdb) then
+                        ["AltCover.Recorder.g.dll"
+#if NETCOREAPP2_0
+                         "FSharp.Core.dll"
+#else
+                         "AltCover.Recorder.g.pdb"
+#endif
+                         "Sample1.exe"
+                         "Sample1.exe.mdb"]
+                     else
+                        ["AltCover.Recorder.g.dll"
+                         "Sample1.exe"
+                         "Sample1.exe.mdb"]
 
       Assert.That (Directory.GetFiles(output)
                    |> Seq.map Path.GetFileName,
-                   Is.EquivalentTo ["AltCover.Recorder.g.dll"
-#if NETCOREAPP2_0
-                                    "FSharp.Core.dll"
-#else
-                                    "AltCover.Recorder.g.pdb"
-#endif
-                                    "Sample1.exe"
-                                    "Sample1.exe.mdb"])
+                   Is.EquivalentTo expected)
 
       let expectedXml = XDocument.Load(new System.IO.StringReader(AltCoverTests.MonoBaseline))
       let recordedXml = XDocument.Load(report)
@@ -2824,18 +2832,30 @@ type AltCoverTests() = class
 #endif
 
       Assert.That (File.Exists report)
+      let pdb = Path.ChangeExtension(Assembly.GetExecutingAssembly().Location, ".pdb")
+
+      let expected = if File.Exists(pdb) then
+                        ["AltCover.Recorder.g.dll"
+#if NETCOREAPP2_0
+                         "FSharp.Core.dll"
+#else
+                         "AltCover.Recorder.g.pdb"
+#endif
+                         "Sample2.deps.json"
+                         "Sample2.dll"
+                         "Sample2.pdb"]
+                     else
+                        ["AltCover.Recorder.g.dll"
+                         "Sample2.deps.json"
+                         "Sample2.dll"
+                         "Sample2.pdb"]
+
+
+
 
       Assert.That (Directory.GetFiles(output)
                    |> Seq.map Path.GetFileName,
-                   Is.EquivalentTo ["AltCover.Recorder.g.dll"
-#if NETCOREAPP2_0
-                                    "FSharp.Core.dll"
-#else
-                                    "AltCover.Recorder.g.pdb"
-#endif
-                                    "Sample2.deps.json"
-                                    "Sample2.dll"
-                                    "Sample2.pdb"])
+                   Is.EquivalentTo expected)
 
     finally
       Visitor.outputDirectory <- outputSaved
