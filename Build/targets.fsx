@@ -246,6 +246,7 @@ Target "UnitTestWithOpenCover" (fun _ ->
 // Hybrid (Self) Tests
 
 Target "UnitTestWithAltCover" (fun _ ->
+  if String.IsNullOrWhiteSpace(environVar "TRAVIS_JOB_NUMBER") then // Mono + F# + Fake build => no symbols
     ensureDirectory "./_Reports/_UnitTestWithAltCover"
     let keyfile = FullName "Build/SelfTest.snk"
     let reports = FullName "./_Reports"
@@ -290,6 +291,7 @@ Target "UnitTestWithAltCover" (fun _ ->
 Target "OperationalTest" ignore
 
 Target "FSharpTypes" ( fun _ ->
+  if String.IsNullOrWhiteSpace(environVar "TRAVIS_JOB_NUMBER") then // Mono + F# + Fake build => no symbols
     ensureDirectory "./_Reports"
     let simpleReport = (FullName "./_Reports") @@ ( "AltCoverFSharpTypes.xml")
     let binRoot = FullName "_Binaries/AltCover/Release+AnyCPU"
