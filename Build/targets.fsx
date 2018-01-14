@@ -63,8 +63,8 @@ Target "BuildRelease" (fun _ ->
      |> Log "AppBuild-Output: "
 
     DotNetCli.Build
-        (fun p -> 
-            { p with 
+        (fun p ->
+            { p with
                 Configuration = "Release"
                 Project =  "./altcover.core.sln"})
 )
@@ -77,8 +77,8 @@ Target "BuildDebug" (fun _ ->
      |> Log "AppBuild-Output: "
 
    DotNetCli.Build
-        (fun p -> 
-            { p with 
+        (fun p ->
+            { p with
                 Configuration = "Debug"
                 Project =  "./altcover.core.sln"})
 )
@@ -117,31 +117,16 @@ Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standal
                                      info.Arguments <- "--severity all --confidence all --config ./Build/rules.xml --console --html ./_Reports/gendarme.html _Binaries/AltCover/Debug+AnyCPU/AltCover.exe  _Binaries/AltCover.Shadow/Debug+AnyCPU/AltCover.Shadow.dll") (TimeSpan.FromMinutes 5.0)
     if r <> 0 then failwith  "Gendarme Errors were detected"
 )
-
 // Travis TODO
 (*
 ------------------------------------------------------------
 1. AvoidLongMethodsRule
-Problem: Long methods are usually hard to understand and maintain.  This method can cause problems because it contains more code than the maximum allowed.
-* Severity: High, Confidence: Normal
 * Target:   AltCover.Instrument/Context AltCover.Instrument::InstrumentationVisitor(AltCover.Instrument/Context,AltCover.Node)
 * Details:  Method IL Size: 324. Maximum Size: 165
-Solution: You should apply an Extract Method refactoring, but there are other solutions.
-More info available at: https://github.com/spouliot/gendarme/wiki/Gendarme.Rules.Smells.AvoidLongMethodsRule(2.10)
-2. AvoidLongMethodsRule
-Problem: Long methods are usually hard to understand and maintain.  This method can cause problems because it contains more code than the maximum allowed.
-* Severity: High, Confidence: Normal
 * Target:   Microsoft.FSharp.Collections.FSharpList`1<System.Xml.Linq.XElement> AltCover.Report/ReportVisitor@22::Invoke(Microsoft.FSharp.Collections.FSharpList`1<System.Xml.Linq.XElement>,AltCover.Node)
 * Details:  Method IL Size: 419. Maximum Size: 165
-Solution: You should apply an Extract Method refactoring, but there are other solutions.
-More info available at: https://github.com/spouliot/gendarme/wiki/Gendarme.Rules.Smells.AvoidLongMethodsRule(2.10)
-3. AvoidLongMethodsRule
-Problem: Long methods are usually hard to understand and maintain.  This method can cause problems because it contains more code than the maximum allowed.
-* Severity: High, Confidence: Normal
 * Target:   System.Collections.Generic.IEnumerable`1<AltCover.Node> AltCover.Visitor::Deeper(AltCover.Node)
 * Details:  Method IL Size: 182. Maximum Size: 165
-Solution: You should apply an Extract Method refactoring, but there are other solutions.
-More info available at: https://github.com/spouliot/gendarme/wiki/Gendarme.Rules.Smells.AvoidLongMethodsRule(2.10)
 *)
 
 Target "FxCop" (fun _ -> // Needs debug because release is compiled --standalone which contaminates everything
@@ -168,7 +153,7 @@ Target "FxCop" (fun _ -> // Needs debug because release is compiled --standalone
                                                             "AltCover.Report"
                                                             "AltCover.Visitor"])
       (["_Binaries/AltCover.Shadow/Debug+AnyCPU/AltCover.Shadow.dll"], ["AltCover.Recorder.Instance"])]
-    |> Seq.iter (fun (files, types) -> files 
+    |> Seq.iter (fun (files, types) -> files
                                        |> FxCop (fun p -> { p with ToolPath = fxCop
                                                                    WorkingDir = "."
                                                                    UseGACSwitch = true
@@ -183,7 +168,7 @@ Target "FxCop" (fun _ -> // Needs debug because release is compiled --standalone
 // Unit Test
 
 Target "UnitTest" (fun _ ->
-  !! (@"_Reports/*/Summary.xml") 
+  !! (@"_Reports/*/Summary.xml")
   |> Seq.iter (fun f -> let xml = XDocument.Load f
                         xml.Descendants(XName.Get("Linecoverage"))
                         |> Seq.iter (fun e -> let coverage = e.Value.Replace("%", String.Empty)
@@ -208,8 +193,8 @@ Target "UnitTestDotNet" (fun _ ->
     !! (@"./*Tests/*.tests.core.fsproj")
     |> Seq.iter (fun f -> printfn "Testing %s" f
                           DotNetCli.Test
-                             (fun p -> 
-                                  { p with 
+                             (fun p ->
+                                  { p with
                                       Configuration = "Debug"
                                       Project =  f}))
 )
@@ -217,7 +202,7 @@ Target "UnitTestDotNet" (fun _ ->
 Target "UnitTestWithOpenCover" (fun _ ->
   if String.IsNullOrWhiteSpace(environVar "TRAVIS_JOB_NUMBER") then
     ensureDirectory "./_Reports/_UnitTestWithOpenCover"
-    let testFiles = !! (@"_Binaries/*Tests/Debug+AnyCPU/*.Test*.dll") 
+    let testFiles = !! (@"_Binaries/*Tests/Debug+AnyCPU/*.Test*.dll")
                     //|> Seq.map (fun f -> f.FullName)
     let coverage = FullName "_Reports/UnitTestWithOpenCover.xml"
 
@@ -309,7 +294,7 @@ Target "FSharpTypesDotNet" ( fun _ ->
     let simpleReport = (FullName "./_Reports") @@ ( "AltCoverFSharpTypesDotNet.xml")
     let sampleRoot = FullName "_Binaries/Sample2/Release+AnyCPU/netstandard2.0"
     let instrumented = "__FSharpTypesDotNet"
-    DotNetCli.RunCommand (fun p -> {p with WorkingDir = sampleRoot}) 
+    DotNetCli.RunCommand (fun p -> {p with WorkingDir = sampleRoot})
                          ("run --project " + project + " -- -t \"System\\.\" -t \"Microsoft\\.\" -x \"" + simpleReport + "\" /o \"./" + instrumented + "\"")
 
     Actions.ValidateFSharpTypes simpleReport
@@ -338,7 +323,7 @@ Target "CSharpMonoWithDotNet" (fun _ ->
     Actions.ValidateSample1 "./_Reports/CSharpMonoWithDotNet.xml" "CSharpMonoWithDotNet"
 )
 
-Target "CSharpDotNetWithDotNet" (fun _ -> // TODO
+Target "CSharpDotNetWithDotNet" (fun _ ->
     ensureDirectory "./_Reports"
     let x = FullName "./_Reports/CSharpDotNetWithDotNet.xml"
     let o = FullName "../_Binaries/Sample1/__Instrumented.CSharpDotNetWithDotNet"
@@ -350,7 +335,7 @@ Target "CSharpDotNetWithDotNet" (fun _ -> // TODO
     Actions.ValidateSample1 "./_Reports/CSharpDotNetWithDotNet.xml" "CSharpDotNetWithDotNet"
 )
 
-Target "CSharpDotNetWithFramework" (fun _ -> // TODO
+Target "CSharpDotNetWithFramework" (fun _ ->
     ensureDirectory "./_Reports"
     let simpleReport = (FullName "./_Reports") @@ ( "CSharpDotNetWithFramework.xml")
     let binRoot = FullName "_Binaries/AltCover/Release+AnyCPU"
@@ -373,7 +358,6 @@ Target "SelfTest" (fun _ ->
     let report = reports @@ "OpenCoverSelfTest.xml"
     let altReport = reports @@ "AltCoverSelfTest.xml"
     let keyfile = FullName "Build/SelfTest.snk"
-
 
     printfn "Self-instrument under OpenCover"
     OpenCover (fun p -> { p with ExePath = findToolInSubPath "OpenCover.Console.exe" "."
@@ -401,7 +385,7 @@ Target "SelfTest" (fun _ ->
         [altReport]
 )
 
-// Packaging 
+// Packaging
 
 Target "Packaging" (fun _ ->
     ensureDirectory "./_Binaries/Packaging"
@@ -410,17 +394,21 @@ Target "Packaging" (fun _ ->
     let AltCover = FullName "_Binaries/AltCover/AltCover.exe"
     let recorder = FullName "_Binaries/AltCover/Release+AnyCPU/AltCover.Recorder.dll"
     let packable = FullName "./_Binaries/README.html"
-    let resources = filesInDirMatchingRecursive "AltCover.resources.dll" (directoryInfo (FullName "_Binaries/AltCover/Release+AnyCPU")) 
+    let resources = filesInDirMatchingRecursive "AltCover.resources.dll" (directoryInfo (FullName "_Binaries/AltCover/Release+AnyCPU"))
 
-    let applicationFiles = [
-                            (AltCover, Some "tools/net45", None)
-                            (recorder, Some "tools/net45", None)
-                            (packable, Some "", None)
-                           ]
-    let resourceFiles = resources
-                        |> Seq.map (fun x -> x.FullName)
-                        |> Seq.map (fun x -> (x, Some ("tools/net45/" + Path.GetFileName(Path.GetDirectoryName(x))), None))
-                        |> Seq.toList
+    let applicationFiles = if String.IsNullOrWhiteSpace(environVar "TRAVIS_JOB_NUMBER") then
+                            [
+                                (AltCover, Some "tools/net45", None)
+                                (recorder, Some "tools/net45", None)
+                                (packable, Some "", None)
+                            ]
+                           else []
+    let resourceFiles = if String.IsNullOrWhiteSpace(environVar "TRAVIS_JOB_NUMBER") then
+                          resources
+                          |> Seq.map (fun x -> x.FullName)
+                          |> Seq.map (fun x -> (x, Some ("tools/net45/" + Path.GetFileName(Path.GetDirectoryName(x))), None))
+                          |> Seq.toList
+                        else []
 
     let root = (FullName ".").Length
     let netcoreFiles = [
@@ -434,7 +422,7 @@ Target "Packaging" (fun _ ->
                           |> Seq.filter (fun n -> n.EndsWith(".fs") || n.EndsWith(".core.fsproj"))
                           |> Seq.toList);
                          ((!! "./_Generated/*")
-                          |> Seq.toList)                          
+                          |> Seq.toList)
                        ]
                        |> List.concat
                        |> List.map (fun x -> (x, Some ("tools/netcoreapp2.0" + Path.GetDirectoryName(x).Substring(root).Replace("\\","/")), None))
@@ -451,12 +439,13 @@ Target "Packaging" (fun _ ->
         Copyright = (!Copyright).Replace("©", "(c)")
         Publish = false
         ReleaseNotes = FullName "ReleaseNotes.md"
-                       |> File.ReadAllText 
+                       |> File.ReadAllText
         })
         "./Build/AltCover.nuspec"
 )
 
 Target "PrepareFrameworkBuild" (fun _ ->
+  if String.IsNullOrWhiteSpace(environVar "TRAVIS_JOB_NUMBER") then // ILMerge yields The type initializer for 'System.Compiler.CoreSystemTypes' threw an exception.
     let toolpath = findToolInSubPath "ILMerge.exe" "./packages"
     let here = Directory.GetCurrentDirectory()
 
@@ -475,12 +464,12 @@ Target "PrepareFrameworkBuild" (fun _ ->
 
 Target "PrepareDotNetBuild" (fun _ ->
     DotNetCli.Publish
-      (fun p -> 
-           { p with 
+      (fun p ->
+           { p with
                 WorkingDir =  FullName "./AltCover"
                 Project = "altcover.core.fsproj"
                 Output = FullName "./_Binaries/altcover.core"
-                Configuration = "Release" })                       
+                Configuration = "Release" })
 )
 
 Target "PrepareReadMe" (fun _ ->
@@ -498,11 +487,13 @@ Target "Unpack" (fun _ ->
 )
 
 Target "SimpleReleaseTest" (fun _ ->
+  if String.IsNullOrWhiteSpace(environVar "TRAVIS_JOB_NUMBER") then
     let unpack = FullName "_Packaging/Unpack/tools/net45"
     Actions.SimpleInstrumentingRun "_Binaries/Sample1/Debug+AnyCPU" unpack "SimpleReleaseTest"
 )
 
 Target "SimpleMonoReleaseTest" (fun _ ->
+  if String.IsNullOrWhiteSpace(environVar "TRAVIS_JOB_NUMBER") then
     let unpack = FullName "_Packaging/Unpack/tools/net45"
     Actions.SimpleInstrumentingRun "_Mono/Sample1" unpack "SimpleMonoReleaseTest"
 )
@@ -513,7 +504,7 @@ Target "ReleaseMonoWithDotNet" (fun _ ->
     let x = FullName "./_Reports/ReleaseMonoWithDotNet.xml"
     let o = FullName "./_Mono/__Instrumented.ReleaseMonoWithDotNet"
     let i = FullName "./_Mono/Sample1"
-    DotNetCli.RunCommand (fun info -> {info with WorkingDir = unpack })  
+    DotNetCli.RunCommand (fun info -> {info with WorkingDir = unpack })
                           ("run --project altcover.core.fsproj -- -x \"" + x + "\" -o \"" + o + "\" -i \"" + i + "\"")
 
     let sampleRoot = "_Mono/__Instrumented.ReleaseMonoWithDotNet"
@@ -525,13 +516,13 @@ Target "ReleaseMonoWithDotNet" (fun _ ->
     Actions.ValidateSample1 "./_Reports/ReleaseMonoWithDotNet.xml" "ReleaseMonoWithDotNet"
 )
 
-Target "ReleaseDotNetWithDotNet" (fun _ -> // TODO
+Target "ReleaseDotNetWithDotNet" (fun _ ->
     ensureDirectory "./_Reports"
     let unpack = FullName "_Packaging/Unpack/tools/netcoreapp2.0/AltCover"
     let x = FullName "./_Reports/ReleaseDotNetWithDotNet.xml"
     let o = FullName "./_Binaries/Sample1/__Instrumented.ReleaseDotNetWithDotNet"
     let i = FullName "./_Binaries/Sample1/Debug+AnyCPU/netcoreapp2.0"
-    DotNetCli.RunCommand (fun info -> {info with WorkingDir = unpack })  
+    DotNetCli.RunCommand (fun info -> {info with WorkingDir = unpack })
                           ("run --project altcover.core.fsproj -- -x \"" + x + "\" -o \"" + o + "\" -i \"" + i + "\"")
 
     let sampleRoot = "_Binaries/Sample1/__Instrumented.ReleaseDotNetWithDotNet"
@@ -540,7 +531,8 @@ Target "ReleaseDotNetWithDotNet" (fun _ -> // TODO
     Actions.ValidateSample1 "./_Reports/ReleaseDotNetWithDotNet.xml" "ReleaseDotNetWithDotNet"
 )
 
-Target "ReleaseDotNetWithFramework" (fun _ -> // TODO
+Target "ReleaseDotNetWithFramework" (fun _ ->
+  if String.IsNullOrWhiteSpace(environVar "TRAVIS_JOB_NUMBER") then
     ensureDirectory "./_Reports"
     let unpack = FullName "_Packaging/Unpack/tools/net45"
     let simpleReport = (FullName "./_Reports") @@ ( "ReleaseDotNetWithFramework.xml")
@@ -554,7 +546,6 @@ Target "ReleaseDotNetWithFramework" (fun _ -> // TODO
 
     Actions.ValidateSample1 "./_Reports/ReleaseDotNetWithFramework.xml" "ReleaseDotNetWithFramework"
 )
-
 
 // AOB
 
@@ -637,11 +628,8 @@ Target "All" ignore
 ==> "CSharpMonoWithDotNet"
 ==> "OperationalTest"
 
-// Unhandled Exception: System.IO.FileNotFoundException: Could not load file or assembly 
-// 'FSharp.Core, Version=4.4.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'. The system cannot find the file specified.
 "Compilation"
-// TODO
- ==> "CSharpDotNetWithDotNet"
+==> "CSharpDotNetWithDotNet"
 ==> "OperationalTest"
 
 "Compilation"
@@ -664,7 +652,6 @@ Target "All" ignore
 ==> "PrepareReadMe"
 ==> "Packaging"
 
-
 "Packaging"
 ==> "Unpack"
 
@@ -680,10 +667,10 @@ Target "All" ignore
 ==> "ReleaseMonoWithDotNet"
 ==> "Deployment"
 
-// Unhandled Exception: System.IO.FileNotFoundException: Could not load file or assembly 
+// Unhandled Exception: System.IO.FileNotFoundException: Could not load file or assembly
 // 'FSharp.Core, Version=4.4.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'. The system cannot find the file specified.
 "Unpack"
-// 
+//
 ==> "ReleaseDotNetWithDotNet"
 ==> "Deployment"
 

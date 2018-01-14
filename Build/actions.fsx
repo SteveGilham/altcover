@@ -27,7 +27,7 @@ module Actions =
     if not <| String.IsNullOrWhiteSpace temp then
       Directory.GetFiles(temp, "*.tmp.dll.mdb")
       |> Seq.iter File.Delete
-  
+
   let template ="""namespace AltCover
 open System.Reflection
 open System.Runtime.CompilerServices
@@ -70,7 +70,7 @@ open System.Runtime.CompilerServices
     // Update the file only if it would change
     let old = if File.Exists(path) then File.ReadAllText(path) else String.Empty
     if not (old.Equals(file)) then File.WriteAllText(path, file)
-  
+
   let GetVersionFromYaml () =
     use yaml = new FileStream("appveyor.yml", FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.SequentialScan)
     use yreader = new StreamReader(yaml)
@@ -90,8 +90,8 @@ open System.Runtime.CompilerServices
     let result = if String.IsNullOrWhiteSpace appveyor then sprintf "%s.%d.%d" majmin diff.Days revision else appveyor
     printfn "Build version : %s" version
     (result, majmin, now.Year)
-  
-  let FixMVId files = 
+
+  let FixMVId files =
     // Fix up symbol file to have the MVId emitted by the System.Reflection.Emit code
     files
     |> Seq.iter (fun f -> let assembly = System.Reflection.Assembly.ReflectionOnlyLoadFrom (Path.GetFullPath f)
@@ -100,7 +100,7 @@ open System.Runtime.CompilerServices
                           mvid |> Array.iteri (fun i x -> symbols.[i+16] <- x)
                           System.IO.File.WriteAllBytes(f + ".mdb", symbols))
 
-  let ValidateFSharpTypes simpleReport = 
+  let ValidateFSharpTypes simpleReport =
     use coverageFile = new FileStream(simpleReport, FileMode.Open, FileAccess.Read, FileShare.None, 4096, FileOptions.SequentialScan)
     // Edit xml report to store new hits
     let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
@@ -112,7 +112,7 @@ open System.Runtime.CompilerServices
     if recorded.Length <> 9 then failwith (sprintf "Bad method list length %A" recorded)
     if String.Join(" ", recorded) <> expected then failwith (sprintf "Bad method list %A" recorded)
 
-  let ValidateSample1 simpleReport sigil = 
+  let ValidateSample1 simpleReport sigil =
     // get recorded details from here
     use coverageFile = new FileStream(simpleReport, FileMode.Open, FileAccess.Read, FileShare.None, 4096, FileOptions.SequentialScan)
     let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
@@ -176,18 +176,17 @@ let PrepareReadMe packingCopyright =
     let eliminate = [ "Continuous Integration"; "Building"; "Thanks to" ]
     let keep = ref true
 
-    let kill = body.Elements() 
+    let kill = body.Elements()
                |> Seq.map (fun x -> match x.Name.LocalName with
                                     | "h2" -> keep := (List.tryFind (fun e -> e = String.Concat(x.Nodes())) eliminate) |> Option.isNone
                                     | "footer" -> keep := true
                                     | _ -> ()
                                     if !keep then None else Some x)
                |> Seq.toList
-    kill |> 
-    Seq.iter (fun q -> match q with 
+    kill |>
+    Seq.iter (fun q -> match q with
                        | Some x -> x.Remove()
                        | _ -> ())
 
     let packable = FullName "./_Binaries/README.html"
     xmlform.Save packable
-

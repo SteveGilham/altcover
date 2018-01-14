@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.27130.2003
+VisualStudioVersion = 15.0.27130.2020
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "AltCover.Recorder", "AltCover.Recorder\AltCover.Recorder.fsproj", "{02192B55-3A50-4AD2-B519-560F30C14DD4}"
 EndProject
@@ -24,14 +24,17 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build Items", "Build Items", "{B9D49110-CE75-418C-BF97-1F94D741EA19}"
 	ProjectSection(SolutionItems) = preProject
 		.travis.yml = .travis.yml
+		Build\actions.fsx = Build\actions.fsx
 		Build\AltCover.nuspec = Build\AltCover.nuspec
 		appveyor.yml = appveyor.yml
 		Build\build.fsx = Build\build.fsx
 		Build\get-nuget.ps1 = Build\get-nuget.ps1
 		Build\Infrastructure.snk = Build\Infrastructure.snk
+		Build\prebuild.fsx = Build\prebuild.fsx
 		Build\Recorder.snk = Build\Recorder.snk
 		Build\rules.xml = Build\rules.xml
 		Build\SelfTest.snk = Build\SelfTest.snk
+		Build\targets.fsx = Build\targets.fsx
 	EndProjectSection
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Sample2", "Sample2\Sample2.fsproj", "{0A513AA9-84D8-46E1-BAB7-08C73ACE5FCA}"

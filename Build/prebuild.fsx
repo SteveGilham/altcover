@@ -2,11 +2,11 @@ open System
 open System.IO
 
 let here = Directory.GetCurrentDirectory()
-let fakelib = Directory.GetFiles(here, "*akeLib.dll", SearchOption.AllDirectories) 
+let fakelib = Directory.GetFiles(here, "*akeLib.dll", SearchOption.AllDirectories)
               |> Seq.head
               |> Path.GetDirectoryName
 
-let lintlib = Directory.GetFiles(here, "*SharpLint.Fake.dll", SearchOption.AllDirectories) 
+let lintlib = Directory.GetFiles(here, "*SharpLint.Fake.dll", SearchOption.AllDirectories)
               |> Seq.head
               |> Path.GetDirectoryName
 
