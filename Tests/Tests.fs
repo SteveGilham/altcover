@@ -3,6 +3,7 @@
 open System
 open System.IO
 open System.Reflection
+open System.Text
 open System.Text.RegularExpressions
 open System.Xml.Linq
 
@@ -217,18 +218,14 @@ type AltCoverTests() = class
     let path' = path
 #endif
     let files = Directory.GetFiles(path')
-
-    if File.Exists(pdb) then
-      files
-      |> Seq.filter (fun x -> x.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)
-                              || x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
-      |> Seq.iter( fun x ->
-        let def = Mono.Cecil.AssemblyDefinition.ReadAssembly x
-        AltCover.ProgramDatabase.ReadSymbols def |> ignore
-        Assert.That (def.MainModule.HasSymbols, def.MainModule.FileName)
-      )
-    else
-      printf "%A" files
+    files
+    |> Seq.filter (fun x -> x.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)
+                            || x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
+    |> Seq.iter( fun x ->
+      let def = Mono.Cecil.AssemblyDefinition.ReadAssembly x
+      AltCover.ProgramDatabase.ReadSymbols def |> ignore
+      Assert.That (def.MainModule.HasSymbols, def.MainModule.FileName)
+    )
 
   // Filter.fs
 
@@ -1923,7 +1920,13 @@ type AltCoverTests() = class
       Main.Launch program (String.Empty) (Path.GetDirectoryName (Assembly.GetExecutingAssembly().Location))
 
       Assert.That(stderr.ToString(), Is.Empty)
-      Assert.That(stdout.ToString(), Is.EqualTo("Where is my rocket pack? \r\n"))
+      let result = stdout.ToString()
+      // hack for Mono
+      let computed = if result.Length = 14 then
+                       result |> Encoding.Unicode.GetBytes |> Encoding.UTF8.GetString
+                     else result
+
+      Assert.That(computed, Is.EqualTo("Where is my rocket pack? \r\n"))
     finally
       Console.SetOut (fst saved)
       Console.SetError (snd saved)
@@ -2311,6 +2314,7 @@ type AltCoverTests() = class
       let unique = Guid.NewGuid().ToString()
       let input = [| "-o"; unique.Replace("-", ":") |]
       let parse = Main.ParseCommandLine input options
+      printfn "%A" parse
       match parse with
       | Right _ -> Assert.Fail()
       | Left (x, y) -> Assert.That (y, Is.SameAs options)
@@ -2670,7 +2674,12 @@ type AltCoverTests() = class
                                      (DirectoryInfo(where))
 
       Assert.That(stderr.ToString(), Is.Empty)
-      Assert.That(stdout.ToString(), Is.EqualTo("Where is my rocket pack? " +
+      let result = stdout.ToString()
+      // hack for Mono
+      let computed = if result.Length = 50 then
+                       result |> Encoding.Unicode.GetBytes |> Encoding.UTF8.GetString
+                     else result
+      Assert.That(computed, Is.EqualTo("Where is my rocket pack? " +
                                                 u1 + "*" + u2 + "\r\n"))
     finally
       Console.SetOut (fst saved)
