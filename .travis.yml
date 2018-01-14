@@ -11,10 +11,6 @@ git:
 # if: NOT branch =~ ^develop/.*$
 if: branch = develop/hardening
 
-cache:
-  directories:
-  - $HOME/packages
-
 addons:
   apt:
     sources:
@@ -27,7 +23,6 @@ install:
   - nuget restore ./AltCover.sln
 
 script:
-  - which nuget
   - chmod +x packages/FAKE.4.64.3/tools/FAKE.exe
   - mono packages/FAKE.4.64.3/tools/FAKE.exe Build/prebuild.fsx
   - mono packages/FAKE.4.64.3/tools/FAKE.exe Build/build.fsx

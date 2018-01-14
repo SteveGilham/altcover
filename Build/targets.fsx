@@ -440,6 +440,7 @@ Target "Packaging" (fun _ ->
         Publish = false
         ReleaseNotes = FullName "ReleaseNotes.md"
                        |> File.ReadAllText
+        ToolPath = if String.IsNullOrWhiteSpace(environVar "TRAVIS_JOB_NUMBER") then p.ToolPath else "/usr/bin/nuget"
         })
         "./Build/AltCover.nuspec"
 )
