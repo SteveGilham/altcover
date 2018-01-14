@@ -302,7 +302,8 @@ type AltCoverTests() = class
   member self.FlushLeavesExpectedTraces() =
     let saved = Console.Out
     let here = Directory.GetCurrentDirectory()
-    let unique = Path.Combine(Environment.GetEnvironmentVariable("TEMP"), Guid.NewGuid().ToString())
+    let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
+    let unique = Path.Combine(where, Guid.NewGuid().ToString())
     try
       Instance.Visits.Clear()
       use stdout = new StringWriter()
@@ -351,6 +352,9 @@ type AltCoverTests() = class
 #else
   [<Test>]
   member self.FlushShouldBeRegisteredForUnload() =
+   // The hack doesn't work in Mono, either
+   let pdb = Path.ChangeExtension(Assembly.GetExecutingAssembly().Location, ".pdb")
+   if File.Exists(pdb) then
     Instance.Visits.Clear()
     let d = AppDomain.CurrentDomain
     let unloaded = d.GetType().GetField(
@@ -385,6 +389,8 @@ type AltCoverTests() = class
 
   [<Test>]
   member self.FlushShouldBeRegisteredForExit() =
+   let pdb = Path.ChangeExtension(Assembly.GetExecutingAssembly().Location, ".pdb")
+   if File.Exists(pdb) then
     Instance.Visits.Clear()
     let d = AppDomain.CurrentDomain
     let exit = d.GetType().GetField(
