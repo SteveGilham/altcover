@@ -2667,6 +2667,7 @@ type AltCoverTests() = class
                   |> Seq.head
 
     let saved = (Console.Out, Console.Error)
+    let mutable probe = "probe"
     try
       use stdout = new StringWriter()
       use stderr = new StringWriter()
@@ -2683,7 +2684,8 @@ type AltCoverTests() = class
 
       Assert.That(stderr.ToString(), Is.Empty)
       let result = stdout.ToString()
-      printfn "result = '%s'" result
+      probe <- result
+
       // hack for Mono
       let computed = if result.Length = 50 then
                        result |> Encoding.Unicode.GetBytes |> Array.takeWhile (fun c -> c <> 0uy)|> Encoding.UTF8.GetString
@@ -2693,6 +2695,9 @@ type AltCoverTests() = class
     finally
       Console.SetOut (fst saved)
       Console.SetError (snd saved)
+
+    printfn "result = '%s' length %d" probe probe.Length
+
 
   [<Test>]
   member self.ADryRunLooksAsExpected() =
