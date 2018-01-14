@@ -1928,7 +1928,7 @@ type AltCoverTests() = class
       let result = stdout.ToString()
       // hack for Mono
       let computed = if result.Length = 14 then
-                       result |> Encoding.Unicode.GetBytes |> Encoding.UTF8.GetString
+                       result |> Encoding.Unicode.GetBytes |> Array.takeWhile (fun c -> c <> 0uy)|> Encoding.UTF8.GetString
                      else result
 
       Assert.That(computed.Trim(), Is.EqualTo("Where is my rocket pack?"))
@@ -2681,7 +2681,7 @@ type AltCoverTests() = class
       let result = stdout.ToString()
       // hack for Mono
       let computed = if result.Length = 50 then
-                       result |> Encoding.Unicode.GetBytes |> Encoding.UTF8.GetString
+                       result |> Encoding.Unicode.GetBytes |> Array.takeWhile (fun c -> c <> 0uy)|> Encoding.UTF8.GetString
                      else result
       Assert.That(computed.Trim(), Is.EqualTo("Where is my rocket pack? " +
                                                 u1 + "*" + u2))
