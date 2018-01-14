@@ -70,11 +70,22 @@ Target "BuildRelease" (fun _ ->
 )
 
 Target "BuildDebug" (fun _ ->
+   let buildMode = getBuildParamOrDefault "buildMode" "Debug"
+   let setParams defaults =
+        { defaults with
+            Targets = ["Build"]
+            Properties =
+                [
+                    "Optimize", "False"
+                    "DebugSymbols", "True"
+                    "Configuration", buildMode
+                ]
+         }
+
    !! "**/AltCove*.sln"  // include demo projects
      |> Seq.filter (fun n -> n.IndexOf(".core.") = -1)
      |> Seq.filter (fun n -> n.IndexOf(".dotnet.") = -1)
-     |> MSBuildDebug "" ""
-     |> Log "AppBuild-Output: "
+     |> Seq.iter (build setParams)
 
    DotNetCli.Build
         (fun p -> 
