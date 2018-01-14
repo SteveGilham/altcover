@@ -174,8 +174,10 @@ type AltCoverTests() = class
 
   [<Test>]
   member self.ShouldGetSymbolsFromPdb() =
+   let where = Assembly.GetExecutingAssembly().Location
+   let pdb = Path.ChangeExtension(where, ".pdb")
+   if File.Exists(pdb) then
     // Hack for running while instrumented
-    let where = Assembly.GetExecutingAssembly().Location
     let files = Directory.GetFiles(Path.GetDirectoryName(where) + AltCoverTests.Hack())
     files
     |> Seq.filter (fun x -> x.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)
@@ -1225,6 +1227,7 @@ type AltCoverTests() = class
     try
       Visitor.keys.Clear()
       let where = Assembly.GetExecutingAssembly().Location
+      let pdb = Path.ChangeExtension(where, ".pdb")
       let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample3.dll")
       let unique = Guid.NewGuid().ToString()
       let output = Path.GetTempFileName()
@@ -1253,24 +1256,26 @@ type AltCoverTests() = class
         let token' = String.Join(String.Empty, raw.Name.PublicKeyToken|> Seq.map (fun x -> x.ToString("x2")))
         Assert.That (token', Is.EqualTo("c02b1a9f5b7cade8"))
 
-        let setup = AppDomainSetup()
-        setup.ApplicationBase <- Path.GetDirectoryName(where)
-        let ad = AppDomain.CreateDomain("ShouldGetNewFilePathFromPreparedAssembly", null, setup)
-        try
-          let proxyObject = ad.CreateInstanceFromAndUnwrap(typeof<ProxyObject>.Assembly.Location,"Tests.ProxyObject") :?> ProxyObject
-          proxyObject.InstantiateObject(outputdll,"Sample3.Class1",[||])
-          let setting = proxyObject.InvokeMethod("set_Property",[| 17 |])
-          Assert.That (setting, Is.Null)
-          let getting = proxyObject.InvokeMethod("get_Property",[||]) :?> int
-          Assert.That (getting, Is.EqualTo 17)
+        if File.Exists(pdb) then
+            // doesnt' seem to work on Mono
+            let setup = AppDomainSetup()
+            setup.ApplicationBase <- Path.GetDirectoryName(where)
+            let ad = AppDomain.CreateDomain("ShouldGetNewFilePathFromPreparedAssembly", null, setup)
+            try
+              let proxyObject = ad.CreateInstanceFromAndUnwrap(typeof<ProxyObject>.Assembly.Location,"Tests.ProxyObject") :?> ProxyObject
+              proxyObject.InstantiateObject(outputdll,"Sample3.Class1",[||])
+              let setting = proxyObject.InvokeMethod("set_Property",[| 17 |])
+              Assert.That (setting, Is.Null)
+              let getting = proxyObject.InvokeMethod("get_Property",[||]) :?> int
+              Assert.That (getting, Is.EqualTo 17)
 
-          let proxyObject' = ad.CreateInstanceFromAndUnwrap(typeof<ProxyObject>.Assembly.Location,"Tests.ProxyObject") :?> ProxyObject
-          proxyObject'.InstantiateObject(outputdll,"Sample3.Class3",[||])
-          let log = proxyObject'.InvokeMethod("get_Visits",[||]) :?> seq<Tuple<string, int>>
-          Assert.That (log, Is.EquivalentTo[(unique, 42)])
+              let proxyObject' = ad.CreateInstanceFromAndUnwrap(typeof<ProxyObject>.Assembly.Location,"Tests.ProxyObject") :?> ProxyObject
+              proxyObject'.InstantiateObject(outputdll,"Sample3.Class3",[||])
+              let log = proxyObject'.InvokeMethod("get_Visits",[||]) :?> seq<Tuple<string, int>>
+              Assert.That (log, Is.EquivalentTo[(unique, 42)])
 
-        finally
-          AppDomain.Unload(ad)
+            finally
+              AppDomain.Unload(ad)
       finally
         Visitor.reportPath <- save
         Directory.EnumerateFiles(Path.GetDirectoryName output,
@@ -1728,7 +1733,7 @@ type AltCoverTests() = class
   member self.IncludedMethodPointInsertsVisit () =
    let where = Assembly.GetExecutingAssembly().Location
    let pdb = Path.ChangeExtension(where, ".pdb")
-   if File.Exists(pdb) then
+   if File.Exists(pdb) then  // TODO
     let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
     let reader = ProgramDatabase.ReadSymbols def
@@ -1926,7 +1931,7 @@ type AltCoverTests() = class
                        result |> Encoding.Unicode.GetBytes |> Encoding.UTF8.GetString
                      else result
 
-      Assert.That(computed, Is.EqualTo("Where is my rocket pack? \r\n"))
+      Assert.That(computed.Trim(), Is.EqualTo("Where is my rocket pack?"))
     finally
       Console.SetOut (fst saved)
       Console.SetError (snd saved)
@@ -1997,7 +2002,7 @@ type AltCoverTests() = class
   [<Test>]
   member self.ParsingErrorHelpGivesHelp() =
     let options = Main.DeclareOptions ()
-    let input = [| "--o"; "--?" |]
+    let input = [| "--o"; Path.GetInvalidPathChars() |> String |]
     let parse = Main.ParseCommandLine input options
     match parse with
     | Right _ -> Assert.Fail()
@@ -2171,7 +2176,7 @@ type AltCoverTests() = class
       Visitor.reportPath <- None
       let options = Main.DeclareOptions ()
       let unique = Guid.NewGuid().ToString()
-      let input = [| "-x"; unique.Replace("-", ":") |]
+      let input = [| "-x"; unique.Replace("-", Path.GetInvalidPathChars() |> String) |]
       let parse = Main.ParseCommandLine input options
       match parse with
       | Right _ -> Assert.Fail()
@@ -2312,9 +2317,8 @@ type AltCoverTests() = class
       Visitor.outputDirectory <- None
       let options = Main.DeclareOptions ()
       let unique = Guid.NewGuid().ToString()
-      let input = [| "-o"; unique.Replace("-", ":") |]
+      let input = [| "-o"; unique.Replace("-", Path.GetInvalidPathChars() |> String) |]
       let parse = Main.ParseCommandLine input options
-      printfn "%A" parse
       match parse with
       | Right _ -> Assert.Fail()
       | Left (x, y) -> Assert.That (y, Is.SameAs options)
@@ -2679,8 +2683,8 @@ type AltCoverTests() = class
       let computed = if result.Length = 50 then
                        result |> Encoding.Unicode.GetBytes |> Encoding.UTF8.GetString
                      else result
-      Assert.That(computed, Is.EqualTo("Where is my rocket pack? " +
-                                                u1 + "*" + u2 + "\r\n"))
+      Assert.That(computed.Trim(), Is.EqualTo("Where is my rocket pack? " +
+                                                u1 + "*" + u2))
     finally
       Console.SetOut (fst saved)
       Console.SetError (snd saved)
