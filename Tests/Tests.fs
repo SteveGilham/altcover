@@ -2828,6 +2828,7 @@ type AltCoverTests() = class
                          ] // See Instrument.WriteAssembly
                      else
                         ["AltCover.Recorder.g.dll"
+                         "AltCover.Recorder.g.dll.mdb"
                          "Sample1.exe"
                          "Sample1.exe.mdb"]
 
@@ -2929,6 +2930,7 @@ type AltCoverTests() = class
                          "Sample2.pdb"]
                      else
                         ["AltCover.Recorder.g.dll"
+                         "AltCover.Recorder.g.dll.mdb"
                          "Sample2.deps.json"
                          "Sample2.dll"
                          "Sample2.pdb"]
