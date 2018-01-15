@@ -105,8 +105,8 @@ type AltCoverTests() = class
                             let filename = file.Name.Replace("\\","/")
                             Assert.That(name.Replace("\\","/"), Does.EndWith("/" + filename), (fst x) + " -> " + name) )
 
-  // TODO [<Test>]
-  member self.ShouldGetPdbFromMonoImage() =
+  [<Test>]
+  member self.ShouldGetNoMdbFromMonoImage() =
     // Hack for running while instrumented
     let where = Assembly.GetExecutingAssembly().Location
     let files = Directory.GetFiles(where.Substring(0, where.IndexOf("_Binaries")) + monoSample1)
@@ -116,14 +116,12 @@ type AltCoverTests() = class
                 |> Seq.toList
     Assert.That(files, Is.Not.Empty)
     files
-    |> Seq.iter( fun x ->let pdb = AltCover.ProgramDatabase.GetPdbFromImage (snd x)
-                         match pdb with
-                         | None -> Assert.Fail("No .mdb for " + (fst x))
-                         | Some name ->
-                            let probe = (fst x) + ".mdb"
-                            let file = FileInfo(probe)
-                            let filename = file.Name.Replace("\\","/")
-                            Assert.That(name, Does.EndWith("/" + filename), (fst x) + " -> " + name) )
+    |> Seq.iter( fun x -> let probe = (fst x) + ".mdb"
+                          let pdb = AltCover.ProgramDatabase.GetPdbFromImage (snd x)
+                          match pdb with
+                          | None -> Assert.That(File.Exists probe, probe + " not found" )
+                          | Some name -> Assert.Fail("Suddenly, an .mdb for " + (fst x)))
+                            
 
   [<Test>]
   member self.ShouldGetPdbWithFallback() =
@@ -1193,7 +1191,7 @@ type AltCoverTests() = class
         let prepared = Instrument.PrepareAssembly path
 
         Instrument.WriteAssembly prepared outputdll
-// TODO        Assert.That (File.Exists (outputdll + ".mdb"))
+// TODO -- see Instrument.WriteAssembly       Assert.That (File.Exists (outputdll + ".mdb"))
         let raw = Mono.Cecil.AssemblyDefinition.ReadAssembly outputdll
         Assert.That raw.Name.HasPublicKey
 
@@ -1733,7 +1731,7 @@ type AltCoverTests() = class
   member self.IncludedMethodPointInsertsVisit () =
    let where = Assembly.GetExecutingAssembly().Location
    let pdb = Path.ChangeExtension(where, ".pdb")
-   if File.Exists(pdb) then  // TODO
+   if File.Exists(pdb) then // skip when we don't have symbols on travis
     let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
     let reader = ProgramDatabase.ReadSymbols def
@@ -2770,7 +2768,12 @@ type AltCoverTests() = class
                          "AltCover.Recorder.g.pdb"
 #endif
                          "Sample1.exe"
-                         "Sample1.exe.mdb"]
+                         "Sample1.exe.mdb"
+#if NETCOREAPP2_0
+#else
+                         "Sample1.pdb"
+#endif
+                         ] // See Instrument.WriteAssembly
                      else
                         ["AltCover.Recorder.g.dll"
                          "Sample1.exe"

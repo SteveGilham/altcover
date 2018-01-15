@@ -182,15 +182,23 @@ module Instrument =
 #else
 #if NETCOREAPP2_0
 #else
-    // Fails in .net core
-    pkey.SymbolWriterProvider <- match Path.GetExtension (Option.getOrElse String.Empty (ProgramDatabase.GetPdbWithFallback assembly)) with
+    // Fails in .net core with
+    // System.NullReferenceException : Object reference not set to an instance of an object.
+    pkey.WriteSymbols <- true
+    pkey.SymbolWriterProvider <-  Mono.Cecil.Pdb.PdbWriterProvider() :> ISymbolWriterProvider
+(* Mdb writing now fails in .net framework, otherwise I would still use
+    
+    match Path.GetExtension (Option.getOrElse ".pdb" (ProgramDatabase.GetPdbWithFallback assembly)) with
                                  | ".pdb" ->
-                                   pkey.WriteSymbols <- true
                                    Mono.Cecil.Pdb.PdbWriterProvider() :> ISymbolWriterProvider
-                                 | _ ->
-                                   pkey.WriteSymbols <- false // TODO
-                                   null // Mono.Cecil.Mdb.MdbWriterProvider() :> ISymbolWriterProvider
+                                 | _ -> Mono.Cecil.Mdb.MdbWriterProvider() :> ISymbolWriterProvider
 
+but instead it throws
+    Mono.CompilerServices.SymbolWriter.MonoSymbolFileException : 
+    Exception of type 'Mono.CompilerServices.SymbolWriter.MonoSymbolFileException' was thrown.
+
+in the Write(...) call below                               
+*)
     // No strongnames in .net core
     KnownKey assembly.Name
     |> Option.iter (fun key -> pkey.StrongNameKeyPair <- key)
