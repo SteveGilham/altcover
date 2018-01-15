@@ -181,11 +181,11 @@ module Instrument =
   let internal WriteAssembly (assembly:AssemblyDefinition) (path:string) =
     let pkey = Mono.Cecil.WriterParameters()
 #if NETCOREAPP2_0
-    // Assembly with symbols writing fails on .net core on Windows when writing with
+    // Assembly with symbols pdb writing fails on .net core on Windows when writing with
     // System.NullReferenceException : Object reference not set to an instance of an object.
-    // from deep inside Cecil
-    pkey.WriteSymbols <- false
-    pkey.SymbolWriterProvider <- null
+    // from deep inside Cecil -- but this works!!
+    pkey.WriteSymbols <- true
+    pkey.SymbolWriterProvider <- Mono.Cecil.Mdb.MdbWriterProvider() :> ISymbolWriterProvider
 #else
 
     // Assembly with pdb writing fails on mono on Windows when writing with

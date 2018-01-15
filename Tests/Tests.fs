@@ -1148,7 +1148,8 @@ type AltCoverTests() = class
         Visitor.reportPath <- Some unique
         let prepared = Instrument.PrepareAssembly path
         Instrument.WriteAssembly prepared outputdll
-        Assert.That (File.Exists (outputdll.Replace(".dll",".pdb")))
+        let expectedSymbols = if "Mono.Runtime" |> Type.GetType |> isNull |> not then ".dll.mdb" else ".pdb"
+        Assert.That (File.Exists (outputdll.Replace(".dll", expectedSymbols)))
         let raw = Mono.Cecil.AssemblyDefinition.ReadAssembly outputdll
         Assert.That raw.Name.HasPublicKey
 
@@ -1252,7 +1253,8 @@ type AltCoverTests() = class
         Assert.That (newValue.OpCode, Is.EqualTo OpCodes.Ldstr)
 
         Instrument.WriteAssembly def outputdll
-        Assert.That (File.Exists (outputdll.Replace(".dll",".pdb")))
+        let expectedSymbols = if "Mono.Runtime" |> Type.GetType |> isNull |> not then ".dll.mdb" else ".pdb"
+        Assert.That (File.Exists (outputdll.Replace(".dll", expectedSymbols)))
         let raw = Mono.Cecil.AssemblyDefinition.ReadAssembly outputdll
         Assert.That raw.Name.HasPublicKey
 
@@ -2815,6 +2817,7 @@ type AltCoverTests() = class
       let expected = if File.Exists(pdb) then
                         ["AltCover.Recorder.g.dll"
 #if NETCOREAPP2_0
+                         "AltCover.Recorder.g.dll.mdb"
                          "FSharp.Core.dll"
 #else
                          "AltCover.Recorder.g.pdb"
@@ -2921,18 +2924,23 @@ type AltCoverTests() = class
       let expected = if File.Exists(pdb) then
                         ["AltCover.Recorder.g.dll"
 #if NETCOREAPP2_0
+                         "AltCover.Recorder.g.dll.mdb"
                          "FSharp.Core.dll"
 #else
                          "AltCover.Recorder.g.pdb"
 #endif
                          "Sample2.deps.json"
                          "Sample2.dll"
+#if NETCOREAPP2_0
+                         "Sample2.dll.mdb"
+#endif
                          "Sample2.pdb"]
                      else
                         ["AltCover.Recorder.g.dll"
                          "AltCover.Recorder.g.dll.mdb"
                          "Sample2.deps.json"
                          "Sample2.dll"
+                         "Sample2.dll.mdb"
                          "Sample2.pdb"]
 
       Assert.That (Directory.GetFiles(output)
