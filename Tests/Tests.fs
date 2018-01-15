@@ -103,7 +103,7 @@ type AltCoverTests() = class
                             let probe = Path.ChangeExtension((fst x), ".pdb")
                             let file = FileInfo(probe)
                             let filename = file.Name.Replace("\\","/")
-                            Assert.That(name.Replace("\\","/"), Does.EndWith("/" + filename), (fst x) + " -> " + name) )
+                            Assert.That("/" + name.Replace("\\","/"), Does.EndWith("/" + filename), (fst x) + " -> " + name) )
 
   [<Test>]
   member self.ShouldGetNoMdbFromMonoImage() =
@@ -146,7 +146,7 @@ type AltCoverTests() = class
          let probe = Path.ChangeExtension(x, ".pdb")
          let file = FileInfo(probe)
          let filename = file.Name.Replace("\\","/")
-         Assert.That(name.Replace("\\","/"), Does.EndWith("/" + filename), x + " -> " + name)
+         Assert.That("/"+ name.Replace("\\","/"), Does.EndWith("/" + filename), x + " -> " + name)
     )
 
   [<Test>]
@@ -372,7 +372,11 @@ type AltCoverTests() = class
                |> Seq.sort
                |> Seq.toList
 
-    let expected = [  ".ctor" ; "Invoke"; "as_bar"; "bytes"; "get_MyBar" ; "makeThing"; "returnBar"; "returnFoo"; "testMakeThing"; "testMakeUnion" ]
+    let expected = [  ".ctor" ; "Invoke"; "as_bar"; "bytes"; "get_MyBar" ; 
+#if NETCOREAPP2_0
+                      "main";
+#endif
+                      "makeThing"; "returnBar"; "returnFoo"; "testMakeThing"; "testMakeUnion" ]
 
     Assert.That(pass, Is.EquivalentTo(expected), sprintf "Got sequence %A" pass);
 
@@ -1862,7 +1866,12 @@ type AltCoverTests() = class
       let input = Instrument.Context.Build []
       let result = Instrument.InstrumentationVisitor input visited
       Assert.That (result, Is.SameAs input, "result differs")
-      let created = Path.Combine (output, "Sample2.dll")
+      let created = Path.Combine (output, 
+#if NETCOREAPP2_0
+                                  "Sample2.exe")
+#else
+                                  "Sample2.dll")
+#endif
       Assert.That (File.Exists created, created + " not found")
 #if NETCOREAPP2_0
 #else
@@ -2855,11 +2864,11 @@ type AltCoverTests() = class
   [<Test>]
   member self.ADotNetDryRunLooksAsExpected() =
     let where = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
-    let path = Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "_Binaries/Sample2/Debug+AnyCPU/netstandard2.0")
+    let path = Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "_Binaries/Sample2/Debug+AnyCPU/netcoreapp2.0")
     let key0 = Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "Build/SelfTest.snk")
 #if NETCOREAPP2_0
     let input = if Directory.Exists path then path
-                else Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "../_Binaries/Sample2/Debug+AnyCPU/netstandard2.0")
+                else Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "../_Binaries/Sample2/Debug+AnyCPU/netcoreapp2.0")
     let key = if File.Exists key0 then key0
               else Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "../Build/SelfTest.snk")
 #else
@@ -2929,11 +2938,17 @@ type AltCoverTests() = class
 #else
                          "AltCover.Recorder.g.pdb"
 #endif
+                         "Mono.Cecil.dll"
+                         "nunit.engine.netstandard.dll"
+                         "NUnit3.TestAdapter.dll"
                          "Sample2.deps.json"
                          "Sample2.dll"
+                         "Sample2.exe"
 #if NETCOREAPP2_0
-                         "Sample2.dll.mdb"
+                         "Sample2.exe.mdb"
 #endif
+                         "Sample2.runtimeconfig.dev.json"
+                         "Sample2.runtimeconfig.json"
                          "Sample2.pdb"]
                      else
                         ["AltCover.Recorder.g.dll"
@@ -2944,7 +2959,8 @@ type AltCoverTests() = class
                          "Sample2.pdb"]
 
       Assert.That (Directory.GetFiles(output)
-                   |> Seq.map Path.GetFileName,
+                   |> Seq.map Path.GetFileName
+                   |> Seq.filter (fun f -> Path.GetExtension f <> ".tmp"),
                    Is.EquivalentTo expected)
 
     finally

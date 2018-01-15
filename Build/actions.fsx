@@ -100,12 +100,13 @@ open System.Runtime.CompilerServices
                           mvid |> Array.iteri (fun i x -> symbols.[i+16] <- x)
                           System.IO.File.WriteAllBytes(f + ".mdb", symbols))
 
-  let ValidateFSharpTypes simpleReport =
+  let ValidateFSharpTypes simpleReport others =
     use coverageFile = new FileStream(simpleReport, FileMode.Open, FileAccess.Read, FileShare.None, 4096, FileOptions.SequentialScan)
     // Edit xml report to store new hits
     let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
     let recorded = coverageDocument.Descendants(XName.Get("method"))
                    |> Seq.map (fun x -> x.Attribute(XName.Get("name")).Value)
+                   |> Seq.filter (fun x -> others |> Seq.exists (fun y -> x = y) |> not)
                    |> Seq.sort
                    |> Seq.toList
     let expected = "Invoke as_bar bytes get_MyBar makeThing returnBar returnFoo testMakeThing testMakeUnion"

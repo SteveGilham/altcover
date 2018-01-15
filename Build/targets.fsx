@@ -266,10 +266,10 @@ Target "UnitTestWithAltCover" (fun _ ->
                                    ResultSpecs = ["./_Reports/UnitTestWithAltCoverReport.xml"] })
 
       printfn "Instrument the shadow tests"
-      let shadowDir = "_Binaries/AltCover.Shadow.Tests/Debug+AnyCPU"
+      let shadowDir = FullName  "_Binaries/AltCover.Shadow.Tests/Debug+AnyCPU"
       let shadowReport = reports @@ "ShadowTestWithAltCover.xml"
       let result = ExecProcess (fun info -> info.FileName <- altcover
-                                            info.WorkingDirectory <- FullName "_Binaries/AltCover.Shadow.Tests/Debug+AnyCPU"
+                                            info.WorkingDirectory <- shadowDir
                                             info.Arguments <- ("/sn=" + keyfile + AltCoverFilter + @"/o=./__ShadowTestWithAltCover -x=" + shadowReport)) (TimeSpan.FromMinutes 5.0)
 
       printfn "Execute the shadow tests"
@@ -286,6 +286,50 @@ Target "UnitTestWithAltCover" (fun _ ->
       printfn "Symbols not present; skipping"
 )
 
+Target "UnitTestWithAltCoverCore" (fun _ ->
+    ensureDirectory "./_Reports/_UnitTestWithAltCover"
+    let keyfile = FullName "Build/SelfTest.snk"
+    let reports = FullName "./_Reports"
+    let altcover = findToolInSubPath "AltCover.exe" "./_Binaries"
+
+    let testDirectory = FullName "_Binaries/AltCover.Tests/Debug+AnyCPU/netcoreapp2.0"
+    let output = FullName "Tests/_Binaries/AltCover.Tests/Debug+AnyCPU/netcoreapp2.0"
+
+    let altReport = reports @@ "UnitTestWithAltCoverCore.xml"
+    printfn "Instrumented the code"
+    let result = ExecProcess (fun info -> info.FileName <- altcover
+                                          info.WorkingDirectory <- testDirectory
+                                          info.Arguments <- ("/sn=" + keyfile + AltCoverFilter + @"/o=" + output + " -x=" + altReport)) (TimeSpan.FromMinutes 5.0)
+    if result <> 0 then failwithf "first instrument returned with a non-zero exit code"
+
+    printfn "Unit test the instrumented code"
+    let result = ExecProcess (fun info -> info.FileName <- "dotnet"
+                                          info.WorkingDirectory <- FullName "Tests"
+                                          info.Arguments <- ("test --no-build --configuration Debug altcover.tests.core.fsproj")) (TimeSpan.FromMinutes 5.0)
+    if result <> 0 then failwithf "first test returned with a non-zero exit code"
+    
+    printfn "Instrument the shadow tests"
+    let shadowDir = "_Binaries/AltCover.Shadow.Tests/Debug+AnyCPU/netcoreapp2.0"
+    let shadowReport = reports @@ "ShadowTestWithAltCoverCore.xml"
+    let shadowOut = FullName "Shadow.Tests/_Binaries/AltCover.Shadow.Tests/Debug+AnyCPU/netcoreapp2.0"
+    let result = ExecProcess (fun info -> info.FileName <- altcover
+                                          info.WorkingDirectory <- shadowDir
+                                          info.Arguments <- ("/sn=" + keyfile + AltCoverFilter + @"/o=" + shadowOut + " -x=" + shadowReport)) (TimeSpan.FromMinutes 5.0)
+    if result <> 0 then failwithf "second instrument returned with a non-zero exit code"
+    printfn "Execute the shadow tests"
+    let result = ExecProcess (fun info -> info.FileName <- "dotnet"
+                                          info.WorkingDirectory <- FullName "Shadow.Tests"
+                                          info.Arguments <- ("test --no-build --configuration Debug altcover.recorder.tests.core.fsproj")) (TimeSpan.FromMinutes 5.0)
+    if result <> 0 then failwithf "second test returned with a non-zero exit code"
+
+//    ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
+//                                       ReportTypes = [ ReportGeneratorReportType.Html; ReportGeneratorReportType.Badges; ReportGeneratorReportType.XmlSummary ]
+//                                       TargetDir = "_Reports/_UnitTestWithAltCoverCore"})
+//          [altReport; shadowReport]
+)
+
+
+
 // Pure OperationalTests
 
 Target "OperationalTest" ignore
@@ -301,7 +345,7 @@ Target "FSharpTypes" ( fun _ ->
       let result = ExecProcess (fun info -> info.FileName <- binRoot @@ "AltCover.exe"
                                             info.WorkingDirectory <- sampleRoot
                                             info.Arguments <- ("-t=System\. -t=Microsoft\. -x=" + simpleReport + " /o=./" + instrumented)) (TimeSpan.FromMinutes 5.0)
-      Actions.ValidateFSharpTypes simpleReport
+      Actions.ValidateFSharpTypes simpleReport []
     else
       printfn "Symbols not present; skipping"
 )
@@ -310,12 +354,18 @@ Target "FSharpTypesDotNet" ( fun _ ->
     ensureDirectory "./_Reports"
     let project = FullName "./AltCover/altcover.core.fsproj"
     let simpleReport = (FullName "./_Reports") @@ ( "AltCoverFSharpTypesDotNet.xml")
-    let sampleRoot = FullName "_Binaries/Sample2/Release+AnyCPU/netstandard2.0"
-    let instrumented = "__FSharpTypesDotNet"
+    let sampleRoot = FullName "_Binaries/Sample2/Debug+AnyCPU/netcoreapp2.0"
+    let instrumented = FullName "Sample2/_Binaries/Sample2/Debug+AnyCPU/netcoreapp2.0"
     DotNetCli.RunCommand (fun p -> {p with WorkingDir = sampleRoot})
-                         ("run --project " + project + " -- -t \"System\\.\" -t \"Microsoft\\.\" -x \"" + simpleReport + "\" /o \"./" + instrumented + "\"")
+                         ("run --project " + project + " -- -t \"System\\.\" -t \"Microsoft\\.\" -x \"" + simpleReport + "\" /o \"" + instrumented + "\"")
 
-    Actions.ValidateFSharpTypes simpleReport
+    Actions.ValidateFSharpTypes simpleReport ["main"]
+
+    printfn "Execute the instrumented tests"
+    let result = ExecProcess (fun info -> info.FileName <- "dotnet"
+                                          info.WorkingDirectory <- FullName "Sample2"
+                                          info.Arguments <- ("test --no-build --configuration Debug sample2.core.fsproj")) (TimeSpan.FromMinutes 5.0)
+    if result <> 0 then failwithf "sample test returned with a non-zero exit code"
 )
 
 Target "BasicCSharp" (fun _ ->
@@ -641,6 +691,10 @@ Target "All" ignore
 
 "Compilation"
 ==> "UnitTestWithAltCover"
+==> "UnitTest"
+
+"UnitTestDotNet"
+==> "UnitTestWithAltCoverCore"
 ==> "UnitTest"
 
 "Compilation"
