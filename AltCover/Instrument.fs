@@ -193,12 +193,12 @@ module Instrument =
     // from deep inside Cecil
     // Pdb writing fails on mono on non-Windows with
     // System.DllNotFoundException : ole32.dll
-    //  at (wrapper managed-to-native) Mono.Cecil.Pdb.SymWriter:CoCreateInstance 
+    //  at (wrapper managed-to-native) Mono.Cecil.Pdb.SymWriter:CoCreateInstance
     // Mdb writing now fails in .net framework, it throws
     // Mono.CompilerServices.SymbolWriter.MonoSymbolFileException :
     // Exception of type 'Mono.CompilerServices.SymbolWriter.MonoSymbolFileException' was thrown.
     pkey.WriteSymbols <- true
-    pkey.SymbolWriterProvider <- if monoRuntime then Mono.Cecil.Mdb.MdbWriterProvider() :> ISymbolWriterProvider else Mono.Cecil.Pdb.PdbWriterProvider() :> ISymbolWriterProvider 
+    pkey.SymbolWriterProvider <- if monoRuntime then Mono.Cecil.Mdb.MdbWriterProvider() :> ISymbolWriterProvider else Mono.Cecil.Pdb.PdbWriterProvider() :> ISymbolWriterProvider
 
     // Also, there are no strongnames in .net core
     KnownKey assembly.Name
