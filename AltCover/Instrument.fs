@@ -187,17 +187,17 @@ module Instrument =
     pkey.WriteSymbols <- true
     pkey.SymbolWriterProvider <-  Mono.Cecil.Pdb.PdbWriterProvider() :> ISymbolWriterProvider
 (* Mdb writing now fails in .net framework, otherwise I would still use
-    
+
     match Path.GetExtension (Option.getOrElse ".pdb" (ProgramDatabase.GetPdbWithFallback assembly)) with
                                  | ".pdb" ->
                                    Mono.Cecil.Pdb.PdbWriterProvider() :> ISymbolWriterProvider
                                  | _ -> Mono.Cecil.Mdb.MdbWriterProvider() :> ISymbolWriterProvider
 
 but instead it throws
-    Mono.CompilerServices.SymbolWriter.MonoSymbolFileException : 
+    Mono.CompilerServices.SymbolWriter.MonoSymbolFileException :
     Exception of type 'Mono.CompilerServices.SymbolWriter.MonoSymbolFileException' was thrown.
 
-in the Write(...) call below                               
+in the Write(...) call below
 *)
     // No strongnames in .net core
     KnownKey assembly.Name

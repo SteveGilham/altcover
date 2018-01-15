@@ -121,7 +121,6 @@ type AltCoverTests() = class
                           match pdb with
                           | None -> Assert.That(File.Exists probe, probe + " not found" )
                           | Some name -> Assert.Fail("Suddenly, an .mdb for " + (fst x)))
-                            
 
   [<Test>]
   member self.ShouldGetPdbWithFallback() =
