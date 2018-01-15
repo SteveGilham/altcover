@@ -51,6 +51,8 @@ module Instrument =
                          |> Seq.find (fun n -> n.EndsWith(".JSONFragments", StringComparison.Ordinal))
   let private resources = ResourceManager(resource , Assembly.GetExecutingAssembly())
   let version = typeof<AltCover.Recorder.Tracer>.Assembly.GetName().Version.ToString()
+
+  let monoRuntime = "Mono.Runtime" |> Type.GetType |> isNull |> not
 #if NETCOREAPP2_0
   let dependencies = (resources.GetString "netcoreDependencies").Replace("version",
                                                                           version)
@@ -181,28 +183,22 @@ module Instrument =
 #if NETCOREAPP2_0
     // Assembly with symbols writing fails on .net core on Windows when writing with
     // System.NullReferenceException : Object reference not set to an instance of an object.
-    // from deep inside Cecil when trying to write symbols
+    // from deep inside Cecil
     pkey.WriteSymbols <- false
     pkey.SymbolWriterProvider <- null
 #else
-    pkey.SymbolWriterProvider <- match Path.GetExtension (Option.getOrElse String.Empty (ProgramDatabase.GetPdbWithFallback assembly)) with
-                                 | ".pdb" ->
-                                   pkey.WriteSymbols <- true
-                                   Mono.Cecil.Pdb.PdbWriterProvider() :> ISymbolWriterProvider
-                                 | _ ->  // Mdb writing now fails in .net framework, it throws
-                                         // Mono.CompilerServices.SymbolWriter.MonoSymbolFileException :
-                                         // Exception of type 'Mono.CompilerServices.SymbolWriter.MonoSymbolFileException' was thrown.
-                                         // Pdb writing fails on non-Windows with
-                                         // System.DllNotFoundException : ole32.dll
-                                         //  at (wrapper managed-to-native) Mono.Cecil.Pdb.SymWriter:CoCreateInstance 
-                                         if Environment.OSVersion.ToString().StartsWith("Microsoft Windows", StringComparison.Ordinal) then
-                                            pkey.WriteSymbols <- true
-                                            Mono.Cecil.Pdb.PdbWriterProvider() :> ISymbolWriterProvider
-                                         else
-                                            pkey.WriteSymbols <- true
-                                            Mono.Cecil.Mdb.MdbWriterProvider() :> ISymbolWriterProvider
-//                                            pkey.WriteSymbols <- false // TODO
-//                                            null // Mono.Cecil.Mdb.MdbWriterProvider() :> ISymbolWriterProvider
+
+    // Assembly with pdb writing fails on mono on Windows when writing with
+    // System.NullReferenceException : Object reference not set to an instance of an object.
+    // from deep inside Cecil
+    // Pdb writing fails on mono on non-Windows with
+    // System.DllNotFoundException : ole32.dll
+    //  at (wrapper managed-to-native) Mono.Cecil.Pdb.SymWriter:CoCreateInstance 
+    // Mdb writing now fails in .net framework, it throws
+    // Mono.CompilerServices.SymbolWriter.MonoSymbolFileException :
+    // Exception of type 'Mono.CompilerServices.SymbolWriter.MonoSymbolFileException' was thrown.
+    pkey.WriteSymbols <- true
+    pkey.SymbolWriterProvider <- if monoRuntime then Mono.Cecil.Mdb.MdbWriterProvider() :> ISymbolWriterProvider else Mono.Cecil.Pdb.PdbWriterProvider() :> ISymbolWriterProvider 
 
     // Also, there are no strongnames in .net core
     KnownKey assembly.Name

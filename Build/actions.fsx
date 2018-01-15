@@ -147,13 +147,34 @@ open System.Runtime.CompilerServices
     let instrumented = "__Instrumented." + reportSigil
     let result = ExecProcess (fun info -> info.FileName <- binRoot @@ "AltCover.exe"
                                           info.WorkingDirectory <- sampleRoot
-                                          info.Arguments <- ("-t=System. -x=" + simpleReport + " /o=./" + instrumented)) (TimeSpan.FromMinutes 5.0)
+                                          info.Arguments <- ("\"-t=System\\.\" -x=" + simpleReport + " /o=./" + instrumented)) (TimeSpan.FromMinutes 5.0)
     if result <> 0 then failwith "Simple instrumentation failed"
     let result2 = ExecProcess (fun info -> info.FileName <- sampleRoot @@ (instrumented + "/Sample1.exe")
                                            info.WorkingDirectory <- (sampleRoot @@ instrumented)
                                            info.Arguments <- "") (TimeSpan.FromMinutes 5.0)
     if result2 <> 0 then failwith "Instrumented .exe failed"
     ValidateSample1 simpleReport reportSigil
+
+  let SimpleInstrumentingRunUnderMono (samplePath:string) (binaryPath:string) (reportSigil':string) (monoOnWindows:string option)=
+   printfn "Instrument and run a simple executable under mono"
+   match monoOnWindows with
+   | Some mono ->
+    ensureDirectory "./_Reports"
+    let reportSigil = reportSigil' + "UnderMono"
+    let simpleReport = (FullName "./_Reports") @@ ( reportSigil + ".xml")
+    let binRoot = FullName binaryPath
+    let sampleRoot = FullName samplePath
+    let instrumented = "__Instrumented." + reportSigil
+    let result = ExecProcess (fun info -> info.FileName <- mono
+                                          info.WorkingDirectory <- sampleRoot
+                                          info.Arguments <- ((binRoot @@ "AltCover.exe") + " \"-t=System\\.\" -x=" + simpleReport + " /o=./" + instrumented)) (TimeSpan.FromMinutes 5.0)
+    if result <> 0 then failwith "Simple instrumentation failed"
+    let result2 = ExecProcess (fun info -> info.FileName <- sampleRoot @@ (instrumented + "/Sample1.exe")
+                                           info.WorkingDirectory <- (sampleRoot @@ instrumented)
+                                           info.Arguments <- "") (TimeSpan.FromMinutes 5.0)
+    if result2 <> 0 then failwith "Instrumented .exe failed"
+    ValidateSample1 simpleReport reportSigil
+   | None -> failwith "Mono executable expected"  
 
 let PrepareReadMe packingCopyright =
     let readme = FullName "README.md"
