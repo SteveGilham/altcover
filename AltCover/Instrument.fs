@@ -178,31 +178,35 @@ module Instrument =
   /// when asked to strongname.  This writes a new .pdb/.mdb alongside the instrumented assembly</remark>
   let internal WriteAssembly (assembly:AssemblyDefinition) (path:string) =
     let pkey = Mono.Cecil.WriterParameters()
-#if NETSTANDARD2_0
-#else
 #if NETCOREAPP2_0
-#else
-    // Fails in .net core with
+    // Assembly with symbols writing fails on .net core on Windows when writing with
     // System.NullReferenceException : Object reference not set to an instance of an object.
-    pkey.WriteSymbols <- true
-    pkey.SymbolWriterProvider <-  Mono.Cecil.Pdb.PdbWriterProvider() :> ISymbolWriterProvider
-(* Mdb writing now fails in .net framework, otherwise I would still use
-
-    match Path.GetExtension (Option.getOrElse ".pdb" (ProgramDatabase.GetPdbWithFallback assembly)) with
+    // from deep inside Cecil when trying to write symbols
+    pkey.WriteSymbols <- false
+    pkey.SymbolWriterProvider <- null
+#else
+    pkey.SymbolWriterProvider <- match Path.GetExtension (Option.getOrElse String.Empty (ProgramDatabase.GetPdbWithFallback assembly)) with
                                  | ".pdb" ->
+                                   pkey.WriteSymbols <- true
                                    Mono.Cecil.Pdb.PdbWriterProvider() :> ISymbolWriterProvider
-                                 | _ -> Mono.Cecil.Mdb.MdbWriterProvider() :> ISymbolWriterProvider
+                                 | _ ->  // Mdb writing now fails in .net framework, it throws
+                                         // Mono.CompilerServices.SymbolWriter.MonoSymbolFileException :
+                                         // Exception of type 'Mono.CompilerServices.SymbolWriter.MonoSymbolFileException' was thrown.
+                                         // Pdb writing fails on non-Windows with
+                                         // System.DllNotFoundException : ole32.dll
+                                         //  at (wrapper managed-to-native) Mono.Cecil.Pdb.SymWriter:CoCreateInstance 
+                                         if Environment.OSVersion.ToString().StartsWith("Microsoft Windows", StringComparison.Ordinal) then
+                                            pkey.WriteSymbols <- true
+                                            Mono.Cecil.Pdb.PdbWriterProvider() :> ISymbolWriterProvider
+                                         else
+                                            pkey.WriteSymbols <- true
+                                            Mono.Cecil.Mdb.MdbWriterProvider() :> ISymbolWriterProvider
+//                                            pkey.WriteSymbols <- false // TODO
+//                                            null // Mono.Cecil.Mdb.MdbWriterProvider() :> ISymbolWriterProvider
 
-but instead it throws
-    Mono.CompilerServices.SymbolWriter.MonoSymbolFileException :
-    Exception of type 'Mono.CompilerServices.SymbolWriter.MonoSymbolFileException' was thrown.
-
-in the Write(...) call below
-*)
-    // No strongnames in .net core
+    // Also, there are no strongnames in .net core
     KnownKey assembly.Name
     |> Option.iter (fun key -> pkey.StrongNameKeyPair <- key)
-#endif
 #endif
     assembly.Write(path, pkey)
 
