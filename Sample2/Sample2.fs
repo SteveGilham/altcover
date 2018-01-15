@@ -18,11 +18,15 @@ module DU =
         | Bar of string
         | Baz of double
         | Bop of DateTime
-    with member this.as_bar() = match this with
-                                | Foo n -> Bar (string n)
-                                | Bar bar -> this
-                                | Baz d -> Bar (string d)
-                                | Bop t -> Bar (string t)
+    with member this.as_bar() = try
+                                  match this with
+                                  | Foo n -> Bar (string n)
+                                  | Baz d -> Bar (string d)
+                                  | Bop t -> Bar (string t)
+                                  // New cases go in here
+                                  | _ -> this
+                                with
+                                | _ -> Bar "none"
          member this.MyBar = this.as_bar
 
     let returnFoo v = Foo v

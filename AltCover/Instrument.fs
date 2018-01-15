@@ -271,8 +271,6 @@ in the Write(...) call below
 
     // TODO -- is this still lookup table of any use??
     let assemblyReferenceSubstitutions = new Dictionary<String, String>()
-#if NETCOREAPP2_0
-#else
     let interestingReferences =  assembly.MainModule.AssemblyReferences
                                  |> Seq.cast<AssemblyNameReference>
                                  |> Seq.filter (fun x -> assemblies |> List.exists (fun y -> y.Equals(x.Name)))
@@ -280,11 +278,15 @@ in the Write(...) call below
     interestingReferences
     |> Seq.iter (fun r -> let original = r.ToString()
                           let token = KnownToken r
-                          let effectiveKey = match token with
+                          let effectiveKey =
+#if NETCOREAPP2_0
+                                             None
+#else
+                                             match token with
                                              | None -> Visitor.defaultStrongNameKey
                                                        |> Option.map KeyStore.KeyToRecord
-                                             | key -> key
-
+                                             | Some _ -> token
+#endif
                           match effectiveKey with
                           | None -> r.HasPublicKey <- false
                                     r.PublicKeyToken <- null
@@ -296,7 +298,7 @@ in the Write(...) call below
                           if  not <| updated.Equals(original, StringComparison.Ordinal) then
                             assemblyReferenceSubstitutions.[original] <- updated
                   )
-#endif
+
     assemblyReferenceSubstitutions
 
   let internal injectJSON json =
