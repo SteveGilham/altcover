@@ -2947,7 +2947,7 @@ type AltCoverTests() = class
 
       let expected' = if pdb |> File.Exists |> not then
                         List.concat [expected; ["AltCover.Recorder.g.dll.mdb"; "Sample2.dll.mdb" ]]
-                        |> List.filter (fun f -> f.EndsWith(".g.pbd", StringComparison.Ordinal) |> not)
+                        |> List.filter (fun f -> f.EndsWith(".g.pdb", StringComparison.Ordinal) |> not)
                         |> List.sortBy (fun f -> f.ToUpperInvariant())
                       else
                         expected
