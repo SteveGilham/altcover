@@ -9,30 +9,35 @@ open FSharp.Markdown
 open YamlDotNet.RepresentationModel
 
 module Actions =
-  let rec Clean ()  =
-   try
-    (DirectoryInfo ".").GetDirectories("*", SearchOption.AllDirectories)
-    |> Seq.filter (fun x -> x.Name.StartsWith "_" || x.Name = "bin" || x.Name = "obj")
-    |> Seq.map (fun x -> x.FullName)
-    |> Seq.distinct
-    // arrange so leaves get deleted first, avoiding "does not exist" warnings
-    |> Seq.groupBy (fun x -> x |> Seq.filter (fun c -> c='\\' || c = '/') |> Seq.length)
-    |> Seq.map (fun (n,x) -> (n, x |> Seq.sort))
-    |> Seq.sortBy (fun (n,x) -> -1 * n)
-    |> Seq.map (fun (n,x) -> x)
-    |> Seq.concat
-    |> Seq.iter (fun n -> printfn "Deleting %s" n
-                          Directory.Delete(n, true))
+  let Clean () =
+    let rec Clean1 depth =
+      try
+        (DirectoryInfo ".").GetDirectories("*", SearchOption.AllDirectories)
+        |> Seq.filter (fun x -> x.Name.StartsWith "_" || x.Name = "bin" || x.Name = "obj")
+        |> Seq.map (fun x -> x.FullName)
+        |> Seq.distinct
+        // arrange so leaves get deleted first, avoiding "does not exist" warnings
+        |> Seq.groupBy (fun x -> x |> Seq.filter (fun c -> c='\\' || c = '/') |> Seq.length)
+        |> Seq.map (fun (n,x) -> (n, x |> Seq.sort))
+        |> Seq.sortBy (fun (n,x) -> -1 * n)
+        |> Seq.map (fun (n,x) -> x)
+        |> Seq.concat
+        |> Seq.iter (fun n -> printfn "Deleting %s" n
+                              Directory.Delete(n, true))
 
-    let temp = Environment.GetEnvironmentVariable("TEMP")
-    if not <| String.IsNullOrWhiteSpace temp then
-      Directory.GetFiles(temp, "*.tmp.dll.mdb")
-      |> Seq.iter File.Delete
-   with
-   | :? System.IO.IOException as x ->
+        let temp = Environment.GetEnvironmentVariable("TEMP")
+        if not <| String.IsNullOrWhiteSpace temp then
+            Directory.GetFiles(temp, "*.tmp.dll.mdb")
+            |> Seq.iter File.Delete
+       with
+       | :? System.IO.IOException as x -> Clean' (x :> Exception) depth
+       | :? System.UnauthorizedAccessException as x -> Clean' (x :> Exception) depth
+    and Clean' x depth =
       printfn "looping after %A" x
       System.Threading.Thread.Sleep(500)
-      Clean()
+      if depth < 10 then Clean1 (depth + 1)
+
+    Clean1 0
 
   let template ="""namespace AltCover
 open System.Reflection
