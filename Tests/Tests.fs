@@ -372,7 +372,7 @@ type AltCoverTests() = class
                |> Seq.sort
                |> Seq.toList
 
-    let expected = [  ".ctor" ; "Invoke"; "as_bar"; "bytes"; "get_MyBar" ; 
+    let expected = [  ".ctor" ; "Invoke"; "as_bar"; "bytes"; "get_MyBar" ;
 #if NETCOREAPP2_0
                       "main";
 #endif
@@ -2925,7 +2925,7 @@ type AltCoverTests() = class
       Assert.That (File.Exists report)
       let pdb = Path.ChangeExtension(Assembly.GetExecutingAssembly().Location, ".pdb")
 
-      let expected = 
+      let expected =
                         ["AltCover.Recorder.g.dll"
 #if NETCOREAPP2_0
                          "AltCover.Recorder.g.dll.mdb"
@@ -2945,11 +2945,17 @@ type AltCoverTests() = class
                          "Sample2.runtimeconfig.json"
                          "Sample2.pdb"]
 
+      let expected' = if pdb |> File.Exists |> not then
+                        List.concat [expected; ["AltCover.Recorder.g.dll.mdb"; "Sample2.dll.mdb" ]]
+                        |> List.filter (fun f -> f.EndsWith(".g.pbd", StringComparison.Ordinal) |> not)
+                        |> List.sortBy (fun f -> f.ToUpperInvariant())
+                      else
+                        expected
+
       Assert.That (Directory.GetFiles(output)
                    |> Seq.map Path.GetFileName
-                   |> Seq.filter (fun f -> Path.GetExtension f <> ".tmp")
                    |> Seq.sortBy (fun f -> f.ToUpperInvariant()),
-                   Is.EquivalentTo expected)
+                   Is.EquivalentTo expected')
 
     finally
       Visitor.outputDirectory <- outputSaved

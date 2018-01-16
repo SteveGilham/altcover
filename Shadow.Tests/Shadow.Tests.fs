@@ -348,6 +348,11 @@ type AltCoverTests() = class
       Directory.Delete(unique)
 
 #if NETCOREAPP2_0
+  [<Test>]
+  member self.CoreFindsThePlace() =
+    Assert.That (AltCover.Recorder.Tracer.Core(),
+                 Does.EndWith("FSharp.Core.dll"))
+
   // The hack doesn't work in .net core
 #else
   [<Test>]
