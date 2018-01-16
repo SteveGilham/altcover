@@ -129,7 +129,7 @@ type AltCoverTests() = class
     worker.Position <- 0L
     let before = XmlDocument()
     before.Load (Assembly.GetExecutingAssembly().GetManifestResourceStream(self.resource))
-    self.UpdateReport [] worker
+    self.UpdateReport (Dictionary<string, Dictionary<int, int>>()) worker
     worker.Position <- 0L
     let after = XmlDocument()
     after.Load worker
@@ -151,7 +151,7 @@ type AltCoverTests() = class
     worker.Position <- 0L
     let before = XmlDocument()
     before.Load (Assembly.GetExecutingAssembly().GetManifestResourceStream(self.resource))
-    self.UpdateReport [] worker
+    self.UpdateReport (Dictionary<string, Dictionary<int, int>>()) worker
     worker.Position <- 0L
     let after = XmlDocument()
     after.Load worker
@@ -173,7 +173,7 @@ type AltCoverTests() = class
     worker.Position <- 0L
     let before = XmlDocument()
     before.Load (Assembly.GetExecutingAssembly().GetManifestResourceStream(self.resource))
-    self.UpdateReport [] worker
+    self.UpdateReport (Dictionary<string, Dictionary<int, int>>()) worker
     worker.Position <- 0L
     let after = XmlDocument()
     after.Load worker
@@ -195,7 +195,7 @@ type AltCoverTests() = class
     worker.Position <- 0L
     let before = XmlDocument()
     before.Load (Assembly.GetExecutingAssembly().GetManifestResourceStream(self.resource))
-    self.UpdateReport [] worker
+    self.UpdateReport (Dictionary<string, Dictionary<int, int>>()) worker
     worker.Position <- 0L
     let after = XmlDocument()
     after.Load worker
@@ -215,8 +215,9 @@ type AltCoverTests() = class
     worker.Write (buffer, 0, size)
     worker.Position <- 0L
     use before = new StreamReader (Assembly.GetExecutingAssembly().GetManifestResourceStream(self.resource))
-    let item = KeyValuePair<string, Dictionary<int,int>>("not a guid", null)
-    self.UpdateReport [item] worker
+    let item = Dictionary<string, Dictionary<int, int>>()
+    item.Add ("not a guid", null)
+    self.UpdateReport item worker
     worker.Position <- 0L
     let after = new StreamReader(worker)
     Assert.That (after.ReadToEnd().Replace("\r\n", "\n"),
@@ -233,8 +234,9 @@ type AltCoverTests() = class
     worker.Write (buffer, 0, size)
     worker.Position <- 0L
     use before = new StreamReader (Assembly.GetExecutingAssembly().GetManifestResourceStream(self.resource))
-    let item = KeyValuePair<string, Dictionary<int,int>>("f6e3edb3-fb20-44b3-817d-f69d1a22fc2f", Dictionary<int,int>())
-    self.UpdateReport [item] worker
+    let item = Dictionary<string, Dictionary<int, int>>()
+    item.Add("f6e3edb3-fb20-44b3-817d-f69d1a22fc2f", Dictionary<int,int>())
+    self.UpdateReport item worker
     worker.Position <- 0L
     let after = new StreamReader(worker)
     Assert.That (after.ReadToEnd().Replace("\r\n", "\n"),
@@ -254,8 +256,9 @@ type AltCoverTests() = class
     let payload = Dictionary<int,int>()
     payload.[-1] <- 10
     payload.[100] <- 10
-    let item = KeyValuePair<string, Dictionary<int,int>>("f6e3edb3-fb20-44b3-817d-f69d1a22fc2f", payload)
-    self.UpdateReport [item] worker
+    let item = Dictionary<string, Dictionary<int, int>>()
+    item.Add("f6e3edb3-fb20-44b3-817d-f69d1a22fc2f", payload)
+    self.UpdateReport item worker
     worker.Position <- 0L
     let after = new StreamReader(worker)
     Assert.That (after.ReadToEnd().Replace("\r\n", "\n"),
@@ -274,8 +277,9 @@ type AltCoverTests() = class
     let payload = Dictionary<int,int>()
     [0..9 ]
     |> Seq.iter(fun i -> payload.[i] <- (i+1))
-    let item = KeyValuePair<string, Dictionary<int,int>>("f6e3edb3-fb20-44b3-817d-f69d1a22fc2f", payload)
-    self.UpdateReport [item] worker
+    let item = Dictionary<string, Dictionary<int, int>>()
+    item.Add("f6e3edb3-fb20-44b3-817d-f69d1a22fc2f", payload)
+    self.UpdateReport item worker
     worker.Position <- 0L
     let after = XmlDocument()
     after.Load worker

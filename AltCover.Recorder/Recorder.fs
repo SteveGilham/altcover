@@ -86,7 +86,7 @@ module Instance =
   /// </summary>
   /// <param name="hitCounts">The coverage results to incorporate</param>
   /// <param name="coverageFile">The coverage file to update as a stream</param>
-  let internal UpdateReport counts coverageFile =
+  let internal UpdateReport (counts:Dictionary<string, Dictionary<int, int>>) coverageFile =
     mutex.WaitOne(10000) |> ignore
     let flushStart = DateTime.UtcNow;
     try
@@ -103,22 +103,17 @@ module Instance =
       measureTime <- (if measureTime > oldMeasureTime then measureTime else oldMeasureTime).ToUniversalTime() // Max
 
       root.SetAttribute("startTime",
-                         startTime.ToString("o", System.Globalization.CultureInfo.InvariantCulture));
+                         startTime.ToString("o", System.Globalization.CultureInfo.InvariantCulture))
       root.SetAttribute("measureTime",
-                        measureTime.ToString("o", System.Globalization.CultureInfo.InvariantCulture));
+                        measureTime.ToString("o", System.Globalization.CultureInfo.InvariantCulture))
 
-      counts
-      |> Seq.iter (fun (pair : KeyValuePair<string, Dictionary<int,int>>) ->
-          let moduleId = pair.Key;
-          let moduleHits = pair.Value;
-          let affectedModules =
-              coverageDocument.SelectNodes("//module")
-              |> Seq.cast<XmlElement>
-              |> Seq.filter (fun el -> el.GetAttribute("moduleId").Equals(moduleId))
-              |> Seq.truncate 1 // at most 1
+      coverageDocument.SelectNodes("//module")
+      |> Seq.cast<XmlElement>
+      |> Seq.map (fun el -> el.GetAttribute("moduleId"), el)
+      |> Seq.filter (fun (k,e) -> counts.ContainsKey k)
+      |> Seq.iter (fun(k,affectedModule) ->
+          let moduleHits = counts.[k]
 
-          affectedModules
-          |> Seq.iter (fun affectedModule ->
           // Don't do this in one leap like --
           // affectedModule.Descendants(XName.Get("seqpnt"))
           // Get the methods, then flip their
@@ -140,7 +135,7 @@ module Instance =
                                       System.Globalization.CultureInfo.InvariantCulture)
               // Treat -ve visit counts (an exemption added in analysis) as zero
               let visits = moduleHits.[counter] + (max 0 (if fst vc then snd vc else 0))
-              pt.SetAttribute("visitcount", visits.ToString(CultureInfo.InvariantCulture)))))
+              pt.SetAttribute("visitcount", visits.ToString(CultureInfo.InvariantCulture))))
 
       // Save modified xml to a file
       coverageFile.Seek(0L, SeekOrigin.Begin) |> ignore
@@ -163,7 +158,7 @@ module Instance =
      WithVisitsLocked (fun () ->
       match Visits.Count with
       | 0 -> ()
-      | _ -> let counts = Visits |> Seq.toArray
+      | _ -> let counts = Dictionary<string, Dictionary<int, int>> Visits
              Visits.Clear()
              measureTime <- DateTime.UtcNow
              use coverageFile = new FileStream(ReportFile, FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.SequentialScan)
