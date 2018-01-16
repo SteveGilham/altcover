@@ -17,6 +17,7 @@ let Version = ref String.Empty
 
 let OpenCoverFilter = "+[AltCove*]* -[*]Microsoft.* -[*]System.* +[*]N.*"
 let AltCoverFilter= @" -s=Mono -s=\.Recorder -s=Sample -s=nunit -t=Tests -t=System. -t=Sample3\.Class2 "
+let AltCoverFilterG= @" -s=Mono -s=\.Recorder\.g -s=Sample -s=nunit -t=Tests -t=System. -t=Sample3\.Class2 "
 
 // A more accurate flag for what is going on in travis-ci
 let runningInMono = "Mono.Runtime" |> Type.GetType |> isNull |> not
@@ -314,7 +315,7 @@ Target "UnitTestWithAltCoverCore" (fun _ ->
     let shadowOut = FullName "Shadow.Tests/_Binaries/AltCover.Shadow.Tests/Debug+AnyCPU/netcoreapp2.0"
     let result = ExecProcess (fun info -> info.FileName <- altcover
                                           info.WorkingDirectory <- shadowDir
-                                          info.Arguments <- ("/sn=" + keyfile + AltCoverFilter + @"/o=" + shadowOut + " -x=" + shadowReport)) (TimeSpan.FromMinutes 5.0)
+                                          info.Arguments <- ("/sn=" + keyfile + AltCoverFilterG + @"/o=" + shadowOut + " -x=" + shadowReport)) (TimeSpan.FromMinutes 5.0)
     if result <> 0 then failwithf "second instrument returned with a non-zero exit code"
     printfn "Execute the shadow tests"
     let result = ExecProcess (fun info -> info.FileName <- "dotnet"
