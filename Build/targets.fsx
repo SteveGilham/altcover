@@ -323,10 +323,10 @@ Target "UnitTestWithAltCoverCore" (fun _ ->
                                           info.Arguments <- ("test --no-build --configuration Debug altcover.recorder.tests.core.fsproj")) (TimeSpan.FromMinutes 5.0)
     if result <> 0 then failwithf "second test returned with a non-zero exit code"
 
-//    ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
-//                                       ReportTypes = [ ReportGeneratorReportType.Html; ReportGeneratorReportType.Badges; ReportGeneratorReportType.XmlSummary ]
-//                                       TargetDir = "_Reports/_UnitTestWithAltCoverCore"})
-//          [altReport; shadowReport]
+    ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
+                                       ReportTypes = [ ReportGeneratorReportType.Html; ReportGeneratorReportType.Badges ] // ; ReportGeneratorReportType.XmlSummary
+                                       TargetDir = "_Reports/_UnitTestWithAltCoverCore"})
+          [altReport; shadowReport]
 )
 
 
