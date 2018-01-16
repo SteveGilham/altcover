@@ -79,31 +79,32 @@ type AltCoverTests() = class
 
   [<Test>]
   member self.ShouldGetPdbFromImage() =
-   let where = Assembly.GetExecutingAssembly().Location
-   let pdb = Path.ChangeExtension(where, ".pdb")
-   if File.Exists(pdb) then
-    // Hack for running while instrumented
-    let files = Directory.GetFiles(Path.GetDirectoryName(where) + AltCoverTests.Hack())
-                |> Seq.filter (fun x -> x.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)
-                                        || x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
-                |> Seq.map (fun x -> (x, Mono.Cecil.AssemblyDefinition.ReadAssembly x))
+    let where = Assembly.GetExecutingAssembly().Location
+    let pdb = Path.ChangeExtension(where, ".pdb")
+    if File.Exists(pdb) then
+      // Hack for running while instrumented
+      let files = Directory.GetFiles(Path.GetDirectoryName(where) + AltCoverTests.Hack())
+                  |> Seq.filter (fun x -> x.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)
+                                          || x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
+                  |> Seq.map (fun x -> (x, Mono.Cecil.AssemblyDefinition.ReadAssembly x))
+                  |> Seq.filter (fun x -> (fst x) + ".mdb" |> File.Exists |> not)
 #if NETCOREAPP2_0
-                |> Seq.filter (fun x -> not <| (snd x).FullName.StartsWith("Mono.", StringComparison.OrdinalIgnoreCase))
-                |> Seq.filter (fun x -> not <| (snd x).FullName.StartsWith("nunit", StringComparison.OrdinalIgnoreCase))
+                  |> Seq.filter (fun x -> not <| (snd x).FullName.StartsWith("Mono.", StringComparison.OrdinalIgnoreCase))
+                  |> Seq.filter (fun x -> not <| (snd x).FullName.StartsWith("nunit", StringComparison.OrdinalIgnoreCase))
 #else
-                |> Seq.filter (fun x -> (snd x).FullName.EndsWith("PublicKeyToken=c02b1a9f5b7cade8", StringComparison.OrdinalIgnoreCase))
+                  |> Seq.filter (fun x -> (snd x).FullName.EndsWith("PublicKeyToken=c02b1a9f5b7cade8", StringComparison.OrdinalIgnoreCase))
 #endif
-                |> Seq.toList
-    Assert.That(files, Is.Not.Empty)
-    files
-    |> Seq.iter( fun x ->let pdb = AltCover.ProgramDatabase.GetPdbFromImage (snd x)
-                         match pdb with
-                         | None -> Assert.Fail("No .pdb for " + (fst x))
-                         | Some name ->
-                            let probe = Path.ChangeExtension((fst x), ".pdb")
-                            let file = FileInfo(probe)
-                            let filename = file.Name.Replace("\\","/")
-                            Assert.That("/" + name.Replace("\\","/"), Does.EndWith("/" + filename), (fst x) + " -> " + name) )
+                  |> Seq.toList
+      Assert.That(files, Is.Not.Empty)
+      files
+      |> Seq.iter( fun x ->let pdb = AltCover.ProgramDatabase.GetPdbFromImage (snd x)
+                           match pdb with
+                           | None -> Assert.Fail("No .pdb for " + (fst x))
+                           | Some name ->
+                              let probe = Path.ChangeExtension((fst x), ".pdb")
+                              let file = FileInfo(probe)
+                              let filename = file.Name.Replace("\\","/")
+                              Assert.That("/" + name.Replace("\\","/"), Does.EndWith("/" + filename), (fst x) + " -> " + name) )
 
   [<Test>]
   member self.ShouldGetNoMdbFromMonoImage() =
@@ -137,6 +138,7 @@ type AltCoverTests() = class
     files
     |> Seq.filter (fun x -> x.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)
                             || x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
+    |> Seq.filter (fun x -> (x + ".mdb") |> File.Exists |> not)
     |> Seq.iter( fun x ->
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly x
       let pdb = AltCover.ProgramDatabase.GetPdbWithFallback(def)
@@ -2694,16 +2696,19 @@ type AltCoverTests() = class
     Assert.That (toInfo.EnumerateFiles()
                  |> Seq.map (fun x -> x.Name),
                  Is.EquivalentTo (fromInfo.EnumerateFiles()
-                 |>Seq.map (fun x -> x.Name)))
+                 |>Seq.map (fun x -> x.Name)),
+                 "Simple to-from comparison failed")
     Assert.That (x,
                  Is.EquivalentTo (fromInfo.EnumerateFiles()
                  |> Seq.map (fun x -> x.FullName)
                  |> Seq.filter (fun f -> f.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) ||
                                          f.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
-                 |> Seq.filter (fun f -> File.Exists(Path.ChangeExtension(f, ".pdb"))  )))
+                 |> Seq.filter (fun f -> File.Exists(Path.ChangeExtension(f, ".pdb"))  )),
+                 "First list mismatch with from files")
     Assert.That (y,
                  Is.EquivalentTo (x
-                 |> Seq.map Path.GetFileNameWithoutExtension))
+                 |> Seq.map Path.GetFileNameWithoutExtension),
+                 "Second list mismatch")
 
   [<Test>]
   member self.ShouldProcessTrailingArguments() =
