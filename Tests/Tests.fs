@@ -2238,7 +2238,10 @@ type AltCoverTests() = class
       Visitor.reportPath <- None
       let options = Main.DeclareOptions ()
       let unique = Guid.NewGuid().ToString()
-      let input = [| "-x"; unique |]
+      let where = Assembly.GetExecutingAssembly().Location
+      let path = Path.Combine(Path.GetDirectoryName(where), unique)
+
+      let input = [| "-x"; path |]
       let parse = Main.ParseCommandLine input options
       match parse with
       | Left _ -> Assert.Fail()

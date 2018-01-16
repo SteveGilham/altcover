@@ -64,6 +64,18 @@ module Main =
     proc.BeginOutputReadLine()
     proc.WaitForExit()
 
+  let private doPathOperation (f: unit -> unit) =
+    let mutable thrown = true
+    try
+        f()
+        thrown <- false
+    with
+    | :? ArgumentException as a -> WriteErr a.Message; 
+    | :? NotSupportedException as n -> WriteErr n.Message
+    | :? IOException as i -> WriteErr i.Message
+    | :? System.Security.SecurityException as s -> WriteErr s.Message
+    error <- error || thrown
+    
   let internal DeclareOptions () =
     [ ("i|inputDirectory=",
        (fun x -> if not (String.IsNullOrWhiteSpace(x)) && Directory.Exists(x) then
@@ -77,44 +89,31 @@ module Main =
                     if Option.isSome Visitor.outputDirectory then
                       error <- true
                     else
-                      try
-                        Visitor.outputDirectory <- Some (Path.GetFullPath x)
-                      with
-                      | :? ArgumentException
-                      | :? NotSupportedException
-                      | :? PathTooLongException -> error <- true
-                      | :? System.Security.SecurityException as s -> WriteErr s.Message
+                      doPathOperation (fun _ -> Visitor.outputDirectory <- Some (Path.GetFullPath x))
                  else error <- true))
 #if NETCOREAPP2_0
 #else
       ("k|key=",
        (fun x ->
              if not (String.IsNullOrWhiteSpace(x)) && File.Exists(x) then
-               try
-                   use stream = new System.IO.FileStream(x, System.IO.FileMode.Open, System.IO.FileAccess.Read)
-                   let pair = StrongNameKeyPair(stream)
-                   Visitor.Add pair
-               with
-               | :? IOException
-               | :? ArgumentException
-               | :? NotSupportedException -> error <- true
-               | :? System.Security.SecurityException as s -> WriteErr s.Message
+               doPathOperation (fun () -> use stream = new System.IO.FileStream(x,
+                                                                                System.IO.FileMode.Open,
+                                                                                System.IO.FileAccess.Read)
+                                          let pair = StrongNameKeyPair(stream)
+                                          Visitor.Add pair)
              else error <- true
          ))
       ("sn|strongNameKey=",
        (fun x ->
              if not (String.IsNullOrWhiteSpace(x)) && File.Exists(x) then
-               try
-                   use stream = new System.IO.FileStream(x, System.IO.FileMode.Open, System.IO.FileAccess.Read)
-                   let pair = StrongNameKeyPair(stream)
-                   if Option.isSome Visitor.defaultStrongNameKey then error <- true
-                   else Visitor.defaultStrongNameKey <- Some pair
-                   Visitor.Add pair
-                with
-                | :? IOException
-                | :? ArgumentException
-                | :? NotSupportedException -> error <- true
-                | :? System.Security.SecurityException as s -> WriteErr s.Message
+               doPathOperation (fun () -> use stream = new System.IO.FileStream(x,
+                                                                                System.IO.FileMode.Open,
+                                                                                System.IO.FileAccess.Read)
+                                          // printfn "%A %A" x Visitor.defaultStrongNameKey
+                                          let pair = StrongNameKeyPair(stream)
+                                          if Option.isSome Visitor.defaultStrongNameKey then error <- true
+                                          else Visitor.defaultStrongNameKey <- Some pair
+                                               Visitor.Add pair)
              else error <- true  ))
 #endif
       ("x|xmlReport=",
@@ -122,13 +121,7 @@ module Main =
                     if Option.isSome Visitor.reportPath then
                       error <- true
                     else
-                      try
-                        Visitor.reportPath <- Some (Path.GetFullPath x)
-                      with
-                      | :? ArgumentException
-                      | :? NotSupportedException
-                      | :? PathTooLongException -> error <- true
-                      | :? System.Security.SecurityException as s -> WriteErr s.Message
+                      doPathOperation (fun () -> Visitor.reportPath <- Some (Path.GetFullPath x))
                  else error <- true))
       ("f|fileFilter=",
        (fun x -> x.Split([|";"|], StringSplitOptions.RemoveEmptyEntries)
