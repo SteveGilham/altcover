@@ -9,7 +9,8 @@ open FSharp.Markdown
 open YamlDotNet.RepresentationModel
 
 module Actions =
-  let Clean ()  =
+  let rec Clean ()  =
+   try
     (DirectoryInfo ".").GetDirectories("*", SearchOption.AllDirectories)
     |> Seq.filter (fun x -> x.Name.StartsWith "_" || x.Name = "bin" || x.Name = "obj")
     |> Seq.map (fun x -> x.FullName)
@@ -27,6 +28,11 @@ module Actions =
     if not <| String.IsNullOrWhiteSpace temp then
       Directory.GetFiles(temp, "*.tmp.dll.mdb")
       |> Seq.iter File.Delete
+   with
+   | :? System.IO.IOException as x -> 
+      printfn "looping after %A" x
+      System.Threading.Thread.Sleep(500)
+      Clean()
 
   let template ="""namespace AltCover
 open System.Reflection
