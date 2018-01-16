@@ -354,7 +354,7 @@ module Instrument =
                                            if included then
                                               assembly.MainModule.AssemblyReferences.Add(state.RecordingAssembly.Name)
                                            { state with RenameTable = updates } // TODO use this (attribute mappings IIRC)
-     | Module (m, _, included) -> //of ModuleDefinition * bool
+     | Module (m, _, included) ->
          let restate = match included with
                        | true ->
                          let recordingMethod = match state.RecordingMethod with
@@ -367,9 +367,9 @@ module Instrument =
                        | _ -> state
          { restate with ModuleId = m.Mvid }
 
-     | Type _ -> //of TypeDefinition * bool
+     | Type _ ->
          state
-     | Method (m, _,  included) -> //of MethodDefinition * bool
+     | Method (m, _,  included) ->
          match included with
          | true ->
            let body = m.Body
@@ -378,7 +378,7 @@ module Instrument =
               MethodWorker = body.GetILProcessor() }
          | _ -> state
 
-     | MethodPoint (instruction, _, point, included) -> //of Instruction * int * bool
+     | MethodPoint (instruction, _, point, included) ->
        if included then // by construction the sequence point is included
             let instrLoadModuleId = InsertVisit instruction state.MethodWorker state.RecordingMethodRef (state.ModuleId.ToString()) point
 
@@ -391,7 +391,7 @@ module Instrument =
             |> Seq.iter subs.SubstituteExceptionBoundary
 
        state
-     | AfterMethod included -> //of MethodDefinition * bool
+     | AfterMethod included ->
          if included then
             let body = state.MethodBody
             // changes conditional (br.s, brtrue.s ...) operators to corresponding "long" ones (br, brtrue)
