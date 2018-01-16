@@ -29,7 +29,7 @@ module Actions =
       Directory.GetFiles(temp, "*.tmp.dll.mdb")
       |> Seq.iter File.Delete
    with
-   | :? System.IO.IOException as x -> 
+   | :? System.IO.IOException as x ->
       printfn "looping after %A" x
       System.Threading.Thread.Sleep(500)
       Clean()
@@ -181,7 +181,7 @@ open System.Runtime.CompilerServices
                                            info.Arguments <- "") (TimeSpan.FromMinutes 5.0)
     if result2 <> 0 then failwith "Instrumented .exe failed"
     ValidateSample1 simpleReport reportSigil
-   | None -> failwith "Mono executable expected"  
+   | None -> failwith "Mono executable expected"
 
 let PrepareReadMe packingCopyright =
     let readme = FullName "README.md"
