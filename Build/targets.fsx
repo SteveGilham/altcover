@@ -181,16 +181,18 @@ Target "FxCop" (fun _ -> // Needs debug because release is compiled --standalone
 // Unit Test
 
 Target "UnitTest" (fun _ ->
-  !! (@"_Reports/*/Summary.xml")
-  |> Seq.iter (fun f -> let xml = XDocument.Load f
-                        xml.Descendants(XName.Get("Linecoverage"))
-                        |> Seq.iter (fun e -> let coverage = e.Value.Replace("%", String.Empty)
-                                              match Double.TryParse coverage with
-                                              | (false, _) -> failwith ("Could not parse coverage "+coverage)
-                                              | (_, numeric) -> printfn "%s : %A" (f |> Path.GetDirectoryName |> Path.GetFileName) numeric
-                                                                if numeric < 90.0 then failwith "Coverage is too low"
-                        )
-  )
+  let numbers = !! (@"_Reports/*/Summary.xml")
+                |> Seq.collect (fun f -> let xml = XDocument.Load f
+                                         xml.Descendants(XName.Get("Linecoverage"))
+                                         |> Seq.map (fun e -> let coverage = e.Value.Replace("%", String.Empty)
+                                                              match Double.TryParse coverage with
+                                                              | (false, _) -> failwith ("Could not parse coverage "+coverage)
+                                                              | (_, numeric) -> printfn "%s : %A" (f |> Path.GetDirectoryName |> Path.GetFileName) numeric
+                                                                                numeric))
+                |> Seq.toList
+
+  if numbers |> List.tryFind (fun n -> n >= 90.0) |> Option.isNone && numbers |> List.length > 1 then
+     failwith "Coverage is too low"
 )
 
 Target "JustUnitTest" (fun _ ->
@@ -308,7 +310,7 @@ Target "UnitTestWithAltCoverCore" (fun _ ->
                                           info.WorkingDirectory <- FullName "Tests"
                                           info.Arguments <- ("test --no-build --configuration Debug altcover.tests.core.fsproj")) (TimeSpan.FromMinutes 5.0)
     if result <> 0 then failwithf "first test returned with a non-zero exit code"
-    
+
     printfn "Instrument the shadow tests"
     let shadowDir = "_Binaries/AltCover.Shadow.Tests/Debug+AnyCPU/netcoreapp2.0"
     let shadowReport = reports @@ "ShadowTestWithAltCoverCore.xml"
@@ -324,12 +326,10 @@ Target "UnitTestWithAltCoverCore" (fun _ ->
     if result <> 0 then failwithf "second test returned with a non-zero exit code"
 
     ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
-                                       ReportTypes = [ ReportGeneratorReportType.Html; ReportGeneratorReportType.Badges ] // ; ReportGeneratorReportType.XmlSummary
+                                       ReportTypes = [ ReportGeneratorReportType.Html; ReportGeneratorReportType.Badges; ReportGeneratorReportType.XmlSummary]
                                        TargetDir = "_Reports/_UnitTestWithAltCoverCore"})
           [altReport; shadowReport]
 )
-
-
 
 // Pure OperationalTests
 
@@ -724,7 +724,6 @@ Target "All" ignore
 "Compilation"
 ==> "BasicCSharpMonoUnderMono"
 =?> ("OperationalTest", Option.isSome monoOnWindows)
-
 
 "Compilation"
 ==> "CSharpMonoWithDotNet"
