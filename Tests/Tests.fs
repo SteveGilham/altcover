@@ -1866,12 +1866,7 @@ type AltCoverTests() = class
       let input = Instrument.Context.Build []
       let result = Instrument.InstrumentationVisitor input visited
       Assert.That (result, Is.SameAs input, "result differs")
-      let created = Path.Combine (output, 
-#if NETCOREAPP2_0
-                                  "Sample2.exe")
-#else
-                                  "Sample2.dll")
-#endif
+      let created = Path.Combine (output, "Sample2.dll")
       Assert.That (File.Exists created, created + " not found")
 #if NETCOREAPP2_0
 #else
@@ -2943,9 +2938,8 @@ type AltCoverTests() = class
                          "NUnit3.TestAdapter.dll"
                          "Sample2.deps.json"
                          "Sample2.dll"
-                         "Sample2.exe"
 #if NETCOREAPP2_0
-                         "Sample2.exe.mdb"
+                         "Sample2.dll.mdb"
 #endif
                          "Sample2.runtimeconfig.dev.json"
                          "Sample2.runtimeconfig.json"
