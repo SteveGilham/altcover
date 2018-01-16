@@ -16,8 +16,8 @@ let Copyright  = ref String.Empty
 let Version = ref String.Empty
 
 let OpenCoverFilter = "+[AltCove*]* -[*]Microsoft.* -[*]System.* +[*]N.*"
-let AltCoverFilter= @" -s=Mono -s=\.Recorder -s=Sample -s=nunit -t=Tests -t=System. -t=Sample3\.Class2 "
-let AltCoverFilterG= @" -s=Mono -s=\.Recorder\.g -s=Sample -s=nunit -t=Tests -t=System. -t=Sample3\.Class2 "
+let AltCoverFilter= @" -s=Mono -s=\.Recorder -s=Sample -s=nunit -e=Tests -t=System. -t=Sample3\.Class2 "
+let AltCoverFilterG= @" -s=Mono -s=\.Recorder\.g -s=Sample -s=nunit -e=Tests -t=System. -t=Sample3\.Class2 "
 
 // A more accurate flag for what is going on in travis-ci
 let runningInMono = "Mono.Runtime" |> Type.GetType |> isNull |> not

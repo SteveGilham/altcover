@@ -14,6 +14,7 @@ open AltCover.Augment
 type internal FilterClass =
   | File of Regex
   | Assembly of Regex
+  | Module of Regex
   | Type of Regex
   | Method of Regex
   | Attribute of Regex
@@ -28,6 +29,9 @@ module Filter =
     | Assembly name -> match nameProvider with
                        | :? AssemblyDefinition as assembly -> name.IsMatch assembly.Name.Name
                        | _ -> false
+    | Module name -> match nameProvider with
+                     | :? ModuleDefinition as ``module`` -> name.IsMatch ``module``.Assembly.Name.Name
+                     | _ -> false
     | Type name -> match nameProvider with
                    | :? TypeDefinition as typeDef -> name.IsMatch typeDef.FullName
                    | _ -> false

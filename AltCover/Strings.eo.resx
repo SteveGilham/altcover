@@ -174,4 +174,7 @@
   <data name="reportingto" xml:space="preserve">
     <value>Kovra Raporto: {0}</value>
   </data>
+  <data name="e|assemblyExcludeFilter=" xml:space="preserve">
+    <value>Laŭvola: asembleo, kiu kunligas aliajn agordajn asembleojn, sed por kiuj internaĵoj povas esti ekskluditaj (eble ripeti)</value>
+  </data>
 </root>

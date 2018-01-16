@@ -174,4 +174,7 @@
   <data name="reportingto" xml:space="preserve">
     <value>Coverage Report: {0}</value>
   </data>
+  <data name="e|assemblyExcludeFilter=" xml:space="preserve">
+    <value>Optional: assembly which links other instrumented assemblies but for which internal details may be excluded (may repeat)</value>
+  </data>
 </root>

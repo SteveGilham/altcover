@@ -136,6 +136,7 @@ module Visitor =
 
     | Assembly (a, reader, included) ->  a.Modules
                                          |> Seq.cast
+                                         |> Seq.filter IsIncluded
                                          |> Seq.collect ((fun x -> Module (x, reader, included)) >> BuildSequence)
 
     | Module (x, reader, included) ->    PointNumber <- 0

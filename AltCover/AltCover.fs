@@ -136,6 +136,9 @@ module Main =
       ("s|assemblyFilter=",
        (fun x -> x.Split([|";"|], StringSplitOptions.RemoveEmptyEntries)
                  |> Seq.iter (Regex >> FilterClass.Assembly >> Visitor.NameFilters.Add)))
+      ("e|assemblyExcludeFilter=",
+       (fun x -> x.Split([|";"|], StringSplitOptions.RemoveEmptyEntries)
+                 |> Seq.iter (Regex >> FilterClass.Module >> Visitor.NameFilters.Add)))
       ("t|typeFilter=",
        (fun x -> x.Split([|";"|], StringSplitOptions.RemoveEmptyEntries)
                  |> Seq.iter (Regex >> FilterClass.Type >> Visitor.NameFilters.Add)))

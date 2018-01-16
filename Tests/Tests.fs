@@ -250,6 +250,10 @@ type AltCoverTests() = class
      Assert.That (Match () (FilterClass.Assembly (Regex "23")), Is.False)
 
   [<Test>]
+  member self.NoneOfTheAboveMatchesNoModule() =
+     Assert.That (Match () (FilterClass.Module (Regex "23")), Is.False)
+
+  [<Test>]
   member self.NoneOfTheAboveMatchesNoFile() =
      Assert.That (Match () (FilterClass.File (Regex "23")), Is.False)
 
@@ -274,6 +278,16 @@ type AltCoverTests() = class
   member self.AssemblyDoesMatchAssemblyClass() =
      let def = Mono.Cecil.AssemblyDefinition.ReadAssembly (Assembly.GetExecutingAssembly().Location)
      Assert.That (Match def (FilterClass.Assembly (Regex "Cove")), Is.True)
+
+  [<Test>]
+  member self.ModuleDoesNotMatchNonModuleClass() =
+     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly (Assembly.GetExecutingAssembly().Location)
+     Assert.That (Match def.MainModule (FilterClass.Type (Regex "23")), Is.False)
+
+  [<Test>]
+  member self.ModuleDoesMatchModuleClass() =
+     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly (Assembly.GetExecutingAssembly().Location)
+     Assert.That (Match def.MainModule (FilterClass.Module (Regex "Cove")), Is.True)
 
   [<Test>]
   member self.TypeDoesNotMatchNonTypeClass() =
@@ -2000,9 +2014,9 @@ type AltCoverTests() = class
     let options = Main.DeclareOptions ()
     Assert.That (options.Count, Is.EqualTo
 #if NETCOREAPP2_0
-                                            10
+                                            11
 #else
-                                            12
+                                            13
 #endif
                  )
     Assert.That(options |> Seq.filter (fun x -> x.Prototype <> "<>")
@@ -2167,6 +2181,29 @@ type AltCoverTests() = class
                                                                | _ -> false))
       Assert.That (Visitor.NameFilters |> Seq.map (fun x -> match x with
                                                             | FilterClass.Assembly i -> i.ToString()
+                                                            | _ -> "*"),
+                   Is.EquivalentTo [| "1"; "2"; "3"; "4"; "p"; "q"; "5"; "6" |])
+    finally
+      Visitor.NameFilters.Clear()
+
+  [<Test>]
+  member self.ParsingModulesGivesModules() =
+    try
+      Visitor.NameFilters.Clear()
+      let options = Main.DeclareOptions ()
+      let input = [| "-e"; "1"; "--e"; "2"; "/e"; "3"; "-e=4;p;q"; "--e=5"; "/e=6" |]
+      let parse = Main.ParseCommandLine input options
+      match parse with
+      | Left _ -> Assert.Fail()
+      | Right (x, y) -> Assert.That (y, Is.SameAs options)
+                        Assert.That (x, Is.Empty)
+
+      Assert.That (Visitor.NameFilters.Count, Is.EqualTo 8)
+      Assert.That (Visitor.NameFilters |> Seq.forall (fun x -> match x with
+                                                               | FilterClass.Module _ -> true
+                                                               | _ -> false))
+      Assert.That (Visitor.NameFilters |> Seq.map (fun x -> match x with
+                                                            | FilterClass.Module i -> i.ToString()
                                                             | _ -> "*"),
                    Is.EquivalentTo [| "1"; "2"; "3"; "4"; "p"; "q"; "5"; "6" |])
     finally
@@ -3033,6 +3070,10 @@ type AltCoverTests() = class
                                instrumentation (may repeat)
   -s, --assemblyFilter=VALUE Optional: assembly name to exclude from
                                instrumentation (may repeat)
+  -e, --assemblyExcludeFilter=VALUE
+                             Optional: assembly which links other instrumented
+                               assemblies but for which internal details may be
+                               excluded (may repeat)
   -t, --typeFilter=VALUE     Optional: type name to exclude from
                                instrumentation (may repeat)
   -m, --methodFilter=VALUE   Optional: method name to exclude from
@@ -3080,6 +3121,10 @@ type AltCoverTests() = class
                                instrumentation (may repeat)
   -s, --assemblyFilter=VALUE Optional: assembly name to exclude from
                                instrumentation (may repeat)
+  -e, --assemblyExcludeFilter=VALUE
+                             Optional: assembly which links other instrumented
+                               assemblies but for which internal details may be
+                               excluded (may repeat)
   -t, --typeFilter=VALUE     Optional: type name to exclude from
                                instrumentation (may repeat)
   -m, --methodFilter=VALUE   Optional: method name to exclude from
