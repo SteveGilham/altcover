@@ -1,4 +1,7 @@
 # 1.4-beta (Araiguma preview releases)
+* "e|assemblyExcludeFilter=" option to exclude assemblies which depend on instrumented/rewritten ones
+* Speed-up in writing out of the instrumentation results which happens in the ProcessExit handling and thus has a limited processing time (mostly affects instrumented code running under `dotnet test`)
+* UNFIXED : earlier [f61f951] BUGFIX Write .mdb out for .mdb in -- as Mono 0.10 will only write `.pdb` files on .net Framework on Windows, and only `.mdb` anywhere else, including .net core on Windows
 * validation of the code on Linux using travis-ci, both using Mono and the full framework, and .net core.  Note that there is an apparent limitation in that F# projects don't generate `.pdb` (or `.mdb`) files under Mono, even when C# projects do, thus they cannot yet be instrumented.
 * reorganised directory structure in the .nuget package, with AltCover.exe moving from `tools/` to `tools/net45/` with
 * .net core 2.0 support : both the original .net framework build being able to inject instrumentation into `dotnet`-built code, but also a .net core 2.0 tool version (delivered as source to `dotnet run` via the `altcover.core.sln` in `tools/netcoreapp2.0/`) that will also instrument both full-framework and .net core code, with the limitation that this build cannot use strong-naming of assemblies.

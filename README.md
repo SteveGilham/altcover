@@ -20,7 +20,7 @@ In particular, this approach supports Mono, as long as suitable `.mdb` (or `.pdb
 
 The full command line is 
 
-```AltCover [/i[nputDirectory]=VALUE] [/o[utputDirectory]=VALUE] [/sn|strongNameKey=VALUE] [/x[mlReport]=VALUE] [/f[ileFilter]=VALUE] [/s|assemblyFilter=VALUE] [/t|typeFilter=VALUE] [/m|methodFilter=VALUE] [/a|attributeFilter=VALUE] [/?|h[elp]] [-- command arguments]```
+```AltCover [/i[nputDirectory]=VALUE] [/o[utputDirectory]=VALUE] [/sn|strongNameKey=VALUE] [/x[mlReport]=VALUE] [/f[ileFilter]=VALUE] [/s|assemblyFilter=VALUE] [/e|assemblyExcludeFilter=VALUE] [/t|typeFilter=VALUE] [/m|methodFilter=VALUE] [/a|attributeFilter=VALUE] [/?|h[elp]] [-- command arguments]```
 
 In detail
 
@@ -31,11 +31,14 @@ In detail
 *  -x, --xmlReport=VALUE       Optional: The output report template file (default: coverage.xml in the current directory)
 *  -f, --fileFilter=VALUE      Optional: source file name to exclude from instrumentation (may repeat)
 *  -s, --assemblyFilter=VALUE  Optional: assembly name to exclude from instrumentation (may repeat)
+*  -e, --assemblyExcludeFilter=VALUE Optional: assembly which links other instrumented assemblies but for which internal details may be excluded (may repeat)
 *  -t, --typeFilter=VALUE      Optional: type name to exclude from instrumentation (may repeat)
 *  -m, --methodFilter=VALUE    Optional: method name to exclude from instrumentation (may repeat)
 *  -a, --attributeFilter=VALUE Optional: attribute name to exclude from instrumentation (may repeat)
 *  -?, --help, -h              Prints out the options.
 * --                           the rest of the command line is treated as a command to execute after performing instrumentation
+
+### Notes
 
 The strong-name key arguments (`-k`, `--sn`) are not available in the .net core build, as the Mono.Cecil beta on that platform (and maybe the whole platform?), does not currently support strong-naming even though it can consume strong-named assemblies.
 
@@ -43,11 +46,25 @@ Filter values are semi-colon separated regular expressions, applied by type in t
 
 Coverage statistics are written to the file nominated by the `x|xmlReport=` parameter as instrumented assemblies are unloaded from an executing AppDomain, even if this is days or weeks later.  In practice the instrumented assemblies should be deleted after the relevant testing has been run, and the report file will thus be freed up.
 
-### Use Case : Unit tests
+#### -e vs -s : what gives?
+
+In the case where you have Unit Tests => Code Under Test => Libraries, and the coverage of the unit tests is not of interest, then exclude those assemblies with `-e`, so their dependencies get rewritten, but their contents are not instrumented or added to the coverage file.  The stable libraries consumed by the code under test (and stable libraries for the unit test framework) should be marked as `-s` to be left untouched.
+
+### Use Case : Unit tests (Framework or Mono)
 
 In the case of a single unit test assembly, then executing AltCover with `/i=<unit test output directory>` to pick up the tests and dependencies, with a strongname replacement `/sn=<my component key>` will usually be sufficient, as framework assemblies without symbols will be ignored.  The test execution can then happen in the context of the output directory.
 
 If there are symbol-bearing third-party assemblies (e.g. from NuGet packages such as `Mono.Options.Signed` as in this project), then those can be excluded with an extra `/s=<identifying substring of third party name>`
+
+### Use Case : Unit tests (.net core)
+
+Given the way that `dotnet`, and in particular, `dotnet test` works, there is a manual step involved here. 
+
+* First build the code with `dotnet`, and instrument the code with `/i=$(OutputPath)` as normal.  
+* Then copy the contents of the output directory back to `$(OutputPath)`.  This is the extra manual step
+* Now you can `dotnet test --no-build` and the instrumented code will be executed
+
+NOTE: On old-fashioned .net framework, the process exit handling window is sufficient for processing significant bodies of code under test (several 10s of kloc); under `dotnet test` the window seems to be rather tighter, with the build self-test by unit testing the .net core build after being instrumented by itself sometimes failing to write all (and sometimes not even any) of the updated report with the coverage data.  For the moment, tests run under `dotnet` should cover only a small assembly.
 
 ### Use Case : Windows Service
 
