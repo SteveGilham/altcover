@@ -94,7 +94,7 @@ module Instance =
   /// <param name="hitCounts">The coverage results to incorporate</param>
   /// <param name="coverageFile">The coverage file to update as a stream</param>
   let internal UpdateReport (counts:Dictionary<string, Dictionary<int, int>>) coverageFile =
-    mutex.WaitOne(10000) |> ignore
+    let own = mutex.WaitOne(10000)
     let flushStart = DateTime.UtcNow;
     try
       // Edit xml report to store new hits
@@ -147,10 +147,10 @@ module Instance =
       // Save modified xml to a file
       coverageFile.Seek(0L, SeekOrigin.Begin) |> ignore
       coverageFile.SetLength 0L
-      WriteXDocument coverageDocument coverageFile
+      if own then WriteXDocument coverageDocument coverageFile
       flushStart
     finally
-        mutex.ReleaseMutex()
+        if own then mutex.ReleaseMutex()
 
   /// <summary>
   /// Synchronize an action on the visits table
