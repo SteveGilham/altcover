@@ -824,7 +824,7 @@ type AltCoverTests() = class
     let expected = ["get_Property"; "set_Property"; "#ctor"; "get_Property"; "set_Property";
                       "#ctor"; "get_Visits"; "Log"; "#ctor"; ".cctor";
                       "get_Property"; "set_Property"; "get_ReportFile";
-                      "set_ReportFile"; "ToList"; "#ctor" ]
+                      "set_ReportFile"; "get_Token"; "set_Token"; "ToList"; "#ctor" ]
     Assert.That(names, Is.EquivalentTo expected)
 
   [<Test>]
@@ -843,9 +843,11 @@ type AltCoverTests() = class
                     "System.Void Sample3.Class3.Log(System.String,System.Int32)"
                     "System.Void Sample3.Class3.#ctor()"; "System.Void Sample3.Class3..cctor()"
                     "Sample3.Class1 Sample3.Class3+Class4.get_Property()";
-                    "System.Void Sample3.Class3+Class4.set_Property(Sample3.Class1)";
-                    "System.String Sample3.Class3+Class4.get_ReportFile()";
-                    "System.Void Sample3.Class3+Class4.set_ReportFile(System.String)";
+                    "System.Void Sample3.Class3+Class4.set_Property(Sample3.Class1)"
+                    "System.String Sample3.Class3+Class4.get_ReportFile()"
+                    "System.Void Sample3.Class3+Class4.set_ReportFile(System.String)"
+                    "System.String Sample3.Class3+Class4.get_Token()"
+                    "System.Void Sample3.Class3+Class4.set_Token(System.String)"
                     "System.Collections.Generic.List`1 Sample3.Class3+Class4.ToList<T>(T)";
                     "System.Void Sample3.Class3+Class4.#ctor()" ]
     Assert.That(names, Is.EquivalentTo expected)

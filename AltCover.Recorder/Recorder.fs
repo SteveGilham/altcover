@@ -55,9 +55,16 @@ module Instance =
   let internal Visits = new Dictionary<string, Dictionary<int, int>>();
 
   /// <summary>
+  /// Gets the unique token for this instance
+  /// This property's IL code is modified to store a GUID-based token
+  /// </summary>
+  [<MethodImplAttribute(MethodImplOptions.NoInlining)>]
+  let Token = "AltCover"
+
+  /// <summary>
   /// Interlock for report instances
   /// </summary>
-  let private mutex = new System.Threading.Mutex(false, "AltCover.Recorder.Instance.mutex");
+  let private mutex = new System.Threading.Mutex(false, Token + ".mutex");
 
   /// <summary>
   /// Load the XDocument
