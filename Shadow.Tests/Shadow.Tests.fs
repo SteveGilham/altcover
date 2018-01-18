@@ -45,6 +45,30 @@ type AltCoverTests() = class
     "AltCover.Shadow")
 #endif
 
+#if NETCOREAPP2_0
+  [<Test>]
+  member self.PipeVisitShouldSignal() =
+    let save = Instance.pipe
+    let token = Guid.NewGuid().ToString()
+    try
+      let expected = ("name", 23)
+      let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
+      use client = new System.IO.Pipes.NamedPipeClientStream(token)
+      Instance.pipe <- client
+      use server = new System.IO.Pipes.NamedPipeServerStream(token)
+      Instance.pipe.Connect(100)
+      server.WaitForConnection()
+      Assert.That (Instance.pipe.IsConnected, Is.True, "connection failed")
+      async { Instance.Visit "name" 23 } |> Async.Start
+      let result = formatter.Deserialize(server) :?> (string*int)
+      Assert.That (Instance.Visits, Is.Empty, "unexpected local write")
+      Assert.That (result, Is.EqualTo expected, "unexpected result")
+    finally
+      Instance.Visits.Clear()
+      Instance.pipe <- save
+
+#endif
+
   [<Test>]
   member self.NullIdShouldNotGiveACount() =
     try
@@ -349,7 +373,38 @@ type AltCoverTests() = class
       Instance.Visits.Clear()
       Console.SetOut saved
       Directory.SetCurrentDirectory(here)
-      Directory.Delete(unique)
+      try 
+        Directory.Delete(unique)
+      with
+      | :? IOException -> ()
+
+#if NETCOREAPP2_0
+  [<Test>]
+  member self.PipeFlushShouldTidyUp() =
+    let save = Instance.pipe
+    let token = Guid.NewGuid().ToString()
+    try
+      let expected = ("name", 23)
+      let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
+      use client = new System.IO.Pipes.NamedPipeClientStream(token)
+      Instance.pipe <- client
+      use server = new System.IO.Pipes.NamedPipeServerStream(token)
+      Instance.pipe.Connect(100)
+      server.WaitForConnection()
+      Assert.That (Instance.pipe.IsConnected, Is.True, "connection failed")
+      async { formatter.Serialize(Instance.pipe, expected)
+              Instance.FlushCounter () } |> Async.Start
+      let result = formatter.Deserialize(server) :?> (string*int)
+      let result' = formatter.Deserialize(server) :?> (string*int)
+      Assert.That (Instance.Visits, Is.Empty, "unexpected local write")
+      Assert.That (result, Is.EqualTo expected, "unexpected result")
+      Assert.That (result' |> fst |> String.IsNullOrEmpty, Is.True, "unexpected end-of-message")
+      Assert.That (Instance.pipe.IsConnected, Is.False, "client linger")
+    finally
+      Instance.Visits.Clear()
+      Instance.pipe <- save
+
+#endif
 
 #if NETCOREAPP2_0
   [<Test>]

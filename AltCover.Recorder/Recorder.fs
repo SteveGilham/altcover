@@ -66,6 +66,16 @@ module Instance =
   /// </summary>
   let private mutex = new System.Threading.Mutex(false, Token + ".mutex");
 
+#if NETSTANDARD2_0
+  /// <summary>
+  /// Reporting back to the mother-ship; only on the .net core build
+  /// because this API isn't available in .net 2.0 (framework back-version support)
+  /// </summary>
+  let mutable internal pipe = new System.IO.Pipes.NamedPipeClientStream(Token)
+
+  let private formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
+#endif
+
   /// <summary>
   /// Load the XDocument
   /// </summary>
@@ -158,11 +168,25 @@ module Instance =
   let private WithVisitsLocked =
     Locking.WithLockerLocked Visits
 
+#if NETSTANDARD2_0
+  let private push (moduleId:string) hitPointId = 
+     formatter.Serialize(pipe, (moduleId, hitPointId))
+     pipe.WaitForPipeDrain()
+#endif
+
   /// <summary>
   /// This method flushes hit count buffers.
   /// </summary>
   let internal FlushCounter _ =
-     WithVisitsLocked (fun () ->
+#if NETSTANDARD2_0
+    if pipe.IsConnected then
+      push null -1
+      use local = pipe
+      local.Flush()
+      local.Close()
+    else
+#endif
+      WithVisitsLocked (fun () ->
       match Visits.Count with
       | 0 -> ()
       | _ -> let counts = Dictionary<string, Dictionary<int, int>> Visits
@@ -179,15 +203,26 @@ module Instance =
   /// <param name="moduleId">Assembly being visited</param>
   /// <param name="hitPointId">Sequence Point identifier</param>
   let Visit moduleId hitPointId =
-   if not <| String.IsNullOrEmpty(moduleId) then
-    WithVisitsLocked (fun () -> if not (Visits.ContainsKey moduleId)
-                                    then Visits.[moduleId] <- new Dictionary<int, int>()
-                                if not (Visits.[moduleId].ContainsKey hitPointId) then
-                                    Visits.[moduleId].Add(hitPointId, 1)
-                                else
-                                    Visits.[moduleId].[hitPointId] <- 1 + Visits.[moduleId].[hitPointId])
-    AppDomain.CurrentDomain.DomainUnload.Add(fun x -> Console.Out.WriteLine("unloaded"))
+    if not <| String.IsNullOrEmpty(moduleId) then
+#if NETSTANDARD2_0
+      if pipe.IsConnected then
+        push moduleId hitPointId
+      else
+#endif
+        WithVisitsLocked (fun () -> if not (Visits.ContainsKey moduleId)
+                                      then Visits.[moduleId] <- new Dictionary<int, int>()
+                                    if not (Visits.[moduleId].ContainsKey hitPointId) then
+                                      Visits.[moduleId].Add(hitPointId, 1)
+                                    else
+                                      Visits.[moduleId].[hitPointId] <- 1 + Visits.[moduleId].[hitPointId])
+
   // Register event handling
   do
     AppDomain.CurrentDomain.DomainUnload.Add(FlushCounter)
     AppDomain.CurrentDomain.ProcessExit.Add(FlushCounter)
+#if NETSTANDARD2_0
+    try
+      pipe.Connect(2000) // 2 seconds
+    with
+    | :? TimeoutException -> ()
+#endif
