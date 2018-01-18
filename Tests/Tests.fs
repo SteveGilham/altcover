@@ -3002,6 +3002,7 @@ type AltCoverTests() = class
 
       Assert.That (Directory.GetFiles(output)
                    |> Seq.map Path.GetFileName
+                   |> Seq.filter (fun f -> f.EndsWith(".tmp", StringComparison.Ordinal) |> not)
                    |> Seq.sortBy (fun f -> f.ToUpperInvariant()),
                    Is.EquivalentTo expected')
 
