@@ -67,6 +67,7 @@ module Instance =
   let private mutex = new System.Threading.Mutex(false, Token + ".mutex");
 
 #if NET2
+  let mutable internal pipe = Object()
 #else
   /// <summary>
   /// Reporting back to the mother-ship; only on the .net core build
@@ -173,17 +174,18 @@ module Instance =
 #else
   let private push (moduleId:string) hitPointId = 
      formatter.Serialize(pipe, (moduleId, hitPointId))
-     pipe.WaitForPipeDrain()
 #endif
 
   /// <summary>
   /// This method flushes hit count buffers.
   /// </summary>
-  let internal FlushCounter _ =
 #if NET2
+  let internal FlushCounter _ _ =
 #else
+  let internal FlushCounter e _ =
     if pipe.IsConnected then
-      push null -1
+      printfn "pushing flush %A" e
+      push null -1     
       use local = pipe
       local.Flush()
       local.Close()
@@ -210,6 +212,7 @@ module Instance =
 #if NET2
 #else
       if pipe.IsConnected then
+        printfn "pushing Visit"
         push moduleId hitPointId
       else
 #endif
@@ -222,12 +225,16 @@ module Instance =
 
   // Register event handling
   do
-    AppDomain.CurrentDomain.DomainUnload.Add(FlushCounter)
-    AppDomain.CurrentDomain.ProcessExit.Add(FlushCounter)
+    AppDomain.CurrentDomain.DomainUnload.Add(FlushCounter false)
+    AppDomain.CurrentDomain.ProcessExit.Add(FlushCounter true)
 #if NET2
 #else
     try
+      printfn "Connecting pipe..."
       pipe.Connect(2000) // 2 seconds
+      printfn "Connected."
     with
-    | :? TimeoutException -> ()
+    | :? TimeoutException -> 
+        printfn "timed out"
+        ()
 #endif

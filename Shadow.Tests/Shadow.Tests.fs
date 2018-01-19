@@ -52,20 +52,22 @@ type AltCoverTests() = class
   [<Test>]
   member self.PipeVisitShouldSignal() =
     let save = Instance.pipe
-    let token = Guid.NewGuid().ToString()
+    let token = Guid.NewGuid().ToString() + "PipeVisitShouldSignal"
     try
       let expected = ("name", 23)
       let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
       use client = new System.IO.Pipes.NamedPipeClientStream(token)
-      Instance.pipe <- client
       use server = new System.IO.Pipes.NamedPipeServerStream(token)
-      Instance.pipe.Connect(100)
+      async { client.Connect(5000) } |> Async.Start
       server.WaitForConnection()
+      Instance.pipe <- client
       Assert.That (Instance.pipe.IsConnected, Is.True, "connection failed")
       async { Instance.Visit "name" 23 } |> Async.Start
       let result = formatter.Deserialize(server) :?> (string*int)
       Assert.That (Instance.Visits, Is.Empty, "unexpected local write")
       Assert.That (result, Is.EqualTo expected, "unexpected result")
+      server.Disconnect()
+      server.Close()
     finally
       Instance.Visits.Clear()
       Instance.pipe <- save
@@ -75,6 +77,11 @@ type AltCoverTests() = class
   [<Test>]
   member self.NullIdShouldNotGiveACount() =
     try
+#if NET2
+#else
+      use dummy = new System.IO.Pipes.NamedPipeClientStream(Guid.NewGuid().ToString())
+      Instance.pipe <- dummy
+#endif
       Instance.Visits.Clear()
       Instance.Visit null 23
       Assert.That (Instance.Visits, Is.Empty)
@@ -84,6 +91,11 @@ type AltCoverTests() = class
   [<Test>]
   member self.EmptyIdShouldNotGiveACount() =
     try
+#if NET2
+#else
+      use dummy = new System.IO.Pipes.NamedPipeClientStream(Guid.NewGuid().ToString())
+      Instance.pipe <- dummy
+#endif
       Instance.Visits.Clear()
       Instance.Visit String.Empty 23
       Assert.That (Instance.Visits, Is.Empty)
@@ -93,6 +105,11 @@ type AltCoverTests() = class
   [<Test>]
   member self.RealIdShouldIncrementCount() =
     try
+#if NET2
+#else
+      use dummy = new System.IO.Pipes.NamedPipeClientStream(Guid.NewGuid().ToString())
+      Instance.pipe <- dummy
+#endif
       Instance.Visits.Clear()
       let key = " "
       Instance.Visit key 23
@@ -105,6 +122,11 @@ type AltCoverTests() = class
   [<Test>]
   member self.DistinctIdShouldBeDistinct() =
     try
+#if NET2
+#else
+      use dummy = new System.IO.Pipes.NamedPipeClientStream(Guid.NewGuid().ToString())
+      Instance.pipe <- dummy
+#endif
       Instance.Visits.Clear()
       let key = " "
       Instance.Visit key 23
@@ -116,6 +138,11 @@ type AltCoverTests() = class
   [<Test>]
   member self.DistinctLineShouldBeDistinct() =
     try
+#if NET2
+#else
+      use dummy = new System.IO.Pipes.NamedPipeClientStream(Guid.NewGuid().ToString())
+      Instance.pipe <- dummy
+#endif
       Instance.Visits.Clear()
       let key = " "
       Instance.Visit key 23
@@ -128,6 +155,11 @@ type AltCoverTests() = class
   [<Test>]
   member self.RepeatVisitsShouldIncrementCount() =
     try
+#if NET2
+#else
+      use dummy = new System.IO.Pipes.NamedPipeClientStream(Guid.NewGuid().ToString())
+      Instance.pipe <- dummy
+#endif
       Instance.Visits.Clear()
       let key = " "
       Instance.Visit key 23
@@ -323,7 +355,7 @@ type AltCoverTests() = class
       use stdout = new StringWriter()
       Console.SetOut stdout
 
-      Instance.FlushCounter ()
+      Instance.FlushCounter true ()
       Assert.That (stdout.ToString(), Is.Empty)
     finally
       Instance.Visits.Clear()
@@ -357,7 +389,7 @@ type AltCoverTests() = class
       |> Seq.iter(fun i -> payload.[i] <- (i+1))
       Instance.Visits.["f6e3edb3-fb20-44b3-817d-f69d1a22fc2f"] <- payload
 
-      Instance.FlushCounter ()
+      Instance.FlushCounter true ()
 
       let head = "Coverage statistics flushing took "
       let tail = " seconds\n"
@@ -385,24 +417,26 @@ type AltCoverTests() = class
   [<Test>]
   member self.PipeFlushShouldTidyUp() =
     let save = Instance.pipe
-    let token = Guid.NewGuid().ToString()
+    let token = Guid.NewGuid().ToString() + "PipeFlushShouldTidyUp"
     try
       let expected = ("name", 23)
       let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
       use client = new System.IO.Pipes.NamedPipeClientStream(token)
       Instance.pipe <- client
       use server = new System.IO.Pipes.NamedPipeServerStream(token)
-      Instance.pipe.Connect(100)
+      async { client.Connect(5000) } |> Async.Start
       server.WaitForConnection()
       Assert.That (Instance.pipe.IsConnected, Is.True, "connection failed")
       async { formatter.Serialize(Instance.pipe, expected)
-              Instance.FlushCounter () } |> Async.Start
+              Instance.FlushCounter true () } |> Async.Start
       let result = formatter.Deserialize(server) :?> (string*int)
       let result' = formatter.Deserialize(server) :?> (string*int)
       Assert.That (Instance.Visits, Is.Empty, "unexpected local write")
       Assert.That (result, Is.EqualTo expected, "unexpected result")
       Assert.That (result' |> fst |> String.IsNullOrEmpty, Is.True, "unexpected end-of-message")
       Assert.That (Instance.pipe.IsConnected, Is.False, "client linger")
+      server.Disconnect()
+      server.Close()
     finally
       Instance.Visits.Clear()
       Instance.pipe <- save
@@ -432,7 +466,7 @@ type AltCoverTests() = class
                   |> Array.map (fun x -> string x.Target)
 
     let shadow = AssemblyDefinition.ReadAssembly typeof<AltCover.Recorder.Tracer>.Assembly.Location
-    let flush = "System.Void AltCover.Recorder.Instance::FlushCounter<System.EventArgs>(a)"
+    let flush = "System.Void AltCover.Recorder.Instance::FlushCounter<System.Boolean,System.EventArgs>(a,b)"
     let handlers = shadow.MainModule.Types
                    |> Seq.collect (fun t -> t.NestedTypes)
                    |> Seq.filter (fun t -> t.Methods
@@ -467,7 +501,7 @@ type AltCoverTests() = class
                   |> Array.map (fun x -> string x.Target)
 
     let shadow = AssemblyDefinition.ReadAssembly typeof<AltCover.Recorder.Tracer>.Assembly.Location
-    let flush = "System.Void AltCover.Recorder.Instance::FlushCounter<System.EventArgs>(a)"
+    let flush = "System.Void AltCover.Recorder.Instance::FlushCounter<System.Boolean,System.EventArgs>(a,b)"
     let handlers = shadow.MainModule.Types
                    |> Seq.collect (fun t -> t.NestedTypes)
                    |> Seq.filter (fun t -> t.Methods
