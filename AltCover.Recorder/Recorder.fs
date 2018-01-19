@@ -66,7 +66,8 @@ module Instance =
   /// </summary>
   let private mutex = new System.Threading.Mutex(false, Token + ".mutex");
 
-#if NETSTANDARD2_0
+#if NET2
+#else
   /// <summary>
   /// Reporting back to the mother-ship; only on the .net core build
   /// because this API isn't available in .net 2.0 (framework back-version support)
@@ -168,7 +169,8 @@ module Instance =
   let private WithVisitsLocked =
     Locking.WithLockerLocked Visits
 
-#if NETSTANDARD2_0
+#if NET2
+#else
   let private push (moduleId:string) hitPointId = 
      formatter.Serialize(pipe, (moduleId, hitPointId))
      pipe.WaitForPipeDrain()
@@ -178,7 +180,8 @@ module Instance =
   /// This method flushes hit count buffers.
   /// </summary>
   let internal FlushCounter _ =
-#if NETSTANDARD2_0
+#if NET2
+#else
     if pipe.IsConnected then
       push null -1
       use local = pipe
@@ -204,7 +207,8 @@ module Instance =
   /// <param name="hitPointId">Sequence Point identifier</param>
   let Visit moduleId hitPointId =
     if not <| String.IsNullOrEmpty(moduleId) then
-#if NETSTANDARD2_0
+#if NET2
+#else
       if pipe.IsConnected then
         push moduleId hitPointId
       else
@@ -220,7 +224,8 @@ module Instance =
   do
     AppDomain.CurrentDomain.DomainUnload.Add(FlushCounter)
     AppDomain.CurrentDomain.ProcessExit.Add(FlushCounter)
-#if NETSTANDARD2_0
+#if NET2
+#else
     try
       pipe.Connect(2000) // 2 seconds
     with

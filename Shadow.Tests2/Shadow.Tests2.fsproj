@@ -9,10 +9,13 @@
     <OutputType>Library</OutputType>
     <RootNamespace>Shadow.Tests2</RootNamespace>
     <AssemblyName>AltCover.Shadow.Tests2</AssemblyName>
+    <!-- Travis really means Mono, here -->
     <TargetFrameworkVersion Condition="'$(TRAVIS_JOB_NUMBER)' == ''">v2.0</TargetFrameworkVersion>
     <TargetFrameworkVersion Condition="'$(TRAVIS_JOB_NUMBER)' != ''">v4.7</TargetFrameworkVersion>
     <TargetFSharpCoreVersion Condition="'$(TRAVIS_JOB_NUMBER)' != ''">4.4.1.0</TargetFSharpCoreVersion>
     <TargetFSharpCoreVersion Condition="'$(TRAVIS_JOB_NUMBER)' == ''">2.3.0.0</TargetFSharpCoreVersion>
+    <ExtraDefines Condition="'$(TRAVIS_JOB_NUMBER)' == ''">NET2</ExtraDefines>
+    <ExtraDefines Condition="'$(TRAVIS_JOB_NUMBER)' != ''"></ExtraDefines>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Name>Shadow.Tests2</Name>
   </PropertyGroup>
@@ -24,7 +27,7 @@
     <OutputPath>$(SolutionDir)_Binaries\$(AssemblyName)\$(Configuration)+$(Platform)\</OutputPath>
     <IntermediateOutputPath>$(SolutionDir)_Intermediate\$(AssemblyName)\$(Configuration)+$(Platform)\</IntermediateOutputPath>
     <OtherFlags>--keyfile:$(SolutionDir)Build\Infrastructure.snk</OtherFlags>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>DEBUG;TRACE;$(ExtraDefines)</DefineConstants>
     <WarningLevel>3</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
@@ -34,7 +37,7 @@
     <OutputPath>$(SolutionDir)_Binaries\$(AssemblyName)\$(Configuration)+$(Platform)\</OutputPath>
     <IntermediateOutputPath>$(SolutionDir)_Intermediate\$(AssemblyName)\$(Configuration)+$(Platform)\</IntermediateOutputPath>
     <OtherFlags>--keyfile:$(SolutionDir)Build\Infrastructure.snk</OtherFlags>
-    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants>TRACE;$(ExtraDefines)</DefineConstants>
     <WarningLevel>3</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>

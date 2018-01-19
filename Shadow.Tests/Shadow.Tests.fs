@@ -1,7 +1,7 @@
-﻿#if NET4
-namespace Shadow.Tests
-#else
+﻿#if NET2
 namespace Shadow.Tests2
+#else
+namespace Shadow.Tests
 #endif
 
 open System
@@ -28,12 +28,12 @@ type AltCoverTests() = class
     "AltCover.Shadow")
 #endif
 
-#if NET4
+#if NET2
+  [<Test>]
+#else
   // Doesn't work across framework boundaries, as the unit -> unit type
   // is rooted in a different runtime.  But the locking code gets executed
   // incidentally anyway in later tests.
-#else
-  [<Test>]
 #endif
   member self.ShouldBeExecutingTheCorrectCopyOfThisCode() =
     let mutable where = ""
