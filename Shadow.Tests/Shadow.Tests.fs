@@ -10,10 +10,13 @@ open System.Reflection
 open System.Xml
 
 open AltCover.Recorder
+#if NETCOREAPP2_0
+#else
 open Mono.Cecil
+open Mono.Cecil.Cil
+#endif
 open NUnit.Framework
 open System.Collections.Generic
-open Mono.Cecil.Cil
 
 [<TestFixture>]
 type AltCoverTests() = class
