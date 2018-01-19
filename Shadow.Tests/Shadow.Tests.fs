@@ -1,7 +1,7 @@
-﻿#if NET2
-namespace Shadow.Tests2
-#else
+﻿#if NET4
 namespace Shadow.Tests
+#else
+namespace Shadow.Tests2
 #endif
 
 open System
