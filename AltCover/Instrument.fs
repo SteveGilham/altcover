@@ -162,7 +162,7 @@ module Instrument =
       ("get_ReportFile", Visitor.ReportPath())
       ("get_Token", "Altcover-" + Guid.NewGuid().ToString())
     ]
-    |> List.iter (fun (property, value) -> 
+    |> List.iter (fun (property, value) ->
         let pathGetterDef = definition.MainModule.GetTypes()
                             |> Seq.collect (fun t -> t.Methods)
                             |> Seq.filter (fun m -> m.Name = property)

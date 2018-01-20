@@ -617,7 +617,7 @@ Target "ReleaseXUnitDotNetDemo" (fun _ ->
         (fun p ->
             { p with
                 Configuration = "Debug"
-                Project =  "./Demo/xunit-dotnet/xunit-dotnet.csproj"})    
+                Project =  "./Demo/xunit-dotnet/xunit-dotnet.csproj"})
     let unpack = FullName "_Packaging/Unpack/tools/netcoreapp2.0/AltCover"
     let x = FullName "./Demo/xunit-dotnet/bin/ReleaseXUnitDotNetDemo.xml"
     let o = FullName "./Demo/xunit-dotnet/bin/Debug/netcoreapp2.0/__Instrumented.ReleaseXUnitDotNetDemo"

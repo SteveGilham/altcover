@@ -70,12 +70,12 @@ module Main =
         f()
         thrown <- false
     with
-    | :? ArgumentException as a -> WriteErr a.Message; 
+    | :? ArgumentException as a -> WriteErr a.Message;
     | :? NotSupportedException as n -> WriteErr n.Message
     | :? IOException as i -> WriteErr i.Message
     | :? System.Security.SecurityException as s -> WriteErr s.Message
     error <- error || thrown
-    
+
   let internal DeclareOptions () =
     [ ("i|inputDirectory=",
        (fun x -> if not (String.IsNullOrWhiteSpace(x)) && Directory.Exists(x) then
