@@ -824,7 +824,6 @@ Target "All" ignore
 
 "Unpack"
 ==> "ReleaseXUnitDotNetDemo"
-==> "Deployment"
 
 "Analysis"
 ==> "All"
