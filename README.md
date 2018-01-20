@@ -58,13 +58,11 @@ If there are symbol-bearing third-party assemblies (e.g. from NuGet packages suc
 
 ### Use Case : Unit tests (.net core)
 
-Given the way that `dotnet`, and in particular, `dotnet test` works, there is a manual step involved here. 
+Given the way that `dotnet`, and in particular, `dotnet test` works, there is a manual step (or some customization of the project) involved here. [See the wiki for various proven recipes.](https://github.com/SteveGilham/altcover/wiki/.net-core----practical-examples)
 
-* First build the code with `dotnet`, and instrument the code with `/i=$(OutputPath)` as normal.  
-* Then copy the contents of the output directory back to `$(OutputPath)`.  This is the extra manual step
-* Now you can `dotnet test --no-build` and the instrumented code will be executed
+*NOTE:* On old-fashioned .net framework, the process exit handling window of (~2s) is sufficient for processing significant bodies of code under test (several 10s of kloc); under `dotnet test` the window seems to be rather tighter (about 100ms, experimentally, about enough for 1kloc as of the current check-in).
 
-NOTE: On old-fashioned .net framework, the process exit handling window is sufficient for processing significant bodies of code under test (several 10s of kloc); under `dotnet test` the window seems to be rather tighter, with the build self-test by unit testing the .net core build after being instrumented by itself sometimes failing to write all (and sometimes not even any) of the updated report with the coverage data.  For the moment, tests run under `dotnet` should cover only a small assembly.
+For the moment, such tests run under `dotnet` should cover only a small amount of code.  Meanwhile, watch this space.
 
 ### Use Case : Windows Service
 
