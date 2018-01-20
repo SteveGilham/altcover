@@ -13,7 +13,7 @@ open System.Xml
 #if NET2
 module private NativeMethods =
    [<System.Runtime.InteropServices.DllImport("kernel32.dll",
-                                               EntryPoint = "CreateFile", 
+                                               EntryPoint = "CreateFile",
                                                SetLastError = true,
                                                CharSet = CharSet.Unicode)>]
     extern Microsoft.Win32.SafeHandles.SafeFileHandle CreateFileW(String lpFileName,
@@ -47,7 +47,7 @@ type Tracer = {
                                              IntPtr.Zero)
 
       // Test against INVALID_HANDLE_VALUE
-      if handle.IsInvalid then // System.ComponentModel.Win32Exception(Marshal.GetLastWin32Error()) |> raise 
+      if handle.IsInvalid then // System.ComponentModel.Win32Exception(Marshal.GetLastWin32Error()) |> raise
         {Tracer = name; Pipe = new MemoryStream() :> Stream}
       else
         {Tracer = name; Pipe = new FileStream(handle, FileAccess.Write) :> Stream}
@@ -223,14 +223,14 @@ module Instance =
      formatter.Serialize(pipe.Pipe, (moduleId, hitPointId))
 
   let internal OnConnected f g =
-     if pipe.IsConnected() then f() 
+     if pipe.IsConnected() then f()
      else WithVisitsLocked g
 
   /// <summary>
   /// This method flushes hit count buffers.
   /// </summary>
   let internal FlushCounter finish _ =
-    OnConnected (fun () -> 
+    OnConnected (fun () ->
       printfn "pushing flush %A" finish
       if finish then
         push null -1
@@ -254,7 +254,7 @@ module Instance =
   /// <param name="hitPointId">Sequence Point identifier</param>
   let Visit moduleId hitPointId =
     if not <| String.IsNullOrEmpty(moduleId) then
-      OnConnected (fun () -> 
+      OnConnected (fun () ->
         printfn "pushing Visit"
         push moduleId hitPointId
                  )
