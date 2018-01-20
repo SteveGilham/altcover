@@ -34,9 +34,9 @@ type Tracer = {
              typeof<Microsoft.FSharp.Core.CompilationMappingAttribute>.Assembly.Location
 #endif
     static member CreatePipe (name:string) =
-      printfn "Creating pipe %s" name
 #if NET2
       // conceal path name from Gendarme
+      printfn "Creating raw pipe %s" name
       let pipeHeader = String.Join(@"\", [|String.Empty; String.Empty; "."; "pipe"; String.Empty|])
       let handle = NativeMethods.CreateFileW(pipeHeader + name,
                                              0x40000000u, // GENERIC_WRITE,
@@ -52,6 +52,7 @@ type Tracer = {
       else
         {Tracer = name; Pipe = new FileStream(handle, FileAccess.Write) :> Stream}
 #else
+      printfn "Creating NamedPipeClientStream %s" name
       {Tracer = name; Pipe = new System.IO.Pipes.NamedPipeClientStream(name) :> Stream}
 #endif
     member this.IsConnected ()=

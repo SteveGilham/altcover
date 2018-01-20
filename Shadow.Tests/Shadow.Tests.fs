@@ -98,13 +98,17 @@ type AltCoverTests() = class
   member self.PipeVisitShouldSignal() =
     let save = Instance.pipe
     let token = Guid.NewGuid().ToString() + "PipeVisitShouldSignal"
+    printfn "token = %s" token
 #if NET2
     use server = NativeMethods.Create token
+    printfn "Created raw server"
 #else
     use server = new System.IO.Pipes.NamedPipeServerStream(token)
+    printfn "Created NamedPipeServerStream"
 #endif
     try
       let client = Tracer.CreatePipe(token)
+      printfn "Created client"
       try
         let expected = ("name", 23)
         let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
@@ -114,22 +118,24 @@ type AltCoverTests() = class
 #else
         server.WaitForConnection()
 #endif
+        printfn "after connection wait"
         Instance.pipe <- client
         Assert.That (Instance.pipe.IsConnected(), "connection failed")
+        printfn "about to act"
         async { Instance.Visit "name" 23 } |> Async.Start
+        printfn "about to read"
         let result = formatter.Deserialize(server) :?> (string*int)
         Assert.That (Instance.Visits, Is.Empty, "unexpected local write")
         Assert.That (result, Is.EqualTo expected, "unexpected result")
-#if NET2
-        server |> NativeMethods.Disconnect |> ignore
-#else
-        server.Disconnect()
-#endif
+        printfn "after all work"
       finally
-      Instance.pipe <- save
-      client.Pipe.Dispose()
+        printfn "finally 1"
+        Instance.pipe <- save
+        client.Pipe.Dispose()
     finally
+      printfn "finally 2"
       Instance.Visits.Clear()
+    printfn "all done"
 
   [<Test>]
   member self.NullIdShouldNotGiveACount() =
@@ -462,41 +468,48 @@ type AltCoverTests() = class
   member self.PipeFlushShouldTidyUp() =
     let save = Instance.pipe
     let token = Guid.NewGuid().ToString() + "PipeFlushShouldTidyUp"
+    printfn "pipe token = %s" token
 #if NET2
     use server = NativeMethods.Create token
 #else
     use server = new System.IO.Pipes.NamedPipeServerStream(token)
 #endif
+    printfn "Created server"
     try
       let client = Tracer.CreatePipe token
+      printfn "Created client"
       try
         let expected = ("name", 23)
         let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
         Instance.pipe <- client
+        printfn "Ready to connect"
         async { client.Connect(5000) } |> Async.Start
 #if NET2
         server |> NativeMethods.WaitForConnection |> ignore
 #else
         server.WaitForConnection()
 #endif
+        printfn "After connection wait"
         Assert.That (Instance.pipe.IsConnected(), "connection failed")
+        printfn "About to act"
         async { formatter.Serialize(Instance.pipe.Pipe, expected)
                 Instance.FlushCounter true () } |> Async.Start
+        printfn "About to read"
         let result = formatter.Deserialize(server) :?> (string*int)
         let result' = formatter.Deserialize(server) :?> (string*int)
+        printfn "About to assert"
         Assert.That (Instance.Visits, Is.Empty, "unexpected local write")
         Assert.That (result, Is.EqualTo expected, "unexpected result")
         Assert.That (result' |> fst |> String.IsNullOrEmpty, Is.True, "unexpected end-of-message")
-#if NET2
-        server |> NativeMethods.Disconnect |> ignore
-#else
-        server.Disconnect()
-#endif
+        printfn "done"
       finally
-      Instance.pipe <- save
-      client.Pipe.Dispose()
+        printfn "first finally"
+        Instance.pipe <- save
+        client.Pipe.Dispose()
     finally
+      printfn "second finally"
       Instance.Visits.Clear()
+    printfn "all done"
 
 #if NETCOREAPP2_0
   [<Test>]
