@@ -304,7 +304,7 @@ type AltCoverTests() = class
       use stdout = new StringWriter()
       Console.SetOut stdout
 
-      Instance.FlushCounter ()
+      Instance.FlushCounter true ()
       Assert.That (stdout.ToString(), Is.Empty)
     finally
       Instance.Visits.Clear()
@@ -338,7 +338,7 @@ type AltCoverTests() = class
       |> Seq.iter(fun i -> payload.[i] <- (i+1))
       Instance.Visits.["f6e3edb3-fb20-44b3-817d-f69d1a22fc2f"] <- payload
 
-      Instance.FlushCounter ()
+      Instance.FlushCounter true ()
 
       let head = "Coverage statistics flushing took "
       let tail = " seconds\n"
@@ -382,7 +382,7 @@ type AltCoverTests() = class
                   |> Array.map (fun x -> string x.Target)
 
     let shadow = AssemblyDefinition.ReadAssembly typeof<AltCover.Recorder.Tracer>.Assembly.Location
-    let flush = "System.Void AltCover.Recorder.Instance::FlushCounter<System.EventArgs>(a)"
+    let flush = "System.Void AltCover.Recorder.Instance::FlushCounter<System.Boolean,System.EventArgs>(a,b)"
     let handlers = shadow.MainModule.Types
                    |> Seq.collect (fun t -> t.NestedTypes)
                    |> Seq.filter (fun t -> t.Methods
@@ -417,7 +417,7 @@ type AltCoverTests() = class
                   |> Array.map (fun x -> string x.Target)
 
     let shadow = AssemblyDefinition.ReadAssembly typeof<AltCover.Recorder.Tracer>.Assembly.Location
-    let flush = "System.Void AltCover.Recorder.Instance::FlushCounter<System.EventArgs>(a)"
+    let flush = "System.Void AltCover.Recorder.Instance::FlushCounter<System.Boolean,System.EventArgs>(a,b)"
     let handlers = shadow.MainModule.Types
                    |> Seq.collect (fun t -> t.NestedTypes)
                    |> Seq.filter (fun t -> t.Methods

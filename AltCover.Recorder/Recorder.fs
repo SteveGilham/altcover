@@ -161,7 +161,7 @@ module Instance =
   /// <summary>
   /// This method flushes hit count buffers.
   /// </summary>
-  let internal FlushCounter _ =
+  let internal FlushCounter _ _ =
      WithVisitsLocked (fun () ->
       match Visits.Count with
       | 0 -> ()
@@ -186,8 +186,8 @@ module Instance =
                                     Visits.[moduleId].Add(hitPointId, 1)
                                 else
                                     Visits.[moduleId].[hitPointId] <- 1 + Visits.[moduleId].[hitPointId])
-    AppDomain.CurrentDomain.DomainUnload.Add(fun x -> Console.Out.WriteLine("unloaded"))
+
   // Register event handling
   do
-    AppDomain.CurrentDomain.DomainUnload.Add(FlushCounter)
-    AppDomain.CurrentDomain.ProcessExit.Add(FlushCounter)
+    AppDomain.CurrentDomain.DomainUnload.Add(FlushCounter false)
+    AppDomain.CurrentDomain.ProcessExit.Add(FlushCounter true)
