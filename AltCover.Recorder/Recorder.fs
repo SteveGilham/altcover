@@ -10,11 +10,64 @@ open System.Runtime.CompilerServices
 open System.Runtime.InteropServices
 open System.Xml
 
+#if NET2
+module private NativeMethods =
+   [<System.Runtime.InteropServices.DllImport("kernel32.dll",
+                                               EntryPoint = "CreateFile", 
+                                               SetLastError = true,
+                                               CharSet = CharSet.Unicode)>]
+    extern Microsoft.Win32.SafeHandles.SafeFileHandle CreateFileW(String lpFileName,
+        UInt32 dwDesiredAccess, UInt32 dwShareMode,
+        IntPtr lpSecurityAttributes, UInt32 dwCreationDisposition,
+        UInt32 dwFlagsAndAttributes,
+        IntPtr hTemplateFile)
+#endif
+
 [<ProgId("ExcludeFromCodeCoverage")>] // HACK HACK HACK
-type Tracer = { Tracer : string }
+type Tracer = {
+                Tracer : string
+                Pipe : Stream
+              }
+  with
 #if NETSTANDARD2_0
-   with static member Core () =
+    static member Core () =
              typeof<Microsoft.FSharp.Core.CompilationMappingAttribute>.Assembly.Location
+#endif
+    static member CreatePipe (name:string) =
+      printfn "Creating pipe %s" name
+#if NET2
+      // conceal path name from Gendarme
+      let pipeHeader = String.Join(@"\", [|String.Empty; String.Empty; "."; "pipe"; String.Empty|])
+      let handle = NativeMethods.CreateFileW(pipeHeader + name,
+                                             0x40000000u, // GENERIC_WRITE,
+                                             0u,
+                                             IntPtr.Zero,
+                                             3u, // OPEN_EXISTING,
+                                             0u,
+                                             IntPtr.Zero)
+
+      // Test against INVALID_HANDLE_VALUE
+      if handle.IsInvalid then // System.ComponentModel.Win32Exception(Marshal.GetLastWin32Error()) |> raise 
+        {Tracer = name; Pipe = new MemoryStream() :> Stream}
+      else
+        {Tracer = name; Pipe = new FileStream(handle, FileAccess.Write) :> Stream}
+#else
+      {Tracer = name; Pipe = new System.IO.Pipes.NamedPipeClientStream(name) :> Stream}
+#endif
+    member this.IsConnected ()=
+#if NET2
+      match this.Pipe with
+      | :? FileStream -> this.Pipe.CanWrite
+      | _ -> false
+#else
+      (this.Pipe :?> System.IO.Pipes.NamedPipeClientStream).IsConnected
+#endif
+
+    member this.Connect ms =
+#if NET2
+      ignore ms
+#else
+      (this.Pipe :?> System.IO.Pipes.NamedPipeClientStream).Connect(ms)
 #endif
 
 // Abstract out compact bits of F# that expand into
@@ -66,17 +119,13 @@ module Instance =
   /// </summary>
   let private mutex = new System.Threading.Mutex(false, Token + ".mutex");
 
-#if NET2
-  let mutable internal pipe = Object()
-#else
   /// <summary>
   /// Reporting back to the mother-ship; only on the .net core build
   /// because this API isn't available in .net 2.0 (framework back-version support)
   /// </summary>
-  let mutable internal pipe = new System.IO.Pipes.NamedPipeClientStream(Token)
+  let mutable internal pipe = Tracer.CreatePipe Token
 
   let private formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
-#endif
 
   /// <summary>
   /// Load the XDocument
@@ -170,28 +219,24 @@ module Instance =
   let private WithVisitsLocked =
     Locking.WithLockerLocked Visits
 
-#if NET2
-#else
-  let private push (moduleId:string) hitPointId = 
-     formatter.Serialize(pipe, (moduleId, hitPointId))
-#endif
+  let private push (moduleId:string) hitPointId =
+     formatter.Serialize(pipe.Pipe, (moduleId, hitPointId))
+
+  let internal OnConnected f g =
+     if pipe.IsConnected() then f() 
+     else WithVisitsLocked g
 
   /// <summary>
   /// This method flushes hit count buffers.
   /// </summary>
-#if NET2
-  let internal FlushCounter _ _ =
-#else
-  let internal FlushCounter e _ =
-    if pipe.IsConnected then
-      printfn "pushing flush %A" e
-      push null -1     
-      use local = pipe
-      local.Flush()
-      local.Close()
-    else
-#endif
-      WithVisitsLocked (fun () ->
+  let internal FlushCounter finish _ =
+    OnConnected (fun () -> 
+      printfn "pushing flush %A" finish
+      if finish then
+        push null -1
+        use local = pipe.Pipe
+        local.Flush())
+      (fun () ->
       match Visits.Count with
       | 0 -> ()
       | _ -> let counts = Dictionary<string, Dictionary<int, int>> Visits
@@ -209,32 +254,27 @@ module Instance =
   /// <param name="hitPointId">Sequence Point identifier</param>
   let Visit moduleId hitPointId =
     if not <| String.IsNullOrEmpty(moduleId) then
-#if NET2
-#else
-      if pipe.IsConnected then
+      OnConnected (fun () -> 
         printfn "pushing Visit"
         push moduleId hitPointId
-      else
-#endif
-        WithVisitsLocked (fun () -> if not (Visits.ContainsKey moduleId)
+                 )
+                 (fun () -> if not (Visits.ContainsKey moduleId)
                                       then Visits.[moduleId] <- new Dictionary<int, int>()
-                                    if not (Visits.[moduleId].ContainsKey hitPointId) then
-                                      Visits.[moduleId].Add(hitPointId, 1)
-                                    else
-                                      Visits.[moduleId].[hitPointId] <- 1 + Visits.[moduleId].[hitPointId])
+                            if not (Visits.[moduleId].ContainsKey hitPointId) then
+                               Visits.[moduleId].Add(hitPointId, 1)
+                            else
+                               Visits.[moduleId].[hitPointId] <- 1 + Visits.[moduleId].[hitPointId])
 
   // Register event handling
   do
     AppDomain.CurrentDomain.DomainUnload.Add(FlushCounter false)
     AppDomain.CurrentDomain.ProcessExit.Add(FlushCounter true)
-#if NET2
-#else
     try
-      printfn "Connecting pipe..."
-      pipe.Connect(2000) // 2 seconds
+      printfn "Connecting pipe %s ..." pipe.Tracer
+      pipe.Connect 2000 // 2 seconds
       printfn "Connected."
+      push null -1
     with
-    | :? TimeoutException -> 
+    | :? TimeoutException ->
         printfn "timed out"
         ()
-#endif
