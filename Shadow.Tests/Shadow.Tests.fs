@@ -1,10 +1,15 @@
-﻿#if NET4
-namespace Shadow.Tests
+﻿#if NETCOREAPP2_0
+namespace Shadow.TestsCore
+#else
+#if NET4
+namespace Shadow.Tests4
 #else
 namespace Shadow.Tests2
 #endif
+#endif
 
 open System
+open System.Collections.Generic
 open System.IO
 open System.Reflection
 open System.Xml
@@ -16,7 +21,6 @@ open Mono.Cecil
 open Mono.Cecil.Cil
 #endif
 open NUnit.Framework
-open System.Collections.Generic
 
 [<TestFixture>]
 type AltCoverTests() = class
@@ -36,6 +40,7 @@ type AltCoverTests() = class
   // is rooted in a different runtime.  But the locking code gets executed
   // incidentally anyway in later tests.
 #else
+  // Do run .net2 to .net2, .netcore to .netcore (and Mono to Mono)
   [<Test>]
 #endif
   member self.ShouldBeExecutingTheCorrectCopyOfThisCode() =
