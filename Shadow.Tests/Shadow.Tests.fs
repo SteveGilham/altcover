@@ -9,6 +9,52 @@ open System.IO
 open System.Reflection
 open System.Xml
 
+#if NET2
+open System.Runtime.InteropServices
+
+module private NativeMethods =
+    [<DllImport("kernel32.dll",
+                 SetLastError = true,
+                 CharSet = CharSet.Unicode)>]
+    extern Microsoft.Win32.SafeHandles.SafeFileHandle CreateNamedPipeW(
+                                                                        String lpName,
+                                                                        UInt32 dwOpenMode,
+                                                                        UInt32 dwPipeMode,
+                                                                        UInt32 nMaxInstances,
+                                                                        UInt32 nOutBufferSize,
+                                                                        UInt32 nInBufferSize,
+                                                                        UInt32 nDefaultTimeOut,
+                                                                        IntPtr pipeSecurityDescriptor
+                                                                        )
+
+    [<DllImport("kernel32.dll", SetLastError = true)>]
+    extern bool DisconnectNamedPipe(Microsoft.Win32.SafeHandles.SafeFileHandle hHandle);
+
+    [<DllImport("kernel32.dll")>]
+    extern bool ConnectNamedPipe(Microsoft.Win32.SafeHandles.SafeFileHandle hNamedPipe,
+                                 IntPtr lpOverlapped)
+
+    let CreateHandle name =
+        CreateNamedPipeW(@"\\.\pipe\" + name,
+                         0x00000001u, //PIPE_ACCESS_INBOUND,
+                         0u,
+                         1u,
+                         4096u,
+                         4096u,
+                         0u,
+                         IntPtr.Zero)
+
+    let Create name =
+      let handle = CreateHandle name
+      new FileStream(handle, FileAccess.Read)
+
+    let WaitForConnection (fs:FileStream)  =
+      ConnectNamedPipe(fs.SafeFileHandle, IntPtr.Zero)
+
+    let Disconnect (fs:FileStream) =
+      DisconnectNamedPipe fs.SafeFileHandle
+#endif
+
 open AltCover.Recorder
 #if NETCOREAPP2_0
 #else
@@ -48,32 +94,42 @@ type AltCoverTests() = class
     "AltCover.Shadow")
 #endif
 
-#if NET2
-#else
   [<Test>]
   member self.PipeVisitShouldSignal() =
     let save = Instance.pipe
     let token = Guid.NewGuid().ToString() + "PipeVisitShouldSignal"
+#if NET2
+    use server = NativeMethods.Create token
+#else
     use server = new System.IO.Pipes.NamedPipeServerStream(token)
-    let client = Tracer.CreatePipe(token)
-    try
-      let expected = ("name", 23)
-      let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
-      async { client.Connect(5000) } |> Async.Start
-      server.WaitForConnection()
-      Instance.pipe <- client
-      Assert.That (Instance.pipe.IsConnected, "connection failed")
-      async { Instance.Visit "name" 23 } |> Async.Start
-      let result = formatter.Deserialize(server) :?> (string*int)
-      Assert.That (Instance.Visits, Is.Empty, "unexpected local write")
-      Assert.That (result, Is.EqualTo expected, "unexpected result")
-      server.Disconnect()
-    finally
-      client.Pipe.Dispose()
-      Instance.Visits.Clear()
-      Instance.pipe <- save
-
 #endif
+    try
+      let client = Tracer.CreatePipe(token)
+      try
+        let expected = ("name", 23)
+        let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
+        async { client.Connect(5000) } |> Async.Start
+#if NET2
+        server |> NativeMethods.WaitForConnection |> ignore
+#else
+        server.WaitForConnection()
+#endif
+        Instance.pipe <- client
+        Assert.That (Instance.pipe.IsConnected(), "connection failed")
+        async { Instance.Visit "name" 23 } |> Async.Start
+        let result = formatter.Deserialize(server) :?> (string*int)
+        Assert.That (Instance.Visits, Is.Empty, "unexpected local write")
+        Assert.That (result, Is.EqualTo expected, "unexpected result")
+#if NET2
+        server |> NativeMethods.Disconnect |> ignore
+#else
+        server.Disconnect()
+#endif
+      finally
+      Instance.pipe <- save
+      client.Pipe.Dispose()
+    finally
+      Instance.Visits.Clear()
 
   [<Test>]
   member self.NullIdShouldNotGiveACount() =
@@ -85,7 +141,7 @@ type AltCoverTests() = class
       Assert.That (Instance.Visits, Is.Empty)
     finally
       Instance.Visits.Clear()
-      dummy.Pipe.Dispose() 
+      dummy.Pipe.Dispose()
 
   [<Test>]
   member self.EmptyIdShouldNotGiveACount() =
@@ -97,7 +153,7 @@ type AltCoverTests() = class
       Assert.That (Instance.Visits, Is.Empty)
     finally
       Instance.Visits.Clear()
-      dummy.Pipe.Dispose() 
+      dummy.Pipe.Dispose()
 
   [<Test>]
   member self.RealIdShouldIncrementCount() =
@@ -112,7 +168,7 @@ type AltCoverTests() = class
       Assert.That (Instance.Visits.[key].[23], Is.EqualTo 1)
     finally
       Instance.Visits.Clear()
-      dummy.Pipe.Dispose() 
+      dummy.Pipe.Dispose()
 
   [<Test>]
   member self.DistinctIdShouldBeDistinct() =
@@ -126,7 +182,7 @@ type AltCoverTests() = class
       Assert.That (Instance.Visits.Count, Is.EqualTo 2)
     finally
       Instance.Visits.Clear()
-      dummy.Pipe.Dispose() 
+      dummy.Pipe.Dispose()
 
   [<Test>]
   member self.DistinctLineShouldBeDistinct() =
@@ -141,7 +197,7 @@ type AltCoverTests() = class
       Assert.That (Instance.Visits.[key].Count, Is.EqualTo 2)
     finally
       Instance.Visits.Clear()
-      dummy.Pipe.Dispose() 
+      dummy.Pipe.Dispose()
 
   [<Test>]
   member self.RepeatVisitsShouldIncrementCount() =
@@ -155,7 +211,7 @@ type AltCoverTests() = class
       Assert.That (Instance.Visits.[key].[23], Is.EqualTo 2)
     finally
       Instance.Visits.Clear()
-      dummy.Pipe.Dispose() 
+      dummy.Pipe.Dispose()
 
   member private self.UpdateReport a b =
     Instance.UpdateReport a b
@@ -402,36 +458,45 @@ type AltCoverTests() = class
       with
       | :? IOException -> ()
 
-#if NET2
-#else
   [<Test>]
   member self.PipeFlushShouldTidyUp() =
     let save = Instance.pipe
     let token = Guid.NewGuid().ToString() + "PipeFlushShouldTidyUp"
+#if NET2
+    use server = NativeMethods.Create token
+#else
     use server = new System.IO.Pipes.NamedPipeServerStream(token)
-    let client = Tracer.CreatePipe token
-    try
-      let expected = ("name", 23)
-      let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
-      Instance.pipe <- client
-      async { client.Connect(5000) } |> Async.Start
-      server.WaitForConnection()
-      Assert.That (Instance.pipe.IsConnected, "connection failed")
-      async { formatter.Serialize(Instance.pipe.Pipe, expected)
-              Instance.FlushCounter true () } |> Async.Start
-      let result = formatter.Deserialize(server) :?> (string*int)
-      let result' = formatter.Deserialize(server) :?> (string*int)
-      Assert.That (Instance.Visits, Is.Empty, "unexpected local write")
-      Assert.That (result, Is.EqualTo expected, "unexpected result")
-      Assert.That (result' |> fst |> String.IsNullOrEmpty, Is.True, "unexpected end-of-message")
-      Assert.That (Instance.pipe.IsConnected() |> not, "client linger")
-      server.Disconnect()
-    finally
-      client.Pipe.Dispose()
-      Instance.Visits.Clear()
-      Instance.pipe <- save
-
 #endif
+    try
+      let client = Tracer.CreatePipe token
+      try
+        let expected = ("name", 23)
+        let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
+        Instance.pipe <- client
+        async { client.Connect(5000) } |> Async.Start
+#if NET2
+        server |> NativeMethods.WaitForConnection |> ignore
+#else
+        server.WaitForConnection()
+#endif
+        Assert.That (Instance.pipe.IsConnected(), "connection failed")
+        async { formatter.Serialize(Instance.pipe.Pipe, expected)
+                Instance.FlushCounter true () } |> Async.Start
+        let result = formatter.Deserialize(server) :?> (string*int)
+        let result' = formatter.Deserialize(server) :?> (string*int)
+        Assert.That (Instance.Visits, Is.Empty, "unexpected local write")
+        Assert.That (result, Is.EqualTo expected, "unexpected result")
+        Assert.That (result' |> fst |> String.IsNullOrEmpty, Is.True, "unexpected end-of-message")
+#if NET2
+        server |> NativeMethods.Disconnect |> ignore
+#else
+        server.Disconnect()
+#endif
+      finally
+      Instance.pipe <- save
+      client.Pipe.Dispose()
+    finally
+      Instance.Visits.Clear()
 
 #if NETCOREAPP2_0
   [<Test>]
