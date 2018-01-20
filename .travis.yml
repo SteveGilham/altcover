@@ -8,7 +8,7 @@ solution: AltCover.sln
 git:
   depth: false
 
-if: NOT branch =~ ^develop/.*$
+if: branch = develop/pipes=travis
 
 addons:
   apt:
