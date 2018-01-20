@@ -610,6 +610,46 @@ Target "ReleaseDotNetWithDotNet" (fun _ ->
     Actions.ValidateSample1 "./_Reports/ReleaseDotNetWithDotNet.xml" "ReleaseDotNetWithDotNet"
 )
 
+Target "ReleaseXUnitDotNetDemo" (fun _ ->
+    ensureDirectory "./_Reports"
+    "./Demo/xunit-dotnet/bin" |> FullName |> CleanDir
+    DotNetCli.Build
+        (fun p ->
+            { p with
+                Configuration = "Debug"
+                Project =  "./Demo/xunit-dotnet/xunit-dotnet.csproj"})    
+    let unpack = FullName "_Packaging/Unpack/tools/netcoreapp2.0/AltCover"
+    let x = FullName "./Demo/xunit-dotnet/bin/ReleaseXUnitDotNetDemo.xml"
+    let o = FullName "./Demo/xunit-dotnet/bin/Debug/netcoreapp2.0/__Instrumented.ReleaseXUnitDotNetDemo"
+    let i = FullName "./Demo/xunit-dotnet/bin/Debug/netcoreapp2.0"
+    DotNetCli.RunCommand (fun info -> {info with WorkingDir = unpack })
+                          ("run --project altcover.core.fsproj -- -x \"" + x + "\" -o \"" + o + "\" -i \"" + i + "\"")
+
+    !! (o @@ "*")
+    |> Copy i
+
+    let result = ExecProcess (fun info -> info.FileName <- "dotnet"
+                                          info.WorkingDirectory <- FullName "./Demo/xunit-dotnet"
+                                          info.Arguments <- ("test --no-build --configuration Debug xunit-dotnet.csproj")) (TimeSpan.FromMinutes 5.0)
+    if result <> 1 then failwith "Unexpected unit test return"
+
+    use coverageFile = new FileStream(x, FileMode.Open, FileAccess.Read, FileShare.None, 4096, FileOptions.SequentialScan)
+    let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
+    let recorded = coverageDocument.Descendants(XName.Get("seqpnt"))
+                   |> Seq.toList
+
+    let visits = ["0"; "1"; "2"]
+                 |> List.map (fun n ->
+                        recorded
+                        |> Seq.filter (fun x -> x.Attribute(XName.Get("visitcount")).Value = n)
+                        |> Seq.length)
+
+    visits
+    |> Seq.zip [3; 5; 3]
+    |> Seq.iteri (fun i (r,x) -> if r <> x then failwith (sprintf "mismatch for visit count %d %A <> %A" i r x))
+
+)
+
 Target "ReleaseDotNetWithFramework" (fun _ ->
     ensureDirectory "./_Reports"
     let unpack = FullName "_Packaging/Unpack/tools/net45"
@@ -780,6 +820,10 @@ Target "All" ignore
 
 "Unpack"
 ==> "ReleaseDotNetWithFramework"
+==> "Deployment"
+
+"Unpack"
+==> "ReleaseXUnitDotNetDemo"
 ==> "Deployment"
 
 "Analysis"
