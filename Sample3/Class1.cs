@@ -34,6 +34,7 @@ namespace Sample3
             }
 
             public string ReportFile { get; set; }
+            public string Token { get; set; }
         }
 
         private static List<Tuple<string, int>> log = new List<Tuple<string, int>>();

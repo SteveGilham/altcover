@@ -157,17 +157,23 @@ module Instrument =
 #endif
     UpdateStrongNaming definition.Name (pair)
 
-    // set the coverage file path
-    let pathGetterDef = definition.MainModule.GetTypes()
-                        |> Seq.collect (fun t -> t.Methods)
-                        |> Seq.filter (fun m -> m.Name = "get_ReportFile")
-                        |> Seq.head
+    // set the coverage file path and unique token
+    [
+      ("get_ReportFile", Visitor.ReportPath())
+      ("get_Token", "Altcover-" + Guid.NewGuid().ToString())
+    ]
+    |> List.iter (fun (property, value) -> 
+        let pathGetterDef = definition.MainModule.GetTypes()
+                            |> Seq.collect (fun t -> t.Methods)
+                            |> Seq.filter (fun m -> m.Name = property)
+                            |> Seq.head
 
-    let body = pathGetterDef.Body
-    let worker = body.GetILProcessor();
-    let head = body.Instructions.[0]
-    worker.InsertBefore(head, worker.Create(OpCodes.Ldstr, Visitor.ReportPath()));
-    worker.InsertBefore(head, worker.Create(OpCodes.Ret));
+        let body = pathGetterDef.Body
+        let worker = body.GetILProcessor();
+        let head = body.Instructions.[0]
+        worker.InsertBefore(head, worker.Create(OpCodes.Ldstr, value))
+        worker.InsertBefore(head, worker.Create(OpCodes.Ret))
+    )
 
     definition
 

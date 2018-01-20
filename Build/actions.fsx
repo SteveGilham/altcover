@@ -36,6 +36,7 @@ module Actions =
       printfn "looping after %A" x
       System.Threading.Thread.Sleep(500)
       if depth < 10 then Clean1 (depth + 1)
+      else failwith "Could not clean all the files"
 
     Clean1 0
 

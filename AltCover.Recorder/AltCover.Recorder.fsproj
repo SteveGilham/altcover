@@ -9,10 +9,13 @@
     <OutputType>Library</OutputType>
     <RootNamespace>AltCover.Recorder</RootNamespace>
     <AssemblyName>AltCover.Recorder</AssemblyName>
+    <!-- Travis really means Mono, here -->
     <TargetFrameworkVersion Condition="'$(TRAVIS_JOB_NUMBER)' == ''">v2.0</TargetFrameworkVersion>
     <TargetFrameworkVersion Condition="'$(TRAVIS_JOB_NUMBER)' != ''">v4.7</TargetFrameworkVersion>
     <TargetFSharpCoreVersion Condition="'$(TRAVIS_JOB_NUMBER)' != ''">4.4.1.0</TargetFSharpCoreVersion>
     <TargetFSharpCoreVersion Condition="'$(TRAVIS_JOB_NUMBER)' == ''">2.3.0.0</TargetFSharpCoreVersion>
+    <ExtraDefines Condition="'$(TRAVIS_JOB_NUMBER)' == ''">NET2</ExtraDefines>
+    <ExtraDefines Condition="'$(TRAVIS_JOB_NUMBER)' != ''"></ExtraDefines>
     <Name>AltCover.Recorder</Name>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>
     <TargetFrameworkProfile>
@@ -32,7 +35,7 @@
     <WarningsAsErrors>
     </WarningsAsErrors>
     <OtherFlags>--keyfile:$(SolutionDir)\Build\Infrastructure.snk --standalone</OtherFlags>
-    <DefineConstants>TRACE;DEBUG;CODE_ANALYSIS</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;CODE_ANALYSIS;$(ExtraDefines)</DefineConstants>
     <WarningLevel>4</WarningLevel>
     <NoWarn>2009</NoWarn>
   </PropertyGroup>
@@ -46,7 +49,7 @@
     <WarningsAsErrors>
     </WarningsAsErrors>
     <OtherFlags>--keyfile:$(SolutionDir)\Build\Infrastructure.snk --standalone</OtherFlags>
-    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants>TRACE;$(ExtraDefines)</DefineConstants>
     <WarningLevel>4</WarningLevel>
     <NoWarn>2009</NoWarn>
   </PropertyGroup>
