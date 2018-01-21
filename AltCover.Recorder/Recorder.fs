@@ -61,7 +61,8 @@ type Tracer = {
       | :? FileStream -> this.Pipe.CanWrite
       | _ -> false
 #else
-      (this.Pipe :?> System.IO.Pipes.NamedPipeClientStream).IsConnected
+      (this.Pipe :?> System.IO.Pipes.NamedPipeClientStream).IsConnected &&
+        this.Pipe.CanWrite
 #endif
 
     member this.Connect ms =
@@ -271,10 +272,10 @@ module Instance =
     AppDomain.CurrentDomain.DomainUnload.Add(FlushCounter false)
     AppDomain.CurrentDomain.ProcessExit.Add(FlushCounter true)
     try
-      printfn "Connecting pipe %s ..." pipe.Tracer
-      pipe.Connect 2000 // 2 seconds
-      printfn "Connected."
-      push null -1
+      if Token <> "AltCover" then
+        printfn "Connecting pipe %s ..." pipe.Tracer
+        pipe.Connect 2000 // 2 seconds
+        printfn "Connected."
     with
     | :? TimeoutException ->
         printfn "timed out"
