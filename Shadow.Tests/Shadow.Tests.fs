@@ -21,52 +21,6 @@ open System.IO
 open System.Reflection
 open System.Xml
 
-#if NET2
-open System.Runtime.InteropServices
-
-module private NativeMethods =
-    [<DllImport("kernel32.dll",
-                 SetLastError = true,
-                 CharSet = CharSet.Unicode)>]
-    extern Microsoft.Win32.SafeHandles.SafeFileHandle CreateNamedPipeW(
-                                                                        String lpName,
-                                                                        UInt32 dwOpenMode,
-                                                                        UInt32 dwPipeMode,
-                                                                        UInt32 nMaxInstances,
-                                                                        UInt32 nOutBufferSize,
-                                                                        UInt32 nInBufferSize,
-                                                                        UInt32 nDefaultTimeOut,
-                                                                        IntPtr pipeSecurityDescriptor
-                                                                        )
-
-    [<DllImport("kernel32.dll", SetLastError = true)>]
-    extern bool DisconnectNamedPipe(Microsoft.Win32.SafeHandles.SafeFileHandle hHandle);
-
-    [<DllImport("kernel32.dll")>]
-    extern bool ConnectNamedPipe(Microsoft.Win32.SafeHandles.SafeFileHandle hNamedPipe,
-                                 IntPtr lpOverlapped)
-
-    let CreateHandle name =
-        CreateNamedPipeW(@"\\.\pipe\" + name,
-                         0x00000001u, //PIPE_ACCESS_INBOUND,
-                         0u,
-                         1u,
-                         4096u,
-                         4096u,
-                         0u,
-                         IntPtr.Zero)
-
-    let Create name =
-      let handle = CreateHandle name
-      new FileStream(handle, FileAccess.Read)
-
-    let WaitForConnection (fs:FileStream)  =
-      ConnectNamedPipe(fs.SafeFileHandle, IntPtr.Zero)
-
-    let Disconnect (fs:FileStream) =
-      DisconnectNamedPipe fs.SafeFileHandle
-#endif
-
 open AltCover.Recorder
 open NUnit.Framework
 open System.Collections.Generic
@@ -76,7 +30,11 @@ type AltCoverTests() = class
 
   [<Test>]
   member self.ShouldBeLinkingTheCorrectCopyOfThisCode() =
-    let locker = { Tracer = String.Empty; Pipe = null }
+    let locker = { Tracer = String.Empty
+#if NETCOREAPP2_0
+                   Pipe = null
+#endif
+    }
     Assert.That(locker.GetType().Assembly.GetName().Name, Is.EqualTo
 #if NETCOREAPP2_0
     "AltCover.Recorder")
@@ -101,21 +59,14 @@ type AltCoverTests() = class
     "AltCover.Shadow")
 #endif
 
-#if MONO
-#else
+#if NETCOREAPP2_0
   [<Test>]
-#endif
   member self.PipeVisitShouldSignal() =
     let save = Instance.pipe
     let token = Guid.NewGuid().ToString() + "PipeVisitShouldSignal"
     printfn "token = %s" token
-#if NET2
-    use server = NativeMethods.Create token
-    printfn "Created raw server"
-#else
     use server = new System.IO.Pipes.NamedPipeServerStream(token)
     printfn "Created NamedPipeServerStream"
-#endif
     try
       let client = Tracer.CreatePipe(token)
       printfn "Created client"
@@ -123,11 +74,7 @@ type AltCoverTests() = class
         let expected = ("name", 23)
         let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
         async { client.Connect(5000) } |> Async.Start
-#if NET2
-        server |> NativeMethods.WaitForConnection |> ignore
-#else
         server.WaitForConnection()
-#endif
         printfn "after connection wait"
         Instance.pipe <- client
         Assert.That (Instance.pipe.IsConnected(), "connection failed")
@@ -146,36 +93,29 @@ type AltCoverTests() = class
       printfn "finally 2"
       Instance.Visits.Clear()
     printfn "all done"
+#endif
 
   [<Test>]
   member self.NullIdShouldNotGiveACount() =
-    let dummy = Tracer.CreatePipe(Guid.NewGuid().ToString())
     try
-      Instance.pipe <- dummy
       Instance.Visits.Clear()
       Instance.Visit null 23
       Assert.That (Instance.Visits, Is.Empty)
     finally
       Instance.Visits.Clear()
-      dummy.Pipe.Dispose()
 
   [<Test>]
   member self.EmptyIdShouldNotGiveACount() =
-    let dummy = Tracer.CreatePipe(Guid.NewGuid().ToString())
     try
-      Instance.pipe <- dummy
       Instance.Visits.Clear()
       Instance.Visit String.Empty 23
       Assert.That (Instance.Visits, Is.Empty)
     finally
       Instance.Visits.Clear()
-      dummy.Pipe.Dispose()
 
   [<Test>]
   member self.RealIdShouldIncrementCount() =
-    let dummy = Tracer.CreatePipe(Guid.NewGuid().ToString())
     try
-      Instance.pipe <- dummy
       Instance.Visits.Clear()
       let key = " "
       Instance.Visit key 23
@@ -184,13 +124,10 @@ type AltCoverTests() = class
       Assert.That (Instance.Visits.[key].[23], Is.EqualTo 1)
     finally
       Instance.Visits.Clear()
-      dummy.Pipe.Dispose()
 
   [<Test>]
   member self.DistinctIdShouldBeDistinct() =
-    let dummy = Tracer.CreatePipe(Guid.NewGuid().ToString())
     try
-      Instance.pipe <- dummy
       Instance.Visits.Clear()
       let key = " "
       Instance.Visit key 23
@@ -198,13 +135,10 @@ type AltCoverTests() = class
       Assert.That (Instance.Visits.Count, Is.EqualTo 2)
     finally
       Instance.Visits.Clear()
-      dummy.Pipe.Dispose()
 
   [<Test>]
   member self.DistinctLineShouldBeDistinct() =
-    let dummy = Tracer.CreatePipe(Guid.NewGuid().ToString())
     try
-      Instance.pipe <- dummy
       Instance.Visits.Clear()
       let key = " "
       Instance.Visit key 23
@@ -213,13 +147,10 @@ type AltCoverTests() = class
       Assert.That (Instance.Visits.[key].Count, Is.EqualTo 2)
     finally
       Instance.Visits.Clear()
-      dummy.Pipe.Dispose()
 
   [<Test>]
   member self.RepeatVisitsShouldIncrementCount() =
-    let dummy = Tracer.CreatePipe(Guid.NewGuid().ToString())
     try
-      Instance.pipe <- dummy
       Instance.Visits.Clear()
       let key = " "
       Instance.Visit key 23
@@ -227,7 +158,6 @@ type AltCoverTests() = class
       Assert.That (Instance.Visits.[key].[23], Is.EqualTo 2)
     finally
       Instance.Visits.Clear()
-      dummy.Pipe.Dispose()
 
   member private self.UpdateReport a b =
     Instance.UpdateReport a b
@@ -474,19 +404,13 @@ type AltCoverTests() = class
       with
       | :? IOException -> ()
 
-#if MONO
-#else
+#if NETCOREAPP2_0
   [<Test>]
-#endif
   member self.PipeFlushShouldTidyUp() =
     let save = Instance.pipe
     let token = Guid.NewGuid().ToString() + "PipeFlushShouldTidyUp"
     printfn "pipe token = %s" token
-#if NET2
-    use server = NativeMethods.Create token
-#else
     use server = new System.IO.Pipes.NamedPipeServerStream(token)
-#endif
     printfn "Created server"
     try
       let client = Tracer.CreatePipe token
@@ -497,11 +421,7 @@ type AltCoverTests() = class
         Instance.pipe <- client
         printfn "Ready to connect"
         async { client.Connect(15000) } |> Async.Start
-#if NET2
-        server |> NativeMethods.WaitForConnection |> ignore
-#else
         server.WaitForConnection()
-#endif
         printfn "After connection wait"
         Assert.That (Instance.pipe.IsConnected(), "connection failed")
         printfn "About to act"
@@ -524,7 +444,6 @@ type AltCoverTests() = class
       Instance.Visits.Clear()
     printfn "all done"
 
-#if NETCOREAPP2_0
   [<Test>]
   member self.CoreFindsThePlace() =
     Assert.That (AltCover.Recorder.Tracer.Core(),

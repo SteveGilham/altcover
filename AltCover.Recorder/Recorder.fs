@@ -10,66 +10,28 @@ open System.Runtime.CompilerServices
 open System.Runtime.InteropServices
 open System.Xml
 
-#if NET2
-module private NativeMethods =
-   [<System.Runtime.InteropServices.DllImport("kernel32.dll",
-                                               EntryPoint = "CreateFile",
-                                               SetLastError = true,
-                                               CharSet = CharSet.Unicode)>]
-    extern Microsoft.Win32.SafeHandles.SafeFileHandle CreateFileW(String lpFileName,
-        UInt32 dwDesiredAccess, UInt32 dwShareMode,
-        IntPtr lpSecurityAttributes, UInt32 dwCreationDisposition,
-        UInt32 dwFlagsAndAttributes,
-        IntPtr hTemplateFile)
-#endif
-
 [<ProgId("ExcludeFromCodeCoverage")>] // HACK HACK HACK
 type Tracer = {
                 Tracer : string
-                Pipe : Stream
+#if NETSTANDARD2_0
+                Pipe : System.IO.Pipes.NamedPipeClientStream
               }
   with
-#if NETSTANDARD2_0
     static member Core () =
              typeof<Microsoft.FSharp.Core.CompilationMappingAttribute>.Assembly.Location
-#endif
-    static member CreatePipe (name:string) =
-#if NET2
-      // conceal path name from Gendarme
-      printfn "**Creating raw pipe %s" name
-      let pipeHeader = String.Join(@"\", [|String.Empty; String.Empty; "."; "pipe"; String.Empty|])
-      let handle = NativeMethods.CreateFileW(pipeHeader + name,
-                                             0x40000000u, // GENERIC_WRITE,
-                                             0u,
-                                             IntPtr.Zero,
-                                             3u, // OPEN_EXISTING,
-                                             0u,
-                                             IntPtr.Zero)
 
-      // Test against INVALID_HANDLE_VALUE
-      if handle.IsInvalid then // System.ComponentModel.Win32Exception(Marshal.GetLastWin32Error()) |> raise
-        {Tracer = name; Pipe = new MemoryStream() :> Stream}
-      else
-        {Tracer = name; Pipe = new FileStream(handle, FileAccess.Write) :> Stream}
-#else
+    static member CreatePipe (name:string) =
       printfn "**Creating NamedPipeClientStream %s" name
-      {Tracer = name; Pipe = new System.IO.Pipes.NamedPipeClientStream(name) :> Stream}
-#endif
+      {Tracer = name; Pipe = new System.IO.Pipes.NamedPipeClientStream(name)}
+
     member this.IsConnected ()=
-#if NET2
-      match this.Pipe with
-      | :? FileStream -> this.Pipe.CanWrite
-      | _ -> false
-#else
-      (this.Pipe :?> System.IO.Pipes.NamedPipeClientStream).IsConnected &&
+      this.Pipe.IsConnected &&
         this.Pipe.CanWrite
-#endif
 
     member this.Connect ms =
-#if NET2
-      ignore ms
+      this.Pipe.Connect(ms)
 #else
-      (this.Pipe :?> System.IO.Pipes.NamedPipeClientStream).Connect(ms)
+              }
 #endif
 
 // Abstract out compact bits of F# that expand into
@@ -121,6 +83,7 @@ module Instance =
   /// </summary>
   let private mutex = new System.Threading.Mutex(false, Token + ".mutex");
 
+#if NETSTANDARD2_0
   /// <summary>
   /// Reporting back to the mother-ship; only on the .net core build
   /// because this API isn't available in .net 2.0 (framework back-version support)
@@ -128,6 +91,7 @@ module Instance =
   let mutable internal pipe = Tracer.CreatePipe Token
 
   let private formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
+#endif
 
   /// <summary>
   /// Load the XDocument
@@ -221,23 +185,32 @@ module Instance =
   let private WithVisitsLocked =
     Locking.WithLockerLocked Visits
 
+#if NETSTANDARD2_0
   let private push (moduleId:string) hitPointId =
      formatter.Serialize(pipe.Pipe, (moduleId, hitPointId))
+#endif
 
+#if NETSTANDARD2_0
   let internal OnConnected f g =
      if pipe.IsConnected() then f()
      else WithVisitsLocked g
+#endif
 
   /// <summary>
   /// This method flushes hit count buffers.
   /// </summary>
   let internal FlushCounter finish _ =
+#if NETSTANDARD2_0
     OnConnected (fun () ->
       printfn "**pushing flush %A" finish
       if finish then
         push null -1
         use local = pipe.Pipe
         local.Flush())
+#else
+    ignore finish
+    WithVisitsLocked
+#endif
       (fun () ->
       match Visits.Count with
       | 0 -> ()
@@ -256,10 +229,14 @@ module Instance =
   /// <param name="hitPointId">Sequence Point identifier</param>
   let Visit moduleId hitPointId =
     if not <| String.IsNullOrEmpty(moduleId) then
+#if NETSTANDARD2_0
       OnConnected (fun () ->
         printfn "**pushing Visit"
         push moduleId hitPointId
                  )
+#else
+      WithVisitsLocked
+#endif
                  (fun () -> if not (Visits.ContainsKey moduleId)
                                       then Visits.[moduleId] <- new Dictionary<int, int>()
                             if not (Visits.[moduleId].ContainsKey hitPointId) then
@@ -271,6 +248,7 @@ module Instance =
   do
     AppDomain.CurrentDomain.DomainUnload.Add(FlushCounter false)
     AppDomain.CurrentDomain.ProcessExit.Add(FlushCounter true)
+#if NETSTANDARD2_0
     try
       if Token <> "AltCover" then
         printfn "**Connecting pipe %s ..." pipe.Tracer
@@ -280,3 +258,4 @@ module Instance =
     | :? TimeoutException ->
         printfn "**timed out"
         ()
+#endif
