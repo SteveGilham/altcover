@@ -19,6 +19,9 @@ namespace Shadow.TestsUnknown
 open System
 open System.IO
 open System.Reflection
+#if NETCOREAPP2_0
+open System.Threading
+#endif
 open System.Xml
 
 open AltCover.Recorder
@@ -73,6 +76,7 @@ type AltCoverTests() = class
       try
         let expected = ("name", 23)
         let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
+        use signal = new AutoResetEvent false
         async { 
             try
               client.Connect 5000
@@ -80,8 +84,10 @@ type AltCoverTests() = class
             with
             | :? TimeoutException ->
                 printfn "timed out"
+            signal.Set() |> ignore
             } |> Async.Start
         server.WaitForConnection()
+        signal.WaitOne() |> ignore
         printfn "after connection wait"
         Instance.pipe <- client
         Assert.That (Instance.pipe.IsConnected(), "connection failed")
@@ -427,6 +433,7 @@ type AltCoverTests() = class
         let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
         Instance.pipe <- client
         printfn "Ready to connect"
+        use signal = new AutoResetEvent false
         async { 
             try
               client.Connect 5000
@@ -434,8 +441,10 @@ type AltCoverTests() = class
             with
             | :? TimeoutException ->
                 printfn "timed out"
+            signal.Set() |> ignore
             } |> Async.Start
         server.WaitForConnection()
+        signal.WaitOne() |> ignore
         printfn "After connection wait"
         Assert.That (Instance.pipe.IsConnected(), "connection failed")
         printfn "About to act"
