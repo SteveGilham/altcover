@@ -200,7 +200,6 @@ Target "JustUnitTest" (fun _ ->
     !! (@"_Binaries/*Tests/Debug+AnyCPU/*.Test*.dll") // Need to figure out why it doesn't build in Release
     |> NUnit3 (fun p -> { p with ToolPath = findToolInSubPath "nunit3-console.exe" "."
                                  WorkingDir = "."
-                                 Labels = LabelsLevel.All
                                  ResultSpecs = ["./_Reports/JustUnitTestReport.xml"] })
 )
 
@@ -229,7 +228,7 @@ Target "UnitTestWithOpenCover" (fun _ ->
                                  OptionalArguments = "-excludebyattribute:*ExcludeFromCodeCoverageAttribute;*ProgIdAttribute"
                                  Register = RegisterType.RegisterUser
                                  Output = coverage })
-        (String.Join(" ", testFiles) + " --result=./_Reports/UnitTestWithOpenCoverReport.xml --labels=All")
+        (String.Join(" ", testFiles) + " --result=./_Reports/UnitTestWithOpenCoverReport.xml")
 
     ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
                                        ReportTypes = [ ReportGeneratorReportType.Html; ReportGeneratorReportType.Badges; ReportGeneratorReportType.XmlSummary ]
@@ -267,7 +266,6 @@ Target "UnitTestWithAltCover" (fun _ ->
       |> Seq.concat |> Seq.distinct
       |> NUnit3 (fun p -> { p with ToolPath = findToolInSubPath "nunit3-console.exe" "."
                                    WorkingDir = "."
-                                   Labels = LabelsLevel.All
                                    ResultSpecs = ["./_Reports/UnitTestWithAltCoverReport.xml"] })
 
       printfn "Instrument the shadow tests"
@@ -281,7 +279,6 @@ Target "UnitTestWithAltCover" (fun _ ->
       !! ("_Binaries/AltCover.Shadow.Tests/Debug+AnyCPU/__ShadowTestWithAltCover/*.Test*.dll")
       |> NUnit3 (fun p -> { p with ToolPath = findToolInSubPath "nunit3-console.exe" "."
                                    WorkingDir = "."
-                                   Labels = LabelsLevel.All
                                    ResultSpecs = ["./_Reports/ShadowTestWithAltCoverReport.xml"] })
 
       ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
