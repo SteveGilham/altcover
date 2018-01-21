@@ -15,7 +15,7 @@
     <TargetFSharpCoreVersion Condition="'$(TRAVIS_JOB_NUMBER)' != ''">4.4.1.0</TargetFSharpCoreVersion>
     <TargetFSharpCoreVersion Condition="'$(TRAVIS_JOB_NUMBER)' == ''">2.3.0.0</TargetFSharpCoreVersion>
     <ExtraDefines Condition="'$(TRAVIS_JOB_NUMBER)' == ''">NET2</ExtraDefines>
-    <ExtraDefines Condition="'$(TRAVIS_JOB_NUMBER)' != ''"></ExtraDefines>
+    <ExtraDefines Condition="'$(TRAVIS_JOB_NUMBER)' != ''">MONO</ExtraDefines>
     <Name>AltCover.Recorder</Name>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>
     <TargetFrameworkProfile>

@@ -1,7 +1,19 @@
-﻿#if NET4
-namespace Shadow.Tests
+﻿#if NETCOREAPP2_0
+namespace Shadow.TestsCore
 #else
+#if NET4
+namespace Shadow.Tests4
+#else
+#if NET2
 namespace Shadow.Tests2
+#else
+#if MONO
+namespace Shadow.TestsMono
+#else
+namespace Shadow.TestsUnknown
+#endif
+#endif
+#endif
 #endif
 
 open System
@@ -89,7 +101,10 @@ type AltCoverTests() = class
     "AltCover.Shadow")
 #endif
 
+#if MONO
+#else
   [<Test>]
+#endif
   member self.PipeVisitShouldSignal() =
     let save = Instance.pipe
     let token = Guid.NewGuid().ToString() + "PipeVisitShouldSignal"
@@ -459,7 +474,10 @@ type AltCoverTests() = class
       with
       | :? IOException -> ()
 
+#if MONO
+#else
   [<Test>]
+#endif
   member self.PipeFlushShouldTidyUp() =
     let save = Instance.pipe
     let token = Guid.NewGuid().ToString() + "PipeFlushShouldTidyUp"
