@@ -101,10 +101,7 @@ type AltCoverTests() = class
     "AltCover.Shadow")
 #endif
 
-#if MONO
-#else
   [<Test>]
-#endif
   member self.PipeVisitShouldSignal() =
     let save = Instance.pipe
     let token = Guid.NewGuid().ToString() + "PipeVisitShouldSignal"
@@ -474,10 +471,7 @@ type AltCoverTests() = class
       with
       | :? IOException -> ()
 
-#if MONO
-#else
   [<Test>]
-#endif
   member self.PipeFlushShouldTidyUp() =
     let save = Instance.pipe
     let token = Guid.NewGuid().ToString() + "PipeFlushShouldTidyUp"
@@ -496,7 +490,7 @@ type AltCoverTests() = class
         let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
         Instance.pipe <- client
         printfn "Ready to connect"
-        async { client.Connect(5000) } |> Async.Start
+        async { client.Connect(15000) } |> Async.Start
 #if NET2
         server |> NativeMethods.WaitForConnection |> ignore
 #else
