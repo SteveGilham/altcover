@@ -15,11 +15,6 @@ open System.Reflection
 open System.Xml
 
 open AltCover.Recorder
-#if NETCOREAPP2_0
-#else
-open Mono.Cecil
-open Mono.Cecil.Cil
-#endif
 open NUnit.Framework
 
 [<TestFixture>]
@@ -379,30 +374,10 @@ type AltCoverTests() = class
                      ).GetValue(d) :?> MulticastDelegate
     Assert.That (unloaded, Is.Not.Null)
     let targets = unloaded.GetInvocationList()
-                  |> Array.map (fun x -> string x.Target)
-
-    let shadow = AssemblyDefinition.ReadAssembly typeof<AltCover.Recorder.Tracer>.Assembly.Location
-    let flush = "System.Void AltCover.Recorder.Instance::FlushCounter<System.Boolean,System.EventArgs>(a,b)"
-    let handlers = shadow.MainModule.Types
-                   |> Seq.collect (fun t -> t.NestedTypes)
-                   |> Seq.filter (fun t -> t.Methods
-                                           |> Seq.exists (fun m -> m.Name = "Invoke" &&
-                                                                   m.Body.Instructions
-                                                                   |> Seq.filter (fun i -> i.OpCode = Cil.OpCodes.Call)
-                                                                   |> Seq.exists (fun i -> (string i.Operand) = flush)))
-                   // Implementation dependent hack
-                   |> Seq.map (fun t -> let f = t.FullName.Replace("/", "+")
-                                        let last = Seq.last f
-                                                   |> string
-                                        let g = string ((Int32.Parse last) - 1)
-                                        f.Substring(0, f.Length - 1) + g)
-
-    Assert.That (targets
-                 |> Array.tryFind (fun x -> handlers
-                                            |> Seq.tryFind (fun h -> h = x)
-                                            |> Option.isSome)
-                 |> Option.isSome,
-                 sprintf "%A" targets)
+                  |> Seq.map (fun x -> string x.Target)
+                  |> Seq.filter (fun t -> t.StartsWith("AltCover.Recorder.Instance", StringComparison.Ordinal))
+                  |> Seq.toArray
+    Assert.That(targets, Is.Not.Empty)
 
   [<Test>]
   member self.FlushShouldBeRegisteredForExit() =
@@ -414,29 +389,9 @@ type AltCoverTests() = class
                      "_processExit", BindingFlags.NonPublic ||| BindingFlags.Instance
                      ).GetValue(d) :?> MulticastDelegate
     let targets = exit.GetInvocationList()
-                  |> Array.map (fun x -> string x.Target)
-
-    let shadow = AssemblyDefinition.ReadAssembly typeof<AltCover.Recorder.Tracer>.Assembly.Location
-    let flush = "System.Void AltCover.Recorder.Instance::FlushCounter<System.Boolean,System.EventArgs>(a,b)"
-    let handlers = shadow.MainModule.Types
-                   |> Seq.collect (fun t -> t.NestedTypes)
-                   |> Seq.filter (fun t -> t.Methods
-                                           |> Seq.exists (fun m -> m.Name = "Invoke" &&
-                                                                   m.Body.Instructions
-                                                                   |> Seq.filter (fun i -> i.OpCode = Cil.OpCodes.Call)
-                                                                   |> Seq.exists (fun i -> (string i.Operand) = flush)))
-                   // Implementation dependent hack
-                   |> Seq.map (fun t -> let f = t.FullName.Replace("/", "+")
-                                        let last = Seq.last f
-                                                   |> string
-                                        let g = string ((Int32.Parse last) - 1)
-                                        f.Substring(0, f.Length - 1) + g)
-
-    Assert.That (targets
-                 |> Array.tryFind (fun x -> handlers
-                                            |> Seq.tryFind (fun h -> h = x)
-                                            |> Option.isSome)
-                 |> Option.isSome,
-                 sprintf "%A" targets)
+                  |> Seq.map (fun x -> string x.Target)
+                  |> Seq.filter (fun t -> t.StartsWith("AltCover.Recorder.Instance", StringComparison.Ordinal))
+                  |> Seq.toArray
+    Assert.That(targets, Is.Not.Empty)
 #endif
 end
