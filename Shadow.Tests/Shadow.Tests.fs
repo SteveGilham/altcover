@@ -101,7 +101,10 @@ type AltCoverTests() = class
     "AltCover.Shadow")
 #endif
 
+#if MONO
+#else
   [<Test>]
+#endif
   member self.PipeVisitShouldSignal() =
     let save = Instance.pipe
     let token = Guid.NewGuid().ToString() + "PipeVisitShouldSignal"
@@ -471,7 +474,10 @@ type AltCoverTests() = class
       with
       | :? IOException -> ()
 
+#if MONO
+#else
   [<Test>]
+#endif
   member self.PipeFlushShouldTidyUp() =
     let save = Instance.pipe
     let token = Guid.NewGuid().ToString() + "PipeFlushShouldTidyUp"

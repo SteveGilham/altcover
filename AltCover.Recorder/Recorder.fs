@@ -36,7 +36,7 @@ type Tracer = {
     static member CreatePipe (name:string) =
 #if NET2
       // conceal path name from Gendarme
-      printfn "Creating raw pipe %s" name
+      printfn "**Creating raw pipe %s" name
       let pipeHeader = String.Join(@"\", [|String.Empty; String.Empty; "."; "pipe"; String.Empty|])
       let handle = NativeMethods.CreateFileW(pipeHeader + name,
                                              0x40000000u, // GENERIC_WRITE,
@@ -52,7 +52,7 @@ type Tracer = {
       else
         {Tracer = name; Pipe = new FileStream(handle, FileAccess.Write) :> Stream}
 #else
-      printfn "Creating NamedPipeClientStream %s" name
+      printfn "**Creating NamedPipeClientStream %s" name
       {Tracer = name; Pipe = new System.IO.Pipes.NamedPipeClientStream(name) :> Stream}
 #endif
     member this.IsConnected ()=
@@ -233,7 +233,7 @@ module Instance =
   /// </summary>
   let internal FlushCounter finish _ =
     OnConnected (fun () ->
-      printfn "pushing flush %A" finish
+      printfn "**pushing flush %A" finish
       if finish then
         push null -1
         use local = pipe.Pipe
@@ -257,7 +257,7 @@ module Instance =
   let Visit moduleId hitPointId =
     if not <| String.IsNullOrEmpty(moduleId) then
       OnConnected (fun () ->
-        printfn "pushing Visit"
+        printfn "**pushing Visit"
         push moduleId hitPointId
                  )
                  (fun () -> if not (Visits.ContainsKey moduleId)
@@ -273,10 +273,10 @@ module Instance =
     AppDomain.CurrentDomain.ProcessExit.Add(FlushCounter true)
     try
       if Token <> "AltCover" then
-        printfn "Connecting pipe %s ..." pipe.Tracer
+        printfn "**Connecting pipe %s ..." pipe.Tracer
         pipe.Connect 2000 // 2 seconds
-        printfn "Connected."
+        printfn "**Connected."
     with
     | :? TimeoutException ->
-        printfn "timed out"
+        printfn "**timed out"
         ()
