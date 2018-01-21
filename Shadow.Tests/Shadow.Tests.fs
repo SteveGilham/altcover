@@ -73,7 +73,14 @@ type AltCoverTests() = class
       try
         let expected = ("name", 23)
         let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
-        async { client.Connect(5000) } |> Async.Start
+        async { 
+            try
+              client.Connect 5000
+              printfn "Connected."
+            with
+            | :? TimeoutException ->
+                printfn "timed out"
+            } |> Async.Start
         server.WaitForConnection()
         printfn "after connection wait"
         Instance.pipe <- client
@@ -420,7 +427,14 @@ type AltCoverTests() = class
         let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
         Instance.pipe <- client
         printfn "Ready to connect"
-        async { client.Connect(15000) } |> Async.Start
+        async { 
+            try
+              client.Connect 5000
+              printfn "Connected."
+            with
+            | :? TimeoutException ->
+                printfn "timed out"
+            } |> Async.Start
         server.WaitForConnection()
         printfn "After connection wait"
         Assert.That (Instance.pipe.IsConnected(), "connection failed")
