@@ -474,10 +474,7 @@ type AltCoverTests() = class
       with
       | :? IOException -> ()
 
-#if MONO
-#else
   [<Test>]
-#endif
   member self.PipeFlushShouldTidyUp() =
     let save = Instance.pipe
     let token = Guid.NewGuid().ToString() + "PipeFlushShouldTidyUp"
@@ -503,7 +500,10 @@ type AltCoverTests() = class
         server.WaitForConnection()
 #endif
         printfn "After connection wait"
+#if MONO
+#else
         Assert.That (Instance.pipe.IsConnected(), "connection failed")
+#endif
         printfn "About to act"
         async { formatter.Serialize(Instance.pipe.Pipe, expected)
                 Instance.FlushCounter true () } |> Async.Start
