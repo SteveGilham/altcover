@@ -56,11 +56,6 @@ module private NativeMethods =
 #endif
 
 open AltCover.Recorder
-#if NETCOREAPP2_0
-#else
-open Mono.Cecil
-open Mono.Cecil.Cil
-#endif
 open NUnit.Framework
 open System.Collections.Generic
 
@@ -519,76 +514,36 @@ type AltCoverTests() = class
 
   // The hack doesn't work in .net core
 #else
-  //[<Test>]
-  //member self.FlushShouldBeRegisteredForUnload() =
-  // // The hack doesn't work in Mono, either
-  // let pdb = Path.ChangeExtension(Assembly.GetExecutingAssembly().Location, ".pdb")
-  // if File.Exists(pdb) then
-  //  Instance.Visits.Clear()
-  //  let d = AppDomain.CurrentDomain
-  //  let unloaded = d.GetType().GetField(
-  //                   "_domainUnload", BindingFlags.NonPublic ||| BindingFlags.Instance
-  //                   ).GetValue(d) :?> MulticastDelegate
-  //  Assert.That (unloaded, Is.Not.Null)
-  //  let targets = unloaded.GetInvocationList()
-  //                |> Array.map (fun x -> string x.Target)
+  [<Test>]
+  member self.FlushShouldBeRegisteredForUnload() =
+   // The hack doesn't work in Mono, either
+   let pdb = Path.ChangeExtension(Assembly.GetExecutingAssembly().Location, ".pdb")
+   if File.Exists(pdb) then
+    Instance.Visits.Clear()
+    let d = AppDomain.CurrentDomain
+    let unloaded = d.GetType().GetField(
+                     "_domainUnload", BindingFlags.NonPublic ||| BindingFlags.Instance
+                     ).GetValue(d) :?> MulticastDelegate
+    Assert.That (unloaded, Is.Not.Null)
+    let targets = unloaded.GetInvocationList()
+                  |> Seq.map (fun x -> string x.Target)
+                  |> Seq.filter (fun t -> t.StartsWith("AltCover.Recorder.Instance", StringComparison.Ordinal))
+                  |> Seq.toArray
+    Assert.That(targets, Is.Not.Empty)
 
-  //  let shadow = AssemblyDefinition.ReadAssembly typeof<AltCover.Recorder.Tracer>.Assembly.Location
-  //  let flush = "System.Void AltCover.Recorder.Instance::FlushCounter<System.Boolean,System.EventArgs>(a,b)"
-  //  let handlers = shadow.MainModule.Types
-  //                 |> Seq.collect (fun t -> t.NestedTypes)
-  //                 |> Seq.filter (fun t -> t.Methods
-  //                                         |> Seq.exists (fun m -> m.Name = "Invoke" &&
-  //                                                                 m.Body.Instructions
-  //                                                                 |> Seq.filter (fun i -> i.OpCode = Cil.OpCodes.Call)
-  //                                                                 |> Seq.exists (fun i -> (string i.Operand) = flush)))
-  //                 // Implementation dependent hack
-  //                 |> Seq.map (fun t -> let f = t.FullName.Replace("/", "+")
-  //                                      let last = Seq.last f
-  //                                                 |> string
-  //                                      let g = string ((Int32.Parse last) - 1)
-  //                                      f.Substring(0, f.Length - 1) + g)
-
-  //  Assert.That (targets
-  //               |> Array.tryFind (fun x -> handlers
-  //                                          |> Seq.tryFind (fun h -> h = x)
-  //                                          |> Option.isSome)
-  //               |> Option.isSome,
-  //               sprintf "%A" targets)
-
-  //[<Test>]
-  //member self.FlushShouldBeRegisteredForExit() =
-  // let pdb = Path.ChangeExtension(Assembly.GetExecutingAssembly().Location, ".pdb")
-  // if File.Exists(pdb) then
-  //  Instance.Visits.Clear()
-  //  let d = AppDomain.CurrentDomain
-  //  let exit = d.GetType().GetField(
-  //                   "_processExit", BindingFlags.NonPublic ||| BindingFlags.Instance
-  //                   ).GetValue(d) :?> MulticastDelegate
-  //  let targets = exit.GetInvocationList()
-  //                |> Array.map (fun x -> string x.Target)
-
-  //  let shadow = AssemblyDefinition.ReadAssembly typeof<AltCover.Recorder.Tracer>.Assembly.Location
-  //  let flush = "System.Void AltCover.Recorder.Instance::FlushCounter<System.Boolean,System.EventArgs>(a,b)"
-  //  let handlers = shadow.MainModule.Types
-  //                 |> Seq.collect (fun t -> t.NestedTypes)
-  //                 |> Seq.filter (fun t -> t.Methods
-  //                                         |> Seq.exists (fun m -> m.Name = "Invoke" &&
-  //                                                                 m.Body.Instructions
-  //                                                                 |> Seq.filter (fun i -> i.OpCode = Cil.OpCodes.Call)
-  //                                                                 |> Seq.exists (fun i -> (string i.Operand) = flush)))
-  //                 // Implementation dependent hack
-  //                 |> Seq.map (fun t -> let f = t.FullName.Replace("/", "+")
-  //                                      let last = Seq.last f
-  //                                                 |> string
-  //                                      let g = string ((Int32.Parse last) - 1)
-  //                                      f.Substring(0, f.Length - 1) + g)
-
-  //  Assert.That (targets
-  //               |> Array.tryFind (fun x -> handlers
-  //                                          |> Seq.tryFind (fun h -> h = x)
-  //                                          |> Option.isSome)
-  //               |> Option.isSome,
-  //               sprintf "%A" targets)
+  [<Test>]
+  member self.FlushShouldBeRegisteredForExit() =
+   let pdb = Path.ChangeExtension(Assembly.GetExecutingAssembly().Location, ".pdb")
+   if File.Exists(pdb) then
+    Instance.Visits.Clear()
+    let d = AppDomain.CurrentDomain
+    let exit = d.GetType().GetField(
+                     "_processExit", BindingFlags.NonPublic ||| BindingFlags.Instance
+                     ).GetValue(d) :?> MulticastDelegate
+    let targets = exit.GetInvocationList()
+                  |> Seq.map (fun x -> string x.Target)
+                  |> Seq.filter (fun t -> t.StartsWith("AltCover.Recorder.Instance", StringComparison.Ordinal))
+                  |> Seq.toArray
+    Assert.That(targets, Is.Not.Empty)
 #endif
 end
