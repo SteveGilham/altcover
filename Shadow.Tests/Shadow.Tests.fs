@@ -36,6 +36,7 @@ type AltCoverTests() = class
     let locker = { Tracer = String.Empty
 #if NETCOREAPP2_0
                    Pipe = null
+                   Activated = null
 #endif
     }
     Assert.That(locker.GetType().Assembly.GetName().Name, Is.EqualTo
@@ -91,6 +92,9 @@ type AltCoverTests() = class
         Instance.pipe <- client
         Assert.That (Instance.pipe.IsConnected(), "connection failed")
         printfn "about to act"
+        server.WriteByte(0uy)
+        Assert.That(client.Activated.WaitOne(1000), "never got activated")
+        Assert.That (Instance.pipe.IsActivated(), "activation failed")
         async { Instance.Visit "name" 23 } |> Async.Start
         printfn "about to read"
         let result = formatter.Deserialize(server) :?> (string*int)
@@ -450,6 +454,9 @@ type AltCoverTests() = class
         printfn "After connection wait"
         Assert.That (Instance.pipe.IsConnected(), "connection failed")
         printfn "About to act"
+        server.WriteByte(0uy)
+        Assert.That(client.Activated.WaitOne(1000), "never got activated")
+        Assert.That (Instance.pipe.IsActivated(), "activation failed")
         async { formatter.Serialize(Instance.pipe.Pipe, expected)
                 Instance.FlushCounter true () } |> Async.Start
         printfn "About to read"

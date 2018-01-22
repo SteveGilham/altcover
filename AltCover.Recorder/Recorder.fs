@@ -15,6 +15,7 @@ type Tracer = {
                 Tracer : string
 #if NETSTANDARD2_0
                 Pipe : System.IO.Pipes.NamedPipeClientStream
+                Activated : System.Threading.ManualResetEvent
               }
   with
     static member Core () =
@@ -22,14 +23,29 @@ type Tracer = {
 
     static member CreatePipe (name:string) =
       printfn "**Creating NamedPipeClientStream %s" name
-      {Tracer = name; Pipe = new System.IO.Pipes.NamedPipeClientStream(name)}
+      {Tracer = name;
+       Pipe = new System.IO.Pipes.NamedPipeClientStream(name);
+       Activated = new System.Threading.ManualResetEvent false }
 
     member this.IsConnected ()=
       this.Pipe.IsConnected &&
         this.Pipe.CanWrite
 
+    member this.IsActivated ()=
+      this.IsConnected() &&
+        this.Activated.WaitOne(0)
+
     member this.Connect ms =
-      this.Pipe.Connect(ms)
+      try
+        this.Pipe.Connect(ms)
+        async {
+          let b = this.Pipe.ReadByte()
+          if (b >= 0) then
+            this.Activated.Set() |> ignore
+        } |> Async.Start
+      with
+      | :? TimeoutException ->
+        reraise ()
 #else
               }
 #endif
@@ -192,7 +208,7 @@ module Instance =
 
 #if NETSTANDARD2_0
   let internal OnConnected f g =
-     if pipe.IsConnected() then f()
+     if pipe.IsActivated() then f()
      else WithVisitsLocked g
 #endif
 
