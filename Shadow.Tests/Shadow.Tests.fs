@@ -4,25 +4,41 @@ namespace Shadow.TestsCore
 #if NET4
 namespace Shadow.Tests4
 #else
+#if NET2
 namespace Shadow.Tests2
+#else
+#if MONO
+namespace Shadow.TestsMono
+#else
+namespace Shadow.TestsUnknown
+#endif
+#endif
 #endif
 #endif
 
 open System
-open System.Collections.Generic
 open System.IO
 open System.Reflection
+#if NETCOREAPP2_0
+open System.Threading
+#endif
 open System.Xml
 
 open AltCover.Recorder
 open NUnit.Framework
+open System.Collections.Generic
 
 [<TestFixture>]
 type AltCoverTests() = class
 
   [<Test>]
   member self.ShouldBeLinkingTheCorrectCopyOfThisCode() =
-    let locker = { Tracer = String.Empty }
+    let locker = { Tracer = String.Empty
+#if NETCOREAPP2_0
+                   Pipe = null
+                   Activated = null
+#endif
+    }
     Assert.That(locker.GetType().Assembly.GetName().Name, Is.EqualTo
 #if NETCOREAPP2_0
     "AltCover.Recorder")
@@ -46,6 +62,54 @@ type AltCoverTests() = class
     "AltCover.Recorder")
 #else
     "AltCover.Shadow")
+#endif
+
+#if NETCOREAPP2_0
+  member self.PipeVisitShouldSignal() =
+    let save = Instance.pipe
+    let token = Guid.NewGuid().ToString() + "PipeVisitShouldSignal"
+    printfn "token = %s" token
+    use server = new System.IO.Pipes.NamedPipeServerStream(token)
+    printfn "Created NamedPipeServerStream"
+    try
+      let client = Tracer.CreatePipe(token)
+      printfn "Created client"
+      try
+        let expected = ("name", 23)
+        let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
+        use signal = new AutoResetEvent false
+        async {
+            try
+              client.Connect 5000
+              printfn "Connected."
+            with
+            | :? TimeoutException ->
+                printfn "timed out"
+            signal.Set() |> ignore
+            } |> Async.Start
+        server.WaitForConnection()
+        signal.WaitOne() |> ignore
+        printfn "after connection wait"
+        Instance.pipe <- client
+        Assert.That (Instance.pipe.IsConnected(), "connection failed")
+        printfn "about to act"
+        server.WriteByte(0uy)
+        Assert.That(client.Activated.WaitOne(1000), "never got activated")
+        Assert.That (Instance.pipe.IsActivated(), "activation failed")
+        async { Instance.Visit "name" 23 } |> Async.Start
+        printfn "about to read"
+        let result = formatter.Deserialize(server) :?> (string*int)
+        Assert.That (Instance.Visits, Is.Empty, "unexpected local write")
+        Assert.That (result, Is.EqualTo expected, "unexpected result")
+        printfn "after all work"
+      finally
+        printfn "finally 1"
+        Instance.pipe.Close()
+        Instance.pipe <- save
+    finally
+      printfn "finally 2"
+      Instance.Visits.Clear()
+    printfn "all done"
 #endif
 
   [<Test>]
@@ -352,9 +416,67 @@ type AltCoverTests() = class
       Instance.Visits.Clear()
       Console.SetOut saved
       Directory.SetCurrentDirectory(here)
-      Directory.Delete(unique)
+      try
+        Directory.Delete(unique)
+      with
+      | :? IOException -> ()
 
 #if NETCOREAPP2_0
+  [<Test>]
+  member self.PipeFlushShouldTidyUp() =
+    // make these sequential in the simplest possible way
+    self.PipeVisitShouldSignal()
+
+    let save = Instance.pipe
+    let token = Guid.NewGuid().ToString() + "PipeFlushShouldTidyUp"
+    printfn "pipe token = %s" token
+    use server = new System.IO.Pipes.NamedPipeServerStream(token)
+    printfn "Created server"
+    try
+      let client = Tracer.CreatePipe token
+      printfn "Created client"
+      try
+        let expected = ("name", 23)
+        let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
+        Instance.pipe <- client
+        printfn "Ready to connect"
+        use signal = new AutoResetEvent false
+        async {
+            try
+              client.Connect 5000
+              printfn "Connected."
+            with
+            | :? TimeoutException ->
+                printfn "timed out"
+            signal.Set() |> ignore
+            } |> Async.Start
+        server.WaitForConnection()
+        signal.WaitOne() |> ignore
+        printfn "After connection wait"
+        Assert.That (Instance.pipe.IsConnected(), "connection failed")
+        printfn "About to act"
+        server.WriteByte(0uy)
+        Assert.That(client.Activated.WaitOne(1000), "never got activated")
+        Assert.That (Instance.pipe.IsActivated(), "activation failed")
+        async { formatter.Serialize(Instance.pipe.Pipe, expected)
+                Instance.FlushCounter true () } |> Async.Start
+        printfn "About to read"
+        let result = formatter.Deserialize(server) :?> (string*int)
+        let result' = formatter.Deserialize(server) :?> (string*int)
+        printfn "About to assert"
+        Assert.That (Instance.Visits, Is.Empty, "unexpected local write")
+        Assert.That (result, Is.EqualTo expected, "unexpected result")
+        Assert.That (result' |> fst |> String.IsNullOrEmpty, Is.True, "unexpected end-of-message")
+        printfn "done"
+      finally
+        printfn "first finally"
+        Instance.pipe.Close()
+        Instance.pipe <- save
+    finally
+      printfn "second finally"
+      Instance.Visits.Clear()
+    printfn "all done"
+
   [<Test>]
   member self.CoreFindsThePlace() =
     Assert.That (AltCover.Recorder.Tracer.Core(),
