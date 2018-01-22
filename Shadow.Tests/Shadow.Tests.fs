@@ -76,7 +76,7 @@ type AltCoverTests() = class
         let expected = ("name", 23)
         let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
         use signal = new AutoResetEvent false
-        async {
+        async { 
             try
               client.Connect 5000
               printfn "Connected."
@@ -436,7 +436,7 @@ type AltCoverTests() = class
         Instance.pipe <- client
         printfn "Ready to connect"
         use signal = new AutoResetEvent false
-        async {
+        async { 
             try
               client.Connect 5000
               printfn "Connected."

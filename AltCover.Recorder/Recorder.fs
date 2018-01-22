@@ -26,8 +26,7 @@ type Tracer = {
 
     member this.IsConnected ()=
       this.Pipe.IsConnected &&
-        this.Pipe.CanWrite &&
-        this.Pipe.NumberOfServerInstances > 0
+        this.Pipe.CanWrite
 
     member this.Connect ms =
       this.Pipe.Connect(ms)
@@ -254,9 +253,7 @@ module Instance =
       if Token <> "AltCover" then
         printfn "**Connecting pipe %s ..." pipe.Tracer
         pipe.Connect 2000 // 2 seconds
-        if pipe.IsConnected() then
-            printfn "**Connected."
-        else printfn "**Ready."
+        printfn "**Connected."
     with
     | :? TimeoutException ->
         printfn "**timed out"
