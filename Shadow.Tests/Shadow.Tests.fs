@@ -63,7 +63,6 @@ type AltCoverTests() = class
 #endif
 
 #if NETCOREAPP2_0
-  [<Test>]
   member self.PipeVisitShouldSignal() =
     let save = Instance.pipe
     let token = Guid.NewGuid().ToString() + "PipeVisitShouldSignal"
@@ -420,6 +419,9 @@ type AltCoverTests() = class
 #if NETCOREAPP2_0
   [<Test>]
   member self.PipeFlushShouldTidyUp() =
+    // make these sequential in the simplest possible way
+    self.PipeVisitShouldSignal()
+
     let save = Instance.pipe
     let token = Guid.NewGuid().ToString() + "PipeFlushShouldTidyUp"
     printfn "pipe token = %s" token
