@@ -46,6 +46,10 @@ type Tracer = {
       with
       | :? TimeoutException ->
         reraise ()
+
+    member this.Close() =
+      this.Pipe.Dispose()
+      this.Activated.Dispose()
 #else
               }
 #endif
@@ -204,6 +208,7 @@ module Instance =
 #if NETSTANDARD2_0
   let private push (moduleId:string) hitPointId =
      formatter.Serialize(pipe.Pipe, (moduleId, hitPointId))
+     pipe.Pipe.Flush()
 #endif
 
 #if NETSTANDARD2_0
@@ -220,14 +225,16 @@ module Instance =
     OnConnected (fun () ->
       printfn "**pushing flush %A" finish
       if finish then
-        push null -1
-        use local = pipe.Pipe
-        local.Flush())
+        push null -1)
 #else
     ignore finish
     WithVisitsLocked
 #endif
       (fun () ->
+#if NETSTANDARD2_0
+      if finish then
+        pipe.Close()
+#endif
       match Visits.Count with
       | 0 -> ()
       | _ -> let counts = Dictionary<string, Dictionary<int, int>> Visits
