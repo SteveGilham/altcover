@@ -95,4 +95,12 @@ module CommandLine =
     | Right (_, options) -> if help then Left ("HelpText", options) else parse
     | fail -> fail
 
+  let internal ProcessTrailingArguments (rest: string list) (toInfo:DirectoryInfo) =
+    // If we have some arguments in rest execute that command line
+        match rest |> Seq.toList with
+        | [] -> ()
+        | cmd::t->
+           let args = String.Join(" ", (List.toArray t))
+           Launch cmd args toInfo.FullName // Spawn process, echoing asynchronously
+
 

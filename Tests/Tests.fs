@@ -2779,7 +2779,7 @@ type AltCoverTests() = class
       let u1 = Guid.NewGuid().ToString()
       let u2 = Guid.NewGuid().ToString()
 
-      Main.ProcessTrailingArguments [program; u1; u2]
+      CommandLine.ProcessTrailingArguments [program; u1; u2]
                                      (DirectoryInfo(where))
 
       Assert.That(stderr.ToString(), Is.Empty)

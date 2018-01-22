@@ -133,6 +133,9 @@
     <value>La ekzekutebla kuri, ekzemple. dotnet</value>
   </data>
   <data name="HelpText" xml:space="preserve">
-    <value />
+    <value>AltCover.Runner [/r[ecordingDirectory]=VALO] [/w[orkingDirectory]=VALO] [/x||executable=VALO] [/?|h[elp]] [-- ] [...]</value>
+  </data>
+  <data name="w|workingDirectory=" xml:space="preserve">
+    <value>Laŭvola: La laboranta dosierujo por la lanĉo de aplikaĵoj</value>
   </data>
 </root>

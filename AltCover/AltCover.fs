@@ -139,14 +139,6 @@ module Main =
 
     List.unzip assemblies
 
-  let internal ProcessTrailingArguments (rest: string list) (toInfo:DirectoryInfo) =
-    // If we have some arguments in rest execute that command line
-        match rest |> Seq.toList with
-        | [] -> ()
-        | cmd::t->
-           let args = String.Join(" ", (List.toArray t))
-           CommandLine.Launch cmd args toInfo.FullName // Spawn process, echoing asynchronously
-
   let internal DoInstrumentation arguments =
     let check1 = DeclareOptions ()
                  |> CommandLine.ParseCommandLine arguments
@@ -168,7 +160,7 @@ module Main =
         Visitor.Visit visitors (assemblies )
         document.Save(Visitor.ReportPath())
 
-        ProcessTrailingArguments rest toInfo
+        CommandLine.ProcessTrailingArguments rest toInfo
       with
       | :? IOException as x -> CommandLine.WriteErr x.Message
 

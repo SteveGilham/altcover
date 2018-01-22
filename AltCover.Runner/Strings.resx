@@ -132,4 +132,10 @@
   <data name="x|executable=" xml:space="preserve">
     <value>The executable to run e.g. dotnet</value>
   </data>
+  <data name="HelpText" xml:space="preserve">
+    <value>AltCover.Runner [/r[ecordingDirectory]=VALUE] [/w[orkingDirectory]=VALUE] [/x||executable=VALUE] [/?|h[elp]] [-- ] [...]</value>
+  </data>
+  <data name="w|workingDirectory=" xml:space="preserve">
+    <value>Optional: The working directory for the application launch</value>
+  </data>
 </root>
