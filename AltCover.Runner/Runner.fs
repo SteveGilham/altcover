@@ -52,7 +52,7 @@ module Runner =
     | Right (rest, options) ->
       match executable with
       | None -> HandleBadArguments arguments "UsageError" options
-      | Some exe -> 
+      | Some exe ->
           try
             CommandLine.ProcessTrailingArguments (exe::rest) null
           with

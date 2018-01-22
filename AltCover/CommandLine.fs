@@ -102,5 +102,3 @@ module CommandLine =
         | cmd::t->
            let args = String.Join(" ", (List.toArray t))
            Launch cmd args toInfo.FullName // Spawn process, echoing asynchronously
-
-

@@ -2,7 +2,7 @@
 
 open System
 open System.Collections.Generic
-  open System.Globalization
+open System.Globalization
 open System.IO
 #if NETCOREAPP2_0
 #else
@@ -36,7 +36,7 @@ module Main =
       ("k|key=",
        (fun x ->
              if not (String.IsNullOrWhiteSpace(x)) && File.Exists(x) then
-               CommandLine.doPathOperation (fun () -> 
+               CommandLine.doPathOperation (fun () ->
                                           use stream = new System.IO.FileStream(x,
                                                                                 System.IO.FileMode.Open,
                                                                                 System.IO.FileAccess.Read)
@@ -47,7 +47,7 @@ module Main =
       ("sn|strongNameKey=",
        (fun x ->
              if not (String.IsNullOrWhiteSpace(x)) && File.Exists(x) then
-               CommandLine.doPathOperation (fun () -> 
+               CommandLine.doPathOperation (fun () ->
                                           use stream = new System.IO.FileStream(x,
                                                                                 System.IO.FileMode.Open,
                                                                                 System.IO.FileAccess.Read)

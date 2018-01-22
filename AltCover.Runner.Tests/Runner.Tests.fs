@@ -108,5 +108,4 @@ type AltCoverTests() = class
     | Left (x, y) -> Assert.That (x, Is.EqualTo "UsageError")
                      Assert.That (y, Is.SameAs options)
 
-
 end
