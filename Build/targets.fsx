@@ -325,10 +325,23 @@ Target "UnitTestWithAltCoverCore" (fun _ ->
                                           info.Arguments <- ("test --no-build --configuration Debug altcover.recorder.tests.core.fsproj")) (TimeSpan.FromMinutes 5.0)
     if result <> 0 then failwithf "second test returned with a non-zero exit code"
 
+    let runnerDir = "_Binaries/AltCover.Runner.Tests/Debug+AnyCPU/netcoreapp2.0"
+    let runnerReport = reports @@ "RunnerTestWithAltCoverCore.xml"
+    let runnerOut = FullName "AltCover.Runner.Tests/_Binaries/AltCover.Runner.Tests/Debug+AnyCPU/netcoreapp2.0"
+    let result = ExecProcess (fun info -> info.FileName <- altcover
+                                          info.WorkingDirectory <- runnerDir
+                                          info.Arguments <- ("/sn=" + keyfile + AltCoverFilterG + @"/o=" + runnerOut + " -x=" + runnerReport)) (TimeSpan.FromMinutes 5.0)
+    if result <> 0 then failwithf "third instrument returned with a non-zero exit code"
+    printfn "Execute the runner tests"
+    let result = ExecProcess (fun info -> info.FileName <- "dotnet"
+                                          info.WorkingDirectory <- FullName "AltCover.Runner.Tests"
+                                          info.Arguments <- ("test --no-build --configuration Debug altcover.runner.tests.core.fsproj")) (TimeSpan.FromMinutes 5.0)
+    if result <> 0 then failwithf "third test returned with a non-zero exit code"
+
     ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
                                        ReportTypes = [ ReportGeneratorReportType.Html; ReportGeneratorReportType.Badges; ReportGeneratorReportType.XmlSummary]
                                        TargetDir = "_Reports/_UnitTestWithAltCoverCore"})
-          [altReport; shadowReport]
+          [altReport; shadowReport; runnerReport]
 )
 
 // Pure OperationalTests
