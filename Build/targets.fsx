@@ -499,6 +499,9 @@ Target "Packaging" (fun _ ->
                          ((!! "./AltCover.Recorder/*")
                           |> Seq.filter (fun n -> n.EndsWith(".fs") || n.EndsWith(".core.fsproj"))
                           |> Seq.toList);
+                         ((!! "./AltCover.Runner/*")
+                          |> Seq.filter (fun n -> n.EndsWith(".fs") || n.EndsWith(".core.fsproj"))
+                          |> Seq.toList);
                          ((!! "./_Generated/*")
                           |> Seq.toList)
                        ]
