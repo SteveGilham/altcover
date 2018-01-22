@@ -2,6 +2,8 @@
 
 open System
 open System.IO
+open System.Reflection
+open System.Text
 
 open AltCover
 open AltCover.Augment
@@ -47,5 +49,61 @@ type AltCoverTests() = class
       Assert.That (result, Is.EqualTo (expected.Replace("\r\n", "\n")))
 
     finally Console.SetError saved
+
+  [<Test>]
+  member self.ShouldLaunchWithExpectedOutput() =
+    // Hack for running while instrumented
+    let where = Assembly.GetExecutingAssembly().Location
+    let path = Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "_Mono/Sample1")
+#if NETCOREAPP2_0
+    let path' = if Directory.Exists path then path
+                else Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "../_Mono/Sample1")
+#else
+    let path' = path
+#endif
+    let files = Directory.GetFiles(path')
+    let program = files
+                  |> Seq.filter (fun x -> x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
+                  |> Seq.head
+
+    let saved = (Console.Out, Console.Error)
+    try
+      use stdout = new StringWriter()
+      use stderr = new StringWriter()
+      Console.SetOut stdout
+      Console.SetError stderr
+
+      CommandLine.Launch program (String.Empty) (Path.GetDirectoryName (Assembly.GetExecutingAssembly().Location))
+
+      Assert.That(stderr.ToString(), Is.Empty)
+      let result = stdout.ToString()
+      // hack for Mono
+      let computed = if result.Length = 14 then
+                       result |> Encoding.Unicode.GetBytes |> Array.takeWhile (fun c -> c <> 0uy)|> Encoding.UTF8.GetString
+                     else result
+
+      if "TRAVIS_JOB_NUMBER" |> Environment.GetEnvironmentVariable |> String.IsNullOrWhiteSpace || result.Length > 0 then
+        Assert.That(computed.Trim(), Is.EqualTo("Where is my rocket pack?"))
+    finally
+      Console.SetOut (fst saved)
+      Console.SetError (snd saved)
+
+  [<Test>]
+  member self.ShouldHaveExpectedOptions() =
+    let options = Runner.DeclareOptions ()
+    Assert.That (options.Count, Is.EqualTo 4)
+    Assert.That(options |> Seq.filter (fun x -> x.Prototype <> "<>")
+                        |> Seq.forall (fun x -> (String.IsNullOrWhiteSpace >> not) x.Description))
+    Assert.That (options |> Seq.filter (fun x -> x.Prototype = "<>") |> Seq.length, Is.EqualTo 1)
+
+  [<Test>]
+  member self.ParsingJunkIsAnError() =
+    let options = Runner.DeclareOptions ()
+    let parse = CommandLine.ParseCommandLine [| "/@thisIsNotAnOption" |] options
+    match parse with
+    | Right _ -> Assert.Fail()
+    | Left (x, y) -> Assert.That (x, Is.EqualTo "UsageError")
+                     Assert.That (y, Is.SameAs options)
+
 
 end
