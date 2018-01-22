@@ -117,64 +117,25 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="i|inputDirectory=" xml:space="preserve">
-    <value>Optional: The folder containing assemblies to instrument (default: current directory)</value>
-  </data>
-  <data name="o|outputDirectory=" xml:space="preserve">
-    <value>Optional: The folder to receive the instrumented assemblies and their companions (default: sub-folder '__Instrumented' of the current directory)</value>
-  </data>
-  <data name="k|key=" xml:space="preserve">
-    <value>Optional, multiple: any other strong-name key to use</value>
-  </data>
-  <data name="sn|strongNameKey=" xml:space="preserve">
-    <value>Optional: The default strong naming key to apply to instrumented assemblies (default: None)</value>
-  </data>
-  <data name="x|xmlReport=" xml:space="preserve">
-    <value>Optional: The output report template file (default: coverage.xml in the current directory)</value>
-  </data>
-  <data name="f|fileFilter=" xml:space="preserve">
-    <value>Optional: source file name to exclude from instrumentation (may repeat)</value>
-  </data>
-  <data name="s|assemblyFilter=" xml:space="preserve">
-    <value>Optional: assembly name to exclude from instrumentation (may repeat)</value>
-  </data>
-  <data name="t|typeFilter=" xml:space="preserve">
-    <value>Optional: type name to exclude from instrumentation (may repeat)</value>
-  </data>
-  <data name="m|methodFilter=" xml:space="preserve">
-    <value>Optional: method name to exclude from instrumentation (may repeat)</value>
-  </data>
-  <data name="a|attributeFilter=" xml:space="preserve">
-    <value>Optional: attribute name to exclude from instrumentation (may repeat)</value>
-  </data>
-  <data name="?|help|h" xml:space="preserve">
-    <value>Prints out the options.</value>
-  </data>
-  <data name="CreateFolder" xml:space="preserve">
-    <value>Creating folder {0}</value>
-  </data>
-  <data name="HelpText" xml:space="preserve">
-    <value>AltCover [/i[nputDirectory]=VALUE] [/o[utputDirectory]=VALUE] [/sn|strongNameKey=VALUE] [/x[mlReport]=VALUE] [/f[ileFilter]=VALUE] [/s|assemblyFilter=VALUE] [/t|typeFilter=VALUE] [/m|methodFilter=VALUE] [/a|attributeFilter=VALUE] [/?|h[elp]]</value>
-  </data>
-  <data name="NotInPlace" xml:space="preserve">
-    <value>From and to directories are identical</value>
-  </data>
-  <data name="UsageError" xml:space="preserve">
-    <value>Error - usage is:</value>
-  </data>
   <data name="&lt;&gt;" xml:space="preserve">
     <value>"n/a"</value>
   </data>
-  <data name="instrumentingfrom" xml:space="preserve">
-    <value>Instrumenting files from {0}</value>
+  <data name="?|help|h" xml:space="preserve">
+    <value>Elmetas ĉi tiujn eblojn.</value>
   </data>
-  <data name="instrumentingto" xml:space="preserve">
-    <value>Writing files to {0}</value>
+  <data name="r|recorderDirectory=" xml:space="preserve">
+    <value>La dosierujo enhavanta la instrumentan kodon por kontroli (inkluzive de la AltCover.Recorder.g.dll generita per antaŭa uzo de la ".net core" AltCover).</value>
   </data>
-  <data name="reportingto" xml:space="preserve">
-    <value>Coverage Report: {0}</value>
+  <data name="UsageError" xml:space="preserve">
+    <value>Eraro - uzado estas:</value>
   </data>
-  <data name="e|assemblyExcludeFilter=" xml:space="preserve">
-    <value>Optional: assembly which links other instrumented assemblies but for which internal details may be excluded (may repeat)</value>
+  <data name="x|executable=" xml:space="preserve">
+    <value>La ekzekutebla kuri, ekzemple. dotnet</value>
+  </data>
+  <data name="HelpText" xml:space="preserve">
+    <value>AltCover.Runner [/r[ecordingDirectory]=VALO] [/w[orkingDirectory]=VALO] [/x||executable=VALO] [/?|h[elp]] [-- ] [...]</value>
+  </data>
+  <data name="w|workingDirectory=" xml:space="preserve">
+    <value>Laŭvola: La laboranta dosierujo por la lanĉo de aplikaĵoj</value>
   </data>
 </root>

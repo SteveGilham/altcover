@@ -104,8 +104,8 @@ type AltCoverTests() = class
         printfn "after all work"
       finally
         printfn "finally 1"
+        Instance.pipe.Close()
         Instance.pipe <- save
-        client.Pipe.Dispose()
     finally
       printfn "finally 2"
       Instance.Visits.Clear()
@@ -470,8 +470,8 @@ type AltCoverTests() = class
         printfn "done"
       finally
         printfn "first finally"
+        Instance.pipe.Close()
         Instance.pipe <- save
-        client.Pipe.Dispose()
     finally
       printfn "second finally"
       Instance.Visits.Clear()
