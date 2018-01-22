@@ -11,10 +11,43 @@ open System.Runtime.InteropServices
 open System.Xml
 
 [<ProgId("ExcludeFromCodeCoverage")>] // HACK HACK HACK
-type Tracer = { Tracer : string }
+type Tracer = {
+                Tracer : string
 #if NETSTANDARD2_0
-   with static member Core () =
+                Pipe : System.IO.Pipes.NamedPipeClientStream
+                Activated : System.Threading.ManualResetEvent
+              }
+  with
+    static member Core () =
              typeof<Microsoft.FSharp.Core.CompilationMappingAttribute>.Assembly.Location
+
+    static member CreatePipe (name:string) =
+      printfn "**Creating NamedPipeClientStream %s" name
+      {Tracer = name;
+       Pipe = new System.IO.Pipes.NamedPipeClientStream(name);
+       Activated = new System.Threading.ManualResetEvent false }
+
+    member this.IsConnected ()=
+      this.Pipe.IsConnected &&
+        this.Pipe.CanWrite
+
+    member this.IsActivated ()=
+      this.IsConnected() &&
+        this.Activated.WaitOne(0)
+
+    member this.Connect ms =
+      try
+        this.Pipe.Connect(ms)
+        async {
+          let b = this.Pipe.ReadByte()
+          if (b >= 0) then
+            this.Activated.Set() |> ignore
+        } |> Async.Start
+      with
+      | :? TimeoutException ->
+        reraise ()
+#else
+              }
 #endif
 
 // Abstract out compact bits of F# that expand into
@@ -65,6 +98,16 @@ module Instance =
   /// Interlock for report instances
   /// </summary>
   let private mutex = new System.Threading.Mutex(false, Token + ".mutex");
+
+#if NETSTANDARD2_0
+  /// <summary>
+  /// Reporting back to the mother-ship; only on the .net core build
+  /// because this API isn't available in .net 2.0 (framework back-version support)
+  /// </summary>
+  let mutable internal pipe = Tracer.CreatePipe Token
+
+  let private formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
+#endif
 
   /// <summary>
   /// Load the XDocument
@@ -158,11 +201,33 @@ module Instance =
   let private WithVisitsLocked =
     Locking.WithLockerLocked Visits
 
+#if NETSTANDARD2_0
+  let private push (moduleId:string) hitPointId =
+     formatter.Serialize(pipe.Pipe, (moduleId, hitPointId))
+#endif
+
+#if NETSTANDARD2_0
+  let internal OnConnected f g =
+     if pipe.IsActivated() then f()
+     else WithVisitsLocked g
+#endif
+
   /// <summary>
   /// This method flushes hit count buffers.
   /// </summary>
-  let internal FlushCounter _ _ =
-     WithVisitsLocked (fun () ->
+  let internal FlushCounter finish _ =
+#if NETSTANDARD2_0
+    OnConnected (fun () ->
+      printfn "**pushing flush %A" finish
+      if finish then
+        push null -1
+        use local = pipe.Pipe
+        local.Flush())
+#else
+    ignore finish
+    WithVisitsLocked
+#endif
+      (fun () ->
       match Visits.Count with
       | 0 -> ()
       | _ -> let counts = Dictionary<string, Dictionary<int, int>> Visits
@@ -179,15 +244,34 @@ module Instance =
   /// <param name="moduleId">Assembly being visited</param>
   /// <param name="hitPointId">Sequence Point identifier</param>
   let Visit moduleId hitPointId =
-   if not <| String.IsNullOrEmpty(moduleId) then
-    WithVisitsLocked (fun () -> if not (Visits.ContainsKey moduleId)
-                                    then Visits.[moduleId] <- new Dictionary<int, int>()
-                                if not (Visits.[moduleId].ContainsKey hitPointId) then
-                                    Visits.[moduleId].Add(hitPointId, 1)
-                                else
-                                    Visits.[moduleId].[hitPointId] <- 1 + Visits.[moduleId].[hitPointId])
+    if not <| String.IsNullOrEmpty(moduleId) then
+#if NETSTANDARD2_0
+      OnConnected (fun () ->
+        printfn "**pushing Visit"
+        push moduleId hitPointId
+                 )
+#else
+      WithVisitsLocked
+#endif
+                 (fun () -> if not (Visits.ContainsKey moduleId)
+                                      then Visits.[moduleId] <- new Dictionary<int, int>()
+                            if not (Visits.[moduleId].ContainsKey hitPointId) then
+                               Visits.[moduleId].Add(hitPointId, 1)
+                            else
+                               Visits.[moduleId].[hitPointId] <- 1 + Visits.[moduleId].[hitPointId])
 
   // Register event handling
   do
     AppDomain.CurrentDomain.DomainUnload.Add(FlushCounter false)
     AppDomain.CurrentDomain.ProcessExit.Add(FlushCounter true)
+#if NETSTANDARD2_0
+    try
+      if Token <> "AltCover" then
+        printfn "**Connecting pipe %s ..." pipe.Tracer
+        pipe.Connect 2000 // 2 seconds
+        printfn "**Connected."
+    with
+    | :? TimeoutException ->
+        printfn "**timed out"
+        ()
+#endif
