@@ -2028,7 +2028,7 @@ type AltCoverTests() = class
   [<Test>]
   member self.ParsingJunkIsAnError() =
     let options = Main.DeclareOptions ()
-    let parse = Main.ParseCommandLine [| "/@thisIsNotAnOption" |] options
+    let parse = CommandLine.ParseCommandLine [| "/@thisIsNotAnOption" |] options
     match parse with
     | Right _ -> Assert.Fail()
     | Left (x, y) -> Assert.That (x, Is.EqualTo "UsageError")
@@ -2037,7 +2037,7 @@ type AltCoverTests() = class
   [<Test>]
   member self.ParsingJunkBeforeSeparatorIsAnError() =
     let options = Main.DeclareOptions ()
-    let parse = Main.ParseCommandLine [| "/@thisIsNotAnOption"; "--";  "this should be OK" |] options
+    let parse = CommandLine.ParseCommandLine [| "/@thisIsNotAnOption"; "--";  "this should be OK" |] options
     match parse with
     | Right _ -> Assert.Fail()
     | Left (x, y) -> Assert.That (x, Is.EqualTo "UsageError")
@@ -2047,7 +2047,7 @@ type AltCoverTests() = class
   member self.ParsingJunkAfterSeparatorIsExpected() =
     let options = Main.DeclareOptions ()
     let input = [| "--";  "/@thisIsNotAnOption"; "this should be OK" |]
-    let parse = Main.ParseCommandLine input options
+    let parse = CommandLine.ParseCommandLine input options
     match parse with
     | Left _ -> Assert.Fail()
     | Right (x, y) -> Assert.That (x, Is.EquivalentTo (input |> Seq.skip 1))
@@ -2057,19 +2057,19 @@ type AltCoverTests() = class
   member self.ParsingHelpGivesHelp() =
     let options = Main.DeclareOptions ()
     let input = [| "--?" |]
-    let parse = Main.ParseCommandLine input options
+    let parse = CommandLine.ParseCommandLine input options
     match parse with
     | Left _ -> Assert.Fail()
     | Right (x, y) -> Assert.That (y, Is.SameAs options)
 
-    match Main.ProcessHelpOption parse with
+    match CommandLine.ProcessHelpOption parse with
     | Right _ -> Assert.Fail()
     | Left (x, y) -> Assert.That (x, Is.EqualTo "HelpText")
                      Assert.That (y, Is.SameAs options)
 
     // a "not sticky" test
-    match Main.ParseCommandLine [| "/t"; "x" |] options
-          |> Main.ProcessHelpOption with
+    match CommandLine.ParseCommandLine [| "/t"; "x" |] options
+          |> CommandLine.ProcessHelpOption with
     | Left _ -> Assert.Fail()
     | Right (x, y) -> Assert.That (y, Is.SameAs options)
                       Assert.That (x, Is.Empty)
@@ -2078,20 +2078,20 @@ type AltCoverTests() = class
   member self.ParsingErrorHelpGivesHelp() =
     let options = Main.DeclareOptions ()
     let input = [| "--o"; Path.GetInvalidPathChars() |> String |]
-    let parse = Main.ParseCommandLine input options
+    let parse = CommandLine.ParseCommandLine input options
     match parse with
     | Right _ -> Assert.Fail()
     | Left (x, y) -> Assert.That (x, Is.EqualTo "UsageError")
                      Assert.That (y, Is.SameAs options)
 
-    match Main.ProcessHelpOption parse with
+    match CommandLine.ProcessHelpOption parse with
     | Right _ -> Assert.Fail()
     | Left (x, y) -> Assert.That (x, Is.EqualTo "UsageError")
                      Assert.That (y, Is.SameAs options)
 
     // a "not sticky" test
-    match Main.ParseCommandLine [| "/t"; "x" |] options
-          |> Main.ProcessHelpOption with
+    match CommandLine.ParseCommandLine [| "/t"; "x" |] options
+          |> CommandLine.ProcessHelpOption with
     | Left _ -> Assert.Fail()
     | Right (x, y) -> Assert.That (y, Is.SameAs options)
                       Assert.That (x, Is.Empty)
@@ -2102,7 +2102,7 @@ type AltCoverTests() = class
       Visitor.NameFilters.Clear()
       let options = Main.DeclareOptions ()
       let input = [| "-a"; "1;a"; "--a"; "2"; "/a"; "3"; "-a=4"; "--a=5"; "/a=6" |]
-      let parse = Main.ParseCommandLine input options
+      let parse = CommandLine.ParseCommandLine input options
       match parse with
       | Left _ -> Assert.Fail()
       | Right (x, y) -> Assert.That (y, Is.SameAs options)
@@ -2125,7 +2125,7 @@ type AltCoverTests() = class
       Visitor.NameFilters.Clear()
       let options = Main.DeclareOptions ()
       let input = [| "-m"; "1"; "--m"; "2;b;c"; "/m"; "3"; "-m=4"; "--m=5"; "/m=6" |]
-      let parse = Main.ParseCommandLine input options
+      let parse = CommandLine.ParseCommandLine input options
       match parse with
       | Left _ -> Assert.Fail()
       | Right (x, y) -> Assert.That (y, Is.SameAs options)
@@ -2148,7 +2148,7 @@ type AltCoverTests() = class
       Visitor.NameFilters.Clear()
       let options = Main.DeclareOptions ()
       let input = [| "-t"; "1"; "--t"; "2"; "/t"; "3;x;y;z"; "-t=4"; "--t=5"; "/t=6" |]
-      let parse = Main.ParseCommandLine input options
+      let parse = CommandLine.ParseCommandLine input options
       match parse with
       | Left _ -> Assert.Fail()
       | Right (x, y) -> Assert.That (y, Is.SameAs options)
@@ -2171,7 +2171,7 @@ type AltCoverTests() = class
       Visitor.NameFilters.Clear()
       let options = Main.DeclareOptions ()
       let input = [| "-s"; "1"; "--s"; "2"; "/s"; "3"; "-s=4;p;q"; "--s=5"; "/s=6" |]
-      let parse = Main.ParseCommandLine input options
+      let parse = CommandLine.ParseCommandLine input options
       match parse with
       | Left _ -> Assert.Fail()
       | Right (x, y) -> Assert.That (y, Is.SameAs options)
@@ -2194,7 +2194,7 @@ type AltCoverTests() = class
       Visitor.NameFilters.Clear()
       let options = Main.DeclareOptions ()
       let input = [| "-e"; "1"; "--e"; "2"; "/e"; "3"; "-e=4;p;q"; "--e=5"; "/e=6" |]
-      let parse = Main.ParseCommandLine input options
+      let parse = CommandLine.ParseCommandLine input options
       match parse with
       | Left _ -> Assert.Fail()
       | Right (x, y) -> Assert.That (y, Is.SameAs options)
@@ -2217,7 +2217,7 @@ type AltCoverTests() = class
       Visitor.NameFilters.Clear()
       let options = Main.DeclareOptions ()
       let input = [| "-f"; "1"; "--f"; "2"; "/f"; "3"; "-f=4"; "--f=5;m;n"; "/f=6" |]
-      let parse = Main.ParseCommandLine input options
+      let parse = CommandLine.ParseCommandLine input options
       match parse with
       | Left _ -> Assert.Fail()
       | Right (x, y) -> Assert.That (y, Is.SameAs options)
@@ -2244,7 +2244,7 @@ type AltCoverTests() = class
       let path = Path.Combine(Path.GetDirectoryName(where), unique)
 
       let input = [| "-x"; path |]
-      let parse = Main.ParseCommandLine input options
+      let parse = CommandLine.ParseCommandLine input options
       match parse with
       | Left _ -> Assert.Fail()
       | Right (x, y) -> Assert.That (y, Is.SameAs options)
@@ -2263,7 +2263,7 @@ type AltCoverTests() = class
       let options = Main.DeclareOptions ()
       let unique = Guid.NewGuid().ToString()
       let input = [| "-x"; unique; "/x"; unique.Replace("-", "+") |]
-      let parse = Main.ParseCommandLine input options
+      let parse = CommandLine.ParseCommandLine input options
       match parse with
       | Right _ -> Assert.Fail()
       | Left (x, y) -> Assert.That (y, Is.SameAs options)
@@ -2278,7 +2278,7 @@ type AltCoverTests() = class
       let options = Main.DeclareOptions ()
       let unique = Guid.NewGuid().ToString()
       let input = [| "-x"; unique.Replace("-", Path.GetInvalidPathChars() |> String) |]
-      let parse = Main.ParseCommandLine input options
+      let parse = CommandLine.ParseCommandLine input options
       match parse with
       | Right _ -> Assert.Fail()
       | Left (x, y) -> Assert.That (y, Is.SameAs options)
@@ -2293,7 +2293,7 @@ type AltCoverTests() = class
       let options = Main.DeclareOptions ()
       let unique = Guid.NewGuid().ToString()
       let input = [| "-x" |]
-      let parse = Main.ParseCommandLine input options
+      let parse = CommandLine.ParseCommandLine input options
       match parse with
       | Right _ -> Assert.Fail()
       | Left (x, y) -> Assert.That (y, Is.SameAs options)
@@ -2308,7 +2308,7 @@ type AltCoverTests() = class
       let options = Main.DeclareOptions ()
       let unique = Guid.NewGuid().ToString()
       let input = [| "-x"; " " |]
-      let parse = Main.ParseCommandLine input options
+      let parse = CommandLine.ParseCommandLine input options
       match parse with
       | Right _ -> Assert.Fail()
       | Left (x, y) -> Assert.That (y, Is.SameAs options)
@@ -2323,7 +2323,7 @@ type AltCoverTests() = class
       let options = Main.DeclareOptions ()
       let unique = Path.GetFullPath(".")
       let input = [| "-i"; unique |]
-      let parse = Main.ParseCommandLine input options
+      let parse = CommandLine.ParseCommandLine input options
       match parse with
       | Left _ -> Assert.Fail()
       | Right (x, y) -> Assert.That (y, Is.SameAs options)
@@ -2341,7 +2341,7 @@ type AltCoverTests() = class
       Visitor.inputDirectory <- None
       let options = Main.DeclareOptions ()
       let input = [| "-i"; Path.GetFullPath("."); "/i"; Path.GetFullPath("..") |]
-      let parse = Main.ParseCommandLine input options
+      let parse = CommandLine.ParseCommandLine input options
       match parse with
       | Right _ -> Assert.Fail()
       | Left (x, y) -> Assert.That (y, Is.SameAs options)
@@ -2356,7 +2356,7 @@ type AltCoverTests() = class
       let options = Main.DeclareOptions ()
       let unique = Guid.NewGuid().ToString().Replace("-", "*")
       let input = [| "-i"; unique |]
-      let parse = Main.ParseCommandLine input options
+      let parse = CommandLine.ParseCommandLine input options
       match parse with
       | Right _ -> Assert.Fail()
       | Left (x, y) -> Assert.That (y, Is.SameAs options)
@@ -2370,7 +2370,7 @@ type AltCoverTests() = class
       Visitor.inputDirectory <- None
       let options = Main.DeclareOptions ()
       let input = [| "-i" |]
-      let parse = Main.ParseCommandLine input options
+      let parse = CommandLine.ParseCommandLine input options
       match parse with
       | Right _ -> Assert.Fail()
       | Left (x, y) -> Assert.That (y, Is.SameAs options)
@@ -2385,7 +2385,7 @@ type AltCoverTests() = class
       let options = Main.DeclareOptions ()
       let unique = Guid.NewGuid().ToString()
       let input = [| "-o"; unique |]
-      let parse = Main.ParseCommandLine input options
+      let parse = CommandLine.ParseCommandLine input options
       match parse with
       | Left _ -> Assert.Fail()
       | Right (x, y) -> Assert.That (y, Is.SameAs options)
@@ -2404,7 +2404,7 @@ type AltCoverTests() = class
       let options = Main.DeclareOptions ()
       let unique = Guid.NewGuid().ToString()
       let input = [| "-o"; unique; "/o"; unique.Replace("-", "+") |]
-      let parse = Main.ParseCommandLine input options
+      let parse = CommandLine.ParseCommandLine input options
       match parse with
       | Right _ -> Assert.Fail()
       | Left (x, y) -> Assert.That (y, Is.SameAs options)
@@ -2419,7 +2419,7 @@ type AltCoverTests() = class
       let options = Main.DeclareOptions ()
       let unique = Guid.NewGuid().ToString()
       let input = [| "-o"; unique.Replace("-", Path.GetInvalidPathChars() |> String) |]
-      let parse = Main.ParseCommandLine input options
+      let parse = CommandLine.ParseCommandLine input options
       match parse with
       | Right _ -> Assert.Fail()
       | Left (x, y) -> Assert.That (y, Is.SameAs options)
@@ -2433,7 +2433,7 @@ type AltCoverTests() = class
       Visitor.outputDirectory <- None
       let options = Main.DeclareOptions ()
       let input = [| "-o" |]
-      let parse = Main.ParseCommandLine input options
+      let parse = CommandLine.ParseCommandLine input options
       match parse with
       | Right _ -> Assert.Fail()
       | Left (x, y) -> Assert.That (y, Is.SameAs options)
@@ -2447,7 +2447,7 @@ type AltCoverTests() = class
       Visitor.outputDirectory <- None
       let options = Main.DeclareOptions ()
       let input = [| "-o"; " " |]
-      let parse = Main.ParseCommandLine input options
+      let parse = CommandLine.ParseCommandLine input options
       match parse with
       | Right _ -> Assert.Fail()
       | Left (x, y) -> Assert.That (y, Is.SameAs options)
@@ -2468,7 +2468,7 @@ type AltCoverTests() = class
       Visitor.keys.Clear()
       let options = Main.DeclareOptions ()
       let input = [| "-sn"; Path.Combine(self.IsolateRootPath(), "Build/Infrastructure.snk") |]
-      let parse = Main.ParseCommandLine input options
+      let parse = CommandLine.ParseCommandLine input options
       match parse with
       | Left _ -> Assert.Fail()
       | Right (x, y) -> Assert.That (y, Is.SameAs options)
@@ -2493,7 +2493,7 @@ type AltCoverTests() = class
       let path = self.IsolateRootPath()
 
       let input = [| "-sn"; Path.Combine(path, "Build/Infrastructure.snk") ; "/sn"; Path.GetFullPath("Build/Recorder.snk") |]
-      let parse = Main.ParseCommandLine input options
+      let parse = CommandLine.ParseCommandLine input options
       match parse with
       | Right _ -> Assert.Fail()
       | Left (x, y) -> Assert.That (y, Is.SameAs options)
@@ -2510,7 +2510,7 @@ type AltCoverTests() = class
       let options = Main.DeclareOptions ()
       let unique = Guid.NewGuid().ToString().Replace("-", "*")
       let input = [| "-sn"; unique |]
-      let parse = Main.ParseCommandLine input options
+      let parse = CommandLine.ParseCommandLine input options
       match parse with
       | Right _ -> Assert.Fail()
       | Left (x, y) -> Assert.That (y, Is.SameAs options)
@@ -2527,7 +2527,7 @@ type AltCoverTests() = class
       let options = Main.DeclareOptions ()
       let unique = Assembly.GetExecutingAssembly().Location
       let input = [| "-sn"; unique |]
-      let parse = Main.ParseCommandLine input options
+      let parse = CommandLine.ParseCommandLine input options
       match parse with
       | Right _ -> Assert.Fail()
       | Left (x, y) -> Assert.That (y, Is.SameAs options)
@@ -2543,7 +2543,7 @@ type AltCoverTests() = class
       Visitor.keys.Clear()
       let options = Main.DeclareOptions ()
       let input = [| "-sn" |]
-      let parse = Main.ParseCommandLine input options
+      let parse = CommandLine.ParseCommandLine input options
       match parse with
       | Right _ -> Assert.Fail()
       | Left (x, y) -> Assert.That (y, Is.SameAs options)
@@ -2562,7 +2562,7 @@ type AltCoverTests() = class
 
       let input = [| "-k"; Path.Combine(path, "Build/Infrastructure.snk");
                      "/k"; Path.Combine(path, "Build/Recorder.snk") |]
-      let parse = Main.ParseCommandLine input options
+      let parse = CommandLine.ParseCommandLine input options
       match parse with
       | Left _ -> Assert.Fail()
       | Right (x, y) -> Assert.That (y, Is.SameAs options)
@@ -2584,7 +2584,7 @@ type AltCoverTests() = class
       Visitor.keys.Clear()
       let options = Main.DeclareOptions ()
       let input = [| "-k" |]
-      let parse = Main.ParseCommandLine input options
+      let parse = CommandLine.ParseCommandLine input options
       match parse with
       | Right _ -> Assert.Fail()
       | Left (x, y) -> Assert.That (y, Is.SameAs options)
@@ -2601,7 +2601,7 @@ type AltCoverTests() = class
       let options = Main.DeclareOptions ()
       let unique = Guid.NewGuid().ToString().Replace("-", "*")
       let input = [| "-k"; unique |]
-      let parse = Main.ParseCommandLine input options
+      let parse = CommandLine.ParseCommandLine input options
       match parse with
       | Right _ -> Assert.Fail()
       | Left (x, y) -> Assert.That (y, Is.SameAs options)
@@ -2618,7 +2618,7 @@ type AltCoverTests() = class
       let options = Main.DeclareOptions ()
       let unique = Assembly.GetExecutingAssembly().Location
       let input = [| "-k"; unique |]
-      let parse = Main.ParseCommandLine input options
+      let parse = CommandLine.ParseCommandLine input options
       match parse with
       | Right _ -> Assert.Fail()
       | Left (x, y) -> Assert.That (y, Is.SameAs options)

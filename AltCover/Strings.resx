@@ -162,7 +162,7 @@
   <data name="UsageError" xml:space="preserve">
     <value>Error - usage is:</value>
   </data>
-  <data name="&quot;&lt;&gt;&quot;" xml:space="preserve">
+  <data name="&lt;&gt;" xml:space="preserve">
     <value>"n/a"</value>
   </data>
   <data name="instrumentingfrom" xml:space="preserve">

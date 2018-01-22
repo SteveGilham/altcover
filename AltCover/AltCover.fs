@@ -2,6 +2,7 @@
 
 open System
 open System.Collections.Generic
+  open System.Globalization
 open System.IO
 #if NETCOREAPP2_0
 #else
@@ -14,70 +15,56 @@ open Mono.Cecil
 open Mono.Options
 
 module Main =
-  open System.Globalization
-
-  let mutable private help = false
-  let mutable private error = false
-
-  let private doPathOperation (f: unit -> unit) =
-    let mutable thrown = true
-    try
-        f()
-        thrown <- false
-    with
-    | :? ArgumentException as a -> CommandLine.WriteErr a.Message;
-    | :? NotSupportedException as n -> CommandLine.WriteErr n.Message
-    | :? IOException as i -> CommandLine.WriteErr i.Message
-    | :? System.Security.SecurityException as s -> CommandLine.WriteErr s.Message
-    error <- error || thrown
 
   let internal DeclareOptions () =
     [ ("i|inputDirectory=",
        (fun x -> if not (String.IsNullOrWhiteSpace(x)) && Directory.Exists(x) then
                     if Option.isSome Visitor.inputDirectory then
-                      error <- true
+                      CommandLine.error <- true
                     else
                       Visitor.inputDirectory <- Some (Path.GetFullPath x)
-                 else error <- true))
+                 else CommandLine.error <- true))
       ("o|outputDirectory=",
        (fun x -> if not (String.IsNullOrWhiteSpace(x)) then
                     if Option.isSome Visitor.outputDirectory then
-                      error <- true
+                      CommandLine.error <- true
                     else
-                      doPathOperation (fun _ -> Visitor.outputDirectory <- Some (Path.GetFullPath x))
-                 else error <- true))
+                      CommandLine.doPathOperation (fun _ -> Visitor.outputDirectory <- Some (Path.GetFullPath x))
+                 else CommandLine.error <- true))
 #if NETCOREAPP2_0
 #else
       ("k|key=",
        (fun x ->
              if not (String.IsNullOrWhiteSpace(x)) && File.Exists(x) then
-               doPathOperation (fun () -> use stream = new System.IO.FileStream(x,
+               CommandLine.doPathOperation (fun () -> 
+                                          use stream = new System.IO.FileStream(x,
                                                                                 System.IO.FileMode.Open,
                                                                                 System.IO.FileAccess.Read)
                                           let pair = StrongNameKeyPair(stream)
                                           Visitor.Add pair)
-             else error <- true
+             else CommandLine.error <- true
          ))
       ("sn|strongNameKey=",
        (fun x ->
              if not (String.IsNullOrWhiteSpace(x)) && File.Exists(x) then
-               doPathOperation (fun () -> use stream = new System.IO.FileStream(x,
+               CommandLine.doPathOperation (fun () -> 
+                                          use stream = new System.IO.FileStream(x,
                                                                                 System.IO.FileMode.Open,
                                                                                 System.IO.FileAccess.Read)
                                           // printfn "%A %A" x Visitor.defaultStrongNameKey
                                           let pair = StrongNameKeyPair(stream)
-                                          if Option.isSome Visitor.defaultStrongNameKey then error <- true
+                                          if Option.isSome Visitor.defaultStrongNameKey then CommandLine.error <- true
                                           else Visitor.defaultStrongNameKey <- Some pair
                                                Visitor.Add pair)
-             else error <- true  ))
+             else CommandLine.error <- true  ))
 #endif
       ("x|xmlReport=",
        (fun x -> if not (String.IsNullOrWhiteSpace(x)) then
                     if Option.isSome Visitor.reportPath then
-                      error <- true
+                      CommandLine.error <- true
                     else
-                      doPathOperation (fun () -> Visitor.reportPath <- Some (Path.GetFullPath x))
-                 else error <- true))
+                      CommandLine.doPathOperation (fun () -> Visitor.reportPath <- Some (Path.GetFullPath x))
+                 else CommandLine.error <- true))
       ("f|fileFilter=",
        (fun x -> x.Split([|";"|], StringSplitOptions.RemoveEmptyEntries)
                  |> Seq.iter (Regex >> FilterClass.File >> Visitor.NameFilters.Add)))
@@ -96,32 +83,9 @@ module Main =
       ("a|attributeFilter=",
        (fun x -> x.Split([|";"|], StringSplitOptions.RemoveEmptyEntries)
                  |> Seq.iter (Regex >> FilterClass.Attribute >> Visitor.NameFilters.Add)))
-      ("?|help|h", (fun x -> help <- not (isNull x)))
-      ("<>", (fun x -> error <- true))         ]// default end stop
+      ("?|help|h", (fun x -> CommandLine.help <- not (isNull x)))
+      ("<>", (fun x -> CommandLine.error <- true))         ]// default end stop
       |> List.fold (fun (o:OptionSet) (p, a) -> o.Add(p, CommandLine.resources.GetString(p), new System.Action<string>(a))) (OptionSet())
-
-  let internal ParseCommandLine (arguments:string array) (options:OptionSet) =
-      help <- false
-      error <- false
-      try
-          let before = arguments
-                       |> Array.takeWhile (fun x -> x <> "--")
-          let after = arguments
-                      |> Seq.skipWhile (fun x -> x <> "--")
-                      |> Seq.skipWhile (fun x -> x = "--")
-                      |> Seq.toList
-          let parse = options.Parse(before)
-          if error || (parse.Count <> 0) then
-             Left ("UsageError", options)
-          else
-             Right (after, options)
-       with
-       | :? OptionException -> Left ("UsageError", options)
-
-  let internal ProcessHelpOption (parse:(Either<string*OptionSet, string list*OptionSet>)) =
-    match parse with
-    | Right (_, options) -> if help then Left ("HelpText", options) else parse
-    | fail -> fail
 
   let internal ProcessOutputLocation (action:(Either<string*OptionSet, string list*OptionSet>)) =
     match action with
@@ -185,8 +149,8 @@ module Main =
 
   let internal DoInstrumentation arguments =
     let check1 = DeclareOptions ()
-                 |> ParseCommandLine arguments
-                 |> ProcessHelpOption
+                 |> CommandLine.ParseCommandLine arguments
+                 |> CommandLine.ProcessHelpOption
                  |> ProcessOutputLocation
     match check1 with
     | Left (intro, options) ->

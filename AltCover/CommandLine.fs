@@ -6,9 +6,13 @@ open System.IO
 open System.Reflection
 open System.Resources
 
+open Augment
 open Mono.Options
 
 module CommandLine =
+
+  let mutable internal help = false
+  let mutable internal error = false
 
   // Can't hard-code what with .net-core and .net-core tests as well as classic .net
   // all giving this a different namespace
@@ -55,3 +59,40 @@ module CommandLine =
     proc.BeginErrorReadLine()
     proc.BeginOutputReadLine()
     proc.WaitForExit()
+
+  let internal doPathOperation (f: unit -> unit) =
+    let mutable thrown = true
+    try
+        f()
+        thrown <- false
+    with
+    | :? ArgumentException as a -> WriteErr a.Message;
+    | :? NotSupportedException as n -> WriteErr n.Message
+    | :? IOException as i -> WriteErr i.Message
+    | :? System.Security.SecurityException as s -> WriteErr s.Message
+    error <- error || thrown
+
+  let internal ParseCommandLine (arguments:string array) (options:OptionSet) =
+      help <- false
+      error <- false
+      try
+          let before = arguments
+                       |> Array.takeWhile (fun x -> x <> "--")
+          let after = arguments
+                      |> Seq.skipWhile (fun x -> x <> "--")
+                      |> Seq.skipWhile (fun x -> x = "--")
+                      |> Seq.toList
+          let parse = options.Parse(before)
+          if error || (parse.Count <> 0) then
+             Left ("UsageError", options)
+          else
+             Right (after, options)
+       with
+       | :? OptionException -> Left ("UsageError", options)
+
+  let internal ProcessHelpOption (parse:(Either<string*OptionSet, string list*OptionSet>)) =
+    match parse with
+    | Right (_, options) -> if help then Left ("HelpText", options) else parse
+    | fail -> fail
+
+

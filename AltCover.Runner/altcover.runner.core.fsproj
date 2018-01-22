@@ -20,6 +20,7 @@
     <Compile Include="..\_Generated\AssemblyVersion.fs" Link="AssemblyVersion.fs" />
     <Compile Include="..\_Generated\VisibleToTest.fs" Link="VisibleToTest.fs" />
     <Compile Include="..\AltCover\AssemblyInfo.fs" Link="AssemblyInfo.fs" />
+    <Compile Include="..\AltCover\Augment.fs" Link="Augment.fs" />
     <Compile Include="..\AltCover\CommandLine.fs" Link="CommandLine.fs" />
     <Compile Include="Runner.fs" />
   </ItemGroup>
