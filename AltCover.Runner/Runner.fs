@@ -1,8 +1,12 @@
-﻿// Learn more about F# at http://fsharp.org
+﻿namespace AltCover
 
 open System
 
-[<EntryPoint>]
-let main argv =
-    printfn "Hello World from F#!"
-    0 // return an integer exit code
+module Runner =
+
+  let DoCoverage _ = ()
+
+  [<EntryPoint>]
+  let private Main arguments =
+    DoCoverage arguments
+    0

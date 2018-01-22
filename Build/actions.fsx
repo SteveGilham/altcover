@@ -53,6 +53,7 @@ open System.Runtime.CompilerServices
 #else
 #if NETCOREAPP2_0
 [<assembly: InternalsVisibleTo("AltCover.Tests")>]
+[<assembly: InternalsVisibleTo("AltCover.Runner.Tests")>]
 
 #else
 [<assembly: InternalsVisibleTo("AltCover.Tests, PublicKey={1}")>]

@@ -1971,7 +1971,7 @@ type AltCoverTests() = class
     Assert.That (result.Replace("\r\n","\n"),
                  Is.EqualTo(expected.Replace("\r\n","\n")))
 
-  // AltCover.fs
+  // AltCover.fs and CommandLine.fs
 
   [<Test>]
   member self.ShouldLaunchWithExpectedOutput() =
@@ -1996,7 +1996,7 @@ type AltCoverTests() = class
       Console.SetOut stdout
       Console.SetError stderr
 
-      Main.Launch program (String.Empty) (Path.GetDirectoryName (Assembly.GetExecutingAssembly().Location))
+      CommandLine.Launch program (String.Empty) (Path.GetDirectoryName (Assembly.GetExecutingAssembly().Location))
 
       Assert.That(stderr.ToString(), Is.Empty)
       let result = stdout.ToString()
@@ -3051,7 +3051,7 @@ type AltCoverTests() = class
     try
       use stderr = new StringWriter()
       Console.SetError stderr
-      Main.Usage "UsageError" options
+      CommandLine.Usage "UsageError" options
       let result = stderr.ToString().Replace("\r\n", "\n")
       let expected = """Error - usage is:
   -i, --inputDirectory=VALUE Optional: The folder containing assemblies to

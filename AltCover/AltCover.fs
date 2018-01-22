@@ -2,10 +2,11 @@
 
 open System
 open System.Collections.Generic
-open System.Diagnostics
 open System.IO
+#if NETCOREAPP2_0
+#else
 open System.Reflection
-open System.Resources
+#endif
 open System.Text.RegularExpressions
 
 open Augment
@@ -18,64 +19,18 @@ module Main =
   let mutable private help = false
   let mutable private error = false
 
-  // Can't hard-code what with .net-core and .net-core tests as well as classic .net
-  // all giving this a different namespace
-  let private resource = Assembly.GetExecutingAssembly().GetManifestResourceNames()
-                         |> Seq.map (fun s -> s.Substring(0, s.Length - 10)) // trim ".resources"
-                         |> Seq.find (fun n -> n.EndsWith(".Strings", StringComparison.Ordinal))
-  let private resources = ResourceManager(resource , Assembly.GetExecutingAssembly())
-
-  let internal WriteColoured (writer:TextWriter) colour operation =
-       let original = Console.ForegroundColor
-       try
-         Console.ForegroundColor <- colour
-         operation writer
-       finally
-         Console.ForegroundColor <- original
-
-  let internal Usage (intro:string) (options:OptionSet) =
-    WriteColoured Console.Error ConsoleColor.Yellow (fun w ->  w.WriteLine (resources.GetString intro)
-                                                               options.WriteOptionDescriptions(w))
-
-  let internal Write (writer:TextWriter) colour data =
-    if not(String.IsNullOrEmpty(data)) then
-      WriteColoured writer colour (fun w -> w.WriteLine(data))
-
-  let internal WriteErr line =
-      Write Console.Error ConsoleColor.Yellow line
-  let internal WriteOut line =
-      Write Console.Out ConsoleColor.White line
-
-  let internal Launch cmd args toDirectory =
-    Directory.SetCurrentDirectory(toDirectory)
-    let psi = ProcessStartInfo(cmd,args)
-    psi.WorkingDirectory <- toDirectory
-    psi.CreateNoWindow <- true
-    psi.UseShellExecute <- false
-    psi.RedirectStandardError <- true
-    psi.RedirectStandardOutput <- true
-    use proc = new Process()
-    proc.StartInfo <- psi
-
-    proc.ErrorDataReceived.Add(fun e -> WriteErr e.Data)
-    proc.OutputDataReceived.Add(fun e -> WriteOut e.Data)
-    proc.Start() |> ignore
-    proc.BeginErrorReadLine()
-    proc.BeginOutputReadLine()
-    proc.WaitForExit()
-
   let private doPathOperation (f: unit -> unit) =
     let mutable thrown = true
     try
         f()
         thrown <- false
     with
-    | :? ArgumentException as a -> WriteErr a.Message; 
-    | :? NotSupportedException as n -> WriteErr n.Message
-    | :? IOException as i -> WriteErr i.Message
-    | :? System.Security.SecurityException as s -> WriteErr s.Message
+    | :? ArgumentException as a -> CommandLine.WriteErr a.Message;
+    | :? NotSupportedException as n -> CommandLine.WriteErr n.Message
+    | :? IOException as i -> CommandLine.WriteErr i.Message
+    | :? System.Security.SecurityException as s -> CommandLine.WriteErr s.Message
     error <- error || thrown
-    
+
   let internal DeclareOptions () =
     [ ("i|inputDirectory=",
        (fun x -> if not (String.IsNullOrWhiteSpace(x)) && Directory.Exists(x) then
@@ -143,7 +98,7 @@ module Main =
                  |> Seq.iter (Regex >> FilterClass.Attribute >> Visitor.NameFilters.Add)))
       ("?|help|h", (fun x -> help <- not (isNull x)))
       ("<>", (fun x -> error <- true))         ]// default end stop
-      |> List.fold (fun (o:OptionSet) (p, a) -> o.Add(p, resources.GetString(p), new System.Action<string>(a))) (OptionSet())
+      |> List.fold (fun (o:OptionSet) (p, a) -> o.Add(p, CommandLine.resources.GetString(p), new System.Action<string>(a))) (OptionSet())
 
   let internal ParseCommandLine (arguments:string array) (options:OptionSet) =
       help <- false
@@ -176,24 +131,24 @@ module Main =
            let fromDirectory = Visitor.InputDirectory()
            let toDirectory = Visitor.OutputDirectory()
            if not (Directory.Exists(toDirectory)) then
-              WriteOut <| String.Format(CultureInfo.CurrentCulture,
-                       (resources.GetString "CreateFolder"),
+              CommandLine.WriteOut <| String.Format(CultureInfo.CurrentCulture,
+                       (CommandLine.resources.GetString "CreateFolder"),
                        toDirectory)
               Directory.CreateDirectory(toDirectory) |> ignore
            if fromDirectory = toDirectory then
-              WriteErr (resources.GetString "NotInPlace")
+              CommandLine.WriteErr (CommandLine.resources.GetString "NotInPlace")
               Left ("UsageError", options)
            else
-               WriteOut <| String.Format(CultureInfo.CurrentCulture,
-                                         (resources.GetString "instrumentingfrom"),
+               CommandLine.WriteOut <| String.Format(CultureInfo.CurrentCulture,
+                                         (CommandLine.resources.GetString "instrumentingfrom"),
                                          fromDirectory)
-               WriteOut <| String.Format(CultureInfo.CurrentCulture,
-                                         (resources.GetString "instrumentingto"),
+               CommandLine.WriteOut <| String.Format(CultureInfo.CurrentCulture,
+                                         (CommandLine.resources.GetString "instrumentingto"),
                                          toDirectory)
                Right (rest, DirectoryInfo(fromDirectory), DirectoryInfo(toDirectory))
 
         with
-        |  :? IOException as x -> WriteErr x.Message
+        |  :? IOException as x -> CommandLine.WriteErr x.Message
                                   Left ("UsageError", options)
     | Left intro -> Left intro
 
@@ -226,7 +181,7 @@ module Main =
         | [] -> ()
         | cmd::t->
            let args = String.Join(" ", (List.toArray t))
-           Launch cmd args toInfo.FullName // Spawn process, echoing asynchronously
+           CommandLine.Launch cmd args toInfo.FullName // Spawn process, echoing asynchronously
 
   let internal DoInstrumentation arguments =
     let check1 = DeclareOptions ()
@@ -236,13 +191,13 @@ module Main =
     match check1 with
     | Left (intro, options) ->
         String.Join (" ", arguments |> Seq.map (sprintf "%A"))
-        |> WriteErr
-        Usage intro options
+        |> CommandLine.WriteErr
+        CommandLine.Usage intro options
     | Right (rest, fromInfo, toInfo) ->
       try
         let (assemblies, assemblyNames) = PrepareTargetFiles fromInfo toInfo
-        WriteOut <| String.Format(CultureInfo.CurrentCulture,
-                                         (resources.GetString "reportingto"),
+        CommandLine.WriteOut <| String.Format(CultureInfo.CurrentCulture,
+                                         (CommandLine.resources.GetString "reportingto"),
                                          Visitor.ReportPath())
         let reporter, document = Report.ReportGenerator ()
         let visitors = [ reporter ; Instrument.InstrumentGenerator assemblyNames ]
@@ -251,7 +206,7 @@ module Main =
 
         ProcessTrailingArguments rest toInfo
       with
-      | :? IOException as x -> WriteErr x.Message
+      | :? IOException as x -> CommandLine.WriteErr x.Message
 
   [<EntryPoint>]
   let private Main arguments =

@@ -76,6 +76,7 @@
     <Compile Include="Naming.fs" />
     <Compile Include="Report.fs" />
     <Compile Include="Instrument.fs" />
+    <Compile Include="CommandLine.fs" />
     <Compile Include="AltCover.fs" />
     <Content Include="packages.config" />
     <EmbeddedResource Include="..\Build\Recorder.snk">
