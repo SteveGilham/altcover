@@ -2483,7 +2483,7 @@ type AltCoverTests() = class
       | Left (x, y) -> Assert.That (y, Is.SameAs options)
                        Assert.That (x, Is.EqualTo "UsageError")
     finally
-      Visitor.inputDirectory <- None
+      Visitor.reportPath <- None
 
   [<Test>]
   member self.ParsingNoXmlGivesFailure() =
@@ -2498,7 +2498,7 @@ type AltCoverTests() = class
       | Left (x, y) -> Assert.That (y, Is.SameAs options)
                        Assert.That (x, Is.EqualTo "UsageError")
     finally
-      Visitor.inputDirectory <- None
+      Visitor.reportPath <- None
 
   [<Test>]
   member self.ParsingEmptyXmlGivesFailure() =
@@ -2513,7 +2513,7 @@ type AltCoverTests() = class
       | Left (x, y) -> Assert.That (y, Is.SameAs options)
                        Assert.That (x, Is.EqualTo "UsageError")
     finally
-      Visitor.inputDirectory <- None
+      Visitor.reportPath <- None
 
   [<Test>]
   member self.ParsingInputGivesInput() =
@@ -2562,8 +2562,8 @@ type AltCoverTests() = class
                        Assert.That (x, Is.EqualTo "UsageError")
     finally
       Visitor.inputDirectory <- None
-  [<Test>]
 
+  [<Test>]
   member self.ParsingNoInputGivesFailure() =
     try
       Visitor.inputDirectory <- None
