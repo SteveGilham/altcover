@@ -6,6 +6,8 @@ open System.IO
 open Mono.Options
 open Augment
 
+type Tracer = { Tracer : string }
+
 module Runner =
 
   let mutable internal recordingDirectory : Option<string> = None
