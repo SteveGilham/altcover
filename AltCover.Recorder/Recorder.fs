@@ -39,9 +39,12 @@ type Tracer = {
       try
         this.Pipe.Connect(ms)
         async {
-          let b = this.Pipe.ReadByte()
-          if (b >= 0) then
-            this.Activated.Set() |> ignore
+          try
+            let b = this.Pipe.ReadByte()
+            if (b >= 0) then
+              this.Activated.Set() |> ignore
+          with 
+          | :? ObjectDisposedException -> ()
         } |> Async.Start
       with
       | :? TimeoutException ->
@@ -267,18 +270,23 @@ module Instance =
                             else
                                Visits.[moduleId].[hitPointId] <- 1 + Visits.[moduleId].[hitPointId])
 
+#if NETSTANDARD2_0
+  let internal Connect (name:string) (p:Tracer) =
+    if name <> "AltCover" then 
+      try
+        printfn "**Connecting pipe %s ..." pipe.Tracer
+        p.Connect 2000 // 2 seconds
+        printfn "**Connected."
+      with
+      | :? TimeoutException ->
+          printfn "**timed out"
+          ()
+#endif
+
   // Register event handling
   do
     AppDomain.CurrentDomain.DomainUnload.Add(FlushCounter false)
     AppDomain.CurrentDomain.ProcessExit.Add(FlushCounter true)
 #if NETSTANDARD2_0
-    try
-      if Token <> "AltCover" then
-        printfn "**Connecting pipe %s ..." pipe.Tracer
-        pipe.Connect 2000 // 2 seconds
-        printfn "**Connected."
-    with
-    | :? TimeoutException ->
-        printfn "**timed out"
-        ()
+    Connect Token pipe
 #endif

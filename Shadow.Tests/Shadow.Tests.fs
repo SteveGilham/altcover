@@ -65,6 +65,55 @@ type AltCoverTests() = class
 #endif
 
 #if NETCOREAPP2_0
+  [<Test>]
+  member self.PipeTimeoutShouldRaise () =
+    let token = Guid.NewGuid().ToString() + "PipeTimeoutShouldRaise"
+    let client = Tracer.CreatePipe(token)
+    try
+      let os = Environment.OSVersion.ToString()
+      if os.StartsWith("Microsoft Windows", StringComparison.Ordinal) then
+        Assert.Throws<TimeoutException> (fun () -> 1 |> client.Connect) |> ignore
+    finally
+      client.Close()
+
+  [<Test>]
+  member self.InitialConnectDefaultsUnconnected() =
+    let os = Environment.OSVersion.ToString()
+    let token = "AltCover"
+    use server = new System.IO.Pipes.NamedPipeServerStream(token)
+    let client = Tracer.CreatePipe(token)
+    try
+      if os.StartsWith("Microsoft Windows", StringComparison.Ordinal) then
+        Instance.Connect token client
+        Assert.That (client.Pipe.IsConnected, Is.False)
+    finally
+      client.Close()
+
+  [<Test>]
+  member self.ValidTokenWillConnect() =
+    let os = Environment.OSVersion.ToString()
+    let token = "ValidToken"
+    use server = new System.IO.Pipes.NamedPipeServerStream(token)
+    let client = Tracer.CreatePipe(token)
+    try
+      if os.StartsWith("Microsoft Windows", StringComparison.Ordinal) then
+        Instance.Connect token client
+        Assert.That (client.Pipe.IsConnected, Is.True)
+    finally
+      client.Close()
+    
+  [<Test>]
+  member self.ValidTokenWillTimeOut() =
+    let os = Environment.OSVersion.ToString()
+    let token = "ValidToken"
+    let client = Tracer.CreatePipe(token)
+    try
+      if os.StartsWith("Microsoft Windows", StringComparison.Ordinal) then
+        Instance.Connect token client
+        Assert.That (client.Pipe.IsConnected, Is.False)
+    finally
+      client.Close()
+
   member self.PipeVisitShouldSignal() =
     let save = Instance.pipe
     let token = Guid.NewGuid().ToString() + "PipeVisitShouldSignal"
