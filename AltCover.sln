@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.27130.2020
+VisualStudioVersion = 15.0.27130.2024
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "AltCover.Recorder", "AltCover.Recorder\AltCover.Recorder.fsproj", "{02192B55-3A50-4AD2-B519-560F30C14DD4}"
 EndProject
@@ -47,6 +47,8 @@ Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Shadow.Tests", "Shadow.Test
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Shadow.Tests2", "Shadow.Tests2\Shadow.Tests2.fsproj", "{D6ED39D2-EA21-4141-96D7-2B5F234FCD3E}"
 EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "AltCover.Runner", "AltCover.Runner\AltCover.Runner.fsproj", "{D9881E98-F397-40C6-8B69-B2C528D533FA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -87,6 +89,10 @@ Global
 		{D6ED39D2-EA21-4141-96D7-2B5F234FCD3E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{D6ED39D2-EA21-4141-96D7-2B5F234FCD3E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D6ED39D2-EA21-4141-96D7-2B5F234FCD3E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D9881E98-F397-40C6-8B69-B2C528D533FA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D9881E98-F397-40C6-8B69-B2C528D533FA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D9881E98-F397-40C6-8B69-B2C528D533FA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D9881E98-F397-40C6-8B69-B2C528D533FA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -125,10 +125,15 @@ Target "Lint" (fun _ ->
 
 Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standalone which contaminates everything
     ensureDirectory "./_Reports"
-
+    let subjects = String.Join(" ",
+                               [
+                                "_Binaries/AltCover/Debug+AnyCPU/AltCover.exe"
+                                "_Binaries/AltCover.Runner/Debug+AnyCPU/AltCover.Runner.exe"
+                                "_Binaries/AltCover.Shadow/Debug+AnyCPU/AltCover.Shadow.dll"
+                               ])
     let r = ExecProcess (fun info -> info.FileName <- (findToolInSubPath "gendarme.exe" "./packages")
                                      info.WorkingDirectory <- "."
-                                     info.Arguments <- "--severity all --confidence all --config ./Build/rules.xml --console --html ./_Reports/gendarme.html _Binaries/AltCover/Debug+AnyCPU/AltCover.exe  _Binaries/AltCover.Shadow/Debug+AnyCPU/AltCover.Shadow.dll") (TimeSpan.FromMinutes 5.0)
+                                     info.Arguments <- "--severity all --confidence all --config ./Build/rules.xml --console --html ./_Reports/gendarme.html " + subjects) (TimeSpan.FromMinutes 5.0)
     if r <> 0 then failwith  "Gendarme Errors were detected"
 )
 // Travis TODO
@@ -156,14 +161,23 @@ Target "FxCop" (fun _ -> // Needs debug because release is compiled --standalone
                  "-Microsoft.Naming#CA1709"
                  "-Microsoft.Naming#CA1715" ]
 
-    [ (["_Binaries/AltCover/Debug+AnyCPU/AltCover.exe"],   ["AltCover.Augment"
+    [ ([
+         "_Binaries/AltCover/Debug+AnyCPU/AltCover.exe"
+         "_Binaries/AltCover.Runner/Debug+AnyCPU/AltCover.Runner.exe"
+                                                      ],   ["AltCover.Augment"
+                                                            "AltCover.CommandLine"
                                                             "AltCover.Filter"
+                                                            "AltCover.FilterClass"
+                                                            "AltCover.Fix"
                                                             "AltCover.Instrument"
+                                                            "AltCover.KeyRecord"
                                                             "AltCover.KeyStore"
                                                             "AltCover.Main"
                                                             "AltCover.Naming"
+                                                            "AltCover.Node"
                                                             "AltCover.ProgramDatabase"
                                                             "AltCover.Report"
+                                                            "AltCover.Runner"
                                                             "AltCover.Visitor"])
       (["_Binaries/AltCover.Shadow/Debug+AnyCPU/AltCover.Shadow.dll"], ["AltCover.Recorder.Instance"])]
     |> Seq.iter (fun (files, types) -> files
