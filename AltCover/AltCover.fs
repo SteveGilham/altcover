@@ -90,31 +90,37 @@ module Main =
   let internal ProcessOutputLocation (action:(Either<string*OptionSet, string list*OptionSet>)) =
     match action with
     | Right (rest, options) ->
-        try
-           // Check that the directories are distinct
-           let fromDirectory = Visitor.InputDirectory()
-           let toDirectory = Visitor.OutputDirectory()
-           if not (Directory.Exists(toDirectory)) then
-              CommandLine.WriteOut <| String.Format(CultureInfo.CurrentCulture,
-                       (CommandLine.resources.GetString "CreateFolder"),
-                       toDirectory)
-              Directory.CreateDirectory(toDirectory) |> ignore
-           if fromDirectory = toDirectory then
-              CommandLine.WriteErr (CommandLine.resources.GetString "NotInPlace")
-              Left ("UsageError", options)
-           else
-               CommandLine.WriteOut <| String.Format(CultureInfo.CurrentCulture,
-                                         (CommandLine.resources.GetString "instrumentingfrom"),
-                                         fromDirectory)
-               CommandLine.WriteOut <| String.Format(CultureInfo.CurrentCulture,
-                                         (CommandLine.resources.GetString "instrumentingto"),
-                                         toDirectory)
-               Right (rest, DirectoryInfo(fromDirectory), DirectoryInfo(toDirectory))
+        // Check that the directories are distinct
+        let fromDirectory = Visitor.InputDirectory()
+        let toDirectory = Visitor.OutputDirectory()
+        if fromDirectory = toDirectory then
+            CommandLine.WriteErr (CommandLine.resources.GetString "NotInPlace")
+            CommandLine.error <- true
 
-        with
-        |  :? IOException as x -> CommandLine.WriteErr x.Message
-                                  Left ("UsageError", options)
+        CommandLine.doPathOperation(fun () ->
+            if not (CommandLine.error || Directory.Exists(toDirectory)) then
+              CommandLine.WriteOut <| String.Format(CultureInfo.CurrentCulture,
+                                                    (CommandLine.resources.GetString "CreateFolder"),
+                                                     toDirectory)
+              Directory.CreateDirectory(toDirectory) |> ignore)
+
+        if CommandLine.error then
+            Left ("UsageError", options)
+        else
+            CommandLine.WriteOut <| String.Format(CultureInfo.CurrentCulture,
+                                        (CommandLine.resources.GetString "instrumentingfrom"),
+                                        fromDirectory)
+            CommandLine.WriteOut <| String.Format(CultureInfo.CurrentCulture,
+                                        (CommandLine.resources.GetString "instrumentingto"),
+                                        toDirectory)
+            Right (rest, DirectoryInfo(fromDirectory), DirectoryInfo(toDirectory))
     | Left intro -> Left intro
+
+  let internal ImageLoadResilient (f : unit -> 'a)  (tidy : unit -> 'a) =
+    try f ()
+    with
+    | :? BadImageFormatException -> tidy()
+    | :? IOException -> tidy()
 
   let internal PrepareTargetFiles (fromInfo:DirectoryInfo) (toInfo:DirectoryInfo) =
     // Copy all the files into the target directory
@@ -125,16 +131,13 @@ module Main =
            let fullName = info.FullName
            let target = Path.Combine (toInfo.FullName, info.Name)
            File.Copy(fullName, target, true)
-           try
+           ImageLoadResilient(fun () ->
              let def = AssemblyDefinition.ReadAssembly(fullName)
              let assemblyPdb = ProgramDatabase.GetPdbWithFallback def
              if Visitor.IsIncluded def && Option.isSome assemblyPdb then
                 (fullName, def.Name.Name) :: accumulator
              else
-                accumulator
-           with
-           | :? BadImageFormatException -> accumulator
-           | :? IOException -> accumulator
+                accumulator) (fun () -> accumulator)
         ) []
 
     List.unzip assemblies
@@ -150,7 +153,7 @@ module Main =
         |> CommandLine.WriteErr
         CommandLine.Usage intro options
     | Right (rest, fromInfo, toInfo) ->
-      try
+        CommandLine.doPathOperation( fun () ->
         let (assemblies, assemblyNames) = PrepareTargetFiles fromInfo toInfo
         CommandLine.WriteOut <| String.Format(CultureInfo.CurrentCulture,
                                          (CommandLine.resources.GetString "reportingto"),
@@ -160,9 +163,7 @@ module Main =
         Visitor.Visit visitors (assemblies )
         document.Save(Visitor.ReportPath())
 
-        CommandLine.ProcessTrailingArguments rest toInfo
-      with
-      | :? IOException as x -> CommandLine.WriteErr x.Message
+        CommandLine.ProcessTrailingArguments rest toInfo)
 
   [<EntryPoint>]
   let private Main arguments =

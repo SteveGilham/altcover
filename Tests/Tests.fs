@@ -2865,6 +2865,7 @@ type AltCoverTests() = class
   member self.OutputToNewPlaceIsOK() =
     let options = Main.DeclareOptions ()
     let saved = (Console.Out, Console.Error)
+    CommandLine.error <- false
     try
       use stdout = new StringWriter()
       use stderr = new StringWriter()
@@ -2896,6 +2897,7 @@ type AltCoverTests() = class
   member self.OutputToReallyNewPlaceIsOK() =
     let options = Main.DeclareOptions ()
     let saved = (Console.Out, Console.Error)
+    CommandLine.error <- false
     try
       use stdout = new StringWriter()
       use stderr = new StringWriter()
@@ -2926,6 +2928,34 @@ type AltCoverTests() = class
     finally
       Console.SetOut (fst saved)
       Console.SetError (snd saved)
+
+  [<Test>]
+  member self.ImageLoadResilientPassesThrough() =
+    let one = ref false
+    let two = ref false
+    Main.ImageLoadResilient (fun () -> one := true) (fun () -> two := true)
+    Assert.That(!one)
+    Assert.That(!two, Is.False)
+
+  [<Test>]
+  member self.ResilientHandlesIOException () =
+    let one = ref false
+    let two = ref false
+    Main.ImageLoadResilient (fun () ->
+        IOException("fail") |> raise
+        one := true) (fun () -> two := true)
+    Assert.That(!one, Is.False)
+    Assert.That(!two)
+
+  [<Test>]
+  member self.ResilientHandlesBadImageFormatException () =
+    let one = ref false
+    let two = ref false
+    Main.ImageLoadResilient (fun () ->
+        BadImageFormatException("fail") |> raise
+        one := true) (fun () -> two := true)
+    Assert.That(!one, Is.False)
+    Assert.That(!two)
 
   [<Test>]
   member self.PreparingNewPlaceShouldCopyEverything() =
@@ -3300,7 +3330,9 @@ type AltCoverTests() = class
       use stderr = new StringWriter()
       Console.SetError stderr
       let unique = Guid.NewGuid().ToString()
-      Main.DoInstrumentation [| "-i"; unique |]
+      let main = typeof<Node>.Assembly.GetType("AltCover.Main").GetMethod("Main", BindingFlags.NonPublic ||| BindingFlags.Static)
+      let returnCode = main.Invoke(null, [| [| "-i"; unique |] |])
+      Assert.That(returnCode, Is.EqualTo 0)
       let result = stderr.ToString().Replace("\r\n", "\n")
       let expected = "\"-i\" \"" + unique + "\"\n" +
                        """Error - usage is:
