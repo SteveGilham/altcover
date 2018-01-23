@@ -61,7 +61,7 @@ type AltCoverTests() = class
       Assert.That(CommandLine.error, Is.True)
       Assert.That(stdout.ToString(), Is.Empty)
       let result = stderr.ToString()
-      Assert.That(result, Is.EqualTo (unique + "\r\n"))
+      Assert.That(result, Is.EqualTo (unique + Environment.NewLine))
     finally
       CommandLine.error <- false
       Console.SetOut (fst saved)
@@ -82,7 +82,7 @@ type AltCoverTests() = class
       Assert.That(CommandLine.error, Is.True)
       Assert.That(stdout.ToString(), Is.Empty)
       let result = stderr.ToString()
-      Assert.That(result, Is.EqualTo (unique + "\r\n"))
+      Assert.That(result, Is.EqualTo (unique + Environment.NewLine))
     finally
       CommandLine.error <- false
       Console.SetOut (fst saved)
@@ -103,7 +103,7 @@ type AltCoverTests() = class
       Assert.That(CommandLine.error, Is.True)
       Assert.That(stdout.ToString(), Is.Empty)
       let result = stderr.ToString()
-      Assert.That(result, Is.EqualTo (unique + "\r\n"))
+      Assert.That(result, Is.EqualTo (unique + Environment.NewLine))
     finally
       CommandLine.error <- false
       Console.SetOut (fst saved)
@@ -124,7 +124,7 @@ type AltCoverTests() = class
       Assert.That(CommandLine.error, Is.True)
       Assert.That(stdout.ToString(), Is.Empty)
       let result = stderr.ToString()
-      Assert.That(result, Is.EqualTo (unique + "\r\n"))
+      Assert.That(result, Is.EqualTo (unique + Environment.NewLine))
     finally
       CommandLine.error <- false
       Console.SetOut (fst saved)
