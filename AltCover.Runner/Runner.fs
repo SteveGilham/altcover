@@ -10,7 +10,7 @@ module Runner =
 
   let mutable internal recordingDirectory : Option<string> = None
   let mutable internal workingDirectory : Option<string> = None
-  let mutable internal executable  : Option<string> = None
+  let mutable internal executable : Option<string> ref = ref None
 
   let internal DeclareOptions () =
     [ ("r|recorderDirectory=",
@@ -29,10 +29,10 @@ module Runner =
                  else CommandLine.error <- true))
       ("x|executable=",
        (fun x -> if not (String.IsNullOrWhiteSpace(x)) then
-                    if Option.isSome executable then
+                    if Option.isSome !executable then
                       CommandLine.error <- true
                     else
-                      executable <- Some x
+                      executable := Some x
                  else CommandLine.error <- true))
       ("?|help|h", (fun x -> CommandLine.help <- not (isNull x)))
       ("<>", (fun x -> CommandLine.error <- true))         ]// default end stop
@@ -50,7 +50,7 @@ module Runner =
     match check1 with
     | Left (intro, options) -> HandleBadArguments arguments intro options
     | Right (rest, options) ->
-      match executable with
+      match !executable with
       | None -> HandleBadArguments arguments "UsageError" options
       | Some exe ->
           try
