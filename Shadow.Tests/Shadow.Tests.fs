@@ -162,7 +162,6 @@ type AltCoverTests() = class
         Assert.That(client.Activated.WaitOne(1000), "never got activated")
         Assert.That (Instance.pipe.IsActivated(), "activation failed")
         client.Close()
-        async { Instance.Visit "name" 23 } |> Async.Start
         printfn "about to read"
         Assert.Throws<System.Runtime.Serialization.SerializationException>(fun () -> formatter.Deserialize(server) |> ignore) |> ignore
         printfn "after all work"
@@ -185,6 +184,7 @@ type AltCoverTests() = class
       let client = Tracer.CreatePipe(token)
       printfn "Created client"
       try
+        Instance.Visits.Clear()
         let expected = ("name", 23)
         let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
         use signal = new AutoResetEvent false
@@ -223,7 +223,7 @@ type AltCoverTests() = class
 
   member self.PipeVisitShouldFailFast() =
     let save = Instance.pipe
-    let token = Guid.NewGuid().ToString() + "PipeVisitShouldFailSafe"
+    let token = Guid.NewGuid().ToString() + "PipeVisitShouldFailFast"
     printfn "token = %s" token
     use server = new System.IO.Pipes.NamedPipeServerStream(token)
     printfn "Created NamedPipeServerStream"
