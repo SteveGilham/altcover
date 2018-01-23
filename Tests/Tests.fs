@@ -1816,7 +1816,6 @@ type AltCoverTests() = class
 #endif
     Assert.That (def.MainModule.AssemblyReferences, Is.EquivalentTo refs)
 
-
   [<Test>]
   member self.IncludedAssemblyRefsAreUpdated () =
     let where = Assembly.GetExecutingAssembly().Location

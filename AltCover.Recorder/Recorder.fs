@@ -10,6 +10,21 @@ open System.Runtime.CompilerServices
 open System.Runtime.InteropServices
 open System.Xml
 
+#if NETSTANDARD2_0
+module Communications =
+  let internal ResilientAgainstDisposedObject (f: unit -> unit) (tidy : unit -> unit)=
+    try
+      f()
+    with
+    | :? ObjectDisposedException -> tidy()
+
+  let SignalOnReceive (s:Stream) (h:System.Threading.EventWaitHandle) =
+    let b = s.ReadByte()
+    if (b >= 0) then
+        h.Set() |> ignore
+
+#endif
+
 [<ProgId("ExcludeFromCodeCoverage")>] // HACK HACK HACK
 type Tracer = {
                 Tracer : string
@@ -39,12 +54,8 @@ type Tracer = {
       try
         this.Pipe.Connect(ms)
         async {
-          try
-            let b = this.Pipe.ReadByte()
-            if (b >= 0) then
-              this.Activated.Set() |> ignore
-          with 
-          | :? ObjectDisposedException -> ()
+          Communications.ResilientAgainstDisposedObject(fun () ->
+            Communications.SignalOnReceive this.Pipe this.Activated) ignore
         } |> Async.Start
       with
       | :? TimeoutException ->
@@ -210,8 +221,9 @@ module Instance =
 
 #if NETSTANDARD2_0
   let private push (moduleId:string) hitPointId =
-     formatter.Serialize(pipe.Pipe, (moduleId, hitPointId))
-     pipe.Pipe.Flush()
+    Communications.ResilientAgainstDisposedObject (fun () ->
+      formatter.Serialize(pipe.Pipe, (moduleId, hitPointId))
+      pipe.Pipe.Flush()) ignore
 #endif
 
 #if NETSTANDARD2_0
@@ -272,7 +284,7 @@ module Instance =
 
 #if NETSTANDARD2_0
   let internal Connect (name:string) (p:Tracer) =
-    if name <> "AltCover" then 
+    if name <> "AltCover" then
       try
         printfn "**Connecting pipe %s ..." pipe.Tracer
         p.Connect 2000 // 2 seconds

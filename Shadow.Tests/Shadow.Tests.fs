@@ -66,6 +66,24 @@ type AltCoverTests() = class
 
 #if NETCOREAPP2_0
   [<Test>]
+  member self.ResilientPassesThrough () =
+    let one = ref false
+    let two = ref false
+    Communications.ResilientAgainstDisposedObject (fun () -> one := true) (fun () -> two := true)
+    Assert.That(!one)
+    Assert.That(!two, Is.False)
+
+  [<Test>]
+  member self.ResilientHandlesException () =
+    let one = ref false
+    let two = ref false
+    Communications.ResilientAgainstDisposedObject (fun () ->
+        ObjectDisposedException("fail") |> raise
+        one := true) (fun () -> two := true)
+    Assert.That(!one, Is.False)
+    Assert.That(!two)
+
+  [<Test>]
   member self.PipeTimeoutShouldRaise () =
     let token = Guid.NewGuid().ToString() + "PipeTimeoutShouldRaise"
     let client = Tracer.CreatePipe(token)
@@ -76,7 +94,6 @@ type AltCoverTests() = class
     finally
       client.Close()
 
-  [<Test>]
   member self.InitialConnectDefaultsUnconnected() =
     let os = Environment.OSVersion.ToString()
     let token = "AltCover"
@@ -89,7 +106,6 @@ type AltCoverTests() = class
     finally
       client.Close()
 
-  [<Test>]
   member self.ValidTokenWillConnect() =
     let os = Environment.OSVersion.ToString()
     let token = "ValidToken"
@@ -101,7 +117,7 @@ type AltCoverTests() = class
         Assert.That (client.Pipe.IsConnected, Is.True)
     finally
       client.Close()
-    
+
   [<Test>]
   member self.ValidTokenWillTimeOut() =
     let os = Environment.OSVersion.ToString()
@@ -113,6 +129,51 @@ type AltCoverTests() = class
         Assert.That (client.Pipe.IsConnected, Is.False)
     finally
       client.Close()
+
+  member self.PipeVisitShouldFailSafe() =
+    let save = Instance.pipe
+    let token = Guid.NewGuid().ToString() + "PipeVisitShouldFailSafe"
+    printfn "token = %s" token
+    use server = new System.IO.Pipes.NamedPipeServerStream(token)
+    printfn "Created NamedPipeServerStream"
+    try
+      let client = Tracer.CreatePipe(token)
+      printfn "Created client"
+      try
+        let expected = ("name", 23)
+        let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
+        use signal = new AutoResetEvent false
+        async {
+            try
+              client.Connect 5000
+              printfn "Connected."
+            with
+            | :? TimeoutException ->
+                printfn "timed out"
+            signal.Set() |> ignore
+            } |> Async.Start
+        server.WaitForConnection()
+        signal.WaitOne() |> ignore
+        printfn "after connection wait"
+        Instance.pipe <- client
+        Assert.That (Instance.pipe.IsConnected(), "connection failed")
+        printfn "about to act"
+        server.WriteByte(0uy)
+        Assert.That(client.Activated.WaitOne(1000), "never got activated")
+        Assert.That (Instance.pipe.IsActivated(), "activation failed")
+        client.Close()
+        async { Instance.Visit "name" 23 } |> Async.Start
+        printfn "about to read"
+        Assert.Throws<System.Runtime.Serialization.SerializationException>(fun () -> formatter.Deserialize(server) |> ignore) |> ignore
+        printfn "after all work"
+      finally
+        printfn "finally 1"
+        Instance.pipe.Close()
+        Instance.pipe <- save
+    finally
+      printfn "finally 2"
+      Instance.Visits.Clear()
+    printfn "all done"
 
   member self.PipeVisitShouldSignal() =
     let save = Instance.pipe
@@ -150,6 +211,49 @@ type AltCoverTests() = class
         let result = formatter.Deserialize(server) :?> (string*int)
         Assert.That (Instance.Visits, Is.Empty, "unexpected local write")
         Assert.That (result, Is.EqualTo expected, "unexpected result")
+        printfn "after all work"
+      finally
+        printfn "finally 1"
+        Instance.pipe.Close()
+        Instance.pipe <- save
+    finally
+      printfn "finally 2"
+      Instance.Visits.Clear()
+    printfn "all done"
+
+  member self.PipeVisitShouldFailFast() =
+    let save = Instance.pipe
+    let token = Guid.NewGuid().ToString() + "PipeVisitShouldFailSafe"
+    printfn "token = %s" token
+    use server = new System.IO.Pipes.NamedPipeServerStream(token)
+    printfn "Created NamedPipeServerStream"
+    try
+      let client = Tracer.CreatePipe(token)
+      printfn "Created client"
+      try
+        let expected = ("name", 23)
+        let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
+        use signal = new AutoResetEvent false
+        client.Close()
+        let blew = ref false
+        async {
+            try
+              client.Connect 500
+              printfn "Connected."
+            with
+            | :? TimeoutException ->
+                printfn "timed out"
+            | :? ObjectDisposedException ->
+                blew := true
+                printfn "blew up"
+            signal.Set() |> ignore
+            } |> Async.Start
+        signal.WaitOne() |> ignore
+        printfn "after connection wait"
+        Instance.pipe <- client
+        Assert.That(!blew, "Should have blown")
+        Assert.That (Instance.pipe.IsConnected(), Is.False, "connected")
+        Assert.That (Instance.pipe.IsActivated(), Is.False, "activated")
         printfn "after all work"
       finally
         printfn "finally 1"
@@ -474,7 +578,11 @@ type AltCoverTests() = class
   [<Test>]
   member self.PipeFlushShouldTidyUp() =
     // make these sequential in the simplest possible way
+    self.PipeVisitShouldFailFast()
+    self.PipeVisitShouldFailSafe()
     self.PipeVisitShouldSignal()
+    self.ValidTokenWillConnect()
+    self.InitialConnectDefaultsUnconnected()
 
     let save = Instance.pipe
     let token = Guid.NewGuid().ToString() + "PipeFlushShouldTidyUp"
