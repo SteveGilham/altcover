@@ -1171,6 +1171,18 @@ type AltCoverTests() = class
       Visitor.keys.Clear()
 
   [<Test>]
+  member self.ForeignTokenIsNotMatchedInIndex() =
+    try
+      Visitor.keys.Clear()
+      self.ProvideKeyPair() |> Visitor.Add
+      let path = typeof<System.IO.FileAccess>.Assembly.Location
+      let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+      let key = KeyStore.ArrayToIndex def.Name.PublicKey
+      Assert.That (Option.isNone(Instrument.KnownToken def.Name))
+    finally
+      Visitor.keys.Clear()
+
+  [<Test>]
   member self.FakedUpTokenIsMatchedInIndex() =
     try
       Visitor.keys.Clear()
