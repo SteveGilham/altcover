@@ -275,8 +275,10 @@ module Instrument =
     let effectiveKey = if assembly.Name.HasPublicKey then Visitor.defaultStrongNameKey else None
     UpdateStrongNaming assembly.Name effectiveKey
 
-    // TODO -- is this still lookup table of any use??
+    // TODO -- is this lookup table still of any use??
     let assemblyReferenceSubstitutions = new Dictionary<String, String>()
+#if NETCOREAPP2_0
+#else
     let interestingReferences =  assembly.MainModule.AssemblyReferences
                                  |> Seq.cast<AssemblyNameReference>
                                  |> Seq.filter (fun x -> assemblies |> List.exists (fun y -> y.Equals(x.Name)))
@@ -284,15 +286,11 @@ module Instrument =
     interestingReferences
     |> Seq.iter (fun r -> let original = r.ToString()
                           let token = KnownToken r
-                          let effectiveKey =
-#if NETCOREAPP2_0
-                                             None
-#else
-                                             match token with
+                          let effectiveKey = match token with
                                              | None -> Visitor.defaultStrongNameKey
                                                        |> Option.map KeyStore.KeyToRecord
                                              | Some _ -> token
-#endif
+
                           match effectiveKey with
                           | None -> r.HasPublicKey <- false
                                     r.PublicKeyToken <- null
@@ -304,7 +302,7 @@ module Instrument =
                           if  not <| updated.Equals(original, StringComparison.Ordinal) then
                             assemblyReferenceSubstitutions.[original] <- updated
                   )
-
+#endif
     assemblyReferenceSubstitutions
 
   let internal injectJSON json =

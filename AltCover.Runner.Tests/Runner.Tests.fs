@@ -26,6 +26,112 @@ type AltCoverTests() = class
     let strings = input |> Seq.map (Option.nullable >> (Option.getOrElse "fallback"))
     Assert.That(strings, Is.EquivalentTo([ "string"; "fallback"; "another string" ]))
 
+  // CommandLine.fs
+
+  [<Test>]
+  member self.NoThrowNoErrorLeavesAllOK () =
+    try
+      CommandLine.error <- false
+      CommandLine.doPathOperation ignore
+      Assert.That(CommandLine.error, Is.False)
+    finally
+      CommandLine.error <- false
+
+  [<Test>]
+  member self.NoThrowWithErrorIsSignalled () =
+    try
+      CommandLine.error <- false
+      CommandLine.doPathOperation (fun () -> CommandLine.error <- true)
+      Assert.That(CommandLine.error, Is.True)
+    finally
+      CommandLine.error <- false
+
+  [<Test>]
+  member self.ArgumentExceptionWrites () =
+    let saved = (Console.Out, Console.Error)
+    try
+      use stdout = new StringWriter()
+      use stderr = new StringWriter()
+      Console.SetOut stdout
+      Console.SetError stderr
+      let unique = "ArgumentException " + Guid.NewGuid().ToString()
+
+      CommandLine.error <- false
+      CommandLine.doPathOperation (fun () -> ArgumentException(unique) |> raise)
+      Assert.That(CommandLine.error, Is.True)
+      Assert.That(stdout.ToString(), Is.Empty)
+      let result = stderr.ToString()
+      Assert.That(result, Is.EqualTo (unique + "\r\n"))
+    finally
+      CommandLine.error <- false
+      Console.SetOut (fst saved)
+      Console.SetError (snd saved)
+
+  [<Test>]
+  member self.IOExceptionWrites () =
+    let saved = (Console.Out, Console.Error)
+    try
+      use stdout = new StringWriter()
+      use stderr = new StringWriter()
+      Console.SetOut stdout
+      Console.SetError stderr
+      let unique = "IOException " + Guid.NewGuid().ToString()
+
+      CommandLine.error <- false
+      CommandLine.doPathOperation (fun () -> IOException(unique) |> raise)
+      Assert.That(CommandLine.error, Is.True)
+      Assert.That(stdout.ToString(), Is.Empty)
+      let result = stderr.ToString()
+      Assert.That(result, Is.EqualTo (unique + "\r\n"))
+    finally
+      CommandLine.error <- false
+      Console.SetOut (fst saved)
+      Console.SetError (snd saved)
+
+  [<Test>]
+  member self.NotSupportedExceptionWrites () =
+    let saved = (Console.Out, Console.Error)
+    try
+      use stdout = new StringWriter()
+      use stderr = new StringWriter()
+      Console.SetOut stdout
+      Console.SetError stderr
+      let unique = "NotSupportedException " + Guid.NewGuid().ToString()
+
+      CommandLine.error <- false
+      CommandLine.doPathOperation (fun () -> NotSupportedException(unique) |> raise)
+      Assert.That(CommandLine.error, Is.True)
+      Assert.That(stdout.ToString(), Is.Empty)
+      let result = stderr.ToString()
+      Assert.That(result, Is.EqualTo (unique + "\r\n"))
+    finally
+      CommandLine.error <- false
+      Console.SetOut (fst saved)
+      Console.SetError (snd saved)
+
+  [<Test>]
+  member self.SecurityExceptionWrites () =
+    let saved = (Console.Out, Console.Error)
+    try
+      use stdout = new StringWriter()
+      use stderr = new StringWriter()
+      Console.SetOut stdout
+      Console.SetError stderr
+      let unique = "SecurityException " + Guid.NewGuid().ToString()
+
+      CommandLine.error <- false
+      CommandLine.doPathOperation (fun () -> System.Security.SecurityException(unique) |> raise)
+      Assert.That(CommandLine.error, Is.True)
+      Assert.That(stdout.ToString(), Is.Empty)
+      let result = stderr.ToString()
+      Assert.That(result, Is.EqualTo (unique + "\r\n"))
+    finally
+      CommandLine.error <- false
+      Console.SetOut (fst saved)
+      Console.SetError (snd saved)
+
+  // Runner.fs and CommandLine.fs
+
   [<Test>]
   member self.UsageIsAsExpected() =
     let options = Runner.DeclareOptions ()

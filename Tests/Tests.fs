@@ -152,6 +152,33 @@ type AltCoverTests() = class
     )
 
   [<Test>]
+  member self.ShouldGetForeignPdbWithFallback() =
+    // Hack for running while instrumented
+    let where = Assembly.GetExecutingAssembly().Location
+    let path = Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "packages")
+#if NETCOREAPP2_0
+    let path' = if Directory.Exists path then path
+                else Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "../packages")
+#else
+    let path' = path
+#endif
+    // Looking for the Mono.Options symbols
+    let files = Directory.GetFiles(path', "*.pdb", SearchOption.AllDirectories)
+    files
+    |> Seq.filter(fun p -> Path.ChangeExtension(p, ".dll") |> File.Exists)
+    |> Seq.iter( fun p ->
+      let dll = Path.ChangeExtension(p, ".dll")
+      try
+        let def = Mono.Cecil.AssemblyDefinition.ReadAssembly dll
+        let pdb = AltCover.ProgramDatabase.GetPdbWithFallback(def)
+        match pdb with
+        | None -> Assert.Fail("Not found " + p)
+        | Some name -> Assert.That(name, Is.EqualTo p)
+      with
+      | :? BadImageFormatException -> ()
+    )
+
+  [<Test>]
   member self.ShouldGetMdbWithFallback() =
     // Hack for running while instrumented
     let where = Assembly.GetExecutingAssembly().Location
@@ -1068,6 +1095,29 @@ type AltCoverTests() = class
       Visitor.keys.Clear()
 
   [<Test>]
+  member self.ThirdPartyKeyNotMatchedInIndex() =
+    try
+      Visitor.keys.Clear()
+      let path = typeof<System.IO.FileAccess>.Assembly.Location
+      let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+      self.ProvideKeyPair() |> Visitor.Add
+      Assert.That (Option.isNone(Instrument.KnownKey def.Name))
+    finally
+      Visitor.keys.Clear()
+
+  [<Test>]
+  member self.FakedUpKeyIsMatchedInIndex() =
+    try
+      Visitor.keys.Clear()
+      let path = typeof<Microsoft.FSharp.Core.CompilationMappingAttribute>.Assembly.Location
+      let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+      let key = KeyStore.ArrayToIndex def.Name.PublicKey
+      Visitor.keys.Add(key, { Pair=null; Token=[] })
+      Assert.That (Option.isSome(Instrument.KnownKey def.Name))
+    finally
+      Visitor.keys.Clear()
+
+  [<Test>]
   member self.NoKnownKeyIfAssemblyHasNone() =
     try
       Visitor.keys.Clear()
@@ -1117,6 +1167,18 @@ type AltCoverTests() = class
       AltCover.Instrument.UpdateStrongNaming def.Name None
       self.ProvideKeyPair() |> Visitor.Add
       Assert.That (Option.isNone(Instrument.KnownToken def.Name))
+    finally
+      Visitor.keys.Clear()
+
+  [<Test>]
+  member self.FakedUpTokenIsMatchedInIndex() =
+    try
+      Visitor.keys.Clear()
+      let path = typeof<Microsoft.FSharp.Core.CompilationMappingAttribute>.Assembly.Location
+      let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+      let key = KeyStore.ArrayToIndex def.Name.PublicKey
+      Visitor.keys.Add(key, { Pair=null; Token=[] })
+      Assert.That (Option.isSome(Instrument.KnownToken def.Name))
     finally
       Visitor.keys.Clear()
 
@@ -1610,12 +1672,16 @@ type AltCoverTests() = class
 
     let token' = String.Join(String.Empty, token1|> Seq.map (fun x -> x.ToString("x2")))
     Assert.That (token', Is.EqualTo String.Empty)
+#if NETCOREAPP2_0
+    Assert.That (result.Count, Is.EqualTo 0)
+#else
     Assert.That (result.Count, Is.EqualTo 1)
     let key = result.Keys |> Seq.head
     let value = result.Values |> Seq.head
     let ptr = key.LastIndexOf("=")
     Assert.That (key.Substring(0, ptr), Is.EqualTo(value.Substring(0, ptr)))
     Assert.That (value.Substring(ptr), Is.EqualTo "=null")
+#endif
 
   [<Test>]
   member self.UpdateStrongReferencesShouldNotAddASigningKey () =
@@ -1661,21 +1727,50 @@ type AltCoverTests() = class
     Visitor.defaultStrongNameKey <- Some (StrongNameKeyPair(buffer.ToArray()))
 
     let result = Instrument.UpdateStrongReferences def ["nunit.framework"; "nonesuch"]
-    Assert.That (result.Count, Is.EqualTo 1)
-    Assert.That (result.Values |> Seq.head, Does.EndWith
 #if NETCOREAPP2_0
-                                                                 "PublicKeyToken=null")
+    Assert.That (result.Count, Is.EqualTo 0)
 #else
-                                                                 "PublicKeyToken=4ebffcaabf10ce6a")
-#endif
+    Assert.That (result.Count, Is.EqualTo 1)
+    Assert.That (result.Values |> Seq.head, Does.EndWith "PublicKeyToken=4ebffcaabf10ce6a")
     let key = result.Keys |> Seq.head
     Assert.That (result.Values |> Seq.head,
-                 Is.EqualTo (key.Substring(0, key.Length - 16) +
-#if NETCOREAPP2_0
-                                                                 "null"))
-#else
-                                                                 "4ebffcaabf10ce6a"))
+                 Is.EqualTo (key.Substring(0, key.Length - 16) + "4ebffcaabf10ce6a"))
 #endif
+
+  [<Test>]
+  member self.UpdateStrongReferencesShouldTrackReferencesEvenFakes () =
+    try
+      let where = Assembly.GetExecutingAssembly().Location
+      let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
+      let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+      ProgramDatabase.ReadSymbols def |> ignore
+      let npath = typeof<TestAttribute>.Assembly.Location
+      let ndef = Mono.Cecil.AssemblyDefinition.ReadAssembly npath
+      let key = KeyStore.ArrayToIndex ndef.Name.PublicKey
+
+#if NETCOREAPP2_0
+      use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(infrastructureSnk)
+#else
+      use stream = typeof<AltCover.Node>.Assembly.GetManifestResourceStream(recorderSnk)
+#endif
+      use buffer = new MemoryStream()
+      stream.CopyTo(buffer)
+      let ourKeyPair = StrongNameKeyPair(buffer.ToArray())
+      Visitor.defaultStrongNameKey <- Some ourKeyPair
+      Visitor.keys.Add(key, { Pair=ourKeyPair; Token=[] })
+
+      let result = Instrument.UpdateStrongReferences def ["nunit.framework"; "nonesuch"]
+#if NETCOREAPP2_0
+      Assert.That (result.Count, Is.EqualTo 0)
+#else
+      Assert.That (result.Count, Is.EqualTo 1)
+      Assert.That (result.Values |> Seq.head, Does.EndWith "PublicKeyToken=4ebffcaabf10ce6a")
+      let key = result.Keys |> Seq.head
+      Assert.That (result.Values |> Seq.head,
+                   Is.EqualTo (key.Substring(0, key.Length - 16) + "4ebffcaabf10ce6a"))
+#endif
+    finally
+      Visitor.keys.Clear()
 
   [<Test>]
   member self.ExcludedAssemblyRefsAreNotUpdated () =
@@ -1698,22 +1793,17 @@ type AltCoverTests() = class
     let visited = Node.Assembly (def, None, false)
 
     let result = Instrument.InstrumentationVisitor {state with RecordingAssembly = fake } visited
-    Assert.That (result.RenameTable.Count, Is.EqualTo 1)
-    Assert.That (result.RenameTable.Values |> Seq.head, Does.EndWith
 #if NETCOREAPP2_0
-                                                                 "PublicKeyToken=null")
+    Assert.That (result.RenameTable.Count, Is.EqualTo 0)
 #else
-                                                                 "PublicKeyToken=4ebffcaabf10ce6a")
-#endif
+    Assert.That (result.RenameTable.Count, Is.EqualTo 1)
+    Assert.That (result.RenameTable.Values |> Seq.head, Does.EndWith "PublicKeyToken=4ebffcaabf10ce6a")
     let key = result.RenameTable.Keys |> Seq.head
     Assert.That (result.RenameTable.Values |> Seq.head,
-                 Is.EqualTo (key.Substring(0, key.Length - 16) +
-#if NETCOREAPP2_0
-                                                                 "null"))
-#else
-                                                                 "4ebffcaabf10ce6a"))
+                 Is.EqualTo (key.Substring(0, key.Length - 16) + "4ebffcaabf10ce6a"))
 #endif
     Assert.That (def.MainModule.AssemblyReferences, Is.EquivalentTo refs)
+
 
   [<Test>]
   member self.IncludedAssemblyRefsAreUpdated () =
@@ -1736,20 +1826,14 @@ type AltCoverTests() = class
     let visited = Node.Assembly (def, None, true)
 
     let result = Instrument.InstrumentationVisitor {state with RecordingAssembly = fake } visited
-    Assert.That (result.RenameTable.Count, Is.EqualTo 1)
-    Assert.That (result.RenameTable.Values |> Seq.head, Does.EndWith
 #if NETCOREAPP2_0
-                                                                 "PublicKeyToken=null")
+    Assert.That (result.RenameTable.Count, Is.EqualTo 0)
 #else
-                                                                 "PublicKeyToken=4ebffcaabf10ce6a")
-#endif
+    Assert.That (result.RenameTable.Count, Is.EqualTo 1)
+    Assert.That (result.RenameTable.Values |> Seq.head, Does.EndWith "PublicKeyToken=4ebffcaabf10ce6a")
     let key = result.RenameTable.Keys |> Seq.head
     Assert.That (result.RenameTable.Values |> Seq.head,
-                 Is.EqualTo (key.Substring(0, key.Length - 16) +
-#if NETCOREAPP2_0
-                                                                 "null"))
-#else
-                                                                 "4ebffcaabf10ce6a"))
+                 Is.EqualTo (key.Substring(0, key.Length - 16) + "4ebffcaabf10ce6a"))
 #endif
     Assert.That (def.MainModule.AssemblyReferences, Is.EquivalentTo (refs @ [fake.Name]))
 
@@ -1970,6 +2054,110 @@ type AltCoverTests() = class
     let result = Instrument.injectJSON <| expected
     Assert.That (result.Replace("\r\n","\n"),
                  Is.EqualTo(expected.Replace("\r\n","\n")))
+
+  // CommandLine.fs
+
+  [<Test>]
+  member self.NoThrowNoErrorLeavesAllOK () =
+    try
+      CommandLine.error <- false
+      CommandLine.doPathOperation ignore
+      Assert.That(CommandLine.error, Is.False)
+    finally
+      CommandLine.error <- false
+
+  [<Test>]
+  member self.NoThrowWithErrorIsSignalled () =
+    try
+      CommandLine.error <- false
+      CommandLine.doPathOperation (fun () -> CommandLine.error <- true)
+      Assert.That(CommandLine.error, Is.True)
+    finally
+      CommandLine.error <- false
+
+  [<Test>]
+  member self.ArgumentExceptionWrites () =
+    let saved = (Console.Out, Console.Error)
+    try
+      use stdout = new StringWriter()
+      use stderr = new StringWriter()
+      Console.SetOut stdout
+      Console.SetError stderr
+      let unique = "ArgumentException " + Guid.NewGuid().ToString()
+
+      CommandLine.error <- false
+      CommandLine.doPathOperation (fun () -> ArgumentException(unique) |> raise)
+      Assert.That(CommandLine.error, Is.True)
+      Assert.That(stdout.ToString(), Is.Empty)
+      let result = stderr.ToString()
+      Assert.That(result, Is.EqualTo (unique + "\r\n"))
+    finally
+      CommandLine.error <- false
+      Console.SetOut (fst saved)
+      Console.SetError (snd saved)
+
+  [<Test>]
+  member self.IOExceptionWrites () =
+    let saved = (Console.Out, Console.Error)
+    try
+      use stdout = new StringWriter()
+      use stderr = new StringWriter()
+      Console.SetOut stdout
+      Console.SetError stderr
+      let unique = "IOException " + Guid.NewGuid().ToString()
+
+      CommandLine.error <- false
+      CommandLine.doPathOperation (fun () -> IOException(unique) |> raise)
+      Assert.That(CommandLine.error, Is.True)
+      Assert.That(stdout.ToString(), Is.Empty)
+      let result = stderr.ToString()
+      Assert.That(result, Is.EqualTo (unique + "\r\n"))
+    finally
+      CommandLine.error <- false
+      Console.SetOut (fst saved)
+      Console.SetError (snd saved)
+
+  [<Test>]
+  member self.NotSupportedExceptionWrites () =
+    let saved = (Console.Out, Console.Error)
+    try
+      use stdout = new StringWriter()
+      use stderr = new StringWriter()
+      Console.SetOut stdout
+      Console.SetError stderr
+      let unique = "NotSupportedException " + Guid.NewGuid().ToString()
+
+      CommandLine.error <- false
+      CommandLine.doPathOperation (fun () -> NotSupportedException(unique) |> raise)
+      Assert.That(CommandLine.error, Is.True)
+      Assert.That(stdout.ToString(), Is.Empty)
+      let result = stderr.ToString()
+      Assert.That(result, Is.EqualTo (unique + "\r\n"))
+    finally
+      CommandLine.error <- false
+      Console.SetOut (fst saved)
+      Console.SetError (snd saved)
+
+  [<Test>]
+  member self.SecurityExceptionWrites () =
+    let saved = (Console.Out, Console.Error)
+    try
+      use stdout = new StringWriter()
+      use stderr = new StringWriter()
+      Console.SetOut stdout
+      Console.SetError stderr
+      let unique = "SecurityException " + Guid.NewGuid().ToString()
+
+      CommandLine.error <- false
+      CommandLine.doPathOperation (fun () -> System.Security.SecurityException(unique) |> raise)
+      Assert.That(CommandLine.error, Is.True)
+      Assert.That(stdout.ToString(), Is.Empty)
+      let result = stderr.ToString()
+      Assert.That(result, Is.EqualTo (unique + "\r\n"))
+    finally
+      CommandLine.error <- false
+      Console.SetOut (fst saved)
+      Console.SetError (snd saved)
 
   // AltCover.fs and CommandLine.fs
 
