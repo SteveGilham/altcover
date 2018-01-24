@@ -11,6 +11,7 @@ open Fake.Testing
 open Fake.OpenCoverHelper
 open Fake.ReportGeneratorHelper
 open FSharpLint.Fake
+open NUnit.Framework
 
 let Copyright  = ref String.Empty
 let Version = ref String.Empty
@@ -109,7 +110,7 @@ Target "BuildMonoSamples" (fun _ ->
                                    let result = ExecProcess (fun info -> info.FileName <- mcs
                                                                          info.WorkingDirectory <- "."
                                                                          info.Arguments <- cmd) (TimeSpan.FromMinutes 5.0)
-                                   if result <> 0 then failwith ("Mono compilation of '" + cmd + "' failed"))
+                                   Assert.That(result, Is.EqualTo 0, "Mono compilation of '" + cmd + "' failed"))
 
     Actions.FixMVId ["./_Mono/Sample1/Sample1.exe"; "./_Mono/Sample3/Sample3.dll"]
 )
@@ -134,7 +135,7 @@ Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standal
     let r = ExecProcess (fun info -> info.FileName <- (findToolInSubPath "gendarme.exe" "./packages")
                                      info.WorkingDirectory <- "."
                                      info.Arguments <- "--severity all --confidence all --config ./Build/rules.xml --console --html ./_Reports/gendarme.html " + subjects) (TimeSpan.FromMinutes 5.0)
-    if r <> 0 then failwith  "Gendarme Errors were detected"
+    Assert.That(r, Is.EqualTo 0, "Gendarme Errors were detected")
 )
 // Travis TODO
 (*
@@ -189,7 +190,7 @@ Target "FxCop" (fun _ -> // Needs debug because release is compiled --standalone
                                                                    TypeList = types
                                                                    Rules = rules
                                                                    IgnoreGeneratedCode  = true})
-                                       if fileExists "_Reports/FxCopReport.xml" then failwith "FxCop Errors were detected")
+                                       Assert.That(fileExists "_Reports/FxCopReport.xml", Is.False, "FxCop Errors were detected"))
 )
 
 // Unit Test
@@ -200,13 +201,14 @@ Target "UnitTest" (fun _ ->
                                          xml.Descendants(XName.Get("Linecoverage"))
                                          |> Seq.map (fun e -> let coverage = e.Value.Replace("%", String.Empty)
                                                               match Double.TryParse coverage with
-                                                              | (false, _) -> failwith ("Could not parse coverage "+coverage)
+                                                              | (false, _) -> Assert.Fail ("Could not parse coverage "+coverage)
+                                                                              0.0
                                                               | (_, numeric) -> printfn "%s : %A" (f |> Path.GetDirectoryName |> Path.GetFileName) numeric
                                                                                 numeric))
                 |> Seq.toList
 
   if numbers |> List.tryFind (fun n -> n >= 90.0) |> Option.isNone && numbers |> List.length > 1 then
-     failwith "Coverage is too low"
+     Assert.Fail("Coverage is too low")
 )
 
 Target "JustUnitTest" (fun _ ->
@@ -272,7 +274,7 @@ Target "UnitTestWithAltCover" (fun _ ->
       let result = ExecProcess (fun info -> info.FileName <- altcover
                                             info.WorkingDirectory <- testDirectory
                                             info.Arguments <- ("/sn=" + keyfile + AltCoverFilter + @"/o=./__UnitTestWithAltCover -x=" + altReport)) (TimeSpan.FromMinutes 5.0)
-      if result <> 0 then failwithf "Re-instrument returned with a non-zero exit code"
+      Assert.That(result, Is.EqualTo 0, "Re-instrument returned with a non-zero exit code")
 
       printfn "Unit test the instrumented code"
       [ !! "_Binaries/AltCover.Tests/Debug+AnyCPU/__UnitTestWithAltCover/*.Tests.dll"
@@ -317,13 +319,13 @@ Target "UnitTestWithAltCoverCore" (fun _ ->
     let result = ExecProcess (fun info -> info.FileName <- altcover
                                           info.WorkingDirectory <- testDirectory
                                           info.Arguments <- ("/sn=" + keyfile + AltCoverFilter + @"/o=" + output + " -x=" + altReport)) (TimeSpan.FromMinutes 5.0)
-    if result <> 0 then failwithf "first instrument returned with a non-zero exit code"
+    Assert.That(result, Is.EqualTo 0, "first instrument returned with a non-zero exit code")
 
     printfn "Unit test the instrumented code"
     let result = ExecProcess (fun info -> info.FileName <- "dotnet"
                                           info.WorkingDirectory <- FullName "Tests"
                                           info.Arguments <- ("test --no-build --configuration Debug altcover.tests.core.fsproj")) (TimeSpan.FromMinutes 5.0)
-    if result <> 0 then failwithf "first test returned with a non-zero exit code"
+    Assert.That(result, Is.EqualTo 0, "first test returned with a non-zero exit code")
 
     printfn "Instrument the shadow tests"
     let shadowDir = "_Binaries/AltCover.Shadow.Tests/Debug+AnyCPU/netcoreapp2.0"
@@ -332,12 +334,12 @@ Target "UnitTestWithAltCoverCore" (fun _ ->
     let result = ExecProcess (fun info -> info.FileName <- altcover
                                           info.WorkingDirectory <- shadowDir
                                           info.Arguments <- ("/sn=" + keyfile + AltCoverFilterG + @"/o=" + shadowOut + " -x=" + shadowReport)) (TimeSpan.FromMinutes 5.0)
-    if result <> 0 then failwithf "second instrument returned with a non-zero exit code"
+    Assert.That(result, Is.EqualTo 0, "second instrument returned with a non-zero exit code")
     printfn "Execute the shadow tests"
     let result = ExecProcess (fun info -> info.FileName <- "dotnet"
                                           info.WorkingDirectory <- FullName "Shadow.Tests"
                                           info.Arguments <- ("test --no-build --configuration Debug altcover.recorder.tests.core.fsproj")) (TimeSpan.FromMinutes 5.0)
-    if result <> 0 then failwithf "second test returned with a non-zero exit code"
+    Assert.That(result, Is.EqualTo 0, "second test returned with a non-zero exit code")
 
     let runnerDir = "_Binaries/AltCover.Runner.Tests/Debug+AnyCPU/netcoreapp2.0"
     let runnerReport = reports @@ "RunnerTestWithAltCoverCore.xml"
@@ -345,12 +347,12 @@ Target "UnitTestWithAltCoverCore" (fun _ ->
     let result = ExecProcess (fun info -> info.FileName <- altcover
                                           info.WorkingDirectory <- runnerDir
                                           info.Arguments <- ("/sn=" + keyfile + AltCoverFilterG + @"/o=" + runnerOut + " -x=" + runnerReport)) (TimeSpan.FromMinutes 5.0)
-    if result <> 0 then failwithf "third instrument returned with a non-zero exit code"
+    Assert.That(result, Is.EqualTo 0, "third instrument returned with a non-zero exit code")
     printfn "Execute the runner tests"
     let result = ExecProcess (fun info -> info.FileName <- "dotnet"
                                           info.WorkingDirectory <- FullName "AltCover.Runner.Tests"
                                           info.Arguments <- ("test --no-build --configuration Debug altcover.runner.tests.core.fsproj")) (TimeSpan.FromMinutes 5.0)
-    if result <> 0 then failwithf "third test returned with a non-zero exit code"
+    Assert.That(result, Is.EqualTo 0, "third test returned with a non-zero exit code")
 
     ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
                                        ReportTypes = [ ReportGeneratorReportType.Html; ReportGeneratorReportType.Badges; ReportGeneratorReportType.XmlSummary]
@@ -393,7 +395,8 @@ Target "FSharpTypesDotNet" ( fun _ ->
     let result = ExecProcess (fun info -> info.FileName <- "dotnet"
                                           info.WorkingDirectory <- FullName "Sample2"
                                           info.Arguments <- ("test --no-build --configuration Debug sample2.core.fsproj")) (TimeSpan.FromMinutes 5.0)
-    if result <> 0 then failwithf "sample test returned with a non-zero exit code"
+    Assert.That(result, Is.EqualTo 0, "sample test returned with a non-zero exit code")
+    Actions.ValidateFSharpTypesCoverage simpleReport
 )
 
 Target "BasicCSharp" (fun _ ->
@@ -424,7 +427,7 @@ Target "CSharpMonoWithDotNet" (fun _ ->
     let result2 = ExecProcess (fun info -> info.FileName <- o @@ "/Sample1.exe"
                                            info.WorkingDirectory <- o
                                            info.Arguments <- "") (TimeSpan.FromMinutes 5.0)
-    if result2 <> 0 then failwith "Instrumented .exe failed"
+    Assert.That(result2, Is.EqualTo 0, "Instrumented .exe failed")
 
     Actions.ValidateSample1 "./_Reports/CSharpMonoWithDotNet.xml" "CSharpMonoWithDotNet"
 )
@@ -483,7 +486,7 @@ Target "SelfTest" (fun _ ->
     let result = ExecProcess (fun info -> info.FileName <- "_Binaries/AltCover.Tests/Debug+AnyCPU/__SelfTest/AltCover.exe"
                                           info.WorkingDirectory <- "_Binaries/AltCover.Tests/Debug+AnyCPU"
                                           info.Arguments <- ("/sn=" + keyfile + AltCoverFilter + @"/o=./__SelfTestDummy -x=" + altReport2)) (TimeSpan.FromMinutes 5.0)
-    if result <> 0 then failwithf "Re-instrument returned with a non-zero exit code"
+    Assert.That(result, Is.EqualTo 0, "Re-instrument returned with a non-zero exit code")
 
     ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
                                        TargetDir = "_Reports/_AltCoverSelfTest"})
@@ -621,7 +624,7 @@ Target "ReleaseMonoWithDotNet" (fun _ ->
     let result2 = ExecProcess (fun info -> info.FileName <- o @@ "Sample1.exe"
                                            info.WorkingDirectory <- o
                                            info.Arguments <- "") (TimeSpan.FromMinutes 5.0)
-    if result2 <> 0 then failwith "Instrumented .exe failed"
+    Assert.That(result2, Is.EqualTo 0, "Instrumented .exe failed")
 
     Actions.ValidateSample1 "./_Reports/ReleaseMonoWithDotNet.xml" "ReleaseMonoWithDotNet"
 )
@@ -661,7 +664,7 @@ Target "ReleaseXUnitDotNetDemo" (fun _ ->
     let result = ExecProcess (fun info -> info.FileName <- "dotnet"
                                           info.WorkingDirectory <- FullName "./Demo/xunit-dotnet"
                                           info.Arguments <- ("test --no-build --configuration Debug xunit-dotnet.csproj")) (TimeSpan.FromMinutes 5.0)
-    if result <> 1 then failwith "Unexpected unit test return"
+    Assert.That(result, Is.EqualTo 1, "Unexpected unit test return")
 
     use coverageFile = new FileStream(x, FileMode.Open, FileAccess.Read, FileShare.None, 4096, FileOptions.SequentialScan)
     let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
@@ -674,9 +677,7 @@ Target "ReleaseXUnitDotNetDemo" (fun _ ->
                         |> Seq.filter (fun x -> x.Attribute(XName.Get("visitcount")).Value = n)
                         |> Seq.length)
 
-    visits
-    |> Seq.zip [3; 5; 3]
-    |> Seq.iteri (fun i (r,x) -> if r <> x then failwith (sprintf "mismatch for visit count %d %A <> %A" i r x))
+    Assert.That(visits, Is.EquivalentTo[3; 5; 3])
 
 )
 

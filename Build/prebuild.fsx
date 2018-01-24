@@ -20,6 +20,11 @@ let ylib = Directory.GetFiles(here, "*amlDotNet.dll", SearchOption.AllDirectorie
             |> Seq.head
             |> Path.GetDirectoryName
 
+let nlib = Directory.GetFiles(here, "*framework.dll", SearchOption.AllDirectories)
+            |> Seq.filter (fun n -> n.Contains("net45"))
+            |> Seq.head
+            |> Path.GetDirectoryName
+
 let build = """#I @"{0}" // include Fake lib
 #r "FakeLib.dll"
 #I @"{1}"
@@ -28,6 +33,8 @@ let build = """#I @"{0}" // include Fake lib
 #r "FSharp.Markdown.dll"
 #I @"{3}"
 #r "YamlDotNet.dll"
+#I @"{4}"
+#r "nunit.framework.dll"
 #r "System.IO.Compression.FileSystem.dll"
 #r "System.Xml"
 #r "System.Xml.Linq"
@@ -36,5 +43,5 @@ let build = """#I @"{0}" // include Fake lib
 #load "targets.fsx"
 """
 
-let formatted = String.Format(build, fakelib, lintlib, mdlib, ylib)
+let formatted = String.Format(build, fakelib, lintlib, mdlib, ylib, nlib)
 File.WriteAllText("./Build/build.fsx", formatted)

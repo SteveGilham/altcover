@@ -6,6 +6,7 @@ open System.Xml.Linq
 
 open Fake
 open FSharp.Markdown
+open NUnit.Framework
 open YamlDotNet.RepresentationModel
 
 module Actions =
@@ -36,7 +37,7 @@ module Actions =
       printfn "looping after %A" x
       System.Threading.Thread.Sleep(500)
       if depth < 10 then Clean1 (depth + 1)
-      else failwith "Could not clean all the files"
+      else Assert.Fail "Could not clean all the files"
 
     Clean1 0
 
@@ -123,8 +124,17 @@ open System.Runtime.CompilerServices
                    |> Seq.sort
                    |> Seq.toList
     let expected = "Invoke as_bar bytes get_MyBar makeThing returnBar returnFoo testMakeThing testMakeUnion"
-    if recorded.Length <> 9 then failwith (sprintf "Bad method list length %A" recorded)
-    if String.Join(" ", recorded) <> expected then failwith (sprintf "Bad method list %A" recorded)
+    Assert.That(recorded, expected.Split() |> Is.EquivalentTo, sprintf "Bad method list %A" recorded)
+
+  let ValidateFSharpTypesCoverage simpleReport =
+    use coverageFile = new FileStream(simpleReport, FileMode.Open, FileAccess.Read, FileShare.None, 4096, FileOptions.SequentialScan)
+    // Edit xml report to store new hits
+    let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
+    let recorded = coverageDocument.Descendants(XName.Get("seqpnt"))
+                   |> Seq.map (fun x -> x.Attribute(XName.Get("visitcount")).Value)
+                   |> Seq.toList
+    let expected = "0 1 1 1 1 1 1 1 0 0 0 0 0 0 0 0 0 2 1 1 1"
+    Assert.That(recorded, expected.Split() |> Is.EquivalentTo, sprintf "Bad method list %A" recorded)
 
   let ValidateSample1 simpleReport sigil =
     // get recorded details from here
@@ -144,13 +154,14 @@ open System.Runtime.CompilerServices
                |> Seq.sort
                |> Seq.toList
 
-    if (List.length ones) + (List.length zero) <> (List.length recorded) then failwith ("unexpected visits in " + sigil)
+    Assert.That(List.length recorded, Is.EqualTo ((List.length ones) + (List.length zero)),
+                        "unexpected visits in " + sigil)
     let zero' = zero |> Seq.distinct |> Seq.toList
 
-    if ["18"; "19"; "20"] <> zero' then failwith ("wrong unvisited in " + sigil + " : " + (sprintf "%A" zero'))
+    Assert.That (zero', Is.EquivalentTo ["18"; "19"; "20"], "wrong unvisited in " + sigil + " : " + (sprintf "%A" zero'))
 
     let ones' = ones |> Seq.distinct |> Seq.toList
-    if ["11"; "12"; "13"; "14"; "15"; "16"; "21"] <> ones' then failwith ("wrong number of visited  in " + sigil + " : " + (sprintf "%A" ones'))
+    Assert.That (ones', Is.EquivalentTo ["11"; "12"; "13"; "14"; "15"; "16"; "21"], "wrong number of visited in " + sigil + " : " + (sprintf "%A" zero'))
 
   let SimpleInstrumentingRun (samplePath:string) (binaryPath:string) (reportSigil:string) =
     printfn "Instrument and run a simple executable"
@@ -162,11 +173,11 @@ open System.Runtime.CompilerServices
     let result = ExecProcess (fun info -> info.FileName <- binRoot @@ "AltCover.exe"
                                           info.WorkingDirectory <- sampleRoot
                                           info.Arguments <- ("\"-t=System\\.\" -x=" + simpleReport + " /o=./" + instrumented)) (TimeSpan.FromMinutes 5.0)
-    if result <> 0 then failwith "Simple instrumentation failed"
+    Assert.That(result, Is.EqualTo 0, "Simple instrumentation failed")
     let result2 = ExecProcess (fun info -> info.FileName <- sampleRoot @@ (instrumented + "/Sample1.exe")
                                            info.WorkingDirectory <- (sampleRoot @@ instrumented)
                                            info.Arguments <- "") (TimeSpan.FromMinutes 5.0)
-    if result2 <> 0 then failwith "Instrumented .exe failed"
+    Assert.That(result2, Is.EqualTo 0, "Instrumented .exe failed")
     ValidateSample1 simpleReport reportSigil
 
   let SimpleInstrumentingRunUnderMono (samplePath:string) (binaryPath:string) (reportSigil':string) (monoOnWindows:string option)=
@@ -182,13 +193,13 @@ open System.Runtime.CompilerServices
     let result = ExecProcess (fun info -> info.FileName <- mono
                                           info.WorkingDirectory <- sampleRoot
                                           info.Arguments <- ((binRoot @@ "AltCover.exe") + " \"-t=System\\.\" -x=" + simpleReport + " /o=./" + instrumented)) (TimeSpan.FromMinutes 5.0)
-    if result <> 0 then failwith "Simple instrumentation failed"
+    Assert.That(result, Is.EqualTo 0, "Simple instrumentation failed")
     let result2 = ExecProcess (fun info -> info.FileName <- sampleRoot @@ (instrumented + "/Sample1.exe")
                                            info.WorkingDirectory <- (sampleRoot @@ instrumented)
                                            info.Arguments <- "") (TimeSpan.FromMinutes 5.0)
-    if result2 <> 0 then failwith "Instrumented .exe failed"
+    Assert.That(result2, Is.EqualTo 0, "Instrumented .exe failed")
     ValidateSample1 simpleReport reportSigil
-   | None -> failwith "Mono executable expected"
+   | None -> Assert.Fail "Mono executable expected"
 
 let PrepareReadMe packingCopyright =
     let readme = FullName "README.md"
