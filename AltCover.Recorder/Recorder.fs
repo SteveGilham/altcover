@@ -290,7 +290,8 @@ module Instance =
         p.Connect 2000 // 2 seconds
         printfn "**Connected."
       with
-      | :? TimeoutException ->
+      | :? TimeoutException
+      | :? IOException ->
           printfn "**timed out"
           ()
 #endif

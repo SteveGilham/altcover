@@ -1,7 +1,9 @@
 ﻿namespace AltCover
 
 open System
+open System.Collections.Generic
 open System.IO
+open System.Reflection
 
 open Mono.Options
 open Augment
@@ -82,6 +84,16 @@ module Runner =
           use latch = new System.Threading.ManualResetEvent false
           use latch' = new System.Threading.ManualResetEvent false
 
+          let recorderPath = Path.Combine (Option.get recordingDirectory, "AltCover.Recorder.g.dll")
+          let recorder = Assembly.LoadFrom recorderPath
+          let instanceType = recorder.GetType("AltCover.Recorder.Instance")
+          let token = instanceType.GetProperty("Token", BindingFlags.Public ||| BindingFlags.Static).GetValue(null) :?> string
+          let report = instanceType.GetProperty("ReportFile", BindingFlags.Public ||| BindingFlags.Static).GetValue(null) :?> string
+          use server = new System.IO.Pipes.NamedPipeServerStream(token)
+          let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
+
+          let hits = List<(string*int)>()
+
           let payload = async {
             CommandLine.doPathOperation (fun () ->
               CommandLine.ProcessTrailingArguments rest (DirectoryInfo(Option.get workingDirectory)))
@@ -90,6 +102,16 @@ module Runner =
 
           let monitor = async {
             printfn "Begun monitoring"
+            server.WaitForConnection()
+            printfn "connected"
+            server.WriteByte(0uy)
+            let rec sink () =
+              let result = formatter.Deserialize(server) :?> (string*int)
+              printfn "%A" result
+              if result |> fst |> String.IsNullOrWhiteSpace  |> not then
+                hits.Add result
+                sink()
+            sink()
             latch.WaitOne() |> ignore
             printfn "Done monitoring"
             latch'.Set() |> ignore
@@ -101,7 +123,24 @@ module Runner =
           |> ignore
 
           latch'.WaitOne() |> ignore
-          ()
+          let visits = instanceType.GetProperty("Visits", BindingFlags.NonPublic ||| BindingFlags.Static).GetValue(null)
+                          :?> Dictionary<string, Dictionary<int, int>>
+          visits.Clear()
+          let visit = instanceType.GetMethod("Visit", BindingFlags.Public ||| BindingFlags.Static)
+          hits |> Seq.iter(fun (moduleId, hitPointId) ->
+                                visit.Invoke(null, [|moduleId; hitPointId|]) |> ignore)
+          let counts = Dictionary<string, Dictionary<int, int>> visits
+          visits.Clear()
+
+          let update = instanceType.GetMethod("UpdateReport", BindingFlags.NonPublic ||| BindingFlags.Static)
+          let measureTime = instanceType.GetProperty("measureTime", BindingFlags.NonPublic ||| BindingFlags.Static)
+          measureTime.SetValue(null, DateTime.UtcNow)
+          use coverageFile = new FileStream(report, FileMode.Open,
+                                 FileAccess.ReadWrite, FileShare.None,
+                                 4096, FileOptions.SequentialScan)
+          let flushStart = update.Invoke(null, [|counts; coverageFile|]) :?> DateTime
+          let delta = TimeSpan(DateTime.UtcNow.Ticks - flushStart.Ticks)
+          Console.Out.WriteLine("Coverage statistics flushing took {0:N} seconds", delta.TotalSeconds)
 
   [<EntryPoint>]
   let private Main arguments =
