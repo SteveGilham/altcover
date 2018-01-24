@@ -79,9 +79,29 @@ module Runner =
     match check1 with
     | Left (intro, options) -> HandleBadArguments arguments intro options
     | Right (rest, _) ->
-          CommandLine.doPathOperation (fun () ->
-            CommandLine.ProcessTrailingArguments rest (DirectoryInfo(Option.get workingDirectory))
-          )
+          use latch = new System.Threading.ManualResetEvent false
+          use latch' = new System.Threading.ManualResetEvent false
+
+          let payload = async {
+            CommandLine.doPathOperation (fun () ->
+              CommandLine.ProcessTrailingArguments rest (DirectoryInfo(Option.get workingDirectory)))
+            latch.Set() |> ignore
+          }
+
+          let monitor = async {
+            printfn "Begun monitoring"
+            latch.WaitOne() |> ignore
+            printfn "Done monitoring"
+            latch'.Set() |> ignore
+           }
+
+          [monitor; payload]
+          |> Async.Parallel
+          |> Async.RunSynchronously
+          |> ignore
+
+          latch'.WaitOne() |> ignore
+          ()
 
   [<EntryPoint>]
   let private Main arguments =
