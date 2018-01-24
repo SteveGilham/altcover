@@ -308,7 +308,7 @@ type AltCoverTests() = class
       Runner.executable := None)
 
   [<Test>]
-  member self.ParsingMoExeGivesFailure() =
+  member self.ParsingNoExeGivesFailure() =
     lock Runner.executable (fun () ->
     try
       Runner.executable := None
@@ -444,6 +444,116 @@ type AltCoverTests() = class
       | Right _ -> Assert.Fail()
       | Left (x, y) -> Assert.That (y, Is.SameAs options)
                        Assert.That (x, Is.EqualTo "UsageError")
+    finally
+      Runner.recordingDirectory <- None
+
+  [<Test>]
+  member self.ShouldRequireExe() =
+    lock Runner.executable (fun () ->
+    try
+      Runner.executable := None
+      let options = Runner.DeclareOptions ()
+      let parse = Runner.RequireExe (Right ([], options))
+      match parse with
+      | Right _ -> Assert.Fail()
+      | Left (x, y) -> Assert.That (y, Is.SameAs options)
+                       Assert.That (x, Is.EqualTo "UsageError")
+    finally
+      Runner.executable := None)
+
+  [<Test>]
+  member self.ShouldAcceptExe() =
+    lock Runner.executable (fun () ->
+    try
+      Runner.executable := Some "xxx"
+      let options = Runner.DeclareOptions ()
+      let parse = Runner.RequireExe (Right (["b"], options))
+      match parse with
+      | Right (x::y, z) -> Assert.That (z, Is.SameAs options)
+                           Assert.That (x, Is.EqualTo "xxx")
+                           Assert.That (y, Is.EquivalentTo ["b"])
+      | _ -> Assert.Fail()
+    finally
+      Runner.executable := None)
+
+  [<Test>]
+  member self.ShouldRequireWorker() =
+    try
+      Runner.workingDirectory <- None
+      let options = Runner.DeclareOptions ()
+      let input = (Right ([], options))
+      let parse = Runner.RequireWorker input
+      match parse with
+      | Right _ -> Assert.That(parse, Is.SameAs input)
+                   Assert.That(Option.isSome Runner.workingDirectory)
+      | _-> Assert.Fail()
+    finally
+      Runner.workingDirectory <- None
+
+  [<Test>]
+  member self.ShouldAcceptWorker() =
+    try
+      Runner.workingDirectory <- Some "ShouldAcceptWorker"
+      let options = Runner.DeclareOptions ()
+      let input = (Right ([], options))
+      let parse = Runner.RequireWorker input
+      match parse with
+      | Right _ -> Assert.That(parse, Is.SameAs input)
+                   Assert.That(Runner.workingDirectory,
+                               Is.EqualTo (Some "ShouldAcceptWorker"))
+      | _-> Assert.Fail()
+    finally
+      Runner.workingDirectory <- None
+
+  [<Test>]
+  member self.ShouldRequireRecorder() =
+    try
+      Runner.recordingDirectory <- None
+      let options = Runner.DeclareOptions ()
+      let input = (Right ([], options))
+      let parse = Runner.RequireRecorder input
+      match parse with
+      | Right _ -> Assert.Fail()
+      | Left (x, y) -> Assert.That (y, Is.SameAs options)
+                       Assert.That (x, Is.EqualTo "UsageError")
+    finally
+      Runner.recordingDirectory <- None
+
+  [<Test>]
+  member self.ShouldRequireRecorderDll() =
+    try
+      let where = Assembly.GetExecutingAssembly().Location
+      let path = Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "_Mono/Sample1")
+      let path' = if Directory.Exists path then path
+                  else Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "../_Mono/Sample1")
+      Runner.recordingDirectory <- Some path'
+      let options = Runner.DeclareOptions ()
+      let input = (Right ([], options))
+      let parse = Runner.RequireRecorder input
+      match parse with
+      | Right _ -> Assert.Fail()
+      | Left (x, y) -> Assert.That (y, Is.SameAs options)
+                       Assert.That (x, Is.EqualTo "UsageError")
+    finally
+      Runner.recordingDirectory <- None
+  [<Test>]
+  member self.ShouldAcceptRecorder() =
+    try
+      let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
+      Runner.recordingDirectory <- Some where
+      let create = Path.Combine(where, "AltCover.Recorder.g.dll")
+      if create |> File.Exists |> not then do
+        let from = Path.Combine(where, "AltCover.Recorder.dll")
+        use frombytes = new FileStream(from, FileMode.Open, FileAccess.Read)
+        use libstream = new FileStream(create, FileMode.Create)
+        frombytes.CopyTo libstream
+
+      let options = Runner.DeclareOptions ()
+      let input = (Right ([], options))
+      let parse = Runner.RequireRecorder input
+      match parse with
+      | Right _ -> Assert.That(parse, Is.SameAs input)
+      | _-> Assert.Fail()
     finally
       Runner.recordingDirectory <- None
 

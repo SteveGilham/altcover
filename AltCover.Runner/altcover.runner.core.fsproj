@@ -30,6 +30,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\AltCover.Recorder\altcover.recorder.core.fsproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <EmbeddedResource Update="Strings.eo.resx">
       <Generator>ResXFileCodeGenerator</Generator>
     </EmbeddedResource>

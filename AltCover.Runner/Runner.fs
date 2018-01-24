@@ -45,20 +45,43 @@ module Runner =
         |> CommandLine.WriteErr
         CommandLine.Usage intro options
 
+  let internal RequireExe (parse:(Either<string*OptionSet, string list*OptionSet>)) =
+    match parse with
+    | Right (l, options) -> match !executable with
+                            | None -> Left ("UsageError", options)
+                            | Some exe -> Right (exe::l, options)
+    | fail -> fail
+
+  let internal RequireRecorder (parse:(Either<string*OptionSet, string list*OptionSet>)) =
+    match parse with
+    | Right (_, options) -> match recordingDirectory with
+                            | None -> Left ("UsageError", options)
+                            | Some path -> let dll = Path.Combine (path, "AltCover.Recorder.g.dll")
+                                           if File.Exists dll then parse
+                                           else Left ("UsageError", options)
+    | fail -> fail
+
+  let internal RequireWorker (parse:(Either<string*OptionSet, string list*OptionSet>)) =
+    match parse with
+    | Right _ -> match workingDirectory with
+                 | None -> workingDirectory <- Directory.GetCurrentDirectory() |> Some
+                 | _ -> ()
+                 parse
+    | fail -> fail
+
   let DoCoverage arguments =
     let check1 = DeclareOptions ()
                  |> CommandLine.ParseCommandLine arguments
                  |> CommandLine.ProcessHelpOption
+                 |> RequireExe
+                 |> RequireRecorder
+                 |> RequireWorker
     match check1 with
     | Left (intro, options) -> HandleBadArguments arguments intro options
-    | Right (rest, options) ->
-      match !executable with
-      | None -> HandleBadArguments arguments "UsageError" options
-      | Some exe ->
-          try
-            CommandLine.ProcessTrailingArguments (exe::rest) null
-          with
-          | :? IOException as x -> CommandLine.WriteErr x.Message
+    | Right (rest, _) ->
+          CommandLine.doPathOperation (fun () ->
+            CommandLine.ProcessTrailingArguments rest null
+          )
 
   [<EntryPoint>]
   let private Main arguments =
