@@ -129,8 +129,8 @@ Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standal
     let subjects = String.Join(" ",
                                [
                                 "_Binaries/AltCover/Debug+AnyCPU/AltCover.exe"
-                                "_Binaries/AltCover.Runner/Debug+AnyCPU/AltCover.Runner.exe"
-                                "_Binaries/AltCover.Shadow/Debug+AnyCPU/AltCover.Shadow.dll"
+                                // TODO "_Binaries/AltCover.Runner/Debug+AnyCPU/AltCover.Runner.exe"
+                                // TODO "_Binaries/AltCover.Shadow/Debug+AnyCPU/AltCover.Shadow.dll"
                                ])
     let r = ExecProcess (fun info -> info.FileName <- (findToolInSubPath "gendarme.exe" "./packages")
                                      info.WorkingDirectory <- "."

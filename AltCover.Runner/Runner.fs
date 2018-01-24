@@ -71,6 +71,10 @@ module Runner =
                  parse
     | fail -> fail
 
+  // Assembly.LoadFrom is "problematic", but necessary so I can read the report file path
+  // and ReflectionOnly context is not supported in .net core  cecil it, maybe??
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability",
+                                                    "CA2001")>]
   let DoCoverage arguments =
     let check1 = DeclareOptions ()
                  |> CommandLine.ParseCommandLine arguments
@@ -89,9 +93,9 @@ module Runner =
           let instanceType = recorder.GetType("AltCover.Recorder.Instance")
           let token = instanceType.GetProperty("Token", BindingFlags.Public ||| BindingFlags.Static).GetValue(null) :?> string
           let report = instanceType.GetProperty("ReportFile", BindingFlags.Public ||| BindingFlags.Static).GetValue(null) :?> string
+
           use server = new System.IO.Pipes.NamedPipeServerStream(token)
           let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
-
           let hits = List<(string*int)>()
 
           let payload = async {
@@ -123,24 +127,10 @@ module Runner =
           |> ignore
 
           latch'.WaitOne() |> ignore
-          let visits = instanceType.GetProperty("Visits", BindingFlags.NonPublic ||| BindingFlags.Static).GetValue(null)
-                          :?> Dictionary<string, Dictionary<int, int>>
           let counts = Dictionary<string, Dictionary<int, int>>()
-
-          let visit = instanceType.GetMethod("AddVisit", BindingFlags.Public ||| BindingFlags.Static)
           hits |> Seq.iter(fun (moduleId, hitPointId) ->
-                                visit.Invoke(null, [|counts; moduleId; hitPointId|]) |> ignore)
-          visits.Clear()
-
-          let update = instanceType.GetMethod("UpdateReport", BindingFlags.NonPublic ||| BindingFlags.Static)
-          let measureTime = instanceType.GetProperty("measureTime", BindingFlags.NonPublic ||| BindingFlags.Static)
-          measureTime.SetValue(null, DateTime.UtcNow)
-          use coverageFile = new FileStream(report, FileMode.Open,
-                                 FileAccess.ReadWrite, FileShare.None,
-                                 4096, FileOptions.SequentialScan)
-          let flushStart = update.Invoke(null, [|counts; coverageFile|]) :?> DateTime
-          let delta = TimeSpan(DateTime.UtcNow.Ticks - flushStart.Ticks)
-          Console.Out.WriteLine("Coverage statistics flushing took {0:N} seconds", delta.TotalSeconds)
+                                AltCover.RecorderProxy.Instance.AddVisit counts moduleId hitPointId)
+          AltCover.RecorderProxy.Instance.DoFlush counts report
 
   [<EntryPoint>]
   let private Main arguments =

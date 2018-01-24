@@ -1,14 +1,22 @@
 ﻿// Based upon C# code by Sergiy Sakharov (sakharov@gmail.com)
 // http://code.google.com/p/dot-net-coverage/source/browse/trunk/Coverage.Counter/Coverage.Counter.csproj
 
+#if RUNNER
+namespace AltCover.RecorderProxy
+#else
 namespace AltCover.Recorder
+#endif
 
 open System
 open System.Collections.Generic
+open System.Globalization
 open System.IO
 open System.Runtime.CompilerServices
 open System.Runtime.InteropServices
 open System.Xml
+
+#if RUNNER
+#else
 
 #if NETSTANDARD2_0
 module Communications =
@@ -67,7 +75,7 @@ type Tracer = {
 #else
               }
 #endif
-
+#endif
 // Abstract out compact bits of F# that expand into
 // enough under-the-covers code to make Gendarme spot duplication
 // with a generic try/finally block.  *sigh*
@@ -81,8 +89,6 @@ module Locking =
     lock locker f
 
 module Instance =
-  open System.Globalization
-
    /// <summary>
    /// The time at which coverage run began
    /// </summary>
@@ -232,6 +238,22 @@ module Instance =
      else WithVisitsLocked g
 #endif
 
+  let DoFlush counts report =
+    measureTime <- DateTime.UtcNow
+    use coverageFile = new FileStream(report, FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.SequentialScan)
+    let flushStart = UpdateReport counts coverageFile
+    let delta = TimeSpan(DateTime.UtcNow.Ticks - flushStart.Ticks)
+    Console.Out.WriteLine("Coverage statistics flushing took {0:N} seconds", delta.TotalSeconds)
+
+  let AddVisit (counts:Dictionary<string, Dictionary<int, int>>) moduleId hitPointId =
+    if not (counts.ContainsKey moduleId) then counts.[moduleId] <- Dictionary<int, int>()
+    if not (counts.[moduleId].ContainsKey hitPointId) then
+        counts.[moduleId].Add(hitPointId, 1)
+    else
+        counts.[moduleId].[hitPointId] <- 1 + counts.[moduleId].[hitPointId]
+
+#if RUNNER
+#else
   /// <summary>
   /// This method flushes hit count buffers.
   /// </summary>
@@ -254,23 +276,13 @@ module Instance =
       | 0 -> ()
       | _ -> let counts = Dictionary<string, Dictionary<int, int>> Visits
              Visits.Clear()
-             measureTime <- DateTime.UtcNow
-             use coverageFile = new FileStream(ReportFile, FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.SequentialScan)
-             let flushStart = UpdateReport counts coverageFile
-             let delta = TimeSpan(DateTime.UtcNow.Ticks - flushStart.Ticks)
-             Console.Out.WriteLine("Coverage statistics flushing took {0:N} seconds", delta.TotalSeconds))
-
-  let AddVisit (counts:Dictionary<string, Dictionary<int, int>>) moduleId hitPointId =
-    if not (counts.ContainsKey moduleId) then counts.[moduleId] <- Dictionary<int, int>()
-    if not (counts.[moduleId].ContainsKey hitPointId) then
-        counts.[moduleId].Add(hitPointId, 1)
-    else
-        counts.[moduleId].[hitPointId] <- 1 + counts.[moduleId].[hitPointId]
+             DoFlush counts ReportFile
+             )
 
 #if NETSTANDARD2_0
   let CatchUp () =
     Visits.Keys
-    |> Seq.iter (fun moduleId -> Visits.[moduleId].Keys 
+    |> Seq.iter (fun moduleId -> Visits.[moduleId].Keys
                                  |> Seq.iter (fun hitPointId -> for i = 1 to Visits.[moduleId].[hitPointId] do
                                                                   push moduleId hitPointId))
     Visits.Clear()
@@ -314,4 +326,5 @@ module Instance =
     AppDomain.CurrentDomain.ProcessExit.Add(FlushCounter true)
 #if NETSTANDARD2_0
     Connect Token pipe
+#endif
 #endif
