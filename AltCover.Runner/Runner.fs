@@ -125,11 +125,11 @@ module Runner =
           latch'.WaitOne() |> ignore
           let visits = instanceType.GetProperty("Visits", BindingFlags.NonPublic ||| BindingFlags.Static).GetValue(null)
                           :?> Dictionary<string, Dictionary<int, int>>
-          visits.Clear()
-          let visit = instanceType.GetMethod("Visit", BindingFlags.Public ||| BindingFlags.Static)
+          let counts = Dictionary<string, Dictionary<int, int>>()
+
+          let visit = instanceType.GetMethod("AddVisit", BindingFlags.Public ||| BindingFlags.Static)
           hits |> Seq.iter(fun (moduleId, hitPointId) ->
-                                visit.Invoke(null, [|moduleId; hitPointId|]) |> ignore)
-          let counts = Dictionary<string, Dictionary<int, int>> visits
+                                visit.Invoke(null, [|counts; moduleId; hitPointId|]) |> ignore)
           visits.Clear()
 
           let update = instanceType.GetMethod("UpdateReport", BindingFlags.NonPublic ||| BindingFlags.Static)

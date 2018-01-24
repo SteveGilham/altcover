@@ -260,6 +260,22 @@ module Instance =
              let delta = TimeSpan(DateTime.UtcNow.Ticks - flushStart.Ticks)
              Console.Out.WriteLine("Coverage statistics flushing took {0:N} seconds", delta.TotalSeconds))
 
+  let AddVisit (counts:Dictionary<string, Dictionary<int, int>>) moduleId hitPointId =
+    if not (counts.ContainsKey moduleId) then counts.[moduleId] <- Dictionary<int, int>()
+    if not (counts.[moduleId].ContainsKey hitPointId) then
+        counts.[moduleId].Add(hitPointId, 1)
+    else
+        counts.[moduleId].[hitPointId] <- 1 + counts.[moduleId].[hitPointId]
+
+#if NETSTANDARD2_0
+  let CatchUp () =
+    Visits.Keys
+    |> Seq.iter (fun moduleId -> Visits.[moduleId].Keys 
+                                 |> Seq.iter (fun hitPointId -> for i = 1 to Visits.[moduleId].[hitPointId] do
+                                                                  push moduleId hitPointId))
+    Visits.Clear()
+#endif
+
   /// <summary>
   /// This method is executed from instrumented assemblies.
   /// </summary>
@@ -269,18 +285,14 @@ module Instance =
     if not <| String.IsNullOrEmpty(moduleId) then
 #if NETSTANDARD2_0
       OnConnected (fun () ->
+        WithVisitsLocked CatchUp
         printfn "**pushing Visit"
         push moduleId hitPointId
                  )
 #else
       WithVisitsLocked
 #endif
-                 (fun () -> if not (Visits.ContainsKey moduleId)
-                                      then Visits.[moduleId] <- new Dictionary<int, int>()
-                            if not (Visits.[moduleId].ContainsKey hitPointId) then
-                               Visits.[moduleId].Add(hitPointId, 1)
-                            else
-                               Visits.[moduleId].[hitPointId] <- 1 + Visits.[moduleId].[hitPointId])
+                 (fun () -> AddVisit Visits moduleId hitPointId)
 
 #if NETSTANDARD2_0
   let internal Connect (name:string) (p:Tracer) =
