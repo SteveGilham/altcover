@@ -808,7 +808,7 @@ Target "All" ignore
 
 "Compilation"
 ==> "FSharpTypesDotNetRunner"
-// ==> "OperationalTest"
+==> "OperationalTest"
 
 "Compilation"
 ==> "BasicCSharp"
