@@ -80,7 +80,7 @@ module Runner =
     | Left (intro, options) -> HandleBadArguments arguments intro options
     | Right (rest, _) ->
           CommandLine.doPathOperation (fun () ->
-            CommandLine.ProcessTrailingArguments rest null
+            CommandLine.ProcessTrailingArguments rest (DirectoryInfo(Option.get workingDirectory))
           )
 
   [<EntryPoint>]

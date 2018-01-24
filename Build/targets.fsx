@@ -399,6 +399,32 @@ Target "FSharpTypesDotNet" ( fun _ ->
     Actions.ValidateFSharpTypesCoverage simpleReport
 )
 
+Target "FSharpTypesDotNetRunner" ( fun _ ->
+    ensureDirectory "./_Reports"
+    let project = FullName "./AltCover/altcover.core.fsproj"
+    let simpleReport = (FullName "./_Reports") @@ ( "AltCoverFSharpTypesDotNet.xml")
+    let sampleRoot = FullName "_Binaries/Sample2/Debug+AnyCPU/netcoreapp2.0"
+    let instrumented = FullName "Sample2/_Binaries/Sample2/Debug+AnyCPU/netcoreapp2.0"
+
+    // Instrument the code
+    DotNetCli.RunCommand (fun p -> {p with WorkingDir = sampleRoot})
+                         ("run --project " + project + " -- -t \"System\\.\" -t \"Microsoft\\.\" -x \"" + simpleReport + "\" /o \"" + instrumented + "\"")
+
+    Actions.ValidateFSharpTypes simpleReport ["main"]
+
+    printfn "Execute the instrumented tests"
+    let runner = FullName "./AltCover.Runner/altcover.runner.core.fsproj"
+    let sample2 = FullName "./Sample2/sample2.core.fsproj"
+
+    DotNetCli.RunCommand (fun info -> {info with WorkingDir = instrumented })
+                          ("run --project " + runner +
+                          " -- -x \"dotnet\" -r \"" + instrumented +
+                          "\" -- test --no-build --configuration Debug " +
+                          sample2)
+
+    Actions.ValidateFSharpTypesCoverage simpleReport
+)
+
 Target "BasicCSharp" (fun _ ->
    Actions.SimpleInstrumentingRun "_Binaries/Sample1/Debug+AnyCPU" "_Binaries/AltCover/Debug+AnyCPU" "BasicCSharp"
 )
@@ -779,6 +805,10 @@ Target "All" ignore
 "Compilation"
 ==> "FSharpTypesDotNet"
 ==> "OperationalTest"
+
+"Compilation"
+==> "FSharpTypesDotNetRunner"
+// ==> "OperationalTest"
 
 "Compilation"
 ==> "BasicCSharp"
