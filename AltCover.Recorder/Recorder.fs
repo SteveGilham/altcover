@@ -77,6 +77,10 @@ module Instance =
                 Counter.DoFlush own counts ReportFile
              ))
 
+
+  let internal TraceVisit moduleId hitPointId =
+     WithVisitsLocked (fun () -> trace.OnVisit Visits moduleId hitPointId)
+
   /// <summary>
   /// This method is executed from instrumented assemblies.
   /// </summary>
@@ -84,8 +88,7 @@ module Instance =
   /// <param name="hitPointId">Sequence Point identifier</param>
   let Visit moduleId hitPointId =
     if not <| String.IsNullOrEmpty(moduleId) then
-      trace.OnConnected (fun () ->
-        WithVisitsLocked (fun () -> trace.OnVisit Visits moduleId hitPointId))
+      trace.OnConnected (fun () -> TraceVisit moduleId hitPointId)
         WithVisitsLocked (fun () -> Counter.AddVisit Visits moduleId hitPointId)
 
   // Register event handling

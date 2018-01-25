@@ -264,6 +264,13 @@ type AltCoverTests() = class
       printfn "finally 2"
       Instance.Visits.Clear()
     printfn "all done"
+#else
+  [<Test>]
+  member self.TracerStubsAreNoOps() =  
+    let t = { Tracer = "dummy" }
+    t.OnFinish false
+    Instance.TraceVisit 1 2
+    Assert.Pass()
 #endif
 
   [<Test>]
