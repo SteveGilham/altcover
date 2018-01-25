@@ -86,7 +86,10 @@ module Runner =
     |> Seq.head
 
   let GetFirstOperandAsString (m:MethodDefinition) =
-     m.Body.Instructions.[0].Operand :?> string
+     m.Body.Instructions
+     |> Seq.filter (fun i -> i.OpCode = Cil.OpCodes.Ldstr)
+     |> Seq.map (fun i -> i.Operand :?> string)
+     |> Seq.head
 
   let PayloadBase (rest:string list) =
     async {
