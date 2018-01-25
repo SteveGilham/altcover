@@ -1,16 +1,9 @@
 ﻿// Based upon C# code by Sergiy Sakharov (sakharov@gmail.com)
 // http://code.google.com/p/dot-net-coverage/source/browse/trunk/Coverage.Counter/Coverage.Counter.csproj
 
-#if RUNNER
-namespace AltCover.Base
-#else
 namespace AltCover.Recorder
-#endif
 
 open System
-#if NETSTANDARD2_0
-open System.IO
-#endif
 open System.Collections.Generic
 open System.Runtime.CompilerServices
 
@@ -46,13 +39,20 @@ module Instance =
   /// </summary>
   let mutable internal trace = Tracer.Create Token
 
+  let internal WithMutex (f : bool -> 'a) =
+    let own = mutex.WaitOne(10000)
+    try 
+      f(own)
+    finally
+      if own then mutex.ReleaseMutex()
+
   /// <summary>
   /// Save sequence point hit counts to xml report file
   /// </summary>
   /// <param name="hitCounts">The coverage results to incorporate</param>
   /// <param name="coverageFile">The coverage file to update as a stream</param>
   let internal UpdateReport (counts:Dictionary<string, Dictionary<int, int>>) coverageFile =
-    Locking.WithMutex mutex (fun own -> Counter.UpdateReport own counts coverageFile)
+    WithMutex (fun own -> Counter.UpdateReport own counts coverageFile)
 
   /// <summary>
   /// Synchronize an action on the visits table
@@ -60,28 +60,12 @@ module Instance =
   let private WithVisitsLocked =
     Locking.WithLockerLocked Visits
 
-#if NETSTANDARD2_0
-  let internal OnConnected f g =
-     if trace.IsActivated() then f()
-     else WithVisitsLocked g
-#endif
-
-
-#if RUNNER
-#else
   /// <summary>
   /// This method flushes hit count buffers.
   /// </summary>
-  let internal FlushCounter finish _ =
-#if NETSTANDARD2_0
-    OnConnected (fun () ->
-      printfn "**pushing flush %A" finish
-      if finish then
-        trace.Push null -1)
-#else
-    ignore finish
-    WithVisitsLocked
-#endif
+  let internal FlushCounter (finish:bool) _ =
+    trace.OnConnected (fun () -> trace.OnFinish finish)
+     WithVisitsLocked
       (fun () ->
       if finish then
         trace.Close()
@@ -89,7 +73,7 @@ module Instance =
       | 0 -> ()
       | _ -> let counts = Dictionary<string, Dictionary<int, int>> Visits
              Visits.Clear()
-             Locking.WithMutex mutex (fun own -> 
+             WithMutex (fun own -> 
                 Counter.DoFlush own counts ReportFile
              ))
 
@@ -100,36 +84,12 @@ module Instance =
   /// <param name="hitPointId">Sequence Point identifier</param>
   let Visit moduleId hitPointId =
     if not <| String.IsNullOrEmpty(moduleId) then
-#if NETSTANDARD2_0
-      OnConnected (fun () ->
-        WithVisitsLocked (fun () -> trace.CatchUp Visits)
-        printfn "**pushing Visit"
-        trace.Push moduleId hitPointId
-                 )
-#else
-      WithVisitsLocked
-#endif
-                 (fun () -> Counter.AddVisit Visits moduleId hitPointId)
-
-#if NETSTANDARD2_0
-  let internal Connect (name:string) (p:Tracer) =
-    if name <> "AltCover" then
-      try
-        printfn "**Connecting pipe %s ..." trace.Tracer
-        p.Connect 2000 // 2 seconds
-        printfn "**Connected."
-      with
-      | :? TimeoutException
-      | :? IOException ->
-          printfn "**timed out"
-          ()
-#endif
+      trace.OnConnected (fun () ->
+        WithVisitsLocked (fun () -> trace.OnVisit Visits moduleId hitPointId))
+        WithVisitsLocked (fun () -> Counter.AddVisit Visits moduleId hitPointId)
 
   // Register event handling
   do
     AppDomain.CurrentDomain.DomainUnload.Add(FlushCounter false)
     AppDomain.CurrentDomain.ProcessExit.Add(FlushCounter true)
-#if NETSTANDARD2_0
-    Connect Token trace
-#endif
-#endif
+    trace.OnStart()

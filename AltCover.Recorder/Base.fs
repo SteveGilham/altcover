@@ -22,13 +22,6 @@ module Locking =
   let internal WithLockerLocked (locker:'a) (f: unit -> unit) =
     lock locker f
 
-  let internal WithMutex (mutex:System.Threading.Mutex) (f : bool -> 'a) =
-    let own = mutex.WaitOne(10000)
-    try 
-      f(own)
-    finally
-      if own then mutex.ReleaseMutex()
-
 module Counter =
    /// <summary>
    /// The time at which coverage run began

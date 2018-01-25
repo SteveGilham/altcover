@@ -81,12 +81,6 @@
     <Compile Include="..\AltCover.Recorder\Base.fs">
       <Link>Base.fs</Link>
     </Compile>
-    <Compile Include="..\AltCover.Recorder\Framework.fs">
-      <Link>Framework.fs</Link>
-    </Compile>
-    <Compile Include="..\AltCover.Recorder\Recorder.fs">
-      <Link>Recorder.fs</Link>
-    </Compile>
     <Compile Include="Runner.fs" />
     <EmbeddedResource Include="Strings.resx" />
     <EmbeddedResource Include="Strings.eo.resx" />

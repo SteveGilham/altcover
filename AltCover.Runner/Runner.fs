@@ -76,6 +76,9 @@ module Runner =
     |> Seq.filter (fun m -> m.Name = name)
     |> Seq.head
 
+  let GetFirstOperandAsString (m:MethodDefinition) =
+     m.Body.Instructions.[0].Operand :?> string
+
   let DoCoverage arguments =
     let check1 = DeclareOptions ()
                  |> CommandLine.ParseCommandLine arguments
@@ -92,8 +95,9 @@ module Runner =
           let recorderPath = Path.Combine (Option.get recordingDirectory, "AltCover.Recorder.g.dll")
           let definition = AssemblyDefinition.ReadAssembly recorderPath
           let instance = definition.MainModule.GetType("AltCover.Recorder.Instance")
-          let token = (GetMethod instance "get_Token").Body.Instructions.[0].Operand :?> string
-          let report = (GetMethod instance "get_ReportFile").Body.Instructions.[0].Operand :?> string
+
+          let token = (GetMethod instance "get_Token") |> GetFirstOperandAsString
+          let report = (GetMethod instance "get_ReportFile") |> GetFirstOperandAsString
 
           use server = new System.IO.Pipes.NamedPipeServerStream(token)
           let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()

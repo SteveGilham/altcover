@@ -70,3 +70,29 @@ type Tracer = {
         |> Seq.iter (fun hitPointId -> for i = 1 to visits.[moduleId].[hitPointId] do
                                          this.Push moduleId hitPointId))
       visits.Clear()
+
+    member this.OnStart () =
+      if this.Tracer <> "AltCover" then
+        try
+          printfn "**Connecting pipe %s ..." this.Tracer
+          this.Connect 2000 // 2 seconds
+          printfn "**Connected."
+        with
+        | :? TimeoutException
+        | :? IOException ->
+            printfn "**timed out"
+            ()
+
+    member this.OnConnected f l g =
+      if this.IsActivated() then f()
+      else l g
+
+    member this.OnFinish finish =
+      printfn "**pushing flush %A" finish
+      if finish then
+        this.Push null -1
+
+    member this.OnVisit visits moduleId hitPointId =
+      this.CatchUp visits
+      printfn "**pushing Visit"
+      this.Push moduleId hitPointId
