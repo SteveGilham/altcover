@@ -110,19 +110,15 @@ module Runner =
           }
 
           let monitor = async {
-            printfn "Begun monitoring"
             server.WaitForConnection()
-            printfn "connected"
             server.WriteByte(0uy)
             let rec sink () =
               let result = formatter.Deserialize(server) :?> (string*int)
-              printfn "%A" result
               if result |> fst |> String.IsNullOrWhiteSpace  |> not then
                 hits.Add result
                 if server.CanWrite then sink()
             sink()
             latch.WaitOne() |> ignore
-            printfn "Done monitoring"
             latch'.Set() |> ignore
            }
 

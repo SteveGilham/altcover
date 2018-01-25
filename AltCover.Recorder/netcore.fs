@@ -27,7 +27,6 @@ type Tracer = {
              typeof<Microsoft.FSharp.Core.CompilationMappingAttribute>.Assembly.Location
 
     static member Create (name:string) =
-      printfn "**Creating NamedPipeClientStream %s" name
       {
        Tracer = name;
        Pipe = new System.IO.Pipes.NamedPipeClientStream(name);
@@ -74,13 +73,10 @@ type Tracer = {
     member this.OnStart () =
       if this.Tracer <> "AltCover" then
         try
-          printfn "**Connecting pipe %s ..." this.Tracer
           this.Connect 2000 // 2 seconds
-          printfn "**Connected."
         with
         | :? TimeoutException
         | :? IOException ->
-            printfn "**timed out"
             ()
 
     member this.OnConnected f l g =
@@ -88,11 +84,9 @@ type Tracer = {
       else l g
 
     member this.OnFinish finish =
-      printfn "**pushing flush %A" finish
       if finish then
         this.Push null -1
 
     member this.OnVisit visits moduleId hitPointId =
       this.CatchUp visits
-      printfn "**pushing Visit"
       this.Push moduleId hitPointId
