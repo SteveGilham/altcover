@@ -75,7 +75,7 @@ module Runner =
   // mocking point
   let mutable internal RecorderName = "AltCover.Recorder.g.dll"
 
-  let GetRecorderInstance () =
+  let RecorderInstance () =
     let recorderPath = Path.Combine (Option.get recordingDirectory, RecorderName)
     let definition = AssemblyDefinition.ReadAssembly recorderPath
     definition.MainModule.GetType("AltCover.Recorder.Instance")
@@ -88,6 +88,37 @@ module Runner =
   let GetFirstOperandAsString (m:MethodDefinition) =
      m.Body.Instructions.[0].Operand :?> string
 
+  let PayloadBase (rest:string list) =
+    async {
+            CommandLine.doPathOperation (fun () ->
+                CommandLine.ProcessTrailingArguments rest (DirectoryInfo(Option.get workingDirectory)))
+          }
+
+  let MonitorBase (hits:ICollection<(string*int)>) token =
+    async {
+      use server = new System.IO.Pipes.NamedPipeServerStream(token)
+      let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
+      server.WaitForConnection()
+      server.WriteByte(0uy)
+      let rec sink () =
+        let result = formatter.Deserialize(server) :?> (string*int)
+        if result |> fst |> String.IsNullOrWhiteSpace  |> not then
+          hits.Add result
+          if server.CanWrite then sink()
+      sink()
+           }
+
+  let WriteReportBase (hits:ICollection<(string*int)>) report =
+    let counts = Dictionary<string, Dictionary<int, int>>()
+    hits |> Seq.iter(fun (moduleId, hitPointId) ->
+                        AltCover.Base.Counter.AddVisit counts moduleId hitPointId)
+    AltCover.Base.Counter.DoFlush true counts report
+
+  // mocking points
+  let mutable internal GetPayload = PayloadBase
+  let mutable internal GetMonitor = MonitorBase
+  let mutable internal DoReport = WriteReportBase
+
   let DoCoverage arguments =
     let check1 = DeclareOptions ()
                  |> CommandLine.ParseCommandLine arguments
@@ -98,39 +129,21 @@ module Runner =
     match check1 with
     | Left (intro, options) -> HandleBadArguments arguments intro options
     | Right (rest, _) ->
-          let instance = GetRecorderInstance()
+          let instance = RecorderInstance()
           let token = (GetMethod instance "get_Token") |> GetFirstOperandAsString
           let report = (GetMethod instance "get_ReportFile") |> GetFirstOperandAsString
 
-          use server = new System.IO.Pipes.NamedPipeServerStream(token)
-          let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
           let hits = List<(string*int)>()
 
-          let payload = async {
-            CommandLine.doPathOperation (fun () ->
-              CommandLine.ProcessTrailingArguments rest (DirectoryInfo(Option.get workingDirectory)))
-          }
-
-          let monitor = async {
-            server.WaitForConnection()
-            server.WriteByte(0uy)
-            let rec sink () =
-              let result = formatter.Deserialize(server) :?> (string*int)
-              if result |> fst |> String.IsNullOrWhiteSpace  |> not then
-                hits.Add result
-                if server.CanWrite then sink()
-            sink()
-           }
+          let payload = GetPayload rest
+          let monitor = GetMonitor hits token
 
           [monitor; payload]
           |> Async.Parallel
           |> Async.RunSynchronously
           |> ignore
 
-          let counts = Dictionary<string, Dictionary<int, int>>()
-          hits |> Seq.iter(fun (moduleId, hitPointId) ->
-                                AltCover.Base.Counter.AddVisit counts moduleId hitPointId)
-          AltCover.Base.Counter.DoFlush true counts report
+          DoReport hits report
 
   [<EntryPoint>]
   let private Main arguments =

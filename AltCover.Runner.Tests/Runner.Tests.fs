@@ -5,6 +5,7 @@ open System.Collections.Generic
 open System.IO
 open System.Reflection
 open System.Text
+open System.Threading
 open System.Xml
 
 open AltCover
@@ -687,6 +688,7 @@ type AltCoverTests() = class
                                      (DirectoryInfo(where))
 
       Assert.That(stderr.ToString(), Is.Empty)
+      stdout.Flush()
       let result = stdout.ToString()
 
       // hack for Mono
@@ -744,16 +746,190 @@ type AltCoverTests() = class
     try
       Runner.recordingDirectory <- Some where
       Runner.RecorderName <- "AltCover.Recorder.dll"
-      let instance = Runner.GetRecorderInstance()
+      let instance = Runner.RecorderInstance()
       Assert.That(instance.FullName, Is.EqualTo "AltCover.Recorder.Instance", "should be the instance")
       let token = (Runner.GetMethod instance "get_Token") |> Runner.GetFirstOperandAsString
       Assert.That(token, Is.EqualTo "AltCover", "should be plain token")
       let report = (Runner.GetMethod instance "get_ReportFile") |> Runner.GetFirstOperandAsString
       Assert.That(report, Is.EqualTo "Coverage.Default.xml", "should be default coverage file")
-   
+
     finally
       Runner.recordingDirectory <- None
       Runner.RecorderName <- save)
 
+  [<Test>]
+  member self.ShouldProcessPayload() =
+    // Hack for running while instrumented
+    let where = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
+    let path = Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "_Mono/Sample1")
+#if NETCOREAPP2_0
+    let path' = if Directory.Exists path then path
+                else Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "../_Mono/Sample1")
+#else
+    let path' = path
+#endif
+    let files = Directory.GetFiles(path')
+    let program = files
+                  |> Seq.filter (fun x -> x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
+                  |> Seq.head
+
+    let saved = (Console.Out, Console.Error)
+    Runner.workingDirectory <- Some where
+    try
+      use stdout = new StringWriter()
+      use stderr = new StringWriter()
+      Console.SetOut stdout
+      Console.SetError stderr
+
+      let u1 = Guid.NewGuid().ToString()
+      let u2 = Guid.NewGuid().ToString()
+
+      let payload = Runner.GetPayload [program; u1; u2]
+      payload |> Async.RunSynchronously
+
+      Assert.That(stderr.ToString(), Is.Empty)
+      stdout.Flush()
+      let result = stdout.ToString()
+
+      // hack for Mono
+      let computed = if result.Length = 50 then
+                       result |> Encoding.Unicode.GetBytes |> Array.takeWhile (fun c -> c <> 0uy)|> Encoding.UTF8.GetString
+                     else result
+      if "TRAVIS_JOB_NUMBER" |> Environment.GetEnvironmentVariable |> String.IsNullOrWhiteSpace || result.Length > 0 then
+        Assert.That(computed.Trim(), Is.EqualTo("Where is my rocket pack? " +
+                                                  u1 + "*" + u2))
+    finally
+      Console.SetOut (fst saved)
+      Console.SetError (snd saved)
+      Runner.workingDirectory <- None
+
+  [<Test>]
+  member self.ShouldDoCoverage() =
+    let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
+    let create = Path.Combine(where, "AltCover.Recorder.g.dll")
+    if create |> File.Exists |> not then do
+        let from = Path.Combine(where, "AltCover.Recorder.dll")
+        use frombytes = new FileStream(from, FileMode.Open, FileAccess.Read)
+        use libstream = new FileStream(create, FileMode.Create)
+        frombytes.CopyTo libstream
+
+    let save = Runner.RecorderName
+    let save1 = Runner.GetPayload
+    let save2 = Runner.GetMonitor
+    let save3 = Runner.DoReport
+    try
+      Runner.RecorderName <- "AltCover.Recorder.dll"
+      let payload (rest:string list) =
+        Assert.That(rest, Is.EquivalentTo [|"test"; "1"|])
+        async { () }
+
+      let monitor (hits:ICollection<(string*int)>) (token:string) =
+        Assert.That(token, Is.EqualTo "AltCover", "should be plain token")
+        Assert.That(hits, Is.Empty)
+        async { () }
+
+      let write (hits:ICollection<(string*int)>) (report:string) =
+        Assert.That(report, Is.EqualTo "Coverage.Default.xml", "should be default coverage file")
+        Assert.That(hits, Is.Empty)
+
+      Runner.GetPayload <- payload
+      Runner.GetMonitor <- monitor
+      Runner.DoReport <- write
+
+      Runner.DoCoverage [|"-x"; "test"; "-r"; where; "--"; "1"|]
+
+    finally
+      Runner.GetPayload <- save1
+      Runner.GetMonitor <- save2
+      Runner.DoReport <- save3
+      Runner.RecorderName <- save
+
+  [<Test>]
+  member self.WriteLeavesExpectedTraces() =
+    let saved = Console.Out
+    let here = Directory.GetCurrentDirectory()
+    let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
+    let unique = Path.Combine(where, Guid.NewGuid().ToString())
+    let reportFile = Path.Combine(unique, "FlushLeavesExpectedTraces.xml")
+    try
+      let visits = new Dictionary<string, Dictionary<int, int>>()
+      use stdout = new StringWriter()
+      Console.SetOut stdout
+      Directory.CreateDirectory(unique) |> ignore
+      Directory.SetCurrentDirectory(unique)
+
+      Counter.measureTime <- DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
+      use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(self.resource)
+      let size = int stream.Length
+      let buffer = Array.create size 0uy
+      Assert.That (stream.Read(buffer, 0, size), Is.EqualTo size)
+      do
+        use worker = new FileStream(reportFile, FileMode.CreateNew)
+        worker.Write(buffer, 0, size)
+        ()
+
+      let hits = List<(string*int)>()
+      [0..9 ]
+      |> Seq.iter(fun i ->
+        for j = 1 to i+1 do
+          hits.Add("f6e3edb3-fb20-44b3-817d-f69d1a22fc2f", i)
+          ignore j
+      )
+
+      let payload = Dictionary<int,int>()
+      [0..9 ]
+      |> Seq.iter(fun i -> payload.[i] <- (i+1))
+      visits.["f6e3edb3-fb20-44b3-817d-f69d1a22fc2f"] <- payload
+
+      Runner.DoReport hits reportFile
+
+      let head = "Coverage statistics flushing took "
+      let tail = " seconds\n"
+      let recorded = stdout.ToString().Replace("\r\n","\n")
+      Assert.That (recorded.StartsWith(head, StringComparison.Ordinal))
+      Assert.That (recorded.EndsWith(tail, StringComparison.Ordinal))
+      use worker' = new FileStream(reportFile, FileMode.Open)
+      let after = XmlDocument()
+      after.Load worker'
+      Assert.That( after.SelectNodes("//seqpnt")
+                   |> Seq.cast<XmlElement>
+                   |> Seq.map (fun x -> x.GetAttribute("visitcount")),
+                   Is.EquivalentTo [ "11"; "10"; "9"; "8"; "7"; "6"; "4"; "3"; "2"; "1"])
+    finally
+      if File.Exists reportFile then File.Delete reportFile
+      Console.SetOut saved
+      Directory.SetCurrentDirectory(here)
+      try
+        Directory.Delete(unique)
+      with
+      | :? IOException -> ()
+
+  [<Test>]
+  member self.PipeMonitorShouldReceiveSignal() =
+    let token = Guid.NewGuid().ToString() + "PipeMonitorShouldReceiveSignal"
+    let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
+    let hits = List<(string*int)>()
+    use signal = new AutoResetEvent false
+    use client = new System.IO.Pipes.NamedPipeClientStream(token)
+    async {
+        do! Runner.GetMonitor hits token
+        do! async { signal.Set() |> ignore }
+    } |> Async.Start
+
+    client.Connect()
+    while client.IsConnected |> not do
+      printf "."
+      Thread.Sleep 100
+
+    let x = client.ReadByte()
+    Assert.That(x, Is.GreaterThanOrEqualTo 0)
+    formatter.Serialize(client, ("name", 23))
+    formatter.Serialize(client, ("name2", 42))
+    let nulled = { Tracer = null }
+    formatter.Serialize(client, (nulled.Tracer, -1))
+    client.Close()
+
+    signal.WaitOne() |> ignore
+    Assert.That(hits, Is.EquivalentTo [("name", 23); ("name2", 42)])
 
 end
