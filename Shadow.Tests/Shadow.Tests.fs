@@ -37,6 +37,7 @@ type AltCoverTests() = class
 #if NETCOREAPP2_0
                    Pipe = null
                    Activated = null
+                   Formatter = null
 #endif
     }
     Assert.That(locker.GetType().Assembly.GetName().Name, Is.EqualTo
@@ -86,7 +87,7 @@ type AltCoverTests() = class
   [<Test>]
   member self.PipeTimeoutShouldRaise () =
     let token = Guid.NewGuid().ToString() + "PipeTimeoutShouldRaise"
-    let client = Tracer.CreatePipe(token)
+    let client = Tracer.Create token
     try
       let os = Environment.OSVersion.ToString()
       if os.StartsWith("Microsoft Windows", StringComparison.Ordinal) then
@@ -98,7 +99,7 @@ type AltCoverTests() = class
     let os = Environment.OSVersion.ToString()
     let token = "AltCover"
     use server = new System.IO.Pipes.NamedPipeServerStream(token)
-    let client = Tracer.CreatePipe(token)
+    let client = Tracer.Create token
     try
       if os.StartsWith("Microsoft Windows", StringComparison.Ordinal) then
         Instance.Connect token client
@@ -110,7 +111,7 @@ type AltCoverTests() = class
     let os = Environment.OSVersion.ToString()
     let token = "ValidToken"
     use server = new System.IO.Pipes.NamedPipeServerStream(token)
-    let client = Tracer.CreatePipe(token)
+    let client = Tracer.Create token
     try
       if os.StartsWith("Microsoft Windows", StringComparison.Ordinal) then
         Instance.Connect token client
@@ -122,7 +123,7 @@ type AltCoverTests() = class
   member self.ValidTokenWillTimeOut() =
     let os = Environment.OSVersion.ToString()
     let token = "ValidToken"
-    let client = Tracer.CreatePipe(token)
+    let client = Tracer.Create token
     try
       if os.StartsWith("Microsoft Windows", StringComparison.Ordinal) then
         Instance.Connect token client
@@ -131,13 +132,13 @@ type AltCoverTests() = class
       client.Close()
 
   member self.PipeVisitShouldFailSafe() =
-    let save = Instance.pipe
+    let save = Instance.trace
     let token = Guid.NewGuid().ToString() + "PipeVisitShouldFailSafe"
     printfn "token = %s" token
     use server = new System.IO.Pipes.NamedPipeServerStream(token)
     printfn "Created NamedPipeServerStream"
     try
-      let client = Tracer.CreatePipe(token)
+      let client = Tracer.Create token
       printfn "Created client"
       try
         let expected = ("name", 23)
@@ -155,33 +156,33 @@ type AltCoverTests() = class
         server.WaitForConnection()
         signal.WaitOne() |> ignore
         printfn "after connection wait"
-        Instance.pipe <- client
-        Assert.That (Instance.pipe.IsConnected(), "connection failed")
+        Instance.trace <- client
+        Assert.That (Instance.trace.IsConnected(), "connection failed")
         printfn "about to act"
         server.WriteByte(0uy)
         Assert.That(client.Activated.WaitOne(1000), "never got activated")
-        Assert.That (Instance.pipe.IsActivated(), "activation failed")
+        Assert.That (Instance.trace.IsActivated(), "activation failed")
         client.Close()
         printfn "about to read"
         Assert.Throws<System.Runtime.Serialization.SerializationException>(fun () -> formatter.Deserialize(server) |> ignore) |> ignore
         printfn "after all work"
       finally
         printfn "finally 1"
-        Instance.pipe.Close()
-        Instance.pipe <- save
+        Instance.trace.Close()
+        Instance.trace <- save
     finally
       printfn "finally 2"
       Instance.Visits.Clear()
     printfn "all done"
 
   member self.PipeVisitShouldSignal() =
-    let save = Instance.pipe
+    let save = Instance.trace
     let token = Guid.NewGuid().ToString() + "PipeVisitShouldSignal"
     printfn "token = %s" token
     use server = new System.IO.Pipes.NamedPipeServerStream(token)
     printfn "Created NamedPipeServerStream"
     try
-      let client = Tracer.CreatePipe(token)
+      let client = Tracer.Create token
       printfn "Created client"
       try
         Instance.Visits.Clear()
@@ -200,12 +201,12 @@ type AltCoverTests() = class
         server.WaitForConnection()
         signal.WaitOne() |> ignore
         printfn "after connection wait"
-        Instance.pipe <- client
-        Assert.That (Instance.pipe.IsConnected(), "connection failed")
+        Instance.trace <- client
+        Assert.That (Instance.trace.IsConnected(), "connection failed")
         printfn "about to act"
         server.WriteByte(0uy)
         Assert.That(client.Activated.WaitOne(1000), "never got activated")
-        Assert.That (Instance.pipe.IsActivated(), "activation failed")
+        Assert.That (Instance.trace.IsActivated(), "activation failed")
         async { Instance.Visit "name" 23 } |> Async.Start
         printfn "about to read"
         let result = formatter.Deserialize(server) :?> (string*int)
@@ -214,21 +215,21 @@ type AltCoverTests() = class
         printfn "after all work"
       finally
         printfn "finally 1"
-        Instance.pipe.Close()
-        Instance.pipe <- save
+        Instance.trace.Close()
+        Instance.trace <- save
     finally
       printfn "finally 2"
       Instance.Visits.Clear()
     printfn "all done"
 
   member self.PipeVisitShouldFailFast() =
-    let save = Instance.pipe
+    let save = Instance.trace
     let token = Guid.NewGuid().ToString() + "PipeVisitShouldFailFast"
     printfn "token = %s" token
     use server = new System.IO.Pipes.NamedPipeServerStream(token)
     printfn "Created NamedPipeServerStream"
     try
-      let client = Tracer.CreatePipe(token)
+      let client = Tracer.Create token
       printfn "Created client"
       try
         let expected = ("name", 23)
@@ -250,15 +251,15 @@ type AltCoverTests() = class
             } |> Async.Start
         signal.WaitOne() |> ignore
         printfn "after connection wait"
-        Instance.pipe <- client
+        Instance.trace <- client
         Assert.That(!blew, "Should have blown")
-        Assert.That (Instance.pipe.IsConnected(), Is.False, "connected")
-        Assert.That (Instance.pipe.IsActivated(), Is.False, "activated")
+        Assert.That (Instance.trace.IsConnected(), Is.False, "connected")
+        Assert.That (Instance.trace.IsActivated(), Is.False, "activated")
         printfn "after all work"
       finally
         printfn "finally 1"
-        Instance.pipe.Close()
-        Instance.pipe <- save
+        Instance.trace.Close()
+        Instance.trace <- save
     finally
       printfn "finally 2"
       Instance.Visits.Clear()
@@ -339,7 +340,7 @@ type AltCoverTests() = class
   [<Test>]
   member self.OldDocumentStartIsNotUpdated() =
     let epoch = DateTime.UtcNow
-    Instance.startTime <- epoch
+    Counter.startTime <- epoch
     use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(self.resource)
     let size = int stream.Length
     let buffer = Array.create size 0uy
@@ -356,12 +357,12 @@ type AltCoverTests() = class
     let startTimeAttr = after.DocumentElement.GetAttribute("startTime")
     let startTime = DateTime.ParseExact(startTimeAttr, "o", null)
     Assert.That (startTime.ToUniversalTime(), Is.LessThan epoch)
-    Assert.That (startTime.ToUniversalTime(), Is.EqualTo (Instance.startTime.ToUniversalTime()))
+    Assert.That (startTime.ToUniversalTime(), Is.EqualTo (Counter.startTime.ToUniversalTime()))
 
   [<Test>]
   member self.NewDocumentStartIsMadeEarlier() =
     let epoch = DateTime (1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)
-    Instance.startTime <- epoch
+    Counter.startTime <- epoch
     use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(self.resource)
     let size = int stream.Length
     let buffer = Array.create size 0uy
@@ -378,12 +379,12 @@ type AltCoverTests() = class
     let startTimeAttr = after.DocumentElement.GetAttribute("startTime")
     let startTime = DateTime.ParseExact(startTimeAttr, "o", null)
     Assert.That (startTime.ToUniversalTime(), Is.EqualTo epoch)
-    Assert.That (startTime.ToUniversalTime(), Is.EqualTo (Instance.startTime.ToUniversalTime()))
+    Assert.That (startTime.ToUniversalTime(), Is.EqualTo (Counter.startTime.ToUniversalTime()))
 
   [<Test>]
   member self.NewDocumentMeasureIsNotMadeEarlier() =
     let epoch = DateTime (1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)
-    Instance.measureTime <- epoch
+    Counter.measureTime <- epoch
     use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(self.resource)
     let size = int stream.Length
     let buffer = Array.create size 0uy
@@ -400,12 +401,12 @@ type AltCoverTests() = class
     let startTimeAttr = after.DocumentElement.GetAttribute("measureTime")
     let startTime = DateTime.ParseExact(startTimeAttr, "o", null)
     Assert.That (startTime.ToUniversalTime(), Is.GreaterThan epoch)
-    Assert.That (startTime.ToUniversalTime(), Is.EqualTo (Instance.measureTime.ToUniversalTime()))
+    Assert.That (startTime.ToUniversalTime(), Is.EqualTo (Counter.measureTime.ToUniversalTime()))
 
   [<Test>]
   member self.OldDocumentMeasureIsUpdated() =
     let epoch = DateTime.UtcNow
-    Instance.measureTime <- epoch
+    Counter.measureTime <- epoch
     use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(self.resource)
     let size = int stream.Length
     let buffer = Array.create size 0uy
@@ -422,11 +423,11 @@ type AltCoverTests() = class
     let startTimeAttr = after.DocumentElement.GetAttribute("measureTime")
     let startTime = DateTime.ParseExact(startTimeAttr, "o", null)
     Assert.That (startTime.ToUniversalTime(), Is.EqualTo epoch)
-    Assert.That (startTime.ToUniversalTime(), Is.EqualTo (Instance.measureTime.ToUniversalTime()))
+    Assert.That (startTime.ToUniversalTime(), Is.EqualTo (Counter.measureTime.ToUniversalTime()))
 
   [<Test>]
   member self.UnknownModuleMakesNoChange() =
-    Instance.measureTime <- DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
+    Counter.measureTime <- DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
     use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(self.resource)
     let size = int stream.Length
     let buffer = Array.create size 0uy
@@ -445,7 +446,7 @@ type AltCoverTests() = class
 
   [<Test>]
   member self.KnownModuleWithNothingMakesNoChange() =
-    Instance.measureTime <- DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
+    Counter.measureTime <- DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
     use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(self.resource)
     let size = int stream.Length
     let buffer = Array.create size 0uy
@@ -464,7 +465,7 @@ type AltCoverTests() = class
 
   [<Test>]
   member self.KnownModuleWithNothingInRangeMakesNoChange() =
-    Instance.measureTime <- DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
+    Counter.measureTime <- DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
     use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(self.resource)
     let size = int stream.Length
     let buffer = Array.create size 0uy
@@ -486,7 +487,7 @@ type AltCoverTests() = class
 
   [<Test>]
   member self.KnownModuleWithPayloadMakesExpectedChange() =
-    Instance.measureTime <- DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
+    Counter.measureTime <- DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
     use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(self.resource)
     let size = int stream.Length
     let buffer = Array.create size 0uy
@@ -535,7 +536,7 @@ type AltCoverTests() = class
       Directory.CreateDirectory(unique) |> ignore
       Directory.SetCurrentDirectory(unique)
 
-      Instance.measureTime <- DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
+      Counter.measureTime <- DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
       use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(self.resource)
       let size = int stream.Length
       let buffer = Array.create size 0uy
@@ -584,18 +585,18 @@ type AltCoverTests() = class
     self.ValidTokenWillConnect()
     self.InitialConnectDefaultsUnconnected()
 
-    let save = Instance.pipe
+    let save = Instance.trace
     let token = Guid.NewGuid().ToString() + "PipeFlushShouldTidyUp"
     printfn "pipe token = %s" token
     use server = new System.IO.Pipes.NamedPipeServerStream(token)
     printfn "Created server"
     try
-      let client = Tracer.CreatePipe token
+      let client = Tracer.Create token
       printfn "Created client"
       try
         let expected = ("name", 23)
         let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
-        Instance.pipe <- client
+        Instance.trace <- client
         printfn "Ready to connect"
         use signal = new AutoResetEvent false
         async {
@@ -610,12 +611,12 @@ type AltCoverTests() = class
         server.WaitForConnection()
         signal.WaitOne() |> ignore
         printfn "After connection wait"
-        Assert.That (Instance.pipe.IsConnected(), "connection failed")
+        Assert.That (Instance.trace.IsConnected(), "connection failed")
         printfn "About to act"
         server.WriteByte(0uy)
         Assert.That(client.Activated.WaitOne(1000), "never got activated")
-        Assert.That (Instance.pipe.IsActivated(), "activation failed")
-        async { formatter.Serialize(Instance.pipe.Pipe, expected)
+        Assert.That (Instance.trace.IsActivated(), "activation failed")
+        async { formatter.Serialize(Instance.trace.Pipe, expected)
                 Instance.FlushCounter true () } |> Async.Start
         printfn "About to read"
         let result = formatter.Deserialize(server) :?> (string*int)
@@ -627,8 +628,8 @@ type AltCoverTests() = class
         printfn "done"
       finally
         printfn "first finally"
-        Instance.pipe.Close()
-        Instance.pipe <- save
+        Instance.trace.Close()
+        Instance.trace <- save
     finally
       printfn "second finally"
       Instance.Visits.Clear()

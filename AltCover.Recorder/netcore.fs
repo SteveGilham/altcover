@@ -1,6 +1,7 @@
 ﻿namespace AltCover.Recorder
 
 open System
+open System.Collections.Generic
 open System.IO
 
 module Communications =
@@ -19,16 +20,20 @@ type Tracer = {
                 Tracer : string
                 Pipe : System.IO.Pipes.NamedPipeClientStream
                 Activated : System.Threading.ManualResetEvent
+                Formatter : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
               }
   with
     static member Core () =
              typeof<Microsoft.FSharp.Core.CompilationMappingAttribute>.Assembly.Location
 
-    static member CreatePipe (name:string) =
+    static member Create (name:string) =
       printfn "**Creating NamedPipeClientStream %s" name
-      {Tracer = name;
+      {
+       Tracer = name;
        Pipe = new System.IO.Pipes.NamedPipeClientStream(name);
-       Activated = new System.Threading.ManualResetEvent false }
+       Activated = new System.Threading.ManualResetEvent false 
+       Formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
+      }
 
     member this.IsConnected ()=
       this.Pipe.IsConnected &&
@@ -52,3 +57,16 @@ type Tracer = {
     member this.Close() =
       this.Pipe.Dispose()
       this.Activated.Dispose()
+
+    member this.Push (moduleId:string) hitPointId =
+      Communications.ResilientAgainstDisposedObject (fun () ->
+        this.Formatter.Serialize(this.Pipe, (moduleId, hitPointId))
+        this.Pipe.Flush()) ignore
+
+    member this.CatchUp (visits:Dictionary<string, Dictionary<int, int>>) =
+      visits.Keys
+      |> Seq.iter (fun moduleId -> 
+        visits.[moduleId].Keys
+        |> Seq.iter (fun hitPointId -> for i = 1 to visits.[moduleId].[hitPointId] do
+                                         this.Push moduleId hitPointId))
+      visits.Clear()

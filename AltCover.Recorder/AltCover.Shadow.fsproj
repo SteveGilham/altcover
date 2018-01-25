@@ -65,6 +65,7 @@
     <Compile Include="..\_Generated\AssemblyVersion.fs">
       <Link>AssemblyVersion.fs</Link>
     </Compile>
+    <Compile Include="Base.fs" />
     <Compile Include="Framework.fs" />
     <Compile Include="Recorder.fs" />
   </ItemGroup>

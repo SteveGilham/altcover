@@ -130,8 +130,8 @@ module Runner =
           latch'.WaitOne() |> ignore
           let counts = Dictionary<string, Dictionary<int, int>>()
           hits |> Seq.iter(fun (moduleId, hitPointId) ->
-                                AltCover.RecorderProxy.Instance.AddVisit counts moduleId hitPointId)
-          AltCover.RecorderProxy.Instance.DoFlush counts report
+                                AltCover.Base.Counter.AddVisit counts moduleId hitPointId)
+          AltCover.Base.Counter.DoFlush true counts report
 
   [<EntryPoint>]
   let private Main arguments =

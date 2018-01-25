@@ -19,6 +19,7 @@
     <Compile Include="..\_Generated\AssemblyVersion.fs" Link="AssemblyVersion.fs" />
     <Compile Include="..\_Generated\VisibleToTest.fs" Link="VisibleToTest.fs" />
     <Compile Include="AssemblyInfo.fs" />
+    <Compile Include="Base.fs" />
     <Compile Include="netcore.fs" />
     <Compile Include="Recorder.fs" />
   </ItemGroup>
