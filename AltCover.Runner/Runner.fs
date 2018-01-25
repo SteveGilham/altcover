@@ -3,8 +3,8 @@
 open System
 open System.Collections.Generic
 open System.IO
-open System.Reflection
 
+open Mono.Cecil
 open Mono.Options
 open Augment
 
@@ -71,10 +71,11 @@ module Runner =
                  parse
     | fail -> fail
 
-  // Assembly.LoadFrom is "problematic", but necessary so I can read the report file path
-  // and ReflectionOnly context is not supported in .net core  cecil it, maybe??
-  [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability",
-                                                    "CA2001")>]
+  let GetMethod (t:TypeDefinition) (name:string) =
+    t.Methods
+    |> Seq.filter (fun m -> m.Name = name)
+    |> Seq.head
+
   let DoCoverage arguments =
     let check1 = DeclareOptions ()
                  |> CommandLine.ParseCommandLine arguments
@@ -89,10 +90,10 @@ module Runner =
           use latch' = new System.Threading.ManualResetEvent false
 
           let recorderPath = Path.Combine (Option.get recordingDirectory, "AltCover.Recorder.g.dll")
-          let recorder = Assembly.LoadFrom recorderPath
-          let instanceType = recorder.GetType("AltCover.Recorder.Instance")
-          let token = instanceType.GetProperty("Token", BindingFlags.Public ||| BindingFlags.Static).GetValue(null) :?> string
-          let report = instanceType.GetProperty("ReportFile", BindingFlags.Public ||| BindingFlags.Static).GetValue(null) :?> string
+          let definition = AssemblyDefinition.ReadAssembly recorderPath
+          let instance = definition.MainModule.GetType("AltCover.Recorder.Instance")
+          let token = (GetMethod instance "get_Token").Body.Instructions.[0].Operand :?> string
+          let report = (GetMethod instance "get_ReportFile").Body.Instructions.[0].Operand :?> string
 
           use server = new System.IO.Pipes.NamedPipeServerStream(token)
           let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
