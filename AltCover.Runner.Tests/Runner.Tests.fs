@@ -1,12 +1,15 @@
 ﻿namespace Tests
 
 open System
+open System.Collections.Generic
 open System.IO
 open System.Reflection
 open System.Text
+open System.Xml
 
 open AltCover
 open AltCover.Augment
+open AltCover.Base
 open NUnit.Framework
 
 [<TestFixture>]
@@ -129,6 +132,103 @@ type AltCoverTests() = class
       CommandLine.error <- false
       Console.SetOut (fst saved)
       Console.SetError (snd saved)
+
+  // Base.fs
+
+  [<Test>]
+  member self.ShouldBeExecutingTheCorrectCopyOfThisCode() =
+    let mutable where = ""
+    Locking.WithLockerLocked self (fun () -> where <- Assembly.GetCallingAssembly().GetName().Name)
+    Assert.That(where, Is.EqualTo "AltCover.Runner")
+
+  [<Test>]
+  member self.RealIdShouldIncrementCount() =
+    let visits = new Dictionary<string, Dictionary<int, int>>()
+    let key = " "
+    Counter.AddVisit visits key  23
+    Assert.That (visits.Count, Is.EqualTo 1)
+    Assert.That (visits.[key].Count, Is.EqualTo 1)
+    Assert.That (visits.[key].[23], Is.EqualTo 1)
+
+  [<Test>]
+  member self.DistinctIdShouldBeDistinct() =
+    let visits = new Dictionary<string, Dictionary<int, int>>()
+    let key = " "
+    Counter.AddVisit visits key 23
+    Counter.AddVisit visits "key" 42
+    Assert.That (visits.Count, Is.EqualTo 2)
+
+  [<Test>]
+  member self.DistinctLineShouldBeDistinct() =
+    let visits = new Dictionary<string, Dictionary<int, int>>()
+    let key = " "
+    Counter.AddVisit visits key 23
+    Counter.AddVisit visits key 42
+    Assert.That (visits.Count, Is.EqualTo 1)
+    Assert.That (visits.[key].Count, Is.EqualTo 2)
+
+  [<Test>]
+  member self.RepeatVisitsShouldIncrementCount() =
+    let visits = new Dictionary<string, Dictionary<int, int>>()
+    let key = " "
+    Counter.AddVisit visits key 23
+    Counter.AddVisit visits key 23
+    Assert.That (visits.[key].[23], Is.EqualTo 2)
+
+  member self.resource = Assembly.GetExecutingAssembly().GetManifestResourceNames()
+                         |> Seq.find (fun n -> n.EndsWith("SimpleCoverage.xml", StringComparison.Ordinal))
+
+  [<Test>]
+  member self.FlushLeavesExpectedTraces() =
+    let saved = Console.Out
+    let here = Directory.GetCurrentDirectory()
+    let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
+    let unique = Path.Combine(where, Guid.NewGuid().ToString())
+    let reportFile = Path.Combine(unique, "FlushLeavesExpectedTraces.xml")
+    try
+      let visits = new Dictionary<string, Dictionary<int, int>>()
+      use stdout = new StringWriter()
+      Console.SetOut stdout
+      Directory.CreateDirectory(unique) |> ignore
+      Directory.SetCurrentDirectory(unique)
+
+      Counter.measureTime <- DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
+      use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(self.resource)
+      let size = int stream.Length
+      let buffer = Array.create size 0uy
+      Assert.That (stream.Read(buffer, 0, size), Is.EqualTo size)
+      do
+        use worker = new FileStream(reportFile, FileMode.CreateNew)
+        worker.Write(buffer, 0, size)
+        ()
+
+      let payload = Dictionary<int,int>()
+      [0..9 ]
+      |> Seq.iter(fun i -> payload.[i] <- (i+1))
+      visits.["f6e3edb3-fb20-44b3-817d-f69d1a22fc2f"] <- payload
+
+      Counter.DoFlush true visits reportFile
+
+      let head = "Coverage statistics flushing took "
+      let tail = " seconds\n"
+      let recorded = stdout.ToString().Replace("\r\n","\n")
+      Assert.That (recorded.StartsWith(head, StringComparison.Ordinal))
+      Assert.That (recorded.EndsWith(tail, StringComparison.Ordinal))
+      use worker' = new FileStream(reportFile, FileMode.Open)
+      let after = XmlDocument()
+      after.Load worker'
+      Assert.That( after.SelectNodes("//seqpnt")
+                   |> Seq.cast<XmlElement>
+                   |> Seq.map (fun x -> x.GetAttribute("visitcount")),
+                   Is.EquivalentTo [ "11"; "10"; "9"; "8"; "7"; "6"; "4"; "3"; "2"; "1"])
+    finally
+      if File.Exists reportFile then File.Delete reportFile
+      Console.SetOut saved
+      Directory.SetCurrentDirectory(here)
+      try
+        Directory.Delete(unique)
+      with
+      | :? IOException -> ()
 
   // Runner.fs and CommandLine.fs
 

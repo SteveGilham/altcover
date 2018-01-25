@@ -30,7 +30,7 @@ type Tracer = {
       {
        Tracer = name;
        Pipe = new System.IO.Pipes.NamedPipeClientStream(name);
-       Activated = new System.Threading.ManualResetEvent false 
+       Activated = new System.Threading.ManualResetEvent false
        Formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
       }
 
@@ -64,7 +64,7 @@ type Tracer = {
 
     member this.CatchUp (visits:Dictionary<string, Dictionary<int, int>>) =
       visits.Keys
-      |> Seq.iter (fun moduleId -> 
+      |> Seq.iter (fun moduleId ->
         visits.[moduleId].Keys
         |> Seq.iter (fun hitPointId -> for i = 1 to visits.[moduleId].[hitPointId] do
                                          this.Push moduleId hitPointId))

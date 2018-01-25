@@ -67,6 +67,9 @@
     </Compile>
     <Compile Include="Runner.Tests.fs" />
     <Content Include="packages.config" />
+    <EmbeddedResource Include="..\Shadow.Tests\SimpleCoverage.xml">
+      <Link>SimpleCoverage.xml</Link>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Mono.Options">
@@ -93,6 +96,7 @@
       <Project>{d9881e98-f397-40c6-8b69-b2c528d533fa}</Project>
       <Private>True</Private>
     </ProjectReference>
+    <Reference Include="System.Xml" />
   </ItemGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

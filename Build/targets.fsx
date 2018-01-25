@@ -302,7 +302,7 @@ Target "UnitTestWithAltCover" (fun _ ->
       let runnerReport = reports @@ "RunnerTestWithAltCover.xml"
       let result = ExecProcess (fun info -> info.FileName <- altcover
                                             info.WorkingDirectory <- runnerDir
-                                            info.Arguments <- ("/sn=" + keyfile + AltCoverFilter + @"/o=./__RunnerTestWithAltCover -x=" + shadowReport)) (TimeSpan.FromMinutes 5.0)
+                                            info.Arguments <- ("/sn=" + keyfile + AltCoverFilter + @"/o=./__RunnerTestWithAltCover -x=" + runnerReport)) (TimeSpan.FromMinutes 5.0)
 
       printfn "Execute the runner tests"
       !! ("_Binaries/AltCover.Runner.Tests/Debug+AnyCPU/__RunnerTestWithAltCover/*.Test*.dll")
