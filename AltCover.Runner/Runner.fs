@@ -114,7 +114,7 @@ module Runner =
               printfn "%A" result
               if result |> fst |> String.IsNullOrWhiteSpace  |> not then
                 hits.Add result
-                sink()
+                if server.CanWrite then sink()
             sink()
             latch.WaitOne() |> ignore
             printfn "Done monitoring"
