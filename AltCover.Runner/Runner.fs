@@ -72,6 +72,14 @@ module Runner =
                  parse
     | fail -> fail
 
+  // mocking point
+  let mutable internal RecorderName = "AltCover.Recorder.g.dll"
+
+  let GetRecorderInstance () =
+    let recorderPath = Path.Combine (Option.get recordingDirectory, RecorderName)
+    let definition = AssemblyDefinition.ReadAssembly recorderPath
+    definition.MainModule.GetType("AltCover.Recorder.Instance")
+
   let GetMethod (t:TypeDefinition) (name:string) =
     t.Methods
     |> Seq.filter (fun m -> m.Name = name)
@@ -90,13 +98,7 @@ module Runner =
     match check1 with
     | Left (intro, options) -> HandleBadArguments arguments intro options
     | Right (rest, _) ->
-          use latch = new System.Threading.ManualResetEvent false
-          use latch' = new System.Threading.ManualResetEvent false
-
-          let recorderPath = Path.Combine (Option.get recordingDirectory, "AltCover.Recorder.g.dll")
-          let definition = AssemblyDefinition.ReadAssembly recorderPath
-          let instance = definition.MainModule.GetType("AltCover.Recorder.Instance")
-
+          let instance = GetRecorderInstance()
           let token = (GetMethod instance "get_Token") |> GetFirstOperandAsString
           let report = (GetMethod instance "get_ReportFile") |> GetFirstOperandAsString
 
@@ -107,7 +109,6 @@ module Runner =
           let payload = async {
             CommandLine.doPathOperation (fun () ->
               CommandLine.ProcessTrailingArguments rest (DirectoryInfo(Option.get workingDirectory)))
-            latch.Set() |> ignore
           }
 
           let monitor = async {
@@ -119,8 +120,6 @@ module Runner =
                 hits.Add result
                 if server.CanWrite then sink()
             sink()
-            latch.WaitOne() |> ignore
-            latch'.Set() |> ignore
            }
 
           [monitor; payload]
@@ -128,7 +127,6 @@ module Runner =
           |> Async.RunSynchronously
           |> ignore
 
-          latch'.WaitOne() |> ignore
           let counts = Dictionary<string, Dictionary<int, int>>()
           hits |> Seq.iter(fun (moduleId, hitPointId) ->
                                 AltCover.Base.Counter.AddVisit counts moduleId hitPointId)

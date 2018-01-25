@@ -734,4 +734,26 @@ type AltCoverTests() = class
       Assert.That (result, Is.EqualTo (expected.Replace("\r\n", "\n")))
 
     finally Console.SetError saved
+
+  [<Test>]
+  member self.ShouldGetStringConstants() =
+    let where = Assembly.GetExecutingAssembly().Location
+                |> Path.GetDirectoryName
+    let save = Runner.RecorderName
+    lock self (fun () ->
+    try
+      Runner.recordingDirectory <- Some where
+      Runner.RecorderName <- "AltCover.Recorder.dll"
+      let instance = Runner.GetRecorderInstance()
+      Assert.That(instance.FullName, Is.EqualTo "AltCover.Recorder.Instance", "should be the instance")
+      let token = (Runner.GetMethod instance "get_Token") |> Runner.GetFirstOperandAsString
+      Assert.That(token, Is.EqualTo "AltCover", "should be plain token")
+      let report = (Runner.GetMethod instance "get_ReportFile") |> Runner.GetFirstOperandAsString
+      Assert.That(report, Is.EqualTo "Coverage.Default.xml", "should be default coverage file")
+   
+    finally
+      Runner.recordingDirectory <- None
+      Runner.RecorderName <- save)
+
+
 end
