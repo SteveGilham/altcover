@@ -63,10 +63,11 @@ open System.Runtime.CompilerServices
 [<assembly: InternalsVisibleTo("AltCover.Shadow.Tests, PublicKey={2}")>]
 [<assembly: InternalsVisibleTo("AltCover.Shadow.Tests2, PublicKey={1}")>]
 [<assembly: InternalsVisibleTo("AltCover.Shadow.Tests2, PublicKey={2}")>]
+[<assembly: InternalsVisibleTo("AltCover.Runner.Tests, PublicKey={1}")>]
+[<assembly: InternalsVisibleTo("AltCover.Runner.Tests, PublicKey={2}")>]
 #endif
 #endif
-()
-"""
+()"""
 
   let InternalsVisibleTo version =
     let stream2 = new System.IO.FileStream("./Build/SelfTest.snk", System.IO.FileMode.Open, System.IO.FileAccess.Read)

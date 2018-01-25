@@ -41,7 +41,7 @@ module Instance =
 
   let internal WithMutex (f : bool -> 'a) =
     let own = mutex.WaitOne(10000)
-    try 
+    try
       f(own)
     finally
       if own then mutex.ReleaseMutex()
@@ -73,10 +73,9 @@ module Instance =
       | 0 -> ()
       | _ -> let counts = Dictionary<string, Dictionary<int, int>> Visits
              Visits.Clear()
-             WithMutex (fun own -> 
+             WithMutex (fun own ->
                 Counter.DoFlush own counts ReportFile
              ))
-
 
   let internal TraceVisit moduleId hitPointId =
      WithVisitsLocked (fun () -> trace.OnVisit Visits moduleId hitPointId)

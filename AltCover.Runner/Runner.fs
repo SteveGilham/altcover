@@ -8,6 +8,7 @@ open Mono.Cecil
 open Mono.Options
 open Augment
 
+[<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage>]
 type Tracer = { Tracer : string }
 
 module Runner =

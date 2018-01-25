@@ -239,7 +239,7 @@ Target "UnitTestWithOpenCover" (fun _ ->
     OpenCover (fun p -> { p with ExePath = findToolInSubPath "OpenCover.Console.exe" "."
                                  WorkingDir = "."
                                  TestRunnerExePath = findToolInSubPath "nunit3-console.exe" "."
-                                 Filter = "+[AltCover]* +[AltCover.Shadow]* -[*]Microsoft.* -[*]System.* -[Sample*]*"
+                                 Filter = "+[AltCover]* +[AltCover.Shadow]* +[AltCover.Runner]* -[*]Microsoft.* -[*]System.* -[Sample*]*"
                                  MergeByHash = true
                                  OptionalArguments = "-excludebyattribute:*ExcludeFromCodeCoverageAttribute;*ProgIdAttribute"
                                  Register = RegisterType.RegisterUser
@@ -297,10 +297,23 @@ Target "UnitTestWithAltCover" (fun _ ->
                                    WorkingDir = "."
                                    ResultSpecs = ["./_Reports/ShadowTestWithAltCoverReport.xml"] })
 
+      printfn "Instrument the runner tests"
+      let runnerDir = FullName  "_Binaries/AltCover.Runner.Tests/Debug+AnyCPU"
+      let runnerReport = reports @@ "RunnerTestWithAltCover.xml"
+      let result = ExecProcess (fun info -> info.FileName <- altcover
+                                            info.WorkingDirectory <- runnerDir
+                                            info.Arguments <- ("/sn=" + keyfile + AltCoverFilter + @"/o=./__RunnerTestWithAltCover -x=" + shadowReport)) (TimeSpan.FromMinutes 5.0)
+
+      printfn "Execute the runner tests"
+      !! ("_Binaries/AltCover.Runner.Tests/Debug+AnyCPU/__RunnerTestWithAltCover/*.Test*.dll")
+      |> NUnit3 (fun p -> { p with ToolPath = findToolInSubPath "nunit3-console.exe" "."
+                                   WorkingDir = "."
+                                   ResultSpecs = ["./_Reports/RunnerTestWithAltCoverReport.xml"] })
+
       ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
                                          ReportTypes = [ ReportGeneratorReportType.Html; ReportGeneratorReportType.Badges; ReportGeneratorReportType.XmlSummary ]
                                          TargetDir = "_Reports/_UnitTestWithAltCover"})
-          [altReport; shadowReport]
+          [altReport; shadowReport; runnerReport]
     else
       printfn "Symbols not present; skipping"
 )

@@ -20,6 +20,7 @@ test:
   assemblies:
     only:
     - _Binaries\AltCover.Tests\Debug+AnyCPU\*.Tests.dll
+    - _Binaries\AltCover.Runner.Tests\Debug+AnyCPU\*.Tests.dll
     - _Binaries\AltCover.Shadow.Tests\Debug+AnyCPU\*.Tests.dll
 artifacts:
 - path: _Packaging\*.nupkg

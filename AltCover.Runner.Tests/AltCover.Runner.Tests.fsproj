@@ -4,18 +4,18 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{d9881e98-f397-40c6-8b69-b2c528d533fa}</ProjectGuid>
-    <OutputType>Exe</OutputType>
-    <RootNamespace>AltCover.Runner</RootNamespace>
-    <AssemblyName>AltCover.Runner</AssemblyName>
+    <ProjectGuid>cc018c9f-335c-421f-99d5-1cded2de6884</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>AltCover.Runner.Tests</RootNamespace>
+    <AssemblyName>AltCover.Runner.Tests</AssemblyName>
+    <UseStandardResourceNames>true</UseStandardResourceNames>
     <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
-    <Name>AltCover.Runner</Name>
     <TargetFSharpCoreVersion>4.4.1.0</TargetFSharpCoreVersion>
-    <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>
-    <TargetFrameworkProfile />
-    <UseStandardResourceNames>True</UseStandardResourceNames>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <ExtraDefines Condition="'$(TRAVIS_JOB_NUMBER)' == ''">NET4</ExtraDefines>
+    <ExtraDefines Condition="'$(TRAVIS_JOB_NUMBER)' != ''">MONO</ExtraDefines>
+    <Name>AltCover.Runner.Tests</Name>
     <ResolveNuGetPackages>false</ResolveNuGetPackages>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -29,7 +29,7 @@
     <WarningsAsErrors>
     </WarningsAsErrors>
     <OtherFlags>--keyfile:$(SolutionDir)Build\Infrastructure.snk</OtherFlags>
-    <DefineConstants>TRACE;DEBUG;CODE_ANALYSIS;RUNNER</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;CODE_ANALYSIS;$(ExtraDefines)</DefineConstants>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
@@ -41,8 +41,8 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <WarningsAsErrors>
     </WarningsAsErrors>
-    <OtherFlags>--keyfile:$(SolutionDir)Build\Infrastructure.snk --standalone --staticlink:Mono.Options</OtherFlags>
-    <DefineConstants>TRACE;RUNNER</DefineConstants>
+    <OtherFlags>--keyfile:$(SolutionDir)Build\Infrastructure.snk</OtherFlags>
+    <DefineConstants>TRACE;$(ExtraDefines)</DefineConstants>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
@@ -65,49 +65,34 @@
     <Compile Include="..\_Generated\AssemblyVersion.fs">
       <Link>AssemblyVersion.fs</Link>
     </Compile>
-    <Compile Include="..\_Generated\VisibleToTest.fs">
-      <Link>VisibleToTest.fs</Link>
-    </Compile>
-    <Compile Include="..\AltCover\AssemblyInfo.fs">
-      <Link>AssemblyInfo.fs</Link>
-    </Compile>
-    <Compile Include="..\AltCover\Augment.fs">
-      <Link>Augment.fs</Link>
-    </Compile>
-    <Compile Include="..\AltCover\CommandLine.fs">
-      <Link>CommandLine.fs</Link>
-    </Compile>
-    <Compile Include="..\AltCover.Recorder\Base.fs">
-      <Link>Base.fs</Link>
-    </Compile>
-    <Compile Include="Runner.fs" />
-    <EmbeddedResource Include="Strings.resx" />
-    <EmbeddedResource Include="Strings.eo.resx" />
+    <Compile Include="Runner.Tests.fs" />
     <Content Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="Mono.Cecil">
-      <HintPath>..\packages\Mono.Cecil.0.10.0-beta7\lib\net40\Mono.Cecil.dll</HintPath>
-    </Reference>
-    <Reference Include="Mono.Cecil.Mdb">
-      <HintPath>..\packages\Mono.Cecil.0.10.0-beta7\lib\net40\Mono.Cecil.Mdb.dll</HintPath>
-    </Reference>
-    <Reference Include="Mono.Cecil.Pdb">
-      <HintPath>..\packages\Mono.Cecil.0.10.0-beta7\lib\net40\Mono.Cecil.Pdb.dll</HintPath>
-    </Reference>
-    <Reference Include="Mono.Cecil.Rocks">
-      <HintPath>..\packages\Mono.Cecil.0.10.0-beta7\lib\net40\Mono.Cecil.Rocks.dll</HintPath>
-    </Reference>
     <Reference Include="Mono.Options">
       <HintPath>..\packages\Mono.Options.Signed.0.2.3\lib\net45\Mono.Options.dll</HintPath>
     </Reference>
     <Reference Include="mscorlib" />
-    <Reference Include="FSharp.Core, Version=$(TargetFSharpCoreVersion), Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-      <Private>True</Private>
+    <Reference Include="FSharp.Core">
+      <Name>FSharp.Core</Name>
+      <AssemblyName>FSharp.Core.dll</AssemblyName>
+      <HintPath>$(MSBuildProgramFiles32)\Reference Assemblies\Microsoft\FSharp\.NETFramework\v4.0\$(TargetFSharpCoreVersion)\FSharp.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="nunit.framework">
+      <HintPath>..\packages\NUnit.3.9.0\lib\net45\nunit.framework.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Xml" />
+    <ProjectReference Include="..\AltCover.Recorder\AltCover.Recorder.fsproj">
+      <Name>AltCover.Recorder</Name>
+      <Project>{02192b55-3a50-4ad2-b519-560f30c14dd4}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\AltCover.Runner\AltCover.Runner.fsproj">
+      <Name>AltCover.Runner</Name>
+      <Project>{d9881e98-f397-40c6-8b69-b2c528d533fa}</Project>
+      <Private>True</Private>
+    </ProjectReference>
   </ItemGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
