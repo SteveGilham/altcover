@@ -74,6 +74,7 @@
     <Compile Include="..\_Generated\VisibleToTest.fs">
       <Link>VisibleToTest.fs</Link>
     </Compile>
+    <Compile Include="Framework.fs" />
     <Compile Include="Recorder.fs" />
   </ItemGroup>
   <ItemGroup>
