@@ -935,4 +935,32 @@ type AltCoverTests() = class
     Assert.That(latch.WaitOne(1000), Is.True)
     Assert.That(hits, Is.EquivalentTo [("name", 23); ("name2", 42)])
 
+  [<Test>]
+  member self.PipeMonitorShouldHandleException() =
+    let token = Guid.NewGuid().ToString() + "PipeMonitorShouldReceiveSignal"
+    let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
+    let hits = List<(string*int)>()
+    use signal = new AutoResetEvent false
+    use client = new System.IO.Pipes.NamedPipeClientStream(token)
+    use latch = new ManualResetEvent false
+    async {
+        do! Runner.GetMonitor hits token latch
+        do! async { signal.Set() |> ignore }
+    } |> Async.Start
+
+    client.Connect()
+    while client.IsConnected |> not do
+      printf "."
+      Thread.Sleep 100
+
+    let x = client.ReadByte()
+    Assert.That(x, Is.GreaterThanOrEqualTo 0)
+    formatter.Serialize(client, ("name", 23))
+    let broken = System.Text.Encoding.UTF8.GetBytes "this is junk"
+    client.Close()
+
+    signal.WaitOne() |> ignore
+    Assert.That(latch.WaitOne(1000), Is.True)
+    Assert.That(hits, Is.EquivalentTo [("name", 23)])
+
 end

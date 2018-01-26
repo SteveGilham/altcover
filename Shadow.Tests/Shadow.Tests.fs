@@ -269,6 +269,7 @@ type AltCoverTests() = class
   member self.TracerStubsAreNoOps() =
     let t = { Tracer = "dummy" }
     t.OnFinish false
+    t.CatchUp ()
     Instance.TraceVisit 1 2
     Assert.Pass()
 #endif

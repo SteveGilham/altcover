@@ -85,7 +85,11 @@ type Tracer = {
 
     member this.OnFinish finish =
       if finish then
-        this.Push null -1
+        try
+          while this.Pipe.CanWrite do
+            this.Push null -1
+        with
+        | :? IOException -> ()
 
     member this.OnVisit visits moduleId hitPointId =
       this.CatchUp visits

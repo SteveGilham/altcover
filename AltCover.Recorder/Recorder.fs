@@ -64,7 +64,8 @@ module Instance =
   /// This method flushes hit count buffers.
   /// </summary>
   let internal FlushCounter (finish:bool) _ =
-    trace.OnConnected (fun () -> trace.OnFinish finish)
+    trace.OnConnected (fun () -> WithVisitsLocked (fun () -> trace.CatchUp Visits)
+                                 trace.OnFinish finish)
      WithVisitsLocked
       (fun () ->
       if finish then

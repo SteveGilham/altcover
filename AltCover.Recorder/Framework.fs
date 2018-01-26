@@ -21,3 +21,4 @@ type Tracer = {
     member this.OnFinish (finish:bool) =
       ignore finish
     member this.OnVisit _ _ _ = ()
+    member this.CatchUp _ = () 
