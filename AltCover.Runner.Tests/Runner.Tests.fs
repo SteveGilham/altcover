@@ -783,8 +783,9 @@ type AltCoverTests() = class
 
       let u1 = Guid.NewGuid().ToString()
       let u2 = Guid.NewGuid().ToString()
+      use latch = new ManualResetEvent true
 
-      let payload = Runner.GetPayload [program; u1; u2]
+      let payload = Runner.GetPayload [program; u1; u2] latch
       payload |> Async.RunSynchronously
 
       Assert.That(stderr.ToString(), Is.Empty)
@@ -819,11 +820,11 @@ type AltCoverTests() = class
     let save3 = Runner.DoReport
     try
       Runner.RecorderName <- "AltCover.Recorder.dll"
-      let payload (rest:string list) =
+      let payload (rest:string list) _ =
         Assert.That(rest, Is.EquivalentTo [|"test"; "1"|])
         async { () }
 
-      let monitor (hits:ICollection<(string*int)>) (token:string) =
+      let monitor (hits:ICollection<(string*int)>) (token:string) _ =
         Assert.That(token, Is.EqualTo "AltCover", "should be plain token")
         Assert.That(hits, Is.Empty)
         async { () }
@@ -911,8 +912,9 @@ type AltCoverTests() = class
     let hits = List<(string*int)>()
     use signal = new AutoResetEvent false
     use client = new System.IO.Pipes.NamedPipeClientStream(token)
+    use latch = new ManualResetEvent false
     async {
-        do! Runner.GetMonitor hits token
+        do! Runner.GetMonitor hits token latch
         do! async { signal.Set() |> ignore }
     } |> Async.Start
 
@@ -930,6 +932,7 @@ type AltCoverTests() = class
     client.Close()
 
     signal.WaitOne() |> ignore
+    Assert.That(latch.WaitOne(1000), Is.True)
     Assert.That(hits, Is.EquivalentTo [("name", 23); ("name2", 42)])
 
 end

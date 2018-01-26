@@ -3,6 +3,7 @@
 open System
 open System.Collections.Generic
 open System.IO
+open System.Threading
 
 open Mono.Cecil
 open Mono.Options
@@ -91,23 +92,28 @@ module Runner =
      |> Seq.map (fun i -> i.Operand :?> string)
      |> Seq.head
 
-  let PayloadBase (rest:string list) =
+  let PayloadBase (rest:string list) (latch:EventWaitHandle) =
     async {
+            latch.WaitOne(10000) |> ignore
             CommandLine.doPathOperation (fun () ->
                 CommandLine.ProcessTrailingArguments rest (DirectoryInfo(Option.get workingDirectory)))
           }
 
-  let MonitorBase (hits:ICollection<(string*int)>) token =
+  let MonitorBase (hits:ICollection<(string*int)>) token  (latch:EventWaitHandle) =
     async {
       use server = new System.IO.Pipes.NamedPipeServerStream(token)
       let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
+      latch.Set() |> ignore
       server.WaitForConnection()
       server.WriteByte(0uy)
       let rec sink () =
-        let result = formatter.Deserialize(server) :?> (string*int)
-        if result |> fst |> String.IsNullOrWhiteSpace  |> not then
-          hits.Add result
-          if server.CanWrite then sink()
+        try
+          let result = formatter.Deserialize(server) :?> (string*int)
+          if result |> fst |> String.IsNullOrWhiteSpace  |> not then
+            hits.Add result
+            if server.CanWrite then sink()
+        with
+        | :? System.Runtime.Serialization.SerializationException -> ()
       sink()
            }
 
@@ -135,11 +141,12 @@ module Runner =
           let instance = RecorderInstance()
           let token = (GetMethod instance "get_Token") |> GetFirstOperandAsString
           let report = (GetMethod instance "get_ReportFile") |> GetFirstOperandAsString
+          use latch = new ManualResetEvent false
 
           let hits = List<(string*int)>()
 
-          let payload = GetPayload rest
-          let monitor = GetMonitor hits token
+          let payload = GetPayload rest latch
+          let monitor = GetMonitor hits token latch
 
           [monitor; payload]
           |> Async.Parallel
