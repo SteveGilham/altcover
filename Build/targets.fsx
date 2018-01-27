@@ -925,6 +925,10 @@ Target "All" ignore
 ==> "Deployment"
 
 "Unpack"
+==> "ReleaseFSharpTypesDotNetRunner"
+==> "Deployment"
+
+"Unpack"
 ==> "ReleaseXUnitDotNetDemo"
 
 "Analysis"
