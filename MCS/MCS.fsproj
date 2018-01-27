@@ -107,7 +107,7 @@
     </Reference>
     <Reference Include="System.Xml" />
     <Reference Include="YamlDotNet">
-      <HintPath>..\packages\YamlDotNet.4.2.4\lib\net45\YamlDotNet.dll</HintPath>
+      <HintPath>..\packages\YamlDotNet.4.3.0\lib\net45\YamlDotNet.dll</HintPath>
     </Reference>
   </ItemGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
