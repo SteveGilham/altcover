@@ -4,6 +4,7 @@ open System
 open System.Collections.Generic
 open System.IO
 open System.Threading
+open System.Threading.Tasks
 
 open Mono.Cecil
 open Mono.Options
@@ -107,13 +108,20 @@ module Runner =
       server.WaitForConnection()
       server.WriteByte(0uy)
       let rec sink () =
-        try
-          let result = formatter.Deserialize(server) :?> (string*int)
-          if result |> fst |> String.IsNullOrWhiteSpace  |> not then
-            hits.Add result
-            if server.CanWrite then sink()
-        with
-        | :? System.Runtime.Serialization.SerializationException -> ()
+          // On Mono/Linux, we get no clue from the pipe that the other end has gone away
+          // Not even a serialization error from a partial message
+          // Async didn't seem to play well with the blocking read within Deserialize
+          // So do it this way, where we do seem to get a timeout
+          let task = Task.Run(fun () -> try 
+                                          formatter.Deserialize(server) :?> (string*int)
+                                        with
+                                        | :? System.Runtime.Serialization.SerializationException as x -> 
+                                            (String.Empty, -1) )
+          if task.Wait(10000) then
+            let result = task.Result
+            if result|> fst |> String.IsNullOrWhiteSpace  |> not then
+               result |> hits.Add 
+               sink()
       sink()
            }
 
