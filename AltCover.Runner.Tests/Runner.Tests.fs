@@ -947,12 +947,12 @@ type AltCoverTests() = class
         Assert.That(signal.WaitOne(60000), "Went on too long")
         Assert.That(latch.WaitOne(1000), Is.True)
         Assert.That(hits, Is.EquivalentTo [("name", 23); ("name2", 42)])
-    else Assert.Fail()
+    else Assert.Fail("Task timeout")
     
 
   [<Test>]
   member self.PipeMonitorShouldHandleException() =
-    let token = Guid.NewGuid().ToString() + "PipeMonitorShouldReceiveSignal"
+    let token = Guid.NewGuid().ToString() + "PipeMonitorShouldHandleException"
     let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
     let hits = List<(string*int)>()
     use signal = new AutoResetEvent false
@@ -963,7 +963,7 @@ type AltCoverTests() = class
         do! async { signal.Set() |> ignore }
     } |> Async.Start
 
-    do
+    let task = Task.Run(fun () ->
       use client = new System.IO.Pipes.NamedPipeClientStream(token)
       printfn "c: about to connect"
       client.Connect()
@@ -981,12 +981,14 @@ type AltCoverTests() = class
       let broken = System.Text.Encoding.UTF8.GetBytes "just junk"
       client.Write(broken, 0, broken.Length)
       client.Flush()
-      printfn "c: junk sent"
+      printfn "c: junk sent")
 
-    Thread.Sleep 100
     printfn "c: closed"
-    Assert.That(signal.WaitOne(60000), "Went on too long")
-    Assert.That(latch.WaitOne(1000), Is.True, "didn't finish monitoring")
-    Assert.That(hits, Is.EquivalentTo [("name", 23)])
+    Thread.Sleep 100
+    if task.Wait(60000) then
+        Assert.That(signal.WaitOne(60000), "Went on too long")
+        Assert.That(latch.WaitOne(1000), Is.True, "didn't finish monitoring")
+        Assert.That(hits, Is.EquivalentTo [("name", 23)])
+    else Assert.Fail("Task timeout")
 
 end
