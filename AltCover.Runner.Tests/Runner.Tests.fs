@@ -1,4 +1,4 @@
-﻿namespace Tests
+﻿namespace Tests.Runner
 
 open System
 open System.Collections.Generic
@@ -6,6 +6,7 @@ open System.IO
 open System.Reflection
 open System.Text
 open System.Threading
+open System.Threading.Tasks
 open System.Xml
 
 open AltCover
@@ -911,29 +912,43 @@ type AltCoverTests() = class
     let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
     let hits = List<(string*int)>()
     use signal = new AutoResetEvent false
-    use client = new System.IO.Pipes.NamedPipeClientStream(token)
     use latch = new ManualResetEvent false
-    async {
-        do! Runner.GetMonitor hits token latch
-        do! async { signal.Set() |> ignore }
-    } |> Async.Start
 
-    client.Connect()
-    while client.IsConnected |> not do
-      printf "."
-      Thread.Sleep 100
+    let task = Task.Run(fun () ->
+          use client = new System.IO.Pipes.NamedPipeClientStream(token)
+          async {
+                do! Runner.GetMonitor hits token latch
+                printfn "monitor exit"
+                do! async { signal.Set() |> ignore }
+            } |> Async.Start
+          printfn "c: about to connect"
+          client.Connect()
+          while client.IsConnected |> not do
+            printfn "."
+            Thread.Sleep 100
 
-    let x = client.ReadByte()
-    Assert.That(x, Is.GreaterThanOrEqualTo 0)
-    formatter.Serialize(client, ("name", 23))
-    formatter.Serialize(client, ("name2", 42))
-    let nulled = { Tracer = null }
-    formatter.Serialize(client, (nulled.Tracer, -1))
-    client.Close()
+          printfn "c: connected"
+          let x = client.ReadByte()
+          Assert.That(x, Is.GreaterThanOrEqualTo 0)
+          printfn "c: active"
+          formatter.Serialize(client, ("name", 23))
+          client.Flush()
+          printfn "c: tuple sent"
+          formatter.Serialize(client, ("name2", 42))
+          client.Flush()
+          printfn "c: tuple sent"
+          let nulled = { Tracer = null }
+          formatter.Serialize(client, (nulled.Tracer, -1))
+          client.Flush()
+          printfn "c: termination sent")
 
-    signal.WaitOne() |> ignore
-    Assert.That(latch.WaitOne(1000), Is.True)
-    Assert.That(hits, Is.EquivalentTo [("name", 23); ("name2", 42)])
+    Thread.Sleep 100
+    if task.Wait(60000) then
+        Assert.That(signal.WaitOne(60000), "Went on too long")
+        Assert.That(latch.WaitOne(1000), Is.True)
+        Assert.That(hits, Is.EquivalentTo [("name", 23); ("name2", 42)])
+    else Assert.Fail()
+    
 
   [<Test>]
   member self.PipeMonitorShouldHandleException() =
@@ -941,26 +956,37 @@ type AltCoverTests() = class
     let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
     let hits = List<(string*int)>()
     use signal = new AutoResetEvent false
-    use client = new System.IO.Pipes.NamedPipeClientStream(token)
     use latch = new ManualResetEvent false
     async {
         do! Runner.GetMonitor hits token latch
+        printfn "monitor exit"
         do! async { signal.Set() |> ignore }
     } |> Async.Start
 
-    client.Connect()
-    while client.IsConnected |> not do
-      printf "."
-      Thread.Sleep 100
+    do
+      use client = new System.IO.Pipes.NamedPipeClientStream(token)
+      printfn "c: about to connect"
+      client.Connect()
+      while client.IsConnected |> not do
+        printf "."
+        Thread.Sleep 100
 
-    let x = client.ReadByte()
-    Assert.That(x, Is.GreaterThanOrEqualTo 0)
-    formatter.Serialize(client, ("name", 23))
-    let broken = System.Text.Encoding.UTF8.GetBytes "this is junk"
-    client.Close()
+      printfn "c: connected"
+      let x = client.ReadByte()
+      Assert.That(x, Is.GreaterThanOrEqualTo 0)
+      printfn "c: active"
+      formatter.Serialize(client, ("name", 23))
+      client.Flush()
+      printfn "c: tuple sent"
+      let broken = System.Text.Encoding.UTF8.GetBytes "just junk"
+      client.Write(broken, 0, broken.Length)
+      client.Flush()
+      printfn "c: junk sent"
 
-    signal.WaitOne() |> ignore
-    Assert.That(latch.WaitOne(1000), Is.True)
+    Thread.Sleep 100
+    printfn "c: closed"
+    Assert.That(signal.WaitOne(60000), "Went on too long")
+    Assert.That(latch.WaitOne(1000), Is.True, "didn't finish monitoring")
     Assert.That(hits, Is.EquivalentTo [("name", 23)])
 
 end
