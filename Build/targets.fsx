@@ -484,7 +484,7 @@ Target "CSharpMonoWithDotNetRunner" (fun _ ->
     // Run
     DotNetCli.RunCommand (fun info -> {info with WorkingDir = o })
                           ("run --project " + runner +
-                          " -- -x \"" + (o @@ "/Sample1.exe") + "\" -r \"" + o)
+                          " -- -x \"" + (o @@ "/Sample1.exe") + "\" -r \"" + o + "\"")
 
     Actions.ValidateSample1 "./_Reports/CSharpMonoWithDotNetRunner.xml" "CSharpMonoWithDotNetRunner"
 )
@@ -716,7 +716,7 @@ Target "ReleaseMonoWithDotNetRunner" (fun _ ->
     // Run
     DotNetCli.RunCommand (fun info -> {info with WorkingDir = o })
                           ("run --project " + runner +
-                          " -- -x \"" + (o @@ "/Sample1.exe") + "\" -r \"" + o)
+                          " -- -x \"" + (o @@ "/Sample1.exe") + "\" -r \"" + o + "\"")
 
     Actions.ValidateSample1 "./_Reports/ReleaseMonoWithDotNetRunner.xml" "ReleaseMonoWithDotNetRunner"
 )
