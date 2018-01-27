@@ -415,7 +415,7 @@ Target "FSharpTypesDotNet" ( fun _ ->
 Target "FSharpTypesDotNetRunner" ( fun _ ->
     ensureDirectory "./_Reports"
     let project = FullName "./AltCover/altcover.core.fsproj"
-    let simpleReport = (FullName "./_Reports") @@ ( "AltCoverFSharpTypesDotNet.xml")
+    let simpleReport = (FullName "./_Reports") @@ ( "AltCoverFSharpTypesDotNetRunner.xml")
     let sampleRoot = FullName "_Binaries/Sample2/Debug+AnyCPU/netcoreapp2.0"
     let instrumented = FullName "Sample2/_Binaries/Sample2/Debug+AnyCPU/netcoreapp2.0"
 
@@ -471,24 +471,6 @@ Target "CSharpMonoWithDotNet" (fun _ ->
     Actions.ValidateSample1 "./_Reports/CSharpMonoWithDotNet.xml" "CSharpMonoWithDotNet"
 )
 
-Target "CSharpMonoWithDotNetRunner" (fun _ ->
-    ensureDirectory "./_Reports"
-    let x = FullName "./_Reports/CSharpMonoWithDotNetRunner.xml"
-    let o = FullName "./_Mono/__Instrumented.CSharpMonoWithDotNetRunner"
-    let i = FullName "./_Mono/Sample1"
-    let runner = FullName "./AltCover.Runner/altcover.runner.core.fsproj"
-
-    // Instrument
-    DotNetCli.RunCommand id ("run --project ./AltCover/altcover.core.fsproj -- -t \"System.\" -x \"" + x + "\" -o \"" + o + "\" -i \"" + i + "\"")
-
-    // Run
-    DotNetCli.RunCommand (fun info -> {info with WorkingDir = o })
-                          ("run --project " + runner +
-                          " -- -x \"" + (o @@ "/Sample1.exe") + "\" -r \"" + o + "\"")
-
-    Actions.ValidateSample1 "./_Reports/CSharpMonoWithDotNetRunner.xml" "CSharpMonoWithDotNetRunner"
-)
-
 Target "CSharpDotNetWithDotNet" (fun _ ->
     ensureDirectory "./_Reports"
     let x = FullName "./_Reports/CSharpDotNetWithDotNet.xml"
@@ -499,22 +481,6 @@ Target "CSharpDotNetWithDotNet" (fun _ ->
     DotNetCli.RunCommand id (o @@ "Sample1.dll")
 
     Actions.ValidateSample1 "./_Reports/CSharpDotNetWithDotNet.xml" "CSharpDotNetWithDotNet"
-)
-
-Target "CSharpDotNetWithDotNetRunner" (fun _ ->
-    ensureDirectory "./_Reports"
-    let x = FullName "./_Reports/CSharpDotNetWithDotNetRunner.xml"
-    let o = FullName "../_Binaries/Sample1/__Instrumented.CSharpDotNetWithDotNetRunner"
-    let i = FullName "./_Binaries/Sample1/Debug+AnyCPU/netcoreapp2.0"
-    DotNetCli.RunCommand id ("_Binaries/AltCover/Debug+AnyCPU/netcoreapp2.0/AltCover.dll -t \"System.\" -x \"" + x + "\" -o \"" + o + "\" -i \"" + i + "\"")
-
-    // Run
-    let runner = FullName "./AltCover.Runner/altcover.runner.core.fsproj"
-    DotNetCli.RunCommand (fun info -> {info with WorkingDir = o })
-                          ("run --project " + runner +
-                          " -- -x \"dotnet\" -r \"" + o + "\" -- \"" + (o @@ "/Sample1.dll") + "\"")
-
-    Actions.ValidateSample1 "./_Reports/CSharpDotNetWithDotNetRunner.xml" "CSharpDotNetWithDotNetRunner"
 )
 
 Target "CSharpDotNetWithFramework" (fun _ ->
@@ -702,25 +668,6 @@ Target "ReleaseMonoWithDotNet" (fun _ ->
     Actions.ValidateSample1 "./_Reports/ReleaseMonoWithDotNet.xml" "ReleaseMonoWithDotNet"
 )
 
-Target "ReleaseMonoWithDotNetRunner" (fun _ ->
-    ensureDirectory "./_Reports"
-    let unpack = FullName "_Packaging/Unpack/tools/netcoreapp2.0/AltCover"
-    let x = FullName "./_Reports/ReleaseMonoWithDotNetRunner.xml"
-    let o = FullName "./_Mono/__Instrumented.ReleaseMonoWithDotNetRunner"
-    let i = FullName "./_Mono/Sample1"
-    DotNetCli.RunCommand (fun info -> {info with WorkingDir = unpack })
-                          ("run --project altcover.core.fsproj -- -x \"" + x + "\" -o \"" + o + "\" -i \"" + i + "\"")
-
-    let runner = FullName "_Packaging/Unpack/tools/netcoreapp2.0/AltCover.Runner/altcover.runner.core.fsproj"
-
-    // Run
-    DotNetCli.RunCommand (fun info -> {info with WorkingDir = o })
-                          ("run --project " + runner +
-                          " -- -x \"" + (o @@ "/Sample1.exe") + "\" -r \"" + o + "\"")
-
-    Actions.ValidateSample1 "./_Reports/ReleaseMonoWithDotNetRunner.xml" "ReleaseMonoWithDotNetRunner"
-)
-
 Target "ReleaseDotNetWithDotNet" (fun _ ->
     ensureDirectory "./_Reports"
     let unpack = FullName "_Packaging/Unpack/tools/netcoreapp2.0/AltCover"
@@ -733,24 +680,6 @@ Target "ReleaseDotNetWithDotNet" (fun _ ->
     DotNetCli.RunCommand id (o @@ "Sample1.dll")
 
     Actions.ValidateSample1 "./_Reports/ReleaseDotNetWithDotNet.xml" "ReleaseDotNetWithDotNet"
-)
-
-Target "ReleaseDotNetWithDotNetRunner" (fun _ ->
-    ensureDirectory "./_Reports"
-    let unpack = FullName "_Packaging/Unpack/tools/netcoreapp2.0/AltCover"
-    let x = FullName "./_Reports/ReleaseDotNetWithDotNetRunner.xml"
-    let o = FullName "./_Binaries/Sample1/__Instrumented.ReleaseDotNetWithDotNetRunner"
-    let i = FullName "./_Binaries/Sample1/Debug+AnyCPU/netcoreapp2.0"
-    DotNetCli.RunCommand (fun info -> {info with WorkingDir = unpack })
-                          ("run --project altcover.core.fsproj -- -x \"" + x + "\" -o \"" + o + "\" -i \"" + i + "\"")
-
-    // Run
-    let runner = FullName "_Packaging/Unpack/tools/netcoreapp2.0/AltCover.Runner/altcover.runner.core.fsproj"
-    DotNetCli.RunCommand (fun info -> {info with WorkingDir = o })
-                          ("run --project " + runner +
-                          " -- -x \"dotnet\" -r \"" + o + "\" -- \"" + (o @@ "/Sample1.dll") + "\"")
-
-    Actions.ValidateSample1 "./_Reports/ReleaseDotNetWithDotNetRunner.xml" "ReleaseDotNetWithDotNetRunner"
 )
 
 Target "ReleaseXUnitDotNetDemo" (fun _ ->
@@ -788,7 +717,6 @@ Target "ReleaseXUnitDotNetDemo" (fun _ ->
                         |> Seq.length)
 
     Assert.That(visits, Is.EquivalentTo[3; 5; 3])
-
 )
 
 Target "ReleaseDotNetWithFramework" (fun _ ->
@@ -806,6 +734,35 @@ Target "ReleaseDotNetWithFramework" (fun _ ->
 
       Actions.ValidateSample1 "./_Reports/ReleaseDotNetWithFramework.xml" "ReleaseDotNetWithFramework"
     else printfn "Skipping -- AltCover.exe not packaged"
+)
+
+Target "ReleaseFSharpTypesDotNetRunner" ( fun _ ->
+    ensureDirectory "./_Reports"
+    let unpack = FullName "_Packaging/Unpack/tools/netcoreapp2.0/AltCover"
+    let x = FullName "./_Reports/AltCoverReleaseFSharpTypesDotNetRunner.xml"
+    let o = FullName "Sample2/_Binaries/Sample2/Debug+AnyCPU/netcoreapp2.0"
+    let i = FullName "_Binaries/Sample2/Debug+AnyCPU/netcoreapp2.0"
+
+    CleanDir o
+
+    // Instrument the code
+    DotNetCli.RunCommand (fun info -> {info with WorkingDir = unpack })
+                          ("run --project altcover.core.fsproj -- -x \"" + x + "\" -o \"" + o + "\" -i \"" + i + "\"")
+
+    Actions.ValidateFSharpTypes x ["main"]
+
+    printfn "Execute the instrumented tests"
+    let sample2 = FullName "./Sample2/sample2.core.fsproj"
+    let runner = FullName "_Packaging/Unpack/tools/netcoreapp2.0/AltCover.Runner/altcover.runner.core.fsproj"
+
+    // Run
+    DotNetCli.RunCommand (fun info -> {info with WorkingDir = o })
+                          ("run --project " + runner +
+                          " -- -x \"dotnet\" -r \"" + o +
+                          "\" -- test --no-build --configuration Debug " +
+                          sample2)
+
+    Actions.ValidateFSharpTypesCoverage x
 )
 
 // AOB
@@ -915,15 +872,7 @@ Target "All" ignore
 ==> "OperationalTest"
 
 "Compilation"
-==> "CSharpMonoWithDotNetRunner"
-==> "OperationalTest"
-
-"Compilation"
 ==> "CSharpDotNetWithDotNet"
-==> "OperationalTest"
-
-"Compilation"
-==> "CSharpDotNetWithDotNetRunner"
 ==> "OperationalTest"
 
 "Compilation"
@@ -968,15 +917,7 @@ Target "All" ignore
 ==> "Deployment"
 
 "Unpack"
-==> "ReleaseMonoWithDotNetRunner"
-==> "Deployment"
-
-"Unpack"
 ==> "ReleaseDotNetWithDotNet"
-==> "Deployment"
-
-"Unpack"
-==> "ReleaseDotNetWithDotNetRunner"
 ==> "Deployment"
 
 "Unpack"
