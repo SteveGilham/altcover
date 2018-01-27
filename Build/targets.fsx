@@ -319,6 +319,7 @@ Target "UnitTestWithAltCover" (fun _ ->
 )
 
 Target "UnitTestWithAltCoverCore" (fun _ ->
+  if "TRAVIS_JOB_NUMBER" |> environVar |> String.IsNullOrWhiteSpace then
     ensureDirectory "./_Reports/_UnitTestWithAltCover"
     let keyfile = FullName "Build/SelfTest.snk"
     let reports = FullName "./_Reports"
