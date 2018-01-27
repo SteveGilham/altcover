@@ -720,6 +720,47 @@ Target "ReleaseXUnitDotNetDemo" (fun _ ->
     Assert.That(visits, Is.EquivalentTo[3; 5; 3])
 )
 
+Target "ReleaseXUnitDotNetRunnerDemo" (fun _ ->
+    ensureDirectory "./_Reports"
+    "./Demo/xunit-dotnet/bin" |> FullName |> CleanDir
+    DotNetCli.Build
+        (fun p ->
+            { p with
+                Configuration = "Debug"
+                Project =  "./Demo/xunit-dotnet/xunit-dotnet.csproj"})
+    let unpack = FullName "_Packaging/Unpack/tools/netcoreapp2.0/AltCover"
+    let x = FullName "./Demo/xunit-dotnet/bin/ReleaseXUnitDotNetDemo.xml"
+    let o = FullName "./Demo/xunit-dotnet/bin/Debug/netcoreapp2.0/__Instrumented.ReleaseXUnitDotNetDemo"
+    let i = FullName "./Demo/xunit-dotnet/bin/Debug/netcoreapp2.0"
+    DotNetCli.RunCommand (fun info -> {info with WorkingDir = unpack })
+                          ("run --project altcover.core.fsproj -- -x \"" + x + "\" -o \"" + o + "\" -i \"" + i + "\"")
+
+    !! (o @@ "*")
+    |> Copy i
+
+    let runner = FullName "_Packaging/Unpack/tools/netcoreapp2.0/AltCover.Runner/altcover.runner.core.fsproj"
+
+    // Run
+    DotNetCli.RunCommand (fun info -> {info with WorkingDir = o })
+                          ("run --project " + runner +
+                          " -- -x \"dotnet\" -r \"" + i +
+                          "\" -w \"" + (FullName "./Demo/xunit-dotnet") + 
+                          "\" -- test --no-build --configuration Debug  xunit-dotnet.csproj")
+
+    use coverageFile = new FileStream(x, FileMode.Open, FileAccess.Read, FileShare.None, 4096, FileOptions.SequentialScan)
+    let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
+    let recorded = coverageDocument.Descendants(XName.Get("seqpnt"))
+                   |> Seq.toList
+
+    let visits = ["0"; "1"; "2"]
+                 |> List.map (fun n ->
+                        recorded
+                        |> Seq.filter (fun x -> x.Attribute(XName.Get("visitcount")).Value = n)
+                        |> Seq.length)
+
+    Assert.That(visits, Is.EquivalentTo[3; 5; 3])
+)
+
 Target "ReleaseDotNetWithFramework" (fun _ ->
     ensureDirectory "./_Reports"
     let unpack = FullName "_Packaging/Unpack/tools/net45"
@@ -931,6 +972,9 @@ Target "All" ignore
 
 "Unpack"
 ==> "ReleaseXUnitDotNetDemo"
+
+"Unpack"
+==> "ReleaseXUnitDotNetRunnerDemo"
 
 "Analysis"
 ==> "All"
