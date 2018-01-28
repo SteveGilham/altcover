@@ -2032,8 +2032,13 @@ type AltCoverTests() = class
     use stream' = Assembly.GetExecutingAssembly().GetManifestResourceStream(resultName)
     use reader' = new StreamReader(stream')
     let expected = reader'.ReadToEnd()
-    Assert.That (result.Replace("\r\n","\n"),
-                 Is.EqualTo(expected.Replace("\r\n","\n")))
+    let version = Assembly.GetExecutingAssembly().GetName().Version.ToString()
+    let transform (s:string) =
+        s.Replace("\r\n","\n"
+        ).Replace("AltCover.Recorder.g/1.4.0.0", "AltCover.Recorder.g/" + version
+        ).Replace("AltCover.Recorder.g\": \"1.4.0.0", "AltCover.Recorder.g\": \"" + version)
+    Assert.That (transform result,
+                 Is.EqualTo(transform expected))
 
   [<Test>]
   member self.JSONInjectionTransformsDependencyFileAsExpected () =
@@ -2049,8 +2054,13 @@ type AltCoverTests() = class
     use stream' = Assembly.GetExecutingAssembly().GetManifestResourceStream(resultName)
     use reader' = new StreamReader(stream')
     let expected = reader'.ReadToEnd()
-    Assert.That (result.Replace("\r\n","\n"),
-                 Is.EqualTo(expected.Replace("\r\n","\n")))
+    let version = Assembly.GetExecutingAssembly().GetName().Version.ToString()
+    let transform (s:string) =
+        s.Replace("\r\n","\n"
+        ).Replace("AltCover.Recorder.g/1.4.0.0", "AltCover.Recorder.g/" + version
+        ).Replace("AltCover.Recorder.g\": \"1.4.0.0", "AltCover.Recorder.g\": \"" + version)
+    Assert.That (transform result,
+                 Is.EqualTo(transform expected))
 
   [<Test>]
   member self.JSONInjectionIsIdempotent () =
@@ -3264,13 +3274,15 @@ type AltCoverTests() = class
     let aux = targeted.Properties()
               |> Seq.map (fun p -> p.Name)
               |> Set.ofSeq
-    Assert.That(aux |> Set.contains "AltCover.Recorder.g/1.4.0.0")
+    Assert.That(aux |> Set.contains ("AltCover.Recorder.g/" +
+                                         Assembly.GetExecutingAssembly().GetName().Version.ToString()))
     let libraries = (o.Properties()
                     |> Seq.find (fun p -> p.Name = "libraries")).Value :?> JObject
     let lib = libraries.Properties()
               |> Seq.map (fun p -> p.Name)
               |> Set.ofSeq
-    Assert.That(lib |> Set.contains "AltCover.Recorder.g/1.4.0.0")
+    Assert.That(lib |> Set.contains ("AltCover.Recorder.g/" +
+                                         Assembly.GetExecutingAssembly().GetName().Version.ToString()))
 
   [<Test>]
   member self.UsageIsAsExpected() =
