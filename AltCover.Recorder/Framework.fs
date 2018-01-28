@@ -8,7 +8,7 @@ type Tracer = {
     static member Create (name:string) =
       {Tracer = name}
     member this.Close () = ()
-    member this.OnStart () = ()
+    member this.OnStart _ = ()
     member this.OnConnected f l g =
 #if DEBUG
       f()

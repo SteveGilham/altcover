@@ -3,6 +3,7 @@
 open System
 open System.Collections.Generic
 open System.IO
+open System.Threading.Tasks
 
 module Communications =
   let internal ResilientAgainstDisposedObject (f: unit -> unit) (tidy : unit -> unit)=
@@ -43,15 +44,14 @@ type Tracer = {
         this.Activated.WaitOne(0)
 
     member this.Connect ms =
-      try
-        this.Pipe.Connect(ms)
-        async {
-          Communications.ResilientAgainstDisposedObject(fun () ->
-            Communications.SignalOnReceive this.Pipe this.Activated) ignore
-        } |> Async.Start
-      with
-      | :? TimeoutException ->
-        reraise ()
+      let start = DateTime.UtcNow
+      this.Pipe.Connect(ms)
+      let left = ms - (((DateTime.UtcNow - start).TotalMilliseconds - 0.5) |> Math.Round |> int)
+      let task = Task.Run (fun () ->
+        Communications.ResilientAgainstDisposedObject(fun () ->
+          Communications.SignalOnReceive this.Pipe this.Activated) ignore)
+      if task.Wait left |> not then
+        TimeoutException "Not activated in time" |> raise
 
     member this.Close() =
       this.Pipe.Dispose()
@@ -70,10 +70,10 @@ type Tracer = {
                                          this.Push moduleId hitPointId))
       visits.Clear()
 
-    member this.OnStart () =
+    member this.OnStart time =
       if this.Tracer <> "AltCover" then
         try
-          this.Connect 2000 // 2 seconds
+          this.Connect time
         with
         | :? TimeoutException
         | :? IOException ->
@@ -81,7 +81,8 @@ type Tracer = {
 
     member this.OnConnected f l g =
       if this.IsActivated() then f()
-      else l g
+      else  this.OnStart 1
+            l g
 
     member this.OnFinish finish =
       if finish then

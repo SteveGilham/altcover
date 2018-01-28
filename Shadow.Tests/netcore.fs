@@ -60,7 +60,7 @@ type AltCoverCoreTests() = class
     let client = Tracer.Create token
     try
       if os.StartsWith("Microsoft Windows", StringComparison.Ordinal) then
-        client.OnStart()
+        client.OnStart 100
         Assert.That (client.Pipe.IsConnected, Is.False)
     finally
       client.Close()
@@ -76,7 +76,7 @@ type AltCoverCoreTests() = class
     let client = Tracer.Create token
     try
       if os.StartsWith("Microsoft Windows", StringComparison.Ordinal) then
-        client.OnStart()
+        client.OnStart 100
         Assert.That (client.Pipe.IsConnected, Is.True)
     finally
       client.Close()
@@ -91,7 +91,7 @@ type AltCoverCoreTests() = class
     let client = Tracer.Create token
     try
       if os.StartsWith("Microsoft Windows", StringComparison.Ordinal) then
-        client.OnStart()
+        client.OnStart 100
         Assert.That (client.Pipe.IsConnected, Is.False)
     finally
       client.Close()

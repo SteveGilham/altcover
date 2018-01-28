@@ -95,4 +95,4 @@ module Instance =
   do
     AppDomain.CurrentDomain.DomainUnload.Add(FlushCounter false)
     AppDomain.CurrentDomain.ProcessExit.Add(FlushCounter true)
-    trace.OnStart()
+    trace.OnStart 2000
