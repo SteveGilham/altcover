@@ -917,8 +917,6 @@ type AltCoverTests() = class
 
     let task = Task.Run(fun () ->
           use client = new System.IO.Pipes.NamedPipeClientStream(token)
-          if os.StartsWith("Microsoft Windows", StringComparison.Ordinal) |> not then
-            client.Connect()
 
           async {
                 do! Runner.GetMonitor hits token latch
@@ -926,12 +924,12 @@ type AltCoverTests() = class
                 do! async { signal.Set() |> ignore }
             } |> Async.Start
 
-          if os.StartsWith("Microsoft Windows", StringComparison.Ordinal) then
-            printfn "cr: about to connect"
-            client.Connect()
-            while client.IsConnected |> not do
-              printfn "."
-              Thread.Sleep 100
+          printfn "cr: about to connect"
+          client.Connect()
+
+          while client.IsConnected |> not do
+            printfn "."
+            Thread.Sleep 100
 
           printfn "cr: connected"
           let x = client.ReadByte()
@@ -966,21 +964,18 @@ type AltCoverTests() = class
 
     let task = Task.Run(fun () ->
       use client = new System.IO.Pipes.NamedPipeClientStream(token)
-      if os.StartsWith("Microsoft Windows", StringComparison.Ordinal) |> not then
-        client.Connect()
-
       async {
         do! Runner.GetMonitor hits token latch
         printfn "ch: monitor exit"
         do! async { signal.Set() |> ignore }
       } |> Async.Start
 
-      if os.StartsWith("Microsoft Windows", StringComparison.Ordinal) then
-        printfn "ch: about to connect"
-        client.Connect()
-        while client.IsConnected |> not do
-          printf "."
-          Thread.Sleep 100
+      printfn "ch: about to connect"
+      client.Connect()
+
+      while client.IsConnected |> not do
+        printf "."
+        Thread.Sleep 100
 
       printfn "ch: connected"
       let x = client.ReadByte()

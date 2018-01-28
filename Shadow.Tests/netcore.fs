@@ -107,12 +107,14 @@ type AltCoverCoreTests() = class
             signal.Set() |> ignore
             } |> Async.Start
         server.WaitForConnection()
+        printfn "After connection wait"
+        server.WriteByte(0uy)
+        printfn "Waiting for client"
         signal.WaitOne() |> ignore
-        printfn "after connection wait"
+        printfn "After connection wait"
         Instance.trace <- client
         Assert.That (Instance.trace.IsConnected(), "connection failed")
         printfn "about to act"
-        server.WriteByte(0uy)
         Assert.That(client.Activated.WaitOne(1000), "never got activated")
         Assert.That (Instance.trace.IsActivated(), "activation failed")
         client.Close()
@@ -154,12 +156,14 @@ type AltCoverCoreTests() = class
             signal.Set() |> ignore
             } |> Async.Start
         server.WaitForConnection()
+        printfn "After connection wait"
+        server.WriteByte(0uy)
+        printfn "Waiting for client"
         signal.WaitOne() |> ignore
-        printfn "after connection wait"
+        printfn "After connection wait"
         Instance.trace <- client
         Assert.That (Instance.trace.IsConnected(), "connection failed")
         printfn "about to act"
-        server.WriteByte(0uy)
         Assert.That(client.Activated.WaitOne(1000), "never got activated")
         Assert.That (Instance.trace.IsActivated(), "activation failed")
         async { Instance.Visit "name" 23 } |> Async.Start
@@ -170,7 +174,7 @@ type AltCoverCoreTests() = class
         printfn "after all work"
       finally
         printfn "finally 1"
-        Instance.trace.Close()
+        async { client.Close() } |> Async.Start
         Instance.trace <- save
     finally
       printfn "finally 2"
@@ -215,11 +219,10 @@ type AltCoverCoreTests() = class
   member self.PipeVisitShouldFailFast () =
     self.RunWithTimeout self.PipeVisitShouldFailFastTest 5000
 
-  [<Test>]
   member self.PipeFlushShouldTidyUpTest() =
     let save = Instance.trace
     let token = Guid.NewGuid().ToString() + "PipeFlushShouldTidyUp"
-    printfn "pipe token = %s" token
+    printfn "pipe token = %s %A" token DateTime.UtcNow
     use server = new System.IO.Pipes.NamedPipeServerStream(token)
     printfn "Created server"
     try
@@ -239,11 +242,13 @@ type AltCoverCoreTests() = class
               signal.Set() |> ignore
             } |> Async.Start
         server.WaitForConnection()
+        printfn "After connection wait"
+        server.WriteByte(0uy)
+        printfn "Waiting for client"
         signal.WaitOne() |> ignore
         printfn "After connection wait"
         Assert.That (Instance.trace.IsConnected(), "connection failed")
         printfn "About to act"
-        server.WriteByte(0uy)
         Assert.That(client.Activated.WaitOne(1000), "never got activated")
         Assert.That (Instance.trace.IsActivated(), "activation failed")
         async { formatter.Serialize(Instance.trace.Pipe, expected)
@@ -255,10 +260,10 @@ type AltCoverCoreTests() = class
         Assert.That (Instance.Visits, Is.Empty, "unexpected local write")
         Assert.That (result, Is.EqualTo expected, "unexpected result")
         Assert.That (result' |> fst |> String.IsNullOrEmpty, Is.True, "unexpected end-of-message")
-        printfn "done"
+        printfn "done %A" DateTime.UtcNow
       finally
-        printfn "first finally"
-        Instance.trace.Close()
+        printfn "first finally %A" DateTime.UtcNow
+        async { client.Close() } |> Async.Start
         Instance.trace <- save
     finally
       printfn "second finally"
