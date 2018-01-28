@@ -39,66 +39,52 @@ type AltCoverCoreTests() = class
   member self.ResilientHandlesException () =
     self.RunWithTimeout self.ResilientHandlesExceptionTest 5000
 
-  member self.PipeTimeoutShouldRaiseTest () =
-    let token = Guid.NewGuid().ToString() + "PipeTimeoutShouldRaise"
-    let client = Tracer.Create token
-    try
-      let os = Environment.OSVersion.ToString()
-      if os.StartsWith("Microsoft Windows", StringComparison.Ordinal) then
-        Assert.Throws<TimeoutException> (fun () -> 1 |> client.Connect) |> ignore
-    finally
-      client.Close()
-
-  [<Test>]
-  member self.PipeTimeoutShouldRaise () =
-    self.RunWithTimeout self.PipeTimeoutShouldRaiseTest 5000
-
   member self.InitialConnectDefaultsUnconnectedTest() =
-    let os = Environment.OSVersion.ToString()
     let token = "AltCover"
     use server = new System.IO.Pipes.NamedPipeServerStream(token)
     let client = Tracer.Create token
     try
-      if os.StartsWith("Microsoft Windows", StringComparison.Ordinal) then
-        client.OnStart 100
+        Task.Run(client.OnStart).Wait 100 |> ignore
         Assert.That (client.Pipe.IsConnected, Is.False)
     finally
       client.Close()
 
   [<Test>]
   member self.InitialConnectDefaultsUnconnected () =
-    self.RunWithTimeout self.InitialConnectDefaultsUnconnectedTest 5000
+    let os = Environment.OSVersion.ToString()
+    if os.StartsWith("Microsoft Windows", StringComparison.Ordinal) then
+      self.RunWithTimeout self.InitialConnectDefaultsUnconnectedTest 5000
 
   member self.ValidTokenWillConnectTest() =
-    let os = Environment.OSVersion.ToString()
     let token = "ValidToken"
     use server = new System.IO.Pipes.NamedPipeServerStream(token)
     let client = Tracer.Create token
     try
-      if os.StartsWith("Microsoft Windows", StringComparison.Ordinal) then
-        client.OnStart 100
+        Task.Run(client.OnStart).Wait 100 |> ignore
         Assert.That (client.Pipe.IsConnected, Is.True)
     finally
       client.Close()
 
   [<Test>]
   member self.ValidTokenWillConnect () =
-    self.RunWithTimeout self.ValidTokenWillConnectTest 5000
+    let os = Environment.OSVersion.ToString()
+    if os.StartsWith("Microsoft Windows", StringComparison.Ordinal) then
+      self.RunWithTimeout self.ValidTokenWillConnectTest 5000
 
   member self.ValidTokenWillTimeOutTest() =
-    let os = Environment.OSVersion.ToString()
     let token = "ValidToken"
     let client = Tracer.Create token
     try
-      if os.StartsWith("Microsoft Windows", StringComparison.Ordinal) then
-        client.OnStart 100
+        Task.Run(client.OnStart).Wait 100 |> ignore
         Assert.That (client.Pipe.IsConnected, Is.False)
     finally
       client.Close()
 
   [<Test>]
   member self.ValidTokenWillTimeOut () =
-    self.RunWithTimeout self.ValidTokenWillTimeOutTest 5000
+    let os = Environment.OSVersion.ToString()
+    if os.StartsWith("Microsoft Windows", StringComparison.Ordinal) then
+      self.RunWithTimeout self.ValidTokenWillTimeOutTest 5000
 
   member self.PipeVisitShouldFailSafeTest() =
     let save = Instance.trace
@@ -114,11 +100,9 @@ type AltCoverCoreTests() = class
         let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
         use signal = new AutoResetEvent false
         async {
-            try
-              client.Connect 2000
-              printfn "Connected."
-            with
-            | :? TimeoutException ->
+            if Task.Run(client.OnStart).Wait 2000 then
+                printfn "Connected."
+            else
                 printfn "timed out"
             signal.Set() |> ignore
             } |> Async.Start
@@ -163,11 +147,9 @@ type AltCoverCoreTests() = class
         let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
         use signal = new AutoResetEvent false
         async {
-            try
-              client.Connect 2000
-              printfn "Connected."
-            with
-            | :? TimeoutException ->
+            if Task.Run(client.OnStart).Wait 2000 then
+                printfn "Connected."
+            else
                 printfn "timed out"
             signal.Set() |> ignore
             } |> Async.Start
@@ -200,46 +182,33 @@ type AltCoverCoreTests() = class
     self.RunWithTimeout self.PipeVisitShouldSignalTest 5000
 
   member self.PipeVisitShouldFailFastTest() =
-    let save = Instance.trace
     let token = Guid.NewGuid().ToString() + "PipeVisitShouldFailFast"
     printfn "token = %s" token
-    use server = new System.IO.Pipes.NamedPipeServerStream(token)
-    printfn "Created NamedPipeServerStream"
+    let client = Tracer.Create token
+    printfn "Created client"
     try
-      let client = Tracer.Create token
-      printfn "Created client"
-      try
-        let expected = ("name", 23)
-        let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
-        use signal = new AutoResetEvent false
-        client.Close()
-        let blew = ref false
-        async {
-            try
-              client.Connect 500
-              printfn "Connected."
-            with
-            | :? TimeoutException ->
-                printfn "timed out"
-            | :? ObjectDisposedException ->
-                blew := true
-                printfn "blew up"
+      use signal = new AutoResetEvent false
+      client.Close()
+      let blew = ref false
+      async {
+            if Task.Run(client.OnStart).Wait 100 then
+              blew := true
+              printfn "Completed."
+            else 
+              printfn "timed out"
             signal.Set() |> ignore
-            } |> Async.Start
-        signal.WaitOne() |> ignore
-        printfn "after connection wait"
-        Instance.trace <- client
-        Assert.That(!blew, "Should have blown")
-        Assert.That (Instance.trace.IsConnected(), Is.False, "connected")
-        Assert.That (Instance.trace.IsActivated(), Is.False, "activated")
-        printfn "after all work"
-      finally
-        printfn "finally 1"
-        Instance.trace.Close()
-        Instance.trace <- save
+          } |> Async.Start
+      signal.WaitOne() |> ignore
+      printfn "after connection wait"
+      Instance.trace <- client
+      Assert.That(!blew, "Should have blown")
+      Assert.That (Instance.trace.IsConnected(), Is.False, "connected")
+      Assert.That (Instance.trace.IsActivated(), Is.False, "activated")
+      printfn "after all work"
     finally
-      printfn "finally 2"
-      Instance.Visits.Clear()
+      printfn "finally"
+      client.Close()
+
     printfn "all done"
 
   [<Test>]
@@ -263,13 +232,11 @@ type AltCoverCoreTests() = class
         printfn "Ready to connect"
         use signal = new AutoResetEvent false
         async {
-            try
-              client.Connect 2000
-              printfn "Connected."
-            with
-            | :? TimeoutException ->
+              if Task.Run(client.OnStart).Wait 2000 then
+                printfn "Connected."
+              else
                 printfn "timed out"
-            signal.Set() |> ignore
+              signal.Set() |> ignore
             } |> Async.Start
         server.WaitForConnection()
         signal.WaitOne() |> ignore

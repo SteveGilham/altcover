@@ -43,15 +43,10 @@ type Tracer = {
       this.IsConnected() &&
         this.Activated.WaitOne(0)
 
-    member this.Connect ms =
-      let start = DateTime.UtcNow
-      this.Pipe.Connect(ms)
-      let left = ms - (((DateTime.UtcNow - start).TotalMilliseconds - 0.5) |> Math.Round |> int)
-      let task = Task.Run (fun () ->
-        Communications.ResilientAgainstDisposedObject(fun () ->
-          Communications.SignalOnReceive this.Pipe this.Activated) ignore)
-      if task.Wait left |> not then
-        TimeoutException "Not activated in time" |> raise
+    member this.Connect () =
+      this.Pipe.Connect()  // this could and should be able to throw ObjectDisposed = Pipe broken
+      Communications.ResilientAgainstDisposedObject(fun () ->
+          Communications.SignalOnReceive this.Pipe this.Activated) ignore
 
     member this.Close() =
       this.Pipe.Dispose()
@@ -70,19 +65,19 @@ type Tracer = {
                                          this.Push moduleId hitPointId))
       visits.Clear()
 
-    member this.OnStart time =
+    member this.OnStart () =
       if this.Tracer <> "AltCover" then
         try
-          this.Connect time
+          this.Connect ()
         with
         | :? TimeoutException
+        | :? ObjectDisposedException
         | :? IOException ->
             ()
 
     member this.OnConnected f l g =
       if this.IsActivated() then f()
-      else  this.OnStart 1
-            l g
+      else  l g
 
     member this.OnFinish finish =
       if finish then

@@ -913,36 +913,41 @@ type AltCoverTests() = class
     let hits = List<(string*int)>()
     use signal = new AutoResetEvent false
     use latch = new ManualResetEvent false
+    let os = Environment.OSVersion.ToString()
 
     let task = Task.Run(fun () ->
           use client = new System.IO.Pipes.NamedPipeClientStream(token)
+          if os.StartsWith("Microsoft Windows", StringComparison.Ordinal) |> not then
+            client.Connect()
+
           async {
                 do! Runner.GetMonitor hits token latch
-                printfn "monitor exit"
+                printfn "cr: monitor exit"
                 do! async { signal.Set() |> ignore }
             } |> Async.Start
-          printfn "c: about to connect"
-          client.Connect()
-          while client.IsConnected |> not do
-            printfn "."
-            Thread.Sleep 100
 
-          printfn "c: connected"
+          if os.StartsWith("Microsoft Windows", StringComparison.Ordinal) then
+            printfn "cr: about to connect"
+            client.Connect()
+            while client.IsConnected |> not do
+              printfn "."
+              Thread.Sleep 100
+
+          printfn "cr: connected"
           let x = client.ReadByte()
           Assert.That(x, Is.GreaterThanOrEqualTo 0)
-          printfn "c: active"
+          printfn "cr: active"
           formatter.Serialize(client, ("name", 23))
           client.Flush()
-          printfn "c: tuple sent"
+          printfn "cr: tuple sent"
           formatter.Serialize(client, ("name2", 42))
           client.Flush()
-          printfn "c: tuple sent"
+          printfn "cr: tuple sent"
           let nulled = { Tracer = null }
           formatter.Serialize(client, (nulled.Tracer, -1))
           client.Flush()
-          printfn "c: termination sent")
+          printfn "cr: termination sent")
 
-    Thread.Sleep 100
     let bigWait = 12000 // 2s more than the timeout in monitorbase
     if task.Wait(bigWait) then
         Assert.That(signal.WaitOne(bigWait), "Went on too long")
@@ -957,35 +962,38 @@ type AltCoverTests() = class
     let hits = List<(string*int)>()
     use signal = new AutoResetEvent false
     use latch = new ManualResetEvent false
-    async {
-        do! Runner.GetMonitor hits token latch
-        printfn "monitor exit"
-        do! async { signal.Set() |> ignore }
-    } |> Async.Start
+    let os = Environment.OSVersion.ToString()
 
     let task = Task.Run(fun () ->
       use client = new System.IO.Pipes.NamedPipeClientStream(token)
-      printfn "c: about to connect"
-      client.Connect()
-      while client.IsConnected |> not do
-        printf "."
-        Thread.Sleep 100
+      if os.StartsWith("Microsoft Windows", StringComparison.Ordinal) |> not then
+        client.Connect()
 
-      printfn "c: connected"
+      async {
+        do! Runner.GetMonitor hits token latch
+        printfn "ch: monitor exit"
+        do! async { signal.Set() |> ignore }
+      } |> Async.Start
+
+      if os.StartsWith("Microsoft Windows", StringComparison.Ordinal) then
+        printfn "ch: about to connect"
+        client.Connect()
+        while client.IsConnected |> not do
+          printf "."
+          Thread.Sleep 100
+
+      printfn "ch: connected"
       let x = client.ReadByte()
       Assert.That(x, Is.GreaterThanOrEqualTo 0)
-      printfn "c: active"
+      printfn "ch: active"
       formatter.Serialize(client, ("name", 23))
       client.Flush()
-      printfn "c: tuple sent"
+      printfn "ch: tuple sent"
       let broken = System.Text.Encoding.UTF8.GetBytes "just junk"
       client.Write(broken, 0, broken.Length)
       client.Flush()
-      printfn "c: junk sent")
+      printfn "ch: junk sent")
 
-    printfn "c: closed"
-    Thread.Sleep 100
-    Thread.Sleep 100
     let bigWait = 12000 // 2s more than the timeout in monitorbase
     if task.Wait(bigWait) then
         Assert.That(signal.WaitOne(bigWait), "Went on too long")
