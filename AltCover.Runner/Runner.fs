@@ -112,15 +112,15 @@ module Runner =
           // Not even a serialization error from a partial message
           // Async didn't seem to play well with the blocking read within Deserialize
           // So do it this way, where we do seem to get a timeout
-          let task = Task.Run(fun () -> try 
+          let task = Task.Run(fun () -> try
                                           formatter.Deserialize(server) :?> (string*int)
                                         with
-                                        | :? System.Runtime.Serialization.SerializationException as x -> 
+                                        | :? System.Runtime.Serialization.SerializationException as x ->
                                             (String.Empty, -1) )
           if task.Wait(10000) then
             let result = task.Result
             if result|> fst |> String.IsNullOrWhiteSpace  |> not then
-               result |> hits.Add 
+               result |> hits.Add
                sink()
       sink()
            }
