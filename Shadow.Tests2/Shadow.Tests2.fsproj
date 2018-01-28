@@ -67,6 +67,9 @@
     <Compile Include="..\_Generated\VisibleToTest.fs">
       <Link>VisibleToTest.fs</Link>
     </Compile>
+    <Compile Include="..\Shadow.Tests\Framework.fs">
+      <Link>Framework.fs</Link>
+    </Compile>
     <Compile Include="..\Shadow.Tests\Shadow.Tests.fs">
       <Link>Shadow.Tests.fs</Link>
     </Compile>

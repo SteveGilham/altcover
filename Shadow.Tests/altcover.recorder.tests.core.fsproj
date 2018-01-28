@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
+    <Compile Include="netcore.fs" />
     <Compile Include="Shadow.Tests.fs" />
     <Compile Include="Program.fs" />    
   </ItemGroup>

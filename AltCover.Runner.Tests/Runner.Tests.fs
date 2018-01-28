@@ -943,12 +943,12 @@ type AltCoverTests() = class
           printfn "c: termination sent")
 
     Thread.Sleep 100
-    if task.Wait(60000) then
-        Assert.That(signal.WaitOne(60000), "Went on too long")
-        Assert.That(latch.WaitOne(1000), Is.True)
+    let bigWait = 12000 // 2s more than the timeout in monitorbase
+    if task.Wait(bigWait) then
+        Assert.That(signal.WaitOne(bigWait), "Went on too long")
+        Assert.That(latch.WaitOne(), Is.True, "didn't finish monitoring")
         Assert.That(hits, Is.EquivalentTo [("name", 23); ("name2", 42)])
     else Assert.Fail("Task timeout")
-    
 
   [<Test>]
   member self.PipeMonitorShouldHandleException() =
@@ -985,9 +985,11 @@ type AltCoverTests() = class
 
     printfn "c: closed"
     Thread.Sleep 100
-    if task.Wait(60000) then
-        Assert.That(signal.WaitOne(60000), "Went on too long")
-        Assert.That(latch.WaitOne(1000), Is.True, "didn't finish monitoring")
+    Thread.Sleep 100
+    let bigWait = 12000 // 2s more than the timeout in monitorbase
+    if task.Wait(bigWait) then
+        Assert.That(signal.WaitOne(bigWait), "Went on too long")
+        Assert.That(latch.WaitOne(), Is.True, "didn't finish monitoring")
         Assert.That(hits, Is.EquivalentTo [("name", 23)])
     else Assert.Fail("Task timeout")
 
