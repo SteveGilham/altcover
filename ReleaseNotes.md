@@ -1,3 +1,7 @@
+# 1.5-rc (Araiguma release candidates)
+* AltCover.Runner helper program for collecting coverage data for .net core runs, avoiding the need to get everything written out during the ProcessExit handling window.
+* various refactorings to support this, but no user-visible changes.
+
 # 1.4-beta (Araiguma preview releases)
 * "e|assemblyExcludeFilter=" option to exclude assemblies which depend on instrumented/rewritten ones
 * Speed-up in writing out of the instrumentation results which happens in the ProcessExit handling and thus has a limited processing time (mostly affects instrumented code running under `dotnet test`)
