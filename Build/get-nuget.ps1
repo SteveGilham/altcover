@@ -6,7 +6,8 @@ if (-not (Test-Path $nugetPath)) {
     Invoke-WebRequest $sourceNugetExe -OutFile $nugetPath
 }
 $solutionRoot = Resolve-Path (Join-Path $PSScriptRoot "..")
-& $nugetPath restore $solutionRoot
+$solution = Join-Path $SolutionRoot "AltCover.sln"
+& $nugetPath restore $solution
 $fake = (dir -recurse "$solutionRoot\*ake.exe") | % { $_.FullName } | Select-Object -First 1
 
 ## establish vsvars
@@ -25,7 +26,9 @@ $bat = @"
 @echo off
 IF '"%VS150COMNTOOLS%"' == '""' CALL "$batchFile"
 SET PATH="$($env:path);$(Split-Path -Parent $fake)"
-"$fake" ".\build\build.fsx" "%1"
+"$fake" ".\Build\build.fsx" "%1"
 exit /b %errorlevel%
 "@
 Set-Content -Value $bat -Path (Join-Path $SolutionRoot "fake.bat")
+
+& "$fake" ".\Build\prebuild.fsx"

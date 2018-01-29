@@ -5,33 +5,38 @@ open System.Diagnostics
 open System.Diagnostics.CodeAnalysis
 open System.IO
 open System.Runtime.CompilerServices
+open System.Text.RegularExpressions
 
 open Mono.Cecil
 open AltCover.Augment
 
 [<ExcludeFromCodeCoverage>]
 type internal FilterClass =
-  | File of string
-  | Assembly of string
-  | Type of string
-  | Method of string
-  | Attribute of string
+  | File of Regex
+  | Assembly of Regex
+  | Module of Regex
+  | Type of Regex
+  | Method of Regex
+  | Attribute of Regex
 
 module Filter =
 
   let internal Match (nameProvider:Object) (filter:FilterClass) =
     match filter with
     | File name -> match nameProvider with
-                   | :? string as fileName -> Path.GetFileName(fileName).Contains(name)
+                   | :? string as fileName -> name.IsMatch(Path.GetFileName(fileName))
                    | _ -> false
     | Assembly name -> match nameProvider with
-                       | :? AssemblyDefinition as assembly -> assembly.Name.Name.Contains(name)
+                       | :? AssemblyDefinition as assembly -> name.IsMatch assembly.Name.Name
                        | _ -> false
+    | Module name -> match nameProvider with
+                     | :? ModuleDefinition as ``module`` -> name.IsMatch ``module``.Assembly.Name.Name
+                     | _ -> false
     | Type name -> match nameProvider with
-                   | :? TypeDefinition as typeDef -> typeDef.FullName.Contains(name)
+                   | :? TypeDefinition as typeDef -> name.IsMatch typeDef.FullName
                    | _ -> false
     | Method name -> match nameProvider with
-                     | :? MethodDefinition as methodDef -> methodDef.Name.Contains(name)
+                     | :? MethodDefinition as methodDef -> name.IsMatch methodDef.Name
                      | _ -> false
     | Attribute name -> match nameProvider with
                         | :? ICustomAttributeProvider as attributeProvider ->
@@ -39,7 +44,7 @@ module Filter =
                                  attributeProvider.CustomAttributes
                                  |> Seq.cast<CustomAttribute>
                                  |> Seq.exists (fun attr ->
-                                    attr.Constructor.DeclaringType.FullName.Contains(name))
+                                    name.IsMatch attr.Constructor.DeclaringType.FullName)
                         | _ -> false
 
   let internal IsCSharpAutoProperty (m:MethodDefinition) =
@@ -67,8 +72,8 @@ module Filter =
     // Use string literals since Mono doesn't return a Type
     let mappings = Seq.concat [baseType; thisType]
                    |> Seq.filter (fun x -> x.AttributeType.FullName = "Microsoft.FSharp.Core.CompilationMappingAttribute")
-                   |> Seq.exists (fun x -> let arg1 = x.ConstructorArguments |> Seq.head
-                                           match (arg1.Value :?> SourceConstructFlags) &&& SourceConstructFlags.KindMask with
+                   |> Seq.exists (fun x -> let arg1 = Enum.ToObject(typeof<SourceConstructFlags>, x.GetBlob() |> Seq.skip 2 |> Seq.head)   // (x.ConstructorArguments |> Seq.head).Value
+                                           match (arg1 :?> SourceConstructFlags) &&& SourceConstructFlags.KindMask with
                                            | SourceConstructFlags.SumType
                                            | SourceConstructFlags.RecordType -> true
                                            | _ -> false)
@@ -82,8 +87,8 @@ module Filter =
                              if owner.HasCustomAttributes then
                                 owner.CustomAttributes
                                 |> Seq.filter (fun x -> x.AttributeType.FullName = "Microsoft.FSharp.Core.CompilationMappingAttribute")
-                                |> Seq.exists (fun x -> let arg1 = x.ConstructorArguments |> Seq.head
-                                                        (arg1.Value :?> SourceConstructFlags) &&& SourceConstructFlags.KindMask = SourceConstructFlags.Field)
+                                |> Seq.exists (fun x -> let arg1 = Enum.ToObject(typeof<SourceConstructFlags>, x.GetBlob() |> Seq.skip 2 |> Seq.head)   // (x.ConstructorArguments |> Seq.head).Value
+                                                        (arg1 :?> SourceConstructFlags) &&& SourceConstructFlags.KindMask = SourceConstructFlags.Field)
                              else false
 
     mappings &&

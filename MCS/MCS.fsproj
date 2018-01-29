@@ -107,10 +107,7 @@
     </Reference>
     <Reference Include="System.Xml" />
     <Reference Include="YamlDotNet">
-      <HintPath>..\packages\YamlDotNet.4.2.3\lib\net35\YamlDotNet.dll</HintPath>
-    </Reference>
-    <Reference Include="ZipStorer">
-      <HintPath>..\packages\ZipStorer.3.4.0\lib\net452\ZipStorer.dll</HintPath>
+      <HintPath>..\packages\YamlDotNet.4.3.0\lib\net45\YamlDotNet.dll</HintPath>
     </Reference>
   </ItemGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

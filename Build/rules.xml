@@ -8,7 +8,7 @@
                exclude="CheckParametersNullityInVisibleMethodsRule | MethodCanBeMadeStaticRule | EnsureLocalDisposalRule"
                from="Gendarme.Rules.Correctness.dll"/>
 		<rules include="*" 
-               exclude="ImplementIComparableCorrectlyRule | ConsiderConvertingMethodToPropertyRule"
+               exclude="ImplementIComparableCorrectlyRule | ConsiderConvertingMethodToPropertyRule | AvoidSmallNamespaceRule"
                from="Gendarme.Rules.Design.dll"/>
 		<rules include="*" 
                exclude="AvoidMethodWithUnusedGenericTypeRule | AvoidDeclaringCustomDelegatesRule | DoNotExposeNestedGenericSignaturesRule"

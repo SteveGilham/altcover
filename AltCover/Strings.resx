@@ -162,7 +162,7 @@
   <data name="UsageError" xml:space="preserve">
     <value>Error - usage is:</value>
   </data>
-  <data name="&quot;&lt;&gt;&quot;" xml:space="preserve">
+  <data name="&lt;&gt;" xml:space="preserve">
     <value>"n/a"</value>
   </data>
   <data name="instrumentingfrom" xml:space="preserve">
@@ -173,5 +173,8 @@
   </data>
   <data name="reportingto" xml:space="preserve">
     <value>Coverage Report: {0}</value>
+  </data>
+  <data name="e|assemblyExcludeFilter=" xml:space="preserve">
+    <value>Optional: assembly which links other instrumented assemblies but for which internal details may be excluded (may repeat)</value>
   </data>
 </root>
