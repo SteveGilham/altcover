@@ -8,7 +8,7 @@ solution: AltCover.sln
 git:
   depth: false
 
-if: (branch =~ ^develop/travis/.*$) OR (NOT branch =~ ^develop/.*$)
+if: NOT branch =~ ^develop/.*$ OR branch =~ ^develop/travis/.*$
 
 addons:
   apt:
