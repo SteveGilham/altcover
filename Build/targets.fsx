@@ -642,13 +642,42 @@ Target "SimpleReleaseTest" (fun _ ->
     let unpack = FullName "_Packaging/Unpack/tools/net45"
     if (unpack @@ "AltCover.exe") |> File.Exists then
       Actions.SimpleInstrumentingRun "_Binaries/Sample1/Debug+AnyCPU" unpack "SimpleReleaseTest"
-    else printfn "Skipping -- AltCover.exe not packaged"
+    else 
+          let test = findToolInSubPath "AltCover.exe" "./packages"
+          if File.Exists test then
+            Actions.SimpleInstrumentingRun "_Binaries/Sample1/Debug+AnyCPU" (Path.GetDirectoryName test) "SimpleReleaseTest"
+          else printfn "Skipping -- AltCover.exe not packaged"
 )
 
 Target "SimpleMonoReleaseTest" (fun _ ->
     let unpack = FullName "_Packaging/Unpack/tools/net45"
     if (unpack @@ "AltCover.exe") |> File.Exists then
       Actions.SimpleInstrumentingRun "_Mono/Sample1" unpack "SimpleMonoReleaseTest"
+    else 
+          let test = findToolInSubPath "AltCover.exe" "./packages"
+          if File.Exists test then
+            Actions.SimpleInstrumentingRun "_Binaries/Sample1/Debug+AnyCPU" (Path.GetDirectoryName test) "SimpleReleaseTest"
+          else printfn "Skipping -- AltCover.exe not packaged"
+)
+
+Target "ReleaseDotNetWithFramework" (fun _ ->
+    ensureDirectory "./_Reports"
+    let unpack0 = FullName "_Packaging/Unpack/tools/net45"
+    let unpack1 = findToolInSubPath "AltCover.exe" "./packages"
+    let unpack = if File.Exists (unpack0 @@ "AltCover.exe") then unpack0 
+                 else Path.GetDirectoryName(unpack1)
+
+    if (unpack @@ "AltCover.exe") |> File.Exists then
+      let simpleReport = (FullName "./_Reports") @@ ( "ReleaseDotNetWithFramework.xml")
+      let sampleRoot = FullName "./_Binaries/Sample1/Debug+AnyCPU/netcoreapp2.0"
+      let instrumented = sampleRoot @@ "__Instrumented.ReleaseDotNetWithFramework"
+      let result = ExecProcess (fun info -> info.FileName <- unpack @@ "AltCover.exe"
+                                            info.WorkingDirectory <- sampleRoot
+                                            info.Arguments <- ("-t=System\. -t=Microsoft\. -x=" + simpleReport + " /o=" + instrumented)) (TimeSpan.FromMinutes 5.0)
+
+      DotNetCli.RunCommand (fun info -> { info with WorkingDir = instrumented }) "Sample1.dll"
+
+      Actions.ValidateSample1 "./_Reports/ReleaseDotNetWithFramework.xml" "ReleaseDotNetWithFramework"
     else printfn "Skipping -- AltCover.exe not packaged"
 )
 
@@ -759,23 +788,6 @@ Target "ReleaseXUnitDotNetRunnerDemo" (fun _ ->
                         |> Seq.length)
 
     Assert.That(visits, Is.EquivalentTo[3; 5; 3])
-)
-
-Target "ReleaseDotNetWithFramework" (fun _ ->
-    ensureDirectory "./_Reports"
-    let unpack = FullName "_Packaging/Unpack/tools/net45"
-    if (unpack @@ "AltCover.exe") |> File.Exists then
-      let simpleReport = (FullName "./_Reports") @@ ( "ReleaseDotNetWithFramework.xml")
-      let sampleRoot = FullName "./_Binaries/Sample1/Debug+AnyCPU/netcoreapp2.0"
-      let instrumented = sampleRoot @@ "__Instrumented.ReleaseDotNetWithFramework"
-      let result = ExecProcess (fun info -> info.FileName <- unpack @@ "AltCover.exe"
-                                            info.WorkingDirectory <- sampleRoot
-                                            info.Arguments <- ("-t=System\. -t=Microsoft\. -x=" + simpleReport + " /o=" + instrumented)) (TimeSpan.FromMinutes 5.0)
-
-      DotNetCli.RunCommand (fun info -> { info with WorkingDir = instrumented }) "Sample1.dll"
-
-      Actions.ValidateSample1 "./_Reports/ReleaseDotNetWithFramework.xml" "ReleaseDotNetWithFramework"
-    else printfn "Skipping -- AltCover.exe not packaged"
 )
 
 Target "ReleaseFSharpTypesDotNetRunner" ( fun _ ->
