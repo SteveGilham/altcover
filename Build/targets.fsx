@@ -806,6 +806,58 @@ Target "ReleaseFSharpTypesDotNetRunner" ( fun _ ->
     Actions.ValidateFSharpTypesCoverage x
 )
 
+Target "ReleaseXUnitFSharpTypesDotNet" ( fun _ ->
+    ensureDirectory "./_Reports"
+    let unpack = FullName "_Packaging/Unpack/tools/netcoreapp2.0/AltCover"
+    let x = FullName "./_Reports/ReleaseXUnitFSharpTypesDotNet.xml"
+    let o = FullName "Sample4/_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.0"
+    let i = FullName "_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.0"
+
+    CleanDir o
+
+    // Instrument the code
+    DotNetCli.RunCommand (fun info -> {info with WorkingDir = unpack })
+                          ("run --project altcover.core.fsproj -- -x \"" + x + "\" -o \"" + o + "\" -i \"" + i + "\"")
+
+    Actions.ValidateFSharpTypes x ["main"]
+
+    printfn "Execute the instrumented tests"
+    let result = ExecProcess (fun info -> info.FileName <- "dotnet"
+                                          info.WorkingDirectory <- FullName "Sample4"
+                                          info.Arguments <- ("test --no-build --configuration Debug sample4.core.fsproj")) (TimeSpan.FromMinutes 5.0)
+    Assert.That(result, Is.EqualTo 0, "sample test returned with a non-zero exit code")
+    Actions.ValidateFSharpTypesCoverage x
+)
+
+Target "ReleaseXUnitFSharpTypesDotNetRunner" ( fun _ ->
+    ensureDirectory "./_Reports"
+    let unpack = FullName "_Packaging/Unpack/tools/netcoreapp2.0/AltCover"
+    let x = FullName "./_Reports/ReleaseXUnitFSharpTypesDotNetRunner.xml"
+    let o = FullName "Sample4/_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.0"
+    let i = FullName "_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.0"
+
+    CleanDir o
+
+    // Instrument the code
+    DotNetCli.RunCommand (fun info -> {info with WorkingDir = unpack })
+                          ("run --project altcover.core.fsproj -- -x \"" + x + "\" -o \"" + o + "\" -i \"" + i + "\"")
+
+    Actions.ValidateFSharpTypes x ["main"]
+
+    printfn "Execute the instrumented tests"
+    let sample4 = FullName "./Sample4/sample4.core.fsproj"
+    let runner = FullName "_Packaging/Unpack/tools/netcoreapp2.0/AltCover.Runner/altcover.runner.core.fsproj"
+
+    // Run
+    DotNetCli.RunCommand (fun info -> {info with WorkingDir = o })
+                          ("run --project " + runner +
+                          " -- -x \"dotnet\" -r \"" + o +
+                          "\" -- test --no-build --configuration Debug " +
+                          sample4)
+
+    Actions.ValidateFSharpTypesCoverage x
+)
+
 // AOB
 
 Target "BulkReport" (fun _ ->
@@ -967,6 +1019,14 @@ Target "All" ignore
 
 "Unpack"
 ==> "ReleaseFSharpTypesDotNetRunner"
+==> "Deployment"
+
+"Unpack"
+==> "ReleaseXUnitFSharpTypesDotNet"
+==> "Deployment"
+
+"Unpack"
+==> "ReleaseXUnitFSharpTypesDotNetRunner"
 ==> "Deployment"
 
 "Unpack"
