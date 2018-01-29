@@ -577,7 +577,8 @@ Target "Packaging" (fun _ ->
                        |> List.concat
                        |> List.map (fun x -> (x, Some ("tools/netcoreapp2.0" + Path.GetDirectoryName(x).Substring(root).Replace("\\","/")), None))
 
-    printfn "Executing on %A" Environment.OSVersion
+    let os = Environment.OSVersion
+    printfn "Executing on %A" os
     NuGet (fun p ->
     {p with
         Authors = ["Steve Gilham"]
@@ -591,7 +592,7 @@ Target "Packaging" (fun _ ->
         Publish = false
         ReleaseNotes = FullName "ReleaseNotes.md"
                        |> File.ReadAllText
-        ToolPath = if String.IsNullOrWhiteSpace(environVar "TRAVIS_JOB_NUMBER") then p.ToolPath else "/usr/bin/nuget"
+        ToolPath = if os.ToString().StartsWith("Microsoft Windows") then p.ToolPath else "/usr/bin/nuget"
         })
         "./Build/AltCover.nuspec"
 )
