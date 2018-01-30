@@ -154,7 +154,8 @@
     <value>Krei dosierujon {0}</value>
   </data>
   <data name="HelpText" xml:space="preserve">
-    <value>AltCover [/i[nputDirectory]=VALO] [/o[utputDirectory]=VALO] [/sn|strongNameKey=VALO] [/x[mlReport]=VALO] [/f[ileFilter]=VALO] [/s|assemblyFilter=VALO] [/t|typeFilter=VALO] [/m|methodFilter=VALO] [/a|attributeFilter=VALO] [/?|h[elp]]</value>
+    <value>AltCover [/i[nputDirectory]=VALO] [/o[utputDirectory]=VALO] [/sn|strongNameKey=VALO] [/x[mlReport]=VALO] [/f[ileFilter]=VALO] [/s|assemblyFilter=VALO] [/t|typeFilter=VALO] [/m|methodFilter=VALO] [/a|attributeFilter=VALO] [/?|h[elp]]
+AltCover Runner [/r[ecordingDirectory]=VALO] [/w[orkingDirectory]=VALO] [/x||executable=VALO] [/?|h[elp]] [-- ] [...]</value>
   </data>
   <data name="NotInPlace" xml:space="preserve">
     <value>De kaj al adresaroj estas identaj</value>
@@ -176,5 +177,14 @@
   </data>
   <data name="e|assemblyExcludeFilter=" xml:space="preserve">
     <value>Laŭvola: asembleo, kiu kunligas aliajn agordajn asembleojn, sed por kiuj internaĵoj povas esti ekskluditaj (eble ripeti)</value>
+  </data>
+  <data name="r|recorderDirectory=" xml:space="preserve">
+    <value>La dosierujo enhavanta la instrumentan kodon por kontroli (inkluzive de la AltCover.Recorder.g.dll generita per antaŭa uzo de la ".net core" AltCover).</value>
+  </data>
+  <data name="x|executable=" xml:space="preserve">
+    <value>La ekzekutebla kuri, ekzemple. dotnet</value>
+  </data>
+  <data name="w|workingDirectory=" xml:space="preserve">
+    <value>Laŭvola: La laboranta dosierujo por la lanĉo de aplikaĵoj</value>
   </data>
 </root>

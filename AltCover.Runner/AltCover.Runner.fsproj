@@ -80,7 +80,10 @@
     <Compile Include="..\AltCover.Recorder\Base.fs">
       <Link>Base.fs</Link>
     </Compile>
-    <Compile Include="Runner.fs" />
+    <Compile Include="..\AltCover\Runner.fs">
+      <Link>Runner.fs</Link>
+    </Compile>
+    <Compile Include="Program.fs" />
     <EmbeddedResource Include="Strings.resx" />
     <EmbeddedResource Include="Strings.eo.resx" />
     <Content Include="packages.config" />

@@ -25,7 +25,8 @@
     <Compile Include="..\AltCover\Augment.fs" Link="Augment.fs" />
     <Compile Include="..\AltCover.Recorder\Base.fs" Link="Base.fs" />
     <Compile Include="..\AltCover\CommandLine.fs" Link="CommandLine.fs" />
-    <Compile Include="Runner.fs" />
+    <Compile Include="..\AltCover\Runner.fs" Link="Runner.fs" />
+    <Compile Include="Program.fs" />
   </ItemGroup>
 
   <ItemGroup>

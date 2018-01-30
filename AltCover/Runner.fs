@@ -155,8 +155,3 @@ module Runner =
           let payload = GetPayload
           GetMonitor hits report payload rest
           DoReport hits report
-
-  [<EntryPoint>]
-  let private Main arguments =
-    DoCoverage arguments
-    0
