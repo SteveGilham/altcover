@@ -29,7 +29,7 @@ module Counter =
   let mutable internal startTime = DateTime.UtcNow
 
   /// <summary>
-  /// Thime taken to perform coverage run
+  /// The finishing time taken of the coverage run
   /// </summary>
   let mutable internal measureTime = DateTime.UtcNow
 
