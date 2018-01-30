@@ -1,4 +1,4 @@
-version: 1.5.{build}-rc
+version: 1.6.{build}-alpha
 branches:
   except:
   - /develop.*/
