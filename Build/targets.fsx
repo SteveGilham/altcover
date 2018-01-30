@@ -398,12 +398,11 @@ Target "FSharpTypesDotNetRunner" ( fun _ ->
     Actions.ValidateFSharpTypes simpleReport ["main"]
 
     printfn "Execute the instrumented tests"
-    let runner = FullName "./AltCover.Runner/altcover.runner.core.fsproj"
     let sample2 = FullName "./Sample2/sample2.core.fsproj"
 
     DotNetCli.RunCommand (fun info -> {info with WorkingDir = instrumented })
-                          ("run --project " + runner +
-                          " -- -x \"dotnet\" -r \"" + instrumented +
+                          ("run --project " + project +
+                          " -- Runner -x \"dotnet\" -r \"" + instrumented +
                           "\" -- test --no-build --configuration Debug " +
                           sample2)
 
@@ -540,9 +539,6 @@ Target "Packaging" (fun _ ->
                          ((!! "./AltCover.Recorder/*")
                           |> Seq.filter (fun n -> n.EndsWith(".fs") || n.EndsWith(".core.fsproj"))
                           |> Seq.toList);
-                         ((!! "./AltCover.Runner/*")
-                          |> Seq.filter (fun n -> n.EndsWith(".fs") || n.EndsWith(".core.fsproj") || n.EndsWith(".resx"))
-                          |> Seq.toList);
                          ((!! "./_Generated/*")
                           |> Seq.toList)
                        ]
@@ -614,7 +610,7 @@ Target "SimpleReleaseTest" (fun _ ->
     let unpack = FullName "_Packaging/Unpack/tools/net45"
     if (unpack @@ "AltCover.exe") |> File.Exists then
       Actions.SimpleInstrumentingRun "_Binaries/Sample1/Debug+AnyCPU" unpack "SimpleReleaseTest"
-    else 
+    else
           let test = findToolInSubPath "AltCover.exe" "./packages"
           if File.Exists test then
             Actions.SimpleInstrumentingRun "_Binaries/Sample1/Debug+AnyCPU" (Path.GetDirectoryName test) "SimpleReleaseTest"
@@ -625,7 +621,7 @@ Target "SimpleMonoReleaseTest" (fun _ ->
     let unpack = FullName "_Packaging/Unpack/tools/net45"
     if (unpack @@ "AltCover.exe") |> File.Exists then
       Actions.SimpleInstrumentingRun "_Mono/Sample1" unpack "SimpleMonoReleaseTest"
-    else 
+    else
           let test = findToolInSubPath "AltCover.exe" "./packages"
           if File.Exists test then
             Actions.SimpleInstrumentingRun "_Binaries/Sample1/Debug+AnyCPU" (Path.GetDirectoryName test) "SimpleReleaseTest"
@@ -636,7 +632,7 @@ Target "ReleaseDotNetWithFramework" (fun _ ->
     ensureDirectory "./_Reports"
     let unpack0 = FullName "_Packaging/Unpack/tools/net45"
     let unpack1 = findToolInSubPath "AltCover.exe" "./packages"
-    let unpack = if File.Exists (unpack0 @@ "AltCover.exe") then unpack0 
+    let unpack = if File.Exists (unpack0 @@ "AltCover.exe") then unpack0
                  else Path.GetDirectoryName(unpack1)
 
     if (unpack @@ "AltCover.exe") |> File.Exists then
@@ -739,13 +735,13 @@ Target "ReleaseXUnitDotNetRunnerDemo" (fun _ ->
     !! (o @@ "*")
     |> Copy i
 
-    let runner = FullName "_Packaging/Unpack/tools/netcoreapp2.0/AltCover.Runner/altcover.runner.core.fsproj"
+    let runner = FullName "_Packaging/Unpack/tools/netcoreapp2.0/AltCover/altcover.core.fsproj"
 
     // Run
     DotNetCli.RunCommand (fun info -> {info with WorkingDir = o })
                           ("run --project " + runner +
-                          " -- -x \"dotnet\" -r \"" + i +
-                          "\" -w \"" + (FullName "./Demo/xunit-dotnet") + 
+                          " -- Runner -x \"dotnet\" -r \"" + i +
+                          "\" -w \"" + (FullName "./Demo/xunit-dotnet") +
                           "\" -- test --no-build --configuration Debug  xunit-dotnet.csproj")
 
     use coverageFile = new FileStream(x, FileMode.Open, FileAccess.Read, FileShare.None, 4096, FileOptions.SequentialScan)
@@ -779,12 +775,12 @@ Target "ReleaseFSharpTypesDotNetRunner" ( fun _ ->
 
     printfn "Execute the instrumented tests"
     let sample2 = FullName "./Sample2/sample2.core.fsproj"
-    let runner = FullName "_Packaging/Unpack/tools/netcoreapp2.0/AltCover.Runner/altcover.runner.core.fsproj"
+    let runner = FullName "_Packaging/Unpack/tools/netcoreapp2.0/AltCover/altcover.core.fsproj"
 
     // Run
     DotNetCli.RunCommand (fun info -> {info with WorkingDir = o })
                           ("run --project " + runner +
-                          " -- -x \"dotnet\" -r \"" + o +
+                          " -- Runner -x \"dotnet\" -r \"" + o +
                           "\" -- test --no-build --configuration Debug " +
                           sample2)
 
@@ -831,12 +827,12 @@ Target "ReleaseXUnitFSharpTypesDotNetRunner" ( fun _ ->
 
     printfn "Execute the instrumented tests"
     let sample4 = FullName "./Sample4/sample4.core.fsproj"
-    let runner = FullName "_Packaging/Unpack/tools/netcoreapp2.0/AltCover.Runner/altcover.runner.core.fsproj"
+    let runner = FullName "_Packaging/Unpack/tools/netcoreapp2.0/AltCover/altcover.core.fsproj"
 
     // Run
     DotNetCli.RunCommand (fun info -> {info with WorkingDir = o })
                           ("run --project " + runner +
-                          " -- -x \"dotnet\" -r \"" + o +
+                          " -- Runner -x \"dotnet\" -r \"" + o +
                           "\" -- test --no-build --configuration Debug " +
                           sample4)
 
