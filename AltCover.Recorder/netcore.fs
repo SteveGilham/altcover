@@ -3,24 +3,10 @@
 open System
 open System.Collections.Generic
 open System.IO
-open System.Threading.Tasks
-
-module Communications =
-  let internal ResilientAgainstDisposedObject (f: unit -> unit) (tidy : unit -> unit)=
-    try
-      f()
-    with
-    | :? ObjectDisposedException -> tidy()
-
-  let SignalOnReceive (s:Stream) (h:System.Threading.EventWaitHandle) =
-    let b = s.ReadByte()
-    if (b >= 0) then
-        h.Set() |> ignore
 
 type Tracer = {
                 Tracer : string
-                Pipe : System.IO.Pipes.NamedPipeClientStream
-                Activated : System.Threading.ManualResetEvent
+                Stream : System.IO.FileStream ref
                 Formatter : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
               }
   with
@@ -29,33 +15,29 @@ type Tracer = {
 
     static member Create (name:string) =
       {
-       Tracer = name;
-       Pipe = new System.IO.Pipes.NamedPipeClientStream(name);
-       Activated = new System.Threading.ManualResetEvent false
+       Tracer = name
+       Stream = ref null
        Formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
       }
 
-    member this.IsConnected ()=
-      this.Pipe.IsConnected &&
-        this.Pipe.CanWrite
-
-    member this.IsActivated ()=
-      this.IsConnected() &&
-        this.Activated.WaitOne(0)
+    member this.IsConnected () =
+      match !this.Stream with
+      | null -> false
+      | _ -> File.Exists this.Tracer
 
     member this.Connect () =
-      this.Pipe.Connect()  // this could and should be able to throw ObjectDisposed = Pipe broken
-      Communications.ResilientAgainstDisposedObject(fun () ->
-          Communications.SignalOnReceive this.Pipe this.Activated) ignore
+      if File.Exists this.Tracer then
+        this.Stream := File.OpenWrite(this.Tracer)
 
     member this.Close() =
-      this.Pipe.Dispose()
-      this.Activated.Dispose()
+      match !this.Stream with
+      | null -> ()
+      | _ -> (!this.Stream).Dispose()
 
     member this.Push (moduleId:string) hitPointId =
-      Communications.ResilientAgainstDisposedObject (fun () ->
-        this.Formatter.Serialize(this.Pipe, (moduleId, hitPointId))
-        this.Pipe.Flush()) ignore
+      let stream = !this.Stream
+      this.Formatter.Serialize(stream, (moduleId, hitPointId))
+      stream.Flush()
 
     member this.CatchUp (visits:Dictionary<string, Dictionary<int, int>>) =
       visits.Keys
@@ -66,26 +48,17 @@ type Tracer = {
       visits.Clear()
 
     member this.OnStart () =
-      if this.Tracer <> "AltCover" then
-        try
-          this.Connect ()
-        with
-        | :? TimeoutException
-        | :? ObjectDisposedException
-        | :? IOException ->
-            ()
+      if this.Tracer <> "Coverage.Default.xml.bin" then
+        this.Connect ()
 
     member this.OnConnected f l g =
-      if this.IsActivated() then f()
+      if this.IsConnected() then f()
       else  l g
 
     member this.OnFinish finish =
       if finish then
-        try
-          while this.Pipe.CanWrite do
-            this.Push null -1
-        with
-        | :? IOException -> ()
+        this.Push null -1
+        this.Close()
 
     member this.OnVisit visits moduleId hitPointId =
       this.CatchUp visits

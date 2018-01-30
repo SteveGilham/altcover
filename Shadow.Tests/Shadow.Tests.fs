@@ -32,8 +32,7 @@ type AltCoverTests() = class
   member self.ShouldBeLinkingTheCorrectCopyOfThisCode() =
     let locker = { Tracer = String.Empty
 #if NETCOREAPP2_0
-                   Pipe = null
-                   Activated = null
+                   Stream = ref null
                    Formatter = null
 #endif
     }

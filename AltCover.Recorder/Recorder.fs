@@ -37,7 +37,7 @@ module Instance =
   /// Reporting back to the mother-ship; only on the .net core build
   /// because this API isn't available in .net 2.0 (framework back-version support)
   /// </summary>
-  let mutable internal trace = Tracer.Create Token
+  let mutable internal trace = Tracer.Create (ReportFile + ".bin")
 
   let internal WithMutex (f : bool -> 'a) =
     let own = mutex.WaitOne(10000)
@@ -95,4 +95,4 @@ module Instance =
   do
     AppDomain.CurrentDomain.DomainUnload.Add(FlushCounter false)
     AppDomain.CurrentDomain.ProcessExit.Add(FlushCounter true)
-    async { trace.OnStart () } |> Async.Start
+    trace.OnStart ()
