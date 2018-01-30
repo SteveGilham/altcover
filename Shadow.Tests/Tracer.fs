@@ -24,6 +24,11 @@ open System.Reflection
 open AltCover.Recorder
 open NUnit.Framework
 
+type UpdateBinder () =
+  inherit System.Runtime.Serialization.SerializationBinder()
+  override self.BindToType (_:string, _:string) =
+    typeof<(string*int)> // anything else is an error
+
 [<TestFixture>]
 type AltCoverCoreTests() = class
 
@@ -56,6 +61,7 @@ type AltCoverCoreTests() = class
   member self.ReadResults (stream:Stream) =
     let hits = List<(string*int)>()
     let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
+    formatter.Binder <- UpdateBinder()
     let rec sink() = try
                           let hit = formatter.Deserialize(stream) :?> (string*int)
                           hit |> hits.Add

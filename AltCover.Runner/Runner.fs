@@ -13,6 +13,11 @@ open Augment
 [<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage>]
 type Tracer = { Tracer : string }
 
+type MonoTypeBinder (``type``:Type) =
+  inherit System.Runtime.Serialization.SerializationBinder()
+  override self.BindToType (_:string, _:string) =
+    ``type``
+
 module Runner =
 
   let mutable internal recordingDirectory : Option<string> = None
@@ -109,6 +114,7 @@ module Runner =
 
       use results = File.OpenRead(binpath)
       let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
+      formatter.Binder <- MonoTypeBinder(typeof<(string*int)>) // anything else is an error
 
       let rec sink() = try
                           let hit = formatter.Deserialize(results) :?> (string*int)
