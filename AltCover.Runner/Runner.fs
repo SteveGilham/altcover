@@ -102,7 +102,11 @@ module Runner =
       do 
         use stream = File.Create(binpath)
         ()
+
+      printfn "Beginning run..."
       payload args
+      printfn "Getting results..."
+
       use results = File.OpenRead(binpath)
       let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
 
@@ -115,6 +119,7 @@ module Runner =
                        | :? System.Runtime.Serialization.SerializationException as x ->
                            ()        
       sink()
+      printfn "%d visits recorded" hits.Count
 
   let WriteReportBase (hits:ICollection<(string*int)>) report =
     let counts = Dictionary<string, Dictionary<int, int>>()
