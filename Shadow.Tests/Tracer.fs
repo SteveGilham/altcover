@@ -68,7 +68,7 @@ type AltCoverCoreTests() = class
                           sink()
                        with
                        | :? System.Runtime.Serialization.SerializationException as x ->
-                           () 
+                           ()
     sink()
     hits
 
@@ -104,7 +104,6 @@ type AltCoverCoreTests() = class
 
     finally
       Instance.Visits.Clear()
-
 
   [<Test>]
   member self.FlushShouldTidyUp() = // also throw a bone to OpenCover 615

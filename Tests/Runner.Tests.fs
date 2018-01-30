@@ -803,7 +803,7 @@ type AltCoverTests() = class
     let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
     let unique = Path.Combine(where, Guid.NewGuid().ToString())
     let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
-    Runner.GetMonitor hits unique (fun l -> 
+    Runner.GetMonitor hits unique (fun l ->
        use sink = File.OpenWrite (unique + ".bin")
        l |> List.iteri (fun i x -> formatter.Serialize(sink, (x,i)))
     ) ["a"; "b"; String.Empty; "c"]

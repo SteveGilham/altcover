@@ -30,7 +30,7 @@ type AltCoverTests() = class
 
   [<Test>]
   member self.ShouldBeLinkingTheCorrectCopyOfThisCode() =
-    let tracer = { 
+    let tracer = {
         Tracer = String.Empty
         Stream = null
         Formatter = null

@@ -104,7 +104,7 @@ module Runner =
 
   let MonitorBase (hits:ICollection<(string*int)>) report (payload: string list -> unit) (args : string list) =
       let binpath = report + ".bin"
-      do 
+      do
         use stream = File.Create(binpath)
         ()
 
@@ -123,7 +123,7 @@ module Runner =
                              sink()
                        with
                        | :? System.Runtime.Serialization.SerializationException as x ->
-                           ()        
+                           ()
       sink()
       printfn "%d visits recorded" hits.Count
 

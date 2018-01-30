@@ -13,7 +13,7 @@ type Tracer = {
 #if NETSTANDARD2_0
     static member Core () =
              typeof<Microsoft.FSharp.Core.CompilationMappingAttribute>.Assembly.Location
-#endif 
+#endif
 
     static member Create (name:string) =
       {
