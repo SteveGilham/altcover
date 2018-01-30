@@ -6,7 +6,6 @@ open System.IO
 open System.Reflection
 open System.Text
 open System.Threading
-open System.Threading.Tasks
 open System.Xml
 
 open AltCover
@@ -786,8 +785,7 @@ type AltCoverTests() = class
       let u2 = Guid.NewGuid().ToString()
       use latch = new ManualResetEvent true
 
-      let payload = Runner.GetPayload [program; u1; u2] latch
-      payload |> Async.RunSynchronously
+      Runner.GetPayload [program; u1; u2]
 
       Assert.That(stderr.ToString(), Is.Empty)
       stdout.Flush()
@@ -821,14 +819,12 @@ type AltCoverTests() = class
     let save3 = Runner.DoReport
     try
       Runner.RecorderName <- "AltCover.Recorder.dll"
-      let payload (rest:string list) _ =
+      let payload (rest:string list) =
         Assert.That(rest, Is.EquivalentTo [|"test"; "1"|])
-        async { () }
 
-      let monitor (hits:ICollection<(string*int)>) (token:string) _ =
-        Assert.That(token, Is.EqualTo "AltCover", "should be plain token")
+      let monitor (hits:ICollection<(string*int)>) (token:string) _ _ =
+        Assert.That(token, Is.EqualTo "Coverage.Default.xml", "should be default coverage file")
         Assert.That(hits, Is.Empty)
-        async { () }
 
       let write (hits:ICollection<(string*int)>) (report:string) =
         Assert.That(report, Is.EqualTo "Coverage.Default.xml", "should be default coverage file")
@@ -907,93 +903,25 @@ type AltCoverTests() = class
       | :? IOException -> ()
 
   [<Test>]
-  member self.PipeMonitorShouldReceiveSignal() =
-    let token = Guid.NewGuid().ToString() + "PipeMonitorShouldReceiveSignal"
-    let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
-    let hits = List<(string*int)>()
-    use signal = new AutoResetEvent false
-    use latch = new ManualResetEvent false
-    let os = Environment.OSVersion.ToString()
-
-    let task = Task.Run(fun () ->
-          use client = new System.IO.Pipes.NamedPipeClientStream(token)
-
-          async {
-                do! Runner.GetMonitor hits token latch
-                printfn "cr: monitor exit"
-                do! async { signal.Set() |> ignore }
-            } |> Async.Start
-
-          printfn "cr: about to connect"
-          client.Connect()
-
-          while client.IsConnected |> not do
-            printfn "."
-            Thread.Sleep 100
-
-          printfn "cr: connected"
-          let x = client.ReadByte()
-          Assert.That(x, Is.GreaterThanOrEqualTo 0)
-          printfn "cr: active"
-          formatter.Serialize(client, ("name", 23))
-          client.Flush()
-          printfn "cr: tuple sent"
-          formatter.Serialize(client, ("name2", 42))
-          client.Flush()
-          printfn "cr: tuple sent"
-          let nulled = { Tracer = null }
-          formatter.Serialize(client, (nulled.Tracer, -1))
-          client.Flush()
-          printfn "cr: termination sent")
-
-    let bigWait = 12000 // 2s more than the timeout in monitorbase
-    if task.Wait(bigWait) then
-        Assert.That(signal.WaitOne(bigWait), "Went on too long")
-        Assert.That(latch.WaitOne(), Is.True, "didn't finish monitoring")
-        Assert.That(hits, Is.EquivalentTo [("name", 23); ("name2", 42)])
-    else Assert.Fail("Task timeout")
+  member self.NullPayloadShouldReportNothing() =
+    let hits = List<string*int>()
+    let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
+    let unique = Path.Combine(where, Guid.NewGuid().ToString())
+    Runner.GetMonitor hits unique ignore []
+    Assert.That (File.Exists (unique + ".bin"))
+    Assert.That(hits, Is.Empty)
 
   [<Test>]
-  member self.PipeMonitorShouldHandleException() =
-    let token = Guid.NewGuid().ToString() + "PipeMonitorShouldHandleException"
+  member self.ActivePayloadShouldReportAsExpected() =
+    let hits = List<string*int>()
+    let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
+    let unique = Path.Combine(where, Guid.NewGuid().ToString())
     let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
-    let hits = List<(string*int)>()
-    use signal = new AutoResetEvent false
-    use latch = new ManualResetEvent false
-    let os = Environment.OSVersion.ToString()
-
-    let task = Task.Run(fun () ->
-      use client = new System.IO.Pipes.NamedPipeClientStream(token)
-      async {
-        do! Runner.GetMonitor hits token latch
-        printfn "ch: monitor exit"
-        do! async { signal.Set() |> ignore }
-      } |> Async.Start
-
-      printfn "ch: about to connect"
-      client.Connect()
-
-      while client.IsConnected |> not do
-        printf "."
-        Thread.Sleep 100
-
-      printfn "ch: connected"
-      let x = client.ReadByte()
-      Assert.That(x, Is.GreaterThanOrEqualTo 0)
-      printfn "ch: active"
-      formatter.Serialize(client, ("name", 23))
-      client.Flush()
-      printfn "ch: tuple sent"
-      let broken = System.Text.Encoding.UTF8.GetBytes "just junk"
-      client.Write(broken, 0, broken.Length)
-      client.Flush()
-      printfn "ch: junk sent")
-
-    let bigWait = 12000 // 2s more than the timeout in monitorbase
-    if task.Wait(bigWait) then
-        Assert.That(signal.WaitOne(bigWait), "Went on too long")
-        Assert.That(latch.WaitOne(), Is.True, "didn't finish monitoring")
-        Assert.That(hits, Is.EquivalentTo [("name", 23)])
-    else Assert.Fail("Task timeout")
+    Runner.GetMonitor hits unique (fun l -> 
+       use sink = File.OpenWrite (unique + ".bin")
+       l |> List.iteri (fun i x -> formatter.Serialize(sink, (x,i)))
+    ) ["a"; "b"; String.Empty; "c"]
+    Assert.That (File.Exists (unique + ".bin"))
+    Assert.That(hits, Is.EquivalentTo [("a",0); ("b",1)])
 
 end

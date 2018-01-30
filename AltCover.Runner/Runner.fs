@@ -93,37 +93,28 @@ module Runner =
      |> Seq.map (fun i -> i.Operand :?> string)
      |> Seq.head
 
-  let PayloadBase (rest:string list) (latch:EventWaitHandle) =
-    async {
-            latch.WaitOne(10000) |> ignore
-            CommandLine.doPathOperation (fun () ->
-                CommandLine.ProcessTrailingArguments rest (DirectoryInfo(Option.get workingDirectory)))
-          }
+  let PayloadBase (rest:string list)  =
+    CommandLine.doPathOperation (fun () ->
+        CommandLine.ProcessTrailingArguments rest (DirectoryInfo(Option.get workingDirectory)))
 
-  let MonitorBase (hits:ICollection<(string*int)>) token  (latch:EventWaitHandle) =
-    async {
-      use server = new System.IO.Pipes.NamedPipeServerStream(token)
+  let MonitorBase (hits:ICollection<(string*int)>) report (payload: string list -> unit) (args : string list) =
+      let binpath = report + ".bin"
+      do 
+        use stream = File.Create(binpath)
+        ()
+      payload args
+      use results = File.OpenRead(binpath)
       let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
-      latch.Set() |> ignore
-      server.WaitForConnection()
-      server.WriteByte(0uy)
-      let rec sink () =
-          // On Mono/Linux, we get no clue from the pipe that the other end has gone away
-          // Not even a serialization error from a partial message
-          // Async didn't seem to play well with the blocking read within Deserialize
-          // So do it this way, where we do seem to get a timeout
-          let task = Task.Run(fun () -> try
-                                          formatter.Deserialize(server) :?> (string*int)
-                                        with
-                                        | :? System.Runtime.Serialization.SerializationException as x ->
-                                            (String.Empty, -1) )
-          if task.Wait(10000) then
-            let result = task.Result
-            if result|> fst |> String.IsNullOrWhiteSpace  |> not then
-               result |> hits.Add
-               sink()
+
+      let rec sink() = try
+                          let hit = formatter.Deserialize(results) :?> (string*int)
+                          if hit|> fst |> String.IsNullOrWhiteSpace  |> not then
+                             hit |> hits.Add
+                             sink()
+                       with
+                       | :? System.Runtime.Serialization.SerializationException as x ->
+                           ()        
       sink()
-           }
 
   let WriteReportBase (hits:ICollection<(string*int)>) report =
     let counts = Dictionary<string, Dictionary<int, int>>()
@@ -147,20 +138,11 @@ module Runner =
     | Left (intro, options) -> HandleBadArguments arguments intro options
     | Right (rest, _) ->
           let instance = RecorderInstance()
-          let token = (GetMethod instance "get_Token") |> GetFirstOperandAsString
           let report = (GetMethod instance "get_ReportFile") |> GetFirstOperandAsString
-          use latch = new ManualResetEvent false
-
           let hits = List<(string*int)>()
 
-          let payload = GetPayload rest latch
-          let monitor = GetMonitor hits token latch
-
-          [monitor; payload]
-          |> Async.Parallel
-          |> Async.RunSynchronously
-          |> ignore
-
+          let payload = GetPayload
+          GetMonitor hits report payload rest
           DoReport hits report
 
   [<EntryPoint>]
