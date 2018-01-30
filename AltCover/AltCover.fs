@@ -167,5 +167,7 @@ module Main =
 
   [<EntryPoint>]
   let private Main arguments =
-    DoInstrumentation arguments
+    if "Runner".StartsWith(arguments |> Seq.head, StringComparison.OrdinalIgnoreCase) 
+      then arguments |> Array.skip 1 |> Runner.DoCoverage
+      else DoInstrumentation arguments
     0

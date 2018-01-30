@@ -522,11 +522,13 @@ type AltCoverTests() = class
   [<Test>]
   member self.ShouldAcceptRecorder() =
     try
-      let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
+      let here = (Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName)
+      let where = Path.Combine(here, Guid.NewGuid().ToString())
+      Directory.CreateDirectory(where) |> ignore
       Runner.recordingDirectory <- Some where
       let create = Path.Combine(where, "AltCover.Recorder.g.dll")
       if create |> File.Exists |> not then do
-        let from = Path.Combine(where, "AltCover.Recorder.dll")
+        let from = Path.Combine(here, "AltCover.Recorder.dll")
         use frombytes = new FileStream(from, FileMode.Open, FileAccess.Read)
         use libstream = new FileStream(create, FileMode.Create)
         frombytes.CopyTo libstream
@@ -598,7 +600,7 @@ type AltCoverTests() = class
       Console.SetError stderr
       let unique = Guid.NewGuid().ToString()
       let main = typeof<Tracer>.Assembly.GetType("AltCover.Main").GetMethod("Main", BindingFlags.NonPublic ||| BindingFlags.Static)
-      let returnCode = main.Invoke(null, [| [| "-r"; unique |] |])
+      let returnCode = main.Invoke(null, [| [| "RuNN"; "-r"; unique |] |])
       Assert.That(returnCode, Is.EqualTo 0)
       let result = stderr.ToString().Replace("\r\n", "\n")
       let expected = "\"-r\" \"" + unique + "\"\n" +
@@ -687,10 +689,12 @@ type AltCoverTests() = class
 
   [<Test>]
   member self.ShouldDoCoverage() =
-    let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
+    let here = (Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName)
+    let where = Path.Combine(here, Guid.NewGuid().ToString())
+    Directory.CreateDirectory(where) |> ignore
     let create = Path.Combine(where, "AltCover.Recorder.g.dll")
     if create |> File.Exists |> not then do
-        let from = Path.Combine(where, "AltCover.Recorder.dll")
+        let from = Path.Combine(here, "AltCover.Recorder.dll")
         use frombytes = new FileStream(from, FileMode.Open, FileAccess.Read)
         use libstream = new FileStream(create, FileMode.Create)
         frombytes.CopyTo libstream
@@ -700,7 +704,7 @@ type AltCoverTests() = class
     let save2 = Runner.GetMonitor
     let save3 = Runner.DoReport
     try
-      Runner.RecorderName <- "AltCover.Recorder.dll"
+      Runner.RecorderName <- "AltCover.Recorder.g.dll"
       let payload (rest:string list) =
         Assert.That(rest, Is.EquivalentTo [|"test"; "1"|])
 
