@@ -75,7 +75,8 @@ module Instance =
       | _ -> let counts = Dictionary<string, Dictionary<int, int>> Visits
              Visits.Clear()
              WithMutex (fun own ->
-                Counter.DoFlush own counts ReportFile
+                let delta = Counter.DoFlush own counts ReportFile
+                Console.Out.WriteLine("Coverage statistics flushing took {0:N} seconds", delta.TotalSeconds)
              ))
 
   let internal TraceVisit moduleId hitPointId =

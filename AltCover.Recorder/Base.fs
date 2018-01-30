@@ -117,8 +117,7 @@ module Counter =
   let DoFlush own counts report =
     use coverageFile = new FileStream(report, FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.SequentialScan)
     let flushStart = UpdateReport own counts coverageFile
-    let delta = TimeSpan(DateTime.UtcNow.Ticks - flushStart.Ticks)
-    Console.Out.WriteLine("Coverage statistics flushing took {0:N} seconds", delta.TotalSeconds)
+    TimeSpan(DateTime.UtcNow.Ticks - flushStart.Ticks)
 
   let AddVisit (counts:Dictionary<string, Dictionary<int, int>>) moduleId hitPointId =
     if not (counts.ContainsKey moduleId) then counts.[moduleId] <- Dictionary<int, int>()

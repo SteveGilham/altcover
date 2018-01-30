@@ -90,13 +90,8 @@ type AltCoverTests() = class
       |> Seq.iter(fun i -> payload.[i] <- (i+1))
       visits.["f6e3edb3-fb20-44b3-817d-f69d1a22fc2f"] <- payload
 
-      Counter.DoFlush true visits reportFile
+      Counter.DoFlush true visits reportFile |> ignore
 
-      let head = "Coverage statistics flushing took "
-      let tail = " seconds\n"
-      let recorded = stdout.ToString().Replace("\r\n","\n")
-      Assert.That (recorded.StartsWith(head, StringComparison.Ordinal))
-      Assert.That (recorded.EndsWith(tail, StringComparison.Ordinal))
       use worker' = new FileStream(reportFile, FileMode.Open)
       let after = XmlDocument()
       after.Load worker'
@@ -715,6 +710,7 @@ type AltCoverTests() = class
       let write (hits:ICollection<(string*int)>) (report:string) =
         Assert.That(report, Is.EqualTo "Coverage.Default.xml", "should be default coverage file")
         Assert.That(hits, Is.Empty)
+        TimeSpan.Zero
 
       Runner.GetPayload <- payload
       Runner.GetMonitor <- monitor
@@ -765,13 +761,8 @@ type AltCoverTests() = class
       |> Seq.iter(fun i -> payload.[i] <- (i+1))
       visits.["f6e3edb3-fb20-44b3-817d-f69d1a22fc2f"] <- payload
 
-      Runner.DoReport hits reportFile
+      Runner.DoReport hits reportFile |> ignore
 
-      let head = "Coverage statistics flushing took "
-      let tail = " seconds\n"
-      let recorded = stdout.ToString().Replace("\r\n","\n")
-      Assert.That (recorded.StartsWith(head, StringComparison.Ordinal))
-      Assert.That (recorded.EndsWith(tail, StringComparison.Ordinal))
       use worker' = new FileStream(reportFile, FileMode.Open)
       let after = XmlDocument()
       after.Load worker'

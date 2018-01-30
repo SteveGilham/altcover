@@ -188,4 +188,16 @@ AltCover Runner [/r[ecordingDirectory]=VALO] [/w[orkingDirectory]=VALO] [/x||exe
   <data name="w|workingDirectory=" xml:space="preserve">
     <value>Laŭvola: La laboranta dosierujo por la lanĉo de aplikaĵoj</value>
   </data>
+  <data name="%d visits recorded" xml:space="preserve">
+    <value>{0} vizitoj registritaj</value>
+  </data>
+  <data name="Beginning run..." xml:space="preserve">
+    <value>Komencanta kuri ...</value>
+  </data>
+  <data name="Coverage statistics flushing took {0:N} seconds" xml:space="preserve">
+    <value>Kovraj statistika skribado prenis {0:N} sekundojn</value>
+  </data>
+  <data name="Getting results..." xml:space="preserve">
+    <value>Akiri rezultojn ...</value>
+  </data>
 </root>

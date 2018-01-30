@@ -188,4 +188,16 @@ AltCover Runner [/r[ecordingDirectory]=VALUE] [/w[orkingDirectory]=VALUE] [/x||e
   <data name="w|workingDirectory=" xml:space="preserve">
     <value>Optional: The working directory for the application launch</value>
   </data>
+  <data name="%d visits recorded" xml:space="preserve">
+    <value>{0} visits recorded</value>
+  </data>
+  <data name="Beginning run..." xml:space="preserve">
+    <value>Beginning run...</value>
+  </data>
+  <data name="Coverage statistics flushing took {0:N} seconds" xml:space="preserve">
+    <value>Coverage statistics flushing took {0:N} seconds</value>
+  </data>
+  <data name="Getting results..." xml:space="preserve">
+    <value>Getting results...</value>
+  </data>
 </root>

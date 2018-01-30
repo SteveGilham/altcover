@@ -102,15 +102,21 @@ module Runner =
     CommandLine.doPathOperation (fun () ->
         CommandLine.ProcessTrailingArguments rest (DirectoryInfo(Option.get workingDirectory)))
 
+  let WriteResource =
+    CommandLine.resources.GetString >> Console.WriteLine
+
+  let WriteResourceWithFormatItems s x =
+    Console.WriteLine (s |> CommandLine.resources.GetString, x)
+
   let MonitorBase (hits:ICollection<(string*int)>) report (payload: string list -> unit) (args : string list) =
       let binpath = report + ".bin"
       do
         use stream = File.Create(binpath)
         ()
 
-      printfn "Beginning run..."
+      "Beginning run..." |> WriteResource
       payload args
-      printfn "Getting results..."
+      "Getting results..."  |> WriteResource
 
       use results = File.OpenRead(binpath)
       let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
@@ -125,7 +131,7 @@ module Runner =
                        | :? System.Runtime.Serialization.SerializationException as x ->
                            ()
       sink()
-      printfn "%d visits recorded" hits.Count
+      WriteResourceWithFormatItems "%d visits recorded" [|hits.Count|]
 
   let WriteReportBase (hits:ICollection<(string*int)>) report =
     let counts = Dictionary<string, Dictionary<int, int>>()
@@ -154,4 +160,5 @@ module Runner =
 
           let payload = GetPayload
           GetMonitor hits report payload rest
-          DoReport hits report
+          let delta = DoReport hits report
+          WriteResourceWithFormatItems "Coverage statistics flushing took {0:N} seconds" [|delta.TotalSeconds|]
