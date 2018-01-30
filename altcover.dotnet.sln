@@ -6,7 +6,6 @@ Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.core", "AltCover/a
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.recorder.core", "AltCover.Recorder/altcover.recorder.core.fsproj", "{7054B26A-95AA-4194-AAC9-E5E430695FBA}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "altcover.runner.core", "AltCover.Runner/altcover.runner.core.fsproj", "{0FFC8A5F-ED80-4F21-AF1A-EFD7F6A1A667}"
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -41,18 +40,6 @@ Global
 		{7054B26A-95AA-4194-AAC9-E5E430695FBA}.Release|x64.Build.0 = Release|Any CPU
 		{7054B26A-95AA-4194-AAC9-E5E430695FBA}.Release|x86.ActiveCfg = Release|Any CPU
 		{7054B26A-95AA-4194-AAC9-E5E430695FBA}.Release|x86.Build.0 = Release|Any CPU
-		{0FFC8A5F-ED80-4F21-AF1A-EFD7F6A1A667}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0FFC8A5F-ED80-4F21-AF1A-EFD7F6A1A667}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0FFC8A5F-ED80-4F21-AF1A-EFD7F6A1A667}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{0FFC8A5F-ED80-4F21-AF1A-EFD7F6A1A667}.Debug|x64.Build.0 = Debug|Any CPU
-		{0FFC8A5F-ED80-4F21-AF1A-EFD7F6A1A667}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{0FFC8A5F-ED80-4F21-AF1A-EFD7F6A1A667}.Debug|x86.Build.0 = Debug|Any CPU
-		{0FFC8A5F-ED80-4F21-AF1A-EFD7F6A1A667}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0FFC8A5F-ED80-4F21-AF1A-EFD7F6A1A667}.Release|Any CPU.Build.0 = Release|Any CPU
-		{0FFC8A5F-ED80-4F21-AF1A-EFD7F6A1A667}.Release|x64.ActiveCfg = Release|Any CPU
-		{0FFC8A5F-ED80-4F21-AF1A-EFD7F6A1A667}.Release|x64.Build.0 = Release|Any CPU
-		{0FFC8A5F-ED80-4F21-AF1A-EFD7F6A1A667}.Release|x86.ActiveCfg = Release|Any CPU
-		{0FFC8A5F-ED80-4F21-AF1A-EFD7F6A1A667}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -65,7 +65,9 @@
     <Compile Include="..\_Generated\AssemblyVersion.fs">
       <Link>AssemblyVersion.fs</Link>
     </Compile>
-    <Compile Include="Runner.Tests.fs" />
+    <Compile Include="..\Tests\Runner.Tests.fs">
+      <Link>Runner.Tests.fs</Link>
+    </Compile>
     <Content Include="packages.config" />
     <EmbeddedResource Include="..\Shadow.Tests\SimpleCoverage.xml">
       <Link>SimpleCoverage.xml</Link>

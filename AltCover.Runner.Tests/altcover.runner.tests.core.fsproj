@@ -17,7 +17,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="Runner.Tests.fs" />
+    <Compile Include="..\Tests\Runner.Tests.fs" Link="Runner.Tests.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 
