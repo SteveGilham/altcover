@@ -30,13 +30,12 @@ type AltCoverTests() = class
 
   [<Test>]
   member self.ShouldBeLinkingTheCorrectCopyOfThisCode() =
-    let locker = { Tracer = String.Empty
-#if NETCOREAPP2_0
-                   Stream = ref null
-                   Formatter = null
-#endif
+    let tracer = { 
+        Tracer = String.Empty
+        Stream = null
+        Formatter = null
     }
-    Assert.That(locker.GetType().Assembly.GetName().Name, Is.EqualTo
+    Assert.That(tracer.GetType().Assembly.GetName().Name, Is.EqualTo
 #if NETCOREAPP2_0
     "AltCover.Recorder")
 #else

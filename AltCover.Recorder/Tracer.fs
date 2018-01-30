@@ -6,36 +6,40 @@ open System.IO
 
 type Tracer = {
                 Tracer : string
-                Stream : System.IO.FileStream ref
+                Stream : System.IO.FileStream
                 Formatter : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
               }
   with
+#if NETSTANDARD2_0
     static member Core () =
              typeof<Microsoft.FSharp.Core.CompilationMappingAttribute>.Assembly.Location
+#endif 
 
     static member Create (name:string) =
       {
        Tracer = name
-       Stream = ref null
+       Stream = null
        Formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
       }
 
     member this.IsConnected () =
-      match !this.Stream with
+      match this.Stream with
       | null -> false
       | _ -> File.Exists this.Tracer
 
     member this.Connect () =
       if File.Exists this.Tracer then
-        this.Stream := File.OpenWrite(this.Tracer)
+        { this with Stream = File.OpenWrite(this.Tracer) }
+      else
+        this
 
     member this.Close() =
-      match !this.Stream with
+      match this.Stream with
       | null -> ()
-      | _ -> (!this.Stream).Dispose()
+      | _ -> this.Stream.Dispose()
 
     member this.Push (moduleId:string) hitPointId =
-      let stream = !this.Stream
+      let stream = this.Stream
       this.Formatter.Serialize(stream, (moduleId, hitPointId))
       stream.Flush()
 
@@ -50,6 +54,7 @@ type Tracer = {
     member this.OnStart () =
       if this.Tracer <> "Coverage.Default.xml.bin" then
         this.Connect ()
+      else this
 
     member this.OnConnected f l g =
       if this.IsConnected() then f()
