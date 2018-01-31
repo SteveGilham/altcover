@@ -658,11 +658,7 @@ Target "SimpleReleaseTest" (fun _ ->
     let unpack = FullName "_Packaging/Unpack/tools/net45"
     if (unpack @@ "AltCover.exe") |> File.Exists then
       Actions.SimpleInstrumentingRun "_Binaries/Sample1/Debug+AnyCPU" unpack "SimpleReleaseTest"
-<<<<<<< HEAD
-    else 
-=======
     else
->>>>>>> release/Araiguma
           let test = findToolInSubPath "AltCover.exe" "./packages"
           if File.Exists test then
             Actions.SimpleInstrumentingRun "_Binaries/Sample1/Debug+AnyCPU" (Path.GetDirectoryName test) "SimpleReleaseTest"
@@ -673,11 +669,7 @@ Target "SimpleMonoReleaseTest" (fun _ ->
     let unpack = FullName "_Packaging/Unpack/tools/net45"
     if (unpack @@ "AltCover.exe") |> File.Exists then
       Actions.SimpleInstrumentingRun "_Mono/Sample1" unpack "SimpleMonoReleaseTest"
-<<<<<<< HEAD
-    else 
-=======
     else
->>>>>>> release/Araiguma
           let test = findToolInSubPath "AltCover.exe" "./packages"
           if File.Exists test then
             Actions.SimpleInstrumentingRun "_Binaries/Sample1/Debug+AnyCPU" (Path.GetDirectoryName test) "SimpleReleaseTest"
@@ -688,11 +680,7 @@ Target "ReleaseDotNetWithFramework" (fun _ ->
     ensureDirectory "./_Reports"
     let unpack0 = FullName "_Packaging/Unpack/tools/net45"
     let unpack1 = findToolInSubPath "AltCover.exe" "./packages"
-<<<<<<< HEAD
-    let unpack = if File.Exists (unpack0 @@ "AltCover.exe") then unpack0 
-=======
     let unpack = if File.Exists (unpack0 @@ "AltCover.exe") then unpack0
->>>>>>> release/Araiguma
                  else Path.GetDirectoryName(unpack1)
 
     if (unpack @@ "AltCover.exe") |> File.Exists then
