@@ -68,6 +68,7 @@
     <Compile Include="Base.fs" />
     <Compile Include="Tracer.fs" />
     <Compile Include="Recorder.fs" />
+    <EmbeddedResource Include="Strings.resx" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />

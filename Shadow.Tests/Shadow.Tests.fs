@@ -24,6 +24,7 @@ open System.Xml
 
 open AltCover.Recorder
 open NUnit.Framework
+open System.Threading
 
 [<TestFixture>]
 type AltCoverTests() = class
@@ -319,54 +320,56 @@ type AltCoverTests() = class
 
   [<Test>]
   member self.FlushLeavesExpectedTraces() =
-    let saved = Console.Out
-    let here = Directory.GetCurrentDirectory()
-    let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
-    let unique = Path.Combine(where, Guid.NewGuid().ToString())
     try
-      Instance.Visits.Clear()
-      use stdout = new StringWriter()
-      Console.SetOut stdout
-      Directory.CreateDirectory(unique) |> ignore
-      Directory.SetCurrentDirectory(unique)
-
-      Counter.measureTime <- DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
-      use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(self.resource)
-      let size = int stream.Length
-      let buffer = Array.create size 0uy
-      Assert.That (stream.Read(buffer, 0, size), Is.EqualTo size)
-      do
-        use worker = new FileStream(Instance.ReportFile, FileMode.CreateNew)
-        worker.Write(buffer, 0, size)
-        ()
-
-      let payload = Dictionary<int,int>()
-      [0..9 ]
-      |> Seq.iter(fun i -> payload.[i] <- (i+1))
-      Instance.Visits.["f6e3edb3-fb20-44b3-817d-f69d1a22fc2f"] <- payload
-
-      Instance.FlushCounter true ()
-
-      let head = "Coverage statistics flushing took "
-      let tail = " seconds\n"
-      let recorded = stdout.ToString().Replace("\r\n","\n")
-      Assert.That (recorded.StartsWith(head, StringComparison.Ordinal))
-      Assert.That (recorded.EndsWith(tail, StringComparison.Ordinal))
-      use worker' = new FileStream(Instance.ReportFile, FileMode.Open)
-      let after = XmlDocument()
-      after.Load worker'
-      Assert.That( after.SelectNodes("//seqpnt")
-                   |> Seq.cast<XmlElement>
-                   |> Seq.map (fun x -> x.GetAttribute("visitcount")),
-                   Is.EquivalentTo [ "11"; "10"; "9"; "8"; "7"; "6"; "4"; "3"; "2"; "1"])
-    finally
-      if File.Exists Instance.ReportFile then File.Delete Instance.ReportFile
-      Instance.Visits.Clear()
-      Console.SetOut saved
-      Directory.SetCurrentDirectory(here)
+      let saved = Console.Out
+      let here = Directory.GetCurrentDirectory()
+      let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
+      let unique = Path.Combine(where, Guid.NewGuid().ToString())
       try
-        Directory.Delete(unique)
-      with
-      | :? IOException -> ()
+        Instance.Visits.Clear()
+        use stdout = new StringWriter()
+        Console.SetOut stdout
+        Directory.CreateDirectory(unique) |> ignore
+        Directory.SetCurrentDirectory(unique)
 
+        Counter.measureTime <- DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
+        use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(self.resource)
+        let size = int stream.Length
+        let buffer = Array.create size 0uy
+        Assert.That (stream.Read(buffer, 0, size), Is.EqualTo size)
+        do
+          use worker = new FileStream(Instance.ReportFile, FileMode.CreateNew)
+          worker.Write(buffer, 0, size)
+          ()
+
+        let payload = Dictionary<int,int>()
+        [0..9 ]
+        |> Seq.iter(fun i -> payload.[i] <- (i+1))
+        Instance.Visits.["f6e3edb3-fb20-44b3-817d-f69d1a22fc2f"] <- payload
+
+        Instance.FlushCounter true ()
+
+        let head = "Coverage statistics flushing took "
+        let tail = " seconds\n"
+        let recorded = stdout.ToString().Replace("\r\n","\n")
+        Assert.That (recorded.StartsWith(head, StringComparison.Ordinal))
+        Assert.That (recorded.EndsWith(tail, StringComparison.Ordinal))
+        use worker' = new FileStream(Instance.ReportFile, FileMode.Open)
+        let after = XmlDocument()
+        after.Load worker'
+        Assert.That( after.SelectNodes("//seqpnt")
+                     |> Seq.cast<XmlElement>
+                     |> Seq.map (fun x -> x.GetAttribute("visitcount")),
+                     Is.EquivalentTo [ "11"; "10"; "9"; "8"; "7"; "6"; "4"; "3"; "2"; "1"])
+      finally
+        if File.Exists Instance.ReportFile then File.Delete Instance.ReportFile
+        Instance.Visits.Clear()
+        Console.SetOut saved
+        Directory.SetCurrentDirectory(here)
+        try
+          Directory.Delete(unique)
+        with
+        | :? IOException -> ()
+    with
+    | :? AbandonedMutexException -> Instance.mutex.ReleaseMutex()
 end

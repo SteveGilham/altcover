@@ -537,7 +537,7 @@ Target "Packaging" (fun _ ->
                           |> Seq.filter (fun n -> n.EndsWith(".fs") || n.EndsWith(".core.fsproj") || n.EndsWith(".resx"))
                           |> Seq.toList);
                          ((!! "./AltCover.Recorder/*")
-                          |> Seq.filter (fun n -> n.EndsWith(".fs") || n.EndsWith(".core.fsproj"))
+                          |> Seq.filter (fun n -> n.EndsWith(".fs") || n.EndsWith(".core.fsproj") || n.EndsWith(".resx"))
                           |> Seq.toList);
                          ((!! "./_Generated/*")
                           |> Seq.toList)
