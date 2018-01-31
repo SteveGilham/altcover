@@ -200,4 +200,8 @@ AltCover Runner [/r[ecordingDirectory]=VALUE] [/w[orkingDirectory]=VALUE] [/x||e
   <data name="Getting results..." xml:space="preserve">
     <value>Getting results...</value>
   </data>
+  <data name="binder" xml:space="preserve">
+    <value>or
+  Runner</value>
+  </data>
 </root>

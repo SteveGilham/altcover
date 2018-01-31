@@ -11,6 +11,7 @@ open System.Xml
 open AltCover
 open AltCover.Augment
 open AltCover.Base
+open Mono.Options
 open NUnit.Framework
 
 [<TestFixture>]
@@ -118,9 +119,12 @@ type AltCoverTests() = class
     try
       use stderr = new StringWriter()
       Console.SetError stderr
-      CommandLine.Usage "UsageError" options
+      let empty = OptionSet()
+      CommandLine.Usage "UsageError" empty options
       let result = stderr.ToString().Replace("\r\n", "\n")
       let expected = """Error - usage is:
+or
+  Runner
   -r, --recorderDirectory=VALUE
                              The folder containing the instrumented code to
                                monitor (including the AltCover.Recorder.g.dll
@@ -598,8 +602,44 @@ type AltCoverTests() = class
       let returnCode = main.Invoke(null, [| [| "RuNN"; "-r"; unique |] |])
       Assert.That(returnCode, Is.EqualTo 0)
       let result = stderr.ToString().Replace("\r\n", "\n")
-      let expected = "\"-r\" \"" + unique + "\"\n" +
+      let expected = "\"RuNN\" \"-r\" \"" + unique + "\"\n" +
                        """Error - usage is:
+  -i, --inputDirectory=VALUE Optional: The folder containing assemblies to
+                               instrument (default: current directory)
+  -o, --outputDirectory=VALUE
+                             Optional: The folder to receive the instrumented
+                               assemblies and their companions (default: sub-
+                               folder '__Instrumented' of the current directory)
+"""
+#if NETCOREAPP2_0
+#else
+                     + """  -k, --key=VALUE            Optional, multiple: any other strong-name key to
+                               use
+      --sn, --strongNameKey=VALUE
+                             Optional: The default strong naming key to apply
+                               to instrumented assemblies (default: None)
+"""
+#endif
+                     + """  -x, --xmlReport=VALUE      Optional: The output report template file (default:
+                                coverage.xml in the current directory)
+  -f, --fileFilter=VALUE     Optional: source file name to exclude from
+                               instrumentation (may repeat)
+  -s, --assemblyFilter=VALUE Optional: assembly name to exclude from
+                               instrumentation (may repeat)
+  -e, --assemblyExcludeFilter=VALUE
+                             Optional: assembly which links other instrumented
+                               assemblies but for which internal details may be
+                               excluded (may repeat)
+  -t, --typeFilter=VALUE     Optional: type name to exclude from
+                               instrumentation (may repeat)
+  -m, --methodFilter=VALUE   Optional: method name to exclude from
+                               instrumentation (may repeat)
+  -a, --attributeFilter=VALUE
+                             Optional: attribute name to exclude from
+                               instrumentation (may repeat)
+  -?, --help, -h             Prints out the options.
+or
+  Runner
   -r, --recorderDirectory=VALUE
                              The folder containing the instrumented code to
                                monitor (including the AltCover.Recorder.g.dll
@@ -716,7 +756,8 @@ type AltCoverTests() = class
       Runner.GetMonitor <- monitor
       Runner.DoReport <- write
 
-      Runner.DoCoverage [|"-x"; "test"; "-r"; where; "--"; "1"|]
+      let empty = OptionSet()
+      Runner.DoCoverage [|"Runner"; "-x"; "test"; "-r"; where; "--"; "1"|] empty
 
     finally
       Runner.GetPayload <- save1

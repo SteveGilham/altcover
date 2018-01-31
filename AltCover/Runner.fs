@@ -50,10 +50,10 @@ module Runner =
       ("<>", (fun x -> CommandLine.error <- true))         ]// default end stop
       |> List.fold (fun (o:OptionSet) (p, a) -> o.Add(p, CommandLine.resources.GetString(p), new System.Action<string>(a))) (OptionSet())
 
-  let HandleBadArguments arguments intro options =
+  let HandleBadArguments arguments intro options1 options =
         String.Join (" ", arguments |> Seq.map (sprintf "%A"))
         |> CommandLine.WriteErr
-        CommandLine.Usage intro options
+        CommandLine.Usage intro options1 options
 
   let internal RequireExe (parse:(Either<string*OptionSet, string list*OptionSet>)) =
     match parse with
@@ -143,15 +143,15 @@ module Runner =
   let mutable internal GetMonitor = MonitorBase
   let mutable internal DoReport = WriteReportBase
 
-  let DoCoverage arguments =
+  let DoCoverage arguments options1 =
     let check1 = DeclareOptions ()
-                 |> CommandLine.ParseCommandLine arguments
+                 |> CommandLine.ParseCommandLine (arguments |> Array.skip 1)
                  |> CommandLine.ProcessHelpOption
                  |> RequireExe
                  |> RequireRecorder
                  |> RequireWorker
     match check1 with
-    | Left (intro, options) -> HandleBadArguments arguments intro options
+    | Left (intro, options) -> HandleBadArguments arguments intro options1 options
     | Right (rest, _) ->
           let instance = RecorderInstance()
           let report = (GetMethod instance "get_ReportFile") |> GetFirstOperandAsString

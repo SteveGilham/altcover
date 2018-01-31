@@ -151,7 +151,7 @@ module Main =
     | Left (intro, options) ->
         String.Join (" ", arguments |> Seq.map (sprintf "%A"))
         |> CommandLine.WriteErr
-        CommandLine.Usage intro options
+        CommandLine.Usage intro options (Runner.DeclareOptions())
     | Right (rest, fromInfo, toInfo) ->
         CommandLine.doPathOperation( fun () ->
         let (assemblies, assemblyNames) = PrepareTargetFiles fromInfo toInfo
@@ -168,6 +168,6 @@ module Main =
   [<EntryPoint>]
   let private Main arguments =
     if "Runner".StartsWith(arguments |> Seq.head, StringComparison.OrdinalIgnoreCase)
-      then arguments |> Array.skip 1 |> Runner.DoCoverage
+      then Runner.DoCoverage arguments (DeclareOptions())
       else DoInstrumentation arguments
     0
