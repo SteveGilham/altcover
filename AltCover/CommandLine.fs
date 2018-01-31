@@ -29,9 +29,11 @@ module CommandLine =
        finally
          Console.ForegroundColor <- original
 
-  let internal Usage (intro:string) (options:OptionSet) =
+  let internal Usage (intro:string) (options:OptionSet) (options2:OptionSet) =
     WriteColoured Console.Error ConsoleColor.Yellow (fun w ->  w.WriteLine (resources.GetString intro)
-                                                               options.WriteOptionDescriptions(w))
+                                                               options.WriteOptionDescriptions(w)
+                                                               w.WriteLine (resources.GetString "binder")
+                                                               options2.WriteOptionDescriptions(w))
 
   let internal Write (writer:TextWriter) colour data =
     if not(String.IsNullOrEmpty(data)) then

@@ -66,6 +66,7 @@
     <Compile Include="..\_Generated\AssemblyVersion.fs">
       <Link>AssemblyVersion.fs</Link>
     </Compile>
+    <Compile Include="Runner.Tests.fs" />
     <Compile Include="Tests.fs" />
     <Content Include="packages.config" />
     <EmbeddedResource Include="..\Build\Infrastructure.snk">
@@ -75,6 +76,9 @@
     <EmbeddedResource Include="Sample1.deps.after.json" />
     <EmbeddedResource Include="Sample2.deps.after.json" />
     <EmbeddedResource Include="Sample2.deps.json" />
+    <EmbeddedResource Include="..\Shadow.Tests\SimpleCoverage.xml">
+      <Link>SimpleCoverage.xml</Link>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Mono.Cecil">

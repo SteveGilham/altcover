@@ -8,10 +8,12 @@
 </PropertyGroup>
   
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DefineConstants>RUNNER</DefineConstants>
     <OutputPath>$(SolutionDir)_Binaries/$(AssemblyName)/$(Configuration)+$(Platform)/</OutputPath>
     <IntermediateOutputPath>$(SolutionDir)_Intermediate/$(AssemblyName)/$(Configuration)+$(Platform)/</IntermediateOutputPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DefineConstants>RUNNER</DefineConstants>
     <OutputPath>$(SolutionDir)_Binaries/$(AssemblyName)/$(Configuration)+$(Platform)/</OutputPath>
     <IntermediateOutputPath>$(SolutionDir)_Intermediate/$(AssemblyName)/$(Configuration)+$(Platform)/</IntermediateOutputPath>
   </PropertyGroup>
@@ -21,6 +23,7 @@
     <Compile Include="..\_Generated\VisibleToTest.fs" Link="VisibleToTest.fs" />
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="Augment.fs" />
+    <Compile Include="..\AltCover.Recorder\Base.fs" Link="Base.fs" />
     <Compile Include="ProgramDatabase.fs" />
     <Compile Include="Filter.fs" />
     <Compile Include="Visitor.fs" />
@@ -28,6 +31,7 @@
     <Compile Include="Report.fs" />
     <Compile Include="Instrument.fs" />
     <Compile Include="CommandLine.fs" />
+    <Compile Include="Runner.fs" />
     <Compile Include="AltCover.fs" />
   </ItemGroup>
 
