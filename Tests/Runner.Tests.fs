@@ -6,134 +6,16 @@ open System.IO
 open System.Reflection
 open System.Text
 open System.Threading
-open System.Threading.Tasks
 open System.Xml
 
 open AltCover
 open AltCover.Augment
 open AltCover.Base
+open Mono.Options
 open NUnit.Framework
 
 [<TestFixture>]
 type AltCoverTests() = class
-
-  // Augment.fs
-
-  [<Test>]
-  member self.AugmentNullableDetectNulls() =
-    let input = [ "string"; null; "another string" ]
-    let nulls = input |> Seq.map (Option.nullable >> Option.isNone)
-    Assert.That(nulls, Is.EquivalentTo([false; true; false]))
-
-  [<Test>]
-  member self.AugmentGetOrElseFillsInNone() =
-    let input = [ "string"; null; "another string" ]
-    let strings = input |> Seq.map (Option.nullable >> (Option.getOrElse "fallback"))
-    Assert.That(strings, Is.EquivalentTo([ "string"; "fallback"; "another string" ]))
-
-  // CommandLine.fs
-
-  [<Test>]
-  member self.NoThrowNoErrorLeavesAllOK () =
-    try
-      CommandLine.error <- false
-      CommandLine.doPathOperation ignore
-      Assert.That(CommandLine.error, Is.False)
-    finally
-      CommandLine.error <- false
-
-  [<Test>]
-  member self.NoThrowWithErrorIsSignalled () =
-    try
-      CommandLine.error <- false
-      CommandLine.doPathOperation (fun () -> CommandLine.error <- true)
-      Assert.That(CommandLine.error, Is.True)
-    finally
-      CommandLine.error <- false
-
-  [<Test>]
-  member self.ArgumentExceptionWrites () =
-    let saved = (Console.Out, Console.Error)
-    try
-      use stdout = new StringWriter()
-      use stderr = new StringWriter()
-      Console.SetOut stdout
-      Console.SetError stderr
-      let unique = "ArgumentException " + Guid.NewGuid().ToString()
-
-      CommandLine.error <- false
-      CommandLine.doPathOperation (fun () -> ArgumentException(unique) |> raise)
-      Assert.That(CommandLine.error, Is.True)
-      Assert.That(stdout.ToString(), Is.Empty)
-      let result = stderr.ToString()
-      Assert.That(result, Is.EqualTo (unique + Environment.NewLine))
-    finally
-      CommandLine.error <- false
-      Console.SetOut (fst saved)
-      Console.SetError (snd saved)
-
-  [<Test>]
-  member self.IOExceptionWrites () =
-    let saved = (Console.Out, Console.Error)
-    try
-      use stdout = new StringWriter()
-      use stderr = new StringWriter()
-      Console.SetOut stdout
-      Console.SetError stderr
-      let unique = "IOException " + Guid.NewGuid().ToString()
-
-      CommandLine.error <- false
-      CommandLine.doPathOperation (fun () -> IOException(unique) |> raise)
-      Assert.That(CommandLine.error, Is.True)
-      Assert.That(stdout.ToString(), Is.Empty)
-      let result = stderr.ToString()
-      Assert.That(result, Is.EqualTo (unique + Environment.NewLine))
-    finally
-      CommandLine.error <- false
-      Console.SetOut (fst saved)
-      Console.SetError (snd saved)
-
-  [<Test>]
-  member self.NotSupportedExceptionWrites () =
-    let saved = (Console.Out, Console.Error)
-    try
-      use stdout = new StringWriter()
-      use stderr = new StringWriter()
-      Console.SetOut stdout
-      Console.SetError stderr
-      let unique = "NotSupportedException " + Guid.NewGuid().ToString()
-
-      CommandLine.error <- false
-      CommandLine.doPathOperation (fun () -> NotSupportedException(unique) |> raise)
-      Assert.That(CommandLine.error, Is.True)
-      Assert.That(stdout.ToString(), Is.Empty)
-      let result = stderr.ToString()
-      Assert.That(result, Is.EqualTo (unique + Environment.NewLine))
-    finally
-      CommandLine.error <- false
-      Console.SetOut (fst saved)
-      Console.SetError (snd saved)
-
-  [<Test>]
-  member self.SecurityExceptionWrites () =
-    let saved = (Console.Out, Console.Error)
-    try
-      use stdout = new StringWriter()
-      use stderr = new StringWriter()
-      Console.SetOut stdout
-      Console.SetError stderr
-      let unique = "SecurityException " + Guid.NewGuid().ToString()
-
-      CommandLine.error <- false
-      CommandLine.doPathOperation (fun () -> System.Security.SecurityException(unique) |> raise)
-      Assert.That(CommandLine.error, Is.True)
-      Assert.That(stdout.ToString(), Is.Empty)
-      let result = stderr.ToString()
-      Assert.That(result, Is.EqualTo (unique + Environment.NewLine))
-    finally
-      CommandLine.error <- false
-      Console.SetOut (fst saved)
-      Console.SetError (snd saved)
 
   // Base.fs
 
@@ -141,7 +23,7 @@ type AltCoverTests() = class
   member self.ShouldBeExecutingTheCorrectCopyOfThisCode() =
     let mutable where = ""
     Locking.WithLockerLocked self (fun () -> where <- Assembly.GetCallingAssembly().GetName().Name)
-    Assert.That(where, Is.EqualTo "AltCover.Runner")
+    Assert.That(where, Is.EqualTo "AltCover")
 
   [<Test>]
   member self.RealIdShouldIncrementCount() =
@@ -209,13 +91,8 @@ type AltCoverTests() = class
       |> Seq.iter(fun i -> payload.[i] <- (i+1))
       visits.["f6e3edb3-fb20-44b3-817d-f69d1a22fc2f"] <- payload
 
-      Counter.DoFlush true visits reportFile
+      Counter.DoFlush true visits reportFile |> ignore
 
-      let head = "Coverage statistics flushing took "
-      let tail = " seconds\n"
-      let recorded = stdout.ToString().Replace("\r\n","\n")
-      Assert.That (recorded.StartsWith(head, StringComparison.Ordinal))
-      Assert.That (recorded.EndsWith(tail, StringComparison.Ordinal))
       use worker' = new FileStream(reportFile, FileMode.Open)
       let after = XmlDocument()
       after.Load worker'
@@ -242,9 +119,12 @@ type AltCoverTests() = class
     try
       use stderr = new StringWriter()
       Console.SetError stderr
-      CommandLine.Usage "UsageError" options
+      let empty = OptionSet()
+      CommandLine.Usage "UsageError" empty options
       let result = stderr.ToString().Replace("\r\n", "\n")
       let expected = """Error - usage is:
+or
+  Runner
   -r, --recorderDirectory=VALUE
                              The folder containing the instrumented code to
                                monitor (including the AltCover.Recorder.g.dll
@@ -641,11 +521,13 @@ type AltCoverTests() = class
   [<Test>]
   member self.ShouldAcceptRecorder() =
     try
-      let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
+      let here = (Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName)
+      let where = Path.Combine(here, Guid.NewGuid().ToString())
+      Directory.CreateDirectory(where) |> ignore
       Runner.recordingDirectory <- Some where
       let create = Path.Combine(where, "AltCover.Recorder.g.dll")
       if create |> File.Exists |> not then do
-        let from = Path.Combine(where, "AltCover.Recorder.dll")
+        let from = Path.Combine(here, "AltCover.Recorder.dll")
         use frombytes = new FileStream(from, FileMode.Open, FileAccess.Read)
         use libstream = new FileStream(create, FileMode.Create)
         frombytes.CopyTo libstream
@@ -716,12 +598,48 @@ type AltCoverTests() = class
       use stderr = new StringWriter()
       Console.SetError stderr
       let unique = Guid.NewGuid().ToString()
-      let main = typeof<Tracer>.Assembly.GetType("AltCover.Runner").GetMethod("Main", BindingFlags.NonPublic ||| BindingFlags.Static)
-      let returnCode = main.Invoke(null, [| [| "-r"; unique |] |])
+      let main = typeof<Tracer>.Assembly.GetType("AltCover.Main").GetMethod("Main", BindingFlags.NonPublic ||| BindingFlags.Static)
+      let returnCode = main.Invoke(null, [| [| "RuNN"; "-r"; unique |] |])
       Assert.That(returnCode, Is.EqualTo 0)
       let result = stderr.ToString().Replace("\r\n", "\n")
-      let expected = "\"-r\" \"" + unique + "\"\n" +
+      let expected = "\"RuNN\" \"-r\" \"" + unique + "\"\n" +
                        """Error - usage is:
+  -i, --inputDirectory=VALUE Optional: The folder containing assemblies to
+                               instrument (default: current directory)
+  -o, --outputDirectory=VALUE
+                             Optional: The folder to receive the instrumented
+                               assemblies and their companions (default: sub-
+                               folder '__Instrumented' of the current directory)
+"""
+#if NETCOREAPP2_0
+#else
+                     + """  -k, --key=VALUE            Optional, multiple: any other strong-name key to
+                               use
+      --sn, --strongNameKey=VALUE
+                             Optional: The default strong naming key to apply
+                               to instrumented assemblies (default: None)
+"""
+#endif
+                     + """  -x, --xmlReport=VALUE      Optional: The output report template file (default:
+                                coverage.xml in the current directory)
+  -f, --fileFilter=VALUE     Optional: source file name to exclude from
+                               instrumentation (may repeat)
+  -s, --assemblyFilter=VALUE Optional: assembly name to exclude from
+                               instrumentation (may repeat)
+  -e, --assemblyExcludeFilter=VALUE
+                             Optional: assembly which links other instrumented
+                               assemblies but for which internal details may be
+                               excluded (may repeat)
+  -t, --typeFilter=VALUE     Optional: type name to exclude from
+                               instrumentation (may repeat)
+  -m, --methodFilter=VALUE   Optional: method name to exclude from
+                               instrumentation (may repeat)
+  -a, --attributeFilter=VALUE
+                             Optional: attribute name to exclude from
+                               instrumentation (may repeat)
+  -?, --help, -h             Prints out the options.
+or
+  Runner
   -r, --recorderDirectory=VALUE
                              The folder containing the instrumented code to
                                monitor (including the AltCover.Recorder.g.dll
@@ -786,8 +704,7 @@ type AltCoverTests() = class
       let u2 = Guid.NewGuid().ToString()
       use latch = new ManualResetEvent true
 
-      let payload = Runner.GetPayload [program; u1; u2] latch
-      payload |> Async.RunSynchronously
+      Runner.GetPayload [program; u1; u2]
 
       Assert.That(stderr.ToString(), Is.Empty)
       stdout.Flush()
@@ -807,10 +724,12 @@ type AltCoverTests() = class
 
   [<Test>]
   member self.ShouldDoCoverage() =
-    let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
+    let here = (Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName)
+    let where = Path.Combine(here, Guid.NewGuid().ToString())
+    Directory.CreateDirectory(where) |> ignore
     let create = Path.Combine(where, "AltCover.Recorder.g.dll")
     if create |> File.Exists |> not then do
-        let from = Path.Combine(where, "AltCover.Recorder.dll")
+        let from = Path.Combine(here, "AltCover.Recorder.dll")
         use frombytes = new FileStream(from, FileMode.Open, FileAccess.Read)
         use libstream = new FileStream(create, FileMode.Create)
         frombytes.CopyTo libstream
@@ -820,25 +739,25 @@ type AltCoverTests() = class
     let save2 = Runner.GetMonitor
     let save3 = Runner.DoReport
     try
-      Runner.RecorderName <- "AltCover.Recorder.dll"
-      let payload (rest:string list) _ =
+      Runner.RecorderName <- "AltCover.Recorder.g.dll"
+      let payload (rest:string list) =
         Assert.That(rest, Is.EquivalentTo [|"test"; "1"|])
-        async { () }
 
-      let monitor (hits:ICollection<(string*int)>) (token:string) _ =
-        Assert.That(token, Is.EqualTo "AltCover", "should be plain token")
+      let monitor (hits:ICollection<(string*int)>) (token:string) _ _ =
+        Assert.That(token, Is.EqualTo "Coverage.Default.xml", "should be default coverage file")
         Assert.That(hits, Is.Empty)
-        async { () }
 
       let write (hits:ICollection<(string*int)>) (report:string) =
         Assert.That(report, Is.EqualTo "Coverage.Default.xml", "should be default coverage file")
         Assert.That(hits, Is.Empty)
+        TimeSpan.Zero
 
       Runner.GetPayload <- payload
       Runner.GetMonitor <- monitor
       Runner.DoReport <- write
 
-      Runner.DoCoverage [|"-x"; "test"; "-r"; where; "--"; "1"|]
+      let empty = OptionSet()
+      Runner.DoCoverage [|"Runner"; "-x"; "test"; "-r"; where; "--"; "1"|] empty
 
     finally
       Runner.GetPayload <- save1
@@ -883,13 +802,8 @@ type AltCoverTests() = class
       |> Seq.iter(fun i -> payload.[i] <- (i+1))
       visits.["f6e3edb3-fb20-44b3-817d-f69d1a22fc2f"] <- payload
 
-      Runner.DoReport hits reportFile
+      Runner.DoReport hits reportFile |> ignore
 
-      let head = "Coverage statistics flushing took "
-      let tail = " seconds\n"
-      let recorded = stdout.ToString().Replace("\r\n","\n")
-      Assert.That (recorded.StartsWith(head, StringComparison.Ordinal))
-      Assert.That (recorded.EndsWith(tail, StringComparison.Ordinal))
       use worker' = new FileStream(reportFile, FileMode.Open)
       let after = XmlDocument()
       after.Load worker'
@@ -907,93 +821,25 @@ type AltCoverTests() = class
       | :? IOException -> ()
 
   [<Test>]
-  member self.PipeMonitorShouldReceiveSignal() =
-    let token = Guid.NewGuid().ToString() + "PipeMonitorShouldReceiveSignal"
-    let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
-    let hits = List<(string*int)>()
-    use signal = new AutoResetEvent false
-    use latch = new ManualResetEvent false
-    let os = Environment.OSVersion.ToString()
-
-    let task = Task.Run(fun () ->
-          use client = new System.IO.Pipes.NamedPipeClientStream(token)
-
-          async {
-                do! Runner.GetMonitor hits token latch
-                printfn "cr: monitor exit"
-                do! async { signal.Set() |> ignore }
-            } |> Async.Start
-
-          printfn "cr: about to connect"
-          client.Connect()
-
-          while client.IsConnected |> not do
-            printfn "."
-            Thread.Sleep 100
-
-          printfn "cr: connected"
-          let x = client.ReadByte()
-          Assert.That(x, Is.GreaterThanOrEqualTo 0)
-          printfn "cr: active"
-          formatter.Serialize(client, ("name", 23))
-          client.Flush()
-          printfn "cr: tuple sent"
-          formatter.Serialize(client, ("name2", 42))
-          client.Flush()
-          printfn "cr: tuple sent"
-          let nulled = { Tracer = null }
-          formatter.Serialize(client, (nulled.Tracer, -1))
-          client.Flush()
-          printfn "cr: termination sent")
-
-    let bigWait = 12000 // 2s more than the timeout in monitorbase
-    if task.Wait(bigWait) then
-        Assert.That(signal.WaitOne(bigWait), "Went on too long")
-        Assert.That(latch.WaitOne(), Is.True, "didn't finish monitoring")
-        Assert.That(hits, Is.EquivalentTo [("name", 23); ("name2", 42)])
-    else Assert.Fail("Task timeout")
+  member self.NullPayloadShouldReportNothing() =
+    let hits = List<string*int>()
+    let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
+    let unique = Path.Combine(where, Guid.NewGuid().ToString())
+    Runner.GetMonitor hits unique ignore []
+    Assert.That (File.Exists (unique + ".bin"))
+    Assert.That(hits, Is.Empty)
 
   [<Test>]
-  member self.PipeMonitorShouldHandleException() =
-    let token = Guid.NewGuid().ToString() + "PipeMonitorShouldHandleException"
+  member self.ActivePayloadShouldReportAsExpected() =
+    let hits = List<string*int>()
+    let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
+    let unique = Path.Combine(where, Guid.NewGuid().ToString())
     let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
-    let hits = List<(string*int)>()
-    use signal = new AutoResetEvent false
-    use latch = new ManualResetEvent false
-    let os = Environment.OSVersion.ToString()
-
-    let task = Task.Run(fun () ->
-      use client = new System.IO.Pipes.NamedPipeClientStream(token)
-      async {
-        do! Runner.GetMonitor hits token latch
-        printfn "ch: monitor exit"
-        do! async { signal.Set() |> ignore }
-      } |> Async.Start
-
-      printfn "ch: about to connect"
-      client.Connect()
-
-      while client.IsConnected |> not do
-        printf "."
-        Thread.Sleep 100
-
-      printfn "ch: connected"
-      let x = client.ReadByte()
-      Assert.That(x, Is.GreaterThanOrEqualTo 0)
-      printfn "ch: active"
-      formatter.Serialize(client, ("name", 23))
-      client.Flush()
-      printfn "ch: tuple sent"
-      let broken = System.Text.Encoding.UTF8.GetBytes "just junk"
-      client.Write(broken, 0, broken.Length)
-      client.Flush()
-      printfn "ch: junk sent")
-
-    let bigWait = 12000 // 2s more than the timeout in monitorbase
-    if task.Wait(bigWait) then
-        Assert.That(signal.WaitOne(bigWait), "Went on too long")
-        Assert.That(latch.WaitOne(), Is.True, "didn't finish monitoring")
-        Assert.That(hits, Is.EquivalentTo [("name", 23)])
-    else Assert.Fail("Task timeout")
+    Runner.GetMonitor hits unique (fun l ->
+       use sink = File.OpenWrite (unique + ".bin")
+       l |> List.iteri (fun i x -> formatter.Serialize(sink, (x,i)))
+    ) ["a"; "b"; String.Empty; "c"]
+    Assert.That (File.Exists (unique + ".bin"))
+    Assert.That(hits, Is.EquivalentTo [("a",0); ("b",1)])
 
 end

@@ -75,8 +75,9 @@
       <Link>VisibleToTest.fs</Link>
     </Compile>
     <Compile Include="Base.fs" />
-    <Compile Include="Framework.fs" />
+    <Compile Include="Tracer.fs" />
     <Compile Include="Recorder.fs" />
+    <EmbeddedResource Include="Strings.resx" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="FSharp.Core, Version=$(TargetFSharpCoreVersion), Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">

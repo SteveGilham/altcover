@@ -31,7 +31,7 @@
     <WarningsAsErrors>
     </WarningsAsErrors>
     <OtherFlags>--keyfile:$(SolutionDir)Build\Infrastructure.snk</OtherFlags>
-    <DefineConstants>TRACE;DEBUG;CODE_ANALYSIS</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;CODE_ANALYSIS;RUNNER</DefineConstants>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
@@ -44,7 +44,7 @@
     <WarningsAsErrors>
     </WarningsAsErrors>
     <OtherFlags>--keyfile:$(SolutionDir)Build\Infrastructure.snk --standalone --staticlink:Mono.Options</OtherFlags>
-    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants>TRACE;RUNNER</DefineConstants>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <Choose>
@@ -69,6 +69,9 @@
       <Link>VisibleToTest.fs</Link>
     </Compile>
     <Compile Include="Augment.fs" />
+    <Compile Include="..\AltCover.Recorder\Base.fs">
+      <Link>Base.fs</Link>
+    </Compile>
     <Compile Include="ProgramDatabase.fs" />
     <Compile Include="Filter.fs" />
     <Compile Include="Visitor.fs" />
@@ -76,6 +79,7 @@
     <Compile Include="Report.fs" />
     <Compile Include="Instrument.fs" />
     <Compile Include="CommandLine.fs" />
+    <Compile Include="Runner.fs" />
     <Compile Include="AltCover.fs" />
     <Content Include="packages.config" />
     <EmbeddedResource Include="..\Build\Recorder.snk">

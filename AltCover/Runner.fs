@@ -13,6 +13,11 @@ open Augment
 [<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage>]
 type Tracer = { Tracer : string }
 
+type MonoTypeBinder (``type``:Type) =
+  inherit System.Runtime.Serialization.SerializationBinder()
+  override self.BindToType (_:string, _:string) =
+    ``type``
+
 module Runner =
 
   let mutable internal recordingDirectory : Option<string> = None
@@ -45,10 +50,10 @@ module Runner =
       ("<>", (fun x -> CommandLine.error <- true))         ]// default end stop
       |> List.fold (fun (o:OptionSet) (p, a) -> o.Add(p, CommandLine.resources.GetString(p), new System.Action<string>(a))) (OptionSet())
 
-  let HandleBadArguments arguments intro options =
+  let HandleBadArguments arguments intro options1 options =
         String.Join (" ", arguments |> Seq.map (sprintf "%A"))
         |> CommandLine.WriteErr
-        CommandLine.Usage intro options
+        CommandLine.Usage intro options1 options
 
   let internal RequireExe (parse:(Either<string*OptionSet, string list*OptionSet>)) =
     match parse with
@@ -93,37 +98,39 @@ module Runner =
      |> Seq.map (fun i -> i.Operand :?> string)
      |> Seq.head
 
-  let PayloadBase (rest:string list) (latch:EventWaitHandle) =
-    async {
-            latch.WaitOne(10000) |> ignore
-            CommandLine.doPathOperation (fun () ->
-                CommandLine.ProcessTrailingArguments rest (DirectoryInfo(Option.get workingDirectory)))
-          }
+  let PayloadBase (rest:string list)  =
+    CommandLine.doPathOperation (fun () ->
+        CommandLine.ProcessTrailingArguments rest (DirectoryInfo(Option.get workingDirectory)))
 
-  let MonitorBase (hits:ICollection<(string*int)>) token  (latch:EventWaitHandle) =
-    async {
-      use server = new System.IO.Pipes.NamedPipeServerStream(token)
+  let WriteResource =
+    CommandLine.resources.GetString >> Console.WriteLine
+
+  let WriteResourceWithFormatItems s x =
+    Console.WriteLine (s |> CommandLine.resources.GetString, x)
+
+  let MonitorBase (hits:ICollection<(string*int)>) report (payload: string list -> unit) (args : string list) =
+      let binpath = report + ".bin"
+      do
+        use stream = File.Create(binpath)
+        ()
+
+      "Beginning run..." |> WriteResource
+      payload args
+      "Getting results..."  |> WriteResource
+
+      use results = File.OpenRead(binpath)
       let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
-      latch.Set() |> ignore
-      server.WaitForConnection()
-      server.WriteByte(0uy)
-      let rec sink () =
-          // On Mono/Linux, we get no clue from the pipe that the other end has gone away
-          // Not even a serialization error from a partial message
-          // Async didn't seem to play well with the blocking read within Deserialize
-          // So do it this way, where we do seem to get a timeout
-          let task = Task.Run(fun () -> try
-                                          formatter.Deserialize(server) :?> (string*int)
-                                        with
-                                        | :? System.Runtime.Serialization.SerializationException as x ->
-                                            (String.Empty, -1) )
-          if task.Wait(10000) then
-            let result = task.Result
-            if result|> fst |> String.IsNullOrWhiteSpace  |> not then
-               result |> hits.Add
-               sink()
-      sink()
-           }
+      formatter.Binder <- MonoTypeBinder(typeof<(string*int)>) // anything else is an error
+
+      try
+        let mutable hit = formatter.Deserialize(results) :?> (string*int)
+        while hit|> fst |> String.IsNullOrWhiteSpace  |> not do
+          hit |> hits.Add
+          hit <- formatter.Deserialize(results) :?> (string*int)
+      with
+      | :? System.Runtime.Serialization.SerializationException -> ()
+
+      WriteResourceWithFormatItems "%d visits recorded" [|hits.Count|]
 
   let WriteReportBase (hits:ICollection<(string*int)>) report =
     let counts = Dictionary<string, Dictionary<int, int>>()
@@ -136,34 +143,21 @@ module Runner =
   let mutable internal GetMonitor = MonitorBase
   let mutable internal DoReport = WriteReportBase
 
-  let DoCoverage arguments =
+  let DoCoverage arguments options1 =
     let check1 = DeclareOptions ()
-                 |> CommandLine.ParseCommandLine arguments
+                 |> CommandLine.ParseCommandLine (arguments |> Array.skip 1)
                  |> CommandLine.ProcessHelpOption
                  |> RequireExe
                  |> RequireRecorder
                  |> RequireWorker
     match check1 with
-    | Left (intro, options) -> HandleBadArguments arguments intro options
+    | Left (intro, options) -> HandleBadArguments arguments intro options1 options
     | Right (rest, _) ->
           let instance = RecorderInstance()
-          let token = (GetMethod instance "get_Token") |> GetFirstOperandAsString
           let report = (GetMethod instance "get_ReportFile") |> GetFirstOperandAsString
-          use latch = new ManualResetEvent false
-
           let hits = List<(string*int)>()
 
-          let payload = GetPayload rest latch
-          let monitor = GetMonitor hits token latch
-
-          [monitor; payload]
-          |> Async.Parallel
-          |> Async.RunSynchronously
-          |> ignore
-
-          DoReport hits report
-
-  [<EntryPoint>]
-  let private Main arguments =
-    DoCoverage arguments
-    0
+          let payload = GetPayload
+          GetMonitor hits report payload rest
+          let delta = DoReport hits report
+          WriteResourceWithFormatItems "Coverage statistics flushing took {0:N} seconds" [|delta.TotalSeconds|]

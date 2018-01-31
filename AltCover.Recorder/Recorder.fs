@@ -5,9 +5,27 @@ namespace AltCover.Recorder
 
 open System
 open System.Collections.Generic
+open System.Reflection
+open System.Resources
 open System.Runtime.CompilerServices
 
 module Instance =
+
+  // Can't hard-code what with .net-core and .net-core tests as well as classic .net
+  // all giving this a different namespace
+  let private resource = Assembly.GetExecutingAssembly().GetManifestResourceNames()
+                         |> Seq.map (fun s -> s.Substring(0, s.Length - 10)) // trim ".resources"
+                         |> Seq.find (fun n -> n.EndsWith("Strings", StringComparison.Ordinal))
+  let internal resources = ResourceManager(resource , Assembly.GetExecutingAssembly())
+
+  let GetResource s =
+    [
+      System.Globalization.CultureInfo.CurrentUICulture.Name
+      System.Globalization.CultureInfo.CurrentUICulture.Parent.Name
+      "en"
+    ]
+    |> Seq.map (fun l -> resources.GetString(s + "." + l))
+    |> Seq.tryFind (String.IsNullOrEmpty >> not)
 
   /// <summary>
   /// Gets the location of coverage xml file
@@ -31,13 +49,13 @@ module Instance =
   /// <summary>
   /// Interlock for report instances
   /// </summary>
-  let private mutex = new System.Threading.Mutex(false, Token + ".mutex");
+  let internal mutex = new System.Threading.Mutex(false, Token + ".mutex");
 
   /// <summary>
   /// Reporting back to the mother-ship; only on the .net core build
   /// because this API isn't available in .net 2.0 (framework back-version support)
   /// </summary>
-  let mutable internal trace = Tracer.Create Token
+  let mutable internal trace = Tracer.Create (ReportFile + ".bin")
 
   let internal WithMutex (f : bool -> 'a) =
     let own = mutex.WaitOne(10000)
@@ -75,7 +93,9 @@ module Instance =
       | _ -> let counts = Dictionary<string, Dictionary<int, int>> Visits
              Visits.Clear()
              WithMutex (fun own ->
-                Counter.DoFlush own counts ReportFile
+                let delta = Counter.DoFlush own counts ReportFile
+                GetResource "Coverage statistics flushing took {0:N} seconds"
+                |> Option.iter (fun s -> Console.Out.WriteLine(s, delta.TotalSeconds))
              ))
 
   let internal TraceVisit moduleId hitPointId =
@@ -95,4 +115,4 @@ module Instance =
   do
     AppDomain.CurrentDomain.DomainUnload.Add(FlushCounter false)
     AppDomain.CurrentDomain.ProcessExit.Add(FlushCounter true)
-    async { trace.OnStart () } |> Async.Start
+    trace <- trace.OnStart ()

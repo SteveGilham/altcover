@@ -18,9 +18,14 @@
 
   <ItemGroup>
     <Compile Include="..\_Generated\AssemblyVersion.fs" Link="AssemblyVersion.fs" />
-    <Compile Include="AssemblyInfo.fs" />    
+    <Compile Include="AssemblyInfo.fs" />
+    <Compile Include="Runner.Tests.fs" />    
     <Compile Include="Tests.fs" />
     <Compile Include="Program.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="..\Shadow.Tests\SimpleCoverage.xml" Link="SimpleCoverage.xml" />
   </ItemGroup>
 
   <ItemGroup>
