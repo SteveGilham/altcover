@@ -122,15 +122,14 @@ module Runner =
       let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
       formatter.Binder <- MonoTypeBinder(typeof<(string*int)>) // anything else is an error
 
-      let rec sink() = try
-                          let hit = formatter.Deserialize(results) :?> (string*int)
-                          if hit|> fst |> String.IsNullOrWhiteSpace  |> not then
-                             hit |> hits.Add
-                             sink()
-                       with
-                       | :? System.Runtime.Serialization.SerializationException as x ->
-                           ()
-      sink()
+      try
+        let mutable hit = formatter.Deserialize(results) :?> (string*int)
+        while hit|> fst |> String.IsNullOrWhiteSpace  |> not do
+          hit |> hits.Add
+          hit <- formatter.Deserialize(results) :?> (string*int)
+      with
+      | :? System.Runtime.Serialization.SerializationException -> ()
+
       WriteResourceWithFormatItems "%d visits recorded" [|hits.Count|]
 
   let WriteReportBase (hits:ICollection<(string*int)>) report =

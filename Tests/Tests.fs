@@ -91,6 +91,7 @@ type AltCoverTests() = class
 #if NETCOREAPP2_0
                   |> Seq.filter (fun x -> not <| (snd x).FullName.StartsWith("Mono.", StringComparison.OrdinalIgnoreCase))
                   |> Seq.filter (fun x -> not <| (snd x).FullName.StartsWith("nunit", StringComparison.OrdinalIgnoreCase))
+                  |> Seq.filter (fun x -> not <| (snd x).FullName.StartsWith("FSharp.", StringComparison.OrdinalIgnoreCase))
 #else
                   |> Seq.filter (fun x -> (snd x).FullName.EndsWith("PublicKeyToken=c02b1a9f5b7cade8", StringComparison.OrdinalIgnoreCase))
 #endif

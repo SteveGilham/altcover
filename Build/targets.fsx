@@ -205,7 +205,7 @@ Target "UnitTest" (fun _ ->
                                                                                 numeric))
                 |> Seq.toList
 
-  if numbers |> List.tryFind (fun n -> n >= 90.0) |> Option.isNone && numbers |> List.length > 1 then
+  if numbers |> List.tryFind (fun n -> n >= 90.0) |> Option.isNone && numbers |> List.length > 2 then
      Assert.Fail("Coverage is too low")
 )
 
@@ -342,6 +342,54 @@ Target "UnitTestWithAltCoverCore" (fun _ ->
     ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
                                        ReportTypes = [ ReportGeneratorReportType.Html; ReportGeneratorReportType.Badges; ReportGeneratorReportType.XmlSummary]
                                        TargetDir = "_Reports/_UnitTestWithAltCoverCore"})
+          [altReport; shadowReport]
+)
+
+Target "UnitTestWithAltCoverCoreRunner" (fun _ ->
+    ensureDirectory "./_Reports/_UnitTestWithAltCover"
+    let keyfile = FullName "Build/SelfTest.snk"
+    let reports = FullName "./_Reports"
+    let altcover = FullName "./AltCover/altcover.core.fsproj"
+
+    let testDirectory = FullName "_Binaries/AltCover.Tests/Debug+AnyCPU/netcoreapp2.0"
+    let output = FullName "Tests/_Binaries/AltCover.Tests/Debug+AnyCPU/netcoreapp2.0"
+
+    let altReport = reports @@ "UnitTestWithAltCoverCoreRunner.xml"
+    printfn "Instrument the code"
+    CleanDir output
+    DotNetCli.RunCommand (fun p -> {p with WorkingDir = testDirectory})
+                         ("run --project " + altcover + 
+                          " -- " + AltCoverFilter + " -x \"" + altReport + "\" /o \"" + output + "\"")
+
+    printfn "Unit test the instrumented code"
+    let testproject = FullName "./Tests/altcover.tests.core.fsproj"
+
+    DotNetCli.RunCommand (fun info -> {info with WorkingDir = output })
+                          ("run --project " + altcover +
+                          " -- Runner -x \"dotnet\" -r \"" + output +
+                          "\" -- test --no-build --configuration Debug " +
+                          testproject)
+
+    printfn "Instrument the shadow tests"
+    let shadowDir = "_Binaries/AltCover.Shadow.Tests/Debug+AnyCPU/netcoreapp2.0"
+    let shadowReport = reports @@ "ShadowTestWithAltCoverCoreRunner.xml"
+    let shadowOut = FullName "Shadow.Tests/_Binaries/AltCover.Shadow.Tests/Debug+AnyCPU/netcoreapp2.0"
+
+    CleanDir shadowOut
+    DotNetCli.RunCommand (fun p -> {p with WorkingDir = shadowDir})
+                         ("run --project " + altcover + 
+                          " -- " + AltCoverFilter + " -x \"" + shadowReport + "\" /o \"" + shadowOut + "\"")
+
+    let shadowProject = FullName "./Shadow.Tests/altcover.recorder.tests.core.fsproj"
+    DotNetCli.RunCommand (fun info -> {info with WorkingDir = shadowOut })
+                          ("run --project " + altcover +
+                          " -- Runner -x \"dotnet\" -r \"" + shadowOut +
+                          "\" -- test --no-build --configuration Debug " +
+                          shadowProject)
+
+    ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
+                                       ReportTypes = [ ReportGeneratorReportType.Html; ReportGeneratorReportType.Badges; ReportGeneratorReportType.XmlSummary]
+                                       TargetDir = "_Reports/_UnitTestWithAltCoverCoreRunner"})
           [altReport; shadowReport]
 )
 
@@ -908,6 +956,10 @@ Target "All" ignore
 
 "UnitTestDotNet"
 ==> "UnitTestWithAltCoverCore"
+==> "UnitTest"
+
+"UnitTestDotNet"
+==> "UnitTestWithAltCoverCoreRunner"
 ==> "UnitTest"
 
 "Compilation"
