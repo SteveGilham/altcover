@@ -1,3 +1,11 @@
+**NOTE:** The main executable links the still in beta (after more than a year) Mono.Cecil 0.10 version.  The binary injected into the instrumented code does not.  Rather than hold my releases on the Mono.Cecil schedule, I make this disclaimer instead.
+
+# 1.6-beta (Araiguma respin preview)
+* The AltCover.Runner helper program in 1.5 used named pipes, collecting data from the instrumented process as it ran; this was strongly platform dependent and brittle -- and was not compatible in the classic framework with the .net 2 support.
+* Named pipes eliminated in favour of writing to a file and post-processing
+* Mechanism compatible with .net 2.0 so made available everywhere
+* separate .net core only runner program eliminated in favour of an alternate command-line interface for the main AltCover
+
 # 1.5-rc (Araiguma release candidates)
 * AltCover.Runner helper program for collecting coverage data for .net core runs, avoiding the need to get everything written out during the ProcessExit handling window.
 * various refactorings to support this, but no user-visible changes.
