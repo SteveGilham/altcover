@@ -599,7 +599,7 @@ Target "Packaging" (fun _ ->
     {p with
         Authors = ["Steve Gilham"]
         Project = "altcover"
-        Description = "A pre-instrumented code coverage tool for .net and Mono"
+        Description = "A pre-instrumented code coverage tool for .net/.net core and Mono"
         OutputPath = "./_Packaging"
         WorkingDir = "./_Binaries/Packaging"
         Files = List.concat [applicationFiles; resourceFiles; netcoreFiles]
