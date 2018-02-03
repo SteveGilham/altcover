@@ -9,6 +9,14 @@ open System.Reflection
 open System.Resources
 open System.Runtime.CompilerServices
 
+type internal Close =
+    | DomainUnload
+    | ProcessExit
+
+type internal Message = 
+    | SequencePoint of String*int
+    | Finish of Close * AsyncReplyChannel<Close>
+
 module Instance =
 
   // Can't hard-code what with .net-core and .net-core tests as well as classic .net
@@ -72,21 +80,18 @@ module Instance =
   let internal UpdateReport (counts:Dictionary<string, Dictionary<int, int>>) coverageFile =
     WithMutex (fun own -> Counter.UpdateReport own counts coverageFile)
 
-  /// <summary>
-  /// Synchronize an action on the visits table
-  /// </summary>
-  let private WithVisitsLocked =
-    Locking.WithLockerLocked Visits
+  let internal IsFinish msg =
+    match msg with
+    | ProcessExit -> true
+    | _ -> false
 
   /// <summary>
   /// This method flushes hit count buffers.
   /// </summary>
-  let internal FlushCounter (finish:bool) _ =
-    trace.OnConnected (fun () -> WithVisitsLocked (fun () -> trace.CatchUp Visits)
-                                 trace.OnFinish finish)
-     WithVisitsLocked
+  let internal FlushCounterImpl (finish:Close) _ =
+    trace.OnConnected (fun () -> finish |> IsFinish |> (trace.OnFinish Visits))
       (fun () ->
-      if finish then
+      if IsFinish finish then
         trace.Close()
       match Visits.Count with
       | 0 -> ()
@@ -99,20 +104,45 @@ module Instance =
              ))
 
   let internal TraceVisit moduleId hitPointId =
-     WithVisitsLocked (fun () -> trace.OnVisit Visits moduleId hitPointId)
+     trace.OnVisit Visits moduleId hitPointId
 
   /// <summary>
   /// This method is executed from instrumented assemblies.
   /// </summary>
   /// <param name="moduleId">Assembly being visited</param>
   /// <param name="hitPointId">Sequence Point identifier</param>
-  let Visit moduleId hitPointId =
+  let internal VisitImpl moduleId hitPointId =
     if not <| String.IsNullOrEmpty(moduleId) then
       trace.OnConnected (fun () -> TraceVisit moduleId hitPointId)
-        WithVisitsLocked (fun () -> Counter.AddVisit Visits moduleId hitPointId)
+                        (fun () -> Counter.AddVisit Visits moduleId hitPointId)
+
+  let internal mailbox = new MailboxProcessor<Message>(fun inbox ->
+    let rec loop prev =
+        async { 
+           let! msg = inbox.TryReceive(1000)
+           match msg with
+           | Some (SequencePoint (moduleId, hitPointId)) ->
+               VisitImpl moduleId hitPointId
+               return! loop moduleId
+           | Some (Finish (mode, channel)) -> 
+               FlushCounterImpl mode ()
+               channel.Reply mode
+           | None -> 
+               return! loop prev
+        }
+
+    loop String.Empty)
+
+  let Visit moduleId hitPointId =
+    let message = SequencePoint (moduleId, hitPointId)
+    mailbox.Post message
+
+  let internal FlushCounter (finish:Close) _ =  
+    mailbox.PostAndReply (fun c -> Finish (finish, c)) |> ignore
 
   // Register event handling
   do
-    AppDomain.CurrentDomain.DomainUnload.Add(FlushCounter false)
-    AppDomain.CurrentDomain.ProcessExit.Add(FlushCounter true)
+    AppDomain.CurrentDomain.DomainUnload.Add(FlushCounter DomainUnload)
+    AppDomain.CurrentDomain.ProcessExit.Add(FlushCounter ProcessExit)
     trace <- trace.OnStart ()
+    mailbox.Start()

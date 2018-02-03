@@ -56,11 +56,12 @@ type Tracer = {
         this.Connect ()
       else this
 
-    member this.OnConnected f l g =
+    member this.OnConnected f g =
       if this.IsConnected() then f()
-      else  l g
+      else g ()
 
-    member this.OnFinish finish =
+    member this.OnFinish visits finish =
+      this.CatchUp visits
       if finish then
         this.Push null -1
         this.Close()

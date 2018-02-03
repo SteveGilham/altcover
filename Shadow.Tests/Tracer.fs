@@ -92,7 +92,7 @@ type AltCoverCoreTests() = class
 
         Instance.trace <- client.OnStart()
         Assert.That (Instance.trace.IsConnected(), "connection failed")
-        Instance.Visit "name" 23
+        Instance.VisitImpl "name" 23
       finally
         Instance.trace.Close()
         Instance.trace <- save
@@ -128,7 +128,7 @@ type AltCoverCoreTests() = class
         Assert.That (Instance.trace.IsConnected(), "connection failed")
         let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
         formatter.Serialize(Instance.trace.Stream, expected |> Seq.head)
-        Instance.FlushCounter true ()
+        Instance.FlushCounterImpl ProcessExit ()
       finally
         client.Close()
         Instance.trace <- save

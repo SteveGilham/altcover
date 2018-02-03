@@ -20,12 +20,6 @@ type AltCoverTests() = class
   // Base.fs
 
   [<Test>]
-  member self.ShouldBeExecutingTheCorrectCopyOfThisCode() =
-    let mutable where = ""
-    Locking.WithLockerLocked self (fun () -> where <- Assembly.GetCallingAssembly().GetName().Name)
-    Assert.That(where, Is.EqualTo "AltCover")
-
-  [<Test>]
   member self.RealIdShouldIncrementCount() =
     let visits = new Dictionary<string, Dictionary<int, int>>()
     let key = " "

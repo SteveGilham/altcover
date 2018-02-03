@@ -43,29 +43,11 @@ type AltCoverTests() = class
     "AltCover.Shadow")
 #endif
 
-#if NET4
-  // Doesn't work across framework boundaries, as the unit -> unit type
-  // is rooted in a different runtime.  But the locking code gets executed
-  // incidentally anyway in later tests.
-#else
-  // Do run .net2 to .net2, .netcore to .netcore (and Mono to Mono)
-  [<Test>]
-#endif
-  member self.ShouldBeExecutingTheCorrectCopyOfThisCode() =
-    let mutable where = ""
-    Locking.WithLockerLocked self (fun () -> where <- Assembly.GetCallingAssembly().GetName().Name)
-    Assert.That(where, Is.EqualTo
-#if NETCOREAPP2_0
-    "AltCover.Recorder")
-#else
-    "AltCover.Shadow")
-#endif
-
   [<Test>]
   member self.NullIdShouldNotGiveACount() =
     try
       Instance.Visits.Clear()
-      Instance.Visit null 23
+      Instance.VisitImpl null 23
       Assert.That (Instance.Visits, Is.Empty)
     finally
       Instance.Visits.Clear()
@@ -74,7 +56,7 @@ type AltCoverTests() = class
   member self.EmptyIdShouldNotGiveACount() =
     try
       Instance.Visits.Clear()
-      Instance.Visit String.Empty 23
+      Instance.VisitImpl String.Empty 23
       Assert.That (Instance.Visits, Is.Empty)
     finally
       Instance.Visits.Clear()
@@ -84,7 +66,7 @@ type AltCoverTests() = class
     try
       Instance.Visits.Clear()
       let key = " "
-      Instance.Visit key 23
+      Instance.VisitImpl key 23
       Assert.That (Instance.Visits.Count, Is.EqualTo 1)
       Assert.That (Instance.Visits.[key].Count, Is.EqualTo 1)
       Assert.That (Instance.Visits.[key].[23], Is.EqualTo 1)
@@ -96,8 +78,8 @@ type AltCoverTests() = class
     try
       Instance.Visits.Clear()
       let key = " "
-      Instance.Visit key 23
-      Instance.Visit "key" 42
+      Instance.VisitImpl key 23
+      Instance.VisitImpl "key" 42
       Assert.That (Instance.Visits.Count, Is.EqualTo 2)
     finally
       Instance.Visits.Clear()
@@ -107,8 +89,8 @@ type AltCoverTests() = class
     try
       Instance.Visits.Clear()
       let key = " "
-      Instance.Visit key 23
-      Instance.Visit key 42
+      Instance.VisitImpl key 23
+      Instance.VisitImpl key 42
       Assert.That (Instance.Visits.Count, Is.EqualTo 1)
       Assert.That (Instance.Visits.[key].Count, Is.EqualTo 2)
     finally
@@ -119,8 +101,8 @@ type AltCoverTests() = class
     try
       Instance.Visits.Clear()
       let key = " "
-      Instance.Visit key 23
-      Instance.Visit key 23
+      Instance.VisitImpl key 23
+      Instance.VisitImpl key 23
       Assert.That (Instance.Visits.[key].[23], Is.EqualTo 2)
     finally
       Instance.Visits.Clear()
@@ -312,7 +294,7 @@ type AltCoverTests() = class
       use stdout = new StringWriter()
       Console.SetOut stdout
 
-      Instance.FlushCounter true ()
+      Instance.FlushCounterImpl ProcessExit ()
       Assert.That (stdout.ToString(), Is.Empty)
     finally
       Instance.Visits.Clear()
@@ -347,7 +329,7 @@ type AltCoverTests() = class
         |> Seq.iter(fun i -> payload.[i] <- (i+1))
         Instance.Visits.["f6e3edb3-fb20-44b3-817d-f69d1a22fc2f"] <- payload
 
-        Instance.FlushCounter true ()
+        Instance.FlushCounterImpl ProcessExit ()
 
         let head = "Coverage statistics flushing took "
         let tail = " seconds\n"
