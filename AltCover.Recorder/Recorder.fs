@@ -9,10 +9,12 @@ open System.Reflection
 open System.Resources
 open System.Runtime.CompilerServices
 
+[<System.Runtime.InteropServices.ProgIdAttribute("ExcludeFromCodeCoverage hack for OpenCover issue 615")>]
 type internal Close =
     | DomainUnload
     | ProcessExit
 
+[<System.Runtime.InteropServices.ProgIdAttribute("ExcludeFromCodeCoverage hack for OpenCover issue 615")>]
 type internal Message = 
     | SequencePoint of String*int
     | Finish of Close * AsyncReplyChannel<Close>
@@ -55,7 +57,7 @@ module Instance =
   let Token = "AltCover"
 
   /// <summary>
-  /// Interlock for report instances
+  /// Serialize access to the report file across AppDomains for the classic mode
   /// </summary>
   let internal mutex = new System.Threading.Mutex(false, Token + ".mutex");
 
@@ -66,19 +68,11 @@ module Instance =
   let mutable internal trace = Tracer.Create (ReportFile + ".bin")
 
   let internal WithMutex (f : bool -> 'a) =
-    let own = mutex.WaitOne(10000)
+    let own = mutex.WaitOne(1000)
     try
       f(own)
     finally
       if own then mutex.ReleaseMutex()
-
-  /// <summary>
-  /// Save sequence point hit counts to xml report file
-  /// </summary>
-  /// <param name="hitCounts">The coverage results to incorporate</param>
-  /// <param name="coverageFile">The coverage file to update as a stream</param>
-  let internal UpdateReport (counts:Dictionary<string, Dictionary<int, int>>) coverageFile =
-    WithMutex (fun own -> Counter.UpdateReport own counts coverageFile)
 
   let internal IsFinish msg =
     match msg with
@@ -116,22 +110,22 @@ module Instance =
       trace.OnConnected (fun () -> TraceVisit moduleId hitPointId)
                         (fun () -> Counter.AddVisit Visits moduleId hitPointId)
 
-  let internal mailbox = new MailboxProcessor<Message>(fun inbox ->
-    let rec loop prev =
-        async { 
-           let! msg = inbox.TryReceive(1000)
-           match msg with
-           | Some (SequencePoint (moduleId, hitPointId)) ->
-               VisitImpl moduleId hitPointId
-               return! loop moduleId
-           | Some (Finish (mode, channel)) -> 
-               FlushCounterImpl mode ()
-               channel.Reply mode
-           | None -> 
-               return! loop prev
-        }
+  let internal MakeMailbox () = 
+    new MailboxProcessor<Message>(fun inbox ->
+      let rec loop prev =
+          async { 
+             let! msg = inbox.Receive(1000)
+             match msg with
+             | SequencePoint (moduleId, hitPointId) ->
+                 VisitImpl moduleId hitPointId
+                 return! loop moduleId
+             | Finish (mode, channel) -> 
+                 FlushCounterImpl mode ()
+                 channel.Reply mode
+          }
+      loop String.Empty)
 
-    loop String.Empty)
+  let mutable internal mailbox = MakeMailbox ()
 
   let Visit moduleId hitPointId =
     let message = SequencePoint (moduleId, hitPointId)
@@ -139,6 +133,14 @@ module Instance =
 
   let internal FlushCounter (finish:Close) _ =  
     mailbox.PostAndReply (fun c -> Finish (finish, c)) |> ignore
+
+  // unit test helpers -- avoid issues with cross CLR version calls 
+  let internal Peek () =
+    mailbox.CurrentQueueLength
+
+  let internal RunMailbox () =
+    mailbox <- MakeMailbox ()
+    mailbox.Start()
 
   // Register event handling
   do

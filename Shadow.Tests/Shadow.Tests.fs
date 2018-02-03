@@ -63,15 +63,20 @@ type AltCoverTests() = class
 
   [<Test>]
   member self.RealIdShouldIncrementCount() =
+    let save = Instance.trace
     try
       Instance.Visits.Clear()
+      Instance.trace <- { Tracer=null; Stream=null; Formatter=null }
       let key = " "
-      Instance.VisitImpl key 23
+      Instance.Visit key 23
+      while Instance.Peek () > 0 do
+        Thread.Sleep 100
       Assert.That (Instance.Visits.Count, Is.EqualTo 1)
       Assert.That (Instance.Visits.[key].Count, Is.EqualTo 1)
       Assert.That (Instance.Visits.[key].[23], Is.EqualTo 1)
     finally
       Instance.Visits.Clear()
+      Instance.trace <- save
 
   [<Test>]
   member self.DistinctIdShouldBeDistinct() =
@@ -108,7 +113,7 @@ type AltCoverTests() = class
       Instance.Visits.Clear()
 
   member private self.UpdateReport a b =
-    Instance.UpdateReport a b
+    Counter.UpdateReport true a b
     |> ignore
 
    member self.resource = Assembly.GetExecutingAssembly().GetManifestResourceNames()
@@ -307,6 +312,8 @@ type AltCoverTests() = class
       let here = Directory.GetCurrentDirectory()
       let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
       let unique = Path.Combine(where, Guid.NewGuid().ToString())
+      let save = Instance.trace
+      Instance.trace <- { Tracer=null; Stream=null; Formatter=null }
       try
         Instance.Visits.Clear()
         use stdout = new StringWriter()
@@ -329,7 +336,12 @@ type AltCoverTests() = class
         |> Seq.iter(fun i -> payload.[i] <- (i+1))
         Instance.Visits.["f6e3edb3-fb20-44b3-817d-f69d1a22fc2f"] <- payload
 
-        Instance.FlushCounterImpl ProcessExit ()
+        Instance.FlushCounter ProcessExit ()
+        while Instance.Peek () > 0 do
+          Thread.Sleep 100
+
+        // Restart the mailbox
+        Instance.RunMailbox ()
 
         let head = "Coverage statistics flushing took "
         let tail = " seconds\n"
@@ -344,6 +356,7 @@ type AltCoverTests() = class
                      |> Seq.map (fun x -> x.GetAttribute("visitcount")),
                      Is.EquivalentTo [ "11"; "10"; "9"; "8"; "7"; "6"; "4"; "3"; "2"; "1"])
       finally
+        Instance.trace <- save
         if File.Exists Instance.ReportFile then File.Delete Instance.ReportFile
         Instance.Visits.Clear()
         Console.SetOut saved
