@@ -819,6 +819,9 @@ or
     let hits = List<string*int>()
     let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
     let unique = Path.Combine(where, Guid.NewGuid().ToString())
+    do
+      use s = File.Create (unique + ".0.bin")
+      s.Close()
     Runner.GetMonitor hits unique ignore []
     Assert.That (File.Exists (unique + ".bin"))
     Assert.That(hits, Is.Empty)
@@ -830,7 +833,7 @@ or
     let unique = Path.Combine(where, Guid.NewGuid().ToString())
     let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
     Runner.GetMonitor hits unique (fun l ->
-       use sink = File.OpenWrite (unique + ".bin")
+       use sink = File.OpenWrite (unique + ".0.bin")
        l |> List.iteri (fun i x -> formatter.Serialize(sink, (x,i)))
     ) ["a"; "b"; String.Empty; "c"]
     Assert.That (File.Exists (unique + ".bin"))

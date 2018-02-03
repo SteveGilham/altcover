@@ -29,7 +29,11 @@ type Tracer = {
 
     member this.Connect () =
       if File.Exists this.Tracer then
-        { this with Stream = File.OpenWrite(this.Tracer) }
+        Seq.initInfinite (fun i -> Path.ChangeExtension(this.Tracer,
+                                                        sprintf ".%d.bin" i))
+        |> Seq.filter (File.Exists >> not)
+        |> Seq.map (fun f -> { this with Stream = File.OpenWrite f  })
+        |> Seq.head
       else
         this
 

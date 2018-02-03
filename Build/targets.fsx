@@ -280,6 +280,7 @@ Target "UnitTestWithAltCover" (fun _ ->
       |> Seq.concat |> Seq.distinct
       |> NUnit3 (fun p -> { p with ToolPath = findToolInSubPath "nunit3-console.exe" "."
                                    WorkingDir = "."
+                                   //Labels = LabelsLevel.All
                                    ResultSpecs = ["./_Reports/UnitTestWithAltCoverReport.xml"] })
 
       printfn "Instrument the shadow tests"

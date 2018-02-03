@@ -118,17 +118,22 @@ module Runner =
       payload args
       "Getting results..."  |> WriteResource
 
-      use results = File.OpenRead(binpath)
       let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
       formatter.Binder <- MonoTypeBinder(typeof<(string*int)>) // anything else is an error
 
-      try
-        let mutable hit = formatter.Deserialize(results) :?> (string*int)
-        while hit|> fst |> String.IsNullOrWhiteSpace  |> not do
-          hit |> hits.Add
-          hit <- formatter.Deserialize(results) :?> (string*int)
-      with
-      | :? System.Runtime.Serialization.SerializationException -> ()
+      Directory.GetFiles( Path.GetDirectoryName(report),
+                          Path.GetFileName(report) + ".*.bin")
+      |> Seq.iter (fun f ->
+          printfn "... %s" f
+          use results = File.OpenRead(f)
+          try
+            let mutable hit = formatter.Deserialize(results) :?> (string*int)
+            while hit|> fst |> String.IsNullOrWhiteSpace  |> not do
+              hit |> hits.Add
+              hit <- formatter.Deserialize(results) :?> (string*int)
+          with
+          | :? System.Runtime.Serialization.SerializationException -> ()
+      )
 
       WriteResourceWithFormatItems "%d visits recorded" [|hits.Count|]
 

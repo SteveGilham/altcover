@@ -36,12 +36,7 @@ type AltCoverTests() = class
         Stream = null
         Formatter = null
     }
-    Assert.That(tracer.GetType().Assembly.GetName().Name, Is.EqualTo
-#if NETCOREAPP2_0
-    "AltCover.Recorder")
-#else
-    "AltCover.Shadow")
-#endif
+    Assert.That(tracer.GetType().Assembly.GetName().Name, Is.EqualTo "AltCover.Shadow")
 
   [<Test>]
   member self.NullIdShouldNotGiveACount() =
@@ -71,12 +66,33 @@ type AltCoverTests() = class
       Instance.Visit key 23
       while Instance.Peek () > 0 do
         Thread.Sleep 100
+
+      Thread.Sleep 100
       Assert.That (Instance.Visits.Count, Is.EqualTo 1)
       Assert.That (Instance.Visits.[key].Count, Is.EqualTo 1)
       Assert.That (Instance.Visits.[key].[23], Is.EqualTo 1)
     finally
       Instance.Visits.Clear()
       Instance.trace <- save
+      
+#if NET4
+  // passing lambdas across the CLR divide doesn't work
+#else
+  [<Test>]
+  member self.RealIdShouldIncrementCountSynchronously() =
+    let save = Instance.trace
+    try
+      Instance.Visits.Clear()
+      Instance.trace <- { Tracer=null; Stream=null; Formatter=null }
+      let key = " "
+      Instance.VisitSelection (fun () -> true) key 23
+      Assert.That (Instance.Visits.Count, Is.EqualTo 1)
+      Assert.That (Instance.Visits.[key].Count, Is.EqualTo 1)
+      Assert.That (Instance.Visits.[key].[23], Is.EqualTo 1)
+    finally
+      Instance.Visits.Clear()
+      Instance.trace <- save
+#endif
 
   [<Test>]
   member self.DistinctIdShouldBeDistinct() =
