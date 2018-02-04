@@ -1,6 +1,9 @@
 **NOTE:** The main executable links the still in beta (after more than a year) Mono.Cecil 0.10 version.  The binary injected into the instrumented code does not.  Rather than hold my releases on the Mono.Cecil schedule, I make this disclaimer instead.
 
 # 1.6-beta (Araiguma respin preview)
+* simplified concurrency handling for the data collection.
+* reduced size of the intermediate files (to under 5% of the previous sizes for large runs)
+* **NOTE** this breaks compatibility between previously instrumented code and the new runner (and vice versa); in general, only same-version components are supported.
 * The AltCover.Runner helper program in 1.5 used named pipes, collecting data from the instrumented process as it ran; this was strongly platform dependent and brittle -- and was not compatible in the classic framework with the .net 2 support.
 * Named pipes eliminated in favour of writing to a file and post-processing
 * Mechanism compatible with .net 2.0 so made available everywhere
