@@ -1225,7 +1225,7 @@ type AltCoverTests() = class
       let after' = after.[0].Methods |> Seq.filter (fun t -> t.Name = "get_ReportFile") |> Seq.toList
       Assert.That (after'.Length = 1)
 
-      Assert.That (after'.[0].Body.Instructions.Count, Is.EqualTo(2 + before'.[0].Body.Instructions.Count))
+      Assert.That (after'.[0].Body.Instructions.Count, Is.EqualTo(2))
     finally
       Visitor.keys.Clear()
 

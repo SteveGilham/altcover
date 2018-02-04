@@ -36,36 +36,13 @@ type AltCoverTests() = class
         Stream = null
         Formatter = null
     }
-    Assert.That(tracer.GetType().Assembly.GetName().Name, Is.EqualTo
-#if NETCOREAPP2_0
-    "AltCover.Recorder")
-#else
-    "AltCover.Shadow")
-#endif
-
-#if NET4
-  // Doesn't work across framework boundaries, as the unit -> unit type
-  // is rooted in a different runtime.  But the locking code gets executed
-  // incidentally anyway in later tests.
-#else
-  // Do run .net2 to .net2, .netcore to .netcore (and Mono to Mono)
-  [<Test>]
-#endif
-  member self.ShouldBeExecutingTheCorrectCopyOfThisCode() =
-    let mutable where = ""
-    Locking.WithLockerLocked self (fun () -> where <- Assembly.GetCallingAssembly().GetName().Name)
-    Assert.That(where, Is.EqualTo
-#if NETCOREAPP2_0
-    "AltCover.Recorder")
-#else
-    "AltCover.Shadow")
-#endif
+    Assert.That(tracer.GetType().Assembly.GetName().Name, Is.EqualTo "AltCover.Shadow")
 
   [<Test>]
   member self.NullIdShouldNotGiveACount() =
     try
       Instance.Visits.Clear()
-      Instance.Visit null 23
+      Instance.VisitImpl null 23
       Assert.That (Instance.Visits, Is.Empty)
     finally
       Instance.Visits.Clear()
@@ -74,30 +51,57 @@ type AltCoverTests() = class
   member self.EmptyIdShouldNotGiveACount() =
     try
       Instance.Visits.Clear()
-      Instance.Visit String.Empty 23
+      Instance.VisitImpl String.Empty 23
       Assert.That (Instance.Visits, Is.Empty)
     finally
       Instance.Visits.Clear()
 
   [<Test>]
   member self.RealIdShouldIncrementCount() =
+    let save = Instance.trace
     try
       Instance.Visits.Clear()
+      Instance.trace <- { Tracer=null; Stream=null; Formatter=null }
       let key = " "
       Instance.Visit key 23
+      while Instance.Peek () > 0 do
+        Thread.Sleep 100
+
+      Thread.Sleep 100
       Assert.That (Instance.Visits.Count, Is.EqualTo 1)
       Assert.That (Instance.Visits.[key].Count, Is.EqualTo 1)
       Assert.That (Instance.Visits.[key].[23], Is.EqualTo 1)
     finally
       Instance.Visits.Clear()
+      Instance.trace <- save
+      
+#if NET4
+  // passing lambdas across the CLR divide doesn't work
+#else
+  [<Test>]
+  member self.RealIdShouldIncrementCountSynchronously() =
+    let save = Instance.trace
+    try
+      Instance.Visits.Clear()
+      Instance.trace <- { Tracer=null; Stream=null; Formatter=null }
+      let key = " "
+      Instance.VisitSelection (fun () -> true) key 23
+      Thread.Sleep 100
+      Assert.That (Instance.Visits.Count, Is.EqualTo 1)
+      Assert.That (Instance.Visits.[key].Count, Is.EqualTo 1)
+      Assert.That (Instance.Visits.[key].[23], Is.EqualTo 1)
+    finally
+      Instance.Visits.Clear()
+      Instance.trace <- save
+#endif
 
   [<Test>]
   member self.DistinctIdShouldBeDistinct() =
     try
       Instance.Visits.Clear()
       let key = " "
-      Instance.Visit key 23
-      Instance.Visit "key" 42
+      Instance.VisitImpl key 23
+      Instance.VisitImpl "key" 42
       Assert.That (Instance.Visits.Count, Is.EqualTo 2)
     finally
       Instance.Visits.Clear()
@@ -107,8 +111,8 @@ type AltCoverTests() = class
     try
       Instance.Visits.Clear()
       let key = " "
-      Instance.Visit key 23
-      Instance.Visit key 42
+      Instance.VisitImpl key 23
+      Instance.VisitImpl key 42
       Assert.That (Instance.Visits.Count, Is.EqualTo 1)
       Assert.That (Instance.Visits.[key].Count, Is.EqualTo 2)
     finally
@@ -119,14 +123,14 @@ type AltCoverTests() = class
     try
       Instance.Visits.Clear()
       let key = " "
-      Instance.Visit key 23
-      Instance.Visit key 23
+      Instance.VisitImpl key 23
+      Instance.VisitImpl key 23
       Assert.That (Instance.Visits.[key].[23], Is.EqualTo 2)
     finally
       Instance.Visits.Clear()
 
   member private self.UpdateReport a b =
-    Instance.UpdateReport a b
+    Counter.UpdateReport true a b
     |> ignore
 
    member self.resource = Assembly.GetExecutingAssembly().GetManifestResourceNames()
@@ -312,7 +316,7 @@ type AltCoverTests() = class
       use stdout = new StringWriter()
       Console.SetOut stdout
 
-      Instance.FlushCounter true ()
+      Instance.FlushCounterImpl ProcessExit ()
       Assert.That (stdout.ToString(), Is.Empty)
     finally
       Instance.Visits.Clear()
@@ -325,6 +329,8 @@ type AltCoverTests() = class
       let here = Directory.GetCurrentDirectory()
       let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
       let unique = Path.Combine(where, Guid.NewGuid().ToString())
+      let save = Instance.trace
+      Instance.trace <- { Tracer=null; Stream=null; Formatter=null }
       try
         Instance.Visits.Clear()
         use stdout = new StringWriter()
@@ -347,7 +353,12 @@ type AltCoverTests() = class
         |> Seq.iter(fun i -> payload.[i] <- (i+1))
         Instance.Visits.["f6e3edb3-fb20-44b3-817d-f69d1a22fc2f"] <- payload
 
-        Instance.FlushCounter true ()
+        Instance.FlushCounter ProcessExit ()
+        while Instance.Peek () > 0 do
+          Thread.Sleep 100
+
+        // Restart the mailbox
+        Instance.RunMailbox ()
 
         let head = "Coverage statistics flushing took "
         let tail = " seconds\n"
@@ -362,6 +373,7 @@ type AltCoverTests() = class
                      |> Seq.map (fun x -> x.GetAttribute("visitcount")),
                      Is.EquivalentTo [ "11"; "10"; "9"; "8"; "7"; "6"; "4"; "3"; "2"; "1"])
       finally
+        Instance.trace <- save
         if File.Exists Instance.ReportFile then File.Delete Instance.ReportFile
         Instance.Visits.Clear()
         Console.SetOut saved

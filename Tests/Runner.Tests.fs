@@ -3,6 +3,7 @@
 open System
 open System.Collections.Generic
 open System.IO
+open System.IO.Compression
 open System.Reflection
 open System.Text
 open System.Threading
@@ -18,12 +19,6 @@ open NUnit.Framework
 type AltCoverTests() = class
 
   // Base.fs
-
-  [<Test>]
-  member self.ShouldBeExecutingTheCorrectCopyOfThisCode() =
-    let mutable where = ""
-    Locking.WithLockerLocked self (fun () -> where <- Assembly.GetCallingAssembly().GetName().Name)
-    Assert.That(where, Is.EqualTo "AltCover")
 
   [<Test>]
   member self.RealIdShouldIncrementCount() =
@@ -825,6 +820,9 @@ or
     let hits = List<string*int>()
     let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
     let unique = Path.Combine(where, Guid.NewGuid().ToString())
+    do
+      use s = File.Create (unique + ".0.bin")
+      s.Close()
     Runner.GetMonitor hits unique ignore []
     Assert.That (File.Exists (unique + ".bin"))
     Assert.That(hits, Is.Empty)
@@ -836,7 +834,7 @@ or
     let unique = Path.Combine(where, Guid.NewGuid().ToString())
     let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
     Runner.GetMonitor hits unique (fun l ->
-       use sink = File.OpenWrite (unique + ".bin")
+       use sink = new DeflateStream(File.OpenWrite (unique + ".0.bin"), CompressionMode.Compress)
        l |> List.iteri (fun i x -> formatter.Serialize(sink, (x,i)))
     ) ["a"; "b"; String.Empty; "c"]
     Assert.That (File.Exists (unique + ".bin"))

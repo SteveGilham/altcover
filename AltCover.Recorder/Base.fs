@@ -10,18 +10,6 @@ open System.Globalization
 open System.IO
 open System.Xml
 
-// Abstract out compact bits of F# that expand into
-// enough under-the-covers code to make Gendarme spot duplication
-// with a generic try/finally block.  *sigh*
-
-module Locking =
-  /// <summary>
-  /// Synchronize an action on an object
-  /// </summary>
-  /// <param name="f">The action to perform</param>
-  let internal WithLockerLocked (locker:'a) (f: unit -> unit) =
-    lock locker f
-
 module Counter =
    /// <summary>
    /// The time at which coverage run began

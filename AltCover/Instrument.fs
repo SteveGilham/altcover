@@ -170,9 +170,11 @@ module Instrument =
 
         let body = pathGetterDef.Body
         let worker = body.GetILProcessor();
-        let head = body.Instructions.[0]
+        let initialBody = body.Instructions |> Seq.toList
+        let head = initialBody |> Seq.head
         worker.InsertBefore(head, worker.Create(OpCodes.Ldstr, value))
         worker.InsertBefore(head, worker.Create(OpCodes.Ret))
+        initialBody |> Seq.iter worker.Remove
     )
 
     definition
