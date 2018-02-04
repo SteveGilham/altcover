@@ -144,7 +144,7 @@ module Instance =
     // when sending async messages.
     let message = SequencePoint (moduleId, hitPointId)
     if f() then
-       mailbox.PostAndReply (fun c -> Item (message, c))
+       mailbox.TryPostAndReply ((fun c -> Item (message, c)),1) |> ignore
     else message |> AsyncItem |> mailbox.Post
 
   let Visit moduleId hitPointId =

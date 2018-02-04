@@ -442,7 +442,7 @@ Target "FSharpTypesDotNetRunner" ( fun _ ->
 
     // Instrument the code
     DotNetCli.RunCommand (fun p -> {p with WorkingDir = sampleRoot})
-                         ("run --project " + project + " -- -t \"System\\.\" -t \"Microsoft\\.\" -x \"" + simpleReport + "\" /o \"" + instrumented + "\"")
+                         ("run --project " + project + " --configuration Release -- -t \"System\\.\" -t \"Microsoft\\.\" -x \"" + simpleReport + "\" /o \"" + instrumented + "\"")
 
     Actions.ValidateFSharpTypes simpleReport ["main"]
 
@@ -451,7 +451,7 @@ Target "FSharpTypesDotNetRunner" ( fun _ ->
 
     DotNetCli.RunCommand (fun info -> {info with WorkingDir = instrumented })
                           ("run --project " + project +
-                          " -- Runner -x \"dotnet\" -r \"" + instrumented +
+                          " --configuration Release -- Runner -x \"dotnet\" -r \"" + instrumented +
                           "\" -- test --no-build --configuration Debug " +
                           sample2)
 
@@ -818,7 +818,7 @@ Target "ReleaseFSharpTypesDotNetRunner" ( fun _ ->
 
     // Instrument the code
     DotNetCli.RunCommand (fun info -> {info with WorkingDir = unpack })
-                          ("run --project altcover.core.fsproj -- -x \"" + x + "\" -o \"" + o + "\" -i \"" + i + "\"")
+                          ("run --project altcover.core.fsproj --configuration Release -- -x \"" + x + "\" -o \"" + o + "\" -i \"" + i + "\"")
 
     Actions.ValidateFSharpTypes x ["main"]
 
@@ -829,7 +829,7 @@ Target "ReleaseFSharpTypesDotNetRunner" ( fun _ ->
     // Run
     DotNetCli.RunCommand (fun info -> {info with WorkingDir = o })
                           ("run --project " + runner +
-                          " -- Runner -x \"dotnet\" -r \"" + o +
+                          " --configuration Release -- Runner -x \"dotnet\" -r \"" + o +
                           "\" -- test --no-build --configuration Debug " +
                           sample2)
 
@@ -870,7 +870,7 @@ Target "ReleaseXUnitFSharpTypesDotNetRunner" ( fun _ ->
 
     // Instrument the code
     DotNetCli.RunCommand (fun info -> {info with WorkingDir = unpack })
-                          ("run --project altcover.core.fsproj -- -x \"" + x + "\" -o \"" + o + "\" -i \"" + i + "\"")
+                          ("run --project altcover.core.fsproj --configuration Release -- -x \"" + x + "\" -o \"" + o + "\" -i \"" + i + "\"")
 
     Actions.ValidateFSharpTypes x ["main"]
 
@@ -881,7 +881,7 @@ Target "ReleaseXUnitFSharpTypesDotNetRunner" ( fun _ ->
     // Run
     DotNetCli.RunCommand (fun info -> {info with WorkingDir = o })
                           ("run --project " + runner +
-                          " -- Runner -x \"dotnet\" -r \"" + o +
+                          " --configuration Release -- Runner -x \"dotnet\" -r \"" + o +
                           "\" -- test --no-build --configuration Debug " +
                           sample4)
 
