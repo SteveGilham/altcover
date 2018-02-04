@@ -86,6 +86,7 @@ type AltCoverTests() = class
       Instance.trace <- { Tracer=null; Stream=null; Formatter=null }
       let key = " "
       Instance.VisitSelection (fun () -> true) key 23
+      Thread.Sleep 100
       Assert.That (Instance.Visits.Count, Is.EqualTo 1)
       Assert.That (Instance.Visits.[key].Count, Is.EqualTo 1)
       Assert.That (Instance.Visits.[key].[23], Is.EqualTo 1)

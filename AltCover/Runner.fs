@@ -126,13 +126,13 @@ module Runner =
       |> Seq.iter (fun f ->
           printfn "... %s" f
           use results = File.OpenRead(f)
-          try
-            let mutable hit = formatter.Deserialize(results) :?> (string*int)
-            while hit|> fst |> String.IsNullOrWhiteSpace  |> not do
+          let rec sink() = 
+            let hit = try formatter.Deserialize(results) :?> (string*int)
+                      with | :? System.Runtime.Serialization.SerializationException as x -> (null, -1)
+            if hit|> fst |> String.IsNullOrWhiteSpace  |> not then
               hit |> hits.Add
-              hit <- formatter.Deserialize(results) :?> (string*int)
-          with
-          | :? System.Runtime.Serialization.SerializationException -> ()
+              sink()
+          sink()
       )
 
       WriteResourceWithFormatItems "%d visits recorded" [|hits.Count|]
