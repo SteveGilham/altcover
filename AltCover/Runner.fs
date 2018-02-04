@@ -158,10 +158,18 @@ module Runner =
     | Left (intro, options) -> HandleBadArguments arguments intro options1 options
     | Right (rest, _) ->
           let instance = RecorderInstance()
-          let report = (GetMethod instance "get_ReportFile") |> GetFirstOperandAsString
+          let report = (GetMethod instance "get_ReportFile") 
+                       |> GetFirstOperandAsString
+                       |> Path.GetFullPath
           let hits = List<(string*int)>()
 
           let payload = GetPayload
           GetMonitor hits report payload rest
           let delta = DoReport hits report
           WriteResourceWithFormatItems "Coverage statistics flushing took {0:N} seconds" [|delta.TotalSeconds|]
+
+          // And tidy up after everything's done
+          File.Delete (report + ".bin")
+          Directory.GetFiles( Path.GetDirectoryName(report),
+                              Path.GetFileName(report) + ".*.bin")
+          |> Seq.iter File.Delete
