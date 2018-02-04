@@ -22,8 +22,8 @@ open Mono.Cecil.Rocks
 type internal Node =
      | Start of seq<string>
      | Assembly of AssemblyDefinition * ISymbolReader option * bool
-     | Module of ModuleDefinition * ISymbolReader option * bool
-     | Type of TypeDefinition * ISymbolReader option  * bool
+     | Module of ModuleDefinition * ISymbolReader option * int * bool
+     | Type of TypeDefinition * ISymbolReader option * bool
      | Method of MethodDefinition * MethodDebugInformation option * bool
      | MethodPoint of Instruction * SequencePoint * int * bool
      | AfterMethod of bool
@@ -114,6 +114,7 @@ module Visitor =
     | _ -> Seq.empty<Node>
 
   let mutable private PointNumber : int = 0
+  let mutable private ModuleNumber : int = 0
 
   let significant (m : MethodDefinition) =
     [Filter.IsFSharpInternal
@@ -137,9 +138,12 @@ module Visitor =
     | Assembly (a, reader, included) ->  a.Modules
                                          |> Seq.cast
                                          |> Seq.filter IsIncluded
-                                         |> Seq.collect ((fun x -> Module (x, reader, included)) >> BuildSequence)
+                                         |> Seq.collect ((fun x -> let n = ModuleNumber
+                                                                   ModuleNumber <- n + 1
+                                                                   Module (x, reader, n, included)) >> BuildSequence)
 
-    | Module (x, reader, included) ->    PointNumber <- 0
+    | Module (x, reader, _, included) ->    
+                                         PointNumber <- 0
                                          x.GetAllTypes()
                                          |> Seq.cast
                                          |> Seq.collect ((fun t -> Type (t, reader, included && IsIncluded t)) >> BuildSequence)
@@ -189,6 +193,7 @@ module Visitor =
     List.map (invoke node)
 
   let internal Visit (visitors : list<Fix<Node>>) (assemblies : seq<string>) =
+    ModuleNumber <- 0
     PointNumber <- 0
     Start assemblies
     |> BuildSequence

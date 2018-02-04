@@ -561,7 +561,7 @@ type AltCoverTests() = class
   [<Test>]
   member self.AfterProcessingYieldsAnExpectedValue() =
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly (Assembly.GetExecutingAssembly().Location)
-    let inputs = [ Node.Start [] ; Node.Assembly (def, None, true) ; Node.Module (null, None, false) ; Node.Type (null, None, true) ;
+    let inputs = [ Node.Start [] ; Node.Assembly (def, None, true) ; Node.Module (null, None, 0, false) ; Node.Type (null, None, true) ;
                    Node.Method (null, None, false) ; Node.MethodPoint (null, null, 0, true ) ;
                    Node.AfterMethod false ; Node.AfterModule ; Node.AfterAssembly def; Node.Finish ]
     let outputs = inputs |> Seq.map (Visitor.After >> Seq.toList)
@@ -657,7 +657,7 @@ type AltCoverTests() = class
     Visitor.Visit [] [] // cheat reset
     try
         "Program" |> (Regex >> FilterClass.Type >> Visitor.NameFilters.Add)
-        let deeper = Visitor.Deeper <| Node.Module (module', rdr, true)
+        let deeper = Visitor.Deeper <| Node.Module (module', rdr, 0, true)
                      |> Seq.toList
         Visitor.Visit [] [] // cheat reset
         let expected = module'.Types // we have no nested types in this test
@@ -682,7 +682,7 @@ type AltCoverTests() = class
                  |> Seq.toList
     Visitor.Visit [] [] // cheat reset
     let expected = def.Modules // we have no nested types in this test
-                |> Seq.map (fun t -> let node = Node.Module (t, rdr, true)
+                |> Seq.map (fun t -> let node = Node.Module (t, rdr, 0, true)
                                      List.concat [ [node]; (Visitor.Deeper >> Seq.toList) node; [AfterModule]])
                 |> List.concat
     Assert.That (deeper.Length, Is.EqualTo 18)
@@ -694,6 +694,7 @@ type AltCoverTests() = class
     let where = Assembly.GetExecutingAssembly().Location
     let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), sample1)
 
+    Visitor.Visit [] [] // cheat reset
     let deeper = Visitor.Deeper <| Node.Start [path]
                     |> Seq.toList
     // assembly definitions care about being separate references in equality tests
@@ -702,6 +703,7 @@ type AltCoverTests() = class
                      | _ -> Assert.Fail(); (null, null)
 
     let assembly = Node.Assembly (def, Some rdr, true)
+    Visitor.Visit [] [] // cheat reset
     let expected = List.concat [ [assembly]; (Visitor.Deeper >> Seq.toList) assembly; [AfterAssembly def]]
     Assert.That (deeper.Length, Is.EqualTo 20)
     Assert.That (deeper |> Seq.map string,
@@ -712,6 +714,7 @@ type AltCoverTests() = class
     let where = Assembly.GetExecutingAssembly().Location
     let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), sample1)
     try
+        Visitor.Visit [] [] // cheat reset
         "Sample" |> (Regex >> FilterClass.Assembly >> Visitor.NameFilters.Add)
         let deeper = Visitor.Deeper <| Node.Start [path]
                      |> Seq.toList
@@ -721,6 +724,7 @@ type AltCoverTests() = class
                   | _ -> Assert.Fail(); null
 
         let assembly = Node.Assembly (def, None, false)
+        Visitor.Visit [] [] // cheat reset
         let expected = List.concat [ [assembly]; (Visitor.Deeper >> Seq.toList) assembly; [AfterAssembly def]]
         Assert.That (deeper.Length, Is.EqualTo 10)
         Assert.That (deeper, Is.EquivalentTo expected)
@@ -770,6 +774,7 @@ type AltCoverTests() = class
                      | _ -> Assert.Fail(); (null, null)
 
     let assembly = Node.Assembly (def, Some rdr, true)
+    Visitor.Visit [] [] // cheat reset
     let expected = List.concat [ [Start[path]; assembly]; (Visitor.Deeper >> Seq.toList) assembly; [AfterAssembly def; Finish]]
     Assert.That (accumulator |> Seq.map string,
                  Is.EquivalentTo (expected |> Seq.map string))
@@ -886,7 +891,7 @@ type AltCoverTests() = class
   static member TTBaseline = "<?xml version=\"1.0\" encoding=\"utf-8\"?>
 <?xml-stylesheet href=\"coverage.xsl\" type=\"text/xsl\"?>
 <coverage profilerVersion=\"0\" driverVersion=\"0\" startTime=\"\" measureTime=\"\">
-<module moduleId=\"\" name=\"Sample1.exe\" assembly=\"Sample1\" assemblyIdentity=\"Sample1, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null\">
+<module mvid=\"\" moduleId=\"\" name=\"Sample1.exe\" assembly=\"Sample1\" assemblyIdentity=\"Sample1, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null\">
 <method name=\"Main\" class=\"TouchTest.Program\" metadataToken=\"0\" excluded=\"true\" instrumented=\"false\" >
 <seqpnt visitcount=\"1\" line=\"11\" column=\"9\"  endline=\"11\" endcolumn=\"10\" excluded=\"true\" document=\"Sample1\\Program.cs\" />
 <seqpnt visitcount=\"1\" line=\"12\" column=\"13\" endline=\"12\" endcolumn=\"36\" excluded=\"true\" document=\"Sample1\\Program.cs\" />
@@ -904,7 +909,7 @@ type AltCoverTests() = class
 
   static member MonoBaseline = "<?xml-stylesheet type='text/xsl' href='coverage.xsl'?>
 <coverage profilerVersion=\"0\" driverVersion=\"0\" startTime=\"\" measureTime=\"\">
-  <module moduleId=\"\" name=\"Sample1.exe\" assembly=\"Sample1\" assemblyIdentity=\"Sample1, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null\">
+  <module mvid=\"\" moduleId=\"\" name=\"Sample1.exe\" assembly=\"Sample1\" assemblyIdentity=\"Sample1, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null\">
     <method name=\"Main\" class=\"TouchTest.Program\" metadataToken=\"0\" excluded=\"false\" instrumented=\"true\" fullname=\"System.Void TouchTest.Program.Main(System.String[])\">
       <seqpnt visitcount=\"0\" line=\"11\" column=\"9\" endline=\"11\" endcolumn=\"10\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
       <seqpnt visitcount=\"0\" line=\"12\" column=\"32\" endline=\"12\" endcolumn=\"33\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
@@ -937,6 +942,7 @@ type AltCoverTests() = class
             Seq.zip ra ea |> Seq.iter (fun ((a1:XAttribute), (a2:XAttribute)) ->
                     Assert.That(a1.Name, Is.EqualTo(a2.Name))
                     match a1.Name.ToString() with
+                    | "mvid"
                     | "moduleId"
                     | "metadataToken"
                     | "startTime"
@@ -1856,10 +1862,10 @@ type AltCoverTests() = class
     let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
     ProgramDatabase.ReadSymbols def |> ignore
-    let visited = Node.Module (def.MainModule, None, false)
+    let visited = Node.Module (def.MainModule, None, 42, false)
     let state = Instrument.Context.Build ["nunit.framework"; "nonesuch"]
     let result = Instrument.InstrumentationVisitor  state visited
-    Assert.That (result, Is.EqualTo  { state with ModuleId = def.MainModule.Mvid })
+    Assert.That (result, Is.EqualTo  { state with ModuleId = "42" })
 
   [<Test>]
   member self.IncludedModuleEnsuresRecorder () =
@@ -1867,7 +1873,7 @@ type AltCoverTests() = class
     let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
     ProgramDatabase.ReadSymbols def |> ignore
-    let visited = Node.Module (def.MainModule, None, true)
+    let visited = Node.Module (def.MainModule, None, 23, true)
     let state = Instrument.Context.Build ["nunit.framework"; "nonesuch"]
 
     let path' = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(),
@@ -1885,9 +1891,9 @@ type AltCoverTests() = class
     Assert.That (string result.RecordingMethodRef,
                 Is.EqualTo (string visit))
     Assert.That ({ result with RecordingMethodRef = null},
-                 Is.EqualTo  { state' with ModuleId = def.MainModule.Mvid
-                                                      RecordingMethod = visit
-                                                      RecordingMethodRef = null })
+                 Is.EqualTo  { state' with ModuleId = "23"
+                                           RecordingMethod = visit
+                                           RecordingMethodRef = null })
 
   [<Test>]
   member self.ExcludedMethodPointIsPassThrough () =
@@ -1931,7 +1937,7 @@ type AltCoverTests() = class
     let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
     ProgramDatabase.ReadSymbols def |> ignore
-    let visited = Node.Module (def.MainModule, None, true)
+    let visited = Node.Module (def.MainModule, None, 17, true)
     let state = Instrument.Context.Build ["nunit.framework"; "nonesuch"]
 
     let path' = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(),
@@ -1954,9 +1960,9 @@ type AltCoverTests() = class
     Assert.That (string result.RecordingMethodRef,
                 Is.EqualTo (string visit))
     Assert.That ({ result with RecordingMethodRef = null},
-                 Is.EqualTo  { state' with ModuleId = def.MainModule.Mvid
-                                                      RecordingMethod = visit
-                                                      RecordingMethodRef = null })
+                 Is.EqualTo  { state' with ModuleId = "17"
+                                           RecordingMethod = visit
+                                           RecordingMethodRef = null })
 
   [<Test>]
   member self.AfterModuleShouldNotChangeState () =

@@ -7,11 +7,11 @@ namespace AltCover
 open System
 open System.Collections.Generic
 open System.Diagnostics.CodeAnalysis
+open System.Globalization
 open System.IO
 open System.Reflection
 open System.Resources
 
-open AltCover.Augment
 open Mono.Cecil
 open Mono.Cecil.Cil
 open Mono.Cecil.Rocks
@@ -28,7 +28,7 @@ module Instrument =
   [<ExcludeFromCodeCoverage>]
   type internal Context = { InstrumentedAssemblies : string list
                             RenameTable : Dictionary<String, String>
-                            ModuleId : Guid
+                            ModuleId : string
                             RecordingAssembly : AssemblyDefinition
                             RecordingMethod : MethodDefinition // initialised once
                             RecordingMethodRef : MethodReference // updated each module
@@ -37,7 +37,7 @@ module Instrument =
   with static member Build assemblies =
                     { InstrumentedAssemblies = assemblies
                       RenameTable = null
-                      ModuleId = Guid.Empty
+                      ModuleId = String.Empty
                       RecordingAssembly = null
                       RecordingMethod = null
                       RecordingMethodRef = null
@@ -360,7 +360,7 @@ module Instrument =
                                            if included then
                                               assembly.MainModule.AssemblyReferences.Add(state.RecordingAssembly.Name)
                                            { state with RenameTable = updates } // TODO use this (attribute mappings IIRC)
-     | Module (m, _, included) ->
+     | Module (m, _, n, included) ->
          let restate = match included with
                        | true ->
                          let recordingMethod = match state.RecordingMethod with
@@ -371,7 +371,7 @@ module Instrument =
                                RecordingMethodRef = m.ImportReference(recordingMethod);
                                RecordingMethod = recordingMethod }
                        | _ -> state
-         { restate with ModuleId = m.Mvid }
+         { restate with ModuleId = n.ToString(CultureInfo.InvariantCulture) }
 
      | Type _ ->
          state
@@ -386,7 +386,7 @@ module Instrument =
 
      | MethodPoint (instruction, _, point, included) ->
        if included then // by construction the sequence point is included
-            let instrLoadModuleId = InsertVisit instruction state.MethodWorker state.RecordingMethodRef (state.ModuleId.ToString()) point
+            let instrLoadModuleId = InsertVisit instruction state.MethodWorker state.RecordingMethodRef state.ModuleId point
 
             // Change references in operands from "instruction" to first counter invocation instruction (instrLoadModuleId)
             let subs = SubstituteInstruction (instruction, instrLoadModuleId)

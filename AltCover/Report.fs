@@ -1,6 +1,7 @@
 ﻿namespace AltCover
 
 open System
+open System.Globalization
 open System.Xml.Linq
 
 module Report =
@@ -31,9 +32,10 @@ module Report =
           document.Add(element)
           element :: s
 
-      | Module (moduleDef,_, _) ->
+      | Module (moduleDef,_,n, _) ->
           let element = XElement(X "module",
-                          XAttribute(X "moduleId", moduleDef.Mvid.ToString()),
+                          XAttribute(X "mvid", moduleDef.Mvid.ToString()),
+                          XAttribute(X "moduleId", n.ToString(CultureInfo.InvariantCulture)),
                           XAttribute(X "name", moduleDef.Name),
                           XAttribute(X "assembly", moduleDef.Assembly.Name.Name),
                           XAttribute(X "assemblyIdentity", moduleDef.Assembly.Name.FullName));
