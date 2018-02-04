@@ -1,12 +1,12 @@
 ﻿namespace AltCover.Recorder
 
-open System
 open System.Collections.Generic
 open System.IO
+open System.IO.Compression
 
 type Tracer = {
                 Tracer : string
-                Stream : System.IO.FileStream
+                Stream : System.IO.Stream
                 Formatter : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
               }
   with
@@ -32,7 +32,8 @@ type Tracer = {
         Seq.initInfinite (fun i -> Path.ChangeExtension(this.Tracer,
                                                         sprintf ".%d.bin" i))
         |> Seq.filter (File.Exists >> not)
-        |> Seq.map (fun f -> { this with Stream = File.OpenWrite f  })
+        |> Seq.map (fun f -> let fs = File.OpenWrite f 
+                             { this with Stream = new DeflateStream(fs, CompressionMode.Compress) })
         |> Seq.head
       else
         this

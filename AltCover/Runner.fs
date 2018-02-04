@@ -3,8 +3,7 @@
 open System
 open System.Collections.Generic
 open System.IO
-open System.Threading
-open System.Threading.Tasks
+open System.IO.Compression
 
 open Mono.Cecil
 open Mono.Options
@@ -125,7 +124,7 @@ module Runner =
                           Path.GetFileName(report) + ".*.bin")
       |> Seq.iter (fun f ->
           printfn "... %s" f
-          use results = File.OpenRead(f)
+          use results = new DeflateStream(File.OpenRead f, CompressionMode.Decompress) 
           let rec sink() = 
             let hit = try formatter.Deserialize(results) :?> (string*int)
                       with | :? System.Runtime.Serialization.SerializationException as x -> (null, -1)

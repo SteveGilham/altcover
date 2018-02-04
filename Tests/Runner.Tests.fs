@@ -3,6 +3,7 @@
 open System
 open System.Collections.Generic
 open System.IO
+open System.IO.Compression
 open System.Reflection
 open System.Text
 open System.Threading
@@ -833,7 +834,7 @@ or
     let unique = Path.Combine(where, Guid.NewGuid().ToString())
     let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
     Runner.GetMonitor hits unique (fun l ->
-       use sink = File.OpenWrite (unique + ".0.bin")
+       use sink = new DeflateStream(File.OpenWrite (unique + ".0.bin"), CompressionMode.Compress)
        l |> List.iteri (fun i x -> formatter.Serialize(sink, (x,i)))
     ) ["a"; "b"; String.Empty; "c"]
     Assert.That (File.Exists (unique + ".bin"))

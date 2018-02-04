@@ -19,6 +19,7 @@ namespace Tests.Shadow.Unknown
 open System
 open System.Collections.Generic
 open System.IO
+open System.IO.Compression
 open System.Reflection
 
 open AltCover.Recorder
@@ -98,7 +99,7 @@ type AltCoverCoreTests() = class
         Instance.trace.Close()
         Instance.trace <- save
 
-      use stream = File.OpenRead (unique + ".0.bin")
+      use stream = new DeflateStream(File.OpenRead (unique + ".0.bin"), CompressionMode.Decompress)
       let results = self.ReadResults stream
       Assert.That (Instance.Visits, Is.Empty, "unexpected local write")
       Assert.That (results, Is.EquivalentTo expected, "unexpected result")
@@ -136,7 +137,7 @@ type AltCoverCoreTests() = class
         System.Threading.Thread.Sleep 100
         Instance.trace <- save
 
-      use stream = File.OpenRead (root + ".0.bin")
+      use stream = new DeflateStream(File.OpenRead (root + ".0.bin"), CompressionMode.Decompress)
       let results = self.ReadResults stream
       Assert.That (Instance.Visits, Is.Empty, "unexpected local write")
       Assert.That (results, Is.EquivalentTo expected, "unexpected result")
