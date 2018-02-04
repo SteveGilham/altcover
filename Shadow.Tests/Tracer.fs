@@ -19,6 +19,7 @@ namespace Tests.Shadow.Unknown
 open System
 open System.Collections.Generic
 open System.IO
+open System.IO.Compression
 open System.Reflection
 
 open AltCover.Recorder
@@ -77,13 +78,14 @@ type AltCoverCoreTests() = class
     let save = Instance.trace
     let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
     let unique = Path.Combine(where, Guid.NewGuid().ToString())
+    let tag = unique + ".bin"
     let expected = [("name", 23); ("name", 23)]
 
     do
-        use stream = File.Create unique
+        use stream = File.Create tag
         ()
     try
-      let mutable client = Tracer.Create unique
+      let mutable client = Tracer.Create tag
       try
         Instance.Visits.Clear()
         let entry = Dictionary<int, int>()
@@ -92,12 +94,12 @@ type AltCoverCoreTests() = class
 
         Instance.trace <- client.OnStart()
         Assert.That (Instance.trace.IsConnected(), "connection failed")
-        Instance.Visit "name" 23
+        Instance.VisitImpl "name" 23
       finally
         Instance.trace.Close()
         Instance.trace <- save
 
-      use stream = File.OpenRead unique
+      use stream = new DeflateStream(File.OpenRead (unique + ".0.bin"), CompressionMode.Decompress)
       let results = self.ReadResults stream
       Assert.That (Instance.Visits, Is.Empty, "unexpected local write")
       Assert.That (results, Is.EquivalentTo expected, "unexpected result")
@@ -109,7 +111,8 @@ type AltCoverCoreTests() = class
   member self.FlushShouldTidyUp() = // also throw a bone to OpenCover 615
     let save = Instance.trace
     let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
-    let unique = Path.Combine(where, Guid.NewGuid().ToString())
+    let root = Path.Combine(where, Guid.NewGuid().ToString())
+    let unique = root + ".bin"
 
     do
         use stream = File.Create unique
@@ -128,12 +131,13 @@ type AltCoverCoreTests() = class
         Assert.That (Instance.trace.IsConnected(), "connection failed")
         let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
         formatter.Serialize(Instance.trace.Stream, expected |> Seq.head)
-        Instance.FlushCounter true ()
+        Instance.FlushCounterImpl ProcessExit ()
       finally
-        client.Close()
+        Instance.trace.Close()
+        System.Threading.Thread.Sleep 100
         Instance.trace <- save
 
-      use stream = File.OpenRead unique
+      use stream = new DeflateStream(File.OpenRead (root + ".0.bin"), CompressionMode.Decompress)
       let results = self.ReadResults stream
       Assert.That (Instance.Visits, Is.Empty, "unexpected local write")
       Assert.That (results, Is.EquivalentTo expected, "unexpected result")

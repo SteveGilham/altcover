@@ -3,8 +3,7 @@
 open System
 open System.Collections.Generic
 open System.IO
-open System.Threading
-open System.Threading.Tasks
+open System.IO.Compression
 
 open Mono.Cecil
 open Mono.Options
@@ -118,17 +117,22 @@ module Runner =
       payload args
       "Getting results..."  |> WriteResource
 
-      use results = File.OpenRead(binpath)
       let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
       formatter.Binder <- MonoTypeBinder(typeof<(string*int)>) // anything else is an error
 
-      try
-        let mutable hit = formatter.Deserialize(results) :?> (string*int)
-        while hit|> fst |> String.IsNullOrWhiteSpace  |> not do
-          hit |> hits.Add
-          hit <- formatter.Deserialize(results) :?> (string*int)
-      with
-      | :? System.Runtime.Serialization.SerializationException -> ()
+      Directory.GetFiles( Path.GetDirectoryName(report),
+                          Path.GetFileName(report) + ".*.bin")
+      |> Seq.iter (fun f ->
+          printfn "... %s" f
+          use results = new DeflateStream(File.OpenRead f, CompressionMode.Decompress) 
+          let rec sink() = 
+            let hit = try formatter.Deserialize(results) :?> (string*int)
+                      with | :? System.Runtime.Serialization.SerializationException as x -> (null, -1)
+            if hit|> fst |> String.IsNullOrWhiteSpace  |> not then
+              hit |> hits.Add
+              sink()
+          sink()
+      )
 
       WriteResourceWithFormatItems "%d visits recorded" [|hits.Count|]
 
