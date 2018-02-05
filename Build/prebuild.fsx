@@ -25,10 +25,15 @@ let nlib = Directory.GetFiles(here, "*framework.dll", SearchOption.AllDirectorie
             |> Seq.head
             |> Path.GetDirectoryName
 
-let build = """#I @"{0}" // include Fake lib
-#r "FakeLib.dll"
-#I @"{1}"
-#r "FSharpLint.Fake.dll"
+let build = """#r "paket:
+nuget Fake.Core.Target prerelease //"
+#r "paket:
+nuget FSharpLint.Core prerelease //"
+#r "FSharpLint.Core.dll"
+//#I @"{0}" // include Fake lib
+//#r "FakeLib.dll"
+//#I @"{1}"
+//#r "FSharpLint.Fake.dll"
 #I @"{2}"
 #r "FSharp.Markdown.dll"
 #I @"{3}"
