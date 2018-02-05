@@ -25,8 +25,8 @@ module Actions =
         // arrange so leaves get deleted first, avoiding "does not exist" warnings
         |> Seq.groupBy (fun x -> x |> Seq.filter (fun c -> c='\\' || c = '/') |> Seq.length)
         |> Seq.map (fun (n,x) -> (n, x |> Seq.sort))
-        |> Seq.sortBy (fun (n,x) -> -1 * n)
-        |> Seq.map (fun (n,x) -> x)
+        |> Seq.sortBy (fun p -> -1 * (fst p))
+        |> Seq.map snd
         |> Seq.concat
         |> Seq.iter (fun n -> printfn "Deleting %s" n
                               Directory.Delete(n, true))
@@ -112,9 +112,9 @@ open System.Runtime.CompilerServices
     // Fix up symbol file to have the MVId emitted by the System.Reflection.Emit code
     files
     |> Seq.iter (fun f -> let assembly = System.Reflection.Assembly.ReflectionOnlyLoadFrom (Path.GetFullPath f)
-                          let mvid = assembly.ManifestModule.ModuleVersionId.ToByteArray();
+                          let mvid = assembly.ManifestModule.ModuleVersionId
                           let symbols = System.IO.File.ReadAllBytes(f + ".mdb")
-                          mvid |> Array.iteri (fun i x -> symbols.[i+16] <- x)
+                          mvid.ToByteArray() |> Array.iteri (fun i x -> symbols.[i+16] <- x)
                           System.IO.File.WriteAllBytes(f + ".mdb", symbols))
 
   let ValidateFSharpTypes simpleReport others =

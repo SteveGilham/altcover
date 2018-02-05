@@ -322,6 +322,7 @@ TargetCreate "UnitTestWithAltCover" (fun _ ->
       let result = ExecProcess (fun info -> info.FileName <- altcover
                                             info.WorkingDirectory <- shadowDir
                                             info.Arguments <- ("/sn=" + keyfile + AltCoverFilter + @"/o=./__ShadowTestWithAltCover -x=" + shadowReport)) (TimeSpan.FromMinutes 5.0)
+      Assert.That (result, Is.EqualTo 0)
 
       printfn "Execute the shadow tests"
       !! ("_Binaries/AltCover.Shadow.Tests/Debug+AnyCPU/__ShadowTestWithAltCover/*.Test*.dll")
@@ -381,7 +382,6 @@ TargetCreate "UnitTestWithAltCoverCore" (fun _ ->
 
 TargetCreate "UnitTestWithAltCoverCoreRunner" (fun _ ->
     ensure "./_Reports/_UnitTestWithAltCover"
-    let keyfile = getFullName "Build/SelfTest.snk"
     let reports = getFullName "./_Reports"
     let altcover = getFullName "./AltCover/altcover.core.fsproj"
 
@@ -442,6 +442,7 @@ TargetCreate "FSharpTypes" ( fun _ ->
       let result = ExecProcess (fun info -> info.FileName <- binRoot @@ "AltCover.exe"
                                             info.WorkingDirectory <- sampleRoot
                                             info.Arguments <- ("-t=System\. -t=Microsoft\. -x=" + simpleReport + " /o=./" + instrumented)) (TimeSpan.FromMinutes 5.0)
+      Assert.That (result, Is.EqualTo 0)
       Actions.ValidateFSharpTypes simpleReport []
     else
       printfn "Symbols not present; skipping"
@@ -545,6 +546,7 @@ TargetCreate "CSharpDotNetWithFramework" (fun _ ->
     let result = ExecProcess (fun info -> info.FileName <- binRoot @@ "AltCover.exe"
                                           info.WorkingDirectory <- sampleRoot
                                           info.Arguments <- ("-t=System\. -t=Microsoft\. -x=" + simpleReport + " /o=" + instrumented)) (TimeSpan.FromMinutes 5.0)
+    Assert.That (result, Is.EqualTo 0)
 
     Fake.DotNetCli.RunCommand id (instrumented @@ "Sample1.dll")
 
@@ -724,6 +726,7 @@ TargetCreate "ReleaseDotNetWithFramework" (fun _ ->
       let result = ExecProcess (fun info -> info.FileName <- unpack @@ "AltCover.exe"
                                             info.WorkingDirectory <- sampleRoot
                                             info.Arguments <- ("-t=System\. -t=Microsoft\. -x=" + simpleReport + " /o=" + instrumented)) (TimeSpan.FromMinutes 5.0)
+      Assert.That (result, Is.EqualTo 0)
 
       Fake.DotNetCli.RunCommand (fun info -> { info with WorkingDir = instrumented }) "Sample1.dll"
 
