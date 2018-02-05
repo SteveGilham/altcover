@@ -260,11 +260,11 @@ TargetCreate "UnitTestDotNet" (fun _ ->
                                       Project =  f}))
 )
 
-TargetCreate "UnitTestWithOpenCover.Run" (fun _ ->
-    ensure "./_Reports/_UnitTestWithOpenCover.Run"
+TargetCreate "UnitTestWithOpenCover" (fun _ ->
+    ensure "./_Reports/_UnitTestWithOpenCover"
     let testFiles = !! (@"_Binaries/*Tests/Debug+AnyCPU/*.Test*.dll")
                     //|> Seq.map (fun f -> f.FullName)
-    let coverage = getFullName "_Reports/UnitTestWithOpenCover.Run.xml"
+    let coverage = getFullName "_Reports/UnitTestWithOpenCover.xml"
 
     OpenCover.Run (fun p -> { p with 
                                  WorkingDir = "."
@@ -275,11 +275,11 @@ TargetCreate "UnitTestWithOpenCover.Run" (fun _ ->
                                  OptionalArguments = "-excludebyattribute:*ExcludeFromCodeCoverageAttribute;*ProgIdAttribute"
                                  Register = OpenCover.RegisterType.RegisterUser
                                  Output = coverage })
-        (String.Join(" ", testFiles) + " --result=./_Reports/UnitTestWithOpenCover.RunReport.xml")
+        (String.Join(" ", testFiles) + " --result=./_Reports/UnitTestWithOpenCoverReport.xml")
 
     ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
                                        ReportTypes = [ ReportGeneratorReportType.Html; ReportGeneratorReportType.Badges; ReportGeneratorReportType.XmlSummary ]
-                                       TargetDir = "_Reports/_UnitTestWithOpenCover.Run"})
+                                       TargetDir = "_Reports/_UnitTestWithOpenCover"})
         [coverage]
 
     if not <| String.IsNullOrWhiteSpace (environVar "APPVEYOR_BUILD_NUMBER") then
@@ -981,7 +981,7 @@ TargetCreate "All" ignore
 ==> "UnitTest"
 
 "Compilation"
-==> "UnitTestWithOpenCover.Run"
+==> "UnitTestWithOpenCover"
 =?> ("UnitTest", not runningInMono)  // OpenCover.Run Mono support
 
 "Compilation"
