@@ -32,7 +32,7 @@ type Tracer = {
         Seq.initInfinite (fun i -> Path.ChangeExtension(this.Tracer,
                                                         sprintf ".%d.bin" i))
         |> Seq.filter (File.Exists >> not)
-        |> Seq.map (fun f -> let fs = File.OpenWrite f 
+        |> Seq.map (fun f -> let fs = File.OpenWrite f
                              { this with Stream = new DeflateStream(fs, CompressionMode.Compress) })
         |> Seq.head
       else

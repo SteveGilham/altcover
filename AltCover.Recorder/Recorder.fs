@@ -121,7 +121,7 @@ module Instance =
              match msg with
              | AsyncItem (SequencePoint (moduleId, hitPointId)) ->
                  VisitImpl moduleId hitPointId
-                 return! loop inbox moduleId                
+                 return! loop inbox moduleId
              | Item (SequencePoint (moduleId, hitPointId), channel)->
                  VisitImpl moduleId hitPointId
                  channel.Reply ()

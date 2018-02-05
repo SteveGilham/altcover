@@ -124,8 +124,8 @@ module Runner =
                           Path.GetFileName(report) + ".*.bin")
       |> Seq.iter (fun f ->
           printfn "... %s" f
-          use results = new DeflateStream(File.OpenRead f, CompressionMode.Decompress) 
-          let rec sink() = 
+          use results = new DeflateStream(File.OpenRead f, CompressionMode.Decompress)
+          let rec sink() =
             let hit = try formatter.Deserialize(results) :?> (string*int)
                       with | :? System.Runtime.Serialization.SerializationException as x -> (null, -1)
             if hit|> fst |> String.IsNullOrWhiteSpace  |> not then

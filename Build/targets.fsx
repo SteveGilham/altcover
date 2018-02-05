@@ -266,7 +266,7 @@ TargetCreate "UnitTestWithOpenCover" (fun _ ->
                     //|> Seq.map (fun f -> f.FullName)
     let coverage = getFullName "_Reports/UnitTestWithOpenCover.xml"
 
-    OpenCover.Run (fun p -> { p with 
+    OpenCover.Run (fun p -> { p with
                                  WorkingDir = "."
                                  ExePath = findToolInSubPath "OpenCover.Console.exe" "."
                                  TestRunnerExePath = findToolInSubPath "nunit3-console.exe" "."
@@ -392,7 +392,7 @@ TargetCreate "UnitTestWithAltCoverCoreRunner" (fun _ ->
     printfn "Instrument the code"
     CleanDir output
     Fake.DotNetCli.RunCommand (fun p -> {p with WorkingDir = testDirectory})
-                         ("run --project " + altcover + 
+                         ("run --project " + altcover +
                           " -- " + AltCoverFilter + " -x \"" + altReport + "\" /o \"" + output + "\"")
 
     printfn "Unit test the instrumented code"
@@ -411,7 +411,7 @@ TargetCreate "UnitTestWithAltCoverCoreRunner" (fun _ ->
 
     CleanDir shadowOut
     Fake.DotNetCli.RunCommand (fun p -> {p with WorkingDir = shadowDir})
-                         ("run --project " + altcover + 
+                         ("run --project " + altcover +
                           " -- " + AltCoverFilter + " -x \"" + shadowReport + "\" /o \"" + shadowOut + "\"")
 
     let shadowProject = getFullName "./Shadow.Tests/altcover.recorder.tests.core.fsproj"
@@ -560,7 +560,7 @@ TargetCreate "SelfTest" (fun _ ->
     let keyfile = getFullName "Build/SelfTest.snk"
 
     printfn "Self-instrument under OpenCover.Run"
-    OpenCover.Run (fun p -> { p with 
+    OpenCover.Run (fun p -> { p with
                                  WorkingDir = targetDir
                                  ExePath = findToolInSubPath "OpenCover.Console.exe" "."
                                  TestRunnerExePath = findToolInSubPath "AltCover.exe" targetDir
