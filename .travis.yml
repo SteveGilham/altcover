@@ -22,6 +22,6 @@ install:
   - nuget restore ./AltCover.sln
 
 script:
-  - mono packages/FAKE.4.64.4/tools/FAKE.exe Build/prebuild.fsx
-  - mono packages/FAKE.4.64.4/tools/FAKE.exe Build/build.fsx
+  - mono packages/FAKE.5.0.0-beta013/tools/FAKE.exe Build/prebuild.fsx
+  - mono packages/FAKE.5.0.0-beta013/tools/FAKE.exe Build/build.fsx
 
