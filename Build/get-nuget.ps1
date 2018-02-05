@@ -32,3 +32,21 @@ exit /b %errorlevel%
 Set-Content -Value $bat -Path (Join-Path $SolutionRoot "fake.bat")
 
 & "$fake" ".\Build\prebuild.fsx"
+
+$lines = Get-Content .travis.yml
+$root = Split-Path $PSScriptRoot -Parent
+$fpath = $fake.Substring(1 + $root.Length).Replace("\","/")
+
+$lines | % { 
+    if ($_ -like "*packages/FAKE*") {
+        $bits = $_.Split()
+        $newbits = $bits | % {
+                if ($_ -like "packages/FAKE*") { 
+                    $fpath
+                }
+                else { $_ }
+            }
+        [string]::Join(" ", $newbits)
+    }
+    else { $_ }
+} | Set-Content .travis.yml

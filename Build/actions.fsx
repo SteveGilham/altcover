@@ -4,7 +4,12 @@ open System.Reflection
 open System.Xml
 open System.Xml.Linq
 
-open Fake
+open Fake.IO.Directory
+open Fake.IO.FileSystemOperators
+open Fake.IO.Path
+open Fake.EnvironmentHelper
+open Fake.ProcessHelper
+
 open FSharp.Markdown
 open NUnit.Framework
 open YamlDotNet.RepresentationModel
@@ -26,7 +31,7 @@ module Actions =
         |> Seq.iter (fun n -> printfn "Deleting %s" n
                               Directory.Delete(n, true))
 
-        let temp = Environment.GetEnvironmentVariable("TEMP")
+        let temp = environVar "TEMP"
         if not <| String.IsNullOrWhiteSpace temp then
             Directory.GetFiles(temp, "*.tmp.dll.mdb")
             |> Seq.iter File.Delete
@@ -163,10 +168,10 @@ open System.Runtime.CompilerServices
 
   let SimpleInstrumentingRun (samplePath:string) (binaryPath:string) (reportSigil:string) =
     printfn "Instrument and run a simple executable"
-    ensureDirectory "./_Reports"
-    let simpleReport = (FullName "./_Reports") @@ ( reportSigil + ".xml")
-    let binRoot = FullName binaryPath
-    let sampleRoot = FullName samplePath
+    ensure "./_Reports"
+    let simpleReport = (getFullName "./_Reports") @@ ( reportSigil + ".xml")
+    let binRoot = getFullName binaryPath
+    let sampleRoot = getFullName samplePath
     let instrumented = "__Instrumented." + reportSigil
     let result = ExecProcess (fun info -> info.FileName <- binRoot @@ "AltCover.exe"
                                           info.WorkingDirectory <- sampleRoot
@@ -182,11 +187,11 @@ open System.Runtime.CompilerServices
    printfn "Instrument and run a simple executable under mono"
    match monoOnWindows with
    | Some mono ->
-    ensureDirectory "./_Reports"
+    ensure "./_Reports"
     let reportSigil = reportSigil' + "UnderMono"
-    let simpleReport = (FullName "./_Reports") @@ ( reportSigil + ".xml")
-    let binRoot = FullName binaryPath
-    let sampleRoot = FullName samplePath
+    let simpleReport = (getFullName "./_Reports") @@ ( reportSigil + ".xml")
+    let binRoot = getFullName binaryPath
+    let sampleRoot = getFullName samplePath
     let instrumented = "__Instrumented." + reportSigil
     let result = ExecProcess (fun info -> info.FileName <- mono
                                           info.WorkingDirectory <- sampleRoot
@@ -200,7 +205,7 @@ open System.Runtime.CompilerServices
    | None -> Assert.Fail "Mono executable expected"
 
 let PrepareReadMe packingCopyright =
-    let readme = FullName "README.md"
+    let readme = getFullName "README.md"
     let document = File.ReadAllText readme
     let docHtml = """<?xml version="1.0"  encoding="utf-8"?>
 <!DOCTYPE html>
@@ -232,5 +237,5 @@ let PrepareReadMe packingCopyright =
                        | Some x -> x.Remove()
                        | _ -> ())
 
-    let packable = FullName "./_Binaries/README.html"
+    let packable = getFullName "./_Binaries/README.html"
     xmlform.Save packable
