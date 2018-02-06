@@ -17,16 +17,11 @@ open Fake.DotNet.AssemblyInfoFile
 open Fake.DotNet.NuGet.NuGet
 open Fake.DotNet.Testing.NUnit3
 open Fake.DotNet.Testing
-open Fake.FileHelper
-open Fake.FxCopHelper
-open Fake.ILMergeHelper
 open Fake.IO
 open Fake.IO.Directory
 open Fake.IO.FileSystemOperators
 open Fake.IO.Path
 
-open Fake.ReportGeneratorHelper
-open FSharpLint.Fake
 open NUnit.Framework
 
 let Copyright  = ref String.Empty
@@ -184,7 +179,7 @@ TargetCreate "Gendarme" (fun _ -> // Needs debug because release is compiled --s
 
 TargetCreate "FxCop" (fun _ -> // Needs debug because release is compiled --standalone which contaminates everything
     ensure "./_Reports"
-    let fxCop = combinePaths (environVar "VS150COMNTOOLS") "../../Team Tools/Static Analysis Tools/FxCop/FxCopCmd.exe"
+    let fxCop = combine (environVar "VS150COMNTOOLS") "../../Team Tools/Static Analysis Tools/FxCop/FxCopCmd.exe"
     let rules = ["-Microsoft.Design#CA1004"
                  "-Microsoft.Design#CA1006"
                  "-Microsoft.Design#CA1011" // maybe sometimes
