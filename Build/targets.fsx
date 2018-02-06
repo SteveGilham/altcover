@@ -57,20 +57,20 @@ let monoOnWindows = if isWindows then
                        |> List.tryFind (fun _ -> true)
                     else None
 
-let TargetCreate s f =
+let Target s f =
   Description s
   Create s f
 
 // Preparation
 
-TargetCreate "Preparation" ignore
+Target "Preparation" ignore
 
-TargetCreate "Clean" (fun _ ->
+Target "Clean" (fun _ ->
     printfn "Cleaning the build and deploy folders"
     Actions.Clean ()
 )
 
-TargetCreate "SetVersion" (fun _ ->
+Target "SetVersion" (fun _ ->
     let appveyor = environVar "APPVEYOR_BUILD_VERSION"
     let travis = environVar "TRAVIS_JOB_NUMBER"
     let version = Actions.GetVersionFromYaml ()
@@ -100,9 +100,9 @@ TargetCreate "SetVersion" (fun _ ->
 
 // Basic compilation
 
-TargetCreate "Compilation" ignore
+Target "Compilation" ignore
 
-TargetCreate "BuildRelease" (fun _ ->
+Target "BuildRelease" (fun _ ->
     "AltCover.sln"
     |> MsBuild.build (fun p ->
             { p with
@@ -121,7 +121,7 @@ TargetCreate "BuildRelease" (fun _ ->
             })
 )
 
-TargetCreate "BuildDebug" (fun _ ->
+Target "BuildDebug" (fun _ ->
     !! "**/AltCove*.sln"  // include demo projects
     |> Seq.filter (fun n -> n.IndexOf(".core.") = -1)
     |> Seq.filter (fun n -> n.IndexOf(".dotnet.") = -1)
@@ -141,7 +141,7 @@ TargetCreate "BuildDebug" (fun _ ->
                 Common = dotnetOptions})
 )
 
-TargetCreate "BuildMonoSamples" (fun _ ->
+Target "BuildMonoSamples" (fun _ ->
     let mcs = findToolInSubPath "MCS.exe" ".."
 
     [
@@ -160,14 +160,14 @@ TargetCreate "BuildMonoSamples" (fun _ ->
 
 // Code Analysis
 
-TargetCreate "Analysis" ignore
+Target "Analysis" ignore
 
-TargetCreate "Lint" (fun _ ->
+Target "Lint" (fun _ ->
     !! "**/*.fsproj"
         |> Seq.filter (fun n -> n.IndexOf(".core.") = -1)
         |> Seq.iter (FSharpLint (fun options -> { options with FailBuildIfAnyWarnings = true }) ))
 
-TargetCreate "Gendarme" (fun _ -> // Needs debug because release is compiled --standalone which contaminates everything
+Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standalone which contaminates everything
     ensure "./_Reports"
     let subjects = String.Join(" ",
                                [
@@ -192,7 +192,7 @@ TargetCreate "Gendarme" (fun _ -> // Needs debug because release is compiled --s
 * Details:  Method IL Size: 182. Maximum Size: 165
 *)
 
-TargetCreate "FxCop" (fun _ -> // Needs debug because release is compiled --standalone which contaminates everything
+Target "FxCop" (fun _ -> // Needs debug because release is compiled --standalone which contaminates everything
     ensure "./_Reports"
     let fxCop = combine (environVar "VS150COMNTOOLS") "../../Team Tools/Static Analysis Tools/FxCop/FxCopCmd.exe"
     let rules = ["-Microsoft.Design#CA1004"
@@ -237,7 +237,7 @@ TargetCreate "FxCop" (fun _ -> // Needs debug because release is compiled --stan
 
 // Unit Test
 
-TargetCreate "UnitTest" (fun _ ->
+Target "UnitTest" (fun _ ->
   let numbers = !! (@"_Reports/*/Summary.xml")
                 |> Seq.collect (fun f -> let xml = XDocument.Load f
                                          xml.Descendants(XName.Get("Linecoverage"))
@@ -253,7 +253,7 @@ TargetCreate "UnitTest" (fun _ ->
      Assert.Fail("Coverage is too low")
 )
 
-TargetCreate "JustUnitTest" (fun _ ->
+Target "JustUnitTest" (fun _ ->
     ensure "./_Reports"
     !! (@"_Binaries/*Tests/Debug+AnyCPU/*.Test*.dll")
     |> NUnit3 (fun p -> { p with ToolPath = findToolInSubPath "nunit3-console.exe" "."
@@ -261,7 +261,7 @@ TargetCreate "JustUnitTest" (fun _ ->
                                  ResultSpecs = ["./_Reports/JustUnitTestReport.xml"] })
 )
 
-TargetCreate "UnitTestDotNet" (fun _ ->
+Target "UnitTestDotNet" (fun _ ->
     ensure "./_Reports"
     !! (@"./*Tests/*.tests.core.fsproj")
     |> Seq.iter (fun f -> printfn "Testing %s" f
@@ -269,7 +269,7 @@ TargetCreate "UnitTestDotNet" (fun _ ->
                           Assert.That (r.ExitCode, Is.EqualTo 0, sprintf "%A" r))
 )
 
-TargetCreate "UnitTestWithOpenCover" (fun _ ->
+Target "UnitTestWithOpenCover" (fun _ ->
     ensure "./_Reports/_UnitTestWithOpenCover"
     let testFiles = !! (@"_Binaries/*Tests/Debug+AnyCPU/*.Test*.dll")
                     //|> Seq.map (fun f -> f.FullName)
@@ -301,7 +301,7 @@ TargetCreate "UnitTestWithOpenCover" (fun _ ->
 
 // Hybrid (Self) Tests
 
-TargetCreate "UnitTestWithAltCover" (fun _ ->
+Target "UnitTestWithAltCover" (fun _ ->
     ensure "./_Reports/_UnitTestWithAltCover"
     let keyfile = getFullName "Build/SelfTest.snk"
     let reports = getFullName "./_Reports"
@@ -350,7 +350,7 @@ TargetCreate "UnitTestWithAltCover" (fun _ ->
       printfn "Symbols not present; skipping"
 )
 
-TargetCreate "UnitTestWithAltCoverCore" (fun _ ->
+Target "UnitTestWithAltCoverCore" (fun _ ->
     ensure "./_Reports/_UnitTestWithAltCover"
     let keyfile = getFullName "Build/SelfTest.snk"
     let reports = getFullName "./_Reports"
@@ -393,7 +393,7 @@ TargetCreate "UnitTestWithAltCoverCore" (fun _ ->
           [altReport; shadowReport]
 )
 
-TargetCreate "UnitTestWithAltCoverCoreRunner" (fun _ ->
+Target "UnitTestWithAltCoverCoreRunner" (fun _ ->
     ensure "./_Reports/_UnitTestWithAltCover"
     let reports = getFullName "./_Reports"
     let altcover = getFullName "./AltCover/altcover.core.fsproj"
@@ -446,9 +446,9 @@ TargetCreate "UnitTestWithAltCoverCoreRunner" (fun _ ->
 
 // Pure OperationalTests
 
-TargetCreate "OperationalTest" ignore
+Target "OperationalTest" ignore
 
-TargetCreate "FSharpTypes" ( fun _ ->
+Target "FSharpTypes" ( fun _ ->
     ensure "./_Reports"
     let simpleReport = (getFullName "./_Reports") @@ ( "AltCoverFSharpTypes.xml")
     let binRoot = getFullName "_Binaries/AltCover/Release+AnyCPU"
@@ -466,7 +466,7 @@ TargetCreate "FSharpTypes" ( fun _ ->
       printfn "Symbols not present; skipping"
 )
 
-TargetCreate "FSharpTypesDotNet" ( fun _ ->
+Target "FSharpTypesDotNet" ( fun _ ->
     ensure "./_Reports"
     let project = getFullName "./AltCover/altcover.core.fsproj"
     let simpleReport = (getFullName "./_Reports") @@ ( "AltCoverFSharpTypesDotNet.xml")
@@ -485,7 +485,7 @@ TargetCreate "FSharpTypesDotNet" ( fun _ ->
     Actions.ValidateFSharpTypesCoverage simpleReport
 )
 
-TargetCreate "FSharpTypesDotNetRunner" ( fun _ ->
+Target "FSharpTypesDotNetRunner" ( fun _ ->
     ensure "./_Reports"
     let project = getFullName "./AltCover/altcover.core.fsproj"
     let simpleReport = (getFullName "./_Reports") @@ ( "AltCoverFSharpTypesDotNetRunner.xml")
@@ -512,25 +512,25 @@ TargetCreate "FSharpTypesDotNetRunner" ( fun _ ->
     Actions.ValidateFSharpTypesCoverage simpleReport
 )
 
-TargetCreate "BasicCSharp" (fun _ ->
+Target "BasicCSharp" (fun _ ->
    Actions.SimpleInstrumentingRun "_Binaries/Sample1/Debug+AnyCPU" "_Binaries/AltCover/Debug+AnyCPU" "BasicCSharp"
 )
 
-TargetCreate "BasicCSharpMono" (fun _ ->
+Target "BasicCSharpMono" (fun _ ->
     Actions.SimpleInstrumentingRun "_Mono/Sample1" "_Binaries/AltCover/Debug+AnyCPU" "BasicCSharpMono"
 )
 
-TargetCreate "BasicCSharpUnderMono" (fun _ ->
+Target "BasicCSharpUnderMono" (fun _ ->
     monoOnWindows |>
     Actions.SimpleInstrumentingRunUnderMono "_Binaries/Sample1/Debug+AnyCPU" "_Binaries/AltCover/Debug+AnyCPU" "BasicCSharp"
 )
 
-TargetCreate "BasicCSharpMonoUnderMono" (fun _ ->
+Target "BasicCSharpMonoUnderMono" (fun _ ->
     monoOnWindows |>
     Actions.SimpleInstrumentingRunUnderMono "_Mono/Sample1" "_Binaries/AltCover/Debug+AnyCPU" "BasicCSharpMono"
 )
 
-TargetCreate "CSharpMonoWithDotNet" (fun _ ->
+Target "CSharpMonoWithDotNet" (fun _ ->
     ensure "./_Reports"
     let x = getFullName "./_Reports/CSharpMonoWithDotNet.xml"
     let o = getFullName "./_Mono/__Instrumented.CSharpMonoWithDotNet"
@@ -548,7 +548,7 @@ TargetCreate "CSharpMonoWithDotNet" (fun _ ->
     Actions.ValidateSample1 "./_Reports/CSharpMonoWithDotNet.xml" "CSharpMonoWithDotNet"
 )
 
-TargetCreate "CSharpDotNetWithDotNet" (fun _ ->
+Target "CSharpDotNetWithDotNet" (fun _ ->
     ensure "./_Reports"
     let x = getFullName "./_Reports/CSharpDotNetWithDotNet.xml"
     let o = getFullName "../_Binaries/Sample1/__Instrumented.CSharpDotNetWithDotNet"
@@ -564,7 +564,7 @@ TargetCreate "CSharpDotNetWithDotNet" (fun _ ->
     Actions.ValidateSample1 "./_Reports/CSharpDotNetWithDotNet.xml" "CSharpDotNetWithDotNet"
 )
 
-TargetCreate "CSharpDotNetWithFramework" (fun _ ->
+Target "CSharpDotNetWithFramework" (fun _ ->
     ensure "./_Reports"
     let simpleReport = (getFullName "./_Reports") @@ ( "CSharpDotNetWithFramework.xml")
     let binRoot = getFullName "_Binaries/AltCover/Release+AnyCPU"
@@ -583,7 +583,7 @@ TargetCreate "CSharpDotNetWithFramework" (fun _ ->
     Actions.ValidateSample1 "./_Reports/CSharpDotNetWithFramework.xml" "CSharpDotNetWithFramework"
 )
 
-TargetCreate "SelfTest" (fun _ ->
+Target "SelfTest" (fun _ ->
     ensure "./_Reports/_Instrumented"
     let targetDir = "_Binaries/AltCover.Tests/Debug+AnyCPU"
     let reports = getFullName "./_Reports"
@@ -621,7 +621,7 @@ TargetCreate "SelfTest" (fun _ ->
 
 // Packaging
 
-TargetCreate "Packaging" (fun _ ->
+Target "Packaging" (fun _ ->
     ensure "./_Binaries/Packaging"
     ensure "./_Packaging"
 
@@ -680,7 +680,7 @@ TargetCreate "Packaging" (fun _ ->
         "./Build/AltCover.nuspec"
 )
 
-TargetCreate "PrepareFrameworkBuild" (fun _ ->
+Target "PrepareFrameworkBuild" (fun _ ->
     let toolpath = findToolInSubPath "ILMerge.exe" "./packages"
     let here = Directory.GetCurrentDirectory()
 
@@ -697,23 +697,23 @@ TargetCreate "PrepareFrameworkBuild" (fun _ ->
                                "./_Binaries/AltCover/Release+AnyCPU/AltCover.exe"
 )
 
-TargetCreate "PrepareDotNetBuild" ignore
+Target "PrepareDotNetBuild" ignore
 
-TargetCreate "PrepareReadMe" (fun _ ->
+Target "PrepareReadMe" (fun _ ->
     Actions.PrepareReadMe ((!Copyright).Replace("©", "&#xa9;").Replace("<","&lt;").Replace(">", "&gt;"))
 )
 
 // Post-packaging deployment touch test
 
-TargetCreate "Deployment" ignore
+Target "Deployment" ignore
 
-TargetCreate "Unpack" (fun _ ->
+Target "Unpack" (fun _ ->
   let nugget = !! "./_Packaging/*.nupkg" |> Seq.last
   let unpack = getFullName "_Packaging/Unpack"
   System.IO.Compression.ZipFile.ExtractToDirectory (nugget, unpack)
 )
 
-TargetCreate "SimpleReleaseTest" (fun _ ->
+Target "SimpleReleaseTest" (fun _ ->
     let unpack = getFullName "_Packaging/Unpack/tools/net45"
     if (unpack @@ "AltCover.exe") |> File.Exists then
       Actions.SimpleInstrumentingRun "_Binaries/Sample1/Debug+AnyCPU" unpack "SimpleReleaseTest"
@@ -724,7 +724,7 @@ TargetCreate "SimpleReleaseTest" (fun _ ->
           else printfn "Skipping -- AltCover.exe not packaged"
 )
 
-TargetCreate "SimpleMonoReleaseTest" (fun _ ->
+Target "SimpleMonoReleaseTest" (fun _ ->
     let unpack = getFullName "_Packaging/Unpack/tools/net45"
     if (unpack @@ "AltCover.exe") |> File.Exists then
       Actions.SimpleInstrumentingRun "_Mono/Sample1" unpack "SimpleMonoReleaseTest"
@@ -735,7 +735,7 @@ TargetCreate "SimpleMonoReleaseTest" (fun _ ->
           else printfn "Skipping -- AltCover.exe not packaged"
 )
 
-TargetCreate "ReleaseDotNetWithFramework" (fun _ ->
+Target "ReleaseDotNetWithFramework" (fun _ ->
     ensure "./_Reports"
     let unpack0 = getFullName "_Packaging/Unpack/tools/net45"
     let unpack1 = findToolInSubPath "AltCover.exe" "./packages"
@@ -759,7 +759,7 @@ TargetCreate "ReleaseDotNetWithFramework" (fun _ ->
     else printfn "Skipping -- AltCover.exe not packaged"
 )
 
-TargetCreate "ReleaseMonoWithDotNet" (fun _ ->
+Target "ReleaseMonoWithDotNet" (fun _ ->
     ensure "./_Reports"
     let unpack = getFullName "_Packaging/Unpack/tools/netcoreapp2.0/AltCover"
     let x = getFullName "./_Reports/ReleaseMonoWithDotNet.xml"
@@ -778,7 +778,7 @@ TargetCreate "ReleaseMonoWithDotNet" (fun _ ->
     Actions.ValidateSample1 "./_Reports/ReleaseMonoWithDotNet.xml" "ReleaseMonoWithDotNet"
 )
 
-TargetCreate "ReleaseDotNetWithDotNet" (fun _ ->
+Target "ReleaseDotNetWithDotNet" (fun _ ->
     ensure "./_Reports"
     let unpack = getFullName "_Packaging/Unpack/tools/netcoreapp2.0/AltCover"
     let x = getFullName "./_Reports/ReleaseDotNetWithDotNet.xml"
@@ -795,7 +795,7 @@ TargetCreate "ReleaseDotNetWithDotNet" (fun _ ->
     Actions.ValidateSample1 "./_Reports/ReleaseDotNetWithDotNet.xml" "ReleaseDotNetWithDotNet"
 )
 
-TargetCreate "ReleaseXUnitDotNetDemo" (fun _ ->
+Target "ReleaseXUnitDotNetDemo" (fun _ ->
     ensure "./_Reports"
     "./Demo/xunit-dotnet/bin" |> getFullName |> CleanDir
 
@@ -835,7 +835,7 @@ TargetCreate "ReleaseXUnitDotNetDemo" (fun _ ->
     Assert.That(visits, Is.EquivalentTo[3; 5; 3])
 )
 
-TargetCreate "ReleaseXUnitDotNetRunnerDemo" (fun _ ->
+Target "ReleaseXUnitDotNetRunnerDemo" (fun _ ->
     ensure "./_Reports"
     "./Demo/xunit-dotnet/bin" |> getFullName |> CleanDir
 
@@ -881,7 +881,7 @@ TargetCreate "ReleaseXUnitDotNetRunnerDemo" (fun _ ->
     Assert.That(visits, Is.EquivalentTo[3; 5; 3])
 )
 
-TargetCreate "ReleaseFSharpTypesDotNetRunner" ( fun _ ->
+Target "ReleaseFSharpTypesDotNetRunner" ( fun _ ->
     ensure "./_Reports"
     let unpack = getFullName "_Packaging/Unpack/tools/netcoreapp2.0/AltCover"
     let x = getFullName "./_Reports/AltCoverReleaseFSharpTypesDotNetRunner.xml"
@@ -912,7 +912,7 @@ TargetCreate "ReleaseFSharpTypesDotNetRunner" ( fun _ ->
     Actions.ValidateFSharpTypesCoverage x
 )
 
-TargetCreate "ReleaseXUnitFSharpTypesDotNet" ( fun _ ->
+Target "ReleaseXUnitFSharpTypesDotNet" ( fun _ ->
     ensure "./_Reports"
     let unpack = getFullName "_Packaging/Unpack/tools/netcoreapp2.0/AltCover"
     let x = getFullName "./_Reports/ReleaseXUnitFSharpTypesDotNet.xml"
@@ -935,7 +935,7 @@ TargetCreate "ReleaseXUnitFSharpTypesDotNet" ( fun _ ->
     Actions.ValidateFSharpTypesCoverage x
 )
 
-TargetCreate "ReleaseXUnitFSharpTypesDotNetRunner" ( fun _ ->
+Target "ReleaseXUnitFSharpTypesDotNetRunner" ( fun _ ->
     ensure "./_Reports"
     let unpack = getFullName "_Packaging/Unpack/tools/netcoreapp2.0/AltCover"
     let x = getFullName "./_Reports/ReleaseXUnitFSharpTypesDotNetRunner.xml"
@@ -967,7 +967,7 @@ TargetCreate "ReleaseXUnitFSharpTypesDotNetRunner" ( fun _ ->
 
 // AOB
 
-TargetCreate "BulkReport" (fun _ ->
+Target "BulkReport" (fun _ ->
     printfn "Overall coverage reporting"
     ensure "./_Reports/_BulkReport"
 
@@ -979,7 +979,7 @@ TargetCreate "BulkReport" (fun _ ->
                                           TargetDir = "_Reports/_BulkReport"})
 )
 
-TargetCreate "All" ignore
+Target "All" ignore
 
 // Dependencies
 
