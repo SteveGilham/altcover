@@ -5,7 +5,6 @@ open System.Xml.Linq
 
 open Actions
 
-open Fake.Core
 open Fake.Core.Environment
 open Fake.Core.Globbing.Operators
 open Fake.Core.Globbing.Tools
@@ -13,6 +12,7 @@ open Fake.Core.Process
 open Fake.Core.Target
 open Fake.Core.TargetOperators
 open Fake.DotNet
+open Fake.DotNet.Cli
 open Fake.DotNet.AssemblyInfoFile
 open Fake.DotNet.NuGet.NuGet
 open Fake.DotNet.Testing.NUnit3
@@ -43,10 +43,10 @@ let runningInMono = "Mono.Runtime" |> Type.GetType |> isNull |> not
 
 let programFiles = environVar "ProgramFiles"
 let programFiles86 = environVar "ProgramFiles(x86) "
-let dotnet' = "dotnet" |> tryFindFileOnPath
-let dotnet = match dotnet' with
-             | Some f -> f
-             | None -> combine Cli.DefaultDotnetCliDir "dotnet.exe"
+let dotnetPath = "dotnet" |> tryFindFileOnPath
+let dotnetOptions = match dotnetPath with
+                    | Some f -> {DotnetOptions.Default with DotnetCliPath = f}
+                    | None -> DotnetOptions.Default
 
 let monoOnWindows = if isWindows then
                        [programFiles; programFiles86]
@@ -58,7 +58,7 @@ let monoOnWindows = if isWindows then
 
 let TargetCreate s f =
   Description s
-  Target.Create s f
+  Create s f
 
 // Preparation
 
@@ -111,11 +111,13 @@ TargetCreate "BuildRelease" (fun _ ->
                                "DebugSymbols", "True"
                              ]})
 
-    Fake.DotNetCli.Build
+    "./altcover.core.sln"
+    |> DotnetCompile
         (fun p ->
             { p with
-                Configuration = "Release"
-                Project =  "./altcover.core.sln"})
+                Configuration = BuildConfiguration.Release
+                Common = dotnetOptions
+            })
 )
 
 TargetCreate "BuildDebug" (fun _ ->
@@ -130,11 +132,12 @@ TargetCreate "BuildDebug" (fun _ ->
                                "DebugSymbols", "True"
                              ]}))
 
-    Fake.DotNetCli.Build
+    "./altcover.core.sln"
+    |> DotnetCompile
         (fun p ->
             { p with
-                Configuration = "Debug"
-                Project =  "./altcover.core.sln"})
+                Configuration = BuildConfiguration.Debug
+                Common = dotnetOptions})
 )
 
 TargetCreate "BuildMonoSamples" (fun _ ->
@@ -251,7 +254,7 @@ TargetCreate "UnitTest" (fun _ ->
 
 TargetCreate "JustUnitTest" (fun _ ->
     ensure "./_Reports"
-    !! (@"_Binaries/*Tests/Debug+AnyCPU/*.Test*.dll") // Need to figure out why it doesn't build in Release
+    !! (@"_Binaries/*Tests/Debug+AnyCPU/*.Test*.dll")
     |> NUnit3 (fun p -> { p with ToolPath = findToolInSubPath "nunit3-console.exe" "."
                                  WorkingDir = "."
                                  ResultSpecs = ["./_Reports/JustUnitTestReport.xml"] })
@@ -261,11 +264,8 @@ TargetCreate "UnitTestDotNet" (fun _ ->
     ensure "./_Reports"
     !! (@"./*Tests/*.tests.core.fsproj")
     |> Seq.iter (fun f -> printfn "Testing %s" f
-                          Fake.DotNetCli.Test
-                             (fun p ->
-                                  { p with
-                                      Configuration = "Debug"
-                                      Project =  f}))
+                          let r = Dotnet dotnetOptions (" test --configuration Debug " + f)
+                          Assert.That (r.ExitCode, Is.EqualTo 0, sprintf "%A" r))
 )
 
 TargetCreate "UnitTestWithOpenCover" (fun _ ->
@@ -367,11 +367,9 @@ TargetCreate "UnitTestWithAltCoverCore" (fun _ ->
     Assert.That(result, Is.EqualTo 0, "first instrument returned with a non-zero exit code")
 
     printfn "Unit test the instrumented code"
-    let result = ExecProcess (fun info -> { info with
-                                                 FileName = "dotnet"
-                                                 WorkingDirectory = getFullName "Tests"
-                                                 Arguments = ("test --no-build --configuration Debug altcover.tests.core.fsproj")}) (TimeSpan.FromMinutes 5.0)
-    Assert.That(result, Is.EqualTo 0, "first test returned with a non-zero exit code")
+    let result = Dotnet {dotnetOptions with WorkingDirectory = getFullName "Tests"}
+                                         ("test --no-build --configuration Debug altcover.tests.core.fsproj")
+    Assert.That(result.ExitCode, Is.EqualTo 0, "first test returned with a non-zero exit code")
 
     printfn "Instrument the shadow tests"
     let shadowDir = "_Binaries/AltCover.Shadow.Tests/Debug+AnyCPU/netcoreapp2.0"
@@ -382,12 +380,11 @@ TargetCreate "UnitTestWithAltCoverCore" (fun _ ->
                                                  WorkingDirectory = shadowDir
                                                  Arguments = ("/sn=" + keyfile + AltCoverFilterG + @"/o=" + shadowOut + " -x=" + shadowReport)}) (TimeSpan.FromMinutes 5.0)
     Assert.That(result, Is.EqualTo 0, "second instrument returned with a non-zero exit code")
+
     printfn "Execute the shadow tests"
-    let result = ExecProcess (fun info -> { info with 
-                                                 FileName = "dotnet"
-                                                 WorkingDirectory = getFullName "Shadow.Tests"
-                                                 Arguments = ("test --no-build --configuration Debug altcover.recorder.tests.core.fsproj")}) (TimeSpan.FromMinutes 5.0)
-    Assert.That(result, Is.EqualTo 0, "second test returned with a non-zero exit code")
+    let result = Dotnet {dotnetOptions with WorkingDirectory = getFullName "Shadow.Tests"}
+                                         ("test --no-build --configuration Debug altcover.recorder.tests.core.fsproj")
+    Assert.That(result.ExitCode, Is.EqualTo 0, "second test returned with a non-zero exit code")
 
     ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
                                        ReportTypes = [ ReportGeneratorReportType.Html; ReportGeneratorReportType.Badges; ReportGeneratorReportType.XmlSummary]
@@ -406,8 +403,7 @@ TargetCreate "UnitTestWithAltCoverCoreRunner" (fun _ ->
     let altReport = reports @@ "UnitTestWithAltCoverCoreRunner.xml"
     printfn "Instrument the code"
     CleanDir output
-    let result = Cli.Dotnet {Cli.DotnetOptions.Default with WorkingDirectory = testDirectory
-                                                            DotnetCliPath = dotnet}
+    let result = Dotnet {dotnetOptions with WorkingDirectory = testDirectory}
                             ("run --project " + altcover +
                              " -- " + AltCoverFilter + " -x \"" + altReport + "\" /o \"" + output + "\"")
     Assert.That (result.ExitCode, Is.EqualTo 0)
@@ -415,8 +411,7 @@ TargetCreate "UnitTestWithAltCoverCoreRunner" (fun _ ->
     printfn "Unit test the instrumented code"
     let testproject = getFullName "./Tests/altcover.tests.core.fsproj"
 
-    let result = Cli.Dotnet {Cli.DotnetOptions.Default with WorkingDirectory = output
-                                                            DotnetCliPath = dotnet}
+    let result = Dotnet {dotnetOptions with WorkingDirectory = output}
                             ("run --project " + altcover +
                              " -- Runner -x \"dotnet\" -r \"" + output +
                              "\" -- test --no-build --configuration Debug " +
@@ -429,15 +424,13 @@ TargetCreate "UnitTestWithAltCoverCoreRunner" (fun _ ->
     let shadowOut = getFullName "Shadow.Tests/_Binaries/AltCover.Shadow.Tests/Debug+AnyCPU/netcoreapp2.0"
 
     CleanDir shadowOut
-    let result = Cli.Dotnet {Cli.DotnetOptions.Default with WorkingDirectory = shadowDir
-                                                            DotnetCliPath = dotnet}
+    let result = Dotnet {dotnetOptions with WorkingDirectory = shadowDir}
                             ("run --project " + altcover +
                              " -- " + AltCoverFilter + " -x \"" + shadowReport + "\" /o \"" + shadowOut + "\"")
     Assert.That (result.ExitCode, Is.EqualTo 0)
 
     let shadowProject = getFullName "./Shadow.Tests/altcover.recorder.tests.core.fsproj"
-    let result = Cli.Dotnet {Cli.DotnetOptions.Default with WorkingDirectory = shadowOut
-                                                            DotnetCliPath = dotnet}
+    let result = Dotnet {dotnetOptions with WorkingDirectory = shadowOut}
                             ("run --project " + altcover +
                              " -- Runner -x \"dotnet\" -r \"" + shadowOut +
                              "\" -- test --no-build --configuration Debug " +
@@ -478,19 +471,16 @@ TargetCreate "FSharpTypesDotNet" ( fun _ ->
     let simpleReport = (getFullName "./_Reports") @@ ( "AltCoverFSharpTypesDotNet.xml")
     let sampleRoot = getFullName "_Binaries/Sample2/Debug+AnyCPU/netcoreapp2.0"
     let instrumented = getFullName "Sample2/_Binaries/Sample2/Debug+AnyCPU/netcoreapp2.0"
-    let result = Cli.Dotnet {Cli.DotnetOptions.Default with WorkingDirectory = sampleRoot
-                                                            DotnetCliPath = dotnet}
+    let result = Dotnet {dotnetOptions with WorkingDirectory = sampleRoot}
                              ("run --project " + project + " -- -t \"System\\.\" -t \"Microsoft\\.\" -x \"" + simpleReport + "\" /o \"" + instrumented + "\"")
     Assert.That (result.ExitCode, Is.EqualTo 0)
 
     Actions.ValidateFSharpTypes simpleReport ["main"]
 
     printfn "Execute the instrumented tests"
-    let result = ExecProcess (fun info -> { info with 
-                                                 FileName = "dotnet"
-                                                 WorkingDirectory = getFullName "Sample2"
-                                                 Arguments = ("test --no-build --configuration Debug sample2.core.fsproj")}) (TimeSpan.FromMinutes 5.0)
-    Assert.That(result, Is.EqualTo 0, "sample test returned with a non-zero exit code")
+    let result = Dotnet {dotnetOptions with WorkingDirectory = getFullName "Sample2"}
+                            ("test --no-build --configuration Debug sample2.core.fsproj")
+    Assert.That(result.ExitCode, Is.EqualTo 0, "sample test returned with a non-zero exit code")
     Actions.ValidateFSharpTypesCoverage simpleReport
 )
 
@@ -502,8 +492,7 @@ TargetCreate "FSharpTypesDotNetRunner" ( fun _ ->
     let instrumented = getFullName "Sample2/_Binaries/Sample2/Debug+AnyCPU/netcoreapp2.0"
 
     // Instrument the code
-    let result = Cli.Dotnet {Cli.DotnetOptions.Default with WorkingDirectory = sampleRoot
-                                                            DotnetCliPath = dotnet}
+    let result = Dotnet {dotnetOptions with WorkingDirectory = sampleRoot}
                              ("run --project " + project + " --configuration Release -- -t \"System\\.\" -t \"Microsoft\\.\" -x \"" + simpleReport + "\" /o \"" + instrumented + "\"")
     Assert.That (result.ExitCode, Is.EqualTo 0)
 
@@ -512,8 +501,7 @@ TargetCreate "FSharpTypesDotNetRunner" ( fun _ ->
     printfn "Execute the instrumented tests"
     let sample2 = getFullName "./Sample2/sample2.core.fsproj"
 
-    let result = Cli.Dotnet {Cli.DotnetOptions.Default with WorkingDirectory = instrumented
-                                                            DotnetCliPath = dotnet}
+    let result = Dotnet {dotnetOptions with WorkingDirectory = instrumented}
                             ("run --project " + project +
                              " --configuration Release -- Runner -x \"dotnet\" -r \"" + instrumented +
                              "\" -- test --no-build --configuration Debug " +
@@ -546,7 +534,7 @@ TargetCreate "CSharpMonoWithDotNet" (fun _ ->
     let x = getFullName "./_Reports/CSharpMonoWithDotNet.xml"
     let o = getFullName "./_Mono/__Instrumented.CSharpMonoWithDotNet"
     let i = getFullName "./_Mono/Sample1"
-    let result = Cli.Dotnet {Cli.DotnetOptions.Default with DotnetCliPath = dotnet} 
+    let result = Dotnet dotnetOptions
                             ("run --project ./AltCover/altcover.core.fsproj -- -t \"System.\" -x \"" + x + "\" -o \"" + o + "\" -i \"" + i + "\"")
     Assert.That (result.ExitCode, Is.EqualTo 0)
 
@@ -564,11 +552,11 @@ TargetCreate "CSharpDotNetWithDotNet" (fun _ ->
     let x = getFullName "./_Reports/CSharpDotNetWithDotNet.xml"
     let o = getFullName "../_Binaries/Sample1/__Instrumented.CSharpDotNetWithDotNet"
     let i = getFullName "./_Binaries/Sample1/Debug+AnyCPU/netcoreapp2.0"
-    let result = Cli.Dotnet {Cli.DotnetOptions.Default with DotnetCliPath = dotnet} 
+    let result = Dotnet dotnetOptions
                             ("_Binaries/AltCover/Debug+AnyCPU/netcoreapp2.0/AltCover.dll -t \"System.\" -x \"" + x + "\" -o \"" + o + "\" -i \"" + i + "\"")
     Assert.That (result.ExitCode, Is.EqualTo 0)
 
-    let result = Cli.Dotnet {Cli.DotnetOptions.Default with DotnetCliPath = dotnet} 
+    let result = Dotnet dotnetOptions
                             (o @@ "Sample1.dll")
     Assert.That (result.ExitCode, Is.EqualTo 0)
 
@@ -587,7 +575,7 @@ TargetCreate "CSharpDotNetWithFramework" (fun _ ->
                                                  Arguments = ("-t=System\. -t=Microsoft\. -x=" + simpleReport + " /o=" + instrumented)}) (TimeSpan.FromMinutes 5.0)
     Assert.That (result, Is.EqualTo 0)
 
-    let result = Cli.Dotnet {Cli.DotnetOptions.Default with DotnetCliPath = dotnet} 
+    let result = Dotnet dotnetOptions 
                             (instrumented @@ "Sample1.dll")
     Assert.That (result.ExitCode, Is.EqualTo 0)
 
@@ -763,8 +751,7 @@ TargetCreate "ReleaseDotNetWithFramework" (fun _ ->
                                                    Arguments = ("-t=System\. -t=Microsoft\. -x=" + simpleReport + " /o=" + instrumented)}) (TimeSpan.FromMinutes 5.0)
       Assert.That (result, Is.EqualTo 0)
 
-      let result = Cli.Dotnet {Cli.DotnetOptions.Default with WorkingDirectory = instrumented
-                                                              DotnetCliPath = dotnet} "Sample1.dll"
+      let result = Dotnet {dotnetOptions with WorkingDirectory = instrumented} "Sample1.dll"
       Assert.That(result.ExitCode, Is.EqualTo 0)
 
       Actions.ValidateSample1 "./_Reports/ReleaseDotNetWithFramework.xml" "ReleaseDotNetWithFramework"
@@ -777,8 +764,7 @@ TargetCreate "ReleaseMonoWithDotNet" (fun _ ->
     let x = getFullName "./_Reports/ReleaseMonoWithDotNet.xml"
     let o = getFullName "./_Mono/__Instrumented.ReleaseMonoWithDotNet"
     let i = getFullName "./_Mono/Sample1"
-    let result = Cli.Dotnet {Cli.DotnetOptions.Default with WorkingDirectory = unpack
-                                                            DotnetCliPath = dotnet}
+    let result = Dotnet {dotnetOptions with WorkingDirectory = unpack}
                           ("run --project altcover.core.fsproj -- -x \"" + x + "\" -o \"" + o + "\" -i \"" + i + "\"")
     Assert.That(result.ExitCode, Is.EqualTo 0)
 
@@ -797,12 +783,11 @@ TargetCreate "ReleaseDotNetWithDotNet" (fun _ ->
     let x = getFullName "./_Reports/ReleaseDotNetWithDotNet.xml"
     let o = getFullName "./_Binaries/Sample1/__Instrumented.ReleaseDotNetWithDotNet"
     let i = getFullName "./_Binaries/Sample1/Debug+AnyCPU/netcoreapp2.0"
-    let result = Cli.Dotnet {Cli.DotnetOptions.Default with WorkingDirectory = unpack
-                                                            DotnetCliPath = dotnet}
+    let result = Dotnet {dotnetOptions with WorkingDirectory = unpack}
                           ("run --project altcover.core.fsproj -- -x \"" + x + "\" -o \"" + o + "\" -i \"" + i + "\"")
     Assert.That(result.ExitCode, Is.EqualTo 0)
 
-    let result = Cli.Dotnet {Cli.DotnetOptions.Default with DotnetCliPath = dotnet} 
+    let result = Dotnet dotnetOptions
                             (o @@ "Sample1.dll")
     Assert.That(result.ExitCode, Is.EqualTo 0)
 
@@ -812,25 +797,26 @@ TargetCreate "ReleaseDotNetWithDotNet" (fun _ ->
 TargetCreate "ReleaseXUnitDotNetDemo" (fun _ ->
     ensure "./_Reports"
     "./Demo/xunit-dotnet/bin" |> getFullName |> CleanDir
-    Fake.DotNetCli.Build
+
+    "./Demo/xunit-dotnet/xunit-dotnet.csproj"
+    |> DotnetCompile
         (fun p ->
             { p with
-                Configuration = "Debug"
-                Project =  "./Demo/xunit-dotnet/xunit-dotnet.csproj"})
+                Configuration = BuildConfiguration.Debug
+                Common = dotnetOptions})
+
     let unpack = getFullName "_Packaging/Unpack/tools/netcoreapp2.0/AltCover"
     let x = getFullName "./Demo/xunit-dotnet/bin/ReleaseXUnitDotNetDemo.xml"
     let o = getFullName "./Demo/xunit-dotnet/bin/Debug/netcoreapp2.0/__Instrumented.ReleaseXUnitDotNetDemo"
     let i = getFullName "./Demo/xunit-dotnet/bin/Debug/netcoreapp2.0"
-    let result = Cli.Dotnet {Cli.DotnetOptions.Default with WorkingDirectory = unpack
-                                                            DotnetCliPath = dotnet}
+    let result = Dotnet {dotnetOptions with WorkingDirectory = unpack}
                             ("run --project altcover.core.fsproj -- -x \"" + x + "\" -o \"" + o + "\" -i \"" + i + "\"")
     Assert.That(result.ExitCode, Is.EqualTo 0)
 
     !! (o @@ "*")
     |> Copy i
 
-    let result = Cli.Dotnet {Cli.DotnetOptions.Default with WorkingDirectory = getFullName "./Demo/xunit-dotnet"
-                                                            DotnetCliPath = dotnet}
+    let result = Dotnet {dotnetOptions with WorkingDirectory = getFullName "./Demo/xunit-dotnet"}
                     "test --no-build --configuration Debug xunit-dotnet.csproj"
     Assert.That(result.ExitCode, Is.EqualTo 1, "Unexpected unit test return")
 
@@ -851,17 +837,19 @@ TargetCreate "ReleaseXUnitDotNetDemo" (fun _ ->
 TargetCreate "ReleaseXUnitDotNetRunnerDemo" (fun _ ->
     ensure "./_Reports"
     "./Demo/xunit-dotnet/bin" |> getFullName |> CleanDir
-    Fake.DotNetCli.Build
+
+    "./Demo/xunit-dotnet/xunit-dotnet.csproj"
+    |> DotnetCompile
         (fun p ->
             { p with
-                Configuration = "Debug"
-                Project =  "./Demo/xunit-dotnet/xunit-dotnet.csproj"})
+                Configuration = BuildConfiguration.Debug
+                Common = dotnetOptions})
+
     let unpack = getFullName "_Packaging/Unpack/tools/netcoreapp2.0/AltCover"
     let x = getFullName "./Demo/xunit-dotnet/bin/ReleaseXUnitDotNetDemo.xml"
     let o = getFullName "./Demo/xunit-dotnet/bin/Debug/netcoreapp2.0/__Instrumented.ReleaseXUnitDotNetDemo"
     let i = getFullName "./Demo/xunit-dotnet/bin/Debug/netcoreapp2.0"
-    let result = Cli.Dotnet {Cli.DotnetOptions.Default with WorkingDirectory = unpack
-                                                            DotnetCliPath = dotnet}
+    let result = Dotnet {dotnetOptions with WorkingDirectory = unpack}
                           ("run --project altcover.core.fsproj -- -x \"" + x + "\" -o \"" + o + "\" -i \"" + i + "\"")
     Assert.That (result.ExitCode, Is.EqualTo 0)
 
@@ -871,8 +859,7 @@ TargetCreate "ReleaseXUnitDotNetRunnerDemo" (fun _ ->
     let runner = getFullName "_Packaging/Unpack/tools/netcoreapp2.0/AltCover/altcover.core.fsproj"
 
     // Run
-    let result = Cli.Dotnet {Cli.DotnetOptions.Default with WorkingDirectory  = o
-                                                            DotnetCliPath = dotnet}
+    let result = Dotnet {dotnetOptions with WorkingDirectory  = o}
                           ("run --project " + runner +
                           " -- Runner -x \"dotnet\" -r \"" + i +
                           "\" -w \"" + (getFullName "./Demo/xunit-dotnet") +
@@ -903,8 +890,7 @@ TargetCreate "ReleaseFSharpTypesDotNetRunner" ( fun _ ->
     CleanDir o
 
     // Instrument the code
-    let result = Cli.Dotnet {Cli.DotnetOptions.Default with WorkingDirectory = unpack
-                                                            DotnetCliPath = dotnet}
+    let result = Dotnet {dotnetOptions with WorkingDirectory = unpack}
                           ("run --project altcover.core.fsproj --configuration Release -- -x \"" + x + "\" -o \"" + o + "\" -i \"" + i + "\"")
     Assert.That (result.ExitCode, Is.EqualTo 0)
 
@@ -915,8 +901,7 @@ TargetCreate "ReleaseFSharpTypesDotNetRunner" ( fun _ ->
     let runner = getFullName "_Packaging/Unpack/tools/netcoreapp2.0/AltCover/altcover.core.fsproj"
 
     // Run
-    let result = Cli.Dotnet {Cli.DotnetOptions.Default with WorkingDirectory  = o
-                                                            DotnetCliPath = dotnet}
+    let result = Dotnet {dotnetOptions with WorkingDirectory = o}
                           ("run --project " + runner +
                           " --configuration Release -- Runner -x \"dotnet\" -r \"" + o +
                           "\" -- test --no-build --configuration Debug " +
@@ -936,19 +921,16 @@ TargetCreate "ReleaseXUnitFSharpTypesDotNet" ( fun _ ->
     CleanDir o
 
     // Instrument the code
-    let result = Cli.Dotnet {Cli.DotnetOptions.Default with WorkingDirectory  = unpack
-                                                            DotnetCliPath = dotnet}
+    let result = Dotnet {dotnetOptions with WorkingDirectory = unpack}
                           ("run --project altcover.core.fsproj -- -x \"" + x + "\" -o \"" + o + "\" -i \"" + i + "\"")
     Assert.That (result.ExitCode, Is.EqualTo 0)
 
     Actions.ValidateFSharpTypes x ["main"]
 
     printfn "Execute the instrumented tests"
-    let result = ExecProcess (fun info -> { info with
-                                                 FileName = "dotnet"
-                                                 WorkingDirectory = getFullName "Sample4"
-                                                 Arguments = ("test --no-build --configuration Debug sample4.core.fsproj")}) (TimeSpan.FromMinutes 5.0)
-    Assert.That(result, Is.EqualTo 0, "sample test returned with a non-zero exit code")
+    let result = Dotnet {dotnetOptions with WorkingDirectory = getFullName "Sample4"}
+                            ("test --no-build --configuration Debug sample4.core.fsproj")
+    Assert.That(result.ExitCode, Is.EqualTo 0, "sample test returned with a non-zero exit code")
     Actions.ValidateFSharpTypesCoverage x
 )
 
@@ -962,8 +944,7 @@ TargetCreate "ReleaseXUnitFSharpTypesDotNetRunner" ( fun _ ->
     CleanDir o
 
     // Instrument the code
-    let result = Cli.Dotnet {Cli.DotnetOptions.Default with WorkingDirectory  = unpack
-                                                            DotnetCliPath = dotnet}
+    let result = Dotnet {dotnetOptions with WorkingDirectory = unpack}
                           ("run --project altcover.core.fsproj --configuration Release -- -x \"" + x + "\" -o \"" + o + "\" -i \"" + i + "\"")
     Assert.That (result.ExitCode, Is.EqualTo 0)
 
@@ -974,8 +955,7 @@ TargetCreate "ReleaseXUnitFSharpTypesDotNetRunner" ( fun _ ->
     let runner = getFullName "_Packaging/Unpack/tools/netcoreapp2.0/AltCover/altcover.core.fsproj"
 
     // Run
-    let result = Cli.Dotnet {Cli.DotnetOptions.Default with WorkingDirectory  = o
-                                                            DotnetCliPath = dotnet}
+    let result = Dotnet {dotnetOptions with WorkingDirectory = o}
                           ("run --project " + runner +
                           " --configuration Release -- Runner -x \"dotnet\" -r \"" + o +
                           "\" -- test --no-build --configuration Debug " +
