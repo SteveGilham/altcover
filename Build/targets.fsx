@@ -21,6 +21,7 @@ open Fake.IO
 open Fake.IO.Directory
 open Fake.IO.FileSystemOperators
 open Fake.IO.Path
+open Fake.IO.Shell
 
 //=========== awkward cases
 open Fake.FileHelper
