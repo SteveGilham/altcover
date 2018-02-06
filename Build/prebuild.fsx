@@ -40,7 +40,6 @@ nuget Fake.DotNet.NuGet prerelease
 nuget Fake.DotNet.Testing.NUnit prerelease
 nuget Fake.DotNet.Testing.OpenCover prerelease
 nuget Fake.IO.FileSystem prerelease
-nuget FSharpLint.Core >= 0.9.0
 nuget FSharpLint.Fake >= 0.9.0
 nuget YamlDotNet >= 4.3.0 //"
 #I @"{2}"
