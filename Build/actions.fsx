@@ -4,11 +4,11 @@ open System.Reflection
 open System.Xml
 open System.Xml.Linq
 
+open Fake.Core.Environment
+open Fake.Core.Process
 open Fake.IO.Directory
 open Fake.IO.FileSystemOperators
 open Fake.IO.Path
-open Fake.EnvironmentHelper
-open Fake.ProcessHelper
 
 open FSharp.Markdown
 open NUnit.Framework
@@ -173,13 +173,15 @@ open System.Runtime.CompilerServices
     let binRoot = getFullName binaryPath
     let sampleRoot = getFullName samplePath
     let instrumented = "__Instrumented." + reportSigil
-    let result = ExecProcess (fun info -> info.FileName <- binRoot @@ "AltCover.exe"
-                                          info.WorkingDirectory <- sampleRoot
-                                          info.Arguments <- ("\"-t=System\\.\" -x=" + simpleReport + " /o=./" + instrumented)) (TimeSpan.FromMinutes 5.0)
+    let result = ExecProcess (fun info -> { info with 
+                                                 FileName = binRoot @@ "AltCover.exe"
+                                                 WorkingDirectory = sampleRoot
+                                                 Arguments = ("\"-t=System\\.\" -x=" + simpleReport + " /o=./" + instrumented)}) (TimeSpan.FromMinutes 5.0)
     Assert.That(result, Is.EqualTo 0, "Simple instrumentation failed")
-    let result2 = ExecProcess (fun info -> info.FileName <- sampleRoot @@ (instrumented + "/Sample1.exe")
-                                           info.WorkingDirectory <- (sampleRoot @@ instrumented)
-                                           info.Arguments <- "") (TimeSpan.FromMinutes 5.0)
+    let result2 = ExecProcess (fun info -> { info with
+                                                  FileName = sampleRoot @@ (instrumented + "/Sample1.exe")
+                                                  WorkingDirectory = (sampleRoot @@ instrumented)
+                                                  Arguments = ""}) (TimeSpan.FromMinutes 5.0)
     Assert.That(result2, Is.EqualTo 0, "Instrumented .exe failed")
     ValidateSample1 simpleReport reportSigil
 
@@ -193,13 +195,15 @@ open System.Runtime.CompilerServices
     let binRoot = getFullName binaryPath
     let sampleRoot = getFullName samplePath
     let instrumented = "__Instrumented." + reportSigil
-    let result = ExecProcess (fun info -> info.FileName <- mono
-                                          info.WorkingDirectory <- sampleRoot
-                                          info.Arguments <- ((binRoot @@ "AltCover.exe") + " \"-t=System\\.\" -x=" + simpleReport + " /o=./" + instrumented)) (TimeSpan.FromMinutes 5.0)
+    let result = ExecProcess (fun info -> { info with
+                                                 FileName = mono
+                                                 WorkingDirectory = sampleRoot
+                                                 Arguments = ((binRoot @@ "AltCover.exe") + " \"-t=System\\.\" -x=" + simpleReport + " /o=./" + instrumented)}) (TimeSpan.FromMinutes 5.0)
     Assert.That(result, Is.EqualTo 0, "Simple instrumentation failed")
-    let result2 = ExecProcess (fun info -> info.FileName <- sampleRoot @@ (instrumented + "/Sample1.exe")
-                                           info.WorkingDirectory <- (sampleRoot @@ instrumented)
-                                           info.Arguments <- "") (TimeSpan.FromMinutes 5.0)
+    let result2 = ExecProcess (fun info -> { info with
+                                                  FileName = sampleRoot @@ (instrumented + "/Sample1.exe")
+                                                  WorkingDirectory = (sampleRoot @@ instrumented)
+                                                  Arguments = ""}) (TimeSpan.FromMinutes 5.0)
     Assert.That(result2, Is.EqualTo 0, "Instrumented .exe failed")
     ValidateSample1 simpleReport reportSigil
    | None -> Assert.Fail "Mono executable expected"

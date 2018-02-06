@@ -1,3 +1,5 @@
+#r "paket:
+nuget Fake.Core.Target prerelease //"
 open System
 open System.IO
 
@@ -26,18 +28,20 @@ let nlib = Directory.GetFiles(here, "*framework.dll", SearchOption.AllDirectorie
             |> Path.GetDirectoryName
 
 let build = """#r "paket:
-nuget Fake.Core.Target prerelease //"
-#r "paket:
-nuget FSharpLint.Core prerelease //"
-#r "FSharpLint.Core.dll"
-//#I @"{0}" // include Fake lib
-//#r "FakeLib.dll"
-//#I @"{1}"
-//#r "FSharpLint.Fake.dll"
+nuget FAKE prerelease
+nuget Fake.Core.Target prerelease
+nuget Fake.Core.Environment prerelease
+nuget Fake.Core.Globbing prerelease
+nuget Fake.Core.Process prerelease
+nuget Fake.IO.FileSystem prerelease
+nuget Fake.DotNet.AssemblyInfoFile prerelease
+nuget Fake.DotNet.MsBuild prerelease
+nuget Fake.DotNet.NuGet prerelease
+nuget Fake.DotNet.Testing.NUnit prerelease
+nuget YamlDotNet >= 4.3.0
+nuget FSharpLint.Fake >= 0.9.0 //"
 #I @"{2}"
 #r "FSharp.Markdown.dll"
-#I @"{3}"
-#r "YamlDotNet.dll"
 #I @"{4}"
 #r "nunit.framework.dll"
 #r "System.IO.Compression.FileSystem.dll"
