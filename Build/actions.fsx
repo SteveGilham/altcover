@@ -4,11 +4,11 @@ open System.Reflection
 open System.Xml
 open System.Xml.Linq
 
+open Fake.Core.Environment
+open Fake.Core.Process
 open Fake.IO.Directory
 open Fake.IO.FileSystemOperators
 open Fake.IO.Path
-open Fake.EnvironmentHelper
-open Fake.ProcessHelper
 
 open FSharp.Markdown
 open NUnit.Framework
@@ -25,8 +25,8 @@ module Actions =
         // arrange so leaves get deleted first, avoiding "does not exist" warnings
         |> Seq.groupBy (fun x -> x |> Seq.filter (fun c -> c='\\' || c = '/') |> Seq.length)
         |> Seq.map (fun (n,x) -> (n, x |> Seq.sort))
-        |> Seq.sortBy (fun (n,x) -> -1 * n)
-        |> Seq.map (fun (n,x) -> x)
+        |> Seq.sortBy (fun p -> -1 * (fst p))
+        |> Seq.map snd
         |> Seq.concat
         |> Seq.iter (fun n -> printfn "Deleting %s" n
                               Directory.Delete(n, true))
@@ -112,9 +112,9 @@ open System.Runtime.CompilerServices
     // Fix up symbol file to have the MVId emitted by the System.Reflection.Emit code
     files
     |> Seq.iter (fun f -> let assembly = System.Reflection.Assembly.ReflectionOnlyLoadFrom (Path.GetFullPath f)
-                          let mvid = assembly.ManifestModule.ModuleVersionId.ToByteArray();
+                          let mvid = assembly.ManifestModule.ModuleVersionId
                           let symbols = System.IO.File.ReadAllBytes(f + ".mdb")
-                          mvid |> Array.iteri (fun i x -> symbols.[i+16] <- x)
+                          mvid.ToByteArray() |> Array.iteri (fun i x -> symbols.[i+16] <- x)
                           System.IO.File.WriteAllBytes(f + ".mdb", symbols))
 
   let ValidateFSharpTypes simpleReport others =
@@ -173,13 +173,15 @@ open System.Runtime.CompilerServices
     let binRoot = getFullName binaryPath
     let sampleRoot = getFullName samplePath
     let instrumented = "__Instrumented." + reportSigil
-    let result = ExecProcess (fun info -> info.FileName <- binRoot @@ "AltCover.exe"
-                                          info.WorkingDirectory <- sampleRoot
-                                          info.Arguments <- ("\"-t=System\\.\" -x=" + simpleReport + " /o=./" + instrumented)) (TimeSpan.FromMinutes 5.0)
+    let result = ExecProcess (fun info -> { info with 
+                                                 FileName = binRoot @@ "AltCover.exe"
+                                                 WorkingDirectory = sampleRoot
+                                                 Arguments = ("\"-t=System\\.\" -x=" + simpleReport + " /o=./" + instrumented)}) (TimeSpan.FromMinutes 5.0)
     Assert.That(result, Is.EqualTo 0, "Simple instrumentation failed")
-    let result2 = ExecProcess (fun info -> info.FileName <- sampleRoot @@ (instrumented + "/Sample1.exe")
-                                           info.WorkingDirectory <- (sampleRoot @@ instrumented)
-                                           info.Arguments <- "") (TimeSpan.FromMinutes 5.0)
+    let result2 = ExecProcess (fun info -> { info with
+                                                  FileName = sampleRoot @@ (instrumented + "/Sample1.exe")
+                                                  WorkingDirectory = (sampleRoot @@ instrumented)
+                                                  Arguments = ""}) (TimeSpan.FromMinutes 5.0)
     Assert.That(result2, Is.EqualTo 0, "Instrumented .exe failed")
     ValidateSample1 simpleReport reportSigil
 
@@ -193,13 +195,15 @@ open System.Runtime.CompilerServices
     let binRoot = getFullName binaryPath
     let sampleRoot = getFullName samplePath
     let instrumented = "__Instrumented." + reportSigil
-    let result = ExecProcess (fun info -> info.FileName <- mono
-                                          info.WorkingDirectory <- sampleRoot
-                                          info.Arguments <- ((binRoot @@ "AltCover.exe") + " \"-t=System\\.\" -x=" + simpleReport + " /o=./" + instrumented)) (TimeSpan.FromMinutes 5.0)
+    let result = ExecProcess (fun info -> { info with
+                                                 FileName = mono
+                                                 WorkingDirectory = sampleRoot
+                                                 Arguments = ((binRoot @@ "AltCover.exe") + " \"-t=System\\.\" -x=" + simpleReport + " /o=./" + instrumented)}) (TimeSpan.FromMinutes 5.0)
     Assert.That(result, Is.EqualTo 0, "Simple instrumentation failed")
-    let result2 = ExecProcess (fun info -> info.FileName <- sampleRoot @@ (instrumented + "/Sample1.exe")
-                                           info.WorkingDirectory <- (sampleRoot @@ instrumented)
-                                           info.Arguments <- "") (TimeSpan.FromMinutes 5.0)
+    let result2 = ExecProcess (fun info -> { info with
+                                                  FileName = sampleRoot @@ (instrumented + "/Sample1.exe")
+                                                  WorkingDirectory = (sampleRoot @@ instrumented)
+                                                  Arguments = ""}) (TimeSpan.FromMinutes 5.0)
     Assert.That(result2, Is.EqualTo 0, "Instrumented .exe failed")
     ValidateSample1 simpleReport reportSigil
    | None -> Assert.Fail "Mono executable expected"
