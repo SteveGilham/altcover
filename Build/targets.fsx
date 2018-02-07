@@ -802,6 +802,7 @@ Target "ReleaseDotNetWithDotNet" (fun _ ->
 )
 
 Target "ReleaseXUnitDotNetDemo" (fun _ ->
+  try
     ensure "./_Reports"
     "./Demo/xunit-dotnet/bin" |> getFullName |> CleanDir
 
@@ -839,9 +840,12 @@ Target "ReleaseXUnitDotNetDemo" (fun _ ->
                         |> Seq.length)
 
     Assert.That(visits, Is.EquivalentTo[3; 5; 3])
+  finally
+    Console.ResetColor()
 )
 
 Target "ReleaseXUnitDotNetRunnerDemo" (fun _ ->
+  try
     ensure "./_Reports"
     "./Demo/xunit-dotnet/bin" |> getFullName |> CleanDir
 
@@ -885,6 +889,8 @@ Target "ReleaseXUnitDotNetRunnerDemo" (fun _ ->
                         |> Seq.length)
 
     Assert.That(visits, Is.EquivalentTo[3; 5; 3])
+  finally
+    Console.ResetColor()
 )
 
 Target "ReleaseFSharpTypesDotNetRunner" ( fun _ ->
