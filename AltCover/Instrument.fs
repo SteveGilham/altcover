@@ -27,7 +27,6 @@ module Instrument =
   /// </summary>
   [<ExcludeFromCodeCoverage>]
   type internal Context = { InstrumentedAssemblies : string list
-                            RenameTable : Dictionary<String, String>
                             ModuleId : Guid
                             RecordingAssembly : AssemblyDefinition
                             RecordingMethod : MethodDefinition // initialised once
@@ -36,7 +35,6 @@ module Instrument =
                             MethodWorker : ILProcessor } // to save fetching repeatedly
   with static member Build assemblies =
                     { InstrumentedAssemblies = assemblies
-                      RenameTable = null
                       ModuleId = Guid.Empty
                       RecordingAssembly = null
                       RecordingMethod = null
@@ -266,46 +264,14 @@ module Instrument =
       instrLoadModuleId
 
   /// <summary>
-  /// Determine new names for input strongnamed assemblies; if we have a key and
-  /// the assembly was already strongnamed then give it the new key token, otherwise
+  /// Determine new names for input strong-named assemblies; if we have a key and
+  /// the assembly was already strong-named then give it the new key token, otherwise
   /// set that there is no strongname.
   /// </summary>
   /// <param name="assembly">The assembly object being operated upon</param>
-  /// <param name="path">The names of all assemblies of interest</param>
-  /// <returns>Map from input to output names</returns>
-  let internal UpdateStrongReferences (assembly : AssemblyDefinition) (assemblies : string list) =
+  let internal UpdateStrongReferences (assembly : AssemblyDefinition) =
     let effectiveKey = if assembly.Name.HasPublicKey then Visitor.defaultStrongNameKey else None
     UpdateStrongNaming assembly.Name effectiveKey
-
-    // TODO -- is this lookup table still of any use??
-    let assemblyReferenceSubstitutions = new Dictionary<String, String>()
-#if NETCOREAPP2_0
-#else
-    let interestingReferences =  assembly.MainModule.AssemblyReferences
-                                 |> Seq.cast<AssemblyNameReference>
-                                 |> Seq.filter (fun x -> assemblies |> List.exists (fun y -> y.Equals(x.Name)))
-
-    interestingReferences
-    |> Seq.iter (fun r -> let original = r.ToString()
-                          let token = KnownToken r
-                          let effectiveKey = match token with
-                                             | None -> Visitor.defaultStrongNameKey
-                                                       |> Option.map KeyStore.KeyToRecord
-                                             | Some _ -> token
-
-                          match effectiveKey with
-                          | None -> r.HasPublicKey <- false
-                                    r.PublicKeyToken <- null
-                                    r.PublicKey <- null
-                          | Some key -> r.HasPublicKey <- true
-                                        r.PublicKey <- key.Pair.PublicKey // implicitly sets token
-
-                          let updated = r.ToString()
-                          if  not <| updated.Equals(original, StringComparison.Ordinal) then
-                            assemblyReferenceSubstitutions.[original] <- updated
-                  )
-#endif
-    assemblyReferenceSubstitutions
 
   let internal injectJSON json =
     let o = JObject.Parse json
@@ -356,10 +322,9 @@ module Instrument =
      match node with
      | Start _ -> let recorder = typeof<AltCover.Recorder.Tracer>
                   { state with RecordingAssembly = PrepareAssembly(recorder.Assembly.Location) }
-     | Assembly (assembly, _, included) -> let updates = UpdateStrongReferences assembly state.InstrumentedAssemblies
-                                           if included then
+     | Assembly (assembly, _, included) -> if included then
                                               assembly.MainModule.AssemblyReferences.Add(state.RecordingAssembly.Name)
-                                           { state with RenameTable = updates } // TODO use this (attribute mappings IIRC)
+                                           state
      | Module (m, _, included) ->
          let restate = match included with
                        | true ->
