@@ -247,20 +247,28 @@ Target "UnitTest" (fun _ ->
 
 Target "JustUnitTest" (fun _ ->
     ensure "./_Reports"
-    !! (@"_Binaries/*Tests/Debug+AnyCPU/*.Test*.dll")
-    |> NUnit3 (fun p -> { p with ToolPath = findToolInSubPath "nunit3-console.exe" "."
-                                 WorkingDir = "."
-                                 Labels = LabelsLevel.All
-                                 ResultSpecs = ["./_Reports/JustUnitTestReport.xml"] })
+    try
+      !! (@"_Binaries/*Tests/Debug+AnyCPU/*.Test*.dll")
+      |> NUnit3 (fun p -> { p with ToolPath = findToolInSubPath "nunit3-console.exe" "."
+                                   WorkingDir = "."
+                                   Labels = LabelsLevel.All
+                                   ResultSpecs = ["./_Reports/JustUnitTestReport.xml"] })
+    with
+    | x -> printfn "%A" x
+           reraise ()
 )
 
 Target "UnitTestDotNet" (fun _ ->
     ensure "./_Reports"
-    !! (@"./*Tests/*.tests.core.fsproj")
-    |> Seq.iter (fun f -> printfn "Testing %s" f
-                          Actions.RunDotnet dotnetOptions
-                                            (" test --configuration Debug " + f)
-                                            f)
+    try
+      !! (@"./*Tests/*.tests.core.fsproj")
+      |> Seq.iter (fun f -> printfn "Testing %s" f
+                            Actions.RunDotnet dotnetOptions
+                                              (" test --configuration Debug " + f)
+                                              f)
+    with
+    | x -> printfn "%A" x
+           reraise ()
 )
 
 Target "UnitTestWithOpenCover" (fun _ ->
@@ -269,16 +277,20 @@ Target "UnitTestWithOpenCover" (fun _ ->
                     //|> Seq.map (fun f -> f.FullName)
     let coverage = getFullName "_Reports/UnitTestWithOpenCover.xml"
 
-    OpenCover.Run (fun p -> { p with
-                                 WorkingDir = "."
-                                 ExePath = findToolInSubPath "OpenCover.Console.exe" "."
-                                 TestRunnerExePath = findToolInSubPath "nunit3-console.exe" "."
-                                 Filter = "+[AltCover]* +[AltCover.Shadow]* +[AltCover.Runner]* -[*]Microsoft.* -[*]System.* -[Sample*]*"
-                                 MergeByHash = true
-                                 OptionalArguments = "-excludebyattribute:*ExcludeFromCodeCoverageAttribute;*ProgIdAttribute"
-                                 Register = OpenCover.RegisterType.RegisterUser
-                                 Output = coverage })
-        (String.Join(" ", testFiles) + " --result=./_Reports/UnitTestWithOpenCoverReport.xml")
+    try
+      OpenCover.Run (fun p -> { p with
+                                   WorkingDir = "."
+                                   ExePath = findToolInSubPath "OpenCover.Console.exe" "."
+                                   TestRunnerExePath = findToolInSubPath "nunit3-console.exe" "."
+                                   Filter = "+[AltCover]* +[AltCover.Shadow]* +[AltCover.Runner]* -[*]Microsoft.* -[*]System.* -[Sample*]*"
+                                   MergeByHash = true
+                                   OptionalArguments = "-excludebyattribute:*ExcludeFromCodeCoverageAttribute;*ProgIdAttribute"
+                                   Register = OpenCover.RegisterType.RegisterUser
+                                   Output = coverage })
+          (String.Join(" ", testFiles) + " --result=./_Reports/UnitTestWithOpenCoverReport.xml")
+    with
+    | x -> printfn "%A" x
+           reraise ()
 
     ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
                                        ReportTypes = [ ReportGeneratorReportType.Html; ReportGeneratorReportType.Badges; ReportGeneratorReportType.XmlSummary ]
@@ -369,9 +381,13 @@ Target "UnitTestWithAltCoverCore" (fun _ ->
                 "first instrument returned with a non-zero exit code"
 
     printfn "Unit test the instrumented code"
-    Actions.RunDotnet {dotnetOptions with WorkingDirectory = getFullName "Tests"}
-                      ("test --no-build --configuration Debug altcover.tests.core.fsproj")
-                      "first test returned with a non-zero exit code"
+    try
+      Actions.RunDotnet {dotnetOptions with WorkingDirectory = getFullName "Tests"}
+                        ("test --no-build --configuration Debug altcover.tests.core.fsproj")
+                        "first test returned with a non-zero exit code"
+    with
+    | x -> printfn "%A" x
+           reraise ()
 
     printfn "Instrument the shadow tests"
     let shadowDir = "_Binaries/AltCover.Shadow.Tests/Debug+AnyCPU/netcoreapp2.0"
