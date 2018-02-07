@@ -6,6 +6,7 @@ open System.Xml.Linq
 
 open Fake.Core.Environment
 open Fake.Core.Process
+open Fake.DotNet.Cli
 open Fake.IO.Directory
 open Fake.IO.FileSystemOperators
 open Fake.IO.Path
@@ -173,7 +174,7 @@ open System.Runtime.CompilerServices
     let binRoot = getFullName binaryPath
     let sampleRoot = getFullName samplePath
     let instrumented = "__Instrumented." + reportSigil
-    let result = ExecProcess (fun info -> { info with 
+    let result = ExecProcess (fun info -> { info with
                                                  FileName = binRoot @@ "AltCover.exe"
                                                  WorkingDirectory = sampleRoot
                                                  Arguments = ("\"-t=System\\.\" -x=" + simpleReport + " /o=./" + instrumented)}) (TimeSpan.FromMinutes 5.0)
@@ -243,3 +244,26 @@ let PrepareReadMe packingCopyright =
 
     let packable = getFullName "./_Binaries/README.html"
     xmlform.Save packable
+
+let HandleResults (msg:string) (result:ProcessResult) =
+    String.Join (Environment.NewLine, result.Messages) |> printfn "%s"
+    let save = (Console.ForegroundColor, Console.BackgroundColor)
+    match result.Errors |> Seq.toList with
+    | [] -> ()
+    | errors ->
+        try
+            Console.ForegroundColor <- ConsoleColor.Black
+            Console.BackgroundColor <- ConsoleColor.White
+            String.Join (Environment.NewLine, errors) |> eprintfn "%s"
+        finally
+            Console.ForegroundColor <- fst save
+            Console.BackgroundColor <- snd save
+    Assert.That(result.ExitCode, Is.EqualTo 0, msg)
+
+let Run (f:ProcStartInfo -> ProcStartInfo) msg =
+    ExecProcessAndReturnMessages f (TimeSpan.FromMinutes 5.0)
+    |> (HandleResults msg)
+
+let RunDotnet (o:DotnetOptions) args msg =
+    Dotnet o args
+    |> (HandleResults msg)
