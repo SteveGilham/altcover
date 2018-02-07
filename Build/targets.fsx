@@ -174,11 +174,12 @@ Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standal
                                 "_Binaries/AltCover/Debug+AnyCPU/AltCover.exe"
                                 "_Binaries/AltCover.Shadow/Debug+AnyCPU/AltCover.Shadow.dll"
                                ])
-    let r = ExecProcess (fun info -> { info with
-                                            FileName = (findToolInSubPath "gendarme.exe" "./packages")
-                                            WorkingDirectory = "."
-                                            Arguments = "--severity all --confidence all --config ./Build/rules.xml --console --html ./_Reports/gendarme.html " + subjects}) (TimeSpan.FromMinutes 5.0)
-    Assert.That(r, Is.EqualTo 0, sprintf "Gendarme Errors were detected %A" r)
+    let r = ExecProcessAndReturnMessages (fun info -> { info with
+                                                             FileName = (findToolInSubPath "gendarme.exe" "./packages")
+                                                             WorkingDirectory = "."
+                                                             Arguments = "--severity all --confidence all --config ./Build/rules.xml --console --html ./_Reports/gendarme.html " + subjects}) (TimeSpan.FromMinutes 5.0)
+    printfn "%A" r
+    Assert.That(r.ExitCode, Is.EqualTo 0, "Gendarme Errors were detected")
 )
 
 Target "FxCop" (fun _ -> // Needs debug because release is compiled --standalone which contaminates everything
