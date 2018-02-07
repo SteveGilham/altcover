@@ -178,7 +178,8 @@ Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standal
                                                              FileName = (findToolInSubPath "gendarme.exe" "./packages")
                                                              WorkingDirectory = "."
                                                              Arguments = "--severity all --confidence all --config ./Build/rules.xml --console --html ./_Reports/gendarme.html " + subjects}) (TimeSpan.FromMinutes 5.0)
-    printfn "%A" r
+    String.Join (Environment.NewLine, r.Messages) |> printfn "%s"
+    String.Join (Environment.NewLine, r.Errors) |> printfn "%s"
     Assert.That(r.ExitCode, Is.EqualTo 0, "Gendarme Errors were detected")
 )
 
