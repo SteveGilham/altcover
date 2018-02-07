@@ -23,6 +23,7 @@ type internal Message =
     | AsyncItem of Carrier
     | Item of Carrier*AsyncReplyChannel<unit>
     | Finish of Close * AsyncReplyChannel<unit>
+    | Kill
 
 module Instance =
 
@@ -119,6 +120,7 @@ module Instance =
           async {
              let! msg = inbox.Receive(1000)
              match msg with
+             | Kill -> ()
              | AsyncItem (SequencePoint (moduleId, hitPointId)) ->
                  VisitImpl moduleId hitPointId
                  return! loop inbox moduleId
@@ -151,8 +153,14 @@ module Instance =
      VisitSelection (fun () -> trace.IsConnected() || mailbox.CurrentQueueLength > 1000)
        moduleId hitPointId
 
+  let here = Assembly.GetExecutingAssembly().GetName().Name
+
   let internal FlushCounter (finish:Close) _ =
-    mailbox.PostAndReply (fun c -> Finish (finish, c))
+    if here <> "AltCover.Recorder" then
+      mailbox.PostAndReply (fun c -> Finish (finish, c))
+    else 
+      Kill  |> mailbox.Post
+      printfn "Flushing %A" finish
 
   // unit test helpers -- avoid issues with cross CLR version calls
   let internal Peek () =
