@@ -309,13 +309,17 @@ Target "UnitTestWithAltCover" (fun _ ->
       Assert.That(result, Is.EqualTo 0, "Re-instrument returned with a non-zero exit code")
 
       printfn "Unit test the instrumented code"
-      [ !! "_Binaries/AltCover.Tests/Debug+AnyCPU/__UnitTestWithAltCover/*.Tests.dll"
-        !! "_Binaries/AltCover.Tests/Debug+AnyCPU/__UnitTestWithAltCover/*ple2.dll"]
-      |> Seq.concat |> Seq.distinct
-      |> NUnit3 (fun p -> { p with ToolPath = findToolInSubPath "nunit3-console.exe" "."
-                                   WorkingDir = "."
-                                   //Labels = LabelsLevel.All
-                                   ResultSpecs = ["./_Reports/UnitTestWithAltCoverReport.xml"] })
+      try
+        [ !! "_Binaries/AltCover.Tests/Debug+AnyCPU/__UnitTestWithAltCover/*.Tests.dll"
+          !! "_Binaries/AltCover.Tests/Debug+AnyCPU/__UnitTestWithAltCover/*ple2.dll"]
+        |> Seq.concat |> Seq.distinct
+        |> NUnit3 (fun p -> { p with ToolPath = findToolInSubPath "nunit3-console.exe" "."
+                                     WorkingDir = "."
+                                     Labels = LabelsLevel.All
+                                     ResultSpecs = ["./_Reports/UnitTestWithAltCoverReport.xml"] })
+      with
+      | x -> printfn "%A" x
+             reraise ()
 
       printfn "Instrument the shadow tests"
       let shadowDir = getFullName  "_Binaries/AltCover.Shadow.Tests/Debug+AnyCPU"
