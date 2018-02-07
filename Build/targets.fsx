@@ -180,17 +180,6 @@ Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standal
                                             Arguments = "--severity all --confidence all --config ./Build/rules.xml --console --html ./_Reports/gendarme.html " + subjects}) (TimeSpan.FromMinutes 5.0)
     Assert.That(r, Is.EqualTo 0, "Gendarme Errors were detected")
 )
-// Travis TODO
-(*
-------------------------------------------------------------
-1. AvoidLongMethodsRule
-* Target:   AltCover.Instrument/Context AltCover.Instrument::InstrumentationVisitor(AltCover.Instrument/Context,AltCover.Node)
-* Details:  Method IL Size: 324. Maximum Size: 165
-* Target:   Microsoft.FSharp.Collections.FSharpList`1<System.Xml.Linq.XElement> AltCover.Report/ReportVisitor@22::Invoke(Microsoft.FSharp.Collections.FSharpList`1<System.Xml.Linq.XElement>,AltCover.Node)
-* Details:  Method IL Size: 419. Maximum Size: 165
-* Target:   System.Collections.Generic.IEnumerable`1<AltCover.Node> AltCover.Visitor::Deeper(AltCover.Node)
-* Details:  Method IL Size: 182. Maximum Size: 165
-*)
 
 Target "FxCop" (fun _ -> // Needs debug because release is compiled --standalone which contaminates everything
     ensure "./_Reports"
@@ -293,7 +282,7 @@ Target "UnitTestWithOpenCover" (fun _ ->
         [coverage]
 
     if not <| String.IsNullOrWhiteSpace (environVar "APPVEYOR_BUILD_NUMBER") then
-            ExecProcess (fun info -> { info with 
+            ExecProcess (fun info -> { info with
                                             FileName = findToolInSubPath "coveralls.net.exe" "."
                                             WorkingDirectory = "_Reports"
                                             Arguments = ("--opencover " + coverage)}) (TimeSpan.FromMinutes 5.0)
@@ -331,7 +320,7 @@ Target "UnitTestWithAltCover" (fun _ ->
       printfn "Instrument the shadow tests"
       let shadowDir = getFullName  "_Binaries/AltCover.Shadow.Tests/Debug+AnyCPU"
       let shadowReport = reports @@ "ShadowTestWithAltCover.xml"
-      let result = ExecProcess (fun info -> { info with 
+      let result = ExecProcess (fun info -> { info with
                                                    FileName = altcover
                                                    WorkingDirectory = shadowDir
                                                    Arguments = ("/sn=" + keyfile + AltCoverFilter + @"/o=./__ShadowTestWithAltCover -x=" + shadowReport)}) (TimeSpan.FromMinutes 5.0)
@@ -577,7 +566,7 @@ Target "CSharpDotNetWithFramework" (fun _ ->
                                                  Arguments = ("-t=System\. -t=Microsoft\. -x=" + simpleReport + " /o=" + instrumented)}) (TimeSpan.FromMinutes 5.0)
     Assert.That (result, Is.EqualTo 0)
 
-    let result = Dotnet dotnetOptions 
+    let result = Dotnet dotnetOptions
                             (instrumented @@ "Sample1.dll")
     Assert.That (result.ExitCode, Is.EqualTo 0)
 
@@ -1012,7 +1001,7 @@ Target "All" ignore
 
 "Compilation"
 ==> "Gendarme"
-=?> ("Analysis", not runningInMono) // TODO -- refactor
+==> "Analysis"
 
 "Compilation"
 ?=> "UnitTest"

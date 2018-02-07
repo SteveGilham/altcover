@@ -312,6 +312,54 @@ module Instrument =
     |> Seq.iter (libraries.AddFirst)
     o.ToString()
 
+  let private VisitModule (state : Context) (m:ModuleDefinition) included =
+         let restate = match included with
+                       | true ->
+                         let recordingMethod = match state.RecordingMethod with
+                                               | null -> RecordingMethod state.RecordingAssembly
+                                               | _ -> state.RecordingMethod
+
+                         { state with
+                               RecordingMethodRef = m.ImportReference(recordingMethod);
+                               RecordingMethod = recordingMethod }
+                       | _ -> state
+         { restate with ModuleId = m.Mvid }
+
+  let private VisitMethod (state : Context) (m:MethodDefinition) included =
+         match included with
+         | true ->
+           let body = m.Body
+           { state with
+              MethodBody = body;
+              MethodWorker = body.GetILProcessor() }
+         | _ -> state
+
+  let private VisitMethodPoint (state : Context) instruction point included =
+       if included then // by construction the sequence point is included
+            let instrLoadModuleId = InsertVisit instruction state.MethodWorker state.RecordingMethodRef (state.ModuleId.ToString()) point
+
+            // Change references in operands from "instruction" to first counter invocation instruction (instrLoadModuleId)
+            let subs = SubstituteInstruction (instruction, instrLoadModuleId)
+            state.MethodBody.Instructions
+            |> Seq.iter subs.SubstituteInstructionOperand
+
+            state.MethodBody.ExceptionHandlers
+            |> Seq.iter subs.SubstituteExceptionBoundary
+       state
+
+  let private FinishVisit (state : Context) =
+                 let counterAssemblyFile = Path.Combine(Visitor.OutputDirectory(), (extractName state.RecordingAssembly) + ".dll")
+                 WriteAssembly (state.RecordingAssembly) counterAssemblyFile
+                 Directory.GetFiles(Visitor.OutputDirectory(), "*.deps.json", SearchOption.TopDirectoryOnly)
+                 |> Seq.iter (fun f -> File.WriteAllText(f, (f |> File.ReadAllText |> injectJSON))                                       )
+#if NETCOREAPP2_0
+                 let fsharplib = Path.Combine(Visitor.OutputDirectory(), "FSharp.Core.dll")
+                 if not (File.Exists fsharplib) then
+                   use fsharpbytes = new FileStream(AltCover.Recorder.Tracer.Core(), FileMode.Open, FileAccess.Read)
+                   use libstream = new FileStream(fsharplib, FileMode.Create)
+                   fsharpbytes.CopyTo libstream
+#endif
+                 state
   /// <summary>
   /// Perform visitor operations
   /// </summary>
@@ -325,43 +373,12 @@ module Instrument =
      | Assembly (assembly, _, included) -> if included then
                                               assembly.MainModule.AssemblyReferences.Add(state.RecordingAssembly.Name)
                                            state
-     | Module (m, _, included) ->
-         let restate = match included with
-                       | true ->
-                         let recordingMethod = match state.RecordingMethod with
-                                               | null -> RecordingMethod state.RecordingAssembly
-                                               | _ -> state.RecordingMethod
-
-                         { state with
-                               RecordingMethodRef = m.ImportReference(recordingMethod);
-                               RecordingMethod = recordingMethod }
-                       | _ -> state
-         { restate with ModuleId = m.Mvid }
-
-     | Type _ ->
-         state
-     | Method (m, _,  included) ->
-         match included with
-         | true ->
-           let body = m.Body
-           { state with
-              MethodBody = body;
-              MethodWorker = body.GetILProcessor() }
-         | _ -> state
+     | Module (m, _, included) -> VisitModule state m included
+     | Type _ -> state
+     | Method (m, _,  included) -> VisitMethod state m included
 
      | MethodPoint (instruction, _, point, included) ->
-       if included then // by construction the sequence point is included
-            let instrLoadModuleId = InsertVisit instruction state.MethodWorker state.RecordingMethodRef (state.ModuleId.ToString()) point
-
-            // Change references in operands from "instruction" to first counter invocation instruction (instrLoadModuleId)
-            let subs = SubstituteInstruction (instruction, instrLoadModuleId)
-            state.MethodBody.Instructions
-            |> Seq.iter subs.SubstituteInstructionOperand
-
-            state.MethodBody.ExceptionHandlers
-            |> Seq.iter subs.SubstituteExceptionBoundary
-
-       state
+                VisitMethodPoint state instruction point included
      | AfterMethod included ->
          if included then
             let body = state.MethodBody
@@ -376,18 +393,7 @@ module Instrument =
                                  let path = Path.Combine(Visitor.OutputDirectory(), originalFileName)
                                  WriteAssembly assembly path
                                  state
-     | Finish -> let counterAssemblyFile = Path.Combine(Visitor.OutputDirectory(), (extractName state.RecordingAssembly) + ".dll")
-                 WriteAssembly (state.RecordingAssembly) counterAssemblyFile
-                 Directory.GetFiles(Visitor.OutputDirectory(), "*.deps.json", SearchOption.TopDirectoryOnly)
-                 |> Seq.iter (fun f -> File.WriteAllText(f, (f |> File.ReadAllText |> injectJSON))                                       )
-#if NETCOREAPP2_0
-                 let fsharplib = Path.Combine(Visitor.OutputDirectory(), "FSharp.Core.dll")
-                 if not (File.Exists fsharplib) then
-                   use fsharpbytes = new FileStream(AltCover.Recorder.Tracer.Core(), FileMode.Open, FileAccess.Read)
-                   use libstream = new FileStream(fsharplib, FileMode.Create)
-                   fsharpbytes.CopyTo libstream
-#endif
-                 state
+     | Finish -> FinishVisit state
 
   /// <summary>
   /// Higher-order function that returns a visitor
