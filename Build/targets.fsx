@@ -588,11 +588,11 @@ Target "SelfTest" (fun _ ->
     ensure "./_Reports/_Instrumented"
     let targetDir = "_Binaries/AltCover.Tests/Debug+AnyCPU"
     let reports = getFullName "./_Reports"
-    let report = reports @@ "OpenCover.RunSelfTest.xml"
+    let report = reports @@ "OpenCoverSelfTest.xml"
     let altReport = reports @@ "AltCoverSelfTest.xml"
     let keyfile = getFullName "Build/SelfTest.snk"
 
-    printfn "Self-instrument under OpenCover.Run"
+    printfn "Self-instrument under OpenCover"
     OpenCover.Run (fun p -> { p with
                                  WorkingDir = targetDir
                                  ExePath = findToolInSubPath "OpenCover.Console.exe" "."
@@ -604,7 +604,7 @@ Target "SelfTest" (fun _ ->
                                  Output = report })
         ("/sn=" + keyfile + AltCoverFilter + "-x=" + altReport + " -o __SelfTest")
     ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
-                                       TargetDir = "_Reports/_OpenCover.RunSelfTest"})
+                                       TargetDir = "_Reports/_OpenCoverSelfTest"})
         [report]
 
     printfn "Re-instrument everything"
@@ -1027,7 +1027,7 @@ Target "All" ignore
 
 "Compilation"
 ==> "UnitTestWithOpenCover"
-=?> ("UnitTest", not runningInMono)  // OpenCover.Run Mono support
+=?> ("UnitTest", not runningInMono)  // OpenCover Mono support
 
 "Compilation"
 ==> "UnitTestWithAltCover"
@@ -1086,7 +1086,7 @@ Target "All" ignore
 
 "Compilation"
 ==> "SelfTest"
-=?> ("OperationalTest", not runningInMono)  // OpenCover.Run Mono support AND Mono + F# + Fake build => no symbols
+=?> ("OperationalTest", not runningInMono)  // OpenCover Mono support AND Mono + F# + Fake build => no symbols
 
 "Compilation"
 ?=> "Packaging"
