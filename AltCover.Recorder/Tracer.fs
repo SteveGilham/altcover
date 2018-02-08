@@ -46,7 +46,6 @@ type Tracer = {
     member this.Push (moduleId:string) hitPointId =
       let stream = this.Stream
       this.Formatter.Serialize(stream, (moduleId, hitPointId))
-      stream.Flush()
 
     member this.CatchUp (visits:Dictionary<string, Dictionary<int, int>>) =
       visits.Keys
@@ -67,6 +66,7 @@ type Tracer = {
 
     member this.OnFinish visits finish =
       this.CatchUp visits
+      this.Stream.Flush()
       if finish then
         this.Push null -1
         this.Close()

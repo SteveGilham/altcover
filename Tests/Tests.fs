@@ -1649,7 +1649,7 @@ type AltCoverTests() = class
     stream.CopyTo(buffer)
     Visitor.defaultStrongNameKey <- Some (StrongNameKeyPair(buffer.ToArray()))
 
-    let result = Instrument.UpdateStrongReferences def []
+    Instrument.UpdateStrongReferences def
     let token1 = def.Name.PublicKeyToken
     Assert.That (token1, Is.Not.Null)
 #if NETCOREAPP2_0
@@ -1663,7 +1663,6 @@ type AltCoverTests() = class
 #else
     Assert.That (token', Is.EqualTo "4ebffcaabf10ce6a" )
 #endif
-    Assert.That (result, Is.Empty)
 
   [<Test>]
   member self.UpdateStrongReferencesShouldRemoveSigningKeyIfRequired () =
@@ -1675,7 +1674,7 @@ type AltCoverTests() = class
 
     Visitor.defaultStrongNameKey <- None
 
-    let result = Instrument.UpdateStrongReferences def ["nunit.framework"]
+    Instrument.UpdateStrongReferences def
     let token1 = def.Name.PublicKeyToken
     Assert.That (token1, Is.Empty)
 #if NETCOREAPP2_0
@@ -1686,16 +1685,6 @@ type AltCoverTests() = class
 
     let token' = String.Join(String.Empty, token1|> Seq.map (fun x -> x.ToString("x2")))
     Assert.That (token', Is.EqualTo String.Empty)
-#if NETCOREAPP2_0
-    Assert.That (result.Count, Is.EqualTo 0)
-#else
-    Assert.That (result.Count, Is.EqualTo 1)
-    let key = result.Keys |> Seq.head
-    let value = result.Values |> Seq.head
-    let ptr = key.LastIndexOf("=")
-    Assert.That (key.Substring(0, ptr), Is.EqualTo(value.Substring(0, ptr)))
-    Assert.That (value.Substring(ptr), Is.EqualTo "=null")
-#endif
 
   [<Test>]
   member self.UpdateStrongReferencesShouldNotAddASigningKey () =
@@ -1719,72 +1708,9 @@ type AltCoverTests() = class
     stream.CopyTo(buffer)
     Visitor.defaultStrongNameKey <- Some (StrongNameKeyPair(buffer.ToArray()))
 
-    let result = Instrument.UpdateStrongReferences def []
+    Instrument.UpdateStrongReferences def
     let token1 = def.Name.PublicKeyToken
     Assert.That (token1, Is.Empty)
-    Assert.That (result, Is.Empty)
-
-  [<Test>]
-  member self.UpdateStrongReferencesShouldTrackReferences () =
-    let where = Assembly.GetExecutingAssembly().Location
-    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
-    let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-    ProgramDatabase.ReadSymbols def |> ignore
-
-#if NETCOREAPP2_0
-    use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(infrastructureSnk)
-#else
-    use stream = typeof<AltCover.Node>.Assembly.GetManifestResourceStream(recorderSnk)
-#endif
-    use buffer = new MemoryStream()
-    stream.CopyTo(buffer)
-    Visitor.defaultStrongNameKey <- Some (StrongNameKeyPair(buffer.ToArray()))
-
-    let result = Instrument.UpdateStrongReferences def ["nunit.framework"; "nonesuch"]
-#if NETCOREAPP2_0
-    Assert.That (result.Count, Is.EqualTo 0)
-#else
-    Assert.That (result.Count, Is.EqualTo 1)
-    Assert.That (result.Values |> Seq.head, Does.EndWith "PublicKeyToken=4ebffcaabf10ce6a")
-    let key = result.Keys |> Seq.head
-    Assert.That (result.Values |> Seq.head,
-                 Is.EqualTo (key.Substring(0, key.Length - 16) + "4ebffcaabf10ce6a"))
-#endif
-
-  [<Test>]
-  member self.UpdateStrongReferencesShouldTrackReferencesEvenFakes () =
-    try
-      let where = Assembly.GetExecutingAssembly().Location
-      let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
-      let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-      ProgramDatabase.ReadSymbols def |> ignore
-      let npath = typeof<TestAttribute>.Assembly.Location
-      let ndef = Mono.Cecil.AssemblyDefinition.ReadAssembly npath
-      let key = KeyStore.ArrayToIndex ndef.Name.PublicKey
-
-#if NETCOREAPP2_0
-      use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(infrastructureSnk)
-#else
-      use stream = typeof<AltCover.Node>.Assembly.GetManifestResourceStream(recorderSnk)
-#endif
-      use buffer = new MemoryStream()
-      stream.CopyTo(buffer)
-      let ourKeyPair = StrongNameKeyPair(buffer.ToArray())
-      Visitor.defaultStrongNameKey <- Some ourKeyPair
-      Visitor.keys.Add(key, { Pair=ourKeyPair; Token=[] })
-
-      let result = Instrument.UpdateStrongReferences def ["nunit.framework"; "nonesuch"]
-#if NETCOREAPP2_0
-      Assert.That (result.Count, Is.EqualTo 0)
-#else
-      Assert.That (result.Count, Is.EqualTo 1)
-      Assert.That (result.Values |> Seq.head, Does.EndWith "PublicKeyToken=4ebffcaabf10ce6a")
-      let key = result.Keys |> Seq.head
-      Assert.That (result.Values |> Seq.head,
-                   Is.EqualTo (key.Substring(0, key.Length - 16) + "4ebffcaabf10ce6a"))
-#endif
-    finally
-      Visitor.keys.Clear()
 
   [<Test>]
   member self.ExcludedAssemblyRefsAreNotUpdated () =
@@ -1807,15 +1733,6 @@ type AltCoverTests() = class
     let visited = Node.Assembly (def, None, false)
 
     let result = Instrument.InstrumentationVisitor {state with RecordingAssembly = fake } visited
-#if NETCOREAPP2_0
-    Assert.That (result.RenameTable.Count, Is.EqualTo 0)
-#else
-    Assert.That (result.RenameTable.Count, Is.EqualTo 1)
-    Assert.That (result.RenameTable.Values |> Seq.head, Does.EndWith "PublicKeyToken=4ebffcaabf10ce6a")
-    let key = result.RenameTable.Keys |> Seq.head
-    Assert.That (result.RenameTable.Values |> Seq.head,
-                 Is.EqualTo (key.Substring(0, key.Length - 16) + "4ebffcaabf10ce6a"))
-#endif
     Assert.That (def.MainModule.AssemblyReferences, Is.EquivalentTo refs)
 
   [<Test>]
@@ -1839,15 +1756,6 @@ type AltCoverTests() = class
     let visited = Node.Assembly (def, None, true)
 
     let result = Instrument.InstrumentationVisitor {state with RecordingAssembly = fake } visited
-#if NETCOREAPP2_0
-    Assert.That (result.RenameTable.Count, Is.EqualTo 0)
-#else
-    Assert.That (result.RenameTable.Count, Is.EqualTo 1)
-    Assert.That (result.RenameTable.Values |> Seq.head, Does.EndWith "PublicKeyToken=4ebffcaabf10ce6a")
-    let key = result.RenameTable.Keys |> Seq.head
-    Assert.That (result.RenameTable.Values |> Seq.head,
-                 Is.EqualTo (key.Substring(0, key.Length - 16) + "4ebffcaabf10ce6a"))
-#endif
     Assert.That (def.MainModule.AssemblyReferences, Is.EquivalentTo (refs @ [fake.Name]))
 
   [<Test>]

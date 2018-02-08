@@ -1,5 +1,11 @@
 **NOTE:** The main executable links the still in beta (after more than a year) Mono.Cecil 0.10 version.  The binary injected into the instrumented code does not.  Rather than hold my releases on the Mono.Cecil schedule, I make this disclaimer instead.
 
+# 1.6-rc (Araiguma respin release candidates)
+* Moved to FAKE 5 (classic) for build and related streamlining of the build scripts
+* Performance tuning for the coverage gathering (trade off of async+backlog vs strict synchronous gathering) -- observed faster than OpenCover on like-for-like tests
+* Fixed an intermittent spin-wait and fail in the unit tests
+* Removed obsolete code that catered to Mono.Cecil 0.9.5 limitations
+
 # 1.6-beta (Araiguma respin preview)
 * simplified concurrency handling for the data collection.
 * reduced size of the intermediate files (to under 5% of the previous sizes for large runs)
