@@ -251,7 +251,7 @@ Target "JustUnitTest" (fun _ ->
       !! (@"_Binaries/*Tests/Debug+AnyCPU/*.Test*.dll")
       |> NUnit3 (fun p -> { p with ToolPath = findToolInSubPath "nunit3-console.exe" "."
                                    WorkingDir = "."
-                                   Labels = LabelsLevel.All
+                                   // Labels = LabelsLevel.All
                                    ResultSpecs = ["./_Reports/JustUnitTestReport.xml"] })
     with
     | x -> printfn "%A" x
@@ -332,7 +332,7 @@ Target "UnitTestWithAltCover" (fun _ ->
         |> Seq.concat |> Seq.distinct
         |> NUnit3 (fun p -> { p with ToolPath = findToolInSubPath "nunit3-console.exe" "."
                                      WorkingDir = "."
-                                     Labels = LabelsLevel.All
+                                     // Labels = LabelsLevel.All
                                      ResultSpecs = ["./_Reports/UnitTestWithAltCoverReport.xml"] })
       with
       | x -> printfn "%A" x
@@ -1009,6 +1009,11 @@ Target "BulkReport" (fun _ ->
 
 Target "All" ignore
 
+Description "ResetConsoleColours" 
+CreateFinal "ResetConsoleColours" (fun _ ->
+  System.Console.ResetColor()
+)
+
 // Dependencies
 
 "Clean"
@@ -1185,6 +1190,7 @@ Target "All" ignore
 
 "Deployment"
 ==> "BulkReport"
+==> "ResetConsoleColours" 
 ==> "All"
 
 RunOrDefault "All"
