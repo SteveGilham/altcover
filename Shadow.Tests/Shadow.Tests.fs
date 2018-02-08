@@ -18,8 +18,10 @@ namespace Tests.Shadow.Unknown
 
 open System
 open System.Collections.Generic
+open System.Diagnostics
 open System.IO
 open System.Reflection
+open System.Runtime.CompilerServices
 open System.Xml
 
 open AltCover.Recorder
@@ -29,42 +31,67 @@ open System.Threading
 [<TestFixture>]
 type AltCoverTests() = class
 
+  [<MethodImpl(MethodImplOptions.NoInlining)>]
+  member private self.GetMyMethodName tag =
+    ignore tag
+//    let st = StackTrace(StackFrame(1))
+//    st.GetFrame(0).GetMethod().Name |>
+//#if NET2
+//    printfn "%s %s 2" tag
+//#else
+//    printfn "%s %s" tag
+//#endif
+
   [<Test>]
   member self.ShouldBeLinkingTheCorrectCopyOfThisCode() =
+    self.GetMyMethodName "=>"
     let tracer = {
         Tracer = String.Empty
         Stream = null
         Formatter = null
     }
     Assert.That(tracer.GetType().Assembly.GetName().Name, Is.EqualTo "AltCover.Shadow")
+    self.GetMyMethodName "<="
 
   [<Test>]
   member self.NullIdShouldNotGiveACount() =
+    self.GetMyMethodName "=>"
+    lock Instance.Visits (fun () ->
     try
       Instance.Visits.Clear()
       Instance.VisitImpl null 23
       Assert.That (Instance.Visits, Is.Empty)
     finally
-      Instance.Visits.Clear()
+      Instance.Visits.Clear())
+    self.GetMyMethodName "<="
 
   [<Test>]
   member self.EmptyIdShouldNotGiveACount() =
+    self.GetMyMethodName "=>"
+    lock Instance.Visits (fun () ->
     try
       Instance.Visits.Clear()
       Instance.VisitImpl String.Empty 23
       Assert.That (Instance.Visits, Is.Empty)
     finally
-      Instance.Visits.Clear()
+      Instance.Visits.Clear())
+    self.GetMyMethodName "<="
 
   member self.RealIdShouldIncrementCount() =
+    self.GetMyMethodName "=>"
+    lock Instance.Visits (fun () ->
     let save = Instance.trace
     try
       Instance.Visits.Clear()
       Instance.trace <- { Tracer=null; Stream=null; Formatter=null }
       let key = " "
+      Assert.That (Instance.Backlog(), Is.EqualTo 0)
+      Thread.Sleep 1000 // provoke a timeout
       Instance.Visit key 23
+      Assert.That(Instance.Backlog(), Is.LessThan 2)
       while Instance.Backlog () > 0 do
         Thread.Sleep 100
+        Assert.That(Instance.Backlog(), Is.LessThan 2)
 
       Thread.Sleep 100
       Assert.That (Instance.Visits.Count, Is.EqualTo 1)
@@ -72,13 +99,16 @@ type AltCoverTests() = class
       Assert.That (Instance.Visits.[key].[23], Is.EqualTo 1)
     finally
       Instance.Visits.Clear()
-      Instance.trace <- save
-      
+      Instance.trace <- save)
+    self.GetMyMethodName "<="
+
 #if NET4
   // passing lambdas across the CLR divide doesn't work
 #else
   [<Test>]
   member self.RealIdShouldIncrementCountSynchronously() =
+    self.GetMyMethodName "=>"
+    lock Instance.Visits (fun () ->
     let save = Instance.trace
     try
       Instance.Visits.Clear()
@@ -86,16 +116,19 @@ type AltCoverTests() = class
       let key = " "
       Instance.VisitSelection (fun () -> true) key 23
       Thread.Sleep 100
-      Assert.That (Instance.Visits.Count, Is.EqualTo 1)
-      Assert.That (Instance.Visits.[key].Count, Is.EqualTo 1)
+      Assert.That (Instance.Visits.Count, Is.EqualTo 1, "A visit happened")
+      Assert.That (Instance.Visits.[key].Count, Is.EqualTo 1, "keys = " + String.Join("; ", Instance.Visits.Keys|> Seq.toArray))
       Assert.That (Instance.Visits.[key].[23], Is.EqualTo 1)
     finally
       Instance.Visits.Clear()
-      Instance.trace <- save
+      Instance.trace <- save)
+    self.GetMyMethodName "<="
 #endif
 
   [<Test>]
   member self.DistinctIdShouldBeDistinct() =
+    self.GetMyMethodName "=>"
+    lock Instance.Visits (fun () ->
     try
       Instance.Visits.Clear()
       let key = " "
@@ -103,10 +136,13 @@ type AltCoverTests() = class
       Instance.VisitImpl "key" 42
       Assert.That (Instance.Visits.Count, Is.EqualTo 2)
     finally
-      Instance.Visits.Clear()
+      Instance.Visits.Clear())
+    self.GetMyMethodName "<="
 
   [<Test>]
   member self.DistinctLineShouldBeDistinct() =
+    self.GetMyMethodName "=>"
+    lock Instance.Visits (fun () ->
     try
       Instance.Visits.Clear()
       let key = " "
@@ -115,10 +151,13 @@ type AltCoverTests() = class
       Assert.That (Instance.Visits.Count, Is.EqualTo 1)
       Assert.That (Instance.Visits.[key].Count, Is.EqualTo 2)
     finally
-      Instance.Visits.Clear()
+      Instance.Visits.Clear())
+    self.GetMyMethodName "<="
 
   [<Test>]
   member self.RepeatVisitsShouldIncrementCount() =
+    self.GetMyMethodName "=>"
+    lock Instance.Visits (fun () ->
     try
       Instance.Visits.Clear()
       let key = " "
@@ -126,7 +165,8 @@ type AltCoverTests() = class
       Instance.VisitImpl key 23
       Assert.That (Instance.Visits.[key].[23], Is.EqualTo 2)
     finally
-      Instance.Visits.Clear()
+      Instance.Visits.Clear())
+    self.GetMyMethodName "<="
 
   member private self.UpdateReport a b =
     Counter.UpdateReport true a b
@@ -137,6 +177,8 @@ type AltCoverTests() = class
 
   [<Test>]
   member self.OldDocumentStartIsNotUpdated() =
+    self.GetMyMethodName "=>"
+    lock Instance.Visits (fun () ->
     let epoch = DateTime.UtcNow
     Counter.startTime <- epoch
     use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(self.resource)
@@ -155,10 +197,13 @@ type AltCoverTests() = class
     let startTimeAttr = after.DocumentElement.GetAttribute("startTime")
     let startTime = DateTime.ParseExact(startTimeAttr, "o", null)
     Assert.That (startTime.ToUniversalTime(), Is.LessThan epoch)
-    Assert.That (startTime.ToUniversalTime(), Is.EqualTo (Counter.startTime.ToUniversalTime()))
+    Assert.That (startTime.ToUniversalTime(), Is.EqualTo (Counter.startTime.ToUniversalTime())))
+    self.GetMyMethodName "<="
 
   [<Test>]
   member self.NewDocumentStartIsMadeEarlier() =
+    self.GetMyMethodName "=>"
+    lock Instance.Visits (fun () ->
     let epoch = DateTime (1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)
     Counter.startTime <- epoch
     use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(self.resource)
@@ -177,10 +222,13 @@ type AltCoverTests() = class
     let startTimeAttr = after.DocumentElement.GetAttribute("startTime")
     let startTime = DateTime.ParseExact(startTimeAttr, "o", null)
     Assert.That (startTime.ToUniversalTime(), Is.EqualTo epoch)
-    Assert.That (startTime.ToUniversalTime(), Is.EqualTo (Counter.startTime.ToUniversalTime()))
+    Assert.That (startTime.ToUniversalTime(), Is.EqualTo (Counter.startTime.ToUniversalTime())))
+    self.GetMyMethodName "<="
 
   [<Test>]
   member self.NewDocumentMeasureIsNotMadeEarlier() =
+    self.GetMyMethodName "=>"
+    lock Instance.Visits (fun () ->
     let epoch = DateTime (1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)
     Counter.measureTime <- epoch
     use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(self.resource)
@@ -199,10 +247,13 @@ type AltCoverTests() = class
     let startTimeAttr = after.DocumentElement.GetAttribute("measureTime")
     let startTime = DateTime.ParseExact(startTimeAttr, "o", null)
     Assert.That (startTime.ToUniversalTime(), Is.GreaterThan epoch)
-    Assert.That (startTime.ToUniversalTime(), Is.EqualTo (Counter.measureTime.ToUniversalTime()))
+    Assert.That (startTime.ToUniversalTime(), Is.EqualTo (Counter.measureTime.ToUniversalTime())))
+    self.GetMyMethodName "<="
 
   [<Test>]
   member self.OldDocumentMeasureIsUpdated() =
+    self.GetMyMethodName "=>"
+    lock Instance.Visits (fun () ->
     let epoch = DateTime.UtcNow
     Counter.measureTime <- epoch
     use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(self.resource)
@@ -221,10 +272,13 @@ type AltCoverTests() = class
     let startTimeAttr = after.DocumentElement.GetAttribute("measureTime")
     let startTime = DateTime.ParseExact(startTimeAttr, "o", null)
     Assert.That (startTime.ToUniversalTime(), Is.EqualTo epoch)
-    Assert.That (startTime.ToUniversalTime(), Is.EqualTo (Counter.measureTime.ToUniversalTime()))
+    Assert.That (startTime.ToUniversalTime(), Is.EqualTo (Counter.measureTime.ToUniversalTime())))
+    self.GetMyMethodName "<="
 
   [<Test>]
   member self.UnknownModuleMakesNoChange() =
+    self.GetMyMethodName "=>"
+    lock Instance.Visits (fun () ->
     Counter.measureTime <- DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
     use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(self.resource)
     let size = int stream.Length
@@ -240,10 +294,13 @@ type AltCoverTests() = class
     worker.Position <- 0L
     let after = new StreamReader(worker)
     Assert.That (after.ReadToEnd().Replace("\r\n", "\n"),
-                 Is.EqualTo (before.ReadToEnd().Replace("\r\n", "\n")))
+                 Is.EqualTo (before.ReadToEnd().Replace("\r\n", "\n"))))
+    self.GetMyMethodName "<="
 
   [<Test>]
   member self.KnownModuleWithNothingMakesNoChange() =
+    self.GetMyMethodName "=>"
+    lock Instance.Visits (fun () ->
     Counter.measureTime <- DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
     use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(self.resource)
     let size = int stream.Length
@@ -259,10 +316,13 @@ type AltCoverTests() = class
     worker.Position <- 0L
     let after = new StreamReader(worker)
     Assert.That (after.ReadToEnd().Replace("\r\n", "\n"),
-                 Is.EqualTo (before.ReadToEnd().Replace("\r\n", "\n")))
+                 Is.EqualTo (before.ReadToEnd().Replace("\r\n", "\n"))))
+    self.GetMyMethodName "<="
 
   [<Test>]
   member self.KnownModuleWithNothingInRangeMakesNoChange() =
+    self.GetMyMethodName "=>"
+    lock Instance.Visits (fun () ->
     Counter.measureTime <- DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
     use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(self.resource)
     let size = int stream.Length
@@ -281,10 +341,13 @@ type AltCoverTests() = class
     worker.Position <- 0L
     let after = new StreamReader(worker)
     Assert.That (after.ReadToEnd().Replace("\r\n", "\n"),
-                 Is.EqualTo (before.ReadToEnd().Replace("\r\n", "\n")))
+                 Is.EqualTo (before.ReadToEnd().Replace("\r\n", "\n"))))
+    self.GetMyMethodName "<="
 
   [<Test>]
   member self.KnownModuleWithPayloadMakesExpectedChange() =
+    self.GetMyMethodName "=>"
+    lock Instance.Visits (fun () ->
     Counter.measureTime <- DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
     use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(self.resource)
     let size = int stream.Length
@@ -305,10 +368,13 @@ type AltCoverTests() = class
     Assert.That( after.SelectNodes("//seqpnt")
                  |> Seq.cast<XmlElement>
                  |> Seq.map (fun x -> x.GetAttribute("visitcount")),
-                 Is.EquivalentTo [ "11"; "10"; "9"; "8"; "7"; "6"; "4"; "3"; "2"; "1"])
+                 Is.EquivalentTo [ "11"; "10"; "9"; "8"; "7"; "6"; "4"; "3"; "2"; "1"]))
+    self.GetMyMethodName "<="
 
   [<Test>]
   member self.EmptyFlushLeavesNoTrace() =
+    self.GetMyMethodName "=>"
+    lock Instance.Visits (fun () ->
     let saved = Console.Out
     try
       Instance.Visits.Clear()
@@ -319,9 +385,12 @@ type AltCoverTests() = class
       Assert.That (stdout.ToString(), Is.Empty)
     finally
       Instance.Visits.Clear()
-      Console.SetOut saved
+      Console.SetOut saved)
+    self.GetMyMethodName "<="
 
   member self.FlushLeavesExpectedTraces() =
+    self.GetMyMethodName "=>"
+    lock Instance.Visits (fun () ->
     try
       let saved = Console.Out
       let here = Directory.GetCurrentDirectory()
@@ -381,7 +450,9 @@ type AltCoverTests() = class
         with
         | :? IOException -> ()
     with
-    | :? AbandonedMutexException -> Instance.mutex.ReleaseMutex()
+    | :? AbandonedMutexException -> Instance.mutex.ReleaseMutex())
+
+    self.GetMyMethodName "<="
 
 #if NET2
 #else
