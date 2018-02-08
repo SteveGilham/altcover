@@ -144,11 +144,11 @@ module Instance =
     // when sending async messages.
     let message = SequencePoint (moduleId, hitPointId)
     if f() then
-       mailbox.TryPostAndReply ((fun c -> Item (message, c)),1) |> ignore
+       mailbox.TryPostAndReply ((fun c -> Item (message, c)), 10) |> ignore
     else message |> AsyncItem |> mailbox.Post
 
   let Visit moduleId hitPointId =
-     VisitSelection (fun () -> trace.IsConnected() || mailbox.CurrentQueueLength > 1000)
+     VisitSelection (fun () -> trace.IsConnected() || mailbox.CurrentQueueLength > 10)
        moduleId hitPointId
 
   let internal FlushCounter (finish:Close) _ =
