@@ -56,7 +56,6 @@ type AltCoverTests() = class
     finally
       Instance.Visits.Clear()
 
-  [<Test>]
   member self.RealIdShouldIncrementCount() =
     let save = Instance.trace
     try
@@ -322,7 +321,6 @@ type AltCoverTests() = class
       Instance.Visits.Clear()
       Console.SetOut saved
 
-  [<Test>]
   member self.FlushLeavesExpectedTraces() =
     try
       let saved = Console.Out
@@ -384,4 +382,14 @@ type AltCoverTests() = class
         | :? IOException -> ()
     with
     | :? AbandonedMutexException -> Instance.mutex.ReleaseMutex()
+
+#if NET2
+#else
+  // Dead simple sequential operation
+  // run only once in Framework mode to avoid contention
+  [<Test>]
+  member self.MailboxFunctionsAsExpected() =
+    self.RealIdShouldIncrementCount()
+    self.FlushLeavesExpectedTraces()
+#endif
 end
