@@ -1,4 +1,4 @@
-version: 1.6.{build}-beta
+version: 1.6.{build}-rc
 branches:
   except:
   - /develop.*/
@@ -20,7 +20,6 @@ test:
   assemblies:
     only:
     - _Binaries\AltCover.Tests\Debug+AnyCPU\*.Tests.dll
-    - _Binaries\AltCover.Runner.Tests\Debug+AnyCPU\*.Tests.dll
     - _Binaries\AltCover.Shadow.Tests\Debug+AnyCPU\*.Tests.dll
 artifacts:
 - path: _Packaging\*.nupkg
@@ -31,12 +30,6 @@ deploy:
     secure: xkwBh+Yq1rXo/MzI5CdoGrLO8a3h73c3BaOFLQSgzE+uulMhOHYeHdPHXGWd9vRA
   on:
     branch: /release.*/
-- provider: NuGet
-  server: https://chocolatey.org/
-  api_key:
-    secure: fR1kSlwEcdI9M2yyPlwK44QlFCOOpTU52ysj/hgcGxTMxNDtCW21zNeF4+o0fFtf
-  on:
-    branch: /releasechoco/.*/
 notifications:
 - provider: Slack
   incoming_webhook: 

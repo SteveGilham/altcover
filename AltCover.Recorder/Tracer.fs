@@ -32,7 +32,7 @@ type Tracer = {
         Seq.initInfinite (fun i -> Path.ChangeExtension(this.Tracer,
                                                         sprintf ".%d.bin" i))
         |> Seq.filter (File.Exists >> not)
-        |> Seq.map (fun f -> let fs = File.OpenWrite f 
+        |> Seq.map (fun f -> let fs = File.OpenWrite f
                              { this with Stream = new DeflateStream(fs, CompressionMode.Compress) })
         |> Seq.head
       else
@@ -46,7 +46,6 @@ type Tracer = {
     member this.Push (moduleId:string) hitPointId =
       let stream = this.Stream
       this.Formatter.Serialize(stream, (moduleId, hitPointId))
-      stream.Flush()
 
     member this.CatchUp (visits:Dictionary<string, Dictionary<int, int>>) =
       visits.Keys
@@ -67,6 +66,7 @@ type Tracer = {
 
     member this.OnFinish visits finish =
       this.CatchUp visits
+      this.Stream.Flush()
       if finish then
         this.Push null -1
         this.Close()

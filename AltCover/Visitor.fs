@@ -124,38 +124,39 @@ module Visitor =
     |> Seq.exists (fun f -> f m)
     |> not
 
-  let rec internal Deeper node =
-    // The pattern here is map x |> map y |> map x |> concat => collect (x >> y >> z)
-    match node with
-    | Start paths -> paths
-                     |> Seq.collect (AssemblyDefinition.ReadAssembly >>
-                                     (fun x -> let included = IsIncluded x
-                                               let reader = if included then ProgramDatabase.ReadSymbols(x)
+  let private StartVisit (paths:seq<string>) buildSequence =
+        paths
+        |> Seq.collect (AssemblyDefinition.ReadAssembly >>
+                        (fun x -> let included = IsIncluded x
+                                  let reader = if included then ProgramDatabase.ReadSymbols(x)
                                                             else None
-                                               Assembly(x, reader, included)) >> BuildSequence)
+                                  Assembly(x, reader, included)) >> buildSequence)
 
-    | Assembly (a, reader, included) ->  a.Modules
-                                         |> Seq.cast
-                                         |> Seq.filter IsIncluded
-                                         |> Seq.collect ((fun x -> Module (x, reader, included)) >> BuildSequence)
+  let private VisitAssembly (a:AssemblyDefinition) reader included buildSequence =
+        a.Modules
+        |> Seq.cast
+        |> Seq.filter IsIncluded
+        |> Seq.collect ((fun x -> Module (x, reader, included)) >> buildSequence)
 
-    | Module (x, reader, included) ->    PointNumber <- 0
-                                         x.GetAllTypes()
-                                         |> Seq.cast
-                                         |> Seq.collect ((fun t -> Type (t, reader, included && IsIncluded t)) >> BuildSequence)
+  let private VisitModule (x:ModuleDefinition) reader included buildSequence =
+        PointNumber <- 0
+        x.GetAllTypes()
+        |> Seq.cast
+        |> Seq.collect ((fun t -> Type (t, reader, included && IsIncluded t)) >> buildSequence)
 
-    | Type (t, reader, included) ->    t.Methods
-                                       |> Seq.cast
-                                       |> Seq.filter (fun (m : MethodDefinition) -> not m.IsAbstract
-                                                                                    && not m.IsRuntime
-                                                                                    && not m.IsPInvokeImpl
-                                                                                    && significant m)
-                                       |> Seq.collect ((fun m -> let dbg = reader
-                                                                           |> Option.map (fun r -> r.Read m)
-                                                                           |> Option.bind Option.nullable
-                                                                 Method (m, dbg, included && IsIncluded m)) >> BuildSequence)
+  let private VisitType (t:TypeDefinition) (reader:ISymbolReader option) included buildSequence =
+        t.Methods
+        |> Seq.cast
+        |> Seq.filter (fun (m : MethodDefinition) -> not m.IsAbstract
+                                                    && not m.IsRuntime
+                                                    && not m.IsPInvokeImpl
+                                                    && significant m)
+        |> Seq.collect ((fun m -> let dbg = reader
+                                            |> Option.map (fun r -> r.Read m)
+                                            |> Option.bind Option.nullable
+                                  Method (m, dbg, included && IsIncluded m)) >> buildSequence)
 
-    | Method (m, dbg, included) ->
+  let private VisitMethod (m:MethodDefinition) (dbg:MethodDebugInformation option) included =
             let instructions = m.Body.Instructions
                                |> Seq.cast
                                |> Seq.distinctBy(fun (x:Instruction) -> x.Offset)
@@ -176,6 +177,14 @@ module Visitor =
             |> Seq.mapi (fun i x -> let s = (Option.get dbg).GetSequencePoint(x)
                                     MethodPoint (x, s, i+point, included && (IsIncluded s.Document.Url)))
 
+  let rec internal Deeper node =
+    // The pattern here is map x |> map y |> map x |> concat => collect (x >> y >> z)
+    match node with
+    | Start paths -> StartVisit paths  BuildSequence
+    | Assembly (a, reader, included) ->  VisitAssembly a reader included BuildSequence
+    | Module (x, reader, included) ->  VisitModule x  reader included BuildSequence
+    | Type (t, reader, included) -> VisitType t reader  included BuildSequence
+    | Method (m, dbg, included) -> VisitMethod m dbg included
     | _ -> Seq.empty<Node>
 
   and internal BuildSequence node =

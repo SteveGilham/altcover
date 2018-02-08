@@ -115,49 +115,53 @@ module Instance =
       trace.OnConnected (fun () -> TraceVisit moduleId hitPointId)
                         (fun () -> Counter.AddVisit Visits moduleId hitPointId)
 
-  let rec private loop (inbox:MailboxProcessor<Message>) _ =
+  let rec private loop (inbox:MailboxProcessor<Message>) =
           async {
-             let! msg = inbox.Receive(1000)
-             match msg with
-             | AsyncItem (SequencePoint (moduleId, hitPointId)) ->
-                 VisitImpl moduleId hitPointId
-                 return! loop inbox moduleId                
-             | Item (SequencePoint (moduleId, hitPointId), channel)->
-                 VisitImpl moduleId hitPointId
-                 channel.Reply ()
-                 return! loop inbox moduleId
-             | Finish (mode, channel) ->
-                 FlushCounterImpl mode ()
-                 channel.Reply ()
+             // release the wait every half second
+             let! opt = inbox.TryReceive(500)
+             match opt with
+             | None -> return! loop inbox
+             | Some msg ->
+                 match msg with
+                 | AsyncItem (SequencePoint (moduleId, hitPointId)) ->
+                     VisitImpl moduleId hitPointId
+                     return! loop inbox
+                 | Item (SequencePoint (moduleId, hitPointId), channel)->
+                     VisitImpl moduleId hitPointId
+                     channel.Reply ()
+                     return! loop inbox
+                 | Finish (mode, channel) ->
+                     FlushCounterImpl mode ()
+                     channel.Reply ()
           }
 
   let internal MakeMailbox () =
-    new MailboxProcessor<Message>(fun inbox -> loop inbox String.Empty)
+    new MailboxProcessor<Message>(loop)
 
   let mutable internal mailbox = MakeMailbox ()
 
+  let internal Backlog () =
+    mailbox.CurrentQueueLength
+
   let internal VisitSelection (f: unit -> bool) moduleId hitPointId =
     // When writing to file for the runner to process,
-    // make this synchronous to avoid choking the mailbox
+    // make this semi-synchronous to avoid choking the mailbox
     // Backlogs of over 90,000 items were observed in self-test
     // which failed to drain during the ProcessExit grace period
-    // when sending async messages.
+    // when sending only async messages.
     let message = SequencePoint (moduleId, hitPointId)
     if f() then
-       mailbox.TryPostAndReply ((fun c -> Item (message, c)),1) |> ignore
+       mailbox.TryPostAndReply ((fun c -> Item (message, c)), 10) |> ignore
     else message |> AsyncItem |> mailbox.Post
 
   let Visit moduleId hitPointId =
-     VisitSelection (fun () -> trace.IsConnected() || mailbox.CurrentQueueLength > 1000)
+     VisitSelection (fun () -> trace.IsConnected() || Backlog() > 10)
        moduleId hitPointId
 
   let internal FlushCounter (finish:Close) _ =
     mailbox.PostAndReply (fun c -> Finish (finish, c))
 
   // unit test helpers -- avoid issues with cross CLR version calls
-  let internal Peek () =
-    mailbox.CurrentQueueLength
-
   let internal RunMailbox () =
     mailbox <- MakeMailbox ()
     mailbox.Start()
