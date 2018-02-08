@@ -115,24 +115,28 @@ module Instance =
       trace.OnConnected (fun () -> TraceVisit moduleId hitPointId)
                         (fun () -> Counter.AddVisit Visits moduleId hitPointId)
 
-  let rec private loop (inbox:MailboxProcessor<Message>) _ =
+  let rec private loop (inbox:MailboxProcessor<Message>) =
           async {
-             let! msg = inbox.Receive(1000)
-             match msg with
-             | AsyncItem (SequencePoint (moduleId, hitPointId)) ->
-                 VisitImpl moduleId hitPointId
-                 return! loop inbox moduleId
-             | Item (SequencePoint (moduleId, hitPointId), channel)->
-                 VisitImpl moduleId hitPointId
-                 channel.Reply ()
-                 return! loop inbox moduleId
-             | Finish (mode, channel) ->
-                 FlushCounterImpl mode ()
-                 channel.Reply ()
+             // release the wait every half second
+             let! opt = inbox.TryReceive(500)
+             match opt with
+             | None -> return! loop inbox
+             | Some msg ->
+                 match msg with
+                 | AsyncItem (SequencePoint (moduleId, hitPointId)) ->
+                     VisitImpl moduleId hitPointId
+                     return! loop inbox
+                 | Item (SequencePoint (moduleId, hitPointId), channel)->
+                     VisitImpl moduleId hitPointId
+                     channel.Reply ()
+                     return! loop inbox
+                 | Finish (mode, channel) ->
+                     FlushCounterImpl mode ()
+                     channel.Reply ()
           }
 
   let internal MakeMailbox () =
-    new MailboxProcessor<Message>(fun inbox -> loop inbox String.Empty)
+    new MailboxProcessor<Message>(loop)
 
   let mutable internal mailbox = MakeMailbox ()
 
