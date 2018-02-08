@@ -63,7 +63,7 @@ type AltCoverTests() = class
       Instance.trace <- { Tracer=null; Stream=null; Formatter=null }
       let key = " "
       Instance.Visit key 23
-      while Instance.Peek () > 0 do
+      while Instance.Backlog () > 0 do
         Thread.Sleep 100
 
       Thread.Sleep 100
@@ -352,7 +352,7 @@ type AltCoverTests() = class
         Instance.Visits.["f6e3edb3-fb20-44b3-817d-f69d1a22fc2f"] <- payload
 
         Instance.FlushCounter ProcessExit ()
-        while Instance.Peek () > 0 do
+        while Instance.Backlog () > 0 do
           Thread.Sleep 100
 
         // Restart the mailbox
