@@ -21,24 +21,8 @@ type internal FilterClass =
 
 module Filter =
 
-  let internal Match (nameProvider:Object) (filter:FilterClass) =
-    match filter with
-    | File name -> match nameProvider with
-                   | :? string as fileName -> name.IsMatch(Path.GetFileName(fileName))
-                   | _ -> false
-    | Assembly name -> match nameProvider with
-                       | :? AssemblyDefinition as assembly -> name.IsMatch assembly.Name.Name
-                       | _ -> false
-    | Module name -> match nameProvider with
-                     | :? ModuleDefinition as ``module`` -> name.IsMatch ``module``.Assembly.Name.Name
-                     | _ -> false
-    | Type name -> match nameProvider with
-                   | :? TypeDefinition as typeDef -> name.IsMatch typeDef.FullName
-                   | _ -> false
-    | Method name -> match nameProvider with
-                     | :? MethodDefinition as methodDef -> name.IsMatch methodDef.Name
-                     | _ -> false
-    | Attribute name -> match nameProvider with
+  let private MatchAttribute (name:Regex) (nameProvider:Object) =
+    match nameProvider with
                         | :? ICustomAttributeProvider as attributeProvider ->
                             attributeProvider.HasCustomAttributes &&
                                  attributeProvider.CustomAttributes
@@ -46,6 +30,20 @@ module Filter =
                                  |> Seq.exists (fun attr ->
                                     name.IsMatch attr.Constructor.DeclaringType.FullName)
                         | _ -> false
+
+  let MatchItem<'a>  (name:Regex) (nameProvider:Object) (toName: 'a -> string) =
+    match nameProvider with
+    | :? 'a as item -> item |> toName |> name.IsMatch
+    | _ -> false
+
+  let internal Match (nameProvider:Object) (filter:FilterClass) =
+    match filter with
+    | File name -> MatchItem<string> name nameProvider Path.GetFileName
+    | Assembly name -> MatchItem<AssemblyDefinition> name nameProvider (fun assembly -> assembly.Name.Name)
+    | Module name -> MatchItem<ModuleDefinition> name nameProvider (fun ``module`` -> ``module``.Assembly.Name.Name)
+    | Type name -> MatchItem<TypeDefinition> name nameProvider (fun typeDef -> typeDef.FullName)
+    | Method name -> MatchItem<MethodDefinition> name nameProvider (fun methodDef -> methodDef.Name)
+    | Attribute name -> MatchAttribute name nameProvider
 
   let internal IsCSharpAutoProperty (m:MethodDefinition) =
       (m.IsSetter || m.IsGetter) && m.HasCustomAttributes &&

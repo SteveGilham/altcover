@@ -27,7 +27,6 @@ module Instrument =
   /// </summary>
   [<ExcludeFromCodeCoverage>]
   type internal Context = { InstrumentedAssemblies : string list
-                            RenameTable : Dictionary<String, String>
                             ModuleId : Guid
                             RecordingAssembly : AssemblyDefinition
                             RecordingMethod : MethodDefinition // initialised once
@@ -36,7 +35,6 @@ module Instrument =
                             MethodWorker : ILProcessor } // to save fetching repeatedly
   with static member Build assemblies =
                     { InstrumentedAssemblies = assemblies
-                      RenameTable = null
                       ModuleId = Guid.Empty
                       RecordingAssembly = null
                       RecordingMethod = null
@@ -266,46 +264,14 @@ module Instrument =
       instrLoadModuleId
 
   /// <summary>
-  /// Determine new names for input strongnamed assemblies; if we have a key and
-  /// the assembly was already strongnamed then give it the new key token, otherwise
+  /// Determine new names for input strong-named assemblies; if we have a key and
+  /// the assembly was already strong-named then give it the new key token, otherwise
   /// set that there is no strongname.
   /// </summary>
   /// <param name="assembly">The assembly object being operated upon</param>
-  /// <param name="path">The names of all assemblies of interest</param>
-  /// <returns>Map from input to output names</returns>
-  let internal UpdateStrongReferences (assembly : AssemblyDefinition) (assemblies : string list) =
+  let internal UpdateStrongReferences (assembly : AssemblyDefinition) =
     let effectiveKey = if assembly.Name.HasPublicKey then Visitor.defaultStrongNameKey else None
     UpdateStrongNaming assembly.Name effectiveKey
-
-    // TODO -- is this lookup table still of any use??
-    let assemblyReferenceSubstitutions = new Dictionary<String, String>()
-#if NETCOREAPP2_0
-#else
-    let interestingReferences =  assembly.MainModule.AssemblyReferences
-                                 |> Seq.cast<AssemblyNameReference>
-                                 |> Seq.filter (fun x -> assemblies |> List.exists (fun y -> y.Equals(x.Name)))
-
-    interestingReferences
-    |> Seq.iter (fun r -> let original = r.ToString()
-                          let token = KnownToken r
-                          let effectiveKey = match token with
-                                             | None -> Visitor.defaultStrongNameKey
-                                                       |> Option.map KeyStore.KeyToRecord
-                                             | Some _ -> token
-
-                          match effectiveKey with
-                          | None -> r.HasPublicKey <- false
-                                    r.PublicKeyToken <- null
-                                    r.PublicKey <- null
-                          | Some key -> r.HasPublicKey <- true
-                                        r.PublicKey <- key.Pair.PublicKey // implicitly sets token
-
-                          let updated = r.ToString()
-                          if  not <| updated.Equals(original, StringComparison.Ordinal) then
-                            assemblyReferenceSubstitutions.[original] <- updated
-                  )
-#endif
-    assemblyReferenceSubstitutions
 
   let internal injectJSON json =
     let o = JObject.Parse json
@@ -346,21 +312,7 @@ module Instrument =
     |> Seq.iter (libraries.AddFirst)
     o.ToString()
 
-  /// <summary>
-  /// Perform visitor operations
-  /// </summary>
-  /// <param name="state">Contextual information for the visit</param>
-  /// <param name="node">The node being visited</param>
-  /// <returns>Updated state</returns>
-  let internal InstrumentationVisitor (state : Context) (node:Node) =
-     match node with
-     | Start _ -> let recorder = typeof<AltCover.Recorder.Tracer>
-                  { state with RecordingAssembly = PrepareAssembly(recorder.Assembly.Location) }
-     | Assembly (assembly, _, included) -> let updates = UpdateStrongReferences assembly state.InstrumentedAssemblies
-                                           if included then
-                                              assembly.MainModule.AssemblyReferences.Add(state.RecordingAssembly.Name)
-                                           { state with RenameTable = updates } // TODO use this (attribute mappings IIRC)
-     | Module (m, _, included) ->
+  let private VisitModule (state : Context) (m:ModuleDefinition) included =
          let restate = match included with
                        | true ->
                          let recordingMethod = match state.RecordingMethod with
@@ -373,9 +325,7 @@ module Instrument =
                        | _ -> state
          { restate with ModuleId = m.Mvid }
 
-     | Type _ ->
-         state
-     | Method (m, _,  included) ->
+  let private VisitMethod (state : Context) (m:MethodDefinition) included =
          match included with
          | true ->
            let body = m.Body
@@ -384,7 +334,7 @@ module Instrument =
               MethodWorker = body.GetILProcessor() }
          | _ -> state
 
-     | MethodPoint (instruction, _, point, included) ->
+  let private VisitMethodPoint (state : Context) instruction point included =
        if included then // by construction the sequence point is included
             let instrLoadModuleId = InsertVisit instruction state.MethodWorker state.RecordingMethodRef (state.ModuleId.ToString()) point
 
@@ -395,8 +345,40 @@ module Instrument =
 
             state.MethodBody.ExceptionHandlers
             |> Seq.iter subs.SubstituteExceptionBoundary
-
        state
+
+  let private FinishVisit (state : Context) =
+                 let counterAssemblyFile = Path.Combine(Visitor.OutputDirectory(), (extractName state.RecordingAssembly) + ".dll")
+                 WriteAssembly (state.RecordingAssembly) counterAssemblyFile
+                 Directory.GetFiles(Visitor.OutputDirectory(), "*.deps.json", SearchOption.TopDirectoryOnly)
+                 |> Seq.iter (fun f -> File.WriteAllText(f, (f |> File.ReadAllText |> injectJSON))                                       )
+#if NETCOREAPP2_0
+                 let fsharplib = Path.Combine(Visitor.OutputDirectory(), "FSharp.Core.dll")
+                 if not (File.Exists fsharplib) then
+                   use fsharpbytes = new FileStream(AltCover.Recorder.Tracer.Core(), FileMode.Open, FileAccess.Read)
+                   use libstream = new FileStream(fsharplib, FileMode.Create)
+                   fsharpbytes.CopyTo libstream
+#endif
+                 state
+  /// <summary>
+  /// Perform visitor operations
+  /// </summary>
+  /// <param name="state">Contextual information for the visit</param>
+  /// <param name="node">The node being visited</param>
+  /// <returns>Updated state</returns>
+  let internal InstrumentationVisitor (state : Context) (node:Node) =
+     match node with
+     | Start _ -> let recorder = typeof<AltCover.Recorder.Tracer>
+                  { state with RecordingAssembly = PrepareAssembly(recorder.Assembly.Location) }
+     | Assembly (assembly, _, included) -> if included then
+                                              assembly.MainModule.AssemblyReferences.Add(state.RecordingAssembly.Name)
+                                           state
+     | Module (m, _, included) -> VisitModule state m included
+     | Type _ -> state
+     | Method (m, _,  included) -> VisitMethod state m included
+
+     | MethodPoint (instruction, _, point, included) ->
+                VisitMethodPoint state instruction point included
      | AfterMethod included ->
          if included then
             let body = state.MethodBody
@@ -411,18 +393,7 @@ module Instrument =
                                  let path = Path.Combine(Visitor.OutputDirectory(), originalFileName)
                                  WriteAssembly assembly path
                                  state
-     | Finish -> let counterAssemblyFile = Path.Combine(Visitor.OutputDirectory(), (extractName state.RecordingAssembly) + ".dll")
-                 WriteAssembly (state.RecordingAssembly) counterAssemblyFile
-                 Directory.GetFiles(Visitor.OutputDirectory(), "*.deps.json", SearchOption.TopDirectoryOnly)
-                 |> Seq.iter (fun f -> File.WriteAllText(f, (f |> File.ReadAllText |> injectJSON))                                       )
-#if NETCOREAPP2_0
-                 let fsharplib = Path.Combine(Visitor.OutputDirectory(), "FSharp.Core.dll")
-                 if not (File.Exists fsharplib) then
-                   use fsharpbytes = new FileStream(AltCover.Recorder.Tracer.Core(), FileMode.Open, FileAccess.Read)
-                   use libstream = new FileStream(fsharplib, FileMode.Create)
-                   fsharpbytes.CopyTo libstream
-#endif
-                 state
+     | Finish -> FinishVisit state
 
   /// <summary>
   /// Higher-order function that returns a visitor
