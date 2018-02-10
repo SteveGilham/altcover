@@ -79,11 +79,6 @@ module Instance =
     finally
       if own then mutex.ReleaseMutex()
 
-  let internal IsFinish msg =
-    match msg with
-    | ProcessExit -> true
-    | _ -> false
-
   /// <summary>
   /// This method flushes hit count buffers.
   /// </summary>
