@@ -34,9 +34,9 @@ Running `.\fake.bat` performs a full build/test/package process.
 
 ### Unit Tests
 
-The tests in the `Tests.fs` file are ordered in the same dependency order as the code within the AltCover project.  While working on any given layer, it would make sense to comment out all the tests for later files so as to show what is and isn't being covered by explicit testing, rather than merely being cascaded through.
+The tests in the `Tests.fs` file are ordered in the same dependency order as the code within the AltCover project (the later `Runner` tests aside).  While working on any given layer, it would make sense to comment out all the tests for later files so as to show what is and isn't being covered by explicit testing, rather than merely being cascaded through.
 
-### Other
+## Other
 
 The main executable links the still in beta (after more than a year) Mono.Cecil 0.10 version.  The recorder assembly injected into the instrumented code does not.  Rather than hold my releases on the Mono.Cecil schedule, I make this disclaimer instead.
 
