@@ -41,8 +41,9 @@ type AltCoverCoreTests() = class
     try
         client <- client.OnStart()
         Assert.That (client.IsConnected(), Is.False)
-    finally
-      client.Close()
+    with
+    | _ -> client.Close()
+           reraise()
 
   [<Test>]
   member self.ValidTokenWillConnect () =

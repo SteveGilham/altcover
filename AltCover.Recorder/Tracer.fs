@@ -39,9 +39,7 @@ type Tracer = {
         this
 
     member this.Close() =
-      match this.Stream with
-      | null -> ()
-      | _ -> this.Stream.Dispose()
+      this.Stream.Dispose()
 
     member this.Push (moduleId:string) hitPointId =
       let stream = this.Stream

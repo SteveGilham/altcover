@@ -85,7 +85,6 @@ module Instance =
   let internal FlushCounterImpl _ =
     trace.OnConnected (fun () -> trace.OnFinish Visits)
       (fun () ->
-      trace.Close()
       match Visits.Count with
       | 0 -> ()
       | _ -> let counts = Dictionary<string, Dictionary<int, int>> Visits
