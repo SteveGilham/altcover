@@ -87,11 +87,10 @@ module Instance =
   /// <summary>
   /// This method flushes hit count buffers.
   /// </summary>
-  let internal FlushCounterImpl (finish:Close) _ =
-    trace.OnConnected (fun () -> finish |> IsFinish |> (trace.OnFinish Visits))
+  let internal FlushCounterImpl _ =
+    trace.OnConnected (fun () -> trace.OnFinish Visits)
       (fun () ->
-      if IsFinish finish then
-        trace.Close()
+      trace.Close()
       match Visits.Count with
       | 0 -> ()
       | _ -> let counts = Dictionary<string, Dictionary<int, int>> Visits
@@ -131,7 +130,7 @@ module Instance =
                      channel.Reply ()
                      return! loop inbox
                  | Finish (mode, channel) ->
-                     FlushCounterImpl mode ()
+                     FlushCounterImpl mode
                      channel.Reply ()
           }
 
