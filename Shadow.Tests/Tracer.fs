@@ -41,8 +41,9 @@ type AltCoverCoreTests() = class
     try
         client <- client.OnStart()
         Assert.That (client.IsConnected(), Is.False)
-    finally
-      client.Close()
+    with
+    | _ -> client.Close()
+           reraise()
 
   [<Test>]
   member self.ValidTokenWillConnect () =
@@ -131,7 +132,7 @@ type AltCoverCoreTests() = class
         Assert.That (Instance.trace.IsConnected(), "connection failed")
         let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
         formatter.Serialize(Instance.trace.Stream, expected |> Seq.head)
-        Instance.FlushCounterImpl ProcessExit ()
+        Instance.FlushCounterImpl ProcessExit
       finally
         Instance.trace.Close()
         System.Threading.Thread.Sleep 100

@@ -381,7 +381,7 @@ type AltCoverTests() = class
       use stdout = new StringWriter()
       Console.SetOut stdout
 
-      Instance.FlushCounterImpl ProcessExit ()
+      Instance.FlushCounterImpl ProcessExit
       Assert.That (stdout.ToString(), Is.Empty)
     finally
       Instance.Visits.Clear()
