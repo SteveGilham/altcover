@@ -39,9 +39,7 @@ type Tracer = {
         this
 
     member this.Close() =
-      match this.Stream with
-      | null -> ()
-      | _ -> this.Stream.Dispose()
+      this.Stream.Dispose()
 
     member this.Push (moduleId:string) hitPointId =
       let stream = this.Stream
@@ -64,12 +62,11 @@ type Tracer = {
       if this.IsConnected() then f()
       else g ()
 
-    member this.OnFinish visits finish =
+    member this.OnFinish visits =
       this.CatchUp visits
+      this.Push null -1
       this.Stream.Flush()
-      if finish then
-        this.Push null -1
-        this.Close()
+      this.Close()
 
     member this.OnVisit visits moduleId hitPointId =
       this.CatchUp visits
