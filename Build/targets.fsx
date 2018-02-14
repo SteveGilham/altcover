@@ -37,6 +37,7 @@ let Version = ref String.Empty
 
 let OpenCoverFilter = "+[AltCove*]* -[*]Microsoft.* -[*]System.* +[*]N.*"
 let AltCoverFilter= @" -s=Mono -s=\.Recorder -s=Sample -s=nunit -e=Tests -t=System. -t=Sample3\.Class2 "
+let AltCoverFilterX= @" -s=Mono -s=\.Recorder -s=Sample -s=nunit -t=System. -t=Sample3\.Class2 "
 let AltCoverFilterG= @" -s=Mono -s=\.Recorder\.g -s=Sample -s=nunit -e=Tests -t=System. -t=Sample3\.Class2 "
 
 // A more accurate flag for what is going on in travis-ci
@@ -103,6 +104,7 @@ Target "SetVersion" (fun _ ->
 Target "Compilation" ignore
 
 Target "BuildRelease" (fun _ ->
+  try
     "AltCover.sln"
     |> MsBuild.build (fun p ->
             { p with
@@ -119,6 +121,9 @@ Target "BuildRelease" (fun _ ->
                 Configuration = BuildConfiguration.Release
                 Common = dotnetOptions
             })
+  with
+  | x -> printfn "%A" x
+         reraise()
 )
 
 Target "BuildDebug" (fun _ ->
@@ -357,6 +362,73 @@ Target "UnitTestWithAltCover" (fun _ ->
       ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
                                          ReportTypes = [ ReportGeneratorReportType.Html; ReportGeneratorReportType.Badges; ReportGeneratorReportType.XmlSummary ]
                                          TargetDir = "_Reports/_UnitTestWithAltCover"})
+          [altReport; shadowReport]
+    else
+      printfn "Symbols not present; skipping"
+)
+
+Target "UnitTestWithAltCoverRunner" (fun _ ->
+    ensure "./_Reports/_UnitTestWithAltCover"
+    let keyfile = getFullName "Build/SelfTest.snk"
+    let reports = getFullName "./_Reports"
+    let altcover = findToolInSubPath "AltCover.exe" "./_Binaries"
+    let nunit = findToolInSubPath "nunit3-console.exe" "."
+
+    let testDirectory = getFullName "_Binaries/AltCover.Tests/Debug+AnyCPU"
+    if !! (testDirectory @@ "AltCov*.pdb") |> Seq.length > 0 then
+
+      let altReport = reports @@ "UnitTestWithAltCoverRunner.xml"
+      printfn "Instrumented the code"
+      Actions.Run (fun info ->
+          { info with
+                FileName = altcover
+                WorkingDirectory = testDirectory
+                Arguments = ("/sn=" + keyfile + AltCoverFilterX + @"/o=./__UnitTestWithAltCoverRunner -x=" + altReport)})
+                "Re-instrument returned with a non-zero exit code"
+
+      printfn "Unit test the instrumented code"
+      try
+       Actions.Run (fun info ->
+          { info with
+                FileName = altcover
+                WorkingDirectory = "."
+                Arguments = ( " Runner -x " + nunit +
+                              " -r " + (testDirectory @@ "__UnitTestWithAltCoverRunner") +
+                              " -w . -- " +
+                              " --noheader --work=. --result=./_Reports/UnitTestWithAltCoverReport.xml \"" +
+                              String.Join ("\" \"", [ getFullName  "_Binaries/AltCover.Tests/Debug+AnyCPU/__UnitTestWithAltCoverRunner/AltCover.Tests.dll"
+                                                      getFullName  "_Binaries/AltCover.Tests/Debug+AnyCPU/__UnitTestWithAltCoveRunner/Sample2.dll"]) + "\""
+                            )}) "Re-instrument tests returned with a non-zero exit code"
+      with
+      | x -> printfn "%A" x
+             reraise ()
+
+      printfn "Instrument the shadow tests"
+      let shadowDir = getFullName  "_Binaries/AltCover.Shadow.Tests/Debug+AnyCPU"
+      let shadowReport = reports @@ "ShadowTestWithAltCoverRunner.xml"
+      Actions.Run (fun info ->
+          { info with
+                FileName = altcover
+                WorkingDirectory = shadowDir
+                Arguments = ("/sn=" + keyfile + AltCoverFilterX + @"/o=./__ShadowTestWithAltCoverRunner -x=" + shadowReport)})
+                "Instrumenting the shadow tests failed"
+
+      printfn "Execute the shadow tests"
+      Actions.Run (fun info ->
+          { info with
+                FileName = altcover
+                WorkingDirectory = "."
+                Arguments = ( " Runner -x " + nunit +
+                              " -r " + (shadowDir @@ "__ShadowTestWithAltCoverRunner") +
+                              " -w . -- " +
+                              " --noheader --work=. --result=./_Reports/ShadowTestWithAltCoverRunnerReport.xml \"" +
+                              String.Join ("\" \"", [ getFullName  "_Binaries/AltCover.Shadow.Tests\Debug+AnyCPU\__ShadowTestWithAltCoverRunner/AltCover.Shadow.Tests.dll"
+                                                      getFullName  "_Binaries/AltCover.Shadow.Tests\Debug+AnyCPU\__ShadowTestWithAltCoverRunner/AltCover.Shadow.Tests2.dll"]) + "\""
+                            )}) "Re-instrument tests returned with a non-zero exit code"
+
+      ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
+                                         ReportTypes = [ ReportGeneratorReportType.Html; ReportGeneratorReportType.Badges; ReportGeneratorReportType.XmlSummary ]
+                                         TargetDir = "_Reports/_UnitTestWithAltCoverRunner"})
           [altReport; shadowReport]
     else
       printfn "Symbols not present; skipping"
@@ -1009,7 +1081,7 @@ Target "BulkReport" (fun _ ->
 
 Target "All" ignore
 
-Description "ResetConsoleColours" 
+Description "ResetConsoleColours"
 CreateFinal "ResetConsoleColours" (fun _ ->
   System.Console.ResetColor()
 )
@@ -1064,6 +1136,9 @@ CreateFinal "ResetConsoleColours" (fun _ ->
 "Compilation"
 ==> "UnitTestWithAltCover"
 ==> "UnitTest"
+
+"Compilation"
+==> "UnitTestWithAltCoverRunner"
 
 "UnitTestDotNet"
 ==> "UnitTestWithAltCoverCore"
@@ -1190,7 +1265,7 @@ CreateFinal "ResetConsoleColours" (fun _ ->
 
 "Deployment"
 ==> "BulkReport"
-==> "ResetConsoleColours" 
+==> "ResetConsoleColours"
 ==> "All"
 
 RunOrDefault "All"

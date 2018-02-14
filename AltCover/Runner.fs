@@ -158,7 +158,7 @@ module Runner =
     | Left (intro, options) -> HandleBadArguments arguments intro options1 options
     | Right (rest, _) ->
           let instance = RecorderInstance()
-          let report = (GetMethod instance "get_ReportFile") 
+          let report = (GetMethod instance "get_ReportFile")
                        |> GetFirstOperandAsString
                        |> Path.GetFullPath
           let hits = List<(string*int)>()
