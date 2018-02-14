@@ -261,7 +261,7 @@ Target "JustUnitTest" (fun _ ->
       !! (@"_Binaries/*Tests/Debug+AnyCPU/*.Test*.dll")
       |> NUnit3 (fun p -> { p with ToolPath = findToolInSubPath "nunit3-console.exe" "."
                                    WorkingDir = "."
-                                   // Labels = LabelsLevel.All
+                                   Labels = LabelsLevel.All
                                    ResultSpecs = ["./_Reports/JustUnitTestReport.xml"] })
     with
     | x -> printfn "%A" x
@@ -342,7 +342,7 @@ Target "UnitTestWithAltCover" (fun _ ->
         |> Seq.concat |> Seq.distinct
         |> NUnit3 (fun p -> { p with ToolPath = findToolInSubPath "nunit3-console.exe" "."
                                      WorkingDir = "."
-                                     // Labels = LabelsLevel.All
+                                     Labels = LabelsLevel.All
                                      ResultSpecs = ["./_Reports/UnitTestWithAltCoverReport.xml"] })
       with
       | x -> printfn "%A" x
@@ -460,7 +460,7 @@ Target "UnitTestWithAltCoverCore" (fun _ ->
     printfn "Unit test the instrumented code"
     try
       Actions.RunDotnet {dotnetOptions with WorkingDirectory = getFullName "Tests"} "test"
-                        ("--no-build --configuration Debug altcover.tests.core.fsproj")
+                        ("--no-build --configuration Debug --verbosity normal altcover.tests.core.fsproj")
                         "first test returned with a non-zero exit code"
     with
     | x -> printfn "%A" x
@@ -479,7 +479,7 @@ Target "UnitTestWithAltCoverCore" (fun _ ->
 
     printfn "Execute the shadow tests"
     Actions.RunDotnet {dotnetOptions with WorkingDirectory = getFullName "Shadow.Tests"} "test"
-                      ("--no-build --configuration Debug altcover.recorder.tests.core.fsproj")
+                      ("--no-build --configuration Debug --verbosity normal altcover.recorder.tests.core.fsproj")
                       "second test returned with a non-zero exit code"
 
     ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
@@ -510,7 +510,7 @@ Target "UnitTestWithAltCoverCoreRunner" (fun _ ->
     Actions.RunDotnet {dotnetOptions with WorkingDirectory = output} "run"
                             ("--project " + altcover +
                              " -- Runner -x \"dotnet\" -r \"" + output +
-                             "\" -- test --no-build --configuration Debug " +
+                             "\" -- test --no-build --configuration Debug --verbosity normal " +
                              testproject)
                              "Unit test the instrumented code"
 
@@ -529,7 +529,7 @@ Target "UnitTestWithAltCoverCoreRunner" (fun _ ->
     Actions.RunDotnet {dotnetOptions with WorkingDirectory = shadowOut} "run"
                             ("--project " + altcover +
                              " -- Runner -x \"dotnet\" -r \"" + shadowOut +
-                             "\" -- test --no-build --configuration Debug " +
+                             "\" -- test --no-build --configuration Debug --verbosity normal " +
                              shadowProject)
                              "Run the shadow tests"
 
