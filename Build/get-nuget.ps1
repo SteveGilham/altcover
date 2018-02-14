@@ -1,10 +1,9 @@
-$nugetDir = Join-Path $PSScriptRoot "..\ThirdParty\nuget"
-$nugetPath = Join-Path $nugetDir "nuget.exe"
-if (-not (Test-Path $nugetPath)) {
-    mkdir $nugetDir  | Out-Null
-    $sourceNugetExe = "https://dist.nuget.org/win-x86-commandline/latest/nuget.exe"
-    Invoke-WebRequest $sourceNugetExe -OutFile $nugetPath
-}
+$nugetDir = Join-Path $PSScriptRoot "..\packages"
+$project = Join-Path $PSScriptRoot dotnet-nuget.csproj
+& dotnet restore --packages $nugetDir $project
+
+$nugetPath = dir -recurse (Join-Path $nugetDir "nuget.exe") | % { $_.FullName } | Select-Object -First 1
+
 $solutionRoot = Resolve-Path (Join-Path $PSScriptRoot "..")
 $solution = Join-Path $SolutionRoot "AltCover.sln"
 & $nugetPath restore $solution
