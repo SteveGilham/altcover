@@ -1,14 +1,13 @@
 #r "paket:
+nuget FSharpLint.Fake >= 0.9.0
 nuget Fake.Core.Target prerelease //"
 open System
 open System.IO
 
 let here = Directory.GetCurrentDirectory()
-let fakelib = Directory.GetFiles(here, "*akeLib.dll", SearchOption.AllDirectories)
-              |> Seq.head
-              |> Path.GetDirectoryName
+let globalNuget = Path.Combine(Environment.GetEnvironmentVariable "USERPROFILE", ".nuget/packages")
 
-let lintlib = Directory.GetFiles(here, "*SharpLint.Fake.dll", SearchOption.AllDirectories)
+let lintlib = Directory.GetFiles(globalNuget, "*SharpLint.Fake.dll", SearchOption.AllDirectories)
               |> Seq.head
               |> Path.GetDirectoryName
 
@@ -42,9 +41,11 @@ nuget Fake.DotNet.Testing.OpenCover prerelease
 nuget Fake.IO.FileSystem prerelease
 nuget FSharpLint.Fake >= 0.9.0
 nuget YamlDotNet >= 4.3.0 //"
-#I @"{2}"
+#I @"{0}"
+#r "FSharpLint.Fake"
+#I @"{1}"
 #r "FSharp.Markdown.dll"
-#I @"{4}"
+#I @"{3}"
 #r "nunit.framework.dll"
 #r "System.IO.Compression.FileSystem.dll"
 #r "System.Xml"
@@ -54,5 +55,5 @@ nuget YamlDotNet >= 4.3.0 //"
 #load "targets.fsx"
 """
 
-let formatted = String.Format(build, fakelib, lintlib, mdlib, ylib, nlib)
+let formatted = String.Format(build, lintlib, mdlib, ylib, nlib)
 File.WriteAllText("./Build/build.fsx", formatted)

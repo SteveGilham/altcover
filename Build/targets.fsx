@@ -29,12 +29,13 @@ open Fake.IO.Path
 open Fake.IO.Shell
 
 //=========== awkward cases
-open Fake.FileHelper
-open Fake.FxCopHelper
-open Fake.ILMergeHelper
-open Fake.ReportGeneratorHelper
-open FSharpLint.Fake
+//open Fake.FileHelper
+//open Fake.FxCopHelper
+//open Fake.ILMergeHelper
+//open Fake.ReportGeneratorHelper
 //============
+
+open FSharpLint.Fake
 open NUnit.Framework
 
 let Copyright  = ref String.Empty
