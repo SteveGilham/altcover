@@ -13,8 +13,10 @@ nuget:
   disable_publish_on_pr: true
 build_script:
 - ps: >-
-    .\Build\get-nuget.ps1
+    & dotnet restore dotnet-fake.csproj
 
+    .\Build\setup.ps1
+    
     .\fake.bat
 test:
   assemblies:

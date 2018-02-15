@@ -19,8 +19,9 @@ addons:
     - dotnet-sharedframework-microsoft.netcore.app-1.1.2
 
 install:
-  - nuget restore ./AltCover.sln
+  - mkdir ./.paket
   - dotnet restore ./dotnet-fake.csproj
+  - nuget restore ./AltCover.sln
 
 script:
   - dotnet fake run Build/prebuild.fsx
