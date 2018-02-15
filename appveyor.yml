@@ -14,7 +14,9 @@ nuget:
 build_script:
 - ps: >-
     & dotnet restore dotnet-fake.csproj
+
     .\Build\get-nuget.ps1
+    
     .\fake.bat
 test:
   assemblies:
