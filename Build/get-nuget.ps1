@@ -1,6 +1,7 @@
 $nugetDir = Join-Path $PSScriptRoot "..\packages"
 $project = Join-Path $PSScriptRoot dotnet-nuget.csproj
 & dotnet restore --packages $nugetDir $project
+& dotnet fake run ".\Build\prebuild.fsx"
 
 $nugetPath = dir -recurse (Join-Path $nugetDir "nuget.exe") | % { $_.FullName } | Select-Object -First 1
 
@@ -29,8 +30,6 @@ SET PATH="$($env:path);$(Split-Path -Parent $fake)"
 exit /b %errorlevel%
 "@
 Set-Content -Value $bat -Path (Join-Path $SolutionRoot "fake.bat")
-
-& "$fake" ".\Build\prebuild.fsx"
 
 $lines = Get-Content .travis.yml
 $root = Split-Path $PSScriptRoot -Parent
