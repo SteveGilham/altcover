@@ -20,8 +20,9 @@ addons:
 
 install:
   - nuget restore ./AltCover.sln
+  - dotnet restore ./dotnet-fake.csproj
 
 script:
-  - mono packages/FAKE.5.0.0-beta014/tools/FAKE.exe Build/prebuild.fsx
+  - dotnet fake run ./Build/prebuild.fsx
   - mono packages/FAKE.5.0.0-beta014/tools/FAKE.exe Build/build.fsx
 
