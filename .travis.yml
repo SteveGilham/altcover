@@ -19,11 +19,11 @@ addons:
     - dotnet-sharedframework-microsoft.netcore.app-1.1.2
 
 install:
-  - mkdir ./.paket
+  - mkdir .paket
   - dotnet restore ./dotnet-fake.csproj
-  - nuget restore ./AltCover.sln
+  - dotnet fake run ./Build/setup.fsx
+  - chmod 755 ./fake.sh
 
 script:
-  - dotnet fake run Build/prebuild.fsx
-  - dotnet fake run Build/build.fsx
+  - ./fake.sh
 

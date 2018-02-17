@@ -15,7 +15,7 @@ build_script:
 - ps: >-
     & dotnet restore dotnet-fake.csproj
 
-    .\Build\setup.ps1
+    & dotnet fake run .\Build\setup.fsx
     
     .\fake.bat
 test:
