@@ -1,7 +1,7 @@
 $nugetDir = Join-Path $PSScriptRoot "..\packages"
 $project = Join-Path $PSScriptRoot dotnet-nuget.csproj
 & dotnet restore --packages $nugetDir $project
-& dotnet fake run ".\Build\prebuild.fsx"
+& dotnet fake run ".\Build\setup.fsx"
 
 $nugetPath = dir -recurse (Join-Path $nugetDir "nuget.exe") | % { $_.FullName } | Select-Object -First 1
 
