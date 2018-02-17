@@ -2,6 +2,7 @@
 nuget Fake.Core.Environment prerelease
 nuget Fake.Core.Globbing prerelease
 nuget Fake.Core.Process prerelease
+nuget Fake.DotNet.Cli prerelease
 nuget Fake.DotNet.NuGet prerelease //"
 open System
 open System.IO
