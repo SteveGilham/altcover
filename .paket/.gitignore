@@ -1,0 +1,6 @@
+# This directory is required by paket in a default configuration (no explicit appdata/localappdata environment variables)
+# paket is forced upon us by FAKE, so use this trick -- https://stackoverflow.com/a/932982/118959
+# Ignore everything in this directory
+*
+# Except this file
+!.gitignore

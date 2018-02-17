@@ -30,8 +30,8 @@ Start by setting up `dotnet fake` with `dotnet restore dotnet-fake.csproj`
 Then `dotnet fake run ./Build/setup.fsx` to do the rest of the set-up.
 
 #### *nix
+
 * It is assumed that `mono` is on the `PATH` already
-* You may need to create the directory `.paket` or otherwise allow for `dotnet restore` to work before starting the process
 * You will need to `chmod 755 ./fake.sh` to make the generated script file executable
 
 ### Normal builds
