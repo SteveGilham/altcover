@@ -64,6 +64,9 @@ let monoOnWindows = if isWindows then
                        |> List.tryFind (fun _ -> true)
                     else None
 
+let nugetCache = Path.Combine (Environment.GetFolderPath Environment.SpecialFolder.UserProfile,
+                               ".nuget/packages")                    
+
 let Target s f =
   Description s
   Create s f
@@ -311,7 +314,7 @@ Target "UnitTestWithOpenCover" (fun _ ->
     if not <| String.IsNullOrWhiteSpace (environVar "APPVEYOR_BUILD_NUMBER") then
        Actions.Run (fun info ->
           { info with
-                FileName = findToolInSubPath "coveralls.net.exe" "."
+                FileName = findToolInSubPath "coveralls.net.exe" nugetCache
                 WorkingDirectory = "_Reports"
                 Arguments = ("--opencover " + coverage)}) "Coveralls upload failed"
 )
