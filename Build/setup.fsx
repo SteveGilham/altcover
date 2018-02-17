@@ -41,6 +41,12 @@ let cache0 = Path.Combine (Environment.GetFolderPath Environment.SpecialFolder.U
 let cache1 = ".paket"
 
 let cache = if Directory.Exists cache1 then cache1 else cache0
+printfn "Cache in %s" cache
+
+Directory.GetFiles(".paket",
+                   "*",
+                   SearchOption.AllDirectories)
+|> Seq.iter (printfn "%s")
 
 let lint =  Path.Combine  (cache, "fsharplint.fake")                     
 let lintlib = Directory.GetFiles(lint, "*SharpLint.Fake.dll", SearchOption.AllDirectories)
