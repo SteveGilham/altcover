@@ -29,10 +29,10 @@ open Fake.IO.Path
 open Fake.IO.Shell
 
 //=========== awkward cases
-//open Fake.FileHelper
-//open Fake.FxCopHelper
-//open Fake.ILMergeHelper
-//open Fake.ReportGeneratorHelper
+open Fake.FileHelper
+open Fake.FxCopHelper
+open Fake.ILMergeHelper
+open Fake.ReportGeneratorHelper
 //============
 
 open FSharpLint.Fake
@@ -307,7 +307,7 @@ Target "UnitTestWithOpenCover" (fun _ ->
            reraise ()
 
     ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
-                                       ReportTypes = [ ReportGeneratorReportType.Html; ReportGeneratorReportType.Badges; ReportGeneratorReportType.XmlSummary ]
+                                       ReportTypes = [ ReportGeneratorReportType.Html; ReportGeneratorReportType.XmlSummary ]
                                        TargetDir = "_Reports/_UnitTestWithOpenCover"})
         [coverage]
 
@@ -369,7 +369,7 @@ Target "UnitTestWithAltCover" (fun _ ->
                                    ResultSpecs = ["./_Reports/ShadowTestWithAltCoverReport.xml"] })
 
       ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
-                                         ReportTypes = [ ReportGeneratorReportType.Html; ReportGeneratorReportType.Badges; ReportGeneratorReportType.XmlSummary ]
+                                         ReportTypes = [ ReportGeneratorReportType.Html; ReportGeneratorReportType.XmlSummary ]
                                          TargetDir = "_Reports/_UnitTestWithAltCover"})
           [altReport; shadowReport]
     else
@@ -436,7 +436,7 @@ Target "UnitTestWithAltCoverRunner" (fun _ ->
                             )}) "Re-instrument tests returned with a non-zero exit code"
 
       ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
-                                         ReportTypes = [ ReportGeneratorReportType.Html; ReportGeneratorReportType.Badges; ReportGeneratorReportType.XmlSummary ]
+                                         ReportTypes = [ ReportGeneratorReportType.Html; ReportGeneratorReportType.XmlSummary ]
                                          TargetDir = "_Reports/_UnitTestWithAltCoverRunner"})
           [altReport; shadowReport]
     else
@@ -487,7 +487,7 @@ Target "UnitTestWithAltCoverCore" (fun _ ->
                       "second test returned with a non-zero exit code"
 
     ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
-                                       ReportTypes = [ ReportGeneratorReportType.Html; ReportGeneratorReportType.Badges; ReportGeneratorReportType.XmlSummary]
+                                       ReportTypes = [ ReportGeneratorReportType.Html; ReportGeneratorReportType.XmlSummary]
                                        TargetDir = "_Reports/_UnitTestWithAltCoverCore"})
           [altReport; shadowReport]
 )
@@ -538,7 +538,7 @@ Target "UnitTestWithAltCoverCoreRunner" (fun _ ->
                              "Run the shadow tests"
 
     ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
-                                       ReportTypes = [ ReportGeneratorReportType.Html; ReportGeneratorReportType.Badges; ReportGeneratorReportType.XmlSummary]
+                                       ReportTypes = [ ReportGeneratorReportType.Html; ReportGeneratorReportType.XmlSummary]
                                        TargetDir = "_Reports/_UnitTestWithAltCoverCoreRunner"})
           [altReport; shadowReport]
 )
@@ -1084,7 +1084,7 @@ Target "BulkReport" (fun _ ->
     |> Seq.filter (fun f -> not <| f.EndsWith("Report.xml", StringComparison.OrdinalIgnoreCase))
     |> Seq.toList
     |> ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
-                                          ReportTypes = [ ReportGeneratorReportType.Html; ReportGeneratorReportType.Badges ]
+                                          ReportTypes = [ ReportGeneratorReportType.Html ]
                                           TargetDir = "_Reports/_BulkReport"})
 )
 
