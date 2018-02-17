@@ -3,7 +3,12 @@ nuget Fake.Core.Environment prerelease
 nuget Fake.Core.Globbing prerelease
 nuget Fake.Core.Process prerelease
 nuget Fake.DotNet.Cli prerelease
-nuget Fake.DotNet.NuGet prerelease //"
+nuget Fake.DotNet.NuGet prerelease
+nuget coveralls.io >= 1.4.2
+nuget FSharp.Formatting >= 2.14.4
+nuget FSharpLint.Fake >= 0.9.0
+nuget NUnit >= 3.9.0
+nuget YamlDotNet >= 4.3.0 //"
 open System
 open System.IO
 
@@ -33,15 +38,9 @@ RestoreMSSolutionPackages id "./AltCover.sln"
 // Get the paths to the current NuGet versions used by the build and feed into the primary build script
 let cache0 = Path.Combine (Environment.GetFolderPath Environment.SpecialFolder.UserProfile,
                            ".nuget/packages")
-let cache1 = ".paket/packages"
+let cache1 = ".paket"
 
-let cache = if Directory.Exists cache0 then cache0 else cache1
-printfn "Cache in %s" cache
-
-Directory.GetFiles(".paket",
-                   "*",
-                   SearchOption.AllDirectories)
-|> Seq.iter (printfn "%s")
+let cache = if Directory.Exists cache1 then cache1 else cache0
 
 let lint =  Path.Combine  (cache, "fsharplint.fake")                     
 let lintlib = Directory.GetFiles(lint, "*SharpLint.Fake.dll", SearchOption.AllDirectories)
