@@ -24,6 +24,5 @@ install:
   - dotnet fake run ./Build/setup.fsx
 
 script:
-  - ls -R .paket
   - dotnet fake run ./Build/build.fsx
 
