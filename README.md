@@ -26,23 +26,19 @@ You will need Visual Studio VS2017 (Community Edition) v15.5 or later with F# la
 
 ### Bootstrapping
 
-#### Windows
 Start by setting up `dotnet fake` with `dotnet restore dotnet-fake.csproj`
-Then `.\Build\setup.ps1` to do the rest of the set-up.
+Then `dotnet fake run ./Build/setup.fsx` to do the rest of the set-up.
 
 #### *nix
-Assumes nuget and mono already present
-
-`nuget restore ./AltCover.sln`
-`mono packages/FAKE.[version]/tools/FAKE.exe Build/prebuild.fsx`
+* It is assumed that `mono` is on the `PATH` already
+* You may need to create the directory `.paket` or otherwise allow for `dotnet restore` to work before starting the process
+* You will need to `chmod 755 ./fake.sh` to make the generated script file executable
 
 ### Normal builds
 
-#### Windows
-Running `.\fake.bat` performs a full build/test/package process.
+Running `.\fake.bat` or `./fake.sh` as appropriate performs a full build/test/package process.
 
-#### *nix
-`mono packages/FAKE.[version]/tools/FAKE.exe Build/build.fsx`
+On Windows, `.\fake.bat` takes an optional build target argument.
 
 ### Unit Tests
 
