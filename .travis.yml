@@ -23,7 +23,6 @@ addons:
     - dotnet-sharedframework-microsoft.netcore.app-1.1.2
 
 install:
-  - mkdir ./.paket
   - dotnet restore ./dotnet-fake.csproj
   - dotnet fake run ./Build/setup.fsx
 
