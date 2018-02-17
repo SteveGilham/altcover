@@ -83,7 +83,6 @@ if isWindows then
   use hklmKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32)
   use key = hklmKey.OpenSubKey(@"SOFTWARE\Microsoft\VisualStudio\SxS\VS7")
   let vsInstallPath = key.GetValue("15.0") :?> string
-  printfn "%s" vsInstallPath
   let vcTools = Path.Combine(vsInstallPath, @"Common7\Tools")
   let batchFile = Path.Combine(vcTools, "VsDevCmd.bat")
   let fakebat = """@echo off
