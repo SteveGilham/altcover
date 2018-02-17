@@ -43,7 +43,7 @@ let cache1 = ".paket"
 let cache = if Directory.Exists cache1 then cache1 else cache0
 printfn "Cache in %s" cache
 
-Directory.GetFiles(".paket",
+Directory.GetFiles(cache0,
                    "*",
                    SearchOption.AllDirectories)
 |> Seq.iter (printfn "%s")
