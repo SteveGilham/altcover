@@ -5,6 +5,10 @@ dist: trusty
 sudo: false
 solution: AltCover.sln
 
+cache:
+  directories:
+  - .paket
+
 git:
   depth: false
 
