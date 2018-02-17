@@ -24,7 +24,7 @@ let dotnetOptions = match dotnetPath with
 
 DotnetRestore (fun o -> { o with 
                             Packages = ["./packages"]
-                            Common = dotnetOptions}) "./build/dotnet-nuget.csproj"
+                            Common = dotnetOptions}) "./Build/dotnet-nuget.csproj"
 
 // Restore the NuGet packages used by the build and the Framework version
 let nuget = findNuget "." 
