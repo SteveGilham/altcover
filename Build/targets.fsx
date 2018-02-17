@@ -65,7 +65,7 @@ let monoOnWindows = if isWindows then
                     else None
 
 let nugetCache = Path.Combine (Environment.GetFolderPath Environment.SpecialFolder.UserProfile,
-                               ".nuget/packages")                    
+                               ".nuget/packages")
 
 let Target s f =
   Description s

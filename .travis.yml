@@ -21,8 +21,7 @@ addons:
 install:
   - dotnet restore ./dotnet-fake.csproj
   - dotnet fake run ./Build/setup.fsx
-  - chmod 755 ./fake.sh
 
 script:
-  - ./fake.sh
+  - dotnet fake run ./Build/build.fsx
 
