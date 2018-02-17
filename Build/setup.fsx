@@ -36,17 +36,8 @@ let nuget = findNuget "."
 RestoreMSSolutionPackages id "./AltCover.sln"
 
 // Get the paths to the current NuGet versions used by the build and feed into the primary build script
-let cache0 = Path.Combine (Environment.GetFolderPath Environment.SpecialFolder.UserProfile,
+let cache = Path.Combine (Environment.GetFolderPath Environment.SpecialFolder.UserProfile,
                            ".nuget/packages")
-let cache1 = ".paket"
-
-let cache = if Directory.Exists cache1 then cache1 else cache0
-printfn "Cache in %s" cache
-
-Directory.GetFiles(cache0,
-                   "*",
-                   SearchOption.AllDirectories)
-|> Seq.iter (printfn "%s")
 
 let lint =  Path.Combine  (cache, "fsharplint.fake")                     
 let lintlib = Directory.GetFiles(lint, "*SharpLint.Fake.dll", SearchOption.AllDirectories)

@@ -64,11 +64,8 @@ let monoOnWindows = if isWindows then
                        |> List.tryFind (fun _ -> true)
                     else None
 
-let cache0 = Path.Combine (Environment.GetFolderPath Environment.SpecialFolder.UserProfile,
-                           ".nuget/packages")
-let cache1 = ".paket"
-
-let nugetCache = if Directory.Exists cache0 then cache0 else cache1             
+let nugetCache = Path.Combine (Environment.GetFolderPath Environment.SpecialFolder.UserProfile,
+                               ".nuget/packages")
 
 let Target s f =
   Description s
