@@ -39,8 +39,10 @@ let cache1 = Path.Combine (Environment.GetFolderPath Environment.SpecialFolder.U
 let cache = if Directory.Exists cache0 then cache0 else cache1
 printfn "Cache in %s" cache
 
-Fake.IO.DirectoryInfo.getMatchingFilesRecursive "*" Path.Combine (Environment.GetFolderPath Environment.SpecialFolder.UserProfile, ".paket")
-|> Seq.iter(fun f -> printfn "%s" f.FullName)
+Directory.GetFiles(Path.Combine (Environment.GetFolderPath Environment.SpecialFolder.UserProfile, ".paket"),
+                   "*",
+                   SearchOption.AllDirectories)
+|> Seq.iter (printfn "%s")
 
 let lint =  Path.Combine  (cache, "fsharplint.fake")                     
 let lintlib = Directory.GetFiles(lint, "*SharpLint.Fake.dll", SearchOption.AllDirectories)
