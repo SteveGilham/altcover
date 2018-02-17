@@ -66,8 +66,7 @@ let monoOnWindows = if isWindows then
 
 let cache0 = Path.Combine (Environment.GetFolderPath Environment.SpecialFolder.UserProfile,
                            ".nuget/packages")
-let cache1 = Path.Combine (Environment.GetFolderPath Environment.SpecialFolder.UserProfile,
-                           ".paket/packages")
+let cache1 = ".paket/packages"
 
 let nugetCache = if Directory.Exists cache0 then cache0 else cache1             
 

@@ -33,13 +33,12 @@ RestoreMSSolutionPackages id "./AltCover.sln"
 // Get the paths to the current NuGet versions used by the build and feed into the primary build script
 let cache0 = Path.Combine (Environment.GetFolderPath Environment.SpecialFolder.UserProfile,
                            ".nuget/packages")
-let cache1 = Path.Combine (Environment.GetFolderPath Environment.SpecialFolder.UserProfile,
-                           ".paket/packages")
+let cache1 = ".paket/packages"
 
 let cache = if Directory.Exists cache0 then cache0 else cache1
 printfn "Cache in %s" cache
 
-Directory.GetFiles(Path.Combine (Environment.GetFolderPath Environment.SpecialFolder.UserProfile, ".paket"),
+Directory.GetFiles(".paket",
                    "*",
                    SearchOption.AllDirectories)
 |> Seq.iter (printfn "%s")
