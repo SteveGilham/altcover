@@ -72,14 +72,32 @@ open System.Runtime.CompilerServices
 #endif
 ()"""
 
+  let prefix = [| 0x00uy; 0x24uy; 0x00uy; 0x00uy; 0x04uy; 0x80uy; 0x00uy; 0x00uy; 0x94uy; 0x00uy; 0x00uy; 0x00uy |]
+
+  let GetPublicKey (stream:Stream) =
+    // see https://social.msdn.microsoft.com/Forums/vstudio/en-US/d9ef264e-1a74-4f48-b93f-3e2c7902f660/determine-contents-of-a-strong-name-key-file-snk?forum=netfxbcl
+    // for the exact format; this is a stripped down hack
+    
+    let buffer = Array.create 148 0uy
+    let size = stream.Read(buffer, 0, buffer.Length)
+    Assert.That(size, Is.EqualTo buffer.Length)
+    Assert.That(buffer.[0], Is.EqualTo 7uy) // private key blob
+    buffer.[0] <- 6uy // public key blob
+    Assert.That(buffer.[11], Is.EqualTo 0x32uy) // RSA2 magic number
+    buffer.[11] <- 0x31uy // RSA1 magic number
+    Array.append prefix buffer
+
   let InternalsVisibleTo version =
     let stream2 = new System.IO.FileStream("./Build/SelfTest.snk", System.IO.FileMode.Open, System.IO.FileAccess.Read)
-    let pair2 = StrongNameKeyPair(stream2)
-    let key2 = BitConverter.ToString pair2.PublicKey
+    //let pair2 = StrongNameKeyPair(stream2)
+    //let key2 = BitConverter.ToString pair2.PublicKey
+    let key2 = stream2 |> GetPublicKey |> BitConverter.ToString
+
 
     let stream = new System.IO.FileStream("./Build/Infrastructure.snk", System.IO.FileMode.Open, System.IO.FileAccess.Read)
-    let pair = StrongNameKeyPair(stream)
-    let key = BitConverter.ToString pair.PublicKey
+    //let pair = StrongNameKeyPair(stream)
+    //let key = BitConverter.ToString pair.PublicKey
+    let key = stream |> GetPublicKey |> BitConverter.ToString
 
     let file = String.Format(System.Globalization.CultureInfo.InvariantCulture,
                 template, version, key.Replace("-", String.Empty), key2.Replace("-", String.Empty))
