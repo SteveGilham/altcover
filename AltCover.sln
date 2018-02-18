@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.27130.2024
+VisualStudioVersion = 15.0.27130.2026
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "AltCover.Recorder", "AltCover.Recorder\AltCover.Recorder.fsproj", "{02192B55-3A50-4AD2-B519-560F30C14DD4}"
 EndProject
@@ -30,10 +30,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build Items", "Build Items"
 		Build\build.fsx = Build\build.fsx
 		Build\get-nuget.ps1 = Build\get-nuget.ps1
 		Build\Infrastructure.snk = Build\Infrastructure.snk
-		Build\prebuild.fsx = Build\prebuild.fsx
 		Build\Recorder.snk = Build\Recorder.snk
 		Build\rules.xml = Build\rules.xml
 		Build\SelfTest.snk = Build\SelfTest.snk
+		Build\setup.fsx = Build\setup.fsx
 		Build\targets.fsx = Build\targets.fsx
 	EndProjectSection
 EndProject

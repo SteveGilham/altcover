@@ -204,13 +204,13 @@ Target "FxCop" (fun _ -> // Needs debug because release is compiled --standalone
     ensure "./_Reports"
 
     let vsInstallPath = if isWindows then
-      use hklmKey = Microsoft.Win32.RegistryKey.OpenBaseKey(
-                          Microsoft.Win32.RegistryHive.LocalMachine, 
-                          Microsoft.Win32.RegistryView.Registry32)
-      use key = hklmKey.OpenSubKey(@"SOFTWARE\Microsoft\VisualStudio\SxS\VS7")
-      key.GetValue("15.0") :?> string
-    else null
-    
+                            use hklmKey = Microsoft.Win32.RegistryKey.OpenBaseKey(
+                                                Microsoft.Win32.RegistryHive.LocalMachine,
+                                                Microsoft.Win32.RegistryView.Registry32)
+                            use key = hklmKey.OpenSubKey(@"SOFTWARE\Microsoft\VisualStudio\SxS\VS7")
+                            key.GetValue("15.0") :?> string
+                        else null
+
     let fxCop = combine vsInstallPath "Team Tools/Static Analysis Tools/FxCop/FxCopCmd.exe"
 
     Actions.Run (fun info ->
@@ -865,7 +865,7 @@ Target "PrepareFrameworkBuild" (fun _ ->
     Actions.Run (fun info ->
         { info with
                FileName = toolpath
-               Arguments = "/out:\"./_Binaries/AltCover/AltCover.exe\" /ver:\"" + ver + 
+               Arguments = "/out:\"./_Binaries/AltCover/AltCover.exe\" /ver:\"" + ver +
                            "\" /attr:\"./_Binaries/AltCover/Release+AnyCPU/AltCover.exe\" /keyfile:\"./Build/Infrastructure.snk\" /target:\"exe\" /internalize ./_Binaries/AltCover/Release+AnyCPU/AltCover.exe .\_Binaries\AltCover\Release+AnyCPU\Mono.Cecil.dll .\_Binaries\AltCover\Release+AnyCPU\Mono.Cecil.Mdb.dll .\_Binaries\AltCover\Release+AnyCPU\Mono.Cecil.Pdb.dll .\_Binaries\AltCover\Release+AnyCPU\Mono.Cecil.Rocks.dll .\_Binaries\AltCover\Release+AnyCPU\Newtonsoft.Json.dll"
                 }) "ILMerge failure"
 
@@ -1167,7 +1167,7 @@ Target "BulkReport" (fun _ ->
     Actions.Run (fun info ->
         { info with
                FileName = findToolInSubPath "ReportGenerator.exe" "."
-               Arguments = "\"-reports:" + String.Join(";", 
+               Arguments = "\"-reports:" + String.Join(";",
                             !! "./_Reports/*.xml"
                             |> Seq.filter (fun f -> not <| f.EndsWith("Report.xml", StringComparison.OrdinalIgnoreCase))
                             |> Seq.toList

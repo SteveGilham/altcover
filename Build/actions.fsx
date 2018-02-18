@@ -80,7 +80,7 @@ open System.Runtime.CompilerServices
   let GetPublicKey (stream:Stream) =
     // see https://social.msdn.microsoft.com/Forums/vstudio/en-US/d9ef264e-1a74-4f48-b93f-3e2c7902f660/determine-contents-of-a-strong-name-key-file-snk?forum=netfxbcl
     // for the exact format; this is a stripped down hack
-    
+
     let buffer = Array.create 148 0uy
     let size = stream.Read(buffer, 0, buffer.Length)
     Assert.That(size, Is.EqualTo buffer.Length)
@@ -95,7 +95,6 @@ open System.Runtime.CompilerServices
     //let pair2 = StrongNameKeyPair(stream2)
     //let key2 = BitConverter.ToString pair2.PublicKey
     let key2 = stream2 |> GetPublicKey |> BitConverter.ToString
-
 
     let stream = new System.IO.FileStream("./Build/Infrastructure.snk", System.IO.FileMode.Open, System.IO.FileAccess.Read)
     //let pair = StrongNameKeyPair(stream)
