@@ -1217,7 +1217,7 @@ CreateFinal "ResetConsoleColours" (fun _ ->
 
 "Compilation"
 ==> "FxCop"
-=?> ("Analysis", not runningInMono) // not supported
+=?> ("Analysis", isWindows) // not supported
 
 "Compilation"
 ==> "Gendarme"
@@ -1236,7 +1236,7 @@ CreateFinal "ResetConsoleColours" (fun _ ->
 
 "Compilation"
 ==> "UnitTestWithOpenCover"
-=?> ("UnitTest", not runningInMono)  // OpenCover Mono support
+=?> ("UnitTest", isWindows)  // OpenCover Mono support
 
 "Compilation"
 ==> "UnitTestWithAltCover"
@@ -1298,14 +1298,14 @@ CreateFinal "ResetConsoleColours" (fun _ ->
 
 "Compilation"
 ==> "SelfTest"
-=?> ("OperationalTest", not runningInMono)  // OpenCover Mono support AND Mono + F# + Fake build => no symbols
+=?> ("OperationalTest", isWindows)  // OpenCover Mono support AND Mono + F# + Fake build => no symbols
 
 "Compilation"
 ?=> "Packaging"
 
 "Compilation"
 ==> "PrepareFrameworkBuild"
-=?> ("Packaging", not runningInMono)  // can't ILMerge
+=?> ("Packaging", isWindows)  // can't ILMerge
 
 "Compilation"
 ==> "PrepareDotNetBuild"
