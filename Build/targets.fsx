@@ -29,10 +29,10 @@ open Fake.IO.Path
 open Fake.IO.Shell
 
 //=========== awkward cases
-open Fake.FileHelper
-open Fake.FxCopHelper
-open Fake.ILMergeHelper
-open Fake.ReportGeneratorHelper
+//pen Fake.FileHelper
+//open Fake.FxCopHelper
+//open Fake.ILMergeHelper
+//open Fake.ReportGeneratorHelper
 //============
 
 open FSharpLint.Fake
@@ -179,9 +179,11 @@ Target "BuildMonoSamples" (fun _ ->
 Target "Analysis" ignore
 
 Target "Lint" (fun _ ->
-    !! "**/*.fsproj"
-        |> Seq.filter (fun n -> n.IndexOf(".core.") = -1)
-        |> Seq.iter (FSharpLint (fun options -> { options with FailBuildIfAnyWarnings = true }) ))
+//    !! "**/*.fsproj"
+//        |> Seq.filter (fun n -> n.IndexOf(".core.") = -1)
+//        |> Seq.iter (FSharpLint (fun options -> { options with FailBuildIfAnyWarnings = true }) )
+() // currently broken
+        )
 
 Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standalone which contaminates everything
     ensure "./_Reports"
@@ -201,6 +203,26 @@ Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standal
 Target "FxCop" (fun _ -> // Needs debug because release is compiled --standalone which contaminates everything
     ensure "./_Reports"
     let fxCop = combine (environVar "VS150COMNTOOLS") "../../Team Tools/Static Analysis Tools/FxCop/FxCopCmd.exe"
+
+    Actions.Run (fun info ->
+        { info with
+                FileName = fxCop
+                WorkingDirectory = "."
+                Arguments = "/c /f:\"_Binaries/AltCover/Debug+AnyCPU/AltCover.exe\" /o:\"_Reports/FxCopReport.xml\" /rid:-Microsoft.Design#CA1004 /rid:-Microsoft.Design#CA1006 /rid:-Microsoft.Design#CA1011 /rid:-Microsoft.Design#CA1062 /rid:-Microsoft.Maintainability#CA1506 /rid:-Microsoft.Naming#CA1704 /rid:-Microsoft.Naming#CA1707 /rid:-Microsoft.Naming#CA1709 /rid:-Microsoft.Naming#CA1715 /ignoregeneratedcode /s /t:AltCover.Augment,AltCover.CommandLine,AltCover.Filter,AltCover.FilterClass,AltCover.Fix,AltCover.Instrument,AltCover.KeyRecord,AltCover.KeyStore,AltCover.Main,AltCover.Naming,AltCover.Node,AltCover.ProgramDatabase,AltCover.Report,AltCover.Runner,AltCover.Visitor /gac"
+        })
+        "FxCop Errors were detected"
+    Assert.That(File.Exists "_Reports/FxCopReport.xml", Is.False, "FxCop Errors were detected")
+
+    Actions.Run (fun info ->
+        { info with
+                FileName = fxCop
+                WorkingDirectory = "."
+                Arguments = "/c /f:\"_Binaries/AltCover.Shadow/Debug+AnyCPU/AltCover.Shadow.dll\" /o:\"_Reports/FxCopReport.xml\" /rid:-Microsoft.Design#CA1004 /rid:-Microsoft.Design#CA1006 /rid:-Microsoft.Design#CA1011 /rid:-Microsoft.Design#CA1062 /rid:-Microsoft.Maintainability#CA1506 /rid:-Microsoft.Naming#CA1704 /rid:-Microsoft.Naming#CA1707 /rid:-Microsoft.Naming#CA1709 /rid:-Microsoft.Naming#CA1715 /ignoregeneratedcode /s /t:AltCover.Recorder.Instance /gac"
+        })
+        "FxCop Errors were detected"
+    Assert.That(File.Exists "_Reports/FxCopReport.xml", Is.False, "FxCop Errors were detected")
+
+    (* where does FakeLib, Version=3.33.0.0 come from??
     let rules = ["-Microsoft.Design#CA1004"
                  "-Microsoft.Design#CA1006"
                  "-Microsoft.Design#CA1011" // maybe sometimes
@@ -239,7 +261,7 @@ Target "FxCop" (fun _ -> // Needs debug because release is compiled --standalone
                                                                    Rules = rules
                                                                    IgnoreGeneratedCode  = true})
                                        Assert.That(File.Exists "_Reports/FxCopReport.xml", Is.False, "FxCop Errors were detected"))
-)
+*))
 
 // Unit Test
 
@@ -306,10 +328,16 @@ Target "UnitTestWithOpenCover" (fun _ ->
     | x -> printfn "%A" x
            reraise ()
 
-    ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
-                                       ReportTypes = [ ReportGeneratorReportType.Html; ReportGeneratorReportType.XmlSummary ]
-                                       TargetDir = "_Reports/_UnitTestWithOpenCover"})
-        [coverage]
+//    ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
+//                                       ReportTypes = [ ReportGeneratorReportType.Html; ReportGeneratorReportType.XmlSummary ]
+//                                       TargetDir = "_Reports/_UnitTestWithOpenCover"})
+//        [coverage]
+    Actions.Run (fun info ->
+        { info with
+               FileName = findToolInSubPath "ReportGenerator.exe" "."
+               Arguments = "\"-reports:" + String.Join(";", [coverage]) +
+                           "\" \"-targetdir:" + "_Reports/_UnitTestWithOpenCover" + "\" -reporttypes:Html;XmlSummary -verbosity:Verbose"
+                }) "Report generation failure"
 
     if not <| String.IsNullOrWhiteSpace (environVar "APPVEYOR_BUILD_NUMBER") then
        Actions.Run (fun info ->
@@ -367,11 +395,18 @@ Target "UnitTestWithAltCover" (fun _ ->
       |> NUnit3 (fun p -> { p with ToolPath = findToolInSubPath "nunit3-console.exe" "."
                                    WorkingDir = "."
                                    ResultSpecs = ["./_Reports/ShadowTestWithAltCoverReport.xml"] })
+// where does FakeLib, Version=3.33.0.0 come from??
+//      ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
+//                                         ReportTypes = [ ReportGeneratorReportType.Html; ReportGeneratorReportType.XmlSummary ]
+//                                         TargetDir = "_Reports/_UnitTestWithAltCover"})
+//          [altReport; shadowReport]
 
-      ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
-                                         ReportTypes = [ ReportGeneratorReportType.Html; ReportGeneratorReportType.XmlSummary ]
-                                         TargetDir = "_Reports/_UnitTestWithAltCover"})
-          [altReport; shadowReport]
+      Actions.Run (fun info ->
+        { info with
+               FileName = findToolInSubPath "ReportGenerator.exe" "."
+               Arguments = "\"-reports:" + String.Join(";", [altReport; shadowReport]) +
+                           "\" \"-targetdir:" + "_Reports/_UnitTestWithAltCover" + "\" -reporttypes:Html;XmlSummary -verbosity:Verbose"
+                }) "Report generation failure"
     else
       printfn "Symbols not present; skipping"
 )
@@ -435,10 +470,18 @@ Target "UnitTestWithAltCoverRunner" (fun _ ->
                                                       getFullName  "_Binaries/AltCover.Shadow.Tests\Debug+AnyCPU\__ShadowTestWithAltCoverRunner/AltCover.Shadow.Tests2.dll"]) + "\""
                             )}) "Re-instrument tests returned with a non-zero exit code"
 
-      ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
-                                         ReportTypes = [ ReportGeneratorReportType.Html; ReportGeneratorReportType.XmlSummary ]
-                                         TargetDir = "_Reports/_UnitTestWithAltCoverRunner"})
-          [altReport; shadowReport]
+//      ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
+//                                         ReportTypes = [ ReportGeneratorReportType.Html; ReportGeneratorReportType.XmlSummary ]
+//                                         TargetDir = "_Reports/_UnitTestWithAltCoverRunner"})
+//          [altReport; shadowReport]
+
+      Actions.Run (fun info ->
+        { info with
+               FileName = findToolInSubPath "ReportGenerator.exe" "."
+               Arguments = "\"-reports:" + String.Join(";", [altReport; shadowReport]) +
+                           "\" \"-targetdir:" + "_Reports/_UnitTestWithAltCoverRunner" + "\" -reporttypes:Html;XmlSummary -verbosity:Verbose"
+                }) "Report generation failure"
+
     else
       printfn "Symbols not present; skipping"
 )
@@ -486,17 +529,22 @@ Target "UnitTestWithAltCoverCore" (fun _ ->
                       ("--no-build --configuration Debug --verbosity normal altcover.recorder.tests.core.fsproj")
                       "second test returned with a non-zero exit code"
 
-    ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
-                                       ReportTypes = [ ReportGeneratorReportType.Html; ReportGeneratorReportType.XmlSummary]
-                                       TargetDir = "_Reports/_UnitTestWithAltCoverCore"})
-          [altReport; shadowReport]
+//    ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
+//                                       ReportTypes = [ ReportGeneratorReportType.Html; ReportGeneratorReportType.XmlSummary]
+//                                       TargetDir = "_Reports/_UnitTestWithAltCoverCore"})
+//          [altReport; shadowReport]
+    Actions.Run (fun info ->
+        { info with
+               FileName = findToolInSubPath "ReportGenerator.exe" "."
+               Arguments = "\"-reports:" + String.Join(";", [altReport; shadowReport]) +
+                           "\" \"-targetdir:" + "_Reports/_UnitTestWithAltCoverCore" + "\" -reporttypes:Html;XmlSummary -verbosity:Verbose"
+                }) "Report generation failure"
 )
 
 Target "UnitTestWithAltCoverCoreRunner" (fun _ ->
     ensure "./_Reports/_UnitTestWithAltCover"
     let reports = getFullName "./_Reports"
     let altcover = getFullName "./AltCover/altcover.core.fsproj"
-
     let testDirectory = getFullName "_Binaries/AltCover.Tests/Debug+AnyCPU/netcoreapp2.0"
     let output = getFullName "Tests/_Binaries/AltCover.Tests/Debug+AnyCPU/netcoreapp2.0"
 
@@ -537,10 +585,16 @@ Target "UnitTestWithAltCoverCoreRunner" (fun _ ->
                              shadowProject)
                              "Run the shadow tests"
 
-    ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
-                                       ReportTypes = [ ReportGeneratorReportType.Html; ReportGeneratorReportType.XmlSummary]
-                                       TargetDir = "_Reports/_UnitTestWithAltCoverCoreRunner"})
-          [altReport; shadowReport]
+//    ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
+//                                       ReportTypes = [ ReportGeneratorReportType.Html; ReportGeneratorReportType.XmlSummary]
+//                                       TargetDir = "_Reports/_UnitTestWithAltCoverCoreRunner"})
+//          [altReport; shadowReport]
+    Actions.Run (fun info ->
+        { info with
+               FileName = findToolInSubPath "ReportGenerator.exe" "."
+               Arguments = "\"-reports:" + String.Join(";", [altReport; shadowReport]) +
+                           "\" \"-targetdir:" + "_Reports/_UnitTestWithAltCoverCoreRunner" + "\" -reporttypes:Html;XmlSummary -verbosity:Verbose"
+                }) "Report generation failure"
 )
 
 // Pure OperationalTests
@@ -703,9 +757,16 @@ Target "SelfTest" (fun _ ->
                                  Register = OpenCover.RegisterType.RegisterUser
                                  Output = report })
         ("/sn=" + keyfile + AltCoverFilter + "-x=" + altReport + " -o __SelfTest")
-    ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
-                                       TargetDir = "_Reports/_OpenCoverSelfTest"})
-        [report]
+//    ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
+//                                       TargetDir = "_Reports/_OpenCoverSelfTest"})
+//        [report]
+
+    Actions.Run (fun info ->
+        { info with
+               FileName = findToolInSubPath "ReportGenerator.exe" "."
+               Arguments = "\"-reports:" + String.Join(";", [report]) +
+                           "\" \"-targetdir:" + "_Reports/_OpenCoverSelfTest" + "\" -reporttypes:Html;XmlSummary -verbosity:Verbose"
+                }) "Report generation failure"
 
     printfn "Re-instrument everything"
     let altReport2 = reports @@ "AltCoverSelfTestDummy.xml"
@@ -716,9 +777,15 @@ Target "SelfTest" (fun _ ->
             Arguments = ("/sn=" + keyfile + AltCoverFilter + @"/o=./__SelfTestDummy -x=" + altReport2)})
             "Re-instrument returned with a non-zero exit code"
 
-    ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
-                                       TargetDir = "_Reports/_AltCoverSelfTest"})
-        [altReport]
+//    ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
+//                                       TargetDir = "_Reports/_AltCoverSelfTest"})
+//        [altReport]
+    Actions.Run (fun info ->
+        { info with
+               FileName = findToolInSubPath "ReportGenerator.exe" "."
+               Arguments = "\"-reports:" + String.Join(";", [altReport]) +
+                           "\" \"-targetdir:" + "_Reports/_AltCoverSelfTest" + "\" -reporttypes:Html;XmlSummary -verbosity:Verbose"
+                }) "Report generation failure"
 )
 
 // Packaging
@@ -784,19 +851,27 @@ Target "Packaging" (fun _ ->
 
 Target "PrepareFrameworkBuild" (fun _ ->
     let toolpath = findToolInSubPath "ILMerge.exe" "./packages"
-    let here = Directory.GetCurrentDirectory()
+    let ver = String.Join(".", (!Version).Split('.') |> Seq.take 2) + ".0.0"
 
-    ILMerge (fun p -> { p with DebugInfo = true
-                               ToolPath = toolpath
-                               TargetKind = TargetKind.Exe
-                               KeyFile = "./Build/Infrastructure.snk"
-                               Version = (String.Join(".", (!Version).Split('.') |> Seq.take 2) + ".0.0")
-                               Internalize = InternalizeTypes.Internalize
-                               Libraries = Seq.concat [!! "./_Binaries/AltCover/Release+AnyCPU/Mono.C*.dll"; !! "./_Binaries/AltCover/Release+AnyCPU/Newton*.dll"]
-                                           |> Seq.map (fun f -> f.Replace(here, "."))
-                               AttributeFile = "./_Binaries/AltCover/Release+AnyCPU/AltCover.exe"})
-                               "./_Binaries/AltCover/AltCover.exe"
-                               "./_Binaries/AltCover/Release+AnyCPU/AltCover.exe"
+    Actions.Run (fun info ->
+        { info with
+               FileName = toolpath
+               Arguments = "/out:\"./_Binaries/AltCover/AltCover.exe\" /ver:\"" + ver + 
+                           "\" /attr:\"./_Binaries/AltCover/Release+AnyCPU/AltCover.exe\" /keyfile:\"./Build/Infrastructure.snk\" /target:\"exe\" /internalize ./_Binaries/AltCover/Release+AnyCPU/AltCover.exe .\_Binaries\AltCover\Release+AnyCPU\Mono.Cecil.dll .\_Binaries\AltCover\Release+AnyCPU\Mono.Cecil.Mdb.dll .\_Binaries\AltCover\Release+AnyCPU\Mono.Cecil.Pdb.dll .\_Binaries\AltCover\Release+AnyCPU\Mono.Cecil.Rocks.dll .\_Binaries\AltCover\Release+AnyCPU\Newtonsoft.Json.dll"
+                }) "ILMerge failure"
+
+//    let here = Directory.GetCurrentDirectory()
+//    ILMerge (fun p -> { p with DebugInfo = true
+//                               ToolPath = toolpath
+//                               TargetKind = TargetKind.Exe
+//                               KeyFile = "./Build/Infrastructure.snk"
+//                               Version = (String.Join(".", (!Version).Split('.') |> Seq.take 2) + ".0.0")
+//                               Internalize = InternalizeTypes.Internalize
+//                               Libraries = Seq.concat [!! "./_Binaries/AltCover/Release+AnyCPU/Mono.C*.dll"; !! "./_Binaries/AltCover/Release+AnyCPU/Newton*.dll"]
+//                                           |> Seq.map (fun f -> f.Replace(here, "."))
+//                               AttributeFile = "./_Binaries/AltCover/Release+AnyCPU/AltCover.exe"})
+//                               "./_Binaries/AltCover/AltCover.exe"
+//                               "./_Binaries/AltCover/Release+AnyCPU/AltCover.exe"
 )
 
 Target "PrepareDotNetBuild" ignore
@@ -1080,12 +1155,20 @@ Target "BulkReport" (fun _ ->
     printfn "Overall coverage reporting"
     ensure "./_Reports/_BulkReport"
 
-    !! "./_Reports/*.xml"
-    |> Seq.filter (fun f -> not <| f.EndsWith("Report.xml", StringComparison.OrdinalIgnoreCase))
-    |> Seq.toList
-    |> ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
-                                          ReportTypes = [ ReportGeneratorReportType.Html ]
-                                          TargetDir = "_Reports/_BulkReport"})
+    Actions.Run (fun info ->
+        { info with
+               FileName = findToolInSubPath "ReportGenerator.exe" "."
+               Arguments = "\"-reports:" + String.Join(";", 
+                            !! "./_Reports/*.xml"
+                            |> Seq.filter (fun f -> not <| f.EndsWith("Report.xml", StringComparison.OrdinalIgnoreCase))
+                            |> Seq.toList
+               ) +
+                           "\" \"-targetdir:" + "_Reports/_BulkReport" + "\" -reporttypes:Html;XmlSummary -verbosity:Verbose"
+                }) "Report generation failure"
+
+//    |> ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
+//                                          ReportTypes = [ ReportGeneratorReportType.Html ]
+//                                          TargetDir = "_Reports/_BulkReport"})
 )
 
 Target "All" ignore

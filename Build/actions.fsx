@@ -21,6 +21,9 @@ module Actions =
       try
         (DirectoryInfo ".").GetDirectories("*", SearchOption.AllDirectories)
         |> Seq.filter (fun x -> x.Name.StartsWith "_" || x.Name = "bin" || x.Name = "obj")
+        |> Seq.filter (fun n -> match n.Name with
+                                | "obj" -> Path.Combine(n.FullName, "dotnet-fake.csproj.nuget.g.props") |> File.Exists |> not
+                                | _ -> true)
         |> Seq.map (fun x -> x.FullName)
         |> Seq.distinct
         // arrange so leaves get deleted first, avoiding "does not exist" warnings
@@ -130,7 +133,7 @@ open System.Runtime.CompilerServices
   let FixMVId files =
     // Fix up symbol file to have the MVId emitted by the System.Reflection.Emit code
     files
-    |> Seq.iter (fun f -> let assembly = System.Reflection.Assembly.ReflectionOnlyLoadFrom (Path.GetFullPath f)
+    |> Seq.iter (fun f -> let assembly = System.Reflection.Assembly.LoadFrom (Path.GetFullPath f)
                           let mvid = assembly.ManifestModule.ModuleVersionId
                           let symbols = System.IO.File.ReadAllBytes(f + ".mdb")
                           mvid.ToByteArray() |> Array.iteri (fun i x -> symbols.[i+16] <- x)
@@ -228,8 +231,8 @@ open System.Runtime.CompilerServices
    | None -> Assert.Fail "Mono executable expected"
 
 let PrepareReadMe packingCopyright =
-    let readme = getFullName "README.md"
-    let document = File.ReadAllText readme
+    //let readme = getFullName "README.md"
+    // let document = File.ReadAllText readme TODO
     let docHtml = """<?xml version="1.0"  encoding="utf-8"?>
 <!DOCTYPE html>
 <html lang="en">
@@ -237,7 +240,7 @@ let PrepareReadMe packingCopyright =
 <title>AltCover README</title>
 </head>
 <body>
-"""               + (Markdown.TransformHtml document) + """
+"""               + "(Markdown.TransformHtml document)" + """
 <footer><p style="text-align: center">""" + packingCopyright + """</p>
 </footer>
 </body>
