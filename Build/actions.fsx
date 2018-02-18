@@ -284,6 +284,6 @@ let Run (f:ProcStartInfo -> ProcStartInfo) msg =
     ExecProcessAndReturnMessages f (TimeSpan.FromMinutes 5.0)
     |> (HandleResults msg)
 
-let RunDotnet (o:DotnetOptions) cmd args msg =
-    Dotnet (fun _ -> o) cmd args
+let RunDotnet (o:DotNetOptions -> DotNetOptions) cmd args msg =
+    DotNet o cmd args
     |> (HandleResults msg)
