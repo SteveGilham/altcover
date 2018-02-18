@@ -22,13 +22,13 @@ open Microsoft.Win32
 
 // Really bootstrap 
 let dotnetPath = "dotnet" |> tryFindFileOnPath
-let dotnetOptions = match dotnetPath with
-                    | Some f -> {DotnetOptions.Default with DotnetCliPath = f}
-                    | None -> DotnetOptions.Default
+let dotnetOptions o = match dotnetPath with
+                      | Some f -> {o with DotNetCliPath = f}
+                      | None -> o
 
-DotnetRestore (fun o -> { o with 
+DotNetRestore (fun o -> { o with
                             Packages = ["./packages"]
-                            Common = dotnetOptions}) "./Build/dotnet-nuget.csproj"
+                            Common = dotnetOptions o.Common}) "./Build/dotnet-nuget.csproj"
 
 // Restore the NuGet packages used by the build and the Framework version
 let nuget = findNuget "." 
