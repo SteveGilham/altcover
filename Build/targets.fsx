@@ -202,7 +202,16 @@ Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standal
 
 Target "FxCop" (fun _ -> // Needs debug because release is compiled --standalone which contaminates everything
     ensure "./_Reports"
-    let fxCop = combine (environVar "VS150COMNTOOLS") "../../Team Tools/Static Analysis Tools/FxCop/FxCopCmd.exe"
+
+    let vsInstallPath = if isWindows then
+      use hklmKey = Microsoft.Win32.RegistryKey.OpenBaseKey(
+                          Microsoft.Win32.RegistryHive.LocalMachine, 
+                          Microsoft.Win32.RegistryView.Registry32)
+      use key = hklmKey.OpenSubKey(@"SOFTWARE\Microsoft\VisualStudio\SxS\VS7")
+      key.GetValue("15.0") :?> string
+    else null
+    
+    let fxCop = combine vsInstallPath "Team Tools/Static Analysis Tools/FxCop/FxCopCmd.exe"
 
     Actions.Run (fun info ->
         { info with
