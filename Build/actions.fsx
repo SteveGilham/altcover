@@ -187,6 +187,29 @@ open System.Runtime.CompilerServices
     let ones' = ones |> Seq.distinct |> Seq.toList
     Assert.That (ones', Is.EquivalentTo ["11"; "12"; "13"; "14"; "15"; "16"; "21"], "wrong number of visited in " + sigil + " : " + (sprintf "%A" zero'))
 
+  let HandleResults (msg:string) (result:ProcessResult) =
+    String.Join (Environment.NewLine, result.Messages) |> printfn "%s"
+    let save = (Console.ForegroundColor, Console.BackgroundColor)
+    match result.Errors |> Seq.toList with
+    | [] -> ()
+    | errors ->
+        try
+            Console.ForegroundColor <- ConsoleColor.Black
+            Console.BackgroundColor <- ConsoleColor.White
+            String.Join (Environment.NewLine, errors) |> eprintfn "%s"
+        finally
+            Console.ForegroundColor <- fst save
+            Console.BackgroundColor <- snd save
+    Assert.That(result.ExitCode, Is.EqualTo 0, msg)
+
+  let Run (f:ProcStartInfo -> ProcStartInfo) msg =
+    ExecProcessAndReturnMessages (f >> withFramework) (TimeSpan.FromMinutes 5.0)
+    |> (HandleResults msg)
+
+  let RunDotnet (o:DotNetOptions -> DotNetOptions) cmd args msg =
+    DotNet o cmd args
+    |> (HandleResults msg)
+
   let SimpleInstrumentingRun (samplePath:string) (binaryPath:string) (reportSigil:string) =
     printfn "Instrument and run a simple executable"
     ensure "./_Reports"
@@ -194,16 +217,15 @@ open System.Runtime.CompilerServices
     let binRoot = getFullName binaryPath
     let sampleRoot = getFullName samplePath
     let instrumented = "__Instrumented." + reportSigil
-    let result = ExecProcess (fun info -> { info with
-                                                 FileName = binRoot @@ "AltCover.exe"
-                                                 WorkingDirectory = sampleRoot
-                                                 Arguments = ("\"-t=System\\.\" -x=" + simpleReport + " /o=./" + instrumented)}) (TimeSpan.FromMinutes 5.0)
-    Assert.That(result, Is.EqualTo 0, "Simple instrumentation failed")
-    let result2 = ExecProcess (fun info -> { info with
-                                                  FileName = sampleRoot @@ (instrumented + "/Sample1.exe")
-                                                  WorkingDirectory = (sampleRoot @@ instrumented)
-                                                  Arguments = ""}) (TimeSpan.FromMinutes 5.0)
-    Assert.That(result2, Is.EqualTo 0, "Instrumented .exe failed")
+    Run (fun info -> { info with
+                            FileName = binRoot @@ "AltCover.exe"
+                            WorkingDirectory = sampleRoot
+                            Arguments = ("\"-t=System\\.\" -x=" + simpleReport + " /o=./" + instrumented)})
+                            "Simple instrumentation failed"
+    Run (fun info -> { info with
+                            FileName = sampleRoot @@ (instrumented + "/Sample1.exe")
+                            WorkingDirectory = (sampleRoot @@ instrumented)
+                            Arguments = ""})  "Instrumented .exe failed"
     ValidateSample1 simpleReport reportSigil
 
   let SimpleInstrumentingRunUnderMono (samplePath:string) (binaryPath:string) (reportSigil':string) (monoOnWindows:string option)=
@@ -216,20 +238,19 @@ open System.Runtime.CompilerServices
     let binRoot = getFullName binaryPath
     let sampleRoot = getFullName samplePath
     let instrumented = "__Instrumented." + reportSigil
-    let result = ExecProcess (fun info -> { info with
-                                                 FileName = mono
-                                                 WorkingDirectory = sampleRoot
-                                                 Arguments = ((binRoot @@ "AltCover.exe") + " \"-t=System\\.\" -x=" + simpleReport + " /o=./" + instrumented)}) (TimeSpan.FromMinutes 5.0)
-    Assert.That(result, Is.EqualTo 0, "Simple instrumentation failed")
-    let result2 = ExecProcess (fun info -> { info with
-                                                  FileName = sampleRoot @@ (instrumented + "/Sample1.exe")
-                                                  WorkingDirectory = (sampleRoot @@ instrumented)
-                                                  Arguments = ""}) (TimeSpan.FromMinutes 5.0)
-    Assert.That(result2, Is.EqualTo 0, "Instrumented .exe failed")
+    Run (fun info -> { info with
+                            FileName = mono
+                            WorkingDirectory = sampleRoot
+                            Arguments = ((binRoot @@ "AltCover.exe") + " \"-t=System\\.\" -x=" + simpleReport + " /o=./" + instrumented)})
+                            "Simple instrumentation failed"
+    Run (fun info -> { info with
+                            FileName = sampleRoot @@ (instrumented + "/Sample1.exe")
+                            WorkingDirectory = (sampleRoot @@ instrumented)
+                            Arguments = ""}) "Instrumented .exe failed"
     ValidateSample1 simpleReport reportSigil
    | None -> Assert.Fail "Mono executable expected"
 
-let PrepareReadMe packingCopyright =
+  let PrepareReadMe packingCopyright =
     //let readme = getFullName "README.md"
     // let document = File.ReadAllText readme TODO
     let docHtml = """<?xml version="1.0"  encoding="utf-8"?>
@@ -264,26 +285,3 @@ let PrepareReadMe packingCopyright =
 
     let packable = getFullName "./_Binaries/README.html"
     xmlform.Save packable
-
-let HandleResults (msg:string) (result:ProcessResult) =
-    String.Join (Environment.NewLine, result.Messages) |> printfn "%s"
-    let save = (Console.ForegroundColor, Console.BackgroundColor)
-    match result.Errors |> Seq.toList with
-    | [] -> ()
-    | errors ->
-        try
-            Console.ForegroundColor <- ConsoleColor.Black
-            Console.BackgroundColor <- ConsoleColor.White
-            String.Join (Environment.NewLine, errors) |> eprintfn "%s"
-        finally
-            Console.ForegroundColor <- fst save
-            Console.BackgroundColor <- snd save
-    Assert.That(result.ExitCode, Is.EqualTo 0, msg)
-
-let Run (f:ProcStartInfo -> ProcStartInfo) msg =
-    ExecProcessAndReturnMessages (f >> withFramework) (TimeSpan.FromMinutes 5.0)
-    |> (HandleResults msg)
-
-let RunDotnet (o:DotNetOptions -> DotNetOptions) cmd args msg =
-    DotNet o cmd args
-    |> (HandleResults msg)
