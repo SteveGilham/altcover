@@ -32,13 +32,12 @@ Then `dotnet fake run ./Build/setup.fsx` to do the rest of the set-up.
 #### *nix
 
 * It is assumed that `mono` is on the `PATH` already
-* You will need to `chmod 755 ./fake.sh` to make the generated script file executable
 
 ### Normal builds
 
-Running `.\fake.bat` or `./fake.sh` as appropriate performs a full build/test/package process.
+Running `dotnet fake run ./Build/build.fsx` performs a full build/test/package process.
 
-On Windows, `.\fake.bat` takes an optional build target argument.
+Use `dotnet fake run ./Build/build.fsx --target <targetname>` to run to a specific target.
 
 ### Unit Tests
 
