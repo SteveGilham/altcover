@@ -281,7 +281,7 @@ let HandleResults (msg:string) (result:ProcessResult) =
     Assert.That(result.ExitCode, Is.EqualTo 0, msg)
 
 let Run (f:ProcStartInfo -> ProcStartInfo) msg =
-    ExecProcessAndReturnMessages f (TimeSpan.FromMinutes 5.0)
+    ExecProcessAndReturnMessages (f >> withFramework) (TimeSpan.FromMinutes 5.0)
     |> (HandleResults msg)
 
 let RunDotnet (o:DotNetOptions -> DotNetOptions) cmd args msg =
