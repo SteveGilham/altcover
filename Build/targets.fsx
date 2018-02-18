@@ -46,9 +46,6 @@ let AltCoverFilter= @" -s=Mono -s=\.Recorder -s=Sample -s=nunit -e=Tests -t=Syst
 let AltCoverFilterX= @" -s=Mono -s=\.Recorder -s=Sample -s=nunit -t=System. -t=Sample3\.Class2 "
 let AltCoverFilterG= @" -s=Mono -s=\.Recorder\.g -s=Sample -s=nunit -e=Tests -t=System. -t=Sample3\.Class2 "
 
-// A more accurate flag for what is going on in travis-ci
-let runningInMono = "Mono.Runtime" |> Type.GetType |> isNull |> not
-
 let programFiles = environVar "ProgramFiles"
 let programFiles86 = environVar "ProgramFiles(x86) "
 let dotnetPath = "dotnet" |> tryFindFileOnPath
@@ -810,14 +807,14 @@ Target "Packaging" (fun _ ->
     let packable = getFullName "./_Binaries/README.html"
     let resources = DirectoryInfo.getMatchingFilesRecursive "AltCover.resources.dll" (DirectoryInfo.ofPath (getFullName "_Binaries/AltCover/Release+AnyCPU"))
 
-    let applicationFiles = if runningInMono |> not then
+    let applicationFiles = if File.Exists AltCover then
                             [
                                 (AltCover, Some "tools/net45", None)
                                 (recorder, Some "tools/net45", None)
                                 (packable, Some "", None)
                             ]
                            else []
-    let resourceFiles = if runningInMono |> not then
+    let resourceFiles = if File.Exists AltCover then
                           resources
                           |> Seq.map (fun x -> x.FullName)
                           |> Seq.map (fun x -> (x, Some ("tools/net45/" + Path.GetFileName(Path.GetDirectoryName(x))), None))
