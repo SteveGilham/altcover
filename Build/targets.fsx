@@ -813,10 +813,12 @@ Target "SimpleReleaseTest" (fun _ ->
     if (unpack @@ "AltCover.exe") |> File.Exists then
       Actions.SimpleInstrumentingRun "_Binaries/Sample1/Debug+AnyCPU" unpack "SimpleReleaseTest"
     else
-          let test = findToolInSubPath "AltCover.exe" "./packages"
-          if File.Exists test then
+      let file = Directory.GetFiles("./packages", "AltCover.exe", SearchOption.AllDirectories)
+                 |> Seq.tryFind (fun _ -> true)
+      match file with
+      | Some test ->
             Actions.SimpleInstrumentingRun "_Binaries/Sample1/Debug+AnyCPU" (Path.GetDirectoryName test) "SimpleReleaseTest"
-          else printfn "Skipping -- AltCover.exe not packaged"
+      | None -> printfn "Skipping -- AltCover.exe not packaged"
 )
 
 Target "SimpleMonoReleaseTest" (fun _ ->
@@ -824,26 +826,29 @@ Target "SimpleMonoReleaseTest" (fun _ ->
     if (unpack @@ "AltCover.exe") |> File.Exists then
       Actions.SimpleInstrumentingRun "_Mono/Sample1" unpack "SimpleMonoReleaseTest"
     else
-          let test = findToolInSubPath "AltCover.exe" "./packages"
-          if File.Exists test then
+      let file = Directory.GetFiles("./packages", "AltCover.exe", SearchOption.AllDirectories)
+                 |> Seq.tryFind (fun _ -> true)
+      match file with
+      | Some test ->
             Actions.SimpleInstrumentingRun "_Binaries/Sample1/Debug+AnyCPU" (Path.GetDirectoryName test) "SimpleReleaseTest"
-          else printfn "Skipping -- AltCover.exe not packaged"
+      | None -> printfn "Skipping -- AltCover.exe not packaged"
 )
 
 Target "ReleaseDotNetWithFramework" (fun _ ->
     ensure "./_Reports"
-    let unpack0 = getFullName "_Packaging/Unpack/tools/net45"
-    let unpack1 = findToolInSubPath "AltCover.exe" "./packages"
-    let unpack = if File.Exists (unpack0 @@ "AltCover.exe") then unpack0
-                 else Path.GetDirectoryName(unpack1)
+    let unpack0 = getFullName "_Packaging/Unpack/tools/net45/AltCover.exe"
+    let unpack1 = Directory.GetFiles("./packages", "AltCover.exe", SearchOption.AllDirectories)
+                  |> Seq.tryFind (fun _ -> true)
 
-    if (unpack @@ "AltCover.exe") |> File.Exists then
+    let unpack = if File.Exists unpack0 then Some unpack0 else unpack1
+
+    if Option.isSome unpack then
       let simpleReport = (getFullName "./_Reports") @@ ( "ReleaseDotNetWithFramework.xml")
       let sampleRoot = getFullName "./_Binaries/Sample1/Debug+AnyCPU/netcoreapp2.0"
       let instrumented = sampleRoot @@ "__Instrumented.ReleaseDotNetWithFramework"
       Actions.Run (fun info ->
           { info with
-                FileName = unpack @@ "AltCover.exe"
+                FileName = Option.get unpack
                 WorkingDirectory = sampleRoot
                 Arguments = ("-t=System\. -t=Microsoft\. -x=" + simpleReport + " /o=" + instrumented)})
                 "ReleaseDotNetWithFramework"
