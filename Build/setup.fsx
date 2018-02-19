@@ -58,10 +58,9 @@ nuget Fake.DotNet.Testing.OpenCover prerelease
 nuget Fake.IO.FileSystem prerelease
 nuget coveralls.io >= 1.4.2
 nuget FSharpLint.Core >= 0.9.0
+nuget Markdown >= 2.2.1
 nuget NUnit >= 3.9.0
 nuget YamlDotNet >= 4.3.0 //"
-#I @"{0}"
-#r "FSharpLint.Core.dll"
 
 #r "System.IO.Compression.FileSystem.dll"
 #r "System.Xml"

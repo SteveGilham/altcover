@@ -11,6 +11,7 @@ open Fake.IO.Directory
 open Fake.IO.FileSystemOperators
 open Fake.IO.Path
 
+open HeyRed.MarkdownSharp
 open NUnit.Framework
 open YamlDotNet.RepresentationModel
 
@@ -250,16 +251,26 @@ open System.Runtime.CompilerServices
    | None -> Assert.Fail "Mono executable expected"
 
   let PrepareReadMe packingCopyright =
-    //let readme = getFullName "README.md"
-    // let document = File.ReadAllText readme TODO
+    let readme = getFullName "README.md"
+    let document = File.ReadAllText readme
+    let markdown = Markdown()
     let docHtml = """<?xml version="1.0"  encoding="utf-8"?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <title>AltCover README</title>
+<style>
+body, html {
+color: #000; background-color: #eee;
+font-family: 'Segoe UI', 'Open Sans', Calibri, verdana, helvetica, arial, sans-serif;
+position: absolute; top: 0px; width: 50em;margin: 1em; padding:0;
+}
+a {color: #444; text-decoration: none; font-weight: bold;}
+a:hover {color: #ecc;}
+</style>
 </head>
 <body>
-"""               + "(Markdown.TransformHtml document)" + """
+"""               + markdown.Transform document + """
 <footer><p style="text-align: center">""" + packingCopyright + """</p>
 </footer>
 </body>
