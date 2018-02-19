@@ -11,7 +11,6 @@ open Fake.IO.Directory
 open Fake.IO.FileSystemOperators
 open Fake.IO.Path
 
-open FSharp.Markdown
 open NUnit.Framework
 open YamlDotNet.RepresentationModel
 

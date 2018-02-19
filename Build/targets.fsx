@@ -28,14 +28,7 @@ open Fake.IO.FileSystemOperators
 open Fake.IO.Path
 open Fake.IO.Shell
 
-//=========== awkward cases
-//pen Fake.FileHelper
-//open Fake.FxCopHelper
-//open Fake.ILMergeHelper
-//open Fake.ReportGeneratorHelper
-//============
-
-open FSharpLint.Fake
+open FSharpLint.Application
 open NUnit.Framework
 
 let Copyright  = ref String.Empty
