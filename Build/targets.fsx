@@ -174,7 +174,7 @@ Target "Lint" (fun _ ->
 //    !! "**/*.fsproj"
 //        |> Seq.filter (fun n -> n.IndexOf(".core.") = -1)
 //        |> Seq.iter (FSharpLint (fun options -> { options with FailBuildIfAnyWarnings = true }) )
-() // currently broken
+() // currently broken; by-hand version fails because of https://github.com/fsprojects/FSharpLint/issues/252
         )
 
 Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standalone which contaminates everything
