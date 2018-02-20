@@ -1,7 +1,6 @@
 language: csharp
 mono: latest
 dotnet: 2.1.4
-dist: trusty
 sudo: false
 solution: AltCover.sln
 
@@ -10,19 +9,9 @@ git:
 
 if: NOT branch =~ ^develop/.*$ OR branch =~ ^develop/travis/.*$
 
-addons:
-  apt:
-    sources:
-    - sourceline: 'deb [arch=amd64] https://packages.microsoft.com/repos/microsoft-ubuntu-trusty-prod trusty main'
-      key_url: 'https://packages.microsoft.com/keys/microsoft.asc'
-    packages:
-    - dotnet-sharedframework-microsoft.netcore.app-1.1.2
-
-install:
+script:
   - dotnet restore ./dotnet-fake.csproj
   - dotnet fake run ./Build/setup.fsx
   - chmod 755 ./fake.sh
-
-script:
   - ./fake.sh
 
