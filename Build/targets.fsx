@@ -148,7 +148,7 @@ Target "BuildDebug" (fun _ ->
 )
 
 Target "BuildMonoSamples" (fun _ ->
-    let mcs = "_Binaries/MCS/Debug+AnyCPU/MCS.exe"
+    let mcs = "_Binaries/MCS/Release+AnyCPU/MCS.exe"
 
     [
         ("./_Mono/Sample1", "-debug -out:./_Mono/Sample1/Sample1.exe  ./Sample1/Program.cs")
