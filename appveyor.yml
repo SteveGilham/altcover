@@ -1,4 +1,4 @@
-version: 1.6.{build}
+version: 2.0.{build}-pre
 branches:
   except:
   - /develop.*/
@@ -13,9 +13,11 @@ nuget:
   disable_publish_on_pr: true
 build_script:
 - ps: >-
-    .\Build\get-nuget.ps1
+    & dotnet restore dotnet-fake.csproj
 
-    .\fake.bat
+    & dotnet fake run .\Build\setup.fsx
+    
+    & dotnet fake run .\Build\build.fsx
 test:
   assemblies:
     only:

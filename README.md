@@ -26,11 +26,18 @@ You will need Visual Studio VS2017 (Community Edition) v15.5 or later with F# la
 
 ### Bootstrapping
 
-Running `.\Build\get-nuget.ps1` pre-installs all the NuGet packages, including, most importantly, the Fake build system.
+Start by setting up `dotnet fake` with `dotnet restore dotnet-fake.csproj`
+Then `dotnet fake run ./Build/setup.fsx` to do the rest of the set-up.
+
+#### *nix
+
+* It is assumed that `mono` is on the `PATH` already
 
 ### Normal builds
 
-Running `.\fake.bat` performs a full build/test/package process.
+Running `dotnet fake run ./Build/build.fsx` performs a full build/test/package process.
+
+Use `dotnet fake run ./Build/build.fsx --target <targetname>` to run to a specific target.
 
 ### Unit Tests
 

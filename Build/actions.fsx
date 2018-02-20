@@ -11,7 +11,7 @@ open Fake.IO.Directory
 open Fake.IO.FileSystemOperators
 open Fake.IO.Path
 
-open FSharp.Markdown
+open HeyRed.MarkdownSharp
 open NUnit.Framework
 open YamlDotNet.RepresentationModel
 
@@ -21,6 +21,9 @@ module Actions =
       try
         (DirectoryInfo ".").GetDirectories("*", SearchOption.AllDirectories)
         |> Seq.filter (fun x -> x.Name.StartsWith "_" || x.Name = "bin" || x.Name = "obj")
+        |> Seq.filter (fun n -> match n.Name with
+                                | "obj" -> Path.Combine(n.FullName, "dotnet-fake.csproj.nuget.g.props") |> File.Exists |> not
+                                | _ -> true)
         |> Seq.map (fun x -> x.FullName)
         |> Seq.distinct
         // arrange so leaves get deleted first, avoiding "does not exist" warnings
@@ -72,14 +75,31 @@ open System.Runtime.CompilerServices
 #endif
 ()"""
 
+  let prefix = [| 0x00uy; 0x24uy; 0x00uy; 0x00uy; 0x04uy; 0x80uy; 0x00uy; 0x00uy; 0x94uy; 0x00uy; 0x00uy; 0x00uy |]
+
+  let GetPublicKey (stream:Stream) =
+    // see https://social.msdn.microsoft.com/Forums/vstudio/en-US/d9ef264e-1a74-4f48-b93f-3e2c7902f660/determine-contents-of-a-strong-name-key-file-snk?forum=netfxbcl
+    // for the exact format; this is a stripped down hack
+
+    let buffer = Array.create 148 0uy
+    let size = stream.Read(buffer, 0, buffer.Length)
+    Assert.That(size, Is.EqualTo buffer.Length)
+    Assert.That(buffer.[0], Is.EqualTo 7uy) // private key blob
+    buffer.[0] <- 6uy // public key blob
+    Assert.That(buffer.[11], Is.EqualTo 0x32uy) // RSA2 magic number
+    buffer.[11] <- 0x31uy // RSA1 magic number
+    Array.append prefix buffer
+
   let InternalsVisibleTo version =
     let stream2 = new System.IO.FileStream("./Build/SelfTest.snk", System.IO.FileMode.Open, System.IO.FileAccess.Read)
-    let pair2 = StrongNameKeyPair(stream2)
-    let key2 = BitConverter.ToString pair2.PublicKey
+    //let pair2 = StrongNameKeyPair(stream2)
+    //let key2 = BitConverter.ToString pair2.PublicKey
+    let key2 = stream2 |> GetPublicKey |> BitConverter.ToString
 
     let stream = new System.IO.FileStream("./Build/Infrastructure.snk", System.IO.FileMode.Open, System.IO.FileAccess.Read)
-    let pair = StrongNameKeyPair(stream)
-    let key = BitConverter.ToString pair.PublicKey
+    //let pair = StrongNameKeyPair(stream)
+    //let key = BitConverter.ToString pair.PublicKey
+    let key = stream |> GetPublicKey |> BitConverter.ToString
 
     let file = String.Format(System.Globalization.CultureInfo.InvariantCulture,
                 template, version, key.Replace("-", String.Empty), key2.Replace("-", String.Empty))
@@ -112,7 +132,7 @@ open System.Runtime.CompilerServices
   let FixMVId files =
     // Fix up symbol file to have the MVId emitted by the System.Reflection.Emit code
     files
-    |> Seq.iter (fun f -> let assembly = System.Reflection.Assembly.ReflectionOnlyLoadFrom (Path.GetFullPath f)
+    |> Seq.iter (fun f -> let assembly = System.Reflection.Assembly.LoadFrom (Path.GetFullPath f)
                           let mvid = assembly.ManifestModule.ModuleVersionId
                           let symbols = System.IO.File.ReadAllBytes(f + ".mdb")
                           mvid.ToByteArray() |> Array.iteri (fun i x -> symbols.[i+16] <- x)
@@ -167,6 +187,29 @@ open System.Runtime.CompilerServices
     let ones' = ones |> Seq.distinct |> Seq.toList
     Assert.That (ones', Is.EquivalentTo ["11"; "12"; "13"; "14"; "15"; "16"; "21"], "wrong number of visited in " + sigil + " : " + (sprintf "%A" zero'))
 
+  let HandleResults (msg:string) (result:ProcessResult) =
+    String.Join (Environment.NewLine, result.Messages) |> printfn "%s"
+    let save = (Console.ForegroundColor, Console.BackgroundColor)
+    match result.Errors |> Seq.toList with
+    | [] -> ()
+    | errors ->
+        try
+            Console.ForegroundColor <- ConsoleColor.Black
+            Console.BackgroundColor <- ConsoleColor.White
+            String.Join (Environment.NewLine, errors) |> eprintfn "%s"
+        finally
+            Console.ForegroundColor <- fst save
+            Console.BackgroundColor <- snd save
+    Assert.That(result.ExitCode, Is.EqualTo 0, msg)
+
+  let Run (f:ProcStartInfo -> ProcStartInfo) msg =
+    ExecProcessAndReturnMessages (f >> withFramework) (TimeSpan.FromMinutes 5.0)
+    |> (HandleResults msg)
+
+  let RunDotnet (o:DotNetOptions -> DotNetOptions) cmd args msg =
+    DotNet o cmd args
+    |> (HandleResults msg)
+
   let SimpleInstrumentingRun (samplePath:string) (binaryPath:string) (reportSigil:string) =
     printfn "Instrument and run a simple executable"
     ensure "./_Reports"
@@ -174,16 +217,15 @@ open System.Runtime.CompilerServices
     let binRoot = getFullName binaryPath
     let sampleRoot = getFullName samplePath
     let instrumented = "__Instrumented." + reportSigil
-    let result = ExecProcess (fun info -> { info with
-                                                 FileName = binRoot @@ "AltCover.exe"
-                                                 WorkingDirectory = sampleRoot
-                                                 Arguments = ("\"-t=System\\.\" -x=" + simpleReport + " /o=./" + instrumented)}) (TimeSpan.FromMinutes 5.0)
-    Assert.That(result, Is.EqualTo 0, "Simple instrumentation failed")
-    let result2 = ExecProcess (fun info -> { info with
-                                                  FileName = sampleRoot @@ (instrumented + "/Sample1.exe")
-                                                  WorkingDirectory = (sampleRoot @@ instrumented)
-                                                  Arguments = ""}) (TimeSpan.FromMinutes 5.0)
-    Assert.That(result2, Is.EqualTo 0, "Instrumented .exe failed")
+    Run (fun info -> { info with
+                            FileName = binRoot @@ "AltCover.exe"
+                            WorkingDirectory = sampleRoot
+                            Arguments = ("\"-t=System\\.\" -x=" + simpleReport + " /o=./" + instrumented)})
+                            "Simple instrumentation failed"
+    Run (fun info -> { info with
+                            FileName = sampleRoot @@ (instrumented + "/Sample1.exe")
+                            WorkingDirectory = (sampleRoot @@ instrumented)
+                            Arguments = ""})  "Instrumented .exe failed"
     ValidateSample1 simpleReport reportSigil
 
   let SimpleInstrumentingRunUnderMono (samplePath:string) (binaryPath:string) (reportSigil':string) (monoOnWindows:string option)=
@@ -196,30 +238,39 @@ open System.Runtime.CompilerServices
     let binRoot = getFullName binaryPath
     let sampleRoot = getFullName samplePath
     let instrumented = "__Instrumented." + reportSigil
-    let result = ExecProcess (fun info -> { info with
-                                                 FileName = mono
-                                                 WorkingDirectory = sampleRoot
-                                                 Arguments = ((binRoot @@ "AltCover.exe") + " \"-t=System\\.\" -x=" + simpleReport + " /o=./" + instrumented)}) (TimeSpan.FromMinutes 5.0)
-    Assert.That(result, Is.EqualTo 0, "Simple instrumentation failed")
-    let result2 = ExecProcess (fun info -> { info with
-                                                  FileName = sampleRoot @@ (instrumented + "/Sample1.exe")
-                                                  WorkingDirectory = (sampleRoot @@ instrumented)
-                                                  Arguments = ""}) (TimeSpan.FromMinutes 5.0)
-    Assert.That(result2, Is.EqualTo 0, "Instrumented .exe failed")
+    Run (fun info -> { info with
+                            FileName = mono
+                            WorkingDirectory = sampleRoot
+                            Arguments = ((binRoot @@ "AltCover.exe") + " \"-t=System\\.\" -x=" + simpleReport + " /o=./" + instrumented)})
+                            "Simple instrumentation failed"
+    Run (fun info -> { info with
+                            FileName = sampleRoot @@ (instrumented + "/Sample1.exe")
+                            WorkingDirectory = (sampleRoot @@ instrumented)
+                            Arguments = ""}) "Instrumented .exe failed"
     ValidateSample1 simpleReport reportSigil
    | None -> Assert.Fail "Mono executable expected"
 
-let PrepareReadMe packingCopyright =
+  let PrepareReadMe packingCopyright =
     let readme = getFullName "README.md"
     let document = File.ReadAllText readme
+    let markdown = Markdown()
     let docHtml = """<?xml version="1.0"  encoding="utf-8"?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <title>AltCover README</title>
+<style>
+body, html {
+color: #000; background-color: #eee;
+font-family: 'Segoe UI', 'Open Sans', Calibri, verdana, helvetica, arial, sans-serif;
+position: absolute; top: 0px; width: 50em;margin: 1em; padding:0;
+}
+a {color: #444; text-decoration: none; font-weight: bold;}
+a:hover {color: #ecc;}
+</style>
 </head>
 <body>
-"""               + (Markdown.TransformHtml document) + """
+"""               + markdown.Transform document + """
 <footer><p style="text-align: center">""" + packingCopyright + """</p>
 </footer>
 </body>
@@ -244,26 +295,3 @@ let PrepareReadMe packingCopyright =
 
     let packable = getFullName "./_Binaries/README.html"
     xmlform.Save packable
-
-let HandleResults (msg:string) (result:ProcessResult) =
-    String.Join (Environment.NewLine, result.Messages) |> printfn "%s"
-    let save = (Console.ForegroundColor, Console.BackgroundColor)
-    match result.Errors |> Seq.toList with
-    | [] -> ()
-    | errors ->
-        try
-            Console.ForegroundColor <- ConsoleColor.Black
-            Console.BackgroundColor <- ConsoleColor.White
-            String.Join (Environment.NewLine, errors) |> eprintfn "%s"
-        finally
-            Console.ForegroundColor <- fst save
-            Console.BackgroundColor <- snd save
-    Assert.That(result.ExitCode, Is.EqualTo 0, msg)
-
-let Run (f:ProcStartInfo -> ProcStartInfo) msg =
-    ExecProcessAndReturnMessages f (TimeSpan.FromMinutes 5.0)
-    |> (HandleResults msg)
-
-let RunDotnet (o:DotnetOptions) args msg =
-    Dotnet o args
-    |> (HandleResults msg)

@@ -9,13 +9,12 @@
     <OutputType>Library</OutputType>
     <RootNamespace>AltCover.Recorder</RootNamespace>
     <AssemblyName>AltCover.Recorder</AssemblyName>
-    <!-- Travis really means Mono, here -->
-    <TargetFrameworkVersion Condition="'$(TRAVIS_JOB_NUMBER)' == ''">v2.0</TargetFrameworkVersion>
-    <TargetFrameworkVersion Condition="'$(TRAVIS_JOB_NUMBER)' != ''">v4.7</TargetFrameworkVersion>
-    <TargetFSharpCoreVersion Condition="'$(TRAVIS_JOB_NUMBER)' != ''">4.4.1.0</TargetFSharpCoreVersion>
-    <TargetFSharpCoreVersion Condition="'$(TRAVIS_JOB_NUMBER)' == ''">2.3.0.0</TargetFSharpCoreVersion>
-    <ExtraDefines Condition="'$(TRAVIS_JOB_NUMBER)' == ''">NET2</ExtraDefines>
-    <ExtraDefines Condition="'$(TRAVIS_JOB_NUMBER)' != ''">MONO</ExtraDefines>
+    <TargetFrameworkVersion Condition="'$(OS)' == 'Windows_NT'">v2.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion Condition="'$(OS)' != 'Windows_NT'">v4.7</TargetFrameworkVersion>
+    <TargetFSharpCoreVersion Condition="'$(OS)' != 'Windows_NT'">4.4.1.0</TargetFSharpCoreVersion>
+    <TargetFSharpCoreVersion Condition="'$(OS)' == 'Windows_NT'">2.3.0.0</TargetFSharpCoreVersion>
+    <ExtraDefines Condition="'$(OS)' == 'Windows_NT'">NET2</ExtraDefines>
+    <ExtraDefines Condition="'$(OS)' != 'Windows_NT'">MONO</ExtraDefines>
     <Name>AltCover.Recorder</Name>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>
     <TargetFrameworkProfile>
@@ -66,6 +65,13 @@
     </Otherwise>
   </Choose>
   <Import Project="$(FSharpTargetsPath)" Condition="Exists('$(FSharpTargetsPath)')" />
+  <Import Project="..\packages\FSharpLint.MSBuild.0.9.0\build\FSharpLint.MSBuild.targets" Condition="Exists('..\packages\FSharpLint.MSBuild.0.9.0\build\FSharpLint.MSBuild.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\FSharpLint.MSBuild.0.9.0\build\FSharpLint.MSBuild.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\FSharpLint.MSBuild.0.9.0\build\FSharpLint.MSBuild.targets'))" />
+  </Target>
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="..\_Generated\AssemblyVersion.fs">
@@ -78,6 +84,7 @@
     <Compile Include="Tracer.fs" />
     <Compile Include="Recorder.fs" />
     <EmbeddedResource Include="Strings.resx" />
+    <Content Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="FSharp.Core, Version=$(TargetFSharpCoreVersion), Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
@@ -94,4 +101,7 @@
 	<Target Name="AfterBuild">
 	</Target>
 	-->
+	<Target Name="FSharpLint" BeforeTargets="AfterBuild" Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <FSharpLintTask Project="$(MSBuildProjectFullPath)" TreatWarningsAsErrors="true"  ContinueOnError="false" />
+	</Target>
 </Project>
