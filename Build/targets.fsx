@@ -920,7 +920,7 @@ Target "SimpleMonoReleaseTest" (fun _ ->
 Target "ReleaseDotNetWithFramework" (fun _ ->
     ensure "./_Reports"
     let unpack0 = getFullName "_Packaging/Unpack/tools/net45/AltCover.exe"
-    let unpack1 = Directory.GetFiles("./packages", "AltCover.exe", SearchOption.AllDirectories)
+    let unpack1 = Directory.GetFiles(getFullName "./packages", "AltCover.exe", SearchOption.AllDirectories)
                   |> Seq.tryFind (fun _ -> true)
 
     let unpack = if File.Exists unpack0 then Some unpack0 else unpack1
