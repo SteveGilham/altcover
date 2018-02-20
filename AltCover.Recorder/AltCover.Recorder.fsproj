@@ -65,6 +65,13 @@
     </Otherwise>
   </Choose>
   <Import Project="$(FSharpTargetsPath)" Condition="Exists('$(FSharpTargetsPath)')" />
+  <Import Project="..\packages\FSharpLint.MSBuild.0.9.0\build\FSharpLint.MSBuild.targets" Condition="Exists('..\packages\FSharpLint.MSBuild.0.9.0\build\FSharpLint.MSBuild.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\FSharpLint.MSBuild.0.9.0\build\FSharpLint.MSBuild.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\FSharpLint.MSBuild.0.9.0\build\FSharpLint.MSBuild.targets'))" />
+  </Target>
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="..\_Generated\AssemblyVersion.fs">
@@ -77,6 +84,7 @@
     <Compile Include="Tracer.fs" />
     <Compile Include="Recorder.fs" />
     <EmbeddedResource Include="Strings.resx" />
+    <Content Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="FSharp.Core, Version=$(TargetFSharpCoreVersion), Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
@@ -93,4 +101,7 @@
 	<Target Name="AfterBuild">
 	</Target>
 	-->
+	<Target Name="FSharpLint" BeforeTargets="AfterBuild" Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <FSharpLintTask Project="$(MSBuildProjectFullPath)" TreatWarningsAsErrors="true"  ContinueOnError="false" />
+	</Target>
 </Project>
