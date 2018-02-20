@@ -8,6 +8,11 @@ git:
 
 if: NOT branch =~ ^develop/.*$ OR branch =~ ^develop/travis/.*$
 
+cache:
+  directories:
+  - packages
+  - $HOME/.nuget
+
 script:
   - dotnet restore ./dotnet-fake.csproj
   - dotnet fake run ./Build/setup.fsx
