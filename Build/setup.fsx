@@ -43,6 +43,11 @@ xml.Descendants(XName.Get("package"))
 
 let here = Path.Combine(Directory.GetCurrentDirectory(), "packages")
 
+let fake = "FAKE." + lookup.["FAKE"]
+Directory.GetDirectories(here, "FAKE.*") 
+|> Seq.filter (fun n -> Path.GetFileName n <> fake)
+|> Seq.iter(fun n-> Directory.Delete(n, true))
+
 let packages = [
   ("FAKE", None, "FakeLib.dll")
   ("FSharpLint.Fake", None, "FSharpLint.Fake.dll")
