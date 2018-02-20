@@ -2,7 +2,6 @@ language: csharp
 mono: latest
 dotnet: 2.1.4
 sudo: false
-solution: AltCover.sln
 
 git:
   depth: false
