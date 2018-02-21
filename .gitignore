@@ -64,3 +64,4 @@ _Mono/
 *.suo
 Build/build.fsx
 *.lock
+msbuild1.log
