@@ -68,6 +68,7 @@ Target "Preparation" ignore
 Target "Clean" (fun _ ->
     printfn "Cleaning the build and deploy folders"
     Actions.Clean ()
+    if File.Exists "msbuild1.log" then File.Delete "msbuild1.log"
 )
 
 Target "SetVersion" (fun _ ->
@@ -108,10 +109,21 @@ Target "BuildRelease" (fun _ ->
     |> MsBuild.build (fun p ->
             { p with
                 Verbosity = Some MsBuild.MSBuildVerbosity.Normal
+                FileLoggers = Some [{
+                                        Filename = None
+                                        Number = 1
+                                        Verbosity = None
+                                        Parameters = Some [
+                                                            MsBuild.MSBuildLogParameter.ErrorsOnly
+                                                          ]
+                                    }]
                 Properties = [
                                "Configuration", "Release"
                                "DebugSymbols", "True"
                              ]})
+
+    if File.Exists "msbuild1.log" then
+      Assert.That (FileInfo("msbuild1.log").Length, Is.EqualTo 0, "Linting errors detected" )
 
     "./altcover.core.sln"
     |> DotNetCompile
