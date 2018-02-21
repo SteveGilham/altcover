@@ -1,8 +1,3 @@
-// bootstrap
-// dotnet restore .\dotnet-fake.csproj
-// dotnet fake run .\Build\prebuild.fsx
-// dotnet fake run .\Build\build.fsx
-
 open System
 open System.IO
 open System.Xml
