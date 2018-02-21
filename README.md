@@ -35,7 +35,7 @@ Then `dotnet fake run ./Build/setup.fsx` to do the rest of the set-up.
 
 #### Windows
 
-* For the .net 2.0 support, FSharp.Core 2.3.0.0 is used and is assumed to be available by reference on the default search location; otherwise FSharp.Core latest is drawn from the nuget package for simpler cross-platform support.
+* This should "just work" if Visual Studio F# support is installed, but for reference : for the .net 2.0 support, FSharp.Core 2.3.0.0 is used and is assumed to be available by reference on the default search location; otherwise FSharp.Core latest is drawn from the nuget package for simpler cross-platform support.
 
 ### Normal builds
 
