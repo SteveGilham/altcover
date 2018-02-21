@@ -8,7 +8,9 @@ shallow_clone: true
 environment:
   COVERALLS_REPO_TOKEN:
     secure: qgIIfE76i59qTVO64mT7QwKcAUUYCQLie4XdUdlnt7MXLhrwqTbcfGUsCss/TmLg
-cache: packages -> **\packages.config
+cache: 
+  - packages -> **\packages.config
+  - '%USERPROFILE%\.nuget\packages -> **\*.*proj'
 nuget:
   disable_publish_on_pr: true
 build_script:
