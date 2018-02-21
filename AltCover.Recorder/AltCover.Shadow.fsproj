@@ -11,8 +11,6 @@
     <AssemblyName>AltCover.Shadow</AssemblyName>
     <TargetFrameworkVersion Condition="'$(OS)' == 'Windows_NT'">v2.0</TargetFrameworkVersion>
     <TargetFrameworkVersion Condition="'$(OS)' != 'Windows_NT'">v4.7</TargetFrameworkVersion>
-    <TargetFSharpCoreVersion Condition="'$(OS)' != 'Windows_NT'">4.4.1.0</TargetFSharpCoreVersion>
-    <TargetFSharpCoreVersion Condition="'$(OS)' == 'Windows_NT'">2.3.0.0</TargetFSharpCoreVersion>
     <ExtraDefines Condition="'$(OS)' == 'Windows_NT'">NET2</ExtraDefines>
     <ExtraDefines Condition="'$(OS)' != 'Windows_NT'">MONO</ExtraDefines>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -71,8 +69,11 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />
-    <Reference Include="FSharp.Core, Version=$(TargetFSharpCoreVersion), Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <Reference Condition="'$(OS)' == 'Windows_NT'" Include="FSharp.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
       <Private>True</Private>
+    </Reference>
+    <Reference Condition="'$(OS)' != 'Windows_NT'" Include="FSharp.Core">
+      <HintPath>..\packages\FSharp.Core.4.3.4\lib\net45\FSharp.Core.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Xml" />
