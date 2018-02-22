@@ -164,7 +164,9 @@ module Main =
         CommandLine.WriteOut <| String.Format(CultureInfo.CurrentCulture,
                                          (CommandLine.resources.GetString "reportingto"),
                                          Visitor.ReportPath())
-        let reporter, document = Report.ReportGenerator ()
+        let reporter, document = match Visitor.ReportFormat() with
+                                 | ReportFormat.OpenCover -> OpenCover.ReportGenerator ()
+                                 | _ -> Report.ReportGenerator ()
         let visitors = [ reporter ; Instrument.InstrumentGenerator assemblyNames ]
         Visitor.Visit visitors (assemblies )
         document.Save(Visitor.ReportPath())
