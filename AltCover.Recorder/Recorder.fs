@@ -62,6 +62,13 @@ module Instance =
   let Token = "AltCover"
 
   /// <summary>
+  /// Gets the style of the associated report
+  /// This property's IL code is modified to store the user chosen override if applicable
+  /// </summary>
+  [<MethodImplAttribute(MethodImplOptions.NoInlining)>]
+  let CoverageFormat = Format.OpenCover
+
+  /// <summary>
   /// Serialize access to the report file across AppDomains for the classic mode
   /// </summary>
   let internal mutex = new System.Threading.Mutex(false, Token + ".mutex");
