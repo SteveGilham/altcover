@@ -67,8 +67,7 @@ module Instance =
   let internal mutex = new System.Threading.Mutex(false, Token + ".mutex");
 
   /// <summary>
-  /// Reporting back to the mother-ship; only on the .net core build
-  /// because this API isn't available in .net 2.0 (framework back-version support)
+  /// Reporting back to the mother-ship
   /// </summary>
   let mutable internal trace = Tracer.Create (ReportFile + ".bin")
 
