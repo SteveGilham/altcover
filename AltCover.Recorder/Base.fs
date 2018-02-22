@@ -66,6 +66,9 @@ module Counter =
     root.SetAttribute("measureTime",
                     measureTime.ToString("o", System.Globalization.CultureInfo.InvariantCulture))
 
+    root.SetAttribute("driverVersion", "AltCover.Recorder "+
+                                     System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString())
+
     coverageDocument.SelectNodes("//module")
     |> Seq.cast<XmlElement>
     |> Seq.map (fun el -> el.GetAttribute("moduleId"), el)
