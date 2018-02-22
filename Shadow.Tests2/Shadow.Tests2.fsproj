@@ -73,6 +73,9 @@
     <EmbeddedResource Include="..\Shadow.Tests\SimpleCoverage.xml">
       <Link>SimpleCoverage.xml</Link>
     </EmbeddedResource>
+    <EmbeddedResource Include="..\Shadow.Tests\Sample1WithModifiedOpenCover.xml">
+      <Link>Sample1WithModifiedOpenCover.xml</Link>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <Reference Condition="'$(OS)' == 'Windows_NT'" Include="FSharp.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">

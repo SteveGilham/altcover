@@ -96,7 +96,7 @@ module Instance =
       | _ -> let counts = Dictionary<string, Dictionary<int, int>> Visits
              Visits.Clear()
              WithMutex (fun own ->
-                let delta = Counter.DoFlush own counts ReportFile
+                let delta = Counter.DoFlush own counts CoverageFormat ReportFile
                 GetResource "Coverage statistics flushing took {0:N} seconds"
                 |> Option.iter (fun s -> Console.Out.WriteLine(s, delta.TotalSeconds))
              ))

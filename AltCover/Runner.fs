@@ -97,6 +97,12 @@ module Runner =
      |> Seq.map (fun i -> i.Operand :?> string)
      |> Seq.head
 
+  let GetFirstOperandAsNumber (m:MethodDefinition) =
+     m.Body.Instructions
+     |> Seq.filter (fun i -> i.OpCode = Cil.OpCodes.Ldc_I4)
+     |> Seq.map (fun i -> i.Operand :?> int)
+     |> Seq.head
+
   let PayloadBase (rest:string list)  =
     CommandLine.doPathOperation (fun () ->
         CommandLine.ProcessTrailingArguments rest (DirectoryInfo(Option.get workingDirectory)))
@@ -161,11 +167,13 @@ module Runner =
           let report = (GetMethod instance "get_ReportFile")
                        |> GetFirstOperandAsString
                        |> Path.GetFullPath
+          let format = (GetMethod instance "get_CoverageFormat")
+                       |> GetFirstOperandAsNumber
           let hits = List<(string*int)>()
 
           let payload = GetPayload
           GetMonitor hits report payload rest
-          let delta = DoReport hits report
+          let delta = DoReport hits (enum format) report
           WriteResourceWithFormatItems "Coverage statistics flushing took {0:N} seconds" [|delta.TotalSeconds|]
 
           // And tidy up after everything's done

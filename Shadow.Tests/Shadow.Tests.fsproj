@@ -70,6 +70,7 @@
     <Compile Include="Shadow.Tests.fs" />
     <Content Include="packages.config" />
     <EmbeddedResource Include="SimpleCoverage.xml" />
+    <EmbeddedResource Include="Sample1WithModifiedOpenCover.xml" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="FSharp.Core">

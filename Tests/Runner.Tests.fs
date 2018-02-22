@@ -56,6 +56,32 @@ type AltCoverTests() = class
 
   member self.resource = Assembly.GetExecutingAssembly().GetManifestResourceNames()
                          |> Seq.find (fun n -> n.EndsWith("SimpleCoverage.xml", StringComparison.Ordinal))
+   member self.resource2 = Assembly.GetExecutingAssembly().GetManifestResourceNames()
+                          |> Seq.find (fun n -> n.EndsWith("Sample1WithOpenCover.xml", StringComparison.Ordinal))
+
+  [<Test>]
+  member self.KnownModuleWithPayloadMakesExpectedChangeInOpenCover() =
+    Counter.measureTime <- DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
+    use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(self.resource2)
+    let size = int stream.Length
+    let buffer = Array.create size 0uy
+    Assert.That (stream.Read(buffer, 0, size), Is.EqualTo size)
+    use worker = new MemoryStream()
+    worker.Write (buffer, 0, size)
+    worker.Position <- 0L
+    let payload = Dictionary<int,int>()
+    [0..9 ]
+    |> Seq.iter(fun i -> payload.[i] <- (i+1))
+    let item = Dictionary<string, Dictionary<int, int>>()
+    item.Add("f6e3edb3-fb20-44b3-817d-f69d1a22fc2f", payload)
+    Counter.UpdateReport true item ReportFormat.OpenCover worker |> ignore
+    worker.Position <- 0L
+    let after = XmlDocument()
+    after.Load worker
+    Assert.That( after.SelectNodes("//SequencePoint")
+                 |> Seq.cast<XmlElement>
+                 |> Seq.map (fun x -> x.GetAttribute("vc")),
+                 Is.EquivalentTo [ "11"; "10"; "9"; "8"; "7"; "6"; "4"; "3"; "2"; "1"])
 
   [<Test>]
   member self.FlushLeavesExpectedTraces() =
@@ -86,7 +112,7 @@ type AltCoverTests() = class
       |> Seq.iter(fun i -> payload.[i] <- (i+1))
       visits.["f6e3edb3-fb20-44b3-817d-f69d1a22fc2f"] <- payload
 
-      Counter.DoFlush true visits reportFile |> ignore
+      Counter.DoFlush true visits AltCover.Base.ReportFormat.NCover reportFile |> ignore
 
       use worker' = new FileStream(reportFile, FileMode.Open)
       let after = XmlDocument()
@@ -728,16 +754,15 @@ or
     let create = Path.Combine(where, "AltCover.Recorder.g.dll")
     if create |> File.Exists |> not then do
         let from = Path.Combine(here, "AltCover.Recorder.dll")
-        use frombytes = new FileStream(from, FileMode.Open, FileAccess.Read)
-        use libstream = new FileStream(create, FileMode.Create)
-        frombytes.CopyTo libstream
+        let updated = Instrument.PrepareAssembly from
+        Instrument.WriteAssembly updated create
 
     let save = Runner.RecorderName
     let save1 = Runner.GetPayload
     let save2 = Runner.GetMonitor
     let save3 = Runner.DoReport
 
-    let report =  "Coverage.Default.xml" |> Path.GetFullPath
+    let report =  "coverage.xml" |> Path.GetFullPath
     try
       Runner.RecorderName <- "AltCover.Recorder.g.dll"
       let payload (rest:string list) =
@@ -747,7 +772,7 @@ or
         Assert.That(token, Is.EqualTo report, "should be default coverage file")
         Assert.That(hits, Is.Empty)
 
-      let write (hits:ICollection<(string*int)>) (report:string) =
+      let write (hits:ICollection<(string*int)>) format (report:string) =
         Assert.That(report, Is.EqualTo report, "should be default coverage file")
         Assert.That(hits, Is.Empty)
         TimeSpan.Zero
@@ -809,7 +834,7 @@ or
       |> Seq.iter(fun i -> payload.[i] <- (i+1))
       visits.["f6e3edb3-fb20-44b3-817d-f69d1a22fc2f"] <- payload
 
-      Runner.DoReport hits reportFile |> ignore
+      Runner.DoReport hits AltCover.Base.ReportFormat.NCover reportFile |> ignore
 
       use worker' = new FileStream(reportFile, FileMode.Open)
       let after = XmlDocument()
