@@ -79,6 +79,7 @@
     <EmbeddedResource Include="..\Shadow.Tests\SimpleCoverage.xml">
       <Link>SimpleCoverage.xml</Link>
     </EmbeddedResource>
+    <EmbeddedResource Include="Sample1WithOpenCover.xml" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Mono.Cecil">
