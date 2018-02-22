@@ -632,6 +632,7 @@ or
   -a, --attributeFilter=VALUE
                              Optional: attribute name to exclude from
                                instrumentation (may repeat)
+      --opencover            Optional: Generate the report in OpenCover format
   -?, --help, -h             Prints out the options.
 or
   Runner

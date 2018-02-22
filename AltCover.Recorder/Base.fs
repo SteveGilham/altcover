@@ -10,7 +10,7 @@ open System.Globalization
 open System.IO
 open System.Xml
 
-type Format = NCover = 0 | OpenCover = 1
+type ReportFormat = NCover = 0 | OpenCover = 1
 
 module Counter =
    /// <summary>

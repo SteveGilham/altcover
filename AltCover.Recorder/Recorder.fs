@@ -66,7 +66,7 @@ module Instance =
   /// This property's IL code is modified to store the user chosen override if applicable
   /// </summary>
   [<MethodImplAttribute(MethodImplOptions.NoInlining)>]
-  let CoverageFormat = Format.OpenCover
+  let CoverageFormat = ReportFormat.NCover
 
   /// <summary>
   /// Serialize access to the report file across AppDomains for the classic mode

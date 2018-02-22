@@ -14,6 +14,7 @@ open System.Reflection
 open System.Text.RegularExpressions
 
 open AltCover.Augment
+open AltCover.Base
 open Mono.Cecil
 open Mono.Cecil.Cil
 open Mono.Cecil.Rocks
@@ -91,6 +92,9 @@ module Visitor =
   let mutable internal reportPath : Option<string> = None
   let defaultReportPath = "coverage.xml"
   let ReportPath () = Path.GetFullPath (Option.getOrElse defaultReportPath reportPath)
+
+  let mutable internal reportFormat : Option<ReportFormat> = None
+  let defaultReportFormat = ReportFormat.NCover
 
   let mutable internal defaultStrongNameKey : option<StrongNameKeyPair> = None
   let internal keys = new Dictionary<UInt64, KeyRecord>()

@@ -204,4 +204,7 @@ AltCover Runner [/r[ecordingDirectory]=VALUE] [/w[orkingDirectory]=VALUE] [/x||e
     <value>or
   Runner</value>
   </data>
+  <data name="opencover" xml:space="preserve">
+    <value>Optional: Generate the report in OpenCover format</value>
+  </data>
 </root>

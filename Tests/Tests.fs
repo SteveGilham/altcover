@@ -2135,9 +2135,9 @@ type AltCoverTests() = class
     let options = Main.DeclareOptions ()
     Assert.That (options.Count, Is.EqualTo
 #if NETCOREAPP2_0
-                                            11
+                                            12
 #else
-                                            13
+                                            14
 #endif
                  )
     Assert.That(options |> Seq.filter (fun x -> x.Prototype <> "<>")
@@ -2748,6 +2748,40 @@ type AltCoverTests() = class
 #endif
 
   [<Test>]
+  member self.ParsingOpenCoverGivesOpenCover() =
+    try
+      Visitor.reportFormat <- None
+      let options = Main.DeclareOptions ()
+      let unique = Guid.NewGuid().ToString()
+      let input = [| "--opencover" |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Left _ -> Assert.Fail()
+      | Right (x, y) -> Assert.That (y, Is.SameAs options)
+                        Assert.That (x, Is.Empty)
+
+      match Visitor.reportFormat with
+      | None -> Assert.Fail()
+      | Some x -> Assert.That(x, Is.EqualTo AltCover.Base.ReportFormat.OpenCover)
+    finally
+      Visitor.reportFormat <- None
+
+  [<Test>]
+  member self.ParsingMultipleOpenCoverGivesFailure() =
+    try
+      Visitor.reportFormat <- None
+      let options = Main.DeclareOptions ()
+      let unique = Guid.NewGuid().ToString()
+      let input = [| "--opencover"; "--opencover" |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Right _ -> Assert.Fail()
+      | Left (x, y) -> Assert.That (y, Is.SameAs options)
+                       Assert.That (x, Is.EqualTo "UsageError")
+    finally
+      Visitor.reportFormat <- None
+
+  [<Test>]
   member self.OutputLeftPassesThrough() =
     let arg = (Guid.NewGuid().ToString(),Main.DeclareOptions())
     let fail = Left arg
@@ -3239,6 +3273,7 @@ type AltCoverTests() = class
   -a, --attributeFilter=VALUE
                              Optional: attribute name to exclude from
                                instrumentation (may repeat)
+      --opencover            Optional: Generate the report in OpenCover format
   -?, --help, -h             Prints out the options.
 or
   Runner
@@ -3294,6 +3329,7 @@ or
   -a, --attributeFilter=VALUE
                              Optional: attribute name to exclude from
                                instrumentation (may repeat)
+      --opencover            Optional: Generate the report in OpenCover format
   -?, --help, -h             Prints out the options.
 or
   Runner

@@ -10,6 +10,7 @@ open System.Reflection
 #endif
 open System.Text.RegularExpressions
 
+open AltCover.Base
 open Augment
 open Mono.Cecil
 open Mono.Options
@@ -83,6 +84,11 @@ module Main =
       ("a|attributeFilter=",
        (fun x -> x.Split([|";"|], StringSplitOptions.RemoveEmptyEntries)
                  |> Seq.iter (Regex >> FilterClass.Attribute >> Visitor.NameFilters.Add)))
+      ("opencover",
+       (fun _ ->  if Option.isSome Visitor.reportFormat then
+                      CommandLine.error <- true
+                  else
+                      Visitor.reportFormat <- Some ReportFormat.OpenCover))
       ("?|help|h", (fun x -> CommandLine.help <- not (isNull x)))
       ("<>", (fun x -> CommandLine.error <- true))         ]// default end stop
       |> List.fold (fun (o:OptionSet) (p, a) -> o.Add(p, CommandLine.resources.GetString(p), new System.Action<string>(a))) (OptionSet())
