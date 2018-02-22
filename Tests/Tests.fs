@@ -853,7 +853,8 @@ type AltCoverTests() = class
     let expected = ["get_Property"; "set_Property"; "#ctor"; "get_Property"; "set_Property";
                       "#ctor"; "get_Visits"; "Log"; "#ctor"; ".cctor";
                       "get_Property"; "set_Property"; "get_ReportFile";
-                      "set_ReportFile"; "get_Token"; "set_Token"; "ToList"; "#ctor" ]
+                      "set_ReportFile"; "get_Token"; "set_Token"; 
+                      "get_CoverageFormat"; "set_CoverageFormat"; "ToList"; "#ctor" ]
     Assert.That(names, Is.EquivalentTo expected)
 
   [<Test>]
@@ -877,6 +878,8 @@ type AltCoverTests() = class
                     "System.Void Sample3.Class3+Class4.set_ReportFile(System.String)"
                     "System.String Sample3.Class3+Class4.get_Token()"
                     "System.Void Sample3.Class3+Class4.set_Token(System.String)"
+                    "System.Int32 Sample3.Class3+Class4.get_CoverageFormat()"
+                    "System.Void Sample3.Class3+Class4.set_CoverageFormat(System.Int32)"
                     "System.Collections.Generic.List`1 Sample3.Class3+Class4.ToList<T>(T)";
                     "System.Void Sample3.Class3+Class4.#ctor()" ]
     Assert.That(names, Is.EquivalentTo expected)
@@ -1242,8 +1245,10 @@ type AltCoverTests() = class
       let output = Path.GetTempFileName()
       let outputdll = output + ".dll"
       let save = Visitor.reportPath
+      let save2 = Visitor.reportFormat
       try
         Visitor.reportPath <- Some unique
+        Visitor.reportFormat <- Some AltCover.Base.ReportFormat.OpenCover
         let prepared = Instrument.PrepareAssembly path
         Instrument.WriteAssembly prepared outputdll
         let expectedSymbols = if "Mono.Runtime" |> Type.GetType |> isNull |> not then ".dll.mdb" else ".pdb"
@@ -1263,10 +1268,13 @@ type AltCoverTests() = class
           proxyObject.InstantiateObject(outputdll,"Sample3.Class3+Class4",[||])
           let report = proxyObject.InvokeMethod("get_ReportFile",[||]).ToString()
           Assert.That (report, Is.EqualTo (Path.GetFullPath unique))
+          let report2 = proxyObject.InvokeMethod("get_CoverageFormat",[||]) :?> System.Int32
+          Assert.That (report2, AltCover.Base.ReportFormat.OpenCover |> int |> Is.EqualTo)
         finally
           AppDomain.Unload(ad)
       finally
         Visitor.reportPath <- save
+        Visitor.reportFormat <- save2
         Directory.EnumerateFiles(Path.GetDirectoryName output,
                                  (Path.GetFileNameWithoutExtension output) + ".*")
         |> Seq.iter (fun f -> try File.Delete f

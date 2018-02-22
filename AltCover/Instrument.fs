@@ -175,6 +175,25 @@ module Instrument =
         initialBody |> Seq.iter worker.Remove
     )
 
+    // set the coverage file format
+    [
+      ("get_CoverageFormat", Visitor.ReportFormat() |> int)
+    ]
+    |> List.iter (fun (property, value) ->
+        let pathGetterDef = definition.MainModule.GetTypes()
+                            |> Seq.collect (fun t -> t.Methods)
+                            |> Seq.filter (fun m -> m.Name = property)
+                            |> Seq.head
+
+        let body = pathGetterDef.Body
+        let worker = body.GetILProcessor();
+        let initialBody = body.Instructions |> Seq.toList
+        let head = initialBody |> Seq.head
+        worker.InsertBefore(head, worker.Create(OpCodes.Ldc_I4, value))
+        worker.InsertBefore(head, worker.Create(OpCodes.Ret))
+        initialBody |> Seq.iter worker.Remove
+    )
+
     definition
 
   /// <summary>

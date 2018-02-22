@@ -95,6 +95,7 @@ module Visitor =
 
   let mutable internal reportFormat : Option<ReportFormat> = None
   let defaultReportFormat = ReportFormat.NCover
+  let ReportFormat () = (Option.getOrElse defaultReportFormat reportFormat)
 
   let mutable internal defaultStrongNameKey : option<StrongNameKeyPair> = None
   let internal keys = new Dictionary<UInt64, KeyRecord>()
