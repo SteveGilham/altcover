@@ -45,7 +45,7 @@
                 <SequencePoint vc="1" uspid="5" ordinal="4" offset="26" sl="15" sc="17" el="15" ec="89" bec="0" bev="0" fileid="1" />
                 <SequencePoint vc="1" uspid="6" ordinal="5" offset="53" sl="16" sc="13" el="16" ec="14" bec="0" bev="0" fileid="1" />
                 <SequencePoint vc="0" uspid="7" ordinal="6" offset="56" sl="18" sc="13" el="18" ec="14" bec="0" bev="0" fileid="1" />
-                <SequencePoint uspid="8" ordinal="7" offset="57" sl="19" sc="17" el="19" ec="62" bec="0" bev="0" fileid="1" />
+                <SequencePoint vc="0" uspid="8" ordinal="7" offset="57" sl="19" sc="17" el="19" ec="62" bec="0" bev="0" fileid="1" />
                 <SequencePoint vc="X" uspid="9" ordinal="8" offset="68" sl="20" sc="13" el="20" ec="14" bec="0" bev="0" fileid="1" />
                 <SequencePoint vc="-1" uspid="10" ordinal="9" offset="69" sl="21" sc="9" el="21" ec="10" bec="0" bev="0" fileid="1" />
               </SequencePoints>

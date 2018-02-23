@@ -28,6 +28,7 @@ type internal Node =
      | Method of MethodDefinition * MethodDebugInformation option * bool
      | MethodPoint of Instruction * SequencePoint * int * bool
      | AfterMethod of bool
+     | AfterType
      | AfterModule
      | AfterAssembly of AssemblyDefinition
      | Finish
@@ -73,6 +74,10 @@ module KeyStore =
       { Pair = key
         Token = TokenOfKey key }
 
+    let internal HashFile sPath =
+      use stream = File.OpenRead sPath
+      stream |>hash.ComputeHash |> BitConverter.ToString
+
 [<ExcludeFromCodeCoverage>]
 type Fix<'T> = delegate of 'T -> Fix<'T>
 
@@ -115,6 +120,7 @@ module Visitor =
     | Start _ -> ToSeq Finish
     | Assembly (a,_,_) -> AfterAssembly a |> ToSeq
     | Module _ -> AfterModule |> ToSeq
+    | Type _ -> AfterType |> ToSeq
     | Method (_,_,included) -> AfterMethod included |> ToSeq
     | _ -> Seq.empty<Node>
 

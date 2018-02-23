@@ -80,6 +80,7 @@
       <Link>SimpleCoverage.xml</Link>
     </EmbeddedResource>
     <EmbeddedResource Include="Sample1WithOpenCover.xml" />
+    <EmbeddedResource Include="HandRolledMonoCoverage.xml" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Mono.Cecil">

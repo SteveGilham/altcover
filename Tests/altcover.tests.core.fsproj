@@ -25,6 +25,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="HandRolledMonoCoverage.xml" />
+  </ItemGroup>
+
+  <ItemGroup>
     <EmbeddedResource Include="Sample1WithOpenCover.xml" />
   </ItemGroup>
 

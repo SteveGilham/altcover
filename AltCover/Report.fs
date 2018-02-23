@@ -2,9 +2,9 @@
 
 open System
 open System.Xml.Linq
+open Mono.Cecil
 
 module Report =
-  open Mono.Cecil
 
   let internal ReportGenerator () =
 
@@ -33,7 +33,7 @@ module Report =
                           XAttribute(X "moduleId", moduleDef.Mvid.ToString()),
                           XAttribute(X "name", moduleDef.Name),
                           XAttribute(X "assembly", moduleDef.Assembly.Name.Name),
-                          XAttribute(X "assemblyIdentity", moduleDef.Assembly.Name.FullName));
+                          XAttribute(X "assemblyIdentity", moduleDef.Assembly.Name.FullName))
           head.Add(element)
           element :: s
 
@@ -63,7 +63,7 @@ module Report =
                           XAttribute(X "endline", fst end'),
                           XAttribute(X "endcolumn", snd end'),
                           XAttribute(X "excluded", if included then "false" else "true"),
-                          XAttribute(X "document", codeSegment.Document.Url));
+                          XAttribute(X "document", codeSegment.Document.Url))
           if head.IsEmpty then head.Add(element)
           else head.FirstNode.AddBeforeSelf(element)
           s
