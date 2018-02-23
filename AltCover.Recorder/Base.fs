@@ -70,7 +70,7 @@ module Counter =
                         measureTime.ToString("o", System.Globalization.CultureInfo.InvariantCulture))
 
     let (m, i, m', s, v) = match format with
-                           | ReportFormat.OpenCover -> ("//Module", "MvId", "Classes/Class/Methods/Method", "SequencePoints/SequencePoint", "vc")
+                           | ReportFormat.OpenCover -> ("//Module", "hash", "Classes/Class/Methods/Method", "SequencePoints/SequencePoint", "vc")
                            | _ -> ("//module", "moduleId", "method", "seqpnt", "visitcount")
     coverageDocument.SelectNodes(m)
     |> Seq.cast<XmlElement>

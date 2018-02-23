@@ -389,7 +389,7 @@ type AltCoverTests() = class
     [0..9 ]
     |> Seq.iter(fun i -> payload.[i] <- (i+1))
     let item = Dictionary<string, Dictionary<int, int>>()
-    item.Add("f6e3edb3-fb20-44b3-817d-f69d1a22fc2f", payload)
+    item.Add("7C-CD-66-29-A3-6C-6D-5F-A7-65-71-0E-22-7D-B2-61-B5-1F-65-9A", payload)
     Counter.UpdateReport true item ReportFormat.OpenCover worker |> ignore
     worker.Position <- 0L
     let after = XmlDocument()
