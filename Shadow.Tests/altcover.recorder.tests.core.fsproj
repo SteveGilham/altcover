@@ -25,6 +25,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Sample1WithModifiedOpenCover.xml" />
+  </ItemGroup>
+
+  <ItemGroup>
     <EmbeddedResource Include="SimpleCoverage.xml" />
   </ItemGroup>
 

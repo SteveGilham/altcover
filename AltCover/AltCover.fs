@@ -10,6 +10,7 @@ open System.Reflection
 #endif
 open System.Text.RegularExpressions
 
+open AltCover.Base
 open Augment
 open Mono.Cecil
 open Mono.Options
@@ -29,7 +30,7 @@ module Main =
                     if Option.isSome Visitor.outputDirectory then
                       CommandLine.error <- true
                     else
-                      CommandLine.doPathOperation (fun _ -> Visitor.outputDirectory <- Some (Path.GetFullPath x))
+                      CommandLine.doPathOperation (fun _ -> Visitor.outputDirectory <- Some (Path.GetFullPath x)) ()
                  else CommandLine.error <- true))
 #if NETCOREAPP2_0
 #else
@@ -41,7 +42,7 @@ module Main =
                                                                                 System.IO.FileMode.Open,
                                                                                 System.IO.FileAccess.Read)
                                           let pair = StrongNameKeyPair(stream)
-                                          Visitor.Add pair)
+                                          Visitor.Add pair) ()
              else CommandLine.error <- true
          ))
       ("sn|strongNameKey=",
@@ -55,7 +56,7 @@ module Main =
                                           let pair = StrongNameKeyPair(stream)
                                           if Option.isSome Visitor.defaultStrongNameKey then CommandLine.error <- true
                                           else Visitor.defaultStrongNameKey <- Some pair
-                                               Visitor.Add pair)
+                                               Visitor.Add pair) ()
              else CommandLine.error <- true  ))
 #endif
       ("x|xmlReport=",
@@ -63,7 +64,7 @@ module Main =
                     if Option.isSome Visitor.reportPath then
                       CommandLine.error <- true
                     else
-                      CommandLine.doPathOperation (fun () -> Visitor.reportPath <- Some (Path.GetFullPath x))
+                      CommandLine.doPathOperation (fun () -> Visitor.reportPath <- Some (Path.GetFullPath x)) ()
                  else CommandLine.error <- true))
       ("f|fileFilter=",
        (fun x -> x.Split([|";"|], StringSplitOptions.RemoveEmptyEntries)
@@ -83,6 +84,11 @@ module Main =
       ("a|attributeFilter=",
        (fun x -> x.Split([|";"|], StringSplitOptions.RemoveEmptyEntries)
                  |> Seq.iter (Regex >> FilterClass.Attribute >> Visitor.NameFilters.Add)))
+      ("opencover",
+       (fun _ ->  if Option.isSome Visitor.reportFormat then
+                      CommandLine.error <- true
+                  else
+                      Visitor.reportFormat <- Some ReportFormat.OpenCover))
       ("?|help|h", (fun x -> CommandLine.help <- not (isNull x)))
       ("<>", (fun x -> CommandLine.error <- true))         ]// default end stop
       |> List.fold (fun (o:OptionSet) (p, a) -> o.Add(p, CommandLine.resources.GetString(p), new System.Action<string>(a))) (OptionSet())
@@ -102,7 +108,7 @@ module Main =
               CommandLine.WriteOut <| String.Format(CultureInfo.CurrentCulture,
                                                     (CommandLine.resources.GetString "CreateFolder"),
                                                      toDirectory)
-              Directory.CreateDirectory(toDirectory) |> ignore)
+              Directory.CreateDirectory(toDirectory) |> ignore) ()
 
         if CommandLine.error then
             Left ("UsageError", options)
@@ -152,22 +158,24 @@ module Main =
         String.Join (" ", arguments |> Seq.map (sprintf "%A"))
         |> CommandLine.WriteErr
         CommandLine.Usage intro options (Runner.DeclareOptions())
+        255
     | Right (rest, fromInfo, toInfo) ->
         CommandLine.doPathOperation( fun () ->
         let (assemblies, assemblyNames) = PrepareTargetFiles fromInfo toInfo
         CommandLine.WriteOut <| String.Format(CultureInfo.CurrentCulture,
                                          (CommandLine.resources.GetString "reportingto"),
                                          Visitor.ReportPath())
-        let reporter, document = Report.ReportGenerator ()
+        let reporter, document = match Visitor.ReportFormat() with
+                                 | ReportFormat.OpenCover -> OpenCover.ReportGenerator ()
+                                 | _ -> Report.ReportGenerator ()
         let visitors = [ reporter ; Instrument.InstrumentGenerator assemblyNames ]
         Visitor.Visit visitors (assemblies )
         document.Save(Visitor.ReportPath())
 
-        CommandLine.ProcessTrailingArguments rest toInfo)
+        CommandLine.ProcessTrailingArguments rest toInfo) 255
 
   [<EntryPoint>]
   let private Main arguments =
     if "Runner".StartsWith(arguments |> Seq.head, StringComparison.OrdinalIgnoreCase)
       then Runner.DoCoverage arguments (DeclareOptions())
       else DoInstrumentation arguments
-    0

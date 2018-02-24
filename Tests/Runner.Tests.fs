@@ -56,6 +56,32 @@ type AltCoverTests() = class
 
   member self.resource = Assembly.GetExecutingAssembly().GetManifestResourceNames()
                          |> Seq.find (fun n -> n.EndsWith("SimpleCoverage.xml", StringComparison.Ordinal))
+   member self.resource2 = Assembly.GetExecutingAssembly().GetManifestResourceNames()
+                          |> Seq.find (fun n -> n.EndsWith("Sample1WithOpenCover.xml", StringComparison.Ordinal))
+
+  [<Test>]
+  member self.KnownModuleWithPayloadMakesExpectedChangeInOpenCover() =
+    Counter.measureTime <- DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
+    use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(self.resource2)
+    let size = int stream.Length
+    let buffer = Array.create size 0uy
+    Assert.That (stream.Read(buffer, 0, size), Is.EqualTo size)
+    use worker = new MemoryStream()
+    worker.Write (buffer, 0, size)
+    worker.Position <- 0L
+    let payload = Dictionary<int,int>()
+    [0..9 ]
+    |> Seq.iter(fun i -> payload.[i] <- (i+1))
+    let item = Dictionary<string, Dictionary<int, int>>()
+    item.Add("7C-CD-66-29-A3-6C-6D-5F-A7-65-71-0E-22-7D-B2-61-B5-1F-65-9A", payload)
+    Counter.UpdateReport true item ReportFormat.OpenCover worker |> ignore
+    worker.Position <- 0L
+    let after = XmlDocument()
+    after.Load worker
+    Assert.That( after.SelectNodes("//SequencePoint")
+                 |> Seq.cast<XmlElement>
+                 |> Seq.map (fun x -> x.GetAttribute("vc")),
+                 Is.EquivalentTo [ "11"; "10"; "9"; "8"; "7"; "6"; "4"; "3"; "2"; "1"])
 
   [<Test>]
   member self.FlushLeavesExpectedTraces() =
@@ -86,7 +112,7 @@ type AltCoverTests() = class
       |> Seq.iter(fun i -> payload.[i] <- (i+1))
       visits.["f6e3edb3-fb20-44b3-817d-f69d1a22fc2f"] <- payload
 
-      Counter.DoFlush true visits reportFile |> ignore
+      Counter.DoFlush true visits AltCover.Base.ReportFormat.NCover reportFile |> ignore
 
       use worker' = new FileStream(reportFile, FileMode.Open)
       let after = XmlDocument()
@@ -159,7 +185,7 @@ or
       Console.SetOut stdout
       Console.SetError stderr
 
-      CommandLine.Launch program (String.Empty) (Path.GetDirectoryName (Assembly.GetExecutingAssembly().Location))
+      CommandLine.Launch program (String.Empty) (Path.GetDirectoryName (Assembly.GetExecutingAssembly().Location)) |> ignore
 
       Assert.That(stderr.ToString(), Is.Empty)
       let result = stdout.ToString()
@@ -563,7 +589,7 @@ or
       let u2 = Guid.NewGuid().ToString()
 
       CommandLine.ProcessTrailingArguments [program; u1; u2]
-                                     (DirectoryInfo(where))
+                                     (DirectoryInfo(where)) |> ignore
 
       Assert.That(stderr.ToString(), Is.Empty)
       stdout.Flush()
@@ -583,7 +609,7 @@ or
   [<Test>]
   member self.ShouldNoOp() =
     let where = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
-    CommandLine.ProcessTrailingArguments [] (DirectoryInfo(where))
+    CommandLine.ProcessTrailingArguments [] (DirectoryInfo(where)) |> ignore
     Assert.Pass()
 
   [<Test>]
@@ -595,7 +621,7 @@ or
       let unique = Guid.NewGuid().ToString()
       let main = typeof<Tracer>.Assembly.GetType("AltCover.Main").GetMethod("Main", BindingFlags.NonPublic ||| BindingFlags.Static)
       let returnCode = main.Invoke(null, [| [| "RuNN"; "-r"; unique |] |])
-      Assert.That(returnCode, Is.EqualTo 0)
+      Assert.That(returnCode, Is.EqualTo 255)
       let result = stderr.ToString().Replace("\r\n", "\n")
       let expected = "\"RuNN\" \"-r\" \"" + unique + "\"\n" +
                        """Error - usage is:
@@ -632,6 +658,7 @@ or
   -a, --attributeFilter=VALUE
                              Optional: attribute name to exclude from
                                instrumentation (may repeat)
+      --opencover            Optional: Generate the report in OpenCover format
   -?, --help, -h             Prints out the options.
 or
   Runner
@@ -699,7 +726,7 @@ or
       let u2 = Guid.NewGuid().ToString()
       use latch = new ManualResetEvent true
 
-      Runner.GetPayload [program; u1; u2]
+      Runner.GetPayload [program; u1; u2] |> ignore
 
       Assert.That(stderr.ToString(), Is.Empty)
       stdout.Flush()
@@ -727,26 +754,27 @@ or
     let create = Path.Combine(where, "AltCover.Recorder.g.dll")
     if create |> File.Exists |> not then do
         let from = Path.Combine(here, "AltCover.Recorder.dll")
-        use frombytes = new FileStream(from, FileMode.Open, FileAccess.Read)
-        use libstream = new FileStream(create, FileMode.Create)
-        frombytes.CopyTo libstream
+        let updated = Instrument.PrepareAssembly from
+        Instrument.WriteAssembly updated create
 
     let save = Runner.RecorderName
     let save1 = Runner.GetPayload
     let save2 = Runner.GetMonitor
     let save3 = Runner.DoReport
 
-    let report =  "Coverage.Default.xml" |> Path.GetFullPath
+    let report =  "coverage.xml" |> Path.GetFullPath
     try
       Runner.RecorderName <- "AltCover.Recorder.g.dll"
       let payload (rest:string list) =
         Assert.That(rest, Is.EquivalentTo [|"test"; "1"|])
+        255
 
       let monitor (hits:ICollection<(string*int)>) (token:string) _ _ =
         Assert.That(token, Is.EqualTo report, "should be default coverage file")
         Assert.That(hits, Is.Empty)
+        127
 
-      let write (hits:ICollection<(string*int)>) (report:string) =
+      let write (hits:ICollection<(string*int)>) format (report:string) =
         Assert.That(report, Is.EqualTo report, "should be default coverage file")
         Assert.That(hits, Is.Empty)
         TimeSpan.Zero
@@ -761,8 +789,9 @@ or
         use temp = File.Create dummy
         dummy |> File.Exists |> Assert.That
 
-      Runner.DoCoverage [|"Runner"; "-x"; "test"; "-r"; where; "--"; "1"|] empty
+      let r = Runner.DoCoverage [|"Runner"; "-x"; "test"; "-r"; where; "--"; "1"|] empty
       dummy |> File.Exists |> not |> Assert.That
+      Assert.That (r, Is.EqualTo 127)
 
     finally
       Runner.GetPayload <- save1
@@ -808,7 +837,7 @@ or
       |> Seq.iter(fun i -> payload.[i] <- (i+1))
       visits.["f6e3edb3-fb20-44b3-817d-f69d1a22fc2f"] <- payload
 
-      Runner.DoReport hits reportFile |> ignore
+      Runner.DoReport hits AltCover.Base.ReportFormat.NCover reportFile |> ignore
 
       use worker' = new FileStream(reportFile, FileMode.Open)
       let after = XmlDocument()
@@ -834,7 +863,7 @@ or
     do
       use s = File.Create (unique + ".0.bin")
       s.Close()
-    Runner.GetMonitor hits unique ignore []
+    Runner.GetMonitor hits unique List.length [] |> ignore
     Assert.That (File.Exists (unique + ".bin"))
     Assert.That(hits, Is.Empty)
 
@@ -846,8 +875,8 @@ or
     let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
     Runner.GetMonitor hits unique (fun l ->
        use sink = new DeflateStream(File.OpenWrite (unique + ".0.bin"), CompressionMode.Compress)
-       l |> List.iteri (fun i x -> formatter.Serialize(sink, (x,i)))
-    ) ["a"; "b"; String.Empty; "c"]
+       l |> List.mapi (fun i x -> formatter.Serialize(sink, (x,i)); x) |> List.length
+    ) ["a"; "b"; String.Empty; "c"] |> ignore
     Assert.That (File.Exists (unique + ".bin"))
     Assert.That(hits, Is.EquivalentTo [("a",0); ("b",1)])
 

@@ -62,6 +62,13 @@ module Instance =
   let Token = "AltCover"
 
   /// <summary>
+  /// Gets the style of the associated report
+  /// This property's IL code is modified to store the user chosen override if applicable
+  /// </summary>
+  [<MethodImplAttribute(MethodImplOptions.NoInlining)>]
+  let CoverageFormat = ReportFormat.NCover
+
+  /// <summary>
   /// Serialize access to the report file across AppDomains for the classic mode
   /// </summary>
   let internal mutex = new System.Threading.Mutex(false, Token + ".mutex");
@@ -89,7 +96,7 @@ module Instance =
       | _ -> let counts = Dictionary<string, Dictionary<int, int>> Visits
              Visits.Clear()
              WithMutex (fun own ->
-                let delta = Counter.DoFlush own counts ReportFile
+                let delta = Counter.DoFlush own counts CoverageFormat ReportFile
                 GetResource "Coverage statistics flushing took {0:N} seconds"
                 |> Option.iter (fun s -> Console.Out.WriteLine(s, delta.TotalSeconds))
              ))

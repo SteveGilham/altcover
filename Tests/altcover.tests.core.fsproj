@@ -25,6 +25,14 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="HandRolledMonoCoverage.xml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Sample1WithOpenCover.xml" />
+  </ItemGroup>
+
+  <ItemGroup>
     <EmbeddedResource Include="..\Shadow.Tests\SimpleCoverage.xml" Link="SimpleCoverage.xml" />
   </ItemGroup>
 

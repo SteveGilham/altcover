@@ -77,6 +77,7 @@
     <Compile Include="Visitor.fs" />
     <Compile Include="Naming.fs" />
     <Compile Include="Report.fs" />
+    <Compile Include="OpenCover.fs" />
     <Compile Include="Instrument.fs" />
     <Compile Include="CommandLine.fs" />
     <Compile Include="Runner.fs" />

@@ -97,9 +97,15 @@ module Runner =
      |> Seq.map (fun i -> i.Operand :?> string)
      |> Seq.head
 
+  let GetFirstOperandAsNumber (m:MethodDefinition) =
+     m.Body.Instructions
+     |> Seq.filter (fun i -> i.OpCode = Cil.OpCodes.Ldc_I4)
+     |> Seq.map (fun i -> i.Operand :?> int)
+     |> Seq.head
+
   let PayloadBase (rest:string list)  =
     CommandLine.doPathOperation (fun () ->
-        CommandLine.ProcessTrailingArguments rest (DirectoryInfo(Option.get workingDirectory)))
+        CommandLine.ProcessTrailingArguments rest (DirectoryInfo(Option.get workingDirectory))) 255
 
   let WriteResource =
     CommandLine.resources.GetString >> Console.WriteLine
@@ -107,14 +113,14 @@ module Runner =
   let WriteResourceWithFormatItems s x =
     Console.WriteLine (s |> CommandLine.resources.GetString, x)
 
-  let MonitorBase (hits:ICollection<(string*int)>) report (payload: string list -> unit) (args : string list) =
+  let MonitorBase (hits:ICollection<(string*int)>) report (payload: string list -> int) (args : string list) =
       let binpath = report + ".bin"
       do
         use stream = File.Create(binpath)
         ()
 
       "Beginning run..." |> WriteResource
-      payload args
+      let result = payload args
       "Getting results..."  |> WriteResource
 
       let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
@@ -135,6 +141,7 @@ module Runner =
       )
 
       WriteResourceWithFormatItems "%d visits recorded" [|hits.Count|]
+      result
 
   let WriteReportBase (hits:ICollection<(string*int)>) report =
     let counts = Dictionary<string, Dictionary<int, int>>()
@@ -156,16 +163,19 @@ module Runner =
                  |> RequireWorker
     match check1 with
     | Left (intro, options) -> HandleBadArguments arguments intro options1 options
+                               255
     | Right (rest, _) ->
           let instance = RecorderInstance()
           let report = (GetMethod instance "get_ReportFile")
                        |> GetFirstOperandAsString
                        |> Path.GetFullPath
+          let format = (GetMethod instance "get_CoverageFormat")
+                       |> GetFirstOperandAsNumber
           let hits = List<(string*int)>()
 
           let payload = GetPayload
-          GetMonitor hits report payload rest
-          let delta = DoReport hits report
+          let result = GetMonitor hits report payload rest
+          let delta = DoReport hits (enum format) report
           WriteResourceWithFormatItems "Coverage statistics flushing took {0:N} seconds" [|delta.TotalSeconds|]
 
           // And tidy up after everything's done
@@ -173,3 +183,4 @@ module Runner =
           Directory.GetFiles( Path.GetDirectoryName(report),
                               Path.GetFileName(report) + ".*.bin")
           |> Seq.iter File.Delete
+          result

@@ -61,18 +61,21 @@ module CommandLine =
     proc.BeginErrorReadLine()
     proc.BeginOutputReadLine()
     proc.WaitForExit()
+    proc.ExitCode
 
-  let internal doPathOperation (f: unit -> unit) =
+  let internal doPathOperation (f: unit -> 'a) (defaultValue:'a) =
     let mutable thrown = true
+    let mutable result = defaultValue
     try
-        f()
+        result <- f()
         thrown <- false
     with
-    | :? ArgumentException as a -> WriteErr a.Message;
+    | :? ArgumentException as a -> WriteErr a.Message
     | :? NotSupportedException as n -> WriteErr n.Message
     | :? IOException as i -> WriteErr i.Message
     | :? System.Security.SecurityException as s -> WriteErr s.Message
     error <- error || thrown
+    result
 
   let internal ParseCommandLine (arguments:string array) (options:OptionSet) =
       help <- false
@@ -100,7 +103,7 @@ module CommandLine =
   let internal ProcessTrailingArguments (rest: string list) (toInfo:DirectoryInfo) =
     // If we have some arguments in rest execute that command line
         match rest |> Seq.toList with
-        | [] -> ()
+        | [] -> 0
         | cmd::t->
            let args = String.Join(" ", (List.toArray t))
            Launch cmd args toInfo.FullName // Spawn process, echoing asynchronously

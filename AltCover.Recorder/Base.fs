@@ -10,6 +10,8 @@ open System.Globalization
 open System.IO
 open System.Xml
 
+type ReportFormat = NCover = 0 | OpenCover = 1
+
 module Counter =
    /// <summary>
    /// The time at which coverage run began
@@ -48,30 +50,33 @@ module Counter =
   /// </summary>
   /// <param name="hitCounts">The coverage results to incorporate</param>
   /// <param name="coverageFile">The coverage file to update as a stream</param>
-  let internal UpdateReport own (counts:Dictionary<string, Dictionary<int, int>>) coverageFile =
+  let internal UpdateReport own (counts:Dictionary<string, Dictionary<int, int>>) format coverageFile =
     let flushStart = DateTime.UtcNow
     let coverageDocument = ReadXDocument coverageFile
     let root = coverageDocument.DocumentElement
 
-    let startTimeAttr = root.GetAttribute("startTime")
-    let measureTimeAttr = root.GetAttribute("measureTime")
-    let oldStartTime = DateTime.ParseExact(startTimeAttr, "o", null)
-    let oldMeasureTime = DateTime.ParseExact(measureTimeAttr, "o", null)
+    if format = ReportFormat.NCover then
+        let startTimeAttr = root.GetAttribute("startTime")
+        let measureTimeAttr = root.GetAttribute("measureTime")
+        let oldStartTime = DateTime.ParseExact(startTimeAttr, "o", null)
+        let oldMeasureTime = DateTime.ParseExact(measureTimeAttr, "o", null)
 
-    startTime <- (if startTime < oldStartTime then startTime else oldStartTime).ToUniversalTime() // Min
-    measureTime <- (if measureTime > oldMeasureTime then measureTime else oldMeasureTime).ToUniversalTime() // Max
+        startTime <- (if startTime < oldStartTime then startTime else oldStartTime).ToUniversalTime() // Min
+        measureTime <- (if measureTime > oldMeasureTime then measureTime else oldMeasureTime).ToUniversalTime() // Max
 
-    root.SetAttribute("startTime",
-                        startTime.ToString("o", System.Globalization.CultureInfo.InvariantCulture))
-    root.SetAttribute("measureTime",
-                    measureTime.ToString("o", System.Globalization.CultureInfo.InvariantCulture))
+        root.SetAttribute("startTime",
+                            startTime.ToString("o", System.Globalization.CultureInfo.InvariantCulture))
+        root.SetAttribute("measureTime",
+                        measureTime.ToString("o", System.Globalization.CultureInfo.InvariantCulture))
+        root.SetAttribute("driverVersion", "AltCover.Recorder " +
+                                     System.Diagnostics.FileVersionInfo.GetVersionInfo(System.Reflection.Assembly.GetExecutingAssembly().Location).FileVersion)
 
-    root.SetAttribute("driverVersion", "AltCover.Recorder "+
-                                     System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString())
-
-    coverageDocument.SelectNodes("//module")
+    let (m, i, m', s, v) = match format with
+                           | ReportFormat.OpenCover -> ("//Module", "hash", "Classes/Class/Methods/Method", "SequencePoints/SequencePoint", "vc")
+                           | _ -> ("//module", "moduleId", "method", "seqpnt", "visitcount")
+    coverageDocument.SelectNodes(m)
     |> Seq.cast<XmlElement>
-    |> Seq.map (fun el -> el.GetAttribute("moduleId"), el)
+    |> Seq.map (fun el -> el.GetAttribute(i), el)
     |> Seq.filter (fun (k,e) -> counts.ContainsKey k)
     |> Seq.iter (fun(k,affectedModule) ->
         let moduleHits = counts.[k]
@@ -80,9 +85,10 @@ module Counter =
         // affectedModule.Descendants(XName.Get("seqpnt"))
         // Get the methods, then flip their
         // contents before concatenating
-        affectedModule.SelectNodes("method")
+        let nn = affectedModule.SelectNodes(m')
+        nn
         |> Seq.cast<XmlElement>
-        |> Seq.collect (fun (``method``:XmlElement) -> ``method``.SelectNodes("seqpnt")
+        |> Seq.collect (fun (``method``:XmlElement) -> ``method``.SelectNodes(s)
                                                         |> Seq.cast<XmlElement>
                                                         |> Seq.toList |> List.rev)
         |> Seq.mapi (fun counter pt -> (counter, pt))
@@ -90,14 +96,14 @@ module Counter =
         |> Seq.iter (fun x ->
             let pt = snd x
             let counter = fst x
-            let attribute = pt.GetAttribute("visitcount")
+            let attribute = pt.GetAttribute(v)
             let value = if String.IsNullOrEmpty attribute then "0" else attribute
             let vc = Int32.TryParse(value,
                                     System.Globalization.NumberStyles.Integer,
                                     System.Globalization.CultureInfo.InvariantCulture)
             // Treat -ve visit counts (an exemption added in analysis) as zero
             let visits = moduleHits.[counter] + (max 0 (if fst vc then snd vc else 0))
-            pt.SetAttribute("visitcount", visits.ToString(CultureInfo.InvariantCulture))))
+            pt.SetAttribute(v, visits.ToString(CultureInfo.InvariantCulture))))
 
     // Save modified xml to a file
     coverageFile.Seek(0L, SeekOrigin.Begin) |> ignore
@@ -105,9 +111,9 @@ module Counter =
     if own then WriteXDocument coverageDocument coverageFile
     flushStart
 
-  let DoFlush own counts report =
+  let DoFlush own counts format report =
     use coverageFile = new FileStream(report, FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.SequentialScan)
-    let flushStart = UpdateReport own counts coverageFile
+    let flushStart = UpdateReport own counts format coverageFile
     TimeSpan(DateTime.UtcNow.Ticks - flushStart.Ticks)
 
   let AddVisit (counts:Dictionary<string, Dictionary<int, int>>) moduleId hitPointId =
