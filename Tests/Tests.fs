@@ -565,7 +565,7 @@ type AltCoverTests() = class
                    Node.Method (null, None, false) ; Node.MethodPoint (null, null, 0, true ) ;
                    Node.AfterMethod false ; Node.AfterModule ; Node.AfterAssembly def; Node.Finish ]
     let outputs = inputs |> Seq.map (Visitor.After >> Seq.toList)
-    let expected = [ [Finish]; [AfterAssembly def]; [AfterModule]; []; [AfterMethod false]; []; []; []; []; []]
+    let expected = [ [Finish]; [AfterAssembly def]; [AfterModule]; [AfterType]; [AfterMethod false]; []; []; []; []; []]
     Assert.That (outputs, Is.EquivalentTo (expected))
 
   [<Test>]
@@ -663,9 +663,9 @@ type AltCoverTests() = class
         let expected = module'.Types // we have no nested types in this test
                     |> Seq.map (fun t -> let flag = t.Name <> "Program"
                                          let node = Node.Type (t, rdr, flag)
-                                         List.concat [ [node]; (Visitor.Deeper >> Seq.toList) node])
+                                         List.concat [ [node]; (Visitor.Deeper >> Seq.toList) node; [Node.AfterType]])
                     |> List.concat
-        Assert.That (deeper.Length, Is.EqualTo 16)
+        Assert.That (deeper.Length, Is.EqualTo 18)
         Assert.That (deeper |> Seq.map string,
                      Is.EquivalentTo (expected |> Seq.map string))
     finally
@@ -685,7 +685,7 @@ type AltCoverTests() = class
                 |> Seq.map (fun t -> let node = Node.Module (t, rdr, true)
                                      List.concat [ [node]; (Visitor.Deeper >> Seq.toList) node; [AfterModule]])
                 |> List.concat
-    Assert.That (deeper.Length, Is.EqualTo 18)
+    Assert.That (deeper.Length, Is.EqualTo 20)
     Assert.That (deeper |> Seq.map string,
                  Is.EquivalentTo (expected |> Seq.map string))
 
@@ -703,7 +703,7 @@ type AltCoverTests() = class
 
     let assembly = Node.Assembly (def, Some rdr, true)
     let expected = List.concat [ [assembly]; (Visitor.Deeper >> Seq.toList) assembly; [AfterAssembly def]]
-    Assert.That (deeper.Length, Is.EqualTo 20)
+    Assert.That (deeper.Length, Is.EqualTo 22)
     Assert.That (deeper |> Seq.map string,
                  Is.EquivalentTo (expected |> Seq.map string))
 
@@ -722,7 +722,7 @@ type AltCoverTests() = class
 
         let assembly = Node.Assembly (def, None, false)
         let expected = List.concat [ [assembly]; (Visitor.Deeper >> Seq.toList) assembly; [AfterAssembly def]]
-        Assert.That (deeper.Length, Is.EqualTo 10)
+        Assert.That (deeper.Length, Is.EqualTo 12)
         Assert.That (deeper, Is.EquivalentTo expected)
     finally
       Visitor.NameFilters.Clear()
@@ -853,7 +853,8 @@ type AltCoverTests() = class
     let expected = ["get_Property"; "set_Property"; "#ctor"; "get_Property"; "set_Property";
                       "#ctor"; "get_Visits"; "Log"; "#ctor"; ".cctor";
                       "get_Property"; "set_Property"; "get_ReportFile";
-                      "set_ReportFile"; "get_Token"; "set_Token"; "ToList"; "#ctor" ]
+                      "set_ReportFile"; "get_Token"; "set_Token";
+                      "get_CoverageFormat"; "set_CoverageFormat"; "ToList"; "#ctor" ]
     Assert.That(names, Is.EquivalentTo expected)
 
   [<Test>]
@@ -877,6 +878,8 @@ type AltCoverTests() = class
                     "System.Void Sample3.Class3+Class4.set_ReportFile(System.String)"
                     "System.String Sample3.Class3+Class4.get_Token()"
                     "System.Void Sample3.Class3+Class4.set_Token(System.String)"
+                    "System.Int32 Sample3.Class3+Class4.get_CoverageFormat()"
+                    "System.Void Sample3.Class3+Class4.set_CoverageFormat(System.Int32)"
                     "System.Collections.Generic.List`1 Sample3.Class3+Class4.ToList<T>(T)";
                     "System.Void Sample3.Class3+Class4.#ctor()" ]
     Assert.That(names, Is.EquivalentTo expected)
@@ -937,6 +940,8 @@ type AltCoverTests() = class
             Seq.zip ra ea |> Seq.iter (fun ((a1:XAttribute), (a2:XAttribute)) ->
                     Assert.That(a1.Name, Is.EqualTo(a2.Name))
                     match a1.Name.ToString() with
+                    | "profilerVersion"
+                    | "driverVersion"
                     | "moduleId"
                     | "metadataToken"
                     | "startTime"
@@ -992,6 +997,126 @@ type AltCoverTests() = class
     let result = document.Elements()
     let expected = baseline.Elements()
     AltCoverTests.RecursiveValidate result expected 0 true
+
+  // OpenCover.fs
+
+  static member private RecursiveValidateOpenCover result expected' depth zero =
+    let X name =
+      XName.Get(name)
+
+    let rcount = result |> Seq.length
+
+    let expected = expected'
+                   |> Seq.filter (fun (el:XElement) -> "skippedDueTo" |> X |> el.Attributes |> Seq.isEmpty)
+                   |> Seq.filter (fun (el:XElement) -> "BranchPoint" <> el.Name.LocalName)
+                   |> Seq.toList
+    let ecount = expected |> Seq.length
+
+    Assert.That(rcount, Is.EqualTo(ecount), "Mismatch at depth " + depth.ToString() + " : " +
+                                            expected.ToString() + " but got" + (result |> Seq.toList).ToString())
+
+    Seq.zip result expected |> Seq.iter (fun ((r:XElement), (e:XElement)) ->
+            Assert.That(r.Name, Is.EqualTo(e.Name), "Expected name " + e.Name.ToString())
+            let ra = r.Attributes()
+            let ea = e.Attributes()
+                     |> Seq.filter (fun xa -> match xa.Name.LocalName with
+                                              | "ordinal"
+                                              | "offset"
+                                              | "bec"
+                                              | "bev"
+                                              | "uspid" -> false
+                                              | _ -> true)
+
+            Seq.zip ra ea |> Seq.iter (fun ((a1:XAttribute), (a2:XAttribute)) ->
+                    Assert.That(a1.Name, Is.EqualTo(a2.Name))
+                    match a1.Name.ToString() with
+                    | "visited"
+                    | "cyclomaticComplexity"
+                    | "nPathComplexity"
+                    | "sequenceCoverage"
+                    | "branchCoverage"
+                    | "hash" -> ()
+                    | "fullPath" -> Assert.That(a1.Value.Replace("\\","/"), Does.EndWith(a2.Value.Replace("\\","/")),
+                                                a1.Name.ToString() + " : " + r.ToString() + " -> document")
+                    | "vc" -> let expected = if zero then "0" else a2.Value
+                              Assert.That(a1.Value, Is.EqualTo(expected), r.ToString() + " -> visitcount")
+                    | _ -> Assert.That(a1.Value, Is.EqualTo(a2.Value), r.ToString() + " -> " + a1.Name.ToString())
+                )
+
+            AltCoverTests.RecursiveValidateOpenCover (r.Elements()) (e.Elements()) (depth+1) zero)
+
+  [<Test>]
+  member self.ShouldGenerateExpectedXmlReportFromDotNetOpenCoverStyle() =
+    let visitor, document = OpenCover.ReportGenerator()
+    // Hack for running while instrumented
+    let where = Assembly.GetExecutingAssembly().Location
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), sample1)
+
+    try
+        "Main" |> (Regex >> FilterClass.Method >> Visitor.NameFilters.Add)
+        Visitor.Visit [ visitor ] (Visitor.ToSeq path)
+        let resource = Assembly.GetExecutingAssembly().GetManifestResourceNames()
+                         |> Seq.find (fun n -> n.EndsWith("Sample1WithOpenCover.xml", StringComparison.Ordinal))
+
+        use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
+
+        let baseline = XDocument.Load(stream)
+        let result = document.Elements()
+        let expected = baseline.Elements()
+        AltCoverTests.RecursiveValidateOpenCover result expected 0 true
+    finally
+      Visitor.NameFilters.Clear()
+
+  [<Test>]
+  member self.ShouldGenerateExpectedXmlReportFromMonoOpenCoverStyle() =
+    let visitor, document = OpenCover.ReportGenerator()
+    // Hack for running while instrumented
+    let where = Assembly.GetExecutingAssembly().Location
+    let path = Path.Combine(where.Substring(0, where.IndexOf("_Binaries")) + "_Mono/Sample1", "Sample1.exe")
+#if NETCOREAPP2_0
+    let path' = if File.Exists path then path
+                else Path.Combine(where.Substring(0, where.IndexOf("_Binaries")) + monoSample1, "Sample1.exe")
+#else
+    let path' = path
+#endif
+
+    try
+        "Main" |> (Regex >> FilterClass.Method >> Visitor.NameFilters.Add)
+        Visitor.Visit [ visitor ] (Visitor.ToSeq path')
+        let resource = Assembly.GetExecutingAssembly().GetManifestResourceNames()
+                         |> Seq.find (fun n -> n.EndsWith("HandRolledMonoCoverage.xml", StringComparison.Ordinal))
+
+        use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
+
+        let baseline = XDocument.Load(stream)
+        let result = document.Elements()
+        let expected = baseline.Elements()
+        AltCoverTests.RecursiveValidateOpenCover result expected 0 true
+    finally
+      Visitor.NameFilters.Clear()
+
+  [<Test>]
+  member self.ShouldSortFileIds() =
+    let visitor, document = OpenCover.ReportGenerator()
+    let X name =
+      XName.Get(name)
+    // Hack for running while instrumented
+    // Hack for running while instrumented
+    let where = Assembly.GetExecutingAssembly().Location
+    let path = Path.Combine(where.Substring(0, where.IndexOf("_Binaries")) + "_Binaries/AltCover/Debug+AnyCPU/netcoreapp2.0", "AltCover.dll")
+#if NETCOREAPP2_0
+    let path' = if File.Exists path then path
+                else Path.Combine(where.Substring(0, where.IndexOf("_Binaries")) + "../_Binaries/AltCover/Debug+AnyCPU/netcoreapp2.0", "AltCover.dll")
+#else
+    let path' = path
+#endif
+
+
+    Visitor.Visit [ visitor ] (Visitor.ToSeq path')
+    Assert.That (document.Descendants(X "Module") |> Seq.length, Is.EqualTo 1)
+    Assert.That (document.Descendants(X "File") |> Seq.length, Is.GreaterThan 1)
+    document.Descendants(X "File")
+    |> Seq.iteri (fun i x -> Assert.That(x.Attribute(X "uid").Value, Is.EqualTo (string (1 + i))))
 
   // Instrument.fs
 
@@ -1242,8 +1367,10 @@ type AltCoverTests() = class
       let output = Path.GetTempFileName()
       let outputdll = output + ".dll"
       let save = Visitor.reportPath
+      let save2 = Visitor.reportFormat
       try
         Visitor.reportPath <- Some unique
+        Visitor.reportFormat <- Some AltCover.Base.ReportFormat.OpenCover
         let prepared = Instrument.PrepareAssembly path
         Instrument.WriteAssembly prepared outputdll
         let expectedSymbols = if "Mono.Runtime" |> Type.GetType |> isNull |> not then ".dll.mdb" else ".pdb"
@@ -1263,10 +1390,13 @@ type AltCoverTests() = class
           proxyObject.InstantiateObject(outputdll,"Sample3.Class3+Class4",[||])
           let report = proxyObject.InvokeMethod("get_ReportFile",[||]).ToString()
           Assert.That (report, Is.EqualTo (Path.GetFullPath unique))
+          let report2 = proxyObject.InvokeMethod("get_CoverageFormat",[||]) :?> System.Int32
+          Assert.That (report2, AltCover.Base.ReportFormat.OpenCover |> int |> Is.EqualTo)
         finally
           AppDomain.Unload(ad)
       finally
         Visitor.reportPath <- save
+        Visitor.reportFormat <- save2
         Directory.EnumerateFiles(Path.GetDirectoryName output,
                                  (Path.GetFileNameWithoutExtension output) + ".*")
         |> Seq.iter (fun f -> try File.Delete f
@@ -1767,7 +1897,7 @@ type AltCoverTests() = class
     let visited = Node.Module (def.MainModule, None, false)
     let state = Instrument.Context.Build ["nunit.framework"; "nonesuch"]
     let result = Instrument.InstrumentationVisitor  state visited
-    Assert.That (result, Is.EqualTo  { state with ModuleId = def.MainModule.Mvid })
+    Assert.That (result, Is.EqualTo  { state with ModuleId = def.MainModule.Mvid.ToString() })
 
   [<Test>]
   member self.IncludedModuleEnsuresRecorder () =
@@ -1793,7 +1923,7 @@ type AltCoverTests() = class
     Assert.That (string result.RecordingMethodRef,
                 Is.EqualTo (string visit))
     Assert.That ({ result with RecordingMethodRef = null},
-                 Is.EqualTo  { state' with ModuleId = def.MainModule.Mvid
+                 Is.EqualTo  { state' with ModuleId = def.MainModule.Mvid.ToString()
                                                       RecordingMethod = visit
                                                       RecordingMethodRef = null })
 
@@ -1862,7 +1992,7 @@ type AltCoverTests() = class
     Assert.That (string result.RecordingMethodRef,
                 Is.EqualTo (string visit))
     Assert.That ({ result with RecordingMethodRef = null},
-                 Is.EqualTo  { state' with ModuleId = def.MainModule.Mvid
+                 Is.EqualTo  { state' with ModuleId = def.MainModule.Mvid.ToString()
                                                       RecordingMethod = visit
                                                       RecordingMethodRef = null })
 
@@ -1992,7 +2122,7 @@ type AltCoverTests() = class
   member self.NoThrowNoErrorLeavesAllOK () =
     try
       CommandLine.error <- false
-      CommandLine.doPathOperation ignore
+      CommandLine.doPathOperation ignore ()
       Assert.That(CommandLine.error, Is.False)
     finally
       CommandLine.error <- false
@@ -2001,7 +2131,7 @@ type AltCoverTests() = class
   member self.NoThrowWithErrorIsSignalled () =
     try
       CommandLine.error <- false
-      CommandLine.doPathOperation (fun () -> CommandLine.error <- true)
+      CommandLine.doPathOperation (fun () -> CommandLine.error <- true) ()
       Assert.That(CommandLine.error, Is.True)
     finally
       CommandLine.error <- false
@@ -2017,7 +2147,7 @@ type AltCoverTests() = class
       let unique = "ArgumentException " + Guid.NewGuid().ToString()
 
       CommandLine.error <- false
-      CommandLine.doPathOperation (fun () -> ArgumentException(unique) |> raise)
+      CommandLine.doPathOperation (fun () -> ArgumentException(unique) |> raise) ()
       Assert.That(CommandLine.error, Is.True)
       Assert.That(stdout.ToString(), Is.Empty)
       let result = stderr.ToString()
@@ -2038,7 +2168,7 @@ type AltCoverTests() = class
       let unique = "IOException " + Guid.NewGuid().ToString()
 
       CommandLine.error <- false
-      CommandLine.doPathOperation (fun () -> IOException(unique) |> raise)
+      CommandLine.doPathOperation (fun () -> IOException(unique) |> raise) ()
       Assert.That(CommandLine.error, Is.True)
       Assert.That(stdout.ToString(), Is.Empty)
       let result = stderr.ToString()
@@ -2059,7 +2189,7 @@ type AltCoverTests() = class
       let unique = "NotSupportedException " + Guid.NewGuid().ToString()
 
       CommandLine.error <- false
-      CommandLine.doPathOperation (fun () -> NotSupportedException(unique) |> raise)
+      CommandLine.doPathOperation (fun () -> NotSupportedException(unique) |> raise) ()
       Assert.That(CommandLine.error, Is.True)
       Assert.That(stdout.ToString(), Is.Empty)
       let result = stderr.ToString()
@@ -2080,7 +2210,7 @@ type AltCoverTests() = class
       let unique = "SecurityException " + Guid.NewGuid().ToString()
 
       CommandLine.error <- false
-      CommandLine.doPathOperation (fun () -> System.Security.SecurityException(unique) |> raise)
+      CommandLine.doPathOperation (fun () -> System.Security.SecurityException(unique) |> raise) ()
       Assert.That(CommandLine.error, Is.True)
       Assert.That(stdout.ToString(), Is.Empty)
       let result = stderr.ToString()
@@ -2115,8 +2245,12 @@ type AltCoverTests() = class
       Console.SetOut stdout
       Console.SetError stderr
 
-      CommandLine.Launch program (String.Empty) (Path.GetDirectoryName (Assembly.GetExecutingAssembly().Location))
+      let nonWindows = System.Environment.GetEnvironmentVariable("OS") <> "Windows_NT"
+      let exe, args = if nonWindows then ("mono", program) else (program, String.Empty)
 
+      let r = CommandLine.Launch exe args (Path.GetDirectoryName (Assembly.GetExecutingAssembly().Location))
+
+      Assert.That(r, Is.EqualTo 0)
       Assert.That(stderr.ToString(), Is.Empty)
       let result = stdout.ToString()
       // hack for Mono
@@ -2135,9 +2269,9 @@ type AltCoverTests() = class
     let options = Main.DeclareOptions ()
     Assert.That (options.Count, Is.EqualTo
 #if NETCOREAPP2_0
-                                            11
+                                            12
 #else
-                                            13
+                                            14
 #endif
                  )
     Assert.That(options |> Seq.filter (fun x -> x.Prototype <> "<>")
@@ -2748,6 +2882,40 @@ type AltCoverTests() = class
 #endif
 
   [<Test>]
+  member self.ParsingOpenCoverGivesOpenCover() =
+    try
+      Visitor.reportFormat <- None
+      let options = Main.DeclareOptions ()
+      let unique = Guid.NewGuid().ToString()
+      let input = [| "--opencover" |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Left _ -> Assert.Fail()
+      | Right (x, y) -> Assert.That (y, Is.SameAs options)
+                        Assert.That (x, Is.Empty)
+
+      match Visitor.reportFormat with
+      | None -> Assert.Fail()
+      | Some x -> Assert.That(x, Is.EqualTo AltCover.Base.ReportFormat.OpenCover)
+    finally
+      Visitor.reportFormat <- None
+
+  [<Test>]
+  member self.ParsingMultipleOpenCoverGivesFailure() =
+    try
+      Visitor.reportFormat <- None
+      let options = Main.DeclareOptions ()
+      let unique = Guid.NewGuid().ToString()
+      let input = [| "--opencover"; "--opencover" |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Right _ -> Assert.Fail()
+      | Left (x, y) -> Assert.That (y, Is.SameAs options)
+                       Assert.That (x, Is.EqualTo "UsageError")
+    finally
+      Visitor.reportFormat <- None
+
+  [<Test>]
   member self.OutputLeftPassesThrough() =
     let arg = (Guid.NewGuid().ToString(),Main.DeclareOptions())
     let fail = Left arg
@@ -2929,7 +3097,7 @@ type AltCoverTests() = class
       let u2 = Guid.NewGuid().ToString()
 
       CommandLine.ProcessTrailingArguments [program; u1; u2]
-                                     (DirectoryInfo(where))
+                                     (DirectoryInfo(where)) |> ignore
 
       Assert.That(stderr.ToString(), Is.Empty)
       let result = stdout.ToString()
@@ -2984,7 +3152,8 @@ type AltCoverTests() = class
                     "-sn"; key
 #endif
                  |]
-      Main.DoInstrumentation args
+      let result = Main.DoInstrumentation args
+      Assert.That(result, Is.EqualTo 0)
       Assert.That (stderr.ToString(), Is.Empty)
 
       let expected = "Creating folder " + output +
@@ -3087,12 +3256,14 @@ type AltCoverTests() = class
       let args = [| "-i"; input
                     "-o"; output
                     "-x"; report
+                    "--opencover"
 #if NETCOREAPP2_0
 #else
                     "-sn"; key
 #endif
                  |]
-      Main.DoInstrumentation args
+      let result = Main.DoInstrumentation args
+      Assert.That (result, Is.EqualTo 0)
       Assert.That (stderr.ToString(), Is.Empty)
 
       let expected = "Creating folder " + output +
@@ -3156,6 +3327,7 @@ type AltCoverTests() = class
                    Is.EquivalentTo expected')
 
     finally
+      Visitor.reportFormat <- None
       Visitor.outputDirectory <- outputSaved
       Visitor.inputDirectory <- inputSaved
       Visitor.reportPath <- reportSaved
@@ -3239,6 +3411,7 @@ type AltCoverTests() = class
   -a, --attributeFilter=VALUE
                              Optional: attribute name to exclude from
                                instrumentation (may repeat)
+      --opencover            Optional: Generate the report in OpenCover format
   -?, --help, -h             Prints out the options.
 or
   Runner
@@ -3257,7 +3430,7 @@ or
       let unique = Guid.NewGuid().ToString()
       let main = typeof<Node>.Assembly.GetType("AltCover.Main").GetMethod("Main", BindingFlags.NonPublic ||| BindingFlags.Static)
       let returnCode = main.Invoke(null, [| [| "-i"; unique |] |])
-      Assert.That(returnCode, Is.EqualTo 0)
+      Assert.That(returnCode, Is.EqualTo 255)
       let result = stderr.ToString().Replace("\r\n", "\n")
       let expected = "\"-i\" \"" + unique + "\"\n" +
                        """Error - usage is:
@@ -3294,6 +3467,7 @@ or
   -a, --attributeFilter=VALUE
                              Optional: attribute name to exclude from
                                instrumentation (may repeat)
+      --opencover            Optional: Generate the report in OpenCover format
   -?, --help, -h             Prints out the options.
 or
   Runner

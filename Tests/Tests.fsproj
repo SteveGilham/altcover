@@ -79,6 +79,8 @@
     <EmbeddedResource Include="..\Shadow.Tests\SimpleCoverage.xml">
       <Link>SimpleCoverage.xml</Link>
     </EmbeddedResource>
+    <EmbeddedResource Include="Sample1WithOpenCover.xml" />
+    <EmbeddedResource Include="HandRolledMonoCoverage.xml" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Mono.Cecil">
@@ -97,8 +99,8 @@
       <HintPath>..\packages\Mono.Options.Signed.0.2.3\lib\net45\Mono.Options.dll</HintPath>
     </Reference>
     <Reference Include="mscorlib" />
-    <Reference Include="FSharp.Core, Version=$(TargetFSharpCoreVersion), Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-      <Private>True</Private>
+    <Reference Include="FSharp.Core">
+      <HintPath>..\packages\FSharp.Core.4.3.4\lib\net45\FSharp.Core.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json">
       <HintPath>..\packages\Newtonsoft.Json.11.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>

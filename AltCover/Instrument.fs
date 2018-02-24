@@ -27,7 +27,7 @@ module Instrument =
   /// </summary>
   [<ExcludeFromCodeCoverage>]
   type internal Context = { InstrumentedAssemblies : string list
-                            ModuleId : Guid
+                            ModuleId : String
                             RecordingAssembly : AssemblyDefinition
                             RecordingMethod : MethodDefinition // initialised once
                             RecordingMethodRef : MethodReference // updated each module
@@ -35,7 +35,7 @@ module Instrument =
                             MethodWorker : ILProcessor } // to save fetching repeatedly
   with static member Build assemblies =
                     { InstrumentedAssemblies = assemblies
-                      ModuleId = Guid.Empty
+                      ModuleId = String.Empty
                       RecordingAssembly = null
                       RecordingMethod = null
                       RecordingMethodRef = null
@@ -171,6 +171,25 @@ module Instrument =
         let initialBody = body.Instructions |> Seq.toList
         let head = initialBody |> Seq.head
         worker.InsertBefore(head, worker.Create(OpCodes.Ldstr, value))
+        worker.InsertBefore(head, worker.Create(OpCodes.Ret))
+        initialBody |> Seq.iter worker.Remove
+    )
+
+    // set the coverage file format
+    [
+      ("get_CoverageFormat", Visitor.ReportFormat() |> int)
+    ]
+    |> List.iter (fun (property, value) ->
+        let pathGetterDef = definition.MainModule.GetTypes()
+                            |> Seq.collect (fun t -> t.Methods)
+                            |> Seq.filter (fun m -> m.Name = property)
+                            |> Seq.head
+
+        let body = pathGetterDef.Body
+        let worker = body.GetILProcessor();
+        let initialBody = body.Instructions |> Seq.toList
+        let head = initialBody |> Seq.head
+        worker.InsertBefore(head, worker.Create(OpCodes.Ldc_I4, value))
         worker.InsertBefore(head, worker.Create(OpCodes.Ret))
         initialBody |> Seq.iter worker.Remove
     )
@@ -323,7 +342,9 @@ module Instrument =
                                RecordingMethodRef = m.ImportReference(recordingMethod);
                                RecordingMethod = recordingMethod }
                        | _ -> state
-         { restate with ModuleId = m.Mvid }
+         { restate with ModuleId = match Visitor.ReportFormat() with
+                                   | AltCover.Base.ReportFormat.OpenCover -> KeyStore.HashFile m.FileName
+                                   | _ -> m.Mvid.ToString() }
 
   let private VisitMethod (state : Context) (m:MethodDefinition) included =
          match included with
@@ -336,7 +357,7 @@ module Instrument =
 
   let private VisitMethodPoint (state : Context) instruction point included =
        if included then // by construction the sequence point is included
-            let instrLoadModuleId = InsertVisit instruction state.MethodWorker state.RecordingMethodRef (state.ModuleId.ToString()) point
+            let instrLoadModuleId = InsertVisit instruction state.MethodWorker state.RecordingMethodRef state.ModuleId point
 
             // Change references in operands from "instruction" to first counter invocation instruction (instrLoadModuleId)
             let subs = SubstituteInstruction (instruction, instrLoadModuleId)
@@ -388,6 +409,7 @@ module Instrument =
             body.OptimizeMacros()
          state
 
+     | AfterType -> state
      | AfterModule -> state
      | AfterAssembly assembly -> let originalFileName = Path.GetFileName assembly.MainModule.FileName
                                  let path = Path.Combine(Visitor.OutputDirectory(), originalFileName)

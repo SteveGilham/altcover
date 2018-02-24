@@ -27,6 +27,7 @@ open System.Xml
 open AltCover.Recorder
 open NUnit.Framework
 open System.Threading
+open System
 
 [<TestFixture>]
 type AltCoverTests() = class
@@ -169,11 +170,13 @@ type AltCoverTests() = class
     self.GetMyMethodName "<="
 
   member private self.UpdateReport a b =
-    Counter.UpdateReport true a b
+    Counter.UpdateReport true a ReportFormat.NCover b
     |> ignore
 
    member self.resource = Assembly.GetExecutingAssembly().GetManifestResourceNames()
                          |> Seq.find (fun n -> n.EndsWith("SimpleCoverage.xml", StringComparison.Ordinal))
+   member self.resource2 = Assembly.GetExecutingAssembly().GetManifestResourceNames()
+                          |> Seq.find (fun n -> n.EndsWith("Sample1WithModifiedOpenCover.xml", StringComparison.Ordinal))
 
   [<Test>]
   member self.OldDocumentStartIsNotUpdated() =
@@ -293,8 +296,12 @@ type AltCoverTests() = class
     self.UpdateReport item worker
     worker.Position <- 0L
     let after = new StreamReader(worker)
-    Assert.That (after.ReadToEnd().Replace("\r\n", "\n"),
-                 Is.EqualTo (before.ReadToEnd().Replace("\r\n", "\n"))))
+    let result = after.ReadToEnd().Split([|'\r';'\n'|], StringSplitOptions.RemoveEmptyEntries)
+                 |> Seq.skip 3
+    let expected = before.ReadToEnd().Split([|'\r';'\n'|], StringSplitOptions.RemoveEmptyEntries)
+                 |> Seq.skip 3
+    Assert.That (result,
+                 Is.EquivalentTo expected))
     self.GetMyMethodName "<="
 
   [<Test>]
@@ -315,8 +322,12 @@ type AltCoverTests() = class
     self.UpdateReport item worker
     worker.Position <- 0L
     let after = new StreamReader(worker)
-    Assert.That (after.ReadToEnd().Replace("\r\n", "\n"),
-                 Is.EqualTo (before.ReadToEnd().Replace("\r\n", "\n"))))
+    let result = after.ReadToEnd().Split([|'\r';'\n'|], StringSplitOptions.RemoveEmptyEntries)
+                 |> Seq.skip 3
+    let expected = before.ReadToEnd().Split([|'\r';'\n'|], StringSplitOptions.RemoveEmptyEntries)
+                 |> Seq.skip 3
+    Assert.That (result,
+                 Is.EquivalentTo expected))
     self.GetMyMethodName "<="
 
   [<Test>]
@@ -340,8 +351,12 @@ type AltCoverTests() = class
     self.UpdateReport item worker
     worker.Position <- 0L
     let after = new StreamReader(worker)
-    Assert.That (after.ReadToEnd().Replace("\r\n", "\n"),
-                 Is.EqualTo (before.ReadToEnd().Replace("\r\n", "\n"))))
+    let result = after.ReadToEnd().Split([|'\r';'\n'|], StringSplitOptions.RemoveEmptyEntries)
+                 |> Seq.skip 3
+    let expected = before.ReadToEnd().Split([|'\r';'\n'|], StringSplitOptions.RemoveEmptyEntries)
+                 |> Seq.skip 3
+    Assert.That (result,
+                 Is.EquivalentTo expected))
     self.GetMyMethodName "<="
 
   [<Test>]
@@ -368,6 +383,33 @@ type AltCoverTests() = class
     Assert.That( after.SelectNodes("//seqpnt")
                  |> Seq.cast<XmlElement>
                  |> Seq.map (fun x -> x.GetAttribute("visitcount")),
+                 Is.EquivalentTo [ "11"; "10"; "9"; "8"; "7"; "6"; "4"; "3"; "2"; "1"]))
+    self.GetMyMethodName "<="
+
+  [<Test>]
+  member self.KnownModuleWithPayloadMakesExpectedChangeInOpenCover() =
+    self.GetMyMethodName "=>"
+    lock Instance.Visits (fun () ->
+    Counter.measureTime <- DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
+    use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(self.resource2)
+    let size = int stream.Length
+    let buffer = Array.create size 0uy
+    Assert.That (stream.Read(buffer, 0, size), Is.EqualTo size)
+    use worker = new MemoryStream()
+    worker.Write (buffer, 0, size)
+    worker.Position <- 0L
+    let payload = Dictionary<int,int>()
+    [0..9 ]
+    |> Seq.iter(fun i -> payload.[i] <- (i+1))
+    let item = Dictionary<string, Dictionary<int, int>>()
+    item.Add("7C-CD-66-29-A3-6C-6D-5F-A7-65-71-0E-22-7D-B2-61-B5-1F-65-9A", payload)
+    Counter.UpdateReport true item ReportFormat.OpenCover worker |> ignore
+    worker.Position <- 0L
+    let after = XmlDocument()
+    after.Load worker
+    Assert.That( after.SelectNodes("//SequencePoint")
+                 |> Seq.cast<XmlElement>
+                 |> Seq.map (fun x -> x.GetAttribute("vc")),
                  Is.EquivalentTo [ "11"; "10"; "9"; "8"; "7"; "6"; "4"; "3"; "2"; "1"]))
     self.GetMyMethodName "<="
 
