@@ -27,11 +27,6 @@ module OpenCover =
     // operation of the visitor.  Everything else should now be pure
     let document = XDocument(XDeclaration("1.0", "utf-8", "yes"), [||])
 
-    let HeadTail (s:Context) =
-      match s.Stack with
-      | h::t -> (h,t)
-      | [] -> (null, [])
-
     let X name =
       XName.Get(name)
 
@@ -46,7 +41,7 @@ module OpenCover =
     let VisitModule (s : Context) (moduleDef:ModuleDefinition) =
           let element = XElement(X "Module",
                           XAttribute(X "hash", KeyStore.HashFile moduleDef.FileName))
-          let (head, _) = HeadTail s
+          let head = s.Stack |> Seq.head
           head.Add(element)
           element.Add(XElement(X "Summary"))
           element.Add(XElement(X "ModulePath", moduleDef.FileName))
@@ -60,7 +55,7 @@ module OpenCover =
 
     let VisitType (s : Context) (typeDef:TypeDefinition) =
           let element = XElement(X "Class")
-          let (head, _) = HeadTail s
+          let head = s.Stack |> Seq.head
           head.Add(element)
           element.Add(XElement(X "Summary"))
           element.Add(XElement(X "FullName", typeDef.FullName))
@@ -84,7 +79,7 @@ module OpenCover =
 
     let VisitMethod  (s : Context) (methodDef:MethodDefinition) included =
           let element = methodElement methodDef
-          let (head, _) = HeadTail s
+          let head = s.Stack |> Seq.head
           head.Add element
           element.Add(XElement(X "Summary"))
           element.Add(XElement(X "MetadataToken", methodDef.MetadataToken.ToUInt32().ToString()))
@@ -115,14 +110,14 @@ module OpenCover =
                           XAttribute(X "el", fst end'),
                           XAttribute(X "ec", snd end'),
                           XAttribute(X "fileid", ref))
-          let (head, _) = HeadTail s
+          let head = s.Stack |> Seq.head
           if head.IsEmpty then head.Add(element)
           else head.FirstNode.AddBeforeSelf(element)
           { s with Files = fileset
                    Index = ref }
 
     let VisitAfterMethod (s : Context) =
-      let (head, tail) = HeadTail s
+      let head,tail = Augment.Split s.Stack
       let fileref = head.Parent.Descendants(X "FileRef") |> Seq.head
       if s.Index < 0 then
         fileref.Remove() // TODO method point
@@ -130,15 +125,16 @@ module OpenCover =
       {s with Stack = tail}
 
     let VisitAfterType (s : Context) =
-      let (_, tail) = HeadTail s
+      let tail = s.Stack.Tail
       {s with Stack = tail}
 
     let VisitAfterModule (s : Context) =
-      let (head, tail) = HeadTail s
+      let head,tail = Augment.Split s.Stack
       let files = head.Parent.Descendants(X "Files") |> Seq.head
       s.Files
       |> Map.toSeq
-      |> Seq.sortBy snd
+      |> Seq.sortBy (fun x -> printfn "sorting %A" x
+                              snd x)
       |> Seq.iter (fun (k,v) -> files.Add(XElement(X "File",
                                                   XAttribute(X "uid", v),
                                                   XAttribute(X "fullPath", k))))
