@@ -1101,8 +1101,18 @@ type AltCoverTests() = class
     let X name =
       XName.Get(name)
     // Hack for running while instrumented
-    let where = typeof<AltCover.Tracer>.Assembly.Location
-    Visitor.Visit [ visitor ] (Visitor.ToSeq where)
+    // Hack for running while instrumented
+    let where = Assembly.GetExecutingAssembly().Location
+    let path = Path.Combine(where.Substring(0, where.IndexOf("_Binaries")) + "_Binaries/AltCover/Debug+AnyCPU", "AltCover.exe")
+#if NETCOREAPP2_0
+    let path' = if File.Exists path then path
+                else Path.Combine(where.Substring(0, where.IndexOf("_Binaries")) + "../_Binaries/AltCover/Debug+AnyCPU", "AltCover.exe")
+#else
+    let path' = path
+#endif
+
+
+    Visitor.Visit [ visitor ] (Visitor.ToSeq path')
     Assert.That (document.Descendants(X "Module") |> Seq.length, Is.EqualTo 1)
     Assert.That (document.Descendants(X "File") |> Seq.length, Is.GreaterThan 1)
     document.Descendants(X "File")
