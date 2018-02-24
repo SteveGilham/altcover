@@ -56,7 +56,7 @@ module OpenCover =
           let element = XElement(X "Class");
           head.Add(element)
           element.Add(XElement(X "Summary"))
-          element.Add(XElement(X "FullName", Naming.FullTypeName typeDef))
+          element.Add(XElement(X "FullName", typeDef.FullName))
           let methods = XElement(X "Methods")
           element.Add(methods)
           {s with Stack = methods :: s.Stack }
@@ -80,7 +80,7 @@ module OpenCover =
           head.Add element
           element.Add(XElement(X "Summary"))
           element.Add(XElement(X "MetadataToken", methodDef.MetadataToken.ToUInt32().ToString()))
-          element.Add(XElement(X "Name", Naming.FullMethodName methodDef))
+          element.Add(XElement(X "Name", methodDef.FullName))
           element.Add(XElement(X "FileRef"))
           let seqpnts = XElement(X "SequencePoints")
           element.Add(seqpnts)
