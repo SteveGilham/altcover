@@ -998,6 +998,8 @@ type AltCoverTests() = class
     let expected = baseline.Elements()
     AltCoverTests.RecursiveValidate result expected 0 true
 
+  // OpenCover.fs
+
   static member private RecursiveValidateOpenCover result expected' depth zero =
     let X name =
       XName.Get(name)
@@ -1092,6 +1094,19 @@ type AltCoverTests() = class
         AltCoverTests.RecursiveValidateOpenCover result expected 0 true
     finally
       Visitor.NameFilters.Clear()
+
+  [<Test>]
+  member self.ShouldSortFileIds() =
+    let visitor, document = OpenCover.ReportGenerator()
+    let X name =
+      XName.Get(name)
+    // Hack for running while instrumented
+    let where = typeof<AltCover.Tracer>.Assembly.Location
+    Visitor.Visit [ visitor ] (Visitor.ToSeq where)
+    Assert.That (document.Descendants(X "Module") |> Seq.length, Is.EqualTo 1)
+    Assert.That (document.Descendants(X "File") |> Seq.length, Is.GreaterThan 1)
+    document.Descendants(X "File")
+    |> Seq.iteri (fun i x -> Assert.That(x.Attribute(X "uid").Value, Is.EqualTo (string (1 + i))))
 
   // Instrument.fs
 
