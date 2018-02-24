@@ -940,6 +940,8 @@ type AltCoverTests() = class
             Seq.zip ra ea |> Seq.iter (fun ((a1:XAttribute), (a2:XAttribute)) ->
                     Assert.That(a1.Name, Is.EqualTo(a2.Name))
                     match a1.Name.ToString() with
+                    | "profilerVersion"
+                    | "driverVersion"
                     | "moduleId"
                     | "metadataToken"
                     | "startTime"
