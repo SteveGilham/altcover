@@ -23,13 +23,9 @@ module OpenCover =
 
   let internal ReportGenerator () =
 
-    let data = XProcessingInstruction(
-                   "xml-stylesheet",
-                   "type='text/xsl' href='coverage.xsl'") :> Object
-
     // The internal state of the document is mutated by the
     // operation of the visitor.  Everything else should now be pure
-    let document = XDocument(XDeclaration("1.0", "utf-8", "yes"), [|data|])
+    let document = XDocument(XDeclaration("1.0", "utf-8", "yes"), [||])
 
     let X name =
       XName.Get(name)
