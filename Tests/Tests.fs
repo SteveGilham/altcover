@@ -1103,10 +1103,10 @@ type AltCoverTests() = class
     // Hack for running while instrumented
     // Hack for running while instrumented
     let where = Assembly.GetExecutingAssembly().Location
-    let path = Path.Combine(where.Substring(0, where.IndexOf("_Binaries")) + "_Binaries/AltCover/Debug+AnyCPU", "AltCover.exe")
+    let path = Path.Combine(where.Substring(0, where.IndexOf("_Binaries")) + "_Binaries/AltCover/Debug+AnyCPU/netcoreapp2.0", "AltCover.dll")
 #if NETCOREAPP2_0
     let path' = if File.Exists path then path
-                else Path.Combine(where.Substring(0, where.IndexOf("_Binaries")) + "../_Binaries/AltCover/Debug+AnyCPU", "AltCover.exe")
+                else Path.Combine(where.Substring(0, where.IndexOf("_Binaries")) + "../_Binaries/AltCover/Debug+AnyCPU/netcoreapp2.0", "AltCover.dll")
 #else
     let path' = path
 #endif
