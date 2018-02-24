@@ -112,6 +112,21 @@ module OpenCover =
           { s with Files = fileset
                    Index = ref }
 
+    let VisitAfterMethod (s : Context) (head:XElement) =
+      let fileref = head.Parent.Descendants(X "FileRef") |> Seq.head
+      if s.Index < 0 then
+        fileref.Remove() // TODO method point
+      else fileref.Add(XAttribute(X "uid", s.Index))
+
+    let VisitAfterModule (s : Context) (head:XElement) =
+      let files = head.Parent.Descendants(X "Files") |> Seq.head
+      s.Files
+      |> Map.toSeq
+      |> Seq.sortBy snd
+      |> Seq.iter (fun (k,v) -> files.Add(XElement(X "File",
+                                                  XAttribute(X "uid", v),
+                                                  XAttribute(X "fullPath", k))))
+
     let ReportVisitor (s : Context) (node:Node) =
       let head = if s.Stack |> List.isEmpty then null else (s.Stack).Head
       let tail = if s.Stack |> List.isEmpty then [] else (s.Stack).Tail
@@ -122,30 +137,11 @@ module OpenCover =
       | Method (methodDef, _, included) -> VisitMethod s head methodDef included
       | MethodPoint (_, codeSegment,  _, included) ->
         VisitMethodPoint s head codeSegment included
-
-      | AfterMethod _ ->
-          let fileref = head.Parent.Descendants(X "FileRef") |> Seq.head
-          if s.Index < 0 then
-            fileref.Remove() // TODO method point
-
-          else fileref.Add(XAttribute(X "uid", s.Index))
-          {s with Stack = tail}
-
-      | AfterType _ ->
-          {s with Stack = tail}
-
-      | AfterModule _ ->
-          let files = head.Parent.Descendants(X "Files") |> Seq.head
-          s.Files
-          |> Map.toSeq
-          |> Seq.sortBy snd
-          |> Seq.iter (fun (k,v) -> files.Add(XElement(X "File",
-                                                       XAttribute(X "uid", v),
-                                                       XAttribute(X "fullPath", k))))
-          {s with Stack = tail}
-
-      | Finish -> s
-
+      | AfterMethod _ -> VisitAfterMethod s head
+                         {s with Stack = tail}
+      | AfterType _ ->   {s with Stack = tail}
+      | AfterModule _ ->  VisitAfterModule s head
+                          {s with Stack = tail}
       | _ -> s
 
     let result = Visitor.EncloseState ReportVisitor (Context.Build())
