@@ -68,6 +68,8 @@ module Counter =
                             startTime.ToString("o", System.Globalization.CultureInfo.InvariantCulture))
         root.SetAttribute("measureTime",
                         measureTime.ToString("o", System.Globalization.CultureInfo.InvariantCulture))
+        root.SetAttribute("driverVersion", "AltCover.Recorder " +
+                                     System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString())
 
     let (m, i, m', s, v) = match format with
                            | ReportFormat.OpenCover -> ("//Module", "hash", "Classes/Class/Methods/Method", "SequencePoints/SequencePoint", "vc")

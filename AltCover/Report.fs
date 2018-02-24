@@ -21,7 +21,8 @@ module Report =
 
     let StartVisit (s : list<XElement>) =
           let element = XElement(X "coverage",
-                          XAttribute(X "profilerVersion", 0),
+                          XAttribute(X "profilerVersion", "AltCover "+
+                                     System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString()),
                           XAttribute(X "driverVersion", 0),
                           XAttribute(X "startTime", DateTime.MaxValue.ToString("o", System.Globalization.CultureInfo.InvariantCulture)),
                           XAttribute(X "measureTime", DateTime.MinValue.ToString("o", System.Globalization.CultureInfo.InvariantCulture)))
