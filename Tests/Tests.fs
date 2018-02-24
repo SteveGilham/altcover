@@ -984,12 +984,10 @@ type AltCoverTests() = class
     let path = Path.Combine(where.Substring(0, where.IndexOf("_Binaries")) + "_Mono/Sample1", "Sample1.exe")
 #if NETCOREAPP2_0
     let path' = if File.Exists path then path
-                else printfn "path alternate chosen olde style"
-                     Path.Combine(where.Substring(0, where.IndexOf("_Binaries")) + monoSample1, "Sample1.exe")
+                else Path.Combine(where.Substring(0, where.IndexOf("_Binaries")) + monoSample1, "Sample1.exe")
 #else
     let path' = path
 #endif
-    printfn "%s" path'
 
     Visitor.Visit [ visitor ] (Visitor.ToSeq path')
 
