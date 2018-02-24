@@ -334,13 +334,6 @@ Target "UnitTestWithOpenCover" (fun _ ->
                Arguments = "\"-reports:" + String.Join(";", [coverage]) +
                            "\" \"-targetdir:" + "_Reports/_UnitTestWithOpenCover" + "\" -reporttypes:Html;XmlSummary -verbosity:Verbose"
                 }) "Report generation failure"
-
-    if not <| String.IsNullOrWhiteSpace (environVar "APPVEYOR_BUILD_NUMBER") then
-       Actions.Run (fun info ->
-          { info with
-                FileName = findToolInSubPath "coveralls.net.exe" nugetCache
-                WorkingDirectory = "_Reports"
-                Arguments = ("--opencover " + coverage)}) "Coveralls upload failed"
 )
 
 // Hybrid (Self) Tests
@@ -403,6 +396,25 @@ Target "UnitTestWithAltCover" (fun _ ->
                Arguments = "\"-reports:" + String.Join(";", [altReport; shadowReport]) +
                            "\" \"-targetdir:" + "_Reports/_UnitTestWithAltCover" + "\" -reporttypes:Html;XmlSummary -verbosity:Verbose"
                 }) "Report generation failure"
+
+      let cover1 = altReport 
+                   |> File.ReadAllLines
+                   |> Seq.takeWhile (fun l -> l <> "  </Modules>")
+      let cover2 = shadowReport
+                   |> File.ReadAllLines
+                   |> Seq.skipWhile (fun l -> l.StartsWith("    <Module") |> not)
+
+      let coverage =  reports @@ "CombinedTestWithAltCover.xml"
+
+      File.WriteAllLines(coverage, Seq.concat [cover1; cover2] |> Seq.toArray)
+
+      if not <| String.IsNullOrWhiteSpace (environVar "APPVEYOR_BUILD_NUMBER") then
+       Actions.Run (fun info ->
+          { info with
+                FileName = findToolInSubPath "coveralls.net.exe" nugetCache
+                WorkingDirectory = "_Reports"
+                Arguments = ("--opencover " + coverage)}) "Coveralls upload failed"
+                
     else
       printfn "Symbols not present; skipping"
 )
