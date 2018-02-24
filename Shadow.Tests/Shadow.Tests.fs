@@ -27,6 +27,7 @@ open System.Xml
 open AltCover.Recorder
 open NUnit.Framework
 open System.Threading
+open System
 
 [<TestFixture>]
 type AltCoverTests() = class
@@ -293,8 +294,12 @@ type AltCoverTests() = class
     self.UpdateReport item worker
     worker.Position <- 0L
     let after = new StreamReader(worker)
-    Assert.That (after.ReadToEnd().Replace("\r\n", "\n"),
-                 Is.EqualTo (before.ReadToEnd().Replace("\r\n", "\n"))))
+    let result = after.ReadToEnd().Split([|'\r';'\n'|], StringSplitOptions.RemoveEmptyEntries)
+                 |> Seq.skip 3
+    let expected = before.ReadToEnd().Split([|'\r';'\n'|], StringSplitOptions.RemoveEmptyEntries)
+                 |> Seq.skip 3
+    Assert.That (result,
+                 Is.EquivalentTo expected))
     self.GetMyMethodName "<="
 
   [<Test>]
@@ -315,8 +320,12 @@ type AltCoverTests() = class
     self.UpdateReport item worker
     worker.Position <- 0L
     let after = new StreamReader(worker)
-    Assert.That (after.ReadToEnd().Replace("\r\n", "\n"),
-                 Is.EqualTo (before.ReadToEnd().Replace("\r\n", "\n"))))
+    let result = after.ReadToEnd().Split([|'\r';'\n'|], StringSplitOptions.RemoveEmptyEntries)
+                 |> Seq.skip 3
+    let expected = before.ReadToEnd().Split([|'\r';'\n'|], StringSplitOptions.RemoveEmptyEntries)
+                 |> Seq.skip 3
+    Assert.That (result,
+                 Is.EquivalentTo expected))
     self.GetMyMethodName "<="
 
   [<Test>]
@@ -340,8 +349,12 @@ type AltCoverTests() = class
     self.UpdateReport item worker
     worker.Position <- 0L
     let after = new StreamReader(worker)
-    Assert.That (after.ReadToEnd().Replace("\r\n", "\n"),
-                 Is.EqualTo (before.ReadToEnd().Replace("\r\n", "\n"))))
+    let result = after.ReadToEnd().Split([|'\r';'\n'|], StringSplitOptions.RemoveEmptyEntries)
+                 |> Seq.skip 3
+    let expected = before.ReadToEnd().Split([|'\r';'\n'|], StringSplitOptions.RemoveEmptyEntries)
+                 |> Seq.skip 3
+    Assert.That (result,
+                 Is.EquivalentTo expected))
     self.GetMyMethodName "<="
 
   [<Test>]
