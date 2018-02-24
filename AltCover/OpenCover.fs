@@ -63,8 +63,8 @@ module OpenCover =
 
     let boolString b = if b then "true" else "false"
 
-    let VisitMethod  (s : Context) (head:XElement) (methodDef:MethodDefinition) included =
-          let element = XElement(X "Method",
+    let methodElement (methodDef:MethodDefinition) =
+         XElement(X "Method",
                            XAttribute(X "visited", "false"),
                            XAttribute(X "cyclomaticComplexity", "0"),
                            XAttribute(X "nPathComplexity", "0"),
@@ -74,6 +74,9 @@ module OpenCover =
                            XAttribute(X "isStatic", boolString methodDef.IsStatic),
                            XAttribute(X "isGetter", boolString methodDef.IsGetter),
                            XAttribute(X "isSetter", boolString methodDef.IsSetter))
+
+    let VisitMethod  (s : Context) (head:XElement) (methodDef:MethodDefinition) included =
+          let element = methodElement methodDef
           head.Add element
           element.Add(XElement(X "Summary"))
           element.Add(XElement(X "MetadataToken", methodDef.MetadataToken.ToUInt32().ToString()))
