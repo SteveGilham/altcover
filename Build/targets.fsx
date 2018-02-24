@@ -404,7 +404,7 @@ Target "UnitTestWithAltCover" (fun _ ->
                    |> File.ReadAllLines
                    |> Seq.skipWhile (fun l -> l.StartsWith("    <Module") |> not)
 
-      let coverage =  reports @@ "CombinedTestWithAltCover.xml"
+      let coverage =  reports @@ "CombinedTestWithAltCover.coveralls"
 
       File.WriteAllLines(coverage, Seq.concat [cover1; cover2] |> Seq.toArray)
 
