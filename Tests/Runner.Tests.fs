@@ -185,7 +185,7 @@ or
       Console.SetOut stdout
       Console.SetError stderr
 
-      CommandLine.Launch program (String.Empty) (Path.GetDirectoryName (Assembly.GetExecutingAssembly().Location))
+      CommandLine.Launch program (String.Empty) (Path.GetDirectoryName (Assembly.GetExecutingAssembly().Location)) |> ignore
 
       Assert.That(stderr.ToString(), Is.Empty)
       let result = stdout.ToString()
@@ -589,7 +589,7 @@ or
       let u2 = Guid.NewGuid().ToString()
 
       CommandLine.ProcessTrailingArguments [program; u1; u2]
-                                     (DirectoryInfo(where))
+                                     (DirectoryInfo(where)) |> ignore
 
       Assert.That(stderr.ToString(), Is.Empty)
       stdout.Flush()
@@ -609,7 +609,7 @@ or
   [<Test>]
   member self.ShouldNoOp() =
     let where = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
-    CommandLine.ProcessTrailingArguments [] (DirectoryInfo(where))
+    CommandLine.ProcessTrailingArguments [] (DirectoryInfo(where)) |> ignore
     Assert.Pass()
 
   [<Test>]
@@ -621,7 +621,7 @@ or
       let unique = Guid.NewGuid().ToString()
       let main = typeof<Tracer>.Assembly.GetType("AltCover.Main").GetMethod("Main", BindingFlags.NonPublic ||| BindingFlags.Static)
       let returnCode = main.Invoke(null, [| [| "RuNN"; "-r"; unique |] |])
-      Assert.That(returnCode, Is.EqualTo 0)
+      Assert.That(returnCode, Is.EqualTo 255)
       let result = stderr.ToString().Replace("\r\n", "\n")
       let expected = "\"RuNN\" \"-r\" \"" + unique + "\"\n" +
                        """Error - usage is:
@@ -726,7 +726,7 @@ or
       let u2 = Guid.NewGuid().ToString()
       use latch = new ManualResetEvent true
 
-      Runner.GetPayload [program; u1; u2]
+      Runner.GetPayload [program; u1; u2] |> ignore
 
       Assert.That(stderr.ToString(), Is.Empty)
       stdout.Flush()
@@ -767,10 +767,12 @@ or
       Runner.RecorderName <- "AltCover.Recorder.g.dll"
       let payload (rest:string list) =
         Assert.That(rest, Is.EquivalentTo [|"test"; "1"|])
+        255
 
       let monitor (hits:ICollection<(string*int)>) (token:string) _ _ =
         Assert.That(token, Is.EqualTo report, "should be default coverage file")
         Assert.That(hits, Is.Empty)
+        127
 
       let write (hits:ICollection<(string*int)>) format (report:string) =
         Assert.That(report, Is.EqualTo report, "should be default coverage file")
@@ -787,8 +789,9 @@ or
         use temp = File.Create dummy
         dummy |> File.Exists |> Assert.That
 
-      Runner.DoCoverage [|"Runner"; "-x"; "test"; "-r"; where; "--"; "1"|] empty
+      let r = Runner.DoCoverage [|"Runner"; "-x"; "test"; "-r"; where; "--"; "1"|] empty
       dummy |> File.Exists |> not |> Assert.That
+      Assert.That (r, Is.EqualTo 127)
 
     finally
       Runner.GetPayload <- save1
@@ -860,7 +863,7 @@ or
     do
       use s = File.Create (unique + ".0.bin")
       s.Close()
-    Runner.GetMonitor hits unique ignore []
+    Runner.GetMonitor hits unique List.length [] |> ignore
     Assert.That (File.Exists (unique + ".bin"))
     Assert.That(hits, Is.Empty)
 
@@ -872,8 +875,8 @@ or
     let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
     Runner.GetMonitor hits unique (fun l ->
        use sink = new DeflateStream(File.OpenWrite (unique + ".0.bin"), CompressionMode.Compress)
-       l |> List.iteri (fun i x -> formatter.Serialize(sink, (x,i)))
-    ) ["a"; "b"; String.Empty; "c"]
+       l |> List.mapi (fun i x -> formatter.Serialize(sink, (x,i)); x) |> List.length
+    ) ["a"; "b"; String.Empty; "c"] |> ignore
     Assert.That (File.Exists (unique + ".bin"))
     Assert.That(hits, Is.EquivalentTo [("a",0); ("b",1)])
 

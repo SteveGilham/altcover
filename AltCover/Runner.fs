@@ -105,7 +105,7 @@ module Runner =
 
   let PayloadBase (rest:string list)  =
     CommandLine.doPathOperation (fun () ->
-        CommandLine.ProcessTrailingArguments rest (DirectoryInfo(Option.get workingDirectory)))
+        CommandLine.ProcessTrailingArguments rest (DirectoryInfo(Option.get workingDirectory))) 255
 
   let WriteResource =
     CommandLine.resources.GetString >> Console.WriteLine
@@ -113,14 +113,14 @@ module Runner =
   let WriteResourceWithFormatItems s x =
     Console.WriteLine (s |> CommandLine.resources.GetString, x)
 
-  let MonitorBase (hits:ICollection<(string*int)>) report (payload: string list -> unit) (args : string list) =
+  let MonitorBase (hits:ICollection<(string*int)>) report (payload: string list -> int) (args : string list) =
       let binpath = report + ".bin"
       do
         use stream = File.Create(binpath)
         ()
 
       "Beginning run..." |> WriteResource
-      payload args
+      let result = payload args
       "Getting results..."  |> WriteResource
 
       let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
@@ -141,6 +141,7 @@ module Runner =
       )
 
       WriteResourceWithFormatItems "%d visits recorded" [|hits.Count|]
+      result
 
   let WriteReportBase (hits:ICollection<(string*int)>) report =
     let counts = Dictionary<string, Dictionary<int, int>>()
@@ -162,6 +163,7 @@ module Runner =
                  |> RequireWorker
     match check1 with
     | Left (intro, options) -> HandleBadArguments arguments intro options1 options
+                               255
     | Right (rest, _) ->
           let instance = RecorderInstance()
           let report = (GetMethod instance "get_ReportFile")
@@ -172,7 +174,7 @@ module Runner =
           let hits = List<(string*int)>()
 
           let payload = GetPayload
-          GetMonitor hits report payload rest
+          let result = GetMonitor hits report payload rest
           let delta = DoReport hits (enum format) report
           WriteResourceWithFormatItems "Coverage statistics flushing took {0:N} seconds" [|delta.TotalSeconds|]
 
@@ -181,3 +183,4 @@ module Runner =
           Directory.GetFiles( Path.GetDirectoryName(report),
                               Path.GetFileName(report) + ".*.bin")
           |> Seq.iter File.Delete
+          result

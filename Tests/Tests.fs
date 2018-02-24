@@ -2112,7 +2112,7 @@ type AltCoverTests() = class
   member self.NoThrowNoErrorLeavesAllOK () =
     try
       CommandLine.error <- false
-      CommandLine.doPathOperation ignore
+      CommandLine.doPathOperation ignore ()
       Assert.That(CommandLine.error, Is.False)
     finally
       CommandLine.error <- false
@@ -2121,7 +2121,7 @@ type AltCoverTests() = class
   member self.NoThrowWithErrorIsSignalled () =
     try
       CommandLine.error <- false
-      CommandLine.doPathOperation (fun () -> CommandLine.error <- true)
+      CommandLine.doPathOperation (fun () -> CommandLine.error <- true) ()
       Assert.That(CommandLine.error, Is.True)
     finally
       CommandLine.error <- false
@@ -2137,7 +2137,7 @@ type AltCoverTests() = class
       let unique = "ArgumentException " + Guid.NewGuid().ToString()
 
       CommandLine.error <- false
-      CommandLine.doPathOperation (fun () -> ArgumentException(unique) |> raise)
+      CommandLine.doPathOperation (fun () -> ArgumentException(unique) |> raise) ()
       Assert.That(CommandLine.error, Is.True)
       Assert.That(stdout.ToString(), Is.Empty)
       let result = stderr.ToString()
@@ -2158,7 +2158,7 @@ type AltCoverTests() = class
       let unique = "IOException " + Guid.NewGuid().ToString()
 
       CommandLine.error <- false
-      CommandLine.doPathOperation (fun () -> IOException(unique) |> raise)
+      CommandLine.doPathOperation (fun () -> IOException(unique) |> raise) ()
       Assert.That(CommandLine.error, Is.True)
       Assert.That(stdout.ToString(), Is.Empty)
       let result = stderr.ToString()
@@ -2179,7 +2179,7 @@ type AltCoverTests() = class
       let unique = "NotSupportedException " + Guid.NewGuid().ToString()
 
       CommandLine.error <- false
-      CommandLine.doPathOperation (fun () -> NotSupportedException(unique) |> raise)
+      CommandLine.doPathOperation (fun () -> NotSupportedException(unique) |> raise) ()
       Assert.That(CommandLine.error, Is.True)
       Assert.That(stdout.ToString(), Is.Empty)
       let result = stderr.ToString()
@@ -2200,7 +2200,7 @@ type AltCoverTests() = class
       let unique = "SecurityException " + Guid.NewGuid().ToString()
 
       CommandLine.error <- false
-      CommandLine.doPathOperation (fun () -> System.Security.SecurityException(unique) |> raise)
+      CommandLine.doPathOperation (fun () -> System.Security.SecurityException(unique) |> raise) ()
       Assert.That(CommandLine.error, Is.True)
       Assert.That(stdout.ToString(), Is.Empty)
       let result = stderr.ToString()
@@ -2235,8 +2235,9 @@ type AltCoverTests() = class
       Console.SetOut stdout
       Console.SetError stderr
 
-      CommandLine.Launch program (String.Empty) (Path.GetDirectoryName (Assembly.GetExecutingAssembly().Location))
+      let r = CommandLine.Launch program (String.Empty) (Path.GetDirectoryName (Assembly.GetExecutingAssembly().Location))
 
+      Assert.That(r, Is.EqualTo 0)
       Assert.That(stderr.ToString(), Is.Empty)
       let result = stdout.ToString()
       // hack for Mono
@@ -3083,7 +3084,7 @@ type AltCoverTests() = class
       let u2 = Guid.NewGuid().ToString()
 
       CommandLine.ProcessTrailingArguments [program; u1; u2]
-                                     (DirectoryInfo(where))
+                                     (DirectoryInfo(where)) |> ignore
 
       Assert.That(stderr.ToString(), Is.Empty)
       let result = stdout.ToString()
@@ -3138,7 +3139,8 @@ type AltCoverTests() = class
                     "-sn"; key
 #endif
                  |]
-      Main.DoInstrumentation args
+      let result = Main.DoInstrumentation args
+      Assert.That(result, Is.EqualTo 0)
       Assert.That (stderr.ToString(), Is.Empty)
 
       let expected = "Creating folder " + output +
@@ -3247,7 +3249,8 @@ type AltCoverTests() = class
                     "-sn"; key
 #endif
                  |]
-      Main.DoInstrumentation args
+      let result = Main.DoInstrumentation args
+      Assert.That (result, Is.EqualTo 0)
       Assert.That (stderr.ToString(), Is.Empty)
 
       let expected = "Creating folder " + output +
@@ -3414,7 +3417,7 @@ or
       let unique = Guid.NewGuid().ToString()
       let main = typeof<Node>.Assembly.GetType("AltCover.Main").GetMethod("Main", BindingFlags.NonPublic ||| BindingFlags.Static)
       let returnCode = main.Invoke(null, [| [| "-i"; unique |] |])
-      Assert.That(returnCode, Is.EqualTo 0)
+      Assert.That(returnCode, Is.EqualTo 255)
       let result = stderr.ToString().Replace("\r\n", "\n")
       let expected = "\"-i\" \"" + unique + "\"\n" +
                        """Error - usage is:
