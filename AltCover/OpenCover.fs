@@ -65,8 +65,19 @@ module OpenCover =
           element.Add(methods)
           {s with Stack = methods :: s.Stack }
 
+    let boolString b = if b then "true" else "false"
+
     let VisitMethod  (s : Context) (head:XElement) (methodDef:MethodDefinition) included =
-          let element = XElement(X "Method")
+          let element = XElement(X "Method",
+                           XAttribute(X "visited", "false"),
+                           XAttribute(X "cyclomaticComplexity", "0"),
+                           XAttribute(X "nPathComplexity", "0"),
+                           XAttribute(X "sequenceCoverage", "0"),
+                           XAttribute(X "branchCoverage", "0"),
+                           XAttribute(X "isConstructor", boolString methodDef.IsConstructor),
+                           XAttribute(X "isStatic", boolString methodDef.IsStatic),
+                           XAttribute(X "isGetter", boolString methodDef.IsGetter),
+                           XAttribute(X "isSetter", boolString methodDef.IsSetter))
           head.Add element
           element.Add(XElement(X "Summary"))
           element.Add(XElement(X "MetadataToken", methodDef.MetadataToken.ToUInt32().ToString()))

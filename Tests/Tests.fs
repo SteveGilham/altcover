@@ -1028,6 +1028,11 @@ type AltCoverTests() = class
             Seq.zip ra ea |> Seq.iter (fun ((a1:XAttribute), (a2:XAttribute)) ->
                     Assert.That(a1.Name, Is.EqualTo(a2.Name))
                     match a1.Name.ToString() with
+                    | "visited"
+                    | "cyclomaticComplexity"
+                    | "nPathComplexity"
+                    | "sequenceCoverage"
+                    | "branchCoverage"
                     | "hash" -> ()
                     | "fullPath" -> Assert.That(a1.Value.Replace("\\","/"), Does.EndWith(a2.Value.Replace("\\","/")),
                                                 a1.Name.ToString() + " : " + r.ToString() + " -> document")

@@ -360,7 +360,7 @@ Target "UnitTestWithAltCover" (fun _ ->
           { info with
                 FileName = altcover
                 WorkingDirectory = testDirectory
-                Arguments = ("/sn=" + keyfile + AltCoverFilter + @"/o=./__UnitTestWithAltCover -x=" + altReport)})
+                Arguments = ("--opencover /sn=" + keyfile + AltCoverFilter + @"/o=./__UnitTestWithAltCover -x=" + altReport)})
                 "Re-instrument returned with a non-zero exit code"
 
       printfn "Unit test the instrumented code"
@@ -383,7 +383,7 @@ Target "UnitTestWithAltCover" (fun _ ->
           { info with
                 FileName = altcover
                 WorkingDirectory = shadowDir
-                Arguments = ("/sn=" + keyfile + AltCoverFilter + @"/o=./__ShadowTestWithAltCover -x=" + shadowReport)})
+                Arguments = ("--opencover /sn=" + keyfile + AltCoverFilter + @"/o=./__ShadowTestWithAltCover -x=" + shadowReport)})
                 "Instrumenting the shadow tests failed"
 
       printfn "Execute the shadow tests"
