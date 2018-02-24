@@ -2245,7 +2245,10 @@ type AltCoverTests() = class
       Console.SetOut stdout
       Console.SetError stderr
 
-      let r = CommandLine.Launch program (String.Empty) (Path.GetDirectoryName (Assembly.GetExecutingAssembly().Location))
+      let nonWindows = System.Environment.GetEnvironmentVariable("OS") <> "Windows_NT"
+      let exe, args = if nonWindows then ("mono", program) else (program, String.Empty)
+
+      let r = CommandLine.Launch exe args (Path.GetDirectoryName (Assembly.GetExecutingAssembly().Location))
 
       Assert.That(r, Is.EqualTo 0)
       Assert.That(stderr.ToString(), Is.Empty)
