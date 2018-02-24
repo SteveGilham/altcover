@@ -133,8 +133,7 @@ module OpenCover =
       let files = head.Parent.Descendants(X "Files") |> Seq.head
       s.Files
       |> Map.toSeq
-      |> Seq.sortBy (fun x -> printfn "sorting %A" x
-                              snd x)
+      |> Seq.sortBy snd
       |> Seq.iter (fun (k,v) -> files.Add(XElement(X "File",
                                                   XAttribute(X "uid", v),
                                                   XAttribute(X "fullPath", k))))
