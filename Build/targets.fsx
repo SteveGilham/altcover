@@ -1256,7 +1256,7 @@ CreateFinal "ResetConsoleColours" (fun _ ->
 
 "Compilation"
 ==> "FSharpTypes"
-==> "OperationalTest"
+// ==> "OperationalTest"
 
 "Compilation"
 ==> "FSharpTypesDotNet"
@@ -1333,7 +1333,7 @@ CreateFinal "ResetConsoleColours" (fun _ ->
 
 "Unpack"
 ==> "ReleaseDotNetWithDotNet"
-==> "Deployment"
+//==> "Deployment"
 
 "Unpack"
 ==> "ReleaseDotNetWithFramework"
@@ -1345,7 +1345,7 @@ CreateFinal "ResetConsoleColours" (fun _ ->
 
 "Unpack"
 ==> "ReleaseXUnitFSharpTypesDotNet"
-==> "Deployment"
+//==> "Deployment"
 
 "Unpack"
 ==> "ReleaseXUnitFSharpTypesDotNetRunner"
