@@ -185,7 +185,8 @@ or
       Console.SetOut stdout
       Console.SetError stderr
 
-      CommandLine.Launch program (String.Empty) (Path.GetDirectoryName (Assembly.GetExecutingAssembly().Location)) |> ignore
+      let r = CommandLine.Launch program (String.Empty) (Path.GetDirectoryName (Assembly.GetExecutingAssembly().Location))
+      Assert.That (r, Is.EqualTo 0)
 
       Assert.That(stderr.ToString(), Is.Empty)
       let result = stdout.ToString()
@@ -588,8 +589,8 @@ or
       let u1 = Guid.NewGuid().ToString()
       let u2 = Guid.NewGuid().ToString()
 
-      CommandLine.ProcessTrailingArguments [program; u1; u2]
-                                     (DirectoryInfo(where)) |> ignore
+      let r = CommandLine.ProcessTrailingArguments [program; u1; u2] <| DirectoryInfo(where)
+      Assert.That(r, Is.EqualTo 0)
 
       Assert.That(stderr.ToString(), Is.Empty)
       stdout.Flush()
@@ -609,8 +610,8 @@ or
   [<Test>]
   member self.ShouldNoOp() =
     let where = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
-    CommandLine.ProcessTrailingArguments [] (DirectoryInfo(where)) |> ignore
-    Assert.Pass()
+    let r = CommandLine.ProcessTrailingArguments [] <| DirectoryInfo(where)
+    Assert.That(r, Is.EqualTo 0)
 
   [<Test>]
   member self.ErrorResponseIsAsExpected() =
@@ -726,7 +727,8 @@ or
       let u2 = Guid.NewGuid().ToString()
       use latch = new ManualResetEvent true
 
-      Runner.GetPayload [program; u1; u2] |> ignore
+      let r = Runner.GetPayload [program; u1; u2]
+      Assert.That(r, Is.EqualTo 0)
 
       Assert.That(stderr.ToString(), Is.Empty)
       stdout.Flush()
@@ -863,7 +865,8 @@ or
     do
       use s = File.Create (unique + ".0.bin")
       s.Close()
-    Runner.GetMonitor hits unique List.length [] |> ignore
+    let r = Runner.GetMonitor hits unique List.length []
+    Assert.That(r, Is.EqualTo 0)
     Assert.That (File.Exists (unique + ".bin"))
     Assert.That(hits, Is.Empty)
 
@@ -873,10 +876,11 @@ or
     let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
     let unique = Path.Combine(where, Guid.NewGuid().ToString())
     let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
-    Runner.GetMonitor hits unique (fun l ->
+    let r = Runner.GetMonitor hits unique (fun l ->
        use sink = new DeflateStream(File.OpenWrite (unique + ".0.bin"), CompressionMode.Compress)
        l |> List.mapi (fun i x -> formatter.Serialize(sink, (x,i)); x) |> List.length
-    ) ["a"; "b"; String.Empty; "c"] |> ignore
+                                           ) ["a"; "b"; String.Empty; "c"]
+    Assert.That(r, Is.EqualTo 4)
     Assert.That (File.Exists (unique + ".bin"))
     Assert.That(hits, Is.EquivalentTo [("a",0); ("b",1)])
 
