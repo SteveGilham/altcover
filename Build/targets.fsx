@@ -110,8 +110,7 @@ Target "BuildRelease" (fun _ ->
 
     "./altcover.core.sln"
     |> DotNetCompile
-        (fun p' ->
-            let p = p'()
+        (fun p ->
             { p with
                 Configuration = BuildConfiguration.Release
                 Common = dotnetOptions p.Common
@@ -135,8 +134,7 @@ Target "BuildDebug" (fun _ ->
 
     "./altcover.core.sln"
     |> DotNetCompile
-        (fun p' ->
-            let p = p'()
+        (fun p ->
             { p with
                 Configuration = BuildConfiguration.Debug
                 Common = dotnetOptions p.Common})
@@ -993,8 +991,7 @@ Target "ReleaseXUnitDotNetDemo" (fun _ ->
 
     "./Demo/xunit-dotnet/xunit-dotnet.csproj"
     |> DotNetCompile
-        (fun p' ->
-            let p = p'()
+        (fun p ->
             { p with
                 Configuration = BuildConfiguration.Debug
                 Common = dotnetOptions p.Common})
@@ -1037,8 +1034,7 @@ Target "ReleaseXUnitDotNetRunnerDemo" (fun _ ->
 
     "./Demo/xunit-dotnet/xunit-dotnet.csproj"
     |> DotNetCompile
-        (fun p' ->
-            let p = p'()
+        (fun p ->
             { p with
                 Configuration = BuildConfiguration.Debug
                 Common = dotnetOptions p.Common})
