@@ -3096,7 +3096,11 @@ type AltCoverTests() = class
       let u1 = Guid.NewGuid().ToString()
       let u2 = Guid.NewGuid().ToString()
 
-      let r = CommandLine.ProcessTrailingArguments [program; u1; u2]
+      let baseArgs= [program; u1; u2]
+      let nonWindows = System.Environment.GetEnvironmentVariable("OS") <> "Windows_NT"
+      let args = if nonWindows then "mono" :: baseArgs else baseArgs
+
+      let r = CommandLine.ProcessTrailingArguments args
                                      (DirectoryInfo(where))
       Assert.That(r, Is.EqualTo 0)
 

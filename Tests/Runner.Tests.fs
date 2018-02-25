@@ -185,7 +185,9 @@ or
       Console.SetOut stdout
       Console.SetError stderr
 
-      let r = CommandLine.Launch program (String.Empty) (Path.GetDirectoryName (Assembly.GetExecutingAssembly().Location))
+      let nonWindows = System.Environment.GetEnvironmentVariable("OS") <> "Windows_NT"
+      let exe, args = if nonWindows then ("mono", program) else (program, String.Empty)
+      let r = CommandLine.Launch exe args (Path.GetDirectoryName (Assembly.GetExecutingAssembly().Location))
       Assert.That (r, Is.EqualTo 0)
 
       Assert.That(stderr.ToString(), Is.Empty)
@@ -589,7 +591,11 @@ or
       let u1 = Guid.NewGuid().ToString()
       let u2 = Guid.NewGuid().ToString()
 
-      let r = CommandLine.ProcessTrailingArguments [program; u1; u2] <| DirectoryInfo(where)
+      let baseArgs= [program; u1; u2]
+      let nonWindows = System.Environment.GetEnvironmentVariable("OS") <> "Windows_NT"
+      let args = if nonWindows then "mono" :: baseArgs else baseArgs
+
+      let r = CommandLine.ProcessTrailingArguments args <| DirectoryInfo(where)
       Assert.That(r, Is.EqualTo 0)
 
       Assert.That(stderr.ToString(), Is.Empty)
@@ -727,7 +733,10 @@ or
       let u2 = Guid.NewGuid().ToString()
       use latch = new ManualResetEvent true
 
-      let r = Runner.GetPayload [program; u1; u2]
+      let baseArgs= [program; u1; u2]
+      let nonWindows = System.Environment.GetEnvironmentVariable("OS") <> "Windows_NT"
+      let args = if nonWindows then "mono" :: baseArgs else baseArgs
+      let r = Runner.GetPayload args
       Assert.That(r, Is.EqualTo 0)
 
       Assert.That(stderr.ToString(), Is.Empty)
