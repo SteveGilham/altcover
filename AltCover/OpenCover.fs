@@ -106,6 +106,20 @@ module OpenCover =
                   Index = -1
                   MethodSeq = 0}
 
+    let MethodPointElement (codeSegment:Cil.SequencePoint) end' ref i =
+      XElement(X "SequencePoint",
+        XAttribute(X "vc", 0),
+        XAttribute(X "uspid", i),
+        XAttribute(X "ordinal", 0),
+        XAttribute(X "offset", codeSegment.Offset),
+        XAttribute(X "sl", codeSegment.StartLine),
+        XAttribute(X "sc", codeSegment.StartColumn),
+        XAttribute(X "el", fst end'),
+        XAttribute(X "ec", snd end'),
+        XAttribute(X "bec", 0),
+        XAttribute(X "bev", 0),
+        XAttribute(X "fileid", ref))
+
     let VisitMethodPoint (s : Context) (codeSegment:Cil.SequencePoint) i included =
           // quick fix for .mdb lack of end line/column information
           let end' = match (codeSegment.EndLine, codeSegment.EndColumn) with
@@ -117,18 +131,7 @@ module OpenCover =
                              else
                                 let index = s.Files.Count + 1
                                 s.Files.Add (file, index), index
-          let element = XElement(X "SequencePoint",
-                          XAttribute(X "vc", 0),
-                          XAttribute(X "uspid", i),
-                          XAttribute(X "ordinal", 0),
-                          XAttribute(X "offset", codeSegment.Offset),
-                          XAttribute(X "sl", codeSegment.StartLine),
-                          XAttribute(X "sc", codeSegment.StartColumn),
-                          XAttribute(X "el", fst end'),
-                          XAttribute(X "ec", snd end'),
-                          XAttribute(X "bec", 0),
-                          XAttribute(X "bev", 0),
-                          XAttribute(X "fileid", ref))
+          let element = MethodPointElement codeSegment end' ref i
           let head = s.Stack |> Seq.head
           if head.IsEmpty then head.Add(element)
           else head.FirstNode.AddBeforeSelf(element)
