@@ -60,7 +60,6 @@ module OpenCover =
           let classes = XElement(X "Classes")
           element.Add(classes)
           {s with Stack = classes :: s.Stack
-                  Files = Map.empty<string, int>
                   ModuleSeq = 0}
 
     let VisitType (s : Context) (typeDef:TypeDefinition) included =
