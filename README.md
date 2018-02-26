@@ -26,7 +26,7 @@ You will need Visual Studio VS2017 (Community Edition) v15.5 or later with F# la
 
 ### Bootstrapping
 
-Start by setting up `dotnet fake` with `dotnet restore dotnet-fake.csproj`
+Start by setting up `dotnet fake` with `dotnet restore dotnet-fake.fsproj`
 Then `dotnet fake run ./Build/setup.fsx` to do the rest of the set-up.
 
 #### *nix
