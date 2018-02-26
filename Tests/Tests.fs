@@ -1019,22 +1019,18 @@ type AltCoverTests() = class
             Assert.That(r.Name, Is.EqualTo(e.Name), "Expected name " + e.Name.ToString())
             let ra = r.Attributes()
             let ea = e.Attributes()
-                     |> Seq.filter (fun xa -> match xa.Name.LocalName with
-                                              | "ordinal"
-                                              | "offset"
-                                              | "bec"
-                                              | "bev"
-                                              | "uspid" -> false
-                                              | _ -> true)
 
             Seq.zip ra ea |> Seq.iter (fun ((a1:XAttribute), (a2:XAttribute)) ->
                     Assert.That(a1.Name, Is.EqualTo(a2.Name))
                     match a1.Name.ToString() with
+                    | "bec"
+                    | "bev"
                     | "visited"
                     | "cyclomaticComplexity"
                     | "nPathComplexity"
                     | "sequenceCoverage"
                     | "branchCoverage"
+                    | "uspid"
                     | "hash" -> ()
                     | "fullPath" -> Assert.That(a1.Value.Replace("\\","/"), Does.EndWith(a2.Value.Replace("\\","/")),
                                                 a1.Name.ToString() + " : " + r.ToString() + " -> document")
@@ -1053,7 +1049,6 @@ type AltCoverTests() = class
     let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), sample1)
 
     try
-        "Main" |> (Regex >> FilterClass.Method >> Visitor.NameFilters.Add)
         Visitor.Visit [ visitor ] (Visitor.ToSeq path)
         let resource = Assembly.GetExecutingAssembly().GetManifestResourceNames()
                          |> Seq.find (fun n -> n.EndsWith("Sample1WithOpenCover.xml", StringComparison.Ordinal))
