@@ -139,10 +139,25 @@ module OpenCover =
     let X name =
       XName.Get(name)
 
+    let Summary () =
+        XElement(X "Summary",
+                XAttribute(X "numSequencePoints", 0),
+                XAttribute(X "visitedSequencePoints", 0),
+                XAttribute(X "numBranchPoints", 0),
+                XAttribute(X "visitedBranchPoints", 0),
+                XAttribute(X "sequenceCoverage", 0),
+                XAttribute(X "branchCoverage", 0),
+                XAttribute(X "maxCyclomaticComplexity", 0),
+                XAttribute(X "minCyclomaticComplexity", 0),
+                XAttribute(X "visitedClasses", 0),
+                XAttribute(X "numClasses", 0),
+                XAttribute(X "visitedMethods", 0),
+                XAttribute(X "numMethods", 0))
+
     let StartVisit (s : Context) =
           let element = XElement(X "CoverageSession")
           document.Add(element)
-          element.Add(XElement(X "Summary"))
+          element.Add(Summary())
           let modules = XElement(X "Modules")
           element.Add(modules)
           {s with Stack = modules :: s.Stack }
@@ -153,7 +168,7 @@ module OpenCover =
           if not included then element.SetAttributeValue(X "skippedDueTo", "Filter")
           let head = s.Stack |> Seq.head
           head.Add(element)
-          element.Add(XElement(X "Summary"))
+          element.Add(Summary())
           element.Add(XElement(X "ModulePath", moduleDef.FileName))
           element.Add(XElement(X "ModuleTime", File.GetLastWriteTimeUtc moduleDef.FileName))
           element.Add(XElement(X "ModuleName", moduleDef.Assembly.Name.Name))
@@ -171,7 +186,7 @@ module OpenCover =
           if not included then element.SetAttributeValue(X "skippedDueTo", "Filter")
           let head = s.Stack |> Seq.head
           head.Add(element)
-          element.Add(XElement(X "Summary"))
+          element.Add(Summary())
           element.Add(XElement(X "FullName", typeDef.FullName))
           let methods = XElement(X "Methods")
           element.Add(methods)
@@ -200,7 +215,7 @@ module OpenCover =
           if not included then element.SetAttributeValue(X "skippedDueTo", "Filter")
           let head = s.Stack |> Seq.head
           head.Add element
-          element.Add(XElement(X "Summary"))
+          element.Add(Summary())
           element.Add(XElement(X "MetadataToken", methodDef.MetadataToken.ToUInt32().ToString()))
           element.Add(XElement(X "Name", methodDef.FullName))
           element.Add(XElement(X "FileRef"))
@@ -254,18 +269,10 @@ module OpenCover =
       else fileref.Add(XAttribute(X "uid", s.Index))
       let summary = head.Parent.Descendants(X "Summary") |> Seq.head
       let cc = Option.getOrElse 1 s.MethodCC.Head
-      summary.Add(XAttribute(X "numSequencePoints", s.MethodSeq))
-      summary.Add(XAttribute(X "visitedSequencePoints", 0))
-      summary.Add(XAttribute(X "numBranchPoints", 0))
-      summary.Add(XAttribute(X "visitedBranchPoints", 0))
-      summary.Add(XAttribute(X "sequenceCoverage", 0))
-      summary.Add(XAttribute(X "branchCoverage", 0))
-      summary.Add(XAttribute(X "maxCyclomaticComplexity", cc))
-      summary.Add(XAttribute(X "minCyclomaticComplexity", cc))
-      summary.Add(XAttribute(X "visitedClasses", 0))
-      summary.Add(XAttribute(X "numClasses", 0))
-      summary.Add(XAttribute(X "visitedMethods", 0))
-      summary.Add(XAttribute(X "numMethods", if s.MethodSeq > 0 then 1 else 0))
+      summary.SetAttributeValue(X "numSequencePoints", s.MethodSeq)
+      summary.SetAttributeValue(X "maxCyclomaticComplexity", cc)
+      summary.SetAttributeValue(X "minCyclomaticComplexity", cc)
+      summary.SetAttributeValue(X "numMethods", if s.MethodSeq > 0 then 1 else 0)
       head.Descendants(X "SequencePoint")
       |> Seq.iteri(fun i x -> x.SetAttributeValue(X "ordinal", i))
       {s with Stack = tail
@@ -284,18 +291,11 @@ module OpenCover =
                                    (Math.Min (fst cc, fst cc2), Math.Max (snd cc, snd cc2)), snd state + snd pair)
                                    ((1,0), 0)
       let classes = if s.ClassSeq > 0 then 1 else 0
-      summary.Add(XAttribute(X "numSequencePoints", s.ClassSeq))
-      summary.Add(XAttribute(X "visitedSequencePoints", 0))
-      summary.Add(XAttribute(X "numBranchPoints", 0))
-      summary.Add(XAttribute(X "visitedBranchPoints", 0))
-      summary.Add(XAttribute(X "sequenceCoverage", 0))
-      summary.Add(XAttribute(X "branchCoverage", 0))
-      summary.Add(XAttribute(X "maxCyclomaticComplexity", max))
-      summary.Add(XAttribute(X "minCyclomaticComplexity", Math.Min(min, max)))
-      summary.Add(XAttribute(X "visitedClasses", 0))
-      summary.Add(XAttribute(X "numClasses", classes))
-      summary.Add(XAttribute(X "visitedMethods", 0))
-      summary.Add(XAttribute(X "numMethods", methods))
+      summary.SetAttributeValue(X "numSequencePoints", s.ClassSeq)
+      summary.SetAttributeValue(X "maxCyclomaticComplexity", max)
+      summary.SetAttributeValue(X "minCyclomaticComplexity", Math.Min(min, max))
+      summary.SetAttributeValue(X "numClasses", classes)
+      summary.SetAttributeValue(X "numMethods", methods)
       {s with Stack = tail
               ModuleSeq = s.ModuleSeq + s.ClassSeq
               ClassCC = ((if min = 0 then 1 else min), max) :: s.ClassCC
@@ -307,18 +307,11 @@ module OpenCover =
       let summary = head.Parent.Descendants(X "Summary") |> Seq.head
       let min,max = s.ClassCC
                     |> Seq.fold (fun state pair -> Math.Min (fst state, fst pair), Math.Max (snd state, snd pair)) (1,0)
-      summary.Add(XAttribute(X "numSequencePoints", s.ModuleSeq))
-      summary.Add(XAttribute(X "visitedSequencePoints", 0))
-      summary.Add(XAttribute(X "numBranchPoints", 0))
-      summary.Add(XAttribute(X "visitedBranchPoints", 0))
-      summary.Add(XAttribute(X "sequenceCoverage", 0))
-      summary.Add(XAttribute(X "branchCoverage", 0))
-      summary.Add(XAttribute(X "maxCyclomaticComplexity", max ))
-      summary.Add(XAttribute(X "minCyclomaticComplexity", min))
-      summary.Add(XAttribute(X "visitedClasses", 0))
-      summary.Add(XAttribute(X "numClasses", s.ModuleClasses))
-      summary.Add(XAttribute(X "visitedMethods", 0))
-      summary.Add(XAttribute(X "numMethods", s.ModuleMethods))
+      summary.SetAttributeValue(X "numSequencePoints", s.ModuleSeq)
+      summary.SetAttributeValue(X "maxCyclomaticComplexity", max )
+      summary.SetAttributeValue(X "minCyclomaticComplexity", min)
+      summary.SetAttributeValue(X "numClasses", s.ModuleClasses)
+      summary.SetAttributeValue(X "numMethods", s.ModuleMethods)
 
       let files = head.Parent.Descendants(X "Files") |> Seq.head
       s.Files
@@ -338,18 +331,11 @@ module OpenCover =
       let summary = head.Parent.Descendants(X "Summary") |> Seq.head
       let min,max = s.ModuleCC
                     |> Seq.fold (fun state pair -> Math.Min (fst state, fst pair), Math.Max (snd state, snd pair)) (1,0)
-      summary.Add(XAttribute(X "numSequencePoints", s.TotalSeq))
-      summary.Add(XAttribute(X "visitedSequencePoints", 0))
-      summary.Add(XAttribute(X "numBranchPoints", 0))
-      summary.Add(XAttribute(X "visitedBranchPoints", 0))
-      summary.Add(XAttribute(X "sequenceCoverage", 0))
-      summary.Add(XAttribute(X "branchCoverage", 0))
-      summary.Add(XAttribute(X "maxCyclomaticComplexity", max ))
-      summary.Add(XAttribute(X "minCyclomaticComplexity", min))
-      summary.Add(XAttribute(X "visitedClasses", 0))
-      summary.Add(XAttribute(X "numClasses", s.TotalClasses))
-      summary.Add(XAttribute(X "visitedMethods", 0))
-      summary.Add(XAttribute(X "numMethods", s.TotalMethods))
+      summary.SetAttributeValue(X "numSequencePoints", s.TotalSeq)
+      summary.SetAttributeValue(X "maxCyclomaticComplexity", max )
+      summary.SetAttributeValue(X "minCyclomaticComplexity", min)
+      summary.SetAttributeValue(X "numClasses", s.TotalClasses)
+      summary.SetAttributeValue(X "numMethods", s.TotalMethods)
       s
 
     let ReportVisitor (s : Context) (node:Node) =
