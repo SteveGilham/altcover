@@ -8,6 +8,11 @@ open System.Xml.Linq
 open Mono.Cecil
 open Mono.Cecil.Cil
 
+#if WEAKNAMETESTS
+#else
+open AltCover.Augment
+#endif
+
 module OpenCover =
 
 #if WEAKNAMETESTS
@@ -21,16 +26,30 @@ module OpenCover =
                             Files : Map<string, int>
                             Index : int
                             MethodSeq : int
+                            MethodCC : int option list
                             ClassSeq : int
+                            ClassCC : (int * int) list
                             ModuleSeq : int
+                            ModuleMethods : int
+                            ModuleClasses : int
+                            ModuleCC : (int * int) list
+                            TotalMethods : int
+                            TotalClasses : int
                             TotalSeq : int}
   with static member Build () =
                     { Stack = List.empty<XElement>
                       Files = Map.empty<string, int>
                       Index = 0
                       MethodSeq = 0
+                      MethodCC = []
                       ClassSeq = 0
+                      ClassCC = []
                       ModuleSeq = 0
+                      ModuleMethods = 0
+                      ModuleClasses = 0
+                      ModuleCC = []
+                      TotalMethods = 0
+                      TotalClasses = 0
                       TotalSeq = 0}
 #endif
 
@@ -68,14 +87,14 @@ module OpenCover =
                                 match i.OpCode.FlowControl with
                                 | FlowControl.Branch ->
                                     let previous = i.Previous
-                                    c + if previous |> isNull |> not
-                                        then if previous.OpCode.FlowControl = FlowControl.Cond_Branch then
+                                    c + if previous |> isNull |> not then
+                                          do if previous.OpCode.FlowControl = FlowControl.Cond_Branch then
                                               match previous.Operand with
                                               | :? (Cil.Instruction array) -> ()
                                               | :? Cil.Instruction as branch ->
                                                  if targets.Contains branch then i |> targets.Add |> ignore
                                               | _ -> ()
-                                             ``detect ternary pattern`` previous.OpCode.Code else 0
+                                          ``detect ternary pattern`` previous.OpCode.Code else 0
                                 | FlowControl.Cond_Branch ->
                                     if i.OpCode = OpCodes.Switch then
                                       AccumulateSwitchTargets i targets
@@ -142,7 +161,10 @@ module OpenCover =
           let classes = XElement(X "Classes")
           element.Add(classes)
           {s with Stack = classes :: s.Stack
-                  ModuleSeq = 0}
+                  ModuleSeq = 0
+                  ModuleMethods = 0
+                  ModuleClasses = 0
+                  ClassCC = []}
 
     let VisitType (s : Context) (typeDef:TypeDefinition) included =
           let element = XElement(X "Class")
@@ -154,24 +176,27 @@ module OpenCover =
           let methods = XElement(X "Methods")
           element.Add(methods)
           {s with Stack = methods :: s.Stack
-                  ClassSeq = 0}
+                  ClassSeq = 0
+                  MethodCC = []}
 
     let boolString b = if b then "true" else "false"
 
     let methodElement (methodDef:MethodDefinition) =
-         XElement(X "Method",
+         let cc = CyclomaticComplexity methodDef
+         (cc, XElement(X "Method",
                            XAttribute(X "visited", "false"),
-                           XAttribute(X "cyclomaticComplexity", CyclomaticComplexity methodDef),
+                           XAttribute(X "cyclomaticComplexity", cc),
                            XAttribute(X "nPathComplexity", "0"),
                            XAttribute(X "sequenceCoverage", "0"),
                            XAttribute(X "branchCoverage", "0"),
                            XAttribute(X "isConstructor", boolString methodDef.IsConstructor),
                            XAttribute(X "isStatic", boolString methodDef.IsStatic),
                            XAttribute(X "isGetter", boolString methodDef.IsGetter),
-                           XAttribute(X "isSetter", boolString methodDef.IsSetter))
+                           XAttribute(X "isSetter", boolString methodDef.IsSetter)))
+         
 
     let VisitMethod  (s : Context) (methodDef:MethodDefinition) included =
-          let element = methodElement methodDef
+          let cc, element = methodElement methodDef
           if not included then element.SetAttributeValue(X "skippedDueTo", "Filter")
           let head = s.Stack |> Seq.head
           head.Add element
@@ -185,7 +210,8 @@ module OpenCover =
           element.Add(XElement(X "MethodPoint"))
           {s with Stack = seqpnts :: s.Stack
                   Index = -1
-                  MethodSeq = 0}
+                  MethodSeq = 0
+                  MethodCC = Some cc :: s.MethodCC}
 
     let MethodPointElement (codeSegment:Cil.SequencePoint) end' ref i =
       XElement(X "SequencePoint",
@@ -227,23 +253,73 @@ module OpenCover =
         fileref.Remove() // TODO method point
       else fileref.Add(XAttribute(X "uid", s.Index))
       let summary = head.Parent.Descendants(X "Summary") |> Seq.head
+      let cc = Option.getOrElse 1 s.MethodCC.Head
       summary.Add(XAttribute(X "numSequencePoints", s.MethodSeq))
+      summary.Add(XAttribute(X "visitedSequencePoints", 0))
+      summary.Add(XAttribute(X "numBranchPoints", 0))
+      summary.Add(XAttribute(X "visitedBranchPoints", 0))
+      summary.Add(XAttribute(X "sequenceCoverage", 0))
+      summary.Add(XAttribute(X "branchCoverage", 0))
+      summary.Add(XAttribute(X "maxCyclomaticComplexity", cc))
+      summary.Add(XAttribute(X "minCyclomaticComplexity", cc))
+      summary.Add(XAttribute(X "visitedClasses", 0))
+      summary.Add(XAttribute(X "numClasses", 0))
+      summary.Add(XAttribute(X "visitedMethods", 0))
+      summary.Add(XAttribute(X "numMethods", if s.MethodSeq > 0 then 1 else 0))
       head.Descendants(X "SequencePoint")
       |> Seq.iteri(fun i x -> x.SetAttributeValue(X "ordinal", i))
       {s with Stack = tail
-              ClassSeq = s.ClassSeq + s.MethodSeq}
+              ClassSeq = s.ClassSeq + s.MethodSeq
+              MethodCC = if s.MethodSeq > 0 then s.MethodCC 
+                         else None :: s.MethodCC.Tail}
 
     let VisitAfterType (s : Context) =
       let head,tail = Augment.Split s.Stack
       let summary = head.Parent.Descendants(X "Summary") |> Seq.head
+      let (min, max), methods = s.MethodCC
+                                |> Seq.map (fun q -> (q |> Option.getOrElse 1, q |> Option.getOrElse 0), if q.IsSome then 1 else 0)
+                                |> Seq.fold (fun state pair -> 
+                                   let cc = fst state
+                                   let cc2 = fst pair
+                                   (Math.Min (fst cc, fst cc2), Math.Max (snd cc, snd cc2)), snd state + snd pair)
+                                   ((1,0), 0)
+      let classes = if s.ClassSeq > 0 then 1 else 0
       summary.Add(XAttribute(X "numSequencePoints", s.ClassSeq))
+      summary.Add(XAttribute(X "visitedSequencePoints", 0))
+      summary.Add(XAttribute(X "numBranchPoints", 0))
+      summary.Add(XAttribute(X "visitedBranchPoints", 0))
+      summary.Add(XAttribute(X "sequenceCoverage", 0))
+      summary.Add(XAttribute(X "branchCoverage", 0))
+      summary.Add(XAttribute(X "maxCyclomaticComplexity", max))
+      summary.Add(XAttribute(X "minCyclomaticComplexity", Math.Min(min, max)))
+      summary.Add(XAttribute(X "visitedClasses", 0))
+      summary.Add(XAttribute(X "numClasses", classes))
+      summary.Add(XAttribute(X "visitedMethods", 0))
+      summary.Add(XAttribute(X "numMethods", methods))
       {s with Stack = tail
-              ModuleSeq = s.ModuleSeq + s.ClassSeq}
+              ModuleSeq = s.ModuleSeq + s.ClassSeq
+              ClassCC = ((if min = 0 then 1 else min), max) :: s.ClassCC
+              ModuleMethods = methods + s.ModuleMethods
+              ModuleClasses = classes + s.ModuleClasses}
 
     let VisitAfterModule (s : Context) =
       let head,tail = Augment.Split s.Stack
       let summary = head.Parent.Descendants(X "Summary") |> Seq.head
+      let min,max = s.ClassCC
+                    |> Seq.fold (fun state pair -> Math.Min (fst state, fst pair), Math.Max (snd state, snd pair)) (1,0)
       summary.Add(XAttribute(X "numSequencePoints", s.ModuleSeq))
+      summary.Add(XAttribute(X "visitedSequencePoints", 0))
+      summary.Add(XAttribute(X "numBranchPoints", 0))
+      summary.Add(XAttribute(X "visitedBranchPoints", 0))
+      summary.Add(XAttribute(X "sequenceCoverage", 0))
+      summary.Add(XAttribute(X "branchCoverage", 0))
+      summary.Add(XAttribute(X "maxCyclomaticComplexity", max ))
+      summary.Add(XAttribute(X "minCyclomaticComplexity", min))
+      summary.Add(XAttribute(X "visitedClasses", 0))
+      summary.Add(XAttribute(X "numClasses", s.ModuleClasses))
+      summary.Add(XAttribute(X "visitedMethods", 0))
+      summary.Add(XAttribute(X "numMethods", s.ModuleMethods))
+
       let files = head.Parent.Descendants(X "Files") |> Seq.head
       s.Files
       |> Map.toSeq
@@ -252,12 +328,28 @@ module OpenCover =
                                                   XAttribute(X "uid", v),
                                                   XAttribute(X "fullPath", k))))
       {s with Stack = tail
-              TotalSeq = s.TotalSeq + s.ModuleSeq}
+              TotalSeq = s.TotalSeq + s.ModuleSeq
+              ModuleCC = (min, max) :: s.ModuleCC
+              TotalClasses = s.ModuleClasses + s.TotalClasses
+              TotalMethods = s.ModuleMethods + s.TotalMethods}
 
     let AfterAll (s : Context) =
       let head = s.Stack |> Seq.head
       let summary = head.Parent.Descendants(X "Summary") |> Seq.head
+      let min,max = s.ModuleCC
+                    |> Seq.fold (fun state pair -> Math.Min (fst state, fst pair), Math.Max (snd state, snd pair)) (1,0)
       summary.Add(XAttribute(X "numSequencePoints", s.TotalSeq))
+      summary.Add(XAttribute(X "visitedSequencePoints", 0))
+      summary.Add(XAttribute(X "numBranchPoints", 0))
+      summary.Add(XAttribute(X "visitedBranchPoints", 0))
+      summary.Add(XAttribute(X "sequenceCoverage", 0))
+      summary.Add(XAttribute(X "branchCoverage", 0))
+      summary.Add(XAttribute(X "maxCyclomaticComplexity", max ))
+      summary.Add(XAttribute(X "minCyclomaticComplexity", min))
+      summary.Add(XAttribute(X "visitedClasses", 0))
+      summary.Add(XAttribute(X "numClasses", s.TotalClasses))
+      summary.Add(XAttribute(X "visitedMethods", 0))
+      summary.Add(XAttribute(X "numMethods", s.TotalMethods))
       s
 
     let ReportVisitor (s : Context) (node:Node) =
