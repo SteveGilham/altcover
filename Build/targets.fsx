@@ -278,7 +278,7 @@ Target "UnitTest" (fun _ ->
 Target "JustUnitTest" (fun _ ->
     ensure "./_Reports"
     try
-      !! (@"_Binaries/*Tests/Debug+AnyCPU/*.Test*.dll")
+      !! (@"_Binaries/*Tests/Debug+AnyCPU/*Test*.dll")
       |> NUnit3 (fun p -> { p with ToolPath = findToolInSubPath "nunit3-console.exe" "."
                                    WorkingDir = "."
                                    Labels = LabelsLevel.All
@@ -303,7 +303,7 @@ Target "UnitTestDotNet" (fun _ ->
 
 Target "UnitTestWithOpenCover" (fun _ ->
     ensure "./_Reports/_UnitTestWithOpenCover"
-    let testFiles = !! (@"_Binaries/*Tests/Debug+AnyCPU/*.Test*.dll")
+    let testFiles = !! (@"_Binaries/*Tests/Debug+AnyCPU/*Test*.dll")
                     //|> Seq.map (fun f -> f.FullName)
     let coverage = getFullName "_Reports/UnitTestWithOpenCover.xml"
 
@@ -312,7 +312,7 @@ Target "UnitTestWithOpenCover" (fun _ ->
                                    WorkingDir = "."
                                    ExePath = findToolInSubPath "OpenCover.Console.exe" "."
                                    TestRunnerExePath = findToolInSubPath "nunit3-console.exe" "."
-                                   Filter = "+[AltCover]* +[AltCover.Shadow]* +[AltCover.Runner]* -[*]Microsoft.* -[*]System.* -[Sample*]*"
+                                   Filter = "+[AltCover]* +[AltCover.Shadow]* +[AltCover.Runner]* +[AltCover.WeakNameTests]Alt* -[*]Microsoft.* -[*]System.* -[Sample*]*"
                                    MergeByHash = true
                                    OptionalArguments = "-excludebyattribute:*ExcludeFromCodeCoverageAttribute;*ProgIdAttribute"
                                    Register = OpenCover.RegisterType.RegisterUser
@@ -367,6 +367,22 @@ Target "UnitTestWithAltCover" (fun _ ->
       | x -> printfn "%A" x
              reraise ()
 
+      printfn "Instrument the weakname tests"
+      let weakDir = getFullName  "_Binaries\AltCover.WeakNameTests\Debug+AnyCPU"
+      let weakReport = reports @@ "WeakNameTestWithAltCover.xml"
+      Actions.Run (fun info ->
+          { info with
+                FileName = altcover
+                WorkingDirectory = weakDir
+                Arguments = ("--opencover /sn=" + keyfile + AltCoverFilterX + " /o=./__WeakNameTestWithAltCover -x=" + weakReport)})
+                "Instrumenting the weakname tests failed"
+
+      printfn "Execute the weakname tests"
+      !! ("_Binaries/AltCover.WeakNameTests/Debug+AnyCPU/__WeakNameTestWithAltCover/*Test*.dll")
+      |> NUnit3 (fun p -> { p with ToolPath = findToolInSubPath "nunit3-console.exe" "."
+                                   WorkingDir = "."
+                                   ResultSpecs = ["./_Reports/WeakNameTestWithAltCoverReport.xml"] })
+
       printfn "Instrument the shadow tests"
       let shadowDir = getFullName  "_Binaries/AltCover.Shadow.Tests/Debug+AnyCPU"
       let shadowReport = reports @@ "ShadowTestWithAltCover.xml"
@@ -391,7 +407,7 @@ Target "UnitTestWithAltCover" (fun _ ->
       Actions.Run (fun info ->
         { info with
                FileName = findToolInSubPath "ReportGenerator.exe" "."
-               Arguments = "\"-reports:" + String.Join(";", [altReport; shadowReport]) +
+               Arguments = "\"-reports:" + String.Join(";", [altReport; weakReport; shadowReport]) +
                            "\" \"-targetdir:" + "_Reports/_UnitTestWithAltCover" + "\" -reporttypes:Html;XmlSummary -verbosity:Verbose"
                 }) "Report generation failure"
     else
@@ -434,6 +450,29 @@ Target "UnitTestWithAltCoverRunner" (fun _ ->
       | x -> printfn "%A" x
              reraise ()
 
+      printfn "Instrument the weakname tests"
+      let weakDir = getFullName  "_Binaries\AltCover.WeakNameTests\Debug+AnyCPU"
+      let weakReport = reports @@ "WeakNameTestWithAltCoverRunner.xml"
+      Actions.Run (fun info ->
+          { info with
+                FileName = altcover
+                WorkingDirectory = weakDir
+                Arguments = ("--opencover /sn=" + keyfile + AltCoverFilterX + " \"-t=WeakName\"  /o=./__WeakNameTestWithAltCoverRunner -x=" + weakReport)})
+                "Instrumenting the weakname tests failed"
+
+      printfn "Execute the weakname tests"
+
+      Actions.Run (fun info ->
+          { info with
+                FileName = altcover
+                WorkingDirectory = "."
+                Arguments = ( " Runner -x " + nunit +
+                              " -r " + (weakDir @@ "__WeakNameTestWithAltCoverRunner") +
+                              " -w . -- " +
+                              " --noheader --work=. --result=./_Reports/ShadowTestWithAltCoverRunnerReport.xml \"" +
+                              String.Join ("\" \"", [ getFullName  "_Binaries/AltCover.WeakNameTests/Debug+AnyCPU/__WeakNameTestWithAltCoverRunner/AltCover.WeakNameTests.dll"]) + "\""
+                            )}) "Re-instrument tests returned with a non-zero exit code"
+
       printfn "Instrument the shadow tests"
       let shadowDir = getFullName  "_Binaries/AltCover.Shadow.Tests/Debug+AnyCPU"
       let shadowReport = reports @@ "ShadowTestWithAltCoverRunner.xml"
@@ -460,25 +499,29 @@ Target "UnitTestWithAltCoverRunner" (fun _ ->
 //      ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
 //                                         ReportTypes = [ ReportGeneratorReportType.Html; ReportGeneratorReportType.XmlSummary ]
 //                                         TargetDir = "_Reports/_UnitTestWithAltCoverRunner"})
-//          [altReport; shadowReport]
+//          [altReport; shadowReport; weakReport]
 
       Actions.Run (fun info ->
         { info with
                FileName = findToolInSubPath "ReportGenerator.exe" "."
-               Arguments = "\"-reports:" + String.Join(";", [altReport; shadowReport]) +
+               Arguments = "\"-reports:" + String.Join(";", [altReport; shadowReport; weakReport]) +
                            "\" \"-targetdir:" + "_Reports/_UnitTestWithAltCoverRunner" + "\" -reporttypes:Html;XmlSummary -verbosity:Verbose"
                 }) "Report generation failure"
 
-      let cover1 = altReport 
+      let cover1 = altReport
                    |> File.ReadAllLines
                    |> Seq.takeWhile (fun l -> l <> "  </Modules>")
       let cover2 = shadowReport
                    |> File.ReadAllLines
                    |> Seq.skipWhile (fun l -> l.StartsWith("    <Module") |> not)
+                   |> Seq.takeWhile (fun l -> l <> "  </Modules>")
+      let cover3 = weakReport
+                   |> File.ReadAllLines
+                   |> Seq.skipWhile (fun l -> l.StartsWith("    <Module") |> not)
 
       let coverage =  reports @@ "CombinedTestWithAltCoverRunner.coveralls"
 
-      File.WriteAllLines(coverage, Seq.concat [cover1; cover2] |> Seq.toArray)
+      File.WriteAllLines(coverage, Seq.concat [cover1; cover2; cover3] |> Seq.toArray)
 
       if not <| String.IsNullOrWhiteSpace (environVar "APPVEYOR_BUILD_NUMBER") then
        Actions.Run (fun info ->
@@ -1236,7 +1279,7 @@ CreateFinal "ResetConsoleColours" (fun _ ->
 
 "Compilation"
 ==> "UnitTestWithAltCover"
-==> "UnitTest"
+// ==> "UnitTest"
 
 "Compilation"
 ==> "UnitTestWithAltCoverRunner"

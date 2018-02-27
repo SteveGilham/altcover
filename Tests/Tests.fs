@@ -1000,6 +1000,11 @@ type AltCoverTests() = class
 
   // OpenCover.fs
 
+  [<Test>]
+  member self.EmptyMethodHasComplexity1() =
+    let m = MethodDefinition("dummy", MethodAttributes.Abstract, TypeDefinition("System", "Void", TypeAttributes.Public))
+    Assert.That (OpenCover.CyclomaticComplexity m, Is.EqualTo 1)
+
   static member private RecursiveValidateOpenCover result expected' depth zero =
     let X name =
       XName.Get(name)
@@ -1026,7 +1031,6 @@ type AltCoverTests() = class
                     | "bec"
                     | "bev"
                     | "visited"
-                    | "cyclomaticComplexity"
                     | "nPathComplexity"
                     | "sequenceCoverage"
                     | "branchCoverage"
@@ -1105,7 +1109,6 @@ type AltCoverTests() = class
 #else
     let path' = path
 #endif
-
 
     Visitor.Visit [ visitor ] (Visitor.ToSeq path')
     Assert.That (document.Descendants(X "Module") |> Seq.length, Is.EqualTo 1)

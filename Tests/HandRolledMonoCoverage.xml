@@ -20,7 +20,7 @@
           <Summary numSequencePoints="14" />
           <FullName>TouchTest.Program</FullName>
           <Methods>
-            <Method visited="false" cyclomaticComplexity="0" nPathComplexity="0" sequenceCoverage="0" branchCoverage="0" isConstructor="true" isStatic="false" isGetter="false" isSetter="false">
+            <Method visited="false" cyclomaticComplexity="1" nPathComplexity="0" sequenceCoverage="0" branchCoverage="0" isConstructor="true" isStatic="false" isGetter="false" isSetter="false">
               <Summary numSequencePoints="0" />
               <MetadataToken>100663297</MetadataToken>
               <Name>System.Void TouchTest.Program::.ctor()</Name>
@@ -28,7 +28,7 @@
               <BranchPoints />
               <MethodPoint />
             </Method>
-            <Method visited="false" cyclomaticComplexity="0" nPathComplexity="0" sequenceCoverage="0" branchCoverage="0" isConstructor="false" isStatic="true" isGetter="false" isSetter="false">
+            <Method visited="false" cyclomaticComplexity="2" nPathComplexity="0" sequenceCoverage="0" branchCoverage="0" isConstructor="false" isStatic="true" isGetter="false" isSetter="false">
               <Summary numSequencePoints="14" />
               <MetadataToken>100663298</MetadataToken>
               <Name>System.Void TouchTest.Program::Main(System.String[])</Name>
