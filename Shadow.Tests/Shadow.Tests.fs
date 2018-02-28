@@ -400,7 +400,7 @@ type AltCoverTests() = class
     worker.Position <- 0L
     let payload = Dictionary<int,int>()
     [0..9 ]
-    |> Seq.iter(fun i -> payload.[i] <- (i+1))
+    |> Seq.iter(fun i -> payload.[10 - i] <- (i+1))
     let item = Dictionary<string, Dictionary<int, int>>()
     item.Add("7C-CD-66-29-A3-6C-6D-5F-A7-65-71-0E-22-7D-B2-61-B5-1F-65-9A", payload)
     Counter.UpdateReport true item ReportFormat.OpenCover worker |> ignore

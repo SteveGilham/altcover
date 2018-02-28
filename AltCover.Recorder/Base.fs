@@ -91,18 +91,22 @@ module Counter =
         |> Seq.collect (fun (``method``:XmlElement) -> ``method``.SelectNodes(s)
                                                         |> Seq.cast<XmlElement>
                                                         |> Seq.toList |> List.rev)
-        |> Seq.mapi (fun counter pt -> (counter, pt))
+        |> Seq.mapi (fun counter pt -> ((match format with
+                                        | ReportFormat.OpenCover ->
+                                             Int32.TryParse( pt.GetAttribute("uspid") ,
+                                                             System.Globalization.NumberStyles.Integer,
+                                                             System.Globalization.CultureInfo.InvariantCulture) |> snd
+                                        | _ -> counter),
+                                        pt))
         |> Seq.filter (fst >> moduleHits.ContainsKey)
         |> Seq.iter (fun x ->
             let pt = snd x
             let counter = fst x
-            let attribute = pt.GetAttribute(v)
-            let value = if String.IsNullOrEmpty attribute then "0" else attribute
-            let vc = Int32.TryParse(value,
+            let vc = Int32.TryParse(pt.GetAttribute(v),
                                     System.Globalization.NumberStyles.Integer,
-                                    System.Globalization.CultureInfo.InvariantCulture)
+                                    System.Globalization.CultureInfo.InvariantCulture) |> snd
             // Treat -ve visit counts (an exemption added in analysis) as zero
-            let visits = moduleHits.[counter] + (max 0 (if fst vc then snd vc else 0))
+            let visits = moduleHits.[counter] + (max 0 vc)
             pt.SetAttribute(v, visits.ToString(CultureInfo.InvariantCulture))))
 
     // Save modified xml to a file
