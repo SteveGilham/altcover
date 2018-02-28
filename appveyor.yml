@@ -21,7 +21,7 @@ build_script:
 
     & dotnet fake run .\Build\setup.fsx
     
-    & dotnet fake run .\Build\build.fsx
+    ## & dotnet fake run .\Build\build.fsx
 
     $save = $LASTEXITCODE
     
@@ -29,7 +29,7 @@ build_script:
 
     Write-Host "Exit code $save"
 
-    exit $save
+    return $save
 test:
   assemblies:
     only:
