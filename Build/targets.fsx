@@ -31,7 +31,7 @@ let Version = ref String.Empty
 
 let OpenCoverFilter = "+[AltCove*]* -[*]Microsoft.* -[*]System.* +[*]N.*"
 let AltCoverFilter= @" -s=Mono -s=\.Recorder -s=Sample -s=nunit -e=Tests -t=System. -t=Sample3\.Class2 "
-let AltCoverFilterX= @" -s=Mono -s=\.Recorder -s=Sample -s=nunit -t=System. -t=Sample3\.Class2 "
+let AltCoverFilterX= @" -s=Mono -s=\.Recorder -s=Sample -s=nunit -t=System\. -t=Sample3\.Class2 "
 let AltCoverFilterG= @" -s=Mono -s=\.Recorder\.g -s=Sample -s=nunit -e=Tests -t=System. -t=Sample3\.Class2 "
 
 let programFiles = environVar "ProgramFiles"
@@ -457,7 +457,7 @@ Target "UnitTestWithAltCoverRunner" (fun _ ->
           { info with
                 FileName = altcover
                 WorkingDirectory = weakDir
-                Arguments = ("--opencover /sn=" + keyfile + AltCoverFilterX + " \"-t=WeakName\"  /o=./__WeakNameTestWithAltCoverRunner -x=" + weakReport)})
+                Arguments = ("--opencover /sn=" + keyfile + AltCoverFilterX + " -t=WeakNameTest  /o=./__WeakNameTestWithAltCoverRunner -x=" + weakReport)})
                 "Instrumenting the weakname tests failed"
 
       printfn "Execute the weakname tests"

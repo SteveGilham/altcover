@@ -1085,7 +1085,7 @@ type AltCoverTests() = class
 #endif
 
     try
-        "Main" |> (Regex >> FilterClass.Method >> Visitor.NameFilters.Add)
+        Visitor.NameFilters.Clear()
         Visitor.Visit [ visitor ] (Visitor.ToSeq path')
         let resource = Assembly.GetExecutingAssembly().GetManifestResourceNames()
                          |> Seq.find (fun n -> n.EndsWith("HandRolledMonoCoverage.xml", StringComparison.Ordinal))
