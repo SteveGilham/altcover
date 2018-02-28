@@ -81,6 +81,8 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Sample1WithOpenCover.xml" />
     <EmbeddedResource Include="HandRolledMonoCoverage.xml" />
+    <EmbeddedResource Include="Sample1ClassExclusion.xml" />
+    <EmbeddedResource Include="Sample1MethodExclusion.xml" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Mono.Cecil">

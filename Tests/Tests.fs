@@ -1012,7 +1012,8 @@ type AltCoverTests() = class
     let rcount = result |> Seq.length
 
     let expected = expected'
-                   |> Seq.filter (fun (el:XElement) -> "skippedDueTo" |> X |> el.Attributes |> Seq.isEmpty)
+                   |> Seq.filter (fun (el:XElement) -> el.Name.LocalName <> "Module" ||
+                                                       "skippedDueTo" |> X |> el.Attributes |> Seq.isEmpty)
                    |> Seq.filter (fun (el:XElement) -> "BranchPoint" <> el.Name.LocalName)
                    |> Seq.toList
     let ecount = expected |> Seq.length
@@ -1064,6 +1065,48 @@ type AltCoverTests() = class
 
         use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
 
+        let baseline = XDocument.Load(stream)
+        let result = document.Elements()
+        let expected = baseline.Elements()
+        AltCoverTests.RecursiveValidateOpenCover result expected 0 true
+    finally
+      Visitor.NameFilters.Clear()
+
+  [<Test>]
+  member self.ShouldGenerateExpectedXmlReportWithClassExclusionOpenCoverStyle() =
+    let visitor, document = OpenCover.ReportGenerator()
+    // Hack for running while instrumented
+    let where = Assembly.GetExecutingAssembly().Location
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), sample1)
+
+    try
+        "Program" |> (Regex >> FilterClass.Type >> Visitor.NameFilters.Add)
+        Visitor.Visit [ visitor ] (Visitor.ToSeq path)
+        let resource = Assembly.GetExecutingAssembly().GetManifestResourceNames()
+                         |> Seq.find (fun n -> n.EndsWith("Sample1ClassExclusion.xml", StringComparison.Ordinal))
+
+        use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
+        let baseline = XDocument.Load(stream)
+        let result = document.Elements()
+        let expected = baseline.Elements()
+        AltCoverTests.RecursiveValidateOpenCover result expected 0 true
+    finally
+      Visitor.NameFilters.Clear()
+
+  [<Test>]
+  member self.ShouldGenerateExpectedXmlReportWithMethodExclusionOpenCoverStyle() =
+    let visitor, document = OpenCover.ReportGenerator()
+    // Hack for running while instrumented
+    let where = Assembly.GetExecutingAssembly().Location
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), sample1)
+
+    try
+        "Main" |> (Regex >> FilterClass.Method >> Visitor.NameFilters.Add)
+        Visitor.Visit [ visitor ] (Visitor.ToSeq path)
+        let resource = Assembly.GetExecutingAssembly().GetManifestResourceNames()
+                         |> Seq.find (fun n -> n.EndsWith("Sample1MethodExclusion.xml", StringComparison.Ordinal))
+
+        use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
         let baseline = XDocument.Load(stream)
         let result = document.Elements()
         let expected = baseline.Elements()

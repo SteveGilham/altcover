@@ -21,7 +21,6 @@ module OpenCover =
   [<ExcludeFromCodeCoverage>]
   type internal Exclusion =
   | Nothing
-  | Module
   | Type
   | Method
 
@@ -174,7 +173,6 @@ module OpenCover =
     let VisitModule (s : Context) (moduleDef:ModuleDefinition) included =
           let element = XElement(X "Module",
                           XAttribute(X "hash", KeyStore.HashFile moduleDef.FileName))
-          if not included then element.SetAttributeValue(X "skippedDueTo", "Filter")
           let head = s.Stack |> Seq.head
           head.Add(element)
           element.Add(Summary())
@@ -185,14 +183,13 @@ module OpenCover =
           let classes = XElement(X "Classes")
           element.Add(classes)
           {s with Stack = if included then classes :: s.Stack else s.Stack
-                  Excluded = if included then Nothing else Module
+                  Excluded = Nothing
                   ModuleSeq = 0
                   ModuleMethods = 0
                   ModuleClasses = 0
                   ClassCC = []}
 
     let VisitType (s : Context) (typeDef:TypeDefinition) included =
-       if s.Excluded = Nothing then
           let element = XElement(X "Class")
           if not included then element.SetAttributeValue(X "skippedDueTo", "Filter")
           let head = s.Stack |> Seq.head
@@ -204,8 +201,7 @@ module OpenCover =
           {s with Stack = if included then methods :: s.Stack else s.Stack
                   Excluded = if included then Nothing else Type
                   ClassSeq = 0
-                  MethodCC = []}
-       else s       
+                  MethodCC = []}   
 
     let boolString b = if b then "true" else "false"
 
@@ -326,7 +322,6 @@ module OpenCover =
       else { s with Excluded = if s.Excluded = Type then Nothing else s.Excluded }
 
     let VisitAfterModule (s : Context) =
-      if s.Excluded = Nothing then
         let head,tail = Augment.Split s.Stack
         let summary = head.Parent.Descendants(X "Summary") |> Seq.head
         let min,max = s.ClassCC
@@ -349,7 +344,6 @@ module OpenCover =
                 ModuleCC = (min, max) :: s.ModuleCC
                 TotalClasses = s.ModuleClasses + s.TotalClasses
                 TotalMethods = s.ModuleMethods + s.TotalMethods}
-      else { s with Excluded = Nothing  }
 
     let AfterAll (s : Context) =
       let head = s.Stack |> Seq.head
