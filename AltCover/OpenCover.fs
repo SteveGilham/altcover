@@ -201,7 +201,7 @@ module OpenCover =
           {s with Stack = if included then methods :: s.Stack else s.Stack
                   Excluded = if included then Nothing else Type
                   ClassSeq = 0
-                  MethodCC = []}   
+                  MethodCC = []}
 
     let boolString b = if b then "true" else "false"
 
@@ -218,7 +218,6 @@ module OpenCover =
                            XAttribute(X "isStatic", boolString methodDef.IsStatic),
                            XAttribute(X "isGetter", boolString methodDef.IsGetter),
                            XAttribute(X "isSetter", boolString methodDef.IsSetter)))
-         
 
     let VisitMethod  (s : Context) (methodDef:MethodDefinition) included =
        if s.Excluded = Nothing then
@@ -283,37 +282,37 @@ module OpenCover =
         if s.Index < 0 then
           fileref.Remove() // TODO method point
         else fileref.Add(XAttribute(X "uid", s.Index))
-        let summary = head.Parent.Descendants(X "Summary") |> Seq.head
         let cc = Option.getOrElse 1 s.MethodCC.Head
-        summary.SetAttributeValue(X "numSequencePoints", s.MethodSeq)
-        summary.SetAttributeValue(X "maxCyclomaticComplexity", cc)
-        summary.SetAttributeValue(X "minCyclomaticComplexity", cc)
-        summary.SetAttributeValue(X "numMethods", if s.MethodSeq > 0 then 1 else 0)
+        head.Parent.Elements(X "Summary")
+        |> Seq.iter(fun summary -> summary.SetAttributeValue(X "numSequencePoints", s.MethodSeq)
+                                   summary.SetAttributeValue(X "maxCyclomaticComplexity", cc)
+                                   summary.SetAttributeValue(X "minCyclomaticComplexity", cc)
+                                   summary.SetAttributeValue(X "numMethods", if s.MethodSeq > 0 then 1 else 0))
         head.Descendants(X "SequencePoint")
         |> Seq.iteri(fun i x -> x.SetAttributeValue(X "ordinal", i))
         {s with Stack = tail
                 ClassSeq = s.ClassSeq + s.MethodSeq
-                MethodCC = if s.MethodSeq > 0 then s.MethodCC 
+                MethodCC = if s.MethodSeq > 0 then s.MethodCC
                            else None :: s.MethodCC.Tail}
       else { s with Excluded = if s.Excluded = Method then Nothing else s.Excluded }
 
     let VisitAfterType (s : Context) =
       if s.Excluded = Nothing then
-        let head,tail = Augment.Split s.Stack
-        let summary = head.Parent.Descendants(X "Summary") |> Seq.head
+        let head, tail = Augment.Split s.Stack
         let (min, max), methods = s.MethodCC
                                   |> Seq.map (fun q -> (q |> Option.getOrElse 1, q |> Option.getOrElse 0), if q.IsSome then 1 else 0)
-                                  |> Seq.fold (fun state pair -> 
+                                  |> Seq.fold (fun state pair ->
                                      let cc = fst state
                                      let cc2 = fst pair
                                      (Math.Min (fst cc, fst cc2), Math.Max (snd cc, snd cc2)), snd state + snd pair)
                                      ((1,0), 0)
         let classes = if s.ClassSeq > 0 then 1 else 0
-        summary.SetAttributeValue(X "numSequencePoints", s.ClassSeq)
-        summary.SetAttributeValue(X "maxCyclomaticComplexity", max)
-        summary.SetAttributeValue(X "minCyclomaticComplexity", Math.Min(min, max))
-        summary.SetAttributeValue(X "numClasses", classes)
-        summary.SetAttributeValue(X "numMethods", methods)
+        head.Parent.Elements(X "Summary")
+        |> Seq.iter(fun summary -> summary.SetAttributeValue(X "numSequencePoints", s.ClassSeq)
+                                   summary.SetAttributeValue(X "maxCyclomaticComplexity", max)
+                                   summary.SetAttributeValue(X "minCyclomaticComplexity", Math.Min(min, max))
+                                   summary.SetAttributeValue(X "numClasses", classes)
+                                   summary.SetAttributeValue(X "numMethods", methods))
         {s with Stack = tail
                 ModuleSeq = s.ModuleSeq + s.ClassSeq
                 ClassCC = ((if min = 0 then 1 else min), max) :: s.ClassCC
@@ -323,16 +322,16 @@ module OpenCover =
 
     let VisitAfterModule (s : Context) =
         let head,tail = Augment.Split s.Stack
-        let summary = head.Parent.Descendants(X "Summary") |> Seq.head
         let min,max = s.ClassCC
                       |> Seq.fold (fun state pair -> Math.Min (fst state, fst pair), Math.Max (snd state, snd pair)) (1,0)
-        summary.SetAttributeValue(X "numSequencePoints", s.ModuleSeq)
-        summary.SetAttributeValue(X "maxCyclomaticComplexity", max )
-        summary.SetAttributeValue(X "minCyclomaticComplexity", min)
-        summary.SetAttributeValue(X "numClasses", s.ModuleClasses)
-        summary.SetAttributeValue(X "numMethods", s.ModuleMethods)
+        head.Parent.Elements(X "Summary")
+        |> Seq.iter(fun summary -> summary.SetAttributeValue(X "numSequencePoints", s.ModuleSeq)
+                                   summary.SetAttributeValue(X "maxCyclomaticComplexity", max )
+                                   summary.SetAttributeValue(X "minCyclomaticComplexity", min)
+                                   summary.SetAttributeValue(X "numClasses", s.ModuleClasses)
+                                   summary.SetAttributeValue(X "numMethods", s.ModuleMethods))
 
-        let files = head.Parent.Descendants(X "Files")
+        let files = head.Parent.Elements(X "Files")
         s.Files
         |> Map.toSeq
         |> Seq.sortBy snd
@@ -347,14 +346,14 @@ module OpenCover =
 
     let AfterAll (s : Context) =
       let head = s.Stack |> Seq.head
-      let summary = head.Parent.Descendants(X "Summary") |> Seq.head
       let min,max = s.ModuleCC
                     |> Seq.fold (fun state pair -> Math.Min (fst state, fst pair), Math.Max (snd state, snd pair)) (1,0)
-      summary.SetAttributeValue(X "numSequencePoints", s.TotalSeq)
-      summary.SetAttributeValue(X "maxCyclomaticComplexity", max )
-      summary.SetAttributeValue(X "minCyclomaticComplexity", min)
-      summary.SetAttributeValue(X "numClasses", s.TotalClasses)
-      summary.SetAttributeValue(X "numMethods", s.TotalMethods)
+      head.Parent.Elements(X "Summary")
+      |> Seq.iter(fun summary -> summary.SetAttributeValue(X "numSequencePoints", s.TotalSeq)
+                                 summary.SetAttributeValue(X "maxCyclomaticComplexity", max )
+                                 summary.SetAttributeValue(X "minCyclomaticComplexity", min)
+                                 summary.SetAttributeValue(X "numClasses", s.TotalClasses)
+                                 summary.SetAttributeValue(X "numMethods", s.TotalMethods))
       s
 
     let ReportVisitor (s : Context) (node:Node) =
