@@ -15,7 +15,9 @@ nuget:
   disable_publish_on_pr: true
 build_script:
 - ps: >-
-    & dotnet restore dotnet-fake.csproj
+    $ErrorActionPreference = 'SilentlyContinue'
+
+    & dotnet restore dotnet-fake.fsproj
 
     & dotnet fake run .\Build\setup.fsx
     
