@@ -1256,11 +1256,11 @@ CreateFinal "ResetConsoleColours" (fun _ ->
 
 "Compilation"
 ==> "FSharpTypes"
-// ==> "OperationalTest"
+==> "OperationalTest"
 
 "Compilation"
 ==> "FSharpTypesDotNet"
-==> "OperationalTest"
+// ==> "OperationalTest"
 
 "Compilation"
 ==> "FSharpTypesDotNetRunner"
