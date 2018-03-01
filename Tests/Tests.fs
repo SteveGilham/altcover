@@ -1481,6 +1481,7 @@ type AltCoverTests() = class
                                  (Path.GetFileNameWithoutExtension output) + ".*")
         |> Seq.iter (fun f -> try File.Delete f
                               with // occasionally the dll file is locked by another process
+                              | :? System.UnauthorizedAccessException
                               | :? IOException -> ())
     finally
       Visitor.keys.Clear()
@@ -1596,6 +1597,7 @@ type AltCoverTests() = class
                                  (Path.GetFileNameWithoutExtension output) + ".*")
         |> Seq.iter (fun f -> try File.Delete f
                               with // occasionally the dll file is locked by another process
+                              | :? System.UnauthorizedAccessException
                               | :? IOException -> ())
     finally
       Visitor.keys.Clear()
