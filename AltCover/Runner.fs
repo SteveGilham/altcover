@@ -144,11 +144,12 @@ module Runner =
       WriteResourceWithFormatItems "%d visits recorded" [|hits.Count|]
       result
 
-  let PostProcess format (document:XmlDocument) =
+  let internal PostProcess format (document:XmlDocument) =
     match format with
     | Base.ReportFormat.OpenCover -> 
            let updateMethod (vs, vm, pt) (``method``:XmlElement) =
-            let sp = ``method``.GetElementsByTagName("SequencePoint")                                                                
+            let sp = ``method``.GetElementsByTagName("SequencePoint") 
+            let count = sp.Count
             let visitPoints = sp
                             |> Seq.cast<XmlElement>
                             |> Seq.filter(fun s -> Int32.TryParse( s.GetAttribute("vc") ,
@@ -157,7 +158,7 @@ module Runner =
                                                    <> 0)
                             |> Seq.length
             if visitPoints > 0 then
-                let cover = (sprintf "%.2f" ((float (visitPoints * 100))/(float sp.Count))).TrimEnd([| '0' |]).TrimEnd([|'.'|])
+                let cover = (sprintf "%.2f" ((float (visitPoints * 100))/(float count))).TrimEnd([| '0' |]).TrimEnd([|'.'|])
                 ``method``.SetAttribute("visited", "true")
                 ``method``.SetAttribute("sequenceCoverage", cover)
                 ``method``.GetElementsByTagName("Summary")
@@ -165,8 +166,8 @@ module Runner =
                 |> Seq.iter(fun s -> s.SetAttribute("visitedSequencePoints", sprintf "%d" visitPoints)
                                      s.SetAttribute("visitedMethods", "1")
                                      s.SetAttribute("sequenceCoverage", cover))
-                (vs + visitPoints, vm + 1, pt + sp.Count)
-            else (vs, vm, pt + sp.Count)
+                (vs + visitPoints, vm + 1, pt + count)
+            else (vs, vm, pt + count)
 
            let updateClass (vs, vm, vc, pt) (``class``:XmlElement) =
              let (cvs, cvm, cpt) = ``class``.GetElementsByTagName("Method")
