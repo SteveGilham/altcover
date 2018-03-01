@@ -998,6 +998,25 @@ type AltCoverTests() = class
     let expected = baseline.Elements()
     AltCoverTests.RecursiveValidate result expected 0 true
 
+  // Gendarme.fs (except where I need to compare with the original, which are the weakname tests)
+
+  [<Test>]
+  member self.ShouldDetectTernary() =
+    let where = Assembly.GetExecutingAssembly().Location
+    let path0 = Path.Combine(where.Substring(0, where.IndexOf("_Binaries")) + "_Binaries/Sample3/Debug+AnyCPU/netstandard2.0", "Sample3.dll")
+    let path = if File.Exists path0 then path0 
+               else Path.Combine(where.Substring(0, where.IndexOf("_Binaries")) + "../_Binaries/Sample3/Debug+AnyCPU/netstandard2.0", "Sample3.dll")
+    let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    let target = def.MainModule.GetType("Sample3.Class2").GetMethods() 
+                 |> Seq.filter(fun m -> m.Name = "set_Property")
+                 |> Seq.head
+    let ternary = target.Body.Instructions
+                    |> Seq.cast<Cil.Instruction>
+                    |> Seq.filter (fun i -> i.OpCode.FlowControl = FlowControl.Branch)
+                    |> Seq.fold(fun state i -> state + (Gendarme.``detect ternary pattern`` i.Previous.OpCode.Code)) 0
+    Assert.That(ternary, Is.EqualTo 1)
+    Assert.That(Gendarme.CyclomaticComplexity target, Is.EqualTo 3)
+
   // OpenCover.fs
 
   [<Test>]

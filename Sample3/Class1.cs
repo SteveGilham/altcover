@@ -12,7 +12,7 @@ namespace Sample3
     public class Class2
     {
         private int _Property;
-        public int Property { get { return _Property; } set { _Property = value; } }
+        public int Property { get { return _Property; } set { _Property = value > 0 ? value : 0; } }
     }
 
     public class Class3
