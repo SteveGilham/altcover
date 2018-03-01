@@ -29,7 +29,7 @@ build_script:
 
     Write-Host "Exit code $save"
 
-    return $save
+    if ($save -ne 0) { exit $save }
 test:
   assemblies:
     only:
