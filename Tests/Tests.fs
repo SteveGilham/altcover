@@ -1003,7 +1003,7 @@ type AltCoverTests() = class
   [<Test>]
   member self.EmptyMethodHasComplexity1() =
     let m = MethodDefinition("dummy", MethodAttributes.Abstract, TypeDefinition("System", "Void", TypeAttributes.Public))
-    Assert.That (OpenCover.CyclomaticComplexity m, Is.EqualTo 1)
+    Assert.That (Gendarme.CyclomaticComplexity m, Is.EqualTo 1)
 
   static member private RecursiveValidateOpenCover result expected' depth zero =
     let X name =

@@ -30,7 +30,7 @@
     </WarningsAsErrors>
     <OtherFlags>
     </OtherFlags>
-    <DefineConstants>TRACE;DEBUG;CODE_ANALYSIS;WEAKNAMETESTS</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;CODE_ANALYSIS</DefineConstants>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
@@ -44,7 +44,7 @@
     </WarningsAsErrors>
     <OtherFlags>
     </OtherFlags>
-    <DefineConstants>TRACE;WEAKNAMETESTS</DefineConstants>
+    <DefineConstants>TRACE</DefineConstants>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
@@ -70,8 +70,8 @@
     <Compile Include="..\_Generated\AssemblyVersion.fs">
       <Link>AssemblyVersion.fs</Link>
     </Compile>
-    <Compile Include="..\AltCover\OpenCover.fs">
-      <Link>OpenCover.fs</Link>
+    <Compile Include="..\AltCover\Gendarme.fs">
+      <Link>Gendarme.fs</Link>
     </Compile>
     <Compile Include="Tests.fs" />
   </ItemGroup>

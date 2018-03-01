@@ -34,7 +34,7 @@ type AltCoverTests() = class
                     |> Seq.sortBy (fun m -> m.FullName)
                     |> Seq.map (fun m -> (m.FullName,
                                            Gendarme.Rules.Maintainability.AvoidComplexMethodsRule.GetCyclomaticComplexity m,
-                                           OpenCover.CyclomaticComplexity m))
+                                           Gendarme.CyclomaticComplexity m))
                     |> Seq.map (fun (n,e,r) -> if r <> e then Some (n,e,r) else None)
                     |> Seq.filter (fun x -> Option.isSome x)
                     |> Seq.map (fun x -> let n,e,r = Option.get x
