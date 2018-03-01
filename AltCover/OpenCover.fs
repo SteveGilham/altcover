@@ -97,7 +97,7 @@ module OpenCover =
           element.Add(XElement(X "Files"))
           let classes = XElement(X "Classes")
           element.Add(classes)
-          {s with Stack = if included then classes :: s.Stack else s.Stack
+          {s with Stack = classes :: s.Stack
                   Excluded = Nothing
                   ModuleSeq = 0
                   ModuleMethods = 0
@@ -233,7 +233,9 @@ module OpenCover =
                 ClassCC = ((if min = 0 then 1 else min), max) :: s.ClassCC
                 ModuleMethods = methods + s.ModuleMethods
                 ModuleClasses = classes + s.ModuleClasses}
-      else { s with Excluded = if s.Excluded = Type then Nothing else s.Excluded }
+      else { s with Excluded = if s.Excluded = Type 
+                               then Nothing
+                               else s.Excluded }
 
     let VisitAfterModule (s : Context) =
         let head,tail = Augment.Split s.Stack

@@ -35,7 +35,9 @@ module Gendarme =
 
   let ``detect ternary pattern`` code =
     let index = int code
-    if mask |> Seq.skip (index >>> 6) |> Seq.head &&& (1UL <<< (index &&& 63)) = 0UL then 0 else 1
+    if mask |> Seq.skip (index >>> 6) |> Seq.head &&& (1UL <<< (index &&& 63)) = 0UL
+    then 0
+    else 1
 
   let SwitchCyclomaticComplexity (instructions:Cil.Instruction seq) =
     let targets = System.Collections.Generic.HashSet<Cil.Instruction>()
@@ -49,9 +51,11 @@ module Gendarme =
                                               match previous.Operand with
                                               | :? (Cil.Instruction array) -> ()
                                               | :? Cil.Instruction as branch ->
-                                                 if targets.Contains branch then i |> targets.Add |> ignore
+                                                 if targets.Contains branch
+                                                 then i |> targets.Add |> ignore
                                               | _ -> ()
-                                          ``detect ternary pattern`` previous.OpCode.Code else 0
+                                          ``detect ternary pattern`` previous.OpCode.Code
+                                        else 0
                                 | FlowControl.Cond_Branch ->
                                     if i.OpCode = OpCodes.Switch then
                                       AccumulateSwitchTargets i targets
@@ -79,7 +83,8 @@ module Gendarme =
                                     | FlowControl.Branch ->
                                       let previous = i.Previous
                                       c + if previous |> isNull |> not then
-                                             ``detect ternary pattern`` previous.OpCode.Code else 0
+                                             ``detect ternary pattern`` previous.OpCode.Code
+                                          else 0
                                     | _ -> c ) 1
         | _ -> SwitchCyclomaticComplexity instructions
     else 1
