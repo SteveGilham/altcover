@@ -1016,6 +1016,7 @@ type AltCoverTests() = class
                     |> Seq.fold(fun state i -> state + (Gendarme.``detect ternary pattern`` i.Previous.OpCode.Code)) 0
     Assert.That(ternary, Is.EqualTo 1)
     Assert.That(Gendarme.CyclomaticComplexity target, Is.EqualTo 3)
+    Assert.That(Gendarme.SwitchCyclomaticComplexity target.Body.Instructions, Is.EqualTo 3)
 
   // OpenCover.fs
 
