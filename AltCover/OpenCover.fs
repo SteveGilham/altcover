@@ -190,6 +190,14 @@ module OpenCover =
                    MethodSeq = s.MethodSeq + 1}
        else s
 
+    let limitMethodCC count stack =
+        if count > 0 
+        then stack 
+        else None :: stack.Tail
+
+    let passOnClassExclusion excluded =
+        if excluded = Method then Nothing else excluded
+
     let VisitAfterMethod (s : Context) =
       if s.Excluded = Nothing then
         let head,tail = Augment.Split s.Stack
@@ -208,9 +216,8 @@ module OpenCover =
         |> Seq.iteri(fun i x -> x.SetAttributeValue(X "ordinal", i))
         {s with Stack = tail
                 ClassSeq = s.ClassSeq + s.MethodSeq
-                MethodCC = if s.MethodSeq > 0 then s.MethodCC
-                           else None :: s.MethodCC.Tail}
-      else { s with Excluded = if s.Excluded = Method then Nothing else s.Excluded }
+                MethodCC = limitMethodCC s.MethodSeq s.MethodCC}
+      else { s with Excluded = passOnClassExclusion s.Excluded }
 
     let VisitAfterType (s : Context) =
         let head, tail = Augment.Split s.Stack
