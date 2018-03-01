@@ -66,7 +66,8 @@ module Gendarme =
                                       c + if previous |> isNull |> not &&
                                              previous.Previous.OpCode.Code <> OpCodes.Switch.Code &&
                                              branch |> targets.Contains |> not
-                                          then 1 else 0
+                                          then 1
+                                          else 0
                                 | _ -> c ) 1
     fast + targets.Count
 

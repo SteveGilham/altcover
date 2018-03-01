@@ -193,10 +193,11 @@ module OpenCover =
     let VisitAfterMethod (s : Context) =
       if s.Excluded = Nothing then
         let head,tail = Augment.Split s.Stack
-        let fileref = head.Parent.Descendants(X "FileRef") |> Seq.head
-        if s.Index < 0 then
-          fileref.Remove() // TODO method point
-        else fileref.Add(XAttribute(X "uid", s.Index))
+        head.Parent.Elements(X "FileRef")
+        |> Seq.toList
+        |> Seq.iter (fun fileref ->  if s.Index < 0
+                                     then fileref.Remove() // TODO method point
+                                     else fileref.Add(XAttribute(X "uid", s.Index)))
         let cc = Option.getOrElse 1 s.MethodCC.Head
         head.Parent.Elements(X "Summary")
         |> Seq.iter(fun summary -> summary.SetAttributeValue(X "numSequencePoints", s.MethodSeq)
@@ -212,7 +213,6 @@ module OpenCover =
       else { s with Excluded = if s.Excluded = Method then Nothing else s.Excluded }
 
     let VisitAfterType (s : Context) =
-      if s.Excluded = Nothing then
         let head, tail = Augment.Split s.Stack
         let (min, max), methods = s.MethodCC
                                   |> Seq.map (fun q -> (q |> Option.getOrElse 1, q |> Option.getOrElse 0), if q.IsSome then 1 else 0)
@@ -228,14 +228,12 @@ module OpenCover =
                                    summary.SetAttributeValue(X "minCyclomaticComplexity", Math.Min(min, max))
                                    summary.SetAttributeValue(X "numClasses", classes)
                                    summary.SetAttributeValue(X "numMethods", methods))
-        {s with Stack = tail
+        {s with Stack = if s.Excluded = Nothing then tail else s.Stack
                 ModuleSeq = s.ModuleSeq + s.ClassSeq
                 ClassCC = ((if min = 0 then 1 else min), max) :: s.ClassCC
                 ModuleMethods = methods + s.ModuleMethods
-                ModuleClasses = classes + s.ModuleClasses}
-      else { s with Excluded = if s.Excluded = Type 
-                               then Nothing
-                               else s.Excluded }
+                ModuleClasses = classes + s.ModuleClasses
+                Excluded = Nothing }
 
     let VisitAfterModule (s : Context) =
         let head,tail = Augment.Split s.Stack
