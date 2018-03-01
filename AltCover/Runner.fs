@@ -143,11 +143,16 @@ module Runner =
       WriteResourceWithFormatItems "%d visits recorded" [|hits.Count|]
       result
 
+  let PostProcess format document =
+    match format with
+    | Base.ReportFormat.OpenCover -> document |> ignore
+    | _ -> ()
+
   let WriteReportBase (hits:ICollection<(string*int)>) report =
     let counts = Dictionary<string, Dictionary<int, int>>()
     hits |> Seq.iter(fun (moduleId, hitPointId) ->
                         AltCover.Base.Counter.AddVisit counts moduleId hitPointId)
-    AltCover.Base.Counter.DoFlush true counts report
+    AltCover.Base.Counter.DoFlush (PostProcess report) true counts report
 
   // mocking points
   let mutable internal GetPayload = PayloadBase

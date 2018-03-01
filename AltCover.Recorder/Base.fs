@@ -50,7 +50,7 @@ module Counter =
   /// </summary>
   /// <param name="hitCounts">The coverage results to incorporate</param>
   /// <param name="coverageFile">The coverage file to update as a stream</param>
-  let internal UpdateReport own (counts:Dictionary<string, Dictionary<int, int>>) format coverageFile =
+  let internal UpdateReport (postProcess:XmlDocument -> unit) own (counts:Dictionary<string, Dictionary<int, int>>) format coverageFile =
     let flushStart = DateTime.UtcNow
     let coverageDocument = ReadXDocument coverageFile
     let root = coverageDocument.DocumentElement
@@ -109,15 +109,17 @@ module Counter =
             let visits = moduleHits.[counter] + (max 0 vc)
             pt.SetAttribute(v, visits.ToString(CultureInfo.InvariantCulture))))
 
+    postProcess coverageDocument
+
     // Save modified xml to a file
     coverageFile.Seek(0L, SeekOrigin.Begin) |> ignore
     coverageFile.SetLength 0L
     if own then WriteXDocument coverageDocument coverageFile
     flushStart
 
-  let DoFlush own counts format report =
+  let DoFlush postProcess own counts format report =
     use coverageFile = new FileStream(report, FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.SequentialScan)
-    let flushStart = UpdateReport own counts format coverageFile
+    let flushStart = UpdateReport postProcess own counts format coverageFile
     TimeSpan(DateTime.UtcNow.Ticks - flushStart.Ticks)
 
   let AddVisit (counts:Dictionary<string, Dictionary<int, int>>) moduleId hitPointId =
