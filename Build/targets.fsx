@@ -145,7 +145,7 @@ Target "BuildMonoSamples" (fun _ ->
 
     [
         ("./_Mono/Sample1", "-debug -out:./_Mono/Sample1/Sample1.exe  ./Sample1/Program.cs")
-        ("./_Mono/Sample3", "-target:library -debug -out:./_Mono/Sample3/Sample3.dll  ./Sample3/Class1.cs")
+        ("./_Mono/Sample3", "-target:library -debug -out:./_Mono/Sample3/Sample3.dll  -lib:./packages/Mono.Cecil.0.10.0-beta7/lib/net40 -r:Mono.Cecil.dll ./Sample3/Class1.cs")
     ]
     |> Seq.iter (fun (dir, cmd) ->
        ensure dir

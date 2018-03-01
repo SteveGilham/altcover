@@ -851,7 +851,7 @@ type AltCoverTests() = class
                 |> Seq.map Naming.MethodName
                 |> Seq.toList
     let expected = ["get_Property"; "set_Property"; "#ctor"; "get_Property"; "set_Property";
-                      "#ctor"; "get_Visits"; "Log"; "#ctor"; ".cctor";
+                      "#ctor"; "get_Visits"; "Log"; "GetOperandType"; "#ctor"; ".cctor";
                       "get_Property"; "set_Property"; "get_ReportFile";
                       "set_ReportFile"; "get_Token"; "set_Token";
                       "get_CoverageFormat"; "set_CoverageFormat"; "ToList"; "#ctor" ]
@@ -871,6 +871,7 @@ type AltCoverTests() = class
                     "System.Void Sample3.Class2.set_Property(System.Int32)"; "System.Void Sample3.Class2.#ctor()";
                     "System.Collections.Generic.List`1 Sample3.Class3.get_Visits()"
                     "System.Void Sample3.Class3.Log(System.String,System.Int32)"
+                    "System.Int32 Sample3.Class3.GetOperandType(Mono.Cecil.Cil.Instruction)"
                     "System.Void Sample3.Class3.#ctor()"; "System.Void Sample3.Class3..cctor()"
                     "Sample3.Class1 Sample3.Class3+Class4.get_Property()";
                     "System.Void Sample3.Class3+Class4.set_Property(Sample3.Class1)"
@@ -1004,19 +1005,32 @@ type AltCoverTests() = class
   member self.ShouldDetectTernary() =
     let where = Assembly.GetExecutingAssembly().Location
     let path0 = Path.Combine(where.Substring(0, where.IndexOf("_Binaries")) + "_Binaries/Sample3/Debug+AnyCPU/netstandard2.0", "Sample3.dll")
-    let path = if File.Exists path0 then path0 
+    let path = if File.Exists path0 then path0
                else Path.Combine(where.Substring(0, where.IndexOf("_Binaries")) + "../_Binaries/Sample3/Debug+AnyCPU/netstandard2.0", "Sample3.dll")
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-    let target = def.MainModule.GetType("Sample3.Class2").GetMethods() 
+    let target = def.MainModule.GetType("Sample3.Class2").GetMethods()
                  |> Seq.filter(fun m -> m.Name = "set_Property")
                  |> Seq.head
     let ternary = target.Body.Instructions
                     |> Seq.cast<Cil.Instruction>
                     |> Seq.filter (fun i -> i.OpCode.FlowControl = FlowControl.Branch)
-                    |> Seq.fold(fun state i -> state + (Gendarme.``detect ternary pattern`` i.Previous.OpCode.Code)) 0
+                    |> Seq.fold(fun state i -> state + (Gendarme.``detect ternary pattern`` <| Some i.Previous.OpCode.Code)) 0
     Assert.That(ternary, Is.EqualTo 1)
+    Assert.That(Gendarme.``detect ternary pattern`` None, Is.EqualTo 0)
     Assert.That(Gendarme.CyclomaticComplexity target, Is.EqualTo 3)
     Assert.That(Gendarme.SwitchCyclomaticComplexity target.Body.Instructions, Is.EqualTo 3)
+
+  [<Test>]
+  member self.ShouldDetectSwitchNesting() =
+    let where = Assembly.GetExecutingAssembly().Location
+    let path0 = Path.Combine(where.Substring(0, where.IndexOf("_Binaries")) + "_Binaries/Sample3/Debug+AnyCPU/netstandard2.0", "Sample3.dll")
+    let path = if File.Exists path0 then path0
+               else Path.Combine(where.Substring(0, where.IndexOf("_Binaries")) + "../_Binaries/Sample3/Debug+AnyCPU/netstandard2.0", "Sample3.dll")
+    let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    let target = def.MainModule.GetType("Sample3.Class3").GetMethods()
+                 |> Seq.filter(fun m -> m.Name = "GetOperandType")
+                 |> Seq.head
+    Assert.That(Gendarme.SwitchCyclomaticComplexity target.Body.Instructions, Is.EqualTo 24)
 
   // OpenCover.fs
 

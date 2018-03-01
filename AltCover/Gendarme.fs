@@ -1,12 +1,9 @@
 ﻿namespace AltCover
 
-open System
-open System.Diagnostics.CodeAnalysis
-open System.IO
-open System.Xml.Linq
-
 open Mono.Cecil
 open Mono.Cecil.Cil
+
+open AltCover.Augment
 
 module Gendarme =
 
@@ -33,8 +30,8 @@ module Gendarme =
       | Some unc when unc = operand -> ()
       | _ -> operand |> targets.Add |> ignore
 
-  let ``detect ternary pattern`` code =
-    let index = int code
+  let ``detect ternary pattern`` (code:Code option) =
+    let index = int (Option.getOrElse Code.Nop code)
     if mask |> Seq.skip (index >>> 6) |> Seq.head &&& (1UL <<< (index &&& 63)) = 0UL
     then 0
     else 1
@@ -45,29 +42,27 @@ module Gendarme =
                |> Seq.fold (fun c i ->
                                 match i.OpCode.FlowControl with
                                 | FlowControl.Branch ->
-                                    let previous = i.Previous
-                                    c + if previous |> isNull |> not then
-                                          do if previous.OpCode.FlowControl = FlowControl.Cond_Branch then
-                                              match previous.Operand with
-                                              | :? (Cil.Instruction array) -> ()
-                                              | :? Cil.Instruction as branch ->
-                                                 if targets.Contains branch
-                                                 then i |> targets.Add |> ignore
-                                              | _ -> ()
-                                          ``detect ternary pattern`` previous.OpCode.Code
-                                        else 0
+                                    c + (Option.nullable i.Previous
+                                         |> Option.map (fun (previous:Instruction) ->
+                                                           do if previous.OpCode.FlowControl = FlowControl.Cond_Branch then
+                                                               match previous.Operand with
+                                                               | :? Cil.Instruction as branch ->
+                                                                  if targets.Contains branch
+                                                                  then i |> targets.Add |> ignore
+                                                               | _ -> ()
+                                                           previous.OpCode.Code)
+                                         |> ``detect ternary pattern``)
                                 | FlowControl.Cond_Branch ->
                                     if i.OpCode = OpCodes.Switch then
                                       AccumulateSwitchTargets i targets
                                       c
                                     else
                                       let branch = i.Operand :?> Cil.Instruction
-                                      let previous = branch.Previous
-                                      c + if previous |> isNull |> not &&
-                                             previous.Previous.OpCode.Code <> OpCodes.Switch.Code &&
-                                             branch |> targets.Contains |> not
-                                          then 1
-                                          else 0
+                                      c + (Option.nullable branch.Previous
+                                           |> Option.filter (fun (previous:Instruction) -> previous.Previous.OpCode.Code <> OpCodes.Switch.Code &&
+                                                                                           branch |> targets.Contains |> not)
+                                           |> Option.map (fun _ -> 1)
+                                           |> Option.getOrElse 0)
                                 | _ -> c ) 1
     fast + targets.Count
 
@@ -78,14 +73,13 @@ module Gendarme =
         match instructions |> Seq.tryFind (fun i -> i.OpCode = OpCodes.Switch) with
         | None ->
            instructions
-            |> Seq.fold (fun c i -> match i.OpCode.FlowControl with
-                                    | FlowControl.Cond_Branch ->
-                                      c + 1
-                                    | FlowControl.Branch ->
-                                      let previous = i.Previous
-                                      c + if previous |> isNull |> not then
-                                             ``detect ternary pattern`` previous.OpCode.Code
-                                          else 0
-                                    | _ -> c ) 1
+           |> Seq.fold (fun c i -> match i.OpCode.FlowControl with
+                                   | FlowControl.Cond_Branch ->
+                                     c + 1
+                                   | FlowControl.Branch ->
+                                     c + (Option.nullable i.Previous
+                                          |> Option.map (fun (previous:Instruction) -> previous.OpCode.Code)
+                                          |> ``detect ternary pattern``)
+                                   | _ -> c ) 1
         | _ -> SwitchCyclomaticComplexity instructions
     else 1

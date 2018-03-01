@@ -23,4 +23,8 @@
     <Folder Include="Properties\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Mono.Cecil" Version="0.10.0-beta7" />
+  </ItemGroup>
+
 </Project>
