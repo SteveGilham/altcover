@@ -191,8 +191,8 @@ module OpenCover =
        else s
 
     let limitMethodCC count stack =
-        if count > 0 
-        then stack 
+        if count > 0
+        then stack
         else None :: stack.Tail
 
     let passOnClassExclusion excluded =
