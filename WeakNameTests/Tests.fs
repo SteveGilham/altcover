@@ -96,7 +96,6 @@ type AltCoverTests() = class
 
     Assert.That(failures, Is.Empty, String.Join(Environment.NewLine, failures))
 
-
   [<Test>]
   member self.GratuitousCoverage() =
     let l = Left 23
