@@ -894,7 +894,62 @@ or
     Assert.That(hits, Is.EquivalentTo [("a",0); ("b",1)])
 
   [<Test>]
-  member self.Placeholder() =
-    Assert.That (Runner.PostProcess Base.ReportFormat.OpenCover (), Is.EqualTo(()))
+  member self.PostprocessShouldRestoreKnownOpenCoverState() =
+    Counter.measureTime <- DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
+    use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(self.resource2)
+    let after = XmlDocument()
+    after.Load stream
+    let before = after.OuterXml
+
+    after.DocumentElement.SelectNodes("//Summary")
+    |> Seq.cast<XmlElement>
+    |> Seq.iter(fun el -> el.SetAttribute("visitedSequencePoints", "0")
+                          el.SetAttribute("sequenceCoverage", "0")
+                          el.SetAttribute("visitedClasses", "0")
+                          el.SetAttribute("visitedMethods", "0")
+                           )
+
+    after.DocumentElement.SelectNodes("//Method")
+    |> Seq.cast<XmlElement>
+    |> Seq.iter(fun el -> el.SetAttribute("visited", "false")
+                          el.SetAttribute("sequenceCoverage", "0")
+                           )
+
+    Runner.PostProcess Base.ReportFormat.OpenCover after
+
+    Assert.That(after.OuterXml, Is.EqualTo before, after.OuterXml)
+
+  [<Test>]
+  member self.PostprocessShouldRestoreDegenerateOpenCoverState() =
+    Counter.measureTime <- DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
+    use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(self.resource2)
+    let after = XmlDocument()
+    after.Load stream
+
+    after.DocumentElement.SelectNodes("//Summary")
+    |> Seq.cast<XmlElement>
+    |> Seq.iter(fun el -> el.SetAttribute("visitedSequencePoints", "0")
+                          el.SetAttribute("sequenceCoverage", "0")
+                          el.SetAttribute("visitedClasses", "0")
+                          el.SetAttribute("visitedMethods", "0")
+                           )
+
+    after.DocumentElement.SelectNodes("//Method")
+    |> Seq.cast<XmlElement>
+    |> Seq.iter(fun el -> el.SetAttribute("visited", "false")
+                          el.SetAttribute("sequenceCoverage", "0")
+                           )
+
+    after.DocumentElement.SelectNodes("//SequencePoint")
+    |> Seq.cast<XmlElement>
+    |> Seq.toList
+    |> List.iter(fun el -> el |> el.ParentNode.RemoveChild |> ignore)
+
+    let before = after.OuterXml
+
+    Runner.PostProcess Base.ReportFormat.OpenCover after
+
+    Assert.That(after.OuterXml, Is.EqualTo before, after.OuterXml)
+
 
 end
