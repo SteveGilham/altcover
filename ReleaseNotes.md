@@ -1,6 +1,6 @@
 **NOTE:** The main executable links the still in beta (after more than a year) Mono.Cecil 0.10 version.  The binary injected into the instrumented code does not.  Rather than hold my releases on the Mono.Cecil schedule, I make this disclaimer instead.
 
-# 2.0.xxx (Byakko series release 2)
+# 2.0.300 (Byakko series release 2)
 * [BUGFIX] OpenCover format output now works with filtering
 * Option `--opencover` now generates cyclomatic complexity values while generating the report file
 * Option `--opencover` now generates roll-up statistics in "runner" mode
