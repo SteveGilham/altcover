@@ -14,6 +14,6 @@ cache:
   - $HOME/.nuget
 
 script:
-  - dotnet restore ./dotnet-fake.csproj
+  - dotnet restore ./dotnet-fake.fsproj
   - dotnet fake run ./Build/setup.fsx
   - dotnet fake run ./Build/build.fsx

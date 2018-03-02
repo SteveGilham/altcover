@@ -169,12 +169,15 @@ type AltCoverTests() = class
       Instance.Visits.Clear())
     self.GetMyMethodName "<="
 
-  member private self.UpdateReport a b =
-    Counter.UpdateReport true a ReportFormat.NCover b
-    |> ignore
-
    member self.resource = Assembly.GetExecutingAssembly().GetManifestResourceNames()
                          |> Seq.find (fun n -> n.EndsWith("SimpleCoverage.xml", StringComparison.Ordinal))
+
+#if NET4
+#else
+  member private self.UpdateReport a b =
+    Counter.UpdateReport ignore true a ReportFormat.NCover b
+    |> ignore
+
    member self.resource2 = Assembly.GetExecutingAssembly().GetManifestResourceNames()
                           |> Seq.find (fun n -> n.EndsWith("Sample1WithModifiedOpenCover.xml", StringComparison.Ordinal))
 
@@ -400,10 +403,10 @@ type AltCoverTests() = class
     worker.Position <- 0L
     let payload = Dictionary<int,int>()
     [0..9 ]
-    |> Seq.iter(fun i -> payload.[i] <- (i+1))
+    |> Seq.iter(fun i -> payload.[10 - i] <- (i+1))
     let item = Dictionary<string, Dictionary<int, int>>()
     item.Add("7C-CD-66-29-A3-6C-6D-5F-A7-65-71-0E-22-7D-B2-61-B5-1F-65-9A", payload)
-    Counter.UpdateReport true item ReportFormat.OpenCover worker |> ignore
+    Counter.UpdateReport ignore true item ReportFormat.OpenCover worker |> ignore
     worker.Position <- 0L
     let after = XmlDocument()
     after.Load worker
@@ -412,6 +415,7 @@ type AltCoverTests() = class
                  |> Seq.map (fun x -> x.GetAttribute("vc")),
                  Is.EquivalentTo [ "11"; "10"; "9"; "8"; "7"; "6"; "4"; "3"; "2"; "1"]))
     self.GetMyMethodName "<="
+#endif
 
   [<Test>]
   member self.EmptyFlushLeavesNoTrace() =

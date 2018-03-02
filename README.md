@@ -22,11 +22,11 @@ See the [Wiki page]( https://github.com/SteveGilham/altcover/wiki/Usage) for det
 
 ## Building
 
-You will need Visual Studio VS2017 (Community Edition) v15.5 or later with F# language support.  The NUnit3 Test Runner will simplify the basic in-IDE development cycle.  Note that some of the unit tests expect that the separate build of an assembly under Mono has taken place; there will around a dozen file-not-found failures when running the unit tests in Visual Studio from clean.
+You will need Visual Studio VS2017 (Community Edition) v15.5 or later with F# language support.  The NUnit3 Test Runner will simplify the basic in-IDE development cycle.  Note that some of the unit tests expect that the separate build of test assemblies under Mono, full .net framework and .net core has taken place; there will be up to 16 failures when running the unit tests in Visual Studio from clean when those expected assemblies are not found.
 
 ### Bootstrapping
 
-Start by setting up `dotnet fake` with `dotnet restore dotnet-fake.csproj`
+Start by setting up `dotnet fake` with `dotnet restore dotnet-fake.fsproj`
 Then `dotnet fake run ./Build/setup.fsx` to do the rest of the set-up.
 
 #### *nix

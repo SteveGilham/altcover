@@ -16,7 +16,9 @@
 		<rules include="*" 
                exclude="AvoidMethodWithUnusedGenericTypeRule"
                from="Gendarme.Rules.Design.Linq.dll"/>
-		<rules include="*" from="Gendarme.Rules.Exceptions.dll" />
+		<rules include="*" 
+           exclude="InstantiateArgumentExceptionCorrectlyRule"
+           from="Gendarme.Rules.Exceptions.dll" />
 		<rules include="*" from="Gendarme.Rules.Interoperability.dll"/>
 		<rules include="*" from="Gendarme.Rules.Interoperability.Com.dll"/>
 		<rules include="*" 

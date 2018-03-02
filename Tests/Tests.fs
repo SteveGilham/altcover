@@ -851,7 +851,7 @@ type AltCoverTests() = class
                 |> Seq.map Naming.MethodName
                 |> Seq.toList
     let expected = ["get_Property"; "set_Property"; "#ctor"; "get_Property"; "set_Property";
-                      "#ctor"; "get_Visits"; "Log"; "#ctor"; ".cctor";
+                      "#ctor"; "get_Visits"; "Log"; "GetOperandType"; "#ctor"; ".cctor";
                       "get_Property"; "set_Property"; "get_ReportFile";
                       "set_ReportFile"; "get_Token"; "set_Token";
                       "get_CoverageFormat"; "set_CoverageFormat"; "ToList"; "#ctor" ]
@@ -871,6 +871,7 @@ type AltCoverTests() = class
                     "System.Void Sample3.Class2.set_Property(System.Int32)"; "System.Void Sample3.Class2.#ctor()";
                     "System.Collections.Generic.List`1 Sample3.Class3.get_Visits()"
                     "System.Void Sample3.Class3.Log(System.String,System.Int32)"
+                    "System.Int32 Sample3.Class3.GetOperandType(Mono.Cecil.Cil.Instruction)"
                     "System.Void Sample3.Class3.#ctor()"; "System.Void Sample3.Class3..cctor()"
                     "Sample3.Class1 Sample3.Class3+Class4.get_Property()";
                     "System.Void Sample3.Class3+Class4.set_Property(Sample3.Class1)"
@@ -998,7 +999,45 @@ type AltCoverTests() = class
     let expected = baseline.Elements()
     AltCoverTests.RecursiveValidate result expected 0 true
 
+  // Gendarme.fs (except where I need to compare with the original, which are the weakname tests)
+
+  [<Test>]
+  member self.ShouldDetectTernary() =
+    let where = Assembly.GetExecutingAssembly().Location
+    let path0 = Path.Combine(where.Substring(0, where.IndexOf("_Binaries")) + "_Binaries/Sample3/Debug+AnyCPU/netstandard2.0", "Sample3.dll")
+    let path = if File.Exists path0 then path0
+               else Path.Combine(where.Substring(0, where.IndexOf("_Binaries")) + "../_Binaries/Sample3/Debug+AnyCPU/netstandard2.0", "Sample3.dll")
+    let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    let target = def.MainModule.GetType("Sample3.Class2").GetMethods()
+                 |> Seq.filter(fun m -> m.Name = "set_Property")
+                 |> Seq.head
+    let ternary = target.Body.Instructions
+                    |> Seq.cast<Cil.Instruction>
+                    |> Seq.filter (fun i -> i.OpCode.FlowControl = FlowControl.Branch)
+                    |> Seq.fold(fun state i -> state + (Gendarme.``detect ternary pattern`` <| Some i.Previous.OpCode.Code)) 0
+    Assert.That(ternary, Is.EqualTo 1)
+    Assert.That(Gendarme.``detect ternary pattern`` None, Is.EqualTo 0)
+    Assert.That(Gendarme.CyclomaticComplexity target, Is.EqualTo 3)
+    Assert.That(Gendarme.SwitchCyclomaticComplexity target.Body.Instructions, Is.EqualTo 3)
+
+  [<Test>]
+  member self.ShouldDetectSwitchNesting() =
+    let where = Assembly.GetExecutingAssembly().Location
+    let path0 = Path.Combine(where.Substring(0, where.IndexOf("_Binaries")) + "_Binaries/Sample3/Debug+AnyCPU/netstandard2.0", "Sample3.dll")
+    let path = if File.Exists path0 then path0
+               else Path.Combine(where.Substring(0, where.IndexOf("_Binaries")) + "../_Binaries/Sample3/Debug+AnyCPU/netstandard2.0", "Sample3.dll")
+    let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    let target = def.MainModule.GetType("Sample3.Class3").GetMethods()
+                 |> Seq.filter(fun m -> m.Name = "GetOperandType")
+                 |> Seq.head
+    Assert.That(Gendarme.SwitchCyclomaticComplexity target.Body.Instructions, Is.EqualTo 24)
+
   // OpenCover.fs
+
+  [<Test>]
+  member self.EmptyMethodHasComplexity1() =
+    let m = MethodDefinition("dummy", MethodAttributes.Abstract, TypeDefinition("System", "Void", TypeAttributes.Public))
+    Assert.That (Gendarme.CyclomaticComplexity m, Is.EqualTo 1)
 
   static member private RecursiveValidateOpenCover result expected' depth zero =
     let X name =
@@ -1007,7 +1046,8 @@ type AltCoverTests() = class
     let rcount = result |> Seq.length
 
     let expected = expected'
-                   |> Seq.filter (fun (el:XElement) -> "skippedDueTo" |> X |> el.Attributes |> Seq.isEmpty)
+                   |> Seq.filter (fun (el:XElement) -> el.Name.LocalName <> "Module" ||
+                                                       "skippedDueTo" |> X |> el.Attributes |> Seq.isEmpty)
                    |> Seq.filter (fun (el:XElement) -> "BranchPoint" <> el.Name.LocalName)
                    |> Seq.toList
     let ecount = expected |> Seq.length
@@ -1019,22 +1059,22 @@ type AltCoverTests() = class
             Assert.That(r.Name, Is.EqualTo(e.Name), "Expected name " + e.Name.ToString())
             let ra = r.Attributes()
             let ea = e.Attributes()
-                     |> Seq.filter (fun xa -> match xa.Name.LocalName with
-                                              | "ordinal"
-                                              | "offset"
-                                              | "bec"
-                                              | "bev"
-                                              | "uspid" -> false
-                                              | _ -> true)
 
             Seq.zip ra ea |> Seq.iter (fun ((a1:XAttribute), (a2:XAttribute)) ->
                     Assert.That(a1.Name, Is.EqualTo(a2.Name))
                     match a1.Name.ToString() with
+                    | "bec"
+                    | "bev"
                     | "visited"
-                    | "cyclomaticComplexity"
+                    | "visitedSequencePoints"
+                    | "visitedBranchPoints"
+                    | "visitedClasses"
+                    | "visitedMethods"
+                    | "numBranchPoints"
                     | "nPathComplexity"
                     | "sequenceCoverage"
                     | "branchCoverage"
+                    | "uspid"
                     | "hash" -> ()
                     | "fullPath" -> Assert.That(a1.Value.Replace("\\","/"), Does.EndWith(a2.Value.Replace("\\","/")),
                                                 a1.Name.ToString() + " : " + r.ToString() + " -> document")
@@ -1053,13 +1093,54 @@ type AltCoverTests() = class
     let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), sample1)
 
     try
-        "Main" |> (Regex >> FilterClass.Method >> Visitor.NameFilters.Add)
         Visitor.Visit [ visitor ] (Visitor.ToSeq path)
         let resource = Assembly.GetExecutingAssembly().GetManifestResourceNames()
                          |> Seq.find (fun n -> n.EndsWith("Sample1WithOpenCover.xml", StringComparison.Ordinal))
 
         use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
 
+        let baseline = XDocument.Load(stream)
+        let result = document.Elements()
+        let expected = baseline.Elements()
+        AltCoverTests.RecursiveValidateOpenCover result expected 0 true
+    finally
+      Visitor.NameFilters.Clear()
+
+  [<Test>]
+  member self.ShouldGenerateExpectedXmlReportWithClassExclusionOpenCoverStyle() =
+    let visitor, document = OpenCover.ReportGenerator()
+    // Hack for running while instrumented
+    let where = Assembly.GetExecutingAssembly().Location
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), sample1)
+
+    try
+        "Program" |> (Regex >> FilterClass.Type >> Visitor.NameFilters.Add)
+        Visitor.Visit [ visitor ] (Visitor.ToSeq path)
+        let resource = Assembly.GetExecutingAssembly().GetManifestResourceNames()
+                         |> Seq.find (fun n -> n.EndsWith("Sample1ClassExclusion.xml", StringComparison.Ordinal))
+
+        use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
+        let baseline = XDocument.Load(stream)
+        let result = document.Elements()
+        let expected = baseline.Elements()
+        AltCoverTests.RecursiveValidateOpenCover result expected 0 true
+    finally
+      Visitor.NameFilters.Clear()
+
+  [<Test>]
+  member self.ShouldGenerateExpectedXmlReportWithMethodExclusionOpenCoverStyle() =
+    let visitor, document = OpenCover.ReportGenerator()
+    // Hack for running while instrumented
+    let where = Assembly.GetExecutingAssembly().Location
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), sample1)
+
+    try
+        "Main" |> (Regex >> FilterClass.Method >> Visitor.NameFilters.Add)
+        Visitor.Visit [ visitor ] (Visitor.ToSeq path)
+        let resource = Assembly.GetExecutingAssembly().GetManifestResourceNames()
+                         |> Seq.find (fun n -> n.EndsWith("Sample1MethodExclusion.xml", StringComparison.Ordinal))
+
+        use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
         let baseline = XDocument.Load(stream)
         let result = document.Elements()
         let expected = baseline.Elements()
@@ -1081,7 +1162,7 @@ type AltCoverTests() = class
 #endif
 
     try
-        "Main" |> (Regex >> FilterClass.Method >> Visitor.NameFilters.Add)
+        Visitor.NameFilters.Clear()
         Visitor.Visit [ visitor ] (Visitor.ToSeq path')
         let resource = Assembly.GetExecutingAssembly().GetManifestResourceNames()
                          |> Seq.find (fun n -> n.EndsWith("HandRolledMonoCoverage.xml", StringComparison.Ordinal))
@@ -1110,7 +1191,6 @@ type AltCoverTests() = class
 #else
     let path' = path
 #endif
-
 
     Visitor.Visit [ visitor ] (Visitor.ToSeq path')
     Assert.That (document.Descendants(X "Module") |> Seq.length, Is.EqualTo 1)
@@ -1401,6 +1481,7 @@ type AltCoverTests() = class
                                  (Path.GetFileNameWithoutExtension output) + ".*")
         |> Seq.iter (fun f -> try File.Delete f
                               with // occasionally the dll file is locked by another process
+                              | :? System.UnauthorizedAccessException
                               | :? IOException -> ())
     finally
       Visitor.keys.Clear()
@@ -1516,6 +1597,7 @@ type AltCoverTests() = class
                                  (Path.GetFileNameWithoutExtension output) + ".*")
         |> Seq.iter (fun f -> try File.Delete f
                               with // occasionally the dll file is locked by another process
+                              | :? System.UnauthorizedAccessException
                               | :? IOException -> ())
     finally
       Visitor.keys.Clear()
@@ -3096,8 +3178,13 @@ type AltCoverTests() = class
       let u1 = Guid.NewGuid().ToString()
       let u2 = Guid.NewGuid().ToString()
 
-      CommandLine.ProcessTrailingArguments [program; u1; u2]
-                                     (DirectoryInfo(where)) |> ignore
+      let baseArgs= [program; u1; u2]
+      let nonWindows = System.Environment.GetEnvironmentVariable("OS") <> "Windows_NT"
+      let args = if nonWindows then "mono" :: baseArgs else baseArgs
+
+      let r = CommandLine.ProcessTrailingArguments args
+                                     (DirectoryInfo(where))
+      Assert.That(r, Is.EqualTo 0)
 
       Assert.That(stderr.ToString(), Is.Empty)
       let result = stdout.ToString()

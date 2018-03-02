@@ -4,6 +4,7 @@ open System
 open System.Collections.Generic
 open System.IO
 open System.IO.Compression
+open System.Xml
 
 open Mono.Cecil
 open Mono.Options
@@ -143,11 +144,79 @@ module Runner =
       WriteResourceWithFormatItems "%d visits recorded" [|hits.Count|]
       result
 
+  let internal PostProcess format (document:XmlDocument) =
+    match format with
+    | Base.ReportFormat.OpenCover -> 
+           let updateMethod (vs, vm, pt) (``method``:XmlElement) =
+            let sp = ``method``.GetElementsByTagName("SequencePoint") 
+            let count = sp.Count
+            let visitPoints = sp
+                            |> Seq.cast<XmlElement>
+                            |> Seq.filter(fun s -> Int32.TryParse( s.GetAttribute("vc") ,
+                                                             System.Globalization.NumberStyles.Integer,
+                                                             System.Globalization.CultureInfo.InvariantCulture) |> snd
+                                                   <> 0)
+                            |> Seq.length
+            if visitPoints > 0 then
+                let cover = (sprintf "%.2f" ((float (visitPoints * 100))/(float count))).TrimEnd([| '0' |]).TrimEnd([|'.'|])
+                ``method``.SetAttribute("visited", "true")
+                ``method``.SetAttribute("sequenceCoverage", cover)
+                ``method``.GetElementsByTagName("Summary")
+                |> Seq.cast<XmlElement>
+                |> Seq.iter(fun s -> s.SetAttribute("visitedSequencePoints", sprintf "%d" visitPoints)
+                                     s.SetAttribute("visitedMethods", "1")
+                                     s.SetAttribute("sequenceCoverage", cover))
+                (vs + visitPoints, vm + 1, pt + count)
+            else (vs, vm, pt + count)
+
+           let updateClass (vs, vm, vc, pt) (``class``:XmlElement) =
+             let (cvs, cvm, cpt) = ``class``.GetElementsByTagName("Method")
+                                     |> Seq.cast<XmlElement>
+                                     |> Seq.fold updateMethod (0,0,0)
+             let csum = ``class``.GetElementsByTagName("Summary") 
+                         |> Seq.cast<XmlElement> |> Seq.head
+             let cover = if cpt = 0 then "0"
+                         else (sprintf "%.2f" ((float (cvs * 100))/(float cpt))).TrimEnd([| '0' |]).TrimEnd([|'.'|])
+             let cvc = if cvm > 0 then 1 else 0
+             csum.SetAttribute("visitedSequencePoints", sprintf "%d" cvs)
+             csum.SetAttribute("visitedMethods", sprintf "%d" cvm)
+             csum.SetAttribute("visitedClasses", sprintf "%d" cvc)
+             csum.SetAttribute("sequenceCoverage", cover)
+             (vs + cvs, vm + cvm, vc + cvc, pt + cpt)
+
+           let updateModule (vs, vm, vc, pt) (``module``:XmlElement) =
+             let (cvs, cvm, cvc, cpt) = ``module``.GetElementsByTagName("Class")
+                                         |> Seq.cast<XmlElement>
+                                         |> Seq.fold updateClass (0,0,0,0)
+             let cover = if cpt = 0 then "0"
+                         else (sprintf "%.2f" ((float (cvs * 100))/(float cpt))).TrimEnd([| '0' |]).TrimEnd([|'.'|])
+             ``module``.GetElementsByTagName("Summary") 
+             |> Seq.cast<XmlElement> |> Seq.tryFind (fun _ -> true)
+             |> Option.iter (fun msum ->
+                 msum.SetAttribute("visitedSequencePoints", sprintf "%d" cvs)
+                 msum.SetAttribute("visitedMethods", sprintf "%d" cvm)
+                 msum.SetAttribute("visitedClasses", sprintf "%d" cvc)
+                 msum.SetAttribute("sequenceCoverage", cover))
+             (vs + cvs, vm + cvm, vc + cvc, pt + cpt)
+                                                                                                                                                                        
+           let (vs, vm, vc, pt) = document.DocumentElement.SelectNodes("//Module")
+                                   |> Seq.cast<XmlElement>
+                                   |> Seq.fold updateModule (0, 0, 0, 0)
+           let cover = if pt = 0 then "0"
+                       else (sprintf "%.2f" ((float (vs * 100))/(float pt))).TrimEnd([| '0' |]).TrimEnd([|'.'|])
+           let msum = document.DocumentElement.GetElementsByTagName("Summary") 
+                         |> Seq.cast<XmlElement> |> Seq.head
+           msum.SetAttribute("visitedSequencePoints", sprintf "%d" vs)
+           msum.SetAttribute("visitedMethods", sprintf "%d" vm)
+           msum.SetAttribute("visitedClasses", sprintf "%d" vc)
+           msum.SetAttribute("sequenceCoverage", cover)
+    | _ -> ()
+
   let WriteReportBase (hits:ICollection<(string*int)>) report =
     let counts = Dictionary<string, Dictionary<int, int>>()
     hits |> Seq.iter(fun (moduleId, hitPointId) ->
                         AltCover.Base.Counter.AddVisit counts moduleId hitPointId)
-    AltCover.Base.Counter.DoFlush true counts report
+    AltCover.Base.Counter.DoFlush (PostProcess report) true counts report
 
   // mocking points
   let mutable internal GetPayload = PayloadBase

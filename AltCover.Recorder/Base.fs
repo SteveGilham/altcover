@@ -50,7 +50,7 @@ module Counter =
   /// </summary>
   /// <param name="hitCounts">The coverage results to incorporate</param>
   /// <param name="coverageFile">The coverage file to update as a stream</param>
-  let internal UpdateReport own (counts:Dictionary<string, Dictionary<int, int>>) format coverageFile =
+  let internal UpdateReport (postProcess:XmlDocument -> unit) own (counts:Dictionary<string, Dictionary<int, int>>) format coverageFile =
     let flushStart = DateTime.UtcNow
     let coverageDocument = ReadXDocument coverageFile
     let root = coverageDocument.DocumentElement
@@ -91,19 +91,25 @@ module Counter =
         |> Seq.collect (fun (``method``:XmlElement) -> ``method``.SelectNodes(s)
                                                         |> Seq.cast<XmlElement>
                                                         |> Seq.toList |> List.rev)
-        |> Seq.mapi (fun counter pt -> (counter, pt))
+        |> Seq.mapi (fun counter pt -> ((match format with
+                                        | ReportFormat.OpenCover ->
+                                             Int32.TryParse( pt.GetAttribute("uspid") ,
+                                                             System.Globalization.NumberStyles.Integer,
+                                                             System.Globalization.CultureInfo.InvariantCulture) |> snd
+                                        | _ -> counter),
+                                        pt))
         |> Seq.filter (fst >> moduleHits.ContainsKey)
         |> Seq.iter (fun x ->
             let pt = snd x
             let counter = fst x
-            let attribute = pt.GetAttribute(v)
-            let value = if String.IsNullOrEmpty attribute then "0" else attribute
-            let vc = Int32.TryParse(value,
+            let vc = Int32.TryParse(pt.GetAttribute(v),
                                     System.Globalization.NumberStyles.Integer,
-                                    System.Globalization.CultureInfo.InvariantCulture)
+                                    System.Globalization.CultureInfo.InvariantCulture) |> snd
             // Treat -ve visit counts (an exemption added in analysis) as zero
-            let visits = moduleHits.[counter] + (max 0 (if fst vc then snd vc else 0))
+            let visits = moduleHits.[counter] + (max 0 vc)
             pt.SetAttribute(v, visits.ToString(CultureInfo.InvariantCulture))))
+
+    postProcess coverageDocument
 
     // Save modified xml to a file
     coverageFile.Seek(0L, SeekOrigin.Begin) |> ignore
@@ -111,9 +117,9 @@ module Counter =
     if own then WriteXDocument coverageDocument coverageFile
     flushStart
 
-  let DoFlush own counts format report =
+  let DoFlush postProcess own counts format report =
     use coverageFile = new FileStream(report, FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.SequentialScan)
-    let flushStart = UpdateReport own counts format coverageFile
+    let flushStart = UpdateReport postProcess own counts format coverageFile
     TimeSpan(DateTime.UtcNow.Ticks - flushStart.Ticks)
 
   let AddVisit (counts:Dictionary<string, Dictionary<int, int>>) moduleId hitPointId =

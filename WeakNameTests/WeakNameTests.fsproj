@@ -1,14 +1,14 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>2537af87-4436-4a1f-8eb4-d8d0da2af444</ProjectGuid>
+    <ProjectGuid>57B8EF6F-1EE4-473B-B5B8-7C2D8213637A</ProjectGuid>
     <OutputType>Library</OutputType>
-    <RootNamespace>Tests</RootNamespace>
-    <AssemblyName>AltCover.Tests</AssemblyName>
+    <RootNamespace>WeakNameTests</RootNamespace>
+    <AssemblyName>AltCover.WeakNameTests</AssemblyName>
     <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
     <TargetFSharpCoreVersion>4.4.1.0</TargetFSharpCoreVersion>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -28,7 +28,8 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <WarningsAsErrors>
     </WarningsAsErrors>
-    <OtherFlags>--keyfile:$(SolutionDir)Build\Infrastructure.snk</OtherFlags>
+    <OtherFlags>
+    </OtherFlags>
     <DefineConstants>TRACE;DEBUG;CODE_ANALYSIS</DefineConstants>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -41,7 +42,8 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <WarningsAsErrors>
     </WarningsAsErrors>
-    <OtherFlags>--keyfile:$(SolutionDir)Build\Infrastructure.snk</OtherFlags>
+    <OtherFlags>
+    </OtherFlags>
     <DefineConstants>TRACE</DefineConstants>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -62,40 +64,35 @@
   </Choose>
   <Import Project="$(FSharpTargetsPath)" Condition="Exists('$(FSharpTargetsPath)')" />
   <ItemGroup>
-    <Compile Include="AssemblyInfo.fs" />
+    <Compile Include="..\Tests\AssemblyInfo.fs">
+      <Link>AssemblyInfo.fs</Link>
+    </Compile>
     <Compile Include="..\_Generated\AssemblyVersion.fs">
       <Link>AssemblyVersion.fs</Link>
     </Compile>
-    <Compile Include="Runner.Tests.fs" />
+    <Compile Include="..\AltCover\Augment.fs">
+      <Link>Augment.fs</Link>
+    </Compile>
+    <Compile Include="..\AltCover\Gendarme.fs">
+      <Link>Gendarme.fs</Link>
+    </Compile>
     <Compile Include="Tests.fs" />
-    <Content Include="packages.config" />
-    <EmbeddedResource Include="..\Build\Infrastructure.snk">
-      <Link>Infrastructure.snk</Link>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Sample1.deps.json" />
-    <EmbeddedResource Include="Sample1.deps.after.json" />
-    <EmbeddedResource Include="Sample2.deps.after.json" />
-    <EmbeddedResource Include="Sample2.deps.json" />
-    <EmbeddedResource Include="..\Shadow.Tests\SimpleCoverage.xml">
-      <Link>SimpleCoverage.xml</Link>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Sample1WithOpenCover.xml" />
-    <EmbeddedResource Include="HandRolledMonoCoverage.xml" />
-    <EmbeddedResource Include="Sample1ClassExclusion.xml" />
-    <EmbeddedResource Include="Sample1MethodExclusion.xml" />
   </ItemGroup>
   <ItemGroup>
+    <Reference Include="Gendarme.Framework">
+      <HintPath>..\packages\Mono.Gendarme.2.11.0.20121120\tools\Gendarme.Framework.dll</HintPath>
+    </Reference>
+    <Reference Include="Gendarme.Rules.Maintainability">
+      <HintPath>..\packages\Mono.Gendarme.2.11.0.20121120\tools\Gendarme.Rules.Maintainability.dll</HintPath>
+    </Reference>
     <Reference Include="Mono.Cecil">
-      <HintPath>..\packages\Mono.Cecil.0.10.0-beta7\lib\net40\Mono.Cecil.dll</HintPath>
+      <HintPath>..\packages\Mono.Gendarme.2.11.0.20121120\tools\Mono.Cecil.dll</HintPath>
     </Reference>
     <Reference Include="Mono.Cecil.Mdb">
-      <HintPath>..\packages\Mono.Cecil.0.10.0-beta7\lib\net40\Mono.Cecil.Mdb.dll</HintPath>
+      <HintPath>..\packages\Mono.Gendarme.2.11.0.20121120\tools\Mono.Cecil.Mdb.dll</HintPath>
     </Reference>
     <Reference Include="Mono.Cecil.Pdb">
-      <HintPath>..\packages\Mono.Cecil.0.10.0-beta7\lib\net40\Mono.Cecil.Pdb.dll</HintPath>
-    </Reference>
-    <Reference Include="Mono.Cecil.Rocks">
-      <HintPath>..\packages\Mono.Cecil.0.10.0-beta7\lib\net40\Mono.Cecil.Rocks.dll</HintPath>
+      <HintPath>..\packages\Mono.Gendarme.2.11.0.20121120\tools\Mono.Cecil.Pdb.dll</HintPath>
     </Reference>
     <Reference Include="Mono.Options">
       <HintPath>..\packages\Mono.Options.Signed.0.2.3\lib\net45\Mono.Options.dll</HintPath>
@@ -115,26 +112,6 @@
     <Reference Include="System.Numerics" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
-    <ProjectReference Include="..\AltCover\AltCover.fsproj">
-      <Name>AltCover</Name>
-      <Project>{b766260f-6551-4ca8-b2cb-25d2d5092801}</Project>
-      <Private>True</Private>
-    </ProjectReference>
-    <ProjectReference Include="..\Sample1\Sample1.csproj">
-      <Name>Sample1</Name>
-      <Project>{25f279c3-2032-4ae1-aceb-eabe5efc739b}</Project>
-      <Private>True</Private>
-    </ProjectReference>
-    <ProjectReference Include="..\Sample2\Sample2.fsproj">
-      <Name>Sample2</Name>
-      <Project>{0a513aa9-84d8-46e1-bab7-08c73ace5fca}</Project>
-      <Private>True</Private>
-    </ProjectReference>
-    <ProjectReference Include="..\Sample3\Sample3.csproj">
-      <Name>Sample3</Name>
-      <Project>{a27e8b50-4862-4e8a-8248-ed34c2503d2b}</Project>
-      <Private>True</Private>
-    </ProjectReference>
   </ItemGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

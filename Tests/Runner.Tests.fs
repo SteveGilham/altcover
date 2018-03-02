@@ -71,10 +71,10 @@ type AltCoverTests() = class
     worker.Position <- 0L
     let payload = Dictionary<int,int>()
     [0..9 ]
-    |> Seq.iter(fun i -> payload.[i] <- (i+1))
+    |> Seq.iter(fun i -> payload.[10 - i] <- (i+1))
     let item = Dictionary<string, Dictionary<int, int>>()
     item.Add("7C-CD-66-29-A3-6C-6D-5F-A7-65-71-0E-22-7D-B2-61-B5-1F-65-9A", payload)
-    Counter.UpdateReport true item ReportFormat.OpenCover worker |> ignore
+    Counter.UpdateReport ignore true item ReportFormat.OpenCover worker |> ignore
     worker.Position <- 0L
     let after = XmlDocument()
     after.Load worker
@@ -112,7 +112,7 @@ type AltCoverTests() = class
       |> Seq.iter(fun i -> payload.[i] <- (i+1))
       visits.["f6e3edb3-fb20-44b3-817d-f69d1a22fc2f"] <- payload
 
-      Counter.DoFlush true visits AltCover.Base.ReportFormat.NCover reportFile |> ignore
+      Counter.DoFlush ignore true visits AltCover.Base.ReportFormat.NCover reportFile |> ignore
 
       use worker' = new FileStream(reportFile, FileMode.Open)
       let after = XmlDocument()
@@ -185,7 +185,10 @@ or
       Console.SetOut stdout
       Console.SetError stderr
 
-      CommandLine.Launch program (String.Empty) (Path.GetDirectoryName (Assembly.GetExecutingAssembly().Location)) |> ignore
+      let nonWindows = System.Environment.GetEnvironmentVariable("OS") <> "Windows_NT"
+      let exe, args = if nonWindows then ("mono", program) else (program, String.Empty)
+      let r = CommandLine.Launch exe args (Path.GetDirectoryName (Assembly.GetExecutingAssembly().Location))
+      Assert.That (r, Is.EqualTo 0)
 
       Assert.That(stderr.ToString(), Is.Empty)
       let result = stdout.ToString()
@@ -588,8 +591,12 @@ or
       let u1 = Guid.NewGuid().ToString()
       let u2 = Guid.NewGuid().ToString()
 
-      CommandLine.ProcessTrailingArguments [program; u1; u2]
-                                     (DirectoryInfo(where)) |> ignore
+      let baseArgs= [program; u1; u2]
+      let nonWindows = System.Environment.GetEnvironmentVariable("OS") <> "Windows_NT"
+      let args = if nonWindows then "mono" :: baseArgs else baseArgs
+
+      let r = CommandLine.ProcessTrailingArguments args <| DirectoryInfo(where)
+      Assert.That(r, Is.EqualTo 0)
 
       Assert.That(stderr.ToString(), Is.Empty)
       stdout.Flush()
@@ -609,8 +616,8 @@ or
   [<Test>]
   member self.ShouldNoOp() =
     let where = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
-    CommandLine.ProcessTrailingArguments [] (DirectoryInfo(where)) |> ignore
-    Assert.Pass()
+    let r = CommandLine.ProcessTrailingArguments [] <| DirectoryInfo(where)
+    Assert.That(r, Is.EqualTo 0)
 
   [<Test>]
   member self.ErrorResponseIsAsExpected() =
@@ -726,7 +733,11 @@ or
       let u2 = Guid.NewGuid().ToString()
       use latch = new ManualResetEvent true
 
-      Runner.GetPayload [program; u1; u2] |> ignore
+      let baseArgs= [program; u1; u2]
+      let nonWindows = System.Environment.GetEnvironmentVariable("OS") <> "Windows_NT"
+      let args = if nonWindows then "mono" :: baseArgs else baseArgs
+      let r = Runner.GetPayload args
+      Assert.That(r, Is.EqualTo 0)
 
       Assert.That(stderr.ToString(), Is.Empty)
       stdout.Flush()
@@ -863,7 +874,8 @@ or
     do
       use s = File.Create (unique + ".0.bin")
       s.Close()
-    Runner.GetMonitor hits unique List.length [] |> ignore
+    let r = Runner.GetMonitor hits unique List.length []
+    Assert.That(r, Is.EqualTo 0)
     Assert.That (File.Exists (unique + ".bin"))
     Assert.That(hits, Is.Empty)
 
@@ -873,11 +885,101 @@ or
     let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
     let unique = Path.Combine(where, Guid.NewGuid().ToString())
     let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
-    Runner.GetMonitor hits unique (fun l ->
+    let r = Runner.GetMonitor hits unique (fun l ->
        use sink = new DeflateStream(File.OpenWrite (unique + ".0.bin"), CompressionMode.Compress)
        l |> List.mapi (fun i x -> formatter.Serialize(sink, (x,i)); x) |> List.length
-    ) ["a"; "b"; String.Empty; "c"] |> ignore
+                                           ) ["a"; "b"; String.Empty; "c"]
+    Assert.That(r, Is.EqualTo 4)
     Assert.That (File.Exists (unique + ".bin"))
     Assert.That(hits, Is.EquivalentTo [("a",0); ("b",1)])
+
+  [<Test>]
+  member self.PostprocessShouldRestoreKnownOpenCoverState() =
+    Counter.measureTime <- DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
+    use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(self.resource2)
+    let after = XmlDocument()
+    after.Load stream
+    let before = after.OuterXml
+
+    after.DocumentElement.SelectNodes("//Summary")
+    |> Seq.cast<XmlElement>
+    |> Seq.iter(fun el -> el.SetAttribute("visitedSequencePoints", "0")
+                          el.SetAttribute("sequenceCoverage", "0")
+                          el.SetAttribute("visitedClasses", "0")
+                          el.SetAttribute("visitedMethods", "0")
+                           )
+
+    after.DocumentElement.SelectNodes("//Method")
+    |> Seq.cast<XmlElement>
+    |> Seq.iter(fun el -> el.SetAttribute("visited", "false")
+                          el.SetAttribute("sequenceCoverage", "0")
+                           )
+
+    Runner.PostProcess Base.ReportFormat.OpenCover after
+
+    Assert.That(after.OuterXml, Is.EqualTo before, after.OuterXml)
+
+
+  [<Test>]
+  member self.PostprocessShouldRestoreKnownOpenCoverStateFromMono() =
+    Counter.measureTime <- DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
+    let resource = Assembly.GetExecutingAssembly().GetManifestResourceNames()
+                         |> Seq.find (fun n -> n.EndsWith("HandRolledMonoCoverage.xml", StringComparison.Ordinal))
+
+    use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
+    let after = XmlDocument()
+    after.Load stream
+    let before = after.OuterXml
+
+    after.DocumentElement.SelectNodes("//Summary")
+    |> Seq.cast<XmlElement>
+    |> Seq.iter(fun el -> el.SetAttribute("visitedSequencePoints", "0")
+                          el.SetAttribute("sequenceCoverage", "0")
+                          el.SetAttribute("visitedClasses", "0")
+                          el.SetAttribute("visitedMethods", "0")
+                           )
+
+    after.DocumentElement.SelectNodes("//Method")
+    |> Seq.cast<XmlElement>
+    |> Seq.iter(fun el -> el.SetAttribute("visited", "false")
+                          el.SetAttribute("sequenceCoverage", "0")
+                           )
+
+    Runner.PostProcess Base.ReportFormat.OpenCover after
+
+    Assert.That(after.OuterXml, Is.EqualTo before, after.OuterXml)
+
+  [<Test>]
+  member self.PostprocessShouldRestoreDegenerateOpenCoverState() =
+    Counter.measureTime <- DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
+    use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(self.resource2)
+    let after = XmlDocument()
+    after.Load stream
+
+    after.DocumentElement.SelectNodes("//Summary")
+    |> Seq.cast<XmlElement>
+    |> Seq.iter(fun el -> el.SetAttribute("visitedSequencePoints", "0")
+                          el.SetAttribute("sequenceCoverage", "0")
+                          el.SetAttribute("visitedClasses", "0")
+                          el.SetAttribute("visitedMethods", "0")
+                           )
+
+    after.DocumentElement.SelectNodes("//Method")
+    |> Seq.cast<XmlElement>
+    |> Seq.iter(fun el -> el.SetAttribute("visited", "false")
+                          el.SetAttribute("sequenceCoverage", "0")
+                           )
+
+    after.DocumentElement.SelectNodes("//SequencePoint")
+    |> Seq.cast<XmlElement>
+    |> Seq.toList
+    |> List.iter(fun el -> el |> el.ParentNode.RemoveChild |> ignore)
+
+    let before = after.OuterXml
+
+    Runner.PostProcess Base.ReportFormat.OpenCover after
+
+    Assert.That(after.OuterXml, Is.EqualTo before, after.OuterXml)
+
 
 end

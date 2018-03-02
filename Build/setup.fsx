@@ -30,7 +30,7 @@ let dotnetOptions o = match dotnetPath with
 
 DotNetRestore (fun o -> { o with
                             Packages = ["./packages"]
-                            Common = dotnetOptions o.Common}) "./Build/dotnet-nuget.csproj"
+                            Common = dotnetOptions o.Common}) "./Build/dotnet-nuget.fsproj"
 
 // Clear any stale AltCover from package cache if present in packages.config
 let xml = XDocument.Load "./MCS/packages.config"

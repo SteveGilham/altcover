@@ -26,10 +26,9 @@
 
   <ItemGroup>
     <EmbeddedResource Include="HandRolledMonoCoverage.xml" />
-  </ItemGroup>
-
-  <ItemGroup>
     <EmbeddedResource Include="Sample1WithOpenCover.xml" />
+    <EmbeddedResource Include="Sample1ClassExclusion.xml" />
+    <EmbeddedResource Include="Sample1MethodExclusion.xml" />
   </ItemGroup>
 
   <ItemGroup>

@@ -31,7 +31,7 @@ let Version = ref String.Empty
 
 let OpenCoverFilter = "+[AltCove*]* -[*]Microsoft.* -[*]System.* +[*]N.*"
 let AltCoverFilter= @" -s=Mono -s=\.Recorder -s=Sample -s=nunit -e=Tests -t=System. -t=Sample3\.Class2 "
-let AltCoverFilterX= @" -s=Mono -s=\.Recorder -s=Sample -s=nunit -t=System. -t=Sample3\.Class2 "
+let AltCoverFilterX= @" -s=Mono -s=\.Recorder -s=Sample -s=nunit -t=System\. -t=Sample3\.Class2 "
 let AltCoverFilterG= @" -s=Mono -s=\.Recorder\.g -s=Sample -s=nunit -e=Tests -t=System. -t=Sample3\.Class2 "
 
 let programFiles = environVar "ProgramFiles"
@@ -110,8 +110,7 @@ Target "BuildRelease" (fun _ ->
 
     "./altcover.core.sln"
     |> DotNetCompile
-        (fun p' ->
-            let p = p'()
+        (fun p ->
             { p with
                 Configuration = BuildConfiguration.Release
                 Common = dotnetOptions p.Common
@@ -135,8 +134,7 @@ Target "BuildDebug" (fun _ ->
 
     "./altcover.core.sln"
     |> DotNetCompile
-        (fun p' ->
-            let p = p'()
+        (fun p ->
             { p with
                 Configuration = BuildConfiguration.Debug
                 Common = dotnetOptions p.Common})
@@ -147,7 +145,7 @@ Target "BuildMonoSamples" (fun _ ->
 
     [
         ("./_Mono/Sample1", "-debug -out:./_Mono/Sample1/Sample1.exe  ./Sample1/Program.cs")
-        ("./_Mono/Sample3", "-target:library -debug -out:./_Mono/Sample3/Sample3.dll  ./Sample3/Class1.cs")
+        ("./_Mono/Sample3", "-target:library -debug -out:./_Mono/Sample3/Sample3.dll  -lib:./packages/Mono.Cecil.0.10.0-beta7/lib/net40 -r:Mono.Cecil.dll ./Sample3/Class1.cs")
     ]
     |> Seq.iter (fun (dir, cmd) ->
        ensure dir
@@ -280,7 +278,7 @@ Target "UnitTest" (fun _ ->
 Target "JustUnitTest" (fun _ ->
     ensure "./_Reports"
     try
-      !! (@"_Binaries/*Tests/Debug+AnyCPU/*.Test*.dll")
+      !! (@"_Binaries/*Tests/Debug+AnyCPU/*Test*.dll")
       |> NUnit3 (fun p -> { p with ToolPath = findToolInSubPath "nunit3-console.exe" "."
                                    WorkingDir = "."
                                    Labels = LabelsLevel.All
@@ -305,7 +303,7 @@ Target "UnitTestDotNet" (fun _ ->
 
 Target "UnitTestWithOpenCover" (fun _ ->
     ensure "./_Reports/_UnitTestWithOpenCover"
-    let testFiles = !! (@"_Binaries/*Tests/Debug+AnyCPU/*.Test*.dll")
+    let testFiles = !! (@"_Binaries/*Tests/Debug+AnyCPU/*Test*.dll")
                     //|> Seq.map (fun f -> f.FullName)
     let coverage = getFullName "_Reports/UnitTestWithOpenCover.xml"
 
@@ -314,7 +312,7 @@ Target "UnitTestWithOpenCover" (fun _ ->
                                    WorkingDir = "."
                                    ExePath = findToolInSubPath "OpenCover.Console.exe" "."
                                    TestRunnerExePath = findToolInSubPath "nunit3-console.exe" "."
-                                   Filter = "+[AltCover]* +[AltCover.Shadow]* +[AltCover.Runner]* -[*]Microsoft.* -[*]System.* -[Sample*]*"
+                                   Filter = "+[AltCover]* +[AltCover.Shadow]* +[AltCover.Runner]* +[AltCover.WeakNameTests]Alt* -[*]Microsoft.* -[*]System.* -[Sample*]*"
                                    MergeByHash = true
                                    OptionalArguments = "-excludebyattribute:*ExcludeFromCodeCoverageAttribute;*ProgIdAttribute"
                                    Register = OpenCover.RegisterType.RegisterUser
@@ -353,7 +351,7 @@ Target "UnitTestWithAltCover" (fun _ ->
           { info with
                 FileName = altcover
                 WorkingDirectory = testDirectory
-                Arguments = ("--opencover /sn=" + keyfile + AltCoverFilter + @"/o=./__UnitTestWithAltCover -x=" + altReport)})
+                Arguments = ("--opencover /sn=" + keyfile + AltCoverFilterX + @"/o=./__UnitTestWithAltCover -x=" + altReport)})
                 "Re-instrument returned with a non-zero exit code"
 
       printfn "Unit test the instrumented code"
@@ -369,6 +367,22 @@ Target "UnitTestWithAltCover" (fun _ ->
       | x -> printfn "%A" x
              reraise ()
 
+      printfn "Instrument the weakname tests"
+      let weakDir = getFullName  "_Binaries\AltCover.WeakNameTests\Debug+AnyCPU"
+      let weakReport = reports @@ "WeakNameTestWithAltCover.xml"
+      Actions.Run (fun info ->
+          { info with
+                FileName = altcover
+                WorkingDirectory = weakDir
+                Arguments = ("--opencover /sn=" + keyfile + AltCoverFilterX + " /o=./__WeakNameTestWithAltCover -x=" + weakReport)})
+                "Instrumenting the weakname tests failed"
+
+      printfn "Execute the weakname tests"
+      !! ("_Binaries/AltCover.WeakNameTests/Debug+AnyCPU/__WeakNameTestWithAltCover/*Test*.dll")
+      |> NUnit3 (fun p -> { p with ToolPath = findToolInSubPath "nunit3-console.exe" "."
+                                   WorkingDir = "."
+                                   ResultSpecs = ["./_Reports/WeakNameTestWithAltCoverReport.xml"] })
+
       printfn "Instrument the shadow tests"
       let shadowDir = getFullName  "_Binaries/AltCover.Shadow.Tests/Debug+AnyCPU"
       let shadowReport = reports @@ "ShadowTestWithAltCover.xml"
@@ -376,7 +390,7 @@ Target "UnitTestWithAltCover" (fun _ ->
           { info with
                 FileName = altcover
                 WorkingDirectory = shadowDir
-                Arguments = ("--opencover /sn=" + keyfile + AltCoverFilter + @"/o=./__ShadowTestWithAltCover -x=" + shadowReport)})
+                Arguments = ("--opencover /sn=" + keyfile + AltCoverFilterX + @"/o=./__ShadowTestWithAltCover -x=" + shadowReport)})
                 "Instrumenting the shadow tests failed"
 
       printfn "Execute the shadow tests"
@@ -393,28 +407,9 @@ Target "UnitTestWithAltCover" (fun _ ->
       Actions.Run (fun info ->
         { info with
                FileName = findToolInSubPath "ReportGenerator.exe" "."
-               Arguments = "\"-reports:" + String.Join(";", [altReport; shadowReport]) +
+               Arguments = "\"-reports:" + String.Join(";", [altReport; weakReport; shadowReport]) +
                            "\" \"-targetdir:" + "_Reports/_UnitTestWithAltCover" + "\" -reporttypes:Html;XmlSummary -verbosity:Verbose"
                 }) "Report generation failure"
-
-      let cover1 = altReport 
-                   |> File.ReadAllLines
-                   |> Seq.takeWhile (fun l -> l <> "  </Modules>")
-      let cover2 = shadowReport
-                   |> File.ReadAllLines
-                   |> Seq.skipWhile (fun l -> l.StartsWith("    <Module") |> not)
-
-      let coverage =  reports @@ "CombinedTestWithAltCover.coveralls"
-
-      File.WriteAllLines(coverage, Seq.concat [cover1; cover2] |> Seq.toArray)
-
-      if not <| String.IsNullOrWhiteSpace (environVar "APPVEYOR_BUILD_NUMBER") then
-       Actions.Run (fun info ->
-          { info with
-                FileName = findToolInSubPath "coveralls.net.exe" nugetCache
-                WorkingDirectory = "_Reports"
-                Arguments = ("--opencover " + coverage)}) "Coveralls upload failed"
-                
     else
       printfn "Symbols not present; skipping"
 )
@@ -435,7 +430,7 @@ Target "UnitTestWithAltCoverRunner" (fun _ ->
           { info with
                 FileName = altcover
                 WorkingDirectory = testDirectory
-                Arguments = ("/sn=" + keyfile + AltCoverFilterX + @"/o=./__UnitTestWithAltCoverRunner -x=" + altReport)})
+                Arguments = ("--opencover /sn=" + keyfile + AltCoverFilter + @"/o=./__UnitTestWithAltCoverRunner -x=" + altReport)})
                 "Re-instrument returned with a non-zero exit code"
 
       printfn "Unit test the instrumented code"
@@ -449,11 +444,34 @@ Target "UnitTestWithAltCoverRunner" (fun _ ->
                               " -w . -- " +
                               " --noheader --work=. --result=./_Reports/UnitTestWithAltCoverReport.xml \"" +
                               String.Join ("\" \"", [ getFullName  "_Binaries/AltCover.Tests/Debug+AnyCPU/__UnitTestWithAltCoverRunner/AltCover.Tests.dll"
-                                                      getFullName  "_Binaries/AltCover.Tests/Debug+AnyCPU/__UnitTestWithAltCoveRunner/Sample2.dll"]) + "\""
+                                                      getFullName  "_Binaries/AltCover.Tests/Debug+AnyCPU/__UnitTestWithAltCoverRunner/Sample2.dll"]) + "\""
                             )}) "Re-instrument tests returned with a non-zero exit code"
       with
       | x -> printfn "%A" x
              reraise ()
+
+      printfn "Instrument the weakname tests"
+      let weakDir = getFullName  "_Binaries\AltCover.WeakNameTests\Debug+AnyCPU"
+      let weakReport = reports @@ "WeakNameTestWithAltCoverRunner.xml"
+      Actions.Run (fun info ->
+          { info with
+                FileName = altcover
+                WorkingDirectory = weakDir
+                Arguments = ("--opencover /sn=" + keyfile + AltCoverFilterX + " -t=WeakNameTest  /o=./__WeakNameTestWithAltCoverRunner -x=" + weakReport)})
+                "Instrumenting the weakname tests failed"
+
+      printfn "Execute the weakname tests"
+
+      Actions.Run (fun info ->
+          { info with
+                FileName = altcover
+                WorkingDirectory = "."
+                Arguments = ( " Runner -x " + nunit +
+                              " -r " + (weakDir @@ "__WeakNameTestWithAltCoverRunner") +
+                              " -w . -- " +
+                              " --noheader --work=. --result=./_Reports/ShadowTestWithAltCoverRunnerReport.xml \"" +
+                              String.Join ("\" \"", [ getFullName  "_Binaries/AltCover.WeakNameTests/Debug+AnyCPU/__WeakNameTestWithAltCoverRunner/AltCover.WeakNameTests.dll"]) + "\""
+                            )}) "Re-instrument tests returned with a non-zero exit code"
 
       printfn "Instrument the shadow tests"
       let shadowDir = getFullName  "_Binaries/AltCover.Shadow.Tests/Debug+AnyCPU"
@@ -462,7 +480,7 @@ Target "UnitTestWithAltCoverRunner" (fun _ ->
           { info with
                 FileName = altcover
                 WorkingDirectory = shadowDir
-                Arguments = ("/sn=" + keyfile + AltCoverFilterX + @"/o=./__ShadowTestWithAltCoverRunner -x=" + shadowReport)})
+                Arguments = ("--opencover /sn=" + keyfile + AltCoverFilter + @"/o=./__ShadowTestWithAltCoverRunner -x=" + shadowReport)})
                 "Instrumenting the shadow tests failed"
 
       printfn "Execute the shadow tests"
@@ -481,15 +499,36 @@ Target "UnitTestWithAltCoverRunner" (fun _ ->
 //      ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
 //                                         ReportTypes = [ ReportGeneratorReportType.Html; ReportGeneratorReportType.XmlSummary ]
 //                                         TargetDir = "_Reports/_UnitTestWithAltCoverRunner"})
-//          [altReport; shadowReport]
+//          [altReport; shadowReport; weakReport]
 
       Actions.Run (fun info ->
         { info with
                FileName = findToolInSubPath "ReportGenerator.exe" "."
-               Arguments = "\"-reports:" + String.Join(";", [altReport; shadowReport]) +
+               Arguments = "\"-reports:" + String.Join(";", [altReport; shadowReport; weakReport]) +
                            "\" \"-targetdir:" + "_Reports/_UnitTestWithAltCoverRunner" + "\" -reporttypes:Html;XmlSummary -verbosity:Verbose"
                 }) "Report generation failure"
 
+      let cover1 = altReport
+                   |> File.ReadAllLines
+                   |> Seq.takeWhile (fun l -> l <> "  </Modules>")
+      let cover2 = shadowReport
+                   |> File.ReadAllLines
+                   |> Seq.skipWhile (fun l -> l.StartsWith("    <Module") |> not)
+                   |> Seq.takeWhile (fun l -> l <> "  </Modules>")
+      let cover3 = weakReport
+                   |> File.ReadAllLines
+                   |> Seq.skipWhile (fun l -> l.StartsWith("    <Module") |> not)
+
+      let coverage =  reports @@ "CombinedTestWithAltCoverRunner.coveralls"
+
+      File.WriteAllLines(coverage, Seq.concat [cover1; cover2; cover3] |> Seq.toArray)
+
+      if not <| String.IsNullOrWhiteSpace (environVar "APPVEYOR_BUILD_NUMBER") then
+       Actions.Run (fun info ->
+          { info with
+                FileName = findToolInSubPath "coveralls.net.exe" nugetCache
+                WorkingDirectory = "_Reports"
+                Arguments = ("--opencover " + coverage)}) "Coveralls upload failed"
     else
       printfn "Symbols not present; skipping"
 )
@@ -993,8 +1032,7 @@ Target "ReleaseXUnitDotNetDemo" (fun _ ->
 
     "./Demo/xunit-dotnet/xunit-dotnet.csproj"
     |> DotNetCompile
-        (fun p' ->
-            let p = p'()
+        (fun p ->
             { p with
                 Configuration = BuildConfiguration.Debug
                 Common = dotnetOptions p.Common})
@@ -1037,8 +1075,7 @@ Target "ReleaseXUnitDotNetRunnerDemo" (fun _ ->
 
     "./Demo/xunit-dotnet/xunit-dotnet.csproj"
     |> DotNetCompile
-        (fun p' ->
-            let p = p'()
+        (fun p ->
             { p with
                 Configuration = BuildConfiguration.Debug
                 Common = dotnetOptions p.Common})
@@ -1242,14 +1279,15 @@ CreateFinal "ResetConsoleColours" (fun _ ->
 
 "Compilation"
 ==> "UnitTestWithAltCover"
-==> "UnitTest"
+// ==> "UnitTest"
 
 "Compilation"
 ==> "UnitTestWithAltCoverRunner"
+==> "UnitTest"
 
 "UnitTestDotNet"
 ==> "UnitTestWithAltCoverCore"
-==> "UnitTest"
+// ==> "UnitTest"
 
 "UnitTestDotNet"
 ==> "UnitTestWithAltCoverCoreRunner"
@@ -1264,7 +1302,7 @@ CreateFinal "ResetConsoleColours" (fun _ ->
 
 "Compilation"
 ==> "FSharpTypesDotNet"
-==> "OperationalTest"
+// ==> "OperationalTest"
 
 "Compilation"
 ==> "FSharpTypesDotNetRunner"
@@ -1337,7 +1375,7 @@ CreateFinal "ResetConsoleColours" (fun _ ->
 
 "Unpack"
 ==> "ReleaseDotNetWithDotNet"
-==> "Deployment"
+//==> "Deployment"
 
 "Unpack"
 ==> "ReleaseDotNetWithFramework"
@@ -1349,7 +1387,7 @@ CreateFinal "ResetConsoleColours" (fun _ ->
 
 "Unpack"
 ==> "ReleaseXUnitFSharpTypesDotNet"
-==> "Deployment"
+//==> "Deployment"
 
 "Unpack"
 ==> "ReleaseXUnitFSharpTypesDotNetRunner"
