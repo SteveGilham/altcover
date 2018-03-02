@@ -3324,7 +3324,7 @@ type AltCoverTests() = class
                          "AltCover.Recorder.g.dll.mdb"
                          "Sample1.exe"
                          "Sample1.exe.mdb"]
-                     |> List.filter (fun f -> isWindows || (f.EndsWith("db", StringComparison.Ordinal) |> not))
+                     |> List.filter (fun f -> isWindows || f = "Sample1.exe.mdb" || (f.EndsWith("db", StringComparison.Ordinal) |> not))
 
       Assert.That (Directory.GetFiles(output)
                    |> Seq.map Path.GetFileName,
@@ -3443,7 +3443,7 @@ type AltCoverTests() = class
       let expected' = if pdb |> File.Exists |> not then
                         List.concat [expected; ["AltCover.Recorder.g.dll.mdb"; "Sample2.dll.mdb" ]]
                         |> List.filter (fun f -> f.EndsWith(".g.pdb", StringComparison.Ordinal) |> not)
-                        |> List.filter (fun f -> isWindows || (f.EndsWith("db", StringComparison.Ordinal) |> not))
+                        |> List.filter (fun f -> isWindows || f = "Sample2.pdb" || (f.EndsWith("db", StringComparison.Ordinal) |> not))
                         |> List.sortBy (fun f -> f.ToUpperInvariant())
                       else
                         expected
