@@ -1468,7 +1468,14 @@ type AltCoverTests() = class
         let prepared = Instrument.PrepareAssembly path
         Instrument.WriteAssembly prepared outputdll
         let expectedSymbols = if "Mono.Runtime" |> Type.GetType |> isNull |> not then ".dll.mdb" else ".pdb"
-        Assert.That (File.Exists (outputdll.Replace(".dll", expectedSymbols)))
+        let isWindows = 
+#if NETCOREAPP2_0
+                        true
+#else
+                        System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
+#endif
+
+        if isWindows then Assert.That (File.Exists (outputdll.Replace(".dll", expectedSymbols)))
         let raw = Mono.Cecil.AssemblyDefinition.ReadAssembly outputdll
         Assert.That raw.Name.HasPublicKey
 
@@ -1577,7 +1584,13 @@ type AltCoverTests() = class
 
         Instrument.WriteAssembly def outputdll
         let expectedSymbols = if "Mono.Runtime" |> Type.GetType |> isNull |> not then ".dll.mdb" else ".pdb"
-        Assert.That (File.Exists (outputdll.Replace(".dll", expectedSymbols)))
+        let isWindows = 
+#if NETCOREAPP2_0
+                        true
+#else
+                        System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
+#endif
+        if isWindows then Assert.That (File.Exists (outputdll.Replace(".dll", expectedSymbols)))
         let raw = Mono.Cecil.AssemblyDefinition.ReadAssembly outputdll
         Assert.That raw.Name.HasPublicKey
 
@@ -3284,6 +3297,12 @@ type AltCoverTests() = class
 
       Assert.That (File.Exists report)
       let pdb = Path.ChangeExtension(Assembly.GetExecutingAssembly().Location, ".pdb")
+      let isWindows = 
+#if NETCOREAPP2_0
+                        true
+#else
+                        System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
+#endif
 
       let expected = if File.Exists(pdb) then
                         ["AltCover.Recorder.g.dll"
@@ -3305,6 +3324,7 @@ type AltCoverTests() = class
                          "AltCover.Recorder.g.dll.mdb"
                          "Sample1.exe"
                          "Sample1.exe.mdb"]
+                     |> List.filter (fun f -> isWindows || (f.EndsWith("db", StringComparison.Ordinal) |> not))
 
       Assert.That (Directory.GetFiles(output)
                    |> Seq.map Path.GetFileName,
@@ -3393,6 +3413,12 @@ type AltCoverTests() = class
 
       Assert.That (File.Exists report)
       let pdb = Path.ChangeExtension(Assembly.GetExecutingAssembly().Location, ".pdb")
+      let isWindows = 
+#if NETCOREAPP2_0
+                        true
+#else
+                        System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
+#endif
 
       let expected =
                         ["AltCover.Recorder.g.dll"
@@ -3417,6 +3443,7 @@ type AltCoverTests() = class
       let expected' = if pdb |> File.Exists |> not then
                         List.concat [expected; ["AltCover.Recorder.g.dll.mdb"; "Sample2.dll.mdb" ]]
                         |> List.filter (fun f -> f.EndsWith(".g.pdb", StringComparison.Ordinal) |> not)
+                        |> List.filter (fun f -> isWindows || (f.EndsWith("db", StringComparison.Ordinal) |> not))
                         |> List.sortBy (fun f -> f.ToUpperInvariant())
                       else
                         expected
