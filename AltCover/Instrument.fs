@@ -222,7 +222,10 @@ module Instrument =
     // Mdb writing now fails in .net framework, it throws
     // Mono.CompilerServices.SymbolWriter.MonoSymbolFileException :
     // Exception of type 'Mono.CompilerServices.SymbolWriter.MonoSymbolFileException' was thrown.
-    pkey.WriteSymbols <- true
+    // If there are portable .pdbs on mono, those fail to write, too with 
+    // Mono.CompilerServices.SymbolWriter.MonoSymbolFileException :
+    // Exception of type 'Mono.CompilerServices.SymbolWriter.MonoSymbolFileException' was thrown.
+    pkey.WriteSymbols <- not monoRuntime
     pkey.SymbolWriterProvider <- if monoRuntime then Mono.Cecil.Mdb.MdbWriterProvider() :> ISymbolWriterProvider else Mono.Cecil.Pdb.PdbWriterProvider() :> ISymbolWriterProvider
 
     // Also, there are no strongnames in .net core
