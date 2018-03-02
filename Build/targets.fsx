@@ -451,7 +451,7 @@ Target "UnitTestWithAltCoverRunner" (fun _ ->
              reraise ()
 
       printfn "Instrument the weakname tests"
-      let weakDir = getFullName  "_Binaries\AltCover.WeakNameTests/Debug+AnyCPU"
+      let weakDir = getFullName  "_Binaries/AltCover.WeakNameTests/Debug+AnyCPU"
       let weakReport = reports @@ "WeakNameTestWithAltCoverRunner.xml"
       Actions.Run (fun info ->
           { info with
