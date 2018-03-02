@@ -196,6 +196,15 @@ module Instrument =
 
     definition
 
+#if NETCOREAPP2_0
+#else
+  let internal CreateSymbolWriter isWindows isMono =
+    match (isWindows, isMono) with
+    | (true, true) -> Mono.Cecil.Mdb.MdbWriterProvider() :> ISymbolWriterProvider
+    | (true, false) -> Mono.Cecil.Pdb.PdbWriterProvider() :> ISymbolWriterProvider
+    | _ -> null
+#endif
+
   /// <summary>
   /// Commit an instrumented assembly to disk
   /// </summary>
@@ -225,8 +234,9 @@ module Instrument =
     // If there are portable .pdbs on mono, those fail to write, too with 
     // Mono.CompilerServices.SymbolWriter.MonoSymbolFileException :
     // Exception of type 'Mono.CompilerServices.SymbolWriter.MonoSymbolFileException' was thrown.
-    pkey.WriteSymbols <- not monoRuntime
-    pkey.SymbolWriterProvider <- if monoRuntime then Mono.Cecil.Mdb.MdbWriterProvider() :> ISymbolWriterProvider else Mono.Cecil.Pdb.PdbWriterProvider() :> ISymbolWriterProvider
+    let isWindows = System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
+    pkey.WriteSymbols <- isWindows
+    pkey.SymbolWriterProvider <- CreateSymbolWriter isWindows monoRuntime
 
     // Also, there are no strongnames in .net core
     KnownKey assembly.Name

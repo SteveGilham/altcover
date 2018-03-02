@@ -1438,6 +1438,20 @@ type AltCoverTests() = class
 // TODO
 #else
   [<Test>]
+  member self.ShouldSymbolWriterOnWindowsOnly () =
+    match Instrument.CreateSymbolWriter true true with
+    | :? Mono.Cecil.Mdb.MdbWriterProvider -> ()
+    | x -> Assert.Fail("Mono.Cecil.Mdb.MdbWriterProvider expected but got " + x.GetType().FullName)
+
+    match Instrument.CreateSymbolWriter true false with
+    | :? Mono.Cecil.Pdb.PdbWriterProvider -> ()
+    | x -> Assert.Fail("Mono.Cecil.Pdb.PdbWriterProvider expected but got " + x.GetType().FullName)
+
+    match Instrument.CreateSymbolWriter false false with
+    | null -> ()
+    | x -> Assert.Fail("null expected but got " + x.GetType().FullName)
+
+  [<Test>]
   member self.ShouldGetNewFilePathFromPreparedAssembly () =
     try
       Visitor.keys.Clear()
