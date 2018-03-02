@@ -368,7 +368,7 @@ Target "UnitTestWithAltCover" (fun _ ->
              reraise ()
 
       printfn "Instrument the weakname tests"
-      let weakDir = getFullName  "_Binaries\AltCover.WeakNameTests\Debug+AnyCPU"
+      let weakDir = getFullName  "_Binaries/AltCover.WeakNameTests/Debug+AnyCPU"
       let weakReport = reports @@ "WeakNameTestWithAltCover.xml"
       Actions.Run (fun info ->
           { info with
@@ -451,7 +451,7 @@ Target "UnitTestWithAltCoverRunner" (fun _ ->
              reraise ()
 
       printfn "Instrument the weakname tests"
-      let weakDir = getFullName  "_Binaries\AltCover.WeakNameTests\Debug+AnyCPU"
+      let weakDir = getFullName  "_Binaries\AltCover.WeakNameTests/Debug+AnyCPU"
       let weakReport = reports @@ "WeakNameTestWithAltCoverRunner.xml"
       Actions.Run (fun info ->
           { info with
@@ -492,8 +492,8 @@ Target "UnitTestWithAltCoverRunner" (fun _ ->
                               " -r " + (shadowDir @@ "__ShadowTestWithAltCoverRunner") +
                               " -w . -- " +
                               " --noheader --work=. --result=./_Reports/ShadowTestWithAltCoverRunnerReport.xml \"" +
-                              String.Join ("\" \"", [ getFullName  "_Binaries/AltCover.Shadow.Tests\Debug+AnyCPU\__ShadowTestWithAltCoverRunner/AltCover.Shadow.Tests.dll"
-                                                      getFullName  "_Binaries/AltCover.Shadow.Tests\Debug+AnyCPU\__ShadowTestWithAltCoverRunner/AltCover.Shadow.Tests2.dll"]) + "\""
+                              String.Join ("\" \"", [ getFullName  "_Binaries/AltCover.Shadow.Tests/Debug+AnyCPU/__ShadowTestWithAltCoverRunner/AltCover.Shadow.Tests.dll"
+                                                      getFullName  "_Binaries/AltCover.Shadow.Tests/Debug+AnyCPU/__ShadowTestWithAltCoverRunner/AltCover.Shadow.Tests2.dll"]) + "\""
                             )}) "Re-instrument tests returned with a non-zero exit code"
 
 //      ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
