@@ -919,6 +919,36 @@ or
 
     Assert.That(after.OuterXml, Is.EqualTo before, after.OuterXml)
 
+
+  [<Test>]
+  member self.PostprocessShouldRestoreKnownOpenCoverStateFromMono() =
+    Counter.measureTime <- DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
+    let resource = Assembly.GetExecutingAssembly().GetManifestResourceNames()
+                         |> Seq.find (fun n -> n.EndsWith("HandRolledMonoCoverage.xml", StringComparison.Ordinal))
+
+    use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
+    let after = XmlDocument()
+    after.Load stream
+    let before = after.OuterXml
+
+    after.DocumentElement.SelectNodes("//Summary")
+    |> Seq.cast<XmlElement>
+    |> Seq.iter(fun el -> el.SetAttribute("visitedSequencePoints", "0")
+                          el.SetAttribute("sequenceCoverage", "0")
+                          el.SetAttribute("visitedClasses", "0")
+                          el.SetAttribute("visitedMethods", "0")
+                           )
+
+    after.DocumentElement.SelectNodes("//Method")
+    |> Seq.cast<XmlElement>
+    |> Seq.iter(fun el -> el.SetAttribute("visited", "false")
+                          el.SetAttribute("sequenceCoverage", "0")
+                           )
+
+    Runner.PostProcess Base.ReportFormat.OpenCover after
+
+    Assert.That(after.OuterXml, Is.EqualTo before, after.OuterXml)
+
   [<Test>]
   member self.PostprocessShouldRestoreDegenerateOpenCoverState() =
     Counter.measureTime <- DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
