@@ -1,9 +1,9 @@
 **NOTE:** The main executable links the still in beta (after more than a year) Mono.Cecil 0.10 version.  The binary injected into the instrumented code does not.  Rather than hold my releases on the Mono.Cecil schedule, I make this disclaimer instead.
 
 # 2.0.300 (Byakko series release 2)
-* [BUGFIX] OpenCover format output now works with filtering
+* [BUGFIX] OpenCover format output now works correctly when classes or methods are filtered out of the coverage
 * Option `--opencover` now generates cyclomatic complexity values while generating the report file
-* Option `--opencover` now generates roll-up statistics in "runner" mode
+* Option `--opencover` now generates roll-up statistics "visitedSequencePoints", "visitedMethods", "visitedClasses", "sequenceCoverage" in Summary tags, and "visited", "sequenceCoverage" in Method tags when collecting the coverage data in "runner" mode
 
 # 2.0.273 (Byakko series release 1)
 * Option `--opencover` to output coverage data in a sub-set of the OpenCover format (sufficient for use with ReportGenerator and coveralls.io, at least)
