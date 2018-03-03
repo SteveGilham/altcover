@@ -170,7 +170,6 @@ module Visitor =
   let private VisitMethod (m:MethodDefinition) (dbg:MethodDebugInformation option) included =
             let instructions = m.Body.Instructions
                                |> Seq.cast
-                               |> Seq.distinctBy(fun (x:Instruction) -> x.Offset)
                                |> Seq.filter (fun (x:Instruction) -> match dbg with
                                                                      | None -> false
                                                                      | Some d ->
