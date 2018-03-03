@@ -508,10 +508,6 @@ Target "UnitTestWithAltCoverRunner" (fun _ ->
                            "\" \"-targetdir:" + "_Reports/_UnitTestWithAltCoverRunner" + "\" -reporttypes:Html;XmlSummary -verbosity:Verbose"
                 }) "Report generation failure"
 
-       "_Reports/_UnitTestWithAltCoverRunner/index.htm"
-      |> System.IO.File.ReadAllLines
-      |> Seq.iter (printfn "%s")                
-
       let cover1 = altReport
                    |> File.ReadAllLines
                    |> Seq.takeWhile (fun l -> l <> "  </Modules>")
@@ -524,6 +520,10 @@ Target "UnitTestWithAltCoverRunner" (fun _ ->
                    |> Seq.skipWhile (fun l -> l.StartsWith("    <Module") |> not)
 
       let coverage =  reports @@ "CombinedTestWithAltCoverRunner.coveralls"
+
+      "_Reports/_UnitTestWithAltCoverRunner/index.htm"
+          |> System.IO.File.ReadAllLines
+          |> Seq.iter (printfn "%s")                
 
       File.WriteAllLines(coverage, Seq.concat [cover1; cover2; cover3] |> Seq.toArray)
 
