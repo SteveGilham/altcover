@@ -150,6 +150,16 @@ module Runner =
            let updateMethod (vs, vm, pt) (``method``:XmlElement) =
             let sp = ``method``.GetElementsByTagName("SequencePoint") 
             let count = sp.Count
+            if count > 0 then
+              ``method``.GetElementsByTagName("MethodPoint")
+              |> Seq.cast<XmlElement>
+              |> Seq.iter(fun m ->
+                m.SetAttribute("type", "http://www.w3.org/2001/XMLSchema-instance", "SequencePoint") |> ignore
+                sp 
+                |> Seq.cast<XmlElement>
+                |> Seq.take 1 
+                |> Seq.collect (fun p -> p.Attributes |> Seq.cast<XmlAttribute>)
+                |> Seq.iter (fun a -> m.SetAttribute(a.Name, a.Value)))
             let visitPoints = sp
                             |> Seq.cast<XmlElement>
                             |> Seq.filter(fun s -> Int32.TryParse( s.GetAttribute("vc") ,

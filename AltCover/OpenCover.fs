@@ -78,7 +78,10 @@ module OpenCover =
                 XAttribute(X "numMethods", 0))
 
     let StartVisit (s : Context) =
-          let element = XElement(X "CoverageSession")
+          let element = XElement(X "CoverageSession",
+                                    XAttribute(XNamespace.Xmlns + "xsd", "http://www.w3.org/2001/XMLSchema"),
+                                    XAttribute(XNamespace.Xmlns + "xsi", "http://www.w3.org/2001/XMLSchema-instance")
+          )
           document.Add(element)
           element.Add(Summary())
           let modules = XElement(X "Modules")
