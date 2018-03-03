@@ -26,7 +26,7 @@ type internal Node =
      | Module of ModuleDefinition * ISymbolReader option * bool
      | Type of TypeDefinition * ISymbolReader option  * bool
      | Method of MethodDefinition * MethodDebugInformation option * bool
-     | MethodPoint of Instruction * SequencePoint * int * bool
+     | MethodPoint of Instruction * SequencePoint option * int * bool
      | AfterMethod of bool
      | AfterType
      | AfterModule
@@ -168,7 +168,8 @@ module Visitor =
                                   Method (m, dbg, included && IsIncluded m)) >> buildSequence)
 
   let private VisitMethod (m:MethodDefinition) (dbg:MethodDebugInformation option) included =
-            let instructions = m.Body.Instructions
+            let rawInstructions = m.Body.Instructions
+            let instructions = rawInstructions
                                |> Seq.cast
                                |> Seq.filter (fun (x:Instruction) -> match dbg with
                                                                      | None -> false
@@ -183,9 +184,14 @@ module Visitor =
             let point = PointNumber
             PointNumber <- point + number
 
-            instructions.OrderByDescending(fun (x:Instruction) -> x.Offset)
-            |> Seq.mapi (fun i x -> let s = (Option.get dbg).GetSequencePoint(x)
-                                    MethodPoint (x, s, i+point, included && (IsIncluded s.Document.Url)))
+            if included && instructions |> Seq.isEmpty && rawInstructions |> Seq.isEmpty |> not then 
+                rawInstructions
+                |> Seq.take 1
+                |> Seq.map (fun i -> MethodPoint (i, None, m.MetadataToken.ToInt32(), included))
+            else 
+                instructions.OrderByDescending(fun (x:Instruction) -> x.Offset)
+                |> Seq.mapi (fun i x -> let s = (Option.get dbg).GetSequencePoint(x)
+                                        MethodPoint (x, Some s, i+point, included && (IsIncluded s.Document.Url)))
 
   let rec internal Deeper node =
     // The pattern here is map x |> map y |> map x |> concat => collect (x >> y >> z)

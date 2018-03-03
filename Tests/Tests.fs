@@ -562,7 +562,7 @@ type AltCoverTests() = class
   member self.AfterProcessingYieldsAnExpectedValue() =
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly (Assembly.GetExecutingAssembly().Location)
     let inputs = [ Node.Start [] ; Node.Assembly (def, None, true) ; Node.Module (null, None, false) ; Node.Type (null, None, true) ;
-                   Node.Method (null, None, false) ; Node.MethodPoint (null, null, 0, true ) ;
+                   Node.Method (null, None, false) ; Node.MethodPoint (null, None, 0, true ) ;
                    Node.AfterMethod false ; Node.AfterModule ; Node.AfterAssembly def; Node.Finish ]
     let outputs = inputs |> Seq.map (Visitor.After >> Seq.toList)
     let expected = [ [Finish]; [AfterAssembly def]; [AfterModule]; [AfterType]; [AfterMethod false]; []; []; []; []; []]
@@ -591,7 +591,7 @@ type AltCoverTests() = class
   [<Test>]
   member self.TerminalCasesGoNoDeeper() =
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly (Assembly.GetExecutingAssembly().Location)
-    let inputs = [ Node.MethodPoint (null, null, 0, true ) ;
+    let inputs = [ Node.MethodPoint (null, None, 0, true ) ;
                    Node.AfterMethod false ; Node.AfterModule ; Node.AfterAssembly def; Node.Finish ]
     let outputs = inputs |> Seq.map (Visitor.Deeper>> Seq.toList)
     let expected = [[]; []; []; []; []]
@@ -641,7 +641,7 @@ type AltCoverTests() = class
                                          let node = Node.Method (m, Option.nullable (dbg.Read m), flag)
                                          List.concat [ [node]; (Visitor.Deeper >> Seq.toList) node;  [Node.AfterMethod flag]])
                     |> List.concat
-        Assert.That (deeper.Length, Is.EqualTo 14)
+        Assert.That (deeper.Length, Is.EqualTo 15)
         Assert.That (deeper |> Seq.map string,
                      Is.EquivalentTo (expected |> Seq.map string))
     finally
@@ -685,7 +685,7 @@ type AltCoverTests() = class
                 |> Seq.map (fun t -> let node = Node.Module (t, rdr, true)
                                      List.concat [ [node]; (Visitor.Deeper >> Seq.toList) node; [AfterModule]])
                 |> List.concat
-    Assert.That (deeper.Length, Is.EqualTo 20)
+    Assert.That (deeper.Length, Is.EqualTo 21)
     Assert.That (deeper |> Seq.map string,
                  Is.EquivalentTo (expected |> Seq.map string))
 
@@ -703,7 +703,7 @@ type AltCoverTests() = class
 
     let assembly = Node.Assembly (def, Some rdr, true)
     let expected = List.concat [ [assembly]; (Visitor.Deeper >> Seq.toList) assembly; [AfterAssembly def]]
-    Assert.That (deeper.Length, Is.EqualTo 22)
+    Assert.That (deeper.Length, Is.EqualTo 23)
     Assert.That (deeper |> Seq.map string,
                  Is.EquivalentTo (expected |> Seq.map string))
 
@@ -2042,7 +2042,7 @@ type AltCoverTests() = class
     let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
     ProgramDatabase.ReadSymbols def |> ignore
-    let visited = Node.MethodPoint (null, null, 0, false)
+    let visited = Node.MethodPoint (null, None, 0, false)
     let state = Instrument.Context.Build []
     let result = Instrument.InstrumentationVisitor state visited
     Assert.That (result, Is.SameAs state)
@@ -2063,7 +2063,7 @@ type AltCoverTests() = class
     let target = main.Body.Instructions
                  |> Seq.filter (dbg.GetSequencePoint >> isNull >> not)
                  |> Seq.head
-    let visited = Node.MethodPoint (target, null, 32767, true)
+    let visited = Node.MethodPoint (target, None, 32767, true)
     Assert.That (target.Previous, Is.Null)
     let state = { (Instrument.Context.Build []) with MethodWorker = proc
                                                      MethodBody = main.Body

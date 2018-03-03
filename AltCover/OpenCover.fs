@@ -193,6 +193,11 @@ module OpenCover =
                    MethodSeq = s.MethodSeq + 1}
        else s
 
+    let VisitMethodPoint' (s : Context) (codeSegment':Cil.SequencePoint option) i included =
+      match codeSegment' with 
+      | Some codeSegment ->  VisitMethodPoint s codeSegment i included
+      | None -> s
+    
     let limitMethodCC count stack =
         if count > 0
         then stack
@@ -201,22 +206,26 @@ module OpenCover =
     let passOnClassExclusion excluded =
         if excluded = Method then Nothing else excluded
 
+    let handleSequencePoints (``method``:XElement) =
+        let sp = ``method``.Descendants(X "SequencePoint")
+        sp |> Seq.iteri(fun i x -> x.SetAttributeValue(X "ordinal", i))
+
     let VisitAfterMethod (s : Context) =
       if s.Excluded = Nothing then
         let head,tail = Augment.Split s.Stack
         head.Parent.Elements(X "FileRef")
         |> Seq.toList
         |> Seq.iter (fun fileref ->  if s.Index < 0
-                                     then fileref.Remove() // TODO method point
+                                     then fileref.Remove()
                                      else fileref.Add(XAttribute(X "uid", s.Index)))
         let cc = Option.getOrElse 1 s.MethodCC.Head
-        head.Parent.Elements(X "Summary")
+        let ``method`` = head.Parent
+        ``method``.Elements(X "Summary")
         |> Seq.iter(fun summary -> summary.SetAttributeValue(X "numSequencePoints", s.MethodSeq)
                                    summary.SetAttributeValue(X "maxCyclomaticComplexity", cc)
                                    summary.SetAttributeValue(X "minCyclomaticComplexity", cc)
                                    summary.SetAttributeValue(X "numMethods", if s.MethodSeq > 0 then 1 else 0))
-        head.Descendants(X "SequencePoint")
-        |> Seq.iteri(fun i x -> x.SetAttributeValue(X "ordinal", i))
+        handleSequencePoints ``method``
         {s with Stack = tail
                 ClassSeq = s.ClassSeq + s.MethodSeq
                 MethodCC = limitMethodCC s.MethodSeq s.MethodCC}
@@ -287,8 +296,7 @@ module OpenCover =
       | Node.Module (moduleDef, _ , included) -> VisitModule s moduleDef included
       | Node.Type (typeDef, _, included) -> VisitType s typeDef included
       | Node.Method (methodDef, _, included) -> VisitMethod s methodDef included
-      | MethodPoint (_, codeSegment,  i, included) ->
-        VisitMethodPoint s codeSegment i included
+      | MethodPoint (_, codeSegment,  i, included) -> VisitMethodPoint' s codeSegment i included
       | AfterMethod _ -> VisitAfterMethod s
       | AfterType _ ->   VisitAfterType s
       | AfterModule _ ->  VisitAfterModule s

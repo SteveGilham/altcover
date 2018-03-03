@@ -915,9 +915,10 @@ or
                           el.SetAttribute("sequenceCoverage", "0")
                            )
 
-    Runner.PostProcess Base.ReportFormat.OpenCover after
+    let empty = Dictionary<string, Dictionary<int, int>>()
+    Runner.PostProcess empty Base.ReportFormat.OpenCover after
 
-    Assert.That(after.OuterXml, Is.EqualTo before, after.OuterXml)
+    Assert.That(after.OuterXml.Replace("uspid=\"100663298", "uspid=\"13"), Is.EqualTo before, after.OuterXml)
 
 
   [<Test>]
@@ -945,9 +946,10 @@ or
                           el.SetAttribute("sequenceCoverage", "0")
                            )
 
-    Runner.PostProcess Base.ReportFormat.OpenCover after
+    let empty = Dictionary<string, Dictionary<int, int>>()
+    Runner.PostProcess empty Base.ReportFormat.OpenCover after
 
-    Assert.That(after.OuterXml, Is.EqualTo before, after.OuterXml)
+    Assert.That(after.OuterXml.Replace("uspid=\"100663298", "uspid=\"13"), Is.EqualTo before, after.OuterXml)
 
   [<Test>]
   member self.PostprocessShouldRestoreDegenerateOpenCoverState() =
@@ -975,9 +977,15 @@ or
     |> Seq.toList
     |> List.iter(fun el -> el |> el.ParentNode.RemoveChild |> ignore)
 
-    let before = after.OuterXml
+    after.DocumentElement.SelectNodes("//MethodPoint")
+    |> Seq.cast<XmlElement>
+    |> Seq.toList
+    |> List.iter(fun el -> el |> el.ParentNode.RemoveChild |> ignore)
 
-    Runner.PostProcess Base.ReportFormat.OpenCover after
+    let before = after.OuterXml.Replace("uspid=\"13", "uspid=\"100663298")
+
+    let empty = Dictionary<string, Dictionary<int, int>>()
+    Runner.PostProcess empty Base.ReportFormat.OpenCover after
 
     Assert.That(after.OuterXml, Is.EqualTo before, after.OuterXml)
 
