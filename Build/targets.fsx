@@ -521,10 +521,6 @@ Target "UnitTestWithAltCoverRunner" (fun _ ->
 
       let coverage =  reports @@ "CombinedTestWithAltCoverRunner.coveralls"
 
-      "_Reports/_UnitTestWithAltCoverRunner/Summary.xml"
-          |> System.IO.File.ReadAllLines
-          |> Seq.iter (printfn "%s")                
-
       File.WriteAllLines(coverage, Seq.concat [cover1; cover2; cover3] |> Seq.toArray)
 
       if not <| String.IsNullOrWhiteSpace (environVar "APPVEYOR_BUILD_NUMBER") then
@@ -533,6 +529,11 @@ Target "UnitTestWithAltCoverRunner" (fun _ ->
                 FileName = findToolInSubPath "coveralls.net.exe" nugetCache
                 WorkingDirectory = "_Reports"
                 Arguments = ("--opencover " + coverage)}) "Coveralls upload failed"
+
+      ["_Reports/_UnitTestWithAltCoverRunner/AltCover_Main.htm"
+       "_Reports/_UnitTestWithAltCoverRunner/AltCover_Runner.htm"]
+       |> List.iter (System.IO.File.ReadAllLines >> (Seq.iter (printfn "%s")))  
+
     else
       printfn "Symbols not present; skipping"
 )
