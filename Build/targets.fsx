@@ -529,11 +529,6 @@ Target "UnitTestWithAltCoverRunner" (fun _ ->
                 FileName = findToolInSubPath "coveralls.net.exe" nugetCache
                 WorkingDirectory = "_Reports"
                 Arguments = ("--opencover " + coverage)}) "Coveralls upload failed"
-
-      ["_Reports/_UnitTestWithAltCoverRunner/AltCover_Main.htm"
-       "_Reports/_UnitTestWithAltCoverRunner/AltCover_Runner.htm"]
-       |> List.iter (System.IO.File.ReadAllLines >> (Seq.iter (printfn "%s")))  
-
     else
       printfn "Symbols not present; skipping"
 )
