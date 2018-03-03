@@ -144,6 +144,16 @@ module Runner =
       WriteResourceWithFormatItems "%d visits recorded" [|hits.Count|]
       result
 
+  let internal CopyFillMethodPoint (mp:XmlElement seq) sp =
+    mp
+    |> Seq.iter(fun m ->
+        m.SetAttribute("type", "http://www.w3.org/2001/XMLSchema-instance", "SequencePoint") |> ignore
+        sp
+        |> Seq.cast<XmlElement>
+        |> Seq.take 1
+        |> Seq.collect (fun p -> p.Attributes |> Seq.cast<XmlAttribute>)
+        |> Seq.iter (fun a -> m.SetAttribute(a.Name, a.Value)))
+
   let internal PostProcess (counts:Dictionary<string, Dictionary<int, int>>) format (document:XmlDocument) =
     match format with
     | Base.ReportFormat.OpenCover ->
@@ -153,14 +163,7 @@ module Runner =
             let mp = ``method``.GetElementsByTagName("MethodPoint")
                         |> Seq.cast<XmlElement>
             if count > 0 then
-                mp
-                |> Seq.iter(fun m ->
-                    m.SetAttribute("type", "http://www.w3.org/2001/XMLSchema-instance", "SequencePoint") |> ignore
-                    sp
-                    |> Seq.cast<XmlElement>
-                    |> Seq.take 1
-                    |> Seq.collect (fun p -> p.Attributes |> Seq.cast<XmlAttribute>)
-                    |> Seq.iter (fun a -> m.SetAttribute(a.Name, a.Value)))
+                CopyFillMethodPoint mp sp
             else
                 let token = ``method``.GetElementsByTagName("MetadataToken")
                             |> Seq.cast<XmlElement>
