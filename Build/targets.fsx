@@ -521,7 +521,7 @@ Target "UnitTestWithAltCoverRunner" (fun _ ->
 
       let coverage =  reports @@ "CombinedTestWithAltCoverRunner.coveralls"
 
-      "_Reports/_UnitTestWithAltCoverRunner/index.htm"
+      "_Reports/_UnitTestWithAltCoverRunner/Summary.xml"
           |> System.IO.File.ReadAllLines
           |> Seq.iter (printfn "%s")                
 
