@@ -946,8 +946,17 @@ or
                           el.SetAttribute("sequenceCoverage", "0")
                            )
 
-    let empty = Dictionary<string, Dictionary<int, int>>()
-    Runner.PostProcess empty Base.ReportFormat.OpenCover after
+    after.DocumentElement.SelectNodes("//MethodPoint")
+    |> Seq.cast<XmlElement>
+    |> Seq.toList
+    |> List.iter(fun el -> el.RemoveAllAttributes())
+
+    let visits = Dictionary<string, Dictionary<int, int>>()
+    let visit = Dictionary<int, int>()
+    visits.Add("6A-33-AA-93-82-ED-22-9D-F8-68-2C-39-5B-93-9F-74-01-76-00-9F", visit)
+    visit.Add(100663297, 1)  // should fill in the expected non-zero value
+    visit.Add(100663298, 23) // should be ignored
+    Runner.PostProcess visits Base.ReportFormat.OpenCover after
 
     Assert.That(after.OuterXml.Replace("uspid=\"100663298", "uspid=\"13"), Is.EqualTo before, after.OuterXml)
 
