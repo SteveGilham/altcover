@@ -6,8 +6,6 @@ open System.Xml.Linq
 open Actions
 
 open Fake.Core.Environment
-open Fake.Core.Globbing.Operators
-open Fake.Core.Globbing.Tools
 open Fake.Core.Target
 open Fake.Core.TargetOperators
 open Fake.DotNet
@@ -18,6 +16,8 @@ open Fake.DotNet.Testing.NUnit3
 open Fake.DotNet.Testing
 open Fake.IO
 open Fake.IO.FileSystemOperators
+open Fake.IO.Globbing.Operators
+open Fake.IO.Globbing.Tools
 
 open FSharpLint.Application
 open NUnit.Framework
