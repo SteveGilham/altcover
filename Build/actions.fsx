@@ -5,11 +5,9 @@ open System.Xml
 open System.Xml.Linq
 
 open Fake.Core.Environment
-open Fake.Core.Process
 open Fake.DotNet.Cli
-open Fake.IO.Directory
 open Fake.IO.FileSystemOperators
-open Fake.IO.Path
+open Fake.IO
 
 open HeyRed.MarkdownSharp
 open NUnit.Framework
@@ -187,7 +185,7 @@ open System.Runtime.CompilerServices
     let ones' = ones |> Seq.distinct |> Seq.toList
     Assert.That (ones', Is.EquivalentTo ["11"; "12"; "13"; "14"; "15"; "16"; "21"], "wrong number of visited in " + sigil + " : " + (sprintf "%A" zero'))
 
-  let HandleResults (msg:string) (result:ProcessResult) =
+  let HandleResults (msg:string) (result:Fake.Core.ProcessResult) =
     String.Join (Environment.NewLine, result.Messages) |> printfn "%s"
     let save = (Console.ForegroundColor, Console.BackgroundColor)
     match result.Errors |> Seq.toList with
@@ -202,8 +200,8 @@ open System.Runtime.CompilerServices
             Console.BackgroundColor <- snd save
     Assert.That(result.ExitCode, Is.EqualTo 0, msg)
 
-  let Run (f:ProcStartInfo -> ProcStartInfo) msg =
-    ExecProcessAndReturnMessages (f >> withFramework) (TimeSpan.FromMinutes 5.0)
+  let Run (f:Fake.Core.ProcStartInfo -> Fake.Core.ProcStartInfo) msg =
+    Fake.Core.Process.ExecAndReturnMessages (f >> Fake.Core.Process.withFramework) (TimeSpan.FromMinutes 5.0)
     |> (HandleResults msg)
 
   let RunDotnet (o:DotNetOptions -> DotNetOptions) cmd args msg =
@@ -212,10 +210,10 @@ open System.Runtime.CompilerServices
 
   let SimpleInstrumentingRun (samplePath:string) (binaryPath:string) (reportSigil:string) =
     printfn "Instrument and run a simple executable"
-    ensure "./_Reports"
-    let simpleReport = (getFullName "./_Reports") @@ ( reportSigil + ".xml")
-    let binRoot = getFullName binaryPath
-    let sampleRoot = getFullName samplePath
+    Directory.ensure "./_Reports"
+    let simpleReport = (Path.getFullName "./_Reports") @@ ( reportSigil + ".xml")
+    let binRoot = Path.getFullName binaryPath
+    let sampleRoot = Path.getFullName samplePath
     let instrumented = "__Instrumented." + reportSigil
     Run (fun info -> { info with
                             FileName = binRoot @@ "AltCover.exe"
@@ -232,11 +230,11 @@ open System.Runtime.CompilerServices
    printfn "Instrument and run a simple executable under mono"
    match monoOnWindows with
    | Some mono ->
-    ensure "./_Reports"
+    Directory.ensure "./_Reports"
     let reportSigil = reportSigil' + "UnderMono"
-    let simpleReport = (getFullName "./_Reports") @@ ( reportSigil + ".xml")
-    let binRoot = getFullName binaryPath
-    let sampleRoot = getFullName samplePath
+    let simpleReport = (Path.getFullName "./_Reports") @@ ( reportSigil + ".xml")
+    let binRoot = Path.getFullName binaryPath
+    let sampleRoot = Path.getFullName samplePath
     let instrumented = "__Instrumented." + reportSigil
     Run (fun info -> { info with
                             FileName = mono
@@ -251,7 +249,7 @@ open System.Runtime.CompilerServices
    | None -> Assert.Fail "Mono executable expected"
 
   let PrepareReadMe packingCopyright =
-    let readme = getFullName "README.md"
+    let readme = Path.getFullName "README.md"
     let document = File.ReadAllText readme
     let markdown = Markdown()
     let docHtml = """<?xml version="1.0"  encoding="utf-8"?>
@@ -293,5 +291,5 @@ a:hover {color: #ecc;}
                        | Some x -> x.Remove()
                        | _ -> ())
 
-    let packable = getFullName "./_Binaries/README.html"
+    let packable = Path.getFullName "./_Binaries/README.html"
     xmlform.Save packable

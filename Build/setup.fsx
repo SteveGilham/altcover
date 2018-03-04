@@ -13,14 +13,13 @@ open System.IO
 
 open Fake.Core.Environment
 open Fake.Core.Globbing.Tools
-open Fake.Core.Process
 open Fake.DotNet.Cli
 open Fake.DotNet.NuGet.Restore
 
 open Microsoft.Win32
 
 // Really bootstrap
-let dotnetPath = "dotnet" |> tryFindFileOnPath
+let dotnetPath = "dotnet" |> Fake.Core.Process.tryFindFileOnPath
 let dotnetOptions o = match dotnetPath with
                       | Some f -> {o with DotNetCliPath = f}
                       | None -> o
