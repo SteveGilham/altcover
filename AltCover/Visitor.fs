@@ -184,11 +184,11 @@ module Visitor =
             let point = PointNumber
             PointNumber <- point + number
 
-            if included && instructions |> Seq.isEmpty && rawInstructions |> Seq.isEmpty |> not then 
+            if included && instructions |> Seq.isEmpty && rawInstructions |> Seq.isEmpty |> not then
                 rawInstructions
                 |> Seq.take 1
                 |> Seq.map (fun i -> MethodPoint (i, None, m.MetadataToken.ToInt32(), included))
-            else 
+            else
                 instructions.OrderByDescending(fun (x:Instruction) -> x.Offset)
                 |> Seq.mapi (fun i x -> let s = (Option.get dbg).GetSequencePoint(x)
                                         MethodPoint (x, Some s, i+point, included && (IsIncluded s.Document.Url)))

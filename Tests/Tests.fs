@@ -1468,7 +1468,7 @@ type AltCoverTests() = class
         let prepared = Instrument.PrepareAssembly path
         Instrument.WriteAssembly prepared outputdll
         let expectedSymbols = if "Mono.Runtime" |> Type.GetType |> isNull |> not then ".dll.mdb" else ".pdb"
-        let isWindows = 
+        let isWindows =
 #if NETCOREAPP2_0
                         true
 #else
@@ -1584,7 +1584,7 @@ type AltCoverTests() = class
 
         Instrument.WriteAssembly def outputdll
         let expectedSymbols = if "Mono.Runtime" |> Type.GetType |> isNull |> not then ".dll.mdb" else ".pdb"
-        let isWindows = 
+        let isWindows =
 #if NETCOREAPP2_0
                         true
 #else
@@ -3297,7 +3297,7 @@ type AltCoverTests() = class
 
       Assert.That (File.Exists report)
       let pdb = Path.ChangeExtension(Assembly.GetExecutingAssembly().Location, ".pdb")
-      let isWindows = 
+      let isWindows =
 #if NETCOREAPP2_0
                         true
 #else
@@ -3413,7 +3413,7 @@ type AltCoverTests() = class
 
       Assert.That (File.Exists report)
       let pdb = Path.ChangeExtension(Assembly.GetExecutingAssembly().Location, ".pdb")
-      let isWindows = 
+      let isWindows =
 #if NETCOREAPP2_0
                         true
 #else

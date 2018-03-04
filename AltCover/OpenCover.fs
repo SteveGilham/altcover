@@ -194,10 +194,10 @@ module OpenCover =
        else s
 
     let VisitMethodPoint' (s : Context) (codeSegment':Cil.SequencePoint option) i included =
-      match codeSegment' with 
+      match codeSegment' with
       | Some codeSegment ->  VisitMethodPoint s codeSegment i included
       | None -> s
-    
+
     let limitMethodCC count stack =
         if count > 0
         then stack
