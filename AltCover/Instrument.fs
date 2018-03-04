@@ -231,7 +231,7 @@ module Instrument =
     // Mdb writing now fails in .net framework, it throws
     // Mono.CompilerServices.SymbolWriter.MonoSymbolFileException :
     // Exception of type 'Mono.CompilerServices.SymbolWriter.MonoSymbolFileException' was thrown.
-    // If there are portable .pdbs on mono, those fail to write, too with 
+    // If there are portable .pdbs on mono, those fail to write, too with
     // Mono.CompilerServices.SymbolWriter.MonoSymbolFileException :
     // Exception of type 'Mono.CompilerServices.SymbolWriter.MonoSymbolFileException' was thrown.
     let isWindows = System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
