@@ -35,6 +35,7 @@ test:
     only:
     - _Binaries\AltCover.Tests\Debug+AnyCPU\*.Tests.dll
     - _Binaries\AltCover.Shadow.Tests\Debug+AnyCPU\*.Tests.dll
+    - _Binaries\AltCover.WeakNameTests\Debug+AnyCPU\*Tests.dll
 artifacts:
 - path: _Packaging\*.nupkg
   name: NuGet
