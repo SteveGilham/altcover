@@ -45,6 +45,12 @@ module Counter =
   let private WriteXDocument (coverageDocument:XmlDocument) (stream:Stream) =
     coverageDocument.Save(stream)
 
+  let internal FindIndexFromUspid uspid =
+    let f, c = Int32.TryParse( uspid ,
+                    System.Globalization.NumberStyles.Integer,
+                    System.Globalization.CultureInfo.InvariantCulture)
+    if f then c else -1
+
   /// <summary>
   /// Save sequence point hit counts to xml report file
   /// </summary>
@@ -92,11 +98,7 @@ module Counter =
                                                         |> Seq.cast<XmlElement>
                                                         |> Seq.toList |> List.rev)
         |> Seq.mapi (fun counter pt -> ((match format with
-                                        | ReportFormat.OpenCover ->
-                                             let f, c = Int32.TryParse( pt.GetAttribute("uspid") ,
-                                                             System.Globalization.NumberStyles.Integer,
-                                                             System.Globalization.CultureInfo.InvariantCulture)
-                                             if f then c else -1
+                                        | ReportFormat.OpenCover -> "uspid" |> pt.GetAttribute |> FindIndexFromUspid 
                                         | _ -> counter),
                                         pt))
         |> Seq.filter (fst >> moduleHits.ContainsKey)

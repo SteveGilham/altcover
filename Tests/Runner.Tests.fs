@@ -21,6 +21,12 @@ type AltCoverTests() = class
   // Base.fs
 
   [<Test>]
+  member self.JunkUspidGivesNegativeIndex() =
+    let key = " "
+    let index = Counter.FindIndexFromUspid key
+    Assert.That (index, Is.LessThan 0)
+
+  [<Test>]
   member self.RealIdShouldIncrementCount() =
     let visits = new Dictionary<string, Dictionary<int, int>>()
     let key = " "
@@ -920,7 +926,6 @@ or
 
     Assert.That(after.OuterXml.Replace("uspid=\"100663298", "uspid=\"13"), Is.EqualTo before, after.OuterXml)
 
-
   [<Test>]
   member self.PostprocessShouldRestoreKnownOpenCoverStateFromMono() =
     Counter.measureTime <- DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
@@ -998,5 +1003,13 @@ or
 
     Assert.That(after.OuterXml, Is.EqualTo before, after.OuterXml)
 
+  [<Test>]
+  member self.JunkTokenShouldDefaultZero() =
+    let visits = Dictionary<int, int>()
+    let key = " "
+    let result = Runner.LookUpVisitsByToken key visits
+    match result with
+    | (false, 0) -> ()
+    | _ -> Assert.Fail(sprintf "%A" result)
 
 end

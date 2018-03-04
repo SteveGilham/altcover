@@ -154,21 +154,24 @@ module Runner =
         |> Seq.collect (fun p -> p.Attributes |> Seq.cast<XmlAttribute>)
         |> Seq.iter (fun a -> m.SetAttribute(a.Name, a.Value)))
 
+  let internal LookUpVisitsByToken token (dict:Dictionary<int, int>) =
+    let (ok, index) = Int32.TryParse( token,
+                                        System.Globalization.NumberStyles.Integer,
+                                        System.Globalization.CultureInfo.InvariantCulture)
+    dict.TryGetValue(if ok then index else -1)
+
   let internal FillMethodPoint (mp:XmlElement seq) (``method``:XmlElement) (dict:Dictionary<int, int>) =
     let token = ``method``.GetElementsByTagName("MetadataToken")
                 |> Seq.cast<XmlElement>
                 |> Seq.map(fun m -> m.InnerText)
                 |> Seq.head
-    let (ok, index) = Int32.TryParse( token,
-                                        System.Globalization.NumberStyles.Integer,
-                                        System.Globalization.CultureInfo.InvariantCulture)
-    let (_, vc) = dict.TryGetValue(if ok then index else -1)
+    let (_, vc) = LookUpVisitsByToken token dict
     mp
     |> Seq.iter (fun m -> m.SetAttribute("vc", vc.ToString(System.Globalization.CultureInfo.InvariantCulture))
                           m.SetAttribute("uspid", token)
                           m.SetAttribute("ordinal", "0")
                           m.SetAttribute("offset", "0"))
-                           
+
   let internal PostProcess (counts:Dictionary<string, Dictionary<int, int>>) format (document:XmlDocument) =
     match format with
     | Base.ReportFormat.OpenCover ->
