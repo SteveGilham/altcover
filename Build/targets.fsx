@@ -748,7 +748,7 @@ Target "CSharpMonoWithDotNet" (fun _ ->
 Target "CSharpDotNetWithDotNet" (fun _ ->
     Directory.ensure "./_Reports"
     let x = Path.getFullName "./_Reports/CSharpDotNetWithDotNet.xml"
-    let o = Path.getFullName "../_Binaries/Sample1/__Instrumented.CSharpDotNetWithDotNet"
+    let o = Path.getFullName "./_Binaries/Sample1/__Instrumented.CSharpDotNetWithDotNet"
     let i = Path.getFullName "./_Binaries/Sample1/Debug+AnyCPU/netcoreapp2.0"
     Actions.RunDotnet dotnetOptions
                        "_Binaries/AltCover/Debug+AnyCPU/netcoreapp2.0/AltCover.dll" (" -t \"System.\" -x \"" + x + "\" -o \"" + o + "\" -i \"" + i + "\"")

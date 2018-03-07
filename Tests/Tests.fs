@@ -2203,11 +2203,12 @@ type AltCoverTests() = class
     use stream' = Assembly.GetExecutingAssembly().GetManifestResourceStream(resultName)
     use reader' = new StreamReader(stream')
     let expected = reader'.ReadToEnd()
+    printfn "%s" result
     let version = Assembly.GetExecutingAssembly().GetName().Version.ToString()
     let transform (s:string) =
         s.Replace("\r\n","\n"
-        ).Replace("AltCover.Recorder.g/1.4.0.0", "AltCover.Recorder.g/" + version
-        ).Replace("AltCover.Recorder.g\": \"1.4.0.0", "AltCover.Recorder.g\": \"" + version)
+        ).Replace("AltCover.Recorder.g/2.0.0.0", "AltCover.Recorder.g/" + version
+        ).Replace("AltCover.Recorder.g\": \"2.0.0.0", "AltCover.Recorder.g\": \"" + version)
     Assert.That (transform result,
                  Is.EqualTo(transform expected))
 

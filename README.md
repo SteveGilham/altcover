@@ -24,7 +24,7 @@ See the [Wiki page]( https://github.com/SteveGilham/altcover/wiki/Usage) for det
 
 ## Building
 
-You will need Visual Studio VS2017 (Community Edition) v15.5 or later with F# language support.  The NUnit3 Test Runner will simplify the basic in-IDE development cycle.  Note that some of the unit tests expect that the separate build of test assemblies under Mono, full .net framework and .net core has taken place; there will be up to 16 failures when running the unit tests in Visual Studio from clean when those expected assemblies are not found.
+You will need Visual Studio VS2017 (Community Edition) v15.6.latest with F# language support.  The NUnit3 Test Runner will simplify the basic in-IDE development cycle.  Note that some of the unit tests expect that the separate build of test assemblies under Mono, full .net framework and .net core has taken place; there will be up to 16 failures when running the unit tests in Visual Studio from clean when those expected assemblies are not found.
 
 ### Bootstrapping
 
