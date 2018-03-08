@@ -1162,6 +1162,7 @@ Target "ReleaseFSharpTypesX86DotNetRunner" ( fun _ ->
 
     Shell.CleanDir o
     try
+      try
         Environment.SetEnvironmentVariable("platform", "x86")
 
         // Instrument the code
@@ -1186,6 +1187,8 @@ Target "ReleaseFSharpTypesX86DotNetRunner" ( fun _ ->
                             "ReleaseFSharpTypesX86DotNetRunner test"
 
         Actions.ValidateFSharpTypesCoverage x
+      with
+      | x -> printfn "Failed with %A" x
     finally
         Environment.SetEnvironmentVariable("platform", "")
 )
