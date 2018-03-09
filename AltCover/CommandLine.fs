@@ -105,5 +105,7 @@ module CommandLine =
         match rest |> Seq.toList with
         | [] -> 0
         | cmd::t->
+           // "Launching : \"" + String.Join ("\" \"", rest) + "\""
+           // |> WriteOut
            let args = String.Join(" ", (List.toArray t))
            Launch cmd args toInfo.FullName // Spawn process, echoing asynchronously
