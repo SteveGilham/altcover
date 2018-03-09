@@ -1171,12 +1171,6 @@ Target "ReleaseFSharpTypesX86DotNetRunner" ( fun _ ->
                 Arguments = "--info"}) "dotnet-x86 failed"
 
         printfn "Build the code"
-        "./altcover.core.sln"
-        |> DotNetCompile
-            (fun p ->
-                { p with
-                    Configuration = BuildConfiguration.Debug
-                    Common = dotnetOptions p.Common})
         Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = unpack }) "build"
                       (" ../altcover.dotnet.sln --configuration Release")
                       "ReleaseFSharpTypesX86DotNetRunnerBuild"
