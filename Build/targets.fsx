@@ -1190,8 +1190,7 @@ Target "ReleaseFSharpTypesX86DotNetRunner" ( fun _ ->
         Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = o
                                                             DotNetCliPath = dotnetPath86 |> Option.get}) ""
                               (altcover + " Runner -x \"" + (dotnetPath |> Option.get) +
-                              "\" -r \"" + o + "\" -- test --no-build --configuration Debug " + sample2 + 
-                              " -- TargetPlatform=x86")
+                              "\" -r \"" + o + "\" -- test --no-build --configuration Debug " + sample2)
                             "ReleaseFSharpTypesX86DotNetRunner test"
 
         Actions.ValidateFSharpTypesCoverage x
