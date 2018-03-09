@@ -1288,9 +1288,11 @@ Target "BulkReport" (fun _ ->
 Target "All" ignore
 
 Description "ResetConsoleColours"
-CreateFinal "ResetConsoleColours" (fun _ ->
+let resetColours = (fun _ ->
   System.Console.ResetColor()
 )
+CreateFinal "ResetConsoleColours" resetColours
+ActivateFinal "ResetConsoleColours"
 
 // Dependencies
 
@@ -1476,7 +1478,6 @@ CreateFinal "ResetConsoleColours" (fun _ ->
 
 "Deployment"
 ==> "BulkReport"
-==> "ResetConsoleColours"
 ==> "All"
 
 RunOrDefault "All"
