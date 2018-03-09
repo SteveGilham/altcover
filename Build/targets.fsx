@@ -1170,7 +1170,7 @@ Target "ReleaseFSharpTypesX86DotNetRunner" ( fun _ ->
                 FileName = dotnetX86 |> Option.get
                 Arguments = "--info"}) "dotnet-x86 failed"
 
-        // Build the code
+        printfn "Build the code"
         "./altcover.core.sln"
         |> DotNetCompile
             (fun p ->
@@ -1181,25 +1181,23 @@ Target "ReleaseFSharpTypesX86DotNetRunner" ( fun _ ->
                       (" altcover.core.fsproj --configuration Release")
                       "ReleaseFSharpTypesX86DotNetRunnerBuild"
 
-        // Instrument the code
+        printfn "Instrument the code"
+        let altcover = unpack @@ "_Binaries/AltCover/Release+x86/netcoreapp2.0/AltCover.dll"
         Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = unpack
-                                                            DotNetCliPath = dotnetX86 |> Option.get}) "run"
-                      ("--project altcover.core.fsproj --configuration Release --no-build -- -x \"" + x + "\" -o \"" + o + "\" -i \"" + i + "\"")
+                                                            DotNetCliPath = dotnetX86 |> Option.get}) ""
+                      (altcover + " -x \"" + x + "\" -o \"" + o + "\" -i \"" + i + "\"")
                       "ReleaseFSharpTypesX86DotNetRunner"
 
         Actions.ValidateFSharpTypes x ["main"]
 
         printfn "Execute the instrumented tests"
         let sample2 = Path.getFullName "./Sample2/sample2.core.fsproj"
-        let runner = Path.getFullName "_Packaging/Unpack/tools/netcoreapp2.0/AltCover/altcover.core.fsproj"
 
         // Run
         Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = o
-                                                            DotNetCliPath = dotnetX86 |> Option.get}) "run"
-                              ("--project " + runner +
-                              " --configuration Release -- Runner -x \"dotnet\" -r \"" + o +
-                              "\" -- test --no-build --configuration Debug " +
-                              sample2)
+                                                            DotNetCliPath = dotnetX86 |> Option.get}) ""
+                              (altcover + " Runner -x \"" + (dotnetX86 |> Option.get) +
+                              "\" -r \"" + o + "\" -- test --no-build --configuration Debug " + sample2)
                             "ReleaseFSharpTypesX86DotNetRunner test"
 
         Actions.ValidateFSharpTypesCoverage x
