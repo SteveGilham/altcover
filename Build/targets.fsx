@@ -9,7 +9,6 @@ open Fake.Core.Environment
 open Fake.Core.Target
 open Fake.Core.TargetOperators
 open Fake.DotNet
-open Fake.DotNet.Cli
 open Fake.DotNet.AssemblyInfoFile
 open Fake.DotNet.NuGet.NuGet
 open Fake.DotNet.Testing.NUnit3
@@ -33,9 +32,9 @@ let AltCoverFilterG= @" -s=Mono -s=\.Recorder\.g -s=Sample -s=nunit -e=Tests -t=
 let programFiles = environVar "ProgramFiles"
 let programFiles86 = environVar "ProgramFiles(x86) "
 let dotnetPath = "dotnet" |> Fake.Core.Process.tryFindFileOnPath
-let dotnetOptions o = match dotnetPath with
-                      | Some f -> {o with DotNetCliPath = f}
-                      | None -> o
+let dotnetOptions (o:DotNet.Options) = match dotnetPath with
+                                       | Some f -> {o with DotNetCliPath = f}
+                                       | None -> o
 
 let monoOnWindows = if isWindows then
                        [programFiles; programFiles86]
@@ -105,10 +104,10 @@ Target "BuildRelease" (fun _ ->
                              ]})
 
     "./altcover.core.sln"
-    |> DotNetCompile
+    |> DotNet.Compile
         (fun p ->
             { p with
-                Configuration = BuildConfiguration.Release
+                Configuration = DotNet.BuildConfiguration.Release
                 Common = dotnetOptions p.Common
             })
   with
@@ -129,10 +128,10 @@ Target "BuildDebug" (fun _ ->
                              ]}))
 
     "./altcover.core.sln"
-    |> DotNetCompile
+    |> DotNet.Compile
         (fun p ->
             { p with
-                Configuration = BuildConfiguration.Debug
+                Configuration = DotNet.BuildConfiguration.Debug
                 Common = dotnetOptions p.Common})
 )
 
@@ -1027,10 +1026,10 @@ Target "ReleaseXUnitDotNetDemo" (fun _ ->
     "./Demo/xunit-dotnet/bin" |> Path.getFullName |> Shell.CleanDir
 
     "./Demo/xunit-dotnet/xunit-dotnet.csproj"
-    |> DotNetCompile
+    |> DotNet.Compile
         (fun p ->
             { p with
-                Configuration = BuildConfiguration.Debug
+                Configuration = DotNet.BuildConfiguration.Debug
                 Common = dotnetOptions p.Common})
 
     let unpack = Path.getFullName "_Packaging/Unpack/tools/netcoreapp2.0/AltCover"
@@ -1044,7 +1043,7 @@ Target "ReleaseXUnitDotNetDemo" (fun _ ->
     !! (o @@ "*")
     |> Shell.Copy i
 
-    let result = DotNet (fun o -> {dotnetOptions o with WorkingDirectory = Path.getFullName "./Demo/xunit-dotnet"})
+    let result = DotNet.Exec (fun o -> {dotnetOptions o with WorkingDirectory = Path.getFullName "./Demo/xunit-dotnet"})
                     "test" "--no-build --configuration Debug xunit-dotnet.csproj"
     Assert.That(result.ExitCode, Is.EqualTo 1, "Unexpected unit test return")
 
@@ -1070,10 +1069,10 @@ Target "ReleaseXUnitDotNetRunnerDemo" (fun _ ->
     "./Demo/xunit-dotnet/bin" |> Path.getFullName |> Shell.CleanDir
 
     "./Demo/xunit-dotnet/xunit-dotnet.csproj"
-    |> DotNetCompile
+    |> DotNet.Compile
         (fun p ->
             { p with
-                Configuration = BuildConfiguration.Debug
+                Configuration = DotNet.BuildConfiguration.Debug
                 Common = dotnetOptions p.Common})
 
     let unpack = Path.getFullName "_Packaging/Unpack/tools/netcoreapp2.0/AltCover"

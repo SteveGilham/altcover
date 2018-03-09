@@ -11,18 +11,18 @@ open System
 open System.IO
 
 open Fake.Core.Environment
-open Fake.DotNet.Cli
+open Fake.DotNet
 open Fake.DotNet.NuGet.Restore
 
 open Microsoft.Win32
 
 // Really bootstrap
 let dotnetPath = "dotnet" |> Fake.Core.Process.tryFindFileOnPath
-let dotnetOptions o = match dotnetPath with
-                      | Some f -> {o with DotNetCliPath = f}
-                      | None -> o
+let dotnetOptions (o:DotNet.Options) = match dotnetPath with
+                                       | Some f -> {o with DotNetCliPath = f}
+                                       | None -> o
 
-DotNetRestore (fun o -> { o with
+DotNet.Restore (fun o -> { o with
                             Packages = ["./packages"]
                             Common = dotnetOptions o.Common}) "./Build/dotnet-nuget.fsproj"
 
