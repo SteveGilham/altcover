@@ -1158,7 +1158,7 @@ Target "ReleaseFSharpTypesX86DotNetRunner" ( fun _ ->
     let unpack = Path.getFullName "_Packaging/Unpack/tools/netcoreapp2.0/AltCover"
     let x = Path.getFullName "./_Reports/AltCoverReleaseFSharpTypesX86DotNetRunner.xml"
     let o = Path.getFullName "Sample2/_Binaries/Sample2/Debug+x86/netcoreapp2.0"
-    let i = Path.getFullName "_Binaries/Sample2/Debug+AnyCPU/netcoreapp2.0"
+    let i = Path.getFullName "_Binaries/Sample2/Debug+x86/netcoreapp2.0"
 
     Shell.CleanDir o
     try
@@ -1170,10 +1170,21 @@ Target "ReleaseFSharpTypesX86DotNetRunner" ( fun _ ->
                 FileName = dotnetX86 |> Option.get
                 Arguments = "--info"}) "dotnet-x86 failed"
 
+        // Build the code
+        "./altcover.core.sln"
+        |> DotNetCompile
+            (fun p ->
+                { p with
+                    Configuration = BuildConfiguration.Debug
+                    Common = dotnetOptions p.Common})
+        Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = unpack }) "build"
+                      (" altcover.core.fsproj --configuration Release")
+                      "ReleaseFSharpTypesX86DotNetRunnerBuild"
+
         // Instrument the code
         Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = unpack
                                                             DotNetCliPath = dotnetX86 |> Option.get}) "run"
-                      ("--project altcover.core.fsproj --configuration Release -- -x \"" + x + "\" -o \"" + o + "\" -i \"" + i + "\"")
+                      ("--project altcover.core.fsproj --configuration Release --no-build -- -x \"" + x + "\" -o \"" + o + "\" -i \"" + i + "\"")
                       "ReleaseFSharpTypesX86DotNetRunner"
 
         Actions.ValidateFSharpTypes x ["main"]
