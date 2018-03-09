@@ -194,7 +194,7 @@ open System.Runtime.CompilerServices
         try
             Console.ForegroundColor <- ConsoleColor.Black
             Console.BackgroundColor <- ConsoleColor.White
-            String.Join (Environment.NewLine, errors) |> eprintfn "%s"
+            String.Join (Environment.NewLine, errors) |> printfn "ERR : %s"
         finally
             Console.ForegroundColor <- fst save
             Console.BackgroundColor <- snd save
