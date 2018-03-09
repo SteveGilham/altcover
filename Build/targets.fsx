@@ -1165,6 +1165,11 @@ Target "ReleaseFSharpTypesX86DotNetRunner" ( fun _ ->
       try
         Environment.SetEnvironmentVariable("platform", "x86")
 
+        Actions.Run (fun info ->
+            { info with
+                FileName = dotnetX86 |> Option.get
+                Arguments = "--info"}) "dotnet-x86 failed"
+
         // Instrument the code
         Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = unpack
                                                             DotNetCliPath = dotnetX86 |> Option.get}) "run"
@@ -1189,6 +1194,7 @@ Target "ReleaseFSharpTypesX86DotNetRunner" ( fun _ ->
         Actions.ValidateFSharpTypesCoverage x
       with
       | x -> printfn "Failed with %A" x
+             reraise()
     finally
         Environment.SetEnvironmentVariable("platform", "")
 )
