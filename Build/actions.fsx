@@ -5,7 +5,7 @@ open System.Xml
 open System.Xml.Linq
 
 open Fake.Core.Environment
-open Fake.DotNet.Cli
+open Fake.DotNet
 open Fake.IO.FileSystemOperators
 open Fake.IO
 
@@ -204,8 +204,8 @@ open System.Runtime.CompilerServices
     Fake.Core.Process.ExecAndReturnMessages (f >> Fake.Core.Process.withFramework) (TimeSpan.FromMinutes 5.0)
     |> (HandleResults msg)
 
-  let RunDotnet (o:DotNetOptions -> DotNetOptions) cmd args msg =
-    DotNet o cmd args
+  let RunDotnet (o:DotNet.Options -> DotNet.Options) cmd args msg =
+    DotNet.Exec o cmd args
     |> (HandleResults msg)
 
   let SimpleInstrumentingRun (samplePath:string) (binaryPath:string) (reportSigil:string) =

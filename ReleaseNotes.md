@@ -2,6 +2,7 @@
 
 # 2.0.xxx  (Byakko series release 3)
 * Option `--opencover` now generates values for MethodPoint tags when collecting the coverage data in "runner" mode
+* Build changes : Visual Studio 15.6, and latest FAKE 5 beta releases; modified the full-framework builds to emit portable .pdb files on Mono, so the travis-ci tests now get coverage for the framework build
 
 # 2.0.300 (Byakko series release 2)
 * [BUGFIX] OpenCover format output now works correctly when classes or methods are filtered out of the coverage
