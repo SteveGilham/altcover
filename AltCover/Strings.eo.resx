@@ -207,4 +207,7 @@ AltCover Runner [/r[ecordingDirectory]=VALO] [/w[orkingDirectory]=VALO] [/x||exe
   <data name="opencover" xml:space="preserve">
     <value>Laŭvola: Kreu la informon en formato OpenCover</value>
   </data>
+  <data name="CommandLine" xml:space="preserve">
+    <value>Komandlinio: '{0} {1}'</value>
+  </data>
 </root>

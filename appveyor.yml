@@ -15,7 +15,7 @@ nuget:
   disable_publish_on_pr: true
 build_script:
 - ps: >-
-    $ErrorActionPreference = 'SilentlyContinue'
+    $ErrorActionPreference = 'Continue'
 
     & dotnet restore dotnet-fake.fsproj
 
@@ -35,6 +35,7 @@ test:
     only:
     - _Binaries\AltCover.Tests\Debug+AnyCPU\*.Tests.dll
     - _Binaries\AltCover.Shadow.Tests\Debug+AnyCPU\*.Tests.dll
+    - _Binaries\AltCover.WeakNameTests\Debug+AnyCPU\*Tests.dll
 artifacts:
 - path: _Packaging\*.nupkg
   name: NuGet

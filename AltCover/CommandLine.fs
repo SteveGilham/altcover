@@ -2,6 +2,7 @@
 
 open System
 open System.Diagnostics
+open System.Globalization
 open System.IO
 open System.Reflection
 open System.Resources
@@ -29,6 +30,8 @@ module CommandLine =
        finally
          Console.ForegroundColor <- original
 
+  let enquotes = Map.empty |> Map.add "Windows_NT" "\""
+
   let internal Usage (intro:string) (options:OptionSet) (options2:OptionSet) =
     WriteColoured Console.Error ConsoleColor.Yellow (fun w ->  w.WriteLine (resources.GetString intro)
                                                                options.WriteOptionDescriptions(w)
@@ -44,9 +47,16 @@ module CommandLine =
   let internal WriteOut line =
       Write Console.Out ConsoleColor.White line
 
-  let internal Launch cmd args toDirectory =
+  let internal Launch (cmd:string) args toDirectory =
     Directory.SetCurrentDirectory(toDirectory)
-    let psi = ProcessStartInfo(cmd,args)
+    let quote = enquotes
+                |> Map.tryFind (System.Environment.GetEnvironmentVariable "OS")
+                |> Option.getOrElse String.Empty
+    let enquoted = quote + cmd.Trim([| '"'; '\'' |]) + quote
+    String.Format(CultureInfo.CurrentCulture, resources.GetString "CommandLine", enquoted,args)
+    |> WriteOut
+
+    let psi = ProcessStartInfo(enquoted,args)
     psi.WorkingDirectory <- toDirectory
     psi.CreateNoWindow <- true
     psi.UseShellExecute <- false

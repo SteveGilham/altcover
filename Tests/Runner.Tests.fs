@@ -5,7 +5,6 @@ open System.Collections.Generic
 open System.IO
 open System.IO.Compression
 open System.Reflection
-open System.Text
 open System.Threading
 open System.Xml
 
@@ -19,6 +18,12 @@ open NUnit.Framework
 type AltCoverTests() = class
 
   // Base.fs
+
+  [<Test>]
+  member self.JunkUspidGivesNegativeIndex() =
+    let key = " "
+    let index = Counter.FindIndexFromUspid key
+    Assert.That (index, Is.LessThan 0)
 
   [<Test>]
   member self.RealIdShouldIncrementCount() =
@@ -179,26 +184,33 @@ or
                   |> Seq.head
 
     let saved = (Console.Out, Console.Error)
+    let e0 = Console.Out.Encoding
+    let e1 = Console.Error.Encoding
     try
-      use stdout = new StringWriter()
-      use stderr = new StringWriter()
+      use stdout = { new StringWriter() with override self.Encoding with get() = e0 }
+      use stderr = { new StringWriter() with override self.Encoding with get() = e1 }
       Console.SetOut stdout
       Console.SetError stderr
 
       let nonWindows = System.Environment.GetEnvironmentVariable("OS") <> "Windows_NT"
-      let exe, args = if nonWindows then ("mono", program) else (program, String.Empty)
+      let exe, args = if nonWindows then ("mono", "\"" + program + "\"") else (program, String.Empty)
       let r = CommandLine.Launch exe args (Path.GetDirectoryName (Assembly.GetExecutingAssembly().Location))
       Assert.That (r, Is.EqualTo 0)
 
       Assert.That(stderr.ToString(), Is.Empty)
       let result = stdout.ToString()
-      // hack for Mono
-      let computed = if result.Length = 14 then
-                       result |> Encoding.Unicode.GetBytes |> Array.takeWhile (fun c -> c <> 0uy)|> Encoding.UTF8.GetString
-                     else result
+      let quote = if System.Environment.GetEnvironmentVariable("OS") = "Windows_NT" then "\"" else String.Empty
+      let expected = "Command line : '" + quote + exe + quote + " " + args + "\'" + Environment.NewLine + 
+                     "Where is my rocket pack? " + Environment.NewLine
 
-      if "TRAVIS_JOB_NUMBER" |> Environment.GetEnvironmentVariable |> String.IsNullOrWhiteSpace || result.Length > 0 then
-        Assert.That(computed.Trim(), Is.EqualTo("Where is my rocket pack?"))
+
+      // hack for Mono
+      //let computed = if result.Length = 14 then
+      //                 result |> Encoding.Unicode.GetBytes |> Array.takeWhile (fun c -> c <> 0uy)|> Encoding.UTF8.GetString
+      //               else result
+
+      //if "TRAVIS_JOB_NUMBER" |> Environment.GetEnvironmentVariable |> String.IsNullOrWhiteSpace || result.Length > 0 then
+      Assert.That(result, Is.EqualTo(expected))
     finally
       Console.SetOut (fst saved)
       Console.SetError (snd saved)
@@ -582,9 +594,11 @@ or
                   |> Seq.head
 
     let saved = (Console.Out, Console.Error)
+    let e0 = Console.Out.Encoding
+    let e1 = Console.Error.Encoding
     try
-      use stdout = new StringWriter()
-      use stderr = new StringWriter()
+      use stdout = { new StringWriter() with override self.Encoding with get() = e0 }
+      use stderr = { new StringWriter() with override self.Encoding with get() = e1 }
       Console.SetOut stdout
       Console.SetError stderr
 
@@ -601,14 +615,17 @@ or
       Assert.That(stderr.ToString(), Is.Empty)
       stdout.Flush()
       let result = stdout.ToString()
+      let quote = if System.Environment.GetEnvironmentVariable("OS") = "Windows_NT" then "\"" else String.Empty
+      let expected = "Command line : '" + quote + args.Head + quote + " " + String.Join(" ", args.Tail) +
+                     "'" + Environment.NewLine + "Where is my rocket pack? " +
+                     u1 + "*" + u2 + Environment.NewLine
 
       // hack for Mono
-      let computed = if result.Length = 50 then
-                       result |> Encoding.Unicode.GetBytes |> Array.takeWhile (fun c -> c <> 0uy)|> Encoding.UTF8.GetString
-                     else result
-      if "TRAVIS_JOB_NUMBER" |> Environment.GetEnvironmentVariable |> String.IsNullOrWhiteSpace || result.Length > 0 then
-        Assert.That(computed.Trim(), Is.EqualTo("Where is my rocket pack? " +
-                                                  u1 + "*" + u2))
+      //let computed = if result.Length = 50 then
+      //                 result |> Encoding.Unicode.GetBytes |> Array.takeWhile (fun c -> c <> 0uy)|> Encoding.UTF8.GetString
+      //               else result
+      //if "TRAVIS_JOB_NUMBER" |> Environment.GetEnvironmentVariable |> String.IsNullOrWhiteSpace || result.Length > 0 then
+      Assert.That(result, Is.EqualTo expected)
     finally
       Console.SetOut (fst saved)
       Console.SetError (snd saved)
@@ -723,9 +740,11 @@ or
 
     let saved = (Console.Out, Console.Error)
     Runner.workingDirectory <- Some where
+    let e0 = Console.Out.Encoding
+    let e1 = Console.Error.Encoding
     try
-      use stdout = new StringWriter()
-      use stderr = new StringWriter()
+      use stdout = { new StringWriter() with override self.Encoding with get() = e0 }
+      use stderr = { new StringWriter() with override self.Encoding with get() = e1 }
       Console.SetOut stdout
       Console.SetError stderr
 
@@ -742,14 +761,18 @@ or
       Assert.That(stderr.ToString(), Is.Empty)
       stdout.Flush()
       let result = stdout.ToString()
+      let quote = if System.Environment.GetEnvironmentVariable("OS") = "Windows_NT" then "\"" else String.Empty
+      let expected = "Command line : '" + quote + args.Head + quote + " " + String.Join(" ", args.Tail) +
+                     "'" + Environment.NewLine + "Where is my rocket pack? " +
+                     u1 + "*" + u2 + Environment.NewLine
+
 
       // hack for Mono
-      let computed = if result.Length = 50 then
-                       result |> Encoding.Unicode.GetBytes |> Array.takeWhile (fun c -> c <> 0uy)|> Encoding.UTF8.GetString
-                     else result
-      if "TRAVIS_JOB_NUMBER" |> Environment.GetEnvironmentVariable |> String.IsNullOrWhiteSpace || result.Length > 0 then
-        Assert.That(computed.Trim(), Is.EqualTo("Where is my rocket pack? " +
-                                                  u1 + "*" + u2))
+      //let computed = if result.Length = 50 then
+      //                 result |> Encoding.Unicode.GetBytes |> Array.takeWhile (fun c -> c <> 0uy)|> Encoding.UTF8.GetString
+      //               else result
+      //if "TRAVIS_JOB_NUMBER" |> Environment.GetEnvironmentVariable |> String.IsNullOrWhiteSpace || result.Length > 0 then
+      Assert.That(result, Is.EqualTo expected)
     finally
       Console.SetOut (fst saved)
       Console.SetError (snd saved)
@@ -915,10 +938,10 @@ or
                           el.SetAttribute("sequenceCoverage", "0")
                            )
 
-    Runner.PostProcess Base.ReportFormat.OpenCover after
+    let empty = Dictionary<string, Dictionary<int, int>>()
+    Runner.PostProcess empty Base.ReportFormat.OpenCover after
 
-    Assert.That(after.OuterXml, Is.EqualTo before, after.OuterXml)
-
+    Assert.That(after.OuterXml.Replace("uspid=\"100663298", "uspid=\"13"), Is.EqualTo before, after.OuterXml)
 
   [<Test>]
   member self.PostprocessShouldRestoreKnownOpenCoverStateFromMono() =
@@ -945,9 +968,19 @@ or
                           el.SetAttribute("sequenceCoverage", "0")
                            )
 
-    Runner.PostProcess Base.ReportFormat.OpenCover after
+    after.DocumentElement.SelectNodes("//MethodPoint")
+    |> Seq.cast<XmlElement>
+    |> Seq.toList
+    |> List.iter(fun el -> el.RemoveAllAttributes())
 
-    Assert.That(after.OuterXml, Is.EqualTo before, after.OuterXml)
+    let visits = Dictionary<string, Dictionary<int, int>>()
+    let visit = Dictionary<int, int>()
+    visits.Add("6A-33-AA-93-82-ED-22-9D-F8-68-2C-39-5B-93-9F-74-01-76-00-9F", visit)
+    visit.Add(100663297, 1)  // should fill in the expected non-zero value
+    visit.Add(100663298, 23) // should be ignored
+    Runner.PostProcess visits Base.ReportFormat.OpenCover after
+
+    Assert.That(after.OuterXml.Replace("uspid=\"100663298", "uspid=\"13"), Is.EqualTo before, after.OuterXml)
 
   [<Test>]
   member self.PostprocessShouldRestoreDegenerateOpenCoverState() =
@@ -975,11 +1008,25 @@ or
     |> Seq.toList
     |> List.iter(fun el -> el |> el.ParentNode.RemoveChild |> ignore)
 
-    let before = after.OuterXml
+    after.DocumentElement.SelectNodes("//MethodPoint")
+    |> Seq.cast<XmlElement>
+    |> Seq.toList
+    |> List.iter(fun el -> el |> el.ParentNode.RemoveChild |> ignore)
 
-    Runner.PostProcess Base.ReportFormat.OpenCover after
+    let before = after.OuterXml.Replace("uspid=\"13", "uspid=\"100663298")
+
+    let empty = Dictionary<string, Dictionary<int, int>>()
+    Runner.PostProcess empty Base.ReportFormat.OpenCover after
 
     Assert.That(after.OuterXml, Is.EqualTo before, after.OuterXml)
 
+  [<Test>]
+  member self.JunkTokenShouldDefaultZero() =
+    let visits = Dictionary<int, int>()
+    let key = " "
+    let result = Runner.LookUpVisitsByToken key visits
+    match result with
+    | (false, 0) -> ()
+    | _ -> Assert.Fail(sprintf "%A" result)
 
 end

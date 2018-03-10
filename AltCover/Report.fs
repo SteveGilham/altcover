@@ -52,7 +52,9 @@ module Report =
           head.Add(element)
           element :: s
 
-    let VisitMethodPoint (s : list<XElement>) (head:XElement) (codeSegment:Cil.SequencePoint) included =
+    let VisitMethodPoint (s : list<XElement>) (head:XElement) (codeSegment':Cil.SequencePoint option) included =
+      match codeSegment' with
+      | Some codeSegment ->
           // quick fix for .mdb lack of end line/column information
           let end' = match (codeSegment.EndLine, codeSegment.EndColumn) with
                      | (-1, _) -> (codeSegment.StartLine, codeSegment.StartColumn + 1)
@@ -67,7 +69,8 @@ module Report =
                           XAttribute(X "document", codeSegment.Document.Url))
           if head.IsEmpty then head.Add(element)
           else head.FirstNode.AddBeforeSelf(element)
-          s
+      | None -> ()
+      s
 
     let ReportVisitor (s : list<XElement>) (node:Node) =
       let head = if List.isEmpty s then null else s.Head
