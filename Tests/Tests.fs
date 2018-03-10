@@ -2349,9 +2349,11 @@ type AltCoverTests() = class
                   |> Seq.head
 
     let saved = (Console.Out, Console.Error)
+    let e0 = Console.Out.Encoding
+    let e1 = Console.Error.Encoding
     try
-      use stdout = new StringWriter()
-      use stderr = new StringWriter()
+      use stdout = { new StringWriter() with override self.Encoding with get() = e0 }
+      use stderr = { new StringWriter() with override self.Encoding with get() = e1 }
       Console.SetOut stdout
       Console.SetError stderr
 
@@ -2364,7 +2366,7 @@ type AltCoverTests() = class
       Assert.That(stderr.ToString(), Is.Empty)
       let result = stdout.ToString()
       let quote = if System.Environment.GetEnvironmentVariable("OS") = "Windows_NT" then "\"" else String.Empty
-      let expected = "Command line : '" + quote + exe + quote + " " + args + "\'" + Environment.NewLine + 
+      let expected = "Command line : '" + quote + exe + quote + " " + args + "\'" + Environment.NewLine +
                      "Where is my rocket pack? " + Environment.NewLine
 
       // hack for Mono
@@ -3203,10 +3205,8 @@ type AltCoverTests() = class
     let saved = (Console.Out, Console.Error)
     let e0 = Console.Out.Encoding
     let e1 = Console.Error.Encoding
-    let mutable e = e0
     try
       use stdout = { new StringWriter() with override self.Encoding with get() = e0 }
-      e <- stdout.Encoding
       use stderr = { new StringWriter() with override self.Encoding with get() = e1 }
       Console.SetOut stdout
       Console.SetError stderr
@@ -3237,8 +3237,6 @@ type AltCoverTests() = class
     finally
       Console.SetOut (fst saved)
       Console.SetError (snd saved)
-      printfn "default encoding %A, override encoding %A" e0 e
-
 
   [<Test>]
   member self.ADryRunLooksAsExpected() =

@@ -5,7 +5,6 @@ open System.Collections.Generic
 open System.IO
 open System.IO.Compression
 open System.Reflection
-open System.Text
 open System.Threading
 open System.Xml
 
@@ -185,9 +184,11 @@ or
                   |> Seq.head
 
     let saved = (Console.Out, Console.Error)
+    let e0 = Console.Out.Encoding
+    let e1 = Console.Error.Encoding
     try
-      use stdout = new StringWriter()
-      use stderr = new StringWriter()
+      use stdout = { new StringWriter() with override self.Encoding with get() = e0 }
+      use stderr = { new StringWriter() with override self.Encoding with get() = e1 }
       Console.SetOut stdout
       Console.SetError stderr
 
@@ -593,9 +594,11 @@ or
                   |> Seq.head
 
     let saved = (Console.Out, Console.Error)
+    let e0 = Console.Out.Encoding
+    let e1 = Console.Error.Encoding
     try
-      use stdout = new StringWriter()
-      use stderr = new StringWriter()
+      use stdout = { new StringWriter() with override self.Encoding with get() = e0 }
+      use stderr = { new StringWriter() with override self.Encoding with get() = e1 }
       Console.SetOut stdout
       Console.SetError stderr
 
@@ -737,9 +740,11 @@ or
 
     let saved = (Console.Out, Console.Error)
     Runner.workingDirectory <- Some where
+    let e0 = Console.Out.Encoding
+    let e1 = Console.Error.Encoding
     try
-      use stdout = new StringWriter()
-      use stderr = new StringWriter()
+      use stdout = { new StringWriter() with override self.Encoding with get() = e0 }
+      use stderr = { new StringWriter() with override self.Encoding with get() = e1 }
       Console.SetOut stdout
       Console.SetError stderr
 
