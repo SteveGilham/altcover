@@ -1,6 +1,6 @@
 **NOTE:** The main executable links the still in beta (after more than a year) Mono.Cecil 0.10 version.  The binary injected into the instrumented code does not.  Rather than hold my releases on the Mono.Cecil schedule, I make this disclaimer instead.
 
-# 2.0.###  (Byakko series release 3)
+# 2.0.324  (Byakko series release 3)
 * Option `--opencover` now generates values for MethodPoint tags when collecting the coverage data in "runner" mode
 * When a process is launched from altcover, the command line is now echoed to stdout
 * Build changes : Visual Studio 15.6.1, and latest FAKE 5 beta releases (beta 24); modified the full-framework builds to emit portable .pdb files on Mono, so the travis-ci tests now get coverage for the framework build
