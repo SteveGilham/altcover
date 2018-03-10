@@ -1,8 +1,10 @@
 **NOTE:** The main executable links the still in beta (after more than a year) Mono.Cecil 0.10 version.  The binary injected into the instrumented code does not.  Rather than hold my releases on the Mono.Cecil schedule, I make this disclaimer instead.
 
-# 2.0.xxx  (Byakko series release 3)
+# 2.0.###  (Byakko series release 3)
 * Option `--opencover` now generates values for MethodPoint tags when collecting the coverage data in "runner" mode
-* Build changes : Visual Studio 15.6, and latest FAKE 5 beta releases; modified the full-framework builds to emit portable .pdb files on Mono, so the travis-ci tests now get coverage for the framework build
+* Build changes : Visual Studio 15.6.1, and latest FAKE 5 beta releases (beta 24); modified the full-framework builds to emit portable .pdb files on Mono, so the travis-ci tests now get coverage for the framework build
+* [BUGFIX] altcover.core.fsproj will now build if the Platform is set (previously only `AnyCPU`, explicitly or by default, would work)
+* Other x86 related information [added to the wiki](https://github.com/SteveGilham/altcover/wiki/x86-support-for-.net-core)
 
 # 2.0.300 (Byakko series release 2)
 * [BUGFIX] OpenCover format output now works correctly when classes or methods are filtered out of the coverage
