@@ -30,6 +30,8 @@ module CommandLine =
        finally
          Console.ForegroundColor <- original
 
+  let enquotes = Map.empty |> Map.add "Windows_NT" "\""
+
   let internal Usage (intro:string) (options:OptionSet) (options2:OptionSet) =
     WriteColoured Console.Error ConsoleColor.Yellow (fun w ->  w.WriteLine (resources.GetString intro)
                                                                options.WriteOptionDescriptions(w)
@@ -47,7 +49,9 @@ module CommandLine =
 
   let internal Launch (cmd:string) args toDirectory =
     Directory.SetCurrentDirectory(toDirectory)
-    let quote = if System.Environment.GetEnvironmentVariable("OS") = "Windows_NT" then "\"" else String.Empty
+    let quote = enquotes
+                |> Map.tryFind (System.Environment.GetEnvironmentVariable "OS")
+                |> Option.getOrElse String.Empty
     let enquoted = quote + cmd.Trim([| '"'; '\'' |]) + quote
     String.Format(CultureInfo.CurrentCulture, resources.GetString "CommandLine", enquoted,args)
     |> WriteOut
