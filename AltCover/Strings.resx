@@ -207,4 +207,7 @@ AltCover Runner [/r[ecordingDirectory]=VALUE] [/w[orkingDirectory]=VALUE] [/x||e
   <data name="opencover" xml:space="preserve">
     <value>Optional: Generate the report in OpenCover format</value>
   </data>
+  <data name="CommandLine" xml:space="preserve">
+    <value>Command line : '{0} {1}'</value>
+  </data>
 </root>

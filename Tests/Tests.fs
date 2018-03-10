@@ -2356,20 +2356,23 @@ type AltCoverTests() = class
       Console.SetError stderr
 
       let nonWindows = System.Environment.GetEnvironmentVariable("OS") <> "Windows_NT"
-      let exe, args = if nonWindows then ("mono", program) else (program, String.Empty)
+      let exe, args = if nonWindows then ("mono", "\"" + program + "\"") else (program, String.Empty)
 
       let r = CommandLine.Launch exe args (Path.GetDirectoryName (Assembly.GetExecutingAssembly().Location))
 
       Assert.That(r, Is.EqualTo 0)
       Assert.That(stderr.ToString(), Is.Empty)
       let result = stdout.ToString()
-      // hack for Mono
-      let computed = if result.Length = 14 then
-                       result |> Encoding.Unicode.GetBytes |> Array.takeWhile (fun c -> c <> 0uy)|> Encoding.UTF8.GetString
-                     else result
+      let expected = "Command line : '\"" + exe + "\" " + args + "\'" + Environment.NewLine + 
+                     "Where is my rocket pack? " + Environment.NewLine
 
-      if "TRAVIS_JOB_NUMBER" |> Environment.GetEnvironmentVariable |> String.IsNullOrWhiteSpace || result.Length > 0 then
-        Assert.That(computed.Trim(), Is.EqualTo("Where is my rocket pack?"))
+      // hack for Mono
+      //let computed = (if result.Length = 14 then
+      //                 result |> Encoding.Unicode.GetBytes |> Array.takeWhile (fun c -> c <> 0uy)|> Encoding.UTF8.GetString
+      //               else result).Split('\n') |> Seq.last
+
+      //if "TRAVIS_JOB_NUMBER" |> Environment.GetEnvironmentVariable |> String.IsNullOrWhiteSpace || result.Length > 0 then
+      Assert.That(result, Is.EqualTo(expected))
     finally
       Console.SetOut (fst saved)
       Console.SetError (snd saved)
@@ -3197,8 +3200,11 @@ type AltCoverTests() = class
                   |> Seq.head
 
     let saved = (Console.Out, Console.Error)
+    let mutable e = Console.Out.Encoding
+    let e0 = e
     try
       use stdout = new StringWriter()
+      e <- stdout.Encoding
       use stderr = new StringWriter()
       Console.SetOut stdout
       Console.SetError stderr
@@ -3216,17 +3222,20 @@ type AltCoverTests() = class
 
       Assert.That(stderr.ToString(), Is.Empty)
       let result = stdout.ToString()
-
+      let expected = "Command line : '\"" + args.Head + "\" " + String.Join(" ", args.Tail) +
+                     "'" + Environment.NewLine + "Where is my rocket pack? " +
+                     u1 + "*" + u2 + Environment.NewLine
       // hack for Mono
-      let computed = if result.Length = 50 then
-                       result |> Encoding.Unicode.GetBytes |> Array.takeWhile (fun c -> c <> 0uy)|> Encoding.UTF8.GetString
-                     else result
-      if "TRAVIS_JOB_NUMBER" |> Environment.GetEnvironmentVariable |> String.IsNullOrWhiteSpace || result.Length > 0 then
-        Assert.That(computed.Trim(), Is.EqualTo("Where is my rocket pack? " +
-                                                  u1 + "*" + u2))
+      //let computed = if result.Length = 50 then
+      //                 result |> Encoding.Unicode.GetBytes |> Array.takeWhile (fun c -> c <> 0uy)|> Encoding.UTF8.GetString
+      //               else result
+      //if "TRAVIS_JOB_NUMBER" |> Environment.GetEnvironmentVariable |> String.IsNullOrWhiteSpace || result.Length > 0 then
+      Assert.That(result, Is.EqualTo expected)
     finally
       Console.SetOut (fst saved)
       Console.SetError (snd saved)
+      printfn "default encoding %A, override encoding %A" e0 e
+
 
   [<Test>]
   member self.ADryRunLooksAsExpected() =

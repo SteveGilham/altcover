@@ -2,6 +2,7 @@
 
 open System
 open System.Diagnostics
+open System.Globalization
 open System.IO
 open System.Reflection
 open System.Resources
@@ -44,9 +45,13 @@ module CommandLine =
   let internal WriteOut line =
       Write Console.Out ConsoleColor.White line
 
-  let internal Launch cmd args toDirectory =
+  let internal Launch (cmd:string) args toDirectory =
     Directory.SetCurrentDirectory(toDirectory)
-    let psi = ProcessStartInfo(cmd,args)
+    let enquoted = "\"" + cmd.Trim([| '"'; '\'' |]) + "\""
+    String.Format(CultureInfo.CurrentCulture, resources.GetString "CommandLine", enquoted,args)
+    |> WriteOut
+
+    let psi = ProcessStartInfo(enquoted,args)
     psi.WorkingDirectory <- toDirectory
     psi.CreateNoWindow <- true
     psi.UseShellExecute <- false
@@ -105,7 +110,5 @@ module CommandLine =
         match rest |> Seq.toList with
         | [] -> 0
         | cmd::t->
-           // "Launching : \"" + String.Join ("\" \"", rest) + "\""
-           // |> WriteOut
            let args = String.Join(" ", (List.toArray t))
            Launch cmd args toInfo.FullName // Spawn process, echoing asynchronously
