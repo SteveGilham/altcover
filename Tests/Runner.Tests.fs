@@ -198,7 +198,8 @@ or
 
       Assert.That(stderr.ToString(), Is.Empty)
       let result = stdout.ToString()
-      let expected = "Command line : '\"" + exe + "\" " + args + "\'" + Environment.NewLine + 
+      let quote = if System.Environment.GetEnvironmentVariable("OS") = "Windows_NT" then "\"" else String.Empty
+      let expected = "Command line : '" + quote + exe + quote + " " + args + "\'" + Environment.NewLine + 
                      "Where is my rocket pack? " + Environment.NewLine
 
 
@@ -611,7 +612,8 @@ or
       Assert.That(stderr.ToString(), Is.Empty)
       stdout.Flush()
       let result = stdout.ToString()
-      let expected = "Command line : '\"" + args.Head + "\" " + String.Join(" ", args.Tail) +
+      let quote = if System.Environment.GetEnvironmentVariable("OS") = "Windows_NT" then "\"" else String.Empty
+      let expected = "Command line : '" + quote + args.Head + quote + " " + String.Join(" ", args.Tail) +
                      "'" + Environment.NewLine + "Where is my rocket pack? " +
                      u1 + "*" + u2 + Environment.NewLine
 
@@ -754,7 +756,8 @@ or
       Assert.That(stderr.ToString(), Is.Empty)
       stdout.Flush()
       let result = stdout.ToString()
-      let expected = "Command line : '\"" + args.Head + "\" " + String.Join(" ", args.Tail) +
+      let quote = if System.Environment.GetEnvironmentVariable("OS") = "Windows_NT" then "\"" else String.Empty
+      let expected = "Command line : '" + quote + args.Head + quote + " " + String.Join(" ", args.Tail) +
                      "'" + Environment.NewLine + "Where is my rocket pack? " +
                      u1 + "*" + u2 + Environment.NewLine
 

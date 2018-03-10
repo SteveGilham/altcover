@@ -47,7 +47,8 @@ module CommandLine =
 
   let internal Launch (cmd:string) args toDirectory =
     Directory.SetCurrentDirectory(toDirectory)
-    let enquoted = "\"" + cmd.Trim([| '"'; '\'' |]) + "\""
+    let quote = if System.Environment.GetEnvironmentVariable("OS") = "Windows_NT" then "\"" else String.Empty
+    let enquoted = quote + cmd.Trim([| '"'; '\'' |]) + quote
     String.Format(CultureInfo.CurrentCulture, resources.GetString "CommandLine", enquoted,args)
     |> WriteOut
 
