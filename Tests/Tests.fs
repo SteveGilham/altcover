@@ -3201,12 +3201,13 @@ type AltCoverTests() = class
                   |> Seq.head
 
     let saved = (Console.Out, Console.Error)
-    let mutable e = Console.Out.Encoding
-    let e0 = e
+    let e0 = Console.Out.Encoding
+    let e1 = Console.Error.Encoding
+    let mutable e = e0
     try
-      use stdout = new StringWriter()
+      use stdout = { new StringWriter() with override self.Encoding with get() = e0 }
       e <- stdout.Encoding
-      use stderr = new StringWriter()
+      use stderr = { new StringWriter() with override self.Encoding with get() = e1 }
       Console.SetOut stdout
       Console.SetError stderr
 
