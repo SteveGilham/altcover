@@ -173,12 +173,55 @@ type AltCoverTests() = class
       try
         let def = Mono.Cecil.AssemblyDefinition.ReadAssembly dll
         let pdb = AltCover.ProgramDatabase.GetPdbWithFallback(def)
+        let normalized = Path.Combine(Path.GetDirectoryName p, Path.GetFileName p)
         match pdb with
         | None -> Assert.Fail("Not found " + p)
-        | Some name -> Assert.That(name, Is.EqualTo p)
+        | Some name -> Assert.That(name, Is.EqualTo normalized)
       with
       | :? BadImageFormatException -> ()
     )
+
+  [<Test>]
+  member self.ShouldGetForeignPdbWithFallbackWhenNotColocated() =
+    try
+      // Hack for running while instrumented
+      let where = Assembly.GetExecutingAssembly().Location
+      let path = Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "packages")
+#if NETCOREAPP2_0
+      let path' = if Directory.Exists path then path
+                  else Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "../packages")
+#else
+      let path' = path
+#endif
+      // Looking for the Mono.Options symbols
+      let files = Directory.GetFiles(path', "*.pdb", SearchOption.AllDirectories)
+      files
+      |> Seq.filter(fun p -> Path.ChangeExtension(p, ".dll") |> File.Exists)
+      |> Seq.iter( fun p ->
+        let dll0 = Path.ChangeExtension(p, ".dll")
+        let unique = Guid.NewGuid().ToString()
+        let output = Path.Combine(Path.GetDirectoryName(where), unique)
+        Directory.CreateDirectory(output) |> ignore
+        let dll = Path.Combine(output, Path.GetFileName dll0)
+        System.IO.File.Copy (dll0, dll)
+        ProgramDatabase.SymbolFolders.Clear()
+        p |> Path.GetDirectoryName |> ProgramDatabase.SymbolFolders.Add 
+        try
+          let def = Mono.Cecil.AssemblyDefinition.ReadAssembly dll
+          let pdb = AltCover.ProgramDatabase.GetPdbWithFallback(def)
+          let normalized = Path.Combine(Path.GetDirectoryName p, Path.GetFileName p)
+          match pdb with
+          | None -> Assert.Fail("Not found " + p)
+          | Some name -> Assert.That(name, Is.EqualTo normalized)
+                         let reader = AltCover.ProgramDatabase.ReadSymbols def
+                         Assert.That (def.MainModule.HasSymbols, def.MainModule.FileName)
+                         Assert.That (Option.isSome reader, def.MainModule.FileName)
+        with
+        | :? BadImageFormatException -> ()
+      )
+    finally
+      ProgramDatabase.SymbolFolders.Clear()
+
 
   [<Test>]
   member self.ShouldGetMdbWithFallback() =
