@@ -30,7 +30,7 @@ type Tracer = {
     member this.Connect () =
       if File.Exists this.Tracer then
         Seq.initInfinite (fun i -> Path.ChangeExtension(this.Tracer,
-                                                        sprintf ".%d.bin" i))
+                                                        sprintf ".%d.acv" i))
         |> Seq.filter (File.Exists >> not)
         |> Seq.map (fun f -> let fs = File.OpenWrite f
                              { this with Stream = new DeflateStream(fs, CompressionMode.Compress) })
@@ -54,7 +54,7 @@ type Tracer = {
       visits.Clear()
 
     member this.OnStart () =
-      if this.Tracer <> "Coverage.Default.xml.bin" then
+      if this.Tracer <> "Coverage.Default.xml.acv" then
         this.Connect ()
       else this
 

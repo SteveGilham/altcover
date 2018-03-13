@@ -115,7 +115,7 @@ module Runner =
     Console.WriteLine (s |> CommandLine.resources.GetString, x)
 
   let MonitorBase (hits:ICollection<(string*int)>) report (payload: string list -> int) (args : string list) =
-      let binpath = report + ".bin"
+      let binpath = report + ".acv"
       do
         use stream = File.Create(binpath)
         ()
@@ -128,7 +128,7 @@ module Runner =
       formatter.Binder <- MonoTypeBinder(typeof<(string*int)>) // anything else is an error
 
       Directory.GetFiles( Path.GetDirectoryName(report),
-                          Path.GetFileName(report) + ".*.bin")
+                          Path.GetFileName(report) + ".*.acv")
       |> Seq.iter (fun f ->
           printfn "... %s" f
           use results = new DeflateStream(File.OpenRead f, CompressionMode.Decompress)
@@ -286,8 +286,8 @@ module Runner =
           WriteResourceWithFormatItems "Coverage statistics flushing took {0:N} seconds" [|delta.TotalSeconds|]
 
           // And tidy up after everything's done
-          File.Delete (report + ".bin")
+          File.Delete (report + ".acv")
           Directory.GetFiles( Path.GetDirectoryName(report),
-                              Path.GetFileName(report) + ".*.bin")
+                              Path.GetFileName(report) + ".*.acv")
           |> Seq.iter File.Delete
           result

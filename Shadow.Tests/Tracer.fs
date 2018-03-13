@@ -79,7 +79,7 @@ type AltCoverCoreTests() = class
     let save = Instance.trace
     let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
     let unique = Path.Combine(where, Guid.NewGuid().ToString())
-    let tag = unique + ".bin"
+    let tag = unique + ".acv"
     let expected = [("name", 23); ("name", 23)]
 
     do
@@ -100,7 +100,7 @@ type AltCoverCoreTests() = class
         Instance.trace.Close()
         Instance.trace <- save
 
-      use stream = new DeflateStream(File.OpenRead (unique + ".0.bin"), CompressionMode.Decompress)
+      use stream = new DeflateStream(File.OpenRead (unique + ".0.acv"), CompressionMode.Decompress)
       let results = self.ReadResults stream
       Assert.That (Instance.Visits, Is.Empty, "unexpected local write")
       Assert.That (results, Is.EquivalentTo expected, "unexpected result")
@@ -113,7 +113,7 @@ type AltCoverCoreTests() = class
     let save = Instance.trace
     let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
     let root = Path.Combine(where, Guid.NewGuid().ToString())
-    let unique = root + ".bin"
+    let unique = root + ".acv"
 
     do
         use stream = File.Create unique
@@ -138,7 +138,7 @@ type AltCoverCoreTests() = class
         System.Threading.Thread.Sleep 100
         Instance.trace <- save
 
-      use stream = new DeflateStream(File.OpenRead (root + ".0.bin"), CompressionMode.Decompress)
+      use stream = new DeflateStream(File.OpenRead (root + ".0.acv"), CompressionMode.Decompress)
       let results = self.ReadResults stream
       Assert.That (Instance.Visits, Is.Empty, "unexpected local write")
       Assert.That (results, Is.EquivalentTo expected, "unexpected result")

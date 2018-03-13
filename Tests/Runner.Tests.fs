@@ -820,7 +820,7 @@ or
       Runner.DoReport <- write
 
       let empty = OptionSet()
-      let dummy = report + ".xx.bin"
+      let dummy = report + ".xx.acv"
       do
         use temp = File.Create dummy
         dummy |> File.Exists |> Assert.That
@@ -897,11 +897,11 @@ or
     let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
     let unique = Path.Combine(where, Guid.NewGuid().ToString())
     do
-      use s = File.Create (unique + ".0.bin")
+      use s = File.Create (unique + ".0.acv")
       s.Close()
     let r = Runner.GetMonitor hits unique List.length []
     Assert.That(r, Is.EqualTo 0)
-    Assert.That (File.Exists (unique + ".bin"))
+    Assert.That (File.Exists (unique + ".acv"))
     Assert.That(hits, Is.Empty)
 
   [<Test>]
@@ -911,11 +911,11 @@ or
     let unique = Path.Combine(where, Guid.NewGuid().ToString())
     let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
     let r = Runner.GetMonitor hits unique (fun l ->
-       use sink = new DeflateStream(File.OpenWrite (unique + ".0.bin"), CompressionMode.Compress)
+       use sink = new DeflateStream(File.OpenWrite (unique + ".0.acv"), CompressionMode.Compress)
        l |> List.mapi (fun i x -> formatter.Serialize(sink, (x,i)); x) |> List.length
                                            ) ["a"; "b"; String.Empty; "c"]
     Assert.That(r, Is.EqualTo 4)
-    Assert.That (File.Exists (unique + ".bin"))
+    Assert.That (File.Exists (unique + ".acv"))
     Assert.That(hits, Is.EquivalentTo [("a",0); ("b",1)])
 
   [<Test>]

@@ -76,7 +76,7 @@ module Instance =
   /// <summary>
   /// Reporting back to the mother-ship
   /// </summary>
-  let mutable internal trace = Tracer.Create (ReportFile + ".bin")
+  let mutable internal trace = Tracer.Create (ReportFile + ".acv")
 
   let internal WithMutex (f : bool -> 'a) =
     let own = mutex.WaitOne(1000)
