@@ -173,12 +173,55 @@ type AltCoverTests() = class
       try
         let def = Mono.Cecil.AssemblyDefinition.ReadAssembly dll
         let pdb = AltCover.ProgramDatabase.GetPdbWithFallback(def)
+        let normalized = Path.Combine(Path.GetDirectoryName p, Path.GetFileName p)
         match pdb with
         | None -> Assert.Fail("Not found " + p)
-        | Some name -> Assert.That(name, Is.EqualTo p)
+        | Some name -> Assert.That(name, Is.EqualTo normalized)
       with
       | :? BadImageFormatException -> ()
     )
+
+  [<Test>]
+  member self.ShouldGetForeignPdbWithFallbackWhenNotColocated() =
+    try
+      // Hack for running while instrumented
+      let where = Assembly.GetExecutingAssembly().Location
+      let path = Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "packages")
+#if NETCOREAPP2_0
+      let path' = if Directory.Exists path then path
+                  else Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "../packages")
+#else
+      let path' = path
+#endif
+      // Looking for the Mono.Options symbols
+      let files = Directory.GetFiles(path', "*.pdb", SearchOption.AllDirectories)
+      files
+      |> Seq.filter(fun p -> Path.ChangeExtension(p, ".dll") |> File.Exists)
+      |> Seq.iter( fun p ->
+        let dll0 = Path.ChangeExtension(p, ".dll")
+        let unique = Guid.NewGuid().ToString()
+        let output = Path.Combine(Path.GetDirectoryName(where), unique)
+        Directory.CreateDirectory(output) |> ignore
+        let dll = Path.Combine(output, Path.GetFileName dll0)
+        System.IO.File.Copy (dll0, dll)
+        ProgramDatabase.SymbolFolders.Clear()
+        p |> Path.GetDirectoryName |> ProgramDatabase.SymbolFolders.Add 
+        try
+          let def = Mono.Cecil.AssemblyDefinition.ReadAssembly dll
+          let pdb = AltCover.ProgramDatabase.GetPdbWithFallback(def)
+          let normalized = Path.Combine(Path.GetDirectoryName p, Path.GetFileName p)
+          match pdb with
+          | None -> Assert.Fail("Not found " + p)
+          | Some name -> Assert.That(name, Is.EqualTo normalized)
+                         let reader = AltCover.ProgramDatabase.ReadSymbols def
+                         Assert.That (def.MainModule.HasSymbols, def.MainModule.FileName)
+                         Assert.That (Option.isSome reader, def.MainModule.FileName)
+        with
+        | :? BadImageFormatException -> ()
+      )
+    finally
+      ProgramDatabase.SymbolFolders.Clear()
+
 
   [<Test>]
   member self.ShouldGetMdbWithFallback() =
@@ -2385,9 +2428,9 @@ type AltCoverTests() = class
     let options = Main.DeclareOptions ()
     Assert.That (options.Count, Is.EqualTo
 #if NETCOREAPP2_0
-                                            12
+                                            13
 #else
-                                            14
+                                            15
 #endif
                  )
     Assert.That(options |> Seq.filter (fun x -> x.Prototype <> "<>")
@@ -2827,6 +2870,73 @@ type AltCoverTests() = class
   member private self.IsolateRootPath () =
     let where = Assembly.GetExecutingAssembly().Location
     where.Substring(0, where.IndexOf("_Binaries"))
+
+  [<Test>]
+  member self.ParsingSymbolGivesSymbol() =
+    try
+      ProgramDatabase.SymbolFolders.Clear()
+      let options = Main.DeclareOptions ()
+      let unique = Path.GetFullPath(".")
+      let Symbol = [| "-y"; unique |]
+      let parse = CommandLine.ParseCommandLine Symbol options
+      match parse with
+      | Left _ -> Assert.Fail()
+      | Right (x, y) -> Assert.That (y, Is.SameAs options)
+                        Assert.That (x, Is.Empty)
+
+      match ProgramDatabase.SymbolFolders.Count with
+      | 1 -> Assert.That(ProgramDatabase.SymbolFolders, Is.EquivalentTo [unique])
+      | _ -> Assert.Fail()
+    finally
+      ProgramDatabase.SymbolFolders.Clear()
+
+  [<Test>]
+  member self.ParsingMultipleSymbolGivesOK() =
+    try
+      ProgramDatabase.SymbolFolders.Clear()
+      let options = Main.DeclareOptions ()
+      let Symbol = [| "-y"; Path.GetFullPath("."); "/y"; Path.GetFullPath("..") |]
+      let parse = CommandLine.ParseCommandLine Symbol options
+      match parse with
+      | Left _ -> Assert.Fail()
+      | Right (x, y) -> Assert.That (y, Is.SameAs options)
+                        Assert.That (x, Is.Empty)
+
+      match ProgramDatabase.SymbolFolders.Count with
+      | 2 -> Assert.That(ProgramDatabase.SymbolFolders,
+                            Is.EquivalentTo (Symbol |> Seq.filter (fun x -> x.Length > 2)))
+      | _ -> Assert.Fail()
+    finally
+      ProgramDatabase.SymbolFolders.Clear()
+
+  [<Test>]
+  member self.ParsingBadSymbolGivesFailure() =
+    try
+      ProgramDatabase.SymbolFolders.Clear()
+      let options = Main.DeclareOptions ()
+      let unique = Guid.NewGuid().ToString().Replace("-", "*")
+      let Symbol = [| "-y"; unique |]
+      let parse = CommandLine.ParseCommandLine Symbol options
+      match parse with
+      | Right _ -> Assert.Fail()
+      | Left (x, y) -> Assert.That (y, Is.SameAs options)
+                       Assert.That (x, Is.EqualTo "UsageError")
+    finally
+      ProgramDatabase.SymbolFolders.Clear()
+
+  [<Test>]
+  member self.ParsingNoSymbolGivesFailure() =
+    try
+      ProgramDatabase.SymbolFolders.Clear()
+      let options = Main.DeclareOptions ()
+      let Symbol = [| "-y" |]
+      let parse = CommandLine.ParseCommandLine Symbol options
+      match parse with
+      | Right _ -> Assert.Fail()
+      | Left (x, y) -> Assert.That (y, Is.SameAs options)
+                       Assert.That (x, Is.EqualTo "UsageError")
+    finally
+      ProgramDatabase.SymbolFolders.Clear()
 
 #if NETCOREAPP2_0
 #else
@@ -3523,6 +3633,10 @@ type AltCoverTests() = class
                              Optional: The folder to receive the instrumented
                                assemblies and their companions (default: sub-
                                folder '__Instrumented' of the current directory)
+  -y, --symbolDirectory=VALUE
+                             Optional, multiple: Additional directory to search
+                               for matching symbols for the assemblies in the
+                               input directory
 """
 #if NETCOREAPP2_0
 #else
@@ -3579,6 +3693,10 @@ or
                              Optional: The folder to receive the instrumented
                                assemblies and their companions (default: sub-
                                folder '__Instrumented' of the current directory)
+  -y, --symbolDirectory=VALUE
+                             Optional, multiple: Additional directory to search
+                               for matching symbols for the assemblies in the
+                               input directory
 """
 #if NETCOREAPP2_0
 #else

@@ -1,9 +1,8 @@
 ﻿namespace AltCover
 
 open System
+open System.Collections.Generic
 open System.IO
-
-open AltCover.Augment
 
 open Mono.Cecil
 open Mono.Cecil.Cil
@@ -11,6 +10,8 @@ open Mono.Cecil.Mdb
 open Mono.Cecil.Pdb
 
 module ProgramDatabase =
+  let internal SymbolFolders = List<String>()
+
   // We no longer have to violate Cecil encapsulation to get the PDB path!
   let GetPdbFromImage (assembly:AssemblyDefinition) =
     Some assembly.MainModule
@@ -28,14 +29,23 @@ module ProgramDatabase =
     |> Option.filter (fun s -> s.Length > 0)
     |> Option.filter File.Exists
 
+  let GetSymbolsByFolder fileName folderName =
+    let name = Path.Combine (folderName, fileName)
+    let fallback = Path.ChangeExtension(name, ".pdb")
+    if File.Exists(fallback)
+    then Some fallback
+    else let fallback2 = name + ".mdb"
+         // Note -- the assembly path, not the mdb path, because GetSymbolReader wants the assembly path for Mono
+         if File.Exists(fallback2) then Some name else None
+
   let GetPdbWithFallback (assembly:AssemblyDefinition) =
     match GetPdbFromImage assembly with
-    | None -> let fallback = Path.ChangeExtension(assembly.MainModule.FileName, ".pdb")
-              if File.Exists(fallback)
-                then Some fallback
-                else let fallback2 = assembly.MainModule.FileName + ".mdb"
-                     // Note -- the assembly path, not the mdb path, because GetSymbolReader wants the assembly path for Mono
-                     if File.Exists(fallback2) then Some assembly.MainModule.FileName else None
+    | None -> let foldername = Path.GetDirectoryName assembly.MainModule.FileName
+              let filename = Path.GetFileName assembly.MainModule.FileName
+              foldername :: (Seq.toList SymbolFolders)
+              |> Seq.map (GetSymbolsByFolder filename)
+              |> Seq.choose id
+              |> Seq.tryFind (fun _ -> true)
     | pdbpath -> pdbpath
 
   // Ensure that we read symbols from the .pdb path we discovered.
