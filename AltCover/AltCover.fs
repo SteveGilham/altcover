@@ -19,24 +19,28 @@ module Main =
 
   let internal DeclareOptions () =
     [ ("i|inputDirectory=",
-       (fun x -> if not (String.IsNullOrWhiteSpace(x)) && Directory.Exists(x) then
+       (fun x -> if not (String.IsNullOrWhiteSpace x) && Directory.Exists x then
                     if Option.isSome Visitor.inputDirectory then
                       CommandLine.error <- true
                     else
                       Visitor.inputDirectory <- Some (Path.GetFullPath x)
                  else CommandLine.error <- true))
       ("o|outputDirectory=",
-       (fun x -> if not (String.IsNullOrWhiteSpace(x)) then
+       (fun x -> if not (String.IsNullOrWhiteSpace x) then
                     if Option.isSome Visitor.outputDirectory then
                       CommandLine.error <- true
                     else
                       CommandLine.doPathOperation (fun _ -> Visitor.outputDirectory <- Some (Path.GetFullPath x)) ()
                  else CommandLine.error <- true))
+      ("y|symbolDirectory=",
+       (fun x -> if not (String.IsNullOrWhiteSpace x) && Directory.Exists x then
+                    ProgramDatabase.SymbolFolders.Add x
+                 else CommandLine.error <- true))
 #if NETCOREAPP2_0
 #else
       ("k|key=",
        (fun x ->
-             if not (String.IsNullOrWhiteSpace(x)) && File.Exists(x) then
+             if not (String.IsNullOrWhiteSpace x) && File.Exists x then
                CommandLine.doPathOperation (fun () ->
                                           use stream = new System.IO.FileStream(x,
                                                                                 System.IO.FileMode.Open,
@@ -47,7 +51,7 @@ module Main =
          ))
       ("sn|strongNameKey=",
        (fun x ->
-             if not (String.IsNullOrWhiteSpace(x)) && File.Exists(x) then
+             if not (String.IsNullOrWhiteSpace x ) && File.Exists x then
                CommandLine.doPathOperation (fun () ->
                                           use stream = new System.IO.FileStream(x,
                                                                                 System.IO.FileMode.Open,
@@ -60,7 +64,7 @@ module Main =
              else CommandLine.error <- true  ))
 #endif
       ("x|xmlReport=",
-       (fun x -> if not (String.IsNullOrWhiteSpace(x)) then
+       (fun x -> if not (String.IsNullOrWhiteSpace x) then
                     if Option.isSome Visitor.reportPath then
                       CommandLine.error <- true
                     else

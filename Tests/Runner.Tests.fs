@@ -200,9 +200,8 @@ or
       Assert.That(stderr.ToString(), Is.Empty)
       let result = stdout.ToString()
       let quote = if System.Environment.GetEnvironmentVariable("OS") = "Windows_NT" then "\"" else String.Empty
-      let expected = "Command line : '" + quote + exe + quote + " " + args + "\'" + Environment.NewLine + 
+      let expected = "Command line : '" + quote + exe + quote + " " + args + "\'" + Environment.NewLine +
                      "Where is my rocket pack? " + Environment.NewLine
-
 
       // hack for Mono
       //let computed = if result.Length = 14 then
@@ -655,6 +654,10 @@ or
                              Optional: The folder to receive the instrumented
                                assemblies and their companions (default: sub-
                                folder '__Instrumented' of the current directory)
+  -y, --symbolDirectory=VALUE
+                             Optional, multiple: Additional directory to search
+                               for matching symbols for the assemblies in the
+                               input directory
 """
 #if NETCOREAPP2_0
 #else
@@ -765,7 +768,6 @@ or
       let expected = "Command line : '" + quote + args.Head + quote + " " + String.Join(" ", args.Tail) +
                      "'" + Environment.NewLine + "Where is my rocket pack? " +
                      u1 + "*" + u2 + Environment.NewLine
-
 
       // hack for Mono
       //let computed = if result.Length = 50 then
