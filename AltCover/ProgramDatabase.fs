@@ -1,9 +1,8 @@
 ﻿namespace AltCover
 
 open System
+open System.Collections.Generic
 open System.IO
-
-open AltCover.Augment
 
 open Mono.Cecil
 open Mono.Cecil.Cil
@@ -11,6 +10,8 @@ open Mono.Cecil.Mdb
 open Mono.Cecil.Pdb
 
 module ProgramDatabase =
+  let internal SymbolFolders = List<String>()
+
   // We no longer have to violate Cecil encapsulation to get the PDB path!
   let GetPdbFromImage (assembly:AssemblyDefinition) =
     Some assembly.MainModule
