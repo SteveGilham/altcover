@@ -1,7 +1,7 @@
 **NOTE:** The main executable links the still in beta (after more than a year) Mono.Cecil 0.10 version.  The binary injected into the instrumented code does not.  Rather than hold my releases on the Mono.Cecil schedule, I make this disclaimer instead.
 
 # 2.0.###  (Byakko series release 4)
-* stuff...
+* "y|symbolDirectory=" option to provide other locations to find symbols for the instrumented assemblies.  The search order goes -- location in the debug header, co-located (.pdb than .mdb), then supplied locations tested in order for .pdb than .mdb
 
 # 2.0.324  (Byakko series release 3)
 * Option `--opencover` now generates values for MethodPoint tags when collecting the coverage data in "runner" mode
