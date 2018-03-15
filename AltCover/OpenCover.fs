@@ -95,7 +95,7 @@ module OpenCover =
           element.SetAttributeValue(X "hash", KeyStore.HashFile moduleDef.FileName)
           let head = s.Stack |> Seq.head
           head.Add(element)
-          
+
           element.Add(XElement(X "ModulePath", moduleDef.FileName))
           element.Add(XElement(X "ModuleTime", File.GetLastWriteTimeUtc moduleDef.FileName))
           element.Add(XElement(X "ModuleName", moduleDef.Assembly.Name.Name))
@@ -295,9 +295,9 @@ module OpenCover =
     let ReportVisitor (s : Context) (node:Node) =
       match node with
       | Start _ -> StartVisit s
-      | Node.Module (moduleDef, _ , included) -> VisitModule s moduleDef included
-      | Node.Type (typeDef, _, included) -> VisitType s typeDef included
-      | Node.Method (methodDef, _, included) -> VisitMethod s methodDef included
+      | Node.Module (moduleDef, included) -> VisitModule s moduleDef included
+      | Node.Type (typeDef, included) -> VisitType s typeDef included
+      | Node.Method (methodDef, included) -> VisitMethod s methodDef included
       | MethodPoint (_, codeSegment,  i, included) -> VisitMethodPoint' s codeSegment i included
       | AfterMethod _ -> VisitAfterMethod s
       | AfterType _ ->   VisitAfterType s

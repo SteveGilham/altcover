@@ -143,7 +143,7 @@ module Instrument =
   /// <returns>A representation of the assembly used to record all coverage visits.</returns>
   let internal PrepareAssembly (location:string) =
     let definition = AssemblyDefinition.ReadAssembly(location)
-    ProgramDatabase.ReadSymbols definition |> ignore
+    ProgramDatabase.ReadSymbols definition
     definition.Name.Name <- (extractName definition) + ".g"
 #if NETCOREAPP2_0
     let pair = None
@@ -404,12 +404,12 @@ module Instrument =
      match node with
      | Start _ -> let recorder = typeof<AltCover.Recorder.Tracer>
                   { state with RecordingAssembly = PrepareAssembly(recorder.Assembly.Location) }
-     | Assembly (assembly, _, included) -> if included then
+     | Assembly (assembly, included) -> if included then
                                               assembly.MainModule.AssemblyReferences.Add(state.RecordingAssembly.Name)
-                                           state
-     | Module (m, _, included) -> VisitModule state m included
+                                        state
+     | Module (m, included) -> VisitModule state m included
      | Type _ -> state
-     | Method (m, _,  included) -> VisitMethod state m included
+     | Method (m,  included) -> VisitMethod state m included
 
      | MethodPoint (instruction, _, point, included) ->
                 VisitMethodPoint state instruction point included

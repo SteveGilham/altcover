@@ -53,11 +53,10 @@ module ProgramDatabase =
   // Will fail  with InvalidOperationException if there is a malformed file with the expected name
   let ReadSymbols (assembly:AssemblyDefinition) =
     GetPdbWithFallback assembly
-    |> Option.map (fun pdbpath ->
+    |> Option.iter (fun pdbpath ->
                         let provider : ISymbolReaderProvider = if pdbpath.EndsWith(".pdb", StringComparison.OrdinalIgnoreCase) then
                                                                    PdbReaderProvider() :> ISymbolReaderProvider
                                                                else MdbReaderProvider() :> ISymbolReaderProvider
 
                         let reader = provider.GetSymbolReader(assembly.MainModule, pdbpath)
-                        assembly.MainModule.ReadSymbols(reader)
-                        reader)
+                        assembly.MainModule.ReadSymbols(reader))
