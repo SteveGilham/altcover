@@ -146,13 +146,13 @@ module Visitor =
   let private VisitAssembly (a:AssemblyDefinition) reader included buildSequence =
         a.Modules
         |> Seq.cast
-        |> Seq.filter IsIncluded
-        |> Seq.collect ((fun x -> Module (x, reader, included)) >> buildSequence)
+        |> Seq.collect ((fun x -> Module (x, reader, included && IsIncluded x)) >> buildSequence)
 
   let private VisitModule (x:ModuleDefinition) reader included buildSequence =
         PointNumber <- 0
-        x.GetAllTypes()
-        |> Seq.cast
+        [x]
+        |> Seq.takeWhile (fun _ -> included)
+        |> Seq.collect(fun x -> x.GetAllTypes() |> Seq.cast)
         |> Seq.collect ((fun t -> Type (t, reader, included && IsIncluded t)) >> buildSequence)
 
   let private VisitType (t:TypeDefinition) (reader:ISymbolReader option) included buildSequence =

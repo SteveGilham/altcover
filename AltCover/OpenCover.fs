@@ -89,15 +89,17 @@ module OpenCover =
           {s with Stack = modules :: s.Stack }
 
     let VisitModule (s : Context) (moduleDef:ModuleDefinition) included =
-          let element = XElement(X "Module",
-                          XAttribute(X "hash", KeyStore.HashFile moduleDef.FileName))
+          let element = XElement(X "Module")
+          if not included then element.SetAttributeValue(X "skippedDueTo", "Filter")
+                          else element.Add(Summary())
+          element.SetAttributeValue(X "hash", KeyStore.HashFile moduleDef.FileName)
           let head = s.Stack |> Seq.head
           head.Add(element)
-          element.Add(Summary())
+          
           element.Add(XElement(X "ModulePath", moduleDef.FileName))
           element.Add(XElement(X "ModuleTime", File.GetLastWriteTimeUtc moduleDef.FileName))
           element.Add(XElement(X "ModuleName", moduleDef.Assembly.Name.Name))
-          element.Add(XElement(X "Files"))
+          if included then element.Add(XElement(X "Files"))
           let classes = XElement(X "Classes")
           element.Add(classes)
           {s with Stack = classes :: s.Stack

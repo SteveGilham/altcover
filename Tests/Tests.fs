@@ -765,7 +765,7 @@ type AltCoverTests() = class
 
         let assembly = Node.Assembly (def, None, false)
         let expected = List.concat [ [assembly]; (Visitor.Deeper >> Seq.toList) assembly; [AfterAssembly def]]
-        Assert.That (deeper.Length, Is.EqualTo 12)
+        Assert.That (deeper.Length, Is.EqualTo 4)
         Assert.That (deeper, Is.EquivalentTo expected)
     finally
       Visitor.NameFilters.Clear()
@@ -1082,7 +1082,7 @@ type AltCoverTests() = class
     let m = MethodDefinition("dummy", MethodAttributes.Abstract, TypeDefinition("System", "Void", TypeAttributes.Public))
     Assert.That (Gendarme.CyclomaticComplexity m, Is.EqualTo 1)
 
-  static member private RecursiveValidateOpenCover result expected' depth zero =
+  static member private RecursiveValidateOpenCover result expected' depth zero expectSkipped =
     let X name =
       XName.Get(name)
 
@@ -1090,6 +1090,7 @@ type AltCoverTests() = class
 
     let expected = expected'
                    |> Seq.filter (fun (el:XElement) -> el.Name.LocalName <> "Module" ||
+                                                       expectSkipped ||
                                                        "skippedDueTo" |> X |> el.Attributes |> Seq.isEmpty)
                    |> Seq.filter (fun (el:XElement) -> "BranchPoint" <> el.Name.LocalName)
                    |> Seq.toList
@@ -1126,7 +1127,7 @@ type AltCoverTests() = class
                     | _ -> Assert.That(a1.Value, Is.EqualTo(a2.Value), r.ToString() + " -> " + a1.Name.ToString())
                 )
 
-            AltCoverTests.RecursiveValidateOpenCover (r.Elements()) (e.Elements()) (depth+1) zero)
+            AltCoverTests.RecursiveValidateOpenCover (r.Elements()) (e.Elements()) (depth+1) zero expectSkipped)
 
   [<Test>]
   member self.ShouldGenerateExpectedXmlReportFromDotNetOpenCoverStyle() =
@@ -1145,7 +1146,35 @@ type AltCoverTests() = class
         let baseline = XDocument.Load(stream)
         let result = document.Elements()
         let expected = baseline.Elements()
-        AltCoverTests.RecursiveValidateOpenCover result expected 0 true
+        AltCoverTests.RecursiveValidateOpenCover result expected 0 true false
+    finally
+      Visitor.NameFilters.Clear()
+
+  [<Test>]
+  member self.ShouldGenerateExpectedXmlReportWithModuleExclusionOpenCoverStyle() =
+    let visitor, document = OpenCover.ReportGenerator()
+    // Hack for running while instrumented
+    let where = Assembly.GetExecutingAssembly().Location
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), sample1)
+
+    try
+        "Sample" |> (Regex >> FilterClass.Module >> Visitor.NameFilters.Add)
+        Visitor.Visit [ visitor ] (Visitor.ToSeq path)
+        let raw = "<CoverageSession xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">
+        <Summary numSequencePoints=\"0\" visitedSequencePoints=\"0\" numBranchPoints=\"0\" visitedBranchPoints=\"0\" sequenceCoverage=\"0\" branchCoverage=\"0\" maxCyclomaticComplexity=\"0\" minCyclomaticComplexity=\"1\" visitedClasses=\"0\" numClasses=\"0\" visitedMethods=\"0\" numMethods=\"0\" />
+        <Modules>
+        <Module skippedDueTo=\"Filter\" hash=\"C2-87-B9-AA-6B-1D-03-60-30-9A-15-4A-D5-28-87-C2-9E-B9-8E-8D\">
+        <ModulePath>_Binaries\\AltCover.Tests\\Debug+AnyCPU\\Sample1.exe</ModulePath>
+        <ModuleTime>2018-03-15T14:00:17.3385938Z</ModuleTime>
+        <ModuleName>Sample1</ModuleName>
+        <Classes />
+        </Module>
+        </Modules>
+        </CoverageSession>"
+        let baseline = XDocument.Load(new System.IO.StringReader(raw))
+        let result = document.Elements()
+        let expected = baseline.Elements()
+        AltCoverTests.RecursiveValidateOpenCover result expected 0 true true
     finally
       Visitor.NameFilters.Clear()
 
@@ -1166,7 +1195,7 @@ type AltCoverTests() = class
         let baseline = XDocument.Load(stream)
         let result = document.Elements()
         let expected = baseline.Elements()
-        AltCoverTests.RecursiveValidateOpenCover result expected 0 true
+        AltCoverTests.RecursiveValidateOpenCover result expected 0 true false
     finally
       Visitor.NameFilters.Clear()
 
@@ -1187,7 +1216,7 @@ type AltCoverTests() = class
         let baseline = XDocument.Load(stream)
         let result = document.Elements()
         let expected = baseline.Elements()
-        AltCoverTests.RecursiveValidateOpenCover result expected 0 true
+        AltCoverTests.RecursiveValidateOpenCover result expected 0 true false
     finally
       Visitor.NameFilters.Clear()
 
@@ -1215,7 +1244,7 @@ type AltCoverTests() = class
         let baseline = XDocument.Load(stream)
         let result = document.Elements()
         let expected = baseline.Elements()
-        AltCoverTests.RecursiveValidateOpenCover result expected 0 true
+        AltCoverTests.RecursiveValidateOpenCover result expected 0 true false
     finally
       Visitor.NameFilters.Clear()
 

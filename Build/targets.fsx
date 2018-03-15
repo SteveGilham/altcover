@@ -355,7 +355,7 @@ Target "UnitTestWithAltCover" (fun _ ->
           { info with
                 FileName = altcover
                 WorkingDirectory = testDirectory
-                Arguments = ("--opencover /sn=" + keyfile + AltCoverFilterX + @"/o=./__UnitTestWithAltCover -x=" + altReport)})
+                Arguments = (" /sn=" + keyfile + AltCoverFilter + @"/o=./__UnitTestWithAltCover -x=" + altReport)})
                 "Re-instrument returned with a non-zero exit code"
 
       printfn "Unit test the instrumented code"
@@ -378,7 +378,7 @@ Target "UnitTestWithAltCover" (fun _ ->
           { info with
                 FileName = altcover
                 WorkingDirectory = weakDir
-                Arguments = ("--opencover /sn=" + keyfile + AltCoverFilterX + " /o=./__WeakNameTestWithAltCover -x=" + weakReport)})
+                Arguments = ("--opencover /sn=" + keyfile + AltCoverFilter + " /o=./__WeakNameTestWithAltCover -x=" + weakReport)})
                 "Instrumenting the weakname tests failed"
 
       printfn "Execute the weakname tests"
@@ -394,7 +394,7 @@ Target "UnitTestWithAltCover" (fun _ ->
           { info with
                 FileName = altcover
                 WorkingDirectory = shadowDir
-                Arguments = ("--opencover /sn=" + keyfile + AltCoverFilterX + @"/o=./__ShadowTestWithAltCover -x=" + shadowReport)})
+                Arguments = ("--opencover /sn=" + keyfile + AltCoverFilter + @"/o=./__ShadowTestWithAltCover -x=" + shadowReport)})
                 "Instrumenting the shadow tests failed"
 
       printfn "Execute the shadow tests"
@@ -1334,7 +1334,7 @@ ActivateFinal "ResetConsoleColours"
 
 "Compilation"
 ==> "UnitTestWithAltCover"
-// ==> "UnitTest"
+==> "UnitTest"
 
 "Compilation"
 ==> "UnitTestWithAltCoverRunner"

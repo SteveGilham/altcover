@@ -29,12 +29,13 @@ module Report =
           document.Add(element)
           element :: s
 
-    let VisitModule (s : list<XElement>) (head:XElement) (moduleDef:ModuleDefinition) =
+    let VisitModule (s : list<XElement>) (head:XElement) (moduleDef:ModuleDefinition) included =
           let element = XElement(X "module",
                           XAttribute(X "moduleId", moduleDef.Mvid.ToString()),
                           XAttribute(X "name", moduleDef.Name),
                           XAttribute(X "assembly", moduleDef.Assembly.Name.Name),
-                          XAttribute(X "assemblyIdentity", moduleDef.Assembly.Name.FullName))
+                          XAttribute(X "assemblyIdentity", moduleDef.Assembly.Name.FullName),
+                          XAttribute(X "excluded", if included then "false" else "true"))
           head.Add(element)
           element :: s
 
@@ -77,7 +78,7 @@ module Report =
       let tail = if List.isEmpty s then [] else s.Tail
       match node with
       | Start _ -> StartVisit s
-      | Module (moduleDef,_, _) -> VisitModule s head moduleDef
+      | Module (moduleDef,_, included) -> VisitModule s head moduleDef included
       | Method (methodDef, _, included) -> VisitMethod s head methodDef included
       | MethodPoint (_, codeSegment,  _, included) ->
         VisitMethodPoint s head codeSegment included
