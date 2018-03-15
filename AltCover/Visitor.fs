@@ -166,13 +166,13 @@ module Visitor =
   let private VisitMethod (m:MethodDefinition) included =
             let rawInstructions = m.Body.Instructions
             let dbg = m.DebugInformation
-            let instructions = rawInstructions
-                               |> Seq.cast
-                               |> Seq.filter (fun (x:Instruction) -> dbg |> isNull |> not)
+            let instructions = [rawInstructions |> Seq.cast]
+                               |> Seq.filter (fun _ -> dbg |> isNull |> not)
+                               |> Seq.concat
                                |> Seq.filter (fun (x:Instruction) -> if dbg.HasSequencePoints then
                                                                         let s = dbg.GetSequencePoint x
                                                                         (not << isNull) s && s.StartLine <> 0xfeefee
-                                                                        else false)
+                                                                     else false)
                                |> Seq.toList
 
             let number = instructions.Length
