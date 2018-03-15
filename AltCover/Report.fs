@@ -19,6 +19,9 @@ module Report =
     let X name =
       XName.Get(name)
 
+    let ToExcluded included =
+      if included then "false" else "true"
+
     let StartVisit (s : list<XElement>) =
           let element = XElement(X "coverage",
                           XAttribute(X "profilerVersion", "AltCover " +
@@ -35,7 +38,7 @@ module Report =
                           XAttribute(X "name", moduleDef.Name),
                           XAttribute(X "assembly", moduleDef.Assembly.Name.Name),
                           XAttribute(X "assemblyIdentity", moduleDef.Assembly.Name.FullName),
-                          XAttribute(X "excluded", if included then "false" else "true"))
+                          XAttribute(X "excluded", ToExcluded included))
           head.Add(element)
           element :: s
 
@@ -45,7 +48,7 @@ module Report =
                           //// Mono.Cecil emits names in the form outer/inner rather than outer+inner
                           XAttribute(X "class", Naming.FullTypeName methodDef.DeclaringType),
                           XAttribute(X "metadataToken", methodDef.MetadataToken.ToUInt32().ToString()),
-                          XAttribute(X "excluded", if included then "false" else "true"),
+                          XAttribute(X "excluded", ToExcluded included),
                           XAttribute(X "instrumented", if included then "true" else "false"),
                           XAttribute(X "fullname", Naming.FullMethodName methodDef)
                               )
@@ -66,7 +69,7 @@ module Report =
                           XAttribute(X "column", codeSegment.StartColumn),
                           XAttribute(X "endline", fst end'),
                           XAttribute(X "endcolumn", snd end'),
-                          XAttribute(X "excluded", if included then "false" else "true"),
+                          XAttribute(X "excluded", ToExcluded included),
                           XAttribute(X "document", codeSegment.Document.Url))
           if head.IsEmpty then head.Add(element)
           else head.FirstNode.AddBeforeSelf(element)
