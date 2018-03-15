@@ -664,7 +664,7 @@ Target "FSharpTypes" ( fun _ ->
           { info with
                 FileName = binRoot @@ "AltCover.exe"
                 WorkingDirectory = sampleRoot
-                Arguments = ("-t=System\. -t=Microsoft\. -x=" + simpleReport + " /o=./" + instrumented)})
+                Arguments = ("-s=nunit -t=System\. -t=Microsoft\. -x=" + simpleReport + " /o=./" + instrumented)})
                 "FSharpTypes"
       Actions.ValidateFSharpTypes simpleReport []
     else
