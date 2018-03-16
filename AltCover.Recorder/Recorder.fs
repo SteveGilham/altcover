@@ -112,7 +112,7 @@ module Instance =
   let internal VisitImpl moduleId hitPointId context =
     if not <| String.IsNullOrEmpty(moduleId) then
       trace.OnConnected (fun () -> TraceVisit moduleId hitPointId context)
-                        (fun () -> Counter.AddVisit Visits moduleId hitPointId (None, None))
+                        (fun () -> Counter.AddVisit Visits moduleId hitPointId context)
 
   let rec private loop (inbox:MailboxProcessor<Message>) =
           async {
@@ -155,7 +155,7 @@ module Instance =
 
   let Visit moduleId hitPointId =
      VisitSelection (fun () -> trace.IsConnected() || Backlog() > 10)
-       moduleId hitPointId (None, None)
+       moduleId hitPointId (None, None) // update iff runner file exists and opencover and option set
 
   let internal FlushCounter (finish:Close) _ =
     mailbox.PostAndReply (fun c -> Finish (finish, c))

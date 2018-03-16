@@ -129,6 +129,7 @@ module Counter =
     if not (counts.ContainsKey moduleId) then counts.[moduleId] <- Dictionary<int, int * (int64 option * int option) list>()
     if not (counts.[moduleId].ContainsKey hitPointId) then
         counts.[moduleId].Add(hitPointId, (0,[]))
+    let n, l = counts.[moduleId].[hitPointId]
     counts.[moduleId].[hitPointId] <- match context with
-                                      | (None, None) -> (1 + fst counts.[moduleId].[hitPointId], snd counts.[moduleId].[hitPointId])
-                                      | something -> (1 + fst counts.[moduleId].[hitPointId], something :: snd counts.[moduleId].[hitPointId])
+                                      | (None, None) -> (1 + n, l)
+                                      | something -> (n, something :: l)

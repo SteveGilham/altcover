@@ -46,11 +46,16 @@ type Tracer = {
       this.Formatter.Serialize(stream, (moduleId, hitPointId, context))
 
     member this.CatchUp (visits:Dictionary<string, Dictionary<int, int * (int64 option * int option) list>>) =
+      let empty = (None,None)
       visits.Keys
       |> Seq.iter (fun moduleId ->
         visits.[moduleId].Keys
-        |> Seq.iter (fun hitPointId -> for i = 1 to fst visits.[moduleId].[hitPointId] do
-                                         this.Push moduleId hitPointId (None, None)))
+        |> Seq.iter (fun hitPointId -> let n, l = visits.[moduleId].[hitPointId]
+                                       let push = this.Push moduleId hitPointId
+                                       [seq {1 .. n} |> Seq.map (fun _ -> empty )
+                                        l |> List.toSeq]
+                                       |> Seq.concat |> Seq.iter push
+                                       ))
       visits.Clear()
 
     member this.OnStart () =
