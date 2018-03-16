@@ -54,7 +54,6 @@ type AltCoverTests() = class
    member self.resource2 = Assembly.GetExecutingAssembly().GetManifestResourceNames()
                           |> Seq.find (fun n -> n.EndsWith("Sample1WithModifiedOpenCover.xml", StringComparison.Ordinal))
 
-
   [<Test>]
   member self.ShouldBeLinkingTheCorrectCopyOfThisCode() =
     self.GetMyMethodName "=>"
