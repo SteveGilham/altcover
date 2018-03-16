@@ -3574,6 +3574,10 @@ type AltCoverTests() = class
                          "Mono.Cecil.dll"
                          "nunit.engine.netstandard.dll"
                          "NUnit3.TestAdapter.dll"
+#if NETCOREAPP2_0
+                         "NUnit3.TestAdapter.dll.mdb"
+#endif
+                         "NUnit3.TestAdapter.pdb"
                          "Sample2.deps.json"
                          "Sample2.dll"
 #if NETCOREAPP2_0
