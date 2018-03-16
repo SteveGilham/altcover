@@ -56,7 +56,7 @@ module Counter =
   /// </summary>
   /// <param name="hitCounts">The coverage results to incorporate</param>
   /// <param name="coverageFile">The coverage file to update as a stream</param>
-  let internal UpdateReport (postProcess:XmlDocument -> unit) own (counts:Dictionary<string, Dictionary<int, int>>) format coverageFile =
+  let internal UpdateReport (postProcess:XmlDocument -> unit) own (counts:Dictionary<string, Dictionary<int, int  * (int64 option * int option) list>>) format coverageFile =
     let flushStart = DateTime.UtcNow
     let coverageDocument = ReadXDocument coverageFile
     let root = coverageDocument.DocumentElement
@@ -98,7 +98,7 @@ module Counter =
                                                         |> Seq.cast<XmlElement>
                                                         |> Seq.toList |> List.rev)
         |> Seq.mapi (fun counter pt -> ((match format with
-                                        | ReportFormat.OpenCover -> "uspid" |> pt.GetAttribute |> FindIndexFromUspid 
+                                        | ReportFormat.OpenCover -> "uspid" |> pt.GetAttribute |> FindIndexFromUspid
                                         | _ -> counter),
                                         pt))
         |> Seq.filter (fst >> moduleHits.ContainsKey)
@@ -109,7 +109,7 @@ module Counter =
                                     System.Globalization.NumberStyles.Integer,
                                     System.Globalization.CultureInfo.InvariantCulture) |> snd
             // Treat -ve visit counts (an exemption added in analysis) as zero
-            let visits = moduleHits.[counter] + (max 0 vc)
+            let visits = (fst moduleHits.[counter]) + (max 0 vc)
             pt.SetAttribute(v, visits.ToString(CultureInfo.InvariantCulture))))
 
     postProcess coverageDocument
@@ -125,9 +125,10 @@ module Counter =
     let flushStart = UpdateReport postProcess own counts format coverageFile
     TimeSpan(DateTime.UtcNow.Ticks - flushStart.Ticks)
 
-  let AddVisit (counts:Dictionary<string, Dictionary<int, int>>) moduleId hitPointId =
-    if not (counts.ContainsKey moduleId) then counts.[moduleId] <- Dictionary<int, int>()
+  let AddVisit (counts:Dictionary<string, Dictionary<int, int * (int64 option * int option) list>>) moduleId hitPointId context =
+    if not (counts.ContainsKey moduleId) then counts.[moduleId] <- Dictionary<int, int * (int64 option * int option) list>()
     if not (counts.[moduleId].ContainsKey hitPointId) then
-        counts.[moduleId].Add(hitPointId, 1)
-    else
-        counts.[moduleId].[hitPointId] <- 1 + counts.[moduleId].[hitPointId]
+        counts.[moduleId].Add(hitPointId, (0,[]))
+    counts.[moduleId].[hitPointId] <- match context with
+                                      | (None, None) -> (1 + fst counts.[moduleId].[hitPointId], snd counts.[moduleId].[hitPointId])
+                                      | something -> (1 + fst counts.[moduleId].[hitPointId], something :: snd counts.[moduleId].[hitPointId])

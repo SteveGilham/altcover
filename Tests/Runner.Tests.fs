@@ -27,37 +27,37 @@ type AltCoverTests() = class
 
   [<Test>]
   member self.RealIdShouldIncrementCount() =
-    let visits = new Dictionary<string, Dictionary<int, int>>()
+    let visits = new Dictionary<string, Dictionary<int, int  * (int64 option * int option) list>>()
     let key = " "
-    Counter.AddVisit visits key  23
+    Counter.AddVisit visits key 23 (None,None)
     Assert.That (visits.Count, Is.EqualTo 1)
     Assert.That (visits.[key].Count, Is.EqualTo 1)
-    Assert.That (visits.[key].[23], Is.EqualTo 1)
+    Assert.That (visits.[key].[23], Is.EqualTo (1,[]))
 
   [<Test>]
   member self.DistinctIdShouldBeDistinct() =
-    let visits = new Dictionary<string, Dictionary<int, int>>()
+    let visits = new Dictionary<string, Dictionary<int, int  * (int64 option * int option) list>>()
     let key = " "
-    Counter.AddVisit visits key 23
-    Counter.AddVisit visits "key" 42
+    Counter.AddVisit visits key 23 (None,None)
+    Counter.AddVisit visits "key" 42 (None,None)
     Assert.That (visits.Count, Is.EqualTo 2)
 
   [<Test>]
   member self.DistinctLineShouldBeDistinct() =
-    let visits = new Dictionary<string, Dictionary<int, int>>()
+    let visits = new Dictionary<string, Dictionary<int, int  * (int64 option * int option) list>>()
     let key = " "
-    Counter.AddVisit visits key 23
-    Counter.AddVisit visits key 42
+    Counter.AddVisit visits key 23 (None,None)
+    Counter.AddVisit visits key 42 (None,None)
     Assert.That (visits.Count, Is.EqualTo 1)
     Assert.That (visits.[key].Count, Is.EqualTo 2)
 
   [<Test>]
   member self.RepeatVisitsShouldIncrementCount() =
-    let visits = new Dictionary<string, Dictionary<int, int>>()
+    let visits = new Dictionary<string, Dictionary<int, int  * (int64 option * int option) list>>()
     let key = " "
-    Counter.AddVisit visits key 23
-    Counter.AddVisit visits key 23
-    Assert.That (visits.[key].[23], Is.EqualTo 2)
+    Counter.AddVisit visits key 23 (None,None)
+    Counter.AddVisit visits key 23 (None,None)
+    Assert.That (visits.[key].[23], Is.EqualTo (2, []))
 
   member self.resource = Assembly.GetExecutingAssembly().GetManifestResourceNames()
                          |> Seq.find (fun n -> n.EndsWith("SimpleCoverage.xml", StringComparison.Ordinal))
@@ -74,10 +74,10 @@ type AltCoverTests() = class
     use worker = new MemoryStream()
     worker.Write (buffer, 0, size)
     worker.Position <- 0L
-    let payload = Dictionary<int,int>()
+    let payload = Dictionary<int,int * (int64 option * int option) list>()
     [0..9 ]
-    |> Seq.iter(fun i -> payload.[10 - i] <- (i+1))
-    let item = Dictionary<string, Dictionary<int, int>>()
+    |> Seq.iter(fun i -> payload.[10 - i] <- (i+1, []))
+    let item = Dictionary<string, Dictionary<int, int  * (int64 option * int option) list>>()
     item.Add("7C-CD-66-29-A3-6C-6D-5F-A7-65-71-0E-22-7D-B2-61-B5-1F-65-9A", payload)
     Counter.UpdateReport ignore true item ReportFormat.OpenCover worker |> ignore
     worker.Position <- 0L
@@ -96,7 +96,7 @@ type AltCoverTests() = class
     let unique = Path.Combine(where, Guid.NewGuid().ToString())
     let reportFile = Path.Combine(unique, "FlushLeavesExpectedTraces.xml")
     try
-      let visits = new Dictionary<string, Dictionary<int, int>>()
+      let visits = new Dictionary<string, Dictionary<int, int  * (int64 option * int option) list>>()
       use stdout = new StringWriter()
       Console.SetOut stdout
       Directory.CreateDirectory(unique) |> ignore
@@ -112,9 +112,9 @@ type AltCoverTests() = class
         worker.Write(buffer, 0, size)
         ()
 
-      let payload = Dictionary<int,int>()
+      let payload = Dictionary<int,int  * (int64 option * int option) list>()
       [0..9 ]
-      |> Seq.iter(fun i -> payload.[i] <- (i+1))
+      |> Seq.iter(fun i -> payload.[i] <- (i+1, []))
       visits.["f6e3edb3-fb20-44b3-817d-f69d1a22fc2f"] <- payload
 
       Counter.DoFlush ignore true visits AltCover.Base.ReportFormat.NCover reportFile |> ignore
@@ -940,7 +940,7 @@ or
                           el.SetAttribute("sequenceCoverage", "0")
                            )
 
-    let empty = Dictionary<string, Dictionary<int, int>>()
+    let empty = Dictionary<string, Dictionary<int, int * (int64 option * int option) list>>()
     Runner.PostProcess empty Base.ReportFormat.OpenCover after
 
     Assert.That(after.OuterXml.Replace("uspid=\"100663298", "uspid=\"13"), Is.EqualTo before, after.OuterXml)
@@ -975,11 +975,11 @@ or
     |> Seq.toList
     |> List.iter(fun el -> el.RemoveAllAttributes())
 
-    let visits = Dictionary<string, Dictionary<int, int>>()
-    let visit = Dictionary<int, int>()
+    let visits = Dictionary<string, Dictionary<int, int * (int64 option * int option) list>>()
+    let visit = Dictionary<int, int * (int64 option * int option) list>()
     visits.Add("6A-33-AA-93-82-ED-22-9D-F8-68-2C-39-5B-93-9F-74-01-76-00-9F", visit)
-    visit.Add(100663297, 1)  // should fill in the expected non-zero value
-    visit.Add(100663298, 23) // should be ignored
+    visit.Add(100663297, (1,[]))  // should fill in the expected non-zero value
+    visit.Add(100663298, (23,[])) // should be ignored
     Runner.PostProcess visits Base.ReportFormat.OpenCover after
 
     Assert.That(after.OuterXml.Replace("uspid=\"100663298", "uspid=\"13"), Is.EqualTo before, after.OuterXml)
@@ -1017,18 +1017,18 @@ or
 
     let before = after.OuterXml.Replace("uspid=\"13", "uspid=\"100663298")
 
-    let empty = Dictionary<string, Dictionary<int, int>>()
+    let empty = Dictionary<string, Dictionary<int, int * (int64 option * int option) list>>()
     Runner.PostProcess empty Base.ReportFormat.OpenCover after
 
     Assert.That(after.OuterXml, Is.EqualTo before, after.OuterXml)
 
   [<Test>]
   member self.JunkTokenShouldDefaultZero() =
-    let visits = Dictionary<int, int>()
+    let visits = Dictionary<int, int * (int64 option * int option) list>()
     let key = " "
     let result = Runner.LookUpVisitsByToken key visits
     match result with
-    | (false, 0) -> ()
+    | (0, []) -> ()
     | _ -> Assert.Fail(sprintf "%A" result)
 
 end

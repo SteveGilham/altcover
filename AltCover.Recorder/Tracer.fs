@@ -41,16 +41,16 @@ type Tracer = {
     member this.Close() =
       this.Stream.Dispose()
 
-    member this.Push (moduleId:string) hitPointId =
+    member this.Push (moduleId:string) hitPointId context =
       let stream = this.Stream
-      this.Formatter.Serialize(stream, (moduleId, hitPointId))
+      this.Formatter.Serialize(stream, (moduleId, hitPointId, context))
 
-    member this.CatchUp (visits:Dictionary<string, Dictionary<int, int>>) =
+    member this.CatchUp (visits:Dictionary<string, Dictionary<int, int * (int64 option * int option) list>>) =
       visits.Keys
       |> Seq.iter (fun moduleId ->
         visits.[moduleId].Keys
-        |> Seq.iter (fun hitPointId -> for i = 1 to visits.[moduleId].[hitPointId] do
-                                         this.Push moduleId hitPointId))
+        |> Seq.iter (fun hitPointId -> for i = 1 to fst visits.[moduleId].[hitPointId] do
+                                         this.Push moduleId hitPointId (None, None)))
       visits.Clear()
 
     member this.OnStart () =
@@ -64,10 +64,10 @@ type Tracer = {
 
     member this.OnFinish visits =
       this.CatchUp visits
-      this.Push null -1
+      this.Push null -1 (None, None)
       this.Stream.Flush()
       this.Close()
 
-    member this.OnVisit visits moduleId hitPointId =
+    member this.OnVisit visits moduleId hitPointId context =
       this.CatchUp visits
-      this.Push moduleId hitPointId
+      this.Push moduleId hitPointId context

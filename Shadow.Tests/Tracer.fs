@@ -74,6 +74,9 @@ type AltCoverCoreTests() = class
     sink()
     hits
 
+#if NET4
+  // passing F# types across the CLR divide doesn't work
+#else
   [<Test>]
   member self.VisitShouldSignal() =
     let save = Instance.trace
@@ -89,13 +92,13 @@ type AltCoverCoreTests() = class
       let mutable client = Tracer.Create tag
       try
         Instance.Visits.Clear()
-        let entry = Dictionary<int, int>()
-        entry.Add(23, 1)
+        let entry = Dictionary<int, int  * (int64 option * int option) list>()
+        entry.Add(23, (1, []))
         Instance.Visits.Add("name", entry)
 
         Instance.trace <- client.OnStart()
         Assert.That (Instance.trace.IsConnected(), "connection failed")
-        Instance.VisitImpl "name" 23
+        Instance.VisitImpl "name" 23 (None,None)
       finally
         Instance.trace.Close()
         Instance.trace <- save
@@ -145,7 +148,7 @@ type AltCoverCoreTests() = class
 
     finally
       Instance.Visits.Clear()
-
+#endif
 #if NETCOREAPP2_0
   [<Test>]
   member self.CoreFindsThePlace() =
