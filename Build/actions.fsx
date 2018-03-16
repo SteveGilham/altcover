@@ -57,6 +57,7 @@ open System.Runtime.CompilerServices
 [<assembly: AssemblyConfiguration("Release {0}")>]
 #endif
 #if NETSTANDARD2_0
+[<assembly: InternalsVisibleTo("AltCover.Shadow.Adapter")>]
 [<assembly: InternalsVisibleTo("AltCover.Shadow.Tests")>]
 #else
 #if NETCOREAPP2_0
@@ -65,6 +66,8 @@ open System.Runtime.CompilerServices
 #else
 [<assembly: InternalsVisibleTo("AltCover.Tests, PublicKey={1}")>]
 [<assembly: InternalsVisibleTo("AltCover.Tests, PublicKey={2}")>]
+[<assembly: InternalsVisibleTo("AltCover.Shadow.Adapter, PublicKey={1}")>]
+[<assembly: InternalsVisibleTo("AltCover.Shadow.Adapter, PublicKey={2}")>]
 [<assembly: InternalsVisibleTo("AltCover.Shadow.Tests, PublicKey={1}")>]
 [<assembly: InternalsVisibleTo("AltCover.Shadow.Tests, PublicKey={2}")>]
 [<assembly: InternalsVisibleTo("AltCover.Shadow.Tests2, PublicKey={1}")>]

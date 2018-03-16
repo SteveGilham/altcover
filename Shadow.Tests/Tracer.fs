@@ -23,6 +23,7 @@ open System.IO.Compression
 open System.Reflection
 
 open AltCover.Recorder
+open AltCover.Shadow
 open NUnit.Framework
 
 type UpdateBinder () =
@@ -74,9 +75,6 @@ type AltCoverCoreTests() = class
     sink()
     hits
 
-#if NET4
-  // passing F# types across the CLR divide doesn't work
-#else
   [<Test>]
   member self.VisitShouldSignal() =
     let save = Instance.trace
@@ -91,25 +89,23 @@ type AltCoverCoreTests() = class
     try
       let mutable client = Tracer.Create tag
       try
-        Instance.Visits.Clear()
-        let entry = Dictionary<int, int  * (int64 option * int option) list>()
-        entry.Add(23, (1, []))
-        Instance.Visits.Add("name", entry)
+        Adapter.VisitsClear()
+        Adapter.VisitsAdd "name" 23 1
 
         Instance.trace <- client.OnStart()
         Assert.That (Instance.trace.IsConnected(), "connection failed")
-        Instance.VisitImpl "name" 23 (None,None)
+        Adapter.VisitImplNone "name" 23
       finally
         Instance.trace.Close()
         Instance.trace <- save
 
       use stream = new DeflateStream(File.OpenRead (unique + ".0.acv"), CompressionMode.Decompress)
       let results = self.ReadResults stream
-      Assert.That (Instance.Visits, Is.Empty, "unexpected local write")
+      Assert.That (Adapter.VisitsSeq(), Is.Empty, "unexpected local write")
       Assert.That (results, Is.EquivalentTo expected, "unexpected result")
 
     finally
-      Instance.Visits.Clear()
+      Adapter.VisitsClear()
 
   [<Test>]
   member self.FlushShouldTidyUp() = // also throw a bone to OpenCover 615
@@ -127,7 +123,7 @@ type AltCoverCoreTests() = class
       let expected = [("name", client.GetHashCode()); (null, -1)]
 
       try
-        Instance.Visits.Clear()
+        Adapter.VisitsClear()
         Instance.trace <- client.OnStart()
         Assert.That(Instance.trace.Equals client, Is.False)
         Assert.That(Instance.trace.Equals expected, Is.False)
@@ -143,12 +139,12 @@ type AltCoverCoreTests() = class
 
       use stream = new DeflateStream(File.OpenRead (root + ".0.acv"), CompressionMode.Decompress)
       let results = self.ReadResults stream
-      Assert.That (Instance.Visits, Is.Empty, "unexpected local write")
+      Assert.That (Adapter.VisitsSeq(), Is.Empty, "unexpected local write")
       Assert.That (results, Is.EquivalentTo expected, "unexpected result")
 
     finally
-      Instance.Visits.Clear()
-#endif
+      Adapter.VisitsClear()
+
 #if NETCOREAPP2_0
   [<Test>]
   member self.CoreFindsThePlace() =

@@ -93,7 +93,7 @@ module Instance =
       (fun () ->
       match Visits.Count with
       | 0 -> ()
-      | _ -> let counts = Dictionary<string, Dictionary<int, int  * (int64 option * int option) list>> Visits
+      | _ -> let counts = Dictionary<string, Dictionary<int, int * (int64 option * int option) list>> Visits
              Visits.Clear()
              WithMutex (fun own ->
                 let delta = Counter.DoFlush ignore own counts CoverageFormat ReportFile
