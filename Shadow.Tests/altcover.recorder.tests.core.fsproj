@@ -44,7 +44,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Update="FSharp.Core" Version="4.3.4" />
+    <Reference Include="FSharp.Core">
+      <HintPath>..\packages\FSharp.Core.4.3.4\lib\netstandard1.6\FSharp.Core.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>
