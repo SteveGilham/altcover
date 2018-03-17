@@ -3525,6 +3525,8 @@ type AltCoverTests() = class
 #else
                     "-sn"; key
 #endif
+                    "-s=Adapter" 
+                    "-s=nunit"
                  |]
       let result = Main.DoInstrumentation args
       Assert.That (result, Is.EqualTo 0)
@@ -3574,9 +3576,6 @@ type AltCoverTests() = class
                          "Mono.Cecil.dll"
                          "nunit.engine.netstandard.dll"
                          "NUnit3.TestAdapter.dll"
-#if NETCOREAPP2_0
-                         "NUnit3.TestAdapter.dll.mdb"
-#endif
                          "NUnit3.TestAdapter.pdb"
                          "Sample2.deps.json"
                          "Sample2.dll"
@@ -3590,7 +3589,8 @@ type AltCoverTests() = class
       let expected' = if pdb |> File.Exists |> not then
                         List.concat [expected; ["AltCover.Recorder.g.dll.mdb"; "Sample2.dll.mdb" ]]
                         |> List.filter (fun f -> f.EndsWith(".g.pdb", StringComparison.Ordinal) |> not)
-                        |> List.filter (fun f -> isWindows || f = "Sample2.pdb" || (f.EndsWith("db", StringComparison.Ordinal) |> not))
+                        |> List.filter (fun f -> isWindows || f = "Sample2.pdb" || f = "NUnit3.TestAdapter.pdb" ||
+                                                 (f.EndsWith("db", StringComparison.Ordinal) |> not))
                         |> List.sortBy (fun f -> f.ToUpperInvariant())
                       else
                         expected

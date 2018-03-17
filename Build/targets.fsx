@@ -664,7 +664,7 @@ Target "FSharpTypes" ( fun _ ->
           { info with
                 FileName = binRoot @@ "AltCover.exe"
                 WorkingDirectory = sampleRoot
-                Arguments = ("-s=nunit -t=System\. -t=Microsoft\. -x=" + simpleReport + " /o=./" + instrumented)})
+                Arguments = ("-s=Adapter -s=nunit -t=System\. -t=Microsoft\. -x=" + simpleReport + " /o=./" + instrumented)})
                 "FSharpTypes"
       Actions.ValidateFSharpTypes simpleReport []
     else
@@ -678,7 +678,7 @@ Target "FSharpTypesDotNet" ( fun _ ->
     let sampleRoot = Path.getFullName "_Binaries/Sample2/Debug+AnyCPU/netcoreapp2.0"
     let instrumented = Path.getFullName "Sample2/_Binaries/Sample2/Debug+AnyCPU/netcoreapp2.0"
     Actions.RunDotnet (fun o -> {dotnetOptions o with WorkingDirectory = sampleRoot}) "run"
-                             ("--project " + project + " -- -t \"System\\.\" -t \"Microsoft\\.\" -x \"" + simpleReport + "\" /o \"" + instrumented + "\"")
+                             ("--project " + project + " -- -s=Adapter -t \"System\\.\" -t \"Microsoft\\.\" -x \"" + simpleReport + "\" /o \"" + instrumented + "\"")
                              "FSharpTypesDotNet"
 
     Actions.ValidateFSharpTypes simpleReport ["main"]
@@ -699,7 +699,7 @@ Target "FSharpTypesDotNetRunner" ( fun _ ->
 
     // Instrument the code
     Actions.RunDotnet (fun o -> {dotnetOptions o with WorkingDirectory = sampleRoot}) "run"
-                             ("--project " + project + " --configuration Release -- -t \"System\\.\" -t \"Microsoft\\.\" -x \"" + simpleReport + "\" /o \"" + instrumented + "\"")
+                             ("--project " + project + " --configuration Release -- -s=Adapter -t \"System\\.\" -t \"Microsoft\\.\" -x \"" + simpleReport + "\" /o \"" + instrumented + "\"")
                              "FSharpTypesDotNetRunner"
 
     Actions.ValidateFSharpTypes simpleReport ["main"]
@@ -1132,7 +1132,7 @@ Target "ReleaseFSharpTypesDotNetRunner" ( fun _ ->
 
     // Instrument the code
     Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = unpack}) "run"
-                      ("--project altcover.core.fsproj --configuration Release -- -x \"" + x + "\" -o \"" + o + "\" -i \"" + i + "\"")
+                      ("--project altcover.core.fsproj --configuration Release -- -s=Adapter -x \"" + x + "\" -o \"" + o + "\" -i \"" + i + "\"")
                       "ReleaseFSharpTypesDotNetRunner"
 
     Actions.ValidateFSharpTypes x ["main"]
@@ -1178,7 +1178,7 @@ Target "ReleaseFSharpTypesX86DotNetRunner" ( fun _ ->
         let altcover = unpack @@ "../_Binaries/AltCover/Release+AnyCPU/netcoreapp2.0/AltCover.dll"
         Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = unpack
                                                             DotNetCliPath = dotnetPath86 |> Option.get}) ""
-                      (altcover + " -x \"" + x + "\" -o \"" + o + "\" -i \"" + i + "\"")
+                      (altcover + " -s=Adapter -x \"" + x + "\" -o \"" + o + "\" -i \"" + i + "\"")
                       "ReleaseFSharpTypesX86DotNetRunner"
 
         Actions.ValidateFSharpTypes x ["main"]
