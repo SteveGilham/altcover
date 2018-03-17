@@ -19,7 +19,7 @@
 
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
-    <Compile Include="Tracer.fs" />
+    <Compile Include="Tracer.Tests.fs" />
     <Compile Include="Shadow.Tests.fs" />
     <Compile Include="Program.fs" />    
   </ItemGroup>
