@@ -133,10 +133,10 @@ type AltCoverTests() = class
   member self.PayloadGeneratedIsAsExpected() =
     try
       Instance.CallerId <- 0
-      Assert.That(Instance.PayloadSelector (fun _ -> true) (),
+      Assert.That(Instance.PayloadSelector (fun _ -> true),
                   Is.EqualTo Null)
       Instance.CallerId <- 4321
-      Assert.That(Instance.PayloadSelector (fun _ -> true) (),
+      Assert.That(Instance.PayloadSelector (fun _ -> true),
                   Is.EqualTo (Call 4321))
       // 0x1234123412341234 == 1311693406324658740
       Assert.That(Instance.PayloadSelection (fun _ -> 0x1234123412341234L) (fun _ -> 1000L) (fun _ -> true),
@@ -167,7 +167,7 @@ type AltCoverTests() = class
       Instance.trace <- { Tracer=null; Stream=null; Formatter=null;
                           Runner = false; Definitive = false }
       let key = " "
-      Instance.VisitSelection (fun () -> true) (fun _ -> Null) key 23
+      Instance.VisitSelection (fun () -> true) Null key 23
       Thread.Sleep 100
       Assert.That (Instance.Visits.Count, Is.EqualTo 1, "A visit happened")
       Assert.That (Instance.Visits.[key].Count, Is.EqualTo 1, "keys = " + String.Join("; ", Instance.Visits.Keys|> Seq.toArray))
