@@ -6,6 +6,8 @@ open System.IO.Compression
 
 type Tracer = {
                 Tracer : string
+                Runner : bool
+                Definitive : bool
                 Stream : System.IO.Stream
                 Formatter : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
               }
@@ -18,6 +20,8 @@ type Tracer = {
     static member Create (name:string) =
       {
        Tracer = name
+       Runner = false
+       Definitive = false
        Stream = null
        Formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
       }
@@ -25,7 +29,7 @@ type Tracer = {
     member this.IsConnected () =
       match this.Stream with
       | null -> false
-      | _ -> File.Exists this.Tracer
+      | _ -> this.Runner
 
     member this.Connect () =
       if File.Exists this.Tracer then
@@ -33,7 +37,8 @@ type Tracer = {
                                                         sprintf ".%d.acv" i))
         |> Seq.filter (File.Exists >> not)
         |> Seq.map (fun f -> let fs = File.OpenWrite f
-                             { this with Stream = new DeflateStream(fs, CompressionMode.Compress) })
+                             { this with Stream = new DeflateStream(fs, CompressionMode.Compress)
+                                         Runner = true })
         |> Seq.head
       else
         this
@@ -61,9 +66,9 @@ type Tracer = {
       visits.Clear()
 
     member this.OnStart () =
-      if this.Tracer <> "Coverage.Default.xml.acv" then
-        this.Connect ()
-      else this
+      let running = if this.Tracer <> "Coverage.Default.xml.acv" then
+                        this.Connect () else this
+      {running with Definitive = true}
 
     member this.OnConnected f g =
       if this.IsConnected() then f()
