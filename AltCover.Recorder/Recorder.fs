@@ -163,7 +163,7 @@ module Instance =
 
   let internal Clock () = DateTime.UtcNow.Ticks
 
-  let internal PayloadSelection wantPayload frequency clock =
+  let internal PayloadSelection clock frequency wantPayload =
     if wantPayload () then
        match (frequency(), CallerId) with
        | (0L, 0) -> Null
@@ -172,8 +172,10 @@ module Instance =
        | (t, n) -> Both (t*(clock()/t), n)
     else Null
 
-  let internal PayloadSelector () =
-    PayloadSelection IsOpenCoverRunner Granularity Clock
+  let internal PayloadControl = PayloadSelection Clock
+
+  let internal PayloadSelector enable _ =
+    PayloadControl Granularity enable 
 
   let internal VisitSelection (f: unit -> bool) (g: unit -> Track) moduleId hitPointId =
     // When writing to file for the runner to process,
@@ -188,7 +190,7 @@ module Instance =
 
   let Visit moduleId hitPointId =
      VisitSelection (fun () -> trace.IsConnected() || Backlog() > 10)
-                     PayloadSelector moduleId hitPointId
+                     (PayloadSelector IsOpenCoverRunner) moduleId hitPointId
 
   let internal FlushCounter (finish:Close) _ =
     mailbox.PostAndReply (fun c -> Finish (finish, c))
