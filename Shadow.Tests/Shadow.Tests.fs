@@ -144,6 +144,8 @@ type AltCoverTests() = class
       Instance.CallerId <- 0
       Assert.That(Instance.PayloadSelection (fun _ -> true) (fun _ -> 1000L) (fun _ -> 0x1234123412341234L),
                   Is.EqualTo (Time 1311693406324658000L))
+
+      Assert.That (Instance.PayloadSelector(), Is.EqualTo Null)
     finally
       Instance.CallerId <- 0
 
@@ -157,7 +159,7 @@ type AltCoverTests() = class
       Instance.trace <- { Tracer=null; Stream=null; Formatter=null;
                           Runner = false; Definitive = false }
       let key = " "
-      Instance.VisitSelection (fun () -> true) Null key 23
+      Instance.VisitSelection (fun () -> true) (fun _ -> Null) key 23
       Thread.Sleep 100
       Assert.That (Instance.Visits.Count, Is.EqualTo 1, "A visit happened")
       Assert.That (Instance.Visits.[key].Count, Is.EqualTo 1, "keys = " + String.Join("; ", Instance.Visits.Keys|> Seq.toArray))

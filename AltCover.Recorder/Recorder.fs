@@ -172,21 +172,23 @@ module Instance =
        | (t, n) -> Both (t*(clock()/t), n)
     else Null
 
-  let internal VisitSelection (f: unit -> bool) track moduleId hitPointId =
+  let internal PayloadSelector () =
+    PayloadSelection IsOpenCoverRunner Granularity Clock
+
+  let internal VisitSelection (f: unit -> bool) (g: unit -> Track) moduleId hitPointId =
     // When writing to file for the runner to process,
     // make this semi-synchronous to avoid choking the mailbox
     // Backlogs of over 90,000 items were observed in self-test
     // which failed to drain during the ProcessExit grace period
     // when sending only async messages.
-    let message = SequencePoint (moduleId, hitPointId, track)
+    let message = SequencePoint (moduleId, hitPointId, g())
     if f() then
        mailbox.TryPostAndReply ((fun c -> Item (message, c)), 10) |> ignore
     else message |> AsyncItem |> mailbox.Post
 
   let Visit moduleId hitPointId =
      VisitSelection (fun () -> trace.IsConnected() || Backlog() > 10)
-                     (PayloadSelection IsOpenCoverRunner Granularity Clock)
-                     moduleId hitPointId
+                     PayloadSelector moduleId hitPointId
 
   let internal FlushCounter (finish:Close) _ =
     mailbox.PostAndReply (fun c -> Finish (finish, c))
