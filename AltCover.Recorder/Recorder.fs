@@ -69,6 +69,18 @@ module Instance =
   let CoverageFormat = ReportFormat.NCover
 
   /// <summary>
+  /// Gets the frequency of time sampling
+  /// This property's IL code is modified to store the user chosen override if applicable
+  /// </summary>
+  [<MethodImplAttribute(MethodImplOptions.NoInlining)>]
+  let Timer = 0L
+
+  /// <summary>
+  /// Gets or sets the current test method
+  /// </summary>
+  let mutable CallerId = 0
+
+  /// <summary>
   /// Serialize access to the report file across AppDomains for the classic mode
   /// </summary>
   let internal mutex = new System.Threading.Mutex(false, Token + ".mutex");
@@ -142,6 +154,17 @@ module Instance =
   let internal Backlog () =
     mailbox.CurrentQueueLength
 
+  let internal PayloadSelection () =
+    if (CoverageFormat = ReportFormat.OpenCover) &&
+       ((trace.Definitive && trace.Runner) ||
+        (ReportFile <> "Coverage.Default.xml" && System.IO.File.Exists (ReportFile + ".acv"))) then
+       match (Timer, CallerId) with
+       | (0L, 0) -> Null
+       | (t, 0) -> Time (t*(DateTime.UtcNow.Ticks/t))
+       | (0L, n) -> Call n
+       | (t, n) -> Both (t*(DateTime.UtcNow.Ticks/t), n)
+    else Null
+
   let internal VisitSelection (f: unit -> bool) (g: unit -> Track) moduleId hitPointId =
     // When writing to file for the runner to process,
     // make this semi-synchronous to avoid choking the mailbox
@@ -155,7 +178,7 @@ module Instance =
 
   let Visit moduleId hitPointId =
      VisitSelection (fun () -> trace.IsConnected() || Backlog() > 10)
-                    (fun () -> Null) // update iff runner file exists and opencover and option set
+                     PayloadSelection
                      moduleId hitPointId
 
   let internal FlushCounter (finish:Close) _ =
