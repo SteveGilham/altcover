@@ -12,6 +12,13 @@ open System.Xml
 
 type ReportFormat = NCover = 0 | OpenCover = 1
 
+[<System.Runtime.InteropServices.ProgIdAttribute("ExcludeFromCodeCoverage hack for OpenCover issue 615")>]
+type internal Track =
+  | Null
+  | Time of int64
+  | Call of int
+  | Both of (int64 * int)
+
 module Counter =
    /// <summary>
    /// The time at which coverage run began
@@ -56,7 +63,7 @@ module Counter =
   /// </summary>
   /// <param name="hitCounts">The coverage results to incorporate</param>
   /// <param name="coverageFile">The coverage file to update as a stream</param>
-  let internal UpdateReport (postProcess:XmlDocument -> unit) own (counts:Dictionary<string, Dictionary<int, int * (int64 option * int option) list>>) format coverageFile =
+  let internal UpdateReport (postProcess:XmlDocument -> unit) own (counts:Dictionary<string, Dictionary<int, int * Track list>>) format coverageFile =
     let flushStart = DateTime.UtcNow
     let coverageDocument = ReadXDocument coverageFile
     let root = coverageDocument.DocumentElement
@@ -120,16 +127,16 @@ module Counter =
     if own then WriteXDocument coverageDocument coverageFile
     flushStart
 
-  let DoFlush postProcess own counts format report =
+  let internal DoFlush postProcess own counts format report =
     use coverageFile = new FileStream(report, FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.SequentialScan)
     let flushStart = UpdateReport postProcess own counts format coverageFile
     TimeSpan(DateTime.UtcNow.Ticks - flushStart.Ticks)
 
-  let AddVisit (counts:Dictionary<string, Dictionary<int, int * (int64 option * int option) list>>) moduleId hitPointId context =
-    if not (counts.ContainsKey moduleId) then counts.[moduleId] <- Dictionary<int, int * (int64 option * int option) list>()
+  let internal AddVisit (counts:Dictionary<string, Dictionary<int, int * Track list>>) moduleId hitPointId context =
+    if not (counts.ContainsKey moduleId) then counts.[moduleId] <- Dictionary<int, int * Track list>()
     if not (counts.[moduleId].ContainsKey hitPointId) then
         counts.[moduleId].Add(hitPointId, (0,[]))
     let n, l = counts.[moduleId].[hitPointId]
     counts.[moduleId].[hitPointId] <- match context with
-                                      | (None, None) -> (1 + n, l)
+                                      | Null -> (1 + n, l)
                                       | something -> (n, something :: l)

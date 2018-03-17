@@ -16,7 +16,7 @@ type internal Close =
 
 [<System.Runtime.InteropServices.ProgIdAttribute("ExcludeFromCodeCoverage hack for OpenCover issue 615")>]
 type internal Carrier =
-    | SequencePoint of String*int*(int64 option * int option)
+    | SequencePoint of String*int*Track
 
 [<System.Runtime.InteropServices.ProgIdAttribute("ExcludeFromCodeCoverage hack for OpenCover issue 615")>]
 type internal Message =
@@ -52,7 +52,7 @@ module Instance =
   /// <summary>
   /// Accumulation of visit records
   /// </summary>
-  let internal Visits = new Dictionary<string, Dictionary<int, int * (int64 option * int option) list>>();
+  let internal Visits = new Dictionary<string, Dictionary<int, int * Track list>>();
 
   /// <summary>
   /// Gets the unique token for this instance
@@ -93,7 +93,7 @@ module Instance =
       (fun () ->
       match Visits.Count with
       | 0 -> ()
-      | _ -> let counts = Dictionary<string, Dictionary<int, int * (int64 option * int option) list>> Visits
+      | _ -> let counts = Dictionary<string, Dictionary<int, int * Track list>> Visits
              Visits.Clear()
              WithMutex (fun own ->
                 let delta = Counter.DoFlush ignore own counts CoverageFormat ReportFile
@@ -142,20 +142,21 @@ module Instance =
   let internal Backlog () =
     mailbox.CurrentQueueLength
 
-  let internal VisitSelection (f: unit -> bool) moduleId hitPointId context =
+  let internal VisitSelection (f: unit -> bool) (g: unit -> Track) moduleId hitPointId =
     // When writing to file for the runner to process,
     // make this semi-synchronous to avoid choking the mailbox
     // Backlogs of over 90,000 items were observed in self-test
     // which failed to drain during the ProcessExit grace period
     // when sending only async messages.
-    let message = SequencePoint (moduleId, hitPointId, context)
+    let message = SequencePoint (moduleId, hitPointId, g())
     if f() then
        mailbox.TryPostAndReply ((fun c -> Item (message, c)), 10) |> ignore
     else message |> AsyncItem |> mailbox.Post
 
   let Visit moduleId hitPointId =
      VisitSelection (fun () -> trace.IsConnected() || Backlog() > 10)
-       moduleId hitPointId (None, None) // update iff runner file exists and opencover and option set
+                    (fun () -> Null) // update iff runner file exists and opencover and option set
+                     moduleId hitPointId
 
   let internal FlushCounter (finish:Close) _ =
     mailbox.PostAndReply (fun c -> Finish (finish, c))

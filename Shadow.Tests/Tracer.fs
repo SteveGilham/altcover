@@ -28,8 +28,11 @@ open NUnit.Framework
 
 type UpdateBinder () =
   inherit System.Runtime.Serialization.SerializationBinder()
-  override self.BindToType (_:string, _:string) =
-    typeof<(string*int)> // anything else is an error
+  override self.BindToType (_:string, n:string) =
+    if n.StartsWith("System.Tuple`2") then typeof<(string*int)> else
+    if n.StartsWith("System.Tuple`3") then typeof<(string*int*Track)> else
+    if n = "AltCover.Recorder.Track+Call" then (Track.Call 0).GetType() else
+    raise (System.Runtime.Serialization.SerializationException n)
 
 [<TestFixture>]
 type AltCoverCoreTests() = class
@@ -61,13 +64,17 @@ type AltCoverCoreTests() = class
     finally
       client.Close()
 
-  member self.ReadResults (stream:Stream) =
-    let hits = List<(string*int)>()
+  member internal self.ReadResults (stream:Stream) =
+    let hits = List<(string*int*Track)>()
     let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
     formatter.Binder <- UpdateBinder()
     let rec sink() = try
-                          let hit = formatter.Deserialize(stream) :?> (string*int)
-                          hit |> hits.Add
+                          let raw = formatter.Deserialize(stream)
+                          match raw with
+                          | :? (string*int) as pair -> (fst pair, snd pair, Null)
+                          | :? (string * int * Track) as x -> x
+                          | _ -> raise (System.Runtime.Serialization.SerializationException (raw.GetType().FullName))
+                          |> hits.Add
                           sink()
                        with
                        | :? System.Runtime.Serialization.SerializationException as x ->
@@ -81,7 +88,7 @@ type AltCoverCoreTests() = class
     let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
     let unique = Path.Combine(where, Guid.NewGuid().ToString())
     let tag = unique + ".acv"
-    let expected = [("name", 23); ("name", 23)]
+    let expected = [("name", 23, Null); ("name", 23, Null)]
 
     do
         use stream = File.Create tag
@@ -108,6 +115,43 @@ type AltCoverCoreTests() = class
       Adapter.VisitsClear()
 
   [<Test>]
+  member self.VisitShouldSignalTrack() =
+    let save = Instance.trace
+    let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
+    let unique = Path.Combine(where, Guid.NewGuid().ToString())
+    let tag = unique + ".acv"
+    let expected = [
+                     ("name", 23, Null)
+                     ("name", 23, Call 17)
+                     ("name", 23, Call 42)
+                     ("name", 23, Call 5)
+    ]
+
+    do
+        use stream = File.Create tag
+        ()
+    try
+      let mutable client = Tracer.Create tag
+      try
+        Adapter.VisitsClear()
+        Adapter.VisitsAddTrack "name" 23 1
+
+        Instance.trace <- client.OnStart()
+        Assert.That (Instance.trace.IsConnected(), "connection failed")
+        Adapter.VisitImplMethod "name" 23 5
+      finally
+        Instance.trace.Close()
+        Instance.trace <- save
+
+      use stream = new DeflateStream(File.OpenRead (unique + ".0.acv"), CompressionMode.Decompress)
+      let results = self.ReadResults stream
+      Assert.That (Adapter.VisitsSeq(), Is.Empty, "unexpected local write")
+      Assert.That (results, Is.EquivalentTo expected, "unexpected result")
+
+    finally
+      Adapter.VisitsClear()
+
+  [<Test>]
   member self.FlushShouldTidyUp() = // also throw a bone to OpenCover 615
     let save = Instance.trace
     let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
@@ -120,7 +164,7 @@ type AltCoverCoreTests() = class
 
     try
       let client = Tracer.Create unique
-      let expected = [("name", client.GetHashCode()); (null, -1)]
+      let expected = [("name", client.GetHashCode(), Null); (null, -1, Null)]
 
       try
         Adapter.VisitsClear()
@@ -130,7 +174,8 @@ type AltCoverCoreTests() = class
 
         Assert.That (Instance.trace.IsConnected(), "connection failed")
         let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
-        formatter.Serialize(Instance.trace.Stream, expected |> Seq.head)
+        let (a, b, _) = expected |> Seq.head
+        formatter.Serialize(Instance.trace.Stream, (a,b))
         Instance.FlushCounterImpl ProcessExit
       finally
         Instance.trace.Close()

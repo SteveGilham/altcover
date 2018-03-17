@@ -126,7 +126,7 @@ type AltCoverTests() = class
       Instance.Visits.Clear()
       Instance.trace <- { Tracer=null; Stream=null; Formatter=null }
       let key = " "
-      Instance.VisitSelection (fun () -> true) key 23 (None, None)
+      Instance.VisitSelection (fun () -> true) (fun () -> Null) key 23
       Thread.Sleep 100
       Assert.That (Instance.Visits.Count, Is.EqualTo 1, "A visit happened")
       Assert.That (Instance.Visits.[key].Count, Is.EqualTo 1, "keys = " + String.Join("; ", Instance.Visits.Keys|> Seq.toArray))
@@ -143,8 +143,8 @@ type AltCoverTests() = class
     try
       Instance.Visits.Clear()
       let key = " "
-      Instance.VisitImpl key 23 (None, None)
-      Instance.VisitImpl "key" 42 (None, None)
+      Instance.VisitImpl key 23 Null
+      Instance.VisitImpl "key" 42 Null
       Assert.That (Instance.Visits.Count, Is.EqualTo 2)
     finally
       Instance.Visits.Clear())
@@ -157,8 +157,8 @@ type AltCoverTests() = class
     try
       Instance.Visits.Clear()
       let key = " "
-      Instance.VisitImpl key 23 (None, None)
-      Instance.VisitImpl key 42 (None, None)
+      Instance.VisitImpl key 23 Null
+      Instance.VisitImpl key 42 Null
       Assert.That (Instance.Visits.Count, Is.EqualTo 1)
       Assert.That (Instance.Visits.[key].Count, Is.EqualTo 2)
     finally
@@ -172,9 +172,24 @@ type AltCoverTests() = class
     try
       Instance.Visits.Clear()
       let key = " "
-      Instance.VisitImpl key 23 (None, None)
-      Instance.VisitImpl key 23 (None, None)
+      Instance.VisitImpl key 23 Null
+      Instance.VisitImpl key 23 Null
       Assert.That (Instance.Visits.[key].[23], Is.EqualTo (2,[]))
+    finally
+      Instance.Visits.Clear())
+    self.GetMyMethodName "<="
+
+  [<Test>]
+  member self.RepeatVisitsShouldIncrementTotal() =
+    self.GetMyMethodName "=>"
+    lock Instance.Visits (fun () ->
+    try
+      Instance.Visits.Clear()
+      let key = " "
+      let payload = Time DateTime.UtcNow.Ticks
+      Instance.VisitImpl key 23 Null
+      Instance.VisitImpl key 23 payload
+      Assert.That (Instance.Visits.[key].[23], Is.EqualTo (1, [payload]))
     finally
       Instance.Visits.Clear())
     self.GetMyMethodName "<="
@@ -194,7 +209,7 @@ type AltCoverTests() = class
     worker.Position <- 0L
     let before = XmlDocument()
     before.Load (Assembly.GetExecutingAssembly().GetManifestResourceStream(self.resource))
-    self.UpdateReport (Dictionary<string, Dictionary<int, int * (int64 option * int option) list>>()) worker
+    self.UpdateReport (Dictionary<string, Dictionary<int, int * Track list>>()) worker
     worker.Position <- 0L
     let after = XmlDocument()
     after.Load worker
@@ -219,7 +234,7 @@ type AltCoverTests() = class
     worker.Position <- 0L
     let before = XmlDocument()
     before.Load (Assembly.GetExecutingAssembly().GetManifestResourceStream(self.resource))
-    self.UpdateReport (Dictionary<string, Dictionary<int, int * (int64 option * int option) list>>()) worker
+    self.UpdateReport (Dictionary<string, Dictionary<int, int * Track list>>()) worker
     worker.Position <- 0L
     let after = XmlDocument()
     after.Load worker
@@ -244,7 +259,7 @@ type AltCoverTests() = class
     worker.Position <- 0L
     let before = XmlDocument()
     before.Load (Assembly.GetExecutingAssembly().GetManifestResourceStream(self.resource))
-    self.UpdateReport (Dictionary<string, Dictionary<int, int * (int64 option * int option) list>>()) worker
+    self.UpdateReport (Dictionary<string, Dictionary<int, int * Track list>>()) worker
     worker.Position <- 0L
     let after = XmlDocument()
     after.Load worker
@@ -269,7 +284,7 @@ type AltCoverTests() = class
     worker.Position <- 0L
     let before = XmlDocument()
     before.Load (Assembly.GetExecutingAssembly().GetManifestResourceStream(self.resource))
-    self.UpdateReport (Dictionary<string, Dictionary<int, int * (int64 option * int option) list>>()) worker
+    self.UpdateReport (Dictionary<string, Dictionary<int, int * Track list>>()) worker
     worker.Position <- 0L
     let after = XmlDocument()
     after.Load worker
@@ -292,7 +307,7 @@ type AltCoverTests() = class
     worker.Write (buffer, 0, size)
     worker.Position <- 0L
     use before = new StreamReader (Assembly.GetExecutingAssembly().GetManifestResourceStream(self.resource))
-    let item = Dictionary<string, Dictionary<int, int * (int64 option * int option) list>>()
+    let item = Dictionary<string, Dictionary<int, int * Track list>>()
     item.Add ("not a guid", null)
     self.UpdateReport item worker
     worker.Position <- 0L
@@ -318,8 +333,8 @@ type AltCoverTests() = class
     worker.Write (buffer, 0, size)
     worker.Position <- 0L
     use before = new StreamReader (Assembly.GetExecutingAssembly().GetManifestResourceStream(self.resource))
-    let item = Dictionary<string, Dictionary<int, int * (int64 option * int option) list>>()
-    item.Add("f6e3edb3-fb20-44b3-817d-f69d1a22fc2f", Dictionary<int,int * (int64 option * int option) list>())
+    let item = Dictionary<string, Dictionary<int, int * Track list>>()
+    item.Add("f6e3edb3-fb20-44b3-817d-f69d1a22fc2f", Dictionary<int,int * Track list>())
     self.UpdateReport item worker
     worker.Position <- 0L
     let after = new StreamReader(worker)
@@ -344,10 +359,10 @@ type AltCoverTests() = class
     worker.Write (buffer, 0, size)
     worker.Position <- 0L
     use before = new StreamReader (Assembly.GetExecutingAssembly().GetManifestResourceStream(self.resource))
-    let payload = Dictionary<int,int * (int64 option * int option) list>()
+    let payload = Dictionary<int,int * Track list>()
     payload.[-1] <- (10, [])
     payload.[100] <- (10, [])
-    let item = Dictionary<string, Dictionary<int, int * (int64 option * int option) list>>()
+    let item = Dictionary<string, Dictionary<int, int * Track list>>()
     item.Add("f6e3edb3-fb20-44b3-817d-f69d1a22fc2f", payload)
     self.UpdateReport item worker
     worker.Position <- 0L
@@ -372,10 +387,10 @@ type AltCoverTests() = class
     use worker = new MemoryStream()
     worker.Write (buffer, 0, size)
     worker.Position <- 0L
-    let payload = Dictionary<int,int * (int64 option * int option) list>()
+    let payload = Dictionary<int,int * Track list>()
     [0..9 ]
     |> Seq.iter(fun i -> payload.[i] <- (i+1, []))
-    let item = Dictionary<string, Dictionary<int, int * (int64 option * int option) list>>()
+    let item = Dictionary<string, Dictionary<int, int * Track list>>()
     item.Add("f6e3edb3-fb20-44b3-817d-f69d1a22fc2f", payload)
     self.UpdateReport item worker
     worker.Position <- 0L
@@ -399,10 +414,10 @@ type AltCoverTests() = class
     use worker = new MemoryStream()
     worker.Write (buffer, 0, size)
     worker.Position <- 0L
-    let payload = Dictionary<int,int * (int64 option * int option) list>()
+    let payload = Dictionary<int,int * Track list>()
     [0..9 ]
     |> Seq.iter(fun i -> payload.[10 - i] <- (i+1, []))
-    let item = Dictionary<string, Dictionary<int, int * (int64 option * int option) list>>()
+    let item = Dictionary<string, Dictionary<int, int * Track list>>()
     item.Add("7C-CD-66-29-A3-6C-6D-5F-A7-65-71-0E-22-7D-B2-61-B5-1F-65-9A", payload)
     Counter.UpdateReport ignore true item ReportFormat.OpenCover worker |> ignore
     worker.Position <- 0L
