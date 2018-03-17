@@ -154,31 +154,38 @@ module Instance =
   let internal Backlog () =
     mailbox.CurrentQueueLength
 
-  let internal PayloadSelection () =
-    if (CoverageFormat = ReportFormat.OpenCover) &&
+  let private IsOpenCoverRunner() =
+     (CoverageFormat = ReportFormat.OpenCover) &&
        ((trace.Definitive && trace.Runner) ||
-        (ReportFile <> "Coverage.Default.xml" && System.IO.File.Exists (ReportFile + ".acv"))) then
-       match (Timer, CallerId) with
+        (ReportFile <> "Coverage.Default.xml" && System.IO.File.Exists (ReportFile + ".acv")))
+
+  let internal Granularity() = Timer
+
+  let internal Clock () = DateTime.UtcNow.Ticks
+
+  let internal PayloadSelection wantPayload frequency clock =
+    if wantPayload () then
+       match (frequency(), CallerId) with
        | (0L, 0) -> Null
-       | (t, 0) -> Time (t*(DateTime.UtcNow.Ticks/t))
+       | (t, 0) -> Time (t*(clock()/t))
        | (0L, n) -> Call n
-       | (t, n) -> Both (t*(DateTime.UtcNow.Ticks/t), n)
+       | (t, n) -> Both (t*(clock()/t), n)
     else Null
 
-  let internal VisitSelection (f: unit -> bool) (g: unit -> Track) moduleId hitPointId =
+  let internal VisitSelection (f: unit -> bool) track moduleId hitPointId =
     // When writing to file for the runner to process,
     // make this semi-synchronous to avoid choking the mailbox
     // Backlogs of over 90,000 items were observed in self-test
     // which failed to drain during the ProcessExit grace period
     // when sending only async messages.
-    let message = SequencePoint (moduleId, hitPointId, g())
+    let message = SequencePoint (moduleId, hitPointId, track)
     if f() then
        mailbox.TryPostAndReply ((fun c -> Item (message, c)), 10) |> ignore
     else message |> AsyncItem |> mailbox.Post
 
   let Visit moduleId hitPointId =
      VisitSelection (fun () -> trace.IsConnected() || Backlog() > 10)
-                     PayloadSelection
+                     (PayloadSelection IsOpenCoverRunner Granularity Clock)
                      moduleId hitPointId
 
   let internal FlushCounter (finish:Close) _ =

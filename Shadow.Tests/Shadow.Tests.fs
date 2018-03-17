@@ -55,6 +55,15 @@ type AltCoverTests() = class
                           |> Seq.find (fun n -> n.EndsWith("Sample1WithModifiedOpenCover.xml", StringComparison.Ordinal))
 
   [<Test>]
+  member self.DefaultAccessorsBehaveAsExpected() =
+    let v1 = DateTime.UtcNow.Ticks
+    let probe = Instance.Clock()
+    let v2 = DateTime.UtcNow.Ticks
+    Assert.That (Instance.Granularity(), Is.EqualTo 0)
+    Assert.That (probe, Is.GreaterThanOrEqualTo v1)
+    Assert.That (probe, Is.LessThanOrEqualTo v2)
+
+  [<Test>]
   member self.ShouldBeLinkingTheCorrectCopyOfThisCode() =
     self.GetMyMethodName "=>"
     let tracer = {
@@ -118,8 +127,26 @@ type AltCoverTests() = class
     self.GetMyMethodName "<="
 
 #if NET4
-  // passing lambdas across the CLR divide doesn't work
+  // passing lambdas or other F# types across the CLR divide doesn't work
 #else
+  [<Test>]
+  member self.PayloadGeneratedIsAsExpected() =
+    try
+      Instance.CallerId <- 0
+      Assert.That(Instance.PayloadSelection (fun _ -> true) Instance.Granularity Instance.Clock,
+                  Is.EqualTo Null)
+      Instance.CallerId <- 4321
+      Assert.That(Instance.PayloadSelection (fun _ -> true) Instance.Granularity Instance.Clock,
+                  Is.EqualTo (Call 4321))
+      // 0x1234123412341234 == 1311693406324658740
+      Assert.That(Instance.PayloadSelection (fun _ -> true) (fun _ -> 1000L) (fun _ -> 0x1234123412341234L),
+                  Is.EqualTo (Both (1311693406324658000L, 4321)))
+      Instance.CallerId <- 0
+      Assert.That(Instance.PayloadSelection (fun _ -> true) (fun _ -> 1000L) (fun _ -> 0x1234123412341234L),
+                  Is.EqualTo (Time 1311693406324658000L))
+    finally
+      Instance.CallerId <- 0
+
   [<Test>]
   member self.RealIdShouldIncrementCountSynchronously() =
     self.GetMyMethodName "=>"
@@ -130,7 +157,7 @@ type AltCoverTests() = class
       Instance.trace <- { Tracer=null; Stream=null; Formatter=null;
                           Runner = false; Definitive = false }
       let key = " "
-      Instance.VisitSelection (fun () -> true) (fun () -> Null) key 23
+      Instance.VisitSelection (fun () -> true) Null key 23
       Thread.Sleep 100
       Assert.That (Instance.Visits.Count, Is.EqualTo 1, "A visit happened")
       Assert.That (Instance.Visits.[key].Count, Is.EqualTo 1, "keys = " + String.Join("; ", Instance.Visits.Keys|> Seq.toArray))
