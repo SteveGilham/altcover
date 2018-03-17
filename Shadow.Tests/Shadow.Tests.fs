@@ -97,7 +97,7 @@ type AltCoverTests() = class
     let save = Instance.trace
     try
       Adapter.VisitsClear()
-      Instance.trace <- { Tracer=null; Stream=null; Formatter=null; 
+      Instance.trace <- { Tracer=null; Stream=null; Formatter=null;
                           Runner = false; Definitive = false  }
       let key = " "
       Assert.That (Instance.Backlog(), Is.EqualTo 0)
@@ -127,7 +127,7 @@ type AltCoverTests() = class
     let save = Instance.trace
     try
       Instance.Visits.Clear()
-      Instance.trace <- { Tracer=null; Stream=null; Formatter=null; 
+      Instance.trace <- { Tracer=null; Stream=null; Formatter=null;
                           Runner = false; Definitive = false }
       let key = " "
       Instance.VisitSelection (fun () -> true) (fun () -> Null) key 23
@@ -460,7 +460,7 @@ type AltCoverTests() = class
       let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
       let unique = Path.Combine(where, Guid.NewGuid().ToString())
       let save = Instance.trace
-      Instance.trace <- { Tracer=null; Stream=null; Formatter=null; 
+      Instance.trace <- { Tracer=null; Stream=null; Formatter=null;
                           Runner = false; Definitive = false }
       try
         Adapter.VisitsClear()

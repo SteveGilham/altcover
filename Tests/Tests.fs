@@ -3525,7 +3525,7 @@ type AltCoverTests() = class
 #else
                     "-sn"; key
 #endif
-                    "-s=Adapter" 
+                    "-s=Adapter"
                     "-s=nunit"
                  |]
       let result = Main.DoInstrumentation args
