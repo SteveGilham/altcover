@@ -98,7 +98,7 @@ type AltCoverTests() = class
     |> Seq.iter(fun i -> payload.[10 - i] <- (i+1, []))
     let item = Dictionary<string, Dictionary<int, int * Track list>>()
     item.Add("7C-CD-66-29-A3-6C-6D-5F-A7-65-71-0E-22-7D-B2-61-B5-1F-65-9A", payload)
-    Counter.UpdateReport ignore true item ReportFormat.OpenCover worker |> ignore
+    Counter.UpdateReport ignore (fun _ _ -> ()) true item ReportFormat.OpenCover worker |> ignore
     worker.Position <- 0L
     let after = XmlDocument()
     after.Load worker
@@ -136,7 +136,7 @@ type AltCoverTests() = class
       |> Seq.iter(fun i -> payload.[i] <- (i+1, []))
       visits.["f6e3edb3-fb20-44b3-817d-f69d1a22fc2f"] <- payload
 
-      Counter.DoFlush ignore true visits AltCover.Base.ReportFormat.NCover reportFile |> ignore
+      Counter.DoFlush ignore (fun _ _ -> ()) true visits AltCover.Base.ReportFormat.NCover reportFile |> ignore
 
       use worker' = new FileStream(reportFile, FileMode.Open)
       let after = XmlDocument()

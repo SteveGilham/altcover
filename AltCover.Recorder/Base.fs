@@ -63,7 +63,8 @@ module Counter =
   /// </summary>
   /// <param name="hitCounts">The coverage results to incorporate</param>
   /// <param name="coverageFile">The coverage file to update as a stream</param>
-  let internal UpdateReport (postProcess:XmlDocument -> unit) own (counts:Dictionary<string, Dictionary<int, int * Track list>>) format coverageFile =
+  let internal UpdateReport (postProcess:XmlDocument -> unit) (pointProcess:XmlElement -> Track list -> unit) 
+                            own (counts:Dictionary<string, Dictionary<int, int * Track list>>) format coverageFile =
     let flushStart = DateTime.UtcNow
     let coverageDocument = ReadXDocument coverageFile
     let root = coverageDocument.DocumentElement
@@ -116,8 +117,10 @@ module Counter =
                                     System.Globalization.NumberStyles.Integer,
                                     System.Globalization.CultureInfo.InvariantCulture) |> snd
             // Treat -ve visit counts (an exemption added in analysis) as zero
-            let visits = (fst moduleHits.[counter]) + (max 0 vc)
-            pt.SetAttribute(v, visits.ToString(CultureInfo.InvariantCulture))))
+            let (count, l) = moduleHits.[counter]
+            let visits = (max 0 vc) + count + l.Length
+            pt.SetAttribute(v, visits.ToString(CultureInfo.InvariantCulture))
+            pointProcess pt l))
 
     postProcess coverageDocument
 
@@ -127,9 +130,9 @@ module Counter =
     if own then WriteXDocument coverageDocument coverageFile
     flushStart
 
-  let internal DoFlush postProcess own counts format report =
+  let internal DoFlush postProcess pointProcess own counts format report =
     use coverageFile = new FileStream(report, FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.SequentialScan)
-    let flushStart = UpdateReport postProcess own counts format coverageFile
+    let flushStart = UpdateReport postProcess pointProcess own counts format coverageFile
     TimeSpan(DateTime.UtcNow.Ticks - flushStart.Ticks)
 
   let internal AddVisit (counts:Dictionary<string, Dictionary<int, int * Track list>>) moduleId hitPointId context =

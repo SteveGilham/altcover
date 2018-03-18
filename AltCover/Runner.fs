@@ -254,11 +254,13 @@ module Runner =
         msum.SetAttribute("sequenceCoverage", cover)
     | _ -> ()
 
+  let PointProcess _ _ = () //TODO
+
   let WriteReportBase (hits:ICollection<(string*int)>) report =
     let counts = Dictionary<string, Dictionary<int, int  * Base.Track list>>()
     hits |> Seq.iter(fun (moduleId, hitPointId) ->
                         AltCover.Base.Counter.AddVisit counts moduleId hitPointId Base.Track.Null)
-    AltCover.Base.Counter.DoFlush (PostProcess counts report) true counts report
+    AltCover.Base.Counter.DoFlush (PostProcess counts report) PointProcess true counts report
 
   // mocking points
   let mutable internal GetPayload = PayloadBase

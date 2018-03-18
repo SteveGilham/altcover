@@ -48,7 +48,7 @@ type AltCoverTests() = class
                          |> Seq.find (fun n -> n.EndsWith("SimpleCoverage.xml", StringComparison.Ordinal))
 
   member private self.UpdateReport a b =
-    Counter.UpdateReport ignore true a ReportFormat.NCover b
+    Counter.UpdateReport ignore (fun _ _ -> ()) true a ReportFormat.NCover b
     |> ignore
 
    member self.resource2 = Assembly.GetExecutingAssembly().GetManifestResourceNames()
@@ -460,7 +460,7 @@ type AltCoverTests() = class
     |> Seq.iter(fun i -> payload.[10 - i] <- (i+1, []))
     let item = Dictionary<string, Dictionary<int, int * Track list>>()
     item.Add("7C-CD-66-29-A3-6C-6D-5F-A7-65-71-0E-22-7D-B2-61-B5-1F-65-9A", payload)
-    Counter.UpdateReport ignore true item ReportFormat.OpenCover worker |> ignore
+    Counter.UpdateReport ignore (fun _ _ -> ()) true item ReportFormat.OpenCover worker |> ignore
     worker.Position <- 0L
     let after = XmlDocument()
     after.Load worker
