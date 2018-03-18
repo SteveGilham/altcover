@@ -946,7 +946,7 @@ or
     let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
     let r = Runner.GetMonitor hits unique (fun l ->
        use sink = new DeflateStream(File.OpenWrite (unique + ".0.acv"), CompressionMode.Compress)
-       l |> List.mapi (fun i x -> formatter.Serialize(sink, (x,i,DateTime.UtcNow)); x) |> List.length
+       l |> List.mapi (fun i x -> formatter.Serialize(sink, (x,i,Base.Null,DateTime.UtcNow)); x) |> List.length
                                            ) ["a"; "b"; String.Empty; "c"]
     Assert.That(r, Is.EqualTo 4)
     Assert.That (File.Exists (unique + ".acv"))
