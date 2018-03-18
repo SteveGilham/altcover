@@ -889,7 +889,7 @@ type AltCoverTests() = class
     let expected = ["get_Property"; "set_Property"; "#ctor"; "get_Property"; "set_Property";
                       "#ctor"; "get_Visits"; "Log"; "GetOperandType"; "#ctor"; ".cctor";
                       "get_Property"; "set_Property"; "get_ReportFile";
-                      "set_ReportFile"; "get_Token"; "set_Token";
+                      "set_ReportFile"; "get_Timer"; "set_Timer"; "get_Token"; "set_Token";
                       "get_CoverageFormat"; "set_CoverageFormat"; "ToList"; "#ctor" ]
     Assert.That(names, Is.EquivalentTo expected)
 
@@ -913,6 +913,8 @@ type AltCoverTests() = class
                     "System.Void Sample3.Class3+Class4.set_Property(Sample3.Class1)"
                     "System.String Sample3.Class3+Class4.get_ReportFile()"
                     "System.Void Sample3.Class3+Class4.set_ReportFile(System.String)"
+                    "System.Int64 Sample3.Class3+Class4.get_Timer()"
+                    "System.Void Sample3.Class3+Class4.set_Timer(System.Int64)" 
                     "System.String Sample3.Class3+Class4.get_Token()"
                     "System.Void Sample3.Class3+Class4.set_Token(System.String)"
                     "System.Int32 Sample3.Class3+Class4.get_CoverageFormat()"
@@ -1527,9 +1529,11 @@ type AltCoverTests() = class
       let outputdll = output + ".dll"
       let save = Visitor.reportPath
       let save2 = Visitor.reportFormat
+      let save3 = Visitor.interval
       try
         Visitor.reportPath <- Some unique
         Visitor.reportFormat <- Some AltCover.Base.ReportFormat.OpenCover
+        Visitor.interval <- Some 1234567890
         let prepared = Instrument.PrepareAssembly path
         Instrument.WriteAssembly prepared outputdll
         let expectedSymbols = if "Mono.Runtime" |> Type.GetType |> isNull |> not then ".dll.mdb" else ".pdb"
@@ -1558,11 +1562,14 @@ type AltCoverTests() = class
           Assert.That (report, Is.EqualTo (Path.GetFullPath unique))
           let report2 = proxyObject.InvokeMethod("get_CoverageFormat",[||]) :?> System.Int32
           Assert.That (report2, AltCover.Base.ReportFormat.OpenCover |> int |> Is.EqualTo)
+          let report3 = proxyObject.InvokeMethod("get_Timer",[||]) :?> System.Int64
+          Assert.That (report3, 1234567890L |> Is.EqualTo)
         finally
           AppDomain.Unload(ad)
       finally
         Visitor.reportPath <- save
         Visitor.reportFormat <- save2
+        Visitor.interval <- save3
         Directory.EnumerateFiles(Path.GetDirectoryName output,
                                  (Path.GetFileNameWithoutExtension output) + ".*")
         |> Seq.iter (fun f -> try File.Delete f

@@ -194,6 +194,26 @@ module Instrument =
         initialBody |> Seq.iter worker.Remove
     )
 
+    // set the timer interval in ticks
+    [
+      ("get_Timer", Visitor.Interval())
+    ]
+    |> List.iter (fun (property, value) ->
+        let pathGetterDef = definition.MainModule.GetTypes()
+                            |> Seq.collect (fun t -> t.Methods)
+                            |> Seq.filter (fun m -> m.Name = property)
+                            |> Seq.head
+
+        let body = pathGetterDef.Body
+        let worker = body.GetILProcessor();
+        let initialBody = body.Instructions |> Seq.toList
+        let head = initialBody |> Seq.head
+        worker.InsertBefore(head, worker.Create(OpCodes.Ldc_I4, value))
+        worker.InsertBefore(head, worker.Create(OpCodes.Conv_I8))
+        worker.InsertBefore(head, worker.Create(OpCodes.Ret))
+        initialBody |> Seq.iter worker.Remove
+    )
+
     definition
 
 #if NETCOREAPP2_0
