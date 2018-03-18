@@ -88,6 +88,15 @@ module Main =
       ("a|attributeFilter=",
        (fun x -> x.Split([|";"|], StringSplitOptions.RemoveEmptyEntries)
                  |> Seq.iter (Regex >> FilterClass.Attribute >> Visitor.NameFilters.Add)))
+      ("c|callContext=",
+       (fun x -> if not (String.IsNullOrWhiteSpace x) && x.Trim().Length = 1 then // TODO
+                    if Option.isSome Visitor.interval then
+                      CommandLine.error <- true
+                    else
+                      let (ok, n) = Int32.TryParse(x) 
+                      Visitor.interval <- Some (pown 10 (7 - n))
+                      CommandLine.error <- (not ok)  || CommandLine.error
+                 else CommandLine.error <- true))
       ("opencover",
        (fun _ ->  if Option.isSome Visitor.reportFormat then
                       CommandLine.error <- true

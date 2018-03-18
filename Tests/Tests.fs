@@ -2450,9 +2450,9 @@ type AltCoverTests() = class
     let options = Main.DeclareOptions ()
     Assert.That (options.Count, Is.EqualTo
 #if NETCOREAPP2_0
-                                            13
+                                            14
 #else
-                                            15
+                                            16
 #endif
                  )
     Assert.That(options |> Seq.filter (fun x -> x.Prototype <> "<>")
@@ -3130,6 +3130,84 @@ type AltCoverTests() = class
 #endif
 
   [<Test>]
+  member self.ParsingTimeGivesTime() =
+    try
+      Visitor.interval <- None
+      let options = Main.DeclareOptions ()
+      let input = [| "-c"; "5" |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Left _ -> Assert.Fail()
+      | Right (x, y) -> Assert.That (y, Is.SameAs options)
+                        Assert.That (x, Is.Empty)
+
+      Assert.That (Visitor.Interval(), Is.EqualTo 100)
+    finally
+      Visitor.interval <- None
+
+  [<Test>]
+  member self.ParsingMultipleTimesGivesFailure() =
+    try
+      Visitor.interval <- None
+      let options = Main.DeclareOptions ()
+      let path = self.IsolateRootPath()
+
+      let input = [| "-c"; "3" ; "/c"; "5" |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Right _ -> Assert.Fail()
+      | Left (x, y) -> Assert.That (y, Is.SameAs options)
+                       Assert.That (x, Is.EqualTo "UsageError")
+      Assert.That (Visitor.Interval(), Is.EqualTo 10000)
+    finally
+      Visitor.interval <- None
+
+  [<Test>]
+  member self.ParsingBadTimeGivesNoOp() =
+    try
+      Visitor.interval <- None
+      let options = Main.DeclareOptions ()
+      let unique = Guid.NewGuid().ToString().Replace("-", "*")
+      let input = [| "-c"; "9" |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Left _ -> Assert.Fail()
+      | Right (x, y) -> Assert.That (y, Is.SameAs options)
+                        Assert.That (x, Is.Empty)
+      Assert.That (Visitor.Interval(), Is.EqualTo 0)
+    finally
+      Visitor.interval <- None
+
+  [<Test>]
+  member self.ParsingNonTimeGivesFailure() = //TODO
+    try
+      Visitor.interval <- None
+      let options = Main.DeclareOptions ()
+      let unique = Assembly.GetExecutingAssembly().Location
+      let input = [| "-c"; "99" |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Right _ -> Assert.Fail()
+      | Left (x, y) -> Assert.That (y, Is.SameAs options)
+                       Assert.That (x, Is.EqualTo "UsageError")
+    finally
+      Visitor.defaultStrongNameKey <- None
+
+  [<Test>]
+  member self.ParsingNoTimeGivesFailure() =
+    try
+      Visitor.interval <- None
+      let options = Main.DeclareOptions ()
+      let input = [| "-c" |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Right _ -> Assert.Fail()
+      | Left (x, y) -> Assert.That (y, Is.SameAs options)
+                       Assert.That (x, Is.EqualTo "UsageError")
+    finally
+      Visitor.interval <- None
+
+  [<Test>]
   member self.ParsingOpenCoverGivesOpenCover() =
     try
       Visitor.reportFormat <- None
@@ -3690,6 +3768,7 @@ type AltCoverTests() = class
   -a, --attributeFilter=VALUE
                              Optional: attribute name to exclude from
                                instrumentation (may repeat)
+  -c, --callContext=VALUE    Optional, multiple: ??
       --opencover            Optional: Generate the report in OpenCover format
   -?, --help, -h             Prints out the options.
 or
@@ -3750,6 +3829,7 @@ or
   -a, --attributeFilter=VALUE
                              Optional: attribute name to exclude from
                                instrumentation (may repeat)
+  -c, --callContext=VALUE    Optional, multiple: ??
       --opencover            Optional: Generate the report in OpenCover format
   -?, --help, -h             Prints out the options.
 or

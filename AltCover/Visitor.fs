@@ -102,6 +102,10 @@ module Visitor =
   let defaultReportFormat = ReportFormat.NCover
   let ReportFormat () = (Option.getOrElse defaultReportFormat reportFormat)
 
+  let mutable internal interval : Option<int> = None
+  let defaultInterval = 0
+  let Interval () = (Option.getOrElse defaultInterval interval)
+
   let mutable internal defaultStrongNameKey : option<StrongNameKeyPair> = None
   let internal keys = new Dictionary<UInt64, KeyRecord>()
 
