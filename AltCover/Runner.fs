@@ -289,10 +289,10 @@ module Runner =
     | _ -> let outer = pt.OwnerDocument.CreateElement("Times")
            outer |> pt.AppendChild |> ignore
            times
-           |>Seq.iter (fun (t,n) -> let inner = pt.OwnerDocument.CreateElement("Time")
-                                    inner |> outer.AppendChild |> ignore
-                                    inner.SetAttribute("time", sprintf "%d" t)
-                                    inner.SetAttribute("vc", sprintf "%d" n))
+           |> Seq.iter (fun (t,n) -> let inner = pt.OwnerDocument.CreateElement("Time")
+                                     inner |> outer.AppendChild |> ignore
+                                     inner.SetAttribute("time", sprintf "%d" t)
+                                     inner.SetAttribute("vc", sprintf "%d" n))
 
   let internal WriteReportBase (hits:ICollection<(string*int*Base.Track)>) report =
     let counts = Dictionary<string, Dictionary<int, int * Base.Track list>>()

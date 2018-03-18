@@ -985,6 +985,21 @@ or
     Assert.That(hits, Is.EquivalentTo expected)
 
   [<Test>]
+  member self.PointProcessShouldCaptureTimes() =
+    let x = XmlDocument()
+    x.LoadXml("<root />")
+    let root = x.DocumentElement
+    let hits = [Base.Null
+                Base.Call 17
+                Base.Time 23L
+                Base.Both (5L, 42)
+                Base.Time 42L
+                Base.Time 5L]
+    Runner.PointProcess root hits
+    Assert.That(x.DocumentElement.OuterXml,
+                Is.EqualTo """<root><Times><Time time="5" vc="2" /><Time time="23" vc="1" /><Time time="42" vc="1" /></Times></root>""")
+
+  [<Test>]
   member self.PostprocessShouldRestoreKnownOpenCoverState() =
     Counter.measureTime <- DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
     use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(self.resource2)
