@@ -63,7 +63,7 @@ module Counter =
   /// </summary>
   /// <param name="hitCounts">The coverage results to incorporate</param>
   /// <param name="coverageFile">The coverage file to update as a stream</param>
-  let internal UpdateReport (postProcess:XmlDocument -> unit) (pointProcess:XmlElement -> Track list -> unit) 
+  let internal UpdateReport (postProcess:XmlDocument -> unit) (pointProcess:XmlElement -> Track list -> unit)
                             own (counts:Dictionary<string, Dictionary<int, int * Track list>>) format coverageFile =
     let flushStart = DateTime.UtcNow
     let coverageDocument = ReadXDocument coverageFile
