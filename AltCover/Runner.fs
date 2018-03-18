@@ -13,10 +13,20 @@ open Augment
 [<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage>]
 type Tracer = { Tracer : string }
 
-type MonoTypeBinder (``type``:Type) =
+type TypeBinder (``type``:Type) =
   inherit System.Runtime.Serialization.SerializationBinder()
-  override self.BindToType (_:string, _:string) =
-    ``type``
+  override self.BindToType (_:string, n:string) =
+    match n with
+    | both when both.StartsWith("System.Tuple`2[[System.Int64") -> typeof<(int64*int)>
+    | t2 when t2.StartsWith("System.Tuple`2") -> ``type``
+    | t3 when t3.StartsWith("System.Tuple`3") -> typeof<(string*int*Base.Track)>
+    | "AltCover.Recorder.Track+Call"
+    | "AltCover.Base.Track+Call"-> (Base.Track.Call 0).GetType()
+    | "AltCover.Recorder.Track+Time"
+    | "AltCover.Base.Track+Time" -> (Base.Track.Time 0L).GetType()
+    | "AltCover.Recorder.Track+Both"
+    | "AltCover.Base.Track+Both" -> (Base.Track.Both (0L, 0)).GetType()
+    | _ -> typeof<Base.Track>
 
 module Runner =
 
@@ -114,7 +124,7 @@ module Runner =
   let WriteResourceWithFormatItems s x =
     Console.WriteLine (s |> CommandLine.resources.GetString, x)
 
-  let MonitorBase (hits:ICollection<(string*int)>) report (payload: string list -> int) (args : string list) =
+  let internal MonitorBase (hits:ICollection<(string*int*Base.Track)>) report (payload: string list -> int) (args : string list) =
       let binpath = report + ".acv"
       do
         use stream = File.Create(binpath)
@@ -125,7 +135,7 @@ module Runner =
       "Getting results..."  |> WriteResource
 
       let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
-      formatter.Binder <- MonoTypeBinder(typeof<(string*int)>) // anything else is an error
+      formatter.Binder <- TypeBinder(typeof<(string*int)>)
 
       Directory.GetFiles( Path.GetDirectoryName(report),
                           Path.GetFileName(report) + ".*.acv")
@@ -133,9 +143,18 @@ module Runner =
           printfn "... %s" f
           use results = new DeflateStream(File.OpenRead f, CompressionMode.Decompress)
           let rec sink() =
-            let hit = try formatter.Deserialize(results) :?> (string*int)
-                      with | :? System.Runtime.Serialization.SerializationException as x -> (null, -1)
-            if hit|> fst |> String.IsNullOrWhiteSpace  |> not then
+            let hit = try
+                          let raw = formatter.Deserialize(results)
+                          match raw with
+                          | :? (string * int * Base.Track) as x -> x
+                          | _ -> let pair = raw :?> (string * int)
+                                 (fst pair, snd pair, Base.Null)
+                      with
+                      | :? System.InvalidCastException
+                      | :? System.ArgumentException
+                      | :? System.Runtime.Serialization.SerializationException -> (null, -1, Base.Null)
+            let (key, _, _) = hit
+            if key |> String.IsNullOrWhiteSpace  |> not then
               hit |> hits.Add
               sink()
           sink()
@@ -256,10 +275,10 @@ module Runner =
 
   let PointProcess _ _ = () //TODO
 
-  let WriteReportBase (hits:ICollection<(string*int)>) report =
-    let counts = Dictionary<string, Dictionary<int, int  * Base.Track list>>()
-    hits |> Seq.iter(fun (moduleId, hitPointId) ->
-                        AltCover.Base.Counter.AddVisit counts moduleId hitPointId Base.Track.Null)
+  let internal WriteReportBase (hits:ICollection<(string*int*Base.Track)>) report =
+    let counts = Dictionary<string, Dictionary<int, int * Base.Track list>>()
+    hits |> Seq.iter(fun (moduleId, hitPointId, hit) ->
+                        AltCover.Base.Counter.AddVisit counts moduleId hitPointId hit)
     AltCover.Base.Counter.DoFlush (PostProcess counts report) PointProcess true counts report
 
   // mocking points
@@ -284,7 +303,7 @@ module Runner =
                        |> Path.GetFullPath
           let format = (GetMethod instance "get_CoverageFormat")
                        |> GetFirstOperandAsNumber
-          let hits = List<(string*int)>()
+          let hits = List<(string*int*Base.Track)>()
 
           let payload = GetPayload
           let result = GetMonitor hits report payload rest

@@ -824,12 +824,12 @@ or
         Assert.That(rest, Is.EquivalentTo [|"test"; "1"|])
         255
 
-      let monitor (hits:ICollection<(string*int)>) (token:string) _ _ =
+      let monitor (hits:ICollection<(string*int*Base.Track)>) (token:string) _ _ =
         Assert.That(token, Is.EqualTo report, "should be default coverage file")
         Assert.That(hits, Is.Empty)
         127
 
-      let write (hits:ICollection<(string*int)>) format (report:string) =
+      let write (hits:ICollection<(string*int*Base.Track)>) format (report:string) =
         Assert.That(report, Is.EqualTo report, "should be default coverage file")
         Assert.That(hits, Is.Empty)
         TimeSpan.Zero
@@ -879,11 +879,11 @@ or
         worker.Write(buffer, 0, size)
         ()
 
-      let hits = List<(string*int)>()
+      let hits = List<(string*int*Base.Track)>()
       [0..9 ]
       |> Seq.iter(fun i ->
         for j = 1 to i+1 do
-          hits.Add("f6e3edb3-fb20-44b3-817d-f69d1a22fc2f", i)
+          hits.Add("f6e3edb3-fb20-44b3-817d-f69d1a22fc2f", i, Base.Null)
           ignore j
       )
 
@@ -912,7 +912,7 @@ or
 
   [<Test>]
   member self.NullPayloadShouldReportNothing() =
-    let hits = List<string*int>()
+    let hits = List<string*int*Base.Track>()
     let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
     let unique = Path.Combine(where, Guid.NewGuid().ToString())
     do
@@ -925,7 +925,7 @@ or
 
   [<Test>]
   member self.ActivePayloadShouldReportAsExpected() =
-    let hits = List<string*int>()
+    let hits = List<string*int*Base.Track>()
     let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
     let unique = Path.Combine(where, Guid.NewGuid().ToString())
     let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
@@ -935,7 +935,53 @@ or
                                            ) ["a"; "b"; String.Empty; "c"]
     Assert.That(r, Is.EqualTo 4)
     Assert.That (File.Exists (unique + ".acv"))
-    Assert.That(hits, Is.EquivalentTo [("a",0); ("b",1)])
+    Assert.That(hits, Is.EquivalentTo [("a",0,Base.Null); ("b",1,Base.Null)])
+
+  [<Test>]
+  member self.JunkPayloadShouldReportAsExpected() =
+    let hits = List<string*int*Base.Track>()
+    let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
+    let unique = Path.Combine(where, Guid.NewGuid().ToString())
+    let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
+    let r = Runner.GetMonitor hits unique (fun l ->
+       use sink = new DeflateStream(File.OpenWrite (unique + ".0.acv"), CompressionMode.Compress)
+       l |> List.mapi (fun i x -> formatter.Serialize(sink, (x,i,DateTime.UtcNow)); x) |> List.length
+                                           ) ["a"; "b"; String.Empty; "c"]
+    Assert.That(r, Is.EqualTo 4)
+    Assert.That (File.Exists (unique + ".acv"))
+    Assert.That(hits, Is.EquivalentTo [])
+
+  [<Test>]
+  member self.TrackingPayloadShouldReportAsExpected() =
+    let hits = List<string*int*Base.Track>()
+    let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
+    let unique = Path.Combine(where, Guid.NewGuid().ToString())
+    let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
+    let payloads = [Base.Null
+                    Base.Call 17
+                    Base.Time 23L
+                    Base.Both (5L, 42)
+                    Base.Time 42L
+                    Base.Call 5]
+    let inputs = [
+                   "a"
+                   "b"
+                   "c"
+                   "d"
+                   String.Empty
+                   "e"
+                 ]
+    let r = Runner.GetMonitor hits unique (fun l ->
+       use sink = new DeflateStream(File.OpenWrite (unique + ".0.acv"), CompressionMode.Compress)
+       l |> List.zip payloads
+       |> List.mapi (fun i (y,x) -> formatter.Serialize(sink, (x,i,y)); x) |> List.length) inputs
+
+    let expected = inputs |> List.zip payloads
+                   |> List.mapi (fun i (y,x) -> (x,i,y))
+                   |> List.take 4
+    Assert.That(r, Is.EqualTo 6)
+    Assert.That (File.Exists (unique + ".acv"))
+    Assert.That(hits, Is.EquivalentTo expected)
 
   [<Test>]
   member self.PostprocessShouldRestoreKnownOpenCoverState() =
