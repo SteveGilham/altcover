@@ -273,7 +273,26 @@ module Runner =
         msum.SetAttribute("sequenceCoverage", cover)
     | _ -> ()
 
-  let PointProcess _ _ = () //TODO
+  let internal PointProcess (pt:XmlElement) tracks =
+    let times = tracks
+                |> List.map (fun t -> match t with
+                                      | Base.Time x -> Some x
+                                      | Base.Both (x, _) -> Some x
+                                      | _ -> None)
+                |> List.choose id
+                |> Seq.groupBy id
+                |> Seq.map (fun (k, l) -> k, Seq.length l)
+                |> Seq.sortBy fst
+                |> Seq.toList
+    match times with
+    | [] -> ()
+    | _ -> let outer = pt.OwnerDocument.CreateElement("Times")
+           outer |> pt.AppendChild |> ignore
+           times
+           |>Seq.iter (fun (t,n) -> let inner = pt.OwnerDocument.CreateElement("Time")
+                                    inner |> outer.AppendChild |> ignore
+                                    inner.SetAttribute("time", sprintf "%d" t)
+                                    inner.SetAttribute("vc", sprintf "%d" n))
 
   let internal WriteReportBase (hits:ICollection<(string*int*Base.Track)>) report =
     let counts = Dictionary<string, Dictionary<int, int * Base.Track list>>()
