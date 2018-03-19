@@ -298,7 +298,6 @@ module Runner =
     Point pt times "Times" "Time" "time"
     Point pt calls "TrackedMethodRefs" "TrackedMethodRef" "uid"
 
-
   let internal WriteReportBase (hits:ICollection<(string*int*Base.Track)>) report =
     let counts = Dictionary<string, Dictionary<int, int * Base.Track list>>()
     hits |> Seq.iter(fun (moduleId, hitPointId, hit) ->

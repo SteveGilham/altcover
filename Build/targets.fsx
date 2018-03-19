@@ -1280,7 +1280,7 @@ Target "ReleaseXUnitFSharpTypesDotNetFullRunner" ( fun _ ->
                         "System.Byte[] Tests.M/Thing::bytes()";
                         "System.Int32 Program/Program::main(System.String[])";
                         "System.Void Tests.DU/get_MyBar@31::.ctor(Tests.DU/MyUnion)";
-                        "System.Void Tests.DU::testMakeUnion()"; 
+                        "System.Void Tests.DU::testMakeUnion()";
                         "System.Void Tests.M::testMakeThing()";
                         "Tests.DU/MyUnion Tests.DU/MyUnion::as_bar()";
                         "Tests.DU/MyUnion Tests.DU/get_MyBar@31::Invoke(Microsoft.FSharp.Core.Unit)";
@@ -1317,7 +1317,6 @@ Target "ReleaseXUnitFSharpTypesDotNetFullRunner" ( fun _ ->
                                      |> Seq.sum
                             Assert.That (vc, Is.EqualTo vx, sp.Value))
 )
-
 
 // AOB
 

@@ -441,30 +441,30 @@ module Instrument =
             // changes "long" conditional operators to their short representation where possible
             body.OptimizeMacros()
             (*
-	// Instance.Push(666);
-	IL_0000: ldc.i4 666
-	IL_0005: call void [AltCover.Recorder]AltCover.Recorder.Instance::Push(int32)
-	.try
-	{
-		// (no C# code)
-		IL_000a: nop
+    // Instance.Push(666);
+    IL_0000: ldc.i4 666
+    IL_0005: call void [AltCover.Recorder]AltCover.Recorder.Instance::Push(int32)
+    .try
+    {
+        // (no C# code)
+        IL_000a: nop
 ...
-		IL_0025: stloc.0
-		// (no C# code)
-		IL_0026: leave.s IL_0031
-	} // end .try
-	finally
-	{
-		IL_0028: nop
-		// Instance.Pop();
-		IL_0029: call void [AltCover.Recorder]AltCover.Recorder.Instance::Pop()
-		// (no C# code)
-		IL_002e: ldnull
-		IL_002f: pop
-		IL_0030: endfinally
-	} // end handler
+        IL_0025: stloc.0
+        // (no C# code)
+        IL_0026: leave.s IL_0031
+    } // end .try
+    finally
+    {
+        IL_0028: nop
+        // Instance.Pop();
+        IL_0029: call void [AltCover.Recorder]AltCover.Recorder.Instance::Pop()
+        // (no C# code)
+        IL_002e: ldnull
+        IL_002f: pop
+        IL_0030: endfinally
+    } // end handler
 
-	IL_0031: ldloc.0
+    IL_0031: ldloc.0
 ahead of
 IL_0032: ret
             *)
