@@ -414,32 +414,8 @@ module Instrument =
                    fsharpbytes.CopyTo libstream
 #endif
                  state
-  /// <summary>
-  /// Perform visitor operations
-  /// </summary>
-  /// <param name="state">Contextual information for the visit</param>
-  /// <param name="node">The node being visited</param>
-  /// <returns>Updated state</returns>
-  let internal InstrumentationVisitor (state : Context) (node:Node) =
-     match node with
-     | Start _ -> let recorder = typeof<AltCover.Recorder.Tracer>
-                  { state with RecordingAssembly = PrepareAssembly(recorder.Assembly.Location) }
-     | Assembly (assembly, included) -> if included then
-                                              assembly.MainModule.AssemblyReferences.Add(state.RecordingAssembly.Name)
-                                        state
-     | Module (m, included) -> VisitModule state m included
-     | Type _ -> state
-     | Method (m,  included, _) -> VisitMethod state m included
 
-     | MethodPoint (instruction, _, point, included) ->
-                VisitMethodPoint state instruction point included
-     | AfterMethod (_, included, _) ->
-         if included then
-            let body = state.MethodBody
-            // changes conditional (br.s, brtrue.s ...) operators to corresponding "long" ones (br, brtrue)
-            body.SimplifyMacros()
-            // changes "long" conditional operators to their short representation where possible
-            body.OptimizeMacros()
+  let internal Track _ _ = ()
             (*
     // Instance.Push(666);
     IL_0000: ldc.i4 666
@@ -468,6 +444,34 @@ module Instrument =
 ahead of
 IL_0032: ret
             *)
+
+  /// <summary>
+  /// Perform visitor operations
+  /// </summary>
+  /// <param name="state">Contextual information for the visit</param>
+  /// <param name="node">The node being visited</param>
+  /// <returns>Updated state</returns>
+  let internal InstrumentationVisitor (state : Context) (node:Node) =
+     match node with
+     | Start _ -> let recorder = typeof<AltCover.Recorder.Tracer>
+                  { state with RecordingAssembly = PrepareAssembly(recorder.Assembly.Location) }
+     | Assembly (assembly, included) -> if included then
+                                              assembly.MainModule.AssemblyReferences.Add(state.RecordingAssembly.Name)
+                                        state
+     | Module (m, included) -> VisitModule state m included
+     | Type _ -> state
+     | Method (m,  included, _) -> VisitMethod state m included
+
+     | MethodPoint (instruction, _, point, included) ->
+                VisitMethodPoint state instruction point included
+     | AfterMethod (m, included, track) ->
+         if included then
+            let body = state.MethodBody
+            // changes conditional (br.s, brtrue.s ...) operators to corresponding "long" ones (br, brtrue)
+            body.SimplifyMacros()
+            // changes "long" conditional operators to their short representation where possible
+            body.OptimizeMacros()
+         Track m track
          state
 
      | AfterType -> state

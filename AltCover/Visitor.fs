@@ -157,6 +157,8 @@ module Visitor =
         |> Seq.collect(fun x -> x.GetAllTypes() |> Seq.cast)
         |> Seq.collect ((fun t -> Type (t, included && IsIncluded t)) >> buildSequence)
 
+  let internal Track _ = None
+
   let private VisitType (t:TypeDefinition) included buildSequence =
         t.Methods
         |> Seq.cast
@@ -164,7 +166,7 @@ module Visitor =
                                                     && not m.IsRuntime
                                                     && not m.IsPInvokeImpl
                                                     && significant m)
-        |> Seq.collect ((fun m -> Method (m, included && IsIncluded m, None)) >> buildSequence)
+        |> Seq.collect ((fun m -> Method (m, included && IsIncluded m, Track m)) >> buildSequence)
 
   let private VisitMethod (m:MethodDefinition) included =
             let rawInstructions = m.Body.Instructions
