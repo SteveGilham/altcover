@@ -140,6 +140,7 @@ module OpenCover =
                            XAttribute(X "isSetter", boolString methodDef.IsSetter)))
 
     let VisitMethod  (s : Context) (methodDef:MethodDefinition) included =
+       // TrackedMethod uid token (MetadataToken) name (FullName) strategy (why)
        if s.Excluded = Nothing then
           let cc, element = methodElement methodDef
           if included then element.SetAttributeValue(X "skippedDueTo", null)
