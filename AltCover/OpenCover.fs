@@ -213,7 +213,7 @@ module OpenCover =
         let sp = ``method``.Descendants(X "SequencePoint")
         sp |> Seq.iteri(fun i x -> x.SetAttributeValue(X "ordinal", i))
 
-    let VisitAfterMethod (s : Context) =
+    let VisitAfterMethod (s : Context) _ =
       if s.Excluded = Nothing then
         let head,tail = Augment.Split s.Stack
         head.Parent.Elements(X "FileRef")
@@ -298,9 +298,9 @@ module OpenCover =
       | Start _ -> StartVisit s
       | Node.Module (moduleDef, included) -> VisitModule s moduleDef included
       | Node.Type (typeDef, included) -> VisitType s typeDef included
-      | Node.Method (methodDef, included) -> VisitMethod s methodDef included
+      | Node.Method (methodDef, included, _) -> VisitMethod s methodDef included
       | MethodPoint (_, codeSegment,  i, included) -> VisitMethodPoint' s codeSegment i included
-      | AfterMethod _ -> VisitAfterMethod s
+      | AfterMethod (m,i,t) -> VisitAfterMethod s (m,i,t)
       | AfterType _ ->   VisitAfterType s
       | AfterModule _ ->  VisitAfterModule s
       | Finish -> AfterAll s

@@ -25,13 +25,20 @@ type internal Node =
      | Assembly of AssemblyDefinition * bool
      | Module of ModuleDefinition * bool
      | Type of TypeDefinition * bool
-     | Method of MethodDefinition * bool
+     | Method of MethodDefinition * bool * (int * string) option
      | MethodPoint of Instruction * SequencePoint option * int * bool
-     | AfterMethod of bool
+     | AfterMethod of MethodDefinition * bool * (int * string) option
      | AfterType
      | AfterModule
      | AfterAssembly of AssemblyDefinition
      | Finish
+with member this.After () = (match this with
+                             | Start _ -> [Finish]
+                             | Assembly (a, _) -> [AfterAssembly a]
+                             | Module _ -> [AfterModule]
+                             | Type _ -> [AfterType]
+                             | Method (m,included, track) -> [AfterMethod (m,included, track)]
+                             | _ -> []) |> List.toSeq
 
 [<ExcludeFromCodeCoverage>]
 type KeyRecord = {
@@ -120,15 +127,6 @@ module Visitor =
   let ToSeq node =
     List.toSeq [ node ]
 
-  let internal After node =
-    match node with
-    | Start _ -> ToSeq Finish
-    | Assembly (a, _) -> AfterAssembly a |> ToSeq
-    | Module _ -> AfterModule |> ToSeq
-    | Type _ -> AfterType |> ToSeq
-    | Method (_,included) -> AfterMethod included |> ToSeq
-    | _ -> Seq.empty<Node>
-
   let mutable private PointNumber : int = 0
 
   let significant (m : MethodDefinition) =
@@ -166,7 +164,7 @@ module Visitor =
                                                     && not m.IsRuntime
                                                     && not m.IsPInvokeImpl
                                                     && significant m)
-        |> Seq.collect ((fun m -> Method (m, included && IsIncluded m)) >> buildSequence)
+        |> Seq.collect ((fun m -> Method (m, included && IsIncluded m, None)) >> buildSequence)
 
   let private VisitMethod (m:MethodDefinition) included =
             let rawInstructions = m.Body.Instructions
@@ -200,11 +198,11 @@ module Visitor =
     | Assembly (a, included) ->  VisitAssembly a included BuildSequence
     | Module (x, included) ->  VisitModule x included BuildSequence
     | Type (t, included) -> VisitType t included BuildSequence
-    | Method (m, included) -> VisitMethod m included
+    | Method (m, included, _) -> VisitMethod m included
     | _ -> Seq.empty<Node>
 
   and internal BuildSequence node =
-    Seq.concat [ ToSeq node ; Deeper node ; After node ]
+    Seq.concat [ ToSeq node ; Deeper node ; node.After() ]
 
   let internal invoke (node : Node) (visitor:Fix<Node>)  =
     visitor.Invoke(node)

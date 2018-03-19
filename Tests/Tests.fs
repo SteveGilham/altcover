@@ -601,10 +601,10 @@ type AltCoverTests() = class
   member self.AfterProcessingYieldsAnExpectedValue() =
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly (Assembly.GetExecutingAssembly().Location)
     let inputs = [ Node.Start [] ; Node.Assembly (def, true) ; Node.Module (null, false) ; Node.Type (null, true) ;
-                   Node.Method (null, false) ; Node.MethodPoint (null, None, 0, true ) ;
-                   Node.AfterMethod false ; Node.AfterModule ; Node.AfterAssembly def; Node.Finish ]
-    let outputs = inputs |> Seq.map (Visitor.After >> Seq.toList)
-    let expected = [ [Finish]; [AfterAssembly def]; [AfterModule]; [AfterType]; [AfterMethod false]; []; []; []; []; []]
+                   Node.Method (null, false, None) ; Node.MethodPoint (null, None, 0, true ) ;
+                   Node.AfterMethod (null, false, None) ; Node.AfterModule ; Node.AfterAssembly def; Node.Finish ]
+    let outputs = inputs |> Seq.map (fun n -> n.After() |> Seq.toList)
+    let expected = [ [Finish]; [AfterAssembly def]; [AfterModule]; [AfterType]; [AfterMethod (null, false, None)]; []; []; []; []; []]
     Assert.That (outputs, Is.EquivalentTo (expected))
 
   [<Test>]
@@ -631,7 +631,7 @@ type AltCoverTests() = class
   member self.TerminalCasesGoNoDeeper() =
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly (Assembly.GetExecutingAssembly().Location)
     let inputs = [ Node.MethodPoint (null, None, 0, true ) ;
-                   Node.AfterMethod false ; Node.AfterModule ; Node.AfterAssembly def; Node.Finish ]
+                   Node.AfterMethod (null, false, None) ; Node.AfterModule ; Node.AfterAssembly def; Node.Finish ]
     let outputs = inputs |> Seq.map (Visitor.Deeper>> Seq.toList)
     let expected = [[]; []; []; []; []]
     Assert.That (outputs, Is.EquivalentTo (expected))
@@ -647,7 +647,8 @@ type AltCoverTests() = class
     try
         "Program" |> (Regex >> FilterClass.File >> Visitor.NameFilters.Add)
         let deeper = Visitor.Deeper <| Node.Method (method,
-                                                    true)
+                                                    true,
+                                                    None)
                      |> Seq.toList
         Assert.That (deeper.Length, Is.EqualTo 10)
         deeper
@@ -674,8 +675,8 @@ type AltCoverTests() = class
         Visitor.Visit [] [] // cheat reset
         let expected = type'.Methods
                     |> Seq.map (fun m -> let flag = m.Name = ".ctor"
-                                         let node = Node.Method (m, flag)
-                                         List.concat [ [node]; (Visitor.Deeper >> Seq.toList) node;  [Node.AfterMethod flag]])
+                                         let node = Node.Method (m, flag, None)
+                                         List.concat [ [node]; (Visitor.Deeper >> Seq.toList) node;  [Node.AfterMethod (m,flag, None)]])
                     |> List.concat
         Assert.That (deeper.Length, Is.EqualTo 15)
         Assert.That (deeper |> Seq.map string,
@@ -1874,7 +1875,7 @@ type AltCoverTests() = class
   [<Test>]
   member self.ExcludedMethodShouldNotChangeState () =
     let input = Instrument.Context.Build []
-    let output = Instrument.InstrumentationVisitor input (Node.Method (null, false))
+    let output = Instrument.InstrumentationVisitor input (Node.Method (null, false, None))
     Assert.That (output, Is.SameAs input)
 
   [<Test>]
@@ -1888,7 +1889,7 @@ type AltCoverTests() = class
     let du = module'.NestedTypes |> Seq.filter (fun t -> t.Name = "MyUnion") |> Seq.head
     let func = du.GetMethods() |> Seq.find (fun x -> x.Name = "as_bar")
     let input = Instrument.Context.Build []
-    let output = Instrument.InstrumentationVisitor input (Node.Method (func, true))
+    let output = Instrument.InstrumentationVisitor input (Node.Method (func, true, None))
     Assert.That (output.MethodBody, Is.SameAs func.Body)
 
   [<Test>]
@@ -1913,7 +1914,7 @@ type AltCoverTests() = class
     let diff = paired
                |> List.map (fun (i,j) -> (i, i=j.OpCode))
 
-    let output = Instrument.InstrumentationVisitor input (Node.AfterMethod false)
+    let output = Instrument.InstrumentationVisitor input (Node.AfterMethod (func, false, None))
     Assert.That (output, Is.SameAs input)
     let paired' = Seq.zip diff input.MethodBody.Instructions
     Assert.That (paired' |> Seq.forall (fun ((i,x),j) -> x = (i = j.OpCode)))
@@ -1938,7 +1939,7 @@ type AltCoverTests() = class
     let paired = Seq.zip opcodes input.MethodBody.Instructions
     Assert.That (paired |> Seq.exists (fun (i,j) -> i <> j.OpCode))
 
-    let output = Instrument.InstrumentationVisitor input (Node.AfterMethod true)
+    let output = Instrument.InstrumentationVisitor input (Node.AfterMethod (func, true, None))
     Assert.That (output, Is.SameAs input)
     let paired' = Seq.zip opcodes input.MethodBody.Instructions
     Assert.That (paired' |> Seq.forall (fun (i,j) -> i = j.OpCode))

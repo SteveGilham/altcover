@@ -429,11 +429,11 @@ module Instrument =
                                         state
      | Module (m, included) -> VisitModule state m included
      | Type _ -> state
-     | Method (m,  included) -> VisitMethod state m included
+     | Method (m,  included, _) -> VisitMethod state m included
 
      | MethodPoint (instruction, _, point, included) ->
                 VisitMethodPoint state instruction point included
-     | AfterMethod included ->
+     | AfterMethod (_, included, _) ->
          if included then
             let body = state.MethodBody
             // changes conditional (br.s, brtrue.s ...) operators to corresponding "long" ones (br, brtrue)

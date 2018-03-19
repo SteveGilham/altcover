@@ -82,7 +82,7 @@ module Report =
       match node with
       | Start _ -> StartVisit s
       | Module (moduleDef, included) -> VisitModule s head moduleDef included
-      | Method (methodDef, included) -> VisitMethod s head methodDef included
+      | Method (methodDef, included, _) -> VisitMethod s head methodDef included
       | MethodPoint (_, codeSegment,  _, included) ->
         VisitMethodPoint s head codeSegment included
 
