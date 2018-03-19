@@ -444,6 +444,15 @@ module Instrument =
 ahead of
 IL_0032: ret
             *)
+  let private VisitAfterMethod state m included track =
+    if included then
+        let body = state.MethodBody
+        // changes conditional (br.s, brtrue.s ...) operators to corresponding "long" ones (br, brtrue)
+        body.SimplifyMacros()
+        // changes "long" conditional operators to their short representation where possible
+        body.OptimizeMacros()
+    Track m track
+    state
 
   /// <summary>
   /// Perform visitor operations
@@ -464,15 +473,7 @@ IL_0032: ret
 
      | MethodPoint (instruction, _, point, included) ->
                 VisitMethodPoint state instruction point included
-     | AfterMethod (m, included, track) ->
-         if included then
-            let body = state.MethodBody
-            // changes conditional (br.s, brtrue.s ...) operators to corresponding "long" ones (br, brtrue)
-            body.SimplifyMacros()
-            // changes "long" conditional operators to their short representation where possible
-            body.OptimizeMacros()
-         Track m track
-         state
+     | AfterMethod (m, included, track) -> VisitAfterMethod state m included track
 
      | AfterType -> state
      | AfterModule -> state

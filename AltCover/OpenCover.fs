@@ -216,9 +216,7 @@ module OpenCover =
     let AddTracking _ _ _ = //(s : Context) m t =
       ()
 
-    let VisitAfterMethod (s : Context) methodDef track =
-      AddTracking s methodDef track
-      if s.Excluded = Nothing then
+    let VisitAfterMethodIncluded (s : Context) methodDef track =
         let head,tail = Augment.Split s.Stack
         head.Parent.Elements(X "FileRef")
         |> Seq.toList
@@ -233,6 +231,12 @@ module OpenCover =
                                    summary.SetAttributeValue(X "minCyclomaticComplexity", cc)
                                    summary.SetAttributeValue(X "numMethods", if s.MethodSeq > 0 then 1 else 0))
         handleSequencePoints ``method``
+        tail
+
+    let VisitAfterMethod (s : Context) methodDef track =
+      AddTracking s methodDef track
+      if s.Excluded = Nothing then
+        let tail = VisitAfterMethodIncluded s methodDef track
         {s with Stack = tail
                 ClassSeq = s.ClassSeq + s.MethodSeq
                 MethodCC = limitMethodCC s.MethodSeq s.MethodCC}
