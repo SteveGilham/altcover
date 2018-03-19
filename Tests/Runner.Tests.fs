@@ -996,8 +996,9 @@ or
                 Base.Time 42L
                 Base.Time 5L]
     Runner.PointProcess root hits
+
     Assert.That(x.DocumentElement.OuterXml,
-                Is.EqualTo """<root><Times><Time time="5" vc="2" /><Time time="23" vc="1" /><Time time="42" vc="1" /></Times></root>""")
+                Is.EqualTo """<root><Times><Time time="5" vc="2" /><Time time="23" vc="1" /><Time time="42" vc="1" /></Times><TrackedMethodRefs><TrackedMethodRef uid="17" vc="1" /><TrackedMethodRef uid="42" vc="1" /></TrackedMethodRefs></root>""")
 
   [<Test>]
   member self.PostprocessShouldRestoreKnownOpenCoverState() =

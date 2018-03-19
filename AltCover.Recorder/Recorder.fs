@@ -78,7 +78,13 @@ module Instance =
   /// <summary>
   /// Gets or sets the current test method
   /// </summary>
-  let mutable CallerId = 0
+  let mutable private caller = [0]
+  let Push x = caller <- x ::caller
+  let Pop () = caller <- match caller with
+                         | []
+                         | [0] -> [0]
+                         | _::xs -> xs
+  let internal CallerId () = Seq.head caller
 
   /// <summary>
   /// Serialize access to the report file across AppDomains for the classic mode
@@ -165,7 +171,7 @@ module Instance =
 
   let internal PayloadSelection clock frequency wantPayload =
     if wantPayload () then
-       match (frequency(), CallerId) with
+       match (frequency(), CallerId()) with
        | (0L, 0) -> Null
        | (t, 0) -> Time (t*(clock()/t))
        | (0L, n) -> Call n
@@ -175,7 +181,7 @@ module Instance =
   let internal PayloadControl = PayloadSelection Clock
 
   let internal PayloadSelector enable =
-    PayloadControl Granularity enable 
+    PayloadControl Granularity enable
 
   let internal VisitSelection (f: unit -> bool) track moduleId hitPointId =
     // When writing to file for the runner to process,

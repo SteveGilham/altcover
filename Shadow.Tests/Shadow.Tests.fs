@@ -132,30 +132,38 @@ type AltCoverTests() = class
   [<Test>]
   member self.PayloadGeneratedIsAsExpected() =
     try
-      Instance.CallerId <- 0
+      Assert.That (Instance.CallerId(), Is.EqualTo 0)
       Assert.That(Instance.PayloadSelector (fun _ -> true),
                   Is.EqualTo Null)
-      Instance.CallerId <- 4321
+      Instance.Push 4321
       Assert.That(Instance.PayloadSelector (fun _ -> true),
                   Is.EqualTo (Call 4321))
-      // 0x1234123412341234 == 1311693406324658740
-      Assert.That(Instance.PayloadSelection (fun _ -> 0x1234123412341234L) (fun _ -> 1000L) (fun _ -> true),
-                  Is.EqualTo (Both (1311693406324658000L, 4321)))
-      Instance.CallerId <- 0
-      Assert.That(Instance.PayloadSelection (fun _ -> 0x1234123412341234L) (fun _ -> 1000L) (fun _ -> true) ,
-                  Is.EqualTo (Time 1311693406324658000L))
-
-      let v1 = DateTime.UtcNow.Ticks
-      let probed = Instance.PayloadControl (fun _ -> 1000L) (fun _ -> true)
-      let v2 = DateTime.UtcNow.Ticks
-      match probed with
-      | Time probe ->
-        Assert.That(probe % 1000L, Is.EqualTo 0L)
-        Assert.That(probe, Is.LessThan v2)
-        Assert.That(probe, Is.GreaterThanOrEqualTo (1000L*(v1/1000L)))
-      | _ -> Assert.Fail()
+      try
+        Instance.Push 6789
+        // 0x1234123412341234 == 1311693406324658740
+        Assert.That(Instance.PayloadSelection (fun _ -> 0x1234123412341234L) (fun _ -> 1000L) (fun _ -> true),
+                    Is.EqualTo (Both (1311693406324658000L, 6789)))
+      finally
+        Instance.Pop()
+      Assert.That(Instance.PayloadSelector (fun _ -> true),
+                  Is.EqualTo (Call 4321))
     finally
-      Instance.CallerId <- 0
+      Instance.Pop()
+    Assert.That(Instance.PayloadSelection (fun _ -> 0x1234123412341234L) (fun _ -> 1000L) (fun _ -> true) ,
+                Is.EqualTo (Time 1311693406324658000L))
+
+    let v1 = DateTime.UtcNow.Ticks
+    let probed = Instance.PayloadControl (fun _ -> 1000L) (fun _ -> true)
+    let v2 = DateTime.UtcNow.Ticks
+    match probed with
+    | Time probe ->
+      Assert.That(probe % 1000L, Is.EqualTo 0L)
+      Assert.That(probe, Is.LessThan v2)
+      Assert.That(probe, Is.GreaterThanOrEqualTo (1000L*(v1/1000L)))
+    | _ -> Assert.Fail()
+    Assert.That (Instance.CallerId(), Is.EqualTo 0)
+    Instance.Pop()
+    Assert.That (Instance.CallerId(), Is.EqualTo 0)
 
   [<Test>]
   member self.RealIdShouldIncrementCountSynchronously() =

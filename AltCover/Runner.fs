@@ -273,27 +273,31 @@ module Runner =
         msum.SetAttribute("sequenceCoverage", cover)
     | _ -> ()
 
-  let internal PointProcess (pt:XmlElement) tracks =
-    let times = tracks
-                |> List.map (fun t -> match t with
-                                      | Base.Time x -> Some x
-                                      | Base.Both (x, _) -> Some x
-                                      | _ -> None)
-                |> List.choose id
-                |> Seq.groupBy id
-                |> Seq.map (fun (k, l) -> k, Seq.length l)
-                |> Seq.sortBy fst
-                |> Seq.toList
-    // TrackedMethodRefs TrackedMethodRef uid vc
-    match times with
+  let internal Point (pt:XmlElement) items outername innername attribute =
+    match items with
     | [] -> ()
-    | _ -> let outer = pt.OwnerDocument.CreateElement("Times")
+    | _ -> let outer = pt.OwnerDocument.CreateElement(outername)
            outer |> pt.AppendChild |> ignore
-           times
-           |> Seq.iter (fun (t,n) -> let inner = pt.OwnerDocument.CreateElement("Time")
+           items
+           |> Seq.choose id
+           |> Seq.countBy id
+           |> Seq.sortBy fst
+           |> Seq.iter (fun (t,n) -> let inner = pt.OwnerDocument.CreateElement(innername)
                                      inner |> outer.AppendChild |> ignore
-                                     inner.SetAttribute("time", sprintf "%d" t)
+                                     inner.SetAttribute(attribute, t.ToString())
                                      inner.SetAttribute("vc", sprintf "%d" n))
+
+  let internal PointProcess (pt:XmlElement) tracks =
+    let (times, calls) = tracks
+                         |> List.map (fun t -> match t with
+                                               | Base.Time x -> (Some x, None)
+                                               | Base.Both (x, y) -> (Some x, Some y)
+                                               | Base.Call y -> (None, Some y)
+                                               | _ -> (None, None))
+                         |> List.unzip
+    Point pt times "Times" "Time" "time"
+    Point pt calls "TrackedMethodRefs" "TrackedMethodRef" "uid"
+
 
   let internal WriteReportBase (hits:ICollection<(string*int*Base.Track)>) report =
     let counts = Dictionary<string, Dictionary<int, int * Base.Track list>>()
