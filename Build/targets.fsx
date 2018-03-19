@@ -1265,7 +1265,7 @@ Target "ReleaseXUnitFSharpTypesDotNetFullRunner" ( fun _ ->
 
     // Instrument the code
     Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = unpack} )"run"
-                          ("--project altcover.core.fsproj --configuration Release -- --opencover -c=0 -x \"" + x + "\" -o \"" + o + "\" -i \"" + i + "\"")
+                          ("--project altcover.core.fsproj --configuration Release -- --opencover -c=0 \"-c=[Fact]\" -x \"" + x + "\" -o \"" + o + "\" -i \"" + i + "\"")
                           "ReleaseXUnitFSharpTypesDotNetFullRunner"
 
     do

@@ -704,7 +704,22 @@ or
   -a, --attributeFilter=VALUE
                              Optional: attribute name to exclude from
                                instrumentation (may repeat)
-  -c, --callContext=VALUE    Optional, multiple: ??
+  -c, --callContext=VALUE    Optional, multiple: Tracking either times of
+                               visits in ticks or designated method calls
+                               leading to the visits.
+                                   A single digit 0-7 gives the number of
+                               decimal places of seconds to report; everything
+                               else is at the mercy of the system clock
+                               information available through DateTime.UtcNow
+                                   A string in brackets "[]" is interpreted as
+                               an attribute type name (the trailing "Attribute"
+                               is optional), so [Test] or [TestAttribute] will
+                               match; if the name contains one or more ".",
+                               then it will be matched against the full name of
+                               the attribute type.
+                                   Other strings are interpreted as method
+                               names (fully qualified if the string contains
+                               any "." characters).
       --opencover            Optional: Generate the report in OpenCover format
   -?, --help, -h             Prints out the options.
 or
@@ -721,7 +736,7 @@ or
   -?, --help, -h             Prints out the options.
 """
 
-      Assert.That (result, Is.EqualTo (expected.Replace("\r\n", "\n")))
+      Assert.That (result.Replace("\r\n", "\n"), Is.EqualTo (expected.Replace("\r\n", "\n")))
 
     finally Console.SetError saved
 

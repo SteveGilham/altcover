@@ -89,13 +89,17 @@ module Main =
        (fun x -> x.Split([|";"|], StringSplitOptions.RemoveEmptyEntries)
                  |> Seq.iter (Regex >> FilterClass.Attribute >> Visitor.NameFilters.Add)))
       ("c|callContext=",
-       (fun x -> if not (String.IsNullOrWhiteSpace x) && x.Trim().Length = 1 then // TODO
-                    if Option.isSome Visitor.interval then
+       (fun x -> if not (String.IsNullOrWhiteSpace x) then
+                   let k = x.Trim()
+                   if Char.IsDigit <| k.Chars(0) then
+                    if Option.isSome Visitor.interval || k.Length > 1 then
                       CommandLine.error <- true
                     else
-                      let (ok, n) = Int32.TryParse(x) 
+                      let (ok, n) = Int32.TryParse(k)
                       Visitor.interval <- Some (pown 10 (7 - n))
                       CommandLine.error <- (not ok)  || CommandLine.error
+                   else
+                      Visitor.TrackingNames.Add(k)
                  else CommandLine.error <- true))
       ("opencover",
        (fun _ ->  if Option.isSome Visitor.reportFormat then

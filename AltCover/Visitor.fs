@@ -82,8 +82,9 @@ module KeyStore =
 type Fix<'T> = delegate of 'T -> Fix<'T>
 
 module Visitor =
+  let internal TrackingNames = new List<String>()
 
-  let internal NameFilters = new List<FilterClass>();
+  let internal NameFilters = new List<FilterClass>()
   let private specialCaseFilters = [ @"^CompareTo\$cont\@\d+\-?\d$" |> Regex |> FilterClass.Method ]
 
   let mutable internal inputDirectory : Option<string> = None

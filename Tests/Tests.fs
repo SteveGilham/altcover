@@ -914,7 +914,7 @@ type AltCoverTests() = class
                     "System.String Sample3.Class3+Class4.get_ReportFile()"
                     "System.Void Sample3.Class3+Class4.set_ReportFile(System.String)"
                     "System.Int64 Sample3.Class3+Class4.get_Timer()"
-                    "System.Void Sample3.Class3+Class4.set_Timer(System.Int64)" 
+                    "System.Void Sample3.Class3+Class4.set_Timer(System.Int64)"
                     "System.String Sample3.Class3+Class4.get_Token()"
                     "System.Void Sample3.Class3+Class4.set_Token(System.String)"
                     "System.Int32 Sample3.Class3+Class4.get_CoverageFormat()"
@@ -3139,6 +3139,7 @@ type AltCoverTests() = class
   [<Test>]
   member self.ParsingTimeGivesTime() =
     try
+      Visitor.TrackingNames.Clear()
       Visitor.interval <- None
       let options = Main.DeclareOptions ()
       let input = [| "-c"; "5" |]
@@ -3151,11 +3152,13 @@ type AltCoverTests() = class
       Assert.That (Visitor.Interval(), Is.EqualTo 100)
     finally
       Visitor.interval <- None
+      Visitor.TrackingNames.Clear()
 
   [<Test>]
   member self.ParsingMultipleTimesGivesFailure() =
     try
       Visitor.interval <- None
+      Visitor.TrackingNames.Clear()
       let options = Main.DeclareOptions ()
       let path = self.IsolateRootPath()
 
@@ -3168,11 +3171,33 @@ type AltCoverTests() = class
       Assert.That (Visitor.Interval(), Is.EqualTo 10000)
     finally
       Visitor.interval <- None
+      Visitor.TrackingNames.Clear()
+
+  [<Test>]
+  member self.ParsingTimeAndNamesGivesOK() =
+    try
+      Visitor.interval <- None
+      Visitor.TrackingNames.Clear()
+      let options = Main.DeclareOptions ()
+      let path = self.IsolateRootPath()
+
+      let input = [| "-c"; "3" ; "/c"; "x"; "--callContext"; "Hello, World!" |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Left _ -> Assert.Fail()
+      | Right (x, y) -> Assert.That (y, Is.SameAs options)
+                        Assert.That (x, Is.Empty)
+      Assert.That (Visitor.Interval(), Is.EqualTo 10000)
+      Assert.That (Visitor.TrackingNames, Is.EquivalentTo ["x"; "Hello, World!"])
+    finally
+      Visitor.interval <- None
+      Visitor.TrackingNames.Clear()
 
   [<Test>]
   member self.ParsingBadTimeGivesNoOp() =
     try
       Visitor.interval <- None
+      Visitor.TrackingNames.Clear()
       let options = Main.DeclareOptions ()
       let unique = Guid.NewGuid().ToString().Replace("-", "*")
       let input = [| "-c"; "9" |]
@@ -3184,11 +3209,13 @@ type AltCoverTests() = class
       Assert.That (Visitor.Interval(), Is.EqualTo 0)
     finally
       Visitor.interval <- None
+      Visitor.TrackingNames.Clear()
 
   [<Test>]
   member self.ParsingNonTimeGivesFailure() = //TODO
     try
       Visitor.interval <- None
+      Visitor.TrackingNames.Clear()
       let options = Main.DeclareOptions ()
       let unique = Assembly.GetExecutingAssembly().Location
       let input = [| "-c"; "99" |]
@@ -3198,14 +3225,16 @@ type AltCoverTests() = class
       | Left (x, y) -> Assert.That (y, Is.SameAs options)
                        Assert.That (x, Is.EqualTo "UsageError")
     finally
-      Visitor.defaultStrongNameKey <- None
+      Visitor.interval <- None
+      Visitor.TrackingNames.Clear()
 
   [<Test>]
   member self.ParsingNoTimeGivesFailure() =
     try
       Visitor.interval <- None
+      Visitor.TrackingNames.Clear()
       let options = Main.DeclareOptions ()
-      let input = [| "-c" |]
+      let input = [| "-c"; " " |]
       let parse = CommandLine.ParseCommandLine input options
       match parse with
       | Right _ -> Assert.Fail()
@@ -3213,6 +3242,7 @@ type AltCoverTests() = class
                        Assert.That (x, Is.EqualTo "UsageError")
     finally
       Visitor.interval <- None
+      Visitor.TrackingNames.Clear()
 
   [<Test>]
   member self.ParsingOpenCoverGivesOpenCover() =
@@ -3775,14 +3805,29 @@ type AltCoverTests() = class
   -a, --attributeFilter=VALUE
                              Optional: attribute name to exclude from
                                instrumentation (may repeat)
-  -c, --callContext=VALUE    Optional, multiple: ??
+  -c, --callContext=VALUE    Optional, multiple: Tracking either times of
+                               visits in ticks or designated method calls
+                               leading to the visits.
+                                   A single digit 0-7 gives the number of
+                               decimal places of seconds to report; everything
+                               else is at the mercy of the system clock
+                               information available through DateTime.UtcNow
+                                   A string in brackets "[]" is interpreted as
+                               an attribute type name (the trailing "Attribute"
+                               is optional), so [Test] or [TestAttribute] will
+                               match; if the name contains one or more ".",
+                               then it will be matched against the full name of
+                               the attribute type.
+                                   Other strings are interpreted as method
+                               names (fully qualified if the string contains
+                               any "." characters).
       --opencover            Optional: Generate the report in OpenCover format
   -?, --help, -h             Prints out the options.
 or
   Runner
 """
 
-      Assert.That (result, Is.EqualTo (expected.Replace("\r\n", "\n")))
+      Assert.That (result.Replace("\r\n", "\n"), Is.EqualTo (expected.Replace("\r\n", "\n")))
 
     finally Console.SetError saved
 
@@ -3836,7 +3881,22 @@ or
   -a, --attributeFilter=VALUE
                              Optional: attribute name to exclude from
                                instrumentation (may repeat)
-  -c, --callContext=VALUE    Optional, multiple: ??
+  -c, --callContext=VALUE    Optional, multiple: Tracking either times of
+                               visits in ticks or designated method calls
+                               leading to the visits.
+                                   A single digit 0-7 gives the number of
+                               decimal places of seconds to report; everything
+                               else is at the mercy of the system clock
+                               information available through DateTime.UtcNow
+                                   A string in brackets "[]" is interpreted as
+                               an attribute type name (the trailing "Attribute"
+                               is optional), so [Test] or [TestAttribute] will
+                               match; if the name contains one or more ".",
+                               then it will be matched against the full name of
+                               the attribute type.
+                                   Other strings are interpreted as method
+                               names (fully qualified if the string contains
+                               any "." characters).
       --opencover            Optional: Generate the report in OpenCover format
   -?, --help, -h             Prints out the options.
 or
@@ -3853,7 +3913,7 @@ or
   -?, --help, -h             Prints out the options.
 """
 
-      Assert.That (result, Is.EqualTo (expected.Replace("\r\n", "\n")))
+      Assert.That (result.Replace("\r\n", "\n"), Is.EqualTo (expected.Replace("\r\n", "\n")))
 
     finally Console.SetError saved
 
