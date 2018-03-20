@@ -204,7 +204,7 @@ open System.Runtime.CompilerServices
     Assert.That(result.ExitCode, Is.EqualTo 0, msg)
 
   let Run (f:Fake.Core.ProcStartInfo -> Fake.Core.ProcStartInfo) msg =
-    Fake.Core.Process.ExecAndReturnMessages (f >> Fake.Core.Process.withFramework) (TimeSpan.FromMinutes 5.0)
+    Fake.Core.Process.ExecAndReturnMessages (f >> Fake.Core.Process.withFramework) (TimeSpan.FromMinutes 10.0)
     |> (HandleResults msg)
 
   let RunDotnet (o:DotNet.Options -> DotNet.Options) cmd args msg =
