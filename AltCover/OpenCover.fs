@@ -60,7 +60,7 @@ module OpenCover =
     let document = XDocument(XDeclaration("1.0", "utf-8", "yes"), [||])
 
     let X name =
-      XName.Get(name)
+      XName.Get name
 
     let Summary () =
         XElement(X "Summary",
