@@ -78,13 +78,40 @@ module Instance =
   /// <summary>
   /// Gets or sets the current test method
   /// </summary>
-  let mutable private caller = [0]
-  let Push x = caller <- x ::caller
-  let Pop () = caller <- match caller with
-                         | []
-                         | [0] -> [0]
-                         | _::xs -> xs
-  let internal CallerId () = Seq.head caller
+  type private CallStack = 
+    [<ThreadStatic;DefaultValue>]
+    static val mutable private instance:Option<CallStack>
+    
+    val mutable private caller:int list 
+    private new (x:int) = {caller = [x]}
+
+    static member Instance =
+        match CallStack.instance with
+        | None -> CallStack.instance <- Some (CallStack(0))
+        | _ -> ()
+
+        CallStack.instance.Value
+
+    member self.Push x =  self.caller <- x :: self.caller
+                          //let s = sprintf "push %d -> %A" x self.caller
+                          //System.Diagnostics.Debug.WriteLine(s)
+                
+    member self.Pop () = self.caller <- match self.caller with
+                                         | []
+                                         | [0] -> [0]
+                                         | _::xs -> xs
+                         //let s = sprintf "pop -> %A"self.caller
+                         //System.Diagnostics.Debug.WriteLine(s)
+
+    member self.CallerId () = Seq.head self.caller
+                              (*let x = Seq.head self.caller
+                              let s = sprintf "peek %d" x
+                              System.Diagnostics.Debug.WriteLine(s)
+                              x*)
+
+  let Push x = CallStack.Instance.Push x
+  let Pop () = CallStack.Instance.Pop ()
+  let CallerId () = CallStack.Instance.CallerId ()
 
   /// <summary>
   /// Serialize access to the report file across AppDomains for the classic mode
