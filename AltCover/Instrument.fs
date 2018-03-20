@@ -29,16 +29,16 @@ module Instrument =
   type internal Context = { InstrumentedAssemblies : string list
                             ModuleId : String
                             RecordingAssembly : AssemblyDefinition
-                            RecordingMethod : MethodDefinition // initialised once
-                            RecordingMethodRef : MethodReference // updated each module
+                            RecordingMethod : MethodDefinition list // initialised once
+                            RecordingMethodRef : MethodReference list // updated each module
                             MethodBody : MethodBody
                             MethodWorker : ILProcessor } // to save fetching repeatedly
   with static member Build assemblies =
                     { InstrumentedAssemblies = assemblies
                       ModuleId = String.Empty
                       RecordingAssembly = null
-                      RecordingMethod = null
-                      RecordingMethodRef = null
+                      RecordingMethod = []
+                      RecordingMethodRef = []
                       MethodBody = null
                       MethodWorker = null }
 
@@ -84,8 +84,9 @@ module Instrument =
     /// <returns>A representation of the method to call to signal a coverage visit.</returns>
   let internal RecordingMethod (recordingAssembly : AssemblyDefinition) =
     let other = RecorderInstanceType()
-    let token = other.GetMethod("Visit").MetadataToken
-    recordingAssembly.MainModule.LookupToken(token) :?> MethodDefinition
+    ["Visit"; "Push"; "Pop"]
+    |> List.map (fun n -> let t = other.GetMethod(n).MetadataToken
+                          recordingAssembly.MainModule.LookupToken(t) :?> MethodDefinition)
 
   /// <summary>
   /// Applies a new key to an assembly name
@@ -368,11 +369,11 @@ module Instrument =
          let restate = match included with
                        | true ->
                          let recordingMethod = match state.RecordingMethod with
-                                               | null -> RecordingMethod state.RecordingAssembly
+                                               | [] -> RecordingMethod state.RecordingAssembly
                                                | _ -> state.RecordingMethod
 
                          { state with
-                               RecordingMethodRef = m.ImportReference(recordingMethod);
+                               RecordingMethodRef = recordingMethod |> List.map m.ImportReference
                                RecordingMethod = recordingMethod }
                        | _ -> state
          { restate with ModuleId = match Visitor.ReportFormat() with
@@ -390,7 +391,7 @@ module Instrument =
 
   let private VisitMethodPoint (state : Context) instruction point included =
        if included then // by construction the sequence point is included
-            let instrLoadModuleId = InsertVisit instruction state.MethodWorker state.RecordingMethodRef state.ModuleId point
+            let instrLoadModuleId = InsertVisit instruction state.MethodWorker state.RecordingMethodRef.Head state.ModuleId point
 
             // Change references in operands from "instruction" to first counter invocation instruction (instrLoadModuleId)
             let subs = SubstituteInstruction (instruction, instrLoadModuleId)
