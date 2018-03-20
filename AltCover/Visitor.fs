@@ -128,6 +128,7 @@ module Visitor =
     List.toSeq [ node ]
 
   let mutable private PointNumber : int = 0
+  let mutable private MethodNumber : int = 0
 
   let significant (m : MethodDefinition) =
     [Filter.IsFSharpInternal
@@ -157,7 +158,30 @@ module Visitor =
         |> Seq.collect(fun x -> x.GetAllTypes() |> Seq.cast)
         |> Seq.collect ((fun t -> Type (t, included && IsIncluded t)) >> buildSequence)
 
-  let internal Track _ = None
+  let internal Track (m : MethodDefinition) =
+    let name = m.Name
+    let fullname = m.DeclaringType.FullName.Replace('/','.') + "." + name
+    TrackingNames
+    |> Seq.map(fun n -> if n.Chars(0) = '[' then
+                            let stripped = n.Trim([| '['; ']' |])
+                            let full = if stripped.EndsWith("Attribute", StringComparison.Ordinal)
+                                          then stripped else stripped + "Attribute"
+                            if m.HasCustomAttributes &&
+                                m.CustomAttributes
+                                |> Seq.map(fun a -> a.AttributeType)
+                                |> Seq.tryFind(fun a -> full = a.Name || full = a.FullName)
+                                |> Option.isSome
+                            then Some n
+                            else None
+                        else
+                            if n = name || n = fullname
+                               then Some n
+                            else None)
+    |> Seq.choose id
+    |> Seq.tryFind (fun _ -> true)
+    |> Option.map (fun n -> let id = MethodNumber + 1
+                            MethodNumber <- id
+                            (id, n))
 
   let private VisitType (t:TypeDefinition) included buildSequence =
         t.Methods
@@ -215,6 +239,7 @@ module Visitor =
 
   let internal Visit (visitors : list<Fix<Node>>) (assemblies : seq<string>) =
     PointNumber <- 0
+    MethodNumber <- 0
     Start assemblies
     |> BuildSequence
     |> Seq.fold apply visitors

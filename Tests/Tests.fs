@@ -811,6 +811,91 @@ type AltCoverTests() = class
     Assert.That (accumulator |> Seq.map string,
                  Is.EquivalentTo (expected |> Seq.map string))
 
+  [<Test>]
+  member self.TrackingDetectsTests() =
+    let where = Assembly.GetExecutingAssembly().Location
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
+    let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    ProgramDatabase.ReadSymbols def
+    try
+      Visitor.TrackingNames.Clear()
+      Visitor.TrackingNames.AddRange(["Junk"; "[MoreJunk"; "[Test"])
+      Visitor.Visit [] [] // cheat reset
+      let tracks = def.MainModule.GetAllTypes()
+                   |> Seq.collect (fun t -> t.Methods)
+                   |> Seq.map (Visitor.Track)
+                   |> Seq.choose id
+                   |> Seq.toList
+      Assert.That (tracks, Is.EquivalentTo [ (1, "[Test"); (2, "[Test")])
+
+    finally
+      Visitor.TrackingNames.Clear()
+      Visitor.Visit [] [] // cheat reset
+
+  [<Test>]
+  member self.TrackingDetectsExpectedTests() =
+    let where = Assembly.GetExecutingAssembly().Location
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
+    let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    ProgramDatabase.ReadSymbols def
+    try
+      Visitor.TrackingNames.Clear()
+      Visitor.TrackingNames.AddRange(["Junk"; "[MoreJunk"; "[Test"])
+      Visitor.Visit [] [] // cheat reset
+      let tracks = def.MainModule.GetAllTypes()
+                   |> Seq.collect (fun t -> t.Methods)
+                   |> Seq.filter (fun m -> m |> Visitor.Track |> Option.isSome)
+                   |> Seq.map (fun m-> m.Name)
+                   |> Seq.toList
+      Assert.That (tracks, Is.EquivalentTo [ "testMakeUnion"; "testMakeThing" ])
+
+    finally
+      Visitor.TrackingNames.Clear()
+      Visitor.Visit [] [] // cheat reset
+
+  [<Test>]
+  member self.TrackingDetectsTestsByFullType() =
+    let where = Assembly.GetExecutingAssembly().Location
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
+    let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    ProgramDatabase.ReadSymbols def
+    try
+      Visitor.TrackingNames.Clear()
+      Visitor.TrackingNames.AddRange(["Junk"; "[MoreJunk"; "[NUnit.Framework.TestAttribute]"])
+      Visitor.Visit [] [] // cheat reset
+      let tracks = def.MainModule.GetAllTypes()
+                   |> Seq.collect (fun t -> t.Methods)
+                   |> Seq.map (Visitor.Track)
+                   |> Seq.choose id
+                   |> Seq.toList
+      Assert.That (tracks, Is.EquivalentTo [ (1, "[NUnit.Framework.TestAttribute]")
+                                             (2, "[NUnit.Framework.TestAttribute]")])
+
+    finally
+      Visitor.TrackingNames.Clear()
+      Visitor.Visit [] [] // cheat reset
+
+  [<Test>]
+  member self.TrackingDetectsMethods() =
+    let where = Assembly.GetExecutingAssembly().Location
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
+    let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    ProgramDatabase.ReadSymbols def
+    try
+      Visitor.TrackingNames.Clear()
+      Visitor.TrackingNames.AddRange(["Junk"; "[MoreJunk"; "returnFoo"; "N.DU.MyUnion.as_bar"])
+      Visitor.Visit [] [] // cheat reset
+      let tracks = def.MainModule.GetAllTypes()
+                   |> Seq.collect (fun t -> t.Methods)
+                   |> Seq.map (Visitor.Track)
+                   |> Seq.choose id
+                   |> Seq.toList
+      Assert.That (tracks, Is.EquivalentTo [ (1, "returnFoo"); (2, "N.DU.MyUnion.as_bar")])
+
+    finally
+      Visitor.TrackingNames.Clear()
+      Visitor.Visit [] [] // cheat reset
+
   // Naming.fs
 
   [<Test>]
