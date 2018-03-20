@@ -437,22 +437,18 @@ module Instrument =
             methodWorker.InsertAfter(tail, popper)
             let enfin = methodWorker.Create(OpCodes.Endfinally)
             methodWorker.InsertAfter(popper, enfin)
-            let ldloc = methodWorker.Create(OpCodes.Ldloc_0)
-            methodWorker.InsertAfter(enfin, ldloc)
             let ret = methodWorker.Create(OpCodes.Ret)
-            methodWorker.InsertAfter(ldloc, ret)
+            methodWorker.InsertAfter(enfin, ret)
 
             rets
-            |> Seq.iter (fun i -> let leave = methodWorker.Create(OpCodes.Leave, ldloc)
-                                  methodWorker.Replace (i, leave)
-                                  let store = methodWorker.Create(OpCodes.Stloc_0)
-                                  methodWorker.InsertBefore(leave, store) )
+            |> Seq.iter (fun i -> let leave = methodWorker.Create(OpCodes.Leave, ret)
+                                  methodWorker.Replace (i, leave) )
 
             let handler = ExceptionHandler(ExceptionHandlerType.Finally)
             handler.TryStart <- instructions |> Seq.head
             handler.TryEnd <- popper
             handler.HandlerStart <- popper
-            handler.HandlerEnd <- ldloc
+            handler.HandlerEnd <- ret
             body.ExceptionHandlers.Add handler
 
             let pushMethodCall = methodWorker.Create(OpCodes.Call, state.RecordingMethodRef.Push)
