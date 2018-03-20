@@ -102,6 +102,8 @@ module OpenCover =
           if included then element.Add(XElement(X "Files"))
           let classes = XElement(X "Classes")
           element.Add(classes)
+          if Visitor.TrackingNames |> Seq.isEmpty |> not then
+            element.Add(XElement(X "TrackedMethods"))
           {s with Stack = classes :: s.Stack
                   Excluded = Nothing
                   ModuleSeq = 0
@@ -140,7 +142,6 @@ module OpenCover =
                            XAttribute(X "isSetter", boolString methodDef.IsSetter)))
 
     let VisitMethod  (s : Context) (methodDef:MethodDefinition) included =
-       // TrackedMethod uid token (MetadataToken) name (FullName) strategy (why)
        if s.Excluded = Nothing then
           let cc, element = methodElement methodDef
           if included then element.SetAttributeValue(X "skippedDueTo", null)
@@ -213,10 +214,19 @@ module OpenCover =
         let sp = ``method``.Descendants(X "SequencePoint")
         sp |> Seq.iteri(fun i x -> x.SetAttributeValue(X "ordinal", i))
 
-    let AddTracking _ _ _ = //(s : Context) m t =
-      ()
+    let AddTracking (s : Context) (m:MethodDefinition) t =
+      t |>
+      Option.iter(fun (uid,strategy) ->
+                    let classes = s.Stack |> Seq.skip 2 |> Seq.head
+                    let tracked = classes.Parent.Elements(X "TrackedMethods")
+                    tracked
+                    |> Seq.iter (fun t -> t.Add(XElement(X "TrackedMethod",
+                                                         XAttribute(X "uid", uid),
+                                                         XAttribute(X "token", m.MetadataToken.ToUInt32().ToString()),
+                                                         XAttribute(X "name", m.FullName),
+                                                         XAttribute(X "strategy", strategy)))))
 
-    let VisitAfterMethodIncluded (s : Context) methodDef track =
+    let VisitAfterMethodIncluded (s : Context) =
         let head,tail = Augment.Split s.Stack
         head.Parent.Elements(X "FileRef")
         |> Seq.toList
@@ -236,7 +246,7 @@ module OpenCover =
     let VisitAfterMethod (s : Context) methodDef track =
       AddTracking s methodDef track
       if s.Excluded = Nothing then
-        let tail = VisitAfterMethodIncluded s methodDef track
+        let tail = VisitAfterMethodIncluded s
         {s with Stack = tail
                 ClassSeq = s.ClassSeq + s.MethodSeq
                 MethodCC = limitMethodCC s.MethodSeq s.MethodCC}

@@ -1316,6 +1316,12 @@ Target "ReleaseXUnitFSharpTypesDotNetFullRunner" ( fun _ ->
                                      |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value |> Int32.Parse)
                                      |> Seq.sum
                             Assert.That (vc, Is.EqualTo vx, sp.Value))
+      let tracked = """<TrackedMethods>
+        <TrackedMethod uid="1" token="100663300" name="System.Void Tests.DU::testMakeUnion()" strategy="[Fact]" />
+        <TrackedMethod uid="2" token="100663342" name="System.Void Tests.M::testMakeThing()" strategy="[Fact]" />
+      </TrackedMethods>"""
+      coverageDocument.Descendants(XName.Get("TrackedMethods"))
+      |> Seq.iter (fun x -> Assert.That(x.ToString().Replace("\r\n","\n"), Is.EqualTo <| tracked.Replace("\r\n","\n")))         
 )
 
 // AOB
