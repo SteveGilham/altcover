@@ -1399,8 +1399,8 @@ type AltCoverTests() = class
     let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "AltCover.Recorder.dll")
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
     let recorder = AltCover.Instrument.RecordingMethod def
-    recorder 
-    |> List.zip [ 
+    recorder
+    |> List.zip [
                   "System.Void AltCover.Recorder.Instance.Visit(System.String,System.Int32)"
                   "System.Void AltCover.Recorder.Instance.Push(System.Int32)"
                   "System.Void AltCover.Recorder.Instance.Pop()"
@@ -2230,15 +2230,19 @@ type AltCoverTests() = class
     let state' = { state with RecordingAssembly = def' }
     let result = Instrument.InstrumentationVisitor state' visited
 
-    result.RecordingMethodRef
-    |> List.iter (fun r -> Assert.That (r.Module,
-                                        Is.EqualTo (def.MainModule)))
-    Assert.That (string result.RecordingMethodRef,
-                 visit |> string |> Is.EqualTo)
-    Assert.That ({ result with RecordingMethodRef = []},
+    Assert.That(result.RecordingMethodRef.Visit.Module,
+                                        Is.EqualTo (def.MainModule))
+    Assert.That (string result.RecordingMethodRef.Visit,
+                 visit |> Seq.head |> string |> Is.EqualTo)
+    Assert.That (string result.RecordingMethodRef.Push,
+                 visit |> Seq.skip 1 |> Seq.head |> string |> Is.EqualTo)
+    Assert.That (string result.RecordingMethodRef.Pop,
+                 visit |> Seq.skip 2 |> Seq.head |> string |> Is.EqualTo)
+
+    Assert.That ({ result with RecordingMethodRef = {Visit = null; Push = null; Pop = null}},
                  Is.EqualTo  { state' with ModuleId = def.MainModule.Mvid.ToString()
                                                       RecordingMethod = visit
-                                                      RecordingMethodRef = [] })
+                                                      RecordingMethodRef = {Visit = null; Push = null; Pop = null} })
 
   [<Test>]
   member self.ExcludedMethodPointIsPassThrough () =
@@ -2271,7 +2275,7 @@ type AltCoverTests() = class
     Assert.That (target.Previous, Is.Null)
     let state = { (Instrument.Context.Build []) with MethodWorker = proc
                                                      MethodBody = main.Body
-                                                     RecordingMethodRef = [def.MainModule.ImportReference main]}
+                                                     RecordingMethodRef = {Visit = def.MainModule.ImportReference main; Push = null; Pop = null}}
     let result = Instrument.InstrumentationVisitor state visited
     Assert.That (result, Is.SameAs state)
     Assert.That (target.Previous.OpCode, Is.EqualTo OpCodes.Call)
@@ -2294,20 +2298,22 @@ type AltCoverTests() = class
                 |> Seq.head
     let def'' = Mono.Cecil.AssemblyDefinition.ReadAssembly where
 
+    let v = def''.MainModule.ImportReference visit
+    let r = {Instrument.RecorderRefs.Build() with Visit = v; Push = v; Pop = v}
     let state' = { state with RecordingAssembly = def'
-                              RecordingMethod = [visit]
-                              RecordingMethodRef = [def''.MainModule.ImportReference visit]}
+                              RecordingMethod = [visit;visit;visit]
+                              RecordingMethodRef = r}
     let result = Instrument.InstrumentationVisitor state' visited
     let ref'' = def.MainModule.ImportReference visit
 
-    Assert.That (result.RecordingMethodRef.Head.Module,
+    Assert.That (result.RecordingMethodRef.Visit.Module,
                 Is.EqualTo ( def.MainModule))
     Assert.That (string result.RecordingMethodRef,
-                Is.EqualTo (string [visit]))
-    Assert.That ({ result with RecordingMethodRef = [null]},
+                Is.EqualTo (string r))
+    Assert.That ({ result with RecordingMethodRef = Instrument.RecorderRefs.Build()},
                  Is.EqualTo  { state' with ModuleId = def.MainModule.Mvid.ToString()
-                                                      RecordingMethod = [visit]
-                                                      RecordingMethodRef = [null] })
+                                                      RecordingMethod = [visit;visit;visit]
+                                                      RecordingMethodRef = Instrument.RecorderRefs.Build()})
 
   [<Test>]
   member self.AfterModuleShouldNotChangeState () =

@@ -21,7 +21,10 @@ open Newtonsoft.Json.Linq
 /// Module to handle instrumentation visitor
 /// </summary>
 module Instrument =
-
+  type internal RecorderRefs = { Visit : MethodReference
+                                 Push : MethodReference
+                                 Pop : MethodReference }
+  with static member Build () = { Visit = null; Push = null; Pop = null }
   /// <summary>
   /// State object passed from visit to visit
   /// </summary>
@@ -30,7 +33,7 @@ module Instrument =
                             ModuleId : String
                             RecordingAssembly : AssemblyDefinition
                             RecordingMethod : MethodDefinition list // initialised once
-                            RecordingMethodRef : MethodReference list // updated each module
+                            RecordingMethodRef : RecorderRefs // updated each module
                             MethodBody : MethodBody
                             MethodWorker : ILProcessor } // to save fetching repeatedly
   with static member Build assemblies =
@@ -38,7 +41,7 @@ module Instrument =
                       ModuleId = String.Empty
                       RecordingAssembly = null
                       RecordingMethod = []
-                      RecordingMethodRef = []
+                      RecordingMethodRef = RecorderRefs.Build()
                       MethodBody = null
                       MethodWorker = null }
 
@@ -168,7 +171,7 @@ module Instrument =
                             |> Seq.head
 
         let body = pathGetterDef.Body
-        let worker = body.GetILProcessor();
+        let worker = body.GetILProcessor()
         let initialBody = body.Instructions |> Seq.toList
         let head = initialBody |> Seq.head
         worker.InsertBefore(head, worker.Create(OpCodes.Ldstr, value))
@@ -187,7 +190,7 @@ module Instrument =
                             |> Seq.head
 
         let body = pathGetterDef.Body
-        let worker = body.GetILProcessor();
+        let worker = body.GetILProcessor()
         let initialBody = body.Instructions |> Seq.toList
         let head = initialBody |> Seq.head
         worker.InsertBefore(head, worker.Create(OpCodes.Ldc_I4, value))
@@ -206,7 +209,7 @@ module Instrument =
                             |> Seq.head
 
         let body = pathGetterDef.Body
-        let worker = body.GetILProcessor();
+        let worker = body.GetILProcessor()
         let initialBody = body.Instructions |> Seq.toList
         let head = initialBody |> Seq.head
         worker.InsertBefore(head, worker.Create(OpCodes.Ldc_I4, value))
@@ -307,13 +310,13 @@ module Instrument =
       | _ -> ()
 
   let internal InsertVisit (instruction:Instruction) (methodWorker:ILProcessor) (recordingMethodRef:MethodReference) (moduleId:string) (point:int) =
-      let counterMethodCall = methodWorker.Create(OpCodes.Call, recordingMethodRef);
+      let counterMethodCall = methodWorker.Create(OpCodes.Call, recordingMethodRef)
       let instrLoadModuleId = methodWorker.Create(OpCodes.Ldstr, moduleId)
-      let instrLoadPointId = methodWorker.Create(OpCodes.Ldc_I4, point);
+      let instrLoadPointId = methodWorker.Create(OpCodes.Ldc_I4, point)
 
-      methodWorker.InsertBefore(instruction, instrLoadModuleId);
-      methodWorker.InsertAfter(instrLoadModuleId, instrLoadPointId);
-      methodWorker.InsertAfter(instrLoadPointId, counterMethodCall);
+      methodWorker.InsertBefore(instruction, instrLoadModuleId)
+      methodWorker.InsertAfter(instrLoadModuleId, instrLoadPointId)
+      methodWorker.InsertAfter(instrLoadPointId, counterMethodCall)
       instrLoadModuleId
 
   /// <summary>
@@ -371,9 +374,9 @@ module Instrument =
                          let recordingMethod = match state.RecordingMethod with
                                                | [] -> RecordingMethod state.RecordingAssembly
                                                | _ -> state.RecordingMethod
-
+                         let refs = recordingMethod |> List.map m.ImportReference
                          { state with
-                               RecordingMethodRef = recordingMethod |> List.map m.ImportReference
+                               RecordingMethodRef = { Visit = refs.[0]; Push = refs.[1]; Pop = refs.[2] }
                                RecordingMethod = recordingMethod }
                        | _ -> state
          { restate with ModuleId = match Visitor.ReportFormat() with
@@ -385,13 +388,13 @@ module Instrument =
          | true ->
            let body = m.Body
            { state with
-              MethodBody = body;
+              MethodBody = body
               MethodWorker = body.GetILProcessor() }
          | _ -> state
 
   let private VisitMethodPoint (state : Context) instruction point included =
        if included then // by construction the sequence point is included
-            let instrLoadModuleId = InsertVisit instruction state.MethodWorker state.RecordingMethodRef.Head state.ModuleId point
+            let instrLoadModuleId = InsertVisit instruction state.MethodWorker state.RecordingMethodRef.Visit state.ModuleId point
 
             // Change references in operands from "instruction" to first counter invocation instruction (instrLoadModuleId)
             let subs = SubstituteInstruction (instruction, instrLoadModuleId)
@@ -416,7 +419,47 @@ module Instrument =
 #endif
                  state
 
-  let internal Track _ _ = ()
+  let internal Track state (m:MethodDefinition) included (track:(int*string) option) =
+    track
+    |> Option.iter (fun (n,_) ->
+            let body = if included then state.MethodBody else m.Body
+            let instructions = body.Instructions
+            let methodWorker = body.GetILProcessor()
+
+            let nop = methodWorker.Create(OpCodes.Nop)
+
+            let rets = instructions
+                       |> Seq.filter (fun i -> i.OpCode = OpCodes.Ret)
+                       |> Seq.toList
+
+            let tail = instructions |> Seq.last
+            let popper = methodWorker.Create(OpCodes.Call, state.RecordingMethodRef.Pop)
+            methodWorker.InsertAfter(tail, popper)
+            let enfin = methodWorker.Create(OpCodes.Endfinally)
+            methodWorker.InsertAfter(popper, enfin)
+            let ldloc = methodWorker.Create(OpCodes.Ldloc_0)
+            methodWorker.InsertAfter(enfin, ldloc)
+            let ret = methodWorker.Create(OpCodes.Ret)
+            methodWorker.InsertAfter(ldloc, ret)
+
+            rets
+            |> Seq.iter (fun i -> let leave = methodWorker.Create(OpCodes.Leave, ldloc)
+                                  methodWorker.Replace (i, leave)
+                                  let store = methodWorker.Create(OpCodes.Stloc_0)
+                                  methodWorker.InsertBefore(leave, store) )
+
+            let handler = ExceptionHandler(ExceptionHandlerType.Finally)
+            handler.TryStart <- instructions |> Seq.head
+            handler.TryEnd <- popper
+            handler.HandlerStart <- popper
+            handler.HandlerEnd <- ldloc
+            body.ExceptionHandlers.Add handler
+
+            let pushMethodCall = methodWorker.Create(OpCodes.Call, state.RecordingMethodRef.Push)
+            let instrLoadId = methodWorker.Create(OpCodes.Ldc_I4, n)
+            methodWorker.InsertBefore (handler.TryStart, pushMethodCall)
+            methodWorker.InsertBefore(pushMethodCall, instrLoadId)
+        )
             (*
     // Instance.Push(666);
     IL_0000: ldc.i4 666
@@ -452,7 +495,7 @@ IL_0032: ret
         body.SimplifyMacros()
         // changes "long" conditional operators to their short representation where possible
         body.OptimizeMacros()
-    Track m track
+    Track state m included track
     state
 
   /// <summary>
