@@ -197,6 +197,7 @@ module Runner =
 
   let internal PostProcess (counts:Dictionary<string, Dictionary<int, int  * Base.Track list>>) format (document:XmlDocument) =
     match format with
+    | Base.ReportFormat.OpenCoverWithTracking
     | Base.ReportFormat.OpenCover ->
         let updateMethod (dict:Dictionary<int, int * Base.Track list>) (vs, vm, pt) (``method``:XmlElement) =
             let sp = ``method``.GetElementsByTagName("SequencePoint")

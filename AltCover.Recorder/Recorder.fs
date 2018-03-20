@@ -188,7 +188,7 @@ module Instance =
     mailbox.CurrentQueueLength
 
   let private IsOpenCoverRunner() =
-     (CoverageFormat = ReportFormat.OpenCover) &&
+     (CoverageFormat = ReportFormat.OpenCoverWithTracking) &&
        ((trace.Definitive && trace.Runner) ||
         (ReportFile <> "Coverage.Default.xml" && System.IO.File.Exists (ReportFile + ".acv")))
 

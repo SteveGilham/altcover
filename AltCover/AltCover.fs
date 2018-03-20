@@ -183,6 +183,7 @@ module Main =
                                          (CommandLine.resources.GetString "reportingto"),
                                          Visitor.ReportPath())
         let reporter, document = match Visitor.ReportFormat() with
+                                 | ReportFormat.OpenCoverWithTracking
                                  | ReportFormat.OpenCover -> OpenCover.ReportGenerator ()
                                  | _ -> Report.ReportGenerator ()
         let visitors = [ reporter ; Instrument.InstrumentGenerator assemblyNames ]

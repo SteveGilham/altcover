@@ -10,7 +10,7 @@ open System.Globalization
 open System.IO
 open System.Xml
 
-type ReportFormat = NCover = 0 | OpenCover = 1
+type ReportFormat = NCover = 0 | OpenCover = 1 | OpenCoverWithTracking = 2
 
 [<System.Runtime.InteropServices.ProgIdAttribute("ExcludeFromCodeCoverage hack for OpenCover issue 615")>]
 type internal Track =
@@ -86,6 +86,7 @@ module Counter =
                                      System.Diagnostics.FileVersionInfo.GetVersionInfo(System.Reflection.Assembly.GetExecutingAssembly().Location).FileVersion)
 
     let (m, i, m', s, v) = match format with
+                           | ReportFormat.OpenCoverWithTracking
                            | ReportFormat.OpenCover -> ("//Module", "hash", "Classes/Class/Methods/Method", "SequencePoints/SequencePoint", "vc")
                            | _ -> ("//module", "moduleId", "method", "seqpnt", "visitcount")
     coverageDocument.SelectNodes(m)
@@ -106,6 +107,7 @@ module Counter =
                                                         |> Seq.cast<XmlElement>
                                                         |> Seq.toList |> List.rev)
         |> Seq.mapi (fun counter pt -> ((match format with
+                                        | ReportFormat.OpenCoverWithTracking
                                         | ReportFormat.OpenCover -> "uspid" |> pt.GetAttribute |> FindIndexFromUspid
                                         | _ -> counter),
                                         pt))

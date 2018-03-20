@@ -1688,7 +1688,7 @@ type AltCoverTests() = class
           let report = proxyObject.InvokeMethod("get_ReportFile",[||]).ToString()
           Assert.That (report, Is.EqualTo (Path.GetFullPath unique))
           let report2 = proxyObject.InvokeMethod("get_CoverageFormat",[||]) :?> System.Int32
-          Assert.That (report2, AltCover.Base.ReportFormat.OpenCover |> int |> Is.EqualTo)
+          Assert.That (report2, AltCover.Base.ReportFormat.OpenCoverWithTracking |> int |> Is.EqualTo)
           let report3 = proxyObject.InvokeMethod("get_Timer",[||]) :?> System.Int64
           Assert.That (report3, 1234567890L |> Is.EqualTo)
         finally

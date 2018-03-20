@@ -380,6 +380,7 @@ module Instrument =
                                RecordingMethod = recordingMethod }
                        | _ -> state
          { restate with ModuleId = match Visitor.ReportFormat() with
+                                   | AltCover.Base.ReportFormat.OpenCoverWithTracking
                                    | AltCover.Base.ReportFormat.OpenCover -> KeyStore.HashFile m.FileName
                                    | _ -> m.Mvid.ToString() }
 

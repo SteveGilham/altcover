@@ -106,13 +106,17 @@ module Visitor =
   let defaultReportPath = "coverage.xml"
   let ReportPath () = Path.GetFullPath (Option.getOrElse defaultReportPath reportPath)
 
-  let mutable internal reportFormat : Option<ReportFormat> = None
-  let defaultReportFormat = ReportFormat.NCover
-  let ReportFormat () = (Option.getOrElse defaultReportFormat reportFormat)
-
   let mutable internal interval : Option<int> = None
   let defaultInterval = 0
   let Interval () = (Option.getOrElse defaultInterval interval)
+
+  let mutable internal reportFormat : Option<ReportFormat> = None
+  let defaultReportFormat = ReportFormat.NCover
+  let ReportFormat () = let fmt = (Option.getOrElse defaultReportFormat reportFormat)
+                        if fmt = ReportFormat.OpenCover &&
+                                 (TrackingNames.Any() || Interval() > 0) then
+                                 ReportFormat.OpenCoverWithTracking
+                        else fmt
 
   let mutable internal defaultStrongNameKey : option<StrongNameKeyPair> = None
   let internal keys = new Dictionary<UInt64, KeyRecord>()
