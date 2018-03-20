@@ -1218,6 +1218,7 @@ type AltCoverTests() = class
     let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), sample1)
 
     try
+        Visitor.NameFilters.Clear()
         Visitor.Visit [ visitor ] (Visitor.ToSeq path)
         let resource = Assembly.GetExecutingAssembly().GetManifestResourceNames()
                          |> Seq.find (fun n -> n.EndsWith("Sample1WithOpenCover.xml", StringComparison.Ordinal))
@@ -1230,6 +1231,40 @@ type AltCoverTests() = class
         AltCoverTests.RecursiveValidateOpenCover result expected 0 true false
     finally
       Visitor.NameFilters.Clear()
+
+  [<Test>]
+  member self.ShouldGenerateExpectedXmlReportFromDotNetOpenCoverStyleWithTracking() =
+    let visitor, document = OpenCover.ReportGenerator()
+    // Hack for running while instrumented
+    let where = Assembly.GetExecutingAssembly().Location
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), sample1)
+
+    try
+        Visitor.NameFilters.Clear()
+        Visitor.TrackingNames.Clear()
+        Visitor.TrackingNames.Add("Main")
+        Visitor.Visit [ visitor ] (Visitor.ToSeq path)
+        let resource = Assembly.GetExecutingAssembly().GetManifestResourceNames()
+                         |> Seq.find (fun n -> n.EndsWith("Sample1WithOpenCover.xml", StringComparison.Ordinal))
+
+        use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
+
+        let baseline = XDocument.Load(stream)
+        let tail = baseline.Descendants(XName.Get "Module") |> Seq.last
+        let tracked = XElement(XName.Get "TrackedMethods")
+        tail.Add(tracked)
+        tracked.Add(XElement(XName.Get "TrackedMethod",
+                                XAttribute(XName.Get "uid", "1"),
+                                XAttribute(XName.Get "token", "100663297"),
+                                XAttribute(XName.Get "name", "System.Void TouchTest.Program::Main(System.String[])"),
+                                XAttribute(XName.Get "strategy", "Main")))
+
+        let result = document.Elements()
+        let expected = baseline.Elements()
+        AltCoverTests.RecursiveValidateOpenCover result expected 0 true false
+    finally
+      Visitor.NameFilters.Clear()
+      Visitor.TrackingNames.Clear()
 
   [<Test>]
   member self.ShouldGenerateExpectedXmlReportWithModuleExclusionOpenCoverStyle() =
