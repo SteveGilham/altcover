@@ -78,11 +78,11 @@ module Instance =
   /// <summary>
   /// Gets or sets the current test method
   /// </summary>
-  type private CallStack = 
+  type private CallStack =
     [<ThreadStatic;DefaultValue>]
     static val mutable private instance:Option<CallStack>
-    
-    val mutable private caller:int list 
+
+    val mutable private caller:int list
     private new (x:int) = {caller = [x]}
 
     static member Instance =
@@ -95,7 +95,7 @@ module Instance =
     member self.Push x =  self.caller <- x :: self.caller
                           //let s = sprintf "push %d -> %A" x self.caller
                           //System.Diagnostics.Debug.WriteLine(s)
-                
+
     member self.Pop () = self.caller <- match self.caller with
                                          | []
                                          | [0] -> [0]
