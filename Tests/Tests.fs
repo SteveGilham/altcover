@@ -1628,6 +1628,33 @@ type AltCoverTests() = class
     finally
       Visitor.keys.Clear()
 
+  [<Test>]
+  member self.ShouldGetTrackingStyleIfSet () =
+      let save2 = Visitor.reportFormat
+      let save3 = Visitor.interval
+      Visitor.TrackingNames.Clear()
+      try
+        Visitor.reportFormat <- Some AltCover.Base.ReportFormat.OpenCover
+        Visitor.interval <- Some 1234567890
+        Assert.That (Visitor.ReportFormat(), Is.EqualTo AltCover.Base.ReportFormat.OpenCoverWithTracking)
+        Visitor.interval <- None
+        Visitor.TrackingNames.Add("dummy")
+        Assert.That (Visitor.ReportFormat(), Is.EqualTo AltCover.Base.ReportFormat.OpenCoverWithTracking)
+        Visitor.TrackingNames.Clear()
+        Assert.That (Visitor.ReportFormat(), Is.EqualTo AltCover.Base.ReportFormat.OpenCover)
+        Visitor.reportFormat <- Some AltCover.Base.ReportFormat.NCover
+        Visitor.interval <- Some 1234567890
+        Assert.That (Visitor.ReportFormat(), Is.EqualTo AltCover.Base.ReportFormat.NCover)
+        Visitor.interval <- None
+        Visitor.TrackingNames.Add("dummy")
+        Assert.That (Visitor.ReportFormat(), Is.EqualTo AltCover.Base.ReportFormat.NCover)
+        Visitor.TrackingNames.Clear()
+        Assert.That (Visitor.ReportFormat(), Is.EqualTo AltCover.Base.ReportFormat.NCover)
+      finally
+        Visitor.reportFormat <- save2
+        Visitor.interval <- save3
+      Visitor.TrackingNames.Clear()
+
 #if NETCOREAPP2_0
 // TODO
 #else
@@ -1986,6 +2013,39 @@ type AltCoverTests() = class
                                    let before = i.Operand
                                    subject.SubstituteInstructionOperand i
                                    Assert.That (i.Operand, Is.SameAs before))
+
+  [<Test>]
+  member self.ShouldBeAbleToTrackAMethod () =
+    let where = Assembly.GetExecutingAssembly().Location
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "AltCover.Recorder.dll")
+    let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    let recorder = AltCover.Instrument.RecordingMethod def
+    let raw = AltCover.Instrument.Context.Build([])
+    let state = {  raw with
+                    RecordingMethodRef = { raw.RecordingMethodRef with
+                                             Visit = null
+                                             Push = recorder.[1]
+                                             Pop = recorder.[2] }}
+    let countBefore = recorder.Head.Body.Instructions.Count
+    let handlersBefore = recorder.Head.Body.ExceptionHandlers.Count
+
+    AltCover.Instrument.Track state recorder.Head false <| Some(42, "hello")
+    Assert.That (recorder.Head.Body.Instructions.Count, Is.EqualTo (countBefore + 5))
+    Assert.That (recorder.Head.Body.ExceptionHandlers.Count, Is.EqualTo (handlersBefore + 1))
+
+  [<Test>]
+  member self.ShouldNotChangeAnUntrackedMethod () =
+    let where = Assembly.GetExecutingAssembly().Location
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "AltCover.Recorder.dll")
+    let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    let recorder = AltCover.Instrument.RecordingMethod def
+    let state = AltCover.Instrument.Context.Build([])
+    let countBefore = recorder.Head.Body.Instructions.Count
+    let handlersBefore = recorder.Head.Body.ExceptionHandlers.Count
+
+    AltCover.Instrument.Track state recorder.Head false None
+    Assert.That (recorder.Head.Body.Instructions.Count, Is.EqualTo countBefore)
+    Assert.That (recorder.Head.Body.ExceptionHandlers.Count, Is.EqualTo handlersBefore)
 
   [<Test>]
   member self.StartShouldLoadRecordingAssembly () =

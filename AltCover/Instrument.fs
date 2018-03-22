@@ -11,7 +11,6 @@ open System.IO
 open System.Reflection
 open System.Resources
 
-open AltCover.Augment
 open Mono.Cecil
 open Mono.Cecil.Cil
 open Mono.Cecil.Rocks
@@ -21,6 +20,7 @@ open Newtonsoft.Json.Linq
 /// Module to handle instrumentation visitor
 /// </summary>
 module Instrument =
+  [<ExcludeFromCodeCoverage>]
   type internal RecorderRefs = { Visit : MethodReference
                                  Push : MethodReference
                                  Pop : MethodReference }
