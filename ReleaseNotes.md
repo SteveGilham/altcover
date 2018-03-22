@@ -1,4 +1,7 @@
-**NOTE:** The main executable links the still in beta (after more than a year) Mono.Cecil 0.10 version.  The binary injected into the instrumented code does not.  Rather than hold my releases on the Mono.Cecil schedule, I make this disclaimer instead.
+**NOTE:** The main executable still links the Mono.Cecil 0.10-beta7 version, as the 0.10 final version causes issues with some build tools that haven't caught up with events.  The binary injected into the instrumented code does not link Cecil at all.  Until the wrinkles are ironed out or worked around, I make this disclaimer instead.
+
+# 2.0.xxx
+* `-c|callContext` option to track what led to a particular line of code being visited -- either by being called from a method of a specified name or with a specified attribute (unit testing, in the main), or by time of visit (which would be more appropriate for system testing).  This release is the first phase of implementation, in which any specified methods have also to be included for coverage instrumentation themselves -- in particular excluding your unit test assemblies with the `-e` option currently means that they won't generate tracking
 
 # 2.0.330  (Byakko series release 4)
 * "y|symbolDirectory=" option to provide other locations to find symbols for the instrumented assemblies.  The search order goes -- location in the debug header, co-located (.pdb then .mdb), then supplied locations tested in order for .pdb then .mdb
