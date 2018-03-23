@@ -158,7 +158,7 @@ type AltCoverTests() = class
     match probed with
     | Time probe ->
       Assert.That(probe % 1000L, Is.EqualTo 0L)
-      Assert.That(probe, Is.LessThan v2)
+      Assert.That(probe, Is.LessThanOrEqualTo v2)
       Assert.That(probe, Is.GreaterThanOrEqualTo (1000L*(v1/1000L)))
     | _ -> Assert.Fail()
     Assert.That (Instance.CallerId(), Is.EqualTo 0)
