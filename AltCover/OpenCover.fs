@@ -144,6 +144,17 @@ module OpenCover =
                            XAttribute(X "isGetter", boolString methodDef.IsGetter),
                            XAttribute(X "isSetter", boolString methodDef.IsSetter)))
 
+    let addMethodContent (element:XElement) (methodDef:MethodDefinition) =
+        element.Add(Summary())
+        element.Add(XElement(X "MetadataToken", methodDef.MetadataToken.ToUInt32().ToString()))
+        element.Add(XElement(X "Name", methodDef.FullName))
+        element.Add(XElement(X "FileRef"))
+        let seqpnts = XElement(X "SequencePoints")
+        element.Add(seqpnts)
+        element.Add(XElement(X "BranchPoints"))
+        element.Add(XElement(X "MethodPoint"))
+        seqpnts
+
     let VisitMethod  (s : Context) (methodDef:MethodDefinition) included =
       if s.Excluded = Nothing && included <> Inspect.TrackOnly then
         let instrumented = Visitor.IsInstrumented included
@@ -151,15 +162,7 @@ module OpenCover =
         if instrumented then element.SetAttributeValue(X "skippedDueTo", null)
         let head = s.Stack |> Seq.head
         head.Add element
-        let seqpnts = (fun () -> element.Add(Summary())
-                                 element.Add(XElement(X "MetadataToken", methodDef.MetadataToken.ToUInt32().ToString()))
-                                 element.Add(XElement(X "Name", methodDef.FullName))
-                                 element.Add(XElement(X "FileRef"))
-                                 let seqpnts = XElement(X "SequencePoints")
-                                 element.Add(seqpnts)
-                                 element.Add(XElement(X "BranchPoints"))
-                                 element.Add(XElement(X "MethodPoint"))
-                                 seqpnts) ()
+        let seqpnts = addMethodContent element methodDef
         {s with Stack = if instrumented then seqpnts :: s.Stack else s.Stack
                 Excluded = if instrumented then Nothing else Method
                 Index = -1
