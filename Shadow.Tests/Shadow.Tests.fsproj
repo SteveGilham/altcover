@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\NUnit.3.10.1\build\NUnit.props" Condition="Exists('..\packages\NUnit.3.10.1\build\NUnit.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -66,7 +67,7 @@
     <Compile Include="..\_Generated\AssemblyVersion.fs">
       <Link>AssemblyVersion.fs</Link>
     </Compile>
-    <Compile Include="Tracer.fs" />
+    <Compile Include="Tracer.Tests.fs" />
     <Compile Include="Shadow.Tests.fs" />
     <Content Include="packages.config" />
     <EmbeddedResource Include="SimpleCoverage.xml" />
@@ -78,18 +79,21 @@
     </Reference>
     <Reference Include="mscorlib" />
     <Reference Include="nunit.framework">
-      <HintPath>..\packages\NUnit.3.9.0\lib\net45\nunit.framework.dll</HintPath>
+      <HintPath>..\packages\NUnit.3.10.1\lib\net45\nunit.framework.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Numerics" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\AltCover.Recorder\AltCover.Shadow.fsproj">
       <Name>AltCover.Shadow</Name>
       <Project>{62480be3-4479-4a47-a23f-50858ecd74b3}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\Shadow.Adapter\Shadow.Adapter.fsproj">
+      <Name>Shadow.Adapter</Name>
+      <Project>{24bfb835-2dac-45d4-afda-f9c2f13b41dd}</Project>
       <Private>True</Private>
     </ProjectReference>
     <ProjectReference Include="..\Shadow.Tests2\Shadow.Tests2.fsproj">

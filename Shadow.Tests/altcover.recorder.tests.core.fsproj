@@ -19,7 +19,7 @@
 
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
-    <Compile Include="Tracer.fs" />
+    <Compile Include="Tracer.Tests.fs" />
     <Compile Include="Shadow.Tests.fs" />
     <Compile Include="Program.fs" />    
   </ItemGroup>
@@ -33,13 +33,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.6.0" />
-    <PackageReference Include="NUnit" Version="3.9.0" />
-    <PackageReference Include="NUnit3TestAdapter" Version="3.9.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.6.1" />
+    <PackageReference Include="NUnit" Version="3.10.1" />
+    <PackageReference Include="NUnit3TestAdapter" Version="3.10.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\AltCover.Shadow\altcover.shadow.core.fsproj" />
+    <ProjectReference Include="..\Shadow.Adapter\altcover.adapter.core.fsproj" />
   </ItemGroup>
 
   <ItemGroup>

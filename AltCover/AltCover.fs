@@ -88,6 +88,19 @@ module Main =
       ("a|attributeFilter=",
        (fun x -> x.Split([|";"|], StringSplitOptions.RemoveEmptyEntries)
                  |> Seq.iter (Regex >> FilterClass.Attribute >> Visitor.NameFilters.Add)))
+      ("c|callContext=",
+       (fun x -> if not (String.IsNullOrWhiteSpace x) then
+                   let k = x.Trim()
+                   if Char.IsDigit <| k.Chars(0) then
+                    if Option.isSome Visitor.interval || k.Length > 1 then
+                      CommandLine.error <- true
+                    else
+                      let (ok, n) = Int32.TryParse(k)
+                      Visitor.interval <- Some (pown 10 (7 - n))
+                      CommandLine.error <- (not ok)  || CommandLine.error
+                   else
+                      Visitor.TrackingNames.Add(k)
+                 else CommandLine.error <- true))
       ("opencover",
        (fun _ ->  if Option.isSome Visitor.reportFormat then
                       CommandLine.error <- true
@@ -144,7 +157,8 @@ module Main =
            ImageLoadResilient(fun () ->
              let def = AssemblyDefinition.ReadAssembly(fullName)
              let assemblyPdb = ProgramDatabase.GetPdbWithFallback def
-             if Visitor.IsIncluded def && Option.isSome assemblyPdb then
+             if def |> Visitor.IsIncluded |> Visitor.IsInstrumented &&
+                Option.isSome assemblyPdb then
                 (fullName, def.Name.Name) :: accumulator
              else
                 accumulator) (fun () -> accumulator)
@@ -169,7 +183,7 @@ module Main =
         CommandLine.WriteOut <| String.Format(CultureInfo.CurrentCulture,
                                          (CommandLine.resources.GetString "reportingto"),
                                          Visitor.ReportPath())
-        let reporter, document = match Visitor.ReportFormat() with
+        let reporter, document = match Visitor.ReportKind() with
                                  | ReportFormat.OpenCover -> OpenCover.ReportGenerator ()
                                  | _ -> Report.ReportGenerator ()
         let visitors = [ reporter ; Instrument.InstrumentGenerator assemblyNames ]

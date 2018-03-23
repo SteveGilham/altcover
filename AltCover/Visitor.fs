@@ -19,19 +19,29 @@ open Mono.Cecil
 open Mono.Cecil.Cil
 open Mono.Cecil.Rocks
 
+[<Flags>]
+type Inspect = Ignore = 0 | Instrument = 1 | Track = 2 | TrackOnly = 4
+
 [<ExcludeFromCodeCoverage>]
 type internal Node =
      | Start of seq<string>
-     | Assembly of AssemblyDefinition * ISymbolReader option * bool
-     | Module of ModuleDefinition * ISymbolReader option * bool
-     | Type of TypeDefinition * ISymbolReader option  * bool
-     | Method of MethodDefinition * MethodDebugInformation option * bool
+     | Assembly of AssemblyDefinition * Inspect
+     | Module of ModuleDefinition * Inspect
+     | Type of TypeDefinition * Inspect
+     | Method of MethodDefinition * Inspect * (int * string) option
      | MethodPoint of Instruction * SequencePoint option * int * bool
-     | AfterMethod of bool
+     | AfterMethod of MethodDefinition * Inspect * (int * string) option
      | AfterType
      | AfterModule
      | AfterAssembly of AssemblyDefinition
      | Finish
+with member this.After () = (match this with
+                             | Start _ -> [Finish]
+                             | Assembly (a, _) -> [AfterAssembly a]
+                             | Module _ -> [AfterModule]
+                             | Type _ -> [AfterType]
+                             | Method (m,included, track) -> [AfterMethod (m,included, track)]
+                             | _ -> []) |> List.toSeq
 
 [<ExcludeFromCodeCoverage>]
 type KeyRecord = {
@@ -82,8 +92,9 @@ module KeyStore =
 type Fix<'T> = delegate of 'T -> Fix<'T>
 
 module Visitor =
+  let internal TrackingNames = new List<String>()
 
-  let internal NameFilters = new List<FilterClass>();
+  let internal NameFilters = new List<FilterClass>()
   let private specialCaseFilters = [ @"^CompareTo\$cont\@\d+\-?\d$" |> Regex |> FilterClass.Method ]
 
   let mutable internal inputDirectory : Option<string> = None
@@ -98,9 +109,18 @@ module Visitor =
   let defaultReportPath = "coverage.xml"
   let ReportPath () = Path.GetFullPath (Option.getOrElse defaultReportPath reportPath)
 
+  let mutable internal interval : Option<int> = None
+  let defaultInterval = 0
+  let Interval () = (Option.getOrElse defaultInterval interval)
+
   let mutable internal reportFormat : Option<ReportFormat> = None
   let defaultReportFormat = ReportFormat.NCover
-  let ReportFormat () = (Option.getOrElse defaultReportFormat reportFormat)
+  let ReportKind () = (Option.getOrElse defaultReportFormat reportFormat)
+  let ReportFormat () = let fmt = ReportKind()
+                        if fmt = ReportFormat.OpenCover &&
+                                 (TrackingNames.Any() || Interval() > 0) then
+                                 ReportFormat.OpenCoverWithTracking
+                        else fmt
 
   let mutable internal defaultStrongNameKey : option<StrongNameKeyPair> = None
   let internal keys = new Dictionary<UInt64, KeyRecord>()
@@ -110,21 +130,23 @@ module Visitor =
     keys.[index] <- KeyStore.KeyToRecord key
 
   let IsIncluded (nameProvider:Object) =
-    not (NameFilters |> Seq.exists (Filter.Match nameProvider))
+    if (NameFilters |> Seq.exists (Filter.Match nameProvider))
+    then Inspect.Ignore
+    else Inspect.Instrument
+
+  let Mask = ~~~Inspect.Instrument
+
+  let UpdateInspection before x =
+    (before &&& Mask) |||
+    (before &&& Inspect.Instrument &&& IsIncluded x)
+
+  let IsInstrumented x = (x &&& Inspect.Instrument) = Inspect.Instrument
 
   let ToSeq node =
     List.toSeq [ node ]
 
-  let internal After node =
-    match node with
-    | Start _ -> ToSeq Finish
-    | Assembly (a,_,_) -> AfterAssembly a |> ToSeq
-    | Module _ -> AfterModule |> ToSeq
-    | Type _ -> AfterType |> ToSeq
-    | Method (_,_,included) -> AfterMethod included |> ToSeq
-    | _ -> Seq.empty<Node>
-
   let mutable private PointNumber : int = 0
+  let mutable private MethodNumber : int = 0
 
   let significant (m : MethodDefinition) =
     [Filter.IsFSharpInternal
@@ -138,73 +160,106 @@ module Visitor =
   let private StartVisit (paths:seq<string>) buildSequence =
         paths
         |> Seq.collect (AssemblyDefinition.ReadAssembly >>
-                        (fun x -> let included = IsIncluded x
-                                  let reader = if included then ProgramDatabase.ReadSymbols(x)
-                                                            else None
-                                  Assembly(x, reader, included)) >> buildSequence)
+                        (fun x -> // Reject completely if filtered here
+                                  let inspection = IsIncluded x
+                                  let included = inspection |||
+                                                 if inspection = Inspect.Instrument &&
+                                                    ReportFormat() = Base.ReportFormat.OpenCoverWithTracking
+                                                 then Inspect.Track
+                                                 else Inspect.Ignore
+                                  ProgramDatabase.ReadSymbols(x)
+                                  Assembly(x, included)) >> buildSequence)
 
-  let private VisitAssembly (a:AssemblyDefinition) reader included buildSequence =
+  let private VisitAssembly (a:AssemblyDefinition) included buildSequence =
         a.Modules
         |> Seq.cast
-        |> Seq.filter IsIncluded
-        |> Seq.collect ((fun x -> Module (x, reader, included)) >> buildSequence)
+        |> Seq.collect ((fun x -> let interim = UpdateInspection included x
+                                  Module (x, if interim = Inspect.Track
+                                             then Inspect.TrackOnly
+                                             else interim )) >> buildSequence)
 
-  let private VisitModule (x:ModuleDefinition) reader included buildSequence =
+  let private VisitModule (x:ModuleDefinition) included buildSequence =
         PointNumber <- 0
-        x.GetAllTypes()
-        |> Seq.cast
-        |> Seq.collect ((fun t -> Type (t, reader, included && IsIncluded t)) >> buildSequence)
+        [x]
+        |> Seq.takeWhile (fun _ -> included <> Inspect.Ignore)
+        |> Seq.collect(fun x -> x.GetAllTypes() |> Seq.cast)
+        |> Seq.collect ((fun t -> Type (t, UpdateInspection included t)) >> buildSequence)
 
-  let private VisitType (t:TypeDefinition) (reader:ISymbolReader option) included buildSequence =
+  let internal Track (m : MethodDefinition) =
+    let name = m.Name
+    let fullname = m.DeclaringType.FullName.Replace('/','.') + "." + name
+    TrackingNames
+    |> Seq.map(fun n -> if n.Chars(0) = '[' then
+                            let stripped = n.Trim([| '['; ']' |])
+                            let full = if stripped.EndsWith("Attribute", StringComparison.Ordinal)
+                                          then stripped else stripped + "Attribute"
+                            if m.HasCustomAttributes &&
+                                m.CustomAttributes
+                                |> Seq.map(fun a -> a.AttributeType)
+                                |> Seq.tryFind(fun a -> full = a.Name || full = a.FullName)
+                                |> Option.isSome
+                            then Some n
+                            else None
+                        else
+                            if n = name || n = fullname
+                               then Some n
+                            else None)
+    |> Seq.choose id
+    |> Seq.tryFind (fun _ -> true)
+    |> Option.map (fun n -> let id = MethodNumber + 1
+                            MethodNumber <- id
+                            (id, n))
+
+  let private VisitType (t:TypeDefinition) included buildSequence =
         t.Methods
         |> Seq.cast
         |> Seq.filter (fun (m : MethodDefinition) -> not m.IsAbstract
                                                     && not m.IsRuntime
                                                     && not m.IsPInvokeImpl
                                                     && significant m)
-        |> Seq.collect ((fun m -> let dbg = reader
-                                            |> Option.map (fun r -> r.Read m)
-                                            |> Option.bind Option.nullable
-                                  Method (m, dbg, included && IsIncluded m)) >> buildSequence)
+        |> Seq.collect ((fun m -> Method (m, UpdateInspection included m, Track m)) >> buildSequence)
 
-  let private VisitMethod (m:MethodDefinition) (dbg:MethodDebugInformation option) included =
+  let private VisitMethod (m:MethodDefinition) (included:Inspect) =
             let rawInstructions = m.Body.Instructions
-            let instructions = rawInstructions
-                               |> Seq.cast
-                               |> Seq.filter (fun (x:Instruction) -> match dbg with
-                                                                     | None -> false
-                                                                     | Some d ->
-                                                                                 if d.HasSequencePoints then
-                                                                                   let s = d.GetSequencePoint x
-                                                                                   (not << isNull) s && s.StartLine <> 0xfeefee
-                                                                                 else false)
+            let dbg = m.DebugInformation
+            let instructions = [rawInstructions |> Seq.cast]
+                               |> Seq.filter (fun _ -> dbg |> isNull |> not)
+                               |> Seq.concat
+                               |> Seq.filter (fun (x:Instruction) -> if dbg.HasSequencePoints then
+                                                                        let s = dbg.GetSequencePoint x
+                                                                        (not << isNull) s && s.StartLine <> 0xfeefee
+                                                                     else false)
                                |> Seq.toList
 
             let number = instructions.Length
             let point = PointNumber
             PointNumber <- point + number
 
-            if included && instructions |> Seq.isEmpty && rawInstructions |> Seq.isEmpty |> not then
+            let interesting = IsInstrumented included
+
+            if  interesting && instructions |> Seq.isEmpty && rawInstructions |> Seq.isEmpty |> not then
                 rawInstructions
                 |> Seq.take 1
-                |> Seq.map (fun i -> MethodPoint (i, None, m.MetadataToken.ToInt32(), included))
+                |> Seq.map (fun i -> MethodPoint (i, None, m.MetadataToken.ToInt32(), interesting))
             else
                 instructions.OrderByDescending(fun (x:Instruction) -> x.Offset)
-                |> Seq.mapi (fun i x -> let s = (Option.get dbg).GetSequencePoint(x)
-                                        MethodPoint (x, Some s, i+point, included && (IsIncluded s.Document.Url)))
+                |> Seq.mapi (fun i x -> let s = dbg.GetSequencePoint(x)
+                                        MethodPoint (x, Some s, i+point, interesting && (s.Document.Url |>
+                                                                                          IsIncluded |>
+                                                                                          IsInstrumented)))
 
   let rec internal Deeper node =
     // The pattern here is map x |> map y |> map x |> concat => collect (x >> y >> z)
     match node with
     | Start paths -> StartVisit paths  BuildSequence
-    | Assembly (a, reader, included) ->  VisitAssembly a reader included BuildSequence
-    | Module (x, reader, included) ->  VisitModule x  reader included BuildSequence
-    | Type (t, reader, included) -> VisitType t reader  included BuildSequence
-    | Method (m, dbg, included) -> VisitMethod m dbg included
+    | Assembly (a, included) ->  VisitAssembly a included BuildSequence
+    | Module (x, included) ->  VisitModule x included BuildSequence
+    | Type (t, included) -> VisitType t included BuildSequence
+    | Method (m, included, _) -> VisitMethod m included
     | _ -> Seq.empty<Node>
 
   and internal BuildSequence node =
-    Seq.concat [ ToSeq node ; Deeper node ; After node ]
+    Seq.concat [ ToSeq node ; Deeper node ; node.After() ]
 
   let internal invoke (node : Node) (visitor:Fix<Node>)  =
     visitor.Invoke(node)
@@ -215,6 +270,7 @@ module Visitor =
 
   let internal Visit (visitors : list<Fix<Node>>) (assemblies : seq<string>) =
     PointNumber <- 0
+    MethodNumber <- 0
     Start assemblies
     |> BuildSequence
     |> Seq.fold apply visitors

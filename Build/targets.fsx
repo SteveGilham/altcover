@@ -25,9 +25,9 @@ let Copyright  = ref String.Empty
 let Version = ref String.Empty
 
 let OpenCoverFilter = "+[AltCove*]* -[*]Microsoft.* -[*]System.* +[*]N.*"
-let AltCoverFilter= @" -s=Mono -s=\.Recorder -s=Sample -s=nunit -e=Tests -t=System. -t=Sample3\.Class2 "
-let AltCoverFilterX= @" -s=Mono -s=\.Recorder -s=Sample -s=nunit -t=System\. -t=Sample3\.Class2 "
-let AltCoverFilterG= @" -s=Mono -s=\.Recorder\.g -s=Sample -s=nunit -e=Tests -t=System. -t=Sample3\.Class2 "
+let AltCoverFilter= @" -s=Adapter -s=Mono -s=\.Recorder -s=Sample -s=nunit -e=Tests -t=System. -t=Sample3\.Class2 "
+let AltCoverFilterX= @" -s=Adapter --s=Mono -s=\.Recorder -s=Sample -s=nunit -t=System\. -t=Sample3\.Class2 "
+let AltCoverFilterG= @" -s=Adapter --s=Mono -s=\.Recorder\.g -s=Sample -s=nunit -e=Tests -t=System. -t=Sample3\.Class2 "
 
 let programFiles = environVar "ProgramFiles"
 let programFiles86 = environVar "ProgramFiles(x86)"
@@ -355,7 +355,7 @@ Target "UnitTestWithAltCover" (fun _ ->
           { info with
                 FileName = altcover
                 WorkingDirectory = testDirectory
-                Arguments = ("--opencover /sn=" + keyfile + AltCoverFilterX + @"/o=./__UnitTestWithAltCover -x=" + altReport)})
+                Arguments = (" /sn=" + keyfile + AltCoverFilter + @"/o=./__UnitTestWithAltCover -x=" + altReport)})
                 "Re-instrument returned with a non-zero exit code"
 
       printfn "Unit test the instrumented code"
@@ -378,7 +378,7 @@ Target "UnitTestWithAltCover" (fun _ ->
           { info with
                 FileName = altcover
                 WorkingDirectory = weakDir
-                Arguments = ("--opencover /sn=" + keyfile + AltCoverFilterX + " /o=./__WeakNameTestWithAltCover -x=" + weakReport)})
+                Arguments = ("--opencover /sn=" + keyfile + AltCoverFilter + " /o=./__WeakNameTestWithAltCover -x=" + weakReport)})
                 "Instrumenting the weakname tests failed"
 
       printfn "Execute the weakname tests"
@@ -394,7 +394,7 @@ Target "UnitTestWithAltCover" (fun _ ->
           { info with
                 FileName = altcover
                 WorkingDirectory = shadowDir
-                Arguments = ("--opencover /sn=" + keyfile + AltCoverFilterX + @"/o=./__ShadowTestWithAltCover -x=" + shadowReport)})
+                Arguments = ("--opencover /sn=" + keyfile + AltCoverFilter + @"/o=./__ShadowTestWithAltCover -x=" + shadowReport)})
                 "Instrumenting the shadow tests failed"
 
       printfn "Execute the shadow tests"
@@ -664,7 +664,7 @@ Target "FSharpTypes" ( fun _ ->
           { info with
                 FileName = binRoot @@ "AltCover.exe"
                 WorkingDirectory = sampleRoot
-                Arguments = ("-t=System\. -t=Microsoft\. -x=" + simpleReport + " /o=./" + instrumented)})
+                Arguments = ("-s=Adapter -s=nunit -t=System\. -t=Microsoft\. -x=" + simpleReport + " /o=./" + instrumented)})
                 "FSharpTypes"
       Actions.ValidateFSharpTypes simpleReport []
     else
@@ -678,7 +678,7 @@ Target "FSharpTypesDotNet" ( fun _ ->
     let sampleRoot = Path.getFullName "_Binaries/Sample2/Debug+AnyCPU/netcoreapp2.0"
     let instrumented = Path.getFullName "Sample2/_Binaries/Sample2/Debug+AnyCPU/netcoreapp2.0"
     Actions.RunDotnet (fun o -> {dotnetOptions o with WorkingDirectory = sampleRoot}) "run"
-                             ("--project " + project + " -- -t \"System\\.\" -t \"Microsoft\\.\" -x \"" + simpleReport + "\" /o \"" + instrumented + "\"")
+                             ("--project " + project + " -- -s=Adapter -t \"System\\.\" -t \"Microsoft\\.\" -x \"" + simpleReport + "\" /o \"" + instrumented + "\"")
                              "FSharpTypesDotNet"
 
     Actions.ValidateFSharpTypes simpleReport ["main"]
@@ -699,7 +699,7 @@ Target "FSharpTypesDotNetRunner" ( fun _ ->
 
     // Instrument the code
     Actions.RunDotnet (fun o -> {dotnetOptions o with WorkingDirectory = sampleRoot}) "run"
-                             ("--project " + project + " --configuration Release -- -t \"System\\.\" -t \"Microsoft\\.\" -x \"" + simpleReport + "\" /o \"" + instrumented + "\"")
+                             ("--project " + project + " --configuration Release -- -s=Adapter -t \"System\\.\" -t \"Microsoft\\.\" -x \"" + simpleReport + "\" /o \"" + instrumented + "\"")
                              "FSharpTypesDotNetRunner"
 
     Actions.ValidateFSharpTypes simpleReport ["main"]
@@ -1132,7 +1132,7 @@ Target "ReleaseFSharpTypesDotNetRunner" ( fun _ ->
 
     // Instrument the code
     Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = unpack}) "run"
-                      ("--project altcover.core.fsproj --configuration Release -- -x \"" + x + "\" -o \"" + o + "\" -i \"" + i + "\"")
+                      ("--project altcover.core.fsproj --configuration Release -- -s=Adapter -x \"" + x + "\" -o \"" + o + "\" -i \"" + i + "\"")
                       "ReleaseFSharpTypesDotNetRunner"
 
     Actions.ValidateFSharpTypes x ["main"]
@@ -1178,7 +1178,7 @@ Target "ReleaseFSharpTypesX86DotNetRunner" ( fun _ ->
         let altcover = unpack @@ "../_Binaries/AltCover/Release+AnyCPU/netcoreapp2.0/AltCover.dll"
         Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = unpack
                                                             DotNetCliPath = dotnetPath86 |> Option.get}) ""
-                      (altcover + " -x \"" + x + "\" -o \"" + o + "\" -i \"" + i + "\"")
+                      (altcover + " -s=Adapter -x \"" + x + "\" -o \"" + o + "\" -i \"" + i + "\"")
                       "ReleaseFSharpTypesX86DotNetRunner"
 
         Actions.ValidateFSharpTypes x ["main"]
@@ -1252,6 +1252,90 @@ Target "ReleaseXUnitFSharpTypesDotNetRunner" ( fun _ ->
                           sample4)
                           "ReleaseXUnitFSharpTypesDotNetRunner test"
     Actions.ValidateFSharpTypesCoverage x
+)
+
+Target "ReleaseXUnitFSharpTypesDotNetFullRunner" ( fun _ ->
+    Directory.ensure "./_Reports"
+    let unpack = Path.getFullName "_Packaging/Unpack/tools/netcoreapp2.0/AltCover"
+    let x = Path.getFullName "./_Reports/ReleaseXUnitFSharpTypesDotNetFullRunner.xml"
+    let o = Path.getFullName "Sample4/_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.0"
+    let i = Path.getFullName "_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.0"
+
+    Shell.CleanDir o
+
+    // Instrument the code
+    Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = unpack} )"run"
+                          ("--project altcover.core.fsproj --configuration Release -- --opencover -c=0 \"-c=[Fact]\" -x \"" + x + "\" -o \"" + o + "\" -i \"" + i + "\"")
+                          "ReleaseXUnitFSharpTypesDotNetFullRunner"
+
+    do
+      use coverageFile = new FileStream(x, FileMode.Open, FileAccess.Read, FileShare.None, 4096, FileOptions.SequentialScan)
+      let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
+      let recorded = coverageDocument.Descendants(XName.Get("Method"))
+                     |> Seq.collect (fun x -> x.Descendants(XName.Get("Name")))
+                     |> Seq.map (fun x -> x.Value)
+                     |> Seq.sort
+                     |> Seq.toList
+      let expected = [  "Microsoft.FSharp.Core.FSharpFunc`2<Microsoft.FSharp.Core.Unit,Tests.DU/MyUnion> Tests.DU/MyUnion::get_MyBar()";
+                        "System.Byte[] Tests.M/Thing::bytes()";
+                        "System.Int32 Program/Program::main(System.String[])";
+                        "System.Void Tests.DU/get_MyBar@31::.ctor(Tests.DU/MyUnion)";
+                        "System.Void Tests.DU::testMakeUnion()";
+                        "System.Void Tests.M::testMakeThing()";
+                        "Tests.DU/MyUnion Tests.DU/MyUnion::as_bar()";
+                        "Tests.DU/MyUnion Tests.DU/get_MyBar@31::Invoke(Microsoft.FSharp.Core.Unit)";
+                        "Tests.DU/MyUnion Tests.DU::returnBar(System.String)";
+                        "Tests.DU/MyUnion Tests.DU::returnFoo(System.Int32)";
+                        "Tests.M/Thing Tests.M::makeThing(System.String)"]
+      Assert.That(recorded, expected |> Is.EquivalentTo, sprintf "Bad method list %A" recorded)
+
+    printfn "Execute the instrumented tests"
+    let sample4 = Path.getFullName "./Sample4/sample4.core.fsproj"
+    let runner = Path.getFullName "_Packaging/Unpack/tools/netcoreapp2.0/AltCover/altcover.core.fsproj"
+
+    // Run
+    Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = o}) "run"
+                          ("--project " + runner +
+                          " --configuration Release -- Runner -x \"dotnet\" -r \"" + o +
+                          "\" -- test --no-build --configuration Debug " +
+                          sample4)
+                          "ReleaseXUnitFSharpTypesDotNetFullRunner test"
+
+    do
+      use coverageFile = new FileStream(x, FileMode.Open, FileAccess.Read, FileShare.None, 4096, FileOptions.SequentialScan)
+      let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
+      let recorded = coverageDocument.Descendants(XName.Get("SequencePoint"))
+                     |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value)
+                     |> Seq.toList
+      let expected = "0 1 1 1 1 1 1 1 0 0 0 0 0 0 0 0 0 2 1 1 1"
+      Assert.That(recorded, expected.Split() |> Is.EquivalentTo, sprintf "Bad method list %A" recorded)
+
+      coverageDocument.Descendants(XName.Get("SequencePoint"))
+      |> Seq.iter(fun sp -> let vc = Int32.Parse (sp.Attribute(XName.Get("vc")).Value)
+                            let vx = sp.Descendants(XName.Get("Time"))
+                                     |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value |> Int32.Parse)
+                                     |> Seq.sum
+                            Assert.That (vc, Is.EqualTo vx, sp.Value))
+      let tracked = """<TrackedMethods>
+        <TrackedMethod uid="1" token="100663300" name="System.Void Tests.DU::testMakeUnion()" strategy="[Fact]" />
+        <TrackedMethod uid="2" token="100663342" name="System.Void Tests.M::testMakeThing()" strategy="[Fact]" />
+      </TrackedMethods>"""
+      coverageDocument.Descendants(XName.Get("TrackedMethods"))
+      |> Seq.iter (fun x -> Assert.That(x.ToString().Replace("\r\n","\n"), Is.EqualTo <| tracked.Replace("\r\n","\n")))
+
+      Assert.That (coverageDocument.Descendants(XName.Get("TrackedMethodRef")) |> Seq.map (fun x -> x.ToString()),
+                    Is.EquivalentTo ["<TrackedMethodRef uid=\"1\" vc=\"1\" />"
+                                     "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
+                                     "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
+                                     "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
+                                     "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
+                                     "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
+                                     "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
+                                     "<TrackedMethodRef uid=\"2\" vc=\"2\" />"
+                                     "<TrackedMethodRef uid=\"2\" vc=\"1\" />"
+                                     "<TrackedMethodRef uid=\"2\" vc=\"1\" />"
+                                     "<TrackedMethodRef uid=\"2\" vc=\"1\" />"
+                    ])
 )
 
 // AOB
@@ -1334,7 +1418,7 @@ ActivateFinal "ResetConsoleColours"
 
 "Compilation"
 ==> "UnitTestWithAltCover"
-// ==> "UnitTest"
+==> "UnitTest"
 
 "Compilation"
 ==> "UnitTestWithAltCoverRunner"
@@ -1450,6 +1534,10 @@ ActivateFinal "ResetConsoleColours"
 
 "Unpack"
 ==> "ReleaseXUnitFSharpTypesDotNetRunner"
+==> "Deployment"
+
+"Unpack"
+==> "ReleaseXUnitFSharpTypesDotNetFullRunner"
 ==> "Deployment"
 
 "Unpack"

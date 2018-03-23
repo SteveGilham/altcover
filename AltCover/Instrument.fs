@@ -11,7 +11,6 @@ open System.IO
 open System.Reflection
 open System.Resources
 
-open AltCover.Augment
 open Mono.Cecil
 open Mono.Cecil.Cil
 open Mono.Cecil.Rocks
@@ -21,7 +20,11 @@ open Newtonsoft.Json.Linq
 /// Module to handle instrumentation visitor
 /// </summary>
 module Instrument =
-
+  [<ExcludeFromCodeCoverage>]
+  type internal RecorderRefs = { Visit : MethodReference
+                                 Push : MethodReference
+                                 Pop : MethodReference }
+  with static member Build () = { Visit = null; Push = null; Pop = null }
   /// <summary>
   /// State object passed from visit to visit
   /// </summary>
@@ -29,16 +32,16 @@ module Instrument =
   type internal Context = { InstrumentedAssemblies : string list
                             ModuleId : String
                             RecordingAssembly : AssemblyDefinition
-                            RecordingMethod : MethodDefinition // initialised once
-                            RecordingMethodRef : MethodReference // updated each module
+                            RecordingMethod : MethodDefinition list // initialised once
+                            RecordingMethodRef : RecorderRefs // updated each module
                             MethodBody : MethodBody
                             MethodWorker : ILProcessor } // to save fetching repeatedly
   with static member Build assemblies =
                     { InstrumentedAssemblies = assemblies
                       ModuleId = String.Empty
                       RecordingAssembly = null
-                      RecordingMethod = null
-                      RecordingMethodRef = null
+                      RecordingMethod = []
+                      RecordingMethodRef = RecorderRefs.Build()
                       MethodBody = null
                       MethodWorker = null }
 
@@ -84,8 +87,9 @@ module Instrument =
     /// <returns>A representation of the method to call to signal a coverage visit.</returns>
   let internal RecordingMethod (recordingAssembly : AssemblyDefinition) =
     let other = RecorderInstanceType()
-    let token = other.GetMethod("Visit").MetadataToken
-    recordingAssembly.MainModule.LookupToken(token) :?> MethodDefinition
+    ["Visit"; "Push"; "Pop"]
+    |> List.map (fun n -> let t = other.GetMethod(n).MetadataToken
+                          recordingAssembly.MainModule.LookupToken(t) :?> MethodDefinition)
 
   /// <summary>
   /// Applies a new key to an assembly name
@@ -143,7 +147,7 @@ module Instrument =
   /// <returns>A representation of the assembly used to record all coverage visits.</returns>
   let internal PrepareAssembly (location:string) =
     let definition = AssemblyDefinition.ReadAssembly(location)
-    ProgramDatabase.ReadSymbols definition |> ignore
+    ProgramDatabase.ReadSymbols definition
     definition.Name.Name <- (extractName definition) + ".g"
 #if NETCOREAPP2_0
     let pair = None
@@ -167,7 +171,7 @@ module Instrument =
                             |> Seq.head
 
         let body = pathGetterDef.Body
-        let worker = body.GetILProcessor();
+        let worker = body.GetILProcessor()
         let initialBody = body.Instructions |> Seq.toList
         let head = initialBody |> Seq.head
         worker.InsertBefore(head, worker.Create(OpCodes.Ldstr, value))
@@ -186,10 +190,30 @@ module Instrument =
                             |> Seq.head
 
         let body = pathGetterDef.Body
-        let worker = body.GetILProcessor();
+        let worker = body.GetILProcessor()
         let initialBody = body.Instructions |> Seq.toList
         let head = initialBody |> Seq.head
         worker.InsertBefore(head, worker.Create(OpCodes.Ldc_I4, value))
+        worker.InsertBefore(head, worker.Create(OpCodes.Ret))
+        initialBody |> Seq.iter worker.Remove
+    )
+
+    // set the timer interval in ticks
+    [
+      ("get_Timer", Visitor.Interval())
+    ]
+    |> List.iter (fun (property, value) ->
+        let pathGetterDef = definition.MainModule.GetTypes()
+                            |> Seq.collect (fun t -> t.Methods)
+                            |> Seq.filter (fun m -> m.Name = property)
+                            |> Seq.head
+
+        let body = pathGetterDef.Body
+        let worker = body.GetILProcessor()
+        let initialBody = body.Instructions |> Seq.toList
+        let head = initialBody |> Seq.head
+        worker.InsertBefore(head, worker.Create(OpCodes.Ldc_I4, value))
+        worker.InsertBefore(head, worker.Create(OpCodes.Conv_I8))
         worker.InsertBefore(head, worker.Create(OpCodes.Ret))
         initialBody |> Seq.iter worker.Remove
     )
@@ -286,13 +310,13 @@ module Instrument =
       | _ -> ()
 
   let internal InsertVisit (instruction:Instruction) (methodWorker:ILProcessor) (recordingMethodRef:MethodReference) (moduleId:string) (point:int) =
-      let counterMethodCall = methodWorker.Create(OpCodes.Call, recordingMethodRef);
+      let counterMethodCall = methodWorker.Create(OpCodes.Call, recordingMethodRef)
       let instrLoadModuleId = methodWorker.Create(OpCodes.Ldstr, moduleId)
-      let instrLoadPointId = methodWorker.Create(OpCodes.Ldc_I4, point);
+      let instrLoadPointId = methodWorker.Create(OpCodes.Ldc_I4, point)
 
-      methodWorker.InsertBefore(instruction, instrLoadModuleId);
-      methodWorker.InsertAfter(instrLoadModuleId, instrLoadPointId);
-      methodWorker.InsertAfter(instrLoadPointId, counterMethodCall);
+      methodWorker.InsertBefore(instruction, instrLoadModuleId)
+      methodWorker.InsertAfter(instrLoadModuleId, instrLoadPointId)
+      methodWorker.InsertAfter(instrLoadPointId, counterMethodCall)
       instrLoadModuleId
 
   /// <summary>
@@ -345,32 +369,32 @@ module Instrument =
     o.ToString()
 
   let private VisitModule (state : Context) (m:ModuleDefinition) included =
-         let restate = match included with
+         let restate = match included <> Inspect.Ignore with
                        | true ->
                          let recordingMethod = match state.RecordingMethod with
-                                               | null -> RecordingMethod state.RecordingAssembly
+                                               | [] -> RecordingMethod state.RecordingAssembly
                                                | _ -> state.RecordingMethod
-
+                         let refs = recordingMethod |> List.map m.ImportReference
                          { state with
-                               RecordingMethodRef = m.ImportReference(recordingMethod);
+                               RecordingMethodRef = { Visit = refs.[0]; Push = refs.[1]; Pop = refs.[2] }
                                RecordingMethod = recordingMethod }
                        | _ -> state
-         { restate with ModuleId = match Visitor.ReportFormat() with
+         { restate with ModuleId = match Visitor.ReportKind() with
                                    | AltCover.Base.ReportFormat.OpenCover -> KeyStore.HashFile m.FileName
                                    | _ -> m.Mvid.ToString() }
 
   let private VisitMethod (state : Context) (m:MethodDefinition) included =
-         match included with
+         match Visitor.IsInstrumented included with
          | true ->
            let body = m.Body
            { state with
-              MethodBody = body;
+              MethodBody = body
               MethodWorker = body.GetILProcessor() }
          | _ -> state
 
   let private VisitMethodPoint (state : Context) instruction point included =
        if included then // by construction the sequence point is included
-            let instrLoadModuleId = InsertVisit instruction state.MethodWorker state.RecordingMethodRef state.ModuleId point
+            let instrLoadModuleId = InsertVisit instruction state.MethodWorker state.RecordingMethodRef.Visit state.ModuleId point
 
             // Change references in operands from "instruction" to first counter invocation instruction (instrLoadModuleId)
             let subs = SubstituteInstruction (instruction, instrLoadModuleId)
@@ -394,6 +418,82 @@ module Instrument =
                    fsharpbytes.CopyTo libstream
 #endif
                  state
+
+  let internal Track state (m:MethodDefinition) included (track:(int*string) option) =
+    track
+    |> Option.iter (fun (n,_) ->
+            let body = if Visitor.IsInstrumented included then state.MethodBody else m.Body
+            let instructions = body.Instructions
+            let methodWorker = body.GetILProcessor()
+
+            let nop = methodWorker.Create(OpCodes.Nop)
+
+            let rets = instructions
+                       |> Seq.filter (fun i -> i.OpCode = OpCodes.Ret)
+                       |> Seq.toList
+
+            let tail = instructions |> Seq.last
+            let popper = methodWorker.Create(OpCodes.Call, state.RecordingMethodRef.Pop)
+            methodWorker.InsertAfter(tail, popper)
+            let enfin = methodWorker.Create(OpCodes.Endfinally)
+            methodWorker.InsertAfter(popper, enfin)
+            let ret = methodWorker.Create(OpCodes.Ret)
+            methodWorker.InsertAfter(enfin, ret)
+
+            rets
+            |> Seq.iter (fun i -> let leave = methodWorker.Create(OpCodes.Leave, ret)
+                                  methodWorker.Replace (i, leave) )
+
+            let handler = ExceptionHandler(ExceptionHandlerType.Finally)
+            handler.TryStart <- instructions |> Seq.head
+            handler.TryEnd <- popper
+            handler.HandlerStart <- popper
+            handler.HandlerEnd <- ret
+            body.ExceptionHandlers.Add handler
+
+            let pushMethodCall = methodWorker.Create(OpCodes.Call, state.RecordingMethodRef.Push)
+            let instrLoadId = methodWorker.Create(OpCodes.Ldc_I4, n)
+            methodWorker.InsertBefore (handler.TryStart, pushMethodCall)
+            methodWorker.InsertBefore(pushMethodCall, instrLoadId)
+        )
+            (*
+    // Instance.Push(666);
+    IL_0000: ldc.i4 666
+    IL_0005: call void [AltCover.Recorder]AltCover.Recorder.Instance::Push(int32)
+    .try
+    {
+        // (no C# code)
+        IL_000a: nop
+...
+        IL_0025: stloc.0
+        // (no C# code)
+        IL_0026: leave.s IL_0031
+    } // end .try
+    finally
+    {
+        IL_0028: nop
+        // Instance.Pop();
+        IL_0029: call void [AltCover.Recorder]AltCover.Recorder.Instance::Pop()
+        // (no C# code)
+        IL_002e: ldnull
+        IL_002f: pop
+        IL_0030: endfinally
+    } // end handler
+
+    IL_0031: ldloc.0
+ahead of
+IL_0032: ret
+            *)
+  let private VisitAfterMethod state m included track =
+    if Visitor.IsInstrumented included then
+        let body = state.MethodBody
+        // changes conditional (br.s, brtrue.s ...) operators to corresponding "long" ones (br, brtrue)
+        body.SimplifyMacros()
+        // changes "long" conditional operators to their short representation where possible
+        body.OptimizeMacros()
+    Track state m included track
+    state
+
   /// <summary>
   /// Perform visitor operations
   /// </summary>
@@ -404,23 +504,16 @@ module Instrument =
      match node with
      | Start _ -> let recorder = typeof<AltCover.Recorder.Tracer>
                   { state with RecordingAssembly = PrepareAssembly(recorder.Assembly.Location) }
-     | Assembly (assembly, _, included) -> if included then
+     | Assembly (assembly, included) -> if included <> Inspect.Ignore then
                                               assembly.MainModule.AssemblyReferences.Add(state.RecordingAssembly.Name)
-                                           state
-     | Module (m, _, included) -> VisitModule state m included
+                                        state
+     | Module (m, included) -> VisitModule state m included
      | Type _ -> state
-     | Method (m, _,  included) -> VisitMethod state m included
+     | Method (m,  included, _) -> VisitMethod state m included
 
      | MethodPoint (instruction, _, point, included) ->
                 VisitMethodPoint state instruction point included
-     | AfterMethod included ->
-         if included then
-            let body = state.MethodBody
-            // changes conditional (br.s, brtrue.s ...) operators to corresponding "long" ones (br, brtrue)
-            body.SimplifyMacros()
-            // changes "long" conditional operators to their short representation where possible
-            body.OptimizeMacros()
-         state
+     | AfterMethod (m, included, track) -> VisitAfterMethod state m included track
 
      | AfterType -> state
      | AfterModule -> state

@@ -37,6 +37,7 @@ namespace Sample3
             public string ReportFile { get; set; }
             public string Token { get; set; }
             public int CoverageFormat { get; set; }
+            public Int64 Timer { get; set; }
         }
 
         private static List<Tuple<string, int>> log = new List<Tuple<string, int>>();
