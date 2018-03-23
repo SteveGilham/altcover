@@ -157,7 +157,8 @@ module Main =
            ImageLoadResilient(fun () ->
              let def = AssemblyDefinition.ReadAssembly(fullName)
              let assemblyPdb = ProgramDatabase.GetPdbWithFallback def
-             if Visitor.IsIncluded def && Option.isSome assemblyPdb then
+             if def |> Visitor.IsIncluded |> Visitor.IsInstrumented &&
+                Option.isSome assemblyPdb then
                 (fullName, def.Name.Name) :: accumulator
              else
                 accumulator) (fun () -> accumulator)

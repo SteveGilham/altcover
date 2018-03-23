@@ -369,7 +369,7 @@ module Instrument =
     o.ToString()
 
   let private VisitModule (state : Context) (m:ModuleDefinition) included =
-         let restate = match included with
+         let restate = match included <> Inspect.Ignore with
                        | true ->
                          let recordingMethod = match state.RecordingMethod with
                                                | [] -> RecordingMethod state.RecordingAssembly
@@ -385,7 +385,7 @@ module Instrument =
                                    | _ -> m.Mvid.ToString() }
 
   let private VisitMethod (state : Context) (m:MethodDefinition) included =
-         match included with
+         match Visitor.IsInstrumented included with
          | true ->
            let body = m.Body
            { state with
@@ -423,7 +423,7 @@ module Instrument =
   let internal Track state (m:MethodDefinition) included (track:(int*string) option) =
     track
     |> Option.iter (fun (n,_) ->
-            let body = if included then state.MethodBody else m.Body
+            let body = if Visitor.IsInstrumented included then state.MethodBody else m.Body
             let instructions = body.Instructions
             let methodWorker = body.GetILProcessor()
 
@@ -486,7 +486,7 @@ ahead of
 IL_0032: ret
             *)
   let private VisitAfterMethod state m included track =
-    if included then
+    if Visitor.IsInstrumented included then
         let body = state.MethodBody
         // changes conditional (br.s, brtrue.s ...) operators to corresponding "long" ones (br, brtrue)
         body.SimplifyMacros()
@@ -505,7 +505,7 @@ IL_0032: ret
      match node with
      | Start _ -> let recorder = typeof<AltCover.Recorder.Tracer>
                   { state with RecordingAssembly = PrepareAssembly(recorder.Assembly.Location) }
-     | Assembly (assembly, included) -> if included then
+     | Assembly (assembly, included) -> if included <> Inspect.Ignore then
                                               assembly.MainModule.AssemblyReferences.Add(state.RecordingAssembly.Name)
                                         state
      | Module (m, included) -> VisitModule state m included

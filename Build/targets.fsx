@@ -1335,7 +1335,7 @@ Target "ReleaseXUnitFSharpTypesDotNetFullRunner" ( fun _ ->
                                      "<TrackedMethodRef uid=\"2\" vc=\"1\" />"
                                      "<TrackedMethodRef uid=\"2\" vc=\"1\" />"
                                      "<TrackedMethodRef uid=\"2\" vc=\"1\" />"
-                    ])    
+                    ])
 )
 
 // AOB

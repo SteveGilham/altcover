@@ -8,7 +8,7 @@
                exclude="CheckParametersNullityInVisibleMethodsRule | MethodCanBeMadeStaticRule | EnsureLocalDisposalRule"
                from="Gendarme.Rules.Correctness.dll"/>
 		<rules include="*" 
-               exclude="ImplementIComparableCorrectlyRule | ConsiderConvertingMethodToPropertyRule | AvoidSmallNamespaceRule"
+               exclude="ImplementIComparableCorrectlyRule | ConsiderConvertingMethodToPropertyRule | AvoidSmallNamespaceRule | FlagsShouldNotDefineAZeroValueRule"
                from="Gendarme.Rules.Design.dll"/>
 		<rules include="*" 
                exclude="AvoidMethodWithUnusedGenericTypeRule | AvoidDeclaringCustomDelegatesRule | DoNotExposeNestedGenericSignaturesRule"
@@ -22,7 +22,7 @@
 		<rules include="*" from="Gendarme.Rules.Interoperability.dll"/>
 		<rules include="*" from="Gendarme.Rules.Interoperability.Com.dll"/>
 		<rules include="*" 
-               exclude="UseCorrectSuffixRule | AvoidNonAlphanumericIdentifierRule | ParameterNamesShouldMatchOverriddenMethodRule | UseCorrectCasingRule | UseCorrectPrefixRule | AvoidDeepNamespaceHierarchyRule "
+               exclude="UseCorrectSuffixRule | AvoidNonAlphanumericIdentifierRule | ParameterNamesShouldMatchOverriddenMethodRule | UseCorrectCasingRule | UseCorrectPrefixRule | AvoidDeepNamespaceHierarchyRule  | UsePluralNameInEnumFlagsRule"
                from="Gendarme.Rules.Naming.dll"/>
 		<rules include="*" 
                exclude="AvoidRepetitiveCastsRule | AvoidUnneededUnboxingRule | AvoidUnsealedUninheritedInternalTypeRule | AvoidUncalledPrivateCodeRule"

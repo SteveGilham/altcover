@@ -81,8 +81,8 @@ module Report =
       let tail = if List.isEmpty s then [] else s.Tail
       match node with
       | Start _ -> StartVisit s
-      | Module (moduleDef, included) -> VisitModule s head moduleDef included
-      | Method (methodDef, included, _) -> VisitMethod s head methodDef included
+      | Module (moduleDef, included) -> VisitModule s head moduleDef (Visitor.IsInstrumented included)
+      | Method (methodDef, included, _) -> VisitMethod s head methodDef (Visitor.IsInstrumented included)
       | MethodPoint (_, codeSegment,  _, included) ->
         VisitMethodPoint s head codeSegment included
 

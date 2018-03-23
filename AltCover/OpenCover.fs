@@ -89,9 +89,10 @@ module OpenCover =
           {s with Stack = modules :: s.Stack }
 
     let VisitModule (s : Context) (moduleDef:ModuleDefinition) included =
+          let instrumented = Visitor.IsInstrumented included
           let element = XElement(X "Module")
-          if not included then element.SetAttributeValue(X "skippedDueTo", "Filter")
-                          else element.Add(Summary())
+          if not instrumented then element.SetAttributeValue(X "skippedDueTo", "Filter")
+                              else element.Add(Summary())
           element.SetAttributeValue(X "hash", KeyStore.HashFile moduleDef.FileName)
           let head = s.Stack |> Seq.head
           head.Add(element)
@@ -99,7 +100,7 @@ module OpenCover =
           element.Add(XElement(X "ModulePath", moduleDef.FileName))
           element.Add(XElement(X "ModuleTime", File.GetLastWriteTimeUtc moduleDef.FileName))
           element.Add(XElement(X "ModuleName", moduleDef.Assembly.Name.Name))
-          if included then element.Add(XElement(X "Files"))
+          if instrumented then element.Add(XElement(X "Files"))
           let classes = XElement(X "Classes")
           element.Add(classes)
           if Visitor.TrackingNames |> Seq.isEmpty |> not then
@@ -112,18 +113,20 @@ module OpenCover =
                   ClassCC = []}
 
     let VisitType (s : Context) (typeDef:TypeDefinition) included =
-          let element = XElement(X "Class")
-          if not included then element.SetAttributeValue(X "skippedDueTo", "Filter")
-          let head = s.Stack |> Seq.head
-          head.Add(element)
-          element.Add(Summary())
-          element.Add(XElement(X "FullName", typeDef.FullName))
-          let methods = XElement(X "Methods")
-          element.Add(methods)
-          {s with Stack = if included then methods :: s.Stack else s.Stack
-                  Excluded = if included then Nothing else Type
-                  ClassSeq = 0
-                  MethodCC = []}
+      let instrumented = Visitor.IsInstrumented included
+      let methods = XElement(X "Methods")
+      if included <> Inspect.TrackOnly then
+        let element = XElement(X "Class")
+        if not instrumented then element.SetAttributeValue(X "skippedDueTo", "Filter")
+        let head = s.Stack |> Seq.head
+        head.Add(element)
+        element.Add(Summary())
+        element.Add(XElement(X "FullName", typeDef.FullName))
+        element.Add(methods)
+      {s with Stack = if instrumented then methods :: s.Stack else s.Stack
+              Excluded = if instrumented then Nothing else Type
+              ClassSeq = 0
+              MethodCC = []}
 
     let boolString b = if b then "true" else "false"
 
@@ -142,25 +145,26 @@ module OpenCover =
                            XAttribute(X "isSetter", boolString methodDef.IsSetter)))
 
     let VisitMethod  (s : Context) (methodDef:MethodDefinition) included =
-       if s.Excluded = Nothing then
-          let cc, element = methodElement methodDef
-          if included then element.SetAttributeValue(X "skippedDueTo", null)
-          let head = s.Stack |> Seq.head
-          head.Add element
-          element.Add(Summary())
-          element.Add(XElement(X "MetadataToken", methodDef.MetadataToken.ToUInt32().ToString()))
-          element.Add(XElement(X "Name", methodDef.FullName))
-          element.Add(XElement(X "FileRef"))
-          let seqpnts = XElement(X "SequencePoints")
-          element.Add(seqpnts)
-          element.Add(XElement(X "BranchPoints"))
-          element.Add(XElement(X "MethodPoint"))
-          {s with Stack = if included then seqpnts :: s.Stack else s.Stack
-                  Excluded = if included then Nothing else Method
-                  Index = -1
-                  MethodSeq = 0
-                  MethodCC = Some cc :: s.MethodCC}
-       else s
+      if s.Excluded = Nothing && included <> Inspect.TrackOnly then
+        let instrumented = Visitor.IsInstrumented included
+        let cc, element = methodElement methodDef
+        if instrumented then element.SetAttributeValue(X "skippedDueTo", null)
+        let head = s.Stack |> Seq.head
+        head.Add element
+        element.Add(Summary())
+        element.Add(XElement(X "MetadataToken", methodDef.MetadataToken.ToUInt32().ToString()))
+        element.Add(XElement(X "Name", methodDef.FullName))
+        element.Add(XElement(X "FileRef"))
+        let seqpnts = XElement(X "SequencePoints")
+        element.Add(seqpnts)
+        element.Add(XElement(X "BranchPoints"))
+        element.Add(XElement(X "MethodPoint"))
+        {s with Stack = if instrumented then seqpnts :: s.Stack else s.Stack
+                Excluded = if instrumented then Nothing else Method
+                Index = -1
+                MethodSeq = 0
+                MethodCC = Some cc :: s.MethodCC}
+      else s
 
     let MethodPointElement (codeSegment:Cil.SequencePoint) end' ref i =
       XElement(X "SequencePoint",
@@ -176,7 +180,7 @@ module OpenCover =
         XAttribute(X "bev", 0),
         XAttribute(X "fileid", ref))
 
-    let VisitMethodPoint (s : Context) (codeSegment:Cil.SequencePoint) i included =
+    let VisitCodeSegment (s : Context) (codeSegment:Cil.SequencePoint) i =
        if s.Excluded = Nothing then
           // quick fix for .mdb lack of end line/column information
           let end' = match (codeSegment.EndLine, codeSegment.EndColumn) with
@@ -197,9 +201,9 @@ module OpenCover =
                    MethodSeq = s.MethodSeq + 1}
        else s
 
-    let VisitMethodPoint' (s : Context) (codeSegment':Cil.SequencePoint option) i included =
+    let VisitMethodPoint (s : Context) (codeSegment':Cil.SequencePoint option) i =
       match codeSegment' with
-      | Some codeSegment ->  VisitMethodPoint s codeSegment i included
+      | Some codeSegment ->  VisitCodeSegment s codeSegment i
       | None -> s
 
     let limitMethodCC count stack =
@@ -217,7 +221,7 @@ module OpenCover =
     let AddTracking (s : Context) (m:MethodDefinition) t =
       t |>
       Option.iter(fun (uid,strategy) ->
-                    let classes = s.Stack |> Seq.skip 2 |> Seq.head
+                    let classes = s.Stack |> Seq.find (fun x -> x.Name.LocalName = "Classes")
                     let tracked = classes.Parent.Elements(X "TrackedMethods")
                     tracked
                     |> Seq.iter (fun t -> t.Add(XElement(X "TrackedMethod",
@@ -243,9 +247,9 @@ module OpenCover =
         handleSequencePoints ``method``
         tail
 
-    let VisitAfterMethod (s : Context) methodDef track =
+    let VisitAfterMethod (s : Context) methodDef track included =
       AddTracking s methodDef track
-      if s.Excluded = Nothing then
+      if s.Excluded = Nothing && included <> Inspect.TrackOnly then
         let tail = VisitAfterMethodIncluded s
         {s with Stack = tail
                 ClassSeq = s.ClassSeq + s.MethodSeq
@@ -317,8 +321,8 @@ module OpenCover =
       | Node.Module (moduleDef, included) -> VisitModule s moduleDef included
       | Node.Type (typeDef, included) -> VisitType s typeDef included
       | Node.Method (methodDef, included, _) -> VisitMethod s methodDef included
-      | MethodPoint (_, codeSegment,  i, included) -> VisitMethodPoint' s codeSegment i included
-      | AfterMethod (methodDef, _, track) -> VisitAfterMethod s methodDef track
+      | MethodPoint (_, codeSegment,  i, included) -> VisitMethodPoint s codeSegment i
+      | AfterMethod (methodDef, included, track) -> VisitAfterMethod s methodDef track included
       | AfterType _ ->   VisitAfterType s
       | AfterModule _ ->  VisitAfterModule s
       | Finish -> AfterAll s
