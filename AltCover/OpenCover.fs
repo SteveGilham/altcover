@@ -151,14 +151,15 @@ module OpenCover =
         if instrumented then element.SetAttributeValue(X "skippedDueTo", null)
         let head = s.Stack |> Seq.head
         head.Add element
-        element.Add(Summary())
-        element.Add(XElement(X "MetadataToken", methodDef.MetadataToken.ToUInt32().ToString()))
-        element.Add(XElement(X "Name", methodDef.FullName))
-        element.Add(XElement(X "FileRef"))
-        let seqpnts = XElement(X "SequencePoints")
-        element.Add(seqpnts)
-        element.Add(XElement(X "BranchPoints"))
-        element.Add(XElement(X "MethodPoint"))
+        let seqpnts = (fun () -> element.Add(Summary())
+                                 element.Add(XElement(X "MetadataToken", methodDef.MetadataToken.ToUInt32().ToString()))
+                                 element.Add(XElement(X "Name", methodDef.FullName))
+                                 element.Add(XElement(X "FileRef"))
+                                 let seqpnts = XElement(X "SequencePoints")
+                                 element.Add(seqpnts)
+                                 element.Add(XElement(X "BranchPoints"))
+                                 element.Add(XElement(X "MethodPoint"))
+                                 seqpnts) ()
         {s with Stack = if instrumented then seqpnts :: s.Stack else s.Stack
                 Excluded = if instrumented then Nothing else Method
                 Index = -1
