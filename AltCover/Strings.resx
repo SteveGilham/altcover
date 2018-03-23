@@ -154,7 +154,7 @@
     <value>Creating folder {0}</value>
   </data>
   <data name="HelpText" xml:space="preserve">
-    <value>AltCover [/i[nputDirectory]=VALUE] [/o[utputDirectory]=VALUE] [/y|symbolDirectory=VALUE] [/sn|strongNameKey=VALUE] [/k[ey]=VALUE] [/x[mlReport]=VALUE] [/f[ileFilter]=VALUE] [/s|assemblyFilter=VALUE] [/t|typeFilter=VALUE] [/m|methodFilter=VALUE] [/a|attributeFilter=VALUE] [/?|h[elp]] [-- ] [...]
+    <value>AltCover [/i[nputDirectory]=VALUE] [/o[utputDirectory]=VALUE] [/y|symbolDirectory=VALUE] [/sn|strongNameKey=VALUE] [/k[ey]=VALUE] [/x[mlReport]=VALUE] [/f[ileFilter]=VALUE] [/s|assemblyFilter=VALUE] [/t|typeFilter=VALUE] [/m|methodFilter=VALUE] [/a|attributeFilter=VALUE] [/c[allContext]=VALUE] [--opencover] [/?|h[elp]] [-- ] [...]
 or
 AltCover Runner [/r[ecordingDirectory]=VALUE] [/w[orkingDirectory]=VALUE] [/x||executable=VALUE] [/?|h[elp]] [-- ] [...]</value>
   </data>
@@ -212,5 +212,11 @@ AltCover Runner [/r[ecordingDirectory]=VALUE] [/w[orkingDirectory]=VALUE] [/x||e
   </data>
   <data name="y|symbolDirectory=" xml:space="preserve">
     <value>Optional, multiple: Additional directory to search for matching symbols for the assemblies in the input directory</value>
+  </data>
+  <data name="c|callContext=" xml:space="preserve">
+    <value>Optional, multiple: Tracking either times of visits in ticks or designated method calls leading to the visits.
+    A single digit 0-7 gives the number of decimal places of seconds to report; everything else is at the mercy of the system clock information available through DateTime.UtcNow
+    A string in brackets "[]" is interpreted as an attribute type name (the trailing "Attribute" is optional), so [Test] or [TestAttribute] will match; if the name contains one or more ".", then it will be matched against the full name of the attribute type.
+    Other strings are interpreted as method names (fully qualified if the string contains any "." characters).</value>
   </data>
 </root>

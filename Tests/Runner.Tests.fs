@@ -27,37 +27,56 @@ type AltCoverTests() = class
 
   [<Test>]
   member self.RealIdShouldIncrementCount() =
-    let visits = new Dictionary<string, Dictionary<int, int>>()
+    let visits = new Dictionary<string, Dictionary<int, int * Track list>>()
     let key = " "
-    Counter.AddVisit visits key  23
+    Counter.AddVisit visits key 23 Null
     Assert.That (visits.Count, Is.EqualTo 1)
     Assert.That (visits.[key].Count, Is.EqualTo 1)
-    Assert.That (visits.[key].[23], Is.EqualTo 1)
+    Assert.That (visits.[key].[23], Is.EqualTo (1,[]))
+
+  [<Test>]
+  member self.RealIdShouldIncrementList() =
+    let visits = new Dictionary<string, Dictionary<int, int * Track list>>()
+    let key = " "
+    let payload = Time DateTime.UtcNow.Ticks
+    Counter.AddVisit visits key 23 payload
+    Assert.That (visits.Count, Is.EqualTo 1)
+    Assert.That (visits.[key].Count, Is.EqualTo 1)
+    Assert.That (visits.[key].[23], Is.EqualTo (0,[payload]))
 
   [<Test>]
   member self.DistinctIdShouldBeDistinct() =
-    let visits = new Dictionary<string, Dictionary<int, int>>()
+    let visits = new Dictionary<string, Dictionary<int, int * Track list>>()
     let key = " "
-    Counter.AddVisit visits key 23
-    Counter.AddVisit visits "key" 42
+    Counter.AddVisit visits key 23 Null
+    Counter.AddVisit visits "key" 42 Null
     Assert.That (visits.Count, Is.EqualTo 2)
 
   [<Test>]
   member self.DistinctLineShouldBeDistinct() =
-    let visits = new Dictionary<string, Dictionary<int, int>>()
+    let visits = new Dictionary<string, Dictionary<int, int * Track list>>()
     let key = " "
-    Counter.AddVisit visits key 23
-    Counter.AddVisit visits key 42
+    Counter.AddVisit visits key 23 Null
+    Counter.AddVisit visits key 42 Null
     Assert.That (visits.Count, Is.EqualTo 1)
     Assert.That (visits.[key].Count, Is.EqualTo 2)
 
   [<Test>]
   member self.RepeatVisitsShouldIncrementCount() =
-    let visits = new Dictionary<string, Dictionary<int, int>>()
+    let visits = new Dictionary<string, Dictionary<int, int * Track list>>()
     let key = " "
-    Counter.AddVisit visits key 23
-    Counter.AddVisit visits key 23
-    Assert.That (visits.[key].[23], Is.EqualTo 2)
+    Counter.AddVisit visits key 23 Null
+    Counter.AddVisit visits key 23 Null
+    Assert.That (visits.[key].[23], Is.EqualTo (2, []))
+
+  [<Test>]
+  member self.RepeatVisitsShouldIncrementTotal() =
+    let visits = new Dictionary<string, Dictionary<int, int * Track list>>()
+    let key = " "
+    let payload = Time DateTime.UtcNow.Ticks
+    Counter.AddVisit visits key 23 Null
+    Counter.AddVisit visits key 23 payload
+    Assert.That (visits.[key].[23], Is.EqualTo (1, [payload]))
 
   member self.resource = Assembly.GetExecutingAssembly().GetManifestResourceNames()
                          |> Seq.find (fun n -> n.EndsWith("SimpleCoverage.xml", StringComparison.Ordinal))
@@ -74,12 +93,12 @@ type AltCoverTests() = class
     use worker = new MemoryStream()
     worker.Write (buffer, 0, size)
     worker.Position <- 0L
-    let payload = Dictionary<int,int>()
+    let payload = Dictionary<int,int * Track list>()
     [0..9 ]
-    |> Seq.iter(fun i -> payload.[10 - i] <- (i+1))
-    let item = Dictionary<string, Dictionary<int, int>>()
+    |> Seq.iter(fun i -> payload.[10 - i] <- (i+1, []))
+    let item = Dictionary<string, Dictionary<int, int * Track list>>()
     item.Add("7C-CD-66-29-A3-6C-6D-5F-A7-65-71-0E-22-7D-B2-61-B5-1F-65-9A", payload)
-    Counter.UpdateReport ignore true item ReportFormat.OpenCover worker |> ignore
+    Counter.UpdateReport ignore (fun _ _ -> ()) true item ReportFormat.OpenCover worker |> ignore
     worker.Position <- 0L
     let after = XmlDocument()
     after.Load worker
@@ -96,7 +115,7 @@ type AltCoverTests() = class
     let unique = Path.Combine(where, Guid.NewGuid().ToString())
     let reportFile = Path.Combine(unique, "FlushLeavesExpectedTraces.xml")
     try
-      let visits = new Dictionary<string, Dictionary<int, int>>()
+      let visits = new Dictionary<string, Dictionary<int, int * Track list>>()
       use stdout = new StringWriter()
       Console.SetOut stdout
       Directory.CreateDirectory(unique) |> ignore
@@ -112,12 +131,12 @@ type AltCoverTests() = class
         worker.Write(buffer, 0, size)
         ()
 
-      let payload = Dictionary<int,int>()
+      let payload = Dictionary<int,int * Track list>()
       [0..9 ]
-      |> Seq.iter(fun i -> payload.[i] <- (i+1))
+      |> Seq.iter(fun i -> payload.[i] <- (i+1, []))
       visits.["f6e3edb3-fb20-44b3-817d-f69d1a22fc2f"] <- payload
 
-      Counter.DoFlush ignore true visits AltCover.Base.ReportFormat.NCover reportFile |> ignore
+      Counter.DoFlush ignore (fun _ _ -> ()) true visits AltCover.Base.ReportFormat.NCover reportFile |> ignore
 
       use worker' = new FileStream(reportFile, FileMode.Open)
       let after = XmlDocument()
@@ -685,6 +704,22 @@ or
   -a, --attributeFilter=VALUE
                              Optional: attribute name to exclude from
                                instrumentation (may repeat)
+  -c, --callContext=VALUE    Optional, multiple: Tracking either times of
+                               visits in ticks or designated method calls
+                               leading to the visits.
+                                   A single digit 0-7 gives the number of
+                               decimal places of seconds to report; everything
+                               else is at the mercy of the system clock
+                               information available through DateTime.UtcNow
+                                   A string in brackets "[]" is interpreted as
+                               an attribute type name (the trailing "Attribute"
+                               is optional), so [Test] or [TestAttribute] will
+                               match; if the name contains one or more ".",
+                               then it will be matched against the full name of
+                               the attribute type.
+                                   Other strings are interpreted as method
+                               names (fully qualified if the string contains
+                               any "." characters).
       --opencover            Optional: Generate the report in OpenCover format
   -?, --help, -h             Prints out the options.
 or
@@ -701,7 +736,7 @@ or
   -?, --help, -h             Prints out the options.
 """
 
-      Assert.That (result, Is.EqualTo (expected.Replace("\r\n", "\n")))
+      Assert.That (result.Replace("\r\n", "\n"), Is.EqualTo (expected.Replace("\r\n", "\n")))
 
     finally Console.SetError saved
 
@@ -805,12 +840,12 @@ or
         Assert.That(rest, Is.EquivalentTo [|"test"; "1"|])
         255
 
-      let monitor (hits:ICollection<(string*int)>) (token:string) _ _ =
+      let monitor (hits:ICollection<(string*int*Base.Track)>) (token:string) _ _ =
         Assert.That(token, Is.EqualTo report, "should be default coverage file")
         Assert.That(hits, Is.Empty)
         127
 
-      let write (hits:ICollection<(string*int)>) format (report:string) =
+      let write (hits:ICollection<(string*int*Base.Track)>) format (report:string) =
         Assert.That(report, Is.EqualTo report, "should be default coverage file")
         Assert.That(hits, Is.Empty)
         TimeSpan.Zero
@@ -820,7 +855,7 @@ or
       Runner.DoReport <- write
 
       let empty = OptionSet()
-      let dummy = report + ".xx.bin"
+      let dummy = report + ".xx.acv"
       do
         use temp = File.Create dummy
         dummy |> File.Exists |> Assert.That
@@ -860,11 +895,11 @@ or
         worker.Write(buffer, 0, size)
         ()
 
-      let hits = List<(string*int)>()
+      let hits = List<(string*int*Base.Track)>()
       [0..9 ]
       |> Seq.iter(fun i ->
         for j = 1 to i+1 do
-          hits.Add("f6e3edb3-fb20-44b3-817d-f69d1a22fc2f", i)
+          hits.Add("f6e3edb3-fb20-44b3-817d-f69d1a22fc2f", i, Base.Null)
           ignore j
       )
 
@@ -893,30 +928,92 @@ or
 
   [<Test>]
   member self.NullPayloadShouldReportNothing() =
-    let hits = List<string*int>()
+    let hits = List<string*int*Base.Track>()
     let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
     let unique = Path.Combine(where, Guid.NewGuid().ToString())
     do
-      use s = File.Create (unique + ".0.bin")
+      use s = File.Create (unique + ".0.acv")
       s.Close()
     let r = Runner.GetMonitor hits unique List.length []
     Assert.That(r, Is.EqualTo 0)
-    Assert.That (File.Exists (unique + ".bin"))
+    Assert.That (File.Exists (unique + ".acv"))
     Assert.That(hits, Is.Empty)
 
   [<Test>]
   member self.ActivePayloadShouldReportAsExpected() =
-    let hits = List<string*int>()
+    let hits = List<string*int*Base.Track>()
     let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
     let unique = Path.Combine(where, Guid.NewGuid().ToString())
     let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
     let r = Runner.GetMonitor hits unique (fun l ->
-       use sink = new DeflateStream(File.OpenWrite (unique + ".0.bin"), CompressionMode.Compress)
+       use sink = new DeflateStream(File.OpenWrite (unique + ".0.acv"), CompressionMode.Compress)
        l |> List.mapi (fun i x -> formatter.Serialize(sink, (x,i)); x) |> List.length
                                            ) ["a"; "b"; String.Empty; "c"]
     Assert.That(r, Is.EqualTo 4)
-    Assert.That (File.Exists (unique + ".bin"))
-    Assert.That(hits, Is.EquivalentTo [("a",0); ("b",1)])
+    Assert.That (File.Exists (unique + ".acv"))
+    Assert.That(hits, Is.EquivalentTo [("a",0,Base.Null); ("b",1,Base.Null)])
+
+  [<Test>]
+  member self.JunkPayloadShouldReportAsExpected() =
+    let hits = List<string*int*Base.Track>()
+    let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
+    let unique = Path.Combine(where, Guid.NewGuid().ToString())
+    let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
+    let r = Runner.GetMonitor hits unique (fun l ->
+       use sink = new DeflateStream(File.OpenWrite (unique + ".0.acv"), CompressionMode.Compress)
+       l |> List.mapi (fun i x -> formatter.Serialize(sink, (x,i,Base.Null,DateTime.UtcNow)); x) |> List.length
+                                           ) ["a"; "b"; String.Empty; "c"]
+    Assert.That(r, Is.EqualTo 4)
+    Assert.That (File.Exists (unique + ".acv"))
+    Assert.That(hits, Is.EquivalentTo [])
+
+  [<Test>]
+  member self.TrackingPayloadShouldReportAsExpected() =
+    let hits = List<string*int*Base.Track>()
+    let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
+    let unique = Path.Combine(where, Guid.NewGuid().ToString())
+    let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
+    let payloads = [Base.Null
+                    Base.Call 17
+                    Base.Time 23L
+                    Base.Both (5L, 42)
+                    Base.Time 42L
+                    Base.Call 5]
+    let inputs = [
+                   "a"
+                   "b"
+                   "c"
+                   "d"
+                   String.Empty
+                   "e"
+                 ]
+    let r = Runner.GetMonitor hits unique (fun l ->
+       use sink = new DeflateStream(File.OpenWrite (unique + ".0.acv"), CompressionMode.Compress)
+       l |> List.zip payloads
+       |> List.mapi (fun i (y,x) -> formatter.Serialize(sink, (x,i,y)); x) |> List.length) inputs
+
+    let expected = inputs |> List.zip payloads
+                   |> List.mapi (fun i (y,x) -> (x,i,y))
+                   |> List.take 4
+    Assert.That(r, Is.EqualTo 6)
+    Assert.That (File.Exists (unique + ".acv"))
+    Assert.That(hits, Is.EquivalentTo expected)
+
+  [<Test>]
+  member self.PointProcessShouldCaptureTimes() =
+    let x = XmlDocument()
+    x.LoadXml("<root />")
+    let root = x.DocumentElement
+    let hits = [Base.Null
+                Base.Call 17
+                Base.Time 23L
+                Base.Both (5L, 42)
+                Base.Time 42L
+                Base.Time 5L]
+    Runner.PointProcess root hits
+
+    Assert.That(x.DocumentElement.OuterXml,
+                Is.EqualTo """<root><Times><Time time="5" vc="2" /><Time time="23" vc="1" /><Time time="42" vc="1" /></Times><TrackedMethodRefs><TrackedMethodRef uid="17" vc="1" /><TrackedMethodRef uid="42" vc="1" /></TrackedMethodRefs></root>""")
 
   [<Test>]
   member self.PostprocessShouldRestoreKnownOpenCoverState() =
@@ -940,7 +1037,7 @@ or
                           el.SetAttribute("sequenceCoverage", "0")
                            )
 
-    let empty = Dictionary<string, Dictionary<int, int>>()
+    let empty = Dictionary<string, Dictionary<int, int * Track list>>()
     Runner.PostProcess empty Base.ReportFormat.OpenCover after
 
     Assert.That(after.OuterXml.Replace("uspid=\"100663298", "uspid=\"13"), Is.EqualTo before, after.OuterXml)
@@ -975,11 +1072,11 @@ or
     |> Seq.toList
     |> List.iter(fun el -> el.RemoveAllAttributes())
 
-    let visits = Dictionary<string, Dictionary<int, int>>()
-    let visit = Dictionary<int, int>()
+    let visits = Dictionary<string, Dictionary<int, int * Track list>>()
+    let visit = Dictionary<int, int * Track list>()
     visits.Add("6A-33-AA-93-82-ED-22-9D-F8-68-2C-39-5B-93-9F-74-01-76-00-9F", visit)
-    visit.Add(100663297, 1)  // should fill in the expected non-zero value
-    visit.Add(100663298, 23) // should be ignored
+    visit.Add(100663297, (1,[]))  // should fill in the expected non-zero value
+    visit.Add(100663298, (23,[])) // should be ignored
     Runner.PostProcess visits Base.ReportFormat.OpenCover after
 
     Assert.That(after.OuterXml.Replace("uspid=\"100663298", "uspid=\"13"), Is.EqualTo before, after.OuterXml)
@@ -1017,18 +1114,18 @@ or
 
     let before = after.OuterXml.Replace("uspid=\"13", "uspid=\"100663298")
 
-    let empty = Dictionary<string, Dictionary<int, int>>()
+    let empty = Dictionary<string, Dictionary<int, int * Track list>>()
     Runner.PostProcess empty Base.ReportFormat.OpenCover after
 
     Assert.That(after.OuterXml, Is.EqualTo before, after.OuterXml)
 
   [<Test>]
   member self.JunkTokenShouldDefaultZero() =
-    let visits = Dictionary<int, int>()
+    let visits = Dictionary<int, int * Track list>()
     let key = " "
     let result = Runner.LookUpVisitsByToken key visits
     match result with
-    | (false, 0) -> ()
+    | (0, []) -> ()
     | _ -> Assert.Fail(sprintf "%A" result)
 
 end

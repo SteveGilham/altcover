@@ -19,6 +19,9 @@ module Report =
     let X name =
       XName.Get(name)
 
+    let ToExcluded included =
+      if included then "false" else "true"
+
     let StartVisit (s : list<XElement>) =
           let element = XElement(X "coverage",
                           XAttribute(X "profilerVersion", "AltCover " +
@@ -29,12 +32,13 @@ module Report =
           document.Add(element)
           element :: s
 
-    let VisitModule (s : list<XElement>) (head:XElement) (moduleDef:ModuleDefinition) =
+    let VisitModule (s : list<XElement>) (head:XElement) (moduleDef:ModuleDefinition) included =
           let element = XElement(X "module",
                           XAttribute(X "moduleId", moduleDef.Mvid.ToString()),
                           XAttribute(X "name", moduleDef.Name),
                           XAttribute(X "assembly", moduleDef.Assembly.Name.Name),
-                          XAttribute(X "assemblyIdentity", moduleDef.Assembly.Name.FullName))
+                          XAttribute(X "assemblyIdentity", moduleDef.Assembly.Name.FullName),
+                          XAttribute(X "excluded", ToExcluded included))
           head.Add(element)
           element :: s
 
@@ -44,7 +48,7 @@ module Report =
                           //// Mono.Cecil emits names in the form outer/inner rather than outer+inner
                           XAttribute(X "class", Naming.FullTypeName methodDef.DeclaringType),
                           XAttribute(X "metadataToken", methodDef.MetadataToken.ToUInt32().ToString()),
-                          XAttribute(X "excluded", if included then "false" else "true"),
+                          XAttribute(X "excluded", ToExcluded included),
                           XAttribute(X "instrumented", if included then "true" else "false"),
                           XAttribute(X "fullname", Naming.FullMethodName methodDef)
                               )
@@ -65,7 +69,7 @@ module Report =
                           XAttribute(X "column", codeSegment.StartColumn),
                           XAttribute(X "endline", fst end'),
                           XAttribute(X "endcolumn", snd end'),
-                          XAttribute(X "excluded", if included then "false" else "true"),
+                          XAttribute(X "excluded", ToExcluded included),
                           XAttribute(X "document", codeSegment.Document.Url))
           if head.IsEmpty then head.Add(element)
           else head.FirstNode.AddBeforeSelf(element)
@@ -77,8 +81,8 @@ module Report =
       let tail = if List.isEmpty s then [] else s.Tail
       match node with
       | Start _ -> StartVisit s
-      | Module (moduleDef,_, _) -> VisitModule s head moduleDef
-      | Method (methodDef, _, included) -> VisitMethod s head methodDef included
+      | Module (moduleDef, included) -> VisitModule s head moduleDef (Visitor.IsInstrumented included)
+      | Method (methodDef, included, _) -> VisitMethod s head methodDef (Visitor.IsInstrumented included)
       | MethodPoint (_, codeSegment,  _, included) ->
         VisitMethodPoint s head codeSegment included
 

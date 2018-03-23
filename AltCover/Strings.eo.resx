@@ -154,7 +154,7 @@
     <value>Krei dosierujon {0}</value>
   </data>
   <data name="HelpText" xml:space="preserve">
-    <value>AltCover [/i[nputDirectory]=VALO] [/o[utputDirectory]=VALO] [/y|symbolDirectory=VALO] [/sn|strongNameKey=VALO] [/k[ey]=VALO] [/x[mlReport]=VALO] [/f[ileFilter]=VALO] [/s|assemblyFilter=VALO] [/t|typeFilter=VALO] [/m|methodFilter=VALO] [/a|attributeFilter=VALO] [/?|h[elp]] [-- ] [...]
+    <value>AltCover [/i[nputDirectory]=VALO] [/o[utputDirectory]=VALO] [/y|symbolDirectory=VALO] [/sn|strongNameKey=VALO] [/k[ey]=VALO] [/x[mlReport]=VALO] [/f[ileFilter]=VALO] [/s|assemblyFilter=VALO] [/t|typeFilter=VALO] [/m|methodFilter=VALO] [/a|attributeFilter=VALO] [/c[allContext]=VALO] [--opencover] [/?|h[elp]] [-- ] [...]
 aŭ
 AltCover Runner [/r[ecordingDirectory]=VALO] [/w[orkingDirectory]=VALO] [/x||executable=VALO] [/?|h[elp]] [-- ] [...]</value>
   </data>
@@ -212,5 +212,11 @@ AltCover Runner [/r[ecordingDirectory]=VALO] [/w[orkingDirectory]=VALO] [/x||exe
   </data>
   <data name="y|symbolDirectory=" xml:space="preserve">
     <value>Laŭvola, multobla: Aldona dosierujo serĉi kongruajn simbolojn por la asembleoj en la eniga dosierujo</value>
+  </data>
+  <data name="c|callContext=" xml:space="preserve">
+    <value>Laŭvola, multobla: Rilatado aŭ tempoj de vizitoj en tikoj aŭ nomitaj metodvokoj kondukantaj al la vizitoj.
+    Ununura cifero 0-7 donas la nombron de dekuma lokoj de sekundoj por raporti; ĉio alia kompatas la sistemon horloĝon disponebla per DateTime.UtcNow
+    Kordo en krampoj [] estas interpretita kiel atributo tipo nomon (la malantaŭa parto "Attribute" estas nedeviga), do [Test] aŭ [TestAttribute] kongruas; se la nomo enhavas unu aŭ pli ".", tiam ĝi estos egalita kontraŭ la plena nomo de la atributa tipo.
+     Aliaj kordoj estas interpretitaj kiel metodnomoj (plene kvalifikitaj se la ĉeno enhavas ajnajn "" "karakterojn).</value>
   </data>
 </root>

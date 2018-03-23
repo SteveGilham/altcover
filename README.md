@@ -10,6 +10,12 @@ In particular, this approach supports Mono, as long as suitable `.mdb` (or `.pdb
 
 **Note** that under Mono on non-Windows platforms the default values of `--debug:full` or `--debug:pdbonly` generate no symbols from F# projects -- and without symbols, such assemblies cannot be instrumented.  Unlike with C# projects, where the substitution appears to be automatic, to use the necessary `--debug:portable` option involves explicitly hand editing the old-school `.fsproj` file to have `<DebugType>portable</DebugType>`.  
 
+### Why altcover? -- the back-story of why it was ever a thing
+
+Back in 2010, the new .net version finally removed the deprecated profiling APIs that the free NCover 1.5.x series relied upon.  The first version of AltCover was written to both fill a gap in functionality, and to give me an excuse for a ground-up F# project to work on.  As such, it saw real production use for about a year and a half, until OpenCover reached a point where it could be used for .net4/x64 work (and I could find time to adapt everything downstream that consumed NCover format input).
+
+Fast forwards to autumn 2017, and I get the chance to dust the project off, with the intention of saying that it worked on Mono, too -- and realise that it's _déja vu_ all over again, because .net core didn't yet have profiler based coverage tools either, and the same approach would work there as well.
+
 ## Continuous Integration
 
 | | |
@@ -51,7 +57,7 @@ The tests in the `Tests.fs` file are ordered in the same dependency order as the
 
 ## Other
 
-The main executable links the still in beta (after more than a year) Mono.Cecil 0.10 version.  The recorder assembly injected into the instrumented code does not.  Rather than hold my releases on the Mono.Cecil schedule, I make this disclaimer instead.
+The main executable still links the Mono.Cecil 0.10-beta7 version, as the 0.10 final version causes issues with some build tools that haven't caught up with events.  The binary injected into the instrumented code does not link Cecil at all.  Until the wrinkles are ironed out or worked around, I make this disclaimer instead.
 
 ## Thanks to
 

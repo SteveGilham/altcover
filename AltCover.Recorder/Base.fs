@@ -10,7 +10,14 @@ open System.Globalization
 open System.IO
 open System.Xml
 
-type ReportFormat = NCover = 0 | OpenCover = 1
+type ReportFormat = NCover = 0 | OpenCover = 1 | OpenCoverWithTracking = 2
+
+[<System.Runtime.InteropServices.ProgIdAttribute("ExcludeFromCodeCoverage hack for OpenCover issue 615")>]
+type internal Track =
+  | Null
+  | Time of int64
+  | Call of int
+  | Both of (int64 * int)
 
 module Counter =
    /// <summary>
@@ -56,7 +63,8 @@ module Counter =
   /// </summary>
   /// <param name="hitCounts">The coverage results to incorporate</param>
   /// <param name="coverageFile">The coverage file to update as a stream</param>
-  let internal UpdateReport (postProcess:XmlDocument -> unit) own (counts:Dictionary<string, Dictionary<int, int>>) format coverageFile =
+  let internal UpdateReport (postProcess:XmlDocument -> unit) (pointProcess:XmlElement -> Track list -> unit)
+                            own (counts:Dictionary<string, Dictionary<int, int * Track list>>) format coverageFile =
     let flushStart = DateTime.UtcNow
     let coverageDocument = ReadXDocument coverageFile
     let root = coverageDocument.DocumentElement
@@ -78,6 +86,7 @@ module Counter =
                                      System.Diagnostics.FileVersionInfo.GetVersionInfo(System.Reflection.Assembly.GetExecutingAssembly().Location).FileVersion)
 
     let (m, i, m', s, v) = match format with
+                           | ReportFormat.OpenCoverWithTracking
                            | ReportFormat.OpenCover -> ("//Module", "hash", "Classes/Class/Methods/Method", "SequencePoints/SequencePoint", "vc")
                            | _ -> ("//module", "moduleId", "method", "seqpnt", "visitcount")
     coverageDocument.SelectNodes(m)
@@ -98,7 +107,8 @@ module Counter =
                                                         |> Seq.cast<XmlElement>
                                                         |> Seq.toList |> List.rev)
         |> Seq.mapi (fun counter pt -> ((match format with
-                                        | ReportFormat.OpenCover -> "uspid" |> pt.GetAttribute |> FindIndexFromUspid 
+                                        | ReportFormat.OpenCoverWithTracking
+                                        | ReportFormat.OpenCover -> "uspid" |> pt.GetAttribute |> FindIndexFromUspid
                                         | _ -> counter),
                                         pt))
         |> Seq.filter (fst >> moduleHits.ContainsKey)
@@ -109,8 +119,10 @@ module Counter =
                                     System.Globalization.NumberStyles.Integer,
                                     System.Globalization.CultureInfo.InvariantCulture) |> snd
             // Treat -ve visit counts (an exemption added in analysis) as zero
-            let visits = moduleHits.[counter] + (max 0 vc)
-            pt.SetAttribute(v, visits.ToString(CultureInfo.InvariantCulture))))
+            let (count, l) = moduleHits.[counter]
+            let visits = (max 0 vc) + count + l.Length
+            pt.SetAttribute(v, visits.ToString(CultureInfo.InvariantCulture))
+            pointProcess pt l))
 
     postProcess coverageDocument
 
@@ -120,14 +132,16 @@ module Counter =
     if own then WriteXDocument coverageDocument coverageFile
     flushStart
 
-  let DoFlush postProcess own counts format report =
+  let internal DoFlush postProcess pointProcess own counts format report =
     use coverageFile = new FileStream(report, FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.SequentialScan)
-    let flushStart = UpdateReport postProcess own counts format coverageFile
+    let flushStart = UpdateReport postProcess pointProcess own counts format coverageFile
     TimeSpan(DateTime.UtcNow.Ticks - flushStart.Ticks)
 
-  let AddVisit (counts:Dictionary<string, Dictionary<int, int>>) moduleId hitPointId =
-    if not (counts.ContainsKey moduleId) then counts.[moduleId] <- Dictionary<int, int>()
+  let internal AddVisit (counts:Dictionary<string, Dictionary<int, int * Track list>>) moduleId hitPointId context =
+    if not (counts.ContainsKey moduleId) then counts.[moduleId] <- Dictionary<int, int * Track list>()
     if not (counts.[moduleId].ContainsKey hitPointId) then
-        counts.[moduleId].Add(hitPointId, 1)
-    else
-        counts.[moduleId].[hitPointId] <- 1 + counts.[moduleId].[hitPointId]
+        counts.[moduleId].Add(hitPointId, (0,[]))
+    let n, l = counts.[moduleId].[hitPointId]
+    counts.[moduleId].[hitPointId] <- match context with
+                                      | Null -> (1 + n, l)
+                                      | something -> (n, something :: l)

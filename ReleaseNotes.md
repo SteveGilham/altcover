@@ -1,7 +1,10 @@
-**NOTE:** The main executable links the still in beta (after more than a year) Mono.Cecil 0.10 version.  The binary injected into the instrumented code does not.  Rather than hold my releases on the Mono.Cecil schedule, I make this disclaimer instead.
+**NOTE:** The main executable still links the Mono.Cecil 0.10-beta7 version, as the 0.10 final version causes issues with some build tools that haven't caught up with events.  The binary injected into the instrumented code does not link Cecil at all.  Until the wrinkles are ironed out or worked around, I make this disclaimer instead.
+
+# 2.0.350
+* `-c|callContext` option to track (when collecting the coverage data in "runner" mode) what led to a particular line of code being visited -- either by being called from a method of a specified name or with a specified attribute (unit testing, in the main), or by time of visit (which would be more appropriate for system testing).  Methods (typically, unit tests) may be tracked even if they are in assemblies that are excluded from instrumentation via the `-e`command line parameter.
 
 # 2.0.330  (Byakko series release 4)
-* "y|symbolDirectory=" option to provide other locations to find symbols for the instrumented assemblies.  The search order goes -- location in the debug header, co-located (.pdb than .mdb), then supplied locations tested in order for .pdb than .mdb
+* "y|symbolDirectory=" option to provide other locations to find symbols for the instrumented assemblies.  The search order goes -- location in the debug header, co-located (.pdb then .mdb), then supplied locations tested in order for .pdb then .mdb
 
 # 2.0.324  (Byakko series release 3)
 * Option `--opencover` now generates values for MethodPoint tags when collecting the coverage data in "runner" mode

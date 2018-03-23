@@ -13,10 +13,20 @@ open Augment
 [<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage>]
 type Tracer = { Tracer : string }
 
-type MonoTypeBinder (``type``:Type) =
+type TypeBinder (``type``:Type) =
   inherit System.Runtime.Serialization.SerializationBinder()
-  override self.BindToType (_:string, _:string) =
-    ``type``
+  override self.BindToType (_:string, n:string) =
+    match n with
+    | both when both.StartsWith("System.Tuple`2[[System.Int64") -> typeof<(int64*int)>
+    | t2 when t2.StartsWith("System.Tuple`2") -> ``type``
+    | t3 when t3.StartsWith("System.Tuple`3") -> typeof<(string*int*Base.Track)>
+    | "AltCover.Recorder.Track+Call"
+    | "AltCover.Base.Track+Call"-> (Base.Track.Call 0).GetType()
+    | "AltCover.Recorder.Track+Time"
+    | "AltCover.Base.Track+Time" -> (Base.Track.Time 0L).GetType()
+    | "AltCover.Recorder.Track+Both"
+    | "AltCover.Base.Track+Both" -> (Base.Track.Both (0L, 0)).GetType()
+    | _ -> typeof<Base.Track>
 
 module Runner =
 
@@ -114,8 +124,8 @@ module Runner =
   let WriteResourceWithFormatItems s x =
     Console.WriteLine (s |> CommandLine.resources.GetString, x)
 
-  let MonitorBase (hits:ICollection<(string*int)>) report (payload: string list -> int) (args : string list) =
-      let binpath = report + ".bin"
+  let internal MonitorBase (hits:ICollection<(string*int*Base.Track)>) report (payload: string list -> int) (args : string list) =
+      let binpath = report + ".acv"
       do
         use stream = File.Create(binpath)
         ()
@@ -125,17 +135,26 @@ module Runner =
       "Getting results..."  |> WriteResource
 
       let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
-      formatter.Binder <- MonoTypeBinder(typeof<(string*int)>) // anything else is an error
+      formatter.Binder <- TypeBinder(typeof<(string*int)>)
 
       Directory.GetFiles( Path.GetDirectoryName(report),
-                          Path.GetFileName(report) + ".*.bin")
+                          Path.GetFileName(report) + ".*.acv")
       |> Seq.iter (fun f ->
           printfn "... %s" f
           use results = new DeflateStream(File.OpenRead f, CompressionMode.Decompress)
           let rec sink() =
-            let hit = try formatter.Deserialize(results) :?> (string*int)
-                      with | :? System.Runtime.Serialization.SerializationException as x -> (null, -1)
-            if hit|> fst |> String.IsNullOrWhiteSpace  |> not then
+            let hit = try
+                          let raw = formatter.Deserialize(results)
+                          match raw with
+                          | :? (string * int * Base.Track) as x -> x
+                          | _ -> let pair = raw :?> (string * int)
+                                 (fst pair, snd pair, Base.Null)
+                      with
+                      | :? System.InvalidCastException
+                      | :? System.ArgumentException
+                      | :? System.Runtime.Serialization.SerializationException -> (null, -1, Base.Null)
+            let (key, _, _) = hit
+            if key |> String.IsNullOrWhiteSpace  |> not then
               hit |> hits.Add
               sink()
           sink()
@@ -154,28 +173,33 @@ module Runner =
         |> Seq.collect (fun p -> p.Attributes |> Seq.cast<XmlAttribute>)
         |> Seq.iter (fun a -> m.SetAttribute(a.Name, a.Value)))
 
-  let internal LookUpVisitsByToken token (dict:Dictionary<int, int>) =
-    let (ok, index) = Int32.TryParse( token,
+  let internal LookUpVisitsByToken token (dict:Dictionary<int, int * Base.Track list>) =
+    let (ok, index) = Int32.TryParse(token,
                                         System.Globalization.NumberStyles.Integer,
                                         System.Globalization.CultureInfo.InvariantCulture)
-    dict.TryGetValue(if ok then index else -1)
+    match dict.TryGetValue(if ok then index else -1) with
+    | (false, _) -> (0, [])
+    | (_, pair) -> pair
 
-  let internal FillMethodPoint (mp:XmlElement seq) (``method``:XmlElement) (dict:Dictionary<int, int>) =
+  let internal FillMethodPoint (mp:XmlElement seq) (``method``:XmlElement) (dict:Dictionary<int, int * Base.Track list>) =
     let token = ``method``.GetElementsByTagName("MetadataToken")
                 |> Seq.cast<XmlElement>
                 |> Seq.map(fun m -> m.InnerText)
                 |> Seq.head
-    let (_, vc) = LookUpVisitsByToken token dict
+    let (vc0, l) = LookUpVisitsByToken token dict
+    let vc = vc0 + (List.length l)
+
     mp
     |> Seq.iter (fun m -> m.SetAttribute("vc", vc.ToString(System.Globalization.CultureInfo.InvariantCulture))
                           m.SetAttribute("uspid", token)
                           m.SetAttribute("ordinal", "0")
                           m.SetAttribute("offset", "0"))
 
-  let internal PostProcess (counts:Dictionary<string, Dictionary<int, int>>) format (document:XmlDocument) =
+  let internal PostProcess (counts:Dictionary<string, Dictionary<int, int  * Base.Track list>>) format (document:XmlDocument) =
     match format with
+    | Base.ReportFormat.OpenCoverWithTracking
     | Base.ReportFormat.OpenCover ->
-        let updateMethod (dict:Dictionary<int, int>) (vs, vm, pt) (``method``:XmlElement) =
+        let updateMethod (dict:Dictionary<int, int * Base.Track list>) (vs, vm, pt) (``method``:XmlElement) =
             let sp = ``method``.GetElementsByTagName("SequencePoint")
             let count = sp.Count
             let mp = ``method``.GetElementsByTagName("MethodPoint")
@@ -204,7 +228,7 @@ module Runner =
                 (vs + visitPoints, vm + 1, pt + count)
             else (vs, vm, pt + count)
 
-        let updateClass (dict:Dictionary<int, int>) (vs, vm, vc, pt) (``class``:XmlElement) =
+        let updateClass (dict:Dictionary<int, int * Base.Track list>) (vs, vm, vc, pt) (``class``:XmlElement) =
             let (cvs, cvm, cpt) = ``class``.GetElementsByTagName("Method")
                                      |> Seq.cast<XmlElement>
                                      |> Seq.fold (updateMethod dict) (0,0,0)
@@ -219,13 +243,13 @@ module Runner =
             csum.SetAttribute("sequenceCoverage", cover)
             (vs + cvs, vm + cvm, vc + cvc, pt + cpt)
 
-        let updateModule (counts:Dictionary<string, Dictionary<int, int>>) (vs, vm, vc, pt) (``module``:XmlElement) =
+        let updateModule (counts:Dictionary<string, Dictionary<int, int * Base.Track list>>) (vs, vm, vc, pt) (``module``:XmlElement) =
             let dict =  match counts.TryGetValue <| ``module``.GetAttribute("hash") with
-                        | (false, _) -> Dictionary<int, int>()
+                        | (false, _) -> Dictionary<int, int * Base.Track list>()
                         | (true, d) -> d
             let (cvs, cvm, cvc, cpt) = ``module``.GetElementsByTagName("Class")
                                          |> Seq.cast<XmlElement>
-                                         |> Seq.fold (updateClass dict) (0,0,0,0)
+                                         |> Seq.fold (dict |> updateClass) (0,0,0,0)
             let cover = if cpt = 0 then "0"
                          else (sprintf "%.2f" ((float (cvs * 100))/(float cpt))).TrimEnd([| '0' |]).TrimEnd([|'.'|])
             ``module``.GetElementsByTagName("Summary")
@@ -250,11 +274,36 @@ module Runner =
         msum.SetAttribute("sequenceCoverage", cover)
     | _ -> ()
 
-  let WriteReportBase (hits:ICollection<(string*int)>) report =
-    let counts = Dictionary<string, Dictionary<int, int>>()
-    hits |> Seq.iter(fun (moduleId, hitPointId) ->
-                        AltCover.Base.Counter.AddVisit counts moduleId hitPointId)
-    AltCover.Base.Counter.DoFlush (PostProcess counts report) true counts report
+  let internal Point (pt:XmlElement) items outername innername attribute =
+    match items with
+    | [] -> ()
+    | _ -> let outer = pt.OwnerDocument.CreateElement(outername)
+           outer |> pt.AppendChild |> ignore
+           items
+           |> Seq.choose id
+           |> Seq.countBy id
+           |> Seq.sortBy fst
+           |> Seq.iter (fun (t,n) -> let inner = pt.OwnerDocument.CreateElement(innername)
+                                     inner |> outer.AppendChild |> ignore
+                                     inner.SetAttribute(attribute, t.ToString())
+                                     inner.SetAttribute("vc", sprintf "%d" n))
+
+  let internal PointProcess (pt:XmlElement) tracks =
+    let (times, calls) = tracks
+                         |> List.map (fun t -> match t with
+                                               | Base.Time x -> (Some x, None)
+                                               | Base.Both (x, y) -> (Some x, Some y)
+                                               | Base.Call y -> (None, Some y)
+                                               | _ -> (None, None))
+                         |> List.unzip
+    Point pt times "Times" "Time" "time"
+    Point pt calls "TrackedMethodRefs" "TrackedMethodRef" "uid"
+
+  let internal WriteReportBase (hits:ICollection<(string*int*Base.Track)>) report =
+    let counts = Dictionary<string, Dictionary<int, int * Base.Track list>>()
+    hits |> Seq.iter(fun (moduleId, hitPointId, hit) ->
+                        AltCover.Base.Counter.AddVisit counts moduleId hitPointId hit)
+    AltCover.Base.Counter.DoFlush (PostProcess counts report) PointProcess true counts report
 
   // mocking points
   let mutable internal GetPayload = PayloadBase
@@ -278,7 +327,7 @@ module Runner =
                        |> Path.GetFullPath
           let format = (GetMethod instance "get_CoverageFormat")
                        |> GetFirstOperandAsNumber
-          let hits = List<(string*int)>()
+          let hits = List<(string*int*Base.Track)>()
 
           let payload = GetPayload
           let result = GetMonitor hits report payload rest
@@ -286,8 +335,8 @@ module Runner =
           WriteResourceWithFormatItems "Coverage statistics flushing took {0:N} seconds" [|delta.TotalSeconds|]
 
           // And tidy up after everything's done
-          File.Delete (report + ".bin")
+          File.Delete (report + ".acv")
           Directory.GetFiles( Path.GetDirectoryName(report),
-                              Path.GetFileName(report) + ".*.bin")
+                              Path.GetFileName(report) + ".*.acv")
           |> Seq.iter File.Delete
           result

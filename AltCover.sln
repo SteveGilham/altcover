@@ -49,6 +49,8 @@ Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Shadow.Tests2", "Shadow.Tes
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "WeakNameTests", "WeakNameTests\WeakNameTests.fsproj", "{57B8EF6F-1EE4-473B-B5B8-7C2D8213637A}"
 EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Shadow.Adapter", "Shadow.Adapter\Shadow.Adapter.fsproj", "{24BFB835-2DAC-45D4-AFDA-F9C2F13B41DD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -92,6 +94,9 @@ Global
 		{57B8EF6F-1EE4-473B-B5B8-7C2D8213637A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{57B8EF6F-1EE4-473B-B5B8-7C2D8213637A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{57B8EF6F-1EE4-473B-B5B8-7C2D8213637A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{24BFB835-2DAC-45D4-AFDA-F9C2F13B41DD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{24BFB835-2DAC-45D4-AFDA-F9C2F13B41DD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{24BFB835-2DAC-45D4-AFDA-F9C2F13B41DD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -16,7 +16,7 @@ type internal Close =
 
 [<System.Runtime.InteropServices.ProgIdAttribute("ExcludeFromCodeCoverage hack for OpenCover issue 615")>]
 type internal Carrier =
-    | SequencePoint of String*int
+    | SequencePoint of String*int*Track
 
 [<System.Runtime.InteropServices.ProgIdAttribute("ExcludeFromCodeCoverage hack for OpenCover issue 615")>]
 type internal Message =
@@ -52,7 +52,7 @@ module Instance =
   /// <summary>
   /// Accumulation of visit records
   /// </summary>
-  let internal Visits = new Dictionary<string, Dictionary<int, int>>();
+  let internal Visits = new Dictionary<string, Dictionary<int, int * Track list>>();
 
   /// <summary>
   /// Gets the unique token for this instance
@@ -69,6 +69,51 @@ module Instance =
   let CoverageFormat = ReportFormat.NCover
 
   /// <summary>
+  /// Gets the frequency of time sampling
+  /// This property's IL code is modified to store the user chosen override if applicable
+  /// </summary>
+  [<MethodImplAttribute(MethodImplOptions.NoInlining)>]
+  let Timer = 0L
+
+  /// <summary>
+  /// Gets or sets the current test method
+  /// </summary>
+  type private CallStack =
+    [<ThreadStatic;DefaultValue>]
+    static val mutable private instance:Option<CallStack>
+
+    val mutable private caller:int list
+    private new (x:int) = {caller = [x]}
+
+    static member Instance =
+        match CallStack.instance with
+        | None -> CallStack.instance <- Some (CallStack(0))
+        | _ -> ()
+
+        CallStack.instance.Value
+
+    member self.Push x =  self.caller <- x :: self.caller
+                          //let s = sprintf "push %d -> %A" x self.caller
+                          //System.Diagnostics.Debug.WriteLine(s)
+
+    member self.Pop () = self.caller <- match self.caller with
+                                         | []
+                                         | [0] -> [0]
+                                         | _::xs -> xs
+                         //let s = sprintf "pop -> %A"self.caller
+                         //System.Diagnostics.Debug.WriteLine(s)
+
+    member self.CallerId () = Seq.head self.caller
+                              (*let x = Seq.head self.caller
+                              let s = sprintf "peek %d" x
+                              System.Diagnostics.Debug.WriteLine(s)
+                              x*)
+
+  let Push x = CallStack.Instance.Push x
+  let Pop () = CallStack.Instance.Pop ()
+  let CallerId () = CallStack.Instance.CallerId ()
+
+  /// <summary>
   /// Serialize access to the report file across AppDomains for the classic mode
   /// </summary>
   let internal mutex = new System.Threading.Mutex(false, Token + ".mutex");
@@ -76,7 +121,7 @@ module Instance =
   /// <summary>
   /// Reporting back to the mother-ship
   /// </summary>
-  let mutable internal trace = Tracer.Create (ReportFile + ".bin")
+  let mutable internal trace = Tracer.Create (ReportFile + ".acv")
 
   let internal WithMutex (f : bool -> 'a) =
     let own = mutex.WaitOne(1000)
@@ -93,26 +138,26 @@ module Instance =
       (fun () ->
       match Visits.Count with
       | 0 -> ()
-      | _ -> let counts = Dictionary<string, Dictionary<int, int>> Visits
+      | _ -> let counts = Dictionary<string, Dictionary<int, int * Track list>> Visits
              Visits.Clear()
              WithMutex (fun own ->
-                let delta = Counter.DoFlush ignore own counts CoverageFormat ReportFile
+                let delta = Counter.DoFlush ignore (fun _ _ -> ()) own counts CoverageFormat ReportFile
                 GetResource "Coverage statistics flushing took {0:N} seconds"
                 |> Option.iter (fun s -> Console.Out.WriteLine(s, delta.TotalSeconds))
              ))
 
-  let internal TraceVisit moduleId hitPointId =
-     trace.OnVisit Visits moduleId hitPointId
+  let internal TraceVisit moduleId hitPointId context =
+     trace.OnVisit Visits moduleId hitPointId context
 
   /// <summary>
   /// This method is executed from instrumented assemblies.
   /// </summary>
   /// <param name="moduleId">Assembly being visited</param>
   /// <param name="hitPointId">Sequence Point identifier</param>
-  let internal VisitImpl moduleId hitPointId =
+  let internal VisitImpl moduleId hitPointId context =
     if not <| String.IsNullOrEmpty(moduleId) then
-      trace.OnConnected (fun () -> TraceVisit moduleId hitPointId)
-                        (fun () -> Counter.AddVisit Visits moduleId hitPointId)
+      trace.OnConnected (fun () -> TraceVisit moduleId hitPointId context)
+                        (fun () -> Counter.AddVisit Visits moduleId hitPointId context)
 
   let rec private loop (inbox:MailboxProcessor<Message>) =
           async {
@@ -122,11 +167,11 @@ module Instance =
              | None -> return! loop inbox
              | Some msg ->
                  match msg with
-                 | AsyncItem (SequencePoint (moduleId, hitPointId)) ->
-                     VisitImpl moduleId hitPointId
+                 | AsyncItem (SequencePoint (moduleId, hitPointId, context)) ->
+                     VisitImpl moduleId hitPointId context
                      return! loop inbox
-                 | Item (SequencePoint (moduleId, hitPointId), channel)->
-                     VisitImpl moduleId hitPointId
+                 | Item (SequencePoint (moduleId, hitPointId, context), channel)->
+                     VisitImpl moduleId hitPointId context
                      channel.Reply ()
                      return! loop inbox
                  | Finish (mode, channel) ->
@@ -142,20 +187,43 @@ module Instance =
   let internal Backlog () =
     mailbox.CurrentQueueLength
 
-  let internal VisitSelection (f: unit -> bool) moduleId hitPointId =
+  let private IsOpenCoverRunner() =
+     (CoverageFormat = ReportFormat.OpenCoverWithTracking) &&
+       ((trace.Definitive && trace.Runner) ||
+        (ReportFile <> "Coverage.Default.xml" && System.IO.File.Exists (ReportFile + ".acv")))
+
+  let internal Granularity() = Timer
+
+  let internal Clock () = DateTime.UtcNow.Ticks
+
+  let internal PayloadSelection clock frequency wantPayload =
+    if wantPayload () then
+       match (frequency(), CallerId()) with
+       | (0L, 0) -> Null
+       | (t, 0) -> Time (t*(clock()/t))
+       | (0L, n) -> Call n
+       | (t, n) -> Both (t*(clock()/t), n)
+    else Null
+
+  let internal PayloadControl = PayloadSelection Clock
+
+  let internal PayloadSelector enable =
+    PayloadControl Granularity enable
+
+  let internal VisitSelection (f: unit -> bool) track moduleId hitPointId =
     // When writing to file for the runner to process,
     // make this semi-synchronous to avoid choking the mailbox
     // Backlogs of over 90,000 items were observed in self-test
     // which failed to drain during the ProcessExit grace period
     // when sending only async messages.
-    let message = SequencePoint (moduleId, hitPointId)
+    let message = SequencePoint (moduleId, hitPointId, track)
     if f() then
        mailbox.TryPostAndReply ((fun c -> Item (message, c)), 10) |> ignore
     else message |> AsyncItem |> mailbox.Post
 
   let Visit moduleId hitPointId =
      VisitSelection (fun () -> trace.IsConnected() || Backlog() > 10)
-       moduleId hitPointId
+                     (PayloadSelector IsOpenCoverRunner) moduleId hitPointId
 
   let internal FlushCounter (finish:Close) _ =
     mailbox.PostAndReply (fun c -> Finish (finish, c))
