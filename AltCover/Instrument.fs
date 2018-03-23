@@ -379,8 +379,7 @@ module Instrument =
                                RecordingMethodRef = { Visit = refs.[0]; Push = refs.[1]; Pop = refs.[2] }
                                RecordingMethod = recordingMethod }
                        | _ -> state
-         { restate with ModuleId = match Visitor.ReportFormat() with
-                                   | AltCover.Base.ReportFormat.OpenCoverWithTracking
+         { restate with ModuleId = match Visitor.ReportKind() with
                                    | AltCover.Base.ReportFormat.OpenCover -> KeyStore.HashFile m.FileName
                                    | _ -> m.Mvid.ToString() }
 

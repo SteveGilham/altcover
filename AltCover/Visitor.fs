@@ -115,7 +115,8 @@ module Visitor =
 
   let mutable internal reportFormat : Option<ReportFormat> = None
   let defaultReportFormat = ReportFormat.NCover
-  let ReportFormat () = let fmt = (Option.getOrElse defaultReportFormat reportFormat)
+  let ReportKind () = (Option.getOrElse defaultReportFormat reportFormat)
+  let ReportFormat () = let fmt = ReportKind()
                         if fmt = ReportFormat.OpenCover &&
                                  (TrackingNames.Any() || Interval() > 0) then
                                  ReportFormat.OpenCoverWithTracking

@@ -183,8 +183,7 @@ module Main =
         CommandLine.WriteOut <| String.Format(CultureInfo.CurrentCulture,
                                          (CommandLine.resources.GetString "reportingto"),
                                          Visitor.ReportPath())
-        let reporter, document = match Visitor.ReportFormat() with
-                                 | ReportFormat.OpenCoverWithTracking
+        let reporter, document = match Visitor.ReportKind() with
                                  | ReportFormat.OpenCover -> OpenCover.ReportGenerator ()
                                  | _ -> Report.ReportGenerator ()
         let visitors = [ reporter ; Instrument.InstrumentGenerator assemblyNames ]
