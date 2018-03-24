@@ -55,10 +55,6 @@ Use `dotnet fake run ./Build/build.fsx --target <targetname>` to run to a specif
 
 The tests in the `Tests.fs` file are ordered in the same dependency order as the code within the AltCover project (the later `Runner` tests aside).  While working on any given layer, it would make sense to comment out all the tests for later files so as to show what is and isn't being covered by explicit testing, rather than merely being cascaded through.
 
-## Other
-
-The main executable still links the Mono.Cecil 0.10-beta7 version, as the 0.10 final version causes issues with some build tools that haven't caught up with events.  The binary injected into the instrumented code does not link Cecil at all.  Until the wrinkles are ironed out or worked around, I make this disclaimer instead.
-
 ## Thanks to
 
 * [AppVeyor](https://ci.appveyor.com/project/SteveGilham/altcover) for allowing free build CI services for Open Source projects
