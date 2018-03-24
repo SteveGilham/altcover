@@ -23,13 +23,35 @@ open Mono.Cecil.Rocks
 type Inspect = Ignore = 0 | Instrument = 1 | Track = 2 | TrackOnly = 4
 
 [<ExcludeFromCodeCoverage>]
+type SeqPnt = {
+         StartLine : int
+         StartColumn : int
+         EndLine : int
+         EndColumn : int
+         Document : string
+         Offset : int
+         }
+    with static member Build(codeSegment:Cil.SequencePoint) = { 
+                                                                 StartLine = codeSegment.StartLine
+                                                                 StartColumn = codeSegment.StartColumn
+                                                                 EndLine = if codeSegment.EndLine < 0
+                                                                              then codeSegment.StartLine
+                                                                              else codeSegment.EndLine
+                                                                 EndColumn = if codeSegment.EndLine < 0
+                                                                              then codeSegment.StartColumn + 1
+                                                                              else codeSegment.EndColumn
+                                                                 Document = codeSegment.Document.Url
+                                                                 Offset = codeSegment.Offset
+    }
+
+[<ExcludeFromCodeCoverage>]
 type internal Node =
      | Start of seq<string>
      | Assembly of AssemblyDefinition * Inspect
      | Module of ModuleDefinition * Inspect
      | Type of TypeDefinition * Inspect
      | Method of MethodDefinition * Inspect * (int * string) option
-     | MethodPoint of Instruction * SequencePoint option * int * bool
+     | MethodPoint of Instruction * SeqPnt option * int * bool
      | AfterMethod of MethodDefinition * Inspect * (int * string) option
      | AfterType
      | AfterModule
@@ -244,9 +266,10 @@ module Visitor =
             else
                 instructions.OrderByDescending(fun (x:Instruction) -> x.Offset)
                 |> Seq.mapi (fun i x -> let s = dbg.GetSequencePoint(x)
-                                        MethodPoint (x, Some s, i+point, interesting && (s.Document.Url |>
-                                                                                          IsIncluded |>
-                                                                                          IsInstrumented)))
+                                        MethodPoint (x, s |> SeqPnt.Build |> Some, 
+                                                        i+point, interesting && (s.Document.Url |>
+                                                                 IsIncluded |>
+                                                                 IsInstrumented)))
 
   let rec internal Deeper node =
     // The pattern here is map x |> map y |> map x |> concat => collect (x >> y >> z)
