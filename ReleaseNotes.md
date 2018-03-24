@@ -1,4 +1,4 @@
-# 2.0.xxx   (Byakko series release 6)
+# 2.0.354   (Byakko series release 6)
 No functional changes this release, just updates of consumed components and tooling
 * Take the Cecil 0.10.0 final release, having worked around the issues with unit testing in .net core with NUnit3TestAdapter 3.10, which links the beta6 version, which has a subset of the internal API present in the full release.
 * Take the latest VS2017 and FAKE updates for building
