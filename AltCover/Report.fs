@@ -56,21 +56,17 @@ module Report =
           head.Add(element)
           element :: s
 
-    let VisitMethodPoint (s : list<XElement>) (head:XElement) (codeSegment':Cil.SequencePoint option) included =
+    let VisitMethodPoint (s : list<XElement>) (head:XElement) (codeSegment':SeqPnt option) included =
       match codeSegment' with
       | Some codeSegment ->
-          // quick fix for .mdb lack of end line/column information
-          let end' = match (codeSegment.EndLine, codeSegment.EndColumn) with
-                     | (-1, _) -> (codeSegment.StartLine, codeSegment.StartColumn + 1)
-                     | endPair -> endPair
           let element = XElement(X "seqpnt",
                           XAttribute(X "visitcount", 0),
                           XAttribute(X "line", codeSegment.StartLine),
                           XAttribute(X "column", codeSegment.StartColumn),
-                          XAttribute(X "endline", fst end'),
-                          XAttribute(X "endcolumn", snd end'),
+                          XAttribute(X "endline", codeSegment.EndLine),
+                          XAttribute(X "endcolumn", codeSegment.EndColumn),
                           XAttribute(X "excluded", ToExcluded included),
-                          XAttribute(X "document", codeSegment.Document.Url))
+                          XAttribute(X "document", codeSegment.Document))
           if head.IsEmpty then head.Add(element)
           else head.FirstNode.AddBeforeSelf(element)
       | None -> ()
