@@ -170,7 +170,7 @@ module OpenCover =
                 MethodCC = Some cc :: s.MethodCC}
       else s
 
-    let MethodPointElement (codeSegment:Cil.SequencePoint) end' ref i =
+    let MethodPointElement (codeSegment:SeqPnt) ref i =
       XElement(X "SequencePoint",
         XAttribute(X "vc", 0),
         XAttribute(X "uspid", i),
@@ -178,25 +178,22 @@ module OpenCover =
         XAttribute(X "offset", codeSegment.Offset),
         XAttribute(X "sl", codeSegment.StartLine),
         XAttribute(X "sc", codeSegment.StartColumn),
-        XAttribute(X "el", fst end'),
-        XAttribute(X "ec", snd end'),
+        XAttribute(X "el", codeSegment.EndLine),
+        XAttribute(X "ec", codeSegment.EndColumn),
         XAttribute(X "bec", 0),
         XAttribute(X "bev", 0),
         XAttribute(X "fileid", ref))
 
-    let VisitCodeSegment (s : Context) (codeSegment:Cil.SequencePoint) i =
+    let VisitCodeSegment (s : Context) (codeSegment:SeqPnt) i =
        if s.Excluded = Nothing then
           // quick fix for .mdb lack of end line/column information
-          let end' = match (codeSegment.EndLine, codeSegment.EndColumn) with
-                     | (-1, _) -> (codeSegment.StartLine, codeSegment.StartColumn + 1)
-                     | endPair -> endPair
-          let file = codeSegment.Document.Url
+          let file = codeSegment.Document
           let fileset, ref = if s.Files.ContainsKey file then
                                 s.Files, s.Files.Item file
                              else
                                 let index = s.Files.Count + 1
                                 s.Files.Add (file, index), index
-          let element = MethodPointElement codeSegment end' ref i
+          let element = MethodPointElement codeSegment ref i
           let head = s.Stack |> Seq.head
           if head.IsEmpty then head.Add(element)
           else head.FirstNode.AddBeforeSelf(element)
@@ -205,7 +202,7 @@ module OpenCover =
                    MethodSeq = s.MethodSeq + 1}
        else s
 
-    let VisitMethodPoint (s : Context) (codeSegment':Cil.SequencePoint option) i =
+    let VisitMethodPoint (s : Context) (codeSegment':SeqPnt option) i =
       match codeSegment' with
       | Some codeSegment ->  VisitCodeSegment s codeSegment i
       | None -> s

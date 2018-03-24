@@ -2,8 +2,8 @@
 
 open System
 open System.IO
+open System.Linq
 open System.Reflection
-open System.Text
 open System.Text.RegularExpressions
 open System.Xml.Linq
 
@@ -499,6 +499,26 @@ type AltCoverTests() = class
     Assert.That(pass, Is.EquivalentTo(expected), sprintf "Got sequence %A" pass);
 
   // Visitor.fs
+
+  [<Test>]
+  member self.ValidateSeqPntFixUp() = // HACK HACK HACK
+    let location = typeof<Sample3.Class1>.Assembly.Location
+    let sourceAssembly = AssemblyDefinition.ReadAssembly(location)
+    let i = sourceAssembly.MainModule.GetAllTypes()
+            |> Seq.collect(fun t -> t.Methods)
+            |> Seq.filter(fun m -> m.HasBody && m.Body.Instructions.Any())
+            |> Seq.map (fun m -> m.Body.Instructions |> Seq.head)
+            |> Seq.head
+
+    let dummy = Cil.Document("dummy")
+    let before = Cil.SequencePoint(i, dummy)
+    before.GetType().GetProperty("StartLine").SetValue(before, 23)
+    before.GetType().GetProperty("StartColumn").SetValue(before, 42)
+    before.GetType().GetProperty("EndLine").SetValue(before, -1)
+    before.GetType().GetProperty("EndColumn").SetValue(before, -1)
+    let after = SeqPnt.Build(before)
+    Assert.That (after.EndLine, Is.EqualTo before.StartLine)
+    Assert.That (after.EndColumn, Is.EqualTo (before.StartColumn + 1))
 
   [<Test>]
   member self.EmptyArrayHasExpectedHash() =
