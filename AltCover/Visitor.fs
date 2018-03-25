@@ -52,7 +52,7 @@ type internal Node =
      | Type of TypeDefinition * Inspect
      | Method of MethodDefinition * Inspect * (int * string) option
      | MethodPoint of Instruction * SeqPnt option * int * bool
-     | BranchPoint of (int * Instruction * Instruction) * int
+     | BranchPoint of int * Instruction * Instruction * int
      | AfterMethod of MethodDefinition * Inspect * (int * string) option
      | AfterType
      | AfterModule
@@ -281,8 +281,8 @@ module Visitor =
                                |> Seq.filter (fun _ -> dbg |> isNull |> not)
                                |> Seq.concat
                                |> Seq.filter (fun (i:Instruction) -> i.OpCode.FlowControl = FlowControl.Cond_Branch)
-                               |> Seq.collect (fun (i:Instruction) -> 
-                                                   let destinations = if i.OpCode = OpCodes.Switch then
+                               |> Seq.map (fun (i:Instruction) ->
+                                                                      if i.OpCode = OpCodes.Switch then
                                                                           (i, i.Next) :: (i.Operand :?> Instruction[]
                                                                                           |> Seq.map (fun d -> i,d)
                                                                                           |> Seq.toList)
@@ -291,16 +291,14 @@ module Visitor =
                                                                               (i, i.Operand :?> Instruction)
                                                                            ]
                                                                       |> List.distinctBy snd
-                                                                      |> List.mapi (fun i (x,y) -> (i,x,y))
-                                                   match destinations with
-                                                   | []
-                                                   | [_] -> [] // if only one, it has to be next, i.e. no branch at all
-                                                   | _ -> destinations)
-                               |> Seq.mapi (fun i x -> BranchPoint (x, i + BranchNumber))
+                                                                      |> List.mapi (fun i (x,y) -> (i,x,y)))
+                               |> Seq.filter (fun l -> l.Length > 1)
+                               |> Seq.collect id
+                               |> Seq.mapi (fun i (j,x,y) -> BranchPoint (j, x, y, i + BranchNumber))
                                |> Seq.toList
                      else []
             BranchNumber <- BranchNumber + List.length bp
-            sp |> Seq.append bp
+            Seq.append sp bp
 
   let rec internal Deeper node =
     // The pattern here is map x |> map y |> map x |> concat => collect (x >> y >> z)

@@ -27,6 +27,7 @@ module OpenCover =
                             Files : Map<string, int>
                             Index : int
                             MethodSeq : int
+                            MethodBr : int
                             MethodCC : int option list
                             ClassSeq : int
                             ClassCC : (int * int) list
@@ -43,6 +44,7 @@ module OpenCover =
                       Files = Map.empty<string, int>
                       Index = 0
                       MethodSeq = 0
+                      MethodBr = 0
                       MethodCC = []
                       ClassSeq = 0
                       ClassCC = []
@@ -206,6 +208,25 @@ module OpenCover =
       | Some codeSegment ->  VisitCodeSegment s codeSegment i
       | None -> s
 
+    let VisitBranchPoint s path uid =
+       if s.Excluded = Nothing then  
+          let branches = s.Stack.Head.Parent.Descendants(X "BranchPoints") |> Seq.head
+          let branch = XElement(X "BranchPoint",
+                                XAttribute (X "vc", 0),
+                                XAttribute (X "uspid", uid),
+                                XAttribute (X "ordinal", 0), // TODO
+//                                XAttribute (X "offset", 0), // TODO
+//                                XAttribute (X "sl", 0), // TODO
+                                XAttribute (X "path", path) //,
+//                                XAttribute (X "offsetchain", 0), // TODO
+//                                XAttribute (X "offsetend", 0), // TODO
+//                                XAttribute (X "fileId", 0) // TODO
+                               )
+          if branches.IsEmpty then branches.Add(branch)
+          else branches.LastNode.AddAfterSelf(branch)
+          { s with MethodBr = s.MethodBr + 1}
+       else s
+
     let limitMethodCC count stack =
         if count > 0
         then stack
@@ -216,6 +237,8 @@ module OpenCover =
 
     let handleSequencePoints (``method``:XElement) =
         let sp = ``method``.Descendants(X "SequencePoint")
+        sp |> Seq.iteri(fun i x -> x.SetAttributeValue(X "ordinal", i))
+        let sp = ``method``.Descendants(X "BranchPoint")
         sp |> Seq.iteri(fun i x -> x.SetAttributeValue(X "ordinal", i))
 
     let AddTracking (s : Context) (m:MethodDefinition) t =
@@ -321,7 +344,8 @@ module OpenCover =
       | Node.Module (moduleDef, included) -> VisitModule s moduleDef included
       | Node.Type (typeDef, included) -> VisitType s typeDef included
       | Node.Method (methodDef, included, _) -> VisitMethod s methodDef included
-      | MethodPoint (_, codeSegment,  i, included) -> VisitMethodPoint s codeSegment i
+      | MethodPoint (_, codeSegment,  i, _) -> VisitMethodPoint s codeSegment i
+      | BranchPoint (path, _, _, uid) -> VisitBranchPoint s path uid
       | AfterMethod (methodDef, included, track) -> VisitAfterMethod s methodDef track included
       | AfterType _ ->   VisitAfterType s
       | AfterModule _ ->  VisitAfterModule s

@@ -680,14 +680,14 @@ type AltCoverTests() = class
                      |> Seq.toList
         Assert.That (deeper.Length, Is.EqualTo 12)
         deeper
-        |> List.take 2
+        |> List.skip 10
         |> List.iteri (fun i node -> match node with
-                                     | (BranchPoint (_, n)) ->
-                                           Assert.That(n, Is.EqualTo i, "point number")
+                                     | (BranchPoint (_, _, _, n)) ->
+                                           Assert.That(n, Is.EqualTo i, "branch point number")
                                      | _ -> Assert.Fail())
 
         deeper
-        |> List.skip 2
+        |> List.take 10
         |> List.iteri (fun i node -> match node with
                                      | (MethodPoint (_, _, n, b)) ->
                                            Assert.That(n, Is.EqualTo i, "point number")
@@ -1280,7 +1280,6 @@ type AltCoverTests() = class
                    |> Seq.filter (fun (el:XElement) -> el.Name.LocalName <> "Module" ||
                                                        expectSkipped ||
                                                        "skippedDueTo" |> X |> el.Attributes |> Seq.isEmpty)
-                   |> Seq.filter (fun (el:XElement) -> "BranchPoint" <> el.Name.LocalName)
                    |> Seq.toList
     let ecount = expected |> Seq.length
 
