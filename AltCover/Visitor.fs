@@ -304,7 +304,7 @@ module Visitor =
                                                                       |> List.mapi (fun i (x,y) -> (i,x,y)))
                                |> Seq.filter (fun l -> l.Length > 1)
                                |> Seq.collect id
-                               |> Seq.mapi (fun i (j,x,y) -> Seq.unfold (fun (state:Cil.Instruction) -> if isNull state then None else Some (state, state.Previous)) x 
+                               |> Seq.mapi (fun i (j,x,y) -> Seq.unfold (fun (state:Cil.Instruction) -> if isNull state then None else Some (state, state.Previous)) x
                                                              |> Seq.map dbg.GetSequencePoint
                                                              |> Seq.tryFind (fun s -> (s  |> isNull |> not) && s.StartLine <> 0xfeefee)
                                                              |> Option.map (fun context ->

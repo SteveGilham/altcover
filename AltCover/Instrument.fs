@@ -467,6 +467,12 @@ module Instrument =
     Track state m included track
     state
 
+  let private VisitAfterAssembly state (assembly:AssemblyDefinition) =
+    let originalFileName = Path.GetFileName assembly.MainModule.FileName
+    let path = Path.Combine(Visitor.OutputDirectory(), originalFileName)
+    WriteAssembly assembly path
+    state
+
   /// <summary>
   /// Perform visitor operations
   /// </summary>
@@ -491,10 +497,7 @@ module Instrument =
 
      | AfterType -> state
      | AfterModule -> state
-     | AfterAssembly assembly -> let originalFileName = Path.GetFileName assembly.MainModule.FileName
-                                 let path = Path.Combine(Visitor.OutputDirectory(), originalFileName)
-                                 WriteAssembly assembly path
-                                 state
+     | AfterAssembly assembly -> VisitAfterAssembly state assembly
      | Finish -> FinishVisit state
 
   /// <summary>
