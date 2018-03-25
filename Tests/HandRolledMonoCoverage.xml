@@ -50,8 +50,8 @@
                 <SequencePoint vc="1" uspid="0" ordinal="13" offset="69" sl="21" sc="9" el="21" ec="10" bec="0" bev="0" fileid="1" />
               </SequencePoints>
               <BranchPoints>
-                <BranchPoint vc="0" uspid="0" ordinal="0" path="0" />
-                <BranchPoint vc="0" uspid="1" ordinal="1" path="1" />
+                <BranchPoint vc="0" uspid="0" ordinal="0" offset="19" sl="13" path="0" offsetend="24" fileid="1" />
+                <BranchPoint vc="0" uspid="1" ordinal="1" offset="19" sl="13" path="1" offsetend="57" fileid="1" />
               </BranchPoints>
               <MethodPoint xsi:type="SequencePoint" vc="1" uspid="13" ordinal="0" offset="0" sl="11" sc="9" el="11" ec="10" bec="0" bev="0" fileid="1" />
             </Method>

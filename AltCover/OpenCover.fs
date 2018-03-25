@@ -208,22 +208,26 @@ module OpenCover =
       | Some codeSegment ->  VisitCodeSegment s codeSegment i
       | None -> s
 
-    let VisitBranchPoint s path uid =
+    let VisitBranchPoint s branch uid =
        if s.Excluded = Nothing then  
           let branches = s.Stack.Head.Parent.Descendants(X "BranchPoints") |> Seq.head
-          let branch = XElement(X "BranchPoint",
-                                XAttribute (X "vc", 0),
-                                XAttribute (X "uspid", uid),
-                                XAttribute (X "ordinal", 0), // TODO
-//                                XAttribute (X "offset", 0), // TODO
-//                                XAttribute (X "sl", 0), // TODO
-                                XAttribute (X "path", path) //,
-//                                XAttribute (X "offsetchain", 0), // TODO
-//                                XAttribute (X "offsetend", 0), // TODO
-//                                XAttribute (X "fileId", 0) // TODO
-                               )
-          if branches.IsEmpty then branches.Add(branch)
-          else branches.LastNode.AddAfterSelf(branch)
+          let xbranch = XElement(X "BranchPoint",
+                                 XAttribute (X "vc", 0),
+                                 XAttribute (X "uspid", uid),
+                                 XAttribute (X "ordinal", 0),
+                                 XAttribute (X "offset", branch.Offset),
+                                 XAttribute (X "sl", branch.StartLine),
+                                 XAttribute (X "path", branch.Path),
+                                 XAttribute (X "offsetchain", 0),
+                                 XAttribute (X "offsetend", branch.Target),
+                                 XAttribute (X "fileid", s.Files.Item branch.Document)
+                                )
+          xbranch.SetAttributeValue(X "offsetchain",
+                                      match branch.Chain with
+                                      | None -> null
+                                      | Some n -> n:>obj)
+          if branches.IsEmpty then branches.Add(xbranch)
+          else branches.LastNode.AddAfterSelf(xbranch)
           { s with MethodBr = s.MethodBr + 1}
        else s
 
@@ -345,7 +349,7 @@ module OpenCover =
       | Node.Type (typeDef, included) -> VisitType s typeDef included
       | Node.Method (methodDef, included, _) -> VisitMethod s methodDef included
       | MethodPoint (_, codeSegment,  i, _) -> VisitMethodPoint s codeSegment i
-      | BranchPoint (path, _, _, uid) -> VisitBranchPoint s path uid
+      | BranchPoint (_, _, branch, uid) -> VisitBranchPoint s branch uid
       | AfterMethod (methodDef, included, track) -> VisitAfterMethod s methodDef track included
       | AfterType _ ->   VisitAfterType s
       | AfterModule _ ->  VisitAfterModule s

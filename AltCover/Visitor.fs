@@ -45,6 +45,16 @@ type SeqPnt = {
     }
 
 [<ExcludeFromCodeCoverage>]
+type Branch = {
+    Path : int
+    StartLine : int
+    Offset : int
+    Target : int
+    Chain : int option
+    Document : string
+}
+
+[<ExcludeFromCodeCoverage>]
 type internal Node =
      | Start of seq<string>
      | Assembly of AssemblyDefinition * Inspect
@@ -52,7 +62,7 @@ type internal Node =
      | Type of TypeDefinition * Inspect
      | Method of MethodDefinition * Inspect * (int * string) option
      | MethodPoint of Instruction * SeqPnt option * int * bool
-     | BranchPoint of int * Instruction * Instruction * int
+     | BranchPoint of Instruction * Instruction * Branch * int
      | AfterMethod of MethodDefinition * Inspect * (int * string) option
      | AfterType
      | AfterModule
@@ -276,7 +286,7 @@ module Visitor =
                                                         i+point, interesting && (s.Document.Url |>
                                                                  IsIncluded |>
                                                                  IsInstrumented)))
-            let bp = if interesting then
+            let bp = if instructions.Any() then
                         [rawInstructions |> Seq.cast]
                                |> Seq.filter (fun _ -> dbg |> isNull |> not)
                                |> Seq.concat
@@ -294,8 +304,18 @@ module Visitor =
                                                                       |> List.mapi (fun i (x,y) -> (i,x,y)))
                                |> Seq.filter (fun l -> l.Length > 1)
                                |> Seq.collect id
-                               |> Seq.mapi (fun i (j,x,y) -> BranchPoint (j, x, y, i + BranchNumber))
-                               |> Seq.toList
+                               |> Seq.mapi (fun i (j,x,y) -> Seq.unfold (fun (state:Cil.Instruction) -> if isNull state then None else Some (state, state.Previous)) x 
+                                                             |> Seq.map dbg.GetSequencePoint
+                                                             |> Seq.tryFind (fun s -> (s  |> isNull |> not) && s.StartLine <> 0xfeefee)
+                                                             |> Option.map (fun context ->
+                                                                                    BranchPoint (x, y, { Path = j
+                                                                                                         StartLine = context.StartLine
+                                                                                                         Offset = x.Offset
+                                                                                                         Target = y.Offset
+                                                                                                         Chain = None
+                                                                                                         Document = context.Document.Url},
+                                                                                                i + BranchNumber)))
+                               |> Seq.choose id |> Seq.toList
                      else []
             BranchNumber <- BranchNumber + List.length bp
             Seq.append sp bp

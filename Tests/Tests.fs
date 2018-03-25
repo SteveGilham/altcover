@@ -715,7 +715,7 @@ type AltCoverTests() = class
                                          let node = Node.Method (m, flag, None)
                                          List.concat [ [node]; (Visitor.Deeper >> Seq.toList) node;  [Node.AfterMethod (m,flag, None)]])
                     |> List.concat
-        Assert.That (deeper.Length, Is.EqualTo 15)
+        Assert.That (deeper.Length, Is.EqualTo 17)
         Assert.That (deeper |> Seq.map string,
                      Is.EquivalentTo (expected |> Seq.map string))
     finally
@@ -741,7 +741,7 @@ type AltCoverTests() = class
                                          let node = Node.Type (t, flag)
                                          List.concat [ [node]; (Visitor.Deeper >> Seq.toList) node; [Node.AfterType]])
                     |> List.concat
-        Assert.That (deeper.Length, Is.EqualTo 18)
+        Assert.That (deeper.Length, Is.EqualTo 20)
         Assert.That (deeper |> Seq.map string,
                      Is.EquivalentTo (expected |> Seq.map string))
     finally
