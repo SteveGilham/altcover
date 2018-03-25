@@ -513,6 +513,7 @@ IL_0032: ret
 
      | MethodPoint (instruction, _, point, included) ->
                 VisitMethodPoint state instruction point included
+     | BranchPoint _ -> state
      | AfterMethod (m, included, track) -> VisitAfterMethod state m included track
 
      | AfterType -> state

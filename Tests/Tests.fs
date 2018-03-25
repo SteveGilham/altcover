@@ -678,8 +678,16 @@ type AltCoverTests() = class
                                                     Inspect.Instrument,
                                                     None)
                      |> Seq.toList
-        Assert.That (deeper.Length, Is.EqualTo 10)
+        Assert.That (deeper.Length, Is.EqualTo 12)
         deeper
+        |> List.take 2
+        |> List.iteri (fun i node -> match node with
+                                     | (BranchPoint (_, n)) ->
+                                           Assert.That(n, Is.EqualTo i, "point number")
+                                     | _ -> Assert.Fail())
+
+        deeper
+        |> List.skip 2
         |> List.iteri (fun i node -> match node with
                                      | (MethodPoint (_, _, n, b)) ->
                                            Assert.That(n, Is.EqualTo i, "point number")
@@ -753,7 +761,7 @@ type AltCoverTests() = class
                 |> Seq.map (fun t -> let node = Node.Module (t, Inspect.Instrument)
                                      List.concat [ [node]; (Visitor.Deeper >> Seq.toList) node; [AfterModule]])
                 |> List.concat
-    Assert.That (deeper.Length, Is.EqualTo 21)
+    Assert.That (deeper.Length, Is.EqualTo 23)
     Assert.That (deeper |> Seq.map string,
                  Is.EquivalentTo (expected |> Seq.map string))
 
@@ -771,7 +779,7 @@ type AltCoverTests() = class
 
     let assembly = Node.Assembly (def, Inspect.Instrument)
     let expected = List.concat [ [assembly]; (Visitor.Deeper >> Seq.toList) assembly; [AfterAssembly def]]
-    Assert.That (deeper.Length, Is.EqualTo 23)
+    Assert.That (deeper.Length, Is.EqualTo 25)
     Assert.That (deeper |> Seq.map string,
                  Is.EquivalentTo (expected |> Seq.map string))
 

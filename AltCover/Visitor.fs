@@ -52,6 +52,7 @@ type internal Node =
      | Type of TypeDefinition * Inspect
      | Method of MethodDefinition * Inspect * (int * string) option
      | MethodPoint of Instruction * SeqPnt option * int * bool
+     | BranchPoint of (int * Instruction * Instruction) * int
      | AfterMethod of MethodDefinition * Inspect * (int * string) option
      | AfterType
      | AfterModule
@@ -168,6 +169,7 @@ module Visitor =
     List.toSeq [ node ]
 
   let mutable private PointNumber : int = 0
+  let mutable private BranchNumber : int = 0
   let mutable private MethodNumber : int = 0
 
   let significant (m : MethodDefinition) =
@@ -199,9 +201,13 @@ module Visitor =
                                   Module (x, if interim = Inspect.Track
                                              then Inspect.TrackOnly
                                              else interim )) >> buildSequence)
+    
+  let private ZeroPoints () =
+        PointNumber <- 0
+        BranchNumber <- 0
 
   let private VisitModule (x:ModuleDefinition) included buildSequence =
-        PointNumber <- 0
+        ZeroPoints()
         [x]
         |> Seq.takeWhile (fun _ -> included <> Inspect.Ignore)
         |> Seq.collect(fun x -> x.GetAllTypes() |> Seq.cast)
@@ -259,17 +265,42 @@ module Visitor =
 
             let interesting = IsInstrumented included
 
-            if  interesting && instructions |> Seq.isEmpty && rawInstructions |> Seq.isEmpty |> not then
-                rawInstructions
-                |> Seq.take 1
-                |> Seq.map (fun i -> MethodPoint (i, None, m.MetadataToken.ToInt32(), interesting))
-            else
-                instructions.OrderByDescending(fun (x:Instruction) -> x.Offset)
-                |> Seq.mapi (fun i x -> let s = dbg.GetSequencePoint(x)
-                                        MethodPoint (x, s |> SeqPnt.Build |> Some, 
+            let sp = if  interesting && instructions |> Seq.isEmpty && rawInstructions |> Seq.isEmpty |> not then
+                        rawInstructions
+                        |> Seq.take 1
+                        |> Seq.map (fun i -> MethodPoint (i, None, m.MetadataToken.ToInt32(), interesting))
+                     else
+                        instructions.OrderByDescending(fun (x:Instruction) -> x.Offset)
+                        |> Seq.mapi (fun i x -> let s = dbg.GetSequencePoint(x)
+                                                MethodPoint (x, s |> SeqPnt.Build |> Some, 
                                                         i+point, interesting && (s.Document.Url |>
                                                                  IsIncluded |>
                                                                  IsInstrumented)))
+            let bp = if interesting then
+                        [rawInstructions |> Seq.cast]
+                               |> Seq.filter (fun _ -> dbg |> isNull |> not)
+                               |> Seq.concat
+                               |> Seq.filter (fun (i:Instruction) -> i.OpCode.FlowControl = FlowControl.Cond_Branch)
+                               |> Seq.collect (fun (i:Instruction) -> 
+                                                   let destinations = if i.OpCode = OpCodes.Switch then
+                                                                          (i, i.Next) :: (i.Operand :?> Instruction[]
+                                                                                          |> Seq.map (fun d -> i,d)
+                                                                                          |> Seq.toList)
+                                                                      else [
+                                                                              (i, i.Next)
+                                                                              (i, i.Operand :?> Instruction)
+                                                                           ]
+                                                                      |> List.distinctBy snd
+                                                                      |> List.mapi (fun i (x,y) -> (i,x,y))
+                                                   match destinations with
+                                                   | []
+                                                   | [_] -> [] // if only one, it has to be next, i.e. no branch at all
+                                                   | _ -> destinations)
+                               |> Seq.mapi (fun i x -> BranchPoint (x, i + BranchNumber))
+                               |> Seq.toList
+                     else []
+            BranchNumber <- BranchNumber + List.length bp
+            sp |> Seq.append bp
 
   let rec internal Deeper node =
     // The pattern here is map x |> map y |> map x |> concat => collect (x >> y >> z)
@@ -292,7 +323,7 @@ module Visitor =
     List.map (invoke node)
 
   let internal Visit (visitors : list<Fix<Node>>) (assemblies : seq<string>) =
-    PointNumber <- 0
+    ZeroPoints()
     MethodNumber <- 0
     Start assemblies
     |> BuildSequence
