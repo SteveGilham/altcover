@@ -186,7 +186,6 @@ module OpenCover =
 
     let VisitCodeSegment (s : Context) (codeSegment:SeqPnt) i =
        if s.Excluded = Nothing then
-          // quick fix for .mdb lack of end line/column information
           let file = codeSegment.Document
           let fileset, ref = if s.Files.ContainsKey file then
                                 s.Files, s.Files.Item file

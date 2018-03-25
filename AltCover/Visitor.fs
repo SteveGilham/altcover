@@ -31,7 +31,7 @@ type SeqPnt = {
          Document : string
          Offset : int
          }
-    with static member Build(codeSegment:Cil.SequencePoint) = { 
+    with static member Build(codeSegment:Cil.SequencePoint) = {
                                                                  StartLine = codeSegment.StartLine
                                                                  StartColumn = codeSegment.StartColumn
                                                                  EndLine = if codeSegment.EndLine < 0
@@ -201,7 +201,7 @@ module Visitor =
                                   Module (x, if interim = Inspect.Track
                                              then Inspect.TrackOnly
                                              else interim )) >> buildSequence)
-    
+
   let private ZeroPoints () =
         PointNumber <- 0
         BranchNumber <- 0
@@ -272,7 +272,7 @@ module Visitor =
                      else
                         instructions.OrderByDescending(fun (x:Instruction) -> x.Offset)
                         |> Seq.mapi (fun i x -> let s = dbg.GetSequencePoint(x)
-                                                MethodPoint (x, s |> SeqPnt.Build |> Some, 
+                                                MethodPoint (x, s |> SeqPnt.Build |> Some,
                                                         i+point, interesting && (s.Document.Url |>
                                                                  IsIncluded |>
                                                                  IsInstrumented)))

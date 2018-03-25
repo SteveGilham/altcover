@@ -1225,8 +1225,8 @@ type AltCoverTests() = class
 #if NETCOREAPP2_0
     Assert.Fail("the NUnit test adapter seems to be working again.  Remove this clause.")
    with  //Cecil 10.0 vs 10.0beta6
-     | :? MissingMethodException as mme -> 
-           Assert.That(mme.Message, 
+     | :? MissingMethodException as mme ->
+           Assert.That(mme.Message,
                        Is.EqualTo("Method not found: 'Int32 Mono.Cecil.MetadataReader.ReadCodeSize(Mono.Cecil.MethodDefinition)'."))
 #endif
 
@@ -1569,8 +1569,8 @@ type AltCoverTests() = class
 #if NETCOREAPP2_0
     Assert.Fail("the NUnit test adapter seems to be working again.  Remove this clause.")
    with  //Cecil 10.0 vs 10.0beta6
-     | :? MissingMethodException as mme -> 
-           Assert.That(mme.Message, 
+     | :? MissingMethodException as mme ->
+           Assert.That(mme.Message,
                        Is.EqualTo("Method not found: 'Int32 Mono.Cecil.MetadataReader.ReadCodeSize(Mono.Cecil.MethodDefinition)'."))
 #endif
 
@@ -4014,8 +4014,8 @@ type AltCoverTests() = class
 #if NETCOREAPP2_0
     Assert.Fail("the NUnit test adapter seems to be working again.  Remove this clause.")
    with  //Cecil 10.0 vs 10.0beta6
-     | :? MissingMethodException as mme -> 
-           Assert.That(mme.Message, 
+     | :? MissingMethodException as mme ->
+           Assert.That(mme.Message,
                        Is.EqualTo("Method not found: 'Int32 Mono.Cecil.MetadataReader.ReadCodeSize(Mono.Cecil.MethodDefinition)'."))
 #endif
 
