@@ -22,7 +22,7 @@ let dotnetOptions (o:DotNet.Options) = match dotnetPath with
                                        | Some f -> {o with DotNetCliPath = f}
                                        | None -> o
 
-DotNet.Restore (fun o -> { o with
+DotNet.restore (fun o -> { o with
                             Packages = ["./packages"]
                             Common = dotnetOptions o.Common}) "./Build/dotnet-nuget.fsproj"
 
