@@ -11,6 +11,7 @@ if: NOT branch =~ ^develop/.*$ OR branch =~ ^develop/travis/.*$
 cache:
   directories:
   - packages
+  - Demo/Service/packages
   - $HOME/.nuget
 
 script:
