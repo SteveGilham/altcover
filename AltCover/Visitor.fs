@@ -305,14 +305,14 @@ module Visitor =
               else 
                 let next = i.Next
                 let jump = i.Operand :?> Instruction
-                match Seq.unfold (fun (state:Cil.Instruction) -> if isNull state || state.Offset = jump.Offset then None else Some (state, state.Next)) next
-                        |> findSequencePoint with // TODO -- more filtering
-                | Some x ->                                                                    
-                    [
+                //match Seq.unfold (fun (state:Cil.Instruction) -> if isNull state || state.Offset > jump.Offset then None else Some (state, state.Next)) i
+                //        |> findSequencePoint with // TODO -- more filtering
+                //| Some x ->                                                                    
+                [
                         (i, next, -1)
                         (i, jump, 0)
                     ]
-                | _ -> []
+                //| _ -> []
 
             let bp = if instructions.Any() && ReportKind() = Base.ReportFormat.OpenCover then
                         [rawInstructions |> Seq.cast]
