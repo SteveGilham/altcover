@@ -288,35 +288,51 @@ module Visitor =
                                                         i+point, interesting && (s.Document.Url |>
                                                                  IsIncluded |>
                                                                  IsInstrumented)))
-            let bp = if instructions.Any() then
+
+            let findSequencePoint instructions =
+              instructions
+              |> Seq.map dbg.GetSequencePoint
+              |> Seq.tryFind (fun s -> (s  |> isNull |> not) && s.StartLine <> 0xfeefee)
+
+            let indexList l =
+                l |> List.mapi (fun i x -> (i,x))
+
+            let getJumps (i:Instruction) =
+              if i.OpCode = OpCodes.Switch then
+                (i, i.Next, -1) :: (i.Operand :?> Instruction[]
+                                |> Seq.mapi (fun k d -> i,d,k)
+                                |> Seq.toList)
+              else 
+                let next = i.Next
+                let jump = i.Operand :?> Instruction
+                match Seq.unfold (fun (state:Cil.Instruction) -> if isNull state || state.Offset = jump.Offset then None else Some (state, state.Next)) next
+                        |> findSequencePoint with // TODO -- more filtering
+                | Some x ->                                                                    
+                    [
+                        (i, next, -1)
+                        (i, jump, 0)
+                    ]
+                | _ -> []
+
+            let bp = if instructions.Any() && ReportKind() = Base.ReportFormat.OpenCover then
                         [rawInstructions |> Seq.cast]
                                |> Seq.filter (fun _ -> dbg |> isNull |> not)
                                |> Seq.concat
                                |> Seq.filter (fun (i:Instruction) -> i.OpCode.FlowControl = FlowControl.Cond_Branch)
-                               |> Seq.map (fun (i:Instruction) ->     // TODO - filter simple branches, reformat switch by destination index
-                                                                      if i.OpCode = OpCodes.Switch then
-                                                                          (i, i.Next, -1) :: (i.Operand :?> Instruction[]
-                                                                                          |> Seq.mapi (fun k d -> i,d,k)
-                                                                                          |> Seq.toList)
-                                                                      else [
-                                                                              (i, i.Next, -1)
-                                                                              (i, i.Operand :?> Instruction, 0)
-                                                                           ]
+                               |> Seq.map (fun (i:Instruction) ->     getJumps i
                                                                       |> List.groupBy (fun (_,t,_) -> t.Offset)
-                                                                      |> List.map (fun (key,records) ->
+                                                                      |> List.map (fun (_,records) ->
                                                                                      let (from, target, _) = Seq.head records
                                                                                      (from, target, records
-                                                                                                    |> Seq.map (fun (_,_,n) -> n)
-                                                                                                    |> Seq.sort 
-                                                                                                    |> Seq.toList))
+                                                                                                    |> List.map (fun (_,_,n) -> n)
+                                                                                                    |> List.sort))
                                                                       |> List.sortBy (fun (_, _, l) -> l.Head)
-                                                                      |> List.mapi (fun path data -> path,data))
+                                                                      |> indexList)
                                |> Seq.filter (fun l -> l.Length > 1)
                                |> Seq.collect id
                                |> Seq.mapi (fun i (path, (from, target, indexes)) -> 
                                                              Seq.unfold (fun (state:Cil.Instruction) -> if isNull state then None else Some (state, state.Previous)) from
-                                                             |> Seq.map dbg.GetSequencePoint
-                                                             |> Seq.tryFind (fun s -> (s  |> isNull |> not) && s.StartLine <> 0xfeefee)
+                                                             |> findSequencePoint
                                                              |> Option.map (fun context ->
                                                                                     BranchPoint { Path = path
                                                                                                   Indexes = indexes

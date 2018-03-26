@@ -673,6 +673,7 @@ type AltCoverTests() = class
     let method = (def.MainModule.Types |> Seq.skipWhile (fun t -> t.Name.StartsWith("<"))|> Seq.head).Methods |> Seq.head
     Visitor.Visit [] [] // cheat reset
     try
+        Visitor.reportFormat <- Some Base.ReportFormat.OpenCover
         "Program" |> (Regex >> FilterClass.File >> Visitor.NameFilters.Add)
         let deeper = Visitor.Deeper <| Node.Method (method,
                                                     Inspect.Instrument,
@@ -695,6 +696,7 @@ type AltCoverTests() = class
                                      | _ -> Assert.Fail())
     finally
       Visitor.NameFilters.Clear()
+      Visitor.reportFormat <- None
 
   [<Test>]
   member self.MethodsAreDeeperThanTypes() =
@@ -705,6 +707,7 @@ type AltCoverTests() = class
     let type' = (def.MainModule.Types |> Seq.skipWhile (fun t -> t.Name.StartsWith("<"))|> Seq.head)
     Visitor.Visit [] [] // cheat reset
     try
+        Visitor.reportFormat <- Some Base.ReportFormat.OpenCover
         "Main" |> (Regex >> FilterClass.Method >> Visitor.NameFilters.Add)
         let deeper = Visitor.Deeper <| Node.Type (type', Inspect.Instrument)
                      |> Seq.toList
@@ -720,6 +723,7 @@ type AltCoverTests() = class
                      Is.EquivalentTo (expected |> Seq.map string))
     finally
       Visitor.NameFilters.Clear()
+      Visitor.reportFormat <- None
 
   [<Test>]
   member self.TypesAreDeeperThanModules() =
@@ -741,7 +745,7 @@ type AltCoverTests() = class
                                          let node = Node.Type (t, flag)
                                          List.concat [ [node]; (Visitor.Deeper >> Seq.toList) node; [Node.AfterType]])
                     |> List.concat
-        Assert.That (deeper.Length, Is.EqualTo 20)
+        Assert.That (deeper.Length, Is.EqualTo 18)
         Assert.That (deeper |> Seq.map string,
                      Is.EquivalentTo (expected |> Seq.map string))
     finally
@@ -761,7 +765,7 @@ type AltCoverTests() = class
                 |> Seq.map (fun t -> let node = Node.Module (t, Inspect.Instrument)
                                      List.concat [ [node]; (Visitor.Deeper >> Seq.toList) node; [AfterModule]])
                 |> List.concat
-    Assert.That (deeper.Length, Is.EqualTo 23)
+    Assert.That (deeper.Length, Is.EqualTo 21)
     Assert.That (deeper |> Seq.map string,
                  Is.EquivalentTo (expected |> Seq.map string))
 
@@ -779,7 +783,7 @@ type AltCoverTests() = class
 
     let assembly = Node.Assembly (def, Inspect.Instrument)
     let expected = List.concat [ [assembly]; (Visitor.Deeper >> Seq.toList) assembly; [AfterAssembly def]]
-    Assert.That (deeper.Length, Is.EqualTo 25)
+    Assert.That (deeper.Length, Is.EqualTo 23)
     Assert.That (deeper |> Seq.map string,
                  Is.EquivalentTo (expected |> Seq.map string))
 
@@ -1325,6 +1329,7 @@ type AltCoverTests() = class
 
     try
         Visitor.NameFilters.Clear()
+        Visitor.reportFormat <- Some Base.ReportFormat.OpenCover
         Visitor.Visit [ visitor ] (Visitor.ToSeq path)
         let resource = Assembly.GetExecutingAssembly().GetManifestResourceNames()
                          |> Seq.find (fun n -> n.EndsWith("Sample1WithOpenCover.xml", StringComparison.Ordinal))
@@ -1337,6 +1342,7 @@ type AltCoverTests() = class
         AltCoverTests.RecursiveValidateOpenCover result expected 0 true false
     finally
       Visitor.NameFilters.Clear()
+      Visitor.reportFormat <- None
 
   member self.AddTrackingForMain xml =
     let resource = Assembly.GetExecutingAssembly().GetManifestResourceNames()
@@ -1365,6 +1371,7 @@ type AltCoverTests() = class
         Visitor.NameFilters.Clear()
         Visitor.TrackingNames.Clear()
         Visitor.TrackingNames.Add("Main")
+        Visitor.reportFormat <- Some Base.ReportFormat.OpenCover
         Visitor.Visit [ visitor ] (Visitor.ToSeq path)
 
         let baseline = self.AddTrackingForMain "Sample1WithOpenCover.xml"
@@ -1372,6 +1379,7 @@ type AltCoverTests() = class
         let expected = baseline.Elements()
         AltCoverTests.RecursiveValidateOpenCover result expected 0 true false
     finally
+      Visitor.reportFormat <- None
       Visitor.NameFilters.Clear()
       Visitor.TrackingNames.Clear()
 
@@ -1553,6 +1561,7 @@ type AltCoverTests() = class
 
     try
         Visitor.NameFilters.Clear()
+        Visitor.reportFormat <- Some Base.ReportFormat.OpenCover
         Visitor.Visit [ visitor ] (Visitor.ToSeq path')
         let resource = Assembly.GetExecutingAssembly().GetManifestResourceNames()
                          |> Seq.find (fun n -> n.EndsWith("HandRolledMonoCoverage.xml", StringComparison.Ordinal))
@@ -1565,6 +1574,7 @@ type AltCoverTests() = class
         AltCoverTests.RecursiveValidateOpenCover result expected 0 true false
     finally
       Visitor.NameFilters.Clear()
+      Visitor.reportFormat <- None
 #if NETCOREAPP2_0
     Assert.Fail("the NUnit test adapter seems to be working again.  Remove this clause.")
    with  //Cecil 10.0 vs 10.0beta6
