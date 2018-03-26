@@ -45,12 +45,14 @@ type SeqPnt = {
     }
 
 [<ExcludeFromCodeCoverage>]
-type Branch = {
+type GoTo = {
+    Start : Instruction
+    Indexes : int list
+    Uid : int
     Path : int
     StartLine : int
     Offset : int
-    Target : int
-    Chain : int option
+    Target : int list
     Document : string
 }
 
@@ -62,7 +64,7 @@ type internal Node =
      | Type of TypeDefinition * Inspect
      | Method of MethodDefinition * Inspect * (int * string) option
      | MethodPoint of Instruction * SeqPnt option * int * bool
-     | BranchPoint of Instruction * Instruction * Branch * int
+     | BranchPoint of GoTo
      | AfterMethod of MethodDefinition * Inspect * (int * string) option
      | AfterType
      | AfterModule
@@ -291,30 +293,38 @@ module Visitor =
                                |> Seq.filter (fun _ -> dbg |> isNull |> not)
                                |> Seq.concat
                                |> Seq.filter (fun (i:Instruction) -> i.OpCode.FlowControl = FlowControl.Cond_Branch)
-                               |> Seq.map (fun (i:Instruction) ->
+                               |> Seq.map (fun (i:Instruction) ->     // TODO - filter simple branches, reformat switch by destination index
                                                                       if i.OpCode = OpCodes.Switch then
-                                                                          (i, i.Next) :: (i.Operand :?> Instruction[]
-                                                                                          |> Seq.map (fun d -> i,d)
+                                                                          (i, i.Next, -1) :: (i.Operand :?> Instruction[]
+                                                                                          |> Seq.mapi (fun k d -> i,d,k)
                                                                                           |> Seq.toList)
                                                                       else [
-                                                                              (i, i.Next)
-                                                                              (i, i.Operand :?> Instruction)
+                                                                              (i, i.Next, -1)
+                                                                              (i, i.Operand :?> Instruction, 0)
                                                                            ]
-                                                                      |> List.distinctBy snd
-                                                                      |> List.mapi (fun i (x,y) -> (i,x,y)))
+                                                                      |> List.groupBy (fun (_,t,_) -> t.Offset)
+                                                                      |> List.map (fun (key,records) ->
+                                                                                     let (from, target, _) = Seq.head records
+                                                                                     (from, target, records
+                                                                                                    |> Seq.map (fun (_,_,n) -> n)
+                                                                                                    |> Seq.toList))
+                                                                      |> List.mapi (fun path data -> path,data))
                                |> Seq.filter (fun l -> l.Length > 1)
                                |> Seq.collect id
-                               |> Seq.mapi (fun i (j,x,y) -> Seq.unfold (fun (state:Cil.Instruction) -> if isNull state then None else Some (state, state.Previous)) x
+                               |> Seq.mapi (fun i (path, (from, target, indexes)) -> 
+                                                             Seq.unfold (fun (state:Cil.Instruction) -> if isNull state then None else Some (state, state.Previous)) from
                                                              |> Seq.map dbg.GetSequencePoint
                                                              |> Seq.tryFind (fun s -> (s  |> isNull |> not) && s.StartLine <> 0xfeefee)
                                                              |> Option.map (fun context ->
-                                                                                    BranchPoint (x, y, { Path = j
-                                                                                                         StartLine = context.StartLine
-                                                                                                         Offset = x.Offset
-                                                                                                         Target = y.Offset
-                                                                                                         Chain = None
-                                                                                                         Document = context.Document.Url},
-                                                                                                i + BranchNumber)))
+                                                                                    BranchPoint { Path = path
+                                                                                                  Indexes = indexes
+                                                                                                  Uid = i + BranchNumber
+                                                                                                  Start = from
+                                                                                                  StartLine = context.StartLine
+                                                                                                  Offset = from.Offset
+                                                                                                  Target = [ target.Offset ] // TODO
+                                                                                                  Document = context.Document.Url
+                                                                                                  } ))
                                |> Seq.choose id |> Seq.toList
                      else []
             BranchNumber <- BranchNumber + List.length bp

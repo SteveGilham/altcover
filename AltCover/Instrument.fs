@@ -405,6 +405,10 @@ module Instrument =
             |> Seq.iter subs.SubstituteExceptionBoundary
        state
 
+  let private VisitBranchPoint (state:Context) _ =
+        // TODO
+    state
+
   let private FinishVisit (state : Context) =
                  let counterAssemblyFile = Path.Combine(Visitor.OutputDirectory(), (extractName state.RecordingAssembly) + ".dll")
                  WriteAssembly (state.RecordingAssembly) counterAssemblyFile
@@ -492,7 +496,7 @@ module Instrument =
 
      | MethodPoint (instruction, _, point, included) ->
                 VisitMethodPoint state instruction point included
-     | BranchPoint _ -> state
+     | BranchPoint branch -> VisitBranchPoint state branch
      | AfterMethod (m, included, track) -> VisitAfterMethod state m included track
 
      | AfterType -> state

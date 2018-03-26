@@ -208,32 +208,32 @@ module OpenCover =
       | Some codeSegment ->  VisitCodeSegment s codeSegment i
       | None -> s
 
-    let VisitJump branch uid fileid = 
+    let VisitGoTo s branch =
+      let fileid =  (s.Files.Item branch.Document)
       XElement(X "BranchPoint",
                XAttribute (X "vc", 0),
-               XAttribute (X "uspid", uid),
+               XAttribute (X "uspid", branch.Uid),
                XAttribute (X "ordinal", 0),
                XAttribute (X "offset", branch.Offset),
                XAttribute (X "sl", branch.StartLine),
                XAttribute (X "path", branch.Path),
                XAttribute (X "offsetchain", 0),
-               XAttribute (X "offsetend", branch.Target),
+               XAttribute (X "offsetend", branch.Target.Head),
                XAttribute (X "fileid", fileid)
               )
 
-    let VisitBranchPoint s x =
-       match (s.Excluded, x) with
-       | (Nothing, BranchPoint (_, _, branch, uid)) ->
+    let VisitBranchPoint s branch =
+       if s.Excluded = Nothing then
           let branches = s.Stack.Head.Parent.Descendants(X "BranchPoints") |> Seq.head
-          let xbranch = VisitJump branch uid (s.Files.Item branch.Document)
+          let xbranch = VisitGoTo s branch
           xbranch.SetAttributeValue(X "offsetchain",
-                                      match branch.Chain with
-                                      | None -> null
-                                      | Some n -> n:>obj)
+                                      match branch.Target.Tail with
+                                      | [] -> null
+                                      | l -> l:>obj)
           if branches.IsEmpty then branches.Add(xbranch)
           else branches.LastNode.AddAfterSelf(xbranch)
           { s with MethodBr = s.MethodBr + 1}
-       | _ -> s
+       else s
 
     let limitMethodCC count stack =
         if count > 0
@@ -353,7 +353,7 @@ module OpenCover =
       | Node.Type (typeDef, included) -> VisitType s typeDef included
       | Node.Method (methodDef, included, _) -> VisitMethod s methodDef included
       | MethodPoint (_, codeSegment,  i, _) -> VisitMethodPoint s codeSegment i
-      | BranchPoint _ -> VisitBranchPoint s node
+      | BranchPoint b -> VisitBranchPoint s b
       | AfterMethod (methodDef, included, track) -> VisitAfterMethod s methodDef track included
       | AfterType _ -> VisitAfterType s
       | AfterModule _ -> VisitAfterModule s

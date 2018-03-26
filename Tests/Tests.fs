@@ -682,8 +682,8 @@ type AltCoverTests() = class
         deeper
         |> List.skip 10
         |> List.iteri (fun i node -> match node with
-                                     | (BranchPoint (_, _, _, n)) ->
-                                           Assert.That(n, Is.EqualTo i, "branch point number")
+                                     | (BranchPoint b) ->
+                                           Assert.That(b.Uid, Is.EqualTo i, "branch point number")
                                      | _ -> Assert.Fail())
 
         deeper
