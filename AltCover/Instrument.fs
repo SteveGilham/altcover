@@ -305,7 +305,7 @@ module Instrument =
                         |> Seq.tryFindIndex (fun x -> x = oldValue)
            match offset with
            | Some i -> // operands.[i] <- newValue : fails with "This expression was expected to have type    ''a [] * int * 'a'    but here has type    'Instruction array'"
-                       Array.blit [| newValue |] 0 operands i 1 // so mutate the array like this instead
+                       Array.set operands i newValue // so mutate the array like this instead
            | _ -> ()
       | _ -> ()
 
@@ -418,7 +418,7 @@ module Instrument =
         branch.Indexes
         |> Seq.filter (fun i -> i >= 0)
         // See SubstituteInstructionOperand for why we do it this way
-        |> Seq.iter (fun i -> Array.blit [| update |] 0 operands i 1)
+        |> Seq.iter (fun i -> Array.set operands i update)
 
       match branch.Indexes |> Seq.tryFind (fun i -> i = -1) with
       | Some _ -> // immediate next instruction; by construction this one comes first
