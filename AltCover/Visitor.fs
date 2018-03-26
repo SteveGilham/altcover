@@ -307,7 +307,9 @@ module Visitor =
                                                                                      let (from, target, _) = Seq.head records
                                                                                      (from, target, records
                                                                                                     |> Seq.map (fun (_,_,n) -> n)
+                                                                                                    |> Seq.sort 
                                                                                                     |> Seq.toList))
+                                                                      |> List.sortBy (fun (_, _, l) -> l.Head)
                                                                       |> List.mapi (fun path data -> path,data))
                                |> Seq.filter (fun l -> l.Length > 1)
                                |> Seq.collect id

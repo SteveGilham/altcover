@@ -392,21 +392,78 @@ module Instrument =
               MethodWorker = body.GetILProcessor() }
          | _ -> state
 
+  let private UpdateBranchReferences state instruction injected =
+    // Change references in operands from "instruction" to first counter invocation instruction (instrLoadModuleId)
+    let subs = SubstituteInstruction (instruction, injected)
+    state.MethodBody.Instructions
+    |> Seq.iter subs.SubstituteInstructionOperand
+
+    state.MethodBody.ExceptionHandlers
+    |> Seq.iter subs.SubstituteExceptionBoundary
+
   let private VisitMethodPoint (state : Context) instruction point included =
-       if included then // by construction the sequence point is included
-            let instrLoadModuleId = InsertVisit instruction state.MethodWorker state.RecordingMethodRef.Visit state.ModuleId point
+    if included then // by construction the sequence point is included
+      let instrLoadModuleId = InsertVisit instruction state.MethodWorker state.RecordingMethodRef.Visit state.ModuleId point
+      UpdateBranchReferences state instruction instrLoadModuleId
+    state
 
-            // Change references in operands from "instruction" to first counter invocation instruction (instrLoadModuleId)
-            let subs = SubstituteInstruction (instruction, instrLoadModuleId)
-            state.MethodBody.Instructions
-            |> Seq.iter subs.SubstituteInstructionOperand
+  let private VisitBranchPoint (state:Context) branch =
+    if  state.MethodWorker |> isNull |> not then
+      let point = (branch.Uid ||| 0x8000000)
+      let instrument instruction =
+        InsertVisit instruction state.MethodWorker state.RecordingMethodRef.Visit state.ModuleId point
 
-            state.MethodBody.ExceptionHandlers
-            |> Seq.iter subs.SubstituteExceptionBoundary
-       state
+      let updateSwitch update =
+        let operands = branch.Start.Operand :?> Instruction[]
+        branch.Indexes
+        |> Seq.filter (fun i -> i >= 0)
+        // See SubstituteInstructionOperand for why we do it this way
+        |> Seq.iter (fun i -> Array.blit [| update |] 0 operands i 1)
 
-  let private VisitBranchPoint (state:Context) _ =
-        // TODO
+      match branch.Indexes |> Seq.tryFind (fun i -> i = -1) with
+      | Some _ -> // immediate next instruction; by construction this one comes first
+        // before
+        // Cond_Branch xxx
+        // Next
+        //
+        // after
+        // Cond_Branch xxx
+        // jump instrument#-1
+        // instrument#-1
+        // Next
+        let target = branch.Start.Next
+        let preamble = instrument target
+        let jump = state.MethodWorker.Create(OpCodes.Br, preamble)
+        state.MethodWorker.InsertAfter (branch.Start, jump)
+        if branch.Start.OpCode = OpCodes.Switch then
+          updateSwitch jump
+      | None -> 
+        // before
+        // Cond_Branch #n
+        // jump instrument#-1
+        // ...
+        // instrument#-1
+        // Next
+        //
+        // after
+        // Cond_Branch instrument#n
+        // jump instrument#-1
+        // instrument#n
+        // jump #n
+        // ...
+        // instrument#-1
+        // Next
+        let target = if branch.Start.OpCode = OpCodes.Switch then
+                      branch.Start.Operand :?> Instruction[]
+                      |> Seq.skip (branch.Indexes.Head)
+                      |> Seq.head
+                     else branch.Start.Operand :?> Instruction
+        let jump = state.MethodWorker.Create(OpCodes.Br, target)
+        state.MethodWorker.InsertAfter (branch.Start.Next, jump)
+        let preamble = instrument jump
+        if branch.Start.OpCode = OpCodes.Switch then
+          updateSwitch preamble
+        else branch.Start.Operand <- preamble
     state
 
   let private FinishVisit (state : Context) =
