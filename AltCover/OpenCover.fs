@@ -2,11 +2,11 @@
 
 open System
 open System.Diagnostics.CodeAnalysis
+open System.Globalization
 open System.IO
 open System.Xml.Linq
 
 open Mono.Cecil
-open Mono.Cecil.Cil
 
 open AltCover.Augment
 
@@ -55,14 +55,21 @@ module OpenCover =
                       TotalMethods = 0
                       TotalClasses = 0
                       TotalSeq = 0}
+
+  let internal X name =
+      XName.Get name
+
+  let internal setChain (xbranch:XElement) (chain:int list) =
+          xbranch.SetAttributeValue(X "offsetchain",
+                                      match chain with
+                                      | [] -> null
+                                      | l -> String.Join(" ", l |> Seq.map (fun i -> i.ToString(CultureInfo.InvariantCulture))))
+
   let internal ReportGenerator () =
 
     // The internal state of the document is mutated by the
     // operation of the visitor.  Everything else should now be pure
     let document = XDocument(XDeclaration("1.0", "utf-8", "yes"), [||])
-
-    let X name =
-      XName.Get name
 
     let Summary () =
         XElement(X "Summary",
@@ -221,15 +228,11 @@ module OpenCover =
                XAttribute (X "offsetend", branch.Target.Head),
                XAttribute (X "fileid", fileid)
               )
-
     let VisitBranchPoint s branch =
        if s.Excluded = Nothing then
           let branches = s.Stack.Head.Parent.Descendants(X "BranchPoints") |> Seq.head
           let xbranch = VisitGoTo s branch
-          xbranch.SetAttributeValue(X "offsetchain",
-                                      match branch.Target.Tail with
-                                      | [] -> null
-                                      | l -> l:>obj)
+          setChain xbranch branch.Target.Tail
           if branches.IsEmpty then branches.Add(xbranch)
           else branches.LastNode.AddAfterSelf(xbranch)
           { s with MethodBr = s.MethodBr + 1}

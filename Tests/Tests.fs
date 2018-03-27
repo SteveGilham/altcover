@@ -1274,6 +1274,36 @@ type AltCoverTests() = class
     let m = MethodDefinition("dummy", MethodAttributes.Abstract, TypeDefinition("System", "Void", TypeAttributes.Public))
     Assert.That (Gendarme.CyclomaticComplexity m, Is.EqualTo 1)
 
+  [<Test>]
+  member self.BranchChainsSerialize() =
+    let where = Assembly.GetExecutingAssembly().Location
+    let path = Path.Combine(Path.GetDirectoryName(where), "Sample2.dll")
+    let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    ProgramDatabase.ReadSymbols def
+    let method = def.MainModule.GetAllTypes()
+                 |> Seq.collect (fun t -> t.Methods)
+                 |> Seq.find (fun m -> m.Name = "as_bar")
+    Visitor.Visit [] [] // cheat reset
+    try
+        Visitor.reportFormat <- Some Base.ReportFormat.OpenCover
+        "Program" |> (Regex >> FilterClass.File >> Visitor.NameFilters.Add)
+        let branch = Visitor.Deeper <| Node.Method (method,
+                                                    Inspect.Instrument,
+                                                    None)
+                     |> Seq.map (fun n -> match n with
+                                          | BranchPoint b -> Some b
+                                          | _ -> None)
+                     |> Seq.choose id |> Seq.head
+        Assert.That (branch.Target.Length, Is.EqualTo 2)
+        let xbranch = XElement(XName.Get "test")
+        OpenCover.setChain xbranch branch.Target.Tail
+        Assert.That (xbranch.ToString(),
+                     Is.EqualTo """<test offsetchain="29" />""")
+    finally
+      Visitor.NameFilters.Clear()
+      Visitor.reportFormat <- None
+
+
   static member private RecursiveValidateOpenCover result expected' depth zero expectSkipped =
     let X name =
       XName.Get(name)
