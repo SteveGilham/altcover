@@ -64,6 +64,18 @@ module Counter =
                     System.Globalization.CultureInfo.InvariantCulture)
     if f then (c|||flag) else -1
 
+  let internal OpenCoverXml = ("//Module", "hash", "Classes/Class/Methods/Method",
+                                                        [("SequencePoints/SequencePoint", 0)
+                                                         ("BranchPoints/BranchPoint", BranchFlag)]
+                                                        , "vc")
+  let internal NCoverXml = ("//module", "moduleId", "method", [("seqpnt",0)], "visitcount")
+
+  let internal XmlByFormat format = 
+    match format with
+    | ReportFormat.OpenCoverWithTracking
+    | ReportFormat.OpenCover -> OpenCoverXml
+    | _ -> NCoverXml
+
   /// <summary>
   /// Save sequence point hit counts to xml report file
   /// </summary>
@@ -91,13 +103,7 @@ module Counter =
         root.SetAttribute("driverVersion", "AltCover.Recorder " +
                                      System.Diagnostics.FileVersionInfo.GetVersionInfo(System.Reflection.Assembly.GetExecutingAssembly().Location).FileVersion)
 
-    let (m, i, m', s, v) = match format with
-                           | ReportFormat.OpenCoverWithTracking
-                           | ReportFormat.OpenCover -> ("//Module", "hash", "Classes/Class/Methods/Method",
-                                                        [("SequencePoints/SequencePoint", 0)
-                                                         ("BranchPoints/BranchPoint", BranchFlag)]
-                                                        , "vc")
-                           | _ -> ("//module", "moduleId", "method", [("seqpnt",0)], "visitcount")
+    let (m, i, m', s, v) = XmlByFormat format
     coverageDocument.SelectNodes(m)
     |> Seq.cast<XmlElement>
     |> Seq.map (fun el -> el.GetAttribute(i), el)

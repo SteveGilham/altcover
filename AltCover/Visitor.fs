@@ -259,6 +259,31 @@ module Visitor =
                                                     && significant m)
         |> Seq.collect ((fun m -> Method (m, UpdateInspection included m, Track m)) >> buildSequence)
 
+  let findSequencePoint (dbg:MethodDebugInformation) (instructions:Instruction seq) =
+    instructions
+    |> Seq.map dbg.GetSequencePoint
+    |> Seq.tryFind (fun s -> (s  |> isNull |> not) && s.StartLine <> 0xfeefee)
+
+  let indexList l =
+    l |> List.mapi (fun i x -> (i,x))
+
+  let getJumps (i:Instruction) =
+    if i.OpCode = OpCodes.Switch then
+      (i, i.Next, -1) :: (i.Operand :?> Instruction[]
+      |> Seq.mapi (fun k d -> i,d,k)
+      |> Seq.toList)
+    else 
+    let next = i.Next
+    let jump = i.Operand :?> Instruction
+    //match Seq.unfold (fun (state:Cil.Instruction) -> if isNull state || state.Offset > jump.Offset then None else Some (state, state.Next)) i
+    //        |> findSequencePoint with // TODO -- more filtering
+    //| Some x ->                                                                    
+    [
+            (i, next, -1)
+            (i, jump, 0)
+        ]
+    //| _ -> []
+
   let private VisitMethod (m:MethodDefinition) (included:Inspect) =
             let rawInstructions = m.Body.Instructions
             let dbg = m.DebugInformation
@@ -289,30 +314,6 @@ module Visitor =
                                                                  IsIncluded |>
                                                                  IsInstrumented)))
 
-            let findSequencePoint instructions =
-              instructions
-              |> Seq.map dbg.GetSequencePoint
-              |> Seq.tryFind (fun s -> (s  |> isNull |> not) && s.StartLine <> 0xfeefee)
-
-            let indexList l =
-                l |> List.mapi (fun i x -> (i,x))
-
-            let getJumps (i:Instruction) =
-              if i.OpCode = OpCodes.Switch then
-                (i, i.Next, -1) :: (i.Operand :?> Instruction[]
-                                |> Seq.mapi (fun k d -> i,d,k)
-                                |> Seq.toList)
-              else 
-                let next = i.Next
-                let jump = i.Operand :?> Instruction
-                //match Seq.unfold (fun (state:Cil.Instruction) -> if isNull state || state.Offset > jump.Offset then None else Some (state, state.Next)) i
-                //        |> findSequencePoint with // TODO -- more filtering
-                //| Some x ->                                                                    
-                [
-                        (i, next, -1)
-                        (i, jump, 0)
-                    ]
-                //| _ -> []
 
             let bp = if instructions.Any() && ReportKind() = Base.ReportFormat.OpenCover then
                         [rawInstructions |> Seq.cast]
@@ -332,7 +333,7 @@ module Visitor =
                                |> Seq.collect id
                                |> Seq.mapi (fun i (path, (from, target, indexes)) -> 
                                                              Seq.unfold (fun (state:Cil.Instruction) -> if isNull state then None else Some (state, state.Previous)) from
-                                                             |> findSequencePoint
+                                                             |> (findSequencePoint dbg)
                                                              |> Option.map (fun context ->
                                                                                     BranchPoint { Path = path
                                                                                                   Indexes = indexes
