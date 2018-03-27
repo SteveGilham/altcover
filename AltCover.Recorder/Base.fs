@@ -25,7 +25,7 @@ module Counter =
    /// </summary>
   let internal BranchFlag = 0x80000000
   let internal BranchMask = 0x7FFFFFFF
-   
+
    /// <summary>
    /// The time at which coverage run began
    /// </summary>
@@ -70,7 +70,7 @@ module Counter =
                                                         , "vc")
   let internal NCoverXml = ("//module", "moduleId", "method", [("seqpnt",0)], "visitcount")
 
-  let internal XmlByFormat format = 
+  let internal XmlByFormat format =
     match format with
     | ReportFormat.OpenCoverWithTracking
     | ReportFormat.OpenCover -> OpenCoverXml
@@ -118,14 +118,14 @@ module Counter =
         let nn = affectedModule.SelectNodes(m')
         nn
         |> Seq.cast<XmlElement>
-        |> Seq.collect (fun (``method``:XmlElement) -> 
+        |> Seq.collect (fun (``method``:XmlElement) ->
                                     s
                                     |> Seq.collect (fun (name, flag) ->
                                                     ``method``.SelectNodes(name)
                                                     |> Seq.cast<XmlElement>
                                                     |> Seq.map (fun x -> (x,flag))
                                                     |> Seq.toList |> List.rev))
-        |> Seq.mapi (fun counter (pt,flag) -> 
+        |> Seq.mapi (fun counter (pt,flag) ->
                              ((match format with
                                         | ReportFormat.OpenCoverWithTracking
                                         | ReportFormat.OpenCover -> "uspid" |> pt.GetAttribute |> (FindIndexFromUspid flag)

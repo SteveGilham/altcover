@@ -272,12 +272,12 @@ module Visitor =
       (i, i.Next, -1) :: (i.Operand :?> Instruction[]
       |> Seq.mapi (fun k d -> i,d,k)
       |> Seq.toList)
-    else 
+    else
     let next = i.Next
     let jump = i.Operand :?> Instruction
     //match Seq.unfold (fun (state:Cil.Instruction) -> if isNull state || state.Offset > jump.Offset then None else Some (state, state.Next)) i
     //        |> findSequencePoint with // TODO -- more filtering
-    //| Some x ->                                                                    
+    //| Some x ->
     [
             (i, next, -1)
             (i, jump, 0)
@@ -314,7 +314,6 @@ module Visitor =
                                                                  IsIncluded |>
                                                                  IsInstrumented)))
 
-
             let bp = if instructions.Any() && ReportKind() = Base.ReportFormat.OpenCover then
                         [rawInstructions |> Seq.cast]
                                |> Seq.filter (fun _ -> dbg |> isNull |> not)
@@ -331,7 +330,7 @@ module Visitor =
                                                                       |> indexList)
                                |> Seq.filter (fun l -> l.Length > 1)
                                |> Seq.collect id
-                               |> Seq.mapi (fun i (path, (from, target, indexes)) -> 
+                               |> Seq.mapi (fun i (path, (from, target, indexes)) ->
                                                              Seq.unfold (fun (state:Cil.Instruction) -> if isNull state then None else Some (state, state.Previous)) from
                                                              |> (findSequencePoint dbg)
                                                              |> Option.map (fun context ->

@@ -437,7 +437,7 @@ module Instrument =
         state.MethodWorker.InsertAfter (branch.Start, jump)
         if branch.Start.OpCode = OpCodes.Switch then
           updateSwitch jump
-      | None -> 
+      | None ->
         // before
         // Cond_Branch #n
         // jump instrument#-1
