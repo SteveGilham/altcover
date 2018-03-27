@@ -466,6 +466,9 @@ type AltCoverTests() = class
     let payload = Dictionary<int,int * Track list>()
     [0..9 ]
     |> Seq.iter(fun i -> payload.[10 - i] <- (i+1, []))
+    [11..12]
+    |> Seq.iter(fun i -> payload.[i ||| Counter.BranchFlag] <- (i-10, []))
+
     let item = Dictionary<string, Dictionary<int, int * Track list>>()
     item.Add("7C-CD-66-29-A3-6C-6D-5F-A7-65-71-0E-22-7D-B2-61-B5-1F-65-9A", payload)
     Counter.UpdateReport ignore (fun _ _ -> ()) true item ReportFormat.OpenCover worker |> ignore
@@ -475,7 +478,12 @@ type AltCoverTests() = class
     Assert.That( after.SelectNodes("//SequencePoint")
                  |> Seq.cast<XmlElement>
                  |> Seq.map (fun x -> x.GetAttribute("vc")),
-                 Is.EquivalentTo [ "11"; "10"; "9"; "8"; "7"; "6"; "4"; "3"; "2"; "1"]))
+                 Is.EquivalentTo [ "11"; "10"; "9"; "8"; "7"; "6"; "4"; "3"; "2"; "1"])
+    Assert.That( after.SelectNodes("//BranchPoint")
+                 |> Seq.cast<XmlElement>
+                 |> Seq.map (fun x -> x.GetAttribute("vc")),
+                 Is.EquivalentTo [ "2"; "2"]))
+
     self.GetMyMethodName "<="
 #endif
 

@@ -409,7 +409,7 @@ module Instrument =
 
   let private VisitBranchPoint (state:Context) branch =
     if  state.MethodWorker |> isNull |> not then
-      let point = (branch.Uid ||| 0x8000000)
+      let point = (branch.Uid ||| Base.Counter.BranchFlag)
       let instrument instruction =
         InsertVisit instruction state.MethodWorker state.RecordingMethodRef.Visit state.ModuleId point
 
