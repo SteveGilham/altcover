@@ -407,7 +407,7 @@ module Instrument =
       UpdateBranchReferences state instruction instrLoadModuleId
     state
 
-  let private VisitBranchPoint (state:Context) branch =
+  let internal VisitBranchPoint (state:Context) branch =
     if  state.MethodWorker |> isNull |> not then
       let point = (branch.Uid ||| Base.Counter.BranchFlag)
       let instrument instruction =

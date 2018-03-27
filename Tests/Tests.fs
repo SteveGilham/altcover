@@ -1303,7 +1303,6 @@ type AltCoverTests() = class
       Visitor.NameFilters.Clear()
       Visitor.reportFormat <- None
 
-
   static member private RecursiveValidateOpenCover result expected' depth zero expectSkipped =
     let X name =
       XName.Get(name)
@@ -2295,6 +2294,118 @@ type AltCoverTests() = class
     AltCover.Instrument.Track state recorder.Head Inspect.Track None
     Assert.That (recorder.Head.Body.Instructions.Count, Is.EqualTo countBefore)
     Assert.That (recorder.Head.Body.ExceptionHandlers.Count, Is.EqualTo handlersBefore)
+
+  [<Test>]
+  member self.SwitchBranchesShouldInstrumentByPushingDown() =
+    let where = Assembly.GetExecutingAssembly().Location
+    let path = Path.Combine(Path.GetDirectoryName(where), "Sample2.dll")
+    let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    ProgramDatabase.ReadSymbols def
+    let method = def.MainModule.GetAllTypes()
+                 |> Seq.collect (fun t -> t.Methods)
+                 |> Seq.find (fun m -> m.Name = "as_bar")
+    Visitor.Visit [] [] // cheat reset
+    try
+        Visitor.reportFormat <- Some Base.ReportFormat.OpenCover
+        let branches = Visitor.Deeper <| Node.Method (method,
+                                                    Inspect.Instrument,
+                                                    None)
+                     |> Seq.map (fun n -> match n with
+                                          | BranchPoint b -> Some b
+                                          | _ -> None)
+                     |> Seq.choose id
+                     |> Seq.take 2 // start of a switch
+                     |> Seq.toList
+        match branches with
+        | [b1 ; b2] ->
+            Assert.That (b1.Start.OpCode, Is.EqualTo OpCodes.Switch)
+            Assert.That (b2.Start.OpCode, Is.EqualTo OpCodes.Switch)
+            Assert.That (b1.Start.Offset, Is.EqualTo b2.Start.Offset)
+        | _ -> Assert.Fail("wrong number of items")
+
+        let raw = AltCover.Instrument.Context.Build([])
+        let state = {  raw with
+                           RecordingMethodRef = { raw.RecordingMethodRef with
+                                                                          Visit = method
+                                                                          Push = null
+                                                                          Pop = null }
+                           MethodWorker = method.Body.GetILProcessor()}
+        let next = branches.Head.Start.Next
+        branches
+        |> Seq.iter(fun b -> Instrument.VisitBranchPoint state b
+                             |> ignore)
+
+        let inject = Seq.unfold (fun (state:Cil.Instruction) -> if isNull state || state = next then None else Some (state, state.Next)) branches.Head.Start
+                     |> Seq.skip 1 |> Seq.toList
+
+        Assert.That (inject.Length, Is.EqualTo 8)
+        let switches = branches.Head.Start.Operand :?> Instruction[]
+                       |> Seq.toList
+        Assert.That (switches.[0], Is.EqualTo inject.[1])
+        Assert.That (switches.[1], Is.EqualTo inject.[0])
+        Assert.That (inject.[0].Operand, Is.EqualTo inject.[5])
+        Assert.That ((inject.[2].Operand :?> int) &&& Base.Counter.BranchMask , Is.EqualTo 1)
+        Assert.That ((inject.[6].Operand :?> int) &&& Base.Counter.BranchMask , Is.EqualTo 0)
+
+    finally
+      Visitor.NameFilters.Clear()
+      Visitor.reportFormat <- None
+
+  [<Test>]
+  member self.SimpleBranchShouldInstrumentByPushingDown() =
+    let where = Assembly.GetExecutingAssembly().Location
+    let path = Path.Combine(Path.GetDirectoryName(where),
+#if NETCOREAPP2_0
+                    "Sample1.dll")
+#else
+                    "Sample1.exe")
+#endif
+
+    let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    ProgramDatabase.ReadSymbols def
+    let method = def.MainModule.GetAllTypes()
+                 |> Seq.collect (fun t -> t.Methods)
+                 |> Seq.find (fun m -> m.Name = "Main")
+    Visitor.Visit [] [] // cheat reset
+    try
+        Visitor.reportFormat <- Some Base.ReportFormat.OpenCover
+        let branches = Visitor.Deeper <| Node.Method (method,
+                                                    Inspect.Instrument,
+                                                    None)
+                     |> Seq.map (fun n -> match n with
+                                          | BranchPoint b -> Some b
+                                          | _ -> None)
+                     |> Seq.choose id
+                     |> Seq.take 2 // start of a switch
+                     |> Seq.toList
+        match branches with
+        | [b1 ; b2] -> ()
+        | _ -> Assert.Fail("wrong number of items")
+
+        let raw = AltCover.Instrument.Context.Build([])
+        let state = {  raw with
+                           RecordingMethodRef = { raw.RecordingMethodRef with
+                                                                          Visit = method
+                                                                          Push = null
+                                                                          Pop = null }
+                           MethodWorker = method.Body.GetILProcessor()}
+        let next = branches.Head.Start.Next
+
+        branches
+        |> Seq.iter(fun b -> Instrument.VisitBranchPoint state b
+                             |> ignore)
+
+        let inject = Seq.unfold (fun (state:Cil.Instruction) -> if isNull state || state = next then None else Some (state, state.Next)) branches.Head.Start
+                     |> Seq.skip 1 |> Seq.toList
+
+        Assert.That (inject.Length, Is.EqualTo 8)
+        Assert.That (inject.[0].Operand, Is.EqualTo inject.[5])
+        Assert.That ((inject.[2].Operand :?> int) &&& Base.Counter.BranchMask , Is.EqualTo 1)
+        Assert.That ((inject.[6].Operand :?> int) &&& Base.Counter.BranchMask , Is.EqualTo 0)
+
+    finally
+      Visitor.NameFilters.Clear()
+      Visitor.reportFormat <- None
 
   [<Test>]
   member self.StartShouldLoadRecordingAssembly () =
