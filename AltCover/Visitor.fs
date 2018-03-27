@@ -268,8 +268,8 @@ module Visitor =
     l |> List.mapi (fun i x -> (i,x))
 
   let getJumpChain (i:Instruction) =
-    Seq.unfold (fun (state:Cil.Instruction) -> if isNull state  
-                                               then None 
+    Seq.unfold (fun (state:Cil.Instruction) -> if isNull state
+                                               then None
                                                else Some (state, if state.OpCode = OpCodes.Br ||
                                                                     state.OpCode = OpCodes.Br_S
                                                                  then state.Operand :?> Instruction
