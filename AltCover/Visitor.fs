@@ -267,20 +267,30 @@ module Visitor =
   let indexList l =
     l |> List.mapi (fun i x -> (i,x))
 
+  let getJumpChain (i:Instruction) =
+    Seq.unfold (fun (state:Cil.Instruction) -> if isNull state  
+                                               then None 
+                                               else Some (state, if state.OpCode = OpCodes.Br ||
+                                                                    state.OpCode = OpCodes.Br_S
+                                                                 then state.Operand :?> Instruction
+                                                                 else null)) i
+    |> Seq.toList
+    |> List.rev
+
   let getJumps (i:Instruction) =
+    let next = i.Next
     if i.OpCode = OpCodes.Switch then
-      (i, i.Next, -1) :: (i.Operand :?> Instruction[]
-      |> Seq.mapi (fun k d -> i,d,k)
+      (i, getJumpChain next, next.Offset, -1) :: (i.Operand :?> Instruction[]
+      |> Seq.mapi (fun k d -> i,getJumpChain d,d.Offset,k)
       |> Seq.toList)
     else
-    let next = i.Next
     let jump = i.Operand :?> Instruction
     //match Seq.unfold (fun (state:Cil.Instruction) -> if isNull state || state.Offset > jump.Offset then None else Some (state, state.Next)) i
     //        |> findSequencePoint with // TODO -- more filtering
     //| Some x ->
     [
-            (i, next, -1)
-            (i, jump, 0)
+            (i, getJumpChain next, next.Offset, -1)
+            (i, getJumpChain jump, jump.Offset, 0)
         ]
     //| _ -> []
 
@@ -320,11 +330,11 @@ module Visitor =
                                |> Seq.concat
                                |> Seq.filter (fun (i:Instruction) -> i.OpCode.FlowControl = FlowControl.Cond_Branch)
                                |> Seq.map (fun (i:Instruction) ->     getJumps i
-                                                                      |> List.groupBy (fun (_,t,_) -> t.Offset)
+                                                                      |> List.groupBy (fun (_,_,o,_) -> o)
                                                                       |> List.map (fun (_,records) ->
-                                                                                     let (from, target, _) = Seq.head records
+                                                                                     let (from, target, _, _) = Seq.head records
                                                                                      (from, target, records
-                                                                                                    |> List.map (fun (_,_,n) -> n)
+                                                                                                    |> List.map (fun (_,_,_,n) -> n)
                                                                                                     |> List.sort))
                                                                       |> List.sortBy (fun (_, _, l) -> l.Head)
                                                                       |> indexList)
@@ -340,7 +350,7 @@ module Visitor =
                                                                                                   Start = from
                                                                                                   StartLine = context.StartLine
                                                                                                   Offset = from.Offset
-                                                                                                  Target = [ target.Offset ] // TODO
+                                                                                                  Target = target |> List.map (fun i -> i.Offset)
                                                                                                   Document = context.Document.Url
                                                                                                   } ))
                                |> Seq.choose id |> Seq.toList
