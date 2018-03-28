@@ -71,6 +71,12 @@ module OpenCover =
                                       | [] -> null
                                       | l -> String.Join(" ", l |> Seq.map (fun i -> i.ToString(CultureInfo.InvariantCulture))))
 
+  let SafeMultiply x y =
+        try 
+            Checked.(*) x <| Math.Max(1, y)
+        with
+        | :? OverflowException -> Int32.MaxValue
+
   let internal ReportGenerator () =
 
     // The internal state of the document is mutated by the
@@ -257,10 +263,22 @@ module OpenCover =
         if excluded = Method then Nothing else excluded
 
     let handleOrdinals (``method``:XElement) =
-        let sp = ``method``.Descendants(X "SequencePoint")
+        let sp = ``method``.Descendants(X "SequencePoint") |> Seq.toList
         sp |> Seq.iteri(fun i x -> x.SetAttributeValue(X "ordinal", i))
-        let sp = ``method``.Descendants(X "BranchPoint")
-        sp |> Seq.iteri(fun i x -> x.SetAttributeValue(X "ordinal", i))
+        let bp = ``method``.Descendants(X "BranchPoint") |> Seq.toList
+        bp |> Seq.iteri(fun i x -> x.SetAttributeValue(X "ordinal", i))
+        
+        if sp |> List.isEmpty |> not && bp |> List.isEmpty |> not then
+          let interleave = List.concat [ sp; bp ]
+                           |> List.sortBy (fun x -> x.Attribute(X "offset").Value |> Int32.TryParse |> snd)
+          let (np,_,_) = interleave 
+                         |> Seq.fold(fun (np0, bec, (sq:XElement)) x ->
+                               match x.Name.LocalName with
+                               | "SequencePoint" -> sq.SetAttributeValue(X "bec", bec)
+                                                    (SafeMultiply np0  bec, 0, x)
+                               | _ -> (np0, bec+1, sq)) (1, 0, sp.Head)
+          ``method``.SetAttributeValue(X "nPathComplexity", np)
+
 
     let AddTracking (s : Context) (m:MethodDefinition) t =
       t |>

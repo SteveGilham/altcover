@@ -1270,6 +1270,12 @@ type AltCoverTests() = class
   // OpenCover.fs
 
   [<Test>]
+  member self.SafeMultiplyIsSafe() =
+    Assert.That (OpenCover.SafeMultiply 1 0, Is.EqualTo 1)
+    Assert.That (OpenCover.SafeMultiply 2 3, Is.EqualTo 6)
+    Assert.That (OpenCover.SafeMultiply 65536 65536, Is.EqualTo Int32.MaxValue)
+
+  [<Test>]
   member self.EmptyMethodHasComplexity1() =
     let m = MethodDefinition("dummy", MethodAttributes.Abstract, TypeDefinition("System", "Void", TypeAttributes.Public))
     Assert.That (Gendarme.CyclomaticComplexity m, Is.EqualTo 1)
@@ -1332,14 +1338,12 @@ type AltCoverTests() = class
             Seq.zip ra ea |> Seq.iter (fun ((a1:XAttribute), (a2:XAttribute)) ->
                     Assert.That(a1.Name, Is.EqualTo(a2.Name))
                     match a1.Name.ToString() with
-                    | "bec"
                     | "bev"
                     | "visited"
                     | "visitedSequencePoints"
                     | "visitedBranchPoints"
                     | "visitedClasses"
                     | "visitedMethods"
-                    | "nPathComplexity"
                     | "sequenceCoverage"
                     | "branchCoverage"
                     | "uspid"
