@@ -72,7 +72,7 @@ module OpenCover =
                                       | l -> String.Join(" ", l |> Seq.map (fun i -> i.ToString(CultureInfo.InvariantCulture))))
 
   let SafeMultiply x y =
-        try 
+        try
             Checked.(*) x <| Math.Max(1, y)
         with
         | :? OverflowException -> Int32.MaxValue
@@ -267,18 +267,17 @@ module OpenCover =
         sp |> Seq.iteri(fun i x -> x.SetAttributeValue(X "ordinal", i))
         let bp = ``method``.Descendants(X "BranchPoint") |> Seq.toList
         bp |> Seq.iteri(fun i x -> x.SetAttributeValue(X "ordinal", i))
-        
+
         if sp |> List.isEmpty |> not && bp |> List.isEmpty |> not then
           let interleave = List.concat [ sp; bp ]
                            |> List.sortBy (fun x -> x.Attribute(X "offset").Value |> Int32.TryParse |> snd)
-          let (np,_,_) = interleave 
+          let (np,_,_) = interleave
                          |> Seq.fold(fun (np0, bec, (sq:XElement)) x ->
                                match x.Name.LocalName with
                                | "SequencePoint" -> sq.SetAttributeValue(X "bec", bec)
                                                     (SafeMultiply np0  bec, 0, x)
                                | _ -> (np0, bec+1, sq)) (1, 0, sp.Head)
           ``method``.SetAttributeValue(X "nPathComplexity", np)
-
 
     let AddTracking (s : Context) (m:MethodDefinition) t =
       t |>
@@ -303,7 +302,7 @@ module OpenCover =
         let ``method`` = head.Parent
         ``method``.Elements(X "Summary")
         |> Seq.iter(fun summary -> summary.SetAttributeValue(X "numSequencePoints", s.MethodSeq)
-                                   summary.SetAttributeValue(X "numBranchPoints", s.MethodBr + 
+                                   summary.SetAttributeValue(X "numBranchPoints", s.MethodBr +
                                                                // make the number agree with OpenCover
                                                                if s.MethodSeq > 0 then 1 else 0)
                                    summary.SetAttributeValue(X "maxCyclomaticComplexity", cc)
@@ -318,7 +317,7 @@ module OpenCover =
         let tail = VisitAfterMethodIncluded s
         {s with Stack = tail
                 ClassSeq = s.ClassSeq + s.MethodSeq
-                ClassBr = s.ClassBr + s.MethodBr + 
+                ClassBr = s.ClassBr + s.MethodBr +
                           // make the number agree with OpenCover
                           if s.MethodSeq > 0 then 1 else 0
                 MethodCC = limitMethodCC s.MethodSeq s.MethodCC}
