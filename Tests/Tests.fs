@@ -1287,13 +1287,18 @@ type AltCoverTests() = class
     try
         Visitor.reportFormat <- Some Base.ReportFormat.OpenCover
         "Program" |> (Regex >> FilterClass.File >> Visitor.NameFilters.Add)
-        let branch = Visitor.Deeper <| Node.Method (method,
+        let branches = Visitor.Deeper <| Node.Method (method,
                                                     Inspect.Instrument,
                                                     None)
-                     |> Seq.map (fun n -> match n with
-                                          | BranchPoint b -> Some b
-                                          | _ -> None)
-                     |> Seq.choose id |> Seq.head
+                       |> Seq.map (fun n -> match n with
+                                            | BranchPoint b -> Some b
+                                            | _ -> None)
+                       |> Seq.choose id |> Seq.toList
+
+        // The only overt branching in this function are the 4 match cases
+        // Internal IL conditional branching is a compiler thing from inlining "string"
+        Assert.That (branches |> Seq.length, Is.EqualTo 4)
+        let branch = branches |> Seq.head
         Assert.That (branch.Target.Length, Is.EqualTo 2)
         let xbranch = XElement(XName.Get "test")
         OpenCover.setChain xbranch branch.Target.Tail

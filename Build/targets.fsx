@@ -1332,8 +1332,6 @@ Target "ReleaseXUnitFSharpTypesDotNetFullRunner" ( fun _ ->
                                      "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
                                      "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
                                      "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
-                                     "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
-                                     "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
                                      "<TrackedMethodRef uid=\"2\" vc=\"2\" />"
                                      "<TrackedMethodRef uid=\"2\" vc=\"1\" />"
                                      "<TrackedMethodRef uid=\"2\" vc=\"1\" />"
