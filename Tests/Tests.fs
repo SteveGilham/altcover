@@ -1339,7 +1339,6 @@ type AltCoverTests() = class
                     | "visitedBranchPoints"
                     | "visitedClasses"
                     | "visitedMethods"
-                    | "numBranchPoints"
                     | "nPathComplexity"
                     | "sequenceCoverage"
                     | "branchCoverage"

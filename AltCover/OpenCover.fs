@@ -30,14 +30,17 @@ module OpenCover =
                             MethodBr : int
                             MethodCC : int option list
                             ClassSeq : int
+                            ClassBr : int
                             ClassCC : (int * int) list
                             ModuleSeq : int
+                            ModuleBr : int
                             ModuleMethods : int
                             ModuleClasses : int
                             ModuleCC : (int * int) list
                             TotalMethods : int
                             TotalClasses : int
-                            TotalSeq : int}
+                            TotalSeq : int
+                            TotalBr : int}
   with static member Build () =
                     { Stack = List.empty<XElement>
                       Excluded = Nothing
@@ -47,14 +50,17 @@ module OpenCover =
                       MethodBr = 0
                       MethodCC = []
                       ClassSeq = 0
+                      ClassBr = 0
                       ClassCC = []
                       ModuleSeq = 0
+                      ModuleBr = 0
                       ModuleMethods = 0
                       ModuleClasses = 0
                       ModuleCC = []
                       TotalMethods = 0
                       TotalClasses = 0
-                      TotalSeq = 0}
+                      TotalSeq = 0
+                      TotalBr = 0}
 
   let internal X name =
       XName.Get name
@@ -117,6 +123,7 @@ module OpenCover =
           {s with Stack = classes :: s.Stack
                   Excluded = Nothing
                   ModuleSeq = 0
+                  ModuleBr = 0
                   ModuleMethods = 0
                   ModuleClasses = 0
                   ClassCC = []}
@@ -135,6 +142,7 @@ module OpenCover =
       {s with Stack = if instrumented then methods :: s.Stack else s.Stack
               Excluded = if instrumented then Nothing else Type
               ClassSeq = 0
+              ClassBr = 0
               MethodCC = []}
 
     let boolString b = if b then "true" else "false"
@@ -176,6 +184,7 @@ module OpenCover =
                 Excluded = if instrumented then Nothing else Method
                 Index = -1
                 MethodSeq = 0
+                MethodBr = 0
                 MethodCC = Some cc :: s.MethodCC}
       else s
 
@@ -228,6 +237,7 @@ module OpenCover =
                XAttribute (X "offsetend", branch.Target.Head),
                XAttribute (X "fileid", fileid)
               )
+
     let VisitBranchPoint s branch =
        if s.Excluded = Nothing then
           let branches = s.Stack.Head.Parent.Descendants(X "BranchPoints") |> Seq.head
@@ -275,6 +285,9 @@ module OpenCover =
         let ``method`` = head.Parent
         ``method``.Elements(X "Summary")
         |> Seq.iter(fun summary -> summary.SetAttributeValue(X "numSequencePoints", s.MethodSeq)
+                                   summary.SetAttributeValue(X "numBranchPoints", s.MethodBr + 
+                                                               // make the number agree with OpenCover
+                                                               if s.MethodSeq > 0 then 1 else 0)
                                    summary.SetAttributeValue(X "maxCyclomaticComplexity", cc)
                                    summary.SetAttributeValue(X "minCyclomaticComplexity", cc)
                                    summary.SetAttributeValue(X "numMethods", if s.MethodSeq > 0 then 1 else 0))
@@ -287,6 +300,9 @@ module OpenCover =
         let tail = VisitAfterMethodIncluded s
         {s with Stack = tail
                 ClassSeq = s.ClassSeq + s.MethodSeq
+                ClassBr = s.ClassBr + s.MethodBr + 
+                          // make the number agree with OpenCover
+                          if s.MethodSeq > 0 then 1 else 0
                 MethodCC = limitMethodCC s.MethodSeq s.MethodCC}
       else { s with Excluded = passOnClassExclusion s.Excluded }
 
@@ -302,12 +318,14 @@ module OpenCover =
         let classes = if s.ClassSeq > 0 then 1 else 0
         head.Parent.Elements(X "Summary")
         |> Seq.iter(fun summary -> summary.SetAttributeValue(X "numSequencePoints", s.ClassSeq)
+                                   summary.SetAttributeValue(X "numBranchPoints", s.ClassBr)
                                    summary.SetAttributeValue(X "maxCyclomaticComplexity", max)
                                    summary.SetAttributeValue(X "minCyclomaticComplexity", Math.Min(min, max))
                                    summary.SetAttributeValue(X "numClasses", classes)
                                    summary.SetAttributeValue(X "numMethods", methods))
         {s with Stack = if s.Excluded = Nothing then tail else s.Stack
                 ModuleSeq = s.ModuleSeq + s.ClassSeq
+                ModuleBr = s.ModuleBr + s.ClassBr
                 ClassCC = ((if min = 0 then 1 else min), max) :: s.ClassCC
                 ModuleMethods = methods + s.ModuleMethods
                 ModuleClasses = classes + s.ModuleClasses
@@ -319,6 +337,7 @@ module OpenCover =
                       |> Seq.fold (fun state pair -> Math.Min (fst state, fst pair), Math.Max (snd state, snd pair)) (1,0)
         head.Parent.Elements(X "Summary")
         |> Seq.iter(fun summary -> summary.SetAttributeValue(X "numSequencePoints", s.ModuleSeq)
+                                   summary.SetAttributeValue(X "numBranchPoints", s.ModuleBr )
                                    summary.SetAttributeValue(X "maxCyclomaticComplexity", max )
                                    summary.SetAttributeValue(X "minCyclomaticComplexity", min)
                                    summary.SetAttributeValue(X "numClasses", s.ModuleClasses)
@@ -333,6 +352,7 @@ module OpenCover =
                                                                              XAttribute(X "fullPath", k)))))
         {s with Stack = tail
                 TotalSeq = s.TotalSeq + s.ModuleSeq
+                TotalBr = s.TotalBr + s.ModuleBr
                 ModuleCC = (min, max) :: s.ModuleCC
                 TotalClasses = s.ModuleClasses + s.TotalClasses
                 TotalMethods = s.ModuleMethods + s.TotalMethods}
@@ -343,6 +363,7 @@ module OpenCover =
                     |> Seq.fold (fun state pair -> Math.Min (fst state, fst pair), Math.Max (snd state, snd pair)) (1,0)
       head.Parent.Elements(X "Summary")
       |> Seq.iter(fun summary -> summary.SetAttributeValue(X "numSequencePoints", s.TotalSeq)
+                                 summary.SetAttributeValue(X "numBranchPoints", s.TotalBr )
                                  summary.SetAttributeValue(X "maxCyclomaticComplexity", max )
                                  summary.SetAttributeValue(X "minCyclomaticComplexity", min)
                                  summary.SetAttributeValue(X "numClasses", s.TotalClasses)
