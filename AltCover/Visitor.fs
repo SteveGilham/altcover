@@ -308,6 +308,40 @@ module Visitor =
   // cribbed from OpenCover's CecilSymbolManager -- internals of C# yield return iterators
   let private IsMoveNext = Regex(@"\<[^\s>]+\>\w__\w(\w)?::MoveNext\(\)$", RegexOptions.Compiled ||| RegexOptions.ExplicitCapture);
 
+  let private ExtractBranchPoints dbg methodFullName rawInstructions =
+        // Generated MoveNext => skip one branch
+        let skip = if IsMoveNext.IsMatch methodFullName then 1 else 0
+        [rawInstructions |> Seq.cast]
+        |> Seq.filter (fun _ -> dbg |> isNull |> not)
+        |> Seq.concat
+        |> Seq.filter (fun (i:Instruction) -> i.OpCode.FlowControl = FlowControl.Cond_Branch)
+        |> Seq.skip skip
+        |> Seq.map (fun (i:Instruction) ->     getJumps dbg i // if two or more jumps go between the same two places, coalesce them
+                                               |> List.groupBy (fun (_,_,o,_) -> o)
+                                               |> List.map (fun (_,records) ->
+                                                               let (from, target, _, _) = Seq.head records
+                                                               (from, target, records
+                                                                           |> List.map (fun (_,_,_,n) -> n)
+                                                                           |> List.sort))
+                                               |> List.sortBy (fun (_, _, l) -> l.Head)
+                                               |> indexList)
+        |> Seq.filter (fun l -> l.Length > 1)
+        |> Seq.collect id
+        |> Seq.mapi (fun i (path, (from, target, indexes)) ->
+                                        Seq.unfold (fun (state:Cil.Instruction) -> if isNull state then None else Some (state, state.Previous)) from
+                                        |> (findSequencePoint dbg)
+                                        |> Option.map (fun context ->
+                                                            BranchPoint { Path = path
+                                                                          Indexes = indexes
+                                                                          Uid = i + BranchNumber
+                                                                          Start = from
+                                                                          StartLine = context.StartLine
+                                                                          Offset = from.Offset
+                                                                          Target = target |> List.map (fun i -> i.Offset)
+                                                                          Document = context.Document.Url
+                                                                          } ))
+        |> Seq.choose id |> Seq.toList
+
   let private VisitMethod (m:MethodDefinition) (included:Inspect) =
             let rawInstructions = m.Body.Instructions
             let dbg = m.DebugInformation
@@ -339,38 +373,7 @@ module Visitor =
                                                                  IsInstrumented)))
 
             let bp = if instructions.Any() && ReportKind() = Base.ReportFormat.OpenCover then
-                        // Generated MoveNext => skip one branch
-                        let skip = if IsMoveNext.IsMatch m.FullName then 1 else 0
-                        [rawInstructions |> Seq.cast]
-                        |> Seq.filter (fun _ -> dbg |> isNull |> not)
-                        |> Seq.concat
-                        |> Seq.filter (fun (i:Instruction) -> i.OpCode.FlowControl = FlowControl.Cond_Branch)
-                        |> Seq.skip skip
-                        |> Seq.map (fun (i:Instruction) ->     getJumps dbg i // if two or more jumps go between the same two places, coalesce them
-                                                               |> List.groupBy (fun (_,_,o,_) -> o)
-                                                               |> List.map (fun (_,records) ->
-                                                                               let (from, target, _, _) = Seq.head records
-                                                                               (from, target, records
-                                                                                           |> List.map (fun (_,_,_,n) -> n)
-                                                                                           |> List.sort))
-                                                               |> List.sortBy (fun (_, _, l) -> l.Head)
-                                                               |> indexList)
-                        |> Seq.filter (fun l -> l.Length > 1)
-                        |> Seq.collect id
-                        |> Seq.mapi (fun i (path, (from, target, indexes)) ->
-                                                        Seq.unfold (fun (state:Cil.Instruction) -> if isNull state then None else Some (state, state.Previous)) from
-                                                        |> (findSequencePoint dbg)
-                                                        |> Option.map (fun context ->
-                                                                            BranchPoint { Path = path
-                                                                                          Indexes = indexes
-                                                                                          Uid = i + BranchNumber
-                                                                                          Start = from
-                                                                                          StartLine = context.StartLine
-                                                                                          Offset = from.Offset
-                                                                                          Target = target |> List.map (fun i -> i.Offset)
-                                                                                          Document = context.Document.Url
-                                                                                          } ))
-                        |> Seq.choose id |> Seq.toList
+                        ExtractBranchPoints dbg m.FullName rawInstructions
                      else []
             BranchNumber <- BranchNumber + List.length bp
             Seq.append sp bp
