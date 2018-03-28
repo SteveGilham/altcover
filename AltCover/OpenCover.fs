@@ -246,7 +246,7 @@ module OpenCover =
     let passOnClassExclusion excluded =
         if excluded = Method then Nothing else excluded
 
-    let handleSequencePoints (``method``:XElement) =
+    let handleOrdinals (``method``:XElement) =
         let sp = ``method``.Descendants(X "SequencePoint")
         sp |> Seq.iteri(fun i x -> x.SetAttributeValue(X "ordinal", i))
         let sp = ``method``.Descendants(X "BranchPoint")
@@ -278,7 +278,7 @@ module OpenCover =
                                    summary.SetAttributeValue(X "maxCyclomaticComplexity", cc)
                                    summary.SetAttributeValue(X "minCyclomaticComplexity", cc)
                                    summary.SetAttributeValue(X "numMethods", if s.MethodSeq > 0 then 1 else 0))
-        handleSequencePoints ``method``
+        handleOrdinals ``method``
         tail
 
     let VisitAfterMethod (s : Context) methodDef track included =
