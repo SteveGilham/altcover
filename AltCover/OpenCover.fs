@@ -291,6 +291,15 @@ module OpenCover =
                                                          XAttribute(X "name", m.FullName),
                                                          XAttribute(X "strategy", strategy)))))
 
+    let AddMethodSummary (s : Context) cc (summary:XElement) =
+        summary.SetAttributeValue(X "numSequencePoints", s.MethodSeq)
+        summary.SetAttributeValue(X "numBranchPoints", s.MethodBr +
+                                    // make the number agree with OpenCover
+                                    if s.MethodSeq > 0 then 1 else 0)
+        summary.SetAttributeValue(X "maxCyclomaticComplexity", cc)
+        summary.SetAttributeValue(X "minCyclomaticComplexity", cc)
+        summary.SetAttributeValue(X "numMethods", if s.MethodSeq > 0 then 1 else 0)
+
     let VisitAfterMethodIncluded (s : Context) =
         let head,tail = Augment.Split s.Stack
         head.Parent.Elements(X "FileRef")
@@ -301,13 +310,7 @@ module OpenCover =
         let cc = Option.getOrElse 1 s.MethodCC.Head
         let ``method`` = head.Parent
         ``method``.Elements(X "Summary")
-        |> Seq.iter(fun summary -> summary.SetAttributeValue(X "numSequencePoints", s.MethodSeq)
-                                   summary.SetAttributeValue(X "numBranchPoints", s.MethodBr +
-                                                               // make the number agree with OpenCover
-                                                               if s.MethodSeq > 0 then 1 else 0)
-                                   summary.SetAttributeValue(X "maxCyclomaticComplexity", cc)
-                                   summary.SetAttributeValue(X "minCyclomaticComplexity", cc)
-                                   summary.SetAttributeValue(X "numMethods", if s.MethodSeq > 0 then 1 else 0))
+        |> Seq.iter (AddMethodSummary s cc)
         handleOrdinals ``method``
         tail
 

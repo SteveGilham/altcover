@@ -279,7 +279,15 @@ module Visitor =
     |> Seq.toList
     |> List.rev
 
-  [<SuppressMessage("Microsoft.Usage", "CA2208", Justification="Compiler inlined code")>]
+  [<SuppressMessage("Microsoft.Usage", "CA2208", Justification="Compiler inlined code in List.m??By")>]
+  let includedSequencePoint dbg (toNext:Instruction list) toJump =
+    let places = List.concat [toNext; toJump]
+    let start = places |> List.minBy (fun i -> i.Offset)
+    let finish = places |> List.maxBy (fun i -> i.Offset)
+    let range = Seq.unfold (fun (state:Cil.Instruction) -> if isNull state || finish = state.Previous then None else Some (state, state.Next)) start
+                |>  Seq.toList
+    findSequencePoint dbg range
+
   let getJumps (dbg:MethodDebugInformation) (i:Instruction) =
     let next = i.Next
     if i.OpCode = OpCodes.Switch then
@@ -293,12 +301,7 @@ module Visitor =
 
     // Eliminate the "all inside one SeqPnt" jumps
     // This covers a multitude of compiler generated branching cases
-    let places = List.concat [toNext; toJump]
-    let start = places |> List.minBy (fun i -> i.Offset)
-    let finish = places |> List.maxBy (fun i -> i.Offset)
-    let range = Seq.unfold (fun (state:Cil.Instruction) -> if isNull state || finish = state.Previous then None else Some (state, state.Next)) start
-                |>  Seq.toList
-    match findSequencePoint dbg range with
+    match includedSequencePoint dbg toNext toJump with
     | Some _ -> [
                 (i, toNext, next.Offset, -1)
                 (i, toJump, jump.Offset, 0)
