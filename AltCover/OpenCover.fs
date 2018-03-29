@@ -314,16 +314,19 @@ module OpenCover =
         handleOrdinals ``method``
         tail
 
-    let VisitAfterMethod (s : Context) methodDef track included =
-      AddTracking s methodDef track
-      if s.Excluded = Nothing && included <> Inspect.TrackOnly then
-        let tail = VisitAfterMethodIncluded s
+    let UpdateClassCountsByMethod (s : Context) (tail:XElement list) =
         {s with Stack = tail
                 ClassSeq = s.ClassSeq + s.MethodSeq
                 ClassBr = s.ClassBr + s.MethodBr +
                           // make the number agree with OpenCover
                           if s.MethodSeq > 0 then 1 else 0
                 MethodCC = limitMethodCC s.MethodSeq s.MethodCC}
+
+    let VisitAfterMethod (s : Context) methodDef track included =
+      AddTracking s methodDef track
+      if s.Excluded = Nothing && included <> Inspect.TrackOnly then
+        let tail = VisitAfterMethodIncluded s
+        UpdateClassCountsByMethod s tail
       else { s with Excluded = passOnClassExclusion s.Excluded }
 
     let VisitAfterType (s : Context) =
