@@ -208,6 +208,22 @@ module Runner =
     match format with
     | Base.ReportFormat.OpenCoverWithTracking
     | Base.ReportFormat.OpenCover ->
+        let percentCover visits points =
+          if points = 0 then "0"
+          else (sprintf "%.2f" ((float (visits * 100))/(float points))).TrimEnd([| '0' |]).TrimEnd([|'.'|])
+
+        let setSummary (x:XmlElement) pointVisits branchVisits methodVisits classVisits ptcover brcover =
+          x.GetElementsByTagName("Summary")
+          |> Seq.cast<XmlElement>
+          |> Seq.tryHead
+          |> Option.iter(fun s -> s.SetAttribute("visitedSequencePoints", sprintf "%d" pointVisits)
+                                  s.SetAttribute("visitedBranchPoints", sprintf "%d" branchVisits)
+                                  s.SetAttribute("visitedMethods", sprintf "%d" methodVisits)
+                                  classVisits
+                                  |> Option.iter (fun cvc -> s.SetAttribute("visitedClasses", sprintf "%d" cvc))
+                                  s.SetAttribute("branchCoverage", brcover)
+                                  s.SetAttribute("sequenceCoverage", ptcover))
+
         let updateMethod (dict:Dictionary<int, int * Base.Track list>) (vb, vs, vm, pt, br) (``method``:XmlElement) =
             let sp = ``method``.GetElementsByTagName("SequencePoint")
             let bp = ``method``.GetElementsByTagName("BranchPoint")
@@ -221,42 +237,28 @@ module Runner =
             else
                 FillMethodPoint mp ``method`` dict
 
-            let visitPoints = VisitCount sp
-            let b0 = VisitCount bp
-            let branches = b0 + Math.Sign b0
-            if visitPoints > 0 then
-                let cover = (sprintf "%.2f" ((float (visitPoints * 100))/(float count))).TrimEnd([| '0' |]).TrimEnd([|'.'|])
-                let bcover = (sprintf "%.2f" ((float (branches * 100))/(float bCount))).TrimEnd([| '0' |]).TrimEnd([|'.'|])
+            let pointVisits = VisitCount sp
+            if pointVisits > 0 then
+                let b0 = VisitCount bp
+                let branchVisits = b0 + Math.Sign b0
+                let cover = percentCover pointVisits count
+                let bcover = percentCover branchVisits bCount
+
                 ``method``.SetAttribute("visited", "true")
                 ``method``.SetAttribute("sequenceCoverage", cover)
                 ``method``.SetAttribute("branchCoverage", bcover)
-                ``method``.GetElementsByTagName("Summary")
-                |> Seq.cast<XmlElement>
-                |> Seq.iter(fun s -> s.SetAttribute("visitedSequencePoints", sprintf "%d" visitPoints)
-                                     s.SetAttribute("visitedBranchPoints", sprintf "%d" branches)
-                                     s.SetAttribute("visitedMethods", "1")
-                                     s.SetAttribute("branchCoverage", bcover)
-                                     s.SetAttribute("sequenceCoverage", cover))
-                (vb + branches, vs + visitPoints, vm + 1, pt + count, br+bCount)
+                setSummary ``method`` pointVisits branchVisits 1 None cover bcover
+                (vb + branchVisits, vs + pointVisits, vm + 1, pt + count, br+bCount)
             else (vb, vs, vm, pt + count, br+bCount)
 
         let updateClass (dict:Dictionary<int, int * Base.Track list>) (vb, vs, vm, vc, pt, br) (``class``:XmlElement) =
             let (cvb, cvs, cvm, cpt, cbr) = ``class``.GetElementsByTagName("Method")
                                             |> Seq.cast<XmlElement>
                                             |> Seq.fold (updateMethod dict) (0,0,0,0,0)
-            let csum = ``class``.GetElementsByTagName("Summary")
-                         |> Seq.cast<XmlElement> |> Seq.head
-            let cover = if cpt = 0 then "0"
-                         else (sprintf "%.2f" ((float (cvs * 100))/(float cpt))).TrimEnd([| '0' |]).TrimEnd([|'.'|])
-            let bcover = if cbr = 0 then "0"
-                         else (sprintf "%.2f" ((float (cvb * 100))/(float cbr))).TrimEnd([| '0' |]).TrimEnd([|'.'|])
+            let cover = percentCover cvs cpt
+            let bcover = percentCover cvb cbr
             let cvc = if cvm > 0 then 1 else 0
-            csum.SetAttribute("visitedSequencePoints", sprintf "%d" cvs)
-            csum.SetAttribute("visitedBranchPoints", sprintf "%d" cvb)
-            csum.SetAttribute("visitedMethods", sprintf "%d" cvm)
-            csum.SetAttribute("visitedClasses", sprintf "%d" cvc)
-            csum.SetAttribute("sequenceCoverage", cover)
-            csum.SetAttribute("branchCoverage", bcover)
+            setSummary ``class`` cvs cvb cvm (Some cvc) cover bcover
             (vb + cvb, vs + cvs, vm + cvm, vc + cvc, pt + cpt, br + cbr)
 
         let updateModule (counts:Dictionary<string, Dictionary<int, int * Base.Track list>>) (vb, vs, vm, vc, pt, br) (``module``:XmlElement) =
@@ -266,36 +268,17 @@ module Runner =
             let (cvb, cvs, cvm, cvc, cpt, cbr) = ``module``.GetElementsByTagName("Class")
                                                 |> Seq.cast<XmlElement>
                                                 |> Seq.fold (dict |> updateClass) (0,0,0,0,0,0)
-            let cover = if cpt = 0 then "0"
-                         else (sprintf "%.2f" ((float (cvs * 100))/(float cpt))).TrimEnd([| '0' |]).TrimEnd([|'.'|])
-            let bcover = if cbr = 0 then "0"
-                         else (sprintf "%.2f" ((float (cvb * 100))/(float cbr))).TrimEnd([| '0' |]).TrimEnd([|'.'|])
-            ``module``.GetElementsByTagName("Summary")
-            |> Seq.cast<XmlElement> |> Seq.tryFind (fun _ -> true)
-            |> Option.iter (fun msum ->
-                msum.SetAttribute("visitedSequencePoints", sprintf "%d" cvs)
-                msum.SetAttribute("visitedBranchPoints", sprintf "%d" cvb)
-                msum.SetAttribute("visitedMethods", sprintf "%d" cvm)
-                msum.SetAttribute("visitedClasses", sprintf "%d" cvc)
-                msum.SetAttribute("sequenceCoverage", cover)
-                msum.SetAttribute("branchCoverage", bcover))
+            let cover = percentCover cvs cpt
+            let bcover = percentCover cvb cbr
+            setSummary ``module`` cvs cvb cvm (Some cvc) cover bcover
             (vb + cvb, vs + cvs, vm + cvm, vc + cvc, pt + cpt, br + cbr)
 
         let (vb, vs, vm, vc, pt, br) = document.DocumentElement.SelectNodes("//Module")
                                        |> Seq.cast<XmlElement>
                                        |> Seq.fold (updateModule counts) (0, 0, 0, 0, 0, 0)
-        let cover = if pt = 0 then "0"
-                    else (sprintf "%.2f" ((float (vs * 100))/(float pt))).TrimEnd([| '0' |]).TrimEnd([|'.'|])
-        let bcover = if br = 0 then "0"
-                     else (sprintf "%.2f" ((float (vb * 100))/(float br))).TrimEnd([| '0' |]).TrimEnd([|'.'|])
-        let msum = document.DocumentElement.GetElementsByTagName("Summary")
-                         |> Seq.cast<XmlElement> |> Seq.head
-        msum.SetAttribute("visitedSequencePoints", sprintf "%d" vs)
-        msum.SetAttribute("visitedBranchPoints", sprintf "%d" vb)
-        msum.SetAttribute("visitedMethods", sprintf "%d" vm)
-        msum.SetAttribute("visitedClasses", sprintf "%d" vc)
-        msum.SetAttribute("sequenceCoverage", cover)
-        msum.SetAttribute("branchCoverage", bcover)
+        let cover = percentCover vs pt
+        let bcover = percentCover vb br
+        setSummary document.DocumentElement vs vb vm (Some vc) cover bcover
     | _ -> ()
 
   let internal Point (pt:XmlElement) items outername innername attribute =
