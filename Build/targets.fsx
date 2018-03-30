@@ -879,7 +879,7 @@ Target "Packaging" (fun _ ->
                           |> Seq.toList)
                        ]
                        |> List.concat
-                       |> List.map (fun x -> (x, Some ("tools/netcoreapp2.0" + Path.GetDirectoryName(x).Substring(root).Replace("\\","/")), None))
+                       |> List.map (fun x -> (x, Some ("src/netcoreapp2.0" + Path.GetDirectoryName(x).Substring(root).Replace("\\","/")), None))
 
     printfn "Executing on %A" Environment.OSVersion
     NuGet (fun p ->
@@ -995,7 +995,7 @@ Target "ReleaseDotNetWithFramework" (fun _ ->
 
 Target "ReleaseMonoWithDotNet" (fun _ ->
     Directory.ensure "./_Reports"
-    let unpack = Path.getFullName "_Packaging/Unpack/tools/netcoreapp2.0/AltCover"
+    let unpack = Path.getFullName "_Packaging/Unpack/src/netcoreapp2.0/AltCover"
     let x = Path.getFullName "./_Reports/ReleaseMonoWithDotNet.xml"
     let o = Path.getFullName "./_Mono/__Instrumented.ReleaseMonoWithDotNet"
     let i = Path.getFullName "./_Mono/Sample1"
@@ -1014,7 +1014,7 @@ Target "ReleaseMonoWithDotNet" (fun _ ->
 
 Target "ReleaseDotNetWithDotNet" (fun _ ->
     Directory.ensure "./_Reports"
-    let unpack = Path.getFullName "_Packaging/Unpack/tools/netcoreapp2.0/AltCover"
+    let unpack = Path.getFullName "_Packaging/Unpack/src/netcoreapp2.0/AltCover"
     let x = Path.getFullName "./_Reports/ReleaseDotNetWithDotNet.xml"
     let o = Path.getFullName "./_Binaries/Sample1/__Instrumented.ReleaseDotNetWithDotNet"
     let i = Path.getFullName "./_Binaries/Sample1/Debug+AnyCPU/netcoreapp2.0"
@@ -1041,7 +1041,7 @@ Target "ReleaseXUnitDotNetDemo" (fun _ ->
                 Configuration = DotNet.BuildConfiguration.Debug
                 Common = dotnetOptions p.Common})
 
-    let unpack = Path.getFullName "_Packaging/Unpack/tools/netcoreapp2.0/AltCover"
+    let unpack = Path.getFullName "_Packaging/Unpack/src/netcoreapp2.0/AltCover"
     let x = Path.getFullName "./Demo/xunit-dotnet/bin/ReleaseXUnitDotNetDemo.xml"
     let o = Path.getFullName "./Demo/xunit-dotnet/bin/Debug/netcoreapp2.0/__Instrumented.ReleaseXUnitDotNetDemo"
     let i = Path.getFullName "./Demo/xunit-dotnet/bin/Debug/netcoreapp2.0"
@@ -1084,7 +1084,7 @@ Target "ReleaseXUnitDotNetRunnerDemo" (fun _ ->
                 Configuration = DotNet.BuildConfiguration.Debug
                 Common = dotnetOptions p.Common})
 
-    let unpack = Path.getFullName "_Packaging/Unpack/tools/netcoreapp2.0/AltCover"
+    let unpack = Path.getFullName "_Packaging/Unpack/src/netcoreapp2.0/AltCover"
     let x = Path.getFullName "./Demo/xunit-dotnet/bin/ReleaseXUnitDotNetDemo.xml"
     let o = Path.getFullName "./Demo/xunit-dotnet/bin/Debug/netcoreapp2.0/__Instrumented.ReleaseXUnitDotNetDemo"
     let i = Path.getFullName "./Demo/xunit-dotnet/bin/Debug/netcoreapp2.0"
@@ -1095,7 +1095,7 @@ Target "ReleaseXUnitDotNetRunnerDemo" (fun _ ->
     !! (o @@ "*")
     |> Shell.Copy i
 
-    let runner = Path.getFullName "_Packaging/Unpack/tools/netcoreapp2.0/AltCover/altcover.core.fsproj"
+    let runner = Path.getFullName "_Packaging/Unpack/src/netcoreapp2.0/AltCover/altcover.core.fsproj"
 
     // Run
     Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory  = o}) "run"
@@ -1123,7 +1123,7 @@ Target "ReleaseXUnitDotNetRunnerDemo" (fun _ ->
 
 Target "ReleaseFSharpTypesDotNetRunner" ( fun _ ->
     Directory.ensure "./_Reports"
-    let unpack = Path.getFullName "_Packaging/Unpack/tools/netcoreapp2.0/AltCover"
+    let unpack = Path.getFullName "_Packaging/Unpack/src/netcoreapp2.0/AltCover"
     let x = Path.getFullName "./_Reports/AltCoverReleaseFSharpTypesDotNetRunner.xml"
     let o = Path.getFullName "Sample2/_Binaries/Sample2/Debug+AnyCPU/netcoreapp2.0"
     let i = Path.getFullName "_Binaries/Sample2/Debug+AnyCPU/netcoreapp2.0"
@@ -1139,7 +1139,7 @@ Target "ReleaseFSharpTypesDotNetRunner" ( fun _ ->
 
     printfn "Execute the instrumented tests"
     let sample2 = Path.getFullName "./Sample2/sample2.core.fsproj"
-    let runner = Path.getFullName "_Packaging/Unpack/tools/netcoreapp2.0/AltCover/altcover.core.fsproj"
+    let runner = Path.getFullName "_Packaging/Unpack/src/netcoreapp2.0/AltCover/altcover.core.fsproj"
 
     // Run
     Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = o}) "run"
@@ -1154,7 +1154,7 @@ Target "ReleaseFSharpTypesDotNetRunner" ( fun _ ->
 
 Target "ReleaseFSharpTypesX86DotNetRunner" ( fun _ ->
     Directory.ensure "./_Reports"
-    let unpack = Path.getFullName "_Packaging/Unpack/tools/netcoreapp2.0/AltCover"
+    let unpack = Path.getFullName "_Packaging/Unpack/src/netcoreapp2.0/AltCover"
     let x = Path.getFullName "./_Reports/AltCoverReleaseFSharpTypesX86DotNetRunner.xml"
     let o = Path.getFullName "Sample2/_Binaries/Sample2/Debug+x86/netcoreapp2.0"
     let i = Path.getFullName "_Binaries/Sample2/Debug+AnyCPU/netcoreapp2.0"
@@ -1203,7 +1203,7 @@ Target "ReleaseFSharpTypesX86DotNetRunner" ( fun _ ->
 
 Target "ReleaseXUnitFSharpTypesDotNet" ( fun _ ->
     Directory.ensure "./_Reports"
-    let unpack = Path.getFullName "_Packaging/Unpack/tools/netcoreapp2.0/AltCover"
+    let unpack = Path.getFullName "_Packaging/Unpack/src/netcoreapp2.0/AltCover"
     let x = Path.getFullName "./_Reports/ReleaseXUnitFSharpTypesDotNet.xml"
     let o = Path.getFullName "Sample4/_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.0"
     let i = Path.getFullName "_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.0"
@@ -1226,7 +1226,7 @@ Target "ReleaseXUnitFSharpTypesDotNet" ( fun _ ->
 
 Target "ReleaseXUnitFSharpTypesDotNetRunner" ( fun _ ->
     Directory.ensure "./_Reports"
-    let unpack = Path.getFullName "_Packaging/Unpack/tools/netcoreapp2.0/AltCover"
+    let unpack = Path.getFullName "_Packaging/Unpack/src/netcoreapp2.0/AltCover"
     let x = Path.getFullName "./_Reports/ReleaseXUnitFSharpTypesDotNetRunner.xml"
     let o = Path.getFullName "Sample4/_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.0"
     let i = Path.getFullName "_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.0"
@@ -1242,7 +1242,7 @@ Target "ReleaseXUnitFSharpTypesDotNetRunner" ( fun _ ->
 
     printfn "Execute the instrumented tests"
     let sample4 = Path.getFullName "./Sample4/sample4.core.fsproj"
-    let runner = Path.getFullName "_Packaging/Unpack/tools/netcoreapp2.0/AltCover/altcover.core.fsproj"
+    let runner = Path.getFullName "_Packaging/Unpack/src/netcoreapp2.0/AltCover/altcover.core.fsproj"
 
     // Run
     Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = o}) "run"
@@ -1256,7 +1256,7 @@ Target "ReleaseXUnitFSharpTypesDotNetRunner" ( fun _ ->
 
 Target "ReleaseXUnitFSharpTypesDotNetFullRunner" ( fun _ ->
     Directory.ensure "./_Reports"
-    let unpack = Path.getFullName "_Packaging/Unpack/tools/netcoreapp2.0/AltCover"
+    let unpack = Path.getFullName "_Packaging/Unpack/src/netcoreapp2.0/AltCover"
     let x = Path.getFullName "./_Reports/ReleaseXUnitFSharpTypesDotNetFullRunner.xml"
     let o = Path.getFullName "Sample4/_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.0"
     let i = Path.getFullName "_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.0"
@@ -1291,7 +1291,7 @@ Target "ReleaseXUnitFSharpTypesDotNetFullRunner" ( fun _ ->
 
     printfn "Execute the instrumented tests"
     let sample4 = Path.getFullName "./Sample4/sample4.core.fsproj"
-    let runner = Path.getFullName "_Packaging/Unpack/tools/netcoreapp2.0/AltCover/altcover.core.fsproj"
+    let runner = Path.getFullName "_Packaging/Unpack/src/netcoreapp2.0/AltCover/altcover.core.fsproj"
 
     // Run
     Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = o}) "run"
