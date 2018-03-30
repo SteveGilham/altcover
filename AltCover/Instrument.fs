@@ -305,7 +305,7 @@ module Instrument =
                         |> Seq.tryFindIndex (fun x -> x = oldValue)
            match offset with
            | Some i -> // operands.[i] <- newValue : fails with "This expression was expected to have type    ''a [] * int * 'a'    but here has type    'Instruction array'"
-                       Array.blit [| newValue |] 0 operands i 1 // so mutate the array like this instead
+                       Array.set operands i newValue // so mutate the array like this instead
            | _ -> ()
       | _ -> ()
 
@@ -392,18 +392,79 @@ module Instrument =
               MethodWorker = body.GetILProcessor() }
          | _ -> state
 
+  let private UpdateBranchReferences state instruction injected =
+    // Change references in operands from "instruction" to first counter invocation instruction (instrLoadModuleId)
+    let subs = SubstituteInstruction (instruction, injected)
+    state.MethodBody.Instructions
+    |> Seq.iter subs.SubstituteInstructionOperand
+
+    state.MethodBody.ExceptionHandlers
+    |> Seq.iter subs.SubstituteExceptionBoundary
+
   let private VisitMethodPoint (state : Context) instruction point included =
-       if included then // by construction the sequence point is included
-            let instrLoadModuleId = InsertVisit instruction state.MethodWorker state.RecordingMethodRef.Visit state.ModuleId point
+    if included then // by construction the sequence point is included
+      let instrLoadModuleId = InsertVisit instruction state.MethodWorker state.RecordingMethodRef.Visit state.ModuleId point
+      UpdateBranchReferences state instruction instrLoadModuleId
+    state
 
-            // Change references in operands from "instruction" to first counter invocation instruction (instrLoadModuleId)
-            let subs = SubstituteInstruction (instruction, instrLoadModuleId)
-            state.MethodBody.Instructions
-            |> Seq.iter subs.SubstituteInstructionOperand
+  let internal VisitBranchPoint (state:Context) branch =
+    if  state.MethodWorker |> isNull |> not then
+      let point = (branch.Uid ||| Base.Counter.BranchFlag)
+      let instrument instruction =
+        InsertVisit instruction state.MethodWorker state.RecordingMethodRef.Visit state.ModuleId point
 
-            state.MethodBody.ExceptionHandlers
-            |> Seq.iter subs.SubstituteExceptionBoundary
-       state
+      let updateSwitch update =
+        let operands = branch.Start.Operand :?> Instruction[]
+        branch.Indexes
+        |> Seq.filter (fun i -> i >= 0)
+        // See SubstituteInstructionOperand for why we do it this way
+        |> Seq.iter (fun i -> Array.set operands i update)
+
+      match branch.Indexes |> Seq.tryFind (fun i -> i = -1) with
+      | Some _ -> // immediate next instruction; by construction this one comes first
+        // before
+        // Cond_Branch xxx
+        // Next
+        //
+        // after
+        // Cond_Branch xxx
+        // jump instrument#-1
+        // instrument#-1
+        // Next
+        let target = branch.Start.Next
+        let preamble = instrument target
+        let jump = state.MethodWorker.Create(OpCodes.Br, preamble)
+        state.MethodWorker.InsertAfter (branch.Start, jump)
+        if branch.Start.OpCode = OpCodes.Switch then
+          updateSwitch jump
+      | None ->
+        // before
+        // Cond_Branch #n
+        // jump instrument#-1
+        // ...
+        // instrument#-1
+        // Next
+        //
+        // after
+        // Cond_Branch instrument#n
+        // jump instrument#-1
+        // instrument#n
+        // jump #n
+        // ...
+        // instrument#-1
+        // Next
+        let target = if branch.Start.OpCode = OpCodes.Switch then
+                      branch.Start.Operand :?> Instruction[]
+                      |> Seq.skip (branch.Indexes.Head)
+                      |> Seq.head
+                     else branch.Start.Operand :?> Instruction
+        let jump = state.MethodWorker.Create(OpCodes.Br, target)
+        state.MethodWorker.InsertAfter (branch.Start.Next, jump)
+        let preamble = instrument jump
+        if branch.Start.OpCode = OpCodes.Switch then
+          updateSwitch preamble
+        else branch.Start.Operand <- preamble
+    state
 
   let private FinishVisit (state : Context) =
                  let counterAssemblyFile = Path.Combine(Visitor.OutputDirectory(), (extractName state.RecordingAssembly) + ".dll")
@@ -456,34 +517,7 @@ module Instrument =
             methodWorker.InsertBefore (handler.TryStart, pushMethodCall)
             methodWorker.InsertBefore(pushMethodCall, instrLoadId)
         )
-            (*
-    // Instance.Push(666);
-    IL_0000: ldc.i4 666
-    IL_0005: call void [AltCover.Recorder]AltCover.Recorder.Instance::Push(int32)
-    .try
-    {
-        // (no C# code)
-        IL_000a: nop
-...
-        IL_0025: stloc.0
-        // (no C# code)
-        IL_0026: leave.s IL_0031
-    } // end .try
-    finally
-    {
-        IL_0028: nop
-        // Instance.Pop();
-        IL_0029: call void [AltCover.Recorder]AltCover.Recorder.Instance::Pop()
-        // (no C# code)
-        IL_002e: ldnull
-        IL_002f: pop
-        IL_0030: endfinally
-    } // end handler
 
-    IL_0031: ldloc.0
-ahead of
-IL_0032: ret
-            *)
   let private VisitAfterMethod state m included track =
     if Visitor.IsInstrumented included then
         let body = state.MethodBody
@@ -492,6 +526,12 @@ IL_0032: ret
         // changes "long" conditional operators to their short representation where possible
         body.OptimizeMacros()
     Track state m included track
+    state
+
+  let private VisitAfterAssembly state (assembly:AssemblyDefinition) =
+    let originalFileName = Path.GetFileName assembly.MainModule.FileName
+    let path = Path.Combine(Visitor.OutputDirectory(), originalFileName)
+    WriteAssembly assembly path
     state
 
   /// <summary>
@@ -513,14 +553,12 @@ IL_0032: ret
 
      | MethodPoint (instruction, _, point, included) ->
                 VisitMethodPoint state instruction point included
+     | BranchPoint branch -> VisitBranchPoint state branch
      | AfterMethod (m, included, track) -> VisitAfterMethod state m included track
 
      | AfterType -> state
      | AfterModule -> state
-     | AfterAssembly assembly -> let originalFileName = Path.GetFileName assembly.MainModule.FileName
-                                 let path = Path.Combine(Visitor.OutputDirectory(), originalFileName)
-                                 WriteAssembly assembly path
-                                 state
+     | AfterAssembly assembly -> VisitAfterAssembly state assembly
      | Finish -> FinishVisit state
 
   /// <summary>

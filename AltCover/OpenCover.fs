@@ -2,11 +2,11 @@
 
 open System
 open System.Diagnostics.CodeAnalysis
+open System.Globalization
 open System.IO
 open System.Xml.Linq
 
 open Mono.Cecil
-open Mono.Cecil.Cil
 
 open AltCover.Augment
 
@@ -27,40 +27,61 @@ module OpenCover =
                             Files : Map<string, int>
                             Index : int
                             MethodSeq : int
+                            MethodBr : int
                             MethodCC : int option list
                             ClassSeq : int
+                            ClassBr : int
                             ClassCC : (int * int) list
                             ModuleSeq : int
+                            ModuleBr : int
                             ModuleMethods : int
                             ModuleClasses : int
                             ModuleCC : (int * int) list
                             TotalMethods : int
                             TotalClasses : int
-                            TotalSeq : int}
+                            TotalSeq : int
+                            TotalBr : int}
   with static member Build () =
                     { Stack = List.empty<XElement>
                       Excluded = Nothing
                       Files = Map.empty<string, int>
                       Index = 0
                       MethodSeq = 0
+                      MethodBr = 0
                       MethodCC = []
                       ClassSeq = 0
+                      ClassBr = 0
                       ClassCC = []
                       ModuleSeq = 0
+                      ModuleBr = 0
                       ModuleMethods = 0
                       ModuleClasses = 0
                       ModuleCC = []
                       TotalMethods = 0
                       TotalClasses = 0
-                      TotalSeq = 0}
+                      TotalSeq = 0
+                      TotalBr = 0}
+
+  let internal X name =
+      XName.Get name
+
+  let internal setChain (xbranch:XElement) (chain:int list) =
+          xbranch.SetAttributeValue(X "offsetchain",
+                                      match chain with
+                                      | [] -> null
+                                      | l -> String.Join(" ", l |> Seq.map (fun i -> i.ToString(CultureInfo.InvariantCulture))))
+
+  let SafeMultiply x y =
+        try
+            Checked.(*) x <| Math.Max(1, y)
+        with
+        | :? OverflowException -> Int32.MaxValue
+
   let internal ReportGenerator () =
 
     // The internal state of the document is mutated by the
     // operation of the visitor.  Everything else should now be pure
     let document = XDocument(XDeclaration("1.0", "utf-8", "yes"), [||])
-
-    let X name =
-      XName.Get name
 
     let Summary () =
         XElement(X "Summary",
@@ -108,6 +129,7 @@ module OpenCover =
           {s with Stack = classes :: s.Stack
                   Excluded = Nothing
                   ModuleSeq = 0
+                  ModuleBr = 0
                   ModuleMethods = 0
                   ModuleClasses = 0
                   ClassCC = []}
@@ -126,6 +148,7 @@ module OpenCover =
       {s with Stack = if instrumented then methods :: s.Stack else s.Stack
               Excluded = if instrumented then Nothing else Type
               ClassSeq = 0
+              ClassBr = 0
               MethodCC = []}
 
     let boolString b = if b then "true" else "false"
@@ -167,6 +190,7 @@ module OpenCover =
                 Excluded = if instrumented then Nothing else Method
                 Index = -1
                 MethodSeq = 0
+                MethodBr = 0
                 MethodCC = Some cc :: s.MethodCC}
       else s
 
@@ -186,7 +210,6 @@ module OpenCover =
 
     let VisitCodeSegment (s : Context) (codeSegment:SeqPnt) i =
        if s.Excluded = Nothing then
-          // quick fix for .mdb lack of end line/column information
           let file = codeSegment.Document
           let fileset, ref = if s.Files.ContainsKey file then
                                 s.Files, s.Files.Item file
@@ -207,6 +230,30 @@ module OpenCover =
       | Some codeSegment ->  VisitCodeSegment s codeSegment i
       | None -> s
 
+    let VisitGoTo s branch =
+      let fileid =  (s.Files.Item branch.Document)
+      XElement(X "BranchPoint",
+               XAttribute (X "vc", 0),
+               XAttribute (X "uspid", branch.Uid),
+               XAttribute (X "ordinal", 0),
+               XAttribute (X "offset", branch.Offset),
+               XAttribute (X "sl", branch.StartLine),
+               XAttribute (X "path", branch.Path),
+               XAttribute (X "offsetchain", 0),
+               XAttribute (X "offsetend", branch.Target.Head),
+               XAttribute (X "fileid", fileid)
+              )
+
+    let VisitBranchPoint s branch =
+       if s.Excluded = Nothing then
+          let branches = s.Stack.Head.Parent.Descendants(X "BranchPoints") |> Seq.head
+          let xbranch = VisitGoTo s branch
+          setChain xbranch branch.Target.Tail
+          if branches.IsEmpty then branches.Add(xbranch)
+          else branches.LastNode.AddAfterSelf(xbranch)
+          { s with MethodBr = s.MethodBr + 1}
+       else s
+
     let limitMethodCC count stack =
         if count > 0
         then stack
@@ -215,9 +262,22 @@ module OpenCover =
     let passOnClassExclusion excluded =
         if excluded = Method then Nothing else excluded
 
-    let handleSequencePoints (``method``:XElement) =
-        let sp = ``method``.Descendants(X "SequencePoint")
+    let handleOrdinals (``method``:XElement) =
+        let sp = ``method``.Descendants(X "SequencePoint") |> Seq.toList
         sp |> Seq.iteri(fun i x -> x.SetAttributeValue(X "ordinal", i))
+        let bp = ``method``.Descendants(X "BranchPoint") |> Seq.toList
+        bp |> Seq.iteri(fun i x -> x.SetAttributeValue(X "ordinal", i))
+
+        if sp |> List.isEmpty |> not && bp |> List.isEmpty |> not then
+          let interleave = List.concat [ sp; bp ]
+                           |> List.sortBy (fun x -> x.Attribute(X "offset").Value |> Int32.TryParse |> snd)
+          let (np,_,_) = interleave
+                         |> Seq.fold(fun (np0, bec, (sq:XElement)) x ->
+                               match x.Name.LocalName with
+                               | "SequencePoint" -> sq.SetAttributeValue(X "bec", bec)
+                                                    (SafeMultiply np0  bec, 0, x)
+                               | _ -> (np0, bec+1, sq)) (1, 0, sp.Head)
+          ``method``.SetAttributeValue(X "nPathComplexity", np)
 
     let AddTracking (s : Context) (m:MethodDefinition) t =
       t |>
@@ -231,6 +291,15 @@ module OpenCover =
                                                          XAttribute(X "name", m.FullName),
                                                          XAttribute(X "strategy", strategy)))))
 
+    let AddMethodSummary (s : Context) cc (summary:XElement) =
+        summary.SetAttributeValue(X "numSequencePoints", s.MethodSeq)
+        summary.SetAttributeValue(X "numBranchPoints", s.MethodBr +
+                                    // make the number agree with OpenCover
+                                    if s.MethodSeq > 0 then 1 else 0)
+        summary.SetAttributeValue(X "maxCyclomaticComplexity", cc)
+        summary.SetAttributeValue(X "minCyclomaticComplexity", cc)
+        summary.SetAttributeValue(X "numMethods", if s.MethodSeq > 0 then 1 else 0)
+
     let VisitAfterMethodIncluded (s : Context) =
         let head,tail = Augment.Split s.Stack
         head.Parent.Elements(X "FileRef")
@@ -241,20 +310,23 @@ module OpenCover =
         let cc = Option.getOrElse 1 s.MethodCC.Head
         let ``method`` = head.Parent
         ``method``.Elements(X "Summary")
-        |> Seq.iter(fun summary -> summary.SetAttributeValue(X "numSequencePoints", s.MethodSeq)
-                                   summary.SetAttributeValue(X "maxCyclomaticComplexity", cc)
-                                   summary.SetAttributeValue(X "minCyclomaticComplexity", cc)
-                                   summary.SetAttributeValue(X "numMethods", if s.MethodSeq > 0 then 1 else 0))
-        handleSequencePoints ``method``
+        |> Seq.iter (AddMethodSummary s cc)
+        handleOrdinals ``method``
         tail
+
+    let UpdateClassCountsByMethod (s : Context) (tail:XElement list) =
+        {s with Stack = tail
+                ClassSeq = s.ClassSeq + s.MethodSeq
+                ClassBr = s.ClassBr + s.MethodBr +
+                          // make the number agree with OpenCover
+                          if s.MethodSeq > 0 then 1 else 0
+                MethodCC = limitMethodCC s.MethodSeq s.MethodCC}
 
     let VisitAfterMethod (s : Context) methodDef track included =
       AddTracking s methodDef track
       if s.Excluded = Nothing && included <> Inspect.TrackOnly then
         let tail = VisitAfterMethodIncluded s
-        {s with Stack = tail
-                ClassSeq = s.ClassSeq + s.MethodSeq
-                MethodCC = limitMethodCC s.MethodSeq s.MethodCC}
+        UpdateClassCountsByMethod s tail
       else { s with Excluded = passOnClassExclusion s.Excluded }
 
     let VisitAfterType (s : Context) =
@@ -269,12 +341,14 @@ module OpenCover =
         let classes = if s.ClassSeq > 0 then 1 else 0
         head.Parent.Elements(X "Summary")
         |> Seq.iter(fun summary -> summary.SetAttributeValue(X "numSequencePoints", s.ClassSeq)
+                                   summary.SetAttributeValue(X "numBranchPoints", s.ClassBr)
                                    summary.SetAttributeValue(X "maxCyclomaticComplexity", max)
                                    summary.SetAttributeValue(X "minCyclomaticComplexity", Math.Min(min, max))
                                    summary.SetAttributeValue(X "numClasses", classes)
                                    summary.SetAttributeValue(X "numMethods", methods))
         {s with Stack = if s.Excluded = Nothing then tail else s.Stack
                 ModuleSeq = s.ModuleSeq + s.ClassSeq
+                ModuleBr = s.ModuleBr + s.ClassBr
                 ClassCC = ((if min = 0 then 1 else min), max) :: s.ClassCC
                 ModuleMethods = methods + s.ModuleMethods
                 ModuleClasses = classes + s.ModuleClasses
@@ -286,6 +360,7 @@ module OpenCover =
                       |> Seq.fold (fun state pair -> Math.Min (fst state, fst pair), Math.Max (snd state, snd pair)) (1,0)
         head.Parent.Elements(X "Summary")
         |> Seq.iter(fun summary -> summary.SetAttributeValue(X "numSequencePoints", s.ModuleSeq)
+                                   summary.SetAttributeValue(X "numBranchPoints", s.ModuleBr )
                                    summary.SetAttributeValue(X "maxCyclomaticComplexity", max )
                                    summary.SetAttributeValue(X "minCyclomaticComplexity", min)
                                    summary.SetAttributeValue(X "numClasses", s.ModuleClasses)
@@ -300,6 +375,7 @@ module OpenCover =
                                                                              XAttribute(X "fullPath", k)))))
         {s with Stack = tail
                 TotalSeq = s.TotalSeq + s.ModuleSeq
+                TotalBr = s.TotalBr + s.ModuleBr
                 ModuleCC = (min, max) :: s.ModuleCC
                 TotalClasses = s.ModuleClasses + s.TotalClasses
                 TotalMethods = s.ModuleMethods + s.TotalMethods}
@@ -310,6 +386,7 @@ module OpenCover =
                     |> Seq.fold (fun state pair -> Math.Min (fst state, fst pair), Math.Max (snd state, snd pair)) (1,0)
       head.Parent.Elements(X "Summary")
       |> Seq.iter(fun summary -> summary.SetAttributeValue(X "numSequencePoints", s.TotalSeq)
+                                 summary.SetAttributeValue(X "numBranchPoints", s.TotalBr )
                                  summary.SetAttributeValue(X "maxCyclomaticComplexity", max )
                                  summary.SetAttributeValue(X "minCyclomaticComplexity", min)
                                  summary.SetAttributeValue(X "numClasses", s.TotalClasses)
@@ -322,10 +399,11 @@ module OpenCover =
       | Node.Module (moduleDef, included) -> VisitModule s moduleDef included
       | Node.Type (typeDef, included) -> VisitType s typeDef included
       | Node.Method (methodDef, included, _) -> VisitMethod s methodDef included
-      | MethodPoint (_, codeSegment,  i, included) -> VisitMethodPoint s codeSegment i
+      | MethodPoint (_, codeSegment,  i, _) -> VisitMethodPoint s codeSegment i
+      | BranchPoint b -> VisitBranchPoint s b
       | AfterMethod (methodDef, included, track) -> VisitAfterMethod s methodDef track included
-      | AfterType _ ->   VisitAfterType s
-      | AfterModule _ ->  VisitAfterModule s
+      | AfterType _ -> VisitAfterType s
+      | AfterModule _ -> VisitAfterModule s
       | Finish -> AfterAll s
       | _ -> s
 

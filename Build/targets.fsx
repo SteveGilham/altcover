@@ -58,7 +58,7 @@ let nugetCache = Path.Combine (Environment.GetFolderPath Environment.SpecialFold
 
 let Target s f =
   Description s
-  Create s f
+  create s f
 
 // Preparation
 
@@ -86,7 +86,7 @@ Target "SetVersion" (fun _ ->
     Directory.ensure "./_Generated"
     Actions.InternalsVisibleTo (!Version)
     let v' = !Version
-    CreateFSharp "./_Generated/AssemblyVersion.fs"
+    createFSharp "./_Generated/AssemblyVersion.fs"
         [
          AssemblyInfo.Product "AltCover"
          AssemblyInfo.Version (majmin + ".0.0")
@@ -113,7 +113,7 @@ Target "BuildRelease" (fun _ ->
                              ]})
 
     "./altcover.core.sln"
-    |> DotNet.Compile
+    |> DotNet.build
         (fun p ->
             { p with
                 Configuration = DotNet.BuildConfiguration.Release
@@ -137,7 +137,7 @@ Target "BuildDebug" (fun _ ->
                              ]}))
 
     "./altcover.core.sln"
-    |> DotNet.Compile
+    |> DotNet.build
         (fun p ->
             { p with
                 Configuration = DotNet.BuildConfiguration.Debug
@@ -283,10 +283,10 @@ Target "JustUnitTest" (fun _ ->
     Directory.ensure "./_Reports"
     try
       !! (@"_Binaries/*Tests/Debug+AnyCPU/*Test*.dll")
-      |> NUnit3 (fun p -> { p with ToolPath = findToolInSubPath "nunit3-console.exe" "."
-                                   WorkingDir = "."
-                                   Labels = LabelsLevel.All
-                                   ResultSpecs = ["./_Reports/JustUnitTestReport.xml"] })
+      |> NUnit3.run (fun p -> { p   with ToolPath = findToolInSubPath "nunit3-console.exe" "."
+                                         WorkingDir = "."
+                                         Labels = LabelsLevel.All
+                                         ResultSpecs = ["./_Reports/JustUnitTestReport.xml"] })
     with
     | x -> printfn "%A" x
            reraise ()
@@ -312,7 +312,7 @@ Target "UnitTestWithOpenCover" (fun _ ->
     let coverage = Path.getFullName "_Reports/UnitTestWithOpenCover.xml"
 
     try
-      OpenCover.Run (fun p -> { p with
+      OpenCover.run (fun p -> { p with
                                    WorkingDir = "."
                                    ExePath = findToolInSubPath "OpenCover.Console.exe" "."
                                    TestRunnerExePath = findToolInSubPath "nunit3-console.exe" "."
@@ -363,10 +363,10 @@ Target "UnitTestWithAltCover" (fun _ ->
         [ !! "_Binaries/AltCover.Tests/Debug+AnyCPU/__UnitTestWithAltCover/*.Tests.dll"
           !! "_Binaries/AltCover.Tests/Debug+AnyCPU/__UnitTestWithAltCover/*ple2.dll"]
         |> Seq.concat |> Seq.distinct
-        |> NUnit3 (fun p -> { p with ToolPath = findToolInSubPath "nunit3-console.exe" "."
-                                     WorkingDir = "."
-                                     Labels = LabelsLevel.All
-                                     ResultSpecs = ["./_Reports/UnitTestWithAltCoverReport.xml"] })
+        |> NUnit3.run (fun p -> { p with ToolPath = findToolInSubPath "nunit3-console.exe" "."
+                                         WorkingDir = "."
+                                         Labels = LabelsLevel.All
+                                         ResultSpecs = ["./_Reports/UnitTestWithAltCoverReport.xml"] })
       with
       | x -> printfn "%A" x
              reraise ()
@@ -383,9 +383,9 @@ Target "UnitTestWithAltCover" (fun _ ->
 
       printfn "Execute the weakname tests"
       !! ("_Binaries/AltCover.WeakNameTests/Debug+AnyCPU/__WeakNameTestWithAltCover/*Test*.dll")
-      |> NUnit3 (fun p -> { p with ToolPath = findToolInSubPath "nunit3-console.exe" "."
-                                   WorkingDir = "."
-                                   ResultSpecs = ["./_Reports/WeakNameTestWithAltCoverReport.xml"] })
+      |> NUnit3.run (fun p -> { p with ToolPath = findToolInSubPath "nunit3-console.exe" "."
+                                       WorkingDir = "."
+                                       ResultSpecs = ["./_Reports/WeakNameTestWithAltCoverReport.xml"] })
 
       printfn "Instrument the shadow tests"
       let shadowDir = Path.getFullName  "_Binaries/AltCover.Shadow.Tests/Debug+AnyCPU"
@@ -399,9 +399,9 @@ Target "UnitTestWithAltCover" (fun _ ->
 
       printfn "Execute the shadow tests"
       !! ("_Binaries/AltCover.Shadow.Tests/Debug+AnyCPU/__ShadowTestWithAltCover/*.Test*.dll")
-      |> NUnit3 (fun p -> { p with ToolPath = findToolInSubPath "nunit3-console.exe" "."
-                                   WorkingDir = "."
-                                   ResultSpecs = ["./_Reports/ShadowTestWithAltCoverReport.xml"] })
+      |> NUnit3.run (fun p -> { p with ToolPath = findToolInSubPath "nunit3-console.exe" "."
+                                       WorkingDir = "."
+                                       ResultSpecs = ["./_Reports/ShadowTestWithAltCoverReport.xml"] })
 // where does FakeLib, Version=3.33.0.0 come from??
 //      ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
 //                                         ReportTypes = [ ReportGeneratorReportType.Html; ReportGeneratorReportType.XmlSummary ]
@@ -798,7 +798,7 @@ Target "SelfTest" (fun _ ->
     let keyfile = Path.getFullName "Build/SelfTest.snk"
 
     printfn "Self-instrument under OpenCover"
-    OpenCover.Run (fun p -> { p with
+    OpenCover.run (fun p -> { p with
                                  WorkingDir = targetDir
                                  ExePath = findToolInSubPath "OpenCover.Console.exe" "."
                                  TestRunnerExePath = findToolInSubPath "AltCover.exe" targetDir
@@ -1035,7 +1035,7 @@ Target "ReleaseXUnitDotNetDemo" (fun _ ->
     "./Demo/xunit-dotnet/bin" |> Path.getFullName |> Shell.CleanDir
 
     "./Demo/xunit-dotnet/xunit-dotnet.csproj"
-    |> DotNet.Compile
+    |> DotNet.build
         (fun p ->
             { p with
                 Configuration = DotNet.BuildConfiguration.Debug
@@ -1052,7 +1052,7 @@ Target "ReleaseXUnitDotNetDemo" (fun _ ->
     !! (o @@ "*")
     |> Shell.Copy i
 
-    let result = DotNet.Exec (fun o -> {dotnetOptions o with WorkingDirectory = Path.getFullName "./Demo/xunit-dotnet"})
+    let result = DotNet.exec (fun o -> {dotnetOptions o with WorkingDirectory = Path.getFullName "./Demo/xunit-dotnet"})
                     "test" "--no-build --configuration Debug xunit-dotnet.csproj"
     Assert.That(result.ExitCode, Is.EqualTo 1, "Unexpected unit test return")
 
@@ -1078,7 +1078,7 @@ Target "ReleaseXUnitDotNetRunnerDemo" (fun _ ->
     "./Demo/xunit-dotnet/bin" |> Path.getFullName |> Shell.CleanDir
 
     "./Demo/xunit-dotnet/xunit-dotnet.csproj"
-    |> DotNet.Compile
+    |> DotNet.build
         (fun p ->
             { p with
                 Configuration = DotNet.BuildConfiguration.Debug
@@ -1331,6 +1331,7 @@ Target "ReleaseXUnitFSharpTypesDotNetFullRunner" ( fun _ ->
                                      "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
                                      "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
                                      "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
+                                     "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
                                      "<TrackedMethodRef uid=\"2\" vc=\"2\" />"
                                      "<TrackedMethodRef uid=\"2\" vc=\"1\" />"
                                      "<TrackedMethodRef uid=\"2\" vc=\"1\" />"
@@ -1366,8 +1367,8 @@ Description "ResetConsoleColours"
 let resetColours = (fun _ ->
   System.Console.ResetColor()
 )
-CreateFinal "ResetConsoleColours" resetColours
-ActivateFinal "ResetConsoleColours"
+createFinal "ResetConsoleColours" resetColours
+activateFinal "ResetConsoleColours"
 
 // Dependencies
 
@@ -1559,4 +1560,4 @@ ActivateFinal "ResetConsoleColours"
 ==> "BulkReport"
 ==> "All"
 
-RunOrDefault "All"
+runOrDefault "All"

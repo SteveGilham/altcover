@@ -673,13 +673,22 @@ type AltCoverTests() = class
     let method = (def.MainModule.Types |> Seq.skipWhile (fun t -> t.Name.StartsWith("<"))|> Seq.head).Methods |> Seq.head
     Visitor.Visit [] [] // cheat reset
     try
+        Visitor.reportFormat <- Some Base.ReportFormat.OpenCover
         "Program" |> (Regex >> FilterClass.File >> Visitor.NameFilters.Add)
         let deeper = Visitor.Deeper <| Node.Method (method,
                                                     Inspect.Instrument,
                                                     None)
                      |> Seq.toList
-        Assert.That (deeper.Length, Is.EqualTo 10)
+        Assert.That (deeper.Length, Is.EqualTo 12)
         deeper
+        |> List.skip 10
+        |> List.iteri (fun i node -> match node with
+                                     | (BranchPoint b) ->
+                                           Assert.That(b.Uid, Is.EqualTo i, "branch point number")
+                                     | _ -> Assert.Fail())
+
+        deeper
+        |> List.take 10
         |> List.iteri (fun i node -> match node with
                                      | (MethodPoint (_, _, n, b)) ->
                                            Assert.That(n, Is.EqualTo i, "point number")
@@ -687,6 +696,7 @@ type AltCoverTests() = class
                                      | _ -> Assert.Fail())
     finally
       Visitor.NameFilters.Clear()
+      Visitor.reportFormat <- None
 
   [<Test>]
   member self.MethodsAreDeeperThanTypes() =
@@ -697,6 +707,7 @@ type AltCoverTests() = class
     let type' = (def.MainModule.Types |> Seq.skipWhile (fun t -> t.Name.StartsWith("<"))|> Seq.head)
     Visitor.Visit [] [] // cheat reset
     try
+        Visitor.reportFormat <- Some Base.ReportFormat.OpenCover
         "Main" |> (Regex >> FilterClass.Method >> Visitor.NameFilters.Add)
         let deeper = Visitor.Deeper <| Node.Type (type', Inspect.Instrument)
                      |> Seq.toList
@@ -707,11 +718,12 @@ type AltCoverTests() = class
                                          let node = Node.Method (m, flag, None)
                                          List.concat [ [node]; (Visitor.Deeper >> Seq.toList) node;  [Node.AfterMethod (m,flag, None)]])
                     |> List.concat
-        Assert.That (deeper.Length, Is.EqualTo 15)
+        Assert.That (deeper.Length, Is.EqualTo 17)
         Assert.That (deeper |> Seq.map string,
                      Is.EquivalentTo (expected |> Seq.map string))
     finally
       Visitor.NameFilters.Clear()
+      Visitor.reportFormat <- None
 
   [<Test>]
   member self.TypesAreDeeperThanModules() =
@@ -1217,8 +1229,8 @@ type AltCoverTests() = class
 #if NETCOREAPP2_0
     Assert.Fail("the NUnit test adapter seems to be working again.  Remove this clause.")
    with  //Cecil 10.0 vs 10.0beta6
-     | :? MissingMethodException as mme -> 
-           Assert.That(mme.Message, 
+     | :? MissingMethodException as mme ->
+           Assert.That(mme.Message,
                        Is.EqualTo("Method not found: 'Int32 Mono.Cecil.MetadataReader.ReadCodeSize(Mono.Cecil.MethodDefinition)'."))
 #endif
 
@@ -1258,9 +1270,49 @@ type AltCoverTests() = class
   // OpenCover.fs
 
   [<Test>]
+  member self.SafeMultiplyIsSafe() =
+    Assert.That (OpenCover.SafeMultiply 1 0, Is.EqualTo 1)
+    Assert.That (OpenCover.SafeMultiply 2 3, Is.EqualTo 6)
+    Assert.That (OpenCover.SafeMultiply 65536 65536, Is.EqualTo Int32.MaxValue)
+
+  [<Test>]
   member self.EmptyMethodHasComplexity1() =
     let m = MethodDefinition("dummy", MethodAttributes.Abstract, TypeDefinition("System", "Void", TypeAttributes.Public))
     Assert.That (Gendarme.CyclomaticComplexity m, Is.EqualTo 1)
+
+  [<Test>]
+  member self.BranchChainsSerialize() =
+    let where = Assembly.GetExecutingAssembly().Location
+    let path = Path.Combine(Path.GetDirectoryName(where), "Sample2.dll")
+    let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    ProgramDatabase.ReadSymbols def
+    let method = def.MainModule.GetAllTypes()
+                 |> Seq.collect (fun t -> t.Methods)
+                 |> Seq.find (fun m -> m.Name = "as_bar")
+    Visitor.Visit [] [] // cheat reset
+    try
+        Visitor.reportFormat <- Some Base.ReportFormat.OpenCover
+        "Program" |> (Regex >> FilterClass.File >> Visitor.NameFilters.Add)
+        let branches = Visitor.Deeper <| Node.Method (method,
+                                                    Inspect.Instrument,
+                                                    None)
+                       |> Seq.map (fun n -> match n with
+                                            | BranchPoint b -> Some b
+                                            | _ -> None)
+                       |> Seq.choose id |> Seq.toList
+
+        // The only overt branching in this function are the 4 match cases
+        // Internal IL conditional branching is a compiler thing from inlining "string"
+        Assert.That (branches |> Seq.length, Is.EqualTo 4)
+        let branch = branches |> Seq.head
+        Assert.That (branch.Target.Length, Is.EqualTo 2)
+        let xbranch = XElement(XName.Get "test")
+        OpenCover.setChain xbranch branch.Target.Tail
+        Assert.That (xbranch.ToString(),
+                     Is.EqualTo """<test offsetchain="29" />""")
+    finally
+      Visitor.NameFilters.Clear()
+      Visitor.reportFormat <- None
 
   static member private RecursiveValidateOpenCover result expected' depth zero expectSkipped =
     let X name =
@@ -1272,7 +1324,6 @@ type AltCoverTests() = class
                    |> Seq.filter (fun (el:XElement) -> el.Name.LocalName <> "Module" ||
                                                        expectSkipped ||
                                                        "skippedDueTo" |> X |> el.Attributes |> Seq.isEmpty)
-                   |> Seq.filter (fun (el:XElement) -> "BranchPoint" <> el.Name.LocalName)
                    |> Seq.toList
     let ecount = expected |> Seq.length
 
@@ -1287,15 +1338,12 @@ type AltCoverTests() = class
             Seq.zip ra ea |> Seq.iter (fun ((a1:XAttribute), (a2:XAttribute)) ->
                     Assert.That(a1.Name, Is.EqualTo(a2.Name))
                     match a1.Name.ToString() with
-                    | "bec"
                     | "bev"
                     | "visited"
                     | "visitedSequencePoints"
                     | "visitedBranchPoints"
                     | "visitedClasses"
                     | "visitedMethods"
-                    | "numBranchPoints"
-                    | "nPathComplexity"
                     | "sequenceCoverage"
                     | "branchCoverage"
                     | "uspid"
@@ -1318,6 +1366,7 @@ type AltCoverTests() = class
 
     try
         Visitor.NameFilters.Clear()
+        Visitor.reportFormat <- Some Base.ReportFormat.OpenCover
         Visitor.Visit [ visitor ] (Visitor.ToSeq path)
         let resource = Assembly.GetExecutingAssembly().GetManifestResourceNames()
                          |> Seq.find (fun n -> n.EndsWith("Sample1WithOpenCover.xml", StringComparison.Ordinal))
@@ -1330,6 +1379,7 @@ type AltCoverTests() = class
         AltCoverTests.RecursiveValidateOpenCover result expected 0 true false
     finally
       Visitor.NameFilters.Clear()
+      Visitor.reportFormat <- None
 
   member self.AddTrackingForMain xml =
     let resource = Assembly.GetExecutingAssembly().GetManifestResourceNames()
@@ -1358,6 +1408,7 @@ type AltCoverTests() = class
         Visitor.NameFilters.Clear()
         Visitor.TrackingNames.Clear()
         Visitor.TrackingNames.Add("Main")
+        Visitor.reportFormat <- Some Base.ReportFormat.OpenCover
         Visitor.Visit [ visitor ] (Visitor.ToSeq path)
 
         let baseline = self.AddTrackingForMain "Sample1WithOpenCover.xml"
@@ -1365,6 +1416,7 @@ type AltCoverTests() = class
         let expected = baseline.Elements()
         AltCoverTests.RecursiveValidateOpenCover result expected 0 true false
     finally
+      Visitor.reportFormat <- None
       Visitor.NameFilters.Clear()
       Visitor.TrackingNames.Clear()
 
@@ -1546,6 +1598,7 @@ type AltCoverTests() = class
 
     try
         Visitor.NameFilters.Clear()
+        Visitor.reportFormat <- Some Base.ReportFormat.OpenCover
         Visitor.Visit [ visitor ] (Visitor.ToSeq path')
         let resource = Assembly.GetExecutingAssembly().GetManifestResourceNames()
                          |> Seq.find (fun n -> n.EndsWith("HandRolledMonoCoverage.xml", StringComparison.Ordinal))
@@ -1558,11 +1611,12 @@ type AltCoverTests() = class
         AltCoverTests.RecursiveValidateOpenCover result expected 0 true false
     finally
       Visitor.NameFilters.Clear()
+      Visitor.reportFormat <- None
 #if NETCOREAPP2_0
     Assert.Fail("the NUnit test adapter seems to be working again.  Remove this clause.")
    with  //Cecil 10.0 vs 10.0beta6
-     | :? MissingMethodException as mme -> 
-           Assert.That(mme.Message, 
+     | :? MissingMethodException as mme ->
+           Assert.That(mme.Message,
                        Is.EqualTo("Method not found: 'Int32 Mono.Cecil.MetadataReader.ReadCodeSize(Mono.Cecil.MethodDefinition)'."))
 #endif
 
@@ -2248,6 +2302,118 @@ type AltCoverTests() = class
     AltCover.Instrument.Track state recorder.Head Inspect.Track None
     Assert.That (recorder.Head.Body.Instructions.Count, Is.EqualTo countBefore)
     Assert.That (recorder.Head.Body.ExceptionHandlers.Count, Is.EqualTo handlersBefore)
+
+  [<Test>]
+  member self.SwitchBranchesShouldInstrumentByPushingDown() =
+    let where = Assembly.GetExecutingAssembly().Location
+    let path = Path.Combine(Path.GetDirectoryName(where), "Sample2.dll")
+    let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    ProgramDatabase.ReadSymbols def
+    let method = def.MainModule.GetAllTypes()
+                 |> Seq.collect (fun t -> t.Methods)
+                 |> Seq.find (fun m -> m.Name = "as_bar")
+    Visitor.Visit [] [] // cheat reset
+    try
+        Visitor.reportFormat <- Some Base.ReportFormat.OpenCover
+        let branches = Visitor.Deeper <| Node.Method (method,
+                                                    Inspect.Instrument,
+                                                    None)
+                     |> Seq.map (fun n -> match n with
+                                          | BranchPoint b -> Some b
+                                          | _ -> None)
+                     |> Seq.choose id
+                     |> Seq.take 2 // start of a switch
+                     |> Seq.toList
+        match branches with
+        | [b1 ; b2] ->
+            Assert.That (b1.Start.OpCode, Is.EqualTo OpCodes.Switch)
+            Assert.That (b2.Start.OpCode, Is.EqualTo OpCodes.Switch)
+            Assert.That (b1.Start.Offset, Is.EqualTo b2.Start.Offset)
+        | _ -> Assert.Fail("wrong number of items")
+
+        let raw = AltCover.Instrument.Context.Build([])
+        let state = {  raw with
+                           RecordingMethodRef = { raw.RecordingMethodRef with
+                                                                          Visit = method
+                                                                          Push = null
+                                                                          Pop = null }
+                           MethodWorker = method.Body.GetILProcessor()}
+        let next = branches.Head.Start.Next
+        branches
+        |> Seq.iter(fun b -> Instrument.VisitBranchPoint state b
+                             |> ignore)
+
+        let inject = Seq.unfold (fun (state:Cil.Instruction) -> if isNull state || state = next then None else Some (state, state.Next)) branches.Head.Start
+                     |> Seq.skip 1 |> Seq.toList
+
+        Assert.That (inject.Length, Is.EqualTo 8)
+        let switches = branches.Head.Start.Operand :?> Instruction[]
+                       |> Seq.toList
+        Assert.That (switches.[0], Is.EqualTo inject.[1])
+        Assert.That (switches.[1], Is.EqualTo inject.[0])
+        Assert.That (inject.[0].Operand, Is.EqualTo inject.[5])
+        Assert.That ((inject.[2].Operand :?> int) &&& Base.Counter.BranchMask , Is.EqualTo 1)
+        Assert.That ((inject.[6].Operand :?> int) &&& Base.Counter.BranchMask , Is.EqualTo 0)
+
+    finally
+      Visitor.NameFilters.Clear()
+      Visitor.reportFormat <- None
+
+  [<Test>]
+  member self.SimpleBranchShouldInstrumentByPushingDown() =
+    let where = Assembly.GetExecutingAssembly().Location
+    let path = Path.Combine(Path.GetDirectoryName(where),
+#if NETCOREAPP2_0
+                    "Sample1.dll")
+#else
+                    "Sample1.exe")
+#endif
+
+    let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    ProgramDatabase.ReadSymbols def
+    let method = def.MainModule.GetAllTypes()
+                 |> Seq.collect (fun t -> t.Methods)
+                 |> Seq.find (fun m -> m.Name = "Main")
+    Visitor.Visit [] [] // cheat reset
+    try
+        Visitor.reportFormat <- Some Base.ReportFormat.OpenCover
+        let branches = Visitor.Deeper <| Node.Method (method,
+                                                    Inspect.Instrument,
+                                                    None)
+                     |> Seq.map (fun n -> match n with
+                                          | BranchPoint b -> Some b
+                                          | _ -> None)
+                     |> Seq.choose id
+                     |> Seq.take 2 // start of a switch
+                     |> Seq.toList
+        match branches with
+        | [b1 ; b2] -> ()
+        | _ -> Assert.Fail("wrong number of items")
+
+        let raw = AltCover.Instrument.Context.Build([])
+        let state = {  raw with
+                           RecordingMethodRef = { raw.RecordingMethodRef with
+                                                                          Visit = method
+                                                                          Push = null
+                                                                          Pop = null }
+                           MethodWorker = method.Body.GetILProcessor()}
+        let next = branches.Head.Start.Next
+
+        branches
+        |> Seq.iter(fun b -> Instrument.VisitBranchPoint state b
+                             |> ignore)
+
+        let inject = Seq.unfold (fun (state:Cil.Instruction) -> if isNull state || state = next then None else Some (state, state.Next)) branches.Head.Start
+                     |> Seq.skip 1 |> Seq.toList
+
+        Assert.That (inject.Length, Is.EqualTo 8)
+        Assert.That (inject.[0].Operand, Is.EqualTo inject.[5])
+        Assert.That ((inject.[2].Operand :?> int) &&& Base.Counter.BranchMask , Is.EqualTo 1)
+        Assert.That ((inject.[6].Operand :?> int) &&& Base.Counter.BranchMask , Is.EqualTo 0)
+
+    finally
+      Visitor.NameFilters.Clear()
+      Visitor.reportFormat <- None
 
   [<Test>]
   member self.StartShouldLoadRecordingAssembly () =
@@ -4006,8 +4172,8 @@ type AltCoverTests() = class
 #if NETCOREAPP2_0
     Assert.Fail("the NUnit test adapter seems to be working again.  Remove this clause.")
    with  //Cecil 10.0 vs 10.0beta6
-     | :? MissingMethodException as mme -> 
-           Assert.That(mme.Message, 
+     | :? MissingMethodException as mme ->
+           Assert.That(mme.Message,
                        Is.EqualTo("Method not found: 'Int32 Mono.Cecil.MetadataReader.ReadCodeSize(Mono.Cecil.MethodDefinition)'."))
 #endif
 

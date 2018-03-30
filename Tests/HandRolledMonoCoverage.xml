@@ -1,9 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <CoverageSession xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <Summary numSequencePoints="14" visitedSequencePoints="10" numBranchPoints="0" visitedBranchPoints="0" sequenceCoverage="71.43" branchCoverage="0" maxCyclomaticComplexity="2" minCyclomaticComplexity="1" visitedClasses="1" numClasses="1" visitedMethods="1" numMethods="1" />
+  <Summary numSequencePoints="14" visitedSequencePoints="10" numBranchPoints="3" visitedBranchPoints="0" sequenceCoverage="71.43" branchCoverage="0" maxCyclomaticComplexity="2" minCyclomaticComplexity="1" visitedClasses="1" numClasses="1" visitedMethods="1" numMethods="1" />
   <Modules>
     <Module hash="6A-33-AA-93-82-ED-22-9D-F8-68-2C-39-5B-93-9F-74-01-76-00-9F">
-      <Summary numSequencePoints="14" visitedSequencePoints="10" numBranchPoints="0" visitedBranchPoints="0" sequenceCoverage="71.43" branchCoverage="0" maxCyclomaticComplexity="2" minCyclomaticComplexity="1" visitedClasses="1" numClasses="1" visitedMethods="1" numMethods="1" />
+      <Summary numSequencePoints="14" visitedSequencePoints="10" numBranchPoints="3" visitedBranchPoints="0" sequenceCoverage="71.43" branchCoverage="0" maxCyclomaticComplexity="2" minCyclomaticComplexity="1" visitedClasses="1" numClasses="1" visitedMethods="1" numMethods="1" />
       <ModulePath>altcover\_Mono/Sample1\Sample1.exe</ModulePath>
       <ModuleTime>2018-02-23T19:05:36.7253612Z</ModuleTime>
       <ModuleName>Sample1</ModuleName>
@@ -17,7 +17,7 @@
           <Methods />
         </Class>
         <Class>
-          <Summary numSequencePoints="14" visitedSequencePoints="10" numBranchPoints="0" visitedBranchPoints="0" sequenceCoverage="71.43" branchCoverage="0" maxCyclomaticComplexity="2" minCyclomaticComplexity="1" visitedClasses="1" numClasses="1" visitedMethods="1" numMethods="1" />
+          <Summary numSequencePoints="14" visitedSequencePoints="10" numBranchPoints="3" visitedBranchPoints="0" sequenceCoverage="71.43" branchCoverage="0" maxCyclomaticComplexity="2" minCyclomaticComplexity="1" visitedClasses="1" numClasses="1" visitedMethods="1" numMethods="1" />
           <FullName>TouchTest.Program</FullName>
           <Methods>
             <Method visited="false" cyclomaticComplexity="1" nPathComplexity="0" sequenceCoverage="0" branchCoverage="0" isConstructor="true" isStatic="false" isGetter="false" isSetter="false">
@@ -28,8 +28,8 @@
               <BranchPoints />
               <MethodPoint vc="1" uspid="100663297" ordinal="0" offset="0" />
             </Method>
-            <Method visited="true" cyclomaticComplexity="2" nPathComplexity="0" sequenceCoverage="71.43" branchCoverage="0" isConstructor="false" isStatic="true" isGetter="false" isSetter="false">
-              <Summary numSequencePoints="14" visitedSequencePoints="10" numBranchPoints="0" visitedBranchPoints="0" sequenceCoverage="71.43" branchCoverage="0" maxCyclomaticComplexity="2" minCyclomaticComplexity="2" visitedClasses="0" numClasses="0" visitedMethods="1" numMethods="1" />
+            <Method visited="true" cyclomaticComplexity="2" nPathComplexity="2" sequenceCoverage="71.43" branchCoverage="0" isConstructor="false" isStatic="true" isGetter="false" isSetter="false">
+              <Summary numSequencePoints="14" visitedSequencePoints="10" numBranchPoints="3" visitedBranchPoints="0" sequenceCoverage="71.43" branchCoverage="0" maxCyclomaticComplexity="2" minCyclomaticComplexity="2" visitedClasses="0" numClasses="0" visitedMethods="1" numMethods="1" />
               <MetadataToken>100663298</MetadataToken>
               <Name>System.Void TouchTest.Program::Main(System.String[])</Name>
               <FileRef uid="1" />
@@ -37,7 +37,7 @@
                 <SequencePoint vc="1" uspid="13" ordinal="0" offset="0" sl="11" sc="9" el="11" ec="10" bec="0" bev="0" fileid="1" />
                 <SequencePoint vc="1" uspid="12" ordinal="1" offset="1" sl="12" sc="32" el="12" ec="33" bec="0" bev="0" fileid="1" />
                 <SequencePoint vc="1" uspid="11" ordinal="2" offset="7" sl="13" sc="13" el="13" ec="14" bec="0" bev="0" fileid="1" />
-                <SequencePoint vc="1" uspid="10" ordinal="3" offset="9" sl="13" sc="21" el="13" ec="22" bec="0" bev="0" fileid="1" />
+                <SequencePoint vc="1" uspid="10" ordinal="3" offset="9" sl="13" sc="21" el="13" ec="22" bec="2" bev="0" fileid="1" />
                 <SequencePoint vc="1" uspid="9" ordinal="4" offset="24" sl="14" sc="13" el="14" ec="14" bec="0" bev="0" fileid="1" />
                 <SequencePoint vc="1" uspid="8" ordinal="5" offset="25" sl="15" sc="17" el="15" ec="18" bec="0" bev="0" fileid="1" />
                 <SequencePoint vc="1" uspid="7" ordinal="6" offset="36" sl="15" sc="72" el="15" ec="73" bec="0" bev="0" fileid="1" />
@@ -49,7 +49,10 @@
                 <SequencePoint vc="0" uspid="1" ordinal="12" offset="68" sl="20" sc="13" el="20" ec="14" bec="0" bev="0" fileid="1" />
                 <SequencePoint vc="1" uspid="0" ordinal="13" offset="69" sl="21" sc="9" el="21" ec="10" bec="0" bev="0" fileid="1" />
               </SequencePoints>
-              <BranchPoints />
+              <BranchPoints>
+                <BranchPoint vc="0" uspid="0" ordinal="0" offset="19" sl="13" path="0" offsetend="24" fileid="1" />
+                <BranchPoint vc="0" uspid="1" ordinal="1" offset="19" sl="13" path="1" offsetend="57" fileid="1" />
+              </BranchPoints>
               <MethodPoint xsi:type="SequencePoint" vc="1" uspid="13" ordinal="0" offset="0" sl="11" sc="9" el="11" ec="10" bec="0" bev="0" fileid="1" />
             </Method>
           </Methods>

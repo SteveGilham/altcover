@@ -31,7 +31,7 @@ type SeqPnt = {
          Document : string
          Offset : int
          }
-    with static member Build(codeSegment:Cil.SequencePoint) = { 
+    with static member Build(codeSegment:Cil.SequencePoint) = {
                                                                  StartLine = codeSegment.StartLine
                                                                  StartColumn = codeSegment.StartColumn
                                                                  EndLine = if codeSegment.EndLine < 0
@@ -45,6 +45,18 @@ type SeqPnt = {
     }
 
 [<ExcludeFromCodeCoverage>]
+type GoTo = {
+    Start : Instruction
+    Indexes : int list
+    Uid : int
+    Path : int
+    StartLine : int
+    Offset : int
+    Target : int list
+    Document : string
+}
+
+[<ExcludeFromCodeCoverage>]
 type internal Node =
      | Start of seq<string>
      | Assembly of AssemblyDefinition * Inspect
@@ -52,6 +64,7 @@ type internal Node =
      | Type of TypeDefinition * Inspect
      | Method of MethodDefinition * Inspect * (int * string) option
      | MethodPoint of Instruction * SeqPnt option * int * bool
+     | BranchPoint of GoTo
      | AfterMethod of MethodDefinition * Inspect * (int * string) option
      | AfterType
      | AfterModule
@@ -168,6 +181,7 @@ module Visitor =
     List.toSeq [ node ]
 
   let mutable private PointNumber : int = 0
+  let mutable private BranchNumber : int = 0
   let mutable private MethodNumber : int = 0
 
   let significant (m : MethodDefinition) =
@@ -200,8 +214,12 @@ module Visitor =
                                              then Inspect.TrackOnly
                                              else interim )) >> buildSequence)
 
-  let private VisitModule (x:ModuleDefinition) included buildSequence =
+  let private ZeroPoints () =
         PointNumber <- 0
+        BranchNumber <- 0
+
+  let private VisitModule (x:ModuleDefinition) included buildSequence =
+        ZeroPoints()
         [x]
         |> Seq.takeWhile (fun _ -> included <> Inspect.Ignore)
         |> Seq.collect(fun x -> x.GetAllTypes() |> Seq.cast)
@@ -241,6 +259,92 @@ module Visitor =
                                                     && significant m)
         |> Seq.collect ((fun m -> Method (m, UpdateInspection included m, Track m)) >> buildSequence)
 
+  let CompilerSpecialLineNumber = 0xfeefee
+
+  let findSequencePoint (dbg:MethodDebugInformation) (instructions:Instruction seq) =
+    instructions
+    |> Seq.map dbg.GetSequencePoint
+    |> Seq.tryFind (fun s -> (s  |> isNull |> not) && s.StartLine <> CompilerSpecialLineNumber)
+
+  let indexList l =
+    l |> List.mapi (fun i x -> (i,x))
+
+  let getJumpChain (i:Instruction) =
+    Seq.unfold (fun (state:Cil.Instruction) -> if isNull state
+                                               then None
+                                               else Some (state, if state.OpCode = OpCodes.Br ||
+                                                                    state.OpCode = OpCodes.Br_S
+                                                                 then state.Operand :?> Instruction
+                                                                 else null)) i
+    |> Seq.toList
+    |> List.rev
+
+  [<SuppressMessage("Microsoft.Usage", "CA2208", Justification="Compiler inlined code in List.m??By")>]
+  let includedSequencePoint dbg (toNext:Instruction list) toJump =
+    let places = List.concat [toNext; toJump]
+    let start = places |> List.minBy (fun i -> i.Offset)
+    let finish = places |> List.maxBy (fun i -> i.Offset)
+    let range = Seq.unfold (fun (state:Cil.Instruction) -> if isNull state || finish = state.Previous then None else Some (state, state.Next)) start
+                |>  Seq.toList
+    findSequencePoint dbg range
+
+  let getJumps (dbg:MethodDebugInformation) (i:Instruction) =
+    let next = i.Next
+    if i.OpCode = OpCodes.Switch then
+      (i, getJumpChain next, next.Offset, -1) :: (i.Operand :?> Instruction[]
+      |> Seq.mapi (fun k d -> i,getJumpChain d,d.Offset,k)
+      |> Seq.toList)
+    else
+    let jump = i.Operand :?> Instruction
+    let toNext = getJumpChain next
+    let toJump = getJumpChain jump
+
+    // Eliminate the "all inside one SeqPnt" jumps
+    // This covers a multitude of compiler generated branching cases
+    match includedSequencePoint dbg toNext toJump with
+    | Some _ -> [
+                (i, toNext, next.Offset, -1)
+                (i, toJump, jump.Offset, 0)
+                ]
+    | None -> []
+
+  // cribbed from OpenCover's CecilSymbolManager -- internals of C# yield return iterators
+  let private IsMoveNext = Regex(@"\<[^\s>]+\>\w__\w(\w)?::MoveNext\(\)$", RegexOptions.Compiled ||| RegexOptions.ExplicitCapture);
+
+  let private ExtractBranchPoints dbg methodFullName rawInstructions =
+        // Generated MoveNext => skip one branch
+        let skip = if IsMoveNext.IsMatch methodFullName then 1 else 0
+        [rawInstructions |> Seq.cast]
+        |> Seq.filter (fun _ -> dbg |> isNull |> not)
+        |> Seq.concat
+        |> Seq.filter (fun (i:Instruction) -> i.OpCode.FlowControl = FlowControl.Cond_Branch)
+        |> Seq.skip skip
+        |> Seq.map (fun (i:Instruction) ->     getJumps dbg i // if two or more jumps go between the same two places, coalesce them
+                                               |> List.groupBy (fun (_,_,o,_) -> o)
+                                               |> List.map (fun (_,records) ->
+                                                               let (from, target, _, _) = Seq.head records
+                                                               (from, target, records
+                                                                           |> List.map (fun (_,_,_,n) -> n)
+                                                                           |> List.sort))
+                                               |> List.sortBy (fun (_, _, l) -> l.Head)
+                                               |> indexList)
+        |> Seq.filter (fun l -> l.Length > 1)
+        |> Seq.collect id
+        |> Seq.mapi (fun i (path, (from, target, indexes)) ->
+                                        Seq.unfold (fun (state:Cil.Instruction) -> if isNull state then None else Some (state, state.Previous)) from
+                                        |> (findSequencePoint dbg)
+                                        |> Option.map (fun context ->
+                                                            BranchPoint { Path = path
+                                                                          Indexes = indexes
+                                                                          Uid = i + BranchNumber
+                                                                          Start = from
+                                                                          StartLine = context.StartLine
+                                                                          Offset = from.Offset
+                                                                          Target = target |> List.map (fun i -> i.Offset)
+                                                                          Document = context.Document.Url
+                                                                          } ))
+        |> Seq.choose id |> Seq.toList
+
   let private VisitMethod (m:MethodDefinition) (included:Inspect) =
             let rawInstructions = m.Body.Instructions
             let dbg = m.DebugInformation
@@ -249,7 +353,7 @@ module Visitor =
                                |> Seq.concat
                                |> Seq.filter (fun (x:Instruction) -> if dbg.HasSequencePoints then
                                                                         let s = dbg.GetSequencePoint x
-                                                                        (not << isNull) s && s.StartLine <> 0xfeefee
+                                                                        (not << isNull) s && s.StartLine <> CompilerSpecialLineNumber
                                                                      else false)
                                |> Seq.toList
 
@@ -259,17 +363,23 @@ module Visitor =
 
             let interesting = IsInstrumented included
 
-            if  interesting && instructions |> Seq.isEmpty && rawInstructions |> Seq.isEmpty |> not then
-                rawInstructions
-                |> Seq.take 1
-                |> Seq.map (fun i -> MethodPoint (i, None, m.MetadataToken.ToInt32(), interesting))
-            else
-                instructions.OrderByDescending(fun (x:Instruction) -> x.Offset)
-                |> Seq.mapi (fun i x -> let s = dbg.GetSequencePoint(x)
-                                        MethodPoint (x, s |> SeqPnt.Build |> Some, 
+            let sp = if  interesting && instructions |> Seq.isEmpty && rawInstructions |> Seq.isEmpty |> not then
+                        rawInstructions
+                        |> Seq.take 1
+                        |> Seq.map (fun i -> MethodPoint (i, None, m.MetadataToken.ToInt32(), interesting))
+                     else
+                        instructions.OrderByDescending(fun (x:Instruction) -> x.Offset)
+                        |> Seq.mapi (fun i x -> let s = dbg.GetSequencePoint(x)
+                                                MethodPoint (x, s |> SeqPnt.Build |> Some,
                                                         i+point, interesting && (s.Document.Url |>
                                                                  IsIncluded |>
                                                                  IsInstrumented)))
+
+            let bp = if instructions.Any() && ReportKind() = Base.ReportFormat.OpenCover then
+                        ExtractBranchPoints dbg m.FullName rawInstructions
+                     else []
+            BranchNumber <- BranchNumber + List.length bp
+            Seq.append sp bp
 
   let rec internal Deeper node =
     // The pattern here is map x |> map y |> map x |> concat => collect (x >> y >> z)
@@ -292,7 +402,7 @@ module Visitor =
     List.map (invoke node)
 
   let internal Visit (visitors : list<Fix<Node>>) (assemblies : seq<string>) =
-    PointNumber <- 0
+    ZeroPoints()
     MethodNumber <- 0
     Start assemblies
     |> BuildSequence
