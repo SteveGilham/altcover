@@ -1,3 +1,8 @@
+# 2.0.xxx   (Byakko series release 7)
+* Branch coverage for `--opencover`.  Note that AltCover takes a rather more conservative approach to detecting "significant" branch points than does OpenCover : it excludes all branches that are entirely internal to a reported sequence point in the source (thus eliminating the many and various sorts of compiler-surprise hidden branching that may include sequence points with no corresponding source location); additionally, if two or more exits from a branch go to the same place, they are considered to constitute only one branch-point in the report, rather than being counted separately.
+* Bonus feature -- `-c|callContext` tracking also applies to branch visits
+* Also take the latest VS2017 and FAKE updates for building
+
 # 2.0.354   (Byakko series release 6)
 No functional changes this release, just updates of consumed components and tooling
 * Take the Cecil 0.10.0 final release, having worked around the issues with unit testing in .net core with NUnit3TestAdapter 3.10, which links the beta6 version, which has a subset of the internal API present in the full release.
