@@ -21,6 +21,12 @@ type internal Track =
 
 module Counter =
    /// <summary>
+   /// The offset flag for branch counts
+   /// </summary>
+  let internal BranchFlag = 0x80000000
+  let internal BranchMask = 0x7FFFFFFF
+
+   /// <summary>
    /// The time at which coverage run began
    /// </summary>
   let mutable internal startTime = DateTime.UtcNow
@@ -52,11 +58,23 @@ module Counter =
   let private WriteXDocument (coverageDocument:XmlDocument) (stream:Stream) =
     coverageDocument.Save(stream)
 
-  let internal FindIndexFromUspid uspid =
+  let internal FindIndexFromUspid flag uspid =
     let f, c = Int32.TryParse( uspid ,
                     System.Globalization.NumberStyles.Integer,
                     System.Globalization.CultureInfo.InvariantCulture)
-    if f then c else -1
+    if f then (c|||flag) else -1
+
+  let internal OpenCoverXml = ("//Module", "hash", "Classes/Class/Methods/Method",
+                                                        [("SequencePoints/SequencePoint", 0)
+                                                         ("BranchPoints/BranchPoint", BranchFlag)]
+                                                        , "vc")
+  let internal NCoverXml = ("//module", "moduleId", "method", [("seqpnt",0)], "visitcount")
+
+  let internal XmlByFormat format =
+    match format with
+    | ReportFormat.OpenCoverWithTracking
+    | ReportFormat.OpenCover -> OpenCoverXml
+    | _ -> NCoverXml
 
   /// <summary>
   /// Save sequence point hit counts to xml report file
@@ -85,10 +103,7 @@ module Counter =
         root.SetAttribute("driverVersion", "AltCover.Recorder " +
                                      System.Diagnostics.FileVersionInfo.GetVersionInfo(System.Reflection.Assembly.GetExecutingAssembly().Location).FileVersion)
 
-    let (m, i, m', s, v) = match format with
-                           | ReportFormat.OpenCoverWithTracking
-                           | ReportFormat.OpenCover -> ("//Module", "hash", "Classes/Class/Methods/Method", "SequencePoints/SequencePoint", "vc")
-                           | _ -> ("//module", "moduleId", "method", "seqpnt", "visitcount")
+    let (m, i, m', s, v) = XmlByFormat format
     coverageDocument.SelectNodes(m)
     |> Seq.cast<XmlElement>
     |> Seq.map (fun el -> el.GetAttribute(i), el)
@@ -103,12 +118,17 @@ module Counter =
         let nn = affectedModule.SelectNodes(m')
         nn
         |> Seq.cast<XmlElement>
-        |> Seq.collect (fun (``method``:XmlElement) -> ``method``.SelectNodes(s)
-                                                        |> Seq.cast<XmlElement>
-                                                        |> Seq.toList |> List.rev)
-        |> Seq.mapi (fun counter pt -> ((match format with
+        |> Seq.collect (fun (``method``:XmlElement) ->
+                                    s
+                                    |> Seq.collect (fun (name, flag) ->
+                                                    ``method``.SelectNodes(name)
+                                                    |> Seq.cast<XmlElement>
+                                                    |> Seq.map (fun x -> (x,flag))
+                                                    |> Seq.toList |> List.rev))
+        |> Seq.mapi (fun counter (pt,flag) ->
+                             ((match format with
                                         | ReportFormat.OpenCoverWithTracking
-                                        | ReportFormat.OpenCover -> "uspid" |> pt.GetAttribute |> FindIndexFromUspid
+                                        | ReportFormat.OpenCover -> "uspid" |> pt.GetAttribute |> (FindIndexFromUspid flag)
                                         | _ -> counter),
                                         pt))
         |> Seq.filter (fst >> moduleHits.ContainsKey)
