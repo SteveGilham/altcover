@@ -1031,7 +1031,9 @@ or
 
     after.DocumentElement.SelectNodes("//Summary")
     |> Seq.cast<XmlElement>
-    |> Seq.iter(fun el -> el.SetAttribute("visitedSequencePoints", "0")
+    |> Seq.iter(fun el -> el.SetAttribute("visitedBranchPoints", "0")
+                          el.SetAttribute("branchCoverage", "0")
+                          el.SetAttribute("visitedSequencePoints", "0")
                           el.SetAttribute("sequenceCoverage", "0")
                           el.SetAttribute("visitedClasses", "0")
                           el.SetAttribute("visitedMethods", "0")
@@ -1041,6 +1043,7 @@ or
     |> Seq.cast<XmlElement>
     |> Seq.iter(fun el -> el.SetAttribute("visited", "false")
                           el.SetAttribute("sequenceCoverage", "0")
+                          el.SetAttribute("branchCoverage", "0")
                            )
 
     let empty = Dictionary<string, Dictionary<int, int * Track list>>()
@@ -1061,7 +1064,9 @@ or
 
     after.DocumentElement.SelectNodes("//Summary")
     |> Seq.cast<XmlElement>
-    |> Seq.iter(fun el -> el.SetAttribute("visitedSequencePoints", "0")
+    |> Seq.iter(fun el -> el.SetAttribute("visitedBranchPoints", "0")
+                          el.SetAttribute("branchCoverage", "0")
+                          el.SetAttribute("visitedSequencePoints", "0")
                           el.SetAttribute("sequenceCoverage", "0")
                           el.SetAttribute("visitedClasses", "0")
                           el.SetAttribute("visitedMethods", "0")
@@ -1071,6 +1076,7 @@ or
     |> Seq.cast<XmlElement>
     |> Seq.iter(fun el -> el.SetAttribute("visited", "false")
                           el.SetAttribute("sequenceCoverage", "0")
+                          el.SetAttribute("branchCoverage", "0")
                            )
 
     after.DocumentElement.SelectNodes("//MethodPoint")
@@ -1096,7 +1102,9 @@ or
 
     after.DocumentElement.SelectNodes("//Summary")
     |> Seq.cast<XmlElement>
-    |> Seq.iter(fun el -> el.SetAttribute("visitedSequencePoints", "0")
+    |> Seq.iter(fun el -> el.SetAttribute("visitedBranchPoints", "0")
+                          el.SetAttribute("branchCoverage", "0")
+                          el.SetAttribute("visitedSequencePoints", "0")
                           el.SetAttribute("sequenceCoverage", "0")
                           el.SetAttribute("visitedClasses", "0")
                           el.SetAttribute("visitedMethods", "0")
@@ -1106,6 +1114,7 @@ or
     |> Seq.cast<XmlElement>
     |> Seq.iter(fun el -> el.SetAttribute("visited", "false")
                           el.SetAttribute("sequenceCoverage", "0")
+                          el.SetAttribute("branchCoverage", "0")
                            )
 
     after.DocumentElement.SelectNodes("//SequencePoint")

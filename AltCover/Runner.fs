@@ -215,27 +215,29 @@ module Runner =
                         |> Seq.cast<XmlElement>
 
             let count = sp.Count
-            let bCount = bp.Count
+            let bCount = bp.Count + Math.Sign count
             if count > 0 then
                 CopyFillMethodPoint mp sp
             else
                 FillMethodPoint mp ``method`` dict
 
             let visitPoints = VisitCount sp
-            let visitBranches = VisitCount bp
+            let b0 = VisitCount bp
+            let branches = b0 + Math.Sign b0
             if visitPoints > 0 then
                 let cover = (sprintf "%.2f" ((float (visitPoints * 100))/(float count))).TrimEnd([| '0' |]).TrimEnd([|'.'|])
-                let bcover = (sprintf "%.2f" ((float (visitBranches * 100))/(float bCount))).TrimEnd([| '0' |]).TrimEnd([|'.'|])
+                let bcover = (sprintf "%.2f" ((float (branches * 100))/(float bCount))).TrimEnd([| '0' |]).TrimEnd([|'.'|])
                 ``method``.SetAttribute("visited", "true")
                 ``method``.SetAttribute("sequenceCoverage", cover)
                 ``method``.SetAttribute("branchCoverage", bcover)
                 ``method``.GetElementsByTagName("Summary")
                 |> Seq.cast<XmlElement>
                 |> Seq.iter(fun s -> s.SetAttribute("visitedSequencePoints", sprintf "%d" visitPoints)
-                                     s.SetAttribute("visitedBranchPoints", sprintf "%d" visitBranches)
+                                     s.SetAttribute("visitedBranchPoints", sprintf "%d" branches)
                                      s.SetAttribute("visitedMethods", "1")
+                                     s.SetAttribute("branchCoverage", bcover)
                                      s.SetAttribute("sequenceCoverage", cover))
-                (vb + visitBranches + 1, vs + visitPoints, vm + 1, pt + count, br+bCount)
+                (vb + branches, vs + visitPoints, vm + 1, pt + count, br+bCount)
             else (vb, vs, vm, pt + count, br+bCount)
 
         let updateClass (dict:Dictionary<int, int * Base.Track list>) (vb, vs, vm, vc, pt, br) (``class``:XmlElement) =
