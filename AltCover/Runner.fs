@@ -196,7 +196,7 @@ module Runner =
                           m.SetAttribute("offset", "0"))
 
   let VisitCount nodes =
-    nodes 
+    nodes
     |> Seq.cast<XmlElement>
     |> Seq.filter(fun s -> Int32.TryParse( s.GetAttribute("vc") ,
                                         System.Globalization.NumberStyles.Integer,
@@ -224,6 +224,19 @@ module Runner =
                                   s.SetAttribute("branchCoverage", brcover)
                                   s.SetAttribute("sequenceCoverage", ptcover))
 
+        let computeBranchExitCount (sp:XmlNodeList) bp =
+          let interleave = Seq.concat [ sp |> Seq.cast<XmlElement>
+                                        bp |> Seq.cast<XmlElement>]
+                           |> Seq.sortBy (fun x -> x.GetAttribute("offset") |> Int32.TryParse |> snd)
+          interleave
+          |> Seq.fold(fun (bev, (sq:XmlElement)) x ->
+                               match x.Name with
+                               | "SequencePoint" -> sq.SetAttribute("bev", sprintf "%d" bev)
+                                                    (0, x)
+                               | _ -> (bev + (if x.GetAttribute("vc") = "0" then 0 else 1), sq))
+                               (0, sp.[0] :?> XmlElement)
+          |> ignore
+
         let updateMethod (dict:Dictionary<int, int * Base.Track list>) (vb, vs, vm, pt, br) (``method``:XmlElement) =
             let sp = ``method``.GetElementsByTagName("SequencePoint")
             let bp = ``method``.GetElementsByTagName("BranchPoint")
@@ -248,6 +261,7 @@ module Runner =
                 ``method``.SetAttribute("sequenceCoverage", cover)
                 ``method``.SetAttribute("branchCoverage", bcover)
                 setSummary ``method`` pointVisits branchVisits 1 None cover bcover
+                computeBranchExitCount sp bp
                 (vb + branchVisits, vs + pointVisits, vm + 1, pt + count, br+bCount)
             else (vb, vs, vm, pt + count, br+bCount)
 
