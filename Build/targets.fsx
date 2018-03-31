@@ -1166,8 +1166,11 @@ Target "ReleaseFSharpTypesX86DotNetRunner" ( fun _ ->
           dotnetPath86 <- Some opt.DotNetCliPath //(findToolInSubPath "dotnet" "./_x86")
           printfn "New CLI path = %s" opt.DotNetCliPath
         else
+          try
             let info = DotNet.info (fun opt -> {opt with Common = { dotnetOptions opt.Common with DotNetCliPath = Option.get dotnetPath86 }})                                                                               
             printfn "RID = %A" info
+          with 
+          | _ -> printfn "No RID"
 
         Actions.Run (fun info ->
             { info with
