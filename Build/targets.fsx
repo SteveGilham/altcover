@@ -1159,9 +1159,10 @@ Target "ReleaseFSharpTypesDotNetRunner" ( fun _ ->
 Target "ReleaseFSharpTypesX86DotNetRunner" ( fun _ ->
     Directory.ensure "./_Reports"
     let unpack = Path.getFullName "_Packaging/Unpack/tools/netcoreapp2.0"
+    let s = Path.getFullName "."
     let x = Path.getFullName "./_Reports/AltCoverReleaseFSharpTypesX86DotNetRunner.xml"
     let o = Path.getFullName "Sample2/_Binaries/Sample2/Debug+x86/netcoreapp2.0"
-    let i = Path.getFullName "_Binaries/Sample2/Debug+AnyCPU/netcoreapp2.0"
+    let i = Path.getFullName "_Binaries/Sample2/Debug+x86/netcoreapp2.0"
 
     Shell.CleanDir o
     try
@@ -1173,10 +1174,10 @@ Target "ReleaseFSharpTypesX86DotNetRunner" ( fun _ ->
                 FileName = dotnetPath86 |> Option.get
                 Arguments = "--info"}) "dotnet-x86 failed"
 
-//        printfn "Build the code"
-//        Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = unpack }) "build"
-//                      (" ../altcover.dotnet.sln --configuration Release")
-//                      "ReleaseFSharpTypesX86DotNetRunnerBuild"
+        printfn "Build the sample2 code as x86"
+        Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = s }) "build"
+                      (" altcover.core.sln --configuration Debug")
+                      "ReleaseFSharpTypesX86DotNetRunnerBuild"
 
         printfn "Instrument the code"
         let altcover = unpack @@ "AltCover.dll"
@@ -1193,7 +1194,7 @@ Target "ReleaseFSharpTypesX86DotNetRunner" ( fun _ ->
         // Run
         Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = o
                                                             DotNetCliPath = dotnetPath86 |> Option.get}) ""
-                              (altcover + " Runner -x \"" + (dotnetPath |> Option.get) +
+                              (altcover + " Runner -x \"" + (dotnetPath86 |> Option.get) +
                               "\" -r \"" + o + "\" -- test --no-build --configuration Debug " + sample2)
                             "ReleaseFSharpTypesX86DotNetRunner test"
 
