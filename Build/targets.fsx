@@ -882,8 +882,9 @@ Target "Packaging" (fun _ ->
                        |> List.concat
                        |> List.map (fun x -> (x, Some ("src/netcoreapp2.0" + Path.GetDirectoryName(x).Substring(root).Replace("\\","/")), None))
 
-    let netcorebin = (!! "./_Binaries/AltCover/Release+AnyCPU/netcoreapp2.0/*.*")
-                     |> Seq.map (fun x -> (x, Some ("tools/netcoreapp2.0/" + Path.GetFileName(x)), None))
+    let root2 = (Path.getFullName "./_Publish").Length
+    let netcorebin = (!! "./_Publish/**/*.*")
+                     |> Seq.map (fun x -> (x, Some ("tools/netcoreapp2.0" + Path.GetDirectoryName(x).Substring(root2).Replace("\\","/")), None))
                      |> Seq.toList
 
     printfn "Executing on %A" Environment.OSVersion
@@ -930,7 +931,13 @@ Target "PrepareFrameworkBuild" (fun _ ->
 //                               "./_Binaries/AltCover/Release+AnyCPU/AltCover.exe"
 )
 
-Target "PrepareDotNetBuild" ignore
+Target "PrepareDotNetBuild" (fun _ ->
+    let netcoresource =  Path.getFullName "./altcover.dotnet.sln"
+    let publish = Path.getFullName "./_Publish"
+    DotNet.publish (fun options -> { options with OutputPath = Some publish
+                                                  Configuration = DotNet.BuildConfiguration.Release})
+                                                  netcoresource
+)
 
 Target "PrepareReadMe" (fun _ ->
     Actions.PrepareReadMe ((!Copyright).Replace("©", "&#xa9;").Replace("<","&lt;").Replace(">", "&gt;"))
