@@ -865,27 +865,10 @@ Target "Packaging" (fun _ ->
                           |> Seq.toList
                         else []
 
-    let root = (Path.getFullName ".").Length
-    let netcoreFiles = [
-                         [
-                             Path.getFullName "./altcover.dotnet.sln"
-                         ];
-                         ((!! "./AltCover/*")
-                          |> Seq.filter (fun n -> n.EndsWith(".fs") || n.EndsWith(".core.fsproj") || n.EndsWith(".resx"))
-                          |> Seq.toList);
-                         ((!! "./AltCover.Recorder/*")
-                          |> Seq.filter (fun n -> n.EndsWith(".fs") || n.EndsWith(".core.fsproj") || n.EndsWith(".resx"))
-                          |> Seq.toList);
-                         ((!! "./_Generated/*")
-                          |> Seq.toList)
-                       ]
-                       |> List.concat
-                       |> List.map (fun x -> (x, Some ("src/netcoreapp2.0" + Path.GetDirectoryName(x).Substring(root).Replace("\\","/")), None))
-
-    let root2 = (Path.getFullName "./_Publish").Length
-    let netcorebin = (!! "./_Publish/**/*.*")
-                     |> Seq.map (fun x -> (x, Some ("tools/netcoreapp2.0" + Path.GetDirectoryName(x).Substring(root2).Replace("\\","/")), None))
-                     |> Seq.toList
+    let root = (Path.getFullName "./_Publish").Length
+    let netcoreFiles = (!! "./_Publish/**/*.*")
+                       |> Seq.map (fun x -> (x, Some ("tools/netcoreapp2.0" + Path.GetDirectoryName(x).Substring(root).Replace("\\","/")), None))
+                       |> Seq.toList
 
     printfn "Executing on %A" Environment.OSVersion
     NuGet (fun p ->
@@ -895,7 +878,7 @@ Target "Packaging" (fun _ ->
         Description = "A pre-instrumented code coverage tool for .net/.net core and Mono"
         OutputPath = "./_Packaging"
         WorkingDir = "./_Binaries/Packaging"
-        Files = List.concat [applicationFiles; resourceFiles; netcoreFiles; netcorebin]
+        Files = List.concat [applicationFiles; resourceFiles; netcoreFiles]
         Version = !Version
         Copyright = (!Copyright).Replace("©", "(c)")
         Publish = false
