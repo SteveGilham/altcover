@@ -492,6 +492,36 @@ or
       Runner.recordingDirectory <- None
 
   [<Test>]
+  member self.ParsingCollectGivesCollect() =
+    try
+      Runner.collect <- false
+      let options = Runner.DeclareOptions ()
+      let input = [| "--collect" |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Left _ -> Assert.Fail()
+      | Right (x, y) -> Assert.That (y, Is.SameAs options)
+                        Assert.That (x, Is.Empty)
+
+      Assert.That(Runner.collect, Is.True)
+    finally
+      Runner.collect <- false
+
+  [<Test>]
+  member self.ParsingMultipleCollectGivesFailure() =
+    try
+      Runner.collect <- false
+      let options = Runner.DeclareOptions ()
+      let input = [| "--collect"; "--collect" |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Right _ -> Assert.Fail()
+      | Left (x, y) -> Assert.That (y, Is.SameAs options)
+                       Assert.That (x, Is.EqualTo "UsageError")
+    finally
+      Runner.collect <- false
+
+  [<Test>]
   member self.ShouldRequireExe() =
     lock Runner.executable (fun () ->
     try

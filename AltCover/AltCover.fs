@@ -150,7 +150,7 @@ module Main =
                   else
                       Visitor.reportFormat <- Some ReportFormat.OpenCover))
       ("inplace",
-       (fun _ ->  if Option.isSome Visitor.reportFormat then
+       (fun _ ->  if inplace then
                       CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
                                                          CommandLine.resources.GetString "MultiplesNotAllowed",
                                                          "--inplace") :: CommandLine.error

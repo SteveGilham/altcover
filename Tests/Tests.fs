@@ -3828,7 +3828,6 @@ type AltCoverTests() = class
     try
       Visitor.reportFormat <- None
       let options = Main.DeclareOptions ()
-      let unique = Guid.NewGuid().ToString()
       let input = [| "--opencover" |]
       let parse = CommandLine.ParseCommandLine input options
       match parse with
@@ -3847,7 +3846,6 @@ type AltCoverTests() = class
     try
       Visitor.reportFormat <- None
       let options = Main.DeclareOptions ()
-      let unique = Guid.NewGuid().ToString()
       let input = [| "--opencover"; "--opencover" |]
       let parse = CommandLine.ParseCommandLine input options
       match parse with
@@ -3856,6 +3854,66 @@ type AltCoverTests() = class
                        Assert.That (x, Is.EqualTo "UsageError")
     finally
       Visitor.reportFormat <- None
+
+  [<Test>]
+  member self.ParsingInPlaceGivesInPlace() =
+    try
+      Main.inplace <- false
+      let options = Main.DeclareOptions ()
+      let input = [| "--inplace" |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Left _ -> Assert.Fail()
+      | Right (x, y) -> Assert.That (y, Is.SameAs options)
+                        Assert.That (x, Is.Empty)
+
+      Assert.That (Main.inplace, Is.True)
+    finally
+      Main.inplace <- false
+
+  [<Test>]
+  member self.ParsingMultipleInPlaceGivesFailure() =
+    try
+      Main.inplace <- false
+      let options = Main.DeclareOptions ()
+      let input = [| "--inplace"; "--inplace" |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Right _ -> Assert.Fail()
+      | Left (x, y) -> Assert.That (y, Is.SameAs options)
+                       Assert.That (x, Is.EqualTo "UsageError")
+    finally
+      Main.inplace <- false
+
+  [<Test>]
+  member self.ParsingSaveGivesSave() =
+    try
+      Visitor.collect <- false
+      let options = Main.DeclareOptions ()
+      let input = [| "--save" |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Left _ -> Assert.Fail()
+      | Right (x, y) -> Assert.That (y, Is.SameAs options)
+                        Assert.That (x, Is.Empty)
+
+      Assert.That(Visitor.collect, Is.True)
+    finally
+      Visitor.collect <- false
+
+  [<Test>]
+  member self.ParsingMultipleSaveGivesFailure() =
+    try
+      Visitor.collect <- false
+      let options = Main.DeclareOptions ()
+      let input = [| "--save"; "--save" |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Right _ -> Assert.Fail()
+      | Left (x, y) -> Assert.That (y, Is.SameAs options)
+                       Assert.That (x, Is.EqualTo "UsageError")
+    finally
+      Visitor.collect <- false
 
   [<Test>]
   member self.OutputLeftPassesThrough() =
