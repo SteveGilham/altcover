@@ -2869,20 +2869,20 @@ type AltCoverTests() = class
   [<Test>]
   member self.NoThrowNoErrorLeavesAllOK () =
     try
-      CommandLine.error <- false
+      CommandLine.error <- []
       CommandLine.doPathOperation ignore ()
-      Assert.That(CommandLine.error, Is.False)
+      Assert.That(CommandLine.error, Is.Empty)
     finally
-      CommandLine.error <- false
+      CommandLine.error <- []
 
   [<Test>]
   member self.NoThrowWithErrorIsSignalled () =
     try
-      CommandLine.error <- false
-      CommandLine.doPathOperation (fun () -> CommandLine.error <- true) ()
-      Assert.That(CommandLine.error, Is.True)
+      CommandLine.error <- []
+      CommandLine.doPathOperation (fun () -> CommandLine.error <- ["NoThrowWithErrorIsSignalled"]) ()
+      Assert.That(CommandLine.error, Is.Not.Empty)
     finally
-      CommandLine.error <- false
+      CommandLine.error <- []
 
   [<Test>]
   member self.ArgumentExceptionWrites () =
@@ -2894,14 +2894,13 @@ type AltCoverTests() = class
       Console.SetError stderr
       let unique = "ArgumentException " + Guid.NewGuid().ToString()
 
-      CommandLine.error <- false
+      CommandLine.error <- []
       CommandLine.doPathOperation (fun () -> ArgumentException(unique) |> raise) ()
-      Assert.That(CommandLine.error, Is.True)
+      Assert.That(CommandLine.error, Is.EquivalentTo [unique])
       Assert.That(stdout.ToString(), Is.Empty)
-      let result = stderr.ToString()
-      Assert.That(result, Is.EqualTo (unique + Environment.NewLine))
+      Assert.That(stderr.ToString(), Is.Empty)
     finally
-      CommandLine.error <- false
+      CommandLine.error <- []
       Console.SetOut (fst saved)
       Console.SetError (snd saved)
 
@@ -2915,14 +2914,13 @@ type AltCoverTests() = class
       Console.SetError stderr
       let unique = "IOException " + Guid.NewGuid().ToString()
 
-      CommandLine.error <- false
+      CommandLine.error <- []
       CommandLine.doPathOperation (fun () -> IOException(unique) |> raise) ()
-      Assert.That(CommandLine.error, Is.True)
+      Assert.That(CommandLine.error, Is.EquivalentTo [unique])
       Assert.That(stdout.ToString(), Is.Empty)
-      let result = stderr.ToString()
-      Assert.That(result, Is.EqualTo (unique + Environment.NewLine))
+      Assert.That(stderr.ToString(), Is.Empty)
     finally
-      CommandLine.error <- false
+      CommandLine.error <- []
       Console.SetOut (fst saved)
       Console.SetError (snd saved)
 
@@ -2936,14 +2934,13 @@ type AltCoverTests() = class
       Console.SetError stderr
       let unique = "NotSupportedException " + Guid.NewGuid().ToString()
 
-      CommandLine.error <- false
+      CommandLine.error <- []
       CommandLine.doPathOperation (fun () -> NotSupportedException(unique) |> raise) ()
-      Assert.That(CommandLine.error, Is.True)
+      Assert.That(CommandLine.error, Is.EquivalentTo [unique])
       Assert.That(stdout.ToString(), Is.Empty)
-      let result = stderr.ToString()
-      Assert.That(result, Is.EqualTo (unique + Environment.NewLine))
+      Assert.That(stderr.ToString(), Is.Empty)
     finally
-      CommandLine.error <- false
+      CommandLine.error <- []
       Console.SetOut (fst saved)
       Console.SetError (snd saved)
 
@@ -2957,14 +2954,13 @@ type AltCoverTests() = class
       Console.SetError stderr
       let unique = "SecurityException " + Guid.NewGuid().ToString()
 
-      CommandLine.error <- false
+      CommandLine.error <- []
       CommandLine.doPathOperation (fun () -> System.Security.SecurityException(unique) |> raise) ()
-      Assert.That(CommandLine.error, Is.True)
+      Assert.That(CommandLine.error, Is.EquivalentTo [unique])
       Assert.That(stdout.ToString(), Is.Empty)
-      let result = stderr.ToString()
-      Assert.That(result, Is.EqualTo (unique + Environment.NewLine))
+      Assert.That(stderr.ToString(), Is.Empty)
     finally
-      CommandLine.error <- false
+      CommandLine.error <- []
       Console.SetOut (fst saved)
       Console.SetError (snd saved)
 
@@ -3871,8 +3867,9 @@ type AltCoverTests() = class
       | Right _ -> Assert.Fail()
       | Left (x,y) -> Assert.That (y, Is.SameAs options)
                       Assert.That (x, Is.EqualTo "UsageError")
-                      Assert.That (stderr.ToString().Replace("\r",String.Empty),
-                                   Is.EqualTo "From and to directories are identical\n")
+                      Assert.That (stderr.ToString(), Is.Empty)
+                      Assert.That (CommandLine.error, 
+                                   Is.EquivalentTo ["From and to directories are identical"])
                       Assert.That (stdout.ToString(), Is.Empty)
     finally
       Console.SetOut (fst saved)
@@ -3882,7 +3879,7 @@ type AltCoverTests() = class
   member self.OutputToNewPlaceIsOK() =
     let options = Main.DeclareOptions ()
     let saved = (Console.Out, Console.Error)
-    CommandLine.error <- false
+    CommandLine.error <- []
     try
       use stdout = new StringWriter()
       use stderr = new StringWriter()
@@ -3914,7 +3911,7 @@ type AltCoverTests() = class
   member self.OutputToReallyNewPlaceIsOK() =
     let options = Main.DeclareOptions ()
     let saved = (Console.Out, Console.Error)
-    CommandLine.error <- false
+    CommandLine.error <- []
     try
       use stdout = new StringWriter()
       use stderr = new StringWriter()
@@ -4423,6 +4420,7 @@ or
       Assert.That(returnCode, Is.EqualTo 255)
       let result = stderr.ToString().Replace("\r\n", "\n")
       let expected = "\"-i\" \"" + unique + "\"\n" +
+                     "--inputDirectory : Directory " + unique + " not found\n" +
                        """Error - usage is:
   -i, --inputDirectory=VALUE Optional: The folder containing assemblies to
                                instrument (default: current directory)

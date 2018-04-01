@@ -219,4 +219,16 @@ AltCover Runner [/r[ecordingDirectory]=VALO] [/w[orkingDirectory]=VALO] [/x||exe
     Kordo en krampoj [] estas interpretita kiel atributo tipo nomon (la malantaŭa parto "Attribute" estas nedeviga), do [Test] aŭ [TestAttribute] kongruas; se la nomo enhavas unu aŭ pli ".", tiam ĝi estos egalita kontraŭ la plena nomo de la atributa tipo.
      Aliaj kordoj estas interpretitaj kiel metodnomoj (plene kvalifikitaj se la ĉeno enhavas ajnajn "" "karakterojn).</value>
   </data>
+  <data name="DirectoryNotFound" xml:space="preserve">
+    <value>{0} : Dosierujo {1} ne trovita</value>
+  </data>
+  <data name="FileNotFound" xml:space="preserve">
+    <value>{0} : Dosiero {1} ne trovita</value>
+  </data>
+  <data name="InvalidValue" xml:space="preserve">
+    <value>{0} : ne povas esti '{1}'</value>
+  </data>
+  <data name="MultiplesNotAllowed" xml:space="preserve">
+    <value>{0} : specifu ĉi tion nur unufoje</value>
+  </data>
 </root>

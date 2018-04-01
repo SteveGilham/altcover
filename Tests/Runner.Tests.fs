@@ -672,6 +672,7 @@ or
       Assert.That(returnCode, Is.EqualTo 255)
       let result = stderr.ToString().Replace("\r\n", "\n")
       let expected = "\"RuNN\" \"-r\" \"" + unique + "\"\n" +
+                     "--recorderDirectory : Directory " + unique + " not found\n" +
                        """Error - usage is:
   -i, --inputDirectory=VALUE Optional: The folder containing assemblies to
                                instrument (default: current directory)

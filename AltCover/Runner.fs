@@ -2,6 +2,7 @@
 
 open System
 open System.Collections.Generic
+open System.Globalization
 open System.IO
 open System.IO.Compression
 open System.Xml
@@ -38,31 +39,53 @@ module Runner =
     [ ("r|recorderDirectory=",
        (fun x -> if not (String.IsNullOrWhiteSpace(x)) && Directory.Exists(x) then
                     if Option.isSome recordingDirectory then
-                      CommandLine.error <- true
+                      CommandLine.error <- String.Format(CultureInfo.CurrentCulture, 
+                                                         CommandLine.resources.GetString "MultiplesNotAllowed", 
+                                                         "--recorderDirectory") :: CommandLine.error
+
                     else
                       recordingDirectory <- Some (Path.GetFullPath x)
-                 else CommandLine.error <- true))
+                 else CommandLine.error <- String.Format(CultureInfo.CurrentCulture, 
+                                                         CommandLine.resources.GetString "DirectoryNotFound", 
+                                                         "--recorderDirectory",
+                                                         x) :: CommandLine.error ))
       ("w|workingDirectory=",
        (fun x -> if not (String.IsNullOrWhiteSpace(x)) && Directory.Exists(x) then
                     if Option.isSome workingDirectory then
-                      CommandLine.error <- true
+                      CommandLine.error <- String.Format(CultureInfo.CurrentCulture, 
+                                                         CommandLine.resources.GetString "MultiplesNotAllowed", 
+                                                         "--workingDirectory") :: CommandLine.error
+
                     else
                       workingDirectory <- Some (Path.GetFullPath x)
-                 else CommandLine.error <- true))
+                 else CommandLine.error <- String.Format(CultureInfo.CurrentCulture, 
+                                                         CommandLine.resources.GetString "DirectoryNotFound", 
+                                                         "--workingDirectory",
+                                                         x) :: CommandLine.error ))
       ("x|executable=",
        (fun x -> if not (String.IsNullOrWhiteSpace(x)) then
                     if Option.isSome !executable then
-                      CommandLine.error <- true
+                      CommandLine.error <- String.Format(CultureInfo.CurrentCulture, 
+                                                         CommandLine.resources.GetString "MultiplesNotAllowed", 
+                                                         "--executable") :: CommandLine.error
                     else
                       executable := Some x
-                 else CommandLine.error <- true))
+                 else CommandLine.error <- String.Format(CultureInfo.CurrentCulture, 
+                                                         CommandLine.resources.GetString "InvalidValue", 
+                                                         "--executable",
+                                                         x) :: CommandLine.error))
       ("?|help|h", (fun x -> CommandLine.help <- not (isNull x)))
-      ("<>", (fun x -> CommandLine.error <- true))         ]// default end stop
+      ("<>", (fun x -> CommandLine.error <- String.Format(CultureInfo.CurrentCulture, 
+                                                         CommandLine.resources.GetString "InvalidValue", 
+                                                         "AltCover",
+                                                         x) :: CommandLine.error))         ]// default end stop
       |> List.fold (fun (o:OptionSet) (p, a) -> o.Add(p, CommandLine.resources.GetString(p), new System.Action<string>(a))) (OptionSet())
 
   let HandleBadArguments arguments intro options1 options =
         String.Join (" ", arguments |> Seq.map (sprintf "%A"))
         |> CommandLine.WriteErr
+        CommandLine.error
+        |> List.iter CommandLine.WriteErr
         CommandLine.Usage intro options1 options
 
   let internal RequireExe (parse:(Either<string*OptionSet, string list*OptionSet>)) =
