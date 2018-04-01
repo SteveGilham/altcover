@@ -45,7 +45,7 @@ let monoOnWindows = if isWindows then
                        |> List.tryFind (fun _ -> true)
                     else None
 
-let mutable dotnetPath86 = if isWindows then
+let dotnetPath86 = if isWindows then
                                 let perhaps = [programFiles86]
                                               |> List.filter (String.IsNullOrWhiteSpace >> not)
                                               |> List.map (fun s -> s @@ "dotnet\dotnet.EXE")
@@ -60,7 +60,7 @@ let mutable dotnetPath86 = if isWindows then
                                     with 
                                     | _ -> None
                                 | _ -> None
-                           else None
+                   else None
 
 let nugetCache = Path.Combine (Environment.GetFolderPath Environment.SpecialFolder.UserProfile,
                                ".nuget/packages")
@@ -1168,13 +1168,6 @@ Target "ReleaseFSharpTypesX86DotNetRunner" ( fun _ ->
     try
       try
         Environment.SetEnvironmentVariable("platform", "x86")
-        if isWindows && Option.isNone dotnetPath86 then
-          let opt = DotNet.install (fun cli -> { cli with Architecture = DotNet.CliArchitecture.X86
-                                                          CustomInstallDir = Some (Path.getFullName "./_x86")
-                                                          NoPath = true }) (dotnetOptions <| DotNet.Options.Create())
-          dotnetPath86 <- Some opt.DotNetCliPath //(findToolInSubPath "dotnet" "./_x86")
-          printfn "New CLI path = %s" opt.DotNetCliPath
-
         Actions.Run (fun info ->
             { info with
                 FileName = dotnetPath86 |> Option.get
