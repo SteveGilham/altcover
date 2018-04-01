@@ -1168,7 +1168,7 @@ Target "ReleaseFSharpTypesX86DotNetRunner" ( fun _ ->
     try
       try
         Environment.SetEnvironmentVariable("platform", "x86")
-        if Option.isNone dotnetPath86 then
+        if isWindows && Option.isNone dotnetPath86 then
           let opt = DotNet.install (fun cli -> { cli with Architecture = DotNet.CliArchitecture.X86
                                                           CustomInstallDir = Some (Path.getFullName "./_x86")
                                                           NoPath = true }) (dotnetOptions <| DotNet.Options.Create())
@@ -1538,8 +1538,7 @@ activateFinal "ResetConsoleColours"
 
 "Unpack"
 ==> "ReleaseFSharpTypesX86DotNetRunner"
-==> "Deployment"
-//=?> ("Deployment", Option.isSome dotnetPath86)
+=?> ("Deployment", Option.isSome dotnetPath86)
 
 "Unpack"
 ==> "ReleaseXUnitFSharpTypesDotNet"
