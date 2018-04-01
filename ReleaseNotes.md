@@ -1,3 +1,7 @@
+# 3.0.367-pre (Caba series release 1)
+* [BREAKING CHANGE] -- packaging the .net core as binaries -- so `dotnet AltCover.dll` rather than `dotnet run altcover.core.fsproj` to invoke.  This will be needed to do the MSBuild integration that's in the pipeline, where it isn't for a simple command-line tool
+* [BUGFIX] -- calculate branch exit visit count for `--opencover` (an oversight in 2.0.360)
+
 # 2.0.360   (Byakko series release 7)
 * Branch coverage for `--opencover`.  Note that AltCover takes a rather more conservative approach to detecting "significant" branch points than does OpenCover : it excludes all branches that are entirely internal to a reported sequence point in the source (thus eliminating the many and various sorts of compiler-surprise hidden branching that may include sequence points with no corresponding source location); additionally, if two or more exits from a branch go to the same place, they are considered to constitute only one branch-point in the report, rather than being counted separately.
 * Bonus feature -- `-c|callContext` tracking also applies to branch visits

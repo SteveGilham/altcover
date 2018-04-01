@@ -1046,6 +1046,11 @@ or
                           el.SetAttribute("branchCoverage", "0")
                            )
 
+    after.DocumentElement.SelectNodes("//SequencePoint")
+    |> Seq.cast<XmlElement>
+    |> Seq.iter(fun el -> el.SetAttribute("bev", "0")
+                           )
+
     let empty = Dictionary<string, Dictionary<int, int * Track list>>()
     Runner.PostProcess empty Base.ReportFormat.OpenCover after
 
@@ -1077,6 +1082,11 @@ or
     |> Seq.iter(fun el -> el.SetAttribute("visited", "false")
                           el.SetAttribute("sequenceCoverage", "0")
                           el.SetAttribute("branchCoverage", "0")
+                           )
+
+    after.DocumentElement.SelectNodes("//SequencePoint")
+    |> Seq.cast<XmlElement>
+    |> Seq.iter(fun el -> el.SetAttribute("bev", "0")
                            )
 
     after.DocumentElement.SelectNodes("//MethodPoint")

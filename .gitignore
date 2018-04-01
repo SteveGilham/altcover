@@ -65,3 +65,4 @@ _Mono/
 Build/build.fsx
 *.lock
 AltCover/Properties/launchSettings.json
+_Publish/
