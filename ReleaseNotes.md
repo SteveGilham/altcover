@@ -1,4 +1,4 @@
-# 3.0.366-pre (Caba series release 1)
+# 3.0.367-pre (Caba series release 1)
 * [BREAKING CHANGE] -- packaging the .net core as binaries -- so `dotnet AltCover.dll` rather than `dotnet run altcover.core.fsproj` to invoke.  This will be needed to do the MSBuild integration that's in the pipeline, where it isn't for a simple command-line tool
 * [BUGFIX] -- calculate branch exit visit count for `--opencover` (an oversight in 2.0.360)
 
