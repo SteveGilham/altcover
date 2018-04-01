@@ -3717,6 +3717,23 @@ type AltCoverTests() = class
       Visitor.TrackingNames.Clear()
 
   [<Test>]
+  member self.ParsingOnlyArabicNumeralsNotThatSortofArabicNumeralsGivesTime() =
+    try
+      Visitor.TrackingNames.Clear()
+      Visitor.interval <- None
+      let options = Main.DeclareOptions ()
+      let input = [| "-c"; "٣" |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Right _ -> Assert.Fail()
+      | Left (x, y) -> Assert.That (y, Is.SameAs options)
+                       Assert.That (x, Is.EqualTo "UsageError")
+      Assert.That (Visitor.Interval(), Is.EqualTo 0)
+    finally
+      Visitor.interval <- None
+      Visitor.TrackingNames.Clear()
+
+  [<Test>]
   member self.ParsingMultipleTimesGivesFailure() =
     try
       Visitor.interval <- None
@@ -3868,7 +3885,7 @@ type AltCoverTests() = class
       | Left (x,y) -> Assert.That (y, Is.SameAs options)
                       Assert.That (x, Is.EqualTo "UsageError")
                       Assert.That (stderr.ToString(), Is.Empty)
-                      Assert.That (CommandLine.error, 
+                      Assert.That (CommandLine.error,
                                    Is.EquivalentTo ["From and to directories are identical"])
                       Assert.That (stdout.ToString(), Is.Empty)
     finally
