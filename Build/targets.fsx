@@ -46,11 +46,20 @@ let monoOnWindows = if isWindows then
                     else None
 
 let mutable dotnetPath86 = if isWindows then
-                                [programFiles86]
-                                |> List.filter (String.IsNullOrWhiteSpace >> not)
-                                |> List.map (fun s -> s @@ "dotnet\dotnet.EXE")
-                                |> List.filter File.Exists
-                                |> List.tryFind (fun _ -> true)
+                                let perhaps = [programFiles86]
+                                              |> List.filter (String.IsNullOrWhiteSpace >> not)
+                                              |> List.map (fun s -> s @@ "dotnet\dotnet.EXE")
+                                              |> List.filter File.Exists
+                                              |> List.tryFind (fun _ -> true)
+                                match perhaps with
+                                | Some path ->
+                                    try // detect if we have the SDK
+                                        DotNet.info (fun opt -> {opt with Common = { dotnetOptions opt.Common with DotNetCliPath = path }})                                                                               
+                                        |> ignore
+                                        perhaps
+                                    with 
+                                    | _ -> None
+                                | _ -> None
                            else None
 
 let nugetCache = Path.Combine (Environment.GetFolderPath Environment.SpecialFolder.UserProfile,
@@ -1165,12 +1174,6 @@ Target "ReleaseFSharpTypesX86DotNetRunner" ( fun _ ->
                                                           NoPath = true }) (dotnetOptions <| DotNet.Options.Create())
           dotnetPath86 <- Some opt.DotNetCliPath //(findToolInSubPath "dotnet" "./_x86")
           printfn "New CLI path = %s" opt.DotNetCliPath
-        else
-          try
-            let info = DotNet.info (fun opt -> {opt with Common = { dotnetOptions opt.Common with DotNetCliPath = Option.get dotnetPath86 }})                                                                               
-            printfn "RID = %A" info
-          with 
-          | _ -> printfn "No RID"
 
         Actions.Run (fun info ->
             { info with
@@ -1179,7 +1182,7 @@ Target "ReleaseFSharpTypesX86DotNetRunner" ( fun _ ->
 
         printfn "Build the sample2 code as x86"
         Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = s }) "build"
-                      (" altcover.core.sln --configuration Release")
+                      (" altcover.core.sln --configuration Debug")
                       "ReleaseFSharpTypesX86DotNetRunnerBuild"
 
         printfn "Instrument the code"
@@ -1535,7 +1538,8 @@ activateFinal "ResetConsoleColours"
 
 "Unpack"
 ==> "ReleaseFSharpTypesX86DotNetRunner"
-=?> ("Deployment", Option.isSome dotnetPath86)
+==> "Deployment"
+//=?> ("Deployment", Option.isSome dotnetPath86)
 
 "Unpack"
 ==> "ReleaseXUnitFSharpTypesDotNet"
