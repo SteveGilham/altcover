@@ -150,7 +150,7 @@ module Main =
                   else
                       Visitor.reportFormat <- Some ReportFormat.OpenCover))
       ("inplace",
-       (fun _ ->  if inplace then
+       (fun _ ->  if inplace then   
                       CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
                                                          CommandLine.resources.GetString "MultiplesNotAllowed",
                                                          "--inplace") :: CommandLine.error
@@ -220,7 +220,7 @@ module Main =
              let assemblyPdb = ProgramDatabase.GetPdbWithFallback def
              if def |> Visitor.IsIncluded |> Visitor.IsInstrumented &&
                 Option.isSome assemblyPdb then
-                (fullName, def.Name.Name) :: accumulator
+                ((if inplace then target else fullName), def.Name.Name) :: accumulator
              else
                 accumulator) (fun () -> accumulator)
         ) []
@@ -249,6 +249,7 @@ module Main =
         let reporter, document = match Visitor.ReportKind() with
                                  | ReportFormat.OpenCover -> OpenCover.ReportGenerator ()
                                  | _ -> Report.ReportGenerator ()
+        if inplace then Visitor.outputDirectory <- Visitor.inputDirectory
         let visitors = [ reporter ; Instrument.InstrumentGenerator assemblyNames ]
         Visitor.Visit visitors (assemblies )
         document.Save(Visitor.ReportPath())
