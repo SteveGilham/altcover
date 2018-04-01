@@ -3019,9 +3019,9 @@ type AltCoverTests() = class
     let options = Main.DeclareOptions ()
     Assert.That (options.Count, Is.EqualTo
 #if NETCOREAPP2_0
-                                            14
-#else
                                             16
+#else
+                                            18
 #endif
                  )
     Assert.That(options |> Seq.filter (fun x -> x.Prototype <> "<>")
@@ -4416,6 +4416,10 @@ type AltCoverTests() = class
                                names (fully qualified if the string contains
                                any "." characters).
       --opencover            Optional: Generate the report in OpenCover format
+      --inplace              Optional: Instrument the inputDirectory, rather
+                               than the outputDirectory (e.g. for dotnet test)
+      --save                 Optional: Write raw coverage data to file for
+                               later processing
   -?, --help, -h             Prints out the options.
 or
   Runner
@@ -4493,6 +4497,10 @@ or
                                names (fully qualified if the string contains
                                any "." characters).
       --opencover            Optional: Generate the report in OpenCover format
+      --inplace              Optional: Instrument the inputDirectory, rather
+                               than the outputDirectory (e.g. for dotnet test)
+      --save                 Optional: Write raw coverage data to file for
+                               later processing
   -?, --help, -h             Prints out the options.
 or
   Runner
@@ -4505,6 +4513,8 @@ or
                              Optional: The working directory for the
                                application launch
   -x, --executable=VALUE     The executable to run e.g. dotnet
+      --collect              Optional: Process previously saved raw coverage
+                               data, rather than launching a process.
   -?, --help, -h             Prints out the options.
 """
 

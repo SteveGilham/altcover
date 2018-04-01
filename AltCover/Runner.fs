@@ -34,6 +34,7 @@ module Runner =
   let mutable internal recordingDirectory : Option<string> = None
   let mutable internal workingDirectory : Option<string> = None
   let mutable internal executable : Option<string> ref = ref None
+  let mutable internal collect = false
 
   let internal DeclareOptions () =
     [ ("r|recorderDirectory=",
@@ -74,6 +75,14 @@ module Runner =
                                                          CommandLine.resources.GetString "InvalidValue",
                                                          "--executable",
                                                          x) :: CommandLine.error))
+      ("collect",
+       (fun _ ->  if collect then
+                      CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
+                                                         CommandLine.resources.GetString "MultiplesNotAllowed",
+                                                         "--collect") :: CommandLine.error
+
+                  else
+                      collect <- true))
       ("?|help|h", (fun x -> CommandLine.help <- not (isNull x)))
       ("<>", (fun x -> CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
                                                          CommandLine.resources.GetString "InvalidValue",

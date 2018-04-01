@@ -185,6 +185,8 @@ or
                              Optional: The working directory for the
                                application launch
   -x, --executable=VALUE     The executable to run e.g. dotnet
+      --collect              Optional: Process previously saved raw coverage
+                               data, rather than launching a process.
   -?, --help, -h             Prints out the options.
 """
 
@@ -242,7 +244,7 @@ or
   [<Test>]
   member self.ShouldHaveExpectedOptions() =
     let options = Runner.DeclareOptions ()
-    Assert.That (options.Count, Is.EqualTo 5)
+    Assert.That (options.Count, Is.EqualTo 6)
     Assert.That(options |> Seq.filter (fun x -> x.Prototype <> "<>")
                         |> Seq.forall (fun x -> (String.IsNullOrWhiteSpace >> not) x.Description))
     Assert.That (options |> Seq.filter (fun x -> x.Prototype = "<>") |> Seq.length, Is.EqualTo 1)
@@ -728,6 +730,10 @@ or
                                names (fully qualified if the string contains
                                any "." characters).
       --opencover            Optional: Generate the report in OpenCover format
+      --inplace              Optional: Instrument the inputDirectory, rather
+                               than the outputDirectory (e.g. for dotnet test)
+      --save                 Optional: Write raw coverage data to file for
+                               later processing
   -?, --help, -h             Prints out the options.
 or
   Runner
@@ -740,6 +746,8 @@ or
                              Optional: The working directory for the
                                application launch
   -x, --executable=VALUE     The executable to run e.g. dotnet
+      --collect              Optional: Process previously saved raw coverage
+                               data, rather than launching a process.
   -?, --help, -h             Prints out the options.
 """
 

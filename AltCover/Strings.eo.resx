@@ -231,4 +231,13 @@ AltCover Runner [/r[ecordingDirectory]=VALO] [/w[orkingDirectory]=VALO] [/x||exe
   <data name="MultiplesNotAllowed" xml:space="preserve">
     <value>{0} : specifu ĉi tion nur unufoje</value>
   </data>
+  <data name="collect" xml:space="preserve">
+    <value>Laŭvola: Procezo antaŭe konservis krudajn kovraĵojn, anstataŭ ĵeti procezon.</value>
+  </data>
+  <data name="inplace" xml:space="preserve">
+    <value>Laŭvola: Instrumento de inputDirectory, prefere ol outputDirectory (ekz. por dotnet test)</value>
+  </data>
+  <data name="save" xml:space="preserve">
+    <value>Laŭvola: Skribu krudan kovradan datumon al dosiero por posta prilaborado</value>
+  </data>
 </root>

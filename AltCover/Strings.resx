@@ -231,4 +231,13 @@ AltCover Runner [/r[ecordingDirectory]=VALUE] [/w[orkingDirectory]=VALUE] [/x||e
   <data name="MultiplesNotAllowed" xml:space="preserve">
     <value>{0} : specify this only once</value>
   </data>
+  <data name="collect" xml:space="preserve">
+    <value>Optional: Process previously saved raw coverage data, rather than launching a process.</value>
+  </data>
+  <data name="inplace" xml:space="preserve">
+    <value>Optional: Instrument the inputDirectory, rather than the outputDirectory (e.g. for dotnet test)</value>
+  </data>
+  <data name="save" xml:space="preserve">
+    <value>Optional: Write raw coverage data to file for later processing</value>
+  </data>
 </root>

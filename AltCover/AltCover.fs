@@ -16,6 +16,7 @@ open Mono.Cecil
 open Mono.Options
 
 module Main =
+  let mutable internal inplace = false
 
   let internal DeclareOptions () =
     [ ("i|inputDirectory=",
@@ -148,6 +149,22 @@ module Main =
 
                   else
                       Visitor.reportFormat <- Some ReportFormat.OpenCover))
+      ("inplace",
+       (fun _ ->  if Option.isSome Visitor.reportFormat then
+                      CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
+                                                         CommandLine.resources.GetString "MultiplesNotAllowed",
+                                                         "--inplace") :: CommandLine.error
+
+                  else
+                      inplace <- true))
+      ("save",
+       (fun _ ->  if Visitor.collect then
+                      CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
+                                                         CommandLine.resources.GetString "MultiplesNotAllowed",
+                                                         "--save") :: CommandLine.error
+
+                  else
+                      Visitor.collect <- true))
       ("?|help|h", (fun x -> CommandLine.help <- not (isNull x)))
       ("<>", (fun x -> CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
                                                          CommandLine.resources.GetString "InvalidValue",

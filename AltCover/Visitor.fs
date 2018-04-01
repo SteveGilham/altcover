@@ -127,6 +127,7 @@ module KeyStore =
 type Fix<'T> = delegate of 'T -> Fix<'T>
 
 module Visitor =
+  let mutable internal collect = false
   let internal TrackingNames = new List<String>()
 
   let internal NameFilters = new List<FilterClass>()
