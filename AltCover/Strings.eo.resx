@@ -246,4 +246,13 @@ AltCover Runner [/r[ecordingDirectory]=VALO] [/w[orkingDirectory]=VALO] [/x||exe
   <data name="savingto" xml:space="preserve">
     <value>Ŝpari dosierojn al {0}</value>
   </data>
+  <data name="executableRequired" xml:space="preserve">
+    <value>Uzo en la "runner" postulas precize unu el ĉu '--executable' aŭ '--collect'.</value>
+  </data>
+  <data name="recorderNotFound" xml:space="preserve">
+    <value>Agordo de registradoj {0} ne trovita en la nomumita dosierujo.</value>
+  </data>
+  <data name="recorderRequired" xml:space="preserve">
+    <value>La valoro '--recorderDirectory' estas postulita.</value>
+  </data>
 </root>

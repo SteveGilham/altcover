@@ -551,6 +551,39 @@ or
       Runner.executable := None)
 
   [<Test>]
+  member self.ShouldRequireCollectIfNotExe() =
+    lock Runner.executable (fun () ->
+    try
+      Runner.executable := None
+      Runner.collect <- true
+      let options = Runner.DeclareOptions ()
+      let parse = Runner.RequireExe (Right ([], options))
+      match parse with
+      | Right ([], z) -> Assert.That (z, Is.SameAs options)
+      | _ -> Assert.Fail()
+    finally
+      Runner.collect <- false
+      Runner.executable := None)
+
+  [<Test>]
+  member self.ShouldRejectExeIfCollect() =
+    lock Runner.executable (fun () ->
+    try
+      Runner.executable := Some "xxx"
+      Runner.collect <- true
+      let options = Runner.DeclareOptions ()
+      let parse = Runner.RequireExe (Right (["b"], options))
+      match parse with
+      | Right _ -> Assert.Fail()
+      | Left (x, y) -> Assert.That (y, Is.SameAs options)
+                       Assert.That (x, Is.EqualTo "UsageError")
+    finally
+      Runner.collect <- false
+      Runner.executable := None)
+
+
+
+  [<Test>]
   member self.ShouldRequireWorker() =
     try
       Runner.workingDirectory <- None

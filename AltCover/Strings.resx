@@ -246,4 +246,13 @@ AltCover Runner [/r[ecordingDirectory]=VALUE] [/w[orkingDirectory]=VALUE] [/x||e
   <data name="savingto" xml:space="preserve">
     <value>Saving files to {0}</value>
   </data>
+  <data name="executableRequired" xml:space="preserve">
+    <value>Use in 'runner' mode requires exactly one of either '--executable' or '--collect'.</value>
+  </data>
+  <data name="recorderNotFound" xml:space="preserve">
+    <value>Recorder assembly {0} not found in the nominated directory.</value>
+  </data>
+  <data name="recorderRequired" xml:space="preserve">
+    <value>The '--recorderDirectory' value is required.</value>
+  </data>
 </root>

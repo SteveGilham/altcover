@@ -264,7 +264,9 @@ module Main =
 
         let visitors = [ reporter ; Instrument.InstrumentGenerator assemblyNames ]
         Visitor.Visit visitors (assemblies )
-        document.Save(Visitor.ReportPath())
+        let report = Visitor.ReportPath()
+        document.Save(report)
+        if Visitor.collect then Runner.SetRecordToFile report
 
         CommandLine.ProcessTrailingArguments rest toInfo) 255
 
