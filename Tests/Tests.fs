@@ -4054,6 +4054,8 @@ type AltCoverTests() = class
                                                     here + "\n"))
                            Assert.That (stderr.ToString(), Is.Empty)
                            Assert.That (Directory.Exists there)
+                           Assert.That (Visitor.SourceDirectory(), Is.EqualTo there)
+                           Assert.That (Visitor.InstrumentDirectory(), Is.EqualTo here)
     finally
       Visitor.inplace <- false
       Console.SetOut (fst saved)
