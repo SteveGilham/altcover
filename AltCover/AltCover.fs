@@ -253,18 +253,18 @@ module Main =
         CommandLine.Usage intro options (Runner.DeclareOptions())
         255
     | Right (rest, fromInfo, toInfo, targetInfo) ->
+        let report = Visitor.ReportPath()
         CommandLine.doPathOperation( fun () ->
         let (assemblies, assemblyNames) = PrepareTargetFiles fromInfo toInfo targetInfo
         CommandLine.WriteOut <| String.Format(CultureInfo.CurrentCulture,
                                          (CommandLine.resources.GetString "reportingto"),
-                                         Visitor.ReportPath())
+                                         report)
         let reporter, document = match Visitor.ReportKind() with
                                  | ReportFormat.OpenCover -> OpenCover.ReportGenerator ()
                                  | _ -> Report.ReportGenerator ()
 
         let visitors = [ reporter ; Instrument.InstrumentGenerator assemblyNames ]
-        Visitor.Visit visitors (assemblies )
-        let report = Visitor.ReportPath()
+        Visitor.Visit visitors (assemblies)
         document.Save(report)
         if Visitor.collect then Runner.SetRecordToFile report
 
