@@ -121,7 +121,7 @@
     <value>Optional: The folder containing assemblies to instrument (default: current directory)</value>
   </data>
   <data name="o|outputDirectory=" xml:space="preserve">
-    <value>Optional: The folder to receive the instrumented assemblies and their companions (default: sub-folder '__Instrumented' of the current directory)</value>
+    <value>Optional: The folder to receive the instrumented assemblies and their companions (default: sub-folder '__Instrumented' of the current directory; or '__Saved' if 'inplace' is set)</value>
   </data>
   <data name="k|key=" xml:space="preserve">
     <value>Optional, multiple: any other strong-name key to use</value>
@@ -239,5 +239,11 @@ AltCover Runner [/r[ecordingDirectory]=VALUE] [/w[orkingDirectory]=VALUE] [/x||e
   </data>
   <data name="save" xml:space="preserve">
     <value>Optional: Write raw coverage data to file for later processing</value>
+  </data>
+  <data name="instrumentingin" xml:space="preserve">
+    <value>Instrumenting files in {0}</value>
+  </data>
+  <data name="savingto" xml:space="preserve">
+    <value>Saving files to {0}</value>
   </data>
 </root>

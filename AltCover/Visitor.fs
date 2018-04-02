@@ -133,13 +133,20 @@ module Visitor =
   let internal NameFilters = new List<FilterClass>()
   let private specialCaseFilters = [ @"^CompareTo\$cont\@\d+\-?\d$" |> Regex |> FilterClass.Method ]
 
+  let mutable internal inplace = false
+
   let mutable internal inputDirectory : Option<string> = None
   let private defaultInputDirectory = "."
   let InputDirectory () = Path.GetFullPath (Option.getOrElse defaultInputDirectory inputDirectory)
 
+  let inplaceSelection a b = if inplace then a else b
+
   let mutable internal outputDirectory : Option<string> = None
-  let private defaultOutputDirectory = "__Instrumented"
-  let OutputDirectory () = Path.GetFullPath (Option.getOrElse defaultOutputDirectory outputDirectory)
+  let private defaultOutputDirectory () = inplaceSelection "__Saved" "__Instrumented"
+  let OutputDirectory () = Path.GetFullPath (Option.getOrElse (defaultOutputDirectory()) outputDirectory)
+
+  let InstrumentDirectory () = (inplaceSelection InputDirectory OutputDirectory) ()
+  let SourceDirectory () = (inplaceSelection OutputDirectory InputDirectory) ()
 
   let mutable internal reportPath : Option<string> = None
   let defaultReportPath = "coverage.xml"

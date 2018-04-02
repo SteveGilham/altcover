@@ -16,7 +16,6 @@ open Mono.Cecil
 open Mono.Options
 
 module Main =
-  let mutable internal inplace = false
 
   let internal DeclareOptions () =
     [ ("i|inputDirectory=",
@@ -150,13 +149,13 @@ module Main =
                   else
                       Visitor.reportFormat <- Some ReportFormat.OpenCover))
       ("inplace",
-       (fun _ ->  if inplace then   
+       (fun _ ->  if Visitor.inplace then   
                       CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
                                                          CommandLine.resources.GetString "MultiplesNotAllowed",
                                                          "--inplace") :: CommandLine.error
 
                   else
-                      inplace <- true))
+                      Visitor.inplace <- true))
       ("save",
        (fun _ ->  if Visitor.collect then
                       CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
@@ -191,13 +190,24 @@ module Main =
         if CommandLine.error |> List.isEmpty |> not then
             Left ("UsageError", options)
         else
+          if Visitor.inplace then
+            CommandLine.WriteOut <| String.Format(CultureInfo.CurrentCulture,
+                                        (CommandLine.resources.GetString "savingto"),
+                                        toDirectory)
+            CommandLine.WriteOut <| String.Format(CultureInfo.CurrentCulture,
+                                        (CommandLine.resources.GetString "instrumentingin"),
+                                        fromDirectory)
+          else
             CommandLine.WriteOut <| String.Format(CultureInfo.CurrentCulture,
                                         (CommandLine.resources.GetString "instrumentingfrom"),
                                         fromDirectory)
             CommandLine.WriteOut <| String.Format(CultureInfo.CurrentCulture,
                                         (CommandLine.resources.GetString "instrumentingto"),
                                         toDirectory)
-            Right (rest, DirectoryInfo(fromDirectory), DirectoryInfo(toDirectory))
+          Right (rest, 
+                 DirectoryInfo(fromDirectory), 
+                 DirectoryInfo(toDirectory),
+                 DirectoryInfo(Visitor.SourceDirectory()))
     | Left intro -> Left intro
 
   let internal ImageLoadResilient (f : unit -> 'a)  (tidy : unit -> 'a) =
@@ -206,21 +216,23 @@ module Main =
     | :? BadImageFormatException -> tidy()
     | :? IOException -> tidy()
 
-  let internal PrepareTargetFiles (fromInfo:DirectoryInfo) (toInfo:DirectoryInfo) =
+  let internal PrepareTargetFiles (fromInfo:DirectoryInfo) (toInfo:DirectoryInfo) (sourceInfo:DirectoryInfo) =
     // Copy all the files into the target directory
     // Track the symbol-bearing assemblies
     let assemblies =
       fromInfo.GetFiles()
       |> Seq.fold (fun (accumulator : (string*string) list) info ->
            let fullName = info.FullName
-           let target = Path.Combine (toInfo.FullName, info.Name)
-           File.Copy(fullName, target, true)
+           let filename = info.Name
+           let copy = Path.Combine (toInfo.FullName, filename)
+           File.Copy(fullName, copy, true)
+           let source = Path.Combine (sourceInfo.FullName, filename)
            ImageLoadResilient(fun () ->
              let def = AssemblyDefinition.ReadAssembly(fullName)
              let assemblyPdb = ProgramDatabase.GetPdbWithFallback def
              if def |> Visitor.IsIncluded |> Visitor.IsInstrumented &&
                 Option.isSome assemblyPdb then
-                ((if inplace then target else fullName), def.Name.Name) :: accumulator
+                (source, def.Name.Name) :: accumulator
              else
                 accumulator) (fun () -> accumulator)
         ) []
@@ -240,16 +252,16 @@ module Main =
         |> List.iter CommandLine.WriteErr
         CommandLine.Usage intro options (Runner.DeclareOptions())
         255
-    | Right (rest, fromInfo, toInfo) ->
+    | Right (rest, fromInfo, toInfo, targetInfo) ->
         CommandLine.doPathOperation( fun () ->
-        let (assemblies, assemblyNames) = PrepareTargetFiles fromInfo toInfo
+        let (assemblies, assemblyNames) = PrepareTargetFiles fromInfo toInfo targetInfo
         CommandLine.WriteOut <| String.Format(CultureInfo.CurrentCulture,
                                          (CommandLine.resources.GetString "reportingto"),
                                          Visitor.ReportPath())
         let reporter, document = match Visitor.ReportKind() with
                                  | ReportFormat.OpenCover -> OpenCover.ReportGenerator ()
                                  | _ -> Report.ReportGenerator ()
-        if inplace then Visitor.outputDirectory <- Visitor.inputDirectory
+
         let visitors = [ reporter ; Instrument.InstrumentGenerator assemblyNames ]
         Visitor.Visit visitors (assemblies )
         document.Save(Visitor.ReportPath())

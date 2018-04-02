@@ -467,12 +467,12 @@ module Instrument =
     state
 
   let private FinishVisit (state : Context) =
-                 let counterAssemblyFile = Path.Combine(Visitor.OutputDirectory(), (extractName state.RecordingAssembly) + ".dll")
+                 let counterAssemblyFile = Path.Combine(Visitor.InstrumentDirectory(), (extractName state.RecordingAssembly) + ".dll")
                  WriteAssembly (state.RecordingAssembly) counterAssemblyFile
-                 Directory.GetFiles(Visitor.OutputDirectory(), "*.deps.json", SearchOption.TopDirectoryOnly)
+                 Directory.GetFiles(Visitor.InstrumentDirectory(), "*.deps.json", SearchOption.TopDirectoryOnly)
                  |> Seq.iter (fun f -> File.WriteAllText(f, (f |> File.ReadAllText |> injectJSON))                                       )
 #if NETCOREAPP2_0
-                 let fsharplib = Path.Combine(Visitor.OutputDirectory(), "FSharp.Core.dll")
+                 let fsharplib = Path.Combine(Visitor.InstrumentDirectory(), "FSharp.Core.dll")
                  if not (File.Exists fsharplib) then
                    use fsharpbytes = new FileStream(AltCover.Recorder.Tracer.Core(), FileMode.Open, FileAccess.Read)
                    use libstream = new FileStream(fsharplib, FileMode.Create)
@@ -530,7 +530,7 @@ module Instrument =
 
   let private VisitAfterAssembly state (assembly:AssemblyDefinition) =
     let originalFileName = Path.GetFileName assembly.MainModule.FileName
-    let path = Path.Combine(Visitor.OutputDirectory(), originalFileName)
+    let path = Path.Combine(Visitor.InstrumentDirectory(), originalFileName)
     WriteAssembly assembly path
     state
 

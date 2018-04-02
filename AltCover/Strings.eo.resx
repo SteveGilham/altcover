@@ -121,7 +121,7 @@
     <value>Laŭvola: La dosierujo enhavanta asembleojn al instrumento (defaŭlta: aktuala dosierujo)</value>
   </data>
   <data name="o|outputDirectory=" xml:space="preserve">
-    <value>Laŭvola: La dosierujo ricevi la instrumentajn asembleojn kaj iliajn kunulojn (defaŭlte: sub-dosierujo '__Instrumented' de la aktuala dosierujo)</value>
+    <value>Laŭvola: La dosierujo ricevi la instrumentajn asembleojn kaj iliajn kunulojn (defaŭlte: sub-dosierujo '__Instrumented' de la aktuala dosierujo; aŭ '__Saved' se 'inplace' estas aro)</value>
   </data>
   <data name="k|key=" xml:space="preserve">
     <value>Laŭvola, multobla: iu ajn alia forta-nomo ŝlosilo por uzi</value>
@@ -239,5 +239,11 @@ AltCover Runner [/r[ecordingDirectory]=VALO] [/w[orkingDirectory]=VALO] [/x||exe
   </data>
   <data name="save" xml:space="preserve">
     <value>Laŭvola: Skribu krudan kovradan datumon al dosiero por posta prilaborado</value>
+  </data>
+  <data name="instrumentingin" xml:space="preserve">
+    <value>Instrumentaj dosieroj en {0}</value>
+  </data>
+  <data name="savingto" xml:space="preserve">
+    <value>Ŝpari dosierojn al {0}</value>
   </data>
 </root>

@@ -711,7 +711,8 @@ or
   -o, --outputDirectory=VALUE
                              Optional: The folder to receive the instrumented
                                assemblies and their companions (default: sub-
-                               folder '__Instrumented' of the current directory)
+                               folder '__Instrumented' of the current directory;
+                                or '__Saved' if 'inplace' is set)
   -y, --symbolDirectory=VALUE
                              Optional, multiple: Additional directory to search
                                for matching symbols for the assemblies in the

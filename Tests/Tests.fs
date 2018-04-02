@@ -3858,7 +3858,7 @@ type AltCoverTests() = class
   [<Test>]
   member self.ParsingInPlaceGivesInPlace() =
     try
-      Main.inplace <- false
+      Visitor.inplace <- false
       let options = Main.DeclareOptions ()
       let input = [| "--inplace" |]
       let parse = CommandLine.ParseCommandLine input options
@@ -3867,14 +3867,14 @@ type AltCoverTests() = class
       | Right (x, y) -> Assert.That (y, Is.SameAs options)
                         Assert.That (x, Is.Empty)
 
-      Assert.That (Main.inplace, Is.True)
+      Assert.That (Visitor.inplace, Is.True)
     finally
-      Main.inplace <- false
+      Visitor.inplace <- false
 
   [<Test>]
   member self.ParsingMultipleInPlaceGivesFailure() =
     try
-      Main.inplace <- false
+      Visitor.inplace <- false
       let options = Main.DeclareOptions ()
       let input = [| "--inplace"; "--inplace" |]
       let parse = CommandLine.ParseCommandLine input options
@@ -3883,7 +3883,7 @@ type AltCoverTests() = class
       | Left (x, y) -> Assert.That (y, Is.SameAs options)
                        Assert.That (x, Is.EqualTo "UsageError")
     finally
-      Main.inplace <- false
+      Visitor.inplace <- false
 
   [<Test>]
   member self.ParsingSaveGivesSave() =
@@ -3970,14 +3970,15 @@ type AltCoverTests() = class
       let ok = Right arg
       match Main.ProcessOutputLocation ok with
       | Left _ -> Assert.Fail()
-      | Right (x,y,z) -> Assert.That (x, Is.SameAs rest)
-                         Assert.That (y.FullName, Is.EqualTo here)
-                         Assert.That (z.FullName, Is.EqualTo (Path.GetDirectoryName here))
-                         Assert.That (stdout.ToString().Replace("\r",String.Empty),
-                                      Is.EqualTo ("Instrumenting files from " +
-                                                  here + "\nWriting files to " +
-                                                  (Path.GetDirectoryName here) + "\n"))
-                         Assert.That (stderr.ToString(), Is.Empty)
+      | Right (x,y,z,t) -> Assert.That (x, Is.SameAs rest)
+                           Assert.That (y.FullName, Is.EqualTo here)
+                           Assert.That (z.FullName, Is.EqualTo (Path.GetDirectoryName here))
+                           Assert.That (t.FullName, Is.EqualTo y.FullName)
+                           Assert.That (stdout.ToString().Replace("\r",String.Empty),
+                                        Is.EqualTo ("Instrumenting files from " +
+                                                    here + "\nWriting files to " +
+                                                    (Path.GetDirectoryName here) + "\n"))
+                           Assert.That (stderr.ToString(), Is.Empty)
     finally
       Console.SetOut (fst saved)
       Console.SetError (snd saved)
@@ -4004,17 +4005,57 @@ type AltCoverTests() = class
       Assert.That (Directory.Exists there, Is.False)
       match Main.ProcessOutputLocation ok with
       | Left _ -> Assert.Fail()
-      | Right (x,y,z) -> Assert.That (x, Is.SameAs rest)
-                         Assert.That (y.FullName, Is.EqualTo here)
-                         Assert.That (z.FullName, Is.EqualTo there)
-                         Assert.That (stdout.ToString().Replace("\r",String.Empty),
-                                      Is.EqualTo ("Creating folder " + there +
-                                                  "\nInstrumenting files from " +
-                                                  here + "\nWriting files to " +
-                                                  there + "\n"))
-                         Assert.That (stderr.ToString(), Is.Empty)
-                         Assert.That (Directory.Exists there)
+      | Right (x,y,z,t) -> Assert.That (x, Is.SameAs rest)
+                           Assert.That (y.FullName, Is.EqualTo here)
+                           Assert.That (z.FullName, Is.EqualTo there)
+                           Assert.That (t.FullName, Is.EqualTo here)
+                           Assert.That (stdout.ToString().Replace("\r",String.Empty),
+                                        Is.EqualTo ("Creating folder " + there +
+                                                    "\nInstrumenting files from " +
+                                                    here + "\nWriting files to " +
+                                                    there + "\n"))
+                           Assert.That (stderr.ToString(), Is.Empty)
+                           Assert.That (Directory.Exists there)
     finally
+      Console.SetOut (fst saved)
+      Console.SetError (snd saved)
+
+  [<Test>]
+  member self.InPlaceOperationIsAsExpected() =
+    let options = Main.DeclareOptions ()
+    let saved = (Console.Out, Console.Error)
+    CommandLine.error <- []
+    Visitor.inplace <- true
+    try
+      use stdout = new StringWriter()
+      use stderr = new StringWriter()
+      Console.SetOut stdout
+      Console.SetError stderr
+
+      let here = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
+      let there = Path.Combine(here, Guid.NewGuid().ToString())
+      Visitor.inputDirectory <- Some here
+      Visitor.outputDirectory <- Some there
+
+      let rest = [Guid.NewGuid().ToString()]
+      let arg = (rest, options)
+      let ok = Right arg
+      Assert.That (Directory.Exists there, Is.False)
+      match Main.ProcessOutputLocation ok with
+      | Left _ -> Assert.Fail()
+      | Right (x,y,z,t) -> Assert.That (x, Is.SameAs rest)
+                           Assert.That (y.FullName, Is.EqualTo here)
+                           Assert.That (z.FullName, Is.EqualTo there)
+                           Assert.That (t.FullName, Is.EqualTo there)
+                           Assert.That (stdout.ToString().Replace("\r",String.Empty),
+                                        Is.EqualTo ("Creating folder " + there +
+                                                    "\nSaving files to " + there + 
+                                                    "\nInstrumenting files in " +
+                                                    here + "\n"))
+                           Assert.That (stderr.ToString(), Is.Empty)
+                           Assert.That (Directory.Exists there)
+    finally
+      Visitor.inplace <- false
       Console.SetOut (fst saved)
       Console.SetError (snd saved)
 
@@ -4052,7 +4093,7 @@ type AltCoverTests() = class
     let there = Path.Combine(here, Guid.NewGuid().ToString())
     let toInfo = Directory.CreateDirectory there
     let fromInfo = DirectoryInfo(here)
-    let (x,y) = Main.PrepareTargetFiles fromInfo toInfo
+    let (x,y) = Main.PrepareTargetFiles fromInfo toInfo fromInfo
     Assert.That (toInfo.EnumerateFiles()
                  |> Seq.map (fun x -> x.Name),
                  Is.EquivalentTo (fromInfo.EnumerateFiles()
@@ -4425,7 +4466,8 @@ type AltCoverTests() = class
   -o, --outputDirectory=VALUE
                              Optional: The folder to receive the instrumented
                                assemblies and their companions (default: sub-
-                               folder '__Instrumented' of the current directory)
+                               folder '__Instrumented' of the current directory;
+                                or '__Saved' if 'inplace' is set)
   -y, --symbolDirectory=VALUE
                              Optional, multiple: Additional directory to search
                                for matching symbols for the assemblies in the
@@ -4506,7 +4548,8 @@ or
   -o, --outputDirectory=VALUE
                              Optional: The folder to receive the instrumented
                                assemblies and their companions (default: sub-
-                               folder '__Instrumented' of the current directory)
+                               folder '__Instrumented' of the current directory;
+                                or '__Saved' if 'inplace' is set)
   -y, --symbolDirectory=VALUE
                              Optional, multiple: Additional directory to search
                                for matching symbols for the assemblies in the
