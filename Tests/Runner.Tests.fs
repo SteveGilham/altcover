@@ -581,8 +581,6 @@ or
       Runner.collect <- false
       Runner.executable := None)
 
-
-
   [<Test>]
   member self.ShouldRequireWorker() =
     try
