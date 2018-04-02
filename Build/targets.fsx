@@ -687,6 +687,7 @@ Target "FSharpTypesDotNet" ( fun _ ->
     let sampleRoot = Path.getFullName "Sample2/_Binaries/Sample2/Debug+AnyCPU/netcoreapp2.0"
 
     // Test the --inplace operation
+    Shell.CleanDir sampleRoot
     Actions.RunDotnet (fun o -> {dotnetOptions o with WorkingDirectory = Path.getFullName "Sample2"}) "test"
                             ("--configuration Debug sample2.core.fsproj")
                              "sample initial test returned with a non-zero exit code"
@@ -740,6 +741,7 @@ Target "FSharpTypesDotNetCollecter" ( fun _ ->
     let sampleRoot = Path.getFullName "Sample2/_Binaries/Sample2/Debug+AnyCPU/netcoreapp2.0"
 
     // Test the --inplace operation
+    Shell.CleanDir sampleRoot
     Actions.RunDotnet (fun o -> {dotnetOptions o with WorkingDirectory = Path.getFullName "Sample2"}) "test"
                             ("--configuration Debug sample2.core.fsproj")
                              "sample initial test returned with a non-zero exit code"
