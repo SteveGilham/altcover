@@ -749,7 +749,7 @@ Target "FSharpTypesDotNetCollecter" ( fun _ ->
     // inplace instrument and save
     Actions.RunDotnet (fun o -> {dotnetOptions o with WorkingDirectory = sampleRoot}) ""
                              (altcover + " --inplace --save -s=Adapter -t \"System\\.\" -t \"Microsoft\\.\" -x \"" + simpleReport + "\" ")
-                             "FSharpTypesDotNet"
+                             "FSharpTypesDotNetCollecter"
 
     Actions.ValidateFSharpTypes simpleReport ["main"]
     Assert.That(Path.Combine (sampleRoot, "__Saved") |> Directory.Exists)
