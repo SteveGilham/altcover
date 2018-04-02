@@ -255,4 +255,7 @@ AltCover Runner [/r[ecordingDirectory]=VALUE] [/w[orkingDirectory]=VALUE] [/x||e
   <data name="recorderRequired" xml:space="preserve">
     <value>The '--recorderDirectory' value is required.</value>
   </data>
+  <data name="SaveExists" xml:space="preserve">
+    <value>Output directory for saved files {0} already exists</value>
+  </data>
 </root>

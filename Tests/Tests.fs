@@ -4021,6 +4021,39 @@ type AltCoverTests() = class
       Console.SetError (snd saved)
 
   [<Test>]
+  member self.InPlaceToExistingPlaceFails() =
+    let options = Main.DeclareOptions ()
+    let saved = (Console.Out, Console.Error)
+    CommandLine.error <- []
+    Visitor.inplace <- true
+    try
+      use stdout = new StringWriter()
+      use stderr = new StringWriter()
+      Console.SetOut stdout
+      Console.SetError stderr
+
+      let here = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
+      Visitor.inputDirectory <- Some here
+      Visitor.outputDirectory <- Some (Path.GetDirectoryName here)
+
+      let rest = [Guid.NewGuid().ToString()]
+      let arg = (rest, options)
+      let ok = Right arg
+      match Main.ProcessOutputLocation ok with
+      | Right _ -> Assert.Fail()
+      | Left _ -> Assert.That (stdout.ToString(), Is.Empty)
+                  Assert.That (stderr.ToString(), Is.Empty)
+                  Assert.That (CommandLine.error, 
+                               Is.EquivalentTo ["Output directory for saved files " +
+                                                Visitor.OutputDirectory() +
+                                                " already exists"])
+    finally
+      Visitor.inplace <- false
+      Console.SetOut (fst saved)
+      Console.SetError (snd saved)
+
+
+  [<Test>]
   member self.InPlaceOperationIsAsExpected() =
     let options = Main.DeclareOptions ()
     let saved = (Console.Out, Console.Error)

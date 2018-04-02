@@ -255,4 +255,7 @@ AltCover Runner [/r[ecordingDirectory]=VALO] [/w[orkingDirectory]=VALO] [/x||exe
   <data name="recorderRequired" xml:space="preserve">
     <value>La valoro '--recorderDirectory' estas postulita.</value>
   </data>
+  <data name="SaveExists" xml:space="preserve">
+    <value>Elŝuta dosierujo por konservitaj dosieroj {0} jam ekzistas</value>
+  </data>
 </root>

@@ -181,6 +181,12 @@ module Main =
             CommandLine.error <- CommandLine.resources.GetString "NotInPlace" :: CommandLine.error
 
         CommandLine.doPathOperation(fun () ->
+            if Visitor.inplace && 
+               CommandLine.error |> List.isEmpty && toDirectory |> Directory.Exists
+            then CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
+                                                    CommandLine.resources.GetString "SaveExists",
+                                                    toDirectory) :: CommandLine.error
+
             if CommandLine.error |> List.isEmpty && toDirectory |> Directory.Exists |> not then
               CommandLine.WriteOut <| String.Format(CultureInfo.CurrentCulture,
                                                     (CommandLine.resources.GetString "CreateFolder"),
