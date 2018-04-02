@@ -733,6 +733,38 @@ Target "FSharpTypesDotNetRunner" ( fun _ ->
     Actions.ValidateFSharpTypesCoverage simpleReport
 )
 
+Target "FSharpTypesDotNetCollecter" ( fun _ ->
+    Directory.ensure "./_Reports"
+    let altcover = Path.getFullName "./_Binaries/AltCover/Release+AnyCPU/netcoreapp2.0/AltCover.dll"
+    let simpleReport = (Path.getFullName "./_Reports") @@ ( "AltCoverFSharpTypesDotNetCollecter.xml")
+    let sampleRoot = Path.getFullName "Sample2/_Binaries/Sample2/Debug+AnyCPU/netcoreapp2.0"
+
+    // Test the --inplace operation
+    Actions.RunDotnet (fun o -> {dotnetOptions o with WorkingDirectory = Path.getFullName "Sample2"}) "test"
+                            ("--configuration Debug sample2.core.fsproj")
+                             "sample initial test returned with a non-zero exit code"
+
+    // inplace instrument and save
+    Actions.RunDotnet (fun o -> {dotnetOptions o with WorkingDirectory = sampleRoot}) ""
+                             (altcover + " --inplace --save -s=Adapter -t \"System\\.\" -t \"Microsoft\\.\" -x \"" + simpleReport + "\" ")
+                             "FSharpTypesDotNet"
+
+    Actions.ValidateFSharpTypes simpleReport ["main"]
+    Assert.That(Path.Combine (sampleRoot, "__Saved") |> Directory.Exists)
+
+    printfn "Execute the instrumented tests"
+    Actions.RunDotnet (fun o -> {dotnetOptions o with WorkingDirectory = Path.getFullName "Sample2"}) "test"
+                            ("--no-build --configuration Debug sample2.core.fsproj")
+                             "sample coverage test returned with a non-zero exit code"
+
+    Actions.RunDotnet (fun o -> {dotnetOptions o with WorkingDirectory = sampleRoot}) ""
+                            (altcover + " Runner --collect -r \"" + sampleRoot + "\"")
+                             "Collect the instrumented test output"
+
+    Actions.ValidateFSharpTypesCoverage simpleReport
+)
+
+
 Target "BasicCSharp" (fun _ ->
    Actions.SimpleInstrumentingRun "_Binaries/Sample1/Debug+AnyCPU" "_Binaries/AltCover/Debug+AnyCPU" "BasicCSharp"
 )
@@ -1451,6 +1483,10 @@ activateFinal "ResetConsoleColours"
 
 "Compilation"
 ==> "FSharpTypesDotNetRunner"
+==> "OperationalTest"
+
+"Compilation"
+==> "FSharpTypesDotNetCollecter"
 ==> "OperationalTest"
 
 "Compilation"
