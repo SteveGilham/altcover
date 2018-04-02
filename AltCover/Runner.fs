@@ -105,7 +105,7 @@ module Runner =
                                CommandLine.error <- (CommandLine.resources.GetString "executableRequired") ::
                                                      CommandLine.error
                                Left ("UsageError", options)
-                            | (None, _) -> parse
+                            | (None, _) -> Right ([], options)
                             | (Some exe, _) -> Right (exe::l, options)
     | fail -> fail
 

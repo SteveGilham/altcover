@@ -557,7 +557,7 @@ or
       Runner.executable := None
       Runner.collect <- true
       let options = Runner.DeclareOptions ()
-      let parse = Runner.RequireExe (Right ([], options))
+      let parse = Runner.RequireExe (Right (["a";"b"], options))
       match parse with
       | Right ([], z) -> Assert.That (z, Is.SameAs options)
       | _ -> Assert.Fail()
