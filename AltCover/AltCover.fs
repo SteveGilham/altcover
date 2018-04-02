@@ -149,7 +149,7 @@ module Main =
                   else
                       Visitor.reportFormat <- Some ReportFormat.OpenCover))
       ("inplace",
-       (fun _ ->  if Visitor.inplace then   
+       (fun _ ->  if Visitor.inplace then
                       CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
                                                          CommandLine.resources.GetString "MultiplesNotAllowed",
                                                          "--inplace") :: CommandLine.error
@@ -204,8 +204,8 @@ module Main =
             CommandLine.WriteOut <| String.Format(CultureInfo.CurrentCulture,
                                         (CommandLine.resources.GetString "instrumentingto"),
                                         toDirectory)
-          Right (rest, 
-                 DirectoryInfo(fromDirectory), 
+          Right (rest,
+                 DirectoryInfo(fromDirectory),
                  DirectoryInfo(toDirectory),
                  DirectoryInfo(Visitor.SourceDirectory()))
     | Left intro -> Left intro
