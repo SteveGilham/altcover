@@ -181,7 +181,7 @@ module Main =
             CommandLine.error <- CommandLine.resources.GetString "NotInPlace" :: CommandLine.error
 
         CommandLine.doPathOperation(fun () ->
-            if Visitor.inplace && 
+            if Visitor.inplace &&
                CommandLine.error |> List.isEmpty && toDirectory |> Directory.Exists
             then CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
                                                     CommandLine.resources.GetString "SaveExists",
@@ -225,8 +225,8 @@ module Main =
   let internal PrepareTargetFiles (fromInfo:DirectoryInfo) (toInfo:DirectoryInfo) (sourceInfo:DirectoryInfo) =
     // Copy all the files into the target directory
     let files = fromInfo.GetFiles()
-    files 
-    |> Seq.iter(fun info -> 
+    files
+    |> Seq.iter(fun info ->
            let fullName = info.FullName
            let filename = info.Name
            let copy = Path.Combine (toInfo.FullName, filename)
@@ -280,8 +280,10 @@ module Main =
 
         CommandLine.ProcessTrailingArguments rest toInfo) 255
 
-  [<EntryPoint>]
-  let private Main arguments =
+  let internal Main arguments =
     if "Runner".StartsWith(arguments |> Seq.head, StringComparison.OrdinalIgnoreCase)
       then Runner.DoCoverage arguments (DeclareOptions())
       else DoInstrumentation arguments
+
+  // mocking point
+  let mutable internal EffectiveMain = Main

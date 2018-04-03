@@ -4043,7 +4043,7 @@ type AltCoverTests() = class
       | Right _ -> Assert.Fail()
       | Left _ -> Assert.That (stdout.ToString(), Is.Empty)
                   Assert.That (stderr.ToString(), Is.Empty)
-                  Assert.That (CommandLine.error, 
+                  Assert.That (CommandLine.error,
                                Is.EquivalentTo ["Output directory for saved files " +
                                                 Visitor.OutputDirectory() +
                                                 " already exists"])
@@ -4051,7 +4051,6 @@ type AltCoverTests() = class
       Visitor.inplace <- false
       Console.SetOut (fst saved)
       Console.SetError (snd saved)
-
 
   [<Test>]
   member self.InPlaceOperationIsAsExpected() =
@@ -4082,7 +4081,7 @@ type AltCoverTests() = class
                            Assert.That (t.FullName, Is.EqualTo there)
                            Assert.That (stdout.ToString().Replace("\r",String.Empty),
                                         Is.EqualTo ("Creating folder " + there +
-                                                    "\nSaving files to " + there + 
+                                                    "\nSaving files to " + there +
                                                     "\nInstrumenting files in " +
                                                     here + "\n"))
                            Assert.That (stderr.ToString(), Is.Empty)
@@ -4571,7 +4570,7 @@ or
       use stderr = new StringWriter()
       Console.SetError stderr
       let unique = Guid.NewGuid().ToString()
-      let main = typeof<Node>.Assembly.GetType("AltCover.Main").GetMethod("Main", BindingFlags.NonPublic ||| BindingFlags.Static)
+      let main = typeof<Node>.Assembly.GetType("AltCover.AltCover").GetMethod("Main", BindingFlags.NonPublic ||| BindingFlags.Static)
       let returnCode = main.Invoke(null, [| [| "-i"; unique |] |])
       Assert.That(returnCode, Is.EqualTo 255)
       let result = stderr.ToString().Replace("\r\n", "\n")
