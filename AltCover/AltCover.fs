@@ -224,21 +224,25 @@ module Main =
 
   let internal PrepareTargetFiles (fromInfo:DirectoryInfo) (toInfo:DirectoryInfo) (sourceInfo:DirectoryInfo) =
     // Copy all the files into the target directory
-    // Track the symbol-bearing assemblies
-    let assemblies =
-      fromInfo.GetFiles()
-      |> Seq.fold (fun (accumulator : (string*string) list) info ->
+    let files = fromInfo.GetFiles()
+    files 
+    |> Seq.iter(fun info -> 
            let fullName = info.FullName
            let filename = info.Name
            let copy = Path.Combine (toInfo.FullName, filename)
-           File.Copy(fullName, copy, true)
-           let source = Path.Combine (sourceInfo.FullName, filename)
+           File.Copy(fullName, copy, true))
+
+    // Track the symbol-bearing assemblies
+    let assemblies =
+      sourceInfo.GetFiles()
+      |> Seq.fold (fun (accumulator : (string*string) list) info ->
+           let fullName = info.FullName
            ImageLoadResilient(fun () ->
              let def = AssemblyDefinition.ReadAssembly(fullName)
              let assemblyPdb = ProgramDatabase.GetPdbWithFallback def
              if def |> Visitor.IsIncluded |> Visitor.IsInstrumented &&
                 Option.isSome assemblyPdb then
-                (source, def.Name.Name) :: accumulator
+                (fullName, def.Name.Name) :: accumulator
              else
                 accumulator) (fun () -> accumulator)
         ) []
