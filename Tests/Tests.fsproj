@@ -86,12 +86,6 @@
     <EmbeddedResource Include="Sample1MethodExclusion.xml" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.Build.Framework">
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.Build.Utilities.Core">
-      <HintPath>..\packages\Microsoft.Build.Utilities.Core.15.6.82\lib\net46\Microsoft.Build.Utilities.Core.dll</HintPath>
-    </Reference>
     <Reference Include="Mono.Cecil">
       <HintPath>..\packages\Mono.Cecil.0.10.0\lib\net40\Mono.Cecil.dll</HintPath>
     </Reference>
