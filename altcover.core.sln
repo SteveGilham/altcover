@@ -2,42 +2,42 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27130.2026
 MinimumVisualStudioVersion = 15.0.26124.0
-Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.core", "AltCover/altcover.core.fsproj", "{26C01B27-9A3E-4460-BB43-5383C8E818FB}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.core", "AltCover\altcover.core.fsproj", "{26C01B27-9A3E-4460-BB43-5383C8E818FB}"
 EndProject
-Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.recorder.core", "AltCover.Recorder/altcover.recorder.core.fsproj", "{7054B26A-95AA-4194-AAC9-E5E430695FBA}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.recorder.core", "AltCover.Recorder\altcover.recorder.core.fsproj", "{7054B26A-95AA-4194-AAC9-E5E430695FBA}"
 EndProject
-Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.shadow.core", "AltCover.Shadow/altcover.shadow.core.fsproj", "{1D249F47-8780-4431-8E95-2C3786607B63}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.shadow.core", "AltCover.Shadow\altcover.shadow.core.fsproj", "{1D249F47-8780-4431-8E95-2C3786607B63}"
 EndProject
-Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.tests.core", "Tests/altcover.tests.core.fsproj", "{440A79BE-7038-44EA-B683-3ED8EFAEC39C}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.tests.core", "Tests\altcover.tests.core.fsproj", "{440A79BE-7038-44EA-B683-3ED8EFAEC39C}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "altcover.adapter.core", "Shadow.Adapter/altcover.adapter.core.fsproj", "{DDF0D5A2-370B-4827-B5D3-2A258E6677F1}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.adapter.core", "Shadow.Adapter\altcover.adapter.core.fsproj", "{DDF0D5A2-370B-4827-B5D3-2A258E6677F1}"
 EndProject
-Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.recorder.tests.core", "Shadow.Tests/altcover.recorder.tests.core.fsproj", "{CE0C9532-2D52-4225-8E23-98E70A3F2326}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.recorder.tests.core", "Shadow.Tests\altcover.recorder.tests.core.fsproj", "{CE0C9532-2D52-4225-8E23-98E70A3F2326}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "sample1.core", "Sample1/sample1.core.csproj", "{B2591DB3-481E-4A79-A849-AD6C6547BA7F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "sample1.core", "Sample1\sample1.core.csproj", "{B2591DB3-481E-4A79-A849-AD6C6547BA7F}"
 EndProject
-Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "sample2.core", "Sample2/sample2.core.fsproj", "{FB3B5250-DF9C-478B-BAD4-1D28D89D437A}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "sample2.core", "Sample2\sample2.core.fsproj", "{FB3B5250-DF9C-478B-BAD4-1D28D89D437A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "sample3.core", "Sample3/sample3.core.csproj", "{D4FE2C23-980A-46B0-8ECC-DD27FDF11C28}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "sample3.core", "Sample3\sample3.core.csproj", "{D4FE2C23-980A-46B0-8ECC-DD27FDF11C28}"
 EndProject
-Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "sample4.core", "Sample4/sample4.core.fsproj", "{358265A1-C7B3-48E8-9707-2F344ECAAE9F}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "sample4.core", "Sample4\sample4.core.fsproj", "{358265A1-C7B3-48E8-9707-2F344ECAAE9F}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{2837CE07-B91F-4B8A-89B5-E7BE39A8F340}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build Items", "Build Items", "{97367D43-64EF-48E1-B6B4-D951C783E6E1}"
 	ProjectSection(SolutionItems) = preProject
 		.travis.yml = .travis.yml
-		Build/actions.fsx = Build/actions.fsx
-		Build/AltCover.nuspec = Build/AltCover.nuspec
+		Build\actions.fsx = Build\actions.fsx
+		Build\AltCover.nuspec = Build\AltCover.nuspec
 		appveyor.yml = appveyor.yml
-		Build/build.fsx = Build/build.fsx
-		Build/get-nuget.ps1 = Build/get-nuget.ps1
-		Build/Infrastructure.snk = Build/Infrastructure.snk
-		Build/setup.fsx = Build/setup.fsx
-		Build/Recorder.snk = Build/Recorder.snk
-		Build/rules.xml = Build/rules.xml
-		Build/SelfTest.snk = Build/SelfTest.snk
-		Build/targets.fsx = Build/targets.fsx
+		Build\build.fsx = Build\build.fsx
+		Build\get-nuget.ps1 = Build\get-nuget.ps1
+		Build\Infrastructure.snk = Build\Infrastructure.snk
+		Build\Recorder.snk = Build\Recorder.snk
+		Build\rules.xml = Build\rules.xml
+		Build\SelfTest.snk = Build\SelfTest.snk
+		Build\setup.fsx = Build\setup.fsx
+		Build\targets.fsx = Build\targets.fsx
 	EndProjectSection
 EndProject
 Global
@@ -105,12 +105,12 @@ Global
 		{FB3B5250-DF9C-478B-BAD4-1D28D89D437A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{FB3B5250-DF9C-478B-BAD4-1D28D89D437A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FB3B5250-DF9C-478B-BAD4-1D28D89D437A}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{FB3B5250-DF9C-478B-BAD4-1D28D89D437A}.Debug|x86.ActiveCfg = Debug|x86
-		{FB3B5250-DF9C-478B-BAD4-1D28D89D437A}.Debug|x86.Build.0 = Debug|x86
+		{FB3B5250-DF9C-478B-BAD4-1D28D89D437A}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{FB3B5250-DF9C-478B-BAD4-1D28D89D437A}.Debug|x86.Build.0 = Debug|Any CPU
 		{FB3B5250-DF9C-478B-BAD4-1D28D89D437A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FB3B5250-DF9C-478B-BAD4-1D28D89D437A}.Release|x64.ActiveCfg = Release|Any CPU
-		{FB3B5250-DF9C-478B-BAD4-1D28D89D437A}.Release|x86.ActiveCfg = Release|x86
-		{FB3B5250-DF9C-478B-BAD4-1D28D89D437A}.Release|x86.Build.0 = Release|x86
+		{FB3B5250-DF9C-478B-BAD4-1D28D89D437A}.Release|x86.ActiveCfg = Release|Any CPU
+		{FB3B5250-DF9C-478B-BAD4-1D28D89D437A}.Release|x86.Build.0 = Release|Any CPU
 		{D4FE2C23-980A-46B0-8ECC-DD27FDF11C28}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{D4FE2C23-980A-46B0-8ECC-DD27FDF11C28}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D4FE2C23-980A-46B0-8ECC-DD27FDF11C28}.Debug|x64.ActiveCfg = Debug|Any CPU
