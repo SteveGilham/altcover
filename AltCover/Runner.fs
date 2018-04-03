@@ -2,6 +2,7 @@
 
 open System
 open System.Collections.Generic
+open System.Globalization
 open System.IO
 open System.IO.Compression
 open System.Xml
@@ -33,52 +34,93 @@ module Runner =
   let mutable internal recordingDirectory : Option<string> = None
   let mutable internal workingDirectory : Option<string> = None
   let mutable internal executable : Option<string> ref = ref None
+  let mutable internal collect = false
 
   let internal DeclareOptions () =
     [ ("r|recorderDirectory=",
        (fun x -> if not (String.IsNullOrWhiteSpace(x)) && Directory.Exists(x) then
                     if Option.isSome recordingDirectory then
-                      CommandLine.error <- true
+                      CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
+                                                         CommandLine.resources.GetString "MultiplesNotAllowed",
+                                                         "--recorderDirectory") :: CommandLine.error
+
                     else
                       recordingDirectory <- Some (Path.GetFullPath x)
-                 else CommandLine.error <- true))
+                 else CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
+                                                         CommandLine.resources.GetString "DirectoryNotFound",
+                                                         "--recorderDirectory",
+                                                         x) :: CommandLine.error ))
       ("w|workingDirectory=",
        (fun x -> if not (String.IsNullOrWhiteSpace(x)) && Directory.Exists(x) then
                     if Option.isSome workingDirectory then
-                      CommandLine.error <- true
+                      CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
+                                                         CommandLine.resources.GetString "MultiplesNotAllowed",
+                                                         "--workingDirectory") :: CommandLine.error
+
                     else
                       workingDirectory <- Some (Path.GetFullPath x)
-                 else CommandLine.error <- true))
+                 else CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
+                                                         CommandLine.resources.GetString "DirectoryNotFound",
+                                                         "--workingDirectory",
+                                                         x) :: CommandLine.error ))
       ("x|executable=",
        (fun x -> if not (String.IsNullOrWhiteSpace(x)) then
                     if Option.isSome !executable then
-                      CommandLine.error <- true
+                      CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
+                                                         CommandLine.resources.GetString "MultiplesNotAllowed",
+                                                         "--executable") :: CommandLine.error
                     else
                       executable := Some x
-                 else CommandLine.error <- true))
+                 else CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
+                                                         CommandLine.resources.GetString "InvalidValue",
+                                                         "--executable",
+                                                         x) :: CommandLine.error))
+      ("collect",
+       (fun _ ->  if collect then
+                      CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
+                                                         CommandLine.resources.GetString "MultiplesNotAllowed",
+                                                         "--collect") :: CommandLine.error
+
+                  else
+                      collect <- true))
       ("?|help|h", (fun x -> CommandLine.help <- not (isNull x)))
-      ("<>", (fun x -> CommandLine.error <- true))         ]// default end stop
+      ("<>", (fun x -> CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
+                                                         CommandLine.resources.GetString "InvalidValue",
+                                                         "AltCover",
+                                                         x) :: CommandLine.error))         ]// default end stop
       |> List.fold (fun (o:OptionSet) (p, a) -> o.Add(p, CommandLine.resources.GetString(p), new System.Action<string>(a))) (OptionSet())
 
   let HandleBadArguments arguments intro options1 options =
         String.Join (" ", arguments |> Seq.map (sprintf "%A"))
         |> CommandLine.WriteErr
+        CommandLine.error
+        |> List.iter CommandLine.WriteErr
         CommandLine.Usage intro options1 options
 
   let internal RequireExe (parse:(Either<string*OptionSet, string list*OptionSet>)) =
     match parse with
-    | Right (l, options) -> match !executable with
-                            | None -> Left ("UsageError", options)
-                            | Some exe -> Right (exe::l, options)
+    | Right (l, options) -> match (!executable, collect) with
+                            | (None, false)
+                            | (Some _, true) ->
+                               CommandLine.error <- (CommandLine.resources.GetString "executableRequired") ::
+                                                     CommandLine.error
+                               Left ("UsageError", options)
+                            | (None, _) -> Right ([], options)
+                            | (Some exe, _) -> Right (exe::l, options)
     | fail -> fail
 
   let internal RequireRecorder (parse:(Either<string*OptionSet, string list*OptionSet>)) =
     match parse with
     | Right (_, options) -> match recordingDirectory with
-                            | None -> Left ("UsageError", options)
+                            | None -> CommandLine.error <- (CommandLine.resources.GetString "recorderRequired") ::
+                                                            CommandLine.error
+                                      Left ("UsageError", options)
                             | Some path -> let dll = Path.Combine (path, "AltCover.Recorder.g.dll")
                                            if File.Exists dll then parse
-                                           else Left ("UsageError", options)
+                                           else CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
+                                                         CommandLine.resources.GetString "recorderNotFound",
+                                                         dll) :: CommandLine.error
+                                                Left ("UsageError", options)
     | fail -> fail
 
   let internal RequireWorker (parse:(Either<string*OptionSet, string list*OptionSet>)) =
@@ -124,16 +166,20 @@ module Runner =
   let WriteResourceWithFormatItems s x =
     Console.WriteLine (s |> CommandLine.resources.GetString, x)
 
-  let internal MonitorBase (hits:ICollection<(string*int*Base.Track)>) report (payload: string list -> int) (args : string list) =
+  let internal SetRecordToFile report =
       let binpath = report + ".acv"
-      do
-        use stream = File.Create(binpath)
-        ()
+      use _stream = File.Create(binpath)
+      ()
+
+  let internal RunProcess report (payload: string list -> int) (args : string list) =
+      SetRecordToFile report
 
       "Beginning run..." |> WriteResource
       let result = payload args
-      "Getting results..."  |> WriteResource
+      "Getting results..." |> WriteResource
+      result
 
+  let internal CollectResults (hits:ICollection<(string*int*Base.Track)>) report =
       let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
       formatter.Binder <- TypeBinder(typeof<(string*int)>)
 
@@ -161,6 +207,10 @@ module Runner =
       )
 
       WriteResourceWithFormatItems "%d visits recorded" [|hits.Count|]
+
+  let internal MonitorBase (hits:ICollection<(string*int*Base.Track)>) report (payload: string list -> int) (args : string list) =
+      let result = if collect then 0 else RunProcess report payload args
+      CollectResults hits report
       result
 
   let internal CopyFillMethodPoint (mp:XmlElement seq) sp =

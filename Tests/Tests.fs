@@ -2869,20 +2869,20 @@ type AltCoverTests() = class
   [<Test>]
   member self.NoThrowNoErrorLeavesAllOK () =
     try
-      CommandLine.error <- false
+      CommandLine.error <- []
       CommandLine.doPathOperation ignore ()
-      Assert.That(CommandLine.error, Is.False)
+      Assert.That(CommandLine.error, Is.Empty)
     finally
-      CommandLine.error <- false
+      CommandLine.error <- []
 
   [<Test>]
   member self.NoThrowWithErrorIsSignalled () =
     try
-      CommandLine.error <- false
-      CommandLine.doPathOperation (fun () -> CommandLine.error <- true) ()
-      Assert.That(CommandLine.error, Is.True)
+      CommandLine.error <- []
+      CommandLine.doPathOperation (fun () -> CommandLine.error <- ["NoThrowWithErrorIsSignalled"]) ()
+      Assert.That(CommandLine.error, Is.Not.Empty)
     finally
-      CommandLine.error <- false
+      CommandLine.error <- []
 
   [<Test>]
   member self.ArgumentExceptionWrites () =
@@ -2894,14 +2894,13 @@ type AltCoverTests() = class
       Console.SetError stderr
       let unique = "ArgumentException " + Guid.NewGuid().ToString()
 
-      CommandLine.error <- false
+      CommandLine.error <- []
       CommandLine.doPathOperation (fun () -> ArgumentException(unique) |> raise) ()
-      Assert.That(CommandLine.error, Is.True)
+      Assert.That(CommandLine.error, Is.EquivalentTo [unique])
       Assert.That(stdout.ToString(), Is.Empty)
-      let result = stderr.ToString()
-      Assert.That(result, Is.EqualTo (unique + Environment.NewLine))
+      Assert.That(stderr.ToString(), Is.Empty)
     finally
-      CommandLine.error <- false
+      CommandLine.error <- []
       Console.SetOut (fst saved)
       Console.SetError (snd saved)
 
@@ -2915,14 +2914,13 @@ type AltCoverTests() = class
       Console.SetError stderr
       let unique = "IOException " + Guid.NewGuid().ToString()
 
-      CommandLine.error <- false
+      CommandLine.error <- []
       CommandLine.doPathOperation (fun () -> IOException(unique) |> raise) ()
-      Assert.That(CommandLine.error, Is.True)
+      Assert.That(CommandLine.error, Is.EquivalentTo [unique])
       Assert.That(stdout.ToString(), Is.Empty)
-      let result = stderr.ToString()
-      Assert.That(result, Is.EqualTo (unique + Environment.NewLine))
+      Assert.That(stderr.ToString(), Is.Empty)
     finally
-      CommandLine.error <- false
+      CommandLine.error <- []
       Console.SetOut (fst saved)
       Console.SetError (snd saved)
 
@@ -2936,14 +2934,13 @@ type AltCoverTests() = class
       Console.SetError stderr
       let unique = "NotSupportedException " + Guid.NewGuid().ToString()
 
-      CommandLine.error <- false
+      CommandLine.error <- []
       CommandLine.doPathOperation (fun () -> NotSupportedException(unique) |> raise) ()
-      Assert.That(CommandLine.error, Is.True)
+      Assert.That(CommandLine.error, Is.EquivalentTo [unique])
       Assert.That(stdout.ToString(), Is.Empty)
-      let result = stderr.ToString()
-      Assert.That(result, Is.EqualTo (unique + Environment.NewLine))
+      Assert.That(stderr.ToString(), Is.Empty)
     finally
-      CommandLine.error <- false
+      CommandLine.error <- []
       Console.SetOut (fst saved)
       Console.SetError (snd saved)
 
@@ -2957,14 +2954,13 @@ type AltCoverTests() = class
       Console.SetError stderr
       let unique = "SecurityException " + Guid.NewGuid().ToString()
 
-      CommandLine.error <- false
+      CommandLine.error <- []
       CommandLine.doPathOperation (fun () -> System.Security.SecurityException(unique) |> raise) ()
-      Assert.That(CommandLine.error, Is.True)
+      Assert.That(CommandLine.error, Is.EquivalentTo [unique])
       Assert.That(stdout.ToString(), Is.Empty)
-      let result = stderr.ToString()
-      Assert.That(result, Is.EqualTo (unique + Environment.NewLine))
+      Assert.That(stderr.ToString(), Is.Empty)
     finally
-      CommandLine.error <- false
+      CommandLine.error <- []
       Console.SetOut (fst saved)
       Console.SetError (snd saved)
 
@@ -3023,9 +3019,9 @@ type AltCoverTests() = class
     let options = Main.DeclareOptions ()
     Assert.That (options.Count, Is.EqualTo
 #if NETCOREAPP2_0
-                                            14
-#else
                                             16
+#else
+                                            18
 #endif
                  )
     Assert.That(options |> Seq.filter (fun x -> x.Prototype <> "<>")
@@ -3721,6 +3717,23 @@ type AltCoverTests() = class
       Visitor.TrackingNames.Clear()
 
   [<Test>]
+  member self.ParsingOnlyArabicNumeralsNotThatSortofArabicNumeralsGivesTime() =
+    try
+      Visitor.TrackingNames.Clear()
+      Visitor.interval <- None
+      let options = Main.DeclareOptions ()
+      let input = [| "-c"; "٣" |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Right _ -> Assert.Fail()
+      | Left (x, y) -> Assert.That (y, Is.SameAs options)
+                       Assert.That (x, Is.EqualTo "UsageError")
+      Assert.That (Visitor.Interval(), Is.EqualTo 0)
+    finally
+      Visitor.interval <- None
+      Visitor.TrackingNames.Clear()
+
+  [<Test>]
   member self.ParsingMultipleTimesGivesFailure() =
     try
       Visitor.interval <- None
@@ -3815,7 +3828,6 @@ type AltCoverTests() = class
     try
       Visitor.reportFormat <- None
       let options = Main.DeclareOptions ()
-      let unique = Guid.NewGuid().ToString()
       let input = [| "--opencover" |]
       let parse = CommandLine.ParseCommandLine input options
       match parse with
@@ -3834,7 +3846,6 @@ type AltCoverTests() = class
     try
       Visitor.reportFormat <- None
       let options = Main.DeclareOptions ()
-      let unique = Guid.NewGuid().ToString()
       let input = [| "--opencover"; "--opencover" |]
       let parse = CommandLine.ParseCommandLine input options
       match parse with
@@ -3843,6 +3854,66 @@ type AltCoverTests() = class
                        Assert.That (x, Is.EqualTo "UsageError")
     finally
       Visitor.reportFormat <- None
+
+  [<Test>]
+  member self.ParsingInPlaceGivesInPlace() =
+    try
+      Visitor.inplace <- false
+      let options = Main.DeclareOptions ()
+      let input = [| "--inplace" |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Left _ -> Assert.Fail()
+      | Right (x, y) -> Assert.That (y, Is.SameAs options)
+                        Assert.That (x, Is.Empty)
+
+      Assert.That (Visitor.inplace, Is.True)
+    finally
+      Visitor.inplace <- false
+
+  [<Test>]
+  member self.ParsingMultipleInPlaceGivesFailure() =
+    try
+      Visitor.inplace <- false
+      let options = Main.DeclareOptions ()
+      let input = [| "--inplace"; "--inplace" |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Right _ -> Assert.Fail()
+      | Left (x, y) -> Assert.That (y, Is.SameAs options)
+                       Assert.That (x, Is.EqualTo "UsageError")
+    finally
+      Visitor.inplace <- false
+
+  [<Test>]
+  member self.ParsingSaveGivesSave() =
+    try
+      Visitor.collect <- false
+      let options = Main.DeclareOptions ()
+      let input = [| "--save" |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Left _ -> Assert.Fail()
+      | Right (x, y) -> Assert.That (y, Is.SameAs options)
+                        Assert.That (x, Is.Empty)
+
+      Assert.That(Visitor.collect, Is.True)
+    finally
+      Visitor.collect <- false
+
+  [<Test>]
+  member self.ParsingMultipleSaveGivesFailure() =
+    try
+      Visitor.collect <- false
+      let options = Main.DeclareOptions ()
+      let input = [| "--save"; "--save" |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Right _ -> Assert.Fail()
+      | Left (x, y) -> Assert.That (y, Is.SameAs options)
+                       Assert.That (x, Is.EqualTo "UsageError")
+    finally
+      Visitor.collect <- false
 
   [<Test>]
   member self.OutputLeftPassesThrough() =
@@ -3871,8 +3942,9 @@ type AltCoverTests() = class
       | Right _ -> Assert.Fail()
       | Left (x,y) -> Assert.That (y, Is.SameAs options)
                       Assert.That (x, Is.EqualTo "UsageError")
-                      Assert.That (stderr.ToString().Replace("\r",String.Empty),
-                                   Is.EqualTo "From and to directories are identical\n")
+                      Assert.That (stderr.ToString(), Is.Empty)
+                      Assert.That (CommandLine.error,
+                                   Is.EquivalentTo ["From and to directories are identical"])
                       Assert.That (stdout.ToString(), Is.Empty)
     finally
       Console.SetOut (fst saved)
@@ -3882,7 +3954,7 @@ type AltCoverTests() = class
   member self.OutputToNewPlaceIsOK() =
     let options = Main.DeclareOptions ()
     let saved = (Console.Out, Console.Error)
-    CommandLine.error <- false
+    CommandLine.error <- []
     try
       use stdout = new StringWriter()
       use stderr = new StringWriter()
@@ -3898,14 +3970,15 @@ type AltCoverTests() = class
       let ok = Right arg
       match Main.ProcessOutputLocation ok with
       | Left _ -> Assert.Fail()
-      | Right (x,y,z) -> Assert.That (x, Is.SameAs rest)
-                         Assert.That (y.FullName, Is.EqualTo here)
-                         Assert.That (z.FullName, Is.EqualTo (Path.GetDirectoryName here))
-                         Assert.That (stdout.ToString().Replace("\r",String.Empty),
-                                      Is.EqualTo ("Instrumenting files from " +
-                                                  here + "\nWriting files to " +
-                                                  (Path.GetDirectoryName here) + "\n"))
-                         Assert.That (stderr.ToString(), Is.Empty)
+      | Right (x,y,z,t) -> Assert.That (x, Is.SameAs rest)
+                           Assert.That (y.FullName, Is.EqualTo here)
+                           Assert.That (z.FullName, Is.EqualTo (Path.GetDirectoryName here))
+                           Assert.That (t.FullName, Is.EqualTo y.FullName)
+                           Assert.That (stdout.ToString().Replace("\r",String.Empty),
+                                        Is.EqualTo ("Instrumenting files from " +
+                                                    here + "\nWriting files to " +
+                                                    (Path.GetDirectoryName here) + "\n"))
+                           Assert.That (stderr.ToString(), Is.Empty)
     finally
       Console.SetOut (fst saved)
       Console.SetError (snd saved)
@@ -3914,7 +3987,7 @@ type AltCoverTests() = class
   member self.OutputToReallyNewPlaceIsOK() =
     let options = Main.DeclareOptions ()
     let saved = (Console.Out, Console.Error)
-    CommandLine.error <- false
+    CommandLine.error <- []
     try
       use stdout = new StringWriter()
       use stderr = new StringWriter()
@@ -3932,17 +4005,92 @@ type AltCoverTests() = class
       Assert.That (Directory.Exists there, Is.False)
       match Main.ProcessOutputLocation ok with
       | Left _ -> Assert.Fail()
-      | Right (x,y,z) -> Assert.That (x, Is.SameAs rest)
-                         Assert.That (y.FullName, Is.EqualTo here)
-                         Assert.That (z.FullName, Is.EqualTo there)
-                         Assert.That (stdout.ToString().Replace("\r",String.Empty),
-                                      Is.EqualTo ("Creating folder " + there +
-                                                  "\nInstrumenting files from " +
-                                                  here + "\nWriting files to " +
-                                                  there + "\n"))
-                         Assert.That (stderr.ToString(), Is.Empty)
-                         Assert.That (Directory.Exists there)
+      | Right (x,y,z,t) -> Assert.That (x, Is.SameAs rest)
+                           Assert.That (y.FullName, Is.EqualTo here)
+                           Assert.That (z.FullName, Is.EqualTo there)
+                           Assert.That (t.FullName, Is.EqualTo here)
+                           Assert.That (stdout.ToString().Replace("\r",String.Empty),
+                                        Is.EqualTo ("Creating folder " + there +
+                                                    "\nInstrumenting files from " +
+                                                    here + "\nWriting files to " +
+                                                    there + "\n"))
+                           Assert.That (stderr.ToString(), Is.Empty)
+                           Assert.That (Directory.Exists there)
     finally
+      Console.SetOut (fst saved)
+      Console.SetError (snd saved)
+
+  [<Test>]
+  member self.InPlaceToExistingPlaceFails() =
+    let options = Main.DeclareOptions ()
+    let saved = (Console.Out, Console.Error)
+    CommandLine.error <- []
+    Visitor.inplace <- true
+    try
+      use stdout = new StringWriter()
+      use stderr = new StringWriter()
+      Console.SetOut stdout
+      Console.SetError stderr
+
+      let here = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
+      Visitor.inputDirectory <- Some here
+      Visitor.outputDirectory <- Some (Path.GetDirectoryName here)
+
+      let rest = [Guid.NewGuid().ToString()]
+      let arg = (rest, options)
+      let ok = Right arg
+      match Main.ProcessOutputLocation ok with
+      | Right _ -> Assert.Fail()
+      | Left _ -> Assert.That (stdout.ToString(), Is.Empty)
+                  Assert.That (stderr.ToString(), Is.Empty)
+                  Assert.That (CommandLine.error, 
+                               Is.EquivalentTo ["Output directory for saved files " +
+                                                Visitor.OutputDirectory() +
+                                                " already exists"])
+    finally
+      Visitor.inplace <- false
+      Console.SetOut (fst saved)
+      Console.SetError (snd saved)
+
+
+  [<Test>]
+  member self.InPlaceOperationIsAsExpected() =
+    let options = Main.DeclareOptions ()
+    let saved = (Console.Out, Console.Error)
+    CommandLine.error <- []
+    Visitor.inplace <- true
+    try
+      use stdout = new StringWriter()
+      use stderr = new StringWriter()
+      Console.SetOut stdout
+      Console.SetError stderr
+
+      let here = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
+      let there = Path.Combine(here, Guid.NewGuid().ToString())
+      Visitor.inputDirectory <- Some here
+      Visitor.outputDirectory <- Some there
+
+      let rest = [Guid.NewGuid().ToString()]
+      let arg = (rest, options)
+      let ok = Right arg
+      Assert.That (Directory.Exists there, Is.False)
+      match Main.ProcessOutputLocation ok with
+      | Left _ -> Assert.Fail()
+      | Right (x,y,z,t) -> Assert.That (x, Is.SameAs rest)
+                           Assert.That (y.FullName, Is.EqualTo here)
+                           Assert.That (z.FullName, Is.EqualTo there)
+                           Assert.That (t.FullName, Is.EqualTo there)
+                           Assert.That (stdout.ToString().Replace("\r",String.Empty),
+                                        Is.EqualTo ("Creating folder " + there +
+                                                    "\nSaving files to " + there + 
+                                                    "\nInstrumenting files in " +
+                                                    here + "\n"))
+                           Assert.That (stderr.ToString(), Is.Empty)
+                           Assert.That (Directory.Exists there)
+                           Assert.That (Visitor.SourceDirectory(), Is.EqualTo there)
+                           Assert.That (Visitor.InstrumentDirectory(), Is.EqualTo here)
+    finally
+      Visitor.inplace <- false
       Console.SetOut (fst saved)
       Console.SetError (snd saved)
 
@@ -3980,7 +4128,7 @@ type AltCoverTests() = class
     let there = Path.Combine(here, Guid.NewGuid().ToString())
     let toInfo = Directory.CreateDirectory there
     let fromInfo = DirectoryInfo(here)
-    let (x,y) = Main.PrepareTargetFiles fromInfo toInfo
+    let (x,y) = Main.PrepareTargetFiles fromInfo toInfo fromInfo
     Assert.That (toInfo.EnumerateFiles()
                  |> Seq.map (fun x -> x.Name),
                  Is.EquivalentTo (fromInfo.EnumerateFiles()
@@ -4353,7 +4501,8 @@ type AltCoverTests() = class
   -o, --outputDirectory=VALUE
                              Optional: The folder to receive the instrumented
                                assemblies and their companions (default: sub-
-                               folder '__Instrumented' of the current directory)
+                               folder '__Instrumented' of the current directory;
+                                or '__Saved' if 'inplace' is set)
   -y, --symbolDirectory=VALUE
                              Optional, multiple: Additional directory to search
                                for matching symbols for the assemblies in the
@@ -4402,6 +4551,10 @@ type AltCoverTests() = class
                                names (fully qualified if the string contains
                                any "." characters).
       --opencover            Optional: Generate the report in OpenCover format
+      --inplace              Optional: Instrument the inputDirectory, rather
+                               than the outputDirectory (e.g. for dotnet test)
+      --save                 Optional: Write raw coverage data to file for
+                               later processing
   -?, --help, -h             Prints out the options.
 or
   Runner
@@ -4423,13 +4576,15 @@ or
       Assert.That(returnCode, Is.EqualTo 255)
       let result = stderr.ToString().Replace("\r\n", "\n")
       let expected = "\"-i\" \"" + unique + "\"\n" +
+                     "--inputDirectory : Directory " + unique + " not found\n" +
                        """Error - usage is:
   -i, --inputDirectory=VALUE Optional: The folder containing assemblies to
                                instrument (default: current directory)
   -o, --outputDirectory=VALUE
                              Optional: The folder to receive the instrumented
                                assemblies and their companions (default: sub-
-                               folder '__Instrumented' of the current directory)
+                               folder '__Instrumented' of the current directory;
+                                or '__Saved' if 'inplace' is set)
   -y, --symbolDirectory=VALUE
                              Optional, multiple: Additional directory to search
                                for matching symbols for the assemblies in the
@@ -4478,6 +4633,10 @@ or
                                names (fully qualified if the string contains
                                any "." characters).
       --opencover            Optional: Generate the report in OpenCover format
+      --inplace              Optional: Instrument the inputDirectory, rather
+                               than the outputDirectory (e.g. for dotnet test)
+      --save                 Optional: Write raw coverage data to file for
+                               later processing
   -?, --help, -h             Prints out the options.
 or
   Runner
@@ -4490,6 +4649,8 @@ or
                              Optional: The working directory for the
                                application launch
   -x, --executable=VALUE     The executable to run e.g. dotnet
+      --collect              Optional: Process previously saved raw coverage
+                               data, rather than launching a process.
   -?, --help, -h             Prints out the options.
 """
 

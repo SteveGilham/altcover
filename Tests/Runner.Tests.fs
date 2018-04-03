@@ -185,6 +185,8 @@ or
                              Optional: The working directory for the
                                application launch
   -x, --executable=VALUE     The executable to run e.g. dotnet
+      --collect              Optional: Process previously saved raw coverage
+                               data, rather than launching a process.
   -?, --help, -h             Prints out the options.
 """
 
@@ -242,7 +244,7 @@ or
   [<Test>]
   member self.ShouldHaveExpectedOptions() =
     let options = Runner.DeclareOptions ()
-    Assert.That (options.Count, Is.EqualTo 5)
+    Assert.That (options.Count, Is.EqualTo 6)
     Assert.That(options |> Seq.filter (fun x -> x.Prototype <> "<>")
                         |> Seq.forall (fun x -> (String.IsNullOrWhiteSpace >> not) x.Description))
     Assert.That (options |> Seq.filter (fun x -> x.Prototype = "<>") |> Seq.length, Is.EqualTo 1)
@@ -490,6 +492,36 @@ or
       Runner.recordingDirectory <- None
 
   [<Test>]
+  member self.ParsingCollectGivesCollect() =
+    try
+      Runner.collect <- false
+      let options = Runner.DeclareOptions ()
+      let input = [| "--collect" |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Left _ -> Assert.Fail()
+      | Right (x, y) -> Assert.That (y, Is.SameAs options)
+                        Assert.That (x, Is.Empty)
+
+      Assert.That(Runner.collect, Is.True)
+    finally
+      Runner.collect <- false
+
+  [<Test>]
+  member self.ParsingMultipleCollectGivesFailure() =
+    try
+      Runner.collect <- false
+      let options = Runner.DeclareOptions ()
+      let input = [| "--collect"; "--collect" |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Right _ -> Assert.Fail()
+      | Left (x, y) -> Assert.That (y, Is.SameAs options)
+                       Assert.That (x, Is.EqualTo "UsageError")
+    finally
+      Runner.collect <- false
+
+  [<Test>]
   member self.ShouldRequireExe() =
     lock Runner.executable (fun () ->
     try
@@ -516,6 +548,37 @@ or
                            Assert.That (y, Is.EquivalentTo ["b"])
       | _ -> Assert.Fail()
     finally
+      Runner.executable := None)
+
+  [<Test>]
+  member self.ShouldRequireCollectIfNotExe() =
+    lock Runner.executable (fun () ->
+    try
+      Runner.executable := None
+      Runner.collect <- true
+      let options = Runner.DeclareOptions ()
+      let parse = Runner.RequireExe (Right (["a";"b"], options))
+      match parse with
+      | Right ([], z) -> Assert.That (z, Is.SameAs options)
+      | _ -> Assert.Fail()
+    finally
+      Runner.collect <- false
+      Runner.executable := None)
+
+  [<Test>]
+  member self.ShouldRejectExeIfCollect() =
+    lock Runner.executable (fun () ->
+    try
+      Runner.executable := Some "xxx"
+      Runner.collect <- true
+      let options = Runner.DeclareOptions ()
+      let parse = Runner.RequireExe (Right (["b"], options))
+      match parse with
+      | Right _ -> Assert.Fail()
+      | Left (x, y) -> Assert.That (y, Is.SameAs options)
+                       Assert.That (x, Is.EqualTo "UsageError")
+    finally
+      Runner.collect <- false
       Runner.executable := None)
 
   [<Test>]
@@ -672,13 +735,15 @@ or
       Assert.That(returnCode, Is.EqualTo 255)
       let result = stderr.ToString().Replace("\r\n", "\n")
       let expected = "\"RuNN\" \"-r\" \"" + unique + "\"\n" +
+                     "--recorderDirectory : Directory " + unique + " not found\n" +
                        """Error - usage is:
   -i, --inputDirectory=VALUE Optional: The folder containing assemblies to
                                instrument (default: current directory)
   -o, --outputDirectory=VALUE
                              Optional: The folder to receive the instrumented
                                assemblies and their companions (default: sub-
-                               folder '__Instrumented' of the current directory)
+                               folder '__Instrumented' of the current directory;
+                                or '__Saved' if 'inplace' is set)
   -y, --symbolDirectory=VALUE
                              Optional, multiple: Additional directory to search
                                for matching symbols for the assemblies in the
@@ -727,6 +792,10 @@ or
                                names (fully qualified if the string contains
                                any "." characters).
       --opencover            Optional: Generate the report in OpenCover format
+      --inplace              Optional: Instrument the inputDirectory, rather
+                               than the outputDirectory (e.g. for dotnet test)
+      --save                 Optional: Write raw coverage data to file for
+                               later processing
   -?, --help, -h             Prints out the options.
 or
   Runner
@@ -739,6 +808,8 @@ or
                              Optional: The working directory for the
                                application launch
   -x, --executable=VALUE     The executable to run e.g. dotnet
+      --collect              Optional: Process previously saved raw coverage
+                               data, rather than launching a process.
   -?, --help, -h             Prints out the options.
 """
 

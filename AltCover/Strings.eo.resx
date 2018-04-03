@@ -121,7 +121,7 @@
     <value>Laŭvola: La dosierujo enhavanta asembleojn al instrumento (defaŭlta: aktuala dosierujo)</value>
   </data>
   <data name="o|outputDirectory=" xml:space="preserve">
-    <value>Laŭvola: La dosierujo ricevi la instrumentajn asembleojn kaj iliajn kunulojn (defaŭlte: sub-dosierujo '__Instrumented' de la aktuala dosierujo)</value>
+    <value>Laŭvola: La dosierujo ricevi la instrumentajn asembleojn kaj iliajn kunulojn (defaŭlte: sub-dosierujo '__Instrumented' de la aktuala dosierujo; aŭ '__Saved' se 'inplace' estas aro)</value>
   </data>
   <data name="k|key=" xml:space="preserve">
     <value>Laŭvola, multobla: iu ajn alia forta-nomo ŝlosilo por uzi</value>
@@ -218,5 +218,44 @@ AltCover Runner [/r[ecordingDirectory]=VALO] [/w[orkingDirectory]=VALO] [/x||exe
     Ununura cifero 0-7 donas la nombron de dekuma lokoj de sekundoj por raporti; ĉio alia kompatas la sistemon horloĝon disponebla per DateTime.UtcNow
     Kordo en krampoj [] estas interpretita kiel atributo tipo nomon (la malantaŭa parto "Attribute" estas nedeviga), do [Test] aŭ [TestAttribute] kongruas; se la nomo enhavas unu aŭ pli ".", tiam ĝi estos egalita kontraŭ la plena nomo de la atributa tipo.
      Aliaj kordoj estas interpretitaj kiel metodnomoj (plene kvalifikitaj se la ĉeno enhavas ajnajn "" "karakterojn).</value>
+  </data>
+  <data name="DirectoryNotFound" xml:space="preserve">
+    <value>{0} : Dosierujo {1} ne trovita</value>
+  </data>
+  <data name="FileNotFound" xml:space="preserve">
+    <value>{0} : Dosiero {1} ne trovita</value>
+  </data>
+  <data name="InvalidValue" xml:space="preserve">
+    <value>{0} : ne povas esti '{1}'</value>
+  </data>
+  <data name="MultiplesNotAllowed" xml:space="preserve">
+    <value>{0} : specifu ĉi tion nur unufoje</value>
+  </data>
+  <data name="collect" xml:space="preserve">
+    <value>Laŭvola: Procezo antaŭe konservis krudajn kovraĵojn, anstataŭ ĵeti procezon.</value>
+  </data>
+  <data name="inplace" xml:space="preserve">
+    <value>Laŭvola: Instrumento de inputDirectory, prefere ol outputDirectory (ekz. por dotnet test)</value>
+  </data>
+  <data name="save" xml:space="preserve">
+    <value>Laŭvola: Skribu krudan kovradan datumon al dosiero por posta prilaborado</value>
+  </data>
+  <data name="instrumentingin" xml:space="preserve">
+    <value>Instrumentaj dosieroj en {0}</value>
+  </data>
+  <data name="savingto" xml:space="preserve">
+    <value>Ŝpari dosierojn al {0}</value>
+  </data>
+  <data name="executableRequired" xml:space="preserve">
+    <value>Uzo en la "runner" postulas precize unu el ĉu '--executable' aŭ '--collect'.</value>
+  </data>
+  <data name="recorderNotFound" xml:space="preserve">
+    <value>Agordo de registradoj {0} ne trovita en la nomumita dosierujo.</value>
+  </data>
+  <data name="recorderRequired" xml:space="preserve">
+    <value>La valoro '--recorderDirectory' estas postulita.</value>
+  </data>
+  <data name="SaveExists" xml:space="preserve">
+    <value>Elŝuta dosierujo por konservitaj dosieroj {0} jam ekzistas</value>
   </data>
 </root>

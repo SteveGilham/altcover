@@ -21,21 +21,36 @@ module Main =
     [ ("i|inputDirectory=",
        (fun x -> if not (String.IsNullOrWhiteSpace x) && Directory.Exists x then
                     if Option.isSome Visitor.inputDirectory then
-                      CommandLine.error <- true
+                      CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
+                                                         CommandLine.resources.GetString "MultiplesNotAllowed",
+                                                         "--inputDirectory") :: CommandLine.error
+
                     else
                       Visitor.inputDirectory <- Some (Path.GetFullPath x)
-                 else CommandLine.error <- true))
+                 else CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
+                                                         CommandLine.resources.GetString "DirectoryNotFound",
+                                                         "--inputDirectory",
+                                                         x) :: CommandLine.error))
       ("o|outputDirectory=",
        (fun x -> if not (String.IsNullOrWhiteSpace x) then
                     if Option.isSome Visitor.outputDirectory then
-                      CommandLine.error <- true
+                      CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
+                                                         CommandLine.resources.GetString "MultiplesNotAllowed",
+                                                         "--outputDirectory") :: CommandLine.error
+
                     else
                       CommandLine.doPathOperation (fun _ -> Visitor.outputDirectory <- Some (Path.GetFullPath x)) ()
-                 else CommandLine.error <- true))
+                 else CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
+                                                         CommandLine.resources.GetString "DirectoryNotFound",
+                                                         "--outputDirectory",
+                                                         x) :: CommandLine.error))
       ("y|symbolDirectory=",
        (fun x -> if not (String.IsNullOrWhiteSpace x) && Directory.Exists x then
                     ProgramDatabase.SymbolFolders.Add x
-                 else CommandLine.error <- true))
+                 else CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
+                                                         CommandLine.resources.GetString "DirectoryNotFound",
+                                                         "--symbolDirectory",
+                                                         x) :: CommandLine.error))
 #if NETCOREAPP2_0
 #else
       ("k|key=",
@@ -47,8 +62,10 @@ module Main =
                                                                                 System.IO.FileAccess.Read)
                                           let pair = StrongNameKeyPair(stream)
                                           Visitor.Add pair) ()
-             else CommandLine.error <- true
-         ))
+             else CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
+                                                         CommandLine.resources.GetString "FileNotFound",
+                                                         "--key",
+                                                         x) :: CommandLine.error ))
       ("sn|strongNameKey=",
        (fun x ->
              if not (String.IsNullOrWhiteSpace x ) && File.Exists x then
@@ -58,18 +75,31 @@ module Main =
                                                                                 System.IO.FileAccess.Read)
                                           // printfn "%A %A" x Visitor.defaultStrongNameKey
                                           let pair = StrongNameKeyPair(stream)
-                                          if Option.isSome Visitor.defaultStrongNameKey then CommandLine.error <- true
+                                          if Option.isSome Visitor.defaultStrongNameKey then
+                                             CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
+                                                                                CommandLine.resources.GetString "MultiplesNotAllowed",
+                                                                                "--strongNameKey") :: CommandLine.error
+
                                           else Visitor.defaultStrongNameKey <- Some pair
                                                Visitor.Add pair) ()
-             else CommandLine.error <- true  ))
+             else CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
+                                                         CommandLine.resources.GetString "FileNotFound",
+                                                         "--strongNameKey",
+                                                         x) :: CommandLine.error ))
 #endif
       ("x|xmlReport=",
        (fun x -> if not (String.IsNullOrWhiteSpace x) then
                     if Option.isSome Visitor.reportPath then
-                      CommandLine.error <- true
+                      CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
+                                                         CommandLine.resources.GetString "MultiplesNotAllowed",
+                                                         "--xmlReport") :: CommandLine.error
+
                     else
                       CommandLine.doPathOperation (fun () -> Visitor.reportPath <- Some (Path.GetFullPath x)) ()
-                 else CommandLine.error <- true))
+                 else CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
+                                                         CommandLine.resources.GetString "InvalidValue",
+                                                         "--xmlReport",
+                                                         x) :: CommandLine.error))
       ("f|fileFilter=",
        (fun x -> x.Split([|";"|], StringSplitOptions.RemoveEmptyEntries)
                  |> Seq.iter (Regex >> FilterClass.File >> Visitor.NameFilters.Add)))
@@ -93,21 +123,52 @@ module Main =
                    let k = x.Trim()
                    if Char.IsDigit <| k.Chars(0) then
                     if Option.isSome Visitor.interval || k.Length > 1 then
-                      CommandLine.error <- true
+                      CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
+                                                         CommandLine.resources.GetString "InvalidValue",
+                                                         "--callContext",
+                                                         x) :: CommandLine.error
                     else
                       let (ok, n) = Int32.TryParse(k)
-                      Visitor.interval <- Some (pown 10 (7 - n))
-                      CommandLine.error <- (not ok)  || CommandLine.error
+                      if ok then Visitor.interval <- Some (pown 10 (7 - n))
+                      else CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
+                                                              CommandLine.resources.GetString "InvalidValue",
+                                                              "--callContext",
+                                                              x) :: CommandLine.error
                    else
                       Visitor.TrackingNames.Add(k)
-                 else CommandLine.error <- true))
+                 else CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
+                                                         CommandLine.resources.GetString "InvalidValue",
+                                                         "--callContext",
+                                                         x) :: CommandLine.error))
       ("opencover",
        (fun _ ->  if Option.isSome Visitor.reportFormat then
-                      CommandLine.error <- true
+                      CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
+                                                         CommandLine.resources.GetString "MultiplesNotAllowed",
+                                                         "--opencover") :: CommandLine.error
+
                   else
                       Visitor.reportFormat <- Some ReportFormat.OpenCover))
+      ("inplace",
+       (fun _ ->  if Visitor.inplace then
+                      CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
+                                                         CommandLine.resources.GetString "MultiplesNotAllowed",
+                                                         "--inplace") :: CommandLine.error
+
+                  else
+                      Visitor.inplace <- true))
+      ("save",
+       (fun _ ->  if Visitor.collect then
+                      CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
+                                                         CommandLine.resources.GetString "MultiplesNotAllowed",
+                                                         "--save") :: CommandLine.error
+
+                  else
+                      Visitor.collect <- true))
       ("?|help|h", (fun x -> CommandLine.help <- not (isNull x)))
-      ("<>", (fun x -> CommandLine.error <- true))         ]// default end stop
+      ("<>", (fun x -> CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
+                                                         CommandLine.resources.GetString "InvalidValue",
+                                                         "AltCover",
+                                                         x) :: CommandLine.error))         ]// default end stop
       |> List.fold (fun (o:OptionSet) (p, a) -> o.Add(p, CommandLine.resources.GetString(p), new System.Action<string>(a))) (OptionSet())
 
   let internal ProcessOutputLocation (action:(Either<string*OptionSet, string list*OptionSet>)) =
@@ -117,26 +178,42 @@ module Main =
         let fromDirectory = Visitor.InputDirectory()
         let toDirectory = Visitor.OutputDirectory()
         if fromDirectory = toDirectory then
-            CommandLine.WriteErr (CommandLine.resources.GetString "NotInPlace")
-            CommandLine.error <- true
+            CommandLine.error <- CommandLine.resources.GetString "NotInPlace" :: CommandLine.error
 
         CommandLine.doPathOperation(fun () ->
-            if not (CommandLine.error || Directory.Exists(toDirectory)) then
+            if Visitor.inplace && 
+               CommandLine.error |> List.isEmpty && toDirectory |> Directory.Exists
+            then CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
+                                                    CommandLine.resources.GetString "SaveExists",
+                                                    toDirectory) :: CommandLine.error
+
+            if CommandLine.error |> List.isEmpty && toDirectory |> Directory.Exists |> not then
               CommandLine.WriteOut <| String.Format(CultureInfo.CurrentCulture,
                                                     (CommandLine.resources.GetString "CreateFolder"),
                                                      toDirectory)
               Directory.CreateDirectory(toDirectory) |> ignore) ()
 
-        if CommandLine.error then
+        if CommandLine.error |> List.isEmpty |> not then
             Left ("UsageError", options)
         else
+          if Visitor.inplace then
+            CommandLine.WriteOut <| String.Format(CultureInfo.CurrentCulture,
+                                        (CommandLine.resources.GetString "savingto"),
+                                        toDirectory)
+            CommandLine.WriteOut <| String.Format(CultureInfo.CurrentCulture,
+                                        (CommandLine.resources.GetString "instrumentingin"),
+                                        fromDirectory)
+          else
             CommandLine.WriteOut <| String.Format(CultureInfo.CurrentCulture,
                                         (CommandLine.resources.GetString "instrumentingfrom"),
                                         fromDirectory)
             CommandLine.WriteOut <| String.Format(CultureInfo.CurrentCulture,
                                         (CommandLine.resources.GetString "instrumentingto"),
                                         toDirectory)
-            Right (rest, DirectoryInfo(fromDirectory), DirectoryInfo(toDirectory))
+          Right (rest,
+                 DirectoryInfo(fromDirectory),
+                 DirectoryInfo(toDirectory),
+                 DirectoryInfo(Visitor.SourceDirectory()))
     | Left intro -> Left intro
 
   let internal ImageLoadResilient (f : unit -> 'a)  (tidy : unit -> 'a) =
@@ -145,15 +222,21 @@ module Main =
     | :? BadImageFormatException -> tidy()
     | :? IOException -> tidy()
 
-  let internal PrepareTargetFiles (fromInfo:DirectoryInfo) (toInfo:DirectoryInfo) =
+  let internal PrepareTargetFiles (fromInfo:DirectoryInfo) (toInfo:DirectoryInfo) (sourceInfo:DirectoryInfo) =
     // Copy all the files into the target directory
+    let files = fromInfo.GetFiles()
+    files 
+    |> Seq.iter(fun info -> 
+           let fullName = info.FullName
+           let filename = info.Name
+           let copy = Path.Combine (toInfo.FullName, filename)
+           File.Copy(fullName, copy, true))
+
     // Track the symbol-bearing assemblies
     let assemblies =
-      fromInfo.GetFiles()
+      sourceInfo.GetFiles()
       |> Seq.fold (fun (accumulator : (string*string) list) info ->
            let fullName = info.FullName
-           let target = Path.Combine (toInfo.FullName, info.Name)
-           File.Copy(fullName, target, true)
            ImageLoadResilient(fun () ->
              let def = AssemblyDefinition.ReadAssembly(fullName)
              let assemblyPdb = ProgramDatabase.GetPdbWithFallback def
@@ -175,20 +258,25 @@ module Main =
     | Left (intro, options) ->
         String.Join (" ", arguments |> Seq.map (sprintf "%A"))
         |> CommandLine.WriteErr
+        CommandLine.error
+        |> List.iter CommandLine.WriteErr
         CommandLine.Usage intro options (Runner.DeclareOptions())
         255
-    | Right (rest, fromInfo, toInfo) ->
+    | Right (rest, fromInfo, toInfo, targetInfo) ->
+        let report = Visitor.ReportPath()
         CommandLine.doPathOperation( fun () ->
-        let (assemblies, assemblyNames) = PrepareTargetFiles fromInfo toInfo
+        let (assemblies, assemblyNames) = PrepareTargetFiles fromInfo toInfo targetInfo
         CommandLine.WriteOut <| String.Format(CultureInfo.CurrentCulture,
                                          (CommandLine.resources.GetString "reportingto"),
-                                         Visitor.ReportPath())
+                                         report)
         let reporter, document = match Visitor.ReportKind() with
                                  | ReportFormat.OpenCover -> OpenCover.ReportGenerator ()
                                  | _ -> Report.ReportGenerator ()
+
         let visitors = [ reporter ; Instrument.InstrumentGenerator assemblyNames ]
-        Visitor.Visit visitors (assemblies )
-        document.Save(Visitor.ReportPath())
+        Visitor.Visit visitors (assemblies)
+        document.Save(report)
+        if Visitor.collect then Runner.SetRecordToFile report
 
         CommandLine.ProcessTrailingArguments rest toInfo) 255
 

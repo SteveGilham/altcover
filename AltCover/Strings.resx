@@ -121,7 +121,7 @@
     <value>Optional: The folder containing assemblies to instrument (default: current directory)</value>
   </data>
   <data name="o|outputDirectory=" xml:space="preserve">
-    <value>Optional: The folder to receive the instrumented assemblies and their companions (default: sub-folder '__Instrumented' of the current directory)</value>
+    <value>Optional: The folder to receive the instrumented assemblies and their companions (default: sub-folder '__Instrumented' of the current directory; or '__Saved' if 'inplace' is set)</value>
   </data>
   <data name="k|key=" xml:space="preserve">
     <value>Optional, multiple: any other strong-name key to use</value>
@@ -218,5 +218,44 @@ AltCover Runner [/r[ecordingDirectory]=VALUE] [/w[orkingDirectory]=VALUE] [/x||e
     A single digit 0-7 gives the number of decimal places of seconds to report; everything else is at the mercy of the system clock information available through DateTime.UtcNow
     A string in brackets "[]" is interpreted as an attribute type name (the trailing "Attribute" is optional), so [Test] or [TestAttribute] will match; if the name contains one or more ".", then it will be matched against the full name of the attribute type.
     Other strings are interpreted as method names (fully qualified if the string contains any "." characters).</value>
+  </data>
+  <data name="DirectoryNotFound" xml:space="preserve">
+    <value>{0} : Directory {1} not found</value>
+  </data>
+  <data name="FileNotFound" xml:space="preserve">
+    <value>{0} : File {1} not found</value>
+  </data>
+  <data name="InvalidValue" xml:space="preserve">
+    <value>{0} : cannot be '{1}'</value>
+  </data>
+  <data name="MultiplesNotAllowed" xml:space="preserve">
+    <value>{0} : specify this only once</value>
+  </data>
+  <data name="collect" xml:space="preserve">
+    <value>Optional: Process previously saved raw coverage data, rather than launching a process.</value>
+  </data>
+  <data name="inplace" xml:space="preserve">
+    <value>Optional: Instrument the inputDirectory, rather than the outputDirectory (e.g. for dotnet test)</value>
+  </data>
+  <data name="save" xml:space="preserve">
+    <value>Optional: Write raw coverage data to file for later processing</value>
+  </data>
+  <data name="instrumentingin" xml:space="preserve">
+    <value>Instrumenting files in {0}</value>
+  </data>
+  <data name="savingto" xml:space="preserve">
+    <value>Saving files to {0}</value>
+  </data>
+  <data name="executableRequired" xml:space="preserve">
+    <value>Use in 'runner' mode requires exactly one of either '--executable' or '--collect'.</value>
+  </data>
+  <data name="recorderNotFound" xml:space="preserve">
+    <value>Recorder assembly {0} not found in the nominated directory.</value>
+  </data>
+  <data name="recorderRequired" xml:space="preserve">
+    <value>The '--recorderDirectory' value is required.</value>
+  </data>
+  <data name="SaveExists" xml:space="preserve">
+    <value>Output directory for saved files {0} already exists</value>
   </data>
 </root>

@@ -13,7 +13,7 @@ open Mono.Options
 module CommandLine =
 
   let mutable internal help = false
-  let mutable internal error = false
+  let mutable internal error :string list = []
 
   // Can't hard-code what with .net-core and .net-core tests as well as classic .net
   // all giving this a different namespace
@@ -53,7 +53,7 @@ module CommandLine =
                 |> Map.tryFind (System.Environment.GetEnvironmentVariable "OS")
                 |> Option.getOrElse String.Empty
     let enquoted = quote + cmd.Trim([| '"'; '\'' |]) + quote
-    String.Format(CultureInfo.CurrentCulture, resources.GetString "CommandLine", enquoted,args)
+    String.Format(CultureInfo.CurrentCulture, resources.GetString "CommandLine", enquoted, args)
     |> WriteOut
 
     let psi = ProcessStartInfo(enquoted,args)
@@ -74,22 +74,19 @@ module CommandLine =
     proc.ExitCode
 
   let internal doPathOperation (f: unit -> 'a) (defaultValue:'a) =
-    let mutable thrown = true
     let mutable result = defaultValue
     try
         result <- f()
-        thrown <- false
     with
-    | :? ArgumentException as a -> WriteErr a.Message
-    | :? NotSupportedException as n -> WriteErr n.Message
-    | :? IOException as i -> WriteErr i.Message
-    | :? System.Security.SecurityException as s -> WriteErr s.Message
-    error <- error || thrown
+    | :? ArgumentException as a -> error <- a.Message :: error
+    | :? NotSupportedException as n -> error <- n.Message :: error
+    | :? IOException as i -> error <- i.Message :: error
+    | :? System.Security.SecurityException as s -> error <- s.Message :: error
     result
 
   let internal ParseCommandLine (arguments:string array) (options:OptionSet) =
       help <- false
-      error <- false
+      error <- []
       try
           let before = arguments
                        |> Array.takeWhile (fun x -> x <> "--")
@@ -98,7 +95,7 @@ module CommandLine =
                       |> Seq.skipWhile (fun x -> x = "--")
                       |> Seq.toList
           let parse = options.Parse(before)
-          if error || (parse.Count <> 0) then
+          if error |> List.isEmpty |> not || (parse.Count <> 0) then
              Left ("UsageError", options)
           else
              Right (after, options)
