@@ -1318,6 +1318,7 @@ Target "ReleaseXUnitFSharpTypesDotNetFullRunner" ( fun _ ->
       let expected = [  "Microsoft.FSharp.Core.FSharpFunc`2<Microsoft.FSharp.Core.Unit,Tests.DU/MyUnion> Tests.DU/MyUnion::get_MyBar()";
                         "System.Byte[] Tests.M/Thing::bytes()";
                         "System.Int32 Program/Program::main(System.String[])";
+                        "System.Void Tests.DU/MyClass::.ctor()";
                         "System.Void Tests.DU/get_MyBar@31::.ctor(Tests.DU/MyUnion)";
                         "System.Void Tests.DU::testMakeUnion()";
                         "System.Void Tests.M::testMakeThing()";
@@ -1346,7 +1347,7 @@ Target "ReleaseXUnitFSharpTypesDotNetFullRunner" ( fun _ ->
       let recorded = coverageDocument.Descendants(XName.Get("SequencePoint"))
                      |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value)
                      |> Seq.toList
-      let expected = "0 1 1 1 1 1 1 1 0 0 0 0 0 0 0 0 0 2 1 1 1"
+      let expected = "0 1 1 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 2 1 1 1"
       Assert.That(recorded, expected.Split() |> Is.EquivalentTo, sprintf "Bad method list %A" recorded)
 
       coverageDocument.Descendants(XName.Get("SequencePoint"))
@@ -1357,7 +1358,7 @@ Target "ReleaseXUnitFSharpTypesDotNetFullRunner" ( fun _ ->
                             Assert.That (vc, Is.EqualTo vx, sp.Value))
       let tracked = """<TrackedMethods>
         <TrackedMethod uid="1" token="100663300" name="System.Void Tests.DU::testMakeUnion()" strategy="[Fact]" />
-        <TrackedMethod uid="2" token="100663342" name="System.Void Tests.M::testMakeThing()" strategy="[Fact]" />
+        <TrackedMethod uid="2" token="100663345" name="System.Void Tests.M::testMakeThing()" strategy="[Fact]" />
       </TrackedMethods>"""
       coverageDocument.Descendants(XName.Get("TrackedMethods"))
       |> Seq.iter (fun x -> Assert.That(x.ToString().Replace("\r\n","\n"), Is.EqualTo <| tracked.Replace("\r\n","\n")))

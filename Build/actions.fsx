@@ -148,7 +148,7 @@ open System.Runtime.CompilerServices
                    |> Seq.filter (fun x -> others |> Seq.exists (fun y -> x = y) |> not)
                    |> Seq.sort
                    |> Seq.toList
-    let expected = "Invoke as_bar bytes get_MyBar makeThing returnBar returnFoo testMakeThing testMakeUnion"
+    let expected = ".ctor Invoke as_bar bytes get_MyBar makeThing returnBar returnFoo testMakeThing testMakeUnion"
     Assert.That(recorded, expected.Split() |> Is.EquivalentTo, sprintf "Bad method list %A" recorded)
 
   let ValidateFSharpTypesCoverage simpleReport =
@@ -158,7 +158,7 @@ open System.Runtime.CompilerServices
     let recorded = coverageDocument.Descendants(XName.Get("seqpnt"))
                    |> Seq.map (fun x -> x.Attribute(XName.Get("visitcount")).Value)
                    |> Seq.toList
-    let expected = "0 1 1 1 1 1 1 1 0 0 0 0 0 0 0 0 0 2 1 1 1"
+    let expected = "0 1 1 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 2 1 1 1"
     Assert.That(recorded, expected.Split() |> Is.EquivalentTo, sprintf "Bad method list %A" recorded)
 
   let ValidateSample1 simpleReport sigil =

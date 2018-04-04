@@ -8,6 +8,7 @@ open System.Runtime.CompilerServices
 open System.Text.RegularExpressions
 
 open Mono.Cecil
+open Mono.Cecil.Cil
 open AltCover.Augment
 
 [<ExcludeFromCodeCoverage>]
@@ -50,7 +51,7 @@ module Filter =
         m.CustomAttributes
         |> Seq.exists (fun x -> x.AttributeType.FullName = typeof<CompilerGeneratedAttribute>.FullName)
 
-  let internal IsFSharpInternal (m:MethodDefinition) =
+  let internal IsFSharpInternalAlgebraic (m:MethodDefinition) =
 
     // Discriminated Union/Sum/Algebraic data types are implemented as
     // subtypes nested in the base type
@@ -96,3 +97,27 @@ module Filter =
                                                            fullName = typeof<CompilerGeneratedAttribute>.FullName ||
                                                            fullName = typeof<DebuggerNonUserCodeAttribute>.FullName ||
                                                            fullName = typeof<CompilationMappingAttribute>.FullName)))
+
+  let internal IsFSharpAutoProperty (m:MethodDefinition) =
+      let body = if m.HasBody then m.Body.Instructions |> Seq.cast else Seq.empty<Instruction>
+      if m.IsSetter then
+        body
+        |> Seq.tryFind (fun i -> i.OpCode = OpCodes.Stfld)
+        |> Option.map (fun i -> let f = i.Operand :?> FieldReference
+                                (f.DeclaringType.FullName = m.DeclaringType.FullName) && 
+                                      m.Name.Replace("set_",String.Empty) + "@" = 
+                                        f.Name)
+        |> Option.getOrElse false
+      else if m.IsGetter then
+        body
+        |> Seq.tryFind (fun i -> i.OpCode = OpCodes.Ldfld)
+        |> Option.map (fun i -> let f = i.Operand :?> FieldReference
+                                (f.DeclaringType.FullName = m.DeclaringType.FullName) && 
+                                      m.Name.Replace("get_",String.Empty) + "@" = 
+                                        f.Name)
+        |> Option.getOrElse false
+           else false
+
+  let internal IsFSharpInternal (m:MethodDefinition) =
+    IsFSharpAutoProperty m ||
+    IsFSharpInternalAlgebraic m

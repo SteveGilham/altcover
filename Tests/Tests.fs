@@ -456,7 +456,7 @@ type AltCoverTests() = class
                |> Seq.sort
                |> Seq.toList
 
-    let expected = [  ".ctor" ; "Invoke"; "as_bar"; "bytes"; "get_MyBar" ;
+    let expected = [  ".ctor" ; ".ctor" ; "Invoke"; "as_bar"; "bytes"; "get_MyBar" ;
 #if NETCOREAPP2_0
                       "main";
 #endif
