@@ -99,21 +99,21 @@ module Filter =
                                                            fullName = typeof<CompilationMappingAttribute>.FullName)))
 
   let internal IsFSharpAutoProperty (m:MethodDefinition) =
-      let body = if m.HasBody then m.Body.Instructions |> Seq.cast else Seq.empty<Instruction>
+      let body = m.Body.Instructions
       if m.IsSetter then
         body
         |> Seq.tryFind (fun i -> i.OpCode = OpCodes.Stfld)
         |> Option.map (fun i -> let f = i.Operand :?> FieldReference
-                                (f.DeclaringType.FullName = m.DeclaringType.FullName) && 
-                                      m.Name.Replace("set_",String.Empty) + "@" = 
+                                (f.DeclaringType.FullName = m.DeclaringType.FullName) &&
+                                      m.Name.Replace("set_",String.Empty) + "@" =
                                         f.Name)
         |> Option.getOrElse false
       else if m.IsGetter then
         body
         |> Seq.tryFind (fun i -> i.OpCode = OpCodes.Ldfld)
         |> Option.map (fun i -> let f = i.Operand :?> FieldReference
-                                (f.DeclaringType.FullName = m.DeclaringType.FullName) && 
-                                      m.Name.Replace("get_",String.Empty) + "@" = 
+                                (f.DeclaringType.FullName = m.DeclaringType.FullName) &&
+                                      m.Name.Replace("get_",String.Empty) + "@" =
                                         f.Name)
         |> Option.getOrElse false
            else false
