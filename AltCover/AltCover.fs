@@ -101,23 +101,29 @@ module Main =
                                                          "--xmlReport",
                                                          x) :: CommandLine.error))
       ("f|fileFilter=",
-       (fun x -> x.Split([|";"|], StringSplitOptions.RemoveEmptyEntries)
-                 |> Seq.iter (Regex >> FilterClass.File >> Visitor.NameFilters.Add)))
+       (fun x -> CommandLine.doPathOperation (fun () ->
+                 x.Split([|";"|], StringSplitOptions.RemoveEmptyEntries)
+                 |> Seq.iter (Regex >> FilterClass.File >> Visitor.NameFilters.Add))()))
       ("s|assemblyFilter=",
-       (fun x -> x.Split([|";"|], StringSplitOptions.RemoveEmptyEntries)
-                 |> Seq.iter (Regex >> FilterClass.Assembly >> Visitor.NameFilters.Add)))
+       (fun x -> CommandLine.doPathOperation (fun () ->
+                 x.Split([|";"|], StringSplitOptions.RemoveEmptyEntries)
+                 |> Seq.iter (Regex >> FilterClass.Assembly >> Visitor.NameFilters.Add))()))
       ("e|assemblyExcludeFilter=",
-       (fun x -> x.Split([|";"|], StringSplitOptions.RemoveEmptyEntries)
-                 |> Seq.iter (Regex >> FilterClass.Module >> Visitor.NameFilters.Add)))
+       (fun x -> CommandLine.doPathOperation (fun () ->
+                 x.Split([|";"|], StringSplitOptions.RemoveEmptyEntries)
+                 |> Seq.iter (Regex >> FilterClass.Module >> Visitor.NameFilters.Add))()))
       ("t|typeFilter=",
-       (fun x -> x.Split([|";"|], StringSplitOptions.RemoveEmptyEntries)
-                 |> Seq.iter (Regex >> FilterClass.Type >> Visitor.NameFilters.Add)))
+       (fun x -> CommandLine.doPathOperation (fun () ->
+                 x.Split([|";"|], StringSplitOptions.RemoveEmptyEntries)
+                 |> Seq.iter (Regex >> FilterClass.Type >> Visitor.NameFilters.Add))()))
       ("m|methodFilter=",
-       (fun x -> x.Split([|";"|], StringSplitOptions.RemoveEmptyEntries)
-                 |> Seq.iter (Regex >> FilterClass.Method >> Visitor.NameFilters.Add)))
+       (fun x -> CommandLine.doPathOperation (fun () ->
+                 x.Split([|";"|], StringSplitOptions.RemoveEmptyEntries)
+                 |> Seq.iter (Regex >> FilterClass.Method >> Visitor.NameFilters.Add))()))
       ("a|attributeFilter=",
-       (fun x -> x.Split([|";"|], StringSplitOptions.RemoveEmptyEntries)
-                 |> Seq.iter (Regex >> FilterClass.Attribute >> Visitor.NameFilters.Add)))
+       (fun x -> CommandLine.doPathOperation (fun () ->
+                 x.Split([|";"|], StringSplitOptions.RemoveEmptyEntries)
+                 |> Seq.iter (Regex >> FilterClass.Attribute >> Visitor.NameFilters.Add))()))
       ("c|callContext=",
        (fun x -> if not (String.IsNullOrWhiteSpace x) then
                    let k = x.Trim()
