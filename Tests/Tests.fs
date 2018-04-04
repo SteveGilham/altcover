@@ -456,7 +456,7 @@ type AltCoverTests() = class
                |> Seq.sort
                |> Seq.toList
 
-    let expected = [  ".ctor" ; "Invoke"; "as_bar"; "bytes"; "get_MyBar" ;
+    let expected = [  ".ctor" ; ".ctor" ; "Invoke"; "as_bar"; "bytes"; "get_MyBar" ;
 #if NETCOREAPP2_0
                       "main";
 #endif
@@ -4367,6 +4367,7 @@ type AltCoverTests() = class
                     "-s=nunit"
                     "-e=Sample"
                     "-c=[Test]"
+                    "--save"
                  |]
       let result = Main.DoInstrumentation args
       Assert.That (result, Is.EqualTo 0)
@@ -4397,6 +4398,7 @@ type AltCoverTests() = class
 #endif
 
       Assert.That (File.Exists report)
+      Assert.That (File.Exists (report + ".acv"))
       let pdb = Path.ChangeExtension(Assembly.GetExecutingAssembly().Location, ".pdb")
       let isWindows =
 #if NETCOREAPP2_0

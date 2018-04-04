@@ -30,6 +30,9 @@ module DU =
                                 | _ -> Bar "none"
          member this.MyBar = this.as_bar
 
+    type MyClass() =
+         member val Property = 0 with get, set
+
     let returnFoo v = Foo v
 
     let returnBar v = Bar v
