@@ -25,7 +25,7 @@
                exclude="UseCorrectSuffixRule | AvoidNonAlphanumericIdentifierRule | ParameterNamesShouldMatchOverriddenMethodRule | UseCorrectCasingRule | UseCorrectPrefixRule | AvoidDeepNamespaceHierarchyRule  | UsePluralNameInEnumFlagsRule"
                from="Gendarme.Rules.Naming.dll"/>
 		<rules include="*" 
-               exclude="AvoidRepetitiveCastsRule | AvoidUnneededUnboxingRule | AvoidUnsealedUninheritedInternalTypeRule | AvoidUncalledPrivateCodeRule"
+               exclude="AvoidReturningArraysOnPropertiesRule | AvoidRepetitiveCastsRule | AvoidUnneededUnboxingRule | AvoidUnsealedUninheritedInternalTypeRule | AvoidUncalledPrivateCodeRule"
                from="Gendarme.Rules.Performance.dll" />
 		<rules include="*" 
 		       exclude="ExitCodeIsLimitedOnUnixRule"

@@ -4657,6 +4657,76 @@ or
 
     finally Console.SetError saved
 
-  // Recorder.fs => Shadow.Tests
+  // Tasks.fs
+  [<Test>]
+  member self.EmptyInstrumentIsJustTheDefaults() =
+    let subject = ACVInstrument()
+    let save = Main.EffectiveMain
+    let mutable args = [| "some junk "|]
+    try
+        Main.EffectiveMain <- (fun a -> args <- a
+                                        255)
+        let result = subject.Execute()
+        Assert.That(result, Is.False)
+        Assert.That(args, Is.EquivalentTo ["--opencover"
+                                           "--inplace"
+                                           "--save"])
+    finally
+      Main.EffectiveMain <- save
 
+  [<Test>]
+  member self.NonDefaultInstrumentIsOK() =
+    let subject = ACVInstrument()
+    let save = Main.EffectiveMain
+    let mutable args = [| "some junk "|]
+    try
+        Main.EffectiveMain <- (fun a -> args <- a
+                                        0)
+        subject.OpenCover <- false
+        subject.CommandLine <- "testing 1 2 3"
+        subject.SymbolDirectories <- [| "a"; "b" |]
+        let result = subject.Execute()
+        Assert.That(result, Is.True)
+        Assert.That(args, Is.EquivalentTo ["-y"; "a"
+                                           "-y"; "b"
+                                           "--inplace"
+                                           "--save"
+                                           "--"
+                                           "testing 1 2 3"])
+    finally
+      Main.EffectiveMain <- save
+
+  [<Test>]
+  member self.EmptyCollectIsJustTheDefaults() =
+    let subject = ACVCollect()
+    let save = Main.EffectiveMain
+    let mutable args = [| "some junk "|]
+    try
+        Main.EffectiveMain <- (fun a -> args <- a
+                                        255)
+        let result = subject.Execute()
+        Assert.That(result, Is.False)
+        Assert.That(args, Is.EquivalentTo ["Runner"
+                                           "--collect"])
+    finally
+      Main.EffectiveMain <- save
+
+  [<Test>]
+  member self.CollectWithExeIsNotCollecting() =
+    let subject = ACVCollect()
+    let save = Main.EffectiveMain
+    let mutable args = [| "some junk "|]
+    try
+        Main.EffectiveMain <- (fun a -> args <- a
+                                        0)
+        subject.Executable <- "dotnet"
+        let result = subject.Execute()
+        Assert.That(result, Is.True)
+        Assert.That(args, Is.EquivalentTo ["Runner"
+                                           "-x"
+                                           "dotnet"])
+    finally
+      Main.EffectiveMain <- save
+
+  // Recorder.fs => Shadow.Tests
 end
