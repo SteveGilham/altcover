@@ -18,7 +18,7 @@ module Args =
        then [a]
        else []
 
-type ACVInstrument () =
+type Prepare () =
   inherit Task(null)
   member val InputDirectory = String.Empty with get, set
   member val OutputDirectory = String.Empty with get, set
@@ -73,7 +73,7 @@ type ACVInstrument () =
     |> AltCover.Main.EffectiveMain = 0
 
 
-type ACVCollect () =
+type Collect () =
   inherit Task(null)
   [<Required>]
   member val RecorderDirectory = String.Empty with get, set

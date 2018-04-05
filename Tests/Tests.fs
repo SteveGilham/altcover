@@ -4662,7 +4662,7 @@ or
   // Tasks.fs
   [<Test>]
   member self.EmptyInstrumentIsJustTheDefaults() =
-    let subject = ACVInstrument()
+    let subject = Prepare()
     let save = Main.EffectiveMain
     let mutable args = [| "some junk "|]
     try
@@ -4678,7 +4678,7 @@ or
 
   [<Test>]
   member self.NonDefaultInstrumentIsOK() =
-    let subject = ACVInstrument()
+    let subject = Prepare()
     let save = Main.EffectiveMain
     let mutable args = [| "some junk "|]
     try
@@ -4700,7 +4700,7 @@ or
 
   [<Test>]
   member self.EmptyCollectIsJustTheDefaults() =
-    let subject = ACVCollect()
+    let subject = Collect()
     let save = Main.EffectiveMain
     let mutable args = [| "some junk "|]
     try
@@ -4715,7 +4715,7 @@ or
 
   [<Test>]
   member self.CollectWithExeIsNotCollecting() =
-    let subject = ACVCollect()
+    let subject = Collect()
     let save = Main.EffectiveMain
     let mutable args = [| "some junk "|]
     try
