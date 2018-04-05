@@ -4225,8 +4225,12 @@ type AltCoverTests() = class
     let reportSaved = Visitor.reportPath
     let keySaved = Visitor.defaultStrongNameKey
     let saved = (Console.Out, Console.Error)
+    let save2 = (Base.Output.Info, Base.Output.Error)
     Visitor.keys.Clear()
     try
+      Base.Output.Error <- CommandLine.WriteErr
+      Base.Output.Info <- CommandLine.WriteOut
+
       use stdout = new StringWriter()
       use stderr = new StringWriter()
       Console.SetOut stdout
@@ -4316,6 +4320,8 @@ type AltCoverTests() = class
       Console.SetOut (fst saved)
       Console.SetError (snd saved)
       Visitor.keys.Clear()
+      Base.Output.Error <- snd save2
+      Base.Output.Info <- fst save2
 #if NETCOREAPP2_0
     Assert.Fail("the NUnit test adapter seems to be working again.  Remove this clause.")
    with  //Cecil 10.0 vs 10.0beta6
@@ -4349,7 +4355,11 @@ type AltCoverTests() = class
     let keySaved = Visitor.defaultStrongNameKey
     let saved = (Console.Out, Console.Error)
     Visitor.keys.Clear()
+    let save2 = (Base.Output.Info, Base.Output.Error)
     try
+      Base.Output.Error <- CommandLine.WriteErr
+      Base.Output.Info <- CommandLine.WriteOut
+
       use stdout = new StringWriter()
       use stderr = new StringWriter()
       Console.SetOut stdout
@@ -4454,6 +4464,8 @@ type AltCoverTests() = class
       Console.SetError (snd saved)
       Visitor.keys.Clear()
       Visitor.NameFilters.Clear()
+      Base.Output.Error <- snd save2
+      Base.Output.Info <- fst save2
 
     let before = File.ReadAllText(Path.Combine(input, "Sample2.deps.json"))
     Assert.That(before.IndexOf("AltCover.Recorder.g"), Is.EqualTo -1)
@@ -4665,6 +4677,7 @@ or
     let subject = Prepare()
     let save = Main.EffectiveMain
     let mutable args = [| "some junk "|]
+    let saved = (Base.Output.Info, Base.Output.Error)
     try
         Main.EffectiveMain <- (fun a -> args <- a
                                         255)
@@ -4675,12 +4688,15 @@ or
                                            "--save"])
     finally
       Main.EffectiveMain <- save
+      Base.Output.Info <- fst saved
+      Base.Output.Error <- snd saved
 
   [<Test>]
   member self.NonDefaultInstrumentIsOK() =
     let subject = Prepare()
     let save = Main.EffectiveMain
     let mutable args = [| "some junk "|]
+    let saved = (Base.Output.Info, Base.Output.Error)
     try
         Main.EffectiveMain <- (fun a -> args <- a
                                         0)
@@ -4697,12 +4713,15 @@ or
                                            "testing 1 2 3"])
     finally
       Main.EffectiveMain <- save
+      Base.Output.Info <- fst saved
+      Base.Output.Error <- snd saved
 
   [<Test>]
   member self.EmptyCollectIsJustTheDefaults() =
     let subject = Collect()
     let save = Main.EffectiveMain
     let mutable args = [| "some junk "|]
+    let saved = (Base.Output.Info, Base.Output.Error)
     try
         Main.EffectiveMain <- (fun a -> args <- a
                                         255)
@@ -4712,12 +4731,15 @@ or
                                            "--collect"])
     finally
       Main.EffectiveMain <- save
+      Base.Output.Info <- fst saved
+      Base.Output.Error <- snd saved
 
   [<Test>]
   member self.CollectWithExeIsNotCollecting() =
     let subject = Collect()
     let save = Main.EffectiveMain
     let mutable args = [| "some junk "|]
+    let saved = (Base.Output.Info, Base.Output.Error)
     try
         Main.EffectiveMain <- (fun a -> args <- a
                                         0)
@@ -4729,6 +4751,8 @@ or
                                            "dotnet"])
     finally
       Main.EffectiveMain <- save
+      Base.Output.Info <- fst saved
+      Base.Output.Error <- snd saved
 
   // Recorder.fs => Shadow.Tests
 end

@@ -194,7 +194,7 @@ module Main =
                                                     toDirectory) :: CommandLine.error
 
             if CommandLine.error |> List.isEmpty && toDirectory |> Directory.Exists |> not then
-              CommandLine.WriteOut <| String.Format(CultureInfo.CurrentCulture,
+              Base.Output.Info <| String.Format(CultureInfo.CurrentCulture,
                                                     (CommandLine.resources.GetString "CreateFolder"),
                                                      toDirectory)
               Directory.CreateDirectory(toDirectory) |> ignore) ()
@@ -203,17 +203,17 @@ module Main =
             Left ("UsageError", options)
         else
           if Visitor.inplace then
-            CommandLine.WriteOut <| String.Format(CultureInfo.CurrentCulture,
+            Base.Output.Info <| String.Format(CultureInfo.CurrentCulture,
                                         (CommandLine.resources.GetString "savingto"),
                                         toDirectory)
-            CommandLine.WriteOut <| String.Format(CultureInfo.CurrentCulture,
+            Base.Output.Info <| String.Format(CultureInfo.CurrentCulture,
                                         (CommandLine.resources.GetString "instrumentingin"),
                                         fromDirectory)
           else
-            CommandLine.WriteOut <| String.Format(CultureInfo.CurrentCulture,
+            Base.Output.Info <| String.Format(CultureInfo.CurrentCulture,
                                         (CommandLine.resources.GetString "instrumentingfrom"),
                                         fromDirectory)
-            CommandLine.WriteOut <| String.Format(CultureInfo.CurrentCulture,
+            Base.Output.Info <| String.Format(CultureInfo.CurrentCulture,
                                         (CommandLine.resources.GetString "instrumentingto"),
                                         toDirectory)
           Right (rest,
@@ -263,16 +263,16 @@ module Main =
     match check1 with
     | Left (intro, options) ->
         String.Join (" ", arguments |> Seq.map (sprintf "%A"))
-        |> CommandLine.WriteErr
+        |> Base.Output.Echo
         CommandLine.error
-        |> List.iter CommandLine.WriteErr
+        |> List.iter Base.Output.Error
         CommandLine.Usage intro options (Runner.DeclareOptions())
         255
     | Right (rest, fromInfo, toInfo, targetInfo) ->
         let report = Visitor.ReportPath()
         CommandLine.doPathOperation( fun () ->
         let (assemblies, assemblyNames) = PrepareTargetFiles fromInfo toInfo targetInfo
-        CommandLine.WriteOut <| String.Format(CultureInfo.CurrentCulture,
+        Base.Output.Info <| String.Format(CultureInfo.CurrentCulture,
                                          (CommandLine.resources.GetString "reportingto"),
                                          report)
         let reporter, document = match Visitor.ReportKind() with

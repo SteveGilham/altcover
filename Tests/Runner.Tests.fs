@@ -21,6 +21,7 @@ type AltCoverTests() = class
 
   [<Test>]
   member self.JunkUspidGivesNegativeIndex() =
+    Base.Output.Sink 1 2 3
     let key = " "
     let index = Counter.FindIndexFromUspid 0 key
     Assert.That (index, Is.LessThan 0)

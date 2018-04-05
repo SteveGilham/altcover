@@ -19,6 +19,13 @@ type internal Track =
   | Call of int
   | Both of (int64 * int)
 
+module Output =
+  let mutable internal Info : (String -> unit) = ignore
+  let mutable internal Echo : (String -> unit) = ignore
+  let mutable internal Error : (String -> unit) = ignore
+  let internal Sink _ _ _ = ()
+  let mutable internal Usage : (String -> obj -> obj -> unit) = Sink
+
 module Counter =
    /// <summary>
    /// The offset flag for branch counts

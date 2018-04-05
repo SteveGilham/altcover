@@ -92,9 +92,9 @@ module Runner =
 
   let HandleBadArguments arguments intro options1 options =
         String.Join (" ", arguments |> Seq.map (sprintf "%A"))
-        |> CommandLine.WriteErr
+        |> Base.Output.Echo
         CommandLine.error
-        |> List.iter CommandLine.WriteErr
+        |> List.iter Base.Output.Error
         CommandLine.Usage intro options1 options
 
   let internal RequireExe (parse:(Either<string*OptionSet, string list*OptionSet>)) =
@@ -161,10 +161,10 @@ module Runner =
         CommandLine.ProcessTrailingArguments rest (DirectoryInfo(Option.get workingDirectory))) 255
 
   let WriteResource =
-    CommandLine.resources.GetString >> Console.WriteLine
+    CommandLine.resources.GetString >> Base.Output.Info
 
   let WriteResourceWithFormatItems s x =
-    Console.WriteLine (s |> CommandLine.resources.GetString, x)
+    String.Format (CultureInfo.CurrentCulture, s |> CommandLine.resources.GetString, x) |> Base.Output.Info
 
   let internal SetRecordToFile report =
       let binpath = report + ".acv"
@@ -186,7 +186,7 @@ module Runner =
       Directory.GetFiles( Path.GetDirectoryName(report),
                           Path.GetFileName(report) + ".*.acv")
       |> Seq.iter (fun f ->
-          printfn "... %s" f
+          sprintf "... %s" f |> Base.Output.Info
           use results = new DeflateStream(File.OpenRead f, CompressionMode.Decompress)
           let rec sink() =
             let hit = try
