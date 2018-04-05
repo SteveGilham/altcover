@@ -5,16 +5,16 @@ open Microsoft.Build.Utilities
 open Microsoft.Build.Framework
 
 module Args =
-  let Item a x = 
-    if x |> String.IsNullOrWhiteSpace 
+  let Item a x =
+    if x |> String.IsNullOrWhiteSpace
        then []
        else [ a; x ]
   let ItemList a x =
       x
       |> Seq.collect (fun i -> [ a; i ])
       |> Seq.toList
-  let Flag a x = 
-    if x 
+  let Flag a x =
+    if x
        then [a]
        else []
 
