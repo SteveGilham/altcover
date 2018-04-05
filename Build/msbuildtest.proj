@@ -1,16 +1,33 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <UsingTask TaskName="AltCover.ACVInstrument"   
+  <UsingTask TaskName="AltCover.Prepare"   
         AssemblyFile="$(MSBuildThisFileDirectory)../_Packaging/Unpack/tools/netcoreapp2.0/AltCover.dll"/>  
-  <UsingTask TaskName="AltCover.ACVCollect"   
+  <UsingTask TaskName="AltCover.Collect"   
         AssemblyFile="$(MSBuildThisFileDirectory)../_Packaging/Unpack/tools/netcoreapp2.0/AltCover.dll"/>  
+
+  <!-- UsingTask TaskName="AltCover.Prepare"   
+        AssemblyFile="$(MSBuildThisFileDirectory)../_Binaries/AltCover/Debug+AnyCPU/netcoreapp2.0/AltCover.dll"/>  
+  <UsingTask TaskName="AltCover.Collect"   
+        AssemblyFile="$(MSBuildThisFileDirectory)../_Binaries/AltCover/Debug+AnyCPU/netcoreapp2.0/AltCover.dll"/ -->  
+
+  <ItemGroup>
+    <CallContext Include="0" />
+    <CallContext Include="[Fact]" />
+  </ItemGroup>
   <Target Name="MSBuildTest">
     <Exec Command="dotnet build $(MSBuildThisFileDirectory)../Sample4/sample4.core.fsproj" />
-    <AltCover.ACVInstrument 
-      InputDirectory="$(MSBuildThisFileDirectory)../Sample4/_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.0"   
+    <Message Text="1"/>
+    <AltCover.Prepare 
+      InputDirectory="$(MSBuildThisFileDirectory)../Sample4/_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.0"  
+      OutputDirectory="$(MSBuildThisFileDirectory)../Sample4/_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.0/__Saved$([System.DateTime]::UtcNow.ToString().Replace(':','-').Replace('/','-').Replace(' ','+'))"  
+      XmlReport="$(MSBuildThisFileDirectory)../_Reports/MSBuildTest.xml"
+      CallContext="@(CallContext)"
       />  
+    <Message Text="2"/>
     <Exec Command="dotnet test -no-build $(MSBuildThisFileDirectory)../Sample4/sample4.core.fsproj" />
-    <AltCover.ACVCollect 
+    <Message Text="3"/>
+    <AltCover.Collect 
       RecorderDirectory="$(MSBuildThisFileDirectory)../Sample4/_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.0"   
       />  
+    <Message Text="4"/>
   </Target>
 </Project>
