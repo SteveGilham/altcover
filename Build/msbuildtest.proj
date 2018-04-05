@@ -1,0 +1,16 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <UsingTask TaskName="AltCover.ACVInstrument"   
+        AssemblyFile="$(MSBuildThisFileDirectory)../_Packaging/Unpack/tools/netcoreapp2.0/AltCover.dll"/>  
+  <UsingTask TaskName="AltCover.ACVCollect"   
+        AssemblyFile="$(MSBuildThisFileDirectory)../_Packaging/Unpack/tools/netcoreapp2.0/AltCover.dll"/>  
+  <Target Name="MSBuildTest">
+    <Exec Command="dotnet build $(MSBuildThisFileDirectory)../Sample4/sample4.core.fsproj" />
+    <AltCover.ACVInstrument 
+      InputDirectory="$(MSBuildThisFileDirectory)../Sample4/_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.0"   
+      />  
+    <Exec Command="dotnet test -no-build $(MSBuildThisFileDirectory)../Sample4/sample4.core.fsproj" />
+    <AltCover.ACVCollect 
+      RecorderDirectory="$(MSBuildThisFileDirectory)../Sample4/_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.0"   
+      />  
+  </Target>
+</Project>

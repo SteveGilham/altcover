@@ -1379,6 +1379,17 @@ Target "ReleaseXUnitFSharpTypesDotNetFullRunner" ( fun _ ->
                     ])
 )
 
+Target "MSBuildTest" ( fun _ ->
+    Directory.ensure "./_Reports"
+    let unpack = Path.getFullName "_Packaging/Unpack/tools/netcoreapp2.0"
+    let build = Path.getFullName "Build"
+    let sample = Path.getFullName "Sample4"
+    // Run
+    Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = sample}) "msbuild"
+                          (build @@ "msbuildtest.proj")
+                          "MSBuildTest"
+)
+
 // AOB
 
 Target "BulkReport" (fun _ ->
