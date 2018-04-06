@@ -119,11 +119,11 @@ module CommandLine =
 
   let ReportErrors () =
         error
-        |> List.iter WriteErr
+        |> List.iter Base.Output.Error
 
   let HandleBadArguments arguments intro options1 options =
         String.Join (" ", arguments |> Seq.map (sprintf "%A"))
-        |> WriteErr
-        WriteErr String.Empty
+        |> Base.Output.Echo
+        Base.Output.Echo String.Empty
         ReportErrors ()
         Usage intro options1 options
