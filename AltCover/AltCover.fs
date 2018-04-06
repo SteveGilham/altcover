@@ -262,31 +262,26 @@ module Main =
                  |> ProcessOutputLocation
     match check1 with
     | Left (intro, options) ->
-        String.Join (" ", arguments |> Seq.map (sprintf "%A"))
-        |> Base.Output.Echo
-        CommandLine.error
-        |> List.iter Base.Output.Error
-        CommandLine.Usage intro options (Runner.DeclareOptions())
+        CommandLine.HandleBadArguments arguments intro options (Runner.DeclareOptions())
         255
     | Right (rest, fromInfo, toInfo, targetInfo) ->
         let report = Visitor.ReportPath()
         let result = CommandLine.doPathOperation( fun () ->
-                      let (assemblies, assemblyNames) = PrepareTargetFiles fromInfo toInfo targetInfo
-                      Base.Output.Info <| String.Format(CultureInfo.CurrentCulture,
-                                                      (CommandLine.resources.GetString "reportingto"),
-                                                      report)
-                      let reporter, document = match Visitor.ReportKind() with
-                                               | ReportFormat.OpenCover -> OpenCover.ReportGenerator ()
-                                               | _ -> Report.ReportGenerator ()
+            let (assemblies, assemblyNames) = PrepareTargetFiles fromInfo toInfo targetInfo
+            Base.Output.Info <| String.Format(CultureInfo.CurrentCulture,
+                                            (CommandLine.resources.GetString "reportingto"),
+                                            report)
+            let reporter, document = match Visitor.ReportKind() with
+                                     | ReportFormat.OpenCover -> OpenCover.ReportGenerator ()
+                                     | _ -> Report.ReportGenerator ()
 
-                      let visitors = [ reporter ; Instrument.InstrumentGenerator assemblyNames ]
-                      Visitor.Visit visitors (assemblies)
-                      document.Save(report)
-                      if Visitor.collect then Runner.SetRecordToFile report
+            let visitors = [ reporter ; Instrument.InstrumentGenerator assemblyNames ]
+            Visitor.Visit visitors (assemblies)
+            document.Save(report)
+            if Visitor.collect then Runner.SetRecordToFile report
 
-                      CommandLine.ProcessTrailingArguments rest toInfo) 255
-        CommandLine.error
-        |> List.iter Base.Output.Error
+            CommandLine.ProcessTrailingArguments rest toInfo) 255
+        CommandLine.ReportErrors()
         result
 
   let internal Main arguments =

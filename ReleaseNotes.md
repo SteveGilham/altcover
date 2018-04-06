@@ -1,3 +1,7 @@
+# 3.0.4xx (Caba series release 3)
+* [BUGFIX] -- malformed filter regexes no longer cause a crash
+* F# auto-properties are omitted from coverage as C# ones have for a long time
+
 # 3.0.388 (Caba series release 2)
 * Improved command line error reporting
 * `--inplace` option to instrument the assemblies in the input directory, having saved them to the output directory first; this avoids the manual copy-back step for `dotnet test` and the like
