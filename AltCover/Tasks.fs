@@ -45,8 +45,8 @@ type Prepare () =
 
   override self.Execute () =
     try
-     Base.Output.Error <- self.Log.LogError
-     Base.Output.Info <- self.Log.LogMessage
+     Base.Output.Error <- Console.WriteLine
+     Base.Output.Info <- Console.WriteLine
      let xx =
         [
           Args.Item "-i" self.InputDirectory;
@@ -91,8 +91,8 @@ type Collect () =
   member val CommandLine = String.Empty with get, set
 
   override self.Execute () =
-    Base.Output.Error <- self.Log.LogError
-    Base.Output.Info <- self.Log.LogMessage
+    Base.Output.Error <- Console.WriteLine
+    Base.Output.Info <- Console.WriteLine
     [
       ["Runner"];
       Args.Item "-r" self.RecorderDirectory;
