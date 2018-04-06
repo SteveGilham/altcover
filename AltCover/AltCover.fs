@@ -270,21 +270,24 @@ module Main =
         255
     | Right (rest, fromInfo, toInfo, targetInfo) ->
         let report = Visitor.ReportPath()
-        CommandLine.doPathOperation( fun () ->
-        let (assemblies, assemblyNames) = PrepareTargetFiles fromInfo toInfo targetInfo
-        Base.Output.Info <| String.Format(CultureInfo.CurrentCulture,
-                                         (CommandLine.resources.GetString "reportingto"),
-                                         report)
-        let reporter, document = match Visitor.ReportKind() with
-                                 | ReportFormat.OpenCover -> OpenCover.ReportGenerator ()
-                                 | _ -> Report.ReportGenerator ()
+        let result = CommandLine.doPathOperation( fun () ->
+                      let (assemblies, assemblyNames) = PrepareTargetFiles fromInfo toInfo targetInfo
+                      Base.Output.Info <| String.Format(CultureInfo.CurrentCulture,
+                                                      (CommandLine.resources.GetString "reportingto"),
+                                                      report)
+                      let reporter, document = match Visitor.ReportKind() with
+                                               | ReportFormat.OpenCover -> OpenCover.ReportGenerator ()
+                                               | _ -> Report.ReportGenerator ()
 
-        let visitors = [ reporter ; Instrument.InstrumentGenerator assemblyNames ]
-        Visitor.Visit visitors (assemblies)
-        document.Save(report)
-        if Visitor.collect then Runner.SetRecordToFile report
+                      let visitors = [ reporter ; Instrument.InstrumentGenerator assemblyNames ]
+                      Visitor.Visit visitors (assemblies)
+                      document.Save(report)
+                      if Visitor.collect then Runner.SetRecordToFile report
 
-        CommandLine.ProcessTrailingArguments rest toInfo) 255
+                      CommandLine.ProcessTrailingArguments rest toInfo) 255
+        CommandLine.error
+        |> List.iter Base.Output.Error
+        result
 
   let internal Main arguments =
     if "Runner".StartsWith(arguments |> Seq.head, StringComparison.OrdinalIgnoreCase)
