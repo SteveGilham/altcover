@@ -114,3 +114,14 @@ module CommandLine =
         | cmd::t->
            let args = String.Join(" ", (List.toArray t))
            Launch cmd args toInfo.FullName // Spawn process, echoing asynchronously
+
+  let ReportErrors () =
+        error
+        |> List.iter WriteErr
+
+  let HandleBadArguments arguments intro options1 options =
+        String.Join (" ", arguments |> Seq.map (sprintf "%A"))
+        |> WriteErr
+        WriteErr String.Empty
+        ReportErrors ()
+        Usage intro options1 options

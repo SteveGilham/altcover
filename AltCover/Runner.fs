@@ -90,13 +90,6 @@ module Runner =
                                                          x) :: CommandLine.error))         ]// default end stop
       |> List.fold (fun (o:OptionSet) (p, a) -> o.Add(p, CommandLine.resources.GetString(p), new System.Action<string>(a))) (OptionSet())
 
-  let HandleBadArguments arguments intro options1 options =
-        String.Join (" ", arguments |> Seq.map (sprintf "%A"))
-        |> CommandLine.WriteErr
-        CommandLine.error
-        |> List.iter CommandLine.WriteErr
-        CommandLine.Usage intro options1 options
-
   let internal RequireExe (parse:(Either<string*OptionSet, string list*OptionSet>)) =
     match parse with
     | Right (l, options) -> match (!executable, collect) with
@@ -389,25 +382,28 @@ module Runner =
                  |> RequireRecorder
                  |> RequireWorker
     match check1 with
-    | Left (intro, options) -> HandleBadArguments arguments intro options1 options
+    | Left (intro, options) -> CommandLine.HandleBadArguments arguments intro options1 options
                                255
     | Right (rest, _) ->
-          let instance = RecorderInstance()
-          let report = (GetMethod instance "get_ReportFile")
-                       |> GetFirstOperandAsString
-                       |> Path.GetFullPath
-          let format = (GetMethod instance "get_CoverageFormat")
-                       |> GetFirstOperandAsNumber
-          let hits = List<(string*int*Base.Track)>()
+        let value = CommandLine.doPathOperation( fun () ->
+            let instance = RecorderInstance()
+            let report = (GetMethod instance "get_ReportFile")
+                         |> GetFirstOperandAsString
+                         |> Path.GetFullPath
+            let format = (GetMethod instance "get_CoverageFormat")
+                         |> GetFirstOperandAsNumber
+            let hits = List<(string*int*Base.Track)>()
 
-          let payload = GetPayload
-          let result = GetMonitor hits report payload rest
-          let delta = DoReport hits (enum format) report
-          WriteResourceWithFormatItems "Coverage statistics flushing took {0:N} seconds" [|delta.TotalSeconds|]
+            let payload = GetPayload
+            let result = GetMonitor hits report payload rest
+            let delta = DoReport hits (enum format) report
+            WriteResourceWithFormatItems "Coverage statistics flushing took {0:N} seconds" [|delta.TotalSeconds|]
 
-          // And tidy up after everything's done
-          File.Delete (report + ".acv")
-          Directory.GetFiles( Path.GetDirectoryName(report),
-                              Path.GetFileName(report) + ".*.acv")
-          |> Seq.iter File.Delete
-          result
+            // And tidy up after everything's done
+            File.Delete (report + ".acv")
+            Directory.GetFiles( Path.GetDirectoryName(report),
+                                Path.GetFileName(report) + ".*.acv")
+            |> Seq.iter File.Delete
+            result                             ) 255
+        CommandLine.ReportErrors()
+        value
