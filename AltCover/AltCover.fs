@@ -194,7 +194,7 @@ module Main =
                                                     toDirectory) :: CommandLine.error
 
             if CommandLine.error |> List.isEmpty && toDirectory |> Directory.Exists |> not then
-              Base.Output.Info <| String.Format(CultureInfo.CurrentCulture,
+              Output.Info <| String.Format(CultureInfo.CurrentCulture,
                                                     (CommandLine.resources.GetString "CreateFolder"),
                                                      toDirectory)
               Directory.CreateDirectory(toDirectory) |> ignore) ()
@@ -203,17 +203,17 @@ module Main =
             Left ("UsageError", options)
         else
           if Visitor.inplace then
-            Base.Output.Info <| String.Format(CultureInfo.CurrentCulture,
+            Output.Info <| String.Format(CultureInfo.CurrentCulture,
                                         (CommandLine.resources.GetString "savingto"),
                                         toDirectory)
-            Base.Output.Info <| String.Format(CultureInfo.CurrentCulture,
+            Output.Info <| String.Format(CultureInfo.CurrentCulture,
                                         (CommandLine.resources.GetString "instrumentingin"),
                                         fromDirectory)
           else
-            Base.Output.Info <| String.Format(CultureInfo.CurrentCulture,
+            Output.Info <| String.Format(CultureInfo.CurrentCulture,
                                         (CommandLine.resources.GetString "instrumentingfrom"),
                                         fromDirectory)
-            Base.Output.Info <| String.Format(CultureInfo.CurrentCulture,
+            Output.Info <| String.Format(CultureInfo.CurrentCulture,
                                         (CommandLine.resources.GetString "instrumentingto"),
                                         toDirectory)
           Right (rest,
@@ -268,7 +268,7 @@ module Main =
         let report = Visitor.ReportPath()
         let result = CommandLine.doPathOperation( fun () ->
             let (assemblies, assemblyNames) = PrepareTargetFiles fromInfo toInfo targetInfo
-            Base.Output.Info <| String.Format(CultureInfo.CurrentCulture,
+            Output.Info <| String.Format(CultureInfo.CurrentCulture,
                                             (CommandLine.resources.GetString "reportingto"),
                                             report)
             let reporter, document = match Visitor.ReportKind() with

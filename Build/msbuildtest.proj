@@ -4,11 +4,6 @@
   <UsingTask TaskName="AltCover.Collect"   
         AssemblyFile="$(MSBuildThisFileDirectory)../_Packaging/Unpack/tools/netcoreapp2.0/AltCover.dll"/>  
 
-  <!-- UsingTask TaskName="AltCover.Prepare"   
-        AssemblyFile="$(MSBuildThisFileDirectory)../_Binaries/AltCover/Debug+AnyCPU/netcoreapp2.0/AltCover.dll"/>  
-  <UsingTask TaskName="AltCover.Collect"   
-        AssemblyFile="$(MSBuildThisFileDirectory)../_Binaries/AltCover/Debug+AnyCPU/netcoreapp2.0/AltCover.dll"/ -->  
-
   <ItemGroup>
     <CallContext Include="0" />
     <CallContext Include="[Fact]" />
@@ -23,7 +18,7 @@
       CallContext="@(CallContext)"
       />  
     <Message Text="2"/>
-    <Exec Command="dotnet test -no-build $(MSBuildThisFileDirectory)../Sample4/sample4.core.fsproj" />
+    <Exec Command="dotnet test --no-build $(MSBuildThisFileDirectory)../Sample4/sample4.core.fsproj" />
     <Message Text="3"/>
     <AltCover.Collect 
       RecorderDirectory="$(MSBuildThisFileDirectory)../Sample4/_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.0"   

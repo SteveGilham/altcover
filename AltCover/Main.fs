@@ -4,9 +4,9 @@ module AltCover =
 
   [<EntryPoint>]
   let private Main arguments =
-    Base.Output.Error <- CommandLine.WriteErr
-    Base.Output.Usage <- CommandLine.Usage
-    Base.Output.Echo <- CommandLine.WriteErr
-    Base.Output.Info <- CommandLine.WriteOut
+    Output.Error <- CommandLine.WriteErr
+    Output.Usage <- CommandLine.Usage
+    Output.Echo <- CommandLine.WriteErr
+    Output.Info <- CommandLine.WriteOut
 
     AltCover.Main.EffectiveMain arguments

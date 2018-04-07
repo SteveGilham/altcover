@@ -48,7 +48,6 @@ type AltCoverTests() = class
                          |> Seq.find (fun n -> n.EndsWith("SimpleCoverage.xml", StringComparison.Ordinal))
 
   member private self.UpdateReport a b =
-    Output.Sink 1 2 3
     Counter.UpdateReport ignore (fun _ _ -> ()) true a ReportFormat.NCover b
     |> ignore
 

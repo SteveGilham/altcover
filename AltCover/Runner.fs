@@ -154,10 +154,10 @@ module Runner =
         CommandLine.ProcessTrailingArguments rest (DirectoryInfo(Option.get workingDirectory))) 255
 
   let WriteResource =
-    CommandLine.resources.GetString >> Base.Output.Info
+    CommandLine.resources.GetString >> Output.Info
 
   let WriteResourceWithFormatItems s x =
-    String.Format (CultureInfo.CurrentCulture, s |> CommandLine.resources.GetString, x) |> Base.Output.Info
+    String.Format (CultureInfo.CurrentCulture, s |> CommandLine.resources.GetString, x) |> Output.Info
 
   let internal SetRecordToFile report =
       let binpath = report + ".acv"
@@ -179,7 +179,7 @@ module Runner =
       Directory.GetFiles( Path.GetDirectoryName(report),
                           Path.GetFileName(report) + ".*.acv")
       |> Seq.iter (fun f ->
-          sprintf "... %s" f |> Base.Output.Info
+          sprintf "... %s" f |> Output.Info
           use results = new DeflateStream(File.OpenRead f, CompressionMode.Decompress)
           let rec sink() =
             let hit = try

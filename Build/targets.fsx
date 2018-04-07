@@ -25,9 +25,9 @@ let Copyright  = ref String.Empty
 let Version = ref String.Empty
 
 let OpenCoverFilter = "+[AltCove*]* -[*]Microsoft.* -[*]System.* +[*]N.*"
-let AltCoverFilter= @" -s=Adapter -s=Mono -s=\.Recorder -s=Sample -s=nunit -e=Tests -t=System. -t=Sample3\.Class2 "
-let AltCoverFilterX= @" -s=Adapter --s=Mono -s=\.Recorder -s=Sample -s=nunit -t=System\. -t=Sample3\.Class2 "
-let AltCoverFilterG= @" -s=Adapter --s=Mono -s=\.Recorder\.g -s=Sample -s=nunit -e=Tests -t=System. -t=Sample3\.Class2 "
+let AltCoverFilter= @" -t=AltCover\.Output -s=Adapter -s=Mono -s=\.Recorder -s=Sample -s=nunit -e=Tests -t=System. -t=Sample3\.Class2 "
+let AltCoverFilterX= @" -t=AltCover\.Output -s=Adapter --s=Mono -s=\.Recorder -s=Sample -s=nunit -t=System\. -t=Sample3\.Class2 "
+let AltCoverFilterG= @" -t=AltCover\.Output -s=Adapter --s=Mono -s=\.Recorder\.g -s=Sample -s=nunit -e=Tests -t=System. -t=Sample3\.Class2 "
 
 let programFiles = environVar "ProgramFiles"
 let programFiles86 = environVar "ProgramFiles(x86)"
@@ -1385,6 +1385,7 @@ Target "MSBuildTest" ( fun _ ->
     let sample = Path.getFullName "Sample4"
     let x = Path.getFullName "./_Reports/MSBuildTest.xml"
     // Run
+    Shell.CleanDir (sample @@ "_Binaries")
     Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = sample}) "msbuild"
                           (build @@ "msbuildtest.proj")
                           "MSBuildTest"
@@ -1650,6 +1651,10 @@ activateFinal "ResetConsoleColours"
 
 "Unpack"
 ==> "ReleaseXUnitFSharpTypesDotNetFullRunner"
+==> "Deployment"
+
+"Unpack"
+==> "MSBuildTest"
 ==> "Deployment"
 
 "Unpack"

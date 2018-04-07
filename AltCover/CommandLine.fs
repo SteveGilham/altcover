@@ -10,6 +10,13 @@ open System.Resources
 open Augment
 open Mono.Options
 
+[<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage>]
+module Output =
+  let mutable internal Info : (String -> unit) = ignore
+  let mutable internal Echo : (String -> unit) = ignore
+  let mutable internal Error : (String -> unit) = ignore
+  let mutable internal Usage : ((String * obj * obj) -> unit) = ignore
+
 module CommandLine =
 
   let mutable internal help = false
@@ -32,7 +39,7 @@ module CommandLine =
 
   let enquotes = Map.empty |> Map.add "Windows_NT" "\""
 
-  let internal Usage (intro:string) (o1:obj) (o2:obj) =
+  let internal Usage ((intro:string), (o1:obj), (o2:obj)) =
     let options = o1 :?> OptionSet
     let options2 = o2 :?> OptionSet
     WriteColoured Console.Error ConsoleColor.Yellow (fun w ->  w.WriteLine (resources.GetString intro)
@@ -56,7 +63,7 @@ module CommandLine =
                 |> Option.getOrElse String.Empty
     let enquoted = quote + cmd.Trim([| '"'; '\'' |]) + quote
     String.Format(CultureInfo.CurrentCulture, resources.GetString "CommandLine", enquoted, args)
-    |> Base.Output.Info
+    |> Output.Info
 
     let psi = ProcessStartInfo(enquoted,args)
     psi.WorkingDirectory <- toDirectory
@@ -67,8 +74,8 @@ module CommandLine =
     use proc = new Process()
     proc.StartInfo <- psi
 
-    proc.ErrorDataReceived.Add(fun e -> Base.Output.Error e.Data)
-    proc.OutputDataReceived.Add(fun e -> Base.Output.Info e.Data)
+    proc.ErrorDataReceived.Add(fun e -> Output.Error e.Data)
+    proc.OutputDataReceived.Add(fun e -> Output.Info e.Data)
     proc.Start() |> ignore
     proc.BeginErrorReadLine()
     proc.BeginOutputReadLine()
@@ -119,11 +126,11 @@ module CommandLine =
 
   let ReportErrors () =
         error
-        |> List.iter Base.Output.Error
+        |> List.iter Output.Error
 
   let HandleBadArguments arguments intro options1 options =
         String.Join (" ", arguments |> Seq.map (sprintf "%A"))
-        |> Base.Output.Echo
-        Base.Output.Echo String.Empty
+        |> Output.Echo
+        Output.Echo String.Empty
         ReportErrors ()
-        Usage intro options1 options
+        Usage (intro, options1, options)

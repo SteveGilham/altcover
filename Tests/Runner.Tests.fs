@@ -21,7 +21,6 @@ type AltCoverTests() = class
 
   [<Test>]
   member self.JunkUspidGivesNegativeIndex() =
-    Base.Output.Sink 1 2 3
     let key = " "
     let index = Counter.FindIndexFromUspid 0 key
     Assert.That (index, Is.LessThan 0)
@@ -172,7 +171,7 @@ type AltCoverTests() = class
       use stderr = new StringWriter()
       Console.SetError stderr
       let empty = OptionSet()
-      CommandLine.Usage "UsageError" empty options
+      CommandLine.Usage ("UsageError", empty, options)
       let result = stderr.ToString().Replace("\r\n", "\n")
       let expected = """Error - usage is:
 or

@@ -43,43 +43,39 @@ type Prepare () =
 
   member val CommandLine = String.Empty with get, set
 
+  member self.Message x =
+    base.Log.LogMessage (MessageImportance.High, x)
+
   override self.Execute () =
-    try
-     Base.Output.Error <- Console.WriteLine
-     Base.Output.Info <- Console.WriteLine
-     let xx =
-        [
-          Args.Item "-i" self.InputDirectory;
-          Args.Item "-o" self.OutputDirectory;
-          Args.ItemList "-y" self.SymbolDirectories;
-    #if NETCOREAPP2_0
-    #else
-          Args.ItemList "-k" self.Keys;
-          Args.Item "--sn" self.StrongNameKey;
-    #endif
-          Args.Item "-x" self.XmlReport;
-          Args.ItemList "-f" self.FileFilter;
-          Args.ItemList "-s" self.AssemblyFilter;
-          Args.ItemList "-e" self.AssemblyExcludeFilter;
-          Args.ItemList "-t" self.TypeFilter;
-          Args.ItemList "-m" self.MethodFilter;
-          Args.ItemList "-a" self.AttributeFilter;
-          Args.ItemList "-c" self.CallContext;
+    Output.Error <- base.Log.LogError
+    Output.Info <- self.Message
+    [
+      Args.Item "-i" self.InputDirectory;
+      Args.Item "-o" self.OutputDirectory;
+      Args.ItemList "-y" self.SymbolDirectories;
+#if NETCOREAPP2_0
+#else
+      Args.ItemList "-k" self.Keys;
+      Args.Item "--sn" self.StrongNameKey;
+#endif
+      Args.Item "-x" self.XmlReport;
+      Args.ItemList "-f" self.FileFilter;
+      Args.ItemList "-s" self.AssemblyFilter;
+      Args.ItemList "-e" self.AssemblyExcludeFilter;
+      Args.ItemList "-t" self.TypeFilter;
+      Args.ItemList "-m" self.MethodFilter;
+      Args.ItemList "-a" self.AttributeFilter;
+      Args.ItemList "-c" self.CallContext;
 
-          Args.Flag "--opencover" self.OpenCover
-          Args.Flag "--inplace" self.InPlace
-          Args.Flag "--save" self.Save
+      Args.Flag "--opencover" self.OpenCover
+      Args.Flag "--inplace" self.InPlace
+      Args.Flag "--save" self.Save
 
-          Args.Item "--" self.CommandLine;
-        ]
-        |> List.concat
-        |> List.toArray
-        |> AltCover.Main.EffectiveMain
-     printfn "Return code %A" xx
-     xx = 0
-    with
-    | x -> printfn "Threw %A" x
-           reraise ()
+      Args.Item "--" self.CommandLine;
+    ]
+    |> List.concat
+    |> List.toArray
+    |> AltCover.Main.EffectiveMain = 0
 
 type Collect () =
   inherit Task(null)
@@ -90,9 +86,12 @@ type Collect () =
 
   member val CommandLine = String.Empty with get, set
 
+  member self.Message x =
+    base.Log.LogMessage (MessageImportance.High, x)
+
   override self.Execute () =
-    Base.Output.Error <- Console.WriteLine
-    Base.Output.Info <- Console.WriteLine
+    Output.Error <- base.Log.LogError
+    Output.Info <- self.Message
     [
       ["Runner"];
       Args.Item "-r" self.RecorderDirectory;
