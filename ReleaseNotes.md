@@ -7,8 +7,8 @@
 InputDirectory
 OutputDirectory
 SymbolDirectories†
-Keys†
-StrongNameKey
+Keys†⁋
+StrongNameKey⁋
 XmlReport
 FileFilter†
 AssemblyFilter†
@@ -23,7 +23,8 @@ Save‡
 CommandLine = String.Empty with get, set
 ```
 † = array of strings
-‡ = Boolean
+‡ = Boolean, default `true`
+⁋ = Mono/.net Framework build only
 
 and
 ```
@@ -33,7 +34,7 @@ Executable
 
 CommandLine
 ```
-which match the command line arguments, except `SymbolDirectories` is pluralised, and `CommandLine` is everything after a `--`.  `Collect`'s `RecorderDirectory` argument is``[Required]`; and if `Executable` is set, that switches the virtual `--collect` flag off.
+which match the command line arguments, except `SymbolDirectories` is pluralised, and `CommandLine` is everything after a `--`.  `Collect`'s `RecorderDirectory` argument is `[Required]`; and if `Executable` is set, that switches the virtual `--collect` flag off.
 
 
 # 3.0.388 (Caba series release 2)

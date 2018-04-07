@@ -4464,6 +4464,7 @@ type AltCoverTests() = class
                    Is.EquivalentTo expected')
 
     finally
+      Output.Usage ("dummy", OptionSet(), OptionSet())
       Visitor.TrackingNames.Clear()
       Visitor.reportFormat <- None
       Visitor.outputDirectory <- outputSaved
@@ -4723,6 +4724,8 @@ or
                                            "testing 1 2 3"])
 
         Assert.Throws<InvalidOperationException>(fun () -> subject.Message "x") |> ignore
+        Assert.Throws<InvalidOperationException>(fun () -> Output.Info "x") |> ignore
+        Assert.Throws<InvalidOperationException>(fun () -> Output.Error "x") |> ignore
 
     finally
       Main.EffectiveMain <- save
@@ -4763,6 +4766,8 @@ or
                                            "-x"
                                            "dotnet"])
         Assert.Throws<InvalidOperationException>(fun () -> subject.Message "x") |> ignore
+        Assert.Throws<InvalidOperationException>(fun () -> Output.Info "x") |> ignore
+        Assert.Throws<InvalidOperationException>(fun () -> Output.Error "x") |> ignore
     finally
       Main.EffectiveMain <- save
       Output.Info <- fst saved
