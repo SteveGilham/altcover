@@ -2869,12 +2869,15 @@ type AltCoverTests() = class
   member self.OutputCanBeExercised () =
     Assert.That(Output.Usage, Is.Not.Null)
     typeof<Tracer>.Assembly.GetExportedTypes()
-    |> Seq.filter (fun t -> string t = "AltCover.Output")
-    |> Seq.collect (fun t -> t.GetNestedTypes())
-    |> Seq.collect (fun t -> t.GetConstructors())
-    |> Seq.iter (fun c -> let o = c.Invoke(null)
-                          let i = o.GetType().GetMethod("Invoke")
-                          i.Invoke(o, null) |> ignore)
+    |> Seq.filter (fun t -> (string t = "AltCover.Output") || (string t = "AltCover.AltCover"))
+    |> Seq.collect (fun t -> t.GetNestedTypes(BindingFlags.NonPublic))
+    |> Seq.iter (fun t -> let p = t.GetType().GetProperty("DeclaredConstructors")
+                          let c = p.GetValue(t, null) :?> ConstructorInfo[]
+                          let o = (c |> Seq.head).Invoke(null)
+                          try
+                            t.GetMethod("Invoke").Invoke(o, [|null|]) |> ignore
+                          with
+                          | :? TargetInvocationException -> () )
 
   [<Test>]
   member self.NoThrowNoErrorLeavesAllOK () =
