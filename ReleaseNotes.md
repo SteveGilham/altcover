@@ -1,6 +1,40 @@
-# 3.0.4xx (Caba series release 3)
+# 3.0.xxx (Caba series release 3)
 * [BUGFIX] -- malformed filter regexes no longer cause a crash
 * F# auto-properties are omitted from coverage as C# ones have for a long time
+* [BUGFIX] -- errors during the instrumentation or collection phases are actually reported
+* The main AltCover executable also now publishes MSBuild tasks `AltCover.Prepare` and `AltCover.Collect`; the former is the normal mode with `--opencover --save --inplace` as default, the latter is `runner` mode with `--collect` as default.  The full argument lists are
+```
+InputDirectory
+OutputDirectory
+SymbolDirectories†
+Keys†
+StrongNameKey
+XmlReport
+FileFilter†
+AssemblyFilter†
+AssemblyExcludeFilter†
+TypeFilter†
+MethodFilter†
+AttributeFilter†
+CallContext†
+OpenCover‡
+InPlace‡
+Save‡
+CommandLine = String.Empty with get, set
+```
+† = array of strings
+‡ = Boolean
+
+and
+```
+RecorderDirectory
+WorkingDirectory
+Executable
+
+CommandLine
+```
+which match the command line arguments, except `SymbolDirectories` is pluralised, and `CommandLine` is everything after a `--`.  `Collect`'s `RecorderDirectory` argument is``[Required]`; and if `Executable` is set, that switches the virtual `--collect` flag off.
+
 
 # 3.0.388 (Caba series release 2)
 * Improved command line error reporting
