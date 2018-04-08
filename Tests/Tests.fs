@@ -2871,13 +2871,29 @@ type AltCoverTests() = class
     typeof<Tracer>.Assembly.GetExportedTypes()
     |> Seq.filter (fun t -> (string t = "AltCover.Output") || (string t = "AltCover.AltCover"))
     |> Seq.collect (fun t -> t.GetNestedTypes(BindingFlags.NonPublic))
-    |> Seq.iter (fun t -> let p = t.GetType().GetProperty("DeclaredConstructors")
+    |> Seq.iter (fun t -> let tokens = [
+                                            "Info"
+                                            "Echo"
+                                            "Error"
+                                            "Usage"
+                                            "Main"
+                                        ]
+                          let name = t.Name
+                          Assert.That(tokens
+                                      |> List.exists (fun n -> name.StartsWith n),
+                                      name)
+
+                          let p = t.GetType().GetProperty("DeclaredConstructors")
                           let c = p.GetValue(t, null) :?> ConstructorInfo[]
                           let o = (c |> Seq.head).Invoke(null)
-                          try
-                            t.GetMethod("Invoke").Invoke(o, [|null|]) |> ignore
-                          with
-                          | :? TargetInvocationException -> () )
+                          let invoke = t.GetMethod("Invoke")
+                          let param = invoke.GetParameters() |> Seq.head
+
+                          let arg : obj = if param.ParameterType = typeof<String> then
+                                            String.Empty :> obj
+                                          else (String.Empty, OptionSet() :> obj, OptionSet() :> obj) :> obj
+
+                          invoke.Invoke(o, [| arg |]) |> ignore)
 
   [<Test>]
   member self.NoThrowNoErrorLeavesAllOK () =
