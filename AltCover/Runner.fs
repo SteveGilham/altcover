@@ -374,6 +374,71 @@ module Runner =
   let mutable internal GetMonitor = MonitorBase
   let mutable internal DoReport = WriteReportBase
 
+(*
+param ([string]$OpenCoverPath)
+
+$x = [xml](Get-Content $OpenCoverPath)
+$x.CoverageSession.Modules.Module.Files.File | % {
+  Write-Output "TN:"
+  Write-Output "SF:$($_.fullPath)"
+  $uid = $_.uid
+  $p = $_.ParentNode.ParentNode
+  $methods = $p.Classes.Class.Methods.Method | ? { $_.FileRef.uid -eq $uid } 
+  $methods | % {
+    $s = $_.SequencePoints.SequencePoint
+    if ($s) {
+        $l = $s[0].sl
+        if($l) {
+            Write-Output "FN:$l,$($_.Name)"
+        }
+    }
+  }
+
+  $methods | % {
+      $s = $_.SequencePoints.SequencePoint
+      if ($s) {
+        $l = $s[0].sl
+        if($l) {
+            Write-Output "FNDA:$($_.MethodPoint.vc),$($_.Name)"
+        }
+      }
+  }
+
+  Write-Output "FNF:$($Methods.Length)"
+  $hit = $methods | ? { $_.visited -eq "true" }
+  Write-Output "FNH:$($hit.Length)"
+
+  $brf = 0
+  $brh = 0
+  $methods | % {
+      $_.Branchpoints.BranchPoint | % {
+         if ($_.sl) {
+            $brf += 1
+            if ([int]($_.vc)) { $brh += 1 }
+            Write-Output "BRDA:$($_.sl),$($_.offset),$($_.path),$($_.vc)"
+        }
+      }
+  }
+  Write-Output "BRF:$brf"
+  Write-Output "BRH:$brh"
+
+  $lf = 0
+  $lh = 0
+  $methods | % {
+      $_.SequencePoints.SequencePoint | % {
+         if ($_.sl) {
+            $lf += 1
+            if ([int]($_.vc)) { $lh += 1 }
+            Write-Output "DA:$($_.sl),$($_.vc)"
+        }
+      }
+  }
+  Write-Output "LF:$lf"
+  Write-Output "LH:$lh"
+
+  Write-Output "end_of_record"
+}*)
+
   let DoCoverage arguments options1 =
     let check1 = DeclareOptions ()
                  |> CommandLine.ParseCommandLine (arguments |> Array.skip 1)
