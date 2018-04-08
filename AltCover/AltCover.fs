@@ -101,23 +101,29 @@ module Main =
                                                          "--xmlReport",
                                                          x) :: CommandLine.error))
       ("f|fileFilter=",
-       (fun x -> x.Split([|";"|], StringSplitOptions.RemoveEmptyEntries)
-                 |> Seq.iter (Regex >> FilterClass.File >> Visitor.NameFilters.Add)))
+       (fun x -> CommandLine.doPathOperation (fun () ->
+                 x.Split([|";"|], StringSplitOptions.RemoveEmptyEntries)
+                 |> Seq.iter (Regex >> FilterClass.File >> Visitor.NameFilters.Add))()))
       ("s|assemblyFilter=",
-       (fun x -> x.Split([|";"|], StringSplitOptions.RemoveEmptyEntries)
-                 |> Seq.iter (Regex >> FilterClass.Assembly >> Visitor.NameFilters.Add)))
+       (fun x -> CommandLine.doPathOperation (fun () ->
+                 x.Split([|";"|], StringSplitOptions.RemoveEmptyEntries)
+                 |> Seq.iter (Regex >> FilterClass.Assembly >> Visitor.NameFilters.Add))()))
       ("e|assemblyExcludeFilter=",
-       (fun x -> x.Split([|";"|], StringSplitOptions.RemoveEmptyEntries)
-                 |> Seq.iter (Regex >> FilterClass.Module >> Visitor.NameFilters.Add)))
+       (fun x -> CommandLine.doPathOperation (fun () ->
+                 x.Split([|";"|], StringSplitOptions.RemoveEmptyEntries)
+                 |> Seq.iter (Regex >> FilterClass.Module >> Visitor.NameFilters.Add))()))
       ("t|typeFilter=",
-       (fun x -> x.Split([|";"|], StringSplitOptions.RemoveEmptyEntries)
-                 |> Seq.iter (Regex >> FilterClass.Type >> Visitor.NameFilters.Add)))
+       (fun x -> CommandLine.doPathOperation (fun () ->
+                 x.Split([|";"|], StringSplitOptions.RemoveEmptyEntries)
+                 |> Seq.iter (Regex >> FilterClass.Type >> Visitor.NameFilters.Add))()))
       ("m|methodFilter=",
-       (fun x -> x.Split([|";"|], StringSplitOptions.RemoveEmptyEntries)
-                 |> Seq.iter (Regex >> FilterClass.Method >> Visitor.NameFilters.Add)))
+       (fun x -> CommandLine.doPathOperation (fun () ->
+                 x.Split([|";"|], StringSplitOptions.RemoveEmptyEntries)
+                 |> Seq.iter (Regex >> FilterClass.Method >> Visitor.NameFilters.Add))()))
       ("a|attributeFilter=",
-       (fun x -> x.Split([|";"|], StringSplitOptions.RemoveEmptyEntries)
-                 |> Seq.iter (Regex >> FilterClass.Attribute >> Visitor.NameFilters.Add)))
+       (fun x -> CommandLine.doPathOperation (fun () ->
+                 x.Split([|";"|], StringSplitOptions.RemoveEmptyEntries)
+                 |> Seq.iter (Regex >> FilterClass.Attribute >> Visitor.NameFilters.Add))()))
       ("c|callContext=",
        (fun x -> if not (String.IsNullOrWhiteSpace x) then
                    let k = x.Trim()
@@ -181,14 +187,14 @@ module Main =
             CommandLine.error <- CommandLine.resources.GetString "NotInPlace" :: CommandLine.error
 
         CommandLine.doPathOperation(fun () ->
-            if Visitor.inplace && 
+            if Visitor.inplace &&
                CommandLine.error |> List.isEmpty && toDirectory |> Directory.Exists
             then CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
                                                     CommandLine.resources.GetString "SaveExists",
                                                     toDirectory) :: CommandLine.error
 
             if CommandLine.error |> List.isEmpty && toDirectory |> Directory.Exists |> not then
-              CommandLine.WriteOut <| String.Format(CultureInfo.CurrentCulture,
+              Output.Info <| String.Format(CultureInfo.CurrentCulture,
                                                     (CommandLine.resources.GetString "CreateFolder"),
                                                      toDirectory)
               Directory.CreateDirectory(toDirectory) |> ignore) ()
@@ -197,17 +203,17 @@ module Main =
             Left ("UsageError", options)
         else
           if Visitor.inplace then
-            CommandLine.WriteOut <| String.Format(CultureInfo.CurrentCulture,
+            Output.Info <| String.Format(CultureInfo.CurrentCulture,
                                         (CommandLine.resources.GetString "savingto"),
                                         toDirectory)
-            CommandLine.WriteOut <| String.Format(CultureInfo.CurrentCulture,
+            Output.Info <| String.Format(CultureInfo.CurrentCulture,
                                         (CommandLine.resources.GetString "instrumentingin"),
                                         fromDirectory)
           else
-            CommandLine.WriteOut <| String.Format(CultureInfo.CurrentCulture,
+            Output.Info <| String.Format(CultureInfo.CurrentCulture,
                                         (CommandLine.resources.GetString "instrumentingfrom"),
                                         fromDirectory)
-            CommandLine.WriteOut <| String.Format(CultureInfo.CurrentCulture,
+            Output.Info <| String.Format(CultureInfo.CurrentCulture,
                                         (CommandLine.resources.GetString "instrumentingto"),
                                         toDirectory)
           Right (rest,
@@ -225,8 +231,8 @@ module Main =
   let internal PrepareTargetFiles (fromInfo:DirectoryInfo) (toInfo:DirectoryInfo) (sourceInfo:DirectoryInfo) =
     // Copy all the files into the target directory
     let files = fromInfo.GetFiles()
-    files 
-    |> Seq.iter(fun info -> 
+    files
+    |> Seq.iter(fun info ->
            let fullName = info.FullName
            let filename = info.Name
            let copy = Path.Combine (toInfo.FullName, filename)
@@ -256,32 +262,32 @@ module Main =
                  |> ProcessOutputLocation
     match check1 with
     | Left (intro, options) ->
-        String.Join (" ", arguments |> Seq.map (sprintf "%A"))
-        |> CommandLine.WriteErr
-        CommandLine.error
-        |> List.iter CommandLine.WriteErr
-        CommandLine.Usage intro options (Runner.DeclareOptions())
+        CommandLine.HandleBadArguments arguments intro options (Runner.DeclareOptions())
         255
     | Right (rest, fromInfo, toInfo, targetInfo) ->
         let report = Visitor.ReportPath()
-        CommandLine.doPathOperation( fun () ->
-        let (assemblies, assemblyNames) = PrepareTargetFiles fromInfo toInfo targetInfo
-        CommandLine.WriteOut <| String.Format(CultureInfo.CurrentCulture,
-                                         (CommandLine.resources.GetString "reportingto"),
-                                         report)
-        let reporter, document = match Visitor.ReportKind() with
-                                 | ReportFormat.OpenCover -> OpenCover.ReportGenerator ()
-                                 | _ -> Report.ReportGenerator ()
+        let result = CommandLine.doPathOperation( fun () ->
+            let (assemblies, assemblyNames) = PrepareTargetFiles fromInfo toInfo targetInfo
+            Output.Info <| String.Format(CultureInfo.CurrentCulture,
+                                            (CommandLine.resources.GetString "reportingto"),
+                                            report)
+            let reporter, document = match Visitor.ReportKind() with
+                                     | ReportFormat.OpenCover -> OpenCover.ReportGenerator ()
+                                     | _ -> Report.ReportGenerator ()
 
-        let visitors = [ reporter ; Instrument.InstrumentGenerator assemblyNames ]
-        Visitor.Visit visitors (assemblies)
-        document.Save(report)
-        if Visitor.collect then Runner.SetRecordToFile report
+            let visitors = [ reporter ; Instrument.InstrumentGenerator assemblyNames ]
+            Visitor.Visit visitors (assemblies)
+            document.Save(report)
+            if Visitor.collect then Runner.SetRecordToFile report
 
-        CommandLine.ProcessTrailingArguments rest toInfo) 255
+            CommandLine.ProcessTrailingArguments rest toInfo) 255
+        CommandLine.ReportErrors()
+        result
 
-  [<EntryPoint>]
-  let private Main arguments =
+  let internal Main arguments =
     if "Runner".StartsWith(arguments |> Seq.head, StringComparison.OrdinalIgnoreCase)
       then Runner.DoCoverage arguments (DeclareOptions())
       else DoInstrumentation arguments
+
+  // mocking point
+  let mutable internal EffectiveMain = Main

@@ -193,7 +193,9 @@ module Visitor =
   let mutable private MethodNumber : int = 0
 
   let significant (m : MethodDefinition) =
-    [Filter.IsFSharpInternal
+    [
+     (fun _ -> m.HasBody |> not)
+     Filter.IsFSharpInternal
      Filter.IsCSharpAutoProperty
      (fun m -> specialCaseFilters
                |> Seq.exists (Filter.Match m))

@@ -1,3 +1,46 @@
+# 3.0.400 (Caba series release 3)
+* [BUGFIX] -- malformed filter regexes no longer cause a crash, but are reported as normal errors
+* F# auto-properties are now omitted from coverage, just as C# ones are
+* [BUGFIX] -- errors during the instrumentation or collection phases are actually reported
+* The main AltCover assembly also now publishes MSBuild tasks `AltCover.Prepare` and `AltCover.Collect`; the former is the normal mode with `--opencover --save --inplace` as default, the latter is `runner` mode with `--collect` as default.  The full parameter lists are
+```
+InputDirectory
+OutputDirectory
+SymbolDirectories†
+Keys†⁋
+StrongNameKey⁋
+XmlReport
+FileFilter†
+AssemblyFilter†
+AssemblyExcludeFilter†
+TypeFilter†
+MethodFilter†
+AttributeFilter†
+CallContext†
+OpenCover‡
+InPlace‡
+Save‡
+CommandLine
+```
+where these parameters are all optional strings (default empty) except as noted
+† = optional array of strings, default empty
+‡ = Boolean, default `true`
+⁋ = Mono/.net Framework build only
+
+and
+```
+RecorderDirectory⸸
+WorkingDirectory
+Executable
+
+CommandLine
+```
+with all these parameters being optional strings(default empty) except as noted
+⸸ denotes a `[Required]` parameter
+
+The task parameters match the command line arguments in name and function, except that `SymbolDirectories` is pluralised, and `CommandLine` is everything after a `--`.  If `AltCover.Collect`'s `Executable` parameter is set, that switches the virtual `--collect` flag off.
+
+
 # 3.0.388 (Caba series release 2)
 * Improved command line error reporting
 * `--inplace` option to instrument the assemblies in the input directory, having saved them to the output directory first; this avoids the manual copy-back step for `dotnet test` and the like
