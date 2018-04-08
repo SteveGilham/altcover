@@ -29,7 +29,7 @@ module Filter =
                                  attributeProvider.CustomAttributes
                                  |> Seq.cast<CustomAttribute>
                                  |> Seq.exists (fun attr ->
-                                    name.IsMatch attr.Constructor.DeclaringType.FullName)
+                                    name.IsMatch attr.AttributeType.FullName)
                         | _ -> false
 
   let MatchItem<'a>  (name:Regex) (nameProvider:Object) (toName: 'a -> string) =
