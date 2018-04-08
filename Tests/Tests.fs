@@ -2865,6 +2865,35 @@ type AltCoverTests() = class
                  Is.EqualTo(expected.Replace("\r\n","\n")))
 
   // CommandLine.fs
+  [<Test>]
+  member self.OutputCanBeExercised () =
+    Assert.That(Output.Usage, Is.Not.Null)
+    typeof<Tracer>.Assembly.GetExportedTypes()
+    |> Seq.filter (fun t -> (string t = "AltCover.Output") || (string t = "AltCover.AltCover"))
+    |> Seq.collect (fun t -> t.GetNestedTypes(BindingFlags.NonPublic))
+    |> Seq.iter (fun t -> let tokens = [
+                                            "Info"
+                                            "Echo"
+                                            "Error"
+                                            "Usage"
+                                            "Main"
+                                        ]
+                          let name = t.Name
+                          Assert.That(tokens
+                                      |> List.exists (fun n -> name.StartsWith n),
+                                      name)
+
+                          let p = t.GetType().GetProperty("DeclaredConstructors")
+                          let c = p.GetValue(t, null) :?> ConstructorInfo[]
+                          let o = (c |> Seq.head).Invoke(null)
+                          let invoke = t.GetMethod("Invoke")
+                          let param = invoke.GetParameters() |> Seq.head
+
+                          let arg : obj = if param.ParameterType = typeof<String> then
+                                            String.Empty :> obj
+                                          else (String.Empty, OptionSet() :> obj, OptionSet() :> obj) :> obj
+
+                          invoke.Invoke(o, [| arg |]) |> ignore)
 
   [<Test>]
   member self.NoThrowNoErrorLeavesAllOK () =
