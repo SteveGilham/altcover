@@ -113,7 +113,7 @@ Target "Compilation" ignore
 Target "BuildRelease" (fun _ ->
   try
     "AltCover.sln"
-    |> MsBuild.build (fun p ->
+    |> MSBuild.build (fun p ->
             { p with
                 Verbosity = Some MSBuildVerbosity.Normal
                 Properties = [
@@ -137,7 +137,7 @@ Target "BuildDebug" (fun _ ->
     !! "**/AltCove*.sln"  // include demo projects
     |> Seq.filter (fun n -> n.IndexOf(".core.") = -1)
     |> Seq.filter (fun n -> n.IndexOf(".dotnet.") = -1)
-    |> Seq.iter (MsBuild.build (fun p ->
+    |> Seq.iter (MSBuild.build (fun p ->
             { p with
                 Verbosity = Some MSBuildVerbosity.Normal
                 Properties = [
