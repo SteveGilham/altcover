@@ -18,7 +18,8 @@
     <DefineConstants>$(GlobalDefineConstants)</DefineConstants>
     <OutputPath>$(SolutionDir)_Binaries/$(AssemblyName)/$(Configuration)+$(Platform)/</OutputPath>
     <IntermediateOutputPath>$(SolutionDir)_Intermediate/$(AssemblyName)/$(Configuration)+$(Platform)/</IntermediateOutputPath>
-  </PropertyGroup>
+    <OtherFlags>--keyfile:$(SolutionDir)Build\Infrastructure.snk --staticlink:Newtonsoft.Json</OtherFlags>
+</PropertyGroup>
 
   <ItemGroup>
     <Compile Include="..\_Generated\AssemblyVersion.fs" Link="AssemblyVersion.fs" />
@@ -37,6 +38,8 @@
     <Compile Include="CommandLine.fs" />
     <Compile Include="Runner.fs" />
     <Compile Include="AltCover.fs" />
+    <Compile Include="Tasks.fs" />
+    <Compile Include="Main.fs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -45,6 +48,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="15.6.82" />
     <PackageReference Include="Mono.Cecil" Version="0.10.0" />
     <PackageReference Include="Mono.Options" Version="5.3.0.1" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />

@@ -456,7 +456,7 @@ type AltCoverTests() = class
                |> Seq.sort
                |> Seq.toList
 
-    let expected = [  ".ctor" ; "Invoke"; "as_bar"; "bytes"; "get_MyBar" ;
+    let expected = [  ".ctor" ; ".ctor" ; "Invoke"; "as_bar"; "bytes"; "get_MyBar" ;
 #if NETCOREAPP2_0
                       "main";
 #endif
@@ -2865,6 +2865,35 @@ type AltCoverTests() = class
                  Is.EqualTo(expected.Replace("\r\n","\n")))
 
   // CommandLine.fs
+  [<Test>]
+  member self.OutputCanBeExercised () =
+    Assert.That(Output.Usage, Is.Not.Null)
+    typeof<Tracer>.Assembly.GetExportedTypes()
+    |> Seq.filter (fun t -> (string t = "AltCover.Output") || (string t = "AltCover.AltCover"))
+    |> Seq.collect (fun t -> t.GetNestedTypes(BindingFlags.NonPublic))
+    |> Seq.iter (fun t -> let tokens = [
+                                            "Info"
+                                            "Echo"
+                                            "Error"
+                                            "Usage"
+                                            "Main"
+                                        ]
+                          let name = t.Name
+                          Assert.That(tokens
+                                      |> List.exists (fun n -> name.StartsWith n),
+                                      name)
+
+                          let p = t.GetType().GetProperty("DeclaredConstructors")
+                          let c = p.GetValue(t, null) :?> ConstructorInfo[]
+                          let o = (c |> Seq.head).Invoke(null)
+                          let invoke = t.GetMethod("Invoke")
+                          let param = invoke.GetParameters() |> Seq.head
+
+                          let arg : obj = if param.ParameterType = typeof<String> then
+                                            String.Empty :> obj
+                                          else (String.Empty, OptionSet() :> obj, OptionSet() :> obj) :> obj
+
+                          invoke.Invoke(o, [| arg |]) |> ignore)
 
   [<Test>]
   member self.NoThrowNoErrorLeavesAllOK () =
@@ -4043,7 +4072,7 @@ type AltCoverTests() = class
       | Right _ -> Assert.Fail()
       | Left _ -> Assert.That (stdout.ToString(), Is.Empty)
                   Assert.That (stderr.ToString(), Is.Empty)
-                  Assert.That (CommandLine.error, 
+                  Assert.That (CommandLine.error,
                                Is.EquivalentTo ["Output directory for saved files " +
                                                 Visitor.OutputDirectory() +
                                                 " already exists"])
@@ -4051,7 +4080,6 @@ type AltCoverTests() = class
       Visitor.inplace <- false
       Console.SetOut (fst saved)
       Console.SetError (snd saved)
-
 
   [<Test>]
   member self.InPlaceOperationIsAsExpected() =
@@ -4082,7 +4110,7 @@ type AltCoverTests() = class
                            Assert.That (t.FullName, Is.EqualTo there)
                            Assert.That (stdout.ToString().Replace("\r",String.Empty),
                                         Is.EqualTo ("Creating folder " + there +
-                                                    "\nSaving files to " + there + 
+                                                    "\nSaving files to " + there +
                                                     "\nInstrumenting files in " +
                                                     here + "\n"))
                            Assert.That (stderr.ToString(), Is.Empty)
@@ -4226,8 +4254,12 @@ type AltCoverTests() = class
     let reportSaved = Visitor.reportPath
     let keySaved = Visitor.defaultStrongNameKey
     let saved = (Console.Out, Console.Error)
+    let save2 = (Output.Info, Output.Error)
     Visitor.keys.Clear()
     try
+      Output.Error <- CommandLine.WriteErr
+      Output.Info <- CommandLine.WriteOut
+
       use stdout = new StringWriter()
       use stderr = new StringWriter()
       Console.SetOut stdout
@@ -4317,6 +4349,8 @@ type AltCoverTests() = class
       Console.SetOut (fst saved)
       Console.SetError (snd saved)
       Visitor.keys.Clear()
+      Output.Error <- snd save2
+      Output.Info <- fst save2
 #if NETCOREAPP2_0
     Assert.Fail("the NUnit test adapter seems to be working again.  Remove this clause.")
    with  //Cecil 10.0 vs 10.0beta6
@@ -4350,7 +4384,11 @@ type AltCoverTests() = class
     let keySaved = Visitor.defaultStrongNameKey
     let saved = (Console.Out, Console.Error)
     Visitor.keys.Clear()
+    let save2 = (Output.Info, Output.Error)
     try
+      Output.Error <- CommandLine.WriteErr
+      Output.Info <- CommandLine.WriteOut
+
       use stdout = new StringWriter()
       use stderr = new StringWriter()
       Console.SetOut stdout
@@ -4368,6 +4406,7 @@ type AltCoverTests() = class
                     "-s=nunit"
                     "-e=Sample"
                     "-c=[Test]"
+                    "--save"
                  |]
       let result = Main.DoInstrumentation args
       Assert.That (result, Is.EqualTo 0)
@@ -4398,6 +4437,7 @@ type AltCoverTests() = class
 #endif
 
       Assert.That (File.Exists report)
+      Assert.That (File.Exists (report + ".acv"))
       let pdb = Path.ChangeExtension(Assembly.GetExecutingAssembly().Location, ".pdb")
       let isWindows =
 #if NETCOREAPP2_0
@@ -4443,6 +4483,7 @@ type AltCoverTests() = class
                    Is.EquivalentTo expected')
 
     finally
+      Output.Usage ("dummy", OptionSet(), OptionSet())
       Visitor.TrackingNames.Clear()
       Visitor.reportFormat <- None
       Visitor.outputDirectory <- outputSaved
@@ -4453,6 +4494,8 @@ type AltCoverTests() = class
       Console.SetError (snd saved)
       Visitor.keys.Clear()
       Visitor.NameFilters.Clear()
+      Output.Error <- snd save2
+      Output.Info <- fst save2
 
     let before = File.ReadAllText(Path.Combine(input, "Sample2.deps.json"))
     Assert.That(before.IndexOf("AltCover.Recorder.g"), Is.EqualTo -1)
@@ -4493,7 +4536,7 @@ type AltCoverTests() = class
       use stderr = new StringWriter()
       Console.SetError stderr
       let empty = OptionSet()
-      CommandLine.Usage "UsageError" options empty
+      CommandLine.Usage ("UsageError", options, empty)
       let result = stderr.ToString().Replace("\r\n", "\n")
       let expected = """Error - usage is:
   -i, --inputDirectory=VALUE Optional: The folder containing assemblies to
@@ -4571,7 +4614,7 @@ or
       use stderr = new StringWriter()
       Console.SetError stderr
       let unique = Guid.NewGuid().ToString()
-      let main = typeof<Node>.Assembly.GetType("AltCover.Main").GetMethod("Main", BindingFlags.NonPublic ||| BindingFlags.Static)
+      let main = typeof<Node>.Assembly.GetType("AltCover.AltCover").GetMethod("Main", BindingFlags.NonPublic ||| BindingFlags.Static)
       let returnCode = main.Invoke(null, [| [| "-i"; unique |] |])
       Assert.That(returnCode, Is.EqualTo 255)
       let result = stderr.ToString().Replace("\r\n", "\n")
@@ -4658,6 +4701,96 @@ or
 
     finally Console.SetError saved
 
-  // Recorder.fs => Shadow.Tests
+  // Tasks.fs
+  [<Test>]
+  member self.EmptyInstrumentIsJustTheDefaults() =
+    let subject = Prepare()
+    let save = Main.EffectiveMain
+    let mutable args = [| "some junk "|]
+    let saved = (Output.Info, Output.Error)
+    try
+        Main.EffectiveMain <- (fun a -> args <- a
+                                        255)
+        let result = subject.Execute()
+        Assert.That(result, Is.False)
+        Assert.That(args, Is.EquivalentTo ["--opencover"
+                                           "--inplace"
+                                           "--save"])
+    finally
+      Main.EffectiveMain <- save
+      Output.Info <- fst saved
+      Output.Error <- snd saved
 
+  [<Test>]
+  member self.NonDefaultInstrumentIsOK() =
+    let subject = Prepare()
+    let save = Main.EffectiveMain
+    let mutable args = [| "some junk "|]
+    let saved = (Output.Info, Output.Error)
+    try
+        Main.EffectiveMain <- (fun a -> args <- a
+                                        0)
+        subject.OpenCover <- false
+        subject.CommandLine <- "testing 1 2 3"
+        subject.SymbolDirectories <- [| "a"; "b" |]
+        let result = subject.Execute()
+        Assert.That(result, Is.True)
+        Assert.That(args, Is.EquivalentTo ["-y"; "a"
+                                           "-y"; "b"
+                                           "--inplace"
+                                           "--save"
+                                           "--"
+                                           "testing 1 2 3"])
+
+        Assert.Throws<InvalidOperationException>(fun () -> subject.Message "x") |> ignore
+        Assert.Throws<InvalidOperationException>(fun () -> Output.Info "x") |> ignore
+        Assert.Throws<InvalidOperationException>(fun () -> Output.Error "x") |> ignore
+
+    finally
+      Main.EffectiveMain <- save
+      Output.Info <- fst saved
+      Output.Error <- snd saved
+
+  [<Test>]
+  member self.EmptyCollectIsJustTheDefaults() =
+    let subject = Collect()
+    let save = Main.EffectiveMain
+    let mutable args = [| "some junk "|]
+    let saved = (Output.Info, Output.Error)
+    try
+        Main.EffectiveMain <- (fun a -> args <- a
+                                        255)
+        let result = subject.Execute()
+        Assert.That(result, Is.False)
+        Assert.That(args, Is.EquivalentTo ["Runner"
+                                           "--collect"])
+    finally
+      Main.EffectiveMain <- save
+      Output.Info <- fst saved
+      Output.Error <- snd saved
+
+  [<Test>]
+  member self.CollectWithExeIsNotCollecting() =
+    let subject = Collect()
+    let save = Main.EffectiveMain
+    let mutable args = [| "some junk "|]
+    let saved = (Output.Info, Output.Error)
+    try
+        Main.EffectiveMain <- (fun a -> args <- a
+                                        0)
+        subject.Executable <- "dotnet"
+        let result = subject.Execute()
+        Assert.That(result, Is.True)
+        Assert.That(args, Is.EquivalentTo ["Runner"
+                                           "-x"
+                                           "dotnet"])
+        Assert.Throws<InvalidOperationException>(fun () -> subject.Message "x") |> ignore
+        Assert.Throws<InvalidOperationException>(fun () -> Output.Info "x") |> ignore
+        Assert.Throws<InvalidOperationException>(fun () -> Output.Error "x") |> ignore
+    finally
+      Main.EffectiveMain <- save
+      Output.Info <- fst saved
+      Output.Error <- snd saved
+
+  // Recorder.fs => Shadow.Tests
 end

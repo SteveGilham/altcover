@@ -10,6 +10,13 @@ open System.Resources
 open Augment
 open Mono.Options
 
+[<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage>]
+module Output =
+  let mutable internal Info : (String -> unit) = ignore
+  let mutable internal Echo : (String -> unit) = ignore
+  let mutable internal Error : (String -> unit) = ignore
+  let mutable internal Usage : ((String * obj * obj) -> unit) = ignore
+
 module CommandLine =
 
   let mutable internal help = false
@@ -32,7 +39,9 @@ module CommandLine =
 
   let enquotes = Map.empty |> Map.add "Windows_NT" "\""
 
-  let internal Usage (intro:string) (options:OptionSet) (options2:OptionSet) =
+  let internal Usage ((intro:string), (o1:obj), (o2:obj)) =
+    let options = o1 :?> OptionSet
+    let options2 = o2 :?> OptionSet
     WriteColoured Console.Error ConsoleColor.Yellow (fun w ->  w.WriteLine (resources.GetString intro)
                                                                options.WriteOptionDescriptions(w)
                                                                w.WriteLine (resources.GetString "binder")
@@ -54,7 +63,7 @@ module CommandLine =
                 |> Option.getOrElse String.Empty
     let enquoted = quote + cmd.Trim([| '"'; '\'' |]) + quote
     String.Format(CultureInfo.CurrentCulture, resources.GetString "CommandLine", enquoted, args)
-    |> WriteOut
+    |> Output.Info
 
     let psi = ProcessStartInfo(enquoted,args)
     psi.WorkingDirectory <- toDirectory
@@ -65,8 +74,8 @@ module CommandLine =
     use proc = new Process()
     proc.StartInfo <- psi
 
-    proc.ErrorDataReceived.Add(fun e -> WriteErr e.Data)
-    proc.OutputDataReceived.Add(fun e -> WriteOut e.Data)
+    proc.ErrorDataReceived.Add(fun e -> Output.Error e.Data)
+    proc.OutputDataReceived.Add(fun e -> Output.Info e.Data)
     proc.Start() |> ignore
     proc.BeginErrorReadLine()
     proc.BeginOutputReadLine()
@@ -114,3 +123,14 @@ module CommandLine =
         | cmd::t->
            let args = String.Join(" ", (List.toArray t))
            Launch cmd args toInfo.FullName // Spawn process, echoing asynchronously
+
+  let ReportErrors () =
+        error
+        |> List.iter Output.Error
+
+  let HandleBadArguments arguments intro options1 options =
+        String.Join (" ", arguments |> Seq.map (sprintf "%A"))
+        |> Output.Echo
+        Output.Echo String.Empty
+        ReportErrors ()
+        Usage (intro, options1, options)

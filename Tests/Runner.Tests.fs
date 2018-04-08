@@ -171,7 +171,7 @@ type AltCoverTests() = class
       use stderr = new StringWriter()
       Console.SetError stderr
       let empty = OptionSet()
-      CommandLine.Usage "UsageError" empty options
+      CommandLine.Usage ("UsageError", empty, options)
       let result = stderr.ToString().Replace("\r\n", "\n")
       let expected = """Error - usage is:
 or
@@ -730,7 +730,7 @@ or
       use stderr = new StringWriter()
       Console.SetError stderr
       let unique = Guid.NewGuid().ToString()
-      let main = typeof<Tracer>.Assembly.GetType("AltCover.Main").GetMethod("Main", BindingFlags.NonPublic ||| BindingFlags.Static)
+      let main = typeof<Tracer>.Assembly.GetType("AltCover.AltCover").GetMethod("Main", BindingFlags.NonPublic ||| BindingFlags.Static)
       let returnCode = main.Invoke(null, [| [| "RuNN"; "-r"; unique |] |])
       Assert.That(returnCode, Is.EqualTo 255)
       let result = stderr.ToString().Replace("\r\n", "\n")

@@ -59,7 +59,7 @@ nuget Fake.Core.Environment prerelease
 nuget Fake.Core.Process prerelease
 nuget Fake.DotNet.AssemblyInfoFile prerelease
 nuget Fake.DotNet.Cli prerelease
-nuget Fake.DotNet.MsBuild prerelease
+nuget Fake.DotNet.MSBuild prerelease
 nuget Fake.DotNet.NuGet prerelease
 nuget Fake.DotNet.Testing.NUnit prerelease
 nuget Fake.DotNet.Testing.OpenCover prerelease
