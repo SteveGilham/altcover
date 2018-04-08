@@ -1,3 +1,5 @@
+# 3.0.4xx (Caba series release 4)
+
 # 3.0.400 (Caba series release 3)
 * [BUGFIX] -- malformed filter regexes no longer cause a crash, but are reported as normal errors
 * F# auto-properties are now omitted from coverage, just as C# ones are (and have been since before v1.0.101)
