@@ -6,6 +6,7 @@ open System.Globalization
 open System.IO
 open System.IO.Compression
 open System.Xml
+open System.Xml.Linq
 
 open Mono.Cecil
 open Mono.Options
@@ -35,6 +36,140 @@ module Runner =
   let mutable internal workingDirectory : Option<string> = None
   let mutable internal executable : Option<string> ref = ref None
   let mutable internal collect = false
+
+  let LCovSummary (report:XDocument) (tags: string option list) =
+(*
+param ([string]$OpenCoverPath)
+
+$x = [xml](Get-Content $OpenCoverPath)
+$x.CoverageSession.Modules.Module.Files.File | % {
+  Write-Output "TN:"
+  Write-Output "SF:$($_.fullPath)"
+  $uid = $_.uid
+  $p = $_.ParentNode.ParentNode
+  $methods = $p.Classes.Class.Methods.Method | ? { $_.FileRef.uid -eq $uid }
+  $methods | % {
+    $s = $_.SequencePoints.SequencePoint
+    if ($s) {
+        $l = $s[0].sl
+        if($l) {
+            Write-Output "FN:$l,$($_.Name)"
+        }
+    }
+  }
+
+  $methods | % {
+      $s = $_.SequencePoints.SequencePoint
+      if ($s) {
+        $l = $s[0].sl
+        if($l) {
+            Write-Output "FNDA:$($_.MethodPoint.vc),$($_.Name)"
+        }
+      }
+  }
+
+  Write-Output "FNF:$($Methods.Length)"
+  $hit = $methods | ? { $_.visited -eq "true" }
+  Write-Output "FNH:$($hit.Length)"
+
+  $brf = 0
+  $brh = 0
+  $methods | % {
+      $_.Branchpoints.BranchPoint | % {
+         if ($_.sl) {
+            $brf += 1
+            if ([int]($_.vc)) { $brh += 1 }
+            Write-Output "BRDA:$($_.sl),$($_.offset),$($_.path),$($_.vc)"
+        }
+      }
+  }
+  Write-Output "BRF:$brf"
+  Write-Output "BRH:$brh"
+
+  $lf = 0
+  $lh = 0
+  $methods | % {
+      $_.SequencePoints.SequencePoint | % {
+         if ($_.sl) {
+            $lf += 1
+            if ([int]($_.vc)) { $lh += 1 }
+            Write-Output "DA:$($_.sl),$($_.vc)"
+        }
+      }
+  }
+  Write-Output "LF:$lf"
+  Write-Output "LH:$lh"
+
+  Write-Output "end_of_record"
+}
+*)
+    ()
+
+  let StandardSummary (report:XDocument) (tags: string option list) =
+(*
+        private static void CalculateResults(CoverageSession coverageSession, Results results)
+        {
+            foreach (var @class in
+                                from module in coverageSession.Modules.Where(x => x.Classes != null)
+                                from @class in module.Classes.Where(c => !c.ShouldSerializeSkippedDueTo())
+                                select @class)
+            {
+                if (@class.Methods == null)
+                    continue;
+
+                if (!@class.Methods.Any(x => !x.ShouldSerializeSkippedDueTo() && x.SequencePoints.Any(y => y.VisitCount > 0))
+                    && @class.Methods.Any(x => x.FileRef != null))
+                {
+                    results.unvisitedClasses.Add(@class.FullName);
+                }
+
+                if (@class.Methods.Any(x => x.Visited))
+                {
+                    results.altVisitedClasses += 1;
+                    results.altTotalClasses += 1;
+                }
+                else if (@class.Methods.Any())
+                {
+                    results.altTotalClasses += 1;
+                }
+
+                foreach (var method in @class.Methods.Where(x => !x.ShouldSerializeSkippedDueTo()))
+                {
+                    if (method.FileRef != null && !method.SequencePoints.Any(x => x.VisitCount > 0))
+                        results.unvisitedMethods.Add(string.Format("{0}", method.FullName));
+
+                    results.altTotalMethods += 1;
+                    if (method.Visited)
+                    {
+                        results.altVisitedMethods += 1;
+                    }
+                }
+            }
+        }
+
+        private static void DisplayResults(CoverageSession coverageSession, ICommandLine parser, Results results)
+        {
+            if (coverageSession.Summary.NumClasses > 0)
+            {
+                Logger.InfoFormat("Visited Classes {0} of {1} ({2})", coverageSession.Summary.VisitedClasses,
+                                  coverageSession.Summary.NumClasses, Math.Round(coverageSession.Summary.VisitedClasses * 100.0 / coverageSession.Summary.NumClasses, 2));
+                Logger.InfoFormat("Visited Methods {0} of {1} ({2})", coverageSession.Summary.VisitedMethods,
+                                  coverageSession.Summary.NumMethods, Math.Round(coverageSession.Summary.VisitedMethods * 100.0 / coverageSession.Summary.NumMethods, 2));
+                Logger.InfoFormat("Visited Points {0} of {1} ({2})", coverageSession.Summary.VisitedSequencePoints,
+                                  coverageSession.Summary.NumSequencePoints, coverageSession.Summary.SequenceCoverage);
+                Logger.InfoFormat("Visited Branches {0} of {1} ({2})", coverageSession.Summary.VisitedBranchPoints,
+                                  coverageSession.Summary.NumBranchPoints, coverageSession.Summary.BranchCoverage);
+
+                Logger.InfoFormat("");
+                Logger.InfoFormat(
+                    "==== Alternative Results (includes all methods including those without corresponding source) ====");
+                Logger.InfoFormat("Alternative Visited Classes {0} of {1} ({2})", results.altVisitedClasses,
+                                  results.altTotalClasses, results.altTotalClasses == 0 ? 0 : Math.Round(results.altVisitedClasses * 100.0 / results.altTotalClasses, 2));
+                Logger.InfoFormat("Alternative Visited Methods {0} of {1} ({2})", results.altVisitedMethods,
+                                  results.altTotalMethods, results.altTotalMethods == 0 ? 0 : Math.Round(results.altVisitedMethods * 100.0 / results.altTotalMethods, 2));
+
+*)
+    ()
 
   let internal DeclareOptions () =
     [ ("r|recorderDirectory=",
@@ -373,71 +508,26 @@ module Runner =
   let mutable internal GetPayload = PayloadBase
   let mutable internal GetMonitor = MonitorBase
   let mutable internal DoReport = WriteReportBase
+  let mutable internal Summaries = [StandardSummary]
 
-(*
-param ([string]$OpenCoverPath)
+  let DoSummaries (report:string) (format:Base.ReportFormat) =
+    let document = XDocument.Load report
+    let tags = if format = Base.ReportFormat.NCover then [
+                                                           Some "module"
+                                                           Some "method"
+                                                           Some "seqpnt"
+                                                           None
+                                                         ]
+                else
+                                                         [
+                                                           Some "Class"
+                                                           Some "Method"
+                                                           Some "SequencePoint"
+                                                           Some "BranchPoint"
+                                                         ]
 
-$x = [xml](Get-Content $OpenCoverPath)
-$x.CoverageSession.Modules.Module.Files.File | % {
-  Write-Output "TN:"
-  Write-Output "SF:$($_.fullPath)"
-  $uid = $_.uid
-  $p = $_.ParentNode.ParentNode
-  $methods = $p.Classes.Class.Methods.Method | ? { $_.FileRef.uid -eq $uid } 
-  $methods | % {
-    $s = $_.SequencePoints.SequencePoint
-    if ($s) {
-        $l = $s[0].sl
-        if($l) {
-            Write-Output "FN:$l,$($_.Name)"
-        }
-    }
-  }
-
-  $methods | % {
-      $s = $_.SequencePoints.SequencePoint
-      if ($s) {
-        $l = $s[0].sl
-        if($l) {
-            Write-Output "FNDA:$($_.MethodPoint.vc),$($_.Name)"
-        }
-      }
-  }
-
-  Write-Output "FNF:$($Methods.Length)"
-  $hit = $methods | ? { $_.visited -eq "true" }
-  Write-Output "FNH:$($hit.Length)"
-
-  $brf = 0
-  $brh = 0
-  $methods | % {
-      $_.Branchpoints.BranchPoint | % {
-         if ($_.sl) {
-            $brf += 1
-            if ([int]($_.vc)) { $brh += 1 }
-            Write-Output "BRDA:$($_.sl),$($_.offset),$($_.path),$($_.vc)"
-        }
-      }
-  }
-  Write-Output "BRF:$brf"
-  Write-Output "BRH:$brh"
-
-  $lf = 0
-  $lh = 0
-  $methods | % {
-      $_.SequencePoints.SequencePoint | % {
-         if ($_.sl) {
-            $lf += 1
-            if ([int]($_.vc)) { $lh += 1 }
-            Write-Output "DA:$($_.sl),$($_.vc)"
-        }
-      }
-  }
-  Write-Output "LF:$lf"
-  Write-Output "LH:$lh"
-
-  Write-Output "end_of_record"
-}*)
+    Summaries
+    |> List.iter (fun summary -> summary document tags)
 
   let DoCoverage arguments options1 =
     let check1 = DeclareOptions ()
@@ -461,7 +551,8 @@ $x.CoverageSession.Modules.Module.Files.File | % {
 
             let payload = GetPayload
             let result = GetMonitor hits report payload rest
-            let delta = DoReport hits (enum format) report
+            let format' = enum format
+            let delta = DoReport hits format' report
             WriteResourceWithFormatItems "Coverage statistics flushing took {0:N} seconds" [|delta.TotalSeconds|]
 
             // And tidy up after everything's done
@@ -469,6 +560,9 @@ $x.CoverageSession.Modules.Module.Files.File | % {
             Directory.GetFiles( Path.GetDirectoryName(report),
                                 Path.GetFileName(report) + ".*.acv")
             |> Seq.iter File.Delete
+
+            if File.Exists report then
+                DoSummaries report format'
             result                             ) 255
         CommandLine.ReportErrors()
         value
