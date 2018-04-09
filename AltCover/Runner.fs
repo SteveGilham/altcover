@@ -322,9 +322,11 @@ module Runner =
 *)
     ()
 
-  let mutable internal Summaries = [StandardSummary]
+  let mutable internal Summaries : (XDocument -> Base.ReportFormat -> unit) list = []
 
   let internal DeclareOptions () =
+    Summaries <- []
+    Summaries <- StandardSummary :: Summaries
     [ ("r|recorderDirectory=",
        (fun x -> if not (String.IsNullOrWhiteSpace(x)) && Directory.Exists(x) then
                     if Option.isSome recordingDirectory then
