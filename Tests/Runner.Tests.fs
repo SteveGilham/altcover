@@ -1345,4 +1345,46 @@ or
     finally
       Runner.lcov := None
 
+  [<Test>]
+  member self.MultiSortDoesItsThing() =
+    let input = [ ("m", [3; 2; 1])
+                  ("a", [4; 9; 7])
+                  ("z", [3; 5])]
+                |> List.map (fun (x,y) -> (x, y 
+                                              |> List.map (sprintf "<x><seqpnt line=\"%d\" /></x>")
+                                              |> List.map (fun x -> XDocument.Load(new System.IO.StringReader(x)))
+                                              |> List.map (fun x -> x.Descendants(XName.Get "x") |> Seq.head)
+                                              |> List.toSeq))
+                |> List.toSeq
+    let result = Runner.multiSortByLine input
+                 |> Seq.map (fun (f,ms) -> (f, ms
+                                               |> Seq.map (fun m -> m.ToString().Replace("\"","'"))
+                                               |> Seq.toList))
+                 |> Seq.toList
+    Assert.That (result, Is.EquivalentTo [
+                                            ("a", [ """<x>
+  <seqpnt line='4' />
+</x>""" 
+                                                    """<x>
+  <seqpnt line='7' />
+</x>"""
+                                                    """<x>
+  <seqpnt line='9' />
+</x>"""                                           ])
+                                            ("m", [ """<x>
+  <seqpnt line='1' />
+</x>"""
+                                                    """<x>
+  <seqpnt line='2' />
+</x>"""
+                                                    """<x>
+  <seqpnt line='3' />
+</x>"""                                           ])
+                                            ("z", [ """<x>
+  <seqpnt line='3' />
+</x>"""
+                                                    """<x>
+  <seqpnt line='5' />
+</x>"""                                           ]) ])
+    
 end

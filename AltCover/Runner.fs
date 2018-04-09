@@ -42,6 +42,21 @@ module Runner =
     use stream = create()
     action stream
 
+  let X = OpenCover.X
+
+  let lineOfMethod (m : XElement) =
+     (m.Descendants(X "seqpnt") |> Seq.head).Attribute(X "line").Value |> Int32.TryParse |> snd
+
+  let multiSort (by : 'a -> int) (l : (string * 'a seq) seq) =
+    l
+    |> Seq.map (fun (f, ms) -> (f, ms
+                                   |> Seq.sortBy by
+                                   |> Seq.toList))
+    |> Seq.sortBy fst
+
+  let multiSortByLine (l : (string * XElement seq) seq) =
+    multiSort lineOfMethod l
+
   let LCovSummary (report:XDocument) (format:Base.ReportFormat) =
     DoWithFile 
       (fun () -> File.OpenWrite(!lcov |> Option.get))
@@ -52,17 +67,13 @@ module Runner =
         //
         //     TN:<test name>
         writer.WriteLine "TN:"
-        let X = OpenCover.X
 
         match format with
         | Base.ReportFormat.NCover ->
             report.Descendants(X "method")
             |> Seq.filter (fun m -> m.Descendants(X "seqpnt") |> Seq.isEmpty |> not)
             |> Seq.groupBy (fun m -> (m.Descendants(X "seqpnt") |> Seq.head).Attribute(X "document").Value)
-            |> Seq.map (fun (f, ms) -> (f, ms
-                                            |> Seq.sortBy (fun m -> (m.Descendants(X "seqpnt") |> Seq.head).Attribute(X "line").Value |> Int32.TryParse |> snd)
-                                            |> Seq.toList))
-            |> Seq.sortBy (fun (f, _) -> f)
+            |> multiSortByLine
             |> Seq.iter (fun (f, methods) ->
                            // For each source file referenced in the .da file,  there  is  a  section
                            // containing filename and coverage data:
@@ -76,7 +87,7 @@ module Runner =
                            // FN:<line number of function start>,<function name>
                            methods
                            |> Seq.iter (fun m ->
-                                           let l = (m.Descendants(X "seqpnt") |> Seq.head).Attribute(X "line").Value
+                                           let l = (lineOfMethod m).ToString(CultureInfo.InvariantCulture)
                                            let name = m.Attribute(X "fullname").Value
                                            writer.WriteLine ("FN:" + l + "," + name))
 
