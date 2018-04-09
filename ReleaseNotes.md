@@ -1,4 +1,5 @@
 # 3.0.4xx (Caba series release 4)
+* Exclusion by attribute on a class also extends to all nested classes, including invisible ones like lambda expressions and relatives.
 
 # 3.0.400 (Caba series release 3)
 * [BUGFIX] -- malformed filter regexes no longer cause a crash, but are reported as normal errors

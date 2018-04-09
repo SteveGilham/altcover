@@ -233,7 +233,14 @@ module Visitor =
         [x]
         |> Seq.takeWhile (fun _ -> included <> Inspect.Ignore)
         |> Seq.collect(fun x -> x.GetAllTypes() |> Seq.cast)
-        |> Seq.collect ((fun t -> Type (t, UpdateInspection included t)) >> buildSequence)
+        |> Seq.collect ((fun t -> let types = Seq.unfold (fun (state:TypeDefinition) -> 
+                                                             if isNull state
+                                                             then None
+                                                             else Some (state, state.DeclaringType)) t
+                                  let inclusion = Seq.fold UpdateInspection
+                                                           included
+                                                           types
+                                  Type (t, inclusion)) >> buildSequence)
 
   let internal Track (m : MethodDefinition) =
     let name = m.Name
