@@ -1,0 +1,23 @@
+TN:
+SF:altcover\Sample1\Program.cs
+FN:11,System.Void TouchTest.Program::Main(System.String[])
+FNDA:1,System.Void TouchTest.Program::Main(System.String[])
+FNF:1
+FNH:1
+BRDA:13,11,0,1
+BRDA:13,11,1,-
+BRF:2
+BRH:1
+DA:11,1
+DA:12,1
+DA:13,1
+DA:14,1
+DA:15,1
+DA:16,1
+DA:18,0
+DA:19,0
+DA:20,X
+DA:21,-1
+LH:8
+LF:10
+end_of_record

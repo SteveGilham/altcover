@@ -7,6 +7,7 @@ open System.IO.Compression
 open System.Reflection
 open System.Threading
 open System.Xml
+open System.Xml.Linq
 
 open AltCover
 open AltCover.Augment
@@ -1287,5 +1288,61 @@ or
     match result with
     | (0, []) -> ()
     | _ -> Assert.Fail(sprintf "%A" result)
+
+  [<Test>]
+  member self.OpenCoverShouldGeneratePlausibleLcov() =
+    let resource = Assembly.GetExecutingAssembly().GetManifestResourceNames()
+                        |> Seq.find (fun n -> n.EndsWith("Sample1WithOpenCover.xml", StringComparison.Ordinal))
+
+    use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
+
+    let baseline = XDocument.Load(stream)
+    let unique = Path.Combine(Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName,
+                                Guid.NewGuid().ToString() + "/OpenCover.lcov")
+    Runner.lcov := Some unique
+    unique |> Path.GetDirectoryName |>  Directory.CreateDirectory |> ignore
+
+    try
+      Runner.LCovSummary baseline Base.ReportFormat.OpenCover
+
+      let result = File.ReadAllText unique
+
+      let resource2 = Assembly.GetExecutingAssembly().GetManifestResourceNames()
+                        |> Seq.find (fun n -> n.EndsWith("OpenCover.lcov", StringComparison.Ordinal))
+
+      use stream2 = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource2)
+      use reader = new StreamReader(stream2)
+      let expected = reader.ReadToEnd().Replace("\r\n", Environment.NewLine)
+      Assert.That (result, Is.EqualTo expected)
+    finally
+      Runner.lcov := None
+
+  [<Test>]
+  member self.NCoverShouldGeneratePlausibleLcov() =
+    let resource = Assembly.GetExecutingAssembly().GetManifestResourceNames()
+                        |> Seq.find (fun n -> n.EndsWith("SimpleCoverage.xml", StringComparison.Ordinal))
+
+    use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
+
+    let baseline = XDocument.Load(stream)
+    let unique = Path.Combine(Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName,
+                                Guid.NewGuid().ToString() + "/NCover.lcov")
+    Runner.lcov := Some unique
+    unique |> Path.GetDirectoryName |>  Directory.CreateDirectory |> ignore
+
+    try
+      Runner.LCovSummary baseline Base.ReportFormat.NCover
+
+      let result = File.ReadAllText unique
+
+      let resource2 = Assembly.GetExecutingAssembly().GetManifestResourceNames()
+                        |> Seq.find (fun n -> n.EndsWith("NCover.lcov", StringComparison.Ordinal))
+
+      use stream2 = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource2)
+      use reader = new StreamReader(stream2)
+      let expected = reader.ReadToEnd().Replace("\r\n", Environment.NewLine)
+      Assert.That (result, Is.EqualTo expected)
+    finally
+      Runner.lcov := None
 
 end

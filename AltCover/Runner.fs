@@ -41,96 +41,164 @@ module Runner =
   let LCovSummary (report:XDocument) (format:Base.ReportFormat) =
     use stream = File.OpenWrite(!lcov |> Option.get)
     use writer = new StreamWriter(stream)
+    //If available, a tracefile begins with the testname which
+    //   is stored in the following format:
+    //
+    //     TN:<test name>
+    writer.WriteLine "TN:"
+    let X = OpenCover.X
+
     match format with
-    | Base.ReportFormat.NCover -> ()
-(*
-param ([string]$OpenCoverPath)
+    | Base.ReportFormat.NCover ->
+        report.Descendants(X "method")
+        |> Seq.filter (fun m -> m.Descendants(X "seqpnt") |> Seq.isEmpty |> not)
+        |> Seq.groupBy (fun m -> (m.Descendants(X "seqpnt") |> Seq.head).Attribute(X "document").Value)
+        |> Seq.map (fun (f, ms) -> (f, ms
+                                        |> Seq.sortBy (fun m -> (m.Descendants(X "seqpnt") |> Seq.head).Attribute(X "line").Value |> Int32.Parse)
+                                        |> Seq.toList))
+        |> Seq.sortBy (fun (f, _) -> f)
+        |> Seq.iter (fun (f, methods) ->
+                       // For each source file referenced in the .da file,  there  is  a  section
+                       // containing filename and coverage data:
+                       //
+                       //  SF:<absolute path to the source file>
+                       writer.WriteLine ("SF:" + f)
 
-$x = [xml](Get-Content $OpenCoverPath)
-$x.CoverageSession.Modules.Module.Files.File | % {
-  Write-Output "TN:"
-  Write-Output "SF:$($_.fullPath)"
-  $uid = $_.uid
-  $p = $_.ParentNode.ParentNode
-  $methods = $p.Classes.Class.Methods.Method | ? { $_.FileRef.uid -eq $uid }
-  $methods | % {
-    $s = $_.SequencePoints.SequencePoint
-    if ($s) {
-        $l = $s[0].sl
-        if($l) {
-            Write-Output "FN:$l,$($_.Name)"
-            Write-Output "FNDA:$($_.MethodPoint.vc),$($_.Name)"
-        }
-      }
-  }
+                       // Following is a list of line numbers for each function name found in the
+                       // source file:
+                       //
+                       // FN:<line number of function start>,<function name>
+                       methods
+                       |> Seq.iter (fun m ->
+                                       let l = (m.Descendants(X "seqpnt") |> Seq.head).Attribute(X "line").Value
+                                       let name = m.Attribute(X "fullname").Value
+                                       writer.WriteLine ("FN:" + l + "," + name))
 
-  Write-Output "FNF:$($Methods.Length)"
-  $hit = $methods | ? { $_.visited -eq "true" }
-  Write-Output "FNH:$($hit.Length)"
+                       // Next, there is a list of execution counts for each  instrumented  function:
+                       //
+                       // FNDA:<execution count>,<function name>
+                       let hit = methods
+                                 |> Seq.fold (fun n m ->
+                                       let v = (m.Descendants(X "seqpnt") |> Seq.head).Attribute(X "visitcount").Value
+                                       let name = m.Attribute(X "fullname").Value
+                                       writer.WriteLine ("FNDA:" + v + "," + name)
+                                       n + (if v = "0" then 0 else 1)
+                                       ) 0
+                       // This  list  is followed by two lines containing the number of functions
+                       // found and hit:
+                       //
+                       // FNF:<number of functions found>
+                       // FNH:<number of function hit>
+                       writer.WriteLine ("FNF:" + methods.Length.ToString(CultureInfo.InvariantCulture))
+                       writer.WriteLine ("FNH:" + hit.ToString(CultureInfo.InvariantCulture))
 
-  $brf = 0
-  $brh = 0
-  $methods | % {
-      $_.Branchpoints.BranchPoint | % {
-         if ($_.sl) {
-            $brf += 1
-            if ([int]($_.vc)) { $brh += 1 }
-            Write-Output "BRDA:$($_.sl),$($_.offset),$($_.path),$($_.vc)"
-        }
-      }
-  }
-  Write-Output "BRF:$brf"
-  Write-Output "BRH:$brh"
+                       // Branch coverage information is stored which one line per branch:
+                       //
+                       // BRDA:<line number>,<block number>,<branch number>,<taken>
+                       //
+                       // Block number and branch number are gcc internal  IDs  for  the  branch.
+                       // Taken  is either '-' if the basic block containing the branch was never
+                       // executed or a number indicating how often that branch was taken.
 
-  $lf = 0
-  $lh = 0
-  $methods | % {
-      $_.SequencePoints.SequencePoint | % {
-         if ($_.sl) {
-            $lf += 1
-            if ([int]($_.vc)) { $lh += 1 }
-            Write-Output "DA:$($_.sl),$($_.vc)"
-        }
-      }
-  }
-  Write-Output "LF:$lf"
-  Write-Output "LH:$lh"
+                       // Branch coverage summaries are stored in two lines:
+                       //
+                       // BRF:<number of branches found>
+                       // BRH:<number of branches hit>
+                       writer.WriteLine ("BRF:0")
+                       writer.WriteLine ("BRH:0")
 
-  Write-Output "end_of_record"
-}
-*)
+                       // Then there is a list of execution counts  for  each  instrumented  line
+                       // (i.e. a line which resulted in executable code):
+                       //
+                       // DA:<line number>,<execution count>[,<checksum>]
+                       //
+                       // Note  that  there  may be an optional checksum present for each instru‐
+                       // mented line. The current geninfo implementation uses  an  MD5  hash  as
+                       // checksumming algorithm.
+                       let (lf, lh) = methods
+                                           |> Seq.collect (fun m -> m.Descendants(X "seqpnt"))
+                                           |> Seq.filter (fun b -> b.Attribute(X "line").Value |> String.IsNullOrWhiteSpace |> not)
+                                           |> Seq.fold (fun (f,h) b -> let sl = b.Attribute(X "line").Value
+                                                                       let v = b.Attribute(X "visitcount")
+                                                                       let vc = if v |> isNull then "0" else v.Value
+                                                                       writer.WriteLine ("DA:" + sl + "," + vc)
+                                                                       (f+1, h + if vc = "0" then 0 else 1))
+                                                                       (0,0)
+                       // At  the  end of a section, there is a summary about how many lines were
+                       // found and how many were actually instrumented:
+                       //
+                       // LH:<number of lines with a non-zero execution count>
+                       // LF:<number of instrumented lines>
+                       writer.WriteLine ("LH:" + lh.ToString(CultureInfo.InvariantCulture))
+                       writer.WriteLine ("LF:" + lf.ToString(CultureInfo.InvariantCulture))
+
+                       // Each sections ends with:
+                       //
+                       // end_of_record
+                       writer.WriteLine "end_of_record"
+
+                    )
 
     | _ ->
-        let X = OpenCover.X
+        // For each source file referenced in the .da file,  there  is  a  section
+        // containing filename and coverage data:
+        //
+        //  SF:<absolute path to the source file>
+
         report.Descendants(X "File")
         |> Seq.iter (fun f ->
-                       writer.WriteLine "TN:"
                        writer.WriteLine ("SF:" + f.Attribute(X "fullPath").Value)
                        let uid = f.Attribute(X "uid").Value
                        let p = f.Parent.Parent
+
+                       // Following is a list of line numbers for each function name found in the
+                       // source file:
+                       //
+                       // FN:<line number of function start>,<function name>
                        let methods = p.Descendants(X "Method")
                                      |> Seq.filter (fun m -> m.Descendants(X "FileRef")
                                                              |> Seq.exists (fun r -> r.Attribute(X "uid").Value = uid))
                                      |> Seq.toList
                        methods
-                       |> Seq.iter (fun m -> 
+                       |> Seq.iter (fun m ->
                                      m.Descendants(X "SequencePoint") |> Seq.tryHead
                                      |> Option.iter (fun s -> let n = (m.Descendants(X "Name")
                                                                        |> Seq.head).Value
                                                               let mp = m.Descendants(X "MethodPoint") |> Seq.head
                                                               let sl = s.Attribute(X "sl").Value
                                                               if sl |> String.IsNullOrWhiteSpace |> not then
-                                                                  writer.WriteLine ("FN:" + s.Attribute(X "sl").Value + 
-                                                                                    "," + n)
-                                                                  writer.WriteLine ("FNDA:" + mp.Attribute(X "vc").Value + 
-                                                                                    "," + n)
-                                     
-                                     ))
+                                                                  writer.WriteLine ("FN:" + s.Attribute(X "sl").Value +
+                                                                                    "," + n)))
+                       // Next, there is a list of execution counts for each  instrumented  function:
+                       //
+                       // FNDA:<execution count>,<function name>
+                       methods
+                       |> Seq.iter (fun m ->
+                                     m.Descendants(X "SequencePoint") |> Seq.tryHead
+                                     |> Option.iter (fun s -> let n = (m.Descendants(X "Name")
+                                                                       |> Seq.head).Value
+                                                              let mp = m.Descendants(X "MethodPoint") |> Seq.head
+                                                              let sl = s.Attribute(X "sl").Value
+                                                              if sl |> String.IsNullOrWhiteSpace |> not then
+                                                                  writer.WriteLine ("FNDA:" + mp.Attribute(X "vc").Value +
+                                                                                    "," + n)))
+                       // This  list  is followed by two lines containing the number of functions
+                       // found and hit:
+                       //
+                       // FNF:<number of functions found>
+                       // FNH:<number of function hit>
                        writer.WriteLine ("FNF:" + methods.Length.ToString(CultureInfo.InvariantCulture))
-                       let hit = methods 
+                       let hit = methods
                                  |> List.filter (fun m -> m.Attribute(X "visited").Value = "true")
                        writer.WriteLine ("FNH:" + hit.Length.ToString(CultureInfo.InvariantCulture))
 
+                       // Branch coverage information is stored which one line per branch:
+                       //
+                       // BRDA:<line number>,<block number>,<branch number>,<taken>
+                       //
+                       // Block number and branch number are gcc internal  IDs  for  the  branch.
+                       // Taken  is either '-' if the basic block containing the branch was never
+                       // executed or a number indicating how often that branch was taken.
                        let (brf, brh, _) = methods
                                            |> Seq.collect (fun m -> m.Descendants(X "BranchPoint"))
                                            |> Seq.filter (fun b -> b.Attribute(X "sl").Value |> String.IsNullOrWhiteSpace |> not)
@@ -140,13 +208,26 @@ $x.CoverageSession.Modules.Module.Files.File | % {
                                                                              let path = b.Attribute(X "path").Value
                                                                              let vc = b.Attribute(X "vc").Value
                                                                              writer.WriteLine ("BRDA:" + sl + "," +
-                                                                                               (if o = off then u else usp) + 
-                                                                                               "," + path  + "," + vc)
+                                                                                               (if o = off then u else usp) +
+                                                                                               "," + path  + "," +
+                                                                                               (if vc = "0" then "-" else vc))
                                                                              (f+1, h + (if vc = "0" then 0 else 1), if o = off then (o,u) else (off,usp)))
                                                                              (0,0,("?","?"))
+                       // Branch coverage summaries are stored in two lines:
+                       //
+                       // BRF:<number of branches found>
+                       // BRH:<number of branches hit>
                        writer.WriteLine ("BRF:" + brf.ToString(CultureInfo.InvariantCulture))
                        writer.WriteLine ("BRH:" + brh.ToString(CultureInfo.InvariantCulture))
 
+                       // Then there is a list of execution counts  for  each  instrumented  line
+                       // (i.e. a line which resulted in executable code):
+                       //
+                       // DA:<line number>,<execution count>[,<checksum>]
+                       //
+                       // Note  that  there  may be an optional checksum present for each instru‐
+                       // mented line. The current geninfo implementation uses  an  MD5  hash  as
+                       // checksumming algorithm.
                        let (lf, lh) = methods
                                            |> Seq.collect (fun m -> m.Descendants(X "SequencePoint"))
                                            |> Seq.filter (fun b -> b.Attribute(X "sl").Value |> String.IsNullOrWhiteSpace |> not)
@@ -155,11 +236,19 @@ $x.CoverageSession.Modules.Module.Files.File | % {
                                                                        writer.WriteLine ("DA:" + sl + "," + vc)
                                                                        (f+1, h + if vc = "0" then 0 else 1))
                                                                        (0,0)
-                       writer.WriteLine ("LF:" + lf.ToString(CultureInfo.InvariantCulture))
+                       // At  the  end of a section, there is a summary about how many lines were
+                       // found and how many were actually instrumented:
+                       //
+                       // LH:<number of lines with a non-zero execution count>
+                       // LF:<number of instrumented lines>
                        writer.WriteLine ("LH:" + lh.ToString(CultureInfo.InvariantCulture))
+                       writer.WriteLine ("LF:" + lf.ToString(CultureInfo.InvariantCulture))
+
+                       // Each sections ends with:
+                       //
+                       // end_of_record
                        writer.WriteLine "end_of_record"
                        )
-                                                                      
 
     ()
 
