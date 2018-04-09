@@ -13,12 +13,7 @@ open Mono.Options
 open Augment
 
 [<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage>]
-type Covered = { 
-                 Class : string option
-                 Method : string
-                 SeqPnt : string
-                 Branch : string option
-               }
+type Tracer = { Tracer : string }
 
 type TypeBinder (``type``:Type) =
   inherit System.Runtime.Serialization.SerializationBinder()
@@ -43,7 +38,11 @@ module Runner =
   let internal lcov : Option<string> ref = ref None
   let mutable internal collect = false
 
-  let LCovSummary (report:XDocument) (tags: Covered) =
+  let LCovSummary (report:XDocument) (format:Base.ReportFormat) =
+    use stream = File.OpenWrite(!lcov |> Option.get)
+    use writer = new StreamWriter(stream)
+    match format with
+    | Base.ReportFormat.NCover -> ()
 (*
 param ([string]$OpenCoverPath)
 
@@ -60,15 +59,6 @@ $x.CoverageSession.Modules.Module.Files.File | % {
         $l = $s[0].sl
         if($l) {
             Write-Output "FN:$l,$($_.Name)"
-        }
-    }
-  }
-
-  $methods | % {
-      $s = $_.SequencePoints.SequencePoint
-      if ($s) {
-        $l = $s[0].sl
-        if($l) {
             Write-Output "FNDA:$($_.MethodPoint.vc),$($_.Name)"
         }
       }
@@ -109,9 +99,75 @@ $x.CoverageSession.Modules.Module.Files.File | % {
   Write-Output "end_of_record"
 }
 *)
+
+    | _ ->
+        let X = OpenCover.X
+        report.Descendants(X "File")
+        |> Seq.iter (fun f ->
+                       writer.WriteLine "TN:"
+                       writer.WriteLine ("SF:" + f.Attribute(X "fullPath").Value)
+                       let uid = f.Attribute(X "uid").Value
+                       let p = f.Parent.Parent
+                       let methods = p.Descendants(X "Method")
+                                     |> Seq.filter (fun m -> m.Descendants(X "FileRef")
+                                                             |> Seq.exists (fun r -> r.Attribute(X "uid").Value = uid))
+                                     |> Seq.toList
+                       methods
+                       |> Seq.iter (fun m -> 
+                                     m.Descendants(X "SequencePoint") |> Seq.tryHead
+                                     |> Option.iter (fun s -> let n = (m.Descendants(X "Name")
+                                                                       |> Seq.head).Value
+                                                              let mp = m.Descendants(X "MethodPoint") |> Seq.head
+                                                              let sl = s.Attribute(X "sl").Value
+                                                              if sl |> String.IsNullOrWhiteSpace |> not then
+                                                                  writer.WriteLine ("FN:" + s.Attribute(X "sl").Value + 
+                                                                                    "," + n)
+                                                                  writer.WriteLine ("FNDA:" + mp.Attribute(X "vc").Value + 
+                                                                                    "," + n)
+                                     
+                                     ))
+                       writer.WriteLine ("FNF:" + methods.Length.ToString(CultureInfo.InvariantCulture))
+                       let hit = methods 
+                                 |> List.filter (fun m -> m.Attribute(X "visited").Value = "true")
+                       writer.WriteLine ("FNH:" + hit.Length.ToString(CultureInfo.InvariantCulture))
+
+                       let (brf, brh, _) = methods
+                                           |> Seq.collect (fun m -> m.Descendants(X "BranchPoint"))
+                                           |> Seq.filter (fun b -> b.Attribute(X "sl").Value |> String.IsNullOrWhiteSpace |> not)
+                                           |> Seq.fold (fun (f,h,(o,u)) b -> let sl = b.Attribute(X "sl").Value
+                                                                             let off = b.Attribute(X "offset").Value
+                                                                             let usp = b.Attribute(X "uspid").Value
+                                                                             let path = b.Attribute(X "path").Value
+                                                                             let vc = b.Attribute(X "vc").Value
+                                                                             writer.WriteLine ("BRDA:" + sl + "," +
+                                                                                               (if o = off then u else usp) + 
+                                                                                               "," + path  + "," + vc)
+                                                                             (f+1, h + (if vc = "0" then 0 else 1), if o = off then (o,u) else (off,usp)))
+                                                                             (0,0,("?","?"))
+                       writer.WriteLine ("BRF:" + brf.ToString(CultureInfo.InvariantCulture))
+                       writer.WriteLine ("BRH:" + brh.ToString(CultureInfo.InvariantCulture))
+
+                       let (lf, lh) = methods
+                                           |> Seq.collect (fun m -> m.Descendants(X "SequencePoint"))
+                                           |> Seq.filter (fun b -> b.Attribute(X "sl").Value |> String.IsNullOrWhiteSpace |> not)
+                                           |> Seq.fold (fun (f,h) b -> let sl = b.Attribute(X "sl").Value
+                                                                       let vc = b.Attribute(X "vc").Value
+                                                                       writer.WriteLine ("DA:" + sl + "," + vc)
+                                                                       (f+1, h + if vc = "0" then 0 else 1))
+                                                                       (0,0)
+                       writer.WriteLine ("LF:" + lf.ToString(CultureInfo.InvariantCulture))
+                       writer.WriteLine ("LH:" + lh.ToString(CultureInfo.InvariantCulture))
+                       writer.WriteLine "end_of_record"
+                       )
+                                                                      
+
     ()
 
-  let StandardSummary (report:XDocument) (tags: Covered) =
+  let StandardSummary (report:XDocument) (format:Base.ReportFormat) =
+    match format with
+    | Base.ReportFormat.NCover -> ()
+    | _ ->
+
 (*
         private static void CalculateResults(CoverageSession coverageSession, Results results)
         {
@@ -531,22 +587,8 @@ $x.CoverageSession.Modules.Module.Files.File | % {
   let mutable internal DoReport = WriteReportBase
 
   let DoSummaries (document:XDocument) (format:Base.ReportFormat) =
-    let tags = if format = Base.ReportFormat.NCover then {
-                                                           Class = None
-                                                           Method = "method"
-                                                           SeqPnt = "seqpnt"
-                                                           Branch = None
-                                                         }
-                else
-                                                         {
-                                                           Class = Some "Class"
-                                                           Method = "Method"
-                                                           SeqPnt = "SequencePoint"
-                                                           Branch = Some "BranchPoint"
-                                                         }
-
     Summaries
-    |> List.iter (fun summary -> summary document tags)
+    |> List.iter (fun summary -> summary document format)
 
   let DoCoverage arguments options1 =
     let check1 = DeclareOptions ()

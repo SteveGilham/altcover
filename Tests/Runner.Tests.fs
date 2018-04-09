@@ -792,7 +792,7 @@ or
       use stderr = new StringWriter()
       Console.SetError stderr
       let unique = Guid.NewGuid().ToString()
-      let main = typeof<Covered>.Assembly.GetType("AltCover.AltCover").GetMethod("Main", BindingFlags.NonPublic ||| BindingFlags.Static)
+      let main = typeof<Tracer>.Assembly.GetType("AltCover.AltCover").GetMethod("Main", BindingFlags.NonPublic ||| BindingFlags.Static)
       let returnCode = main.Invoke(null, [| [| "RuNN"; "-r"; unique |] |])
       Assert.That(returnCode, Is.EqualTo 255)
       let result = stderr.ToString().Replace("\r\n", "\n")
