@@ -510,8 +510,7 @@ $x.CoverageSession.Modules.Module.Files.File | % {
   let mutable internal DoReport = WriteReportBase
   let mutable internal Summaries = [StandardSummary]
 
-  let DoSummaries (report:string) (format:Base.ReportFormat) =
-    let document = XDocument.Load report
+  let DoSummaries (document:XDocument) (format:Base.ReportFormat) =
     let tags = if format = Base.ReportFormat.NCover then [
                                                            Some "module"
                                                            Some "method"
@@ -561,8 +560,8 @@ $x.CoverageSession.Modules.Module.Files.File | % {
                                 Path.GetFileName(report) + ".*.acv")
             |> Seq.iter File.Delete
 
-            if File.Exists report then
-                DoSummaries report format'
+            let document = if File.Exists report then XDocument.Load report else XDocument()
+            DoSummaries document format'
             result                             ) 255
         CommandLine.ReportErrors()
         value
