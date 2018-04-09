@@ -512,7 +512,7 @@ $x.CoverageSession.Modules.Module.Files.File | % {
 
   let DoSummaries (document:XDocument) (format:Base.ReportFormat) =
     let tags = if format = Base.ReportFormat.NCover then [
-                                                           Some "module"
+                                                           None
                                                            Some "method"
                                                            Some "seqpnt"
                                                            None
