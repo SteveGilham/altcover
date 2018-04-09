@@ -260,4 +260,7 @@ See https://github.com/SteveGilham/altcover/wiki/Usage for full details.
   <data name="SaveExists" xml:space="preserve">
     <value>Output directory for saved files {0} already exists</value>
   </data>
+  <data name="l|lcovReport=" xml:space="preserve">
+    <value>Optional: File for lcov format version of the collected data</value>
+  </data>
 </root>

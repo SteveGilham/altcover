@@ -187,6 +187,8 @@ or
   -x, --executable=VALUE     The executable to run e.g. dotnet
       --collect              Optional: Process previously saved raw coverage
                                data, rather than launching a process.
+  -l, --lcovReport=VALUE     Optional: File for lcov format version of the
+                               collected data
   -?, --help, -h             Prints out the options.
 """
 
@@ -244,7 +246,7 @@ or
   [<Test>]
   member self.ShouldHaveExpectedOptions() =
     let options = Runner.DeclareOptions ()
-    Assert.That (options.Count, Is.EqualTo 6)
+    Assert.That (options.Count, Is.EqualTo 7)
     Assert.That(options |> Seq.filter (fun x -> x.Prototype <> "<>")
                         |> Seq.forall (fun x -> (String.IsNullOrWhiteSpace >> not) x.Description))
     Assert.That (options |> Seq.filter (fun x -> x.Prototype = "<>") |> Seq.length, Is.EqualTo 1)
@@ -522,6 +524,66 @@ or
       Runner.collect <- false
 
   [<Test>]
+  member self.ParsingLcovGivesLcove() =
+    lock Runner.lcov (fun () ->
+    try
+      Runner.lcov := None
+      Runner.Summaries <- [Runner.StandardSummary]
+      let options = Runner.DeclareOptions ()
+      let unique = "some exe"
+      let input = [| "-l"; unique |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Left _ -> Assert.Fail()
+      | Right (x, y) -> Assert.That (y, Is.SameAs options)
+                        Assert.That (x, Is.Empty)
+
+      match !Runner.lcov with
+      | None -> Assert.Fail()
+      | Some x -> Assert.That(Path.GetFileName x, Is.EqualTo unique)
+
+      Assert.That (Runner.Summaries.Length, Is.EqualTo 2)
+    finally
+      Runner.Summaries <- [Runner.StandardSummary]
+      Runner.lcov := None)
+
+  [<Test>]
+  member self.ParsingMultipleLcovGivesFailure() =
+    lock Runner.lcov (fun () ->
+    try
+      Runner.lcov := None
+      Runner.Summaries <- [Runner.StandardSummary]
+      let options = Runner.DeclareOptions ()
+      let unique = Guid.NewGuid().ToString()
+      let input = [| "-l"; unique; "/l"; unique.Replace("-", "+") |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Right _ -> Assert.Fail()
+      | Left (x, y) -> Assert.That (y, Is.SameAs options)
+                       Assert.That (x, Is.EqualTo "UsageError")
+    finally
+      Runner.Summaries <- [Runner.StandardSummary]
+      Runner.lcov := None)
+
+  [<Test>]
+  member self.ParsingNoLcovGivesFailure() =
+    lock Runner.lcov (fun () ->
+    try
+      Runner.lcov := None
+      Runner.Summaries <- [Runner.StandardSummary]
+      let options = Runner.DeclareOptions ()
+      let blank = " "
+      let input = [| "-l"; blank; |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Right _ -> Assert.Fail()
+      | Left (x, y) -> Assert.That (y, Is.SameAs options)
+                       Assert.That (x, Is.EqualTo "UsageError")
+    finally
+      Runner.Summaries <- [Runner.StandardSummary]
+      Runner.lcov := None)
+
+  [<Test>]
   member self.ShouldRequireExe() =
     lock Runner.executable (fun () ->
     try
@@ -730,7 +792,7 @@ or
       use stderr = new StringWriter()
       Console.SetError stderr
       let unique = Guid.NewGuid().ToString()
-      let main = typeof<Tracer>.Assembly.GetType("AltCover.AltCover").GetMethod("Main", BindingFlags.NonPublic ||| BindingFlags.Static)
+      let main = typeof<Covered>.Assembly.GetType("AltCover.AltCover").GetMethod("Main", BindingFlags.NonPublic ||| BindingFlags.Static)
       let returnCode = main.Invoke(null, [| [| "RuNN"; "-r"; unique |] |])
       Assert.That(returnCode, Is.EqualTo 255)
       let result = stderr.ToString().Replace("\r\n", "\n")
@@ -810,6 +872,8 @@ or
   -x, --executable=VALUE     The executable to run e.g. dotnet
       --collect              Optional: Process previously saved raw coverage
                                data, rather than launching a process.
+  -l, --lcovReport=VALUE     Optional: File for lcov format version of the
+                               collected data
   -?, --help, -h             Prints out the options.
 """
 

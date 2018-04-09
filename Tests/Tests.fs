@@ -2872,7 +2872,7 @@ type AltCoverTests() = class
     Output.Echo <- ignore
     Output.Usage <- ignore
     Assert.That(Output.Usage, Is.Not.Null)
-    typeof<Tracer>.Assembly.GetExportedTypes()
+    typeof<Covered>.Assembly.GetExportedTypes()
     |> Seq.filter (fun t -> (string t = "AltCover.Output") || (string t = "AltCover.AltCover"))
     |> Seq.collect (fun t -> t.GetNestedTypes(BindingFlags.NonPublic))
     |> Seq.iter (fun t -> let tokens = [
@@ -4702,6 +4702,8 @@ or
   -x, --executable=VALUE     The executable to run e.g. dotnet
       --collect              Optional: Process previously saved raw coverage
                                data, rather than launching a process.
+  -l, --lcovReport=VALUE     Optional: File for lcov format version of the
+                               collected data
   -?, --help, -h             Prints out the options.
 """
 

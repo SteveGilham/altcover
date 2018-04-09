@@ -13,7 +13,12 @@ open Mono.Options
 open Augment
 
 [<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage>]
-type Tracer = { Tracer : string }
+type Covered = { 
+                 Class : string option
+                 Method : string
+                 SeqPnt : string
+                 Branch : string option
+               }
 
 type TypeBinder (``type``:Type) =
   inherit System.Runtime.Serialization.SerializationBinder()
@@ -34,10 +39,11 @@ module Runner =
 
   let mutable internal recordingDirectory : Option<string> = None
   let mutable internal workingDirectory : Option<string> = None
-  let mutable internal executable : Option<string> ref = ref None
+  let internal executable : Option<string> ref = ref None
+  let internal lcov : Option<string> ref = ref None
   let mutable internal collect = false
 
-  let LCovSummary (report:XDocument) (tags: string option list) =
+  let LCovSummary (report:XDocument) (tags: Covered) =
 (*
 param ([string]$OpenCoverPath)
 
@@ -105,7 +111,7 @@ $x.CoverageSession.Modules.Module.Files.File | % {
 *)
     ()
 
-  let StandardSummary (report:XDocument) (tags: string option list) =
+  let StandardSummary (report:XDocument) (tags: Covered) =
 (*
         private static void CalculateResults(CoverageSession coverageSession, Results results)
         {
@@ -171,6 +177,8 @@ $x.CoverageSession.Modules.Module.Files.File | % {
 *)
     ()
 
+  let mutable internal Summaries = [StandardSummary]
+
   let internal DeclareOptions () =
     [ ("r|recorderDirectory=",
        (fun x -> if not (String.IsNullOrWhiteSpace(x)) && Directory.Exists(x) then
@@ -218,6 +226,19 @@ $x.CoverageSession.Modules.Module.Files.File | % {
 
                   else
                       collect <- true))
+      ("l|lcovReport=",
+       (fun x -> if not (String.IsNullOrWhiteSpace(x)) then
+                    if Option.isSome !lcov then
+                      CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
+                                                         CommandLine.resources.GetString "MultiplesNotAllowed",
+                                                         "--lcovReport") :: CommandLine.error
+                    else
+                      lcov := Some x
+                      Summaries <- LCovSummary :: Summaries
+                 else CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
+                                                         CommandLine.resources.GetString "InvalidValue",
+                                                         "--lcovReport",
+                                                         x) :: CommandLine.error))
       ("?|help|h", (fun x -> CommandLine.help <- not (isNull x)))
       ("<>", (fun x -> CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
                                                          CommandLine.resources.GetString "InvalidValue",
@@ -508,22 +529,21 @@ $x.CoverageSession.Modules.Module.Files.File | % {
   let mutable internal GetPayload = PayloadBase
   let mutable internal GetMonitor = MonitorBase
   let mutable internal DoReport = WriteReportBase
-  let mutable internal Summaries = [StandardSummary]
 
   let DoSummaries (document:XDocument) (format:Base.ReportFormat) =
-    let tags = if format = Base.ReportFormat.NCover then [
-                                                           None
-                                                           Some "method"
-                                                           Some "seqpnt"
-                                                           None
-                                                         ]
+    let tags = if format = Base.ReportFormat.NCover then {
+                                                           Class = None
+                                                           Method = "method"
+                                                           SeqPnt = "seqpnt"
+                                                           Branch = None
+                                                         }
                 else
-                                                         [
-                                                           Some "Class"
-                                                           Some "Method"
-                                                           Some "SequencePoint"
-                                                           Some "BranchPoint"
-                                                         ]
+                                                         {
+                                                           Class = Some "Class"
+                                                           Method = "Method"
+                                                           SeqPnt = "SequencePoint"
+                                                           Branch = Some "BranchPoint"
+                                                         }
 
     Summaries
     |> List.iter (fun summary -> summary document tags)
