@@ -175,8 +175,6 @@ type AltCoverTests() = class
       CommandLine.Usage ("UsageError", empty, options)
       let result = stderr.ToString().Replace("\r\n", "\n")
       let expected = """Error - usage is:
-or
-  Runner
   -r, --recorderDirectory=VALUE
                              The folder containing the instrumented code to
                                monitor (including the AltCover.Recorder.g.dll

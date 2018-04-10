@@ -4607,8 +4607,6 @@ type AltCoverTests() = class
       --save                 Optional: Write raw coverage data to file for
                                later processing
   -?, --help, -h             Prints out the options.
-or
-  Runner
 """
 
       Assert.That (result.Replace("\r\n", "\n"), Is.EqualTo (expected.Replace("\r\n", "\n")))
