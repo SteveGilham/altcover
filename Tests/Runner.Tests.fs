@@ -1377,7 +1377,7 @@ or
       use stream2 = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource2)
       use reader = new StreamReader(stream2)
       let expected = reader.ReadToEnd().Replace("\r\n", Environment.NewLine)
-      Assert.That (result, Is.EqualTo expected)
+      Assert.That (result.Replace("\r\n", Environment.NewLine), Is.EqualTo expected)
     finally
       Runner.lcov := None
 
@@ -1405,7 +1405,7 @@ or
       use stream2 = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource2)
       use reader = new StreamReader(stream2)
       let expected = reader.ReadToEnd().Replace("\r\n", Environment.NewLine)
-      Assert.That (result, Is.EqualTo expected)
+      Assert.That (result.Replace("\r\n", Environment.NewLine), Is.EqualTo expected)
     finally
       Runner.lcov := None
 
@@ -1422,33 +1422,17 @@ or
                 |> List.toSeq
     let result = Runner.multiSortByNameAndStartLine input
                  |> Seq.map (fun (f,ms) -> (f, ms
-                                               |> Seq.map (fun m -> m.ToString().Replace("\"","'"))
+                                               |> Seq.map (fun m -> m.ToString().Replace("\r",String.Empty).Replace("\n",String.Empty).Replace("  <", "<"))
                                                |> Seq.toList))
                  |> Seq.toList
     Assert.That (result, Is.EquivalentTo [
-                                            ("a", [ """<x>
-  <seqpnt line='4' />
-</x>"""
-                                                    """<x>
-  <seqpnt line='7' />
-</x>"""
-                                                    """<x>
-  <seqpnt line='9' />
-</x>"""                                           ])
-                                            ("m", [ """<x>
-  <seqpnt line='1' />
-</x>"""
-                                                    """<x>
-  <seqpnt line='2' />
-</x>"""
-                                                    """<x>
-  <seqpnt line='3' />
-</x>"""                                           ])
-                                            ("z", [ """<x>
-  <seqpnt line='3' />
-</x>"""
-                                                    """<x>
-  <seqpnt line='5' />
-</x>"""                                           ]) ])
+                                            ("a", [ """<x><seqpnt line="4" /></x>"""
+                                                    """<x><seqpnt line="7" /></x>"""
+                                                    """<x><seqpnt line="9" /></x>"""                                           ])
+                                            ("m", [ """<x><seqpnt line="1" /></x>"""
+                                                    """<x><seqpnt line="2" /></x>"""
+                                                    """<x><seqpnt line="3" /></x>"""                                           ])
+                                            ("z", [ """<x><seqpnt line="3" /></x>"""
+                                                    """<x><seqpnt line="5" /></x>""" ]) ])
 
 end

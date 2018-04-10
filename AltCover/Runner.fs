@@ -319,31 +319,7 @@ module Runner =
        summarise vmethods methods.Length "VisitedMethods"
        summarise vpoints points.Length "VisitedPoints"
 
-  let OpenCoverSummary (report:XDocument) =
-
-      let summary = report.Descendants(X "Summary") |> Seq.head
-
-      let summarise visit number precalc key =
-          let vc = summary.Attribute(X visit).Value
-          let nc = summary.Attribute(X number).Value
-          let pc = match precalc with
-                   | None ->
-                      if nc = "0" then "n/a" else
-                                let vc1 = vc |> Int32.TryParse |> snd |> float
-                                let nc1 = nc |> Int32.TryParse |> snd |> float
-                                Math.Round(vc1 * 100.0 / nc1, 2).ToString(CultureInfo.InvariantCulture)
-                   | Some x -> summary.Attribute(X x).Value
-          String.Format(CultureInfo.CurrentCulture,
-                        CommandLine.resources.GetString key,
-                        vc, nc, pc)
-          |> Output.Info
-
-      summarise "visitedClasses" "numClasses" None "VisitedClasses"
-      summarise "visitedMethods" "numMethods" None "VisitedMethods"
-      summarise "visitedSequencePoints" "numSequencePoints" (Some "sequenceCoverage") "VisitedPoints"
-      summarise "visitedBranchPoints" "numBranchPoints" (Some "branchCoverage") "VisitedBranches"
-
-      Output.Info String.Empty
+  let AltSummary (report:XDocument) =
       "Alternative" |> CommandLine.resources.GetString |> Output.Info
 
       let classes = report.Descendants(X "Class")
@@ -376,6 +352,33 @@ module Runner =
                         CommandLine.resources.GetString "AltVM",
                         vm, nm, pm)
       |> Output.Info
+
+  let OpenCoverSummary (report:XDocument) =
+
+      let summary = report.Descendants(X "Summary") |> Seq.head
+
+      let summarise visit number precalc key =
+          let vc = summary.Attribute(X visit).Value
+          let nc = summary.Attribute(X number).Value
+          let pc = match precalc with
+                   | None ->
+                      if nc = "0" then "n/a" else
+                                let vc1 = vc |> Int32.TryParse |> snd |> float
+                                let nc1 = nc |> Int32.TryParse |> snd |> float
+                                Math.Round(vc1 * 100.0 / nc1, 2).ToString(CultureInfo.InvariantCulture)
+                   | Some x -> summary.Attribute(X x).Value
+          String.Format(CultureInfo.CurrentCulture,
+                        CommandLine.resources.GetString key,
+                        vc, nc, pc)
+          |> Output.Info
+
+      summarise "visitedClasses" "numClasses" None "VisitedClasses"
+      summarise "visitedMethods" "numMethods" None "VisitedMethods"
+      summarise "visitedSequencePoints" "numSequencePoints" (Some "sequenceCoverage") "VisitedPoints"
+      summarise "visitedBranchPoints" "numBranchPoints" (Some "branchCoverage") "VisitedBranches"
+
+      Output.Info String.Empty
+      AltSummary report
 
   let StandardSummary (report:XDocument) (format:Base.ReportFormat) =
     report |>
