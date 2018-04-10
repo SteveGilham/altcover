@@ -7,6 +7,7 @@ open System.IO.Compression
 open System.Reflection
 open System.Threading
 open System.Xml
+open System.Xml.Linq
 
 open AltCover
 open AltCover.Augment
@@ -174,8 +175,6 @@ type AltCoverTests() = class
       CommandLine.Usage ("UsageError", empty, options)
       let result = stderr.ToString().Replace("\r\n", "\n")
       let expected = """Error - usage is:
-or
-  Runner
   -r, --recorderDirectory=VALUE
                              The folder containing the instrumented code to
                                monitor (including the AltCover.Recorder.g.dll
@@ -187,6 +186,8 @@ or
   -x, --executable=VALUE     The executable to run e.g. dotnet
       --collect              Optional: Process previously saved raw coverage
                                data, rather than launching a process.
+  -l, --lcovReport=VALUE     Optional: File for lcov format version of the
+                               collected data
   -?, --help, -h             Prints out the options.
 """
 
@@ -210,6 +211,7 @@ or
                   |> Seq.filter (fun x -> x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
                   |> Seq.head
 
+    AltCover.ToConsole()
     let saved = (Console.Out, Console.Error)
     let e0 = Console.Out.Encoding
     let e1 = Console.Error.Encoding
@@ -244,7 +246,7 @@ or
   [<Test>]
   member self.ShouldHaveExpectedOptions() =
     let options = Runner.DeclareOptions ()
-    Assert.That (options.Count, Is.EqualTo 6)
+    Assert.That (options.Count, Is.EqualTo 7)
     Assert.That(options |> Seq.filter (fun x -> x.Prototype <> "<>")
                         |> Seq.forall (fun x -> (String.IsNullOrWhiteSpace >> not) x.Description))
     Assert.That (options |> Seq.filter (fun x -> x.Prototype = "<>") |> Seq.length, Is.EqualTo 1)
@@ -522,6 +524,66 @@ or
       Runner.collect <- false
 
   [<Test>]
+  member self.ParsingLcovGivesLcove() =
+    lock Runner.lcov (fun () ->
+    try
+      Runner.lcov := None
+      Runner.Summaries <- [Runner.StandardSummary]
+      let options = Runner.DeclareOptions ()
+      let unique = "some exe"
+      let input = [| "-l"; unique |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Left _ -> Assert.Fail()
+      | Right (x, y) -> Assert.That (y, Is.SameAs options)
+                        Assert.That (x, Is.Empty)
+
+      match !Runner.lcov with
+      | None -> Assert.Fail()
+      | Some x -> Assert.That(Path.GetFileName x, Is.EqualTo unique)
+
+      Assert.That (Runner.Summaries.Length, Is.EqualTo 2)
+    finally
+      Runner.Summaries <- [Runner.StandardSummary]
+      Runner.lcov := None)
+
+  [<Test>]
+  member self.ParsingMultipleLcovGivesFailure() =
+    lock Runner.lcov (fun () ->
+    try
+      Runner.lcov := None
+      Runner.Summaries <- [Runner.StandardSummary]
+      let options = Runner.DeclareOptions ()
+      let unique = Guid.NewGuid().ToString()
+      let input = [| "-l"; unique; "/l"; unique.Replace("-", "+") |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Right _ -> Assert.Fail()
+      | Left (x, y) -> Assert.That (y, Is.SameAs options)
+                       Assert.That (x, Is.EqualTo "UsageError")
+    finally
+      Runner.Summaries <- [Runner.StandardSummary]
+      Runner.lcov := None)
+
+  [<Test>]
+  member self.ParsingNoLcovGivesFailure() =
+    lock Runner.lcov (fun () ->
+    try
+      Runner.lcov := None
+      Runner.Summaries <- [Runner.StandardSummary]
+      let options = Runner.DeclareOptions ()
+      let blank = " "
+      let input = [| "-l"; blank; |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Right _ -> Assert.Fail()
+      | Left (x, y) -> Assert.That (y, Is.SameAs options)
+                       Assert.That (x, Is.EqualTo "UsageError")
+    finally
+      Runner.Summaries <- [Runner.StandardSummary]
+      Runner.lcov := None)
+
+  [<Test>]
   member self.ShouldRequireExe() =
     lock Runner.executable (fun () ->
     try
@@ -680,6 +742,7 @@ or
                   |> Seq.filter (fun x -> x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
                   |> Seq.head
 
+    AltCover.ToConsole()
     let saved = (Console.Out, Console.Error)
     let e0 = Console.Out.Encoding
     let e1 = Console.Error.Encoding
@@ -810,6 +873,8 @@ or
   -x, --executable=VALUE     The executable to run e.g. dotnet
       --collect              Optional: Process previously saved raw coverage
                                data, rather than launching a process.
+  -l, --lcovReport=VALUE     Optional: File for lcov format version of the
+                               collected data
   -?, --help, -h             Prints out the options.
 """
 
@@ -853,6 +918,7 @@ or
                   |> Seq.filter (fun x -> x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
                   |> Seq.head
 
+    AltCover.ToConsole()
     let saved = (Console.Out, Console.Error)
     Runner.workingDirectory <- Some where
     let e0 = Console.Out.Encoding
@@ -1223,5 +1289,150 @@ or
     match result with
     | (0, []) -> ()
     | _ -> Assert.Fail(sprintf "%A" result)
+
+  [<Test>]
+  member self.EmptyNCoverGeneratesExpectedSummary() =
+    let report = XDocument()
+    let builder = System.Text.StringBuilder()
+    try
+      Output.Info <- (fun s -> builder.Append(s).Append("|") |> ignore)
+      Runner.StandardSummary report Base.ReportFormat.NCover
+      Assert.That (builder.ToString(), Is.EqualTo "Visited Classes 0 of 0 (n/a)|Visited Methods 0 of 0 (n/a)|Visited Points 0 of 0 (n/a)|")
+    finally
+      Output.Info <- ignore
+
+  [<Test>]
+  member self.NCoverShouldGeneratePlausibleSummary() =
+    let resource = Assembly.GetExecutingAssembly().GetManifestResourceNames()
+                        |> Seq.find (fun n -> n.EndsWith("SimpleCoverage.xml", StringComparison.Ordinal))
+
+    use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
+
+    let baseline = XDocument.Load(stream)
+    let builder = System.Text.StringBuilder()
+    try
+      Output.Info <- (fun s -> builder.Append(s).Append("|") |> ignore)
+      Runner.StandardSummary baseline Base.ReportFormat.NCover
+      Assert.That (builder.ToString(), Is.EqualTo "Visited Classes 1 of 1 (100)|Visited Methods 1 of 1 (100)|Visited Points 8 of 10 (80)|")
+    finally
+      Output.Info <- ignore
+
+  [<Test>]
+  member self.EmptyOpenCoverGeneratesExpectedSummary() =
+    let report = XDocument.Load(new System.IO.StringReader("""<CoverageSession>
+  <Summary numSequencePoints="0" visitedSequencePoints="0" numBranchPoints="0" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="0" minCyclomaticComplexity="1" visitedClasses="0" numClasses="0" visitedMethods="0" numMethods="0" />
+</CoverageSession>"""))
+    let builder = System.Text.StringBuilder()
+    try
+        Output.Info <- (fun s -> builder.Append(s).Append("|") |> ignore)
+        Runner.StandardSummary report Base.ReportFormat.OpenCover
+        Assert.That (builder.ToString(), Is.EqualTo ("Visited Classes 0 of 0 (n/a)|Visited Methods 0 of 0 (n/a)|" +
+                                                     "Visited Points 0 of 0 (0)|Visited Branches 0 of 0 (0)||" +
+                                                     "==== Alternative Results (includes all methods including those without corresponding source) ====|" +
+                                                     "Alternative Visited Classes 0 of 0 (n/a)|Alternative Visited Methods 0 of 0 (n/a)|"))
+    finally
+      Output.Info <- ignore
+
+  [<Test>]
+  member self.OpenCoverShouldGeneratePlausibleSummary() =
+    let resource = Assembly.GetExecutingAssembly().GetManifestResourceNames()
+                        |> Seq.find (fun n -> n.EndsWith("Sample1WithOpenCover.xml", StringComparison.Ordinal))
+
+    use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
+
+    let baseline = XDocument.Load(stream)
+    let builder = System.Text.StringBuilder()
+    try
+        Output.Info <- (fun s -> builder.Append(s).Append("|") |> ignore)
+        Runner.StandardSummary baseline Base.ReportFormat.OpenCover
+        Assert.That (builder.ToString(), Is.EqualTo ("Visited Classes 1 of 1 (100)|Visited Methods 1 of 1 (100)|" +
+                                                     "Visited Points 7 of 10 (70)|Visited Branches 2 of 3 (66.67)||" +
+                                                     "==== Alternative Results (includes all methods including those without corresponding source) ====|" +
+                                                     "Alternative Visited Classes 1 of 1 (100)|Alternative Visited Methods 1 of 2 (50)|"))
+    finally
+      Output.Info <- ignore
+
+
+  [<Test>]
+  member self.OpenCoverShouldGeneratePlausibleLcov() =
+    let resource = Assembly.GetExecutingAssembly().GetManifestResourceNames()
+                        |> Seq.find (fun n -> n.EndsWith("Sample1WithOpenCover.xml", StringComparison.Ordinal))
+
+    use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
+
+    let baseline = XDocument.Load(stream)
+    let unique = Path.Combine(Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName,
+                                Guid.NewGuid().ToString() + "/OpenCover.lcov")
+    Runner.lcov := Some unique
+    unique |> Path.GetDirectoryName |>  Directory.CreateDirectory |> ignore
+
+    try
+      Runner.LCovSummary baseline Base.ReportFormat.OpenCover
+
+      let result = File.ReadAllText unique
+
+      let resource2 = Assembly.GetExecutingAssembly().GetManifestResourceNames()
+                        |> Seq.find (fun n -> n.EndsWith("OpenCover.lcov", StringComparison.Ordinal))
+
+      use stream2 = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource2)
+      use reader = new StreamReader(stream2)
+      let expected = reader.ReadToEnd().Replace("\r", String.Empty)
+      Assert.That (result.Replace("\r", String.Empty), Is.EqualTo expected)
+    finally
+      Runner.lcov := None
+
+  [<Test>]
+  member self.NCoverShouldGeneratePlausibleLcov() =
+    let resource = Assembly.GetExecutingAssembly().GetManifestResourceNames()
+                        |> Seq.find (fun n -> n.EndsWith("SimpleCoverage.xml", StringComparison.Ordinal))
+
+    use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
+
+    let baseline = XDocument.Load(stream)
+    let unique = Path.Combine(Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName,
+                                Guid.NewGuid().ToString() + "/NCover.lcov")
+    Runner.lcov := Some unique
+    unique |> Path.GetDirectoryName |>  Directory.CreateDirectory |> ignore
+
+    try
+      Runner.LCovSummary baseline Base.ReportFormat.NCover
+
+      let result = File.ReadAllText unique
+
+      let resource2 = Assembly.GetExecutingAssembly().GetManifestResourceNames()
+                        |> Seq.find (fun n -> n.EndsWith("NCover.lcov", StringComparison.Ordinal))
+
+      use stream2 = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource2)
+      use reader = new StreamReader(stream2)
+      let expected = reader.ReadToEnd().Replace("\r", String.Empty)
+      Assert.That (result.Replace("\r", String.Empty), Is.EqualTo expected)
+    finally
+      Runner.lcov := None
+
+  [<Test>]
+  member self.MultiSortDoesItsThing() =
+    let input = [ ("m", [3; 2; 1])
+                  ("a", [4; 9; 7])
+                  ("z", [3; 5])]
+                |> List.map (fun (x,y) -> (x, y
+                                              |> List.map (sprintf "<x><seqpnt line=\"%d\" /></x>")
+                                              |> List.map (fun x -> XDocument.Load(new System.IO.StringReader(x)))
+                                              |> List.map (fun x -> x.Descendants(XName.Get "x") |> Seq.head)
+                                              |> List.toSeq))
+                |> List.toSeq
+    let result = Runner.multiSortByNameAndStartLine input
+                 |> Seq.map (fun (f,ms) -> (f, ms
+                                               |> Seq.map (fun m -> m.ToString().Replace("\r",String.Empty).Replace("\n",String.Empty).Replace("  <", "<"))
+                                               |> Seq.toList))
+                 |> Seq.toList
+    Assert.That (result, Is.EquivalentTo [
+                                            ("a", [ """<x><seqpnt line="4" /></x>"""
+                                                    """<x><seqpnt line="7" /></x>"""
+                                                    """<x><seqpnt line="9" /></x>"""                                           ])
+                                            ("m", [ """<x><seqpnt line="1" /></x>"""
+                                                    """<x><seqpnt line="2" /></x>"""
+                                                    """<x><seqpnt line="3" /></x>"""                                           ])
+                                            ("z", [ """<x><seqpnt line="3" /></x>"""
+                                                    """<x><seqpnt line="5" /></x>""" ]) ])
 
 end

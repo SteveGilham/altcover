@@ -1,3 +1,8 @@
+# 3.0.404 (Caba series release 4)
+* Exclusion by attribute on a class also extends to all nested classes, including invisible ones like lambda expressions and relatives.
+* Runner mode (and the `AltCover.Collect` task) now outputs coverage summaries (class, method, point and, where available, branch)
+* `-l|lcovReport` option in `runner` mode (parameter `LcovReport` for the `AltCover.Collect` task) to also output the result in lcov format
+
 # 3.0.400 (Caba series release 3)
 * [BUGFIX] -- malformed filter regexes no longer cause a crash, but are reported as normal errors
 * F# auto-properties are now omitted from coverage, just as C# ones are (and have been since before v1.0.101)

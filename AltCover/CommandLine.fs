@@ -4,6 +4,7 @@ open System
 open System.Diagnostics
 open System.Globalization
 open System.IO
+open System.Linq
 open System.Reflection
 open System.Resources
 
@@ -42,10 +43,14 @@ module CommandLine =
   let internal Usage ((intro:string), (o1:obj), (o2:obj)) =
     let options = o1 :?> OptionSet
     let options2 = o2 :?> OptionSet
-    WriteColoured Console.Error ConsoleColor.Yellow (fun w ->  w.WriteLine (resources.GetString intro)
-                                                               options.WriteOptionDescriptions(w)
-                                                               w.WriteLine (resources.GetString "binder")
-                                                               options2.WriteOptionDescriptions(w))
+    WriteColoured Console.Error ConsoleColor.Yellow (fun w ->  if options.Any() || options2.Any() then
+                                                                  w.WriteLine (resources.GetString intro)
+                                                               if options.Any() then
+                                                                 options.WriteOptionDescriptions(w)
+                                                               if options.Any() && options2.Any() then
+                                                                 w.WriteLine (resources.GetString "binder")
+                                                               if options2.Any() then
+                                                                 options2.WriteOptionDescriptions(w))
 
   let internal Write (writer:TextWriter) colour data =
     if not(String.IsNullOrEmpty(data)) then

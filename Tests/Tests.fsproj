@@ -84,6 +84,8 @@
     <EmbeddedResource Include="HandRolledMonoCoverage.xml" />
     <EmbeddedResource Include="Sample1ClassExclusion.xml" />
     <EmbeddedResource Include="Sample1MethodExclusion.xml" />
+    <EmbeddedResource Include="NCover.lcov" />
+    <EmbeddedResource Include="OpenCover.lcov" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Microsoft.Build.Framework" />
