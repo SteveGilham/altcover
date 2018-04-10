@@ -1420,7 +1420,7 @@ or
                                               |> List.map (fun x -> x.Descendants(XName.Get "x") |> Seq.head)
                                               |> List.toSeq))
                 |> List.toSeq
-    let result = Runner.multiSortByLine input
+    let result = Runner.multiSortByNameAndStartLine input
                  |> Seq.map (fun (f,ms) -> (f, ms
                                                |> Seq.map (fun m -> m.ToString().Replace("\"","'"))
                                                |> Seq.toList))

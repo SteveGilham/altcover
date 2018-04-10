@@ -54,7 +54,7 @@ module Runner =
                                    |> Seq.toList))
     |> Seq.sortBy fst
 
-  let multiSortByLine (l : (string * XElement seq) seq) =
+  let multiSortByNameAndStartLine (l : (string * XElement seq) seq) =
     multiSort lineOfMethod l
 
   let LCovSummary (report:XDocument) (format:Base.ReportFormat) =
@@ -73,7 +73,7 @@ module Runner =
             report.Descendants(X "method")
             |> Seq.filter (fun m -> m.Descendants(X "seqpnt") |> Seq.isEmpty |> not)
             |> Seq.groupBy (fun m -> (m.Descendants(X "seqpnt") |> Seq.head).Attribute(X "document").Value)
-            |> multiSortByLine
+            |> multiSortByNameAndStartLine
             |> Seq.iter (fun (f, methods) ->
                            // For each source file referenced in the .da file,  there  is  a  section
                            // containing filename and coverage data:
@@ -276,9 +276,7 @@ module Runner =
                            writer.WriteLine "end_of_record"
                            ))
 
-  let StandardSummary (report:XDocument) (format:Base.ReportFormat) =
-    match format with
-    | Base.ReportFormat.NCover ->
+  let NCoverSummary (report:XDocument) =
        let summarise v n key =
          let pc = if n = 0 then "n/a" else
                   Math.Round((float v) * 100.0 / (float n), 2).ToString(CultureInfo.InvariantCulture)
@@ -321,7 +319,8 @@ module Runner =
        summarise vmethods methods.Length "VisitedMethods"
        summarise vpoints points.Length "VisitedPoints"
 
-    | _ ->
+  let OpenCoverSummary (report:XDocument) =
+
       let summary = report.Descendants(X "Summary") |> Seq.head
 
       let summarise visit number precalc key =
@@ -377,6 +376,12 @@ module Runner =
                         CommandLine.resources.GetString "AltVM",
                         vm, nm, pm)
       |> Output.Info
+
+  let StandardSummary (report:XDocument) (format:Base.ReportFormat) =
+    report |>
+    match format with
+    | Base.ReportFormat.NCover -> NCoverSummary 
+    | _ -> OpenCoverSummary
 
   let mutable internal Summaries : (XDocument -> Base.ReportFormat -> unit) list = []
 
