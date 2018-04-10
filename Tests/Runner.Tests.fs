@@ -1376,8 +1376,8 @@ or
 
       use stream2 = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource2)
       use reader = new StreamReader(stream2)
-      let expected = reader.ReadToEnd().Replace("\r\n", Environment.NewLine)
-      Assert.That (result.Replace("\r\n", Environment.NewLine), Is.EqualTo expected)
+      let expected = reader.ReadToEnd().Replace("\r", String.Empty)
+      Assert.That (result.Replace("\r", String.Empty), Is.EqualTo expected)
     finally
       Runner.lcov := None
 
@@ -1404,8 +1404,8 @@ or
 
       use stream2 = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource2)
       use reader = new StreamReader(stream2)
-      let expected = reader.ReadToEnd().Replace("\r\n", Environment.NewLine)
-      Assert.That (result.Replace("\r\n", Environment.NewLine), Is.EqualTo expected)
+      let expected = reader.ReadToEnd().Replace("\r", String.Empty)
+      Assert.That (result.Replace("\r", String.Empty), Is.EqualTo expected)
     finally
       Runner.lcov := None
 
