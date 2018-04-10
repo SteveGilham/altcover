@@ -29,6 +29,8 @@
     <EmbeddedResource Include="Sample1WithOpenCover.xml" />
     <EmbeddedResource Include="Sample1ClassExclusion.xml" />
     <EmbeddedResource Include="Sample1MethodExclusion.xml" />
+    <EmbeddedResource Include="NCover.lcov" />
+    <EmbeddedResource Include="OpenCover.lcov" />
   </ItemGroup>
 
   <ItemGroup>

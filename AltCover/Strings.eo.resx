@@ -156,7 +156,7 @@
   <data name="HelpText" xml:space="preserve">
     <value>AltCover [/i[nputDirectory]=VALO] [/o[utputDirectory]=VALO] [/y|symbolDirectory=VALO] [/sn|strongNameKey=VALO] [/k[ey]=VALO] [/x[mlReport]=VALO] [/f[ileFilter]=VALO] [/s|assemblyFilter=VALO] [/t|typeFilter=VALO] [/m|methodFilter=VALO] [/a|attributeFilter=VALO] [/c[allContext]=VALO] [--opencover] [--inplace] [--save] [/?|h[elp]] [-- ] [...]
 aŭ
-AltCover Runner [/r[ecordingDirectory]=VALO] [/w[orkingDirectory]=VALO] [/x||executable=VALO] [--collect] [/?|h[elp]] [-- ] [...]
+AltCover Runner [/r[ecordingDirectory]=VALO] [/w[orkingDirectory]=VALO] [/x||executable=VALO] [--collect] [/l[covReport]=VALO] [/?|h[elp]] [-- ] [...]
 Vidu https://github.com/SteveGilham/altcover/wiki/Usage por plenaj detaloj.</value>
   </data>
   <data name="NotInPlace" xml:space="preserve">
@@ -258,5 +258,29 @@ Vidu https://github.com/SteveGilham/altcover/wiki/Usage por plenaj detaloj.</val
   </data>
   <data name="SaveExists" xml:space="preserve">
     <value>Elŝuta dosierujo por konservitaj dosieroj {0} jam ekzistas</value>
+  </data>
+  <data name="l|lcovReport=" xml:space="preserve">
+    <value>Laŭvola: Dosiero por la versio de formato lcov de la datumoj kolektitaj</value>
+  </data>
+  <data name="Alternative" xml:space="preserve">
+    <value>==== Alternativaj Rezultoj (inkluzivas ĉiujn metodojn inkluzive de tiuj sen responda fonto) ====</value>
+  </data>
+  <data name="AltVC" xml:space="preserve">
+    <value>Alternativaj Vizititaj Klasoj {0} de {1} ({2})</value>
+  </data>
+  <data name="AltVM" xml:space="preserve">
+    <value>Alternativaj Vizititaj Metodoj {0} de {1} ({2})</value>
+  </data>
+  <data name="VisitedBranches" xml:space="preserve">
+    <value>Vizititaj Branĉoj {0} de {1} ({2})</value>
+  </data>
+  <data name="VisitedClasses" xml:space="preserve">
+    <value>Vizititaj Klasoj {0} de {1} ({2})</value>
+  </data>
+  <data name="VisitedMethods" xml:space="preserve">
+    <value>Vizititaj Metodoj {0} de {1} ({2})</value>
+  </data>
+  <data name="VisitedPoints" xml:space="preserve">
+    <value>Vizititaj Punktoj {0} de {1} ({2})</value>
   </data>
 </root>

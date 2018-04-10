@@ -2867,6 +2867,10 @@ type AltCoverTests() = class
   // CommandLine.fs
   [<Test>]
   member self.OutputCanBeExercised () =
+    Output.Info <- ignore
+    Output.Error <- ignore
+    Output.Echo <- ignore
+    Output.Usage <- ignore
     Assert.That(Output.Usage, Is.Not.Null)
     typeof<Tracer>.Assembly.GetExportedTypes()
     |> Seq.filter (fun t -> (string t = "AltCover.Output") || (string t = "AltCover.AltCover"))
@@ -2876,7 +2880,7 @@ type AltCoverTests() = class
                                             "Echo"
                                             "Error"
                                             "Usage"
-                                            "Main"
+                                            "ToConsole"
                                         ]
                           let name = t.Name
                           Assert.That(tokens
@@ -3014,6 +3018,7 @@ type AltCoverTests() = class
     let saved = (Console.Out, Console.Error)
     let e0 = Console.Out.Encoding
     let e1 = Console.Error.Encoding
+    AltCover.ToConsole()
     try
       use stdout = { new StringWriter() with override self.Encoding with get() = e0 }
       use stderr = { new StringWriter() with override self.Encoding with get() = e1 }
@@ -3983,6 +3988,7 @@ type AltCoverTests() = class
   member self.OutputToNewPlaceIsOK() =
     let options = Main.DeclareOptions ()
     let saved = (Console.Out, Console.Error)
+    AltCover.ToConsole()
     CommandLine.error <- []
     try
       use stdout = new StringWriter()
@@ -4015,6 +4021,7 @@ type AltCoverTests() = class
   [<Test>]
   member self.OutputToReallyNewPlaceIsOK() =
     let options = Main.DeclareOptions ()
+    AltCover.ToConsole()
     let saved = (Console.Out, Console.Error)
     CommandLine.error <- []
     try
@@ -4194,6 +4201,7 @@ type AltCoverTests() = class
     let saved = (Console.Out, Console.Error)
     let e0 = Console.Out.Encoding
     let e1 = Console.Error.Encoding
+    AltCover.ToConsole()
     try
       use stdout = { new StringWriter() with override self.Encoding with get() = e0 }
       use stderr = { new StringWriter() with override self.Encoding with get() = e1 }
@@ -4599,8 +4607,6 @@ type AltCoverTests() = class
       --save                 Optional: Write raw coverage data to file for
                                later processing
   -?, --help, -h             Prints out the options.
-or
-  Runner
 """
 
       Assert.That (result.Replace("\r\n", "\n"), Is.EqualTo (expected.Replace("\r\n", "\n")))
@@ -4694,6 +4700,8 @@ or
   -x, --executable=VALUE     The executable to run e.g. dotnet
       --collect              Optional: Process previously saved raw coverage
                                data, rather than launching a process.
+  -l, --lcovReport=VALUE     Optional: File for lcov format version of the
+                               collected data
   -?, --help, -h             Prints out the options.
 """
 

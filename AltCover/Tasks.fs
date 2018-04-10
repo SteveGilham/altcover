@@ -83,6 +83,7 @@ type Collect () =
   member val RecorderDirectory = String.Empty with get, set
   member val WorkingDirectory = String.Empty with get, set
   member val Executable = String.Empty with get, set
+  member val LcovReport = String.Empty with get, set
 
   member val CommandLine = String.Empty with get, set
 
@@ -97,6 +98,8 @@ type Collect () =
       Args.Item "-r" self.RecorderDirectory;
       Args.Item "-w" self.WorkingDirectory;
       Args.Item "-x" self.Executable;
+      Args.Item "-l" self.LcovReport;
+
       Args.Flag "--collect" (self.Executable |> String.IsNullOrWhiteSpace)
 
       Args.Item "--" self.CommandLine;
