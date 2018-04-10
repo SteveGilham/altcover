@@ -292,7 +292,7 @@ module Runner =
                      |> Seq.toList
 
        let classes = methods
-                     |> Seq.groupBy (fun m -> m.Attribute(X "class"))
+                     |> Seq.groupBy (fun m -> m.Attribute(X "class").Value)
                      |> Seq.toList
 
        let isVisited (x:XElement) =
