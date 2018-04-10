@@ -263,4 +263,25 @@ See https://github.com/SteveGilham/altcover/wiki/Usage for full details.
   <data name="l|lcovReport=" xml:space="preserve">
     <value>Optional: File for lcov format version of the collected data</value>
   </data>
+  <data name="Alternative" xml:space="preserve">
+    <value>==== Alternative Results (includes all methods including those without corresponding source) ====</value>
+  </data>
+  <data name="AltVC" xml:space="preserve">
+    <value>Alternative Visited Classes {0} of {1} ({2})</value>
+  </data>
+  <data name="AltVM" xml:space="preserve">
+    <value>Alternative Visited Methods {0} of {1} ({2})</value>
+  </data>
+  <data name="VisitedBranches" xml:space="preserve">
+    <value>Visited Branches {0} of {1} ({2})</value>
+  </data>
+  <data name="VisitedClasses" xml:space="preserve">
+    <value>Visited Classes {0} of {1} ({2})</value>
+  </data>
+  <data name="VisitedMethods" xml:space="preserve">
+    <value>Visited Methods {0} of {1} ({2})</value>
+  </data>
+  <data name="VisitedPoints" xml:space="preserve">
+    <value>Visited Points {0} of {1} ({2})</value>
+  </data>
 </root>

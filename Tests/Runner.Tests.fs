@@ -213,6 +213,7 @@ or
                   |> Seq.filter (fun x -> x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
                   |> Seq.head
 
+    AltCover.ToConsole()
     let saved = (Console.Out, Console.Error)
     let e0 = Console.Out.Encoding
     let e1 = Console.Error.Encoding
@@ -743,6 +744,7 @@ or
                   |> Seq.filter (fun x -> x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
                   |> Seq.head
 
+    AltCover.ToConsole()
     let saved = (Console.Out, Console.Error)
     let e0 = Console.Out.Encoding
     let e1 = Console.Error.Encoding
@@ -918,6 +920,7 @@ or
                   |> Seq.filter (fun x -> x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
                   |> Seq.head
 
+    AltCover.ToConsole()
     let saved = (Console.Out, Console.Error)
     Runner.workingDirectory <- Some where
     let e0 = Console.Out.Encoding
@@ -1290,6 +1293,69 @@ or
     | _ -> Assert.Fail(sprintf "%A" result)
 
   [<Test>]
+  member self.EmptyNCoverGeneratesExpectedSummary() =
+    let report = XDocument()
+    let builder = System.Text.StringBuilder()
+    try
+      Output.Info <- (fun s -> builder.Append(s).Append("|") |> ignore)
+      Runner.StandardSummary report Base.ReportFormat.NCover
+      Assert.That (builder.ToString(), Is.EqualTo "Visited Classes 0 of 0 (n/a)|Visited Methods 0 of 0 (n/a)|Visited Points 0 of 0 (n/a)|")
+    finally
+      Output.Info <- ignore
+
+  [<Test>]
+  member self.NCoverShouldGeneratePlausibleSummary() =
+    let resource = Assembly.GetExecutingAssembly().GetManifestResourceNames()
+                        |> Seq.find (fun n -> n.EndsWith("SimpleCoverage.xml", StringComparison.Ordinal))
+
+    use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
+
+    let baseline = XDocument.Load(stream)
+    let builder = System.Text.StringBuilder()
+    try
+      Output.Info <- (fun s -> builder.Append(s).Append("|") |> ignore)
+      Runner.StandardSummary baseline Base.ReportFormat.NCover
+      Assert.That (builder.ToString(), Is.EqualTo "Visited Classes 1 of 1 (100)|Visited Methods 1 of 1 (100)|Visited Points 8 of 10 (80)|")
+    finally
+      Output.Info <- ignore
+
+  [<Test>]
+  member self.EmptyOpenCoverGeneratesExpectedSummary() =
+    let report = XDocument.Load(new System.IO.StringReader("""<CoverageSession>
+  <Summary numSequencePoints="0" visitedSequencePoints="0" numBranchPoints="0" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="0" minCyclomaticComplexity="1" visitedClasses="0" numClasses="0" visitedMethods="0" numMethods="0" />
+</CoverageSession>"""))
+    let builder = System.Text.StringBuilder()
+    try
+        Output.Info <- (fun s -> builder.Append(s).Append("|") |> ignore)
+        Runner.StandardSummary report Base.ReportFormat.OpenCover
+        Assert.That (builder.ToString(), Is.EqualTo ("Visited Classes 0 of 0 (n/a)|Visited Methods 0 of 0 (n/a)|" +
+                                                     "Visited Points 0 of 0 (0)|Visited Branches 0 of 0 (0)||" +
+                                                     "==== Alternative Results (includes all methods including those without corresponding source) ====|" +
+                                                     "Alternative Visited Classes 0 of 0 (n/a)|Alternative Visited Methods 0 of 0 (n/a)|"))
+    finally
+      Output.Info <- ignore
+
+  [<Test>]
+  member self.OpenCoverShouldGeneratePlausibleSummary() =
+    let resource = Assembly.GetExecutingAssembly().GetManifestResourceNames()
+                        |> Seq.find (fun n -> n.EndsWith("Sample1WithOpenCover.xml", StringComparison.Ordinal))
+
+    use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
+
+    let baseline = XDocument.Load(stream)
+    let builder = System.Text.StringBuilder()
+    try
+        Output.Info <- (fun s -> builder.Append(s).Append("|") |> ignore)
+        Runner.StandardSummary baseline Base.ReportFormat.OpenCover
+        Assert.That (builder.ToString(), Is.EqualTo ("Visited Classes 1 of 1 (100)|Visited Methods 1 of 1 (100)|" +
+                                                     "Visited Points 7 of 10 (70)|Visited Branches 2 of 3 (66.67)||" +
+                                                     "==== Alternative Results (includes all methods including those without corresponding source) ====|" +
+                                                     "Alternative Visited Classes 1 of 1 (100)|Alternative Visited Methods 1 of 2 (50)|"))
+    finally
+      Output.Info <- ignore
+
+
+  [<Test>]
   member self.OpenCoverShouldGeneratePlausibleLcov() =
     let resource = Assembly.GetExecutingAssembly().GetManifestResourceNames()
                         |> Seq.find (fun n -> n.EndsWith("Sample1WithOpenCover.xml", StringComparison.Ordinal))
@@ -1350,7 +1416,7 @@ or
     let input = [ ("m", [3; 2; 1])
                   ("a", [4; 9; 7])
                   ("z", [3; 5])]
-                |> List.map (fun (x,y) -> (x, y 
+                |> List.map (fun (x,y) -> (x, y
                                               |> List.map (sprintf "<x><seqpnt line=\"%d\" /></x>")
                                               |> List.map (fun x -> XDocument.Load(new System.IO.StringReader(x)))
                                               |> List.map (fun x -> x.Descendants(XName.Get "x") |> Seq.head)
@@ -1364,7 +1430,7 @@ or
     Assert.That (result, Is.EquivalentTo [
                                             ("a", [ """<x>
   <seqpnt line='4' />
-</x>""" 
+</x>"""
                                                     """<x>
   <seqpnt line='7' />
 </x>"""
@@ -1386,5 +1452,5 @@ or
                                                     """<x>
   <seqpnt line='5' />
 </x>"""                                           ]) ])
-    
+
 end

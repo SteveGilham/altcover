@@ -58,7 +58,7 @@ module Runner =
     multiSort lineOfMethod l
 
   let LCovSummary (report:XDocument) (format:Base.ReportFormat) =
-    DoWithFile 
+    DoWithFile
       (fun () -> File.OpenWrite(!lcov |> Option.get))
       (fun stream ->
         use writer = new StreamWriter(stream)
@@ -276,75 +276,107 @@ module Runner =
                            writer.WriteLine "end_of_record"
                            ))
 
-  let StandardSummary (_:XDocument) (format:Base.ReportFormat) =
+  let StandardSummary (report:XDocument) (format:Base.ReportFormat) =
     match format with
-    | Base.ReportFormat.NCover -> ()
+    | Base.ReportFormat.NCover ->
+       let summarise v n key =
+         let pc = if n = 0 then "n/a" else
+                  Math.Round((float v) * 100.0 / (float n), 2).ToString(CultureInfo.InvariantCulture)
+         String.Format(CultureInfo.CurrentCulture,
+                        CommandLine.resources.GetString key,
+                        v, n, pc)
+         |> Output.Info
+
+       let methods = report.Descendants(X "method")
+                     |> Seq.filter (fun m -> m.Attribute(X "excluded").Value = "false")
+                     |> Seq.toList
+
+       let classes = methods
+                     |> Seq.groupBy (fun m -> m.Attribute(X "class"))
+                     |> Seq.toList
+
+       let isVisited (x:XElement) =
+         let v = x.Attribute(X "visitcount")
+         (v |> isNull |> not) && (v.Value <> "0") 
+
+       let vclasses = classes
+                      |> Seq.filter (fun (_, ms) -> ms
+                                                    |> Seq.exists (fun m -> m.Descendants(X "seqpnt")
+                                                                            |> Seq.exists isVisited))
+                      |> Seq.length
+       let vmethods = methods
+                      |> Seq.filter (fun m -> m.Descendants(X "seqpnt")
+                                              |> Seq.exists isVisited)
+                     |> Seq.length
+
+       let points = report.Descendants(X "seqpnt")
+                     |> Seq.filter (fun m -> m.Attribute(X "excluded").Value = "false")
+                     |> Seq.toList
+
+       let vpoints = points
+                     |> Seq.filter isVisited
+                     |> Seq.length
+
+       summarise vclasses classes.Length "VisitedClasses"
+       summarise vmethods methods.Length "VisitedMethods"
+       summarise vpoints points.Length "VisitedPoints"
+
     | _ ->
+      let summary = report.Descendants(X "Summary") |> Seq.head
 
-(*
-        private static void CalculateResults(CoverageSession coverageSession, Results results)
-        {
-            foreach (var @class in
-                                from module in coverageSession.Modules.Where(x => x.Classes != null)
-                                from @class in module.Classes.Where(c => !c.ShouldSerializeSkippedDueTo())
-                                select @class)
-            {
-                if (@class.Methods == null)
-                    continue;
+      let summarise visit number precalc key =
+          let vc = summary.Attribute(X visit).Value
+          let nc = summary.Attribute(X number).Value
+          let pc = match precalc with
+                   | None ->
+                      if nc = "0" then "n/a" else
+                                let vc1 = vc |> Int32.TryParse |> snd |> float
+                                let nc1 = nc |> Int32.TryParse |> snd |> float
+                                Math.Round(vc1 * 100.0 / nc1, 2).ToString(CultureInfo.InvariantCulture)
+                   | Some x -> summary.Attribute(X x).Value
+          String.Format(CultureInfo.CurrentCulture,
+                        CommandLine.resources.GetString key,
+                        vc, nc, pc)
+          |> Output.Info
 
-                if (!@class.Methods.Any(x => !x.ShouldSerializeSkippedDueTo() && x.SequencePoints.Any(y => y.VisitCount > 0))
-                    && @class.Methods.Any(x => x.FileRef != null))
-                {
-                    results.unvisitedClasses.Add(@class.FullName);
-                }
+      summarise "visitedClasses" "numClasses" None "VisitedClasses"
+      summarise "visitedMethods" "numMethods" None "VisitedMethods"
+      summarise "visitedSequencePoints" "numSequencePoints" (Some "sequenceCoverage") "VisitedPoints"
+      summarise "visitedBranchPoints" "numBranchPoints" (Some "branchCoverage") "VisitedBranches"
 
-                if (@class.Methods.Any(x => x.Visited))
-                {
-                    results.altVisitedClasses += 1;
-                    results.altTotalClasses += 1;
-                }
-                else if (@class.Methods.Any())
-                {
-                    results.altTotalClasses += 1;
-                }
+      Output.Info String.Empty
+      "Alternative" |> CommandLine.resources.GetString |> Output.Info
 
-                foreach (var method in @class.Methods.Where(x => !x.ShouldSerializeSkippedDueTo()))
-                {
-                    if (method.FileRef != null && !method.SequencePoints.Any(x => x.VisitCount > 0))
-                        results.unvisitedMethods.Add(string.Format("{0}", method.FullName));
+      let classes = report.Descendants(X "Class")
+                    |> Seq.filter (fun c -> c.Attribute(X "skippedDueTo") |> isNull )
+                    |> Seq.filter (fun c -> c.Descendants(X "Method") |> Seq.isEmpty |> not)
+                    |> Seq.toList
+      let vclasses = classes
+                     |> Seq.filter (fun c -> c.Descendants(X "Method")
+                                             |> Seq.exists (fun m -> m.Attribute(X "visited").Value = "true"))
+                     |> Seq.length
+      let nc = classes.Length
+      let pc = if nc = 0 then "n/a"
+               else Math.Round((float vclasses) * 100.0 / (float nc), 2).ToString(CultureInfo.InvariantCulture)
+      String.Format(CultureInfo.CurrentCulture,
+                        CommandLine.resources.GetString "AltVC",
+                        vclasses, nc, pc)
+      |> Output.Info
 
-                    results.altTotalMethods += 1;
-                    if (method.Visited)
-                    {
-                        results.altVisitedMethods += 1;
-                    }
-                }
-            }
-        }
-
-        private static void DisplayResults(CoverageSession coverageSession, ICommandLine parser, Results results)
-        {
-            if (coverageSession.Summary.NumClasses > 0)
-            {
-                Logger.InfoFormat("Visited Classes {0} of {1} ({2})", coverageSession.Summary.VisitedClasses,
-                                  coverageSession.Summary.NumClasses, Math.Round(coverageSession.Summary.VisitedClasses * 100.0 / coverageSession.Summary.NumClasses, 2));
-                Logger.InfoFormat("Visited Methods {0} of {1} ({2})", coverageSession.Summary.VisitedMethods,
-                                  coverageSession.Summary.NumMethods, Math.Round(coverageSession.Summary.VisitedMethods * 100.0 / coverageSession.Summary.NumMethods, 2));
-                Logger.InfoFormat("Visited Points {0} of {1} ({2})", coverageSession.Summary.VisitedSequencePoints,
-                                  coverageSession.Summary.NumSequencePoints, coverageSession.Summary.SequenceCoverage);
-                Logger.InfoFormat("Visited Branches {0} of {1} ({2})", coverageSession.Summary.VisitedBranchPoints,
-                                  coverageSession.Summary.NumBranchPoints, coverageSession.Summary.BranchCoverage);
-
-                Logger.InfoFormat("");
-                Logger.InfoFormat(
-                    "==== Alternative Results (includes all methods including those without corresponding source) ====");
-                Logger.InfoFormat("Alternative Visited Classes {0} of {1} ({2})", results.altVisitedClasses,
-                                  results.altTotalClasses, results.altTotalClasses == 0 ? 0 : Math.Round(results.altVisitedClasses * 100.0 / results.altTotalClasses, 2));
-                Logger.InfoFormat("Alternative Visited Methods {0} of {1} ({2})", results.altVisitedMethods,
-                                  results.altTotalMethods, results.altTotalMethods == 0 ? 0 : Math.Round(results.altVisitedMethods * 100.0 / results.altTotalMethods, 2));
-
-*)
-    ()
+      let methods = classes
+                    |> Seq.collect (fun c -> c.Descendants(X "Method"))
+                    |> Seq.filter (fun c -> c.Attribute(X "skippedDueTo") |> isNull)
+                    |> Seq.toList
+      let vm = methods
+               |> Seq.filter (fun m -> m.Attribute(X "visited").Value = "true")
+               |> Seq.length
+      let nm = methods.Length
+      let pm = if nm = 0 then "n/a"
+               else Math.Round((float vm) * 100.0 / (float nm), 2).ToString(CultureInfo.InvariantCulture)
+      String.Format(CultureInfo.CurrentCulture,
+                        CommandLine.resources.GetString "AltVM",
+                        vm, nm, pm)
+      |> Output.Info
 
   let mutable internal Summaries : (XDocument -> Base.ReportFormat -> unit) list = []
 
@@ -487,7 +519,7 @@ module Runner =
     String.Format (CultureInfo.CurrentCulture, s |> CommandLine.resources.GetString, x) |> Output.Info
 
   let internal SetRecordToFile report =
-    DoWithFile (fun () -> 
+    DoWithFile (fun () ->
           let binpath = report + ".acv"
           File.Create(binpath))
           ignore

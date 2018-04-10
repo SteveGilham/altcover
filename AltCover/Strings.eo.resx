@@ -262,4 +262,25 @@ Vidu https://github.com/SteveGilham/altcover/wiki/Usage por plenaj detaloj.</val
   <data name="l|lcovReport=" xml:space="preserve">
     <value>Laŭvola: Dosiero por la versio de formato lcov de la datumoj kolektitaj</value>
   </data>
+  <data name="Alternative" xml:space="preserve">
+    <value>==== Alternativaj Rezultoj (inkluzivas ĉiujn metodojn inkluzive de tiuj sen responda fonto) ====</value>
+  </data>
+  <data name="AltVC" xml:space="preserve">
+    <value>Alternativaj Vizititaj Klasoj {0} de {1} ({2})</value>
+  </data>
+  <data name="AltVM" xml:space="preserve">
+    <value>Alternativaj Vizititaj Metodoj {0} de {1} ({2})</value>
+  </data>
+  <data name="VisitedBranches" xml:space="preserve">
+    <value>Vizititaj Branĉoj {0} de {1} ({2})</value>
+  </data>
+  <data name="VisitedClasses" xml:space="preserve">
+    <value>Vizititaj Klasoj {0} de {1} ({2})</value>
+  </data>
+  <data name="VisitedMethods" xml:space="preserve">
+    <value>Vizititaj Metodoj {0} de {1} ({2})</value>
+  </data>
+  <data name="VisitedPoints" xml:space="preserve">
+    <value>Vizititaj Punktoj {0} de {1} ({2})</value>
+  </data>
 </root>
