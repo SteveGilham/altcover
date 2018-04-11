@@ -500,6 +500,63 @@ type AltCoverTests() = class
 
   // Visitor.fs
 
+  //[<Test>]
+  member self.CSharpNestedMethods() =
+     let sample3 = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Sample5.dll")
+     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly (sample3)
+     let result = def.MainModule.GetAllTypes()
+                    |> Seq.collect(fun t -> t.Methods)
+                    |> Seq.map Visitor.DeclaringMethod
+                    |> Seq.map Option.nullable
+                    |> Seq.map (fun (mo : MethodDefinition option) -> 
+                                    mo |> Option.map (fun m -> m.Name))
+
+     let expected = [
+                     None // System.Int32 Sample5.Class1::F1(System.String)
+                     None // System.Collections.Generic.IEnumerable`1<System.Int32> Sample5.Class1::F2(System.String)
+                     None // System.Threading.Tasks.Task`1<System.String> Sample5.Class1::F3(System.String)
+                     None // System.Void Sample5.Class1::.ctor()
+                     None // System.Int32 Sample5.Class1/Inner::G1(System.String)
+                     None // System.Collections.Generic.IEnumerable`1<System.Int32> Sample5.Class1/Inner::G2(System.String)
+                     None // System.Threading.Tasks.Task`1<System.String> Sample5.Class1/Inner::G3(System.String)
+                     None // System.Void Sample5.Class1/Inner::.ctor()
+                     None // System.Void Sample5.Class1/Inner/<>c__DisplayClass0_0::.ctor()
+                     Some "G1" // System.Int32 Sample5.Class1/Inner/<>c__DisplayClass0_0::<G1>b__1(System.Char)
+                     Some "G1" // System.Int32 Sample5.Class1/Inner/<>c__DisplayClass0_0::<G1>b__2(System.Char)
+                     None // System.Void Sample5.Class1/Inner/<>c::.cctor()
+                     None // System.Void Sample5.Class1/Inner/<>c::.ctor()
+                     Some "G1" // System.Int32 Sample5.Class1/Inner/<>c::<G1>b__0_0(System.Char)
+                     Some "G2" // System.Void Sample5.Class1/Inner/<G2>d__1::.ctor(System.Int32)
+                     Some "G2" // System.Void Sample5.Class1/Inner/<G2>d__1::System.IDisposable.Dispose()
+                     Some "G2" // System.Boolean Sample5.Class1/Inner/<G2>d__1::MoveNext()
+                     Some "G2" // System.Int32 Sample5.Class1/Inner/<G2>d__1::System.Collections.Generic.IEnumerator<System.Int32>.get_Current()
+                     Some "G2" // System.Void Sample5.Class1/Inner/<G2>d__1::System.Collections.IEnumerator.Reset()
+                     Some "G2" // System.Object Sample5.Class1/Inner/<G2>d__1::System.Collections.IEnumerator.get_Current()
+                     Some "G2" // System.Collections.Generic.IEnumerator`1<System.Int32> Sample5.Class1/Inner/<G2>d__1::System.Collections.Generic.IEnumerable<System.Int32>.GetEnumerator()
+                     Some "G2" // System.Collections.IEnumerator Sample5.Class1/Inner/<G2>d__1::System.Collections.IEnumerable.GetEnumerator()
+                     Some "G3" // System.Void Sample5.Class1/Inner/<G3>d__2::.ctor()
+                     Some "G3" // System.Void Sample5.Class1/Inner/<G3>d__2::MoveNext()
+                     Some "G3" // System.Void Sample5.Class1/Inner/<G3>d__2::SetStateMachine(System.Runtime.CompilerServices.IAsyncStateMachine)
+                     None // System.Void Sample5.Class1/<>c__DisplayClass0_0::.ctor()
+                     Some "F1" // System.Int32 Sample5.Class1/<>c__DisplayClass0_0::<F1>b__1(System.Char)
+                     Some "F1" // System.Int32 Sample5.Class1/<>c__DisplayClass0_0::<F1>b__2(System.Char)
+                     None // System.Void Sample5.Class1/<>c::.cctor()
+                     None // System.Void Sample5.Class1/<>c::.ctor()
+                     Some "F1" // System.Int32 Sample5.Class1/<>c::<F1>b__0_0(System.Char)
+                     Some "F2" // System.Void Sample5.Class1/<F2>d__1::.ctor(System.Int32)
+                     Some "F2" // System.Void Sample5.Class1/<F2>d__1::System.IDisposable.Dispose()
+                     Some "F2" // System.Boolean Sample5.Class1/<F2>d__1::MoveNext()
+                     Some "F2" // System.Int32 Sample5.Class1/<F2>d__1::System.Collections.Generic.IEnumerator<System.Int32>.get_Current()
+                     Some "F2" // System.Void Sample5.Class1/<F2>d__1::System.Collections.IEnumerator.Reset()
+                     Some "F2" // System.Object Sample5.Class1/<F2>d__1::System.Collections.IEnumerator.get_Current()
+                     Some "F2" // System.Collections.Generic.IEnumerator`1<System.Int32> Sample5.Class1/<F2>d__1::System.Collections.Generic.IEnumerable<System.Int32>.GetEnumerator()
+                     Some "F2" // System.Collections.IEnumerator Sample5.Class1/<F2>d__1::System.Collections.IEnumerable.GetEnumerator()
+                     Some "F3" // System.Void Sample5.Class1/<F3>d__2::.ctor()
+                     Some "F3" // System.Void Sample5.Class1/<F3>d__2::MoveNext()
+                     Some "F3" // System.Void Sample5.Class1/<F3>d__2::SetStateMachine(System.Runtime.CompilerServices.IAsyncStateMachine)
+                     ]
+     Assert.That (result, Is.EquivalentTo expected)
+
   [<Test>]
   member self.ValidateSeqPntFixUp() = // HACK HACK HACK
     let location = typeof<Sample3.Class1>.Assembly.Location
