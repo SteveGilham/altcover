@@ -45,7 +45,7 @@ For the .net 2.0 support, if you don't already have FSharp.Core.dll version 2.3.
 
 #### *nix
 
-It is assumed that `mono` (version 5.10.x) and `dotnet` (SDKv 2.1.3 or later) are on the `PATH` already, and everything is built from the command line, with your favourite editor used for coding.
+It is assumed that `mono` (version 5.10.x) and `dotnet` (SDKv 2.1.104 or later) are on the `PATH` already, and everything is built from the command line, with your favourite editor used for coding.
 
 ### Bootstrapping
 
