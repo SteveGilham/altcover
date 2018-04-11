@@ -233,7 +233,7 @@ module Visitor =
         [x]
         |> Seq.takeWhile (fun _ -> included <> Inspect.Ignore)
         |> Seq.collect(fun x -> x.GetAllTypes() |> Seq.cast)
-        |> Seq.collect ((fun t -> let types = Seq.unfold (fun (state:TypeDefinition) -> 
+        |> Seq.collect ((fun t -> let types = Seq.unfold (fun (state:TypeDefinition) ->
                                                              if isNull state
                                                              then None
                                                              else Some (state, state.DeclaringType)) t
@@ -267,6 +267,9 @@ module Visitor =
                             MethodNumber <- id
                             (id, n))
 
+  let internal DeclaringMethod (_:MethodDefinition) =
+    null
+
   let private VisitType (t:TypeDefinition) included buildSequence =
         t.Methods
         |> Seq.cast
@@ -274,7 +277,15 @@ module Visitor =
                                                     && not m.IsRuntime
                                                     && not m.IsPInvokeImpl
                                                     && significant m)
-        |> Seq.collect ((fun m -> Method (m, UpdateInspection included m, Track m)) >> buildSequence)
+        |> Seq.collect ((fun m -> let methods = Seq.unfold (fun (state:MethodDefinition) ->
+                                                             if isNull state
+                                                             then None
+                                                             else Some (state, DeclaringMethod state)) m
+                                  let inclusion = Seq.fold UpdateInspection
+                                                           included
+                                                           methods
+
+                                  Method (m, inclusion, Track m)) >> buildSequence)
 
   let CompilerSpecialLineNumber = 0xfeefee
 
