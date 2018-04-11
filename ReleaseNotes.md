@@ -1,3 +1,7 @@
+# 3.0.4xx (Caba series release 5)
+* Exclude constructors on compiler generated types as being simply noise -- they will be exercised if you use any of the real code they represent, so nothing of importance is lost
+* ...
+
 # 3.0.404 (Caba series release 4)
 * Exclusion by attribute on a class also extends to all nested classes, including invisible ones like lambda expressions and relatives.
 * Runner mode (and the `AltCover.Collect` task) now outputs coverage summaries (class, method, point and, where available, branch)
