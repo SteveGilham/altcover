@@ -199,6 +199,11 @@ module Visitor =
      Filter.IsCSharpAutoProperty
      (fun m -> specialCaseFilters
                |> Seq.exists (Filter.Match m))
+     (fun m -> let t = m.DeclaringType
+               m.IsConstructor &&
+               t.IsNested &&
+               t.CustomAttributes
+               |> Seq.exists(fun a -> a.AttributeType.FullName = "System.Runtime.CompilerServices.CompilerGeneratedAttribute"))
      ]
     |> Seq.exists (fun f -> f m)
     |> not
