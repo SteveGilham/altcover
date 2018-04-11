@@ -17,8 +17,11 @@ namespace Sample5
 
             // function Sample5.Class1+<>c__DisplayClass0_0.<F1>b__1
             // function Sample5.Class1+<>c__DisplayClass0_0.<F1>b__2
-            return input.Select(x => { var l = new List<char>{ x };
-                                       return l.Select( c => f(c)).Last() % 6;}).Sum();
+            return input.Select(x =>
+            {
+                var l = new List<char> { x };
+                return l.Select(c => f(c)).Last() % 6;
+            }).Sum();
         }
 
         [ExcludeFromCodeCoverage]
@@ -50,8 +53,11 @@ namespace Sample5
 
                 // function Sample5.Class1+Inner+<>c__DisplayClass0_0.<IF1>b__1
                 // function Sample5.Class1+Inner+<>c__DisplayClass0_0.<IF1>b__2
-            return input.Select(x => { var l = new List<char>{ x };
-                                       return l.Select( c => f(c)).Last() % 6;}).Sum();
+                return input.Select(x =>
+                {
+                    var l = new List<char> { x };
+                    return l.Select(c => f(c)).Last() % 6;
+                }).Sum();
             }
 
             [ExcludeFromCodeCoverage]
