@@ -272,8 +272,14 @@ module Visitor =
                             MethodNumber <- id
                             (id, n))
 
-  let internal DeclaringMethod (_:MethodDefinition) =
-    null
+  let internal DeclaringMethod (m:MethodDefinition) =
+    let t = m.DeclaringType
+    if t.IsNested |> not then  
+      null
+    else if t.Name.StartsWith("<", StringComparison.Ordinal) then
+         // c# cases
+         null
+         else null
 
   let private VisitType (t:TypeDefinition) included buildSequence =
         t.Methods
