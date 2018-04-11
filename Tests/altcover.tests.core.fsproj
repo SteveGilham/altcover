@@ -68,6 +68,7 @@
     <ProjectReference Include="..\Sample1\sample1.core.csproj" />
     <ProjectReference Include="..\Sample2\sample2.core.fsproj" />
     <ProjectReference Include="..\Sample3\sample3.core.csproj" />
+    <ProjectReference Include="..\Sample5\sample5.core.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -88,6 +88,11 @@
     <EmbeddedResource Include="OpenCover.lcov" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Sample5\Sample5.csproj">
+      <Name>Sample5</Name>
+      <Project>{d1f77a3c-6b04-41b7-9507-fc1a7263cd3d}</Project>
+      <Private>True</Private>
+    </ProjectReference>
     <Reference Include="Microsoft.Build.Framework" />
     <Reference Include="Microsoft.Build.Tasks.v4.0" />
     <Reference Include="Microsoft.Build.Utilities.v4.0" />

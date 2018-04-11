@@ -43,9 +43,9 @@ namespace Sample5
         private class Inner
         {
             [ExcludeFromCodeCoverage]
-            public int IF1(string input)
+            public int G1(string input)
             {
-                // function Sample5.Class1+Inner+<>c.<IF1>b__0_0
+                // function Sample5.Class1+Inner+<>c.<G1>b__0_0
                 Func<char, int> f = (c => { return (int)c; });
 
                 // function Sample5.Class1+Inner+<>c__DisplayClass0_0.<IF1>b__1
@@ -55,9 +55,9 @@ namespace Sample5
             }
 
             [ExcludeFromCodeCoverage]
-            public IEnumerable<int> IF2(string input)
+            public IEnumerable<int> G2(string input)
             {
-                // class Sample5.Class1+Inner+<IF2>d__1
+                // class Sample5.Class1+Inner+<G2>d__1
                 foreach (char c in input)
                 {
                     yield return c;
@@ -65,9 +65,9 @@ namespace Sample5
             }
 
             [ExcludeFromCodeCoverage]
-            public async Task<string> IF3(string input)
+            public async Task<string> G3(string input)
             {
-                // class Sample5.Class1+Inner+<IF3>d__2
+                // class Sample5.Class1+Inner+<G3>d__2
                 var f = new StreamReader(File.OpenRead(input));
                 var r = await f.ReadToEndAsync();
                 return r;
