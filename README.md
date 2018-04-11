@@ -35,20 +35,22 @@ See the [Wiki page]( https://github.com/SteveGilham/altcover/wiki/Usage) for det
 
 ## Building
 
-You will need Visual Studio VS2017 (Community Edition) v15.6.latest with F# language support.  The NUnit3 Test Runner will simplify the basic in-IDE development cycle.  Note that some of the unit tests expect that the separate build of test assemblies under Mono, full .net framework and .net core has taken place; there will be up to 16 failures when running the unit tests in Visual Studio from clean when those expected assemblies are not found.
+### Tooling
+
+#### Windows
+
+You will need Visual Studio VS2017 (Community Edition) v15.6.latest with F# language support (or just the associated build tools and your editor of choice).  The NUnit3 Test Runner will simplify the basic in-IDE development cycle.  Note that some of the unit tests expect that the separate build of test assemblies under Mono, full .net framework and .net core has taken place; there will be up to 20 failures when running the unit tests in Visual Studio from clean when those expected assemblies are not found.
+
+For the .net 2.0 support, if you don't already have FSharp.Core.dll version 2.3.0.0 (usually in Reference Assemblies\Microsoft\FSharp\.NETFramework\v2.0\2.3.0.0), then you will need to install this -- the [Visual F# Tools 4.0 RTM](https://www.microsoft.com/en-us/download/details.aspx?id=48179) `FSharp_Bundle.exe` is the most convenient source. 
+
+#### *nix
+
+It is assumed that `mono` (version 5.10.x) and `dotnet` (SDKv 2.1.104 or later) are on the `PATH` already, and everything is built from the command line, with your favourite editor used for coding.
 
 ### Bootstrapping
 
 Start by setting up `dotnet fake` with `dotnet restore dotnet-fake.fsproj`
 Then `dotnet fake run ./Build/setup.fsx` to do the rest of the set-up.
-
-#### *nix
-
-* It is assumed that `mono` is on the `PATH` already
-
-#### Windows
-
-* This should "just work" if Visual Studio F# support is installed, but for reference : for the .net 2.0 support, FSharp.Core 2.3.0.0 is used and is assumed to be available by reference on the default search location; otherwise FSharp.Core latest is drawn from the nuget package for simpler cross-platform support.
 
 ### Normal builds
 
