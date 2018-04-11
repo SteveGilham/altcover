@@ -12,17 +12,19 @@ namespace Sample5
         [ExcludeFromCodeCoverage]
         public int F1(string input)
         {
-            // function Sample5.Class1.<>c.<F1>b__0_0
+            // function Sample5.Class1+<>c.<F1>b__0_0
             Func<char, int> f = (c => { return (int)c; });
 
-            // function Sample5.Class1.<>c_DisplayClass0_0.<F1>b__1
-            return input.Select(x => f(x) % 6).Sum();
+            // function Sample5.Class1+<>c__DisplayClass0_0.<F1>b__1
+            // function Sample5.Class1+<>c__DisplayClass0_0.<F1>b__2
+            return input.Select(x => { var l = new List<char>{ x };
+                                       return l.Select( c => f(c)).Last() % 6;}).Sum();
         }
 
         [ExcludeFromCodeCoverage]
         public IEnumerable<int> F2(string input)
         {
-            // class Sample5.Class1.<F2>d__1
+            // class Sample5.Class1+<F2>d__1
             foreach (char c in input)
             {
                 yield return c;
@@ -32,10 +34,44 @@ namespace Sample5
         [ExcludeFromCodeCoverage]
         public async Task<string> F3(string input)
         {
-            // class Sample5.Class1.<F3>d__2
+            // class Sample5.Class1+<F3>d__2
             var f = new StreamReader(File.OpenRead(input));
             var r = await f.ReadToEndAsync();
             return r;
+        }
+
+        private class Inner
+        {
+            [ExcludeFromCodeCoverage]
+            public int IF1(string input)
+            {
+                // function Sample5.Class1+Inner+<>c.<IF1>b__0_0
+                Func<char, int> f = (c => { return (int)c; });
+
+                // function Sample5.Class1+Inner+<>c__DisplayClass0_0.<IF1>b__1
+                // function Sample5.Class1+Inner+<>c__DisplayClass0_0.<IF1>b__2
+            return input.Select(x => { var l = new List<char>{ x };
+                                       return l.Select( c => f(c)).Last() % 6;}).Sum();
+            }
+
+            [ExcludeFromCodeCoverage]
+            public IEnumerable<int> IF2(string input)
+            {
+                // class Sample5.Class1+Inner+<IF2>d__1
+                foreach (char c in input)
+                {
+                    yield return c;
+                }
+            }
+
+            [ExcludeFromCodeCoverage]
+            public async Task<string> IF3(string input)
+            {
+                // class Sample5.Class1+Inner+<IF3>d__2
+                var f = new StreamReader(File.OpenRead(input));
+                var r = await f.ReadToEndAsync();
+                return r;
+            }
         }
     }
 }
