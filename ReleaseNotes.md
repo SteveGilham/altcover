@@ -1,6 +1,6 @@
 # 3.0.4xx (Caba series release 5)
 * Exclude constructors on compiler generated types as being simply noise -- they will be exercised if you use any of the real code they represent, so nothing of importance is lost
-* ...
+* C# compiler generated types for lambdas, `async`/`await` and `yield return` are mapped to their containing methods for the purpose of filtering by method name or method level attributes
 * Even more feedback on error, including logging exception detail to file.
 * [BUGFIX] Mono.Cecil can give `ArgumentException` when given an arbitrary file input (while detecting which files are instrumentable assemblies); handle that case
 
