@@ -501,6 +501,72 @@ type AltCoverTests() = class
   // Visitor.fs
 
   [<Test>]
+  member self.CSharpNestedMethods() =
+     let sample3 = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Sample5.dll")
+     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly (sample3)
+     let methods = def.MainModule.GetAllTypes()
+                    |> Seq.collect(fun t -> t.Methods)
+                    |> Seq.toList
+     let result = methods
+                    |> Seq.map Visitor.DeclaringMethod
+                    |> Seq.map (fun (mo : MethodDefinition option) ->
+                                    mo |> Option.map (fun m -> m.Name))
+
+     let expected = [
+                     None // System.Int32 Sample5.Class1::F1(System.String)
+                     None // System.Collections.Generic.IEnumerable`1<System.Int32> Sample5.Class1::F2(System.String)
+                     None // System.Threading.Tasks.Task`1<System.String> Sample5.Class1::F3(System.String)
+                     None // System.Void Sample5.Class1::.ctor()
+                     None // System.Int32 Sample5.Class1/Inner::G1(System.String)
+                     None // System.Collections.Generic.IEnumerable`1<System.Int32> Sample5.Class1/Inner::G2(System.String)
+                     None // System.Threading.Tasks.Task`1<System.String> Sample5.Class1/Inner::G3(System.String)
+                     None // System.Void Sample5.Class1/Inner::G3(System.Int32)
+                     None // System.Void Sample5.Class1/Inner::.ctor()
+                     None // System.Void Sample5.Class1/Inner/<>c__DisplayClass0_0::.ctor()
+                     Some "G1" // System.Int32 Sample5.Class1/Inner/<>c__DisplayClass0_0::<G1>b__1(System.Char)
+                     Some "G1" // System.Int32 Sample5.Class1/Inner/<>c__DisplayClass0_0::<G1>b__2(System.Char)
+                     None // System.Void Sample5.Class1/Inner/<>c::.cctor()
+                     None // System.Void Sample5.Class1/Inner/<>c::.ctor()
+                     Some "G1" // System.Int32 Sample5.Class1/Inner/<>c::<G1>b__0_0(System.Char)
+                     Some "G2" // System.Void Sample5.Class1/Inner/<G2>d__1::.ctor(System.Int32)
+                     Some "G2" // System.Void Sample5.Class1/Inner/<G2>d__1::System.IDisposable.Dispose()
+                     Some "G2" // System.Boolean Sample5.Class1/Inner/<G2>d__1::MoveNext()
+                     Some "G2" // System.Int32 Sample5.Class1/Inner/<G2>d__1::System.Collections.Generic.IEnumerator<System.Int32>.get_Current()
+                     Some "G2" // System.Void Sample5.Class1/Inner/<G2>d__1::System.Collections.IEnumerator.Reset()
+                     Some "G2" // System.Object Sample5.Class1/Inner/<G2>d__1::System.Collections.IEnumerator.get_Current()
+                     Some "G2" // System.Collections.Generic.IEnumerator`1<System.Int32> Sample5.Class1/Inner/<G2>d__1::System.Collections.Generic.IEnumerable<System.Int32>.GetEnumerator()
+                     Some "G2" // System.Collections.IEnumerator Sample5.Class1/Inner/<G2>d__1::System.Collections.IEnumerable.GetEnumerator()
+                     Some "G3" // System.Void Sample5.Class1/Inner/<G3>d__2::.ctor()
+                     Some "G3" // System.Void Sample5.Class1/Inner/<G3>d__2::MoveNext()
+                     Some "G3" // System.Void Sample5.Class1/Inner/<G3>d__2::SetStateMachine(System.Runtime.CompilerServices.IAsyncStateMachine)
+                     None // System.Void Sample5.Class1/<>c__DisplayClass0_0::.ctor()
+                     Some "F1" // System.Int32 Sample5.Class1/<>c__DisplayClass0_0::<F1>b__1(System.Char)
+                     Some "F1" // System.Int32 Sample5.Class1/<>c__DisplayClass0_0::<F1>b__2(System.Char)
+                     None // System.Void Sample5.Class1/<>c::.cctor()
+                     None // System.Void Sample5.Class1/<>c::.ctor()
+                     Some "F1" // System.Int32 Sample5.Class1/<>c::<F1>b__0_0(System.Char)
+                     Some "F2" // System.Void Sample5.Class1/<F2>d__1::.ctor(System.Int32)
+                     Some "F2" // System.Void Sample5.Class1/<F2>d__1::System.IDisposable.Dispose()
+                     Some "F2" // System.Boolean Sample5.Class1/<F2>d__1::MoveNext()
+                     Some "F2" // System.Int32 Sample5.Class1/<F2>d__1::System.Collections.Generic.IEnumerator<System.Int32>.get_Current()
+                     Some "F2" // System.Void Sample5.Class1/<F2>d__1::System.Collections.IEnumerator.Reset()
+                     Some "F2" // System.Object Sample5.Class1/<F2>d__1::System.Collections.IEnumerator.get_Current()
+                     Some "F2" // System.Collections.Generic.IEnumerator`1<System.Int32> Sample5.Class1/<F2>d__1::System.Collections.Generic.IEnumerable<System.Int32>.GetEnumerator()
+                     Some "F2" // System.Collections.IEnumerator Sample5.Class1/<F2>d__1::System.Collections.IEnumerable.GetEnumerator()
+                     Some "F3" // System.Void Sample5.Class1/<F3>d__2::.ctor()
+                     Some "F3" // System.Void Sample5.Class1/<F3>d__2::MoveNext()
+                     Some "F3" // System.Void Sample5.Class1/<F3>d__2::SetStateMachine(System.Runtime.CompilerServices.IAsyncStateMachine)
+                     ]
+     Assert.That (result, Is.EquivalentTo expected)
+
+     let g3 = methods.[6]
+     Assert.That (methods
+                  |> Seq.map Visitor.DeclaringMethod
+                  |> Seq.choose id
+                  |> Seq.filter (fun m -> m.Name = "G3"), 
+                  Is.EquivalentTo [g3;g3;g3])
+
+  [<Test>]
   member self.ValidateSeqPntFixUp() = // HACK HACK HACK
     let location = typeof<Sample3.Class1>.Assembly.Location
     let sourceAssembly = AssemblyDefinition.ReadAssembly(location)
@@ -2875,18 +2941,16 @@ type AltCoverTests() = class
     typeof<Tracer>.Assembly.GetExportedTypes()
     |> Seq.filter (fun t -> (string t = "AltCover.Output") || (string t = "AltCover.AltCover"))
     |> Seq.collect (fun t -> t.GetNestedTypes(BindingFlags.NonPublic))
-    |> Seq.iter (fun t -> let tokens = [
+    |> Seq.filter (fun t -> let tokens = [
                                             "Info"
                                             "Echo"
                                             "Error"
                                             "Usage"
                                             "ToConsole"
-                                        ]
-                          let name = t.Name
-                          Assert.That(tokens
-                                      |> List.exists (fun n -> name.StartsWith n),
-                                      name)
-
+                                          ]
+                            let name = t.Name
+                            tokens |> List.exists (fun n -> name.StartsWith n))
+    |> Seq.iter (fun t ->
                           let p = t.GetType().GetProperty("DeclaredConstructors")
                           let c = p.GetValue(t, null) :?> ConstructorInfo[]
                           let o = (c |> Seq.head).Invoke(null)
@@ -2903,99 +2967,139 @@ type AltCoverTests() = class
   member self.NoThrowNoErrorLeavesAllOK () =
     try
       CommandLine.error <- []
-      CommandLine.doPathOperation ignore ()
+      CommandLine.exceptions <- []
+      CommandLine.doPathOperation ignore () true
       Assert.That(CommandLine.error, Is.Empty)
+      Assert.That(CommandLine.exceptions, Is.Empty)
     finally
       CommandLine.error <- []
+      CommandLine.exceptions <- []
 
   [<Test>]
   member self.NoThrowWithErrorIsSignalled () =
     try
       CommandLine.error <- []
-      CommandLine.doPathOperation (fun () -> CommandLine.error <- ["NoThrowWithErrorIsSignalled"]) ()
+      CommandLine.exceptions <- []
+      CommandLine.doPathOperation (fun () -> CommandLine.error <- ["NoThrowWithErrorIsSignalled"]) () true
       Assert.That(CommandLine.error, Is.Not.Empty)
+      Assert.That(CommandLine.exceptions, Is.Empty)
     finally
       CommandLine.error <- []
+      CommandLine.exceptions <- []
 
   [<Test>]
   member self.ArgumentExceptionWrites () =
-    let saved = (Console.Out, Console.Error)
+    let saved = (Output.Info, Output.Error)
+    let err = System.Text.StringBuilder()
+    let info = System.Text.StringBuilder()
     try
-      use stdout = new StringWriter()
-      use stderr = new StringWriter()
-      Console.SetOut stdout
-      Console.SetError stderr
+      Output.Info <- (fun s -> info.Append(s).Append("|") |> ignore)
+      Output.Error <- (fun s -> err.Append(s).Append("|") |> ignore)
       let unique = "ArgumentException " + Guid.NewGuid().ToString()
 
       CommandLine.error <- []
-      CommandLine.doPathOperation (fun () -> ArgumentException(unique) |> raise) ()
+      CommandLine.exceptions <- []
+      CommandLine.doPathOperation (fun () -> let inner = InvalidOperationException()
+                                             ArgumentException(unique, inner) |> raise) () true
       Assert.That(CommandLine.error, Is.EquivalentTo [unique])
-      Assert.That(stdout.ToString(), Is.Empty)
-      Assert.That(stderr.ToString(), Is.Empty)
+      Assert.That(CommandLine.exceptions |> List.map (fun e -> e.Message), Is.EquivalentTo [unique])
+      let here = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
+      let there = Path.Combine(here, Guid.NewGuid().ToString())
+      let toInfo = Directory.CreateDirectory there
+      Visitor.outputDirectory <- Some toInfo.FullName
+
+      Assert.That(info.ToString(), Is.Empty)
+      Assert.That(err.ToString(), Is.Empty)
+
+      CommandLine.logExceptionsToFile "ArgumentExceptionWrites"
+      let target = Path.Combine(toInfo.FullName, "ArgumentExceptionWrites")
+      Assert.That (File.Exists target, target)
+      let lines = target |> File.ReadAllLines |> Seq.toList
+      Assert.That (lines.[0], Is.EqualTo ("System.ArgumentException: " + unique +
+                                            " ---> System.InvalidOperationException: Operation is not valid due to the current state of the object." ))
+      Assert.That (lines.[1], Does.StartWith("   --- End of inner exception stack trace ---"))
+      Assert.That (lines.[2].Replace("+",".").Trim(), Does.StartWith("at <StartupCode$AltCover-Tests>.$Tests.ArgumentExceptionWrites"))
+      Assert.That (lines.[3].Trim(), Does.StartWith("at AltCover.CommandLine.doPathOperation"))
+      Assert.That (lines |> List.skip 4, Is.Not.Empty)
+      Assert.That(info.ToString(), Is.Empty)
+      Assert.That(err.ToString().Trim(), Is.EqualTo ("Details written to " + target + "|"))
     finally
       CommandLine.error <- []
-      Console.SetOut (fst saved)
-      Console.SetError (snd saved)
+      CommandLine.exceptions <- []
+      Output.Info <- (fst saved)
+      Output.Error <- (snd saved)
+      Visitor.outputDirectory <- None
 
   [<Test>]
   member self.IOExceptionWrites () =
-    let saved = (Console.Out, Console.Error)
+    let saved = (Output.Info, Output.Error)
+    let err = System.Text.StringBuilder()
+    let info = System.Text.StringBuilder()
     try
-      use stdout = new StringWriter()
-      use stderr = new StringWriter()
-      Console.SetOut stdout
-      Console.SetError stderr
+      Output.Info <- (fun s -> info.Append(s).Append("|") |> ignore)
+      Output.Error <- (fun s -> err.Append(s).Append("|") |> ignore)
       let unique = "IOException " + Guid.NewGuid().ToString()
 
       CommandLine.error <- []
-      CommandLine.doPathOperation (fun () -> IOException(unique) |> raise) ()
+      CommandLine.exceptions <- []
+      CommandLine.doPathOperation (fun () -> IOException(unique) |> raise) () false
       Assert.That(CommandLine.error, Is.EquivalentTo [unique])
-      Assert.That(stdout.ToString(), Is.Empty)
-      Assert.That(stderr.ToString(), Is.Empty)
+
+      CommandLine.ReportErrors "Instrumentation"
+      Assert.That(info.ToString(), Is.Empty)
+
+      let logged = err.ToString().Replace("\r", String.Empty).Replace("\n","|")
+      Assert.That(logged, Is.EqualTo ("|ERROR *** Instrumentation phase failed|||" + unique + "|"))
+      Assert.That(CommandLine.exceptions, Is.Empty)
     finally
       CommandLine.error <- []
-      Console.SetOut (fst saved)
-      Console.SetError (snd saved)
+      CommandLine.exceptions <- []
+      Output.Info <- (fst saved)
+      Output.Error <- (snd saved)
 
   [<Test>]
   member self.NotSupportedExceptionWrites () =
-    let saved = (Console.Out, Console.Error)
+    let saved = (Output.Info, Output.Error)
+    let err = System.Text.StringBuilder()
+    let info = System.Text.StringBuilder()
     try
-      use stdout = new StringWriter()
-      use stderr = new StringWriter()
-      Console.SetOut stdout
-      Console.SetError stderr
+      Output.Info <- (fun s -> info.Append(s).Append("|") |> ignore)
+      Output.Error <- (fun s -> err.Append(s).Append("|") |> ignore)
       let unique = "NotSupportedException " + Guid.NewGuid().ToString()
 
       CommandLine.error <- []
-      CommandLine.doPathOperation (fun () -> NotSupportedException(unique) |> raise) ()
+      CommandLine.doPathOperation (fun () -> NotSupportedException(unique) |> raise) () false
       Assert.That(CommandLine.error, Is.EquivalentTo [unique])
-      Assert.That(stdout.ToString(), Is.Empty)
-      Assert.That(stderr.ToString(), Is.Empty)
+      Assert.That(info.ToString(), Is.Empty)
+      Assert.That(err.ToString(), Is.Empty)
+      Assert.That(CommandLine.exceptions, Is.Empty)
     finally
       CommandLine.error <- []
-      Console.SetOut (fst saved)
-      Console.SetError (snd saved)
+      Output.Info <- (fst saved)
+      Output.Error <- (snd saved)
 
   [<Test>]
   member self.SecurityExceptionWrites () =
-    let saved = (Console.Out, Console.Error)
+    let saved = (Output.Info, Output.Error)
+    let err = System.Text.StringBuilder()
+    let info = System.Text.StringBuilder()
     try
-      use stdout = new StringWriter()
-      use stderr = new StringWriter()
-      Console.SetOut stdout
-      Console.SetError stderr
+      Output.Info <- (fun s -> info.Append(s).Append("|") |> ignore)
+      Output.Error <- (fun s -> err.Append(s).Append("|") |> ignore)
       let unique = "SecurityException " + Guid.NewGuid().ToString()
 
       CommandLine.error <- []
-      CommandLine.doPathOperation (fun () -> System.Security.SecurityException(unique) |> raise) ()
+      CommandLine.exceptions <- []
+      CommandLine.doPathOperation (fun () -> System.Security.SecurityException(unique) |> raise) () false
       Assert.That(CommandLine.error, Is.EquivalentTo [unique])
-      Assert.That(stdout.ToString(), Is.Empty)
-      Assert.That(stderr.ToString(), Is.Empty)
+      Assert.That(info.ToString(), Is.Empty)
+      Assert.That(err.ToString(), Is.Empty)
+      Assert.That(CommandLine.exceptions, Is.Empty)
     finally
       CommandLine.error <- []
-      Console.SetOut (fst saved)
-      Console.SetError (snd saved)
+      CommandLine.exceptions <- []
+      Output.Info <- (fst saved)
+      Output.Error <- (snd saved)
 
   // AltCover.fs and CommandLine.fs
 
@@ -4158,6 +4262,16 @@ type AltCoverTests() = class
     Assert.That(!two)
 
   [<Test>]
+  member self.ResilientHandlesArgumentException () =
+    let one = ref false
+    let two = ref false
+    Main.ImageLoadResilient (fun () ->
+        ArgumentException("fail") |> raise
+        one := true) (fun () -> two := true)
+    Assert.That(!one, Is.False)
+    Assert.That(!two)
+
+  [<Test>]
   member self.PreparingNewPlaceShouldCopyEverything() =
     let here = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
     let there = Path.Combine(here, Guid.NewGuid().ToString())
@@ -4288,6 +4402,7 @@ type AltCoverTests() = class
       let expected = "Creating folder " + output +
                      "\nInstrumenting files from " + (Path.GetFullPath input) +
                      "\nWriting files to " + output +
+                     "\n   => " + Path.Combine(Path.GetFullPath input, "Sample1.exe") +
                      "\nCoverage Report: " + report + "\n"
 
       Assert.That (stdout.ToString().Replace("\r\n", "\n").Replace("\\", "/"),
@@ -4423,6 +4538,7 @@ type AltCoverTests() = class
       let expected = "Creating folder " + output +
                      "\nInstrumenting files from " + (Path.GetFullPath input) +
                      "\nWriting files to " + output +
+                     "\n   => " + Path.Combine(Path.GetFullPath input, "Sample2.dll") +
                      "\nCoverage Report: " + report + "\n"
 
       Assert.That (stdout.ToString().Replace("\r\n", "\n").Replace("\\", "/"),

@@ -283,4 +283,23 @@ Vidu https://github.com/SteveGilham/altcover/wiki/Usage por plenaj detaloj.</val
   <data name="VisitedPoints" xml:space="preserve">
     <value>Vizititaj Punktoj {0} de {1} ({2})</value>
   </data>
+  <data name="Collection" xml:space="preserve">
+    <value>
+ERROR *** Kolekto fazo malsukcesis
+
+</value>
+  </data>
+  <data name="Instrumentation" xml:space="preserve">
+    <value>
+ERROR *** Instrumentation fazo malsukcesis
+
+</value>
+  </data>
+  <data name="WrittenTo" xml:space="preserve">
+    <value>
+Detaloj skribitaj al {0}</value>
+  </data>
+  <data name="instrumenting" xml:space="preserve">
+    <value>   =&gt; {0}</value>
+  </data>
 </root>
