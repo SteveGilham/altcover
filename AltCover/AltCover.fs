@@ -225,7 +225,8 @@ module Main =
   let internal ImageLoadResilient (f : unit -> 'a)  (tidy : unit -> 'a) =
     try f ()
     with
-    | :? BadImageFormatException -> tidy()
+    | :? BadImageFormatException
+    | :? ArgumentException
     | :? IOException -> tidy()
 
   let internal PrepareTargetFiles (fromInfo:DirectoryInfo) (toInfo:DirectoryInfo) (sourceInfo:DirectoryInfo) =
@@ -248,6 +249,9 @@ module Main =
              let assemblyPdb = ProgramDatabase.GetPdbWithFallback def
              if def |> Visitor.IsIncluded |> Visitor.IsInstrumented &&
                 Option.isSome assemblyPdb then
+                String.Format(CultureInfo.CurrentCulture,
+                               (CommandLine.resources.GetString "instrumenting"),
+                               fullName) |> Output.Info
                 (fullName, def.Name.Name) :: accumulator
              else
                 accumulator) (fun () -> accumulator)

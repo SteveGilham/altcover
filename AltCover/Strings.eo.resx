@@ -299,4 +299,7 @@ ERROR *** Instrumentation fazo malsukcesis
     <value>
 Detaloj skribitaj al {0}</value>
   </data>
+  <data name="instrumenting" xml:space="preserve">
+    <value>   =&gt; {0}</value>
+  </data>
 </root>

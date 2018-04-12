@@ -300,4 +300,7 @@ ERROR *** Instrumentation phase failed
     <value>
 Details written to {0}</value>
   </data>
+  <data name="instrumenting" xml:space="preserve">
+    <value>   =&gt; {0}</value>
+  </data>
 </root>

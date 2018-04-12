@@ -4196,6 +4196,16 @@ type AltCoverTests() = class
     Assert.That(!two)
 
   [<Test>]
+  member self.ResilientHandlesArgumentException () =
+    let one = ref false
+    let two = ref false
+    Main.ImageLoadResilient (fun () ->
+        ArgumentException("fail") |> raise
+        one := true) (fun () -> two := true)
+    Assert.That(!one, Is.False)
+    Assert.That(!two)
+
+  [<Test>]
   member self.PreparingNewPlaceShouldCopyEverything() =
     let here = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
     let there = Path.Combine(here, Guid.NewGuid().ToString())
@@ -4326,6 +4336,7 @@ type AltCoverTests() = class
       let expected = "Creating folder " + output +
                      "\nInstrumenting files from " + (Path.GetFullPath input) +
                      "\nWriting files to " + output +
+                     "\n   => " + Path.Combine(Path.GetFullPath input, "Sample1.exe") +
                      "\nCoverage Report: " + report + "\n"
 
       Assert.That (stdout.ToString().Replace("\r\n", "\n").Replace("\\", "/"),
@@ -4461,6 +4472,7 @@ type AltCoverTests() = class
       let expected = "Creating folder " + output +
                      "\nInstrumenting files from " + (Path.GetFullPath input) +
                      "\nWriting files to " + output +
+                     "\n   => " + Path.Combine(Path.GetFullPath input, "Sample2.dll") +
                      "\nCoverage Report: " + report + "\n"
 
       Assert.That (stdout.ToString().Replace("\r\n", "\n").Replace("\\", "/"),
