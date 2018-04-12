@@ -22,13 +22,19 @@ module Output =
   let LogExceptionToFile path e =
     use stream = File.Open(path, FileMode.Append, FileAccess.Write)
     use writer = new StreamWriter(stream)
-    e.ToString() |> writer.WriteLine
 
-    e.GetType().GetProperties()
-    |> Seq.filter (fun p -> [ "Message"
-                              "StackTrace" ] |> Seq.exists (fun n -> n = p.Name) |> not)
-    |> Seq.iter (fun p -> p.Name |> writer.WriteLine
-                          p.GetValue(e) |> sprintf "%A" |> writer.WriteLine)
+    let rec logException padding ex =
+      ex.ToString() |> writer.WriteLine
+
+      ex.GetType().GetProperties()
+      |> Seq.filter (fun p -> [ "Message"
+                                "StackTrace" ] |> Seq.exists (fun n -> n = p.Name) |> not)
+      |> Seq.iter (fun p -> (padding + p.Name + " = ") |> writer.WriteLine
+                            match p.GetValue(ex) with
+                            | :? Exception as exx ->
+                              logException ("  " + padding) exx
+                            | v -> v |> sprintf "%A" |> writer.WriteLine)
+    logException String.Empty e
 
 module CommandLine =
 
