@@ -276,12 +276,29 @@ module Visitor =
 
   let internal DeclaringMethod (m:MethodDefinition) =
     let t = m.DeclaringType
-    if t.IsNested |> not then  
-      null
-    else if t.Name.StartsWith("<", StringComparison.Ordinal) then
-         // c# cases
-         null
-         else null
+    let n = t.Name
+    if t.IsNested |> not then
+      None
+    else if n.StartsWith("<", StringComparison.Ordinal) then
+           let name = if n.StartsWith("<>", StringComparison.Ordinal)
+                      then m.Name
+                      else n
+
+           let index = name.IndexOf('>') - 1
+           if (index < 1) then None
+           else
+               let stripped = name.Substring(1, index)
+               let candidates = t.DeclaringType.Methods
+                                |> Seq.filter (fun mx -> mx.Name = stripped)
+                                |> Seq.toList
+               match candidates with
+               | [x] -> Some x
+               | _ -> candidates
+                      |> Seq.tryFind(fun m -> m.Body.Instructions
+                                              |> Seq.filter(fun i -> i.OpCode = OpCodes.Newobj)
+                                              |> Seq.exists(fun i -> let tn = (i.Operand :?> MethodDefinition).DeclaringType
+                                                                     tn = t))
+         else None
 
   let private VisitType (t:TypeDefinition) included buildSequence =
         t.Methods
@@ -290,10 +307,10 @@ module Visitor =
                                                     && not m.IsRuntime
                                                     && not m.IsPInvokeImpl
                                                     && significant m)
-        |> Seq.collect ((fun m -> let methods = Seq.unfold (fun (state:MethodDefinition) ->
-                                                             if isNull state
-                                                             then None
-                                                             else Some (state, DeclaringMethod state)) m
+        |> Seq.collect ((fun m -> let methods = Seq.unfold (fun (state:MethodDefinition option) ->
+                                                             match state with
+                                                             | None -> None
+                                                             | Some x -> Some (x, DeclaringMethod x)) (Some m)
                                   let inclusion = Seq.fold UpdateInspection
                                                            included
                                                            methods

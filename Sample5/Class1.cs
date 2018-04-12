@@ -78,6 +78,11 @@ namespace Sample5
                 var r = await f.ReadToEndAsync();
                 return r;
             }
+
+            public void G3(int label)
+            {
+                Console.WriteLine(2 * label);
+            }
         }
     }
 }

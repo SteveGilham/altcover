@@ -500,15 +500,16 @@ type AltCoverTests() = class
 
   // Visitor.fs
 
-  //[<Test>]
+  [<Test>]
   member self.CSharpNestedMethods() =
      let sample3 = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Sample5.dll")
      let def = Mono.Cecil.AssemblyDefinition.ReadAssembly (sample3)
-     let result = def.MainModule.GetAllTypes()
+     let methods = def.MainModule.GetAllTypes()
                     |> Seq.collect(fun t -> t.Methods)
+                    |> Seq.toList
+     let result = methods
                     |> Seq.map Visitor.DeclaringMethod
-                    |> Seq.map Option.nullable
-                    |> Seq.map (fun (mo : MethodDefinition option) -> 
+                    |> Seq.map (fun (mo : MethodDefinition option) ->
                                     mo |> Option.map (fun m -> m.Name))
 
      let expected = [
@@ -519,6 +520,7 @@ type AltCoverTests() = class
                      None // System.Int32 Sample5.Class1/Inner::G1(System.String)
                      None // System.Collections.Generic.IEnumerable`1<System.Int32> Sample5.Class1/Inner::G2(System.String)
                      None // System.Threading.Tasks.Task`1<System.String> Sample5.Class1/Inner::G3(System.String)
+                     None // System.Void Sample5.Class1/Inner::G3(System.Int32)
                      None // System.Void Sample5.Class1/Inner::.ctor()
                      None // System.Void Sample5.Class1/Inner/<>c__DisplayClass0_0::.ctor()
                      Some "G1" // System.Int32 Sample5.Class1/Inner/<>c__DisplayClass0_0::<G1>b__1(System.Char)
@@ -556,6 +558,13 @@ type AltCoverTests() = class
                      Some "F3" // System.Void Sample5.Class1/<F3>d__2::SetStateMachine(System.Runtime.CompilerServices.IAsyncStateMachine)
                      ]
      Assert.That (result, Is.EquivalentTo expected)
+
+     let g3 = methods.[6]
+     Assert.That (methods
+                  |> Seq.map Visitor.DeclaringMethod
+                  |> Seq.choose id
+                  |> Seq.filter (fun m -> m.Name = "G3"), 
+                  Is.EquivalentTo [g3;g3;g3])
 
   [<Test>]
   member self.ValidateSeqPntFixUp() = // HACK HACK HACK
@@ -3006,7 +3015,7 @@ type AltCoverTests() = class
       let target = Path.Combine(toInfo.FullName, "ArgumentExceptionWrites")
       Assert.That (File.Exists target, target)
       let lines = target |> File.ReadAllLines |> Seq.toList
-      Assert.That (lines.[0], Is.EqualTo ("System.ArgumentException: " + unique + 
+      Assert.That (lines.[0], Is.EqualTo ("System.ArgumentException: " + unique +
                                             " ---> System.InvalidOperationException: Operation is not valid due to the current state of the object." ))
       Assert.That (lines.[1], Does.StartWith("   --- End of inner exception stack trace ---"))
       Assert.That (lines.[2].Replace("+",".").Trim(), Does.StartWith("at <StartupCode$AltCover-Tests>.$Tests.ArgumentExceptionWrites"))
