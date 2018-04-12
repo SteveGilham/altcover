@@ -284,4 +284,23 @@ See https://github.com/SteveGilham/altcover/wiki/Usage for full details.
   <data name="VisitedPoints" xml:space="preserve">
     <value>Visited Points {0} of {1} ({2})</value>
   </data>
+  <data name="Collection" xml:space="preserve">
+    <value>
+ERROR *** Collection phase failed
+
+</value>
+  </data>
+  <data name="Instrumentation" xml:space="preserve">
+    <value>
+ERROR *** Instrumentation phase failed
+
+</value>
+  </data>
+  <data name="WrittenTo" xml:space="preserve">
+    <value>
+Details written to {0}</value>
+  </data>
+  <data name="instrumenting" xml:space="preserve">
+    <value>   =&gt; {0}</value>
+  </data>
 </root>

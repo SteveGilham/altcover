@@ -1352,7 +1352,6 @@ or
     finally
       Output.Info <- ignore
 
-
   [<Test>]
   member self.OpenCoverShouldGeneratePlausibleLcov() =
     let resource = Assembly.GetExecutingAssembly().GetManifestResourceNames()
