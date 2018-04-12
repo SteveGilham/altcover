@@ -2875,18 +2875,16 @@ type AltCoverTests() = class
     typeof<Tracer>.Assembly.GetExportedTypes()
     |> Seq.filter (fun t -> (string t = "AltCover.Output") || (string t = "AltCover.AltCover"))
     |> Seq.collect (fun t -> t.GetNestedTypes(BindingFlags.NonPublic))
-    |> Seq.iter (fun t -> let tokens = [
+    |> Seq.filter (fun t -> let tokens = [
                                             "Info"
                                             "Echo"
                                             "Error"
                                             "Usage"
                                             "ToConsole"
-                                        ]
-                          let name = t.Name
-                          Assert.That(tokens
-                                      |> List.exists (fun n -> name.StartsWith n),
-                                      name)
-
+                                          ]
+                            let name = t.Name
+                            tokens |> List.exists (fun n -> name.StartsWith n))
+    |> Seq.iter (fun t ->
                           let p = t.GetType().GetProperty("DeclaredConstructors")
                           let c = p.GetValue(t, null) :?> ConstructorInfo[]
                           let o = (c |> Seq.head).Invoke(null)
@@ -2903,99 +2901,136 @@ type AltCoverTests() = class
   member self.NoThrowNoErrorLeavesAllOK () =
     try
       CommandLine.error <- []
-      CommandLine.doPathOperation ignore ()
+      CommandLine.exceptions <- []
+      CommandLine.doPathOperation ignore () true
       Assert.That(CommandLine.error, Is.Empty)
+      Assert.That(CommandLine.exceptions, Is.Empty)
     finally
       CommandLine.error <- []
+      CommandLine.exceptions <- []
 
   [<Test>]
   member self.NoThrowWithErrorIsSignalled () =
     try
       CommandLine.error <- []
-      CommandLine.doPathOperation (fun () -> CommandLine.error <- ["NoThrowWithErrorIsSignalled"]) ()
+      CommandLine.exceptions <- []
+      CommandLine.doPathOperation (fun () -> CommandLine.error <- ["NoThrowWithErrorIsSignalled"]) () true
       Assert.That(CommandLine.error, Is.Not.Empty)
+      Assert.That(CommandLine.exceptions, Is.Empty)
     finally
       CommandLine.error <- []
+      CommandLine.exceptions <- []
 
   [<Test>]
   member self.ArgumentExceptionWrites () =
-    let saved = (Console.Out, Console.Error)
+    let saved = (Output.Info, Output.Error)
+    let err = System.Text.StringBuilder()
+    let info = System.Text.StringBuilder()
     try
-      use stdout = new StringWriter()
-      use stderr = new StringWriter()
-      Console.SetOut stdout
-      Console.SetError stderr
+      Output.Info <- (fun s -> info.Append(s).Append("|") |> ignore)
+      Output.Error <- (fun s -> err.Append(s).Append("|") |> ignore)
       let unique = "ArgumentException " + Guid.NewGuid().ToString()
 
       CommandLine.error <- []
-      CommandLine.doPathOperation (fun () -> ArgumentException(unique) |> raise) ()
+      CommandLine.exceptions <- []
+      CommandLine.doPathOperation (fun () -> ArgumentException(unique) |> raise) () true
       Assert.That(CommandLine.error, Is.EquivalentTo [unique])
-      Assert.That(stdout.ToString(), Is.Empty)
-      Assert.That(stderr.ToString(), Is.Empty)
+      Assert.That(CommandLine.exceptions |> List.map (fun e -> e.Message), Is.EquivalentTo [unique])
+      let here = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
+      let there = Path.Combine(here, Guid.NewGuid().ToString())
+      let toInfo = Directory.CreateDirectory there
+      Visitor.outputDirectory <- Some toInfo.FullName
+
+      Assert.That(info.ToString(), Is.Empty)
+      Assert.That(err.ToString(), Is.Empty)
+
+      CommandLine.logExceptionsToFile "ArgumentExceptionWrites"
+      let target = Path.Combine(toInfo.FullName, "ArgumentExceptionWrites")
+      Assert.That (File.Exists target, target)
+      let lines = target |> File.ReadAllLines |> Seq.toList
+      Assert.That (lines.[0], Is.EqualTo ("System.ArgumentException: " + unique))
+      Assert.That (lines.[1], Does.StartWith("   at <StartupCode$AltCover-Tests>.$Tests.ArgumentExceptionWrites"))
+      Assert.That (lines.[2], Does.StartWith("   at AltCover.CommandLine.doPathOperation"))
+      Assert.That (lines |> List.skip 3, Is.Not.Empty)
+      Assert.That(info.ToString(), Is.Empty)
+      Assert.That(err.ToString().Trim(), Is.EqualTo ("Details written to " + target + "|"))
     finally
       CommandLine.error <- []
-      Console.SetOut (fst saved)
-      Console.SetError (snd saved)
+      CommandLine.exceptions <- []
+      Output.Info <- (fst saved)
+      Output.Error <- (snd saved)
+      Visitor.outputDirectory <- None
 
   [<Test>]
   member self.IOExceptionWrites () =
-    let saved = (Console.Out, Console.Error)
+    let saved = (Output.Info, Output.Error)
+    let err = System.Text.StringBuilder()
+    let info = System.Text.StringBuilder()
     try
-      use stdout = new StringWriter()
-      use stderr = new StringWriter()
-      Console.SetOut stdout
-      Console.SetError stderr
+      Output.Info <- (fun s -> info.Append(s).Append("|") |> ignore)
+      Output.Error <- (fun s -> err.Append(s).Append("|") |> ignore)
       let unique = "IOException " + Guid.NewGuid().ToString()
 
       CommandLine.error <- []
-      CommandLine.doPathOperation (fun () -> IOException(unique) |> raise) ()
+      CommandLine.exceptions <- []
+      CommandLine.doPathOperation (fun () -> IOException(unique) |> raise) () false
       Assert.That(CommandLine.error, Is.EquivalentTo [unique])
-      Assert.That(stdout.ToString(), Is.Empty)
-      Assert.That(stderr.ToString(), Is.Empty)
+
+      CommandLine.ReportErrors "Instrumentation"
+      Assert.That(info.ToString(), Is.Empty)
+
+      let logged = err.ToString().Replace("\r", String.Empty).Replace("\n","|")
+      Assert.That(logged, Is.EqualTo ("|ERROR *** Instrumentation phase failed|||" + unique + "|"))
+      Assert.That(CommandLine.exceptions, Is.Empty)
     finally
       CommandLine.error <- []
-      Console.SetOut (fst saved)
-      Console.SetError (snd saved)
+      CommandLine.exceptions <- []
+      Output.Info <- (fst saved)
+      Output.Error <- (snd saved)
 
   [<Test>]
   member self.NotSupportedExceptionWrites () =
-    let saved = (Console.Out, Console.Error)
+    let saved = (Output.Info, Output.Error)
+    let err = System.Text.StringBuilder()
+    let info = System.Text.StringBuilder()
     try
-      use stdout = new StringWriter()
-      use stderr = new StringWriter()
-      Console.SetOut stdout
-      Console.SetError stderr
+      Output.Info <- (fun s -> info.Append(s).Append("|") |> ignore)
+      Output.Error <- (fun s -> err.Append(s).Append("|") |> ignore)
       let unique = "NotSupportedException " + Guid.NewGuid().ToString()
 
       CommandLine.error <- []
-      CommandLine.doPathOperation (fun () -> NotSupportedException(unique) |> raise) ()
+      CommandLine.doPathOperation (fun () -> NotSupportedException(unique) |> raise) () false
       Assert.That(CommandLine.error, Is.EquivalentTo [unique])
-      Assert.That(stdout.ToString(), Is.Empty)
-      Assert.That(stderr.ToString(), Is.Empty)
+      Assert.That(info.ToString(), Is.Empty)
+      Assert.That(err.ToString(), Is.Empty)
+      Assert.That(CommandLine.exceptions, Is.Empty)
     finally
       CommandLine.error <- []
-      Console.SetOut (fst saved)
-      Console.SetError (snd saved)
+      Output.Info <- (fst saved)
+      Output.Error <- (snd saved)
 
   [<Test>]
   member self.SecurityExceptionWrites () =
-    let saved = (Console.Out, Console.Error)
+    let saved = (Output.Info, Output.Error)
+    let err = System.Text.StringBuilder()
+    let info = System.Text.StringBuilder()
     try
-      use stdout = new StringWriter()
-      use stderr = new StringWriter()
-      Console.SetOut stdout
-      Console.SetError stderr
+      Output.Info <- (fun s -> info.Append(s).Append("|") |> ignore)
+      Output.Error <- (fun s -> err.Append(s).Append("|") |> ignore)
       let unique = "SecurityException " + Guid.NewGuid().ToString()
 
       CommandLine.error <- []
-      CommandLine.doPathOperation (fun () -> System.Security.SecurityException(unique) |> raise) ()
+      CommandLine.exceptions <- []
+      CommandLine.doPathOperation (fun () -> System.Security.SecurityException(unique) |> raise) () false
       Assert.That(CommandLine.error, Is.EquivalentTo [unique])
-      Assert.That(stdout.ToString(), Is.Empty)
-      Assert.That(stderr.ToString(), Is.Empty)
+      Assert.That(info.ToString(), Is.Empty)
+      Assert.That(err.ToString(), Is.Empty)
+      Assert.That(CommandLine.exceptions, Is.Empty)
     finally
       CommandLine.error <- []
-      Console.SetOut (fst saved)
-      Console.SetError (snd saved)
+      CommandLine.exceptions <- []
+      Output.Info <- (fst saved)
+      Output.Error <- (snd saved)
 
   // AltCover.fs and CommandLine.fs
 

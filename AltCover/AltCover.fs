@@ -39,7 +39,7 @@ module Main =
                                                          "--outputDirectory") :: CommandLine.error
 
                     else
-                      CommandLine.doPathOperation (fun _ -> Visitor.outputDirectory <- Some (Path.GetFullPath x)) ()
+                      CommandLine.doPathOperation (fun _ -> Visitor.outputDirectory <- Some (Path.GetFullPath x)) () false
                  else CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
                                                          CommandLine.resources.GetString "DirectoryNotFound",
                                                          "--outputDirectory",
@@ -61,7 +61,7 @@ module Main =
                                                                                 System.IO.FileMode.Open,
                                                                                 System.IO.FileAccess.Read)
                                           let pair = StrongNameKeyPair(stream)
-                                          Visitor.Add pair) ()
+                                          Visitor.Add pair) () false
              else CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
                                                          CommandLine.resources.GetString "FileNotFound",
                                                          "--key",
@@ -81,7 +81,7 @@ module Main =
                                                                                 "--strongNameKey") :: CommandLine.error
 
                                           else Visitor.defaultStrongNameKey <- Some pair
-                                               Visitor.Add pair) ()
+                                               Visitor.Add pair) () false
              else CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
                                                          CommandLine.resources.GetString "FileNotFound",
                                                          "--strongNameKey",
@@ -95,7 +95,7 @@ module Main =
                                                          "--xmlReport") :: CommandLine.error
 
                     else
-                      CommandLine.doPathOperation (fun () -> Visitor.reportPath <- Some (Path.GetFullPath x)) ()
+                      CommandLine.doPathOperation (fun () -> Visitor.reportPath <- Some (Path.GetFullPath x)) () false
                  else CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
                                                          CommandLine.resources.GetString "InvalidValue",
                                                          "--xmlReport",
@@ -103,27 +103,27 @@ module Main =
       ("f|fileFilter=",
        (fun x -> CommandLine.doPathOperation (fun () ->
                  x.Split([|";"|], StringSplitOptions.RemoveEmptyEntries)
-                 |> Seq.iter (Regex >> FilterClass.File >> Visitor.NameFilters.Add))()))
+                 |> Seq.iter (Regex >> FilterClass.File >> Visitor.NameFilters.Add))() false))
       ("s|assemblyFilter=",
        (fun x -> CommandLine.doPathOperation (fun () ->
                  x.Split([|";"|], StringSplitOptions.RemoveEmptyEntries)
-                 |> Seq.iter (Regex >> FilterClass.Assembly >> Visitor.NameFilters.Add))()))
+                 |> Seq.iter (Regex >> FilterClass.Assembly >> Visitor.NameFilters.Add))() false))
       ("e|assemblyExcludeFilter=",
        (fun x -> CommandLine.doPathOperation (fun () ->
                  x.Split([|";"|], StringSplitOptions.RemoveEmptyEntries)
-                 |> Seq.iter (Regex >> FilterClass.Module >> Visitor.NameFilters.Add))()))
+                 |> Seq.iter (Regex >> FilterClass.Module >> Visitor.NameFilters.Add))() false))
       ("t|typeFilter=",
        (fun x -> CommandLine.doPathOperation (fun () ->
                  x.Split([|";"|], StringSplitOptions.RemoveEmptyEntries)
-                 |> Seq.iter (Regex >> FilterClass.Type >> Visitor.NameFilters.Add))()))
+                 |> Seq.iter (Regex >> FilterClass.Type >> Visitor.NameFilters.Add))() false))
       ("m|methodFilter=",
        (fun x -> CommandLine.doPathOperation (fun () ->
                  x.Split([|";"|], StringSplitOptions.RemoveEmptyEntries)
-                 |> Seq.iter (Regex >> FilterClass.Method >> Visitor.NameFilters.Add))()))
+                 |> Seq.iter (Regex >> FilterClass.Method >> Visitor.NameFilters.Add))() false))
       ("a|attributeFilter=",
        (fun x -> CommandLine.doPathOperation (fun () ->
                  x.Split([|";"|], StringSplitOptions.RemoveEmptyEntries)
-                 |> Seq.iter (Regex >> FilterClass.Attribute >> Visitor.NameFilters.Add))()))
+                 |> Seq.iter (Regex >> FilterClass.Attribute >> Visitor.NameFilters.Add))() false))
       ("c|callContext=",
        (fun x -> if not (String.IsNullOrWhiteSpace x) then
                    let k = x.Trim()
@@ -197,7 +197,7 @@ module Main =
               Output.Info <| String.Format(CultureInfo.CurrentCulture,
                                                     (CommandLine.resources.GetString "CreateFolder"),
                                                      toDirectory)
-              Directory.CreateDirectory(toDirectory) |> ignore) ()
+              Directory.CreateDirectory(toDirectory) |> ignore) () false
 
         if CommandLine.error |> List.isEmpty |> not then
             Left ("UsageError", options)
@@ -280,8 +280,8 @@ module Main =
             document.Save(report)
             if Visitor.collect then Runner.SetRecordToFile report
 
-            CommandLine.ProcessTrailingArguments rest toInfo) 255
-        CommandLine.ReportErrors()
+            CommandLine.ProcessTrailingArguments rest toInfo) 255 true
+        CommandLine.ReportErrors "Instrumentation"
         result
 
   let internal Main arguments =
