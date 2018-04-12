@@ -2952,8 +2952,8 @@ type AltCoverTests() = class
       Assert.That (lines.[0], Is.EqualTo ("System.ArgumentException: " + unique + 
                                             " ---> System.InvalidOperationException: Operation is not valid due to the current state of the object." ))
       Assert.That (lines.[1], Does.StartWith("   --- End of inner exception stack trace ---"))
-      Assert.That (lines.[2].Replace("+","."), Does.StartWith("   at <StartupCode$AltCover-Tests>.$Tests.ArgumentExceptionWrites"))
-      Assert.That (lines.[3], Does.StartWith("   at AltCover.CommandLine.doPathOperation"))
+      Assert.That (lines.[2].Replace("+",".").Trim(), Does.StartWith("at <StartupCode$AltCover-Tests>.$Tests.ArgumentExceptionWrites"))
+      Assert.That (lines.[3].Trim(), Does.StartWith("at AltCover.CommandLine.doPathOperation"))
       Assert.That (lines |> List.skip 4, Is.Not.Empty)
       Assert.That(info.ToString(), Is.Empty)
       Assert.That(err.ToString().Trim(), Is.EqualTo ("Details written to " + target + "|"))
