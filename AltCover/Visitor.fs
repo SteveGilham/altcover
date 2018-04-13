@@ -300,6 +300,7 @@ module Visitor =
                                                                      tn = (t :> TypeReference)))
          else if n.IndexOf('@') >= 0 then
                let candidates = t.DeclaringType.Methods
+                                // TODO and all the nested types
                candidates
                       |> Seq.tryFind(fun m -> m.Body.Instructions
                                               |> Seq.filter(fun i -> i.OpCode = OpCodes.Newobj)
