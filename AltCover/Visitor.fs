@@ -296,9 +296,16 @@ module Visitor =
                | _ -> candidates
                       |> Seq.tryFind(fun m -> m.Body.Instructions
                                               |> Seq.filter(fun i -> i.OpCode = OpCodes.Newobj)
-                                              |> Seq.exists(fun i -> let tn = (i.Operand :?> MethodDefinition).DeclaringType
-                                                                     tn = t))
-         else None
+                                              |> Seq.exists(fun i -> let tn = (i.Operand :?> MethodReference).DeclaringType
+                                                                     tn = (t :> TypeReference)))
+         else if n.IndexOf('@') >= 0 then
+               let candidates = t.DeclaringType.Methods
+               candidates
+                      |> Seq.tryFind(fun m -> m.Body.Instructions
+                                              |> Seq.filter(fun i -> i.OpCode = OpCodes.Newobj)
+                                              |> Seq.exists(fun i -> let tn = (i.Operand :?> MethodReference).DeclaringType
+                                                                     tn = (t :> TypeReference)))
+              else None
 
   let private VisitType (t:TypeDefinition) included buildSequence =
         t.Methods
