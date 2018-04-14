@@ -175,9 +175,11 @@ type AltCoverTests() = class
       Instance.trace <- { Tracer=null; Stream=null; Formatter=null;
                           Runner = false; Definitive = false }
       let key = " "
+      Assert.That (Instance.Backlog(), Is.EqualTo 0, "There should be no pending operations")
       Instance.VisitSelection (fun () -> true) Null key 23
-      Thread.Sleep 100
-      Assert.That (Instance.Visits.Count, Is.EqualTo 1, "A visit happened")
+      while Instance.Backlog() > 0 do
+          Thread.Sleep 20
+      Assert.That (Instance.Visits.Count, Is.EqualTo 1, "A visit that should have happened, didn't")
       Assert.That (Instance.Visits.[key].Count, Is.EqualTo 1, "keys = " + String.Join("; ", Instance.Visits.Keys|> Seq.toArray))
       Assert.That (Instance.Visits.[key].[23], Is.EqualTo (1, []))
     finally
