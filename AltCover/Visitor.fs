@@ -199,6 +199,13 @@ module Visitor =
      Filter.IsCSharpAutoProperty
      (fun m -> specialCaseFilters
                |> Seq.exists (Filter.Match m))
+     (fun m -> let t = m.DeclaringType
+               m.IsConstructor &&
+               (t.IsNested &&
+                t.CustomAttributes
+                |> Seq.exists(fun a -> a.AttributeType.FullName = "System.Runtime.CompilerServices.CompilerGeneratedAttribute")) ||
+                m.CustomAttributes
+                |> Seq.exists(fun a -> a.AttributeType.FullName = "System.Runtime.CompilerServices.CompilerGeneratedAttribute"))
      ]
     |> Seq.exists (fun f -> f m)
     |> not
@@ -233,7 +240,7 @@ module Visitor =
         [x]
         |> Seq.takeWhile (fun _ -> included <> Inspect.Ignore)
         |> Seq.collect(fun x -> x.GetAllTypes() |> Seq.cast)
-        |> Seq.collect ((fun t -> let types = Seq.unfold (fun (state:TypeDefinition) -> 
+        |> Seq.collect ((fun t -> let types = Seq.unfold (fun (state:TypeDefinition) ->
                                                              if isNull state
                                                              then None
                                                              else Some (state, state.DeclaringType)) t
@@ -267,6 +274,56 @@ module Visitor =
                             MethodNumber <- id
                             (id, n))
 
+  let private CSharpDeclaringMethod (name:string) (t:TypeDefinition) index =
+    let stripped = name.Substring(1, index)
+    let candidates = t.DeclaringType.Methods
+                    |> Seq.filter (fun mx -> (mx.Name = stripped) && mx.HasBody)
+                    |> Seq.toList
+    match candidates with
+    | [x] -> Some x
+    | _ -> candidates
+            |> Seq.tryFind(fun m -> m.Body.Instructions
+                                    |> Seq.filter(fun i -> i.OpCode = OpCodes.Newobj)
+                                    |> Seq.exists(fun i -> let tn = (i.Operand :?> MethodReference).DeclaringType
+                                                           tn = (t :> TypeReference)))
+
+  let private FSharpDeclaringMethod (t:TypeDefinition) (tx:TypeReference) =
+    let candidates = t.DeclaringType.Methods.Concat
+                        (t.DeclaringType.NestedTypes
+                        |> Seq.filter (fun t2 -> (t2 :> TypeReference) <> tx)
+                        |> Seq.collect (fun t2 -> t2.Methods))
+                        |> Seq.filter (fun m -> m.HasBody)
+
+    candidates
+            |> Seq.tryFind(fun m -> m.Body.Instructions
+                                    |> Seq.filter(fun i -> i.OpCode = OpCodes.Newobj)
+                                    |> Seq.exists(fun i -> let tn = (i.Operand :?> MethodReference).DeclaringType
+                                                           tn = tx))
+
+  let internal DeclaringMethod (m:MethodDefinition) =
+    let t = m.DeclaringType
+    let n = t.Name
+    if t.IsNested |> not then
+      None
+    else if n.StartsWith("<", StringComparison.Ordinal) then
+           let name = if n.StartsWith("<>", StringComparison.Ordinal)
+                      then m.Name
+                      else n
+
+           let index = name.IndexOf('>') - 1
+           if (index < 1) then None
+           else CSharpDeclaringMethod name t index
+         else if n.IndexOf('@') >= 0 then
+               let tx = if n.EndsWith("T", StringComparison.Ordinal)
+                        then match t.Methods |> Seq.tryFind (fun m -> m.IsConstructor && m.HasParameters && (m.Parameters.Count = 1))
+                                             |> Option.map (fun m -> m.Parameters |> Seq.head) with
+                             | None -> t :> TypeReference
+                             | Some other -> other.ParameterType
+
+                        else t :> TypeReference
+               FSharpDeclaringMethod t tx
+              else None
+
   let private VisitType (t:TypeDefinition) included buildSequence =
         t.Methods
         |> Seq.cast
@@ -274,7 +331,15 @@ module Visitor =
                                                     && not m.IsRuntime
                                                     && not m.IsPInvokeImpl
                                                     && significant m)
-        |> Seq.collect ((fun m -> Method (m, UpdateInspection included m, Track m)) >> buildSequence)
+        |> Seq.collect ((fun m -> let methods = Seq.unfold (fun (state:MethodDefinition option) ->
+                                                             match state with
+                                                             | None -> None
+                                                             | Some x -> Some (x, DeclaringMethod x)) (Some m)
+                                  let inclusion = Seq.fold UpdateInspection
+                                                           included
+                                                           methods
+
+                                  Method (m, inclusion, Track m)) >> buildSequence)
 
   let CompilerSpecialLineNumber = 0xfeefee
 

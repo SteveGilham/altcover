@@ -1319,7 +1319,7 @@ Target "ReleaseXUnitFSharpTypesDotNetFullRunner" ( fun _ ->
                         "System.Byte[] Tests.M/Thing::bytes()";
                         "System.Int32 Program/Program::main(System.String[])";
                         "System.Void Tests.DU/MyClass::.ctor()";
-                        "System.Void Tests.DU/get_MyBar@31::.ctor(Tests.DU/MyUnion)";
+                        // "System.Void Tests.DU/get_MyBar@31::.ctor(Tests.DU/MyUnion)";
                         "System.Void Tests.DU::testMakeUnion()";
                         "System.Void Tests.M::testMakeThing()";
                         "Tests.DU/MyUnion Tests.DU/MyUnion::as_bar()";
@@ -1402,7 +1402,7 @@ Target "MSBuildTest" ( fun _ ->
                         "System.Byte[] Tests.M/Thing::bytes()";
                         "System.Int32 Program/Program::main(System.String[])";
                         "System.Void Tests.DU/MyClass::.ctor()";
-                        "System.Void Tests.DU/get_MyBar@31::.ctor(Tests.DU/MyUnion)";
+                        // "System.Void Tests.DU/get_MyBar@31::.ctor(Tests.DU/MyUnion)";
                         "System.Void Tests.DU::testMakeUnion()";
                         "System.Void Tests.M::testMakeThing()";
                         "Tests.DU/MyUnion Tests.DU/MyUnion::as_bar()";

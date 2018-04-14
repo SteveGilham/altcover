@@ -295,7 +295,7 @@ module Runner =
 
        let isVisited (x:XElement) =
          let v = x.Attribute(X "visitcount")
-         (v |> isNull |> not) && (v.Value <> "0") 
+         (v |> isNull |> not) && (v.Value <> "0")
 
        let vclasses = classes
                       |> Seq.filter (fun (_, ms) -> ms
@@ -383,7 +383,7 @@ module Runner =
   let StandardSummary (report:XDocument) (format:Base.ReportFormat) =
     report |>
     match format with
-    | Base.ReportFormat.NCover -> NCoverSummary 
+    | Base.ReportFormat.NCover -> NCoverSummary
     | _ -> OpenCoverSummary
 
   let mutable internal Summaries : (XDocument -> Base.ReportFormat -> unit) list = []
@@ -518,7 +518,7 @@ module Runner =
 
   let PayloadBase (rest:string list)  =
     CommandLine.doPathOperation (fun () ->
-        CommandLine.ProcessTrailingArguments rest (DirectoryInfo(Option.get workingDirectory))) 255
+        CommandLine.ProcessTrailingArguments rest (DirectoryInfo(Option.get workingDirectory))) 255 true
 
   let WriteResource =
     CommandLine.resources.GetString >> Output.Info
@@ -780,6 +780,6 @@ module Runner =
 
             let document = if File.Exists report then XDocument.Load report else XDocument()
             DoSummaries document format'
-            result                             ) 255
-        CommandLine.ReportErrors()
+            result                             ) 255 true
+        CommandLine.ReportErrors "Collection"
         value
