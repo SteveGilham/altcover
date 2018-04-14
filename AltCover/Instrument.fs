@@ -266,7 +266,12 @@ module Instrument =
     KnownKey assembly.Name
     |> Option.iter (fun key -> pkey.StrongNameKeyPair <- key)
 #endif
-    assembly.Write(path, pkey)
+    let here = Directory.GetCurrentDirectory()
+    try
+        Directory.SetCurrentDirectory(Path.GetDirectoryName(path))
+        assembly.Write(path, pkey)
+    finally
+        Directory.SetCurrentDirectory(here)
 
   type internal SubstituteInstruction (oldValue:Instruction, newValue:Instruction) =
     /// <summary>
