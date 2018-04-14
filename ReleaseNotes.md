@@ -1,3 +1,10 @@
+# 3.0.416 (Caba series release 5)
+* Exclude constructors on compiler generated types as being simply noise -- they will be exercised if you use any of the real code they represent, so nothing of importance is lost
+* C# compiler generated types for lambdas, `async`/`await` and `yield return` are mapped to their containing methods for the purpose of filtering by method name or method level attributes
+* F# compiler generated types for lambdas, nested named functions and computation expressions are mapped to their containing methods (and their containing methods, if relevant) for the purpose of filtering by method name or method level attributes to that a filter at any level will be picked up by deeply nested inner functions
+* Even more feedback on error, including logging exception detail to file.
+* [BUGFIX] Mono.Cecil can give `ArgumentException` when given an arbitrary file input (while detecting which files are instrumentable assemblies); handle that case
+
 # 3.0.404 (Caba series release 4)
 * Exclusion by attribute on a class also extends to all nested classes, including invisible ones like lambda expressions and relatives.
 * Runner mode (and the `AltCover.Collect` task) now outputs coverage summaries (class, method, point and, where available, branch)

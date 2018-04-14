@@ -18,10 +18,29 @@ module Output =
   let mutable internal Error : (String -> unit) = ignore
   let mutable internal Usage : ((String * obj * obj) -> unit) = ignore
 
+  [<CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202", Justification="Multiple Close() should be safe")>]
+  let LogExceptionToFile path e =
+    use stream = File.Open(path, FileMode.Append, FileAccess.Write)
+    use writer = new StreamWriter(stream)
+
+    let rec logException padding ex =
+      ex.ToString() |> writer.WriteLine
+
+      ex.GetType().GetProperties()
+      |> Seq.filter (fun p -> [ "Message"
+                                "StackTrace" ] |> Seq.exists (fun n -> n = p.Name) |> not)
+      |> Seq.iter (fun p -> (padding + p.Name + " = ") |> writer.WriteLine
+                            match p.GetValue(ex) with
+                            | :? Exception as exx ->
+                              logException ("  " + padding) exx
+                            | v -> v |> sprintf "%A" |> writer.WriteLine)
+    logException String.Empty e
+
 module CommandLine =
 
   let mutable internal help = false
   let mutable internal error :string list = []
+  let mutable internal exceptions : Exception list = []
 
   // Can't hard-code what with .net-core and .net-core tests as well as classic .net
   // all giving this a different namespace
@@ -87,15 +106,19 @@ module CommandLine =
     proc.WaitForExit()
     proc.ExitCode
 
-  let internal doPathOperation (f: unit -> 'a) (defaultValue:'a) =
+  let logException store (e : Exception) =
+    error <- e.Message :: error
+    if store then exceptions <- e :: exceptions
+
+  let internal doPathOperation (f: unit -> 'a) (defaultValue:'a) store =
     let mutable result = defaultValue
     try
         result <- f()
     with
-    | :? ArgumentException as a -> error <- a.Message :: error
-    | :? NotSupportedException as n -> error <- n.Message :: error
-    | :? IOException as i -> error <- i.Message :: error
-    | :? System.Security.SecurityException as s -> error <- s.Message :: error
+    | :? ArgumentException as a -> a :> Exception |> (logException store)
+    | :? NotSupportedException as n -> n :> Exception |> (logException store)
+    | :? IOException as i -> i :> Exception |> (logException store)
+    | :? System.Security.SecurityException as s -> s :> Exception |> (logException store)
     result
 
   let internal ParseCommandLine (arguments:string array) (options:OptionSet) =
@@ -129,13 +152,27 @@ module CommandLine =
            let args = String.Join(" ", (List.toArray t))
            Launch cmd args toInfo.FullName // Spawn process, echoing asynchronously
 
-  let ReportErrors () =
-        error
-        |> List.iter Output.Error
+  let logExceptionsToFile name =
+    let path = Path.Combine (Visitor.OutputDirectory(), name)
+    exceptions
+    |> List.iter (Output.LogExceptionToFile path)
+    if exceptions |> List.isEmpty |> not then
+       String.Format (CultureInfo.CurrentCulture, resources.GetString "WrittenTo", path)
+       |> Output.Error
+
+  let ReportErrors (tag:string) =
+    if tag |> String.IsNullOrWhiteSpace |> not && error |> List.isEmpty |> not then
+       tag |> resources.GetString |> Output.Error
+
+    error
+    |> List.iter Output.Error
+
+    let name = "AltCover-" + DateTime.Now.ToString("yyyy-MM-dd--HH-mm-ss", CultureInfo.InvariantCulture) + ".log"
+    logExceptionsToFile name
 
   let HandleBadArguments arguments intro options1 options =
         String.Join (" ", arguments |> Seq.map (sprintf "%A"))
         |> Output.Echo
         Output.Echo String.Empty
-        ReportErrors ()
+        ReportErrors String.Empty
         Usage (intro, options1, options)
