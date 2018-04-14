@@ -299,13 +299,24 @@ module Visitor =
                                               |> Seq.exists(fun i -> let tn = (i.Operand :?> MethodReference).DeclaringType
                                                                      tn = (t :> TypeReference)))
          else if n.IndexOf('@') >= 0 then
-               let candidates = t.DeclaringType.Methods
-                                // TODO and all the nested types
+               let tx = if n.EndsWith("T", StringComparison.Ordinal)
+                        then match t.Methods |> Seq.tryFind (fun m -> m.IsConstructor && m.HasParameters && (m.Parameters.Count = 1))
+                                             |> Option.map (fun m -> m.Parameters |> Seq.head) with
+                             | None -> t :> TypeReference
+                             | Some other -> other.ParameterType
+
+                        else t :> TypeReference
+
+               let candidates = t.DeclaringType.Methods.Concat
+                                  (t.DeclaringType.NestedTypes
+                                   |> Seq.filter (fun t2 -> (t2 :> TypeReference) <> tx)
+                                   |> Seq.collect (fun t2 -> t2.Methods))
+
                candidates
                       |> Seq.tryFind(fun m -> m.Body.Instructions
                                               |> Seq.filter(fun i -> i.OpCode = OpCodes.Newobj)
                                               |> Seq.exists(fun i -> let tn = (i.Operand :?> MethodReference).DeclaringType
-                                                                     tn = (t :> TypeReference)))
+                                                                     tn = tx))
               else None
 
   let private VisitType (t:TypeDefinition) included buildSequence =

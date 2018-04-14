@@ -17,14 +17,14 @@ module Module =
     |> List.map (fun i -> (string i).Length)
 
   let F2 l =
-    let fetchUrlAsync url =        
-      async {                             
-        let req = WebRequest.Create(Uri(url)) 
+    let fetchUrlAsync url =
+      async {
+        let req = WebRequest.Create(Uri(url))
         use! resp = req.AsyncGetResponse()  // new keyword "use!"
-        use stream = resp.GetResponseStream() 
-        use reader = new StreamReader(stream) 
-        let html = reader.ReadToEnd() 
-        printfn "finished downloading %s" url 
+        use stream = resp.GetResponseStream()
+        use reader = new StreamReader(stream)
+        let html = reader.ReadToEnd()
+        printfn "finished downloading %s" url
         }
     l
     |> List.map fetchUrlAsync  // make a list of async tasks
