@@ -579,8 +579,6 @@ type AltCoverTests() = class
                     |> Seq.map (fun (mo : MethodDefinition option) ->
                                     mo |> Option.map (fun m -> m.DeclaringType.Name + "::" + m.Name))
 
-     result |> Seq.iter (printfn "%A")
-
      let expected = [
                      None //Microsoft.FSharp.Collections.FSharpList`1<System.Int32> Sample6.Module::F1(Microsoft.FSharp.Collections.FSharpList`1<System.Object>)
                      None //Microsoft.FSharp.Core.Unit[] Sample6.Module::F2(Microsoft.FSharp.Collections.FSharpList`1<System.String>)

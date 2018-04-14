@@ -274,11 +274,10 @@ module Visitor =
                             MethodNumber <- id
                             (id, n))
 
-
   let private CSharpDeclaringMethod (name:string) (t:TypeDefinition) index =
     let stripped = name.Substring(1, index)
     let candidates = t.DeclaringType.Methods
-                    |> Seq.filter (fun mx -> mx.Name = stripped)
+                    |> Seq.filter (fun mx -> (mx.Name = stripped) && mx.HasBody)
                     |> Seq.toList
     match candidates with
     | [x] -> Some x
@@ -293,6 +292,7 @@ module Visitor =
                         (t.DeclaringType.NestedTypes
                         |> Seq.filter (fun t2 -> (t2 :> TypeReference) <> tx)
                         |> Seq.collect (fun t2 -> t2.Methods))
+                        |> Seq.filter (fun m -> m.HasBody)
 
     candidates
             |> Seq.tryFind(fun m -> m.Body.Instructions
