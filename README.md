@@ -58,6 +58,10 @@ Running `dotnet fake run ./Build/build.fsx` performs a full build/test/package p
 
 Use `dotnet fake run ./Build/build.fsx --target <targetname>` to run to a specific target.
 
+#### If the build fails
+
+If there's a passing build on the CI servers for this commit, then it's likely to be one of the [intermittent build failures](https://github.com/SteveGilham/altcover/wiki/Intermittent-build-issues) that can arise from the tooling used. The standard remedy is to try again.
+
 ### Unit Tests
 
 The tests in the `Tests.fs` file are ordered in the same dependency order as the code within the AltCover project (the later `Runner` tests aside).  While working on any given layer, it would make sense to comment out all the tests for later files so as to show what is and isn't being covered by explicit testing, rather than merely being cascaded through.
