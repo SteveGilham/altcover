@@ -176,7 +176,10 @@ See https://github.com/SteveGilham/altcover/wiki/Usage for full details.
     <value>Writing files to {0}</value>
   </data>
   <data name="reportingto" xml:space="preserve">
-    <value>Coverage Report: {0}</value>
+    <value>
+Coverage Report: {0}
+
+</value>
   </data>
   <data name="e|assemblyExcludeFilter=" xml:space="preserve">
     <value>Optional: assembly which links other instrumented assemblies but for which internal details may be excluded (may repeat)</value>
@@ -304,6 +307,7 @@ Details written to {0}</value>
     <value>   =&gt; {0}</value>
   </data>
   <data name="instrumented" xml:space="preserve">
-    <value>    {1}  &lt;=  {0}</value>
+    <value>    {1}
+                &lt;=  {0}</value>
   </data>
 </root>

@@ -175,7 +175,10 @@ Vidu https://github.com/SteveGilham/altcover/wiki/Usage por plenaj detaloj.</val
     <value>Skribi dosierojn al {0}</value>
   </data>
   <data name="reportingto" xml:space="preserve">
-    <value>Kovra Raporto: {0}</value>
+    <value>
+Kovra Raporto: {0}
+
+</value>
   </data>
   <data name="e|assemblyExcludeFilter=" xml:space="preserve">
     <value>Laŭvola: asembleo, kiu kunligas aliajn agordajn asembleojn, sed por kiuj internaĵoj povas esti ekskluditaj (eble ripeti)</value>
@@ -303,6 +306,7 @@ Detaloj skribitaj al {0}</value>
     <value>   =&gt; {0}</value>
   </data>
   <data name="instrumented" xml:space="preserve">
-    <value>{1}  &lt;=  {0}</value>
+    <value>    {1}
+                &lt;=  {0}</value>
   </data>
 </root>

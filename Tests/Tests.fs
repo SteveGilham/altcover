@@ -4444,9 +4444,9 @@ type AltCoverTests() = class
                      "\nInstrumenting files from " + (Path.GetFullPath input) +
                      "\nWriting files to " + output +
                      "\n   => " + Path.Combine(Path.GetFullPath input, "Sample1.exe") +
-                     "\nCoverage Report: " + report + 
-                     "\n    " + Path.Combine(Path.GetFullPath output, "Sample1.exe") +
-                     "  <=  Sample1, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null\n"
+                     "\n\nCoverage Report: " + report + 
+                     "\n\n\n    " + Path.Combine(Path.GetFullPath output, "Sample1.exe") +
+                     "\n                <=  Sample1, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null\n"
 
       let console = stdout.ToString()
       Assert.That (console.Replace("\r\n", "\n").Replace("\\", "/"),
@@ -4583,9 +4583,9 @@ type AltCoverTests() = class
                      "\nInstrumenting files from " + (Path.GetFullPath input) +
                      "\nWriting files to " + output +
                      "\n   => " + Path.Combine(Path.GetFullPath input, "Sample2.dll") +
-                     "\nCoverage Report: " + report +
-                     "\n    " + Path.Combine(Path.GetFullPath output, "Sample2.dll") +
-                     "  <=  Sample2, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null\n"
+                     "\n\nCoverage Report: " + report +
+                     "\n\n\n    " + Path.Combine(Path.GetFullPath output, "Sample2.dll") +
+                     "\n                <=  Sample2, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null\n"
 
       Assert.That (stdout.ToString().Replace("\r\n", "\n").Replace("\\", "/"),
                    Is.EqualTo (expected.Replace("\\", "/")))
