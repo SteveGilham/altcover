@@ -302,4 +302,7 @@ Detaloj skribitaj al {0}</value>
   <data name="instrumenting" xml:space="preserve">
     <value>   =&gt; {0}</value>
   </data>
+  <data name="instrumented" xml:space="preserve">
+    <value>{1}  &lt;=  {0}</value>
+  </data>
 </root>
