@@ -1,7 +1,7 @@
 ﻿namespace AltCover
 
 open System
-open System.Collections.Generic
+open System.Diagnostics.CodeAnalysis
 open System.Globalization
 open System.IO
 #if NETCOREAPP2_0
@@ -14,6 +14,13 @@ open AltCover.Base
 open Augment
 open Mono.Cecil
 open Mono.Options
+
+[<ExcludeFromCodeCoverage>]
+type AssemblyInfo = {
+         Path : string
+         Name : string
+         Refs : string list
+         }
 
 module Main =
 
@@ -242,7 +249,7 @@ module Main =
     // Track the symbol-bearing assemblies
     let assemblies =
       sourceInfo.GetFiles()
-      |> Seq.fold (fun (accumulator : (string*string) list) info ->
+      |> Seq.fold (fun (accumulator : AssemblyInfo list) info ->
            let fullName = info.FullName
            ImageLoadResilient(fun () ->
              let def = AssemblyDefinition.ReadAssembly(fullName)
@@ -252,12 +259,48 @@ module Main =
                 String.Format(CultureInfo.CurrentCulture,
                                (CommandLine.resources.GetString "instrumenting"),
                                fullName) |> Output.Info
-                (fullName, def.Name.Name) :: accumulator
+                
+                { Path = fullName 
+                  Name = def.Name.Name
+                  Refs = def.MainModule.AssemblyReferences
+                         |> Seq.map (fun r -> r.Name)
+                         |> Seq.toList} :: accumulator
              else
                 accumulator) (fun () -> accumulator)
         ) []
 
-    List.unzip assemblies
+
+    // sort the assemblies into order so that the depended-upon are processed first
+    let candidates = assemblies
+                     |> Seq.map (fun a -> a.Name)
+                     |> Seq.fold (fun (s: Set<string>) n -> Set.add n s) Set.empty<string>
+    let simplified = assemblies
+                     |> List.map (fun a -> { a with Refs = a.Refs
+                                                           |> List.filter (fun n -> Set.contains n candidates) })
+    let rec bundle unassigned unresolved collection =
+      match unassigned with
+      | [] -> collection
+      | _ ->
+        let stage = unassigned
+                    |> List.filter (fun u -> u.Refs |> List.isEmpty)
+                    |> List.sortBy (fun u -> u.Name)
+
+        let waiting = stage 
+                      |> List.fold (fun s a -> Set.remove a.Name s) unresolved
+
+        let next = unassigned
+                   |> List.filter (fun u -> u.Refs |> List.isEmpty |> not)
+                   |> List.map (fun a -> { a with Refs = a.Refs
+                                                         |> List.filter (fun n -> Set.contains n waiting) })
+
+        bundle next waiting (stage :: collection)
+
+    let sorted = bundle simplified candidates []
+                 |> List.concat
+                 |> List.rev
+                 |> List.map (fun a -> (a.Path, a.Name))
+
+    List.unzip sorted
 
   let internal DoInstrumentation arguments =
     let check1 = DeclareOptions ()

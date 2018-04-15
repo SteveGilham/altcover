@@ -448,14 +448,18 @@ Target "UnitTestWithAltCoverRunner" (fun _ ->
 
       printfn "Unit test the instrumented code"
       try
-       Actions.Run (fun info ->
+       let RunIt (f:Fake.Core.ProcStartInfo -> Fake.Core.ProcStartInfo) (msg:string) =
+           let x = Fake.Core.Process.execSimple (f >> Fake.Core.Process.withFramework) (TimeSpan.FromMinutes 10.0) 
+           Assert.That(x, Is.EqualTo 0, msg)
+
+       RunIt (fun info -> 
           { info with
                 FileName = altcover
                 WorkingDirectory = "."
                 Arguments = ( " Runner -x " + nunit +
                               " -r " + (testDirectory @@ "__UnitTestWithAltCoverRunner") +
                               " -w . -- " +
-                              " --noheader --work=. --result=./_Reports/UnitTestWithAltCoverReport.xml \"" +
+                              " --labels=All --noheader --work=. --result=./_Reports/UnitTestWithAltCoverReport.xml \"" +
                               String.Join ("\" \"", [ Path.getFullName  "_Binaries/AltCover.Tests/Debug+AnyCPU/__UnitTestWithAltCoverRunner/AltCover.Tests.dll"
                                                       Path.getFullName  "_Binaries/AltCover.Tests/Debug+AnyCPU/__UnitTestWithAltCoverRunner/Sample2.dll"]) + "\""
                             )}) "Re-instrument tests returned with a non-zero exit code"

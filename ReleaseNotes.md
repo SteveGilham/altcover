@@ -1,3 +1,8 @@
+# 3.0.422 (Caba series release 6)
+* [BUGFIX] -- Cecil resolves type dependencies by looking relative to the current working directory, no matter where it's actually writing the file : so work in the target directory wheil we are writing
+* Also, just in case, ensure we process files from the depended-upon first, up the dependency chain (assumes no dependency cycles).
+* Give feedback of what is written where and when.
+
 # 3.0.416 (Caba series release 5)
 * Exclude constructors on compiler generated types as being simply noise -- they will be exercised if you use any of the real code they represent, so nothing of importance is lost
 * C# compiler generated types for lambdas, `async`/`await` and `yield return` are mapped to their containing methods for the purpose of filtering by method name or method level attributes
