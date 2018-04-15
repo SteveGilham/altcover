@@ -34,8 +34,8 @@
     <Compile Include="Report.fs" />
     <Compile Include="Gendarme.fs" />
     <Compile Include="OpenCover.fs" />
-    <Compile Include="Instrument.fs" />
     <Compile Include="CommandLine.fs" />
+    <Compile Include="Instrument.fs" />
     <Compile Include="Runner.fs" />
     <Compile Include="AltCover.fs" />
     <Compile Include="Tasks.fs" />

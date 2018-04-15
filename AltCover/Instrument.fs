@@ -266,7 +266,12 @@ module Instrument =
     KnownKey assembly.Name
     |> Option.iter (fun key -> pkey.StrongNameKeyPair <- key)
 #endif
-    assembly.Write(path, pkey)
+    let here = Directory.GetCurrentDirectory()
+    try
+        Directory.SetCurrentDirectory(Path.GetDirectoryName(path))
+        assembly.Write(path, pkey)
+    finally
+        Directory.SetCurrentDirectory(here)
 
   type internal SubstituteInstruction (oldValue:Instruction, newValue:Instruction) =
     /// <summary>
@@ -531,6 +536,9 @@ module Instrument =
   let private VisitAfterAssembly state (assembly:AssemblyDefinition) =
     let originalFileName = Path.GetFileName assembly.MainModule.FileName
     let path = Path.Combine(Visitor.InstrumentDirectory(), originalFileName)
+    String.Format(System.Globalization.CultureInfo.CurrentCulture, 
+                  CommandLine.resources.GetString "instrumented", assembly, path)
+    |> Output.Info
     WriteAssembly assembly path
     state
 
