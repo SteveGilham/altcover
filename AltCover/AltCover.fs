@@ -297,6 +297,7 @@ module Main =
 
     let sorted = bundle simplified candidates []
                  |> List.concat
+                 |> List.rev
                  |> List.map (fun a -> (a.Path, a.Name))
 
     List.unzip sorted
