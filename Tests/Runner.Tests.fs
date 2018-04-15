@@ -188,6 +188,11 @@ type AltCoverTests() = class
                                data, rather than launching a process.
   -l, --lcovReport=VALUE     Optional: File for lcov format version of the
                                collected data
+  -t, --threshold=VALUE      Optional: minimum acceptable coverage percentage (
+                               integer, 0 to 100).  If the coverage result is
+                               below threshold, the return code of the process
+                               is (threshold - actual) rounded up to the
+                               nearest integer.
   -?, --help, -h             Prints out the options.
 """
 
@@ -246,7 +251,7 @@ type AltCoverTests() = class
   [<Test>]
   member self.ShouldHaveExpectedOptions() =
     let options = Runner.DeclareOptions ()
-    Assert.That (options.Count, Is.EqualTo 7)
+    Assert.That (options.Count, Is.EqualTo 8)
     Assert.That(options |> Seq.filter (fun x -> x.Prototype <> "<>")
                         |> Seq.forall (fun x -> (String.IsNullOrWhiteSpace >> not) x.Description))
     Assert.That (options |> Seq.filter (fun x -> x.Prototype = "<>") |> Seq.length, Is.EqualTo 1)
@@ -524,7 +529,7 @@ type AltCoverTests() = class
       Runner.collect <- false
 
   [<Test>]
-  member self.ParsingLcovGivesLcove() =
+  member self.ParsingLcovGivesLcov() =
     lock Runner.lcov (fun () ->
     try
       Runner.lcov := None
@@ -582,6 +587,66 @@ type AltCoverTests() = class
     finally
       Runner.Summaries <- [Runner.StandardSummary]
       Runner.lcov := None)
+
+  [<Test>]
+  member self.ParsingThresholdGivesThreshold() =
+    try
+      Runner.threshold <- None
+      let options = Runner.DeclareOptions ()
+      let input = [| "-t"; "57" |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Left _ -> Assert.Fail()
+      | Right (x, y) -> Assert.That (y, Is.SameAs options)
+                        Assert.That (x, Is.Empty)
+
+      match Runner.threshold with
+      | None -> Assert.Fail()
+      | Some x -> Assert.That(x, Is.EqualTo 57)
+    finally
+      Runner.threshold <- None
+
+  [<Test>]
+  member self.ParsingMultipleThresholdGivesFailure() =
+    try
+      Runner.threshold <- None
+      let options = Runner.DeclareOptions ()
+      let input = [| "-t"; "23"; "/t"; "42" |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Right _ -> Assert.Fail()
+      | Left (x, y) -> Assert.That (y, Is.SameAs options)
+                       Assert.That (x, Is.EqualTo "UsageError")
+    finally
+      Runner.threshold <- None
+
+  [<Test>]
+  member self.ParsingBadThresholdGivesFailure() =
+    try
+      Runner.threshold <- None
+      let options = Runner.DeclareOptions ()
+      let input = [| "-t"; "-111" |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Right _ -> Assert.Fail()
+      | Left (x, y) -> Assert.That (y, Is.SameAs options)
+                       Assert.That (x, Is.EqualTo "UsageError")
+    finally
+      Runner.threshold <- None
+
+  [<Test>]
+  member self.ParsingNoThresholdGivesFailure() =
+    try
+      Runner.threshold <- None
+      let options = Runner.DeclareOptions ()
+      let input = [| "-t" |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Right _ -> Assert.Fail()
+      | Left (x, y) -> Assert.That (y, Is.SameAs options)
+                       Assert.That (x, Is.EqualTo "UsageError")
+    finally
+      Runner.threshold <- None
 
   [<Test>]
   member self.ShouldRequireExe() =
@@ -875,6 +940,11 @@ or
                                data, rather than launching a process.
   -l, --lcovReport=VALUE     Optional: File for lcov format version of the
                                collected data
+  -t, --threshold=VALUE      Optional: minimum acceptable coverage percentage (
+                               integer, 0 to 100).  If the coverage result is
+                               below threshold, the return code of the process
+                               is (threshold - actual) rounded up to the
+                               nearest integer.
   -?, --help, -h             Prints out the options.
 """
 

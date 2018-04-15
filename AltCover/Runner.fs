@@ -37,6 +37,7 @@ module Runner =
   let internal executable : Option<string> ref = ref None
   let internal lcov : Option<string> ref = ref None
   let mutable internal collect = false
+  let mutable internal threshold : Option<int> = None
 
   let DoWithFile (create: unit -> FileStream) (action : Stream -> unit) =
     use stream = create()
@@ -449,6 +450,21 @@ module Runner =
                  else CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
                                                          CommandLine.resources.GetString "InvalidValue",
                                                          "--lcovReport",
+                                                         x) :: CommandLine.error))
+      ("t|threshold=",
+       (fun x -> let (q,n) = Int32.TryParse ( if (String.IsNullOrWhiteSpace(x)) then "!"
+                                              else x )
+                 let ok = if q then (n >= 0) && (n <= 100) else q
+                 if ok then
+                    if Option.isSome threshold then
+                      CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
+                                                         CommandLine.resources.GetString "MultiplesNotAllowed",
+                                                         "--threshold") :: CommandLine.error
+                    else
+                      threshold <- Some n
+                 else CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
+                                                         CommandLine.resources.GetString "InvalidValue",
+                                                         "--threshold",
                                                          x) :: CommandLine.error))
       ("?|help|h", (fun x -> CommandLine.help <- not (isNull x)))
       ("<>", (fun x -> CommandLine.error <- String.Format(CultureInfo.CurrentCulture,

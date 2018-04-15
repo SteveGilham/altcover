@@ -4444,7 +4444,7 @@ type AltCoverTests() = class
                      "\nInstrumenting files from " + (Path.GetFullPath input) +
                      "\nWriting files to " + output +
                      "\n   => " + Path.Combine(Path.GetFullPath input, "Sample1.exe") +
-                     "\n\nCoverage Report: " + report + 
+                     "\n\nCoverage Report: " + report +
                      "\n\n\n    " + Path.Combine(Path.GetFullPath output, "Sample1.exe") +
                      "\n                <=  Sample1, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null\n"
 
@@ -4864,6 +4864,11 @@ or
                                data, rather than launching a process.
   -l, --lcovReport=VALUE     Optional: File for lcov format version of the
                                collected data
+  -t, --threshold=VALUE      Optional: minimum acceptable coverage percentage (
+                               integer, 0 to 100).  If the coverage result is
+                               below threshold, the return code of the process
+                               is (threshold - actual) rounded up to the
+                               nearest integer.
   -?, --help, -h             Prints out the options.
 """
 
