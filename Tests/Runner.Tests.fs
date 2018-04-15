@@ -1366,7 +1366,8 @@ or
     let builder = System.Text.StringBuilder()
     try
       Output.Info <- (fun s -> builder.Append(s).Append("|") |> ignore)
-      Runner.StandardSummary report Base.ReportFormat.NCover
+      let r = Runner.StandardSummary report Base.ReportFormat.NCover 0
+      Assert.That (r, Is.EqualTo 0)
       Assert.That (builder.ToString(), Is.EqualTo "Visited Classes 0 of 0 (n/a)|Visited Methods 0 of 0 (n/a)|Visited Points 0 of 0 (n/a)|")
     finally
       Output.Info <- ignore
@@ -1382,7 +1383,8 @@ or
     let builder = System.Text.StringBuilder()
     try
       Output.Info <- (fun s -> builder.Append(s).Append("|") |> ignore)
-      Runner.StandardSummary baseline Base.ReportFormat.NCover
+      let r = Runner.StandardSummary baseline Base.ReportFormat.NCover 0
+      Assert.That (r, Is.EqualTo 0)
       Assert.That (builder.ToString(), Is.EqualTo "Visited Classes 1 of 1 (100)|Visited Methods 1 of 1 (100)|Visited Points 8 of 10 (80)|")
     finally
       Output.Info <- ignore
@@ -1395,7 +1397,8 @@ or
     let builder = System.Text.StringBuilder()
     try
         Output.Info <- (fun s -> builder.Append(s).Append("|") |> ignore)
-        Runner.StandardSummary report Base.ReportFormat.OpenCover
+        let r = Runner.StandardSummary report Base.ReportFormat.OpenCover 0
+        Assert.That (r, Is.EqualTo 0)
         Assert.That (builder.ToString(), Is.EqualTo ("Visited Classes 0 of 0 (n/a)|Visited Methods 0 of 0 (n/a)|" +
                                                      "Visited Points 0 of 0 (0)|Visited Branches 0 of 0 (0)||" +
                                                      "==== Alternative Results (includes all methods including those without corresponding source) ====|" +
@@ -1414,7 +1417,8 @@ or
     let builder = System.Text.StringBuilder()
     try
         Output.Info <- (fun s -> builder.Append(s).Append("|") |> ignore)
-        Runner.StandardSummary baseline Base.ReportFormat.OpenCover
+        let r = Runner.StandardSummary baseline Base.ReportFormat.OpenCover 0
+        Assert.That (r, Is.EqualTo 0)
         Assert.That (builder.ToString(), Is.EqualTo ("Visited Classes 1 of 1 (100)|Visited Methods 1 of 1 (100)|" +
                                                      "Visited Points 7 of 10 (70)|Visited Branches 2 of 3 (66.67)||" +
                                                      "==== Alternative Results (includes all methods including those without corresponding source) ====|" +
@@ -1436,7 +1440,8 @@ or
     unique |> Path.GetDirectoryName |>  Directory.CreateDirectory |> ignore
 
     try
-      Runner.LCovSummary baseline Base.ReportFormat.OpenCover
+      let r = Runner.LCovSummary baseline Base.ReportFormat.OpenCover 0
+      Assert.That (r, Is.EqualTo 0)
 
       let result = File.ReadAllText unique
 
@@ -1464,7 +1469,8 @@ or
     unique |> Path.GetDirectoryName |>  Directory.CreateDirectory |> ignore
 
     try
-      Runner.LCovSummary baseline Base.ReportFormat.NCover
+      let r = Runner.LCovSummary baseline Base.ReportFormat.NCover 0
+      Assert.That (r, Is.EqualTo 0)
 
       let result = File.ReadAllText unique
 
