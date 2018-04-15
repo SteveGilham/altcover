@@ -210,6 +210,8 @@ module Instance =
   let internal PayloadSelector enable =
     PayloadControl Granularity enable
 
+  let mutable internal Wait = 10
+
   let internal VisitSelection (f: unit -> bool) track moduleId hitPointId =
     // When writing to file for the runner to process,
     // make this semi-synchronous to avoid choking the mailbox
@@ -218,7 +220,7 @@ module Instance =
     // when sending only async messages.
     let message = SequencePoint (moduleId, hitPointId, track)
     if f() then
-       mailbox.TryPostAndReply ((fun c -> Item (message, c)), 10) |> ignore
+       mailbox.TryPostAndReply ((fun c -> Item (message, c)), Wait) |> ignore
     else message |> AsyncItem |> mailbox.Post
 
   let Visit moduleId hitPointId =
