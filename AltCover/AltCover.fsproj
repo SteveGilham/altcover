@@ -149,7 +149,7 @@
 	<Target Name="AfterBuild">
 	</Target>
 	-->
-  <Target Name="FSharpLint" BeforeTargets="AfterBuild" Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+  <Target Name="FSharpLint" BeforeTargets="AfterBuild" Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' AND '$(FSharpLintEnabled)' != 'false'">
     <FSharpLintTask Project="$(MSBuildProjectFullPath)" TreatWarningsAsErrors="true" />
   </Target>
 </Project>
