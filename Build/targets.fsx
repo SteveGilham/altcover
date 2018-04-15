@@ -449,7 +449,7 @@ Target "UnitTestWithAltCoverRunner" (fun _ ->
       printfn "Unit test the instrumented code"
       try
        let RunIt (f:Fake.Core.ProcStartInfo -> Fake.Core.ProcStartInfo) (msg:string) =
-           let x = Fake.Core.Process.execSimple (f >> Fake.Core.Process.withFramework) (TimeSpan.FromMinutes 10.0) 
+           let x = Fake.Core.Process.execSimple (f >> Fake.Core.Process.withFramework) (TimeSpan.FromMinutes 15.0) 
            Assert.That(x, Is.EqualTo 0, msg)
 
        RunIt (fun info -> 
