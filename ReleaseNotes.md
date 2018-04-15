@@ -1,6 +1,6 @@
-# 3.0.4xx (Caba series release 6)
+# 3.0.422 (Caba series release 6)
 * [BUGFIX] -- Cecil resolves type dependencies by looking relative to the current working directory, no matter where it's actually writing the file : so work in the target directory wheil we are writing
-* Also, just in case, ensure we process files from the depended-upon first, up the dependency chain.
+* Also, just in case, ensure we process files from the depended-upon first, up the dependency chain (assumes no dependency cycles).
 * Give feedback of what is written where and when.
 
 # 3.0.416 (Caba series release 5)
