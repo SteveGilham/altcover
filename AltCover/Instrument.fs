@@ -536,7 +536,7 @@ module Instrument =
   let private VisitAfterAssembly state (assembly:AssemblyDefinition) =
     let originalFileName = Path.GetFileName assembly.MainModule.FileName
     let path = Path.Combine(Visitor.InstrumentDirectory(), originalFileName)
-    String.Format(System.Globalization.CultureInfo.CurrentCulture, 
+    String.Format(System.Globalization.CultureInfo.CurrentCulture,
                   CommandLine.resources.GetString "instrumented", assembly, path)
     |> Output.Info
     WriteAssembly assembly path

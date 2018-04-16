@@ -37,6 +37,16 @@ module Runner =
   let internal executable : Option<string> ref = ref None
   let mutable internal collect = false
   let mutable internal threshold : Option<int> = None
+
+  let init() =
+    recordingDirectory <- None
+    workingDirectory <- None
+    executable := None
+    LCov.path := None
+    Cobertura.path := None
+    collect <- false
+    threshold <- None
+
   let X = OpenCover.X
 
   let NCoverSummary (report:XDocument) =
@@ -156,7 +166,7 @@ module Runner =
     let value = match covered with
                 | (false, _) -> 0.0
                 | (_ , x) -> x
-    
+
     match threshold with
     | None -> result
     | Some x -> let f = float x
