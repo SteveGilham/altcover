@@ -5,7 +5,7 @@ open System.Xml.Linq
 
 open Actions
 
-open Fake.Core.Environment
+open Fake.Core
 open Fake.Core.Target
 open Fake.Core.TargetOperators
 open Fake.DotNet
@@ -29,15 +29,15 @@ let AltCoverFilter= @" -s=Adapter -s=Mono -s=\.Recorder -s=Sample -s=nunit -e=Te
 let AltCoverFilterX= @" -s=Adapter --s=Mono -s=\.Recorder -s=Sample -s=nunit -t=System\. -t=Sample3\.Class2 "
 let AltCoverFilterG= @" -s=Adapter --s=Mono -s=\.Recorder\.g -s=Sample -s=nunit -e=Tests -t=System. -t=Sample3\.Class2 "
 
-let programFiles = environVar "ProgramFiles"
-let programFiles86 = environVar "ProgramFiles(x86)"
+let programFiles = Environment.environVar "ProgramFiles"
+let programFiles86 = Environment.environVar "ProgramFiles(x86)"
 let dotnetPath = "dotnet" |> Fake.Core.Process.tryFindFileOnPath
 
 let dotnetOptions (o:DotNet.Options) = match dotnetPath with
                                        | Some f -> {o with DotNetCliPath = f}
                                        | None -> o
 
-let monoOnWindows = if isWindows then
+let monoOnWindows = if Environment.isWindows then
                        [programFiles; programFiles86]
                        |> List.filter (String.IsNullOrWhiteSpace >> not)
                        |> List.map (fun s -> s @@ "Mono/bin/mono.exe")
@@ -45,7 +45,7 @@ let monoOnWindows = if isWindows then
                        |> List.tryFind (fun _ -> true)
                     else None
 
-let dotnetPath86 = if isWindows then
+let dotnetPath86 = if Environment.isWindows then
                                 let perhaps = [programFiles86]
                                               |> List.filter (String.IsNullOrWhiteSpace >> not)
                                               |> List.map (fun s -> s @@ "dotnet\dotnet.EXE")
@@ -79,8 +79,8 @@ Target "Clean" (fun _ ->
 )
 
 Target "SetVersion" (fun _ ->
-    let appveyor = environVar "APPVEYOR_BUILD_VERSION"
-    let travis = environVar "TRAVIS_JOB_NUMBER"
+    let appveyor = Environment.environVar "APPVEYOR_BUILD_VERSION"
+    let travis = Environment.environVar "TRAVIS_JOB_NUMBER"
     let version = Actions.GetVersionFromYaml ()
     let ci = if String.IsNullOrWhiteSpace appveyor then
                if  String.IsNullOrWhiteSpace travis then
@@ -201,7 +201,7 @@ Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standal
 Target "FxCop" (fun _ -> // Needs debug because release is compiled --standalone which contaminates everything
     Directory.ensure "./_Reports"
 
-    let vsInstallPath = if isWindows then
+    let vsInstallPath = if Environment.isWindows then
                             use hklmKey = Microsoft.Win32.RegistryKey.OpenBaseKey(
                                                 Microsoft.Win32.RegistryHive.LocalMachine,
                                                 Microsoft.Win32.RegistryView.Registry32)
@@ -540,7 +540,7 @@ Target "UnitTestWithAltCoverRunner" (fun _ ->
 
       File.WriteAllLines(coverage, Seq.concat [cover1; cover2; cover3] |> Seq.toArray)
 
-      if not <| String.IsNullOrWhiteSpace (environVar "APPVEYOR_BUILD_NUMBER") then
+      if not <| String.IsNullOrWhiteSpace (Environment.environVar "APPVEYOR_BUILD_NUMBER") then
        Actions.Run (fun info ->
           { info with
                 FileName = findToolInSubPath "coveralls.net.exe" nugetCache
@@ -938,7 +938,7 @@ Target "Packaging" (fun _ ->
         Publish = false
         ReleaseNotes = Path.getFullName "ReleaseNotes.md"
                        |> File.ReadAllText
-        ToolPath = if isWindows then p.ToolPath else "/usr/bin/nuget"
+        ToolPath = if Environment.isWindows then p.ToolPath else "/usr/bin/nuget"
         })
         "./Build/AltCover.nuspec"
 )
@@ -1508,7 +1508,7 @@ activateFinal "ResetConsoleColours"
 
 "Compilation"
 ==> "FxCop"
-=?> ("Analysis", isWindows) // not supported
+=?> ("Analysis", Environment.isWindows) // not supported
 
 "Compilation"
 ==> "Gendarme"
@@ -1527,7 +1527,7 @@ activateFinal "ResetConsoleColours"
 
 "Compilation"
 ==> "UnitTestWithOpenCover"
-=?> ("UnitTest", isWindows)  // OpenCover Mono support
+=?> ("UnitTest", Environment.isWindows)  // OpenCover Mono support
 
 "Compilation"
 ==> "UnitTestWithAltCover"
@@ -1594,14 +1594,14 @@ activateFinal "ResetConsoleColours"
 
 "Compilation"
 ==> "SelfTest"
-=?> ("OperationalTest", isWindows)  // OpenCover Mono support AND Mono + F# + Fake build => no symbols
+=?> ("OperationalTest", Environment.isWindows)  // OpenCover Mono support AND Mono + F# + Fake build => no symbols
 
 "Compilation"
 ?=> "Packaging"
 
 "Compilation"
 ==> "PrepareFrameworkBuild"
-=?> ("Packaging", isWindows)  // can't ILMerge
+=?> ("Packaging", Environment.isWindows)  // can't ILMerge
 
 "Compilation"
 ==> "PrepareDotNetBuild"
