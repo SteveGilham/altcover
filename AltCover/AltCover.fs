@@ -274,15 +274,16 @@ module Main =
     let candidates = assemblies
                      |> Seq.map (fun a -> a.Name)
                      |> Seq.fold (fun (s: Set<string>) n -> Set.add n s) Set.empty<string>
+
     let simplified = assemblies
                      |> List.map (fun a -> { a with Refs = a.Refs
                                                            |> List.filter (fun n -> Set.contains n candidates) })
-    let rec bundle unassigned unresolved collection =
+    let rec bundle unassigned unresolved collection n =
       match unassigned with
       | [] -> collection
       | _ ->
-        let stage = unassigned
-                    |> List.filter (fun u -> u.Refs |> List.isEmpty)
+        let stage = (if n <= 1 then unassigned
+                     else unassigned |> List.filter (fun u -> u.Refs |> List.isEmpty))
                     |> List.sortBy (fun u -> u.Name)
 
         let waiting = stage 
@@ -293,9 +294,9 @@ module Main =
                    |> List.map (fun a -> { a with Refs = a.Refs
                                                          |> List.filter (fun n -> Set.contains n waiting) })
 
-        bundle next waiting (stage :: collection)
+        bundle next waiting (stage :: collection) (n-1)
 
-    let sorted = bundle simplified candidates []
+    let sorted = bundle simplified candidates [] (simplified |> List.length)
                  |> List.concat
                  |> List.rev
                  |> List.map (fun a -> (a.Path, a.Name))
