@@ -530,9 +530,9 @@ type AltCoverTests() = class
 
   [<Test>]
   member self.ParsingLcovGivesLcov() =
-    lock Runner.lcov (fun () ->
+    lock LCov.path (fun () ->
     try
-      Runner.lcov := None
+      LCov.path := None
       Runner.Summaries <- [Runner.StandardSummary]
       let options = Runner.DeclareOptions ()
       let unique = "some exe"
@@ -543,20 +543,20 @@ type AltCoverTests() = class
       | Right (x, y) -> Assert.That (y, Is.SameAs options)
                         Assert.That (x, Is.Empty)
 
-      match !Runner.lcov with
+      match !LCov.path with
       | None -> Assert.Fail()
       | Some x -> Assert.That(Path.GetFileName x, Is.EqualTo unique)
 
       Assert.That (Runner.Summaries.Length, Is.EqualTo 2)
     finally
       Runner.Summaries <- [Runner.StandardSummary]
-      Runner.lcov := None)
+      LCov.path := None)
 
   [<Test>]
   member self.ParsingMultipleLcovGivesFailure() =
-    lock Runner.lcov (fun () ->
+    lock LCov.path (fun () ->
     try
-      Runner.lcov := None
+      LCov.path := None
       Runner.Summaries <- [Runner.StandardSummary]
       let options = Runner.DeclareOptions ()
       let unique = Guid.NewGuid().ToString()
@@ -568,13 +568,13 @@ type AltCoverTests() = class
                        Assert.That (x, Is.EqualTo "UsageError")
     finally
       Runner.Summaries <- [Runner.StandardSummary]
-      Runner.lcov := None)
+      LCov.path := None)
 
   [<Test>]
   member self.ParsingNoLcovGivesFailure() =
-    lock Runner.lcov (fun () ->
+    lock LCov.path (fun () ->
     try
-      Runner.lcov := None
+      LCov.path := None
       Runner.Summaries <- [Runner.StandardSummary]
       let options = Runner.DeclareOptions ()
       let blank = " "
@@ -586,7 +586,7 @@ type AltCoverTests() = class
                        Assert.That (x, Is.EqualTo "UsageError")
     finally
       Runner.Summaries <- [Runner.StandardSummary]
-      Runner.lcov := None)
+      LCov.path := None)
 
   [<Test>]
   member self.ParsingThresholdGivesThreshold() =
@@ -1447,11 +1447,11 @@ or
     let baseline = XDocument.Load(stream)
     let unique = Path.Combine(Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName,
                                 Guid.NewGuid().ToString() + "/OpenCover.lcov")
-    Runner.lcov := Some unique
+    LCov.path := Some unique
     unique |> Path.GetDirectoryName |>  Directory.CreateDirectory |> ignore
 
     try
-      let r = Runner.LCovSummary baseline Base.ReportFormat.OpenCover 0
+      let r = LCov.Summary baseline Base.ReportFormat.OpenCover 0
       Assert.That (r, Is.EqualTo 0)
 
       let result = File.ReadAllText unique
@@ -1464,7 +1464,7 @@ or
       let expected = reader.ReadToEnd().Replace("\r", String.Empty)
       Assert.That (result.Replace("\r", String.Empty), Is.EqualTo expected)
     finally
-      Runner.lcov := None
+      LCov.path := None
 
   [<Test>]
   member self.NCoverShouldGeneratePlausibleLcov() =
@@ -1476,11 +1476,11 @@ or
     let baseline = XDocument.Load(stream)
     let unique = Path.Combine(Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName,
                                 Guid.NewGuid().ToString() + "/NCover.lcov")
-    Runner.lcov := Some unique
+    LCov.path := Some unique
     unique |> Path.GetDirectoryName |>  Directory.CreateDirectory |> ignore
 
     try
-      let r = Runner.LCovSummary baseline Base.ReportFormat.NCover 0
+      let r = LCov.Summary baseline Base.ReportFormat.NCover 0
       Assert.That (r, Is.EqualTo 0)
 
       let result = File.ReadAllText unique
@@ -1493,7 +1493,7 @@ or
       let expected = reader.ReadToEnd().Replace("\r", String.Empty)
       Assert.That (result.Replace("\r", String.Empty), Is.EqualTo expected)
     finally
-      Runner.lcov := None
+      LCov.path := None
 
   [<Test>]
   member self.MultiSortDoesItsThing() =
@@ -1506,7 +1506,7 @@ or
                                               |> List.map (fun x -> x.Descendants(XName.Get "x") |> Seq.head)
                                               |> List.toSeq))
                 |> List.toSeq
-    let result = Runner.multiSortByNameAndStartLine input
+    let result = LCov.multiSortByNameAndStartLine input
                  |> Seq.map (fun (f,ms) -> (f, ms
                                                |> Seq.map (fun m -> m.ToString().Replace("\r",String.Empty).Replace("\n",String.Empty).Replace("  <", "<"))
                                                |> Seq.toList))
