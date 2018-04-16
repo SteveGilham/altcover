@@ -39,6 +39,14 @@ module Runner =
   let mutable internal collect = false
   let mutable internal threshold : Option<int> = None
 
+  let init() =
+    recordingDirectory <- None
+    workingDirectory <- None
+    executable := None
+    lcov := None
+    collect <- false
+    threshold <- None
+
   let DoWithFile (create: unit -> FileStream) (action : Stream -> unit) =
     use stream = create()
     action stream

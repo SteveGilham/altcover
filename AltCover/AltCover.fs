@@ -23,6 +23,22 @@ type AssemblyInfo = {
          }
 
 module Main =
+  let init () =
+    Visitor.inputDirectory <- None
+    Visitor.outputDirectory <- None
+    ProgramDatabase.SymbolFolders.Clear()
+#if NETCOREAPP2_0
+#else
+    Visitor.keys.Clear()
+    Visitor.defaultStrongNameKey <- None
+#endif
+    Visitor.reportPath <- None
+    Visitor.NameFilters.Clear()
+    Visitor.interval <- None
+    Visitor.TrackingNames.Clear()
+    Visitor.reportFormat <- None
+    Visitor.inplace <- false
+    Visitor.collect <- false
 
   let internal DeclareOptions () =
     [ ("i|inputDirectory=",
@@ -333,8 +349,10 @@ module Main =
 
   let internal Main arguments =
     if "Runner".StartsWith(arguments |> Seq.head, StringComparison.OrdinalIgnoreCase)
-      then Runner.DoCoverage arguments (DeclareOptions())
-      else DoInstrumentation arguments
+      then Runner.init()
+           Runner.DoCoverage arguments (DeclareOptions())
+      else init()
+           DoInstrumentation arguments
 
   // mocking point
   let mutable internal EffectiveMain = Main
