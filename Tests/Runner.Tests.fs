@@ -193,6 +193,8 @@ type AltCoverTests() = class
                                below threshold, the return code of the process
                                is (threshold - actual) rounded up to the
                                nearest integer.
+  -c, --cobertura=VALUE      Optional: File for Cobertura format version of the
+                               collected data
   -?, --help, -h             Prints out the options.
 """
 
@@ -251,7 +253,7 @@ type AltCoverTests() = class
   [<Test>]
   member self.ShouldHaveExpectedOptions() =
     let options = Runner.DeclareOptions ()
-    Assert.That (options.Count, Is.EqualTo 8)
+    Assert.That (options.Count, Is.EqualTo 9)
     Assert.That(options |> Seq.filter (fun x -> x.Prototype <> "<>")
                         |> Seq.forall (fun x -> (String.IsNullOrWhiteSpace >> not) x.Description))
     Assert.That (options |> Seq.filter (fun x -> x.Prototype = "<>") |> Seq.length, Is.EqualTo 1)
@@ -635,6 +637,66 @@ type AltCoverTests() = class
       Runner.threshold <- None
 
   [<Test>]
+  member self.ParsingCoberturaGivesCobertura() =
+    lock Cobertura.path (fun () ->
+    try
+      Cobertura.path := None
+      Runner.Summaries <- [Runner.StandardSummary]
+      let options = Runner.DeclareOptions ()
+      let unique = "some exe"
+      let input = [| "-c"; unique |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Left _ -> Assert.Fail()
+      | Right (x, y) -> Assert.That (y, Is.SameAs options)
+                        Assert.That (x, Is.Empty)
+
+      match !Cobertura.path with
+      | None -> Assert.Fail()
+      | Some x -> Assert.That(Path.GetFileName x, Is.EqualTo unique)
+
+      Assert.That (Runner.Summaries.Length, Is.EqualTo 2)
+    finally
+      Runner.Summaries <- [Runner.StandardSummary]
+      Cobertura.path := None)
+
+  [<Test>]
+  member self.ParsingMultipleCoberturaGivesFailure() =
+    lock Cobertura.path (fun () ->
+    try
+      Cobertura.path := None
+      Runner.Summaries <- [Runner.StandardSummary]
+      let options = Runner.DeclareOptions ()
+      let unique = Guid.NewGuid().ToString()
+      let input = [| "-c"; unique; "/c"; unique.Replace("-", "+") |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Right _ -> Assert.Fail()
+      | Left (x, y) -> Assert.That (y, Is.SameAs options)
+                       Assert.That (x, Is.EqualTo "UsageError")
+    finally
+      Runner.Summaries <- [Runner.StandardSummary]
+      Cobertura.path := None)
+
+  [<Test>]
+  member self.ParsingNoCoberturaGivesFailure() =
+    lock Cobertura.path (fun () ->
+    try
+      Cobertura.path := None
+      Runner.Summaries <- [Runner.StandardSummary]
+      let options = Runner.DeclareOptions ()
+      let blank = " "
+      let input = [| "-c"; blank; |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Right _ -> Assert.Fail()
+      | Left (x, y) -> Assert.That (y, Is.SameAs options)
+                       Assert.That (x, Is.EqualTo "UsageError")
+    finally
+      Runner.Summaries <- [Runner.StandardSummary]
+      Cobertura.path := None)
+
+  [<Test>]
   member self.ParsingNoThresholdGivesFailure() =
     try
       Runner.threshold <- None
@@ -945,6 +1007,8 @@ or
                                below threshold, the return code of the process
                                is (threshold - actual) rounded up to the
                                nearest integer.
+  -c, --cobertura=VALUE      Optional: File for Cobertura format version of the
+                               collected data
   -?, --help, -h             Prints out the options.
 """
 

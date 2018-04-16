@@ -4869,6 +4869,8 @@ or
                                below threshold, the return code of the process
                                is (threshold - actual) rounded up to the
                                nearest integer.
+  -c, --cobertura=VALUE      Optional: File for Cobertura format version of the
+                               collected data
   -?, --help, -h             Prints out the options.
 """
 

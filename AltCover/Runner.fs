@@ -242,6 +242,19 @@ module Runner =
                                                          CommandLine.resources.GetString "InvalidValue",
                                                          "--threshold",
                                                          x) :: CommandLine.error))
+      ("c|cobertura=",
+       (fun x -> if not (String.IsNullOrWhiteSpace(x)) then
+                    if Option.isSome !Cobertura.path then
+                      CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
+                                                         CommandLine.resources.GetString "MultiplesNotAllowed",
+                                                         "--cobertura") :: CommandLine.error
+                    else
+                      Cobertura.path := x |> Path.GetFullPath |> Some
+                      Summaries <- Cobertura.Summary :: Summaries
+                 else CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
+                                                         CommandLine.resources.GetString "InvalidValue",
+                                                         "--cobertura",
+                                                         x) :: CommandLine.error))
       ("?|help|h", (fun x -> CommandLine.help <- not (isNull x)))
       ("<>", (fun x -> CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
                                                          CommandLine.resources.GetString "InvalidValue",
