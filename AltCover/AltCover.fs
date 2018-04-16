@@ -259,8 +259,8 @@ module Main =
                 String.Format(CultureInfo.CurrentCulture,
                                (CommandLine.resources.GetString "instrumenting"),
                                fullName) |> Output.Info
-                
-                { Path = fullName 
+
+                { Path = fullName
                   Name = def.Name.Name
                   Refs = def.MainModule.AssemblyReferences
                          |> Seq.map (fun r -> r.Name)
@@ -268,7 +268,6 @@ module Main =
              else
                 accumulator) (fun () -> accumulator)
         ) []
-
 
     // sort the assemblies into order so that the depended-upon are processed first
     let candidates = assemblies
@@ -286,7 +285,7 @@ module Main =
                      else unassigned |> List.filter (fun u -> u.Refs |> List.isEmpty))
                     |> List.sortBy (fun u -> u.Name)
 
-        let waiting = stage 
+        let waiting = stage
                       |> List.fold (fun s a -> Set.remove a.Name s) unresolved
 
         let next = unassigned

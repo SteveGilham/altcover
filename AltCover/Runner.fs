@@ -395,7 +395,7 @@ module Runner =
     let value = match covered with
                 | (false, _) -> 0.0
                 | (_ , x) -> x
-    
+
     match threshold with
     | None -> result
     | Some x -> let f = float x
