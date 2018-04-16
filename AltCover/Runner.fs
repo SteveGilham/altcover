@@ -399,7 +399,7 @@ module Runner =
     match threshold with
     | None -> result
     | Some x -> let f = float x
-                if f < value then result
+                if f <= value then result
                 else Math.Ceiling(f - value) |> int
 
   let mutable internal Summaries : (XDocument -> Base.ReportFormat -> int -> int) list = []

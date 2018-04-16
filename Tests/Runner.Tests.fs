@@ -1383,8 +1383,13 @@ or
     let builder = System.Text.StringBuilder()
     try
       Output.Info <- (fun s -> builder.Append(s).Append("|") |> ignore)
-      let r = Runner.StandardSummary baseline Base.ReportFormat.NCover 0
-      Assert.That (r, Is.EqualTo 0)
+      let r = try 
+                Runner.threshold <- Some 25
+                Runner.StandardSummary baseline Base.ReportFormat.NCover 42
+              finally
+                Runner.threshold <- None
+      // 80% coverage > threshold so expect return code coming in
+      Assert.That (r, Is.EqualTo 42)
       Assert.That (builder.ToString(), Is.EqualTo "Visited Classes 1 of 1 (100)|Visited Methods 1 of 1 (100)|Visited Points 8 of 10 (80)|")
     finally
       Output.Info <- ignore
@@ -1417,8 +1422,14 @@ or
     let builder = System.Text.StringBuilder()
     try
         Output.Info <- (fun s -> builder.Append(s).Append("|") |> ignore)
-        let r = Runner.StandardSummary baseline Base.ReportFormat.OpenCover 0
-        Assert.That (r, Is.EqualTo 0)
+        let r = try 
+                  Runner.threshold <- Some 75
+                  Runner.StandardSummary baseline Base.ReportFormat.OpenCover 23
+                finally
+                  Runner.threshold <- None
+        
+        // 70% coverage < threshold so expect shortfall
+        Assert.That (r, Is.EqualTo 5)
         Assert.That (builder.ToString(), Is.EqualTo ("Visited Classes 1 of 1 (100)|Visited Methods 1 of 1 (100)|" +
                                                      "Visited Points 7 of 10 (70)|Visited Branches 2 of 3 (66.67)||" +
                                                      "==== Alternative Results (includes all methods including those without corresponding source) ====|" +
