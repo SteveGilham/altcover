@@ -635,6 +635,20 @@ type AltCoverTests() = class
       Runner.threshold <- None
 
   [<Test>]
+  member self.ParsingEmptyThresholdGivesFailure() =
+    try
+      Runner.threshold <- None
+      let options = Runner.DeclareOptions ()
+      let input = [| "-t"; "  " |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Right _ -> Assert.Fail()
+      | Left (x, y) -> Assert.That (y, Is.SameAs options)
+                       Assert.That (x, Is.EqualTo "UsageError")
+    finally
+      Runner.threshold <- None
+
+  [<Test>]
   member self.ParsingNoThresholdGivesFailure() =
     try
       Runner.threshold <- None
