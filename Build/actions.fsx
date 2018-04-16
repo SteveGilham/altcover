@@ -4,7 +4,7 @@ open System.Reflection
 open System.Xml
 open System.Xml.Linq
 
-open Fake.Core.Environment
+open Fake.Core
 open Fake.DotNet
 open Fake.IO.FileSystemOperators
 open Fake.IO
@@ -33,7 +33,7 @@ module Actions =
         |> Seq.iter (fun n -> printfn "Deleting %s" n
                               Directory.Delete(n, true))
 
-        let temp = environVar "TEMP"
+        let temp = Environment.environVar "TEMP"
         if not <| String.IsNullOrWhiteSpace temp then
             Directory.GetFiles(temp, "*.tmp.dll.mdb")
             |> Seq.iter File.Delete
