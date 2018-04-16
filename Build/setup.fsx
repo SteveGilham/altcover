@@ -11,7 +11,6 @@ nuget YamlDotNet >= 4.3.0 //"
 open System
 open System.IO
 
-open Fake.Core.Environment
 open Fake.DotNet
 open Fake.DotNet.NuGet.Restore
 open Fake.IO
