@@ -1042,65 +1042,6 @@ or
       Console.SetError (snd saved)
       Runner.workingDirectory <- None
 
-#if NETCOREAPP2_0
-#else
-  [<Test>]
-  member self.ShouldDoCoverage() =
-    let start = Directory.GetCurrentDirectory()
-    let here = (Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName)
-    let where = Path.Combine(here, Guid.NewGuid().ToString())
-    Directory.CreateDirectory(where) |> ignore
-    Directory.SetCurrentDirectory where
-    let create = Path.Combine(where, "AltCover.Recorder.g.dll")
-    if create |> File.Exists |> not then do
-        let from = Path.Combine(here, "AltCover.Recorder.dll")
-        let updated = Instrument.PrepareAssembly from
-        Instrument.WriteAssembly updated create
-
-    let save = Runner.RecorderName
-    let save1 = Runner.GetPayload
-    let save2 = Runner.GetMonitor
-    let save3 = Runner.DoReport
-
-    let codedreport =  "coverage.xml" |> Path.GetFullPath
-    try
-      Runner.RecorderName <- "AltCover.Recorder.g.dll"
-      let payload (rest:string list) =
-        Assert.That(rest, Is.EquivalentTo [|"test"; "1"|])
-        255
-
-      let monitor (hits:ICollection<(string*int*Base.Track)>) (token:string) _ _ =
-        Assert.That(token, Is.EqualTo codedreport, "should be default coverage file")
-        Assert.That(hits, Is.Empty)
-        127
-
-      let write (hits:ICollection<(string*int*Base.Track)>) format (report:string) =
-        Assert.That(report, Is.EqualTo codedreport, "should be default coverage file")
-        Assert.That(hits, Is.Empty)
-        TimeSpan.Zero
-
-      Runner.GetPayload <- payload
-      Runner.GetMonitor <- monitor
-      Runner.DoReport <- write
-
-      let empty = OptionSet()
-      let dummy = codedreport + ".xx.acv"
-      do
-        use temp = File.Create dummy
-        dummy |> File.Exists |> Assert.That
-
-      let r = Runner.DoCoverage [|"Runner"; "-x"; "test"; "-r"; where; "--"; "1"|] empty
-      dummy |> File.Exists |> not |> Assert.That
-      Assert.That (r, Is.EqualTo 127)
-
-    finally
-      Runner.GetPayload <- save1
-      Runner.GetMonitor <- save2
-      Runner.DoReport <- save3
-      Runner.RecorderName <- save
-      Directory.SetCurrentDirectory start
-#endif
-
   [<Test>]
   member self.WriteLeavesExpectedTraces() =
     let saved = Console.Out

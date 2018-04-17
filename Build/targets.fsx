@@ -291,7 +291,15 @@ Target "UnitTest" (fun _ ->
 Target "JustUnitTest" (fun _ ->
     Directory.ensure "./_Reports"
     try
+      let here = Path.getFullName "."
+      !! (@"_Binaries/*Tests/Debug+AnyCPU/*XTest*.dll")
+      |> Fake.DotNet.Testing.XUnit2.run (fun p -> { p   with ToolPath = findToolInSubPath "xunit.console.exe" "."
+                                                             NUnitXmlOutputPath = Some "./_Reports/JustXUnitTestReport.xml"
+                                                             WorkingDir = Some here
+                                                             ShadowCopy = false})
+    
       !! (@"_Binaries/*Tests/Debug+AnyCPU/*Test*.dll")
+      |> Seq.filter (fun f -> Path.GetFileName(f) <> "AltCover.XTests.dll")
       |> NUnit3.run (fun p -> { p   with ToolPath = findToolInSubPath "nunit3-console.exe" "."
                                          WorkingDir = "."
                                          Labels = LabelsLevel.All

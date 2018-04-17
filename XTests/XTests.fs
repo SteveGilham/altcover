@@ -198,8 +198,8 @@ module XTests =
 #if NETCOREAPP2_0
       Assert.Equal (Visitor.keys.Count, 0)
 #else
-      Assert.That (Visitor.keys.ContainsKey(KeyStore.KeyToIndex snk))
-      Assert.That (Visitor.keys.Count, Is.EqualTo 1)
+      Assert.True (Visitor.keys.ContainsKey(KeyStore.KeyToIndex snk))
+      Assert.Equal (Visitor.keys.Count, 1)
 #endif
 
       Assert.True (File.Exists report)
@@ -293,6 +293,129 @@ module XTests =
                                          Assembly.GetExecutingAssembly().GetName().Version.ToString()))
 
   [<Fact>]
+  let ADryRunLooksAsExpected() =
+    let where = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
+    let path = Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "_Mono/Sample1")
+    let key0 = Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "Build/SelfTest.snk")
+#if NETCOREAPP2_0
+    let input = if Directory.Exists path then path
+                else Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), monoSample1)
+    let key = if File.Exists key0 then key0
+              else Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "../Build/SelfTest.snk")
+#else
+    let input = path
+    let key = key0
+#endif
+    let unique = Guid.NewGuid().ToString()
+    let unique' = Path.Combine (where, Guid.NewGuid().ToString())
+    Directory.CreateDirectory unique' |> ignore
+    let report = Path.Combine(unique', "ADryRunLooksAsExpected.xml")
+    let output = Path.Combine(Path.GetDirectoryName(where), unique)
+    let outputSaved = Visitor.outputDirectory
+    let inputSaved = Visitor.inputDirectory
+    let reportSaved = Visitor.reportPath
+    let keySaved = Visitor.defaultStrongNameKey
+    let saved = (Console.Out, Console.Error)
+    let save2 = (Output.Info, Output.Error)
+    Visitor.keys.Clear()
+    try
+      Output.Error <- CommandLine.WriteErr
+      Output.Info <- CommandLine.WriteOut
+
+      use stdout = new StringWriter()
+      use stderr = new StringWriter()
+      Console.SetOut stdout
+      Console.SetError stderr
+
+      let args = [| "-i"; input
+                    "-o"; output
+                    "-x"; report
+#if NETCOREAPP2_0
+#else
+                    "-sn"; key
+#endif
+                 |]
+      let result = Main.DoInstrumentation args
+      Assert.Equal(result, 0)
+      Assert.Empty (stderr.ToString())
+
+      let expected = "Creating folder " + output +
+                     "\nInstrumenting files from " + (Path.GetFullPath input) +
+                     "\nWriting files to " + output +
+                     "\n   => " + Path.Combine(Path.GetFullPath input, "Sample1.exe") +
+                     "\n\nCoverage Report: " + report +
+                     "\n\n\n    " + Path.Combine(Path.GetFullPath output, "Sample1.exe") +
+                     "\n                <=  Sample1, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null\n"
+
+      let console = stdout.ToString()
+      Assert.Equal (console.Replace("\r\n", "\n").Replace("\\", "/"),
+                    (expected.Replace("\\", "/")))
+
+      Assert.Equal (Visitor.OutputDirectory(), output)
+      Assert.Equal (Visitor.InputDirectory().Replace("\\", "/"),
+                    ((Path.GetFullPath input).Replace("\\", "/")))
+      Assert.Equal (Visitor.ReportPath (), report)
+
+      use stream = new FileStream(key, FileMode.Open)
+      use buffer = new MemoryStream()
+      stream.CopyTo(buffer)
+      let snk = StrongNameKeyPair(buffer.ToArray())
+
+#if NETCOREAPP2_0
+      Assert.Equal (Visitor.keys.Count, Is.EqualTo 1)
+#else
+      Assert.True (Visitor.keys.ContainsKey(KeyStore.KeyToIndex snk))
+      Assert.Equal (Visitor.keys.Count, 1)
+#endif
+
+      Assert.True (File.Exists report)
+      let pdb = Path.ChangeExtension(Assembly.GetExecutingAssembly().Location, ".pdb")
+      let isWindows =
+#if NETCOREAPP2_0
+                        true
+#else
+                        System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
+#endif
+
+      let expected = if File.Exists(pdb) then
+                        ["AltCover.Recorder.g.dll"
+#if NETCOREAPP2_0
+                         "AltCover.Recorder.g.dll.mdb"
+                         "FSharp.Core.dll"
+#else
+                         "AltCover.Recorder.g.pdb"
+#endif
+                         "Sample1.exe"
+                         "Sample1.exe.mdb"
+                         ] // See Instrument.WriteAssembly
+                     else
+                        ["AltCover.Recorder.g.dll"
+                         "AltCover.Recorder.g.dll.mdb"
+                         "Sample1.exe"
+                         "Sample1.exe.mdb"]
+                     |> List.filter (fun f -> isWindows || f = "Sample1.exe.mdb" || (f.EndsWith("db", StringComparison.Ordinal) |> not))
+
+      Assert.Equal<IEnumerable<String>> (Directory.GetFiles(output)
+                                            |> Seq.map Path.GetFileName
+                                            |> Seq.toList,
+                                            expected)
+
+      let expectedXml = XDocument.Load(new System.IO.StringReader(MonoBaseline))
+      let recordedXml = XDocument.Load(report)
+      RecursiveValidate (recordedXml.Elements()) (expectedXml.Elements()) 0 true
+
+    finally
+      Visitor.outputDirectory <- outputSaved
+      Visitor.inputDirectory <- inputSaved
+      Visitor.reportPath <- reportSaved
+      Visitor.defaultStrongNameKey <- keySaved
+      Console.SetOut (fst saved)
+      Console.SetError (snd saved)
+      Visitor.keys.Clear()
+      Output.Error <- snd save2
+      Output.Info <- fst save2
+
+  [<Fact>]
   let AfterAssemblyCommitsThatAssembly () =
     let where = Assembly.GetExecutingAssembly().Location
     let path = Path.Combine(Path.GetDirectoryName(where) + Hack(), "Sample4.dll")
@@ -315,7 +438,7 @@ module XTests =
 #else
       let pdb = Path.ChangeExtension(Assembly.GetExecutingAssembly().Location, ".pdb")
       if File.Exists pdb then
-        Assert.That (File.Exists (Path.ChangeExtension(created, ".pdb")), created + " pdb not found")
+        Assert.True (File.Exists (Path.ChangeExtension(created, ".pdb")), created + " pdb not found")
 #endif
     finally
       Visitor.outputDirectory <- saved
@@ -374,7 +497,7 @@ module XTests =
 #else
       let pdb = Path.ChangeExtension(Assembly.GetExecutingAssembly().Location, ".pdb")
       if File.Exists pdb then
-        Assert.That (File.Exists (Path.ChangeExtension(created, ".pdb")), created + " pdb not found")
+        Assert.True (File.Exists (Path.ChangeExtension(created, ".pdb")), created + " pdb not found")
 #endif
     finally
       Visitor.outputDirectory <- saved

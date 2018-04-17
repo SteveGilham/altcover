@@ -223,10 +223,12 @@ module Instrument =
 
 #if NETCOREAPP2_0
 #else
-  let internal CreateSymbolWriter isWindows isMono =
+  let internal CreateSymbolWriter pdb isWindows isMono =
     match (isWindows, isMono) with
     | (true, true) -> Mono.Cecil.Mdb.MdbWriterProvider() :> ISymbolWriterProvider
-    | (true, false) -> Mono.Cecil.Pdb.PdbWriterProvider() :> ISymbolWriterProvider
+    | (true, false) -> match pdb   with
+                       | ".pdb" -> Mono.Cecil.Pdb.PdbWriterProvider() :> ISymbolWriterProvider
+                       | _ -> Mono.Cecil.Mdb.MdbWriterProvider() :> ISymbolWriterProvider
     | _ -> null
 #endif
 
@@ -239,12 +241,13 @@ module Instrument =
   /// when asked to strongname.  This writes a new .pdb/.mdb alongside the instrumented assembly</remark>
   let internal WriteAssembly (assembly:AssemblyDefinition) (path:string) =
     let pkey = Mono.Cecil.WriterParameters()
+    let pdb = ProgramDatabase.GetPdbWithFallback assembly
+              |> Option.getOrElse "x.pdb" |> Path.GetExtension
 #if NETCOREAPP2_0
     // Once Cecil 0.10 beta6 is taken out of the equation, this works
     pkey.WriteSymbols <- true
 
-    let pdb = ProgramDatabase.GetPdbWithFallback assembly
-    pkey.SymbolWriterProvider <- match pdb |> Option.getOrElse "x.pdb" |> Path.GetExtension  with
+    pkey.SymbolWriterProvider <- match pdb with
                                  | ".pdb" -> Mono.Cecil.Pdb.PdbWriterProvider() :> ISymbolWriterProvider
                                  | _ -> Mono.Cecil.Mdb.MdbWriterProvider() :> ISymbolWriterProvider
 #else
@@ -263,7 +266,7 @@ module Instrument =
     // Exception of type 'Mono.CompilerServices.SymbolWriter.MonoSymbolFileException' was thrown.
     let isWindows = System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
     pkey.WriteSymbols <- isWindows
-    pkey.SymbolWriterProvider <- CreateSymbolWriter isWindows monoRuntime
+    pkey.SymbolWriterProvider <- CreateSymbolWriter pdb isWindows monoRuntime
 
     // Also, there are no strongnames in .net core
     KnownKey assembly.Name
