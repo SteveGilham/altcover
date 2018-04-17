@@ -11,6 +11,7 @@ open System.IO
 open System.Reflection
 open System.Resources
 
+open Augment
 open Mono.Cecil
 open Mono.Cecil.Cil
 open Mono.Cecil.Rocks
@@ -243,7 +244,11 @@ module Instrument =
     // System.NullReferenceException : Object reference not set to an instance of an object.
     // from deep inside Cecil -- but this works!!
     pkey.WriteSymbols <- true
-    pkey.SymbolWriterProvider <- Mono.Cecil.Mdb.MdbWriterProvider() :> ISymbolWriterProvider
+
+    let pdb = ProgramDatabase.GetPdbWithFallback assembly
+    pkey.SymbolWriterProvider <- match pdb |> Option.getOrElse "x.pdb" |> Path.GetExtension  with
+                                 | ".pdb" -> Mono.Cecil.Pdb.PdbWriterProvider() :> ISymbolWriterProvider
+                                 | _ -> Mono.Cecil.Mdb.MdbWriterProvider() :> ISymbolWriterProvider
 #else
 
     // Assembly with pdb writing fails on mono on Windows when writing with

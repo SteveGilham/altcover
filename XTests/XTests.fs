@@ -215,16 +215,11 @@ module XTests =
       let expected =
                         ["AltCover.Recorder.g.dll"
 #if NETCOREAPP2_0
-                         "AltCover.Recorder.g.dll.mdb"
                          "FSharp.Core.dll"
-#else
-                         "AltCover.Recorder.g.pdb"
 #endif
+                         "AltCover.Recorder.g.pdb"
                          "Sample4.deps.json"
                          "Sample4.dll"
-#if NETCOREAPP2_0
-                         "Sample4.dll.mdb"
-#endif
                          "Sample4.runtimeconfig.dev.json"
                          "Sample4.runtimeconfig.json"
                          "Sample4.pdb"
@@ -322,6 +317,37 @@ module XTests =
       if File.Exists pdb then
         Assert.That (File.Exists (Path.ChangeExtension(created, ".pdb")), created + " pdb not found")
 #endif
+    finally
+      Visitor.outputDirectory <- saved
+
+  [<Fact>]
+  let AfterAssemblyCommitsThatAssemblyForMono () =
+    // Hack for running while instrumented
+    let where = Assembly.GetExecutingAssembly().Location
+    let path = Path.Combine(where.Substring(0, where.IndexOf("_Binaries")) + "_Mono/Sample1", "Sample1.exe")
+#if NETCOREAPP2_0
+    let path' = if File.Exists path then path
+                else Path.Combine(where.Substring(0, where.IndexOf("_Binaries")) + monoSample1, "Sample1.exe")
+#else
+    let path' = path
+#endif
+
+    let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path'
+    ProgramDatabase.ReadSymbols def
+
+    let unique = Guid.NewGuid().ToString()
+    let output = Path.Combine(Path.GetDirectoryName(where), unique)
+    Directory.CreateDirectory(output) |> ignore
+    let saved = Visitor.outputDirectory
+    try
+      Visitor.outputDirectory <- Some output
+      let visited = Node.AfterAssembly def
+      let input = Instrument.Context.Build []
+      let result = Instrument.InstrumentationVisitor input visited
+      Assert.Same (result, input) //, "result differs")
+      let created = Path.Combine (output, "Sample1.exe")
+      Assert.True (File.Exists created, created + " not found")
+      Assert.True (File.Exists (created + ".mdb"), created + ".mdb not found")
     finally
       Visitor.outputDirectory <- saved
 
