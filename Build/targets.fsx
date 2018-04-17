@@ -593,6 +593,23 @@ Target "UnitTestWithAltCoverCore" (fun _ ->
                       ("--no-build --configuration Debug --verbosity normal altcover.recorder.tests.core.fsproj")
                       "second test returned with a non-zero exit code"
 
+    printfn "Instrument the XUnit tests"
+    let xDir = "_Binaries/AltCover.XTests/Debug+AnyCPU/netcoreapp2.0"
+    let xReport = reports @@ "XTestWithAltCoverCore.xml"
+    let xOut = Path.getFullName "XTests/_Binaries/AltCover.XTests/Debug+AnyCPU/netcoreapp2.0"
+    Actions.Run (fun info ->
+        { info with
+                FileName = altcover
+                WorkingDirectory = xDir
+                Arguments = ("/sn=" + keyfile + AltCoverFilterG + @"/o=" + xOut + " -x=" + xReport)})
+                "xuint instrument returned with a non-zero exit code"
+
+    printfn "Execute the XUnit tests"
+    Actions.RunDotnet(fun o -> {dotnetOptions o with WorkingDirectory = Path.getFullName "XTests"}) "test"
+                      ("--no-build --configuration Debug --verbosity normal altcover.x.tests.core.fsproj")
+                      "xuint test returned with a non-zero exit code"
+                      
+
 //    ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
 //                                       ReportTypes = [ ReportGeneratorReportType.Html; ReportGeneratorReportType.XmlSummary]
 //                                       TargetDir = "_Reports/_UnitTestWithAltCoverCore"})
@@ -600,7 +617,7 @@ Target "UnitTestWithAltCoverCore" (fun _ ->
     Actions.Run (fun info ->
         { info with
                FileName = findToolInSubPath "ReportGenerator.exe" "."
-               Arguments = "\"-reports:" + String.Join(";", [altReport; shadowReport]) +
+               Arguments = "\"-reports:" + String.Join(";", [altReport; shadowReport; xReport]) +
                            "\" \"-targetdir:" + "_Reports/_UnitTestWithAltCoverCore" + "\" -reporttypes:Html;XmlSummary -verbosity:Verbose"
                 }) "Report generation failure"
 )
@@ -649,6 +666,26 @@ Target "UnitTestWithAltCoverCoreRunner" (fun _ ->
                              shadowProject)
                              "Run the shadow tests"
 
+    printfn "Instrument the XUnit tests"
+    let xDir = "_Binaries/AltCover.XTests/Debug+AnyCPU/netcoreapp2.0"
+    let xReport = reports @@ "XTestWithAltCoverCore.xml"
+    let xOut = Path.getFullName "XTests/_Binaries/AltCover.XTests/Debug+AnyCPU/netcoreapp2.0"
+    Shell.CleanDir xOut
+    
+    Actions.RunDotnet (fun o -> {dotnetOptions o with WorkingDirectory = xDir}) ""
+                      ( altcover +
+                             " " + AltCoverFilter + " -x \"" + xReport + "\" /o \"" + xOut + "\"")
+                             "Instrument the xunit tests"
+
+    printfn "Execute the XUnit tests"
+    let xProject = Path.getFullName "./XTests/altcover.x.tests.core.fsproj"
+    Actions.RunDotnet (fun o -> {dotnetOptions o with WorkingDirectory = xOut}) ""
+                            (altcover +
+                             " Runner -x \"dotnet\" -r \"" + xOut +
+                             "\" -- test --no-build --configuration Debug --verbosity normal " +
+                             xProject)
+                             "Run the shadow tests"
+
 //    ReportGenerator (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
 //                                       ReportTypes = [ ReportGeneratorReportType.Html; ReportGeneratorReportType.XmlSummary]
 //                                       TargetDir = "_Reports/_UnitTestWithAltCoverCoreRunner"})
@@ -656,7 +693,7 @@ Target "UnitTestWithAltCoverCoreRunner" (fun _ ->
     Actions.Run (fun info ->
         { info with
                FileName = findToolInSubPath "ReportGenerator.exe" "."
-               Arguments = "\"-reports:" + String.Join(";", [altReport; shadowReport]) +
+               Arguments = "\"-reports:" + String.Join(";", [altReport; shadowReport; xReport]) +
                            "\" \"-targetdir:" + "_Reports/_UnitTestWithAltCoverCoreRunner" + "\" -reporttypes:Html;XmlSummary -verbosity:Verbose"
                 }) "Report generation failure"
 )
