@@ -234,7 +234,7 @@ module XTests =
                          ]
 
       let expected' = if pdb |> File.Exists |> not then
-                        List.concat [expected; ["AltCover.Recorder.g.dll.mdb"; "Sample2.dll.mdb" ]]
+                        List.concat [expected; ["AltCover.Recorder.g.dll.mdb"; "Sample4.dll.mdb" ]]
                         |> List.filter (fun f -> f.EndsWith(".g.pdb", StringComparison.Ordinal) |> not)
                         |> List.filter (fun f -> isWindows || f = "Sample4.pdb" ||
                                                  (f.EndsWith("db", StringComparison.Ordinal) |> not))
@@ -300,7 +300,7 @@ module XTests =
   [<Fact>]
   let AfterAssemblyCommitsThatAssembly () =
     let where = Assembly.GetExecutingAssembly().Location
-    let path = Path.Combine(Path.GetDirectoryName(where) + Hack(), "Sample2.dll")
+    let path = Path.Combine(Path.GetDirectoryName(where) + Hack(), "Sample4.dll")
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
     ProgramDatabase.ReadSymbols def
 
@@ -314,7 +314,7 @@ module XTests =
       let input = Instrument.Context.Build []
       let result = Instrument.InstrumentationVisitor input visited
       Assert.Same (result, input) //, "result differs")
-      let created = Path.Combine (output, "Sample2.dll")
+      let created = Path.Combine (output, "Sample4.dll")
       Assert.True (File.Exists created, created + " not found")
 #if NETCOREAPP2_0
 #else
@@ -328,7 +328,7 @@ module XTests =
   [<Fact>]
   let FinishCommitsTheRecordingAssembly () =
     let where = Assembly.GetExecutingAssembly().Location
-    let path = Path.Combine(Path.GetDirectoryName(where) + Hack(), "Sample2.dll")
+    let path = Path.Combine(Path.GetDirectoryName(where) + Hack(), "Sample4.dll")
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
     ProgramDatabase.ReadSymbols def
 
@@ -341,7 +341,7 @@ module XTests =
       let input = { Instrument.Context.Build [] with RecordingAssembly = def }
       let result = Instrument.InstrumentationVisitor input Finish
       Assert.Same (result, input) //, "results differ")
-      let created = Path.Combine (output, "Sample2.dll")
+      let created = Path.Combine (output, "Sample4.dll")
       Assert.True (File.Exists created, created + " not found")
 #if NETCOREAPP2_0
       Assert.True (File.Exists (Path.Combine(output, "FSharp.Core.dll")), "Core not found")
