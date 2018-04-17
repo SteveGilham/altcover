@@ -125,11 +125,11 @@ module XTests =
   [<Fact>]
   let ADotNetDryRunLooksAsExpected() =
     let where = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
-    let path = Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "_Binaries/Sample2/Debug+AnyCPU/netcoreapp2.0")
+    let path = Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.0")
     let key0 = Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "Build/SelfTest.snk")
 #if NETCOREAPP2_0
     let input = if Directory.Exists path then path
-                else Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "../_Binaries/Sample2/Debug+AnyCPU/netcoreapp2.0")
+                else Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "../_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.0")
     let key = if File.Exists key0 then key0
               else Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "../Build/SelfTest.snk")
 #else
@@ -178,10 +178,10 @@ module XTests =
       let expected = "Creating folder " + output +
                      "\nInstrumenting files from " + (Path.GetFullPath input) +
                      "\nWriting files to " + output +
-                     "\n   => " + Path.Combine(Path.GetFullPath input, "Sample2.dll") +
+                     "\n   => " + Path.Combine(Path.GetFullPath input, "Sample4.dll") +
                      "\n\nCoverage Report: " + report +
-                     "\n\n\n    " + Path.Combine(Path.GetFullPath output, "Sample2.dll") +
-                     "\n                <=  Sample2, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null\n"
+                     "\n\n\n    " + Path.Combine(Path.GetFullPath output, "Sample4.dll") +
+                     "\n                <=  Sample4, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null\n"
 
       Assert.Equal (stdout.ToString().Replace("\r\n", "\n").Replace("\\", "/"),
                     (expected.Replace("\\", "/")))
@@ -220,33 +220,37 @@ module XTests =
 #else
                          "AltCover.Recorder.g.pdb"
 #endif
-                         "Mono.Cecil.dll"
-                         "nunit.engine.netstandard.dll"
-                         "NUnit3.TestAdapter.dll"
-                         "NUnit3.TestAdapter.pdb"
-                         "Sample2.deps.json"
-                         "Sample2.dll"
+                         "Sample4.deps.json"
+                         "Sample4.dll"
 #if NETCOREAPP2_0
-                         "Sample2.dll.mdb"
+                         "Sample4.dll.mdb"
 #endif
-                         "Sample2.runtimeconfig.dev.json"
-                         "Sample2.runtimeconfig.json"
-                         "Sample2.pdb"]
+                         "Sample4.runtimeconfig.dev.json"
+                         "Sample4.runtimeconfig.json"
+                         "Sample4.pdb"
+                         "xunit.runner.reporters.netcoreapp10.dll"
+                         "xunit.runner.utility.netcoreapp10.dll"
+                         "xunit.runner.visualstudio.dotnetcore.testadapter.dll"
+                         ]
 
       let expected' = if pdb |> File.Exists |> not then
                         List.concat [expected; ["AltCover.Recorder.g.dll.mdb"; "Sample2.dll.mdb" ]]
                         |> List.filter (fun f -> f.EndsWith(".g.pdb", StringComparison.Ordinal) |> not)
-                        |> List.filter (fun f -> isWindows || f = "Sample2.pdb" || f = "NUnit3.TestAdapter.pdb" ||
+                        |> List.filter (fun f -> isWindows || f = "Sample4.pdb" ||
                                                  (f.EndsWith("db", StringComparison.Ordinal) |> not))
                         |> List.sortBy (fun f -> f.ToUpperInvariant())
                       else
-                        expected
+                        expected |> List.sortBy (fun f -> f.ToUpperInvariant())
 
-      Assert.Equal<IEnumerable<String>> (Directory.GetFiles(output)
-                   |> Seq.map Path.GetFileName
-                   |> Seq.filter (fun f -> f.EndsWith(".tmp", StringComparison.Ordinal) |> not)
-                   |> Seq.sortBy (fun f -> f.ToUpperInvariant()),
-                   expected' |> List.toSeq)
+      let actualFiles = Directory.GetFiles(output)
+                           |> Seq.map Path.GetFileName
+                           |> Seq.filter (fun f -> f.EndsWith(".tmp", StringComparison.Ordinal) |> not)
+                           |> Seq.sortBy (fun f -> f.ToUpperInvariant())
+                           |> Seq.toList
+
+      Assert.Equal (actualFiles |> List.length, expected' |> List.length)
+      List.zip actualFiles expected' 
+      |> List.iter (fun (a, e) -> Assert.Equal(a,e))
 
     finally
       Output.Usage ("dummy", OptionSet(), OptionSet())
@@ -263,10 +267,10 @@ module XTests =
       Output.Error <- snd save2
       Output.Info <- fst save2
 
-    let before = File.ReadAllText(Path.Combine(input, "Sample2.deps.json"))
+    let before = File.ReadAllText(Path.Combine(input, "Sample4.deps.json"))
     Assert.Equal(before.IndexOf("AltCover.Recorder.g"), -1)
 
-    let o = JObject.Parse (File.ReadAllText(Path.Combine(output, "Sample2.deps.json")))
+    let o = JObject.Parse (File.ReadAllText(Path.Combine(output, "Sample4.deps.json")))
     let target = ((o.Property "runtimeTarget").Value :?> JObject).Property("name").Value.ToString()
     let targets = (o.Properties()
                     |> Seq.find (fun p -> p.Name = "targets")).Value :?> JObject
