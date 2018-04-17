@@ -1311,6 +1311,8 @@ type AltCoverTests() = class
       Visitor.NameFilters.Clear()
       Visitor.TrackingNames.Clear()
 
+#if NETCOREAPP2_0
+#else
   [<Test>]
   member self.ShouldGenerateExpectedXmlReportFromMono() =
 #if NETCOREAPP2_0
@@ -1339,6 +1341,7 @@ type AltCoverTests() = class
      | :? MissingMethodException as mme ->
            Assert.That(mme.Message,
                        Is.EqualTo("Method not found: 'Int32 Mono.Cecil.MetadataReader.ReadCodeSize(Mono.Cecil.MethodDefinition)'."))
+#endif
 #endif
 
   // Gendarme.fs (except where I need to compare with the original, which are the weakname tests)
@@ -1687,6 +1690,8 @@ type AltCoverTests() = class
       Visitor.TrackingNames.Clear()
       Visitor.reportFormat <- None
 
+#if NETCOREAPP2_0
+#else
   [<Test>]
   member self.ShouldGenerateExpectedXmlReportFromMonoOpenCoverStyle() =
 #if NETCOREAPP2_0
@@ -1725,6 +1730,7 @@ type AltCoverTests() = class
      | :? MissingMethodException as mme ->
            Assert.That(mme.Message,
                        Is.EqualTo("Method not found: 'Int32 Mono.Cecil.MetadataReader.ReadCodeSize(Mono.Cecil.MethodDefinition)'."))
+#endif
 #endif
 
   [<Test>]
@@ -2856,6 +2862,8 @@ type AltCoverTests() = class
     let output = Instrument.InstrumentationVisitor input AfterModule
     Assert.That (output, Is.SameAs input)
 
+#if NETCOREAPP2_0
+#else
   [<Test>]
   member self.AfterAssemblyCommitsThatAssembly () =
     let where = Assembly.GetExecutingAssembly().Location
@@ -2883,7 +2891,10 @@ type AltCoverTests() = class
 #endif
     finally
       Visitor.outputDirectory <- saved
+#endif
 
+#if NETCOREAPP2_0
+#else
   [<Test>]
   member self.FinishCommitsTheRecordingAssembly () =
     let where = Assembly.GetExecutingAssembly().Location
@@ -2911,6 +2922,7 @@ type AltCoverTests() = class
 #endif
     finally
       Visitor.outputDirectory <- saved
+#endif
 
   [<Test>]
   member self.JSONInjectionTransformsStandaloneFileAsExpected () =
@@ -4526,6 +4538,8 @@ type AltCoverTests() = class
                        Is.EqualTo("Method not found: 'Int32 Mono.Cecil.MetadataReader.ReadCodeSize(Mono.Cecil.MethodDefinition)'."))
 #endif
 
+#if NETCOREAPP2_0
+#else
   [<Test>]
   member self.ADotNetDryRunLooksAsExpected() =
     let where = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
@@ -4696,6 +4710,7 @@ type AltCoverTests() = class
               |> Set.ofSeq
     Assert.That(lib |> Set.contains ("AltCover.Recorder.g/" +
                                          Assembly.GetExecutingAssembly().GetName().Version.ToString()))
+#endif
 
   [<Test>]
   member self.UsageIsAsExpected() =

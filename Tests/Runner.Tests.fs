@@ -1042,6 +1042,8 @@ or
       Console.SetError (snd saved)
       Runner.workingDirectory <- None
 
+#if NETCOREAPP2_0
+#else
   [<Test>]
   member self.ShouldDoCoverage() =
     let start = Directory.GetCurrentDirectory()
@@ -1097,6 +1099,7 @@ or
       Runner.DoReport <- save3
       Runner.RecorderName <- save
       Directory.SetCurrentDirectory start
+#endif
 
   [<Test>]
   member self.WriteLeavesExpectedTraces() =
