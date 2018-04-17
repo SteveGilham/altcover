@@ -1060,7 +1060,7 @@ or
     let save2 = Runner.GetMonitor
     let save3 = Runner.DoReport
 
-    let report =  "coverage.xml" |> Path.GetFullPath
+    let codedreport =  "coverage.xml" |> Path.GetFullPath
     try
       Runner.RecorderName <- "AltCover.Recorder.g.dll"
       let payload (rest:string list) =
@@ -1068,12 +1068,12 @@ or
         255
 
       let monitor (hits:ICollection<(string*int*Base.Track)>) (token:string) _ _ =
-        Assert.That(token, Is.EqualTo report, "should be default coverage file")
+        Assert.That(token, Is.EqualTo codedreport, "should be default coverage file")
         Assert.That(hits, Is.Empty)
         127
 
       let write (hits:ICollection<(string*int*Base.Track)>) format (report:string) =
-        Assert.That(report, Is.EqualTo report, "should be default coverage file")
+        Assert.That(report, Is.EqualTo codedreport, "should be default coverage file")
         Assert.That(hits, Is.Empty)
         TimeSpan.Zero
 
@@ -1082,7 +1082,7 @@ or
       Runner.DoReport <- write
 
       let empty = OptionSet()
-      let dummy = report + ".xx.acv"
+      let dummy = codedreport + ".xx.acv"
       do
         use temp = File.Create dummy
         dummy |> File.Exists |> Assert.That
