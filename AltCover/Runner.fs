@@ -67,6 +67,11 @@ module Runner =
     multiSort lineOfMethod l
 
   let LCovSummary (report:XDocument) (format:Base.ReportFormat) result =
+    !lcov 
+    |> Option.get
+    |> Path.GetDirectoryName
+    |> CommandLine.ensureDirectory
+
     DoWithFile
       (fun () -> File.OpenWrite(!lcov |> Option.get))
       (fun stream ->

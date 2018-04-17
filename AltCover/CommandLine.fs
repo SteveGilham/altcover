@@ -49,6 +49,17 @@ module CommandLine =
                          |> Seq.find (fun n -> n.EndsWith(".Strings", StringComparison.Ordinal))
   let internal resources = ResourceManager(resource , Assembly.GetExecutingAssembly())
 
+  let conditionalOutput condition output =
+    if condition() 
+    then output()
+
+  let ensureDirectory directory =
+    conditionalOutput(fun () ->  directory |> Directory.Exists |> not)
+        (fun () -> Output.Info <| String.Format(CultureInfo.CurrentCulture,
+                                                (resources.GetString "CreateFolder"),
+                                                directory)
+                   Directory.CreateDirectory(directory) |> ignore)
+
   let internal WriteColoured (writer:TextWriter) colour operation =
        let original = Console.ForegroundColor
        try
@@ -161,8 +172,9 @@ module CommandLine =
        |> Output.Error
 
   let ReportErrors (tag:string) =
-    if tag |> String.IsNullOrWhiteSpace |> not && error |> List.isEmpty |> not then
-       tag |> resources.GetString |> Output.Error
+    conditionalOutput(fun () ->  tag |> String.IsNullOrWhiteSpace |> not && 
+                                 error |> List.isEmpty |> not)
+                     (fun () -> tag |> resources.GetString |> Output.Error)
 
     error
     |> List.iter Output.Error
