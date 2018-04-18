@@ -19,6 +19,16 @@ module XTests =
     | 0 -> "/.."
     | _ -> String.Empty
 
+  // work around the forced shadowing  in the Visual Studio plug-in
+  let HereHack () =
+    let where = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
+    if where.IndexOf "_Binaries" >= 0 then where 
+    else where 
+         |> File.OpenRead
+         |> Mono.Cecil.AssemblyDefinition.ReadAssembly
+         |> ProgramDatabase.GetPdbFromImage
+         |> Option.get
+
 #if NETCOREAPP2_0
   let sample1 = "Sample1.dll"
   let monoSample1 = "../_Mono/Sample1"
@@ -124,7 +134,7 @@ module XTests =
 
   [<Fact>]
   let ADotNetDryRunLooksAsExpected() =
-    let where = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
+    let where = HereHack () |> Path.GetDirectoryName
     let path = Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.0")
     let key0 = Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "Build/SelfTest.snk")
 #if NETCOREAPP2_0
@@ -294,7 +304,7 @@ module XTests =
 
   [<Fact>]
   let ADryRunLooksAsExpected() =
-    let where = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
+    let where = HereHack () |> Path.GetDirectoryName
     let path = Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "_Mono/Sample1")
     let key0 = Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "Build/SelfTest.snk")
 #if NETCOREAPP2_0
@@ -416,7 +426,7 @@ module XTests =
 
   [<Fact>]
   let AfterAssemblyCommitsThatAssembly () =
-    let where = Assembly.GetExecutingAssembly().Location
+    let where = HereHack ()
     let path = Path.Combine(Path.GetDirectoryName(where) + Hack(), "Sample4.dll")
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
     ProgramDatabase.ReadSymbols def
@@ -480,7 +490,7 @@ module XTests =
 
   [<Fact>]
   let FinishCommitsTheRecordingAssembly () =
-    let where = Assembly.GetExecutingAssembly().Location
+    let where = HereHack ()
     let path = Path.Combine(Path.GetDirectoryName(where) + Hack(), "Sample4.dll")
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
     ProgramDatabase.ReadSymbols def
@@ -509,7 +519,7 @@ module XTests =
   [<Fact>]
   let ShouldDoCoverage() =
     let start = Directory.GetCurrentDirectory()
-    let here = (Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName)
+    let here = (HereHack () |> Path.GetDirectoryName)
     let where = Path.Combine(here, Guid.NewGuid().ToString())
     Directory.CreateDirectory(where) |> ignore
     Directory.SetCurrentDirectory where
@@ -566,7 +576,7 @@ module XTests =
   let ShouldGenerateExpectedXmlReportFromMono() =
     let visitor, document = Report.ReportGenerator()
     // Hack for running while instrumented
-    let where = Assembly.GetExecutingAssembly().Location
+    let where = HereHack ()
     let path = Path.Combine(where.Substring(0, where.IndexOf("_Binaries")) + "_Mono/Sample1", "Sample1.exe")
 #if NETCOREAPP2_0
     let path' = if File.Exists path then path
@@ -586,7 +596,7 @@ module XTests =
   let ShouldGenerateExpectedXmlReportFromMonoOpenCoverStyle() =
     let visitor, document = OpenCover.ReportGenerator()
     // Hack for running while instrumented
-    let where = Assembly.GetExecutingAssembly().Location
+    let where = HereHack ()
     let path = Path.Combine(where.Substring(0, where.IndexOf("_Binaries")) + "_Mono/Sample1", "Sample1.exe")
 #if NETCOREAPP2_0
     let path' = if File.Exists path then path
