@@ -1,46 +1,39 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <IsPackable>false</IsPackable>
-    <AssemblyName>AltCover.Shadow.Tests</AssemblyName>
+    <AssemblyName>AltCover.XTests</AssemblyName>
+    <AssetTargetFallback>$(AssetTargetFallback);netcoreapp1.0;</AssetTargetFallback>    
   </PropertyGroup>
-  
+
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <OutputPath>$(SolutionDir)_Binaries/$(AssemblyName)/$(Configuration)+$(Platform)/</OutputPath>
     <IntermediateOutputPath>$(SolutionDir)_Intermediate/$(AssemblyName)/$(Configuration)+$(Platform)/</IntermediateOutputPath>
-    <DefineConstants>TRACE;DEBUG;NETCOREAPP2_0;ALTCOVER_TEST</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <OutputPath>$(SolutionDir)_Binaries/$(AssemblyName)/$(Configuration)+$(Platform)/</OutputPath>
     <IntermediateOutputPath>$(SolutionDir)_Intermediate/$(AssemblyName)/$(Configuration)+$(Platform)/</IntermediateOutputPath>
-    <DefineConstants>TRACE;RELEASE;NETCOREAPP2_0;ALTCOVER_TEST</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="AssemblyInfo.fs" />
-    <Compile Include="Tracer.Tests.fs" />
-    <Compile Include="Shadow.Tests.fs" />
-    <Compile Include="Program.fs" />    
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Include="Sample1WithModifiedOpenCover.xml" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Include="SimpleCoverage.xml" />
+    <Compile Include="..\_Generated\AssemblyVersion.fs" Link="AssemblyVersion.fs" />
+    <Compile Include="XTests.fs" />
+    <Compile Include="Program.fs" />
+    <EmbeddedResource Include="..\Tests\HandRolledMonoCoverage.xml" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.7.0" />
-    <PackageReference Include="NUnit" Version="3.10.1" />
-    <PackageReference Include="NUnit3TestAdapter" Version="3.10.0" />
+    <PackageReference Include="xunit" Version="2.3.1" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.3.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+    <DotNetCliToolReference Include="dotnet-xunit" Version="2.3.1" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\AltCover.Shadow\altcover.shadow.core.fsproj" />
-    <ProjectReference Include="..\Shadow.Adapter\altcover.adapter.core.fsproj" />
+    <ProjectReference Include="..\AltCover\altcover.core.fsproj" />
+    <ProjectReference Include="..\Sample4\sample4.core.fsproj" />
   </ItemGroup>
 
   <ItemGroup>

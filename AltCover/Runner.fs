@@ -37,6 +37,15 @@ module Runner =
   let internal executable : Option<string> ref = ref None
   let internal lcov : Option<string> ref = ref None
   let mutable internal collect = false
+  let mutable internal threshold : Option<int> = None
+
+  let init() =
+    recordingDirectory <- None
+    workingDirectory <- None
+    executable := None
+    lcov := None
+    collect <- false
+    threshold <- None
 
   let DoWithFile (create: unit -> FileStream) (action : Stream -> unit) =
     use stream = create()
@@ -57,7 +66,12 @@ module Runner =
   let multiSortByNameAndStartLine (l : (string * XElement seq) seq) =
     multiSort lineOfMethod l
 
-  let LCovSummary (report:XDocument) (format:Base.ReportFormat) =
+  let LCovSummary (report:XDocument) (format:Base.ReportFormat) result =
+    !lcov
+    |> Option.get
+    |> Path.GetDirectoryName
+    |> CommandLine.ensureDirectory
+
     DoWithFile
       (fun () -> File.OpenWrite(!lcov |> Option.get))
       (fun stream ->
@@ -275,6 +289,7 @@ module Runner =
                            // end_of_record
                            writer.WriteLine "end_of_record"
                            ))
+    result
 
   let NCoverSummary (report:XDocument) =
        let summarise v n key =
@@ -284,6 +299,7 @@ module Runner =
                         CommandLine.resources.GetString key,
                         v, n, pc)
          |> Output.Info
+         pc
 
        let methods = report.Descendants(X "method")
                      |> Seq.filter (fun m -> m.Attribute(X "excluded").Value = "false")
@@ -315,8 +331,8 @@ module Runner =
                      |> Seq.filter isVisited
                      |> Seq.length
 
-       summarise vclasses classes.Length "VisitedClasses"
-       summarise vmethods methods.Length "VisitedMethods"
+       summarise vclasses classes.Length "VisitedClasses" |> ignore
+       summarise vmethods methods.Length "VisitedMethods" |> ignore
        summarise vpoints points.Length "VisitedPoints"
 
   let AltSummary (report:XDocument) =
@@ -371,22 +387,35 @@ module Runner =
                         CommandLine.resources.GetString key,
                         vc, nc, pc)
           |> Output.Info
+          pc
 
-      summarise "visitedClasses" "numClasses" None "VisitedClasses"
-      summarise "visitedMethods" "numMethods" None "VisitedMethods"
-      summarise "visitedSequencePoints" "numSequencePoints" (Some "sequenceCoverage") "VisitedPoints"
-      summarise "visitedBranchPoints" "numBranchPoints" (Some "branchCoverage") "VisitedBranches"
+      summarise "visitedClasses" "numClasses" None "VisitedClasses" |> ignore
+      summarise "visitedMethods" "numMethods" None "VisitedMethods" |> ignore
+      let covered = summarise "visitedSequencePoints" "numSequencePoints" (Some "sequenceCoverage") "VisitedPoints"
+      summarise "visitedBranchPoints" "numBranchPoints" (Some "branchCoverage") "VisitedBranches" |> ignore
 
       Output.Info String.Empty
       AltSummary report
+      covered
 
-  let StandardSummary (report:XDocument) (format:Base.ReportFormat) =
-    report |>
-    match format with
-    | Base.ReportFormat.NCover -> NCoverSummary
-    | _ -> OpenCoverSummary
+  let StandardSummary (report:XDocument) (format:Base.ReportFormat) result =
+    let covered = report |>
+                  match format with
+                  | Base.ReportFormat.NCover -> NCoverSummary
+                  | _ -> OpenCoverSummary
+                  |> Double.TryParse
 
-  let mutable internal Summaries : (XDocument -> Base.ReportFormat -> unit) list = []
+    let value = match covered with
+                | (false, _) -> 0.0
+                | (_ , x) -> x
+
+    match threshold with
+    | None -> result
+    | Some x -> let f = float x
+                if f <= value then result
+                else Math.Ceiling(f - value) |> int
+
+  let mutable internal Summaries : (XDocument -> Base.ReportFormat -> int -> int) list = []
 
   let internal DeclareOptions () =
     Summaries <- []
@@ -449,6 +478,21 @@ module Runner =
                  else CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
                                                          CommandLine.resources.GetString "InvalidValue",
                                                          "--lcovReport",
+                                                         x) :: CommandLine.error))
+      ("t|threshold=",
+       (fun x -> let (q,n) = Int32.TryParse ( if (String.IsNullOrWhiteSpace(x)) then "!"
+                                              else x )
+                 let ok =  q && (n >= 0) && (n <= 100)
+                 if ok then
+                    if Option.isSome threshold then
+                      CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
+                                                         CommandLine.resources.GetString "MultiplesNotAllowed",
+                                                         "--threshold") :: CommandLine.error
+                    else
+                      threshold <- Some n
+                 else CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
+                                                         CommandLine.resources.GetString "InvalidValue",
+                                                         "--threshold",
                                                          x) :: CommandLine.error))
       ("?|help|h", (fun x -> CommandLine.help <- not (isNull x)))
       ("<>", (fun x -> CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
@@ -742,9 +786,9 @@ module Runner =
   let mutable internal GetMonitor = MonitorBase
   let mutable internal DoReport = WriteReportBase
 
-  let DoSummaries (document:XDocument) (format:Base.ReportFormat) =
+  let DoSummaries (document:XDocument) (format:Base.ReportFormat) result =
     Summaries
-    |> List.iter (fun summary -> summary document format)
+    |> List.fold (fun r summary -> summary document format r) result
 
   let DoCoverage arguments options1 =
     let check1 = DeclareOptions ()
@@ -779,7 +823,6 @@ module Runner =
             |> Seq.iter File.Delete
 
             let document = if File.Exists report then XDocument.Load report else XDocument()
-            DoSummaries document format'
-            result                             ) 255 true
+            DoSummaries document format' result ) 255 true
         CommandLine.ReportErrors "Collection"
         value

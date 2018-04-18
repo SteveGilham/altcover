@@ -4,7 +4,7 @@ open System.Reflection
 open System.Xml
 open System.Xml.Linq
 
-open Fake.Core.Environment
+open Fake.Core
 open Fake.DotNet
 open Fake.IO.FileSystemOperators
 open Fake.IO
@@ -33,7 +33,7 @@ module Actions =
         |> Seq.iter (fun n -> printfn "Deleting %s" n
                               Directory.Delete(n, true))
 
-        let temp = environVar "TEMP"
+        let temp = Environment.environVar "TEMP"
         if not <| String.IsNullOrWhiteSpace temp then
             Directory.GetFiles(temp, "*.tmp.dll.mdb")
             |> Seq.iter File.Delete
@@ -62,10 +62,13 @@ open System.Runtime.CompilerServices
 #else
 #if NETCOREAPP2_0
 [<assembly: InternalsVisibleTo("AltCover.Tests")>]
+[<assembly: InternalsVisibleTo("AltCover.XTests")>]
 
 #else
 [<assembly: InternalsVisibleTo("AltCover.Tests, PublicKey={1}")>]
 [<assembly: InternalsVisibleTo("AltCover.Tests, PublicKey={2}")>]
+[<assembly: InternalsVisibleTo("AltCover.XTests, PublicKey={1}")>]
+[<assembly: InternalsVisibleTo("AltCover.XTests, PublicKey={2}")>]
 [<assembly: InternalsVisibleTo("AltCover.Shadow.Adapter, PublicKey={1}")>]
 [<assembly: InternalsVisibleTo("AltCover.Shadow.Adapter, PublicKey={2}")>]
 [<assembly: InternalsVisibleTo("AltCover.Shadow.Tests, PublicKey={1}")>]

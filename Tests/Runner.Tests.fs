@@ -188,6 +188,11 @@ type AltCoverTests() = class
                                data, rather than launching a process.
   -l, --lcovReport=VALUE     Optional: File for lcov format version of the
                                collected data
+  -t, --threshold=VALUE      Optional: minimum acceptable coverage percentage (
+                               integer, 0 to 100).  If the coverage result is
+                               below threshold, the return code of the process
+                               is (threshold - actual) rounded up to the
+                               nearest integer.
   -?, --help, -h             Prints out the options.
 """
 
@@ -246,7 +251,7 @@ type AltCoverTests() = class
   [<Test>]
   member self.ShouldHaveExpectedOptions() =
     let options = Runner.DeclareOptions ()
-    Assert.That (options.Count, Is.EqualTo 7)
+    Assert.That (options.Count, Is.EqualTo 8)
     Assert.That(options |> Seq.filter (fun x -> x.Prototype <> "<>")
                         |> Seq.forall (fun x -> (String.IsNullOrWhiteSpace >> not) x.Description))
     Assert.That (options |> Seq.filter (fun x -> x.Prototype = "<>") |> Seq.length, Is.EqualTo 1)
@@ -524,7 +529,7 @@ type AltCoverTests() = class
       Runner.collect <- false
 
   [<Test>]
-  member self.ParsingLcovGivesLcove() =
+  member self.ParsingLcovGivesLcov() =
     lock Runner.lcov (fun () ->
     try
       Runner.lcov := None
@@ -582,6 +587,80 @@ type AltCoverTests() = class
     finally
       Runner.Summaries <- [Runner.StandardSummary]
       Runner.lcov := None)
+
+  [<Test>]
+  member self.ParsingThresholdGivesThreshold() =
+    try
+      Runner.threshold <- None
+      let options = Runner.DeclareOptions ()
+      let input = [| "-t"; "57" |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Left _ -> Assert.Fail()
+      | Right (x, y) -> Assert.That (y, Is.SameAs options)
+                        Assert.That (x, Is.Empty)
+
+      match Runner.threshold with
+      | None -> Assert.Fail()
+      | Some x -> Assert.That(x, Is.EqualTo 57)
+    finally
+      Runner.threshold <- None
+
+  [<Test>]
+  member self.ParsingMultipleThresholdGivesFailure() =
+    try
+      Runner.threshold <- None
+      let options = Runner.DeclareOptions ()
+      let input = [| "-t"; "23"; "/t"; "42" |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Right _ -> Assert.Fail()
+      | Left (x, y) -> Assert.That (y, Is.SameAs options)
+                       Assert.That (x, Is.EqualTo "UsageError")
+    finally
+      Runner.threshold <- None
+
+  [<Test>]
+  member self.ParsingBadThresholdGivesFailure() =
+    try
+      Runner.threshold <- None
+      let options = Runner.DeclareOptions ()
+      let input = [| "-t"; "-111" |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Right _ -> Assert.Fail()
+      | Left (x, y) -> Assert.That (y, Is.SameAs options)
+                       Assert.That (x, Is.EqualTo "UsageError")
+    finally
+      Runner.threshold <- None
+
+  [<Test>]
+  member self.ParsingEmptyThresholdGivesFailure() =
+    try
+      Runner.threshold <- None
+      let options = Runner.DeclareOptions ()
+      let input = [| "-t"; "  " |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Right _ -> Assert.Fail()
+      | Left (x, y) -> Assert.That (y, Is.SameAs options)
+                       Assert.That (x, Is.EqualTo "UsageError")
+    finally
+      Runner.threshold <- None
+
+  [<Test>]
+  member self.ParsingNoThresholdGivesFailure() =
+    try
+      Runner.threshold <- None
+      let options = Runner.DeclareOptions ()
+      let input = [| "-t" |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Right _ -> Assert.Fail()
+      | Left (x, y) -> Assert.That (y, Is.SameAs options)
+                       Assert.That (x, Is.EqualTo "UsageError")
+    finally
+      Runner.threshold <- None
 
   [<Test>]
   member self.ShouldRequireExe() =
@@ -875,6 +954,11 @@ or
                                data, rather than launching a process.
   -l, --lcovReport=VALUE     Optional: File for lcov format version of the
                                collected data
+  -t, --threshold=VALUE      Optional: minimum acceptable coverage percentage (
+                               integer, 0 to 100).  If the coverage result is
+                               below threshold, the return code of the process
+                               is (threshold - actual) rounded up to the
+                               nearest integer.
   -?, --help, -h             Prints out the options.
 """
 
@@ -957,62 +1041,6 @@ or
       Console.SetOut (fst saved)
       Console.SetError (snd saved)
       Runner.workingDirectory <- None
-
-  [<Test>]
-  member self.ShouldDoCoverage() =
-    let start = Directory.GetCurrentDirectory()
-    let here = (Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName)
-    let where = Path.Combine(here, Guid.NewGuid().ToString())
-    Directory.CreateDirectory(where) |> ignore
-    Directory.SetCurrentDirectory where
-    let create = Path.Combine(where, "AltCover.Recorder.g.dll")
-    if create |> File.Exists |> not then do
-        let from = Path.Combine(here, "AltCover.Recorder.dll")
-        let updated = Instrument.PrepareAssembly from
-        Instrument.WriteAssembly updated create
-
-    let save = Runner.RecorderName
-    let save1 = Runner.GetPayload
-    let save2 = Runner.GetMonitor
-    let save3 = Runner.DoReport
-
-    let report =  "coverage.xml" |> Path.GetFullPath
-    try
-      Runner.RecorderName <- "AltCover.Recorder.g.dll"
-      let payload (rest:string list) =
-        Assert.That(rest, Is.EquivalentTo [|"test"; "1"|])
-        255
-
-      let monitor (hits:ICollection<(string*int*Base.Track)>) (token:string) _ _ =
-        Assert.That(token, Is.EqualTo report, "should be default coverage file")
-        Assert.That(hits, Is.Empty)
-        127
-
-      let write (hits:ICollection<(string*int*Base.Track)>) format (report:string) =
-        Assert.That(report, Is.EqualTo report, "should be default coverage file")
-        Assert.That(hits, Is.Empty)
-        TimeSpan.Zero
-
-      Runner.GetPayload <- payload
-      Runner.GetMonitor <- monitor
-      Runner.DoReport <- write
-
-      let empty = OptionSet()
-      let dummy = report + ".xx.acv"
-      do
-        use temp = File.Create dummy
-        dummy |> File.Exists |> Assert.That
-
-      let r = Runner.DoCoverage [|"Runner"; "-x"; "test"; "-r"; where; "--"; "1"|] empty
-      dummy |> File.Exists |> not |> Assert.That
-      Assert.That (r, Is.EqualTo 127)
-
-    finally
-      Runner.GetPayload <- save1
-      Runner.GetMonitor <- save2
-      Runner.DoReport <- save3
-      Runner.RecorderName <- save
-      Directory.SetCurrentDirectory start
 
   [<Test>]
   member self.WriteLeavesExpectedTraces() =
@@ -1296,7 +1324,8 @@ or
     let builder = System.Text.StringBuilder()
     try
       Output.Info <- (fun s -> builder.Append(s).Append("|") |> ignore)
-      Runner.StandardSummary report Base.ReportFormat.NCover
+      let r = Runner.StandardSummary report Base.ReportFormat.NCover 0
+      Assert.That (r, Is.EqualTo 0)
       Assert.That (builder.ToString(), Is.EqualTo "Visited Classes 0 of 0 (n/a)|Visited Methods 0 of 0 (n/a)|Visited Points 0 of 0 (n/a)|")
     finally
       Output.Info <- ignore
@@ -1312,7 +1341,13 @@ or
     let builder = System.Text.StringBuilder()
     try
       Output.Info <- (fun s -> builder.Append(s).Append("|") |> ignore)
-      Runner.StandardSummary baseline Base.ReportFormat.NCover
+      let r = try
+                Runner.threshold <- Some 25
+                Runner.StandardSummary baseline Base.ReportFormat.NCover 42
+              finally
+                Runner.threshold <- None
+      // 80% coverage > threshold so expect return code coming in
+      Assert.That (r, Is.EqualTo 42)
       Assert.That (builder.ToString(), Is.EqualTo "Visited Classes 1 of 1 (100)|Visited Methods 1 of 1 (100)|Visited Points 8 of 10 (80)|")
     finally
       Output.Info <- ignore
@@ -1325,7 +1360,8 @@ or
     let builder = System.Text.StringBuilder()
     try
         Output.Info <- (fun s -> builder.Append(s).Append("|") |> ignore)
-        Runner.StandardSummary report Base.ReportFormat.OpenCover
+        let r = Runner.StandardSummary report Base.ReportFormat.OpenCover 0
+        Assert.That (r, Is.EqualTo 0)
         Assert.That (builder.ToString(), Is.EqualTo ("Visited Classes 0 of 0 (n/a)|Visited Methods 0 of 0 (n/a)|" +
                                                      "Visited Points 0 of 0 (0)|Visited Branches 0 of 0 (0)||" +
                                                      "==== Alternative Results (includes all methods including those without corresponding source) ====|" +
@@ -1344,7 +1380,14 @@ or
     let builder = System.Text.StringBuilder()
     try
         Output.Info <- (fun s -> builder.Append(s).Append("|") |> ignore)
-        Runner.StandardSummary baseline Base.ReportFormat.OpenCover
+        let r = try
+                  Runner.threshold <- Some 75
+                  Runner.StandardSummary baseline Base.ReportFormat.OpenCover 23
+                finally
+                  Runner.threshold <- None
+
+        // 70% coverage < threshold so expect shortfall
+        Assert.That (r, Is.EqualTo 5)
         Assert.That (builder.ToString(), Is.EqualTo ("Visited Classes 1 of 1 (100)|Visited Methods 1 of 1 (100)|" +
                                                      "Visited Points 7 of 10 (70)|Visited Branches 2 of 3 (66.67)||" +
                                                      "==== Alternative Results (includes all methods including those without corresponding source) ====|" +
@@ -1366,7 +1409,8 @@ or
     unique |> Path.GetDirectoryName |>  Directory.CreateDirectory |> ignore
 
     try
-      Runner.LCovSummary baseline Base.ReportFormat.OpenCover
+      let r = Runner.LCovSummary baseline Base.ReportFormat.OpenCover 0
+      Assert.That (r, Is.EqualTo 0)
 
       let result = File.ReadAllText unique
 
@@ -1394,7 +1438,8 @@ or
     unique |> Path.GetDirectoryName |>  Directory.CreateDirectory |> ignore
 
     try
-      Runner.LCovSummary baseline Base.ReportFormat.NCover
+      let r = Runner.LCovSummary baseline Base.ReportFormat.NCover 0
+      Assert.That (r, Is.EqualTo 0)
 
       let result = File.ReadAllText unique
 
