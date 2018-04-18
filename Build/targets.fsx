@@ -325,7 +325,6 @@ Target "UnitTestDotNet" (fun _ ->
 Target "UnitTestWithOpenCover" (fun _ ->
     Directory.ensure "./_Reports/_UnitTestWithOpenCover"
     let testFiles = !! (@"_Binaries/*Tests/Debug+AnyCPU/*Test*.dll")
-                    //|> Seq.map (fun f -> f.FullName)
                     |> Seq.filter (fun f -> Path.GetFileName(f) <> "AltCover.XTests.dll")
     let xtestFiles = !! (@"_Binaries/*Tests/Debug+AnyCPU/*XTest*.dll")
 
@@ -342,7 +341,7 @@ Target "UnitTestWithOpenCover" (fun _ ->
                                    OptionalArguments = "-excludebyattribute:*ExcludeFromCodeCoverageAttribute;*ProgIdAttribute"
                                    Register = OpenCover.RegisterType.RegisterUser
                                    Output = xcoverage })
-          (String.Join(" ", xtestFiles) + " -parallel none -noshadow -nunit =./_Reports/XUnitTestWithOpenCoverReport.xml")
+          (String.Join(" ", xtestFiles) + " -parallel none -noshadow -nunit _Reports/XUnitTestWithOpenCoverReport.xml")
 
       OpenCover.run (fun p -> { p with
                                    WorkingDir = "."
