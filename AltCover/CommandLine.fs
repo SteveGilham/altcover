@@ -91,6 +91,10 @@ module CommandLine =
   let internal WriteOut line =
       Write Console.Out ConsoleColor.White line
 
+  let internal Filter line f =
+     if line |> String.IsNullOrEmpty |> not 
+     then f line
+
   let internal Launch (cmd:string) args toDirectory =
     Directory.SetCurrentDirectory(toDirectory)
     let quote = enquotes
@@ -109,10 +113,8 @@ module CommandLine =
     use proc = new Process()
     proc.StartInfo <- psi
 
-    proc.ErrorDataReceived.Add(fun e -> if e.Data |> String.IsNullOrEmpty |> not 
-                                        then Output.Error e.Data)
-    proc.OutputDataReceived.Add(fun e -> if e.Data |> String.IsNullOrEmpty |> not 
-                                         then Output.Info e.Data)
+    proc.ErrorDataReceived.Add(fun e -> Output.Error |> Filter e.Data)
+    proc.OutputDataReceived.Add(fun e -> Output.Info |> Filter e.Data)
     proc.Start() |> ignore
     proc.BeginErrorReadLine()
     proc.BeginOutputReadLine()
