@@ -396,7 +396,8 @@ module XTests =
 
       Assert.Equal<IEnumerable<String>> (Directory.GetFiles(output)
                                             |> Seq.map Path.GetFileName
-                                            |> Seq.toList,
+                                            |> Seq.toList
+                                            |> List.sortBy (fun f -> f.ToUpperInvariant()),
                                             expected)
 
       let expectedXml = XDocument.Load(new System.IO.StringReader(MonoBaseline))
