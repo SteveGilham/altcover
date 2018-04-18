@@ -487,7 +487,7 @@ Target "UnitTestWithAltCoverRunner" (fun _ ->
           { info with
                 FileName = altcover
                 WorkingDirectory = xtestDirectory
-                Arguments = (" /sn=" + keyfile + AltCoverFilter + @"/o=./__UnitTestWithAltCoverRunner -x=" + xaltReport)})
+                Arguments = ("--opencover  /sn=" + keyfile + AltCoverFilter + @"/o=./__UnitTestWithAltCoverRunner -x=" + xaltReport)})
                 "Re-instrument returned with a non-zero exit code"
 
       printfn "Unit test the instrumented code"
