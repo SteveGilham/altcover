@@ -244,7 +244,7 @@ module XTests =
                            |> Seq.toList
 
       Assert.Equal (actualFiles |> List.length, expected' |> List.length)
-      List.zip actualFiles expected' 
+      List.zip actualFiles expected'
       |> List.iter (fun (a, e) -> Assert.Equal(a,e))
 
     finally
@@ -362,7 +362,7 @@ module XTests =
       let snk = StrongNameKeyPair(buffer.ToArray())
 
 #if NETCOREAPP2_0
-      Assert.Equal (Visitor.keys.Count, Is.EqualTo 1)
+      Assert.Equal (Visitor.keys.Count, 0)
 #else
       Assert.True (Visitor.keys.ContainsKey(KeyStore.KeyToIndex snk))
       Assert.Equal (Visitor.keys.Count, 1)
@@ -379,11 +379,10 @@ module XTests =
 
       let expected = if File.Exists(pdb) then
                         ["AltCover.Recorder.g.dll"
-#if NETCOREAPP2_0
-                         "AltCover.Recorder.g.dll.mdb"
-                         "FSharp.Core.dll"
-#else
                          "AltCover.Recorder.g.pdb"
+
+#if NETCOREAPP2_0
+                         "FSharp.Core.dll"
 #endif
                          "Sample1.exe"
                          "Sample1.exe.mdb"
