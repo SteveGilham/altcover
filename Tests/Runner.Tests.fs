@@ -1341,7 +1341,7 @@ or
     let builder = System.Text.StringBuilder()
     try
       Output.Info <- (fun s -> builder.Append(s).Append("|") |> ignore)
-      let r = try 
+      let r = try
                 Runner.threshold <- Some 25
                 Runner.StandardSummary baseline Base.ReportFormat.NCover 42
               finally
@@ -1380,12 +1380,12 @@ or
     let builder = System.Text.StringBuilder()
     try
         Output.Info <- (fun s -> builder.Append(s).Append("|") |> ignore)
-        let r = try 
+        let r = try
                   Runner.threshold <- Some 75
                   Runner.StandardSummary baseline Base.ReportFormat.OpenCover 23
                 finally
                   Runner.threshold <- None
-        
+
         // 70% coverage < threshold so expect shortfall
         Assert.That (r, Is.EqualTo 5)
         Assert.That (builder.ToString(), Is.EqualTo ("Visited Classes 1 of 1 (100)|Visited Methods 1 of 1 (100)|" +
