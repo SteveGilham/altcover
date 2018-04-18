@@ -240,7 +240,7 @@ module Runner =
       ("t|threshold=",
        (fun x -> let (q,n) = Int32.TryParse ( if (String.IsNullOrWhiteSpace(x)) then "!"
                                               else x )
-                 let ok = if q then (n >= 0) && (n <= 100) else q
+                 let ok =  q && (n >= 0) && (n <= 100)
                  if ok then
                     if Option.isSome threshold then
                       CommandLine.error <- String.Format(CultureInfo.CurrentCulture,

@@ -697,6 +697,20 @@ type AltCoverTests() = class
       Cobertura.path := None)
 
   [<Test>]
+  member self.ParsingEmptyThresholdGivesFailure() =
+    try
+      Runner.threshold <- None
+      let options = Runner.DeclareOptions ()
+      let input = [| "-t"; "  " |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Right _ -> Assert.Fail()
+      | Left (x, y) -> Assert.That (y, Is.SameAs options)
+                       Assert.That (x, Is.EqualTo "UsageError")
+    finally
+      Runner.threshold <- None
+
+  [<Test>]
   member self.ParsingNoThresholdGivesFailure() =
     try
       Runner.threshold <- None
@@ -1093,62 +1107,6 @@ or
       Runner.workingDirectory <- None
 
   [<Test>]
-  member self.ShouldDoCoverage() =
-    let start = Directory.GetCurrentDirectory()
-    let here = (Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName)
-    let where = Path.Combine(here, Guid.NewGuid().ToString())
-    Directory.CreateDirectory(where) |> ignore
-    Directory.SetCurrentDirectory where
-    let create = Path.Combine(where, "AltCover.Recorder.g.dll")
-    if create |> File.Exists |> not then do
-        let from = Path.Combine(here, "AltCover.Recorder.dll")
-        let updated = Instrument.PrepareAssembly from
-        Instrument.WriteAssembly updated create
-
-    let save = Runner.RecorderName
-    let save1 = Runner.GetPayload
-    let save2 = Runner.GetMonitor
-    let save3 = Runner.DoReport
-
-    let report =  "coverage.xml" |> Path.GetFullPath
-    try
-      Runner.RecorderName <- "AltCover.Recorder.g.dll"
-      let payload (rest:string list) =
-        Assert.That(rest, Is.EquivalentTo [|"test"; "1"|])
-        255
-
-      let monitor (hits:ICollection<(string*int*Base.Track)>) (token:string) _ _ =
-        Assert.That(token, Is.EqualTo report, "should be default coverage file")
-        Assert.That(hits, Is.Empty)
-        127
-
-      let write (hits:ICollection<(string*int*Base.Track)>) format (report:string) =
-        Assert.That(report, Is.EqualTo report, "should be default coverage file")
-        Assert.That(hits, Is.Empty)
-        TimeSpan.Zero
-
-      Runner.GetPayload <- payload
-      Runner.GetMonitor <- monitor
-      Runner.DoReport <- write
-
-      let empty = OptionSet()
-      let dummy = report + ".xx.acv"
-      do
-        use temp = File.Create dummy
-        dummy |> File.Exists |> Assert.That
-
-      let r = Runner.DoCoverage [|"Runner"; "-x"; "test"; "-r"; where; "--"; "1"|] empty
-      dummy |> File.Exists |> not |> Assert.That
-      Assert.That (r, Is.EqualTo 127)
-
-    finally
-      Runner.GetPayload <- save1
-      Runner.GetMonitor <- save2
-      Runner.DoReport <- save3
-      Runner.RecorderName <- save
-      Directory.SetCurrentDirectory start
-
-  [<Test>]
   member self.WriteLeavesExpectedTraces() =
     let saved = Console.Out
     let here = Directory.GetCurrentDirectory()
@@ -1447,7 +1405,7 @@ or
     let builder = System.Text.StringBuilder()
     try
       Output.Info <- (fun s -> builder.Append(s).Append("|") |> ignore)
-      let r = try 
+      let r = try
                 Runner.threshold <- Some 25
                 Runner.StandardSummary baseline Base.ReportFormat.NCover 42
               finally
@@ -1486,12 +1444,12 @@ or
     let builder = System.Text.StringBuilder()
     try
         Output.Info <- (fun s -> builder.Append(s).Append("|") |> ignore)
-        let r = try 
+        let r = try
                   Runner.threshold <- Some 75
                   Runner.StandardSummary baseline Base.ReportFormat.OpenCover 23
                 finally
                   Runner.threshold <- None
-        
+
         // 70% coverage < threshold so expect shortfall
         Assert.That (r, Is.EqualTo 5)
         Assert.That (builder.ToString(), Is.EqualTo ("Visited Classes 1 of 1 (100)|Visited Methods 1 of 1 (100)|" +

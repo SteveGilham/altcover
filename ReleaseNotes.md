@@ -1,3 +1,9 @@
+# 3.0.4xx (Caba series release 7)
+* `-t|threshold` option in `runner` mode (parameter `Threshold` for the `AltCover.Collect` task) to fail the build (non-zero return code or MSBuild error state) if coverage falls below the specified percentage
+* [BUGFIX] -- Parameters weren't being re-initialised on the second or subsequent use of the MSBuild tasks, leading to failures about arguments being specified more than once (Issue #10)
+* FIXED AGAIN : reinstate earlier change [f61f951] to write .mdb out for .mdb in (and pdb out for pdb in) -- at least on .net core and full .net (long story)
+* Moving some of the unit tests to XUnit for reasons related to the above
+
 # 3.0.422 (Caba series release 6)
 * [BUGFIX] -- Cecil resolves type dependencies by looking relative to the current working directory, no matter where it's actually writing the file : so work in the target directory while we are writing
 * Also, just in case, ensure we process files from the depended-upon first, up the dependency chain (assumes no dependency cycles).

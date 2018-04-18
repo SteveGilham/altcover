@@ -216,11 +216,8 @@ module Main =
                                                     CommandLine.resources.GetString "SaveExists",
                                                     toDirectory) :: CommandLine.error
 
-            if CommandLine.error |> List.isEmpty && toDirectory |> Directory.Exists |> not then
-              Output.Info <| String.Format(CultureInfo.CurrentCulture,
-                                                    (CommandLine.resources.GetString "CreateFolder"),
-                                                     toDirectory)
-              Directory.CreateDirectory(toDirectory) |> ignore) () false
+            if CommandLine.error |> List.isEmpty then
+              CommandLine.ensureDirectory toDirectory) () false
 
         if CommandLine.error |> List.isEmpty |> not then
             Left ("UsageError", options)
@@ -330,6 +327,9 @@ module Main =
     | Right (rest, fromInfo, toInfo, targetInfo) ->
         let report = Visitor.ReportPath()
         let result = CommandLine.doPathOperation( fun () ->
+            report 
+            |> Path.GetDirectoryName
+            |> CommandLine.ensureDirectory
             let (assemblies, assemblyNames) = PrepareTargetFiles fromInfo toInfo targetInfo
             Output.Info <| String.Format(CultureInfo.CurrentCulture,
                                             (CommandLine.resources.GetString "reportingto"),
