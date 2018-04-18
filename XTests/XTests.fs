@@ -433,12 +433,9 @@ module XTests =
       Assert.Same (result, input) //, "result differs")
       let created = Path.Combine (output, "Sample4.dll")
       Assert.True (File.Exists created, created + " not found")
-#if NETCOREAPP2_0
-#else
       let pdb = Path.ChangeExtension(Assembly.GetExecutingAssembly().Location, ".pdb")
       if File.Exists pdb then
         Assert.True (File.Exists (Path.ChangeExtension(created, ".pdb")), created + " pdb not found")
-#endif
     finally
       Visitor.outputDirectory <- saved
 
@@ -469,7 +466,17 @@ module XTests =
       Assert.Same (result, input) //, "result differs")
       let created = Path.Combine (output, "Sample1.exe")
       Assert.True (File.Exists created, created + " not found")
-      Assert.True (File.Exists (created + ".mdb"), created + ".mdb not found")
+      let isWindows =
+#if NETCOREAPP2_0
+                        true
+#else
+                        System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
+#endif
+
+      if isWindows then
+        Assert.True (File.Exists (created + ".mdb"), created + ".mdb not found")
+      else 
+        Assert.True (File.Exists (Path.ChangeExtension(created, ".pdb")), created + " pdb not found")
     finally
       Visitor.outputDirectory <- saved
 
