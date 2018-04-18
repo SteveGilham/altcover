@@ -49,6 +49,17 @@ module CommandLine =
                          |> Seq.find (fun n -> n.EndsWith(".Strings", StringComparison.Ordinal))
   let internal resources = ResourceManager(resource , Assembly.GetExecutingAssembly())
 
+  let conditionalOutput condition output =
+    if condition() 
+    then output()
+
+  let ensureDirectory directory =
+    conditionalOutput(fun () ->  directory |> Directory.Exists |> not)
+        (fun () -> Output.Info <| String.Format(CultureInfo.CurrentCulture,
+                                                (resources.GetString "CreateFolder"),
+                                                directory)
+                   Directory.CreateDirectory(directory) |> ignore)
+
   let internal WriteColoured (writer:TextWriter) colour operation =
        let original = Console.ForegroundColor
        try
@@ -80,6 +91,10 @@ module CommandLine =
   let internal WriteOut line =
       Write Console.Out ConsoleColor.White line
 
+  let internal Filter line f =
+     if line |> String.IsNullOrEmpty |> not 
+     then f line
+
   let internal Launch (cmd:string) args toDirectory =
     Directory.SetCurrentDirectory(toDirectory)
     let quote = enquotes
@@ -98,8 +113,8 @@ module CommandLine =
     use proc = new Process()
     proc.StartInfo <- psi
 
-    proc.ErrorDataReceived.Add(fun e -> Output.Error e.Data)
-    proc.OutputDataReceived.Add(fun e -> Output.Info e.Data)
+    proc.ErrorDataReceived.Add(fun e -> Output.Error |> Filter e.Data)
+    proc.OutputDataReceived.Add(fun e -> Output.Info |> Filter e.Data)
     proc.Start() |> ignore
     proc.BeginErrorReadLine()
     proc.BeginOutputReadLine()
@@ -161,8 +176,9 @@ module CommandLine =
        |> Output.Error
 
   let ReportErrors (tag:string) =
-    if tag |> String.IsNullOrWhiteSpace |> not && error |> List.isEmpty |> not then
-       tag |> resources.GetString |> Output.Error
+    conditionalOutput(fun () ->  tag |> String.IsNullOrWhiteSpace |> not && 
+                                 error |> List.isEmpty |> not)
+                     (fun () -> tag |> resources.GetString |> Output.Error)
 
     error
     |> List.iter Output.Error

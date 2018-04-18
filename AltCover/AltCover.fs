@@ -23,6 +23,22 @@ type AssemblyInfo = {
          }
 
 module Main =
+  let init () =
+    Visitor.inputDirectory <- None
+    Visitor.outputDirectory <- None
+    ProgramDatabase.SymbolFolders.Clear()
+#if NETCOREAPP2_0
+#else
+    Visitor.keys.Clear()
+    Visitor.defaultStrongNameKey <- None
+#endif
+    Visitor.reportPath <- None
+    Visitor.NameFilters.Clear()
+    Visitor.interval <- None
+    Visitor.TrackingNames.Clear()
+    Visitor.reportFormat <- None
+    Visitor.inplace <- false
+    Visitor.collect <- false
 
   let internal DeclareOptions () =
     [ ("i|inputDirectory=",
@@ -200,11 +216,8 @@ module Main =
                                                     CommandLine.resources.GetString "SaveExists",
                                                     toDirectory) :: CommandLine.error
 
-            if CommandLine.error |> List.isEmpty && toDirectory |> Directory.Exists |> not then
-              Output.Info <| String.Format(CultureInfo.CurrentCulture,
-                                                    (CommandLine.resources.GetString "CreateFolder"),
-                                                     toDirectory)
-              Directory.CreateDirectory(toDirectory) |> ignore) () false
+            if CommandLine.error |> List.isEmpty then
+              CommandLine.ensureDirectory toDirectory) () false
 
         if CommandLine.error |> List.isEmpty |> not then
             Left ("UsageError", options)
@@ -259,8 +272,8 @@ module Main =
                 String.Format(CultureInfo.CurrentCulture,
                                (CommandLine.resources.GetString "instrumenting"),
                                fullName) |> Output.Info
-                
-                { Path = fullName 
+
+                { Path = fullName
                   Name = def.Name.Name
                   Refs = def.MainModule.AssemblyReferences
                          |> Seq.map (fun r -> r.Name)
@@ -269,23 +282,23 @@ module Main =
                 accumulator) (fun () -> accumulator)
         ) []
 
-
     // sort the assemblies into order so that the depended-upon are processed first
     let candidates = assemblies
                      |> Seq.map (fun a -> a.Name)
                      |> Seq.fold (fun (s: Set<string>) n -> Set.add n s) Set.empty<string>
+
     let simplified = assemblies
                      |> List.map (fun a -> { a with Refs = a.Refs
                                                            |> List.filter (fun n -> Set.contains n candidates) })
-    let rec bundle unassigned unresolved collection =
+    let rec bundle unassigned unresolved collection n =
       match unassigned with
       | [] -> collection
       | _ ->
-        let stage = unassigned
-                    |> List.filter (fun u -> u.Refs |> List.isEmpty)
+        let stage = (if n <= 1 then unassigned
+                     else unassigned |> List.filter (fun u -> u.Refs |> List.isEmpty))
                     |> List.sortBy (fun u -> u.Name)
 
-        let waiting = stage 
+        let waiting = stage
                       |> List.fold (fun s a -> Set.remove a.Name s) unresolved
 
         let next = unassigned
@@ -293,9 +306,9 @@ module Main =
                    |> List.map (fun a -> { a with Refs = a.Refs
                                                          |> List.filter (fun n -> Set.contains n waiting) })
 
-        bundle next waiting (stage :: collection)
+        bundle next waiting (stage :: collection) (n-1)
 
-    let sorted = bundle simplified candidates []
+    let sorted = bundle simplified candidates [] (simplified |> List.length)
                  |> List.concat
                  |> List.rev
                  |> List.map (fun a -> (a.Path, a.Name))
@@ -314,6 +327,9 @@ module Main =
     | Right (rest, fromInfo, toInfo, targetInfo) ->
         let report = Visitor.ReportPath()
         let result = CommandLine.doPathOperation( fun () ->
+            report 
+            |> Path.GetDirectoryName
+            |> CommandLine.ensureDirectory
             let (assemblies, assemblyNames) = PrepareTargetFiles fromInfo toInfo targetInfo
             Output.Info <| String.Format(CultureInfo.CurrentCulture,
                                             (CommandLine.resources.GetString "reportingto"),
@@ -333,8 +349,10 @@ module Main =
 
   let internal Main arguments =
     if "Runner".StartsWith(arguments |> Seq.head, StringComparison.OrdinalIgnoreCase)
-      then Runner.DoCoverage arguments (DeclareOptions())
-      else DoInstrumentation arguments
+      then Runner.init()
+           Runner.DoCoverage arguments (DeclareOptions())
+      else init()
+           DoInstrumentation arguments
 
   // mocking point
   let mutable internal EffectiveMain = Main

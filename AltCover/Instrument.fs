@@ -11,6 +11,7 @@ open System.IO
 open System.Reflection
 open System.Resources
 
+open Augment
 open Mono.Cecil
 open Mono.Cecil.Cil
 open Mono.Cecil.Rocks
@@ -222,10 +223,12 @@ module Instrument =
 
 #if NETCOREAPP2_0
 #else
-  let internal CreateSymbolWriter isWindows isMono =
+  let internal CreateSymbolWriter pdb isWindows isMono =
     match (isWindows, isMono) with
     | (true, true) -> Mono.Cecil.Mdb.MdbWriterProvider() :> ISymbolWriterProvider
-    | (true, false) -> Mono.Cecil.Pdb.PdbWriterProvider() :> ISymbolWriterProvider
+    | (true, false) -> match pdb   with
+                       | ".pdb" -> Mono.Cecil.Pdb.PdbWriterProvider() :> ISymbolWriterProvider
+                       | _ -> Mono.Cecil.Mdb.MdbWriterProvider() :> ISymbolWriterProvider
     | _ -> null
 #endif
 
@@ -238,12 +241,15 @@ module Instrument =
   /// when asked to strongname.  This writes a new .pdb/.mdb alongside the instrumented assembly</remark>
   let internal WriteAssembly (assembly:AssemblyDefinition) (path:string) =
     let pkey = Mono.Cecil.WriterParameters()
+    let pdb = ProgramDatabase.GetPdbWithFallback assembly
+              |> Option.getOrElse "x.pdb" |> Path.GetExtension
 #if NETCOREAPP2_0
-    // Assembly with symbols pdb writing fails on .net core on Windows when writing with
-    // System.NullReferenceException : Object reference not set to an instance of an object.
-    // from deep inside Cecil -- but this works!!
+    // Once Cecil 0.10 beta6 is taken out of the equation, this works
     pkey.WriteSymbols <- true
-    pkey.SymbolWriterProvider <- Mono.Cecil.Mdb.MdbWriterProvider() :> ISymbolWriterProvider
+
+    pkey.SymbolWriterProvider <- match pdb with
+                                 | ".pdb" -> Mono.Cecil.Pdb.PdbWriterProvider() :> ISymbolWriterProvider
+                                 | _ -> Mono.Cecil.Mdb.MdbWriterProvider() :> ISymbolWriterProvider
 #else
 
     // Assembly with pdb writing fails on mono on Windows when writing with
@@ -260,7 +266,7 @@ module Instrument =
     // Exception of type 'Mono.CompilerServices.SymbolWriter.MonoSymbolFileException' was thrown.
     let isWindows = System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
     pkey.WriteSymbols <- isWindows
-    pkey.SymbolWriterProvider <- CreateSymbolWriter isWindows monoRuntime
+    pkey.SymbolWriterProvider <- CreateSymbolWriter pdb isWindows monoRuntime
 
     // Also, there are no strongnames in .net core
     KnownKey assembly.Name
@@ -536,7 +542,7 @@ module Instrument =
   let private VisitAfterAssembly state (assembly:AssemblyDefinition) =
     let originalFileName = Path.GetFileName assembly.MainModule.FileName
     let path = Path.Combine(Visitor.InstrumentDirectory(), originalFileName)
-    String.Format(System.Globalization.CultureInfo.CurrentCulture, 
+    String.Format(System.Globalization.CultureInfo.CurrentCulture,
                   CommandLine.resources.GetString "instrumented", assembly, path)
     |> Output.Info
     WriteAssembly assembly path

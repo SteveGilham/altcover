@@ -11,7 +11,6 @@ nuget YamlDotNet >= 4.3.0 //"
 open System
 open System.IO
 
-open Fake.Core.Environment
 open Fake.DotNet
 open Fake.DotNet.NuGet.Restore
 open Fake.IO
@@ -47,6 +46,7 @@ nuget Fake.DotNet.MSBuild prerelease
 nuget Fake.DotNet.NuGet prerelease
 nuget Fake.DotNet.Testing.NUnit prerelease
 nuget Fake.DotNet.Testing.OpenCover prerelease
+nuget Fake.DotNet.Testing.XUnit2 prerelease
 nuget Fake.IO.FileSystem prerelease
 nuget coveralls.io >= 1.4.2
 nuget FSharpLint.Core >= 0.9.0
