@@ -820,6 +820,29 @@ Target "FSharpTypesDotNet" ( fun _ ->
     Actions.ValidateFSharpTypesCoverage simpleReport
 )
 
+Target "FSharpTests" ( fun _ ->
+    Directory.ensure "./_Reports"
+    let altcover = Path.getFullName "./_Binaries/AltCover/Release+AnyCPU/netcoreapp2.0/AltCover.dll"
+    let simpleReport = (Path.getFullName "./_Reports") @@ ( "AltCoverFSharpTests.xml")
+    let sampleRoot = Path.getFullName "Sample7/_Binaries/Sample7/Debug+AnyCPU/netcoreapp2.0"
+
+    // Test the --inplace operation
+    Shell.CleanDir sampleRoot
+    Actions.RunDotnet (fun o -> {dotnetOptions o with WorkingDirectory = Path.getFullName "Sample7"}) "test"
+                            ("--configuration Debug sample7.core.fsproj")
+                             "sample initial test returned with a non-zero exit code"
+
+    // inplace instrument
+    Actions.RunDotnet (fun o -> {dotnetOptions o with WorkingDirectory = sampleRoot}) ""
+                             (altcover + " --inplace -c=[Test] -s=Adapter -t \"System\\.\" -t \"Microsoft\\.\" -x \"" + simpleReport + "\" ")
+                             "FSharpTypesDotNet"
+
+    printfn "Execute the instrumented tests"
+    Actions.RunDotnet (fun o -> {dotnetOptions o with WorkingDirectory = Path.getFullName "Sample7"}) "test"
+                            ("--no-build --configuration Debug sample7.core.fsproj")
+                             "sample coverage test returned with a non-zero exit code"
+)
+
 Target "FSharpTypesDotNetRunner" ( fun _ ->
     Directory.ensure "./_Reports"
     let altcover = Path.getFullName "./_Binaries/AltCover/Release+AnyCPU/netcoreapp2.0/AltCover.dll"
@@ -1659,6 +1682,10 @@ activateFinal "ResetConsoleColours"
 "Compilation"
 ==> "FSharpTypes"
 ==> "OperationalTest"
+
+"Compilation"
+==> "FSharpTests"
+//==> "OperationalTest"
 
 "Compilation"
 ==> "FSharpTypesDotNet"
