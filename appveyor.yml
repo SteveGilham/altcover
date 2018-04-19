@@ -9,7 +9,6 @@ environment:
   COVERALLS_REPO_TOKEN:
     secure: qgIIfE76i59qTVO64mT7QwKcAUUYCQLie4XdUdlnt7MXLhrwqTbcfGUsCss/TmLg
 cache: 
-  - packages -> **\packages.config
   - Demo\Service\packages -> Demo\Service\Service\packages.config
   - '%USERPROFILE%\.nuget\packages -> **\*.*proj'
 nuget:
