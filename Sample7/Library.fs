@@ -33,39 +33,39 @@ module Problematic =
       finally
         System.Console.WriteLine("Finally")
 
-    //let add6To n =
-    //    n + 6
+    let add6To n =
+        n + 6
 
-    //let inline shouldBeOdd x =
-    //    if x % 2 = 0 then Assert.Fail "Not odd enough"
+    let inline shouldBeOdd x =
+        if x % 2 = 0 then Assert.Fail "Not odd enough"
 
-    //[<Test>]
-    //let ``add6To3 should be odd`` () =
-    //    add6To 3 |> shouldBeOdd
+    [<Test>]
+    let ``add6To3 should be odd`` () =
+        add6To 3 |> shouldBeOdd
 
-    //[<Test>]
-    //let ``add6To3 should be odd bis`` () =
-    //  try
-    //    add6To 3 |> shouldBeOdd
-    //  finally
-    //    System.Console.WriteLine("Finally")
+    [<Test>]
+    let ``add6To3 should be odd bis`` () =
+      try
+        add6To 3 |> shouldBeOdd
+      finally
+        System.Console.WriteLine("Finally")
 
-    //[<Test>]
-    //let ``Thing Rectangle`` () = 
-    //    let g = Thing (Size(11, 21))
-    //    for row = 0 to g.Height do
-    //        for col = 0 to g.Width do
-    //            Assert.AreEqual(System.Drawing.Rectangle(col, row, col, row), g.Rectangle(col, row))
+    [<Test>]
+    let ``Thing Rectangle`` () = 
+        let g = Thing (Size(11, 21))
+        for row = 0 to g.Height do
+            for col = 0 to g.Width do
+                Assert.AreEqual(System.Drawing.Rectangle(col, row, col, row), g.Rectangle(col, row))
 
-    //[<Test>]
-    //let ``Thing Rectangle bis`` () = 
-    //  try
-    //    let g = Thing (Size(11, 21))
-    //    for row = 0 to g.Height do
-    //        for col = 0 to g.Width do
-    //            Assert.AreEqual(System.Drawing.Rectangle(col, row, col, row), g.Rectangle(col, row))
-    //  finally
-    //    System.Console.WriteLine("Finally")
+    [<Test>]
+    let ``Thing Rectangle bis`` () = 
+      try
+        let g = Thing (Size(11, 21))
+        for row = 0 to g.Height do
+            for col = 0 to g.Width do
+                Assert.AreEqual(System.Drawing.Rectangle(col, row, col, row), g.Rectangle(col, row))
+      finally
+        System.Console.WriteLine("Finally")
 
 #if NETCOREAPP2_0
 module Program = let [<EntryPoint>] main _ = 0

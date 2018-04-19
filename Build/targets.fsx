@@ -834,7 +834,7 @@ Target "FSharpTests" ( fun _ ->
 
     // inplace instrument
     Actions.RunDotnet (fun o -> {dotnetOptions o with WorkingDirectory = sampleRoot}) ""
-                             (altcover + " --inplace -c=[Test] -s=Adapter -t \"System\\.\" -t \"Microsoft\\.\" -x \"" + simpleReport + "\" ")
+                             (altcover + " --opencover --inplace -c=[Test] -s=Adapter -t \"System\\.\" -t \"Microsoft\\.\" -x \"" + simpleReport + "\" ")
                              "FSharpTypesDotNet"
 
     printfn "Execute the instrumented tests"
