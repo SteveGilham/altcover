@@ -1685,7 +1685,7 @@ activateFinal "ResetConsoleColours"
 
 "Compilation"
 ==> "FSharpTests"
-//==> "OperationalTest"
+==> "OperationalTest"
 
 "Compilation"
 ==> "FSharpTypesDotNet"
