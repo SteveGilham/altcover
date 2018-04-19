@@ -19,6 +19,14 @@ module XTests =
     | 0 -> "/.."
     | _ -> String.Empty
 
+  let SolutionDir() =
+#if NETCOREAPP2_0
+    let where = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
+    where.Substring(0, where.IndexOf("_Binaries"))
+#else
+    SolutionRoot.location
+#endif
+
 #if NETCOREAPP2_0
   let sample1 = "Sample1.dll"
   let monoSample1 = "../_Mono/Sample1"
@@ -125,8 +133,9 @@ module XTests =
   [<Fact>]
   let ADotNetDryRunLooksAsExpected() =
     let where = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
-    let path = Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.0")
-    let key0 = Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "Build/SelfTest.snk")
+    let here = SolutionDir()
+    let path = Path.Combine(here, "_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.0")
+    let key0 = Path.Combine(here, "Build/SelfTest.snk")
 #if NETCOREAPP2_0
     let input = if Directory.Exists path then path
                 else Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "../_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.0")
@@ -295,8 +304,9 @@ module XTests =
   [<Fact>]
   let ADryRunLooksAsExpected() =
     let where = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
-    let path = Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "_Mono/Sample1")
-    let key0 = Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "Build/SelfTest.snk")
+    let here = SolutionDir()
+    let path = Path.Combine(here, "_Mono/Sample1")
+    let key0 = Path.Combine(here, "Build/SelfTest.snk")
 #if NETCOREAPP2_0
     let input = if Directory.Exists path then path
                 else Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), monoSample1)
@@ -417,8 +427,10 @@ module XTests =
 
   [<Fact>]
   let AfterAssemblyCommitsThatAssembly () =
-    let where = Assembly.GetExecutingAssembly().Location
-    let path = Path.Combine(Path.GetDirectoryName(where) + Hack(), "Sample4.dll")
+    let hack = Path.Combine(SolutionDir(), "_Binaries/AltCover.XTests/Debug+AnyCPU")
+    let local = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
+    let where = if local.IndexOf("_Binaries") > 0 then local else hack
+    let path = Path.Combine(where + Hack(), "Sample4.dll")
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
     ProgramDatabase.ReadSymbols def
 
@@ -444,7 +456,8 @@ module XTests =
   let AfterAssemblyCommitsThatAssemblyForMono () =
     // Hack for running while instrumented
     let where = Assembly.GetExecutingAssembly().Location
-    let path = Path.Combine(where.Substring(0, where.IndexOf("_Binaries")) + "_Mono/Sample1", "Sample1.exe")
+    let here = SolutionDir()
+    let path = Path.Combine(here, "_Mono/Sample1/Sample1.exe")
 #if NETCOREAPP2_0
     let path' = if File.Exists path then path
                 else Path.Combine(where.Substring(0, where.IndexOf("_Binaries")) + monoSample1, "Sample1.exe")
@@ -481,8 +494,10 @@ module XTests =
 
   [<Fact>]
   let FinishCommitsTheRecordingAssembly () =
-    let where = Assembly.GetExecutingAssembly().Location
-    let path = Path.Combine(Path.GetDirectoryName(where) + Hack(), "Sample4.dll")
+    let hack = Path.Combine(SolutionDir(), "_Binaries/AltCover.XTests/Debug+AnyCPU")
+    let local = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
+    let where = if local.IndexOf("_Binaries") > 0 then local else hack
+    let path = Path.Combine(where + Hack(), "Sample4.dll")
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
     ProgramDatabase.ReadSymbols def
 
@@ -510,7 +525,9 @@ module XTests =
   [<Fact>]
   let ShouldDoCoverage() =
     let start = Directory.GetCurrentDirectory()
-    let here = (Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName)
+    let hack = Path.Combine(SolutionDir(), "_Binaries/AltCover.XTests/Debug+AnyCPU")
+    let local = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
+    let here = if local.IndexOf("_Binaries") > 0 then local else hack
     let where = Path.Combine(here, Guid.NewGuid().ToString())
     Directory.CreateDirectory(where) |> ignore
     Directory.SetCurrentDirectory where
@@ -568,7 +585,8 @@ module XTests =
     let visitor, document = Report.ReportGenerator()
     // Hack for running while instrumented
     let where = Assembly.GetExecutingAssembly().Location
-    let path = Path.Combine(where.Substring(0, where.IndexOf("_Binaries")) + "_Mono/Sample1", "Sample1.exe")
+    let here = SolutionDir()
+    let path = Path.Combine(here, "_Mono/Sample1/Sample1.exe")
 #if NETCOREAPP2_0
     let path' = if File.Exists path then path
                 else Path.Combine(where.Substring(0, where.IndexOf("_Binaries")) + monoSample1, "Sample1.exe")
@@ -587,9 +605,10 @@ module XTests =
   let ShouldGenerateExpectedXmlReportFromMonoOpenCoverStyle() =
     let visitor, document = OpenCover.ReportGenerator()
     // Hack for running while instrumented
-    let where = Assembly.GetExecutingAssembly().Location
-    let path = Path.Combine(where.Substring(0, where.IndexOf("_Binaries")) + "_Mono/Sample1", "Sample1.exe")
+    let here = SolutionDir()
+    let path = Path.Combine(here, "_Mono/Sample1/Sample1.exe")
 #if NETCOREAPP2_0
+    let where = Assembly.GetExecutingAssembly().Location
     let path' = if File.Exists path then path
                 else Path.Combine(where.Substring(0, where.IndexOf("_Binaries")) + monoSample1, "Sample1.exe")
 #else
