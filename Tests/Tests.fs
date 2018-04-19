@@ -2320,10 +2320,13 @@ type AltCoverTests() = class
                                              Push = recorder.[1]
                                              Pop = recorder.[2] }}
     let countBefore = recorder.Head.Body.Instructions.Count
+    let tailsBefore = recorder.Head.Body.Instructions
+                      |> Seq.filter (fun i -> i.OpCode = OpCodes.Tail)
+                      |> Seq.length
     let handlersBefore = recorder.Head.Body.ExceptionHandlers.Count
 
     AltCover.Instrument.Track state recorder.Head Inspect.Track <| Some(42, "hello")
-    Assert.That (recorder.Head.Body.Instructions.Count, Is.EqualTo (countBefore + 5))
+    Assert.That (recorder.Head.Body.Instructions.Count, Is.EqualTo (countBefore + 5 - tailsBefore))
     Assert.That (recorder.Head.Body.ExceptionHandlers.Count, Is.EqualTo (handlersBefore + 1))
 
   [<Test>]
