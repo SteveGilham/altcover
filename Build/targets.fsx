@@ -104,6 +104,14 @@ Target "SetVersion" (fun _ ->
          AssemblyInfo.Trademark ""
          AssemblyInfo.Copyright copy
         ]
+
+    let hack = """namespace AltCover
+module SolutionRoot =
+  let location = """ + "\"\"\"" + (Path.getFullName ".") + "\"\"\""
+    let path = "_Generated/SolutionRoot.fs"
+    // Update the file only if it would change
+    let old = if File.Exists(path) then File.ReadAllText(path) else String.Empty
+    if not (old.Equals(hack)) then File.WriteAllText(path, hack)         
 )
 
 // Basic compilation
@@ -299,7 +307,8 @@ Target "JustUnitTest" (fun _ ->
                                                              ShadowCopy = false})
 
       !! (@"_Binaries/*Tests/Debug+AnyCPU/*Test*.dll")
-      |> Seq.filter (fun f -> Path.GetFileName(f) <> "AltCover.XTests.dll")
+      |> Seq.filter (fun f -> Path.GetFileName(f) <> "AltCover.XTests.dll" && 
+                              Path.GetFileName(f) <> "xunit.runner.visualstudio.testadapter.dll")
       |> NUnit3.run (fun p -> { p   with ToolPath = findToolInSubPath "nunit3-console.exe" "."
                                          WorkingDir = "."
                                          Labels = LabelsLevel.All
@@ -325,7 +334,8 @@ Target "UnitTestDotNet" (fun _ ->
 Target "UnitTestWithOpenCover" (fun _ ->
     Directory.ensure "./_Reports/_UnitTestWithOpenCover"
     let testFiles = !! (@"_Binaries/*Tests/Debug+AnyCPU/*Test*.dll")
-                    |> Seq.filter (fun f -> Path.GetFileName(f) <> "AltCover.XTests.dll")
+                    |> Seq.filter (fun f -> Path.GetFileName(f) <> "AltCover.XTests.dll" && 
+                                            Path.GetFileName(f) <> "xunit.runner.visualstudio.testadapter.dll")
     let xtestFiles = !! (@"_Binaries/*Tests/Debug+AnyCPU/*XTest*.dll")
 
     let coverage = Path.getFullName "_Reports/UnitTestWithOpenCover.xml"
