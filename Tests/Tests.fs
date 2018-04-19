@@ -2310,7 +2310,13 @@ type AltCoverTests() = class
   [<Test>]
   member self.ShouldBeAbleToTrackAMethod () =
     let where = Assembly.GetExecutingAssembly().Location
-    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "AltCover.Recorder.dll")
+#if NETCOREAPP2_0
+    let shift = String.Empty
+#else
+    let shift = "\\netcoreapp2.0"
+#endif
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack() +
+                            shift, "AltCover.Recorder.dll")
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
     let recorder = AltCover.Instrument.RecordingMethod def
     let raw = AltCover.Instrument.Context.Build([])
