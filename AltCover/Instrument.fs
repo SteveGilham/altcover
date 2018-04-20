@@ -403,19 +403,19 @@ module Instrument =
               MethodWorker = body.GetILProcessor() }
          | _ -> state
 
-  let private UpdateBranchReferences state instruction injected =
+  let private UpdateBranchReferences (body:MethodBody) instruction injected =
     // Change references in operands from "instruction" to first counter invocation instruction (instrLoadModuleId)
     let subs = SubstituteInstruction (instruction, injected)
-    state.MethodBody.Instructions
+    body.Instructions
     |> Seq.iter subs.SubstituteInstructionOperand
 
-    state.MethodBody.ExceptionHandlers
+    body.ExceptionHandlers
     |> Seq.iter subs.SubstituteExceptionBoundary
 
   let private VisitMethodPoint (state : Context) instruction point included =
     if included then // by construction the sequence point is included
       let instrLoadModuleId = InsertVisit instruction state.MethodWorker state.RecordingMethodRef.Visit state.ModuleId point
-      UpdateBranchReferences state instruction instrLoadModuleId
+      UpdateBranchReferences state.MethodBody instruction instrLoadModuleId
     state
 
   let internal VisitBranchPoint (state:Context) branch =
@@ -504,6 +504,10 @@ module Instrument =
                        |> Seq.filter (fun i -> i.OpCode = OpCodes.Ret)
                        |> Seq.toList
 
+            let tailcalls = instructions
+                            |> Seq.filter (fun i -> i.OpCode = OpCodes.Tail)
+                            |> Seq.toList
+
             let tail = instructions |> Seq.last
             let popper = methodWorker.Create(OpCodes.Call, state.RecordingMethodRef.Pop)
             methodWorker.InsertAfter(tail, popper)
@@ -514,7 +518,12 @@ module Instrument =
 
             rets
             |> Seq.iter (fun i -> let leave = methodWorker.Create(OpCodes.Leave, ret)
+                                  UpdateBranchReferences body i leave
                                   methodWorker.Replace (i, leave) )
+
+            tailcalls
+            |> Seq.iter (fun i -> UpdateBranchReferences body i i.Next
+                                  methodWorker.Remove i)
 
             let handler = ExceptionHandler(ExceptionHandlerType.Finally)
             handler.TryStart <- instructions |> Seq.head
