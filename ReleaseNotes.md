@@ -1,6 +1,7 @@
 # 3.0.4xx (Caba series release 8)
 * [BUGFIX] for `-c|callContext` option -- generate valid IL where the context function completes with a tail call
 * [BUGFIX] for `-c|callContext` option -- generate valid IL where the context function contains a branch directly to a return instruction
+* `-c|cobertura` option on "runner"/Collect mode -- Cobertura format output to teh given file name, based on sample file at https://raw.githubusercontent.com/jenkinsci/cobertura-plugin/master/src/test/resources/hudson/plugins/cobertura/coverage-with-data.xml
 
 
 # 3.0.433 (Caba series release 7)
