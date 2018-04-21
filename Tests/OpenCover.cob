@@ -2,7 +2,9 @@
 <coverage line-rate="0" branch-rate="0" version="3.0.0.0" timestamp="xx">
   <packages>
     <package name="Sample1">
-      <classes />
+      <classes>
+        <class name="TouchTest.Program" filename="altcover\Sample1\Program.cs" />
+      </classes>
     </package>
   </packages>
 </coverage>

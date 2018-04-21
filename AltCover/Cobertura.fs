@@ -14,7 +14,17 @@ module Cobertura =
                           packages.Add(package)
                           let classes = XElement(X "classes")
                           package.Add(classes)
-    )
+                          m.Descendants(X "method")
+                          |> Seq.groupBy(fun mx -> (mx.Attribute(X "class").Value,
+                                                    mx.Descendants(X "seqpnt")
+                                                    |> Seq.map (fun s -> s.Attribute(X "document").Value)
+                                                    |> Seq.head))
+                          |> Seq.sortBy fst
+                          |> Seq.iter (fun ((n,s),mx) -> let cx = XElement(X "class",
+                                                                           XAttribute(X "name", n),
+                                                                           XAttribute(X "filename", s))
+                                                         classes.Add(cx))
+                )
     packages.Parent.SetAttributeValue(X "branch-rate", null)
 
   let OpenCover (report:XDocument)  (packages:XElement) =
@@ -25,9 +35,24 @@ module Cobertura =
                                                      m.Descendants(X "ModuleName")
                                                      |> Seq.map (fun x -> x.Value)
                                                      |> Seq.head))
+                          let files = m.Descendants(X "File")
+                                      |> Seq.fold(fun m x -> m |> 
+                                                             Map.add (x.Attribute(X "uid").Value) (x.Attribute(X "fullPath").Value)) Map.empty
                           packages.Add(package)
                           let classes = XElement(X "classes")
                           package.Add(classes)
+                          m.Descendants(X "Method")
+                          |> Seq.filter(fun m -> m.Descendants(X "FileRef") |> Seq.isEmpty |> not)
+                          |> Seq.groupBy(fun mx -> ((mx.Parent.Parent.Descendants(X "FullName") |> Seq.head).Value,
+                                                    mx.Descendants(X "FileRef")
+                                                    |> Seq.map (fun s -> files
+                                                                         |> Map.find (s.Attribute(X "uid").Value))
+                                                    |> Seq.head))
+                          |> Seq.sortBy fst
+                          |> Seq.iter (fun ((n,s),mx) -> let cx = XElement(X "class",
+                                                                           XAttribute(X "name", n),
+                                                                           XAttribute(X "filename", s))
+                                                         classes.Add(cx))
     )
 
   let Summary (report:XDocument) (format:Base.ReportFormat) result =
