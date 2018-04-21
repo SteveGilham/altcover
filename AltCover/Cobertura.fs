@@ -58,26 +58,30 @@ module Cobertura =
     packages.Parent.SetAttributeValue(X "branch-rate", null)
 
   let OpenCover (report:XDocument)  (packages:XElement) =
-    let extract (x:XElement) n =
-      Math.Round((x.Attribute(X n).Value
-                  |> Double.TryParse
-                  |> snd) / 100.0, 4)
+    let extract (owner:XElement) (target:XElement) =
+        let summary = owner.Descendants(X "Summary") |> Seq.head
+        let b = summary.Attribute(X "numBranchPoints").Value |> Int32.TryParse |> snd
+        let bv = summary.Attribute(X "visitedBranchPoints").Value |> Int32.TryParse |> snd
+        let s = summary.Attribute(X "numSequencePoints").Value |> Int32.TryParse |> snd
+        let sv = summary.Attribute(X "visitedSequencePoints").Value |> Int32.TryParse |> snd
+        if s > 0 then target.SetAttributeValue(X "line-rate", (float sv)/(float s))
+        if b > 0 then target.SetAttributeValue(X "branch-rate", (float bv)/(float b))
     report.Descendants(X "Module")
     |> Seq.filter(fun m -> m.Descendants(X "Class") |> Seq.isEmpty |> not)
-    |> Seq.iter (fun m -> let summary = m.Descendants(X "Summary") |> Seq.head
+    |> Seq.iter (fun m -> let mname = m.Descendants(X "ModuleName")
+                                      |> Seq.map (fun x -> x.Value)
+                                      |> Seq.head
                           let package = XElement(X "package",
-                                                 XAttribute(X "name",
-                                                     m.Descendants(X "ModuleName")
-                                                     |> Seq.map (fun x -> x.Value)
-                                                     |> Seq.head))
-                          package.SetAttributeValue(X "line-rate", extract summary "sequenceCoverage")
-                          package.SetAttributeValue(X "branch-rate", extract summary "branchCoverage")
+                                                 XAttribute(X "name", mname))
                           let files = m.Descendants(X "File")
                                       |> Seq.fold(fun m x -> m |>
                                                              Map.add (x.Attribute(X "uid").Value) (x.Attribute(X "fullPath").Value)) Map.empty
                           packages.Add(package)
                           let classes = XElement(X "classes")
                           package.Add(classes)
+
+                          extract m package
+
                           m.Descendants(X "Method")
                           |> Seq.filter(fun m -> m.Descendants(X "FileRef") |> Seq.isEmpty |> not)
                           |> Seq.groupBy(fun mx -> ((mx.Parent.Parent.Descendants(X "FullName") |> Seq.head).Value,
@@ -101,10 +105,8 @@ module Cobertura =
                                                                  |> Seq.filter (fun (_,(_,mt)) -> mt.Descendants(X "SequencePoint") |> Seq.isEmpty |> not)
                                                                  |> Seq.fold(fun (b,bv,s,sv) (key, (signa, mt)) -> let mtx = XElement(X "method",
                                                                                                                                       XAttribute(X "name", key),
-                                                                                                                                      XAttribute(X "signature", signa),
-                                                                                                                                      XAttribute(X "line-rate", extract mt "sequenceCoverage"),
-                                                                                                                                      XAttribute(X "branch-rate", extract mt "branchCoverage")
-                                                                                                                                      )
+                                                                                                                                      XAttribute(X "signature", signa))
+                                                                                                                   extract mt mtx
                                                                                                                    mxx.Add(mtx)
                                                                                                                    let lines = XElement(X "lines")
                                                                                                                    mtx.Add(lines)
@@ -118,9 +120,8 @@ module Cobertura =
                                                          if b > 0 then cx.SetAttributeValue(X "branch-rate", (float bv)/(float b))
                                                                                                                    )
     )
-    let summary = report.Descendants(X "Summary") |> Seq.head
-    packages.Parent.SetAttributeValue(X "line-rate", extract summary "sequenceCoverage")
-    packages.Parent.SetAttributeValue(X "branch-rate", extract summary "branchCoverage")
+
+    extract (report.Descendants(X "CoverageSession") |> Seq.head) packages.Parent
 
   let Summary (report:XDocument) (format:Base.ReportFormat) result =
     let rewrite = XDocument(XDeclaration("1.0", "utf-8", "yes"), [||])
