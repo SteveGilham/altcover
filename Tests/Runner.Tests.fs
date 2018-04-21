@@ -902,21 +902,21 @@ type AltCoverTests() = class
 #endif
                      + """  -x, --xmlReport=VALUE      Optional: The output report template file (default:
                                 coverage.xml in the current directory)
-  -f, --fileFilter=VALUE     Optional: source file name to exclude from
-                               instrumentation (may repeat)
-  -s, --assemblyFilter=VALUE Optional: assembly name to exclude from
-                               instrumentation (may repeat)
+  -f, --fileFilter=VALUE     Optional, multiple: source file name to exclude
+                               from instrumentation
+  -s, --assemblyFilter=VALUE Optional, multiple: assembly name to exclude from
+                               instrumentation
   -e, --assemblyExcludeFilter=VALUE
-                             Optional: assembly which links other instrumented
-                               assemblies but for which internal details may be
-                               excluded (may repeat)
-  -t, --typeFilter=VALUE     Optional: type name to exclude from
-                               instrumentation (may repeat)
-  -m, --methodFilter=VALUE   Optional: method name to exclude from
-                               instrumentation (may repeat)
+                             Optional, multiple: assembly which links other
+                               instrumented assemblies but for which internal
+                               details may be excluded
+  -t, --typeFilter=VALUE     Optional, multiple: type name to exclude from
+                               instrumentation
+  -m, --methodFilter=VALUE   Optional, multiple: method name to exclude from
+                               instrumentation
   -a, --attributeFilter=VALUE
-                             Optional: attribute name to exclude from
-                               instrumentation (may repeat)
+                             Optional, multiple: attribute name to exclude from
+                               instrumentation
   -c, --callContext=VALUE    Optional, multiple: Tracking either times of
                                visits in ticks or designated method calls
                                leading to the visits.
