@@ -25,7 +25,18 @@ module Cobertura =
                                                                            XAttribute(X "filename", s))
                                                          classes.Add(cx)
                                                          let mxx = XElement(X "methods")
-                                                         cx.Add(mxx))
+                                                         cx.Add(mxx)
+                                                         mx
+                                                         |> Seq.map(fun mt -> let fn = mt.Attribute(X "fullname").Value.Split([| ' '; '(' |]) |> Array.toList
+                                                                              let key = fn.[1].Substring(n.Length + 1)
+                                                                              let signa = fn.[0] + " " + fn.[2]
+                                                                              (key, (signa, mt)))
+                                                         |> Seq.sortBy fst
+                                                         |> Seq.iter(fun (key, (signa, mt)) -> let mtx = XElement(X "method",
+                                                                                                                  XAttribute(X "name", key),
+                                                                                                                  XAttribute(X "signature", signa))
+                                                                                               mxx.Add(mtx)))
+
                 )
     packages.Parent.SetAttributeValue(X "branch-rate", null)
 
@@ -56,7 +67,17 @@ module Cobertura =
                                                                            XAttribute(X "filename", s))
                                                          classes.Add(cx)
                                                          let mxx = XElement(X "methods")
-                                                         cx.Add(mxx))
+                                                         cx.Add(mxx)
+                                                         mx
+                                                         |> Seq.map(fun mt -> let fn = (mt.Descendants(X "Name") |> Seq.head).Value.Split([| ' '; '(' |]) |> Array.toList
+                                                                              let key = fn.[1].Substring(n.Length + 2)
+                                                                              let signa = fn.[0] + " " + fn.[2]
+                                                                              (key, (signa, mt)))
+                                                         |> Seq.sortBy fst
+                                                         |> Seq.iter(fun (key, (signa, mt)) -> let mtx = XElement(X "method",
+                                                                                                                  XAttribute(X "name", key),
+                                                                                                                  XAttribute(X "signature", signa))
+                                                                                               mxx.Add(mtx)))
     )
 
   let Summary (report:XDocument) (format:Base.ReportFormat) result =

@@ -4,7 +4,9 @@
     <package name="Sample1.exe">
       <classes>
         <class name="TouchTest.Program" filename="altcover\Sample1\Program.cs">
-          <methods />
+          <methods>
+            <method name="Main" signature="System.Void System.String[])" />
+          </methods>
         </class>
       </classes>
     </package>
