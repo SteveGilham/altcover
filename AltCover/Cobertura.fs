@@ -1,7 +1,6 @@
 ﻿namespace AltCover
 
 open System
-open System.IO
 open System.Xml.Linq
 
 module Cobertura =
@@ -13,21 +12,22 @@ module Cobertura =
     |> Seq.iter (fun m -> let package = XElement(X "package",
                                                  XAttribute(X "name", m.Attribute(X "name").Value))
                           packages.Add(package)
+                          let classes = XElement(X "classes")
+                          package.Add(classes)
     )
     packages.Parent.SetAttributeValue(X "branch-rate", null)
-
-
-
 
   let OpenCover (report:XDocument)  (packages:XElement) =
     report.Descendants(X "Module")
     |> Seq.filter(fun m -> m.Descendants(X "Class") |> Seq.isEmpty |> not)
     |> Seq.iter (fun m -> let package = XElement(X "package",
-                                                 XAttribute(X "name", 
+                                                 XAttribute(X "name",
                                                      m.Descendants(X "ModuleName")
                                                      |> Seq.map (fun x -> x.Value)
                                                      |> Seq.head))
                           packages.Add(package)
+                          let classes = XElement(X "classes")
+                          package.Add(classes)
     )
 
   let Summary (report:XDocument) (format:Base.ReportFormat) result =
@@ -43,10 +43,9 @@ module Cobertura =
     let packages = XElement(X "packages")
     element.Add(packages)
 
-    match format with 
+    match format with
     | Base.ReportFormat.NCover -> NCover report packages
     | _ -> OpenCover report packages
 
     rewrite.Save(!path |> Option.get)
     result
-

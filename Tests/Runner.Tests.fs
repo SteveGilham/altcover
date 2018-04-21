@@ -1571,7 +1571,7 @@ or
       use stream2 = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource2)
       use reader = new StreamReader(stream2)
       let expected = reader.ReadToEnd().Replace("\r", String.Empty)
-      Assert.That (result.Replace("\r", String.Empty), Is.EqualTo expected)
+      Assert.That (result.Replace("\r", String.Empty), Is.EqualTo expected, result)
     finally
       Cobertura.path := None
 
@@ -1602,7 +1602,7 @@ or
       use stream2 = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource2)
       use reader = new StreamReader(stream2)
       let expected = reader.ReadToEnd().Replace("\r", String.Empty)
-      Assert.That (result.Replace("\r", String.Empty), Is.EqualTo expected)
+      Assert.That (result.Replace("\r", String.Empty), Is.EqualTo expected, result)
     finally
       Cobertura.path := None
 
