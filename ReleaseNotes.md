@@ -1,6 +1,6 @@
 # 3.0.4xx (Caba series release 8)
-* [BUGFIX] for `-c|callContext` option where the conext function completes with a tail call
-* [BUGFIX] for `-c|callContext` option where the context function contains a branch directly to the return instruction
+* [BUGFIX] for `-c|callContext` option -- generate valid IL where the context function completes with a tail call
+* [BUGFIX] for `-c|callContext` option -- generate valid IL where the context function contains a branch directly to a return instruction
 
 
 # 3.0.433 (Caba series release 7)
