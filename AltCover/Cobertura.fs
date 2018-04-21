@@ -3,6 +3,8 @@
 open System
 open System.Xml.Linq
 
+// based on the sample file at https://raw.githubusercontent.com/jenkinsci/cobertura-plugin/master/src/test/resources/hudson/plugins/cobertura/coverage-with-data.xml
+
 module Cobertura =
   let internal path : Option<string> ref = ref None
   let X = OpenCover.X
@@ -119,7 +121,7 @@ module Cobertura =
                                                                                                                                                        XAttribute(X "number", s.Attribute(X "sl").Value),
                                                                                                                                                        XAttribute(X "hits", vx),
                                                                                                                                                        XAttribute(X "branch", if bec = 0 then "false" else "true"))
-                                                                                                                                        if bec > 0 then
+                                                                                                                                        let doBranch () =
                                                                                                                                           let pc = Math.Round(100.0 * (float bev)/ (float bec)) |> int
                                                                                                                                           line.SetAttributeValue(X "condition-coverage",
                                                                                                                                                                  sprintf "%d%% (%d/%d)" pc bev bec)
@@ -130,6 +132,8 @@ module Cobertura =
                                                                                                                                                             XAttribute(X "type", "jump"),
                                                                                                                                                             XAttribute(X "coverage", sprintf "%d%%" pc))
                                                                                                                                           cc.Add co
+
+                                                                                                                                        if bec > 0 then doBranch()
 
                                                                                                                                         lines.Add line
                                                                                                                               )
