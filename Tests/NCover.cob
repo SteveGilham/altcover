@@ -20,6 +20,18 @@
               </lines>
             </method>
           </methods>
+          <lines>
+            <line number="11" hits="1" branch="false" />
+            <line number="12" hits="1" branch="false" />
+            <line number="13" hits="1" branch="false" />
+            <line number="14" hits="1" branch="false" />
+            <line number="15" hits="1" branch="false" />
+            <line number="16" hits="1" branch="false" />
+            <line number="18" hits="0" branch="false" />
+            <line number="19" hits="0" branch="false" />
+            <line number="20" hits="X" branch="false" />
+            <line number="21" hits="-1" branch="false" />
+          </lines>
         </class>
       </classes>
     </package>

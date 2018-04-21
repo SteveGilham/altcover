@@ -4,6 +4,8 @@ open System
 open System.Xml.Linq
 
 // based on the sample file at https://raw.githubusercontent.com/jenkinsci/cobertura-plugin/master/src/test/resources/hudson/plugins/cobertura/coverage-with-data.xml
+// TODO -- refactor away from the arrow anti-pattern
+// TODO -- class level lines summaries
 
 module Cobertura =
   let internal path : Option<string> ref = ref None
