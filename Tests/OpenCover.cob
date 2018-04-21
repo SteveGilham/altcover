@@ -5,7 +5,9 @@
       <classes>
         <class name="TouchTest.Program" filename="altcover\Sample1\Program.cs">
           <methods>
-            <method name="Main" signature="System.Void System.String[])" />
+            <method name="Main" signature="System.Void System.String[])">
+              <lines />
+            </method>
           </methods>
         </class>
       </classes>

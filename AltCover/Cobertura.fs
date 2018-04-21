@@ -35,7 +35,9 @@ module Cobertura =
                                                          |> Seq.iter(fun (key, (signa, mt)) -> let mtx = XElement(X "method",
                                                                                                                   XAttribute(X "name", key),
                                                                                                                   XAttribute(X "signature", signa))
-                                                                                               mxx.Add(mtx)))
+                                                                                               mxx.Add(mtx)
+                                                                                               let lines = XElement(X "lines")
+                                                                                               mtx.Add(lines)))
 
                 )
     packages.Parent.SetAttributeValue(X "branch-rate", null)
@@ -77,7 +79,9 @@ module Cobertura =
                                                          |> Seq.iter(fun (key, (signa, mt)) -> let mtx = XElement(X "method",
                                                                                                                   XAttribute(X "name", key),
                                                                                                                   XAttribute(X "signature", signa))
-                                                                                               mxx.Add(mtx)))
+                                                                                               mxx.Add(mtx)
+                                                                                               let lines = XElement(X "lines")
+                                                                                               mtx.Add(lines)))
     )
 
   let Summary (report:XDocument) (format:Base.ReportFormat) result =
