@@ -8,38 +8,53 @@ module Cobertura =
   let X = OpenCover.X
 
   let NCover (report:XDocument) (packages:XElement) =
-    report.Descendants(X "module")
-    |> Seq.iter (fun m -> let package = XElement(X "package",
-                                                 XAttribute(X "name", m.Attribute(X "name").Value))
-                          packages.Add(package)
-                          let classes = XElement(X "classes")
-                          package.Add(classes)
-                          m.Descendants(X "method")
-                          |> Seq.groupBy(fun mx -> (mx.Attribute(X "class").Value,
-                                                    mx.Descendants(X "seqpnt")
-                                                    |> Seq.map (fun s -> s.Attribute(X "document").Value)
-                                                    |> Seq.head))
-                          |> Seq.sortBy fst
-                          |> Seq.iter (fun ((n,s),mx) -> let cx = XElement(X "class",
-                                                                           XAttribute(X "name", n),
-                                                                           XAttribute(X "filename", s))
-                                                         classes.Add(cx)
-                                                         let mxx = XElement(X "methods")
-                                                         cx.Add(mxx)
-                                                         mx
-                                                         |> Seq.map(fun mt -> let fn = mt.Attribute(X "fullname").Value.Split([| ' '; '(' |]) |> Array.toList
-                                                                              let key = fn.[1].Substring(n.Length + 1)
-                                                                              let signa = fn.[0] + " " + fn.[2]
-                                                                              (key, (signa, mt)))
-                                                         |> Seq.sortBy fst
-                                                         |> Seq.iter(fun (key, (signa, mt)) -> let mtx = XElement(X "method",
-                                                                                                                  XAttribute(X "name", key),
-                                                                                                                  XAttribute(X "signature", signa))
-                                                                                               mxx.Add(mtx)
-                                                                                               let lines = XElement(X "lines")
-                                                                                               mtx.Add(lines)))
-
-                )
+    let (hxxx, txxx) = 
+                    report.Descendants(X "module")
+                    |> Seq.fold (fun (h0, t0) m -> let package = XElement(X "package",
+                                                                          XAttribute(X "name", m.Attribute(X "name").Value))
+                                                   packages.Add(package)
+                                                   let classes = XElement(X "classes")
+                                                   package.Add(classes)
+                                                   let (h0x, t0x) = m.Descendants(X "method")
+                                                                    |> Seq.groupBy(fun mx -> (mx.Attribute(X "class").Value,
+                                                                                              mx.Descendants(X "seqpnt")
+                                                                                              |> Seq.map (fun s -> s.Attribute(X "document").Value)
+                                                                                              |> Seq.head))
+                                                                    |> Seq.sortBy fst
+                                                                    |> Seq.fold (fun (h0', t0') ((n,s),mx) -> let cx = XElement(X "class",
+                                                                                                                                XAttribute(X "name", n),
+                                                                                                                                XAttribute(X "filename", s))
+                                                                                                              classes.Add(cx)
+                                                                                                              let mxx = XElement(X "methods")
+                                                                                                              cx.Add(mxx)
+                                                                                                              let (hxx, txx) = mx
+                                                                                                                               |> Seq.map(fun mt -> let fn = mt.Attribute(X "fullname").Value.Split([| ' '; '(' |]) |> Array.toList
+                                                                                                                                                    let key = fn.[1].Substring(n.Length + 1)
+                                                                                                                                                    let signa = fn.[0] + " " + fn.[2]
+                                                                                                                                                    (key, (signa, mt)))
+                                                                                                                               |> Seq.sortBy fst
+                                                                                                                               |> Seq.fold(fun (h', t') (key, (signa, mt)) -> let mtx = XElement(X "method",
+                                                                                                                                                                                                 XAttribute(X "name", key),
+                                                                                                                                                                                                 XAttribute(X "signature", signa))
+                                                                                                                                                                              mxx.Add(mtx)
+                                                                                                                                                                              let lines = XElement(X "lines")
+                                                                                                                                                                              mtx.Add(lines)
+                                                                                                                                                                              let (hx,tx) = mt.Descendants(X "seqpnt")
+                                                                                                                                                                                             |> Seq.fold (fun (h,t) s -> let vc = s.Attribute(X "visitcount")
+                                                                                                                                                                                                                         let vx = if isNull vc then "0" else vc.Value
+                                                                                                                                                                                                                         let line = XElement(X "line",
+                                                                                                                                                                                                                                        XAttribute(X "number", s.Attribute(X "line").Value),
+                                                                                                                                                                                                                                        XAttribute(X "hits", if isNull vc then "0" else vc.Value),
+                                                                                                                                                                                                                                        XAttribute(X "branch", "false"))
+                                                                                                                                                                                                                         lines.Add line
+                                                                                                                                                                                                                         (h + (if vx = "0" then 0 else 1), t + 1)) (0,0)
+                                                                                                                                                                              if tx > 0 then mtx.SetAttributeValue(X "line-rate", (float hx)/(float tx))
+                                                                                                                                                                              (h' + hx, t' + tx)) (0,0)
+                                                                                                              if txx > 0 then cx.SetAttributeValue(X "line-rate", (float hxx)/(float txx))
+                                                                                                              (h0'+hxx, t0'+txx)) (0,0)
+                                                   if t0x > 0 then package.SetAttributeValue(X "line-rate", (float h0x)/(float t0x))
+                                                   (h0 + h0x, t0 + t0x)) (0,0)                                
+    if txxx > 0 then packages.Parent.SetAttributeValue(X "line-rate", (float hxxx)/(float txxx))
     packages.Parent.SetAttributeValue(X "branch-rate", null)
 
   let OpenCover (report:XDocument)  (packages:XElement) =
