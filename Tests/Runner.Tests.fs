@@ -5,6 +5,7 @@ open System.Collections.Generic
 open System.IO
 open System.IO.Compression
 open System.Reflection
+open System.Text.RegularExpressions
 open System.Threading
 open System.Xml
 open System.Xml.Linq
@@ -1542,5 +1543,67 @@ or
                                                     """<x><seqpnt line="3" /></x>"""                                           ])
                                             ("z", [ """<x><seqpnt line="3" /></x>"""
                                                     """<x><seqpnt line="5" /></x>""" ]) ])
+
+  [<Test>]
+  member self.NCoverShouldGeneratePlausibleCobertura() =
+    let resource = Assembly.GetExecutingAssembly().GetManifestResourceNames()
+                        |> Seq.find (fun n -> n.EndsWith("SimpleCoverage.xml", StringComparison.Ordinal))
+
+    use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
+
+    let baseline = XDocument.Load(stream)
+    let unique = Path.Combine(Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName,
+                                Guid.NewGuid().ToString() + "/NCover.cob")
+    Cobertura.path := Some unique
+    unique |> Path.GetDirectoryName |>  Directory.CreateDirectory |> ignore
+
+    try
+      let r = Cobertura.Summary baseline Base.ReportFormat.NCover 0
+      Assert.That (r, Is.EqualTo 0)
+
+      let result = Regex.Replace(File.ReadAllText unique,
+                                 """timestamp=\"\d*\">""",
+                                 """timestamp="xx">""")
+
+      let resource2 = Assembly.GetExecutingAssembly().GetManifestResourceNames()
+                        |> Seq.find (fun n -> n.EndsWith("NCover.cob", StringComparison.Ordinal))
+
+      use stream2 = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource2)
+      use reader = new StreamReader(stream2)
+      let expected = reader.ReadToEnd().Replace("\r", String.Empty)
+      Assert.That (result.Replace("\r", String.Empty), Is.EqualTo expected)
+    finally
+      Cobertura.path := None
+
+  [<Test>]
+  member self.OpenCoverShouldGeneratePlausibleCobertura() =
+    let resource = Assembly.GetExecutingAssembly().GetManifestResourceNames()
+                        |> Seq.find (fun n -> n.EndsWith("Sample1WithOpenCover.xml", StringComparison.Ordinal))
+
+    use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
+
+    let baseline = XDocument.Load(stream)
+    let unique = Path.Combine(Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName,
+                                Guid.NewGuid().ToString() + "/OpenCover.cob")
+    Cobertura.path := Some unique
+    unique |> Path.GetDirectoryName |>  Directory.CreateDirectory |> ignore
+
+    try
+      let r = Cobertura.Summary baseline Base.ReportFormat.OpenCover 0
+      Assert.That (r, Is.EqualTo 0)
+
+      let result = Regex.Replace(File.ReadAllText unique,
+                                 """timestamp=\"\d*\">""",
+                                 """timestamp="xx">""")
+
+      let resource2 = Assembly.GetExecutingAssembly().GetManifestResourceNames()
+                        |> Seq.find (fun n -> n.EndsWith("OpenCover.cob", StringComparison.Ordinal))
+
+      use stream2 = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource2)
+      use reader = new StreamReader(stream2)
+      let expected = reader.ReadToEnd().Replace("\r", String.Empty)
+      Assert.That (result.Replace("\r", String.Empty), Is.EqualTo expected)
+    finally
+      Cobertura.path := None
 
 end
