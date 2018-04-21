@@ -44,7 +44,7 @@ module Cobertura =
                                                                                                                                                                                                                          let vx = if isNull vc then "0" else vc.Value
                                                                                                                                                                                                                          let line = XElement(X "line",
                                                                                                                                                                                                                                         XAttribute(X "number", s.Attribute(X "line").Value),
-                                                                                                                                                                                                                                        XAttribute(X "hits", if isNull vc then "0" else vc.Value),
+                                                                                                                                                                                                                                        XAttribute(X "hits", vx),
                                                                                                                                                                                                                                         XAttribute(X "branch", "false"))
                                                                                                                                                                                                                          lines.Add line
                                                                                                                                                                                                                          (h + (if vx = "0" then 0 else 1), t + 1)) (0,0)
@@ -110,6 +110,29 @@ module Cobertura =
                                                                                                                    mxx.Add(mtx)
                                                                                                                    let lines = XElement(X "lines")
                                                                                                                    mtx.Add(lines)
+                                                                                                                   mt.Descendants(X "SequencePoint")
+                                                                                                                   |> Seq.iter(fun s -> let vc = s.Attribute(X "vc")
+                                                                                                                                        let vx = if isNull vc then "0" else vc.Value
+                                                                                                                                        let bec = s.Attribute(X "bec").Value |> Int32.TryParse |> snd
+                                                                                                                                        let bev = s.Attribute(X "bev").Value |> Int32.TryParse |> snd
+                                                                                                                                        let line = XElement(X "line",
+                                                                                                                                                       XAttribute(X "number", s.Attribute(X "sl").Value),
+                                                                                                                                                       XAttribute(X "hits", vx),
+                                                                                                                                                       XAttribute(X "branch", if bec = 0 then "false" else "true"))
+                                                                                                                                        if bec > 0 then
+                                                                                                                                          let pc = Math.Round(100.0 * (float bev)/ (float bec)) |> int
+                                                                                                                                          line.SetAttributeValue(X "condition-coverage",
+                                                                                                                                                                 sprintf "%d%% (%d/%d)" pc bev bec)
+                                                                                                                                          let cc = XElement(X "conditions")
+                                                                                                                                          line.Add cc
+                                                                                                                                          let co = XElement(X "condition",
+                                                                                                                                                            XAttribute(X "number", 0),
+                                                                                                                                                            XAttribute(X "type", "jump"),
+                                                                                                                                                            XAttribute(X "coverage", sprintf "%d%%" pc))
+                                                                                                                                          cc.Add co
+
+                                                                                                                                        lines.Add line
+                                                                                                                              )
                                                                                                                    let summary = mt.Descendants(X "Summary") |> Seq.head
                                                                                                                    ( b + (summary.Attribute(X "numBranchPoints").Value |> Int32.TryParse |> snd),
                                                                                                                      bv + (summary.Attribute(X "visitedBranchPoints").Value |> Int32.TryParse |> snd),
