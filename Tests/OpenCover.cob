@@ -3,7 +3,9 @@
   <packages>
     <package name="Sample1">
       <classes>
-        <class name="TouchTest.Program" filename="altcover\Sample1\Program.cs" />
+        <class name="TouchTest.Program" filename="altcover\Sample1\Program.cs">
+          <methods />
+        </class>
       </classes>
     </package>
   </packages>
