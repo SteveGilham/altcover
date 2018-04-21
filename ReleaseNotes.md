@@ -1,4 +1,7 @@
 # 3.0.4xx (Caba series release 8)
+* [BUGFIX] for `-c|callContext` option where the conext function completes with a tail call
+* [BUGFIX] for `-c|callContext` option where the context function contains a branch directly to the return instruction
+
 
 # 3.0.433 (Caba series release 7)
 * `-t|threshold` option in `runner` mode (parameter `Threshold` for the `AltCover.Collect` task) to fail the build (non-zero return code or MSBuild error state) if coverage falls below the specified percentage
