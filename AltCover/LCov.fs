@@ -17,12 +17,17 @@ module LCov =
   let lineOfMethod (m : XElement) =
      (m.Descendants(X "seqpnt") |> Seq.head).Attribute(X "line").Value |> Int32.TryParse |> snd
 
+  let SortByFirst s =
+    s
+    |> Seq.sortBy fst
+
+
   let multiSort (by : 'a -> int) (l : (string * 'a seq) seq) =
     l
     |> Seq.map (fun (f, ms) -> (f, ms
                                    |> Seq.sortBy by
                                    |> Seq.toList))
-    |> Seq.sortBy fst
+    |> SortByFirst
 
   let multiSortByNameAndStartLine (l : (string * XElement seq) seq) =
     multiSort lineOfMethod l

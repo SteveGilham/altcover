@@ -42,7 +42,7 @@ module Cobertura =
                           let key = fn.[1].Substring(n.Length + 1)
                           let signature = fn.[0] + " " + fn.[2]
                           (key, (signature, m)))
-      |> Seq.sortBy fst
+      |> LCov.SortByFirst
       |> Seq.fold (ProcessMethod methods) (0,0)
 
     let ProcessClass (classes:XElement) (hits, total) ((name,signature),``method``) =
@@ -62,7 +62,7 @@ module Cobertura =
                                         ``method``.Descendants(X "seqpnt")
                                         |> Seq.map (fun s -> s.Attribute(X "document").Value)
                                         |> Seq.head))
-      |> Seq.sortBy fst
+      |> LCov.SortByFirst
       |> Seq.fold (ProcessClass classes) (0,0)
 
     let ProcessModule  (hits, total) (``module``:XElement) =
@@ -139,7 +139,7 @@ module Cobertura =
                                    let key = fn.[1].Substring(name.Length + 2)
                                    let signature = fn.[0] + " " + fn.[2]
                                    (key, (signature, ``method``)))
-      |> Seq.sortBy fst
+      |> LCov.SortByFirst
       |> Seq.filter (fun (_,(_,mt)) -> mt.Descendants(X "SequencePoint") |> Seq.isEmpty |> not)
       |> Seq.fold(ProcessMethod methods) (0,0,0,0)
 
@@ -163,7 +163,7 @@ module Cobertura =
                                         |> Seq.map (fun s -> files
                                                              |> Map.find (s.Attribute(X "uid").Value))
                                         |> Seq.head))
-      |> Seq.sortBy fst
+      |> LCov.SortByFirst
       |> Seq.iter (ProcessClass classes)
 
     let lookUpFiles (``module``:XElement) =
