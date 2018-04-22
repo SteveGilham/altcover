@@ -3,16 +3,16 @@
 <coverage profilerVersion="0" driverVersion="0" startTime="2017-12-29T16:33:40.9364012Z" measureTime="2017-12-29T16:33:40.9564026Z">
   <module moduleId="f6e3edb3-fb20-44b3-817d-f69d1a22fc2f" name="Sample1.exe" assembly="Sample1" assemblyIdentity="Sample1, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
     <method name="Main" class="TouchTest.Program" metadataToken="100663297" excluded="false" instrumented="true" fullname="System.Void TouchTest.Program.Main(System.String[])">
-      <seqpnt visitcount="1" line="11" column="9" endline="11" endcolumn="10" excluded="false" document="altcover\Sample1\Program.cs" />
-      <seqpnt visitcount="1" line="12" column="13" endline="12" endcolumn="36" excluded="false" document="altcover\Sample1\Program.cs" />
-      <seqpnt visitcount="1" line="13" column="13" endline="13" endcolumn="33" excluded="false" document="altcover\Sample1\Program.cs" />
-      <seqpnt visitcount="1" line="14" column="13" endline="14" endcolumn="14" excluded="false" document="altcover\Sample1\Program.cs" />
-      <seqpnt visitcount="1" line="15" column="17" endline="15" endcolumn="89" excluded="false" document="altcover\Sample1\Program.cs" />
-      <seqpnt visitcount="1" line="16" column="13" endline="16" endcolumn="14" excluded="false" document="altcover\Sample1\Program.cs" />
-      <seqpnt visitcount="0" line="18" column="13" endline="18" endcolumn="14" excluded="false" document="altcover\Sample1\Program.cs" />
-      <seqpnt line="19" column="17" endline="19" endcolumn="62" excluded="false" document="altcover\Sample1\Program.cs" />
-      <seqpnt visitcount="X" line="20" column="13" endline="20" endcolumn="14" excluded="false" document="altcover\Sample1\Program.cs" />
-      <seqpnt visitcount="-1" line="21" column="9" endline="21" endcolumn="10" excluded="false" document="altcover\Sample1\Program.cs" />
+      <seqpnt visitcount="1" line="11" column="9" endline="11" endcolumn="10" excluded="false" document="altcover/Sample1/Program.cs" />
+      <seqpnt visitcount="1" line="12" column="13" endline="12" endcolumn="36" excluded="false" document="altcover/Sample1/Program.cs" />
+      <seqpnt visitcount="1" line="13" column="13" endline="13" endcolumn="33" excluded="false" document="altcover/Sample1/Program.cs" />
+      <seqpnt visitcount="1" line="14" column="13" endline="14" endcolumn="14" excluded="false" document="altcover/Sample1/Program.cs" />
+      <seqpnt visitcount="1" line="15" column="17" endline="15" endcolumn="89" excluded="false" document="altcover/Sample1/Program.cs" />
+      <seqpnt visitcount="1" line="16" column="13" endline="16" endcolumn="14" excluded="false" document="altcover/Sample1/Program.cs" />
+      <seqpnt visitcount="0" line="18" column="13" endline="18" endcolumn="14" excluded="false" document="altcover/Sample1/Program.cs" />
+      <seqpnt line="19" column="17" endline="19" endcolumn="62" excluded="false" document="altcover/Sample1/Program.cs" />
+      <seqpnt visitcount="X" line="20" column="13" endline="20" endcolumn="14" excluded="false" document="altcover/Sample1/Program.cs" />
+      <seqpnt visitcount="-1" line="21" column="9" endline="21" endcolumn="10" excluded="false" document="altcover/Sample1/Program.cs" />
     </method>
   </module>
 </coverage>

@@ -22,6 +22,7 @@ module Actions =
         |> Seq.filter (fun n -> match n.Name with
                                 | "obj" -> Path.Combine(n.FullName, "dotnet-fake.fsproj.nuget.g.props") |> File.Exists |> not
                                 | _ -> true)
+        |> Seq.filter (fun n -> "packages" |> Path.GetFullPath |> n.FullName.StartsWith |> not)
         |> Seq.map (fun x -> x.FullName)
         |> Seq.distinct
         // arrange so leaves get deleted first, avoiding "does not exist" warnings

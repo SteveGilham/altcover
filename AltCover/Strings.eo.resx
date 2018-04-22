@@ -133,19 +133,19 @@
     <value>Laŭvola: La eliga raporta ŝablono-dosiero (defaŭlte: 'coverage.xml' en la aktuala dosierujo)</value>
   </data>
   <data name="f|fileFilter=" xml:space="preserve">
-    <value>Laŭvola: fonta dosiernomo por ekskludi de instrumentado (eble ripeti)</value>
+    <value>Laŭvola, multobla: fonta dosiernomo por ekskludi de instrumentado</value>
   </data>
   <data name="s|assemblyFilter=" xml:space="preserve">
-    <value>Laŭvola: ensambla nomo por ekskludi de instrumentado (eble ripeti)</value>
+    <value>Laŭvola, multobla: ensambla nomo por ekskludi de instrumentado</value>
   </data>
   <data name="t|typeFilter=" xml:space="preserve">
-    <value>Laŭvola: tajpu nomon por ekskludi de instrumentado (eble ripeti)</value>
+    <value>Laŭvola, multobla: tajpu nomon por ekskludi de instrumentado</value>
   </data>
   <data name="m|methodFilter=" xml:space="preserve">
-    <value>Laŭvola: metodo nomo por ekskludi de instrumentado (eble ripeti)</value>
+    <value>Laŭvola, multobla: metodo nomo por ekskludi de instrumentado</value>
   </data>
   <data name="a|attributeFilter=" xml:space="preserve">
-    <value>Laŭvola: atribuka nomo por ekskludi de instrumentado (eble ripeti)</value>
+    <value>Laŭvola, multobla: atribuka nomo por ekskludi de instrumentado</value>
   </data>
   <data name="?|help|h" xml:space="preserve">
     <value>Elmetas ĉi tiujn eblojn.</value>
@@ -156,7 +156,7 @@
   <data name="HelpText" xml:space="preserve">
     <value>AltCover [/i[nputDirectory]=VALO] [/o[utputDirectory]=VALO] [/y|symbolDirectory=VALO] [/sn|strongNameKey=VALO] [/k[ey]=VALO] [/x[mlReport]=VALO] [/f[ileFilter]=VALO] [/s|assemblyFilter=VALO] [/t|typeFilter=VALO] [/m|methodFilter=VALO] [/a|attributeFilter=VALO] [/c[allContext]=VALO] [--opencover] [--inplace] [--save] [/?|h[elp]] [-- ] [...]
 aŭ
-AltCover Runner [/r[ecordingDirectory]=VALO] [/w[orkingDirectory]=VALO] [/x||executable=VALO] [--collect] [/l[covReport]=VALO] [/t[hreshold]=VALO] [/?|h[elp]] [-- ] [...]
+AltCover Runner [/r[ecordingDirectory]=VALO] [/w[orkingDirectory]=VALO] [/x||executable=VALO] [--collect] [/l[covReport]=VALO] [/t[hreshold]=VALO] [/c[obertura]=VALO] [/?|h[elp]] [-- ] [...]
 Vidu https://github.com/SteveGilham/altcover/wiki/Usage por plenaj detaloj.</value>
   </data>
   <data name="NotInPlace" xml:space="preserve">
@@ -181,7 +181,7 @@ Kovra Raporto: {0}
 </value>
   </data>
   <data name="e|assemblyExcludeFilter=" xml:space="preserve">
-    <value>Laŭvola: asembleo, kiu kunligas aliajn agordajn asembleojn, sed por kiuj internaĵoj povas esti ekskluditaj (eble ripeti)</value>
+    <value>Laŭvola, multobla: asembleo, kiu kunligas aliajn agordajn asembleojn, sed por kiuj internaĵoj povas esti ekskluditaj</value>
   </data>
   <data name="r|recorderDirectory=" xml:space="preserve">
     <value>La dosierujo enhavanta la instrumentan kodon por kontroli (inkluzive de la AltCover.Recorder.g.dll generita per antaŭa uzo de la ".net core" AltCover).</value>
@@ -311,5 +311,11 @@ Detaloj skribitaj al {0}</value>
   </data>
   <data name="t|threshold=" xml:space="preserve">
     <value> Laŭvola: minimuma akceptebla kovra procento (entjero, 0 ĝis 100). Se la rezulto de kovraĵo estas sub sojlo, la rondkodo de la procezo estas (sojlo - reala) rondigita ĝis la plej proksima entjero.</value>
+  </data>
+  <data name="c|cobertura=" xml:space="preserve">
+    <value>Laŭvola: Dosiero por la versio de formato Cobertura de la datumoj kolektitaj</value>
+  </data>
+  <data name="threshold" xml:space="preserve">
+    <value>Kovra procento atingita estas {0}% sub la sojlo de {1}%.</value>
   </data>
 </root>

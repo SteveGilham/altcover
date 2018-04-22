@@ -104,6 +104,14 @@ Target "SetVersion" (fun _ ->
          AssemblyInfo.Trademark ""
          AssemblyInfo.Copyright copy
         ]
+
+    let hack = """namespace AltCover
+module SolutionRoot =
+  let location = """ + "\"\"\"" + (Path.getFullName ".") + "\"\"\""
+    let path = "_Generated/SolutionRoot.fs"
+    // Update the file only if it would change
+    let old = if File.Exists(path) then File.ReadAllText(path) else String.Empty
+    if not (old.Equals(hack)) then File.WriteAllText(path, hack)         
 )
 
 // Basic compilation
@@ -299,7 +307,8 @@ Target "JustUnitTest" (fun _ ->
                                                              ShadowCopy = false})
 
       !! (@"_Binaries/*Tests/Debug+AnyCPU/*Test*.dll")
-      |> Seq.filter (fun f -> Path.GetFileName(f) <> "AltCover.XTests.dll")
+      |> Seq.filter (fun f -> Path.GetFileName(f) <> "AltCover.XTests.dll" && 
+                              Path.GetFileName(f) <> "xunit.runner.visualstudio.testadapter.dll")
       |> NUnit3.run (fun p -> { p   with ToolPath = findToolInSubPath "nunit3-console.exe" "."
                                          WorkingDir = "."
                                          Labels = LabelsLevel.All
@@ -325,7 +334,8 @@ Target "UnitTestDotNet" (fun _ ->
 Target "UnitTestWithOpenCover" (fun _ ->
     Directory.ensure "./_Reports/_UnitTestWithOpenCover"
     let testFiles = !! (@"_Binaries/*Tests/Debug+AnyCPU/*Test*.dll")
-                    |> Seq.filter (fun f -> Path.GetFileName(f) <> "AltCover.XTests.dll")
+                    |> Seq.filter (fun f -> Path.GetFileName(f) <> "AltCover.XTests.dll" && 
+                                            Path.GetFileName(f) <> "xunit.runner.visualstudio.testadapter.dll")
     let xtestFiles = !! (@"_Binaries/*Tests/Debug+AnyCPU/*XTest*.dll")
 
     let coverage = Path.getFullName "_Reports/UnitTestWithOpenCover.xml"
@@ -808,6 +818,29 @@ Target "FSharpTypesDotNet" ( fun _ ->
                             ("--no-build --configuration Debug sample2.core.fsproj")
                              "sample coverage test returned with a non-zero exit code"
     Actions.ValidateFSharpTypesCoverage simpleReport
+)
+
+Target "FSharpTests" ( fun _ ->
+    Directory.ensure "./_Reports"
+    let altcover = Path.getFullName "./_Binaries/AltCover/Release+AnyCPU/netcoreapp2.0/AltCover.dll"
+    let simpleReport = (Path.getFullName "./_Reports") @@ ( "AltCoverFSharpTests.xml")
+    let sampleRoot = Path.getFullName "Sample7/_Binaries/Sample7/Debug+AnyCPU/netcoreapp2.0"
+
+    // Test the --inplace operation
+    Shell.CleanDir sampleRoot
+    Actions.RunDotnet (fun o -> {dotnetOptions o with WorkingDirectory = Path.getFullName "Sample7"}) "test"
+                            ("--configuration Debug sample7.core.fsproj")
+                             "sample initial test returned with a non-zero exit code"
+
+    // inplace instrument
+    Actions.RunDotnet (fun o -> {dotnetOptions o with WorkingDirectory = sampleRoot}) ""
+                             (altcover + " --opencover --inplace -c=[Test] -s=Adapter -t \"System\\.\" -t \"Microsoft\\.\" -x \"" + simpleReport + "\" ")
+                             "FSharpTypesDotNet"
+
+    printfn "Execute the instrumented tests"
+    Actions.RunDotnet (fun o -> {dotnetOptions o with WorkingDirectory = Path.getFullName "Sample7"}) "test"
+                            ("--no-build --configuration Debug sample7.core.fsproj")
+                             "sample coverage test returned with a non-zero exit code"
 )
 
 Target "FSharpTypesDotNetRunner" ( fun _ ->
@@ -1648,6 +1681,10 @@ activateFinal "ResetConsoleColours"
 
 "Compilation"
 ==> "FSharpTypes"
+==> "OperationalTest"
+
+"Compilation"
+==> "FSharpTests"
 ==> "OperationalTest"
 
 "Compilation"

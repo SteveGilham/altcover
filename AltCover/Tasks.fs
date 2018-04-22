@@ -85,6 +85,7 @@ type Collect () =
   member val Executable = String.Empty with get, set
   member val LcovReport = String.Empty with get, set
   member val Threshold = String.Empty with get, set
+  member val Cobertura = String.Empty with get, set
 
   member val CommandLine = String.Empty with get, set
 
@@ -101,6 +102,7 @@ type Collect () =
       Args.Item "-x" self.Executable;
       Args.Item "-l" self.LcovReport;
       Args.Item "-t" self.Threshold;
+      Args.Item "-c" self.Cobertura;
 
       Args.Flag "--collect" (self.Executable |> String.IsNullOrWhiteSpace)
 
