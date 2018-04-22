@@ -5,7 +5,6 @@ open System.Xml.Linq
 
 // based on the sample file at https://raw.githubusercontent.com/jenkinsci/cobertura-plugin/master/src/test/resources/hudson/plugins/cobertura/coverage-with-data.xml
 // TODO -- refactor away from the arrow anti-pattern
-// TODO -- class level lines summaries
 
 module Cobertura =
   let internal path : Option<string> ref = ref None
@@ -168,6 +167,18 @@ module Cobertura =
     match format with
     | Base.ReportFormat.NCover -> NCover report packages
     | _ -> OpenCover report packages
+
+    // lines reprise
+    packages.Descendants(X "class")
+    |> Seq.iter(fun c -> let reprise = XElement(X "lines")
+                         c.Add reprise
+                         let lines = c.Descendants(X "line")
+                                     |> Seq.sortBy(fun l -> l.Attribute(X "number").Value 
+                                                            |> Int32.TryParse |> snd)
+                                     |> Seq.toList
+                         lines
+                         |> List.iter (fun l -> let copy = XElement(l)
+                                                reprise.Add copy))
 
     rewrite.Save(!path |> Option.get)
     result
