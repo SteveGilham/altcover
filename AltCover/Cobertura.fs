@@ -1,6 +1,7 @@
 ﻿namespace AltCover
 
 open System
+open System.IO
 open System.Xml.Linq
 
 // based on the sample file at https://raw.githubusercontent.com/jenkinsci/cobertura-plugin/master/src/test/resources/hudson/plugins/cobertura/coverage-with-data.xml
@@ -11,6 +12,16 @@ module Cobertura =
 
   let SetRate hits total rate (target:XElement) =
      if total > 0 then target.SetAttributeValue(X rate, (float hits)/(float total))
+
+  let AddSources (report:XDocument) (target:XElement) tag attribute =
+    report.Descendants(X tag)
+    |> Seq.map (fun s -> s.Attribute(X attribute).Value |> Path.GetDirectoryName)
+    |> Seq.fold (fun s f -> s |> Set.add f) Set.empty<String>
+    |> Seq.sort
+    |> Seq.iter (fun f -> target.Descendants(X "sources")
+                          |> Seq.iter (fun s -> s.Add(XElement(X "source",
+                                                               XText(f)))))
+
 
   let internal NCover (report:XDocument) (packages:XElement) =
     let ProcessSeqPnts (``method``:XElement) (lines:XElement) =
@@ -79,6 +90,7 @@ module Cobertura =
                        |> Seq.fold ProcessModule (0,0)
     SetRate hits total "line-rate" packages.Parent
     packages.Parent.SetAttributeValue(X "branch-rate", null)
+    AddSources report packages.Parent "seqpnt" "document"
 
   let internal OpenCover (report:XDocument)  (packages:XElement) =
     let extract (owner:XElement) (target:XElement) =
@@ -125,7 +137,7 @@ module Cobertura =
       (mtx, lines)
 
     let ProcessMethod (methods:XElement) (b,bv,s,sv) (key, (signature, ``method``)) =
-      let mtx, lines = AddMethod (methods:XElement) (key, signature) 
+      let mtx, lines = AddMethod (methods:XElement) (key, signature)
       extract ``method`` mtx
       ``method``.Descendants(X "SequencePoint")
       |> Seq.iter(ProcessSeqPnt lines)
@@ -192,6 +204,7 @@ module Cobertura =
                                    ProcessModule files classes ``module``)
 
     extract (report.Descendants(X "CoverageSession") |> Seq.head) packages.Parent
+    AddSources report packages.Parent "File" "fullPath"
 
   let internal Summary (report:XDocument) (format:Base.ReportFormat) result =
     let rewrite = XDocument(XDeclaration("1.0", "utf-8", "yes"), [||])
@@ -205,6 +218,7 @@ module Cobertura =
                 )
 
     rewrite.Add(element)
+    element.Add(XElement(X "sources"))
     let packages = XElement(X "packages")
     element.Add(packages)
 

@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <coverage line-rate="0.8" version="3.0.0.0" timestamp="xx">
+  <sources>
+    <source>altcover/Sample1</source>
+  </sources>
   <packages>
     <package name="Sample1.exe" line-rate="0.8">
       <classes>
-        <class name="TouchTest.Program" filename="altcover\Sample1\Program.cs" line-rate="0.8">
+        <class name="TouchTest.Program" filename="altcover/Sample1/Program.cs" line-rate="0.8">
           <methods>
             <method name="Main" signature="System.Void System.String[])" line-rate="0.8">
               <lines>

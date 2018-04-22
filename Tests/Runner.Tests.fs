@@ -1484,8 +1484,8 @@ or
 
       use stream2 = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource2)
       use reader = new StreamReader(stream2)
-      let expected = reader.ReadToEnd().Replace("\r", String.Empty)
-      Assert.That (result.Replace("\r", String.Empty), Is.EqualTo expected)
+      let expected = reader.ReadToEnd().Replace("\r", String.Empty).Replace("\\","/")
+      Assert.That (result.Replace("\r", String.Empty).Replace("\\","/"), Is.EqualTo expected)
     finally
       LCov.path := None
 
@@ -1513,8 +1513,8 @@ or
 
       use stream2 = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource2)
       use reader = new StreamReader(stream2)
-      let expected = reader.ReadToEnd().Replace("\r", String.Empty)
-      Assert.That (result.Replace("\r", String.Empty), Is.EqualTo expected)
+      let expected = reader.ReadToEnd().Replace("\r", String.Empty).Replace("\\","/")
+      Assert.That (result.Replace("\r", String.Empty).Replace("\\","/"), Is.EqualTo expected)
     finally
       LCov.path := None
 
@@ -1563,14 +1563,14 @@ or
 
       let result = Regex.Replace(File.ReadAllText unique,
                                  """timestamp=\"\d*\">""",
-                                 """timestamp="xx">""")
+                                 """timestamp="xx">""").Replace("\\","/")
 
       let resource2 = Assembly.GetExecutingAssembly().GetManifestResourceNames()
                         |> Seq.find (fun n -> n.EndsWith("NCover.cob", StringComparison.Ordinal))
 
       use stream2 = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource2)
       use reader = new StreamReader(stream2)
-      let expected = reader.ReadToEnd().Replace("\r", String.Empty)
+      let expected = reader.ReadToEnd().Replace("\r", String.Empty).Replace("\\","/")
       Assert.That (result.Replace("\r", String.Empty), Is.EqualTo expected, result)
     finally
       Cobertura.path := None
@@ -1601,8 +1601,8 @@ or
 
       use stream2 = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource2)
       use reader = new StreamReader(stream2)
-      let expected = reader.ReadToEnd().Replace("\r", String.Empty)
-      Assert.That (result.Replace("\r", String.Empty), Is.EqualTo expected, result)
+      let expected = reader.ReadToEnd().Replace("\r", String.Empty).Replace("\\","/")
+      Assert.That (result.Replace("\r", String.Empty).Replace("\\","/"), Is.EqualTo expected, result)
     finally
       Cobertura.path := None
 

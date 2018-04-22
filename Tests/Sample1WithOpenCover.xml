@@ -20,7 +20,7 @@
       <ModuleTime>2018-02-22T08:50:13.1034471Z</ModuleTime>
       <ModuleName>Sample1</ModuleName>
       <Files>
-        <File uid="1" fullPath="altcover\Sample1\Program.cs" />
+        <File uid="1" fullPath="altcover/Sample1/Program.cs" />
       </Files>
       <Classes>
         <Class>
