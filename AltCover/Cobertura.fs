@@ -10,7 +10,7 @@ module Cobertura =
   let internal path : Option<string> ref = ref None
   let X = OpenCover.X
 
-  let NCover (report:XDocument) (packages:XElement) =
+  let internal NCover (report:XDocument) (packages:XElement) =
     let ProcessSeqPnts (``method``:XElement) (lines:XElement) =
        ``method``.Descendants(X "seqpnt")
        |> Seq.fold (fun (h,t) s -> let vc = s.Attribute(X "visitcount")
@@ -78,7 +78,7 @@ module Cobertura =
     if total > 0 then packages.Parent.SetAttributeValue(X "line-rate", (float hits)/(float total))
     packages.Parent.SetAttributeValue(X "branch-rate", null)
 
-  let OpenCover (report:XDocument)  (packages:XElement) =
+  let internal OpenCover (report:XDocument)  (packages:XElement) =
     let extract (owner:XElement) (target:XElement) =
         let summary = owner.Descendants(X "Summary") |> Seq.head
         let b = summary.Attribute(X "numBranchPoints").Value |> Int32.TryParse |> snd
@@ -169,7 +169,7 @@ module Cobertura =
 
     extract (report.Descendants(X "CoverageSession") |> Seq.head) packages.Parent
 
-  let Summary (report:XDocument) (format:Base.ReportFormat) result =
+  let internal Summary (report:XDocument) (format:Base.ReportFormat) result =
     let rewrite = XDocument(XDeclaration("1.0", "utf-8", "yes"), [||])
     let element = XElement(X "coverage",
                             XAttribute(X "line-rate", 0),
