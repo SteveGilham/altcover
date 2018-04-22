@@ -1,8 +1,8 @@
 # 3.0.4xx (Caba series release 8)
-* [BUGFIX] for `-c|callContext` option -- generate valid IL where the context function completes with a tail call
-* [BUGFIX] for `-c|callContext` option -- generate valid IL where the context function contains a branch directly to a return instruction
-* `-c|cobertura` option in `runner` mode (parameter `Cobertura` for the `AltCover.Collect` task) -- Cobertura format output to the given file name, with format composition based on the sample file at https://raw.githubusercontent.com/jenkinsci/cobertura-plugin/master/src/test/resources/hudson/plugins/cobertura/coverage-with-data.xml
-
+* [BUGFIX] for `-c|callContext` option -- generate valid IL where the function being tracked completes with a tail call
+* [BUGFIX] for `-c|callContext` option -- generate valid IL where the function being tracked contains a branch directly to a return instruction
+* `-c|cobertura` option in `runner` mode (parameter `Cobertura` for the `AltCover.Collect` task) -- Cobertura format output to the given file name (more complete for OpenCover format coverage gathering than NCover, inevitably)
+* Signal failure explicitly for `-t|threshold` violations, as well as through the return code
 
 # 3.0.433 (Caba series release 7)
 * `-t|threshold` option in `runner` mode (parameter `Threshold` for the `AltCover.Collect` task) to fail the build (non-zero return code or MSBuild error state) if coverage falls below the specified percentage
