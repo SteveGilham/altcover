@@ -1,4 +1,4 @@
-# 3.0.4xx (Caba series release 8)
+# 3.0.444 (Caba series release 8)
 * [BUGFIX] for `-c|callContext` option -- generate valid IL where the function being tracked completes with a tail call
 * [BUGFIX] for `-c|callContext` option -- generate valid IL where the function being tracked contains a branch directly to a return instruction
 * `-c|cobertura` option in `runner` mode (parameter `Cobertura` for the `AltCover.Collect` task) -- Cobertura format output to the given file name (more complete for OpenCover format coverage gathering than NCover, inevitably)
