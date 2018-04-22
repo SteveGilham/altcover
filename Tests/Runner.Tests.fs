@@ -1606,4 +1606,26 @@ or
     finally
       Cobertura.path := None
 
+  [<Test>]
+  member self.ThresholdViolationShouldBeReported() =
+    let saveErr = Output.Error
+    let saveSummaries = Runner.Summaries
+    let builder = System.Text.StringBuilder()
+    let saved = Runner.threshold
+
+    try
+      Runner.Summaries <- [ (fun _ _ _ -> 23) ]
+      Output.Error <- (fun s -> builder.Append(s).Append("|") |> ignore)
+      Runner.threshold <- Some 42
+
+      let delta = Runner.DoSummaries (XDocument()) Base.ReportFormat.NCover 0
+      Assert.That (delta, Is.EqualTo 23)
+      Assert.That(builder.ToString(),
+                  Is.EqualTo "Coverage percentage achieved is 23% below the threshold of 42%.|")
+
+    finally
+      Output.Error <- saveErr
+      Runner.Summaries <- saveSummaries
+      Runner.threshold <- saved
+
 end

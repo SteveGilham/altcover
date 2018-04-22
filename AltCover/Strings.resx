@@ -316,4 +316,7 @@ Details written to {0}</value>
   <data name="c|cobertura=" xml:space="preserve">
     <value>Optional: File for Cobertura format version of the collected data</value>
   </data>
+  <data name="threshold" xml:space="preserve">
+    <value>Coverage percentage achieved is {0}% below the threshold of {1}%.</value>
+  </data>
 </root>

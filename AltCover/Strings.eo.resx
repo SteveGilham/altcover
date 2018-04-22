@@ -315,4 +315,7 @@ Detaloj skribitaj al {0}</value>
   <data name="c|cobertura=" xml:space="preserve">
     <value>Laŭvola: Dosiero por la versio de formato Cobertura de la datumoj kolektitaj</value>
   </data>
+  <data name="threshold" xml:space="preserve">
+    <value>Kovra procento atingita estas {0}% sub la sojlo de {1}%.</value>
+  </data>
 </root>
