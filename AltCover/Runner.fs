@@ -341,6 +341,9 @@ module Runner =
   let WriteResourceWithFormatItems s x =
     String.Format (CultureInfo.CurrentCulture, s |> CommandLine.resources.GetString, x) |> Output.Info
 
+  let WriteErrorResourceWithFormatItems s x =
+    String.Format (CultureInfo.CurrentCulture, s |> CommandLine.resources.GetString, x) |> Output.Error
+
   let internal SetRecordToFile report =
     LCov.DoWithFile (fun () ->
           let binpath = report + ".acv"
@@ -558,8 +561,12 @@ module Runner =
   let mutable internal DoReport = WriteReportBase
 
   let DoSummaries (document:XDocument) (format:Base.ReportFormat) result =
-    Summaries
-    |> List.fold (fun r summary -> summary document format r) result
+    let code = Summaries
+               |> List.fold (fun r summary -> summary document format r) result
+    if (code > 0 && code <> result) 
+    then WriteErrorResourceWithFormatItems "threshold" [| code :> obj ; 
+                                                          (Option.get threshold) :> obj|]
+    code
 
   let DoCoverage arguments options1 =
     let check1 = DeclareOptions ()
