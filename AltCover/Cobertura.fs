@@ -141,18 +141,21 @@ module Cobertura =
       mtx.Add(lines)
       (mtx, lines)
 
+    let AddAttributeValue (element:XElement) name  v=
+      v + (element.Attribute(X name).Value |> Int32.TryParse |> snd)
+
     let ProcessMethod (methods:XElement) (b,bv,s,sv,c,cv) (key, (signature, ``method``)) =
       let mtx, lines = AddMethod (methods:XElement) (key, signature)
       extract ``method`` mtx
       ``method``.Descendants(X "SequencePoint")
       |> Seq.iter(ProcessSeqPnt lines)
       let summary = ``method``.Descendants(X "Summary") |> Seq.head
-      ( b + (summary.Attribute(X "numBranchPoints").Value |> Int32.TryParse |> snd),
-        bv + (summary.Attribute(X "visitedBranchPoints").Value |> Int32.TryParse |> snd),
-        s + (summary.Attribute(X "numSequencePoints").Value |> Int32.TryParse |> snd),
-        sv + (summary.Attribute(X "visitedSequencePoints").Value |> Int32.TryParse |> snd),
+      ( b |> AddAttributeValue summary  "numBranchPoints",
+        bv |> AddAttributeValue summary "visitedBranchPoints",
+        s |> AddAttributeValue summary "numSequencePoints",
+        sv |> AddAttributeValue summary "visitedSequencePoints",
         c + 1,
-        cv + (``method``.Attribute(X "cyclomaticComplexity").Value |> Int32.TryParse |> snd))
+        cv |> AddAttributeValue ``method``"cyclomaticComplexity")
 
     let ArrangeMethods (name:String) (methods:XElement) (methodSet:XElement seq) =
       methodSet
