@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="utf-8"?>
+<coverage line-rate="0.61038961038961037">
+  <packages>
+    <package name="C:\Users\steve\Documents\Visual Studio 2017\Projects\ConsoleApp1\Debug\ConsoleApplication1.exe" line-rate="0.61038961038961037">
+      <classes>
+        <class name="stdio.h" filename="program files (x86)\windows kits\10\include\10.0.16299.0\ucrt\stdio.h" line-rate="1">
+          <lines>
+            <line number="640" hits="1"/>
+            <line number="641" hits="1"/>
+            <line number="642" hits="1"/>
+            <line number="952" hits="1"/>
+            <line number="955" hits="1"/>
+            <line number="956" hits="1"/>
+            <line number="957" hits="1"/>
+            <line number="958" hits="1"/>
+            <line number="959" hits="1"/>
+          </lines>
+        </class>
+        <class name="time.h" filename="program files (x86)\windows kits\10\include\10.0.16299.0\ucrt\time.h" line-rate="1">
+          <lines>
+            <line number="534" hits="1"/>
+            <line number="535" hits="1"/>
+            <line number="536" hits="1"/>
+            <line number="572" hits="1"/>
+            <line number="573" hits="1"/>
+            <line number="574" hits="1"/>
+          </lines>
+        </class>
+        <class name="consoleapplication1.cpp" filename="users\steve\documents\visual studio 2017\projects\consoleapp1\consoleapplication1\consoleapplication1.cpp" line-rate="0.77777777777777779">
+          <lines>
+            <line number="10" hits="1"/>
+            <line number="11" hits="1"/>
+            <line number="13" hits="1"/>
+            <line number="14" hits="1"/>
+            <line number="16" hits="0"/>
+            <line number="18" hits="0"/>
+            <line number="20" hits="1"/>
+            <line number="22" hits="1"/>
+            <line number="23" hits="1"/>
+          </lines>
+        </class>
+        <class name="winnt.h" filename="dd\externalapis\windows\10\sdk\inc\winnt.h" line-rate="0.125">
+          <lines>
+            <line number="7658" hits="0"/>
+            <line number="7662" hits="0"/>
+            <line number="7663" hits="0"/>
+            <line number="7664" hits="0"/>
+            <line number="8235" hits="0"/>
+            <line number="8237" hits="0"/>
+            <line number="8238" hits="0"/>
+            <line number="21441" hits="1"/>
+          </lines>
+        </class>
+        <class name="argv_mode.cpp" filename="dd\vctools\crt\vcstartup\src\defaults\argv_mode.cpp" line-rate="1">
+          <lines>
+            <line number="14" hits="1"/>
+            <line number="15" hits="1"/>
+            <line number="16" hits="1"/>
+          </lines>
+        </class>
+        <class name="commit_mode.cpp" filename="dd\vctools\crt\vcstartup\src\defaults\commit_mode.cpp" line-rate="1">
+          <lines>
+            <line number="14" hits="1"/>
+            <line number="15" hits="1"/>
+            <line number="16" hits="1"/>
+          </lines>
+        </class>
+        <class name="default_precision.cpp" filename="dd\vctools\crt\vcstartup\src\defaults\default_precision.cpp" line-rate="0.75">
+          <lines>
+            <line number="19" hits="1"/>
+            <line number="20" hits="1"/>
+            <line number="21" hits="0"/>
+            <line number="22" hits="1"/>
+          </lines>
+        </class>
+        <class name="denormal_control.cpp" filename="dd\vctools\crt\vcstartup\src\defaults\denormal_control.cpp" line-rate="1">
+          <lines>
+            <line number="14" hits="1"/>
+            <line number="16" hits="1"/>
+          </lines>
+        </class>
+        <class name="env_mode.cpp" filename="dd\vctools\crt\vcstartup\src\defaults\env_mode.cpp" line-rate="1">
+          <lines>
+            <line number="14" hits="1"/>
+            <line number="15" hits="1"/>
+            <line number="16" hits="1"/>
+          </lines>
+        </class>
+        <class name="file_mode.cpp" filename="dd\vctools\crt\vcstartup\src\defaults\file_mode.cpp" line-rate="1">
+          <lines>
+            <line number="15" hits="1"/>
+            <line number="16" hits="1"/>
+            <line number="17" hits="1"/>
+          </lines>
+        </class>
+        <class name="invalid_parameter_handler.cpp" filename="dd\vctools\crt\vcstartup\src\defaults\invalid_parameter_handler.cpp" line-rate="1">
+          <lines>
+            <line number="15" hits="1"/>
+            <line number="17" hits="1"/>
+          </lines>
+        </class>
+        <class name="matherr.cpp" filename="dd\vctools\crt\vcstartup\src\defaults\matherr.cpp" line-rate="0">
+          <lines>
+            <line number="21" hits="0"/>
+            <line number="22" hits="0"/>
+            <line number="23" hits="0"/>
+          </lines>
+        </class>
+        <class name="new_mode.cpp" filename="dd\vctools\crt\vcstartup\src\defaults\new_mode.cpp" line-rate="1">
+          <lines>
+            <line number="17" hits="1"/>
+            <line number="18" hits="1"/>
+            <line number="19" hits="1"/>
+          </lines>
+        </class>
+        <class name="thread_locale.cpp" filename="dd\vctools\crt\vcstartup\src\defaults\thread_locale.cpp" line-rate="1">
+          <lines>
+            <line number="11" hits="1"/>
+            <line number="12" hits="1"/>
+            <line number="13" hits="1"/>
+          </lines>
+        </class>
+        <class name="checkcfg.c" filename="dd\vctools\crt\vcstartup\src\misc\checkcfg.c" line-rate="1">
+          <lines>
+            <line number="61" hits="1"/>
+            <line number="63" hits="1"/>
+            <line number="65" hits="1"/>
+          </lines>
+        </class>
+        <class name="guard_support.c" filename="dd\vctools\crt\vcstartup\src\misc\guard_support.c" line-rate="0.40000000000000002">
+          <lines>
+            <line number="80" hits="1"/>
+            <line number="84" hits="1"/>
+            <line number="138" hits="0"/>
+            <line number="140" hits="0"/>
+            <line number="141" hits="0"/>
+          </lines>
+        </class>
+        <class name="exe_common.inl" filename="dd\vctools\crt\vcstartup\src\startup\exe_common.inl" line-rate="0.91176470588235292">
+          <lines>
+            <line number="77" hits="1"/>
+            <line number="78" hits="1"/>
+            <line number="79" hits="1"/>
+            <line number="147" hits="1"/>
+            <line number="148" hits="1"/>
+            <line number="150" hits="1"/>
+            <line number="151" hits="1"/>
+            <line number="153" hits="1"/>
+            <line number="154" hits="0"/>
+            <line number="159" hits="1"/>
+            <line number="163" hits="1"/>
+            <line number="164" hits="1"/>
+            <line number="167" hits="1"/>
+            <line number="168" hits="0"/>
+            <line number="170" hits="1"/>
+            <line number="176" hits="1"/>
+            <line number="178" hits="0"/>
+            <line number="182" hits="1"/>
+            <line number="183" hits="1"/>
+            <line number="186" hits="1"/>
+            <line number="189" hits="1"/>
+            <line number="191" hits="1"/>
+            <line number="192" hits="1"/>
+            <line number="194" hits="1"/>
+            <line number="196" hits="1"/>
+            <line number="197" hits="1"/>
+            <line number="200" hits="1"/>
+            <line number="205" hits="1"/>
+            <line number="207" hits="1"/>
+            <line number="208" hits="1"/>
+            <line number="211" hits="1"/>
+            <line number="215" hits="1"/>
+            <line number="217" hits="1"/>
+            <line number="218" hits="1"/>
+          </lines>
+        </class>
+        <class name="exe_main.cpp" filename="dd\vctools\crt\vcstartup\src\startup\exe_main.cpp" line-rate="0.66666666666666663">
+          <lines>
+            <line number="15" hits="1"/>
+            <line number="16" hits="1"/>
+            <line number="17" hits="0"/>
+          </lines>
+        </class>
+        <class name="utility.cpp" filename="dd\vctools\crt\vcstartup\src\utility\utility.cpp" line-rate="0.17777777777777778">
+          <lines>
+            <line number="28" hits="0"/>
+            <line number="29" hits="0"/>
+            <line number="31" hits="0"/>
+            <line number="34" hits="0"/>
+            <line number="35" hits="0"/>
+            <line number="37" hits="0"/>
+            <line number="40" hits="0"/>
+            <line number="41" hits="0"/>
+            <line number="42" hits="0"/>
+            <line number="44" hits="0"/>
+            <line number="47" hits="0"/>
+            <line number="48" hits="0"/>
+            <line number="50" hits="0"/>
+            <line number="53" hits="0"/>
+            <line number="54" hits="0"/>
+            <line number="61" hits="0"/>
+            <line number="62" hits="0"/>
+            <line number="63" hits="0"/>
+            <line number="64" hits="0"/>
+            <line number="69" hits="0"/>
+            <line number="70" hits="0"/>
+            <line number="71" hits="0"/>
+            <line number="73" hits="0"/>
+            <line number="75" hits="0"/>
+            <line number="77" hits="0"/>
+            <line number="79" hits="0"/>
+            <line number="80" hits="0"/>
+            <line number="256" hits="1"/>
+            <line number="257" hits="1"/>
+            <line number="259" hits="1"/>
+            <line number="261" hits="1"/>
+            <line number="265" hits="0"/>
+            <line number="267" hits="0"/>
+            <line number="271" hits="1"/>
+            <line number="274" hits="1"/>
+            <line number="275" hits="1"/>
+            <line number="278" hits="1"/>
+            <line number="281" hits="0"/>
+            <line number="282" hits="0"/>
+            <line number="284" hits="0"/>
+            <line number="286" hits="0"/>
+            <line number="288" hits="0"/>
+            <line number="290" hits="0"/>
+            <line number="291" hits="0"/>
+            <line number="293" hits="0"/>
+          </lines>
+        </class>
+        <class name="utility_desktop.cpp" filename="dd\vctools\crt\vcstartup\src\utility\utility_desktop.cpp" line-rate="0">
+          <lines>
+            <line number="110" hits="0"/>
+            <line number="115" hits="0"/>
+            <line number="116" hits="0"/>
+          </lines>
+        </class>
+      </classes>
+    </package>
+  </packages>
+  <sources>
+    <source>c:</source>
+    <source>f:</source>
+  </sources>
+</coverage>

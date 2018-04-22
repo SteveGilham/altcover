@@ -50,22 +50,22 @@ module Problematic =
       finally
         System.Console.WriteLine("Finally")
 
-    //[<Test>]
-    //let ``Thing Rectangle`` () = 
-    //    let g = Thing (Size(11, 21))
-    //    for row = 0 to g.Height do
-    //        for col = 0 to g.Width do
-    //            Assert.AreEqual(System.Drawing.Rectangle(col, row, col, row), g.Rectangle(col, row))
+    [<Test>]
+    let ``Thing Rectangle`` () = 
+        let g = Thing (Size(11, 21))
+        for row = 0 to g.Height do
+            for col = 0 to g.Width do
+                Assert.AreEqual(System.Drawing.Rectangle(col, row, col, row), g.Rectangle(col, row))
 
-    //[<Test>]
-    //let ``Thing Rectangle bis`` () = 
-    //  try
-    //    let g = Thing (Size(11, 21))
-    //    for row = 0 to g.Height do
-    //        for col = 0 to g.Width do
-    //            Assert.AreEqual(System.Drawing.Rectangle(col, row, col, row), g.Rectangle(col, row))
-    //  finally
-    //    System.Console.WriteLine("Finally")
+    [<Test>]
+    let ``Thing Rectangle bis`` () = 
+      try
+        let g = Thing (Size(11, 21))
+        for row = 0 to g.Height do
+            for col = 0 to g.Width do
+                Assert.AreEqual(System.Drawing.Rectangle(col, row, col, row), g.Rectangle(col, row))
+      finally
+        System.Console.WriteLine("Finally")
 
 #if NETCOREAPP2_0
 module Program = let [<EntryPoint>] main _ = 0

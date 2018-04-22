@@ -5,6 +5,7 @@ open System.Collections.Generic
 open System.IO
 open System.IO.Compression
 open System.Reflection
+open System.Text.RegularExpressions
 open System.Threading
 open System.Xml
 open System.Xml.Linq
@@ -193,6 +194,8 @@ type AltCoverTests() = class
                                below threshold, the return code of the process
                                is (threshold - actual) rounded up to the
                                nearest integer.
+  -c, --cobertura=VALUE      Optional: File for Cobertura format version of the
+                               collected data
   -?, --help, -h             Prints out the options.
 """
 
@@ -251,7 +254,7 @@ type AltCoverTests() = class
   [<Test>]
   member self.ShouldHaveExpectedOptions() =
     let options = Runner.DeclareOptions ()
-    Assert.That (options.Count, Is.EqualTo 8)
+    Assert.That (options.Count, Is.EqualTo 9)
     Assert.That(options |> Seq.filter (fun x -> x.Prototype <> "<>")
                         |> Seq.forall (fun x -> (String.IsNullOrWhiteSpace >> not) x.Description))
     Assert.That (options |> Seq.filter (fun x -> x.Prototype = "<>") |> Seq.length, Is.EqualTo 1)
@@ -530,9 +533,9 @@ type AltCoverTests() = class
 
   [<Test>]
   member self.ParsingLcovGivesLcov() =
-    lock Runner.lcov (fun () ->
+    lock LCov.path (fun () ->
     try
-      Runner.lcov := None
+      LCov.path := None
       Runner.Summaries <- [Runner.StandardSummary]
       let options = Runner.DeclareOptions ()
       let unique = "some exe"
@@ -543,20 +546,20 @@ type AltCoverTests() = class
       | Right (x, y) -> Assert.That (y, Is.SameAs options)
                         Assert.That (x, Is.Empty)
 
-      match !Runner.lcov with
+      match !LCov.path with
       | None -> Assert.Fail()
       | Some x -> Assert.That(Path.GetFileName x, Is.EqualTo unique)
 
       Assert.That (Runner.Summaries.Length, Is.EqualTo 2)
     finally
       Runner.Summaries <- [Runner.StandardSummary]
-      Runner.lcov := None)
+      LCov.path := None)
 
   [<Test>]
   member self.ParsingMultipleLcovGivesFailure() =
-    lock Runner.lcov (fun () ->
+    lock LCov.path (fun () ->
     try
-      Runner.lcov := None
+      LCov.path := None
       Runner.Summaries <- [Runner.StandardSummary]
       let options = Runner.DeclareOptions ()
       let unique = Guid.NewGuid().ToString()
@@ -568,13 +571,13 @@ type AltCoverTests() = class
                        Assert.That (x, Is.EqualTo "UsageError")
     finally
       Runner.Summaries <- [Runner.StandardSummary]
-      Runner.lcov := None)
+      LCov.path := None)
 
   [<Test>]
   member self.ParsingNoLcovGivesFailure() =
-    lock Runner.lcov (fun () ->
+    lock LCov.path (fun () ->
     try
-      Runner.lcov := None
+      LCov.path := None
       Runner.Summaries <- [Runner.StandardSummary]
       let options = Runner.DeclareOptions ()
       let blank = " "
@@ -586,7 +589,7 @@ type AltCoverTests() = class
                        Assert.That (x, Is.EqualTo "UsageError")
     finally
       Runner.Summaries <- [Runner.StandardSummary]
-      Runner.lcov := None)
+      LCov.path := None)
 
   [<Test>]
   member self.ParsingThresholdGivesThreshold() =
@@ -633,6 +636,66 @@ type AltCoverTests() = class
                        Assert.That (x, Is.EqualTo "UsageError")
     finally
       Runner.threshold <- None
+
+  [<Test>]
+  member self.ParsingCoberturaGivesCobertura() =
+    lock Cobertura.path (fun () ->
+    try
+      Cobertura.path := None
+      Runner.Summaries <- [Runner.StandardSummary]
+      let options = Runner.DeclareOptions ()
+      let unique = "some exe"
+      let input = [| "-c"; unique |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Left _ -> Assert.Fail()
+      | Right (x, y) -> Assert.That (y, Is.SameAs options)
+                        Assert.That (x, Is.Empty)
+
+      match !Cobertura.path with
+      | None -> Assert.Fail()
+      | Some x -> Assert.That(Path.GetFileName x, Is.EqualTo unique)
+
+      Assert.That (Runner.Summaries.Length, Is.EqualTo 2)
+    finally
+      Runner.Summaries <- [Runner.StandardSummary]
+      Cobertura.path := None)
+
+  [<Test>]
+  member self.ParsingMultipleCoberturaGivesFailure() =
+    lock Cobertura.path (fun () ->
+    try
+      Cobertura.path := None
+      Runner.Summaries <- [Runner.StandardSummary]
+      let options = Runner.DeclareOptions ()
+      let unique = Guid.NewGuid().ToString()
+      let input = [| "-c"; unique; "/c"; unique.Replace("-", "+") |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Right _ -> Assert.Fail()
+      | Left (x, y) -> Assert.That (y, Is.SameAs options)
+                       Assert.That (x, Is.EqualTo "UsageError")
+    finally
+      Runner.Summaries <- [Runner.StandardSummary]
+      Cobertura.path := None)
+
+  [<Test>]
+  member self.ParsingNoCoberturaGivesFailure() =
+    lock Cobertura.path (fun () ->
+    try
+      Cobertura.path := None
+      Runner.Summaries <- [Runner.StandardSummary]
+      let options = Runner.DeclareOptions ()
+      let blank = " "
+      let input = [| "-c"; blank; |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Right _ -> Assert.Fail()
+      | Left (x, y) -> Assert.That (y, Is.SameAs options)
+                       Assert.That (x, Is.EqualTo "UsageError")
+    finally
+      Runner.Summaries <- [Runner.StandardSummary]
+      Cobertura.path := None)
 
   [<Test>]
   member self.ParsingEmptyThresholdGivesFailure() =
@@ -902,21 +965,21 @@ type AltCoverTests() = class
 #endif
                      + """  -x, --xmlReport=VALUE      Optional: The output report template file (default:
                                 coverage.xml in the current directory)
-  -f, --fileFilter=VALUE     Optional: source file name to exclude from
-                               instrumentation (may repeat)
-  -s, --assemblyFilter=VALUE Optional: assembly name to exclude from
-                               instrumentation (may repeat)
+  -f, --fileFilter=VALUE     Optional, multiple: source file name to exclude
+                               from instrumentation
+  -s, --assemblyFilter=VALUE Optional, multiple: assembly name to exclude from
+                               instrumentation
   -e, --assemblyExcludeFilter=VALUE
-                             Optional: assembly which links other instrumented
-                               assemblies but for which internal details may be
-                               excluded (may repeat)
-  -t, --typeFilter=VALUE     Optional: type name to exclude from
-                               instrumentation (may repeat)
-  -m, --methodFilter=VALUE   Optional: method name to exclude from
-                               instrumentation (may repeat)
+                             Optional, multiple: assembly which links other
+                               instrumented assemblies but for which internal
+                               details may be excluded
+  -t, --typeFilter=VALUE     Optional, multiple: type name to exclude from
+                               instrumentation
+  -m, --methodFilter=VALUE   Optional, multiple: method name to exclude from
+                               instrumentation
   -a, --attributeFilter=VALUE
-                             Optional: attribute name to exclude from
-                               instrumentation (may repeat)
+                             Optional, multiple: attribute name to exclude from
+                               instrumentation
   -c, --callContext=VALUE    Optional, multiple: Tracking either times of
                                visits in ticks or designated method calls
                                leading to the visits.
@@ -959,6 +1022,8 @@ or
                                below threshold, the return code of the process
                                is (threshold - actual) rounded up to the
                                nearest integer.
+  -c, --cobertura=VALUE      Optional: File for Cobertura format version of the
+                               collected data
   -?, --help, -h             Prints out the options.
 """
 
@@ -1405,11 +1470,11 @@ or
     let baseline = XDocument.Load(stream)
     let unique = Path.Combine(Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName,
                                 Guid.NewGuid().ToString() + "/OpenCover.lcov")
-    Runner.lcov := Some unique
+    LCov.path := Some unique
     unique |> Path.GetDirectoryName |>  Directory.CreateDirectory |> ignore
 
     try
-      let r = Runner.LCovSummary baseline Base.ReportFormat.OpenCover 0
+      let r = LCov.Summary baseline Base.ReportFormat.OpenCover 0
       Assert.That (r, Is.EqualTo 0)
 
       let result = File.ReadAllText unique
@@ -1422,7 +1487,7 @@ or
       let expected = reader.ReadToEnd().Replace("\r", String.Empty)
       Assert.That (result.Replace("\r", String.Empty), Is.EqualTo expected)
     finally
-      Runner.lcov := None
+      LCov.path := None
 
   [<Test>]
   member self.NCoverShouldGeneratePlausibleLcov() =
@@ -1434,11 +1499,11 @@ or
     let baseline = XDocument.Load(stream)
     let unique = Path.Combine(Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName,
                                 Guid.NewGuid().ToString() + "/NCover.lcov")
-    Runner.lcov := Some unique
+    LCov.path := Some unique
     unique |> Path.GetDirectoryName |>  Directory.CreateDirectory |> ignore
 
     try
-      let r = Runner.LCovSummary baseline Base.ReportFormat.NCover 0
+      let r = LCov.Summary baseline Base.ReportFormat.NCover 0
       Assert.That (r, Is.EqualTo 0)
 
       let result = File.ReadAllText unique
@@ -1451,7 +1516,7 @@ or
       let expected = reader.ReadToEnd().Replace("\r", String.Empty)
       Assert.That (result.Replace("\r", String.Empty), Is.EqualTo expected)
     finally
-      Runner.lcov := None
+      LCov.path := None
 
   [<Test>]
   member self.MultiSortDoesItsThing() =
@@ -1464,7 +1529,7 @@ or
                                               |> List.map (fun x -> x.Descendants(XName.Get "x") |> Seq.head)
                                               |> List.toSeq))
                 |> List.toSeq
-    let result = Runner.multiSortByNameAndStartLine input
+    let result = LCov.multiSortByNameAndStartLine input
                  |> Seq.map (fun (f,ms) -> (f, ms
                                                |> Seq.map (fun m -> m.ToString().Replace("\r",String.Empty).Replace("\n",String.Empty).Replace("  <", "<"))
                                                |> Seq.toList))
@@ -1478,5 +1543,67 @@ or
                                                     """<x><seqpnt line="3" /></x>"""                                           ])
                                             ("z", [ """<x><seqpnt line="3" /></x>"""
                                                     """<x><seqpnt line="5" /></x>""" ]) ])
+
+  [<Test>]
+  member self.NCoverShouldGeneratePlausibleCobertura() =
+    let resource = Assembly.GetExecutingAssembly().GetManifestResourceNames()
+                        |> Seq.find (fun n -> n.EndsWith("SimpleCoverage.xml", StringComparison.Ordinal))
+
+    use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
+
+    let baseline = XDocument.Load(stream)
+    let unique = Path.Combine(Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName,
+                                Guid.NewGuid().ToString() + "/NCover.cob")
+    Cobertura.path := Some unique
+    unique |> Path.GetDirectoryName |>  Directory.CreateDirectory |> ignore
+
+    try
+      let r = Cobertura.Summary baseline Base.ReportFormat.NCover 0
+      Assert.That (r, Is.EqualTo 0)
+
+      let result = Regex.Replace(File.ReadAllText unique,
+                                 """timestamp=\"\d*\">""",
+                                 """timestamp="xx">""")
+
+      let resource2 = Assembly.GetExecutingAssembly().GetManifestResourceNames()
+                        |> Seq.find (fun n -> n.EndsWith("NCover.cob", StringComparison.Ordinal))
+
+      use stream2 = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource2)
+      use reader = new StreamReader(stream2)
+      let expected = reader.ReadToEnd().Replace("\r", String.Empty)
+      Assert.That (result.Replace("\r", String.Empty), Is.EqualTo expected, result)
+    finally
+      Cobertura.path := None
+
+  [<Test>]
+  member self.OpenCoverShouldGeneratePlausibleCobertura() =
+    let resource = Assembly.GetExecutingAssembly().GetManifestResourceNames()
+                        |> Seq.find (fun n -> n.EndsWith("Sample1WithOpenCover.xml", StringComparison.Ordinal))
+
+    use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
+
+    let baseline = XDocument.Load(stream)
+    let unique = Path.Combine(Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName,
+                                Guid.NewGuid().ToString() + "/OpenCover.cob")
+    Cobertura.path := Some unique
+    unique |> Path.GetDirectoryName |>  Directory.CreateDirectory |> ignore
+
+    try
+      let r = Cobertura.Summary baseline Base.ReportFormat.OpenCover 0
+      Assert.That (r, Is.EqualTo 0)
+
+      let result = Regex.Replace(File.ReadAllText unique,
+                                 """timestamp=\"\d*\">""",
+                                 """timestamp="xx">""")
+
+      let resource2 = Assembly.GetExecutingAssembly().GetManifestResourceNames()
+                        |> Seq.find (fun n -> n.EndsWith("OpenCover.cob", StringComparison.Ordinal))
+
+      use stream2 = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource2)
+      use reader = new StreamReader(stream2)
+      let expected = reader.ReadToEnd().Replace("\r", String.Empty)
+      Assert.That (result.Replace("\r", String.Empty), Is.EqualTo expected, result)
+    finally
+      Cobertura.path := None
 
 end

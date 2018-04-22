@@ -86,6 +86,8 @@
     <EmbeddedResource Include="Sample1MethodExclusion.xml" />
     <EmbeddedResource Include="NCover.lcov" />
     <EmbeddedResource Include="OpenCover.lcov" />
+    <EmbeddedResource Include="NCover.cob" />
+    <EmbeddedResource Include="OpenCover.cob" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Sample5\Sample5.csproj">
