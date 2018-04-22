@@ -115,14 +115,18 @@ module Cobertura =
         if bec > 0 then doBranch bec bev line
         lines.Add line
 
-    let ProcessMethod (methods:XElement) (b,bv,s,sv) (key, (signature, ``method``)) =
+    let AddMethod (methods:XElement) (key, signature) =
       let mtx = XElement(X "method",
                           XAttribute(X "name", key),
                           XAttribute(X "signature", signature))
-      extract ``method`` mtx
       methods.Add(mtx)
       let lines = XElement(X "lines")
       mtx.Add(lines)
+      (mtx, lines)
+
+    let ProcessMethod (methods:XElement) (b,bv,s,sv) (key, (signature, ``method``)) =
+      let mtx, lines = AddMethod (methods:XElement) (key, signature) 
+      extract ``method`` mtx
       ``method``.Descendants(X "SequencePoint")
       |> Seq.iter(ProcessSeqPnt lines)
       let summary = ``method``.Descendants(X "Summary") |> Seq.head
