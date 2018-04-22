@@ -21,7 +21,6 @@ module LCov =
     s
     |> Seq.sortBy fst
 
-
   let multiSort (by : 'a -> int) (l : (string * 'a seq) seq) =
     l
     |> Seq.map (fun (f, ms) -> (f, ms

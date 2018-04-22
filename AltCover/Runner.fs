@@ -563,8 +563,8 @@ module Runner =
   let DoSummaries (document:XDocument) (format:Base.ReportFormat) result =
     let code = Summaries
                |> List.fold (fun r summary -> summary document format r) result
-    if (code > 0 && code <> result) 
-    then WriteErrorResourceWithFormatItems "threshold" [| code :> obj ; 
+    if (code > 0 && code <> result)
+    then WriteErrorResourceWithFormatItems "threshold" [| code :> obj ;
                                                           (Option.get threshold) :> obj|]
     code
 

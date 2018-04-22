@@ -22,7 +22,6 @@ module Cobertura =
                           |> Seq.iter (fun s -> s.Add(XElement(X "source",
                                                                XText(f)))))
 
-
   let internal NCover (report:XDocument) (packages:XElement) =
     let ProcessSeqPnts (``method``:XElement) (lines:XElement) =
        ``method``.Descendants(X "seqpnt")
@@ -141,7 +140,7 @@ module Cobertura =
       mtx.Add(lines)
       (mtx, lines)
 
-    let AddAttributeValue (element:XElement) name  v=
+    let AddAttributeValue (element:XElement) name v =
       v + (element.Attribute(X name).Value |> Int32.TryParse |> snd)
 
     let ProcessMethod (methods:XElement) (b,bv,s,sv,c,cv) (key, (signature, ``method``)) =

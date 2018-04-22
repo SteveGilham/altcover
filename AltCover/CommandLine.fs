@@ -50,7 +50,7 @@ module CommandLine =
   let internal resources = ResourceManager(resource , Assembly.GetExecutingAssembly())
 
   let conditionalOutput condition output =
-    if condition() 
+    if condition()
     then output()
 
   let ensureDirectory directory =
@@ -92,7 +92,7 @@ module CommandLine =
       Write Console.Out ConsoleColor.White line
 
   let internal Filter line f =
-     if line |> String.IsNullOrEmpty |> not 
+     if line |> String.IsNullOrEmpty |> not
      then f line
 
   let internal Launch (cmd:string) args toDirectory =
@@ -176,7 +176,7 @@ module CommandLine =
        |> Output.Error
 
   let ReportErrors (tag:string) =
-    conditionalOutput(fun () ->  tag |> String.IsNullOrWhiteSpace |> not && 
+    conditionalOutput(fun () ->  tag |> String.IsNullOrWhiteSpace |> not &&
                                  error |> List.isEmpty |> not)
                      (fun () -> tag |> resources.GetString |> Output.Error)
 
