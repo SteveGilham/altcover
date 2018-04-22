@@ -4,9 +4,9 @@
     <source>altcover\Sample1</source>
   </sources>
   <packages>
-    <package name="Sample1" line-rate="0.7" branch-rate="0.66666666666666663">
+    <package name="Sample1" line-rate="0.7" branch-rate="0.66666666666666663" complexity="2">
       <classes>
-        <class name="TouchTest.Program" filename="altcover/Sample1/Program.cs" line-rate="0.7" branch-rate="0.66666666666666663">
+        <class name="TouchTest.Program" filename="altcover/Sample1/Program.cs" line-rate="0.7" branch-rate="0.66666666666666663" complexity="2">
           <methods>
             <method name="Main" signature="System.Void System.String[])" line-rate="0.7" branch-rate="0.66666666666666663">
               <lines>
