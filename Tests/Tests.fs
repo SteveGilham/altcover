@@ -2310,7 +2310,13 @@ type AltCoverTests() = class
   [<Test>]
   member self.ShouldBeAbleToTrackAMethod () =
     let where = Assembly.GetExecutingAssembly().Location
-    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "AltCover.Recorder.dll")
+#if NETCOREAPP2_0
+    let shift = String.Empty
+#else
+    let shift = "/netcoreapp2.0"
+#endif
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack() +
+                            shift, "AltCover.Recorder.dll")
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
     let recorder = AltCover.Instrument.RecordingMethod def
     let raw = AltCover.Instrument.Context.Build([])
@@ -2320,10 +2326,13 @@ type AltCoverTests() = class
                                              Push = recorder.[1]
                                              Pop = recorder.[2] }}
     let countBefore = recorder.Head.Body.Instructions.Count
+    let tailsBefore = recorder.Head.Body.Instructions
+                      |> Seq.filter (fun i -> i.OpCode = OpCodes.Tail)
+                      |> Seq.length
     let handlersBefore = recorder.Head.Body.ExceptionHandlers.Count
 
     AltCover.Instrument.Track state recorder.Head Inspect.Track <| Some(42, "hello")
-    Assert.That (recorder.Head.Body.Instructions.Count, Is.EqualTo (countBefore + 5))
+    Assert.That (recorder.Head.Body.Instructions.Count, Is.EqualTo (countBefore + 5 - tailsBefore))
     Assert.That (recorder.Head.Body.ExceptionHandlers.Count, Is.EqualTo (handlersBefore + 1))
 
   [<Test>]
@@ -4299,21 +4308,21 @@ type AltCoverTests() = class
 #endif
                      + """  -x, --xmlReport=VALUE      Optional: The output report template file (default:
                                 coverage.xml in the current directory)
-  -f, --fileFilter=VALUE     Optional: source file name to exclude from
-                               instrumentation (may repeat)
-  -s, --assemblyFilter=VALUE Optional: assembly name to exclude from
-                               instrumentation (may repeat)
+  -f, --fileFilter=VALUE     Optional, multiple: source file name to exclude
+                               from instrumentation
+  -s, --assemblyFilter=VALUE Optional, multiple: assembly name to exclude from
+                               instrumentation
   -e, --assemblyExcludeFilter=VALUE
-                             Optional: assembly which links other instrumented
-                               assemblies but for which internal details may be
-                               excluded (may repeat)
-  -t, --typeFilter=VALUE     Optional: type name to exclude from
-                               instrumentation (may repeat)
-  -m, --methodFilter=VALUE   Optional: method name to exclude from
-                               instrumentation (may repeat)
+                             Optional, multiple: assembly which links other
+                               instrumented assemblies but for which internal
+                               details may be excluded
+  -t, --typeFilter=VALUE     Optional, multiple: type name to exclude from
+                               instrumentation
+  -m, --methodFilter=VALUE   Optional, multiple: method name to exclude from
+                               instrumentation
   -a, --attributeFilter=VALUE
-                             Optional: attribute name to exclude from
-                               instrumentation (may repeat)
+                             Optional, multiple: attribute name to exclude from
+                               instrumentation
   -c, --callContext=VALUE    Optional, multiple: Tracking either times of
                                visits in ticks or designated method calls
                                leading to the visits.
@@ -4379,21 +4388,21 @@ type AltCoverTests() = class
 #endif
                      + """  -x, --xmlReport=VALUE      Optional: The output report template file (default:
                                 coverage.xml in the current directory)
-  -f, --fileFilter=VALUE     Optional: source file name to exclude from
-                               instrumentation (may repeat)
-  -s, --assemblyFilter=VALUE Optional: assembly name to exclude from
-                               instrumentation (may repeat)
+  -f, --fileFilter=VALUE     Optional, multiple: source file name to exclude
+                               from instrumentation
+  -s, --assemblyFilter=VALUE Optional, multiple: assembly name to exclude from
+                               instrumentation
   -e, --assemblyExcludeFilter=VALUE
-                             Optional: assembly which links other instrumented
-                               assemblies but for which internal details may be
-                               excluded (may repeat)
-  -t, --typeFilter=VALUE     Optional: type name to exclude from
-                               instrumentation (may repeat)
-  -m, --methodFilter=VALUE   Optional: method name to exclude from
-                               instrumentation (may repeat)
+                             Optional, multiple: assembly which links other
+                               instrumented assemblies but for which internal
+                               details may be excluded
+  -t, --typeFilter=VALUE     Optional, multiple: type name to exclude from
+                               instrumentation
+  -m, --methodFilter=VALUE   Optional, multiple: method name to exclude from
+                               instrumentation
   -a, --attributeFilter=VALUE
-                             Optional: attribute name to exclude from
-                               instrumentation (may repeat)
+                             Optional, multiple: attribute name to exclude from
+                               instrumentation
   -c, --callContext=VALUE    Optional, multiple: Tracking either times of
                                visits in ticks or designated method calls
                                leading to the visits.
@@ -4436,6 +4445,8 @@ or
                                below threshold, the return code of the process
                                is (threshold - actual) rounded up to the
                                nearest integer.
+  -c, --cobertura=VALUE      Optional: File for Cobertura format version of the
+                               collected data
   -?, --help, -h             Prints out the options.
 """
 

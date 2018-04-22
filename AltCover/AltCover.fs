@@ -327,7 +327,7 @@ module Main =
     | Right (rest, fromInfo, toInfo, targetInfo) ->
         let report = Visitor.ReportPath()
         let result = CommandLine.doPathOperation( fun () ->
-            report 
+            report
             |> Path.GetDirectoryName
             |> CommandLine.ensureDirectory
             let (assemblies, assemblyNames) = PrepareTargetFiles fromInfo toInfo targetInfo
