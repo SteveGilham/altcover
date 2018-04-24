@@ -93,6 +93,7 @@ type AltCoverTests() = class
     let buffer = Array.create size 0uy
     Assert.That (stream.Read(buffer, 0, size), Is.EqualTo size)
     use worker = new MemoryStream()
+    use worker2 = new MemoryStream()
     worker.Write (buffer, 0, size)
     worker.Position <- 0L
     let payload = Dictionary<int,int * Track list>()
@@ -102,10 +103,10 @@ type AltCoverTests() = class
     |> Seq.iter(fun i -> payload.[i ||| Counter.BranchFlag] <- (i-10, []))
     let item = Dictionary<string, Dictionary<int, int * Track list>>()
     item.Add("7C-CD-66-29-A3-6C-6D-5F-A7-65-71-0E-22-7D-B2-61-B5-1F-65-9A", payload)
-    Counter.UpdateReport ignore (fun _ _ -> ()) true item ReportFormat.OpenCover worker worker |> ignore
-    worker.Position <- 0L
+    Counter.UpdateReport ignore (fun _ _ -> ()) true item ReportFormat.OpenCover worker worker2 |> ignore
+    worker2.Position <- 0L
     let after = XmlDocument()
-    after.Load worker
+    after.Load worker2
     Assert.That( after.SelectNodes("//SequencePoint")
                  |> Seq.cast<XmlElement>
                  |> Seq.map (fun x -> x.GetAttribute("vc")),
@@ -162,6 +163,54 @@ type AltCoverTests() = class
       with
       | :? IOException -> ()
 
+  [<Test>]
+  member self.FlushLeavesExpectedTracesWhenDiverted() =
+    let saved = Console.Out
+    let here = Directory.GetCurrentDirectory()
+    let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
+    let unique = Path.Combine(where, Guid.NewGuid().ToString())
+    let reportFile = Path.Combine(unique, "FlushLeavesExpectedTraces.xml")
+    let outputFile = Path.Combine(unique, "FlushLeavesExpectedTracesWhenDiverted.xml")
+    try
+      let visits = new Dictionary<string, Dictionary<int, int * Track list>>()
+      use stdout = new StringWriter()
+      Console.SetOut stdout
+      Directory.CreateDirectory(unique) |> ignore
+      Directory.SetCurrentDirectory(unique)
+
+      Counter.measureTime <- DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
+      use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(self.resource)
+      let size = int stream.Length
+      let buffer = Array.create size 0uy
+      Assert.That (stream.Read(buffer, 0, size), Is.EqualTo size)
+      do
+        use worker = new FileStream(reportFile, FileMode.CreateNew)
+        worker.Write(buffer, 0, size)
+        ()
+
+      let payload = Dictionary<int,int * Track list>()
+      [0..9 ]
+      |> Seq.iter(fun i -> payload.[i] <- (i+1, []))
+      visits.["f6e3edb3-fb20-44b3-817d-f69d1a22fc2f"] <- payload
+
+      Counter.DoFlush ignore (fun _ _ -> ()) true visits AltCover.Base.ReportFormat.NCover reportFile (Some outputFile) |> ignore
+
+      use worker' = new FileStream(outputFile, FileMode.Open)
+      let after = XmlDocument()
+      after.Load worker'
+      Assert.That( after.SelectNodes("//seqpnt")
+                   |> Seq.cast<XmlElement>
+                   |> Seq.map (fun x -> x.GetAttribute("visitcount")),
+                   Is.EquivalentTo [ "11"; "10"; "9"; "8"; "7"; "6"; "4"; "3"; "2"; "1"])
+    finally
+      if File.Exists reportFile then File.Delete reportFile
+      Console.SetOut saved
+      Directory.SetCurrentDirectory(here)
+      try
+        Directory.Delete(unique)
+      with
+      | :? IOException -> ()
+
   // Runner.fs and CommandLine.fs
 
   [<Test>]
@@ -196,6 +245,8 @@ type AltCoverTests() = class
                                nearest integer.
   -c, --cobertura=VALUE      Optional: File for Cobertura format version of the
                                collected data
+  -o, --outputFile=VALUE     Optional: write the recorded coverage to this file
+                               rather than overwriting the original report file.
   -?, --help, -h             Prints out the options.
 """
 
@@ -254,7 +305,7 @@ type AltCoverTests() = class
   [<Test>]
   member self.ShouldHaveExpectedOptions() =
     let options = Runner.DeclareOptions ()
-    Assert.That (options.Count, Is.EqualTo 9)
+    Assert.That (options.Count, Is.EqualTo 10)
     Assert.That(options |> Seq.filter (fun x -> x.Prototype <> "<>")
                         |> Seq.forall (fun x -> (String.IsNullOrWhiteSpace >> not) x.Description))
     Assert.That (options |> Seq.filter (fun x -> x.Prototype = "<>") |> Seq.length, Is.EqualTo 1)
@@ -304,7 +355,7 @@ type AltCoverTests() = class
   [<Test>]
   member self.ParsingErrorHelpGivesHelp() =
     let options = Runner.DeclareOptions ()
-    let input = [| "--o"; Path.GetInvalidPathChars() |> String |]
+    let input = [| "--zzz"; Path.GetInvalidPathChars() |> String |]
     let parse = CommandLine.ParseCommandLine input options
     match parse with
     | Right _ -> Assert.Fail()
@@ -638,6 +689,34 @@ type AltCoverTests() = class
       Runner.threshold <- None
 
   [<Test>]
+  member self.ParsingEmptyThresholdGivesFailure() =
+    try
+      Runner.threshold <- None
+      let options = Runner.DeclareOptions ()
+      let input = [| "-t"; "  " |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Right _ -> Assert.Fail()
+      | Left (x, y) -> Assert.That (y, Is.SameAs options)
+                       Assert.That (x, Is.EqualTo "UsageError")
+    finally
+      Runner.threshold <- None
+
+  [<Test>]
+  member self.ParsingNoThresholdGivesFailure() =
+    try
+      Runner.threshold <- None
+      let options = Runner.DeclareOptions ()
+      let input = [| "-t" |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Right _ -> Assert.Fail()
+      | Left (x, y) -> Assert.That (y, Is.SameAs options)
+                       Assert.That (x, Is.EqualTo "UsageError")
+    finally
+      Runner.threshold <- None
+
+  [<Test>]
   member self.ParsingCoberturaGivesCobertura() =
     lock Cobertura.path (fun () ->
     try
@@ -698,32 +777,54 @@ type AltCoverTests() = class
       Cobertura.path := None)
 
   [<Test>]
-  member self.ParsingEmptyThresholdGivesFailure() =
+  member self.ParsingOutputGivesOutput() =
     try
-      Runner.threshold <- None
+      Runner.output <- None
       let options = Runner.DeclareOptions ()
-      let input = [| "-t"; "  " |]
+      let unique = Guid.NewGuid().ToString()
+      let input = [| "-o"; unique |]
       let parse = CommandLine.ParseCommandLine input options
       match parse with
-      | Right _ -> Assert.Fail()
-      | Left (x, y) -> Assert.That (y, Is.SameAs options)
-                       Assert.That (x, Is.EqualTo "UsageError")
+      | Left _ -> Assert.Fail()
+      | Right (x, y) -> Assert.That (y, Is.SameAs options)
+                        Assert.That (x, Is.Empty)
+
+      match Runner.output with
+      | None -> Assert.Fail()
+      | Some x -> Assert.That(Path.GetFileName x, Is.EqualTo unique)
+
     finally
-      Runner.threshold <- None
+      Runner.output <- None
 
   [<Test>]
-  member self.ParsingNoThresholdGivesFailure() =
+  member self.ParsingMultipleOutputGivesFailure() =
     try
-      Runner.threshold <- None
+      Runner.output <- None
       let options = Runner.DeclareOptions ()
-      let input = [| "-t" |]
+      let unique = Guid.NewGuid().ToString()
+      let input = [| "-o"; unique; "/o"; unique.Replace("-", "+") |]
       let parse = CommandLine.ParseCommandLine input options
       match parse with
       | Right _ -> Assert.Fail()
       | Left (x, y) -> Assert.That (y, Is.SameAs options)
                        Assert.That (x, Is.EqualTo "UsageError")
     finally
-      Runner.threshold <- None
+      Runner.output <- None
+
+  [<Test>]
+  member self.ParsingNoOutputGivesFailure() =
+    try
+      Runner.output <- None
+      let options = Runner.DeclareOptions ()
+      let blank = " "
+      let input = [| "-o"; blank; |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Right _ -> Assert.Fail()
+      | Left (x, y) -> Assert.That (y, Is.SameAs options)
+                       Assert.That (x, Is.EqualTo "UsageError")
+    finally
+      Runner.output <- None
 
   [<Test>]
   member self.ShouldRequireExe() =
@@ -1024,6 +1125,8 @@ or
                                nearest integer.
   -c, --cobertura=VALUE      Optional: File for Cobertura format version of the
                                collected data
+  -o, --outputFile=VALUE     Optional: write the recorded coverage to this file
+                               rather than overwriting the original report file.
   -?, --help, -h             Prints out the options.
 """
 

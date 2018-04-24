@@ -319,4 +319,7 @@ Details written to {0}</value>
   <data name="threshold" xml:space="preserve">
     <value>Coverage percentage achieved is {0}% below the threshold of {1}%.</value>
   </data>
+  <data name="o|outputFile=" xml:space="preserve">
+    <value>Optional: write the recorded coverage to this file rather than overwriting the original report file.</value>
+  </data>
 </root>

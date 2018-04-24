@@ -4447,6 +4447,8 @@ or
                                nearest integer.
   -c, --cobertura=VALUE      Optional: File for Cobertura format version of the
                                collected data
+  -o, --outputFile=VALUE     Optional: write the recorded coverage to this file
+                               rather than overwriting the original report file.
   -?, --help, -h             Prints out the options.
 """
 

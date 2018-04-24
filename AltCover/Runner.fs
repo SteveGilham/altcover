@@ -37,6 +37,7 @@ module Runner =
   let internal executable : Option<string> ref = ref None
   let mutable internal collect = false
   let mutable internal threshold : Option<int> = None
+  let mutable internal output : Option<string> = None
 
   let init() =
     recordingDirectory <- None
@@ -46,6 +47,7 @@ module Runner =
     Cobertura.path := None
     collect <- false
     threshold <- None
+    output <- None
 
   let X = OpenCover.X
 
@@ -264,6 +266,18 @@ module Runner =
                  else CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
                                                          CommandLine.resources.GetString "InvalidValue",
                                                          "--cobertura",
+                                                         x) :: CommandLine.error))
+      ("o|outputFile=",
+       (fun x -> if not (String.IsNullOrWhiteSpace(x)) then
+                    if Option.isSome output then
+                      CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
+                                                         CommandLine.resources.GetString "MultiplesNotAllowed",
+                                                         "--outputFile") :: CommandLine.error
+                    else
+                      output <- x |> Path.GetFullPath |> Some
+                 else CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
+                                                         CommandLine.resources.GetString "InvalidValue",
+                                                         "--outputFile",
                                                          x) :: CommandLine.error))
       ("?|help|h", (fun x -> CommandLine.help <- not (isNull x)))
       ("<>", (fun x -> CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
@@ -549,11 +563,11 @@ module Runner =
     Point pt times "Times" "Time" "time"
     Point pt calls "TrackedMethodRefs" "TrackedMethodRef" "uid"
 
-  let internal WriteReportBase (hits:ICollection<(string*int*Base.Track)>) report output =
+  let internal WriteReportBase (hits:ICollection<(string*int*Base.Track)>) report =
     let counts = Dictionary<string, Dictionary<int, int * Base.Track list>>()
     hits |> Seq.iter(fun (moduleId, hitPointId, hit) ->
                         AltCover.Base.Counter.AddVisit counts moduleId hitPointId hit)
-    AltCover.Base.Counter.DoFlush (PostProcess counts report) PointProcess true counts report output
+    AltCover.Base.Counter.DoFlush (PostProcess counts report) PointProcess true counts report
 
   // mocking points
   let mutable internal GetPayload = PayloadBase
@@ -591,7 +605,8 @@ module Runner =
             let payload = GetPayload
             let result = GetMonitor hits report payload rest
             let format' = enum format
-            let delta = DoReport hits format' report None
+
+            let delta = DoReport hits format' report output
             WriteResourceWithFormatItems "Coverage statistics flushing took {0:N} seconds" [|delta.TotalSeconds|]
 
             // And tidy up after everything's done

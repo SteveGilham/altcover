@@ -572,6 +572,54 @@ type AltCoverTests() = class
     self.GetMyMethodName "<="
 
 #if NET2
+  [<Test>]
+  member self.FlushLeavesExpectedTracesWhenDiverted() =
+    let saved = Console.Out
+    let here = Directory.GetCurrentDirectory()
+    let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
+    let unique = Path.Combine(where, Guid.NewGuid().ToString())
+    let reportFile = Path.Combine(unique, "FlushLeavesExpectedTraces.xml")
+    let outputFile = Path.Combine(unique, "FlushLeavesExpectedTracesWhenDiverted.xml")
+    try
+      let visits = new Dictionary<string, Dictionary<int, int * Track list>>()
+      use stdout = new StringWriter()
+      Console.SetOut stdout
+      Directory.CreateDirectory(unique) |> ignore
+      Directory.SetCurrentDirectory(unique)
+
+      Counter.measureTime <- DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
+      use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(self.resource)
+      let size = int stream.Length
+      let buffer = Array.create size 0uy
+      Assert.That (stream.Read(buffer, 0, size), Is.EqualTo size)
+      do
+        use worker = new FileStream(reportFile, FileMode.CreateNew)
+        worker.Write(buffer, 0, size)
+        ()
+
+      let payload = Dictionary<int,int * Track list>()
+      [0..9 ]
+      |> Seq.iter(fun i -> payload.[i] <- (i+1, []))
+      visits.["f6e3edb3-fb20-44b3-817d-f69d1a22fc2f"] <- payload
+
+      Counter.DoFlush ignore (fun _ _ -> ()) true visits AltCover.Recorder.ReportFormat.NCover reportFile (Some outputFile) |> ignore
+
+      use worker' = new FileStream(outputFile, FileMode.Open)
+      let after = XmlDocument()
+      after.Load worker'
+      Assert.That( after.SelectNodes("//seqpnt")
+                   |> Seq.cast<XmlElement>
+                   |> Seq.map (fun x -> x.GetAttribute("visitcount")),
+                   Is.EquivalentTo [ "11"; "10"; "9"; "8"; "7"; "6"; "4"; "3"; "2"; "1"])
+    finally
+      if File.Exists reportFile then File.Delete reportFile
+      Console.SetOut saved
+      Directory.SetCurrentDirectory(here)
+      try
+        Directory.Delete(unique)
+      with
+      | :? IOException -> ()
+
 #else
   // Dead simple sequential operation
   // run only once in Framework mode to avoid contention

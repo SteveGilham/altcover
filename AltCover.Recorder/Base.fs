@@ -154,7 +154,11 @@ module Counter =
 
   let internal DoFlush postProcess pointProcess own counts format report output =
     use coverageFile = new FileStream(report, FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.SequentialScan)
-    let outputFile = if Option.isSome output then Option.get output else coverageFile :> Stream
+    use target = match output with
+                 | None -> new MemoryStream() :> Stream
+                 | Some f -> new FileStream(f, FileMode.OpenOrCreate, FileAccess.Write, FileShare.None, 4096, FileOptions.SequentialScan) :> Stream
+
+    let outputFile = if Option.isSome output then target else coverageFile :> Stream
     let flushStart = UpdateReport postProcess pointProcess own counts format coverageFile outputFile
     TimeSpan(DateTime.UtcNow.Ticks - flushStart.Ticks)
 

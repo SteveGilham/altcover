@@ -543,6 +543,7 @@ module XTests =
     let save3 = Runner.DoReport
 
     let codedreport =  "coverage.xml" |> Path.GetFullPath
+    let alternate =  "not-coverage.xml" |> Path.GetFullPath
     try
       Runner.RecorderName <- "AltCover.Recorder.g.dll"
       let payload (rest:string list) =
@@ -554,8 +555,9 @@ module XTests =
         Assert.Empty(hits)
         127
 
-      let write (hits:ICollection<(string*int*Base.Track)>) format (report:string) (output:Stream option)=
+      let write (hits:ICollection<(string*int*Base.Track)>) format (report:string) (output:String option)=
         Assert.Equal(report, codedreport) //, "should be default coverage file")
+        Assert.Equal(output, Some alternate) 
         Assert.Empty(hits)
         TimeSpan.Zero
 
@@ -569,7 +571,7 @@ module XTests =
         use temp = File.Create dummy
         dummy |> File.Exists |> Assert.True
 
-      let r = Runner.DoCoverage [|"Runner"; "-x"; "test"; "-r"; where; "--"; "1"|] empty
+      let r = Runner.DoCoverage [|"Runner"; "-x"; "test"; "-r"; where; "-o"; alternate; "--"; "1"|] empty
       dummy |> File.Exists |> not |> Assert.True
       Assert.Equal (r, 127)
 
