@@ -549,11 +549,11 @@ module Runner =
     Point pt times "Times" "Time" "time"
     Point pt calls "TrackedMethodRefs" "TrackedMethodRef" "uid"
 
-  let internal WriteReportBase (hits:ICollection<(string*int*Base.Track)>) report =
+  let internal WriteReportBase (hits:ICollection<(string*int*Base.Track)>) report output =
     let counts = Dictionary<string, Dictionary<int, int * Base.Track list>>()
     hits |> Seq.iter(fun (moduleId, hitPointId, hit) ->
                         AltCover.Base.Counter.AddVisit counts moduleId hitPointId hit)
-    AltCover.Base.Counter.DoFlush (PostProcess counts report) PointProcess true counts report
+    AltCover.Base.Counter.DoFlush (PostProcess counts report) PointProcess true counts report output
 
   // mocking points
   let mutable internal GetPayload = PayloadBase
@@ -591,7 +591,7 @@ module Runner =
             let payload = GetPayload
             let result = GetMonitor hits report payload rest
             let format' = enum format
-            let delta = DoReport hits format' report
+            let delta = DoReport hits format' report None
             WriteResourceWithFormatItems "Coverage statistics flushing took {0:N} seconds" [|delta.TotalSeconds|]
 
             // And tidy up after everything's done

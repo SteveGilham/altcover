@@ -554,7 +554,7 @@ module XTests =
         Assert.Empty(hits)
         127
 
-      let write (hits:ICollection<(string*int*Base.Track)>) format (report:string) =
+      let write (hits:ICollection<(string*int*Base.Track)>) format (report:string) (output:Stream option)=
         Assert.Equal(report, codedreport) //, "should be default coverage file")
         Assert.Empty(hits)
         TimeSpan.Zero
