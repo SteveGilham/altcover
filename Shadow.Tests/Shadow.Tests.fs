@@ -571,8 +571,10 @@ type AltCoverTests() = class
 
     self.GetMyMethodName "<="
 
-#if NET2
+#if NET4
+#else
   [<Test>]
+#endif
   member self.FlushLeavesExpectedTracesWhenDiverted() =
     let saved = Console.Out
     let here = Directory.GetCurrentDirectory()
@@ -620,6 +622,7 @@ type AltCoverTests() = class
       with
       | :? IOException -> ()
 
+#if NET2
 #else
   // Dead simple sequential operation
   // run only once in Framework mode to avoid contention

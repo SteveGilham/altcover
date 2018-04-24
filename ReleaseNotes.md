@@ -1,3 +1,6 @@
+# 3.0.4xx (Caba series release 9)
+* `-o|outputFile` option in `runner` mode (parameter `OutputFile` for the `AltCover.Collect` task) to allow the default report for the current dataset to be written to a new file, rather than updating/accumulating in the file specified at instrumentation time.
+
 # 3.0.444 (Caba series release 8)
 * [BUGFIX] for `-c|callContext` option -- generate valid IL where the function being tracked completes with a tail call
 * [BUGFIX] for `-c|callContext` option -- generate valid IL where the function being tracked contains a branch directly to a return instruction
