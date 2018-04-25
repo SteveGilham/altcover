@@ -265,6 +265,7 @@ module Instance =
      Watcher.Filter <- Path.GetFileName <| SignalFile()
      Watcher.Created.Add (FlushCounter Resume)
      Watcher.Deleted.Add (FlushCounter Pause)
+     Watcher.EnableRaisingEvents <- Watcher.Path |> String.IsNullOrEmpty |> not
 
   // Register event handling
   do
