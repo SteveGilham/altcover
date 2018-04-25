@@ -5,6 +5,7 @@ namespace AltCover.Recorder
 
 open System
 open System.Collections.Generic
+open System.IO
 open System.Reflection
 open System.Resources
 open System.Runtime.CompilerServices
@@ -13,6 +14,8 @@ open System.Runtime.CompilerServices
 type internal Close =
     | DomainUnload
     | ProcessExit
+    | Pause
+    | Resume
 
 [<System.Runtime.InteropServices.ProgIdAttribute("ExcludeFromCodeCoverage hack for OpenCover issue 615")>]
 type internal Carrier =
@@ -118,10 +121,12 @@ module Instance =
   /// </summary>
   let internal mutex = new System.Threading.Mutex(false, Token + ".mutex");
 
+  let SignalFile () = ReportFile + ".acv"
+
   /// <summary>
   /// Reporting back to the mother-ship
   /// </summary>
-  let mutable internal trace = Tracer.Create (ReportFile + ".acv")
+  let mutable internal trace = Tracer.Create (SignalFile ())
 
   let internal WithMutex (f : bool -> 'a) =
     let own = mutex.WaitOne(1000)
@@ -130,10 +135,13 @@ module Instance =
     finally
       if own then mutex.ReleaseMutex()
 
-  /// <summary>
-  /// This method flushes hit count buffers.
-  /// </summary>
-  let internal FlushCounterImpl _ =
+  let InitialiseTrace () =
+    WithMutex (fun _ -> trace <- trace.OnStart ())
+
+  let internal Watcher = new FileSystemWatcher()
+  let mutable internal Recording = true
+    
+  let internal FlushAll () =
     trace.OnConnected (fun () -> trace.OnFinish Visits)
       (fun () ->
       match Visits.Count with
@@ -145,6 +153,22 @@ module Instance =
                 GetResource "Coverage statistics flushing took {0:N} seconds"
                 |> Option.iter (fun s -> Console.Out.WriteLine(s, delta.TotalSeconds))
              ))
+
+  /// <summary>
+  /// This method flushes hit count buffers.
+  /// </summary>
+  let internal FlushCounterImpl action mode =
+    match mode with
+    | Resume -> 
+      Visits.Clear()
+      InitialiseTrace ()
+      Recording <- true
+    | Pause -> Recording <- false
+               action()              
+    | _ -> action()
+
+  let internal FlushCounterDefault mode =
+     FlushCounterImpl FlushAll mode    
 
   let internal TraceVisit moduleId hitPointId context =
      trace.OnVisit Visits moduleId hitPointId context
@@ -175,7 +199,7 @@ module Instance =
                      channel.Reply ()
                      return! loop inbox
                  | Finish (mode, channel) ->
-                     FlushCounterImpl mode
+                     FlushCounterDefault mode
                      channel.Reply ()
           }
 
@@ -224,7 +248,8 @@ module Instance =
     else message |> AsyncItem |> mailbox.Post
 
   let Visit moduleId hitPointId =
-     VisitSelection (fun () -> trace.IsConnected() || Backlog() > 10)
+    if Recording then
+      VisitSelection (fun () -> trace.IsConnected() || Backlog() > 10)
                      (PayloadSelector IsOpenCoverRunner) moduleId hitPointId
 
   let internal FlushCounter (finish:Close) _ =
@@ -235,9 +260,16 @@ module Instance =
     mailbox <- MakeMailbox ()
     mailbox.Start()
 
+  let internal StartWatcher() =
+     Watcher.Path <- Path.GetDirectoryName <| SignalFile()
+     Watcher.Filter <- Path.GetFileName <| SignalFile()
+     Watcher.Created.Add (FlushCounter Resume)
+     Watcher.Deleted.Add (FlushCounter Pause)
+
   // Register event handling
   do
     AppDomain.CurrentDomain.DomainUnload.Add(FlushCounter DomainUnload)
     AppDomain.CurrentDomain.ProcessExit.Add(FlushCounter ProcessExit)
-    WithMutex (fun _ -> trace <- trace.OnStart ())
+    StartWatcher ()
+    InitialiseTrace ()
     mailbox.Start()
