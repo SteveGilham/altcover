@@ -1025,6 +1025,37 @@ Target "SelfTest" (fun _ ->
                 }) "Report generation failure"
 )
 
+Target "RecordResumeTest" ( fun _ ->
+    Directory.ensure "./_Reports"
+    let simpleReport = (Path.getFullName "./_Reports") @@ ( "RecordResumeTest.xml")
+    let binRoot = Path.getFullName "_Binaries/AltCover/Release+AnyCPU"
+    let sampleRoot = Path.getFullName "_Binaries/Sample8/Debug+AnyCPU"
+    let instrumented = "__RecordResumeTest"
+
+    Actions.Run (fun info ->
+          { info with
+                FileName = binRoot @@ "AltCover.exe"
+                WorkingDirectory = sampleRoot
+                Arguments = ("-s=Adapter -s=nunit -t=System\. -t=Microsoft\. -x=" + simpleReport + " /o=./" + instrumented)})
+                "FSharpTypes"
+
+    let testing = (sampleRoot @@ instrumented) @@ "Sample8.exe"
+    Actions.Run (fun info ->
+          { info with
+                FileName = testing
+                WorkingDirectory = sampleRoot
+                Arguments = simpleReport + ".acv"})
+                "RecordResumeTest"
+    do
+      use coverageFile = new FileStream(simpleReport, FileMode.Open, FileAccess.Read, FileShare.None, 4096, FileOptions.SequentialScan)
+      let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
+      let recorded = coverageDocument.Descendants(XName.Get("seqpnt"))
+                     |> Seq.map (fun x -> x.Attribute(XName.Get("visitcount")).Value)
+                     |> Seq.toList
+      let expected = ["0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"]
+      Assert.That(recorded, expected |> Is.EquivalentTo, sprintf "Bad visit list %A -- should be empty now" recorded)
+)
+
 // Packaging
 
 Target "Packaging" (fun _ ->
