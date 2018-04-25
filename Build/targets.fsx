@@ -1037,7 +1037,7 @@ Target "RecordResumeTest" ( fun _ ->
                 FileName = binRoot @@ "AltCover.exe"
                 WorkingDirectory = sampleRoot
                 Arguments = ("-s=Adapter -s=nunit -t=System\. -t=Microsoft\. -x=" + simpleReport + " /o=./" + instrumented)})
-                "FSharpTypes"
+                "RecordResumeTest 1"
 
     let testing = (sampleRoot @@ instrumented) @@ "Sample8.exe"
     Actions.Run (fun info ->
@@ -1045,7 +1045,7 @@ Target "RecordResumeTest" ( fun _ ->
                 FileName = testing
                 WorkingDirectory = sampleRoot
                 Arguments = simpleReport + ".acv"})
-                "RecordResumeTest"
+                "RecordResumeTest 2"
     do
       use coverageFile = new FileStream(simpleReport, FileMode.Open, FileAccess.Read, FileShare.None, 4096, FileOptions.SequentialScan)
       let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
@@ -1054,6 +1054,22 @@ Target "RecordResumeTest" ( fun _ ->
                      |> Seq.toList
       let expected = ["0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"]
       Assert.That(recorded, expected |> Is.EquivalentTo, sprintf "Bad visit list %A -- should be empty now" recorded)
+
+    Actions.Run (fun info ->
+          { info with
+                FileName = binRoot @@ "AltCover.exe"
+                WorkingDirectory = sampleRoot
+                Arguments = ("runner --collect /r=./" + instrumented)})
+                "RecordResumeTest 3"
+
+    do
+      use coverageFile = new FileStream(simpleReport, FileMode.Open, FileAccess.Read, FileShare.None, 4096, FileOptions.SequentialScan)
+      let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
+      let recorded = coverageDocument.Descendants(XName.Get("seqpnt"))
+                     |> Seq.map (fun x -> x.Attribute(XName.Get("visitcount")).Value)
+                     |> Seq.toList
+      let expected = ["0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"]
+      Assert.That(recorded, expected |> Is.Not.EquivalentTo, sprintf "Bad visit list %A -- should no longer be empty now" recorded)
 )
 
 // Packaging
