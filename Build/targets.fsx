@@ -1052,7 +1052,7 @@ Target "RecordResumeTest" ( fun _ ->
       let recorded = coverageDocument.Descendants(XName.Get("seqpnt"))
                      |> Seq.map (fun x -> x.Attribute(XName.Get("visitcount")).Value)
                      |> Seq.toList
-      let expected = ["0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"]
+      let expected = Array.create 20 "0"
       Assert.That(recorded, expected |> Is.EquivalentTo, sprintf "Bad visit list %A -- should be empty now" recorded)
 
     Actions.Run (fun info ->
@@ -1068,8 +1068,9 @@ Target "RecordResumeTest" ( fun _ ->
       let recorded = coverageDocument.Descendants(XName.Get("seqpnt"))
                      |> Seq.map (fun x -> x.Attribute(XName.Get("visitcount")).Value)
                      |> Seq.toList
-      let expected = ["0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"; "0"]
+      let expected = Array.create 20 "0"
       Assert.That(recorded, expected |> Is.Not.EquivalentTo, sprintf "Bad visit list %A -- should no longer be empty now" recorded)
+      Assert.That(recorded |> Seq.length,  Is.EqualTo 20, sprintf "Bad visit list %A -- should no longer be empty now" recorded)
 )
 
 // Packaging
@@ -1772,6 +1773,10 @@ activateFinal "ResetConsoleColours"
 
 "Compilation"
 ==> "CSharpDotNetWithFramework"
+==> "OperationalTest"
+
+"Compilation"
+==> "RecordResumeTest"
 ==> "OperationalTest"
 
 "Compilation"

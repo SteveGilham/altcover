@@ -163,8 +163,8 @@ module Instance =
       Visits.Clear()
       InitialiseTrace ()
       Recording <- true
-    | Pause -> Recording <- false
-               action()              
+    | Pause -> action()    
+               Recording <- false
     | _ -> action()
 
   let internal FlushCounterDefault mode =
@@ -194,13 +194,14 @@ module Instance =
                  | AsyncItem (SequencePoint (moduleId, hitPointId, context)) ->
                      VisitImpl moduleId hitPointId context
                      return! loop inbox
-                 | Item (SequencePoint (moduleId, hitPointId, context), channel)->
+                 | Item (SequencePoint (moduleId, hitPointId, context), channel) ->
                      VisitImpl moduleId hitPointId context
                      channel.Reply ()
                      return! loop inbox
                  | Finish (mode, channel) ->
                      FlushCounterDefault mode
                      channel.Reply ()
+                     if mode = Pause || mode = Resume then return! loop inbox
           }
 
   let internal MakeMailbox () =

@@ -14,9 +14,17 @@ namespace Sample8
             Console.WriteLine("Created file");
             System.Threading.Thread.Sleep(1000);
             Console.WriteLine("Waited one second");
+            System.Threading.Thread.Sleep(1000);
+            Console.WriteLine("Waited one second");
+            System.Threading.Thread.Sleep(1000);
+            Console.WriteLine("Waited one second");
 
             System.IO.File.Delete(args[0]);
             Console.WriteLine("Deleted file");
+            System.Threading.Thread.Sleep(1000);
+            Console.WriteLine("Waited one second");
+            System.Threading.Thread.Sleep(1000);
+            Console.WriteLine("Waited one second");
         }
     }
 }
