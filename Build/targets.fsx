@@ -1878,11 +1878,15 @@ activateFinal "ResetConsoleColours"
 
 "Compilation"
 ==> "RecordResumeTest"
-=?> ("OperationalTest", Environment.isWindows)  // Something adrift with mono
+=?> ("OperationalTest", Environment.isWindows) // Something adrift with mono
 
 //"Compilation"
 //==> "RecordResumeTestUnderMono"
-//=?> ("OperationalTest", Option.isSome monoOnWindows)
+//=?> ("OperationalTest", Option.isSome monoOnWindows) // Something adrift with mono
+
+"Compilation"
+==> "RecordResumeTestDotNet"
+==> "OperationalTest"
 
 "Compilation"
 ==> "SelfTest"
