@@ -500,7 +500,7 @@ type AltCoverTests() = class
       Console.SetOut stdout
 
       Instance.FlushCounterDefault ProcessExit
-      Assert.That (stdout.ToString(), Is.Empty)
+      Assert.That (stdout.ToString().Trim(), Is.EqualTo "Finalizing overall coverage report")
     finally
       Adapter.VisitsClear()
       Console.SetOut saved)

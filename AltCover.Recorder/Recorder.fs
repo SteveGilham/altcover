@@ -136,11 +136,12 @@ module Instance =
       if own then mutex.ReleaseMutex()
 
   let InitialiseTrace () =
-    WithMutex (fun _ -> trace <- trace.OnStart ())
+    WithMutex (fun _ -> let t = Tracer.Create (SignalFile ())
+                        trace <- t.OnStart ())
 
   let internal Watcher = new FileSystemWatcher()
   let mutable internal Recording = true
-    
+
   let internal FlushAll () =
     trace.OnConnected (fun () -> trace.OnFinish Visits)
       (fun () ->
@@ -158,17 +159,19 @@ module Instance =
   /// This method flushes hit count buffers.
   /// </summary>
   let internal FlushCounterImpl action mode =
+    (mode.ToString() + "Handler")
+    |> GetResource
+    |> Option.iter Console.Out.WriteLine
     match mode with
-    | Resume -> 
+    | Resume ->
       Visits.Clear()
       InitialiseTrace ()
-      Recording <- true
-    | Pause -> action()    
-               Recording <- false
+    | Pause -> action()
+               InitialiseTrace ()
     | _ -> action()
 
   let internal FlushCounterDefault mode =
-     FlushCounterImpl FlushAll mode    
+     FlushCounterImpl FlushAll mode
 
   let internal TraceVisit moduleId hitPointId context =
      trace.OnVisit Visits moduleId hitPointId context
@@ -257,15 +260,22 @@ module Instance =
 
   let internal FlushCounter (finish:Close) _ =
     lock mailbox (fun () ->
-      if TerminalSent |> not then mailbox.PostAndReply (fun c -> Finish (finish, c))
-      TerminalSent <- (finish = Pause || finish = Resume) |> not)
+      finish.ToString()
+      |> GetResource
+      |> Option.iter Console.Out.WriteLine
+      Recording <- finish = Resume
+      let isTerminal = (finish = Pause || finish = Resume) |> not
+      if TerminalSent |> not then mailbox.TryPostAndReply ((fun c -> Finish (finish, c)),
+                                                           if isTerminal then 2000 else -1)
+                                  |> ignore
+      TerminalSent <- isTerminal)
 
-  // unit test helpers -- avoid issues with cross CLR version calls
   let internal RunMailbox () =
     mailbox <- MakeMailbox ()
     TerminalSent <- false
     mailbox.Start()
 
+  // Register event handling
   let internal StartWatcher() =
      Watcher.Path <- Path.GetDirectoryName <| SignalFile()
      Watcher.Filter <- Path.GetFileName <| SignalFile()
@@ -273,10 +283,9 @@ module Instance =
      Watcher.Deleted.Add (FlushCounter Pause)
      Watcher.EnableRaisingEvents <- Watcher.Path |> String.IsNullOrEmpty |> not
 
-  // Register event handling
   do
     AppDomain.CurrentDomain.DomainUnload.Add(FlushCounter DomainUnload)
     AppDomain.CurrentDomain.ProcessExit.Add(FlushCounter ProcessExit)
     StartWatcher ()
     InitialiseTrace ()
-    mailbox.Start()
+    RunMailbox ()
