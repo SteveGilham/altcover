@@ -112,7 +112,7 @@ module SolutionRoot =
     let path = "_Generated/SolutionRoot.fs"
     // Update the file only if it would change
     let old = if File.Exists(path) then File.ReadAllText(path) else String.Empty
-    if not (old.Equals(hack)) then File.WriteAllText(path, hack)         
+    if not (old.Equals(hack)) then File.WriteAllText(path, hack)
 )
 
 // Basic compilation
@@ -308,7 +308,7 @@ Target "JustUnitTest" (fun _ ->
                                                              ShadowCopy = false})
 
       !! (@"_Binaries/*Tests/Debug+AnyCPU/*Test*.dll")
-      |> Seq.filter (fun f -> Path.GetFileName(f) <> "AltCover.XTests.dll" && 
+      |> Seq.filter (fun f -> Path.GetFileName(f) <> "AltCover.XTests.dll" &&
                               Path.GetFileName(f) <> "xunit.runner.visualstudio.testadapter.dll")
       |> NUnit3.run (fun p -> { p   with ToolPath = findToolInSubPath "nunit3-console.exe" "."
                                          WorkingDir = "."
@@ -335,7 +335,7 @@ Target "UnitTestDotNet" (fun _ ->
 Target "UnitTestWithOpenCover" (fun _ ->
     Directory.ensure "./_Reports/_UnitTestWithOpenCover"
     let testFiles = !! (@"_Binaries/*Tests/Debug+AnyCPU/*Test*.dll")
-                    |> Seq.filter (fun f -> Path.GetFileName(f) <> "AltCover.XTests.dll" && 
+                    |> Seq.filter (fun f -> Path.GetFileName(f) <> "AltCover.XTests.dll" &&
                                             Path.GetFileName(f) <> "xunit.runner.visualstudio.testadapter.dll")
     let xtestFiles = !! (@"_Binaries/*Tests/Debug+AnyCPU/*XTest*.dll")
 
@@ -369,7 +369,7 @@ Target "UnitTestWithOpenCover" (fun _ ->
     | x -> printfn "%A" x
            reraise ()
 
-    ReportGenerator.generateReports 
+    ReportGenerator.generateReports
                         (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
                                            ReportTypes = [ ReportGenerator.ReportType.Html; ReportGenerator.ReportType.XmlSummary ]
                                            TargetDir = "_Reports/_UnitTestWithOpenCover"})
@@ -1096,11 +1096,11 @@ Target "RecordResumeTestUnderMono" ( fun _ ->
                 "RecordResumeTestUnderMono 1"
 
     match monoOnWindows with
-    | Some mono ->             
+    | Some mono ->
       let RunIt (f:Fake.Core.ProcStartInfo -> Fake.Core.ProcStartInfo) (msg:string) =
            let x = Fake.Core.Process.execSimple (f >> Fake.Core.Process.withFramework) (TimeSpan.FromMinutes 15.0)
            Assert.That(x, Is.EqualTo 0, msg)
-    
+
       let testing = (sampleRoot @@ instrumented) @@ "Sample8.exe"
       RunIt (fun info ->
           { info with
@@ -1136,7 +1136,6 @@ Target "RecordResumeTestUnderMono" ( fun _ ->
       Assert.That(recorded, expected |> Is.Not.EquivalentTo, sprintf "Bad visit list %A -- should no longer be empty now" recorded)
       Assert.That(recorded |> Seq.length,  Is.EqualTo 20, sprintf "Bad visit list %A -- should no longer be empty now" recorded)
 )
-
 
 // Packaging
 
