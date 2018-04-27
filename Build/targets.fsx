@@ -199,11 +199,13 @@ Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standal
                                 "_Binaries/AltCover/Debug+AnyCPU/AltCover.exe"
                                 "_Binaries/AltCover.Shadow/Debug+AnyCPU/AltCover.Shadow.dll"
                                ])
+
+    let rules = if Environment.isWindows then "./Build/rules.xml" else "./Build/rules-mono.xml"
     Actions.Run (fun info ->
         { info with
                 FileName = (findToolInSubPath "gendarme.exe" "./packages")
                 WorkingDirectory = "."
-                Arguments = "--severity all --confidence all --config ./Build/rules.xml --console --html ./_Reports/gendarme.html " + subjects})
+                Arguments = "--severity all --confidence all --config " + rules + " --console --html ./_Reports/gendarme.html " + subjects})
                 "Gendarme Errors were detected"
 )
 
