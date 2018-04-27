@@ -517,6 +517,7 @@ type AltCoverTests() = class
       let save = Instance.trace
       Instance.trace <- { Tracer=null; Stream=null; Formatter=null;
                           Runner = false; Definitive = false }
+      Instance.TerminalSent <- false
       try
         Adapter.VisitsClear()
         use stdout = new StringWriter()
@@ -541,14 +542,18 @@ type AltCoverTests() = class
         while Instance.Backlog () > 0 do
           Thread.Sleep 100
 
+        Assert.That(Instance.TerminalSent)
+
         // Restart the mailbox
         Instance.RunMailbox ()
 
         let head = "Coverage statistics flushing took "
         let tail = " seconds\n"
         let recorded = stdout.ToString().Replace("\r\n","\n")
-        Assert.That (recorded.StartsWith(head, StringComparison.Ordinal))
-        Assert.That (recorded.EndsWith(tail, StringComparison.Ordinal))
+        let index1 = recorded.IndexOf(head, StringComparison.Ordinal)
+        let index2 = recorded.IndexOf(tail, StringComparison.Ordinal)
+        Assert.That (index1, Is.GreaterThanOrEqualTo 0, recorded)
+        Assert.That (index2, Is.GreaterThan index1, recorded)
         use worker' = new FileStream(Instance.ReportFile, FileMode.Open)
         let after = XmlDocument()
         after.Load worker'

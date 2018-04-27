@@ -253,15 +253,17 @@ module Instance =
       VisitSelection (fun () -> trace.IsConnected() || Backlog() > 10)
                      (PayloadSelector IsOpenCoverRunner) moduleId hitPointId
 
-  let mutable private TerminalSent = false
+  let mutable internal TerminalSent = false
 
   let internal FlushCounter (finish:Close) _ =
-    TerminalSent <- (finish = Pause || finish = Resume) |> not
-    if TerminalSent |> not then mailbox.PostAndReply (fun c -> Finish (finish, c))
+    lock mailbox (fun () ->
+      if TerminalSent |> not then mailbox.PostAndReply (fun c -> Finish (finish, c))
+      TerminalSent <- (finish = Pause || finish = Resume) |> not)
 
   // unit test helpers -- avoid issues with cross CLR version calls
   let internal RunMailbox () =
     mailbox <- MakeMailbox ()
+    TerminalSent <- false
     mailbox.Start()
 
   let internal StartWatcher() =
