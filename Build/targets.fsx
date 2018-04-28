@@ -1883,7 +1883,7 @@ activateFinal "ResetConsoleColours"
 
 //"Compilation"
 //==> "RecordResumeTestUnderMono"
-//=?> ("OperationalTest", Option.isSome monoOnWindows) // Something adrift with mono
+//=?> ("OperationalTest", Option.isSome monoOnWindows) // System.EntryPointNotFoundException: CreateZStream
 
 "Compilation"
 ==> "RecordResumeTestDotNet"

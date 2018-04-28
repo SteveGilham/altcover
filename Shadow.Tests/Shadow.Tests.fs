@@ -517,7 +517,6 @@ type AltCoverTests() = class
       let save = Instance.trace
       Instance.trace <- { Tracer=null; Stream=null; Formatter=null;
                           Runner = false; Definitive = false }
-      Instance.TerminalSent <- false
       try
         Adapter.VisitsClear()
         use stdout = new StringWriter()
@@ -541,8 +540,6 @@ type AltCoverTests() = class
         Instance.FlushCounter ProcessExit ()
         while Instance.Backlog () > 0 do
           Thread.Sleep 100
-
-        Assert.That(Instance.TerminalSent)
 
         // Restart the mailbox
         Instance.RunMailbox ()

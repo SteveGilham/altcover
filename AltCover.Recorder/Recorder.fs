@@ -256,23 +256,18 @@ module Instance =
       VisitSelection (fun () -> trace.IsConnected() || Backlog() > 10)
                      (PayloadSelector IsOpenCoverRunner) moduleId hitPointId
 
-  let mutable internal TerminalSent = false
-
   let internal FlushCounter (finish:Close) _ =
-    lock mailbox (fun () ->
       finish.ToString()
       |> GetResource
       |> Option.iter Console.Out.WriteLine
       Recording <- finish = Resume
       let isTerminal = (finish = Pause || finish = Resume) |> not
-      if TerminalSent |> not then mailbox.TryPostAndReply ((fun c -> Finish (finish, c)),
-                                                           if isTerminal then 2000 else -1)
-                                  |> ignore
-      TerminalSent <- isTerminal)
+      mailbox.TryPostAndReply ((fun c -> Finish (finish, c)),
+                               if isTerminal then 2000 else -1)
+                               |> ignore
 
   let internal RunMailbox () =
     mailbox <- MakeMailbox ()
-    TerminalSent <- false
     mailbox.Start()
 
   // Register event handling
