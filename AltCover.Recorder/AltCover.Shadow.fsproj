@@ -36,7 +36,7 @@
     <Tailcalls>true</Tailcalls>
     <OutputPath>$(SolutionDir)_Binaries\$(AssemblyName)\$(Configuration)+$(Platform)\</OutputPath>
     <IntermediateOutputPath>$(SolutionDir)_Intermediate\$(AssemblyName)\$(Configuration)+$(Platform)\</IntermediateOutputPath>
-    <DefineConstants>TRACE;$(ExtraDefines)</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;$(ExtraDefines)</DefineConstants>
     <WarningLevel>3</WarningLevel>
     <OtherFlags>--keyfile:$(SolutionDir)\Build\Infrastructure.snk</OtherFlags>
   </PropertyGroup>

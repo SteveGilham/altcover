@@ -104,6 +104,7 @@ type AltCoverTests() = class
     self.GetMyMethodName "=>"
     lock Adapter.Lock (fun () ->
     let save = Instance.trace
+    Instance.RunMailbox()
     try
       Adapter.VisitsClear()
       Instance.trace <- { Tracer=null; Stream=null; Formatter=null;
@@ -173,6 +174,7 @@ type AltCoverTests() = class
     let wait = Instance.Wait
     try
       Instance.Visits.Clear()
+      Instance.RunMailbox()
       Instance.trace <- { Tracer=null; Stream=null; Formatter=null;
                           Runner = false; Definitive = false }
       let key = " "

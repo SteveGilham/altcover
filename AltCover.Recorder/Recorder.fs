@@ -191,12 +191,12 @@ module Instance =
           async {
              // release the wait every half second
              let! opt = inbox.TryReceive(500)
-             if flag then
-               System.Diagnostics.Debug.WriteLine ("Handling message " + opt.ToString())
-               flag <- false
              match opt with
              | None -> return! loop inbox
              | Some msg ->
+                 if flag then
+                   System.Diagnostics.Debug.WriteLine ("Handling message " + msg.ToString())
+                   flag <- false
                  match msg with
                  | AsyncItem (SequencePoint (moduleId, hitPointId, context)) ->
                      VisitImpl moduleId hitPointId context
@@ -277,6 +277,7 @@ module Instance =
   let internal RunMailbox () =
     System.Diagnostics.Debug.WriteLine ("Starting mailbox")
     flag <- true
+    Recording <- true
     mailbox <- MakeMailbox ()
     mailbox.Start()
     System.Diagnostics.Debug.WriteLine ("Started mailbox")
