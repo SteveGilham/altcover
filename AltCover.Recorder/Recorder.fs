@@ -186,10 +186,14 @@ module Instance =
       trace.OnConnected (fun () -> TraceVisit moduleId hitPointId context)
                         (fun () -> Counter.AddVisit Visits moduleId hitPointId context)
 
+  let mutable private flag = true
   let rec private loop (inbox:MailboxProcessor<Message>) =
           async {
              // release the wait every half second
              let! opt = inbox.TryReceive(500)
+             if flag then
+               System.Diagnostics.Debug.WriteLine ("Handling message " + opt.ToString())
+               flag <- false
              match opt with
              | None -> return! loop inbox
              | Some msg ->
@@ -202,7 +206,9 @@ module Instance =
                      channel.Reply ()
                      return! loop inbox
                  | Finish (mode, channel) ->
+                     System.Diagnostics.Debug.WriteLine ("Handling Finish " + mode.ToString())
                      FlushCounterDefault mode
+                     System.Diagnostics.Debug.WriteLine ("Handled Finish " + mode.ToString())
                      channel.Reply ()
                      if mode = Pause || mode = Resume then return! loop inbox
           }
@@ -257,7 +263,9 @@ module Instance =
                      (PayloadSelector IsOpenCoverRunner) moduleId hitPointId
 
   let internal FlushCounter (finish:Close) _ =
-      finish.ToString()
+      let key = finish.ToString()
+      System.Diagnostics.Debug.WriteLine ("Flushing " + key)
+      key
       |> GetResource
       |> Option.iter Console.Out.WriteLine
       Recording <- finish = Resume
@@ -267,8 +275,11 @@ module Instance =
                                |> ignore
 
   let internal RunMailbox () =
+    System.Diagnostics.Debug.WriteLine ("Starting mailbox")
+    flag <- true
     mailbox <- MakeMailbox ()
     mailbox.Start()
+    System.Diagnostics.Debug.WriteLine ("Started mailbox")
 
   // Register event handling
   let internal StartWatcher() =
