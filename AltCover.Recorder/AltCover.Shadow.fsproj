@@ -16,6 +16,8 @@
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Name>AltCover.Shadow</Name>
     <ResolveNuGetPackages>false</ResolveNuGetPackages>
+    <UseStandardResourceNames>True</UseStandardResourceNames>
+    <Win32Resource>$(ProjectDir)../AltCover/Resource.res</Win32Resource>    
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
