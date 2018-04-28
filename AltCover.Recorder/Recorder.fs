@@ -261,7 +261,7 @@ module Instance =
       |> GetResource
       |> Option.iter Console.Out.WriteLine
       Recording <- finish = Resume
-      let isTerminal = (finish = Pause || finish = Resume) |> not
+      let isTerminal = (finish = DomainUnload || finish = ProcessExit)
       mailbox.TryPostAndReply ((fun c -> Finish (finish, c)),
                                if isTerminal then 2000 else -1)
                                |> ignore
