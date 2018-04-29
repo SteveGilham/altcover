@@ -245,13 +245,19 @@ module Instance =
    if mailboxOK then
     mailbox.PostAndReply (fun c -> Finish (finish, c))
 
+  let internal AddErrorHandler (box:MailboxProcessor<'a>) =
+    box.Error.Add MailboxError
+
+  let internal SetErrorAction () =
+    ErrorAction <- DisplayError
+
   // unit test helpers -- avoid issues with cross CLR version calls
   let internal RunMailbox () =
     (mailbox :> IDisposable).Dispose()
     mailbox <- MakeMailbox ()
     mailboxOK <- true
-    ErrorAction <- DisplayError
-    mailbox.Error.Add MailboxError
+    AddErrorHandler mailbox
+    SetErrorAction ()
     mailbox.Start()
 
   // Register event handling

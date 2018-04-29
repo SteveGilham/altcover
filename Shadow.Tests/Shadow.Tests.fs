@@ -104,6 +104,7 @@ type AltCoverTests() = class
     self.GetMyMethodName "=>"
     lock Adapter.Lock (fun () ->
     let save = Instance.trace
+    Instance.RunMailbox()
     try
       Adapter.VisitsClear()
       Instance.trace <- { Tracer=null; Stream=null; Formatter=null;
@@ -540,6 +541,7 @@ type AltCoverTests() = class
         Instance.FlushCounter ProcessExit ()
         while Instance.Backlog () > 0 do
           Thread.Sleep 100
+        Assert.That(Instance.mailboxOK, Is.False)
 
         // Restart the mailbox
         Instance.RunMailbox ()
@@ -631,7 +633,6 @@ type AltCoverTests() = class
     let saved = (Console.Out, Console.Error)
     let e0 = Console.Out.Encoding
     let e1 = Console.Error.Encoding
-
     try
       use stdout = { new StringWriter() with override self.Encoding with get() = e0 }
       use stderr = { new StringWriter() with override self.Encoding with get() = e1 }
@@ -649,6 +650,62 @@ type AltCoverTests() = class
       Assert.That(stdout.ToString(), Is.Empty)
       let result = stderr.ToString().Trim()
       Assert.That(result, Does.StartWith "Recorder error - System.InvalidOperationException: ")
+
+      Instance.DefaultErrorAction result
+
+    finally
+      Instance.mailboxOK <- save
+      Console.SetOut (fst saved)
+      Console.SetError (snd saved)
+
+#if NET4
+#else
+  [<Test>]
+#endif
+  member self.DefaultMailboxWorks() =
+    let saved = (Console.Out, Console.Error)
+    let e0 = Console.Out.Encoding
+    let e1 = Console.Error.Encoding
+    try
+      use stdout = { new StringWriter() with override self.Encoding with get() = e0 }
+      use stderr = { new StringWriter() with override self.Encoding with get() = e1 }
+      Console.SetOut stdout
+      Console.SetError stderr
+      let dummy = Instance.MakeDefaultMailbox()
+      use latch = new ManualResetEvent(false)
+      Instance.ErrorAction <- (fun _ -> latch.Set() |> ignore)
+      Instance.AddErrorHandler dummy
+      dummy.Start()
+      dummy.TryPostAndReply ((fun c -> Finish (ProcessExit, c)), 100) |> ignore
+      Assert.That(stdout.ToString(), Is.Empty)
+      Assert.That(stderr.ToString(), Is.Empty)
+
+      let go = latch.WaitOne(2000) 
+      Assert.That(go, Is.True)
+
+    finally
+      Instance.SetErrorAction()
+      Console.SetOut (fst saved)
+      Console.SetError (snd saved)
+
+  member self.ReplacementMailboxWorks() =
+    let save = Instance.mailboxOK
+    let saved = (Console.Out, Console.Error)
+    let e0 = Console.Out.Encoding
+    let e1 = Console.Error.Encoding
+    try
+      use stdout = { new StringWriter() with override self.Encoding with get() = e0 }
+      use stderr = { new StringWriter() with override self.Encoding with get() = e1 }
+      Console.SetOut stdout
+      Console.SetError stderr
+      let dummy = Instance.MakeMailbox()
+      Instance.AddErrorHandler dummy
+      dummy.Start()
+      Instance.mailboxOK <- true
+      dummy.TryPostAndReply ((fun c -> Finish (ProcessExit, c)), 100) |> ignore
+      Assert.That(stdout.ToString(), Is.Empty)
+      Assert.That(stderr.ToString(), Is.Empty)
+      Assert.That(Instance.mailboxOK, Is.True)
 
     finally
       Instance.mailboxOK <- save
