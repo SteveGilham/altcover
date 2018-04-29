@@ -541,6 +541,8 @@ type AltCoverTests() = class
         Instance.FlushCounter ProcessExit ()
         while Instance.Backlog () > 0 do
           Thread.Sleep 100
+
+        Thread.Sleep 100
         Assert.That(Instance.mailboxOK, Is.False)
 
         // Restart the mailbox
