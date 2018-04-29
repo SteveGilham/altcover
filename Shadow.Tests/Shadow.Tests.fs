@@ -628,7 +628,16 @@ type AltCoverTests() = class
 #endif
   member self.MailboxHandlesErrors() =
     let save = Instance.mailboxOK
+    let saved = (Console.Out, Console.Error)
+    let e0 = Console.Out.Encoding
+    let e1 = Console.Error.Encoding
+
     try
+      use stdout = { new StringWriter() with override self.Encoding with get() = e0 }
+      use stderr = { new StringWriter() with override self.Encoding with get() = e1 }
+      Console.SetOut stdout
+      Console.SetError stderr
+
       Instance.mailboxOK <- true
       InvalidOperationException()
       |> Instance.MailboxError
@@ -637,8 +646,14 @@ type AltCoverTests() = class
       Assert.Throws<InvalidOperationException>( fun () -> Instance.Fault ()
                                                           |> Async.RunSynchronously
                                                           ) |> ignore
+      Assert.That(stdout.ToString(), Is.Empty)
+      let result = stderr.ToString().Trim()
+      Assert.That(result, Does.StartWith "Recorder error - System.InvalidOperationException: ")
+
     finally
       Instance.mailboxOK <- save
+      Console.SetOut (fst saved)
+      Console.SetError (snd saved)
 
 #if NET2
 #else

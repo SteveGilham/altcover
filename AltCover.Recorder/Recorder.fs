@@ -198,7 +198,7 @@ module Instance =
     ErrorAction x
 
   let DisplayError x =
-    eprintfn "Recorder error - %A" x
+    eprintfn "%s - %A" ("Recorder error" |> GetResource |> Option.get) x
 
   let private IsOpenCoverRunner() =
      (CoverageFormat = ReportFormat.OpenCoverWithTracking) &&
