@@ -552,6 +552,12 @@ module Instrument =
     WriteAssembly assembly path
     state
 
+  let private VisitStart state =
+    let recorder = typeof<AltCover.Recorder.Tracer>
+    let recordingAssembly = PrepareAssembly(recorder.Assembly.Location)
+    Visitor.accumulator.Add(recordingAssembly) |> ignore
+    { state with RecordingAssembly = recordingAssembly }
+
   /// <summary>
   /// Perform visitor operations
   /// </summary>
@@ -560,8 +566,7 @@ module Instrument =
   /// <returns>Updated state</returns>
   let internal InstrumentationVisitor (state : Context) (node:Node) =
      match node with
-     | Start _ -> let recorder = typeof<AltCover.Recorder.Tracer>
-                  { state with RecordingAssembly = PrepareAssembly(recorder.Assembly.Location) }
+     | Start _ -> VisitStart state
      | Assembly (assembly, included) -> if included <> Inspect.Ignore then
                                               assembly.MainModule.AssemblyReferences.Add(state.RecordingAssembly.Name)
                                         state

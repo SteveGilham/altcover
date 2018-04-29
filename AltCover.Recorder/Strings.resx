@@ -171,4 +171,10 @@
   <data name="ResumeHandler.eo" xml:space="preserve">
     <value>Resumante...</value>
   </data>
+  <data name="Recorder error.en" xml:space="preserve">
+    <value>Recorder error</value>
+  </data>
+  <data name="Recorder error.eo" xml:space="preserve">
+    <value>Registra eraro</value>
+  </data>
 </root>

@@ -483,13 +483,24 @@ module Visitor =
     visitors |>
     List.map (invoke node)
 
+  let internal accumulator = HashSet<AssemblyDefinition>()
+
   let internal Visit (visitors : list<Fix<Node>>) (assemblies : seq<string>) =
     ZeroPoints()
     MethodNumber <- 0
-    Start assemblies
-    |> BuildSequence
-    |> Seq.fold apply visitors
-    |> ignore
+    try
+        Start assemblies
+        |> BuildSequence
+        |> Seq.map (fun node -> match node with
+                                | Assembly (a, _) -> accumulator.Add(a) |> ignore
+                                | _ -> ()
+                                node)
+        |> Seq.fold apply visitors
+        |> ignore
+    finally
+      accumulator
+      |> Seq.iter (fun a -> (a :>IDisposable).Dispose())
+      accumulator.Clear()
 
   let EncloseState (visitor : 'State -> 'T -> 'State) (current : 'State) =
     let rec stateful l = new Fix<'T> (

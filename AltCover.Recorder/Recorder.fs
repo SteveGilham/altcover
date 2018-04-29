@@ -182,8 +182,16 @@ module Instance =
                         (fun () -> Counter.AddVisit Visits moduleId hitPointId context)
 
   let mutable private flag = true
+  let Fault _ = async { InvalidOperationException() |> raise }
+  let internal MakeDefaultMailbox() =
+    new MailboxProcessor<Message>(Fault)
+
+  let mutable internal mailbox = MakeDefaultMailbox()
+  let mutable internal mailboxOK = false
+
   let rec private loop (inbox:MailboxProcessor<Message>) =
           async {
+            if Object.ReferenceEquals (inbox, mailbox) then
              // release the wait every half second
              let! opt = inbox.TryReceive(500)
              match opt with
@@ -206,15 +214,24 @@ module Instance =
                      System.Diagnostics.Debug.WriteLine ("Handled Finish " + mode.ToString())
                      channel.Reply ()
                      if mode = Pause || mode = Resume then return! loop inbox
+                     else (inbox :> IDisposable).Dispose()
           }
 
   let internal MakeMailbox () =
     new MailboxProcessor<Message>(loop)
 
-  let mutable internal mailbox = MakeMailbox ()
-
   let internal Backlog () =
     mailbox.CurrentQueueLength
+
+  let internal DefaultErrorAction = ignore
+  let mutable internal ErrorAction = DefaultErrorAction
+
+  let MailboxError x =
+    mailboxOK <- false
+    ErrorAction x
+
+  let DisplayError x =
+    eprintfn "%s - %A" ("Recorder error" |> GetResource |> Option.get) x
 
   let private IsOpenCoverRunner() =
      (CoverageFormat = ReportFormat.OpenCoverWithTracking) &&
@@ -253,11 +270,12 @@ module Instance =
     else message |> AsyncItem |> mailbox.Post
 
   let Visit moduleId hitPointId =
-    if Recording then
-      VisitSelection (fun () -> trace.IsConnected() || Backlog() > 10)
+    if Recording && mailboxOK then
+     VisitSelection (fun () -> trace.IsConnected() || Backlog() > 10)
                      (PayloadSelector IsOpenCoverRunner) moduleId hitPointId
 
   let internal FlushCounter (finish:Close) _ =
+   if mailboxOK then
       let key = finish.ToString()
       System.Diagnostics.Debug.WriteLine ("Flushing " + key)
       key
@@ -269,11 +287,21 @@ module Instance =
                                if isTerminal then 2000 else -1)
                                |> ignore
 
+  let internal AddErrorHandler (box:MailboxProcessor<'a>) =
+    box.Error.Add MailboxError
+
+  let internal SetErrorAction () =
+    ErrorAction <- DisplayError
+
   let internal RunMailbox () =
     System.Diagnostics.Debug.WriteLine ("Starting mailbox")
     flag <- true
     Recording <- true
+    (mailbox :> IDisposable).Dispose()
     mailbox <- MakeMailbox ()
+    mailboxOK <- true
+    AddErrorHandler mailbox
+    SetErrorAction ()
     mailbox.Start()
     System.Diagnostics.Debug.WriteLine ("Started mailbox")
 
