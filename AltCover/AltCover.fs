@@ -266,20 +266,23 @@ module Main =
            let fullName = info.FullName
            ImageLoadResilient(fun () ->
              let def = AssemblyDefinition.ReadAssembly(fullName)
-             let assemblyPdb = ProgramDatabase.GetPdbWithFallback def
-             if def |> Visitor.IsIncluded |> Visitor.IsInstrumented &&
-                Option.isSome assemblyPdb then
-                String.Format(CultureInfo.CurrentCulture,
-                               (CommandLine.resources.GetString "instrumenting"),
-                               fullName) |> Output.Info
+             try
+               let assemblyPdb = ProgramDatabase.GetPdbWithFallback def
+               if def |> Visitor.IsIncluded |> Visitor.IsInstrumented &&
+                  Option.isSome assemblyPdb then
+                  String.Format(CultureInfo.CurrentCulture,
+                                 (CommandLine.resources.GetString "instrumenting"),
+                                 fullName) |> Output.Info
 
-                { Path = fullName
-                  Name = def.Name.Name
-                  Refs = def.MainModule.AssemblyReferences
-                         |> Seq.map (fun r -> r.Name)
-                         |> Seq.toList} :: accumulator
-             else
-                accumulator) (fun () -> accumulator)
+                  { Path = fullName
+                    Name = def.Name.Name
+                    Refs = def.MainModule.AssemblyReferences
+                           |> Seq.map (fun r -> r.Name)
+                           |> Seq.toList} :: accumulator
+               else
+                  accumulator
+             finally
+               (def :> IDisposable).Dispose()) (fun () -> accumulator)
         ) []
 
     // sort the assemblies into order so that the depended-upon are processed first

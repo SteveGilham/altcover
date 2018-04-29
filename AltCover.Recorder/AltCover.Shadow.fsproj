@@ -7,7 +7,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>62480be3-4479-4a47-a23f-50858ecd74b3</ProjectGuid>
     <OutputType>Library</OutputType>
-    <RootNamespace>AltCover.Shadow</RootNamespace>
+    <RootNamespace>AltCover.Recorder</RootNamespace>
     <AssemblyName>AltCover.Shadow</AssemblyName>
     <TargetFrameworkVersion Condition="'$(OS)' == 'Windows_NT'">v2.0</TargetFrameworkVersion>
     <TargetFrameworkVersion Condition="'$(OS)' != 'Windows_NT'">v4.7</TargetFrameworkVersion>
@@ -16,6 +16,8 @@
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Name>AltCover.Shadow</Name>
     <ResolveNuGetPackages>false</ResolveNuGetPackages>
+    <UseStandardResourceNames>True</UseStandardResourceNames>
+    <Win32Resource>$(ProjectDir)../AltCover/Resource.res</Win32Resource>    
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>

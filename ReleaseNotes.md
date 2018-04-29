@@ -1,3 +1,9 @@
+# 3.0.454 (Caba series release 9)
+* `-o|outputFile` option in `runner` mode (parameter `OutputFile` for the `AltCover.Collect` task) to allow the default report for the current dataset to be written to a new file, rather than updating/accumulating in the file specified at instrumentation time.
+* Some refactoring and adjustements to the build processes
+* [BUGFIX] -- handle and signal exceptions in the visit recording, rather than potentially just locking up or silently failing
+* [BUGFIX] -- ensure that more of the IDisposable objects generated, primarily the ones that can lock the assemblies under instrumentation, are promptly disposed.
+
 # 3.0.444 (Caba series release 8)
 * [BUGFIX] for `-c|callContext` option -- generate valid IL where the function being tracked completes with a tail call
 * [BUGFIX] for `-c|callContext` option -- generate valid IL where the function being tracked contains a branch directly to a return instruction

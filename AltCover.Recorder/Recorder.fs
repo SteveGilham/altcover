@@ -26,12 +26,7 @@ type internal Message =
 
 module Instance =
 
-  // Can't hard-code what with .net-core and .net-core tests as well as classic .net
-  // all giving this a different namespace
-  let private resource = Assembly.GetExecutingAssembly().GetManifestResourceNames()
-                         |> Seq.map (fun s -> s.Substring(0, s.Length - 10)) // trim ".resources"
-                         |> Seq.find (fun n -> n.EndsWith("Strings", StringComparison.Ordinal))
-  let internal resources = ResourceManager(resource , Assembly.GetExecutingAssembly())
+  let internal resources = ResourceManager("AltCover.Recorder.Strings" , Assembly.GetExecutingAssembly())
 
   let GetResource s =
     [
@@ -141,7 +136,7 @@ module Instance =
       | _ -> let counts = Dictionary<string, Dictionary<int, int * Track list>> Visits
              Visits.Clear()
              WithMutex (fun own ->
-                let delta = Counter.DoFlush ignore (fun _ _ -> ()) own counts CoverageFormat ReportFile
+                let delta = Counter.DoFlush ignore (fun _ _ -> ()) own counts CoverageFormat ReportFile None
                 GetResource "Coverage statistics flushing took {0:N} seconds"
                 |> Option.iter (fun s -> Console.Out.WriteLine(s, delta.TotalSeconds))
              ))
@@ -159,33 +154,51 @@ module Instance =
       trace.OnConnected (fun () -> TraceVisit moduleId hitPointId context)
                         (fun () -> Counter.AddVisit Visits moduleId hitPointId context)
 
+  let Fault _ = async { InvalidOperationException() |> raise }
+  let internal MakeDefaultMailbox() =
+    new MailboxProcessor<Message>(Fault)
+
+  let mutable internal mailbox = MakeDefaultMailbox()
+  let mutable internal mailboxOK = false
+
   let rec private loop (inbox:MailboxProcessor<Message>) =
           async {
-             // release the wait every half second
-             let! opt = inbox.TryReceive(500)
-             match opt with
-             | None -> return! loop inbox
-             | Some msg ->
-                 match msg with
-                 | AsyncItem (SequencePoint (moduleId, hitPointId, context)) ->
-                     VisitImpl moduleId hitPointId context
-                     return! loop inbox
-                 | Item (SequencePoint (moduleId, hitPointId, context), channel)->
-                     VisitImpl moduleId hitPointId context
-                     channel.Reply ()
-                     return! loop inbox
-                 | Finish (mode, channel) ->
-                     FlushCounterImpl mode
-                     channel.Reply ()
+             if Object.ReferenceEquals (inbox, mailbox) then
+                 // release the wait every half second
+                 let! opt = inbox.TryReceive(500)
+                 match opt with
+                 | None -> return! loop inbox
+                 | Some msg ->
+                     match msg with
+                     | AsyncItem (SequencePoint (moduleId, hitPointId, context)) ->
+                         VisitImpl moduleId hitPointId context
+                         return! loop inbox
+                     | Item (SequencePoint (moduleId, hitPointId, context), channel)->
+                         VisitImpl moduleId hitPointId context
+                         channel.Reply ()
+                         return! loop inbox
+                     | Finish (mode, channel) ->
+                         FlushCounterImpl mode
+                         channel.Reply ()
+                         mailboxOK <- false
+                         (inbox :> IDisposable).Dispose()
           }
 
   let internal MakeMailbox () =
     new MailboxProcessor<Message>(loop)
 
-  let mutable internal mailbox = MakeMailbox ()
-
   let internal Backlog () =
     mailbox.CurrentQueueLength
+
+  let internal DefaultErrorAction = ignore
+  let mutable internal ErrorAction = DefaultErrorAction
+
+  let MailboxError x =
+    mailboxOK <- false
+    ErrorAction x
+
+  let DisplayError x =
+    eprintfn "%s - %A" ("Recorder error" |> GetResource |> Option.get) x
 
   let private IsOpenCoverRunner() =
      (CoverageFormat = ReportFormat.OpenCoverWithTracking) &&
@@ -224,15 +237,27 @@ module Instance =
     else message |> AsyncItem |> mailbox.Post
 
   let Visit moduleId hitPointId =
+   if mailboxOK then
      VisitSelection (fun () -> trace.IsConnected() || Backlog() > 10)
                      (PayloadSelector IsOpenCoverRunner) moduleId hitPointId
 
   let internal FlushCounter (finish:Close) _ =
+   if mailboxOK then
     mailbox.PostAndReply (fun c -> Finish (finish, c))
+
+  let internal AddErrorHandler (box:MailboxProcessor<'a>) =
+    box.Error.Add MailboxError
+
+  let internal SetErrorAction () =
+    ErrorAction <- DisplayError
 
   // unit test helpers -- avoid issues with cross CLR version calls
   let internal RunMailbox () =
+    (mailbox :> IDisposable).Dispose()
     mailbox <- MakeMailbox ()
+    mailboxOK <- true
+    AddErrorHandler mailbox
+    SetErrorAction ()
     mailbox.Start()
 
   // Register event handling
@@ -240,4 +265,4 @@ module Instance =
     AppDomain.CurrentDomain.DomainUnload.Add(FlushCounter DomainUnload)
     AppDomain.CurrentDomain.ProcessExit.Add(FlushCounter ProcessExit)
     WithMutex (fun _ -> trace <- trace.OnStart ())
-    mailbox.Start()
+    RunMailbox ()
