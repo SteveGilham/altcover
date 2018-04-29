@@ -623,6 +623,21 @@ type AltCoverTests() = class
       | :? IOException -> ()
 
 #if NET2
+  [<Test>]
+  member self.MailboxHandlesErrors() =
+    let save = Instance.mailboxOK
+    try
+      Instance.mailboxOK <- true
+      InvalidOperationException()
+      |> Instance.MailboxError 
+      Assert.That(Instance.mailboxOK, Is.False)
+
+      Assert.Throws<InvalidOperationException>( fun () -> Instance.Fault ()
+                                                          |> Async.RunSynchronously
+                                                          ) |> ignore
+    finally
+      Instance.mailboxOK <- save
+        
 #else
   // Dead simple sequential operation
   // run only once in Framework mode to avoid contention

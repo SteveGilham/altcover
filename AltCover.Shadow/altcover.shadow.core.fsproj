@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <AssemblyName>AltCover.Shadow</AssemblyName>
+    <RootNamespace>AltCover.Recorder</RootNamespace>
    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
 
