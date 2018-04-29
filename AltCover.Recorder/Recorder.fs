@@ -29,12 +29,7 @@ type internal Message =
 
 module Instance =
 
-  // Can't hard-code what with .net-core and .net-core tests as well as classic .net
-  // all giving this a different namespace
-  let private resource = Assembly.GetExecutingAssembly().GetManifestResourceNames()
-                         |> Seq.map (fun s -> s.Substring(0, s.Length - 10)) // trim ".resources"
-                         |> Seq.find (fun n -> n.EndsWith("Strings", StringComparison.Ordinal))
-  let internal resources = ResourceManager(resource , Assembly.GetExecutingAssembly())
+  let internal resources = ResourceManager("AltCover.Recorder.Strings" , Assembly.GetExecutingAssembly())
 
   let GetResource s =
     [
