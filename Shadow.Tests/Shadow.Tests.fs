@@ -48,7 +48,7 @@ type AltCoverTests() = class
                          |> Seq.find (fun n -> n.EndsWith("SimpleCoverage.xml", StringComparison.Ordinal))
 
   member private self.UpdateReport a b =
-    Counter.UpdateReport ignore (fun _ _ -> ()) true a ReportFormat.NCover b
+    Counter.UpdateReport ignore (fun _ _ -> ()) true a ReportFormat.NCover b b
     |> ignore
 
    member self.resource2 = Assembly.GetExecutingAssembly().GetManifestResourceNames()
@@ -104,6 +104,7 @@ type AltCoverTests() = class
     self.GetMyMethodName "=>"
     lock Adapter.Lock (fun () ->
     let save = Instance.trace
+    Instance.RunMailbox()
     try
       Adapter.VisitsClear()
       Instance.trace <- { Tracer=null; Stream=null; Formatter=null;
@@ -473,7 +474,7 @@ type AltCoverTests() = class
 
     let item = Dictionary<string, Dictionary<int, int * Track list>>()
     item.Add("7C-CD-66-29-A3-6C-6D-5F-A7-65-71-0E-22-7D-B2-61-B5-1F-65-9A", payload)
-    Counter.UpdateReport ignore (fun _ _ -> ()) true item ReportFormat.OpenCover worker |> ignore
+    Counter.UpdateReport ignore (fun _ _ -> ()) true item ReportFormat.OpenCover worker worker |> ignore
     worker.Position <- 0L
     let after = XmlDocument()
     after.Load worker
@@ -541,6 +542,9 @@ type AltCoverTests() = class
         while Instance.Backlog () > 0 do
           Thread.Sleep 100
 
+        Thread.Sleep 100
+        Assert.That(Instance.mailboxOK, Is.False)
+
         // Restart the mailbox
         Instance.RunMailbox ()
 
@@ -570,6 +574,145 @@ type AltCoverTests() = class
     | :? AbandonedMutexException -> Instance.mutex.ReleaseMutex())
 
     self.GetMyMethodName "<="
+
+#if NET4
+#else
+  [<Test>]
+#endif
+  member self.FlushLeavesExpectedTracesWhenDiverted() =
+    let saved = Console.Out
+    let here = Directory.GetCurrentDirectory()
+    let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
+    let unique = Path.Combine(where, Guid.NewGuid().ToString())
+    let reportFile = Path.Combine(unique, "FlushLeavesExpectedTraces.xml")
+    let outputFile = Path.Combine(unique, "FlushLeavesExpectedTracesWhenDiverted.xml")
+    try
+      let visits = new Dictionary<string, Dictionary<int, int * Track list>>()
+      use stdout = new StringWriter()
+      Console.SetOut stdout
+      Directory.CreateDirectory(unique) |> ignore
+      Directory.SetCurrentDirectory(unique)
+
+      Counter.measureTime <- DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
+      use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(self.resource)
+      let size = int stream.Length
+      let buffer = Array.create size 0uy
+      Assert.That (stream.Read(buffer, 0, size), Is.EqualTo size)
+      do
+        use worker = new FileStream(reportFile, FileMode.CreateNew)
+        worker.Write(buffer, 0, size)
+        ()
+
+      let payload = Dictionary<int,int * Track list>()
+      [0..9 ]
+      |> Seq.iter(fun i -> payload.[i] <- (i+1, []))
+      visits.["f6e3edb3-fb20-44b3-817d-f69d1a22fc2f"] <- payload
+
+      Counter.DoFlush ignore (fun _ _ -> ()) true visits AltCover.Recorder.ReportFormat.NCover reportFile (Some outputFile) |> ignore
+
+      use worker' = new FileStream(outputFile, FileMode.Open)
+      let after = XmlDocument()
+      after.Load worker'
+      Assert.That( after.SelectNodes("//seqpnt")
+                   |> Seq.cast<XmlElement>
+                   |> Seq.map (fun x -> x.GetAttribute("visitcount")),
+                   Is.EquivalentTo [ "11"; "10"; "9"; "8"; "7"; "6"; "4"; "3"; "2"; "1"])
+    finally
+      if File.Exists reportFile then File.Delete reportFile
+      Console.SetOut saved
+      Directory.SetCurrentDirectory(here)
+      try
+        Directory.Delete(unique)
+      with
+      | :? IOException -> ()
+
+#if NET4
+#else
+  [<Test>]
+#endif
+  member self.MailboxHandlesErrors() =
+    let save = Instance.mailboxOK
+    let saved = (Console.Out, Console.Error)
+    let e0 = Console.Out.Encoding
+    let e1 = Console.Error.Encoding
+    try
+      use stdout = { new StringWriter() with override self.Encoding with get() = e0 }
+      use stderr = { new StringWriter() with override self.Encoding with get() = e1 }
+      Console.SetOut stdout
+      Console.SetError stderr
+
+      Instance.mailboxOK <- true
+      InvalidOperationException()
+      |> Instance.MailboxError
+      Assert.That(Instance.mailboxOK, Is.False)
+
+      Assert.Throws<InvalidOperationException>( fun () -> Instance.Fault ()
+                                                          |> Async.RunSynchronously
+                                                          ) |> ignore
+      Assert.That(stdout.ToString(), Is.Empty)
+      let result = stderr.ToString().Trim()
+      Assert.That(result, Does.StartWith "Recorder error - System.InvalidOperationException: ")
+
+      Instance.DefaultErrorAction result
+
+    finally
+      Instance.mailboxOK <- save
+      Console.SetOut (fst saved)
+      Console.SetError (snd saved)
+
+#if NET4
+#else
+  [<Test>]
+#endif
+  member self.DefaultMailboxWorks() =
+    let saved = (Console.Out, Console.Error)
+    let e0 = Console.Out.Encoding
+    let e1 = Console.Error.Encoding
+    try
+      use stdout = { new StringWriter() with override self.Encoding with get() = e0 }
+      use stderr = { new StringWriter() with override self.Encoding with get() = e1 }
+      Console.SetOut stdout
+      Console.SetError stderr
+      let dummy = Instance.MakeDefaultMailbox()
+      use latch = new ManualResetEvent(false)
+      Instance.ErrorAction <- (fun _ -> latch.Set() |> ignore)
+      Instance.AddErrorHandler dummy
+      dummy.Start()
+      dummy.TryPostAndReply ((fun c -> Finish (ProcessExit, c)), 100) |> ignore
+      Assert.That(stdout.ToString(), Is.Empty)
+      Assert.That(stderr.ToString(), Is.Empty)
+
+      let go = latch.WaitOne(2000) 
+      Assert.That(go, Is.True)
+
+    finally
+      Instance.SetErrorAction()
+      Console.SetOut (fst saved)
+      Console.SetError (snd saved)
+
+  member self.ReplacementMailboxWorks() =
+    let save = Instance.mailboxOK
+    let saved = (Console.Out, Console.Error)
+    let e0 = Console.Out.Encoding
+    let e1 = Console.Error.Encoding
+    try
+      use stdout = { new StringWriter() with override self.Encoding with get() = e0 }
+      use stderr = { new StringWriter() with override self.Encoding with get() = e1 }
+      Console.SetOut stdout
+      Console.SetError stderr
+      let dummy = Instance.MakeMailbox()
+      Instance.AddErrorHandler dummy
+      dummy.Start()
+      Instance.mailboxOK <- true
+      dummy.TryPostAndReply ((fun c -> Finish (ProcessExit, c)), 100) |> ignore
+      Assert.That(stdout.ToString(), Is.Empty)
+      Assert.That(stderr.ToString(), Is.Empty)
+      Assert.That(Instance.mailboxOK, Is.True)
+
+    finally
+      Instance.mailboxOK <- save
+      Console.SetOut (fst saved)
+      Console.SetError (snd saved)
 
 #if NET2
 #else

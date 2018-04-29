@@ -198,11 +198,13 @@ Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standal
                                 "_Binaries/AltCover/Debug+AnyCPU/AltCover.exe"
                                 "_Binaries/AltCover.Shadow/Debug+AnyCPU/AltCover.Shadow.dll"
                                ])
+
+    let rules = if Environment.isWindows then "./Build/rules.xml" else "./Build/rules-mono.xml"
     Actions.Run (fun info ->
         { info with
                 FileName = (findToolInSubPath "gendarme.exe" "./packages")
                 WorkingDirectory = "."
-                Arguments = "--severity all --confidence all --config ./Build/rules.xml --console --html ./_Reports/gendarme.html " + subjects})
+                Arguments = "--severity all --confidence all --config " + rules + " --console --html ./_Reports/gendarme.html " + subjects})
                 "Gendarme Errors were detected"
 )
 
@@ -703,7 +705,7 @@ Target "UnitTestWithAltCoverCoreRunner" (fun _ ->
 
     let altReport = reports @@ "UnitTestWithAltCoverCoreRunner.xml"
     printfn "Instrument the code"
-    Shell.CleanDir output
+    Shell.cleanDir output
     Actions.RunDotnet (fun o -> {dotnetOptions o with WorkingDirectory = testDirectory}) ""
                       (altcover +
                              " " + AltCoverFilter + " -x \"" + altReport + "\" /o \"" + output + "\"")
@@ -724,7 +726,7 @@ Target "UnitTestWithAltCoverCoreRunner" (fun _ ->
     let shadowReport = reports @@ "ShadowTestWithAltCoverCoreRunner.xml"
     let shadowOut = Path.getFullName "Shadow.Tests/_Binaries/AltCover.Shadow.Tests/Debug+AnyCPU/netcoreapp2.0"
 
-    Shell.CleanDir shadowOut
+    Shell.cleanDir shadowOut
     Actions.RunDotnet (fun o -> {dotnetOptions o with WorkingDirectory = shadowDir}) ""
                       ( altcover +
                              " " + AltCoverFilter + " -x \"" + shadowReport + "\" /o \"" + shadowOut + "\"")
@@ -742,7 +744,7 @@ Target "UnitTestWithAltCoverCoreRunner" (fun _ ->
     let xDir = "_Binaries/AltCover.XTests/Debug+AnyCPU/netcoreapp2.0"
     let xReport = reports @@ "XTestWithAltCoverCore.xml"
     let xOut = Path.getFullName "XTests/_Binaries/AltCover.XTests/Debug+AnyCPU/netcoreapp2.0"
-    Shell.CleanDir xOut
+    Shell.cleanDir xOut
 
     Actions.RunDotnet (fun o -> {dotnetOptions o with WorkingDirectory = xDir}) ""
                       ( altcover +
@@ -800,7 +802,7 @@ Target "FSharpTypesDotNet" ( fun _ ->
     let sampleRoot = Path.getFullName "Sample2/_Binaries/Sample2/Debug+AnyCPU/netcoreapp2.0"
 
     // Test the --inplace operation
-    Shell.CleanDir sampleRoot
+    Shell.cleanDir sampleRoot
     Actions.RunDotnet (fun o -> {dotnetOptions o with WorkingDirectory = Path.getFullName "Sample2"}) "test"
                             ("--configuration Debug sample2.core.fsproj")
                              "sample initial test returned with a non-zero exit code"
@@ -827,7 +829,7 @@ Target "FSharpTests" ( fun _ ->
     let sampleRoot = Path.getFullName "Sample7/_Binaries/Sample7/Debug+AnyCPU/netcoreapp2.0"
 
     // Test the --inplace operation
-    Shell.CleanDir sampleRoot
+    Shell.cleanDir sampleRoot
     Actions.RunDotnet (fun o -> {dotnetOptions o with WorkingDirectory = Path.getFullName "Sample7"}) "test"
                             ("--configuration Debug sample7.core.fsproj")
                              "sample initial test returned with a non-zero exit code"
@@ -877,7 +879,7 @@ Target "FSharpTypesDotNetCollecter" ( fun _ ->
     let sampleRoot = Path.getFullName "Sample2/_Binaries/Sample2/Debug+AnyCPU/netcoreapp2.0"
 
     // Test the --inplace operation
-    Shell.CleanDir sampleRoot
+    Shell.cleanDir sampleRoot
     Actions.RunDotnet (fun o -> {dotnetOptions o with WorkingDirectory = Path.getFullName "Sample2"}) "test"
                             ("--configuration Debug sample2.core.fsproj")
                              "sample initial test returned with a non-zero exit code"
@@ -1212,7 +1214,7 @@ Target "ReleaseDotNetWithDotNet" (fun _ ->
 Target "ReleaseXUnitDotNetDemo" (fun _ ->
   try
     Directory.ensure "./_Reports"
-    "./Demo/xunit-dotnet/bin" |> Path.getFullName |> Shell.CleanDir
+    "./Demo/xunit-dotnet/bin" |> Path.getFullName |> Shell.cleanDir
 
     "./Demo/xunit-dotnet/xunit-dotnet.csproj"
     |> DotNet.build
@@ -1252,7 +1254,7 @@ Target "ReleaseXUnitDotNetDemo" (fun _ ->
 Target "ReleaseXUnitDotNetRunnerDemo" (fun _ ->
   try
     Directory.ensure "./_Reports"
-    "./Demo/xunit-dotnet/bin" |> Path.getFullName |> Shell.CleanDir
+    "./Demo/xunit-dotnet/bin" |> Path.getFullName |> Shell.cleanDir
 
     "./Demo/xunit-dotnet/xunit-dotnet.csproj"
     |> DotNet.build
@@ -1302,7 +1304,7 @@ Target "ReleaseFSharpTypesDotNetRunner" ( fun _ ->
     let o = Path.getFullName "Sample2/_Binaries/Sample2/Debug+AnyCPU/netcoreapp2.0"
     let i = Path.getFullName "_Binaries/Sample2/Debug+AnyCPU/netcoreapp2.0"
 
-    Shell.CleanDir o
+    Shell.cleanDir o
 
     // Instrument the code
     Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = unpack}) ""
@@ -1334,7 +1336,7 @@ Target "ReleaseFSharpTypesX86DotNetRunner" ( fun _ ->
     let o = Path.getFullName "Sample2/_Binaries/Sample2/Debug+x86/netcoreapp2.0"
     let i = Path.getFullName "_Binaries/Sample2/Debug+x86/netcoreapp2.0"
 
-    Shell.CleanDir o
+    Shell.cleanDir o
     try
       try
         Environment.SetEnvironmentVariable("platform", "x86")
@@ -1382,7 +1384,7 @@ Target "ReleaseXUnitFSharpTypesDotNet" ( fun _ ->
     let o = Path.getFullName "Sample4/_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.0"
     let i = Path.getFullName "_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.0"
 
-    Shell.CleanDir o
+    Shell.cleanDir o
 
     // Instrument the code
     Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = unpack}) ""
@@ -1405,7 +1407,7 @@ Target "ReleaseXUnitFSharpTypesDotNetRunner" ( fun _ ->
     let o = Path.getFullName "Sample4/_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.0"
     let i = Path.getFullName "_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.0"
 
-    Shell.CleanDir o
+    Shell.cleanDir o
 
     // Instrument the code
     Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = unpack} )""
@@ -1435,7 +1437,7 @@ Target "ReleaseXUnitFSharpTypesDotNetFullRunner" ( fun _ ->
     let o = Path.getFullName "Sample4/_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.0"
     let i = Path.getFullName "_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.0"
 
-    Shell.CleanDir o
+    Shell.cleanDir o
 
     // Instrument the code
     Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = unpack} )""
@@ -1520,7 +1522,7 @@ Target "MSBuildTest" ( fun _ ->
     let sample = Path.getFullName "Sample4"
     let x = Path.getFullName "./_Reports/MSBuildTest.xml"
     // Run
-    Shell.CleanDir (sample @@ "_Binaries")
+    Shell.cleanDir (sample @@ "_Binaries")
     Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = sample}) "msbuild"
                           (build @@ "msbuildtest.proj")
                           "MSBuildTest"

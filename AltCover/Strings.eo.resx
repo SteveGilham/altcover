@@ -318,4 +318,7 @@ Detaloj skribitaj al {0}</value>
   <data name="threshold" xml:space="preserve">
     <value>Kovra procento atingita estas {0}% sub la sojlo de {1}%.</value>
   </data>
+  <data name="o|outputFile=" xml:space="preserve">
+    <value>Laŭvola: skribu la registradan kovradon al ĉi tiu dosiero anstataŭ anstataŭi la originalan raportan dosieron.</value>
+  </data>
 </root>

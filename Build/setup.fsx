@@ -64,6 +64,7 @@ nuget Fake.DotNet.Testing.NUnit prerelease
 nuget Fake.DotNet.Testing.OpenCover prerelease
 nuget Fake.DotNet.Testing.XUnit2 prerelease
 nuget Fake.IO.FileSystem prerelease
+nuget Fake.Testing.ReportGenerator prerelease
 nuget coveralls.io >= 1.4.2
 nuget FSharpLint.Core >= 0.9.0
 nuget Markdown >= 2.2.1
