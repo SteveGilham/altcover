@@ -180,6 +180,8 @@ module Instance =
                      | Finish (mode, channel) ->
                          FlushCounterImpl mode
                          channel.Reply ()
+                         mailboxOK <- false
+                         (inbox :> IDisposable).Dispose()
           }
 
   let internal MakeMailbox () =

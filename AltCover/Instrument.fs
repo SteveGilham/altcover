@@ -561,7 +561,9 @@ module Instrument =
   let internal InstrumentationVisitor (state : Context) (node:Node) =
      match node with
      | Start _ -> let recorder = typeof<AltCover.Recorder.Tracer>
-                  { state with RecordingAssembly = PrepareAssembly(recorder.Assembly.Location) }
+                  let recordingAssembly = PrepareAssembly(recorder.Assembly.Location)
+                  Visitor.accumulator.Add(recordingAssembly) |> ignore
+                  { state with RecordingAssembly = recordingAssembly }
      | Assembly (assembly, included) -> if included <> Inspect.Ignore then
                                               assembly.MainModule.AssemblyReferences.Add(state.RecordingAssembly.Name)
                                         state
