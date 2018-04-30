@@ -270,7 +270,11 @@ module Instrument =
     let here = Directory.GetCurrentDirectory()
     try
         Directory.SetCurrentDirectory(Path.GetDirectoryName(path))
-        assembly.Write(path, pkey)
+        let write (a:AssemblyDefinition) p pk  = 
+          use sink = File.Open (p, FileMode.Create, FileAccess.ReadWrite)
+          a.Write(sink, pk)
+
+        write assembly path pkey
     finally
         Directory.SetCurrentDirectory(here)
 

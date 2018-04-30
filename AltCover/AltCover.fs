@@ -265,24 +265,22 @@ module Main =
       |> Seq.fold (fun (accumulator : AssemblyInfo list) info ->
            let fullName = info.FullName
            ImageLoadResilient(fun () ->
-             let def = AssemblyDefinition.ReadAssembly(fullName)
-             try
-               let assemblyPdb = ProgramDatabase.GetPdbWithFallback def
-               if def |> Visitor.IsIncluded |> Visitor.IsInstrumented &&
-                  Option.isSome assemblyPdb then
-                  String.Format(CultureInfo.CurrentCulture,
-                                 (CommandLine.resources.GetString "instrumenting"),
-                                 fullName) |> Output.Info
+             use stream = File.OpenRead(fullName)
+             use def = AssemblyDefinition.ReadAssembly(stream)
+             let assemblyPdb = ProgramDatabase.GetPdbWithFallback def
+             if def |> Visitor.IsIncluded |> Visitor.IsInstrumented &&
+                Option.isSome assemblyPdb then
+                String.Format(CultureInfo.CurrentCulture,
+                               (CommandLine.resources.GetString "instrumenting"),
+                               fullName) |> Output.Info
 
-                  { Path = fullName
-                    Name = def.Name.Name
-                    Refs = def.MainModule.AssemblyReferences
-                           |> Seq.map (fun r -> r.Name)
-                           |> Seq.toList} :: accumulator
+                { Path = fullName
+                  Name = def.Name.Name
+                  Refs = def.MainModule.AssemblyReferences
+                         |> Seq.map (fun r -> r.Name)
+                         |> Seq.toList} :: accumulator
                else
-                  accumulator
-             finally
-               (def :> IDisposable).Dispose()) (fun () -> accumulator)
+                  accumulator) (fun () -> accumulator)
         ) []
 
     // sort the assemblies into order so that the depended-upon are processed first
