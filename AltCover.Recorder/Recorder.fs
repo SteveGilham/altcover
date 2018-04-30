@@ -214,7 +214,9 @@ module Instance =
                      System.Diagnostics.Debug.WriteLine ("Handled Finish " + mode.ToString())
                      channel.Reply ()
                      if mode = Pause || mode = Resume then return! loop inbox
-                     else (inbox :> IDisposable).Dispose()
+                     else 
+                         mailboxOK <- false
+                         (inbox :> IDisposable).Dispose()
           }
 
   let internal MakeMailbox () =
