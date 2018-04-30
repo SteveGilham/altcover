@@ -137,6 +137,9 @@ module Instance =
   let internal Watcher = new FileSystemWatcher()
   let mutable internal Recording = true
 
+  /// <summary>
+  /// This method flushes hit count buffers.
+  /// </summary>
   let internal FlushAll () =
     trace.OnConnected (fun () -> trace.OnFinish Visits)
       (fun () ->
@@ -150,24 +153,20 @@ module Instance =
                 |> Option.iter (fun s -> Console.Out.WriteLine(s, delta.TotalSeconds))
              ))
 
-  /// <summary>
-  /// This method flushes hit count buffers.
-  /// </summary>
-  let internal FlushCounterImpl action mode =
-    (mode.ToString() + "Handler")
+  let FlushPause () =
+    ("PauseHandler")
     |> GetResource
     |> Option.iter Console.Out.WriteLine
-    match mode with
-    | Resume ->
-      Visits.Clear()
-      InitialiseTrace ()
-    | Pause -> action()
-               InitialiseTrace ()
-    | _ -> action()
+    FlushAll ()
+    InitialiseTrace()
 
-  let internal FlushCounterDefault mode =
-     FlushCounterImpl FlushAll mode
-
+  let FlushResume () =
+    ("ResumeHandler")
+    |> GetResource
+    |> Option.iter Console.Out.WriteLine
+    Visits.Clear()
+    InitialiseTrace ()
+    
   let internal TraceVisit moduleId hitPointId context =
      trace.OnVisit Visits moduleId hitPointId context
 
@@ -205,11 +204,11 @@ module Instance =
                 channel.Reply ()
                 return! loop inbox
             | Finish (Pause, channel) ->
-                FlushCounterDefault Pause
+                FlushPause()
                 channel.Reply ()
                 return! loop inbox
             | Finish (Resume, channel) ->
-                FlushCounterDefault Resume
+                FlushResume ()
                 channel.Reply ()
                 return! loop inbox
             | Finish (_, channel) ->
@@ -297,11 +296,17 @@ module Instance =
     mailbox.Start()
 
   // Register event handling
+  let DoPause e =
+    FlushCounter Pause e
+
+  let DoResume =
+    FlushCounter Resume
+
   let internal StartWatcher() =
      Watcher.Path <- Path.GetDirectoryName <| SignalFile()
      Watcher.Filter <- Path.GetFileName <| SignalFile()
-     Watcher.Created.Add (FlushCounter Resume)
-     Watcher.Deleted.Add (FlushCounter Pause)
+     Watcher.Created.Add DoResume
+     Watcher.Deleted.Add DoPause
      Watcher.EnableRaisingEvents <- Watcher.Path |> String.IsNullOrEmpty |> not
 
   do

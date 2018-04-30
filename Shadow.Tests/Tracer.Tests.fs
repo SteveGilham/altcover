@@ -176,7 +176,7 @@ type AltCoverCoreTests() = class
         let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
         let (a, b, _) = expected |> Seq.head
         formatter.Serialize(Instance.trace.Stream, (a,b))
-        Instance.FlushCounterDefault ProcessExit
+        Instance.FlushAll ()
       finally
         Instance.trace.Close()
         System.Threading.Thread.Sleep 100
