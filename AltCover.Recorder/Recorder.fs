@@ -181,7 +181,6 @@ module Instance =
       trace.OnConnected (fun () -> TraceVisit moduleId hitPointId context)
                         (fun () -> Counter.AddVisit Visits moduleId hitPointId context)
 
-  let mutable private flag = true
   let Fault _ = async { InvalidOperationException() |> raise }
   let internal MakeDefaultMailbox() =
     new MailboxProcessor<Message>(Fault)
@@ -197,10 +196,6 @@ module Instance =
         match opt with
         | None -> return! loop inbox
         | Some msg ->
-            if flag then
-              // this is voodoo
-              // System.Diagnostics.Debug.WriteLine ("Handling message " + msg.ToString())
-              flag <- false
             match msg with
             | AsyncItem (SequencePoint (moduleId, hitPointId, context)) ->
                 VisitImpl moduleId hitPointId context
@@ -209,15 +204,19 @@ module Instance =
                 VisitImpl moduleId hitPointId context
                 channel.Reply ()
                 return! loop inbox
-            | Finish (mode, channel) ->
-                System.Diagnostics.Debug.WriteLine ("Handling Finish " + mode.ToString())
-                FlushCounterDefault mode
-                System.Diagnostics.Debug.WriteLine ("Handled Finish " + mode.ToString())
+            | Finish (Pause, channel) ->
+                FlushCounterDefault Pause
                 channel.Reply ()
-                if mode = Pause || mode = Resume then return! loop inbox
-                else
-                    mailboxOK <- false
-                    (inbox :> IDisposable).Dispose()
+                return! loop inbox
+            | Finish (Resume, channel) ->
+                FlushCounterDefault Resume
+                channel.Reply ()
+                return! loop inbox
+            | Finish (_, channel) ->
+                FlushAll ()
+                channel.Reply ()
+                mailboxOK <- false
+                (inbox :> IDisposable).Dispose()
         }
 
   let internal MakeMailbox () =
@@ -279,16 +278,8 @@ module Instance =
 
   let internal FlushCounter (finish:Close) _ =
    if mailboxOK then
-      let key = finish.ToString()
-      System.Diagnostics.Debug.WriteLine ("Flushing " + key)
-      key
-      |> GetResource
-      |> Option.iter Console.Out.WriteLine
-      Recording <- finish = Resume
-      let isTerminal = (finish = DomainUnload || finish = ProcessExit)
-      mailbox.TryPostAndReply ((fun c -> Finish (finish, c)),
-                               if isTerminal then 2000 else -1)
-                               |> ignore
+       Recording <- finish = Resume
+       mailbox.TryPostAndReply ((fun c -> Finish (finish, c)), 2000) |> ignore
 
   let internal AddErrorHandler (box:MailboxProcessor<'a>) =
     box.Error.Add MailboxError
@@ -297,8 +288,6 @@ module Instance =
     ErrorAction <- DisplayError
 
   let internal RunMailbox () =
-    System.Diagnostics.Debug.WriteLine ("Starting mailbox")
-    flag <- true
     Recording <- true
     (mailbox :> IDisposable).Dispose()
     mailbox <- MakeMailbox ()
@@ -306,7 +295,6 @@ module Instance =
     AddErrorHandler mailbox
     SetErrorAction ()
     mailbox.Start()
-    System.Diagnostics.Debug.WriteLine ("Started mailbox")
 
   // Register event handling
   let internal StartWatcher() =

@@ -1879,7 +1879,7 @@ activateFinal "ResetConsoleColours"
 
 "Compilation"
 ==> "RecordResumeTest"
-=?> ("OperationalTest", Environment.isWindows) // Something adrift with mono
+==> "OperationalTest"
 
 //"Compilation"
 //==> "RecordResumeTestUnderMono"
