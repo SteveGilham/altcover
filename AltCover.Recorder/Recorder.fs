@@ -190,34 +190,35 @@ module Instance =
   let mutable internal mailboxOK = false
 
   let rec private loop (inbox:MailboxProcessor<Message>) =
-          async {
-            if Object.ReferenceEquals (inbox, mailbox) then
-             // release the wait every half second
-             let! opt = inbox.TryReceive(500)
-             match opt with
-             | None -> return! loop inbox
-             | Some msg ->
-                 if flag then
-                   System.Diagnostics.Debug.WriteLine ("Handling message " + msg.ToString())
-                   flag <- false
-                 match msg with
-                 | AsyncItem (SequencePoint (moduleId, hitPointId, context)) ->
-                     VisitImpl moduleId hitPointId context
-                     return! loop inbox
-                 | Item (SequencePoint (moduleId, hitPointId, context), channel) ->
-                     VisitImpl moduleId hitPointId context
-                     channel.Reply ()
-                     return! loop inbox
-                 | Finish (mode, channel) ->
-                     System.Diagnostics.Debug.WriteLine ("Handling Finish " + mode.ToString())
-                     FlushCounterDefault mode
-                     System.Diagnostics.Debug.WriteLine ("Handled Finish " + mode.ToString())
-                     channel.Reply ()
-                     if mode = Pause || mode = Resume then return! loop inbox
-                     else 
-                         mailboxOK <- false
-                         (inbox :> IDisposable).Dispose()
-          }
+    async {
+      if Object.ReferenceEquals (inbox, mailbox) then
+        // release the wait every half second
+        let! opt = inbox.TryReceive(500)
+        match opt with
+        | None -> return! loop inbox
+        | Some msg ->
+            if flag then
+              // this is voodoo
+              // System.Diagnostics.Debug.WriteLine ("Handling message " + msg.ToString())
+              flag <- false
+            match msg with
+            | AsyncItem (SequencePoint (moduleId, hitPointId, context)) ->
+                VisitImpl moduleId hitPointId context
+                return! loop inbox
+            | Item (SequencePoint (moduleId, hitPointId, context), channel) ->
+                VisitImpl moduleId hitPointId context
+                channel.Reply ()
+                return! loop inbox
+            | Finish (mode, channel) ->
+                System.Diagnostics.Debug.WriteLine ("Handling Finish " + mode.ToString())
+                FlushCounterDefault mode
+                System.Diagnostics.Debug.WriteLine ("Handled Finish " + mode.ToString())
+                channel.Reply ()
+                if mode = Pause || mode = Resume then return! loop inbox
+                else
+                    mailboxOK <- false
+                    (inbox :> IDisposable).Dispose()
+        }
 
   let internal MakeMailbox () =
     new MailboxProcessor<Message>(loop)
