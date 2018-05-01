@@ -270,7 +270,7 @@ module Instrument =
     let here = Directory.GetCurrentDirectory()
     try
         Directory.SetCurrentDirectory(Path.GetDirectoryName(path))
-        let write (a:AssemblyDefinition) p pk  = 
+        let write (a:AssemblyDefinition) p pk  =
           use sink = File.Open (p, FileMode.Create, FileAccess.ReadWrite)
           a.Write(sink, pk)
 
@@ -597,10 +597,10 @@ module Instrument =
     with
     | _ -> match node with
            | Finish -> ()
-           | _ -> if state.RecordingAssembly |> isNull |> not 
+           | _ -> if state.RecordingAssembly |> isNull |> not
                   then (state.RecordingAssembly :>IDisposable).Dispose()
            reraise()
-           
+
   let internal InstrumentationVisitor (state : Context) (node:Node) =
     InstrumentationVisitorWrapper InstrumentationVisitorCore state node
 

@@ -4,10 +4,10 @@ open System.Collections.Generic
 open AltCover.Recorder
 
 module Adapter =
-  let DoPause () = 
+  let DoPause () =
     Instance.DoPause null
 
-  let DoResume () = 
+  let DoResume () =
     Instance.DoResume null
 
   let VisitsClear () = Instance.Visits.Clear()

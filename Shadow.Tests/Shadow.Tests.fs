@@ -819,7 +819,7 @@ type AltCoverTests() = class
       Assert.That(stdout.ToString(), Is.Empty)
       Assert.That(stderr.ToString(), Is.Empty)
 
-      let go = latch.WaitOne(2000) 
+      let go = latch.WaitOne(2000)
       Assert.That(go, Is.True)
 
     finally

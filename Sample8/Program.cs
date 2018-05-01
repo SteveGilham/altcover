@@ -2,12 +2,12 @@
 
 namespace Sample8
 {
-    class Program
+    internal class Program
     {
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             Console.WriteLine("Starting");
-            using(var stream = System.IO.File.Create(args[0]))
+            using (var stream = System.IO.File.Create(args[0]))
             {
                 Console.WriteLine("Creating file");
             }

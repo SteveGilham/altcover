@@ -166,7 +166,7 @@ module Instance =
     |> Option.iter Console.Out.WriteLine
     Visits.Clear()
     InitialiseTrace ()
-    
+
   let internal TraceVisit moduleId hitPointId context =
      trace.OnVisit Visits moduleId hitPointId context
 
