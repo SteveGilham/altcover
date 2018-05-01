@@ -483,7 +483,7 @@ module Visitor =
     visitors |>
     List.map (invoke node)
 
-  let internal accumulator = HashSet<AssemblyDefinition>()
+  let private accumulator = HashSet<AssemblyDefinition>()
 
   let internal Visit (visitors : list<Fix<Node>>) (assemblies : seq<string>) =
     ZeroPoints()

@@ -2854,6 +2854,69 @@ type AltCoverTests() = class
     Assert.That (result.Replace("\r\n","\n"),
                  Is.EqualTo(expected.Replace("\r\n","\n")))
 
+  [<Test>]
+  member self.NonFinishShouldDisposeRecordingAssembly () =
+    let where = Assembly.GetExecutingAssembly().Location
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample3.dll")
+    let prepared = AssemblyDefinition.ReadAssembly path
+    ProgramDatabase.ReadSymbols prepared
+    let state = { Instrument.Context.Build [] with RecordingAssembly = prepared }
+
+    Assert.Throws<InvalidOperationException>(fun () ->
+                                               Instrument.InstrumentationVisitorWrapper
+                                                (fun _ _ -> InvalidOperationException("Bang") |> raise)
+                                                state AfterType
+                                                |> ignore) |> ignore
+    let output = Path.GetTempFileName()
+    let outputdll = output + ".dll"
+    try
+      Assert.Throws<ArgumentException>(fun () -> Instrument.WriteAssembly prepared outputdll  ) |> ignore
+    finally
+        Directory.EnumerateFiles(Path.GetDirectoryName output,
+                                 (Path.GetFileNameWithoutExtension output) + ".*")
+        |> Seq.iter (fun f -> try File.Delete f
+                              with // occasionally the dll file is locked by another process
+                              | :? System.UnauthorizedAccessException
+                              | :? IOException -> ())
+
+  [<Test>]
+  member self.NonFinishShouldNotDisposeNullRecordingAssembly () =
+    let where = Assembly.GetExecutingAssembly().Location
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample3.dll")
+    let state = { Instrument.Context.Build [] with RecordingAssembly = null }
+
+    // Would be NullreferenceException if we tried it
+    Assert.Throws<InvalidOperationException>(fun () ->
+                                               Instrument.InstrumentationVisitorWrapper
+                                                (fun _ _ -> InvalidOperationException("Bang") |> raise)
+                                                state AfterType
+                                                |> ignore) |> ignore
+
+  [<Test>]
+  member self.FinishShouldLeaveRecordingAssembly () =
+    let where = Assembly.GetExecutingAssembly().Location
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample3.dll")
+    let state = { Instrument.Context.Build [] with RecordingAssembly = null }
+    let prepared = AssemblyDefinition.ReadAssembly path
+    ProgramDatabase.ReadSymbols prepared
+
+    Assert.Throws<InvalidOperationException>(fun () ->
+                                               Instrument.InstrumentationVisitorWrapper
+                                                (fun _ _ -> InvalidOperationException("Bang") |> raise)
+                                                state Finish
+                                                |> ignore) |> ignore
+    let output = Path.GetTempFileName()
+    let outputdll = output + ".dll"
+    try
+      Instrument.WriteAssembly prepared outputdll
+    finally
+        Directory.EnumerateFiles(Path.GetDirectoryName output,
+                                 (Path.GetFileNameWithoutExtension output) + ".*")
+        |> Seq.iter (fun f -> try File.Delete f
+                              with // occasionally the dll file is locked by another process
+                              | :? System.UnauthorizedAccessException
+                              | :? IOException -> ())
+
   // CommandLine.fs
   [<Test>]
   member self.OutputCanBeExercised () =
