@@ -296,8 +296,8 @@ module Instance =
     mailbox.Start()
 
   // Register event handling
-  let DoPause e =
-    FlushCounter Pause e
+  let DoPause =
+    FlushCounter Pause
 
   let DoResume =
     FlushCounter Resume
