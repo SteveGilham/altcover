@@ -346,23 +346,29 @@ module Visitor =
 
   let CompilerSpecialLineNumber = 0xfeefee
 
+  let IsSequencePoint (s:SequencePoint) =
+    (s  |> isNull |> not) && s.StartLine <> CompilerSpecialLineNumber
+
   let findSequencePoint (dbg:MethodDebugInformation) (instructions:Instruction seq) =
     instructions
     |> Seq.map dbg.GetSequencePoint
-    |> Seq.tryFind (fun s -> (s  |> isNull |> not) && s.StartLine <> CompilerSpecialLineNumber)
+    |> Seq.tryFind IsSequencePoint
 
   let indexList l =
     l |> List.mapi (fun i x -> (i,x))
 
-  let getJumpChain (i:Instruction) =
-    Seq.unfold (fun (state:Cil.Instruction) -> if isNull state
-                                               then None
-                                               else Some (state, if state.OpCode = OpCodes.Br ||
-                                                                    state.OpCode = OpCodes.Br_S
-                                                                 then state.Operand :?> Instruction
-                                                                 else null)) i
-    |> Seq.toList
-    |> List.rev
+  let getJumpChain (terminal:Instruction) (i:Instruction) =
+    let rec accumulate (state:Instruction) l =
+      if isNull state then l
+      else if state.OpCode = OpCodes.Br ||
+              state.OpCode = OpCodes.Br_S then
+              let target = (state.Operand :?> Instruction)
+              accumulate target (target::l)
+           else if (state.Offset > terminal.Offset ||
+                    state.OpCode.FlowControl = FlowControl.Cond_Branch)
+                then l
+                else accumulate state.Next l
+    accumulate i [i]
 
   [<SuppressMessage("Microsoft.Usage", "CA2208", Justification="Compiler inlined code in List.m??By")>]
   let includedSequencePoint dbg (toNext:Instruction list) toJump =
@@ -373,16 +379,22 @@ module Visitor =
                 |>  Seq.toList
     findSequencePoint dbg range
 
+  let rec lastOfSequencePoint (dbg:MethodDebugInformation) (i:Instruction) =
+    let n = i.Next
+    if n |> isNull || n |>dbg.GetSequencePoint |> IsSequencePoint then i
+    else lastOfSequencePoint dbg n
+
   let getJumps (dbg:MethodDebugInformation) (i:Instruction) =
+    let terminal = lastOfSequencePoint dbg i
     let next = i.Next
     if i.OpCode = OpCodes.Switch then
-      (i, getJumpChain next, next.Offset, -1) :: (i.Operand :?> Instruction[]
-      |> Seq.mapi (fun k d -> i,getJumpChain d,d.Offset,k)
+      (i, getJumpChain terminal next, next.Offset, -1) :: (i.Operand :?> Instruction[]
+      |> Seq.mapi (fun k d -> i,getJumpChain terminal d,d.Offset,k)
       |> Seq.toList)
     else
     let jump = i.Operand :?> Instruction
-    let toNext = getJumpChain next
-    let toJump = getJumpChain jump
+    let toNext = getJumpChain terminal next
+    let toJump = getJumpChain terminal jump
 
     // Eliminate the "all inside one SeqPnt" jumps
     // This covers a multitude of compiler generated branching cases
@@ -485,7 +497,6 @@ module Visitor =
   let internal apply (visitors : list<Fix<Node>>) (node : Node) =
     visitors |>
     List.map (invoke node)
-
 
   let internal Visit (visitors : list<Fix<Node>>) (assemblies : seq<string>) =
     ZeroPoints()
