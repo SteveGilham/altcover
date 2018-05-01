@@ -359,7 +359,8 @@ module Visitor =
 
   let getJumpChain (terminal:Instruction) (i:Instruction) =
     let rec accumulate (state:Instruction) l =
-      if isNull state then l
+      let gendarme = l
+      if isNull state then gendarme
       else if state.OpCode = OpCodes.Br ||
               state.OpCode = OpCodes.Br_S then
               let target = (state.Operand :?> Instruction)
@@ -367,7 +368,7 @@ module Visitor =
            else if (state.Offset > terminal.Offset ||
                     state.OpCode.FlowControl = FlowControl.Cond_Branch)
                 then l
-                else accumulate state.Next l
+                else accumulate state.Next gendarme
     accumulate i [i]
 
   [<SuppressMessage("Microsoft.Usage", "CA2208", Justification="Compiler inlined code in List.m??By")>]
