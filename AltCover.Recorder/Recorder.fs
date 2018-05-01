@@ -5,6 +5,7 @@ namespace AltCover.Recorder
 
 open System
 open System.Collections.Generic
+open System.IO
 open System.Reflection
 open System.Resources
 open System.Runtime.CompilerServices
@@ -13,6 +14,8 @@ open System.Runtime.CompilerServices
 type internal Close =
     | DomainUnload
     | ProcessExit
+    | Pause
+    | Resume
 
 [<System.Runtime.InteropServices.ProgIdAttribute("ExcludeFromCodeCoverage hack for OpenCover issue 615")>]
 type internal Carrier =
@@ -113,10 +116,12 @@ module Instance =
   /// </summary>
   let internal mutex = new System.Threading.Mutex(false, Token + ".mutex");
 
+  let SignalFile () = ReportFile + ".acv"
+
   /// <summary>
   /// Reporting back to the mother-ship
   /// </summary>
-  let mutable internal trace = Tracer.Create (ReportFile + ".acv")
+  let mutable internal trace = Tracer.Create (SignalFile ())
 
   let internal WithMutex (f : bool -> 'a) =
     let own = mutex.WaitOne(1000)
@@ -125,10 +130,17 @@ module Instance =
     finally
       if own then mutex.ReleaseMutex()
 
+  let InitialiseTrace () =
+    WithMutex (fun _ -> let t = Tracer.Create (SignalFile ())
+                        trace <- t.OnStart ())
+
+  let internal Watcher = new FileSystemWatcher()
+  let mutable internal Recording = true
+
   /// <summary>
   /// This method flushes hit count buffers.
   /// </summary>
-  let internal FlushCounterImpl _ =
+  let internal FlushAll () =
     trace.OnConnected (fun () -> trace.OnFinish Visits)
       (fun () ->
       match Visits.Count with
@@ -141,6 +153,20 @@ module Instance =
                 |> Option.iter (fun s -> Console.Out.WriteLine(s, delta.TotalSeconds))
              ))
 
+  let FlushPause () =
+    ("PauseHandler")
+    |> GetResource
+    |> Option.iter Console.Out.WriteLine
+    FlushAll ()
+    InitialiseTrace()
+
+  let FlushResume () =
+    ("ResumeHandler")
+    |> GetResource
+    |> Option.iter Console.Out.WriteLine
+    Visits.Clear()
+    InitialiseTrace ()
+    
   let internal TraceVisit moduleId hitPointId context =
      trace.OnVisit Visits moduleId hitPointId context
 
@@ -162,27 +188,35 @@ module Instance =
   let mutable internal mailboxOK = false
 
   let rec private loop (inbox:MailboxProcessor<Message>) =
-          async {
-             if Object.ReferenceEquals (inbox, mailbox) then
-                 // release the wait every half second
-                 let! opt = inbox.TryReceive(500)
-                 match opt with
-                 | None -> return! loop inbox
-                 | Some msg ->
-                     match msg with
-                     | AsyncItem (SequencePoint (moduleId, hitPointId, context)) ->
-                         VisitImpl moduleId hitPointId context
-                         return! loop inbox
-                     | Item (SequencePoint (moduleId, hitPointId, context), channel)->
-                         VisitImpl moduleId hitPointId context
-                         channel.Reply ()
-                         return! loop inbox
-                     | Finish (mode, channel) ->
-                         FlushCounterImpl mode
-                         channel.Reply ()
-                         mailboxOK <- false
-                         (inbox :> IDisposable).Dispose()
-          }
+    async {
+      if Object.ReferenceEquals (inbox, mailbox) then
+        // release the wait every half second
+        let! opt = inbox.TryReceive(500)
+        match opt with
+        | None -> return! loop inbox
+        | Some msg ->
+            match msg with
+            | AsyncItem (SequencePoint (moduleId, hitPointId, context)) ->
+                VisitImpl moduleId hitPointId context
+                return! loop inbox
+            | Item (SequencePoint (moduleId, hitPointId, context), channel) ->
+                VisitImpl moduleId hitPointId context
+                channel.Reply ()
+                return! loop inbox
+            | Finish (Pause, channel) ->
+                FlushPause()
+                channel.Reply ()
+                return! loop inbox
+            | Finish (Resume, channel) ->
+                FlushResume ()
+                channel.Reply ()
+                return! loop inbox
+            | Finish (_, channel) ->
+                FlushAll ()
+                channel.Reply ()
+                mailboxOK <- false
+                (inbox :> IDisposable).Dispose()
+        }
 
   let internal MakeMailbox () =
     new MailboxProcessor<Message>(loop)
@@ -237,13 +271,14 @@ module Instance =
     else message |> AsyncItem |> mailbox.Post
 
   let Visit moduleId hitPointId =
-   if mailboxOK then
+    if Recording && mailboxOK then
      VisitSelection (fun () -> trace.IsConnected() || Backlog() > 10)
                      (PayloadSelector IsOpenCoverRunner) moduleId hitPointId
 
   let internal FlushCounter (finish:Close) _ =
    if mailboxOK then
-    mailbox.PostAndReply (fun c -> Finish (finish, c))
+       Recording <- finish = Resume
+       mailbox.TryPostAndReply ((fun c -> Finish (finish, c)), 2000) |> ignore
 
   let internal AddErrorHandler (box:MailboxProcessor<'a>) =
     box.Error.Add MailboxError
@@ -251,8 +286,8 @@ module Instance =
   let internal SetErrorAction () =
     ErrorAction <- DisplayError
 
-  // unit test helpers -- avoid issues with cross CLR version calls
   let internal RunMailbox () =
+    Recording <- true
     (mailbox :> IDisposable).Dispose()
     mailbox <- MakeMailbox ()
     mailboxOK <- true
@@ -261,8 +296,22 @@ module Instance =
     mailbox.Start()
 
   // Register event handling
+  let DoPause =
+    FlushCounter Pause
+
+  let DoResume =
+    FlushCounter Resume
+
+  let internal StartWatcher() =
+     Watcher.Path <- Path.GetDirectoryName <| SignalFile()
+     Watcher.Filter <- Path.GetFileName <| SignalFile()
+     Watcher.Created.Add DoResume
+     Watcher.Deleted.Add DoPause
+     Watcher.EnableRaisingEvents <- Watcher.Path |> String.IsNullOrEmpty |> not
+
   do
     AppDomain.CurrentDomain.DomainUnload.Add(FlushCounter DomainUnload)
     AppDomain.CurrentDomain.ProcessExit.Add(FlushCounter ProcessExit)
-    WithMutex (fun _ -> trace <- trace.OnStart ())
+    StartWatcher ()
+    InitialiseTrace ()
     RunMailbox ()

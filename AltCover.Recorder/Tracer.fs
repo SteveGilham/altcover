@@ -67,7 +67,7 @@ type Tracer = {
 
     member this.OnStart () =
       let running = if this.Tracer <> "Coverage.Default.xml.acv" then
-                        this.Connect () else this
+                       this.Connect () else this
       {running with Definitive = true}
 
     member this.OnConnected f g =

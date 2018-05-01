@@ -174,6 +174,7 @@ type AltCoverTests() = class
     let wait = Instance.Wait
     try
       Instance.Visits.Clear()
+      Instance.RunMailbox()
       Instance.trace <- { Tracer=null; Stream=null; Formatter=null;
                           Runner = false; Definitive = false }
       let key = " "
@@ -500,11 +501,145 @@ type AltCoverTests() = class
       use stdout = new StringWriter()
       Console.SetOut stdout
 
-      Instance.FlushCounterImpl ProcessExit
-      Assert.That (stdout.ToString(), Is.Empty)
+      Instance.FlushAll ()
+      Assert.That (stdout.ToString(),Is.Empty)
     finally
       Adapter.VisitsClear()
       Console.SetOut saved)
+    self.GetMyMethodName "<="
+
+  member self.PauseLeavesExpectedTraces() =
+    self.GetMyMethodName "=>"
+    lock Adapter.Lock (fun () ->
+    try
+      let saved = Console.Out
+      let here = Directory.GetCurrentDirectory()
+      let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
+      let unique = Path.Combine(where, Guid.NewGuid().ToString())
+      let save = Instance.trace
+      Instance.trace <- { Tracer=null; Stream=null; Formatter=null;
+                          Runner = false; Definitive = false }
+      try
+        Adapter.VisitsClear()
+        use stdout = new StringWriter()
+        Console.SetOut stdout
+        Directory.CreateDirectory(unique) |> ignore
+        Directory.SetCurrentDirectory(unique)
+
+        Counter.measureTime <- DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
+        use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(self.resource)
+        let size = int stream.Length
+        let buffer = Array.create size 0uy
+        Assert.That (stream.Read(buffer, 0, size), Is.EqualTo size)
+        do
+          use worker = new FileStream(Instance.ReportFile, FileMode.CreateNew)
+          worker.Write(buffer, 0, size)
+          ()
+
+        [0..9 ]
+        |> Seq.iter(fun i -> Adapter.VisitsAdd "f6e3edb3-fb20-44b3-817d-f69d1a22fc2f" i (i+1))
+
+        Adapter.DoPause ()
+        while Instance.Backlog () > 0 do
+          Thread.Sleep 100
+
+        Thread.Sleep 100
+        Assert.That(Instance.mailboxOK, Is.True, "mailbox should still be OK")
+
+        let head = "Coverage statistics flushing took "
+        let tail = " seconds\n"
+        let recorded = stdout.ToString().Replace("\r\n","\n")
+        let index1 = recorded.IndexOf(head, StringComparison.Ordinal)
+        let index2 = recorded.IndexOf(tail, StringComparison.Ordinal)
+        Assert.That (index1, Is.GreaterThanOrEqualTo 0, recorded)
+        Assert.That (index2, Is.GreaterThan index1, recorded)
+        use worker' = new FileStream(Instance.ReportFile, FileMode.Open)
+        let after = XmlDocument()
+        after.Load worker'
+        Assert.That( after.SelectNodes("//seqpnt")
+                     |> Seq.cast<XmlElement>
+                     |> Seq.map (fun x -> x.GetAttribute("visitcount")),
+                     Is.EquivalentTo [ "11"; "10"; "9"; "8"; "7"; "6"; "4"; "3"; "2"; "1"])
+      finally
+        Instance.trace <- save
+        if File.Exists Instance.ReportFile then File.Delete Instance.ReportFile
+        Adapter.VisitsClear()
+        Console.SetOut saved
+        Directory.SetCurrentDirectory(here)
+        try
+          Directory.Delete(unique)
+        with
+        | :? IOException -> ()
+    with
+    | :? AbandonedMutexException -> Instance.mutex.ReleaseMutex())
+
+    self.GetMyMethodName "<="
+
+  member self.ResumeLeavesExpectedTraces() =
+    self.GetMyMethodName "=>"
+    lock Adapter.Lock (fun () ->
+    try
+      let saved = Console.Out
+      let here = Directory.GetCurrentDirectory()
+      let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
+      let unique = Path.Combine(where, Guid.NewGuid().ToString())
+      let save = Instance.trace
+      let newTrace = { Tracer=null; Stream=null; Formatter=null;
+                          Runner = false; Definitive = false }
+      Instance.trace <- newTrace
+      try
+        Adapter.VisitsClear()
+        use stdout = new StringWriter()
+        Console.SetOut stdout
+        Directory.CreateDirectory(unique) |> ignore
+        Directory.SetCurrentDirectory(unique)
+
+        Counter.measureTime <- DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
+        use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(self.resource)
+        let size = int stream.Length
+        let buffer = Array.create size 0uy
+        Assert.That (stream.Read(buffer, 0, size), Is.EqualTo size)
+        do
+          use worker = new FileStream(Instance.ReportFile, FileMode.CreateNew)
+          worker.Write(buffer, 0, size)
+          ()
+
+        [0..9 ]
+        |> Seq.iter(fun i -> Adapter.VisitsAdd "f6e3edb3-fb20-44b3-817d-f69d1a22fc2f" i (i+1))
+
+        Adapter.DoResume ()
+        while Instance.Backlog () > 0 do
+          Thread.Sleep 100
+
+        Thread.Sleep 100
+        Assert.That(Instance.mailboxOK, Is.True, "mailbox should still be OK")
+        Assert.That(Adapter.VisitsSeq(), Is.Empty, "Visits should be cleared")
+        Assert.That(Object.ReferenceEquals (Instance.trace, newTrace),
+                    Is.False, "trace should be replaced")
+
+        let recorded = stdout.ToString().Trim()
+        Assert.That (recorded, Is.EqualTo "Resuming...", recorded)
+
+        use worker' = new FileStream(Instance.ReportFile, FileMode.Open)
+        let after = XmlDocument()
+        after.Load worker'
+        Assert.That( after.SelectNodes("//seqpnt")
+                     |> Seq.cast<XmlElement>
+                     |> Seq.map (fun x -> x.GetAttribute("visitcount")),
+                     Is.EquivalentTo [ "1"; "1"; "1"; "1"; "1"; "1"; "0"; String.Empty; "X"; "-1"])
+      finally
+        Instance.trace <- save
+        if File.Exists Instance.ReportFile then File.Delete Instance.ReportFile
+        Adapter.VisitsClear()
+        Console.SetOut saved
+        Directory.SetCurrentDirectory(here)
+        try
+          Directory.Delete(unique)
+        with
+        | :? IOException -> ()
+    with
+    | :? AbandonedMutexException -> Instance.mutex.ReleaseMutex())
+
     self.GetMyMethodName "<="
 
   member self.FlushLeavesExpectedTraces() =
@@ -551,8 +686,10 @@ type AltCoverTests() = class
         let head = "Coverage statistics flushing took "
         let tail = " seconds\n"
         let recorded = stdout.ToString().Replace("\r\n","\n")
-        Assert.That (recorded.StartsWith(head, StringComparison.Ordinal))
-        Assert.That (recorded.EndsWith(tail, StringComparison.Ordinal))
+        let index1 = recorded.IndexOf(head, StringComparison.Ordinal)
+        let index2 = recorded.IndexOf(tail, StringComparison.Ordinal)
+        Assert.That (index1, Is.GreaterThanOrEqualTo 0, recorded)
+        Assert.That (index2, Is.GreaterThan index1, recorded)
         use worker' = new FileStream(Instance.ReportFile, FileMode.Open)
         let after = XmlDocument()
         after.Load worker'
@@ -721,6 +858,8 @@ type AltCoverTests() = class
   [<Test>]
   member self.MailboxFunctionsAsExpected() =
     self.RealIdShouldIncrementCount()
+    self.PauseLeavesExpectedTraces()
+    self.ResumeLeavesExpectedTraces()
     self.FlushLeavesExpectedTraces()
 #endif
 end

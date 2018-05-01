@@ -4,6 +4,12 @@ open System.Collections.Generic
 open AltCover.Recorder
 
 module Adapter =
+  let DoPause () = 
+    Instance.DoPause null
+
+  let DoResume () = 
+    Instance.DoResume null
+
   let VisitsClear () = Instance.Visits.Clear()
 
   let internal prepareName name =
