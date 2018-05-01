@@ -1075,6 +1075,55 @@ Target "RecordResumeTest" ( fun _ ->
       Assert.That(recorded |> Seq.length,  Is.EqualTo 20, sprintf "Bad visit list %A -- should no longer be empty now" recorded)
 )
 
+Target "RecordResumeTrackingTest" ( fun _ ->
+    Directory.ensure "./_Reports"
+    let simpleReport = (Path.getFullName "./_Reports") @@ ( "RecordResumeTrackingTest.xml")
+    let binRoot = Path.getFullName "_Binaries/AltCover/Release+AnyCPU"
+    let sampleRoot = Path.getFullName "_Binaries/Sample8/Debug+AnyCPU"
+    let instrumented = "__RecordResumeTrackingTest"
+
+    Actions.Run (fun info ->
+          { info with
+                FileName = binRoot @@ "AltCover.exe"
+                WorkingDirectory = sampleRoot
+                Arguments = ("--opencover -c=Main -s=Adapter -s=nunit -t=System\. -t=Microsoft\. -x=" + simpleReport + " /o=./" + instrumented)})
+                "RecordResumeTrackingTest 1"
+
+    let testing = (sampleRoot @@ instrumented) @@ "Sample8.exe"
+    Actions.Run (fun info ->
+          { info with
+                FileName = testing
+                WorkingDirectory = sampleRoot
+                Arguments = simpleReport + ".acv"})
+                "RecordResumeTrackingTest 2"
+    do
+      use coverageFile = new FileStream(simpleReport, FileMode.Open, FileAccess.Read, FileShare.None, 4096, FileOptions.SequentialScan)
+      let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
+      let recorded = coverageDocument.Descendants(XName.Get("SequencePoint"))
+                     |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value)
+                     |> Seq.toList
+      let expected = Array.create 20 "0"
+      Assert.That(recorded, expected |> Is.EquivalentTo, sprintf "Bad visit list %A -- should be empty now" recorded)
+
+    Actions.Run (fun info ->
+          { info with
+                FileName = binRoot @@ "AltCover.exe"
+                WorkingDirectory = sampleRoot
+                Arguments = ("runner --collect /r=./" + instrumented)})
+                "RecordResumeTrackingTest 3"
+
+    do
+      use coverageFile = new FileStream(simpleReport, FileMode.Open, FileAccess.Read, FileShare.None, 4096, FileOptions.SequentialScan)
+      let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
+      let recorded = coverageDocument.Descendants(XName.Get("SequencePoint"))
+                     |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value)
+                     |> Seq.toList
+      let expected = Array.create 20 "0"
+      Assert.That(recorded, expected |> Is.Not.EquivalentTo, sprintf "Bad visit list %A -- should no longer be empty now" recorded)
+      Assert.That(recorded |> Seq.length,  Is.EqualTo 20, sprintf "Bad visit list %A -- should no longer be empty now" recorded)
+)
+
+
 Target "RecordResumeTestDotNet" ( fun _ ->
     Directory.ensure "./_Reports"
     let simpleReport = (Path.getFullName "./_Reports") @@ ( "RecordResumeTestDotNet.xml")
@@ -1880,6 +1929,11 @@ activateFinal "ResetConsoleColours"
 "Compilation"
 ==> "RecordResumeTest"
 ==> "OperationalTest"
+
+"Compilation"
+==> "RecordResumeTrackingTest"
+==> "OperationalTest"
+
 
 //"Compilation"
 //==> "RecordResumeTestUnderMono"
