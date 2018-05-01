@@ -210,10 +210,13 @@ module Visitor =
     |> Seq.exists (fun f -> f m)
     |> not
 
+  let private accumulator = HashSet<AssemblyDefinition>()
+
   let private StartVisit (paths:seq<string>) buildSequence =
         paths
         |> Seq.collect (AssemblyDefinition.ReadAssembly >>
-                        (fun x -> // Reject completely if filtered here
+                        (fun x -> x |> accumulator.Add |> ignore
+                                  // Reject completely if filtered here
                                   let inspection = IsIncluded x
                                   let included = inspection |||
                                                  if inspection = Inspect.Instrument &&
@@ -483,7 +486,6 @@ module Visitor =
     visitors |>
     List.map (invoke node)
 
-  let private accumulator = HashSet<AssemblyDefinition>()
 
   let internal Visit (visitors : list<Fix<Node>>) (assemblies : seq<string>) =
     ZeroPoints()
@@ -491,15 +493,11 @@ module Visitor =
     try
         Start assemblies
         |> BuildSequence
-        |> Seq.map (fun node -> match node with
-                                | Assembly (a, _) -> accumulator.Add(a) |> ignore
-                                | _ -> ()
-                                node)
         |> Seq.fold apply visitors
         |> ignore
     finally
       accumulator
-      |> Seq.iter (fun a -> (a :>IDisposable).Dispose())
+      |> Seq.iter (fun a -> (a :> IDisposable).Dispose())
       accumulator.Clear()
 
   let EncloseState (visitor : 'State -> 'T -> 'State) (current : 'State) =
