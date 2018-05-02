@@ -1361,7 +1361,7 @@ type AltCoverTests() = class
   member self.BranchChainsSerialize() =
     let where = Assembly.GetExecutingAssembly().Location
     let path = Path.Combine(Path.GetDirectoryName(where), "Sample2.dll")
-    let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    use def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
     ProgramDatabase.ReadSymbols def
     let method = def.MainModule.GetAllTypes()
                  |> Seq.collect (fun t -> t.Methods)
@@ -1390,6 +1390,19 @@ type AltCoverTests() = class
     finally
       Visitor.NameFilters.Clear()
       Visitor.reportFormat <- None
+
+  [<Test>]
+  member self.BranchChainsTerminate() =
+    let where = Assembly.GetExecutingAssembly().Location
+    let path = Path.Combine(Path.GetDirectoryName(where), "Sample2.dll")
+    use def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    ProgramDatabase.ReadSymbols def
+    let method = def.MainModule.GetAllTypes()
+                 |> Seq.collect (fun t -> t.Methods)
+                 |> Seq.find (fun m -> m.Name = "as_bar")
+    let fin = method.Body.Instructions |> Seq.last
+    let list = Visitor.getJumpChain fin fin
+    Assert.That (list, Is.EquivalentTo [fin])
 
   static member private RecursiveValidateOpenCover result expected' depth zero expectSkipped =
     let X name =
