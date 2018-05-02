@@ -1923,7 +1923,6 @@ type AltCoverTests() = class
                               | :? System.UnauthorizedAccessException
                               | :? IOException -> ())
 
-
   [<Test>]
   member self.ShouldBeAbleToPrepareTheAssembly () =
     try

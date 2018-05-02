@@ -371,7 +371,7 @@ Target "UnitTestWithOpenCover" (fun _ ->
     | x -> printfn "%A" x
            reraise ()
 
-    ReportGenerator.generateReports 
+    ReportGenerator.generateReports
                         (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
                                            ReportTypes = [ ReportGenerator.ReportType.Html; ReportGenerator.ReportType.XmlSummary ]
                                            TargetDir = "_Reports/_UnitTestWithOpenCover"})
@@ -1893,7 +1893,6 @@ activateFinal "ResetConsoleColours"
 "Compilation"
 ==> "RecordResumeTrackingTest"
 ==> "OperationalTest"
-
 
 //"Compilation"
 //==> "RecordResumeTestUnderMono"
