@@ -1085,8 +1085,11 @@ Target "RecordResumeTrackingTest" ( fun _ ->
       let expected = Array.create 20 "0"
       Assert.That(recorded, expected |> Is.Not.EquivalentTo, sprintf "Bad visit list %A -- should no longer be empty now" recorded)
       Assert.That(recorded |> Seq.length,  Is.EqualTo 20, sprintf "Bad visit list %A -- should no longer be empty now" recorded)
-)
+      let tracked = coverageDocument.Descendants(XName.Get("TrackedMethodRef"))
+                     |> Seq.toList
+      Assert.That (tracked, Is.Not.Empty)
 
+)
 
 Target "RecordResumeTestDotNet" ( fun _ ->
     Directory.ensure "./_Reports"
