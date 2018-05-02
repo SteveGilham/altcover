@@ -167,7 +167,8 @@ module OpenCover =
                            XAttribute(X "isConstructor", boolString methodDef.IsConstructor),
                            XAttribute(X "isStatic", boolString methodDef.IsStatic),
                            XAttribute(X "isGetter", boolString methodDef.IsGetter),
-                           XAttribute(X "isSetter", boolString methodDef.IsSetter)))
+                           XAttribute(X "isSetter", boolString methodDef.IsSetter),
+                           XAttribute(X "crapScore", 0)))
 
     let addMethodContent (element:XElement) (methodDef:MethodDefinition) =
         element.Add(Summary())

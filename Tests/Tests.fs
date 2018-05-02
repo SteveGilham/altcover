@@ -1439,6 +1439,7 @@ type AltCoverTests() = class
                     | "uspid"
                     | "minCrapScore"
                     | "maxCrapScore"
+                    | "crapScore"
                     | "hash" -> ()
                     | "fullPath" -> Assert.That(a1.Value.Replace("\\","/"), Does.EndWith(a2.Value.Replace("\\","/")),
                                                 a1.Name.ToString() + " : " + r.ToString() + " -> document")

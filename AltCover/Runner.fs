@@ -513,18 +513,20 @@ module Runner =
 
             let pointVisits = VisitCount sp
             if pointVisits > 0 then
-                let b0 = VisitCount bp
-                let branchVisits = b0 + Math.Sign b0
-                let cover = percentCover pointVisits count
-                let bcover = percentCover branchVisits bCount
+                let FillMethod () =
+                  let b0 = VisitCount bp
+                  let branchVisits = b0 + Math.Sign b0
+                  let cover = percentCover pointVisits count
+                  let bcover = percentCover branchVisits bCount
 
-                ``method``.SetAttribute("visited", "true")
-                ``method``.SetAttribute("sequenceCoverage", cover)
-                ``method``.SetAttribute("branchCoverage", bcover)
-                let raw = crapScore ``method``
-                setSummary ``method`` pointVisits branchVisits 1 None cover bcover raw raw
-                computeBranchExitCount sp bp
-                (vb + branchVisits, vs + pointVisits, vm + 1, pt + count, br+bCount, Math.Min(minc, raw), Math.Max(maxc, raw))
+                  ``method``.SetAttribute("visited", "true")
+                  ``method``.SetAttribute("sequenceCoverage", cover)
+                  ``method``.SetAttribute("branchCoverage", bcover)
+                  let raw = crapScore ``method``
+                  setSummary ``method`` pointVisits branchVisits 1 None cover bcover raw raw
+                  computeBranchExitCount sp bp
+                  (vb + branchVisits, vs + pointVisits, vm + 1, pt + count, br+bCount, Math.Min(minc, raw), Math.Max(maxc, raw))
+                FillMethod()
             else (vb, vs, vm, pt + count, br+bCount, minc, maxc)
 
         let updateClass (dict:Dictionary<int, int * Base.Track list>) (vb, vs, vm, vc, pt, br, minc0, maxc0) (``class``:XmlElement) =

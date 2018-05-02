@@ -122,6 +122,7 @@ module XTests =
                     | "uspid"
                     | "minCrapScore"
                     | "maxCrapScore"
+                    | "crapScore"
                     | "hash" -> ()
                     | "fullPath" -> Assert.True(a1.Value.Replace("\\","/").EndsWith(a2.Value.Replace("\\","/")),
                                                 a1.Name.ToString() + " : " + r.ToString() + " -> document")
