@@ -1902,6 +1902,29 @@ type AltCoverTests() = class
       Visitor.keys.Clear()
 
   [<Test>]
+  member self.GuardShouldDisposeRecordingAssemblyOnException () =
+    let where = Assembly.GetExecutingAssembly().Location
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample3.dll")
+    let prepared = AssemblyDefinition.ReadAssembly path
+    ProgramDatabase.ReadSymbols prepared
+
+    let bang = fun () -> InvalidOperationException("Bang") |> raise
+
+    Assert.Throws<InvalidOperationException>(fun() -> Instrument.Guard prepared bang |> ignore) |> ignore
+    let output = Path.GetTempFileName()
+    let outputdll = output + ".dll"
+    try
+      Assert.Throws<ArgumentException>(fun () -> Instrument.WriteAssembly prepared outputdll) |> ignore
+    finally
+        Directory.EnumerateFiles(Path.GetDirectoryName output,
+                                 (Path.GetFileNameWithoutExtension output) + ".*")
+        |> Seq.iter (fun f -> try File.Delete f
+                              with // occasionally the dll file is locked by another process
+                              | :? System.UnauthorizedAccessException
+                              | :? IOException -> ())
+
+
+  [<Test>]
   member self.ShouldBeAbleToPrepareTheAssembly () =
     try
       Visitor.keys.Clear()

@@ -137,12 +137,21 @@ module Instrument =
   let private extractName (assembly: AssemblyDefinition) =
      assembly.Name.Name
 
+  let Guard (assembly:AssemblyDefinition) (f:unit->unit) =
+    try
+      f()
+      assembly
+    with
+    | _ -> (assembly :> IDisposable).Dispose()
+           reraise()
+
   /// <summary>
   /// Create the new assembly that will record visits, based on the prototype.
   /// </summary>
   /// <returns>A representation of the assembly used to record all coverage visits.</returns>
   let internal PrepareAssembly (location:string) =
     let definition = AssemblyDefinition.ReadAssembly(location)
+    Guard definition (fun () ->
     ProgramDatabase.ReadSymbols definition
     definition.Name.Name <- (extractName definition) + ".g"
 #if NETCOREAPP2_0
@@ -212,9 +221,7 @@ module Instrument =
         worker.InsertBefore(head, worker.Create(OpCodes.Conv_I8))
         worker.InsertBefore(head, worker.Create(OpCodes.Ret))
         initialBody |> Seq.iter worker.Remove
-    )
-
-    definition
+    ))
 
 #if NETCOREAPP2_0
 #else
