@@ -1451,6 +1451,8 @@ or
                           el.SetAttribute("sequenceCoverage", "0")
                           el.SetAttribute("visitedClasses", "0")
                           el.SetAttribute("visitedMethods", "0")
+                          el.SetAttribute("minCrapScore", "0")
+                          el.SetAttribute("maxCrapScore", "0")
                            )
 
     after.DocumentElement.SelectNodes("//Method")

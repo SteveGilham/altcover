@@ -1437,6 +1437,8 @@ type AltCoverTests() = class
                     | "sequenceCoverage"
                     | "branchCoverage"
                     | "uspid"
+                    | "minCrapScore"
+                    | "maxCrapScore"
                     | "hash" -> ()
                     | "fullPath" -> Assert.That(a1.Value.Replace("\\","/"), Does.EndWith(a2.Value.Replace("\\","/")),
                                                 a1.Name.ToString() + " : " + r.ToString() + " -> document")
