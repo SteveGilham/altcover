@@ -326,7 +326,7 @@ module Runner =
   let RecorderInstance () =
     let recorderPath = Path.Combine (Option.get recordingDirectory, RecorderName)
     let definition = AssemblyDefinition.ReadAssembly recorderPath
-    definition.MainModule.GetType("AltCover.Recorder.Instance")
+    (definition, definition.MainModule.GetType("AltCover.Recorder.Instance"))
 
   let GetMethod (t:TypeDefinition) (name:string) =
     t.Methods
@@ -594,7 +594,9 @@ module Runner =
                                255
     | Right (rest, _) ->
         let value = CommandLine.doPathOperation( fun () ->
-            let instance = RecorderInstance()
+            let pair = RecorderInstance()
+            use assembly = fst pair
+            let instance = snd pair
             let report = (GetMethod instance "get_ReportFile")
                          |> GetFirstOperandAsString
                          |> Path.GetFullPath
