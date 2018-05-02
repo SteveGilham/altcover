@@ -480,6 +480,15 @@ module Runner =
                                (0, sp.[0] :?> XmlElement)
           |> ignore
 
+        let crapScore (``method``:XmlElement) =
+          let coverage = ``method``.GetAttribute("sequenceCoverage") |> Double.TryParse |> snd
+          let complexity = ``method``.GetAttribute("cyclomaticComplexity") |> Double.TryParse |> snd
+          let score = (Math.Pow(complexity, 2.0) *
+                                  Math.Pow((1.0 - (coverage / 100.0)), 3.0) +
+                                          complexity) |> (sprintf "%.2f") 
+          method.SetAttribute("crapScore", score.TrimEnd([| '0' |]).TrimEnd([|'.'|]))
+
+
         let updateMethod (dict:Dictionary<int, int * Base.Track list>) (vb, vs, vm, pt, br) (``method``:XmlElement) =
             let sp = ``method``.GetElementsByTagName("SequencePoint")
             let bp = ``method``.GetElementsByTagName("BranchPoint")
@@ -503,6 +512,7 @@ module Runner =
                 ``method``.SetAttribute("visited", "true")
                 ``method``.SetAttribute("sequenceCoverage", cover)
                 ``method``.SetAttribute("branchCoverage", bcover)
+                crapScore ``method``
                 setSummary ``method`` pointVisits branchVisits 1 None cover bcover
                 computeBranchExitCount sp bp
                 (vb + branchVisits, vs + pointVisits, vm + 1, pt + count, br+bCount)

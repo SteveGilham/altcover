@@ -28,7 +28,7 @@
               <BranchPoints />
               <MethodPoint vc="1" uspid="100663297" ordinal="0" offset="0" />
             </Method>
-            <Method visited="true" cyclomaticComplexity="2" nPathComplexity="2" sequenceCoverage="71.43" branchCoverage="66.67" isConstructor="false" isStatic="true" isGetter="false" isSetter="false">
+            <Method visited="true" cyclomaticComplexity="2" nPathComplexity="2" sequenceCoverage="71.43" branchCoverage="66.67" isConstructor="false" isStatic="true" isGetter="false" isSetter="false" crapScore="2.09">
               <Summary numSequencePoints="14" visitedSequencePoints="10" numBranchPoints="3" visitedBranchPoints="2" sequenceCoverage="71.43" branchCoverage="66.67" maxCyclomaticComplexity="2" minCyclomaticComplexity="2" visitedClasses="0" numClasses="0" visitedMethods="1" numMethods="1" />
               <MetadataToken>100663298</MetadataToken>
               <Name>System.Void TouchTest.Program::Main(System.String[])</Name>

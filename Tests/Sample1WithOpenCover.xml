@@ -32,7 +32,7 @@
           <Summary numSequencePoints="10" visitedSequencePoints="7" numBranchPoints="3" visitedBranchPoints="2" sequenceCoverage="70" branchCoverage="66.67" maxCyclomaticComplexity="2" minCyclomaticComplexity="1" visitedClasses="1" numClasses="1" visitedMethods="1" numMethods="1" />
           <FullName>TouchTest.Program</FullName>
           <Methods>
-            <Method visited="true" cyclomaticComplexity="2" nPathComplexity="2" sequenceCoverage="70" branchCoverage="66.67" isConstructor="false" isStatic="true" isGetter="false" isSetter="false">
+            <Method visited="true" cyclomaticComplexity="2" nPathComplexity="2" sequenceCoverage="70" branchCoverage="66.67" isConstructor="false" isStatic="true" isGetter="false" isSetter="false" crapScore="2.11">
               <Summary numSequencePoints="10" visitedSequencePoints="7" numBranchPoints="3" visitedBranchPoints="2" sequenceCoverage="70" branchCoverage="66.67" maxCyclomaticComplexity="2" minCyclomaticComplexity="2" visitedClasses="0" numClasses="0" visitedMethods="1" numMethods="1" />
               <MetadataToken>100663297</MetadataToken>
               <Name>System.Void TouchTest.Program::Main(System.String[])</Name>
