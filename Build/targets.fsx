@@ -334,6 +334,40 @@ Target "UnitTestDotNet" (fun _ ->
            reraise ()
 )
 
+Target "UnitTestDotNetWithCoverlet" (fun _ ->
+    Directory.ensure "./_Reports"
+    try
+      !! (@"./*Tests/*.tests.core.fsproj")
+      |> Seq.iter (fun f -> try
+                                printfn "Testing %s" f
+                                Actions.RunDotnet dotnetOptions "add"
+                                                  (f + " package coverlet.msbuild ")
+                                                  f
+                                try
+                                  Actions.RunDotnet dotnetOptions "test"
+                                                    ("/p:CollectCoverage=true /p:CoverletOutputFormat=opencover --configuration Debug " + f)
+                                                    f
+                                with
+                                | x -> eprintf "%A" x
+                                                  
+                                let here = Path.GetDirectoryName f
+                                let tag = Path.GetFileName here
+
+                                ReportGenerator.generateReports
+                                      (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
+                                                         ReportTypes = [ ReportGenerator.ReportType.Html ]
+                                                         TargetDir = "_Reports/_Coverlet" + tag})
+                                     [here @@ "coverage.xml"]
+                            finally
+                                Actions.RunDotnet dotnetOptions "remove"
+                                                  (f + " package coverlet.msbuild ")
+                                                  f
+                                              )
+    with
+    | x -> printfn "%A" x
+           reraise ()
+)
+
 Target "UnitTestWithOpenCover" (fun _ ->
     Directory.ensure "./_Reports/_UnitTestWithOpenCover"
     let testFiles = !! (@"_Binaries/*Tests/Debug+AnyCPU/*Test*.dll")
