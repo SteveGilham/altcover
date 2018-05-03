@@ -375,12 +375,13 @@ module Instrument =
     let rt = JObject.Parse runtime
     rt.Properties()
     |> Seq.filter (fun r -> prior |> Set.contains (r.Name.Split('/') |> Seq.head) |> not)
-    |> Seq.iter (fun r -> targeted.Add(r))
+    |> Seq.iter (fun r -> if targeted.ContainsKey(r.Name) |> not then targeted.Add(r))
 
     let libraries = (o.Properties()
                     |> Seq.find (fun p -> p.Name = "libraries")).Value :?> JObject
     (JObject.Parse newLibraries).Properties()
     |> Seq.filter (fun r -> prior |> Set.contains (r.Name.Split('/') |> Seq.head) |> not)
+    |> Seq.filter (fun r -> libraries.ContainsKey(r.Name) |> not)
     |> Seq.rev
     |> Seq.iter (libraries.AddFirst)
     o.ToString()
