@@ -344,10 +344,8 @@ module Visitor =
 
                                   Method (m, inclusion, Track m)) >> buildSequence)
 
-  let CompilerSpecialLineNumber = 0xfeefee
-
   let IsSequencePoint (s:SequencePoint) =
-    (s  |> isNull |> not) && s.StartLine <> CompilerSpecialLineNumber
+    (s  |> isNull |> not) && s.IsHidden |> not
 
   let findSequencePoint (dbg:MethodDebugInformation) (instructions:Instruction seq) =
     instructions
@@ -451,7 +449,7 @@ module Visitor =
                                |> Seq.concat
                                |> Seq.filter (fun (x:Instruction) -> if dbg.HasSequencePoints then
                                                                         let s = dbg.GetSequencePoint x
-                                                                        (not << isNull) s && s.StartLine <> CompilerSpecialLineNumber
+                                                                        (not << isNull) s && (s.IsHidden |> not)
                                                                      else false)
                                |> Seq.toList
 
