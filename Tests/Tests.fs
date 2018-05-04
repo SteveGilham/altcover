@@ -2374,6 +2374,36 @@ type AltCoverTests() = class
     Assert.That (recorder.Head.Body.ExceptionHandlers.Count, Is.EqualTo (handlersBefore + 1))
 
   [<Test>]
+  member self.ShouldBeAbleToTrackAMethodWithTailCalls () =
+    let where = Assembly.GetExecutingAssembly().Location
+#if NETCOREAPP2_0
+    let shift = String.Empty
+#else
+    let shift = "/netcoreapp2.0"
+#endif
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack() +
+                            shift, "AltCover.Recorder.dll")
+    let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    let recorder = AltCover.Instrument.RecordingMethod def
+    let target = def.MainModule.GetType("AltCover.Recorder.Instance").Methods
+                 |> Seq.find (fun m -> m.Name = "loop")
+    let raw = AltCover.Instrument.Context.Build([])
+    let state = {  raw with
+                    RecordingMethodRef = { raw.RecordingMethodRef with
+                                             Visit = null
+                                             Push = recorder.[1]
+                                             Pop = recorder.[2] }}
+    let countBefore = target.Body.Instructions.Count
+    let tailsBefore = target.Body.Instructions
+                      |> Seq.filter (fun i -> i.OpCode = OpCodes.Tail)
+                      |> Seq.length
+    let handlersBefore = target.Body.ExceptionHandlers.Count
+
+    AltCover.Instrument.Track state target Inspect.Track <| Some(42, "hello")
+    Assert.That (target.Body.Instructions.Count, Is.EqualTo (countBefore + 5 - tailsBefore))
+    Assert.That (target.Body.ExceptionHandlers.Count, Is.EqualTo (handlersBefore + 1))
+
+  [<Test>]
   member self.ShouldNotChangeAnUntrackedMethod () =
     let where = Assembly.GetExecutingAssembly().Location
     let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "AltCover.Recorder.dll")
