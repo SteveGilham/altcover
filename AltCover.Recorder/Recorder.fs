@@ -23,8 +23,8 @@ type internal Carrier =
 
 [<System.Runtime.InteropServices.ProgIdAttribute("ExcludeFromCodeCoverage hack for OpenCover issue 615")>]
 type internal Message =
-    | AsyncItem of Carrier
-    | Item of Carrier*AsyncReplyChannel<unit>
+    | AsyncItem of Carrier seq
+    | Item of Carrier seq*AsyncReplyChannel<unit>
     | Finish of Close * AsyncReplyChannel<unit>
 
 module Instance =
@@ -50,7 +50,8 @@ module Instance =
   /// <summary>
   /// Accumulation of visit records
   /// </summary>
-  let internal Visits = new Dictionary<string, Dictionary<int, int * Track list>>();
+  let internal Visits = new Dictionary<string, Dictionary<int, int * Track list>>()
+  let internal buffer = List<Carrier> ()
 
   /// <summary>
   /// Gets the unique token for this instance
@@ -187,6 +188,11 @@ module Instance =
   let mutable internal mailbox = MakeDefaultMailbox()
   let mutable internal mailboxOK = false
 
+  let internal Post (x : Carrier) =
+    match x with
+    | SequencePoint (moduleId, hitPointId, context) ->
+      VisitImpl moduleId hitPointId context
+
   let rec private loop (inbox:MailboxProcessor<Message>) =
     async {
       if Object.ReferenceEquals (inbox, mailbox) then
@@ -196,13 +202,15 @@ module Instance =
         | None -> return! loop inbox
         | Some msg ->
             match msg with
-            | AsyncItem (SequencePoint (moduleId, hitPointId, context)) ->
-                VisitImpl moduleId hitPointId context
-                return! loop inbox
-            | Item (SequencePoint (moduleId, hitPointId, context), channel) ->
-                VisitImpl moduleId hitPointId context
-                channel.Reply ()
-                return! loop inbox
+            | AsyncItem s -> 
+              s |>
+              Seq.iter Post
+              return! loop inbox
+            | Item (s, channel) ->
+              s |>
+              Seq.iter Post
+              channel.Reply ()
+              return! loop inbox
             | Finish (Pause, channel) ->
                 FlushPause()
                 channel.Reply ()
@@ -258,6 +266,12 @@ module Instance =
     PayloadControl Granularity enable
 
   let mutable internal Wait = 10
+  let mutable internal Capacity = 255
+
+  let UnbufferedVisit (f: unit -> bool)  =
+    if f() then
+     mailbox.TryPostAndReply ((fun c -> Item (buffer |> Seq.toArray, c)), Wait) |> ignore
+    else buffer |> Seq.toArray |> Array.toSeq |> AsyncItem |> mailbox.Post
 
   let internal VisitSelection (f: unit -> bool) track moduleId hitPointId =
     // When writing to file for the runner to process,
@@ -266,9 +280,12 @@ module Instance =
     // which failed to drain during the ProcessExit grace period
     // when sending only async messages.
     let message = SequencePoint (moduleId, hitPointId, track)
-    if f() then
-       mailbox.TryPostAndReply ((fun c -> Item (message, c)), Wait) |> ignore
-    else message |> AsyncItem |> mailbox.Post
+    lock (buffer) (fun () ->
+    buffer.Add message
+    if buffer.Count > Capacity then
+      UnbufferedVisit f
+      buffer.Clear()
+      )
 
   let Visit moduleId hitPointId =
     if Recording && mailboxOK then
@@ -278,6 +295,8 @@ module Instance =
   let internal FlushCounter (finish:Close) _ =
    if mailboxOK then
        Recording <- finish = Resume
+       if not Recording then UnbufferedVisit (fun _ -> true)
+       buffer.Clear()
        mailbox.TryPostAndReply ((fun c -> Finish (finish, c)), 2000) |> ignore
 
   let internal AddErrorHandler (box:MailboxProcessor<'a>) =

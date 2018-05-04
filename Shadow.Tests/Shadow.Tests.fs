@@ -170,6 +170,7 @@ type AltCoverTests() = class
   member self.RealIdShouldIncrementCountSynchronously() =
     self.GetMyMethodName "=>"
     lock Instance.Visits (fun () ->
+    Instance.Capacity <- 0
     let save = Instance.trace
     let wait = Instance.Wait
     try
@@ -857,6 +858,7 @@ type AltCoverTests() = class
   // run only once in Framework mode to avoid contention
   [<Test>]
   member self.MailboxFunctionsAsExpected() =
+    Instance.Capacity <- 0
     self.RealIdShouldIncrementCount()
     self.PauseLeavesExpectedTraces()
     self.ResumeLeavesExpectedTraces()

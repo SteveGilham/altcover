@@ -721,7 +721,7 @@ Target "UnitTestWithAltCoverCoreRunner" (fun _ ->
     Shell.cleanDir output
     Actions.RunDotnet (fun o -> {dotnetOptions o with WorkingDirectory = testDirectory}) ""
                       (altcover +
-                             " " + AltCoverFilter + " -x \"" + altReport + "\" /o \"" + output + "\"")
+                             " --opencover " + AltCoverFilter + " -x \"" + altReport + "\" /o \"" + output + "\"")
                              "Instrument the code"
 
     printfn "Unit test the instrumented code"
@@ -742,7 +742,7 @@ Target "UnitTestWithAltCoverCoreRunner" (fun _ ->
     Shell.cleanDir shadowOut
     Actions.RunDotnet (fun o -> {dotnetOptions o with WorkingDirectory = shadowDir}) ""
                       ( altcover +
-                             " " + AltCoverFilter + " -x \"" + shadowReport + "\" /o \"" + shadowOut + "\"")
+                             " --opencover " + AltCoverFilter + " -x \"" + shadowReport + "\" /o \"" + shadowOut + "\"")
                              "Instrument the shadow tests"
 
     let shadowProject = Path.getFullName "./Shadow.Tests/altcover.recorder.tests.core.fsproj"
@@ -761,7 +761,7 @@ Target "UnitTestWithAltCoverCoreRunner" (fun _ ->
 
     Actions.RunDotnet (fun o -> {dotnetOptions o with WorkingDirectory = xDir}) ""
                       ( altcover +
-                             " " + AltCoverFilter + " -x \"" + xReport + "\" /o \"" + xOut + "\"")
+                             " --opencover " + AltCoverFilter + " -x \"" + xReport + "\" /o \"" + xOut + "\"")
                              "Instrument the xunit tests"
 
     printfn "Execute the XUnit tests"
