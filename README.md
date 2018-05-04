@@ -1,7 +1,11 @@
 # altcover
-Instrumenting coverage tool for .net (framework 2.0+  and core) and Mono, reimplemented and extended from [dot-net-coverage](https://github.com/SteveGilham/dot-net-coverage)
+Instrumenting coverage tool for .net (framework 2.0+  and core) and Mono, reimplemented and extended almost beyond recognition from [dot-net-coverage](https://github.com/SteveGilham/dot-net-coverage)
 
-The latest releases can be downloaded from [releases](https://github.com/SteveGilham/altcover/releases), but the easiest (and most automated) way is through the [nuget package](https://www.nuget.org/packages/AltCover).  Alternatively, for .net core, which can be run as a command line tool with `dotnet run`, you can just link from this repo as a Git module, and be as conservative or as bleeding-edge daring as you wish if that meets your needs.
+## Never mind the fluff -- how do I get started?
+
+Start with the [Quick Start guide](https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide)
+
+The latest releases can be downloaded from [releases](https://github.com/SteveGilham/altcover/releases), but the easiest (and most automated) way is through the [nuget package](https://www.nuget.org/packages/AltCover).  Alternatively, for .net core, which can be run as a command line tool with `dotnet run altcover.core.fsproj`, you can just link from this repo as a Git module, and be as conservative or as bleeding-edge daring as you wish, if that meets your needs.
 
 ## Why altcover?
 As the name suggests, it's an alternative coverage approach.  Rather than working by hooking the .net profiling API at run-time, it works by weaving the same sort of extra IL into the assemblies of interest ahead of execution.  This means that it should work pretty much everywhere, whatever your platform, so long as the executing process has write access to the results file.  You can even mix-and-match between platforms used to instrument and those under test.
