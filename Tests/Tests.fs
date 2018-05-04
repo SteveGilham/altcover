@@ -507,6 +507,8 @@ type AltCoverTests() = class
      let methods = def.MainModule.GetAllTypes()
                     |> Seq.collect(fun t -> t.Methods)
                     |> Seq.toList
+
+     methods |> Seq.iter (fun x -> printfn "%As" x.FullName)
      let result = methods
                     |> Seq.map Visitor.DeclaringMethod
                     |> Seq.map (fun (mo : MethodDefinition option) ->
@@ -517,11 +519,15 @@ type AltCoverTests() = class
                      None // System.Collections.Generic.IEnumerable`1<System.Int32> Sample5.Class1::F2(System.String)
                      None // System.Threading.Tasks.Task`1<System.String> Sample5.Class1::F3(System.String)
                      None // System.Void Sample5.Class1::.ctor()
+                     Some "F1" // "System.Int32 Sample5.Class1::<F1>g__Interior|0_1(System.Int32,System.Int32)"
+                     Some "F1" // "System.Int32 Sample5.Class1::<F1>g__Recursive|0_3(System.Int32)"
                      None // System.Int32 Sample5.Class1/Inner::G1(System.String)
                      None // System.Collections.Generic.IEnumerable`1<System.Int32> Sample5.Class1/Inner::G2(System.String)
                      None // System.Threading.Tasks.Task`1<System.String> Sample5.Class1/Inner::G3(System.String)
                      None // System.Void Sample5.Class1/Inner::G3(System.Int32)
                      None // System.Void Sample5.Class1/Inner::.ctor()
+                     Some "G1" // "System.Int32 Sample5.Class1/Inner::<G1>g__Interior|0_1(System.Int32,System.Int32)"
+                     Some "G1" // "System.Int32 Sample5.Class1/Inner::<G1>g__Recursive|0_3(System.Int32)"
                      None // System.Void Sample5.Class1/Inner/<>c__DisplayClass0_0::.ctor()
                      Some "G1" // System.Int32 Sample5.Class1/Inner/<>c__DisplayClass0_0::<G1>b__1(System.Char)
                      Some "G1" // System.Int32 Sample5.Class1/Inner/<>c__DisplayClass0_0::<G1>b__2(System.Char)
@@ -557,9 +563,13 @@ type AltCoverTests() = class
                      Some "F3" // System.Void Sample5.Class1/<F3>d__2::MoveNext()
                      Some "F3" // System.Void Sample5.Class1/<F3>d__2::SetStateMachine(System.Runtime.CompilerServices.IAsyncStateMachine)
                      ]
+     result |> Seq.toList
+      |> List.zip expected
+      |> List.iteri (fun i (x,y) -> Assert.That(y, Is.EqualTo x, sprintf "%A %A %d" x y i))
+   
      Assert.That (result, Is.EquivalentTo expected)
 
-     let g3 = methods.[6]
+     let g3 = methods.[8]
      Assert.That (methods
                   |> Seq.map Visitor.DeclaringMethod
                   |> Seq.choose id
