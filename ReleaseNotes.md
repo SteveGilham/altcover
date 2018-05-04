@@ -1,3 +1,11 @@
+# 3.0.4xx (Caba series release 10)
+* Support for starting/pausing/resuming coverage collection during operation -- see https://github.com/SteveGilham/altcover/wiki/Pause%E2%95%B1Resume-and-the-Control-File
+* Speed-up in data collection
+* Support for excluding C# inner methods by excluding the enclosing method
+* Add CRAP (Change Risk Anti-Patterns) score to methods (and min/max values to summaries) in `--opencover` format and `runner`/`Collect` mode 
+* [BUGFIX] -- using `dotnet AltCover.dll` to instrument a .net core project using F# could fail when rewriting the `.deps.json` file.
+* [BUGFIX] -- not all branches were being tallied for certain complex F# match expressions
+
 # 3.0.455 (Caba series release 9)
 * `-o|outputFile` option in `runner` mode (parameter `OutputFile` for the `AltCover.Collect` task) to allow the default report for the current dataset to be written to a new file, rather than updating/accumulating in the file specified at instrumentation time.
 * Some refactoring and adjustments to the build processes, latest FAKE RC etc.
