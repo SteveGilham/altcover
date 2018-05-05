@@ -566,7 +566,7 @@ type AltCoverTests() = class
      result |> Seq.toList
       |> List.zip expected
       |> List.iteri (fun i (x,y) -> Assert.That(y, Is.EqualTo x, sprintf "%A %A %d" x y i))
-   
+
      Assert.That (result, Is.EquivalentTo expected)
 
      let g3 = methods.[8]

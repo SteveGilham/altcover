@@ -202,7 +202,7 @@ module Instance =
         | None -> return! loop inbox
         | Some msg ->
             match msg with
-            | AsyncItem s -> 
+            | AsyncItem s ->
               s |>
               Seq.iter Post
               return! loop inbox

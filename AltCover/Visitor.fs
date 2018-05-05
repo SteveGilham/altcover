@@ -277,7 +277,7 @@ module Visitor =
                             MethodNumber <- id
                             (id, n))
 
-  let private CSharpDeclaringMethod (name:string) (source:TypeDefinition) 
+  let private CSharpDeclaringMethod (name:string) (source:TypeDefinition)
                                      (target:TypeDefinition) index =
     let stripped = name.Substring(1, index)
     let candidates = target.Methods

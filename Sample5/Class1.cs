@@ -16,10 +16,10 @@ namespace Sample5
             Func<char, int> f = (c => { return (int)c; });
 
             // function Sample5.Class1.<F1>g__Interior|0_1
-            int Interior (int a, int b)
+            int Interior(int a, int b)
             {
                 // Sample5.Class1.<F1>g__Recursive|0_3
-                int Recursive (int c)
+                int Recursive(int c)
                 {
                     return c * c;
                 }
@@ -74,7 +74,6 @@ namespace Sample5
 
                     return Recursive(a) % b;
                 }
-
 
                 // function Sample5.Class1+Inner+<>c__DisplayClass0_0.<IF1>b__1
                 // function Sample5.Class1+Inner+<>c__DisplayClass0_0.<IF1>b__2
