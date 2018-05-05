@@ -32,7 +32,7 @@ namespace Sample5
             return input.Select(x =>
             {
                 var l = new List<char> { x };
-                return Interior(l.Select(c => f(c)).Last(), 6);
+                return Interior(l.Select(f).Last(), 6);
             }).Sum();
         }
 
@@ -80,7 +80,7 @@ namespace Sample5
                 return input.Select(x =>
                 {
                     var l = new List<char> { x };
-                    return Interior(l.Select(c => f(c)).Last(), 6);
+                    return Interior(l.Select(f).Last(), 6);
                 }).Sum();
             }
 

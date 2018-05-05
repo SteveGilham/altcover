@@ -528,7 +528,6 @@ type AltCoverTests() = class
                      Some "G1" // "System.Int32 Sample5.Class1/Inner::<G1>g__Interior|0_1(System.Int32,System.Int32)"
                      Some "G1" // "System.Int32 Sample5.Class1/Inner::<G1>g__Recursive|0_3(System.Int32)"
                      None // System.Void Sample5.Class1/Inner/<>c__DisplayClass0_0::.ctor()
-                     Some "G1" // System.Int32 Sample5.Class1/Inner/<>c__DisplayClass0_0::<G1>b__1(System.Char)
                      Some "G1" // System.Int32 Sample5.Class1/Inner/<>c__DisplayClass0_0::<G1>b__2(System.Char)
                      None // System.Void Sample5.Class1/Inner/<>c::.cctor()
                      None // System.Void Sample5.Class1/Inner/<>c::.ctor()
@@ -545,7 +544,6 @@ type AltCoverTests() = class
                      Some "G3" // System.Void Sample5.Class1/Inner/<G3>d__2::MoveNext()
                      Some "G3" // System.Void Sample5.Class1/Inner/<G3>d__2::SetStateMachine(System.Runtime.CompilerServices.IAsyncStateMachine)
                      None // System.Void Sample5.Class1/<>c__DisplayClass0_0::.ctor()
-                     Some "F1" // System.Int32 Sample5.Class1/<>c__DisplayClass0_0::<F1>b__1(System.Char)
                      Some "F1" // System.Int32 Sample5.Class1/<>c__DisplayClass0_0::<F1>b__2(System.Char)
                      None // System.Void Sample5.Class1/<>c::.cctor()
                      None // System.Void Sample5.Class1/<>c::.ctor()
@@ -562,7 +560,8 @@ type AltCoverTests() = class
                      Some "F3" // System.Void Sample5.Class1/<F3>d__2::MoveNext()
                      Some "F3" // System.Void Sample5.Class1/<F3>d__2::SetStateMachine(System.Runtime.CompilerServices.IAsyncStateMachine)
                      ]
-     // methods |> Seq.iter (fun x -> printfn "%A" x.FullName)
+     methods |> Seq.iter (fun x -> printfn "%A" x.FullName)
+     Assert.That (result, Is.EquivalentTo expected)
 
      result |> Seq.toList
       |> List.zip expected
