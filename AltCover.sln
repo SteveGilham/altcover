@@ -31,6 +31,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build Items", "Build Items"
 		Build\get-nuget.ps1 = Build\get-nuget.ps1
 		Build\Infrastructure.snk = Build\Infrastructure.snk
 		Build\Recorder.snk = Build\Recorder.snk
+		Build\rules-mono.xml = Build\rules-mono.xml
 		Build\rules.xml = Build\rules.xml
 		Build\SelfTest.snk = Build\SelfTest.snk
 		Build\setup.fsx = Build\setup.fsx

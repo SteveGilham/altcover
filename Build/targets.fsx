@@ -349,7 +349,7 @@ Target "UnitTestDotNetWithCoverlet" (fun _ ->
                                                     f
                                 with
                                 | x -> eprintf "%A" x
-                                                  
+
                                 let here = Path.GetDirectoryName f
                                 let tag = Path.GetFileName here
 
