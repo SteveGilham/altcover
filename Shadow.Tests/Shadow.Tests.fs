@@ -55,6 +55,12 @@ type AltCoverTests() = class
                           |> Seq.find (fun n -> n.EndsWith("Sample1WithModifiedOpenCover.xml", StringComparison.Ordinal))
 
   [<Test>]
+  member self.SafeDisposalProtects() =
+    let obj1 = { new System.IDisposable with member x.Dispose() = ObjectDisposedException("Bang!") |> raise }
+    Assist.SafeDispose obj1
+    Assert.Pass()
+
+  [<Test>]
   member self.DefaultAccessorsBehaveAsExpected() =
     let v1 = DateTime.UtcNow.Ticks
     let probe = Instance.Clock()

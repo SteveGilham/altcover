@@ -223,7 +223,7 @@ module Instance =
                 FlushAll ()
                 channel.Reply ()
                 mailboxOK <- false
-                (inbox :> IDisposable).Dispose()
+                Assist.SafeDispose inbox
         }
 
   let internal MakeMailbox () =
@@ -307,7 +307,7 @@ module Instance =
 
   let internal RunMailbox () =
     Recording <- true
-    (mailbox :> IDisposable).Dispose()
+    Assist.SafeDispose mailbox
     mailbox <- MakeMailbox ()
     mailboxOK <- true
     AddErrorHandler mailbox
