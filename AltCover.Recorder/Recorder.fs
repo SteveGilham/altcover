@@ -266,7 +266,7 @@ module Instance =
     PayloadControl Granularity enable
 
   let mutable internal Wait = 10
-  let mutable internal Capacity = 255
+  let mutable internal Capacity = 127
 
   let UnbufferedVisit (f: unit -> bool)  =
     if f() then
