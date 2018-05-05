@@ -5,6 +5,7 @@ namespace AltCover.Recorder
 
 open System
 open System.Collections.Generic
+open System.IO
 open System.Reflection
 open System.Resources
 open System.Runtime.CompilerServices
@@ -13,6 +14,8 @@ open System.Runtime.CompilerServices
 type internal Close =
     | DomainUnload
     | ProcessExit
+    | Pause
+    | Resume
 
 [<System.Runtime.InteropServices.ProgIdAttribute("ExcludeFromCodeCoverage hack for OpenCover issue 615")>]
 type internal Carrier =
@@ -20,8 +23,8 @@ type internal Carrier =
 
 [<System.Runtime.InteropServices.ProgIdAttribute("ExcludeFromCodeCoverage hack for OpenCover issue 615")>]
 type internal Message =
-    | AsyncItem of Carrier
-    | Item of Carrier*AsyncReplyChannel<unit>
+    | AsyncItem of Carrier seq
+    | Item of Carrier seq*AsyncReplyChannel<unit>
     | Finish of Close * AsyncReplyChannel<unit>
 
 module Instance =
@@ -47,7 +50,8 @@ module Instance =
   /// <summary>
   /// Accumulation of visit records
   /// </summary>
-  let internal Visits = new Dictionary<string, Dictionary<int, int * Track list>>();
+  let internal Visits = new Dictionary<string, Dictionary<int, int * Track list>>()
+  let internal buffer = List<Carrier> ()
 
   /// <summary>
   /// Gets the unique token for this instance
@@ -113,10 +117,12 @@ module Instance =
   /// </summary>
   let internal mutex = new System.Threading.Mutex(false, Token + ".mutex");
 
+  let SignalFile () = ReportFile + ".acv"
+
   /// <summary>
   /// Reporting back to the mother-ship
   /// </summary>
-  let mutable internal trace = Tracer.Create (ReportFile + ".acv")
+  let mutable internal trace = Tracer.Create (SignalFile ())
 
   let internal WithMutex (f : bool -> 'a) =
     let own = mutex.WaitOne(1000)
@@ -125,10 +131,17 @@ module Instance =
     finally
       if own then mutex.ReleaseMutex()
 
+  let InitialiseTrace () =
+    WithMutex (fun _ -> let t = Tracer.Create (SignalFile ())
+                        trace <- t.OnStart ())
+
+  let internal Watcher = new FileSystemWatcher()
+  let mutable internal Recording = true
+
   /// <summary>
   /// This method flushes hit count buffers.
   /// </summary>
-  let internal FlushCounterImpl _ =
+  let internal FlushAll () =
     trace.OnConnected (fun () -> trace.OnFinish Visits)
       (fun () ->
       match Visits.Count with
@@ -140,6 +153,20 @@ module Instance =
                 GetResource "Coverage statistics flushing took {0:N} seconds"
                 |> Option.iter (fun s -> Console.Out.WriteLine(s, delta.TotalSeconds))
              ))
+
+  let FlushPause () =
+    ("PauseHandler")
+    |> GetResource
+    |> Option.iter Console.Out.WriteLine
+    FlushAll ()
+    InitialiseTrace()
+
+  let FlushResume () =
+    ("ResumeHandler")
+    |> GetResource
+    |> Option.iter Console.Out.WriteLine
+    Visits.Clear()
+    InitialiseTrace ()
 
   let internal TraceVisit moduleId hitPointId context =
      trace.OnVisit Visits moduleId hitPointId context
@@ -161,28 +188,43 @@ module Instance =
   let mutable internal mailbox = MakeDefaultMailbox()
   let mutable internal mailboxOK = false
 
+  let internal Post (x : Carrier) =
+    match x with
+    | SequencePoint (moduleId, hitPointId, context) ->
+      VisitImpl moduleId hitPointId context
+
   let rec private loop (inbox:MailboxProcessor<Message>) =
-          async {
-             if Object.ReferenceEquals (inbox, mailbox) then
-                 // release the wait every half second
-                 let! opt = inbox.TryReceive(500)
-                 match opt with
-                 | None -> return! loop inbox
-                 | Some msg ->
-                     match msg with
-                     | AsyncItem (SequencePoint (moduleId, hitPointId, context)) ->
-                         VisitImpl moduleId hitPointId context
-                         return! loop inbox
-                     | Item (SequencePoint (moduleId, hitPointId, context), channel)->
-                         VisitImpl moduleId hitPointId context
-                         channel.Reply ()
-                         return! loop inbox
-                     | Finish (mode, channel) ->
-                         FlushCounterImpl mode
-                         channel.Reply ()
-                         mailboxOK <- false
-                         (inbox :> IDisposable).Dispose()
-          }
+    async {
+      if Object.ReferenceEquals (inbox, mailbox) then
+        // release the wait every half second
+        let! opt = inbox.TryReceive(500)
+        match opt with
+        | None -> return! loop inbox
+        | Some msg ->
+            match msg with
+            | AsyncItem s ->
+              s |>
+              Seq.iter Post
+              return! loop inbox
+            | Item (s, channel) ->
+              s |>
+              Seq.iter Post
+              channel.Reply ()
+              return! loop inbox
+            | Finish (Pause, channel) ->
+                FlushPause()
+                channel.Reply ()
+                return! loop inbox
+            | Finish (Resume, channel) ->
+                FlushResume ()
+                channel.Reply ()
+                return! loop inbox
+            | Finish (_, channel) ->
+                FlushAll ()
+                channel.Reply ()
+                mailboxOK <- false
+                (inbox :> IDisposable).Dispose()
+        }
 
   let internal MakeMailbox () =
     new MailboxProcessor<Message>(loop)
@@ -224,6 +266,12 @@ module Instance =
     PayloadControl Granularity enable
 
   let mutable internal Wait = 10
+  let mutable internal Capacity = 127
+
+  let UnbufferedVisit (f: unit -> bool)  =
+    if f() then
+     mailbox.TryPostAndReply ((fun c -> Item (buffer |> Seq.toArray, c)), Wait) |> ignore
+    else buffer |> Seq.toArray |> Array.toSeq |> AsyncItem |> mailbox.Post
 
   let internal VisitSelection (f: unit -> bool) track moduleId hitPointId =
     // When writing to file for the runner to process,
@@ -232,18 +280,24 @@ module Instance =
     // which failed to drain during the ProcessExit grace period
     // when sending only async messages.
     let message = SequencePoint (moduleId, hitPointId, track)
-    if f() then
-       mailbox.TryPostAndReply ((fun c -> Item (message, c)), Wait) |> ignore
-    else message |> AsyncItem |> mailbox.Post
+    lock (buffer) (fun () ->
+    buffer.Add message
+    if buffer.Count > Capacity then
+      UnbufferedVisit f
+      buffer.Clear()
+      )
 
   let Visit moduleId hitPointId =
-   if mailboxOK then
+    if Recording && mailboxOK then
      VisitSelection (fun () -> trace.IsConnected() || Backlog() > 10)
                      (PayloadSelector IsOpenCoverRunner) moduleId hitPointId
 
   let internal FlushCounter (finish:Close) _ =
    if mailboxOK then
-    mailbox.PostAndReply (fun c -> Finish (finish, c))
+       Recording <- finish = Resume
+       if not Recording then UnbufferedVisit (fun _ -> true)
+       buffer.Clear()
+       mailbox.TryPostAndReply ((fun c -> Finish (finish, c)), 2000) |> ignore
 
   let internal AddErrorHandler (box:MailboxProcessor<'a>) =
     box.Error.Add MailboxError
@@ -251,8 +305,8 @@ module Instance =
   let internal SetErrorAction () =
     ErrorAction <- DisplayError
 
-  // unit test helpers -- avoid issues with cross CLR version calls
   let internal RunMailbox () =
+    Recording <- true
     (mailbox :> IDisposable).Dispose()
     mailbox <- MakeMailbox ()
     mailboxOK <- true
@@ -261,8 +315,22 @@ module Instance =
     mailbox.Start()
 
   // Register event handling
+  let DoPause =
+    FlushCounter Pause
+
+  let DoResume =
+    FlushCounter Resume
+
+  let internal StartWatcher() =
+     Watcher.Path <- Path.GetDirectoryName <| SignalFile()
+     Watcher.Filter <- Path.GetFileName <| SignalFile()
+     Watcher.Created.Add DoResume
+     Watcher.Deleted.Add DoPause
+     Watcher.EnableRaisingEvents <- Watcher.Path |> String.IsNullOrEmpty |> not
+
   do
     AppDomain.CurrentDomain.DomainUnload.Add(FlushCounter DomainUnload)
     AppDomain.CurrentDomain.ProcessExit.Add(FlushCounter ProcessExit)
-    WithMutex (fun _ -> trace <- trace.OnStart ())
+    StartWatcher ()
+    InitialiseTrace ()
     RunMailbox ()

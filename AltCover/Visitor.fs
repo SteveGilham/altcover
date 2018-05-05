@@ -210,10 +210,13 @@ module Visitor =
     |> Seq.exists (fun f -> f m)
     |> not
 
+  let private accumulator = HashSet<AssemblyDefinition>()
+
   let private StartVisit (paths:seq<string>) buildSequence =
         paths
         |> Seq.collect (AssemblyDefinition.ReadAssembly >>
-                        (fun x -> // Reject completely if filtered here
+                        (fun x -> x |> accumulator.Add |> ignore
+                                  // Reject completely if filtered here
                                   let inspection = IsIncluded x
                                   let included = inspection |||
                                                  if inspection = Inspect.Instrument &&
@@ -274,9 +277,10 @@ module Visitor =
                             MethodNumber <- id
                             (id, n))
 
-  let private CSharpDeclaringMethod (name:string) (t:TypeDefinition) index =
+  let private CSharpDeclaringMethod (name:string) (source:TypeDefinition)
+                                     (target:TypeDefinition) index =
     let stripped = name.Substring(1, index)
-    let candidates = t.DeclaringType.Methods
+    let candidates = target.Methods
                     |> Seq.filter (fun mx -> (mx.Name = stripped) && mx.HasBody)
                     |> Seq.toList
     match candidates with
@@ -285,7 +289,7 @@ module Visitor =
             |> Seq.tryFind(fun m -> m.Body.Instructions
                                     |> Seq.filter(fun i -> i.OpCode = OpCodes.Newobj)
                                     |> Seq.exists(fun i -> let tn = (i.Operand :?> MethodReference).DeclaringType
-                                                           tn = (t :> TypeReference)))
+                                                           tn = (source :> TypeReference)))
 
   let private FSharpDeclaringMethod (t:TypeDefinition) (tx:TypeReference) =
     let candidates = t.DeclaringType.Methods.Concat
@@ -301,28 +305,33 @@ module Visitor =
                                                            tn = tx))
 
   let internal DeclaringMethod (m:MethodDefinition) =
+    let mname = m.Name
     let t = m.DeclaringType
-    let n = t.Name
-    if t.IsNested |> not then
-      None
-    else if n.StartsWith("<", StringComparison.Ordinal) then
-           let name = if n.StartsWith("<>", StringComparison.Ordinal)
-                      then m.Name
-                      else n
+    if mname.StartsWith("<", StringComparison.Ordinal) && mname.IndexOf('|') > 0 then
+      let index = mname.IndexOf('>') - 1
+      CSharpDeclaringMethod mname t t index
+    else
+      let n = t.Name
+      if t.IsNested |> not then
+        None
+      else if n.StartsWith("<", StringComparison.Ordinal) then
+             let name = if n.StartsWith("<>", StringComparison.Ordinal)
+                        then mname
+                        else n
 
-           let index = name.IndexOf('>') - 1
-           if (index < 1) then None
-           else CSharpDeclaringMethod name t index
-         else if n.IndexOf('@') >= 0 then
-               let tx = if n.EndsWith("T", StringComparison.Ordinal)
-                        then match t.Methods |> Seq.tryFind (fun m -> m.IsConstructor && m.HasParameters && (m.Parameters.Count = 1))
-                                             |> Option.map (fun m -> m.Parameters |> Seq.head) with
-                             | None -> t :> TypeReference
-                             | Some other -> other.ParameterType
+             let index = name.IndexOf('>') - 1
+             if (index < 1) then None
+             else CSharpDeclaringMethod name t t.DeclaringType index
+           else if n.IndexOf('@') >= 0 then
+                 let tx = if n.EndsWith("T", StringComparison.Ordinal)
+                          then match t.Methods |> Seq.tryFind (fun m -> m.IsConstructor && m.HasParameters && (m.Parameters.Count = 1))
+                                               |> Option.map (fun m -> m.Parameters |> Seq.head) with
+                               | None -> t :> TypeReference
+                               | Some other -> other.ParameterType
 
-                        else t :> TypeReference
-               FSharpDeclaringMethod t tx
-              else None
+                          else t :> TypeReference
+                 FSharpDeclaringMethod t tx
+                else None
 
   let private VisitType (t:TypeDefinition) included buildSequence =
         t.Methods
@@ -341,25 +350,30 @@ module Visitor =
 
                                   Method (m, inclusion, Track m)) >> buildSequence)
 
-  let CompilerSpecialLineNumber = 0xfeefee
+  let IsSequencePoint (s:SequencePoint) =
+    (s  |> isNull |> not) && s.IsHidden |> not
 
   let findSequencePoint (dbg:MethodDebugInformation) (instructions:Instruction seq) =
     instructions
     |> Seq.map dbg.GetSequencePoint
-    |> Seq.tryFind (fun s -> (s  |> isNull |> not) && s.StartLine <> CompilerSpecialLineNumber)
+    |> Seq.tryFind IsSequencePoint
 
   let indexList l =
     l |> List.mapi (fun i x -> (i,x))
 
-  let getJumpChain (i:Instruction) =
-    Seq.unfold (fun (state:Cil.Instruction) -> if isNull state
-                                               then None
-                                               else Some (state, if state.OpCode = OpCodes.Br ||
-                                                                    state.OpCode = OpCodes.Br_S
-                                                                 then state.Operand :?> Instruction
-                                                                 else null)) i
-    |> Seq.toList
-    |> List.rev
+  let getJumpChain (terminal:Instruction) (i:Instruction) =
+    let rec accumulate (state:Instruction) l =
+      let gendarme = l
+      if isNull state then gendarme
+      else if state.OpCode = OpCodes.Br ||
+              state.OpCode = OpCodes.Br_S then
+              let target = (state.Operand :?> Instruction)
+              accumulate target (target::l)
+           else if (state.Offset > terminal.Offset ||
+                    state.OpCode.FlowControl = FlowControl.Cond_Branch)
+                then l
+                else accumulate state.Next gendarme
+    accumulate i [i]
 
   [<SuppressMessage("Microsoft.Usage", "CA2208", Justification="Compiler inlined code in List.m??By")>]
   let includedSequencePoint dbg (toNext:Instruction list) toJump =
@@ -370,16 +384,22 @@ module Visitor =
                 |>  Seq.toList
     findSequencePoint dbg range
 
+  let rec lastOfSequencePoint (dbg:MethodDebugInformation) (i:Instruction) =
+    let n = i.Next
+    if n |> isNull || n |>dbg.GetSequencePoint |> IsSequencePoint then i
+    else lastOfSequencePoint dbg n
+
   let getJumps (dbg:MethodDebugInformation) (i:Instruction) =
+    let terminal = lastOfSequencePoint dbg i
     let next = i.Next
     if i.OpCode = OpCodes.Switch then
-      (i, getJumpChain next, next.Offset, -1) :: (i.Operand :?> Instruction[]
-      |> Seq.mapi (fun k d -> i,getJumpChain d,d.Offset,k)
+      (i, getJumpChain terminal next, next.Offset, -1) :: (i.Operand :?> Instruction[]
+      |> Seq.mapi (fun k d -> i,getJumpChain terminal d,d.Offset,k)
       |> Seq.toList)
     else
     let jump = i.Operand :?> Instruction
-    let toNext = getJumpChain next
-    let toJump = getJumpChain jump
+    let toNext = getJumpChain terminal next
+    let toJump = getJumpChain terminal jump
 
     // Eliminate the "all inside one SeqPnt" jumps
     // This covers a multitude of compiler generated branching cases
@@ -435,7 +455,7 @@ module Visitor =
                                |> Seq.concat
                                |> Seq.filter (fun (x:Instruction) -> if dbg.HasSequencePoints then
                                                                         let s = dbg.GetSequencePoint x
-                                                                        (not << isNull) s && s.StartLine <> CompilerSpecialLineNumber
+                                                                        (not << isNull) s && (s.IsHidden |> not)
                                                                      else false)
                                |> Seq.toList
 
@@ -483,23 +503,17 @@ module Visitor =
     visitors |>
     List.map (invoke node)
 
-  let internal accumulator = HashSet<AssemblyDefinition>()
-
   let internal Visit (visitors : list<Fix<Node>>) (assemblies : seq<string>) =
     ZeroPoints()
     MethodNumber <- 0
     try
         Start assemblies
         |> BuildSequence
-        |> Seq.map (fun node -> match node with
-                                | Assembly (a, _) -> accumulator.Add(a) |> ignore
-                                | _ -> ()
-                                node)
         |> Seq.fold apply visitors
         |> ignore
     finally
       accumulator
-      |> Seq.iter (fun a -> (a :>IDisposable).Dispose())
+      |> Seq.iter (fun a -> (a :> IDisposable).Dispose())
       accumulator.Clear()
 
   let EncloseState (visitor : 'State -> 'T -> 'State) (current : 'State) =

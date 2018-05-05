@@ -517,11 +517,15 @@ type AltCoverTests() = class
                      None // System.Collections.Generic.IEnumerable`1<System.Int32> Sample5.Class1::F2(System.String)
                      None // System.Threading.Tasks.Task`1<System.String> Sample5.Class1::F3(System.String)
                      None // System.Void Sample5.Class1::.ctor()
+                     Some "F1" // "System.Int32 Sample5.Class1::<F1>g__Interior|0_1(System.Int32,System.Int32)"
+                     Some "F1" // "System.Int32 Sample5.Class1::<F1>g__Recursive|0_3(System.Int32)"
                      None // System.Int32 Sample5.Class1/Inner::G1(System.String)
                      None // System.Collections.Generic.IEnumerable`1<System.Int32> Sample5.Class1/Inner::G2(System.String)
                      None // System.Threading.Tasks.Task`1<System.String> Sample5.Class1/Inner::G3(System.String)
                      None // System.Void Sample5.Class1/Inner::G3(System.Int32)
                      None // System.Void Sample5.Class1/Inner::.ctor()
+                     Some "G1" // "System.Int32 Sample5.Class1/Inner::<G1>g__Interior|0_1(System.Int32,System.Int32)"
+                     Some "G1" // "System.Int32 Sample5.Class1/Inner::<G1>g__Recursive|0_3(System.Int32)"
                      None // System.Void Sample5.Class1/Inner/<>c__DisplayClass0_0::.ctor()
                      Some "G1" // System.Int32 Sample5.Class1/Inner/<>c__DisplayClass0_0::<G1>b__1(System.Char)
                      Some "G1" // System.Int32 Sample5.Class1/Inner/<>c__DisplayClass0_0::<G1>b__2(System.Char)
@@ -557,9 +561,11 @@ type AltCoverTests() = class
                      Some "F3" // System.Void Sample5.Class1/<F3>d__2::MoveNext()
                      Some "F3" // System.Void Sample5.Class1/<F3>d__2::SetStateMachine(System.Runtime.CompilerServices.IAsyncStateMachine)
                      ]
-     Assert.That (result, Is.EquivalentTo expected)
+     result |> Seq.toList
+      |> List.zip expected
+      |> List.iteri (fun i (x,y) -> Assert.That(y, Is.EqualTo x, sprintf "%A %A %d" x y i))
 
-     let g3 = methods.[6]
+     let g3 = methods.[8]
      Assert.That (methods
                   |> Seq.map Visitor.DeclaringMethod
                   |> Seq.choose id
@@ -1361,7 +1367,7 @@ type AltCoverTests() = class
   member self.BranchChainsSerialize() =
     let where = Assembly.GetExecutingAssembly().Location
     let path = Path.Combine(Path.GetDirectoryName(where), "Sample2.dll")
-    let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    use def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
     ProgramDatabase.ReadSymbols def
     let method = def.MainModule.GetAllTypes()
                  |> Seq.collect (fun t -> t.Methods)
@@ -1390,6 +1396,19 @@ type AltCoverTests() = class
     finally
       Visitor.NameFilters.Clear()
       Visitor.reportFormat <- None
+
+  [<Test>]
+  member self.BranchChainsTerminate() =
+    let where = Assembly.GetExecutingAssembly().Location
+    let path = Path.Combine(Path.GetDirectoryName(where), "Sample2.dll")
+    use def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    ProgramDatabase.ReadSymbols def
+    let method = def.MainModule.GetAllTypes()
+                 |> Seq.collect (fun t -> t.Methods)
+                 |> Seq.find (fun m -> m.Name = "as_bar")
+    let fin = method.Body.Instructions |> Seq.last
+    let list = Visitor.getJumpChain fin fin
+    Assert.That (list, Is.EquivalentTo [fin])
 
   static member private RecursiveValidateOpenCover result expected' depth zero expectSkipped =
     let X name =
@@ -1424,6 +1443,9 @@ type AltCoverTests() = class
                     | "sequenceCoverage"
                     | "branchCoverage"
                     | "uspid"
+                    | "minCrapScore"
+                    | "maxCrapScore"
+                    | "crapScore"
                     | "hash" -> ()
                     | "fullPath" -> Assert.That(a1.Value.Replace("\\","/"), Does.EndWith(a2.Value.Replace("\\","/")),
                                                 a1.Name.ToString() + " : " + r.ToString() + " -> document")
@@ -1889,6 +1911,28 @@ type AltCoverTests() = class
       Visitor.keys.Clear()
 
   [<Test>]
+  member self.GuardShouldDisposeRecordingAssemblyOnException () =
+    let where = Assembly.GetExecutingAssembly().Location
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample3.dll")
+    let prepared = AssemblyDefinition.ReadAssembly path
+    ProgramDatabase.ReadSymbols prepared
+
+    let bang = fun () -> InvalidOperationException("Bang") |> raise
+
+    Assert.Throws<InvalidOperationException>(fun() -> Instrument.Guard prepared bang |> ignore) |> ignore
+    let output = Path.GetTempFileName()
+    let outputdll = output + ".dll"
+    try
+      Assert.Throws<ArgumentException>(fun () -> Instrument.WriteAssembly prepared outputdll) |> ignore
+    finally
+        Directory.EnumerateFiles(Path.GetDirectoryName output,
+                                 (Path.GetFileNameWithoutExtension output) + ".*")
+        |> Seq.iter (fun f -> try File.Delete f
+                              with // occasionally the dll file is locked by another process
+                              | :? System.UnauthorizedAccessException
+                              | :? IOException -> ())
+
+  [<Test>]
   member self.ShouldBeAbleToPrepareTheAssembly () =
     try
       Visitor.keys.Clear()
@@ -2334,6 +2378,36 @@ type AltCoverTests() = class
     AltCover.Instrument.Track state recorder.Head Inspect.Track <| Some(42, "hello")
     Assert.That (recorder.Head.Body.Instructions.Count, Is.EqualTo (countBefore + 5 - tailsBefore))
     Assert.That (recorder.Head.Body.ExceptionHandlers.Count, Is.EqualTo (handlersBefore + 1))
+
+  [<Test>]
+  member self.ShouldBeAbleToTrackAMethodWithTailCalls () =
+    let where = Assembly.GetExecutingAssembly().Location
+#if NETCOREAPP2_0
+    let shift = String.Empty
+#else
+    let shift = "/netcoreapp2.0"
+#endif
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack() +
+                            shift, "AltCover.Recorder.dll")
+    let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    let recorder = AltCover.Instrument.RecordingMethod def
+    let target = def.MainModule.GetType("AltCover.Recorder.Instance").Methods
+                 |> Seq.find (fun m -> m.Name = "loop")
+    let raw = AltCover.Instrument.Context.Build([])
+    let state = {  raw with
+                    RecordingMethodRef = { raw.RecordingMethodRef with
+                                             Visit = null
+                                             Push = recorder.[1]
+                                             Pop = recorder.[2] }}
+    let countBefore = target.Body.Instructions.Count
+    let tailsBefore = target.Body.Instructions
+                      |> Seq.filter (fun i -> i.OpCode = OpCodes.Tail)
+                      |> Seq.length
+    let handlersBefore = target.Body.ExceptionHandlers.Count
+
+    AltCover.Instrument.Track state target Inspect.Track <| Some(42, "hello")
+    Assert.That (target.Body.Instructions.Count, Is.EqualTo (countBefore + 5 - tailsBefore))
+    Assert.That (target.Body.ExceptionHandlers.Count, Is.EqualTo (handlersBefore + 1))
 
   [<Test>]
   member self.ShouldNotChangeAnUntrackedMethod () =
@@ -2853,6 +2927,69 @@ type AltCoverTests() = class
     let result = Instrument.injectJSON <| expected
     Assert.That (result.Replace("\r\n","\n"),
                  Is.EqualTo(expected.Replace("\r\n","\n")))
+
+  [<Test>]
+  member self.NonFinishShouldDisposeRecordingAssembly () =
+    let where = Assembly.GetExecutingAssembly().Location
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample3.dll")
+    let prepared = AssemblyDefinition.ReadAssembly path
+    ProgramDatabase.ReadSymbols prepared
+    let state = { Instrument.Context.Build [] with RecordingAssembly = prepared }
+
+    Assert.Throws<InvalidOperationException>(fun () ->
+                                               Instrument.InstrumentationVisitorWrapper
+                                                (fun _ _ -> InvalidOperationException("Bang") |> raise)
+                                                state AfterType
+                                                |> ignore) |> ignore
+    let output = Path.GetTempFileName()
+    let outputdll = output + ".dll"
+    try
+      Assert.Throws<ArgumentException>(fun () -> Instrument.WriteAssembly prepared outputdll  ) |> ignore
+    finally
+        Directory.EnumerateFiles(Path.GetDirectoryName output,
+                                 (Path.GetFileNameWithoutExtension output) + ".*")
+        |> Seq.iter (fun f -> try File.Delete f
+                              with // occasionally the dll file is locked by another process
+                              | :? System.UnauthorizedAccessException
+                              | :? IOException -> ())
+
+  [<Test>]
+  member self.NonFinishShouldNotDisposeNullRecordingAssembly () =
+    let where = Assembly.GetExecutingAssembly().Location
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample3.dll")
+    let state = { Instrument.Context.Build [] with RecordingAssembly = null }
+
+    // Would be NullreferenceException if we tried it
+    Assert.Throws<InvalidOperationException>(fun () ->
+                                               Instrument.InstrumentationVisitorWrapper
+                                                (fun _ _ -> InvalidOperationException("Bang") |> raise)
+                                                state AfterType
+                                                |> ignore) |> ignore
+
+  [<Test>]
+  member self.FinishShouldLeaveRecordingAssembly () =
+    let where = Assembly.GetExecutingAssembly().Location
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample3.dll")
+    let state = { Instrument.Context.Build [] with RecordingAssembly = null }
+    let prepared = AssemblyDefinition.ReadAssembly path
+    ProgramDatabase.ReadSymbols prepared
+
+    Assert.Throws<InvalidOperationException>(fun () ->
+                                               Instrument.InstrumentationVisitorWrapper
+                                                (fun _ _ -> InvalidOperationException("Bang") |> raise)
+                                                state Finish
+                                                |> ignore) |> ignore
+    let output = Path.GetTempFileName()
+    let outputdll = output + ".dll"
+    try
+      Instrument.WriteAssembly prepared outputdll
+    finally
+        Directory.EnumerateFiles(Path.GetDirectoryName output,
+                                 (Path.GetFileNameWithoutExtension output) + ".*")
+        |> Seq.iter (fun f -> try File.Delete f
+                              with // occasionally the dll file is locked by another process
+                              | :? System.UnauthorizedAccessException
+                              | :? IOException -> ())
 
   // CommandLine.fs
   [<Test>]

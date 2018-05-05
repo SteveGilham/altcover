@@ -1,8 +1,20 @@
+# 3.0.466 (Caba series release 10)
+* Support for starting/pausing/resuming coverage collection during operation -- see https://github.com/SteveGilham/altcover/wiki/Pause%E2%95%B1Resume-and-the-Control-File
+* Major speed-up in data collection by reducing the amount of synchronization being done while writing data to file -- this means significant reductions in the time taken for instrumented code to execute 
+* Support for excluding C#7.0 local functions by excluding the enclosing method
+* Add CRAP (Change Risk Anti-Patterns) score to methods (and min/max values to summaries) in `--opencover` format and `runner`/`Collect` mode 
+* [BUGFIX] -- using `dotnet AltCover.dll` to instrument a .net core project using F# could fail when rewriting the `.deps.json` file.
+* [BUGFIX] -- not all branches were being tallied for certain complex F# match expressions
+
 # 3.0.455 (Caba series release 9)
 * `-o|outputFile` option in `runner` mode (parameter `OutputFile` for the `AltCover.Collect` task) to allow the default report for the current dataset to be written to a new file, rather than updating/accumulating in the file specified at instrumentation time.
-* Some refactoring and adjustements to the build processes
+* Some refactoring and adjustments to the build processes, latest FAKE RC etc.
+* Support for starting/pausing/resuming coverage collection during operation -- see https://github.com/SteveGilham/altcover/wiki/Pause%E2%95%B1Resume-and-the-Control-File
+* Add CRAP (Change Risk Anti-Patterns) score to methods (and min/max values to summaries) in `--opencover` format and `runner`/`Collect` mode 
 * [BUGFIX] -- handle and signal exceptions in the visit recording, rather than potentially just locking up or silently failing
 * [BUGFIX] -- ensure that more of the IDisposable objects generated, primarily the ones that can lock the assemblies under instrumentation, are promptly disposed.
+* [BUGFIX] -- using `dotnet AltCover.dll` to instrument a .net core project using F# could fail when rewriting the `.deps.json` file.
+* [BUGFIX] -- not all branches were being tallied for certain complex F# match expressions
 
 # 3.0.444 (Caba series release 8)
 * [BUGFIX] for `-c|callContext` option -- generate valid IL where the function being tracked completes with a tail call

@@ -120,6 +120,9 @@ module XTests =
                     | "sequenceCoverage"
                     | "branchCoverage"
                     | "uspid"
+                    | "minCrapScore"
+                    | "maxCrapScore"
+                    | "crapScore"
                     | "hash" -> ()
                     | "fullPath" -> Assert.True(a1.Value.Replace("\\","/").EndsWith(a2.Value.Replace("\\","/")),
                                                 a1.Name.ToString() + " : " + r.ToString() + " -> document")
@@ -509,7 +512,7 @@ module XTests =
       Visitor.outputDirectory <- Some output
       let input = { Instrument.Context.Build [] with RecordingAssembly = def }
       let result = Instrument.InstrumentationVisitor input Finish
-      Assert.Same (result, input) //, "results differ")
+      Assert.True (result.RecordingAssembly |> isNull)
       let created = Path.Combine (output, "Sample4.dll")
       Assert.True (File.Exists created, created + " not found")
 #if NETCOREAPP2_0
