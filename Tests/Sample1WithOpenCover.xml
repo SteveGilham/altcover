@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <CoverageSession xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <Summary numSequencePoints="10" visitedSequencePoints="7" numBranchPoints="3" visitedBranchPoints="2" sequenceCoverage="70" branchCoverage="66.67" maxCyclomaticComplexity="2" minCyclomaticComplexity="1" visitedClasses="1" numClasses="1" visitedMethods="1" numMethods="1" />
+  <Summary numSequencePoints="10" visitedSequencePoints="7" numBranchPoints="3" visitedBranchPoints="2" sequenceCoverage="70" branchCoverage="66.67" maxCyclomaticComplexity="2" minCyclomaticComplexity="1" visitedClasses="1" numClasses="1" visitedMethods="1" numMethods="1" minCrapScore="2.11" maxCrapScore="2.11" />
   <Modules>
     <Module skippedDueTo="Filter" hash="61-76-47-E0-8B-BE-78-EC-D4-B7-01-C5-D1-9E-B1-8D-57-6D-61-9D">
       <ModulePath>C:\WINDOWS\assembly\GAC_64\mscorlib\2.0.0.0__b77a5c561934e089\mscorlib.dll</ModulePath>
@@ -15,7 +15,7 @@
       <Classes />
     </Module>
     <Module hash="7C-CD-66-29-A3-6C-6D-5F-A7-65-71-0E-22-7D-B2-61-B5-1F-65-9A">
-      <Summary numSequencePoints="10" visitedSequencePoints="7" numBranchPoints="3" visitedBranchPoints="2" sequenceCoverage="70" branchCoverage="66.67" maxCyclomaticComplexity="2" minCyclomaticComplexity="1" visitedClasses="1" numClasses="1" visitedMethods="1" numMethods="1" />
+      <Summary numSequencePoints="10" visitedSequencePoints="7" numBranchPoints="3" visitedBranchPoints="2" sequenceCoverage="70" branchCoverage="66.67" maxCyclomaticComplexity="2" minCyclomaticComplexity="1" visitedClasses="1" numClasses="1" visitedMethods="1" numMethods="1" minCrapScore="2.11" maxCrapScore="2.11" />
       <ModulePath>altcover\_Binaries\Sample1\Debug+AnyCPU\Sample1.exe</ModulePath>
       <ModuleTime>2018-02-22T08:50:13.1034471Z</ModuleTime>
       <ModuleName>Sample1</ModuleName>
@@ -24,16 +24,16 @@
       </Files>
       <Classes>
         <Class>
-          <Summary numSequencePoints="0" visitedSequencePoints="0" numBranchPoints="0" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="0" minCyclomaticComplexity="0" visitedClasses="0" numClasses="0" visitedMethods="0" numMethods="0" />
+          <Summary numSequencePoints="0" visitedSequencePoints="0" numBranchPoints="0" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="0" minCyclomaticComplexity="0" visitedClasses="0" numClasses="0" visitedMethods="0" numMethods="0" minCrapScore="0" maxCrapScore="0" />
           <FullName>&lt;Module&gt;</FullName>
           <Methods />
         </Class>
         <Class>
-          <Summary numSequencePoints="10" visitedSequencePoints="7" numBranchPoints="3" visitedBranchPoints="2" sequenceCoverage="70" branchCoverage="66.67" maxCyclomaticComplexity="2" minCyclomaticComplexity="1" visitedClasses="1" numClasses="1" visitedMethods="1" numMethods="1" />
+          <Summary numSequencePoints="10" visitedSequencePoints="7" numBranchPoints="3" visitedBranchPoints="2" sequenceCoverage="70" branchCoverage="66.67" maxCyclomaticComplexity="2" minCyclomaticComplexity="1" visitedClasses="1" numClasses="1" visitedMethods="1" numMethods="1" minCrapScore="2.11" maxCrapScore="2.11" />
           <FullName>TouchTest.Program</FullName>
           <Methods>
-            <Method visited="true" cyclomaticComplexity="2" nPathComplexity="2" sequenceCoverage="70" branchCoverage="66.67" isConstructor="false" isStatic="true" isGetter="false" isSetter="false">
-              <Summary numSequencePoints="10" visitedSequencePoints="7" numBranchPoints="3" visitedBranchPoints="2" sequenceCoverage="70" branchCoverage="66.67" maxCyclomaticComplexity="2" minCyclomaticComplexity="2" visitedClasses="0" numClasses="0" visitedMethods="1" numMethods="1" />
+            <Method visited="true" cyclomaticComplexity="2" nPathComplexity="2" sequenceCoverage="70" branchCoverage="66.67" isConstructor="false" isStatic="true" isGetter="false" isSetter="false" crapScore="2.11">
+              <Summary numSequencePoints="10" visitedSequencePoints="7" numBranchPoints="3" visitedBranchPoints="2" sequenceCoverage="70" branchCoverage="66.67" maxCyclomaticComplexity="2" minCyclomaticComplexity="2" visitedClasses="0" numClasses="0" visitedMethods="1" numMethods="1" minCrapScore="2.11" maxCrapScore="2.11" />
               <MetadataToken>100663297</MetadataToken>
               <Name>System.Void TouchTest.Program::Main(System.String[])</Name>
               <FileRef uid="1" />

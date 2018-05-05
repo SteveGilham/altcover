@@ -1143,7 +1143,7 @@ or
     try
       Runner.recordingDirectory <- Some where
       Runner.RecorderName <- "AltCover.Recorder.dll"
-      let instance = Runner.RecorderInstance()
+      let instance = Runner.RecorderInstance() |> snd
       Assert.That(instance.FullName, Is.EqualTo "AltCover.Recorder.Instance", "should be the instance")
       let token = (Runner.GetMethod instance "get_Token") |> Runner.GetFirstOperandAsString
       Assert.That(token, Is.EqualTo "AltCover", "should be plain token")
@@ -1451,6 +1451,8 @@ or
                           el.SetAttribute("sequenceCoverage", "0")
                           el.SetAttribute("visitedClasses", "0")
                           el.SetAttribute("visitedMethods", "0")
+                          el.SetAttribute("minCrapScore", "0")
+                          el.SetAttribute("maxCrapScore", "0")
                            )
 
     after.DocumentElement.SelectNodes("//Method")

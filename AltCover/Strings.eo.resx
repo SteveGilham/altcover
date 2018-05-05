@@ -156,7 +156,7 @@
   <data name="HelpText" xml:space="preserve">
     <value>AltCover [/i[nputDirectory]=VALO] [/o[utputDirectory]=VALO] [/y|symbolDirectory=VALO] [/sn|strongNameKey=VALO] [/k[ey]=VALO] [/x[mlReport]=VALO] [/f[ileFilter]=VALO] [/s|assemblyFilter=VALO] [/t|typeFilter=VALO] [/m|methodFilter=VALO] [/a|attributeFilter=VALO] [/c[allContext]=VALO] [--opencover] [--inplace] [--save] [/?|h[elp]] [-- ] [...]
 aŭ
-AltCover Runner [/r[ecordingDirectory]=VALO] [/w[orkingDirectory]=VALO] [/x||executable=VALO] [--collect] [/l[covReport]=VALO] [/t[hreshold]=VALO] [/c[obertura]=VALO] [/?|h[elp]] [-- ] [...]
+AltCover Runner [/r[ecordingDirectory]=VALO] [/w[orkingDirectory]=VALO] [/x||executable=VALO] [--collect] [/l[covReport]=VALO] [/t[hreshold]=VALO] [/c[obertura]=VALO] [/o[utputFile]=VALO] [/?|h[elp]] [-- ] [...]
 Vidu https://github.com/SteveGilham/altcover/wiki/Usage por plenaj detaloj.</value>
   </data>
   <data name="NotInPlace" xml:space="preserve">

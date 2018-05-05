@@ -137,12 +137,21 @@ module Instrument =
   let private extractName (assembly: AssemblyDefinition) =
      assembly.Name.Name
 
+  let Guard (assembly:AssemblyDefinition) (f:unit->unit) =
+    try
+      f()
+      assembly
+    with
+    | _ -> (assembly :> IDisposable).Dispose()
+           reraise()
+
   /// <summary>
   /// Create the new assembly that will record visits, based on the prototype.
   /// </summary>
   /// <returns>A representation of the assembly used to record all coverage visits.</returns>
   let internal PrepareAssembly (location:string) =
     let definition = AssemblyDefinition.ReadAssembly(location)
+    Guard definition (fun () ->
     ProgramDatabase.ReadSymbols definition
     definition.Name.Name <- (extractName definition) + ".g"
 #if NETCOREAPP2_0
@@ -212,9 +221,7 @@ module Instrument =
         worker.InsertBefore(head, worker.Create(OpCodes.Conv_I8))
         worker.InsertBefore(head, worker.Create(OpCodes.Ret))
         initialBody |> Seq.iter worker.Remove
-    )
-
-    definition
+    ))
 
 #if NETCOREAPP2_0
 #else
@@ -270,7 +277,11 @@ module Instrument =
     let here = Directory.GetCurrentDirectory()
     try
         Directory.SetCurrentDirectory(Path.GetDirectoryName(path))
-        assembly.Write(path, pkey)
+        let write (a:AssemblyDefinition) p pk  =
+          use sink = File.Open (p, FileMode.Create, FileAccess.ReadWrite)
+          a.Write(sink, pk)
+
+        write assembly path pkey
     finally
         Directory.SetCurrentDirectory(here)
 
@@ -363,13 +374,15 @@ module Instrument =
 
     let rt = JObject.Parse runtime
     rt.Properties()
-    |> Seq.filter (fun r -> prior |> Set.contains (r.Name.Split('/') |> Seq.head) |> not)
+    |> Seq.filter (fun r -> prior |> Set.contains (r.Name.Split('/') |> Seq.head) |> not
+                            && targeted.ContainsKey(r.Name) |> not)
     |> Seq.iter (fun r -> targeted.Add(r))
 
     let libraries = (o.Properties()
                     |> Seq.find (fun p -> p.Name = "libraries")).Value :?> JObject
     (JObject.Parse newLibraries).Properties()
-    |> Seq.filter (fun r -> prior |> Set.contains (r.Name.Split('/') |> Seq.head) |> not)
+    |> Seq.filter (fun r -> prior |> Set.contains (r.Name.Split('/') |> Seq.head) |> not
+                            && libraries.ContainsKey(r.Name) |> not)
     |> Seq.rev
     |> Seq.iter (libraries.AddFirst)
     o.ToString()
@@ -473,6 +486,7 @@ module Instrument =
     state
 
   let private FinishVisit (state : Context) =
+    try
                  let counterAssemblyFile = Path.Combine(Visitor.InstrumentDirectory(), (extractName state.RecordingAssembly) + ".dll")
                  WriteAssembly (state.RecordingAssembly) counterAssemblyFile
                  Directory.GetFiles(Visitor.InstrumentDirectory(), "*.deps.json", SearchOption.TopDirectoryOnly)
@@ -484,7 +498,10 @@ module Instrument =
                    use libstream = new FileStream(fsharplib, FileMode.Create)
                    fsharpbytes.CopyTo libstream
 #endif
-                 state
+    finally
+      (state.RecordingAssembly :>IDisposable).Dispose()
+
+    { state with RecordingAssembly = null }
 
   let internal Track state (m:MethodDefinition) included (track:(int*string) option) =
     track
@@ -555,7 +572,6 @@ module Instrument =
   let private VisitStart state =
     let recorder = typeof<AltCover.Recorder.Tracer>
     let recordingAssembly = PrepareAssembly(recorder.Assembly.Location)
-    Visitor.accumulator.Add(recordingAssembly) |> ignore
     { state with RecordingAssembly = recordingAssembly }
 
   /// <summary>
@@ -564,25 +580,38 @@ module Instrument =
   /// <param name="state">Contextual information for the visit</param>
   /// <param name="node">The node being visited</param>
   /// <returns>Updated state</returns>
+  let internal InstrumentationVisitorCore (state : Context) (node:Node) =
+    match node with
+    | Start _ -> VisitStart state
+    | Assembly (assembly, included) -> if included <> Inspect.Ignore then
+                                             assembly.MainModule.AssemblyReferences.Add(state.RecordingAssembly.Name)
+                                       state
+    | Module (m, included) -> VisitModule state m included
+    | Type _ -> state
+    | Method (m,  included, _) -> VisitMethod state m included
+
+    | MethodPoint (instruction, _, point, included) ->
+               VisitMethodPoint state instruction point included
+    | BranchPoint branch -> VisitBranchPoint state branch
+    | AfterMethod (m, included, track) -> VisitAfterMethod state m included track
+
+    | AfterType -> state
+    | AfterModule -> state
+    | AfterAssembly assembly -> VisitAfterAssembly state assembly
+    | Finish -> FinishVisit state
+
+  let internal InstrumentationVisitorWrapper (core  : Context -> Node -> Context) (state : Context) (node:Node) =
+    try
+      core state node
+    with
+    | _ -> match node with
+           | Finish -> ()
+           | _ -> if state.RecordingAssembly |> isNull |> not
+                  then (state.RecordingAssembly :>IDisposable).Dispose()
+           reraise()
+
   let internal InstrumentationVisitor (state : Context) (node:Node) =
-     match node with
-     | Start _ -> VisitStart state
-     | Assembly (assembly, included) -> if included <> Inspect.Ignore then
-                                              assembly.MainModule.AssemblyReferences.Add(state.RecordingAssembly.Name)
-                                        state
-     | Module (m, included) -> VisitModule state m included
-     | Type _ -> state
-     | Method (m,  included, _) -> VisitMethod state m included
-
-     | MethodPoint (instruction, _, point, included) ->
-                VisitMethodPoint state instruction point included
-     | BranchPoint branch -> VisitBranchPoint state branch
-     | AfterMethod (m, included, track) -> VisitAfterMethod state m included track
-
-     | AfterType -> state
-     | AfterModule -> state
-     | AfterAssembly assembly -> VisitAfterAssembly state assembly
-     | Finish -> FinishVisit state
+    InstrumentationVisitorWrapper InstrumentationVisitorCore state node
 
   /// <summary>
   /// Higher-order function that returns a visitor

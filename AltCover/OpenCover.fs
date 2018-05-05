@@ -96,7 +96,9 @@ module OpenCover =
                 XAttribute(X "visitedClasses", 0),
                 XAttribute(X "numClasses", 0),
                 XAttribute(X "visitedMethods", 0),
-                XAttribute(X "numMethods", 0))
+                XAttribute(X "numMethods", 0),
+                XAttribute(X "minCrapScore", 0),
+                XAttribute(X "maxCrapScore", 0))
 
     let StartVisit (s : Context) =
           let element = XElement(X "CoverageSession",
@@ -165,7 +167,8 @@ module OpenCover =
                            XAttribute(X "isConstructor", boolString methodDef.IsConstructor),
                            XAttribute(X "isStatic", boolString methodDef.IsStatic),
                            XAttribute(X "isGetter", boolString methodDef.IsGetter),
-                           XAttribute(X "isSetter", boolString methodDef.IsSetter)))
+                           XAttribute(X "isSetter", boolString methodDef.IsSetter),
+                           XAttribute(X "crapScore", 0)))
 
     let addMethodContent (element:XElement) (methodDef:MethodDefinition) =
         element.Add(Summary())
