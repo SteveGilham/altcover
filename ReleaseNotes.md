@@ -1,4 +1,4 @@
-# 3.0.4xx (Caba series release 10)
+# 3.0.466 (Caba series release 10)
 * Support for starting/pausing/resuming coverage collection during operation -- see https://github.com/SteveGilham/altcover/wiki/Pause%E2%95%B1Resume-and-the-Control-File
 * Major speed-up in data collection by reducing the amount of synchronization being done while writing data to file -- this means significant reductions in the time taken for instrumented code to execute 
 * Support for excluding C#7.0 local functions by excluding the enclosing method
