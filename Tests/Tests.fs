@@ -520,6 +520,7 @@ type AltCoverTests() = class
                      Some "F1" // "System.Int32 Sample5.Class1::<F1>g__Interior|0_1(System.Int32,System.Int32)"
                      Some "F1" // "System.Int32 Sample5.Class1::<F1>g__Recursive|0_3(System.Int32)"
                      None // System.Int32 Sample5.Class1/Inner::G1(System.String)
+                     None // System.Void Sample5.Class1/Inner::G1(System.Int32)
                      None // System.Collections.Generic.IEnumerable`1<System.Int32> Sample5.Class1/Inner::G2(System.String)
                      None // System.Threading.Tasks.Task`1<System.String> Sample5.Class1/Inner::G3(System.String)
                      None // System.Void Sample5.Class1/Inner::G3(System.Int32)
@@ -561,6 +562,8 @@ type AltCoverTests() = class
                      Some "F3" // System.Void Sample5.Class1/<F3>d__2::MoveNext()
                      Some "F3" // System.Void Sample5.Class1/<F3>d__2::SetStateMachine(System.Runtime.CompilerServices.IAsyncStateMachine)
                      ]
+     // methods |> Seq.iter (fun x -> printfn "%A" x.FullName)
+
      result |> Seq.toList
       |> List.zip expected
       |> List.iteri (fun i (x,y) -> Assert.That(y, Is.EqualTo x, sprintf "%A %A %d" x y i))

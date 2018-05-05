@@ -277,10 +277,22 @@ module Visitor =
                             MethodNumber <- id
                             (id, n))
 
-  let private CSharpDeclaringMethod (name:string) (source:TypeDefinition)
-                                     (target:TypeDefinition) index =
+  let private CSharpDeclaringInnerMethod (name:string) (inner:MethodDefinition) index =
     let stripped = name.Substring(1, index)
-    let candidates = target.Methods
+    let candidates = inner.DeclaringType.Methods
+                    |> Seq.filter (fun mx -> (mx.Name = stripped) && mx.HasBody)
+                    |> Seq.toList
+    match candidates with
+    | [x] -> Some x
+    | _ -> candidates
+            |> Seq.tryFind(fun m -> m.Body.Instructions
+                                    |> Seq.filter(fun i -> i.OpCode = OpCodes.Call)
+                                    |> Seq.exists(fun i -> let tn = (i.Operand :?> MethodReference)
+                                                           tn = (inner :> MethodReference)))
+
+  let private CSharpDeclaringMethod (name:string) (t:TypeDefinition) index =
+    let stripped = name.Substring(1, index)
+    let candidates = t.DeclaringType.Methods
                     |> Seq.filter (fun mx -> (mx.Name = stripped) && mx.HasBody)
                     |> Seq.toList
     match candidates with
@@ -289,7 +301,7 @@ module Visitor =
             |> Seq.tryFind(fun m -> m.Body.Instructions
                                     |> Seq.filter(fun i -> i.OpCode = OpCodes.Newobj)
                                     |> Seq.exists(fun i -> let tn = (i.Operand :?> MethodReference).DeclaringType
-                                                           tn = (source :> TypeReference)))
+                                                           tn = (t :> TypeReference)))
 
   let private FSharpDeclaringMethod (t:TypeDefinition) (tx:TypeReference) =
     let candidates = t.DeclaringType.Methods.Concat
@@ -309,7 +321,7 @@ module Visitor =
     let t = m.DeclaringType
     if mname.StartsWith("<", StringComparison.Ordinal) && mname.IndexOf('|') > 0 then
       let index = mname.IndexOf('>') - 1
-      CSharpDeclaringMethod mname t t index
+      CSharpDeclaringInnerMethod mname m index
     else
       let n = t.Name
       if t.IsNested |> not then
@@ -321,7 +333,7 @@ module Visitor =
 
              let index = name.IndexOf('>') - 1
              if (index < 1) then None
-             else CSharpDeclaringMethod name t t.DeclaringType index
+             else CSharpDeclaringMethod name t index
            else if n.IndexOf('@') >= 0 then
                  let tx = if n.EndsWith("T", StringComparison.Ordinal)
                           then match t.Methods |> Seq.tryFind (fun m -> m.IsConstructor && m.HasParameters && (m.Parameters.Count = 1))

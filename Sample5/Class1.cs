@@ -84,6 +84,11 @@ namespace Sample5
                 }).Sum();
             }
 
+            public void G1(int label)
+            {
+                Console.WriteLine(2 * label);
+            }
+
             [ExcludeFromCodeCoverage]
             public IEnumerable<int> G2(string input)
             {
