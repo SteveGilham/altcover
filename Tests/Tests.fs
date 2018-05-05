@@ -508,7 +508,7 @@ type AltCoverTests() = class
                     |> Seq.collect(fun t -> t.Methods)
                     |> Seq.toList
 
-     methods |> Seq.iter (fun x -> printfn "%As" x.FullName)
+     // methods |> Seq.iter (fun x -> printfn "%As" x.FullName)
      let result = methods
                     |> Seq.map Visitor.DeclaringMethod
                     |> Seq.map (fun (mo : MethodDefinition option) ->
