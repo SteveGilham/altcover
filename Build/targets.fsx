@@ -295,7 +295,7 @@ Target "UnitTest" (fun _ ->
                                                                                 numeric))
                 |> Seq.toList
 
-  if numbers |> List.tryFind (fun n -> n >= 90.0) |> Option.isNone && numbers |> List.length > 2 then
+  if numbers |> List.tryFind (fun n -> n <= 99.0) |> Option.isSome then
      Assert.Fail("Coverage is too low")
 )
 
