@@ -61,7 +61,7 @@ namespace Sample5
             public int G1(string input)
             {
                 // function Sample5.Class1+Inner+<>c.<G1>b__0_0
-                Func<char, int> f = (c => { return (int)c; });
+                Func<char, int> f = (c => { return 5 + (int)c; });
 
                 // function Sample5.Class1.<F1>g__Interior|0_1
                 int Interior(int a, int b)
