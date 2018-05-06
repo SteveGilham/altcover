@@ -297,40 +297,35 @@ module Visitor =
                                          mx.DeclaringType.Name.IndexOf(tag, StringComparison.Ordinal) >=0)))
            |> Seq.tryFind predicate
 
-
-  let SafeResolve f =
-    try
-        f()
-    with
-    | :? ArgumentNullException
-    | :? AssemblyResolutionException -> null
-
-  let MethodConstructsType (t:TypeDefinition) (m:MethodDefinition) =
+  let MethodConstructsType (t:TypeReference) (m:MethodDefinition) =
+    let name = t.FullName + if t.HasGenericParameters 
+                            then "<" + String.Join(",", t.GenericParameters |> Seq.map (fun x -> x.ToString())) + ">"
+                            else String.Empty
     m.Body.Instructions
     |> Seq.filter(fun i -> i.OpCode = OpCodes.Newobj)
-    |> Seq.exists(fun i -> let tn = SafeResolve (fun () -> (i.Operand :?> MethodReference).DeclaringType.Resolve())
-                           tn = t)
+    |> Seq.exists(fun i -> let tn = (i.Operand :?> MethodReference).DeclaringType
+                           tn.FullName = name)
 
-  let private FSharpContainingMethod (t:TypeDefinition) (tx:TypeDefinition) =
+  let private FSharpContainingMethod (t:TypeDefinition) (tx:TypeReference) =
     let candidates = t.DeclaringType.Methods.Concat
                         (t.DeclaringType.NestedTypes
-                        |> Seq.filter (fun t2 -> t2  <> tx)
+                        |> Seq.filter (fun t2 -> (t2 :> TypeReference) <> tx)
                         |> Seq.collect (fun t2 -> t2.Methods))
                         |> Seq.filter (fun m -> m.HasBody)
 
     candidates
     |> Seq.tryFind (MethodConstructsType tx)
 
-  let MethodCallsMethod (t:MethodDefinition) (m:MethodDefinition) =
+  let MethodCallsMethod (t:MethodReference) (m:MethodDefinition) =
     m.Body.Instructions
     |> Seq.filter(fun i -> i.OpCode = OpCodes.Call)
-    |> Seq.exists(fun i -> let tn = SafeResolve (fun () ->(i.Operand :?> MethodReference).Resolve())
+    |> Seq.exists(fun i -> let tn = (i.Operand :?> MethodReference)
                            tn = t)
 
-  let MethodLoadsMethod (t:MethodDefinition) (m:MethodDefinition) =
+  let MethodLoadsMethod (t:MethodReference) (m:MethodDefinition) =
     m.Body.Instructions
     |> Seq.filter(fun i -> i.OpCode = OpCodes.Ldftn)
-    |> Seq.exists(fun i -> let tn = SafeResolve (fun () ->(i.Operand :?> MethodReference).Resolve())
+    |> Seq.exists(fun i -> let tn = (i.Operand :?> MethodReference)
                            tn = t)
 
   let internal ContainingMethod (m:MethodDefinition) =
@@ -357,10 +352,10 @@ module Visitor =
                  let tx = if n.EndsWith("T", StringComparison.Ordinal)
                           then match t.Methods |> Seq.tryFind (fun m -> m.IsConstructor && m.HasParameters && (m.Parameters.Count = 1))
                                                |> Option.map (fun m -> m.Parameters |> Seq.head) with
-                               | None -> t
-                               | Some other -> SafeResolve(fun () -> other.ParameterType.Resolve())
+                               | None -> t :> TypeReference
+                               | Some other -> other.ParameterType
 
-                          else t
+                          else t :> TypeReference
                  FSharpContainingMethod t tx
                 else None
 

@@ -631,16 +631,6 @@ type AltCoverTests() = class
       |> List.zip expected
       |> List.iteri (fun i (x,y) -> Assert.That(y, Is.EqualTo x, sprintf "%A %A %d %s" x y i methods.[i].FullName))
 
-  [<Test>]
-  member self.SafeResolveIsSafe() =
-    let action () =
-      let now = DateTime.Now.Year
-      if now > 2000 then  InvalidOperationException() |> raise
-      else String.Empty
-    Assert.Throws<InvalidOperationException>(fun () -> Visitor.SafeResolve action |> ignore) |> ignore
-    Assert.That(Visitor.SafeResolve (fun () -> AssemblyResolutionException(null) |> raise), Is.Null) 
-    Assert.That(Visitor.SafeResolve (fun () -> "23"), Is.EqualTo "23")
-
 
   [<Test>]
   member self.ValidateSeqPntFixUp() = // HACK HACK HACK
