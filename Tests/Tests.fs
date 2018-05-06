@@ -604,12 +604,12 @@ type AltCoverTests() = class
                      Some "Module::F1" //System.Int32 Sample6.Module/aux@9::Invoke(System.Int32)
                      Some "FI@10T::Invoke" //System.Void Sample6.Module/FII@11::.ctor()
                      Some "FI@10T::Invoke" //System.Object Sample6.Module/FII@11::Specialize()
-                     Some "FI@10T::Invoke" //System.Void Sample6.Module/FII@11T::.ctor(Sample6.Module/FII@11)
-                     Some "FI@10T::Invoke"  //System.Int32 Sample6.Module/FII@11T::Invoke(Microsoft.FSharp.Collections.FSharpList`1<b>,System.Int32)
+                     Some "FII@11::Specialize" //System.Void Sample6.Module/FII@11T::.ctor(Sample6.Module/FII@11)
+                     Some "FII@11::Specialize"  //System.Int32 Sample6.Module/FII@11T::Invoke(Microsoft.FSharp.Collections.FSharpList`1<b>,System.Int32)
                      Some "Module::F1" //System.Void Sample6.Module/FI@10::.ctor()
                      Some "Module::F1" //System.Object Sample6.Module/FI@10::Specialize()
-                     Some "Module::F1" //System.Void Sample6.Module/FI@10T::.ctor(Sample6.Module/FI@10)
-                     Some "Module::F1" //System.Int32 Sample6.Module/FI@10T::Invoke(Microsoft.FSharp.Collections.FSharpList`1<a>)
+                     Some "FI@10::Specialize" //System.Void Sample6.Module/FI@10T::.ctor(Sample6.Module/FI@10)
+                     Some "FI@10::Specialize" //System.Int32 Sample6.Module/FI@10T::Invoke(Microsoft.FSharp.Collections.FSharpList`1<a>)
                      Some "Module::F1" //System.Void Sample6.Module/F1@18::.ctor()
                      Some "Module::F1" //System.Int32 Sample6.Module/F1@18::Invoke(System.Object)
                      Some "fetchUrlAsync@26-4::Invoke" //System.Void Sample6.Module/fetchUrlAsync@26-5::.ctor(System.String,Microsoft.FSharp.Control.FSharpAsyncBuilder)
@@ -630,6 +630,16 @@ type AltCoverTests() = class
      result 
       |> List.zip expected
       |> List.iteri (fun i (x,y) -> Assert.That(y, Is.EqualTo x, sprintf "%A %A %d %s" x y i methods.[i].FullName))
+
+  [<Test>]
+  member self.SafeResolveIsSafe() =
+    let action () =
+      let now = DateTime.Now.Year
+      if now > 2000 then  InvalidOperationException() |> raise
+      else String.Empty
+    Assert.Throws<InvalidOperationException>(fun () -> Visitor.SafeResolve action |> ignore) |> ignore
+    Assert.That(Visitor.SafeResolve (fun () -> AssemblyResolutionException(null) |> raise), Is.Null) 
+    Assert.That(Visitor.SafeResolve (fun () -> "23"), Is.EqualTo "23")
 
 
   [<Test>]

@@ -279,13 +279,14 @@ module Visitor =
 
   let private CSharpContainingMethod (name:string) (ct:TypeDefinition) index predicate =
     let stripped = name.Substring(1, index)
-    let candidates = ct.Methods
+    let methods = ct.Methods
+    let candidates = methods
                     |> Seq.filter (fun mx -> (mx.Name = stripped) && mx.HasBody)
                     |> Seq.toList
     match candidates with
     | [x] -> Some x
     | _ -> let tag = "<" + stripped + ">"
-           candidates.Concat(ct.Methods
+           candidates.Concat(methods
                              |> Seq.filter (fun mx -> (mx.Name.IndexOf(tag, StringComparison.Ordinal) >=0) 
                                                        && mx.HasBody)).Concat (
               ct.NestedTypes 
@@ -296,34 +297,40 @@ module Visitor =
                                          mx.DeclaringType.Name.IndexOf(tag, StringComparison.Ordinal) >=0)))
            |> Seq.tryFind predicate
 
-  let MethodConstructsType (t:TypeReference) (m:MethodDefinition) =
-    printfn "%A for %A %A" m t t.MetadataToken
+
+  let SafeResolve f =
+    try
+        f()
+    with
+    | :? ArgumentNullException
+    | :? AssemblyResolutionException -> null
+
+  let MethodConstructsType (t:TypeDefinition) (m:MethodDefinition) =
     m.Body.Instructions
     |> Seq.filter(fun i -> i.OpCode = OpCodes.Newobj)
-    |> Seq.exists(fun i -> let tn = (i.Operand :?> MethodReference).DeclaringType
-                           printfn "  >  %A %A" tn tn.DeclaringType
+    |> Seq.exists(fun i -> let tn = SafeResolve (fun () -> (i.Operand :?> MethodReference).DeclaringType.Resolve())
                            tn = t)
 
-  let private FSharpContainingMethod (t:TypeDefinition) (tx:TypeReference) =
+  let private FSharpContainingMethod (t:TypeDefinition) (tx:TypeDefinition) =
     let candidates = t.DeclaringType.Methods.Concat
                         (t.DeclaringType.NestedTypes
-                        |> Seq.filter (fun t2 -> (t2 :> TypeReference) <> tx)
+                        |> Seq.filter (fun t2 -> t2  <> tx)
                         |> Seq.collect (fun t2 -> t2.Methods))
                         |> Seq.filter (fun m -> m.HasBody)
 
     candidates
     |> Seq.tryFind (MethodConstructsType tx)
 
-  let MethodCallsMethod (t:MethodReference) (m:MethodDefinition) =
+  let MethodCallsMethod (t:MethodDefinition) (m:MethodDefinition) =
     m.Body.Instructions
     |> Seq.filter(fun i -> i.OpCode = OpCodes.Call)
-    |> Seq.exists(fun i -> let tn = (i.Operand :?> MethodReference)
+    |> Seq.exists(fun i -> let tn = SafeResolve (fun () ->(i.Operand :?> MethodReference).Resolve())
                            tn = t)
 
-  let MethodLoadsMethod (t:MethodReference) (m:MethodDefinition) =
+  let MethodLoadsMethod (t:MethodDefinition) (m:MethodDefinition) =
     m.Body.Instructions
     |> Seq.filter(fun i -> i.OpCode = OpCodes.Ldftn)
-    |> Seq.exists(fun i -> let tn = (i.Operand :?> MethodReference)
+    |> Seq.exists(fun i -> let tn = SafeResolve (fun () ->(i.Operand :?> MethodReference).Resolve())
                            tn = t)
 
   let internal ContainingMethod (m:MethodDefinition) =
@@ -350,10 +357,10 @@ module Visitor =
                  let tx = if n.EndsWith("T", StringComparison.Ordinal)
                           then match t.Methods |> Seq.tryFind (fun m -> m.IsConstructor && m.HasParameters && (m.Parameters.Count = 1))
                                                |> Option.map (fun m -> m.Parameters |> Seq.head) with
-                               | None -> t :> TypeReference
-                               | Some other -> other.ParameterType
+                               | None -> t
+                               | Some other -> SafeResolve(fun () -> other.ParameterType.Resolve())
 
-                          else t :> TypeReference
+                          else t
                  FSharpContainingMethod t tx
                 else None
 
