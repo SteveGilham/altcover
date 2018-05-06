@@ -63,13 +63,18 @@ namespace Sample5
                 // function Sample5.Class1+Inner+<>c.<G1>b__0_0
                 Func<char, int> f = (c => { return 5 + (int)c; });
 
+                T[] InteriorToArray<T>(T v)
+                {
+                    return new[] { v };
+                }
+
                 // function Sample5.Class1.<F1>g__Interior|0_1
                 int Interior(int a, int b)
                 {
                     // Sample5.Class1.<F1>g__Recursive|0_3
                     int Recursive(int c)
                     {
-                        return c * c;
+                        return c * c * InteriorToArray(c).Length;
                     }
 
                     return Recursive(a) % b;
@@ -90,13 +95,19 @@ namespace Sample5
             }
 
             [ExcludeFromCodeCoverage]
-            public IEnumerable<int> G2(string input)
+            public IEnumerable<T> G2<T>(T input)
             {
                 // class Sample5.Class1+Inner+<G2>d__1
-                foreach (char c in input)
+                var source = new[] { input };
+                foreach (var c in source)
                 {
                     yield return c;
                 }
+            }
+
+            public void G2(int label)
+            {
+                Console.WriteLine(2 * label);
             }
 
             [ExcludeFromCodeCoverage]

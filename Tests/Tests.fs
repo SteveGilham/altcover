@@ -522,11 +522,13 @@ type AltCoverTests() = class
                      None // System.Int32 Sample5.Class1/Inner::G1(System.String)
                      None // System.Void Sample5.Class1/Inner::G1(System.Int32)
                      None // System.Collections.Generic.IEnumerable`1<System.Int32> Sample5.Class1/Inner::G2(System.String)
+                     None // System.Void Sample5.Class1/Inner::G2(System.Int32)
                      None // System.Threading.Tasks.Task`1<System.String> Sample5.Class1/Inner::G3(System.String)
                      None // System.Void Sample5.Class1/Inner::G3(System.Int32)
                      None // System.Void Sample5.Class1/Inner::.ctor()
-                     Some "<G1>b__2" // "System.Int32 Sample5.Class1/Inner::<G1>g__Interior|0_1(System.Int32,System.Int32)"
-                     Some "<G1>g__Interior|0_1" // "System.Int32 Sample5.Class1/Inner::<G1>g__Recursive|0_3(System.Int32)"
+                     Some "<G1>g__Recursive|0_4" // T[] Sample5.Class1/Inner::<G1>g__InteriorToArray|0_1(T)
+                     Some "<G1>b__3" // "System.Int32 Sample5.Class1/Inner::<G1>g__Interior|0_1(System.Int32,System.Int32)"
+                     Some "<G1>g__Interior|0_2" // "System.Int32 Sample5.Class1/Inner::<G1>g__Recursive|0_3(System.Int32)"
                      None // System.Void Sample5.Class1/Inner/<>c__DisplayClass0_0::.ctor()
                      Some "G1" // System.Int32 Sample5.Class1/Inner/<>c__DisplayClass0_0::<G1>b__2(System.Char)
                      None // System.Void Sample5.Class1/Inner/<>c::.cctor()
@@ -560,7 +562,7 @@ type AltCoverTests() = class
                      Some "F3" // System.Void Sample5.Class1/<F3>d__2::MoveNext()
                      Some "F3" // System.Void Sample5.Class1/<F3>d__2::SetStateMachine(System.Runtime.CompilerServices.IAsyncStateMachine)
                      ]
-     //  methods |> Seq.iter (fun x -> printfn "%A" x.FullName)
+     // methods |> Seq.iter (fun x -> printfn "%A" x.FullName)
      // Assert.That (result, Is.EquivalentTo expected)
 
      result |> Seq.toList
@@ -568,7 +570,7 @@ type AltCoverTests() = class
       |> List.iteri (fun i (x,y) -> Assert.That(y, Is.EqualTo x, sprintf "%A %A %d" x y i))
 
      // Disambiguation checks
-     let g3 = methods.[9]
+     let g3 = methods.[10]
      Assert.That (methods
                   |> Seq.map Visitor.ContainingMethod
                   |> Seq.choose id
@@ -581,7 +583,6 @@ type AltCoverTests() = class
                   |> Seq.choose id
                   |> Seq.filter (fun m -> m.Name = "G1"),
                   Is.EquivalentTo [g1;g1])
-
 
   [<Test>]
   member self.FSharpNestedMethods() =
@@ -627,10 +628,9 @@ type AltCoverTests() = class
                          ]
      methods |> Seq.iter (fun x -> printfn "%A" x.FullName)
      //Assert.That (result, Is.EquivalentTo expected)
-     result 
+     result
       |> List.zip expected
       |> List.iteri (fun i (x,y) -> Assert.That(y, Is.EqualTo x, sprintf "%A %A %d %s" x y i methods.[i].FullName))
-
 
   [<Test>]
   member self.ValidateSeqPntFixUp() = // HACK HACK HACK
