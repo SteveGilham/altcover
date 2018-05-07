@@ -626,7 +626,7 @@ type AltCoverTests() = class
                      Some "Module::F2" //System.Void Sample6.Module/fetchUrlAsync@21::.ctor()
                      Some "Module::F2" //Microsoft.FSharp.Control.FSharpAsync`1<Microsoft.FSharp.Core.Unit> Sample6.Module/fetchUrlAsync@21::Invoke(System.String)
                          ]
-     methods |> Seq.iter (fun x -> printfn "%A" x.FullName)
+     //methods |> Seq.iter (fun x -> printfn "%A" x.FullName)
      //Assert.That (result, Is.EquivalentTo expected)
      result
       |> List.zip expected
