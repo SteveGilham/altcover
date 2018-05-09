@@ -349,7 +349,9 @@ module Main =
         result
 
   let internal Main arguments =
-    if "Runner".StartsWith(arguments |> Seq.head, StringComparison.OrdinalIgnoreCase)
+    let first = arguments |> Seq.tryHead |> Option.getOrElse String.Empty
+    if (first |> String.IsNullOrWhiteSpace |> not) &&
+        "Runner".StartsWith(first, StringComparison.OrdinalIgnoreCase)
       then Runner.init()
            Runner.DoCoverage arguments (DeclareOptions())
       else init()
