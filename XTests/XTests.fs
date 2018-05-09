@@ -390,7 +390,7 @@ module XTests =
                         System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
 #endif
 
-      let expected = if File.Exists(pdb) then
+      let theFiles = if File.Exists(pdb) then
                         ["AltCover.Recorder.g.dll"
                          "AltCover.Recorder.g.pdb"
 
@@ -407,11 +407,11 @@ module XTests =
                          "Sample1.exe.mdb"]
                      |> List.filter (fun f -> isWindows || f = "Sample1.exe.mdb" || (f.EndsWith("db", StringComparison.Ordinal) |> not))
 
-      Assert.Equal<IEnumerable<String>> (Directory.GetFiles(output)
+      let actual = Directory.GetFiles(output)
                                             |> Seq.map Path.GetFileName
                                             |> Seq.toList
-                                            |> List.sortBy (fun f -> f.ToUpperInvariant()),
-                                            expected)
+                                            |> List.sortBy (fun f -> f.ToUpperInvariant())
+      Assert.Equal<IEnumerable<String>> (theFiles, actual)
 
       let expectedXml = XDocument.Load(new System.IO.StringReader(MonoBaseline))
       let recordedXml = XDocument.Load(report)
