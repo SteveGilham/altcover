@@ -462,7 +462,9 @@ module Visitor =
         |> Seq.filter (fun _ -> dbg |> isNull |> not)
         |> Seq.concat
         |> Seq.filter (fun (i:Instruction) -> i.OpCode.FlowControl = FlowControl.Cond_Branch)
-        |> Seq.skip skip
+        |> Seq.mapi (fun n i -> (n, i))         //
+        |> Seq.filter (fun (n, _) -> n >= skip) // like skip, but OK if there aren't enough elements
+        |> Seq.map snd                          //
         |> Seq.map (fun (i:Instruction) ->     getJumps dbg i // if two or more jumps go between the same two places, coalesce them
                                                |> List.groupBy (fun (_,_,o,_) -> o)
                                                |> List.map (fun (_,records) ->
