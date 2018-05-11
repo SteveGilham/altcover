@@ -755,7 +755,7 @@ Target "UnitTestWithAltCoverCoreRunner" (fun _ ->
 
     printfn "Instrument the XUnit tests"
     let xDir = "_Binaries/AltCover.XTests/Debug+AnyCPU/netcoreapp2.0"
-    let xReport = reports @@ "XTestWithAltCoverCore.xml"
+    let xReport = reports @@ "XTestWithAltCoverCoreRunner.xml"
     let xOut = Path.getFullName "XTests/_Binaries/AltCover.XTests/Debug+AnyCPU/netcoreapp2.0"
     Shell.cleanDir xOut
 
