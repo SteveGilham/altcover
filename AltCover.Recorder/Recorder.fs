@@ -223,7 +223,7 @@ module Instance =
                 FlushAll ()
                 channel.Reply ()
                 mailboxOK <- false
-                (inbox :> IDisposable).Dispose()
+                Assist.SafeDispose inbox
         }
 
   let internal MakeMailbox () =
@@ -265,12 +265,11 @@ module Instance =
   let internal PayloadSelector enable =
     PayloadControl Granularity enable
 
-  let mutable internal Wait = 10
-  let mutable internal Capacity = 127
+  let mutable internal Capacity = 1023
 
   let UnbufferedVisit (f: unit -> bool)  =
     if f() then
-     mailbox.TryPostAndReply ((fun c -> Item (buffer |> Seq.toArray, c)), Wait) |> ignore
+     mailbox.PostAndReply (fun c -> Item (buffer |> Seq.toArray, c))
     else buffer |> Seq.toArray |> Array.toSeq |> AsyncItem |> mailbox.Post
 
   let internal VisitSelection (f: unit -> bool) track moduleId hitPointId =
@@ -289,14 +288,16 @@ module Instance =
 
   let Visit moduleId hitPointId =
     if Recording && mailboxOK then
-     VisitSelection (fun () -> trace.IsConnected() || Backlog() > 10)
+     VisitSelection (fun () -> trace.IsConnected() || Backlog() > 0)
                      (PayloadSelector IsOpenCoverRunner) moduleId hitPointId
 
   let internal FlushCounter (finish:Close) _ =
    if mailboxOK then
        Recording <- finish = Resume
+       lock (buffer) (fun () ->
        if not Recording then UnbufferedVisit (fun _ -> true)
        buffer.Clear()
+       buffer.Clear())
        mailbox.TryPostAndReply ((fun c -> Finish (finish, c)), 2000) |> ignore
 
   let internal AddErrorHandler (box:MailboxProcessor<'a>) =
@@ -307,7 +308,7 @@ module Instance =
 
   let internal RunMailbox () =
     Recording <- true
-    (mailbox :> IDisposable).Dispose()
+    Assist.SafeDispose mailbox
     mailbox <- MakeMailbox ()
     mailboxOK <- true
     AddErrorHandler mailbox

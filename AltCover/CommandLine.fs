@@ -20,6 +20,7 @@ module Output =
 
   [<CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202", Justification="Multiple Close() should be safe")>]
   let LogExceptionToFile path e =
+    Directory.CreateDirectory(path |> Path.GetDirectoryName) |> ignore
     use stream = File.Open(path, FileMode.Append, FileAccess.Write)
     use writer = new StreamWriter(stream)
 

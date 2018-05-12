@@ -20,6 +20,11 @@ open NUnit.Framework
 type AltCoverTests() = class
 
   // Base.fs
+  [<Test>]
+  member self.SafeDisposalProtects() =
+    let obj1 = { new System.IDisposable with member x.Dispose() = ObjectDisposedException("Bang!") |> raise }
+    Assist.SafeDispose obj1
+    Assert.Pass()
 
   [<Test>]
   member self.JunkUspidGivesNegativeIndex() =

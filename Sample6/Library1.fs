@@ -6,11 +6,12 @@ open System.Net
 
 module Module =
   let F1 l =
+    let aux i = i + 1
     let FI li =
       let rec FII lii acc =
         match lii with
         | [] -> acc
-        | x::xs -> FII xs (acc + 1)
+        | x::xs -> FII xs (aux acc)
       FII li 0
 
     l

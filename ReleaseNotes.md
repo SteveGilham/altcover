@@ -1,3 +1,10 @@
+# 3.0.475 (Caba series release 11)
+* Fine tune the speed-up in data collection (marginal improvements only)
+* [BUGFIX] -- some corner cases for nested functions (including uses of generics) were not being detected for purposes of exclusion by containing function
+* [BUGFIX] -- Issue #17 : restore intended behaviour when no arguments supplied
+* [BUGFIX] -- Issue #18 : protect against certain degenerate cases when looking for branch coverage
+* other minor build process changes
+
 # 3.0.466 (Caba series release 10)
 * Support for starting/pausing/resuming coverage collection during operation -- see https://github.com/SteveGilham/altcover/wiki/Pause%E2%95%B1Resume-and-the-Control-File
 * Major speed-up in data collection by reducing the amount of synchronization being done while writing data to file -- this means significant reductions in the time taken for instrumented code to execute 

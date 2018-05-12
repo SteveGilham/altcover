@@ -277,21 +277,52 @@ module Visitor =
                             MethodNumber <- id
                             (id, n))
 
-  let private CSharpDeclaringMethod (name:string) (source:TypeDefinition)
-                                     (target:TypeDefinition) index =
+  let private CSharpContainingMethod (name:string) (ct:TypeDefinition) index predicate =
     let stripped = name.Substring(1, index)
-    let candidates = target.Methods
+    let methods = ct.Methods
+    let candidates = methods
                     |> Seq.filter (fun mx -> (mx.Name = stripped) && mx.HasBody)
                     |> Seq.toList
     match candidates with
     | [x] -> Some x
-    | _ -> candidates
-            |> Seq.tryFind(fun m -> m.Body.Instructions
-                                    |> Seq.filter(fun i -> i.OpCode = OpCodes.Newobj)
-                                    |> Seq.exists(fun i -> let tn = (i.Operand :?> MethodReference).DeclaringType
-                                                           tn = (source :> TypeReference)))
+    | _ -> let tag = "<" + stripped + ">"
+           candidates.Concat(methods
+                             |> Seq.filter (fun mx -> (mx.Name.IndexOf(tag, StringComparison.Ordinal) >=0)
+                                                       && mx.HasBody)).Concat (
+              ct.NestedTypes
+              |> Seq.filter (fun tx -> tx.Name.StartsWith("<", StringComparison.Ordinal))
+              |> Seq.collect (fun tx -> tx.Methods)
+              |> Seq.filter (fun mx -> mx.HasBody &&
+                                        (mx.Name.IndexOf(tag, StringComparison.Ordinal) >=0 ||
+                                         mx.DeclaringType.Name.IndexOf(tag, StringComparison.Ordinal) >=0)))
+           |> Seq.tryFind predicate
 
-  let private FSharpDeclaringMethod (t:TypeDefinition) (tx:TypeReference) =
+  let SameType (target:TypeReference) (candidate:TypeReference) =
+    if target = candidate then true
+    else if target.HasGenericParameters then
+            let cname = candidate.FullName
+            let last = cname.LastIndexOf('<')
+            if last < 0 then false
+            else let stripped = cname.Substring(0, last)
+                 let tname = target.FullName
+                 stripped.Equals(tname)
+         else false
+
+  let SameFunction (target:MethodReference) (candidate:MethodReference) =
+    if target = candidate then true
+    else if SameType target.DeclaringType candidate.DeclaringType then
+            let cname = candidate.Name
+            let tname = target.Name
+            tname.Equals cname
+         else false
+
+  let MethodConstructsType (t:TypeReference) (m:MethodDefinition) =
+    m.Body.Instructions
+    |> Seq.filter(fun i -> i.OpCode = OpCodes.Newobj)
+    |> Seq.exists(fun i -> let tn = (i.Operand :?> MethodReference).DeclaringType
+                           SameType t tn)
+
+  let private FSharpContainingMethod (t:TypeDefinition) (tx:TypeReference) =
     let candidates = t.DeclaringType.Methods.Concat
                         (t.DeclaringType.NestedTypes
                         |> Seq.filter (fun t2 -> (t2 :> TypeReference) <> tx)
@@ -299,17 +330,26 @@ module Visitor =
                         |> Seq.filter (fun m -> m.HasBody)
 
     candidates
-            |> Seq.tryFind(fun m -> m.Body.Instructions
-                                    |> Seq.filter(fun i -> i.OpCode = OpCodes.Newobj)
-                                    |> Seq.exists(fun i -> let tn = (i.Operand :?> MethodReference).DeclaringType
-                                                           tn = tx))
+    |> Seq.tryFind (MethodConstructsType tx)
 
-  let internal DeclaringMethod (m:MethodDefinition) =
+  let MethodCallsMethod (t:MethodReference) (m:MethodDefinition) =
+    m.Body.Instructions
+    |> Seq.filter(fun i -> i.OpCode = OpCodes.Call)
+    |> Seq.exists(fun i -> let tn = (i.Operand :?> MethodReference)
+                           SameFunction t tn)
+
+  let MethodLoadsMethod (t:MethodReference) (m:MethodDefinition) =
+    m.Body.Instructions
+    |> Seq.filter(fun i -> i.OpCode = OpCodes.Ldftn)
+    |> Seq.exists(fun i -> let tn = (i.Operand :?> MethodReference)
+                           SameFunction t tn)
+
+  let internal ContainingMethod (m:MethodDefinition) =
     let mname = m.Name
     let t = m.DeclaringType
     if mname.StartsWith("<", StringComparison.Ordinal) && mname.IndexOf('|') > 0 then
       let index = mname.IndexOf('>') - 1
-      CSharpDeclaringMethod mname t t index
+      CSharpContainingMethod mname t index (MethodCallsMethod m)
     else
       let n = t.Name
       if t.IsNested |> not then
@@ -321,7 +361,9 @@ module Visitor =
 
              let index = name.IndexOf('>') - 1
              if (index < 1) then None
-             else CSharpDeclaringMethod name t t.DeclaringType index
+             else CSharpContainingMethod name t.DeclaringType index
+                                     (fun mx -> MethodConstructsType t mx ||
+                                                MethodLoadsMethod m mx)
            else if n.IndexOf('@') >= 0 then
                  let tx = if n.EndsWith("T", StringComparison.Ordinal)
                           then match t.Methods |> Seq.tryFind (fun m -> m.IsConstructor && m.HasParameters && (m.Parameters.Count = 1))
@@ -330,7 +372,7 @@ module Visitor =
                                | Some other -> other.ParameterType
 
                           else t :> TypeReference
-                 FSharpDeclaringMethod t tx
+                 FSharpContainingMethod t tx
                 else None
 
   let private VisitType (t:TypeDefinition) included buildSequence =
@@ -343,7 +385,7 @@ module Visitor =
         |> Seq.collect ((fun m -> let methods = Seq.unfold (fun (state:MethodDefinition option) ->
                                                              match state with
                                                              | None -> None
-                                                             | Some x -> Some (x, DeclaringMethod x)) (Some m)
+                                                             | Some x -> Some (x, ContainingMethod x)) (Some m)
                                   let inclusion = Seq.fold UpdateInspection
                                                            included
                                                            methods
@@ -420,7 +462,9 @@ module Visitor =
         |> Seq.filter (fun _ -> dbg |> isNull |> not)
         |> Seq.concat
         |> Seq.filter (fun (i:Instruction) -> i.OpCode.FlowControl = FlowControl.Cond_Branch)
-        |> Seq.skip skip
+        |> Seq.mapi (fun n i -> (n, i))         //
+        |> Seq.filter (fun (n, _) -> n >= skip) // like skip, but OK if there aren't enough elements
+        |> Seq.map snd                          //
         |> Seq.map (fun (i:Instruction) ->     getJumps dbg i // if two or more jumps go between the same two places, coalesce them
                                                |> List.groupBy (fun (_,_,o,_) -> o)
                                                |> List.map (fun (_,records) ->

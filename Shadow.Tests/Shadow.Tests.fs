@@ -55,6 +55,12 @@ type AltCoverTests() = class
                           |> Seq.find (fun n -> n.EndsWith("Sample1WithModifiedOpenCover.xml", StringComparison.Ordinal))
 
   [<Test>]
+  member self.SafeDisposalProtects() =
+    let obj1 = { new System.IDisposable with member x.Dispose() = ObjectDisposedException("Bang!") |> raise }
+    Assist.SafeDispose obj1
+    Assert.Pass()
+
+  [<Test>]
   member self.DefaultAccessorsBehaveAsExpected() =
     let v1 = DateTime.UtcNow.Ticks
     let probe = Instance.Clock()
@@ -172,21 +178,18 @@ type AltCoverTests() = class
     lock Instance.Visits (fun () ->
     Instance.Capacity <- 0
     let save = Instance.trace
-    let wait = Instance.Wait
     try
       Instance.Visits.Clear()
       Instance.RunMailbox()
       Instance.trace <- { Tracer=null; Stream=null; Formatter=null;
                           Runner = false; Definitive = false }
       let key = " "
-      Instance.Wait <- System.Threading.Timeout.Infinite // force synchronous
       Instance.VisitSelection (fun () -> true) Null key 23
       Assert.That (Instance.Visits.Count, Is.EqualTo 1, "A visit that should have happened, didn't")
       Assert.That (Instance.Visits.[key].Count, Is.EqualTo 1, "keys = " + String.Join("; ", Instance.Visits.Keys|> Seq.toArray))
       Assert.That (Instance.Visits.[key].[23], Is.EqualTo (1, []))
     finally
       Instance.Visits.Clear()
-      Instance.Wait <- wait
       Instance.trace <- save)
     self.GetMyMethodName "<="
 
