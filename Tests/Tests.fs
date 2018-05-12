@@ -508,7 +508,7 @@ type AltCoverTests() = class
                     |> Seq.collect(fun t -> t.Methods)
                     |> Seq.toList
      let result = methods
-                    |> Seq.map Visitor.DeclaringMethod
+                    |> Seq.map Visitor.ContainingMethod
                     |> Seq.map (fun (mo : MethodDefinition option) ->
                                     mo |> Option.map (fun m -> m.Name))
 
@@ -520,14 +520,16 @@ type AltCoverTests() = class
                      Some "F1" // "System.Int32 Sample5.Class1::<F1>g__Interior|0_1(System.Int32,System.Int32)"
                      Some "F1" // "System.Int32 Sample5.Class1::<F1>g__Recursive|0_3(System.Int32)"
                      None // System.Int32 Sample5.Class1/Inner::G1(System.String)
+                     None // System.Void Sample5.Class1/Inner::G1(System.Int32)
                      None // System.Collections.Generic.IEnumerable`1<System.Int32> Sample5.Class1/Inner::G2(System.String)
+                     None // System.Void Sample5.Class1/Inner::G2(System.Int32)
                      None // System.Threading.Tasks.Task`1<System.String> Sample5.Class1/Inner::G3(System.String)
                      None // System.Void Sample5.Class1/Inner::G3(System.Int32)
                      None // System.Void Sample5.Class1/Inner::.ctor()
-                     Some "G1" // "System.Int32 Sample5.Class1/Inner::<G1>g__Interior|0_1(System.Int32,System.Int32)"
-                     Some "G1" // "System.Int32 Sample5.Class1/Inner::<G1>g__Recursive|0_3(System.Int32)"
+                     Some "<G1>g__Recursive|0_4" // T[] Sample5.Class1/Inner::<G1>g__InteriorToArray|0_1(T)
+                     Some "<G1>b__3" // "System.Int32 Sample5.Class1/Inner::<G1>g__Interior|0_1(System.Int32,System.Int32)"
+                     Some "<G1>g__Interior|0_2" // "System.Int32 Sample5.Class1/Inner::<G1>g__Recursive|0_3(System.Int32)"
                      None // System.Void Sample5.Class1/Inner/<>c__DisplayClass0_0::.ctor()
-                     Some "G1" // System.Int32 Sample5.Class1/Inner/<>c__DisplayClass0_0::<G1>b__1(System.Char)
                      Some "G1" // System.Int32 Sample5.Class1/Inner/<>c__DisplayClass0_0::<G1>b__2(System.Char)
                      None // System.Void Sample5.Class1/Inner/<>c::.cctor()
                      None // System.Void Sample5.Class1/Inner/<>c::.ctor()
@@ -544,7 +546,6 @@ type AltCoverTests() = class
                      Some "G3" // System.Void Sample5.Class1/Inner/<G3>d__2::MoveNext()
                      Some "G3" // System.Void Sample5.Class1/Inner/<G3>d__2::SetStateMachine(System.Runtime.CompilerServices.IAsyncStateMachine)
                      None // System.Void Sample5.Class1/<>c__DisplayClass0_0::.ctor()
-                     Some "F1" // System.Int32 Sample5.Class1/<>c__DisplayClass0_0::<F1>b__1(System.Char)
                      Some "F1" // System.Int32 Sample5.Class1/<>c__DisplayClass0_0::<F1>b__2(System.Char)
                      None // System.Void Sample5.Class1/<>c::.cctor()
                      None // System.Void Sample5.Class1/<>c::.ctor()
@@ -561,16 +562,27 @@ type AltCoverTests() = class
                      Some "F3" // System.Void Sample5.Class1/<F3>d__2::MoveNext()
                      Some "F3" // System.Void Sample5.Class1/<F3>d__2::SetStateMachine(System.Runtime.CompilerServices.IAsyncStateMachine)
                      ]
+     // methods |> Seq.iter (fun x -> printfn "%A" x.FullName)
+     // Assert.That (result, Is.EquivalentTo expected)
+
      result |> Seq.toList
       |> List.zip expected
       |> List.iteri (fun i (x,y) -> Assert.That(y, Is.EqualTo x, sprintf "%A %A %d" x y i))
 
-     let g3 = methods.[8]
+     // Disambiguation checks
+     let g3 = methods.[10]
      Assert.That (methods
-                  |> Seq.map Visitor.DeclaringMethod
+                  |> Seq.map Visitor.ContainingMethod
                   |> Seq.choose id
                   |> Seq.filter (fun m -> m.Name = "G3"),
                   Is.EquivalentTo [g3;g3;g3])
+
+     let g1 = methods.[6]
+     Assert.That (methods
+                  |> Seq.map Visitor.ContainingMethod
+                  |> Seq.choose id
+                  |> Seq.filter (fun m -> m.Name = "G1"),
+                  Is.EquivalentTo [g1;g1])
 
   [<Test>]
   member self.FSharpNestedMethods() =
@@ -581,37 +593,44 @@ type AltCoverTests() = class
                     |> Seq.toList
 
      let result = methods
-                    |> Seq.map Visitor.DeclaringMethod
+                    |> Seq.map Visitor.ContainingMethod
                     |> Seq.map (fun (mo : MethodDefinition option) ->
                                     mo |> Option.map (fun m -> m.DeclaringType.Name + "::" + m.Name))
+                    |> Seq.toList
 
      let expected = [
                      None //Microsoft.FSharp.Collections.FSharpList`1<System.Int32> Sample6.Module::F1(Microsoft.FSharp.Collections.FSharpList`1<System.Object>)
                      None //Microsoft.FSharp.Core.Unit[] Sample6.Module::F2(Microsoft.FSharp.Collections.FSharpList`1<System.String>)
-                     Some "FI@9T::Invoke" //System.Void Sample6.Module/FII@10::.ctor()
-                     Some "FI@9T::Invoke" //System.Object Sample6.Module/FII@10::Specialize()
-                     Some "FI@9T::Invoke" //System.Void Sample6.Module/FII@10T::.ctor(Sample6.Module/FII@10)
-                     Some "FI@9T::Invoke"  //System.Int32 Sample6.Module/FII@10T::Invoke(Microsoft.FSharp.Collections.FSharpList`1<b>,System.Int32)
-                     Some "Module::F1" //System.Void Sample6.Module/FI@9::.ctor()
-                     Some "Module::F1" //System.Object Sample6.Module/FI@9::Specialize()
-                     Some "Module::F1" //System.Void Sample6.Module/FI@9T::.ctor(Sample6.Module/FI@9)
-                     Some "Module::F1" //System.Int32 Sample6.Module/FI@9T::Invoke(Microsoft.FSharp.Collections.FSharpList`1<a>)
-                     Some "Module::F1" //System.Void Sample6.Module/F1@17::.ctor()
-                     Some "Module::F1" //System.Int32 Sample6.Module/F1@17::Invoke(System.Object)
-                     Some "fetchUrlAsync@25-4::Invoke" //System.Void Sample6.Module/fetchUrlAsync@26-5::.ctor(System.String,Microsoft.FSharp.Control.FSharpAsyncBuilder)
-                     Some "fetchUrlAsync@25-4::Invoke" //Microsoft.FSharp.Control.FSharpAsync`1<Microsoft.FSharp.Core.Unit> Sample6.Module/fetchUrlAsync@26-5::Invoke(System.IO.StreamReader)
-                     Some "fetchUrlAsync@23-3::Invoke" //System.Void Sample6.Module/fetchUrlAsync@25-4::.ctor(System.String,Microsoft.FSharp.Control.FSharpAsyncBuilder)
-                     Some "fetchUrlAsync@23-3::Invoke" //Microsoft.FSharp.Control.FSharpAsync`1<Microsoft.FSharp.Core.Unit> Sample6.Module/fetchUrlAsync@25-4::Invoke(System.IO.Stream)
-                     Some "fetchUrlAsync@23-2::Invoke" //System.Void Sample6.Module/fetchUrlAsync@23-3::.ctor(System.String,Microsoft.FSharp.Control.FSharpAsyncBuilder)
-                     Some "fetchUrlAsync@23-2::Invoke" //Microsoft.FSharp.Control.FSharpAsync`1<Microsoft.FSharp.Core.Unit> Sample6.Module/fetchUrlAsync@23-3::Invoke(System.Net.WebResponse)
-                     Some "fetchUrlAsync@22-1::Invoke" //System.Void Sample6.Module/fetchUrlAsync@23-2::.ctor(System.String,Microsoft.FSharp.Control.FSharpAsyncBuilder)
-                     Some "fetchUrlAsync@22-1::Invoke" //Microsoft.FSharp.Control.FSharpAsync`1<Microsoft.FSharp.Core.Unit> Sample6.Module/fetchUrlAsync@23-2::Invoke(System.Net.WebResponse)
-                     Some "fetchUrlAsync@21::Invoke" //System.Void Sample6.Module/fetchUrlAsync@22-1::.ctor(System.String,Microsoft.FSharp.Control.FSharpAsyncBuilder)
-                     Some "fetchUrlAsync@21::Invoke" //Microsoft.FSharp.Control.FSharpAsync`1<Microsoft.FSharp.Core.Unit> Sample6.Module/fetchUrlAsync@22-1::Invoke(Microsoft.FSharp.Core.Unit)
+                     Some "Module::F1" //System.Void Sample6.Module/aux@9::.ctor()
+                     Some "Module::F1" //System.Int32 Sample6.Module/aux@9::Invoke(System.Int32)
+                     Some "FI@10T::Invoke" //System.Void Sample6.Module/FII@11::.ctor()
+                     Some "FI@10T::Invoke" //System.Object Sample6.Module/FII@11::Specialize()
+                     Some "FII@11::Specialize" //System.Void Sample6.Module/FII@11T::.ctor(Sample6.Module/FII@11)
+                     Some "FII@11::Specialize"  //System.Int32 Sample6.Module/FII@11T::Invoke(Microsoft.FSharp.Collections.FSharpList`1<b>,System.Int32)
+                     Some "Module::F1" //System.Void Sample6.Module/FI@10::.ctor()
+                     Some "Module::F1" //System.Object Sample6.Module/FI@10::Specialize()
+                     Some "FI@10::Specialize" //System.Void Sample6.Module/FI@10T::.ctor(Sample6.Module/FI@10)
+                     Some "FI@10::Specialize" //System.Int32 Sample6.Module/FI@10T::Invoke(Microsoft.FSharp.Collections.FSharpList`1<a>)
+                     Some "Module::F1" //System.Void Sample6.Module/F1@18::.ctor()
+                     Some "Module::F1" //System.Int32 Sample6.Module/F1@18::Invoke(System.Object)
+                     Some "fetchUrlAsync@26-4::Invoke" //System.Void Sample6.Module/fetchUrlAsync@26-5::.ctor(System.String,Microsoft.FSharp.Control.FSharpAsyncBuilder)
+                     Some "fetchUrlAsync@26-4::Invoke" //Microsoft.FSharp.Control.FSharpAsync`1<Microsoft.FSharp.Core.Unit> Sample6.Module/fetchUrlAsync@26-5::Invoke(System.IO.StreamReader)
+                     Some "fetchUrlAsync@24-3::Invoke" //System.Void Sample6.Module/fetchUrlAsync@25-4::.ctor(System.String,Microsoft.FSharp.Control.FSharpAsyncBuilder)
+                     Some "fetchUrlAsync@24-3::Invoke" //Microsoft.FSharp.Control.FSharpAsync`1<Microsoft.FSharp.Core.Unit> Sample6.Module/fetchUrlAsync@25-4::Invoke(System.IO.Stream)
+                     Some "fetchUrlAsync@24-2::Invoke" //System.Void Sample6.Module/fetchUrlAsync@23-3::.ctor(System.String,Microsoft.FSharp.Control.FSharpAsyncBuilder)
+                     Some "fetchUrlAsync@24-2::Invoke" //Microsoft.FSharp.Control.FSharpAsync`1<Microsoft.FSharp.Core.Unit> Sample6.Module/fetchUrlAsync@23-3::Invoke(System.Net.WebResponse)
+                     Some "fetchUrlAsync@23-1::Invoke" //System.Void Sample6.Module/fetchUrlAsync@23-2::.ctor(System.String,Microsoft.FSharp.Control.FSharpAsyncBuilder)
+                     Some "fetchUrlAsync@23-1::Invoke" //Microsoft.FSharp.Control.FSharpAsync`1<Microsoft.FSharp.Core.Unit> Sample6.Module/fetchUrlAsync@23-2::Invoke(System.Net.WebResponse)
+                     Some "fetchUrlAsync@22::Invoke" //System.Void Sample6.Module/fetchUrlAsync@22-1::.ctor(System.String,Microsoft.FSharp.Control.FSharpAsyncBuilder)
+                     Some "fetchUrlAsync@22::Invoke" //Microsoft.FSharp.Control.FSharpAsync`1<Microsoft.FSharp.Core.Unit> Sample6.Module/fetchUrlAsync@22-1::Invoke(Microsoft.FSharp.Core.Unit)
                      Some "Module::F2" //System.Void Sample6.Module/fetchUrlAsync@21::.ctor()
                      Some "Module::F2" //Microsoft.FSharp.Control.FSharpAsync`1<Microsoft.FSharp.Core.Unit> Sample6.Module/fetchUrlAsync@21::Invoke(System.String)
                          ]
-     Assert.That (result, Is.EquivalentTo expected)
+     //methods |> Seq.iter (fun x -> printfn "%A" x.FullName)
+     //Assert.That (result, Is.EquivalentTo expected)
+     result
+      |> List.zip expected
+      |> List.iteri (fun i (x,y) -> Assert.That(y, Is.EqualTo x, sprintf "%A %A %d %s" x y i methods.[i].FullName))
 
   [<Test>]
   member self.ValidateSeqPntFixUp() = // HACK HACK HACK
@@ -2008,6 +2027,10 @@ type AltCoverTests() = class
     match Instrument.CreateSymbolWriter ".pdb" false false with
     | null -> ()
     | x -> Assert.Fail("null expected but got " + x.GetType().FullName)
+
+    match Instrument.CreateSymbolWriter ".exe" true false with
+    | :? Mono.Cecil.Mdb.MdbWriterProvider -> ()
+    | x -> Assert.Fail("Mono.Cecil.Mdb.MdbWriterProvider expected but got " + x.GetType().FullName)
 
   [<Test>]
   member self.ShouldGetNewFilePathFromPreparedAssembly () =

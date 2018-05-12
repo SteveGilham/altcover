@@ -295,7 +295,7 @@ Target "UnitTest" (fun _ ->
                                                                                 numeric))
                 |> Seq.toList
 
-  if numbers |> List.tryFind (fun n -> n >= 90.0) |> Option.isNone && numbers |> List.length > 2 then
+  if numbers |> List.tryFind (fun n -> n <= 99.0) |> Option.isSome then
      Assert.Fail("Coverage is too low")
 )
 
@@ -755,7 +755,7 @@ Target "UnitTestWithAltCoverCoreRunner" (fun _ ->
 
     printfn "Instrument the XUnit tests"
     let xDir = "_Binaries/AltCover.XTests/Debug+AnyCPU/netcoreapp2.0"
-    let xReport = reports @@ "XTestWithAltCoverCore.xml"
+    let xReport = reports @@ "XTestWithAltCoverCoreRunner.xml"
     let xOut = Path.getFullName "XTests/_Binaries/AltCover.XTests/Debug+AnyCPU/netcoreapp2.0"
     Shell.cleanDir xOut
 

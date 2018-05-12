@@ -137,13 +137,13 @@
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
-  <Import Project="..\packages\FSharpLint.MSBuild.0.9.1-beta\build\FSharpLint.MSBuild.targets" Condition="Exists('..\packages\FSharpLint.MSBuild.0.9.1-beta\build\FSharpLint.MSBuild.targets')" />
+  <!-- Import Project="..\packages\FSharpLint.MSBuild.0.9.1-beta\build\FSharpLint.MSBuild.targets" Condition="Exists('..\packages\FSharpLint.MSBuild.0.9.1-beta\build\FSharpLint.MSBuild.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\FSharpLint.MSBuild.0.9.1-beta\build\FSharpLint.MSBuild.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\FSharpLint.MSBuild.0.9.1-beta\build\FSharpLint.MSBuild.targets'))" />
-  </Target>
+  </Target -->
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
 	     Other similar extension points exist, see Microsoft.Common.targets.
 	<Target Name="BeforeBuild">
@@ -151,7 +151,7 @@
 	<Target Name="AfterBuild">
 	</Target>
 	-->
-  <Target Name="FSharpLint" BeforeTargets="AfterBuild" Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' AND '$(FSharpLintEnabled)' != 'false'">
+  <!-- Target Name="FSharpLint" BeforeTargets="AfterBuild" Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' AND '$(FSharpLintEnabled)' != 'false'">
     <FSharpLintTask Project="$(MSBuildProjectFullPath)" TreatWarningsAsErrors="true" />
-  </Target>
+  </Target -->
 </Project>

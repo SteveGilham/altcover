@@ -19,6 +19,13 @@ type internal Track =
   | Call of int
   | Both of (int64 * int)
 
+module Assist =
+  let internal SafeDispose x =
+    try
+      (x :> IDisposable).Dispose()
+    with
+    | :? ObjectDisposedException -> ()
+
 module Counter =
    /// <summary>
    /// The offset flag for branch counts
