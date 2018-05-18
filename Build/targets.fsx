@@ -345,7 +345,7 @@ Target "UnitTestDotNetWithCoverlet" (fun _ ->
                                                   f
                                 try
                                   Actions.RunDotnet dotnetOptions "test"
-                                                    ("/p:CollectCoverage=true /p:CoverletOutputFormat=opencover --configuration Debug " + f)
+                                                    ("/p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Exclude=[Sample*]* --configuration Debug " + f)
                                                     f
                                 with
                                 | x -> eprintf "%A" x
