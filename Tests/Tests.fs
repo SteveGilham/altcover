@@ -93,6 +93,11 @@ type AltCoverTests() = class
                   |> Seq.filter (fun x -> not <| (snd x).FullName.StartsWith("Mono.", StringComparison.OrdinalIgnoreCase))
                   |> Seq.filter (fun x -> not <| (snd x).FullName.StartsWith("nunit", StringComparison.OrdinalIgnoreCase))
                   |> Seq.filter (fun x -> not <| (snd x).FullName.StartsWith("FSharp.", StringComparison.OrdinalIgnoreCase))
+#if COVERLET
+                  |> Seq.filter (fun x -> not <| (snd x).FullName.StartsWith("coverlet", StringComparison.OrdinalIgnoreCase))
+                  |> Seq.filter (fun x -> not <| (snd x).FullName.StartsWith("AltCover,", StringComparison.OrdinalIgnoreCase))
+                  |> Seq.filter (fun x -> not <| (snd x).FullName.StartsWith("AltCover.Recorder", StringComparison.OrdinalIgnoreCase))
+#endif
 #else
                   |> Seq.filter (fun x -> (snd x).FullName.EndsWith("PublicKeyToken=c02b1a9f5b7cade8", StringComparison.OrdinalIgnoreCase))
 #endif
@@ -259,6 +264,10 @@ type AltCoverTests() = class
     |> Seq.filter (fun x -> x.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)
                             || x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
     |> Seq.map Mono.Cecil.AssemblyDefinition.ReadAssembly
+#if COVERLET
+    |> Seq.filter (fun x -> not <| x.FullName.StartsWith("AltCover,", StringComparison.OrdinalIgnoreCase))
+    |> Seq.filter (fun x -> not <| x.FullName.StartsWith("AltCover.Recorder", StringComparison.OrdinalIgnoreCase))
+#endif
     |> Seq.filter (fun x -> x.FullName.EndsWith("PublicKeyToken=c02b1a9f5b7cade8", StringComparison.OrdinalIgnoreCase))
     |> Seq.iter (fun def ->
       AltCover.ProgramDatabase.ReadSymbols def
@@ -457,9 +466,13 @@ type AltCoverTests() = class
                |> Seq.toList
 
     let expected = [  ".ctor" ; ".ctor" ; "Invoke"; "as_bar"; "bytes"; "get_MyBar" ;
+#if COVERLET
+#else
 #if NETCOREAPP2_0
                       "main";
 #endif
+#endif
+
                       "makeThing"; "returnBar"; "returnFoo"; "testMakeThing"; "testMakeUnion" ]
 
     Assert.That(pass, Is.EquivalentTo(expected), sprintf "Got sequence %A" pass);
@@ -2558,10 +2571,13 @@ type AltCoverTests() = class
       Visitor.NameFilters.Clear()
       Visitor.reportFormat <- None
 
+#if COVERLET
+#else
   [<Test>]
   member self.StartShouldLoadRecordingAssembly () =
     let def = Instrument.InstrumentationVisitor (Instrument.Context.Build []) (Start [])
     Assert.That (def.RecordingAssembly.Name.Name, Is.EqualTo "AltCover.Recorder.g")
+#endif
 
   [<Test>]
   member self.TypeShouldNotChangeState () =
