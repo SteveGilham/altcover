@@ -11,12 +11,18 @@ open System.Resources
 open Augment
 open Mono.Options
 
+type StringSink = delegate of string -> unit
+
 [<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage>]
 module Output =
   let mutable internal Info : (String -> unit) = ignore
   let mutable internal Echo : (String -> unit) = ignore
   let mutable internal Error : (String -> unit) = ignore
   let mutable internal Usage : ((String * obj * obj) -> unit) = ignore
+  let internal SetInfo (x:StringSink) =
+    Info <- x.Invoke
+  let internal SetError (x:StringSink) =
+    Error <- x.Invoke
 
   [<CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202", Justification="Multiple Close() should be safe")>]
   let LogExceptionToFile path e =

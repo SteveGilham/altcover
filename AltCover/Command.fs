@@ -1,6 +1,35 @@
-﻿namespace AltCover
+﻿namespace AltCover.PowerShell
+
+#if MONO
+module Say =
+    let hello name =
+        printfn "Hello %s" name
+#else
+
+open System
 
 #if NETCOREAPP2_0
+open AltCover
+#else
+#if DEBUG
+open AltCover
+#else
+module Args =
+  let Item a x =
+    if x |> String.IsNullOrWhiteSpace
+       then []
+       else [ a; x ]
+  let ItemList a x =
+      x
+      |> Seq.collect (fun i -> [ a; i ])
+      |> Seq.toList
+  let Flag a x =
+    if x
+       then [a]
+       else []
+
+#endif
+#endif
 
 open System
 open System.Management.Automation
@@ -115,9 +144,20 @@ type InvokeAltCoverCommand(runner:bool) =
   member val Save:SwitchParameter = SwitchParameter(false) with get, set
 
   override self.ProcessRecord() =
+#if NETCOREAPP2_0
     Output.Error <- (fun s -> let fail = ErrorRecord(InvalidOperationException(), s, ErrorCategory.FromStdErr, self)
                               self.WriteError fail)
     Output.Info <- (fun s -> self.WriteInformation (s, [| |]))
+#else
+#if DEBUG
+    Output.Error <- (fun s -> let fail = ErrorRecord(InvalidOperationException(), s, ErrorCategory.FromStdErr, self)
+                              self.WriteError fail)
+    Output.Info <- (fun s -> self.WriteInformation (s, [| |]))
+#else
+    let x = StringSink(fun s -> self.WriteInformation (s, [| |]))
+    Output.SetInfo x
+#endif
+#endif
     let status = (if self.Runner.IsPresent
                     then
                     [
@@ -162,12 +202,16 @@ type InvokeAltCoverCommand(runner:bool) =
                  )
                     |> List.concat
                     |> List.toArray
+#if NETCOREAPP2_0
                     |> AltCover.Main.EffectiveMain
+#else
+#if DEBUG
+                    |> AltCover.Main.EffectiveMain
+#else
+                    |> AltCover.Main.EffectiveMain.Invoke
+#endif
+#endif
     if status <> 0 then
         let fail = ErrorRecord(InvalidOperationException(), status.ToString(), ErrorCategory.InvalidOperation, self)
         self.WriteError fail
-#else
-module Say =
-    let hello name =
-        printfn "Hello %s" name
 #endif

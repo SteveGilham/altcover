@@ -66,6 +66,8 @@ open System.Runtime.CompilerServices
 [<assembly: InternalsVisibleTo("AltCover.XTests")>]
 
 #else
+[<assembly: InternalsVisibleTo("AltCover.PowerShell, PublicKey={1}")>]
+[<assembly: InternalsVisibleTo("AltCover.PowerShell, PublicKey={2}")>]
 [<assembly: InternalsVisibleTo("AltCover.Tests, PublicKey={1}")>]
 [<assembly: InternalsVisibleTo("AltCover.Tests, PublicKey={2}")>]
 [<assembly: InternalsVisibleTo("AltCover.XTests, PublicKey={1}")>]
