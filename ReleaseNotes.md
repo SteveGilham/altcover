@@ -1,3 +1,6 @@
+Modules don't import (posh fails on F#.Core; pwsh just crashes out)
+CoreRunner unit test set fails with instrumentation issue.
+
 # 3.0.475 (Caba series release 11)
 * Fine tune the speed-up in data collection (marginal improvements only)
 * [BUGFIX] -- some corner cases for nested functions (including uses of generics) were not being detected for purposes of exclusion by containing function
