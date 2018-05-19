@@ -345,7 +345,7 @@ Target "UnitTestDotNetWithCoverlet" (fun _ ->
                                                               f
                                             try
                                               Actions.RunDotnet dotnetOptions "test"
-                                                                ("/p:OtherConstants=COVERLET /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Exclude=[Sample*]*,[AltCover.Record*]*,[NUnit*]* --configuration Debug " + f)
+                                                                ("""/p:OtherConstants=COVERLET /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Exclude=\"[Sample*]*,[AltCover.Record*]*,[NUnit*]*,[AltCover.Shadow.Adapter]*\" --configuration Debug """ + f)
                                                                 f
                                             with
                                             | x -> eprintf "%A" x
@@ -362,7 +362,7 @@ Target "UnitTestDotNetWithCoverlet" (fun _ ->
               (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
                                  ReportTypes = [ ReportGenerator.ReportType.Html ]
                                  TargetDir = "_Reports/_Coverlet"})
-              xml                                             
+              xml
     with
     | x -> printfn "%A" x
            reraise ()

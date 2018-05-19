@@ -466,13 +466,9 @@ type AltCoverTests() = class
                |> Seq.toList
 
     let expected = [  ".ctor" ; ".ctor" ; "Invoke"; "as_bar"; "bytes"; "get_MyBar" ;
-#if COVERLET
-#else
 #if NETCOREAPP2_0
                       "main";
 #endif
-#endif
-
                       "makeThing"; "returnBar"; "returnFoo"; "testMakeThing"; "testMakeUnion" ]
 
     Assert.That(pass, Is.EquivalentTo(expected), sprintf "Got sequence %A" pass);
