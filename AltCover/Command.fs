@@ -32,13 +32,14 @@ module Args =
 #endif
 
 open System
+open System.IO
 open System.Management.Automation
 open AltCover
 
 [<Cmdlet(VerbsLifecycle.Invoke, "AltCover")>]
 [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.PowerShell", "PS1101:AllCmdletsShouldAcceptPipelineInput", Justification = "No valid input")>]
 type InvokeAltCoverCommand(runner:bool) =
-  inherit Cmdlet()
+  inherit PSCmdlet()
 
   new () = InvokeAltCoverCommand(false)
 
@@ -144,6 +145,7 @@ type InvokeAltCoverCommand(runner:bool) =
   member val Save:SwitchParameter = SwitchParameter(false) with get, set
 
   override self.ProcessRecord() =
+    let here = Directory.GetCurrentDirectory()
 #if NETCOREAPP2_0
     Output.Error <- (fun s -> let fail = ErrorRecord(InvalidOperationException(), s, ErrorCategory.FromStdErr, self)
                               self.WriteError fail)
@@ -158,48 +160,51 @@ type InvokeAltCoverCommand(runner:bool) =
     Output.SetInfo x
 #endif
 #endif
-    let status = (if self.Runner.IsPresent
+    try
+      let where = self.SessionState.Path.CurrentLocation.Path
+      Directory.SetCurrentDirectory where
+      let status = (if self.Runner.IsPresent
                     then
-                    [
-                      ["Runner"];
-                      Args.Item "-r" self.RecorderDirectory;
-                      Args.Item "-w" self.WorkingDirectory;
-                      Args.Item "-x" self.Executable;
-                      Args.Item "-l" self.LcovReport;
-                      Args.Item "-t" self.Threshold;
-                      Args.Item "-c" self.Cobertura;
-                      Args.Item "-o" self.OutputFile;
+                        [
+                          ["Runner"];
+                          Args.Item "-r" self.RecorderDirectory;
+                          Args.Item "-w" self.WorkingDirectory;
+                          Args.Item "-x" self.Executable;
+                          Args.Item "-l" self.LcovReport;
+                          Args.Item "-t" self.Threshold;
+                          Args.Item "-c" self.Cobertura;
+                          Args.Item "-o" self.OutputFile;
 
-                      Args.Flag "--collect" (self.Executable |> String.IsNullOrWhiteSpace)
+                          Args.Flag "--collect" (self.Executable |> String.IsNullOrWhiteSpace)
 
-                      Args.Item "--" (String.Join(" ", self.CommandLine));
-                    ]
-                    else
-                    [
-                      Args.Item "-i" self.InputDirectory;
-                      Args.Item "-o" self.OutputDirectory;
-                      Args.ItemList "-y" self.SymbolDirectories;
+                          Args.Item "--" (String.Join(" ", self.CommandLine));
+                        ]
+                        else
+                        [
+                          Args.Item "-i" self.InputDirectory;
+                          Args.Item "-o" self.OutputDirectory;
+                          Args.ItemList "-y" self.SymbolDirectories;
 #if NETCOREAPP2_0
 #else
-                      Args.ItemList "-k" self.Keys;
-                      Args.Item "--sn" self.StrongNameKey;
+                          Args.ItemList "-k" self.Keys;
+                          Args.Item "--sn" self.StrongNameKey;
 #endif
-                      Args.Item "-x" self.XmlReport;
-                      Args.ItemList "-f" self.FileFilter;
-                      Args.ItemList "-s" self.AssemblyFilter;
-                      Args.ItemList "-e" self.AssemblyExcludeFilter;
-                      Args.ItemList "-t" self.TypeFilter;
-                      Args.ItemList "-m" self.MethodFilter;
-                      Args.ItemList "-a" self.AttributeFilter;
-                      Args.ItemList "-c" self.CallContext;
+                          Args.Item "-x" self.XmlReport;
+                          Args.ItemList "-f" self.FileFilter;
+                          Args.ItemList "-s" self.AssemblyFilter;
+                          Args.ItemList "-e" self.AssemblyExcludeFilter;
+                          Args.ItemList "-t" self.TypeFilter;
+                          Args.ItemList "-m" self.MethodFilter;
+                          Args.ItemList "-a" self.AttributeFilter;
+                          Args.ItemList "-c" self.CallContext;
 
-                      Args.Flag "--opencover" self.OpenCover.IsPresent
-                      Args.Flag "--inplace" self.InPlace.IsPresent
-                      Args.Flag "--save" self.Save.IsPresent
+                          Args.Flag "--opencover" self.OpenCover.IsPresent
+                          Args.Flag "--inplace" self.InPlace.IsPresent
+                          Args.Flag "--save" self.Save.IsPresent
 
-                      Args.Item "--" (String.Join(" ", self.CommandLine));
-                    ]
-                 )
+                          Args.Item "--" (String.Join(" ", self.CommandLine));
+                        ]
+                    )
                     |> List.concat
                     |> List.toArray
 #if NETCOREAPP2_0
@@ -211,7 +216,9 @@ type InvokeAltCoverCommand(runner:bool) =
                     |> AltCover.Main.EffectiveMain.Invoke
 #endif
 #endif
-    if status <> 0 then
+      if status <> 0 then
         let fail = ErrorRecord(InvalidOperationException(), status.ToString(), ErrorCategory.InvalidOperation, self)
         self.WriteError fail
+    finally
+      Directory.SetCurrentDirectory here
 #endif
