@@ -337,32 +337,32 @@ Target "UnitTestDotNet" (fun _ ->
 Target "UnitTestDotNetWithCoverlet" (fun _ ->
     Directory.ensure "./_Reports"
     try
-      !! (@"./*Tests/*.tests.core.fsproj")
-      |> Seq.iter (fun f -> try
-                                printfn "Testing %s" f
-                                Actions.RunDotnet dotnetOptions "add"
-                                                  (f + " package coverlet.msbuild ")
-                                                  f
-                                try
-                                  Actions.RunDotnet dotnetOptions "test"
-                                                    ("/p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Exclude=[Sample*]* --configuration Debug " + f)
-                                                    f
-                                with
-                                | x -> eprintf "%A" x
+      let xml = !! (@"./*Tests/*.tests.core.fsproj")
+                |> Seq.fold (fun l f -> try
+                                            printfn "Testing %s" f
+                                            Actions.RunDotnet dotnetOptions "add"
+                                                              (f + " package coverlet.msbuild ")
+                                                              f
+                                            try
+                                              Actions.RunDotnet dotnetOptions "test"
+                                                                ("""/p:OtherConstants=COVERLET /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Exclude=\"[Sample*]*,[AltCover.Record*]*,[NUnit*]*,[AltCover.Shadow.Adapter]*\" --configuration Debug """ + f)
+                                                                f
+                                            with
+                                            | x -> eprintf "%A" x
 
-                                let here = Path.GetDirectoryName f
-                                let tag = Path.GetFileName here
+                                            let here = Path.GetDirectoryName f
 
-                                ReportGenerator.generateReports
-                                      (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
-                                                         ReportTypes = [ ReportGenerator.ReportType.Html ]
-                                                         TargetDir = "_Reports/_Coverlet" + tag})
-                                     [here @@ "coverage.xml"]
-                            finally
-                                Actions.RunDotnet dotnetOptions "remove"
-                                                  (f + " package coverlet.msbuild ")
-                                                  f
-                                              )
+                                            (here @@ "coverage.xml") :: l
+                                        finally
+                                            Actions.RunDotnet dotnetOptions "remove"
+                                                              (f + " package coverlet.msbuild ")
+                                                              f
+                                              ) []
+      ReportGenerator.generateReports
+              (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
+                                 ReportTypes = [ ReportGenerator.ReportType.Html ]
+                                 TargetDir = "_Reports/_Coverlet"})
+              xml
     with
     | x -> printfn "%A" x
            reraise ()
