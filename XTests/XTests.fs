@@ -255,7 +255,7 @@ module XTests =
                            |> Seq.sortBy (fun f -> f.ToUpperInvariant())
                            |> Seq.toList
 
-      Assert.Equal (actualFiles |> List.length, expected' |> List.length)
+      Assert.Equal (expected' |> List.length, actualFiles |> List.length)
       List.zip actualFiles expected'
       |> List.iter (fun (a, e) -> Assert.Equal(a,e))
 
