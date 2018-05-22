@@ -241,7 +241,7 @@ module XTests =
                          ]
 #if NETCOREAPP2_0
 #else
-                     |> List.filter (fun f -> isWindows || f = "Sample1.exe.mdb" || (f.EndsWith("db", StringComparison.Ordinal) |> not))
+                     |> List.filter (fun f -> isWindows || f = "Sample4.pdb" || f = "Sample1.exe.mdb" || (f.EndsWith("db", StringComparison.Ordinal) |> not))
 #endif
 
       let theFiles  = if pdb |> File.Exists |> not then
