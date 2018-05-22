@@ -1233,6 +1233,7 @@ Target "Packaging" (fun _ ->
 
     let AltCover = Path.getFullName "_Binaries/AltCover/AltCover.exe"
     let recorder = Path.getFullName "_Binaries/AltCover/Release+AnyCPU/AltCover.Recorder.dll"
+    let posh = Path.getFullName "_Binaries/AltCover.PowerShell/AltCover.PowerShell.dll"
     let packable = Path.getFullName "./_Binaries/README.html"
     let resources = DirectoryInfo.getMatchingFilesRecursive "AltCover.resources.dll" (DirectoryInfo.ofPath (Path.getFullName "_Binaries/AltCover/Release+AnyCPU"))
 
@@ -1240,6 +1241,7 @@ Target "Packaging" (fun _ ->
                             [
                                 (AltCover, Some "tools/net45", None)
                                 (recorder, Some "tools/net45", None)
+                                (posh, Some "tools/net45", None)
                                 (packable, Some "", None)
                             ]
                            else []
@@ -1284,6 +1286,14 @@ Target "PrepareFrameworkBuild" (fun _ ->
                Arguments = "/out:\"./_Binaries/AltCover/AltCover.exe\" /ver:\"" + ver +
                            "\" /attr:\"./_Binaries/AltCover/Release+AnyCPU/AltCover.exe\" /keyfile:\"./Build/Infrastructure.snk\" /target:\"exe\" /internalize ./_Binaries/AltCover/Release+AnyCPU/AltCover.exe .\_Binaries\AltCover\Release+AnyCPU\Mono.Cecil.dll .\_Binaries\AltCover\Release+AnyCPU\Mono.Cecil.Mdb.dll .\_Binaries\AltCover\Release+AnyCPU\Mono.Cecil.Pdb.dll .\_Binaries\AltCover\Release+AnyCPU\Mono.Cecil.Rocks.dll .\_Binaries\AltCover\Release+AnyCPU\Newtonsoft.Json.dll"
                 }) "ILMerge failure"
+
+    Actions.Run (fun info ->
+        { info with
+               FileName = toolpath
+               Arguments = "/out:\"./_Binaries/AltCover.PowerShell/AltCover.PowerShell.dll\" /ver:\"" + ver +
+                           "\" /attr:\"./_Binaries/AltCover.PowerShell/Release+AnyCPU/AltCover.PowerShell.dll\" /keyfile:\"./Build/Infrastructure.snk\" /target:\"library\" /internalize ./_Binaries/AltCover.PowerShell/Release+AnyCPU/AltCover.PowerShell.dll .\_Binaries\AltCover.PowerShell\Debug+AnyCPU\FSharp.Core.dll"
+                }) "ILMerge failure"
+
 
 //    let here = Directory.GetCurrentDirectory()
 //    ILMerge (fun p -> { p with DebugInfo = true
