@@ -260,9 +260,6 @@ module XTests =
                            |> Seq.toList
 
       Assert.Equal<IEnumerable<String>> (theFiles, actualFiles)
-//      Assert.Equal (expected' |> List.length, actualFiles |> List.length)
-//      List.zip actualFiles expected'
-//      |> List.iter (fun (a, e) -> Assert.Equal(a,e))
 
     finally
       Output.Usage ("dummy", OptionSet(), OptionSet())
@@ -466,7 +463,7 @@ module XTests =
 #else
                         System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
 #endif
-        Assert.True (isWindows |> not || 
+        Assert.True (isWindows |> not ||
                      File.Exists (Path.ChangeExtension(created, ".pdb")), created + " pdb not found")
     finally
       Visitor.outputDirectory <- saved
@@ -542,7 +539,7 @@ module XTests =
 #else
                         System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
 #endif
-        Assert.True (isWindows |> not || 
+        Assert.True (isWindows |> not ||
                      File.Exists (Path.ChangeExtension(created, ".pdb")), created + " pdb not found")
 #endif
     finally
