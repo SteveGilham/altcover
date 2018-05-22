@@ -1,5 +1,6 @@
-Modules don't import (posh fails on F#.Core; pwsh just crashes out)
-CoreRunner unit test set fails with instrumentation issue.
+# 3.0.xxx (Caba series release 11)
+* Invoke-Altcover cmdlets for both Windows PowerShell and PowerShell Core
+* [BUGFIX] -- Possible branch instrumentation failure when filtering is applied.
 
 # 3.0.475 (Caba series release 11)
 * Fine tune the speed-up in data collection (marginal improvements only)
