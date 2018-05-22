@@ -42,7 +42,6 @@
     <Compile Include="Runner.fs" />
     <Compile Include="AltCover.fs" />
     <Compile Include="Tasks.fs" />
-    <Compile Include="Command.fs" />
     <Compile Include="Main.fs" />
   </ItemGroup>
 

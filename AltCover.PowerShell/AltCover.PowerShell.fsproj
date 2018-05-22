@@ -72,9 +72,7 @@
     <Compile Include="..\_Generated\VisibleToTest.fs">
       <Link>VisibleToTest.fs</Link>
     </Compile>
-    <Compile Include="..\AltCover\Command.fs">
-      <Link>Command.fs</Link>
-    </Compile>
+    <Compile Include="Command.fs" />
     <Content Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
