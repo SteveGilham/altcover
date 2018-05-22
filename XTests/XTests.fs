@@ -244,7 +244,7 @@ module XTests =
                      |> List.filter (fun f -> isWindows || f = "Sample1.exe.mdb" || (f.EndsWith("db", StringComparison.Ordinal) |> not))
 #endif
 
-      let expected' = if pdb |> File.Exists |> not then
+      let theFiles  = if pdb |> File.Exists |> not then
                         List.concat [expected; ["AltCover.Recorder.g.dll.mdb"; "Sample4.dll.mdb" ]]
                         |> List.filter (fun f -> f.EndsWith(".g.pdb", StringComparison.Ordinal) |> not)
                         |> List.filter (fun f -> isWindows || f = "Sample4.pdb" ||
@@ -259,9 +259,10 @@ module XTests =
                            |> Seq.sortBy (fun f -> f.ToUpperInvariant())
                            |> Seq.toList
 
-      Assert.Equal (expected' |> List.length, actualFiles |> List.length)
-      List.zip actualFiles expected'
-      |> List.iter (fun (a, e) -> Assert.Equal(a,e))
+      Assert.Equal<IEnumerable<String>> (theFiles, actualFiles)
+//      Assert.Equal (expected' |> List.length, actualFiles |> List.length)
+//      List.zip actualFiles expected'
+//      |> List.iter (fun (a, e) -> Assert.Equal(a,e))
 
     finally
       Output.Usage ("dummy", OptionSet(), OptionSet())
