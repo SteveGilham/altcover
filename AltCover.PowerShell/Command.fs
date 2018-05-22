@@ -1,4 +1,4 @@
-﻿namespace AltCover.PowerShell
+﻿namespace AltCover.Commands
 
 #if MONO
 module Say =
