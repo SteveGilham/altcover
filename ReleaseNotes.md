@@ -1,5 +1,5 @@
 # 3.0.xxx (Caba series release 11)
-* Invoke-Altcover cmdlets for both Windows PowerShell and PowerShell Core
+* [Invoke-Altcover cmdlets](https://github.com/SteveGilham/altcover/wiki/PowerShell-integration) for both Windows PowerShell and PowerShell Core
 * [coverlet-style `dotnet test` integration](https://github.com/SteveGilham/altcover/wiki/%60dotnet-test%60-integration)
 * [BUGFIX] -- Possible branch instrumentation failure when filtering is applied.
 
