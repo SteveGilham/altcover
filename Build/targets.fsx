@@ -1257,6 +1257,12 @@ Target "Packaging" (fun _ ->
                        |> Seq.map (fun x -> (x, Some ("tools/netcoreapp2.0" + Path.GetDirectoryName(x).Substring(root).Replace("\\","/")), None))
                        |> Seq.toList
 
+    let root2 = (Path.getFullName "./nupkg").Length
+    let otherFiles = (!! "./nupkg/**/*.*")
+                       |> Seq.map (fun x -> (x, Some (Path.GetDirectoryName(x).Substring(root - 2).Replace("\\","/")), None))
+                       |> Seq.toList
+       
+
     printfn "Executing on %A" Environment.OSVersion
     NuGet (fun p ->
     {p with
@@ -1265,7 +1271,7 @@ Target "Packaging" (fun _ ->
         Description = "A pre-instrumented code coverage tool for .net/.net core and Mono"
         OutputPath = "./_Packaging"
         WorkingDir = "./_Binaries/Packaging"
-        Files = List.concat [applicationFiles; resourceFiles; netcoreFiles]
+        Files = List.concat [applicationFiles; resourceFiles; netcoreFiles; otherFiles]
         Version = !Version
         Copyright = (!Copyright).Replace("©", "(c)")
         Publish = false

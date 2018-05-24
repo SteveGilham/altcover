@@ -1,0 +1,26 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <UsingTask TaskName="AltCover.Prepare"   
+        AssemblyFile="$(MSBuildThisFileDirectory)../../tools/netcoreapp2.0/AltCover.dll"/>  
+  <UsingTask TaskName="AltCover.Collect"   
+        AssemblyFile="$(MSBuildThisFileDirectory)../../tools/netcoreapp2.0/AltCover.dll"/>  
+
+  <Target Name="InstrumentModulesNoBuild" BeforeTargets="VSTest">
+    <AltCover.Prepare
+      Condition="'$(VSTestNoBuild)' == 'true' and $(AltCover) == 'true'"
+      InputDirectory="$(TargetPath)" />
+  </Target>
+
+  <Target Name="InstrumentModulesAfterBuild" AfterTargets="BuildProject">
+    <AltCover.Prepare
+      Condition="'$(VSTestNoBuild)' != 'true' and $(AltCover) == 'true'"
+      InputDirectory="$(TargetPath)" />
+  </Target>
+
+  <Target Name="GenerateCoverageResult" AfterTargets="VSTest">
+    <AltCover.Collect
+      Condition="$(AltCover) == 'true'"
+      RecorderDirectory="$(TargetPath)"  />
+  </Target>
+
+</Project>
