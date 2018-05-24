@@ -1259,7 +1259,7 @@ Target "Packaging" (fun _ ->
 
     let root2 = (Path.getFullName "./nupkg").Length
     let otherFiles = (!! "./nupkg/**/*.*")
-                       |> Seq.map (fun x -> (x, Some (Path.GetDirectoryName(x).Substring(root - 2).Replace("\\","/")), None))
+                       |> Seq.map (fun x -> (x, Some (Path.GetDirectoryName(x).Substring(root2).Replace("\\","/")), None))
                        |> Seq.toList
        
 

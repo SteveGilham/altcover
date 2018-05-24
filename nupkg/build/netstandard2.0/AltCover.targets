@@ -8,19 +8,19 @@
   <Target Name="InstrumentModulesNoBuild" BeforeTargets="VSTest">
     <AltCover.Prepare
       Condition="'$(VSTestNoBuild)' == 'true' and $(AltCover) == 'true'"
-      InputDirectory="$(TargetPath)" />
+      InputDirectory="$(TargetDir)" />
   </Target>
 
   <Target Name="InstrumentModulesAfterBuild" AfterTargets="BuildProject">
     <AltCover.Prepare
       Condition="'$(VSTestNoBuild)' != 'true' and $(AltCover) == 'true'"
-      InputDirectory="$(TargetPath)" />
+      InputDirectory="$(TargetDir)" />
   </Target>
 
   <Target Name="GenerateCoverageResult" AfterTargets="VSTest">
     <AltCover.Collect
       Condition="$(AltCover) == 'true'"
-      RecorderDirectory="$(TargetPath)"  />
+      RecorderDirectory="$(TargetDir)"  />
   </Target>
 
 </Project>
