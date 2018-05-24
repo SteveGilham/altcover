@@ -6,21 +6,60 @@
         AssemblyFile="$(MSBuildThisFileDirectory)../../tools/netcoreapp2.0/AltCover.dll"/>  
 
   <Target Name="InstrumentModulesNoBuild" BeforeTargets="VSTest">
+    <ItemGroup>
+      <SplitContext Include="$(CallContext).Split(';')" />
+    </ItemGroup>
     <AltCover.Prepare
       Condition="'$(VSTestNoBuild)' == 'true' and $(AltCover) == 'true'"
-      InputDirectory="$(TargetDir)" />
+      InputDirectory="$(TargetDir)"
+      OutputDirectory="$(TargetDir)__Saved"
+      XmlReport="$(XmlReport)"
+      OpenCover="$(OpenCover)"
+      FileFilter="$(FileFilter)"
+      AssemblyFilter="$(AssemblyFilter)"
+      AssemblyExcludeFilter="$(AssemblyExcludeFilter)"
+      TypeFilter="$(TypeFilter)"
+      MethodFilter="$(MethodFilter)"
+      AttributeFilter="$(AttributeFilter)"
+      CallContext="@(SplitContext)"
+       />
   </Target>
 
   <Target Name="InstrumentModulesAfterBuild" AfterTargets="BuildProject">
+    <ItemGroup>
+      <SplitContext Include="$(CallContext).Split(';')" />
+    </ItemGroup>
     <AltCover.Prepare
       Condition="'$(VSTestNoBuild)' != 'true' and $(AltCover) == 'true'"
-      InputDirectory="$(TargetDir)" />
+      InputDirectory="$(TargetDir)"
+      OutputDirectory="$(TargetDir)__Saved"
+      XmlReport="$(XmlReport)"
+      OpenCover="$(OpenCover)"
+      FileFilter="$(FileFilter)"
+      AssemblyFilter="$(AssemblyFilter)"
+      AssemblyExcludeFilter="$(AssemblyExcludeFilter)"
+      TypeFilter="$(TypeFilter)"
+      MethodFilter="$(MethodFilter)"
+      AttributeFilter="$(AttributeFilter)"
+      CallContext="@(SplitContext)"
+       />
   </Target>
 
   <Target Name="GenerateCoverageResult" AfterTargets="VSTest">
     <AltCover.Collect
       Condition="$(AltCover) == 'true'"
-      RecorderDirectory="$(TargetDir)"  />
+      RecorderDirectory="$(TargetDir)"
+      LcovReport="$(LcovReport)"
+      Threshold="$(Threshold)"
+      Cobertura="$(Cobertura)"
+        />
+    <ItemGroup>
+      <RecorderGFiles Include="$(TargetDir)/AltCover.Recorder.g.*" />
+      <SavedFiles Include="$(TargetDir)__Saved/*.*" />
+    </ItemGroup>
+    <Delete Files="@(RecorderGFiles)" />
+    <Move SourceFiles="@(SavedFiles)" DestinationFolder="$(TargetDir)" OverwriteReadOnlyFiles="true" />
+    <RemoveDir Directories="$(TargetDir)__Saved" />
   </Target>
 
 </Project>

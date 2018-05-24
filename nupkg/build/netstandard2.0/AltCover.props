@@ -1,7 +1,9 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
   <PropertyGroup>
-
+    <AltCover Condition="$(AltCover) == ''">false</AltCover>
+    <OpenCover Condition="'$(OpenCover)' == ''">true</OpenCover>
+    <XmlReport Condition="'$(XmlReport)' == ''">$(ProjectDir)/coverage.xml</XmlReport>
   </PropertyGroup>
 
 </Project>
