@@ -239,8 +239,12 @@ module XTests =
                          "xunit.runner.utility.netcoreapp10.dll"
                          "xunit.runner.visualstudio.dotnetcore.testadapter.dll"
                          ]
+#if NETCOREAPP2_0
+#else
+                     |> List.filter (fun f -> isWindows || f = "Sample4.pdb" || f = "Sample1.exe.mdb" || (f.EndsWith("db", StringComparison.Ordinal) |> not))
+#endif
 
-      let expected' = if pdb |> File.Exists |> not then
+      let theFiles  = if pdb |> File.Exists |> not then
                         List.concat [expected; ["AltCover.Recorder.g.dll.mdb"; "Sample4.dll.mdb" ]]
                         |> List.filter (fun f -> f.EndsWith(".g.pdb", StringComparison.Ordinal) |> not)
                         |> List.filter (fun f -> isWindows || f = "Sample4.pdb" ||
@@ -255,9 +259,7 @@ module XTests =
                            |> Seq.sortBy (fun f -> f.ToUpperInvariant())
                            |> Seq.toList
 
-      Assert.Equal (actualFiles |> List.length, expected' |> List.length)
-      List.zip actualFiles expected'
-      |> List.iter (fun (a, e) -> Assert.Equal(a,e))
+      Assert.Equal<IEnumerable<String>> (theFiles, actualFiles)
 
     finally
       Output.Usage ("dummy", OptionSet(), OptionSet())
@@ -400,6 +402,10 @@ module XTests =
                          "Sample1.exe"
                          "Sample1.exe.mdb"
                          ] // See Instrument.WriteAssembly
+#if NETCOREAPP2_0
+#else
+                     |> List.filter (fun f -> isWindows || f = "Sample1.exe.mdb" || (f.EndsWith("db", StringComparison.Ordinal) |> not))
+#endif
                      else
                         ["AltCover.Recorder.g.dll"
                          "AltCover.Recorder.g.dll.mdb"
@@ -451,7 +457,14 @@ module XTests =
       Assert.True (File.Exists created, created + " not found")
       let pdb = Path.ChangeExtension(Assembly.GetExecutingAssembly().Location, ".pdb")
       if File.Exists pdb then
-        Assert.True (File.Exists (Path.ChangeExtension(created, ".pdb")), created + " pdb not found")
+        let isWindows =
+#if NETCOREAPP2_0
+                        true
+#else
+                        System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
+#endif
+        Assert.True (isWindows |> not ||
+                     File.Exists (Path.ChangeExtension(created, ".pdb")), created + " pdb not found")
     finally
       Visitor.outputDirectory <- saved
 
@@ -520,7 +533,14 @@ module XTests =
 #else
       let pdb = Path.ChangeExtension(Assembly.GetExecutingAssembly().Location, ".pdb")
       if File.Exists pdb then
-        Assert.True (File.Exists (Path.ChangeExtension(created, ".pdb")), created + " pdb not found")
+        let isWindows =
+#if NETCOREAPP2_0
+                        true
+#else
+                        System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
+#endif
+        Assert.True (isWindows |> not ||
+                     File.Exists (Path.ChangeExtension(created, ".pdb")), created + " pdb not found")
 #endif
     finally
       Visitor.outputDirectory <- saved

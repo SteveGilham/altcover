@@ -54,6 +54,7 @@ type GoTo = {
     Offset : int
     Target : int list
     Document : string
+    Included : bool
 }
 
 [<ExcludeFromCodeCoverage>]
@@ -455,7 +456,7 @@ module Visitor =
   // cribbed from OpenCover's CecilSymbolManager -- internals of C# yield return iterators
   let private IsMoveNext = Regex(@"\<[^\s>]+\>\w__\w(\w)?::MoveNext\(\)$", RegexOptions.Compiled ||| RegexOptions.ExplicitCapture);
 
-  let private ExtractBranchPoints dbg methodFullName rawInstructions =
+  let private ExtractBranchPoints dbg methodFullName rawInstructions interesting =
         // Generated MoveNext => skip one branch
         let skip = if IsMoveNext.IsMatch methodFullName then 1 else 0
         [rawInstructions |> Seq.cast]
@@ -488,6 +489,7 @@ module Visitor =
                                                                           Offset = from.Offset
                                                                           Target = target |> List.map (fun i -> i.Offset)
                                                                           Document = context.Document.Url
+                                                                          Included = interesting
                                                                           } ))
         |> Seq.choose id |> Seq.toList
 
@@ -508,6 +510,10 @@ module Visitor =
             PointNumber <- point + number
 
             let interesting = IsInstrumented included
+            let wanted i (s:SequencePoint) =
+               i && (s.Document.Url |>
+                     IsIncluded |>
+                     IsInstrumented)
 
             let sp = if  interesting && instructions |> Seq.isEmpty && rawInstructions |> Seq.isEmpty |> not then
                         rawInstructions
@@ -517,12 +523,15 @@ module Visitor =
                         instructions.OrderByDescending(fun (x:Instruction) -> x.Offset)
                         |> Seq.mapi (fun i x -> let s = dbg.GetSequencePoint(x)
                                                 MethodPoint (x, s |> SeqPnt.Build |> Some,
-                                                        i+point, interesting && (s.Document.Url |>
-                                                                 IsIncluded |>
-                                                                 IsInstrumented)))
+                                                        i+point, wanted interesting s))
 
             let bp = if instructions.Any() && ReportKind() = Base.ReportFormat.OpenCover then
-                        ExtractBranchPoints dbg m.FullName rawInstructions
+                        let spnt = instructions
+                                   |> Seq.head
+                                   |> dbg.GetSequencePoint
+
+                        let branches = wanted interesting spnt
+                        ExtractBranchPoints dbg m.FullName rawInstructions branches
                      else []
             BranchNumber <- BranchNumber + List.length bp
             Seq.append sp bp

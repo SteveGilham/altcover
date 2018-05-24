@@ -15,6 +15,9 @@
     <releaseNotes>@releaseNotes@</releaseNotes>
     <copyright>@copyright@</copyright>
     <tags>codecoverage .net Mono .netcore</tags>
+    <packageTypes>
+      <packageType name="DotnetCliTool" />
+    </packageTypes>
     @dependencies@
     @references@
   </metadata>

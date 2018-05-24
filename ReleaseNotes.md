@@ -1,3 +1,8 @@
+# 3.0.488 (Caba series release 11)
+* [Invoke-Altcover cmdlets](https://github.com/SteveGilham/altcover/wiki/PowerShell-integration) for both Windows PowerShell and PowerShell Core
+* [coverlet-style `dotnet test` integration](https://github.com/SteveGilham/altcover/wiki/%60dotnet-test%60-integration)
+* [BUGFIX] -- Possible branch instrumentation failure when filtering is applied.
+
 # 3.0.475 (Caba series release 11)
 * Fine tune the speed-up in data collection (marginal improvements only)
 * [BUGFIX] -- some corner cases for nested functions (including uses of generics) were not being detected for purposes of exclusion by containing function

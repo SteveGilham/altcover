@@ -337,32 +337,32 @@ Target "UnitTestDotNet" (fun _ ->
 Target "UnitTestDotNetWithCoverlet" (fun _ ->
     Directory.ensure "./_Reports"
     try
-      !! (@"./*Tests/*.tests.core.fsproj")
-      |> Seq.iter (fun f -> try
-                                printfn "Testing %s" f
-                                Actions.RunDotnet dotnetOptions "add"
-                                                  (f + " package coverlet.msbuild ")
-                                                  f
-                                try
-                                  Actions.RunDotnet dotnetOptions "test"
-                                                    ("/p:CollectCoverage=true /p:CoverletOutputFormat=opencover --configuration Debug " + f)
-                                                    f
-                                with
-                                | x -> eprintf "%A" x
+      let xml = !! (@"./*Tests/*.tests.core.fsproj")
+                |> Seq.fold (fun l f -> try
+                                            printfn "Testing %s" f
+                                            Actions.RunDotnet dotnetOptions "add"
+                                                              (f + " package coverlet.msbuild ")
+                                                              f
+                                            try
+                                              Actions.RunDotnet dotnetOptions "test"
+                                                                ("""/p:OtherConstants=COVERLET /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Exclude=\"[Sample*]*,[AltCover.Record*]*,[NUnit*]*,[AltCover.Shadow.Adapter]*\" --configuration Debug """ + f)
+                                                                f
+                                            with
+                                            | x -> eprintf "%A" x
 
-                                let here = Path.GetDirectoryName f
-                                let tag = Path.GetFileName here
+                                            let here = Path.GetDirectoryName f
 
-                                ReportGenerator.generateReports
-                                      (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
-                                                         ReportTypes = [ ReportGenerator.ReportType.Html ]
-                                                         TargetDir = "_Reports/_Coverlet" + tag})
-                                     [here @@ "coverage.xml"]
-                            finally
-                                Actions.RunDotnet dotnetOptions "remove"
-                                                  (f + " package coverlet.msbuild ")
-                                                  f
-                                              )
+                                            (here @@ "coverage.xml") :: l
+                                        finally
+                                            Actions.RunDotnet dotnetOptions "remove"
+                                                              (f + " package coverlet.msbuild ")
+                                                              f
+                                              ) []
+      ReportGenerator.generateReports
+              (fun p -> { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
+                                 ReportTypes = [ ReportGenerator.ReportType.Html ]
+                                 TargetDir = "_Reports/_Coverlet"})
+              xml
     with
     | x -> printfn "%A" x
            reraise ()
@@ -1233,6 +1233,7 @@ Target "Packaging" (fun _ ->
 
     let AltCover = Path.getFullName "_Binaries/AltCover/AltCover.exe"
     let recorder = Path.getFullName "_Binaries/AltCover/Release+AnyCPU/AltCover.Recorder.dll"
+    let posh = Path.getFullName "_Binaries/AltCover.PowerShell/AltCover.PowerShell.dll"
     let packable = Path.getFullName "./_Binaries/README.html"
     let resources = DirectoryInfo.getMatchingFilesRecursive "AltCover.resources.dll" (DirectoryInfo.ofPath (Path.getFullName "_Binaries/AltCover/Release+AnyCPU"))
 
@@ -1240,6 +1241,7 @@ Target "Packaging" (fun _ ->
                             [
                                 (AltCover, Some "tools/net45", None)
                                 (recorder, Some "tools/net45", None)
+                                (posh, Some "tools/net45", None)
                                 (packable, Some "", None)
                             ]
                            else []
@@ -1255,6 +1257,12 @@ Target "Packaging" (fun _ ->
                        |> Seq.map (fun x -> (x, Some ("tools/netcoreapp2.0" + Path.GetDirectoryName(x).Substring(root).Replace("\\","/")), None))
                        |> Seq.toList
 
+    let root2 = (Path.getFullName "./nupkg").Length
+    let otherFiles = (!! "./nupkg/**/*.*")
+                       |> Seq.map (fun x -> (x, Some (Path.GetDirectoryName(x).Substring(root2).Replace("\\","/")), None))
+                       |> Seq.toList
+       
+
     printfn "Executing on %A" Environment.OSVersion
     NuGet (fun p ->
     {p with
@@ -1263,7 +1271,7 @@ Target "Packaging" (fun _ ->
         Description = "A pre-instrumented code coverage tool for .net/.net core and Mono"
         OutputPath = "./_Packaging"
         WorkingDir = "./_Binaries/Packaging"
-        Files = List.concat [applicationFiles; resourceFiles; netcoreFiles]
+        Files = List.concat [applicationFiles; resourceFiles; netcoreFiles; otherFiles]
         Version = !Version
         Copyright = (!Copyright).Replace("©", "(c)")
         Publish = false
@@ -1284,6 +1292,14 @@ Target "PrepareFrameworkBuild" (fun _ ->
                Arguments = "/out:\"./_Binaries/AltCover/AltCover.exe\" /ver:\"" + ver +
                            "\" /attr:\"./_Binaries/AltCover/Release+AnyCPU/AltCover.exe\" /keyfile:\"./Build/Infrastructure.snk\" /target:\"exe\" /internalize ./_Binaries/AltCover/Release+AnyCPU/AltCover.exe .\_Binaries\AltCover\Release+AnyCPU\Mono.Cecil.dll .\_Binaries\AltCover\Release+AnyCPU\Mono.Cecil.Mdb.dll .\_Binaries\AltCover\Release+AnyCPU\Mono.Cecil.Pdb.dll .\_Binaries\AltCover\Release+AnyCPU\Mono.Cecil.Rocks.dll .\_Binaries\AltCover\Release+AnyCPU\Newtonsoft.Json.dll"
                 }) "ILMerge failure"
+
+    Actions.Run (fun info ->
+        { info with
+               FileName = toolpath
+               Arguments = "/out:\"./_Binaries/AltCover.PowerShell/AltCover.PowerShell.dll\" /ver:\"" + ver +
+                           "\" /attr:\"./_Binaries/AltCover.PowerShell/Release+AnyCPU/AltCover.PowerShell.dll\" /keyfile:\"./Build/Infrastructure.snk\" /target:\"library\" /internalize ./_Binaries/AltCover.PowerShell/Release+AnyCPU/AltCover.PowerShell.dll .\_Binaries\AltCover.PowerShell\Debug+AnyCPU\FSharp.Core.dll"
+                }) "ILMerge failure"
+
 
 //    let here = Directory.GetCurrentDirectory()
 //    ILMerge (fun p -> { p with DebugInfo = true
