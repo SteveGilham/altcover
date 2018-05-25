@@ -1,3 +1,6 @@
+# 3.5.xxx-pre (Cerulean series pre-release)
+* TBC
+
 # 3.0.490 (Caba series release 12 re-spin)
 * No functional change from 3.0.488, just removing an experimental extension that couldn't be tested without a release.
 
