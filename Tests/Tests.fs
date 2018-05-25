@@ -3036,8 +3036,9 @@ type AltCoverTests() = class
   // CommandLine.fs
   [<Test>]
   member self.OutputCanBeExercised () =
-    Output.Info <- ignore
-    Output.Error <- ignore
+    let sink = StringSink(ignore)
+    Output.SetInfo sink
+    Output.SetError sink
     Output.Echo <- ignore
     Output.Usage <- ignore
     Assert.That(Output.Usage, Is.Not.Null)
