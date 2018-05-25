@@ -62,10 +62,13 @@ open System.Runtime.CompilerServices
 [<assembly: InternalsVisibleTo("AltCover.Shadow.Tests")>]
 #else
 #if NETCOREAPP2_0
+[<assembly: InternalsVisibleTo("AltCover.PowerShell")>]
 [<assembly: InternalsVisibleTo("AltCover.Tests")>]
 [<assembly: InternalsVisibleTo("AltCover.XTests")>]
 
 #else
+[<assembly: InternalsVisibleTo("AltCover.PowerShell, PublicKey={1}")>]
+[<assembly: InternalsVisibleTo("AltCover.PowerShell, PublicKey={2}")>]
 [<assembly: InternalsVisibleTo("AltCover.Tests, PublicKey={1}")>]
 [<assembly: InternalsVisibleTo("AltCover.Tests, PublicKey={2}")>]
 [<assembly: InternalsVisibleTo("AltCover.XTests, PublicKey={1}")>]

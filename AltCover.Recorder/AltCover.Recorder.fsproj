@@ -25,7 +25,8 @@
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
+    <DebugType Condition="'$(OS)' == 'Windows_NT'">full</DebugType>
+    <DebugType Condition="'$(OS)' != 'Windows_NT'">portable</DebugType>
     <Optimize>false</Optimize>
     <Tailcalls>false</Tailcalls>
     <OutputPath>$(SolutionDir)_Binaries\$(AssemblyName)\$(Configuration)+$(Platform)\</OutputPath>
@@ -39,7 +40,8 @@
     <NoWarn>2009</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
+    <DebugType Condition="'$(OS)' == 'Windows_NT'">pdbonly</DebugType>
+    <DebugType Condition="'$(OS)' != 'Windows_NT'">portable</DebugType>
     <Optimize>true</Optimize>
     <Tailcalls>true</Tailcalls>
     <OutputPath>$(SolutionDir)_Binaries\$(AssemblyName)\$(Configuration)+$(Platform)\</OutputPath>
