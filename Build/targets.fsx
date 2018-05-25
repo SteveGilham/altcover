@@ -1261,8 +1261,11 @@ Target "Packaging" (fun _ ->
     let otherFiles = (!! "./nupkg/**/*.*")
                        |> Seq.map (fun x -> (x, Some (Path.GetDirectoryName(x).Substring(root2).Replace("\\","/")), None))
                        |> Seq.toList
-       
 
+    let poshFiles = (!! "./_Binaries/AltCover.PowerShell/Release+AnyCPU/netcoreapp2.0/*.PowerShell.*")
+                       |> Seq.map (fun x -> (x, Some ("tools/netcoreapp2.0/" + Path.GetFileName x), None))
+                       |> Seq.toList
+                       
     printfn "Executing on %A" Environment.OSVersion
     NuGet (fun p ->
     {p with
@@ -1271,7 +1274,7 @@ Target "Packaging" (fun _ ->
         Description = "A pre-instrumented code coverage tool for .net/.net core and Mono"
         OutputPath = "./_Packaging"
         WorkingDir = "./_Binaries/Packaging"
-        Files = List.concat [applicationFiles; resourceFiles; netcoreFiles; otherFiles]
+        Files = List.concat [applicationFiles; resourceFiles; netcoreFiles; poshFiles; otherFiles]
         Version = !Version
         Copyright = (!Copyright).Replace("©", "(c)")
         Publish = false
@@ -1316,7 +1319,7 @@ Target "PrepareFrameworkBuild" (fun _ ->
 )
 
 Target "PrepareDotNetBuild" (fun _ ->
-    let netcoresource =  Path.getFullName "./altcover.dotnet.sln"
+    let netcoresource =  Path.getFullName "./altcover/altcover.core.fsproj" //  "./altcover.dotnet.sln"
     let publish = Path.getFullName "./_Publish"
     DotNet.publish (fun options -> { options with OutputPath = Some publish
                                                   Configuration = DotNet.BuildConfiguration.Release})
