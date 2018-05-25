@@ -1,4 +1,7 @@
-# 3.0.488 (Caba series release 11)
+# 3.0.490 (Caba series release 12 re-spin)
+* No functional change from 3.0.488, just removing an experimental extension that couldn't be tested without a release.
+
+# 3.0.488 (Caba series release 12 -- deprecated)
 * [Invoke-Altcover cmdlets](https://github.com/SteveGilham/altcover/wiki/PowerShell-integration) for both Windows PowerShell and PowerShell Core
 * [coverlet-style `dotnet test` integration](https://github.com/SteveGilham/altcover/wiki/%60dotnet-test%60-integration)
 * [BUGFIX] -- Possible branch instrumentation failure when filtering is applied.
