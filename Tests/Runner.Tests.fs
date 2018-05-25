@@ -1680,7 +1680,9 @@ or
 
       use stream2 = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource2)
       use reader = new StreamReader(stream2)
-      let expected = reader.ReadToEnd().Replace("\r", String.Empty).Replace("\\","/")
+      let expected = reader.ReadToEnd().Replace("\r", String.Empty).Replace("\\","/").
+                                 Replace("""version="3.0.0.0""", "version=\""
+                                 + typeof<Tracer>.Assembly.GetName().Version.ToString())
       Assert.That (result.Replace("\r", String.Empty), Is.EqualTo expected, result)
     finally
       Cobertura.path := None
@@ -1711,7 +1713,9 @@ or
 
       use stream2 = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource2)
       use reader = new StreamReader(stream2)
-      let expected = reader.ReadToEnd().Replace("\r", String.Empty).Replace("\\","/")
+      let expected = reader.ReadToEnd().Replace("\r", String.Empty).Replace("\\","/").
+                                 Replace("""version="3.0.0.0""", "version=\""
+                                 + typeof<Tracer>.Assembly.GetName().Version.ToString())
       Assert.That (result.Replace("\r", String.Empty).Replace("\\","/"), Is.EqualTo expected, result)
     finally
       Cobertura.path := None
