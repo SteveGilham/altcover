@@ -89,12 +89,14 @@ type InvokeAltCoverCommand(runner:bool) =
 
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
       ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  member val SymbolDirectories : string array = [| |] with get, set
+  [<Alias("SymbolDirectories")>]
+  member val SymbolDirectory : string array = [| |] with get, set
 #if NETCOREAPP2_0
 #else
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
       ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  member val Keys  : string array = [| |] with get, set
+  [<Alias("Keys")>]
+  member val Key  : string array = [| |] with get, set
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
       ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
   member val StrongNameKey = String.Empty with get, set
@@ -183,10 +185,10 @@ type InvokeAltCoverCommand(runner:bool) =
                         [
                           Args.Item "-i" self.InputDirectory;
                           Args.Item "-o" self.OutputDirectory;
-                          Args.ItemList "-y" self.SymbolDirectories;
+                          Args.ItemList "-y" self.SymbolDirectory;
 #if NETCOREAPP2_0
 #else
-                          Args.ItemList "-k" self.Keys;
+                          Args.ItemList "-k" self.Key;
                           Args.Item "--sn" self.StrongNameKey;
 #endif
                           Args.Item "-x" self.XmlReport;
