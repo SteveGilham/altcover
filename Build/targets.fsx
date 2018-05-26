@@ -1319,7 +1319,7 @@ Target "PrepareFrameworkBuild" (fun _ ->
 )
 
 Target "PrepareDotNetBuild" (fun _ ->
-    let netcoresource =  Path.getFullName "./altcover/altcover.core.fsproj" //  "./altcover.dotnet.sln"
+    let netcoresource =  Path.getFullName "./AltCover/altcover.core.fsproj" //  "./altcover.dotnet.sln"
     let publish = Path.getFullName "./_Publish"
     DotNet.publish (fun options -> { options with OutputPath = Some publish
                                                   Configuration = DotNet.BuildConfiguration.Release})
