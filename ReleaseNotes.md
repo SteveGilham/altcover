@@ -1,5 +1,5 @@
 # 3.5.xxx-pre (Cerulean series pre-release)
-* TBC
+* Reduce the amount of unneccesary infrastructure runtime code in the .nupkg that bloated the 3.0.488-490 release
 
 # 3.0.490 (Caba series release 12 re-spin)
 * No functional change from 3.0.488, just removing an experimental extension that couldn't be tested without a release.
