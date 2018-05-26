@@ -19,9 +19,9 @@ type TypeBinder (``type``:Type) =
   inherit System.Runtime.Serialization.SerializationBinder()
   override self.BindToType (_:string, n:string) =
     match n with
-    | both when both.StartsWith("System.Tuple`2[[System.Int64") -> typeof<(int64*int)>
-    | t2 when t2.StartsWith("System.Tuple`2") -> ``type``
-    | t3 when t3.StartsWith("System.Tuple`3") -> typeof<(string*int*Base.Track)>
+    | both when both.StartsWith("System.Tuple`2[[System.Int64", StringComparison.Ordinal) -> typeof<(int64*int)>
+    | t2 when t2.StartsWith("System.Tuple`2", StringComparison.Ordinal) -> ``type``
+    | t3 when t3.StartsWith("System.Tuple`3", StringComparison.Ordinal) -> typeof<(string*int*Base.Track)>
     | "AltCover.Recorder.Track+Call"
     | "AltCover.Base.Track+Call"-> (Base.Track.Call 0).GetType()
     | "AltCover.Recorder.Track+Time"
