@@ -1,0 +1,47 @@
+--- Microsoft.PowerShell.CodeAnalysis.il	Sat May 26 14:20:50 2018
++++ Microsoft.PowerShell.CodeAnalysis.15.il	Sat May 26 13:42:31 2018
+@@ -347,7 +347,7 @@
+ .assembly extern /*23000001*/ FxCopSdk
+ {
+   .publickeytoken = (B0 3F 5F 7F 11 D5 0A 3A )                         // .?_....:
+-  .ver 10:0:0:0
++  .ver 15:0:0:0
+ }
+ .assembly extern /*23000002*/ mscorlib
+ {
+@@ -357,7 +357,7 @@
+ .assembly extern /*23000003*/ Microsoft.Cci
+ {
+   .publickeytoken = (B0 3F 5F 7F 11 D5 0A 3A )                         // .?_....:
+-  .ver 10:0:0:0
++  .ver 15:0:0:0
+ }
+ .assembly extern /*23000004*/ System.Core
+ {
+@@ -428,7 +428,7 @@
+ .stackreserve 0x00100000
+ .subsystem 0x0003       // WINDOWS_CUI
+ .corflags 0x00000009    //  ILONLY
+-// Image base: 0x02D80000
++// Image base: 0x02F20000
+ 
+ 
+ // =============== CLASS MEMBERS DECLARATION ===================
+@@ -2722,7 +2722,7 @@
+     IL_0000:  /* 7E   | (04)00000E       */ ldsfld     class [System.Core/*23000004*/]System.Collections.Generic.HashSet`1/*01000013*/<class [Microsoft.Cci/*23000003*/]Microsoft.FxCop.Sdk.AssemblyNode/*01000012*/> Microsoft.PowerShell.CodeAnalysis.PowerShellAssemblies/*0200000E*/::allAssemblies /* 0400000E */
+     IL_0005:  /* 2D   | 33               */ brtrue.s   IL_003a
+ 
+-    IL_0007:  /* 28   | (0A)000073       */ call       class [Microsoft.Cci/*23000003*/]Microsoft.FxCop.Sdk.AssemblyNodeCollection/*01000053*/ [FxCopSdk/*23000001*/]Microsoft.FxCop.Sdk.RuleUtilities/*01000052*/::get_AnalysisAssemblies() /* 0A000073 */
++    IL_0007:  /* 28   | (0A)000073       */ call       class [mscorlib]System.Collections.ObjectModel.ReadOnlyCollection`1<class [Microsoft.Cci]Microsoft.FxCop.Sdk.AssemblyNode> /*01000053*/ [FxCopSdk/*23000001*/]Microsoft.FxCop.Sdk.RuleUtilities/*01000052*/::get_AnalysisAssemblies() /* 0A000073 */
+     IL_000c:  /* 7E   | (04)000013       */ ldsfld     class [mscorlib/*23000002*/]System.Func`2/*0100000B*/<class [Microsoft.Cci/*23000003*/]Microsoft.FxCop.Sdk.AssemblyNode/*01000012*/,class [mscorlib/*23000002*/]System.Collections.Generic.IEnumerable`1/*0100000A*/<class [Microsoft.Cci/*23000003*/]Microsoft.FxCop.Sdk.AssemblyNode/*01000012*/>> Microsoft.PowerShell.CodeAnalysis.PowerShellAssemblies/*0200000E*/::'CS$<>9__CachedAnonymousMethodDelegate5' /* 04000013 */
+     IL_0011:  /* 2D   | 11               */ brtrue.s   IL_0024
+ 
+@@ -2754,7 +2754,7 @@
+     IL_0000:  /* 7E   | (04)00000F       */ ldsfld     class [System.Core/*23000004*/]System.Collections.Generic.HashSet`1/*01000013*/<class [Microsoft.Cci/*23000003*/]Microsoft.FxCop.Sdk.AssemblyNode/*01000012*/> Microsoft.PowerShell.CodeAnalysis.PowerShellAssemblies/*0200000E*/::allAssembliesReacheableFromCmdlets /* 0400000F */
+     IL_0005:  /* 2D   | 55               */ brtrue.s   IL_005c
+ 
+-    IL_0007:  /* 28   | (0A)000073       */ call       class [Microsoft.Cci/*23000003*/]Microsoft.FxCop.Sdk.AssemblyNodeCollection/*01000053*/ [FxCopSdk/*23000001*/]Microsoft.FxCop.Sdk.RuleUtilities/*01000052*/::get_AnalysisAssemblies() /* 0A000073 */
++    IL_0007:  /* 28   | (0A)000073       */ call       class [mscorlib]System.Collections.ObjectModel.ReadOnlyCollection`1<class [Microsoft.Cci]Microsoft.FxCop.Sdk.AssemblyNode> [FxCopSdk/*23000001*/]Microsoft.FxCop.Sdk.RuleUtilities/*01000052*/::get_AnalysisAssemblies() /* 0A000073 */
+     IL_000c:  /* 7E   | (04)000016       */ ldsfld     class [mscorlib/*23000002*/]System.Func`2/*0100000B*/<class [Microsoft.Cci/*23000003*/]Microsoft.FxCop.Sdk.AssemblyNode/*01000012*/,bool> Microsoft.PowerShell.CodeAnalysis.PowerShellAssemblies/*0200000E*/::'CS$<>9__CachedAnonymousMethodDelegated' /* 04000016 */
+     IL_0011:  /* 2D   | 11               */ brtrue.s   IL_0024
+ 
