@@ -4,6 +4,7 @@ nuget Fake.Core.Process prerelease
 nuget Fake.DotNet.Cli prerelease
 nuget Fake.DotNet.NuGet prerelease
 nuget Fake.IO.FileSystem prerelease
+nuget System.Reactive ~> 3.1
 nuget coveralls.io >= 1.4.2
 nuget FSharpLint.Core >= 0.9.0
 nuget NUnit >= 3.9.0
@@ -49,6 +50,7 @@ nuget Fake.DotNet.Testing.OpenCover prerelease
 nuget Fake.DotNet.Testing.XUnit2 prerelease
 nuget Fake.IO.FileSystem prerelease
 nuget Fake.Testing.ReportGenerator prerelease
+nuget System.Reactive ~> 3.1
 nuget coveralls.io >= 1.4.2
 nuget FSharpLint.Core >= 0.9.0
 nuget Markdown >= 2.2.1
