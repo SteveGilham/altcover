@@ -1,7 +1,7 @@
 ﻿namespace AltCover.Commands
 
 #if MONO
-module CoverageFormats
+module CoverageFormats =
     let hello name =
         printfn "Hello %s" name
 #else
