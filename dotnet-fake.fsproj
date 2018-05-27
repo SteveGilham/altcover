@@ -5,6 +5,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <DotNetCliToolReference Include="dotnet-fake" Version="5.0.0-rc016.225" />
+    <DotNetCliToolReference Include="dotnet-fake" Version="5.0.0-rc017.237" />
   </ItemGroup>
 </Project>
