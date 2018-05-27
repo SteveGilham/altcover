@@ -207,6 +207,14 @@ Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standal
                 WorkingDirectory = "."
                 Arguments = "--severity all --confidence all --config " + rules + " --console --html ./_Reports/gendarme.html " + subjects})
                 "Gendarme Errors were detected"
+
+    if Environment.isWindows then    
+        Actions.Run (fun info ->
+            { info with
+                    FileName = (findToolInSubPath "gendarme.exe" "./packages")
+                    WorkingDirectory = "."
+                    Arguments = "--severity all --confidence all --config ./Build/rules-posh.xml --console --html ./_Reports/gendarme.html _Binaries/AltCover.PowerShell/Debug+AnyCPU/AltCover.PowerShell.dll"})
+                    "Gendarme Errors were detected"          
 )
 
 Target "FxCop" (fun _ -> // Needs debug because release is compiled --standalone which contaminates everything
