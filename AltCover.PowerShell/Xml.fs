@@ -1,11 +1,13 @@
 ﻿namespace AltCover.PowerShell
 
+open System.Diagnostics.CodeAnalysis
 open System.Linq
 open System.Xml
 open System.Xml.Linq
 
-module Xml =
+module XmlUntilities =
 
+  [<SuppressMessage("Microsoft.Design", "CA1059", Justification="converts concrete types")>]
   let ToXmlDocument(xDocument:XDocument) =
     let xmlDocument = XmlDocument()
     use xmlReader = xDocument.CreateReader()
@@ -21,6 +23,7 @@ module Xml =
 
     xmlDocument
 
+  [<SuppressMessage("Microsoft.Design", "CA1059", Justification="converts concrete types")>]
   let ToXDocument(xmlDocument:XmlDocument) =
     use nodeReader = new XmlNodeReader(xmlDocument)
     nodeReader.MoveToContent() |> ignore // skips leading comments
