@@ -1,6 +1,7 @@
 # 3.5.xxx-pre (Cerulean series pre-release)
 * Reduce the amount of unneccesary infrastructure runtime code in the .nupkg that bloated the 3.0.488-490 release
-* Minor adjustments to `Invoked-AltCover` cmdlet based on PowerShell guidelines -- plural argument names made singular with backwards-compatibile aliases
+* Expose the LCov and Cobertura output formatters as simple cmdlets `ConvertTo-Cobertura` and `ConvertTo-Lcov` to take OpenCover or NCover format input.
+* Minor adjustments to `Invoke-AltCover` cmdlet based on PowerShell guidelines -- plural argument names made singular with backwards-compatibile aliases
 
 # 3.0.490 (Caba series release 12 re-spin)
 * No functional change from 3.0.488, just removing an experimental extension that couldn't be tested without a release.
