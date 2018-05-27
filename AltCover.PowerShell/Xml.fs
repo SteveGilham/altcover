@@ -5,7 +5,7 @@ open System.Linq
 open System.Xml
 open System.Xml.Linq
 
-module XmlUntilities =
+module XmlUtilities =
 
   [<SuppressMessage("Microsoft.Design", "CA1059", Justification="converts concrete types")>]
   let ToXmlDocument(xDocument:XDocument) =

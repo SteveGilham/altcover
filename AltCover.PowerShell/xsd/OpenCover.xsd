@@ -84,6 +84,9 @@
                     <xs:sequence>
                     <xs:element name="BranchPoint"  minOccurs="0" maxOccurs="unbounded">
                     <xs:complexType>
+    <xs:sequence>
+      <xs:any minOccurs="0" />
+    </xs:sequence>
                     <xs:attribute name="vc" type="xs:integer" use="required" />
                     <xs:attribute name="uspid" type="xs:integer" use="required" />
                     <xs:attribute name="ordinal" type="xs:integer" use="required" />
@@ -140,6 +143,9 @@
   <xs:complexType name="SequencePoint">
     <xs:complexContent>
       <xs:extension base="MethodPoint">
+    <xs:sequence>
+      <xs:any minOccurs="0" />
+    </xs:sequence>
         <xs:attribute name="sl" type="xs:integer" use="required" />
         <xs:attribute name="sc" type="xs:integer" use="required" />
         <xs:attribute name="el" type="xs:integer" use="required" />

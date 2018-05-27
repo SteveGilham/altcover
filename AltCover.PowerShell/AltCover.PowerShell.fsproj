@@ -73,6 +73,7 @@
       <Link>VisibleToTest.fs</Link>
     </Compile>
     <Compile Include="Xml.fs" />
+    <Compile Include="CoverageFormats.fs" />
     <Compile Include="Command.fs" />
     <Content Include="packages.config" />
     <EmbeddedResource Include="xsd\NCover.xsd" />

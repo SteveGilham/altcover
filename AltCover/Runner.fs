@@ -359,7 +359,7 @@ module Runner =
     String.Format (CultureInfo.CurrentCulture, s |> CommandLine.resources.GetString, x) |> Output.Error
 
   let internal SetRecordToFile report =
-    LCov.DoWithFile (fun () ->
+    LCov.DoWith (fun () ->
           let binpath = report + ".acv"
           File.Create(binpath))
           ignore

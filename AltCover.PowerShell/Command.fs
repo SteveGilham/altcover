@@ -1,12 +1,14 @@
 ﻿namespace AltCover.Commands
 
 #if MONO
-module Say =
+module Command =
     let hello name =
         printfn "Hello %s" name
 #else
 
 open System
+open System.IO
+open System.Management.Automation
 
 #if NETCOREAPP2_0
 open AltCover
@@ -14,6 +16,7 @@ open AltCover
 #if DEBUG
 open AltCover
 #else
+open AltCover
 module Args =
   let Item a x =
     if x |> String.IsNullOrWhiteSpace
@@ -31,12 +34,8 @@ module Args =
 #endif
 #endif
 
-open System
-open System.IO
-open System.Management.Automation
-open AltCover
-
 [<Cmdlet(VerbsLifecycle.Invoke, "AltCover")>]
+[<OutputType("System.Void")>]
 [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.PowerShell", "PS1101:AllCmdletsShouldAcceptPipelineInput", Justification = "No valid input")>]
 type InvokeAltCoverCommand(runner:bool) =
   inherit PSCmdlet()
