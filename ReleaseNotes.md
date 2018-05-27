@@ -1,7 +1,10 @@
-# 3.5.xxx-pre (Cerulean series pre-release)
-* Reduce the amount of unneccesary infrastructure runtime code in the .nupkg that bloated the 3.0.488-490 release
+# 3.5.5xx (Cerulean series release 1)
+TODO -- fix appveyor.yml in release branch
+
+# 3.5.500-pre (Cerulean series pre-release)
+* Reduce the amount of unnecessary infrastructure runtime code in the .nupkg that bloated the 3.0.488-490 release
 * Expose the LCov and Cobertura output formatters as simple cmdlets `ConvertTo-Cobertura` and `ConvertTo-Lcov` to take OpenCover or NCover format input.
-* Minor adjustments to `Invoke-AltCover` cmdlet based on PowerShell guidelines -- plural argument names made singular with backwards-compatibile aliases
+* Minor adjustments to the `Invoke-AltCover` cmdlet based on PowerShell guidelines -- plural argument names made singular with backwards-compatible aliases
 
 # 3.0.490 (Caba series release 12 re-spin)
 * No functional change from 3.0.488, just removing an experimental extension that couldn't be tested without a release.
