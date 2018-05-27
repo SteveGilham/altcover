@@ -1,132 +1,128 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <xs:schema id="NewDataSet" xmlns="" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
   <xs:element name="CoverageSession">
-      <xs:complexType>
+    <xs:complexType>
       <xs:sequence>
-        <xs:element name="Summary"  minOccurs="0" maxOccurs="1">
+        <xs:element name="Summary" minOccurs="0" maxOccurs="1">
           <xs:complexType>
             <xs:anyAttribute processContents="skip" />
           </xs:complexType>
         </xs:element>
-        <xs:element name="Modules"  minOccurs="1" maxOccurs="1">
+        <xs:element name="Modules" minOccurs="1" maxOccurs="1">
           <xs:complexType>
-          <xs:sequence>
-            <xs:element name="Summary"  minOccurs="0" maxOccurs="1">
-              <xs:complexType>
-                <xs:anyAttribute processContents="skip" />
-              </xs:complexType>
-            </xs:element>
-            <xs:element name="Module" minOccurs="1" maxOccurs="unbounded">
-              <xs:complexType>
-              <xs:sequence>
-                <xs:element name="Summary"  minOccurs="0" maxOccurs="1">
-                  <xs:complexType>
-		<xs:anyAttribute processContents="skip" />
-	         </xs:complexType>
-	      </xs:element>
-                <xs:element name="FullName" type="xs:string" minOccurs="0" />
-                <xs:element name="ModuleName" type="xs:string" minOccurs="0" />
-                <xs:element name="Files" minOccurs="0">
+            <xs:sequence>
+              <xs:element name="Summary" minOccurs="0" maxOccurs="1">
                 <xs:complexType>
-                <xs:sequence>
-                  <xs:element name="File" minOccurs="0" maxOccurs="unbounded">
-                  <xs:complexType>
-                    <xs:attribute name="uid" type="xs:integer" use="required" />
-                    <xs:attribute name="fullPath" type="xs:string" use="required" />
-                  </xs:complexType>
-                  </xs:element>
-                </xs:sequence>
+                  <xs:anyAttribute processContents="skip" />
                 </xs:complexType>
-                </xs:element>
-                <xs:element name="Classes" minOccurs="0">
+              </xs:element>
+              <xs:element name="Module" minOccurs="1" maxOccurs="unbounded">
                 <xs:complexType>
-                <xs:sequence>
-                  <xs:element name="Class" minOccurs="0" maxOccurs="unbounded">
-                  <xs:complexType>
-                  <xs:all>
+                  <xs:sequence>
                     <xs:element name="Summary" minOccurs="0" maxOccurs="1">
                       <xs:complexType>
                         <xs:anyAttribute processContents="skip" />
                       </xs:complexType>
                     </xs:element>
-                    <xs:element name="FullName" type="xs:string" />
-                    <xs:element name="Methods">
-                    <xs:complexType>
-                    <xs:sequence>
-                    <xs:element name="Method"  minOccurs="0" maxOccurs="unbounded">
-                    <xs:complexType>
-                    <xs:sequence>
-                    <xs:element name="Summary"  minOccurs="0" maxOccurs="1">
+                    <xs:element name="FullName" type="xs:string" minOccurs="0" />
+                    <xs:element name="ModuleName" type="xs:string" minOccurs="0" />
+                    <xs:element name="Files" minOccurs="0">
                       <xs:complexType>
-                        <xs:anyAttribute processContents="skip" />
+                        <xs:sequence>
+                          <xs:element name="File" minOccurs="0" maxOccurs="unbounded">
+                            <xs:complexType>
+                              <xs:attribute name="uid" type="xs:integer" use="required" />
+                              <xs:attribute name="fullPath" type="xs:string" use="required" />
+                            </xs:complexType>
+                          </xs:element>
+                        </xs:sequence>
                       </xs:complexType>
                     </xs:element>
-                    <xs:element name="MetadataToken" type="xs:integer" />
-                    <xs:element name="Name" type="xs:string" />
-
-                    <xs:element name="FileRef"  minOccurs="0">
-                    <xs:complexType>
-                    <xs:attribute name="uid" type="xs:integer" use="required" />
-                    </xs:complexType>
+                    <xs:element name="Classes" minOccurs="0">
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element name="Class" minOccurs="0" maxOccurs="unbounded">
+                            <xs:complexType>
+                              <xs:all>
+                                <xs:element name="Summary" minOccurs="0" maxOccurs="1">
+                                  <xs:complexType>
+                                    <xs:anyAttribute processContents="skip" />
+                                  </xs:complexType>
+                                </xs:element>
+                                <xs:element name="FullName" type="xs:string" />
+                                <xs:element name="Methods">
+                                  <xs:complexType>
+                                    <xs:sequence>
+                                      <xs:element name="Method" minOccurs="0" maxOccurs="unbounded">
+                                        <xs:complexType>
+                                          <xs:sequence>
+                                            <xs:element name="Summary" minOccurs="0" maxOccurs="1">
+                                              <xs:complexType>
+                                                <xs:anyAttribute processContents="skip" />
+                                              </xs:complexType>
+                                            </xs:element>
+                                            <xs:element name="MetadataToken" type="xs:integer" />
+                                            <xs:element name="Name" type="xs:string" />
+                                            <xs:element name="FileRef" minOccurs="0">
+                                              <xs:complexType>
+                                                <xs:attribute name="uid" type="xs:integer" use="required" />
+                                              </xs:complexType>
+                                            </xs:element>
+                                            <xs:element name="SequencePoints">
+                                              <xs:complexType>
+                                                <xs:sequence>
+                                                  <xs:element name="SequencePoint" minOccurs="0" maxOccurs="unbounded" type="SequencePoint">
+                                                  </xs:element>
+                                                </xs:sequence>
+                                              </xs:complexType>
+                                            </xs:element>
+                                            <xs:element name="BranchPoints">
+                                              <xs:complexType>
+                                                <xs:sequence>
+                                                  <xs:element name="BranchPoint" minOccurs="0" maxOccurs="unbounded">
+                                                    <xs:complexType>
+                                                      <xs:sequence>
+                                                        <xs:any minOccurs="0" />
+                                                      </xs:sequence>
+                                                      <xs:attribute name="vc" type="xs:integer" use="required" />
+                                                      <xs:attribute name="uspid" type="xs:integer" use="required" />
+                                                      <xs:attribute name="ordinal" type="xs:integer" use="required" />
+                                                      <xs:attribute name="offset" type="xs:integer" use="required" />
+                                                      <xs:attribute name="path" type="xs:integer" use="required" />
+                                                      <xs:anyAttribute processContents="skip" />
+                                                    </xs:complexType>
+                                                  </xs:element>
+                                                </xs:sequence>
+                                              </xs:complexType>
+                                            </xs:element>
+                                            <xs:element name="MethodPoint" type="MethodPoint">
+                                            </xs:element>
+                                          </xs:sequence>
+                                          <xs:attribute name="visited" type="xs:boolean" use="required" />
+                                          <xs:attribute name="cyclomaticComplexity" type="xs:integer" use="required" />
+                                          <xs:attribute name="sequenceCoverage" type="xs:decimal" use="required" />
+                                          <xs:attribute name="branchCoverage" type="xs:decimal" use="required" />
+                                          <xs:attribute name="isConstructor" type="xs:boolean" use="required" />
+                                          <xs:attribute name="isStatic" type="xs:boolean" use="required" />
+                                          <xs:attribute name="isGetter" type="xs:boolean" use="required" />
+                                          <xs:attribute name="isSetter" type="xs:boolean" use="required" />
+                                        </xs:complexType>
+                                      </xs:element>
+                                    </xs:sequence>
+                                  </xs:complexType>
+                                </xs:element>
+                              </xs:all>
+                            </xs:complexType>
+                          </xs:element>
+                        </xs:sequence>
+                      </xs:complexType>
                     </xs:element>
-
-                    <xs:element name="SequencePoints">
-                    <xs:complexType>
-                    <xs:sequence>
-                    <xs:element name="SequencePoint"  minOccurs="0" maxOccurs="unbounded" type="SequencePoint">
-                    </xs:element>
-                    </xs:sequence>
-                    </xs:complexType>
-                    </xs:element>
-
-                    <xs:element name="BranchPoints">
-                    <xs:complexType>
-                    <xs:sequence>
-                    <xs:element name="BranchPoint"  minOccurs="0" maxOccurs="unbounded">
-                    <xs:complexType>
-    <xs:sequence>
-      <xs:any minOccurs="0" />
-    </xs:sequence>
-                    <xs:attribute name="vc" type="xs:integer" use="required" />
-                    <xs:attribute name="uspid" type="xs:integer" use="required" />
-                    <xs:attribute name="ordinal" type="xs:integer" use="required" />
-                    <xs:attribute name="offset" type="xs:integer" use="required" />
-                    <xs:attribute name="path" type="xs:integer" use="required" />
-                    <xs:anyAttribute processContents="skip" />
-                    </xs:complexType>
-                    </xs:element>
-                    </xs:sequence>
-                    </xs:complexType>
-                    </xs:element>
-
-                    <xs:element name="MethodPoint" type="MethodPoint">
-                    </xs:element>
-                    </xs:sequence>
-                    <xs:attribute name="visited" type="xs:boolean" use="required" />
-                    <xs:attribute name="cyclomaticComplexity" type="xs:integer" use="required" />
-                    <xs:attribute name="sequenceCoverage" type="xs:decimal" use="required" />
-                    <xs:attribute name="branchCoverage" type="xs:decimal" use="required" />
-                    <xs:attribute name="isConstructor" type="xs:boolean" use="required" />
-                    <xs:attribute name="isStatic" type="xs:boolean" use="required" />
-                    <xs:attribute name="isGetter" type="xs:boolean" use="required" />
-                    <xs:attribute name="isSetter" type="xs:boolean" use="required" />
-                    </xs:complexType>
-                    </xs:element>
-                    </xs:sequence>
-                    </xs:complexType>
-                    </xs:element>
-                  </xs:all>
-                  </xs:complexType>
-                  </xs:element>
-                </xs:sequence>
+                  </xs:sequence>
+                  <xs:attribute name="skippedDueTo" type="xs:string" use="optional" />
+                  <xs:attribute name="hash" type="xs:string" use="required" />
                 </xs:complexType>
-                </xs:element>
-                </xs:sequence>
-                <xs:attribute name="skippedDueTo" type="xs:string" use="optional" />
-                <xs:attribute name="hash" type="xs:string" use="required" />
-              </xs:complexType>
-            </xs:element>
-          </xs:sequence>
+              </xs:element>
+            </xs:sequence>
           </xs:complexType>
         </xs:element>
       </xs:sequence>
@@ -143,9 +139,9 @@
   <xs:complexType name="SequencePoint">
     <xs:complexContent>
       <xs:extension base="MethodPoint">
-    <xs:sequence>
-      <xs:any minOccurs="0" />
-    </xs:sequence>
+        <xs:sequence>
+          <xs:any minOccurs="0" />
+        </xs:sequence>
         <xs:attribute name="sl" type="xs:integer" use="required" />
         <xs:attribute name="sc" type="xs:integer" use="required" />
         <xs:attribute name="el" type="xs:integer" use="required" />
