@@ -3036,8 +3036,9 @@ type AltCoverTests() = class
   // CommandLine.fs
   [<Test>]
   member self.OutputCanBeExercised () =
-    Output.Info <- ignore
-    Output.Error <- ignore
+    let sink = StringSink(ignore)
+    Output.SetInfo sink
+    Output.SetError sink
     Output.Echo <- ignore
     Output.Usage <- ignore
     Assert.That(Output.Usage, Is.Not.Null)
@@ -3050,13 +3051,17 @@ type AltCoverTests() = class
                                             "Error"
                                             "Usage"
                                             "ToConsole"
+                                            "SetInfo"
+                                            "SetError"
                                           ]
                             let name = t.Name
                             tokens |> List.exists (fun n -> name.StartsWith n))
     |> Seq.iter (fun t ->
                           let p = t.GetType().GetProperty("DeclaredConstructors")
                           let c = p.GetValue(t, null) :?> ConstructorInfo[]
-                          let o = (c |> Seq.head).Invoke(null)
+                          let c0 = c |> Seq.head
+                          let p = c0.GetParameters().Length
+                          let o = c0.Invoke(if p = 0 then null else [| sink |] )
                           let invoke = t.GetMethod("Invoke")
                           let param = invoke.GetParameters() |> Seq.head
 

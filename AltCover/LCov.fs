@@ -8,7 +8,7 @@ open System.Xml.Linq
 module LCov =
   let internal path : Option<string> ref = ref None
 
-  let DoWithFile (create: unit -> FileStream) (action : Stream -> unit) =
+  let DoWith (create: unit -> 'a) (action : 'a -> unit) =
     use stream = create()
     action stream
 
@@ -31,11 +31,10 @@ module LCov =
   let multiSortByNameAndStartLine (l : (string * XElement seq) seq) =
     multiSort lineOfMethod l
 
-  let Summary (report:XDocument) (format:Base.ReportFormat) result =
-    DoWithFile
-      (fun () -> File.OpenWrite(!path |> Option.get))
-      (fun stream ->
-        use writer = new StreamWriter(stream)
+  let ConvertReport (report:XDocument) (format:Base.ReportFormat) (stream:Stream) =
+    DoWith
+      (fun () -> new StreamWriter(stream))
+      (fun writer ->
         //If available, a tracefile begins with the testname which
         //   is stored in the following format:
         //
@@ -247,6 +246,10 @@ module LCov =
                            // Each sections ends with:
                            //
                            // end_of_record
-                           writer.WriteLine "end_of_record"
-                           ))
+                           writer.WriteLine "end_of_record"))
+
+  let Summary (report:XDocument) (format:Base.ReportFormat) result =
+    DoWith
+      (fun () -> File.OpenWrite(!path |> Option.get))
+      (ConvertReport report format)
     result

@@ -45,24 +45,14 @@ $RECYCLE.BIN/
 Network Trash Folder
 Temporary Items
 .apdisk
-_Binaries/
-_Intermediate/
-Backu*/
-UpgradeLo*.htm
+
+_*/
+.*/
 packages/
-_Generated/
-.fake/
-fake.bat
-_Reports/
-.vs/
-ThirdParty/
-_Packaging/
 *.mdb
-_Mono/
 **/bin/
 **/obj/
 *.suo
 Build/build.fsx
 *.lock
 AltCover/Properties/launchSettings.json
-_Publish/
