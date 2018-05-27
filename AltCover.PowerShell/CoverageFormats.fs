@@ -33,16 +33,17 @@ type ConvertToLcovCommand(outputFile:String) =
   member val OutputFile:string = outputFile with get, set
 
   override self.ProcessRecord() =
+    let format = XmlUtilities.DiscoverFormat self.XmlDocument
     let xdoc = XmlUtilities.ToXDocument self.XmlDocument
     use stream = File.Open(self.OutputFile, FileMode.OpenOrCreate, FileAccess.Write)
     // TODO detect formats
 #if NETCOREAPP2_0
-    AltCover.LCov.ConvertReport xdoc AltCover.Base.ReportFormat.OpenCover stream
+    AltCover.LCov.ConvertReport xdoc format stream
 #else
 #if DEBUG
-    AltCover.LCov.ConvertReport xdoc AltCover.Base.ReportFormat.OpenCover stream
+    AltCover.LCov.ConvertReport xdoc format stream
 #else
-    AltCover.LCov.ConvertReport (xdoc, AltCover.Base.ReportFormat.OpenCover, stream)
+    AltCover.LCov.ConvertReport (xdoc, format, stream)
 #endif
 #endif
 
@@ -64,15 +65,15 @@ type ConvertToCoberturaCommand(outputFile:String) =
   member val OutputFile:string = outputFile with get, set
 
   override self.ProcessRecord() =
+    let format = XmlUtilities.DiscoverFormat self.XmlDocument
     let xdoc = XmlUtilities.ToXDocument self.XmlDocument
-    // TODO detect formats
 #if NETCOREAPP2_0
-    let rewrite = AltCover.Cobertura.ConvertReport xdoc AltCover.Base.ReportFormat.OpenCover
+    let rewrite = AltCover.Cobertura.ConvertReport xdoc format
 #else
 #if DEBUG
-    let rewrite = AltCover.Cobertura.ConvertReport xdoc AltCover.Base.ReportFormat.OpenCover
+    let rewrite = AltCover.Cobertura.ConvertReport xdoc format
 #else
-    let rewrite = AltCover.Cobertura.ConvertReport (xdoc, AltCover.Base.ReportFormat.OpenCover)
+    let rewrite = AltCover.Cobertura.ConvertReport (xdoc, format)
 #endif
 #endif
     if self.OutputFile |> String.IsNullOrWhiteSpace |> not then
