@@ -60,7 +60,7 @@ type ConvertToCoberturaCommand(outputFile:String) =
       ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
   member val XmlDocument:XmlDocument = null with get, set
 
-  [<Parameter(ParameterSetName = "XmlDoc", Mandatory = true, Position = 2,
+  [<Parameter(ParameterSetName = "XmlDoc", Mandatory = false, Position = 2,
       ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
   member val OutputFile:string = outputFile with get, set
 
