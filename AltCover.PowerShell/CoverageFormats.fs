@@ -28,11 +28,20 @@ type ConvertToLcovCommand(outputFile:String) =
       ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
   member val XmlDocument:XmlDocument = null with get, set
 
+  [<Parameter(ParameterSetName = "FromFile", Mandatory = true, Position = 1,
+      ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
+  member val InputFile:string = null with get, set
+
   [<Parameter(ParameterSetName = "XmlDoc", Mandatory = true, Position = 2,
+      ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
+  [<Parameter(ParameterSetName = "FromFile", Mandatory = true, Position = 2,
       ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
   member val OutputFile:string = outputFile with get, set
 
   override self.ProcessRecord() =
+    if self.ParameterSetName = "FromFile" then
+        self.XmlDocument <- XmlDocument()
+        self.XmlDocument.Load self.InputFile
     let format = XmlUtilities.DiscoverFormat self.XmlDocument
     let xdoc = XmlUtilities.ToXDocument self.XmlDocument
     use stream = File.Open(self.OutputFile, FileMode.OpenOrCreate, FileAccess.Write)
@@ -60,11 +69,20 @@ type ConvertToCoberturaCommand(outputFile:String) =
       ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
   member val XmlDocument:XmlDocument = null with get, set
 
+  [<Parameter(ParameterSetName = "FromFile", Mandatory = true, Position = 1,
+      ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
+  member val InputFile:string = null with get, set
+
   [<Parameter(ParameterSetName = "XmlDoc", Mandatory = false, Position = 2,
+      ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
+  [<Parameter(ParameterSetName = "FromFile", Mandatory = false, Position = 2,
       ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
   member val OutputFile:string = outputFile with get, set
 
   override self.ProcessRecord() =
+    if self.ParameterSetName = "FromFile" then
+        self.XmlDocument <- XmlDocument()
+        self.XmlDocument.Load self.InputFile
     let format = XmlUtilities.DiscoverFormat self.XmlDocument
     let xdoc = XmlUtilities.ToXDocument self.XmlDocument
 #if NETCOREAPP2_0
