@@ -9,8 +9,6 @@ open System.Xml
 open System.Xml.Schema
 open System.Xml.Linq
 
-open AltCover
-
 module XmlUtilities =
 
   [<SuppressMessage("Microsoft.Design", "CA1059", Justification="converts concrete types")>]
@@ -49,7 +47,7 @@ module XmlUtilities =
     use stream = match format with
                  | AltCover.Base.ReportFormat.NCover ->
                   Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.PowerShell.xsd.NCover.xsd")
-                 | _ -> 
+                 | _ ->
                   Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.PowerShell.xsd.OpenCover.xsd")
     use reader = new StreamReader(stream)
     use xreader = XmlReader.Create(reader)
@@ -57,11 +55,11 @@ module XmlUtilities =
     schemas
 
   [<SuppressMessage("Microsoft.Design", "CA1059", Justification="converts concrete types")>]
-  let DiscoverFormat (xmlDocument:XmlDocument) = 
+  let DiscoverFormat (xmlDocument:XmlDocument) =
     let format = if xmlDocument.SelectNodes("/CoverageSession").OfType<XmlNode>().Any() then
                     AltCover.Base.ReportFormat.OpenCover
                  else AltCover.Base.ReportFormat.NCover
     let schema = loadSchema format
     xmlDocument.Schemas <- schema
-    xmlDocument.Validate (null) 
+    xmlDocument.Validate (null)
     format

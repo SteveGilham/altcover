@@ -99,4 +99,33 @@ type ConvertToCoberturaCommand(outputFile:String) =
 
     self.WriteObject rewrite
 
+[<Cmdlet(VerbsData.ConvertTo, "XmlDocument")>]
+[<OutputType(typeof<XmlDocument>)>]
+type ConvertToXmlDocumentCommand(xdocument:XDocument) =
+  inherit PSCmdlet()
+
+  new () = ConvertToXmlDocumentCommand(null)
+
+  [<SuppressMessage("Microsoft.Design", "CA1059", Justification="converts concrete types")>]
+  [<Parameter(ParameterSetName = "XmlDoc", Mandatory = true, Position = 1,
+      ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
+  member val XDocument:XDocument = xdocument with get, set
+
+  override self.ProcessRecord() =
+    self.XDocument |> XmlUtilities.ToXmlDocument |> self.WriteObject
+
+[<Cmdlet(VerbsData.ConvertTo, "XDocument")>]
+[<OutputType(typeof<XDocument>)>]
+type ConvertToXDocumentCommand(xmldocument:XmlDocument) =
+  inherit PSCmdlet()
+
+  new () = ConvertToXDocumentCommand(null)
+
+  [<SuppressMessage("Microsoft.Design", "CA1059", Justification="converts concrete types")>]
+  [<Parameter(ParameterSetName = "XmlDoc", Mandatory = true, Position = 1,
+      ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
+  member val XmlDocument:XmlDocument = xmldocument with get, set
+
+  override self.ProcessRecord() =
+    self.XmlDocument |> XmlUtilities.ToXDocument |> self.WriteObject
 #endif
