@@ -28,6 +28,7 @@
     <Compile Include="Command.fs" />
     <EmbeddedResource Include="xsd\NCover.xsd" />
     <EmbeddedResource Include="xsd\OpenCover.xsd" />
+    <EmbeddedResource Include="xsl\OpenCoverToNCover.xsl" />
   </ItemGroup>
 
   <ItemGroup>
