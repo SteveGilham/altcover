@@ -1703,7 +1703,7 @@ _Target "ReleaseXUnitFSharpTypesDotNetFullRunner" ( fun _ ->
                         "System.Void Tests.DU::testMakeUnion()";
                         "System.Void Tests.M::testMakeThing()";
                         "Tests.DU/MyUnion Tests.DU/MyUnion::as_bar()";
-                        "Tests.DU/MyUnion Tests.DU/get_MyBar@31::Invoke(Microsoft.FSharp.Core.Unit)";
+                        "Tests.DU/MyUnion Tests.DU/get_MyBar@36::Invoke(Microsoft.FSharp.Core.Unit)";
                         "Tests.DU/MyUnion Tests.DU::returnBar(System.String)";
                         "Tests.DU/MyUnion Tests.DU::returnFoo(System.Int32)";
                         "Tests.M/Thing Tests.M::makeThing(System.String)"]
@@ -1786,7 +1786,7 @@ _Target "MSBuildTest" ( fun _ ->
                         "System.Void Tests.DU::testMakeUnion()";
                         "System.Void Tests.M::testMakeThing()";
                         "Tests.DU/MyUnion Tests.DU/MyUnion::as_bar()";
-                        "Tests.DU/MyUnion Tests.DU/get_MyBar@31::Invoke(Microsoft.FSharp.Core.Unit)";
+                        "Tests.DU/MyUnion Tests.DU/get_MyBar@36::Invoke(Microsoft.FSharp.Core.Unit)";
                         "Tests.DU/MyUnion Tests.DU::returnBar(System.String)";
                         "Tests.DU/MyUnion Tests.DU::returnFoo(System.Int32)";
                         "Tests.M/Thing Tests.M::makeThing(System.String)"]
