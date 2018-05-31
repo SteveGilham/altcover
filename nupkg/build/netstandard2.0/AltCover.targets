@@ -7,7 +7,7 @@
 
   <Target Name="InstrumentModulesNoBuild" BeforeTargets="VSTest">
     <ItemGroup>
-      <SplitContext Include="$(CallContext).Split(';')" />
+      <SplitContext Include="$(CallContext.Split('%3B'))" />
     </ItemGroup>
     <AltCover.Prepare
       Condition="'$(VSTestNoBuild)' == 'true' and $(AltCover) == 'true'"
@@ -27,7 +27,7 @@
 
   <Target Name="InstrumentModulesAfterBuild" AfterTargets="BuildProject">
     <ItemGroup>
-      <SplitContext Include="$(CallContext).Split(';')" />
+      <SplitContext Include="$(CallContext.Split('%3B'))" />
     </ItemGroup>
     <AltCover.Prepare
       Condition="'$(VSTestNoBuild)' != 'true' and $(AltCover) == 'true'"
