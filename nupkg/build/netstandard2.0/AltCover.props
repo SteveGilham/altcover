@@ -3,7 +3,6 @@
   <PropertyGroup>
     <AltCover Condition="$(AltCover) == ''">false</AltCover>
     <AltCoverOpenCover Condition="'$(AltCoverOpenCover)' == ''">true</AltCoverOpenCover>
-    <AltCoverXmlReport Condition="'$(AltCoverXmlReport)' == ''">$(ProjectDir)/coverage.xml</AltCoverXmlReport>
   </PropertyGroup>
 
 </Project>
