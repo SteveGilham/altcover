@@ -208,13 +208,13 @@ _Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standa
                 Arguments = "--severity all --confidence all --config " + rules + " --console --html ./_Reports/gendarme.html " + subjects})
                 "Gendarme Errors were detected"
 
-    if Environment.isWindows then    
+    if Environment.isWindows then
         Actions.Run (fun info ->
             { info with
                     FileName = (Tools.findToolInSubPath "gendarme.exe" "./packages")
                     WorkingDirectory = "."
                     Arguments = "--severity all --confidence all --config ./Build/rules-posh.xml --console --html ./_Reports/gendarme.html _Binaries/AltCover.PowerShell/Debug+AnyCPU/AltCover.PowerShell.dll"})
-                    "Gendarme Errors were detected"          
+                    "Gendarme Errors were detected"
 )
 
 _Target "FxCop" (fun _ -> // Needs debug because release is compiled --standalone which contaminates everything
@@ -265,7 +265,7 @@ _Target "FxCop" (fun _ -> // Needs debug because release is compiled --standalon
         })
         "FxCop Errors were detected"
     Assert.That(File.Exists "_Reports/FxCopReport.xml", Is.False, "FxCop Errors were detected")
-    
+
     (* where does FakeLib, Version=3.33.0.0 come from??
     let rules = ["-Microsoft.Design#CA1004"
                  "-Microsoft.Design#CA1006"
@@ -1254,9 +1254,6 @@ _Target "RecordResumeTestUnderMono" ( fun _ ->
 // Packaging
 
 _Target "Packaging" (fun _ ->
-    Directory.ensure "./_Binaries/Packaging"
-    Directory.ensure "./_Packaging"
-
     let AltCover = Path.getFullName "_Binaries/AltCover/AltCover.exe"
     let recorder = Path.getFullName "_Binaries/AltCover/Release+AnyCPU/AltCover.Recorder.dll"
     let posh = Path.getFullName "_Binaries/AltCover.PowerShell/AltCover.PowerShell.dll"
@@ -1278,29 +1275,65 @@ _Target "Packaging" (fun _ ->
                           |> Seq.toList
                         else []
 
-    let root = (Path.getFullName "./_Publish").Length
-    let netcoreFiles = (!! "./_Publish/**/*.*")
-                       |> Seq.map (fun x -> (x, Some ("tools/netcoreapp2.0" + Path.GetDirectoryName(x).Substring(root).Replace("\\","/")), None))
-                       |> Seq.toList
-
-    let root2 = (Path.getFullName "./nupkg").Length
+    let nupkg = (Path.getFullName "./nupkg").Length
     let otherFiles = (!! "./nupkg/**/*.*")
-                       |> Seq.map (fun x -> (x, Some (Path.GetDirectoryName(x).Substring(root2).Replace("\\","/")), None))
+                       |> Seq.map (fun x -> (x, Some (Path.GetDirectoryName(x).Substring(nupkg).Replace("\\","/")), None))
                        |> Seq.toList
 
     let poshFiles = (!! "./_Binaries/AltCover.PowerShell/Release+AnyCPU/netcoreapp2.0/*.PowerShell.*")
                        |> Seq.map (fun x -> (x, Some ("tools/netcoreapp2.0/" + Path.GetFileName x), None))
                        |> Seq.toList
-                       
+
+    let publish = (Path.getFullName "./_Publish").Length
+    let netcoreFiles where = (!! "./_Publish/**/*.*")
+                               |> Seq.map (fun x -> (x, Some (where + Path.GetDirectoryName(x).Substring(publish).Replace("\\","/")), None))
+                               |> Seq.toList
+
+    let dotnetFiles = (!! "./_Binaries/dotnet-altcover/Release+AnyCPU/netcoreapp2.0/dotnet-altcover.*")
+                       |> Seq.map (fun x -> (x, Some ("lib/netcoreapp2.0/" + Path.GetFileName x), None))
+                       |> Seq.toList
+
+    let globalFiles = (!! "./_Binaries/dotnet-altcover/Release+AnyCPU/netcoreapp2.1/dotnet-altcover.*")
+                       |> Seq.map (fun x -> (x, Some ("tools/netcoreapp2.1/any/" + Path.GetFileName x), None))
+                       |> Seq.toList
+
+    let auxFiles = (!! "./_Binaries/dotnet-altcover/Release+AnyCPU/netcoreapp2.1/*.xml")
+                       |> Seq.map (fun x -> (x, Some ("tools/netcoreapp2.1/any/" + Path.GetFileName x), None))
+                       |> Seq.toList
+
     printfn "Executing on %A" Environment.OSVersion
+
+    [
+        (List.concat [applicationFiles; resourceFiles; netcoreFiles "tools/netcoreapp2.0/"; poshFiles; otherFiles],
+         "_Packaging",
+         "./Build/AltCover.nuspec",
+         "altcover"
+        )
+        (List.concat[netcoreFiles "lib/netcoreapp2.0/"; dotnetFiles],
+         "_Packaging.dotnet",
+         "./_Generated/altcover.dotnet.nuspec",
+         "altcover.dotnet"
+        )
+        (List.concat [globalFiles; netcoreFiles "tools/netcoreapp2.1/any/"; auxFiles],
+         "_Packaging.global",
+         "./_Generated/altcover.global.nuspec",
+         "altcover.global"
+        )
+    ]
+    |> List.iter (fun (files, output, nuspec, project) ->
+    let outputPath = "./" + output
+    let workingDir = "./_Binaries/" + output
+    Directory.ensure workingDir
+    Directory.ensure outputPath
+
     NuGet (fun p ->
     {p with
         Authors = ["Steve Gilham"]
-        Project = "altcover"
+        Project = project
         Description = "A pre-instrumenting code coverage tool set for .net/.net core and Mono"
-        OutputPath = "./_Packaging"
-        WorkingDir = "./_Binaries/Packaging"
-        Files = List.concat [applicationFiles; resourceFiles; netcoreFiles; poshFiles; otherFiles]
+        OutputPath = outputPath
+        WorkingDir = workingDir
+        Files = files
         Version = !Version
         Copyright = (!Copyright).Replace("©", "(c)")
         Publish = false
@@ -1308,7 +1341,7 @@ _Target "Packaging" (fun _ ->
                        |> File.ReadAllText
         ToolPath = if Environment.isWindows then p.ToolPath else "/usr/bin/nuget"
         })
-        "./Build/AltCover.nuspec"
+        nuspec)
 )
 
 _Target "PrepareFrameworkBuild" (fun _ ->
@@ -1328,7 +1361,6 @@ _Target "PrepareFrameworkBuild" (fun _ ->
                Arguments = "/out:\"./_Binaries/AltCover.PowerShell/AltCover.PowerShell.dll\" /ver:\"" + ver +
                            "\" /attr:\"./_Binaries/AltCover.PowerShell/Release+AnyCPU/AltCover.PowerShell.dll\" /keyfile:\"./Build/Infrastructure.snk\" /target:\"library\" /internalize ./_Binaries/AltCover.PowerShell/Release+AnyCPU/AltCover.PowerShell.dll .\_Binaries\AltCover.PowerShell\Debug+AnyCPU\FSharp.Core.dll"
                 }) "ILMerge failure"
-
 
 //    let here = Directory.GetCurrentDirectory()
 //    ILMerge (fun p -> { p with DebugInfo = true
@@ -1350,6 +1382,23 @@ _Target "PrepareDotNetBuild" (fun _ ->
     DotNet.publish (fun options -> { options with OutputPath = Some publish
                                                   Configuration = DotNet.BuildConfiguration.Release})
                                                   netcoresource
+
+    // dotnet tooling mods
+    [
+        ("DotnetCliTool", "./_Generated/altcover.dotnet.nuspec", "AltCover (dotnet CLI tool install)")
+        ("DotnetTool", "./_Generated/altcover.global.nuspec", "AltCover (dotnet global tool install)")
+    ]
+    |> List.iter (fun (ptype, path, caption) ->
+        let x s = XName.Get(s, "http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd")
+        let dotnetNupkg = XDocument.Load "./Build/AltCover.nuspec"
+        let title = dotnetNupkg.Descendants(x "title") |> Seq.head
+        title.ReplaceNodes caption
+        let tag = dotnetNupkg.Descendants(x "tags") |> Seq.head
+        let insert = XElement(x "packageTypes")
+        insert.Add(XElement(x "packageType",
+                            XAttribute (XName.Get "name", ptype)))
+        tag.AddAfterSelf insert
+        dotnetNupkg.Save path)
 )
 
 _Target "PrepareReadMe" (fun _ ->
