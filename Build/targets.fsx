@@ -1961,6 +1961,105 @@ _Target "DotnetTestIntegration" ( fun _ ->
     Shell.deleteDir folder
 )
 
+_Target "DotnetCLIIntegration" ( fun _ ->
+  try
+    Directory.ensure "./_DotnetCLITest"
+    Shell.cleanDir ("./_DotnetCLITest")
+    let config = XDocument.Load "./Build/NuGet.config.dotnettest"
+    let repo = config.Descendants(XName.Get("add")) |> Seq.head
+    repo.SetAttributeValue(XName.Get "value", Path.getFullName "./_Packaging.dotnet" )
+    config.Save "./_DotnetCLITest/NuGet.config"
+
+    let fsproj = XDocument.Load "./Sample4/sample4.core.fsproj"
+    let pack = fsproj.Descendants(XName.Get("PackageReference")) |> Seq.head
+    let inject = XElement(XName.Get "DotNetCliToolReference",
+                          XAttribute (XName.Get "Include", "altcover.dotnet"),
+                          XAttribute (XName.Get "Version", !Version) )
+    pack.AddBeforeSelf inject
+    fsproj.Save "./_DotnetCLITest/dotnetcli.fsproj"
+    Shell.copy "./_DotnetCLITest" (!! "./Sample4/*.fs")
+
+    let working = Path.getFullName "./_DotnetCLITest"
+
+    Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = working} ) "build" "" "Restored"
+
+    let x = Path.getFullName "./_Reports/DotnetCLIIntegration.xml"
+    let o = Path.getFullName "./_DotnetCLITest/_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.0"
+
+    // Instrument the code
+    Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = working} ) "altcover"
+                          (" --opencover --inplace -c=0 \"-c=[Fact]\" -x \"" + x + "\" -i \"" + o + "\"")
+                          "DotnetCLIIntegration"
+
+    do
+      use coverageFile = new FileStream(x, FileMode.Open, FileAccess.Read, FileShare.None, 4096, FileOptions.SequentialScan)
+      let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
+      let recorded = coverageDocument.Descendants(XName.Get("Method"))
+                     |> Seq.collect (fun x -> x.Descendants(XName.Get("Name")))
+                     |> Seq.map (fun x -> x.Value)
+                     |> Seq.sort
+                     |> Seq.toList
+      let expected = [  "Microsoft.FSharp.Core.FSharpFunc`2<Microsoft.FSharp.Core.Unit,Tests.DU/MyUnion> Tests.DU/MyUnion::get_MyBar()";
+                        "System.Byte[] Tests.M/Thing::bytes()";
+                        "System.Int32 Program/Program::main(System.String[])";
+                        "System.Void Tests.DU/MyClass::.ctor()";
+                        // "System.Void Tests.DU/get_MyBar@31::.ctor(Tests.DU/MyUnion)";
+                        "System.Void Tests.DU::testMakeUnion()";
+                        "System.Void Tests.M::testMakeThing()";
+                        "Tests.DU/MyUnion Tests.DU/MyUnion::as_bar()";
+                        "Tests.DU/MyUnion Tests.DU/get_MyBar@36::Invoke(Microsoft.FSharp.Core.Unit)";
+                        "Tests.DU/MyUnion Tests.DU::returnBar(System.String)";
+                        "Tests.DU/MyUnion Tests.DU::returnFoo(System.Int32)";
+                        "Tests.M/Thing Tests.M::makeThing(System.String)"]
+      Assert.That(recorded, expected |> Is.EquivalentTo, sprintf "Bad method list %A" recorded)
+
+    printfn "Execute the instrumented tests"
+    Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = working}) "altcover"
+                          (" Runner -x \"dotnet\" -r \"" + o +
+                          "\" -- test --no-build --configuration Debug ")
+                          "DotnetCLIIntegration test"
+
+    do
+      use coverageFile = new FileStream(x, FileMode.Open, FileAccess.Read, FileShare.None, 4096, FileOptions.SequentialScan)
+      let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
+      let recorded = coverageDocument.Descendants(XName.Get("SequencePoint"))
+                     |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value)
+                     |> Seq.toList
+      let expected = "0 1 1 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 2 1 1 1"
+      Assert.That(recorded, expected.Split() |> Is.EquivalentTo, sprintf "Bad method list %A" recorded)
+
+      coverageDocument.Descendants(XName.Get("SequencePoint"))
+      |> Seq.iter(fun sp -> let vc = Int32.Parse (sp.Attribute(XName.Get("vc")).Value)
+                            let vx = sp.Descendants(XName.Get("Time"))
+                                     |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value |> Int32.Parse)
+                                     |> Seq.sum
+                            Assert.That (vc, Is.EqualTo vx, sp.Value))
+      let tracked = """<TrackedMethods>
+        <TrackedMethod uid="1" token="100663300" name="System.Void Tests.DU::testMakeUnion()" strategy="[Fact]" />
+        <TrackedMethod uid="2" token="100663345" name="System.Void Tests.M::testMakeThing()" strategy="[Fact]" />
+      </TrackedMethods>"""
+      coverageDocument.Descendants(XName.Get("TrackedMethods"))
+      |> Seq.iter (fun x -> Assert.That(x.ToString().Replace("\r\n","\n"), Is.EqualTo <| tracked.Replace("\r\n","\n")))
+
+      Assert.That (coverageDocument.Descendants(XName.Get("TrackedMethodRef")) |> Seq.map (fun x -> x.ToString()),
+                    Is.EquivalentTo ["<TrackedMethodRef uid=\"1\" vc=\"1\" />"
+                                     "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
+                                     "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
+                                     "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
+                                     "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
+                                     "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
+                                     "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
+                                     "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
+                                     "<TrackedMethodRef uid=\"2\" vc=\"2\" />"
+                                     "<TrackedMethodRef uid=\"2\" vc=\"1\" />"
+                                     "<TrackedMethodRef uid=\"2\" vc=\"1\" />"
+                                     "<TrackedMethodRef uid=\"2\" vc=\"1\" />"
+                    ])
+  finally
+    let folder = ((Environment.environVar "USERPROFILE") @@ ".nuget/packages/altcover.dotnet") @@ !Version
+    Shell.mkdir folder
+    Shell.deleteDir folder
+)
 // AOB
 
 _Target "BulkReport" (fun _ ->
@@ -2186,6 +2285,10 @@ Target.activateFinal "ResetConsoleColours"
 
 "Unpack"
 ==> "DotnetTestIntegration"
+==> "Deployment"
+
+"Unpack"
+==> "DotnetCLIIntegration"
 ==> "Deployment"
 
 "Unpack"
