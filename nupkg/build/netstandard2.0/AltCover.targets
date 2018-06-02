@@ -5,10 +5,11 @@
   <UsingTask TaskName="AltCover.Collect"   
         AssemblyFile="$(MSBuildThisFileDirectory)../../tools/netcoreapp2.0/AltCover.dll"/>  
 
+  <ItemGroup>
+    <AltCoverSplitContext Include="$(AltCoverCallContext.Split('|'))" />
+  </ItemGroup>
+
   <Target Name="AltCoverInstrumentModulesNoBuild" BeforeTargets="VSTest">
-    <ItemGroup>
-      <AltCoverSplitContext Include="$(AltCoverCallContext.Split('%3B'))" />
-    </ItemGroup>
     <PropertyGroup>
       <AltCoverXmlReport Condition="'$(AltCoverXmlReport)' == ''">$(ProjectDir)coverage.xml</AltCoverXmlReport>
     </PropertyGroup>
@@ -29,9 +30,6 @@
   </Target>
 
   <Target Name="AltCoverInstrumentModulesAfterBuild" AfterTargets="BuildProject">
-    <ItemGroup>
-      <AltCoverSplitContext Include="$(AltCoverCallContext.Split('%3B'))" />
-    </ItemGroup>
     <PropertyGroup>
       <AltCoverXmlReport Condition="'$(AltCoverXmlReport)' == ''">$(ProjectDir)coverage.xml</AltCoverXmlReport>
     </PropertyGroup>
