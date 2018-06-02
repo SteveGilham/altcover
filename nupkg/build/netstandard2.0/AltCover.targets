@@ -5,59 +5,63 @@
   <UsingTask TaskName="AltCover.Collect"   
         AssemblyFile="$(MSBuildThisFileDirectory)../../tools/netcoreapp2.0/AltCover.dll"/>  
 
-  <Target Name="InstrumentModulesNoBuild" BeforeTargets="VSTest">
-    <ItemGroup>
-      <SplitContext Include="$(CallContext.Split('%3B'))" />
-    </ItemGroup>
+  <ItemGroup>
+    <AltCoverSplitContext Include="$(AltCoverCallContext.Split('|'))" />
+  </ItemGroup>
+
+  <Target Name="AltCoverInstrumentModulesNoBuild" BeforeTargets="VSTest">
+    <PropertyGroup>
+      <AltCoverXmlReport Condition="'$(AltCoverXmlReport)' == ''">$(ProjectDir)coverage.xml</AltCoverXmlReport>
+    </PropertyGroup>
     <AltCover.Prepare
       Condition="'$(VSTestNoBuild)' == 'true' and $(AltCover) == 'true'"
       InputDirectory="$(TargetDir)"
       OutputDirectory="$(TargetDir)__Saved"
-      XmlReport="$(XmlReport)"
-      OpenCover="$(OpenCover)"
-      FileFilter="$(FileFilter)"
-      AssemblyFilter="$(AssemblyFilter)"
-      AssemblyExcludeFilter="$(AssemblyExcludeFilter)"
-      TypeFilter="$(TypeFilter)"
-      MethodFilter="$(MethodFilter)"
-      AttributeFilter="$(AttributeFilter)"
-      CallContext="@(SplitContext)"
+      XmlReport="$(AltCoverXmlReport)"
+      OpenCover="$(AltCoverOpenCover)"
+      FileFilter="$(AltCoverFileFilter)"
+      AssemblyFilter="$(AltCoverAssemblyFilter)"
+      AssemblyExcludeFilter="$(AltCoverAssemblyExcludeFilter)"
+      TypeFilter="$(AltCoverTypeFilter)"
+      MethodFilter="$(AltCoverMethodFilter)"
+      AttributeFilter="$(AltCoverAttributeFilter)"
+      CallContext="@(AltCoverSplitContext)"
        />
   </Target>
 
-  <Target Name="InstrumentModulesAfterBuild" AfterTargets="BuildProject">
-    <ItemGroup>
-      <SplitContext Include="$(CallContext.Split('%3B'))" />
-    </ItemGroup>
+  <Target Name="AltCoverInstrumentModulesAfterBuild" AfterTargets="BuildProject">
+    <PropertyGroup>
+      <AltCoverXmlReport Condition="'$(AltCoverXmlReport)' == ''">$(ProjectDir)coverage.xml</AltCoverXmlReport>
+    </PropertyGroup>
     <AltCover.Prepare
       Condition="'$(VSTestNoBuild)' != 'true' and $(AltCover) == 'true'"
       InputDirectory="$(TargetDir)"
       OutputDirectory="$(TargetDir)__Saved"
-      XmlReport="$(XmlReport)"
-      OpenCover="$(OpenCover)"
-      FileFilter="$(FileFilter)"
-      AssemblyFilter="$(AssemblyFilter)"
-      AssemblyExcludeFilter="$(AssemblyExcludeFilter)"
-      TypeFilter="$(TypeFilter)"
-      MethodFilter="$(MethodFilter)"
-      AttributeFilter="$(AttributeFilter)"
-      CallContext="@(SplitContext)"
+      XmlReport="$(AltCoverXmlReport)"
+      OpenCover="$(AltCoverOpenCover)"
+      FileFilter="$(AltCoverFileFilter)"
+      AssemblyFilter="$(AltCoverAssemblyFilter)"
+      AssemblyExcludeFilter="$(AltCoverAssemblyExcludeFilter)"
+      TypeFilter="$(AltCoverTypeFilter)"
+      MethodFilter="$(AltCoverMethodFilter)"
+      AttributeFilter="$(AltCoverAttributeFilter)"
+      CallContext="@(AltCoverSplitContext)"
        />
   </Target>
 
-  <Target Name="GenerateCoverageResult" AfterTargets="VSTest">
+  <Target Name="AltCoverGenerateCoverageResult" AfterTargets="VSTest">
     <AltCover.Collect
       Condition="$(AltCover) == 'true'"
       RecorderDirectory="$(TargetDir)"
-      LcovReport="$(LcovReport)"
-      Threshold="$(Threshold)"
-      Cobertura="$(Cobertura)"
+      LcovReport="$(AltCoverLcovReport)"
+      Threshold="$(AltCoverThreshold)"
+      Cobertura="$(AltCoverCobertura)"
         />
     <ItemGroup>
-      <RecorderGFiles Include="$(TargetDir)/AltCover.Recorder.g.*" />
+      <AltCoverRecorderGFiles Include="$(TargetDir)/AltCover.Recorder.g.*" />
       <SavedFiles Include="$(TargetDir)__Saved/*.*" />
     </ItemGroup>
-    <Delete Files="@(RecorderGFiles)" />
+    <Delete Files="@(AltCoverRecorderGFiles)" />
     <Move SourceFiles="@(SavedFiles)" DestinationFolder="$(TargetDir)" OverwriteReadOnlyFiles="true" />
     <RemoveDir Directories="$(TargetDir)__Saved" />
   </Target>
