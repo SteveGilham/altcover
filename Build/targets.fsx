@@ -208,13 +208,13 @@ _Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standa
                 Arguments = "--severity all --confidence all --config " + rules + " --console --html ./_Reports/gendarme.html " + subjects})
                 "Gendarme Errors were detected"
 
-    if Environment.isWindows then    
+    if Environment.isWindows then
         Actions.Run (fun info ->
             { info with
                     FileName = (Tools.findToolInSubPath "gendarme.exe" "./packages")
                     WorkingDirectory = "."
                     Arguments = "--severity all --confidence all --config ./Build/rules-posh.xml --console --html ./_Reports/gendarme.html _Binaries/AltCover.PowerShell/Debug+AnyCPU/AltCover.PowerShell.dll"})
-                    "Gendarme Errors were detected"          
+                    "Gendarme Errors were detected"
 )
 
 _Target "FxCop" (fun _ -> // Needs debug because release is compiled --standalone which contaminates everything
@@ -265,7 +265,7 @@ _Target "FxCop" (fun _ -> // Needs debug because release is compiled --standalon
         })
         "FxCop Errors were detected"
     Assert.That(File.Exists "_Reports/FxCopReport.xml", Is.False, "FxCop Errors were detected")
-    
+
     (* where does FakeLib, Version=3.33.0.0 come from??
     let rules = ["-Microsoft.Design#CA1004"
                  "-Microsoft.Design#CA1006"
@@ -1283,7 +1283,7 @@ _Target "Packaging" (fun _ ->
     let poshFiles = (!! "./_Binaries/AltCover.PowerShell/Release+AnyCPU/netcoreapp2.0/*.PowerShell.*")
                        |> Seq.map (fun x -> (x, Some ("tools/netcoreapp2.0/" + Path.GetFileName x), None))
                        |> Seq.toList
-                       
+
     let publish = (Path.getFullName "./_Publish").Length
     let netcoreFiles where = (!! "./_Publish/**/*.*")
                                |> Seq.map (fun x -> (x, Some (where + Path.GetDirectoryName(x).Substring(publish).Replace("\\","/")), None))
@@ -1293,11 +1293,11 @@ _Target "Packaging" (fun _ ->
                        |> Seq.map (fun x -> (x, Some ("lib/netcoreapp2.0/" + Path.GetFileName x), None))
                        |> Seq.toList
 
-    let globalFiles = (!! "./_Binaries/dotnet-altcover/Release+AnyCPU/netcoreapp2.1/dotnet-altcover.*")
+    let globalFiles = (!! "./_Binaries/global-altcover/Release+AnyCPU/netcoreapp2.1/global-altcover.*")
                        |> Seq.map (fun x -> (x, Some ("tools/netcoreapp2.1/any/" + Path.GetFileName x), None))
                        |> Seq.toList
 
-    let auxFiles = (!! "./_Binaries/dotnet-altcover/Release+AnyCPU/netcoreapp2.1/*.xml")
+    let auxFiles = (!! "./_Binaries/global-altcover/Release+AnyCPU/netcoreapp2.1/*.xml")
                        |> Seq.map (fun x -> (x, Some ("tools/netcoreapp2.1/any/" + Path.GetFileName x), None))
                        |> Seq.toList
 
@@ -2060,6 +2060,114 @@ _Target "DotnetCLIIntegration" ( fun _ ->
     Shell.mkdir folder
     Shell.deleteDir folder
 )
+
+_Target "DotnetGlobalIntegration" ( fun _ ->
+  let working = Path.getFullName "./_DotnetGlobalTest"
+  let mutable set = false
+  printfn "1"
+  try
+    Directory.ensure working
+    Shell.cleanDir working
+
+    let fsproj = XDocument.Load "./Sample4/sample4.core.fsproj"
+    fsproj.Save "./_DotnetGlobalTest/dotnetglobal.fsproj"
+    Shell.copy "./_DotnetGlobalTest" (!! "./Sample4/*.fs")
+
+    printfn "2"
+    Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = working} ) "tool"
+                       ("install -g altcover.global --add-source " + Path.getFullName "./_Packaging.global") "Installed"
+
+    Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = working} ) "tool"
+                       ("list -g ") "Checked"
+    set <- true
+
+    Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = working} ) "build" "" "Built"
+
+    let x = Path.getFullName "./_Reports/DotnetGlobalIntegration.xml"
+    let o = Path.getFullName "./_DotnetGlobalTest/_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.0"
+
+    // Instrument the code
+    Actions.RunRaw (fun info -> { info with
+                                        FileName = "altcover"
+                                        WorkingDirectory = working
+                                        Arguments = (" --opencover --inplace -c=0 \"-c=[Fact]\" -x \"" + x + "\" -i \"" + o + "\"")})
+                                 "DotnetGlobalIntegration"
+
+    do
+      use coverageFile = new FileStream(x, FileMode.Open, FileAccess.Read, FileShare.None, 4096, FileOptions.SequentialScan)
+      let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
+      let recorded = coverageDocument.Descendants(XName.Get("Method"))
+                     |> Seq.collect (fun x -> x.Descendants(XName.Get("Name")))
+                     |> Seq.map (fun x -> x.Value)
+                     |> Seq.sort
+                     |> Seq.toList
+      let expected = [  "Microsoft.FSharp.Core.FSharpFunc`2<Microsoft.FSharp.Core.Unit,Tests.DU/MyUnion> Tests.DU/MyUnion::get_MyBar()";
+                        "System.Byte[] Tests.M/Thing::bytes()";
+                        "System.Int32 Program/Program::main(System.String[])";
+                        "System.Void Tests.DU/MyClass::.ctor()";
+                        // "System.Void Tests.DU/get_MyBar@31::.ctor(Tests.DU/MyUnion)";
+                        "System.Void Tests.DU::testMakeUnion()";
+                        "System.Void Tests.M::testMakeThing()";
+                        "Tests.DU/MyUnion Tests.DU/MyUnion::as_bar()";
+                        "Tests.DU/MyUnion Tests.DU/get_MyBar@36::Invoke(Microsoft.FSharp.Core.Unit)";
+                        "Tests.DU/MyUnion Tests.DU::returnBar(System.String)";
+                        "Tests.DU/MyUnion Tests.DU::returnFoo(System.Int32)";
+                        "Tests.M/Thing Tests.M::makeThing(System.String)"]
+      Assert.That(recorded, expected |> Is.EquivalentTo, sprintf "Bad method list %A" recorded)
+
+    printfn "Execute the instrumented tests"
+    Actions.RunRaw (fun info -> { info with
+                                        FileName = "altcover"
+                                        WorkingDirectory = working
+                                        Arguments = (" Runner -x \"dotnet\" -r \"" + o +
+                                                       "\" -- test --no-build --configuration Debug ")})
+                                 "DotnetGlobalIntegration test"
+
+    do
+      use coverageFile = new FileStream(x, FileMode.Open, FileAccess.Read, FileShare.None, 4096, FileOptions.SequentialScan)
+      let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
+      let recorded = coverageDocument.Descendants(XName.Get("SequencePoint"))
+                     |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value)
+                     |> Seq.toList
+      let expected = "0 1 1 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 2 1 1 1"
+      Assert.That(recorded, expected.Split() |> Is.EquivalentTo, sprintf "Bad method list %A" recorded)
+
+      coverageDocument.Descendants(XName.Get("SequencePoint"))
+      |> Seq.iter(fun sp -> let vc = Int32.Parse (sp.Attribute(XName.Get("vc")).Value)
+                            let vx = sp.Descendants(XName.Get("Time"))
+                                     |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value |> Int32.Parse)
+                                     |> Seq.sum
+                            Assert.That (vc, Is.EqualTo vx, sp.Value))
+      let tracked = """<TrackedMethods>
+        <TrackedMethod uid="1" token="100663300" name="System.Void Tests.DU::testMakeUnion()" strategy="[Fact]" />
+        <TrackedMethod uid="2" token="100663345" name="System.Void Tests.M::testMakeThing()" strategy="[Fact]" />
+      </TrackedMethods>"""
+      coverageDocument.Descendants(XName.Get("TrackedMethods"))
+      |> Seq.iter (fun x -> Assert.That(x.ToString().Replace("\r\n","\n"), Is.EqualTo <| tracked.Replace("\r\n","\n")))
+
+      Assert.That (coverageDocument.Descendants(XName.Get("TrackedMethodRef")) |> Seq.map (fun x -> x.ToString()),
+                    Is.EquivalentTo ["<TrackedMethodRef uid=\"1\" vc=\"1\" />"
+                                     "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
+                                     "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
+                                     "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
+                                     "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
+                                     "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
+                                     "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
+                                     "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
+                                     "<TrackedMethodRef uid=\"2\" vc=\"2\" />"
+                                     "<TrackedMethodRef uid=\"2\" vc=\"1\" />"
+                                     "<TrackedMethodRef uid=\"2\" vc=\"1\" />"
+                                     "<TrackedMethodRef uid=\"2\" vc=\"1\" />"
+                    ])
+  finally
+    printfn "x"
+    if set then Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = working} ) "tool"
+                                             ("uninstall -g altcover.global") "uninstalled"
+    let folder = ((Environment.environVar "USERPROFILE") @@ ".nuget/packages/altcover.global") @@ !Version
+    Shell.mkdir folder
+    Shell.deleteDir folder
+)
+
 // AOB
 
 _Target "BulkReport" (fun _ ->
@@ -2289,6 +2397,10 @@ Target.activateFinal "ResetConsoleColours"
 
 "Unpack"
 ==> "DotnetCLIIntegration"
+==> "Deployment"
+
+"Unpack"
+==> "DotnetGlobalIntegration"
 ==> "Deployment"
 
 "Unpack"

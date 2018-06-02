@@ -216,6 +216,10 @@ open System.Runtime.CompilerServices
     Fake.Core.Process.execWithResult (f >> Fake.Core.Process.withFramework) (TimeSpan.FromMinutes 10.0)
     |> (HandleResults msg)
 
+  let RunRaw (f:Fake.Core.ProcStartInfo -> Fake.Core.ProcStartInfo) msg =
+    Fake.Core.Process.execWithResult f (TimeSpan.FromMinutes 10.0)
+    |> (HandleResults msg)
+
   let RunDotnet (o:DotNet.Options -> DotNet.Options) cmd args msg =
     DotNet.exec o cmd args
     |> (HandleResults msg)
