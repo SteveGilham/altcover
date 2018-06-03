@@ -160,9 +160,9 @@ type ConvertToNCoverCommand(outputFile:String) =
       ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
   member val InputFile:string = null with get, set
 
-  [<Parameter(ParameterSetName = "XmlDoc", Mandatory = false, Position = 2,
+  [<Parameter(ParameterSetName = "XmlDoc", Mandatory = true, Position = 2,
       ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  [<Parameter(ParameterSetName = "FromFile", Mandatory = false, Position = 2,
+  [<Parameter(ParameterSetName = "FromFile", Mandatory = true, Position = 2,
       ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
   member val OutputFile:string = outputFile with get, set
 
