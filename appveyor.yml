@@ -1,4 +1,4 @@
-version: 3.5.{build}-pre
+version: 3.5.{build}
 branches:
   except:
   - /develop.*/
