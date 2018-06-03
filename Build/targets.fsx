@@ -1330,7 +1330,7 @@ _Target "Packaging" (fun _ ->
     {p with
         Authors = ["Steve Gilham"]
         Project = project
-        Description = "A pre-instrumenting code coverage tool set for .net/.net core and Mono"
+        Description = "A cross-platform pre-instrumenting code coverage tool set for .net/.net core and Mono"
         OutputPath = outputPath
         WorkingDir = workingDir
         Files = files
