@@ -1,5 +1,11 @@
 # 3.5.5xx (Cerulean series release 1)
 TODO -- fix appveyor.yml in release branch
+* Separate packages altcover.dotnet and altcover.global that contain the command-line tool functionality (only) for .net core as a CLI tool and as a .net core global tool respectively 
+* [BREAKING] `dotnet test` integration - all names have been prefixed with `AltCover` to avoid collisions
+* [BREAKING] `dotnet test` integration - `|` is used as the separator character for lists rather than `;` as the latter causes problems in the command-line context
+* Extended the `ConvertTo-Cobertura` and `ConvertTo-Lcov` cmdlets
+* `ConvertTo-XDocument` and `ConvertTo-XmlDocument` to interconvert in the object pipeline
+* `ConvertTo-NCover` to take OpenCover format to classic NCover
 
 # 3.5.500-pre (Cerulean series pre-release)
 * Reduce the amount of unnecessary infrastructure runtime code in the .nupkg that bloated the 3.0.488-490 release

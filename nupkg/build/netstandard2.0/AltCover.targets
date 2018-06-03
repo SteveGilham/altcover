@@ -7,6 +7,12 @@
 
   <ItemGroup>
     <AltCoverSplitContext Include="$(AltCoverCallContext.Split('|'))" />
+    <AltCoverFileFilters Include="$(AltCoverFileFilter.Split('|'))" />
+    <AltCoverAssemblyFilters Include="$(AltCoverAssemblyFilter.Split('|'))" />
+    <AltCoverAssemblyExcludeFilters Include="$(AltCoverAssemblyExcludeFilter.Split('|'))" />
+    <AltCoverTypeFilters Include="$(AltCoverTypeFilter.Split('|'))" />
+    <AltCoverMethodFilters Include="$(AltCoverMethodFilter.Split('|'))" />
+    <AltCoverAttributeFilters Include="$(AltCoverAttributeFilter.Split('|'))" />
   </ItemGroup>
 
   <Target Name="AltCoverInstrumentModulesNoBuild" BeforeTargets="VSTest">
@@ -19,12 +25,12 @@
       OutputDirectory="$(TargetDir)__Saved"
       XmlReport="$(AltCoverXmlReport)"
       OpenCover="$(AltCoverOpenCover)"
-      FileFilter="$(AltCoverFileFilter)"
-      AssemblyFilter="$(AltCoverAssemblyFilter)"
-      AssemblyExcludeFilter="$(AltCoverAssemblyExcludeFilter)"
-      TypeFilter="$(AltCoverTypeFilter)"
-      MethodFilter="$(AltCoverMethodFilter)"
-      AttributeFilter="$(AltCoverAttributeFilter)"
+      FileFilter="@(AltCoverFileFilters)"
+      AssemblyFilter="@(AltCoverAssemblyFilters)"
+      AssemblyExcludeFilter="@(AltCoverAssemblyExcludeFilters)"
+      TypeFilter="@(AltCoverTypeFilters)"
+      MethodFilter="@(AltCoverMethodFilters)"
+      AttributeFilter="@(AltCoverAttributeFilters)"
       CallContext="@(AltCoverSplitContext)"
        />
   </Target>
@@ -59,10 +65,10 @@
         />
     <ItemGroup>
       <AltCoverRecorderGFiles Include="$(TargetDir)/AltCover.Recorder.g.*" />
-      <SavedFiles Include="$(TargetDir)__Saved/*.*" />
+      <AltCoverSavedFiles Include="$(TargetDir)__Saved/*.*" />
     </ItemGroup>
     <Delete Files="@(AltCoverRecorderGFiles)" />
-    <Move SourceFiles="@(SavedFiles)" DestinationFolder="$(TargetDir)" OverwriteReadOnlyFiles="true" />
+    <Move SourceFiles="@(AltCoverSavedFiles)" DestinationFolder="$(TargetDir)" OverwriteReadOnlyFiles="true" />
     <RemoveDir Directories="$(TargetDir)__Saved" />
   </Target>
 
