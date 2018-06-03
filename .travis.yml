@@ -15,6 +15,7 @@ cache:
   - $HOME/.nuget
 
 script:
+  - export PATH="$PATH:/home/travis/.dotnet/tools"
   - dotnet restore ./dotnet-fake.fsproj
   - dotnet fake run ./Build/setup.fsx
   - dotnet fake run ./Build/build.fsx

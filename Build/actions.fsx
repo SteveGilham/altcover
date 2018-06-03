@@ -217,7 +217,11 @@ open System.Runtime.CompilerServices
     |> (HandleResults msg)
 
   let RunRaw (f:Fake.Core.ProcStartInfo -> Fake.Core.ProcStartInfo) msg =
-    Fake.Core.Process.execWithResult f (TimeSpan.FromMinutes 10.0)
+    // C:\Users\appveyor\AppData\Local\Microsoft\dotnet
+    let prep = if Environment.isWindows && Directory.Exists "C:/Users/appveyor/AppData/Local/Microsoft\dotnet"
+               then f >> (Fake.Core.Process.setEnvironmentVariable "DOTNET_ROOT" "C:/Users/appveyor/AppData/Local/Microsoft/dotnet")
+               else f
+    Fake.Core.Process.execWithResult prep (TimeSpan.FromMinutes 10.0)
     |> (HandleResults msg)
 
   let RunDotnet (o:DotNet.Options -> DotNet.Options) cmd args msg =

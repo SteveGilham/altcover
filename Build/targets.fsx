@@ -1956,7 +1956,7 @@ _Target "DotnetTestIntegration" ( fun _ ->
                                      "<TrackedMethodRef uid=\"2\" vc=\"1\" />"
                     ])
   finally
-    let folder = ((Environment.environVar "USERPROFILE") @@ ".nuget/packages/altcover") @@ !Version
+    let folder = (nugetCache @@ "altcover") @@ !Version
     Shell.mkdir folder
     Shell.deleteDir folder
 )
@@ -2056,7 +2056,7 @@ _Target "DotnetCLIIntegration" ( fun _ ->
                                      "<TrackedMethodRef uid=\"2\" vc=\"1\" />"
                     ])
   finally
-    let folder = ((Environment.environVar "USERPROFILE") @@ ".nuget/packages/altcover.dotnet") @@ !Version
+    let folder = (nugetCache @@ "altcover.dotnet") @@ !Version
     Shell.mkdir folder
     Shell.deleteDir folder
 )
@@ -2064,7 +2064,6 @@ _Target "DotnetCLIIntegration" ( fun _ ->
 _Target "DotnetGlobalIntegration" ( fun _ ->
   let working = Path.getFullName "./_DotnetGlobalTest"
   let mutable set = false
-  printfn "1"
   try
     Directory.ensure working
     Shell.cleanDir working
@@ -2073,9 +2072,8 @@ _Target "DotnetGlobalIntegration" ( fun _ ->
     fsproj.Save "./_DotnetGlobalTest/dotnetglobal.fsproj"
     Shell.copy "./_DotnetGlobalTest" (!! "./Sample4/*.fs")
 
-    printfn "2"
     Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = working} ) "tool"
-                       ("install -g altcover.global --add-source " + Path.getFullName "./_Packaging.global") "Installed"
+                       ("install -g altcover.global --add-source " + (Path.getFullName "./_Packaging.global") + " --version " + !Version) "Installed"
 
     Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = working} ) "tool"
                        ("list -g ") "Checked"
@@ -2160,10 +2158,9 @@ _Target "DotnetGlobalIntegration" ( fun _ ->
                                      "<TrackedMethodRef uid=\"2\" vc=\"1\" />"
                     ])
   finally
-    printfn "x"
     if set then Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = working} ) "tool"
                                              ("uninstall -g altcover.global") "uninstalled"
-    let folder = ((Environment.environVar "USERPROFILE") @@ ".nuget/packages/altcover.global") @@ !Version
+    let folder = (nugetCache @@ "altcover.global") @@ !Version
     Shell.mkdir folder
     Shell.deleteDir folder
 )
