@@ -1,3 +1,6 @@
+# 3.5.5xx (Cerulean series release 2)
+* [BUGFIX] make the OutputFile parameter mandatory on `ConvertTo-NCover` as intended
+
 # 3.5.512 (Cerulean series release 1)
 * Separate NuGet packages altcover.dotnet and altcover.global that contain the command-line tool functionality (only) for .net core as a CLI tool and as a .net core global tool respectively 
 * [BREAKING] `dotnet test` integration - all names have been prefixed with `AltCover` to avoid collisions
