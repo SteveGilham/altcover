@@ -32,8 +32,8 @@
     <EmbeddedResource Include="Sample1MethodExclusion.xml" />
     <EmbeddedResource Include="NCover.lcov" />
     <EmbeddedResource Include="OpenCover.lcov" />
-    <EmbeddedResource Include="NCover.cob" />
-    <EmbeddedResource Include="OpenCover.cob" />
+    <EmbeddedResource Include="NCover.cobertura" />
+    <EmbeddedResource Include="OpenCover.cobertura" />
   </ItemGroup>
 
   <ItemGroup>

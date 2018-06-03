@@ -1,7 +1,12 @@
 namespace Tests
 
 open System
+open System.Reflection
 open Xunit
+
+[<assembly: AssemblyVersionAttribute("1.0.0.0")>]
+[<assembly: AssemblyFileVersionAttribute("1.0.0.0")>]
+do ()
 
 module M =
   type Thing = { Thing: string } with

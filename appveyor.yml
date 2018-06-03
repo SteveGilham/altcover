@@ -1,4 +1,4 @@
-version: 3.5.{build}-pre
+version: 3.5.{build}
 branches:
   except:
   - /develop.*/
@@ -8,6 +8,26 @@ shallow_clone: true
 environment:
   COVERALLS_REPO_TOKEN:
     secure: qgIIfE76i59qTVO64mT7QwKcAUUYCQLie4XdUdlnt7MXLhrwqTbcfGUsCss/TmLg
+    DOTNET_ROOT: '%USERPROFILE%\AppData\Local\Microsoft\dotnet'
+    PATH: '%PATH%;%USERPROFILE%\.dotnet\tools;%USERPROFILE%\AppData\Local\Microsoft\dotnet'
+install:
+- ps: >-
+
+    $s = & dotnet --version | out-String
+
+    if ([Version]$s -lt [Version]"2.1.300") {
+
+      Write-Host "Found version $s"
+
+      $client = new-object System.Net.WebClient
+
+      $client.DownloadFile("https://dot.net/v1/dotnet-install.ps1", "C:/projects/altcover/dotnet-install.ps1")
+
+      dir *.ps1
+
+      & "C:/projects/altcover/dotnet-install.ps1" -Version "2.1.300"
+
+    }
 cache: 
   - packages -> **\packages.config
   - Demo\Service\packages -> Demo\Service\Service\packages.config
@@ -21,7 +41,7 @@ build_script:
     & dotnet restore dotnet-fake.fsproj
 
     & dotnet fake run .\Build\setup.fsx
-    
+
     & dotnet fake run .\Build\build.fsx
 
     $save = $LASTEXITCODE
@@ -38,7 +58,7 @@ test:
     - _Binaries\AltCover.Shadow.Tests\Debug+AnyCPU\*.Tests.dll
     - _Binaries\AltCover.WeakNameTests\Debug+AnyCPU\*Tests.dll
 artifacts:
-- path: _Packaging\*.nupkg
+- path: _Packagin*\*.nupkg
   name: NuGet
 deploy:
 - provider: NuGet

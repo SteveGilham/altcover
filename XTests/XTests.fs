@@ -193,7 +193,7 @@ module XTests =
                      "\n   => " + Path.Combine(Path.GetFullPath input, "Sample4.dll") +
                      "\n\nCoverage Report: " + report +
                      "\n\n\n    " + Path.Combine(Path.GetFullPath output, "Sample4.dll") +
-                     "\n                <=  Sample4, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null\n"
+                     "\n                <=  Sample4, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null\n"
 
       Assert.Equal (stdout.ToString().Replace("\r\n", "\n").Replace("\\", "/"),
                     (expected.Replace("\\", "/")))
@@ -297,14 +297,14 @@ module XTests =
               |> Seq.map (fun p -> p.Name)
               |> Set.ofSeq
     Assert.True(aux |> Set.contains ("AltCover.Recorder.g/" +
-                                         Assembly.GetExecutingAssembly().GetName().Version.ToString()))
+                                         System.AssemblyVersionInformation.AssemblyVersion))
     let libraries = (o.Properties()
                     |> Seq.find (fun p -> p.Name = "libraries")).Value :?> JObject
     let lib = libraries.Properties()
               |> Seq.map (fun p -> p.Name)
               |> Set.ofSeq
     Assert.True(lib |> Set.contains ("AltCover.Recorder.g/" +
-                                         Assembly.GetExecutingAssembly().GetName().Version.ToString()))
+                                         System.AssemblyVersionInformation.AssemblyVersion))
 
   [<Fact>]
   let ADryRunLooksAsExpected() =
