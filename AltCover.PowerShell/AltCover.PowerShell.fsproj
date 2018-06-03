@@ -20,7 +20,7 @@
     </NuGetPackageImportStamp>
     <ResolveNuGetPackages>false</ResolveNuGetPackages>
     <UseStandardResourceNames>True</UseStandardResourceNames>
-    <Win32Resource>$(ProjectDir)../AltCover/Resource.res</Win32Resource>    
+    <Win32Resource>$(ProjectDir)../AltCover/Resource.res</Win32Resource>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -80,6 +80,7 @@
     <Content Include="packages.config" />
     <EmbeddedResource Include="xsd\NCover.xsd" />
     <EmbeddedResource Include="xsd\OpenCover.xsd" />
+    <EmbeddedResource Include="xsl\OpenCoverToNCover.xsl" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\AltCover.Recorder\AltCover.Recorder.fsproj">

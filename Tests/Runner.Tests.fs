@@ -1663,7 +1663,7 @@ or
 
     let baseline = XDocument.Load(stream)
     let unique = Path.Combine(Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName,
-                                Guid.NewGuid().ToString() + "/NCover.cob")
+                                Guid.NewGuid().ToString() + "/NCover.cobertura")
     Cobertura.path := Some unique
     unique |> Path.GetDirectoryName |>  Directory.CreateDirectory |> ignore
 
@@ -1676,7 +1676,7 @@ or
                                  """timestamp="xx">""").Replace("\\","/")
 
       let resource2 = Assembly.GetExecutingAssembly().GetManifestResourceNames()
-                        |> Seq.find (fun n -> n.EndsWith("NCover.cob", StringComparison.Ordinal))
+                        |> Seq.find (fun n -> n.EndsWith("NCover.cobertura", StringComparison.Ordinal))
 
       use stream2 = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource2)
       use reader = new StreamReader(stream2)
@@ -1696,7 +1696,7 @@ or
 
     let baseline = XDocument.Load(stream)
     let unique = Path.Combine(Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName,
-                                Guid.NewGuid().ToString() + "/OpenCover.cob")
+                                Guid.NewGuid().ToString() + "/OpenCover.cobertura")
     Cobertura.path := Some unique
     unique |> Path.GetDirectoryName |>  Directory.CreateDirectory |> ignore
 
@@ -1709,7 +1709,7 @@ or
                                  """timestamp="xx">""")
 
       let resource2 = Assembly.GetExecutingAssembly().GetManifestResourceNames()
-                        |> Seq.find (fun n -> n.EndsWith("OpenCover.cob", StringComparison.Ordinal))
+                        |> Seq.find (fun n -> n.EndsWith("OpenCover.cobertura", StringComparison.Ordinal))
 
       use stream2 = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource2)
       use reader = new StreamReader(stream2)

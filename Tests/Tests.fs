@@ -2925,7 +2925,7 @@ type AltCoverTests() = class
     use stream' = Assembly.GetExecutingAssembly().GetManifestResourceStream(resultName)
     use reader' = new StreamReader(stream')
     let expected = reader'.ReadToEnd()
-    let version = Assembly.GetExecutingAssembly().GetName().Version.ToString()
+    let version = System.AssemblyVersionInformation.AssemblyVersion
     let transform (s:string) =
         s.Replace("\r\n","\n"
         ).Replace("AltCover.Recorder.g/1.4.0.0", "AltCover.Recorder.g/" + version
@@ -2948,7 +2948,7 @@ type AltCoverTests() = class
     use reader' = new StreamReader(stream')
     let expected = reader'.ReadToEnd()
 
-    let version = Assembly.GetExecutingAssembly().GetName().Version.ToString()
+    let version = System.AssemblyVersionInformation.AssemblyVersion
     let transform (s:string) =
         s.Replace("\r\n","\n"
         ).Replace("AltCover.Recorder.g/2.0.0.0", "AltCover.Recorder.g/" + version
