@@ -1,5 +1,5 @@
 # 3.5.5xx (Cerulean series release 2)
-* [BUGFIX] make the OutputFile parameter mandatory on `ConvertTo-NCover` as intended (altcover classic .nupkg)
+* [BUGFIX] `ConvertTo-NCover` now also outputs to the object pipeline as well as to the optional file (altcover classic .nupkg)
 * [BUGFIX] -- Issue #20 : on assembly resolution failure, look to the nuget package cache for a match (all .nupkg variants)
 
 # 3.5.512 (Cerulean series release 1)
