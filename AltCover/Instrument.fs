@@ -238,12 +238,22 @@ module Instrument =
   let private nugetCache = Path.Combine(Path.Combine (Environment.GetFolderPath Environment.SpecialFolder.UserProfile,
                                                       ".nuget"), "packages")
 
+  let internal FindAssemblyName f =
+    try
+      (AssemblyName.GetAssemblyName f).ToString()
+    with
+    | :? ArgumentException
+    | :? FileNotFoundException
+    | :? System.Security.SecurityException
+    | :? BadImageFormatException
+    | :? FileLoadException -> String.Empty
+
   let internal ResolveFromNugetCache _ (y:AssemblyNameReference) =
     let candidate = Directory.GetFiles(nugetCache, y.Name + ".*", SearchOption.AllDirectories)
-                    |> Seq.filter(fun f -> f.Replace("\\","/").IndexOf("/"+y.Version.ToString()+"/", StringComparison.Ordinal) > 0)
                     |> Seq.filter(fun f -> let x = Path.GetExtension f
                                            x.Equals(".exe", StringComparison.OrdinalIgnoreCase) ||
                                            x.Equals(".dll", StringComparison.OrdinalIgnoreCase))
+                    |> Seq.filter (fun f -> y.ToString().Equals(FindAssemblyName f, StringComparison.Ordinal))
                     |> Seq.tryLast
     match candidate with
     | None -> null
@@ -251,7 +261,9 @@ module Instrument =
 
   let internal HookResolver (resolver:IAssemblyResolver) =
     if resolver |> isNull |> not then
-        (resolver :?> BaseAssemblyResolver).add_ResolveFailure (new AssemblyResolveEventHandler(ResolveFromNugetCache))
+      let hook = resolver.GetType().GetMethod("add_ResolveFailure")
+      hook.Invoke(resolver, [|new AssemblyResolveEventHandler(ResolveFromNugetCache) :> obj |])
+      |> ignore
 #endif
 
   /// <summary>
