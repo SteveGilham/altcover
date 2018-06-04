@@ -234,6 +234,26 @@ module Instrument =
     | _ -> null
 #endif
 
+#if NETCOREAPP2_0
+  let private nugetCache = Path.Combine(Path.Combine (Environment.GetFolderPath Environment.SpecialFolder.UserProfile,
+                                                      ".nuget"), "packages")
+
+  let internal ResolveFromNugetCache _ (y:AssemblyNameReference) =
+    let candidate = Directory.GetFiles(nugetCache, y.Name + ".*", SearchOption.AllDirectories)
+                    |> Seq.filter(fun f -> f.Replace("\\","/").IndexOf("/"+y.Version.ToString()+"/", StringComparison.Ordinal) > 0)
+                    |> Seq.filter(fun f -> let x = Path.GetExtension f
+                                           x.Equals(".exe", StringComparison.OrdinalIgnoreCase) ||
+                                           x.Equals(".dll", StringComparison.OrdinalIgnoreCase))
+                    |> Seq.tryLast
+    match candidate with
+    | None -> null
+    | Some x -> AssemblyDefinition.ReadAssembly x
+
+  let internal HookResolver (resolver:IAssemblyResolver) =
+    if resolver |> isNull |> not then
+        (resolver :?> BaseAssemblyResolver).add_ResolveFailure (new AssemblyResolveEventHandler(ResolveFromNugetCache))
+#endif
+
   /// <summary>
   /// Commit an instrumented assembly to disk
   /// </summary>
@@ -280,6 +300,11 @@ module Instrument =
         let write (a:AssemblyDefinition) p pk  =
           use sink = File.Open (p, FileMode.Create, FileAccess.ReadWrite)
           a.Write(sink, pk)
+
+#if NETCOREAPP2_0
+        let resolver = assembly.MainModule.AssemblyResolver
+        HookResolver resolver
+#endif
 
         write assembly path pkey
     finally
