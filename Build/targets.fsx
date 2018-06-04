@@ -2060,6 +2060,8 @@ _Target "DotnetCLIIntegration" ( fun _ ->
     Shell.mkdir folder
     Shell.deleteDir folder
     let folder2 = (nugetCache @@ ".tools") @@ "altcover.dotnet"
+    // after next release 
+    // let folder2 = ((nugetCache @@ ".tools") @@ "altcover.dotnet") @@ !Version
     Shell.mkdir folder2
     Shell.deleteDir folder2
 )
