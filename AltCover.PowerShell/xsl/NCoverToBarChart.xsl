@@ -31,7 +31,7 @@
           h5 {
           margin-bottom: 0.5em; font: bold 100% verdana,arial,helvetica
           }
-          H6 {
+          h6 {
           margin-bottom: 0.5em; font: bold 100% verdana,arial,helvetica
           }
           .notVisited { background:red; }
@@ -41,15 +41,17 @@
           .automatic { background:yellow; }
           .static { background:silver;}
           .title { font-size: 12px; font-weight: bold; }
-          .assembly { font-size: normal;   font-weight: bold; font-size: 11px}
-          .class {font-size:normal; cursor: hand; color: #444444; font-size: 11px}
+          .assembly { font-size: 100%; font-weight: bold; font-size: 11px}
+          .class { font-size:100%; cursor: pointer; color: #444444; font-size: 11px}
           .module { color: navy; font-size: 12px; }
-          .method {cursor: hand; color: #444444; font-size: 10px; font-weight: bold; }
+          .method {cursor: pointer; color: #444444; font-size: 10px; font-weight: bold; }
           .subtitle { color: black; font-size: 10px; font-weight: bold; }
-          .hdrcell  {font-size:9px; background-color: #DDEEFF; }
-          .datacell {font-size:9px; background-color: #FFFFEE; text-align: right; }
-          .hldatacell {font-size:9px; background-color: #FFCCCC; text-align: right; }
-          .exdatacell {font-size:9px; background-color: #DDEEFF; text-align: right; }
+          th  {font-size:9px; background-color: #DDEEFF; }
+          .datacell tbody {font-size:9px; text-align: right; }
+          .datacell td {background-color: #FFFFEE;}
+          .datacell td:last-child, .datacell th:last-child { width:100%; text-align: left; }
+          td.hldatacell {background-color: #FFCCCC; }
+          td.exdatacell {background-color: #DDEEFF; }
           .detailPercent {  font-size: 9px; font-weight: bold; padding-top: 1px; padding-bottom: 1px; padding-left: 3px; padding-right: 3px;}
         </style>
         <script language="JavaScript">
@@ -188,22 +190,25 @@
     <xsl:param name="module" />
     <xsl:param name="class" />
     <xsl:param name="id" />
-    <table cellpadding="3" cellspacing="0" border='1' width="90%" bordercolor="black" style="display: block;">
+    <table class="datacell" cellpadding="3" cellspacing="0" border='1' width="90%" bordercolor="black" style="display: block;">
       <xsl:attribute name="id">
         <xsl:value-of select="$id" />
       </xsl:attribute>
-      <tr>
-        <td class="hdrcell">Visits</td>
-        <td class="hdrcell">Line</td>
-        <td class="hdrcell">End</td>
-        <td class="hdrcell">Column</td>
-        <td class="hdrcell">End</td>
-        <td class="hdrcell">Document</td>
-      </tr>
+      <thead>
+        <tr>
+          <th>Visits</th>
+          <th>Line</th>
+          <th>End</th>
+          <th>Column</th>
+          <th>End</th>
+          <th>Document</th>
+        </tr>
+      </thead>
+      <tbody>
       <xsl:for-each select="./seqpnt">
         <xsl:sort select="@line" />
         <tr>
-          <td class="datacell">
+          <td>
             <xsl:attribute name="class">
               <xsl:choose>
                 <xsl:when test="@excluded = 'true'">exdatacell</xsl:when>
@@ -218,23 +223,24 @@
               </xsl:otherwise>
             </xsl:choose>
           </td>
-          <td class="datacell">
+          <td>
             <xsl:value-of select="@line" />
           </td>
-          <td class="datacell">
+          <td>
             <xsl:value-of select="@endline" />
           </td>
-          <td class="datacell">
+          <td>
             <xsl:value-of select="@column" />
           </td>
-          <td class="datacell">
+          <td>
             <xsl:value-of select="@endcolumn" />
           </td>
-          <td class="datacell">
+          <td>
             <xsl:value-of select="@document" />
           </td>
         </tr>
       </xsl:for-each>
+      </tbody>        
     </table>
   </xsl:template>
   <!-- Class Summary -->
@@ -270,9 +276,8 @@
         </td>
       </tr>
       <tr>
-        <table style="display: block;" width="100%">
-          <tr>
-            <td>
+        <div style="display: block;" width="100%">
+            <div>
               <xsl:attribute name="id">
                 <xsl:value-of select="$newid" />
               </xsl:attribute>
@@ -280,9 +285,8 @@
                 <xsl:with-param name="module" select="$module" />
                 <xsl:with-param name="class" select="$class" />
               </xsl:call-template>
-            </td>
-          </tr>
-        </table>
+            </div>
+        </div>
       </tr>
     </table>
     <hr size="1" width='90%' align='left' style=" border-bottom: 1px dotted #999;" />
