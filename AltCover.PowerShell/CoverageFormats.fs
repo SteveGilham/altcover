@@ -144,7 +144,7 @@ type ConvertToCoberturaCommand(outputFile:String) =
       Directory.SetCurrentDirectory here
 
 [<Cmdlet(VerbsData.ConvertTo, "NCover")>]
-[<OutputType(typeof<System.Void>)>]
+[<OutputType(typeof<XmlDocument>)>]
 [<SuppressMessage("Microsoft.PowerShell", "PS1008", Justification = "Cobertura is OK")>]
 type ConvertToNCoverCommand(outputFile:String) =
   inherit PSCmdlet()
@@ -160,9 +160,9 @@ type ConvertToNCoverCommand(outputFile:String) =
       ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
   member val InputFile:string = null with get, set
 
-  [<Parameter(ParameterSetName = "XmlDoc", Mandatory = true, Position = 2,
+  [<Parameter(ParameterSetName = "XmlDoc", Mandatory = false, Position = 2,
       ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  [<Parameter(ParameterSetName = "FromFile", Mandatory = true, Position = 2,
+  [<Parameter(ParameterSetName = "FromFile", Mandatory = false, Position = 2,
       ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
   member val OutputFile:string = outputFile with get, set
 
@@ -174,8 +174,13 @@ type ConvertToNCoverCommand(outputFile:String) =
       if self.ParameterSetName = "FromFile" then
         self.XmlDocument <- XPathDocument self.InputFile
       let transform = XmlUtilities.LoadTransform "OpenCoverToNCover"
-      use output = XmlWriter.Create(self.OutputFile)
+      let rewrite = XmlDocument()
+      use output = rewrite.CreateNavigator().AppendChild()
       transform.Transform (self.XmlDocument, output)
+      if self.OutputFile |> String.IsNullOrWhiteSpace |> not then
+        rewrite.Save(self.OutputFile)
+
+      self.WriteObject rewrite
     finally
       Directory.SetCurrentDirectory here
 #endif
