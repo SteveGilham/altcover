@@ -1,6 +1,6 @@
 # 3.5.5xx (Cerulean series release 2)
-* [BUGFIX] make the OutputFile parameter mandatory on `ConvertTo-NCover` as intended
-* [BUGFIX] -- Issue #20 : on assembly resolution failure, look to the nuget package cache for a match.
+* [BUGFIX] make the OutputFile parameter mandatory on `ConvertTo-NCover` as intended (altcover classic .nupkg)
+* [BUGFIX] -- Issue #20 : on assembly resolution failure, look to the nuget package cache for a match (all .nupkg variants)
 
 # 3.5.512 (Cerulean series release 1)
 * Separate NuGet packages altcover.dotnet and altcover.global that contain the command-line tool functionality (only) for .net core as a CLI tool and as a .net core global tool respectively 
