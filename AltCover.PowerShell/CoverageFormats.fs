@@ -13,9 +13,7 @@ open System.Management.Automation
 open System.Xml
 open System.Xml.Linq
 open System.Xml.XPath
-open System.Xml.Xsl
 
-open AltCover.PowerShell
 open AltCover.PowerShell
 
 [<Cmdlet(VerbsData.ConvertTo, "XmlDocument")>]
