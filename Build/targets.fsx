@@ -1425,7 +1425,7 @@ _Target "SimpleReleaseTest" (fun _ ->
       match file with
       | Some test ->
             Actions.SimpleInstrumentingRun "_Binaries/Sample1/Debug+AnyCPU" (Path.GetDirectoryName test) "SimpleReleaseTest"
-      | None -> printfn "Skipping -- AltCover.exe not packaged"
+      | None -> Assert.Fail "AltCover.exe not packaged"
 )
 
 _Target "SimpleMonoReleaseTest" (fun _ ->
@@ -1438,7 +1438,7 @@ _Target "SimpleMonoReleaseTest" (fun _ ->
       match file with
       | Some test ->
             Actions.SimpleInstrumentingRun "_Binaries/Sample1/Debug+AnyCPU" (Path.GetDirectoryName test) "SimpleReleaseTest"
-      | None -> printfn "Skipping -- AltCover.exe not packaged"
+      | None -> Assert.Fail "AltCover.exe not packaged"
 )
 
 _Target "ReleaseDotNetWithFramework" (fun _ ->
@@ -1464,7 +1464,7 @@ _Target "ReleaseDotNetWithFramework" (fun _ ->
                         "ReleaseDotNetWithFramework test"
 
       Actions.ValidateSample1 "./_Reports/ReleaseDotNetWithFramework.xml" "ReleaseDotNetWithFramework"
-    else printfn "Skipping -- AltCover.exe not packaged"
+    else Assert.Fail "AltCover.exe not packaged"
 )
 
 _Target "ReleaseMonoWithDotNet" (fun _ ->
