@@ -234,6 +234,38 @@ module Instrument =
     | _ -> null
 #endif
 
+#if NETCOREAPP2_0
+  let private nugetCache = Path.Combine(Path.Combine (Environment.GetFolderPath Environment.SpecialFolder.UserProfile,
+                                                      ".nuget"), "packages")
+
+  let internal FindAssemblyName f =
+    try
+      (AssemblyName.GetAssemblyName f).ToString()
+    with
+    | :? ArgumentException
+    | :? FileNotFoundException
+    | :? System.Security.SecurityException
+    | :? BadImageFormatException
+    | :? FileLoadException -> String.Empty
+
+  let internal ResolveFromNugetCache _ (y:AssemblyNameReference) =
+    let candidate = Directory.GetFiles(nugetCache, y.Name + ".*", SearchOption.AllDirectories)
+                    |> Seq.filter(fun f -> let x = Path.GetExtension f
+                                           x.Equals(".exe", StringComparison.OrdinalIgnoreCase) ||
+                                           x.Equals(".dll", StringComparison.OrdinalIgnoreCase))
+                    |> Seq.filter (fun f -> y.ToString().Equals(FindAssemblyName f, StringComparison.Ordinal))
+                    |> Seq.tryLast
+    match candidate with
+    | None -> null
+    | Some x -> AssemblyDefinition.ReadAssembly x
+
+  let internal HookResolver (resolver:IAssemblyResolver) =
+    if resolver |> isNull |> not then
+      let hook = resolver.GetType().GetMethod("add_ResolveFailure")
+      hook.Invoke(resolver, [|new AssemblyResolveEventHandler(ResolveFromNugetCache) :> obj |])
+      |> ignore
+#endif
+
   /// <summary>
   /// Commit an instrumented assembly to disk
   /// </summary>
@@ -280,6 +312,11 @@ module Instrument =
         let write (a:AssemblyDefinition) p pk  =
           use sink = File.Open (p, FileMode.Create, FileAccess.ReadWrite)
           a.Write(sink, pk)
+
+#if NETCOREAPP2_0
+        let resolver = assembly.MainModule.AssemblyResolver
+        HookResolver resolver
+#endif
 
         write assembly path pkey
     finally

@@ -1,3 +1,7 @@
+# 3.5.518 (Cerulean series release 2)
+* [BUGFIX] `ConvertTo-NCover` now also outputs to the object pipeline as well as to the optional file (altcover classic .nupkg)
+* [BUGFIX] -- Issue #20 : on assembly resolution failure, look to the nuget package cache for a match (all .nupkg variants)
+
 # 3.5.512 (Cerulean series release 1)
 * Separate NuGet packages altcover.dotnet and altcover.global that contain the command-line tool functionality (only) for .net core as a CLI tool and as a .net core global tool respectively 
 * [BREAKING] `dotnet test` integration - all names have been prefixed with `AltCover` to avoid collisions
