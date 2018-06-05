@@ -1960,6 +1960,30 @@ type AltCoverTests() = class
                               | :? System.UnauthorizedAccessException
                               | :? IOException -> ())
 
+#if NETCOREAPP2_0
+  [<Test>]
+  member self.ShouldBeAbleLocateAReference () =
+    let where = Assembly.GetExecutingAssembly().Location
+    let here = Path.GetDirectoryName where
+    let json = Directory.GetFiles(here, "*.json")
+    Assert.That (json, Is.Not.Empty, "no json")
+    json
+    |> Seq.iter(fun j -> let a = Instrument.FindAssemblyName j
+                         Assert.That(String.IsNullOrWhiteSpace a, j))
+
+    let raw = Mono.Cecil.AssemblyDefinition.ReadAssembly where
+    raw.MainModule.AssemblyReferences
+    |> Seq.filter(fun f -> f.Name.IndexOf("Mono.Cecil",StringComparison.Ordinal) >= 0)
+    |> Seq.iter (fun f -> let resolved = Instrument.ResolveFromNugetCache null f
+                          Assert.That(resolved, Is.Not.Null, f.ToString()))
+    raw.MainModule.AssemblyReferences
+    |> Seq.filter(fun f -> f.Name.IndexOf("Mono.Cecil",StringComparison.Ordinal) >= 0)
+    |> Seq.iter (fun f -> f.Version <- Version("666.666.666.666")
+                          let resolved = Instrument.ResolveFromNugetCache null f
+                          Assert.That(resolved, Is.Null, f.ToString()))
+
+#endif
+
   [<Test>]
   member self.ShouldBeAbleToPrepareTheAssembly () =
     try

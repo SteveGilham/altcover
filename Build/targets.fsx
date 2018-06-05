@@ -1330,7 +1330,7 @@ _Target "Packaging" (fun _ ->
     {p with
         Authors = ["Steve Gilham"]
         Project = project
-        Description = "A pre-instrumenting code coverage tool set for .net/.net core and Mono"
+        Description = "A cross-platform pre-instrumenting code coverage tool set for .net/.net core and Mono"
         OutputPath = outputPath
         WorkingDir = workingDir
         Files = files
@@ -2059,6 +2059,9 @@ _Target "DotnetCLIIntegration" ( fun _ ->
     let folder = (nugetCache @@ "altcover.dotnet") @@ !Version
     Shell.mkdir folder
     Shell.deleteDir folder
+    let folder2 = (nugetCache @@ ".tools") @@ "altcover.dotnet"
+    Shell.mkdir folder2
+    Shell.deleteDir folder2
 )
 
 _Target "DotnetGlobalIntegration" ( fun _ ->

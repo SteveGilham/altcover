@@ -13,9 +13,7 @@ open System.Management.Automation
 open System.Xml
 open System.Xml.Linq
 open System.Xml.XPath
-open System.Xml.Xsl
 
-open AltCover.PowerShell
 open AltCover.PowerShell
 
 [<Cmdlet(VerbsData.ConvertTo, "XmlDocument")>]
@@ -144,7 +142,7 @@ type ConvertToCoberturaCommand(outputFile:String) =
       Directory.SetCurrentDirectory here
 
 [<Cmdlet(VerbsData.ConvertTo, "NCover")>]
-[<OutputType(typeof<System.Void>)>]
+[<OutputType(typeof<XmlDocument>)>]
 [<SuppressMessage("Microsoft.PowerShell", "PS1008", Justification = "Cobertura is OK")>]
 type ConvertToNCoverCommand(outputFile:String) =
   inherit PSCmdlet()
@@ -174,8 +172,13 @@ type ConvertToNCoverCommand(outputFile:String) =
       if self.ParameterSetName = "FromFile" then
         self.XmlDocument <- XPathDocument self.InputFile
       let transform = XmlUtilities.LoadTransform "OpenCoverToNCover"
-      use output = XmlWriter.Create(self.OutputFile)
+      let rewrite = XmlDocument()
+      use output = rewrite.CreateNavigator().AppendChild()
       transform.Transform (self.XmlDocument, output)
+      if self.OutputFile |> String.IsNullOrWhiteSpace |> not then
+        rewrite.Save(self.OutputFile)
+
+      self.WriteObject rewrite
     finally
       Directory.SetCurrentDirectory here
 #endif
