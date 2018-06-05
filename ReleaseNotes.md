@@ -1,4 +1,4 @@
-# 3.5.5xx (Cerulean series release 2)
+# 3.5.518 (Cerulean series release 2)
 * [BUGFIX] `ConvertTo-NCover` now also outputs to the object pipeline as well as to the optional file (altcover classic .nupkg)
 * [BUGFIX] -- Issue #20 : on assembly resolution failure, look to the nuget package cache for a match (all .nupkg variants)
 
