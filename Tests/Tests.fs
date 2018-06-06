@@ -3090,9 +3090,11 @@ type AltCoverTests() = class
                                             "Echo"
                                             "Error"
                                             "Usage"
+                                            "Warn"
                                             "ToConsole"
                                             "SetInfo"
                                             "SetError"
+                                            "SetWarn"
                                           ]
                             let name = t.Name
                             tokens |> List.exists (fun n -> name.StartsWith n))

@@ -151,14 +151,21 @@ type InvokeAltCoverCommand(runner:bool) =
     Output.Error <- (fun s -> let fail = ErrorRecord(InvalidOperationException(), s, ErrorCategory.FromStdErr, self)
                               self.WriteError fail)
     Output.Info <- (fun s -> self.WriteInformation (s, [| |]))
+    Output.Warn <- (fun s -> self.WriteWarning s)
 #else
 #if DEBUG
     Output.Error <- (fun s -> let fail = ErrorRecord(InvalidOperationException(), s, ErrorCategory.FromStdErr, self)
                               self.WriteError fail)
     Output.Info <- (fun s -> self.WriteInformation (s, [| |]))
+    Output.Warn <- (fun s -> self.WriteWarning s)
 #else
     let x = StringSink(fun s -> self.WriteInformation (s, [| |]))
     Output.SetInfo x
+    let y = StringSink (fun s -> let fail = ErrorRecord(InvalidOperationException(), s, ErrorCategory.FromStdErr, self)
+                                 self.WriteError fail)
+    Output.SetError y
+    let z = StringSink(fun s -> self.WriteWarning s)
+    Output.SetWarn z
 #endif
 #endif
     try

@@ -48,6 +48,7 @@ type Prepare () =
 
   override self.Execute () =
     Output.Error <- base.Log.LogError
+    Output.Warn <- base.Log.LogWarning
     Output.Info <- self.Message
     [
       Args.Item "-i" self.InputDirectory;
@@ -95,6 +96,7 @@ type Collect () =
 
   override self.Execute () =
     Output.Error <- base.Log.LogError
+    Output.Warn <- base.Log.LogWarning
     Output.Info <- self.Message
     [
       ["Runner"];
