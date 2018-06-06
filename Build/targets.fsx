@@ -75,6 +75,20 @@ _Target "Preparation" ignore
 
 _Target "Clean" (fun _ ->
     printfn "Cleaning the build and deploy folders"
+    if Environment.isWindows then
+      try
+        Tools.findToolInSubPath "pwsh.exe" (programFiles @@ "PowerShell") |> printfn "%A"
+      with
+      | x -> printfn "%A" x
+    else
+      try
+        Actions.RunRaw (fun info -> { info with
+                                            FileName = "which"
+                                            Arguments = ("pwsh")})
+                                 "pwsh"
+      with
+      | x -> printfn "%A" x
+
     Actions.Clean ()
 )
 
