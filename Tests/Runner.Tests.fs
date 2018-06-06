@@ -1061,6 +1061,9 @@ type AltCoverTests() = class
                                input directory
 """
 #if NETCOREAPP2_0
+                     + """  -d, --dependency=VALUE     Optional,multiple: assembly path to resolve
+                               missing reference.
+"""
 #else
                      + """  -k, --key=VALUE            Optional, multiple: any other strong-name key to
                                use

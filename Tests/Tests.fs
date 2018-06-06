@@ -3307,7 +3307,7 @@ type AltCoverTests() = class
     let options = Main.DeclareOptions ()
     Assert.That (options.Count, Is.EqualTo
 #if NETCOREAPP2_0
-                                            16
+                                            17
 #else
                                             18
 #endif
@@ -3818,6 +3818,73 @@ type AltCoverTests() = class
       ProgramDatabase.SymbolFolders.Clear()
 
 #if NETCOREAPP2_0
+  [<Test>]
+  member self.ParsingMultipleDependencyIsOk() =
+    try
+      Instrument.ResolutionTable.Clear()
+      let options = Main.DeclareOptions ()
+      let here = Assembly.GetExecutingAssembly().Location
+      let next = Path.Combine(Path.GetDirectoryName here, "AltCover.Recorder.dll")
+
+      let input = [| "-d"; here;
+                     "/d"; next |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Left _ -> Assert.Fail()
+      | Right (x, y) -> Assert.That (y, Is.SameAs options)
+                        Assert.That (x, Is.Empty)
+
+      let expected = Instrument.ResolutionTable.Keys
+                     |> Seq.map (fun a -> Instrument.ResolutionTable.[a].Name.Name)
+                     |> Seq.sort
+      Assert.That (String.Join(" ", expected), Is.EqualTo ("AltCover.Recorder AltCover.Tests"))
+    finally
+      Instrument.ResolutionTable.Clear()
+
+  member self.ParsingNoDependencyGivesFailure() =
+    try
+      Instrument.ResolutionTable.Clear()
+      let options = Main.DeclareOptions ()
+      let input = [| "-d" |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Right _ -> Assert.Fail()
+      | Left (x, y) -> Assert.That (y, Is.SameAs options)
+                       Assert.That (x, Is.EqualTo "UsageError")
+    finally
+      Instrument.ResolutionTable.Clear()
+
+  [<Test>]
+  member self.ParsingBadDependencyGivesFailure() =
+    try
+      Instrument.ResolutionTable.Clear()
+      let options = Main.DeclareOptions ()
+      let unique = Guid.NewGuid().ToString().Replace("-", "*")
+      let input = [| "-d"; unique |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Right _ -> Assert.Fail()
+      | Left (x, y) -> Assert.That (y, Is.SameAs options)
+                       Assert.That (x, Is.EqualTo "UsageError")
+    finally
+      Instrument.ResolutionTable.Clear()
+
+  [<Test>]
+  member self.ParsingNonDependencyGivesFailure() =
+    try
+      Visitor.defaultStrongNameKey <- None
+      Visitor.keys.Clear()
+      let options = Main.DeclareOptions ()
+      let unique = Assembly.GetExecutingAssembly().Location + ".txt"
+      let input = [| "-d"; unique |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Right _ -> Assert.Fail()
+      | Left (x, y) -> Assert.That (y, Is.SameAs options)
+                       Assert.That (x, Is.EqualTo "UsageError")
+    finally
+      Visitor.defaultStrongNameKey <- None
+      Visitor.keys.Clear()
 #else
   [<Test>]
   member self.ParsingStrongNameGivesStrongName() =
@@ -4524,6 +4591,9 @@ type AltCoverTests() = class
                                input directory
 """
 #if NETCOREAPP2_0
+                     + """  -d, --dependency=VALUE     Optional,multiple: assembly path to resolve
+                               missing reference.
+"""
 #else
                      + """  -k, --key=VALUE            Optional, multiple: any other strong-name key to
                                use
@@ -4604,6 +4674,9 @@ type AltCoverTests() = class
                                input directory
 """
 #if NETCOREAPP2_0
+                     + """  -d, --dependency=VALUE     Optional,multiple: assembly path to resolve
+                               missing reference.
+"""
 #else
                      + """  -k, --key=VALUE            Optional, multiple: any other strong-name key to
                                use
