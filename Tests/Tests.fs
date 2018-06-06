@@ -4798,6 +4798,7 @@ or
 
         Assert.Throws<InvalidOperationException>(fun () -> subject.Message "x") |> ignore
         Assert.Throws<InvalidOperationException>(fun () -> Output.Info "x") |> ignore
+        Assert.Throws<InvalidOperationException>(fun () -> Output.Warn "x") |> ignore
         Assert.Throws<InvalidOperationException>(fun () -> Output.Error "x") |> ignore
 
     finally
