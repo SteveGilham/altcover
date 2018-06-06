@@ -84,6 +84,13 @@ _Target "Clean" (fun _ ->
       try
         Actions.RunRaw (fun info -> { info with
                                             FileName = "which"
+                                            Arguments = ("dotnet")})
+                                 "dotnet"
+      with
+      | x -> printfn "%A" x
+      try
+        Actions.RunRaw (fun info -> { info with
+                                            FileName = "which"
                                             Arguments = ("pwsh")})
                                  "pwsh"
       with
