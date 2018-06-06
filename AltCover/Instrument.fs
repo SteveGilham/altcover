@@ -255,11 +255,12 @@ module Instrument =
     if ResolutionTable.ContainsKey name then ResolutionTable.[name]
     else 
         let candidate = Directory.GetFiles(nugetCache, y.Name + ".*", SearchOption.AllDirectories)
+                        |> Array.rev
                         |> Seq.filter(fun f -> let x = Path.GetExtension f
                                                x.Equals(".exe", StringComparison.OrdinalIgnoreCase) ||
                                                x.Equals(".dll", StringComparison.OrdinalIgnoreCase))
                         |> Seq.filter (fun f -> y.ToString().Equals(FindAssemblyName f, StringComparison.Ordinal))
-                        |> Seq.tryLast
+                        |> Seq.tryHead
         match candidate with
         | None -> null
         | Some x -> String.Format(System.Globalization.CultureInfo.CurrentCulture,
