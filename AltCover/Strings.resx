@@ -322,4 +322,7 @@ Details written to {0}</value>
   <data name="o|outputFile=" xml:space="preserve">
     <value>Optional: write the recorded coverage to this file rather than overwriting the original report file.</value>
   </data>
+  <data name="resolved" xml:space="preserve">
+    <value>Resolved assembly reference '{0}' as file '{1}'.</value>
+  </data>
 </root>

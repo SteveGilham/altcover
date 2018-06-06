@@ -321,4 +321,7 @@ Detaloj skribitaj al {0}</value>
   <data name="o|outputFile=" xml:space="preserve">
     <value>Laŭvola: skribu la registradan kovradon al ĉi tiu dosiero anstataŭ anstataŭi la originalan raportan dosieron.</value>
   </data>
+  <data name="resolved" xml:space="preserve">
+    <value>Rezolita asemblea referenco '{0}' kiel dosiero '{1}'.</value>
+  </data>
 </root>

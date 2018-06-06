@@ -238,6 +238,8 @@ module Instrument =
   let private nugetCache = Path.Combine(Path.Combine (Environment.GetFolderPath Environment.SpecialFolder.UserProfile,
                                                       ".nuget"), "packages")
 
+  let internal ResolutionTable = Dictionary<string, AssemblyDefinition>()
+
   let internal FindAssemblyName f =
     try
       (AssemblyName.GetAssemblyName f).ToString()
@@ -249,15 +251,24 @@ module Instrument =
     | :? FileLoadException -> String.Empty
 
   let internal ResolveFromNugetCache _ (y:AssemblyNameReference) =
-    let candidate = Directory.GetFiles(nugetCache, y.Name + ".*", SearchOption.AllDirectories)
-                    |> Seq.filter(fun f -> let x = Path.GetExtension f
-                                           x.Equals(".exe", StringComparison.OrdinalIgnoreCase) ||
-                                           x.Equals(".dll", StringComparison.OrdinalIgnoreCase))
-                    |> Seq.filter (fun f -> y.ToString().Equals(FindAssemblyName f, StringComparison.Ordinal))
-                    |> Seq.tryLast
-    match candidate with
-    | None -> null
-    | Some x -> AssemblyDefinition.ReadAssembly x
+    let name = y.ToString()
+    if ResolutionTable.ContainsKey name then ResolutionTable.[name]
+    else 
+        let candidate = Directory.GetFiles(nugetCache, y.Name + ".*", SearchOption.AllDirectories)
+                        |> Seq.filter(fun f -> let x = Path.GetExtension f
+                                               x.Equals(".exe", StringComparison.OrdinalIgnoreCase) ||
+                                               x.Equals(".dll", StringComparison.OrdinalIgnoreCase))
+                        |> Seq.filter (fun f -> y.ToString().Equals(FindAssemblyName f, StringComparison.Ordinal))
+                        |> Seq.tryLast
+        match candidate with
+        | None -> null
+        | Some x -> String.Format(System.Globalization.CultureInfo.CurrentCulture,
+                      CommandLine.resources.GetString "resolved", y.ToString(), x)
+                    |> Output.Info
+                    let a = AssemblyDefinition.ReadAssembly x
+                    ResolutionTable.[name] <- a
+                    a
+                    
 
   let internal HookResolver (resolver:IAssemblyResolver) =
     if resolver |> isNull |> not then

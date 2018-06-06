@@ -1972,15 +1972,31 @@ type AltCoverTests() = class
                          Assert.That(String.IsNullOrWhiteSpace a, j))
 
     let raw = Mono.Cecil.AssemblyDefinition.ReadAssembly where
-    raw.MainModule.AssemblyReferences
-    |> Seq.filter(fun f -> f.Name.IndexOf("Mono.Cecil",StringComparison.Ordinal) >= 0)
-    |> Seq.iter (fun f -> let resolved = Instrument.ResolveFromNugetCache null f
-                          Assert.That(resolved, Is.Not.Null, f.ToString()))
-    raw.MainModule.AssemblyReferences
-    |> Seq.filter(fun f -> f.Name.IndexOf("Mono.Cecil",StringComparison.Ordinal) >= 0)
-    |> Seq.iter (fun f -> f.Version <- Version("666.666.666.666")
-                          let resolved = Instrument.ResolveFromNugetCache null f
-                          Assert.That(resolved, Is.Null, f.ToString()))
+    Instrument.ResolutionTable.Clear()
+    try
+        raw.MainModule.AssemblyReferences
+        |> Seq.filter(fun f -> f.Name.IndexOf("Mono.Cecil",StringComparison.Ordinal) >= 0)
+        |> Seq.iter (fun f -> let resolved = Instrument.ResolveFromNugetCache null f
+                              Assert.That(resolved, Is.Not.Null, f.ToString()))
+        raw.MainModule.AssemblyReferences
+        |> Seq.filter(fun f -> f.Name.IndexOf("Mono.Cecil",StringComparison.Ordinal) >= 0)
+        |> Seq.iter (fun f -> f.Version <- Version("666.666.666.666")
+                              let resolved = Instrument.ResolveFromNugetCache null f
+                              Assert.That(resolved, Is.Null, f.ToString()))
+
+        let found = Instrument.ResolutionTable.Keys |> Seq.toList
+        found
+        |> Seq.iter(fun k -> let matched = Instrument.ResolutionTable.[k]
+                             let k2 = AssemblyNameReference.Parse(k.ToString())
+                             k2.Version <- Version("666.666.666.666")
+                             Instrument.ResolutionTable.[k2.ToString()] <- matched)
+        raw.MainModule.AssemblyReferences
+        |> Seq.filter(fun f -> f.Name.IndexOf("Mono.Cecil",StringComparison.Ordinal) >= 0)
+        |> Seq.iter (fun f -> f.Version <- Version("666.666.666.666")
+                              let resolved = Instrument.ResolveFromNugetCache null f
+                              Assert.That(resolved, Is.Not.Null, f.ToString()))
+    finally
+        Instrument.ResolutionTable.Clear()
 
 #endif
 
