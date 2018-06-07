@@ -314,7 +314,7 @@ _Target "FxCop" (fun _ -> // Needs debug because release is compiled --standalon
 // Unit Test
 
 _Target "UnitTest" (fun _ ->
-  let numbers = !! (@"_Reports/*/Summary.xml")
+  let numbers = !! (@"_Reports/_Unit*/Summary.xml")
                 |> Seq.collect (fun f -> let xml = XDocument.Load f
                                          xml.Descendants(XName.Get("Linecoverage"))
                                          |> Seq.map (fun e -> let coverage = e.Value.Replace("%", String.Empty)
