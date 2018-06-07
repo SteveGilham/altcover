@@ -52,6 +52,14 @@ Describe "ConvertTo-XDocument" {
         $xw.Close()
         ($header + $xd.ToString()).Replace("`r", "") | Should -Be $sw.ToString().Replace("`r", "")
     }
+
+    It "Round Trips" {
+        $xml = [xml]"<document/>"
+        $xd = $xml | ConvertTo-XDocument
+        $xd.ToString() | Should -Be $xml.OuterXml
+        $x2 = $xd | ConvertTo-XmlDocument
+        $x2.OuterXml | Should -Be $xml.OuterXml
+    }
 }
 
 Describe "ConvertTo-XmlDocument" {
