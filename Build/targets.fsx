@@ -1446,9 +1446,13 @@ _Target "Pester" (fun _ ->
 
   ReportGenerator.generateReports
               (fun p -> { p with ExePath = Tools.findToolInSubPath "ReportGenerator.exe" "."
-                                 ReportTypes = [ ReportGenerator.ReportType.Html ]
+                                 ReportTypes = [ ReportGenerator.ReportType.Html; ReportGenerator.ReportType.XmlSummary ]
                                  TargetDir = "_Reports/_Pester"})
               [ report ]
+
+  "_Reports/_Pester/Summary.xml"
+  |> File.ReadAllText
+  |> printfn "%s"
 )
 
 _Target "SimpleReleaseTest" (fun _ ->
