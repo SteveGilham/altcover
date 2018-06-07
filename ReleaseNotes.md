@@ -1,3 +1,11 @@
+# 3.5.5xx (Cerulean series release 3)
+* `-d|dependency` option for all .net core versions (equivalents for pwsh, MSBuild) to allow the user to specify assemblies to satisfy references (anticipating resolution failures)
+* cache resolution failure fix-ups for some possible performance improvement, and notify to the user (as a build warning)
+* minor bugfixes for `ConvertTo-Lcov` and `ConvertTo-Cobertura` for NCover format input
+* minor bugfixes for `ConvertTo-XDocument` and `ConvertTo-XmlDocument` to handle XML processing instructions.
+* FAKE 5.0 now being used
+* Unit/operational testing of cmdlets in the build with coverage gathering
+
 # 3.5.518 (Cerulean series release 2)
 * [BUGFIX] `ConvertTo-NCover` now also outputs to the object pipeline as well as to the optional file (altcover classic .nupkg)
 * [BUGFIX] -- Issue #20 : on assembly resolution failure, look to the nuget package cache for a match (all .nupkg variants)
