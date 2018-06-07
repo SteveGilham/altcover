@@ -2,6 +2,13 @@ language: csharp
 mono: latest
 dotnet: 2.1.300
 sudo: false
+addons:
+  apt:
+    sources:
+      - sourceline: "deb [arch=amd64] https://packages.microsoft.com/ubuntu/14.04/prod trusty main"
+        key_url: "https://packages.microsoft.com/keys/microsoft.asc"
+    packages:
+      - powershell
 
 git:
   depth: false

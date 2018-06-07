@@ -65,6 +65,10 @@ let dotnetPath86 = if Environment.isWindows then
 let nugetCache = Path.Combine (Environment.GetFolderPath Environment.SpecialFolder.UserProfile,
                                ".nuget/packages")
 
+let pwsh = if Environment.isWindows then
+                    Tools.findToolInSubPath "pwsh.exe" (programFiles @@ "PowerShell")
+           else "pwsh"
+
 let _Target s f =
   Target.description s
   Target.create s f
@@ -1415,6 +1419,38 @@ _Target "Unpack" (fun _ ->
   System.IO.Compression.ZipFile.ExtractToDirectory (nugget, unpack)
 )
 
+_Target "Pester" (fun _ ->
+  Directory.ensure "./_Reports"
+  let nugget = !! "./_Packaging/*.nupkg" |> Seq.last
+  let ``module`` = Path.getFullName "_Packaging/Module"
+  System.IO.Compression.ZipFile.ExtractToDirectory (nugget, ``module``)
+  let unpack = Path.getFullName "_Packaging/Unpack/tools/netcoreapp2.0"
+  let report = Path.getFullName "_Reports/Pester.xml"
+  let i = ``module`` @@ "tools/netcoreapp2.0"
+
+  Actions.RunDotnet (fun o -> {dotnetOptions o with WorkingDirectory = unpack}) ""
+                      ("AltCover.dll --inplace --save --opencover -t=System\. \"-s=^((?!AltCover\.PowerShell).)*$\" -x \"" + report + "\" -i \"" + i + "\"")
+                             "Pester instrument"
+
+  printfn "Execute the instrumented tests"
+
+  Actions.RunRaw (fun info -> { info with
+                                        FileName = pwsh
+                                        WorkingDirectory = "."
+                                        Arguments = (" ./Build/pester.ps1")})
+                                 "pwsh"
+
+  Actions.RunDotnet (fun o -> {dotnetOptions o with WorkingDirectory = unpack}) ""
+                            ("AltCover.dll Runner --collect -r \"" + i + "\"")
+                             "Collect the output"
+
+  ReportGenerator.generateReports
+              (fun p -> { p with ExePath = Tools.findToolInSubPath "ReportGenerator.exe" "."
+                                 ReportTypes = [ ReportGenerator.ReportType.Html ]
+                                 TargetDir = "_Reports/_Pester"})
+              [ report ]
+)
+
 _Target "SimpleReleaseTest" (fun _ ->
     let unpack = Path.getFullName "_Packaging/Unpack/tools/net45"
     if (unpack @@ "AltCover.exe") |> File.Exists then
@@ -2346,6 +2382,10 @@ Target.activateFinal "ResetConsoleColours"
 
 "Compilation"
 ?=> "Deployment"
+
+"Unpack"
+==> "Pester"
+==> "Deployment"
 
 "Unpack"
 ==> "SimpleReleaseTest"
