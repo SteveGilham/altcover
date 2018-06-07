@@ -36,3 +36,82 @@ Describe "Invoke-Altcover" {
         }
     }
 }
+
+Describe "ConvertTo-XDocument" {
+    It "converts" {
+        $xml = [xml](Get-Content "./Tests/Sample1WithNCover.xml")
+        $xd = $xml | ConvertTo-XDocument
+        $xd.GetType().FullName | Should -Be "System.Xml.Linq.XDocument"
+        $header = "<?xml version=`"1.0`" encoding=`"utf-8`"?>`n<?xml-stylesheet href=`"coverage.xsl`" type=`"text/xsl`"?>`n"
+        $sw = new-object System.IO.StringWriter @()
+        $settings = new-object System.Xml.XmlWriterSettings @()
+        $settings.Indent = $true
+        $settings.IndentChars = "  "
+        $xw = [System.Xml.XmlWriter]::Create($sw, $settings)
+        $xml.WriteTo($xw)
+        $xw.Close()
+        ($header + $xd.ToString()).Replace("`r", "") | Should -Be $sw.ToString().Replace("`r", "")
+    }
+}
+
+Describe "ConvertTo-XmlDocument" {
+    It "converts" {
+        $xd = [System.Xml.Linq.XDocument]::Load("./Tests/Sample1WithNCover.xml")
+        $xml = $xd | ConvertTo-XmlDocument
+        $xml.GetType().FullName | Should -Be "System.Xml.XmlDocument"
+        $header = "<?xml version=`"1.0`" encoding=`"utf-8`"?>`n<?xml-stylesheet href=`"coverage.xsl`" type=`"text/xsl`"?>`n"
+        $sw = new-object System.IO.StringWriter @()
+        $settings = new-object System.Xml.XmlWriterSettings @()
+        $settings.Indent = $true
+        $settings.IndentChars = "  "
+        $xw = [System.Xml.XmlWriter]::Create($sw, $settings)
+        $xml.WriteTo($xw)
+        $xw.Close()
+        $header = "<?xml version=`"1.0`" encoding=`"utf-8`"?>`n"
+        $sw.ToString().Replace("`r", "") | Should -Be ($header + $xd.ToString()).Replace("`r", "")
+    }
+}
+
+Describe "ConvertTo-Lcov" {
+    It "Converts OpenCover Data" {
+        ConvertTo-LCov -InputFile "./Tests/HandRolledMonoCoverage.xml" -OutputFile "./_Packaging/OpenCover.lcov"
+        $expected = @"
+TN:
+SF:altcover\Sample1\Program.cs
+FN:11,System.Void TouchTest.Program::Main(System.String[])
+FNDA:1,System.Void TouchTest.Program::Main(System.String[])
+FNF:1
+FNH:1
+BRDA:13,0,0,1
+BRDA:13,0,1,-
+BRF:2
+BRH:1
+DA:11,1
+DA:12,1
+DA:13,1
+DA:13,1
+DA:14,1
+DA:15,1
+DA:15,1
+DA:15,1
+DA:16,1
+DA:18,0
+DA:19,0
+DA:19,0
+DA:20,0
+DA:21,1
+LH:10
+LF:14
+end_of_record
+"@
+        $got = [String]::Join("`n", (Get-Content "./_Packaging/OpenCover.lcov"))
+        $got | Should -Be $expected.Replace("`r", "")
+    }
+
+    It "Converts NCover Data" {
+        ConvertTo-LCov -InputFile "./Tests/Sample1WithNCover.xml" -OutputFile "./_Packaging/NCover.lcov"
+        $expected = [String]::Join("`n", (Get-Content "./Tests/NCoverBugFix.lcov"))
+        $got = [String]::Join("`n", (Get-Content "./_Packaging/NCover.lcov"))
+        $got | Should -Be $expected.Replace("`r", "")
+    }
+}

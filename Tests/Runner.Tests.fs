@@ -1632,6 +1632,36 @@ or
       LCov.path := None
 
   [<Test>]
+  member self.NCoverShouldGeneratePlausibleLcovBugFix() =
+    let resource = Assembly.GetExecutingAssembly().GetManifestResourceNames()
+                        |> Seq.find (fun n -> n.EndsWith("Sample1WithNCover.xml", StringComparison.Ordinal))
+
+    use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
+
+    let baseline = XDocument.Load(stream)
+    let unique = Path.Combine(Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName,
+                                Guid.NewGuid().ToString() + "/NCoverBugFix.lcov")
+    LCov.path := Some unique
+    unique |> Path.GetDirectoryName |>  Directory.CreateDirectory |> ignore
+
+    try
+      let r = LCov.Summary baseline Base.ReportFormat.NCover 0
+      Assert.That (r, Is.EqualTo 0)
+
+      let result = File.ReadAllText unique
+
+      let resource2 = Assembly.GetExecutingAssembly().GetManifestResourceNames()
+                        |> Seq.find (fun n -> n.EndsWith("NCoverBugFix.lcov", StringComparison.Ordinal))
+
+      use stream2 = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource2)
+      use reader = new StreamReader(stream2)
+      let expected = reader.ReadToEnd().Replace("\r", String.Empty).Replace("\\","/")
+      Assert.That (result.Replace("\r", String.Empty).Replace("\\","/"), Is.EqualTo expected)
+    finally
+      LCov.path := None
+
+
+  [<Test>]
   member self.MultiSortDoesItsThing() =
     let input = [ ("m", [3; 2; 1])
                   ("a", [4; 9; 7])
