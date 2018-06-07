@@ -40,6 +40,9 @@ module XmlUtilities =
     | Some decl -> xdoc.Declaration <- XDeclaration(decl.Version,
                                                     decl.Encoding,
                                                     decl.Standalone)
+    xmlDocument.ChildNodes.OfType<XmlProcessingInstruction>()
+    |> Seq.rev
+    |> Seq.iter (fun pi -> xdoc.AddFirst(XProcessingInstruction(pi.Target, pi.Data)))
     xdoc
 
   [<SuppressMessage("Microsoft.Usage", "CA2202", Justification="Observably safe")>]

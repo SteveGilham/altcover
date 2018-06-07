@@ -42,7 +42,7 @@ Describe "ConvertTo-XDocument" {
         $xml = [xml](Get-Content "./Tests/Sample1WithNCover.xml")
         $xd = $xml | ConvertTo-XDocument
         $xd.GetType().FullName | Should -Be "System.Xml.Linq.XDocument"
-        $header = "<?xml version=`"1.0`" encoding=`"utf-8`"?>`n<?xml-stylesheet href=`"coverage.xsl`" type=`"text/xsl`"?>`n"
+        $header = $xd.Declaration.ToString().Replace(" standalone=`"`"", "") + "`n" 
         $sw = new-object System.IO.StringWriter @()
         $settings = new-object System.Xml.XmlWriterSettings @()
         $settings.Indent = $true
@@ -67,7 +67,6 @@ Describe "ConvertTo-XmlDocument" {
         $xd = [System.Xml.Linq.XDocument]::Load("./Tests/Sample1WithNCover.xml")
         $xml = $xd | ConvertTo-XmlDocument
         $xml.GetType().FullName | Should -Be "System.Xml.XmlDocument"
-        $header = "<?xml version=`"1.0`" encoding=`"utf-8`"?>`n<?xml-stylesheet href=`"coverage.xsl`" type=`"text/xsl`"?>`n"
         $sw = new-object System.IO.StringWriter @()
         $settings = new-object System.Xml.XmlWriterSettings @()
         $settings.Indent = $true
@@ -75,7 +74,7 @@ Describe "ConvertTo-XmlDocument" {
         $xw = [System.Xml.XmlWriter]::Create($sw, $settings)
         $xml.WriteTo($xw)
         $xw.Close()
-        $header = "<?xml version=`"1.0`" encoding=`"utf-8`"?>`n"
+        $header = $xd.Declaration.ToString() + "`n"
         $sw.ToString().Replace("`r", "") | Should -Be ($header + $xd.ToString()).Replace("`r", "")
     }
 }
