@@ -538,7 +538,7 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
     Directory.ensure "./_Reports/_UnitTestWithAltCover"
     let keyfile = Path.getFullName "Build/SelfTest.snk"
     let reports = Path.getFullName "./_Reports"
-    let altcover = Tools.findToolInSubPath "AltCover.exe" "./_Binaries"
+    let altcover = Tools.findToolInSubPath "AltCover.exe" "./_Binaries/AltCover/Debug+AnyCPU"
     let nunit = Tools.findToolInSubPath "nunit3-console.exe" "."
     let here = Path.getFullName "."
 
@@ -638,11 +638,12 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
                                                       Path.getFullName  "_Binaries/AltCover.Shadow.Tests/Debug+AnyCPU/__ShadowTestWithAltCoverRunner/AltCover.Shadow.Tests2.dll"]) + "\""
                             )}) "Re-instrument tests returned with a non-zero exit code"
 
+      let pester = Path.getFullName "_Reports/Pester.xml"
       ReportGenerator.generateReports
                       (fun p -> { p with ExePath = Tools.findToolInSubPath "ReportGenerator.exe" "."
                                          ReportTypes = [ ReportGenerator.ReportType.Html; ReportGenerator.ReportType.XmlSummary ]
                                          TargetDir = "_Reports/_UnitTestWithAltCoverRunner"})
-          [xaltReport; altReport; shadowReport; weakReport]
+          [xaltReport; altReport; shadowReport; weakReport; pester]
 
       let cover1 = altReport
                    |> File.ReadAllLines
@@ -655,13 +656,17 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
                    |> File.ReadAllLines
                    |> Seq.skipWhile (fun l -> l.StartsWith("    <Module") |> not)
                    |> Seq.takeWhile (fun l -> l <> "  </Modules>")
+      let cover3a = pester
+                   |> File.ReadAllLines
+                   |> Seq.skipWhile (fun l -> l.StartsWith("    <Module") |> not)
+                   |> Seq.takeWhile (fun l -> l <> "  </Modules>")
       let cover4 = xaltReport
                    |> File.ReadAllLines
                    |> Seq.skipWhile (fun l -> l.StartsWith("    <Module") |> not)
 
       let coverage =  reports @@ "CombinedTestWithAltCoverRunner.coveralls"
 
-      File.WriteAllLines(coverage, Seq.concat [cover1; cover2; cover3; cover4] |> Seq.toArray)
+      File.WriteAllLines(coverage, Seq.concat [cover1; cover2; cover3; cover3a; cover4] |> Seq.toArray)
 
       if not <| String.IsNullOrWhiteSpace (Environment.environVar "APPVEYOR_BUILD_NUMBER") then
        Actions.Run (fun info ->
@@ -2389,7 +2394,7 @@ Target.activateFinal "ResetConsoleColours"
 
 "Unpack"
 ==> "Pester"
-==> "Deployment"
+==> "UnitTestWithAltCoverRunner"
 
 "Unpack"
 ==> "SimpleReleaseTest"
