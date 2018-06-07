@@ -33,16 +33,17 @@ module XmlUtilities =
     use nodeReader = new XmlNodeReader(xmlDocument)
     nodeReader.MoveToContent() |> ignore // skips leading comments
     let xdoc = XDocument.Load(nodeReader)
-    let decl' = xmlDocument.ChildNodes.OfType<XmlDeclaration>()
+    let cn = xmlDocument.ChildNodes
+    let decl' = cn.OfType<XmlDeclaration>()
                 |> Seq.tryHead
     match decl' with
     | None -> ()
     | Some decl -> xdoc.Declaration <- XDeclaration(decl.Version,
                                                     decl.Encoding,
                                                     decl.Standalone)
-    xmlDocument.ChildNodes.OfType<XmlProcessingInstruction>()
+    cn.OfType<XmlProcessingInstruction>()
     |> Seq.rev
-    |> Seq.iter (fun pi -> xdoc.AddFirst(XProcessingInstruction(pi.Target, pi.Data)))
+    |> Seq.iter (fun func -> xdoc.AddFirst(XProcessingInstruction(func.Target, func.Data)))
     xdoc
 
   [<SuppressMessage("Microsoft.Usage", "CA2202", Justification="Observably safe")>]
