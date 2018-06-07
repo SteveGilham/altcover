@@ -36,6 +36,7 @@
     <EmbeddedResource Include="OpenCover.cobertura" />
     <EmbeddedResource Include="Sample1WithNCover.xml" />
     <EmbeddedResource Include="NCoverBugFix.lcov" />
+    <EmbeddedResource Include="NCoverBugFix.cobertura" />
   </ItemGroup>
 
   <ItemGroup>
