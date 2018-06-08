@@ -187,10 +187,10 @@ type ConvertToNCoverCommand(outputFile:String) =
 
       rewrite.SelectNodes("//method").OfType<XmlElement>()
       |> Seq.iter (fun m -> let c = m.GetAttribute("class")
-                            m.SetAttribute("class", c.Replace("/", "+"))
+                            m.SetAttribute("class", c.Replace('/', '+'))
                             let name = m.GetAttribute("name")
-                            let lead = name.Substring(name.LastIndexOf("::") + 2)
-                            m.SetAttribute("name", lead.Substring(0, lead.IndexOf("("))))
+                            let lead = name.Substring(name.LastIndexOf("::", StringComparison.Ordinal) + 2)
+                            m.SetAttribute("name", lead.Substring(0, lead.IndexOf('('))))
 
       rewrite.SelectNodes("//module").OfType<XmlElement>()
       |> Seq.iter (fun m -> let path = m.GetAttribute("name")
