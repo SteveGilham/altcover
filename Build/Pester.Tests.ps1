@@ -123,12 +123,12 @@ end_of_record
         $got | Should -Be $expected.Replace("`r", "")
     }
 
-  It "Converts NCover Data" {
-      ConvertTo-LCov -InputFile "./Tests/Sample1WithNCover.xml" -OutputFile "./_Packaging/NCover.lcov"
-      $expected = [String]::Join("`n", (Get-Content "./Tests/NCoverBugFix.lcov"))
-      $got = [String]::Join("`n", (Get-Content "./_Packaging/NCover.lcov"))
-      $got | Should -Be $expected.Replace("`r", "")
-  }
+    It "Converts NCover Data" {
+        ConvertTo-LCov -InputFile "./Tests/Sample1WithNCover.xml" -OutputFile "./_Packaging/NCover.lcov"
+        $expected = [String]::Join("`n", (Get-Content "./Tests/NCoverBugFix.lcov"))
+        $got = [String]::Join("`n", (Get-Content "./_Packaging/NCover.lcov"))
+        $got | Should -Be $expected.Replace("`r", "")
+    }
 
   It "Converts Real NCover Data" {
     $ev = ""
@@ -274,6 +274,7 @@ Describe "ConvertTo-Cobertura" {
       $ev | Should -BeFalse
     }
   }
+}
 
 Describe "ConvertTo-NCover" {
   It "converts" {
@@ -287,6 +288,7 @@ Describe "ConvertTo-NCover" {
       $xw = [System.Xml.XmlWriter]::Create($sw, $settings)
       $xml.WriteTo($xw)
       $xw.Close()
+      $header = $xd.Declaration.ToString() + "`n"
       $written = [System.IO.File]::ReadAllText("./_Packaging/HandRolledMonoNCover.xml")
       $result = [xml](Get-Content "./_Packaging/HandRolledMonoNCover.xml")
       $time = $result.coverage.startTime
