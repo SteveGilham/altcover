@@ -123,12 +123,18 @@ end_of_record
         $got | Should -Be $expected.Replace("`r", "")
     }
 
-    It "Converts NCover Data" {
-        ConvertTo-LCov -InputFile "./Tests/Sample1WithNCover.xml" -OutputFile "./_Packaging/NCover.lcov"
-        $expected = [String]::Join("`n", (Get-Content "./Tests/NCoverBugFix.lcov"))
-        $got = [String]::Join("`n", (Get-Content "./_Packaging/NCover.lcov"))
-        $got | Should -Be $expected.Replace("`r", "")
-    }
+  It "Converts NCover Data" {
+      ConvertTo-LCov -InputFile "./Tests/Sample1WithNCover.xml" -OutputFile "./_Packaging/NCover.lcov"
+      $expected = [String]::Join("`n", (Get-Content "./Tests/NCoverBugFix.lcov"))
+      $got = [String]::Join("`n", (Get-Content "./_Packaging/NCover.lcov"))
+      $got | Should -Be $expected.Replace("`r", "")
+  }
+
+  It "Converts Real NCover Data" {
+    $ev = ""
+    ConvertTo-LCov -InputFile "./Tests/GenuineNCover158.Xml" -OutputFile "./_Packaging/NCover158.lcov" -ErrorVariable ev
+    $ev | Should -BeFalse
+  }
 }
 
 Describe "ConvertTo-Cobertura" {
@@ -261,7 +267,13 @@ Describe "ConvertTo-Cobertura" {
         $header = $x.Declaration.ToString() + "`n"
         ($header + $x.ToString()).Replace("`r", "") | Should -Be $expected.Replace("`r", "")
     }
-}
+
+    It "Converts Real NCover Data" {
+      $ev = ""
+      ConvertTo-Cobertura -InputFile "./Tests/GenuineNCover158.Xml" -OutputFile "./_Packaging/NCover158.cobertura" -ErrorVariable ev
+      $ev | Should -BeFalse
+    }
+  }
 
 Describe "ConvertTo-NCover" {
   It "converts" {
