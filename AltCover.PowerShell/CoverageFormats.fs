@@ -8,7 +8,9 @@ module CoverageFormats =
 
 open System
 open System.Diagnostics.CodeAnalysis
+open System.Globalization
 open System.IO
+open System.Linq
 open System.Management.Automation
 open System.Xml
 open System.Xml.Linq
@@ -173,8 +175,50 @@ type ConvertToNCoverCommand(outputFile:String) =
         self.XmlDocument <- XPathDocument self.InputFile
       let transform = XmlUtilities.LoadTransform "OpenCoverToNCover"
       let rewrite = XmlDocument()
-      use output = rewrite.CreateNavigator().AppendChild()
-      transform.Transform (self.XmlDocument, output)
+      do
+        use output = rewrite.CreateNavigator().AppendChild()
+        transform.Transform (self.XmlDocument, output)
+
+      let xmlDeclaration = rewrite.CreateXmlDeclaration(
+                                        "1.0",
+                                        "utf-8",
+                                        null)
+      rewrite.InsertBefore(xmlDeclaration, rewrite.FirstChild) |> ignore
+
+      rewrite.SelectNodes("//method").OfType<XmlElement>()
+      |> Seq.iter (fun m -> let c = m.GetAttribute("class")
+                            m.SetAttribute("class", c.Replace("/", "+"))
+                            let name = m.GetAttribute("name")
+                            let lead = name.Substring(name.LastIndexOf("::") + 2)
+                            m.SetAttribute("name", lead.Substring(0, lead.IndexOf("("))))
+
+      rewrite.SelectNodes("//module").OfType<XmlElement>()
+      |> Seq.iter (fun m -> let path = m.GetAttribute("name")
+                            let info = System.IO.FileInfo path
+                            m.SetAttribute("name", info.Name)
+                            let assembly = m.GetAttribute("assembly")
+                            m.SetAttribute("assemblyIdentity",
+                                           try
+                                             System.Reflection.AssemblyName.GetAssemblyName(path).FullName
+                                           with
+                                           | :? ArgumentException
+                                           | :? FileNotFoundException
+                                           | :? System.Security.SecurityException
+                                           | :? BadImageFormatException
+                                           | :? FileLoadException -> assembly ))
+
+      let culture = System.Threading.Thread.CurrentThread.CurrentCulture
+      try
+          System.Threading.Thread.CurrentThread.CurrentCulture <- CultureInfo.InvariantCulture
+          rewrite.SelectNodes("//coverage").OfType<XmlElement>()
+          |> Seq.iter (fun c -> let now = DateTime.UtcNow.ToLongDateString() +
+                                          ":" + DateTime.UtcNow.ToLongTimeString()
+                                c.SetAttribute("startTime", now)
+                                c.SetAttribute("measureTime", now)
+                      )
+      finally
+          System.Threading.Thread.CurrentThread.CurrentCulture <- culture
+
       if self.OutputFile |> String.IsNullOrWhiteSpace |> not then
         rewrite.Save(self.OutputFile)
 
