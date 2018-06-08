@@ -6,7 +6,7 @@
   <packages>
     <package name="Sample1.exe" line-rate="0.7" branch-rate="1" complexity="1">
       <classes>
-        <class name="TouchTest.Program" filename="Sample1\\Program.cs" line-rate="0.7" branch-rate="1" complexity="1">
+        <class name="TouchTest.Program" filename="Sample1/Program.cs" line-rate="0.7" branch-rate="1" complexity="1">
           <methods>
             <method name="TouchTest.Program.Main" signature="" line-rate="0.7" branch-rate="1">
               <lines>

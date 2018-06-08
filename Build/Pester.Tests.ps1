@@ -84,7 +84,7 @@ Describe "ConvertTo-Lcov" {
         ConvertTo-LCov -InputFile "./Tests/HandRolledMonoCoverage.xml" -OutputFile "./_Packaging/OpenCover.lcov"
         $expected = @"
 TN:
-SF:altcover\Sample1\Program.cs
+SF:altcover/Sample1/Program.cs
 FN:11,System.Void TouchTest.Program::Main(System.String[])
 FNDA:1,System.Void TouchTest.Program::Main(System.String[])
 FNF:1
@@ -139,7 +139,7 @@ Describe "ConvertTo-Cobertura" {
   <packages>
     <package name="Sample1" line-rate="0.7142857142857143" branch-rate="0.66666666666666663" complexity="2">
       <classes>
-        <class name="TouchTest.Program" filename="altcover\Sample1\Program.cs" line-rate="0.7142857142857143" branch-rate="0.66666666666666663" complexity="2">
+        <class name="TouchTest.Program" filename="altcover/Sample1/Program.cs" line-rate="0.7142857142857143" branch-rate="0.66666666666666663" complexity="2">
           <methods>
             <method name="Main" signature="System.Void System.String[])" line-rate="0.7142857142857143" branch-rate="0.66666666666666663">
               <lines>
@@ -191,10 +191,10 @@ Describe "ConvertTo-Cobertura" {
 </coverage>
 "@
         $got = [String]::Join("`n", (Get-Content "./_Packaging/OpenCover.cobertura"))
-        $got | Should -Be $expected.Replace("`r", "")
+        $got | Should -Be $expected.Replace("`r", "").Replace("\", [System.IO.Path]::DirectorySeparatorChar)
 
         $header = $x.Declaration.ToString() + "`n"
-        ($header + $x.ToString()).Replace("`r", "") | Should -Be $expected.Replace("`r", "")
+        ($header + $x.ToString()).Replace("`r", "") | Should -Be $expected.Replace("`r", "").Replace("\", [System.IO.Path]::DirectorySeparatorChar)
     }
 
     It "Converts NCover Data" {
@@ -212,7 +212,7 @@ Describe "ConvertTo-Cobertura" {
   <packages>
     <package name="Sample1.exe" line-rate="0.7" branch-rate="1" complexity="1">
       <classes>
-        <class name="TouchTest.Program" filename="Sample1\\Program.cs" line-rate="0.7" branch-rate="1" complexity="1">
+        <class name="TouchTest.Program" filename="Sample1/Program.cs" line-rate="0.7" branch-rate="1" complexity="1">
           <methods>
             <method name="TouchTest.Program.Main" signature="" line-rate="0.7" branch-rate="1">
               <lines>
