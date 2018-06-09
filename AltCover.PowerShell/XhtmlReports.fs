@@ -68,6 +68,11 @@ type ConvertToBarChartCommand(outputFile:String) =
 
       let doctype = rewrite.CreateDocumentType("html", null, null, null)
       rewrite.PrependChild(doctype) |> ignore
+      let xmlDeclaration = rewrite.CreateXmlDeclaration(
+                                        "1.0",
+                                        "utf-8",
+                                        null)
+      rewrite.InsertBefore(xmlDeclaration, rewrite.FirstChild) |> ignore
 
       if self.OutputFile |> String.IsNullOrWhiteSpace |> not then
         rewrite.Save(self.OutputFile)
