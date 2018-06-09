@@ -2317,7 +2317,7 @@ Target.activateFinal "ResetConsoleColours"
 
 "Compilation"
 ==> "FSharpTypesDotNetRunner"
-==> "OperationalTest"
+// ==> "OperationalTest" // test is duplicated in the Pester testing
 
 "Compilation"
 ==> "FSharpTypesDotNetCollecter"
