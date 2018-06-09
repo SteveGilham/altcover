@@ -1,4 +1,4 @@
-# 3.5.5xx (Cerulean series release 3)
+# 3.5.530 (Cerulean series release 3)
 * Issue #20 related : `-d|dependency` option for all .net core versions (classic, .dotnet and .global) plus equivalents for pwsh, and MSBuild to allow the user to specify assemblies to satisfy references, anticipating resolution failures
 * Issue #20 related : cache resolution failure fix-ups for some possible performance improvement
 * Issue #20 related : notify the user of assembly resolution fix-up as a build warning
