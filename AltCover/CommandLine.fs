@@ -16,6 +16,7 @@ type StringSink = delegate of string -> unit
 [<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage>]
 module Output =
   let mutable internal Info : (String -> unit) = ignore
+  let mutable internal Warn : (String -> unit) = ignore
   let mutable internal Echo : (String -> unit) = ignore
   let mutable internal Error : (String -> unit) = ignore
   let mutable internal Usage : ((String * obj * obj) -> unit) = ignore
@@ -23,6 +24,11 @@ module Output =
     Info <- x.Invoke
   let internal SetError (x:StringSink) =
     Error <- x.Invoke
+  let internal SetWarn (x:StringSink) =
+    Warn <- x.Invoke
+  let internal WarnOn x = if x 
+                          then Warn
+                          else Info 
 
   [<CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202", Justification="Multiple Close() should be safe")>]
   let LogExceptionToFile path e =

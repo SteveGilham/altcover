@@ -24,6 +24,7 @@ type Prepare () =
   member val OutputDirectory = String.Empty with get, set
   member val SymbolDirectories : string array = [| |] with get, set
 #if NETCOREAPP2_0
+  member val Dependencies : string array = [| |] with get, set
 #else
   member val Keys  : string array = [| |] with get, set
   member val StrongNameKey = String.Empty with get, set
@@ -48,12 +49,14 @@ type Prepare () =
 
   override self.Execute () =
     Output.Error <- base.Log.LogError
+    Output.Warn <- base.Log.LogWarning
     Output.Info <- self.Message
     [
       Args.Item "-i" self.InputDirectory;
       Args.Item "-o" self.OutputDirectory;
       Args.ItemList "-y" self.SymbolDirectories;
 #if NETCOREAPP2_0
+      Args.ItemList "-d" self.Dependencies;
 #else
       Args.ItemList "-k" self.Keys;
       Args.Item "--sn" self.StrongNameKey;
@@ -95,6 +98,7 @@ type Collect () =
 
   override self.Execute () =
     Output.Error <- base.Log.LogError
+    Output.Warn <- base.Log.LogWarning
     Output.Info <- self.Message
     [
       ["Runner"];

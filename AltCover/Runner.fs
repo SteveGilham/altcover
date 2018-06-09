@@ -352,8 +352,8 @@ module Runner =
   let WriteResource =
     CommandLine.resources.GetString >> Output.Info
 
-  let WriteResourceWithFormatItems s x =
-    String.Format (CultureInfo.CurrentCulture, s |> CommandLine.resources.GetString, x) |> Output.Info
+  let WriteResourceWithFormatItems s x warn =
+    String.Format (CultureInfo.CurrentCulture, s |> CommandLine.resources.GetString, x) |> (Output.WarnOn warn)
 
   let WriteErrorResourceWithFormatItems s x =
     String.Format (CultureInfo.CurrentCulture, s |> CommandLine.resources.GetString, x) |> Output.Error
@@ -399,7 +399,8 @@ module Runner =
           sink()
       )
 
-      WriteResourceWithFormatItems "%d visits recorded" [|hits.Count|]
+      let visits = hits.Count
+      WriteResourceWithFormatItems "%d visits recorded" [|visits|] (visits = 0)
 
   let internal MonitorBase (hits:ICollection<(string*int*Base.Track)>) report (payload: string list -> int) (args : string list) =
       let result = if collect then 0 else RunProcess report payload args
@@ -633,7 +634,7 @@ module Runner =
             let format' = enum format
 
             let delta = DoReport hits format' report output
-            WriteResourceWithFormatItems "Coverage statistics flushing took {0:N} seconds" [|delta.TotalSeconds|]
+            WriteResourceWithFormatItems "Coverage statistics flushing took {0:N} seconds" [|delta.TotalSeconds|] false
 
             // And tidy up after everything's done
             File.Delete (report + ".acv")

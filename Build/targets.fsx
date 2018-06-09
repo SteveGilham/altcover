@@ -65,6 +65,10 @@ let dotnetPath86 = if Environment.isWindows then
 let nugetCache = Path.Combine (Environment.GetFolderPath Environment.SpecialFolder.UserProfile,
                                ".nuget/packages")
 
+let pwsh = if Environment.isWindows then
+                    Tools.findToolInSubPath "pwsh.exe" (programFiles @@ "PowerShell")
+           else "pwsh"
+
 let _Target s f =
   Target.description s
   Target.create s f
@@ -310,7 +314,7 @@ _Target "FxCop" (fun _ -> // Needs debug because release is compiled --standalon
 // Unit Test
 
 _Target "UnitTest" (fun _ ->
-  let numbers = !! (@"_Reports/*/Summary.xml")
+  let numbers = !! (@"_Reports/_Unit*/Summary.xml")
                 |> Seq.collect (fun f -> let xml = XDocument.Load f
                                          xml.Descendants(XName.Get("Linecoverage"))
                                          |> Seq.map (fun e -> let coverage = e.Value.Replace("%", String.Empty)
@@ -534,7 +538,7 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
     Directory.ensure "./_Reports/_UnitTestWithAltCover"
     let keyfile = Path.getFullName "Build/SelfTest.snk"
     let reports = Path.getFullName "./_Reports"
-    let altcover = Tools.findToolInSubPath "AltCover.exe" "./_Binaries"
+    let altcover = Tools.findToolInSubPath "AltCover.exe" "./_Binaries/AltCover/Debug+AnyCPU"
     let nunit = Tools.findToolInSubPath "nunit3-console.exe" "."
     let here = Path.getFullName "."
 
@@ -634,11 +638,12 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
                                                       Path.getFullName  "_Binaries/AltCover.Shadow.Tests/Debug+AnyCPU/__ShadowTestWithAltCoverRunner/AltCover.Shadow.Tests2.dll"]) + "\""
                             )}) "Re-instrument tests returned with a non-zero exit code"
 
+      let pester = Path.getFullName "_Reports/Pester.xml"
       ReportGenerator.generateReports
                       (fun p -> { p with ExePath = Tools.findToolInSubPath "ReportGenerator.exe" "."
                                          ReportTypes = [ ReportGenerator.ReportType.Html; ReportGenerator.ReportType.XmlSummary ]
                                          TargetDir = "_Reports/_UnitTestWithAltCoverRunner"})
-          [xaltReport; altReport; shadowReport; weakReport]
+          [xaltReport; altReport; shadowReport; weakReport; pester]
 
       let cover1 = altReport
                    |> File.ReadAllLines
@@ -651,13 +656,17 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
                    |> File.ReadAllLines
                    |> Seq.skipWhile (fun l -> l.StartsWith("    <Module") |> not)
                    |> Seq.takeWhile (fun l -> l <> "  </Modules>")
+      let cover3a = pester
+                   |> File.ReadAllLines
+                   |> Seq.skipWhile (fun l -> l.StartsWith("    <Module") |> not)
+                   |> Seq.takeWhile (fun l -> l <> "  </Modules>")
       let cover4 = xaltReport
                    |> File.ReadAllLines
                    |> Seq.skipWhile (fun l -> l.StartsWith("    <Module") |> not)
 
       let coverage =  reports @@ "CombinedTestWithAltCoverRunner.coveralls"
 
-      File.WriteAllLines(coverage, Seq.concat [cover1; cover2; cover3; cover4] |> Seq.toArray)
+      File.WriteAllLines(coverage, Seq.concat [cover1; cover2; cover3; cover3a; cover4] |> Seq.toArray)
 
       if not <| String.IsNullOrWhiteSpace (Environment.environVar "APPVEYOR_BUILD_NUMBER") then
        Actions.Run (fun info ->
@@ -1415,6 +1424,42 @@ _Target "Unpack" (fun _ ->
   System.IO.Compression.ZipFile.ExtractToDirectory (nugget, unpack)
 )
 
+_Target "Pester" (fun _ ->
+  Directory.ensure "./_Reports"
+  let nugget = !! "./_Packaging/*.nupkg" |> Seq.last
+  let ``module`` = Path.getFullName "_Packaging/Module"
+  System.IO.Compression.ZipFile.ExtractToDirectory (nugget, ``module``)
+  let unpack = Path.getFullName "_Packaging/Unpack/tools/netcoreapp2.0"
+  let report = Path.getFullName "_Reports/Pester.xml"
+  let i = ``module`` @@ "tools/netcoreapp2.0"
+
+  Actions.RunDotnet (fun o -> {dotnetOptions o with WorkingDirectory = unpack}) ""
+                      ("AltCover.dll --inplace --save --opencover -t=System\. \"-s=^((?!AltCover\.PowerShell).)*$\" -x \"" + report + "\" -i \"" + i + "\"")
+                             "Pester instrument"
+
+  printfn "Execute the instrumented tests"
+
+  Actions.RunRaw (fun info -> { info with
+                                        FileName = pwsh
+                                        WorkingDirectory = "."
+                                        Arguments = (" ./Build/pester.ps1")})
+                                 "pwsh"
+
+  Actions.RunDotnet (fun o -> {dotnetOptions o with WorkingDirectory = unpack}) ""
+                            ("AltCover.dll Runner --collect -r \"" + i + "\"")
+                             "Collect the output"
+
+  ReportGenerator.generateReports
+              (fun p -> { p with ExePath = Tools.findToolInSubPath "ReportGenerator.exe" "."
+                                 ReportTypes = [ ReportGenerator.ReportType.Html; ReportGenerator.ReportType.XmlSummary ]
+                                 TargetDir = "_Reports/_Pester"})
+              [ report ]
+
+  "_Reports/_Pester/Summary.xml"
+  |> File.ReadAllText
+  |> printfn "%s"
+)
+
 _Target "SimpleReleaseTest" (fun _ ->
     let unpack = Path.getFullName "_Packaging/Unpack/tools/net45"
     if (unpack @@ "AltCover.exe") |> File.Exists then
@@ -2059,7 +2104,7 @@ _Target "DotnetCLIIntegration" ( fun _ ->
     let folder = (nugetCache @@ "altcover.dotnet") @@ !Version
     Shell.mkdir folder
     Shell.deleteDir folder
-    let folder2 = (nugetCache @@ ".tools") @@ "altcover.dotnet"
+    let folder2 = ((nugetCache @@ ".tools") @@ "altcover.dotnet") @@ !Version
     Shell.mkdir folder2
     Shell.deleteDir folder2
 )
@@ -2272,7 +2317,7 @@ Target.activateFinal "ResetConsoleColours"
 
 "Compilation"
 ==> "FSharpTypesDotNetRunner"
-==> "OperationalTest"
+// ==> "OperationalTest" // test is duplicated in the Pester testing
 
 "Compilation"
 ==> "FSharpTypesDotNetCollecter"
@@ -2348,6 +2393,10 @@ Target.activateFinal "ResetConsoleColours"
 ?=> "Deployment"
 
 "Unpack"
+==> "Pester"
+==> "UnitTestWithAltCoverRunner"
+
+"Unpack"
 ==> "SimpleReleaseTest"
 ==> "Deployment"
 
@@ -2369,7 +2418,7 @@ Target.activateFinal "ResetConsoleColours"
 
 "Unpack"
 ==> "ReleaseFSharpTypesDotNetRunner"
-==> "Deployment"
+// ==> "Deployment" // test is duplicated in the Pester testing
 
 "Unpack"
 ==> "ReleaseFSharpTypesX86DotNetRunner"

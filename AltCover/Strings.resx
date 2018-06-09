@@ -154,7 +154,7 @@
     <value>Creating folder {0}</value>
   </data>
   <data name="HelpText" xml:space="preserve">
-    <value>AltCover [/i[nputDirectory]=VALUE] [/o[utputDirectory]=VALUE] [/y|symbolDirectory=VALUE] [/sn|strongNameKey=VALUE] [/k[ey]=VALUE] [/x[mlReport]=VALUE] [/f[ileFilter]=VALUE] [/s|assemblyFilter=VALUE] [/t|typeFilter=VALUE] [/m|methodFilter=VALUE] [/a|attributeFilter=VALUE] [/c[allContext]=VALUE] [--opencover] [--inplace] [--save] [/?|h[elp]] [-- ] [...]
+    <value>AltCover [/i[nputDirectory]=VALUE] [/o[utputDirectory]=VALUE] [/y|symbolDirectory=VALUE] [/d[ependency]=VALUE] [/sn|strongNameKey=VALUE] [/k[ey]=VALUE] [/x[mlReport]=VALUE] [/f[ileFilter]=VALUE] [/s|assemblyFilter=VALUE] [/t|typeFilter=VALUE] [/m|methodFilter=VALUE] [/a|attributeFilter=VALUE] [/c[allContext]=VALUE] [--opencover] [--inplace] [--save] [/?|h[elp]] [-- ] [...]
 or
 AltCover Runner [/r[ecordingDirectory]=VALUE] [/w[orkingDirectory]=VALUE] [/x|executable=VALUE] [--collect] [/l[covReport]=VALUE] [/t[hreshold]=VALUE] [/c[obertura]=VALUE] [/o[utputFile]=VALUE] [/?|h[elp]] [-- ] [...]
 See https://github.com/SteveGilham/altcover/wiki/Usage for full details.
@@ -321,5 +321,14 @@ Details written to {0}</value>
   </data>
   <data name="o|outputFile=" xml:space="preserve">
     <value>Optional: write the recorded coverage to this file rather than overwriting the original report file.</value>
+  </data>
+  <data name="resolved" xml:space="preserve">
+    <value>Resolved assembly reference '{0}' as file '{1}'.</value>
+  </data>
+  <data name="d|dependency=" xml:space="preserve">
+    <value>Optional,multiple: assembly path to resolve missing reference.</value>
+  </data>
+  <data name="NotAnAssembly" xml:space="preserve">
+    <value>{0} : File {1} is not an assembly</value>
   </data>
 </root>

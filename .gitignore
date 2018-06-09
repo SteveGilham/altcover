@@ -54,5 +54,4 @@ packages/
 **/obj/
 *.suo
 Build/build.fsx
-*.lock
 AltCover/Properties/launchSettings.json

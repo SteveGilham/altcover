@@ -48,10 +48,13 @@ module Cobertura =
 
     let SortMethod (n:String) (methods:XElement) (``method``: XElement seq) =
       ``method``
-      |> Seq.map(fun m -> let fn = m.Attribute(X "fullname").Value.Split([| ' '; '(' |])
-                                    |> Array.toList
-                          let key = fn.[1].Substring(n.Length + 1)
-                          let signature = fn.[0] + " " + fn.[2]
+      |> Seq.map(fun m -> let key, signature =
+                                let fna = m.Attribute(X "fullname")
+                                if fna |> isNull then
+                                    (m.Attribute(X "class").Value + "." + m.Attribute(X "name").Value, String.Empty)
+                                else let fn = fna.Value.Split([| ' '; '(' |])
+                                              |> Array.toList
+                                     (fn.[1].Substring(n.Length + 1), fn.[0] + " " + fn.[2])
                           (key, (signature, m)))
       |> LCov.SortByFirst
       |> Seq.fold (ProcessMethod methods) (0,0)

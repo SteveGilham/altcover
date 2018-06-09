@@ -13,6 +13,7 @@
     <AltCoverTypeFilters Include="$(AltCoverTypeFilter.Split('|'))" />
     <AltCoverMethodFilters Include="$(AltCoverMethodFilter.Split('|'))" />
     <AltCoverAttributeFilters Include="$(AltCoverAttributeFilter.Split('|'))" />
+    <AltCoverDependencies Include="$(AltCoverDependencyList.Split('|'))" />
   </ItemGroup>
 
   <Target Name="AltCoverInstrumentModulesNoBuild" BeforeTargets="VSTest">
@@ -32,6 +33,7 @@
       MethodFilter="@(AltCoverMethodFilters)"
       AttributeFilter="@(AltCoverAttributeFilters)"
       CallContext="@(AltCoverSplitContext)"
+      Dependencies="@(AltCoverDependencies)"
        />
   </Target>
 
@@ -52,6 +54,7 @@
       MethodFilter="$(AltCoverMethodFilter)"
       AttributeFilter="$(AltCoverAttributeFilter)"
       CallContext="@(AltCoverSplitContext)"
+      Dependencies="@(AltCoverDependencies)"
        />
   </Target>
 

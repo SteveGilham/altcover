@@ -36,7 +36,7 @@
 		       from="Gendarme.Rules.Smells.dll" />
 		<rules include="*" from="Gendarme.Rules.Ui.dll" />
 		<rules include="*"
-		       exclude="AvoidUnnecessarySpecializationRule"
+		       exclude="AvoidUnnecessarySpecializationRule | VariableNamesShouldNotMatchFieldNamesRule"
                from="Gendarme.Rules.Maintainability.dll" />
 		<rules include="*" 
 		       from="Gendarme.Rules.Gendarme.dll" />
