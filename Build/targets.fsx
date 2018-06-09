@@ -1940,7 +1940,7 @@ _Target "DotnetTestIntegration" ( fun _ ->
     Shell.copy "./_DotnetTest" (!! "./Sample4/*.fs")
 
     Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = Path.getFullName "_DotnetTest"}) "test"
-                      ("/p:AltCover=true /p:AltCoverCallContext=[Fact]|0 ")
+                      ("-v d /p:AltCover=true /p:AltCoverCallContext=[Fact]|0 ")
                       "sample test returned with a non-zero exit code"
 
     let x = Path.getFullName "./_DotnetTest/coverage.xml"
