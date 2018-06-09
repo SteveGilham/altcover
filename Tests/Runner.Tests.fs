@@ -1061,6 +1061,9 @@ type AltCoverTests() = class
                                input directory
 """
 #if NETCOREAPP2_0
+                     + """  -d, --dependency=VALUE     Optional,multiple: assembly path to resolve
+                               missing reference.
+"""
 #else
                      + """  -k, --key=VALUE            Optional, multiple: any other strong-name key to
                                use
@@ -1629,6 +1632,36 @@ or
       LCov.path := None
 
   [<Test>]
+  member self.NCoverShouldGeneratePlausibleLcovBugFix() =
+    let resource = Assembly.GetExecutingAssembly().GetManifestResourceNames()
+                        |> Seq.find (fun n -> n.EndsWith("Sample1WithNCover.xml", StringComparison.Ordinal))
+
+    use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
+
+    let baseline = XDocument.Load(stream)
+    let unique = Path.Combine(Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName,
+                                Guid.NewGuid().ToString() + "/NCoverBugFix.lcov")
+    LCov.path := Some unique
+    unique |> Path.GetDirectoryName |>  Directory.CreateDirectory |> ignore
+
+    try
+      let r = LCov.Summary baseline Base.ReportFormat.NCover 0
+      Assert.That (r, Is.EqualTo 0)
+
+      let result = File.ReadAllText unique
+
+      let resource2 = Assembly.GetExecutingAssembly().GetManifestResourceNames()
+                        |> Seq.find (fun n -> n.EndsWith("NCoverBugFix.lcov", StringComparison.Ordinal))
+
+      use stream2 = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource2)
+      use reader = new StreamReader(stream2)
+      let expected = reader.ReadToEnd().Replace("\r", String.Empty).Replace("\\","/")
+      Assert.That (result.Replace("\r", String.Empty).Replace("\\","/"), Is.EqualTo expected)
+    finally
+      LCov.path := None
+
+
+  [<Test>]
   member self.MultiSortDoesItsThing() =
     let input = [ ("m", [3; 2; 1])
                   ("a", [4; 9; 7])
@@ -1682,6 +1715,39 @@ or
       use reader = new StreamReader(stream2)
       let expected = reader.ReadToEnd().Replace("\r", String.Empty).Replace("\\","/").
                                  Replace("""version="3.0.0.0""", "version=\""
+                                 + typeof<Tracer>.Assembly.GetName().Version.ToString())
+      Assert.That (result.Replace("\r", String.Empty), Is.EqualTo expected, result)
+    finally
+      Cobertura.path := None
+
+  [<Test>]
+  member self.NCoverShouldGeneratePlausibleCoberturaBugFix() =
+    let resource = Assembly.GetExecutingAssembly().GetManifestResourceNames()
+                        |> Seq.find (fun n -> n.EndsWith("Sample1WithNCover.xml", StringComparison.Ordinal))
+
+    use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
+
+    let baseline = XDocument.Load(stream)
+    let unique = Path.Combine(Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName,
+                                Guid.NewGuid().ToString() + "/NCover.cobertura")
+    Cobertura.path := Some unique
+    unique |> Path.GetDirectoryName |>  Directory.CreateDirectory |> ignore
+
+    try
+      let r = Cobertura.Summary baseline Base.ReportFormat.NCover 0
+      Assert.That (r, Is.EqualTo 0)
+
+      let result = Regex.Replace(File.ReadAllText unique,
+                                 """timestamp=\"\d*\">""",
+                                 """timestamp="xx">""").Replace("\\","/")
+
+      let resource2 = Assembly.GetExecutingAssembly().GetManifestResourceNames()
+                        |> Seq.find (fun n -> n.EndsWith("NCoverBugFix.cobertura", StringComparison.Ordinal))
+
+      use stream2 = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource2)
+      use reader = new StreamReader(stream2)
+      let expected = reader.ReadToEnd().Replace("\r", String.Empty).Replace("\\","/").
+                                 Replace("""version="3.5.0.0""", "version=\""
                                  + typeof<Tracer>.Assembly.GetName().Version.ToString())
       Assert.That (result.Replace("\r", String.Empty), Is.EqualTo expected, result)
     finally

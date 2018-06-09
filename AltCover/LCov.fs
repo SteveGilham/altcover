@@ -54,6 +54,12 @@ module LCov =
                            //  SF:<absolute path to the source file>
                            writer.WriteLine ("SF:" + f)
 
+                           let fullname (m:XElement) =
+                               let fna = m.Attribute(X "fullname")
+                               if fna |> isNull then
+                                  m.Attribute(X "class").Value + "." + m.Attribute(X "name").Value
+                               else fna.Value
+
                            // Following is a list of line numbers for each function name found in the
                            // source file:
                            //
@@ -61,7 +67,7 @@ module LCov =
                            methods
                            |> Seq.iter (fun m ->
                                            let l = (lineOfMethod m).ToString(CultureInfo.InvariantCulture)
-                                           let name = m.Attribute(X "fullname").Value
+                                           let name = fullname m
                                            writer.WriteLine ("FN:" + l + "," + name))
 
                            // Next, there is a list of execution counts for each  instrumented  function:
@@ -70,7 +76,7 @@ module LCov =
                            let hit = methods
                                      |> Seq.fold (fun n m ->
                                            let v = (m.Descendants(X "seqpnt") |> Seq.head).Attribute(X "visitcount").Value
-                                           let name = m.Attribute(X "fullname").Value
+                                           let name = fullname m
                                            writer.WriteLine ("FNDA:" + v + "," + name)
                                            n + (if v = "0" then 0 else 1)
                                            ) 0

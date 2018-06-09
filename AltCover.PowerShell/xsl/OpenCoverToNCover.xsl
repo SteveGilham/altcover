@@ -1,67 +1,22 @@
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:msxsl="urn:schemas-microsoft-com:xslt" xmlns:user="urn:my-scripts">
 
-  <msxsl:script language="C#" implements-prefix="user">
-    <![CDATA[
-     public string filename(string path){
-       return (new System.IO.FileInfo(path)).Name;
-     }
-      ]]>
-  </msxsl:script>
-  <msxsl:script language="C#" implements-prefix="user">
-    <![CDATA[
-     public string identity(string path, string fallback){
-       if (System.IO.File.Exists(path))
-         try { return System.Reflection.AssemblyName.GetAssemblyName(path).FullName; }  catch (Exception) { }
-       return fallback;
-     }
-      ]]>
-  </msxsl:script>
-  <msxsl:script language="C#" implements-prefix="user">
-    <![CDATA[
-     public string now(){
-       return System.DateTime.UtcNow.ToLongDateString() + ":" + System.DateTime.UtcNow.ToLongTimeString();
-     }
-      ]]>
-  </msxsl:script>
-  <msxsl:script language="C#" implements-prefix="user">
-    <![CDATA[
-     public string methodname(string name){
-       string lead = name.Substring(name.LastIndexOf("::") + 2);
-       return lead.Substring(0, lead.IndexOf("("));
-     }
-      ]]>
-  </msxsl:script>
-  <msxsl:script language="C#" implements-prefix="user">
-    <![CDATA[
-     public string classname(string name){
-       return name.Replace("/", "+");
-     }
-      ]]>
-  </msxsl:script>
-
   <xsl:output method="xml" />
 
   <xsl:template match="CoverageSession">
-    <coverage profilerVersion="OpenCover" driverVersion="OpenCover">
-      <xsl:attribute name="startTime">
-        <xsl:value-of select="user:now()" />
-      </xsl:attribute>
-      <xsl:attribute name="measureTime">
-        <xsl:value-of select="user:now()" />
-      </xsl:attribute>
+    <coverage profilerVersion="OpenCover" driverVersion="OpenCover" startTime="now" measureTime="now">
 
       <xsl:for-each select="//Module[not(@skippedDueTo)]">
         <xsl:variable name="module" select="./ModulePath" />
         <xsl:variable name="moduleName" select="./ModuleName" />
         <module moduleId="{@hash}">
           <xsl:attribute name="name">
-            <xsl:value-of select="user:filename($module)" />
+            <xsl:value-of select="$module" />
           </xsl:attribute>
           <xsl:attribute name="assembly">
             <xsl:value-of select="$moduleName" />
           </xsl:attribute>
           <xsl:attribute name="assemblyIdentity">
-            <xsl:value-of select="user:identity($module, $moduleName)" />
+            <xsl:value-of select="$moduleName" />
           </xsl:attribute>
           <xsl:for-each select="descendant::Method[not(@skippedDueTo)]">
             <xsl:variable name="class" select="../../FullName" />
@@ -71,10 +26,10 @@
 
             <method excluded="false" instrumented="true">
               <xsl:attribute name="name">
-                <xsl:value-of select="user:methodname($method)" />
+                <xsl:value-of select="$method" />
               </xsl:attribute>
               <xsl:attribute name="class">
-                <xsl:value-of select="user:classname($class)" />
+                <xsl:value-of select="$class" />
               </xsl:attribute>
               <xsl:attribute name="fullname">
                 <xsl:value-of select="$method" />

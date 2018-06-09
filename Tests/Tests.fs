@@ -1972,15 +1972,31 @@ type AltCoverTests() = class
                          Assert.That(String.IsNullOrWhiteSpace a, j))
 
     let raw = Mono.Cecil.AssemblyDefinition.ReadAssembly where
-    raw.MainModule.AssemblyReferences
-    |> Seq.filter(fun f -> f.Name.IndexOf("Mono.Cecil",StringComparison.Ordinal) >= 0)
-    |> Seq.iter (fun f -> let resolved = Instrument.ResolveFromNugetCache null f
-                          Assert.That(resolved, Is.Not.Null, f.ToString()))
-    raw.MainModule.AssemblyReferences
-    |> Seq.filter(fun f -> f.Name.IndexOf("Mono.Cecil",StringComparison.Ordinal) >= 0)
-    |> Seq.iter (fun f -> f.Version <- Version("666.666.666.666")
-                          let resolved = Instrument.ResolveFromNugetCache null f
-                          Assert.That(resolved, Is.Null, f.ToString()))
+    Instrument.ResolutionTable.Clear()
+    try
+        raw.MainModule.AssemblyReferences
+        |> Seq.filter(fun f -> f.Name.IndexOf("Mono.Cecil",StringComparison.Ordinal) >= 0)
+        |> Seq.iter (fun f -> let resolved = Instrument.ResolveFromNugetCache null f
+                              Assert.That(resolved, Is.Not.Null, f.ToString()))
+        raw.MainModule.AssemblyReferences
+        |> Seq.filter(fun f -> f.Name.IndexOf("Mono.Cecil",StringComparison.Ordinal) >= 0)
+        |> Seq.iter (fun f -> f.Version <- Version("666.666.666.666")
+                              let resolved = Instrument.ResolveFromNugetCache null f
+                              Assert.That(resolved, Is.Null, f.ToString()))
+
+        let found = Instrument.ResolutionTable.Keys |> Seq.toList
+        found
+        |> Seq.iter(fun k -> let matched = Instrument.ResolutionTable.[k]
+                             let k2 = AssemblyNameReference.Parse(k.ToString())
+                             k2.Version <- Version("666.666.666.666")
+                             Instrument.ResolutionTable.[k2.ToString()] <- matched)
+        raw.MainModule.AssemblyReferences
+        |> Seq.filter(fun f -> f.Name.IndexOf("Mono.Cecil",StringComparison.Ordinal) >= 0)
+        |> Seq.iter (fun f -> f.Version <- Version("666.666.666.666")
+                              let resolved = Instrument.ResolveFromNugetCache null f
+                              Assert.That(resolved, Is.Not.Null, f.ToString()))
+    finally
+        Instrument.ResolutionTable.Clear()
 
 #endif
 
@@ -3074,9 +3090,11 @@ type AltCoverTests() = class
                                             "Echo"
                                             "Error"
                                             "Usage"
+                                            "Warn"
                                             "ToConsole"
                                             "SetInfo"
                                             "SetError"
+                                            "SetWarn"
                                           ]
                             let name = t.Name
                             tokens |> List.exists (fun n -> name.StartsWith n))
@@ -3289,7 +3307,7 @@ type AltCoverTests() = class
     let options = Main.DeclareOptions ()
     Assert.That (options.Count, Is.EqualTo
 #if NETCOREAPP2_0
-                                            16
+                                            17
 #else
                                             18
 #endif
@@ -3800,6 +3818,73 @@ type AltCoverTests() = class
       ProgramDatabase.SymbolFolders.Clear()
 
 #if NETCOREAPP2_0
+  [<Test>]
+  member self.ParsingMultipleDependencyIsOk() =
+    try
+      Instrument.ResolutionTable.Clear()
+      let options = Main.DeclareOptions ()
+      let here = Assembly.GetExecutingAssembly().Location
+      let next = Path.Combine(Path.GetDirectoryName here, "AltCover.Recorder.dll")
+
+      let input = [| "-d"; here;
+                     "/d"; next |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Left _ -> Assert.Fail()
+      | Right (x, y) -> Assert.That (y, Is.SameAs options)
+                        Assert.That (x, Is.Empty)
+
+      let expected = Instrument.ResolutionTable.Keys
+                     |> Seq.map (fun a -> Instrument.ResolutionTable.[a].Name.Name)
+                     |> Seq.sort
+      Assert.That (String.Join(" ", expected), Is.EqualTo ("AltCover.Recorder AltCover.Tests"))
+    finally
+      Instrument.ResolutionTable.Clear()
+
+  member self.ParsingNoDependencyGivesFailure() =
+    try
+      Instrument.ResolutionTable.Clear()
+      let options = Main.DeclareOptions ()
+      let input = [| "-d" |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Right _ -> Assert.Fail()
+      | Left (x, y) -> Assert.That (y, Is.SameAs options)
+                       Assert.That (x, Is.EqualTo "UsageError")
+    finally
+      Instrument.ResolutionTable.Clear()
+
+  [<Test>]
+  member self.ParsingBadDependencyGivesFailure() =
+    try
+      Instrument.ResolutionTable.Clear()
+      let options = Main.DeclareOptions ()
+      let unique = Guid.NewGuid().ToString().Replace("-", "*")
+      let input = [| "-d"; unique |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Right _ -> Assert.Fail()
+      | Left (x, y) -> Assert.That (y, Is.SameAs options)
+                       Assert.That (x, Is.EqualTo "UsageError")
+    finally
+      Instrument.ResolutionTable.Clear()
+
+  [<Test>]
+  member self.ParsingNonDependencyGivesFailure() =
+    try
+      Visitor.defaultStrongNameKey <- None
+      Visitor.keys.Clear()
+      let options = Main.DeclareOptions ()
+      let unique = Assembly.GetExecutingAssembly().Location + ".txt"
+      let input = [| "-d"; unique |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Right _ -> Assert.Fail()
+      | Left (x, y) -> Assert.That (y, Is.SameAs options)
+                       Assert.That (x, Is.EqualTo "UsageError")
+    finally
+      Visitor.defaultStrongNameKey <- None
+      Visitor.keys.Clear()
 #else
   [<Test>]
   member self.ParsingStrongNameGivesStrongName() =
@@ -4506,6 +4591,9 @@ type AltCoverTests() = class
                                input directory
 """
 #if NETCOREAPP2_0
+                     + """  -d, --dependency=VALUE     Optional,multiple: assembly path to resolve
+                               missing reference.
+"""
 #else
                      + """  -k, --key=VALUE            Optional, multiple: any other strong-name key to
                                use
@@ -4586,6 +4674,9 @@ type AltCoverTests() = class
                                input directory
 """
 #if NETCOREAPP2_0
+                     + """  -d, --dependency=VALUE     Optional,multiple: assembly path to resolve
+                               missing reference.
+"""
 #else
                      + """  -k, --key=VALUE            Optional, multiple: any other strong-name key to
                                use
@@ -4707,6 +4798,7 @@ or
 
         Assert.Throws<InvalidOperationException>(fun () -> subject.Message "x") |> ignore
         Assert.Throws<InvalidOperationException>(fun () -> Output.Info "x") |> ignore
+        Assert.Throws<InvalidOperationException>(fun () -> Output.Warn "x") |> ignore
         Assert.Throws<InvalidOperationException>(fun () -> Output.Error "x") |> ignore
 
     finally
@@ -4749,6 +4841,7 @@ or
                                            "dotnet"])
         Assert.Throws<InvalidOperationException>(fun () -> subject.Message "x") |> ignore
         Assert.Throws<InvalidOperationException>(fun () -> Output.Info "x") |> ignore
+        Assert.Throws<InvalidOperationException>(fun () -> Output.Warn "x") |> ignore
         Assert.Throws<InvalidOperationException>(fun () -> Output.Error "x") |> ignore
     finally
       Main.EffectiveMain <- save

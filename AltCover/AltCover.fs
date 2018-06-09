@@ -28,6 +28,7 @@ module Main =
     Visitor.outputDirectory <- None
     ProgramDatabase.SymbolFolders.Clear()
 #if NETCOREAPP2_0
+    Instrument.ResolutionTable.Clear()
 #else
     Visitor.keys.Clear()
     Visitor.defaultStrongNameKey <- None
@@ -75,6 +76,20 @@ module Main =
                                                          "--symbolDirectory",
                                                          x) :: CommandLine.error))
 #if NETCOREAPP2_0
+      ("d|dependency=",
+       (fun x ->
+             if not (String.IsNullOrWhiteSpace x) && File.Exists x then
+               let name = Instrument.FindAssemblyName x
+               if String.IsNullOrWhiteSpace name then
+                  CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
+                                                         CommandLine.resources.GetString "NotAnAssembly",
+                                                         "--dependency",
+                                                         x) :: CommandLine.error
+               else Instrument.ResolutionTable.[name] <- AssemblyDefinition.ReadAssembly x
+             else CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
+                                                         CommandLine.resources.GetString "FileNotFound",
+                                                         "--dependency",
+                                                         x) :: CommandLine.error ))
 #else
       ("k|key=",
        (fun x ->

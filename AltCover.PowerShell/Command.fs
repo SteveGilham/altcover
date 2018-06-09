@@ -91,6 +91,10 @@ type InvokeAltCoverCommand(runner:bool) =
   [<Alias("SymbolDirectories")>]
   member val SymbolDirectory : string array = [| |] with get, set
 #if NETCOREAPP2_0
+  [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
+      ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
+  [<Alias("Dependencies")>]
+  member val Dependency : string array = [| |] with get, set
 #else
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
       ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
@@ -151,14 +155,21 @@ type InvokeAltCoverCommand(runner:bool) =
     Output.Error <- (fun s -> let fail = ErrorRecord(InvalidOperationException(), s, ErrorCategory.FromStdErr, self)
                               self.WriteError fail)
     Output.Info <- (fun s -> self.WriteInformation (s, [| |]))
+    Output.Warn <- (fun s -> self.WriteWarning s)
 #else
 #if DEBUG
     Output.Error <- (fun s -> let fail = ErrorRecord(InvalidOperationException(), s, ErrorCategory.FromStdErr, self)
                               self.WriteError fail)
     Output.Info <- (fun s -> self.WriteInformation (s, [| |]))
+    Output.Warn <- (fun s -> self.WriteWarning s)
 #else
     let x = StringSink(fun s -> self.WriteInformation (s, [| |]))
     Output.SetInfo x
+    let y = StringSink (fun s -> let fail = ErrorRecord(InvalidOperationException(), s, ErrorCategory.FromStdErr, self)
+                                 self.WriteError fail)
+    Output.SetError y
+    let z = StringSink(fun s -> self.WriteWarning s)
+    Output.SetWarn z
 #endif
 #endif
     try
@@ -186,6 +197,7 @@ type InvokeAltCoverCommand(runner:bool) =
                           Args.Item "-o" self.OutputDirectory;
                           Args.ItemList "-y" self.SymbolDirectory;
 #if NETCOREAPP2_0
+                          Args.ItemList "-d" self.Dependency;
 #else
                           Args.ItemList "-k" self.Key;
                           Args.Item "--sn" self.StrongNameKey;

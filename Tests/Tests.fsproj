@@ -88,6 +88,9 @@
     <EmbeddedResource Include="OpenCover.lcov" />
     <EmbeddedResource Include="NCover.cobertura" />
     <EmbeddedResource Include="OpenCover.cobertura" />
+    <EmbeddedResource Include="Sample1WithNCover.xml" />
+    <EmbeddedResource Include="NCoverBugFix.lcov" />
+    <EmbeddedResource Include="NCoverBugFix.cobertura" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Sample5\Sample5.csproj">

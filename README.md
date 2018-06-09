@@ -30,7 +30,7 @@ Fast forwards to autumn 2017, and I get the chance to dust the project off, with
 | | |
 | --- | --- |
 | **Build** | <sup>AppVeyor</sup> [![Build status](https://img.shields.io/appveyor/ci/SteveGilham/altcover/master.svg)](https://ci.appveyor.com/project/SteveGilham/altcover) [![Test status](https://img.shields.io/appveyor/tests/SteveGilham/altcover/master.svg)](https://ci.appveyor.com/project/SteveGilham/altcover) <sup>Travis</sup> [![Build status](https://travis-ci.org/SteveGilham/altcover.svg?branch=master)](https://travis-ci.org/SteveGilham/altcover#)|
-| **Unit Test coverage** | <sup>Coveralls</sup> [![Coverage Status](https://img.shields.io/coveralls/github/SteveGilham/altcover/master.svg)](https://coveralls.io/github/SteveGilham/altcover?branch=master) |
+| **Unit Test coverage** | <sup>Coveralls</sup> [![Coverage Status](https://coveralls.io/repos/github/SteveGilham/altcover/badge.svg?branch=master)](https://coveralls.io/github/SteveGilham/altcover?branch=master) |
 | **Nuget** | [![Nuget](https://buildstats.info/nuget/AltCover)](http://nuget.org/packages/AltCover) [![Nuget](https://img.shields.io/nuget/vpre/AltCover.svg)](http://nuget.org/packages/AltCover) |
 | (.dotnet) | [![Nuget](https://buildstats.info/nuget/altcover.dotnet)](http://nuget.org/packages/altcover.dotnet) [![Nuget](https://img.shields.io/nuget/vpre/altcover.dotnet.svg)](http://nuget.org/packages/altcover.dotnet) |
 | (.global) | [![Nuget](https://buildstats.info/nuget/altcover.global)](http://nuget.org/packages/altcover.global) [![Nuget](https://img.shields.io/nuget/vpre/altcover.global.svg)](http://nuget.org/packages/altcover.global) |
