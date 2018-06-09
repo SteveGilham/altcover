@@ -49,7 +49,7 @@ Describe "ConvertTo-XDocument" {
     It "converts" {
         $xml = [xml](Get-Content "./Tests/Sample1WithNCover.xml")
         $xd = $xml | ConvertTo-XDocument
-        $xd.GetType().FullName | Should -Be "System.Xml.Linq.XDocument"
+        $xd | Should -BeOfType "System.Xml.Linq.XDocument"
         $header = $xd.Declaration.ToString().Replace(" standalone=`"`"", "") + "`n" 
         $sw = new-object System.IO.StringWriter @()
         $settings = new-object System.Xml.XmlWriterSettings @()
@@ -74,7 +74,7 @@ Describe "ConvertTo-XmlDocument" {
     It "converts" {
         $xd = [System.Xml.Linq.XDocument]::Load("./Tests/Sample1WithNCover.xml")
         $xml = $xd | ConvertTo-XmlDocument
-        $xml.GetType().FullName | Should -Be "System.Xml.XmlDocument"
+        $xml | Should -BeOfType "System.Xml.XmlDocument"
         $sw = new-object System.IO.StringWriter @()
         $settings = new-object System.Xml.XmlWriterSettings @()
         $settings.Indent = $true
@@ -278,7 +278,7 @@ Describe "ConvertTo-Cobertura" {
 Describe "ConvertTo-NCover" {
   It "converts" {
       $xml = ConvertTo-NCover -InputFile "./Tests/HandRolledMonoCoverage.xml" -OutputFile "./_Packaging/HandRolledMonoNCover.xml"
-      $xml.GetType().FullName | Should -Be "System.Xml.XmlDocument"
+      $xml | Should -BeOfType "System.Xml.XmlDocument"
 
       $sw = new-object System.IO.StringWriter @()
       $settings = new-object System.Xml.XmlWriterSettings @()
