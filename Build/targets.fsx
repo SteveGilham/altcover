@@ -2418,7 +2418,7 @@ Target.activateFinal "ResetConsoleColours"
 
 "Unpack"
 ==> "ReleaseFSharpTypesDotNetRunner"
-==> "Deployment"
+// ==> "Deployment" // test is duplicated in the Pester testing
 
 "Unpack"
 ==> "ReleaseFSharpTypesX86DotNetRunner"
