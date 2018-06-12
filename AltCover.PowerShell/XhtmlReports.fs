@@ -52,13 +52,20 @@ type ConvertToBarChartCommand(outputFile:String) =
                     AltCover.Base.ReportFormat.OpenCover
                    else AltCover.Base.ReportFormat.NCover
 
-      let transform = XmlUtilities.LoadTransform (if format = AltCover.Base.ReportFormat.NCover 
-                                                  then "NCoverToBarChart"
-                                                  else "OpenCoverToBarChart")
+      let intermediate = if format = AltCover.Base.ReportFormat.NCover then self.XmlDocument
+                         else
+                          let modify = XmlUtilities.LoadTransform "OpenCoverToNCoverEx"
+                          let temp = XmlDocument()
+                          do
+                            use feed = temp.CreateNavigator().AppendChild()
+                            modify.Transform (self.XmlDocument, feed)
+                          temp :> IXPathNavigable
+
+      let transform = XmlUtilities.LoadTransform "NCoverToBarChart"
       let rewrite = XmlDocument()
       do
         use output = rewrite.CreateNavigator().AppendChild()
-        transform.Transform (self.XmlDocument, output)
+        transform.Transform (intermediate, output)
 
       rewrite.DocumentElement.SelectNodes("//script[@language='JavaScript']").OfType<XmlNode>()
       |> Seq.iter(fun n -> let text = n.InnerText

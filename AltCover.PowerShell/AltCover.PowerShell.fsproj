@@ -82,7 +82,7 @@
     <EmbeddedResource Include="xsd\NCover.xsd" />
     <EmbeddedResource Include="xsd\OpenCover.xsd" />
     <EmbeddedResource Include="xsl\OpenCoverToNCover.xsl" />
-    <EmbeddedResource Include="xsl\OpenCoverToBarChart.xsl" />
+    <EmbeddedResource Include="xsl\OpenCoverToNCoverEx.xsl" />
     <EmbeddedResource Include="xsl\NCoverToBarChart.xsl" />
   </ItemGroup>
   <ItemGroup>

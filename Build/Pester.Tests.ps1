@@ -322,22 +322,39 @@ Describe "ConvertTo-NCover" {
   }
 }
 
-Describe "ConvertTo-" {
+Describe "ConvertTo-BarChart" {
   It "converts NCover" {
-      $xml = ConvertTo-BarChart -InputFile "./Tests/GenuineNCover158.Xml" -OutputFile "./_Packaging/GenuineNCover158Chart.html"
-      $xml.GetType().FullName | Should -Be "System.Xml.XmlDocument"
+    $xml = ConvertTo-BarChart -InputFile "./Tests/GenuineNCover158.Xml" -OutputFile "./_Packaging/GenuineNCover158Chart.html"
+    $xml.GetType().FullName | Should -Be "System.Xml.XmlDocument"
 
-      $sw = new-object System.IO.StringWriter @()
-      $settings = new-object System.Xml.XmlWriterSettings @()
-      $settings.Indent = $true
-      $settings.IndentChars = "  "
-      $xw = [System.Xml.XmlWriter]::Create($sw, $settings)
-      $xml.WriteTo($xw)
-      $xw.Close()
-      $written = [System.IO.File]::ReadAllText("./_Packaging/GenuineNCover158Chart.html")
-      $result = [xml](Get-Content "./_Packaging/HandRolledMonoNCover.xml")
-      $time = $result.coverage.startTime
-      $expected = [System.IO.File]::ReadAllText("./Tests/GenuineNCover158Chart.html")
+    $sw = new-object System.IO.StringWriter @()
+    $settings = new-object System.Xml.XmlWriterSettings @()
+    $settings.Indent = $true
+    $settings.IndentChars = "  "
+    $xw = [System.Xml.XmlWriter]::Create($sw, $settings)
+    $xml.WriteTo($xw)
+    $xw.Close()
+    $written = [System.IO.File]::ReadAllText("./_Packaging/GenuineNCover158Chart.html")
+    $expected = [System.IO.File]::ReadAllText("./Tests/GenuineNCover158Chart.html")
+
+    $result = $sw.ToString().Replace("`r", "").Replace("html >", "html>") 
+    $result | Should -Be $expected.Replace("`r", "")
+    $result | Should -Be $written.Replace("`r", "")
+  }
+
+  It "converts OpenCover" {
+    $xml = ConvertTo-BarChart -InputFile "./Tests/HandRolledMonoCoverage.Xml" -OutputFile "./_Packaging/HandRolledMonoCoverage.html"
+    $xml.GetType().FullName | Should -Be "System.Xml.XmlDocument"
+
+    $sw = new-object System.IO.StringWriter @()
+    $settings = new-object System.Xml.XmlWriterSettings @()
+    $settings.Indent = $true
+    $settings.IndentChars = "  "
+    $xw = [System.Xml.XmlWriter]::Create($sw, $settings)
+    $xml.WriteTo($xw)
+    $xw.Close()
+    $written = [System.IO.File]::ReadAllText("./_Packaging/HandRolledMonoCoverage.html")
+    $expected = [System.IO.File]::ReadAllText("./Tests/HandRolledMonoCoverage.html")
 
     $result = $sw.ToString().Replace("`r", "").Replace("html >", "html>") 
     $result | Should -Be $expected.Replace("`r", "")
