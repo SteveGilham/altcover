@@ -341,7 +341,7 @@ Describe "ConvertTo-BarChart" {
   }
 
   It "converts OpenCover" {
-    $xml = ConvertTo-BarChart -InputFile "./Tests/HandRolledMonoCoverage.Xml" -OutputFile "./_Packaging/HandRolledMonoCoverage.html"
+    $xml = ConvertTo-BarChart -InputFile "./Tests/HandRolledMonoCoverage.xml" -OutputFile "./_Packaging/HandRolledMonoCoverage.html"
     $xml.GetType().FullName | Should -Be "System.Xml.XmlDocument"
 
     $sw = new-object System.IO.StringWriter @()
