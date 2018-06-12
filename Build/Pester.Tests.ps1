@@ -138,13 +138,13 @@ end_of_record
 }
 
 Describe "ConvertTo-Cobertura" {
-    It "Converts OpenCover Data" {
-        $x = ConvertTo-Cobertura -InputFile "./Tests/HandRolledMonoCoverage.xml" -OutputFile "./_Packaging/OpenCover.cobertura"
-        $coverage = $x.Descendants("coverage")
-        $v = $coverage.Attribute("version").Value
-        $t = $coverage.Attribute("timestamp").Value
+  It "Converts OpenCover Data" {
+    $x = ConvertTo-Cobertura -InputFile "./Tests/HandRolledMonoCoverage.xml" -OutputFile "./_Packaging/OpenCover.cobertura"
+    $coverage = $x.Descendants("coverage")
+    $v = $coverage.Attribute("version").Value
+    $t = $coverage.Attribute("timestamp").Value
 
-        $expected = @"
+    $expected = @"
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <coverage line-rate="0.7142857142857143" branch-rate="0.66666666666666663" version="$v" timestamp="$t">
   <sources>
@@ -204,20 +204,20 @@ Describe "ConvertTo-Cobertura" {
   </packages>
 </coverage>
 "@
-        $got = [String]::Join("`n", (Get-Content "./_Packaging/OpenCover.cobertura"))
-        $got | Should -Be $expected.Replace("`r", "").Replace("\", [System.IO.Path]::DirectorySeparatorChar)
+    $got = [String]::Join("`n", (Get-Content "./_Packaging/OpenCover.cobertura"))
+    $got | Should -Be $expected.Replace("`r", "").Replace("\", [System.IO.Path]::DirectorySeparatorChar)
 
-        $header = $x.Declaration.ToString() + "`n"
-        ($header + $x.ToString()).Replace("`r", "") | Should -Be $expected.Replace("`r", "").Replace("\", [System.IO.Path]::DirectorySeparatorChar)
-    }
+    $header = $x.Declaration.ToString() + "`n"
+    ($header + $x.ToString()).Replace("`r", "") | Should -Be $expected.Replace("`r", "").Replace("\", [System.IO.Path]::DirectorySeparatorChar)
+  }
 
-    It "Converts NCover Data" {
-        $x = ConvertTo-Cobertura -InputFile "./Tests/Sample1WithNCover.xml" -OutputFile "./_Packaging/NCover.cobertura"
-        $coverage = $x.Descendants("coverage")
-        $v = $coverage.Attribute("version").Value
-        $t = $coverage.Attribute("timestamp").Value
+  It "Converts NCover Data" {
+    $x = ConvertTo-Cobertura -InputFile "./Tests/Sample1WithNCover.xml" -OutputFile "./_Packaging/NCover.cobertura"
+    $coverage = $x.Descendants("coverage")
+    $v = $coverage.Attribute("version").Value
+    $t = $coverage.Attribute("timestamp").Value
 
-        $expected = @"
+    $expected = @"
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <coverage line-rate="0.7" branch-rate="1" version="$v" timestamp="$t">
   <sources>
@@ -261,18 +261,17 @@ Describe "ConvertTo-Cobertura" {
   </packages>
 </coverage>
 "@
-        $got = [String]::Join("`n", (Get-Content "./_Packaging/NCover.cobertura"))
-        $got | Should -Be $expected.Replace("`r", "")
+    $got = [String]::Join("`n", (Get-Content "./_Packaging/NCover.cobertura"))
+    $got | Should -Be $expected.Replace("`r", "")
 
-        $header = $x.Declaration.ToString() + "`n"
-        ($header + $x.ToString()).Replace("`r", "") | Should -Be $expected.Replace("`r", "")
-    }
+    $header = $x.Declaration.ToString() + "`n"
+    ($header + $x.ToString()).Replace("`r", "") | Should -Be $expected.Replace("`r", "")
+  }
 
-    It "Converts Real NCover Data" {
-      $ev = ""
-      ConvertTo-Cobertura -InputFile "./Tests/GenuineNCover158.Xml" -OutputFile "./_Packaging/NCover158.cobertura" -ErrorVariable ev
-      $ev | Should -BeFalse
-    }
+  It "Converts Real NCover Data" {
+    $ev = ""
+    ConvertTo-Cobertura -InputFile "./Tests/GenuineNCover158.Xml" -OutputFile "./_Packaging/NCover158.cobertura" -ErrorVariable ev
+    $ev | Should -BeFalse
   }
 }
 
@@ -288,7 +287,6 @@ Describe "ConvertTo-NCover" {
       $xw = [System.Xml.XmlWriter]::Create($sw, $settings)
       $xml.WriteTo($xw)
       $xw.Close()
-      $header = $xd.Declaration.ToString() + "`n"
       $written = [System.IO.File]::ReadAllText("./_Packaging/HandRolledMonoNCover.xml")
       $result = [xml](Get-Content "./_Packaging/HandRolledMonoNCover.xml")
       $time = $result.coverage.startTime
