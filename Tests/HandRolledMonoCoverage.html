@@ -36,22 +36,30 @@
           }
           .notVisited { background:red; }
           .excluded { background: skyblue; }
-          .visited { background: #90ee90; }
+          .visited { background: lightgreen; }
           .declared { background:orange; }
           .automatic { background:yellow; }
           .static { background:silver;}
+          .notVisited0 { background:lightpink; }
+          .excluded0 { background: lightskyblue; }
+          .visited0 { background: palegreen; }
+          .declared0 { background: sandybrown; }
+          .automatic0 { background: lightyellow; }
+          .static0 { background: gainsboro;}
+
           .title { font-size: 12px; font-weight: bold; }
           .assembly { font-size: 100%; font-weight: bold; font-size: 11px}
           .class { font-size:100%; cursor: pointer; color: #444444; font-size: 11px}
           .module { color: navy; font-size: 12px; }
           .method {cursor: pointer; color: #444444; font-size: 10px; font-weight: bold; }
           .subtitle { color: black; font-size: 10px; font-weight: bold; }
-          th  {font-size:9px; background-color: #DDEEFF; }
+          th  {font-size:9px; background-color: #powderblue; }
           .datacell tbody {font-size:9px; text-align: right; }
-          .datacell td {background-color: #FFFFEE;}
+          .datacell td {background-color: lightyellow;}
+          .branchcell td {background-color: aquamarine;}
           .datacell td:last-child, .datacell th:last-child { width:100%; text-align: left; }
-          td.hldatacell {background-color: #FFCCCC; }
-          td.exdatacell {background-color: #DDEEFF; }
+          td.hldatacell {background-color: pink; }
+          td.exdatacell {background-color: #powderblue; }
           .detailPercent {  font-size: 9px; font-weight: bold; padding-top: 1px; padding-bottom: 1px; padding-left: 3px; padding-right: 3px;}
         </style>
     <script language="JavaScript">//<![CDATA[
@@ -133,6 +141,13 @@
               <td class="visited" width="71.42857142857143%">71.43%</td>
             </tr>
           </table>
+          <br />
+          <table width="100%" class="detailPercent">
+            <tr>
+              <td class="notVisited0" width="50%">50%</td>
+              <td class="visited0" width="50%">50%</td>
+            </tr>
+          </table>
         </td>
       </tr>
     </table>
@@ -150,6 +165,13 @@
             <tr>
               <td class="notVisited" width="28.57142857142857%">28.57%</td>
               <td class="visited" width="71.42857142857143%">71.43%</td>
+            </tr>
+          </table>
+          <br />
+          <table width="100%" class="detailPercent">
+            <tr>
+              <td class="notVisited0" width="50%">50%</td>
+              <td class="visited0" width="50%">50%</td>
             </tr>
           </table>
         </td>
@@ -190,6 +212,13 @@
                     <tr>
                       <td class="notVisited" width="28.57142857142857%">28.57%</td>
                       <td class="visited" width="71.42857142857143%">71.43%</td>
+                    </tr>
+                  </table>
+                  <br />
+                  <table width="100%" class="detailPercent">
+                    <tr>
+                      <td class="notVisited0" width="50%">50%</td>
+                      <td class="visited0" width="50%">50%</td>
                     </tr>
                   </table>
                 </td>
@@ -238,6 +267,22 @@
                   <td>21</td>
                   <td>22</td>
                   <td>altcover/Sample1/Program.cs</td>
+                </tr>
+                <tr class="branchcell">
+                  <td class="datacell">┣ 1</td>
+                  <td>13</td>
+                  <td>19</td>
+                  <td>0</td>
+                  <td>24</td>
+                  <td />
+                </tr>
+                <tr class="branchcell">
+                  <td class="hldatacell">┣ 0</td>
+                  <td>13</td>
+                  <td>19</td>
+                  <td>1</td>
+                  <td>57</td>
+                  <td />
                 </tr>
                 <tr>
                   <td class="datacell">1</td>

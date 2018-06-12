@@ -36,9 +36,8 @@
               </xsl:attribute>
 
               <xsl:for-each select="descendant::SequencePoint|descendant::BranchPoint">
-                <xsl:sort select="@offset"/>
+                <xsl:sort select="@offset" data-type="number" />
                 <xsl:choose>
-
                 <xsl:when test="name(.) = 'SequencePoint'">
                 <seqpnt visitcount="{@vc}" line="{@sl}" column="{@sc}" endline="{@el}" endcolumn="{@ec}" offset="{@offset}" excluded="false">
                   <xsl:attribute name="document">

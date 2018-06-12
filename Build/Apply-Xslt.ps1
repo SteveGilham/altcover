@@ -44,12 +44,8 @@ $rawStream = new-object system.io.StreamReader -ArgumentList @($DocumentPath)
 $rawDocument = [System.Xml.Linq.XDocument]::Load($rawStream)
 $rawStream.Close()
 
-$buffer = new-object system.io.MemoryStream
-$sw = new-object system.io.StreamWriter @($buffer)
+$sw = new-object system.io.StringWriter @()
 
 ## transform the document:
 $xmlTransform.Transform($rawDocument.CreateReader(), $null, $sw)
-$buffer.Position = 0
-$transformed = [System.Xml.Linq.XDocument]::Load([System.Xml.XmlReader]::Create($buffer))
-
-$transformed.ToString()
+$sw.ToString()

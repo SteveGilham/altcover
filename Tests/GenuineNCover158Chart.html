@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE html>
 <html lang="en" xmlns:msxsl="urn:schemas-microsoft-com:xslt">
   <head>
@@ -36,22 +36,30 @@
           }
           .notVisited { background:red; }
           .excluded { background: skyblue; }
-          .visited { background: #90ee90; }
+          .visited { background: lightgreen; }
           .declared { background:orange; }
           .automatic { background:yellow; }
           .static { background:silver;}
+          .notVisited0 { background:lightpink; }
+          .excluded0 { background: lightskyblue; }
+          .visited0 { background: palegreen; }
+          .declared0 { background: sandybrown; }
+          .automatic0 { background: lightyellow; }
+          .static0 { background: gainsboro;}
+
           .title { font-size: 12px; font-weight: bold; }
           .assembly { font-size: 100%; font-weight: bold; font-size: 11px}
           .class { font-size:100%; cursor: pointer; color: #444444; font-size: 11px}
           .module { color: navy; font-size: 12px; }
           .method {cursor: pointer; color: #444444; font-size: 10px; font-weight: bold; }
           .subtitle { color: black; font-size: 10px; font-weight: bold; }
-          th  {font-size:9px; background-color: #DDEEFF; }
+          th  {font-size:9px; background-color: #powderblue; }
           .datacell tbody {font-size:9px; text-align: right; }
-          .datacell td {background-color: #FFFFEE;}
+          .datacell td {background-color: lightyellow;}
+          .branchcell td {background-color: aquamarine;}
           .datacell td:last-child, .datacell th:last-child { width:100%; text-align: left; }
-          td.hldatacell {background-color: #FFCCCC; }
-          td.exdatacell {background-color: #DDEEFF; }
+          td.hldatacell {background-color: pink; }
+          td.exdatacell {background-color: #powderblue; }
           .detailPercent {  font-size: 9px; font-weight: bold; padding-top: 1px; padding-bottom: 1px; padding-left: 3px; padding-right: 3px;}
         </style>
     <script language="JavaScript">//<![CDATA[
@@ -216,6 +224,14 @@
               <tbody>
                 <tr>
                   <td class="datacell">1</td>
+                  <td>9</td>
+                  <td>9</td>
+                  <td>5</td>
+                  <td>29</td>
+                  <td>C:\Users\steve\Documents\Visual Studio 2017\Projects\ConsoleApp2\ConsoleApplication1\Program.fs</td>
+                </tr>
+                <tr>
+                  <td class="datacell">1</td>
                   <td>10</td>
                   <td>10</td>
                   <td>5</td>
@@ -236,14 +252,6 @@
                   <td>12</td>
                   <td>5</td>
                   <td>6</td>
-                  <td>C:\Users\steve\Documents\Visual Studio 2017\Projects\ConsoleApp2\ConsoleApplication1\Program.fs</td>
-                </tr>
-                <tr>
-                  <td class="datacell">1</td>
-                  <td>9</td>
-                  <td>9</td>
-                  <td>5</td>
-                  <td>29</td>
                   <td>C:\Users\steve\Documents\Visual Studio 2017\Projects\ConsoleApp2\ConsoleApplication1\Program.fs</td>
                 </tr>
               </tbody>
