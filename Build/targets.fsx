@@ -2411,7 +2411,7 @@ Target.activateFinal "ResetConsoleColours"
 ==> "WindowsPowerShell"
 =?> ("Deployment", Environment.isWindows)
 
-"FSharpTypes"
+"ReleaseXUnitFSharpTypesDotNetRunner"
 =?> ("WindowsPowerShell", Environment.isWindows)
 
 "Unpack"

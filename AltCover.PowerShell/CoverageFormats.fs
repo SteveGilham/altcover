@@ -261,9 +261,8 @@ type ConvertFromNCoverCommand(outputFile:String) =
       let visitors = [ reporter ]
       let navigator = self.XmlDocument.CreateNavigator()
       let identities = Dictionary<string, XPathNavigator>()
-      navigator.Select("//@assemblyIdentity").OfType<XPathNavigator>()
-      |> Seq.iter (fun n -> let key = n.Value
-                            n.MoveToParent() |> ignore
+      navigator.Select("//module").OfType<XPathNavigator>()
+      |> Seq.iter (fun n -> let key = n.GetAttribute("assemblyIdentity",String.Empty)
                             identities.Add(key, n))
 
       let paths = Dictionary<string, string>()
@@ -287,6 +286,10 @@ type ConvertFromNCoverCommand(outputFile:String) =
       rewrite.Descendants(XName.Get "BranchPoint")
       |> Seq.toList |> Seq.iter(fun n -> n.Remove())
 
+      let parse s = Int32.TryParse(s,
+                                   System.Globalization.NumberStyles.Integer,
+                                   System.Globalization.CultureInfo.InvariantCulture) |> snd
+
       // Match modules
       rewrite.Descendants(XName.Get "Module")
       |> Seq.iter (fun target -> let path = target.Descendants(XName.Get "ModulePath")
@@ -296,12 +299,30 @@ type ConvertFromNCoverCommand(outputFile:String) =
                                  let source = identities.[identity]
                                  let files = Dictionary<string,string>()
                                  target.Descendants(XName.Get "File").OfType<XElement>()
-                                 |> Seq.iter(fun f -> files.Add(f.Attribute(XName.Get "uid").Value,
-                                                                f.Attribute(XName.Get "fullPath").Value))
+                                 |> Seq.iter(fun f -> files.Add(f.Attribute(XName.Get "fullPath").Value,
+                                                                f.Attribute(XName.Get "uid").Value))
 
       // Copy sequence points across
-                                 source.Select("./seqpnt") |> ignore
-                  )
+                                 let sps = source.Select(".//seqpnt").OfType<XPathNavigator>().Count()
+                                 //printfn "%s %d %A" identity sps source.Value
+                                 source.Select(".//seqpnt").OfType<XPathNavigator>() |>
+                                 Seq.iter(fun s -> //printfn "%s" s.OuterXml
+                                                   let sl = s.GetAttribute("line",String.Empty)
+                                                   let sc = s.GetAttribute("column",String.Empty)
+                                                   let el = s.GetAttribute("endline",String.Empty)
+                                                   let ec = s.GetAttribute("endcolumn",String.Empty)
+                                                   let uid = files.[s.GetAttribute("document",String.Empty)]
+                                                   let vc = parse <| s.GetAttribute("visitcount", String.Empty)
+                                                   let xpath = ".//SequencePoint[@sl='" + sl +
+                                                                                          "' and @sc='" + sc +
+                                                                                          "' and @el='" + el +
+                                                                                          "' and @ec='" + ec +
+                                                                                          "' and @fileid='" + uid + "']"
+                                                   let sp = Extensions.XPathSelectElement(target, xpath)
+                                                   //printfn " %s %A" xpath sp
+                                                   let v = parse <| sp.Attribute(XName.Get "vc").Value
+                                                   let visits = (max 0 v) + (max 0 vc)
+                                                   sp.Attribute(XName.Get "vc").Value <- visits.ToString(System.Globalization.CultureInfo.InvariantCulture)))
 
       let dec = rewrite.Declaration
       dec.Encoding <- "utf-8"

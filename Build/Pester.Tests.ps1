@@ -366,8 +366,8 @@ Describe "ConvertTo-BarChart" {
 Describe "ConvertFrom-NCover" {
   It "converts" {
     $assemblies = @()
-    $assemblies += "./_Binaries/Sample2/Debug+AnyCPU/Sample2.dll"
-    $xml = ConvertFrom-NCover -InputFile "./_Reports/AltCoverFSharpTypes.xml" -Assembly $Assemblies -OutputFile "./_Packaging/AltCoverFSharpTypes.xml"
+    $assemblies += "./_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.0/Sample4.dll"
+    $xml = ConvertFrom-NCover -InputFile "./_Reports/ReleaseXUnitFSharpTypesDotNetRunner.xml" -Assembly $Assemblies -OutputFile "./_Packaging/AltCoverFSharpTypes.xml"
     $xml | Should -BeOfType "System.Xml.Linq.XDocument"
 
     $sw = new-object System.IO.StringWriter @()
@@ -381,11 +381,13 @@ Describe "ConvertFrom-NCover" {
     $expected = [System.IO.File]::ReadAllText("./Tests/AltCoverFSharpTypes.xml")
     $hash = $xml.Descendants("Module").Attribute("hash").Value
     $time = $xml.Descendants("ModuleTime").Value
-    $fullpath = $xml.Descendants("File").Attribute("fullPath").Value
+    $file = $xml.Descendants("File") | Select-Object -First 1
+    $fullpath = [System.io.path]::GetDirectoryName($file.Attribute("fullPath").Value)
 
     $expected = $expected.Replace("09-23-DC-B3-65-CE-96-5D-B4-56-2A-3A-0D-5A-1B-09-3E-38-2B-22", $hash)
     $expected = $expected.Replace("2018-06-13T15:08:24.8840000Z", $time)
-    $expected = $expected.Replace("Sample2|Sample2.fs", $fullpath)
+    $expected = $expected.Replace("Sample4|Program.fs", (Join-Path $fullpath "Program.fs"))
+    $expected = $expected.Replace("Sample4|Tests.fs", (Join-Path $fullpath "Tests.fs"))
 
     $result = $sw.ToString().Replace("`r", "").Replace("utf-16", "utf-8") 
     $result | Should -Be $expected.Replace("`r", "")
