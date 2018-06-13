@@ -1424,6 +1424,14 @@ _Target "Unpack" (fun _ ->
   System.IO.Compression.ZipFile.ExtractToDirectory (nugget, unpack)
 )
 
+_Target "WindowsPowerShell" (fun _ ->
+  Actions.RunRaw (fun info -> { info with
+                                        FileName = "powershell.exe"
+                                        WorkingDirectory = "."
+                                        Arguments = (" ./Build/powershell.ps1")})
+                                 "powershell"
+)
+
 _Target "Pester" (fun _ ->
   Directory.ensure "./_Reports"
   let nugget = !! "./_Packaging/*.nupkg" |> Seq.last
@@ -2395,6 +2403,10 @@ Target.activateFinal "ResetConsoleColours"
 "Unpack"
 ==> "Pester"
 ==> "UnitTestWithAltCoverRunner"
+
+"Unpack"
+==> "WindowsPowerShell"
+=?> ("Deployment", Environment.isWindows)
 
 "Unpack"
 ==> "SimpleReleaseTest"
