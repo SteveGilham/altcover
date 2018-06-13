@@ -2405,14 +2405,14 @@ Target.activateFinal "ResetConsoleColours"
 ==> "UnitTestWithAltCoverRunner"
 
 "WindowsPowerShell"
-==> "Pester"
+=?> ("Pester", Environment.isWindows)
 
 "Unpack"
 ==> "WindowsPowerShell"
 =?> ("Deployment", Environment.isWindows)
 
 "FSharpTypes"
-==> "WindowsPowerShell"
+=?> ("WindowsPowerShell", Environment.isWindows)
 
 "Unpack"
 ==> "SimpleReleaseTest"
