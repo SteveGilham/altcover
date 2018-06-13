@@ -1,6 +1,9 @@
 $x = "./_Reports/PesterFSharpTypesDotNetRunner.xml"
 $o = "./Sample2/_Binaries/Sample2/Debug+AnyCPU/netcoreapp2.0"
 $i = "./_Binaries/Sample2/Debug+AnyCPU/netcoreapp2.0"
+dir "./_Packaging/*.*" | % { if ( -not($_.Name -like "*.nupkg")) { del -force $_.FullName }}
+dir "./_Packaging"
+if (Test-Path $x) { del -force $x }
 
 Describe "Invoke-Altcover" {
     It "instruments and collects" {
@@ -323,7 +326,7 @@ Describe "ConvertTo-NCover" {
 Describe "ConvertTo-BarChart" {
   It "converts NCover" {
     $xml = ConvertTo-BarChart -InputFile "./Tests/GenuineNCover158.Xml" -OutputFile "./_Packaging/GenuineNCover158Chart.html"
-    $xml.GetType().FullName | Should -Be "System.Xml.XmlDocument"
+    $xml | Should -BeOfType "System.Xml.XmlDocument"
 
     $sw = new-object System.IO.StringWriter @()
     $settings = new-object System.Xml.XmlWriterSettings @()
@@ -342,7 +345,7 @@ Describe "ConvertTo-BarChart" {
 
   It "converts OpenCover" {
     $xml = ConvertTo-BarChart -InputFile "./Tests/HandRolledMonoCoverage.xml" -OutputFile "./_Packaging/HandRolledMonoCoverage.html"
-    $xml.GetType().FullName | Should -Be "System.Xml.XmlDocument"
+    $xml | Should -BeOfType "System.Xml.XmlDocument"
 
     $sw = new-object System.IO.StringWriter @()
     $settings = new-object System.Xml.XmlWriterSettings @()
@@ -355,6 +358,36 @@ Describe "ConvertTo-BarChart" {
     $expected = [System.IO.File]::ReadAllText("./Tests/HandRolledMonoCoverage.html")
 
     $result = $sw.ToString().Replace("`r", "").Replace("html >", "html>") 
+    $result | Should -Be $expected.Replace("`r", "")
+    $result | Should -Be $written.Replace("`r", "")
+  }
+}
+
+Describe "ConvertFrom-NCover" {
+  It "converts" {
+    $assemblies = @()
+    $assemblies += "./_Binaries/Sample2/Debug+AnyCPU/Sample2.dll"
+    $xml = ConvertFrom-NCover -InputFile "./_Reports/AltCoverFSharpTypes.xml" -Assembly $Assemblies -OutputFile "./_Packaging/AltCoverFSharpTypes.xml"
+    $xml | Should -BeOfType "System.Xml.Linq.XDocument"
+
+    $sw = new-object System.IO.StringWriter @()
+    $settings = new-object System.Xml.XmlWriterSettings @()
+    $settings.Indent = $true
+    $settings.IndentChars = "  "
+    $xw = [System.Xml.XmlWriter]::Create($sw, $settings)
+    $xml.WriteTo($xw)
+    $xw.Close()
+    $written = [System.IO.File]::ReadAllText("./_Packaging/AltCoverFSharpTypes.xml")
+    $expected = [System.IO.File]::ReadAllText("./Tests/AltCoverFSharpTypes.xml")
+    $hash = $xml.Descendants("Module").Attribute("hash").Value
+    $time = $xml.Descendants("ModuleTime").Value
+    $fullpath = $xml.Descendants("File").Attribute("fullPath").Value
+
+    $expected = $expected.Replace("09-23-DC-B3-65-CE-96-5D-B4-56-2A-3A-0D-5A-1B-09-3E-38-2B-22", $hash)
+    $expected = $expected.Replace("2018-06-13T15:08:24.8840000Z", $time)
+    $expected = $expected.Replace("Sample2|Sample2.fs", $fullpath)
+
+    $result = $sw.ToString().Replace("`r", "").Replace("utf-16", "utf-8") 
     $result | Should -Be $expected.Replace("`r", "")
     $result | Should -Be $written.Replace("`r", "")
   }

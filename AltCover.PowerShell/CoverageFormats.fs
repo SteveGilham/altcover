@@ -198,14 +198,7 @@ type ConvertToNCoverCommand(outputFile:String) =
                             m.SetAttribute("name", info.Name)
                             let assembly = m.GetAttribute("assembly")
                             m.SetAttribute("assemblyIdentity",
-                                           try
-                                             System.Reflection.AssemblyName.GetAssemblyName(path).FullName
-                                           with
-                                           | :? ArgumentException
-                                           | :? FileNotFoundException
-                                           | :? System.Security.SecurityException
-                                           | :? BadImageFormatException
-                                           | :? FileLoadException -> assembly ))
+                                           XmlUtilities.AssemblyNameWithFallback path assembly))
 
       let culture = System.Threading.Thread.CurrentThread.CurrentCulture
       try
@@ -225,4 +218,76 @@ type ConvertToNCoverCommand(outputFile:String) =
       self.WriteObject rewrite
     finally
       Directory.SetCurrentDirectory here
+
+[<Cmdlet(VerbsData.ConvertFrom, "NCover")>]
+[<OutputType(typeof<XDocument>)>]
+[<SuppressMessage("Microsoft.PowerShell", "PS1008", Justification = "Cobertura is OK")>]
+type ConvertFromNCoverCommand(outputFile:String) =
+  inherit PSCmdlet()
+
+  new () = ConvertFromNCoverCommand(String.Empty)
+
+  [<SuppressMessage("Microsoft.Design", "CA1059", Justification="converts concrete types")>]
+  [<Parameter(ParameterSetName = "XmlDoc", Mandatory = true, Position = 1,
+      ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
+  member val XmlDocument:IXPathNavigable = null with get, set
+
+  [<Parameter(ParameterSetName = "FromFile", Mandatory = true, Position = 1,
+      ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
+  member val InputFile:string = null with get, set
+
+  [<Parameter(ParameterSetName = "XmlDoc", Mandatory = true, Position = 2,
+      ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
+  [<Parameter(ParameterSetName = "FromFile", Mandatory = true, Position = 2,
+      ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
+  member val Assembly:string array = [| |] with get, set
+
+  [<Parameter(ParameterSetName = "XmlDoc", Mandatory = false, Position = 3,
+      ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
+  [<Parameter(ParameterSetName = "FromFile", Mandatory = false, Position = 3,
+      ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
+  member val OutputFile:string = outputFile with get, set
+
+  override self.ProcessRecord() =
+    let here = Directory.GetCurrentDirectory()
+    try
+      let where = self.SessionState.Path.CurrentLocation.Path
+      Directory.SetCurrentDirectory where
+      if self.ParameterSetName = "FromFile" then
+        self.XmlDocument <- XPathDocument self.InputFile
+
+      let reporter, rewrite = AltCover.OpenCover.ReportGenerator ()
+      let visitors = [ reporter ]
+      let navigator = self.XmlDocument.CreateNavigator()
+      let identities = navigator.Select("//@assemblyIdentity").OfType<XPathNavigator>()
+                       |> Seq.map (fun n -> n.Value)
+                       |> Seq.toList
+
+      let assemblies = self.Assembly
+                       |> Seq.filter(fun p -> let a = XmlUtilities.AssemblyNameWithFallback p (Path.GetFileNameWithoutExtension p)
+                                              identities 
+                                              |> Seq.exists(fun i -> i = a))
+
+#if NETCOREAPP2_0
+      AltCover.Visitor.Visit visitors assemblies
+#else
+#if DEBUG
+      AltCover.Visitor.Visit visitors assemblies
+#else
+      AltCover.Visitor.Visit(visitors, assemblies)
+#endif
+#endif
+
+      // TODO -- copy items across
+
+      let dec = rewrite.Declaration
+      dec.Encoding <- "utf-8"
+      dec.Standalone <- null
+      if self.OutputFile |> String.IsNullOrWhiteSpace |> not then
+        rewrite.Save(self.OutputFile)
+
+      self.WriteObject rewrite
+    finally
+      Directory.SetCurrentDirectory here
+
 #endif
