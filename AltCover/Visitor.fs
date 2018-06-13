@@ -418,7 +418,7 @@ module Visitor =
                 else accumulate state.Next gendarme
     accumulate i [i]
 
-  let private boundaryOfList (f: (Instruction->int) -> Instruction list -> Instruction) 
+  let private boundaryOfList (f: (Instruction->int) -> Instruction list -> Instruction)
                              (places:Instruction list) =
     places |> f (fun i -> i.Offset)
 
