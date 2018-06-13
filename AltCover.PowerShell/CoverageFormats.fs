@@ -7,6 +7,7 @@ module CoverageFormats =
 #else
 
 open System
+open System.Collections.Generic
 open System.Diagnostics.CodeAnalysis
 open System.Globalization
 open System.IO
@@ -259,14 +260,19 @@ type ConvertFromNCoverCommand(outputFile:String) =
       let reporter, rewrite = AltCover.OpenCover.ReportGenerator ()
       let visitors = [ reporter ]
       let navigator = self.XmlDocument.CreateNavigator()
-      let identities = navigator.Select("//@assemblyIdentity").OfType<XPathNavigator>()
-                       |> Seq.map (fun n -> n.Value)
-                       |> Seq.toList
+      let identities = Dictionary<string, XPathNavigator>()
+      navigator.Select("//@assemblyIdentity").OfType<XPathNavigator>()
+      |> Seq.iter (fun n -> let key = n.Value
+                            n.MoveToParent() |> ignore
+                            identities.Add(key, n))
+
+      let paths = Dictionary<string, string>()
+      self.Assembly
+      |> Seq.iter(fun p -> let a = XmlUtilities.AssemblyNameWithFallback p (Path.GetFileNameWithoutExtension p)
+                           paths.Add(p, a))
 
       let assemblies = self.Assembly
-                       |> Seq.filter(fun p -> let a = XmlUtilities.AssemblyNameWithFallback p (Path.GetFileNameWithoutExtension p)
-                                              identities 
-                                              |> Seq.exists(fun i -> i = a))
+                       |> Seq.filter(fun p -> identities.ContainsKey paths.[p])
 
 #if NETCOREAPP2_0
       AltCover.Visitor.Visit visitors assemblies
@@ -277,8 +283,25 @@ type ConvertFromNCoverCommand(outputFile:String) =
       AltCover.Visitor.Visit(visitors, assemblies)
 #endif
 #endif
+      // Clear branch points
+      rewrite.Descendants(XName.Get "BranchPoint")
+      |> Seq.toList |> Seq.iter(fun n -> n.Remove())
 
-      // TODO -- copy items across
+      // Match modules
+      rewrite.Descendants(XName.Get "Module")
+      |> Seq.iter (fun target -> let path = target.Descendants(XName.Get "ModulePath")
+                                            |> Seq.map (fun n -> n.Value)
+                                            |> Seq.head
+                                 let identity = paths.[path]
+                                 let source = identities.[identity]
+                                 let files = Dictionary<string,string>()
+                                 target.Descendants(XName.Get "File").OfType<XElement>()
+                                 |> Seq.iter(fun f -> files.Add(f.Attribute(XName.Get "uid").Value,
+                                                                f.Attribute(XName.Get "fullPath").Value))
+
+      // Copy sequence points across
+                                 source.Select("./seqpnt") |> ignore
+                  )
 
       let dec = rewrite.Declaration
       dec.Encoding <- "utf-8"
