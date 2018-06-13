@@ -182,7 +182,7 @@
               <xsl:with-param name="total" select="$total" />
             </xsl:call-template>
             <xsl:if test="not ($totalb = 0)">
-            <br/>
+            <br />
             <xsl:call-template name="detailPercent">
               <xsl:with-param name="visited" select="$visitedb" />
               <xsl:with-param name="declared" select="$declaredb" />
@@ -294,7 +294,7 @@
           </xsl:choose>
         </tr>
       </xsl:for-each>
-      </tbody>        
+      </tbody>
     </table>
   </xsl:template>
   <!-- Class Summary -->
@@ -334,7 +334,7 @@
             <xsl:with-param name="total" select="$total" />
           </xsl:call-template>
           <xsl:if test="not ($totalb = 0)">
-          <br/>
+          <br />
           <xsl:call-template name="detailPercent">
             <xsl:with-param name="visited" select="$visitedb" />
             <xsl:with-param name="declared" select="$declaredb" />
@@ -397,7 +397,7 @@
         <xsl:with-param name="total" select="$total" />
       </xsl:call-template>
       <xsl:if test="not ($totalb = 0)">
-      <br/>
+      <br />
       <xsl:call-template name="detailPercent">
         <xsl:with-param name="visited" select="$visitedb" />
         <xsl:with-param name="declared" select="$declaredb" />
@@ -459,7 +459,7 @@
         <xsl:with-param name="total" select="$total" />
       </xsl:call-template>
       <xsl:if test="not ($totalb = 0)">
-      <br/>
+      <br />
       <xsl:call-template name="detailPercent">
         <xsl:with-param name="visited" select="$visitedb" />
         <xsl:with-param name="declared" select="$declaredb" />

@@ -1660,7 +1660,6 @@ or
     finally
       LCov.path := None
 
-
   [<Test>]
   member self.MultiSortDoesItsThing() =
     let input = [ ("m", [3; 2; 1])
