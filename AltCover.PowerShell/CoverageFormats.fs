@@ -303,11 +303,8 @@ type ConvertFromNCoverCommand(outputFile:String) =
                                                                 f.Attribute(XName.Get "uid").Value))
 
       // Copy sequence points across
-                                 let sps = source.Select(".//seqpnt").OfType<XPathNavigator>().Count()
-                                 //printfn "%s %d %A" identity sps source.Value
                                  source.Select(".//seqpnt").OfType<XPathNavigator>() |>
-                                 Seq.iter(fun s -> //printfn "%s" s.OuterXml
-                                                   let sl = s.GetAttribute("line",String.Empty)
+                                 Seq.iter(fun s -> let sl = s.GetAttribute("line",String.Empty)
                                                    let sc = s.GetAttribute("column",String.Empty)
                                                    let el = s.GetAttribute("endline",String.Empty)
                                                    let ec = s.GetAttribute("endcolumn",String.Empty)
@@ -319,7 +316,6 @@ type ConvertFromNCoverCommand(outputFile:String) =
                                                                                           "' and @ec='" + ec +
                                                                                           "' and @fileid='" + uid + "']"
                                                    let sp = Extensions.XPathSelectElement(target, xpath)
-                                                   //printfn " %s %A" xpath sp
                                                    let v = parse <| sp.Attribute(XName.Get "vc").Value
                                                    let visits = (max 0 v) + (max 0 vc)
                                                    sp.Attribute(XName.Get "vc").Value <- visits.ToString(System.Globalization.CultureInfo.InvariantCulture)))
