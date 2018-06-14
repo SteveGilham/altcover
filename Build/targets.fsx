@@ -382,7 +382,7 @@ _Target "UnitTestDotNetWithCoverlet" (fun _ ->
 
                                             let here = Path.GetDirectoryName f
 
-                                            (here @@ "coverage.xml") :: l
+                                            (here @@ "coverage.opencover.xml") :: l
                                         finally
                                             Actions.RunDotnet dotnetOptions "remove"
                                                               (f + " package coverlet.msbuild ")
