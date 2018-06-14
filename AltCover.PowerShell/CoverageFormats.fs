@@ -273,6 +273,9 @@ type ConvertFromNCoverCommand(outputFile:String) =
       let assemblies = self.Assembly
                        |> Seq.filter(fun p -> identities.ContainsKey paths.[p])
 
+      // ensure default state -- this switches branch recording off
+      AltCover.Main.init()
+
 #if NETCOREAPP2_0
       AltCover.Visitor.Visit visitors assemblies
 #else
@@ -282,10 +285,6 @@ type ConvertFromNCoverCommand(outputFile:String) =
       AltCover.Visitor.Visit(visitors, assemblies)
 #endif
 #endif
-      // Clear branch points
-      rewrite.Descendants(XName.Get "BranchPoint")
-      |> Seq.toList |> Seq.iter(fun n -> n.Remove())
-
       let parse s = Int32.TryParse(s,
                                    System.Globalization.NumberStyles.Integer,
                                    System.Globalization.CultureInfo.InvariantCulture) |> snd
