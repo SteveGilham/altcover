@@ -2414,6 +2414,9 @@ Target.activateFinal "ResetConsoleColours"
 "ReleaseXUnitFSharpTypesDotNetRunner"
 =?> ("WindowsPowerShell", Environment.isWindows)
 
+"ReleaseXUnitFSharpTypesDotNetRunner"
+==> "Pester"
+
 "Unpack"
 ==> "SimpleReleaseTest"
 ==> "Deployment"
