@@ -1291,10 +1291,13 @@ or
     let hits = List<string*int*Base.Track>()
     let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
     let unique = Path.Combine(where, Guid.NewGuid().ToString())
-    let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
     let r = Runner.GetMonitor hits unique (fun l ->
        use sink = new DeflateStream(File.OpenWrite (unique + ".0.acv"), CompressionMode.Compress)
-       l |> List.mapi (fun i x -> formatter.Serialize(sink, (x,i)); x) |> List.length
+       use formatter = new BinaryWriter(sink)
+       l |> List.mapi (fun i x -> formatter.Write x
+                                  formatter.Write i
+                                  formatter.Write 0uy
+                                  x) |> List.length
                                            ) ["a"; "b"; String.Empty; "c"]
     Assert.That(r, Is.EqualTo 4)
     Assert.That (File.Exists (unique + ".acv"))
@@ -1319,7 +1322,6 @@ or
     let hits = List<string*int*Base.Track>()
     let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
     let unique = Path.Combine(where, Guid.NewGuid().ToString())
-    let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
     let payloads = [Base.Null
                     Base.Call 17
                     Base.Time 23L
@@ -1336,8 +1338,20 @@ or
                  ]
     let r = Runner.GetMonitor hits unique (fun l ->
        use sink = new DeflateStream(File.OpenWrite (unique + ".0.acv"), CompressionMode.Compress)
+       use formatter = new BinaryWriter(sink)
        l |> List.zip payloads
-       |> List.mapi (fun i (y,x) -> formatter.Serialize(sink, (x,i,y)); x) |> List.length) inputs
+       |> List.mapi (fun i (y,x) -> formatter.Write x
+                                    formatter.Write i
+                                    match y with
+                                    | Null -> formatter.Write(Base.Tag.Null |> byte)
+                                    | Time t  -> formatter.Write(Base.Tag.Time |> byte)
+                                                 formatter.Write(t)
+                                    | Call t -> formatter.Write(Base.Tag.Call |> byte)
+                                                formatter.Write(t)
+                                    | Both (t', t) -> formatter.Write(Base.Tag.Both |> byte)
+                                                      formatter.Write(t')
+                                                      formatter.Write(t)
+                                    x) |> List.length) inputs
 
     let expected = inputs |> List.zip payloads
                    |> List.mapi (fun i (y,x) -> (x,i,y))

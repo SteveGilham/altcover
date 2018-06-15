@@ -3,13 +3,14 @@
 open System.Collections.Generic
 open System.IO
 open System.IO.Compression
+open System.Reflection
 
 type Tracer = {
                 Tracer : string
                 Runner : bool
                 Definitive : bool
                 Stream : System.IO.Stream
-                Formatter : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+                Formatter : System.IO.BinaryWriter
               }
   with
 #if NETSTANDARD2_0
@@ -23,7 +24,7 @@ type Tracer = {
        Runner = false
        Definitive = false
        Stream = null
-       Formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
+       Formatter = null
       }
 
     member this.IsConnected () =
@@ -37,20 +38,29 @@ type Tracer = {
                                                         sprintf ".%d.acv" i))
         |> Seq.filter (File.Exists >> not)
         |> Seq.map (fun f -> let fs = File.OpenWrite f
-                             { this with Stream = new BufferedStream(new DeflateStream(fs, CompressionMode.Compress))
+                             let s = new BufferedStream(new DeflateStream(fs, CompressionMode.Compress))
+                             { this with Stream = s
+                                         Formatter = new BinaryWriter(s)
                                          Runner = true })
         |> Seq.head
       else
         this
 
     member this.Close() =
-      this.Stream.Dispose()
+      this.Formatter.Close()
 
-    member internal this.Push (moduleId:string) hitPointId context =
-      let stream = this.Stream
-      this.Formatter.Serialize(stream, match context with
-                                       | Null -> (moduleId, hitPointId) :> obj
-                                       | _ -> (moduleId, hitPointId, context) :> obj)
+    member internal this.Push (moduleId:string) (hitPointId:int) context =
+      this.Formatter.Write moduleId
+      this.Formatter.Write hitPointId
+      match context with
+      | Null -> this.Formatter.Write(Tag.Null |> byte)
+      | Time t  -> this.Formatter.Write(Tag.Time |> byte)
+                   this.Formatter.Write(t)
+      | Call t -> this.Formatter.Write(Tag.Call |> byte)
+                  this.Formatter.Write(t)
+      | Both (t', t) -> this.Formatter.Write(Tag.Both |> byte)
+                        this.Formatter.Write(t')
+                        this.Formatter.Write(t)
 
     member internal this.CatchUp (visits:Dictionary<string, Dictionary<int, int * Track list>>) =
       let empty = Null
@@ -76,7 +86,7 @@ type Tracer = {
 
     member internal this.OnFinish visits =
       this.CatchUp visits
-      this.Push null -1 Null
+      this.Push System.String.Empty -1 Null
       this.Stream.Flush()
       this.Close()
 

@@ -26,14 +26,6 @@ open AltCover.Recorder
 open AltCover.Shadow
 open NUnit.Framework
 
-type UpdateBinder () =
-  inherit System.Runtime.Serialization.SerializationBinder()
-  override self.BindToType (_:string, n:string) =
-    if n.StartsWith("System.Tuple`2") then typeof<(string*int)> else
-    if n.StartsWith("System.Tuple`3") then typeof<(string*int*Track)> else
-    if n = "AltCover.Recorder.Track+Call" then (Track.Call 0).GetType() else
-    raise (System.Runtime.Serialization.SerializationException n)
-
 [<TestFixture>]
 type AltCoverCoreTests() = class
 
@@ -66,19 +58,20 @@ type AltCoverCoreTests() = class
 
   member internal self.ReadResults (stream:Stream) =
     let hits = List<(string*int*Track)>()
-    let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
-    formatter.Binder <- UpdateBinder()
+    use formatter = new System.IO.BinaryReader(stream)
     let rec sink() = try
-                          let raw = formatter.Deserialize(stream)
-                          match raw with
-                          | :? (string*int) as pair -> (fst pair, snd pair, Null)
-                          | :? (string * int * Track) as x -> x
-                          | _ -> raise (System.Runtime.Serialization.SerializationException (raw.GetType().FullName))
+                          let id = formatter.ReadString()
+                          let strike = formatter.ReadInt32()
+                          let tag = formatter.ReadByte() |> int
+                          (id, strike, match enum tag  with
+                                       | AltCover.Recorder.Tag.Time -> Time <| formatter.ReadInt64()
+                                       | AltCover.Recorder.Tag.Call -> Call <| formatter.ReadInt32()
+                                       | AltCover.Recorder.Tag.Both -> Both (formatter.ReadInt64(), formatter.ReadInt32())
+                                       | _ -> Null)
                           |> hits.Add
                           sink()
-                       with
-                       | :? System.Runtime.Serialization.SerializationException as x ->
-                           ()
+                     with
+                     | :? System.IO.IOException -> ()
     sink()
     hits
 
@@ -164,7 +157,7 @@ type AltCoverCoreTests() = class
 
     try
       let client = Tracer.Create unique
-      let expected = [("name", client.GetHashCode(), Null); (null, -1, Null)]
+      let expected = [("name", client.GetHashCode(), Null); (String.Empty, -1, Null)]
 
       try
         Adapter.VisitsClear()
@@ -174,8 +167,8 @@ type AltCoverCoreTests() = class
 
         Assert.That (Instance.trace.IsConnected(), "connection failed")
         let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
-        let (a, b, _) = expected |> Seq.head
-        formatter.Serialize(Instance.trace.Stream, (a,b))
+        let (a, b, c) = expected |> Seq.head
+        Instance.trace.Push a b c
         Instance.FlushAll ()
       finally
         Instance.trace.Close()
