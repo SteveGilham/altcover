@@ -1,3 +1,12 @@
+# 3.5.5xx (Cerulean series release 4)
+* [BUGFIX] -- Issue #22 : found the bottleneck, and it's not disk I/Ops as I'm too used to it being in other contexts.  Using a custom serialization gives the major speed-up I was looking for, without needing to try tricks that may be counter-productive given the use of compression in the process.
+* **NOTE** this breaks compatibility between previously instrumented code and the new runner (and vice versa); in general, only same-version components are supported.
+* Indicate the throughput levels in the command line output
+* `ConvertTo-BarChart` report generation based on the NCover 1.5.8 style sheet for NCover and OpenCover output
+* [BUGFIX] `ConvertTo-NCover` now works on `pwsh`
+* `ConvertFrom-NCover` to OpenCover format
+* Updated some consumed NuGet packages but not F# 4.5 (which breaks the `dotnet test` integration) : that's still being worked
+
 # 3.5.530 (Cerulean series release 3)
 * Issue #20 related : `-d|dependency` option for all .net core versions (classic, .dotnet and .global) plus equivalents for pwsh, and MSBuild to allow the user to specify assemblies to satisfy references, anticipating resolution failures
 * Issue #20 related : cache resolution failure fix-ups for some possible performance improvement
