@@ -124,7 +124,7 @@ type AltCoverCoreTests() = class
                      ("name", 24, Null)
                      ("name", 24, Null)
                      ("name", 24, Time 17L)
-                     ("name", 24, Both (42L, 23))
+                     ("name", 24, Adapter.NewBoth 42L 23)
                      ("name", 23, Call 5)
     ]
 
