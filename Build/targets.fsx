@@ -1289,9 +1289,9 @@ _Target "Packaging" (fun _ ->
                        |> Seq.map (fun x -> (x, Some (Path.GetDirectoryName(x).Substring(nupkg).Replace("\\","/")), None))
                        |> Seq.toList
 
-    let poshFiles = (!! "./_Binaries/AltCover.PowerShell/Release+AnyCPU/netcoreapp2.0/*.PowerShell.*")
-                       |> Seq.map (fun x -> (x, Some ("tools/netcoreapp2.0/" + Path.GetFileName x), None))
-                       |> Seq.toList
+    let poshFiles where = (!! "./_Binaries/AltCover.PowerShell/Release+AnyCPU/netcoreapp2.0/*.PowerShell.*")
+                           |> Seq.map (fun x -> (x, Some (where + Path.GetFileName x), None))
+                           |> Seq.toList
 
     let publish = (Path.getFullName "./_Publish").Length
     let netcoreFiles where = (!! "./_Publish/**/*.*")
@@ -1313,17 +1313,17 @@ _Target "Packaging" (fun _ ->
     printfn "Executing on %A" Environment.OSVersion
 
     [
-        (List.concat [applicationFiles; resourceFiles; netcoreFiles "tools/netcoreapp2.0/"; poshFiles; otherFiles],
+        (List.concat [applicationFiles; resourceFiles; netcoreFiles "tools/netcoreapp2.0/"; poshFiles "tools/netcoreapp2.0/"; otherFiles],
          "_Packaging",
          "./Build/AltCover.nuspec",
          "altcover"
         )
-        (List.concat[netcoreFiles "lib/netcoreapp2.0/"; dotnetFiles],
+        (List.concat[netcoreFiles "lib/netcoreapp2.0/"; poshFiles "lib/netcoreapp2.0/"; dotnetFiles],
          "_Packaging.dotnet",
          "./_Generated/altcover.dotnet.nuspec",
          "altcover.dotnet"
         )
-        (List.concat [globalFiles; netcoreFiles "tools/netcoreapp2.1/any/"; auxFiles],
+        (List.concat [globalFiles; netcoreFiles "tools/netcoreapp2.1/any/"; poshFiles"tools/netcoreapp2.1/any/"; auxFiles],
          "_Packaging.global",
          "./_Generated/altcover.global.nuspec",
          "altcover.global"
