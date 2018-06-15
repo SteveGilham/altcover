@@ -66,7 +66,11 @@ type AltCoverCoreTests() = class
                           (id, strike, match enum tag  with
                                        | AltCover.Recorder.Tag.Time -> Time <| formatter.ReadInt64()
                                        | AltCover.Recorder.Tag.Call -> Call <| formatter.ReadInt32()
+#if NET4
                                        | AltCover.Recorder.Tag.Both -> Adapter.NewBoth (formatter.ReadInt64()) (formatter.ReadInt32())
+#else
+                                       | AltCover.Recorder.Tag.Both -> Both (formatter.ReadInt64(), formatter.ReadInt32())
+#endif
                                        | _ -> Null)
                           |> hits.Add
                           sink()
