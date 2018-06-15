@@ -1,10 +1,13 @@
-# 3.5.5xx (Cerulean series release 4)
-* [BUGFIX] -- Issue #22 : found the bottleneck, and it's not disk I/Ops as I'm too used to it being in other contexts.  Using a custom serialization gives the major speed-up I was looking for, without needing to try tricks that may be counter-productive given the use of compression in the process.
+# 3.5.543 (Cerulean series release 4)
+### All NuGet packages
+* [BUGFIX] -- Issue #22 : found the bottleneck, and it's not disk I/Ops (as I'm too used to it being in other contexts).  Using a custom serialization gives the major speed-up I was looking for, without needing to try tricks that may be counter-productive given the use of compression in the process.
 * **NOTE** this breaks compatibility between previously instrumented code and the new runner (and vice versa); in general, only same-version components are supported.
 * Indicate the throughput levels in the command line output
+### "classic" NuGet package only
 * `ConvertTo-BarChart` report generation, based on the old NCover 1.5.8 style sheet, for both NCover and OpenCover coverage format data
 * [BUGFIX] `ConvertTo-NCover` now works on `pwsh`
 * `ConvertFrom-NCover` to OpenCover format
+### Other
 * Updated some consumed NuGet packages but not F# 4.5 (which breaks the `dotnet test` integration) : that's still being worked
 * Test cmdlets in WindowsPowerShell in the build, as well as `pwsh`, plus some other refinements to the Pester-based tests
 
