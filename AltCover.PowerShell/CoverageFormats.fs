@@ -7,6 +7,7 @@ module CoverageFormats =
 #else
 
 open System
+open System.Collections.Generic
 open System.Diagnostics.CodeAnalysis
 open System.Globalization
 open System.IO
@@ -198,14 +199,7 @@ type ConvertToNCoverCommand(outputFile:String) =
                             m.SetAttribute("name", info.Name)
                             let assembly = m.GetAttribute("assembly")
                             m.SetAttribute("assemblyIdentity",
-                                           try
-                                             System.Reflection.AssemblyName.GetAssemblyName(path).FullName
-                                           with
-                                           | :? ArgumentException
-                                           | :? FileNotFoundException
-                                           | :? System.Security.SecurityException
-                                           | :? BadImageFormatException
-                                           | :? FileLoadException -> assembly ))
+                                           XmlUtilities.AssemblyNameWithFallback path assembly))
 
       let culture = System.Threading.Thread.CurrentThread.CurrentCulture
       try
@@ -225,4 +219,114 @@ type ConvertToNCoverCommand(outputFile:String) =
       self.WriteObject rewrite
     finally
       Directory.SetCurrentDirectory here
+
+[<Cmdlet(VerbsData.ConvertFrom, "NCover")>]
+[<OutputType(typeof<XDocument>)>]
+[<SuppressMessage("Microsoft.PowerShell", "PS1008", Justification = "Cobertura is OK")>]
+type ConvertFromNCoverCommand(outputFile:String) =
+  inherit PSCmdlet()
+
+  new () = ConvertFromNCoverCommand(String.Empty)
+
+  [<SuppressMessage("Microsoft.Design", "CA1059", Justification="converts concrete types")>]
+  [<Parameter(ParameterSetName = "XmlDoc", Mandatory = true, Position = 1,
+      ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
+  member val XmlDocument:IXPathNavigable = null with get, set
+
+  [<Parameter(ParameterSetName = "FromFile", Mandatory = true, Position = 1,
+      ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
+  member val InputFile:string = null with get, set
+
+  [<Parameter(ParameterSetName = "XmlDoc", Mandatory = true, Position = 2,
+      ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
+  [<Parameter(ParameterSetName = "FromFile", Mandatory = true, Position = 2,
+      ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
+  member val Assembly:string array = [| |] with get, set
+
+  [<Parameter(ParameterSetName = "XmlDoc", Mandatory = false, Position = 3,
+      ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
+  [<Parameter(ParameterSetName = "FromFile", Mandatory = false, Position = 3,
+      ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
+  member val OutputFile:string = outputFile with get, set
+
+  override self.ProcessRecord() =
+    let here = Directory.GetCurrentDirectory()
+    try
+      let where = self.SessionState.Path.CurrentLocation.Path
+      Directory.SetCurrentDirectory where
+      if self.ParameterSetName = "FromFile" then
+        self.XmlDocument <- XPathDocument self.InputFile
+
+      let reporter, rewrite = AltCover.OpenCover.ReportGenerator ()
+      let visitors = [ reporter ]
+      let navigator = self.XmlDocument.CreateNavigator()
+      let identities = Dictionary<string, XPathNavigator>()
+      navigator.Select("//module").OfType<XPathNavigator>()
+      |> Seq.iter (fun n -> let key = n.GetAttribute("assemblyIdentity",String.Empty)
+                            identities.Add(key, n))
+
+      let paths = Dictionary<string, string>()
+      self.Assembly
+      |> Seq.iter(fun p -> let a = XmlUtilities.AssemblyNameWithFallback p (Path.GetFileNameWithoutExtension p)
+                           paths.Add(p, a))
+
+      let assemblies = self.Assembly
+                       |> Seq.filter(fun p -> identities.ContainsKey paths.[p])
+
+      // ensure default state -- this switches branch recording off
+      AltCover.Main.init()
+
+#if NETCOREAPP2_0
+      AltCover.Visitor.Visit visitors assemblies
+#else
+#if DEBUG
+      AltCover.Visitor.Visit visitors assemblies
+#else
+      AltCover.Visitor.Visit(visitors, assemblies)
+#endif
+#endif
+      let parse s = Int32.TryParse(s,
+                                   System.Globalization.NumberStyles.Integer,
+                                   System.Globalization.CultureInfo.InvariantCulture) |> snd
+
+      // Match modules
+      rewrite.Descendants(XName.Get "Module")
+      |> Seq.iter (fun target -> let path = target.Descendants(XName.Get "ModulePath")
+                                            |> Seq.map (fun n -> n.Value)
+                                            |> Seq.head
+                                 let identity = paths.[path]
+                                 let source = identities.[identity]
+                                 let files = Dictionary<string,string>()
+                                 target.Descendants(XName.Get "File").OfType<XElement>()
+                                 |> Seq.iter(fun f -> files.Add(f.Attribute(XName.Get "fullPath").Value,
+                                                                f.Attribute(XName.Get "uid").Value))
+
+      // Copy sequence points across
+                                 source.Select(".//seqpnt").OfType<XPathNavigator>() |>
+                                 Seq.iter(fun s -> let sl = s.GetAttribute("line",String.Empty)
+                                                   let sc = s.GetAttribute("column",String.Empty)
+                                                   let el = s.GetAttribute("endline",String.Empty)
+                                                   let ec = s.GetAttribute("endcolumn",String.Empty)
+                                                   let uid = files.[s.GetAttribute("document",String.Empty)]
+                                                   let vc = parse <| s.GetAttribute("visitcount", String.Empty)
+                                                   let xpath = ".//SequencePoint[@sl='" + sl +
+                                                                                          "' and @sc='" + sc +
+                                                                                          "' and @el='" + el +
+                                                                                          "' and @ec='" + ec +
+                                                                                          "' and @fileid='" + uid + "']"
+                                                   let sp = Extensions.XPathSelectElement(target, xpath)
+                                                   let v = parse <| sp.Attribute(XName.Get "vc").Value
+                                                   let visits = (max 0 v) + (max 0 vc)
+                                                   sp.Attribute(XName.Get "vc").Value <- visits.ToString(System.Globalization.CultureInfo.InvariantCulture)))
+
+      let dec = rewrite.Declaration
+      dec.Encoding <- "utf-8"
+      dec.Standalone <- null
+      if self.OutputFile |> String.IsNullOrWhiteSpace |> not then
+        rewrite.Save(self.OutputFile)
+
+      self.WriteObject rewrite
+    finally
+      Directory.SetCurrentDirectory here
+
 #endif

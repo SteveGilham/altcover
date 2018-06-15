@@ -418,11 +418,14 @@ module Visitor =
                 else accumulate state.Next gendarme
     accumulate i [i]
 
-  [<SuppressMessage("Microsoft.Usage", "CA2208", Justification="Compiler inlined code in List.m??By")>]
+  let private boundaryOfList (f: (Instruction->int) -> Instruction list -> Instruction)
+                             (places:Instruction list) =
+    places |> f (fun i -> i.Offset)
+
   let includedSequencePoint dbg (toNext:Instruction list) toJump =
     let places = List.concat [toNext; toJump]
-    let start = places |> List.minBy (fun i -> i.Offset)
-    let finish = places |> List.maxBy (fun i -> i.Offset)
+    let start = places |> (boundaryOfList List.minBy)
+    let finish = places |> (boundaryOfList List.maxBy)
     let range = Seq.unfold (fun (state:Cil.Instruction) -> if isNull state || finish = state.Previous then None else Some (state, state.Next)) start
                 |>  Seq.toList
     findSequencePoint dbg range
@@ -556,13 +559,13 @@ module Visitor =
     visitors |>
     List.map (invoke node)
 
-  let internal Visit (visitors : list<Fix<Node>>) (assemblies : seq<string>) =
+  let internal Visit (visitors : seq<Fix<Node>>) (assemblies : seq<string>) =
     ZeroPoints()
     MethodNumber <- 0
     try
         Start assemblies
         |> BuildSequence
-        |> Seq.fold apply visitors
+        |> Seq.fold apply (visitors |> Seq.toList)
         |> ignore
     finally
       accumulator

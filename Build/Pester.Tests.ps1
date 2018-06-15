@@ -1,6 +1,9 @@
 $x = "./_Reports/PesterFSharpTypesDotNetRunner.xml"
 $o = "./Sample2/_Binaries/Sample2/Debug+AnyCPU/netcoreapp2.0"
 $i = "./_Binaries/Sample2/Debug+AnyCPU/netcoreapp2.0"
+dir "./_Packaging/*.*" | % { if ( -not($_.Name -like "*.nupkg")) { del -force $_.FullName }}
+dir "./_Packaging"
+if (Test-Path $x) { del -force $x }
 
 Describe "Invoke-Altcover" {
     It "instruments and collects" {
@@ -19,7 +22,7 @@ Describe "Invoke-Altcover" {
         $xm = [xml](Get-Content $x)
         [string]::Join(" ", $xm.coverage.module.method.name) | Should -Be "main returnFoo returnBar testMakeUnion as_bar get_MyBar Invoke .ctor makeThing testMakeThing bytes"
         [string]::Join(" ", $xm.coverage.module.method.seqpnt.visitcount) | Should -Be "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"
-        $w | Should -Be "0 visits recorded"
+        $w | Should -Be "A total of 0 visits recorded"
 
         Invoke-AltCover  -InformationAction Continue -Runner -RecorderDirectory $o -WorkingDirectory "./Sample2" -Executable "dotnet" -CommandLine @("test", "--no-build", "--configuration", "Debug",  "sample2.core.fsproj")
         $xm2 = [xml](Get-Content $x)
@@ -49,7 +52,7 @@ Describe "ConvertTo-XDocument" {
     It "converts" {
         $xml = [xml](Get-Content "./Tests/Sample1WithNCover.xml")
         $xd = $xml | ConvertTo-XDocument
-        $xd.GetType().FullName | Should -Be "System.Xml.Linq.XDocument"
+        $xd | Should -BeOfType "System.Xml.Linq.XDocument"
         $header = $xd.Declaration.ToString().Replace(" standalone=`"`"", "") + "`n" 
         $sw = new-object System.IO.StringWriter @()
         $settings = new-object System.Xml.XmlWriterSettings @()
@@ -74,7 +77,7 @@ Describe "ConvertTo-XmlDocument" {
     It "converts" {
         $xd = [System.Xml.Linq.XDocument]::Load("./Tests/Sample1WithNCover.xml")
         $xml = $xd | ConvertTo-XmlDocument
-        $xml.GetType().FullName | Should -Be "System.Xml.XmlDocument"
+        $xml | Should -BeOfType "System.Xml.XmlDocument"
         $sw = new-object System.IO.StringWriter @()
         $settings = new-object System.Xml.XmlWriterSettings @()
         $settings.Indent = $true
@@ -138,13 +141,13 @@ end_of_record
 }
 
 Describe "ConvertTo-Cobertura" {
-    It "Converts OpenCover Data" {
-        $x = ConvertTo-Cobertura -InputFile "./Tests/HandRolledMonoCoverage.xml" -OutputFile "./_Packaging/OpenCover.cobertura"
-        $coverage = $x.Descendants("coverage")
-        $v = $coverage.Attribute("version").Value
-        $t = $coverage.Attribute("timestamp").Value
+  It "Converts OpenCover Data" {
+    $x = ConvertTo-Cobertura -InputFile "./Tests/HandRolledMonoCoverage.xml" -OutputFile "./_Packaging/OpenCover.cobertura"
+    $coverage = $x.Descendants("coverage")
+    $v = $coverage.Attribute("version").Value
+    $t = $coverage.Attribute("timestamp").Value
 
-        $expected = @"
+    $expected = @"
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <coverage line-rate="0.7142857142857143" branch-rate="0.66666666666666663" version="$v" timestamp="$t">
   <sources>
@@ -204,20 +207,20 @@ Describe "ConvertTo-Cobertura" {
   </packages>
 </coverage>
 "@
-        $got = [String]::Join("`n", (Get-Content "./_Packaging/OpenCover.cobertura"))
-        $got | Should -Be $expected.Replace("`r", "").Replace("\", [System.IO.Path]::DirectorySeparatorChar)
+    $got = [String]::Join("`n", (Get-Content "./_Packaging/OpenCover.cobertura"))
+    $got | Should -Be $expected.Replace("`r", "").Replace("\", [System.IO.Path]::DirectorySeparatorChar)
 
-        $header = $x.Declaration.ToString() + "`n"
-        ($header + $x.ToString()).Replace("`r", "") | Should -Be $expected.Replace("`r", "").Replace("\", [System.IO.Path]::DirectorySeparatorChar)
-    }
+    $header = $x.Declaration.ToString() + "`n"
+    ($header + $x.ToString()).Replace("`r", "") | Should -Be $expected.Replace("`r", "").Replace("\", [System.IO.Path]::DirectorySeparatorChar)
+  }
 
-    It "Converts NCover Data" {
-        $x = ConvertTo-Cobertura -InputFile "./Tests/Sample1WithNCover.xml" -OutputFile "./_Packaging/NCover.cobertura"
-        $coverage = $x.Descendants("coverage")
-        $v = $coverage.Attribute("version").Value
-        $t = $coverage.Attribute("timestamp").Value
+  It "Converts NCover Data" {
+    $x = ConvertTo-Cobertura -InputFile "./Tests/Sample1WithNCover.xml" -OutputFile "./_Packaging/NCover.cobertura"
+    $coverage = $x.Descendants("coverage")
+    $v = $coverage.Attribute("version").Value
+    $t = $coverage.Attribute("timestamp").Value
 
-        $expected = @"
+    $expected = @"
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <coverage line-rate="0.7" branch-rate="1" version="$v" timestamp="$t">
   <sources>
@@ -261,24 +264,24 @@ Describe "ConvertTo-Cobertura" {
   </packages>
 </coverage>
 "@
-        $got = [String]::Join("`n", (Get-Content "./_Packaging/NCover.cobertura"))
-        $got | Should -Be $expected.Replace("`r", "")
+    $got = [String]::Join("`n", (Get-Content "./_Packaging/NCover.cobertura"))
+    $got | Should -Be $expected.Replace("`r", "")
 
-        $header = $x.Declaration.ToString() + "`n"
-        ($header + $x.ToString()).Replace("`r", "") | Should -Be $expected.Replace("`r", "")
-    }
-
-    It "Converts Real NCover Data" {
-      $ev = ""
-      ConvertTo-Cobertura -InputFile "./Tests/GenuineNCover158.Xml" -OutputFile "./_Packaging/NCover158.cobertura" -ErrorVariable ev
-      $ev | Should -BeFalse
-    }
+    $header = $x.Declaration.ToString() + "`n"
+    ($header + $x.ToString()).Replace("`r", "") | Should -Be $expected.Replace("`r", "")
   }
+
+  It "Converts Real NCover Data" {
+    $ev = ""
+    ConvertTo-Cobertura -InputFile "./Tests/GenuineNCover158.Xml" -OutputFile "./_Packaging/NCover158.cobertura" -ErrorVariable ev
+    $ev | Should -BeFalse
+  }
+}
 
 Describe "ConvertTo-NCover" {
   It "converts" {
       $xml = ConvertTo-NCover -InputFile "./Tests/HandRolledMonoCoverage.xml" -OutputFile "./_Packaging/HandRolledMonoNCover.xml"
-      $xml.GetType().FullName | Should -Be "System.Xml.XmlDocument"
+      $xml | Should -BeOfType "System.Xml.XmlDocument"
 
       $sw = new-object System.IO.StringWriter @()
       $settings = new-object System.Xml.XmlWriterSettings @()
@@ -317,5 +320,77 @@ Describe "ConvertTo-NCover" {
 "@
     $sw.ToString().Replace("`r", "") | Should -Be $expected.Replace("`r", "")
     $sw.ToString().Replace("`r", "") | Should -Be $written.Replace("`r", "")
+  }
+}
+
+Describe "ConvertTo-BarChart" {
+  It "converts NCover" {
+    $xml = ConvertTo-BarChart -InputFile "./Tests/GenuineNCover158.Xml" -OutputFile "./_Packaging/GenuineNCover158Chart.html"
+    $xml | Should -BeOfType "System.Xml.XmlDocument"
+
+    $sw = new-object System.IO.StringWriter @()
+    $settings = new-object System.Xml.XmlWriterSettings @()
+    $settings.Indent = $true
+    $settings.IndentChars = "  "
+    $xw = [System.Xml.XmlWriter]::Create($sw, $settings)
+    $xml.WriteTo($xw)
+    $xw.Close()
+    $written = [System.IO.File]::ReadAllText("./_Packaging/GenuineNCover158Chart.html")
+    $expected = [System.IO.File]::ReadAllText("./Tests/GenuineNCover158Chart.html")
+
+    $result = $sw.ToString().Replace("`r", "").Replace("html >", "html>") 
+    $result | Should -Be $expected.Replace("`r", "")
+    $result | Should -Be $written.Replace("`r", "")
+  }
+
+  It "converts OpenCover" {
+    $xml = ConvertTo-BarChart -InputFile "./Tests/HandRolledMonoCoverage.xml" -OutputFile "./_Packaging/HandRolledMonoCoverage.html"
+    $xml | Should -BeOfType "System.Xml.XmlDocument"
+
+    $sw = new-object System.IO.StringWriter @()
+    $settings = new-object System.Xml.XmlWriterSettings @()
+    $settings.Indent = $true
+    $settings.IndentChars = "  "
+    $xw = [System.Xml.XmlWriter]::Create($sw, $settings)
+    $xml.WriteTo($xw)
+    $xw.Close()
+    $written = [System.IO.File]::ReadAllText("./_Packaging/HandRolledMonoCoverage.html")
+    $expected = [System.IO.File]::ReadAllText("./Tests/HandRolledMonoCoverage.html")
+
+    $result = $sw.ToString().Replace("`r", "").Replace("html >", "html>") 
+    $result | Should -Be $expected.Replace("`r", "")
+    $result | Should -Be $written.Replace("`r", "")
+  }
+}
+
+Describe "ConvertFrom-NCover" {
+  It "converts" {
+    $assemblies = @()
+    $assemblies += "./_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.0/Sample4.dll"
+    $xml = ConvertFrom-NCover -InputFile "./_Reports/ReleaseXUnitFSharpTypesDotNetRunner.xml" -Assembly $Assemblies -OutputFile "./_Packaging/AltCoverFSharpTypes.xml"
+    $xml | Should -BeOfType "System.Xml.Linq.XDocument"
+
+    $sw = new-object System.IO.StringWriter @()
+    $settings = new-object System.Xml.XmlWriterSettings @()
+    $settings.Indent = $true
+    $settings.IndentChars = "  "
+    $xw = [System.Xml.XmlWriter]::Create($sw, $settings)
+    $xml.WriteTo($xw)
+    $xw.Close()
+    $written = [System.IO.File]::ReadAllText("./_Packaging/AltCoverFSharpTypes.xml")
+    $expected = [System.IO.File]::ReadAllText("./Tests/AltCoverFSharpTypes.xml")
+    $hash = $xml.Descendants("Module").Attribute("hash").Value
+    $time = $xml.Descendants("ModuleTime").Value
+    $file = $xml.Descendants("File") | Select-Object -First 1
+    $fullpath = [System.io.path]::GetDirectoryName($file.Attribute("fullPath").Value)
+
+    $expected = $expected.Replace("09-23-DC-B3-65-CE-96-5D-B4-56-2A-3A-0D-5A-1B-09-3E-38-2B-22", $hash)
+    $expected = $expected.Replace("2018-06-13T15:08:24.8840000Z", $time)
+    $expected = $expected.Replace("Sample4|Program.fs", (Join-Path $fullpath "Program.fs"))
+    $expected = $expected.Replace("Sample4|Tests.fs", (Join-Path $fullpath "Tests.fs"))
+
+    $result = $sw.ToString().Replace("`r", "").Replace("utf-16", "utf-8") 
+    $result | Should -Be $expected.Replace("`r", "")
+    $result | Should -Be $written.Replace("`r", "")
   }
 }

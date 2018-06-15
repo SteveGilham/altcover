@@ -163,7 +163,7 @@
       "FSharp.Core/4.3.4": {
         "runtime": {
           "lib/netstandard1.6/FSharp.Core.dll": {}
-        }
+          }
       }
     }</value>
   </data>
