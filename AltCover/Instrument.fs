@@ -253,7 +253,7 @@ module Instrument =
   let internal ResolveFromNugetCache _ (y:AssemblyNameReference) =
     let name = y.ToString()
     if ResolutionTable.ContainsKey name then ResolutionTable.[name]
-    else 
+    else
         let candidate = Directory.GetFiles(nugetCache, y.Name + ".*", SearchOption.AllDirectories)
                         |> Array.rev
                         |> Seq.filter(fun f -> let x = Path.GetExtension f
@@ -269,7 +269,6 @@ module Instrument =
                     let a = AssemblyDefinition.ReadAssembly x
                     ResolutionTable.[name] <- a
                     a
-                    
 
   let internal HookResolver (resolver:IAssemblyResolver) =
     if resolver |> isNull |> not then

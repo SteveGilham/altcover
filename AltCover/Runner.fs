@@ -15,21 +15,6 @@ open Augment
 [<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage>]
 type Tracer = { Tracer : string }
 
-type TypeBinder (``type``:Type) =
-  inherit System.Runtime.Serialization.SerializationBinder()
-  override self.BindToType (_:string, n:string) =
-    match n with
-    | both when both.StartsWith("System.Tuple`2[[System.Int64", StringComparison.Ordinal) -> typeof<(int64*int)>
-    | t2 when t2.StartsWith("System.Tuple`2", StringComparison.Ordinal) -> ``type``
-    | t3 when t3.StartsWith("System.Tuple`3", StringComparison.Ordinal) -> typeof<(string*int*Base.Track)>
-    | "AltCover.Recorder.Track+Call"
-    | "AltCover.Base.Track+Call"-> (Base.Track.Call 0).GetType()
-    | "AltCover.Recorder.Track+Time"
-    | "AltCover.Base.Track+Time" -> (Base.Track.Time 0L).GetType()
-    | "AltCover.Recorder.Track+Both"
-    | "AltCover.Base.Track+Both" -> (Base.Track.Both (0L, 0)).GetType()
-    | _ -> typeof<Base.Track>
-
 module Runner =
 
   let mutable internal recordingDirectory : Option<string> = None
@@ -373,33 +358,49 @@ module Runner =
       result
 
   let internal CollectResults (hits:ICollection<(string*int*Base.Track)>) report =
-      let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
-      formatter.Binder <- TypeBinder(typeof<(string*int)>)
-
+      let timer = System.Diagnostics.Stopwatch()
+      timer.Start()
+      let mutable before = hits.Count
+      let mutable after = 0
       Directory.GetFiles( Path.GetDirectoryName(report),
                           Path.GetFileName(report) + ".*.acv")
       |> Seq.iter (fun f ->
-          sprintf "... %s" f |> Output.Info
+          timer.Restart()
+          let length = FileInfo(f).Length
+
+          sprintf "... %s (%db)" f length |> Output.Info
           use results = new DeflateStream(File.OpenRead f, CompressionMode.Decompress)
+          use formatter = new System.IO.BinaryReader(results)
           let rec sink() =
             let hit = try
-                          let raw = formatter.Deserialize(results)
-                          match raw with
-                          | :? (string * int * Base.Track) as x -> x
-                          | _ -> let pair = raw :?> (string * int)
-                                 (fst pair, snd pair, Base.Null)
+                          let id = formatter.ReadString()
+                          let strike = formatter.ReadInt32()
+                          let tag = formatter.ReadByte() |> int
+                          (id, strike, match enum tag  with
+                                       | AltCover.Base.Tag.Time -> Base.Time <| formatter.ReadInt64()
+                                       | AltCover.Base.Tag.Call -> Base.Call <| formatter.ReadInt32()
+                                       | AltCover.Base.Tag.Both -> Base.Both (formatter.ReadInt64(), formatter.ReadInt32())
+                                       | _ -> Base.Null)
                       with
-                      | :? System.InvalidCastException
-                      | :? System.ArgumentException
-                      | :? System.Runtime.Serialization.SerializationException -> (null, -1, Base.Null)
+                      | :? IOException -> (null, -1, Base.Null)
             let (key, _, _) = hit
             if key |> String.IsNullOrWhiteSpace  |> not then
               hit |> hits.Add
               sink()
           sink()
+          timer.Stop()
+          after <- hits.Count
+          if after > before then
+            let delta = after - before
+            before <- after
+            let interval = timer.Elapsed
+            let rate = (float delta)/interval.TotalSeconds
+            WriteResourceWithFormatItems "%d visits recorded in %A (%A visits/sec)" [| delta :> obj ; interval; rate |] false
       )
 
-      let visits = hits.Count
+      timer.Stop()
+
+      let visits = after
       WriteResourceWithFormatItems "%d visits recorded" [|visits|] (visits = 0)
 
   let internal MonitorBase (hits:ICollection<(string*int*Base.Track)>) report (payload: string list -> int) (args : string list) =

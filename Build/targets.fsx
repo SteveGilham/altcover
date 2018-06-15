@@ -382,7 +382,7 @@ _Target "UnitTestDotNetWithCoverlet" (fun _ ->
 
                                             let here = Path.GetDirectoryName f
 
-                                            (here @@ "coverage.xml") :: l
+                                            (here @@ "coverage.opencover.xml") :: l
                                         finally
                                             Actions.RunDotnet dotnetOptions "remove"
                                                               (f + " package coverlet.msbuild ")
@@ -1424,6 +1424,14 @@ _Target "Unpack" (fun _ ->
   System.IO.Compression.ZipFile.ExtractToDirectory (nugget, unpack)
 )
 
+_Target "WindowsPowerShell" (fun _ ->
+  Actions.RunRaw (fun info -> { info with
+                                        FileName = "powershell.exe"
+                                        WorkingDirectory = "."
+                                        Arguments = ("-NoProfile ./Build/powershell.ps1")})
+                                 "powershell"
+)
+
 _Target "Pester" (fun _ ->
   Directory.ensure "./_Reports"
   let nugget = !! "./_Packaging/*.nupkg" |> Seq.last
@@ -1442,7 +1450,7 @@ _Target "Pester" (fun _ ->
   Actions.RunRaw (fun info -> { info with
                                         FileName = pwsh
                                         WorkingDirectory = "."
-                                        Arguments = (" ./Build/pester.ps1")})
+                                        Arguments = ("-NoProfile ./Build/pester.ps1")})
                                  "pwsh"
 
   Actions.RunDotnet (fun o -> {dotnetOptions o with WorkingDirectory = unpack}) ""
@@ -1940,7 +1948,7 @@ _Target "DotnetTestIntegration" ( fun _ ->
     Shell.copy "./_DotnetTest" (!! "./Sample4/*.fs")
 
     Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = Path.getFullName "_DotnetTest"}) "test"
-                      ("/p:AltCover=true /p:AltCoverCallContext=[Fact]|0 ")
+                      ("-v n /p:AltCover=true /p:AltCoverCallContext=[Fact]|0 ")
                       "sample test returned with a non-zero exit code"
 
     let x = Path.getFullName "./_DotnetTest/coverage.xml"
@@ -2395,6 +2403,19 @@ Target.activateFinal "ResetConsoleColours"
 "Unpack"
 ==> "Pester"
 ==> "UnitTestWithAltCoverRunner"
+
+"WindowsPowerShell"
+=?> ("Pester", Environment.isWindows)
+
+"Unpack"
+==> "WindowsPowerShell"
+=?> ("Deployment", Environment.isWindows)
+
+"ReleaseXUnitFSharpTypesDotNetRunner"
+=?> ("WindowsPowerShell", Environment.isWindows)
+
+"ReleaseXUnitFSharpTypesDotNetRunner"
+==> "Pester"
 
 "Unpack"
 ==> "SimpleReleaseTest"

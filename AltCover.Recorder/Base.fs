@@ -12,6 +12,8 @@ open System.Xml
 
 type ReportFormat = NCover = 0 | OpenCover = 1 | OpenCoverWithTracking = 2
 
+type Tag = Null = 0 | Time = 1 | Call = 2 | Both = 3
+
 [<System.Runtime.InteropServices.ProgIdAttribute("ExcludeFromCodeCoverage hack for OpenCover issue 615")>]
 type internal Track =
   | Null

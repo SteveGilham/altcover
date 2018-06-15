@@ -77,3 +77,13 @@ module XmlUtilities =
     xmlDocument.Schemas <- schema
     xmlDocument.Validate (null)
     format
+
+  let AssemblyNameWithFallback path fallback =
+    try
+        System.Reflection.AssemblyName.GetAssemblyName(path).FullName
+    with
+    | :? ArgumentException
+    | :? FileNotFoundException
+    | :? System.Security.SecurityException
+    | :? BadImageFormatException
+    | :? FileLoadException -> fallback

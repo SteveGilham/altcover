@@ -26,9 +26,9 @@ module Output =
     Error <- x.Invoke
   let internal SetWarn (x:StringSink) =
     Warn <- x.Invoke
-  let internal WarnOn x = if x 
+  let internal WarnOn x = if x
                           then Warn
-                          else Info 
+                          else Info
 
   [<CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202", Justification="Multiple Close() should be safe")>]
   let LogExceptionToFile path e =
