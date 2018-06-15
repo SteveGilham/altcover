@@ -33,3 +33,6 @@ module Adapter =
 
   let VisitImplNone moduleId hitPointId = Instance.VisitImpl moduleId hitPointId Track.Null
   let VisitImplMethod moduleId hitPointId mId = Instance.VisitImpl moduleId hitPointId (Call mId)
+
+  let internal NewBoth time track =
+    Both (time, track)
