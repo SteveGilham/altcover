@@ -1,3 +1,15 @@
+# 3.5.5xx (Cerulean series release 5)
+### All NuGet packages
+* All packages now include the `pwsh` module alongside the main .net core AltCover.dll so 
+`ipmo %USERPROFILE%\.nuget\packages\altcover\<version>\tools\netcoreapp2.0\AltCover.PowerShell.dll` or  
+`ipmo %USERPROFILE%\.nuget\packages\altcover.dotnet\<version>\lib\netcoreapp2.0\AltCover.PowerShell.dll` or  
+`ipmo %USERPROFILE%\.nuget\packages\altcover.global\<version>\tools\netcoreapp2.1\any\AltCover.PowerShell.dll`  
+according to which package is used
+
+### "classic" NuGet package only
+* provides the .net Framework/mono binaries
+
+
 # 3.5.543 (Cerulean series release 4)
 ### All NuGet packages
 * [BUGFIX] -- Issue #22 : Using a custom serialization gives the major speed-up I was looking for, without needing to try tricks that may be counter-productive given the use of compression in the process.
