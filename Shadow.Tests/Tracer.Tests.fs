@@ -121,6 +121,10 @@ type AltCoverCoreTests() = class
                      ("name", 23, Null)
                      ("name", 23, Call 17)
                      ("name", 23, Call 42)
+                     ("name", 24, Null)
+                     ("name", 24, Null)
+                     ("name", 24, Time 17L)
+                     ("name", 24, Both (42L, 23))
                      ("name", 23, Call 5)
     ]
 

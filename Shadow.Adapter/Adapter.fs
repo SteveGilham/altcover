@@ -25,6 +25,7 @@ module Adapter =
     prepareName name
 
     Instance.Visits.[name].Add(line, (number, [Call 17; Call 42]))
+    Instance.Visits.[name].Add(line + 1, (number + 1, [Time 17L; Both (42L, 23)]))
 
   let VisitsSeq() = Instance.Visits |> Seq.cast<obj>
   let VisitsEntrySeq key = Instance.Visits.[key] |> Seq.cast<obj>
