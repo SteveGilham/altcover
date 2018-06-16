@@ -8,7 +8,7 @@ according to which package is used
 
 ### "classic" NuGet package only
 * can integrate with `dotnet test`
-* provides the .net Framework/mono binaries
+* provides the .net Framework/mono binaries, including the Windows PowerShell module : `ipmo $(SolutionDir)\packages\altcover\<version>\tools\net45\AltCover.PowerShell.dll`
 
 
 # 3.5.543 (Cerulean series release 4)
