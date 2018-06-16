@@ -7,6 +7,7 @@
 according to which package is used
 
 ### "classic" NuGet package only
+* can integrate with `dotnet test`
 * provides the .net Framework/mono binaries
 
 
