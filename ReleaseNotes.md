@@ -6,6 +6,10 @@
 `ipmo %USERPROFILE%\.dotnet\tool\altcover.global\<version>\altcover.global\<version>\tools\netcoreapp2.1\any\AltCover.PowerShell.dll` (yes, package name and version twice in the default install location)  
 according to which package is used
 
+### "classic" and dotnet CLI NuGet packages
+* Support `dotnet add package ...` for `dotnet test` integration
+* dotnet global tools aren't compatible with `dotnet add package`
+
 ### "classic" NuGet package only
 * can integrate with `dotnet test`
 * provides the .net Framework/mono binaries

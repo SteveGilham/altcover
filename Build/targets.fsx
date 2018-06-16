@@ -1292,14 +1292,14 @@ _Target "Packaging" (fun _ ->
     Directory.ensure "/_Intermediate/dotnet"
     let otherFilesDotnet = otherFiles
                            |> List.map (fun (a,b,c) -> let text = File.ReadAllText(a).Replace("tools/netcoreapp2.0", "lib/netcoreapp2.0")
-                                                       let name = "/_Intermediate/dotnet" @@ (Path.GetFileName a)
+                                                       let name = "/_Intermediate/dotnet" @@ ("altcover.dotnet" + Path.GetExtension a)
                                                        File.WriteAllText(name, text)
                                                        (name,b,c))   
 
     Directory.ensure "/_Intermediate/global"
     let otherFilesGlobal = otherFiles
                            |> List.map (fun (a,b,c) -> let text = File.ReadAllText(a).Replace("tools/netcoreapp2.0", "tools/netcoreapp2.1/any")
-                                                       let name = "/_Intermediate/global" @@ (Path.GetFileName a)
+                                                       let name = "/_Intermediate/global" @@ ("altcover.global" + Path.GetExtension a)
                                                        File.WriteAllText(name, text)
                                                        (name,b,c))                       
 
@@ -2134,7 +2134,7 @@ _Target "DotnetCLIIntegration" ( fun _ ->
                       ("package altcover.dotnet")
                       "sample test returned with a non-zero exit code"
     Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = Path.getFullName "_DotnetCLITest"}) "test"
-                      ("-v n /p:AltCover=true")
+                      ("/p:AltCover=true")
                       "sample test returned with a non-zero exit code"
     "./_DotnetCLITest/coverage.xml" |> Path.getFullName |> File.Exists |> Assert.That
 
@@ -2251,15 +2251,15 @@ _Target "DotnetGlobalIntegration" ( fun _ ->
                                         Arguments = ("-NoProfile -Command \"ipmo " + mpath + "; ConvertTo-BarChart -? \"")})
                                    "pwsh"
 
-    (fsproj.Descendants(XName.Get("TargetFramework")) |> Seq.head).Value <- "netcoreapp2.1"
-    fsproj.Save "./_DotnetGlobalTest/dotnetglobal.fsproj"
-    Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = Path.getFullName "_DotnetGlobalTest"}) "add"
-                      ("package altcover.global")
-                      "sample test returned with a non-zero exit code"
-    Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = Path.getFullName "_DotnetGlobalTest"}) "test"
-                      ("-v n /p:AltCover=true")
-                      "sample test returned with a non-zero exit code"
-    "./_DotnetGlobalTest/coverage.xml" |> Path.getFullName |> File.Exists |> Assert.That
+    // (fsproj.Descendants(XName.Get("TargetFramework")) |> Seq.head).Value <- "netcoreapp2.1"
+    // fsproj.Save "./_DotnetGlobalTest/dotnetglobal.fsproj"
+    // Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = Path.getFullName "_DotnetGlobalTest"}) "add"
+    //                   ("package altcover.global")
+    //                   "sample test returned with a non-zero exit code"
+    // Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = Path.getFullName "_DotnetGlobalTest"}) "test"
+    //                   ("-v n /p:AltCover=true")
+    //                   "sample test returned with a non-zero exit code"
+    // "./_DotnetGlobalTest/coverage.xml" |> Path.getFullName |> File.Exists |> Assert.That
 
   finally
     if set then Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = working} ) "tool"
