@@ -3,7 +3,7 @@
 * All packages now include the `pwsh` module alongside the main .net core AltCover.dll so 
 `ipmo %USERPROFILE%\.nuget\packages\altcover\<version>\tools\netcoreapp2.0\AltCover.PowerShell.dll` or  
 `ipmo %USERPROFILE%\.nuget\packages\altcover.dotnet\<version>\lib\netcoreapp2.0\AltCover.PowerShell.dll` or  
-`ipmo %USERPROFILE%\.nuget\packages\altcover.global\<version>\tools\netcoreapp2.1\any\AltCover.PowerShell.dll`  
+`ipmo %USERPROFILE%\.dotnet\tool\altcover.global\<version>\altcover.global\<version>\tools\netcoreapp2.1\any\AltCover.PowerShell.dll` (yes, package name and version twice in the default install location)  
 according to which package is used
 
 ### "classic" NuGet package only

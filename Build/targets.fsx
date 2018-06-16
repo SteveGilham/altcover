@@ -2108,6 +2108,14 @@ _Target "DotnetCLIIntegration" ( fun _ ->
                                      "<TrackedMethodRef uid=\"2\" vc=\"1\" />"
                                      "<TrackedMethodRef uid=\"2\" vc=\"1\" />"
                     ])
+
+    let mpath = ((nugetCache @@ "altcover.dotnet") @@ !Version) @@ "lib/netcoreapp2.0/AltCover.PowerShell.dll"
+    Actions.RunRaw (fun info -> { info with
+                                        FileName = pwsh
+                                        WorkingDirectory = "."
+                                        Arguments = ("-NoProfile -Command \"ipmo " + mpath + " ; ConvertTo-BarChart -? \"")})
+                                   "pwsh"
+
   finally
     let folder = (nugetCache @@ "altcover.dotnet") @@ !Version
     Shell.mkdir folder
@@ -2213,6 +2221,14 @@ _Target "DotnetGlobalIntegration" ( fun _ ->
                                      "<TrackedMethodRef uid=\"2\" vc=\"1\" />"
                                      "<TrackedMethodRef uid=\"2\" vc=\"1\" />"
                     ])
+
+    let mpath = ((((nugetCache @@ "../../.dotnet/tools/.store/altcover.global") @@ !Version) @@ "altcover.global") @@ !Version) @@ "tools/netcoreapp2.1/any/AltCover.PowerShell.dll"
+    Actions.RunRaw (fun info -> { info with
+                                        FileName = pwsh
+                                        WorkingDirectory = "."
+                                        Arguments = ("-NoProfile -Command \"ipmo " + mpath + "; ConvertTo-BarChart -? \"")})
+                                   "pwsh"
+
   finally
     if set then Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = working} ) "tool"
                                              ("uninstall -g altcover.global") "uninstalled"
