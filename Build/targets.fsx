@@ -1289,17 +1289,17 @@ _Target "Packaging" (fun _ ->
                        |> Seq.map (fun x -> (x, Some (Path.GetDirectoryName(x).Substring(nupkg).Replace("\\","/")), None))
                        |> Seq.toList
 
-    Directory.ensure "/_Intermediate/dotnet"
+    Directory.ensure "./_Intermediate/dotnet"
     let otherFilesDotnet = otherFiles
                            |> List.map (fun (a,b,c) -> let text = File.ReadAllText(a).Replace("tools/netcoreapp2.0", "lib/netcoreapp2.0")
-                                                       let name = "/_Intermediate/dotnet" @@ ("altcover.dotnet" + Path.GetExtension a)
+                                                       let name = (Path.getFullName"./_Intermediate/dotnet") @@ ("altcover.dotnet" + Path.GetExtension a)
                                                        File.WriteAllText(name, text)
                                                        (name,b,c))   
 
-    Directory.ensure "/_Intermediate/global"
+    Directory.ensure "./_Intermediate/global"
     let otherFilesGlobal = otherFiles
                            |> List.map (fun (a,b,c) -> let text = File.ReadAllText(a).Replace("tools/netcoreapp2.0", "tools/netcoreapp2.1/any")
-                                                       let name = "/_Intermediate/global" @@ ("altcover.global" + Path.GetExtension a)
+                                                       let name = (Path.getFullName"./_Intermediate/global") @@ ("altcover.global" + Path.GetExtension a)
                                                        File.WriteAllText(name, text)
                                                        (name,b,c))                       
 
@@ -2131,7 +2131,7 @@ _Target "DotnetCLIIntegration" ( fun _ ->
                                    "pwsh"
 
     Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = Path.getFullName "_DotnetCLITest"}) "add"
-                      ("package altcover.dotnet")
+                      ("package altcover.dotnet --version " + !Version)
                       "sample test returned with a non-zero exit code"
     Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = Path.getFullName "_DotnetCLITest"}) "test"
                       ("/p:AltCover=true")
