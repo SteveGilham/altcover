@@ -1,5 +1,40 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:html="clr-namespace:Avalonia.Controls.Html;assembly=Avalonia.HtmlRenderer"
         Title="AltCover.Avalonia">
-    Hello World from F# and Avalonia!
+  <TabControl>
+    <TabItem Name="Visualizer" Header="Visualizer">
+  <StackPanel>
+    <DockPanel Height="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Window, AncestorLevel=1}, Path=Height}" Width="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Window, AncestorLevel=1}, Path=Width}">
+      <Menu DockPanel.Dock="Top" MaxHeight="48" VerticalAlignment="Top">
+        <MenuItem Name="Open">
+          <MenuItem.Header>
+            <StackPanel>
+              <Image Source="Open_6529.png"  Stretch="None" />
+              <TextBlock Name="OpenText" Text="" />
+            </StackPanel>
+          </MenuItem.Header>
+        </MenuItem>
+      </Menu>
+    </DockPanel>
+  </StackPanel>
+    </TabItem>
+    <TabItem Name="About">
+      <StackPanel Margin="10">
+        <Image Height="128" Stretch="None" Width="128" Source="Visualizer.png" HorizontalAlignment="Center" />
+        <TextBlock Name="Program" Margin="10" FontSize="24" FontWeight="ExtraBold" HorizontalAlignment="Center" />
+        <TextBlock Name="Description"  HorizontalAlignment="Center" TextAlignment="Center" />
+        <TextBlock Name="Copyright" Margin="10" FontSize="8" HorizontalAlignment="Center" />
+        <html:HtmlLabel Name="Link" MinHeight="20" Focusable="True" HorizontalAlignment="Center" />
+        <Expander Name="Expander" Margin="10" HorizontalAlignment="Center" MinWidth="500" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
+          <Expander.Header>
+            <TextBlock Name="License" />
+          </Expander.Header>
+          <ScrollViewer MaxHeight="400" HorizontalAlignment="Center">
+            <TextBlock Name="MIT" MinHeight="100" Width="500" TextWrapping="NoWrap" xml:space="preserve" />
+          </ScrollViewer>
+        </Expander>
+      </StackPanel>
+    </TabItem>
+  </TabControl>
 </Window>
