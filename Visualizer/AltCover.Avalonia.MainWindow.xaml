@@ -1,0 +1,5 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="AltCover.Avalonia">
+    Hello World from F# and Avalonia!
+</Window>

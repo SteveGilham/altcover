@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="AltCover.Avalonia.MainWindow.xaml">
+      <LogicalName>AltCover.Avalonia.MainWindow.xaml</LogicalName>
+    </EmbeddedResource>
+
+    <EmbeddedResource Include="AltCover.Avalonia.App.xaml">
+      <LogicalName>AltCover.Avalonia.App.xaml</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="MainWindow.fs" />
+    <Compile Include="App.fs" />
+    <Compile Include="Program.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="0.6.1" />
+    <PackageReference Include="Avalonia.Desktop" Version="0.6.1" />
+  </ItemGroup>
+
+</Project>
