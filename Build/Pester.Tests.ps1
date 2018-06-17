@@ -2,7 +2,6 @@ $x = "./_Reports/PesterFSharpTypesDotNetRunner.xml"
 $o = "./Sample2/_Binaries/Sample2/Debug+AnyCPU/netcoreapp2.0"
 $i = "./_Binaries/Sample2/Debug+AnyCPU/netcoreapp2.0"
 dir "./_Packaging/*.*" | % { if ( -not($_.Name -like "*.nupkg")) { del -force $_.FullName }}
-dir "./_Packaging"
 if (Test-Path $x) { del -force $x }
 
 Describe "Invoke-Altcover" {
