@@ -374,7 +374,7 @@ module Main =
                                "AltCover.PowerShell.dll")
                 |> Path.GetFullPath
                 |> sprintf "Import-Module %A"
-                |> Output.Info
+                |> (Output.WarnOn true)
                 0
            else
                 DoInstrumentation arguments

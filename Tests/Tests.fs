@@ -4573,6 +4573,7 @@ type AltCoverTests() = class
     try
       use stdout = new StringWriter()
       Console.SetOut stdout
+      Output.Task <- true
       let rc = AltCover.Main.EffectiveMain [| "i" |]
       Assert.That (rc, Is.EqualTo 0)
       let result = stdout.ToString().Replace("\r\n", "\n")
@@ -4584,7 +4585,9 @@ type AltCoverTests() = class
 
       Assert.That (result.Replace("\r\n", "\n"), Is.EqualTo (expected.Replace("\r\n", "\n")))
 
-    finally Console.SetOut saved
+    finally 
+      Console.SetOut saved
+      Output.Task <- false
 
   [<Test>]
   member self.UsageIsAsExpected() =
@@ -4797,6 +4800,7 @@ or
       Main.EffectiveMain <- save
       Output.Info <- fst saved
       Output.Error <- snd saved
+      Output.Task <- false
 
   [<Test>]
   member self.NonDefaultInstrumentIsOK() =
@@ -4828,6 +4832,7 @@ or
       Main.EffectiveMain <- save
       Output.Info <- fst saved
       Output.Error <- snd saved
+      Output.Task <- false
 
   [<Test>]
   member self.EmptyCollectIsJustTheDefaults() =
@@ -4846,6 +4851,7 @@ or
       Main.EffectiveMain <- save
       Output.Info <- fst saved
       Output.Error <- snd saved
+      Output.Task <- false
 
   [<Test>]
   member self.CollectWithExeIsNotCollecting() =
@@ -4870,6 +4876,7 @@ or
       Main.EffectiveMain <- save
       Output.Info <- fst saved
       Output.Error <- snd saved
+      Output.Task <- false
 
   [<Test>]
   member self.EmptyPowerShellIsJustTheDefaults() =
@@ -4883,10 +4890,12 @@ or
         let result = subject.Execute()
         Assert.That(result, Is.False)
         Assert.That(args, Is.EquivalentTo ["ipmo"])
-        Assert.Throws<InvalidOperationException>(fun () -> Output.Info "x") |> ignore
+        Assert.Throws<InvalidOperationException>(fun () -> Output.Warn "x") |> ignore
+        Assert.Throws<InvalidOperationException>(fun () -> Output.Error "x") |> ignore
     finally
       Main.EffectiveMain <- save
       Output.Info <- fst saved
       Output.Error <- snd saved
+      Output.Task <- false
   // Recorder.fs => Shadow.Tests
 end

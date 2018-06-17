@@ -48,6 +48,7 @@ type Prepare () =
     base.Log.LogMessage (MessageImportance.High, x)
 
   override self.Execute () =
+    Output.Task <- true
     Output.Error <- base.Log.LogError
     Output.Warn <- base.Log.LogWarning
     Output.Info <- self.Message
@@ -97,6 +98,7 @@ type Collect () =
     base.Log.LogMessage (MessageImportance.High, x)
 
   override self.Execute () =
+    Output.Task <- true
     Output.Error <- base.Log.LogError
     Output.Warn <- base.Log.LogWarning
     Output.Info <- self.Message
@@ -121,7 +123,9 @@ type Collect () =
 type PowerShell () =
   inherit Task(null)
   override self.Execute () =
-    Output.Info <- base.Log.LogWarning
+    Output.Task <- true
+    Output.Error <- base.Log.LogError
+    Output.Warn <- base.Log.LogWarning
     [|
       "ipmo"
     |]
