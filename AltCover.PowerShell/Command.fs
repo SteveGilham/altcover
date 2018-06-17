@@ -151,6 +151,7 @@ type InvokeAltCoverCommand(runner:bool) =
 
   override self.ProcessRecord() =
     let here = Directory.GetCurrentDirectory()
+    Output.Task <- true
 #if NETCOREAPP2_0
     Output.Error <- (fun s -> let fail = ErrorRecord(InvalidOperationException(), s, ErrorCategory.FromStdErr, self)
                               self.WriteError fail)

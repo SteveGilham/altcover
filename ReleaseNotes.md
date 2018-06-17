@@ -1,6 +1,24 @@
+**Expect slower releases for the Summer**
+
+# 3.5.550 (Cerulean series release 5)
+Functionality expansion release
+### All NuGet packages
+* All packages now include the `pwsh` module alongside the main .net core AltCover.dll
+* `altcover ipmo` command line option to output the `Import-Module` invocation needed to register the PowerShell module for the version of AltCover being used.  Yes, the path for the global tool does include the name and version twice; that's just how it works.
+* `AltCover.PowerShell` MSBuild task and option `/p:AltCoverIpmo=true` to expose this functionality through MSBuild and `dotnet test` integration
+* [BUGFIX] messages categorized as warnings now display for the Dotnet-CLI and global tool versions.
+* Better format for the throughput feedback (comma groups -- or localized equivalent -- for the big numbers)
+
+### "classic" and dotnet CLI NuGet packages
+* Support `dotnet add package ...` for `dotnet test` integration -- now added to dotnet CLI package
+* Availability limited because dotnet global tools aren't compatible with `dotnet add package`
+
+### "classic" NuGet package only
+* provides the .net Framework/mono binaries, including the Windows PowerShell module
+
 # 3.5.543 (Cerulean series release 4)
 ### All NuGet packages
-* [BUGFIX] -- Issue #22 : found the bottleneck, and it's not disk I/Ops (as I'm too used to it being in other contexts).  Using a custom serialization gives the major speed-up I was looking for, without needing to try tricks that may be counter-productive given the use of compression in the process.
+* [BUGFIX] -- Issue #22 : Using a custom serialization gives the major speed-up I was looking for, without needing to try tricks that may be counter-productive given the use of compression in the process.
 * **NOTE** this breaks compatibility between previously instrumented code and the new runner (and vice versa); in general, only same-version components are supported.
 * Indicate the throughput levels in the command line output
 ### "classic" NuGet package only

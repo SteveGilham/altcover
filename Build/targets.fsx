@@ -1289,9 +1289,23 @@ _Target "Packaging" (fun _ ->
                        |> Seq.map (fun x -> (x, Some (Path.GetDirectoryName(x).Substring(nupkg).Replace("\\","/")), None))
                        |> Seq.toList
 
-    let poshFiles = (!! "./_Binaries/AltCover.PowerShell/Release+AnyCPU/netcoreapp2.0/*.PowerShell.*")
-                       |> Seq.map (fun x -> (x, Some ("tools/netcoreapp2.0/" + Path.GetFileName x), None))
-                       |> Seq.toList
+    Directory.ensure "./_Intermediate/dotnet"
+    let otherFilesDotnet = otherFiles
+                           |> List.map (fun (a,b,c) -> let text = File.ReadAllText(a).Replace("tools/netcoreapp2.0", "lib/netcoreapp2.0")
+                                                       let name = (Path.getFullName"./_Intermediate/dotnet") @@ ("altcover.dotnet" + Path.GetExtension a)
+                                                       File.WriteAllText(name, text)
+                                                       (name,b,c))   
+
+    Directory.ensure "./_Intermediate/global"
+    let otherFilesGlobal = otherFiles
+                           |> List.map (fun (a,b,c) -> let text = File.ReadAllText(a).Replace("tools/netcoreapp2.0", "tools/netcoreapp2.1/any")
+                                                       let name = (Path.getFullName"./_Intermediate/global") @@ ("altcover.global" + Path.GetExtension a)
+                                                       File.WriteAllText(name, text)
+                                                       (name,b,c))                       
+
+    let poshFiles where = (!! "./_Binaries/AltCover.PowerShell/Release+AnyCPU/netcoreapp2.0/*.PowerShell.*")
+                           |> Seq.map (fun x -> (x, Some (where + Path.GetFileName x), None))
+                           |> Seq.toList
 
     let publish = (Path.getFullName "./_Publish").Length
     let netcoreFiles where = (!! "./_Publish/**/*.*")
@@ -1313,17 +1327,17 @@ _Target "Packaging" (fun _ ->
     printfn "Executing on %A" Environment.OSVersion
 
     [
-        (List.concat [applicationFiles; resourceFiles; netcoreFiles "tools/netcoreapp2.0/"; poshFiles; otherFiles],
+        (List.concat [applicationFiles; resourceFiles; netcoreFiles "tools/netcoreapp2.0/"; poshFiles "tools/netcoreapp2.0/"; otherFiles],
          "_Packaging",
          "./Build/AltCover.nuspec",
          "altcover"
         )
-        (List.concat[netcoreFiles "lib/netcoreapp2.0/"; dotnetFiles],
+        (List.concat[netcoreFiles "lib/netcoreapp2.0/"; poshFiles "lib/netcoreapp2.0/"; dotnetFiles; otherFilesDotnet],
          "_Packaging.dotnet",
          "./_Generated/altcover.dotnet.nuspec",
          "altcover.dotnet"
         )
-        (List.concat [globalFiles; netcoreFiles "tools/netcoreapp2.1/any/"; auxFiles],
+        (List.concat [globalFiles; netcoreFiles "tools/netcoreapp2.1/any/"; poshFiles"tools/netcoreapp2.1/any/"; auxFiles; otherFilesGlobal],
          "_Packaging.global",
          "./_Generated/altcover.global.nuspec",
          "altcover.global"
@@ -1948,7 +1962,7 @@ _Target "DotnetTestIntegration" ( fun _ ->
     Shell.copy "./_DotnetTest" (!! "./Sample4/*.fs")
 
     Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = Path.getFullName "_DotnetTest"}) "test"
-                      ("-v n /p:AltCover=true /p:AltCoverCallContext=[Fact]|0 ")
+                      ("-v n /p:AltCover=true /p:AltCoverCallContext=[Fact]|0 /p:AltCoverIpmo=true")
                       "sample test returned with a non-zero exit code"
 
     let x = Path.getFullName "./_DotnetTest/coverage.xml"
@@ -2039,6 +2053,10 @@ _Target "DotnetCLIIntegration" ( fun _ ->
     let x = Path.getFullName "./_Reports/DotnetCLIIntegration.xml"
     let o = Path.getFullName "./_DotnetCLITest/_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.0"
 
+    Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = working} ) "altcover"
+                          ("ipmo")
+                          "DotnetCLIIntegration ipmo"
+
     // Instrument the code
     Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = working} ) "altcover"
                           (" --opencover --inplace -c=0 \"-c=[Fact]\" -x \"" + x + "\" -i \"" + o + "\"")
@@ -2108,6 +2126,22 @@ _Target "DotnetCLIIntegration" ( fun _ ->
                                      "<TrackedMethodRef uid=\"2\" vc=\"1\" />"
                                      "<TrackedMethodRef uid=\"2\" vc=\"1\" />"
                     ])
+
+    let mpath = ((nugetCache @@ "altcover.dotnet") @@ !Version) @@ "lib/netcoreapp2.0/AltCover.PowerShell.dll"
+    Actions.RunRaw (fun info -> { info with
+                                        FileName = pwsh
+                                        WorkingDirectory = "."
+                                        Arguments = ("-NoProfile -Command \"ipmo " + mpath + " ; ConvertTo-BarChart -? \"")})
+                                   "pwsh"
+
+    Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = Path.getFullName "_DotnetCLITest"}) "add"
+                      ("package altcover.dotnet --version " + !Version)
+                      "sample test returned with a non-zero exit code"
+    Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = Path.getFullName "_DotnetCLITest"}) "test"
+                      ("/p:AltCover=true")
+                      "sample test returned with a non-zero exit code"
+    "./_DotnetCLITest/coverage.xml" |> Path.getFullName |> File.Exists |> Assert.That
+
   finally
     let folder = (nugetCache @@ "altcover.dotnet") @@ !Version
     Shell.mkdir folder
@@ -2139,6 +2173,12 @@ _Target "DotnetGlobalIntegration" ( fun _ ->
 
     let x = Path.getFullName "./_Reports/DotnetGlobalIntegration.xml"
     let o = Path.getFullName "./_DotnetGlobalTest/_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.0"
+
+    Actions.RunRaw (fun info -> { info with
+                                        FileName = "altcover"
+                                        WorkingDirectory = working
+                                        Arguments = ("ipmo")})
+                                 "DotnetGlobalIntegration ipmo"
 
     // Instrument the code
     Actions.RunRaw (fun info -> { info with
@@ -2213,6 +2253,24 @@ _Target "DotnetGlobalIntegration" ( fun _ ->
                                      "<TrackedMethodRef uid=\"2\" vc=\"1\" />"
                                      "<TrackedMethodRef uid=\"2\" vc=\"1\" />"
                     ])
+
+    let mpath = ((((nugetCache @@ "../../.dotnet/tools/.store/altcover.global") @@ !Version) @@ "altcover.global") @@ !Version) @@ "tools/netcoreapp2.1/any/AltCover.PowerShell.dll"
+    Actions.RunRaw (fun info -> { info with
+                                        FileName = pwsh
+                                        WorkingDirectory = "."
+                                        Arguments = ("-NoProfile -Command \"ipmo " + mpath + "; ConvertTo-BarChart -? \"")})
+                                   "pwsh"
+
+    // (fsproj.Descendants(XName.Get("TargetFramework")) |> Seq.head).Value <- "netcoreapp2.1"
+    // fsproj.Save "./_DotnetGlobalTest/dotnetglobal.fsproj"
+    // Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = Path.getFullName "_DotnetGlobalTest"}) "add"
+    //                   ("package altcover.global")
+    //                   "sample test returned with a non-zero exit code"
+    // Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = Path.getFullName "_DotnetGlobalTest"}) "test"
+    //                   ("-v n /p:AltCover=true")
+    //                   "sample test returned with a non-zero exit code"
+    // "./_DotnetGlobalTest/coverage.xml" |> Path.getFullName |> File.Exists |> Assert.That
+
   finally
     if set then Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = working} ) "tool"
                                              ("uninstall -g altcover.global") "uninstalled"
