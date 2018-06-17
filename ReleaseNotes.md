@@ -1,8 +1,10 @@
-# 3.5.5xx (Cerulean series release 5)
+**Expect slower releases for the Summer**
+
+# 3.5.550 (Cerulean series release 5)
 Functionality expansion release
 ### All NuGet packages
 * All packages now include the `pwsh` module alongside the main .net core AltCover.dll
-* `altcover ipmo` command line option to output the `Import-Module` invocation needed to register the PowerShell module for the version of AltCover being used
+* `altcover ipmo` command line option to output the `Import-Module` invocation needed to register the PowerShell module for the version of AltCover being used.  Yes, the path for the global tool does include the name and version twice; that's just how it works.
 * `AltCover.PowerShell` MSBuild task and option `/p:AltCoverIpmo=true` to expose this functionality through MSBuild and `dotnet test` integration
 * [BUGFIX] messages categorized as warnings now display for the Dotnet-CLI and global tool versions.
 * Better format for the throughput feedback (comma groups -- or localized equivalent -- for the big numbers)
