@@ -75,6 +75,7 @@
       <Link>VisibleToTest.fs</Link>
     </Compile>
     <Compile Include="Xml.fs" />
+    <Compile Include="OpenCover.fs" />
     <Compile Include="CoverageFormats.fs" />
     <Compile Include="XhtmlReports.fs" />
     <Compile Include="Command.fs" />
