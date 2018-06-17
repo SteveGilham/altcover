@@ -362,12 +362,14 @@ module Main =
 
   let internal Main arguments =
     let first = arguments |> Seq.tryHead |> Option.getOrElse String.Empty
-    if (first |> String.IsNullOrWhiteSpace |> not) &&
+    let present = (first |> String.IsNullOrWhiteSpace |> not)
+    if present &&
         "Runner".StartsWith(first, StringComparison.OrdinalIgnoreCase)
       then Runner.init()
            Runner.DoCoverage arguments (DeclareOptions())
       else init()
-           if "ipmo".StartsWith(first, StringComparison.OrdinalIgnoreCase) then
+           if present && 
+               "ipmo".StartsWith(first, StringComparison.OrdinalIgnoreCase) then
                 Path.Combine ( Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName,
                                "AltCover.PowerShell.dll")
                 |> Path.GetFullPath
