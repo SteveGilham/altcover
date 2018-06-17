@@ -4883,6 +4883,7 @@ or
         let result = subject.Execute()
         Assert.That(result, Is.False)
         Assert.That(args, Is.EquivalentTo ["ipmo"])
+        Assert.Throws<InvalidOperationException>(fun () -> Output.Info "x") |> ignore
     finally
       Main.EffectiveMain <- save
       Output.Info <- fst saved

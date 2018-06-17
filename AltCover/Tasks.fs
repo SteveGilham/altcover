@@ -121,7 +121,7 @@ type Collect () =
 type PowerShell () =
   inherit Task(null)
   override self.Execute () =
-    Output.Warn <- base.Log.LogWarning
+    Output.Info <- base.Log.LogWarning
     [|
       "ipmo"
     |]
