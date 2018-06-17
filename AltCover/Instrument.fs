@@ -265,7 +265,7 @@ module Instrument =
         | None -> null
         | Some x -> String.Format(System.Globalization.CultureInfo.CurrentCulture,
                       CommandLine.resources.GetString "resolved", y.ToString(), x)
-                    |> Output.Warn
+                    |> (Output.WarnOn true)
                     let a = AssemblyDefinition.ReadAssembly x
                     ResolutionTable.[name] <- a
                     a

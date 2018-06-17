@@ -4,10 +4,7 @@ open System
 open System.Diagnostics.CodeAnalysis
 open System.Globalization
 open System.IO
-#if NETCOREAPP2_0
-#else
 open System.Reflection
-#endif
 open System.Text.RegularExpressions
 
 open AltCover.Base
@@ -365,12 +362,22 @@ module Main =
 
   let internal Main arguments =
     let first = arguments |> Seq.tryHead |> Option.getOrElse String.Empty
-    if (first |> String.IsNullOrWhiteSpace |> not) &&
+    let present = (first |> String.IsNullOrWhiteSpace |> not)
+    if present &&
         "Runner".StartsWith(first, StringComparison.OrdinalIgnoreCase)
       then Runner.init()
            Runner.DoCoverage arguments (DeclareOptions())
       else init()
-           DoInstrumentation arguments
+           if present && 
+               "ipmo".StartsWith(first, StringComparison.OrdinalIgnoreCase) then
+                Path.Combine ( Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName,
+                               "AltCover.PowerShell.dll")
+                |> Path.GetFullPath
+                |> sprintf "Import-Module %A"
+                |> (Output.WarnOn true)
+                0
+           else
+                DoInstrumentation arguments
 
   // mocking point
   let mutable internal EffectiveMain = Main

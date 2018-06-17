@@ -48,6 +48,7 @@ type Prepare () =
     base.Log.LogMessage (MessageImportance.High, x)
 
   override self.Execute () =
+    Output.Task <- true
     Output.Error <- base.Log.LogError
     Output.Warn <- base.Log.LogWarning
     Output.Info <- self.Message
@@ -97,6 +98,7 @@ type Collect () =
     base.Log.LogMessage (MessageImportance.High, x)
 
   override self.Execute () =
+    Output.Task <- true
     Output.Error <- base.Log.LogError
     Output.Warn <- base.Log.LogWarning
     Output.Info <- self.Message
@@ -116,4 +118,15 @@ type Collect () =
     ]
     |> List.concat
     |> List.toArray
+    |> AltCover.Main.EffectiveMain = 0
+
+type PowerShell () =
+  inherit Task(null)
+  override self.Execute () =
+    Output.Task <- true
+    Output.Error <- base.Log.LogError
+    Output.Warn <- base.Log.LogWarning
+    [|
+      "ipmo"
+    |]
     |> AltCover.Main.EffectiveMain = 0

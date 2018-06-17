@@ -157,6 +157,8 @@
     <value>AltCover [/i[nputDirectory]=VALO] [/o[utputDirectory]=VALO] [/y|symbolDirectory=VALO]  [/d[ependency]=VALO] [/sn|strongNameKey=VALO] [/k[ey]=VALO] [/x[mlReport]=VALO] [/f[ileFilter]=VALO] [/s|assemblyFilter=VALO] [/t|typeFilter=VALO] [/m|methodFilter=VALO] [/a|attributeFilter=VALO] [/c[allContext]=VALO] [--opencover] [--inplace] [--save] [/?|h[elp]] [-- ] [...]
 aŭ
 AltCover Runner [/r[ecordingDirectory]=VALO] [/w[orkingDirectory]=VALO] [/x||executable=VALO] [--collect] [/l[covReport]=VALO] [/t[hreshold]=VALO] [/c[obertura]=VALO] [/o[utputFile]=VALO] [/?|h[elp]] [-- ] [...]
+aŭ
+AltCover ipmo
 Vidu https://github.com/SteveGilham/altcover/wiki/Usage por plenaj detaloj.</value>
   </data>
   <data name="NotInPlace" xml:space="preserve">
@@ -193,7 +195,7 @@ Kovra Raporto: {0}
     <value>Laŭvola: La laboranta dosierujo por la lanĉo de aplikaĵoj</value>
   </data>
   <data name="%d visits recorded" xml:space="preserve">
-    <value>Totalo de {0} vizitoj registritaj</value>
+    <value>Totalo de {0:#,#0} vizitoj registritaj</value>
   </data>
   <data name="Beginning run..." xml:space="preserve">
     <value>Komencanta kuri ...</value>
@@ -207,6 +209,13 @@ Kovra Raporto: {0}
   <data name="binder" xml:space="preserve">
     <value>aŭ
   Runner</value>
+  </data>
+  <data name="orbinder" xml:space="preserve">
+    <value>aŭ</value>
+  </data>
+  <data name="ipmo" xml:space="preserve">
+    <value>  ipmo                       Elprenas la PowerShell-skripton por importi la
+                               asociita PowerShell-modulo</value>
   </data>
   <data name="opencover" xml:space="preserve">
     <value>Laŭvola: Kreu la informon en formato OpenCover</value>
@@ -331,6 +340,6 @@ Detaloj skribitaj al {0}</value>
     <value>{0}: Dosiero {1} ne estas asemblea</value>
   </data>
   <data name="%d visits recorded in %A (%A visits/sec)" xml:space="preserve">
-    <value>{0} vizitoj registritaj en {1} ({2} visits/sek)</value>
+    <value>{0:#,#0} vizitoj registritaj en {1} ({2:#,#0} visits/sek)</value>
   </data>
 </root>

@@ -1962,7 +1962,7 @@ _Target "DotnetTestIntegration" ( fun _ ->
     Shell.copy "./_DotnetTest" (!! "./Sample4/*.fs")
 
     Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = Path.getFullName "_DotnetTest"}) "test"
-                      ("-v n /p:AltCover=true /p:AltCoverCallContext=[Fact]|0 ")
+                      ("-v n /p:AltCover=true /p:AltCoverCallContext=[Fact]|0 /p:AltCoverIpmo=true")
                       "sample test returned with a non-zero exit code"
 
     let x = Path.getFullName "./_DotnetTest/coverage.xml"
@@ -2052,6 +2052,10 @@ _Target "DotnetCLIIntegration" ( fun _ ->
 
     let x = Path.getFullName "./_Reports/DotnetCLIIntegration.xml"
     let o = Path.getFullName "./_DotnetCLITest/_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.0"
+
+    Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = working} ) "altcover"
+                          ("ipmo")
+                          "DotnetCLIIntegration ipmo"
 
     // Instrument the code
     Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = working} ) "altcover"
@@ -2169,6 +2173,12 @@ _Target "DotnetGlobalIntegration" ( fun _ ->
 
     let x = Path.getFullName "./_Reports/DotnetGlobalIntegration.xml"
     let o = Path.getFullName "./_DotnetGlobalTest/_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.0"
+
+    Actions.RunRaw (fun info -> { info with
+                                        FileName = "altcover"
+                                        WorkingDirectory = working
+                                        Arguments = ("ipmo")})
+                                 "DotnetGlobalIntegration ipmo"
 
     // Instrument the code
     Actions.RunRaw (fun info -> { info with

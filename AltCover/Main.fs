@@ -7,6 +7,7 @@ module AltCover =
     Output.Echo <- CommandLine.WriteErr
     Output.Info <- CommandLine.WriteOut
     Output.Warn <- CommandLine.WriteOut
+    Output.Task <- false
 
   [<EntryPoint>]
   let private Main arguments =
