@@ -14,7 +14,7 @@
     <description>@description@</description>
     <releaseNotes>@releaseNotes@</releaseNotes>
     <copyright>@copyright@</copyright>
-    <tags>codecoverage .net Mono .netcore cross-platform</tags>
+    <tags>codecoverage .net Mono .netcore cross-platform PowerShell PSModule</tags>
     @dependencies@
     @references@
   </metadata>

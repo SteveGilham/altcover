@@ -1,3 +1,5 @@
+**Expect slower releases for the Summer**
+
 # altcover
 Instrumenting coverage tool for .net (framework 2.0+  and core) and Mono, reimplemented and extended almost beyond recognition from [dot-net-coverage](https://github.com/SteveGilham/dot-net-coverage), plus a set of related utilities for processing the results from this and from other programs producing similar output formats.
 
@@ -37,7 +39,11 @@ Fast forwards to autumn 2017, and I get the chance to dust the project off, with
 
 ## Usage
 
-See the [Wiki page]( https://github.com/SteveGilham/altcover/wiki/Usage) for details
+See the [Wiki page](https://github.com/SteveGilham/altcover/wiki/Usage) for details
+
+## Roadmap
+
+See the [current project](https://github.com/SteveGilham/altcover/projects/6) for details
 
 ## Building
 

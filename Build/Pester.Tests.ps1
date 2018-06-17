@@ -2,7 +2,6 @@ $x = "./_Reports/PesterFSharpTypesDotNetRunner.xml"
 $o = "./Sample2/_Binaries/Sample2/Debug+AnyCPU/netcoreapp2.0"
 $i = "./_Binaries/Sample2/Debug+AnyCPU/netcoreapp2.0"
 dir "./_Packaging/*.*" | % { if ( -not($_.Name -like "*.nupkg")) { del -force $_.FullName }}
-dir "./_Packaging"
 if (Test-Path $x) { del -force $x }
 
 Describe "Invoke-Altcover" {
@@ -135,7 +134,7 @@ end_of_record
 
   It "Converts Real NCover Data" {
     $ev = ""
-    ConvertTo-LCov -InputFile "./Tests/GenuineNCover158.Xml" -OutputFile "./_Packaging/NCover158.lcov" -ErrorVariable ev
+    [xml](Get-Content "./Tests/GenuineNCover158.Xml") | ConvertTo-LCov -OutputFile "./_Packaging/NCover158.lcov" -ErrorVariable ev
     $ev | Should -BeFalse
   }
 }
@@ -271,6 +270,60 @@ Describe "ConvertTo-Cobertura" {
     ($header + $x.ToString()).Replace("`r", "") | Should -Be $expected.Replace("`r", "")
   }
 
+  It "Converts With the pipeline" {
+    $x = [xml] (Get-Content "./Tests/Sample1WithNCover.xml") | ConvertTo-Cobertura
+    $coverage = $x.Descendants("coverage")
+    $v = $coverage.Attribute("version").Value
+    $t = $coverage.Attribute("timestamp").Value
+
+    $expected = @"
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<coverage line-rate="0.7" branch-rate="1" version="$v" timestamp="$t">
+  <sources>
+    <source>Sample1</source>
+  </sources>
+  <packages>
+    <package name="Sample1.exe" line-rate="0.7" branch-rate="1" complexity="1">
+      <classes>
+        <class name="TouchTest.Program" filename="Sample1/Program.cs" line-rate="0.7" branch-rate="1" complexity="1">
+          <methods>
+            <method name="TouchTest.Program.Main" signature="" line-rate="0.7" branch-rate="1">
+              <lines>
+                <line number="11" hits="1" branch="false" />
+                <line number="12" hits="1" branch="false" />
+                <line number="13" hits="1" branch="false" />
+                <line number="14" hits="1" branch="false" />
+                <line number="15" hits="1" branch="false" />
+                <line number="16" hits="1" branch="false" />
+                <line number="18" hits="0" branch="false" />
+                <line number="19" hits="0" branch="false" />
+                <line number="20" hits="0" branch="false" />
+                <line number="21" hits="1" branch="false" />
+              </lines>
+            </method>
+          </methods>
+          <lines>
+            <line number="11" hits="1" branch="false" />
+            <line number="12" hits="1" branch="false" />
+            <line number="13" hits="1" branch="false" />
+            <line number="14" hits="1" branch="false" />
+            <line number="15" hits="1" branch="false" />
+            <line number="16" hits="1" branch="false" />
+            <line number="18" hits="0" branch="false" />
+            <line number="19" hits="0" branch="false" />
+            <line number="20" hits="0" branch="false" />
+            <line number="21" hits="1" branch="false" />
+          </lines>
+        </class>
+      </classes>
+    </package>
+  </packages>
+</coverage>
+"@
+    $header = $x.Declaration.ToString() + "`n"
+    ($header + $x.ToString()).Replace("`r", "") | Should -Be $expected.Replace("`r", "")
+  }
+
   It "Converts Real NCover Data" {
     $ev = ""
     ConvertTo-Cobertura -InputFile "./Tests/GenuineNCover158.Xml" -OutputFile "./_Packaging/NCover158.cobertura" -ErrorVariable ev
@@ -321,6 +374,46 @@ Describe "ConvertTo-NCover" {
     $sw.ToString().Replace("`r", "") | Should -Be $expected.Replace("`r", "")
     $sw.ToString().Replace("`r", "") | Should -Be $written.Replace("`r", "")
   }
+
+  It "converts with the pipeline" {
+    $xml = [xml](Get-Content "./Tests/HandRolledMonoCoverage.xml") | ConvertTo-NCover
+    $xml | Should -BeOfType "System.Xml.XmlDocument"
+
+    $sw = new-object System.IO.StringWriter @()
+    $settings = new-object System.Xml.XmlWriterSettings @()
+    $settings.Indent = $true
+    $settings.IndentChars = "  "
+    $xw = [System.Xml.XmlWriter]::Create($sw, $settings)
+    $xml.WriteTo($xw)
+    $xw.Close()
+    $time = $xml.coverage.startTime
+
+    $expected = @"
+<?xml version="1.0" encoding="utf-8"?>
+<coverage profilerVersion="OpenCover" driverVersion="OpenCover" startTime="$time" measureTime="$time" xmlns:msxsl="urn:schemas-microsoft-com:xslt" xmlns:user="urn:my-scripts">
+  <module moduleId="6A-33-AA-93-82-ED-22-9D-F8-68-2C-39-5B-93-9F-74-01-76-00-9F" name="Sample1.exe" assembly="Sample1" assemblyIdentity="Sample1">
+    <method excluded="false" instrumented="true" name=".ctor" class="TouchTest.Program" fullname="System.Void TouchTest.Program::.ctor()" />
+    <method excluded="false" instrumented="true" name="Main" class="TouchTest.Program" fullname="System.Void TouchTest.Program::Main(System.String[])">
+      <seqpnt visitcount="1" line="11" column="9" endline="11" endcolumn="10" offset="0" excluded="false" document="altcover/Sample1/Program.cs" />
+      <seqpnt visitcount="1" line="12" column="32" endline="12" endcolumn="33" offset="1" excluded="false" document="altcover/Sample1/Program.cs" />
+      <seqpnt visitcount="1" line="13" column="13" endline="13" endcolumn="14" offset="7" excluded="false" document="altcover/Sample1/Program.cs" />
+      <seqpnt visitcount="1" line="13" column="21" endline="13" endcolumn="22" offset="9" excluded="false" document="altcover/Sample1/Program.cs" />
+      <seqpnt visitcount="1" line="14" column="13" endline="14" endcolumn="14" offset="24" excluded="false" document="altcover/Sample1/Program.cs" />
+      <seqpnt visitcount="1" line="15" column="17" endline="15" endcolumn="18" offset="25" excluded="false" document="altcover/Sample1/Program.cs" />
+      <seqpnt visitcount="1" line="15" column="72" endline="15" endcolumn="73" offset="36" excluded="false" document="altcover/Sample1/Program.cs" />
+      <seqpnt visitcount="1" line="15" column="25" endline="15" endcolumn="26" offset="46" excluded="false" document="altcover/Sample1/Program.cs" />
+      <seqpnt visitcount="1" line="16" column="13" endline="16" endcolumn="14" offset="51" excluded="false" document="altcover/Sample1/Program.cs" />
+      <seqpnt visitcount="0" line="18" column="13" endline="18" endcolumn="14" offset="57" excluded="false" document="altcover/Sample1/Program.cs" />
+      <seqpnt visitcount="0" line="19" column="17" endline="19" endcolumn="18" offset="58" excluded="false" document="altcover/Sample1/Program.cs" />
+      <seqpnt visitcount="0" line="19" column="25" endline="19" endcolumn="26" offset="63" excluded="false" document="altcover/Sample1/Program.cs" />
+      <seqpnt visitcount="0" line="20" column="13" endline="20" endcolumn="14" offset="68" excluded="false" document="altcover/Sample1/Program.cs" />
+      <seqpnt visitcount="1" line="21" column="9" endline="21" endcolumn="10" offset="69" excluded="false" document="altcover/Sample1/Program.cs" />
+    </method>
+  </module>
+</coverage>
+"@
+    $sw.ToString().Replace("`r", "") | Should -Be $expected.Replace("`r", "")
+  }
 }
 
 Describe "ConvertTo-BarChart" {
@@ -341,6 +434,38 @@ Describe "ConvertTo-BarChart" {
     $result = $sw.ToString().Replace("`r", "").Replace("html >", "html>") 
     $result | Should -Be $expected.Replace("`r", "")
     $result | Should -Be $written.Replace("`r", "")
+  }
+
+  It "converts NCover through the pipeline" {
+    $xml = [xml](Get-Content "./Tests/GenuineNCover158.Xml" ) | ConvertTo-BarChart
+    $xml | Should -BeOfType "System.Xml.XmlDocument"
+
+    $sw = new-object System.IO.StringWriter @()
+    $settings = new-object System.Xml.XmlWriterSettings @()
+    $settings.Indent = $true
+    $settings.IndentChars = "  "
+    $xw = [System.Xml.XmlWriter]::Create($sw, $settings)
+    $xml.WriteTo($xw)
+    $xw.Close()
+    $expected = [System.IO.File]::ReadAllText("./Tests/GenuineNCover158Chart.html")
+
+    # swap out unique identifiers
+    $result = $sw.ToString().Replace("`r", "").Replace("html >", "html>")
+    $result = $result -replace "href\=`"\#[A-Z0-9]{7}`"","href=`"xxx`"" 
+    $result = $result -replace "name\=`"\#[A-Z0-9]{7}`"","name=`"xxx`"" 
+    $result = $result -replace "id\=`"[A-Z0-9]+class","id=`"xxxclass" 
+    $result = $result -replace "id\=`"[A-Z0-9]+`"","id=`"xxx`"" 
+    $result = $result -replace "toggle\([A-Z0-9]+class","toggle(xxxclass" 
+    $result = $result -replace "toggle\([A-Z0-9]+\)","toggle(xxx)" 
+
+    $expected = $expected -replace "href\=`"\#[A-Z0-9]{7}`"","href=`"xxx`"" 
+    $expected = $expected -replace "name\=`"\#[A-Z0-9]{7}`"","name=`"xxx`"" 
+    $expected = $expected -replace "id\=`"[A-Z0-9]+class","id=`"xxxclass" 
+    $expected = $expected -replace "id\=`"[A-Z0-9]+`"","id=`"xxx`"" 
+    $expected = $expected -replace "toggle\([A-Z0-9]+class","toggle(xxxclass" 
+    $expected = $expected -replace "toggle\([A-Z0-9]+\)","toggle(xxx)" 
+
+    $result | Should -Be $expected.Replace("`r", "")
   }
 
   It "converts OpenCover" {
@@ -392,5 +517,34 @@ Describe "ConvertFrom-NCover" {
     $result = $sw.ToString().Replace("`r", "").Replace("utf-16", "utf-8") 
     $result | Should -Be $expected.Replace("`r", "")
     $result | Should -Be $written.Replace("`r", "")
+  }
+
+  It "converts from the pipeline" {
+    $assemblies = @()
+    $assemblies += "./_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.0/Sample4.dll"
+    $xml = [xml](Get-Content  "./_Reports/ReleaseXUnitFSharpTypesDotNetRunner.xml") | ConvertFrom-NCover -Assembly $Assemblies
+    $xml | Should -BeOfType "System.Xml.Linq.XDocument"
+
+    $sw = new-object System.IO.StringWriter @()
+    $settings = new-object System.Xml.XmlWriterSettings @()
+    $settings.Indent = $true
+    $settings.IndentChars = "  "
+    $xw = [System.Xml.XmlWriter]::Create($sw, $settings)
+    $xml.WriteTo($xw)
+    $xw.Close()
+
+    $expected = [System.IO.File]::ReadAllText("./Tests/AltCoverFSharpTypes.xml")
+    $hash = $xml.Descendants("Module").Attribute("hash").Value
+    $time = $xml.Descendants("ModuleTime").Value
+    $file = $xml.Descendants("File") | Select-Object -First 1
+    $fullpath = [System.io.path]::GetDirectoryName($file.Attribute("fullPath").Value)
+
+    $expected = $expected.Replace("09-23-DC-B3-65-CE-96-5D-B4-56-2A-3A-0D-5A-1B-09-3E-38-2B-22", $hash)
+    $expected = $expected.Replace("2018-06-13T15:08:24.8840000Z", $time)
+    $expected = $expected.Replace("Sample4|Program.fs", (Join-Path $fullpath "Program.fs"))
+    $expected = $expected.Replace("Sample4|Tests.fs", (Join-Path $fullpath "Tests.fs"))
+
+    $result = $sw.ToString().Replace("`r", "").Replace("utf-16", "utf-8") 
+    $result | Should -Be $expected.Replace("`r", "")
   }
 }

@@ -15,6 +15,7 @@ type StringSink = delegate of string -> unit
 
 [<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage>]
 module Output =
+  let mutable internal Task = false
   let mutable internal Info : (String -> unit) = ignore
   let mutable internal Warn : (String -> unit) = ignore
   let mutable internal Echo : (String -> unit) = ignore
@@ -26,7 +27,7 @@ module Output =
     Error <- x.Invoke
   let internal SetWarn (x:StringSink) =
     Warn <- x.Invoke
-  let internal WarnOn x = if x
+  let internal WarnOn x = if x && Task
                           then Warn
                           else Info
 
@@ -88,7 +89,10 @@ module CommandLine =
                                                                if options.Any() && options2.Any() then
                                                                  w.WriteLine (resources.GetString "binder")
                                                                if options2.Any() then
-                                                                 options2.WriteOptionDescriptions(w))
+                                                                 options2.WriteOptionDescriptions(w)
+                                                               else if options.Any() then
+                                                                   w.WriteLine (resources.GetString "orbinder")
+                                                                   w.WriteLine (resources.GetString "ipmo"))
 
   let internal Write (writer:TextWriter) colour data =
     if not(String.IsNullOrEmpty(data)) then
