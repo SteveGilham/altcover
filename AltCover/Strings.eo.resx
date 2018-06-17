@@ -157,6 +157,8 @@
     <value>AltCover [/i[nputDirectory]=VALO] [/o[utputDirectory]=VALO] [/y|symbolDirectory=VALO]  [/d[ependency]=VALO] [/sn|strongNameKey=VALO] [/k[ey]=VALO] [/x[mlReport]=VALO] [/f[ileFilter]=VALO] [/s|assemblyFilter=VALO] [/t|typeFilter=VALO] [/m|methodFilter=VALO] [/a|attributeFilter=VALO] [/c[allContext]=VALO] [--opencover] [--inplace] [--save] [/?|h[elp]] [-- ] [...]
 aŭ
 AltCover Runner [/r[ecordingDirectory]=VALO] [/w[orkingDirectory]=VALO] [/x||executable=VALO] [--collect] [/l[covReport]=VALO] [/t[hreshold]=VALO] [/c[obertura]=VALO] [/o[utputFile]=VALO] [/?|h[elp]] [-- ] [...]
+aŭ
+AltCover ipmo
 Vidu https://github.com/SteveGilham/altcover/wiki/Usage por plenaj detaloj.</value>
   </data>
   <data name="NotInPlace" xml:space="preserve">
@@ -207,6 +209,13 @@ Kovra Raporto: {0}
   <data name="binder" xml:space="preserve">
     <value>aŭ
   Runner</value>
+  </data>
+  <data name="orbinder" xml:space="preserve">
+    <value>aŭ</value>
+  </data>
+  <data name="ipmo" xml:space="preserve">
+    <value>  ipmo                       Elprenas la PowerShell-skripton por importi la
+                               asociita PowerShell-modulo</value>
   </data>
   <data name="opencover" xml:space="preserve">
     <value>Laŭvola: Kreu la informon en formato OpenCover</value>

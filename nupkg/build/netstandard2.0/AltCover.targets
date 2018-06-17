@@ -4,6 +4,8 @@
         AssemblyFile="$(MSBuildThisFileDirectory)../../tools/netcoreapp2.0/AltCover.dll"/>  
   <UsingTask TaskName="AltCover.Collect"   
         AssemblyFile="$(MSBuildThisFileDirectory)../../tools/netcoreapp2.0/AltCover.dll"/>  
+  <UsingTask TaskName="AltCover.PowerShell"   
+        AssemblyFile="$(MSBuildThisFileDirectory)../../tools/netcoreapp2.0/AltCover.dll"/>  
 
   <ItemGroup>
     <AltCoverSplitContext Include="$(AltCoverCallContext.Split('|'))" />
@@ -20,6 +22,7 @@
     <PropertyGroup>
       <AltCoverXmlReport Condition="'$(AltCoverXmlReport)' == ''">$(ProjectDir)coverage.xml</AltCoverXmlReport>
     </PropertyGroup>
+    <AltCover.PowerShell Condition="'$(VSTestNoBuild)' == 'true' and $(AltCoverIpmo) == 'true'" />
     <AltCover.Prepare
       Condition="'$(VSTestNoBuild)' == 'true' and $(AltCover) == 'true'"
       InputDirectory="$(TargetDir)"
@@ -41,6 +44,7 @@
     <PropertyGroup>
       <AltCoverXmlReport Condition="'$(AltCoverXmlReport)' == ''">$(ProjectDir)coverage.xml</AltCoverXmlReport>
     </PropertyGroup>
+    <AltCover.PowerShell Condition="'$(VSTestNoBuild)' != 'true' and $(AltCoverIpmo) == 'true'" />
     <AltCover.Prepare
       Condition="'$(VSTestNoBuild)' != 'true' and $(AltCover) == 'true'"
       InputDirectory="$(TargetDir)"

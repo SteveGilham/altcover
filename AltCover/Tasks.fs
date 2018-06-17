@@ -117,3 +117,12 @@ type Collect () =
     |> List.concat
     |> List.toArray
     |> AltCover.Main.EffectiveMain = 0
+
+type PowerShell () =
+  inherit Task(null)
+  override self.Execute () =
+    Output.Warn <- base.Log.LogWarning
+    [|
+      "ipmo"
+    |]
+    |> AltCover.Main.EffectiveMain = 0

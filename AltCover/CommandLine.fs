@@ -88,7 +88,10 @@ module CommandLine =
                                                                if options.Any() && options2.Any() then
                                                                  w.WriteLine (resources.GetString "binder")
                                                                if options2.Any() then
-                                                                 options2.WriteOptionDescriptions(w))
+                                                                 options2.WriteOptionDescriptions(w)
+                                                               else if options.Any() then
+                                                                   w.WriteLine (resources.GetString "orbinder")
+                                                                   w.WriteLine (resources.GetString "ipmo"))
 
   let internal Write (writer:TextWriter) colour data =
     if not(String.IsNullOrEmpty(data)) then

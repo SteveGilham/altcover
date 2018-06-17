@@ -1,19 +1,16 @@
 # 3.5.5xx (Cerulean series release 5)
 ### All NuGet packages
-* All packages now include the `pwsh` module alongside the main .net core AltCover.dll so 
-`ipmo %USERPROFILE%\.nuget\packages\altcover\<version>\tools\netcoreapp2.0\AltCover.PowerShell.dll` or  
-`ipmo %USERPROFILE%\.nuget\packages\altcover.dotnet\<version>\lib\netcoreapp2.0\AltCover.PowerShell.dll` or  
-`ipmo %USERPROFILE%\.dotnet\tool\altcover.global\<version>\altcover.global\<version>\tools\netcoreapp2.1\any\AltCover.PowerShell.dll` (yes, package name and version twice in the default install location)  
-according to which package is used
+* All packages now include the `pwsh` module alongside the main .net core AltCover.dll
+* `altcover ipmo` command line option to output the `Import-Module` invocation needed to register the PowerShell module for the version of AltCover being used
+* `AltCover.PowerShell` MSBuild task and option `/p:AltCoverIpmo=true` to expose this functionality through MSBuild and `dotnet test` integration
 
 ### "classic" and dotnet CLI NuGet packages
-* Support `dotnet add package ...` for `dotnet test` integration
-* dotnet global tools aren't compatible with `dotnet add package`
+* Support `dotnet add package ...` for `dotnet test` integration added to dotnet CLI package
+* Availability limited because dotnet global tools aren't compatible with `dotnet add package`
 
 ### "classic" NuGet package only
-* can integrate with `dotnet test`
-* provides the .net Framework/mono binaries, including the Windows PowerShell module : `ipmo $(SolutionDir)\packages\altcover\<version>\tools\net45\AltCover.PowerShell.dll`
-
+* still integrates with `dotnet test`
+* still provides the .net Framework/mono binaries, including the Windows PowerShell module
 
 # 3.5.543 (Cerulean series release 4)
 ### All NuGet packages

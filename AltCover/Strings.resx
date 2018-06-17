@@ -157,6 +157,8 @@
     <value>AltCover [/i[nputDirectory]=VALUE] [/o[utputDirectory]=VALUE] [/y|symbolDirectory=VALUE] [/d[ependency]=VALUE] [/sn|strongNameKey=VALUE] [/k[ey]=VALUE] [/x[mlReport]=VALUE] [/f[ileFilter]=VALUE] [/s|assemblyFilter=VALUE] [/t|typeFilter=VALUE] [/m|methodFilter=VALUE] [/a|attributeFilter=VALUE] [/c[allContext]=VALUE] [--opencover] [--inplace] [--save] [/?|h[elp]] [-- ] [...]
 or
 AltCover Runner [/r[ecordingDirectory]=VALUE] [/w[orkingDirectory]=VALUE] [/x|executable=VALUE] [--collect] [/l[covReport]=VALUE] [/t[hreshold]=VALUE] [/c[obertura]=VALUE] [/o[utputFile]=VALUE] [/?|h[elp]] [-- ] [...]
+or
+AltCover ipmo
 See https://github.com/SteveGilham/altcover/wiki/Usage for full details.
 </value>
   </data>
@@ -208,6 +210,13 @@ Coverage Report: {0}
   <data name="binder" xml:space="preserve">
     <value>or
   Runner</value>
+  </data>
+  <data name="orbinder" xml:space="preserve">
+    <value>or</value>
+  </data>
+  <data name="ipmo" xml:space="preserve">
+    <value>  ipmo                       Prints out the PowerShell script to import the
+                               associated PowerShell module</value>
   </data>
   <data name="opencover" xml:space="preserve">
     <value>Optional: Generate the report in OpenCover format</value>
