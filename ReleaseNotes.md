@@ -4,6 +4,8 @@ Functionality expansion release
 * All packages now include the `pwsh` module alongside the main .net core AltCover.dll
 * `altcover ipmo` command line option to output the `Import-Module` invocation needed to register the PowerShell module for the version of AltCover being used
 * `AltCover.PowerShell` MSBuild task and option `/p:AltCoverIpmo=true` to expose this functionality through MSBuild and `dotnet test` integration
+* [BUGFIX] messages categorized as warnings now display for the Dotnet-CLI and global tool versions.
+* Better format for the throughput feedback (comma groups -- or localized equivalent -- for the big numbers)
 
 ### "classic" and dotnet CLI NuGet packages
 * Support `dotnet add package ...` for `dotnet test` integration -- now added to dotnet CLI package
