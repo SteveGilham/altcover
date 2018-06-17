@@ -1,16 +1,16 @@
 # 3.5.5xx (Cerulean series release 5)
+Functionality expansion release
 ### All NuGet packages
 * All packages now include the `pwsh` module alongside the main .net core AltCover.dll
 * `altcover ipmo` command line option to output the `Import-Module` invocation needed to register the PowerShell module for the version of AltCover being used
 * `AltCover.PowerShell` MSBuild task and option `/p:AltCoverIpmo=true` to expose this functionality through MSBuild and `dotnet test` integration
 
 ### "classic" and dotnet CLI NuGet packages
-* Support `dotnet add package ...` for `dotnet test` integration added to dotnet CLI package
+* Support `dotnet add package ...` for `dotnet test` integration -- now added to dotnet CLI package
 * Availability limited because dotnet global tools aren't compatible with `dotnet add package`
 
 ### "classic" NuGet package only
-* still integrates with `dotnet test`
-* still provides the .net Framework/mono binaries, including the Windows PowerShell module
+* provides the .net Framework/mono binaries, including the Windows PowerShell module
 
 # 3.5.543 (Cerulean series release 4)
 ### All NuGet packages
