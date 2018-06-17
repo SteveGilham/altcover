@@ -366,9 +366,9 @@ module Runner =
                           Path.GetFileName(report) + ".*.acv")
       |> Seq.iter (fun f ->
           timer.Restart()
-          let length = FileInfo(f).Length
+          let length = FileInfo(f).Length.ToString("#,#", CultureInfo.CurrentUICulture)
 
-          sprintf "... %s (%db)" f length |> Output.Info
+          sprintf "... %s (%sb)" f length |> Output.Info
           use results = new DeflateStream(File.OpenRead f, CompressionMode.Decompress)
           use formatter = new System.IO.BinaryReader(results)
           let rec sink() =

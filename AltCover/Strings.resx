@@ -196,7 +196,7 @@ Coverage Report: {0}
     <value>Optional: The working directory for the application launch</value>
   </data>
   <data name="%d visits recorded" xml:space="preserve">
-    <value>A total of {0} visits recorded</value>
+    <value>A total of {0:#,#0} visits recorded</value>
   </data>
   <data name="Beginning run..." xml:space="preserve">
     <value>Beginning run...</value>
@@ -341,6 +341,6 @@ Details written to {0}</value>
     <value>{0} : File {1} is not an assembly</value>
   </data>
   <data name="%d visits recorded in %A (%A visits/sec)" xml:space="preserve">
-    <value>{0} visits recorded in {1} ({2} visits/sec)</value>
+    <value>{0:#,#0} visits recorded in {1} ({2:#,#0} visits/sec)</value>
   </data>
 </root>

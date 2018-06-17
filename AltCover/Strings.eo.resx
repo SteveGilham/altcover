@@ -195,7 +195,7 @@ Kovra Raporto: {0}
     <value>Laŭvola: La laboranta dosierujo por la lanĉo de aplikaĵoj</value>
   </data>
   <data name="%d visits recorded" xml:space="preserve">
-    <value>Totalo de {0} vizitoj registritaj</value>
+    <value>Totalo de {0:#,#0} vizitoj registritaj</value>
   </data>
   <data name="Beginning run..." xml:space="preserve">
     <value>Komencanta kuri ...</value>
@@ -340,6 +340,6 @@ Detaloj skribitaj al {0}</value>
     <value>{0}: Dosiero {1} ne estas asemblea</value>
   </data>
   <data name="%d visits recorded in %A (%A visits/sec)" xml:space="preserve">
-    <value>{0} vizitoj registritaj en {1} ({2} visits/sek)</value>
+    <value>{0:#,#0} vizitoj registritaj en {1} ({2:#,#0} visits/sek)</value>
   </data>
 </root>
