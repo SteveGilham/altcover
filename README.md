@@ -53,7 +53,7 @@ See the [current project](https://github.com/SteveGilham/altcover/projects/6) fo
 
 It is assumed that the following are available
 
-.net core SDK 2.1.300 or later (`dotnet`) -- try https://www.microsoft.com/net/download/windows  
+.net core SDK 2.1.300 or later (`dotnet`) -- try https://www.microsoft.com/net/download  
 PowerShell Core 6.0.2 or later (`pwsh`) -- try https://github.com/powershell/powershell
 
 #### Windows
