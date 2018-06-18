@@ -21,6 +21,7 @@
 </PropertyGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Visualizer.ico" />
     <EmbeddedResource Include="AltCover.Avalonia.MainWindow.xaml">
       <LogicalName>AltCover.Avalonia.MainWindow.xaml</LogicalName>
     </EmbeddedResource>
@@ -38,13 +39,15 @@
     <Compile Include="Program.fs" />
   </ItemGroup>
 
+  <ItemGroup />
+
   <ItemGroup>
-    <None Include="Visualizer.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Open_6529.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    <EmbeddedResource Include="Visualizer.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Open_6529.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </EmbeddedResource>
   </ItemGroup>
 
   <ItemGroup>
