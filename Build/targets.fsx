@@ -2127,11 +2127,12 @@ _Target "DotnetCLIIntegration" ( fun _ ->
                                      "<TrackedMethodRef uid=\"2\" vc=\"1\" />"
                     ])
 
-    let mpath = ((nugetCache @@ "altcover.dotnet") @@ !Version) @@ "lib/netcoreapp2.0/AltCover.PowerShell.dll"
+    let command = """$ipmo = (dotnet altcover ipmo | Out-String).Trim().Split()[1].Trim(@('""')); Import-Module $ipmo; ConvertTo-BarChart -?"""
+
     Actions.RunRaw (fun info -> { info with
                                         FileName = pwsh
-                                        WorkingDirectory = "."
-                                        Arguments = ("-NoProfile -Command \"ipmo " + mpath + " ; ConvertTo-BarChart -? \"")})
+                                        WorkingDirectory = working
+                                        Arguments = ("-NoProfile -Command \"" + command + "\"")})
                                    "pwsh"
 
     Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = Path.getFullName "_DotnetCLITest"}) "add"
@@ -2254,11 +2255,12 @@ _Target "DotnetGlobalIntegration" ( fun _ ->
                                      "<TrackedMethodRef uid=\"2\" vc=\"1\" />"
                     ])
 
-    let mpath = ((((nugetCache @@ "../../.dotnet/tools/.store/altcover.global") @@ !Version) @@ "altcover.global") @@ !Version) @@ "tools/netcoreapp2.1/any/AltCover.PowerShell.dll"
+    let command = """$ipmo = (altcover ipmo | Out-String).Trim().Split()[1].Trim(@('""')); Import-Module $ipmo; ConvertTo-BarChart -?"""
+
     Actions.RunRaw (fun info -> { info with
                                         FileName = pwsh
-                                        WorkingDirectory = "."
-                                        Arguments = ("-NoProfile -Command \"ipmo " + mpath + "; ConvertTo-BarChart -? \"")})
+                                        WorkingDirectory = working
+                                        Arguments = ("-NoProfile -Command \"" + command + "\"")})
                                    "pwsh"
 
     // (fsproj.Descendants(XName.Get("TargetFramework")) |> Seq.head).Value <- "netcoreapp2.1"
