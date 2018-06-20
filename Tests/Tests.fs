@@ -2719,10 +2719,10 @@ type AltCoverTests() = class
 
     Instrument.UpdateStrongReferences def
     let token1 = def.Name.PublicKeyToken
-    Assert.That (token1, Is.Not.Null)
 #if NETCOREAPP2_0
-    Assert.That (token1, Is.EquivalentTo(token0))
+    Assert.That (token1, Is.Empty)
 #else
+    Assert.That (token1, Is.Not.Null)
     Assert.That (token1, Is.Not.EquivalentTo(token0))
 #endif
     let token' = String.Join(String.Empty, token1|> Seq.map (fun x -> x.ToString("x2")))
@@ -2745,11 +2745,7 @@ type AltCoverTests() = class
     Instrument.UpdateStrongReferences def
     let token1 = def.Name.PublicKeyToken
     Assert.That (token1, Is.Empty)
-#if NETCOREAPP2_0
-    Assert.That (token1, Is.EquivalentTo(token0))
-#else
     Assert.That (token1, Is.Not.EquivalentTo(token0))
-#endif
 
     let token' = String.Join(String.Empty, token1|> Seq.map (fun x -> x.ToString("x2")))
     Assert.That (token', Is.EqualTo String.Empty)

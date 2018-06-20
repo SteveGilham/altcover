@@ -2028,6 +2028,37 @@ _Target "DotnetTestIntegration" ( fun _ ->
     Shell.deleteDir folder
 )
 
+_Target "Issue24" ( fun _ ->
+  try
+    Directory.ensure "./_Issue24"
+    Shell.cleanDir ("./_Issue24")
+    let config = XDocument.Load "./Build/NuGet.config.dotnettest"
+    let repo = config.Descendants(XName.Get("add")) |> Seq.head
+    repo.SetAttributeValue(XName.Get "value", Path.getFullName "./_Packaging" )
+    config.Save "./_Issue24/NuGet.config"
+
+    let csproj = XDocument.Load "./Sample9/sample9.csproj"
+    let pack = csproj.Descendants(XName.Get("PackageReference")) |> Seq.head
+    let inject = XElement(XName.Get "PackageReference",
+                          XAttribute (XName.Get "Include", "altcover"),
+                          XAttribute (XName.Get "Version", !Version) )
+    pack.AddBeforeSelf inject
+    csproj.Save "./_Issue24/sample9.csproj"
+    Shell.copy "./_Issue24" (!! "./Sample9/*.cs")
+
+    Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = Path.getFullName "_Issue24"}) "restore"
+                      ("")
+                      "restore returned with a non-zero exit code"
+
+    Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = Path.getFullName "_Issue24"}) "test"
+                      ("/p:AltCover=true /p:AltCoverIpmo=true")
+                      "sample test returned with a non-zero exit code"
+  finally
+    let folder = (nugetCache @@ "altcover") @@ !Version
+    Shell.mkdir folder
+    Shell.deleteDir folder
+)
+
 _Target "DotnetCLIIntegration" ( fun _ ->
   try
     Directory.ensure "./_DotnetCLITest"
@@ -2127,11 +2158,12 @@ _Target "DotnetCLIIntegration" ( fun _ ->
                                      "<TrackedMethodRef uid=\"2\" vc=\"1\" />"
                     ])
 
-    let mpath = ((nugetCache @@ "altcover.dotnet") @@ !Version) @@ "lib/netcoreapp2.0/AltCover.PowerShell.dll"
+    let command = """$ipmo = (dotnet altcover ipmo | Out-String).Trim().Split()[1].Trim(@('""')); Import-Module $ipmo; ConvertTo-BarChart -?"""
+
     Actions.RunRaw (fun info -> { info with
                                         FileName = pwsh
-                                        WorkingDirectory = "."
-                                        Arguments = ("-NoProfile -Command \"ipmo " + mpath + " ; ConvertTo-BarChart -? \"")})
+                                        WorkingDirectory = working
+                                        Arguments = ("-NoProfile -Command \"" + command + "\"")})
                                    "pwsh"
 
     Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = Path.getFullName "_DotnetCLITest"}) "add"
@@ -2254,11 +2286,12 @@ _Target "DotnetGlobalIntegration" ( fun _ ->
                                      "<TrackedMethodRef uid=\"2\" vc=\"1\" />"
                     ])
 
-    let mpath = ((((nugetCache @@ "../../.dotnet/tools/.store/altcover.global") @@ !Version) @@ "altcover.global") @@ !Version) @@ "tools/netcoreapp2.1/any/AltCover.PowerShell.dll"
+    let command = """$ipmo = (altcover ipmo | Out-String).Trim().Split()[1].Trim(@('""')); Import-Module $ipmo; ConvertTo-BarChart -?"""
+
     Actions.RunRaw (fun info -> { info with
                                         FileName = pwsh
-                                        WorkingDirectory = "."
-                                        Arguments = ("-NoProfile -Command \"ipmo " + mpath + "; ConvertTo-BarChart -? \"")})
+                                        WorkingDirectory = working
+                                        Arguments = ("-NoProfile -Command \"" + command + "\"")})
                                    "pwsh"
 
     // (fsproj.Descendants(XName.Get("TargetFramework")) |> Seq.head).Value <- "netcoreapp2.1"
@@ -2522,6 +2555,10 @@ Target.activateFinal "ResetConsoleColours"
 "Unpack"
 ==> "DotnetTestIntegration"
 ==> "Deployment"
+
+"Unpack"
+==> "Issue24"
+=?> ("Deployment", Environment.isWindows)
 
 "Unpack"
 ==> "DotnetCLIIntegration"
