@@ -94,12 +94,15 @@ module Instrument =
   /// <param name="key">The possibly empty key to use</param>
   let internal UpdateStrongNaming (assemblyName:AssemblyNameDefinition) (key:StrongNameKeyPair option) =
 #if NETCOREAPP2_0
-    ()
 #else
     match key with
-    | None -> assemblyName.HasPublicKey <- false
+    | None -> 
+#endif
+              assemblyName.HasPublicKey <- false
               assemblyName.PublicKey <- null
               assemblyName.PublicKeyToken <- null
+#if NETCOREAPP2_0
+#else
     | Some key' -> assemblyName.HasPublicKey <- true
                    assemblyName.PublicKey <- key'.PublicKey // sets token implicitly
 #endif
