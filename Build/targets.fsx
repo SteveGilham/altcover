@@ -2028,14 +2028,14 @@ _Target "DotnetTestIntegration" ( fun _ ->
     Shell.deleteDir folder
 )
 
-_Target "Issue24" ( fun _ ->
+_Target "Issue23" ( fun _ ->
   try
-    Directory.ensure "./_Issue24"
-    Shell.cleanDir ("./_Issue24")
+    Directory.ensure "./_Issue23"
+    Shell.cleanDir ("./_Issue23")
     let config = XDocument.Load "./Build/NuGet.config.dotnettest"
     let repo = config.Descendants(XName.Get("add")) |> Seq.head
     repo.SetAttributeValue(XName.Get "value", Path.getFullName "./_Packaging" )
-    config.Save "./_Issue24/NuGet.config"
+    config.Save "./_Issue23/NuGet.config"
 
     let csproj = XDocument.Load "./Sample9/sample9.csproj"
     let pack = csproj.Descendants(XName.Get("PackageReference")) |> Seq.head
@@ -2043,14 +2043,14 @@ _Target "Issue24" ( fun _ ->
                           XAttribute (XName.Get "Include", "altcover"),
                           XAttribute (XName.Get "Version", !Version) )
     pack.AddBeforeSelf inject
-    csproj.Save "./_Issue24/sample9.csproj"
-    Shell.copy "./_Issue24" (!! "./Sample9/*.cs")
+    csproj.Save "./_Issue23/sample9.csproj"
+    Shell.copy "./_Issue23" (!! "./Sample9/*.cs")
 
-    Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = Path.getFullName "_Issue24"}) "restore"
+    Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = Path.getFullName "_Issue23"}) "restore"
                       ("")
                       "restore returned with a non-zero exit code"
 
-    Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = Path.getFullName "_Issue24"}) "test"
+    Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = Path.getFullName "_Issue23"}) "test"
                       ("/p:AltCover=true /p:AltCoverIpmo=true")
                       "sample test returned with a non-zero exit code"
   finally
@@ -2557,7 +2557,7 @@ Target.activateFinal "ResetConsoleColours"
 ==> "Deployment"
 
 "Unpack"
-==> "Issue24"
+==> "Issue23"
 =?> ("Deployment", Environment.isWindows)
 
 "Unpack"
