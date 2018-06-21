@@ -92,12 +92,16 @@ module Instrument =
   /// </summary>
   /// <param name="assemblyName">The name to update</param>
   /// <param name="key">The possibly empty key to use</param>
-  let internal UpdateStrongNaming (assemblyName:AssemblyNameDefinition) (key:StrongNameKeyPair option) =
+  let internal UpdateStrongNaming (assembly:AssemblyDefinition) (key:StrongNameKeyPair option) =
+    let assemblyName = assembly.Name
 #if NETCOREAPP2_0
+    do
 #else
     match key with
     | None -> 
 #endif
+              assembly.MainModule.Attributes <- assembly.MainModule.Attributes &&& 
+                                                   (~~~ModuleAttributes.StrongNameSigned)
               assemblyName.HasPublicKey <- false
               assemblyName.PublicKey <- null
               assemblyName.PublicKeyToken <- null
@@ -165,7 +169,7 @@ module Instrument =
     stream.CopyTo(buffer)
     let pair = Some (StrongNameKeyPair(buffer.ToArray()))
 #endif
-    UpdateStrongNaming definition.Name (pair)
+    UpdateStrongNaming definition pair
 
     // set the coverage file path and unique token
     [
@@ -395,7 +399,8 @@ module Instrument =
   /// <param name="assembly">The assembly object being operated upon</param>
   let internal UpdateStrongReferences (assembly : AssemblyDefinition) =
     let effectiveKey = if assembly.Name.HasPublicKey then Visitor.defaultStrongNameKey else None
-    UpdateStrongNaming assembly.Name effectiveKey
+    UpdateStrongNaming assembly effectiveKey
+    assembly.MainModule.Attributes <- assembly.MainModule.Attributes &&& (~~~ModuleAttributes.StrongNameSigned)
 
   let internal injectJSON json =
     let o = JObject.Parse json
