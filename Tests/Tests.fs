@@ -1763,7 +1763,7 @@ type AltCoverTests() = class
     let token0 = def.Name.PublicKeyToken
     Assert.That (token0, Is.Not.Empty)
 #endif
-    AltCover.Instrument.UpdateStrongNaming def.Name None
+    AltCover.Instrument.UpdateStrongNaming def None
     Assert.That (def.Name.HasPublicKey, Is.False)
     let key1 = def.Name.PublicKey
     Assert.That (key1, Is.Empty)
@@ -1796,7 +1796,7 @@ type AltCoverTests() = class
     stream.CopyTo(buffer)
     let key = StrongNameKeyPair(buffer.ToArray())
 
-    AltCover.Instrument.UpdateStrongNaming def.Name (Some key)
+    AltCover.Instrument.UpdateStrongNaming def (Some key)
 #if NETCOREAPP2_0
     Assert.That (def.Name.HasPublicKey, Is.False)
 #else
@@ -1868,7 +1868,7 @@ type AltCoverTests() = class
       let where = Assembly.GetExecutingAssembly().Location
       let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample3.dll")
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-      AltCover.Instrument.UpdateStrongNaming def.Name None
+      AltCover.Instrument.UpdateStrongNaming def None
       self.ProvideKeyPair() |> Visitor.Add
       Assert.That (Option.isNone(Instrument.KnownKey def.Name))
     finally
@@ -1908,7 +1908,7 @@ type AltCoverTests() = class
       let where = Assembly.GetExecutingAssembly().Location
       let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample3.dll")
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-      AltCover.Instrument.UpdateStrongNaming def.Name None
+      AltCover.Instrument.UpdateStrongNaming def None
       self.ProvideKeyPair() |> Visitor.Add
       Assert.That (Option.isNone(Instrument.KnownToken def.Name))
     finally
@@ -2719,10 +2719,10 @@ type AltCoverTests() = class
 
     Instrument.UpdateStrongReferences def
     let token1 = def.Name.PublicKeyToken
-    Assert.That (token1, Is.Not.Null)
 #if NETCOREAPP2_0
-    Assert.That (token1, Is.EquivalentTo(token0))
+    Assert.That (token1, Is.Empty)
 #else
+    Assert.That (token1, Is.Not.Null)
     Assert.That (token1, Is.Not.EquivalentTo(token0))
 #endif
     let token' = String.Join(String.Empty, token1|> Seq.map (fun x -> x.ToString("x2")))
@@ -2745,11 +2745,7 @@ type AltCoverTests() = class
     Instrument.UpdateStrongReferences def
     let token1 = def.Name.PublicKeyToken
     Assert.That (token1, Is.Empty)
-#if NETCOREAPP2_0
-    Assert.That (token1, Is.EquivalentTo(token0))
-#else
     Assert.That (token1, Is.Not.EquivalentTo(token0))
-#endif
 
     let token' = String.Join(String.Empty, token1|> Seq.map (fun x -> x.ToString("x2")))
     Assert.That (token', Is.EqualTo String.Empty)
