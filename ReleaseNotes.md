@@ -1,5 +1,5 @@
 **Expect slower releases for the Summer**
-# 3.5.55x (Cerulean series release 6)
+# 3.5.556 (Cerulean series release 6)
 * [BUGFIX] -- Issue #23 : properly and completely remove strong-names in the .net core instrumentation phase
 
 # 3.5.550 (Cerulean series release 5)
