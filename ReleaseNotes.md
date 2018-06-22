@@ -1,6 +1,6 @@
 **Expect slower releases for the Summer**
 # 3.5.556 (Cerulean series release 6)
-* [BUGFIX] -- Issue #23 : properly and completely remove strong-names in the .net core instrumentation phase
+* [BUGFIX] -- Issue #23 : properly and completely remove strong-names when no new key is supplied ( = always in the .net core build, since Mono.Cecil there doesn't support setting strong-naming keys)
 
 # 3.5.550 (Cerulean series release 5)
 Functionality expansion release
