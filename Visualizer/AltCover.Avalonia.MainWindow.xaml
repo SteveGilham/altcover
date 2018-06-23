@@ -21,7 +21,7 @@
             </StackPanel>
           </MenuItem.Header>
         </MenuItem>
-        <MenuItem Name="List">
+        <MenuItem Name="List" IsEnabled="False">
           <MenuItem.Header>
             <StackPanel>
               <Image Source="resm:AltCover.Visualizer.ExpandChevronDown_lightGray_16x.png" Stretch="None" Margin="0,8" />
