@@ -5,60 +5,58 @@
         Icon="resm:AltCover.Visualizer.Visualizer.ico">
   <TabControl>
     <TabItem Name="Visualizer" Header="Visualizer">
-  <StackPanel>
-    <DockPanel Height="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Window, AncestorLevel=1}, Path=Height}" Width="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Window, AncestorLevel=1}, Path=Width}">
-      <Menu DockPanel.Dock="Top" MaxHeight="48" VerticalAlignment="Top">
-        <Menu.ItemsPanel>
-          <ItemsPanelTemplate>
-            <DockPanel HorizontalAlignment="Stretch"/>
-          </ItemsPanelTemplate>
-        </Menu.ItemsPanel>
-        <MenuItem Name="Open">
-          <MenuItem.Header>
-            <StackPanel>
-              <Image Source="resm:AltCover.Visualizer.Open_6529.png"  Stretch="None" />
-              <TextBlock Name="OpenText" Text="" />
-            </StackPanel>
-          </MenuItem.Header>
-        </MenuItem>
-        <MenuItem Name="List" IsEnabled="False">
-          <MenuItem.Header>
-            <StackPanel>
-              <Image Source="resm:AltCover.Visualizer.ExpandChevronDown_lightGray_16x.png" Stretch="None" Margin="0,8" />
-            </StackPanel>
-          </MenuItem.Header>
-          <MenuItem Header="Inline Items"></MenuItem>
-          <MenuItem Header="Inline Item 2"></MenuItem>
-          <MenuItem Header="Inline Item 3"></MenuItem>
-          <MenuItem Header="Inline Item 4"></MenuItem>
-        </MenuItem>
-        <MenuItem Name="Font" MinWidth="80">
-          <MenuItem.Header>
-            <StackPanel>
-              <Image Source="resm:AltCover.Visualizer.Font_16x.png"  Stretch="None" />
-              <TextBlock Name="FontText" Text="" HorizontalAlignment="Center"/>
-            </StackPanel>
-          </MenuItem.Header>
-        </MenuItem>
-        <MenuItem Name="Exit" HorizontalAlignment="Right" MinWidth="80">
-          <MenuItem.Header>
-            <StackPanel>
-              <Image Source="resm:AltCover.Visualizer.Exit_16x.png" Stretch="None" />
-              <TextBlock Name="ExitText" Text="" HorizontalAlignment="Center"/>
-            </StackPanel>
-          </MenuItem.Header>
-        </MenuItem>
-      </Menu>
-      <Grid RowDefinitions="Auto,*,Auto">
-        <TreeView Grid.Column="1" MinWidth="150">
-          
-        </TreeView>
-        <TabControl Grid.Column="2" MinWidth="150">
-          
-        </TabControl>
-      </Grid>
-    </DockPanel>
-  </StackPanel>
+      <StackPanel>
+        <DockPanel Height="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Window, AncestorLevel=1}, Path=Height}" Width="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Window, AncestorLevel=1}, Path=Width}">
+          <Menu DockPanel.Dock="Top" MaxHeight="48" VerticalAlignment="Top">
+            <Menu.ItemsPanel>
+              <ItemsPanelTemplate>
+                <DockPanel HorizontalAlignment="Stretch" />
+              </ItemsPanelTemplate>
+            </Menu.ItemsPanel>
+            <MenuItem Name="Open">
+              <MenuItem.Header>
+                <StackPanel>
+                  <Image Source="resm:AltCover.Visualizer.Open_6529.png"  Stretch="None" />
+                  <TextBlock Name="OpenText" Text="" />
+                </StackPanel>
+              </MenuItem.Header>
+            </MenuItem>
+            <MenuItem Name="List" IsEnabled="False">
+              <MenuItem.Header>
+                <StackPanel>
+                  <Image Source="resm:AltCover.Visualizer.ExpandChevronDown_lightGray_16x.png" Stretch="None" Margin="0,8" />
+                </StackPanel>
+              </MenuItem.Header>
+              <MenuItem Header="Inline Items"></MenuItem>
+              <MenuItem Header="Inline Item 2"></MenuItem>
+              <MenuItem Header="Inline Item 3"></MenuItem>
+              <MenuItem Header="Inline Item 4"></MenuItem>
+            </MenuItem>
+            <MenuItem Name="Font" MinWidth="80">
+              <MenuItem.Header>
+                <StackPanel>
+                  <Image Source="resm:AltCover.Visualizer.Font_16x.png"  Stretch="None" />
+                  <TextBlock Name="FontText" Text="" HorizontalAlignment="Center" />
+                </StackPanel>
+              </MenuItem.Header>
+            </MenuItem>
+            <MenuItem Name="Exit" HorizontalAlignment="Right" MinWidth="80"  Command="{Binding Exit}">
+              <MenuItem.Header>
+                <StackPanel>
+                  <Image Source="resm:AltCover.Visualizer.Exit_16x.png" Stretch="None" />
+                  <TextBlock Name="ExitText" Text="" HorizontalAlignment="Center" />
+                </StackPanel>
+              </MenuItem.Header>
+            </MenuItem>
+          </Menu>
+          <Grid RowDefinitions="Auto,*,Auto">
+            <TreeView Grid.Column="1" MinWidth="150">
+            </TreeView>
+            <TabControl Grid.Column="2" MinWidth="150">
+            </TabControl>
+          </Grid>
+        </DockPanel>
+      </StackPanel>
     </TabItem>
     <TabItem Name="About">
       <StackPanel Margin="10">

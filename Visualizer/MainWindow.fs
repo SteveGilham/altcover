@@ -1,12 +1,14 @@
 namespace AltCover.Avalonia
 
-open Avalonia.Controls
-open Avalonia.Controls.Html
-open Avalonia.Markup.Xaml
-
 open System
 open System.Globalization
 open System.Resources
+
+open Avalonia
+open Avalonia.Controls
+open Avalonia.Controls.Html
+open Avalonia.Markup.Xaml
+open ReactiveUI
 
 module UICommon =
 
@@ -15,14 +17,26 @@ module UICommon =
         let resources = new ResourceManager("AltCover.Visualizer.Strings", executingAssembly)
         resources.GetString(key)
 
+type MainWindowViewModel  () =
+    inherit ReactiveObject()
+
+    let mutable exit = ReactiveCommand.Create(new Action(fun _ -> Application.Current.Exit()))
+
+    member this.Exit
+        with get() =
+            exit
+
 type MainWindow () as this =
     inherit Window()
 
     let mutable armed = false
 
     do this.InitializeComponent()
+
     member this.InitializeComponent() =
         AvaloniaXamlLoader.Load(this)
+        this.DataContext <- MainWindowViewModel()
+
         this.Title <- "AltCover.Visualizer"
         this.FindControl<TabItem>("Visualizer").Header <- UICommon.GetResourceString "Visualizer"
 
