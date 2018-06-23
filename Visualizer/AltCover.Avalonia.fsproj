@@ -21,6 +21,17 @@
 </PropertyGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Assembly_16x.png" />
+    <EmbeddedResource Include="Class_16x.png" />
+    <EmbeddedResource Include="Exit_16x.png" />
+    <EmbeddedResource Include="ExpandChevronDown_16x.png" />
+    <EmbeddedResource Include="ExpandChevronDown_lightGray_16x.png" />
+    <EmbeddedResource Include="Font_16x.png" />
+    <EmbeddedResource Include="Method_16x.png" />
+    <EmbeddedResource Include="Namespace_16x.png" />
+    <EmbeddedResource Include="Refresh_16x.png" />
+    <EmbeddedResource Include="StatusCriticalError_16x.png" />
+    <EmbeddedResource Include="StatusInformation_16x.png" />
     <EmbeddedResource Include="Visualizer.ico" />
     <EmbeddedResource Include="AltCover.Avalonia.MainWindow.xaml">
       <LogicalName>AltCover.Avalonia.MainWindow.xaml</LogicalName>

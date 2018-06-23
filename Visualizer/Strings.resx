@@ -167,4 +167,10 @@ THE SOFTWARE.</value>
   <data name="Open" xml:space="preserve">
     <value> Open...</value>
   </data>
+  <data name="Exit" xml:space="preserve">
+    <value>Exit</value>
+  </data>
+  <data name="Font" xml:space="preserve">
+    <value>Font...</value>
+  </data>
 </root>

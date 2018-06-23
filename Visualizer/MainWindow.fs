@@ -25,8 +25,10 @@ type MainWindow () as this =
         AvaloniaXamlLoader.Load(this)
         this.Title <- "AltCover.Visualizer"
         this.FindControl<TabItem>("Visualizer").Header <- UICommon.GetResourceString "Visualizer"
-        let openItem = this.FindControl<TextBlock>("OpenText")
-        openItem.Text <- UICommon.GetResourceString "Open"
+
+        ["Open"; "Font"; "Exit"]
+        |> Seq.iter (fun n -> let item = this.FindControl<TextBlock>(n + "Text")
+                              item.Text <- UICommon.GetResourceString n)
 
         this.FindControl<TabItem>("About").Header <- UICommon.GetResourceString "About"
         this.FindControl<TextBlock>("Program").Text <- "AltCover.Visualizer " + AssemblyVersionInformation.AssemblyFileVersion
