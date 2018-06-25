@@ -1,8 +1,13 @@
 **Expect slower releases for the Summer**
+
+Q. Never mind the fluff -- how do I get started?
+
+A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
+
 # 3.5.xxx (Cerulean series release 6)
 * [BUGFIX] -- `dotnet test` integration : don't leave the imported FSharp.Core.dll in the binaries folder
 * `dotnet test` integration : Override the "VSTest" target to allow tidying after test failure
-* [BUGFIX; BREAKING] -- `ConvertFrom-NCover` : fill in the <Summary />, <Method />, and <MethodPoint /> values to reflect the recorded visits.  This uses exiting code, and comes at the cost of translating the output to `[xml]` instead of `XDocument`.
+* [BUGFIX; BREAKING] -- `ConvertFrom-NCover` : fill in the <Summary />, <Method />, and <MethodPoint /> values to reflect the recorded visits.  This uses existing code, and comes at the cost of translating the output to `[xml]` instead of `XDocument`.
 
 # 3.5.556 (Cerulean series release 6)
 * [BUGFIX] -- Issue #23 : properly and completely remove strong-names when no new key is supplied ( = always in the .net core build, since Mono.Cecil there doesn't support setting strong-naming keys)
