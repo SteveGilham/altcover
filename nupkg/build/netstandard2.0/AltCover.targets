@@ -62,6 +62,32 @@
        />
   </Target>
 
+  <!-- As per Microsoft.TestPlatform.targets v2.1.300, but with OnError clause -->
+  <Target Name="VSTest" >
+    <CallTarget Condition="'$(VSTestNoBuild)' != 'true'" Targets="BuildProject" />
+    
+    <CallTarget Targets="ShowCallOfVSTestTaskWithParameter" />
+
+    <Microsoft.TestPlatform.Build.Tasks.VSTestTask
+      TestFileFullPath="$(TargetPath)"
+      VSTestSetting="$(VSTestSetting)"
+      VSTestTestAdapterPath="$(VSTestTestAdapterPath)"
+      VSTestFramework="$(TargetFrameworkMoniker)"
+      VSTestPlatform="$(PlatformTarget)"
+      VSTestTestCaseFilter="$(VSTestTestCaseFilter)"
+      VSTestLogger="$(VSTestLogger)"
+      VSTestListTests="$(VSTestListTests)"
+      VSTestDiag="$(VSTestDiag)"
+      VSTestCLIRunSettings="$(VSTestCLIRunSettings)"
+      VSTestConsolePath="$(VSTestConsolePath)"
+      VSTestResultsDirectory="$(VSTestResultsDirectory)"
+      VSTestVerbosity="$(VSTestVerbosity)"
+      VSTestCollect="$(VSTestCollect)"
+      VSTestBlame="$(VSTestBlame)"
+    />
+    <OnError ExecuteTargets="AltCoverGenerateCoverageResult" />      
+  </Target>
+
   <Target Name="AltCoverGenerateCoverageResult" AfterTargets="VSTest">
     <AltCover.Collect
       Condition="$(AltCover) == 'true'"

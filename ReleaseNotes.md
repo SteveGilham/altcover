@@ -1,6 +1,7 @@
 **Expect slower releases for the Summer**
 # 3.5.xxx (Cerulean series release 6)
 * [BUGFIX] -- `dotnet test` integration : don't leave the imported FSharp.Core.dll in the binaries folder
+* `dotnet test` integration : Override the "VSTest" target to allow tidying after test failure
 * [BUGFIX; BREAKING] -- `ConvertFrom-NCover` : fill in the <Summary />, <Method />, and <MethodPoint /> values to reflect the recorded visits.  This uses exiting code, and comes at the cost of translating the output to `[xml]` instead of `XDocument`.
 
 # 3.5.556 (Cerulean series release 6)
