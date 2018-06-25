@@ -368,7 +368,7 @@ module Main =
       then Runner.init()
            Runner.DoCoverage arguments (DeclareOptions())
       else init()
-           if present && 
+           if present &&
                "ipmo".StartsWith(first, StringComparison.OrdinalIgnoreCase) then
                 Path.Combine ( Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName,
                                "AltCover.PowerShell.dll")

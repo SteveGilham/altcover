@@ -4581,7 +4581,7 @@ type AltCoverTests() = class
 
       Assert.That (result.Replace("\r\n", "\n"), Is.EqualTo (expected.Replace("\r\n", "\n")))
 
-    finally 
+    finally
       Console.SetOut saved
       Output.Task <- false
 
