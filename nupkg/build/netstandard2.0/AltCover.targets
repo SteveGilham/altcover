@@ -1,11 +1,11 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
-  <UsingTask TaskName="AltCover.Prepare"   
-        AssemblyFile="$(MSBuildThisFileDirectory)../../tools/netcoreapp2.0/AltCover.dll"/>  
-  <UsingTask TaskName="AltCover.Collect"   
-        AssemblyFile="$(MSBuildThisFileDirectory)../../tools/netcoreapp2.0/AltCover.dll"/>  
-  <UsingTask TaskName="AltCover.PowerShell"   
-        AssemblyFile="$(MSBuildThisFileDirectory)../../tools/netcoreapp2.0/AltCover.dll"/>  
+  <UsingTask TaskName="AltCover.Prepare"
+        AssemblyFile="$(MSBuildThisFileDirectory)../../tools/netcoreapp2.0/AltCover.dll" />
+  <UsingTask TaskName="AltCover.Collect"
+        AssemblyFile="$(MSBuildThisFileDirectory)../../tools/netcoreapp2.0/AltCover.dll" />
+  <UsingTask TaskName="AltCover.PowerShell"
+        AssemblyFile="$(MSBuildThisFileDirectory)../../tools/netcoreapp2.0/AltCover.dll" />
 
   <ItemGroup>
     <AltCoverSplitContext Include="$(AltCoverCallContext.Split('|'))" />
@@ -22,9 +22,9 @@
     <PropertyGroup>
       <AltCoverXmlReport Condition="'$(AltCoverXmlReport)' == ''">$(ProjectDir)coverage.xml</AltCoverXmlReport>
     </PropertyGroup>
-    <AltCover.PowerShell Condition="'$(VSTestNoBuild)' == 'true' and $(AltCoverIpmo) == 'true'" />
+    <AltCover.PowerShell Condition="'$(VSTestNoBuild)' == 'true' and '$(AltCoverIpmo)' == 'true'" />
     <AltCover.Prepare
-      Condition="'$(VSTestNoBuild)' == 'true' and $(AltCover) == 'true'"
+      Condition="'$(VSTestNoBuild)' == 'true' AND '$(AltCover)' == 'true'"
       InputDirectory="$(TargetDir)"
       OutputDirectory="$(TargetDir)__Saved"
       XmlReport="$(AltCoverXmlReport)"
@@ -36,17 +36,16 @@
       MethodFilter="@(AltCoverMethodFilters)"
       AttributeFilter="@(AltCoverAttributeFilters)"
       CallContext="@(AltCoverSplitContext)"
-      Dependencies="@(AltCoverDependencies)"
-       />
+      Dependencies="@(AltCoverDependencies)" />
   </Target>
 
   <Target Name="AltCoverInstrumentModulesAfterBuild" AfterTargets="BuildProject">
     <PropertyGroup>
       <AltCoverXmlReport Condition="'$(AltCoverXmlReport)' == ''">$(ProjectDir)coverage.xml</AltCoverXmlReport>
     </PropertyGroup>
-    <AltCover.PowerShell Condition="'$(VSTestNoBuild)' != 'true' and $(AltCoverIpmo) == 'true'" />
+    <AltCover.PowerShell Condition="'$(VSTestNoBuild)' != 'true' AND $(AltCoverIpmo) == 'true'" />
     <AltCover.Prepare
-      Condition="'$(VSTestNoBuild)' != 'true' and $(AltCover) == 'true'"
+      Condition="'$(VSTestNoBuild)' != 'true' AND '$(AltCover)' == 'true'"
       InputDirectory="$(TargetDir)"
       OutputDirectory="$(TargetDir)__Saved"
       XmlReport="$(AltCoverXmlReport)"
@@ -58,14 +57,13 @@
       MethodFilter="$(AltCoverMethodFilter)"
       AttributeFilter="$(AltCoverAttributeFilter)"
       CallContext="@(AltCoverSplitContext)"
-      Dependencies="@(AltCoverDependencies)"
-       />
+      Dependencies="@(AltCoverDependencies)" />
   </Target>
 
   <!-- As per Microsoft.TestPlatform.targets v2.1.300, but with OnError clause -->
-  <Target Name="VSTest" >
+  <Target Name="VSTest">
     <CallTarget Condition="'$(VSTestNoBuild)' != 'true'" Targets="BuildProject" />
-    
+
     <CallTarget Targets="ShowCallOfVSTestTaskWithParameter" />
 
     <Microsoft.TestPlatform.Build.Tasks.VSTestTask
@@ -83,28 +81,25 @@
       VSTestResultsDirectory="$(VSTestResultsDirectory)"
       VSTestVerbosity="$(VSTestVerbosity)"
       VSTestCollect="$(VSTestCollect)"
-      VSTestBlame="$(VSTestBlame)"
-    />
-    <OnError ExecuteTargets="AltCoverGenerateCoverageResult" />      
+      VSTestBlame="$(VSTestBlame)" />
+    <OnError ExecuteTargets="AltCoverGenerateCoverageResult" />
   </Target>
 
   <Target Name="AltCoverGenerateCoverageResult" AfterTargets="VSTest">
     <AltCover.Collect
-      Condition="$(AltCover) == 'true'"
+      Condition="'$(AltCover)' == 'true'"
       RecorderDirectory="$(TargetDir)"
       LcovReport="$(AltCoverLcovReport)"
       Threshold="$(AltCoverThreshold)"
-      Cobertura="$(AltCoverCobertura)"
-        />
+      Cobertura="$(AltCoverCobertura)" />
     <ItemGroup>
       <AltCoverRecorderGFiles Include="$(TargetDir)/AltCover.Recorder.g.*" />
       <AltCoverFSharpFiles Include="$(TargetDir)/FSharp.Core.*" />
       <AltCoverSavedFiles Include="$(TargetDir)__Saved/*.*" />
     </ItemGroup>
-    <Delete Files="@(AltCoverRecorderGFiles)" />
-    <Delete Files="@(AltCoverFSharpFiles)" />
-    <Move SourceFiles="@(AltCoverSavedFiles)" DestinationFolder="$(TargetDir)" OverwriteReadOnlyFiles="true" />
-    <RemoveDir Directories="$(TargetDir)__Saved" Condition="Exists('$(TargetDir)__Saved')" />
+    <Delete Files="@(AltCoverRecorderGFiles)" Condition="'$(AltCover)' == 'true'" />
+    <Delete Files="@(AltCoverFSharpFiles)" Condition="'$(AltCover)' == 'true'" />
+    <Move SourceFiles="@(AltCoverSavedFiles)" DestinationFolder="$(TargetDir)" OverwriteReadOnlyFiles="true" Condition="'$(AltCover)' == 'true'" />
+    <RemoveDir Directories="$(TargetDir)__Saved" Condition="Exists('$(TargetDir)__Saved') AND '$(AltCover)' == 'true'" />
   </Target>
-
 </Project>
