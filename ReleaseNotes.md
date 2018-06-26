@@ -1,4 +1,4 @@
-**Expect slower releases for the Summer**
+**Expect slower/bugfix-only releases for the Summer**
 
 Q. Never mind the fluff -- how do I get started?
 
