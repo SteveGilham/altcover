@@ -364,15 +364,28 @@ _Target "UnitTestDotNet" (fun _ ->
            reraise ()
 )
 
+_Target "BuildForCoverlet" (fun _ ->
+      !! (@"./*Tests/*.tests.core.fsproj")
+      |> Seq.iter (fun f -> printfn "Building %s" f
+                            Actions.RunDotnet dotnetOptions "build"
+                                ("--configuration Debug " + f)
+                                f)
+)
+
 _Target "UnitTestDotNetWithCoverlet" (fun _ ->
     Directory.ensure "./_Reports"
     try
       let xml = !! (@"./*Tests/*.tests.core.fsproj")
-                |> Seq.fold (fun l f -> 
+                |> Seq.zip [
+                    """--no-build /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Exclude="\"[Sample*]*,[AltCover.Record*]*,[NUnit*]*,[AltCover.Shadow.Adapter]*\"" --configuration Debug """
+                    """--no-build /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Exclude="\"[Sample*]*,[AltCover.Record*]*,[NUnit*]*,[AltCover.Shadow.Adapter]*\"" --configuration Debug """ 
+                    """--no-build /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Exclude="\"[Sample*]*,[AltCover.Record*]*\"" --configuration Debug """
+                           ]
+                |> Seq.fold (fun l (p,f) -> 
                                             printfn "Testing %s" f
                                             try
                                               Actions.RunDotnet dotnetOptions "test"
-                                                                ("""--no-build /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Exclude=\"[Sample*]*,[AltCover.Record*]*,[NUnit*]*,[AltCover.Shadow.Adapter]*\" --configuration Debug """ + f)
+                                                                (p + f)
                                                                 f
                                             with
                                             | x -> eprintf "%A" x
@@ -384,7 +397,7 @@ _Target "UnitTestDotNetWithCoverlet" (fun _ ->
       ReportGenerator.generateReports
               (fun p -> { p with ExePath = Tools.findToolInSubPath "ReportGenerator.exe" "."
                                  ReportTypes = [ ReportGenerator.ReportType.Html; ReportGenerator.ReportType.XmlSummary ]
-                                 TargetDir = "_Reports/_Coverlet"})
+                                 TargetDir = "_Reports/_UnitTestWithCoverlet"})
               xml
     with
     | x -> printfn "%A" x
@@ -2393,6 +2406,7 @@ Target.activateFinal "ResetConsoleColours"
 ==> "UnitTest"
 
 "UnitTestDotNet"
+==> "BuildForCoverlet"
 ==> "UnitTestDotNetWithCoverlet"
 ==> "UnitTest"
 
