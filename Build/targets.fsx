@@ -368,11 +368,8 @@ _Target "UnitTestDotNetWithCoverlet" (fun _ ->
     Directory.ensure "./_Reports"
     try
       let xml = !! (@"./*Tests/*.tests.core.fsproj")
-                |> Seq.fold (fun l f -> try
+                |> Seq.fold (fun l f -> 
                                             printfn "Testing %s" f
-                                            Actions.RunDotnet dotnetOptions "add"
-                                                              (f + " package coverlet.msbuild ")
-                                                              f
                                             try
                                               Actions.RunDotnet dotnetOptions "test"
                                                                 ("""/p:OtherConstants=COVERLET /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Exclude=\"[Sample*]*,[AltCover.Record*]*,[NUnit*]*,[AltCover.Shadow.Adapter]*\" --configuration Debug """ + f)
@@ -383,10 +380,6 @@ _Target "UnitTestDotNetWithCoverlet" (fun _ ->
                                             let here = Path.GetDirectoryName f
 
                                             (here @@ "coverage.opencover.xml") :: l
-                                        finally
-                                            Actions.RunDotnet dotnetOptions "remove"
-                                                              (f + " package coverlet.msbuild ")
-                                                              f
                                               ) []
       ReportGenerator.generateReports
               (fun p -> { p with ExePath = Tools.findToolInSubPath "ReportGenerator.exe" "."
@@ -2397,6 +2390,10 @@ Target.activateFinal "ResetConsoleColours"
 
 "UnitTestDotNet"
 ==> "UnitTestWithAltCoverCoreRunner"
+==> "UnitTest"
+
+"UnitTestDotNet"
+==> "UnitTestDotNetWithCoverlet"
 ==> "UnitTest"
 
 "Compilation"
