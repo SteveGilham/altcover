@@ -221,7 +221,7 @@ type ConvertToNCoverCommand(outputFile:String) =
       Directory.SetCurrentDirectory here
 
 [<Cmdlet(VerbsData.ConvertFrom, "NCover")>]
-[<OutputType(typeof<XDocument>)>]
+[<OutputType(typeof<XmlDocument>)>]
 [<SuppressMessage("Microsoft.PowerShell", "PS1008", Justification = "Cobertura is OK")>]
 type ConvertFromNCoverCommand(outputFile:String) =
   inherit PSCmdlet()
@@ -322,10 +322,22 @@ type ConvertFromNCoverCommand(outputFile:String) =
       let dec = rewrite.Declaration
       dec.Encoding <- "utf-8"
       dec.Standalone <- null
-      if self.OutputFile |> String.IsNullOrWhiteSpace |> not then
-        rewrite.Save(self.OutputFile)
 
-      self.WriteObject rewrite
+      let converted = XmlUtilities.ToXmlDocument rewrite
+#if NETCOREAPP2_0
+      AltCover.Runner.PostProcess null AltCover.Base.ReportFormat.OpenCover converted
+#else
+#if DEBUG
+      AltCover.Runner.PostProcess null AltCover.Base.ReportFormat.OpenCover converted
+#else
+      AltCover.Runner.PostProcess (null, AltCover.Base.ReportFormat.OpenCover, converted)
+#endif
+#endif
+
+      if self.OutputFile |> String.IsNullOrWhiteSpace |> not then
+        converted.Save(self.OutputFile)
+
+      self.WriteObject converted
     finally
       Directory.SetCurrentDirectory here
 

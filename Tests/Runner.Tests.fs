@@ -1821,4 +1821,9 @@ or
       Runner.Summaries <- saveSummaries
       Runner.threshold <- saved
 
+  [<Test>]
+  member self.TryGetValueHandlesNull() =
+    let dict : Dictionary<int,int> = null
+    Assert.That( Runner.TryGetValue dict 0 |> fst, Is.False)
+
 end

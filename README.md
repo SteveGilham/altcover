@@ -1,4 +1,4 @@
-**Expect slower releases for the Summer**
+**Expect slower/bugfix-only releases for the Summer**
 
 # altcover
 Instrumenting coverage tool for .net (framework 2.0+  and core) and Mono, reimplemented and extended almost beyond recognition from [dot-net-coverage](https://github.com/SteveGilham/dot-net-coverage), plus a set of related utilities for processing the results from this and from other programs producing similar output formats.

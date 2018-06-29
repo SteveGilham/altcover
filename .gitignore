@@ -55,3 +55,4 @@ packages/
 *.suo
 Build/build.fsx
 AltCover/Properties/launchSettings.json
+*/coverage.opencover.xml

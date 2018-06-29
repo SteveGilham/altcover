@@ -1,8 +1,7 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
   <PropertyGroup>
-    <AltCover Condition="$(AltCover) == ''">false</AltCover>
+    <AltCover Condition="'$(AltCover)' == ''">false</AltCover>
     <AltCoverOpenCover Condition="'$(AltCoverOpenCover)' == ''">true</AltCoverOpenCover>
   </PropertyGroup>
-
 </Project>
