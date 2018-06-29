@@ -493,7 +493,7 @@ Describe "ConvertFrom-NCover" {
     $assemblies = @()
     $assemblies += "./_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.0/Sample4.dll"
     $xml = ConvertFrom-NCover -InputFile "./_Reports/ReleaseXUnitFSharpTypesDotNetRunner.xml" -Assembly $Assemblies -OutputFile "./_Packaging/AltCoverFSharpTypes.xml"
-    $xml | Should -BeOfType "System.Xml.Linq.XDocument"
+    $xml | Should -BeOfType "System.Xml.XmlDocument"
 
     $sw = new-object System.IO.StringWriter @()
     $settings = new-object System.Xml.XmlWriterSettings @()
@@ -504,6 +504,8 @@ Describe "ConvertFrom-NCover" {
     $xw.Close()
     $written = [System.IO.File]::ReadAllText("./_Packaging/AltCoverFSharpTypes.xml")
     $expected = [System.IO.File]::ReadAllText("./Tests/AltCoverFSharpTypes.xml")
+
+    $xml = ConvertTo-XDocument $xml
     $hash = $xml.Descendants("Module").Attribute("hash").Value
     $time = $xml.Descendants("ModuleTime").Value
     $file = $xml.Descendants("File") | Select-Object -First 1
@@ -523,7 +525,7 @@ Describe "ConvertFrom-NCover" {
     $assemblies = @()
     $assemblies += "./_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.0/Sample4.dll"
     $xml = [xml](Get-Content  "./_Reports/ReleaseXUnitFSharpTypesDotNetRunner.xml") | ConvertFrom-NCover -Assembly $Assemblies
-    $xml | Should -BeOfType "System.Xml.Linq.XDocument"
+    $xml | Should -BeOfType "System.Xml.XmlDocument"
 
     $sw = new-object System.IO.StringWriter @()
     $settings = new-object System.Xml.XmlWriterSettings @()
@@ -534,6 +536,8 @@ Describe "ConvertFrom-NCover" {
     $xw.Close()
 
     $expected = [System.IO.File]::ReadAllText("./Tests/AltCoverFSharpTypes.xml")
+
+    $xml = ConvertTo-XDocument $xml
     $hash = $xml.Descendants("Module").Attribute("hash").Value
     $time = $xml.Descendants("ModuleTime").Value
     $file = $xml.Descendants("File") | Select-Object -First 1
@@ -545,6 +549,6 @@ Describe "ConvertFrom-NCover" {
     $expected = $expected.Replace("Sample4|Tests.fs", (Join-Path $fullpath "Tests.fs"))
 
     $result = $sw.ToString().Replace("`r", "").Replace("utf-16", "utf-8") 
-    $result | Should -Be $expected.Replace("`r", "")
+    $result | Should -Be $expected.Replace("`r", "") ###.Substring(0,11680)
   }
 }

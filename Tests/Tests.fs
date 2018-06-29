@@ -93,11 +93,10 @@ type AltCoverTests() = class
                   |> Seq.filter (fun x -> not <| (snd x).FullName.StartsWith("Mono.", StringComparison.OrdinalIgnoreCase))
                   |> Seq.filter (fun x -> not <| (snd x).FullName.StartsWith("nunit", StringComparison.OrdinalIgnoreCase))
                   |> Seq.filter (fun x -> not <| (snd x).FullName.StartsWith("FSharp.", StringComparison.OrdinalIgnoreCase))
-#if COVERLET
+// for coverlet
                   |> Seq.filter (fun x -> not <| (snd x).FullName.StartsWith("coverlet", StringComparison.OrdinalIgnoreCase))
                   |> Seq.filter (fun x -> not <| (snd x).FullName.StartsWith("AltCover,", StringComparison.OrdinalIgnoreCase))
                   |> Seq.filter (fun x -> not <| (snd x).FullName.StartsWith("AltCover.Recorder", StringComparison.OrdinalIgnoreCase))
-#endif
 #else
                   |> Seq.filter (fun x -> (snd x).FullName.EndsWith("PublicKeyToken=c02b1a9f5b7cade8", StringComparison.OrdinalIgnoreCase))
 #endif
@@ -4581,7 +4580,7 @@ type AltCoverTests() = class
 
       Assert.That (result.Replace("\r\n", "\n"), Is.EqualTo (expected.Replace("\r\n", "\n")))
 
-    finally 
+    finally
       Console.SetOut saved
       Output.Task <- false
 
