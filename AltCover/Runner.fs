@@ -449,6 +449,11 @@ module Runner =
                             <> 0)
     |> Seq.length
 
+  let internal TryGetValue (d:Dictionary<'a,'b>) (key:'a) =
+    match d with
+    | null -> (false, Unchecked.defaultof<'b>)
+    | _ -> d.TryGetValue key
+
   let internal PostProcess (counts:Dictionary<string, Dictionary<int, int  * Base.Track list>>) format (document:XmlDocument) =
     match format with
     | Base.ReportFormat.OpenCoverWithTracking
@@ -543,7 +548,7 @@ module Runner =
             (vb + cvb, vs + cvs, vm + cvm, vc + cvc, pt + cpt, br + cbr, Math.Min(minc, minc0), Math.Max(maxc, maxc0))
 
         let updateModule (counts:Dictionary<string, Dictionary<int, int * Base.Track list>>) (vb, vs, vm, vc, pt, br, minc0, maxc0) (``module``:XmlElement) =
-            let dict =  match counts.TryGetValue <| ``module``.GetAttribute("hash") with
+            let dict =  match (TryGetValue counts) <| ``module``.GetAttribute("hash") with
                         | (false, _) -> Dictionary<int, int * Base.Track list>()
                         | (true, d) -> d
             let (cvb, cvs, cvm, cvc, cpt, cbr, minc, maxc) =
