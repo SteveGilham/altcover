@@ -98,9 +98,9 @@ module Instrument =
     do
 #else
     match key with
-    | None -> 
+    | None ->
 #endif
-              assembly.MainModule.Attributes <- assembly.MainModule.Attributes &&& 
+              assembly.MainModule.Attributes <- assembly.MainModule.Attributes &&&
                                                    (~~~ModuleAttributes.StrongNameSigned)
               assemblyName.HasPublicKey <- false
               assemblyName.PublicKey <- null
