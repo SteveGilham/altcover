@@ -5,7 +5,7 @@ nuget Fake.DotNet.Cli 5.1.0
 nuget Fake.DotNet.NuGet 5.1.0
 nuget Fake.IO.FileSystem 5.1.0
 nuget coveralls.io >= 1.4.2
-nuget FSharpLint.Core >= 0.9.0
+nuget FSharpLint.Core prerelease
 nuget NUnit >= 3.9.0
 nuget YamlDotNet >= 4.3.0 //"
 open System
@@ -50,7 +50,7 @@ nuget Fake.DotNet.Testing.XUnit2 5.1.0
 nuget Fake.IO.FileSystem 5.1.0
 nuget Fake.Testing.ReportGenerator 5.1.0
 nuget coveralls.io >= 1.4.2
-nuget FSharpLint.Core >= 0.9.0
+nuget FSharpLint.Core prerelease
 nuget Markdown >= 2.2.1
 nuget NUnit >= 3.9.0
 nuget YamlDotNet >= 4.3.0 //"
