@@ -192,9 +192,13 @@ _Target "Analysis" ignore
 _Target "Lint" (fun _ ->
 //    !! "**/*.fsproj"
 //        |> Seq.filter (fun n -> n.IndexOf(".core.") = -1)
-//        |> Seq.iter (FSharpLint (fun options -> { options with FailBuildIfAnyWarnings = true }) )
-() // currently broken; by-hand version fails because of https://github.com/fsprojects/FSharpLint/issues/252
-        )
+//        |> Seq.collect (fun n -> !!(Path.GetDirectoryName n @@ "*.fs"))
+//        |> Seq.iter (fun f -> match Lint.lintFile (Lint.OptionalLintParameters.Default) f (new Version "4.0") with
+//                              | Lint.Failure x -> new InvalidOperationException(x.ToString()) |> raise
+//                              | Lint.Success w -> w |> Seq.iter (printfn "%A"))
+// => https://github.com/fsprojects/FSharpLint/issues/266
+()
+)
 
 _Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standalone which contaminates everything
     Directory.ensure "./_Reports"
