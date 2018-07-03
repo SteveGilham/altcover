@@ -8,6 +8,7 @@ open Fake.Core
 open Fake.DotNet
 open Fake.IO.FileSystemOperators
 open Fake.IO
+open Fake.IO.Globbing.Operators
 
 open HeyRed.MarkdownSharp
 open NUnit.Framework
@@ -33,6 +34,10 @@ module Actions =
         |> Seq.concat
         |> Seq.iter (fun n -> printfn "Deleting %s" n
                               Directory.Delete(n, true))
+
+        !! (@"./*Tests/*.tests.core.fsproj")
+        |> Seq.map (fun f -> (Path.GetDirectoryName f) @@ "coverage.opencover.xml")
+        |> Seq.iter File.Delete
 
         let temp = Environment.environVar "TEMP"
         if not <| String.IsNullOrWhiteSpace temp then
