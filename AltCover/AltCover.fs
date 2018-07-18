@@ -360,24 +360,26 @@ module Main =
         CommandLine.ReportErrors "Instrumentation"
         result
 
+  let internal (|Select|_|) (pattern:String) offered =
+    if offered |> String.IsNullOrWhiteSpace |> not &&
+       pattern.StartsWith(offered, StringComparison.OrdinalIgnoreCase) 
+       then Some offered
+       else None
+
   let internal Main arguments =
     let first = arguments |> Seq.tryHead |> Option.getOrElse String.Empty
-    let present = (first |> String.IsNullOrWhiteSpace |> not)
-    if present &&
-        "Runner".StartsWith(first, StringComparison.OrdinalIgnoreCase)
-      then Runner.init()
-           Runner.DoCoverage arguments (DeclareOptions())
-      else init()
-           if present &&
-               "ipmo".StartsWith(first, StringComparison.OrdinalIgnoreCase) then
+    init()
+    match first with
+    | Select "Runner" _ -> Runner.init()
+                           Runner.DoCoverage arguments (DeclareOptions())
+    | Select "ipmo" _ ->                 
                 Path.Combine ( Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName,
                                "AltCover.PowerShell.dll")
                 |> Path.GetFullPath
                 |> sprintf "Import-Module %A"
                 |> (Output.WarnOn true)
                 0
-           else
-                DoInstrumentation arguments
+    | _ -> DoInstrumentation arguments
 
   // mocking point
   let mutable internal EffectiveMain = Main
