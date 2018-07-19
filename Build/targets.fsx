@@ -1449,10 +1449,11 @@ _Target "Unpack" (fun _ ->
 )
 
 _Target "WindowsPowerShell" (fun _ ->
+  let v = (!Version).Split([| '-' |]).[0]
   Actions.RunRaw (fun info -> { info with
                                         FileName = "powershell.exe"
                                         WorkingDirectory = "."
-                                        Arguments = ("-NoProfile ./Build/powershell.ps1 -ACV " + !Version)})
+                                        Arguments = ("-NoProfile ./Build/powershell.ps1 -ACV " + v)})
                                  "powershell"
 )
 
@@ -1464,6 +1465,7 @@ _Target "Pester" (fun _ ->
   let unpack = Path.getFullName "_Packaging/Unpack/tools/netcoreapp2.0"
   let report = Path.getFullName "_Reports/Pester.xml"
   let i = ``module`` @@ "tools/netcoreapp2.0"
+  let v = (!Version).Split([| '-' |]).[0]
 
   Actions.RunDotnet (fun o -> {dotnetOptions o with WorkingDirectory = unpack}) ""
                       ("AltCover.dll --inplace --save --opencover -t=System\. \"-s=^((?!AltCover\.PowerShell).)*$\" -x \"" + report + "\" -i \"" + i + "\"")
@@ -1474,7 +1476,7 @@ _Target "Pester" (fun _ ->
   Actions.RunRaw (fun info -> { info with
                                         FileName = pwsh
                                         WorkingDirectory = "."
-                                        Arguments = ("-NoProfile ./Build/pester.ps1 -ACV " + !Version)})
+                                        Arguments = ("-NoProfile ./Build/pester.ps1 -ACV " + v)})
                                  "pwsh"
 
   Actions.RunDotnet (fun o -> {dotnetOptions o with WorkingDirectory = unpack}) ""
