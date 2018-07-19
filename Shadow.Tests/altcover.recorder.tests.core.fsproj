@@ -6,7 +6,7 @@
     <AssemblyName>AltCover.Shadow.Tests</AssemblyName>
     <GenerateProgramFile>false</GenerateProgramFile>
   </PropertyGroup>
-  
+
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <OutputPath>$(SolutionDir)_Binaries/$(AssemblyName)/$(Configuration)+$(Platform)/</OutputPath>
     <IntermediateOutputPath>$(SolutionDir)_Intermediate/$(AssemblyName)/$(Configuration)+$(Platform)/</IntermediateOutputPath>
@@ -22,7 +22,7 @@
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="Tracer.Tests.fs" />
     <Compile Include="Shadow.Tests.fs" />
-    <Compile Include="Program.fs" />    
+    <Compile Include="Program.fs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -48,5 +48,4 @@
   <ItemGroup>
     <PackageReference Update="FSharp.Core" Version="4.3.4" />
   </ItemGroup>
-
 </Project>

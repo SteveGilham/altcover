@@ -31,5 +31,4 @@
   <ItemGroup>
     <ProjectReference Include="..\AltCover\altcover.core.fsproj" />
   </ItemGroup>
-
 </Project>
