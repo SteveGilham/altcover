@@ -1979,7 +1979,7 @@ type AltCoverTests() = class
                               Assert.That(resolved, Is.Not.Null, f.ToString()))
         raw.MainModule.AssemblyReferences
         |> Seq.filter(fun f -> f.Name.IndexOf("Mono.Cecil",StringComparison.Ordinal) >= 0)
-        |> Seq.iter (fun f -> f.Version <- Version("666.666.666.666")
+        |> Seq.iter (fun f -> f.Version <- System.Version("666.666.666.666")
                               let resolved = Instrument.ResolveFromNugetCache null f
                               Assert.That(resolved, Is.Null, f.ToString()))
 
@@ -1987,11 +1987,11 @@ type AltCoverTests() = class
         found
         |> Seq.iter(fun k -> let matched = Instrument.ResolutionTable.[k]
                              let k2 = AssemblyNameReference.Parse(k.ToString())
-                             k2.Version <- Version("666.666.666.666")
+                             k2.Version <- System.Version("666.666.666.666")
                              Instrument.ResolutionTable.[k2.ToString()] <- matched)
         raw.MainModule.AssemblyReferences
         |> Seq.filter(fun f -> f.Name.IndexOf("Mono.Cecil",StringComparison.Ordinal) >= 0)
-        |> Seq.iter (fun f -> f.Version <- Version("666.666.666.666")
+        |> Seq.iter (fun f -> f.Version <- System.Version("666.666.666.666")
                               let resolved = Instrument.ResolveFromNugetCache null f
                               Assert.That(resolved, Is.Not.Null, f.ToString()))
     finally
@@ -4585,6 +4585,27 @@ type AltCoverTests() = class
       Output.Task <- false
 
   [<Test>]
+  member self.VersionIsAsExpected() =
+    AltCover.ToConsole()
+    let saved = Console.Out
+    try
+      use stdout = new StringWriter()
+      Console.SetOut stdout
+      Output.Task <- true
+      let rc = AltCover.Main.EffectiveMain [| "v" |]
+      Assert.That (rc, Is.EqualTo 0)
+      let result = stdout.ToString().Replace("\r\n", "\n")
+      let expected = "AltCover version " + AssemblyVersionInformation.AssemblyFileVersion +
+                     """
+"""
+
+      Assert.That (result.Replace("\r\n", "\n"), Is.EqualTo (expected.Replace("\r\n", "\n")))
+
+    finally
+      Console.SetOut saved
+      Output.Task <- false
+
+  [<Test>]
   member self.UsageIsAsExpected() =
     let options = Main.DeclareOptions ()
     let saved = Console.Error
@@ -4662,6 +4683,8 @@ type AltCoverTests() = class
 or
   ipmo                       Prints out the PowerShell script to import the
                                associated PowerShell module
+or
+  version                    Prints out the AltCover build version
 """
 
       Assert.That (result.Replace("\r\n", "\n"), Is.EqualTo (expected.Replace("\r\n", "\n")))
@@ -4879,6 +4902,7 @@ or
     let save = Main.EffectiveMain
     let mutable args = [| "some junk "|]
     let saved = (Output.Info, Output.Error)
+    let warned = Output.Warn
     try
         Main.EffectiveMain <- (fun a -> args <- a
                                         255)
@@ -4892,5 +4916,28 @@ or
       Output.Info <- fst saved
       Output.Error <- snd saved
       Output.Task <- false
+      Output.Warn <- warned
+
+  [<Test>]
+  member self.EmptyVersionIsJustTheDefaults() =
+    let subject = GetVersion()
+    let save = Main.EffectiveMain
+    let mutable args = [| "some junk "|]
+    let saved = (Output.Info, Output.Error)
+    let warned = Output.Warn
+    try
+        Main.EffectiveMain <- (fun a -> args <- a
+                                        255)
+        let result = subject.Execute()
+        Assert.That(result, Is.False)
+        Assert.That(args, Is.EquivalentTo ["version"])
+        Assert.Throws<InvalidOperationException>(fun () -> Output.Warn "x") |> ignore
+        Assert.Throws<InvalidOperationException>(fun () -> Output.Error "x") |> ignore
+    finally
+      Main.EffectiveMain <- save
+      Output.Info <- fst saved
+      Output.Error <- snd saved
+      Output.Task <- false
+      Output.Warn <- warned
   // Recorder.fs => Shadow.Tests
 end

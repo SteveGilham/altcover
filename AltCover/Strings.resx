@@ -343,4 +343,10 @@ Details written to {0}</value>
   <data name="%d visits recorded in %A (%A visits/sec)" xml:space="preserve">
     <value>{0:#,#0} visits recorded in {1} ({2:#,#0} visits/sec)</value>
   </data>
+  <data name="AltCover.Version" xml:space="preserve">
+    <value>AltCover version {0}</value>
+  </data>
+  <data name="version" xml:space="preserve">
+    <value>  version                    Prints out the AltCover build version</value>
+  </data>
 </root>

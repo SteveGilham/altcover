@@ -342,4 +342,10 @@ Detaloj skribitaj al {0}</value>
   <data name="%d visits recorded in %A (%A visits/sec)" xml:space="preserve">
     <value>{0:#,#0} vizitoj registritaj en {1} ({2:#,#0} visits/sek)</value>
   </data>
+  <data name="AltCover.Version" xml:space="preserve">
+    <value>AltCover version {0}</value>
+  </data>
+  <data name="version" xml:space="preserve">
+    <value>  version                    Printas la AltCover-konstruan version</value>
+  </data>
 </root>

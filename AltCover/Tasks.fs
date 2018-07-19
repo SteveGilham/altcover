@@ -130,3 +130,14 @@ type PowerShell () =
       "ipmo"
     |]
     |> AltCover.Main.EffectiveMain = 0
+
+type GetVersion () =
+  inherit Task(null)
+  override self.Execute () =
+    Output.Task <- true
+    Output.Error <- base.Log.LogError
+    Output.Warn <- base.Log.LogWarning
+    [|
+      "version"
+    |]
+    |> AltCover.Main.EffectiveMain = 0

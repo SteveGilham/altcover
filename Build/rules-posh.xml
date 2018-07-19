@@ -32,7 +32,7 @@
 		       exclude="MarkAllNonSerializableFieldsRule"
                from="Gendarme.Rules.Serialization.dll" />
 		<rules include="*"
-		       exclude="AvoidCodeDuplicatedInSameClassRule | AvoidSwitchStatementsRule"
+		       exclude="AvoidLargeClassesRule | AvoidCodeDuplicatedInSameClassRule | AvoidSwitchStatementsRule"
 		       from="Gendarme.Rules.Smells.dll" />
 		<rules include="*" from="Gendarme.Rules.Ui.dll" />
 		<rules include="*"

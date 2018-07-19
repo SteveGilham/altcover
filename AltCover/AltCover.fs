@@ -362,7 +362,7 @@ module Main =
 
   let internal (|Select|_|) (pattern:String) offered =
     if offered |> String.IsNullOrWhiteSpace |> not &&
-       pattern.StartsWith(offered, StringComparison.OrdinalIgnoreCase) 
+       pattern.StartsWith(offered, StringComparison.OrdinalIgnoreCase)
        then Some offered
        else None
 
@@ -372,12 +372,15 @@ module Main =
     match first with
     | Select "Runner" _ -> Runner.init()
                            Runner.DoCoverage arguments (DeclareOptions())
-    | Select "ipmo" _ ->                 
+    | Select "ipmo" _ ->
                 Path.Combine ( Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName,
                                "AltCover.PowerShell.dll")
                 |> Path.GetFullPath
                 |> sprintf "Import-Module %A"
                 |> (Output.WarnOn true)
+                0
+    | Select "version" _ ->
+                Runner.WriteResourceWithFormatItems "AltCover.Version" [|AssemblyVersionInformation.AssemblyFileVersion |] true
                 0
     | _ -> DoInstrumentation arguments
 

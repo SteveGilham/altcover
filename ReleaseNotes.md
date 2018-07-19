@@ -4,6 +4,8 @@ Q. Never mind the fluff -- how do I get started?
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
+# 3.5.5xx (Cerulean series release 8)
+* `altcover version` command line option to output the version of AltCover being used (also `Invoke-AltCover -Version`, MSBuild task `AltCover.GetVersion`, option `/p:AltCoverGetVersion`)
 # 3.5.560 (Cerulean series release 7)
 * [BUGFIX] -- `dotnet test` integration : don't leave the imported FSharp.Core.dll in the binaries folder
 * `dotnet test` integration : Override the "VSTest" target to allow tidying after test failure
