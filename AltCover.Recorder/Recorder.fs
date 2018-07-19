@@ -10,18 +10,30 @@ open System.Reflection
 open System.Resources
 open System.Runtime.CompilerServices
 
+#if NETSTANDARD2_0
+[<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage>]
+#else
 [<System.Runtime.InteropServices.ProgIdAttribute("ExcludeFromCodeCoverage hack for OpenCover issue 615")>]
+#endif
 type internal Close =
     | DomainUnload
     | ProcessExit
     | Pause
     | Resume
 
+#if NETSTANDARD2_0
+[<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage>]
+#else
 [<System.Runtime.InteropServices.ProgIdAttribute("ExcludeFromCodeCoverage hack for OpenCover issue 615")>]
+#endif
 type internal Carrier =
     | SequencePoint of String*int*Track
 
+#if NETSTANDARD2_0
+[<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage>]
+#else
 [<System.Runtime.InteropServices.ProgIdAttribute("ExcludeFromCodeCoverage hack for OpenCover issue 615")>]
+#endif
 type internal Message =
     | AsyncItem of Carrier seq
     | Item of Carrier seq*AsyncReplyChannel<unit>
