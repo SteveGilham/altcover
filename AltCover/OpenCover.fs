@@ -10,38 +10,36 @@ open Mono.Cecil
 
 open AltCover.Augment
 
-module OpenCover =
-
-  [<ExcludeFromCodeCoverage>]
-  type internal Exclusion =
-  | Nothing
-  | Type
-  | Method
+[<ExcludeFromCodeCoverage>]
+type internal Exclusion =
+| Nothing
+| ByType
+| ByMethod
 
   /// <summary>
   /// State object passed from visit to visit
   /// </summary>
-  [<ExcludeFromCodeCoverage>]
-  type internal Context = { Stack : XElement list
-                            Excluded : Exclusion
-                            Files : Map<string, int>
-                            Index : int
-                            MethodSeq : int
-                            MethodBr : int
-                            MethodCC : int option list
-                            ClassSeq : int
-                            ClassBr : int
-                            ClassCC : (int * int) list
-                            ModuleSeq : int
-                            ModuleBr : int
-                            ModuleMethods : int
-                            ModuleClasses : int
-                            ModuleCC : (int * int) list
-                            TotalMethods : int
-                            TotalClasses : int
-                            TotalSeq : int
-                            TotalBr : int}
-  with static member Build () =
+[<ExcludeFromCodeCoverage>]
+type internal OpenCoverContext = { Stack : XElement list
+                                   Excluded : Exclusion
+                                   Files : Map<string, int>
+                                   Index : int
+                                   MethodSeq : int
+                                   MethodBr : int
+                                   MethodCC : int option list
+                                   ClassSeq : int
+                                   ClassBr : int
+                                   ClassCC : (int * int) list
+                                   ModuleSeq : int
+                                   ModuleBr : int
+                                   ModuleMethods : int
+                                   ModuleClasses : int
+                                   ModuleCC : (int * int) list
+                                   TotalMethods : int
+                                   TotalClasses : int
+                                   TotalSeq : int
+                                   TotalBr : int}
+with static member Build () =
                     { Stack = List.empty<XElement>
                       Excluded = Nothing
                       Files = Map.empty<string, int>
@@ -61,6 +59,8 @@ module OpenCover =
                       TotalClasses = 0
                       TotalSeq = 0
                       TotalBr = 0}
+
+module OpenCover =
 
   let internal X name =
       XName.Get name
@@ -100,7 +100,7 @@ module OpenCover =
                 XAttribute(X "minCrapScore", 0),
                 XAttribute(X "maxCrapScore", 0))
 
-    let StartVisit (s : Context) =
+    let StartVisit (s : OpenCoverContext) =
           let element = XElement(X "CoverageSession",
                                     XAttribute(XNamespace.Xmlns + "xsd", "http://www.w3.org/2001/XMLSchema"),
                                     XAttribute(XNamespace.Xmlns + "xsi", "http://www.w3.org/2001/XMLSchema-instance")
@@ -111,7 +111,7 @@ module OpenCover =
           element.Add(modules)
           {s with Stack = modules :: s.Stack }
 
-    let VisitModule (s : Context) (moduleDef:ModuleDefinition) included =
+    let VisitModule (s : OpenCoverContext) (moduleDef:ModuleDefinition) included =
           let instrumented = Visitor.IsInstrumented included
           let element = XElement(X "Module")
           if not instrumented then element.SetAttributeValue(X "skippedDueTo", "Filter")
@@ -136,7 +136,7 @@ module OpenCover =
                   ModuleClasses = 0
                   ClassCC = []}
 
-    let VisitType (s : Context) (typeDef:TypeDefinition) included =
+    let VisitType (s : OpenCoverContext) (typeDef:TypeDefinition) included =
       let instrumented = Visitor.IsInstrumented included
       let methods = XElement(X "Methods")
       if included <> Inspect.TrackOnly then
@@ -148,7 +148,7 @@ module OpenCover =
         element.Add(XElement(X "FullName", typeDef.FullName))
         element.Add(methods)
       {s with Stack = if instrumented then methods :: s.Stack else s.Stack
-              Excluded = if instrumented then Nothing else Type
+              Excluded = if instrumented then Nothing else ByType
               ClassSeq = 0
               ClassBr = 0
               MethodCC = []}
@@ -181,7 +181,7 @@ module OpenCover =
         element.Add(XElement(X "MethodPoint"))
         seqpnts
 
-    let VisitMethod  (s : Context) (methodDef:MethodDefinition) included =
+    let VisitMethod  (s : OpenCoverContext) (methodDef:MethodDefinition) included =
       if s.Excluded = Nothing && included <> Inspect.TrackOnly then
         let instrumented = Visitor.IsInstrumented included
         let cc, element = methodElement methodDef
@@ -190,7 +190,7 @@ module OpenCover =
         head.Add element
         let seqpnts = addMethodContent element methodDef
         {s with Stack = if instrumented then seqpnts :: s.Stack else s.Stack
-                Excluded = if instrumented then Nothing else Method
+                Excluded = if instrumented then Nothing else ByMethod
                 Index = -1
                 MethodSeq = 0
                 MethodBr = 0
@@ -211,7 +211,7 @@ module OpenCover =
         XAttribute(X "bev", 0),
         XAttribute(X "fileid", ref))
 
-    let VisitCodeSegment (s : Context) (codeSegment:SeqPnt) i =
+    let VisitCodeSegment (s : OpenCoverContext) (codeSegment:SeqPnt) i =
        if s.Excluded = Nothing then
           let file = codeSegment.Document
           let fileset, ref = if s.Files.ContainsKey file then
@@ -228,7 +228,7 @@ module OpenCover =
                    MethodSeq = s.MethodSeq + 1}
        else s
 
-    let VisitMethodPoint (s : Context) (codeSegment':SeqPnt option) i =
+    let VisitMethodPoint (s : OpenCoverContext) (codeSegment':SeqPnt option) i =
       match codeSegment' with
       | Some codeSegment ->  VisitCodeSegment s codeSegment i
       | None -> s
@@ -263,7 +263,7 @@ module OpenCover =
         else None :: stack.Tail
 
     let passOnClassExclusion excluded =
-        if excluded = Method then Nothing else excluded
+        if excluded = ByMethod then Nothing else excluded
 
     let handleOrdinals (``method``:XElement) =
         let sp = ``method``.Descendants(X "SequencePoint") |> Seq.toList
@@ -282,7 +282,7 @@ module OpenCover =
                                | _ -> (np0, bec+1, sq)) (1, 0, sp.Head)
           ``method``.SetAttributeValue(X "nPathComplexity", np)
 
-    let AddTracking (s : Context) (m:MethodDefinition) t =
+    let AddTracking (s : OpenCoverContext) (m:MethodDefinition) t =
       t |>
       Option.iter(fun (uid,strategy) ->
                     let classes = s.Stack |> Seq.find (fun x -> x.Name.LocalName = "Classes")
@@ -294,7 +294,7 @@ module OpenCover =
                                                          XAttribute(X "name", m.FullName),
                                                          XAttribute(X "strategy", strategy)))))
 
-    let AddMethodSummary (s : Context) cc (summary:XElement) =
+    let AddMethodSummary (s : OpenCoverContext) cc (summary:XElement) =
         summary.SetAttributeValue(X "numSequencePoints", s.MethodSeq)
         summary.SetAttributeValue(X "numBranchPoints", s.MethodBr +
                                     // make the number agree with OpenCover
@@ -303,7 +303,7 @@ module OpenCover =
         summary.SetAttributeValue(X "minCyclomaticComplexity", cc)
         summary.SetAttributeValue(X "numMethods", if s.MethodSeq > 0 then 1 else 0)
 
-    let VisitAfterMethodIncluded (s : Context) =
+    let VisitAfterMethodIncluded (s : OpenCoverContext) =
         let head,tail = Augment.Split s.Stack
         head.Parent.Elements(X "FileRef")
         |> Seq.toList
@@ -317,7 +317,7 @@ module OpenCover =
         handleOrdinals ``method``
         tail
 
-    let UpdateClassCountsByMethod (s : Context) (tail:XElement list) =
+    let UpdateClassCountsByMethod (s : OpenCoverContext) (tail:XElement list) =
         {s with Stack = tail
                 ClassSeq = s.ClassSeq + s.MethodSeq
                 ClassBr = s.ClassBr + s.MethodBr +
@@ -325,14 +325,14 @@ module OpenCover =
                           if s.MethodSeq > 0 then 1 else 0
                 MethodCC = limitMethodCC s.MethodSeq s.MethodCC}
 
-    let VisitAfterMethod (s : Context) methodDef track included =
+    let VisitAfterMethod (s : OpenCoverContext) methodDef track included =
       AddTracking s methodDef track
       if s.Excluded = Nothing && included <> Inspect.TrackOnly then
         let tail = VisitAfterMethodIncluded s
         UpdateClassCountsByMethod s tail
       else { s with Excluded = passOnClassExclusion s.Excluded }
 
-    let VisitAfterType (s : Context) =
+    let VisitAfterType (s : OpenCoverContext) =
         let head, tail = Augment.Split s.Stack
         let (min, max), methods = s.MethodCC
                                   |> Seq.map (fun q -> (q |> Option.getOrElse 1, q |> Option.getOrElse 0), if q.IsSome then 1 else 0)
@@ -357,7 +357,7 @@ module OpenCover =
                 ModuleClasses = classes + s.ModuleClasses
                 Excluded = Nothing }
 
-    let VisitAfterModule (s : Context) =
+    let VisitAfterModule (s : OpenCoverContext) =
         let head,tail = Augment.Split s.Stack
         let min,max = s.ClassCC
                       |> Seq.fold (fun state pair -> Math.Min (fst state, fst pair), Math.Max (snd state, snd pair)) (1,0)
@@ -383,7 +383,7 @@ module OpenCover =
                 TotalClasses = s.ModuleClasses + s.TotalClasses
                 TotalMethods = s.ModuleMethods + s.TotalMethods}
 
-    let AfterAll (s : Context) =
+    let AfterAll (s : OpenCoverContext) =
       let head = s.Stack |> Seq.head
       let min,max = s.ModuleCC
                     |> Seq.fold (fun state pair -> Math.Min (fst state, fst pair), Math.Max (snd state, snd pair)) (1,0)
@@ -396,7 +396,7 @@ module OpenCover =
                                  summary.SetAttributeValue(X "numMethods", s.TotalMethods))
       s
 
-    let ReportVisitor (s : Context) (node:Node) =
+    let ReportVisitor (s : OpenCoverContext) (node:Node) =
       match node with
       | Start _ -> StartVisit s
       | Node.Module (moduleDef, included) -> VisitModule s moduleDef included
@@ -410,5 +410,5 @@ module OpenCover =
       | Finish -> AfterAll s
       | _ -> s
 
-    let result = Visitor.EncloseState ReportVisitor (Context.Build())
+    let result = Visitor.EncloseState ReportVisitor (OpenCoverContext.Build())
     (result, document)

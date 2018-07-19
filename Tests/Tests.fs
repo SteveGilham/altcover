@@ -2441,7 +2441,7 @@ type AltCoverTests() = class
                             shift, "AltCover.Recorder.dll")
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
     let recorder = AltCover.Instrument.RecordingMethod def
-    let raw = AltCover.Instrument.Context.Build([])
+    let raw = AltCover.InstrumentContext.Build([])
     let state = {  raw with
                     RecordingMethodRef = { raw.RecordingMethodRef with
                                              Visit = null
@@ -2471,7 +2471,7 @@ type AltCoverTests() = class
     let recorder = AltCover.Instrument.RecordingMethod def
     let target = def.MainModule.GetType("AltCover.Recorder.Instance").Methods
                  |> Seq.find (fun m -> m.Name = "loop")
-    let raw = AltCover.Instrument.Context.Build([])
+    let raw = AltCover.InstrumentContext.Build([])
     let state = {  raw with
                     RecordingMethodRef = { raw.RecordingMethodRef with
                                              Visit = null
@@ -2493,7 +2493,7 @@ type AltCoverTests() = class
     let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "AltCover.Recorder.dll")
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
     let recorder = AltCover.Instrument.RecordingMethod def
-    let state = AltCover.Instrument.Context.Build([])
+    let state = AltCover.InstrumentContext.Build([])
     let countBefore = recorder.Head.Body.Instructions.Count
     let handlersBefore = recorder.Head.Body.ExceptionHandlers.Count
 
@@ -2529,7 +2529,7 @@ type AltCoverTests() = class
             Assert.That (b1.Start.Offset, Is.EqualTo b2.Start.Offset)
         | _ -> Assert.Fail("wrong number of items")
 
-        let raw = AltCover.Instrument.Context.Build([])
+        let raw = AltCover.InstrumentContext.Build([])
         let state = {  raw with
                            RecordingMethodRef = { raw.RecordingMethodRef with
                                                                           Visit = method
@@ -2588,7 +2588,7 @@ type AltCoverTests() = class
         | [b1 ; b2] -> ()
         | _ -> Assert.Fail("wrong number of items")
 
-        let raw = AltCover.Instrument.Context.Build([])
+        let raw = AltCover.InstrumentContext.Build([])
         let state = {  raw with
                            RecordingMethodRef = { raw.RecordingMethodRef with
                                                                           Visit = method
@@ -2617,19 +2617,19 @@ type AltCoverTests() = class
 #else
   [<Test>]
   member self.StartShouldLoadRecordingAssembly () =
-    let def = Instrument.InstrumentationVisitor (Instrument.Context.Build []) (Start [])
+    let def = Instrument.InstrumentationVisitor (InstrumentContext.Build []) (Start [])
     Assert.That (def.RecordingAssembly.Name.Name, Is.EqualTo "AltCover.Recorder.g")
 #endif
 
   [<Test>]
   member self.TypeShouldNotChangeState () =
-    let input = Instrument.Context.Build []
+    let input = InstrumentContext.Build []
     let output = Instrument.InstrumentationVisitor input (Node.Type (null, Inspect.Ignore))
     Assert.That (output, Is.SameAs input)
 
   [<Test>]
   member self.ExcludedMethodShouldNotChangeState () =
-    let input = Instrument.Context.Build []
+    let input = InstrumentContext.Build []
     let output = Instrument.InstrumentationVisitor input (Node.Method (null, Inspect.Ignore, None))
     Assert.That (output, Is.SameAs input)
 
@@ -2643,7 +2643,7 @@ type AltCoverTests() = class
     let module' = def.MainModule.GetType("N.DU")
     let du = module'.NestedTypes |> Seq.filter (fun t -> t.Name = "MyUnion") |> Seq.head
     let func = du.GetMethods() |> Seq.find (fun x -> x.Name = "as_bar")
-    let input = Instrument.Context.Build []
+    let input = InstrumentContext.Build []
     let output = Instrument.InstrumentationVisitor input (Node.Method (func, Inspect.Instrument, None))
     Assert.That (output.MethodBody, Is.SameAs func.Body)
 
@@ -2661,7 +2661,7 @@ type AltCoverTests() = class
     let opcodes = func.Body.Instructions
                    |> Seq.map (fun i -> i.OpCode)
                    |> Seq.toList
-    let input = { Instrument.Context.Build [] with MethodBody = func.Body }
+    let input = { InstrumentContext.Build [] with MethodBody = func.Body }
     input.MethodBody.SimplifyMacros()
 
     let paired = Seq.zip opcodes input.MethodBody.Instructions |> Seq.toList
@@ -2688,7 +2688,7 @@ type AltCoverTests() = class
     let opcodes = func.Body.Instructions
                    |> Seq.map (fun i -> i.OpCode)
                    |> Seq.toList
-    let input = { Instrument.Context.Build [] with MethodBody = func.Body }
+    let input = { InstrumentContext.Build [] with MethodBody = func.Body }
     input.MethodBody.SimplifyMacros()
 
     let paired = Seq.zip opcodes input.MethodBody.Instructions
@@ -2792,7 +2792,7 @@ type AltCoverTests() = class
     stream.CopyTo(buffer)
     Visitor.defaultStrongNameKey <- Some (StrongNameKeyPair(buffer.ToArray()))
     let fake = Mono.Cecil.AssemblyDefinition.ReadAssembly (Assembly.GetExecutingAssembly().Location)
-    let state = Instrument.Context.Build ["nunit.framework"; "nonesuch"]
+    let state = InstrumentContext.Build ["nunit.framework"; "nonesuch"]
     let visited = Node.Assembly (def, Inspect.Ignore)
 
     let result = Instrument.InstrumentationVisitor {state with RecordingAssembly = fake } visited
@@ -2815,7 +2815,7 @@ type AltCoverTests() = class
     stream.CopyTo(buffer)
     Visitor.defaultStrongNameKey <- Some (StrongNameKeyPair(buffer.ToArray()))
     let fake = Mono.Cecil.AssemblyDefinition.ReadAssembly (Assembly.GetExecutingAssembly().Location)
-    let state = Instrument.Context.Build ["nunit.framework"; "nonesuch"]
+    let state = InstrumentContext.Build ["nunit.framework"; "nonesuch"]
     let visited = Node.Assembly (def, Inspect.Instrument)
 
     let result = Instrument.InstrumentationVisitor {state with RecordingAssembly = fake } visited
@@ -2828,7 +2828,7 @@ type AltCoverTests() = class
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
     ProgramDatabase.ReadSymbols def
     let visited = Node.Module (def.MainModule, Inspect.Ignore)
-    let state = Instrument.Context.Build ["nunit.framework"; "nonesuch"]
+    let state = InstrumentContext.Build ["nunit.framework"; "nonesuch"]
     let result = Instrument.InstrumentationVisitor  state visited
     Assert.That (result, Is.EqualTo  { state with ModuleId = def.MainModule.Mvid.ToString() })
 
@@ -2839,7 +2839,7 @@ type AltCoverTests() = class
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
     ProgramDatabase.ReadSymbols def
     let visited = Node.Module (def.MainModule, Inspect.Instrument)
-    let state = Instrument.Context.Build ["nunit.framework"; "nonesuch"]
+    let state = InstrumentContext.Build ["nunit.framework"; "nonesuch"]
 
     let path' = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(),
                              "AltCover.Recorder.dll")
@@ -2876,7 +2876,7 @@ type AltCoverTests() = class
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
     ProgramDatabase.ReadSymbols def
     let visited = Node.MethodPoint (null, None, 0, false)
-    let state = Instrument.Context.Build []
+    let state = InstrumentContext.Build []
     let result = Instrument.InstrumentationVisitor state visited
     Assert.That (result, Is.SameAs state)
 
@@ -2898,9 +2898,9 @@ type AltCoverTests() = class
                  |> Seq.head
     let visited = Node.MethodPoint (target, None, 32767, true)
     Assert.That (target.Previous, Is.Null)
-    let state = { (Instrument.Context.Build []) with MethodWorker = proc
-                                                     MethodBody = main.Body
-                                                     RecordingMethodRef = {Visit = def.MainModule.ImportReference main; Push = null; Pop = null}}
+    let state = { (InstrumentContext.Build []) with MethodWorker = proc
+                                                    MethodBody = main.Body
+                                                    RecordingMethodRef = {Visit = def.MainModule.ImportReference main; Push = null; Pop = null}}
     let result = Instrument.InstrumentationVisitor state visited
     Assert.That (result, Is.SameAs state)
     Assert.That (target.Previous.OpCode, Is.EqualTo OpCodes.Call)
@@ -2912,7 +2912,7 @@ type AltCoverTests() = class
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
     ProgramDatabase.ReadSymbols def
     let visited = Node.Module (def.MainModule, Inspect.Instrument)
-    let state = Instrument.Context.Build ["nunit.framework"; "nonesuch"]
+    let state = InstrumentContext.Build ["nunit.framework"; "nonesuch"]
 
     let path' = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(),
                              "AltCover.Recorder.dll")
@@ -2924,7 +2924,7 @@ type AltCoverTests() = class
     let def'' = Mono.Cecil.AssemblyDefinition.ReadAssembly where
 
     let v = def''.MainModule.ImportReference visit
-    let r = {Instrument.RecorderRefs.Build() with Visit = v; Push = v; Pop = v}
+    let r = {RecorderRefs.Build() with Visit = v; Push = v; Pop = v}
     let state' = { state with RecordingAssembly = def'
                               RecordingMethod = [visit;visit;visit]
                               RecordingMethodRef = r}
@@ -2935,14 +2935,14 @@ type AltCoverTests() = class
                 Is.EqualTo ( def.MainModule))
     Assert.That (string result.RecordingMethodRef,
                 Is.EqualTo (string r))
-    Assert.That ({ result with RecordingMethodRef = Instrument.RecorderRefs.Build()},
+    Assert.That ({ result with RecordingMethodRef = RecorderRefs.Build()},
                  Is.EqualTo  { state' with ModuleId = def.MainModule.Mvid.ToString()
                                                       RecordingMethod = [visit;visit;visit]
-                                                      RecordingMethodRef = Instrument.RecorderRefs.Build()})
+                                                      RecordingMethodRef = RecorderRefs.Build()})
 
   [<Test>]
   member self.AfterModuleShouldNotChangeState () =
-    let input = Instrument.Context.Build []
+    let input = InstrumentContext.Build []
     let output = Instrument.InstrumentationVisitor input AfterModule
     Assert.That (output, Is.SameAs input)
 
@@ -3011,7 +3011,7 @@ type AltCoverTests() = class
     let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample3.dll")
     let prepared = AssemblyDefinition.ReadAssembly path
     ProgramDatabase.ReadSymbols prepared
-    let state = { Instrument.Context.Build [] with RecordingAssembly = prepared }
+    let state = { InstrumentContext.Build [] with RecordingAssembly = prepared }
 
     Assert.Throws<InvalidOperationException>(fun () ->
                                                Instrument.InstrumentationVisitorWrapper
@@ -3034,7 +3034,7 @@ type AltCoverTests() = class
   member self.NonFinishShouldNotDisposeNullRecordingAssembly () =
     let where = Assembly.GetExecutingAssembly().Location
     let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample3.dll")
-    let state = { Instrument.Context.Build [] with RecordingAssembly = null }
+    let state = { InstrumentContext.Build [] with RecordingAssembly = null }
 
     // Would be NullreferenceException if we tried it
     Assert.Throws<InvalidOperationException>(fun () ->
@@ -3047,7 +3047,7 @@ type AltCoverTests() = class
   member self.FinishShouldLeaveRecordingAssembly () =
     let where = Assembly.GetExecutingAssembly().Location
     let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample3.dll")
-    let state = { Instrument.Context.Build [] with RecordingAssembly = null }
+    let state = { InstrumentContext.Build [] with RecordingAssembly = null }
     let prepared = AssemblyDefinition.ReadAssembly path
     ProgramDatabase.ReadSymbols prepared
 
