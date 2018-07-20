@@ -41,6 +41,7 @@ type Prepare () =
   member val OpenCover = true with get, set
   member val InPlace = true with get, set
   member val Save = true with get, set
+  member val Single = true |> not with get, set  // work around Gendarme insistence on non-default values only
 
   member val CommandLine = String.Empty with get, set
 
@@ -74,6 +75,7 @@ type Prepare () =
       Args.Flag "--opencover" self.OpenCover
       Args.Flag "--inplace" self.InPlace
       Args.Flag "--save" self.Save
+      Args.Flag "--single" self.Single
 
       Args.Item "--" self.CommandLine;
     ]

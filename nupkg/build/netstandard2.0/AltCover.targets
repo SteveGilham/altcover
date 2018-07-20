@@ -39,6 +39,7 @@
       MethodFilter="@(AltCoverMethodFilters)"
       AttributeFilter="@(AltCoverAttributeFilters)"
       CallContext="@(AltCoverSplitContext)"
+      Single="@(AltCoverSingle)"
       Dependencies="@(AltCoverDependencies)" />
   </Target>
 
@@ -61,6 +62,7 @@
       MethodFilter="$(AltCoverMethodFilter)"
       AttributeFilter="$(AltCoverAttributeFilter)"
       CallContext="@(AltCoverSplitContext)"
+      Single="@(AltCoverSingle)"
       Dependencies="@(AltCoverDependencies)" />
   </Target>
 

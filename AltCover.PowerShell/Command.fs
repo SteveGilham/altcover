@@ -149,6 +149,10 @@ type InvokeAltCoverCommand(runner:bool) =
       ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
   member val Save:SwitchParameter = SwitchParameter(false) with get, set
 
+  [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
+      ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
+  member val Single:SwitchParameter = SwitchParameter(false) with get, set
+
   [<Parameter(ParameterSetName = "Version", Mandatory = true, Position = 1,
       ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
   member val Version:SwitchParameter = SwitchParameter(false) with get, set
@@ -222,6 +226,7 @@ type InvokeAltCoverCommand(runner:bool) =
                               Args.Flag "--opencover" self.OpenCover.IsPresent
                               Args.Flag "--inplace" self.InPlace.IsPresent
                               Args.Flag "--save" self.Save.IsPresent
+                              Args.Flag "--single" self.Single.IsPresent
 
                               Args.Item "--" (String.Join(" ", self.CommandLine));
                             ]
