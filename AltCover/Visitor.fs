@@ -135,6 +135,7 @@ module Visitor =
   let private specialCaseFilters = [ @"^CompareTo\$cont\@\d+\-?\d$" |> Regex |> FilterClass.Method ]
 
   let mutable internal inplace = false
+  let mutable internal single = false
 
   let mutable internal inputDirectory : Option<string> = None
   let private defaultInputDirectory = "."

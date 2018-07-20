@@ -3302,9 +3302,9 @@ type AltCoverTests() = class
     let options = Main.DeclareOptions ()
     Assert.That (options.Count, Is.EqualTo
 #if NETCOREAPP2_0
-                                            17
-#else
                                             18
+#else
+                                            19
 #endif
                  )
     Assert.That(options |> Seq.filter (fun x -> x.Prototype <> "<>")
@@ -4174,6 +4174,24 @@ type AltCoverTests() = class
       Visitor.TrackingNames.Clear()
 
   [<Test>]
+  member self.ParsingAfterSingleGivesFailure() =
+    try
+      Visitor.single <- true
+      Visitor.interval <- None
+      Visitor.TrackingNames.Clear()
+      let options = Main.DeclareOptions ()
+      let input = [| "-c"; "3" ; "/c"; "x"; "--callContext"; "Hello, World!" |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Right _ -> Assert.Fail()
+      | Left (x, y) -> Assert.That (y, Is.SameAs options)
+                       Assert.That (x, Is.EqualTo "UsageError")
+    finally
+      Visitor.single <- false
+      Visitor.interval <- None
+      Visitor.TrackingNames.Clear()
+
+  [<Test>]
   member self.ParsingOpenCoverGivesOpenCover() =
     try
       Visitor.reportFormat <- None
@@ -4264,6 +4282,52 @@ type AltCoverTests() = class
                        Assert.That (x, Is.EqualTo "UsageError")
     finally
       Visitor.collect <- false
+
+  [<Test>]
+  member self.ParsingSingleGivesSingle() =
+    try
+      Visitor.single <- false
+      let options = Main.DeclareOptions ()
+      let input = [| "--single" |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Left _ -> Assert.Fail()
+      | Right (x, y) -> Assert.That (y, Is.SameAs options)
+                        Assert.That (x, Is.Empty)
+
+      Assert.That(Visitor.single, Is.True)
+    finally
+      Visitor.single <- false
+
+  [<Test>]
+  member self.ParsingMultipleSingleGivesFailure() =
+    try
+      Visitor.single <- false
+      let options = Main.DeclareOptions ()
+      let input = [| "--single"; "--single" |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Right _ -> Assert.Fail()
+      | Left (x, y) -> Assert.That (y, Is.SameAs options)
+                       Assert.That (x, Is.EqualTo "UsageError")
+    finally
+      Visitor.single <- false
+
+  [<Test>]
+  member self.ParsingSingleAfterContextGivesFailure() =
+    try
+      Visitor.single <- false
+      Visitor.interval <- Some 0
+      let options = Main.DeclareOptions ()
+      let input = [| "--single" |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Right _ -> Assert.Fail()
+      | Left (x, y) -> Assert.That (y, Is.SameAs options)
+                       Assert.That (x, Is.EqualTo "UsageError")
+    finally
+      Visitor.single <- false
+      Visitor.interval <- None
 
   [<Test>]
   member self.OutputLeftPassesThrough() =
@@ -4674,11 +4738,15 @@ type AltCoverTests() = class
                                    Other strings are interpreted as method
                                names (fully qualified if the string contains
                                any "." characters).
+                                   Incompatible with --single
       --opencover            Optional: Generate the report in OpenCover format
       --inplace              Optional: Instrument the inputDirectory, rather
                                than the outputDirectory (e.g. for dotnet test)
       --save                 Optional: Write raw coverage data to file for
                                later processing
+      --single               Optional: only record the first hit at any
+                               location.
+                                   Incompatible with --callContext.
   -?, --help, -h             Prints out the options.
 or
   ipmo                       Prints out the PowerShell script to import the
@@ -4762,11 +4830,15 @@ or
                                    Other strings are interpreted as method
                                names (fully qualified if the string contains
                                any "." characters).
+                                   Incompatible with --single
       --opencover            Optional: Generate the report in OpenCover format
       --inplace              Optional: Instrument the inputDirectory, rather
                                than the outputDirectory (e.g. for dotnet test)
       --save                 Optional: Write raw coverage data to file for
                                later processing
+      --single               Optional: only record the first hit at any
+                               location.
+                                   Incompatible with --callContext.
   -?, --help, -h             Prints out the options.
 or
   Runner

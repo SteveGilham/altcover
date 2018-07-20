@@ -1105,11 +1105,15 @@ type AltCoverTests() = class
                                    Other strings are interpreted as method
                                names (fully qualified if the string contains
                                any "." characters).
+                                   Incompatible with --single
       --opencover            Optional: Generate the report in OpenCover format
       --inplace              Optional: Instrument the inputDirectory, rather
                                than the outputDirectory (e.g. for dotnet test)
       --save                 Optional: Write raw coverage data to file for
                                later processing
+      --single               Optional: only record the first hit at any
+                               location.
+                                   Incompatible with --callContext.
   -?, --help, -h             Prints out the options.
 or
   Runner

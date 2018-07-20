@@ -231,7 +231,8 @@ Coverage Report: {0}
     <value>Optional, multiple: Tracking either times of visits in ticks or designated method calls leading to the visits.
     A single digit 0-7 gives the number of decimal places of seconds to report; everything else is at the mercy of the system clock information available through DateTime.UtcNow
     A string in brackets "[]" is interpreted as an attribute type name (the trailing "Attribute" is optional), so [Test] or [TestAttribute] will match; if the name contains one or more ".", then it will be matched against the full name of the attribute type.
-    Other strings are interpreted as method names (fully qualified if the string contains any "." characters).</value>
+    Other strings are interpreted as method names (fully qualified if the string contains any "." characters).
+    Incompatible with --single</value>
   </data>
   <data name="DirectoryNotFound" xml:space="preserve">
     <value>{0} : Directory {1} not found</value>
@@ -348,5 +349,12 @@ Details written to {0}</value>
   </data>
   <data name="version" xml:space="preserve">
     <value>  version                    Prints out the AltCover build version</value>
+  </data>
+  <data name="Incompatible" xml:space="preserve">
+    <value>Command line options {0} and {1} are mutally exclusive.</value>
+  </data>
+  <data name="single" xml:space="preserve">
+    <value>Optional: only record the first hit at any location.
+    Incompatible with --callContext.</value>
   </data>
 </root>

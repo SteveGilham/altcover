@@ -4,6 +4,7 @@ open System
 open System.Diagnostics.CodeAnalysis
 open System.Globalization
 open System.IO
+open System.Linq
 open System.Reflection
 open System.Text.RegularExpressions
 
@@ -37,6 +38,7 @@ module Main =
     Visitor.reportFormat <- None
     Visitor.inplace <- false
     Visitor.collect <- false
+    Visitor.single <- false
 
   let internal DeclareOptions () =
     [ ("i|inputDirectory=",
@@ -160,7 +162,11 @@ module Main =
                  x.Split([|";"|], StringSplitOptions.RemoveEmptyEntries)
                  |> Seq.iter (Regex >> FilterClass.Attribute >> Visitor.NameFilters.Add))() false))
       ("c|callContext=",
-       (fun x -> if not (String.IsNullOrWhiteSpace x) then
+       (fun x -> if Visitor.single then
+                         CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
+                                                         CommandLine.resources.GetString "Incompatible",
+                                                         "--single","--callContext") :: CommandLine.error
+                 if not (String.IsNullOrWhiteSpace x) then
                    let k = x.Trim()
                    if Char.IsDigit <| k.Chars(0) then
                     if Option.isSome Visitor.interval || k.Length > 1 then
@@ -205,6 +211,20 @@ module Main =
 
                   else
                       Visitor.collect <- true))
+      ("single",
+       (fun _ ->  if Visitor.single then
+                      CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
+                                                         CommandLine.resources.GetString "MultiplesNotAllowed",
+                                                         "--single") :: CommandLine.error
+
+                  else
+                      if Option.isSome Visitor.interval || 
+                         Visitor.TrackingNames.Any() then
+                         CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
+                                                         CommandLine.resources.GetString "Incompatible",
+                                                         "--single","--callContext") :: CommandLine.error
+                      else 
+                        Visitor.single <- true))
       ("?|help|h", (fun x -> CommandLine.help <- not (isNull x)))
       ("<>", (fun x -> CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
                                                          CommandLine.resources.GetString "InvalidValue",
