@@ -39,8 +39,9 @@
       MethodFilter="@(AltCoverMethodFilters)"
       AttributeFilter="@(AltCoverAttributeFilters)"
       CallContext="@(AltCoverSplitContext)"
-      Single="@(AltCoverSingle)"
-      LineCover="@(AltCoverLineCover)"
+      Single="$(AltCoverSingle)"
+      LineCover="$(AltCoverLineCover)"
+      BranchCover="$(AltCoverBranchCover)"
       Dependencies="@(AltCoverDependencies)" />
   </Target>
 
@@ -63,8 +64,9 @@
       MethodFilter="$(AltCoverMethodFilter)"
       AttributeFilter="$(AltCoverAttributeFilter)"
       CallContext="@(AltCoverSplitContext)"
-      Single="@(AltCoverSingle)"
-      LineCover="@(AltCoverLineCover)"
+      Single="$(AltCoverSingle)"
+      LineCover="$(AltCoverLineCover)"
+      BranchCover="$(AltCoverBranchCover)"
       Dependencies="@(AltCoverDependencies)" />
   </Target>
 

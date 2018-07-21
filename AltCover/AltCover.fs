@@ -39,7 +39,7 @@ module Main =
     Visitor.inplace <- false
     Visitor.collect <- false
     Visitor.single <- false
-    Visitor.linecover <- false
+    Visitor.coverstyle <- CoverStyle.All
 
   let internal DeclareOptions () =
     [ ("i|inputDirectory=",
@@ -227,13 +227,29 @@ module Main =
                       else
                         Visitor.single <- true))
       ("linecover",
-       (fun _ ->  if Visitor.linecover then
+       (fun _ ->  match Visitor.coverstyle with
+                  | CoverStyle.LineOnly ->
                       CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
                                                          CommandLine.resources.GetString "MultiplesNotAllowed",
                                                          "--linecover") :: CommandLine.error
-
-                  else
-                      Visitor.linecover <- true))
+                  | CoverStyle.BranchOnly ->
+                         CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
+                                                         CommandLine.resources.GetString "Incompatible",
+                                                         "--linecover","--branchcover") :: CommandLine.error
+                  | _ ->
+                      Visitor.coverstyle <- CoverStyle.LineOnly))
+      ("branchcover",
+       (fun _ ->  match Visitor.coverstyle with
+                  | CoverStyle.BranchOnly ->
+                      CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
+                                                         CommandLine.resources.GetString "MultiplesNotAllowed",
+                                                         "--branchcover") :: CommandLine.error
+                  | CoverStyle.LineOnly ->
+                         CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
+                                                         CommandLine.resources.GetString "Incompatible",
+                                                         "--branchcover", "--linecover") :: CommandLine.error
+                  | _ ->
+                      Visitor.coverstyle <- CoverStyle.BranchOnly))
       ("?|help|h", (fun x -> CommandLine.help <- not (isNull x)))
       ("<>", (fun x -> CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
                                                          CommandLine.resources.GetString "InvalidValue",

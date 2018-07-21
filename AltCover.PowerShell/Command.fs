@@ -157,6 +157,10 @@ type InvokeAltCoverCommand(runner:bool) =
       ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
   member val LineCover:SwitchParameter = SwitchParameter(false) with get, set
 
+  [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
+      ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
+  member val BranchCover:SwitchParameter = SwitchParameter(false) with get, set
+
   [<Parameter(ParameterSetName = "Version", Mandatory = true, Position = 1,
       ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
   member val Version:SwitchParameter = SwitchParameter(false) with get, set
@@ -232,6 +236,7 @@ type InvokeAltCoverCommand(runner:bool) =
                               Args.Flag "--save" self.Save.IsPresent
                               Args.Flag "--single" self.Single.IsPresent
                               Args.Flag "--linecover" self.LineCover.IsPresent
+                              Args.Flag "--branchcover" self.BranchCover.IsPresent
 
                               Args.Item "--" (String.Join(" ", self.CommandLine));
                             ]

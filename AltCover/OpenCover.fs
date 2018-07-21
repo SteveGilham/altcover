@@ -211,14 +211,16 @@ module OpenCover =
         XAttribute(X "bev", 0),
         XAttribute(X "fileid", ref))
 
+    let RecordFile (s : OpenCoverContext) file =
+      if s.Files.ContainsKey file then
+        s.Files, s.Files.Item file
+      else
+        let index = s.Files.Count + 1
+        s.Files.Add (file, index), index
+
     let VisitCodeSegment (s : OpenCoverContext) (codeSegment:SeqPnt) i =
        if s.Excluded = Nothing then
-          let file = codeSegment.Document
-          let fileset, ref = if s.Files.ContainsKey file then
-                                s.Files, s.Files.Item file
-                             else
-                                let index = s.Files.Count + 1
-                                s.Files.Add (file, index), index
+          let fileset, ref = RecordFile s codeSegment.Document
           let element = MethodPointElement codeSegment ref i
           let head = s.Stack |> Seq.head
           if head.IsEmpty then head.Add(element)
@@ -234,8 +236,9 @@ module OpenCover =
       | None -> s
 
     let VisitGoTo s branch =
-      let fileid =  (s.Files.Item branch.Document)
-      XElement(X "BranchPoint",
+      let fileset, ref = RecordFile s branch.Document
+      let fileid = fileset.Item branch.Document
+      (XElement(X "BranchPoint",
                XAttribute (X "vc", 0),
                XAttribute (X "uspid", branch.Uid),
                XAttribute (X "ordinal", 0),
@@ -245,16 +248,18 @@ module OpenCover =
                XAttribute (X "offsetchain", 0),
                XAttribute (X "offsetend", branch.Target.Head),
                XAttribute (X "fileid", fileid)
-              )
+              ), fileset, ref)
 
     let VisitBranchPoint s branch =
        if s.Excluded = Nothing then
           let branches = s.Stack.Head.Parent.Descendants(X "BranchPoints") |> Seq.head
-          let xbranch = VisitGoTo s branch
+          let (xbranch, fileset, ref) = VisitGoTo s branch
           setChain xbranch branch.Target.Tail
           if branches.IsEmpty then branches.Add(xbranch)
           else branches.LastNode.AddAfterSelf(xbranch)
-          { s with MethodBr = s.MethodBr + 1}
+          { s with Files = fileset
+                   Index = ref
+                   MethodBr = s.MethodBr + 1}
        else s
 
     let limitMethodCC count stack =
@@ -281,6 +286,12 @@ module OpenCover =
                                                     (SafeMultiply np0  bec, 0, x)
                                | _ -> (np0, bec+1, sq)) (1, 0, sp.Head)
           ``method``.SetAttributeValue(X "nPathComplexity", np)
+        else if bp |> List.isEmpty |> not then
+          let np =  bp
+                   |> List.groupBy (fun bp -> bp.Attribute(X "offset").Value)
+                   |> Seq.fold( fun np0 (_,b) -> SafeMultiply (Seq.length b) np0) 1
+          ``method``.SetAttributeValue(X "nPathComplexity", np)
+
 
     let AddTracking (s : OpenCoverContext) (m:MethodDefinition) t =
       t |>
@@ -298,10 +309,10 @@ module OpenCover =
         summary.SetAttributeValue(X "numSequencePoints", s.MethodSeq)
         summary.SetAttributeValue(X "numBranchPoints", s.MethodBr +
                                     // make the number agree with OpenCover
-                                    if s.MethodSeq > 0 then 1 else 0)
+                                    if s.MethodSeq > 0 || s.MethodBr > 0 then 1 else 0)
         summary.SetAttributeValue(X "maxCyclomaticComplexity", cc)
         summary.SetAttributeValue(X "minCyclomaticComplexity", cc)
-        summary.SetAttributeValue(X "numMethods", if s.MethodSeq > 0 then 1 else 0)
+        summary.SetAttributeValue(X "numMethods", if s.MethodSeq > 0 || s.MethodBr > 0 then 1 else 0)
 
     let VisitAfterMethodIncluded (s : OpenCoverContext) =
         let head,tail = Augment.Split s.Stack
@@ -322,8 +333,8 @@ module OpenCover =
                 ClassSeq = s.ClassSeq + s.MethodSeq
                 ClassBr = s.ClassBr + s.MethodBr +
                           // make the number agree with OpenCover
-                          if s.MethodSeq > 0 then 1 else 0
-                MethodCC = limitMethodCC s.MethodSeq s.MethodCC}
+                          if s.MethodSeq > 0 || s.MethodBr > 0 then 1 else 0
+                MethodCC = limitMethodCC (s.MethodSeq + s.MethodBr) s.MethodCC}
 
     let VisitAfterMethod (s : OpenCoverContext) methodDef track included =
       AddTracking s methodDef track
@@ -341,7 +352,7 @@ module OpenCover =
                                      let cc2 = fst pair
                                      (Math.Min (fst cc, fst cc2), Math.Max (snd cc, snd cc2)), snd state + snd pair)
                                      ((1,0), 0)
-        let classes = if s.ClassSeq > 0 then 1 else 0
+        let classes = if s.ClassSeq > 0 || s.ClassBr > 0 then 1 else 0
         head.Parent.Elements(X "Summary")
         |> Seq.iter(fun summary -> summary.SetAttributeValue(X "numSequencePoints", s.ClassSeq)
                                    summary.SetAttributeValue(X "numBranchPoints", s.ClassBr)

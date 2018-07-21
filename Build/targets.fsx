@@ -2060,6 +2060,64 @@ _Target "DotnetTestIntegration" ( fun _ ->
                                      "<TrackedMethodRef uid=\"2\" vc=\"1\" />"
                                      "<TrackedMethodRef uid=\"2\" vc=\"1\" />"
                     ])
+
+// optest linecover
+    Directory.ensure "./_DotnetTestLineCover"
+    Shell.cleanDir ("./_DotnetTestLineCover")
+    let config = XDocument.Load "./Build/NuGet.config.dotnettest"
+    let repo = config.Descendants(XName.Get("add")) |> Seq.head
+    repo.SetAttributeValue(XName.Get "value", Path.getFullName "./_Packaging" )
+    config.Save "./_DotnetTestLineCover/NuGet.config"
+
+    let fsproj = XDocument.Load "./Sample10/sample10.core.csproj"
+    let pack = fsproj.Descendants(XName.Get("PackageReference")) |> Seq.head
+    let inject = XElement(XName.Get "PackageReference",
+                          XAttribute (XName.Get "Include", "altcover"),
+                          XAttribute (XName.Get "Version", !Version) )
+    pack.AddBeforeSelf inject
+    fsproj.Save "./_DotnetTestLineCover/dotnettest.csproj"
+    Shell.copy "./_DotnetTestLineCover" (!! "./Sample10/*.cs")
+
+    Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = Path.getFullName "_DotnetTestLineCover"}) "test"
+                      ("-v n /p:AltCover=true /p:AltCoverLineCover=true")
+                      "sample test returned with a non-zero exit code"
+
+    let x = Path.getFullName "./_DotnetTestLineCover/coverage.xml"
+
+    do
+      use coverageFile = new FileStream(x, FileMode.Open, FileAccess.Read, FileShare.None, 4096, FileOptions.SequentialScan)
+      let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
+      Assert.That (coverageDocument.Descendants(XName.Get("SequencePoint")) |> Seq.length, Is.EqualTo 13)
+      Assert.That (coverageDocument.Descendants(XName.Get("BranchPoint")) |> Seq.length, Is.EqualTo 0)
+
+// optest branchcover
+    Directory.ensure "./_DotnetTestBranchCover"
+    Shell.cleanDir ("./_DotnetTestBranchCover")
+    let config = XDocument.Load "./Build/NuGet.config.dotnettest"
+    let repo = config.Descendants(XName.Get("add")) |> Seq.head
+    repo.SetAttributeValue(XName.Get "value", Path.getFullName "./_Packaging" )
+    config.Save "./_DotnetTestLineCover/NuGet.config"
+
+    let fsproj = XDocument.Load "./Sample10/sample10.core.csproj"
+    let pack = fsproj.Descendants(XName.Get("PackageReference")) |> Seq.head
+    let inject = XElement(XName.Get "PackageReference",
+                          XAttribute (XName.Get "Include", "altcover"),
+                          XAttribute (XName.Get "Version", !Version) )
+    pack.AddBeforeSelf inject
+    fsproj.Save "./_DotnetTestBranchCover/dotnettest.csproj"
+    Shell.copy "./_DotnetTestBranchCover" (!! "./Sample10/*.cs")
+
+    Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = Path.getFullName "_DotnetTestBranchCover"}) "test"
+                      ("-v n /p:AltCover=true /p:AltCoverBranchCover=true")
+                      "sample test returned with a non-zero exit code"
+
+    let x = Path.getFullName "./_DotnetTestBranchCover/coverage.xml"
+    do
+      use coverageFile = new FileStream(x, FileMode.Open, FileAccess.Read, FileShare.None, 4096, FileOptions.SequentialScan)
+      let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
+      Assert.That (coverageDocument.Descendants(XName.Get("SequencePoint")) |> Seq.length, Is.EqualTo 0)
+      Assert.That (coverageDocument.Descendants(XName.Get("BranchPoint")) |> Seq.length, Is.EqualTo 2)
+
   finally
     let folder = (nugetCache @@ "altcover") @@ !Version
     Shell.mkdir folder

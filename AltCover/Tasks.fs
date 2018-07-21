@@ -43,6 +43,7 @@ type Prepare () =
   member val Save = true with get, set
   member val Single = true |> not with get, set  // work around Gendarme insistence on non-default values only
   member val LineCover = true |> not with get, set
+  member val BranchCover = true |> not with get, set
 
   member val CommandLine = String.Empty with get, set
 
@@ -77,6 +78,8 @@ type Prepare () =
       Args.Flag "--inplace" self.InPlace
       Args.Flag "--save" self.Save
       Args.Flag "--single" self.Single
+      Args.Flag "--linecover" self.LineCover
+      Args.Flag "--branchcover" self.BranchCover
 
       Args.Item "--" self.CommandLine;
     ]

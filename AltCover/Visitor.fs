@@ -22,6 +22,8 @@ open Mono.Cecil.Rocks
 [<Flags>]
 type Inspect = Ignore = 0 | Instrument = 1 | Track = 2 | TrackOnly = 4
 
+type CoverStyle = All = 0 | LineOnly = 1 | BranchOnly = 2
+
 [<ExcludeFromCodeCoverage>]
 type SeqPnt = {
          StartLine : int
@@ -159,8 +161,8 @@ module Visitor =
   let Interval () = (Option.getOrElse defaultInterval interval)
 
   let mutable internal reportFormat : Option<ReportFormat> = None
-  let mutable internal linecover = false
-  let defaultReportFormat() = if linecover then ReportFormat.OpenCover else ReportFormat.NCover
+  let mutable internal coverstyle = CoverStyle.All
+  let defaultReportFormat() = if coverstyle = CoverStyle.All then ReportFormat.NCover else ReportFormat.OpenCover
   let ReportKind () = (Option.getOrElse (defaultReportFormat()) reportFormat)
   let ReportFormat () = let fmt = ReportKind()
                         if fmt = ReportFormat.OpenCover &&
@@ -520,7 +522,9 @@ module Visitor =
                      IsIncluded |>
                      IsInstrumented)
 
-            let sp = if  interesting && instructions |> Seq.isEmpty && rawInstructions |> Seq.isEmpty |> not then
+            let sp = if  interesting && (instructions |> Seq.isEmpty ||
+                                         coverstyle = CoverStyle.BranchOnly) && 
+                                         rawInstructions |> Seq.isEmpty |> not then
                         rawInstructions
                         |> Seq.take 1
                         |> Seq.map (fun i -> MethodPoint (i, None, m.MetadataToken.ToInt32(), interesting))
@@ -530,7 +534,7 @@ module Visitor =
                                                 MethodPoint (x, s |> SeqPnt.Build |> Some,
                                                         i+point, wanted interesting s))
 
-            let bp = if instructions.Any() && ReportKind() = Base.ReportFormat.OpenCover && linecover |> not then
+            let bp = if instructions.Any() && ReportKind() = Base.ReportFormat.OpenCover && (coverstyle <> CoverStyle.LineOnly) then
                         let spnt = instructions
                                    |> Seq.head
                                    |> dbg.GetSequencePoint

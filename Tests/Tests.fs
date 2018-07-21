@@ -1523,7 +1523,7 @@ type AltCoverTests() = class
     try
         Visitor.NameFilters.Clear()
         Visitor.reportFormat <- Some Base.ReportFormat.OpenCover
-        Visitor.linecover <- true
+        Visitor.coverstyle <- CoverStyle.LineOnly
         Visitor.Visit [ visitor ] (Visitor.ToSeq path)
         let resource = Assembly.GetExecutingAssembly().GetManifestResourceNames()
                          |> Seq.find (fun n -> n.EndsWith("Sample1WithOpenCover.xml", StringComparison.Ordinal))
@@ -1551,7 +1551,45 @@ type AltCoverTests() = class
     finally
       Visitor.NameFilters.Clear()
       Visitor.reportFormat <- None
-      Visitor.linecover <- false
+      Visitor.coverstyle <- CoverStyle.All
+
+  [<Test>]
+  member self.ShouldGenerateExpectedXmlReportFromDotNetBranchCoverStyle() =
+    let visitor, document = OpenCover.ReportGenerator()
+    // Hack for running while instrumented
+    let where = Assembly.GetExecutingAssembly().Location
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), sample1)
+    let X name =
+      XName.Get(name)
+
+    try
+        Visitor.NameFilters.Clear()
+        Visitor.reportFormat <- Some Base.ReportFormat.OpenCover
+        Visitor.coverstyle <- CoverStyle.BranchOnly
+        Visitor.Visit [ visitor ] (Visitor.ToSeq path)
+        let resource = Assembly.GetExecutingAssembly().GetManifestResourceNames()
+                         |> Seq.find (fun n -> n.EndsWith("Sample1WithOpenCover.xml", StringComparison.Ordinal))
+
+        use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
+
+        let baseline = XDocument.Load(stream)
+
+        // strip out line information
+        baseline.Descendants(X "Summary")
+        |> Seq.filter(fun x -> x.Attribute(X "numSequencePoints").Value = "10")
+        |> Seq.iter(fun x -> x.Attribute(X "numSequencePoints").Value <- "0")
+        baseline.Descendants(X "SequencePoint")
+        |> Seq.toList
+        |> Seq.iter(fun x -> x.Remove())
+
+        let result = document.Elements()
+        let expected = baseline.Elements()
+
+        AltCoverTests.RecursiveValidateOpenCover result expected 0 true false
+    finally
+      Visitor.NameFilters.Clear()
+      Visitor.reportFormat <- None
+      Visitor.coverstyle <- CoverStyle.All
 
   member self.AddTrackingForMain xml =
     let resource = Assembly.GetExecutingAssembly().GetManifestResourceNames()
@@ -3352,9 +3390,9 @@ type AltCoverTests() = class
     let options = Main.DeclareOptions ()
     Assert.That (options.Count, Is.EqualTo
 #if NETCOREAPP2_0
-                                            19
-#else
                                             20
+#else
+                                            21
 #endif
                  )
     Assert.That(options |> Seq.filter (fun x -> x.Prototype <> "<>")
@@ -4382,7 +4420,7 @@ type AltCoverTests() = class
   [<Test>]
   member self.ParsingLineCoverGivesLineCover() =
     try
-      Visitor.linecover <- false
+      Visitor.coverstyle <- CoverStyle.All
       let options = Main.DeclareOptions ()
       let input = [| "--linecover" |]
       let parse = CommandLine.ParseCommandLine input options
@@ -4390,17 +4428,18 @@ type AltCoverTests() = class
       | Left _ -> Assert.Fail()
       | Right (x, y) -> Assert.That (y, Is.SameAs options)
                         Assert.That (x, Is.Empty)
-      Assert.That(Visitor.linecover)
+      Assert.That(Visitor.coverstyle, Is.EqualTo CoverStyle.LineOnly)
       match Visitor.reportFormat with
-      | None -> Assert.Fail()
-      | Some x -> Assert.That(x, Is.EqualTo AltCover.Base.ReportFormat.OpenCover)
+      | None -> Assert.Pass()
+      | Some x -> Assert.Fail()
     finally
-      Visitor.linecover <- false
+      Visitor.coverstyle <- CoverStyle.All
 
   [<Test>]
   member self.OpenCoverIsCompatibleWithLineCover() =
     try
-      Visitor.linecover <- false
+      Visitor.coverstyle <- CoverStyle.All
+      Visitor.reportFormat <- None
       let options = Main.DeclareOptions ()
       let input = [| "--linecover"; "--opencover" |]
       let parse = CommandLine.ParseCommandLine input options
@@ -4408,17 +4447,19 @@ type AltCoverTests() = class
       | Left _ -> Assert.Fail()
       | Right (x, y) -> Assert.That (y, Is.SameAs options)
                         Assert.That (x, Is.Empty)
-      Assert.That(Visitor.linecover)
+      Assert.That(Visitor.coverstyle, Is.EqualTo CoverStyle.LineOnly)
       match Visitor.reportFormat with
       | None -> Assert.Fail()
       | Some x -> Assert.That(x, Is.EqualTo AltCover.Base.ReportFormat.OpenCover)
     finally
-      Visitor.linecover <- false
+      Visitor.reportFormat <- None
+      Visitor.coverstyle <- CoverStyle.All
 
   [<Test>]
   member self.LineCoverIsCompatibleWithOpenCover() =
     try
-      Visitor.linecover <- false
+      Visitor.coverstyle <- CoverStyle.All
+      Visitor.reportFormat <- None
       let options = Main.DeclareOptions ()
       let input = [| "--opencover"; "--linecover" |]
       let parse = CommandLine.ParseCommandLine input options
@@ -4426,17 +4467,18 @@ type AltCoverTests() = class
       | Left _ -> Assert.Fail()
       | Right (x, y) -> Assert.That (y, Is.SameAs options)
                         Assert.That (x, Is.Empty)
-      Assert.That(Visitor.linecover)
+      Assert.That(Visitor.coverstyle, Is.EqualTo CoverStyle.LineOnly)
       match Visitor.reportFormat with
       | None -> Assert.Fail()
       | Some x -> Assert.That(x, Is.EqualTo AltCover.Base.ReportFormat.OpenCover)
     finally
-      Visitor.linecover <- false
+      Visitor.reportFormat <- None
+      Visitor.coverstyle <- CoverStyle.All
 
   [<Test>]
   member self.ParsingMultipleLineCoverGivesFailure() =
     try
-      Visitor.linecover <- false
+      Visitor.coverstyle <- CoverStyle.All
       let options = Main.DeclareOptions ()
       let input = [| "--linecover"; "--linecover" |]
       let parse = CommandLine.ParseCommandLine input options
@@ -4445,7 +4487,107 @@ type AltCoverTests() = class
       | Left (x, y) -> Assert.That (y, Is.SameAs options)
                        Assert.That (x, Is.EqualTo "UsageError")
     finally
-      Visitor.linecover <- false
+      Visitor.coverstyle <- CoverStyle.All
+
+  [<Test>]
+  member self.LineCoverIsNotCompatibleWithBranchCover() =
+    try
+      Visitor.coverstyle <- CoverStyle.All
+      let options = Main.DeclareOptions ()
+      let input = [| "--linecover"; "--branchcover" |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Right _ -> Assert.Fail()
+      | Left (x, y) -> Assert.That (y, Is.SameAs options)
+                       Assert.That (x, Is.EqualTo "UsageError")
+    finally
+      Visitor.coverstyle <- CoverStyle.All
+
+  [<Test>]
+  member self.ParsingBranchCoverGivesBranchCover() =
+    try
+      Visitor.coverstyle <- CoverStyle.All
+      let options = Main.DeclareOptions ()
+      let input = [| "--branchcover" |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Left _ -> Assert.Fail()
+      | Right (x, y) -> Assert.That (y, Is.SameAs options)
+                        Assert.That (x, Is.Empty)
+      Assert.That(Visitor.coverstyle, Is.EqualTo CoverStyle.BranchOnly)
+      match Visitor.reportFormat with
+      | None -> Assert.Pass()
+      | Some x -> Assert.Fail()
+    finally
+      Visitor.coverstyle <- CoverStyle.All
+
+  [<Test>]
+  member self.OpenCoverIsCompatibleWithBranchCover() =
+    try
+      Visitor.reportFormat <- None
+      Visitor.coverstyle <- CoverStyle.All
+      let options = Main.DeclareOptions ()
+      let input = [| "--branchcover"; "--opencover" |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Left _ -> Assert.Fail()
+      | Right (x, y) -> Assert.That (y, Is.SameAs options)
+                        Assert.That (x, Is.Empty)
+      Assert.That(Visitor.coverstyle, Is.EqualTo CoverStyle.BranchOnly)
+      match Visitor.reportFormat with
+      | None -> Assert.Fail()
+      | Some x -> Assert.That(x, Is.EqualTo AltCover.Base.ReportFormat.OpenCover)
+    finally
+      Visitor.reportFormat <- None
+      Visitor.coverstyle <- CoverStyle.All
+
+  [<Test>]
+  member self.BranchCoverIsCompatibleWithOpenCover() =
+    try
+      Visitor.reportFormat <- None
+      Visitor.coverstyle <- CoverStyle.All
+      let options = Main.DeclareOptions ()
+      let input = [| "--opencover"; "--branchcover" |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Left _ -> Assert.Fail()
+      | Right (x, y) -> Assert.That (y, Is.SameAs options)
+                        Assert.That (x, Is.Empty)
+      Assert.That(Visitor.coverstyle, Is.EqualTo CoverStyle.BranchOnly)
+      match Visitor.reportFormat with
+      | None -> Assert.Fail()
+      | Some x -> Assert.That(x, Is.EqualTo AltCover.Base.ReportFormat.OpenCover)
+    finally
+      Visitor.coverstyle <- CoverStyle.All
+      Visitor.reportFormat <- None
+
+  [<Test>]
+  member self.ParsingMultipleBranchCoverGivesFailure() =
+    try
+      Visitor.coverstyle <- CoverStyle.All
+      let options = Main.DeclareOptions ()
+      let input = [| "--branchcover"; "--branchcover" |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Right _ -> Assert.Fail()
+      | Left (x, y) -> Assert.That (y, Is.SameAs options)
+                       Assert.That (x, Is.EqualTo "UsageError")
+    finally
+      Visitor.coverstyle <- CoverStyle.All
+
+  [<Test>]
+  member self.BranchCoverIsNotCompatibleWithLineCover() =
+    try
+      Visitor.coverstyle <- CoverStyle.All
+      let options = Main.DeclareOptions ()
+      let input = [|"--branchcover"; "--linecover"|]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Right _ -> Assert.Fail()
+      | Left (x, y) -> Assert.That (y, Is.SameAs options)
+                       Assert.That (x, Is.EqualTo "UsageError")
+    finally
+      Visitor.coverstyle <- CoverStyle.All
 
   [<Test>]
   member self.OutputLeftPassesThrough() =
@@ -4867,6 +5009,10 @@ type AltCoverTests() = class
                                    Incompatible with --callContext.
       --linecover            Optional: Do not record branch coverage.  Implies,
                                and is compatible with, the --opencover option.
+                                   Incompatible with --branchcover.
+      --branchcover          Optional: Do not record line coverage.  Implies,
+                               and is compatible with, the --opencover option.
+                                   Incompatible with --linecover.
   -?, --help, -h             Prints out the options.
 or
   ipmo                       Prints out the PowerShell script to import the
@@ -4961,6 +5107,10 @@ or
                                    Incompatible with --callContext.
       --linecover            Optional: Do not record branch coverage.  Implies,
                                and is compatible with, the --opencover option.
+                                   Incompatible with --branchcover.
+      --branchcover          Optional: Do not record line coverage.  Implies,
+                               and is compatible with, the --opencover option.
+                                   Incompatible with --linecover.
   -?, --help, -h             Prints out the options.
 or
   Runner
