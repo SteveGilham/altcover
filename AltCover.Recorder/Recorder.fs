@@ -87,6 +87,13 @@ module Instance =
   let Timer = 0L
 
   /// <summary>
+  /// Gets the sampling strategy
+  /// This property's IL code is modified to store the user chosen override if applicable
+  /// </summary>
+  [<MethodImplAttribute(MethodImplOptions.NoInlining)>]
+  let Sample = Sampling.All
+
+  /// <summary>
   /// Gets or sets the current test method
   /// </summary>
   type private CallStack =

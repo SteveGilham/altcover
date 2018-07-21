@@ -1161,7 +1161,9 @@ type AltCoverTests() = class
                       "#ctor"; "get_Visits"; "Log"; "GetOperandType"; "#ctor"; ".cctor";
                       "get_Property"; "set_Property"; "get_ReportFile";
                       "set_ReportFile"; "get_Timer"; "set_Timer"; "get_Token"; "set_Token";
-                      "get_CoverageFormat"; "set_CoverageFormat"; "ToList"; "#ctor" ]
+                      "get_CoverageFormat"; "set_CoverageFormat"; 
+                      "get_Sample"; "set_Sample"; 
+                      "ToList"; "#ctor" ]
     Assert.That(names, Is.EquivalentTo expected)
 
   [<Test>]
@@ -1190,6 +1192,8 @@ type AltCoverTests() = class
                     "System.Void Sample3.Class3+Class4.set_Token(System.String)"
                     "System.Int32 Sample3.Class3+Class4.get_CoverageFormat()"
                     "System.Void Sample3.Class3+Class4.set_CoverageFormat(System.Int32)"
+                    "System.Int32 Sample3.Class3+Class4.get_Sample()"
+                    "System.Void Sample3.Class3+Class4.set_Sample(System.Int32)"
                     "System.Collections.Generic.List`1 Sample3.Class3+Class4.ToList<T>(T)";
                     "System.Void Sample3.Class3+Class4.#ctor()" ]
     Assert.That(names, Is.EquivalentTo expected)
@@ -2096,6 +2100,7 @@ type AltCoverTests() = class
         Visitor.reportPath <- Some unique
         Visitor.reportFormat <- Some AltCover.Base.ReportFormat.OpenCover
         Visitor.interval <- Some 1234567890
+        Visitor.single <- true
         let prepared = Instrument.PrepareAssembly path
         Instrument.WriteAssembly prepared outputdll
         let expectedSymbols = if "Mono.Runtime" |> Type.GetType |> isNull |> not then ".dll.mdb" else ".pdb"
@@ -2126,9 +2131,12 @@ type AltCoverTests() = class
           Assert.That (report2, AltCover.Base.ReportFormat.OpenCoverWithTracking |> int |> Is.EqualTo)
           let report3 = proxyObject.InvokeMethod("get_Timer",[||]) :?> System.Int64
           Assert.That (report3, 1234567890L |> Is.EqualTo)
+          let report4 = proxyObject.InvokeMethod("get_Sample",[||]) :?> System.Int32
+          Assert.That (report4, AltCover.Base.Sampling.Single |> int |> Is.EqualTo)
         finally
           AppDomain.Unload(ad)
       finally
+        Visitor.single <- false
         Visitor.reportPath <- save
         Visitor.reportFormat <- save2
         Visitor.interval <- save3

@@ -191,9 +191,10 @@ module Instrument =
         initialBody |> Seq.iter worker.Remove
     )
 
-    // set the coverage file format
+    // set the coverage file format and sampling strategy
     [
       ("get_CoverageFormat", Visitor.ReportFormat() |> int)
+      ("get_Sample", (if Visitor.single then Base.Sampling.Single else Base.Sampling.All) |> int)
     ]
     |> List.iter (fun (property, value) ->
         let pathGetterDef = definition.MainModule.GetTypes()
