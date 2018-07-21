@@ -522,9 +522,12 @@ module Visitor =
                      IsIncluded |>
                      IsInstrumented)
 
-            let sp = if  interesting && (instructions |> Seq.isEmpty ||
+            let MethodPointOnly() =
+                interesting && (instructions |> Seq.isEmpty ||
                                          coverstyle = CoverStyle.BranchOnly) && 
-                                         rawInstructions |> Seq.isEmpty |> not then
+                                         rawInstructions |> Seq.isEmpty |> not
+
+            let sp = if MethodPointOnly()  then
                         rawInstructions
                         |> Seq.take 1
                         |> Seq.map (fun i -> MethodPoint (i, None, m.MetadataToken.ToInt32(), interesting))
@@ -534,7 +537,9 @@ module Visitor =
                                                 MethodPoint (x, s |> SeqPnt.Build |> Some,
                                                         i+point, wanted interesting s))
 
-            let bp = if instructions.Any() && ReportKind() = Base.ReportFormat.OpenCover && (coverstyle <> CoverStyle.LineOnly) then
+            let IncludeBranches() =
+              instructions.Any() && ReportKind() = Base.ReportFormat.OpenCover && (coverstyle <> CoverStyle.LineOnly) 
+            let bp = if IncludeBranches() then
                         let spnt = instructions
                                    |> Seq.head
                                    |> dbg.GetSequencePoint
