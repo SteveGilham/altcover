@@ -200,14 +200,14 @@ module Instance =
            let wanted = unwanted |> not
            if wanted then Samples.[moduleId].Add(hitPointId, true)
            wanted
-           
+
   /// <summary>
   /// This method is executed from instrumented assemblies.
   /// </summary>
   /// <param name="moduleId">Assembly being visited</param>
   /// <param name="hitPointId">Sequence Point identifier</param>
   let internal VisitImpl moduleId hitPointId context =
-    if not <| String.IsNullOrEmpty(moduleId) && 
+    if not <| String.IsNullOrEmpty(moduleId) &&
        TakeSample Sample moduleId hitPointId then
       trace.OnConnected (fun () -> TraceVisit moduleId hitPointId context)
                         (fun () -> Counter.AddVisit Visits moduleId hitPointId context)

@@ -1161,8 +1161,8 @@ type AltCoverTests() = class
                       "#ctor"; "get_Visits"; "Log"; "GetOperandType"; "#ctor"; ".cctor";
                       "get_Property"; "set_Property"; "get_ReportFile";
                       "set_ReportFile"; "get_Timer"; "set_Timer"; "get_Token"; "set_Token";
-                      "get_CoverageFormat"; "set_CoverageFormat"; 
-                      "get_Sample"; "set_Sample"; 
+                      "get_CoverageFormat"; "set_CoverageFormat";
+                      "get_Sample"; "set_Sample";
                       "ToList"; "#ctor" ]
     Assert.That(names, Is.EquivalentTo expected)
 
