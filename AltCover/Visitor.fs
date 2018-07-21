@@ -530,7 +530,7 @@ module Visitor =
                                                 MethodPoint (x, s |> SeqPnt.Build |> Some,
                                                         i+point, wanted interesting s))
 
-            let bp = if instructions.Any() && ReportKind() = Base.ReportFormat.OpenCover then
+            let bp = if instructions.Any() && ReportKind() = Base.ReportFormat.OpenCover && linecover |> not then
                         let spnt = instructions
                                    |> Seq.head
                                    |> dbg.GetSequencePoint

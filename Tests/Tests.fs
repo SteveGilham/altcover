@@ -1511,6 +1511,48 @@ type AltCoverTests() = class
       Visitor.NameFilters.Clear()
       Visitor.reportFormat <- None
 
+  [<Test>]
+  member self.ShouldGenerateExpectedXmlReportFromDotNetLineCoverStyle() =
+    let visitor, document = OpenCover.ReportGenerator()
+    // Hack for running while instrumented
+    let where = Assembly.GetExecutingAssembly().Location
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), sample1)
+    let X name =
+      XName.Get(name)
+
+    try
+        Visitor.NameFilters.Clear()
+        Visitor.reportFormat <- Some Base.ReportFormat.OpenCover
+        Visitor.linecover <- true
+        Visitor.Visit [ visitor ] (Visitor.ToSeq path)
+        let resource = Assembly.GetExecutingAssembly().GetManifestResourceNames()
+                         |> Seq.find (fun n -> n.EndsWith("Sample1WithOpenCover.xml", StringComparison.Ordinal))
+
+        use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
+
+        let baseline = XDocument.Load(stream)
+
+        // strip out branch information
+        baseline.Descendants(X "Summary")
+        |> Seq.filter(fun x -> x.Attribute(X "numBranchPoints").Value = "3")
+        |> Seq.iter(fun x -> x.Attribute(X "numBranchPoints").Value <- "1")
+
+        baseline.Descendants(X "Method")
+        |> Seq.iter(fun x -> x.Attribute(X "nPathComplexity").Value <- "0")
+        baseline.Descendants(X "SequencePoint")
+        |> Seq.iter(fun x -> x.Attribute(X "bec").Value <- "0")
+        baseline.Descendants(X "BranchPoint")
+        |> Seq.toList
+        |> Seq.iter(fun x -> x.Remove())
+
+        let result = document.Elements()
+        let expected = baseline.Elements()
+        AltCoverTests.RecursiveValidateOpenCover result expected 0 true false
+    finally
+      Visitor.NameFilters.Clear()
+      Visitor.reportFormat <- None
+      Visitor.linecover <- false
+
   member self.AddTrackingForMain xml =
     let resource = Assembly.GetExecutingAssembly().GetManifestResourceNames()
                         |> Seq.find (fun n -> n.EndsWith(xml, StringComparison.Ordinal))
