@@ -63,6 +63,7 @@ module Instance =
   /// Accumulation of visit records
   /// </summary>
   let internal Visits = new Dictionary<string, Dictionary<int, int * Track list>>()
+  let internal Samples = new Dictionary<string, Dictionary<int, bool>>()
   let internal buffer = List<Carrier> ()
 
   /// <summary>
@@ -190,13 +191,24 @@ module Instance =
   let internal TraceVisit moduleId hitPointId context =
      trace.OnVisit Visits moduleId hitPointId context
 
+  let internal TakeSample strategy moduleId hitPointId =
+    match strategy with
+    | Sampling.All -> true
+    | _ -> let hasKey = Samples.ContainsKey(moduleId)
+           if hasKey |> not then Samples.Add(moduleId, Dictionary<int, bool>())
+           let unwanted = hasKey && Samples.[moduleId].ContainsKey(hitPointId)
+           let wanted = unwanted |> not
+           if wanted then Samples.[moduleId].Add(hitPointId, true)
+           wanted
+           
   /// <summary>
   /// This method is executed from instrumented assemblies.
   /// </summary>
   /// <param name="moduleId">Assembly being visited</param>
   /// <param name="hitPointId">Sequence Point identifier</param>
   let internal VisitImpl moduleId hitPointId context =
-    if not <| String.IsNullOrEmpty(moduleId) then
+    if not <| String.IsNullOrEmpty(moduleId) && 
+       TakeSample Sample moduleId hitPointId then
       trace.OnConnected (fun () -> TraceVisit moduleId hitPointId context)
                         (fun () -> Counter.AddVisit Visits moduleId hitPointId context)
 

@@ -355,13 +355,21 @@ _Target "JustUnitTest" (fun _ ->
            reraise ()
 )
 
+_Target "BuildForUnitTestDotNet" (fun _ ->
+      !! (@"./*Tests/*.tests.core.fsproj")
+      |> Seq.iter (fun f -> printfn "Building %s" f
+                            Actions.RunDotnet dotnetOptions "build"
+                                ("--configuration Debug " + f)
+                                f)
+)
+
 _Target "UnitTestDotNet" (fun _ ->
     Directory.ensure "./_Reports"
     try
       !! (@"./*Tests/*.tests.core.fsproj")
       |> Seq.iter (fun f -> printfn "Testing %s" f
                             Actions.RunDotnet dotnetOptions "test"
-                                              ("--configuration Debug " + f)
+                                              ("--no-build --configuration Debug " + f)
                                               f)
     with
     | x -> printfn "%A" x
@@ -761,12 +769,30 @@ _Target "UnitTestWithAltCoverCoreRunner" (fun _ ->
     let testDirectory = Path.getFullName "_Binaries/AltCover.Tests/Debug+AnyCPU/netcoreapp2.0"
     let output = Path.getFullName "Tests/_Binaries/AltCover.Tests/Debug+AnyCPU/netcoreapp2.0"
 
+    // W/o --single
+    // UnitTestWithAltCoverCoreRunner.xml.0.acv (3,066,500b)
+    // 2,319,766 visits recorded in 00:00:03.6291581 (639,202 visits/sec)
+    // ShadowTestWithAltCoverCoreRunner.xml.0.acv (5,503b)
+    // 3,162 visits recorded in 00:00:00.0589018 (53,683 visits/sec)
+    // XTestWithAltCoverCoreRunner.xml.0.acv (50,201b)
+    // 32,134 visits recorded in 00:00:00.0859144 (374,023 visits/sec)
+    // UnitTestWithAltCoverCoreRunner   00:01:01.8200156
+
+    // W/ --single
+    // UnitTestWithAltCoverCoreRunner.xml.0.acv (10,373b)
+    // 3,082 visits recorded in 00:00:00.0586471 (52,552 visits/sec)
+    // ShadowTestWithAltCoverCoreRunner.xml.0.acv (1,614b)
+    // 453 visits recorded in 00:00:00.0542989 (8,343 visits/sec)
+    // XTestWithAltCoverCoreRunner.xml.0.acv (5,365b)
+    // 1,537 visits recorded in 00:00:00.0556820 (27,603 visits/sec)
+    // UnitTestWithAltCoverCoreRunner   00:00:54.7479602
+
     let altReport = reports @@ "UnitTestWithAltCoverCoreRunner.xml"
     printfn "Instrument the code"
     Shell.cleanDir output
     Actions.RunDotnet (fun o -> {dotnetOptions o with WorkingDirectory = testDirectory}) ""
                       (altcover +
-                             " --opencover " + AltCoverFilter + " -x \"" + altReport + "\" /o \"" + output + "\"")
+                             " --single --opencover " + AltCoverFilter + " -x \"" + altReport + "\" /o \"" + output + "\"")
                              "Instrument the code"
 
     printfn "Unit test the instrumented code"
@@ -787,7 +813,7 @@ _Target "UnitTestWithAltCoverCoreRunner" (fun _ ->
     Shell.cleanDir shadowOut
     Actions.RunDotnet (fun o -> {dotnetOptions o with WorkingDirectory = shadowDir}) ""
                       ( altcover +
-                             " --opencover " + AltCoverFilter + " -x \"" + shadowReport + "\" /o \"" + shadowOut + "\"")
+                             " --single --opencover " + AltCoverFilter + " -x \"" + shadowReport + "\" /o \"" + shadowOut + "\"")
                              "Instrument the shadow tests"
 
     let shadowProject = Path.getFullName "./Shadow.Tests/altcover.recorder.tests.core.fsproj"
@@ -806,7 +832,7 @@ _Target "UnitTestWithAltCoverCoreRunner" (fun _ ->
 
     Actions.RunDotnet (fun o -> {dotnetOptions o with WorkingDirectory = xDir}) ""
                       ( altcover +
-                             " --opencover " + AltCoverFilter + " -x \"" + xReport + "\" /o \"" + xOut + "\"")
+                             " --single --opencover " + AltCoverFilter + " -x \"" + xReport + "\" /o \"" + xOut + "\"")
                              "Instrument the xunit tests"
 
     printfn "Execute the XUnit tests"
@@ -2397,6 +2423,7 @@ Target.activateFinal "ResetConsoleColours"
 ==> "UnitTest"
 
 "Compilation"
+==> "BuildForUnitTestDotNet"
 ==> "UnitTestDotNet"
 ==> "UnitTest"
 

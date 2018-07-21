@@ -12,6 +12,8 @@ module Adapter =
 
   let VisitsClear () = Instance.Visits.Clear()
 
+  let SamplesClear () = Instance.Samples.Clear()
+
   let internal prepareName name =
     if name |> Instance.Visits.ContainsKey |> not then
         let entry = Dictionary<int, int * Track list>()
@@ -34,6 +36,8 @@ module Adapter =
 
   let VisitImplNone moduleId hitPointId = Instance.VisitImpl moduleId hitPointId Track.Null
   let VisitImplMethod moduleId hitPointId mId = Instance.VisitImpl moduleId hitPointId (Call mId)
+
+  let AddSample moduleId hitPointId = Instance.TakeSample Sampling.Single moduleId hitPointId
 
   let internal NewBoth time track =
     Both (time, track)
