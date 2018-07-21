@@ -39,6 +39,7 @@ module Main =
     Visitor.inplace <- false
     Visitor.collect <- false
     Visitor.single <- false
+    Visitor.linecover <- false
 
   let internal DeclareOptions () =
     [ ("i|inputDirectory=",
@@ -218,13 +219,21 @@ module Main =
                                                          "--single") :: CommandLine.error
 
                   else
-                      if Option.isSome Visitor.interval || 
+                      if Option.isSome Visitor.interval ||
                          Visitor.TrackingNames.Any() then
                          CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
                                                          CommandLine.resources.GetString "Incompatible",
                                                          "--single","--callContext") :: CommandLine.error
-                      else 
+                      else
                         Visitor.single <- true))
+      ("linecover",
+       (fun _ ->  if Visitor.linecover then
+                      CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
+                                                         CommandLine.resources.GetString "MultiplesNotAllowed",
+                                                         "--linecover") :: CommandLine.error
+
+                  else
+                      Visitor.linecover <- true))
       ("?|help|h", (fun x -> CommandLine.help <- not (isNull x)))
       ("<>", (fun x -> CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
                                                          CommandLine.resources.GetString "InvalidValue",

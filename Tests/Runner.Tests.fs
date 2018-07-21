@@ -1114,6 +1114,8 @@ type AltCoverTests() = class
       --single               Optional: only record the first hit at any
                                location.
                                    Incompatible with --callContext.
+      --linecover            Optional: Do not record branch coverage.  Implies,
+                               and is compatible with, the --opencover option.
   -?, --help, -h             Prints out the options.
 or
   Runner

@@ -159,8 +159,9 @@ module Visitor =
   let Interval () = (Option.getOrElse defaultInterval interval)
 
   let mutable internal reportFormat : Option<ReportFormat> = None
-  let defaultReportFormat = ReportFormat.NCover
-  let ReportKind () = (Option.getOrElse defaultReportFormat reportFormat)
+  let mutable internal linecover = false
+  let defaultReportFormat() = if linecover then ReportFormat.OpenCover else ReportFormat.NCover
+  let ReportKind () = (Option.getOrElse (defaultReportFormat()) reportFormat)
   let ReportFormat () = let fmt = ReportKind()
                         if fmt = ReportFormat.OpenCover &&
                                  (TrackingNames.Any() || Interval() > 0) then

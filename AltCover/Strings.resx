@@ -357,4 +357,7 @@ Details written to {0}</value>
     <value>Optional: only record the first hit at any location.
     Incompatible with --callContext.</value>
   </data>
+  <data name="linecover" xml:space="preserve">
+    <value>Optional: Do not record branch coverage.  Implies, and is compatible with, the --opencover option.</value>
+  </data>
 </root>

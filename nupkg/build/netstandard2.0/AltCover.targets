@@ -40,6 +40,7 @@
       AttributeFilter="@(AltCoverAttributeFilters)"
       CallContext="@(AltCoverSplitContext)"
       Single="@(AltCoverSingle)"
+      LineCover="@(AltCoverLineCover)"
       Dependencies="@(AltCoverDependencies)" />
   </Target>
 
@@ -63,6 +64,7 @@
       AttributeFilter="$(AltCoverAttributeFilter)"
       CallContext="@(AltCoverSplitContext)"
       Single="@(AltCoverSingle)"
+      LineCover="@(AltCoverLineCover)"
       Dependencies="@(AltCoverDependencies)" />
   </Target>
 

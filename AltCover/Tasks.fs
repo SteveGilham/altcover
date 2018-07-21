@@ -42,6 +42,7 @@ type Prepare () =
   member val InPlace = true with get, set
   member val Save = true with get, set
   member val Single = true |> not with get, set  // work around Gendarme insistence on non-default values only
+  member val LineCover = true |> not with get, set
 
   member val CommandLine = String.Empty with get, set
 

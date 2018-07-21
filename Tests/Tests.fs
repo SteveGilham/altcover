@@ -3310,9 +3310,9 @@ type AltCoverTests() = class
     let options = Main.DeclareOptions ()
     Assert.That (options.Count, Is.EqualTo
 #if NETCOREAPP2_0
-                                            18
-#else
                                             19
+#else
+                                            20
 #endif
                  )
     Assert.That(options |> Seq.filter (fun x -> x.Prototype <> "<>")
@@ -4338,6 +4338,74 @@ type AltCoverTests() = class
       Visitor.interval <- None
 
   [<Test>]
+  member self.ParsingLineCoverGivesLineCover() =
+    try
+      Visitor.linecover <- false
+      let options = Main.DeclareOptions ()
+      let input = [| "--linecover" |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Left _ -> Assert.Fail()
+      | Right (x, y) -> Assert.That (y, Is.SameAs options)
+                        Assert.That (x, Is.Empty)
+      Assert.That(Visitor.linecover)
+      match Visitor.reportFormat with
+      | None -> Assert.Fail()
+      | Some x -> Assert.That(x, Is.EqualTo AltCover.Base.ReportFormat.OpenCover)
+    finally
+      Visitor.linecover <- false
+
+  [<Test>]
+  member self.OpenCoverIsCompatibleWithLineCover() =
+    try
+      Visitor.linecover <- false
+      let options = Main.DeclareOptions ()
+      let input = [| "--linecover"; "--opencover" |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Left _ -> Assert.Fail()
+      | Right (x, y) -> Assert.That (y, Is.SameAs options)
+                        Assert.That (x, Is.Empty)
+      Assert.That(Visitor.linecover)
+      match Visitor.reportFormat with
+      | None -> Assert.Fail()
+      | Some x -> Assert.That(x, Is.EqualTo AltCover.Base.ReportFormat.OpenCover)
+    finally
+      Visitor.linecover <- false
+
+  [<Test>]
+  member self.LineCoverIsCompatibleWithOpenCover() =
+    try
+      Visitor.linecover <- false
+      let options = Main.DeclareOptions ()
+      let input = [| "--opencover"; "--linecover" |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Left _ -> Assert.Fail()
+      | Right (x, y) -> Assert.That (y, Is.SameAs options)
+                        Assert.That (x, Is.Empty)
+      Assert.That(Visitor.linecover)
+      match Visitor.reportFormat with
+      | None -> Assert.Fail()
+      | Some x -> Assert.That(x, Is.EqualTo AltCover.Base.ReportFormat.OpenCover)
+    finally
+      Visitor.linecover <- false
+
+  [<Test>]
+  member self.ParsingMultipleLineCoverGivesFailure() =
+    try
+      Visitor.linecover <- false
+      let options = Main.DeclareOptions ()
+      let input = [| "--linecover"; "--linecover" |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Right _ -> Assert.Fail()
+      | Left (x, y) -> Assert.That (y, Is.SameAs options)
+                       Assert.That (x, Is.EqualTo "UsageError")
+    finally
+      Visitor.linecover <- false
+
+  [<Test>]
   member self.OutputLeftPassesThrough() =
     let arg = (Guid.NewGuid().ToString(),Main.DeclareOptions())
     let fail = Left arg
@@ -4755,6 +4823,8 @@ type AltCoverTests() = class
       --single               Optional: only record the first hit at any
                                location.
                                    Incompatible with --callContext.
+      --linecover            Optional: Do not record branch coverage.  Implies,
+                               and is compatible with, the --opencover option.
   -?, --help, -h             Prints out the options.
 or
   ipmo                       Prints out the PowerShell script to import the
@@ -4847,6 +4917,8 @@ or
       --single               Optional: only record the first hit at any
                                location.
                                    Incompatible with --callContext.
+      --linecover            Optional: Do not record branch coverage.  Implies,
+                               and is compatible with, the --opencover option.
   -?, --help, -h             Prints out the options.
 or
   Runner

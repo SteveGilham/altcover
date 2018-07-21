@@ -356,4 +356,7 @@ Detaloj skribitaj al {0}</value>
     <value>Laŭvola: nur registru la unuan sukceson en ajna loko.
     Nekongrua kun --callContext.</value>
   </data>
+  <data name="linecover" xml:space="preserve">
+    <value>Laŭvola: Ne registru branĉan kovradon Implikas, kaj estas kongrua kun, la --opencover opcio.</value>
+  </data>
 </root>
