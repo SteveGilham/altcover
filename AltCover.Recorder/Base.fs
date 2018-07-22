@@ -12,9 +12,19 @@ open System.Xml
 
 type ReportFormat = NCover = 0 | OpenCover = 1 | OpenCoverWithTracking = 2
 
+type Sampling = All = 0 | Single = 1
+
 type Tag = Null = 0 | Time = 1 | Call = 2 | Both = 3
 
+#if NETSTANDARD2_0
+[<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage>]
+#else
+#if NETCOREAPP2_0
+[<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage>]
+#else
 [<System.Runtime.InteropServices.ProgIdAttribute("ExcludeFromCodeCoverage hack for OpenCover issue 615")>]
+#endif
+#endif
 type internal Track =
   | Null
   | Time of int64

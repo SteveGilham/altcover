@@ -450,7 +450,7 @@ module XTests =
     try
       Visitor.outputDirectory <- Some output
       let visited = Node.AfterAssembly def
-      let input = Instrument.Context.Build []
+      let input = InstrumentContext.Build []
       let result = Instrument.InstrumentationVisitor input visited
       Assert.Same (result, input) //, "result differs")
       let created = Path.Combine (output, "Sample4.dll")
@@ -491,7 +491,7 @@ module XTests =
     try
       Visitor.outputDirectory <- Some output
       let visited = Node.AfterAssembly def
-      let input = Instrument.Context.Build []
+      let input = InstrumentContext.Build []
       let result = Instrument.InstrumentationVisitor input visited
       Assert.Same (result, input) //, "result differs")
       let created = Path.Combine (output, "Sample1.exe")
@@ -523,7 +523,7 @@ module XTests =
     let saved = Visitor.outputDirectory
     try
       Visitor.outputDirectory <- Some output
-      let input = { Instrument.Context.Build [] with RecordingAssembly = def }
+      let input = { InstrumentContext.Build [] with RecordingAssembly = def }
       let result = Instrument.InstrumentationVisitor input Finish
       Assert.True (result.RecordingAssembly |> isNull)
       let created = Path.Combine (output, "Sample4.dll")

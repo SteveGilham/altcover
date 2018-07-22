@@ -1105,11 +1105,21 @@ type AltCoverTests() = class
                                    Other strings are interpreted as method
                                names (fully qualified if the string contains
                                any "." characters).
+                                   Incompatible with --single
       --opencover            Optional: Generate the report in OpenCover format
       --inplace              Optional: Instrument the inputDirectory, rather
                                than the outputDirectory (e.g. for dotnet test)
       --save                 Optional: Write raw coverage data to file for
                                later processing
+      --single               Optional: only record the first hit at any
+                               location.
+                                   Incompatible with --callContext.
+      --linecover            Optional: Do not record branch coverage.  Implies,
+                               and is compatible with, the --opencover option.
+                                   Incompatible with --branchcover.
+      --branchcover          Optional: Do not record line coverage.  Implies,
+                               and is compatible with, the --opencover option.
+                                   Incompatible with --linecover.
   -?, --help, -h             Prints out the options.
 or
   Runner
@@ -1467,22 +1477,19 @@ or
 
     after.DocumentElement.SelectNodes("//Summary")
     |> Seq.cast<XmlElement>
-    |> Seq.iter(fun el -> el.SetAttribute("visitedBranchPoints", "0")
-                          el.SetAttribute("branchCoverage", "0")
-                          el.SetAttribute("visitedSequencePoints", "0")
+    |> Seq.iter(fun el -> el.SetAttribute("visitedSequencePoints", "0")
                           el.SetAttribute("sequenceCoverage", "0")
-                          el.SetAttribute("visitedClasses", "0")
-                          el.SetAttribute("visitedMethods", "0")
-                          el.SetAttribute("minCrapScore", "0")
-                          el.SetAttribute("maxCrapScore", "0")
+                          if el.GetAttribute("minCrapScore") = "2.11" then
+                            el.SetAttribute("minCrapScore", "2.15")
+                            el.SetAttribute("maxCrapScore", "2.15")
                            )
 
     after.DocumentElement.SelectNodes("//Method")
     |> Seq.cast<XmlElement>
-    |> Seq.iter(fun el -> el.SetAttribute("visited", "false")
-                          el.SetAttribute("sequenceCoverage", "0")
-                          el.SetAttribute("branchCoverage", "0")
-                           )
+    |> Seq.iter(fun el -> el.SetAttribute("sequenceCoverage", "0")
+                          if el.GetAttribute("crapScore") = "2.11" then
+                            el.SetAttribute("crapScore", "2.15")
+                            )
 
     after.DocumentElement.SelectNodes("//SequencePoint")
     |> Seq.cast<XmlElement>
@@ -1495,6 +1502,89 @@ or
     |> List.iter(fun el -> el |> el.ParentNode.RemoveChild |> ignore)
 
     let before = after.OuterXml.Replace("uspid=\"13", "uspid=\"100663298")
+    after.DocumentElement.SelectNodes("//Summary")
+    |> Seq.cast<XmlElement>
+    |> Seq.iter(fun el -> el.SetAttribute("visitedBranchPoints", "0")
+                          el.SetAttribute("branchCoverage", "0")
+                          el.SetAttribute("visitedSequencePoints", "0")
+                          el.SetAttribute("sequenceCoverage", "0")
+                          el.SetAttribute("visitedClasses", "0")
+                          el.SetAttribute("visitedMethods", "0")
+                          if el.GetAttribute "minCrapScore" |> String.IsNullOrWhiteSpace |> not then
+                            el.SetAttribute("minCrapScore", "0")
+                            el.SetAttribute("maxCrapScore", "0")
+                           )
+
+    after.DocumentElement.SelectNodes("//Method")
+    |> Seq.cast<XmlElement>
+    |> Seq.iter(fun el -> el.SetAttribute("visited", "false")
+                          el.SetAttribute("sequenceCoverage", "0")
+                          el.SetAttribute("branchCoverage", "0")
+                          if el.GetAttribute "crapScore" |> String.IsNullOrWhiteSpace |> not then
+                            el.SetAttribute("crapScore", "0")
+                            )
+
+    let empty = Dictionary<string, Dictionary<int, int * Track list>>()
+    Runner.PostProcess empty Base.ReportFormat.OpenCover after
+
+    Assert.That(after.OuterXml, Is.EqualTo before, after.OuterXml)
+
+  [<Test>]
+  member self.PostprocessShouldRestoreBranchOnlyOpenCoverState() =
+    Counter.measureTime <- DateTime.ParseExact("2017-12-29T16:33:40.9564026+00:00", "o", null)
+    use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(self.resource2)
+    let after = XmlDocument()
+    after.Load stream
+
+    after.DocumentElement.SelectNodes("//Summary")
+    |> Seq.cast<XmlElement>
+    |> Seq.iter(fun el -> el.SetAttribute("visitedSequencePoints", "0")
+                          el.SetAttribute("sequenceCoverage", "0")
+                          if el.GetAttribute("minCrapScore") = "2.11" then
+                            el.SetAttribute("minCrapScore", "2.15")
+                            el.SetAttribute("maxCrapScore", "2.15")
+                           )
+
+    after.DocumentElement.SelectNodes("//Method")
+    |> Seq.cast<XmlElement>
+    |> Seq.iter(fun el -> el.SetAttribute("sequenceCoverage", "0")
+                          if el.GetAttribute("crapScore") = "2.11" then
+                            el.SetAttribute("crapScore", "2.15")
+                            )
+
+    after.DocumentElement.SelectNodes("//SequencePoint")
+    |> Seq.cast<XmlElement>
+    |> Seq.toList
+    |> List.iter(fun el -> el |> el.ParentNode.RemoveChild |> ignore)
+
+    after.DocumentElement.SelectNodes("//MethodPoint")
+    |> Seq.cast<XmlElement>
+    |> Seq.iter(fun el -> el.SetAttribute("vc", "0")
+                           )
+
+    let before = after.OuterXml.Replace("uspid=\"13", "uspid=\"100663298"
+                              ).Replace("uspid=\"1\"", "uspid=\"100663297\"")
+    after.DocumentElement.SelectNodes("//Summary")
+    |> Seq.cast<XmlElement>
+    |> Seq.iter(fun el -> el.SetAttribute("visitedBranchPoints", "0")
+                          el.SetAttribute("branchCoverage", "0")
+                          el.SetAttribute("visitedSequencePoints", "0")
+                          el.SetAttribute("sequenceCoverage", "0")
+                          el.SetAttribute("visitedClasses", "0")
+                          el.SetAttribute("visitedMethods", "0")
+                          if el.GetAttribute "minCrapScore" |> String.IsNullOrWhiteSpace |> not then
+                            el.SetAttribute("minCrapScore", "0")
+                            el.SetAttribute("maxCrapScore", "0")
+                           )
+
+    after.DocumentElement.SelectNodes("//Method")
+    |> Seq.cast<XmlElement>
+    |> Seq.iter(fun el -> el.SetAttribute("visited", "false")
+                          el.SetAttribute("sequenceCoverage", "0")
+                          el.SetAttribute("branchCoverage", "0")
+                          if el.GetAttribute "crapScore" |> String.IsNullOrWhiteSpace |> not then
+                            el.SetAttribute("crapScore", "0")
+                            )
 
     let empty = Dictionary<string, Dictionary<int, int * Track list>>()
     Runner.PostProcess empty Base.ReportFormat.OpenCover after

@@ -6,6 +6,8 @@
         AssemblyFile="$(MSBuildThisFileDirectory)../../tools/netcoreapp2.0/AltCover.dll" />
   <UsingTask TaskName="AltCover.PowerShell"
         AssemblyFile="$(MSBuildThisFileDirectory)../../tools/netcoreapp2.0/AltCover.dll" />
+  <UsingTask TaskName="AltCover.GetVersion"
+        AssemblyFile="$(MSBuildThisFileDirectory)../../tools/netcoreapp2.0/AltCover.dll" />
 
   <ItemGroup>
     <AltCoverSplitContext Include="$(AltCoverCallContext.Split('|'))" />
@@ -23,6 +25,7 @@
       <AltCoverXmlReport Condition="'$(AltCoverXmlReport)' == ''">$(ProjectDir)coverage.xml</AltCoverXmlReport>
     </PropertyGroup>
     <AltCover.PowerShell Condition="'$(VSTestNoBuild)' == 'true' and '$(AltCoverIpmo)' == 'true'" />
+    <AltCover.GetVersion Condition="'$(VSTestNoBuild)' == 'true' and '$(AltCoverGetVersion)' == 'true'" />
     <AltCover.Prepare
       Condition="'$(VSTestNoBuild)' == 'true' AND '$(AltCover)' == 'true'"
       InputDirectory="$(TargetDir)"
@@ -36,6 +39,9 @@
       MethodFilter="@(AltCoverMethodFilters)"
       AttributeFilter="@(AltCoverAttributeFilters)"
       CallContext="@(AltCoverSplitContext)"
+      Single="$(AltCoverSingle)"
+      LineCover="$(AltCoverLineCover)"
+      BranchCover="$(AltCoverBranchCover)"
       Dependencies="@(AltCoverDependencies)" />
   </Target>
 
@@ -44,6 +50,7 @@
       <AltCoverXmlReport Condition="'$(AltCoverXmlReport)' == ''">$(ProjectDir)coverage.xml</AltCoverXmlReport>
     </PropertyGroup>
     <AltCover.PowerShell Condition="'$(VSTestNoBuild)' != 'true' AND $(AltCoverIpmo) == 'true'" />
+    <AltCover.GetVersion Condition="'$(VSTestNoBuild)' != 'true' AND $(AltCoverGetVersion) == 'true'" />
     <AltCover.Prepare
       Condition="'$(VSTestNoBuild)' != 'true' AND '$(AltCover)' == 'true'"
       InputDirectory="$(TargetDir)"
@@ -57,6 +64,9 @@
       MethodFilter="$(AltCoverMethodFilter)"
       AttributeFilter="$(AltCoverAttributeFilter)"
       CallContext="@(AltCoverSplitContext)"
+      Single="$(AltCoverSingle)"
+      LineCover="$(AltCoverLineCover)"
+      BranchCover="$(AltCoverBranchCover)"
       Dependencies="@(AltCoverDependencies)" />
   </Target>
 

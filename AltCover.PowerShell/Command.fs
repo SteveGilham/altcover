@@ -149,9 +149,25 @@ type InvokeAltCoverCommand(runner:bool) =
       ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
   member val Save:SwitchParameter = SwitchParameter(false) with get, set
 
+  [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
+      ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
+  member val Single:SwitchParameter = SwitchParameter(false) with get, set
+
+  [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
+      ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
+  member val LineCover:SwitchParameter = SwitchParameter(false) with get, set
+
+  [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
+      ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
+  member val BranchCover:SwitchParameter = SwitchParameter(false) with get, set
+
+  [<Parameter(ParameterSetName = "Version", Mandatory = true, Position = 1,
+      ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
+  member val Version:SwitchParameter = SwitchParameter(false) with get, set
+
   override self.ProcessRecord() =
     let here = Directory.GetCurrentDirectory()
-    Output.Task <- true
+    Output.Task <- self.Version.IsPresent |> not
 #if NETCOREAPP2_0
     Output.Error <- (fun s -> let fail = ErrorRecord(InvalidOperationException(), s, ErrorCategory.FromStdErr, self)
                               self.WriteError fail)
@@ -192,32 +208,38 @@ type InvokeAltCoverCommand(runner:bool) =
 
                           Args.Item "--" (String.Join(" ", self.CommandLine));
                         ]
-                        else
-                        [
-                          Args.Item "-i" self.InputDirectory;
-                          Args.Item "-o" self.OutputDirectory;
-                          Args.ItemList "-y" self.SymbolDirectory;
-#if NETCOREAPP2_0
-                          Args.ItemList "-d" self.Dependency;
-#else
-                          Args.ItemList "-k" self.Key;
-                          Args.Item "--sn" self.StrongNameKey;
-#endif
-                          Args.Item "-x" self.XmlReport;
-                          Args.ItemList "-f" self.FileFilter;
-                          Args.ItemList "-s" self.AssemblyFilter;
-                          Args.ItemList "-e" self.AssemblyExcludeFilter;
-                          Args.ItemList "-t" self.TypeFilter;
-                          Args.ItemList "-m" self.MethodFilter;
-                          Args.ItemList "-a" self.AttributeFilter;
-                          Args.ItemList "-c" self.CallContext;
+                        else if self.Version.IsPresent
+                          then
+                             [ ["version"] ]
+                          else
+                            [
+                              Args.Item "-i" self.InputDirectory;
+                              Args.Item "-o" self.OutputDirectory;
+                              Args.ItemList "-y" self.SymbolDirectory;
+    #if NETCOREAPP2_0
+                              Args.ItemList "-d" self.Dependency;
+    #else
+                              Args.ItemList "-k" self.Key;
+                              Args.Item "--sn" self.StrongNameKey;
+    #endif
+                              Args.Item "-x" self.XmlReport;
+                              Args.ItemList "-f" self.FileFilter;
+                              Args.ItemList "-s" self.AssemblyFilter;
+                              Args.ItemList "-e" self.AssemblyExcludeFilter;
+                              Args.ItemList "-t" self.TypeFilter;
+                              Args.ItemList "-m" self.MethodFilter;
+                              Args.ItemList "-a" self.AttributeFilter;
+                              Args.ItemList "-c" self.CallContext;
 
-                          Args.Flag "--opencover" self.OpenCover.IsPresent
-                          Args.Flag "--inplace" self.InPlace.IsPresent
-                          Args.Flag "--save" self.Save.IsPresent
+                              Args.Flag "--opencover" self.OpenCover.IsPresent
+                              Args.Flag "--inplace" self.InPlace.IsPresent
+                              Args.Flag "--save" self.Save.IsPresent
+                              Args.Flag "--single" self.Single.IsPresent
+                              Args.Flag "--linecover" self.LineCover.IsPresent
+                              Args.Flag "--branchcover" self.BranchCover.IsPresent
 
-                          Args.Item "--" (String.Join(" ", self.CommandLine));
-                        ]
+                              Args.Item "--" (String.Join(" ", self.CommandLine));
+                            ]
                     )
                     |> List.concat
                     |> List.toArray

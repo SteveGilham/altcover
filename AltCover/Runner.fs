@@ -496,7 +496,9 @@ module Runner =
           |> ignore
 
         let crapScore (``method``:XmlElement) =
-          let coverage = ``method``.GetAttribute("sequenceCoverage") |> Double.TryParse |> snd
+          let coverage = let cover = ``method``.GetAttribute("sequenceCoverage") |> Double.TryParse |> snd
+                         if cover > 0.0 then cover
+                         else ``method``.GetAttribute("branchCoverage") |> Double.TryParse |> snd
           let complexity = ``method``.GetAttribute("cyclomaticComplexity") |> Double.TryParse |> snd
           let raw = (Math.Pow(complexity, 2.0) *
                                   Math.Pow((1.0 - (coverage / 100.0)), 3.0) +
@@ -512,19 +514,22 @@ module Runner =
                         |> Seq.cast<XmlElement>
 
             let count = sp.Count
-            let bCount = bp.Count + Math.Sign count
+            let rawCount = bp.Count
+            // inconsistent name to shut Gendarme up
+            let numBranches = rawCount + Math.Sign (count + rawCount)
             if count > 0 then
                 CopyFillMethodPoint mp sp
             else
                 FillMethodPoint mp ``method`` dict
 
             let pointVisits = VisitCount sp
-            if pointVisits > 0 then
+            let b0 = VisitCount bp
+            let branchVisits = b0 + Math.Sign b0
+
+            if pointVisits > 0 || b0 > 0 then
                 let FillMethod () =
-                  let b0 = VisitCount bp
-                  let branchVisits = b0 + Math.Sign b0
                   let cover = percentCover pointVisits count
-                  let bcover = percentCover branchVisits bCount
+                  let bcover = percentCover branchVisits numBranches
 
                   ``method``.SetAttribute("visited", "true")
                   ``method``.SetAttribute("sequenceCoverage", cover)
@@ -532,9 +537,9 @@ module Runner =
                   let raw = crapScore ``method``
                   setSummary ``method`` pointVisits branchVisits 1 None cover bcover raw raw
                   computeBranchExitCount sp bp
-                  (vb + branchVisits, vs + pointVisits, vm + 1, pt + count, br+bCount, Math.Min(minc, raw), Math.Max(maxc, raw))
+                  (vb + branchVisits, vs + pointVisits, vm + 1, pt + count, br+numBranches, Math.Min(minc, raw), Math.Max(maxc, raw))
                 FillMethod()
-            else (vb, vs, vm, pt + count, br+bCount, minc, maxc)
+            else (vb, vs, vm, pt + count, br+numBranches, minc, maxc)
 
         let updateClass (dict:Dictionary<int, int * Base.Track list>) (vb, vs, vm, vc, pt, br, minc0, maxc0) (``class``:XmlElement) =
             let (cvb, cvs, cvm, cpt, cbr, minc, maxc) =

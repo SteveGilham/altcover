@@ -192,9 +192,13 @@ _Target "Analysis" ignore
 _Target "Lint" (fun _ ->
 //    !! "**/*.fsproj"
 //        |> Seq.filter (fun n -> n.IndexOf(".core.") = -1)
-//        |> Seq.iter (FSharpLint (fun options -> { options with FailBuildIfAnyWarnings = true }) )
-() // currently broken; by-hand version fails because of https://github.com/fsprojects/FSharpLint/issues/252
-        )
+//        |> Seq.collect (fun n -> !!(Path.GetDirectoryName n @@ "*.fs"))
+//        |> Seq.iter (fun f -> match Lint.lintFile (Lint.OptionalLintParameters.Default) f (new Version "4.0") with
+//                              | Lint.Failure x -> new InvalidOperationException(x.ToString()) |> raise
+//                              | Lint.Success w -> w |> Seq.iter (printfn "%A"))
+// => https://github.com/fsprojects/FSharpLint/issues/266
+()
+)
 
 _Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standalone which contaminates everything
     Directory.ensure "./_Reports"
@@ -351,13 +355,21 @@ _Target "JustUnitTest" (fun _ ->
            reraise ()
 )
 
+_Target "BuildForUnitTestDotNet" (fun _ ->
+      !! (@"./*Tests/*.tests.core.fsproj")
+      |> Seq.iter (fun f -> printfn "Building %s" f
+                            Actions.RunDotnet dotnetOptions "build"
+                                ("--configuration Debug " + f)
+                                f)
+)
+
 _Target "UnitTestDotNet" (fun _ ->
     Directory.ensure "./_Reports"
     try
       !! (@"./*Tests/*.tests.core.fsproj")
       |> Seq.iter (fun f -> printfn "Testing %s" f
                             Actions.RunDotnet dotnetOptions "test"
-                                              ("--configuration Debug " + f)
+                                              ("--no-build --configuration Debug " + f)
                                               f)
     with
     | x -> printfn "%A" x
@@ -378,10 +390,10 @@ _Target "UnitTestDotNetWithCoverlet" (fun _ ->
       let xml = !! (@"./*Tests/*.tests.core.fsproj")
                 |> Seq.zip [
                     """--no-build /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Exclude="\"[Sample*]*,[AltCover.Record*]*,[NUnit*]*,[AltCover.Shadow.Adapter]*\"" --configuration Debug """
-                    """--no-build /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Exclude="\"[Sample*]*,[AltCover.Record*]*,[NUnit*]*,[AltCover.Shadow.Adapter]*\"" --configuration Debug """ 
+                    """--no-build /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Exclude="\"[Sample*]*,[AltCover.Record*]*,[NUnit*]*,[AltCover.Shadow.Adapter]*\"" --configuration Debug """
                     """--no-build /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Exclude="\"[Sample*]*,[AltCover.Record*]*\"" --configuration Debug """
                            ]
-                |> Seq.fold (fun l (p,f) -> 
+                |> Seq.fold (fun l (p,f) ->
                                             printfn "Testing %s" f
                                             try
                                               Actions.RunDotnet dotnetOptions "test"
@@ -757,12 +769,30 @@ _Target "UnitTestWithAltCoverCoreRunner" (fun _ ->
     let testDirectory = Path.getFullName "_Binaries/AltCover.Tests/Debug+AnyCPU/netcoreapp2.0"
     let output = Path.getFullName "Tests/_Binaries/AltCover.Tests/Debug+AnyCPU/netcoreapp2.0"
 
+    // W/o --single
+    // UnitTestWithAltCoverCoreRunner.xml.0.acv (3,066,500b)
+    // 2,319,766 visits recorded in 00:00:03.6291581 (639,202 visits/sec)
+    // ShadowTestWithAltCoverCoreRunner.xml.0.acv (5,503b)
+    // 3,162 visits recorded in 00:00:00.0589018 (53,683 visits/sec)
+    // XTestWithAltCoverCoreRunner.xml.0.acv (50,201b)
+    // 32,134 visits recorded in 00:00:00.0859144 (374,023 visits/sec)
+    // UnitTestWithAltCoverCoreRunner   00:01:01.8200156
+
+    // W/ --single
+    // UnitTestWithAltCoverCoreRunner.xml.0.acv (10,373b)
+    // 3,082 visits recorded in 00:00:00.0586471 (52,552 visits/sec)
+    // ShadowTestWithAltCoverCoreRunner.xml.0.acv (1,614b)
+    // 453 visits recorded in 00:00:00.0542989 (8,343 visits/sec)
+    // XTestWithAltCoverCoreRunner.xml.0.acv (5,365b)
+    // 1,537 visits recorded in 00:00:00.0556820 (27,603 visits/sec)
+    // UnitTestWithAltCoverCoreRunner   00:00:54.7479602
+
     let altReport = reports @@ "UnitTestWithAltCoverCoreRunner.xml"
     printfn "Instrument the code"
     Shell.cleanDir output
     Actions.RunDotnet (fun o -> {dotnetOptions o with WorkingDirectory = testDirectory}) ""
                       (altcover +
-                             " --opencover " + AltCoverFilter + " -x \"" + altReport + "\" /o \"" + output + "\"")
+                             " --single --opencover " + AltCoverFilter + " -x \"" + altReport + "\" /o \"" + output + "\"")
                              "Instrument the code"
 
     printfn "Unit test the instrumented code"
@@ -783,7 +813,7 @@ _Target "UnitTestWithAltCoverCoreRunner" (fun _ ->
     Shell.cleanDir shadowOut
     Actions.RunDotnet (fun o -> {dotnetOptions o with WorkingDirectory = shadowDir}) ""
                       ( altcover +
-                             " --opencover " + AltCoverFilter + " -x \"" + shadowReport + "\" /o \"" + shadowOut + "\"")
+                             " --single --opencover " + AltCoverFilter + " -x \"" + shadowReport + "\" /o \"" + shadowOut + "\"")
                              "Instrument the shadow tests"
 
     let shadowProject = Path.getFullName "./Shadow.Tests/altcover.recorder.tests.core.fsproj"
@@ -802,7 +832,7 @@ _Target "UnitTestWithAltCoverCoreRunner" (fun _ ->
 
     Actions.RunDotnet (fun o -> {dotnetOptions o with WorkingDirectory = xDir}) ""
                       ( altcover +
-                             " --opencover " + AltCoverFilter + " -x \"" + xReport + "\" /o \"" + xOut + "\"")
+                             " --single --opencover " + AltCoverFilter + " -x \"" + xReport + "\" /o \"" + xOut + "\"")
                              "Instrument the xunit tests"
 
     printfn "Execute the XUnit tests"
@@ -1300,14 +1330,14 @@ _Target "Packaging" (fun _ ->
                            |> List.map (fun (a,b,c) -> let text = File.ReadAllText(a).Replace("tools/netcoreapp2.0", "lib/netcoreapp2.0")
                                                        let name = (Path.getFullName"./_Intermediate/dotnet") @@ ("altcover.dotnet" + Path.GetExtension a)
                                                        File.WriteAllText(name, text)
-                                                       (name,b,c))   
+                                                       (name,b,c))
 
     Directory.ensure "./_Intermediate/global"
     let otherFilesGlobal = otherFiles
                            |> List.map (fun (a,b,c) -> let text = File.ReadAllText(a).Replace("tools/netcoreapp2.0", "tools/netcoreapp2.1/any")
                                                        let name = (Path.getFullName"./_Intermediate/global") @@ ("altcover.global" + Path.GetExtension a)
                                                        File.WriteAllText(name, text)
-                                                       (name,b,c))                       
+                                                       (name,b,c))
 
     let poshFiles where = (!! "./_Binaries/AltCover.PowerShell/Release+AnyCPU/netcoreapp2.0/*.PowerShell.*")
                            |> Seq.map (fun x -> (x, Some (where + Path.GetFileName x), None))
@@ -1445,10 +1475,11 @@ _Target "Unpack" (fun _ ->
 )
 
 _Target "WindowsPowerShell" (fun _ ->
+  let v = (!Version).Split([| '-' |]).[0]
   Actions.RunRaw (fun info -> { info with
                                         FileName = "powershell.exe"
                                         WorkingDirectory = "."
-                                        Arguments = ("-NoProfile ./Build/powershell.ps1")})
+                                        Arguments = ("-NoProfile ./Build/powershell.ps1 -ACV " + v)})
                                  "powershell"
 )
 
@@ -1460,6 +1491,7 @@ _Target "Pester" (fun _ ->
   let unpack = Path.getFullName "_Packaging/Unpack/tools/netcoreapp2.0"
   let report = Path.getFullName "_Reports/Pester.xml"
   let i = ``module`` @@ "tools/netcoreapp2.0"
+  let v = (!Version).Split([| '-' |]).[0]
 
   Actions.RunDotnet (fun o -> {dotnetOptions o with WorkingDirectory = unpack}) ""
                       ("AltCover.dll --inplace --save --opencover -t=System\. \"-s=^((?!AltCover\.PowerShell).)*$\" -x \"" + report + "\" -i \"" + i + "\"")
@@ -1470,7 +1502,7 @@ _Target "Pester" (fun _ ->
   Actions.RunRaw (fun info -> { info with
                                         FileName = pwsh
                                         WorkingDirectory = "."
-                                        Arguments = ("-NoProfile ./Build/pester.ps1")})
+                                        Arguments = ("-NoProfile ./Build/pester.ps1 -ACV " + v)})
                                  "pwsh"
 
   Actions.RunDotnet (fun o -> {dotnetOptions o with WorkingDirectory = unpack}) ""
@@ -1968,7 +2000,7 @@ _Target "DotnetTestIntegration" ( fun _ ->
     Shell.copy "./_DotnetTest" (!! "./Sample4/*.fs")
 
     Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = Path.getFullName "_DotnetTest"}) "test"
-                      ("-v n /p:AltCover=true /p:AltCoverCallContext=[Fact]|0 /p:AltCoverIpmo=true")
+                      ("-v n /p:AltCover=true /p:AltCoverCallContext=[Fact]|0 /p:AltCoverIpmo=true /p:AltCoverGetVersion=true")
                       "sample test returned with a non-zero exit code"
 
     let x = Path.getFullName "./_DotnetTest/coverage.xml"
@@ -2028,6 +2060,64 @@ _Target "DotnetTestIntegration" ( fun _ ->
                                      "<TrackedMethodRef uid=\"2\" vc=\"1\" />"
                                      "<TrackedMethodRef uid=\"2\" vc=\"1\" />"
                     ])
+
+// optest linecover
+    Directory.ensure "./_DotnetTestLineCover"
+    Shell.cleanDir ("./_DotnetTestLineCover")
+    let config = XDocument.Load "./Build/NuGet.config.dotnettest"
+    let repo = config.Descendants(XName.Get("add")) |> Seq.head
+    repo.SetAttributeValue(XName.Get "value", Path.getFullName "./_Packaging" )
+    config.Save "./_DotnetTestLineCover/NuGet.config"
+
+    let fsproj = XDocument.Load "./Sample10/sample10.core.csproj"
+    let pack = fsproj.Descendants(XName.Get("PackageReference")) |> Seq.head
+    let inject = XElement(XName.Get "PackageReference",
+                          XAttribute (XName.Get "Include", "altcover"),
+                          XAttribute (XName.Get "Version", !Version) )
+    pack.AddBeforeSelf inject
+    fsproj.Save "./_DotnetTestLineCover/dotnettest.csproj"
+    Shell.copy "./_DotnetTestLineCover" (!! "./Sample10/*.cs")
+
+    Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = Path.getFullName "_DotnetTestLineCover"}) "test"
+                      ("-v n /p:AltCover=true /p:AltCoverLineCover=true")
+                      "sample test returned with a non-zero exit code"
+
+    let x = Path.getFullName "./_DotnetTestLineCover/coverage.xml"
+
+    do
+      use coverageFile = new FileStream(x, FileMode.Open, FileAccess.Read, FileShare.None, 4096, FileOptions.SequentialScan)
+      let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
+      Assert.That (coverageDocument.Descendants(XName.Get("SequencePoint")) |> Seq.length, Is.EqualTo 13)
+      Assert.That (coverageDocument.Descendants(XName.Get("BranchPoint")) |> Seq.length, Is.EqualTo 0)
+
+// optest branchcover
+    Directory.ensure "./_DotnetTestBranchCover"
+    Shell.cleanDir ("./_DotnetTestBranchCover")
+    let config = XDocument.Load "./Build/NuGet.config.dotnettest"
+    let repo = config.Descendants(XName.Get("add")) |> Seq.head
+    repo.SetAttributeValue(XName.Get "value", Path.getFullName "./_Packaging" )
+    config.Save "./_DotnetTestLineCover/NuGet.config"
+
+    let fsproj = XDocument.Load "./Sample10/sample10.core.csproj"
+    let pack = fsproj.Descendants(XName.Get("PackageReference")) |> Seq.head
+    let inject = XElement(XName.Get "PackageReference",
+                          XAttribute (XName.Get "Include", "altcover"),
+                          XAttribute (XName.Get "Version", !Version) )
+    pack.AddBeforeSelf inject
+    fsproj.Save "./_DotnetTestBranchCover/dotnettest.csproj"
+    Shell.copy "./_DotnetTestBranchCover" (!! "./Sample10/*.cs")
+
+    Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = Path.getFullName "_DotnetTestBranchCover"}) "test"
+                      ("-v n /p:AltCover=true /p:AltCoverBranchCover=true")
+                      "sample test returned with a non-zero exit code"
+
+    let x = Path.getFullName "./_DotnetTestBranchCover/coverage.xml"
+    do
+      use coverageFile = new FileStream(x, FileMode.Open, FileAccess.Read, FileShare.None, 4096, FileOptions.SequentialScan)
+      let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
+      Assert.That (coverageDocument.Descendants(XName.Get("SequencePoint")) |> Seq.length, Is.EqualTo 0)
+      Assert.That (coverageDocument.Descendants(XName.Get("BranchPoint")) |> Seq.length, Is.EqualTo 2)
+
   finally
     let folder = (nugetCache @@ "altcover") @@ !Version
     Shell.mkdir folder
@@ -2057,7 +2147,7 @@ _Target "Issue23" ( fun _ ->
                       "restore returned with a non-zero exit code"
 
     Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = Path.getFullName "_Issue23"}) "test"
-                      ("/p:AltCover=true /p:AltCoverIpmo=true")
+                      ("/p:AltCover=true /p:AltCoverIpmo=true /p:AltCoverGetVersion=true")
                       "sample test returned with a non-zero exit code"
   finally
     let folder = (nugetCache @@ "altcover") @@ !Version
@@ -2094,6 +2184,9 @@ _Target "DotnetCLIIntegration" ( fun _ ->
                           ("ipmo")
                           "DotnetCLIIntegration ipmo"
 
+    Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = working} ) "altcover"
+                          ("version")
+                          "DotnetCLIIntegration version"
     // Instrument the code
     Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = working} ) "altcover"
                           (" --opencover --inplace -c=0 \"-c=[Fact]\" -x \"" + x + "\" -i \"" + o + "\"")
@@ -2217,6 +2310,12 @@ _Target "DotnetGlobalIntegration" ( fun _ ->
                                         WorkingDirectory = working
                                         Arguments = ("ipmo")})
                                  "DotnetGlobalIntegration ipmo"
+
+    Actions.RunRaw (fun info -> { info with
+                                        FileName = "altcover"
+                                        WorkingDirectory = working
+                                        Arguments = ("version")})
+                                 "DotnetGlobalIntegration version"
 
     // Instrument the code
     Actions.RunRaw (fun info -> { info with
@@ -2382,6 +2481,7 @@ Target.activateFinal "ResetConsoleColours"
 ==> "UnitTest"
 
 "Compilation"
+==> "BuildForUnitTestDotNet"
 ==> "UnitTestDotNet"
 ==> "UnitTest"
 
