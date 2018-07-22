@@ -4,8 +4,9 @@
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <IsPackable>false</IsPackable>
     <AssemblyName>AltCover.Shadow.Tests</AssemblyName>
+    <GenerateProgramFile>false</GenerateProgramFile>
   </PropertyGroup>
-  
+
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <OutputPath>$(SolutionDir)_Binaries/$(AssemblyName)/$(Configuration)+$(Platform)/</OutputPath>
     <IntermediateOutputPath>$(SolutionDir)_Intermediate/$(AssemblyName)/$(Configuration)+$(Platform)/</IntermediateOutputPath>
@@ -21,7 +22,7 @@
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="Tracer.Tests.fs" />
     <Compile Include="Shadow.Tests.fs" />
-    <Compile Include="Program.fs" />    
+    <Compile Include="Program.fs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -33,8 +34,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="coverlet.msbuild" Version="2.0.1" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.7.2" />
+    <PackageReference Include="coverlet.msbuild" Version="2.1.1" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.8.0" />
     <PackageReference Include="NUnit" Version="3.10.1" />
     <PackageReference Include="NUnit3TestAdapter" Version="3.10.0" />
   </ItemGroup>
@@ -47,5 +48,4 @@
   <ItemGroup>
     <PackageReference Update="FSharp.Core" Version="4.3.4" />
   </ItemGroup>
-
 </Project>

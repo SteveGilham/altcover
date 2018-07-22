@@ -4,7 +4,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <AssemblyName>AltCover.Shadow</AssemblyName>
     <RootNamespace>AltCover.Recorder</RootNamespace>
-   <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -34,5 +34,4 @@
   <ItemGroup>
     <PackageReference Update="FSharp.Core" Version="4.3.4" />
   </ItemGroup>
-
 </Project>

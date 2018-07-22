@@ -21,7 +21,7 @@
     </NuGetPackageImportStamp>
     <ResolveNuGetPackages>false</ResolveNuGetPackages>
     <UseStandardResourceNames>True</UseStandardResourceNames>
-    <Win32Resource>$(ProjectDir)../AltCover/Resource.res</Win32Resource>    
+    <Win32Resource>$(ProjectDir)../AltCover/Resource.res</Win32Resource>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -99,14 +99,14 @@
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\FSharpLint.MSBuild.0.9.1-beta\build\FSharpLint.MSBuild.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\FSharpLint.MSBuild.0.9.1-beta\build\FSharpLint.MSBuild.targets'))" />
   </Target -->
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
 	     Other similar extension points exist, see Microsoft.Common.targets.
 	<Target Name="BeforeBuild">
 	</Target>
 	<Target Name="AfterBuild">
 	</Target>
 	-->
-	<!-- Target Name="FSharpLint" BeforeTargets="AfterBuild" Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' AND '$(FSharpLintEnabled)' != 'false'">
+  <!-- Target Name="FSharpLint" BeforeTargets="AfterBuild" Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' AND '$(FSharpLintEnabled)' != 'false'">
     <FSharpLintTask Project="$(MSBuildProjectFullPath)" TreatWarningsAsErrors="true" />
 	</Target -->
 </Project>

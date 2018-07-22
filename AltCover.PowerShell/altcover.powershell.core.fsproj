@@ -18,7 +18,7 @@
     <OutputPath>$(SolutionDir)_Binaries/$(AssemblyName)/$(Configuration)+$(Platform)/</OutputPath>
     <IntermediateOutputPath>$(SolutionDir)_Intermediate/$(AssemblyName)/$(Configuration)+$(Platform)/</IntermediateOutputPath>
     <OtherFlags>--keyfile:$(SolutionDir)Build\Infrastructure.snk</OtherFlags>
-</PropertyGroup>
+  </PropertyGroup>
 
   <ItemGroup>
     <Compile Include="..\_Generated\AssemblyVersion.fs" Link="AssemblyVersion.fs" />
@@ -36,7 +36,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.PowerShell.SDK" Version="6.0.1.1" />
+    <PackageReference Include="Microsoft.PowerShell.SDK" Version="6.0.2" />
   </ItemGroup>
 
   <ItemGroup>
@@ -46,5 +46,4 @@
   <ItemGroup>
     <PackageReference Update="FSharp.Core" Version="4.3.4" />
   </ItemGroup>
-
 </Project>

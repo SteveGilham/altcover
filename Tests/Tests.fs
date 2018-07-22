@@ -1161,7 +1161,9 @@ type AltCoverTests() = class
                       "#ctor"; "get_Visits"; "Log"; "GetOperandType"; "#ctor"; ".cctor";
                       "get_Property"; "set_Property"; "get_ReportFile";
                       "set_ReportFile"; "get_Timer"; "set_Timer"; "get_Token"; "set_Token";
-                      "get_CoverageFormat"; "set_CoverageFormat"; "ToList"; "#ctor" ]
+                      "get_CoverageFormat"; "set_CoverageFormat";
+                      "get_Sample"; "set_Sample";
+                      "ToList"; "#ctor" ]
     Assert.That(names, Is.EquivalentTo expected)
 
   [<Test>]
@@ -1190,6 +1192,8 @@ type AltCoverTests() = class
                     "System.Void Sample3.Class3+Class4.set_Token(System.String)"
                     "System.Int32 Sample3.Class3+Class4.get_CoverageFormat()"
                     "System.Void Sample3.Class3+Class4.set_CoverageFormat(System.Int32)"
+                    "System.Int32 Sample3.Class3+Class4.get_Sample()"
+                    "System.Void Sample3.Class3+Class4.set_Sample(System.Int32)"
                     "System.Collections.Generic.List`1 Sample3.Class3+Class4.ToList<T>(T)";
                     "System.Void Sample3.Class3+Class4.#ctor()" ]
     Assert.That(names, Is.EquivalentTo expected)
@@ -1506,6 +1510,86 @@ type AltCoverTests() = class
     finally
       Visitor.NameFilters.Clear()
       Visitor.reportFormat <- None
+
+  [<Test>]
+  member self.ShouldGenerateExpectedXmlReportFromDotNetLineCoverStyle() =
+    let visitor, document = OpenCover.ReportGenerator()
+    // Hack for running while instrumented
+    let where = Assembly.GetExecutingAssembly().Location
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), sample1)
+    let X name =
+      XName.Get(name)
+
+    try
+        Visitor.NameFilters.Clear()
+        Visitor.reportFormat <- Some Base.ReportFormat.OpenCover
+        Visitor.coverstyle <- CoverStyle.LineOnly
+        Visitor.Visit [ visitor ] (Visitor.ToSeq path)
+        let resource = Assembly.GetExecutingAssembly().GetManifestResourceNames()
+                         |> Seq.find (fun n -> n.EndsWith("Sample1WithOpenCover.xml", StringComparison.Ordinal))
+
+        use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
+
+        let baseline = XDocument.Load(stream)
+
+        // strip out branch information
+        baseline.Descendants(X "Summary")
+        |> Seq.filter(fun x -> x.Attribute(X "numBranchPoints").Value = "3")
+        |> Seq.iter(fun x -> x.Attribute(X "numBranchPoints").Value <- "1")
+
+        baseline.Descendants(X "Method")
+        |> Seq.iter(fun x -> x.Attribute(X "nPathComplexity").Value <- "0")
+        baseline.Descendants(X "SequencePoint")
+        |> Seq.iter(fun x -> x.Attribute(X "bec").Value <- "0")
+        baseline.Descendants(X "BranchPoint")
+        |> Seq.toList
+        |> Seq.iter(fun x -> x.Remove())
+
+        let result = document.Elements()
+        let expected = baseline.Elements()
+        AltCoverTests.RecursiveValidateOpenCover result expected 0 true false
+    finally
+      Visitor.NameFilters.Clear()
+      Visitor.reportFormat <- None
+      Visitor.coverstyle <- CoverStyle.All
+
+  [<Test>]
+  member self.ShouldGenerateExpectedXmlReportFromDotNetBranchCoverStyle() =
+    let visitor, document = OpenCover.ReportGenerator()
+    // Hack for running while instrumented
+    let where = Assembly.GetExecutingAssembly().Location
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), sample1)
+    let X name =
+      XName.Get(name)
+
+    try
+        Visitor.NameFilters.Clear()
+        Visitor.reportFormat <- Some Base.ReportFormat.OpenCover
+        Visitor.coverstyle <- CoverStyle.BranchOnly
+        Visitor.Visit [ visitor ] (Visitor.ToSeq path)
+        let resource = Assembly.GetExecutingAssembly().GetManifestResourceNames()
+                         |> Seq.find (fun n -> n.EndsWith("Sample1WithOpenCover.xml", StringComparison.Ordinal))
+
+        use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
+
+        let baseline = XDocument.Load(stream)
+
+        // strip out line information
+        baseline.Descendants(X "Summary")
+        |> Seq.filter(fun x -> x.Attribute(X "numSequencePoints").Value = "10")
+        |> Seq.iter(fun x -> x.Attribute(X "numSequencePoints").Value <- "0")
+        baseline.Descendants(X "SequencePoint")
+        |> Seq.toList
+        |> Seq.iter(fun x -> x.Remove())
+
+        let result = document.Elements()
+        let expected = baseline.Elements()
+
+        AltCoverTests.RecursiveValidateOpenCover result expected 0 true false
+    finally
+      Visitor.NameFilters.Clear()
+      Visitor.reportFormat <- None
+      Visitor.coverstyle <- CoverStyle.All
 
   member self.AddTrackingForMain xml =
     let resource = Assembly.GetExecutingAssembly().GetManifestResourceNames()
@@ -1979,7 +2063,7 @@ type AltCoverTests() = class
                               Assert.That(resolved, Is.Not.Null, f.ToString()))
         raw.MainModule.AssemblyReferences
         |> Seq.filter(fun f -> f.Name.IndexOf("Mono.Cecil",StringComparison.Ordinal) >= 0)
-        |> Seq.iter (fun f -> f.Version <- Version("666.666.666.666")
+        |> Seq.iter (fun f -> f.Version <- System.Version("666.666.666.666")
                               let resolved = Instrument.ResolveFromNugetCache null f
                               Assert.That(resolved, Is.Null, f.ToString()))
 
@@ -1987,11 +2071,11 @@ type AltCoverTests() = class
         found
         |> Seq.iter(fun k -> let matched = Instrument.ResolutionTable.[k]
                              let k2 = AssemblyNameReference.Parse(k.ToString())
-                             k2.Version <- Version("666.666.666.666")
+                             k2.Version <- System.Version("666.666.666.666")
                              Instrument.ResolutionTable.[k2.ToString()] <- matched)
         raw.MainModule.AssemblyReferences
         |> Seq.filter(fun f -> f.Name.IndexOf("Mono.Cecil",StringComparison.Ordinal) >= 0)
-        |> Seq.iter (fun f -> f.Version <- Version("666.666.666.666")
+        |> Seq.iter (fun f -> f.Version <- System.Version("666.666.666.666")
                               let resolved = Instrument.ResolveFromNugetCache null f
                               Assert.That(resolved, Is.Not.Null, f.ToString()))
     finally
@@ -2096,6 +2180,7 @@ type AltCoverTests() = class
         Visitor.reportPath <- Some unique
         Visitor.reportFormat <- Some AltCover.Base.ReportFormat.OpenCover
         Visitor.interval <- Some 1234567890
+        Visitor.single <- true
         let prepared = Instrument.PrepareAssembly path
         Instrument.WriteAssembly prepared outputdll
         let expectedSymbols = if "Mono.Runtime" |> Type.GetType |> isNull |> not then ".dll.mdb" else ".pdb"
@@ -2126,9 +2211,12 @@ type AltCoverTests() = class
           Assert.That (report2, AltCover.Base.ReportFormat.OpenCoverWithTracking |> int |> Is.EqualTo)
           let report3 = proxyObject.InvokeMethod("get_Timer",[||]) :?> System.Int64
           Assert.That (report3, 1234567890L |> Is.EqualTo)
+          let report4 = proxyObject.InvokeMethod("get_Sample",[||]) :?> System.Int32
+          Assert.That (report4, AltCover.Base.Sampling.Single |> int |> Is.EqualTo)
         finally
           AppDomain.Unload(ad)
       finally
+        Visitor.single <- false
         Visitor.reportPath <- save
         Visitor.reportFormat <- save2
         Visitor.interval <- save3
@@ -2441,7 +2529,7 @@ type AltCoverTests() = class
                             shift, "AltCover.Recorder.dll")
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
     let recorder = AltCover.Instrument.RecordingMethod def
-    let raw = AltCover.Instrument.Context.Build([])
+    let raw = AltCover.InstrumentContext.Build([])
     let state = {  raw with
                     RecordingMethodRef = { raw.RecordingMethodRef with
                                              Visit = null
@@ -2471,7 +2559,7 @@ type AltCoverTests() = class
     let recorder = AltCover.Instrument.RecordingMethod def
     let target = def.MainModule.GetType("AltCover.Recorder.Instance").Methods
                  |> Seq.find (fun m -> m.Name = "loop")
-    let raw = AltCover.Instrument.Context.Build([])
+    let raw = AltCover.InstrumentContext.Build([])
     let state = {  raw with
                     RecordingMethodRef = { raw.RecordingMethodRef with
                                              Visit = null
@@ -2493,7 +2581,7 @@ type AltCoverTests() = class
     let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "AltCover.Recorder.dll")
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
     let recorder = AltCover.Instrument.RecordingMethod def
-    let state = AltCover.Instrument.Context.Build([])
+    let state = AltCover.InstrumentContext.Build([])
     let countBefore = recorder.Head.Body.Instructions.Count
     let handlersBefore = recorder.Head.Body.ExceptionHandlers.Count
 
@@ -2529,7 +2617,7 @@ type AltCoverTests() = class
             Assert.That (b1.Start.Offset, Is.EqualTo b2.Start.Offset)
         | _ -> Assert.Fail("wrong number of items")
 
-        let raw = AltCover.Instrument.Context.Build([])
+        let raw = AltCover.InstrumentContext.Build([])
         let state = {  raw with
                            RecordingMethodRef = { raw.RecordingMethodRef with
                                                                           Visit = method
@@ -2588,7 +2676,7 @@ type AltCoverTests() = class
         | [b1 ; b2] -> ()
         | _ -> Assert.Fail("wrong number of items")
 
-        let raw = AltCover.Instrument.Context.Build([])
+        let raw = AltCover.InstrumentContext.Build([])
         let state = {  raw with
                            RecordingMethodRef = { raw.RecordingMethodRef with
                                                                           Visit = method
@@ -2617,19 +2705,19 @@ type AltCoverTests() = class
 #else
   [<Test>]
   member self.StartShouldLoadRecordingAssembly () =
-    let def = Instrument.InstrumentationVisitor (Instrument.Context.Build []) (Start [])
+    let def = Instrument.InstrumentationVisitor (InstrumentContext.Build []) (Start [])
     Assert.That (def.RecordingAssembly.Name.Name, Is.EqualTo "AltCover.Recorder.g")
 #endif
 
   [<Test>]
   member self.TypeShouldNotChangeState () =
-    let input = Instrument.Context.Build []
+    let input = InstrumentContext.Build []
     let output = Instrument.InstrumentationVisitor input (Node.Type (null, Inspect.Ignore))
     Assert.That (output, Is.SameAs input)
 
   [<Test>]
   member self.ExcludedMethodShouldNotChangeState () =
-    let input = Instrument.Context.Build []
+    let input = InstrumentContext.Build []
     let output = Instrument.InstrumentationVisitor input (Node.Method (null, Inspect.Ignore, None))
     Assert.That (output, Is.SameAs input)
 
@@ -2643,7 +2731,7 @@ type AltCoverTests() = class
     let module' = def.MainModule.GetType("N.DU")
     let du = module'.NestedTypes |> Seq.filter (fun t -> t.Name = "MyUnion") |> Seq.head
     let func = du.GetMethods() |> Seq.find (fun x -> x.Name = "as_bar")
-    let input = Instrument.Context.Build []
+    let input = InstrumentContext.Build []
     let output = Instrument.InstrumentationVisitor input (Node.Method (func, Inspect.Instrument, None))
     Assert.That (output.MethodBody, Is.SameAs func.Body)
 
@@ -2661,7 +2749,7 @@ type AltCoverTests() = class
     let opcodes = func.Body.Instructions
                    |> Seq.map (fun i -> i.OpCode)
                    |> Seq.toList
-    let input = { Instrument.Context.Build [] with MethodBody = func.Body }
+    let input = { InstrumentContext.Build [] with MethodBody = func.Body }
     input.MethodBody.SimplifyMacros()
 
     let paired = Seq.zip opcodes input.MethodBody.Instructions |> Seq.toList
@@ -2688,7 +2776,7 @@ type AltCoverTests() = class
     let opcodes = func.Body.Instructions
                    |> Seq.map (fun i -> i.OpCode)
                    |> Seq.toList
-    let input = { Instrument.Context.Build [] with MethodBody = func.Body }
+    let input = { InstrumentContext.Build [] with MethodBody = func.Body }
     input.MethodBody.SimplifyMacros()
 
     let paired = Seq.zip opcodes input.MethodBody.Instructions
@@ -2792,7 +2880,7 @@ type AltCoverTests() = class
     stream.CopyTo(buffer)
     Visitor.defaultStrongNameKey <- Some (StrongNameKeyPair(buffer.ToArray()))
     let fake = Mono.Cecil.AssemblyDefinition.ReadAssembly (Assembly.GetExecutingAssembly().Location)
-    let state = Instrument.Context.Build ["nunit.framework"; "nonesuch"]
+    let state = InstrumentContext.Build ["nunit.framework"; "nonesuch"]
     let visited = Node.Assembly (def, Inspect.Ignore)
 
     let result = Instrument.InstrumentationVisitor {state with RecordingAssembly = fake } visited
@@ -2815,7 +2903,7 @@ type AltCoverTests() = class
     stream.CopyTo(buffer)
     Visitor.defaultStrongNameKey <- Some (StrongNameKeyPair(buffer.ToArray()))
     let fake = Mono.Cecil.AssemblyDefinition.ReadAssembly (Assembly.GetExecutingAssembly().Location)
-    let state = Instrument.Context.Build ["nunit.framework"; "nonesuch"]
+    let state = InstrumentContext.Build ["nunit.framework"; "nonesuch"]
     let visited = Node.Assembly (def, Inspect.Instrument)
 
     let result = Instrument.InstrumentationVisitor {state with RecordingAssembly = fake } visited
@@ -2828,7 +2916,7 @@ type AltCoverTests() = class
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
     ProgramDatabase.ReadSymbols def
     let visited = Node.Module (def.MainModule, Inspect.Ignore)
-    let state = Instrument.Context.Build ["nunit.framework"; "nonesuch"]
+    let state = InstrumentContext.Build ["nunit.framework"; "nonesuch"]
     let result = Instrument.InstrumentationVisitor  state visited
     Assert.That (result, Is.EqualTo  { state with ModuleId = def.MainModule.Mvid.ToString() })
 
@@ -2839,7 +2927,7 @@ type AltCoverTests() = class
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
     ProgramDatabase.ReadSymbols def
     let visited = Node.Module (def.MainModule, Inspect.Instrument)
-    let state = Instrument.Context.Build ["nunit.framework"; "nonesuch"]
+    let state = InstrumentContext.Build ["nunit.framework"; "nonesuch"]
 
     let path' = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(),
                              "AltCover.Recorder.dll")
@@ -2876,7 +2964,7 @@ type AltCoverTests() = class
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
     ProgramDatabase.ReadSymbols def
     let visited = Node.MethodPoint (null, None, 0, false)
-    let state = Instrument.Context.Build []
+    let state = InstrumentContext.Build []
     let result = Instrument.InstrumentationVisitor state visited
     Assert.That (result, Is.SameAs state)
 
@@ -2898,9 +2986,9 @@ type AltCoverTests() = class
                  |> Seq.head
     let visited = Node.MethodPoint (target, None, 32767, true)
     Assert.That (target.Previous, Is.Null)
-    let state = { (Instrument.Context.Build []) with MethodWorker = proc
-                                                     MethodBody = main.Body
-                                                     RecordingMethodRef = {Visit = def.MainModule.ImportReference main; Push = null; Pop = null}}
+    let state = { (InstrumentContext.Build []) with MethodWorker = proc
+                                                    MethodBody = main.Body
+                                                    RecordingMethodRef = {Visit = def.MainModule.ImportReference main; Push = null; Pop = null}}
     let result = Instrument.InstrumentationVisitor state visited
     Assert.That (result, Is.SameAs state)
     Assert.That (target.Previous.OpCode, Is.EqualTo OpCodes.Call)
@@ -2912,7 +3000,7 @@ type AltCoverTests() = class
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
     ProgramDatabase.ReadSymbols def
     let visited = Node.Module (def.MainModule, Inspect.Instrument)
-    let state = Instrument.Context.Build ["nunit.framework"; "nonesuch"]
+    let state = InstrumentContext.Build ["nunit.framework"; "nonesuch"]
 
     let path' = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(),
                              "AltCover.Recorder.dll")
@@ -2924,7 +3012,7 @@ type AltCoverTests() = class
     let def'' = Mono.Cecil.AssemblyDefinition.ReadAssembly where
 
     let v = def''.MainModule.ImportReference visit
-    let r = {Instrument.RecorderRefs.Build() with Visit = v; Push = v; Pop = v}
+    let r = {RecorderRefs.Build() with Visit = v; Push = v; Pop = v}
     let state' = { state with RecordingAssembly = def'
                               RecordingMethod = [visit;visit;visit]
                               RecordingMethodRef = r}
@@ -2935,14 +3023,14 @@ type AltCoverTests() = class
                 Is.EqualTo ( def.MainModule))
     Assert.That (string result.RecordingMethodRef,
                 Is.EqualTo (string r))
-    Assert.That ({ result with RecordingMethodRef = Instrument.RecorderRefs.Build()},
+    Assert.That ({ result with RecordingMethodRef = RecorderRefs.Build()},
                  Is.EqualTo  { state' with ModuleId = def.MainModule.Mvid.ToString()
                                                       RecordingMethod = [visit;visit;visit]
-                                                      RecordingMethodRef = Instrument.RecorderRefs.Build()})
+                                                      RecordingMethodRef = RecorderRefs.Build()})
 
   [<Test>]
   member self.AfterModuleShouldNotChangeState () =
-    let input = Instrument.Context.Build []
+    let input = InstrumentContext.Build []
     let output = Instrument.InstrumentationVisitor input AfterModule
     Assert.That (output, Is.SameAs input)
 
@@ -3011,7 +3099,7 @@ type AltCoverTests() = class
     let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample3.dll")
     let prepared = AssemblyDefinition.ReadAssembly path
     ProgramDatabase.ReadSymbols prepared
-    let state = { Instrument.Context.Build [] with RecordingAssembly = prepared }
+    let state = { InstrumentContext.Build [] with RecordingAssembly = prepared }
 
     Assert.Throws<InvalidOperationException>(fun () ->
                                                Instrument.InstrumentationVisitorWrapper
@@ -3034,7 +3122,7 @@ type AltCoverTests() = class
   member self.NonFinishShouldNotDisposeNullRecordingAssembly () =
     let where = Assembly.GetExecutingAssembly().Location
     let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample3.dll")
-    let state = { Instrument.Context.Build [] with RecordingAssembly = null }
+    let state = { InstrumentContext.Build [] with RecordingAssembly = null }
 
     // Would be NullreferenceException if we tried it
     Assert.Throws<InvalidOperationException>(fun () ->
@@ -3047,7 +3135,7 @@ type AltCoverTests() = class
   member self.FinishShouldLeaveRecordingAssembly () =
     let where = Assembly.GetExecutingAssembly().Location
     let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample3.dll")
-    let state = { Instrument.Context.Build [] with RecordingAssembly = null }
+    let state = { InstrumentContext.Build [] with RecordingAssembly = null }
     let prepared = AssemblyDefinition.ReadAssembly path
     ProgramDatabase.ReadSymbols prepared
 
@@ -3302,9 +3390,9 @@ type AltCoverTests() = class
     let options = Main.DeclareOptions ()
     Assert.That (options.Count, Is.EqualTo
 #if NETCOREAPP2_0
-                                            17
+                                            20
 #else
-                                            18
+                                            21
 #endif
                  )
     Assert.That(options |> Seq.filter (fun x -> x.Prototype <> "<>")
@@ -4174,6 +4262,24 @@ type AltCoverTests() = class
       Visitor.TrackingNames.Clear()
 
   [<Test>]
+  member self.ParsingAfterSingleGivesFailure() =
+    try
+      Visitor.single <- true
+      Visitor.interval <- None
+      Visitor.TrackingNames.Clear()
+      let options = Main.DeclareOptions ()
+      let input = [| "-c"; "3" ; "/c"; "x"; "--callContext"; "Hello, World!" |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Right _ -> Assert.Fail()
+      | Left (x, y) -> Assert.That (y, Is.SameAs options)
+                       Assert.That (x, Is.EqualTo "UsageError")
+    finally
+      Visitor.single <- false
+      Visitor.interval <- None
+      Visitor.TrackingNames.Clear()
+
+  [<Test>]
   member self.ParsingOpenCoverGivesOpenCover() =
     try
       Visitor.reportFormat <- None
@@ -4264,6 +4370,224 @@ type AltCoverTests() = class
                        Assert.That (x, Is.EqualTo "UsageError")
     finally
       Visitor.collect <- false
+
+  [<Test>]
+  member self.ParsingSingleGivesSingle() =
+    try
+      Visitor.single <- false
+      let options = Main.DeclareOptions ()
+      let input = [| "--single" |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Left _ -> Assert.Fail()
+      | Right (x, y) -> Assert.That (y, Is.SameAs options)
+                        Assert.That (x, Is.Empty)
+
+      Assert.That(Visitor.single, Is.True)
+    finally
+      Visitor.single <- false
+
+  [<Test>]
+  member self.ParsingMultipleSingleGivesFailure() =
+    try
+      Visitor.single <- false
+      let options = Main.DeclareOptions ()
+      let input = [| "--single"; "--single" |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Right _ -> Assert.Fail()
+      | Left (x, y) -> Assert.That (y, Is.SameAs options)
+                       Assert.That (x, Is.EqualTo "UsageError")
+    finally
+      Visitor.single <- false
+
+  [<Test>]
+  member self.ParsingSingleAfterContextGivesFailure() =
+    try
+      Visitor.single <- false
+      Visitor.interval <- Some 0
+      let options = Main.DeclareOptions ()
+      let input = [| "--single" |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Right _ -> Assert.Fail()
+      | Left (x, y) -> Assert.That (y, Is.SameAs options)
+                       Assert.That (x, Is.EqualTo "UsageError")
+    finally
+      Visitor.single <- false
+      Visitor.interval <- None
+
+  [<Test>]
+  member self.ParsingLineCoverGivesLineCover() =
+    try
+      Visitor.coverstyle <- CoverStyle.All
+      let options = Main.DeclareOptions ()
+      let input = [| "--linecover" |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Left _ -> Assert.Fail()
+      | Right (x, y) -> Assert.That (y, Is.SameAs options)
+                        Assert.That (x, Is.Empty)
+      Assert.That(Visitor.coverstyle, Is.EqualTo CoverStyle.LineOnly)
+      match Visitor.reportFormat with
+      | None -> Assert.Pass()
+      | Some x -> Assert.Fail()
+    finally
+      Visitor.coverstyle <- CoverStyle.All
+
+  [<Test>]
+  member self.OpenCoverIsCompatibleWithLineCover() =
+    try
+      Visitor.coverstyle <- CoverStyle.All
+      Visitor.reportFormat <- None
+      let options = Main.DeclareOptions ()
+      let input = [| "--linecover"; "--opencover" |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Left _ -> Assert.Fail()
+      | Right (x, y) -> Assert.That (y, Is.SameAs options)
+                        Assert.That (x, Is.Empty)
+      Assert.That(Visitor.coverstyle, Is.EqualTo CoverStyle.LineOnly)
+      match Visitor.reportFormat with
+      | None -> Assert.Fail()
+      | Some x -> Assert.That(x, Is.EqualTo AltCover.Base.ReportFormat.OpenCover)
+    finally
+      Visitor.reportFormat <- None
+      Visitor.coverstyle <- CoverStyle.All
+
+  [<Test>]
+  member self.LineCoverIsCompatibleWithOpenCover() =
+    try
+      Visitor.coverstyle <- CoverStyle.All
+      Visitor.reportFormat <- None
+      let options = Main.DeclareOptions ()
+      let input = [| "--opencover"; "--linecover" |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Left _ -> Assert.Fail()
+      | Right (x, y) -> Assert.That (y, Is.SameAs options)
+                        Assert.That (x, Is.Empty)
+      Assert.That(Visitor.coverstyle, Is.EqualTo CoverStyle.LineOnly)
+      match Visitor.reportFormat with
+      | None -> Assert.Fail()
+      | Some x -> Assert.That(x, Is.EqualTo AltCover.Base.ReportFormat.OpenCover)
+    finally
+      Visitor.reportFormat <- None
+      Visitor.coverstyle <- CoverStyle.All
+
+  [<Test>]
+  member self.ParsingMultipleLineCoverGivesFailure() =
+    try
+      Visitor.coverstyle <- CoverStyle.All
+      let options = Main.DeclareOptions ()
+      let input = [| "--linecover"; "--linecover" |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Right _ -> Assert.Fail()
+      | Left (x, y) -> Assert.That (y, Is.SameAs options)
+                       Assert.That (x, Is.EqualTo "UsageError")
+    finally
+      Visitor.coverstyle <- CoverStyle.All
+
+  [<Test>]
+  member self.LineCoverIsNotCompatibleWithBranchCover() =
+    try
+      Visitor.coverstyle <- CoverStyle.All
+      let options = Main.DeclareOptions ()
+      let input = [| "--linecover"; "--branchcover" |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Right _ -> Assert.Fail()
+      | Left (x, y) -> Assert.That (y, Is.SameAs options)
+                       Assert.That (x, Is.EqualTo "UsageError")
+    finally
+      Visitor.coverstyle <- CoverStyle.All
+
+  [<Test>]
+  member self.ParsingBranchCoverGivesBranchCover() =
+    try
+      Visitor.coverstyle <- CoverStyle.All
+      let options = Main.DeclareOptions ()
+      let input = [| "--branchcover" |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Left _ -> Assert.Fail()
+      | Right (x, y) -> Assert.That (y, Is.SameAs options)
+                        Assert.That (x, Is.Empty)
+      Assert.That(Visitor.coverstyle, Is.EqualTo CoverStyle.BranchOnly)
+      match Visitor.reportFormat with
+      | None -> Assert.Pass()
+      | Some x -> Assert.Fail()
+    finally
+      Visitor.coverstyle <- CoverStyle.All
+
+  [<Test>]
+  member self.OpenCoverIsCompatibleWithBranchCover() =
+    try
+      Visitor.reportFormat <- None
+      Visitor.coverstyle <- CoverStyle.All
+      let options = Main.DeclareOptions ()
+      let input = [| "--branchcover"; "--opencover" |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Left _ -> Assert.Fail()
+      | Right (x, y) -> Assert.That (y, Is.SameAs options)
+                        Assert.That (x, Is.Empty)
+      Assert.That(Visitor.coverstyle, Is.EqualTo CoverStyle.BranchOnly)
+      match Visitor.reportFormat with
+      | None -> Assert.Fail()
+      | Some x -> Assert.That(x, Is.EqualTo AltCover.Base.ReportFormat.OpenCover)
+    finally
+      Visitor.reportFormat <- None
+      Visitor.coverstyle <- CoverStyle.All
+
+  [<Test>]
+  member self.BranchCoverIsCompatibleWithOpenCover() =
+    try
+      Visitor.reportFormat <- None
+      Visitor.coverstyle <- CoverStyle.All
+      let options = Main.DeclareOptions ()
+      let input = [| "--opencover"; "--branchcover" |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Left _ -> Assert.Fail()
+      | Right (x, y) -> Assert.That (y, Is.SameAs options)
+                        Assert.That (x, Is.Empty)
+      Assert.That(Visitor.coverstyle, Is.EqualTo CoverStyle.BranchOnly)
+      match Visitor.reportFormat with
+      | None -> Assert.Fail()
+      | Some x -> Assert.That(x, Is.EqualTo AltCover.Base.ReportFormat.OpenCover)
+    finally
+      Visitor.coverstyle <- CoverStyle.All
+      Visitor.reportFormat <- None
+
+  [<Test>]
+  member self.ParsingMultipleBranchCoverGivesFailure() =
+    try
+      Visitor.coverstyle <- CoverStyle.All
+      let options = Main.DeclareOptions ()
+      let input = [| "--branchcover"; "--branchcover" |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Right _ -> Assert.Fail()
+      | Left (x, y) -> Assert.That (y, Is.SameAs options)
+                       Assert.That (x, Is.EqualTo "UsageError")
+    finally
+      Visitor.coverstyle <- CoverStyle.All
+
+  [<Test>]
+  member self.BranchCoverIsNotCompatibleWithLineCover() =
+    try
+      Visitor.coverstyle <- CoverStyle.All
+      let options = Main.DeclareOptions ()
+      let input = [|"--branchcover"; "--linecover"|]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Right _ -> Assert.Fail()
+      | Left (x, y) -> Assert.That (y, Is.SameAs options)
+                       Assert.That (x, Is.EqualTo "UsageError")
+    finally
+      Visitor.coverstyle <- CoverStyle.All
 
   [<Test>]
   member self.OutputLeftPassesThrough() =
@@ -4585,6 +4909,27 @@ type AltCoverTests() = class
       Output.Task <- false
 
   [<Test>]
+  member self.VersionIsAsExpected() =
+    AltCover.ToConsole()
+    let saved = Console.Out
+    try
+      use stdout = new StringWriter()
+      Console.SetOut stdout
+      Output.Task <- true
+      let rc = AltCover.Main.EffectiveMain [| "v" |]
+      Assert.That (rc, Is.EqualTo 0)
+      let result = stdout.ToString().Replace("\r\n", "\n")
+      let expected = "AltCover version " + AssemblyVersionInformation.AssemblyFileVersion +
+                     """
+"""
+
+      Assert.That (result.Replace("\r\n", "\n"), Is.EqualTo (expected.Replace("\r\n", "\n")))
+
+    finally
+      Console.SetOut saved
+      Output.Task <- false
+
+  [<Test>]
   member self.UsageIsAsExpected() =
     let options = Main.DeclareOptions ()
     let saved = Console.Error
@@ -4653,15 +4998,27 @@ type AltCoverTests() = class
                                    Other strings are interpreted as method
                                names (fully qualified if the string contains
                                any "." characters).
+                                   Incompatible with --single
       --opencover            Optional: Generate the report in OpenCover format
       --inplace              Optional: Instrument the inputDirectory, rather
                                than the outputDirectory (e.g. for dotnet test)
       --save                 Optional: Write raw coverage data to file for
                                later processing
+      --single               Optional: only record the first hit at any
+                               location.
+                                   Incompatible with --callContext.
+      --linecover            Optional: Do not record branch coverage.  Implies,
+                               and is compatible with, the --opencover option.
+                                   Incompatible with --branchcover.
+      --branchcover          Optional: Do not record line coverage.  Implies,
+                               and is compatible with, the --opencover option.
+                                   Incompatible with --linecover.
   -?, --help, -h             Prints out the options.
 or
   ipmo                       Prints out the PowerShell script to import the
                                associated PowerShell module
+or
+  version                    Prints out the AltCover build version
 """
 
       Assert.That (result.Replace("\r\n", "\n"), Is.EqualTo (expected.Replace("\r\n", "\n")))
@@ -4739,11 +5096,21 @@ or
                                    Other strings are interpreted as method
                                names (fully qualified if the string contains
                                any "." characters).
+                                   Incompatible with --single
       --opencover            Optional: Generate the report in OpenCover format
       --inplace              Optional: Instrument the inputDirectory, rather
                                than the outputDirectory (e.g. for dotnet test)
       --save                 Optional: Write raw coverage data to file for
                                later processing
+      --single               Optional: only record the first hit at any
+                               location.
+                                   Incompatible with --callContext.
+      --linecover            Optional: Do not record branch coverage.  Implies,
+                               and is compatible with, the --opencover option.
+                                   Incompatible with --branchcover.
+      --branchcover          Optional: Do not record line coverage.  Implies,
+                               and is compatible with, the --opencover option.
+                                   Incompatible with --linecover.
   -?, --help, -h             Prints out the options.
 or
   Runner
@@ -4879,6 +5246,7 @@ or
     let save = Main.EffectiveMain
     let mutable args = [| "some junk "|]
     let saved = (Output.Info, Output.Error)
+    let warned = Output.Warn
     try
         Main.EffectiveMain <- (fun a -> args <- a
                                         255)
@@ -4892,5 +5260,28 @@ or
       Output.Info <- fst saved
       Output.Error <- snd saved
       Output.Task <- false
+      Output.Warn <- warned
+
+  [<Test>]
+  member self.EmptyVersionIsJustTheDefaults() =
+    let subject = GetVersion()
+    let save = Main.EffectiveMain
+    let mutable args = [| "some junk "|]
+    let saved = (Output.Info, Output.Error)
+    let warned = Output.Warn
+    try
+        Main.EffectiveMain <- (fun a -> args <- a
+                                        255)
+        let result = subject.Execute()
+        Assert.That(result, Is.False)
+        Assert.That(args, Is.EquivalentTo ["version"])
+        Assert.Throws<InvalidOperationException>(fun () -> Output.Warn "x") |> ignore
+        Assert.Throws<InvalidOperationException>(fun () -> Output.Error "x") |> ignore
+    finally
+      Main.EffectiveMain <- save
+      Output.Info <- fst saved
+      Output.Error <- snd saved
+      Output.Task <- false
+      Output.Warn <- warned
   // Recorder.fs => Shadow.Tests
 end

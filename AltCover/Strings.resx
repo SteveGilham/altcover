@@ -154,11 +154,13 @@
     <value>Creating folder {0}</value>
   </data>
   <data name="HelpText" xml:space="preserve">
-    <value>AltCover [/i[nputDirectory]=VALUE] [/o[utputDirectory]=VALUE] [/y|symbolDirectory=VALUE] [/d[ependency]=VALUE] [/sn|strongNameKey=VALUE] [/k[ey]=VALUE] [/x[mlReport]=VALUE] [/f[ileFilter]=VALUE] [/s|assemblyFilter=VALUE] [/t|typeFilter=VALUE] [/m|methodFilter=VALUE] [/a|attributeFilter=VALUE] [/c[allContext]=VALUE] [--opencover] [--inplace] [--save] [/?|h[elp]] [-- ] [...]
+    <value>AltCover [/i[nputDirectory]=VALUE] [/o[utputDirectory]=VALUE] [/y|symbolDirectory=VALUE] [/d[ependency]=VALUE] [/sn|strongNameKey=VALUE] [/k[ey]=VALUE] [/x[mlReport]=VALUE] [/f[ileFilter]=VALUE] [/s|assemblyFilter=VALUE] [/t|typeFilter=VALUE] [/m|methodFilter=VALUE] [/a|attributeFilter=VALUE] [/c[allContext]=VALUE] [--opencover] [--inplace] [--save] [--single] [--linecover|branchcover] [/?|h[elp]] [-- ] [...]
 or
 AltCover Runner [/r[ecordingDirectory]=VALUE] [/w[orkingDirectory]=VALUE] [/x|executable=VALUE] [--collect] [/l[covReport]=VALUE] [/t[hreshold]=VALUE] [/c[obertura]=VALUE] [/o[utputFile]=VALUE] [/?|h[elp]] [-- ] [...]
 or
 AltCover ipmo
+or
+AltCover version
 See https://github.com/SteveGilham/altcover/wiki/Usage for full details.
 </value>
   </data>
@@ -231,7 +233,8 @@ Coverage Report: {0}
     <value>Optional, multiple: Tracking either times of visits in ticks or designated method calls leading to the visits.
     A single digit 0-7 gives the number of decimal places of seconds to report; everything else is at the mercy of the system clock information available through DateTime.UtcNow
     A string in brackets "[]" is interpreted as an attribute type name (the trailing "Attribute" is optional), so [Test] or [TestAttribute] will match; if the name contains one or more ".", then it will be matched against the full name of the attribute type.
-    Other strings are interpreted as method names (fully qualified if the string contains any "." characters).</value>
+    Other strings are interpreted as method names (fully qualified if the string contains any "." characters).
+    Incompatible with --single</value>
   </data>
   <data name="DirectoryNotFound" xml:space="preserve">
     <value>{0} : Directory {1} not found</value>
@@ -342,5 +345,26 @@ Details written to {0}</value>
   </data>
   <data name="%d visits recorded in %A (%A visits/sec)" xml:space="preserve">
     <value>{0:#,#0} visits recorded in {1} ({2:#,#0} visits/sec)</value>
+  </data>
+  <data name="AltCover.Version" xml:space="preserve">
+    <value>AltCover version {0}</value>
+  </data>
+  <data name="version" xml:space="preserve">
+    <value>  version                    Prints out the AltCover build version</value>
+  </data>
+  <data name="Incompatible" xml:space="preserve">
+    <value>Command line options {0} and {1} are mutally exclusive.</value>
+  </data>
+  <data name="single" xml:space="preserve">
+    <value>Optional: only record the first hit at any location.
+    Incompatible with --callContext.</value>
+  </data>
+  <data name="linecover" xml:space="preserve">
+    <value>Optional: Do not record branch coverage.  Implies, and is compatible with, the --opencover option.
+    Incompatible with --branchcover.</value>
+  </data>
+  <data name="branchcover" xml:space="preserve">
+    <value>Optional: Do not record line coverage.  Implies, and is compatible with, the --opencover option.
+    Incompatible with --linecover.</value>
   </data>
 </root>
