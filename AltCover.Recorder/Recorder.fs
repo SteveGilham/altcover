@@ -10,18 +10,30 @@ open System.Reflection
 open System.Resources
 open System.Runtime.CompilerServices
 
+#if NETSTANDARD2_0
+[<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage>]
+#else
 [<System.Runtime.InteropServices.ProgIdAttribute("ExcludeFromCodeCoverage hack for OpenCover issue 615")>]
+#endif
 type internal Close =
     | DomainUnload
     | ProcessExit
     | Pause
     | Resume
 
+#if NETSTANDARD2_0
+[<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage>]
+#else
 [<System.Runtime.InteropServices.ProgIdAttribute("ExcludeFromCodeCoverage hack for OpenCover issue 615")>]
+#endif
 type internal Carrier =
     | SequencePoint of String*int*Track
 
+#if NETSTANDARD2_0
+[<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage>]
+#else
 [<System.Runtime.InteropServices.ProgIdAttribute("ExcludeFromCodeCoverage hack for OpenCover issue 615")>]
+#endif
 type internal Message =
     | AsyncItem of Carrier seq
     | Item of Carrier seq*AsyncReplyChannel<unit>
@@ -51,6 +63,7 @@ module Instance =
   /// Accumulation of visit records
   /// </summary>
   let internal Visits = new Dictionary<string, Dictionary<int, int * Track list>>()
+  let internal Samples = new Dictionary<string, Dictionary<int, bool>>()
   let internal buffer = List<Carrier> ()
 
   /// <summary>
@@ -73,6 +86,13 @@ module Instance =
   /// </summary>
   [<MethodImplAttribute(MethodImplOptions.NoInlining)>]
   let Timer = 0L
+
+  /// <summary>
+  /// Gets the sampling strategy
+  /// This property's IL code is modified to store the user chosen override if applicable
+  /// </summary>
+  [<MethodImplAttribute(MethodImplOptions.NoInlining)>]
+  let Sample = Sampling.All
 
   /// <summary>
   /// Gets or sets the current test method
@@ -171,13 +191,24 @@ module Instance =
   let internal TraceVisit moduleId hitPointId context =
      trace.OnVisit Visits moduleId hitPointId context
 
+  let internal TakeSample strategy moduleId hitPointId =
+    match strategy with
+    | Sampling.All -> true
+    | _ -> let hasKey = Samples.ContainsKey(moduleId)
+           if hasKey |> not then Samples.Add(moduleId, Dictionary<int, bool>())
+           let unwanted = hasKey && Samples.[moduleId].ContainsKey(hitPointId)
+           let wanted = unwanted |> not
+           if wanted then Samples.[moduleId].Add(hitPointId, true)
+           wanted
+
   /// <summary>
   /// This method is executed from instrumented assemblies.
   /// </summary>
   /// <param name="moduleId">Assembly being visited</param>
   /// <param name="hitPointId">Sequence Point identifier</param>
   let internal VisitImpl moduleId hitPointId context =
-    if not <| String.IsNullOrEmpty(moduleId) then
+    if not <| String.IsNullOrEmpty(moduleId) &&
+       TakeSample Sample moduleId hitPointId then
       trace.OnConnected (fun () -> TraceVisit moduleId hitPointId context)
                         (fun () -> Counter.AddVisit Visits moduleId hitPointId context)
 

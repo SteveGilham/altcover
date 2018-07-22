@@ -41,6 +41,9 @@ type Prepare () =
   member val OpenCover = true with get, set
   member val InPlace = true with get, set
   member val Save = true with get, set
+  member val Single = true |> not with get, set  // work around Gendarme insistence on non-default values only
+  member val LineCover = true |> not with get, set
+  member val BranchCover = true |> not with get, set
 
   member val CommandLine = String.Empty with get, set
 
@@ -74,6 +77,9 @@ type Prepare () =
       Args.Flag "--opencover" self.OpenCover
       Args.Flag "--inplace" self.InPlace
       Args.Flag "--save" self.Save
+      Args.Flag "--single" self.Single
+      Args.Flag "--linecover" self.LineCover
+      Args.Flag "--branchcover" self.BranchCover
 
       Args.Item "--" self.CommandLine;
     ]
@@ -128,5 +134,16 @@ type PowerShell () =
     Output.Warn <- base.Log.LogWarning
     [|
       "ipmo"
+    |]
+    |> AltCover.Main.EffectiveMain = 0
+
+type GetVersion () =
+  inherit Task(null)
+  override self.Execute () =
+    Output.Task <- true
+    Output.Error <- base.Log.LogError
+    Output.Warn <- base.Log.LogWarning
+    [|
+      "version"
     |]
     |> AltCover.Main.EffectiveMain = 0
