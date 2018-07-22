@@ -83,6 +83,20 @@ type AltCoverTests() = class
     self.GetMyMethodName "<="
 
   [<Test>]
+  member self.OnlyNewIdPairShouldBeSampled() =
+    self.GetMyMethodName "=>"
+    lock Adapter.Lock (fun () ->
+    try
+      Adapter.SamplesClear()
+      Assert.That (Adapter.AddSample "module" 23, Is.True)
+      Assert.That (Adapter.AddSample "module" 24, Is.True)
+      Assert.That (Adapter.AddSample "newmodule" 23, Is.True)
+      Assert.That (Adapter.AddSample "module" 23, Is.False)
+    finally
+      Adapter.SamplesClear())
+    self.GetMyMethodName "<="
+
+  [<Test>]
   member self.NullIdShouldNotGiveACount() =
     self.GetMyMethodName "=>"
     lock Adapter.Lock (fun () ->

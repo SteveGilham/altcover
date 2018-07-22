@@ -1,3 +1,4 @@
+param([string]$ACV="0.0.0.0")
 $x = "./_Reports/PesterFSharpTypesDotNetRunner.xml"
 $o = "./Sample2/_Binaries/Sample2/Debug+AnyCPU/netcoreapp2.0"
 $i = "./_Binaries/Sample2/Debug+AnyCPU/netcoreapp2.0"
@@ -43,6 +44,21 @@ Describe "Invoke-Altcover" {
         finally
         {
             [System.Console]::SetError($saved)     
+        }
+    }
+
+    It "Reports the version" {
+        $saved = [System.Console]::Out
+        $stdout = new-object System.IO.StringWriter @()
+        [System.Console]::SetOut($stdout)
+        try 
+        {
+          Invoke-AltCover -Version -InformationAction Continue
+          $stdout.ToString().Trim() | Should -Be ("AltCover version " + $ACV)
+        }
+        finally
+        {
+            [System.Console]::SetOut($saved)     
         }
     }
 }

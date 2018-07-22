@@ -17,35 +17,35 @@ open Mono.Cecil.Cil
 open Mono.Cecil.Rocks
 open Newtonsoft.Json.Linq
 
+[<ExcludeFromCodeCoverage>]
+type internal RecorderRefs = { Visit : MethodReference
+                               Push : MethodReference
+                               Pop : MethodReference }
+with static member Build () = { Visit = null; Push = null; Pop = null }
+/// <summary>
+/// State object passed from visit to visit
+/// </summary>
+[<ExcludeFromCodeCoverage>]
+type internal InstrumentContext = { InstrumentedAssemblies : string list
+                                    ModuleId : String
+                                    RecordingAssembly : AssemblyDefinition
+                                    RecordingMethod : MethodDefinition list // initialised once
+                                    RecordingMethodRef : RecorderRefs // updated each module
+                                    MethodBody : MethodBody
+                                    MethodWorker : ILProcessor } // to save fetching repeatedly
+with static member Build assemblies =
+                  { InstrumentedAssemblies = assemblies
+                    ModuleId = String.Empty
+                    RecordingAssembly = null
+                    RecordingMethod = []
+                    RecordingMethodRef = RecorderRefs.Build()
+                    MethodBody = null
+                    MethodWorker = null }
+
 /// <summary>
 /// Module to handle instrumentation visitor
 /// </summary>
 module Instrument =
-  [<ExcludeFromCodeCoverage>]
-  type internal RecorderRefs = { Visit : MethodReference
-                                 Push : MethodReference
-                                 Pop : MethodReference }
-  with static member Build () = { Visit = null; Push = null; Pop = null }
-  /// <summary>
-  /// State object passed from visit to visit
-  /// </summary>
-  [<ExcludeFromCodeCoverage>]
-  type internal Context = { InstrumentedAssemblies : string list
-                            ModuleId : String
-                            RecordingAssembly : AssemblyDefinition
-                            RecordingMethod : MethodDefinition list // initialised once
-                            RecordingMethodRef : RecorderRefs // updated each module
-                            MethodBody : MethodBody
-                            MethodWorker : ILProcessor } // to save fetching repeatedly
-  with static member Build assemblies =
-                    { InstrumentedAssemblies = assemblies
-                      ModuleId = String.Empty
-                      RecordingAssembly = null
-                      RecordingMethod = []
-                      RecordingMethodRef = RecorderRefs.Build()
-                      MethodBody = null
-                      MethodWorker = null }
-
   let private resources = ResourceManager("AltCover.JSONFragments" , Assembly.GetExecutingAssembly())
   let version = typeof<AltCover.Recorder.Tracer>.Assembly.GetName().Version.ToString()
 
@@ -191,9 +191,10 @@ module Instrument =
         initialBody |> Seq.iter worker.Remove
     )
 
-    // set the coverage file format
+    // set the coverage file format and sampling strategy
     [
       ("get_CoverageFormat", Visitor.ReportFormat() |> int)
+      ("get_Sample", (if Visitor.single then Base.Sampling.Single else Base.Sampling.All) |> int)
     ]
     |> List.iter (fun (property, value) ->
         let pathGetterDef = definition.MainModule.GetTypes()
@@ -443,7 +444,7 @@ module Instrument =
     |> Seq.iter (libraries.AddFirst)
     o.ToString()
 
-  let private VisitModule (state : Context) (m:ModuleDefinition) included =
+  let private VisitModule (state : InstrumentContext) (m:ModuleDefinition) included =
          let restate = match included <> Inspect.Ignore with
                        | true ->
                          let recordingMethod = match state.RecordingMethod with
@@ -458,7 +459,7 @@ module Instrument =
                                    | AltCover.Base.ReportFormat.OpenCover -> KeyStore.HashFile m.FileName
                                    | _ -> m.Mvid.ToString() }
 
-  let private VisitMethod (state : Context) (m:MethodDefinition) included =
+  let private VisitMethod (state : InstrumentContext) (m:MethodDefinition) included =
          match Visitor.IsInstrumented included with
          | true ->
            let body = m.Body
@@ -476,13 +477,13 @@ module Instrument =
     body.ExceptionHandlers
     |> Seq.iter subs.SubstituteExceptionBoundary
 
-  let private VisitMethodPoint (state : Context) instruction point included =
+  let private VisitMethodPoint (state : InstrumentContext) instruction point included =
     if included then // by construction the sequence point is included
       let instrLoadModuleId = InsertVisit instruction state.MethodWorker state.RecordingMethodRef.Visit state.ModuleId point
       UpdateBranchReferences state.MethodBody instruction instrLoadModuleId
     state
 
-  let internal VisitBranchPoint (state:Context) branch =
+  let internal VisitBranchPoint (state:InstrumentContext) branch =
     if branch.Included && state.MethodWorker |> isNull |> not then
       let point = (branch.Uid ||| Base.Counter.BranchFlag)
       let instrument instruction =
@@ -541,7 +542,7 @@ module Instrument =
         else branch.Start.Operand <- preamble
     state
 
-  let private FinishVisit (state : Context) =
+  let private FinishVisit (state : InstrumentContext) =
     try
                  let counterAssemblyFile = Path.Combine(Visitor.InstrumentDirectory(), (extractName state.RecordingAssembly) + ".dll")
                  WriteAssembly (state.RecordingAssembly) counterAssemblyFile
@@ -636,7 +637,7 @@ module Instrument =
   /// <param name="state">Contextual information for the visit</param>
   /// <param name="node">The node being visited</param>
   /// <returns>Updated state</returns>
-  let internal InstrumentationVisitorCore (state : Context) (node:Node) =
+  let internal InstrumentationVisitorCore (state : InstrumentContext) (node:Node) =
     match node with
     | Start _ -> VisitStart state
     | Assembly (assembly, included) -> if included <> Inspect.Ignore then
@@ -656,7 +657,7 @@ module Instrument =
     | AfterAssembly assembly -> VisitAfterAssembly state assembly
     | Finish -> FinishVisit state
 
-  let internal InstrumentationVisitorWrapper (core  : Context -> Node -> Context) (state : Context) (node:Node) =
+  let internal InstrumentationVisitorWrapper (core  : InstrumentContext -> Node -> InstrumentContext) (state : InstrumentContext) (node:Node) =
     try
       core state node
     with
@@ -666,7 +667,7 @@ module Instrument =
                   then (state.RecordingAssembly :>IDisposable).Dispose()
            reraise()
 
-  let internal InstrumentationVisitor (state : Context) (node:Node) =
+  let internal InstrumentationVisitor (state : InstrumentContext) (node:Node) =
     InstrumentationVisitorWrapper InstrumentationVisitorCore state node
 
   /// <summary>
@@ -675,4 +676,4 @@ module Instrument =
   /// <param name="assemblies">List of assembly paths to visit</param>
   /// <returns>Stateful visitor function</returns>
   let internal InstrumentGenerator (assemblies : string list) =
-    Visitor.EncloseState InstrumentationVisitor (Context.Build assemblies)
+    Visitor.EncloseState InstrumentationVisitor (InstrumentContext.Build assemblies)

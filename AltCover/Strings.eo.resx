@@ -154,11 +154,13 @@
     <value>Krei dosierujon {0}</value>
   </data>
   <data name="HelpText" xml:space="preserve">
-    <value>AltCover [/i[nputDirectory]=VALO] [/o[utputDirectory]=VALO] [/y|symbolDirectory=VALO]  [/d[ependency]=VALO] [/sn|strongNameKey=VALO] [/k[ey]=VALO] [/x[mlReport]=VALO] [/f[ileFilter]=VALO] [/s|assemblyFilter=VALO] [/t|typeFilter=VALO] [/m|methodFilter=VALO] [/a|attributeFilter=VALO] [/c[allContext]=VALO] [--opencover] [--inplace] [--save] [/?|h[elp]] [-- ] [...]
+    <value>AltCover [/i[nputDirectory]=VALO] [/o[utputDirectory]=VALO] [/y|symbolDirectory=VALO]  [/d[ependency]=VALO] [/sn|strongNameKey=VALO] [/k[ey]=VALO] [/x[mlReport]=VALO] [/f[ileFilter]=VALO] [/s|assemblyFilter=VALO] [/t|typeFilter=VALO] [/m|methodFilter=VALO] [/a|attributeFilter=VALO] [/c[allContext]=VALO] [--opencover] [--inplace] [--save] [--single] [--linecover|branchcover] [/?|h[elp]] [-- ] [...]
 aŭ
 AltCover Runner [/r[ecordingDirectory]=VALO] [/w[orkingDirectory]=VALO] [/x||executable=VALO] [--collect] [/l[covReport]=VALO] [/t[hreshold]=VALO] [/c[obertura]=VALO] [/o[utputFile]=VALO] [/?|h[elp]] [-- ] [...]
 aŭ
 AltCover ipmo
+aŭ
+AltCover version
 Vidu https://github.com/SteveGilham/altcover/wiki/Usage por plenaj detaloj.</value>
   </data>
   <data name="NotInPlace" xml:space="preserve">
@@ -230,7 +232,8 @@ Kovra Raporto: {0}
     <value>Laŭvola, multobla: Rilatado aŭ tempoj de vizitoj en tikoj aŭ nomitaj metodvokoj kondukantaj al la vizitoj.
     Ununura cifero 0-7 donas la nombron de dekuma lokoj de sekundoj por raporti; ĉio alia kompatas la sistemon horloĝon disponebla per DateTime.UtcNow
     Kordo en krampoj [] estas interpretita kiel atributo tipo nomon (la malantaŭa parto "Attribute" estas nedeviga), do [Test] aŭ [TestAttribute] kongruas; se la nomo enhavas unu aŭ pli ".", tiam ĝi estos egalita kontraŭ la plena nomo de la atributa tipo.
-     Aliaj kordoj estas interpretitaj kiel metodnomoj (plene kvalifikitaj se la ĉeno enhavas ajnajn "" "karakterojn).</value>
+    Aliaj kordoj estas interpretitaj kiel metodnomoj (plene kvalifikitaj se la ĉeno enhavas ajnajn "" "karakterojn).
+   Nekongrua kun --single</value>
   </data>
   <data name="DirectoryNotFound" xml:space="preserve">
     <value>{0} : Dosierujo {1} ne trovita</value>
@@ -341,5 +344,26 @@ Detaloj skribitaj al {0}</value>
   </data>
   <data name="%d visits recorded in %A (%A visits/sec)" xml:space="preserve">
     <value>{0:#,#0} vizitoj registritaj en {1} ({2:#,#0} visits/sek)</value>
+  </data>
+  <data name="AltCover.Version" xml:space="preserve">
+    <value>AltCover version {0}</value>
+  </data>
+  <data name="version" xml:space="preserve">
+    <value>  version                    Printas la AltCover-konstruan version</value>
+  </data>
+  <data name="Incompatible" xml:space="preserve">
+    <value>Komandlinioj opcioj {0} kaj {1} estas reciproke ekskluzivaj.</value>
+  </data>
+  <data name="single" xml:space="preserve">
+    <value>Laŭvola: nur registru la unuan sukceson en ajna loko.
+    Nekongrua kun --callContext.</value>
+  </data>
+  <data name="linecover" xml:space="preserve">
+    <value>Laŭvola: Ne registru branĉan kovradon. Implikas, kaj estas kongrua kun, la --opencover opcio.
+    Nekongrua kun --branchcover.</value>
+  </data>
+  <data name="branchcover" xml:space="preserve">
+    <value>Ne registru linion-kovradon. Implikas, kaj estas kongrua kun, la --opencover opcio.
+     Nekongrua kun --linecover.</value>
   </data>
 </root>
