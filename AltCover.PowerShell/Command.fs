@@ -74,7 +74,9 @@ type InvokeAltCoverCommand(runner:bool) =
       ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
   member val OutputFile = String.Empty with get, set
 
-  [<Parameter(Mandatory = false,
+  [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
+      ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
+  [<Parameter(ParameterSetName = "Runner", Mandatory = false,
       ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
   member val CommandLine : string array = [| |] with get, set
 
