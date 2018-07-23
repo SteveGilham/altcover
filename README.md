@@ -62,6 +62,8 @@ You will need Visual Studio VS2017 (Community Edition) v15.7.latest with F# lang
 
 For the .net 2.0 support, if you don't already have FSharp.Core.dll version 2.3.0.0 (usually in Reference Assemblies\Microsoft\FSharp\.NETFramework\v2.0\2.3.0.0), then you will need to install this -- the [Visual F# Tools 4.0 RTM](https://www.microsoft.com/en-us/download/details.aspx?id=48179) `FSharp_Bundle.exe` is the most convenient source. 
 
+For GTK# support, the GTK# latest 2.12 install is expected -- try https://www.mono-project.com/download/stable/#download-win  
+
 #### *nix
 
 It is assumed that `mono` (version 5.12.x) and `dotnet` are on the `PATH` already, and everything is built from the command line, with your favourite editor used for coding.
