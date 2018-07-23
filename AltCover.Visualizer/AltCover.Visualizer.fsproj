@@ -88,6 +88,13 @@
     <Compile Include="Visualizer.fs" />
     <None Include="packages.config" />
     <EmbeddedResource Include="VIcon.ico" />
+    <EmbeddedResource Include="..\AltCover.PowerShell\xsd\NCover.xsd">
+      <Link>NCover.xsd</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\AltCover.PowerShell\xsd\OpenCover.xsd">
+      <Link>OpenCover.xsd</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Opencover.xsl" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="atk-sharp" />

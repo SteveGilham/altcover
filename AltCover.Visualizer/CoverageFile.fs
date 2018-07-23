@@ -55,16 +55,8 @@ module Implementation =
     buffer.Position <- 0L
     XDocument.Load(XmlReader.Create(buffer))
 
-  let TransformFromPartCover (document : XNode) =
-    let report = TransformFromOtherCover document "Partcover.xsl"
-
-    // Blazon it for our benfit
-    let element = new XElement(XName.Get("PartCoverReport"))
-    report.XPathSelectElement("//coverage").LastNode.AddAfterSelf(element)
-    report
-
   let TransformFromOpenCover (document : XNode) =
-    let report = TransformFromOtherCover document "Opencover.xsl"
+    let report = TransformFromOtherCover document "AltCover.Visualizer.Opencover.xsl"
 
     // Blazon it for our benfit
     let element = new XElement(XName.Get("OpenCoverReport"))
@@ -75,30 +67,11 @@ module Implementation =
   let ConvertFile (helper : CoverageTool -> XDocument -> XDocument -> XDocument) (document : XDocument) =
    let schemas = new XmlSchemaSet()
    try
-    match (document.XPathSelectElements("/PartCoverReport").Count(),
-           document.XPathSelectElements("/CoverageSession").Count()) with
-    | (1, 0) -> // looks like a PartCover document so load and apply the XSL transform
+    match document.XPathSelectElements("/CoverageSession").Count() with
+    | 1 -> // looks like an OpenCover document so load and apply the XSL transform
         schemas.Add(String.Empty,
                     XmlReader.Create(new StreamReader(Assembly.GetExecutingAssembly()
-                                                              .GetManifestResourceStream("PartCover.xsd"))))
-          |> ignore
-        document.Validate(schemas, null);
-        let report = TransformFromPartCover document
-        let fixedup = helper CoverageTool.PartCover document report
-
-        // Consistency check our XSLT
-        let schemas2 = new XmlSchemaSet()
-        schemas2.Add(String.Empty,
-                     XmlReader.Create(new StreamReader(Assembly.GetExecutingAssembly()
-                                                               .GetManifestResourceStream("Coverage.xsd"))))
-          |> ignore
-        fixedup.Validate(schemas2, null);
-
-        Right fixedup
-    | (0, 1) -> // looks like an OpenCover document so load and apply the XSL transform
-        schemas.Add(String.Empty,
-                    XmlReader.Create(new StreamReader(Assembly.GetExecutingAssembly()
-                                                              .GetManifestResourceStream("OpenCover.xsd"))))
+                                                              .GetManifestResourceStream("AltCover.Visualizer.OpenCover.xsd"))))
            |> ignore
         document.Validate(schemas, null);
         let report = TransformFromOpenCover document
@@ -108,7 +81,7 @@ module Implementation =
         let schemas2 = new XmlSchemaSet()
         schemas2.Add(String.Empty,
                      XmlReader.Create(new StreamReader(Assembly.GetExecutingAssembly()
-                                                               .GetManifestResourceStream("Coverage.xsd"))))
+                                                               .GetManifestResourceStream("AltCover.Visualizer.NCover.xsd"))))
           |> ignore
         fixedup.Validate(schemas2, null);
 
@@ -116,7 +89,7 @@ module Implementation =
     | _ ->  // any other XML
         schemas.Add(String.Empty,
                     XmlReader.Create(new StreamReader(Assembly.GetExecutingAssembly()
-                                                              .GetManifestResourceStream("Coverage.xsd"))))
+                                                              .GetManifestResourceStream("AltCover.Visualizer.NCover.xsd"))))
           |> ignore
         document.Validate(schemas, null);
         Right document

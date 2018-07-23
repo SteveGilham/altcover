@@ -80,7 +80,7 @@ module Gui =
 
  let private GetResourceString (key:string) =
    let executingAssembly = System.Reflection.Assembly.GetExecutingAssembly()
-   let resources = new ResourceManager("Resource", executingAssembly)
+   let resources = new ResourceManager("AltCover.Visualizer.Resource", executingAssembly)
    resources.GetString(key)
 
  let private AssemblyIcon = lazy ( new Pixbuf(Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Visualizer.Assembly_6212.png")) )
