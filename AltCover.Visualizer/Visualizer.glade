@@ -58,7 +58,7 @@ THE SOFTWARE.</property>
           </packing>
         </child>
         <child>
-          <placeholder/>
+          <placeholder />
         </child>
       </widget>
     </child>

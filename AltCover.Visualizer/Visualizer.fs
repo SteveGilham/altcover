@@ -536,7 +536,7 @@ module Gui =
                            k1.Close();
                            Registry.CurrentUser.DeleteSubKeyTree(recent))) |> ignore
    options.Parse(arguments) |> ignore
-            
+
  [<EntryPoint; STAThread>]
  let internal Main arguments =
    ParseCommandLine arguments
