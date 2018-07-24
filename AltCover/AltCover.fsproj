@@ -45,7 +45,7 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <WarningsAsErrors>
     </WarningsAsErrors>
-    <OtherFlags>--keyfile:$(SolutionDir)Build\Infrastructure.snk --standalone --staticlink:Mono.Options</OtherFlags>
+    <OtherFlags>--keyfile:$(SolutionDir)Build\Infrastructure.snk</OtherFlags>
     <DefineConstants>TRACE;RUNNER</DefineConstants>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>

@@ -1316,21 +1316,28 @@ _Target "RecordResumeTestUnderMono" ( fun _ ->
 
 _Target "Packaging" (fun _ ->
     let AltCover = Path.getFullName "_Binaries/AltCover/AltCover.exe"
+    let fscore = Path.getFullName "_Binaries/AltCover/Release+AnyCPU/FSharp.Core.dll"
+    let options = Path.getFullName "_Binaries/AltCover/Release+AnyCPU/Mono.Options.dll"
     let recorder = Path.getFullName "_Binaries/AltCover/Release+AnyCPU/AltCover.Recorder.dll"
-    let posh = Path.getFullName "_Binaries/AltCover.PowerShell/AltCover.PowerShell.dll"
+    let posh = Path.getFullName "_Binaries/AltCover.PowerShell/Release+AnyCPU/AltCover.PowerShell.dll"
+    let vis = Path.getFullName "_Binaries/AltCover.Visualizer/Release+AnyCPU/AltCover.Visualizer.exe"
     let packable = Path.getFullName "./_Binaries/README.html"
     let resources = DirectoryInfo.getMatchingFilesRecursive "AltCover.resources.dll" (DirectoryInfo.ofPath (Path.getFullName "_Binaries/AltCover/Release+AnyCPU"))
+    let resources2 = DirectoryInfo.getMatchingFilesRecursive "AltCover.Visualizer.resources.dll" (DirectoryInfo.ofPath (Path.getFullName "_Binaries/AltCover.Visualizer/Release+AnyCPU"))
 
     let applicationFiles = if File.Exists AltCover then
                             [
                                 (AltCover, Some "tools/net45", None)
                                 (recorder, Some "tools/net45", None)
                                 (posh, Some "tools/net45", None)
+                                (vis, Some "tools/net45", None)
+                                (fscore, Some "tools/net45", None)
+                                (options, Some "tools/net45", None)
                                 (packable, Some "", None)
                             ]
                            else []
     let resourceFiles = if File.Exists AltCover then
-                          resources
+                          Seq.concat [resources; resources2]
                           |> Seq.map (fun x -> x.FullName)
                           |> Seq.map (fun x -> (x, Some ("tools/net45/" + Path.GetFileName(Path.GetDirectoryName(x))), None))
                           |> Seq.toList
@@ -1428,13 +1435,6 @@ _Target "PrepareFrameworkBuild" (fun _ ->
                FileName = toolpath
                Arguments = "/out:\"./_Binaries/AltCover/AltCover.exe\" /ver:\"" + ver +
                            "\" /attr:\"./_Binaries/AltCover/Release+AnyCPU/AltCover.exe\" /keyfile:\"./Build/Infrastructure.snk\" /target:\"exe\" /internalize ./_Binaries/AltCover/Release+AnyCPU/AltCover.exe .\_Binaries\AltCover\Release+AnyCPU\Mono.Cecil.dll .\_Binaries\AltCover\Release+AnyCPU\Mono.Cecil.Mdb.dll .\_Binaries\AltCover\Release+AnyCPU\Mono.Cecil.Pdb.dll .\_Binaries\AltCover\Release+AnyCPU\Mono.Cecil.Rocks.dll .\_Binaries\AltCover\Release+AnyCPU\Newtonsoft.Json.dll"
-                }) "ILMerge failure"
-
-    Actions.Run (fun info ->
-        { info with
-               FileName = toolpath
-               Arguments = "/out:\"./_Binaries/AltCover.PowerShell/AltCover.PowerShell.dll\" /ver:\"" + ver +
-                           "\" /attr:\"./_Binaries/AltCover.PowerShell/Release+AnyCPU/AltCover.PowerShell.dll\" /keyfile:\"./Build/Infrastructure.snk\" /target:\"library\" /internalize ./_Binaries/AltCover.PowerShell/Release+AnyCPU/AltCover.PowerShell.dll .\_Binaries\AltCover.PowerShell\Debug+AnyCPU\FSharp.Core.dll"
                 }) "ILMerge failure"
 
 //    let here = Directory.GetCurrentDirectory()

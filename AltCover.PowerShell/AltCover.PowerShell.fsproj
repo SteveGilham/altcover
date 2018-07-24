@@ -91,7 +91,7 @@
       <Project>{02192b55-3a50-4ad2-b519-560f30c14dd4}</Project>
       <Private>True</Private>
     </ProjectReference>
-    <Reference Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU'" Include="FSharp.Core">
+    <Reference Include="FSharp.Core">
       <HintPath>..\packages\FSharp.Core.4.3.4\lib\net45\FSharp.Core.dll</HintPath>
     </Reference>
     <Reference Include="Mono.Cecil">

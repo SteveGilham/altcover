@@ -20,7 +20,7 @@
     </NuGetPackageImportStamp>
     <ResolveNuGetPackages>false</ResolveNuGetPackages>
     <UseStandardResourceNames>True</UseStandardResourceNames>
-    <Win32Resource>$(ProjectDir)../AltCover/Resource.res</Win32Resource>
+    <Win32Resource>Resource.res</Win32Resource>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -100,14 +100,24 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="atk-sharp" />
+    <Reference Include="atk-sharp">
+      <Private>False</Private>
+    </Reference>
     <Reference Include="FSharp.Core">
       <HintPath>$(SolutionDir)packages\FSharp.Core.4.3.4\lib\net45\FSharp.Core.dll</HintPath>
     </Reference>
-    <Reference Include="gdk-sharp" />
-    <Reference Include="glade-sharp" />
-    <Reference Include="glib-sharp" />
-    <Reference Include="gtk-sharp" />
+    <Reference Include="gdk-sharp">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="glade-sharp">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="glib-sharp">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="gtk-sharp">
+      <Private>False</Private>
+    </Reference>
     <Reference Include="Mono.Options">
       <HintPath>$(SolutionDir)packages\Mono.Options.Signed.0.2.3\lib\net45\Mono.Options.dll</HintPath>
     </Reference>
