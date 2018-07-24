@@ -117,23 +117,23 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="InvalidFile" xml:space="preserve">
-    <value>The file {0} is not a valid coverage file:
-{1}</value>
-  </data>
   <data name="CoverageOutOfDate" xml:space="preserve">
-    <value>The file {0} 
-is out of date with respect to some of the source files.</value>
+    <value>La dosiero {0}
+estas sen dato koncerne iujn el la fontaj dosieroj.</value>
   </data>
   <data name="CoverageOutOfDateThisFile" xml:space="preserve">
-    <value>The file {0} 
-is out of date with respect to source file
+    <value>La dosiero {0}
+estas sen dato pri respekto al fonta dosiero
 {1}.</value>
   </data>
+  <data name="InvalidFile" xml:space="preserve">
+    <value>La dosiero {0} ne estas valida kovra dosiero:
+{1}</value>
+  </data>
   <data name="SelectFont" xml:space="preserve">
-    <value>Select font for source display</value>
+    <value>Elektu tiparon por fonta ekrano</value>
   </data>
   <data name="SelectXml" xml:space="preserve">
-    <value>xml files (*.xml)|*.xml|All files (*.*)|*.*</value>
+    <value>xml-dosieroj (* .xml) | * .xml | Ĉiuj dosieroj (*. *) | *. *</value>
   </data>
 </root>

@@ -2,7 +2,6 @@
 
 open System
 open System.Collections.Generic
-open System.Diagnostics.CodeAnalysis
 open System.Globalization
 open System.IO
 open System.Reflection
@@ -22,33 +21,31 @@ open Microsoft.Win32
 open Mono.Options
 
 type internal Handler() = class
-       [<Widget; NonSerialized; DefaultValue(true)>]
+       [<Widget; DefaultValue(true)>]
        val mutable mainWindow : Window
 
-       [<Widget; NonSerialized; DefaultValue(true)>]
+       [<Widget; DefaultValue(true)>]
        val mutable openButton : MenuToolButton
 
-       [<Widget; NonSerialized; DefaultValue(true)>]
+       [<Widget; DefaultValue(true)>]
        val mutable refreshButton : ToolButton
 
-       [<Widget; NonSerialized; DefaultValue(true)>]
+       [<Widget; DefaultValue(true)>]
        val mutable fontButton : ToolButton
 
-       [<Widget; NonSerialized; DefaultValue(true)>]
-       val mutable aboutButton : ToolButton
+       [<Widget; DefaultValue(true)>]
+       val mutable showAboutButton : ToolButton
 
-       [<Widget; NonSerialized; DefaultValue(true)>]
+       [<Widget; DefaultValue(true)>]
        val mutable aboutVisualizer : AboutDialog
 
-       [<Widget; NonSerialized; DefaultValue(true)>]
-       val mutable openMenu : Menu
+       [<Widget; DefaultValue(true)>]
+       val mutable fileOpenMenu : Menu
 
-       [<Widget; NonSerialized; DefaultValue(true)>]
-       [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1823:AvoidUnusedPrivateFields", Justification = "To be used eventually")>]
-       val mutable coverageTree : TreeView
+       [<Widget; DefaultValue(true)>]
+       val mutable classStructureTree : TreeView
 
-       [<Widget; NonSerialized; DefaultValue(true)>]
-       [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1823:AvoidUnusedPrivateFields", Justification = "To be used eventually")>]
+       [<Widget; DefaultValue(true)>]
        val mutable codeView : TextView
 
        [<DefaultValue(true)>]
@@ -59,7 +56,7 @@ module Gui =
 
  // Binds class name and XML
  type internal MethodKey = {
-         [<NonSerialized>] m : XPathNavigator;
+         m : XPathNavigator;
          spacename : string;
          classname : string;
          name : string }
@@ -93,7 +90,7 @@ module Gui =
  let private geometry = "SOFTWARE\\AltCover\\Visualizer\\Geometry"
  let private recent = "SOFTWARE\\AltCover\\Visualizer\\Recently Opened"
  let private coveragepath = "SOFTWARE\\AltCover\\Visualizer"
- let mutable private save = true;
+ let mutable private save = true
 
  let private saveFolder (path:string) =
     use key = Registry.CurrentUser.CreateSubKey(coveragepath)
@@ -132,7 +129,6 @@ module Gui =
    w.DefaultWidth <- width
    w.Move(x, y)
 
- [<SuppressMessage("Microsoft.Usage", "CA2208:InstantiateArgumentExceptionsCorrectly", Justification = "F# code generation!")>]
  let private readCoverageFiles (handler:Handler) =
    use fileKey = Registry.CurrentUser.CreateSubKey(recent)
 
@@ -141,7 +137,7 @@ module Gui =
 
    let names = fileKey.GetValueNames()
                 |> Array.filter (fun (s:string) -> s.Length = 1 && Char.IsDigit(s.Chars(0)))
-                |> Array.sortBy (fun s -> Int32.Parse(s, CultureInfo.InvariantCulture))
+                |> Array.sortBy (fun s -> Int32.TryParse(s) |> snd)
    let files = names
                |> Array.map (KeyToValue fileKey)
                |> Seq.cast<string>
@@ -227,7 +223,7 @@ module Gui =
  // -------------------------- Message Boxes ---------------------------
 
  let private ShowMessage (parent:Window) (message:string) (messageType:MessageType) =
-        let md = new MessageDialog (parent,
+        use md = new MessageDialog (parent,
                                     DialogFlags.Modal ||| DialogFlags.DestroyWithParent,
                                     messageType,
                                     ButtonsType.Close,
@@ -272,14 +268,14 @@ module Gui =
  let private InitializeHandler () =
    let handler = new Handler()
 
-   ["mainWindow"; "openMenu"; "aboutVisualizer"]
+   ["mainWindow"; "fileOpenMenu"; "aboutVisualizer"]
    |> List.map (fun name -> new Glade.XML ("AltCover.Visualizer.Visualizer.glade", name))
    |> List.iter (fun xml -> xml.Autoconnect(handler))
    handler
 
  // Fill in the menu from the memory cache
  let private populateMenu (handler:Handler) =
-   let items = handler.openMenu.AllChildren
+   let items = handler.fileOpenMenu.AllChildren
                |> Seq.cast<MenuItem>
 
    // blank the whole menu
@@ -293,25 +289,25 @@ module Gui =
                           (((snd p).Child) :?> Label).Text <- fst p)
 
    // set or clear the menu
-   handler.openButton.Menu <- if handler.coverageFiles.IsEmpty then null else handler.openMenu :> Widget
+   handler.openButton.Menu <- if handler.coverageFiles.IsEmpty then null else handler.fileOpenMenu :> Widget
 
  let private PrepareAboutDialog (handler:Handler) =
    let ShowUrl (link:string) =
     System.Diagnostics.Process.Start(link) |> ignore
 
    // The first gets the display right, the second the browser launch
-   AboutDialog.SetUrlHook(fun dialog link -> ShowUrl link) |> ignore
-   LinkButton.SetUriHook(fun dialog link -> ShowUrl link) |> ignore
+   AboutDialog.SetUrlHook(fun _ link -> ShowUrl link) |> ignore
+   LinkButton.SetUriHook(fun _ link -> ShowUrl link) |> ignore
 
    handler.aboutVisualizer.Parent <- handler.mainWindow
    handler.aboutVisualizer.Version <- System.Diagnostics.FileVersionInfo.GetVersionInfo(
                                       System.Reflection.Assembly.GetExecutingAssembly().Location).FileVersion
    handler.aboutVisualizer.WindowPosition <- WindowPosition.Mouse
    handler.aboutVisualizer.Version <- System.AssemblyVersionInformation.AssemblyFileVersion
-   handler.aboutVisualizer.Copyright <- String.Format(System.Globalization.CultureInfo.CurrentUICulture,
+   handler.aboutVisualizer.Copyright <- String.Format(System.Globalization.CultureInfo.CurrentCulture,
                                                       handler.aboutVisualizer.Copyright,
                                                       System.AssemblyVersionInformation.AssemblyCopyright)
-   handler.aboutVisualizer.License <- String.Format(System.Globalization.CultureInfo.CurrentUICulture,
+   handler.aboutVisualizer.License <- String.Format(System.Globalization.CultureInfo.CurrentCulture,
                                                     handler.aboutVisualizer.License,
                                                       System.AssemblyVersionInformation.AssemblyCopyright)
 
@@ -322,21 +318,24 @@ module Gui =
                             let icon = new Gtk.CellRendererPixbuf()
                             column.PackStart(icon, true)
                             column.PackEnd(cell, true)
-                            handler.coverageTree.AppendColumn(column) |> ignore
+                            handler.classStructureTree.AppendColumn(column) |> ignore
                             column.AddAttribute(cell, "text", 2*i)
                             column.AddAttribute(icon, "pixbuf", 1+(2*i)) )
 
+ [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:DisposeObjectsBeforeLosingScope",
+    Justification = "'openFileDialog' is returned")>]
  let private PrepareOpenFileDialog () =
    let openFileDialog = new System.Windows.Forms.OpenFileDialog();
    openFileDialog.InitialDirectory <- readFolder ()
-   openFileDialog.Filter <- "xml files (*.xml)|*.xml|All files (*.*)|*.*"
+   openFileDialog.Filter <- GetResourceString("SelectXml")
    openFileDialog.FilterIndex <- 0
    openFileDialog.RestoreDirectory <- false
    openFileDialog
 
  // -------------------------- Event handling  ---------------------------
 
- let private HandleOpenClicked (handler:Handler) (openFileDialog:System.Windows.Forms.OpenFileDialog) =
+ let private HandleOpenClicked (handler:Handler) (openFileDialogFactory:unit -> System.Windows.Forms.OpenFileDialog) =
+   use openFileDialog = openFileDialogFactory()
    let MakeSelection (ofd:System.Windows.Forms.OpenFileDialog) x =
         if ofd.ShowDialog() = System.Windows.Forms.DialogResult.OK then
                                                 let file = new FileInfo(ofd.FileName)
@@ -349,6 +348,8 @@ module Gui =
                  |> Event.map (MakeSelection openFileDialog)
                  |> Event.choose id
 
+ [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:DisposeObjectsBeforeLosingScope",
+    Justification = "'baseline' is returned")>]
  let private InitializeTextBuffer (buff:TextBuffer) =
     let Tag (buffer:TextBuffer) (definition:(string * string)) =
                         let tag = new TextTag(fst definition)
@@ -406,12 +407,15 @@ module Gui =
                     |> Seq.filter (fun n -> n.visitcount = 0 && n.line > 0)
                     |> Seq.iter (Decorate buff)
 
- [<SuppressMessage("Microsoft.Performance", "CA1804:RemoveUnusedLocals", MessageId="s", Justification = "F# code generation")>]
- [<SuppressMessage("Microsoft.Performance", "CA1804:RemoveUnusedLocals", MessageId="t", Justification = "F# code generation")>]
- [<SuppressMessage("Microsoft.Performance", "CA1804:RemoveUnusedLocals", MessageId="a", Justification = "F# code generation")>]
+ let internal (|Select|_|) (pattern:String) offered =
+    if (fst offered) |> String.IsNullOrWhiteSpace |> not &&
+       pattern.StartsWith(fst offered, StringComparison.Ordinal)
+       then Some offered
+       else None
+
  let private CoverageToTag (n:XPathNavigator) =
-    let excluded = Boolean.Parse(n.GetAttribute("excluded", String.Empty))
-    let visitcount = Int32.Parse(n.GetAttribute("visitcount", String.Empty), CultureInfo.InvariantCulture)
+    let excluded = Boolean.TryParse(n.GetAttribute("excluded", String.Empty)) |> snd
+    let visitcount = Int32.TryParse(n.GetAttribute("visitcount", String.Empty)) |> snd
     let line = n.GetAttribute("line", String.Empty)
     let column = n.GetAttribute("column", String.Empty)
     let endline = n.GetAttribute("endline", String.Empty)
@@ -421,22 +425,23 @@ module Gui =
     n.MoveToParent() |> ignore
     let because = n.GetAttribute("excluded-because", String.Empty)
     let fallback = match (because, excluded) with
-                   | (a, _) when a.StartsWith("author declared (", StringComparison.Ordinal) -> Exemption.Declared
-                   | (t, _) when t.StartsWith("tool-generated: ", StringComparison.Ordinal) -> Exemption.Automatic
-                   | (s, _) when s.StartsWith("static analysis: ", StringComparison.Ordinal) -> Exemption.StaticAnalysis
+                   | Select "author declared (" _ -> Exemption.Declared
+                   | Select "tool-generated: " _ -> Exemption.Automatic
+                   | Select "static analysis: " _ -> Exemption.StaticAnalysis
                    | (_, true) -> Exemption.Excluded
                    | _ -> 0
 
     { visitcount = if visitcount = 0 then fallback else visitcount
-      line = Int32.Parse(line, CultureInfo.InvariantCulture)
-      column = Int32.Parse(column, CultureInfo.InvariantCulture)
-      endline = Int32.Parse(endline, CultureInfo.InvariantCulture)
-      endcolumn = Int32.Parse(endcolumn, CultureInfo.InvariantCulture) }
+      line = Int32.TryParse(line) |> snd
+      column = Int32.TryParse(column) |> snd
+      endline = Int32.TryParse(endline) |> snd
+      endcolumn = Int32.TryParse(endcolumn) |> snd }
 
  let private FilterCoverage (buff:TextBuffer) (n:CodeTag) =
+    let lc = buff.LineCount
     n.line > 0 && n.endline > 0 &&
-    n.line <= buff.LineCount &&
-    n.endline <= buff.LineCount
+    n.line <= lc &&
+    n.endline <= lc
 
  let private TagByCoverage (buff:TextBuffer) (n:CodeTag) =
     // bound by current line length in case we're looking from stale coverage
@@ -491,21 +496,20 @@ module Gui =
 
                     code |> Seq.iter (TagByCoverage buff)
 
-                    let iter = buff.GetIterAtLine(Int32.Parse(line, CultureInfo.InvariantCulture) - 1)
+                    let iter = buff.GetIterAtLine((Int32.TryParse(line) |> snd) - 1)
                     let mark = buff.CreateMark(line, iter, true)
                     handler.codeView.ScrollToMark(mark, 0.0, true, 0.0, 0.3)
 
  [<EntryPoint; STAThread>]
- [<SuppressMessage("Microsoft.Performance", "CA1804:RemoveUnusedLocals", MessageId="document", Justification = "In progress.")>]
- let Main arguments =
+ let internal Main arguments =
    let options = new OptionSet()
    options.Add("-g", "Clear geometry",
-                (fun x -> let k1 = Registry.CurrentUser.CreateSubKey(geometry)
+                (fun _ -> let k1 = Registry.CurrentUser.CreateSubKey(geometry)
                           k1.Close();
                           save <- false
                           Registry.CurrentUser.DeleteSubKeyTree(geometry)))
           .Add("-r", "Clear recent file list",
-                 (fun x -> let k1 = Registry.CurrentUser.CreateSubKey(recent)
+                 (fun _ -> let k1 = Registry.CurrentUser.CreateSubKey(recent)
                            k1.Close();
                            Registry.CurrentUser.DeleteSubKeyTree(recent))) |> ignore
    options.Parse(arguments) |> ignore
@@ -528,17 +532,17 @@ module Gui =
                                        Application.Quit()
                                        args.RetVal <- true)
 
-   handler.aboutButton.Clicked
+   handler.showAboutButton.Clicked
             |> Event.add (fun args ->
                             ignore <| handler.aboutVisualizer.Run()
                             handler.aboutVisualizer.Hide())
 
    // The Open event
-   let click = HandleOpenClicked handler <| PrepareOpenFileDialog ()
+   let click = HandleOpenClicked handler PrepareOpenFileDialog
 
    // Selecting an item from the menu
    let select =
-       handler.openMenu.AllChildren
+       handler.fileOpenMenu.AllChildren
        |> Seq.cast<MenuItem>
        |> Seq.map (fun (i:MenuItem) -> let text = (i.Child :?> Label).Text
                                        i.Activated
@@ -559,8 +563,8 @@ module Gui =
    let doMRU =
      let rec loop (h:Handler)
                   (selected:IEvent<FileInfo>)
-                  (keyDelete:RegistryKey -> string -> unit)
-                  (keySet:RegistryKey -> int -> string -> unit) = // Track this for 4 fields
+                  (deleteKey:RegistryKey -> string -> unit)
+                  (setKey:RegistryKey -> int -> string -> unit) = // Track this for 4 fields
        async {
                 let! current = Async.AwaitEvent selected
 
@@ -578,12 +582,12 @@ module Gui =
                                    |> Seq.toList
                 use fileKey = Registry.CurrentUser.CreateSubKey(recent)
                 fileKey.GetValueNames()
-                |> Seq.iter (keyDelete fileKey)
+                |> Seq.iter (deleteKey fileKey)
                 h.coverageFiles
-                |> Seq.iteri (keySet fileKey)
+                |> Seq.iteri (setKey fileKey)
 
                 InvokeOnGuiThread (fun () -> populateMenu h)
-                return! loop h selected keyDelete keySet }
+                return! loop h selected deleteKey setKey }
      loop handler fileSelection RegDeleteKey RegSetKey
 
    doMRU |> Async.Start
@@ -627,11 +631,11 @@ module Gui =
             |> Seq.sortBy (fun nodepair -> snd nodepair)
             |> Seq.iter (ApplyToModel model)
 
-            let UpdateUI (theModel : TreeStore) () =
+            let UpdateUI (theModel : TreeModel) () =
                 // File is good so enable the refresh button
                 h.refreshButton.Sensitive <- true
                 // Do real UI work here
-                h.coverageTree.Model <- theModel
+                h.classStructureTree.Model <- theModel
 
             InvokeOnGuiThread (UpdateUI model)
         return! loop h loadEvent }
@@ -652,7 +656,7 @@ module Gui =
      )
 
    // Tree selection events and such
-   handler.coverageTree.RowActivated |> Event.add (OnRowActivated handler)
+   handler.classStructureTree.RowActivated |> Event.add (OnRowActivated handler)
 
    // Initialize graphics and begin
    handler.mainWindow.Icon <- new Pixbuf(Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Visualizer.VIcon.ico"))

@@ -216,13 +216,19 @@ _Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standa
                 Arguments = "--severity all --confidence all --config " + rules + " --console --html ./_Reports/gendarme.html " + subjects})
                 "Gendarme Errors were detected"
 
-    if Environment.isWindows then
-        Actions.Run (fun info ->
-            { info with
-                    FileName = (Tools.findToolInSubPath "gendarme.exe" "./packages")
-                    WorkingDirectory = "."
-                    Arguments = "--severity all --confidence all --config ./Build/rules-posh.xml --console --html ./_Reports/gendarme.html _Binaries/AltCover.PowerShell/Debug+AnyCPU/AltCover.PowerShell.dll"})
-                    "Gendarme Errors were detected"
+    Actions.Run (fun info ->
+        { info with
+                FileName = (Tools.findToolInSubPath "gendarme.exe" "./packages")
+                WorkingDirectory = "."
+                Arguments = "--severity all --confidence all --config ./Build/rules-posh.xml --console --html ./_Reports/gendarme.html _Binaries/AltCover.PowerShell/Debug+AnyCPU/AltCover.PowerShell.dll"})
+                "Gendarme Errors were detected"
+
+    Actions.Run (fun info ->
+        { info with
+                FileName = (Tools.findToolInSubPath "gendarme.exe" "./packages")
+                WorkingDirectory = "."
+                Arguments = "--severity all --confidence all --config ./Build/rules-gtk.xml --console --html ./_Reports/gendarme.html _Binaries/AltCover.Visualizer/Debug+AnyCPU/AltCover.Visualizer.exe"})
+                "Gendarme Errors were detected"
 )
 
 _Target "FxCop" (fun _ -> // Needs debug because release is compiled --standalone which contaminates everything
@@ -251,7 +257,7 @@ _Target "FxCop" (fun _ -> // Needs debug because release is compiled --standalon
         { info with
                 FileName = fxCop
                 WorkingDirectory = "."
-                Arguments = "/c /f:\"_Binaries/AltCover.Shadow/Debug+AnyCPU/AltCover.Shadow.dll\" /o:\"_Reports/FxCopReport.xml\" /rid:-Microsoft.Design#CA1004 /rid:-Microsoft.Design#CA1006 /rid:-Microsoft.Design#CA1011 /rid:-Microsoft.Design#CA1062 /rid:-Microsoft.Maintainability#CA1506 /rid:-Microsoft.Naming#CA1704 /rid:-Microsoft.Naming#CA1707 /rid:-Microsoft.Naming#CA1709 /rid:-Microsoft.Naming#CA1715 /ignoregeneratedcode /s /t:AltCover.Recorder.Instance /gac"
+                Arguments = "/c /f:\"_Binaries/AltCover.Shadow/Debug+AnyCPU/AltCover.Shadow.dll\" /o:\"_Reports/FxCopReport.xml\" /rid:-Microsoft.Design#CA1004 /rid:-Microsoft.Design#CA1006 /rid:-Microsoft.Design#CA1011 /rid:-Microsoft.Design#CA1062 /rid:-Microsoft.Maintainability#CA1506 /rid:-Microsoft.Naming#CA1704 /rid:-Microsoft.Naming#CA1707 /rid:-Microsoft.Naming#CA1709 /rid:-Microsoft.Naming#CA1715 /t:AltCover.Recorder.Assist,AltCover.Recorder.Counter,AltCover.Recorder.Assist,AltCover.Recorder.Tracer,AltCover.Recorder.Instance /ignoregeneratedcode /s /gac"
         })
         "FxCop Errors were detected"
     Assert.That(File.Exists "_Reports/FxCopReport.xml", Is.False, "FxCop Errors were detected")
@@ -270,6 +276,16 @@ _Target "FxCop" (fun _ -> // Needs debug because release is compiled --standalon
                 FileName = fxCop
                 WorkingDirectory = "."
                 Arguments = "/c /f:\"_Binaries/AltCover.PowerShell/Debug+AnyCPU/AltCover.PowerShell.dll\" /o:\"_Reports/FxCopReport.xml\" /rid:-Microsoft.Usage#CA2235 /rid:-Microsoft.Performance#CA1819 /rid:-Microsoft.Design#CA1020 /rid:-Microsoft.Design#CA1004 /rid:-Microsoft.Design#CA1006 /rid:-Microsoft.Design#CA1011 /rid:-Microsoft.Design#CA1062 /rid:-Microsoft.Maintainability#CA1506 /rid:-Microsoft.Naming#CA1704 /rid:-Microsoft.Naming#CA1707 /rid:-Microsoft.Naming#CA1709 /rid:-Microsoft.Naming#CA1715 /ignoregeneratedcode /s /gac"
+        })
+        "FxCop Errors were detected"
+    Assert.That(File.Exists "_Reports/FxCopReport.xml", Is.False, "FxCop Errors were detected")
+
+
+    Actions.Run (fun info ->
+        { info with
+                FileName = fxCop
+                WorkingDirectory = "."
+                Arguments = "/c /f:\"_Binaries/AltCover.Visualizer/Debug+AnyCPU/AltCover.Visualizer.exe\" /o:\"_Reports/FxCopReport.xml\" /rid:-Microsoft.Usage#CA2208 /rid:-Microsoft.Usage#CA2235 /rid:-Microsoft.Maintainability#CA1506 /rid:-Microsoft.Design#CA1004 /rid:-Microsoft.Design#CA1006 /rid:-Microsoft.Naming#CA1707 /rid:-Microsoft.Design#CA1006 /rid:-Microsoft.Naming#CA1715 /rid:-Microsoft.Naming#CA1704 /rid:-Microsoft.Naming#CA1709 /t:AltCover.Augment,AltCover.Visualizer.Transformer,AltCover.Visualizer.CoverageFile,AltCover.Visualizer.Extensions,AltCover.Visualizer.Gui /ignoregeneratedcode /s /gac"
         })
         "FxCop Errors were detected"
     Assert.That(File.Exists "_Reports/FxCopReport.xml", Is.False, "FxCop Errors were detected")

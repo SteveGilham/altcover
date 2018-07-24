@@ -125,7 +125,7 @@ THE SOFTWARE.</property>
               </packing>
             </child>
             <child>
-              <widget class="GtkToolButton" id="aboutButton">
+              <widget class="GtkToolButton" id="showAboutButton">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="label" translatable="yes">About Visualizer</property>
@@ -156,7 +156,7 @@ THE SOFTWARE.</property>
                 <property name="hscrollbar_policy">automatic</property>
                 <property name="vscrollbar_policy">automatic</property>
                 <child>
-                  <widget class="GtkTreeView" id="coverageTree">
+                  <widget class="GtkTreeView" id="classStructureTree">
                     <property name="width_request">200</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
@@ -198,7 +198,7 @@ THE SOFTWARE.</property>
       </widget>
     </child>
   </widget>
-  <widget class="GtkMenu" id="openMenu">
+  <widget class="GtkMenu" id="fileOpenMenu">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
     <child>

@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <SolutionDir Condition=" '$(SolutionDir)' == '' ">$(ProjectDir)..\..\</SolutionDir>
+    <SolutionDir Condition=" '$(SolutionDir)' == '' ">$(ProjectDir)../</SolutionDir>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{d5bb91d8-e3ef-4f10-bbdb-752c5ebd689e}</ProjectGuid>
@@ -74,6 +74,7 @@
       <Link>VisibleToTest.fs</Link>
     </Compile>
     <EmbeddedResource Include="Resource.resx" />
+    <EmbeddedResource Include="Resource.eo.resx" />
     <EmbeddedResource Include="Visualizer.glade" />
     <EmbeddedResource Include="Assembly_6212.png" />
     <EmbeddedResource Include="class_16xLG.png" />

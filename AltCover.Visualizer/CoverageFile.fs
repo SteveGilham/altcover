@@ -1,7 +1,6 @@
 ﻿namespace AltCover.Visualizer
 
 open System
-open System.Diagnostics.CodeAnalysis
 open System.IO
 open System.Linq
 open System.Reflection
@@ -15,10 +14,9 @@ open AltCover.Augment
 
 type CoverageTool =
         | NCoverAlike = 0
-        | PartCover = 1
         | OpenCover = 2
 
-module Exemption =
+module internal Exemption =
   [<Literal>]
   let Declared = -1
 
@@ -35,19 +33,19 @@ type InvalidFile = {
          File : FileInfo;
          Fault : Exception }
 
-module Implementation =
+module Transformer =
 
-  let DefaultHelper (dummy:XDocument) (document:XDocument) = document
+  let internal DefaultHelper (_:XDocument) (document:XDocument) = document
 
-  let LoadTransform (path: string) =
+  let internal LoadTransform (path: string) =
     let stylesheet = XmlReader.Create(Assembly.GetExecutingAssembly().GetManifestResourceStream(path))
     let xmlTransform = new XslCompiledTransform()
     xmlTransform.Load(stylesheet, new XsltSettings(false, true), null)
     xmlTransform
 
-  let TransformFromOtherCover (document : XNode) (path: string) =
+  let internal TransformFromOtherCover (document : XNode) (path: string) =
     let xmlTransform = LoadTransform path
-    let buffer = new MemoryStream()
+    use buffer = new MemoryStream()
     let sw = new StreamWriter(buffer)
 
     // transform the document:
@@ -55,7 +53,7 @@ module Implementation =
     buffer.Position <- 0L
     XDocument.Load(XmlReader.Create(buffer))
 
-  let TransformFromOpenCover (document : XNode) =
+  let internal TransformFromOpenCover (document : XNode) =
     let report = TransformFromOtherCover document "AltCover.Visualizer.OpenCoverToNCoverEx.xsl"
 
     // Blazon it for our benfit
@@ -64,7 +62,7 @@ module Implementation =
     report
 
   // PartCover to NCover style sheet
-  let ConvertFile (helper : CoverageTool -> XDocument -> XDocument -> XDocument) (document : XDocument) =
+  let internal ConvertFile (helper : CoverageTool -> XDocument -> XDocument -> XDocument) (document : XDocument) =
    let schemas = new XmlSchemaSet()
    try
     match document.XPathSelectElements("/CoverageSession").Count() with
@@ -101,17 +99,14 @@ module Implementation =
    | :? XmlSchemaValidationException as x -> Left (x :> Exception)
    | :? ArgumentException as x -> Left (x :> Exception)
 
-type CoverageFile = {
+type internal CoverageFile = {
          File : FileInfo;
-         [<NonSerialized>]
          Document : XDocument }
      with
-      [<SuppressMessage("Microsoft.Design", "CA1006:DoNotNestGenericTypesInMemberSignatures",
-       Justification = "F# code -- not visible as such")>]
       static member ToCoverageFile (helper : CoverageTool -> XDocument -> XDocument -> XDocument) (file:FileInfo) =
           try
             let rawDocument = XDocument.Load(file.FullName)
-            match Implementation.ConvertFile helper rawDocument with
+            match Transformer.ConvertFile helper rawDocument with
             | Left x -> Left {Fault = x; File = file}
             | Right doc -> Right {File = file; Document = doc}
           with
@@ -120,9 +115,9 @@ type CoverageFile = {
           | :? IOException as e -> Left {Fault = e; File = file}
 
       static member LoadCoverageFile (file:FileInfo) =
-        CoverageFile.ToCoverageFile (fun x -> Implementation.DefaultHelper) file
+        CoverageFile.ToCoverageFile (fun x -> Transformer.DefaultHelper) file
 
-type Coverage = Either<InvalidFile, CoverageFile>
+type internal Coverage = Either<InvalidFile, CoverageFile>
 
 module Extensions =
     type Choice<'b,'a> with
