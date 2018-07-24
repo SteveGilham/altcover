@@ -351,25 +351,25 @@ module Gui =
  [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:DisposeObjectsBeforeLosingScope",
     Justification = "'baseline' is returned")>]
  let private InitializeTextBuffer (buff:TextBuffer) =
-    let Tag (buffer:TextBuffer) (definition:(string * string)) =
-                        let tag = new TextTag(fst definition)
-                        tag.Foreground <- "#000000"
-                        tag.Background <- snd definition
+    let Tag (buffer:TextBuffer) (style:string, fg, bg) =
+                        let tag = new TextTag(style)
+                        tag.Foreground <- fg
+                        tag.Background <- bg
                         buffer.TagTable.Add(tag)
 
     let baseline = new TextTag("baseline")
     baseline.Font <- readFont()
-    baseline.Foreground <- "#808080"
+    baseline.Foreground <- "#c0c0c0"
     buff.TagTable.Add(baseline)
 
     // Last declared type is last layer painted
-    [  ("visited", "#90ee90") ; // Light Green
-        ("branched", "#ADFF2F") ; // Green Yellow
-        ("declared", "#FFA500") ; // Orange
-        ("static", "#C0C0C0") ; // Silver
-        ("automatic", "#FFFF00") ; // Yellow
-        ("notVisited", "#ff0000") ; // Red
-        ("excluded", "#87CEEB") ] // Sky Blue
+    [  ("visited", "#404040", "#cefdce") // "#98FB98") ; // Dark on Pale Green
+       ("branched", "#404040", "#ADFF2F") ; // Grey on Green Yellow
+       ("declared", "#FFA500", "#FFFFFF") ; // Orange on White
+       ("static", "#808080", "#F5F5F5") ; // Grey on White Smoke
+       ("automatic", "#808080", "#FFFF00") ; // Grey on Yellow
+       ("notVisited", "#ff0000", "#FFFFFF") ; // Red on White
+       ("excluded", "#87CEEB", "#FFFFFF") ] // Sky Blue on white
         |> Seq.iter (Tag buff)
 
  let private ParseIntegerAttribute (element:XPathNavigator) (attribute:string) =
@@ -381,31 +381,31 @@ module Gui =
      if not <| String.IsNullOrEmpty(text) then System.Diagnostics.Debug.WriteLine("ParseIntegerAttribute : '" + attribute + "' with value '" + text)
      0
 
-  // simple sl/el marking
- let private MarkBranches (root:XPathNavigator) (buff:TextBuffer) (filename:string) =
-    let Decorate (buffer:TextBuffer) (tag:CodeTag) =
-        let from = buffer.GetIterAtLineOffset(tag.line - 1, tag.column - 1)
-        let until = buffer.GetIterAtLineOffset(tag.endline - 1, tag.endcolumn - 1)
-        buffer.ApplyTag("branched", from, until)
+ //// // simple sl/el marking
+ ////let private MarkBranches (root:XPathNavigator) (buff:TextBuffer) (filename:string) =
+ ////   let Decorate (buffer:TextBuffer) (tag:CodeTag) =
+ ////       let from = buffer.GetIterAtLineOffset(tag.line - 1, tag.column - 1)
+ ////       let until = buffer.GetIterAtLineOffset(tag.endline - 1, tag.endcolumn - 1)
+ ////       buffer.ApplyTag("branched", from, until)
 
-    root.Select("//method")
-                    |> Seq.cast<XPathNavigator>
-                    |> Seq.filter(fun n -> let f = n.Clone()
-                                           f.MoveToFirstChild() && filename.Equals(
-                                            f.GetAttribute("document", String.Empty),
-                                            StringComparison.OrdinalIgnoreCase))
+ ////   root.Select("//method")
+ ////                   |> Seq.cast<XPathNavigator>
+ ////                   |> Seq.filter(fun n -> let f = n.Clone()
+ ////                                          f.MoveToFirstChild() && filename.Equals(
+ ////                                           f.GetAttribute("document", String.Empty),
+ ////                                           StringComparison.OrdinalIgnoreCase))
 
-                    |> Seq.collect(fun n -> n.Select("./branch") |> Seq.cast<XPathNavigator>)
-                    |> Seq.map (fun n -> let visitcount = ParseIntegerAttribute n "visitcount"
-                                         let line = ParseIntegerAttribute n "sl"
-                                         let endline = ParseIntegerAttribute n "el"
-                                         { visitcount = visitcount
-                                           line = line
-                                           column = 1
-                                           endline = if endline > line then endline else line + 1
-                                           endcolumn = 1 })
-                    |> Seq.filter (fun n -> n.visitcount = 0 && n.line > 0)
-                    |> Seq.iter (Decorate buff)
+ ////                   |> Seq.collect(fun n -> n.Select("./branch") |> Seq.cast<XPathNavigator>)
+ ////                   |> Seq.map (fun n -> let visitcount = ParseIntegerAttribute n "visitcount"
+ ////                                        let line = ParseIntegerAttribute n "sl"
+ ////                                        let endline = ParseIntegerAttribute n "el"
+ ////                                        { visitcount = visitcount
+ ////                                          line = line
+ ////                                          column = 1
+ ////                                          endline = if endline > line then endline else line + 1
+ ////                                          endcolumn = 1 })
+ ////                   |> Seq.filter (fun n -> n.visitcount = 0 && n.line > 0)
+ ////                   |> Seq.iter (Decorate buff)
 
  let internal (|Select|_|) (pattern:String) offered =
     if (fst offered) |> String.IsNullOrWhiteSpace |> not &&
@@ -486,8 +486,8 @@ module Gui =
                     let root = m.Clone()
                     root.MoveToRoot()
 
-                    // simple sl/el marking
-                    MarkBranches root buff filename
+                    ////// simple sl/el marking
+                    ////MarkBranches root buff filename
 
                     let code = root.Select("//seqpnt[@document='" + filename + "']")
                                  |> Seq.cast<XPathNavigator>
