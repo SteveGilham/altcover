@@ -523,9 +523,8 @@ module Gui =
    handler.aboutVisualizer.Logo <- new Pixbuf(Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Visualizer.logo.png"))
    handler.mainWindow.ShowAll()
    handler
-            
- [<EntryPoint; STAThread>]
- let internal Main arguments =
+
+ let ParseCommandLine arguments =
    let options = new OptionSet()
    options.Add("-g", "Clear geometry",
                 (fun _ -> let k1 = Registry.CurrentUser.CreateSubKey(geometry)
@@ -537,7 +536,10 @@ module Gui =
                            k1.Close();
                            Registry.CurrentUser.DeleteSubKeyTree(recent))) |> ignore
    options.Parse(arguments) |> ignore
-
+            
+ [<EntryPoint; STAThread>]
+ let internal Main arguments =
+   ParseCommandLine arguments
    Application.Init()
    let handler = PrepareGui ()
    handler.mainWindow.DeleteEvent
