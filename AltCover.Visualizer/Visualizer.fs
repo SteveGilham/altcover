@@ -413,6 +413,14 @@ module Gui =
        then Some offered
        else None
 
+ let private SelectStyle because excluded =
+    match (because, excluded) with
+                   | Select "author declared (" _ -> Exemption.Declared
+                   | Select "tool-generated: " _ -> Exemption.Automatic
+                   | Select "static analysis: " _ -> Exemption.StaticAnalysis
+                   | (_, true) -> Exemption.Excluded
+                   | _ -> 0
+
  let private CoverageToTag (n:XPathNavigator) =
     let excluded = Boolean.TryParse(n.GetAttribute("excluded", String.Empty)) |> snd
     let visitcount = Int32.TryParse(n.GetAttribute("visitcount", String.Empty)) |> snd
@@ -424,12 +432,7 @@ module Gui =
     // Extension behaviour for textual signalling for three lines
     n.MoveToParent() |> ignore
     let because = n.GetAttribute("excluded-because", String.Empty)
-    let fallback = match (because, excluded) with
-                   | Select "author declared (" _ -> Exemption.Declared
-                   | Select "tool-generated: " _ -> Exemption.Automatic
-                   | Select "static analysis: " _ -> Exemption.StaticAnalysis
-                   | (_, true) -> Exemption.Excluded
-                   | _ -> 0
+    let fallback = SelectStyle because excluded
 
     { visitcount = if visitcount = 0 then fallback else visitcount
       line = Int32.TryParse(line) |> snd
@@ -500,6 +503,27 @@ module Gui =
                     let mark = buff.CreateMark(line, iter, true)
                     handler.codeView.ScrollToMark(mark, 0.0, true, 0.0, 0.3)
 
+ let private PrepareGui () =
+   let handler = InitializeHandler ()
+   PrepareAboutDialog handler
+   PrepareTreeView handler
+
+   readGeometry handler.mainWindow
+   readCoverageFiles handler
+   populateMenu handler
+
+   handler.codeView.Editable <- false
+   InitializeTextBuffer handler.codeView.Buffer
+
+   handler.refreshButton.Sensitive <- false
+
+   // Initialize graphics and begin
+   handler.mainWindow.Icon <- new Pixbuf(Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Visualizer.VIcon.ico"))
+   handler.aboutVisualizer.Icon <- new Pixbuf(Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Visualizer.VIcon.ico"))
+   handler.aboutVisualizer.Logo <- new Pixbuf(Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Visualizer.logo.png"))
+   handler.mainWindow.ShowAll()
+   handler
+            
  [<EntryPoint; STAThread>]
  let internal Main arguments =
    let options = new OptionSet()
@@ -515,18 +539,7 @@ module Gui =
    options.Parse(arguments) |> ignore
 
    Application.Init()
-   let handler = InitializeHandler ()
-   PrepareAboutDialog handler
-   PrepareTreeView handler
-
-   readGeometry handler.mainWindow
-   readCoverageFiles handler
-   populateMenu handler
-
-   handler.codeView.Editable <- false
-   InitializeTextBuffer handler.codeView.Buffer
-
-   handler.refreshButton.Sensitive <- false
+   let handler = PrepareGui ()
    handler.mainWindow.DeleteEvent
              |> Event.add (fun args -> if save then saveGeometry handler.mainWindow
                                        Application.Quit()
@@ -657,12 +670,6 @@ module Gui =
 
    // Tree selection events and such
    handler.classStructureTree.RowActivated |> Event.add (OnRowActivated handler)
-
-   // Initialize graphics and begin
-   handler.mainWindow.Icon <- new Pixbuf(Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Visualizer.VIcon.ico"))
-   handler.aboutVisualizer.Icon <- new Pixbuf(Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Visualizer.VIcon.ico"))
-   handler.aboutVisualizer.Logo <- new Pixbuf(Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Visualizer.logo.png"))
-   handler.mainWindow.ShowAll()
 
    Application.Run()
 
