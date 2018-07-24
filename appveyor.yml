@@ -14,6 +14,8 @@ cache:
   - '%USERPROFILE%\.nuget\packages -> **\*.*proj'
 nuget:
   disable_publish_on_pr: true
+install:
+  - cinst gtksharp
 build_script:
 - ps: >-
     $ErrorActionPreference = 'Continue'
