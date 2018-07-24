@@ -56,7 +56,7 @@ module Implementation =
     XDocument.Load(XmlReader.Create(buffer))
 
   let TransformFromOpenCover (document : XNode) =
-    let report = TransformFromOtherCover document "AltCover.Visualizer.Opencover.xsl"
+    let report = TransformFromOtherCover document "AltCover.Visualizer.OpenCoverToNCoverEx.xsl"
 
     // Blazon it for our benfit
     let element = new XElement(XName.Get("OpenCoverReport"))
