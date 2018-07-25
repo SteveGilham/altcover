@@ -233,35 +233,48 @@ module Gui =
         md.Run() |> ignore
         md.Destroy()
 
+ let private ShowMessageOnGuiThread (parent:Window) (severity:MessageType) message =
+   let SendMessageToWindow  () =
+     ShowMessage parent message severity
+   InvokeOnGuiThread(SendMessageToWindow)
+
  let private InvalidCoverageFileMessage (parent:Window) (x : InvalidFile) =
-   let SendMessageToWindow (window:Window) (message:string) () =
-     ShowMessage window message MessageType.Error
    let format = GetResourceString("InvalidFile")
    let message = String.Format(System.Globalization.CultureInfo.CurrentCulture,
                                format,
                                x.File.FullName,
                                x.Fault.Message)
-   InvokeOnGuiThread(SendMessageToWindow parent message)
+   ShowMessageOnGuiThread parent MessageType.Error message
 
  let private OutdatedCoverageFileMessage (parent:Window) (x : FileInfo) =
-   let SendMessageToWindow (window:Window) (message:string) () =
-     ShowMessage window message MessageType.Warning
    let format = GetResourceString("CoverageOutOfDate")
    let message = String.Format(System.Globalization.CultureInfo.CurrentCulture,
                                format,
                                x.FullName)
-   InvokeOnGuiThread(SendMessageToWindow parent message)
+   ShowMessageOnGuiThread parent MessageType.Warning message
+
+ let private MissingSourceFileMessage (parent:Window) (x : FileInfo) =
+   let format = GetResourceString("MissingSourceFile")
+   let message = String.Format(System.Globalization.CultureInfo.CurrentCulture,
+                               format,
+                               x.FullName)
+   ShowMessageOnGuiThread parent MessageType.Warning message
 
  let private OutdatedCoverageThisFileMessage (parent:Window) (c : FileInfo) (s:FileInfo) =
-   let SendMessageToWindow (window:Window) (message:string) () =
-     ShowMessage window message MessageType.Warning
-
    let format = GetResourceString("CoverageOutOfDateThisFile")
    let message = String.Format(System.Globalization.CultureInfo.CurrentCulture,
                                format,
                                c.FullName,
                                s.FullName)
-   InvokeOnGuiThread(SendMessageToWindow parent message)
+   ShowMessageOnGuiThread parent MessageType.Warning message
+
+ let private MissingSourceThisFileMessage (parent:Window) (c : FileInfo) (s:FileInfo) =
+   let format = GetResourceString("MissingSourceThisFile")
+   let message = String.Format(System.Globalization.CultureInfo.CurrentCulture,
+                               format,
+                               c.FullName,
+                               s.FullName)
+   ShowMessageOnGuiThread parent MessageType.Warning message
 
  // -------------------------- UI set-up  ---------------------------
 
@@ -478,30 +491,32 @@ module Gui =
 
                 let info = new FileInfo(filename)
                 let current = new FileInfo(handler.coverageFiles.Head)
-                if (not info.Exists) || (info.LastWriteTimeUtc > current.LastWriteTimeUtc) then
-                    OutdatedCoverageThisFileMessage handler.mainWindow current info
-                else
-                    let buff = handler.codeView.Buffer
-                    buff.Text <- File.ReadAllText(filename)
-                    buff.ApplyTag("baseline", buff.StartIter, buff.EndIter)
+                if (not info.Exists) then
+                        MissingSourceThisFileMessage handler.mainWindow current info
+                else if (info.LastWriteTimeUtc > current.LastWriteTimeUtc) then
+                        OutdatedCoverageThisFileMessage handler.mainWindow current info
+                     else
+                        let buff = handler.codeView.Buffer
+                        buff.Text <- File.ReadAllText(filename)
+                        buff.ApplyTag("baseline", buff.StartIter, buff.EndIter)
 
-                    let line = child.GetAttribute("line", String.Empty)
-                    let root = m.Clone()
-                    root.MoveToRoot()
+                        let line = child.GetAttribute("line", String.Empty)
+                        let root = m.Clone()
+                        root.MoveToRoot()
 
-                    ////// simple sl/el marking
-                    ////MarkBranches root buff filename
+                        ////// simple sl/el marking
+                        ////MarkBranches root buff filename
 
-                    let code = root.Select("//seqpnt[@document='" + filename + "']")
-                                 |> Seq.cast<XPathNavigator>
-                                 |> Seq.map CoverageToTag
-                                 |> Seq.filter (FilterCoverage buff)
+                        let code = root.Select("//seqpnt[@document='" + filename + "']")
+                                     |> Seq.cast<XPathNavigator>
+                                     |> Seq.map CoverageToTag
+                                     |> Seq.filter (FilterCoverage buff)
 
-                    code |> Seq.iter (TagByCoverage buff)
+                        code |> Seq.iter (TagByCoverage buff)
 
-                    let iter = buff.GetIterAtLine((Int32.TryParse(line) |> snd) - 1)
-                    let mark = buff.CreateMark(line, iter, true)
-                    handler.codeView.ScrollToMark(mark, 0.0, true, 0.0, 0.3)
+                        let iter = buff.GetIterAtLine((Int32.TryParse(line) |> snd) - 1)
+                        let mark = buff.CreateMark(line, iter, true)
+                        handler.codeView.ScrollToMark(mark, 0.0, true, 0.0, 0.3)
 
  let private PrepareGui () =
    let handler = InitializeHandler ()
@@ -620,11 +635,17 @@ module Gui =
         | Right coverage ->
             // check if coverage is newer that the source files
             let sourceFiles = coverage.Document.CreateNavigator().Select("//seqpnt/@document") |> Seq.cast<XPathNavigator> |> Seq.map (fun x -> x.Value) |> Seq.distinct
+
+            let missing = sourceFiles
+                        |> Seq.map (fun f -> new FileInfo(f))
+                        |> Seq.filter (fun f -> not f.Exists)
+            if not (Seq.isEmpty missing) then
+                MissingSourceFileMessage h.mainWindow current
+
             let newer = sourceFiles
                         |> Seq.map (fun f -> new FileInfo(f))
-                        |> Seq.filter (fun f -> (not f.Exists) ||
+                        |> Seq.filter (fun f -> f.Exists &&
                                                 f.LastWriteTimeUtc > current.LastWriteTimeUtc )
-
             // warn if not
             if not (Seq.isEmpty newer) then
                 OutdatedCoverageFileMessage h.mainWindow current

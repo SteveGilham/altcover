@@ -679,7 +679,7 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
           { info with
                 FileName = altcover
                 WorkingDirectory = gtkDir
-                Arguments = ("--opencover -t=Gui /sn=" + keyfile + AltCoverFilter + @"/o=./__GTKVTestWithAltCoverRunner -x=" + gtkReport)})
+                Arguments = ("--opencover -t=Gui -s=\"\\-sharp\" /sn=" + keyfile + AltCoverFilter + @"/o=./__GTKVTestWithAltCoverRunner -x=" + gtkReport)})
                 "Instrumenting the shadow tests failed"
 
       printfn "Execute the the GTK# visualizer tests"

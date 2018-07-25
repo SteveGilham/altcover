@@ -136,4 +136,13 @@ is out of date with respect to source file
   <data name="SelectXml" xml:space="preserve">
     <value>xml files (*.xml)|*.xml|All files (*.*)|*.*</value>
   </data>
+  <data name="MissingSourceFile" xml:space="preserve">
+    <value>The file {0} 
+refers to source files not found on this computer.</value>
+  </data>
+  <data name="MissingSourceThisFile" xml:space="preserve">
+    <value>The file {0} 
+refers to absent to source file
+{1}.</value>
+  </data>
 </root>

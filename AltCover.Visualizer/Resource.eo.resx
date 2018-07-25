@@ -130,6 +130,15 @@ estas sen dato pri respekto al fonta dosiero
     <value>La dosiero {0} ne estas valida kovra dosiero:
 {1}</value>
   </data>
+  <data name="MissingSourceFile" xml:space="preserve">
+    <value>La dosiero {0} 
+raportas al fontaj dosieroj ne trovitaj en ĉi tiu komputilo.</value>
+  </data>
+  <data name="MissingSourceThisFile" xml:space="preserve">
+    <value>La dosiero {0}
+raportas al ausente fonta dosiero
+{1}.</value>
+  </data>
   <data name="SelectFont" xml:space="preserve">
     <value>Elektu tiparon por fonta ekrano</value>
   </data>
