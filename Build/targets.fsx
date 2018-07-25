@@ -280,7 +280,6 @@ _Target "FxCop" (fun _ -> // Needs debug because release is compiled --standalon
         "FxCop Errors were detected"
     Assert.That(File.Exists "_Reports/FxCopReport.xml", Is.False, "FxCop Errors were detected")
 
-
     Actions.Run (fun info ->
         { info with
                 FileName = fxCop
@@ -2019,13 +2018,17 @@ _Target "MSBuildTest" ( fun _ ->
                     ])
 
       // touch-test framework
-      MSBuild.build (fun p ->
-            { p with
-                Verbosity = Some MSBuildVerbosity.Normal
-                Properties = [
-                               "Configuration", "Debug"
-                               "DebugSymbols", "True"
-                             ]})  "./Sample4/Sample4.prepare.fsproj"                 
+      let unpack = Path.getFullName "_Packaging/Unpack/tools/net45"
+      if (unpack @@ "AltCover.exe") |> File.Exists then
+          MSBuild.build (fun p ->
+                { p with
+                    Verbosity = Some MSBuildVerbosity.Normal
+                    Properties = [
+                                   "Configuration", "Debug"
+                                   "DebugSymbols", "True"
+                                 ]})  "./Sample4/Sample4.prepare.fsproj"
+      else
+        printfn "Skipping touch-test -- AltCover.exe not packaged"
 )
 
 _Target "DotnetTestIntegration" ( fun _ ->
