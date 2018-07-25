@@ -20,8 +20,4 @@ type AltCoverTests() = class
     let strings = input |> Seq.map (Option.nullable >> (Option.getOrElse "fallback"))
     Assert.That(strings, Is.EquivalentTo([ "string"; "fallback"; "another string" ]))
 
-  [<Test>]
-  member self.PlaceHolder() =
-    Assert.Fail("is this wired up yet?")
-
 end

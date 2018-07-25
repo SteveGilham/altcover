@@ -672,6 +672,28 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
                                                       Path.getFullName  "_Binaries/AltCover.Shadow.Tests/Debug+AnyCPU/__ShadowTestWithAltCoverRunner/AltCover.Shadow.Tests2.dll"]) + "\""
                             )}) "Re-instrument tests returned with a non-zero exit code"
 
+      printfn "Instrument the GTK# visualizer tests"
+      let gtkDir = Path.getFullName  "_Binaries/AltCover.Tests.Visualizer/Debug+AnyCPU"
+      let gtkReport = reports @@ "GTKVTestWithAltCoverRunner.xml"
+      Actions.Run (fun info ->
+          { info with
+                FileName = altcover
+                WorkingDirectory = gtkDir
+                Arguments = ("--opencover -t=Gui /sn=" + keyfile + AltCoverFilter + @"/o=./__GTKVTestWithAltCoverRunner -x=" + gtkReport)})
+                "Instrumenting the shadow tests failed"
+
+      printfn "Execute the the GTK# visualizer tests"
+      Actions.Run (fun info ->
+          { info with
+                FileName = altcover
+                WorkingDirectory = "."
+                Arguments = ( " Runner -x " + nunit +
+                              " -r " + (gtkDir @@ "__GTKVTestWithAltCoverRunner") +
+                              " -w . -- " +
+                              " --noheader --work=. --result=./_Reports/ShadowTestWithAltCoverRunnerReport.xml \"" +
+                              String.Join ("\" \"", [ Path.getFullName  "_Binaries/AltCover.Tests.Visualizer/Debug+AnyCPU/__GTKVTestWithAltCoverRunner/AltCover.Tests.Visualizer.dll"]) + "\""
+                            )}) "Re-instrument tests returned with a non-zero exit code"
+
       let pester = Path.getFullName "_Reports/Pester.xml"
       ReportGenerator.generateReports
                       (fun p -> { p with ExePath = Tools.findToolInSubPath "ReportGenerator.exe" "."
