@@ -4,6 +4,7 @@ open System
 open System.Collections.Generic
 open System.Globalization
 open System.IO
+open System.Linq
 open System.Reflection
 open System.Resources
 open System.Xml.Linq
@@ -302,6 +303,7 @@ module Gui =
 
    // set or clear the menu
    handler.openButton.Menu <- if handler.coverageFiles.IsEmpty then null else handler.fileOpenMenu :> Widget
+   handler.openButton.Label <- GetResourceString("openButton.Label")
 
  let private PrepareAboutDialog (handler:Handler) =
    let isWindows = System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
@@ -315,17 +317,25 @@ module Gui =
    AboutDialog.SetUrlHook(fun _ link -> ShowUrl link) |> ignore
    LinkButton.SetUriHook(fun _ link -> ShowUrl link) |> ignore
 
+   handler.aboutVisualizer.ActionArea.Children.OfType<Button>()
+   |> Seq.iter(fun w -> let t = GetResourceString w.Label
+                        if t |> String.IsNullOrWhiteSpace |> not then
+                          w.Label <- t )
+
+   handler.aboutVisualizer.Title <- GetResourceString("aboutVisualizer.Title")
    handler.aboutVisualizer.Parent <- handler.mainWindow
    handler.aboutVisualizer.Version <- System.Diagnostics.FileVersionInfo.GetVersionInfo(
                                       System.Reflection.Assembly.GetExecutingAssembly().Location).FileVersion
    handler.aboutVisualizer.WindowPosition <- WindowPosition.Mouse
    handler.aboutVisualizer.Version <- System.AssemblyVersionInformation.AssemblyFileVersion
    handler.aboutVisualizer.Copyright <- String.Format(System.Globalization.CultureInfo.CurrentCulture,
-                                                      handler.aboutVisualizer.Copyright,
+                                                      GetResourceString("aboutVisualizer.Copyright"),
                                                       System.AssemblyVersionInformation.AssemblyCopyright)
    handler.aboutVisualizer.License <- String.Format(System.Globalization.CultureInfo.CurrentCulture,
                                                     handler.aboutVisualizer.License,
                                                       System.AssemblyVersionInformation.AssemblyCopyright)
+   handler.aboutVisualizer.Comments <- GetResourceString("aboutVisualizer.Comments")
+   handler.aboutVisualizer.WebsiteLabel <- GetResourceString("aboutVisualizer.WebsiteLabel")
 
  let private PrepareTreeView (handler:Handler) =
    [| AssemblyIcon ; NamespaceIcon ; ClassIcon ; MethodIcon |]
@@ -534,6 +544,9 @@ module Gui =
    InitializeTextBuffer handler.codeView.Buffer
 
    handler.refreshButton.Sensitive <- false
+   handler.refreshButton.Label <- GetResourceString("refreshButton.Label")
+   handler.fontButton.Label <- GetResourceString("fontButton.Label")
+   handler.showAboutButton.Label <- GetResourceString("showAboutButton.Label")
 
    // Initialize graphics and begin
    handler.mainWindow.Icon <- new Pixbuf(Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Visualizer.VIcon.ico"))

@@ -145,4 +145,39 @@ refers to source files not found on this computer.</value>
 refers to absent to source file
 {1}.</value>
   </data>
+  <data name="aboutVisualizer.Comments" xml:space="preserve">
+    <value>Coverage visualizer for NCover and OpenCover reports</value>
+  </data>
+  <data name="aboutVisualizer.Copyright" xml:space="preserve">
+    <value>{0}
+Icons from the Visual Studio 2017 collection
+https://docs.microsoft.com/en-us/visualstudio/designers/the-visual-studio-image-library</value>
+  </data>
+  <data name="aboutVisualizer.Title" xml:space="preserve">
+    <value>About AltCover Visualizer</value>
+  </data>
+  <data name="aboutVisualizer.WebsiteLabel" xml:space="preserve">
+    <value>GitHub repo</value>
+  </data>
+  <data name="C_redits" xml:space="preserve">
+    <value>C_redits</value>
+  </data>
+  <data name="fontButton.Label" xml:space="preserve">
+    <value>Font...</value>
+  </data>
+  <data name="gtk-close" xml:space="preserve">
+    <value>_Close</value>
+  </data>
+  <data name="openButton.Label" xml:space="preserve">
+    <value>Open...</value>
+  </data>
+  <data name="refreshButton.Label" xml:space="preserve">
+    <value>Refresh</value>
+  </data>
+  <data name="showAboutButton.Label" xml:space="preserve">
+    <value>About...</value>
+  </data>
+  <data name="_License" xml:space="preserve">
+    <value>_License</value>
+  </data>
 </root>

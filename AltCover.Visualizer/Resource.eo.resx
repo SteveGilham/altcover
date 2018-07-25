@@ -117,6 +117,20 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="aboutVisualizer.Comments" xml:space="preserve">
+    <value>Kovrilo-visualizilo por raportoj de NCover kaj OpenCover</value>
+  </data>
+  <data name="aboutVisualizer.Copyright" xml:space="preserve">
+    <value>{0}
+Ikonoj de la Visual Studio 2017-kolekto
+https://docs.microsoft.com/en-us/visualstudio/designers/the-visual-studio-image-library</value>
+  </data>
+  <data name="aboutVisualizer.Title" xml:space="preserve">
+    <value>Pri AltCover Visualizer</value>
+  </data>
+  <data name="aboutVisualizer.WebsiteLabel" xml:space="preserve">
+    <value>GitHub repo</value>
+  </data>
   <data name="CoverageOutOfDate" xml:space="preserve">
     <value>La dosiero {0}
 estas sen dato koncerne iujn el la fontaj dosieroj.</value>
@@ -125,6 +139,15 @@ estas sen dato koncerne iujn el la fontaj dosieroj.</value>
     <value>La dosiero {0}
 estas sen dato pri respekto al fonta dosiero
 {1}.</value>
+  </data>
+  <data name="C_redits" xml:space="preserve">
+    <value>_Kreditoj</value>
+  </data>
+  <data name="fontButton.Label" xml:space="preserve">
+    <value>Tiparo...</value>
+  </data>
+  <data name="gtk-close" xml:space="preserve">
+    <value>_Fermi</value>
   </data>
   <data name="InvalidFile" xml:space="preserve">
     <value>La dosiero {0} ne estas valida kovra dosiero:
@@ -139,10 +162,22 @@ raportas al fontaj dosieroj ne trovitaj en ĉi tiu komputilo.</value>
 raportas al ausente fonta dosiero
 {1}.</value>
   </data>
+  <data name="openButton.Label" xml:space="preserve">
+    <value>Malferma ...</value>
+  </data>
+  <data name="refreshButton.Label" xml:space="preserve">
+    <value>Refreŝigi</value>
+  </data>
   <data name="SelectFont" xml:space="preserve">
     <value>Elektu tiparon por fonta ekrano</value>
   </data>
   <data name="SelectXml" xml:space="preserve">
     <value>xml-dosieroj (* .xml) | * .xml | Ĉiuj dosieroj (*. *) | *. *</value>
+  </data>
+  <data name="showAboutButton.Label" xml:space="preserve">
+    <value>Pri...</value>
+  </data>
+  <data name="_License" xml:space="preserve">
+    <value>_Permesilo</value>
   </data>
 </root>

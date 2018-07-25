@@ -5,7 +5,7 @@
   <widget class="GtkAboutDialog" id="aboutVisualizer">
     <property name="can_focus">False</property>
     <property name="border_width">5</property>
-    <property name="title" translatable="yes">About AltCover Visualizer</property>
+    <property name="title" translatable="no">xx</property>
     <property name="resizable">False</property>
     <property name="window_position">center-on-parent</property>
     <property name="destroy_with_parent">True</property>
@@ -13,13 +13,12 @@
     <property name="skip_taskbar_hint">True</property>
     <property name="skip_pager_hint">True</property>
     <property name="program_name">AltCover Visualizer</property>
-    <property name="version">{0}</property>
-    <property name="copyright" translatable="yes">{0}
-Icon derived in part from the Tango Desktop Project (http://tango.freedesktop.org/)</property>
-    <property name="comments" translatable="yes">Coverage and static analysis visualizer for NCover and OpenCover reports</property>
+    <property name="version">xx</property>
+    <property name="copyright" translatable="no">xx</property>
+    <property name="comments" translatable="no">xx</property>
     <property name="website">https://github.com/SteveGilham/altcover</property>
-    <property name="website_label" translatable="yes">GitHub repo</property>
-    <property name="license" translatable="yes">The MIT License
+    <property name="website_label" translatable="no">xx</property>
+    <property name="license" translatable="no">The MIT License
 {0}
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -79,7 +78,7 @@ THE SOFTWARE.</property>
               <widget class="GtkMenuToolButton" id="openButton">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="label" translatable="yes">Open...</property>
+                <property name="label" translatable="no">xx</property>
                 <property name="use_underline">True</property>
                 <property name="stock_id">gtk-open</property>
               </widget>
@@ -92,7 +91,7 @@ THE SOFTWARE.</property>
               <widget class="GtkToolButton" id="refreshButton">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="label" translatable="yes">Refresh</property>
+                <property name="label" translatable="no">xx</property>
                 <property name="use_underline">True</property>
                 <property name="stock_id">gtk-refresh</property>
               </widget>
@@ -105,7 +104,7 @@ THE SOFTWARE.</property>
               <widget class="GtkToolButton" id="fontButton">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="label" translatable="yes">Font...</property>
+                <property name="label" translatable="no">xxx</property>
                 <property name="use_underline">True</property>
                 <property name="stock_id">gtk-select-font</property>
               </widget>
@@ -128,7 +127,7 @@ THE SOFTWARE.</property>
               <widget class="GtkToolButton" id="showAboutButton">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="label" translatable="yes">About Visualizer</property>
+                <property name="label" translatable="no">xx</property>
                 <property name="use_underline">True</property>
                 <property name="stock_id">gtk-about</property>
               </widget>
@@ -205,7 +204,7 @@ THE SOFTWARE.</property>
       <widget class="GtkMenuItem" id="menuitem0">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
-        <property name="label" translatable="yes">&amp;0</property>
+        <property name="label" translatable="no">&amp;0</property>
         <property name="use_underline">True</property>
       </widget>
     </child>
@@ -213,7 +212,7 @@ THE SOFTWARE.</property>
       <widget class="GtkMenuItem" id="menuitem1">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
-        <property name="label" translatable="yes">&amp;1</property>
+        <property name="label" translatable="no">&amp;1</property>
         <property name="use_underline">True</property>
       </widget>
     </child>
@@ -221,7 +220,7 @@ THE SOFTWARE.</property>
       <widget class="GtkMenuItem" id="menuitem2">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
-        <property name="label" translatable="yes">&amp;2</property>
+        <property name="label" translatable="no">&amp;2</property>
         <property name="use_underline">True</property>
       </widget>
     </child>
@@ -229,7 +228,7 @@ THE SOFTWARE.</property>
       <widget class="GtkMenuItem" id="menuitem3">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
-        <property name="label" translatable="yes">&amp;3</property>
+        <property name="label" translatable="no">&amp;3</property>
         <property name="use_underline">True</property>
       </widget>
     </child>
@@ -237,7 +236,7 @@ THE SOFTWARE.</property>
       <widget class="GtkMenuItem" id="menuitem4">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
-        <property name="label" translatable="yes">&amp;4</property>
+        <property name="label" translatable="no">&amp;4</property>
         <property name="use_underline">True</property>
       </widget>
     </child>
@@ -245,7 +244,7 @@ THE SOFTWARE.</property>
       <widget class="GtkMenuItem" id="menuitem5">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
-        <property name="label" translatable="yes">&amp;5</property>
+        <property name="label" translatable="no">&amp;5</property>
         <property name="use_underline">True</property>
       </widget>
     </child>
@@ -253,7 +252,7 @@ THE SOFTWARE.</property>
       <widget class="GtkMenuItem" id="menuitem6">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
-        <property name="label" translatable="yes">&amp;6</property>
+        <property name="label" translatable="no">&amp;6</property>
         <property name="use_underline">True</property>
       </widget>
     </child>
@@ -261,7 +260,7 @@ THE SOFTWARE.</property>
       <widget class="GtkMenuItem" id="menuitem7">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
-        <property name="label" translatable="yes">&amp;7</property>
+        <property name="label" translatable="no">&amp;7</property>
         <property name="use_underline">True</property>
       </widget>
     </child>
@@ -269,7 +268,7 @@ THE SOFTWARE.</property>
       <widget class="GtkMenuItem" id="menuitem8">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
-        <property name="label" translatable="yes">&amp;8</property>
+        <property name="label" translatable="no">&amp;8</property>
         <property name="use_underline">True</property>
       </widget>
     </child>
@@ -277,7 +276,7 @@ THE SOFTWARE.</property>
       <widget class="GtkMenuItem" id="menuitem9">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
-        <property name="label" translatable="yes">&amp;9</property>
+        <property name="label" translatable="no">&amp;9</property>
         <property name="use_underline">True</property>
       </widget>
     </child>
