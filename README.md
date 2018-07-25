@@ -16,7 +16,7 @@ For Mono, .net framework and .net core, except as noted
 * `AltCover`, a command-line tool for recording code coverage (including dotnet and global tool versions)
 * MSBuild tasks to drive the tool, including `dotnet test` integration
 * A PowerShell module (not mono) containing a cmdlet that drives the tool, and other cmdlets for manipulating coverage reports
-* A coverage visualizer tool (.net framework and mono only, so far; for .net framework, needs GTK# v2.12.xx installed separately -- see https://www.mono-project.com/download/stable/#download-win )
+* **NEW** A coverage visualizer tool (.net framework and mono only, so far; for .net framework, needs GTK# v2.12.xx installed separately -- see https://www.mono-project.com/download/stable/#download-win )
 
 ![Visualizer screenshot](./AltCover.Visualizer/Screenshot.png)
 

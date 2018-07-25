@@ -5,8 +5,8 @@ Q. Never mind the fluff -- how do I get started?
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
 # 3.5.xxx (Cerulean series release 9)
-* `AltCover.Visualizer` tool for .net framework and mono (for .net framework, needs GTK#2.12.xx installed separately -- see https://www.mono-project.com/download/stable/)
-* [BUGFIX] `ConvertTo-BarChart`, `ConvertTo-LCov` and `ConvertTo-Cobertura` would fail for some corner cases found in OpenCover files (fixed in code shared with the Visualizer om the course of Visualizer teating)
+* [Initial Release] `AltCover.Visualizer` tool for .net framework and mono (for .net framework, needs GTK#2.12.xx installed separately -- see https://www.mono-project.com/download/stable/)
+* [BUGFIX] `ConvertTo-BarChart`, `ConvertTo-LCov` and `ConvertTo-Cobertura` would fail for some corner cases found in OpenCover files (fixed in code shared with the Visualizer om the course of Visualizer testing)
 
 # 3.5.569 (Cerulean series release 8)
 * `altcover version` command line option to output the version of AltCover being used (also `Invoke-AltCover -Version`, MSBuild task `AltCover.GetVersion`, option `/p:AltCoverGetVersion`)
