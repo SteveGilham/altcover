@@ -2017,6 +2017,15 @@ _Target "MSBuildTest" ( fun _ ->
                                      "<TrackedMethodRef uid=\"2\" vc=\"1\" />"
                                      "<TrackedMethodRef uid=\"2\" vc=\"1\" />"
                     ])
+
+      // touch-test framework
+      MSBuild.build (fun p ->
+            { p with
+                Verbosity = Some MSBuildVerbosity.Normal
+                Properties = [
+                               "Configuration", "Debug"
+                               "DebugSymbols", "True"
+                             ]})  "./Sample4/Sample4.prepare.fsproj"                 
 )
 
 _Target "DotnetTestIntegration" ( fun _ ->
