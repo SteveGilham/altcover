@@ -516,6 +516,13 @@ module Gui =
                 | _ -> "visited"
     buff.ApplyTag(tag, from, until)
 
+ let private MarkCoverage (root:XPathNavigator) buff filename =
+    root.Select("//seqpnt[@document='" + filename + "']")
+                    |> Seq.cast<XPathNavigator>
+                    |> Seq.map CoverageToTag
+                    |> Seq.filter (FilterCoverage buff)
+                    |> Seq.iter (TagByCoverage buff)
+
  let private OnRowActivated (handler:Handler) (activation:RowActivatedArgs) =
         let HitFilter (activated:RowActivatedArgs) (path:TreePath) =
             activated.Path.Compare(path) = 0
@@ -545,13 +552,7 @@ module Gui =
                         root.MoveToRoot()
 
                         MarkBranches root handler.codeView filename
-
-                        let code = root.Select("//seqpnt[@document='" + filename + "']")
-                                     |> Seq.cast<XPathNavigator>
-                                     |> Seq.map CoverageToTag
-                                     |> Seq.filter (FilterCoverage buff)
-
-                        code |> Seq.iter (TagByCoverage buff)
+                        MarkCoverage root buff filename
 
                         let iter = buff.GetIterAtLine((Int32.TryParse(line) |> snd) - 1)
                         let mark = buff.CreateMark(line, iter, true)
