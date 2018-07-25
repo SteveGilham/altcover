@@ -95,9 +95,9 @@
     <EmbeddedResource Include="..\AltCover.PowerShell\xsd\OpenCover.xsd">
       <Link>OpenCover.xsd</Link>
     </EmbeddedResource>
-    <None Include="..\AltCover.PowerShell\xsl\OpenCoverToNCoverEx.xsl">
+    <EmbeddedResource Include="..\AltCover.PowerShell\xsl\OpenCoverToNCoverEx.xsl">
       <Link>OpenCoverToNCoverEx.xsl</Link>
-    </None>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <Reference Include="atk-sharp">
