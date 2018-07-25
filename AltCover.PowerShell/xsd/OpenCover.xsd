@@ -120,7 +120,7 @@
                                                 </xs:sequence>
                                               </xs:complexType>
                                             </xs:element>
-                                            <xs:element name="MethodPoint" type="MethodPoint">
+                                            <xs:element name="MethodPoint" type="MethodPoint" minOccurs="0" maxOccurs="1">
                                             </xs:element>
                                           </xs:sequence>
                                           <xs:attribute name="visited" type="xs:boolean" use="required" />
@@ -131,12 +131,14 @@
                                           <xs:attribute name="isStatic" type="xs:boolean" use="required" />
                                           <xs:attribute name="isGetter" type="xs:boolean" use="required" />
                                           <xs:attribute name="isSetter" type="xs:boolean" use="required" />
-                                          <xs:anyAttribute processContents="skip" />                                        </xs:complexType>
+                                          <xs:anyAttribute processContents="skip" />
+                                        </xs:complexType>
                                       </xs:element>
                                     </xs:sequence>
                                   </xs:complexType>
                                 </xs:element>
                               </xs:all>
+                              <xs:anyAttribute processContents="skip" />
                             </xs:complexType>
                           </xs:element>
                         </xs:sequence>
@@ -169,10 +171,10 @@
     </xs:complexType>
   </xs:element>
   <xs:complexType name="MethodPoint">
-    <xs:attribute name="vc" type="xs:integer" use="required" />
-    <xs:attribute name="uspid" type="xs:integer" use="required" />
-    <xs:attribute name="ordinal" type="xs:integer" use="required" />
-    <xs:attribute name="offset" type="xs:integer" use="required" />
+    <xs:attribute name="vc" type="xs:integer" use="optional" />
+    <xs:attribute name="uspid" type="xs:integer" use="optional" />
+    <xs:attribute name="ordinal" type="xs:integer" use="optional" />
+    <xs:attribute name="offset" type="xs:integer" use="optional" />
     <xs:anyAttribute processContents="skip" />
   </xs:complexType>
   <xs:complexType name="SequencePoint">

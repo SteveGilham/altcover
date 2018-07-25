@@ -83,15 +83,7 @@ type ConvertToLcovCommand(outputFile:String) =
       let format = XmlUtilities.DiscoverFormat self.XmlDocument
       let xdoc = XmlUtilities.ToXDocument self.XmlDocument
       use stream = File.Open(self.OutputFile, FileMode.OpenOrCreate, FileAccess.Write)
-#if NETCOREAPP2_0
       AltCover.LCov.ConvertReport xdoc format stream
-#else
-#if DEBUG
-      AltCover.LCov.ConvertReport xdoc format stream
-#else
-      AltCover.LCov.ConvertReport (xdoc, format, stream)
-#endif
-#endif
     finally
       Directory.SetCurrentDirectory here
 
@@ -128,15 +120,7 @@ type ConvertToCoberturaCommand(outputFile:String) =
         self.XmlDocument.Load self.InputFile
       let format = XmlUtilities.DiscoverFormat self.XmlDocument
       let xdoc = XmlUtilities.ToXDocument self.XmlDocument
-#if NETCOREAPP2_0
       let rewrite = AltCover.Cobertura.ConvertReport xdoc format
-#else
-#if DEBUG
-      let rewrite = AltCover.Cobertura.ConvertReport xdoc format
-#else
-      let rewrite = AltCover.Cobertura.ConvertReport (xdoc, format)
-#endif
-#endif
       if self.OutputFile |> String.IsNullOrWhiteSpace |> not then
         rewrite.Save(self.OutputFile)
 
@@ -276,15 +260,8 @@ type ConvertFromNCoverCommand(outputFile:String) =
       // ensure default state -- this switches branch recording off
       AltCover.Main.init()
 
-#if NETCOREAPP2_0
       AltCover.Visitor.Visit visitors assemblies
-#else
-#if DEBUG
-      AltCover.Visitor.Visit visitors assemblies
-#else
-      AltCover.Visitor.Visit(visitors, assemblies)
-#endif
-#endif
+
       let parse s = Int32.TryParse(s,
                                    System.Globalization.NumberStyles.Integer,
                                    System.Globalization.CultureInfo.InvariantCulture) |> snd
@@ -324,15 +301,7 @@ type ConvertFromNCoverCommand(outputFile:String) =
       dec.Standalone <- null
 
       let converted = XmlUtilities.ToXmlDocument rewrite
-#if NETCOREAPP2_0
       AltCover.Runner.PostProcess null AltCover.Base.ReportFormat.OpenCover converted
-#else
-#if DEBUG
-      AltCover.Runner.PostProcess null AltCover.Base.ReportFormat.OpenCover converted
-#else
-      AltCover.Runner.PostProcess (null, AltCover.Base.ReportFormat.OpenCover, converted)
-#endif
-#endif
 
       if self.OutputFile |> String.IsNullOrWhiteSpace |> not then
         converted.Save(self.OutputFile)

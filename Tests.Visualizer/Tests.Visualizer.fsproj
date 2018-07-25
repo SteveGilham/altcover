@@ -6,18 +6,18 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>cf6c4e7a-63c1-489d-ab14-054e09de1b29</ProjectGuid>
+    <ProjectGuid>9ac35f60-3425-4284-bd2f-efe7fbba10ec</ProjectGuid>
+    <PlatformTarget>x86</PlatformTarget>
     <OutputType>Library</OutputType>
-    <RootNamespace>Shadow.Tests</RootNamespace>
-    <AssemblyName>AltCover.Shadow.Tests</AssemblyName>
-    <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
-    <TargetFSharpCoreVersion>4.4.1.0</TargetFSharpCoreVersion>
-    <ExtraDefines Condition="'$(OS)' == 'Windows_NT'">NET4</ExtraDefines>
-    <ExtraDefines Condition="'$(OS)' != 'Windows_NT'">MONO</ExtraDefines>
+    <RootNamespace>Tests.Visualizer</RootNamespace>
+    <AssemblyName>AltCover.Tests.Visualizer</AssemblyName>
     <UseStandardResourceNames>true</UseStandardResourceNames>
+    <TargetFrameworkVersion>v4.7.1</TargetFrameworkVersion>
+    <TargetFSharpCoreVersion>4.4.3.0</TargetFSharpCoreVersion>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <Name>Shadow.Tests</Name>
-    <ResolveNuGetPackages>false</ResolveNuGetPackages>
+    <Name>Tests.Visualizer</Name>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -29,8 +29,9 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <WarningsAsErrors>
     </WarningsAsErrors>
-    <OtherFlags>--keyfile:$(SolutionDir)Build\Infrastructure.snk</OtherFlags>
-    <DefineConstants>TRACE;DEBUG;CODE_ANALYSIS;$(ExtraDefines)</DefineConstants>
+    <OtherFlags>
+    </OtherFlags>
+    <DefineConstants>TRACE;DEBUG;CODE_ANALYSIS</DefineConstants>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
@@ -42,8 +43,9 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <WarningsAsErrors>
     </WarningsAsErrors>
-    <OtherFlags>--keyfile:$(SolutionDir)Build\Infrastructure.snk</OtherFlags>
-    <DefineConstants>TRACE;$(ExtraDefines)</DefineConstants>
+    <OtherFlags>
+    </OtherFlags>
+    <DefineConstants>TRACE</DefineConstants>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
@@ -61,47 +63,42 @@
       </PropertyGroup>
     </Otherwise>
   </Choose>
-  <Import Project="$(FSharpTargetsPath)" Condition="Exists('$(FSharpTargetsPath)')" />
+  <Import Project="$(FSharpTargetsPath)" />
   <ItemGroup>
-    <Compile Include="AssemblyInfo.fs" />
+    <Compile Include="..\Tests\AssemblyInfo.fs">
+      <Link>AssemblyInfo.fs</Link>
+    </Compile>
     <Compile Include="..\_Generated\AssemblyVersion.fs">
       <Link>AssemblyVersion.fs</Link>
     </Compile>
-    <Compile Include="Tracer.Tests.fs" />
-    <Compile Include="Shadow.Tests.fs" />
+    <Compile Include="GtkVisualizerTests.fs" />
     <Content Include="packages.config" />
-    <EmbeddedResource Include="SimpleCoverage.xml" />
-    <EmbeddedResource Include="Sample1WithModifiedOpenCover.xml" />
   </ItemGroup>
   <ItemGroup>
+    <Reference Include="mscorlib" />
     <Reference Include="FSharp.Core">
       <HintPath>..\packages\FSharp.Core.4.5.1\lib\net45\FSharp.Core.dll</HintPath>
     </Reference>
-    <Reference Include="mscorlib" />
     <Reference Include="nunit.framework">
       <HintPath>..\packages\NUnit.3.10.1\lib\net45\nunit.framework.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Numerics" />
-    <Reference Include="System.Xml" />
-    <Reference Include="System.Xml.Linq" />
-    <ProjectReference Include="..\AltCover.Recorder\AltCover.Shadow.fsproj">
-      <Name>AltCover.Shadow</Name>
-      <Project>{62480be3-4479-4a47-a23f-50858ecd74b3}</Project>
-      <Private>True</Private>
-    </ProjectReference>
-    <ProjectReference Include="..\Shadow.Adapter\Shadow.Adapter.fsproj">
-      <Name>Shadow.Adapter</Name>
-      <Project>{24bfb835-2dac-45d4-afda-f9c2f13b41dd}</Project>
-      <Private>True</Private>
-    </ProjectReference>
-    <ProjectReference Include="..\Shadow.Tests2\Shadow.Tests2.fsproj">
-      <Name>Shadow.Tests2</Name>
-      <Project>{d6ed39d2-ea21-4141-96d7-2b5f234fcd3e}</Project>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\AltCover.Visualizer\AltCover.Visualizer.fsproj">
+      <Name>AltCover.Visualizer</Name>
+      <Project>{d5bb91d8-e3ef-4f10-bbdb-752c5ebd689e}</Project>
       <Private>True</Private>
     </ProjectReference>
   </ItemGroup>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\NUnit.3.10.1\build\NUnit.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\NUnit.3.10.1\build\NUnit.props'))" />
+  </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

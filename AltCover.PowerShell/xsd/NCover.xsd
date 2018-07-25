@@ -9,28 +9,30 @@
               <xs:element name="method" minOccurs="0" maxOccurs="unbounded">
                 <xs:complexType>
                   <xs:sequence>
-                    <xs:element name="seqpnt" minOccurs="0" maxOccurs="unbounded">
-                      <xs:complexType>
-                        <xs:attribute name="visitcount" type="xs:integer" use="required" />
-                        <xs:attribute name="line" type="xs:integer" use="required" />
-                        <xs:attribute name="column" type="xs:integer" use="required" />
-                        <xs:attribute name="endline" type="xs:integer" use="required" />
-                        <xs:attribute name="endcolumn" type="xs:integer" use="required" />
-                        <xs:attribute name="excluded" type="xs:boolean" use="required" />
-                        <xs:attribute name="document" type="xs:string" use="required" />
-                        <xs:attribute name="excluded-because" type="xs:string" use="optional" />
-                        <xs:attribute name="tag" type="xs:integer" use="optional" />
-                        <xs:anyAttribute processContents="skip" />
-                      </xs:complexType>
-                    </xs:element>
-                    <xs:element name="branch" minOccurs="0" maxOccurs="unbounded">
-                      <xs:complexType>
-                        <xs:attribute name="visitcount" type="xs:integer" use="required" />
-                        <xs:attribute name="path" type="xs:integer" use="required" />
-                        <xs:attribute name="offset" type="xs:integer" use="optional" />
-                        <xs:anyAttribute processContents="skip" />
-                      </xs:complexType>
-                    </xs:element>
+                    <xs:choice minOccurs="0" maxOccurs="unbounded">
+                      <xs:element name="seqpnt">
+                        <xs:complexType>
+                          <xs:attribute name="visitcount" type="xs:integer" use="required" />
+                          <xs:attribute name="line" type="xs:integer" use="required" />
+                          <xs:attribute name="column" type="xs:integer" use="required" />
+                          <xs:attribute name="endline" type="xs:integer" use="required" />
+                          <xs:attribute name="endcolumn" type="xs:integer" use="required" />
+                          <xs:attribute name="excluded" type="xs:boolean" use="required" />
+                          <xs:attribute name="document" type="xs:string" use="required" />
+                          <xs:attribute name="excluded-because" type="xs:string" use="optional" />
+                          <xs:attribute name="tag" type="xs:integer" use="optional" />
+                          <xs:anyAttribute processContents="skip" />
+                        </xs:complexType>
+                      </xs:element>
+                      <xs:element name="branch">
+                        <xs:complexType>
+                          <xs:attribute name="visitcount" type="xs:integer" use="required" />
+                          <xs:attribute name="path" type="xs:integer" use="required" />
+                          <xs:attribute name="offset" type="xs:integer" use="optional" />
+                          <xs:anyAttribute processContents="skip" />
+                        </xs:complexType>
+                      </xs:element>
+                    </xs:choice>
                   </xs:sequence>
                   <xs:attribute name="name" type="xs:string" use="required" />
                   <xs:attribute name="class" type="xs:string" use="required" />
