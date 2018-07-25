@@ -71,6 +71,8 @@ Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "AltCover.PowerShell", "AltC
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "AltCover.Visualizer", "AltCover.Visualizer\AltCover.Visualizer.fsproj", "{D5BB91D8-E3EF-4F10-BBDB-752C5EBD689E}"
 EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Tests.Visualizer", "Tests.Visualizer\Tests.Visualizer.fsproj", "{9AC35F60-3425-4284-BD2F-EFE7FBBA10EC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -218,6 +220,11 @@ Global
 		{D5BB91D8-E3EF-4F10-BBDB-752C5EBD689E}.Release|Any CPU.Build.0 = Release|Any CPU
 		{D5BB91D8-E3EF-4F10-BBDB-752C5EBD689E}.Release|x86.ActiveCfg = Release|Any CPU
 		{D5BB91D8-E3EF-4F10-BBDB-752C5EBD689E}.Release|x86.Build.0 = Release|Any CPU
+		{9AC35F60-3425-4284-BD2F-EFE7FBBA10EC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9AC35F60-3425-4284-BD2F-EFE7FBBA10EC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9AC35F60-3425-4284-BD2F-EFE7FBBA10EC}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{9AC35F60-3425-4284-BD2F-EFE7FBBA10EC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9AC35F60-3425-4284-BD2F-EFE7FBBA10EC}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -359,7 +359,7 @@ _Target "JustUnitTest" (fun _ ->
                                                              WorkingDir = Some here
                                                              ShadowCopy = false})
 
-      !! (@"_Binaries/*Tests/Debug+AnyCPU/*Test*.dll")
+      !! (@"_Binaries/*Tests*/Debug+AnyCPU/*Test*.dll")
       |> Seq.filter (fun f -> Path.GetFileName(f) <> "AltCover.XTests.dll" &&
                               Path.GetFileName(f) <> "xunit.runner.visualstudio.testadapter.dll")
       |> NUnit3.run (fun p -> { p   with ToolPath = Tools.findToolInSubPath "nunit3-console.exe" "."

@@ -66,12 +66,12 @@
   </Choose>
   <Import Project="$(FSharpTargetsPath)" Condition="Exists('$(FSharpTargetsPath)')" />
   <ItemGroup>
+    <Compile Include="..\_Generated\VisibleToTest.fs">
+      <Link>VisibleToTest.fs</Link>
+    </Compile>
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="..\_Generated\AssemblyVersion.fs">
       <Link>AssemblyVersion.fs</Link>
-    </Compile>
-    <Compile Include="..\_Generated\VisibleToTest.fs">
-      <Link>VisibleToTest.fs</Link>
     </Compile>
     <EmbeddedResource Include="Resource.resx" />
     <EmbeddedResource Include="Resource.eo.resx" />
@@ -104,7 +104,7 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="FSharp.Core">
-      <HintPath>$(SolutionDir)packages\FSharp.Core.4.3.4\lib\net45\FSharp.Core.dll</HintPath>
+      <HintPath>..\packages\FSharp.Core.4.5.1\lib\net45\FSharp.Core.dll</HintPath>
     </Reference>
     <Reference Include="gdk-sharp">
       <Private>False</Private>
@@ -138,7 +138,7 @@
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\FSharpLint.MSBuild.0.9.1-beta\build\FSharpLint.MSBuild.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\FSharpLint.MSBuild.0.9.1-beta\build\FSharpLint.MSBuild.targets'))" />
   </Target -->
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
 	     Other similar extension points exist, see Microsoft.Common.targets.
 	<Target Name="BeforeBuild">
 	</Target>
