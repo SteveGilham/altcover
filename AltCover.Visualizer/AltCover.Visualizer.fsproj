@@ -81,6 +81,8 @@
     <EmbeddedResource Include="method_16xLG.png" />
     <EmbeddedResource Include="brackets_Curly_16xLG.png" />
     <EmbeddedResource Include="logo.png" />
+    <EmbeddedResource Include="Blank_12x_16x.png" />
+    <EmbeddedResource Include="Branch_12x_16x.png" />
     <Compile Include="..\AltCover\Augment.fs">
       <Link>Augment.fs</Link>
     </Compile>

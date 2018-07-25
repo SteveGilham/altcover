@@ -395,7 +395,11 @@ module Gui =
        ("static", "#808080", "#F5F5F5") ; // Grey on White Smoke
        ("automatic", "#808080", "#FFFF00") ; // Grey on Yellow
        ("notVisited", "#ff0000", "#FFFFFF") ; // Red on White
-       ("excluded", "#87CEEB", "#FFFFFF") ] // Sky Blue on white
+       ("excluded", "#87CEEB", "#FFFFFF") ; // Sky Blue on white
+       ("allBranches", "#FFFFFF", "#00FF00")
+       ("someBranches", "#FFFFFF", "#FFFF00")
+       ("noBranches", "#FFFFFF", "#FF0000")
+       ]
         |> Seq.iter (Tag buff)
 
  let private ParseIntegerAttribute (element:XPathNavigator) (attribute:string) =
@@ -407,31 +411,43 @@ module Gui =
      if not <| String.IsNullOrEmpty(text) then System.Diagnostics.Debug.WriteLine("ParseIntegerAttribute : '" + attribute + "' with value '" + text)
      0
 
- //// // simple sl/el marking
- ////let private MarkBranches (root:XPathNavigator) (buff:TextBuffer) (filename:string) =
- ////   let Decorate (buffer:TextBuffer) (tag:CodeTag) =
- ////       let from = buffer.GetIterAtLineOffset(tag.line - 1, tag.column - 1)
- ////       let until = buffer.GetIterAtLineOffset(tag.endline - 1, tag.endcolumn - 1)
- ////       buffer.ApplyTag("branched", from, until)
+ let private MarkBranches (root:XPathNavigator) (buff:TextBuffer) (filename:string) =
+    let branches = new Dictionary<int,int*int>()
+    let branch = new Pixbuf(Assembly.GetExecutingAssembly().GetManifestResourceStream(
+                                "AltCover.Visualizer.Branch_12x_16x.png"))
+    let blank = new Pixbuf(Assembly.GetExecutingAssembly().GetManifestResourceStream(
+                                "AltCover.Visualizer.Blank_12x_16x.png"))
 
- ////   root.Select("//method")
- ////                   |> Seq.cast<XPathNavigator>
- ////                   |> Seq.filter(fun n -> let f = n.Clone()
- ////                                          f.MoveToFirstChild() && filename.Equals(
- ////                                           f.GetAttribute("document", String.Empty),
- ////                                           StringComparison.OrdinalIgnoreCase))
+    root.Select("//method")
+                    |> Seq.cast<XPathNavigator>
+                    |> Seq.filter(fun n -> let f = n.Clone()
+                                           f.MoveToFirstChild() && filename.Equals(
+                                            f.GetAttribute("document", String.Empty),
+                                            StringComparison.OrdinalIgnoreCase))
 
- ////                   |> Seq.collect(fun n -> n.Select("./branch") |> Seq.cast<XPathNavigator>)
- ////                   |> Seq.map (fun n -> let visitcount = ParseIntegerAttribute n "visitcount"
- ////                                        let line = ParseIntegerAttribute n "sl"
- ////                                        let endline = ParseIntegerAttribute n "el"
- ////                                        { visitcount = visitcount
- ////                                          line = line
- ////                                          column = 1
- ////                                          endline = if endline > line then endline else line + 1
- ////                                          endcolumn = 1 })
- ////                   |> Seq.filter (fun n -> n.visitcount = 0 && n.line > 0)
- ////                   |> Seq.iter (Decorate buff)
+                    |> Seq.collect(fun n -> n.Select("./branch") |> Seq.cast<XPathNavigator>)
+                    |> Seq.groupBy(fun n -> n.GetAttribute("line", String.Empty))
+                    |> Seq.iter (fun n -> let line = ParseIntegerAttribute ((snd n) |> Seq.head) "line"
+                                          let num = (snd n) |> Seq.length
+                                          let v = (snd n)
+                                                  |> Seq.filter (fun x -> x.GetAttribute("visitcount", String.Empty) <> "0")
+                                                  |> Seq.length
+                                          branches.Add(line, (v,num)))
+    for l in 1 .. buff.LineCount do
+      let pix = if branches.ContainsKey l then
+                                branch
+                            else
+                                blank
+      let mutable i = buff.GetIterAtLine(l - 1)
+      buff.InsertPixbuf(&i, pix)
+      if branches.ContainsKey l then
+        let from = buff.GetIterAtLineOffset(l - 1, 0)
+        let until = buff.GetIterAtLineOffset(l - 1, 1)
+        let v, num = branches.[l]
+        buff.ApplyTag(if 0 = v then "noBranches"
+                      else if v = num then "allBranches"
+                           else "someBranches"
+                      ,from, until)
 
  let internal (|Select|_|) (pattern:String) offered =
     if (fst offered) |> String.IsNullOrWhiteSpace |> not &&
@@ -462,9 +478,9 @@ module Gui =
 
     { visitcount = if visitcount = 0 then fallback else visitcount
       line = Int32.TryParse(line) |> snd
-      column = Int32.TryParse(column) |> snd
+      column = (Int32.TryParse(column) |> snd) + 1
       endline = Int32.TryParse(endline) |> snd
-      endcolumn = Int32.TryParse(endcolumn) |> snd }
+      endcolumn = (Int32.TryParse(endcolumn) |> snd) + 1 }
 
  let private FilterCoverage (buff:TextBuffer) (n:CodeTag) =
     let lc = buff.LineCount
@@ -517,8 +533,7 @@ module Gui =
                         let root = m.Clone()
                         root.MoveToRoot()
 
-                        ////// simple sl/el marking
-                        ////MarkBranches root buff filename
+                        MarkBranches root buff filename
 
                         let code = root.Select("//seqpnt[@document='" + filename + "']")
                                      |> Seq.cast<XPathNavigator>
