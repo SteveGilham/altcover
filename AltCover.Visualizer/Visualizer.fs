@@ -410,7 +410,7 @@ module Gui =
      if not <| String.IsNullOrEmpty(text) then System.Diagnostics.Debug.WriteLine("ParseIntegerAttribute : '" + attribute + "' with value '" + text)
      0
 
- [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", 
+ [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability",
     "CA2000:DisposeObjectsBeforeLosingScope",
     Justification = "IDisposables are added to the TextView")>]
  let private MarkBranches (root:XPathNavigator) (codeView:TextView) (filename:string) =
