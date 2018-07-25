@@ -120,7 +120,7 @@
                                                 </xs:sequence>
                                               </xs:complexType>
                                             </xs:element>
-                                            <xs:element name="MethodPoint" type="MethodPoint">
+                                            <xs:element name="MethodPoint" type="MethodPoint" minOccurs="0" maxOccurs="1">
                                             </xs:element>
                                           </xs:sequence>
                                           <xs:attribute name="visited" type="xs:boolean" use="required" />
