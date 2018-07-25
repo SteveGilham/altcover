@@ -141,8 +141,7 @@ module Gui =
    let files = names
                |> Array.map (KeyToValue fileKey)
                |> Seq.cast<string>
-               |> Seq.filter (fun n -> not (String.IsNullOrEmpty(n)))
-               |> Seq.filter (fun n -> not (String.IsNullOrEmpty(n.Trim())))
+               |> Seq.filter (fun n -> not (String.IsNullOrWhiteSpace(n)))
                |> Seq.filter (fun n -> File.Exists(n))
                |> Seq.toList
    handler.coverageFiles <- files
@@ -305,8 +304,11 @@ module Gui =
    handler.openButton.Menu <- if handler.coverageFiles.IsEmpty then null else handler.fileOpenMenu :> Widget
 
  let private PrepareAboutDialog (handler:Handler) =
+   // TODO -- other OS types
+   let isWindows = System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
    let ShowUrl (link:string) =
-    System.Diagnostics.Process.Start(link) |> ignore
+     if isWindows then
+        System.Diagnostics.Process.Start(link) |> ignore
 
    // The first gets the display right, the second the browser launch
    AboutDialog.SetUrlHook(fun _ link -> ShowUrl link) |> ignore
