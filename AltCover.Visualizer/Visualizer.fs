@@ -304,11 +304,12 @@ module Gui =
    handler.openButton.Menu <- if handler.coverageFiles.IsEmpty then null else handler.fileOpenMenu :> Widget
 
  let private PrepareAboutDialog (handler:Handler) =
-   // TODO -- other OS types
    let isWindows = System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
    let ShowUrl (link:string) =
-     if isWindows then
-        System.Diagnostics.Process.Start(link) |> ignore
+     match System.Environment.GetEnvironmentVariable("OS") with
+     | "Windows_NT" -> System.Diagnostics.Process.Start(link) |> ignore
+     // TODO -- other OS types
+     | _ -> ShowMessage handler.aboutVisualizer link MessageType.Info
 
    // The first gets the display right, the second the browser launch
    AboutDialog.SetUrlHook(fun _ link -> ShowUrl link) |> ignore
