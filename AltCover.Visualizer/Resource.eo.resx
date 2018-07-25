@@ -180,4 +180,7 @@ raportas al ausente fonta dosiero
   <data name="_License" xml:space="preserve">
     <value>_Permesilo</value>
   </data>
+  <data name="branchesVisited" xml:space="preserve">
+    <value>{0} de {1} branĉoj vizititaj</value>
+  </data>
 </root>

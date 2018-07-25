@@ -306,7 +306,6 @@ module Gui =
    handler.openButton.Label <- GetResourceString("openButton.Label")
 
  let private PrepareAboutDialog (handler:Handler) =
-   let isWindows = System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
    let ShowUrl (link:string) =
      match System.Environment.GetEnvironmentVariable("OS") with
      | "Windows_NT" -> System.Diagnostics.Process.Start(link) |> ignore
@@ -411,7 +410,11 @@ module Gui =
      if not <| String.IsNullOrEmpty(text) then System.Diagnostics.Debug.WriteLine("ParseIntegerAttribute : '" + attribute + "' with value '" + text)
      0
 
- let private MarkBranches (root:XPathNavigator) (buff:TextBuffer) (filename:string) =
+ [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", 
+    "CA2000:DisposeObjectsBeforeLosingScope",
+    Justification = "IDisposables are added to the TextView")>]
+ let private MarkBranches (root:XPathNavigator) (codeView:TextView) (filename:string) =
+    let buff = codeView.Buffer
     let branches = new Dictionary<int,int*int>()
     let branch = new Pixbuf(Assembly.GetExecutingAssembly().GetManifestResourceStream(
                                 "AltCover.Visualizer.Branch_12x_16x.png"))
@@ -439,11 +442,19 @@ module Gui =
                             else
                                 blank
       let mutable i = buff.GetIterAtLine(l - 1)
-      buff.InsertPixbuf(&i, pix)
+      let a = new TextChildAnchor()
+      buff.InsertChildAnchor(&i, a)
+      let image = new Image(pix)
+      image.Visible <- true
+      codeView.AddChildAtAnchor(image, a)
       if branches.ContainsKey l then
         let from = buff.GetIterAtLineOffset(l - 1, 0)
         let until = buff.GetIterAtLineOffset(l - 1, 1)
         let v, num = branches.[l]
+        image.TooltipText <-  String.Format(System.Globalization.CultureInfo.CurrentCulture,
+                               GetResourceString "branchesVisited",
+                               v,
+                               num)
         buff.ApplyTag(if 0 = v then "noBranches"
                       else if v = num then "allBranches"
                            else "someBranches"
@@ -533,7 +544,7 @@ module Gui =
                         let root = m.Clone()
                         root.MoveToRoot()
 
-                        MarkBranches root buff filename
+                        MarkBranches root handler.codeView filename
 
                         let code = root.Select("//seqpnt[@document='" + filename + "']")
                                      |> Seq.cast<XPathNavigator>

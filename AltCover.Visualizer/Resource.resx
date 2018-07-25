@@ -180,4 +180,7 @@ https://docs.microsoft.com/en-us/visualstudio/designers/the-visual-studio-image-
   <data name="_License" xml:space="preserve">
     <value>_License</value>
   </data>
+  <data name="branchesVisited" xml:space="preserve">
+    <value>{0} of {1} branches visited</value>
+  </data>
 </root>
