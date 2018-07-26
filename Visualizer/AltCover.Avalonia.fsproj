@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
     <RootNamespace>AltCover.Visualizer</RootNamespace>
     <AssemblyName>AltCover.Visualizer</AssemblyName>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
@@ -31,6 +31,7 @@
     <EmbeddedResource Include="Method_16x.png" />
     <EmbeddedResource Include="Namespace_16x.png" />
     <EmbeddedResource Include="Refresh_16x.png" />
+    <EmbeddedResource Include="Refresh_greyThin_16x.png" />
     <EmbeddedResource Include="StatusCriticalError_16x.png" />
     <EmbeddedResource Include="StatusInformation_16x.png" />
     <EmbeddedResource Include="Visualizer.ico" />
@@ -59,8 +60,6 @@
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </EmbeddedResource>
   </ItemGroup>
-
-  <ItemGroup />
 
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="0.6.2-build5768-beta" />
