@@ -395,7 +395,7 @@ module Gui =
        ("automatic", "#808080", "#FFFF00") ; // Grey on Yellow
        ("notVisited", "#ff0000", "#FFFFFF") ; // Red on White
        ("excluded", "#87CEEB", "#FFFFFF") ; // Sky Blue on white
-       ("allBranches", "#FFFFFF", "#00FF00")
+       ("allBranches", "#FFFFFF", "#cefdce")
        ("someBranches", "#FFFFFF", "#FFFF00")
        ("noBranches", "#FFFFFF", "#FF0000")
        ]
