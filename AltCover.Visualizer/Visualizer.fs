@@ -90,6 +90,16 @@ module Gui =
     lazy (new Pixbuf(Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Visualizer.class_16xLG.png")))
   let private MethodIcon =
     lazy (new Pixbuf(Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Visualizer.method_16xLG.png")))
+
+  let branched =
+    lazy (new Pixbuf(Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Visualizer.Branch_12x_16x_grn.png")))
+  let branch =
+    lazy (new Pixbuf(Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Visualizer.Branch_12x_16x_ylw.png")))
+  let redbranch =
+    lazy (new Pixbuf(Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Visualizer.Branch_12x_16x_red.png")))
+  let blank =
+    lazy (new Pixbuf(Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Visualizer.Blank_12x_16x.png")))
+
   // --------------------------  Persistence ---------------------------
   let private geometry = "SOFTWARE\\AltCover\\Visualizer\\Geometry"
   let private recent = "SOFTWARE\\AltCover\\Visualizer\\Recently Opened"
@@ -411,15 +421,12 @@ module Gui =
     buff.TagTable.Add(baseline)
     [ (// Last declared type is last layer painted
        "visited", "#404040", "#cefdce") // "#98FB98") ; // Dark on Pale Green
-      ("branched", "#404040", "#ADFF2F") // Grey on Green Yellow
       ("declared", "#FFA500", "#FFFFFF") // Orange on White
       ("static", "#808080", "#F5F5F5") // Grey on White Smoke
       ("automatic", "#808080", "#FFFF00") // Grey on Yellow
       ("notVisited", "#ff0000", "#FFFFFF") // Red on White
       ("excluded", "#87CEEB", "#FFFFFF") // Sky Blue on white
-      ("allBranches", "#FFFFFF", "#cefdce")
-      ("someBranches", "#FFFFFF", "#FFFF00")
-      ("noBranches", "#FFFFFF", "#FF0000") ]
+     ]
     |> Seq.iter (Tag buff)
 
   let private ParseIntegerAttribute (element : XPathNavigator) (attribute : string) =
@@ -436,8 +443,6 @@ module Gui =
   let private MarkBranches (root : XPathNavigator) (codeView : TextView) (filename : string) =
     let buff = codeView.Buffer
     let branches = new Dictionary<int, int * int>()
-    let branch = new Pixbuf(Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Visualizer.Branch_12x_16x.png"))
-    let blank = new Pixbuf(Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Visualizer.Blank_12x_16x.png"))
     root.Select("//method")
     |> Seq.cast<XPathNavigator>
     |> Seq.filter (fun n ->
@@ -455,26 +460,27 @@ module Gui =
            |> Seq.length
          branches.Add(line, (v, num)))
     for l in 1..buff.LineCount do
-      let pix =
-        if branches.ContainsKey l then branch
-        else blank
+      let counts = branches.TryGetValue l
+      let (|AllVisited|_|) (b,(v,num)) =
+        if b |> not || v <> num then None
+        else Some ()
+        
+      let pix = match counts with
+                | (false, _) -> blank
+                | (_, (0, _)) -> redbranch
+                | AllVisited -> branched
+                | _ -> branch
 
       let mutable i = buff.GetIterAtLine(l - 1)
       let a = new TextChildAnchor()
       buff.InsertChildAnchor(&i, a)
-      let image = new Image(pix)
+      let image = new Image(pix.Force())
       image.Visible <- true
       codeView.AddChildAtAnchor(image, a)
-      if branches.ContainsKey l then
-        let from = buff.GetIterAtLineOffset(l - 1, 0)
-        let until = buff.GetIterAtLineOffset(l - 1, 1)
-        let v, num = branches.[l]
+      if fst counts then
+        let v, num = snd counts
         image.TooltipText <- String.Format
                                (System.Globalization.CultureInfo.CurrentCulture, GetResourceString "branchesVisited", v, num)
-        buff.ApplyTag(if 0 = v then "noBranches"
-                      else if v = num then "allBranches"
-                      else "someBranches"
-                      , from, until)
 
   let internal (|Select|_|) (pattern : String) offered =
     if (fst offered)
