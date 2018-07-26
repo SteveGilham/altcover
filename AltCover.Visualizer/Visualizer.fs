@@ -181,7 +181,9 @@ module Gui =
  let private PopulateClassNode (model:TreeStore) (row:TreeIter) (nodes: seq<MethodKey>) =
     let ApplyToModel (theModel:TreeStore) (theRow:TreeIter) (x:MethodKey) =
         let fullname = x.m.GetAttribute("fullname", String.Empty)
-        let args = if String.IsNullOrEmpty(fullname) then String.Empty
+        let args = if String.IsNullOrEmpty(fullname) || 
+                      x.name.IndexOf('(') > 0
+                   then String.Empty
                    else let bracket = fullname.IndexOf('(')
                         if bracket < 0 then String.Empty
                         else fullname.Substring(bracket)
