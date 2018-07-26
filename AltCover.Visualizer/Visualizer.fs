@@ -30,6 +30,12 @@ type internal Handler() =
     val mutable openButton : MenuToolButton
 
     [<Widget; DefaultValue(true)>]
+    val mutable separator1 : SeparatorToolItem
+
+    [<Widget; DefaultValue(true)>]
+    val mutable exitButton : ToolButton
+
+    [<Widget; DefaultValue(true)>]
     val mutable refreshButton : ToolButton
 
     [<Widget; DefaultValue(true)>]
@@ -587,6 +593,8 @@ module Gui =
     readGeometry handler.mainWindow
     readCoverageFiles handler
     populateMenu handler
+    handler.separator1.Expand <- true
+    handler.separator1.Homogeneous <- false
     handler.codeView.Editable <- false
     InitializeTextBuffer handler.codeView.Buffer
     handler.refreshButton.Sensitive <- false

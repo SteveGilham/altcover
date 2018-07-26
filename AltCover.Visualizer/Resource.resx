@@ -163,24 +163,27 @@ https://docs.microsoft.com/en-us/visualstudio/designers/the-visual-studio-image-
     <value>C_redits</value>
   </data>
   <data name="fontButton.Label" xml:space="preserve">
-    <value>Font...</value>
+    <value>_Font...</value>
   </data>
   <data name="gtk-close" xml:space="preserve">
     <value>_Close</value>
   </data>
   <data name="openButton.Label" xml:space="preserve">
-    <value>Open...</value>
+    <value>_Open...</value>
   </data>
   <data name="refreshButton.Label" xml:space="preserve">
-    <value>Refresh</value>
+    <value>_Refresh</value>
   </data>
   <data name="showAboutButton.Label" xml:space="preserve">
-    <value>About...</value>
+    <value>_About...</value>
   </data>
   <data name="_License" xml:space="preserve">
     <value>_License</value>
   </data>
   <data name="branchesVisited" xml:space="preserve">
     <value>{0} of {1} branches visited</value>
+  </data>
+  <data name="exitButton.Label" xml:space="preserve">
+    <value>E_xit</value>
   </data>
 </root>

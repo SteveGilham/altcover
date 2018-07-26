@@ -118,16 +118,16 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="About" xml:space="preserve">
-    <value> About AltCover.Visualizer...</value>
+    <value> Pri AltCover Visualizer...</value>
   </data>
   <data name="AboutDialog.About" xml:space="preserve">
-    <value>About</value>
+    <value>Pri</value>
   </data>
   <data name="About.dlg" xml:space="preserve">
-    <value>About AltCover.Visualizer</value>
+    <value>Pri AltCover Visualizer</value>
   </data>
   <data name="ProgramDescription" xml:space="preserve">
-    <value>Coverage visualizer for NCover and OpenCover reports</value>
+    <value>Kovrilo-visualizilo por raportoj de NCover kaj OpenCover</value>
   </data>
   <data name="License" xml:space="preserve">
     <value>The MIT License
@@ -153,24 +153,24 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.</value>
   </data>
   <data name="AboutDialog.License" xml:space="preserve">
-    <value>License</value>
+    <value>Permesilo</value>
   </data>
   <data name="WebsiteLabel" xml:space="preserve">
     <value>GitHub repo</value>
   </data>
   <data name="Close" xml:space="preserve">
-    <value>Close</value>
+    <value>Fermi</value>
   </data>
   <data name="Visualizer" xml:space="preserve">
     <value>Visualizer</value>
   </data>
   <data name="Open" xml:space="preserve">
-    <value> Open...</value>
+    <value>_Malferma...</value>
   </data>
   <data name="Exit" xml:space="preserve">
-    <value>Exit</value>
+    <value>Eliro</value>
   </data>
   <data name="Font" xml:space="preserve">
-    <value>Font...</value>
+    <value>Tiparo...</value>
   </data>
 </root>

@@ -136,6 +136,29 @@ THE SOFTWARE.</property>
                 <property name="homogeneous">True</property>
               </packing>
             </child>
+            <child>
+              <widget class="GtkSeparatorToolItem" id="separator1">
+                <property name="can_focus">False</property>
+                <property name="draw">False</property>
+              </widget>
+              <packing>
+                <property name="expand">True</property>
+                <property name="homogeneous">False</property>
+              </packing>
+            </child>
+            <child>
+              <widget class="GtkToolButton" id="exitButton">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="no">xx</property>
+                <property name="use_underline">True</property>
+                <property name="stock_id">gtk-close</property>
+              </widget>
+              <packing>
+                <property name="expand">False</property>
+                <property name="homogeneous">True</property>
+              </packing>
+            </child>
           </widget>
           <packing>
             <property name="expand">False</property>
