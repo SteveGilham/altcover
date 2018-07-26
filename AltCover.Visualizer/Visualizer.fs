@@ -51,6 +51,9 @@ type internal Handler() = class
 
        [<DefaultValue(true)>]
        val mutable coverageFiles : string list
+
+       [<DefaultValue(true)>]
+       val mutable justOpened : string
 end
 
 module Gui =
@@ -372,6 +375,8 @@ module Gui =
    handler.openButton.Clicked
                  |> Event.map (MakeSelection openFileDialog)
                  |> Event.choose id
+                 |> Event.map (fun info -> handler.justOpened <- info.FullName
+                                           -1)
 
  [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:DisposeObjectsBeforeLosingScope",
     Justification = "'baseline' is returned")>]
@@ -617,9 +622,8 @@ module Gui =
    let select =
        handler.fileOpenMenu.AllChildren
        |> Seq.cast<MenuItem>
-       |> Seq.map (fun (i:MenuItem) -> let text = (i.Child :?> Label).Text
-                                       i.Activated
-                                       |> Event.map (fun a -> new FileInfo(text) ))
+       |> Seq.mapi (fun n (i:MenuItem) -> i.Activated
+                                          |> Event.map (fun _ -> n ))
 
    // The sum of all these events -- we have explicitly selected a file
    let fileSelection = select
@@ -633,48 +637,39 @@ module Gui =
    let RegSetKey (key:RegistryKey) (index:int) (name:string) =
         key.SetValue(index.ToString(), name)
 
-   let doMRU =
-     let rec loop (h:Handler)
-                  (selected:IEvent<FileInfo>)
-                  (deleteKey:RegistryKey -> string -> unit)
-                  (setKey:RegistryKey -> int -> string -> unit) = // Track this for 4 fields
-       async {
-                let! current = Async.AwaitEvent selected
+   let updateMRU (h:Handler) path add = 
+    let casematch = match System.Environment.GetEnvironmentVariable("OS") with
+                     | "Windows_NT" -> StringComparison.OrdinalIgnoreCase
+                     | _ -> StringComparison.Ordinal
+    let files = h.coverageFiles
+                |> List.filter (fun n -> not (n.Equals(path, casematch)))
+                |> Seq.truncate(9)
+                |> Seq.toList
 
-                let path = current.FullName
-                let files = h.coverageFiles
-                            |> List.map (fun n -> new FileInfo(n) |> CoverageFile.LoadCoverageFile)
-                            |> List.choose Either.toOption
-                            |> List.filter (fun n -> not (n.File.FullName.Equals(path, StringComparison.OrdinalIgnoreCase)))
-                            |> Seq.truncate(9)
-                            |> Seq.map (fun n -> n.File.FullName)
-                            |> Seq.toList
-
-                h.coverageFiles <- (path :: files)
-                                   |> Seq.distinct
-                                   |> Seq.toList
-                use fileKey = Registry.CurrentUser.CreateSubKey(recent)
-                fileKey.GetValueNames()
-                |> Seq.iter (deleteKey fileKey)
-                h.coverageFiles
-                |> Seq.iteri (setKey fileKey)
-
-                InvokeOnGuiThread (fun () -> populateMenu h)
-                return! loop h selected deleteKey setKey }
-     loop handler fileSelection RegDeleteKey RegSetKey
-
-   doMRU |> Async.Start
+    h.coverageFiles <- (if add then (path :: files) else files)
+                       |> Seq.distinctBy (fun n -> match casematch with
+                                                   | StringComparison.Ordinal -> n
+                                                   | _ -> n.ToUpperInvariant())
+                       |> Seq.toList
+    populateMenu h
+    use fileKey = Registry.CurrentUser.CreateSubKey(recent)
+    fileKey.GetValueNames()
+    |> Seq.iter (RegDeleteKey fileKey)
+    h.coverageFiles
+    |> Seq.iteri (RegSetKey fileKey)
 
    // Now mix in selecting the file currently loaded
-   let refresh = handler.refreshButton.Clicked
-                 |> Event.map (fun x -> new FileInfo(handler.coverageFiles.Head))
+   let refresh  = handler.refreshButton.Clicked
+                    |> Event.map (fun _ -> 0)
 
-   let doUI =
-     let rec loop (h:Handler) (loadEvent:IEvent<FileInfo>) =
-       async {
-        let! current = Async.AwaitEvent loadEvent
+   Event.merge fileSelection refresh
+   |> Event.add(fun index ->
+        let h = handler
+        async {
+        let current = FileInfo (if index < 0 then h.justOpened else h.coverageFiles.[index])
         match CoverageFile.LoadCoverageFile current with
         | Left failed -> InvalidCoverageFileMessage h.mainWindow failed
+                         InvokeOnGuiThread (fun () -> updateMRU h current.FullName false)
         | Right coverage ->
             // check if coverage is newer that the source files
             let sourceFiles = coverage.Document.CreateNavigator().Select("//seqpnt/@document") |> Seq.cast<XPathNavigator> |> Seq.map (fun x -> x.Value) |> Seq.distinct
@@ -710,17 +705,16 @@ module Gui =
             |> Seq.sortBy (fun nodepair -> snd nodepair)
             |> Seq.iter (ApplyToModel model)
 
-            let UpdateUI (theModel : TreeModel) () =
+            let UpdateUI (theModel : TreeModel) (info:FileInfo) () =
                 // File is good so enable the refresh button
                 h.refreshButton.Sensitive <- true
                 // Do real UI work here
                 h.classStructureTree.Model <- theModel
+                updateMRU h info.FullName true
+                ////ShowMessage h.mainWindow (sprintf "%s\r\n>%A" info.FullName h.coverageFiles) MessageType.Info
 
-            InvokeOnGuiThread (UpdateUI model)
-        return! loop h loadEvent }
-     loop handler (Event.merge fileSelection refresh)
-
-   doUI |> Async.Start
+            InvokeOnGuiThread (UpdateUI model current)}
+        |> Async.Start )
 
    handler.fontButton.Clicked |> Event.add (fun x ->
         let executingAssembly = System.Reflection.Assembly.GetExecutingAssembly()
