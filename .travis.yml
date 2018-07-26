@@ -1,6 +1,6 @@
 language: csharp
 mono: latest
-dotnet: 2.1.300
+dotnet: 2.1.302
 sudo: false
 addons:
   apt:

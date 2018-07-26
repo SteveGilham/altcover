@@ -1,0 +1,76 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <RootNamespace>AltCover.Visualizer</RootNamespace>
+    <AssemblyName>AltCover.Visualizer</AssemblyName>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
+    <OutputPath>$(SolutionDir)_Binaries/$(AssemblyName)/$(Configuration)+$(Platform)/</OutputPath>
+    <IntermediateOutputPath>$(SolutionDir)_Intermediate/$(AssemblyName)/$(Configuration)+$(Platform)/</IntermediateOutputPath>
+    <OtherFlags>--tailcalls+</OtherFlags>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)'=='Release'">
+    <SolutionDir Condition="'$(SolutionDir)' == '$(ProjectDir)'">$(ProjectDir)../</SolutionDir>
+    <OutputPath>$(SolutionDir)_Binaries/$(AssemblyName)/$(Configuration)+$(Platform)/</OutputPath>
+    <IntermediateOutputPath>$(SolutionDir)_Intermediate/$(AssemblyName)/$(Configuration)+$(Platform)/</IntermediateOutputPath>
+    <OtherFlags>--keyfile:$(SolutionDir)Build\Infrastructure.snk</OtherFlags>
+</PropertyGroup>
+
+  <ItemGroup>
+    <None Include="nuget.config" />
+    <EmbeddedResource Include="Assembly_16x.png" />
+    <EmbeddedResource Include="Class_16x.png" />
+    <EmbeddedResource Include="Exit_16x.png" />
+    <EmbeddedResource Include="ExpandChevronDown_16x.png" />
+    <EmbeddedResource Include="ExpandChevronDown_lightGray_16x.png" />
+    <EmbeddedResource Include="Font_16x.png" />
+    <EmbeddedResource Include="Method_16x.png" />
+    <EmbeddedResource Include="Namespace_16x.png" />
+    <EmbeddedResource Include="Refresh_16x.png" />
+    <EmbeddedResource Include="StatusCriticalError_16x.png" />
+    <EmbeddedResource Include="StatusInformation_16x.png" />
+    <EmbeddedResource Include="Visualizer.ico" />
+    <EmbeddedResource Include="AltCover.Avalonia.MainWindow.xaml">
+      <LogicalName>AltCover.Avalonia.MainWindow.xaml</LogicalName>
+    </EmbeddedResource>
+
+    <EmbeddedResource Include="AltCover.Avalonia.App.xaml">
+      <LogicalName>AltCover.Avalonia.App.xaml</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\_Generated\AssemblyVersion.fs" Link="AssemblyVersion.fs" />
+    <Compile Include="..\_Generated\VisibleToTest.fs" Link="VisibleToTest.fs" />
+    <Compile Include="MainWindow.fs" />
+    <Compile Include="App.fs" />
+    <Compile Include="Program.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Visualizer.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Open_6529.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup />
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="0.6.2-build5768-beta" />
+    <PackageReference Include="Avalonia.Desktop" Version="0.6.2-build5768-beta" />
+    <PackageReference Include="Avalonia.HtmlRenderer" Version="0.6.1" />
+    <PackageReference Include="Avalonia.ReactiveUI" Version="0.6.2-build5768-beta" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Update="FSharp.Core" Version="4.5.1" />
+  </ItemGroup>
+
+</Project>

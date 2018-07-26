@@ -9,6 +9,17 @@ Start with the [Quick Start guide](https://github.com/SteveGilham/altcover/wiki/
 
 The latest releases can be downloaded from [releases](https://github.com/SteveGilham/altcover/releases), but the easiest (and most automated) way is through the [nuget package](https://www.nuget.org/packages/AltCover).
 
+## What's in the box?
+
+For Mono, .net framework and .net core, except as noted
+
+* `AltCover`, a command-line tool for recording code coverage (including dotnet and global tool versions)
+* MSBuild tasks to drive the tool, including `dotnet test` integration
+* A PowerShell module (not mono) containing a cmdlet that drives the tool, and other cmdlets for manipulating coverage reports
+* **NEW** A coverage visualizer tool (.net framework and mono only, so far; for .net framework, needs GTK# v2.12.xx installed separately -- see https://www.mono-project.com/download/stable/#download-win )
+
+![Visualizer screenshot](./AltCover.Visualizer/Screenshot.png)
+
 ## Why altcover?
 As the name suggests, it's an alternative coverage approach.  Rather than working by hooking the .net profiling API at run-time, it works by weaving the same sort of extra IL into the assemblies of interest ahead of execution.  This means that it should work pretty much everywhere, whatever your platform, so long as the executing process has write access to the results file.  You can even mix-and-match between platforms used to instrument and those under test.
 
@@ -62,6 +73,8 @@ See [powershell issue #7334](https://github.com/PowerShell/PowerShell/issues/733
 You will need Visual Studio VS2017 (Community Edition) v15.7.latest with F# language support (or just the associated build tools and your editor of choice).  The NUnit3 Test Runner will simplify the basic in-IDE development cycle.  Note that some of the unit tests expect that the separate build of test assemblies under Mono, full .net framework and .net core has taken place; there will be up to 20 failures when running the unit tests in Visual Studio from clean when those expected assemblies are not found.
 
 For the .net 2.0 support, if you don't already have FSharp.Core.dll version 2.3.0.0 (usually in Reference Assemblies\Microsoft\FSharp\.NETFramework\v2.0\2.3.0.0), then you will need to install this -- the [Visual F# Tools 4.0 RTM](https://www.microsoft.com/en-us/download/details.aspx?id=48179) `FSharp_Bundle.exe` is the most convenient source. 
+
+For GTK# support, the GTK# latest 2.12 install is expected -- try https://www.mono-project.com/download/stable/#download-win  
 
 #### *nix
 
