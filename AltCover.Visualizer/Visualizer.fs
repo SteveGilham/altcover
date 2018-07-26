@@ -186,7 +186,10 @@ module Gui =
                         if bracket < 0 then String.Empty
                         else fullname.Substring(bracket)
         let displayname = x.name + args
-        let newrow = theModel.AppendValues(theRow, [| displayname :> obj ; MethodIcon.Force() :> obj |])
+        let offset = match displayname.LastIndexOf("::", StringComparison.Ordinal) with
+                     | -1 -> 0
+                     | o -> o + 2
+        let newrow = theModel.AppendValues(theRow, [| displayname.Substring(offset) :> obj ; MethodIcon.Force() :> obj |])
         Mappings.Add(theModel.GetPath(newrow), x.m)
 
     let methods = nodes |> Seq.toArray
@@ -198,10 +201,24 @@ module Gui =
         let name = fst group
         let newrow = theModel.AppendValues(theRow, [| name :> obj ; ClassIcon.Force() :> obj |])
         PopulateClassNode theModel newrow (snd group)
+        newrow
+
+    let isNested (name:string) n =
+       name.StartsWith(n + "+", StringComparison.Ordinal) ||
+       name.StartsWith(n + "/", StringComparison.Ordinal)
+
     nodes |> Seq.groupBy (fun x -> x.classname)
-          |> Seq.sortBy (fun x -> fst x)
-          |> Seq.iter (ApplyToModel model row)
-    ()
+          |> Seq.sortBy fst
+          |> Seq.fold(fun stack c -> let name = fst c
+                                     let restack = stack 
+                                                   |> List.filter (fst >> (isNested name))
+                                     let pr = match restack with
+                                              | [] -> row
+                                              | (_,r)::_ -> r
+                                     let nr = ApplyToModel model pr c
+                                     (name, nr) :: restack
+                     ) [ ]
+          |> ignore
 
  let private PopulateAssemblyNode (model:TreeStore) (row:TreeIter) (node:XPathNavigator) =
     // within the <module> we have <method> nodes with name="get_module" class="AltCover.Coverage.CoverageSchema.coverage"
@@ -219,7 +236,7 @@ module Gui =
                                          classname = if lastdot < 0 then classfullname else classfullname.Substring(1 + lastdot)
                                          name = m.GetAttribute("name", String.Empty) } )
                   |> Seq.groupBy (fun x -> x.spacename)
-                  |> Seq.sortBy (fun x -> fst x)
+                  |> Seq.sortBy fst
 
     methods |> Seq.iter (ApplyToModel model row)
 
