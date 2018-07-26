@@ -152,7 +152,7 @@ THE SOFTWARE.</property>
                 <property name="can_focus">False</property>
                 <property name="label" translatable="no">xx</property>
                 <property name="use_underline">True</property>
-                <property name="stock_id">gtk-close</property>
+                <property name="stock_id">gtk-quit</property>
               </widget>
               <packing>
                 <property name="expand">False</property>

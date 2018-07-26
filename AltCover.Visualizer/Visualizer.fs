@@ -341,6 +341,9 @@ module Gui =
     handler.openButton.Menu <- if handler.coverageFiles.IsEmpty then null
                                else handler.fileOpenMenu :> Widget
     handler.openButton.Label <- GetResourceString("openButton.Label")
+    handler.exitButton.Label <- GetResourceString("exitButton.Label")
+    handler.exitButton.Clicked
+    |> Event.add(fun _ -> Application.Quit())
 
   let private PrepareAboutDialog(handler : Handler) =
     let ShowUrl(link : string) =
