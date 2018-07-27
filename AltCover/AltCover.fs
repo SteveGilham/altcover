@@ -142,6 +142,10 @@ module Main =
        (fun x -> CommandLine.doPathOperation (fun () ->
                  x.Split([|";"|], StringSplitOptions.RemoveEmptyEntries)
                  |> Seq.iter (Regex >> FilterClass.File >> Visitor.NameFilters.Add))() false))
+      ("p|pathFilter=",
+       (fun x -> CommandLine.doPathOperation (fun () ->
+                 x.Split([|";"|], StringSplitOptions.RemoveEmptyEntries)
+                 |> Seq.iter (Regex >> FilterClass.Path >> Visitor.NameFilters.Add))() false))
       ("s|assemblyFilter=",
        (fun x -> CommandLine.doPathOperation (fun () ->
                  x.Split([|";"|], StringSplitOptions.RemoveEmptyEntries)
