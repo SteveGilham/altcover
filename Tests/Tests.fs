@@ -346,6 +346,15 @@ type AltCoverTests() = class
      Assert.That (Match (Assembly.GetExecutingAssembly().Location) (FilterClass.File (Regex "Cove")), Is.True)
 
   [<Test>]
+  member self.PathDoesNotMatchNonPathClass() =
+     Assert.That (Match (Assembly.GetExecutingAssembly().Location) (FilterClass.Type (Regex "23")), Is.False)
+
+  [<Test>]
+  member self.PathDoesMatchPathClass() =
+     let x = String [| '\\'; Path.DirectorySeparatorChar |]
+     Assert.That (Match (Assembly.GetExecutingAssembly().Location) (FilterClass.Path (Regex (x + "_Binaries" + x))), Is.True)
+
+  [<Test>]
   member self.AssemblyDoesNotMatchNonAssemblyClass() =
      let def = Mono.Cecil.AssemblyDefinition.ReadAssembly (Assembly.GetExecutingAssembly().Location)
      Assert.That (Match def (FilterClass.Type (Regex "23")), Is.False)
@@ -3408,9 +3417,9 @@ type AltCoverTests() = class
     let options = Main.DeclareOptions ()
     Assert.That (options.Count, Is.EqualTo
 #if NETCOREAPP2_0
-                                            20
-#else
                                             21
+#else
+                                            22
 #endif
                  )
     Assert.That(options |> Seq.filter (fun x -> x.Prototype <> "<>")
@@ -3621,6 +3630,29 @@ type AltCoverTests() = class
                                                                | _ -> false))
       Assert.That (Visitor.NameFilters |> Seq.map (fun x -> match x with
                                                             | FilterClass.File i -> i.ToString()
+                                                            | _ -> "*"),
+                   Is.EquivalentTo [| "1"; "2"; "3"; "4"; "5"; "m"; "n"; "6" |])
+    finally
+      Visitor.NameFilters.Clear()
+
+  [<Test>]
+  member self.ParsingPathsGivesPaths() =
+    try
+      Visitor.NameFilters.Clear()
+      let options = Main.DeclareOptions ()
+      let input = [| "-p"; "1"; "--p"; "2"; "/p"; "3"; "-p=4"; "--p=5;m;n"; "/p=6" |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Left _ -> Assert.Fail()
+      | Right (x, y) -> Assert.That (y, Is.SameAs options)
+                        Assert.That (x, Is.Empty)
+
+      Assert.That (Visitor.NameFilters.Count, Is.EqualTo 8)
+      Assert.That (Visitor.NameFilters |> Seq.forall (fun x -> match x with
+                                                               | FilterClass.Path _ -> true
+                                                               | _ -> false))
+      Assert.That (Visitor.NameFilters |> Seq.map (fun x -> match x with
+                                                            | FilterClass.Path i -> i.ToString()
                                                             | _ -> "*"),
                    Is.EquivalentTo [| "1"; "2"; "3"; "4"; "5"; "m"; "n"; "6" |])
     finally
@@ -4987,6 +5019,8 @@ type AltCoverTests() = class
                                 coverage.xml in the current directory)
   -f, --fileFilter=VALUE     Optional, multiple: source file name to exclude
                                from instrumentation
+  -p, --pathFilter=VALUE     Optional, multiple: source file path to exclude
+                               from instrumentation
   -s, --assemblyFilter=VALUE Optional, multiple: assembly name to exclude from
                                instrumentation
   -e, --assemblyExcludeFilter=VALUE
@@ -5084,6 +5118,8 @@ or
                      + """  -x, --xmlReport=VALUE      Optional: The output report template file (default:
                                 coverage.xml in the current directory)
   -f, --fileFilter=VALUE     Optional, multiple: source file name to exclude
+                               from instrumentation
+  -p, --pathFilter=VALUE     Optional, multiple: source file path to exclude
                                from instrumentation
   -s, --assemblyFilter=VALUE Optional, multiple: assembly name to exclude from
                                instrumentation

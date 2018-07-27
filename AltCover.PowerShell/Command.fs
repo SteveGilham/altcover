@@ -95,6 +95,10 @@ type InvokeAltCoverCommand(runner:bool) =
 
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
       ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
+  member val PathFilter  : string array = [| |] with get, set
+
+  [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
+      ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
   member val AssemblyFilter  : string array = [| |] with get, set
 
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
@@ -204,6 +208,7 @@ type InvokeAltCoverCommand(runner:bool) =
     #endif
                               Args.Item "-x" self.XmlReport;
                               Args.ItemList "-f" self.FileFilter;
+                              Args.ItemList "-p" self.PathFilter;
                               Args.ItemList "-s" self.AssemblyFilter;
                               Args.ItemList "-e" self.AssemblyExcludeFilter;
                               Args.ItemList "-t" self.TypeFilter;

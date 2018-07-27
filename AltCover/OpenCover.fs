@@ -170,11 +170,11 @@ module OpenCover =
                            XAttribute(X "isSetter", boolString methodDef.IsSetter),
                            XAttribute(X "crapScore", 0)))
 
-    let addMethodContent (element:XElement) (methodDef:MethodDefinition) =
+    let addMethodContent (element:XElement) (methodDef:MethodDefinition) instrumented =
         element.Add(Summary())
         element.Add(XElement(X "MetadataToken", methodDef.MetadataToken.ToUInt32().ToString()))
         element.Add(XElement(X "Name", methodDef.FullName))
-        element.Add(XElement(X "FileRef"))
+        if instrumented then element.Add(XElement(X "FileRef"))
         let seqpnts = XElement(X "SequencePoints")
         element.Add(seqpnts)
         element.Add(XElement(X "BranchPoints"))
@@ -188,7 +188,7 @@ module OpenCover =
         if instrumented then element.SetAttributeValue(X "skippedDueTo", null)
         let head = s.Stack |> Seq.head
         head.Add element
-        let seqpnts = addMethodContent element methodDef
+        let seqpnts = addMethodContent element methodDef instrumented
         {s with Stack = if instrumented then seqpnts :: s.Stack else s.Stack
                 Excluded = if instrumented then Nothing else ByMethod
                 Index = -1
