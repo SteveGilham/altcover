@@ -334,6 +334,10 @@ type AltCoverTests() = class
      Assert.That (Match () (FilterClass.File (Regex "23")), Is.False)
 
   [<Test>]
+  member self.NoneOfTheAboveMatchesNoPath() =
+     Assert.That (Match () (FilterClass.Path (Regex "23")), Is.False)
+
+  [<Test>]
   member self.NoneOfTheAboveMatchesNoMethod() =
      Assert.That (Match () (FilterClass.Method (Regex "23")), Is.False)
 
