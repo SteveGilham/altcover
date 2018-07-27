@@ -334,16 +334,12 @@ module Gui =
          (i.Child :?> Label).Text <- String.Empty)
     // fill in with the items we have
     Seq.zip handler.coverageFiles items
-    |> Seq.iter (fun (p : string * MenuItem) ->
-         (snd p).Visible <- true
-         (((snd p).Child) :?> Label).Text <- fst p)
+    |> Seq.iter (fun (name, item) ->
+         item.Visible <- true
+         (item.Child :?> Label).Text <- name)
     // set or clear the menu
     handler.openButton.Menu <- if handler.coverageFiles.IsEmpty then null
                                else handler.fileOpenMenu :> Widget
-    handler.openButton.Label <- GetResourceString("openButton.Label")
-    handler.exitButton.Label <- GetResourceString("exitButton.Label")
-    handler.exitButton.Clicked
-    |> Event.add(fun _ -> Application.Quit())
 
   let private PrepareAboutDialog(handler : Handler) =
     let ShowUrl(link : string) =
@@ -473,7 +469,7 @@ module Gui =
       let (|AllVisited|_|) (b,(v,num)) =
         if b |> not || v <> num then None
         else Some ()
-        
+
       let pix = match counts with
                 | (false, _) -> blank
                 | (_, (0, _)) -> redbranch
@@ -589,8 +585,56 @@ module Gui =
           let mark = buff.CreateMark(line, iter, true)
           handler.codeView.ScrollToMark(mark, 0.0, true, 0.0, 0.3)
 
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:DisposeObjectsBeforeLosingScope",
+                                                    Justification = "IDisposables are added to other widgets")>]
+  let private AddLabelWidget g (button:ToolButton, resource) =
+    let keytext = (resource |> GetResourceString).Split('\u0000' )
+
+    let label = new TextView()
+    let buffer = label.Buffer
+    let tag0 = new TextTag("baseline")
+    tag0.Justification <- Justification.Center
+    tag0.Background <- "#FFFFFF"
+    let tt = buffer.TagTable
+    tt.Add tag0
+    let tag = new TextTag("underline")
+    tag.Underline <- Pango.Underline.Single
+    tt.Add tag
+    let start = keytext.[1].IndexOf('_')
+    buffer.Text <- keytext.[1].Replace("_", String.Empty)
+
+    buffer.ApplyTag("baseline", buffer.StartIter, buffer.EndIter)
+    buffer.ApplyTag("underline",
+                    buffer.GetIterAtLineOffset(0, start),
+                    buffer.GetIterAtLineOffset(0, start + 1))
+    label.CursorVisible <- false
+    label.Editable <- false
+    let key = Keyval.FromName(keytext.[0].Substring(0, 1)) |> int |> enum<Gdk.Key>
+    button.LabelWidget <- label
+    button.AddAccelerator("clicked", g, new AccelKey(key, ModifierType.Mod1Mask, AccelFlags.Visible))
+
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:DisposeObjectsBeforeLosingScope",
+                                                    Justification = "IDisposables are added to other widgets")>]
+  let private SetToolButtons (h:Handler) =
+    let g = new AccelGroup()
+    h.mainWindow.AddAccelGroup(g)
+    [
+        (h.openButton :> ToolButton, "openButton.Label")
+        (h.refreshButton, "refreshButton.Label")
+        (h.fontButton, "fontButton.Label")
+        (h.showAboutButton, "showAboutButton.Label")
+        (h.exitButton, "exitButton.Label")
+    ]
+    |> Seq.iter (AddLabelWidget g)
+    h.fileOpenMenu.AllChildren |> Seq.cast<MenuItem>
+    |> Seq.iteri (fun n (i : MenuItem) -> let c = ((n + 1) % 10) |> char
+                                          let key = Keyval.FromName(String [| '0' + c |]) |> int |> enum<Gdk.Key>
+                                          i.AddAccelerator("activate", g, new AccelKey(key, ModifierType.Mod1Mask, AccelFlags.Visible))
+                                        )
+
   let private PrepareGui() =
     let handler = InitializeHandler()
+    SetToolButtons handler
     PrepareAboutDialog handler
     PrepareTreeView handler
     readGeometry handler.mainWindow
@@ -601,9 +645,10 @@ module Gui =
     handler.codeView.Editable <- false
     InitializeTextBuffer handler.codeView.Buffer
     handler.refreshButton.Sensitive <- false
-    handler.refreshButton.Label <- GetResourceString("refreshButton.Label")
-    handler.fontButton.Label <- GetResourceString("fontButton.Label")
-    handler.showAboutButton.Label <- GetResourceString("showAboutButton.Label")
+    handler.exitButton.Clicked
+    |> Event.add(fun _ ->
+             if save then saveGeometry handler.mainWindow
+             Application.Quit())
     // Initialize graphics and begin
     handler.mainWindow.Icon <- new Pixbuf(Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Visualizer.VIcon.ico"))
     handler.aboutVisualizer.Icon <- new Pixbuf(Assembly.GetExecutingAssembly()
