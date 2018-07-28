@@ -6,8 +6,8 @@ A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wi
 
 # 3.5.xxx (Cerulean series release 9)
 * [Initial Release] `AltCover.Visualizer` tool for .net framework and mono (for .net framework, needs GTK#2.12.xx installed separately -- see https://www.mono-project.com/download/stable/)
-* [BUGFIX] `ConvertTo-BarChart`, `ConvertTo-LCov` and `ConvertTo-Cobertura` would fail for some corner cases found in OpenCover files (fixed in code shared with the Visualizer om the course of Visualizer testing)
 * `-p|--pathFilter` (`-PathFilter`, `PathFilter="string[]"`, `/p:AltCoverPathFilter=...`) option to specify regexes to select source files to ignore on the basis of their full path; distinct for `--fileFilter` which works of the file name alone .
+* [BUGFIX] `ConvertTo-BarChart`, `ConvertTo-LCov` and `ConvertTo-Cobertura` would fail for some corner cases found in OpenCover files (fixed in code shared with the Visualizer om the course of Visualizer testing)
 * [BUGFIX] Issue #28 --in OpenCover format,  don't emit empty `FileRef` tags for methods that aren't being instrumented.
 
 # 3.5.569 (Cerulean series release 8)
