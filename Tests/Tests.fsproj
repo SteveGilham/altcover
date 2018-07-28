@@ -103,6 +103,9 @@
       <Project>{4fa35926-fb21-4f1b-bb55-465d472ee027}</Project>
       <Private>True</Private>
     </ProjectReference>
+    <Reference Include="FSharp.Core">
+      <HintPath>..\packages\FSharp.Core.4.5.2\lib\net45\FSharp.Core.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.Build.Framework" />
     <Reference Include="Microsoft.Build.Tasks.v4.0" />
     <Reference Include="Microsoft.Build.Utilities.v4.0" />
@@ -122,9 +125,6 @@
       <HintPath>..\packages\Mono.Options.Signed.0.2.3\lib\net45\Mono.Options.dll</HintPath>
     </Reference>
     <Reference Include="mscorlib" />
-    <Reference Include="FSharp.Core">
-      <HintPath>..\packages\FSharp.Core.4.5.1\lib\net45\FSharp.Core.dll</HintPath>
-    </Reference>
     <Reference Include="Newtonsoft.Json">
       <HintPath>..\packages\Newtonsoft.Json.11.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>

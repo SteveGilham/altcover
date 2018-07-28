@@ -5,7 +5,7 @@
   <widget class="GtkAboutDialog" id="aboutVisualizer">
     <property name="can_focus">False</property>
     <property name="border_width">5</property>
-    <property name="title" translatable="no">xx</property>
+    <property name="title">xx</property>
     <property name="resizable">False</property>
     <property name="window_position">center-on-parent</property>
     <property name="destroy_with_parent">True</property>
@@ -14,8 +14,8 @@
     <property name="skip_pager_hint">True</property>
     <property name="program_name">AltCover Visualizer</property>
     <property name="version">xx</property>
-    <property name="copyright" translatable="no">xx</property>
-    <property name="comments" translatable="no">xx</property>
+    <property name="copyright">xx</property>
+    <property name="comments">xx</property>
     <property name="website">https://github.com/SteveGilham/altcover</property>
     <property name="website_label" translatable="no">xx</property>
     <property name="license" translatable="no">The MIT License
@@ -62,6 +62,90 @@ THE SOFTWARE.</property>
       </widget>
     </child>
   </widget>
+  <widget class="GtkMenu" id="fileOpenMenu">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <child>
+      <widget class="GtkMenuItem" id="menuitem1">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="label">_1</property>
+        <property name="use_underline">True</property>
+      </widget>
+    </child>
+    <child>
+      <widget class="GtkMenuItem" id="menuitem2">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="label">_2</property>
+        <property name="use_underline">True</property>
+      </widget>
+    </child>
+    <child>
+      <widget class="GtkMenuItem" id="menuitem3">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="label">_3</property>
+        <property name="use_underline">True</property>
+      </widget>
+    </child>
+    <child>
+      <widget class="GtkMenuItem" id="menuitem4">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="label">_4</property>
+        <property name="use_underline">True</property>
+      </widget>
+    </child>
+    <child>
+      <widget class="GtkMenuItem" id="menuitem5">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="label">_5</property>
+        <property name="use_underline">True</property>
+      </widget>
+    </child>
+    <child>
+      <widget class="GtkMenuItem" id="menuitem6">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="label">_6</property>
+        <property name="use_underline">True</property>
+      </widget>
+    </child>
+    <child>
+      <widget class="GtkMenuItem" id="menuitem7">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="label">_7</property>
+        <property name="use_underline">True</property>
+      </widget>
+    </child>
+    <child>
+      <widget class="GtkMenuItem" id="menuitem8">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="label">_8</property>
+        <property name="use_underline">True</property>
+      </widget>
+    </child>
+    <child>
+      <widget class="GtkMenuItem" id="menuitem9">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="label">_9</property>
+        <property name="use_underline">True</property>
+      </widget>
+    </child>
+    <child>
+      <widget class="GtkMenuItem" id="menuitem0">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="label">_0</property>
+        <property name="use_underline">True</property>
+      </widget>
+    </child>
+  </widget>
   <widget class="GtkWindow" id="mainWindow">
     <property name="can_focus">False</property>
     <property name="default_width">600</property>
@@ -78,7 +162,7 @@ THE SOFTWARE.</property>
               <widget class="GtkMenuToolButton" id="openButton">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="label" translatable="no">xx</property>
+                <property name="label">xx</property>
                 <property name="use_underline">True</property>
                 <property name="stock_id">gtk-open</property>
               </widget>
@@ -91,7 +175,7 @@ THE SOFTWARE.</property>
               <widget class="GtkToolButton" id="refreshButton">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="label" translatable="no">xx</property>
+                <property name="label">xx</property>
                 <property name="use_underline">True</property>
                 <property name="stock_id">gtk-refresh</property>
               </widget>
@@ -104,7 +188,7 @@ THE SOFTWARE.</property>
               <widget class="GtkToolButton" id="fontButton">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="label" translatable="no">xxx</property>
+                <property name="label">xxx</property>
                 <property name="use_underline">True</property>
                 <property name="stock_id">gtk-select-font</property>
               </widget>
@@ -127,9 +211,31 @@ THE SOFTWARE.</property>
               <widget class="GtkToolButton" id="showAboutButton">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="label" translatable="no">xx</property>
+                <property name="label">xx</property>
                 <property name="use_underline">True</property>
                 <property name="stock_id">gtk-about</property>
+              </widget>
+              <packing>
+                <property name="expand">False</property>
+                <property name="homogeneous">True</property>
+              </packing>
+            </child>
+            <child>
+              <widget class="GtkSeparatorToolItem" id="separator1">
+                <property name="can_focus">False</property>
+                <property name="draw">False</property>
+              </widget>
+              <packing>
+                <property name="expand">True</property>
+              </packing>
+            </child>
+            <child>
+              <widget class="GtkToolButton" id="exitButton">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label">xx</property>
+                <property name="use_underline">True</property>
+                <property name="stock_id">gtk-quit</property>
               </widget>
               <packing>
                 <property name="expand">False</property>
@@ -194,90 +300,6 @@ THE SOFTWARE.</property>
             <property name="position">1</property>
           </packing>
         </child>
-      </widget>
-    </child>
-  </widget>
-  <widget class="GtkMenu" id="fileOpenMenu">
-    <property name="visible">True</property>
-    <property name="can_focus">False</property>
-    <child>
-      <widget class="GtkMenuItem" id="menuitem0">
-        <property name="visible">True</property>
-        <property name="can_focus">False</property>
-        <property name="label" translatable="no">&amp;0</property>
-        <property name="use_underline">True</property>
-      </widget>
-    </child>
-    <child>
-      <widget class="GtkMenuItem" id="menuitem1">
-        <property name="visible">True</property>
-        <property name="can_focus">False</property>
-        <property name="label" translatable="no">&amp;1</property>
-        <property name="use_underline">True</property>
-      </widget>
-    </child>
-    <child>
-      <widget class="GtkMenuItem" id="menuitem2">
-        <property name="visible">True</property>
-        <property name="can_focus">False</property>
-        <property name="label" translatable="no">&amp;2</property>
-        <property name="use_underline">True</property>
-      </widget>
-    </child>
-    <child>
-      <widget class="GtkMenuItem" id="menuitem3">
-        <property name="visible">True</property>
-        <property name="can_focus">False</property>
-        <property name="label" translatable="no">&amp;3</property>
-        <property name="use_underline">True</property>
-      </widget>
-    </child>
-    <child>
-      <widget class="GtkMenuItem" id="menuitem4">
-        <property name="visible">True</property>
-        <property name="can_focus">False</property>
-        <property name="label" translatable="no">&amp;4</property>
-        <property name="use_underline">True</property>
-      </widget>
-    </child>
-    <child>
-      <widget class="GtkMenuItem" id="menuitem5">
-        <property name="visible">True</property>
-        <property name="can_focus">False</property>
-        <property name="label" translatable="no">&amp;5</property>
-        <property name="use_underline">True</property>
-      </widget>
-    </child>
-    <child>
-      <widget class="GtkMenuItem" id="menuitem6">
-        <property name="visible">True</property>
-        <property name="can_focus">False</property>
-        <property name="label" translatable="no">&amp;6</property>
-        <property name="use_underline">True</property>
-      </widget>
-    </child>
-    <child>
-      <widget class="GtkMenuItem" id="menuitem7">
-        <property name="visible">True</property>
-        <property name="can_focus">False</property>
-        <property name="label" translatable="no">&amp;7</property>
-        <property name="use_underline">True</property>
-      </widget>
-    </child>
-    <child>
-      <widget class="GtkMenuItem" id="menuitem8">
-        <property name="visible">True</property>
-        <property name="can_focus">False</property>
-        <property name="label" translatable="no">&amp;8</property>
-        <property name="use_underline">True</property>
-      </widget>
-    </child>
-    <child>
-      <widget class="GtkMenuItem" id="menuitem9">
-        <property name="visible">True</property>
-        <property name="can_focus">False</property>
-        <property name="label" translatable="no">&amp;9</property>
-        <property name="use_underline">True</property>
       </widget>
     </child>
   </widget>

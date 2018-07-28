@@ -117,73 +117,60 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="InvalidFile" xml:space="preserve">
-    <value>The file {0} is not a valid coverage file:
-{1}</value>
+  <data name="About" xml:space="preserve">
+    <value> Pri AltCover Visualizer...</value>
   </data>
-  <data name="CoverageOutOfDate" xml:space="preserve">
-    <value>The file {0} 
-is out of date with respect to some of the source files.</value>
+  <data name="AboutDialog.About" xml:space="preserve">
+    <value>Pri</value>
   </data>
-  <data name="CoverageOutOfDateThisFile" xml:space="preserve">
-    <value>The file {0} 
-is out of date with respect to source file
-{1}.</value>
+  <data name="About.dlg" xml:space="preserve">
+    <value>Pri AltCover Visualizer</value>
   </data>
-  <data name="SelectFont" xml:space="preserve">
-    <value>Select font for source display</value>
+  <data name="ProgramDescription" xml:space="preserve">
+    <value>Kovrilo-visualizilo por raportoj de NCover kaj OpenCover</value>
   </data>
-  <data name="SelectXml" xml:space="preserve">
-    <value>xml files (*.xml)|*.xml|All files (*.*)|*.*</value>
+  <data name="License" xml:space="preserve">
+    <value>The MIT License
+
+Copyright {0}
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.</value>
   </data>
-  <data name="MissingSourceFile" xml:space="preserve">
-    <value>The file {0} 
-refers to source files not found on this computer.</value>
+  <data name="AboutDialog.License" xml:space="preserve">
+    <value>Permesilo</value>
   </data>
-  <data name="MissingSourceThisFile" xml:space="preserve">
-    <value>The file {0} 
-refers to absent to source file
-{1}.</value>
-  </data>
-  <data name="aboutVisualizer.Comments" xml:space="preserve">
-    <value>Coverage visualizer for NCover and OpenCover reports</value>
-  </data>
-  <data name="aboutVisualizer.Copyright" xml:space="preserve">
-    <value>{0}
-Icons from the Visual Studio 2017 collection
-https://docs.microsoft.com/en-us/visualstudio/designers/the-visual-studio-image-library</value>
-  </data>
-  <data name="aboutVisualizer.Title" xml:space="preserve">
-    <value>About AltCover Visualizer</value>
-  </data>
-  <data name="aboutVisualizer.WebsiteLabel" xml:space="preserve">
+  <data name="WebsiteLabel" xml:space="preserve">
     <value>GitHub repo</value>
   </data>
-  <data name="C_redits" xml:space="preserve">
-    <value>C_redits</value>
+  <data name="Close" xml:space="preserve">
+    <value>Fermi</value>
   </data>
-  <data name="fontButton.Label" xml:space="preserve">
-    <value>f&#x0;_Font...</value>
+  <data name="Visualizer" xml:space="preserve">
+    <value>Visualizer</value>
   </data>
-  <data name="gtk-close" xml:space="preserve">
-    <value>_Close</value>
+  <data name="Open" xml:space="preserve">
+    <value>_Malferma...</value>
   </data>
-  <data name="openButton.Label" xml:space="preserve">
-    <value>o&#x0;_Open...</value>
+  <data name="Exit" xml:space="preserve">
+    <value>Eliro</value>
   </data>
-  <data name="refreshButton.Label" xml:space="preserve">
-    <value>r&#x0;_Refresh</value>
-  </data>
-  <data name="showAboutButton.Label" xml:space="preserve">
-    <value>a&#x0;_About...</value>
-  </data>
-  <data name="_License" xml:space="preserve">
-    <value>_License</value>
-  </data>
-  <data name="branchesVisited" xml:space="preserve">
-    <value>{0} of {1} branches visited</value>
-  </data>
-  <data name="exitButton.Label" xml:space="preserve">
-    <value>x&#x0;E_xit</value>
+  <data name="Font" xml:space="preserve">
+    <value>Tiparo...</value>
   </data>
 </root>

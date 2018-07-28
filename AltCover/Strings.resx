@@ -154,7 +154,7 @@
     <value>Creating folder {0}</value>
   </data>
   <data name="HelpText" xml:space="preserve">
-    <value>AltCover [/i[nputDirectory]=VALUE] [/o[utputDirectory]=VALUE] [/y|symbolDirectory=VALUE] [/d[ependency]=VALUE] [/sn|strongNameKey=VALUE] [/k[ey]=VALUE] [/x[mlReport]=VALUE] [/f[ileFilter]=VALUE] [/s|assemblyFilter=VALUE] [/t|typeFilter=VALUE] [/m|methodFilter=VALUE] [/a|attributeFilter=VALUE] [/c[allContext]=VALUE] [--opencover] [--inplace] [--save] [--single] [--linecover|branchcover] [/?|h[elp]] [-- ] [...]
+    <value>AltCover [/i[nputDirectory]=VALUE] [/o[utputDirectory]=VALUE] [/y|symbolDirectory=VALUE] [/d[ependency]=VALUE] [/sn|strongNameKey=VALUE] [/k[ey]=VALUE] [/x[mlReport]=VALUE] [/f[ileFilter]=VALUE] [/p[athFilter]=VALUE] [/s|assemblyFilter=VALUE] [/t|typeFilter=VALUE] [/m|methodFilter=VALUE] [/a|attributeFilter=VALUE] [/c[allContext]=VALUE] [--opencover] [--inplace] [--save] [--single] [--linecover|branchcover] [/?|h[elp]] [-- ] [...]
 or
 AltCover Runner [/r[ecordingDirectory]=VALUE] [/w[orkingDirectory]=VALUE] [/x|executable=VALUE] [--collect] [/l[covReport]=VALUE] [/t[hreshold]=VALUE] [/c[obertura]=VALUE] [/o[utputFile]=VALUE] [/?|h[elp]] [-- ] [...]
 or
@@ -366,5 +366,8 @@ Details written to {0}</value>
   <data name="branchcover" xml:space="preserve">
     <value>Optional: Do not record line coverage.  Implies, and is compatible with, the --opencover option.
     Incompatible with --linecover.</value>
+  </data>
+  <data name="p|pathFilter=" xml:space="preserve">
+    <value>Optional, multiple: source file path to exclude from instrumentation</value>
   </data>
 </root>

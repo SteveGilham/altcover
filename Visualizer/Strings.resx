@@ -127,7 +127,7 @@
     <value>About AltCover.Visualizer</value>
   </data>
   <data name="ProgramDescription" xml:space="preserve">
-    <value>Interactive coverage report viewer</value>
+    <value>Coverage visualizer for NCover and OpenCover reports</value>
   </data>
   <data name="License" xml:space="preserve">
     <value>The MIT License
@@ -156,7 +156,7 @@ THE SOFTWARE.</value>
     <value>License</value>
   </data>
   <data name="WebsiteLabel" xml:space="preserve">
-    <value>Project site</value>
+    <value>GitHub repo</value>
   </data>
   <data name="Close" xml:space="preserve">
     <value>Close</value>

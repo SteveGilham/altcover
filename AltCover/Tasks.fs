@@ -36,6 +36,7 @@ type Prepare () =
   member val TypeFilter  : string array = [| |] with get, set
   member val MethodFilter  : string array = [| |] with get, set
   member val AttributeFilter  : string array = [| |] with get, set
+  member val PathFilter  : string array = [| |] with get, set
   member val CallContext  : string array = [| |] with get, set
 
   member val OpenCover = true with get, set
@@ -72,6 +73,7 @@ type Prepare () =
       Args.ItemList "-t" self.TypeFilter;
       Args.ItemList "-m" self.MethodFilter;
       Args.ItemList "-a" self.AttributeFilter;
+      Args.ItemList "-p" self.PathFilter;
       Args.ItemList "-c" self.CallContext;
 
       Args.Flag "--opencover" self.OpenCover

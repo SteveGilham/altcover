@@ -12,6 +12,7 @@
   <ItemGroup>
     <AltCoverSplitContext Include="$(AltCoverCallContext.Split('|'))" />
     <AltCoverFileFilters Include="$(AltCoverFileFilter.Split('|'))" />
+    <AltCoverPathFilters Include="$(AltCoverPathFilter.Split('|'))" />
     <AltCoverAssemblyFilters Include="$(AltCoverAssemblyFilter.Split('|'))" />
     <AltCoverAssemblyExcludeFilters Include="$(AltCoverAssemblyExcludeFilter.Split('|'))" />
     <AltCoverTypeFilters Include="$(AltCoverTypeFilter.Split('|'))" />
@@ -33,6 +34,7 @@
       XmlReport="$(AltCoverXmlReport)"
       OpenCover="$(AltCoverOpenCover)"
       FileFilter="@(AltCoverFileFilters)"
+      PathFilter="@(AltCoverPathFilters)"
       AssemblyFilter="@(AltCoverAssemblyFilters)"
       AssemblyExcludeFilter="@(AltCoverAssemblyExcludeFilters)"
       TypeFilter="@(AltCoverTypeFilters)"
@@ -57,12 +59,13 @@
       OutputDirectory="$(TargetDir)__Saved"
       XmlReport="$(AltCoverXmlReport)"
       OpenCover="$(AltCoverOpenCover)"
-      FileFilter="$(AltCoverFileFilter)"
-      AssemblyFilter="$(AltCoverAssemblyFilter)"
-      AssemblyExcludeFilter="$(AltCoverAssemblyExcludeFilter)"
-      TypeFilter="$(AltCoverTypeFilter)"
-      MethodFilter="$(AltCoverMethodFilter)"
-      AttributeFilter="$(AltCoverAttributeFilter)"
+      FileFilter="$(AltCoverFileFilters)"
+      PathFilter="@(AltCoverPathFilters)"
+      AssemblyFilter="$(AltCoverAssemblyFilters)"
+      AssemblyExcludeFilter="$(AltCoverAssemblyExcludeFilters)"
+      TypeFilter="$(AltCoverTypeFilters)"
+      MethodFilter="$(AltCoverMethodFilters)"
+      AttributeFilter="$(AltCoverAttributeFilters)"
       CallContext="@(AltCoverSplitContext)"
       Single="$(AltCoverSingle)"
       LineCover="$(AltCoverLineCover)"

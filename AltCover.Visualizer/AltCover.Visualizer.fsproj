@@ -108,7 +108,7 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="FSharp.Core">
-      <HintPath>..\packages\FSharp.Core.4.5.1\lib\net45\FSharp.Core.dll</HintPath>
+      <HintPath>..\packages\FSharp.Core.4.5.2\lib\net45\FSharp.Core.dll</HintPath>
     </Reference>
     <Reference Include="gdk-sharp">
       <Private>False</Private>
@@ -126,6 +126,9 @@
       <HintPath>$(SolutionDir)packages\Mono.Options.Signed.0.2.3\lib\net45\Mono.Options.dll</HintPath>
     </Reference>
     <Reference Include="mscorlib" />
+    <Reference Include="pango-sharp">
+      <Private>False</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
