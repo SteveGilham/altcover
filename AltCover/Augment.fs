@@ -14,5 +14,8 @@ module Augment =
   let  Left  x :Either<'a,'b> = Choice2Of2 x
   let  (|Right|Left|) = function Choice1Of2 x -> Right x | Choice2Of2 x -> Left x
 
-  let Split (l:'a list) =
+#if GUI
+#else
+  let internal Split (l:'a list) =
     (l.Head, l.Tail) // since Gendarme thinks the concatenation operator is a hardcoded path!
+#endif

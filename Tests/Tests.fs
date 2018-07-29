@@ -334,6 +334,10 @@ type AltCoverTests() = class
      Assert.That (Match () (FilterClass.File (Regex "23")), Is.False)
 
   [<Test>]
+  member self.NoneOfTheAboveMatchesNoPath() =
+     Assert.That (Match () (FilterClass.Path (Regex "23")), Is.False)
+
+  [<Test>]
   member self.NoneOfTheAboveMatchesNoMethod() =
      Assert.That (Match () (FilterClass.Method (Regex "23")), Is.False)
 
@@ -344,6 +348,15 @@ type AltCoverTests() = class
   [<Test>]
   member self.FileDoesMatchFileClass() =
      Assert.That (Match (Assembly.GetExecutingAssembly().Location) (FilterClass.File (Regex "Cove")), Is.True)
+
+  [<Test>]
+  member self.PathDoesNotMatchNonPathClass() =
+     Assert.That (Match (Assembly.GetExecutingAssembly().Location) (FilterClass.Type (Regex "23")), Is.False)
+
+  [<Test>]
+  member self.PathDoesMatchPathClass() =
+     let x = String [| '\\'; Path.DirectorySeparatorChar |]
+     Assert.That (Match (Assembly.GetExecutingAssembly().Location) (FilterClass.Path (Regex (x + "_Binaries" + x))), Is.True)
 
   [<Test>]
   member self.AssemblyDoesNotMatchNonAssemblyClass() =
@@ -621,6 +634,7 @@ type AltCoverTests() = class
                      Some "FI@10::Specialize" //System.Int32 Sample6.Module/FI@10T::Invoke(Microsoft.FSharp.Collections.FSharpList`1<a>)
                      Some "Module::F1" //System.Void Sample6.Module/F1@18::.ctor()
                      Some "Module::F1" //System.Int32 Sample6.Module/F1@18::Invoke(System.Object)
+#if NETCOREAPP2_0
                      Some "fetchUrlAsync@26-4::Invoke" //System.Void Sample6.Module/fetchUrlAsync@26-5::.ctor(System.String,Microsoft.FSharp.Control.FSharpAsyncBuilder)
                      Some "fetchUrlAsync@26-4::Invoke" //Microsoft.FSharp.Control.FSharpAsync`1<Microsoft.FSharp.Core.Unit> Sample6.Module/fetchUrlAsync@26-5::Invoke(System.IO.StreamReader)
                      Some "fetchUrlAsync@24-3::Invoke" //System.Void Sample6.Module/fetchUrlAsync@25-4::.ctor(System.String,Microsoft.FSharp.Control.FSharpAsyncBuilder)
@@ -633,6 +647,23 @@ type AltCoverTests() = class
                      Some "fetchUrlAsync@22::Invoke" //Microsoft.FSharp.Control.FSharpAsync`1<Microsoft.FSharp.Core.Unit> Sample6.Module/fetchUrlAsync@22-1::Invoke(Microsoft.FSharp.Core.Unit)
                      Some "Module::F2" //System.Void Sample6.Module/fetchUrlAsync@21::.ctor()
                      Some "Module::F2" //Microsoft.FSharp.Control.FSharpAsync`1<Microsoft.FSharp.Core.Unit> Sample6.Module/fetchUrlAsync@21::Invoke(System.String)
+#else
+// F# 4.5.1
+                     Some "fetchUrlAsync@26-4::Invoke" //"System.Void Sample6.Module/fetchUrlAsync@27-5::.ctor(System.String,Microsoft.FSharp.Control.FSharpAsyncBuilder)"
+                     Some "fetchUrlAsync@26-4::Invoke" //"Microsoft.FSharp.Control.FSharpAsync`1<Microsoft.FSharp.Core.Unit> Sample6.Module/fetchUrlAsync@27-5::Invoke(System.IO.StreamReader)"
+                     Some "fetchUrlAsync@24-3::Invoke" //"System.Void Sample6.Module/fetchUrlAsync@26-4::.ctor(System.String,Microsoft.FSharp.Control.FSharpAsyncBuilder)"
+                     Some "fetchUrlAsync@24-3::Invoke" //"Microsoft.FSharp.Control.FSharpAsync`1<Microsoft.FSharp.Core.Unit> Sample6.Module/fetchUrlAsync@26-4::Invoke(System.IO.Stream)"
+                     Some "fetchUrlAsync@24-2::Invoke" //"System.Void Sample6.Module/fetchUrlAsync@24-3::.ctor(System.String,Microsoft.FSharp.Control.FSharpAsyncBuilder)"
+                     Some "fetchUrlAsync@24-2::Invoke" //"Microsoft.FSharp.Control.FSharpAsync`1<Microsoft.FSharp.Core.Unit> Sample6.Module/fetchUrlAsync@24-3::Invoke(System.Net.WebResponse)"
+                     Some "fetchUrlAsync@23-1::Invoke" //"System.Void Sample6.Module/fetchUrlAsync@24-2::.ctor(System.String,Microsoft.FSharp.Control.FSharpAsyncBuilder)"
+                     Some "fetchUrlAsync@23-1::Invoke" //"Microsoft.FSharp.Control.FSharpAsync`1<Microsoft.FSharp.Core.Unit> Sample6.Module/fetchUrlAsync@24-2::Invoke(System.Net.WebResponse)"
+                     Some "fetchUrlAsync@23-1::Invoke" //"System.Void Sample6.Module/fetchUrlAsync@24-6::.ctor(Microsoft.FSharp.Control.FSharpAsync`1<System.Net.WebResponse>,Microsoft.FSharp.Core.FSharpFunc`2<System.Net.WebResponse,Microsoft.FSharp.Control.FSharpAsync`1<Microsoft.FSharp.Core.Unit>>)"
+                     Some "fetchUrlAsync@23-1::Invoke" //"Microsoft.FSharp.Control.AsyncReturn Sample6.Module/fetchUrlAsync@24-6::Invoke(Microsoft.FSharp.Control.AsyncActivation`1<Microsoft.FSharp.Core.Unit>)"
+                     Some "fetchUrlAsync@22::Invoke" //"System.Void Sample6.Module/fetchUrlAsync@23-1::.ctor(System.String,Microsoft.FSharp.Control.FSharpAsyncBuilder)"
+                     Some "fetchUrlAsync@22::Invoke" //"Microsoft.FSharp.Control.FSharpAsync`1<Microsoft.FSharp.Core.Unit> Sample6.Module/fetchUrlAsync@23-1::Invoke(Microsoft.FSharp.Core.Unit)"
+                     Some "Module::F2" //"System.Void Sample6.Module/fetchUrlAsync@22::.ctor()"
+                     Some "Module::F2" //"Microsoft.FSharp.Control.FSharpAsync`1<Microsoft.FSharp.Core.Unit> Sample6.Module/fetchUrlAsync@22::Invoke(System.String)"
+#endif
                          ]
      //methods |> Seq.iter (fun x -> printfn "%A" x.FullName)
      //Assert.That (result, Is.EquivalentTo expected)
@@ -3390,9 +3421,9 @@ type AltCoverTests() = class
     let options = Main.DeclareOptions ()
     Assert.That (options.Count, Is.EqualTo
 #if NETCOREAPP2_0
-                                            20
-#else
                                             21
+#else
+                                            22
 #endif
                  )
     Assert.That(options |> Seq.filter (fun x -> x.Prototype <> "<>")
@@ -3603,6 +3634,29 @@ type AltCoverTests() = class
                                                                | _ -> false))
       Assert.That (Visitor.NameFilters |> Seq.map (fun x -> match x with
                                                             | FilterClass.File i -> i.ToString()
+                                                            | _ -> "*"),
+                   Is.EquivalentTo [| "1"; "2"; "3"; "4"; "5"; "m"; "n"; "6" |])
+    finally
+      Visitor.NameFilters.Clear()
+
+  [<Test>]
+  member self.ParsingPathsGivesPaths() =
+    try
+      Visitor.NameFilters.Clear()
+      let options = Main.DeclareOptions ()
+      let input = [| "-p"; "1"; "--p"; "2"; "/p"; "3"; "-p=4"; "--p=5;m;n"; "/p=6" |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Left _ -> Assert.Fail()
+      | Right (x, y) -> Assert.That (y, Is.SameAs options)
+                        Assert.That (x, Is.Empty)
+
+      Assert.That (Visitor.NameFilters.Count, Is.EqualTo 8)
+      Assert.That (Visitor.NameFilters |> Seq.forall (fun x -> match x with
+                                                               | FilterClass.Path _ -> true
+                                                               | _ -> false))
+      Assert.That (Visitor.NameFilters |> Seq.map (fun x -> match x with
+                                                            | FilterClass.Path i -> i.ToString()
                                                             | _ -> "*"),
                    Is.EquivalentTo [| "1"; "2"; "3"; "4"; "5"; "m"; "n"; "6" |])
     finally
@@ -4969,6 +5023,8 @@ type AltCoverTests() = class
                                 coverage.xml in the current directory)
   -f, --fileFilter=VALUE     Optional, multiple: source file name to exclude
                                from instrumentation
+  -p, --pathFilter=VALUE     Optional, multiple: source file path to exclude
+                               from instrumentation
   -s, --assemblyFilter=VALUE Optional, multiple: assembly name to exclude from
                                instrumentation
   -e, --assemblyExcludeFilter=VALUE
@@ -5066,6 +5122,8 @@ or
                      + """  -x, --xmlReport=VALUE      Optional: The output report template file (default:
                                 coverage.xml in the current directory)
   -f, --fileFilter=VALUE     Optional, multiple: source file name to exclude
+                               from instrumentation
+  -p, --pathFilter=VALUE     Optional, multiple: source file path to exclude
                                from instrumentation
   -s, --assemblyFilter=VALUE Optional, multiple: assembly name to exclude from
                                instrumentation

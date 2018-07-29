@@ -1076,6 +1076,8 @@ type AltCoverTests() = class
                                 coverage.xml in the current directory)
   -f, --fileFilter=VALUE     Optional, multiple: source file name to exclude
                                from instrumentation
+  -p, --pathFilter=VALUE     Optional, multiple: source file path to exclude
+                               from instrumentation
   -s, --assemblyFilter=VALUE Optional, multiple: assembly name to exclude from
                                instrumentation
   -e, --assemblyExcludeFilter=VALUE

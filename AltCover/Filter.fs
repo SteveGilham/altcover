@@ -19,6 +19,7 @@ type internal FilterClass =
   | Type of Regex
   | Method of Regex
   | Attribute of Regex
+  | Path of Regex
 
 module Filter =
 
@@ -45,6 +46,7 @@ module Filter =
     | Type name -> MatchItem<TypeDefinition> name nameProvider (fun typeDef -> typeDef.FullName)
     | Method name -> MatchItem<MethodDefinition> name nameProvider (fun methodDef -> methodDef.Name)
     | Attribute name -> MatchAttribute name nameProvider
+    | Path name -> MatchItem<string> name nameProvider Path.GetFullPath
 
   let internal IsCSharpAutoProperty (m:MethodDefinition) =
       (m.IsSetter || m.IsGetter) && m.HasCustomAttributes &&

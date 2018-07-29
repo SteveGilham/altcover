@@ -86,6 +86,8 @@ open System.Runtime.CompilerServices
 [<assembly: InternalsVisibleTo("AltCover.Shadow.Tests, PublicKey={2}")>]
 [<assembly: InternalsVisibleTo("AltCover.Shadow.Tests2, PublicKey={1}")>]
 [<assembly: InternalsVisibleTo("AltCover.Shadow.Tests2, PublicKey={2}")>]
+[<assembly: InternalsVisibleTo("AltCover.Tests.Visualizer, PublicKey={1}")>]
+[<assembly: InternalsVisibleTo("AltCover.Tests.Visualizer, PublicKey={2}")>]
 #endif
 #endif
 ()"""

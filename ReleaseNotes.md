@@ -4,6 +4,12 @@ Q. Never mind the fluff -- how do I get started?
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
+# 3.5.580 (Cerulean series release 9) -- special heat-wave bonus content issue
+* [Initial Release; Bonus Content] `AltCover.Visualizer` tool for .net framework and mono (for .net framework, needs GTK#2.12.xx installed separately -- see https://www.mono-project.com/download/stable/)
+* `-p|--pathFilter` (`-PathFilter`, `PathFilter="string[]"`, `/p:AltCoverPathFilter=...`) option to specify regexes to select source files to ignore on the basis of their full path; distinct from the `--fileFilter` opetion which works on the file name alone.  The distinction is that you'd use `-p` to exclude your folder `$(SolutionRoot)Generated`, and `-f` to exclude your `.g.cs` files wherever they are.
+* [BUGFIX] Issue #28 --in OpenCover format,  don't emit empty (no `uid=` attribute)`FileRef` tags for methods that aren't being instrumented.
+* [BUGFIX] Related degenerate case handling in `ConvertTo-BarChart`, `ConvertTo-LCov` and `ConvertTo-Cobertura` : these operations could fail for some legitimate corner cases found in OpenCover files (fixed in code shared with the Visualizer in the course of Visualizer testing)
+
 # 3.5.569 (Cerulean series release 8)
 * `altcover version` command line option to output the version of AltCover being used (also `Invoke-AltCover -Version`, MSBuild task `AltCover.GetVersion`, option `/p:AltCoverGetVersion`)
 * `--single` (`-Single`, `Single="bool"`, `/p:AltCoverSingle=true`) option to only sample the first visit to each point (per AppDomain), reducing intermediate file size and processing time.
