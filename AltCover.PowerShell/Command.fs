@@ -10,29 +10,7 @@ open System
 open System.IO
 open System.Management.Automation
 
-#if NETCOREAPP2_0
 open AltCover
-#else
-#if DEBUG
-open AltCover
-#else
-open AltCover
-module Args =
-  let Item a x =
-    if x |> String.IsNullOrWhiteSpace
-       then []
-       else [ a; x ]
-  let ItemList a x =
-      x
-      |> Seq.collect (fun i -> [ a; i ])
-      |> Seq.toList
-  let Flag a x =
-    if x
-       then [a]
-       else []
-
-#endif
-#endif
 
 [<Cmdlet(VerbsLifecycle.Invoke, "AltCover")>]
 [<OutputType("System.Void")>]
@@ -74,7 +52,9 @@ type InvokeAltCoverCommand(runner:bool) =
       ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
   member val OutputFile = String.Empty with get, set
 
-  [<Parameter(Mandatory = false,
+  [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
+      ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
+  [<Parameter(ParameterSetName = "Runner", Mandatory = false,
       ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
   member val CommandLine : string array = [| |] with get, set
 
@@ -112,6 +92,10 @@ type InvokeAltCoverCommand(runner:bool) =
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
       ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
   member val FileFilter  : string array = [| |] with get, set
+
+  [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
+      ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
+  member val PathFilter  : string array = [| |] with get, set
 
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
       ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
@@ -224,6 +208,7 @@ type InvokeAltCoverCommand(runner:bool) =
     #endif
                               Args.Item "-x" self.XmlReport;
                               Args.ItemList "-f" self.FileFilter;
+                              Args.ItemList "-p" self.PathFilter;
                               Args.ItemList "-s" self.AssemblyFilter;
                               Args.ItemList "-e" self.AssemblyExcludeFilter;
                               Args.ItemList "-t" self.TypeFilter;
@@ -243,15 +228,7 @@ type InvokeAltCoverCommand(runner:bool) =
                     )
                     |> List.concat
                     |> List.toArray
-#if NETCOREAPP2_0
                     |> AltCover.Main.EffectiveMain
-#else
-#if DEBUG
-                    |> AltCover.Main.EffectiveMain
-#else
-                    |> AltCover.Main.EffectiveMain.Invoke
-#endif
-#endif
       if status <> 0 then
         let fail = ErrorRecord(InvalidOperationException(), status.ToString(), ErrorCategory.InvalidOperation, self)
         self.WriteError fail

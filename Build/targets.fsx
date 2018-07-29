@@ -216,13 +216,19 @@ _Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standa
                 Arguments = "--severity all --confidence all --config " + rules + " --console --html ./_Reports/gendarme.html " + subjects})
                 "Gendarme Errors were detected"
 
-    if Environment.isWindows then
-        Actions.Run (fun info ->
-            { info with
-                    FileName = (Tools.findToolInSubPath "gendarme.exe" "./packages")
-                    WorkingDirectory = "."
-                    Arguments = "--severity all --confidence all --config ./Build/rules-posh.xml --console --html ./_Reports/gendarme.html _Binaries/AltCover.PowerShell/Debug+AnyCPU/AltCover.PowerShell.dll"})
-                    "Gendarme Errors were detected"
+    Actions.Run (fun info ->
+        { info with
+                FileName = (Tools.findToolInSubPath "gendarme.exe" "./packages")
+                WorkingDirectory = "."
+                Arguments = "--severity all --confidence all --config ./Build/rules-posh.xml --console --html ./_Reports/gendarme.html _Binaries/AltCover.PowerShell/Debug+AnyCPU/AltCover.PowerShell.dll"})
+                "Gendarme Errors were detected"
+
+    Actions.Run (fun info ->
+        { info with
+                FileName = (Tools.findToolInSubPath "gendarme.exe" "./packages")
+                WorkingDirectory = "."
+                Arguments = "--severity all --confidence all --config ./Build/rules-gtk.xml --console --html ./_Reports/gendarme.html _Binaries/AltCover.Visualizer/Debug+AnyCPU/AltCover.Visualizer.exe"})
+                "Gendarme Errors were detected"
 )
 
 _Target "FxCop" (fun _ -> // Needs debug because release is compiled --standalone which contaminates everything
@@ -251,7 +257,7 @@ _Target "FxCop" (fun _ -> // Needs debug because release is compiled --standalon
         { info with
                 FileName = fxCop
                 WorkingDirectory = "."
-                Arguments = "/c /f:\"_Binaries/AltCover.Shadow/Debug+AnyCPU/AltCover.Shadow.dll\" /o:\"_Reports/FxCopReport.xml\" /rid:-Microsoft.Design#CA1004 /rid:-Microsoft.Design#CA1006 /rid:-Microsoft.Design#CA1011 /rid:-Microsoft.Design#CA1062 /rid:-Microsoft.Maintainability#CA1506 /rid:-Microsoft.Naming#CA1704 /rid:-Microsoft.Naming#CA1707 /rid:-Microsoft.Naming#CA1709 /rid:-Microsoft.Naming#CA1715 /ignoregeneratedcode /s /t:AltCover.Recorder.Instance /gac"
+                Arguments = "/c /f:\"_Binaries/AltCover.Shadow/Debug+AnyCPU/AltCover.Shadow.dll\" /o:\"_Reports/FxCopReport.xml\" /rid:-Microsoft.Design#CA1004 /rid:-Microsoft.Design#CA1006 /rid:-Microsoft.Design#CA1011 /rid:-Microsoft.Design#CA1062 /rid:-Microsoft.Maintainability#CA1506 /rid:-Microsoft.Naming#CA1704 /rid:-Microsoft.Naming#CA1707 /rid:-Microsoft.Naming#CA1709 /rid:-Microsoft.Naming#CA1715 /t:AltCover.Recorder.Assist,AltCover.Recorder.Counter,AltCover.Recorder.Assist,AltCover.Recorder.Tracer,AltCover.Recorder.Instance /ignoregeneratedcode /s /gac"
         })
         "FxCop Errors were detected"
     Assert.That(File.Exists "_Reports/FxCopReport.xml", Is.False, "FxCop Errors were detected")
@@ -270,6 +276,15 @@ _Target "FxCop" (fun _ -> // Needs debug because release is compiled --standalon
                 FileName = fxCop
                 WorkingDirectory = "."
                 Arguments = "/c /f:\"_Binaries/AltCover.PowerShell/Debug+AnyCPU/AltCover.PowerShell.dll\" /o:\"_Reports/FxCopReport.xml\" /rid:-Microsoft.Usage#CA2235 /rid:-Microsoft.Performance#CA1819 /rid:-Microsoft.Design#CA1020 /rid:-Microsoft.Design#CA1004 /rid:-Microsoft.Design#CA1006 /rid:-Microsoft.Design#CA1011 /rid:-Microsoft.Design#CA1062 /rid:-Microsoft.Maintainability#CA1506 /rid:-Microsoft.Naming#CA1704 /rid:-Microsoft.Naming#CA1707 /rid:-Microsoft.Naming#CA1709 /rid:-Microsoft.Naming#CA1715 /ignoregeneratedcode /s /gac"
+        })
+        "FxCop Errors were detected"
+    Assert.That(File.Exists "_Reports/FxCopReport.xml", Is.False, "FxCop Errors were detected")
+
+    Actions.Run (fun info ->
+        { info with
+                FileName = fxCop
+                WorkingDirectory = "."
+                Arguments = "/c /f:\"_Binaries/AltCover.Visualizer/Debug+AnyCPU/AltCover.Visualizer.exe\" /o:\"_Reports/FxCopReport.xml\" /rid:-Microsoft.Usage#CA2208 /rid:-Microsoft.Usage#CA2235 /rid:-Microsoft.Maintainability#CA1506 /rid:-Microsoft.Design#CA1004 /rid:-Microsoft.Design#CA1006 /rid:-Microsoft.Naming#CA1707 /rid:-Microsoft.Design#CA1006 /rid:-Microsoft.Naming#CA1715 /rid:-Microsoft.Naming#CA1704 /rid:-Microsoft.Naming#CA1709 /t:AltCover.Augment,AltCover.Visualizer.Transformer,AltCover.Visualizer.CoverageFile,AltCover.Visualizer.Extensions,AltCover.Visualizer.Gui /ignoregeneratedcode /s /gac"
         })
         "FxCop Errors were detected"
     Assert.That(File.Exists "_Reports/FxCopReport.xml", Is.False, "FxCop Errors were detected")
@@ -343,7 +358,7 @@ _Target "JustUnitTest" (fun _ ->
                                                              WorkingDir = Some here
                                                              ShadowCopy = false})
 
-      !! (@"_Binaries/*Tests/Debug+AnyCPU/*Test*.dll")
+      !! (@"_Binaries/*Tests*/Debug+AnyCPU/*Test*.dll")
       |> Seq.filter (fun f -> Path.GetFileName(f) <> "AltCover.XTests.dll" &&
                               Path.GetFileName(f) <> "xunit.runner.visualstudio.testadapter.dll")
       |> NUnit3.run (fun p -> { p   with ToolPath = Tools.findToolInSubPath "nunit3-console.exe" "."
@@ -654,6 +669,28 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
                               " --noheader --work=. --result=./_Reports/ShadowTestWithAltCoverRunnerReport.xml \"" +
                               String.Join ("\" \"", [ Path.getFullName  "_Binaries/AltCover.Shadow.Tests/Debug+AnyCPU/__ShadowTestWithAltCoverRunner/AltCover.Shadow.Tests.dll"
                                                       Path.getFullName  "_Binaries/AltCover.Shadow.Tests/Debug+AnyCPU/__ShadowTestWithAltCoverRunner/AltCover.Shadow.Tests2.dll"]) + "\""
+                            )}) "Re-instrument tests returned with a non-zero exit code"
+
+      printfn "Instrument the GTK# visualizer tests"
+      let gtkDir = Path.getFullName  "_Binaries/AltCover.Tests.Visualizer/Debug+AnyCPU"
+      let gtkReport = reports @@ "GTKVTestWithAltCoverRunner.xml"
+      Actions.Run (fun info ->
+          { info with
+                FileName = altcover
+                WorkingDirectory = gtkDir
+                Arguments = ("--opencover -t=Gui -s=\"\\-sharp\" /sn=" + keyfile + AltCoverFilter + @"/o=./__GTKVTestWithAltCoverRunner -x=" + gtkReport)})
+                "Instrumenting the shadow tests failed"
+
+      printfn "Execute the the GTK# visualizer tests"
+      Actions.Run (fun info ->
+          { info with
+                FileName = altcover
+                WorkingDirectory = "."
+                Arguments = ( " Runner -x " + nunit +
+                              " -r " + (gtkDir @@ "__GTKVTestWithAltCoverRunner") +
+                              " -w . -- " +
+                              " --noheader --work=. --result=./_Reports/ShadowTestWithAltCoverRunnerReport.xml \"" +
+                              String.Join ("\" \"", [ Path.getFullName  "_Binaries/AltCover.Tests.Visualizer/Debug+AnyCPU/__GTKVTestWithAltCoverRunner/AltCover.Tests.Visualizer.dll"]) + "\""
                             )}) "Re-instrument tests returned with a non-zero exit code"
 
       let pester = Path.getFullName "_Reports/Pester.xml"
@@ -1300,21 +1337,28 @@ _Target "RecordResumeTestUnderMono" ( fun _ ->
 
 _Target "Packaging" (fun _ ->
     let AltCover = Path.getFullName "_Binaries/AltCover/AltCover.exe"
+    let fscore = Path.getFullName "_Binaries/AltCover/Release+AnyCPU/FSharp.Core.dll"
+    let options = Path.getFullName "_Binaries/AltCover/Release+AnyCPU/Mono.Options.dll"
     let recorder = Path.getFullName "_Binaries/AltCover/Release+AnyCPU/AltCover.Recorder.dll"
-    let posh = Path.getFullName "_Binaries/AltCover.PowerShell/AltCover.PowerShell.dll"
+    let posh = Path.getFullName "_Binaries/AltCover.PowerShell/Release+AnyCPU/AltCover.PowerShell.dll"
+    let vis = Path.getFullName "_Binaries/AltCover.Visualizer/Release+AnyCPU/AltCover.Visualizer.exe"
     let packable = Path.getFullName "./_Binaries/README.html"
     let resources = DirectoryInfo.getMatchingFilesRecursive "AltCover.resources.dll" (DirectoryInfo.ofPath (Path.getFullName "_Binaries/AltCover/Release+AnyCPU"))
+    let resources2 = DirectoryInfo.getMatchingFilesRecursive "AltCover.Visualizer.resources.dll" (DirectoryInfo.ofPath (Path.getFullName "_Binaries/AltCover.Visualizer/Release+AnyCPU"))
 
     let applicationFiles = if File.Exists AltCover then
                             [
                                 (AltCover, Some "tools/net45", None)
                                 (recorder, Some "tools/net45", None)
                                 (posh, Some "tools/net45", None)
+                                (vis, Some "tools/net45", None)
+                                (fscore, Some "tools/net45", None)
+                                (options, Some "tools/net45", None)
                                 (packable, Some "", None)
                             ]
                            else []
     let resourceFiles = if File.Exists AltCover then
-                          resources
+                          Seq.concat [resources; resources2]
                           |> Seq.map (fun x -> x.FullName)
                           |> Seq.map (fun x -> (x, Some ("tools/net45/" + Path.GetFileName(Path.GetDirectoryName(x))), None))
                           |> Seq.toList
@@ -1412,13 +1456,6 @@ _Target "PrepareFrameworkBuild" (fun _ ->
                FileName = toolpath
                Arguments = "/out:\"./_Binaries/AltCover/AltCover.exe\" /ver:\"" + ver +
                            "\" /attr:\"./_Binaries/AltCover/Release+AnyCPU/AltCover.exe\" /keyfile:\"./Build/Infrastructure.snk\" /target:\"exe\" /internalize ./_Binaries/AltCover/Release+AnyCPU/AltCover.exe .\_Binaries\AltCover\Release+AnyCPU\Mono.Cecil.dll .\_Binaries\AltCover\Release+AnyCPU\Mono.Cecil.Mdb.dll .\_Binaries\AltCover\Release+AnyCPU\Mono.Cecil.Pdb.dll .\_Binaries\AltCover\Release+AnyCPU\Mono.Cecil.Rocks.dll .\_Binaries\AltCover\Release+AnyCPU\Newtonsoft.Json.dll"
-                }) "ILMerge failure"
-
-    Actions.Run (fun info ->
-        { info with
-               FileName = toolpath
-               Arguments = "/out:\"./_Binaries/AltCover.PowerShell/AltCover.PowerShell.dll\" /ver:\"" + ver +
-                           "\" /attr:\"./_Binaries/AltCover.PowerShell/Release+AnyCPU/AltCover.PowerShell.dll\" /keyfile:\"./Build/Infrastructure.snk\" /target:\"library\" /internalize ./_Binaries/AltCover.PowerShell/Release+AnyCPU/AltCover.PowerShell.dll .\_Binaries\AltCover.PowerShell\Debug+AnyCPU\FSharp.Core.dll"
                 }) "ILMerge failure"
 
 //    let here = Directory.GetCurrentDirectory()
@@ -1979,6 +2016,19 @@ _Target "MSBuildTest" ( fun _ ->
                                      "<TrackedMethodRef uid=\"2\" vc=\"1\" />"
                                      "<TrackedMethodRef uid=\"2\" vc=\"1\" />"
                     ])
+
+      // touch-test framework
+      let unpack = Path.getFullName "_Packaging/Unpack/tools/net45"
+      if (unpack @@ "AltCover.exe") |> File.Exists then
+          MSBuild.build (fun p ->
+                { p with
+                    Verbosity = Some MSBuildVerbosity.Normal
+                    Properties = [
+                                   "Configuration", "Debug"
+                                   "DebugSymbols", "True"
+                                 ]})  "./Sample4/Sample4.prepare.fsproj"
+      else
+        printfn "Skipping touch-test -- AltCover.exe not packaged"
 )
 
 _Target "DotnetTestIntegration" ( fun _ ->

@@ -24,6 +24,7 @@
     <Compile Include="..\_Generated\AssemblyVersion.fs" Link="AssemblyVersion.fs" />
     <Compile Include="..\_Generated\VisibleToTest.fs" Link="VisibleToTest.fs" />
     <Compile Include="Xml.fs" />
+    <Compile Include="OpenCover.fs" />
     <Compile Include="CoverageFormats.fs" />
     <Compile Include="XhtmlReports.fs" />
     <Compile Include="Command.fs" />

@@ -171,6 +171,8 @@ module Counter =
     if own then WriteXDocument coverageDocument outputFile
     flushStart
 
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:DisposeObjectsBeforeLosingScope",
+    Justification = "'Target' is disposed")>]
   let internal DoFlush postProcess pointProcess own counts format report output =
     use coverageFile = new FileStream(report, FileMode.Open, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.SequentialScan)
     use target = match output with

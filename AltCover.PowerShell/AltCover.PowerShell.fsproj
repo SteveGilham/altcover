@@ -75,6 +75,7 @@
       <Link>VisibleToTest.fs</Link>
     </Compile>
     <Compile Include="Xml.fs" />
+    <Compile Include="OpenCover.fs" />
     <Compile Include="CoverageFormats.fs" />
     <Compile Include="XhtmlReports.fs" />
     <Compile Include="Command.fs" />
@@ -91,8 +92,8 @@
       <Project>{02192b55-3a50-4ad2-b519-560f30c14dd4}</Project>
       <Private>True</Private>
     </ProjectReference>
-    <Reference Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU'" Include="FSharp.Core">
-      <HintPath>..\packages\FSharp.Core.4.3.4\lib\net45\FSharp.Core.dll</HintPath>
+    <Reference Include="FSharp.Core">
+      <HintPath>..\packages\FSharp.Core.4.5.2\lib\net45\FSharp.Core.dll</HintPath>
     </Reference>
     <Reference Include="Mono.Cecil">
       <HintPath>..\packages\Mono.Cecil.0.10.0\lib\net40\Mono.Cecil.dll</HintPath>
