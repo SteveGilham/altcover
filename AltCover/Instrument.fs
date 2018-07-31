@@ -640,7 +640,8 @@ module Instrument =
   let internal InstrumentationVisitorCore (state : InstrumentContext) (node:Node) =
     match node with
     | Start _ -> VisitStart state
-    | Assembly (assembly, included) -> if included <> Inspect.Ignore then
+    | Assembly (assembly, included) -> UpdateStrongReferences assembly
+                                       if included <> Inspect.Ignore then                                             
                                              assembly.MainModule.AssemblyReferences.Add(state.RecordingAssembly.Name)
                                        state
     | Module (m, included) -> VisitModule state m included
