@@ -110,6 +110,17 @@ _Target "SetVersion" (fun _ ->
         ]
         (Some AssemblyInfoFileConfig.Default)
 
+    AssemblyInfoFile.create "./_Generated/AssemblyVersion.cs"
+        [
+         AssemblyInfo.Product "AltCover"
+         AssemblyInfo.Version (majmin + ".0.0")
+         AssemblyInfo.FileVersion v'
+         AssemblyInfo.Company "Steve Gilham"
+         AssemblyInfo.Trademark ""
+         AssemblyInfo.Copyright copy
+        ]
+        (Some AssemblyInfoFileConfig.Default)
+
     let hack = """namespace AltCover
 module SolutionRoot =
   let location = """ + "\"\"\"" + (Path.getFullName ".") + "\"\"\""
@@ -1341,6 +1352,7 @@ _Target "Packaging" (fun _ ->
     let options = Path.getFullName "_Binaries/AltCover/Release+AnyCPU/Mono.Options.dll"
     let recorder = Path.getFullName "_Binaries/AltCover/Release+AnyCPU/AltCover.Recorder.dll"
     let posh = Path.getFullName "_Binaries/AltCover.PowerShell/Release+AnyCPU/AltCover.PowerShell.dll"
+    let csapi = Path.getFullName "_Binaries/AltCover.PowerShell/Release+AnyCPU/AltCover.CSApi.dll"
     let vis = Path.getFullName "_Binaries/AltCover.Visualizer/Release+AnyCPU/AltCover.Visualizer.exe"
     let packable = Path.getFullName "./_Binaries/README.html"
     let resources = DirectoryInfo.getMatchingFilesRecursive "AltCover.resources.dll" (DirectoryInfo.ofPath (Path.getFullName "_Binaries/AltCover/Release+AnyCPU"))
@@ -1352,6 +1364,7 @@ _Target "Packaging" (fun _ ->
                                 (recorder, Some "tools/net45", None)
                                 (posh, Some "tools/net45", None)
                                 (vis, Some "tools/net45", None)
+                                (csapi, Some "tools/net45", None)
                                 (fscore, Some "tools/net45", None)
                                 (options, Some "tools/net45", None)
                                 (packable, Some "", None)
@@ -1387,6 +1400,10 @@ _Target "Packaging" (fun _ ->
                            |> Seq.map (fun x -> (x, Some (where + Path.GetFileName x), None))
                            |> Seq.toList
 
+    let csapiFiles where = (!! "./_Binaries/AltCover.CSApi/Release+AnyCPU/netcoreapp2.0/*.CSApi.*")
+                           |> Seq.map (fun x -> (x, Some (where + Path.GetFileName x), None))
+                           |> Seq.toList
+
     let publish = (Path.getFullName "./_Publish").Length
     let netcoreFiles where = (!! "./_Publish/**/*.*")
                                |> Seq.map (fun x -> (x, Some (where + Path.GetDirectoryName(x).Substring(publish).Replace("\\","/")), None))
@@ -1407,17 +1424,17 @@ _Target "Packaging" (fun _ ->
     printfn "Executing on %A" Environment.OSVersion
 
     [
-        (List.concat [applicationFiles; resourceFiles; netcoreFiles "tools/netcoreapp2.0/"; poshFiles "tools/netcoreapp2.0/"; otherFiles],
+        (List.concat [applicationFiles; resourceFiles; netcoreFiles "tools/netcoreapp2.0/"; csapiFiles "tools/netcoreapp2.0/"; poshFiles "tools/netcoreapp2.0/"; otherFiles],
          "_Packaging",
          "./Build/AltCover.nuspec",
          "altcover"
         )
-        (List.concat[netcoreFiles "lib/netcoreapp2.0/"; poshFiles "lib/netcoreapp2.0/"; dotnetFiles; otherFilesDotnet],
+        (List.concat[netcoreFiles "lib/netcoreapp2.0/"; csapiFiles "lib/netcoreapp2.0/"; poshFiles "lib/netcoreapp2.0/"; dotnetFiles; otherFilesDotnet],
          "_Packaging.dotnet",
          "./_Generated/altcover.dotnet.nuspec",
          "altcover.dotnet"
         )
-        (List.concat [globalFiles; netcoreFiles "tools/netcoreapp2.1/any/"; poshFiles"tools/netcoreapp2.1/any/"; auxFiles; otherFilesGlobal],
+        (List.concat [globalFiles; netcoreFiles "tools/netcoreapp2.1/any/"; csapiFiles "tools/netcoreapp2.1/any/"; poshFiles "tools/netcoreapp2.1/any/"; auxFiles; otherFilesGlobal],
          "_Packaging.global",
          "./_Generated/altcover.global.nuspec",
          "altcover.global"
