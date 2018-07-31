@@ -2168,6 +2168,18 @@ _Target "DotnetTestIntegration" ( fun _ ->
       Assert.That (coverageDocument.Descendants(XName.Get("SequencePoint")) |> Seq.length, Is.EqualTo 0)
       Assert.That (coverageDocument.Descendants(XName.Get("BranchPoint")) |> Seq.length, Is.EqualTo 2)
 
+    // Regression test
+    let proj = XDocument.Load "./RegressionTesting/issue29/issue29.xml"
+    let pack = proj.Descendants(XName.Get("PackageReference")) |> Seq.head
+    let inject = XElement(XName.Get "PackageReference",
+                          XAttribute (XName.Get "Include", "altcover"),
+                          XAttribute (XName.Get "Version", !Version) )
+    pack.AddBeforeSelf inject
+    proj.Save "./RegressionTesting/issue29/issue29.csproj"
+    Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = Path.getFullName "RegressionTesting/issue29"}) "test"
+                      ("-v n /p:AltCover=true")
+                      "issue#29 regression test returned with a non-zero exit code"
+
   finally
     let folder = (nugetCache @@ "altcover") @@ !Version
     Shell.mkdir folder
