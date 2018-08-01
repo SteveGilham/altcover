@@ -2177,7 +2177,7 @@ _Target "DotnetTestIntegration" ( fun _ ->
     pack.AddBeforeSelf inject
     proj.Save "./RegressionTesting/issue29/issue29.csproj"
     Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = Path.getFullName "RegressionTesting/issue29"}) "test"
-                      ("-v n /p:AltCover=true")
+                      ("-v n /p:AltCover=true  /p:AltCoverAssemblyFilter=NUnit")
                       "issue#29 regression test returned with a non-zero exit code"
 
   finally
