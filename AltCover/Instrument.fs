@@ -398,10 +398,44 @@ module Instrument =
   /// set that there is no strongname.
   /// </summary>
   /// <param name="assembly">The assembly object being operated upon</param>
-  let internal UpdateStrongReferences (assembly : AssemblyDefinition) =
+  let internal UpdateStrongReferences (assembly : AssemblyDefinition) (assemblies : string list) =
     let effectiveKey = if assembly.Name.HasPublicKey then Visitor.defaultStrongNameKey else None
     UpdateStrongNaming assembly effectiveKey
-    assembly.MainModule.Attributes <- assembly.MainModule.Attributes &&& (~~~ModuleAttributes.StrongNameSigned)
+
+    let interestingReferences =  assembly.MainModule.AssemblyReferences
+                                 |> Seq.cast<AssemblyNameReference>
+                                 |> Seq.filter (fun x -> assemblies |> List.exists (fun y -> y.Equals(x.Name)))
+                                 |> Seq.toList
+
+    // For unit testing purposes, only
+    let assemblyReferenceSubstitutions = new Dictionary<String, String>()
+    interestingReferences
+    |> Seq.iter (fun r -> let original = r.ToString()
+#if NETCOREAPP2_0
+                          do
+#else
+                          let token = KnownToken r
+
+                          let effectiveKey = match token with
+                                             | None -> Visitor.defaultStrongNameKey
+                                                       |> Option.map KeyStore.KeyToRecord
+                                             | Some _ -> token
+
+                          match effectiveKey with
+                          | None ->
+#endif
+                                    r.HasPublicKey <- false
+                                    r.PublicKeyToken <- null
+                                    r.PublicKey <- null
+#if NETCOREAPP2_0
+#else
+                          | Some key -> r.HasPublicKey <- true
+                                        r.PublicKey <- key.Pair.PublicKey // implicitly sets token
+#endif
+                          let updated = r.ToString()
+                          if  not <| updated.Equals(original, StringComparison.Ordinal) then
+                            assemblyReferenceSubstitutions.[original] <- updated )
+    assemblyReferenceSubstitutions
 
   let internal injectJSON json =
     let o = JObject.Parse json
@@ -640,8 +674,8 @@ module Instrument =
   let internal InstrumentationVisitorCore (state : InstrumentContext) (node:Node) =
     match node with
     | Start _ -> VisitStart state
-    | Assembly (assembly, included) -> UpdateStrongReferences assembly
-                                       if included <> Inspect.Ignore then                                             
+    | Assembly (assembly, included) -> UpdateStrongReferences assembly state.InstrumentedAssemblies |> ignore
+                                       if included <> Inspect.Ignore then
                                              assembly.MainModule.AssemblyReferences.Add(state.RecordingAssembly.Name)
                                        state
     | Module (m, included) -> VisitModule state m included
