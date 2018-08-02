@@ -3272,8 +3272,7 @@ type AltCoverTests() = class
     Output.Echo <- ignore
     Output.Usage <- ignore
     Assert.That(Output.Usage, Is.Not.Null)
-    Assert.That(Logging.ActionAdapter null, Is.Not.Null)
-    Assert.That(Logging.ActionAdapter (new Action<String>(ignore)), Is.Not.Null)
+
     typeof<Tracer>.Assembly.GetExportedTypes()
     |> Seq.filter (fun t -> (string t = "AltCover.Output") || (string t = "AltCover.AltCover"))
     |> Seq.collect (fun t -> t.GetNestedTypes(BindingFlags.NonPublic))
@@ -5280,6 +5279,21 @@ or
     finally Console.SetError saved
 
   // Tasks.fs
+
+  [<Test>]
+  member self.LoggingCanBeExercised() =
+    Assert.That(Logging.ActionAdapter null, Is.Not.Null)
+    (Logging.ActionAdapter null) "23"
+    Assert.That(Logging.ActionAdapter (new Action<String>(ignore)), Is.Not.Null)
+    let mutable x = String.Empty
+    let f = (fun s -> x <- s)
+    (Logging.ActionAdapter (new Action<String>(f))) "42"
+    Assert.That (x, Is.EqualTo "42")
+    Logging.Default.Info "32"
+    Logging.Default.Warn "32"
+    Logging.Default.Error "32"
+    Logging.Default.Echo "32"
+
   [<Test>]
   member self.EmptyInstrumentIsJustTheDefaults() =
     let subject = Prepare()

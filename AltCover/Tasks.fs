@@ -120,8 +120,7 @@ type Logging =
           Output.Warn <- self.Warn
           Output.Info <- self.Info
           Output.Echo <- self.Echo
-          ////Output.Usage <- self.Usage
-          Output.Usage <- ignore
+          ////Output.Usage <- ignore
 
 module Args =
   let Item a x =
