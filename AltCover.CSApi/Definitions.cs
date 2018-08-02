@@ -99,22 +99,13 @@ namespace AltCover
         public Action<String> Error { get; set; }
         public Action<String> Echo { get; set; }
 
-        private static FSharpFunc<String, Unit> ActionAdapter(Action<String> a)
-        {
-            return FSharpFunc<String, Unit>.FromConverter(s =>
-            {
-                a?.Invoke(s);
-                return null;
-            });
-        }
-
         internal Logging ToParameters()
         {
             return new Logging(
-                ActionAdapter(Info),
-                ActionAdapter(Warn),
-                ActionAdapter(Error),
-                ActionAdapter(Echo));
+                Logging.ActionAdapter(Info),
+                Logging.ActionAdapter(Warn),
+                Logging.ActionAdapter(Error),
+                Logging.ActionAdapter(Echo));
         }
     }
 

@@ -110,6 +110,11 @@ type Logging =
             ////Usage = ignore
         }
 
+       static member ActionAdapter (a:Action<String>) =
+         match a with
+         | null -> ignore
+         | _ -> a.Invoke
+
        member internal self.Apply() =
           Output.Error <- self.Error
           Output.Warn <- self.Warn

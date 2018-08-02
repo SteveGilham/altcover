@@ -1352,7 +1352,7 @@ _Target "Packaging" (fun _ ->
     let options = Path.getFullName "_Binaries/AltCover/Release+AnyCPU/Mono.Options.dll"
     let recorder = Path.getFullName "_Binaries/AltCover/Release+AnyCPU/AltCover.Recorder.dll"
     let posh = Path.getFullName "_Binaries/AltCover.PowerShell/Release+AnyCPU/AltCover.PowerShell.dll"
-    let csapi = Path.getFullName "_Binaries/AltCover.PowerShell/Release+AnyCPU/AltCover.CSApi.dll"
+    let csapi = Path.getFullName "_Binaries/AltCover.CSApi/Release+AnyCPU/AltCover.CSApi.dll"
     let vis = Path.getFullName "_Binaries/AltCover.Visualizer/Release+AnyCPU/AltCover.Visualizer.exe"
     let packable = Path.getFullName "./_Binaries/README.html"
     let resources = DirectoryInfo.getMatchingFilesRecursive "AltCover.resources.dll" (DirectoryInfo.ofPath (Path.getFullName "_Binaries/AltCover/Release+AnyCPU"))
@@ -2732,14 +2732,6 @@ Target.activateFinal "ResetConsoleColours"
 //==> "Deployment"
 
 "Unpack"
-==> "ReleaseXUnitFSharpTypesDotNetRunner"
-==> "Deployment"
-
-"Unpack"
-==> "ReleaseXUnitFSharpTypesDotNetFullRunner"
-==> "Deployment"
-
-"Unpack"
 ==> "MSBuildTest"
 ==> "Deployment"
 
@@ -2757,6 +2749,14 @@ Target.activateFinal "ResetConsoleColours"
 
 "Unpack"
 ==> "DotnetGlobalIntegration"
+==> "Deployment"
+
+"Unpack"
+==> "ReleaseXUnitFSharpTypesDotNetRunner"
+==> "Deployment"
+
+"Unpack"
+==> "ReleaseXUnitFSharpTypesDotNetFullRunner"
 ==> "Deployment"
 
 "Unpack"
