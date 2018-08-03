@@ -1420,6 +1420,11 @@ _Target "Packaging" (fun _ ->
                                |> Seq.map (fun x -> (x, Some (where + Path.GetDirectoryName(x).Substring(publish).Replace("\\","/")), None))
                                |> Seq.toList
 
+    let publish = (Path.getFullName "./_Publish.api").Length
+    let netstdFiles where = (!! "./_Publish.api/**/*.*")
+                               |> Seq.map (fun x -> (x, Some (where + Path.GetDirectoryName(x).Substring(publish).Replace("\\","/")), None))
+                               |> Seq.toList
+
     let dotnetFiles = (!! "./_Binaries/dotnet-altcover/Release+AnyCPU/netcoreapp2.0/dotnet-altcover.*")
                        |> Seq.map (fun x -> (x, Some ("lib/netcoreapp2.0/" + Path.GetFileName x), None))
                        |> Seq.toList
@@ -1440,7 +1445,7 @@ _Target "Packaging" (fun _ ->
          "./Build/AltCover.nuspec",
          "altcover"
         )
-        (List.concat [apiFiles; resourceFiles "lib/net45/"; netcoreFiles "lib/netcoreapp2.0/"; csapiFiles "lib/netcoreapp2.0/"],
+        (List.concat [apiFiles; resourceFiles "lib/net45/"; netstdFiles "lib/netcoreapp2.0/"; csapiFiles "lib/netcoreapp2.0/"],
          "_Packaging.api",
          "./_Generated/altcover.api.nuspec",
          "altcover.api"
@@ -1509,7 +1514,12 @@ _Target "PrepareDotNetBuild" (fun _ ->
     let netcoresource =  Path.getFullName "./AltCover/altcover.core.fsproj" //  "./altcover.dotnet.sln"
     let publish = Path.getFullName "./_Publish"
     DotNet.publish (fun options -> { options with OutputPath = Some publish
-                                                  Configuration = DotNet.BuildConfiguration.Release})
+                                                  Configuration = DotNet.BuildConfiguration.Release
+                                                  Framework = Some "netcoreapp2.0"})
+                                                  netcoresource
+    DotNet.publish (fun options -> { options with OutputPath = Some (publish + ".api")
+                                                  Configuration = DotNet.BuildConfiguration.Release
+                                                  Framework = Some "netstandard2.0"})
                                                   netcoresource
 
     // dotnet tooling mods
