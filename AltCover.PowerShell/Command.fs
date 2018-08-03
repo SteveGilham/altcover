@@ -152,83 +152,63 @@ type InvokeAltCoverCommand(runner:bool) =
   override self.ProcessRecord() =
     let here = Directory.GetCurrentDirectory()
     Output.Task <- self.Version.IsPresent |> not
-#if NETCOREAPP2_0
-    Output.Error <- (fun s -> let fail = ErrorRecord(InvalidOperationException(), s, ErrorCategory.FromStdErr, self)
-                              self.WriteError fail)
-    Output.Info <- (fun s -> self.WriteInformation (s, [| |]))
-    Output.Warn <- (fun s -> self.WriteWarning s)
-#else
-#if DEBUG
-    Output.Error <- (fun s -> let fail = ErrorRecord(InvalidOperationException(), s, ErrorCategory.FromStdErr, self)
-                              self.WriteError fail)
-    Output.Info <- (fun s -> self.WriteInformation (s, [| |]))
-    Output.Warn <- (fun s -> self.WriteWarning s)
-#else
-    let x = StringSink(fun s -> self.WriteInformation (s, [| |]))
-    Output.SetInfo x
-    let y = StringSink (fun s -> let fail = ErrorRecord(InvalidOperationException(), s, ErrorCategory.FromStdErr, self)
-                                 self.WriteError fail)
-    Output.SetError y
-    let z = StringSink(fun s -> self.WriteWarning s)
-    Output.SetWarn z
-#endif
-#endif
+    let log = { Logging.Default with
+                            Error = (fun s -> let fail = ErrorRecord(InvalidOperationException(), s, ErrorCategory.FromStdErr, self)
+                                              self.WriteError fail)
+                            Info = (fun s -> self.WriteInformation (s, [| |]))
+                            Warn = (fun s -> self.WriteWarning s)
+    }
     try
       let where = self.SessionState.Path.CurrentLocation.Path
       Directory.SetCurrentDirectory where
-      let status = (if self.Runner.IsPresent
-                    then
-                        [
-                          ["Runner"];
-                          Args.Item "-r" self.RecorderDirectory;
-                          Args.Item "-w" self.WorkingDirectory;
-                          Args.Item "-x" self.Executable;
-                          Args.Item "-l" self.LcovReport;
-                          Args.Item "-t" self.Threshold;
-                          Args.Item "-c" self.Cobertura;
-                          Args.Item "-o" self.OutputFile;
 
-                          Args.Flag "--collect" (self.Executable |> String.IsNullOrWhiteSpace)
+      let status = if self.Version.IsPresent then
+                    Api.Version log
+                   else if self.Runner.IsPresent
+                     then
+                        let task = { CollectParams.Default with
+                                                     RecorderDirectory = self.RecorderDirectory;
+                                                     WorkingDirectory = self.WorkingDirectory;
+                                                     Executable = self.Executable;
+                                                     LcovReport = self.LcovReport;
+                                                     Threshold = self.Threshold;
+                                                     Cobertura = self.Cobertura;
+                                                     OutputFile = self.OutputFile;
 
-                          Args.Item "--" (String.Join(" ", self.CommandLine));
-                        ]
-                        else if self.Version.IsPresent
-                          then
-                             [ ["version"] ]
-                          else
-                            [
-                              Args.Item "-i" self.InputDirectory;
-                              Args.Item "-o" self.OutputDirectory;
-                              Args.ItemList "-y" self.SymbolDirectory;
-    #if NETCOREAPP2_0
-                              Args.ItemList "-d" self.Dependency;
-    #else
-                              Args.ItemList "-k" self.Key;
-                              Args.Item "--sn" self.StrongNameKey;
-    #endif
-                              Args.Item "-x" self.XmlReport;
-                              Args.ItemList "-f" self.FileFilter;
-                              Args.ItemList "-p" self.PathFilter;
-                              Args.ItemList "-s" self.AssemblyFilter;
-                              Args.ItemList "-e" self.AssemblyExcludeFilter;
-                              Args.ItemList "-t" self.TypeFilter;
-                              Args.ItemList "-m" self.MethodFilter;
-                              Args.ItemList "-a" self.AttributeFilter;
-                              Args.ItemList "-c" self.CallContext;
+                                                     CommandLine = String.Join(" ", self.CommandLine)
+                                    }
+                        Api.Collect task log
+                     else
+                        let task = { PrepareParams.Default with
+                                                      InputDirectory = self.InputDirectory;
+                                                      OutputDirectory = self.OutputDirectory;
+                                                      SymbolDirectories = self.SymbolDirectory;
+#if NETCOREAPP2_0
+                                                      Dependencies = self.Dependency;
+#else
+                                                      Keys = self.Key;
+                                                      StrongNameKey = self.StrongNameKey;
+#endif
+                                                      XmlReport = self.XmlReport;
+                                                      FileFilter = self.FileFilter;
+                                                      AssemblyFilter = self.AssemblyFilter;
+                                                      AssemblyExcludeFilter = self.AssemblyExcludeFilter;
+                                                      TypeFilter = self.TypeFilter;
+                                                      MethodFilter = self.MethodFilter;
+                                                      AttributeFilter = self.AttributeFilter;
+                                                      PathFilter = self.PathFilter;
+                                                      CallContext = self.CallContext;
 
-                              Args.Flag "--opencover" self.OpenCover.IsPresent
-                              Args.Flag "--inplace" self.InPlace.IsPresent
-                              Args.Flag "--save" self.Save.IsPresent
-                              Args.Flag "--single" self.Single.IsPresent
-                              Args.Flag "--linecover" self.LineCover.IsPresent
-                              Args.Flag "--branchcover" self.BranchCover.IsPresent
+                                                      OpenCover = self.OpenCover.IsPresent
+                                                      InPlace = self.InPlace.IsPresent
+                                                      Save = self.Save.IsPresent
+                                                      Single = self.Single.IsPresent
+                                                      LineCover = self.LineCover.IsPresent
+                                                      BranchCover = self.BranchCover.IsPresent
 
-                              Args.Item "--" (String.Join(" ", self.CommandLine));
-                            ]
-                    )
-                    |> List.concat
-                    |> List.toArray
-                    |> AltCover.Main.EffectiveMain
+                                                      CommandLine = String.Join(" ", self.CommandLine)
+                                   }
+                        Api.Prepare task log
       if status <> 0 then
         let fail = ErrorRecord(InvalidOperationException(), status.ToString(), ErrorCategory.InvalidOperation, self)
         self.WriteError fail
