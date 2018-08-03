@@ -1364,18 +1364,29 @@ _Target "Packaging" (fun _ ->
                                 (recorder, Some "tools/net45", None)
                                 (posh, Some "tools/net45", None)
                                 (vis, Some "tools/net45", None)
-                                (csapi, Some "tools/net45", None)
                                 (fscore, Some "tools/net45", None)
                                 (options, Some "tools/net45", None)
                                 (packable, Some "", None)
                             ]
                            else []
-    let resourceFiles = if File.Exists AltCover then
-                          Seq.concat [resources; resources2]
-                          |> Seq.map (fun x -> x.FullName)
-                          |> Seq.map (fun x -> (x, Some ("tools/net45/" + Path.GetFileName(Path.GetDirectoryName(x))), None))
-                          |> Seq.toList
-                        else []
+
+    let apiFiles = if File.Exists AltCover then
+                            [
+                                (AltCover, Some "lib/net45", None)
+                                (recorder, Some "lib/net45", None)
+                                (csapi, Some "lib/net45", None)
+                                (fscore, Some "lib/net45", None)
+                                (options, Some "lib/net45", None)
+                                (packable, Some "", None)
+                            ]
+                           else []
+
+    let resourceFiles path = if File.Exists AltCover then
+                                  Seq.concat [resources; resources2]
+                                  |> Seq.map (fun x -> x.FullName)
+                                  |> Seq.map (fun x -> (x, Some (path + Path.GetFileName(Path.GetDirectoryName(x))), None))
+                                  |> Seq.toList
+                              else []
 
     let nupkg = (Path.getFullName "./nupkg").Length
     let otherFiles = (!! "./nupkg/**/*.*")
@@ -1424,10 +1435,15 @@ _Target "Packaging" (fun _ ->
     printfn "Executing on %A" Environment.OSVersion
 
     [
-        (List.concat [applicationFiles; resourceFiles; netcoreFiles "tools/netcoreapp2.0/"; csapiFiles "tools/netcoreapp2.0/"; poshFiles "tools/netcoreapp2.0/"; otherFiles],
+        (List.concat [applicationFiles; resourceFiles "tools/net45/"; netcoreFiles "tools/netcoreapp2.0/"; poshFiles "tools/netcoreapp2.0/"; otherFiles],
          "_Packaging",
          "./Build/AltCover.nuspec",
          "altcover"
+        )
+        (List.concat [apiFiles; resourceFiles "lib/net45/"; netcoreFiles "lib/netcoreapp2.0/"; csapiFiles "lib/netcoreapp2.0/"],
+         "_Packaging.api",
+         "./_Generated/altcover.api.nuspec",
+         "altcover.api"
         )
         (List.concat[netcoreFiles "lib/netcoreapp2.0/"; csapiFiles "lib/netcoreapp2.0/"; poshFiles "lib/netcoreapp2.0/"; dotnetFiles; otherFilesDotnet],
          "_Packaging.dotnet",
@@ -1500,17 +1516,19 @@ _Target "PrepareDotNetBuild" (fun _ ->
     [
         ("DotnetCliTool", "./_Generated/altcover.dotnet.nuspec", "AltCover (dotnet CLI tool install)")
         ("DotnetTool", "./_Generated/altcover.global.nuspec", "AltCover (dotnet global tool install)")
+        (String.Empty, "./_Generated/altcover.api.nuspec", "AltCover (API install)")
     ]
     |> List.iter (fun (ptype, path, caption) ->
         let x s = XName.Get(s, "http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd")
         let dotnetNupkg = XDocument.Load "./Build/AltCover.nuspec"
         let title = dotnetNupkg.Descendants(x "title") |> Seq.head
         title.ReplaceNodes caption
-        let tag = dotnetNupkg.Descendants(x "tags") |> Seq.head
-        let insert = XElement(x "packageTypes")
-        insert.Add(XElement(x "packageType",
-                            XAttribute (XName.Get "name", ptype)))
-        tag.AddAfterSelf insert
+        if ptype |> String.IsNullOrWhiteSpace |> not then
+            let tag = dotnetNupkg.Descendants(x "tags") |> Seq.head
+            let insert = XElement(x "packageTypes")
+            insert.Add(XElement(x "packageType",
+                                XAttribute (XName.Get "name", ptype)))
+            tag.AddAfterSelf insert
         dotnetNupkg.Save path)
 )
 
