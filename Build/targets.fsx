@@ -228,7 +228,7 @@ _Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standa
                 Arguments = "--severity all --confidence all --config " + rules + " --console --html ./_Reports/gendarme.html " + subjects})
                 "Gendarme Errors were detected"
 
-    let rules = if Environment.isWindows then 
+    if Environment.isWindows then 
         Actions.Run (fun info ->
             { info with
                     FileName = (Tools.findToolInSubPath "gendarme.exe" "./packages")
