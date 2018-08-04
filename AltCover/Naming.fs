@@ -4,7 +4,7 @@ open System
 
 open Mono.Cecil
 
-module Naming =
+module internal Naming =
 
     let isNotNull x = (not << isNull) x
     let emptyIfIsNullOrWhiteSpace name = if String.IsNullOrWhiteSpace name then String.Empty else name

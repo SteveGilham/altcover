@@ -4,7 +4,7 @@ open System
 open System.Xml.Linq
 open Mono.Cecil
 
-module Report =
+module internal Report =
 
   let internal ReportGenerator () =
 

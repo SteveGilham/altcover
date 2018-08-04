@@ -20,6 +20,7 @@ open Fake.IO.Globbing.Operators
 open FSharpLint.Application
 open NUnit.Framework
 open System.Reflection
+open System
 
 let Copyright  = ref String.Empty
 let Version = ref String.Empty
@@ -416,9 +417,9 @@ _Target "UnitTestDotNetWithCoverlet" (fun _ ->
     try
       let xml = !! (@"./*Tests/*.tests.core.fsproj")
                 |> Seq.zip [
-                    """--no-build /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Exclude="\"[Sample*]*,[AltCover.Record*]*,[NUnit*]*,[AltCover.Shadow.Adapter]*\"" --configuration Debug """
-                    """--no-build /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Exclude="\"[Sample*]*,[AltCover.Record*]*,[NUnit*]*,[AltCover.Shadow.Adapter]*\"" --configuration Debug """
-                    """--no-build /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Exclude="\"[Sample*]*,[AltCover.Record*]*\"" --configuration Debug """
+                    """--no-build --framework netcoreapp2.0 /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Exclude="\"[Sample*]*,[AltCover.Record*]*,[NUnit*]*,[AltCover.Shadow.Adapter]*\"" --configuration Debug """
+                    """--no-build --framework netcoreapp2.0 /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Exclude="\"[Sample*]*,[AltCover.Record*]*,[NUnit*]*,[AltCover.Shadow.Adapter]*\"" --configuration Debug """
+                    """--no-build --framework netcoreapp2.0 /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Exclude="\"[Sample*]*,[AltCover.Record*]*\"" --configuration Debug """
                            ]
                 |> Seq.fold (fun l (p,f) ->
                                             printfn "Testing %s" f
@@ -1365,18 +1366,29 @@ _Target "Packaging" (fun _ ->
                                 (recorder, Some "tools/net45", None)
                                 (posh, Some "tools/net45", None)
                                 (vis, Some "tools/net45", None)
-                                (csapi, Some "tools/net45", None)
                                 (fscore, Some "tools/net45", None)
                                 (options, Some "tools/net45", None)
                                 (packable, Some "", None)
                             ]
                            else []
-    let resourceFiles = if File.Exists AltCover then
-                          Seq.concat [resources; resources2]
-                          |> Seq.map (fun x -> x.FullName)
-                          |> Seq.map (fun x -> (x, Some ("tools/net45/" + Path.GetFileName(Path.GetDirectoryName(x))), None))
-                          |> Seq.toList
-                        else []
+
+    let apiFiles = if File.Exists AltCover then
+                            [
+                                (AltCover, Some "lib/net45", None)
+                                (recorder, Some "lib/net45", None)
+                                (csapi, Some "lib/net45", None)
+                                (fscore, Some "lib/net45", None)
+                                (options, Some "lib/net45", None)
+                                (packable, Some "", None)
+                            ]
+                           else []
+
+    let resourceFiles path = if File.Exists AltCover then
+                                  Seq.concat [resources; resources2]
+                                  |> Seq.map (fun x -> x.FullName)
+                                  |> Seq.map (fun x -> (x, Some (path + Path.GetFileName(Path.GetDirectoryName(x))), None))
+                                  |> Seq.toList
+                              else []
 
     let nupkg = (Path.getFullName "./nupkg").Length
     let otherFiles = (!! "./nupkg/**/*.*")
@@ -1410,6 +1422,16 @@ _Target "Packaging" (fun _ ->
                                |> Seq.map (fun x -> (x, Some (where + Path.GetDirectoryName(x).Substring(publish).Replace("\\","/")), None))
                                |> Seq.toList
 
+    let publish = (Path.getFullName "./_Publish.api").Length
+    let netstdFiles where = (!! "./_Publish.api/**/*.*")
+                               |> Seq.filter (fun f -> let n = f |> Path.GetFileName
+                                                       n.StartsWith("altcover.", StringComparison.OrdinalIgnoreCase) ||
+                                                       n.StartsWith("Mono.", StringComparison.Ordinal) ||
+                                                       n.StartsWith("FSharp.Core.", StringComparison.Ordinal)
+                               )
+                               |> Seq.map (fun x -> (x, Some (where + Path.GetDirectoryName(x).Substring(publish).Replace("\\","/")), None))
+                               |> Seq.toList
+
     let dotnetFiles = (!! "./_Binaries/dotnet-altcover/Release+AnyCPU/netcoreapp2.0/dotnet-altcover.*")
                        |> Seq.map (fun x -> (x, Some ("lib/netcoreapp2.0/" + Path.GetFileName x), None))
                        |> Seq.toList
@@ -1425,10 +1447,15 @@ _Target "Packaging" (fun _ ->
     printfn "Executing on %A" Environment.OSVersion
 
     [
-        (List.concat [applicationFiles; resourceFiles; netcoreFiles "tools/netcoreapp2.0/"; csapiFiles "tools/netcoreapp2.0/"; poshFiles "tools/netcoreapp2.0/"; otherFiles],
+        (List.concat [applicationFiles; resourceFiles "tools/net45/"; netcoreFiles "tools/netcoreapp2.0/"; poshFiles "tools/netcoreapp2.0/"; otherFiles],
          "_Packaging",
          "./Build/AltCover.nuspec",
          "altcover"
+        )
+        (List.concat [apiFiles; resourceFiles "lib/net45/"; netstdFiles "lib/netstandard2.0/"; csapiFiles "lib/netstandard2.0/"],
+         "_Packaging.api",
+         "./_Generated/altcover.api.nuspec",
+         "altcover.api"
         )
         (List.concat[netcoreFiles "lib/netcoreapp2.0/"; csapiFiles "lib/netcoreapp2.0/"; poshFiles "lib/netcoreapp2.0/"; dotnetFiles; otherFilesDotnet],
          "_Packaging.dotnet",
@@ -1494,24 +1521,31 @@ _Target "PrepareDotNetBuild" (fun _ ->
     let netcoresource =  Path.getFullName "./AltCover/altcover.core.fsproj" //  "./altcover.dotnet.sln"
     let publish = Path.getFullName "./_Publish"
     DotNet.publish (fun options -> { options with OutputPath = Some publish
-                                                  Configuration = DotNet.BuildConfiguration.Release})
+                                                  Configuration = DotNet.BuildConfiguration.Release
+                                                  Framework = Some "netcoreapp2.0"})
+                                                  netcoresource
+    DotNet.publish (fun options -> { options with OutputPath = Some (publish + ".api")
+                                                  Configuration = DotNet.BuildConfiguration.Release
+                                                  Framework = Some "netstandard2.0"})
                                                   netcoresource
 
     // dotnet tooling mods
     [
         ("DotnetCliTool", "./_Generated/altcover.dotnet.nuspec", "AltCover (dotnet CLI tool install)")
         ("DotnetTool", "./_Generated/altcover.global.nuspec", "AltCover (dotnet global tool install)")
+        (String.Empty, "./_Generated/altcover.api.nuspec", "AltCover (API install)")
     ]
     |> List.iter (fun (ptype, path, caption) ->
         let x s = XName.Get(s, "http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd")
         let dotnetNupkg = XDocument.Load "./Build/AltCover.nuspec"
         let title = dotnetNupkg.Descendants(x "title") |> Seq.head
         title.ReplaceNodes caption
-        let tag = dotnetNupkg.Descendants(x "tags") |> Seq.head
-        let insert = XElement(x "packageTypes")
-        insert.Add(XElement(x "packageType",
-                            XAttribute (XName.Get "name", ptype)))
-        tag.AddAfterSelf insert
+        if ptype |> String.IsNullOrWhiteSpace |> not then
+            let tag = dotnetNupkg.Descendants(x "tags") |> Seq.head
+            let insert = XElement(x "packageTypes")
+            insert.Add(XElement(x "packageType",
+                                XAttribute (XName.Get "name", ptype)))
+            tag.AddAfterSelf insert
         dotnetNupkg.Save path)
 )
 
@@ -2047,6 +2081,67 @@ _Target "MSBuildTest" ( fun _ ->
                                  ]})  "./Sample4/Sample4.prepare.fsproj"
       else
         printfn "Skipping touch-test -- AltCover.exe not packaged"
+)
+
+_Target "ApiUse" (fun _ ->
+    Directory.ensure "./_ApiUse"
+    Shell.cleanDir ("./_ApiUse")
+
+    let config = """<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+  <packageSources>
+    <add key="local" value="{0}" />
+    <add key="nuget.org" value="https://api.nuget.org/v3/index.json" />
+  </packageSources>
+</configuration>"""
+
+    File.WriteAllText("./_ApiUse/NuGet.config", String.Format(config, Path.getFullName "./_Packaging.api"))
+
+    let script = """#r "paket: groupref netcorebuild //"
+#load ".fake/DriveApi.fsx/intellisense.fsx"
+
+open System
+open Fake.Core
+
+let _Target s f =
+  Target.description s
+  Target.create s f
+
+_Target "DoIt" (fun _ ->
+  {{AltCover.Logging.Default with Info = printfn "%s"}}
+  |> AltCover.Api.Version
+  |> printfn "Returned %A"
+
+  let cslog = AltCover.LogArgs()
+  cslog.Info <- new Action<String>(printfn "%s")
+  AltCover.CSApi.Version cslog
+  |> printfn "Returned %A"
+)
+
+Target.runOrDefault "DoIt"
+"""   
+    File.WriteAllText("./_ApiUse/DriveApi.fsx", String.Format(script, !Version))
+
+    let dependencies = """// [ FAKE GROUP ]
+group NetcoreBuild
+  source https://api.nuget.org/v3/index.json
+  nuget Fake.Core 5.3.0
+  nuget Fake.Core.Target 5.3.0
+
+  source {0}
+  nuget AltCover.Api {1} """
+
+    File.WriteAllText("./_ApiUse/paket.dependencies", String.Format(dependencies, Path.getFullName "./_Packaging.api", !Version))
+
+    Shell.copy "./_ApiUse" (!! "./dotnet*.fsproj")
+
+    Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = Path.getFullName "_ApiUse"}) "restore"
+                      (String.Empty)
+                      "restoring dotnet-fake returned with a non-zero exit code"
+
+    Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = Path.getFullName "_ApiUse"}) "fake"
+                      ("run ./DriveApi.fsx")
+                      "running fake script returned with a non-zero exit code"
 )
 
 _Target "DotnetTestIntegration" ( fun _ ->
@@ -2734,6 +2829,10 @@ Target.activateFinal "ResetConsoleColours"
 
 "Unpack"
 ==> "MSBuildTest"
+==> "Deployment"
+
+"Unpack"
+==> "ApiUse"
 ==> "Deployment"
 
 "Unpack"

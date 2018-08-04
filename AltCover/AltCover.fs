@@ -14,13 +14,13 @@ open Mono.Cecil
 open Mono.Options
 
 [<ExcludeFromCodeCoverage>]
-type AssemblyInfo = {
+type internal AssemblyInfo = {
          Path : string
          Name : string
          Refs : string list
          }
 
-module Main =
+module internal Main =
   let init () =
     Visitor.inputDirectory <- None
     Visitor.outputDirectory <- None

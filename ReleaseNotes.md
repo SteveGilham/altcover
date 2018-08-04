@@ -4,7 +4,10 @@ Q. Never mind the fluff -- how do I get started?
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
-# 3.5.xxx (Cerulean series release 10)
+# 3.5.587 (Cerulean series release 10)
+* [BUGFIX] Issue #28 -- handle strong-named dependencies properly in the .net core case (reinstating code too enthusiatically removed six months earlier)
+* [BUGFIX] Issue #28 -- Allow `dotnet test` to usefully specify exclusion filters when building (did not affect `dotnet test --no-build`)
+* Refactor in a few places to reduce code duplication 
 
 # 3.5.580 (Cerulean series release 9)
 * [NEW] `AltCover.Visualizer` tool for .net framework and mono (for .net framework, needs GTK#2.12.xx installed separately -- see https://www.mono-project.com/download/stable/)

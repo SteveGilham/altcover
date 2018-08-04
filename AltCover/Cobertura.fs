@@ -6,7 +6,7 @@ open System.Xml.Linq
 
 // based on the sample file at https://raw.githubusercontent.com/jenkinsci/cobertura-plugin/master/src/test/resources/hudson/plugins/cobertura/coverage-with-data.xml
 
-module Cobertura =
+module internal Cobertura =
   let internal path : Option<string> ref = ref None
   let X = OpenCover.X
 

@@ -45,7 +45,7 @@ with static member Build assemblies =
 /// <summary>
 /// Module to handle instrumentation visitor
 /// </summary>
-module Instrument =
+module internal Instrument =
   let private resources = ResourceManager("AltCover.JSONFragments" , Assembly.GetExecutingAssembly())
   let version = typeof<AltCover.Recorder.Tracer>.Assembly.GetName().Version.ToString()
 

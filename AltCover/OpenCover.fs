@@ -60,7 +60,7 @@ with static member Build () =
                       TotalSeq = 0
                       TotalBr = 0}
 
-module OpenCover =
+module internal OpenCover =
 
   let internal X name =
       XName.Get name
@@ -291,7 +291,6 @@ module OpenCover =
                    |> List.groupBy (fun bp -> bp.Attribute(X "offset").Value)
                    |> Seq.fold( fun np0 (_,b) -> SafeMultiply (Seq.length b) np0) 1
           ``method``.SetAttributeValue(X "nPathComplexity", np)
-
 
     let AddTracking (s : OpenCoverContext) (m:MethodDefinition) t =
       t |>

@@ -120,10 +120,9 @@ type Logging =
           Output.Warn <- self.Warn
           Output.Info <- self.Info
           Output.Echo <- self.Echo
-          ////Output.Usage <- self.Usage
-          Output.Usage <- ignore
+          ////Output.Usage <- ignore
 
-module Args =
+module internal Args =
   let Item a x =
     if x |> String.IsNullOrWhiteSpace
        then []
@@ -207,6 +206,8 @@ module Api =
     |]
     |> AltCover.Main.EffectiveMain
 
+#if NETSTANDARD2_0
+#else
 type Prepare () =
   inherit Task(null)
   member val InputDirectory = String.Empty with get, set
@@ -333,3 +334,4 @@ type GetVersion () =
         Warn = base.Log.LogWarning
     }
     |> Api.Version = 0
+#endif

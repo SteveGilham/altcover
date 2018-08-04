@@ -11,10 +11,9 @@ open System.Resources
 open Augment
 open Mono.Options
 
-type StringSink = delegate of string -> unit
+type internal StringSink = delegate of string -> unit
 
-[<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage>]
-module Output =
+module internal Output =
   let mutable internal Task = false
   let mutable internal Info : (String -> unit) = ignore
   let mutable internal Warn : (String -> unit) = ignore
@@ -50,7 +49,7 @@ module Output =
                             | v -> v |> sprintf "%A" |> writer.WriteLine)
     logException String.Empty e
 
-module CommandLine =
+module internal CommandLine =
 
   let mutable internal help = false
   let mutable internal error :string list = []
