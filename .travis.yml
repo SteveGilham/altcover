@@ -16,6 +16,7 @@ git:
 if: NOT branch =~ ^develop/.*$ OR branch =~ ^develop/travis/.*$
 
 cache:
+  timeout: 300
   directories:
   - packages
   - Demo/Service/packages

@@ -2835,7 +2835,7 @@ type AltCoverTests() = class
     stream.CopyTo(buffer)
     Visitor.defaultStrongNameKey <- Some (StrongNameKeyPair(buffer.ToArray()))
 
-    Instrument.UpdateStrongReferences def
+    let result = Instrument.UpdateStrongReferences def []
     let token1 = def.Name.PublicKeyToken
 #if NETCOREAPP2_0
     Assert.That (token1, Is.Empty)
@@ -2849,6 +2849,7 @@ type AltCoverTests() = class
 #else
     Assert.That (token', Is.EqualTo "4ebffcaabf10ce6a" )
 #endif
+    Assert.That (result, Is.Empty)
 
   [<Test>]
   member self.UpdateStrongReferencesShouldRemoveSigningKeyIfRequired () =
@@ -2860,13 +2861,19 @@ type AltCoverTests() = class
 
     Visitor.defaultStrongNameKey <- None
 
-    Instrument.UpdateStrongReferences def
+    let result = Instrument.UpdateStrongReferences def ["nunit.framework"]
     let token1 = def.Name.PublicKeyToken
     Assert.That (token1, Is.Empty)
     Assert.That (token1, Is.Not.EquivalentTo(token0))
 
     let token' = String.Join(String.Empty, token1|> Seq.map (fun x -> x.ToString("x2")))
     Assert.That (token', Is.EqualTo String.Empty)
+    Assert.That (result.Count, Is.EqualTo 1)
+    let key = result.Keys |> Seq.head
+    let value = result.Values |> Seq.head
+    let ptr = key.LastIndexOf("=")
+    Assert.That (key.Substring(0, ptr), Is.EqualTo(value.Substring(0, ptr)))
+    Assert.That (value.Substring(ptr), Is.EqualTo "=null")
 
   [<Test>]
   member self.UpdateStrongReferencesShouldNotAddASigningKey () =
@@ -2890,9 +2897,78 @@ type AltCoverTests() = class
     stream.CopyTo(buffer)
     Visitor.defaultStrongNameKey <- Some (StrongNameKeyPair(buffer.ToArray()))
 
-    Instrument.UpdateStrongReferences def
+    let result = Instrument.UpdateStrongReferences def []
     let token1 = def.Name.PublicKeyToken
     Assert.That (token1, Is.Empty)
+    Assert.That (result, Is.Empty)
+
+  [<Test>]
+  member self.UpdateStrongReferencesShouldTrackReferences () =
+    let where = Assembly.GetExecutingAssembly().Location
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
+    let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+    ProgramDatabase.ReadSymbols def |> ignore
+
+#if NETCOREAPP2_0
+    use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(infrastructureSnk)
+#else
+    use stream = typeof<AltCover.Node>.Assembly.GetManifestResourceStream(recorderSnk)
+#endif
+    use buffer = new MemoryStream()
+    stream.CopyTo(buffer)
+    Visitor.defaultStrongNameKey <- Some (StrongNameKeyPair(buffer.ToArray()))
+
+    let result = Instrument.UpdateStrongReferences def ["nunit.framework"; "nonesuch"]
+    Assert.That (result.Count, Is.EqualTo 1)
+#if NETCOREAPP2_0
+    Assert.That (result.Values |> Seq.head, Does.EndWith "PublicKeyToken=null")
+    let key = result.Keys |> Seq.head
+    Assert.That (result.Values |> Seq.head,
+                 Is.EqualTo (key.Substring(0, key.Length - 16) + "null"))
+#else
+    Assert.That (result.Values |> Seq.head, Does.EndWith "PublicKeyToken=4ebffcaabf10ce6a")
+    let key = result.Keys |> Seq.head
+    Assert.That (result.Values |> Seq.head,
+                 Is.EqualTo (key.Substring(0, key.Length - 16) + "4ebffcaabf10ce6a"))
+#endif
+
+  [<Test>]
+  member self.UpdateStrongReferencesShouldTrackReferencesEvenFakes () =
+    try
+      let where = Assembly.GetExecutingAssembly().Location
+      let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
+      let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+      ProgramDatabase.ReadSymbols def |> ignore
+      let npath = typeof<TestAttribute>.Assembly.Location
+      let ndef = Mono.Cecil.AssemblyDefinition.ReadAssembly npath
+      let key = KeyStore.ArrayToIndex ndef.Name.PublicKey
+
+#if NETCOREAPP2_0
+      use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(infrastructureSnk)
+#else
+      use stream = typeof<AltCover.Node>.Assembly.GetManifestResourceStream(recorderSnk)
+#endif
+      use buffer = new MemoryStream()
+      stream.CopyTo(buffer)
+      let ourKeyPair = StrongNameKeyPair(buffer.ToArray())
+      Visitor.defaultStrongNameKey <- Some ourKeyPair
+      Visitor.keys.Add(key, { Pair=ourKeyPair; Token=[] })
+
+      let result = Instrument.UpdateStrongReferences def ["nunit.framework"; "nonesuch"]
+      Assert.That (result.Count, Is.EqualTo 1)
+#if NETCOREAPP2_0
+      Assert.That (result.Values |> Seq.head, Does.EndWith "PublicKeyToken=null")
+      let key = result.Keys |> Seq.head
+      Assert.That (result.Values |> Seq.head,
+                   Is.EqualTo (key.Substring(0, key.Length - 16) + "null"))
+#else
+      Assert.That (result.Values |> Seq.head, Does.EndWith "PublicKeyToken=4ebffcaabf10ce6a")
+      let key = result.Keys |> Seq.head
+      Assert.That (result.Values |> Seq.head,
+                   Is.EqualTo (key.Substring(0, key.Length - 16) + "4ebffcaabf10ce6a"))
+#endif
+    finally
+      Visitor.keys.Clear()
 
   [<Test>]
   member self.ExcludedAssemblyRefsAreNotUpdated () =
@@ -3196,6 +3272,7 @@ type AltCoverTests() = class
     Output.Echo <- ignore
     Output.Usage <- ignore
     Assert.That(Output.Usage, Is.Not.Null)
+
     typeof<Tracer>.Assembly.GetExportedTypes()
     |> Seq.filter (fun t -> (string t = "AltCover.Output") || (string t = "AltCover.AltCover"))
     |> Seq.collect (fun t -> t.GetNestedTypes(BindingFlags.NonPublic))
@@ -5202,6 +5279,21 @@ or
     finally Console.SetError saved
 
   // Tasks.fs
+
+  [<Test>]
+  member self.LoggingCanBeExercised() =
+    Assert.That(Logging.ActionAdapter null, Is.Not.Null)
+    (Logging.ActionAdapter null) "23"
+    Assert.That(Logging.ActionAdapter (new Action<String>(ignore)), Is.Not.Null)
+    let mutable x = String.Empty
+    let f = (fun s -> x <- s)
+    (Logging.ActionAdapter (new Action<String>(f))) "42"
+    Assert.That (x, Is.EqualTo "42")
+    Logging.Default.Info "32"
+    Logging.Default.Warn "32"
+    Logging.Default.Error "32"
+    Logging.Default.Echo "32"
+
   [<Test>]
   member self.EmptyInstrumentIsJustTheDefaults() =
     let subject = Prepare()

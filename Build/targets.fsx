@@ -25,9 +25,9 @@ let Copyright  = ref String.Empty
 let Version = ref String.Empty
 
 let OpenCoverFilter = "+[AltCove*]* -[*]Microsoft.* -[*]System.* +[*]N.*"
-let AltCoverFilter= @" -s=Adapter -s=Mono -s=\.Recorder -s=Sample -s=nunit -e=Tests -t=System. -t=Sample3\.Class2 "
-let AltCoverFilterX= @" -s=Adapter --s=Mono -s=\.Recorder -s=Sample -s=nunit -t=System\. -t=Sample3\.Class2 "
-let AltCoverFilterG= @" -s=Adapter --s=Mono -s=\.Recorder\.g -s=Sample -s=nunit -e=Tests -t=System. -t=Sample3\.Class2 "
+let AltCoverFilter= @" -e=Adapter -s=Mono -s=\.Recorder -s=Sample -s=nunit -e=Tests -t=System. -t=Sample3\.Class2 "
+let AltCoverFilterX= @" -e=Adapter --s=Mono -s=\.Recorder -s=Sample -s=nunit -t=System\. -t=Sample3\.Class2 "
+let AltCoverFilterG= @" -e=Adapter --s=Mono -s=\.Recorder\.g -s=Sample -s=nunit -e=Tests -t=System. -t=Sample3\.Class2 "
 
 let programFiles = Environment.environVar "ProgramFiles"
 let programFiles86 = Environment.environVar "ProgramFiles(x86)"
@@ -100,6 +100,17 @@ _Target "SetVersion" (fun _ ->
     Actions.InternalsVisibleTo (!Version)
     let v' = !Version
     AssemblyInfoFile.create "./_Generated/AssemblyVersion.fs"
+        [
+         AssemblyInfo.Product "AltCover"
+         AssemblyInfo.Version (majmin + ".0.0")
+         AssemblyInfo.FileVersion v'
+         AssemblyInfo.Company "Steve Gilham"
+         AssemblyInfo.Trademark ""
+         AssemblyInfo.Copyright copy
+        ]
+        (Some AssemblyInfoFileConfig.Default)
+
+    AssemblyInfoFile.create "./_Generated/AssemblyVersion.cs"
         [
          AssemblyInfo.Product "AltCover"
          AssemblyInfo.Version (majmin + ".0.0")
@@ -1341,6 +1352,7 @@ _Target "Packaging" (fun _ ->
     let options = Path.getFullName "_Binaries/AltCover/Release+AnyCPU/Mono.Options.dll"
     let recorder = Path.getFullName "_Binaries/AltCover/Release+AnyCPU/AltCover.Recorder.dll"
     let posh = Path.getFullName "_Binaries/AltCover.PowerShell/Release+AnyCPU/AltCover.PowerShell.dll"
+    let csapi = Path.getFullName "_Binaries/AltCover.CSApi/Release+AnyCPU/AltCover.CSApi.dll"
     let vis = Path.getFullName "_Binaries/AltCover.Visualizer/Release+AnyCPU/AltCover.Visualizer.exe"
     let packable = Path.getFullName "./_Binaries/README.html"
     let resources = DirectoryInfo.getMatchingFilesRecursive "AltCover.resources.dll" (DirectoryInfo.ofPath (Path.getFullName "_Binaries/AltCover/Release+AnyCPU"))
@@ -1352,6 +1364,7 @@ _Target "Packaging" (fun _ ->
                                 (recorder, Some "tools/net45", None)
                                 (posh, Some "tools/net45", None)
                                 (vis, Some "tools/net45", None)
+                                (csapi, Some "tools/net45", None)
                                 (fscore, Some "tools/net45", None)
                                 (options, Some "tools/net45", None)
                                 (packable, Some "", None)
@@ -1387,6 +1400,10 @@ _Target "Packaging" (fun _ ->
                            |> Seq.map (fun x -> (x, Some (where + Path.GetFileName x), None))
                            |> Seq.toList
 
+    let csapiFiles where = (!! "./_Binaries/AltCover.CSApi/Release+AnyCPU/netcoreapp2.0/*.CSApi.*")
+                           |> Seq.map (fun x -> (x, Some (where + Path.GetFileName x), None))
+                           |> Seq.toList
+
     let publish = (Path.getFullName "./_Publish").Length
     let netcoreFiles where = (!! "./_Publish/**/*.*")
                                |> Seq.map (fun x -> (x, Some (where + Path.GetDirectoryName(x).Substring(publish).Replace("\\","/")), None))
@@ -1407,17 +1424,17 @@ _Target "Packaging" (fun _ ->
     printfn "Executing on %A" Environment.OSVersion
 
     [
-        (List.concat [applicationFiles; resourceFiles; netcoreFiles "tools/netcoreapp2.0/"; poshFiles "tools/netcoreapp2.0/"; otherFiles],
+        (List.concat [applicationFiles; resourceFiles; netcoreFiles "tools/netcoreapp2.0/"; csapiFiles "tools/netcoreapp2.0/"; poshFiles "tools/netcoreapp2.0/"; otherFiles],
          "_Packaging",
          "./Build/AltCover.nuspec",
          "altcover"
         )
-        (List.concat[netcoreFiles "lib/netcoreapp2.0/"; poshFiles "lib/netcoreapp2.0/"; dotnetFiles; otherFilesDotnet],
+        (List.concat[netcoreFiles "lib/netcoreapp2.0/"; csapiFiles "lib/netcoreapp2.0/"; poshFiles "lib/netcoreapp2.0/"; dotnetFiles; otherFilesDotnet],
          "_Packaging.dotnet",
          "./_Generated/altcover.dotnet.nuspec",
          "altcover.dotnet"
         )
-        (List.concat [globalFiles; netcoreFiles "tools/netcoreapp2.1/any/"; poshFiles"tools/netcoreapp2.1/any/"; auxFiles; otherFilesGlobal],
+        (List.concat [globalFiles; netcoreFiles "tools/netcoreapp2.1/any/"; csapiFiles "tools/netcoreapp2.1/any/"; poshFiles "tools/netcoreapp2.1/any/"; auxFiles; otherFilesGlobal],
          "_Packaging.global",
          "./_Generated/altcover.global.nuspec",
          "altcover.global"
@@ -2168,6 +2185,19 @@ _Target "DotnetTestIntegration" ( fun _ ->
       Assert.That (coverageDocument.Descendants(XName.Get("SequencePoint")) |> Seq.length, Is.EqualTo 0)
       Assert.That (coverageDocument.Descendants(XName.Get("BranchPoint")) |> Seq.length, Is.EqualTo 2)
 
+    // Regression test -- On travis : 'the reference assemblies for framework ".NETFramework,Version=v4.6.1" were not found.'
+    if Environment.isWindows then
+        let proj = XDocument.Load "./RegressionTesting/issue29/issue29.xml"
+        let pack = proj.Descendants(XName.Get("PackageReference")) |> Seq.head
+        let inject = XElement(XName.Get "PackageReference",
+                              XAttribute (XName.Get "Include", "altcover"),
+                              XAttribute (XName.Get "Version", !Version) )
+        pack.AddBeforeSelf inject
+        proj.Save "./RegressionTesting/issue29/issue29.csproj"
+        Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = Path.getFullName "RegressionTesting/issue29"}) "test"
+                          ("-v n /p:AltCover=true")
+                          "issue#29 regression test returned with a non-zero exit code"
+
   finally
     let folder = (nugetCache @@ "altcover") @@ !Version
     Shell.mkdir folder
@@ -2702,14 +2732,6 @@ Target.activateFinal "ResetConsoleColours"
 //==> "Deployment"
 
 "Unpack"
-==> "ReleaseXUnitFSharpTypesDotNetRunner"
-==> "Deployment"
-
-"Unpack"
-==> "ReleaseXUnitFSharpTypesDotNetFullRunner"
-==> "Deployment"
-
-"Unpack"
 ==> "MSBuildTest"
 ==> "Deployment"
 
@@ -2727,6 +2749,14 @@ Target.activateFinal "ResetConsoleColours"
 
 "Unpack"
 ==> "DotnetGlobalIntegration"
+==> "Deployment"
+
+"Unpack"
+==> "ReleaseXUnitFSharpTypesDotNetRunner"
+==> "Deployment"
+
+"Unpack"
+==> "ReleaseXUnitFSharpTypesDotNetFullRunner"
 ==> "Deployment"
 
 "Unpack"
