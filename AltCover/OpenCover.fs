@@ -60,7 +60,7 @@ with static member Build () =
                       TotalSeq = 0
                       TotalBr = 0}
 
-module OpenCover =
+module internal OpenCover =
 
   let internal X name =
       XName.Get name

@@ -122,7 +122,7 @@ type Logging =
           Output.Echo <- self.Echo
           ////Output.Usage <- ignore
 
-module Args =
+module internal Args =
   let Item a x =
     if x |> String.IsNullOrWhiteSpace
        then []

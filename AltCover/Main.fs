@@ -1,6 +1,6 @@
 ﻿namespace AltCover
 
-module AltCover =
+module internal AltCover =
   let internal ToConsole () =
     Output.Error <- CommandLine.WriteErr
     Output.Usage <- CommandLine.Usage

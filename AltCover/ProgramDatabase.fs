@@ -9,7 +9,7 @@ open Mono.Cecil.Cil
 open Mono.Cecil.Mdb
 open Mono.Cecil.Pdb
 
-module ProgramDatabase =
+module internal ProgramDatabase =
   let internal SymbolFolders = List<String>()
 
   // We no longer have to violate Cecil encapsulation to get the PDB path!

@@ -10,11 +10,28 @@ open System.Globalization
 open System.IO
 open System.Xml
 
-type ReportFormat = NCover = 0 | OpenCover = 1 | OpenCoverWithTracking = 2
+// These conditionally internal for Gendarme
 
-type Sampling = All = 0 | Single = 1
+type 
+#if DEBUG
+#else
+     internal
+#endif
+              ReportFormat = NCover = 0 | OpenCover = 1 | OpenCoverWithTracking = 2
 
-type Tag = Null = 0 | Time = 1 | Call = 2 | Both = 3
+type 
+#if DEBUG
+#else
+     internal
+#endif
+              Sampling = All = 0 | Single = 1
+
+type 
+#if DEBUG
+#else
+     internal
+#endif
+              Tag = Null = 0 | Time = 1 | Call = 2 | Both = 3
 
 #if NETSTANDARD2_0
 [<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage>]
