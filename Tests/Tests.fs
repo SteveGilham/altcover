@@ -3273,7 +3273,7 @@ type AltCoverTests() = class
     Output.Usage <- ignore
     Assert.That(Output.Usage, Is.Not.Null)
 
-    typeof<Tracer>.Assembly.GetExportedTypes()
+    typeof<Tracer>.Assembly.GetTypes()
     |> Seq.filter (fun t -> (string t = "AltCover.Output") || (string t = "AltCover.AltCover"))
     |> Seq.collect (fun t -> t.GetNestedTypes(BindingFlags.NonPublic))
     |> Seq.filter (fun t -> let tokens = [

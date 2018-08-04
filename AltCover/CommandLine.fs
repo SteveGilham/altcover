@@ -13,7 +13,6 @@ open Mono.Options
 
 type internal StringSink = delegate of string -> unit
 
-[<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage>]
 module internal Output =
   let mutable internal Task = false
   let mutable internal Info : (String -> unit) = ignore
