@@ -20,6 +20,7 @@ open Fake.IO.Globbing.Operators
 open FSharpLint.Application
 open NUnit.Framework
 open System.Reflection
+open System
 
 let Copyright  = ref String.Empty
 let Version = ref String.Empty
@@ -1422,6 +1423,11 @@ _Target "Packaging" (fun _ ->
 
     let publish = (Path.getFullName "./_Publish.api").Length
     let netstdFiles where = (!! "./_Publish.api/**/*.*")
+                               |> Seq.filter (fun f -> let n = f |> Path.GetFileName
+                                                       n.StartsWith("altcover.", StringComparison.OrdinalIgnoreCase) ||
+                                                       n.StartsWith("Mono.", StringComparison.Ordinal) ||
+                                                       n.StartsWith("FSharp.Core.", StringComparison.Ordinal)
+                               )
                                |> Seq.map (fun x -> (x, Some (where + Path.GetDirectoryName(x).Substring(publish).Replace("\\","/")), None))
                                |> Seq.toList
 
@@ -1445,7 +1451,7 @@ _Target "Packaging" (fun _ ->
          "./Build/AltCover.nuspec",
          "altcover"
         )
-        (List.concat [apiFiles; resourceFiles "lib/net45/"; netstdFiles "lib/netcoreapp2.0/"; csapiFiles "lib/netcoreapp2.0/"],
+        (List.concat [apiFiles; resourceFiles "lib/net45/"; netstdFiles "lib/netstandard2.0/"; csapiFiles "lib/netstandard2.0/"],
          "_Packaging.api",
          "./_Generated/altcover.api.nuspec",
          "altcover.api"
