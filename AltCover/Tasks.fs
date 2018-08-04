@@ -122,8 +122,6 @@ type Logging =
           Output.Echo <- self.Echo
           ////Output.Usage <- ignore
 
-#if NETSTANDARD2_0
-#else
 module internal Args =
   let Item a x =
     if x |> String.IsNullOrWhiteSpace
@@ -208,6 +206,8 @@ module Api =
     |]
     |> AltCover.Main.EffectiveMain
 
+#if NETSTANDARD2_0
+#else
 type Prepare () =
   inherit Task(null)
   member val InputDirectory = String.Empty with get, set

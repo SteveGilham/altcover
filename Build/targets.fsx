@@ -2082,6 +2082,67 @@ _Target "MSBuildTest" ( fun _ ->
         printfn "Skipping touch-test -- AltCover.exe not packaged"
 )
 
+_Target "ApiUse" (fun _ ->
+    Directory.ensure "./_ApiUse"
+    Shell.cleanDir ("./_ApiUse")
+
+    let config = """<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+  <packageSources>
+    <add key="local" value="{0}" />
+    <add key="nuget.org" value="https://api.nuget.org/v3/index.json" />
+  </packageSources>
+</configuration>"""
+
+    File.WriteAllText("./_ApiUse/NuGet.config", String.Format(config, Path.getFullName "./_Packaging.api"))
+
+    let script = """#r "paket: groupref netcorebuild //"
+#load ".fake/DriveApi.fsx/intellisense.fsx"
+
+open System
+open Fake.Core
+
+let _Target s f =
+  Target.description s
+  Target.create s f
+
+_Target "DoIt" (fun _ ->
+  {{AltCover.Logging.Default with Info = printfn "%s"}}
+  |> AltCover.Api.Version
+  |> printfn "Returned %A"
+
+  let cslog = AltCover.LogArgs()
+  cslog.Info <- new Action<String>(printfn "%s")
+  AltCover.CSApi.Version cslog
+  |> printfn "Returned %A"
+)
+
+Target.runOrDefault "DoIt"
+"""   
+    File.WriteAllText("./_ApiUse/DriveApi.fsx", String.Format(script, !Version))
+
+    let dependencies = """// [ FAKE GROUP ]
+group NetcoreBuild
+  source https://api.nuget.org/v3/index.json
+  nuget Fake.Core 5.3.0
+  nuget Fake.Core.Target 5.3.0
+
+  source {0}
+  nuget AltCover.Api {1} """
+
+    File.WriteAllText("./_ApiUse/paket.dependencies", String.Format(dependencies, Path.getFullName "./_Packaging.api", !Version))
+
+    Shell.copy "./_ApiUse" (!! "./dotnet*.fsproj")
+
+    Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = Path.getFullName "_ApiUse"}) "restore"
+                      (String.Empty)
+                      "restoring dotnet-fake returned with a non-zero exit code"
+
+    Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = Path.getFullName "_ApiUse"}) "fake"
+                      ("run ./DriveApi.fsx")
+                      "running fake script returned with a non-zero exit code"
+)
+
 _Target "DotnetTestIntegration" ( fun _ ->
   try
     Directory.ensure "./_DotnetTest"
@@ -2767,6 +2828,10 @@ Target.activateFinal "ResetConsoleColours"
 
 "Unpack"
 ==> "MSBuildTest"
+==> "Deployment"
+
+"Unpack"
+==> "ApiUse"
 ==> "Deployment"
 
 "Unpack"
