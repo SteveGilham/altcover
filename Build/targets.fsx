@@ -227,12 +227,13 @@ _Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standa
                 Arguments = "--severity all --confidence all --config " + rules + " --console --html ./_Reports/gendarme.html " + subjects})
                 "Gendarme Errors were detected"
 
-    Actions.Run (fun info ->
-        { info with
-                FileName = (Tools.findToolInSubPath "gendarme.exe" "./packages")
-                WorkingDirectory = "."
-                Arguments = "--severity all --confidence all --config ./Build/rules-posh.xml --console --html ./_Reports/gendarme.html _Binaries/AltCover.PowerShell/Debug+AnyCPU/AltCover.PowerShell.dll"})
-                "Gendarme Errors were detected"
+    if Environment.isWindows then 
+        Actions.Run (fun info ->
+            { info with
+                    FileName = (Tools.findToolInSubPath "gendarme.exe" "./packages")
+                    WorkingDirectory = "."
+                    Arguments = "--severity all --confidence all --config ./Build/rules-posh.xml --console --html ./_Reports/gendarme.html _Binaries/AltCover.PowerShell/Debug+AnyCPU/AltCover.PowerShell.dll"})
+                    "Gendarme Errors were detected"
 
     Actions.Run (fun info ->
         { info with
