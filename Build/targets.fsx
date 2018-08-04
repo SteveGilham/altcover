@@ -416,9 +416,9 @@ _Target "UnitTestDotNetWithCoverlet" (fun _ ->
     try
       let xml = !! (@"./*Tests/*.tests.core.fsproj")
                 |> Seq.zip [
-                    """--no-build /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Exclude="\"[Sample*]*,[AltCover.Record*]*,[NUnit*]*,[AltCover.Shadow.Adapter]*\"" --configuration Debug """
-                    """--no-build /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Exclude="\"[Sample*]*,[AltCover.Record*]*,[NUnit*]*,[AltCover.Shadow.Adapter]*\"" --configuration Debug """
-                    """--no-build /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Exclude="\"[Sample*]*,[AltCover.Record*]*\"" --configuration Debug """
+                    """--no-build --framework netcoreapp2.0 /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Exclude="\"[Sample*]*,[AltCover.Record*]*,[NUnit*]*,[AltCover.Shadow.Adapter]*\"" --configuration Debug """
+                    """--no-build --framework netcoreapp2.0 /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Exclude="\"[Sample*]*,[AltCover.Record*]*,[NUnit*]*,[AltCover.Shadow.Adapter]*\"" --configuration Debug """
+                    """--no-build --framework netcoreapp2.0 /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Exclude="\"[Sample*]*,[AltCover.Record*]*\"" --configuration Debug """
                            ]
                 |> Seq.fold (fun l (p,f) ->
                                             printfn "Testing %s" f
