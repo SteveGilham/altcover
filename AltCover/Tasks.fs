@@ -122,6 +122,8 @@ type Logging =
           Output.Echo <- self.Echo
           ////Output.Usage <- ignore
 
+#if NETSTANDARD2_0
+#else
 module internal Args =
   let Item a x =
     if x |> String.IsNullOrWhiteSpace
@@ -332,3 +334,4 @@ type GetVersion () =
         Warn = base.Log.LogWarning
     }
     |> Api.Version = 0
+#endif
