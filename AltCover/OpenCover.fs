@@ -292,7 +292,6 @@ module internal OpenCover =
                    |> Seq.fold( fun np0 (_,b) -> SafeMultiply (Seq.length b) np0) 1
           ``method``.SetAttributeValue(X "nPathComplexity", np)
 
-
     let AddTracking (s : OpenCoverContext) (m:MethodDefinition) t =
       t |>
       Option.iter(fun (uid,strategy) ->

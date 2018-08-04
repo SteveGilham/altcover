@@ -12,21 +12,21 @@ open System.Xml
 
 // These conditionally internal for Gendarme
 
-type 
+type
 #if DEBUG
 #else
      internal
 #endif
               ReportFormat = NCover = 0 | OpenCover = 1 | OpenCoverWithTracking = 2
 
-type 
+type
 #if DEBUG
 #else
      internal
 #endif
               Sampling = All = 0 | Single = 1
 
-type 
+type
 #if DEBUG
 #else
      internal

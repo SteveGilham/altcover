@@ -524,7 +524,7 @@ module internal Visitor =
 
             let MethodPointOnly() =
                 interesting && (instructions |> Seq.isEmpty ||
-                                         coverstyle = CoverStyle.BranchOnly) && 
+                                         coverstyle = CoverStyle.BranchOnly) &&
                                          rawInstructions |> Seq.isEmpty |> not
 
             let sp = if MethodPointOnly()  then
@@ -538,7 +538,7 @@ module internal Visitor =
                                                         i+point, wanted interesting s))
 
             let IncludeBranches() =
-              instructions.Any() && ReportKind() = Base.ReportFormat.OpenCover && (coverstyle <> CoverStyle.LineOnly) 
+              instructions.Any() && ReportKind() = Base.ReportFormat.OpenCover && (coverstyle <> CoverStyle.LineOnly)
             let bp = if IncludeBranches() then
                         let spnt = instructions
                                    |> Seq.head
