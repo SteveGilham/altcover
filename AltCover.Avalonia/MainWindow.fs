@@ -25,6 +25,7 @@ type MainWindow () as this =
     let mutable armed = false
     let mutable justOpened = String.Empty
     let mutable coverageFiles : string list = []
+    let ofd = OpenFileDialog()
 
     do this.InitializeComponent()
 
@@ -74,6 +75,9 @@ type MainWindow () as this =
 
         // TODO read from store
         this.populateMenu ()
+        ofd.Title <- UICommon.GetResourceString "Open Coverage File"
+        ofd.AllowMultiple <- false
+        // ofd.Filters <- [ ]
 
         this.Title <- "AltCover.Visualizer"
         this.FindControl<TabItem>("Visualizer").Header <- UICommon.GetResourceString "Visualizer"
@@ -87,15 +91,11 @@ type MainWindow () as this =
 
         let openFile = new Event<String option>()
         this.FindControl<MenuItem>("Open").Click
-                    |> Event.add(fun _ -> let d = OpenFileDialog()
-                                          // d.InitialDirectory <- readFolder()
-                                          // d.Filters <- [ ]
-                                          d.Title <- UICommon.GetResourceString "Open Coverage File"
-                                          d.AllowMultiple <- false
-                                          let a = d.ShowAsync(this)
-                                                  |> Async.AwaitTask
+                    |> Event.add(fun _ -> // ofd.InitialDirectory <- readFolder()
                                           async {
-                                                  (a |> Async.RunSynchronously).
+                                                  (ofd.ShowAsync(this)
+                                                   |> Async.AwaitTask
+                                                   |> Async.RunSynchronously).
                                                      FirstOrDefault()
                                                   |> Option.nullable
                                                   |> openFile.Trigger
