@@ -173,4 +173,7 @@ THE SOFTWARE.</value>
   <data name="Font" xml:space="preserve">
     <value>Tiparo...</value>
   </data>
+  <data name="Refresh" xml:space="preserve">
+    <value>Refreŝigi</value>
+  </data>
 </root>

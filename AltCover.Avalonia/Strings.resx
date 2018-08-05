@@ -173,4 +173,7 @@ THE SOFTWARE.</value>
   <data name="Font" xml:space="preserve">
     <value>Font...</value>
   </data>
+  <data name="Refresh" xml:space="preserve">
+    <value>Refresh</value>
+  </data>
 </root>

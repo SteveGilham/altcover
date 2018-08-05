@@ -40,7 +40,7 @@ type MainWindow () as this =
         this.Title <- "AltCover.Visualizer"
         this.FindControl<TabItem>("Visualizer").Header <- UICommon.GetResourceString "Visualizer"
 
-        ["Open"; "Font"; "Exit"]
+        ["Open"; "Refresh"; "Font"; "Exit"]
         |> Seq.iter (fun n -> let item = this.FindControl<TextBlock>(n + "Text")
                               item.Text <- UICommon.GetResourceString n)
 
