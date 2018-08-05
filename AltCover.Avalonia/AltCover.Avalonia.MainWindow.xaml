@@ -55,7 +55,7 @@
                 </StackPanel>
               </MenuItem.Header>
             </MenuItem>
-            <MenuItem Name="Exit" HorizontalAlignment="Right" MinWidth="80"  Command="{Binding Exit}">
+            <MenuItem Name="Exit" HorizontalAlignment="Right" MinWidth="80">
               <MenuItem.Header>
                 <StackPanel>
                   <Image Source="resm:AltCover.Visualizer.Exit_16x.png" Stretch="None" />

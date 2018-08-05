@@ -11,7 +11,6 @@ open Avalonia
 open Avalonia.Controls
 open Avalonia.Controls.Html
 open Avalonia.Markup.Xaml
-open ReactiveUI
 
 module UICommon =
 
@@ -19,15 +18,6 @@ module UICommon =
         let executingAssembly = System.Reflection.Assembly.GetExecutingAssembly()
         let resources = new ResourceManager("AltCover.Visualizer.Strings", executingAssembly)
         resources.GetString(key)
-
-type MainWindowViewModel  () =
-    inherit ReactiveObject()
-
-    let mutable exit = ReactiveCommand.Create(new Action(fun _ -> Application.Current.Exit()))
-
-    member this.Exit
-        with get() =
-            exit
 
 type MainWindow () as this =
     inherit Window()
@@ -81,7 +71,6 @@ type MainWindow () as this =
 
     member this.InitializeComponent() =
         AvaloniaXamlLoader.Load(this)
-        this.DataContext <- MainWindowViewModel()
 
         // TODO read from store
         this.populateMenu ()
@@ -92,6 +81,9 @@ type MainWindow () as this =
         ["Open"; "Refresh"; "Font"; "Exit"]
         |> Seq.iter (fun n -> let item = this.FindControl<TextBlock>(n + "Text")
                               item.Text <- UICommon.GetResourceString n)
+
+        this.FindControl<MenuItem>("Exit").Click
+        |> Event.add (fun _ -> Application.Current.Exit())
 
         let openFile = new Event<String option>()
         this.FindControl<MenuItem>("Open").Click
