@@ -176,4 +176,7 @@ THE SOFTWARE.</value>
   <data name="Refresh" xml:space="preserve">
     <value>Refreŝigi</value>
   </data>
+  <data name="Open Coverage File" xml:space="preserve">
+    <value>Malferma Kovrilo Dosiero</value>
+  </data>
 </root>

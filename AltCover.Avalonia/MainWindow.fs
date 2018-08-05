@@ -2,8 +2,10 @@ namespace AltCover.Avalonia
 
 open System
 open System.Globalization
+open System.Linq
 open System.Resources
 
+open AltCover.Augment
 open Avalonia
 open Avalonia.Controls
 open Avalonia.Controls.Html
@@ -30,6 +32,7 @@ type MainWindow () as this =
     inherit Window()
 
     let mutable armed = false
+    let mutable justOpened = String.Empty
 
     do this.InitializeComponent()
 
@@ -44,14 +47,89 @@ type MainWindow () as this =
         |> Seq.iter (fun n -> let item = this.FindControl<TextBlock>(n + "Text")
                               item.Text <- UICommon.GetResourceString n)
 
-        this.FindControl<MenuItem>("Open").Click
-        |> Event.add(fun _ -> let d = OpenFileDialog()
-                              d.Title <- "Open file"
-                              d.AllowMultiple <- false
-                              d.ShowAsync(this)
-                              |> Async.AwaitTask
-                              |> ignore // TODO
-                              )
+        let click = this.FindControl<MenuItem>("Open").Click
+                    |> Event.map(fun _ -> let d = OpenFileDialog()
+                                          // d.InitialDirectory <- readFolder()
+                                          // d.Filters <- [ ]
+                                          d.Title <- UICommon.GetResourceString "Open Coverage File"
+                                          d.AllowMultiple <- false
+                                          let a = d.ShowAsync(this)
+                                                  |> Async.AwaitTask
+                                                  |> Async.RunSynchronously // blocks
+                                          a.FirstOrDefault()
+                                          |> Option.nullable )
+                    |> Event.choose id
+                    |> Event.map (fun n -> justOpened <- n
+                                           -1)
+
+        let select = 
+           this.FindControl<MenuItem>("List").Items.OfType<MenuItem>()
+           |> Seq.mapi (fun n (i : MenuItem) -> i.Click |> Event.map (fun _ -> n))
+
+        // The sum of all these events -- we have explicitly selected a file
+        let fileSelection = select |> Seq.fold Event.merge click
+
+        let refresh = this.FindControl<MenuItem>("Refresh").Click
+                      |> Event.map (fun _ -> 0)
+
+        Event.merge fileSelection refresh
+        |> Event.add (fun index ->
+               printfn "%d - %s" index justOpened
+(*             let h = handler
+             async {
+               let current =
+                 FileInfo(if index < 0 then h.justOpened
+                          else h.coverageFiles.[index])
+               match CoverageFile.LoadCoverageFile current with
+               | Left failed ->
+                 InvalidCoverageFileMessage h.mainWindow failed
+                 InvokeOnGuiThread(fun () -> updateMRU h current.FullName false)
+               | Right coverage ->
+                 // check if coverage is newer that the source files
+                 let sourceFiles =
+                   coverage.Document.CreateNavigator().Select("//seqpnt/@document")
+                   |> Seq.cast<XPathNavigator>
+                   |> Seq.map (fun x -> x.Value)
+                   |> Seq.distinct
+
+                 let missing =
+                   sourceFiles
+                   |> Seq.map (fun f -> new FileInfo(f))
+                   |> Seq.filter (fun f -> not f.Exists)
+
+                 if not (Seq.isEmpty missing) then MissingSourceFileMessage h.mainWindow current
+                 let newer =
+                   sourceFiles
+                   |> Seq.map (fun f -> new FileInfo(f))
+                   |> Seq.filter (fun f -> f.Exists && f.LastWriteTimeUtc > current.LastWriteTimeUtc)
+                 // warn if not
+                 if not (Seq.isEmpty newer) then OutdatedCoverageFileMessage h.mainWindow current
+                 let model =
+                   new TreeStore(typeof<string>, typeof<Gdk.Pixbuf>, typeof<string>, typeof<Gdk.Pixbuf>, typeof<string>,
+                                 typeof<Gdk.Pixbuf>, typeof<string>, typeof<Gdk.Pixbuf>)
+                 Mappings.Clear()
+                 let ApplyToModel (theModel : TreeStore) (group : XPathNavigator * string) =
+                   let name = snd group
+                   let row = theModel.AppendValues(name, AssemblyIcon.Force())
+                   PopulateAssemblyNode theModel row (fst group)
+
+                 let assemblies = coverage.Document.CreateNavigator().Select("//module") |> Seq.cast<XPathNavigator>
+                 assemblies
+                 |> Seq.map (fun node -> (node, node.GetAttribute("assemblyIdentity", String.Empty).Split(',') |> Seq.head))
+                 |> Seq.sortBy (fun nodepair -> snd nodepair)
+                 |> Seq.iter (ApplyToModel model)
+                 let UpdateUI (theModel : TreeModel) (info : FileInfo) () =
+                   // File is good so enable the refresh button
+                   h.refreshButton.Sensitive <- true
+                   // Do real UI work here
+                   h.classStructureTree.Model <- theModel
+                   updateMRU h info.FullName true
+                 ////ShowMessage h.mainWindow (sprintf "%s\r\n>%A" info.FullName h.coverageFiles) MessageType.Info
+                 InvokeOnGuiThread(UpdateUI model current)
+             }
+             |> Async.Start*)
+             )
+           
 
         this.FindControl<TabItem>("About").Header <- UICommon.GetResourceString "About"
         this.FindControl<TextBlock>("Program").Text <- "AltCover.Visualizer " + AssemblyVersionInformation.AssemblyFileVersion

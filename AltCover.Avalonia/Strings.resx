@@ -176,4 +176,7 @@ THE SOFTWARE.</value>
   <data name="Refresh" xml:space="preserve">
     <value>Refresh</value>
   </data>
+  <data name="Open Coverage File" xml:space="preserve">
+    <value>Open Coverage File</value>
+  </data>
 </root>
