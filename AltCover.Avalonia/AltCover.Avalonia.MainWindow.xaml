@@ -47,7 +47,7 @@
                 </StackPanel>
               </MenuItem.Header>
             </MenuItem>
-            <MenuItem Name="Font" MinWidth="80">
+            <MenuItem Name="Font" MinWidth="80" IsVisible="false">
               <MenuItem.Header>
                 <StackPanel>
                   <Image Source="resm:AltCover.Visualizer.Font_16x.png"  Stretch="None" />
