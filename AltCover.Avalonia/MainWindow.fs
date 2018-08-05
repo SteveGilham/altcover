@@ -47,22 +47,27 @@ type MainWindow () as this =
         |> Seq.iter (fun n -> let item = this.FindControl<TextBlock>(n + "Text")
                               item.Text <- UICommon.GetResourceString n)
 
-        let click = this.FindControl<MenuItem>("Open").Click
-                    |> Event.map(fun _ -> let d = OpenFileDialog()
+        let openFile = new Event<String option>()
+        this.FindControl<MenuItem>("Open").Click
+                    |> Event.add(fun _ -> let d = OpenFileDialog()
                                           // d.InitialDirectory <- readFolder()
                                           // d.Filters <- [ ]
                                           d.Title <- UICommon.GetResourceString "Open Coverage File"
                                           d.AllowMultiple <- false
                                           let a = d.ShowAsync(this)
                                                   |> Async.AwaitTask
-                                                  |> Async.RunSynchronously // blocks
-                                          a.FirstOrDefault()
-                                          |> Option.nullable )
+                                          async {
+                                                  (a |> Async.RunSynchronously).
+                                                     FirstOrDefault()
+                                                  |> Option.nullable
+                                                  |> openFile.Trigger
+                                          } |> Async.Start )
+
+        let click = openFile.Publish
                     |> Event.choose id
                     |> Event.map (fun n -> justOpened <- n
                                            -1)
-
-        let select = 
+        let select =
            this.FindControl<MenuItem>("List").Items.OfType<MenuItem>()
            |> Seq.mapi (fun n (i : MenuItem) -> i.Click |> Event.map (fun _ -> n))
 
@@ -129,7 +134,6 @@ type MainWindow () as this =
              }
              |> Async.Start*)
              )
-           
 
         this.FindControl<TabItem>("About").Header <- UICommon.GetResourceString "About"
         this.FindControl<TextBlock>("Program").Text <- "AltCover.Visualizer " + AssemblyVersionInformation.AssemblyFileVersion
