@@ -39,7 +39,7 @@
               <MenuItem Header="8"></MenuItem>
               <MenuItem Header="9"></MenuItem>
             </MenuItem>
-            <MenuItem Name="Refresh" MinWidth="80">
+            <MenuItem Name="Refresh" MinWidth="80" IsEnabled="False">
               <MenuItem.Header>
                 <StackPanel>
                   <Image Source="resm:AltCover.Visualizer.Refresh_greyThin_16x.png"  Stretch="None" />

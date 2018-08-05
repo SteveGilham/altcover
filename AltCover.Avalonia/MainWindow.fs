@@ -2,6 +2,7 @@ namespace AltCover.Avalonia
 
 open System
 open System.Globalization
+open System.IO
 open System.Linq
 open System.Resources
 
@@ -33,12 +34,57 @@ type MainWindow () as this =
 
     let mutable armed = false
     let mutable justOpened = String.Empty
+    let mutable coverageFiles : string list = []
 
     do this.InitializeComponent()
+
+    // Fill in the menu from the memory cache
+    member private this.populateMenu () =
+        let listitem = this.FindControl<MenuItem>("List")
+        let items = listitem.Items.OfType<MenuItem>()
+        // blank the whole menu
+        items
+        |> Seq.iter (fun (i : MenuItem) ->
+             i.IsVisible <- false
+             i.Header <- String.Empty)
+        // fill in with the items we have
+        Seq.zip coverageFiles items
+        |> Seq.iter (fun (name, item) ->
+             item.IsVisible <- true
+             item.Header <- name)
+        // set or clear the menu
+        listitem.IsEnabled <- coverageFiles.Any()
+
+    member private this.updateMRU path add =
+      let casematch =
+        match System.Environment.GetEnvironmentVariable("OS") with
+        | "Windows_NT" -> StringComparison.OrdinalIgnoreCase
+        | _ -> StringComparison.Ordinal
+
+      let files =
+        coverageFiles
+        |> List.filter (fun n -> not (n.Equals(path, casematch)))
+        |> Seq.truncate (9)
+        |> Seq.toList
+
+      coverageFiles <- (if add then (path :: files)
+                          else files)
+                         |> Seq.distinctBy (fun n ->
+                              match casematch with
+                              | StringComparison.Ordinal -> n
+                              | _ -> n.ToUpperInvariant())
+                         |> Seq.toList
+      this.populateMenu ()
+      //use fileKey = Registry.CurrentUser.CreateSubKey(recent)
+      //fileKey.GetValueNames() |> Seq.iter (RegDeleteKey fileKey)
+      //coverageFiles |> Seq.iteri (RegSetKey fileKey)
 
     member this.InitializeComponent() =
         AvaloniaXamlLoader.Load(this)
         this.DataContext <- MainWindowViewModel()
+
+        // TODO read from store
+        this.populateMenu ()
 
         this.Title <- "AltCover.Visualizer"
         this.FindControl<TabItem>("Visualizer").Header <- UICommon.GetResourceString "Visualizer"
@@ -79,12 +125,12 @@ type MainWindow () as this =
 
         Event.merge fileSelection refresh
         |> Event.add (fun index ->
-               printfn "%d - %s" index justOpened
-(*             let h = handler
              async {
                let current =
-                 FileInfo(if index < 0 then h.justOpened
-                          else h.coverageFiles.[index])
+                 FileInfo(if index < 0 then justOpened
+                          else coverageFiles.[index])
+               printfn "%d - %A" index current
+(*
                match CoverageFile.LoadCoverageFile current with
                | Left failed ->
                  InvalidCoverageFileMessage h.mainWindow failed
@@ -131,8 +177,9 @@ type MainWindow () as this =
                    updateMRU h info.FullName true
                  ////ShowMessage h.mainWindow (sprintf "%s\r\n>%A" info.FullName h.coverageFiles) MessageType.Info
                  InvokeOnGuiThread(UpdateUI model current)
+                 *)
              }
-             |> Async.Start*)
+             |> Async.Start
              )
 
         this.FindControl<TabItem>("About").Header <- UICommon.GetResourceString "About"
