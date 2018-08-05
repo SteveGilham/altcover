@@ -41,6 +41,9 @@
     <EmbeddedResource Include="Refresh_greyThin_16x.png" />
     <EmbeddedResource Include="StatusCriticalError_16x.png" />
     <EmbeddedResource Include="StatusInformation_16x.png" />
+    <EmbeddedResource Include="..\AltCover.PowerShell\xsd\NCover.xsd" Link="NCover.xsd"/>
+    <EmbeddedResource Include="..\AltCover.PowerShell\xsd\OpenCover.xsd" Link="OpenCover.xsd"/>
+    <EmbeddedResource Include="..\AltCover.PowerShell\xsl\OpenCoverToNCoverEx.xsl" Link="OpenCoverToNCoverEx.xsl"/>
     <EmbeddedResource Include="AltCover.Avalonia.MainWindow.xaml">
       <LogicalName>AltCover.Avalonia.MainWindow.xaml</LogicalName>
     </EmbeddedResource>
@@ -53,6 +56,8 @@
   <ItemGroup>
     <Compile Include="..\_Generated\AssemblyVersion.fs" Link="AssemblyVersion.fs" />
     <Compile Include="..\_Generated\VisibleToTest.fs" Link="VisibleToTest.fs" />
+    <Compile Include="..\AltCover\Augment.fs" Link="Augment.fs" />
+    <Compile Include="..\AltCover.Visualizer\CoverageFile.fs" Link="CoverageFile.fs" />
     <Compile Include="MainWindow.fs" />
     <Compile Include="App.fs" />
     <Compile Include="Program.fs" />
