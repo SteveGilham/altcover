@@ -2,7 +2,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:html="clr-namespace:Avalonia.Controls.Html;assembly=Avalonia.HtmlRenderer"
         Title="AltCover.Avalonia"
-        Icon="resm:AltCover.Visualizer.Visualizer.ico"
+        Icon="resm:AltCover.Visualizer.VIcon.ico"
         Height="750" Width="750">
   <TabControl>
     <TabItem Name="Visualizer" Header="Visualizer">
@@ -69,7 +69,7 @@
     </TabItem>
     <TabItem Name="About">
       <StackPanel Margin="10">
-        <Image Height="128" Stretch="None" Width="128" Source="resm:AltCover.Visualizer.Visualizer.png" HorizontalAlignment="Center" />
+        <Image Height="128" Stretch="None" Width="128" Source="resm:AltCover.Visualizer.logo.png" HorizontalAlignment="Center" />
         <TextBlock Name="Program" Margin="10" FontSize="24" FontWeight="ExtraBold" HorizontalAlignment="Center" />
         <TextBlock Name="Description"  HorizontalAlignment="Center" TextAlignment="Center" />
         <TextBlock Name="Copyright" Margin="10" FontSize="8" HorizontalAlignment="Center" />

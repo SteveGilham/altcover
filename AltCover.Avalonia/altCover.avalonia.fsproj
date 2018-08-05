@@ -21,20 +21,26 @@
 </PropertyGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="..\AltCover.Visualizer\Assembly_6212.png" Link="Assembly_6212.png" />
+    <EmbeddedResource Include="..\AltCover.Visualizer\Blank_12x_16x.png" Link="Blank_12x_16x.png" />
+    <Content Include="..\AltCover.Visualizer\brackets_Curly_16xLG.png" Link="brackets_Curly_16xLG.png" />
+    <EmbeddedResource Include="..\AltCover.Visualizer\Branch_12x_16x.png" Link="Branch_12x_16x.png" />
+    <Content Include="..\AltCover.Visualizer\Branch_12x_16x_grn.png" Link="Branch_12x_16x_grn.png" />
+    <EmbeddedResource Include="..\AltCover.Visualizer\Branch_12x_16x_red.png" Link="Branch_12x_16x_red.png" />
+    <EmbeddedResource Include="..\AltCover.Visualizer\Branch_12x_16x_ylw.png" Link="Branch_12x_16x_ylw.png" />
+    <Content Include="..\AltCover.Visualizer\class_16xLG.png" Link="class_16xLG.png" />
+    <EmbeddedResource Include="..\AltCover.Visualizer\logo.png" Link="logo.png" />
+    <EmbeddedResource Include="..\AltCover.Visualizer\method_16xLG.png" Link="method_16xLG.png" />
+    <EmbeddedResource Include="..\AltCover.Visualizer\VIcon.ico" Link="VIcon.ico" />
     <None Include="nuget.config" />
-    <EmbeddedResource Include="Assembly_16x.png" />
-    <EmbeddedResource Include="Class_16x.png" />
     <EmbeddedResource Include="Exit_16x.png" />
     <EmbeddedResource Include="ExpandChevronDown_16x.png" />
     <EmbeddedResource Include="ExpandChevronDown_lightGray_16x.png" />
     <EmbeddedResource Include="Font_16x.png" />
-    <EmbeddedResource Include="Method_16x.png" />
-    <EmbeddedResource Include="Namespace_16x.png" />
     <EmbeddedResource Include="Refresh_16x.png" />
     <EmbeddedResource Include="Refresh_greyThin_16x.png" />
     <EmbeddedResource Include="StatusCriticalError_16x.png" />
     <EmbeddedResource Include="StatusInformation_16x.png" />
-    <EmbeddedResource Include="Visualizer.ico" />
     <EmbeddedResource Include="AltCover.Avalonia.MainWindow.xaml">
       <LogicalName>AltCover.Avalonia.MainWindow.xaml</LogicalName>
     </EmbeddedResource>
@@ -52,10 +58,9 @@
     <Compile Include="Program.fs" />
   </ItemGroup>
 
+  <ItemGroup />
+
   <ItemGroup>
-    <EmbeddedResource Include="Visualizer.png">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </EmbeddedResource>
     <EmbeddedResource Include="Open_6529.png">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </EmbeddedResource>
