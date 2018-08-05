@@ -44,6 +44,15 @@ type MainWindow () as this =
         |> Seq.iter (fun n -> let item = this.FindControl<TextBlock>(n + "Text")
                               item.Text <- UICommon.GetResourceString n)
 
+        this.FindControl<MenuItem>("Open").Click
+        |> Event.add(fun _ -> let d = OpenFileDialog()
+                              d.Title <- "Open file"
+                              d.AllowMultiple <- false
+                              d.ShowAsync(this)
+                              |> Async.AwaitTask
+                              |> ignore // TODO
+                              )
+
         this.FindControl<TabItem>("About").Header <- UICommon.GetResourceString "About"
         this.FindControl<TextBlock>("Program").Text <- "AltCover.Visualizer " + AssemblyVersionInformation.AssemblyFileVersion
         this.FindControl<TextBlock>("Description").Text <- UICommon.GetResourceString "ProgramDescription"
