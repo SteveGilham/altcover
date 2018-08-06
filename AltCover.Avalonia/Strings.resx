@@ -188,4 +188,32 @@ THE SOFTWARE.</value>
   <data name="r|recentFiles" xml:space="preserve">
     <value>Clear recent file list</value>
   </data>
+  <data name="InvalidFile" xml:space="preserve">
+    <value>The file {0} is not a valid coverage file:
+{1}</value>
+  </data>
+  <data name="CoverageOutOfDate" xml:space="preserve">
+    <value>The file {0} 
+is out of date with respect to some of the source files.</value>
+  </data>
+  <data name="CoverageOutOfDateThisFile" xml:space="preserve">
+    <value>The file {0} 
+is out of date with respect to source file
+{1}.</value>
+  </data>
+  <data name="MissingSourceFile" xml:space="preserve">
+    <value>The file {0} 
+refers to source files not found on this computer.</value>
+  </data>
+  <data name="MissingSourceThisFile" xml:space="preserve">
+    <value>The file {0} 
+refers to absent to source file
+{1}.</value>
+  </data>
+  <data name="Load Warning" xml:space="preserve">
+    <value>Inconsistent Coverage File</value>
+  </data>
+  <data name="LoadError" xml:space="preserve">
+    <value>Coverage File Load Failed</value>
+  </data>
 </root>

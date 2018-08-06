@@ -13,6 +13,7 @@ open System.Xml.Schema
 open System.Xml.XPath
 
 open AltCover.Augment
+open AltCover.Visualizer
 open AltCover.Visualizer.GuiCommon
 
 open Avalonia
@@ -137,7 +138,7 @@ module Persistence =
     |> Seq.iter (fun f -> f.Remove())
     config.Save file
 
-type MBStatus = Info = 0 | Warn = 1 | Error = 2
+type MessageType = Info = 0 | Warning = 1 | Error = 2
 
 type MainWindow () as this =
     inherit Window()
@@ -159,12 +160,12 @@ type MainWindow () as this =
 
     do this.InitializeComponent()
 
-    member private this.ShowMessageBox (status:MBStatus) caption message =
+    member private this.ShowMessageBox (status:MessageType) caption message =
         Dispatcher.UIThread.Post(fun _ ->
             this.FindControl<Image>("Status").Source <-
                     match status with
-                    | MBStatus.Info -> infoIcon
-                    | MBStatus.Warn -> warnIcon
+                    | MessageType.Info -> infoIcon
+                    | MessageType.Warning -> warnIcon
                     | _ -> errorIcon
 
             this.FindControl<TextBlock>("Caption").Text <- caption
@@ -210,6 +211,36 @@ type MainWindow () as this =
                          |> Seq.toList
       this.populateMenu ()
       Persistence.saveCoverageFiles coverageFiles
+
+    member private this.InvalidCoverageFileMessage (x : InvalidFile) =
+        let caption = UICommon.GetResourceString "LoadError"
+        let format = UICommon.GetResourceString "InvalidFile"
+        let message = String.Format(System.Globalization.CultureInfo.CurrentCulture, format, x.File.FullName, x.Fault.Message)
+        this.ShowMessageBox MessageType.Error caption message
+
+    member private this.OutdatedCoverageFileMessage (x : FileInfo) =
+        let caption = UICommon.GetResourceString "LoadWarning"
+        let format = UICommon.GetResourceString "CoverageOutOfDate"
+        let message = String.Format(System.Globalization.CultureInfo.CurrentCulture, format, x.FullName)
+        this.ShowMessageBox MessageType.Warning caption message
+
+    member private this.MissingSourceFileMessage (x : FileInfo) =
+        let caption = UICommon.GetResourceString "LoadWarning"
+        let format = UICommon.GetResourceString "MissingSourceFile"
+        let message = String.Format(System.Globalization.CultureInfo.CurrentCulture, format, x.FullName)
+        this.ShowMessageBox MessageType.Warning caption message
+
+    member private this.OutdatedCoverageThisFileMessage (c : FileInfo) (s : FileInfo) =
+        let caption = UICommon.GetResourceString "LoadWarning"
+        let format = UICommon.GetResourceString "CoverageOutOfDateThisFile"
+        let message = String.Format(System.Globalization.CultureInfo.CurrentCulture, format, c.FullName, s.FullName)
+        this.ShowMessageBox MessageType.Warning caption message
+
+    member private this.MissingSourceThisFileMessage (c : FileInfo) (s : FileInfo) =
+        let caption = UICommon.GetResourceString "LoadWarning"
+        let format = UICommon.GetResourceString "MissingSourceThisFile"
+        let message = String.Format(System.Globalization.CultureInfo.CurrentCulture, format, c.FullName, s.FullName)
+        this.ShowMessageBox MessageType.Warning caption message
 
     member this.InitializeComponent() =
         AvaloniaXamlLoader.Load(this)
@@ -275,13 +306,10 @@ type MainWindow () as this =
                  FileInfo(if index < 0 then justOpened
                           else coverageFiles.[index])
 
-               this.ShowMessageBox MBStatus.Info "Load status"
-                                    (sprintf "%d - %A" index current)
-(*
                match CoverageFile.LoadCoverageFile current with
                | Left failed ->
-                 InvalidCoverageFileMessage h.mainWindow failed
-                 InvokeOnGuiThread(fun () -> updateMRU h current.FullName false)
+                 this.InvalidCoverageFileMessage failed
+                 Dispatcher.UIThread.Post(fun _ -> this.updateMRU current.FullName false)
                | Right coverage ->
                  // check if coverage is newer that the source files
                  let sourceFiles =
@@ -295,13 +323,14 @@ type MainWindow () as this =
                    |> Seq.map (fun f -> new FileInfo(f))
                    |> Seq.filter (fun f -> not f.Exists)
 
-                 if not (Seq.isEmpty missing) then MissingSourceFileMessage h.mainWindow current
+                 if not (Seq.isEmpty missing) then this.MissingSourceFileMessage current
                  let newer =
                    sourceFiles
                    |> Seq.map (fun f -> new FileInfo(f))
                    |> Seq.filter (fun f -> f.Exists && f.LastWriteTimeUtc > current.LastWriteTimeUtc)
                  // warn if not
-                 if not (Seq.isEmpty newer) then OutdatedCoverageFileMessage h.mainWindow current
+                 if not (Seq.isEmpty newer) then this.OutdatedCoverageFileMessage current
+                 (*
                  let model =
                    new TreeStore(typeof<string>, typeof<Gdk.Pixbuf>, typeof<string>, typeof<Gdk.Pixbuf>, typeof<string>,
                                  typeof<Gdk.Pixbuf>, typeof<string>, typeof<Gdk.Pixbuf>)
