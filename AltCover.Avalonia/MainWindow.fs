@@ -148,25 +148,54 @@ type MainWindow () as this =
     let mutable coverageFiles : string list = []
     let ofd = OpenFileDialog()
 
-    let infoIcon = new Bitmap(
-                     Assembly.GetExecutingAssembly().GetManifestResourceStream(
-                       "AltCover.Visualizer.dialog-information.png"))
-    let warnIcon = new Bitmap(
-                     Assembly.GetExecutingAssembly().GetManifestResourceStream(
-                       "AltCover.Visualizer.dialog-warning.png"))
-    let errorIcon = new Bitmap(
-                     Assembly.GetExecutingAssembly().GetManifestResourceStream(
-                       "AltCover.Visualizer.dialog-error.png"))
+    let infoIcon = lazy(new Bitmap(
+                         Assembly.GetExecutingAssembly().GetManifestResourceStream(
+                           "AltCover.Visualizer.dialog-information.png")))
+    let warnIcon = lazy(new Bitmap(
+                         Assembly.GetExecutingAssembly().GetManifestResourceStream(
+                           "AltCover.Visualizer.dialog-warning.png")))
+    let errorIcon = lazy(new Bitmap(
+                          Assembly.GetExecutingAssembly().GetManifestResourceStream(
+                           "AltCover.Visualizer.dialog-error.png")))
+
+    let AssemblyIcon =
+        lazy (new Bitmap(Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Visualizer.Assembly_6212.png")))
+    let NamespaceIcon =
+        lazy (new Bitmap(Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Visualizer.Namespace_16x.png")))
+    let ClassIcon =
+        lazy (new Bitmap(Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Visualizer.class_16xLG.png")))
+    let MethodIcon =
+        lazy (new Bitmap(Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Visualizer.method_16xLG.png")))
+
+    let branched =
+        lazy (new Bitmap(Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Visualizer.Branch_12x_16x_grn.png")))
+    let branch =
+        lazy (new Bitmap(Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Visualizer.Branch_12x_16x_ylw.png")))
+    let redbranch =
+        lazy (new Bitmap(Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Visualizer.Branch_12x_16x_red.png")))
+    let blank =
+        lazy (new Bitmap(Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Visualizer.Blank_12x_16x.png")))
+
+    let MakeTreeNode name icon =
+        let text = new TextBlock()
+        text.Text <- name // TODO
+        let image = new Image()
+        image.Source <- icon
+        let display = new StackPanel()
+        display.Orientation <- Orientation.Horizontal
+        display.Children.Add image
+        display.Children.Add text
+        display
 
     do this.InitializeComponent()
 
     member private this.ShowMessageBox (status:MessageType) caption message =
         Dispatcher.UIThread.Post(fun _ ->
             this.FindControl<Image>("Status").Source <-
-                    match status with
-                    | MessageType.Info -> infoIcon
-                    | MessageType.Warning -> warnIcon
-                    | _ -> errorIcon
+                    (match status with
+                     | MessageType.Info -> infoIcon
+                     | MessageType.Warning -> warnIcon
+                     | _ -> errorIcon).Force()
 
             this.FindControl<TextBlock>("Caption").Text <- caption
             this.FindControl<TextBox>("Message").Text <- message
@@ -211,6 +240,7 @@ type MainWindow () as this =
                          |> Seq.toList
       this.populateMenu ()
       Persistence.saveCoverageFiles coverageFiles
+      this.FindControl<MenuItem>("Refresh").IsEnabled <- coverageFiles.Any()
 
     member private this.InvalidCoverageFileMessage (x : InvalidFile) =
         let caption = UICommon.GetResourceString "LoadError"
@@ -245,6 +275,92 @@ type MainWindow () as this =
     member private this.HideAboutBox _ =
         this.FindControl<StackPanel>("AboutBox").IsVisible <- false
         this.FindControl<Grid>("Grid").IsVisible <- true
+
+    member private this.PopulateClassNode (model:List<TreeViewItem>) (row : TreeViewItem) (nodes : seq<MethodKey>) =
+        let ApplyToModel (model:List<TreeViewItem>)  (theRow : TreeViewItem) (x : MethodKey) =
+          let fullname = x.m.GetAttribute("fullname", String.Empty)
+
+          let args =
+            if String.IsNullOrEmpty(fullname) || x.name.IndexOf('(') > 0 then String.Empty
+            else
+              let bracket = fullname.IndexOf('(')
+              if bracket < 0 then String.Empty
+              else fullname.Substring(bracket)
+
+          let displayname = x.name + args
+
+          let offset =
+            match displayname.LastIndexOf("::", StringComparison.Ordinal) with
+            | -1 -> 0
+            | o -> o + 2
+
+          let newrow = TreeViewItem()
+          let display = MakeTreeNode (displayname.Substring(offset)) <| MethodIcon.Force()
+          newrow.Header <- display
+          model.Add newrow
+
+        let methods = nodes |> Seq.toArray
+        Array.sortInPlaceWith MethodNameCompare methods
+        methods |> Array.iter (ApplyToModel model row)
+
+    member private this.PopulateNamespaceNode (model:List<TreeViewItem>) (row : TreeViewItem) (nodes : seq<MethodKey>) =
+        let ApplyToModel (model:List<TreeViewItem>) (theRow : TreeViewItem) (group : string * seq<MethodKey>) =
+          let name = fst group
+          let newrow = TreeViewItem()
+          let display = MakeTreeNode name <| ClassIcon.Force()
+          newrow.Header <- display
+          let items = List<TreeViewItem>()
+          newrow.Items <- items
+          this.PopulateClassNode items newrow (snd group)
+          newrow
+
+        let isNested (name : string) n =
+          name.StartsWith(n + "+", StringComparison.Ordinal) || name.StartsWith(n + "/", StringComparison.Ordinal)
+        nodes
+        |> Seq.groupBy (fun x -> x.classname)
+        |> Seq.sortBy fst
+        |> Seq.fold (fun stack c ->
+             let name = fst c
+             let restack = stack |> List.filter (fst >> (isNested name))
+
+             let pr =
+               match restack with
+               | [] -> row
+               | (_, r) :: _ -> r
+
+             let nr = ApplyToModel (pr.Items :?> List<TreeViewItem>) pr c
+             (name, nr) :: restack) []
+        |> ignore
+
+    member private this.PopulateAssemblyNode   (model:List<TreeViewItem>) (row : TreeViewItem) (node : XPathNavigator) =
+        // within the <module> we have <method> nodes with name="get_module" class="AltCover.Coverage.CoverageSchema.coverage"
+        let ApplyToModel (model:List<TreeViewItem>) (theRow : TreeViewItem) (group : string * seq<MethodKey>) =
+          let name = fst group
+          let newrow = TreeViewItem()
+          let display = MakeTreeNode name <| NamespaceIcon.Force()
+          newrow.Header <- display
+          let items = List<TreeViewItem>()
+          newrow.Items <- items
+          this.PopulateNamespaceNode items newrow (snd group)
+
+        let methods =
+          node.SelectChildren("method", String.Empty)
+          |> Seq.cast<XPathNavigator>
+          |> Seq.map (fun m ->
+               let classfullname = m.GetAttribute("class", String.Empty)
+               let lastdot = classfullname.LastIndexOf('.')
+               { m = m
+                 spacename =
+                   if lastdot < 0 then String.Empty
+                   else classfullname.Substring(0, lastdot)
+                 classname =
+                   if lastdot < 0 then classfullname
+                   else classfullname.Substring(1 + lastdot)
+                 name = m.GetAttribute("name", String.Empty) })
+          |> Seq.groupBy (fun x -> x.spacename)
+          |> Seq.sortBy fst
+
+        methods |> Seq.map (ApplyToModel model row)
 
     member this.InitializeComponent() =
         AvaloniaXamlLoader.Load(this)
@@ -341,30 +457,28 @@ type MainWindow () as this =
                    |> Seq.filter (fun f -> f.Exists && f.LastWriteTimeUtc > current.LastWriteTimeUtc)
                  // warn if not
                  if not (Seq.isEmpty newer) then this.OutdatedCoverageFileMessage current
-                 (*
-                 let model =
-                   new TreeStore(typeof<string>, typeof<Gdk.Pixbuf>, typeof<string>, typeof<Gdk.Pixbuf>, typeof<string>,
-                                 typeof<Gdk.Pixbuf>, typeof<string>, typeof<Gdk.Pixbuf>)
-                 Mappings.Clear()
-                 let ApplyToModel (theModel : TreeStore) (group : XPathNavigator * string) =
-                   let name = snd group
-                   let row = theModel.AppendValues(name, AssemblyIcon.Force())
-                   PopulateAssemblyNode theModel row (fst group)
 
-                 let assemblies = coverage.Document.CreateNavigator().Select("//module") |> Seq.cast<XPathNavigator>
-                 assemblies
-                 |> Seq.map (fun node -> (node, node.GetAttribute("assemblyIdentity", String.Empty).Split(',') |> Seq.head))
-                 |> Seq.sortBy (fun nodepair -> snd nodepair)
-                 |> Seq.iter (ApplyToModel model)
-                 let UpdateUI (theModel : TreeModel) (info : FileInfo) () =
-                   // File is good so enable the refresh button
-                   h.refreshButton.Sensitive <- true
-                   // Do real UI work here
-                   h.classStructureTree.Model <- theModel
-                   updateMRU h info.FullName true
-                 ////ShowMessage h.mainWindow (sprintf "%s\r\n>%A" info.FullName h.coverageFiles) MessageType.Info
-                 InvokeOnGuiThread(UpdateUI model current)
-                 *)
+                 let tree = this.FindControl<TreeView>("Tree")
+                 tree.Items.OfType<IDisposable>()
+                 |> Seq.iter (fun x -> x.Dispose())
+
+                 let ApplyToModel (model:List<TreeViewItem>) (group : XPathNavigator * string) =
+                   let name = snd group
+                   let row = TreeViewItem()
+                   model.Add row
+                   let display = MakeTreeNode name <| AssemblyIcon.Force()
+                   row.Header <- display
+                   row.Items <- this.PopulateAssemblyNode model row (fst group)
+
+                 Dispatcher.UIThread.Post(fun _ ->
+                     let items = List<TreeViewItem>()
+                     coverage.Document.CreateNavigator().Select("//module") |> Seq.cast<XPathNavigator>
+                     |> Seq.map (fun node -> (node, node.GetAttribute("assemblyIdentity", String.Empty).Split(',') |> Seq.head))
+                     |> Seq.sortBy (fun nodepair -> snd nodepair)
+                     |> Seq.iter (ApplyToModel items)
+                     tree.Items <- items
+                     this.FindControl<MenuItem>("Refresh").IsEnabled <- true
+                     )
              }
              |> Async.Start
              )
