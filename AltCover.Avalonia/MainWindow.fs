@@ -343,12 +343,12 @@ type MainWindow () as this =
              let name = fst c
              let restack = stack |> List.filter (fst >> (isNested name))
 
-             let pr =
+             let rowModel, pr =
                match restack with
-               | [] -> row
-               | (_, r) :: _ -> r
+               | [] -> model, row
+               | (_, r) :: _ -> let tmp : TreeViewItem = r
+                                tmp.Items.OfType<TreeViewItem>().ToList(), r
 
-             let rowModel = pr.Items.OfType<TreeViewItem>().ToList()
              let nr = ApplyToModel rowModel pr c
              pr.Items <- rowModel
              (name, nr) :: restack) []
