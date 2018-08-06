@@ -1,6 +1,7 @@
 namespace AltCover.Avalonia
 
 open System
+open System.Collections.Generic
 open System.Globalization
 open System.IO
 open System.Linq
@@ -77,7 +78,13 @@ type MainWindow () as this =
         this.populateMenu ()
         ofd.Title <- UICommon.GetResourceString "Open Coverage File"
         ofd.AllowMultiple <- false
-        // ofd.Filters <- [ ]
+        let filterBits = (UICommon.GetResourceString "SelectXml").Split([| '|' |])
+                         |> Seq.map (fun f -> let entry = f.Split([| '%' |])
+                                              let filter = FileDialogFilter() 
+                                              filter.Name <- entry |> Seq.head
+                                              filter.Extensions <- List(entry |> Seq.tail)
+                                              filter)
+        ofd.Filters <- List(filterBits)
 
         this.Title <- "AltCover.Visualizer"
         this.FindControl<TabItem>("Visualizer").Header <- UICommon.GetResourceString "Visualizer"

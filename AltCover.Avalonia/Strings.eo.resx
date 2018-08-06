@@ -179,4 +179,7 @@ THE SOFTWARE.</value>
   <data name="Open Coverage File" xml:space="preserve">
     <value>Malferma Kovrilo Dosiero</value>
   </data>
+  <data name="SelectXml" xml:space="preserve">
+    <value>XML-dosieroj (*.xml)%*.xml|Ĉiuj dosieroj (*.*)%*.*</value>
+  </data>
 </root>

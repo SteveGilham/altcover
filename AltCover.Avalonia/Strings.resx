@@ -179,4 +179,7 @@ THE SOFTWARE.</value>
   <data name="Open Coverage File" xml:space="preserve">
     <value>Open Coverage File</value>
   </data>
+  <data name="SelectXml" xml:space="preserve">
+    <value>xml files (*.xml)%*.xml|All files (*.*)%*.*</value>
+  </data>
 </root>
