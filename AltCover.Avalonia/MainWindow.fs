@@ -326,11 +326,12 @@ type MainWindow () as this =
         let ApplyToModel (model:List<TreeViewItem>) (theRow : TreeViewItem) (group : string * seq<MethodKey>) =
           let name = fst group
           let newrow = TreeViewItem()
+          model.Add newrow
           let display = MakeTreeNode name <| ClassIcon.Force()
           newrow.Header <- display
           let items = List<TreeViewItem>()
-          newrow.Items <- items
           this.PopulateClassNode items newrow (snd group)
+          newrow.Items <- items
           newrow
 
         let isNested (name : string) n =
@@ -347,7 +348,9 @@ type MainWindow () as this =
                | [] -> row
                | (_, r) :: _ -> r
 
-             let nr = ApplyToModel (pr.Items :?> List<TreeViewItem>) pr c
+             let rowModel = pr.Items.OfType<TreeViewItem>().ToList()
+             let nr = ApplyToModel rowModel pr c
+             pr.Items <- rowModel
              (name, nr) :: restack) []
         |> ignore
 
@@ -356,11 +359,12 @@ type MainWindow () as this =
         let ApplyToModel (model:List<TreeViewItem>) (theRow : TreeViewItem) (group : string * seq<MethodKey>) =
           let name = fst group
           let newrow = TreeViewItem()
+          model.Add newrow
           let display = MakeTreeNode name <| NamespaceIcon.Force()
           newrow.Header <- display
           let items = List<TreeViewItem>()
-          newrow.Items <- items
           this.PopulateNamespaceNode items newrow (snd group)
+          newrow.Items <- items
 
         let methods =
           node.SelectChildren("method", String.Empty)
@@ -379,7 +383,7 @@ type MainWindow () as this =
           |> Seq.groupBy (fun x -> x.spacename)
           |> Seq.sortBy fst
 
-        methods |> Seq.map (ApplyToModel model row)
+        methods |> Seq.iter (ApplyToModel model row)
 
     member this.InitializeComponent() =
         AvaloniaXamlLoader.Load(this)
@@ -483,7 +487,9 @@ type MainWindow () as this =
                    model.Add row
                    let display = MakeTreeNode name <| AssemblyIcon.Force()
                    row.Header <- display
-                   row.Items <- this.PopulateAssemblyNode model row (fst group)
+                   let items = List<TreeViewItem>()
+                   this.PopulateAssemblyNode items row (fst group)
+                   row.Items <- items
 
                  Dispatcher.UIThread.Post(fun _ ->
                      let tree = this.FindControl<TreeView>("Tree")
