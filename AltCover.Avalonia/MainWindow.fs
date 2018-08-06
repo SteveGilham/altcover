@@ -19,6 +19,8 @@ open Avalonia
 open Avalonia.Controls
 open Avalonia.Controls.Html
 open Avalonia.Markup.Xaml
+open Avalonia.Media.Imaging
+open Avalonia.Threading
 
 module UICommon =
 
@@ -49,7 +51,7 @@ module Persistence =
               (String.Empty,
                XmlReader.Create xsd)
             |> ignore
-            doc.Validate(schemas, null) 
+            doc.Validate(schemas, null)
             (file, doc)
          with
          | _ -> (file, DefaultDocument())
@@ -95,7 +97,7 @@ module Persistence =
 
   let readCoverageFiles () =
     let _, config = EnsureFile()
-    config.XPathSelectElements("//RecentlyOpened") 
+    config.XPathSelectElements("//RecentlyOpened")
     |> Seq.map (fun n -> n.FirstNode.ToString())
     |> Seq.toList
 
@@ -117,10 +119,10 @@ module Persistence =
     let attribute (x:XElement) a =
         x.Attribute(XName.Get a).Value
         |> Double.TryParse |> snd
-    config.XPathSelectElements("//Geometry") 
+    config.XPathSelectElements("//Geometry")
     |> Seq.iter (fun e ->  let width = Math.Min(attribute e "width", 750.0)
                            let height = Math.Min(attribute e "height", 750.0)
-                           
+
                            let bounds = w.Screens.Primary.WorkingArea
                            let x = Math.Min(Math.Max(attribute e "x", 0.0), bounds.Width - width)
                            let y = Math.Min(Math.Max(attribute e "y", 0.0), bounds.Height - height)
@@ -130,10 +132,12 @@ module Persistence =
 
   let clearGeometry () =
     let file, config = EnsureFile()
-    config.XPathSelectElements("//Geometry") 
+    config.XPathSelectElements("//Geometry")
     |> Seq.toList
     |> Seq.iter (fun f -> f.Remove())
     config.Save file
+
+type MBStatus = Info = 0 | Warn = 1 | Error = 2
 
 type MainWindow () as this =
     inherit Window()
@@ -143,7 +147,30 @@ type MainWindow () as this =
     let mutable coverageFiles : string list = []
     let ofd = OpenFileDialog()
 
+    let infoIcon = new Bitmap(
+                     Assembly.GetExecutingAssembly().GetManifestResourceStream(
+                       "AltCover.Visualizer.dialog-information.png"))
+    let warnIcon = new Bitmap(
+                     Assembly.GetExecutingAssembly().GetManifestResourceStream(
+                       "AltCover.Visualizer.dialog-warning.png"))
+    let errorIcon = new Bitmap(
+                     Assembly.GetExecutingAssembly().GetManifestResourceStream(
+                       "AltCover.Visualizer.dialog-error.png"))
+
     do this.InitializeComponent()
+
+    member private this.ShowMessageBox (status:MBStatus) caption message =
+        Dispatcher.UIThread.Post(fun _ ->
+            this.FindControl<Image>("Status").Source <-
+                    match status with
+                    | MBStatus.Info -> infoIcon
+                    | MBStatus.Warn -> warnIcon
+                    | _ -> errorIcon
+
+            this.FindControl<TextBlock>("Caption").Text <- caption
+            this.FindControl<TextBlock>("Message").Text <- message
+            this.FindControl<StackPanel>("MessageBox").IsVisible <- true
+            this.FindControl<Grid>("Grid").IsVisible <- false)
 
     // Fill in the menu from the memory cache
     member private this.populateMenu () =
@@ -190,12 +217,12 @@ type MainWindow () as this =
         Persistence.readGeometry this
         coverageFiles <- Persistence.readCoverageFiles ()
         this.populateMenu ()
-        ofd.InitialDirectory <- Persistence.readFolder()                                          
+        ofd.InitialDirectory <- Persistence.readFolder()
         ofd.Title <- UICommon.GetResourceString "Open Coverage File"
         ofd.AllowMultiple <- false
         let filterBits = (UICommon.GetResourceString "SelectXml").Split([| '|' |])
                          |> Seq.map (fun f -> let entry = f.Split([| '%' |])
-                                              let filter = FileDialogFilter() 
+                                              let filter = FileDialogFilter()
                                               filter.Name <- entry |> Seq.head
                                               filter.Extensions <- List(entry |> Seq.tail)
                                               filter)
@@ -227,7 +254,7 @@ type MainWindow () as this =
         let click = openFile.Publish
                     |> Event.choose id
                     |> Event.map (fun n -> ofd.InitialDirectory <- Path.GetDirectoryName n
-                                           if Persistence.save then 
+                                           if Persistence.save then
                                               Persistence.saveFolder ofd.InitialDirectory
                                            justOpened <- n
                                            -1)
@@ -247,7 +274,9 @@ type MainWindow () as this =
                let current =
                  FileInfo(if index < 0 then justOpened
                           else coverageFiles.[index])
-               printfn "%d - %A" index current
+
+               this.ShowMessageBox MBStatus.Info "Load status"
+                                    (sprintf "%d - %A" index current)
 (*
                match CoverageFile.LoadCoverageFile current with
                | Left failed ->
@@ -326,3 +355,9 @@ type MainWindow () as this =
         this.FindControl<TextBlock>("MIT").Text <- String.Format(CultureInfo.InvariantCulture,
                                                                  UICommon.GetResourceString "License",
                                                                  copyright)
+        // MessageBox
+        let okButton = this.FindControl<Button>("DismissMessageBox")
+        okButton.Content <- "OK"
+        okButton.Click
+        |> Event.add(fun _ -> this.FindControl<StackPanel>("MessageBox").IsVisible <- false
+                              this.FindControl<Grid>("Grid").IsVisible <- true)

@@ -21,6 +21,9 @@
 </PropertyGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="dialog-error.png" />
+    <EmbeddedResource Include="dialog-information.png" />
+    <EmbeddedResource Include="dialog-warning.png" />
     <EmbeddedResource Include="..\AltCover.Visualizer\Assembly_6212.png" Link="Assembly_6212.png" />
     <EmbeddedResource Include="..\AltCover.Visualizer\Blank_12x_16x.png" Link="Blank_12x_16x.png" />
     <Content Include="..\AltCover.Visualizer\brackets_Curly_16xLG.png" Link="brackets_Curly_16xLG.png" />

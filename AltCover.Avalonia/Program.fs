@@ -11,7 +11,7 @@ let BuildAvaloniaApp() =
 
 [<EntryPoint>]
 let main arguments =
-    let options = 
+    let options =
         [ ("g|geometry", (fun _ ->  Persistence.clearGeometry ()
                                     Persistence.save <- false))
           ("r|recentFiles",  (fun _ -> Persistence.saveCoverageFiles [])) ]

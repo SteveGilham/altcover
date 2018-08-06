@@ -64,12 +64,23 @@
               </MenuItem.Header>
             </MenuItem>
           </Menu>
-          <Grid RowDefinitions="Auto,*,Auto">
-            <TreeView Grid.Column="1" MinWidth="150">
-            </TreeView>
-            <TabControl Grid.Column="2" MinWidth="150">
-            </TabControl>
-          </Grid>
+          <StackPanel Name="Content">
+            <Grid Name="Grid" RowDefinitions="Auto,*,Auto">
+              <TreeView Grid.Column="1" MinWidth="150">
+              </TreeView>
+              <TabControl Grid.Column="2" MinWidth="150">
+              </TabControl>
+            </Grid>
+            <StackPanel Name="MessageBox" IsVisible="false">
+              <TextBlock Name="Caption" Margin="10" FontSize="24" FontWeight="ExtraBold" HorizontalAlignment="Center" />
+              <StackPanel Orientation="Horizontal">
+                <Image Name="Status" Source="resm:AltCover.Visualizer.dialog-error.png" Stretch="None" />
+                <TextBlock Name="Message" HorizontalAlignment="Center" TextAlignment="Center" />
+              </StackPanel>
+              <Button Name="DismissMessageBox" HorizontalAlignment="Center">
+              </Button>
+            </StackPanel>
+          </StackPanel>
         </DockPanel>
       </StackPanel>
     </TabItem>
