@@ -182,4 +182,10 @@ THE SOFTWARE.</value>
   <data name="SelectXml" xml:space="preserve">
     <value>XML-dosieroj (*.xml)%*.xml|Ĉiuj dosieroj (*.*)%*.*</value>
   </data>
+  <data name="g|geometry" xml:space="preserve">
+    <value>Klara geometrio</value>
+  </data>
+  <data name="r|recentFiles" xml:space="preserve">
+    <value>Klara lastatempa listo</value>
+  </data>
 </root>

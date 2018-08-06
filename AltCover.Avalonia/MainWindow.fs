@@ -6,6 +6,11 @@ open System.Globalization
 open System.IO
 open System.Linq
 open System.Resources
+open System.Reflection
+open System.Xml
+open System.Xml.Linq
+open System.Xml.Schema
+open System.Xml.XPath
 
 open AltCover.Augment
 open AltCover.Visualizer.GuiCommon
@@ -23,8 +28,112 @@ module UICommon =
         resources.GetString(key)
 
 module Persistence =
-    let readFolder() =
-      String.Empty
+  let mutable save = true
+
+  let private DefaultDocument () =
+    let doc = XDocument()
+    doc.Add(XElement(XName.Get "AltCover.Visualizer"))
+    doc
+
+  let private EnsureFile () =
+    let profileDir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)
+    let dir = Directory.CreateDirectory(Path.Combine(profileDir, ".altcover"))
+    let file = Path.Combine(dir.FullName, "Visualizer.xml")
+    if file |> File.Exists |> not then
+        (file, DefaultDocument())
+    else try
+            let doc = XDocument.Load(file)
+            let schemas = new XmlSchemaSet()
+            use xsd = new StreamReader(Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Visualizer.config.xsd"))
+            schemas.Add
+              (String.Empty,
+               XmlReader.Create xsd)
+            |> ignore
+            doc.Validate(schemas, null) 
+            (file, doc)
+         with
+         | _ -> (file, DefaultDocument())
+
+  let saveFont (font : string) =
+    let file, config = EnsureFile()
+    config.XPathSelectElements("//Font")
+    |> Seq.toList
+    |> Seq.iter(fun x -> x.Remove())
+    let inject = XElement(XName.Get "Font", font)
+    match config.XPathSelectElements("//CoveragePath") |> Seq.toList with
+    | [] -> (config.FirstNode :?> XElement).AddFirst(inject)
+    | x::_ -> inject |> x.Add
+    config.Save file
+
+  let readFont() =
+    let _, config = EnsureFile()
+    match config.XPathSelectElements("//Font") |> Seq.toList with
+    | [] -> "Monospace Normal 10"
+    | x::_ -> x.FirstNode.ToString()
+
+  let saveFolder (path : string) =
+    let file, config = EnsureFile()
+    match config.XPathSelectElements("//CoveragePath") |> Seq.toList with
+    | [] -> (config.FirstNode :?> XElement).AddFirst(XElement(XName.Get "CoveragePath", path))
+    | x::_ -> x.RemoveAll()
+              x.Add path
+    config.Save file
+
+  let readFolder () =
+    let _, config = EnsureFile()
+    match config.XPathSelectElements("//CoveragePath") |> Seq.toList with
+    | [] -> System.IO.Directory.GetCurrentDirectory()
+    | x::_ -> x.FirstNode.ToString()
+
+  let saveCoverageFiles (coverageFiles : string list) =
+    let file, config = EnsureFile()
+    config.XPathSelectElements("//RecentlyOpened") |> Seq.toList
+    |> Seq.iter (fun x -> x.Remove())
+    let inject = config.FirstNode :?> XElement
+    coverageFiles |> Seq.iter (fun path -> inject.Add(XElement(XName.Get "RecentlyOpened", path)))
+    config.Save file
+
+  let readCoverageFiles () =
+    let _, config = EnsureFile()
+    config.XPathSelectElements("//RecentlyOpened") 
+    |> Seq.map (fun n -> n.FirstNode.ToString())
+    |> Seq.toList
+
+  let saveGeometry (w:Window) =
+    let file, config = EnsureFile()
+    let element= XElement(XName.Get "Geometry",
+                            XAttribute(XName.Get "x", w.Position.X),
+                            XAttribute(XName.Get "y", w.Position.Y),
+                            XAttribute(XName.Get "width", w.Width),
+                            XAttribute(XName.Get "height", w.Height))
+
+    match config.XPathSelectElements("//RecentlyOpened") |> Seq.toList with
+    | [] -> (config.FirstNode :?> XElement).Add element
+    | x::_ -> x.AddBeforeSelf element
+    config.Save file
+
+  let readGeometry (w:Window) =
+    let _, config = EnsureFile()
+    let attribute (x:XElement) a =
+        x.Attribute(XName.Get a).Value
+        |> Double.TryParse |> snd
+    config.XPathSelectElements("//Geometry") 
+    |> Seq.iter (fun e ->  let width = Math.Min(attribute e "width", 750.0)
+                           let height = Math.Min(attribute e "height", 750.0)
+                           
+                           let bounds = w.Screens.Primary.WorkingArea
+                           let x = Math.Min(Math.Max(attribute e "x", 0.0), bounds.Width - width)
+                           let y = Math.Min(Math.Max(attribute e "y", 0.0), bounds.Height - height)
+                           w.Height <- height
+                           w.Width <- width
+                           w.Position <- Point(x, y))
+
+  let clearGeometry () =
+    let file, config = EnsureFile()
+    config.XPathSelectElements("//Geometry") 
+    |> Seq.toList
+    |> Seq.iter (fun f -> f.Remove())
+    config.Save file
 
 type MainWindow () as this =
     inherit Window()
@@ -73,14 +182,13 @@ type MainWindow () as this =
                               | _ -> n.ToUpperInvariant())
                          |> Seq.toList
       this.populateMenu ()
-      //use fileKey = Registry.CurrentUser.CreateSubKey(recent)
-      //fileKey.GetValueNames() |> Seq.iter (RegDeleteKey fileKey)
-      //coverageFiles |> Seq.iteri (RegSetKey fileKey)
+      Persistence.saveCoverageFiles coverageFiles
 
     member this.InitializeComponent() =
         AvaloniaXamlLoader.Load(this)
 
-        // TODO read from store
+        Persistence.readGeometry this
+        coverageFiles <- Persistence.readCoverageFiles ()
         this.populateMenu ()
         ofd.InitialDirectory <- Persistence.readFolder()                                          
         ofd.Title <- UICommon.GetResourceString "Open Coverage File"
@@ -101,7 +209,9 @@ type MainWindow () as this =
                               item.Text <- UICommon.GetResourceString n)
 
         this.FindControl<MenuItem>("Exit").Click
-        |> Event.add (fun _ -> Application.Current.Exit())
+        |> Event.add (fun _ -> if Persistence.save then
+                                  Persistence.saveGeometry this
+                               Application.Current.Exit())
 
         let openFile = new Event<String option>()
         this.FindControl<MenuItem>("Open").Click
@@ -116,7 +226,10 @@ type MainWindow () as this =
 
         let click = openFile.Publish
                     |> Event.choose id
-                    |> Event.map (fun n -> justOpened <- n
+                    |> Event.map (fun n -> ofd.InitialDirectory <- Path.GetDirectoryName n
+                                           if Persistence.save then 
+                                              Persistence.saveFolder ofd.InitialDirectory
+                                           justOpened <- n
                                            -1)
         let select =
            this.FindControl<MenuItem>("List").Items.OfType<MenuItem>()

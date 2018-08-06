@@ -182,4 +182,10 @@ THE SOFTWARE.</value>
   <data name="SelectXml" xml:space="preserve">
     <value>xml files (*.xml)%*.xml|All files (*.*)%*.*</value>
   </data>
+  <data name="g|geometry" xml:space="preserve">
+    <value>Clear geometry</value>
+  </data>
+  <data name="r|recentFiles" xml:space="preserve">
+    <value>Clear recent file list</value>
+  </data>
 </root>
