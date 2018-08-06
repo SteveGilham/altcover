@@ -117,15 +117,6 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="About" xml:space="preserve">
-    <value> About AltCover.Visualizer...</value>
-  </data>
-  <data name="AboutDialog.About" xml:space="preserve">
-    <value>About</value>
-  </data>
-  <data name="About.dlg" xml:space="preserve">
-    <value>About AltCover.Visualizer</value>
-  </data>
   <data name="ProgramDescription" xml:space="preserve">
     <value>Coverage visualizer for NCover and OpenCover reports</value>
   </data>
@@ -215,5 +206,15 @@ refers to absent to source file
   </data>
   <data name="LoadError" xml:space="preserve">
     <value>Coverage File Load Failed</value>
+  </data>
+  <data name="About" xml:space="preserve">
+    <value>About...</value>
+  </data>
+  <data name="ProgramComments" xml:space="preserve">
+    <value>{0}
+Icons from the Visual Studio 2017 collection
+https://docs.microsoft.com/en-us/visualstudio/designers/the-visual-studio-image-library
+and from the Tango Project
+http://tango.freedesktop.org/Tango_Icon_Library#Download</value>
   </data>
 </root>

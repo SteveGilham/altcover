@@ -44,6 +44,7 @@
     <EmbeddedResource Include="Refresh_greyThin_16x.png" />
     <EmbeddedResource Include="StatusCriticalError_16x.png" />
     <EmbeddedResource Include="StatusInformation_16x.png" />
+    <EmbeddedResource Include="VSTAAbout_16x.png" />
     <EmbeddedResource Include="..\AltCover.PowerShell\xsd\NCover.xsd" Link="NCover.xsd" />
     <EmbeddedResource Include="..\AltCover.PowerShell\xsd\OpenCover.xsd" Link="OpenCover.xsd" />
     <EmbeddedResource Include="..\AltCover.PowerShell\xsl\OpenCoverToNCoverEx.xsl" Link="OpenCoverToNCoverEx.xsl" />

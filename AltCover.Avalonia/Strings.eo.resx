@@ -117,15 +117,6 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="About" xml:space="preserve">
-    <value> Pri AltCover Visualizer...</value>
-  </data>
-  <data name="AboutDialog.About" xml:space="preserve">
-    <value>Pri</value>
-  </data>
-  <data name="About.dlg" xml:space="preserve">
-    <value>Pri AltCover Visualizer</value>
-  </data>
   <data name="ProgramDescription" xml:space="preserve">
     <value>Kovrilo-visualizilo por raportoj de NCover kaj OpenCover</value>
   </data>
@@ -215,5 +206,14 @@ raportas al ausente fonta dosiero
   </data>
   <data name="LoadWarning" xml:space="preserve">
     <value>Nekonforma Kovrilo Dosiero</value>
+  </data>
+  <data name="About" xml:space="preserve">
+    <value>Pri...</value>
+  </data>
+  <data name="ProgramComments" xml:space="preserve">
+    <value>Ikonoj de la Visual Studio 2017-kolekto
+https://docs.microsoft.com/en-us/visualstudio/designers/the-visual-studio-image-library
+kaj de la Tango Project
+http://tango.freedesktop.org/Tango_Icon_Library#Download</value>
   </data>
 </root>

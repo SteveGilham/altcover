@@ -242,6 +242,10 @@ type MainWindow () as this =
         let message = String.Format(System.Globalization.CultureInfo.CurrentCulture, format, c.FullName, s.FullName)
         this.ShowMessageBox MessageType.Warning caption message
 
+    member private this.HideAboutBox _ =
+        this.FindControl<StackPanel>("AboutBox").IsVisible <- false
+        this.FindControl<Grid>("Grid").IsVisible <- true
+
     member this.InitializeComponent() =
         AvaloniaXamlLoader.Load(this)
 
@@ -260,9 +264,8 @@ type MainWindow () as this =
         ofd.Filters <- List(filterBits)
 
         this.Title <- "AltCover.Visualizer"
-        this.FindControl<TabItem>("Visualizer").Header <- UICommon.GetResourceString "Visualizer"
 
-        ["Open"; "Refresh"; "Font"; "Exit"]
+        ["Open"; "Refresh"; "Font"; "About"; "Exit"]
         |> Seq.iter (fun n -> let item = this.FindControl<TextBlock>(n + "Text")
                               item.Text <- UICommon.GetResourceString n)
 
@@ -271,9 +274,14 @@ type MainWindow () as this =
                                   Persistence.saveGeometry this
                                Application.Current.Exit())
 
+        this.FindControl<MenuItem>("About").Click
+        |> Event.add(fun _ -> this.FindControl<StackPanel>("AboutBox").IsVisible <- true
+                              this.FindControl<Grid>("Grid").IsVisible <- false)
+
         let openFile = new Event<String option>()
         this.FindControl<MenuItem>("Open").Click
-                    |> Event.add(fun _ -> async {
+                    |> Event.add(fun _ -> this.HideAboutBox ()
+                                          async {
                                                   (ofd.ShowAsync(this)
                                                    |> Async.AwaitTask
                                                    |> Async.RunSynchronously).
@@ -298,6 +306,9 @@ type MainWindow () as this =
 
         let refresh = this.FindControl<MenuItem>("Refresh").Click
                       |> Event.map (fun _ -> 0)
+
+        select |> Seq.fold Event.merge refresh 
+        |> Event.add this.HideAboutBox
 
         Event.merge fileSelection refresh
         |> Event.add (fun index ->
@@ -358,12 +369,12 @@ type MainWindow () as this =
              |> Async.Start
              )
 
-        this.FindControl<TabItem>("About").Header <- UICommon.GetResourceString "About"
         this.FindControl<TextBlock>("Program").Text <- "AltCover.Visualizer " + AssemblyVersionInformation.AssemblyFileVersion
         this.FindControl<TextBlock>("Description").Text <- UICommon.GetResourceString "ProgramDescription"
 
         let copyright = AssemblyVersionInformation.AssemblyCopyright
         this.FindControl<TextBlock>("Copyright").Text <- copyright
+        this.FindControl<TextBlock>("Comments").Text <- UICommon.GetResourceString "ProgramComments"
 
         let link = this.FindControl<HtmlLabel>("Link")
         link.Text <- """<center><a href="http://www.github.com/SteveGilham/altcover">""" +
@@ -389,4 +400,10 @@ type MainWindow () as this =
         okButton.Content <- "OK"
         okButton.Click
         |> Event.add(fun _ -> this.FindControl<StackPanel>("MessageBox").IsVisible <- false
+                              this.FindControl<Grid>("Grid").IsVisible <- true)
+        // AboutBox
+        let okButton2 = this.FindControl<Button>("DismissAboutBox")
+        okButton2.Content <- "OK"
+        okButton2.Click 
+        |> Event.add(fun _ -> this.FindControl<StackPanel>("AboutBox").IsVisible <- false
                               this.FindControl<Grid>("Grid").IsVisible <- true)
