@@ -178,6 +178,15 @@ type MainWindow () as this =
     let blank =
         lazy (new Bitmap(Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Visualizer.Blank_12x_16x.png")))
 
+    let mruIcon =
+        lazy (new Bitmap(Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Visualizer.ExpandChevronDown_16x.png")))
+    let mruInactiveIcon =
+        lazy (new Bitmap(Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Visualizer.ExpandChevronDown_lightGray_16x.png")))
+    let refreshIcon =
+        lazy (new Bitmap(Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Visualizer.Refresh_16x.png")))
+    let refreshInactiveIcon =
+        lazy (new Bitmap(Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Visualizer.Refresh_greyThin_16x.png")))
+
     let MakeTreeNode name icon =
         let text = new TextBlock()
         text.Text <- name
@@ -222,6 +231,9 @@ type MainWindow () as this =
              item.Header <- name)
         // set or clear the menu
         listitem.IsEnabled <- coverageFiles.Any()
+        this.FindControl<Image>("ListImage").Source <- (if coverageFiles.Any() then
+                                                           mruIcon
+                                                         else mruInactiveIcon).Force()
 
     member private this.updateMRU path add =
       let casematch =
@@ -245,6 +257,9 @@ type MainWindow () as this =
       this.populateMenu ()
       Persistence.saveCoverageFiles coverageFiles
       this.FindControl<MenuItem>("Refresh").IsEnabled <- coverageFiles.Any()
+      this.FindControl<Image>("RefreshImage").Source <- (if coverageFiles.Any() then
+                                                           refreshIcon
+                                                         else refreshInactiveIcon).Force()
 
     member private this.InvalidCoverageFileMessage (x : InvalidFile) =
         let caption = UICommon.GetResourceString "LoadError"
