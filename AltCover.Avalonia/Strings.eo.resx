@@ -171,7 +171,7 @@ THE SOFTWARE.</value>
     <value>Malferma Kovrilo Dosiero</value>
   </data>
   <data name="SelectXml" xml:space="preserve">
-    <value>XML-dosieroj (*.xml)%*.xml|Ĉiuj dosieroj (*.*)%*.*</value>
+    <value>XML-dosieroj (*.xml)%xml|Ĉiuj dosieroj (*.*)%*</value>
   </data>
   <data name="g|geometry" xml:space="preserve">
     <value>Klara geometrio</value>
@@ -180,24 +180,30 @@ THE SOFTWARE.</value>
     <value>Klara lastatempa listo</value>
   </data>
   <data name="InvalidFile" xml:space="preserve">
-    <value>La dosiero {0} ne estas valida kovra dosiero:
+    <value>La dosiero
+{0}
+ne estas valida kovra dosiero:
 {1}</value>
   </data>
   <data name="CoverageOutOfDate" xml:space="preserve">
-    <value>La dosiero {0}
+    <value>La dosiero
+{0}
 estas sen dato koncerne iujn el la fontaj dosieroj.</value>
   </data>
   <data name="CoverageOutOfDateThisFile" xml:space="preserve">
-    <value>La dosiero {0}
+    <value>La dosiero
+{0}
 estas sen dato pri respekto al fonta dosiero
 {1}.</value>
   </data>
   <data name="MissingSourceFile" xml:space="preserve">
-    <value>La dosiero {0} 
+    <value>La dosiero
+{0} 
 raportas al fontaj dosieroj ne trovitaj en ĉi tiu komputilo.</value>
   </data>
   <data name="MissingSourceThisFile" xml:space="preserve">
-    <value>La dosiero {0}
+    <value>La dosiero
+{0}
 raportas al ausente fonta dosiero
 {1}.</value>
   </data>

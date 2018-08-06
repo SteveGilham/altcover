@@ -74,14 +74,16 @@
         <Grid Name="Grid" RowDefinitions="Auto,*,Auto" IsVisible="false">
           <TreeView Grid.Column="1" MinWidth="150">
           </TreeView>
-          <TabControl Grid.Column="2" MinWidth="150">
-          </TabControl>
+          <TextBox Grid.Column="2" MinWidth="150">
+          </TextBox>
         </Grid>
         <StackPanel Name="MessageBox" IsVisible="false">
           <TextBlock Name="Caption" Margin="10" FontSize="24" FontWeight="ExtraBold" HorizontalAlignment="Center" />
-          <StackPanel Orientation="Horizontal">
+          <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
             <Image Name="Status" Source="resm:AltCover.Visualizer.dialog-error.png" Stretch="None" />
-            <TextBlock Name="Message" HorizontalAlignment="Center" TextAlignment="Center" />
+            <TextBox Name="Message" HorizontalAlignment="Center" TextAlignment="Center"
+                     IsReadOnly="true" TextWrapping="Wrap" MaxWidth="500" 
+                     BorderThickness="0" />
           </StackPanel>
           <Button Name="DismissMessageBox" HorizontalAlignment="Center">
           </Button>

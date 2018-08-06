@@ -169,7 +169,7 @@ type MainWindow () as this =
                     | _ -> errorIcon
 
             this.FindControl<TextBlock>("Caption").Text <- caption
-            this.FindControl<TextBlock>("Message").Text <- message
+            this.FindControl<TextBox>("Message").Text <- message
             this.FindControl<StackPanel>("MessageBox").IsVisible <- true
             this.FindControl<Grid>("Grid").IsVisible <- false)
 
@@ -307,7 +307,7 @@ type MainWindow () as this =
         let refresh = this.FindControl<MenuItem>("Refresh").Click
                       |> Event.map (fun _ -> 0)
 
-        select |> Seq.fold Event.merge refresh 
+        select |> Seq.fold Event.merge refresh
         |> Event.add this.HideAboutBox
 
         Event.merge fileSelection refresh
@@ -404,6 +404,6 @@ type MainWindow () as this =
         // AboutBox
         let okButton2 = this.FindControl<Button>("DismissAboutBox")
         okButton2.Content <- "OK"
-        okButton2.Click 
+        okButton2.Click
         |> Event.add(fun _ -> this.FindControl<StackPanel>("AboutBox").IsVisible <- false
                               this.FindControl<Grid>("Grid").IsVisible <- true)
