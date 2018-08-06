@@ -314,6 +314,11 @@ type MainWindow () as this =
             | o -> o + 2
 
           let newrow = TreeViewItem()
+          newrow.DoubleTapped
+          |> Event.add(fun _ -> let path = (x.m.SelectChildren("seqpnt", String.Empty)
+                                            |> Seq.cast<XPathNavigator>
+                                            |> Seq.head).GetAttribute("document", String.Empty)
+                                this.FindControl<TextBox>("Source").Text <- File.ReadAllText path )
           let display = MakeTreeNode (displayname.Substring(offset)) <| MethodIcon.Force()
           newrow.Header <- display
           model.Add newrow

@@ -71,11 +71,11 @@
         </MenuItem>
       </Menu>
       <StackPanel Name="Content">
-        <Grid Name="Grid" RowDefinitions="Auto,*,Auto" IsVisible="false">
+        <Grid Name="Grid" RowDefinitions="Auto,*,Auto" IsVisible="false" MinWidth="500">
           <TreeView Name="Tree" Grid.Column="1" MinWidth="150">
           </TreeView>
-          <!-- TextBox Grid.Column="2" MinWidth="150">
-          </TextBox -->
+          <TextBox Name="Source" Grid.Column="2" MinWidth="150" MaxWidth="400">
+          </TextBox>
         </Grid>
         <StackPanel Name="MessageBox" IsVisible="false">
           <TextBlock Name="Caption" Margin="10" FontSize="24" FontWeight="ExtraBold" HorizontalAlignment="Center" />
