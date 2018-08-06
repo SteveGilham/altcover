@@ -479,7 +479,7 @@ type MainWindow () as this =
                      |> Seq.sortBy snd
                      |> Seq.iter (ApplyToModel items)
                      tree.Items <- items
-                     this.FindControl<MenuItem>("Refresh").IsEnabled <- true
+                     this.updateMRU current.FullName true
                      )
              }
              |> Async.Start
