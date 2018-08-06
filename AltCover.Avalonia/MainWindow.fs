@@ -178,9 +178,11 @@ type MainWindow () as this =
 
     let MakeTreeNode name icon =
         let text = new TextBlock()
-        text.Text <- name // TODO
+        text.Text <- name
+        text.Margin <- Thickness.Parse("2")
         let image = new Image()
         image.Source <- icon
+        image.Margin <- Thickness.Parse("2")
         let display = new StackPanel()
         display.Orientation <- Orientation.Horizontal
         display.Children.Add image
@@ -458,10 +460,6 @@ type MainWindow () as this =
                  // warn if not
                  if not (Seq.isEmpty newer) then this.OutdatedCoverageFileMessage current
 
-                 let tree = this.FindControl<TreeView>("Tree")
-                 tree.Items.OfType<IDisposable>()
-                 |> Seq.iter (fun x -> x.Dispose())
-
                  let ApplyToModel (model:List<TreeViewItem>) (group : XPathNavigator * string) =
                    let name = snd group
                    let row = TreeViewItem()
@@ -471,10 +469,14 @@ type MainWindow () as this =
                    row.Items <- this.PopulateAssemblyNode model row (fst group)
 
                  Dispatcher.UIThread.Post(fun _ ->
+                     let tree = this.FindControl<TreeView>("Tree")
+                     tree.Items.OfType<IDisposable>()
+                     |> Seq.iter (fun x -> x.Dispose())
+
                      let items = List<TreeViewItem>()
                      coverage.Document.CreateNavigator().Select("//module") |> Seq.cast<XPathNavigator>
                      |> Seq.map (fun node -> (node, node.GetAttribute("assemblyIdentity", String.Empty).Split(',') |> Seq.head))
-                     |> Seq.sortBy (fun nodepair -> snd nodepair)
+                     |> Seq.sortBy snd
                      |> Seq.iter (ApplyToModel items)
                      tree.Items <- items
                      this.FindControl<MenuItem>("Refresh").IsEnabled <- true

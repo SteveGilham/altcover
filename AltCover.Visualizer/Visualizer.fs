@@ -737,7 +737,7 @@ module Gui =
              let assemblies = coverage.Document.CreateNavigator().Select("//module") |> Seq.cast<XPathNavigator>
              assemblies
              |> Seq.map (fun node -> (node, node.GetAttribute("assemblyIdentity", String.Empty).Split(',') |> Seq.head))
-             |> Seq.sortBy (fun nodepair -> snd nodepair)
+             |> Seq.sortBy snd
              |> Seq.iter (ApplyToModel model)
              let UpdateUI (theModel : TreeModel) (info : FileInfo) () =
                // File is good so enable the refresh button
