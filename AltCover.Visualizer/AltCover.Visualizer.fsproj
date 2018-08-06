@@ -89,6 +89,7 @@
       <Link>Augment.fs</Link>
     </Compile>
     <Compile Include="CoverageFile.fs" />
+    <Compile Include="GuiCommon.fs" />
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="Visualizer.fs" />
     <None Include="packages.config" />

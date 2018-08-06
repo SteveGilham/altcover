@@ -8,6 +8,8 @@ open System.Linq
 open System.Resources
 
 open AltCover.Augment
+open AltCover.Visualizer.GuiCommon
+
 open Avalonia
 open Avalonia.Controls
 open Avalonia.Controls.Html
@@ -19,6 +21,10 @@ module UICommon =
         let executingAssembly = System.Reflection.Assembly.GetExecutingAssembly()
         let resources = new ResourceManager("AltCover.Visualizer.Strings", executingAssembly)
         resources.GetString(key)
+
+module Persistence =
+    let readFolder() =
+      String.Empty
 
 type MainWindow () as this =
     inherit Window()
@@ -76,6 +82,7 @@ type MainWindow () as this =
 
         // TODO read from store
         this.populateMenu ()
+        ofd.InitialDirectory <- Persistence.readFolder()                                          
         ofd.Title <- UICommon.GetResourceString "Open Coverage File"
         ofd.AllowMultiple <- false
         let filterBits = (UICommon.GetResourceString "SelectXml").Split([| '|' |])
@@ -98,8 +105,7 @@ type MainWindow () as this =
 
         let openFile = new Event<String option>()
         this.FindControl<MenuItem>("Open").Click
-                    |> Event.add(fun _ -> // ofd.InitialDirectory <- readFolder()
-                                          async {
+                    |> Event.add(fun _ -> async {
                                                   (ofd.ShowAsync(this)
                                                    |> Async.AwaitTask
                                                    |> Async.RunSynchronously).
