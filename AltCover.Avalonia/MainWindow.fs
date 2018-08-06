@@ -158,6 +158,8 @@ type MainWindow () as this =
                           Assembly.GetExecutingAssembly().GetManifestResourceStream(
                            "AltCover.Visualizer.dialog-error.png")))
 
+    let XmlIcon =
+        lazy (new Bitmap(Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Visualizer.XMLFile_16x.png")))
     let AssemblyIcon =
         lazy (new Bitmap(Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Visualizer.Assembly_6212.png")))
     let NamespaceIcon =
