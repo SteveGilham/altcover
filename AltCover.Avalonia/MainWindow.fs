@@ -325,7 +325,11 @@ type MainWindow () as this =
           |> Event.add(fun _ -> let path = (x.m.SelectChildren("seqpnt", String.Empty)
                                             |> Seq.cast<XPathNavigator>
                                             |> Seq.head).GetAttribute("document", String.Empty)
-                                this.FindControl<TextBox>("Source").Text <- File.ReadAllText path )
+                                try
+                                   // TODO -- colouring
+                                   this.FindControl<TextBox>("Source").Text <- File.ReadAllText path
+                                with
+                                | x -> this.FindControl<TextBox>("Source").Text <- x.Message)
           let display = MakeTreeNode (displayname.Substring(offset)) <| MethodIcon.Force()
           newrow.Header <- display
           model.Add newrow
@@ -508,6 +512,7 @@ type MainWindow () as this =
                      tree.Items.OfType<IDisposable>()
                      |> Seq.iter (fun x -> x.Dispose())
 
+                     this.FindControl<TextBox>("Source").Text <- String.Empty
                      let items = List<TreeViewItem>()
                      coverage.Document.CreateNavigator().Select("//module") |> Seq.cast<XPathNavigator>
                      |> Seq.map (fun node -> (node, node.GetAttribute("assemblyIdentity", String.Empty).Split(',') |> Seq.head))
