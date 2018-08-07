@@ -5,7 +5,7 @@
         Icon="resm:AltCover.Visualizer.VIcon.ico"
         Height="550" Width="750">
   <DockPanel Height="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Window, AncestorLevel=1}, Path=Height}" Width="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Window, AncestorLevel=1}, Path=Width}">
-    <Menu DockPanel.Dock="Top" MaxHeight="48" VerticalAlignment="Top">
+    <Menu DockPanel.Dock="Top" MaxHeight="48" VerticalAlignment="Center">
       <Menu.ItemsPanel>
         <ItemsPanelTemplate>
           <DockPanel HorizontalAlignment="Stretch" />
@@ -50,6 +50,11 @@
             <Image Source="resm:AltCover.Visualizer.Font_16x.png"  Stretch="None" />
             <TextBlock Name="FontText" Text="" HorizontalAlignment="Center" />
           </StackPanel>
+        </MenuItem.Header>
+      </MenuItem>
+      <MenuItem IsEnabled="false" Background="DarkGray" Width="4" Height="28" MaxHeight="28">
+        <MenuItem.Header>
+          <Separator/>
         </MenuItem.Header>
       </MenuItem>
       <MenuItem Name="About" MinWidth="80">
@@ -108,7 +113,7 @@
         <ScrollViewer DockPanel.Dock="Left" MaxWidth="250"
                       VerticalScrollBarVisibility="Auto"
                       HorizontalScrollBarVisibility="Auto">
-          <TreeView Name="Tree" MinWidth="150"/>
+          <TreeView Name="Tree" MinWidth="150" />
         </ScrollViewer>
         <ScrollViewer DockPanel.Dock="Right"
                       VerticalScrollBarVisibility="Auto"
