@@ -3,7 +3,7 @@
         xmlns:html="clr-namespace:Avalonia.Controls.Html;assembly=Avalonia.HtmlRenderer"
         Title="AltCover.Avalonia"
         Icon="resm:AltCover.Visualizer.VIcon.ico"
-        Height="750" Width="750">
+        Height="550" Width="750">
   <StackPanel>
     <DockPanel Height="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Window, AncestorLevel=1}, Path=Height}" Width="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Window, AncestorLevel=1}, Path=Width}">
       <Menu DockPanel.Dock="Top" MaxHeight="48" VerticalAlignment="Top">
@@ -71,11 +71,14 @@
         </MenuItem>
       </Menu>
       <StackPanel Name="Content" Width="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Window, AncestorLevel=1}, Path=Width}">
-        <Grid Name="Grid" RowDefinitions="Auto,*" Width="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Window, AncestorLevel=1}, Path=Width}">
-          <TreeView Name="Tree" Grid.Column="1" MinWidth="150" />
-          <TextBox Name="Source" Grid.Column="2" MinWidth="150" MaxWidth="400">
-          </TextBox>
-        </Grid>
+        <DockPanel Name="Grid" Width="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Window, AncestorLevel=1}, Path=Width}">
+          <ScrollViewer DockPanel.Dock="Left">
+            <TreeView Name="Tree" MinWidth="150" />
+          </ScrollViewer>
+          <ScrollViewer DockPanel.Dock="Right" >
+            <TextBox Name="Source"  MinWidth="150" />
+          </ScrollViewer>
+        </DockPanel>
         <StackPanel Name="MessageBox" IsVisible="false">
           <TextBlock Name="Caption" Margin="10" FontSize="24" FontWeight="ExtraBold" HorizontalAlignment="Center" />
           <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
@@ -91,17 +94,17 @@
           <Image Height="128" Stretch="None" Width="128" Source="resm:AltCover.Visualizer.logo.png" HorizontalAlignment="Center" />
           <TextBlock Name="Program" Margin="10" FontSize="24" FontWeight="ExtraBold" HorizontalAlignment="Center" />
           <TabControl Name="AboutTab" Margin="40">
-            <TabItem Name="AboutDetails" Height="200">
-              <StackPanel Height="200">
+            <TabItem Name="AboutDetails" Height="150">
+              <StackPanel Height="150">
                 <TextBlock Name="Description"  HorizontalAlignment="Center" TextAlignment="Center" />
                 <TextBlock Name="Copyright" Margin="10" FontSize="8" HorizontalAlignment="Center" />
                 <TextBlock Name="Comments" Margin="10" FontSize="8" HorizontalAlignment="Center" />
                 <html:HtmlLabel Name="Link" MinHeight="20" Focusable="True" HorizontalAlignment="Center" />
               </StackPanel>
             </TabItem>
-            <TabItem Name="License" Height="200">
+            <TabItem Name="License" Height="150">
               <StackPanel>
-                <ScrollViewer MaxHeight="200" HorizontalAlignment="Center">
+                <ScrollViewer MaxHeight="150" HorizontalAlignment="Center">
                   <TextBlock Name="MIT" MinHeight="100" Width="500" TextWrapping="NoWrap" xml:space="preserve" />
                 </ScrollViewer>
               </StackPanel>
