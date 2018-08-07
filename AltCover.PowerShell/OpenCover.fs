@@ -53,6 +53,16 @@ type CompressBranchingCommand(outputFile:String) =
       ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
   member val WithinSequencePoint:SwitchParameter = SwitchParameter(false) with get, set
 
+  member private self.ProcessMethod (m:XmlElement) =
+    let sp = m.SelectNodes("/SequencePoint") |> Seq.cast<XmlElement> |> Seq.toList
+    let bp = m.SelectNodes("/BranchPoint") |> Seq.cast<XmlElement> |> Seq.toList
+
+    if sp |> List.isEmpty |> not && bp |> List.isEmpty |> not then
+        let interleave = List.concat [ sp; bp ]
+                        |> List.sortBy (fun x -> x.GetAttribute("offset") |> Int32.TryParse |> snd)
+        () // TODO
+    ()
+
   override self.ProcessRecord() =
     let here = Directory.GetCurrentDirectory()
     try
@@ -60,16 +70,24 @@ type CompressBranchingCommand(outputFile:String) =
       Directory.SetCurrentDirectory where
       if self.ParameterSetName = "FromFile" then
         self.XmlDocument <- XPathDocument self.InputFile
+                
+      // Validate
+      let xmlDocument =  new XmlDocument()
+      self.XmlDocument.CreateNavigator().ReadSubtree() |> xmlDocument.Load
+      xmlDocument.Schemas <- XmlUtilities.LoadSchema AltCover.Base.ReportFormat.OpenCover
+      xmlDocument.Validate (null)
 
-      let converted = XmlDocument()
+      // Get all the methods
+      xmlDocument.SelectNodes("//Method")
+      |> Seq.cast<XmlElement>
+      |> Seq.iter self.ProcessMethod
 
-      // do work here
-
-      AltCover.Runner.PostProcess null AltCover.Base.ReportFormat.OpenCover converted
+      // tidy up here
+      AltCover.Runner.PostProcess null AltCover.Base.ReportFormat.OpenCover xmlDocument
 
       if self.OutputFile |> String.IsNullOrWhiteSpace |> not then
-        converted.Save(self.OutputFile)
+        xmlDocument.Save(self.OutputFile)
 
-      self.WriteObject converted
+      self.WriteObject xmlDocument
     finally
       Directory.SetCurrentDirectory here
