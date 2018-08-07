@@ -542,7 +542,8 @@ type MainWindow () as this =
         // *nix -- ("xdg-open", url)
         //Application.Instance.Open("http://www.github.com/SteveGilham/altcover"))
 
-        this.FindControl<TextBlock>("License").Text <- UICommon.GetResourceString "AboutDialog.License"
+        this.FindControl<TabItem>("AboutDetails").Header <- UICommon.GetResourceString "About"
+        this.FindControl<TabItem>("License").Header <- UICommon.GetResourceString "AboutDialog.License"
         this.FindControl<TextBlock>("MIT").Text <- String.Format(CultureInfo.InvariantCulture,
                                                                  UICommon.GetResourceString "License",
                                                                  copyright)

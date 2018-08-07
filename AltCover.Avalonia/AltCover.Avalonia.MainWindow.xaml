@@ -70,10 +70,9 @@
           </MenuItem.Header>
         </MenuItem>
       </Menu>
-      <StackPanel Name="Content">
-        <Grid Name="Grid" RowDefinitions="Auto,*,Auto" IsVisible="false" MinWidth="500">
-          <TreeView Name="Tree" Grid.Column="1" MinWidth="150">
-          </TreeView>
+      <StackPanel Name="Content" Width="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Window, AncestorLevel=1}, Path=Width}">
+        <Grid Name="Grid" RowDefinitions="Auto,*" Width="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Window, AncestorLevel=1}, Path=Width}">
+          <TreeView Name="Tree" Grid.Column="1" MinWidth="150" />
           <TextBox Name="Source" Grid.Column="2" MinWidth="150" MaxWidth="400">
           </TextBox>
         </Grid>
@@ -91,18 +90,23 @@
         <StackPanel Margin="10" Name="AboutBox" IsVisible="false">
           <Image Height="128" Stretch="None" Width="128" Source="resm:AltCover.Visualizer.logo.png" HorizontalAlignment="Center" />
           <TextBlock Name="Program" Margin="10" FontSize="24" FontWeight="ExtraBold" HorizontalAlignment="Center" />
-          <TextBlock Name="Description"  HorizontalAlignment="Center" TextAlignment="Center" />
-          <TextBlock Name="Copyright" Margin="10" FontSize="8" HorizontalAlignment="Center" />
-          <TextBlock Name="Comments" Margin="10" FontSize="8" HorizontalAlignment="Center" />
-          <html:HtmlLabel Name="Link" MinHeight="20" Focusable="True" HorizontalAlignment="Center" />
-          <Expander Name="Expander" Margin="10" HorizontalAlignment="Center" MinWidth="500" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
-            <Expander.Header>
-              <TextBlock Name="License" />
-            </Expander.Header>
-            <ScrollViewer MaxHeight="250" HorizontalAlignment="Center">
-              <TextBlock Name="MIT" MinHeight="100" Width="500" TextWrapping="NoWrap" xml:space="preserve" />
-            </ScrollViewer>
-          </Expander>
+          <TabControl Name="AboutTab" Margin="40">
+            <TabItem Name="AboutDetails" Height="200">
+              <StackPanel Height="200">
+                <TextBlock Name="Description"  HorizontalAlignment="Center" TextAlignment="Center" />
+                <TextBlock Name="Copyright" Margin="10" FontSize="8" HorizontalAlignment="Center" />
+                <TextBlock Name="Comments" Margin="10" FontSize="8" HorizontalAlignment="Center" />
+                <html:HtmlLabel Name="Link" MinHeight="20" Focusable="True" HorizontalAlignment="Center" />
+              </StackPanel>
+            </TabItem>
+            <TabItem Name="License" Height="200">
+              <StackPanel>
+                <ScrollViewer MaxHeight="200" HorizontalAlignment="Center">
+                  <TextBlock Name="MIT" MinHeight="100" Width="500" TextWrapping="NoWrap" xml:space="preserve" />
+                </ScrollViewer>
+              </StackPanel>
+            </TabItem>
+          </TabControl>
           <Button Name="DismissAboutBox" HorizontalAlignment="Center">
           </Button>
         </StackPanel>
