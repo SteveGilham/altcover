@@ -13,12 +13,12 @@ open System.Xml.XPath
 
 open AltCover.PowerShell
 
-[<Cmdlet(VerbsData.Merge, "Branching")>]
+[<Cmdlet(VerbsData.Compress, "Branching")>]
 [<OutputType(typeof<XmlDocument>)>]
-type MergeBranchingCommand(outputFile:String) =
+type CompressBranchingCommand(outputFile:String) =
   inherit PSCmdlet()
 
-  new () = MergeBranchingCommand(String.Empty)
+  new () = CompressBranchingCommand(String.Empty)
 
   [<SuppressMessage("Microsoft.Design", "CA1059", Justification="converts concrete types")>]
   [<Parameter(ParameterSetName = "XmlDoc", Mandatory = true, Position = 1,
@@ -40,6 +40,18 @@ type MergeBranchingCommand(outputFile:String) =
   [<Parameter(ParameterSetName = "FromFile", Mandatory = false, Position = 3,
       ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
   member val OutputFile:string = outputFile with get, set
+
+  [<Parameter(ParameterSetName = "XmlDoc", Mandatory = false, Position = 4,
+      ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
+  [<Parameter(ParameterSetName = "FromFile", Mandatory = false, Position = 4,
+      ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
+  member val SameSpan:SwitchParameter = SwitchParameter(false) with get, set
+
+  [<Parameter(ParameterSetName = "XmlDoc", Mandatory = false, Position = 4,
+      ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
+  [<Parameter(ParameterSetName = "FromFile", Mandatory = false, Position = 4,
+      ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
+  member val WithinSequencePoint:SwitchParameter = SwitchParameter(false) with get, set
 
   override self.ProcessRecord() =
     let here = Directory.GetCurrentDirectory()
