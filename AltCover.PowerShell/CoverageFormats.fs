@@ -1,11 +1,5 @@
 ﻿namespace AltCover.Commands
 
-#if MONO
-module CoverageFormats =
-    let hello name =
-        printfn "Hello %s" name
-#else
-
 open System
 open System.Collections.Generic
 open System.Diagnostics.CodeAnalysis
@@ -309,5 +303,3 @@ type ConvertFromNCoverCommand(outputFile:String) =
       self.WriteObject converted
     finally
       Directory.SetCurrentDirectory here
-
-#endif
