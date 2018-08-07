@@ -69,16 +69,8 @@
         </MenuItem.Header>
       </MenuItem>
     </Menu>
-    <StackPanel Name="Content" Width="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Window, AncestorLevel=1}, Path=Width}">
-      <DockPanel Name="Grid" Width="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Window, AncestorLevel=1}, Path=Width}">
-        <ScrollViewer DockPanel.Dock="Left">
-          <TreeView Name="Tree" MinWidth="150" />
-        </ScrollViewer>
-        <ScrollViewer DockPanel.Dock="Right">
-          <TextBox Name="Source"  MinWidth="150" />
-        </ScrollViewer>
-      </DockPanel>
-      <StackPanel Name="MessageBox" IsVisible="false">
+    <DockPanel Name="Content" Width="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Window, AncestorLevel=1}, Path=Width}">
+      <StackPanel DockPanel.Dock="Top" Name="MessageBox" IsVisible="false">
         <TextBlock Name="Caption" Margin="10" FontSize="24" FontWeight="ExtraBold" HorizontalAlignment="Center" />
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
           <Image Name="Status" Source="resm:AltCover.Visualizer.dialog-error.png" Stretch="None" />
@@ -89,7 +81,7 @@
         <Button Name="DismissMessageBox" HorizontalAlignment="Center">
         </Button>
       </StackPanel>
-      <StackPanel Margin="10" Name="AboutBox" IsVisible="false">
+      <StackPanel DockPanel.Dock="Top" Margin="10" Name="AboutBox" IsVisible="false">
         <Image Height="128" Stretch="None" Width="128" Source="resm:AltCover.Visualizer.logo.png" HorizontalAlignment="Center" />
         <TextBlock Name="Program" Margin="10" FontSize="24" FontWeight="ExtraBold" HorizontalAlignment="Center" />
         <TabControl Name="AboutTab" Margin="40">
@@ -112,6 +104,14 @@
         <Button Name="DismissAboutBox" HorizontalAlignment="Center">
         </Button>
       </StackPanel>
-    </StackPanel>
+      <DockPanel DockPanel.Dock="Top" Name="Grid" Width="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Window, AncestorLevel=1}, Path=Width}">
+        <ScrollViewer DockPanel.Dock="Left" MaxWidth="250">
+          <TreeView Name="Tree" MinWidth="150"/>
+        </ScrollViewer>
+        <ScrollViewer DockPanel.Dock="Right">
+          <TextBox Name="Source" MinWidth="150" />
+        </ScrollViewer>
+      </DockPanel>
+    </DockPanel>
   </DockPanel>
 </Window>
