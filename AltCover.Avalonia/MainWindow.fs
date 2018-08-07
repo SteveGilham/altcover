@@ -42,10 +42,12 @@ module Persistence =
     let profileDir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)
     let dir = Directory.CreateDirectory(Path.Combine(profileDir, ".altcover"))
     let file = Path.Combine(dir.FullName, "Visualizer.xml")
+    let mutable o = XDocument()
     if file |> File.Exists |> not then
         (file, DefaultDocument())
     else try
             let doc = XDocument.Load(file)
+            o <- doc
             let schemas = new XmlSchemaSet()
             use xsd = new StreamReader(Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Visualizer.config.xsd"))
             schemas.Add
@@ -55,7 +57,8 @@ module Persistence =
             doc.Validate(schemas, null)
             (file, doc)
          with
-         | _ -> (file, DefaultDocument())
+         | x -> printfn "%A\r\n\r\n%A" x o
+                (file, DefaultDocument())
 
   let saveFont (font : string) =
     let file, config = EnsureFile()
@@ -104,6 +107,10 @@ module Persistence =
 
   let saveGeometry (w:Window) =
     let file, config = EnsureFile()
+    config.XPathSelectElements("//Geometry")
+    |> Seq.toList
+    |> Seq.iter (fun x -> x.Remove())
+
     let element= XElement(XName.Get "Geometry",
                             XAttribute(XName.Get "x", w.Position.X),
                             XAttribute(XName.Get "y", w.Position.Y),
