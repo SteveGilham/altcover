@@ -5,7 +5,7 @@
         Icon="resm:AltCover.Visualizer.VIcon.ico"
         Height="550" Width="750">
   <DockPanel Height="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Window, AncestorLevel=1}, Path=Height}" Width="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Window, AncestorLevel=1}, Path=Width}">
-    <Menu DockPanel.Dock="Top" MaxHeight="48" VerticalAlignment="Center">
+    <Menu Name="Menu" DockPanel.Dock="Top" MaxHeight="48" VerticalAlignment="Center">
       <Menu.ItemsPanel>
         <ItemsPanelTemplate>
           <DockPanel HorizontalAlignment="Stretch" />

@@ -220,6 +220,7 @@ type MainWindow () as this =
             this.FindControl<TextBlock>("Caption").Text <- caption
             this.FindControl<TextBox>("Message").Text <- message
             this.FindControl<StackPanel>("MessageBox").IsVisible <- true
+            this.FindControl<Menu>("Menu").IsVisible <- false
             this.FindControl<DockPanel>("Grid").IsVisible <- false)
 
     // Fill in the menu from the memory cache
@@ -300,6 +301,7 @@ type MainWindow () as this =
 
     member private this.HideAboutBox _ =
         this.FindControl<StackPanel>("AboutBox").IsVisible <- false
+        this.FindControl<Menu>("Menu").IsVisible <- true
         this.FindControl<DockPanel>("Grid").IsVisible <- true
 
     member private this.PopulateClassNode (model:List<TreeViewItem>) (row : TreeViewItem) (nodes : seq<MethodKey>) =
@@ -431,6 +433,7 @@ type MainWindow () as this =
 
         this.FindControl<MenuItem>("About").Click
         |> Event.add(fun _ -> this.FindControl<StackPanel>("AboutBox").IsVisible <- true
+                              this.FindControl<Menu>("Menu").IsVisible <- false
                               this.FindControl<DockPanel>("Grid").IsVisible <- false)
 
         let openFile = new Event<String option>()
@@ -552,15 +555,25 @@ type MainWindow () as this =
         this.FindControl<TextBlock>("MIT").Text <- String.Format(CultureInfo.InvariantCulture,
                                                                  UICommon.GetResourceString "License",
                                                                  copyright)
+        this.Closing
+        |> Event.add (fun e -> if this.FindControl<DockPanel>("Grid").IsVisible |> not then
+                                  this.FindControl<StackPanel>("AboutBox").IsVisible <- false
+                                  this.FindControl<StackPanel>("MessageBox").IsVisible <- false
+                                  this.FindControl<Menu>("Menu").IsVisible <- true
+                                  this.FindControl<DockPanel>("Grid").IsVisible <- true
+                                  e.Cancel <- true )
+
         // MessageBox
         let okButton = this.FindControl<Button>("DismissMessageBox")
         okButton.Content <- "OK"
         okButton.Click
         |> Event.add(fun _ -> this.FindControl<StackPanel>("MessageBox").IsVisible <- false
+                              this.FindControl<Menu>("Menu").IsVisible <- true
                               this.FindControl<DockPanel>("Grid").IsVisible <- true)
         // AboutBox
         let okButton2 = this.FindControl<Button>("DismissAboutBox")
         okButton2.Content <- "OK"
         okButton2.Click
         |> Event.add(fun _ -> this.FindControl<StackPanel>("AboutBox").IsVisible <- false
+                              this.FindControl<Menu>("Menu").IsVisible <- true
                               this.FindControl<DockPanel>("Grid").IsVisible <- true)
