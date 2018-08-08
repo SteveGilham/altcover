@@ -118,7 +118,9 @@
         <ScrollViewer DockPanel.Dock="Right"
                       VerticalScrollBarVisibility="Auto"
                       HorizontalScrollBarVisibility="Auto">
-          <TextBox Name="Source" MinWidth="150" />
+          <TextBox Name="Source" MinWidth="150"
+                   Background="White"
+                   Foreground="Silver"/>
         </ScrollViewer>
       </DockPanel>
     </DockPanel>

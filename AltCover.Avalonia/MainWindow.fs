@@ -20,6 +20,7 @@ open Avalonia
 open Avalonia.Controls
 open Avalonia.Controls.Html
 open Avalonia.Markup.Xaml
+open Avalonia.Media
 open Avalonia.Media.Imaging
 open Avalonia.Threading
 
@@ -328,8 +329,12 @@ type MainWindow () as this =
                                             |> Seq.cast<XPathNavigator>
                                             |> Seq.head).GetAttribute("document", String.Empty)
                                 try
+                                   let text = this.FindControl<TextBox>("Source")
                                    // TODO -- colouring
-                                   this.FindControl<TextBox>("Source").Text <- File.ReadAllText path
+                                   text.Text <- File.ReadAllText path
+                                   text.FontFamily <- FontFamily("Monospace")
+                                   text.FontSize <- 16.0
+                                   text.FontStyle <- FontStyle.Normal
                                 with
                                 | x -> this.FindControl<TextBox>("Source").Text <- x.Message)
           let display = MakeTreeNode (displayname.Substring(offset)) <| MethodIcon.Force()
