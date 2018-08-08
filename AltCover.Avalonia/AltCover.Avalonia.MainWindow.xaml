@@ -111,7 +111,6 @@
       </StackPanel>
       <DockPanel DockPanel.Dock="Top" Name="Grid" Width="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Window, AncestorLevel=1}, Path=Width}">
         <ScrollViewer DockPanel.Dock="Left" MaxWidth="250"
-                      VerticalScrollBarVisibility="Auto"
                       HorizontalScrollBarVisibility="Auto">
           <TreeView Name="Tree" MinWidth="150" />
         </ScrollViewer>
