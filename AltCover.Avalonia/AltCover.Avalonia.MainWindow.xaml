@@ -109,6 +109,8 @@
         <Button Name="DismissAboutBox" HorizontalAlignment="Center">
         </Button>
       </StackPanel>
+      <StackPanel DockPanel.Dock="Top" Name="FontSelection" IsVisible="false">
+      </StackPanel>
       <DockPanel DockPanel.Dock="Top" Name="Grid" Width="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Window, AncestorLevel=1}, Path=Width}">
         <ScrollViewer DockPanel.Dock="Left" MaxWidth="250"
                       HorizontalScrollBarVisibility="Auto">
