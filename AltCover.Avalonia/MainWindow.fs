@@ -75,7 +75,7 @@ module Persistence =
   let readFont() =
     let _, config = EnsureFile()
     match config.XPathSelectElements("//Font") |> Seq.toList with
-    | [] -> "Monospace Normal 10"
+    | [] -> "Monospace"  // Font defaults to 'Courier New', which is what we want
     | x::_ -> x.FirstNode.ToString()
 
   let saveFolder (path : string) =
@@ -325,16 +325,32 @@ type MainWindow () as this =
 
           let newrow = TreeViewItem()
           newrow.DoubleTapped
-          |> Event.add(fun _ -> let path = (x.m.SelectChildren("seqpnt", String.Empty)
-                                            |> Seq.cast<XPathNavigator>
-                                            |> Seq.head).GetAttribute("document", String.Empty)
+          |> Event.add(fun _ -> let points = x.m.SelectChildren("seqpnt", String.Empty)
+                                              |> Seq.cast<XPathNavigator>
+                                let point = points 
+                                            |> Seq.head
+                                let path = point.GetAttribute("document", String.Empty)
+                                let line = point.GetAttribute("line", String.Empty)
+                                           |>Int32.TryParse
+                                           |> snd
                                 try
                                    let text = this.FindControl<TextBox>("Source")
-                                   // TODO -- colouring
+
+                                   // TODO -- font  size control too
                                    text.Text <- File.ReadAllText path
-                                   text.FontFamily <- FontFamily("Monospace")
+                                   text.FontFamily <- FontFamily(Persistence.readFont())
                                    text.FontSize <- 16.0
                                    text.FontStyle <- FontStyle.Normal
+
+                                   // offset of line 
+                                   // TODO how much more to scroll into mid-view?
+                                   text.CaretIndex <- File.ReadAllLines path
+                                                      |> Seq.take (line-1)
+                                                      |> Seq.map (fun l -> l.Length + System.Environment.NewLine.Length)
+                                                      |> Seq.sum
+
+                                   // TODO -- colouring
+
                                 with
                                 | x -> this.FindControl<TextBox>("Source").Text <- x.Message)
           let display = MakeTreeNode (displayname.Substring(offset)) <| MethodIcon.Force()
