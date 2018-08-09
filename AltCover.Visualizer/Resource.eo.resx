@@ -186,4 +186,8 @@ raportas al ausente fonta dosiero
   <data name="exitButton.Label" xml:space="preserve">
     <value>_Eliro</value>
   </data>
+  <data name="No source location" xml:space="preserve">
+    <value>Metodo {0}
+havas neniun respondan fontan lokon</value>
+  </data>
 </root>

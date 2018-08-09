@@ -528,9 +528,16 @@ module Gui =
     let hits = Mappings.Keys |> Seq.filter (HitFilter activation)
     if not (Seq.isEmpty hits) then
       let m = Mappings.[Seq.head hits]
-      if m.HasChildren then
-        let child = m.Clone()
-        child.MoveToFirstChild() |> ignore
+      let points = m.SelectChildren("seqpnt", String.Empty)
+                   |> Seq.cast<XPathNavigator>      
+      if Seq.isEmpty points then
+        let message =  String.Format(System.Globalization.CultureInfo.CurrentCulture,
+                                     GetResourceString "No source location",
+                                     (activation.Column.Cells.[1] :?> Gtk.CellRendererText
+                                       ).Text.Replace("<","&lt;").Replace(">","&gt;"))
+        ShowMessageOnGuiThread handler.mainWindow MessageType.Info message
+      else
+        let child = points |> Seq.head
         let filename = child.GetAttribute("document", String.Empty)
         let info = new FileInfo(filename)
         let current = new FileInfo(handler.coverageFiles.Head)
