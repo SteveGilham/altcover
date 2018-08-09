@@ -1,0 +1,53 @@
+<CoverageSession xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <Summary numSequencePoints="2926" visitedSequencePoints="14" numBranchPoints="1995" visitedBranchPoints="7" sequenceCoverage="100" branchCoverage="100" maxCyclomaticComplexity="13" minCyclomaticComplexity="0" visitedClasses="1" numClasses="707" visitedMethods="1" numMethods="1016" minCrapScore="7" maxCrapScore="7" />
+  <Modules>
+    <Module hash="33-5D-D9-4B-CF-B7-76-A6-3B-6E-15-89-8A-E7-D5-2C-3A-E9-77-3D">
+      <Summary numSequencePoints="2510" visitedSequencePoints="14" numBranchPoints="1699" visitedBranchPoints="7" sequenceCoverage="100" branchCoverage="100" maxCyclomaticComplexity="13" minCyclomaticComplexity="0" visitedClasses="1" numClasses="608" visitedMethods="1" numMethods="854" minCrapScore="7" maxCrapScore="7" />
+      <ModulePath>C:\Users\steve\Documents\GitHub\altcover\_Binaries\AltCover.Tests\Debug+AnyCPU\AltCover.exe</ModulePath>
+      <ModuleTime>2018-08-09T17:42:03.797Z</ModuleTime>
+      <ModuleName>AltCover</ModuleName>
+      <Files>
+        <File uid="768" fullPath="C:\Users\steve\Documents\GitHub\altcover\AltCover\Filter.fs" />
+      </Files>
+      <Classes>
+        <Class>
+          <Summary numSequencePoints="34" visitedSequencePoints="14" numBranchPoints="35" visitedBranchPoints="7" sequenceCoverage="100" branchCoverage="100" maxCyclomaticComplexity="7" minCyclomaticComplexity="2" visitedClasses="1" numClasses="1" visitedMethods="1" numMethods="5" minCrapScore="7" maxCrapScore="7" />
+          <FullName>AltCover.Filter</FullName>
+          <Methods>
+            <Method visited="true" cyclomaticComplexity="7" nPathComplexity="8" sequenceCoverage="100" branchCoverage="100" isConstructor="false" isStatic="true" isGetter="false" isSetter="false" crapScore="7">
+              <Summary numSequencePoints="14" visitedSequencePoints="14" numBranchPoints="9" visitedBranchPoints="7" sequenceCoverage="100" branchCoverage="100" maxCyclomaticComplexity="7" minCyclomaticComplexity="7" visitedClasses="0" numClasses="0" visitedMethods="1" numMethods="1" minCrapScore="7" maxCrapScore="7" />
+              <MetadataToken>100665172</MetadataToken>
+              <Name>System.Boolean AltCover.Filter::Match(System.Object,AltCover.FilterClass)</Name>
+              <FileRef uid="768" />
+              <SequencePoints>
+                <SequencePoint vc="2441" uspid="4543" ordinal="0" offset="0" sl="42" sc="5" el="42" ec="22" bec="6" bev="6" fileid="768" />
+                <SequencePoint vc="47" uspid="4544" ordinal="1" offset="78" sl="43" sc="20" el="43" ec="72" bec="0" bev="0" fileid="768" />
+                <SequencePoint vc="5" uspid="4545" ordinal="2" offset="91" sl="42" sc="5" el="42" ec="22" bec="0" bev="0" fileid="768" />
+                <SequencePoint vc="5" uspid="4546" ordinal="3" offset="106" sl="44" sc="24" el="44" ec="108" bec="0" bev="0" fileid="768" />
+                <SequencePoint vc="14" uspid="4547" ordinal="4" offset="120" sl="42" sc="5" el="42" ec="22" bec="0" bev="0" fileid="768" />
+                <SequencePoint vc="14" uspid="4548" ordinal="5" offset="137" sl="45" sc="22" el="45" ec="117" bec="0" bev="0" fileid="768" />
+                <SequencePoint vc="380" uspid="4549" ordinal="6" offset="151" sl="42" sc="5" el="42" ec="22" bec="0" bev="0" fileid="768" />
+                <SequencePoint vc="380" uspid="4550" ordinal="7" offset="168" sl="46" sc="20" el="46" ec="97" bec="0" bev="0" fileid="768" />
+                <SequencePoint vc="1990" uspid="4551" ordinal="8" offset="182" sl="42" sc="5" el="42" ec="22" bec="0" bev="0" fileid="768" />
+                <SequencePoint vc="1990" uspid="4552" ordinal="9" offset="199" sl="47" sc="22" el="47" ec="101" bec="0" bev="0" fileid="768" />
+                <SequencePoint vc="3" uspid="4553" ordinal="10" offset="213" sl="42" sc="5" el="42" ec="22" bec="0" bev="0" fileid="768" />
+                <SequencePoint vc="3" uspid="4554" ordinal="11" offset="230" sl="48" sc="25" el="48" ec="57" bec="0" bev="0" fileid="768" />
+                <SequencePoint vc="2" uspid="4555" ordinal="12" offset="239" sl="42" sc="5" el="42" ec="22" bec="0" bev="0" fileid="768" />
+                <SequencePoint vc="2" uspid="4556" ordinal="13" offset="256" sl="49" sc="20" el="49" ec="72" bec="0" bev="0" fileid="768" />
+              </SequencePoints>
+              <BranchPoints>
+                <BranchPoint vc="47" uspid="4558" ordinal="1" offset="8" sl="42" path="1" offsetchain="41" offsetend="64" fileid="768" />
+                <BranchPoint vc="5" uspid="4559" ordinal="2" offset="8" sl="42" path="2" offsetchain="43" offsetend="75" fileid="768" />
+                <BranchPoint vc="394" uspid="4561" ordinal="4" offset="8" sl="42" path="4" offsetchain="47" offsetend="120" fileid="768" />
+                <BranchPoint vc="1990" uspid="4562" ordinal="5" offset="8" sl="42" path="5" offsetchain="49" offsetend="182" fileid="768" />
+                <BranchPoint vc="3" uspid="4563" ordinal="6" offset="8" sl="42" path="6" offsetchain="54" offsetend="213" fileid="768" />
+                <BranchPoint vc="2" uspid="4564" ordinal="7" offset="8" sl="42" path="7" offsetchain="59" offsetend="239" fileid="768" />
+              </BranchPoints>
+              <MethodPoint xsi:type="SequencePoint" vc="2441" uspid="4543" ordinal="0" offset="0" sl="42" sc="5" el="42" ec="22" bec="6" bev="0" fileid="768" />
+            </Method>
+          </Methods>
+        </Class>
+      </Classes>
+    </Module>
+  </Modules>
+</CoverageSession>

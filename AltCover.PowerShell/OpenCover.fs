@@ -60,14 +60,47 @@ type CompressBranchingCommand(outputFile:String) =
   member val WithinSequencePoint:SwitchParameter = SwitchParameter(false) with get, set
 
   member private self.ProcessMethod (m:XmlElement) =
-    let sp = m.SelectNodes("/SequencePoint") |> Seq.cast<XmlElement> |> Seq.toList
-    let bp = m.SelectNodes("/BranchPoint") |> Seq.cast<XmlElement> |> Seq.toList
+    let sp = m.GetElementsByTagName("SequencePoint").OfType<XmlElement>() |> Seq.toList
+    let bp = m.GetElementsByTagName("BranchPoint").OfType<XmlElement>() |> Seq.toList
 
     if sp |> List.isEmpty |> not && bp |> List.isEmpty |> not then
         let interleave = List.concat [ sp; bp ]
                         |> List.sortBy (fun x -> x.GetAttribute("offset") |> Int32.TryParse |> snd)
-        () // TODO
-    ()
+        interleave
+        |> Seq.fold (fun (s:XmlElement, bs:XmlElement list) x -> match x.Name with
+                                                                 | "SequencePoint" ->
+                                                                   let bx = if self.WithinSequencePoint.IsPresent then
+                                                                              let next = x.GetAttribute("offset") |> Int32.TryParse |> snd
+                                                                              let (kill, keep) = bs
+                                                                                                 |> List.partition (fun b -> b.GetAttribute("offsetend")
+                                                                                                                             |> Int32.TryParse |> snd < next)
+                                                                              kill
+                                                                              |> Seq.iter (fun b -> b.ParentNode.RemoveChild(b) |> ignore)
+                                                                              keep
+                                                                            else bs
+
+                                                                   let by = if self.SameSpan.IsPresent then
+                                                                              let (kill, keep) = bx
+                                                                                                 |> List.groupBy (fun b -> (b.GetAttribute("offset"), b.GetAttribute("offsetend")))
+                                                                                                 |> List.fold (fun (ki,ke) (_, bz) -> let totalVisits = bz
+                                                                                                                                                        |> Seq.map (fun b -> b.GetAttribute("vc")
+                                                                                                                                                                             |> Int32.TryParse |> snd)
+                                                                                                                                                        |> Seq.sum
+                                                                                                                                      let h = bz |> Seq.head
+                                                                                                                                      h.SetAttribute ("vc", totalVisits.ToString(CultureInfo.InvariantCulture))
+                                                                                                                                      (List.concat [ki; bz |> Seq.tail |> Seq.toList] ,h::ke)) ([], [])
+                                                                              kill
+                                                                              |> Seq.iter (fun b -> b.ParentNode.RemoveChild(b) |> ignore)
+                                                                              keep
+                                                                             else bx
+
+                                                                   s.SetAttribute("bec", by.Length.ToString(CultureInfo.InvariantCulture))
+                                                                   s.SetAttribute("bev", "0")
+
+                                                                   (x, [])
+                                                                 | _ -> (s, x::bs)
+                         ) (sp.Head, [])
+        |> ignore
 
   override self.ProcessRecord() =
     let here = Directory.GetCurrentDirectory()
@@ -76,7 +109,7 @@ type CompressBranchingCommand(outputFile:String) =
       Directory.SetCurrentDirectory where
       if self.ParameterSetName.StartsWith("FromFile", StringComparison.Ordinal) then
         self.XmlDocument <- XPathDocument self.InputFile
-                
+
       // Validate
       let xmlDocument =  new XmlDocument()
       self.XmlDocument.CreateNavigator().ReadSubtree() |> xmlDocument.Load
