@@ -374,7 +374,7 @@ type MainWindow () as this =
                                         with
                                         | x ->  let caption = UICommon.GetResourceString "LoadError"
                                                 this.ShowMessageBox MessageType.Error caption x.Message)
-          let display = MakeTreeNode visbleName)<| MethodIcon.Force()
+          let display = MakeTreeNode visbleName <| MethodIcon.Force()
           newrow.Header <- display
           model.Add newrow
 
