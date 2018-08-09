@@ -571,13 +571,13 @@ Describe "ConvertFrom-NCover" {
 
 Describe "Compress-Branching" {
   It "Removes interior branches" {
-    $xml = Compress-Branching -WithinSequencePoint -InputFile "./Tests/HandRolledMonoCoverage.xml" -OutputFile "./_Packaging/CompressInterior.xml"
+    $xml = Compress-Branching -WithinSequencePoint -InputFile "./Tests/Compressible.xml" -OutputFile "./_Packaging/CompressInterior.xml"
   }
   It "Unifies equivalent branches" {
-    $xml = Compress-Branching -SameSpan -InputFile "./Tests/HandRolledMonoCoverage.xml" -OutputFile "./_Packaging/SameSpan.xml"
+    $xml = Compress-Branching -SameSpan -InputFile "./Tests/Compressible.xml" -OutputFile "./_Packaging/SameSpan.xml"
   }
   It "DoesBoth" {
-    $xml = Compress-Branching -SameSpan -WithinSequencePoint -InputFile "./Tests/HandRolledMonoCoverage.xml" -OutputFile "./_Packaging/CompressBoth.xml"  
+    $xml = Compress-Branching -SameSpan -WithinSequencePoint -InputFile "./Tests/Compressible.xml" -OutputFile "./_Packaging/CompressBoth.xml"  
   }
   It "DoesAtLeatOne" {
     $fail = $false
