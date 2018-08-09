@@ -322,6 +322,7 @@ type MainWindow () as this =
             match displayname.LastIndexOf("::", StringComparison.Ordinal) with
             | -1 -> 0
             | o -> o + 2
+          let visbleName = displayname.Substring(offset)
 
           let newrow = TreeViewItem()
           newrow.DoubleTapped
@@ -334,7 +335,7 @@ type MainWindow () as this =
                                                     String.Format(
                                                         System.Globalization.CultureInfo.CurrentCulture,
                                                         UICommon.GetResourceString "No source location",
-                                                        displayname)
+                                                        visbleName)
                                 else
                                     let point = points
                                                 |> Seq.head
@@ -373,7 +374,7 @@ type MainWindow () as this =
                                         with
                                         | x ->  let caption = UICommon.GetResourceString "LoadError"
                                                 this.ShowMessageBox MessageType.Error caption x.Message)
-          let display = MakeTreeNode (displayname.Substring(offset)) <| MethodIcon.Force()
+          let display = MakeTreeNode visbleName)<| MethodIcon.Force()
           newrow.Header <- display
           model.Add newrow
 
