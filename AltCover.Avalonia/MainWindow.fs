@@ -148,6 +148,27 @@ module Persistence =
 
 type MessageType = Info = 0 | Warning = 1 | Error = 2
 
+type TextTag = {
+                Foreground:string
+                Background:string
+               }
+with static member Make a b = { Foreground = a; Background = b }
+     static member Visited = TextTag.Make "#404040" "#cefdce" // Dark on Pale Green
+     static member Declared = TextTag.Make "#FFA500" "#FFFFFF" // Orange on White
+     static member StaticAnalysis = TextTag.Make "#808080" "#F5F5F5" // Grey on White Smoke
+     static member Automatic = TextTag.Make "#808080" "#FFFF00" // Grey on Yellow
+     static member NotVisited = TextTag.Make "#ff0000" "#FFFFFF" // Red on White
+     static member Excluded = TextTag.Make "#87CEEB" "#FFFFFF" // Sky Blue on white
+     static member Partial = TextTag.Make "#404040" "#FFFF00" // Dark on Yellow
+
+// Range colouring information
+type internal ColourTag =
+    { style : TextTag
+      line : int
+      column : int
+      endline : int
+      endcolumn : int }
+
 type MainWindow () as this =
     inherit Window()
 
@@ -324,6 +345,68 @@ type MainWindow () as this =
             | o -> o + 2
           let visbleName = displayname.Substring(offset)
 
+          let (|Select|_|) (pattern : String) offered =
+            if (fst offered)
+               |> String.IsNullOrWhiteSpace
+               |> not
+               && pattern.StartsWith(fst offered, StringComparison.Ordinal)
+            then Some offered
+            else None
+
+          let SelectStyle because excluded =
+            match (because, excluded) with
+            | Select "author declared (" _ -> TextTag.Declared
+            | Select "tool-generated: " _ -> TextTag.Automatic
+            | Select "static analysis: " _ -> TextTag.StaticAnalysis
+            | (_, true) -> TextTag.Excluded
+            | _ -> TextTag.NotVisited
+
+          let CoverageToTag(n : XPathNavigator) =
+            let excluded = Boolean.TryParse(n.GetAttribute("excluded", String.Empty)) |> snd
+            let visitcount = Int32.TryParse(n.GetAttribute("visitcount", String.Empty)) |> snd
+            let line = n.GetAttribute("line", String.Empty)
+            let column = n.GetAttribute("column", String.Empty)
+            let endline = n.GetAttribute("endline", String.Empty)
+            let endcolumn = n.GetAttribute("endcolumn", String.Empty)
+            // Extension behaviour for textual signalling for three lines
+            n.MoveToParent() |> ignore
+            let because = n.GetAttribute("excluded-because", String.Empty)
+            { style =
+                if visitcount = 0 then SelectStyle because excluded
+                else TextTag.Visited
+              line = Int32.TryParse(line) |> snd
+              column = (Int32.TryParse(column) |> snd)
+              endline = Int32.TryParse(endline) |> snd
+              endcolumn = (Int32.TryParse(endcolumn) |> snd) }
+
+          let FilterCoverage lines (n : ColourTag) =
+            n.line > 0 && n.endline > 0 && n.line <= lines && n.endline <= lines
+
+          let TagByCoverage _ _ _ = //(buff : TextBox) lines (n : ColourTag) =
+            ()
+            //// bound by current line length in case we're looking from stale coverage
+            //let line = buff.GetIterAtLine(n.line - 1)
+
+            //let from =
+            //  if line.CharsInLine = 0 then line
+            //  else buff.GetIterAtLineOffset(n.line - 1, Math.Min(n.column, line.CharsInLine) - 1)
+
+            //let endline = buff.GetIterAtLine(n.endline - 1)
+
+            //let until =
+            //  if endline.CharsInLine = 0 then endline
+            //  else buff.GetIterAtLineOffset(n.endline - 1, Math.Min(n.endcolumn, endline.CharsInLine) - 1)
+
+            //buff.ApplyTag(tag, from, until)
+
+          let MarkCoverage (root : XPathNavigator) textBox (lines: string[]) filename =
+            let lc = lines.Length
+            root.Select("//seqpnt[@document='" + filename + "']")
+            |> Seq.cast<XPathNavigator>
+            |> Seq.map CoverageToTag
+            |> Seq.filter (FilterCoverage lc)
+            |> Seq.iter (TagByCoverage textBox lines)
+
           let newrow = TreeViewItem()
           newrow.DoubleTapped
           |> Event.add(fun _ -> let text = this.FindControl<TextBox>("Source")
@@ -365,11 +448,15 @@ type MainWindow () as this =
 
                                            // Scroll into mid-view -- not entirely reliable
                                            text.CaretIndex <- textLines
-                                                              |> Seq.take scroll
+                                                              |> Seq.take capped
                                                               |> Seq.map (fun l -> l.Length + 1) //System.Environment.NewLine.Length)
                                                               |> Seq.sum
 
                                            // TODO -- colouring
+                                           let root = x.m.Clone()
+                                           root.MoveToRoot()
+                                           MarkCoverage root text textLines path
+                                           // MarkBranches root text path
 
                                         with
                                         | x ->  let caption = UICommon.GetResourceString "LoadError"
