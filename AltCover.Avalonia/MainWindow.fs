@@ -342,11 +342,17 @@ type MainWindow () as this =
                                    text.FontSize <- 16.0
                                    text.FontStyle <- FontStyle.Normal
 
-                                   // offset of line 
-                                   // TODO how much more to scroll into mid-view?
-                                   text.CaretIndex <- File.ReadAllLines path
-                                                      |> Seq.take (line-1)
-                                                      |> Seq.map (fun l -> l.Length + System.Environment.NewLine.Length)
+                                   let extra = (0.6 * text.Bounds.Height / text.FontSize) |> int
+
+                                   let textLines = File.ReadAllLines path
+                                   let scroll = line - 1 + extra
+                                   let capped = if scroll >= textLines.Length then textLines.Length - 1
+                                                else scroll
+
+                                   // Scroll into mid-view
+                                   text.CaretIndex <- textLines
+                                                      |> Seq.take scroll
+                                                      |> Seq.map (fun l -> l.Length + 1) //System.Environment.NewLine.Length)
                                                       |> Seq.sum
 
                                    // TODO -- colouring
