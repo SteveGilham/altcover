@@ -222,4 +222,11 @@ https://docs.microsoft.com/en-us/visualstudio/designers/the-visual-studio-image-
 kaj de la Tango Project
 http://tango.freedesktop.org/Tango_Icon_Library#Download</value>
   </data>
+  <data name="LoadInfo" xml:space="preserve">
+    <value>Noto</value>
+  </data>
+  <data name="No source location" xml:space="preserve">
+    <value>Metodo {0}
+havas neniun respondan fontan lokon</value>
+  </data>
 </root>

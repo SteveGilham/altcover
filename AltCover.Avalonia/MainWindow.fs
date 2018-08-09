@@ -325,40 +325,54 @@ type MainWindow () as this =
 
           let newrow = TreeViewItem()
           newrow.DoubleTapped
-          |> Event.add(fun _ -> let points = x.m.SelectChildren("seqpnt", String.Empty)
+          |> Event.add(fun _ -> let text = this.FindControl<TextBox>("Source")
+                                let points = x.m.SelectChildren("seqpnt", String.Empty)
                                               |> Seq.cast<XPathNavigator>
-                                let point = points 
-                                            |> Seq.head
-                                let path = point.GetAttribute("document", String.Empty)
-                                let line = point.GetAttribute("line", String.Empty)
-                                           |>Int32.TryParse
-                                           |> snd
-                                try
-                                   let text = this.FindControl<TextBox>("Source")
+                                if Seq.isEmpty points then
+                                    let caption = UICommon.GetResourceString "LoadInfo"
+                                    this.ShowMessageBox MessageType.Info caption <|
+                                                    String.Format(
+                                                        System.Globalization.CultureInfo.CurrentCulture,
+                                                        UICommon.GetResourceString "No source location",
+                                                        displayname)
+                                else
+                                    let point = points
+                                                |> Seq.head
+                                    let path = point.GetAttribute("document", String.Empty)
+                                    let info = new FileInfo(path)
+                                    let current = new FileInfo(coverageFiles.Head)
+                                    if (not info.Exists) then this.MissingSourceThisFileMessage current info
+                                    else if (info.LastWriteTimeUtc > current.LastWriteTimeUtc) then
+                                      this.OutdatedCoverageThisFileMessage current info
+                                    else
+                                        let line = point.GetAttribute("line", String.Empty)
+                                                   |>Int32.TryParse
+                                                   |> snd
+                                        try
+                                           // TODO -- font  size control too
+                                           text.Text <- File.ReadAllText path
+                                           text.FontFamily <- FontFamily(Persistence.readFont())
+                                           text.FontSize <- 16.0
+                                           text.FontStyle <- FontStyle.Normal
 
-                                   // TODO -- font  size control too
-                                   text.Text <- File.ReadAllText path
-                                   text.FontFamily <- FontFamily(Persistence.readFont())
-                                   text.FontSize <- 16.0
-                                   text.FontStyle <- FontStyle.Normal
+                                           let extra = (0.6 * text.Bounds.Height / text.FontSize) |> int
 
-                                   let extra = (0.6 * text.Bounds.Height / text.FontSize) |> int
+                                           let textLines = File.ReadAllLines path
+                                           let scroll = line - 1 + extra
+                                           let capped = if scroll >= textLines.Length then textLines.Length - 1
+                                                        else scroll
 
-                                   let textLines = File.ReadAllLines path
-                                   let scroll = line - 1 + extra
-                                   let capped = if scroll >= textLines.Length then textLines.Length - 1
-                                                else scroll
+                                           // Scroll into mid-view -- not entirely reliable
+                                           text.CaretIndex <- textLines
+                                                              |> Seq.take scroll
+                                                              |> Seq.map (fun l -> l.Length + 1) //System.Environment.NewLine.Length)
+                                                              |> Seq.sum
 
-                                   // Scroll into mid-view
-                                   text.CaretIndex <- textLines
-                                                      |> Seq.take scroll
-                                                      |> Seq.map (fun l -> l.Length + 1) //System.Environment.NewLine.Length)
-                                                      |> Seq.sum
+                                           // TODO -- colouring
 
-                                   // TODO -- colouring
-
-                                with
-                                | x -> this.FindControl<TextBox>("Source").Text <- x.Message)
+                                        with
+                                        | x ->  let caption = UICommon.GetResourceString "LoadError"
+                                                this.ShowMessageBox MessageType.Error caption x.Message)
           let display = MakeTreeNode (displayname.Substring(offset)) <| MethodIcon.Force()
           newrow.Header <- display
           model.Add newrow
