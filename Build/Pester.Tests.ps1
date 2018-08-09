@@ -568,3 +568,27 @@ Describe "ConvertFrom-NCover" {
     $result | Should -Be $expected.Replace("`r", "") ###.Substring(0,11680)
   }
 }
+
+Describe "Compress-Branching" {
+  It "Removes interior branches" {
+    $xml = Compress-Branching -WithinSequencePoint -InputFile "./Tests/HandRolledMonoCoverage.xml" -OutputFile "./_Packaging/CompressInterior.xml"
+  }
+  It "Unifies equivalent branches" {
+    $xml = Compress-Branching -SameSpan -InputFile "./Tests/HandRolledMonoCoverage.xml" -OutputFile "./_Packaging/SameSpan.xml"
+  }
+  It "DoesBoth" {
+    $xml = Compress-Branching -SameSpan -WithinSequencePoint -InputFile "./Tests/HandRolledMonoCoverage.xml" -OutputFile "./_Packaging/CompressBoth.xml"  
+  }
+  It "DoesAtLeatOne" {
+    $fail = $false
+    try {
+	  $xml = Compress-Branching -InputFile "./Tests/HandRolledMonoCoverage.xml" -OutputFile "./_Packaging/CompressBoth.xml"  
+	  $fail = $true
+	}
+	catch {
+	  $_.Exception.Message | Should -BeLikeExactly 'Parameter set cannot be resolved using the specified named parameters.*'
+	}
+
+	$fail | Should -BeFalse
+  }
+}

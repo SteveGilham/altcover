@@ -21,35 +21,41 @@ type CompressBranchingCommand(outputFile:String) =
   new () = CompressBranchingCommand(String.Empty)
 
   [<SuppressMessage("Microsoft.Design", "CA1059", Justification="converts concrete types")>]
-  [<Parameter(ParameterSetName = "XmlDoc", Mandatory = true, Position = 1,
+  [<Parameter(ParameterSetName = "XmlDocA", Mandatory = true, Position = 1,
+      ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
+  [<Parameter(ParameterSetName = "XmlDocB", Mandatory = true, Position = 1,
       ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
   member val XmlDocument:IXPathNavigable = null with get, set
 
-  [<Parameter(ParameterSetName = "FromFile", Mandatory = true, Position = 1,
+  [<Parameter(ParameterSetName = "FromFileA", Mandatory = true, Position = 1,
+      ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
+  [<Parameter(ParameterSetName = "FromFileB", Mandatory = true, Position = 1,
       ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
   member val InputFile:string = null with get, set
 
-  [<Parameter(ParameterSetName = "XmlDoc", Mandatory = true, Position = 2,
+  [<Parameter(ParameterSetName = "XmlDocA", Mandatory = false, Position = 3,
       ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  [<Parameter(ParameterSetName = "FromFile", Mandatory = true, Position = 2,
+  [<Parameter(ParameterSetName = "FromFileA", Mandatory = false, Position = 3,
       ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  member val Assembly:string array = [| |] with get, set
-
-  [<Parameter(ParameterSetName = "XmlDoc", Mandatory = false, Position = 3,
+  [<Parameter(ParameterSetName = "XmlDocB", Mandatory = false, Position = 3,
       ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  [<Parameter(ParameterSetName = "FromFile", Mandatory = false, Position = 3,
+  [<Parameter(ParameterSetName = "FromFileB", Mandatory = false, Position = 3,
       ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
   member val OutputFile:string = outputFile with get, set
 
-  [<Parameter(ParameterSetName = "XmlDoc", Mandatory = false, Position = 4,
+  [<Parameter(ParameterSetName = "XmlDocA", Mandatory = true, Position = 4,
       ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  [<Parameter(ParameterSetName = "FromFile", Mandatory = false, Position = 4,
+  [<Parameter(ParameterSetName = "FromFileA", Mandatory = true, Position = 4,
       ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
   member val SameSpan:SwitchParameter = SwitchParameter(false) with get, set
 
-  [<Parameter(ParameterSetName = "XmlDoc", Mandatory = false, Position = 4,
+  [<Parameter(ParameterSetName = "XmlDocA", Mandatory = false, Position = 4,
       ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  [<Parameter(ParameterSetName = "FromFile", Mandatory = false, Position = 4,
+  [<Parameter(ParameterSetName = "FromFileA", Mandatory = false, Position = 4,
+      ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
+  [<Parameter(ParameterSetName = "XmlDocB", Mandatory = true, Position = 4,
+      ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
+  [<Parameter(ParameterSetName = "FromFileB", Mandatory = true, Position = 4,
       ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
   member val WithinSequencePoint:SwitchParameter = SwitchParameter(false) with get, set
 
@@ -68,7 +74,7 @@ type CompressBranchingCommand(outputFile:String) =
     try
       let where = self.SessionState.Path.CurrentLocation.Path
       Directory.SetCurrentDirectory where
-      if self.ParameterSetName = "FromFile" then
+      if self.ParameterSetName.StartsWith("FromFile", StringComparison.Ordinal) then
         self.XmlDocument <- XPathDocument self.InputFile
                 
       // Validate
