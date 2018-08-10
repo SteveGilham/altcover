@@ -159,16 +159,14 @@ _Target "BuildRelease" (fun _ ->
 )
 
 _Target "BuildDebug" (fun _ ->
-    !! "**/AltCove*.sln"  // include demo projects
-    |> Seq.filter (fun n -> n.IndexOf(".core.") = -1)
-    |> Seq.filter (fun n -> n.IndexOf(".dotnet.") = -1)
-    |> Seq.iter (MSBuild.build (fun p ->
+    "AltCover.sln"
+    |> MSBuild.build (fun p ->
             { p with
                 Verbosity = Some MSBuildVerbosity.Normal
                 Properties = [
                                "Configuration", "Debug"
                                "DebugSymbols", "True"
-                             ]}))
+                             ]})
 
     "./altcover.core.sln"
     |> DotNet.build
@@ -1697,92 +1695,6 @@ _Target "ReleaseDotNetWithDotNet" (fun _ ->
     Actions.ValidateSample1 "./_Reports/ReleaseDotNetWithDotNet.xml" "ReleaseDotNetWithDotNet"
 )
 
-_Target "ReleaseXUnitDotNetDemo" (fun _ ->
-  try
-    Directory.ensure "./_Reports"
-    "./Demo/xunit-dotnet/bin" |> Path.getFullName |> Shell.cleanDir
-
-    "./Demo/xunit-dotnet/xunit-dotnet.csproj"
-    |> DotNet.build
-        (fun p ->
-            { p with
-                Configuration = DotNet.BuildConfiguration.Debug
-                Common = dotnetOptions p.Common})
-
-    let unpack = Path.getFullName "_Packaging/Unpack/tools/netcoreapp2.0"
-    let x = Path.getFullName "./Demo/xunit-dotnet/bin/ReleaseXUnitDotNetDemo.xml"
-    let o = Path.getFullName "./Demo/xunit-dotnet/bin/Debug/netcoreapp2.0/__Instrumented.ReleaseXUnitDotNetDemo"
-    let i = Path.getFullName "./Demo/xunit-dotnet/bin/Debug/netcoreapp2.0"
-    Actions.RunDotnet (fun o -> {dotnetOptions o with WorkingDirectory = unpack}) ""
-                      ("AltCover.dll -x \"" + x + "\" -o \"" + o + "\" -i \"" + i + "\" --inplace")
-                      "ReleaseXUnitDotNetDemo"
-
-    let result = DotNet.exec (fun o -> {dotnetOptions o with WorkingDirectory = Path.getFullName "./Demo/xunit-dotnet"})
-                    "test" "--no-build --configuration Debug xunit-dotnet.csproj"
-    Assert.That(result.ExitCode, Is.EqualTo 1, "Unexpected unit test return")
-
-    use coverageFile = new FileStream(x, FileMode.Open, FileAccess.Read, FileShare.None, 4096, FileOptions.SequentialScan)
-    let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
-    let recorded = coverageDocument.Descendants(XName.Get("seqpnt"))
-                   |> Seq.toList
-
-    let visits = ["0"; "1"; "2"]
-                 |> List.map (fun n ->
-                        recorded
-                        |> Seq.filter (fun x -> x.Attribute(XName.Get("visitcount")).Value = n)
-                        |> Seq.length)
-
-    Assert.That(visits, Is.EquivalentTo[3; 5; 3])
-  finally
-    Console.ResetColor()
-)
-
-_Target "ReleaseXUnitDotNetRunnerDemo" (fun _ ->
-  try
-    Directory.ensure "./_Reports"
-    "./Demo/xunit-dotnet/bin" |> Path.getFullName |> Shell.cleanDir
-
-    "./Demo/xunit-dotnet/xunit-dotnet.csproj"
-    |> DotNet.build
-        (fun p ->
-            { p with
-                Configuration = DotNet.BuildConfiguration.Debug
-                Common = dotnetOptions p.Common})
-
-    let unpack = Path.getFullName "_Packaging/Unpack/tools/netcoreapp2.0"
-    let x = Path.getFullName "./Demo/xunit-dotnet/bin/ReleaseXUnitDotNetDemo.xml"
-    let o = Path.getFullName "./Demo/xunit-dotnet/bin/Debug/netcoreapp2.0/__Instrumented.ReleaseXUnitDotNetDemo"
-    let i = Path.getFullName "./Demo/xunit-dotnet/bin/Debug/netcoreapp2.0"
-    Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = unpack}) ""
-                      ("AltCover.dll -x \"" + x + "\" -o \"" + o + "\" -i \"" + i + "\" --inplace")
-                      "ReleaseXUnitDotNetRunnerDemo"
-
-    let runner = Path.getFullName "_Packaging/Unpack/tools/netcoreapp2.0/AltCover.dll"
-
-    // Run
-    Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory  = o}) ""
-                          (runner +
-                          " Runner -x \"dotnet\" -r \"" + i +
-                          "\" -w \"" + (Path.getFullName "./Demo/xunit-dotnet") +
-                          "\" -- test --no-build --configuration Debug  xunit-dotnet.csproj")
-                          "ReleaseXUnitDotNetRunnerDemo test"
-
-    use coverageFile = new FileStream(x, FileMode.Open, FileAccess.Read, FileShare.None, 4096, FileOptions.SequentialScan)
-    let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
-    let recorded = coverageDocument.Descendants(XName.Get("seqpnt"))
-                   |> Seq.toList
-
-    let visits = ["0"; "1"; "2"]
-                 |> List.map (fun n ->
-                        recorded
-                        |> Seq.filter (fun x -> x.Attribute(XName.Get("visitcount")).Value = n)
-                        |> Seq.length)
-
-    Assert.That(visits, Is.EquivalentTo[3; 5; 3])
-  finally
-    Console.ResetColor()
-)
-
 _Target "ReleaseFSharpTypesDotNetRunner" ( fun _ ->
     Directory.ensure "./_Reports"
     let unpack = Path.getFullName "_Packaging/Unpack/tools/netcoreapp2.0"
@@ -2858,12 +2770,6 @@ Target.activateFinal "ResetConsoleColours"
 "Unpack"
 ==> "ReleaseXUnitFSharpTypesDotNetFullRunner"
 ==> "Deployment"
-
-"Unpack"
-==> "ReleaseXUnitDotNetDemo"
-
-"Unpack"
-==> "ReleaseXUnitDotNetRunnerDemo"
 
 "Analysis"
 ==> "All"

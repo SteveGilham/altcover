@@ -1,11 +1,5 @@
 ﻿namespace AltCover.Commands
 
-#if MONO
-module XhtmlReports =
-    let hello name =
-        printfn "Hello %s" name
-#else
-
 open System
 open System.Diagnostics.CodeAnalysis
 open System.IO
@@ -87,5 +81,3 @@ type ConvertToBarChartCommand(outputFile:String) =
       self.WriteObject rewrite
     finally
       Directory.SetCurrentDirectory here
-
-#endif
