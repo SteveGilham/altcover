@@ -1,5 +1,4 @@
-﻿using Microsoft.FSharp.Core;
-using System;
+﻿using System;
 
 namespace AltCover
 {
@@ -35,7 +34,7 @@ namespace AltCover
         public string InputDirectory { get; set; }
         public string OutputDirectory { get; set; }
         public string[] SymbolDirectories { get; set; }
-#if NETCOREAPP2_0
+#if NETSTANDARD2_0
         public string[] Dependencies { get; set; }
 #else
         public string[] Keys { get; set; }
@@ -65,7 +64,7 @@ namespace AltCover
                          InputDirectory,
                          OutputDirectory,
                          SymbolDirectories,
-#if NETCOREAPP2_0
+#if NETSTANDARD2_0
                          Dependencies,
 #else
                          Keys,

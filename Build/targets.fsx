@@ -1352,6 +1352,7 @@ _Target "Packaging" (fun _ ->
     let recorder = Path.getFullName "_Binaries/AltCover/Release+AnyCPU/AltCover.Recorder.dll"
     let posh = Path.getFullName "_Binaries/AltCover.PowerShell/Release+AnyCPU/AltCover.PowerShell.dll"
     let csapi = Path.getFullName "_Binaries/AltCover.CSApi/Release+AnyCPU/AltCover.CSApi.dll"
+    let cake = Path.getFullName "_Binaries/AltCover.Cake/Release+AnyCPU/AltCover.Cake.dll"
     let vis = Path.getFullName "_Binaries/AltCover.Visualizer/Release+AnyCPU/AltCover.Visualizer.exe"
     let packable = Path.getFullName "./_Binaries/README.html"
     let resources = DirectoryInfo.getMatchingFilesRecursive "AltCover.resources.dll" (DirectoryInfo.ofPath (Path.getFullName "_Binaries/AltCover/Release+AnyCPU"))
@@ -1373,7 +1374,9 @@ _Target "Packaging" (fun _ ->
                             [
                                 (AltCover, Some "lib/net45", None)
                                 (recorder, Some "lib/net45", None)
+                                (posh, Some "lib/net45", None)
                                 (csapi, Some "lib/net45", None)
+                                (cake, Some "lib/net45", None)
                                 (fscore, Some "lib/net45", None)
                                 (options, Some "lib/net45", None)
                                 (packable, Some "", None)
@@ -1410,9 +1413,13 @@ _Target "Packaging" (fun _ ->
                            |> Seq.map (fun x -> (x, Some (where + Path.GetFileName x), None))
                            |> Seq.toList
 
-    let csapiFiles where = (!! "./_Binaries/AltCover.CSApi/Release+AnyCPU/netcoreapp2.0/*.CSApi.*")
+    let cakeFiles where = (!! "./_Binaries/AltCover.Cake/Release+AnyCPU/netstandard2.0/AltCover.C*.*")
                            |> Seq.map (fun x -> (x, Some (where + Path.GetFileName x), None))
                            |> Seq.toList
+    let fakeFiles where = (!! "./_Binaries/AltCover.Fake/Release+AnyCPU/netstandard2.0/AltCover.F*.*")
+                           |> Seq.map (fun x -> (x, Some (where + Path.GetFileName x), None))
+                           |> Seq.toList
+     
 
     let publish = (Path.getFullName "./_Publish").Length
     let netcoreFiles where = (!! "./_Publish/**/*.*")
@@ -1444,22 +1451,36 @@ _Target "Packaging" (fun _ ->
     printfn "Executing on %A" Environment.OSVersion
 
     [
-        (List.concat [applicationFiles; resourceFiles "tools/net45/"; netcoreFiles "tools/netcoreapp2.0/"; poshFiles "tools/netcoreapp2.0/"; otherFiles],
+        (List.concat [applicationFiles; resourceFiles "tools/net45/"; 
+                      netcoreFiles "tools/netcoreapp2.0/"; 
+                      poshFiles "tools/netcoreapp2.0/"; otherFiles],
          "_Packaging",
          "./Build/AltCover.nuspec",
          "altcover"
         )
-        (List.concat [apiFiles; resourceFiles "lib/net45/"; netstdFiles "lib/netstandard2.0/"; csapiFiles "lib/netstandard2.0/"],
+
+        (List.concat [apiFiles
+                      resourceFiles "lib/net45/"
+                      netstdFiles "lib/netstandard2.0/"
+                      cakeFiles "lib/netstandard2.0/"
+                      fakeFiles "lib/netstandard2.0/"
+                      ],
          "_Packaging.api",
          "./_Generated/altcover.api.nuspec",
          "altcover.api"
         )
-        (List.concat[netcoreFiles "lib/netcoreapp2.0/"; csapiFiles "lib/netcoreapp2.0/"; poshFiles "lib/netcoreapp2.0/"; dotnetFiles; otherFilesDotnet],
+
+        (List.concat[netcoreFiles "lib/netcoreapp2.0/"; 
+                     netstdFiles "lib/netstandard2.0/"
+                     cakeFiles "lib/netstandard2.0/"
+                     fakeFiles "lib/netstandard2.0/"
+                     poshFiles "lib/netcoreapp2.0/"; dotnetFiles; otherFilesDotnet],
          "_Packaging.dotnet",
          "./_Generated/altcover.dotnet.nuspec",
          "altcover.dotnet"
         )
-        (List.concat [globalFiles; netcoreFiles "tools/netcoreapp2.1/any/"; csapiFiles "tools/netcoreapp2.1/any/"; poshFiles "tools/netcoreapp2.1/any/"; auxFiles; otherFilesGlobal],
+        (List.concat [globalFiles; netcoreFiles "tools/netcoreapp2.1/any/"
+                      poshFiles "tools/netcoreapp2.1/any/"; auxFiles; otherFilesGlobal],
          "_Packaging.global",
          "./_Generated/altcover.global.nuspec",
          "altcover.global"
@@ -2020,6 +2041,10 @@ let _Target s f =
 
 _Target "DoIt" (fun _ ->
   {{AltCover.Logging.Default with Info = printfn "%s"}}
+  |> AltCover.Api.Version
+  |> printfn "Returned %A"
+
+  AltCover.Fake.Logging.Default
   |> AltCover.Api.Version
   |> printfn "Returned %A"
 

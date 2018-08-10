@@ -3,8 +3,8 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <RootNamespace>AltCover.CSApi</RootNamespace>
-    <AssemblyName>AltCover.CSApi</AssemblyName>
+    <RootNamespace>AltCover.Cake</RootNamespace>
+    <AssemblyName>AltCover.Cake</AssemblyName>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
@@ -25,10 +25,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\AltCover\altcover.core.fsproj" />
+    <PackageReference Include="Cake" Version="0.29.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Update="FSharp.Core" Version="4.3.4" />
+    <ProjectReference Include="..\AltCover.CSApi\altcover.csapi.core.csproj" />
   </ItemGroup>
+
 </Project>

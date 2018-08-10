@@ -1,10 +1,10 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <RootNamespace>AltCover.Fake</RootNamespace>
+    <AssemblyName>AltCover.Fake</AssemblyName>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <RootNamespace>AltCover.CSApi</RootNamespace>
-    <AssemblyName>AltCover.CSApi</AssemblyName>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
@@ -21,7 +21,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\_Generated\AssemblyVersion.cs" Link="AssemblyVersion.cs" />
+    <Compile Include="..\_Generated\AssemblyVersion.fs" Link="AssemblyVersion.fs" />
+    <Compile Include="Fake.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FAKE.Core.Trace" Version="5.0.0" />
   </ItemGroup>
 
   <ItemGroup>

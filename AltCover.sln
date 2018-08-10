@@ -80,6 +80,8 @@ Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Tests.Visualizer", "Tests.V
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AltCover.CSApi", "AltCover.CSApi\AltCover.CSApi.csproj", "{176C53E7-85B4-40A8-AE46-95894D08535C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AltCover.Cake", "AltCover.Cake\AltCover.Cake.csproj", "{04CF1D47-825F-44F3-80C4-7F0885EB7139}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -238,6 +240,12 @@ Global
 		{176C53E7-85B4-40A8-AE46-95894D08535C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{176C53E7-85B4-40A8-AE46-95894D08535C}.Release|Any CPU.Build.0 = Release|Any CPU
 		{176C53E7-85B4-40A8-AE46-95894D08535C}.Release|x86.ActiveCfg = Release|Any CPU
+		{04CF1D47-825F-44F3-80C4-7F0885EB7139}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{04CF1D47-825F-44F3-80C4-7F0885EB7139}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{04CF1D47-825F-44F3-80C4-7F0885EB7139}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{04CF1D47-825F-44F3-80C4-7F0885EB7139}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{04CF1D47-825F-44F3-80C4-7F0885EB7139}.Release|Any CPU.Build.0 = Release|Any CPU
+		{04CF1D47-825F-44F3-80C4-7F0885EB7139}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
