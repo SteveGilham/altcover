@@ -81,7 +81,7 @@ type CompressBranchingCommand(outputFile:String) =
 
                                                                    let by = if self.SameSpan.IsPresent then
                                                                               let (kill, keep) = bx
-                                                                                                 |> List.groupBy (fun b -> (b.GetAttribute("offset"), b.GetAttribute("offsetend")))
+                                                                                                 |> List.groupBy (fun b -> (b.GetAttribute("offset"), b.GetAttribute("offsetchain"),b.GetAttribute("offsetend")))
                                                                                                  |> List.fold (fun (ki,ke) (_, bz) -> let totalVisits = bz
                                                                                                                                                         |> Seq.map (fun b -> b.GetAttribute("vc")
                                                                                                                                                                              |> Int32.TryParse |> snd)
@@ -93,6 +93,16 @@ type CompressBranchingCommand(outputFile:String) =
                                                                               |> Seq.iter (fun b -> b.ParentNode.RemoveChild(b) |> ignore)
                                                                               keep
                                                                              else bx
+
+                                                                   // Fix up what remains
+                                                                   by
+                                                                   |> List.rev // because the list will have been built up in reverse order
+                                                                   |> Seq.mapi (fun i b -> (i,b))
+                                                                   |> Seq.groupBy (fun (_,b) ->  b.GetAttribute("offset"))
+                                                                   |> Seq.iter (fun (_, paths) -> paths  // assume likely ranges for these numbers!
+                                                                                                  |> Seq.sortBy (fun (n,p) -> n + 100 * (p.GetAttribute("offsetend")
+                                                                                                                                         |> Int32.TryParse |> snd))
+                                                                                                  |> Seq.iteri (fun i (_,p) -> p.SetAttribute("path", (i + 1).ToString(CultureInfo.InvariantCulture))))
 
                                                                    s.SetAttribute("bec", by.Length.ToString(CultureInfo.InvariantCulture))
                                                                    s.SetAttribute("bev", "0")
@@ -123,6 +133,10 @@ type CompressBranchingCommand(outputFile:String) =
 
       // tidy up here
       AltCover.Runner.PostProcess null AltCover.Base.ReportFormat.OpenCover xmlDocument
+      let xmlDeclaration = xmlDocument.CreateXmlDeclaration("1.0",
+                                       "utf-8",
+                                       null)
+      xmlDocument.InsertBefore(xmlDeclaration, xmlDocument.FirstChild) |> ignore
 
       if self.OutputFile |> String.IsNullOrWhiteSpace |> not then
         xmlDocument.Save(self.OutputFile)

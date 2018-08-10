@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <CoverageSession xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <Summary numSequencePoints="2926" visitedSequencePoints="14" numBranchPoints="1995" visitedBranchPoints="6" sequenceCoverage="100" branchCoverage="100" maxCyclomaticComplexity="13" minCyclomaticComplexity="0" visitedClasses="1" numClasses="707" visitedMethods="1" numMethods="1016" minCrapScore="7" maxCrapScore="7" />
   <Modules>
@@ -36,11 +37,11 @@
                 <SequencePoint vc="2" uspid="4556" ordinal="13" offset="256" sl="49" sc="20" el="49" ec="72" bec="0" bev="0" fileid="768" />
               </SequencePoints>
               <BranchPoints>
-                <BranchPoint vc="14" uspid="4560" ordinal="3" offset="8" sl="42" path="3" offsetchain="45" offsetend="120" fileid="768" />
-                <BranchPoint vc="380" uspid="4561" ordinal="4" offset="8" sl="42" path="4" offsetchain="47" offsetend="120" fileid="768" />
-                <BranchPoint vc="1990" uspid="4562" ordinal="5" offset="8" sl="42" path="5" offsetchain="49" offsetend="182" fileid="768" />
-                <BranchPoint vc="3" uspid="4563" ordinal="6" offset="8" sl="42" path="6" offsetchain="54" offsetend="213" fileid="768" />
-                <BranchPoint vc="2" uspid="4564" ordinal="7" offset="8" sl="42" path="7" offsetchain="59" offsetend="239" fileid="768" />
+                <BranchPoint vc="14" uspid="4560" ordinal="3" offset="8" sl="42" path="1" offsetchain="45" offsetend="120" fileid="768" />
+                <BranchPoint vc="380" uspid="4561" ordinal="4" offset="8" sl="42" path="2" offsetchain="45" offsetend="120" fileid="768" />
+                <BranchPoint vc="1990" uspid="4562" ordinal="5" offset="8" sl="42" path="3" offsetchain="49" offsetend="182" fileid="768" />
+                <BranchPoint vc="3" uspid="4563" ordinal="6" offset="8" sl="42" path="4" offsetchain="54" offsetend="213" fileid="768" />
+                <BranchPoint vc="2" uspid="4564" ordinal="7" offset="8" sl="42" path="5" offsetchain="59" offsetend="239" fileid="768" />
               </BranchPoints>
               <MethodPoint xsi:type="SequencePoint" vc="2441" uspid="4543" ordinal="0" offset="0" sl="42" sc="5" el="42" ec="22" bec="5" bev="0" fileid="768" />
             </Method>

@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <CoverageSession xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <Summary numSequencePoints="2926" visitedSequencePoints="14" numBranchPoints="1995" visitedBranchPoints="7" sequenceCoverage="100" branchCoverage="100" maxCyclomaticComplexity="13" minCyclomaticComplexity="0" visitedClasses="1" numClasses="707" visitedMethods="1" numMethods="1016" minCrapScore="7" maxCrapScore="7" />
   <Modules>
@@ -38,10 +39,10 @@
               <BranchPoints>
                 <BranchPoint vc="47" uspid="4558" ordinal="1" offset="8" sl="42" path="1" offsetchain="41" offsetend="64" fileid="768" />
                 <BranchPoint vc="5" uspid="4559" ordinal="2" offset="8" sl="42" path="2" offsetchain="43" offsetend="75" fileid="768" />
-                <BranchPoint vc="394" uspid="4561" ordinal="4" offset="8" sl="42" path="4" offsetchain="47" offsetend="120" fileid="768" />
-                <BranchPoint vc="1990" uspid="4562" ordinal="5" offset="8" sl="42" path="5" offsetchain="49" offsetend="182" fileid="768" />
-                <BranchPoint vc="3" uspid="4563" ordinal="6" offset="8" sl="42" path="6" offsetchain="54" offsetend="213" fileid="768" />
-                <BranchPoint vc="2" uspid="4564" ordinal="7" offset="8" sl="42" path="7" offsetchain="59" offsetend="239" fileid="768" />
+                <BranchPoint vc="394" uspid="4561" ordinal="4" offset="8" sl="42" path="3" offsetchain="45" offsetend="120" fileid="768" />
+                <BranchPoint vc="1990" uspid="4562" ordinal="5" offset="8" sl="42" path="4" offsetchain="49" offsetend="182" fileid="768" />
+                <BranchPoint vc="3" uspid="4563" ordinal="6" offset="8" sl="42" path="5" offsetchain="54" offsetend="213" fileid="768" />
+                <BranchPoint vc="2" uspid="4564" ordinal="7" offset="8" sl="42" path="6" offsetchain="59" offsetend="239" fileid="768" />
               </BranchPoints>
               <MethodPoint xsi:type="SequencePoint" vc="2441" uspid="4543" ordinal="0" offset="0" sl="42" sc="5" el="42" ec="22" bec="6" bev="0" fileid="768" />
             </Method>
