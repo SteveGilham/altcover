@@ -33,14 +33,7 @@ type ConvertToBarChartCommand(outputFile:String) =
       ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
   member val OutputFile:string = outputFile with get, set
 
-  override self.ProcessRecord() =
-    let here = Directory.GetCurrentDirectory()
-    try
-      let where = self.SessionState.Path.CurrentLocation.Path
-      Directory.SetCurrentDirectory where
-      if self.ParameterSetName = "FromFile" then
-        self.XmlDocument <- XPathDocument self.InputFile
-
+  member private self.DoConvert() =
       let navigator = self.XmlDocument.CreateNavigator()
       let format = if navigator.Select("/CoverageSession").OfType<XPathNavigator>().Any() then
                     AltCover.Base.ReportFormat.OpenCover
@@ -70,6 +63,17 @@ type ConvertToBarChartCommand(outputFile:String) =
       let doctype = rewrite.CreateDocumentType("html", null, null, null)
       rewrite.PrependChild(doctype) |> ignore
       XmlUtilities.PrependDeclaration rewrite
+      rewrite
+
+  override self.ProcessRecord() =
+    let here = Directory.GetCurrentDirectory()
+    try
+      let where = self.SessionState.Path.CurrentLocation.Path
+      Directory.SetCurrentDirectory where
+      if self.ParameterSetName = "FromFile" then
+        self.XmlDocument <- XPathDocument self.InputFile
+
+      let rewrite = self.DoConvert()
 
       if self.OutputFile |> String.IsNullOrWhiteSpace |> not then
         rewrite.Save(self.OutputFile)
