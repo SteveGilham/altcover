@@ -87,3 +87,10 @@ module internal XmlUtilities =
     | :? System.Security.SecurityException
     | :? BadImageFormatException
     | :? FileLoadException -> fallback
+
+  let PrependDeclaration (x:XmlDocument) =
+      let xmlDeclaration = x.CreateXmlDeclaration(
+                                        "1.0",
+                                        "utf-8",
+                                        null)
+      x.InsertBefore(xmlDeclaration, x.FirstChild) |> ignore

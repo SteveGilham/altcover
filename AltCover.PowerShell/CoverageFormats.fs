@@ -157,12 +157,7 @@ type ConvertToNCoverCommand(outputFile:String) =
       do
         use output = rewrite.CreateNavigator().AppendChild()
         transform.Transform (self.XmlDocument, output)
-
-      let xmlDeclaration = rewrite.CreateXmlDeclaration(
-                                        "1.0",
-                                        "utf-8",
-                                        null)
-      rewrite.InsertBefore(xmlDeclaration, rewrite.FirstChild) |> ignore
+      XmlUtilities.PrependDeclaration rewrite
 
       rewrite.SelectNodes("//method").OfType<XmlElement>()
       |> Seq.iter (fun m -> let c = m.GetAttribute("class")
