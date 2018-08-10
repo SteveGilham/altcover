@@ -1409,6 +1409,13 @@ _Target "Packaging" (fun _ ->
                                                        File.WriteAllText(name, text)
                                                        (name,b,c))
 
+    Directory.ensure "./_Intermediate/api"
+    let otherFilesApi = otherFiles
+                           |> List.map (fun (a,b,c) -> let text = File.ReadAllText(a).Replace("tools/netcoreapp2.0", "lib/netstandard2.0")
+                                                       let name = (Path.getFullName"./_Intermediate/api") @@ ("altcover.api" + Path.GetExtension a)
+                                                       File.WriteAllText(name, text)
+                                                       (name,b,c))
+
     let poshFiles where = (!! "./_Binaries/AltCover.PowerShell/Release+AnyCPU/netcoreapp2.0/*.PowerShell.*")
                            |> Seq.map (fun x -> (x, Some (where + Path.GetFileName x), None))
                            |> Seq.toList
@@ -1451,9 +1458,11 @@ _Target "Packaging" (fun _ ->
     printfn "Executing on %A" Environment.OSVersion
 
     [
-        (List.concat [applicationFiles; resourceFiles "tools/net45/"; 
-                      netcoreFiles "tools/netcoreapp2.0/"; 
-                      poshFiles "tools/netcoreapp2.0/"; otherFiles],
+        (List.concat [applicationFiles
+                      resourceFiles "tools/net45/"
+                      netcoreFiles "tools/netcoreapp2.0/"
+                      poshFiles "tools/netcoreapp2.0/"
+                      otherFiles],
          "_Packaging",
          "./Build/AltCover.nuspec",
          "altcover"
@@ -1464,23 +1473,29 @@ _Target "Packaging" (fun _ ->
                       netstdFiles "lib/netstandard2.0/"
                       cakeFiles "lib/netstandard2.0/"
                       fakeFiles "lib/netstandard2.0/"
+                      otherFilesApi
                       ],
          "_Packaging.api",
          "./_Generated/altcover.api.nuspec",
          "altcover.api"
         )
 
-        (List.concat[netcoreFiles "lib/netcoreapp2.0/"; 
+        (List.concat[netcoreFiles "lib/netcoreapp2.0/"
                      netstdFiles "lib/netstandard2.0/"
                      cakeFiles "lib/netstandard2.0/"
                      fakeFiles "lib/netstandard2.0/"
-                     poshFiles "lib/netcoreapp2.0/"; dotnetFiles; otherFilesDotnet],
+                     poshFiles "lib/netcoreapp2.0/"
+                     dotnetFiles
+                     otherFilesDotnet],
          "_Packaging.dotnet",
          "./_Generated/altcover.dotnet.nuspec",
          "altcover.dotnet"
         )
-        (List.concat [globalFiles; netcoreFiles "tools/netcoreapp2.1/any/"
-                      poshFiles "tools/netcoreapp2.1/any/"; auxFiles; otherFilesGlobal],
+        (List.concat [globalFiles
+                      netcoreFiles "tools/netcoreapp2.1/any/"
+                      poshFiles "tools/netcoreapp2.1/any/"
+                      auxFiles
+                      otherFilesGlobal],
          "_Packaging.global",
          "./_Generated/altcover.global.nuspec",
          "altcover.global"
