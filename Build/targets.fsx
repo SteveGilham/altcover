@@ -2044,8 +2044,7 @@ _Target "DoIt" (fun _ ->
   |> AltCover.Api.Version
   |> printfn "Returned %A"
 
-  AltCover.Fake.Logging.Default
-  |> AltCover.Api.Version
+  AltCover.Fake.Api.Version ()
   |> printfn "Returned %A"
 
   let cslog = AltCover.LogArgs()
