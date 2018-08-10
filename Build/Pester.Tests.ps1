@@ -568,3 +568,72 @@ Describe "ConvertFrom-NCover" {
     $result | Should -Be $expected.Replace("`r", "") ###.Substring(0,11680)
   }
 }
+
+Describe "Compress-Branching" {
+  It "Removes interior branches" {
+    $xml = Compress-Branching -WithinSequencePoint -InputFile "./Tests/Compressible.xml" -OutputFile "./_Packaging/CompressInterior.xml"
+	$xml | Should -BeOfType "System.Xml.XmlDocument"
+
+    $sw = new-object System.IO.StringWriter @()
+    $settings = new-object System.Xml.XmlWriterSettings @()
+    $settings.Indent = $true
+    $settings.IndentChars = "  "
+    $xw = [System.Xml.XmlWriter]::Create($sw, $settings)
+    $xml.WriteTo($xw)
+    $xw.Close()
+    $written = [System.IO.File]::ReadAllText("./_Packaging/CompressInterior.xml")
+    $expected = [System.IO.File]::ReadAllText("./Tests/CompressInterior.xml").Replace("`r", "")
+
+    $result = $sw.ToString().Replace("`r", "").Replace("utf-16", "utf-8")  
+    $result | Should -Be $expected
+    $written.Replace("`r", "") | Should -Be  $expected
+  }
+  It "Unifies equivalent branches" {
+    $xml = Compress-Branching -SameSpan -InputFile "./Tests/Compressible.xml" -OutputFile "./_Packaging/SameSpan.xml"
+	$xml | Should -BeOfType "System.Xml.XmlDocument"
+
+    $sw = new-object System.IO.StringWriter @()
+    $settings = new-object System.Xml.XmlWriterSettings @()
+    $settings.Indent = $true
+    $settings.IndentChars = "  "
+    $xw = [System.Xml.XmlWriter]::Create($sw, $settings)
+    $xml.WriteTo($xw)
+    $xw.Close()
+    $written = [System.IO.File]::ReadAllText("./_Packaging/SameSpan.xml")
+    $expected = [System.IO.File]::ReadAllText("./Tests/SameSpan.xml").Replace("`r", "")
+
+    $result = $sw.ToString().Replace("`r", "").Replace("utf-16", "utf-8")  
+    $result | Should -Be $expected
+    $written.Replace("`r", "") | Should -Be  $expected
+  }
+  It "DoesBoth" {
+    $xml = [xml](Get-Content  "./Tests/Compressible.xml") | Compress-Branching -SameSpan -WithinSequencePoint -OutputFile "./_Packaging/CompressBoth.xml"
+	$xml | Should -BeOfType "System.Xml.XmlDocument"
+
+    $sw = new-object System.IO.StringWriter @()
+    $settings = new-object System.Xml.XmlWriterSettings @()
+    $settings.Indent = $true
+    $settings.IndentChars = "  "
+    $xw = [System.Xml.XmlWriter]::Create($sw, $settings)
+    $xml.WriteTo($xw)
+    $xw.Close()
+    $written = [System.IO.File]::ReadAllText("./_Packaging/CompressBoth.xml")
+    $expected = ([System.IO.File]::ReadAllText("./Tests/CompressBoth.xml")).Replace("`r", "")
+
+    $result = $sw.ToString().Replace("`r", "").Replace("utf-16", "utf-8") 
+    $result | Should -Be $expected
+    $written.Replace("`r", "") | Should -Be  $expected
+  }
+  It "DoesAtLeastOne" {
+    $fail = $false
+    try {
+	  $xml = Compress-Branching -InputFile "./Tests/HandRolledMonoCoverage.xml" -OutputFile "./_Packaging/CompressBoth.xml"  
+	  $fail = $true
+	}
+	catch {
+	  $_.Exception.Message | Should -BeLikeExactly 'Parameter set cannot be resolved using the specified named parameters.*'
+	}
+
+	$fail | Should -BeFalse
+  }
+}

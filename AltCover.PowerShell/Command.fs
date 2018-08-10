@@ -1,11 +1,5 @@
 ﻿namespace AltCover.Commands
 
-#if MONO
-module Command =
-    let hello name =
-        printfn "Hello %s" name
-#else
-
 open System
 open System.IO
 open System.Management.Automation
@@ -214,4 +208,3 @@ type InvokeAltCoverCommand(runner:bool) =
         self.WriteError fail
     finally
       Directory.SetCurrentDirectory here
-#endif

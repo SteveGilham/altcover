@@ -4,9 +4,12 @@ Q. Never mind the fluff -- how do I get started?
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
+# 3.5.xxx (Cerulean series release 11)
+* `Compress-Branching` cmdlet to transform OpenCover's liberal idea of significant branches towards AltCover's more restricted approach -- chose either or both of `-SameSpan` to unify branches that go from the same start, and take the same trajectory to the same end (OpenCover issue #786 being one instance of this) and `-WithinSequencePoint` to remove branches interior to a statement (compiler generated things like stashing of lambdas, the hidden conditional `Dispose()` after a `using`, or inside F# inlines -- OpenCover issues #657, #807 being instances of this)
+
 # 3.5.587 (Cerulean series release 10)
-* [BUGFIX] Issue #28 -- handle strong-named dependencies properly in the .net core case (reinstating code too enthusiatically removed six months earlier)
-* [BUGFIX] Issue #28 -- Allow `dotnet test` to usefully specify exclusion filters when building (did not affect `dotnet test --no-build`)
+* [BUGFIX] Issue #29 -- handle strong-named dependencies properly in the .net core case (reinstating code too enthusiatically removed six months earlier)
+* [BUGFIX] Issue #29 -- Allow `dotnet test` to usefully specify exclusion filters when building (did not affect `dotnet test --no-build`)
 * Refactor in a few places to reduce code duplication 
 
 # 3.5.580 (Cerulean series release 9)
