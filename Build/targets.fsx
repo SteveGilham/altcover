@@ -2112,9 +2112,17 @@ _Target "DotnetTestIntegration" ( fun _ ->
     fsproj.Save "./_DotnetTest/dotnettest.fsproj"
     Shell.copy "./_DotnetTest" (!! "./Sample4/*.fs")
 
-    Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = Path.getFullName "_DotnetTest"}) "test"
-                      ("-v n /p:AltCover=true /p:AltCoverCallContext=[Fact]|0 /p:AltCoverIpmo=true /p:AltCoverGetVersion=true")
-                      "sample test returned with a non-zero exit code"
+    DotNet.test (fun to' -> to'.WithCommon (fun o' -> {dotnetOptions o' with WorkingDirectory = Path.getFullName "_DotnetTest"
+                                                                             Verbosity = Some DotNet.Verbosity.Minimal
+                                                                             CustomParams = Some "/p:AltCover=true /p:AltCoverCallContext=[Fact]|0 /p:AltCoverIpmo=true /p:AltCoverGetVersion=true"
+    })
+
+
+                        ) "dotnettest.fsproj"
+
+//    Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = Path.getFullName "_DotnetTest"}) "test"
+//                      ("-v n /p:AltCover=true /p:AltCoverCallContext=[Fact]|0 /p:AltCoverIpmo=true /p:AltCoverGetVersion=true")
+//                      "sample test returned with a non-zero exit code"
 
     let x = Path.getFullName "./_DotnetTest/coverage.xml"
 
@@ -2192,7 +2200,7 @@ _Target "DotnetTestIntegration" ( fun _ ->
     Shell.copy "./_DotnetTestLineCover" (!! "./Sample10/*.cs")
 
     Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = Path.getFullName "_DotnetTestLineCover"}) "test"
-                      ("-v n /p:AltCover=true /p:AltCoverLineCover=true")
+                      ("-v m /p:AltCover=true /p:AltCoverLineCover=true")
                       "sample test returned with a non-zero exit code"
 
     let x = Path.getFullName "./_DotnetTestLineCover/coverage.xml"
@@ -2221,7 +2229,7 @@ _Target "DotnetTestIntegration" ( fun _ ->
     Shell.copy "./_DotnetTestBranchCover" (!! "./Sample10/*.cs")
 
     Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = Path.getFullName "_DotnetTestBranchCover"}) "test"
-                      ("-v n /p:AltCover=true /p:AltCoverBranchCover=true")
+                      ("-v m /p:AltCover=true /p:AltCoverBranchCover=true")
                       "sample test returned with a non-zero exit code"
 
     let x = Path.getFullName "./_DotnetTestBranchCover/coverage.xml"
@@ -2241,7 +2249,7 @@ _Target "DotnetTestIntegration" ( fun _ ->
         pack.AddBeforeSelf inject
         proj.Save "./RegressionTesting/issue29/issue29.csproj"
         Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = Path.getFullName "RegressionTesting/issue29"}) "test"
-                          ("-v n /p:AltCover=true")
+                          ("-v m /p:AltCover=true")
                           "issue#29 regression test returned with a non-zero exit code"
 
   finally
