@@ -2049,6 +2049,9 @@ _Target "ApiUse" (fun _ ->
 
 open System
 open Fake.Core
+open Fake.DotNet
+open AltCover
+open AltCover.Fake.DotNet
 
 let _Target s f =
   Target.description s
@@ -2061,20 +2064,28 @@ _Target "DoIt" (fun _ ->
   AltCover.Fake.Api.Version ()
   |> Trace.trace
 
-  let cslog = AltCover.LogArgs()
   AltCover.CSApi.Version ()
   |> printfn "Returned %A"
+
+  let collect = { AltCover.CollectParams.Default with LcovReport = "x" }
+  let prepare = { AltCover.PrepareParams.Default with TypeFilter = [| "a"; "b" |] }
+
+  printfn "%s" (AltCover.DotNet.ToTestArguments prepare collect)
+
+  let t = DotNet.TestOptions.Create().WithParameters prepare collect
+  printfn "returned '%A'" t.Common.CustomParams
 )
 
 Target.runOrDefault "DoIt"
 """   
-    File.WriteAllText("./_ApiUse/DriveApi.fsx", String.Format(script, !Version))
+    File.WriteAllText("./_ApiUse/DriveApi.fsx", script)
 
     let dependencies = """// [ FAKE GROUP ]
 group NetcoreBuild
   source https://api.nuget.org/v3/index.json
   nuget Fake.Core 5.3.0
-  nuget Fake.Core.Target 5.3.0
+  nuget Fake.Core.Target 5.3.0  
+  nuget Fake.DotNet.Cli 5.3.0  
 
   source {0}
   nuget AltCover.Api {1} """

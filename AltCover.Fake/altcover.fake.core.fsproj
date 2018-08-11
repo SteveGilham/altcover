@@ -26,7 +26,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="FAKE.Core.Trace" Version="5.0.0" />
+    <PackageReference Include="FAKE.Core.Trace" Version="5.2.0" />
+    <PackageReference Include="FAKE.DotNet.Cli" Version="5.2.0" />
   </ItemGroup>
 
   <ItemGroup>
