@@ -22,10 +22,8 @@ module DotNet =
     let Join (l : string list) =
       String.Join(" ", l)
 
-    let ToTestArguments (prepare:PrepareParams) (collect:CollectParams) (version:bool) (ipmo:bool) =
+    let ToTestArguments (prepare:PrepareParams) (collect:CollectParams) =
       [ ("/p:AltCover=true", true)
-        ("/p:AltCoverGetVersion=true", version) 
-        ("/p:AltCoverIpmo=true", ipmo)
         FromArg "XmlReport" prepare.XmlReport
         (Arg "OpenCover" "false", not prepare.OpenCover)
         FromList "FileFilter" prepare.FileFilter
@@ -36,9 +34,7 @@ module DotNet =
         FromList "MethodFilter" prepare.MethodFilter
         FromList "AttributeFilter" prepare.AttributeFilter
         FromList "CallContext" prepare.CallContext
-#if NETSTANDARD2_0
         FromList "DependencyList" prepare.Dependencies
-#endif
         FromArg "LcovReport" collect.LcovReport
         FromArg "Cobertura" collect.Cobertura
         FromArg "Threshold" collect.Threshold
@@ -49,5 +45,5 @@ module DotNet =
       |> List.map fst
       |> Join
 
-    let CSToTestArguments (prepare:PrepareParams, collect:CollectParams, version:bool, ipmo:bool) =
-      ToTestArguments prepare collect version ipmo
+    let CSToTestArguments (prepare:PrepareParams, collect:CollectParams) =
+      ToTestArguments prepare collect

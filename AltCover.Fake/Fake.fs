@@ -21,7 +21,7 @@ type Api =
     AltCover.Api.Prepare args (Trace.DoDefault log)
   static member Collect (args:CollectParams, ?log:Logging) =
     AltCover.Api.Collect args (Trace.DoDefault log)
-  static member Ipmo (?log:Logging) =
-    AltCover.Api.Ipmo (Trace.DoDefault log)
-  static member Version (?log:Logging) =
-    AltCover.Api.Version (Trace.DoDefault log)
+  static member Ipmo () =
+    AltCover.Api.Ipmo ()
+  static member Version () =
+    AltCover.Api.Version ()

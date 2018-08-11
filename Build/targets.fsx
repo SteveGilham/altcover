@@ -2055,16 +2055,14 @@ let _Target s f =
   Target.create s f
 
 _Target "DoIt" (fun _ ->
-  {{AltCover.Logging.Default with Info = printfn "%s"}}
-  |> AltCover.Api.Version
+  AltCover.Api.Version ()
   |> printfn "Returned %A"
 
   AltCover.Fake.Api.Version ()
-  |> printfn "Returned %A"
+  |> Trace.trace
 
   let cslog = AltCover.LogArgs()
-  cslog.Info <- new Action<String>(printfn "%s")
-  AltCover.CSApi.Version cslog
+  AltCover.CSApi.Version ()
   |> printfn "Returned %A"
 )
 

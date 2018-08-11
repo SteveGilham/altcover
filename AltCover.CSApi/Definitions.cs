@@ -2,17 +2,6 @@
 
 namespace AltCover
 {
-    public static class DotNetApi
-    {
-        public static string ToTestArguments(PrepareArgs p, 
-                                             CollectArgs c,
-                                             bool version = false,
-                                             bool ipmo = false)
-        {
-            return DotNet.CSToTestArguments(p.ToParameters(), c.ToParameters(), version, ipmo);
-        }
-    }
-
     public class CollectArgs
     {
         public string RecorderDirectory { get; set; }
@@ -45,12 +34,9 @@ namespace AltCover
         public string InputDirectory { get; set; }
         public string OutputDirectory { get; set; }
         public string[] SymbolDirectories { get; set; }
-#if NETSTANDARD2_0
         public string[] Dependencies { get; set; }
-#else
         public string[] Keys { get; set; }
         public string StrongNameKey { get; set; }
-#endif
         public string XmlReport { get; set; }
         public string[] FileFilter { get; set; }
         public string[] AssemblyFilter { get; set; }
@@ -72,15 +58,12 @@ namespace AltCover
         internal PrepareParams ToParameters()
         {
             return new PrepareParams(
-                         InputDirectory,
-                         OutputDirectory,
-                         SymbolDirectories,
-#if NETSTANDARD2_0
-                         Dependencies,
-#else
-                         Keys,
-                         StrongNameKey,
-#endif
+                        InputDirectory,
+                        OutputDirectory,
+                        SymbolDirectories,
+                        Dependencies,
+                        Keys,
+                        StrongNameKey,
                         XmlReport,
                         FileFilter,
                         AssemblyFilter,
@@ -131,14 +114,20 @@ namespace AltCover
             return Api.Collect(c.ToParameters(), l.ToParameters());
         }
 
-        public static int Ipmo(LogArgs l)
+        public static string Ipmo()
         {
-            return Api.Ipmo(l.ToParameters());
+            return Api.Ipmo();
         }
 
-        public static int Version(LogArgs l)
+        public static string Version()
         {
-            return Api.Version(l.ToParameters());
+            return Api.Version();
+        }
+
+        public static string ToTestArguments(PrepareArgs p,
+                                             CollectArgs c)
+        {
+            return DotNet.CSToTestArguments(p.ToParameters(), c.ToParameters());
         }
     }
 }

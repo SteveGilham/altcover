@@ -43,15 +43,15 @@ namespace AltCover.Cake
         }
 
         [CakeMethodAlias]
-        public static int Ipmo(this ICakeContext context, LogArgs l = null)
+        public static string Ipmo(this ICakeContext context, LogArgs l = null)
         {
-            return CSApi.Ipmo(MakeLog(context, l));
+            return CSApi.Ipmo();
         }
 
         [CakeMethodAlias]
-        public static int Version(this ICakeContext context, LogArgs l = null)
+        public static string Version(this ICakeContext context, LogArgs l = null)
         {
-            return CSApi.Version(MakeLog(context, l));
+            return CSApi.Version();
         }
     }
 }

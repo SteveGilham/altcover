@@ -201,7 +201,8 @@ type InvokeAltCoverCommand(runner:bool) =
       Directory.SetCurrentDirectory where
 
       let status = (match (self.Version.IsPresent, self.Runner.IsPresent) with
-                    | (true, _) -> Api.Version
+                    | (true, _) -> (fun _ -> Api.Version() |> log.Info
+                                             0)
                     | (_, true) -> let task = self.Collect()
                                    Api.Collect task
                     | _ -> let task = self.Prepare()

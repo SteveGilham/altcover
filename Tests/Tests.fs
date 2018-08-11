@@ -5397,14 +5397,17 @@ or
     let mutable args = [| "some junk "|]
     let saved = (Output.Info, Output.Error)
     let warned = Output.Warn
+    Assert.Throws<InvalidOperationException>(fun () -> subject.IO.Warn "x") |> ignore
+    Assert.Throws<InvalidOperationException>(fun () -> subject.IO.Error "x") |> ignore
+    subject.IO <- Logging.Default
     try
         Main.EffectiveMain <- (fun a -> args <- a
-                                        255)
+                                        0)
         let result = subject.Execute()
-        Assert.That(result, Is.False)
+        Assert.That(result, Is.True)
         Assert.That(args, Is.EquivalentTo ["ipmo"])
-        Assert.Throws<InvalidOperationException>(fun () -> Output.Warn "x") |> ignore
-        Assert.Throws<InvalidOperationException>(fun () -> Output.Error "x") |> ignore
+        Output.Warn "x"
+        Output.Error "x"
     finally
       Main.EffectiveMain <- save
       Output.Info <- fst saved
@@ -5419,14 +5422,17 @@ or
     let mutable args = [| "some junk "|]
     let saved = (Output.Info, Output.Error)
     let warned = Output.Warn
+    Assert.Throws<InvalidOperationException>(fun () -> subject.IO.Warn "x") |> ignore
+    Assert.Throws<InvalidOperationException>(fun () -> subject.IO.Error "x") |> ignore
+    subject.IO <- Logging.Default
     try
         Main.EffectiveMain <- (fun a -> args <- a
-                                        255)
+                                        0)
         let result = subject.Execute()
-        Assert.That(result, Is.False)
+        Assert.That(result, Is.True)
         Assert.That(args, Is.EquivalentTo ["version"])
-        Assert.Throws<InvalidOperationException>(fun () -> Output.Warn "x") |> ignore
-        Assert.Throws<InvalidOperationException>(fun () -> Output.Error "x") |> ignore
+        Output.Warn "x"
+        Output.Error "x"
     finally
       Main.EffectiveMain <- save
       Output.Info <- fst saved

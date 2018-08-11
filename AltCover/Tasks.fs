@@ -37,12 +37,9 @@ type PrepareParams =
      InputDirectory : String
      OutputDirectory : String
      SymbolDirectories : string array
-#if NETCOREAPP2_0
      Dependencies : string array
-#else
      Keys : string array
      StrongNameKey : String
-#endif
      XmlReport : String
      FileFilter : string array
      AssemblyFilter : string array
@@ -66,12 +63,9 @@ type PrepareParams =
             InputDirectory = String.Empty
             OutputDirectory = String.Empty
             SymbolDirectories = [| |]
-#if NETCOREAPP2_0
             Dependencies = [| |]
-#else
             Keys = [| |]
             StrongNameKey = String.Empty
-#endif
             XmlReport = String.Empty
             FileFilter = [| |]
             AssemblyFilter = [| |]
@@ -192,19 +186,25 @@ module Api =
     |> List.toArray
     |> AltCover.Main.EffectiveMain
 
-  let Ipmo  (log:Logging) =
-    log.Apply()
+  let Ipmo () =
+    let mutable v = String.Empty
+    { Logging.Default with Info = (fun s -> v <- s) }.Apply()
     [|
-      "ipmo"
+        "ipmo"
     |]
     |> AltCover.Main.EffectiveMain
+    |> ignore
+    v
 
-  let Version  (log:Logging) =
-    log.Apply()
+  let Version () =
+    let mutable v = String.Empty
+    { Logging.Default with Info = (fun s -> v <- s) }.Apply()
     [|
-      "version"
+        "version"
     |]
     |> AltCover.Main.EffectiveMain
+    |> ignore
+    v
 
 #if NETSTANDARD2_0
 #else
@@ -317,21 +317,29 @@ type Collect () =
 
 type PowerShell () =
   inherit Task(null)
+  member val internal IO = { Logging.Default with
+                                             Error = base.Log.LogError
+                                             Warn = base.Log.LogWarning
+                           } with get, set
+
   override self.Execute () =
+    let r = Api.Ipmo ()
     Output.Task <- true
-    { Logging.Default with
-        Error = base.Log.LogError
-        Warn = base.Log.LogWarning
-    }
-    |> Api.Ipmo = 0
+    self.IO.Apply()
+    r |> Output.Warn
+    true
 
 type GetVersion () =
   inherit Task(null)
+  member val internal IO = { Logging.Default with
+                                             Error = base.Log.LogError
+                                             Warn = base.Log.LogWarning
+                           } with get, set
+
   override self.Execute () =
+    let r = Api.Version ()
     Output.Task <- true
-    { Logging.Default with
-        Error = base.Log.LogError
-        Warn = base.Log.LogWarning
-    }
-    |> Api.Version = 0
+    self.IO.Apply()
+    r |> Output.Warn
+    true
 #endif
