@@ -19,12 +19,16 @@
     <IntermediateOutputPath>$(SolutionDir)_Intermediate/$(AssemblyName)/$(Configuration)+$(Platform)/</IntermediateOutputPath>
     <OtherFlags>--keyfile:$(SolutionDir)Build\Infrastructure.snk</OtherFlags>
   </PropertyGroup>
+  <ItemGroup>
+    <None Remove="packages.config" />
+  </ItemGroup>
 
   <ItemGroup>
     <Compile Include="..\_Generated\AssemblyVersion.cs" Link="AssemblyVersion.cs" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\AltCover.FSApi\altcover.fsapi.core.fsproj" />
     <ProjectReference Include="..\AltCover\altcover.core.fsproj" />
   </ItemGroup>
 

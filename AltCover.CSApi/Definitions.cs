@@ -2,6 +2,17 @@
 
 namespace AltCover
 {
+    public static class DotNetApi
+    {
+        public static string ToTestArguments(PrepareArgs p, 
+                                             CollectArgs c,
+                                             bool version = false,
+                                             bool ipmo = false)
+        {
+            return DotNet.CSToTestArguments(p.ToParameters(), c.ToParameters(), version, ipmo);
+        }
+    }
+
     public class CollectArgs
     {
         public string RecorderDirectory { get; set; }

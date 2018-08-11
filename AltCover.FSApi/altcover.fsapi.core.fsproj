@@ -1,10 +1,10 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <RootNamespace>AltCover.FSApi</RootNamespace>
+    <AssemblyName>AltCover.FSApi</AssemblyName>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <RootNamespace>AltCover.Cake</RootNamespace>
-    <AssemblyName>AltCover.Cake</AssemblyName>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
@@ -21,16 +21,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\_Generated\AssemblyVersion.cs" Link="AssemblyVersion.cs" />
+    <Compile Include="..\_Generated\AssemblyVersion.fs" Link="AssemblyVersion.fs" />
+    <Compile Include="Definitions.fs" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Cake.Core" Version="0.29.0" />
+    <ProjectReference Include="..\AltCover\altcover.core.fsproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\AltCover.CSApi\altcover.csapi.core.csproj" />
-    <ProjectReference Include="..\AltCover.FSApi\altcover.fsapi.core.fsproj" />
+    <PackageReference Update="FSharp.Core" Version="4.3.4" />
   </ItemGroup>
-
 </Project>

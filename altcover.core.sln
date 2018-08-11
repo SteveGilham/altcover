@@ -46,6 +46,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "sample10.core", "Sample10/s
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{2837CE07-B91F-4B8A-89B5-E7BE39A8F340}"
 EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "altcover.fsapi.core", "AltCover.FSApi/altcover.fsapi.core.fsproj", "{62218EAC-A2E9-462B-9DF6-96C79629CE63}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "altcover.cake.core", "AltCover.Cake/altcover.cake.core.csproj", "{9BBD2D49-C8BD-4213-A97C-F5F3191ACCBD}"
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "altcover.fake.core", "AltCover.Fake/altcover.fake.core.fsproj", "{E59E33B2-F14C-498A-823C-5E573926EF30}"
@@ -255,6 +257,14 @@ Global
 		{E59E33B2-F14C-498A-823C-5E573926EF30}.Release|Any CPU.Build.0 = Release|Any CPU
 		{E59E33B2-F14C-498A-823C-5E573926EF30}.Release|x64.ActiveCfg = Release|Any CPU
 		{E59E33B2-F14C-498A-823C-5E573926EF30}.Release|x86.ActiveCfg = Release|Any CPU
+		{62218EAC-A2E9-462B-9DF6-96C79629CE63}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{62218EAC-A2E9-462B-9DF6-96C79629CE63}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{62218EAC-A2E9-462B-9DF6-96C79629CE63}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{62218EAC-A2E9-462B-9DF6-96C79629CE63}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{62218EAC-A2E9-462B-9DF6-96C79629CE63}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{62218EAC-A2E9-462B-9DF6-96C79629CE63}.Release|Any CPU.Build.0 = Release|Any CPU
+		{62218EAC-A2E9-462B-9DF6-96C79629CE63}.Release|x86.ActiveCfg = Release|Any CPU
+		{62218EAC-A2E9-462B-9DF6-96C79629CE63}.Release|x64.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

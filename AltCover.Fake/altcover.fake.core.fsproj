@@ -31,6 +31,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\AltCover\altcover.core.fsproj" />
+    <ProjectReference Include="..\AltCover.FSApi\altcover.fsapi.core.fsproj" />
   </ItemGroup>
 
   <ItemGroup>
