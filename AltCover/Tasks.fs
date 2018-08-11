@@ -206,8 +206,6 @@ module Api =
     |> ignore
     v
 
-#if NETSTANDARD2_0
-#else
 type Prepare () =
   inherit Task(null)
   member val InputDirectory = String.Empty with get, set
@@ -342,4 +340,3 @@ type GetVersion () =
     self.IO.Apply()
     r |> Output.Warn
     true
-#endif

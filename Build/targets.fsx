@@ -1426,7 +1426,6 @@ _Target "Packaging" (fun _ ->
     let fakeFiles where = (!! "./_Binaries/AltCover.Fake/Release+AnyCPU/netstandard2.0/AltCover.F*.*")
                            |> Seq.map (fun x -> (x, Some (where + Path.GetFileName x), None))
                            |> Seq.toList
-     
 
     let publish = (Path.getFullName "./_Publish").Length
     let netcoreFiles where = (!! "./_Publish/**/*.*")
@@ -2031,8 +2030,24 @@ _Target "MSBuildTest" ( fun _ ->
 )
 
 _Target "ApiUse" (fun _ ->
+  try
     Directory.ensure "./_ApiUse"
     Shell.cleanDir ("./_ApiUse")
+    Directory.ensure "./_ApiUse/_DotnetTest"
+
+    let config = XDocument.Load "./Build/NuGet.config.dotnettest"
+    let repo = config.Descendants(XName.Get("add")) |> Seq.head
+    repo.SetAttributeValue(XName.Get "value", Path.getFullName "./_Packaging" )
+    config.Save "./_ApiUse/_DotnetTest/NuGet.config"
+
+    let fsproj = XDocument.Load "./Sample4/sample4.core.fsproj"
+    let pack = fsproj.Descendants(XName.Get("PackageReference")) |> Seq.head
+    let inject = XElement(XName.Get "PackageReference",
+                          XAttribute (XName.Get "Include", "altcover.api"),
+                          XAttribute (XName.Get "Version", !Version) )
+    pack.AddBeforeSelf inject
+    fsproj.Save "./_ApiUse/_DotnetTest/dotnettest.fsproj"
+    Shell.copy "./_ApiUse/_DotnetTest" (!! "./Sample4/*.fs")
 
     let config = """<?xml version="1.0" encoding="utf-8"?>
 <configuration>
@@ -2048,6 +2063,7 @@ _Target "ApiUse" (fun _ ->
 #load ".fake/DriveApi.fsx/intellisense.fsx"
 
 open System
+open Fake.IO
 open Fake.Core
 open Fake.DotNet
 open AltCover
@@ -2074,18 +2090,27 @@ _Target "DoIt" (fun _ ->
 
   let t = DotNet.TestOptions.Create().WithParameters prepare collect
   printfn "returned '%A'" t.Common.CustomParams
+
+  let p2 = { AltCover.PrepareParams.Default with CallContext = [| "[Fact]"; "0" |] }
+  let c2 = AltCover.CollectParams.Default
+
+  let setBaseOptions (o:DotNet.Options) =
+    { o with WorkingDirectory = Path.getFullName "./_DotnetTest"
+             Verbosity = Some DotNet.Verbosity.Minimal }
+
+  DotNet.test (fun to' -> to'.WithCommon(setBaseOptions).WithParameters p2 c2) "dotnettest.fsproj"
 )
 
 Target.runOrDefault "DoIt"
-"""   
+"""
     File.WriteAllText("./_ApiUse/DriveApi.fsx", script)
 
     let dependencies = """// [ FAKE GROUP ]
 group NetcoreBuild
   source https://api.nuget.org/v3/index.json
   nuget Fake.Core 5.3.0
-  nuget Fake.Core.Target 5.3.0  
-  nuget Fake.DotNet.Cli 5.3.0  
+  nuget Fake.Core.Target 5.3.0
+  nuget Fake.DotNet.Cli 5.3.0
 
   source {0}
   nuget AltCover.Api {1} """
@@ -2101,6 +2126,69 @@ group NetcoreBuild
     Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = Path.getFullName "_ApiUse"}) "fake"
                       ("run ./DriveApi.fsx")
                       "running fake script returned with a non-zero exit code"
+
+    let x = Path.getFullName "./_ApiUse/_DotnetTest/coverage.xml"
+
+    do
+      use coverageFile = new FileStream(x, FileMode.Open, FileAccess.Read, FileShare.None, 4096, FileOptions.SequentialScan)
+      let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
+      let recorded = coverageDocument.Descendants(XName.Get("Method"))
+                     |> Seq.collect (fun x -> x.Descendants(XName.Get("Name")))
+                     |> Seq.map (fun x -> x.Value)
+                     |> Seq.sort
+                     |> Seq.toList
+      let expected = [  "Microsoft.FSharp.Core.FSharpFunc`2<Microsoft.FSharp.Core.Unit,Tests.DU/MyUnion> Tests.DU/MyUnion::get_MyBar()";
+                        "System.Byte[] Tests.M/Thing::bytes()";
+                        "System.Int32 Program/Program::main(System.String[])";
+                        "System.Void Tests.DU/MyClass::.ctor()";
+                        "System.Void Tests.DU::testMakeUnion()";
+                        "System.Void Tests.M::testMakeThing()";
+                        "Tests.DU/MyUnion Tests.DU/MyUnion::as_bar()";
+                        "Tests.DU/MyUnion Tests.DU/get_MyBar@36::Invoke(Microsoft.FSharp.Core.Unit)";
+                        "Tests.DU/MyUnion Tests.DU::returnBar(System.String)";
+                        "Tests.DU/MyUnion Tests.DU::returnFoo(System.Int32)";
+                        "Tests.M/Thing Tests.M::makeThing(System.String)"]
+      Assert.That(recorded, expected |> Is.EquivalentTo, sprintf "Bad method list %A" recorded)
+
+      let recorded = coverageDocument.Descendants(XName.Get("SequencePoint"))
+                     |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value)
+                     |> Seq.toList
+      let expected = "0 1 1 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 2 1 1 1"
+      Assert.That(recorded, expected.Split() |> Is.EquivalentTo, sprintf "Bad method list %A" recorded)
+
+      coverageDocument.Descendants(XName.Get("SequencePoint"))
+      |> Seq.iter(fun sp -> let vc = Int32.Parse (sp.Attribute(XName.Get("vc")).Value)
+                            let vx = sp.Descendants(XName.Get("Time"))
+                                     |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value |> Int32.Parse)
+                                     |> Seq.sum
+                            Assert.That (vc, Is.EqualTo vx, sp.Value))
+      let tracked = """<TrackedMethods>
+        <TrackedMethod uid="1" token="100663300" name="System.Void Tests.DU::testMakeUnion()" strategy="[Fact]" />
+        <TrackedMethod uid="2" token="100663345" name="System.Void Tests.M::testMakeThing()" strategy="[Fact]" />
+      </TrackedMethods>"""
+      coverageDocument.Descendants(XName.Get("TrackedMethods"))
+      |> Seq.iter (fun x -> Assert.That(x.ToString().Replace("\r\n","\n"), Is.EqualTo <| tracked.Replace("\r\n","\n")))
+
+      Assert.That (coverageDocument.Descendants(XName.Get("TrackedMethodRef")) |> Seq.map (fun x -> x.ToString()),
+                    Is.EquivalentTo ["<TrackedMethodRef uid=\"1\" vc=\"1\" />"
+                                     "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
+                                     "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
+                                     "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
+                                     "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
+                                     "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
+                                     "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
+                                     "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
+                                     "<TrackedMethodRef uid=\"2\" vc=\"2\" />"
+                                     "<TrackedMethodRef uid=\"2\" vc=\"1\" />"
+                                     "<TrackedMethodRef uid=\"2\" vc=\"1\" />"
+                                     "<TrackedMethodRef uid=\"2\" vc=\"1\" />"
+                    ])
+
+  finally
+    ["altcover"; "altcover.api"]
+    |> List.iter (fun f -> let folder = (nugetCache @@ f) @@ !Version
+                           Shell.mkdir folder
+                           Shell.deleteDir folder)
 )
 
 _Target "DotnetTestIntegration" ( fun _ ->
@@ -2125,7 +2213,6 @@ _Target "DotnetTestIntegration" ( fun _ ->
                                                                              Verbosity = Some DotNet.Verbosity.Minimal
                                                                              CustomParams = Some "/p:AltCover=true /p:AltCoverCallContext=[Fact]|0 /p:AltCoverIpmo=true /p:AltCoverGetVersion=true"
     })
-
 
                         ) "dotnettest.fsproj"
 
