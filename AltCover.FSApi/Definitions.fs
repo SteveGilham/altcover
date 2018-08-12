@@ -22,7 +22,7 @@ module DotNet =
     let Join (l : string list) =
       String.Join(" ", l)
 
-    let ToTestArguments (prepare:PrepareParams) (collect:CollectParams) =
+    let ToTestArgumentList (prepare:PrepareParams) (collect:CollectParams) =
       [ ("/p:AltCover=true", true)
         FromArg "XmlReport" prepare.XmlReport
         (Arg "OpenCover" "false", not prepare.OpenCover)
@@ -43,7 +43,14 @@ module DotNet =
       ]
       |> List.filter snd
       |> List.map fst
+
+    let ToTestArguments (prepare:PrepareParams) (collect:CollectParams) =
+      ToTestArgumentList prepare collect
       |> Join
+
+    let CSToTestArgumentList (prepare:PrepareParams, collect:CollectParams) =
+      ToTestArgumentList prepare collect
+      |> List.toArray
 
     let CSToTestArguments (prepare:PrepareParams, collect:CollectParams) =
       ToTestArguments prepare collect

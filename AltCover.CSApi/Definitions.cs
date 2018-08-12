@@ -129,5 +129,11 @@ namespace AltCover
         {
             return DotNet.CSToTestArguments(p.ToParameters(), c.ToParameters());
         }
+
+        public static string[] ToTestArgumentList(PrepareArgs p,
+                                             CollectArgs c)
+        {
+            return DotNet.CSToTestArgumentList(p.ToParameters(), c.ToParameters());
+        }
     }
 }
