@@ -23,7 +23,7 @@ module DotNet =
       String.Join(" ", l)
 
     let ToTestArgumentList (prepare:PrepareParams) (collect:CollectParams) =
-      [ ("/p:AltCover=true", true)
+      [ FromArg String.Empty "true"
         FromArg "XmlReport" prepare.XmlReport
         (Arg "OpenCover" "false", not prepare.OpenCover)
         FromList "FileFilter" prepare.FileFilter
