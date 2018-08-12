@@ -1,7 +1,11 @@
 ﻿#nowarn "25"
 namespace AltCover
 
+#if GUI
 module Augment =
+#else
+module internal Augment =
+#endif
   type Microsoft.FSharp.Core.Option<'T> with
       static member getOrElse (fallback : 'T) (x : option<'T>) = defaultArg x fallback
 

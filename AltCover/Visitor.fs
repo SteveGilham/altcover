@@ -20,12 +20,12 @@ open Mono.Cecil.Cil
 open Mono.Cecil.Rocks
 
 [<Flags>]
-type Inspect = Ignore = 0 | Instrument = 1 | Track = 2 | TrackOnly = 4
+type internal Inspect = Ignore = 0 | Instrument = 1 | Track = 2 | TrackOnly = 4
 
-type CoverStyle = All = 0 | LineOnly = 1 | BranchOnly = 2
+type internal CoverStyle = All = 0 | LineOnly = 1 | BranchOnly = 2
 
 [<ExcludeFromCodeCoverage>]
-type SeqPnt = {
+type internal SeqPnt = {
          StartLine : int
          StartColumn : int
          EndLine : int
@@ -47,7 +47,7 @@ type SeqPnt = {
     }
 
 [<ExcludeFromCodeCoverage>]
-type GoTo = {
+type internal GoTo = {
     Start : Instruction
     Indexes : int list
     Uid : int
@@ -82,11 +82,11 @@ with member this.After () = (match this with
                              | _ -> []) |> List.toSeq
 
 [<ExcludeFromCodeCoverage>]
-type KeyRecord = {
+type internal KeyRecord = {
          Pair : StrongNameKeyPair;
          Token : byte list }
 
-module KeyStore =
+module internal KeyStore =
     let private hash = new System.Security.Cryptography.SHA1CryptoServiceProvider()
 
     let private publicKeyOfKey (key:StrongNameKeyPair) =
@@ -129,7 +129,7 @@ module KeyStore =
 [<ExcludeFromCodeCoverage>]
 type Fix<'T> = delegate of 'T -> Fix<'T>
 
-module Visitor =
+module internal Visitor =
   let mutable internal collect = false
   let internal TrackingNames = new List<String>()
 
@@ -524,7 +524,7 @@ module Visitor =
 
             let MethodPointOnly() =
                 interesting && (instructions |> Seq.isEmpty ||
-                                         coverstyle = CoverStyle.BranchOnly) && 
+                                         coverstyle = CoverStyle.BranchOnly) &&
                                          rawInstructions |> Seq.isEmpty |> not
 
             let sp = if MethodPointOnly()  then
@@ -538,7 +538,7 @@ module Visitor =
                                                         i+point, wanted interesting s))
 
             let IncludeBranches() =
-              instructions.Any() && ReportKind() = Base.ReportFormat.OpenCover && (coverstyle <> CoverStyle.LineOnly) 
+              instructions.Any() && ReportKind() = Base.ReportFormat.OpenCover && (coverstyle <> CoverStyle.LineOnly)
             let bp = if IncludeBranches() then
                         let spnt = instructions
                                    |> Seq.head

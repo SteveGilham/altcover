@@ -10,7 +10,7 @@ open System.Xml.Linq
 open System.Xml.Schema
 open System.Xml.Xsl
 
-module XmlUtilities =
+module internal XmlUtilities =
 
   [<SuppressMessage("Microsoft.Design", "CA1059", Justification="converts concrete types")>]
   let ToXmlDocument(xDocument:XDocument) =
@@ -87,3 +87,10 @@ module XmlUtilities =
     | :? System.Security.SecurityException
     | :? BadImageFormatException
     | :? FileLoadException -> fallback
+
+  let PrependDeclaration (x:XmlDocument) =
+      let xmlDeclaration = x.CreateXmlDeclaration(
+                                        "1.0",
+                                        "utf-8",
+                                        null)
+      x.InsertBefore(xmlDeclaration, x.FirstChild) |> ignore

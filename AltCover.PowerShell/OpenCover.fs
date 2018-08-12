@@ -133,10 +133,7 @@ type CompressBranchingCommand(outputFile:String) =
 
       // tidy up here
       AltCover.Runner.PostProcess null AltCover.Base.ReportFormat.OpenCover xmlDocument
-      let xmlDeclaration = xmlDocument.CreateXmlDeclaration("1.0",
-                                       "utf-8",
-                                       null)
-      xmlDocument.InsertBefore(xmlDeclaration, xmlDocument.FirstChild) |> ignore
+      XmlUtilities.PrependDeclaration xmlDocument
 
       if self.OutputFile |> String.IsNullOrWhiteSpace |> not then
         xmlDocument.Save(self.OutputFile)

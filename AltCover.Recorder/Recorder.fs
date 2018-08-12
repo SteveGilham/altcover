@@ -78,7 +78,7 @@ module Instance =
   /// This property's IL code is modified to store the user chosen override if applicable
   /// </summary>
   [<MethodImplAttribute(MethodImplOptions.NoInlining)>]
-  let CoverageFormat = ReportFormat.NCover
+  let internal CoverageFormat = ReportFormat.NCover
 
   /// <summary>
   /// Gets the frequency of time sampling
@@ -92,7 +92,7 @@ module Instance =
   /// This property's IL code is modified to store the user chosen override if applicable
   /// </summary>
   [<MethodImplAttribute(MethodImplOptions.NoInlining)>]
-  let Sample = Sampling.All
+  let internal Sample = Sampling.All
 
   /// <summary>
   /// Gets or sets the current test method
