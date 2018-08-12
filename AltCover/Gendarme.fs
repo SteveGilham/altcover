@@ -5,7 +5,7 @@ open Mono.Cecil.Cil
 
 open AltCover.Augment
 
-module Gendarme =
+module internal Gendarme =
 
   // OpenCover uses Gendarme to compute Cyclomatic Complexity values.  Reimplement that algorithm here
   let mask = [  0xFFFF6C3FCUL

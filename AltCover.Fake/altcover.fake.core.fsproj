@@ -1,10 +1,10 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <RootNamespace>AltCover.Fake</RootNamespace>
+    <AssemblyName>AltCover.Fake</AssemblyName>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <RootNamespace>AltCover.CSApi</RootNamespace>
-    <AssemblyName>AltCover.CSApi</AssemblyName>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
@@ -19,17 +19,20 @@
     <IntermediateOutputPath>$(SolutionDir)_Intermediate/$(AssemblyName)/$(Configuration)+$(Platform)/</IntermediateOutputPath>
     <OtherFlags>--keyfile:$(SolutionDir)Build\Infrastructure.snk</OtherFlags>
   </PropertyGroup>
+
   <ItemGroup>
-    <None Remove="packages.config" />
+    <Compile Include="..\_Generated\AssemblyVersion.fs" Link="AssemblyVersion.fs" />
+    <Compile Include="Fake.fs" />
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\_Generated\AssemblyVersion.cs" Link="AssemblyVersion.cs" />
+    <PackageReference Include="FAKE.Core.Trace" Version="5.2.0" />
+    <PackageReference Include="FAKE.DotNet.Cli" Version="5.2.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\AltCover.FSApi\altcover.fsapi.core.fsproj" />
     <ProjectReference Include="..\AltCover\altcover.core.fsproj" />
+    <ProjectReference Include="..\AltCover.FSApi\altcover.fsapi.core.fsproj" />
   </ItemGroup>
 
   <ItemGroup>

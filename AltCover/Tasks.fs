@@ -37,12 +37,9 @@ type PrepareParams =
      InputDirectory : String
      OutputDirectory : String
      SymbolDirectories : string array
-#if NETCOREAPP2_0
      Dependencies : string array
-#else
      Keys : string array
      StrongNameKey : String
-#endif
      XmlReport : String
      FileFilter : string array
      AssemblyFilter : string array
@@ -66,12 +63,9 @@ type PrepareParams =
             InputDirectory = String.Empty
             OutputDirectory = String.Empty
             SymbolDirectories = [| |]
-#if NETCOREAPP2_0
             Dependencies = [| |]
-#else
             Keys = [| |]
             StrongNameKey = String.Empty
-#endif
             XmlReport = String.Empty
             FileFilter = [| |]
             AssemblyFilter = [| |]
@@ -122,7 +116,7 @@ type Logging =
           Output.Echo <- self.Echo
           ////Output.Usage <- ignore
 
-module Args =
+module internal Args =
   let Item a x =
     if x |> String.IsNullOrWhiteSpace
        then []
@@ -140,24 +134,24 @@ module Api =
   let Prepare (args:PrepareParams) (log:Logging) =
     log.Apply()
     [
-      Args.Item "-i" args.InputDirectory;
-      Args.Item "-o" args.OutputDirectory;
-      Args.ItemList "-y" args.SymbolDirectories;
+      Args.Item "-i" args.InputDirectory
+      Args.Item "-o" args.OutputDirectory
+      Args.ItemList "-y" args.SymbolDirectories
 #if NETCOREAPP2_0
-      Args.ItemList "-d" args.Dependencies;
+      Args.ItemList "-d" args.Dependencies
 #else
-      Args.ItemList "-k" args.Keys;
-      Args.Item "--sn" args.StrongNameKey;
+      Args.ItemList "-k" args.Keys
+      Args.Item "--sn" args.StrongNameKey
 #endif
-      Args.Item "-x" args.XmlReport;
-      Args.ItemList "-f" args.FileFilter;
-      Args.ItemList "-s" args.AssemblyFilter;
-      Args.ItemList "-e" args.AssemblyExcludeFilter;
-      Args.ItemList "-t" args.TypeFilter;
-      Args.ItemList "-m" args.MethodFilter;
-      Args.ItemList "-a" args.AttributeFilter;
-      Args.ItemList "-p" args.PathFilter;
-      Args.ItemList "-c" args.CallContext;
+      Args.Item "-x" args.XmlReport
+      Args.ItemList "-f" args.FileFilter
+      Args.ItemList "-s" args.AssemblyFilter
+      Args.ItemList "-e" args.AssemblyExcludeFilter
+      Args.ItemList "-t" args.TypeFilter
+      Args.ItemList "-m" args.MethodFilter
+      Args.ItemList "-a" args.AttributeFilter
+      Args.ItemList "-p" args.PathFilter
+      Args.ItemList "-c" args.CallContext
 
       Args.Flag "--opencover" args.OpenCover
       Args.Flag "--inplace" args.InPlace
@@ -166,7 +160,7 @@ module Api =
       Args.Flag "--linecover" args.LineCover
       Args.Flag "--branchcover" args.BranchCover
 
-      Args.Item "--" args.CommandLine;
+      Args.Item "--" args.CommandLine
     ]
     |> List.concat
     |> List.toArray
@@ -175,36 +169,42 @@ module Api =
   let Collect (args:CollectParams) (log:Logging) =
     log.Apply()
     [
-      ["Runner"];
-      Args.Item "-r" args.RecorderDirectory;
-      Args.Item "-w" args.WorkingDirectory;
-      Args.Item "-x" args.Executable;
-      Args.Item "-l" args.LcovReport;
-      Args.Item "-t" args.Threshold;
-      Args.Item "-c" args.Cobertura;
-      Args.Item "-o" args.OutputFile;
+      ["Runner"]
+      Args.Item "-r" args.RecorderDirectory
+      Args.Item "-w" args.WorkingDirectory
+      Args.Item "-x" args.Executable
+      Args.Item "-l" args.LcovReport
+      Args.Item "-t" args.Threshold
+      Args.Item "-c" args.Cobertura
+      Args.Item "-o" args.OutputFile
 
       Args.Flag "--collect" (args.Executable |> String.IsNullOrWhiteSpace)
 
-      Args.Item "--" args.CommandLine;
+      Args.Item "--" args.CommandLine
     ]
     |> List.concat
     |> List.toArray
     |> AltCover.Main.EffectiveMain
 
-  let Ipmo  (log:Logging) =
-    log.Apply()
+  let Ipmo () =
+    let mutable v = String.Empty
+    { Logging.Default with Info = (fun s -> v <- s) }.Apply()
     [|
-      "ipmo"
+        "ipmo"
     |]
     |> AltCover.Main.EffectiveMain
+    |> ignore
+    v
 
-  let Version  (log:Logging) =
-    log.Apply()
+  let Version () =
+    let mutable v = String.Empty
+    { Logging.Default with Info = (fun s -> v <- s) }.Apply()
     [|
-      "version"
+        "version"
     |]
     |> AltCover.Main.EffectiveMain
+    |> ignore
+    v
 
 type Prepare () =
   inherit Task(null)
@@ -247,24 +247,24 @@ type Prepare () =
                                     Info = self.Message
               }
     let task = { PrepareParams.Default with
-                                  InputDirectory = self.InputDirectory;
-                                  OutputDirectory = self.OutputDirectory;
-                                  SymbolDirectories = self.SymbolDirectories;
+                                  InputDirectory = self.InputDirectory
+                                  OutputDirectory = self.OutputDirectory
+                                  SymbolDirectories = self.SymbolDirectories
 #if NETCOREAPP2_0
-                                  Dependencies = self.Dependencies;
+                                  Dependencies = self.Dependencies
 #else
-                                  Keys = self.Keys;
-                                  StrongNameKey = self.StrongNameKey;
+                                  Keys = self.Keys
+                                  StrongNameKey = self.StrongNameKey
 #endif
-                                  XmlReport = self.XmlReport;
-                                  FileFilter = self.FileFilter;
-                                  AssemblyFilter = self.AssemblyFilter;
-                                  AssemblyExcludeFilter = self.AssemblyExcludeFilter;
-                                  TypeFilter = self.TypeFilter;
-                                  MethodFilter = self.MethodFilter;
-                                  AttributeFilter = self.AttributeFilter;
-                                  PathFilter = self.PathFilter;
-                                  CallContext = self.CallContext;
+                                  XmlReport = self.XmlReport
+                                  FileFilter = self.FileFilter
+                                  AssemblyFilter = self.AssemblyFilter
+                                  AssemblyExcludeFilter = self.AssemblyExcludeFilter
+                                  TypeFilter = self.TypeFilter
+                                  MethodFilter = self.MethodFilter
+                                  AttributeFilter = self.AttributeFilter
+                                  PathFilter = self.PathFilter
+                                  CallContext = self.CallContext
 
                                   OpenCover = self.OpenCover
                                   InPlace = self.InPlace
@@ -273,7 +273,7 @@ type Prepare () =
                                   LineCover = self.LineCover
                                   BranchCover = self.BranchCover
 
-                                  CommandLine = self.CommandLine;
+                                  CommandLine = self.CommandLine
     }
     Api.Prepare task log = 0
 
@@ -301,34 +301,42 @@ type Collect () =
                                     Info = self.Message
               }
     let task = { CollectParams.Default with
-                                  RecorderDirectory = self.RecorderDirectory;
-                                  WorkingDirectory = self.WorkingDirectory;
-                                  Executable = self.Executable;
-                                  LcovReport = self.LcovReport;
-                                  Threshold = self.Threshold;
-                                  Cobertura = self.Cobertura;
-                                  OutputFile = self.OutputFile;
+                                  RecorderDirectory = self.RecorderDirectory
+                                  WorkingDirectory = self.WorkingDirectory
+                                  Executable = self.Executable
+                                  LcovReport = self.LcovReport
+                                  Threshold = self.Threshold
+                                  Cobertura = self.Cobertura
+                                  OutputFile = self.OutputFile
 
-                                  CommandLine = self.CommandLine;
+                                  CommandLine = self.CommandLine
     }
     Api.Collect task log = 0
 
 type PowerShell () =
   inherit Task(null)
+  member val internal IO = { Logging.Default with
+                                             Error = base.Log.LogError
+                                             Warn = base.Log.LogWarning
+                           } with get, set
+
   override self.Execute () =
+    let r = Api.Ipmo ()
     Output.Task <- true
-    { Logging.Default with
-        Error = base.Log.LogError
-        Warn = base.Log.LogWarning
-    }
-    |> Api.Ipmo = 0
+    self.IO.Apply()
+    r |> Output.Warn
+    true
 
 type GetVersion () =
   inherit Task(null)
+  member val internal IO = { Logging.Default with
+                                             Error = base.Log.LogError
+                                             Warn = base.Log.LogWarning
+                           } with get, set
+
   override self.Execute () =
+    let r = Api.Version ()
     Output.Task <- true
-    { Logging.Default with
-        Error = base.Log.LogError
-        Warn = base.Log.LogWarning
-    }
-    |> Api.Version = 0
+    self.IO.Apply()
+    r |> Output.Warn
+    true

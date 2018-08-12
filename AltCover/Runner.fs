@@ -13,9 +13,9 @@ open Mono.Options
 open Augment
 
 [<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage>]
-type Tracer = { Tracer : string }
+type internal Tracer = { Tracer : string }
 
-module Runner =
+module internal Runner =
 
   let mutable internal recordingDirectory : Option<string> = None
   let mutable internal workingDirectory : Option<string> = None

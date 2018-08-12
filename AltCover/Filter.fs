@@ -21,7 +21,7 @@ type internal FilterClass =
   | Attribute of Regex
   | Path of Regex
 
-module Filter =
+module internal Filter =
 
   let private MatchAttribute (name:Regex) (nameProvider:Object) =
     match nameProvider with

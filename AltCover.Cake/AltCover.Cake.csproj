@@ -4,44 +4,52 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{176C53E7-85B4-40A8-AE46-95894D08535C}</ProjectGuid>
+    <ProjectGuid>{04CF1D47-825F-44F3-80C4-7F0885EB7139}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>AltCover.CSApi</RootNamespace>
-    <AssemblyName>AltCover.CSApi</AssemblyName>
+    <RootNamespace>AltCover.Cake</RootNamespace>
+    <AssemblyName>AltCover.Cake</AssemblyName>
     <TargetFrameworkVersion>v4.7.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
     <ResolveNuGetPackages>false</ResolveNuGetPackages>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>CODE_ANALYSIS;DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
     <OutputPath>$(SolutionDir)_Binaries\$(AssemblyName)\$(Configuration)+$(Platform)\</OutputPath>
     <IntermediateOutputPath>$(SolutionDir)_Intermediate\$(AssemblyName)\$(Configuration)+$(Platform)\</IntermediateOutputPath>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <OtherFlags>--keyfile:$(SolutionDir)Build\Infrastructure.snk</OtherFlags>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
+    <OutputPath>$(SolutionDir)_Binaries\$(AssemblyName)\$(Configuration)+$(Platform)\</OutputPath>
+    <IntermediateOutputPath>$(SolutionDir)_Intermediate\$(AssemblyName)\$(Configuration)+$(Platform)\</IntermediateOutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <OutputPath>$(SolutionDir)_Binaries\$(AssemblyName)\$(Configuration)+$(Platform)\</OutputPath>
-    <IntermediateOutputPath>$(SolutionDir)_Intermediate\$(AssemblyName)\$(Configuration)+$(Platform)\</IntermediateOutputPath>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <OtherFlags>--keyfile:$(SolutionDir)Build\Infrastructure.snk</OtherFlags>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="FSharp.Core, Version=4.5.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\FSharp.Core.4.5.2\lib\net45\FSharp.Core.dll</HintPath>
+    <Reference Include="Cake.Common">
+      <HintPath>..\packages\Cake.Common.0.28.0\lib\net46\Cake.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="Cake.Core">
+      <HintPath>..\packages\Cake.Core.0.28.0\lib\net46\Cake.Core.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.IO.Compression" />
+    <Reference Include="System.IO.Compression.FileSystem" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Runtime.Serialization.Json" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -50,20 +58,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\_Generated\AssemblyVersion.cs">
-      <Link>AssemblyVersion.fs</Link>
-    </Compile>
-    <Compile Include="Definitions.cs" />
+    <Compile Include="Cake.cs" />
+    <Compile Include="DotNet.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\AltCover.FSApi\AltCover.FSApi.fsproj">
-      <Project>{0DC0F7BB-C08F-45E1-A86C-62746372DC4B}</Project>
-      <Name>altcover.fsapi.core</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\AltCover\AltCover.fsproj">
-      <Project>{b766260f-6551-4ca8-b2cb-25d2d5092801}</Project>
-      <Name>AltCover</Name>
+    <ProjectReference Include="..\AltCover.CSApi\AltCover.CSApi.csproj">
+      <Project>{176c53e7-85b4-40a8-ae46-95894d08535c}</Project>
+      <Name>AltCover.CSApi</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

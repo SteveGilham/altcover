@@ -1,11 +1,5 @@
 ﻿namespace AltCover.Commands
 
-#if MONO
-module CoverageFormats =
-    let hello name =
-        printfn "Hello %s" name
-#else
-
 open System
 open System.Collections.Generic
 open System.Diagnostics.CodeAnalysis
@@ -163,12 +157,7 @@ type ConvertToNCoverCommand(outputFile:String) =
       do
         use output = rewrite.CreateNavigator().AppendChild()
         transform.Transform (self.XmlDocument, output)
-
-      let xmlDeclaration = rewrite.CreateXmlDeclaration(
-                                        "1.0",
-                                        "utf-8",
-                                        null)
-      rewrite.InsertBefore(xmlDeclaration, rewrite.FirstChild) |> ignore
+      XmlUtilities.PrependDeclaration rewrite
 
       rewrite.SelectNodes("//method").OfType<XmlElement>()
       |> Seq.iter (fun m -> let c = m.GetAttribute("class")
@@ -309,5 +298,3 @@ type ConvertFromNCoverCommand(outputFile:String) =
       self.WriteObject converted
     finally
       Directory.SetCurrentDirectory here
-
-#endif

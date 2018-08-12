@@ -5,7 +5,7 @@ open System.Globalization
 open System.IO
 open System.Xml.Linq
 
-module LCov =
+module internal LCov =
   let internal path : Option<string> ref = ref None
 
   let DoWith (create: unit -> 'a) (action : 'a -> unit) =

@@ -1,11 +1,5 @@
 ﻿namespace AltCover.Commands
 
-#if MONO
-module Command =
-    let hello name =
-        printfn "Hello %s" name
-#else
-
 open System
 open System.IO
 open System.Management.Automation
@@ -149,69 +143,73 @@ type InvokeAltCoverCommand(runner:bool) =
       ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
   member val Version:SwitchParameter = SwitchParameter(false) with get, set
 
+  member private self.Collect () =
+      { CollectParams.Default with RecorderDirectory = self.RecorderDirectory;
+                                   WorkingDirectory = self.WorkingDirectory;
+                                   Executable = self.Executable;
+                                   LcovReport = self.LcovReport;
+                                   Threshold = self.Threshold;
+                                   Cobertura = self.Cobertura;
+                                   OutputFile = self.OutputFile;
+
+                                   CommandLine = String.Join(" ", self.CommandLine)
+      }
+
+  member private self.Prepare () =
+      { PrepareParams.Default with InputDirectory = self.InputDirectory;
+                                   OutputDirectory = self.OutputDirectory;
+                                   SymbolDirectories = self.SymbolDirectory;
+#if NETCOREAPP2_0
+                                   Dependencies = self.Dependency;
+#else
+                                   Keys = self.Key;
+                                   StrongNameKey = self.StrongNameKey;
+#endif
+                                   XmlReport = self.XmlReport;
+                                   FileFilter = self.FileFilter;
+                                   AssemblyFilter = self.AssemblyFilter;
+                                   AssemblyExcludeFilter = self.AssemblyExcludeFilter;
+                                   TypeFilter = self.TypeFilter;
+                                   MethodFilter = self.MethodFilter;
+                                   AttributeFilter = self.AttributeFilter;
+                                   PathFilter = self.PathFilter;
+                                   CallContext = self.CallContext;
+
+                                   OpenCover = self.OpenCover.IsPresent
+                                   InPlace = self.InPlace.IsPresent
+                                   Save = self.Save.IsPresent
+                                   Single = self.Single.IsPresent
+                                   LineCover = self.LineCover.IsPresent
+                                   BranchCover = self.BranchCover.IsPresent
+
+                                   CommandLine = String.Join(" ", self.CommandLine)
+      }
+
+  member private self.Log () =
+    { Logging.Default with Error = (fun s -> let fail = ErrorRecord(InvalidOperationException(), s, ErrorCategory.FromStdErr, self)
+                                             self.WriteError fail)
+                           Info = (fun s -> self.WriteInformation (s, [| |]))
+                           Warn = (fun s -> self.WriteWarning s)
+    }
+
   override self.ProcessRecord() =
     let here = Directory.GetCurrentDirectory()
     Output.Task <- self.Version.IsPresent |> not
-    let log = { Logging.Default with
-                            Error = (fun s -> let fail = ErrorRecord(InvalidOperationException(), s, ErrorCategory.FromStdErr, self)
-                                              self.WriteError fail)
-                            Info = (fun s -> self.WriteInformation (s, [| |]))
-                            Warn = (fun s -> self.WriteWarning s)
-    }
+    let log = self.Log()
     try
       let where = self.SessionState.Path.CurrentLocation.Path
       Directory.SetCurrentDirectory where
 
-      let status = if self.Version.IsPresent then
-                    Api.Version log
-                   else if self.Runner.IsPresent
-                     then
-                        let task = { CollectParams.Default with
-                                                     RecorderDirectory = self.RecorderDirectory;
-                                                     WorkingDirectory = self.WorkingDirectory;
-                                                     Executable = self.Executable;
-                                                     LcovReport = self.LcovReport;
-                                                     Threshold = self.Threshold;
-                                                     Cobertura = self.Cobertura;
-                                                     OutputFile = self.OutputFile;
+      let status = (match (self.Version.IsPresent, self.Runner.IsPresent) with
+                    | (true, _) -> (fun _ -> Api.Version() |> log.Info
+                                             0)
+                    | (_, true) -> let task = self.Collect()
+                                   Api.Collect task
+                    | _ -> let task = self.Prepare()
+                           Api.Prepare task) log
 
-                                                     CommandLine = String.Join(" ", self.CommandLine)
-                                    }
-                        Api.Collect task log
-                     else
-                        let task = { PrepareParams.Default with
-                                                      InputDirectory = self.InputDirectory;
-                                                      OutputDirectory = self.OutputDirectory;
-                                                      SymbolDirectories = self.SymbolDirectory;
-#if NETCOREAPP2_0
-                                                      Dependencies = self.Dependency;
-#else
-                                                      Keys = self.Key;
-                                                      StrongNameKey = self.StrongNameKey;
-#endif
-                                                      XmlReport = self.XmlReport;
-                                                      FileFilter = self.FileFilter;
-                                                      AssemblyFilter = self.AssemblyFilter;
-                                                      AssemblyExcludeFilter = self.AssemblyExcludeFilter;
-                                                      TypeFilter = self.TypeFilter;
-                                                      MethodFilter = self.MethodFilter;
-                                                      AttributeFilter = self.AttributeFilter;
-                                                      PathFilter = self.PathFilter;
-                                                      CallContext = self.CallContext;
-
-                                                      OpenCover = self.OpenCover.IsPresent
-                                                      InPlace = self.InPlace.IsPresent
-                                                      Save = self.Save.IsPresent
-                                                      Single = self.Single.IsPresent
-                                                      LineCover = self.LineCover.IsPresent
-                                                      BranchCover = self.BranchCover.IsPresent
-
-                                                      CommandLine = String.Join(" ", self.CommandLine)
-                                   }
-                        Api.Prepare task log
       if status <> 0 then
         let fail = ErrorRecord(InvalidOperationException(), status.ToString(), ErrorCategory.InvalidOperation, self)
         self.WriteError fail
     finally
       Directory.SetCurrentDirectory here
-#endif
