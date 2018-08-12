@@ -19,11 +19,14 @@
     <AltCoverMethodFilters Include="$(AltCoverMethodFilter.Split('|'))" />
     <AltCoverAttributeFilters Include="$(AltCoverAttributeFilter.Split('|'))" />
     <AltCoverDependencies Include="$(AltCoverDependencyList.Split('|'))" />
+    <AltCoverXmlOutput Include="$(AltCoverXmlReport)" />
   </ItemGroup>
 
   <Target Name="AltCoverRunPreparation">
     <PropertyGroup>
-      <AltCoverXmlReport Condition="'$(AltCoverXmlReport)' == ''">$(ProjectDir)coverage.xml</AltCoverXmlReport>
+      <AltCoverXmlReport Condition="'$(AltCoverXmlReport)' != '' AND '$(TargetFrameworks)' != ''">%(AltCoverXmlOutput.RootDir)/%(AltCoverXmlOutput.Directory)/%(AltCoverXmlOutput.Filename).$(TargetFramework)%(AltCoverXmlOutput.Extension)</AltCoverXmlReport>
+      <AltCoverXmlReport Condition="'$(AltCoverXmlReport)' == '' AND '$(TargetFrameworks)' == ''">$(ProjectDir)coverage.xml</AltCoverXmlReport>
+      <AltCoverXmlReport Condition="'$(AltCoverXmlReport)' == '' AND '$(TargetFrameworks)' != ''">$(ProjectDir)coverage.$(TargetFramework).xml</AltCoverXmlReport>
     </PropertyGroup>
     <AltCover.PowerShell Condition="'$(AltCoverIpmo)' == 'true'" />
     <AltCover.GetVersion Condition="'$(AltCoverGetVersion)' == 'true'" />
