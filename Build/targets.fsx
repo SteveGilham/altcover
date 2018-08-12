@@ -1808,27 +1808,7 @@ _Target "ReleaseXUnitFSharpTypesDotNetFullRunner" ( fun _ ->
                           ("AltCover.dll --opencover -c=0 \"-c=[Fact]\" -x \"" + x + "\" -o \"" + o + "\" -i \"" + i + "\"")
                           "ReleaseXUnitFSharpTypesDotNetFullRunner"
 
-    do
-      use coverageFile = new FileStream(x, FileMode.Open, FileAccess.Read, FileShare.None, 4096, FileOptions.SequentialScan)
-      let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
-      let recorded = coverageDocument.Descendants(XName.Get("Method"))
-                     |> Seq.collect (fun x -> x.Descendants(XName.Get("Name")))
-                     |> Seq.map (fun x -> x.Value)
-                     |> Seq.sort
-                     |> Seq.toList
-      let expected = [  "Microsoft.FSharp.Core.FSharpFunc`2<Microsoft.FSharp.Core.Unit,Tests.DU/MyUnion> Tests.DU/MyUnion::get_MyBar()";
-                        "System.Byte[] Tests.M/Thing::bytes()";
-                        "System.Int32 Program/Program::main(System.String[])";
-                        "System.Void Tests.DU/MyClass::.ctor()";
-                        // "System.Void Tests.DU/get_MyBar@31::.ctor(Tests.DU/MyUnion)";
-                        "System.Void Tests.DU::testMakeUnion()";
-                        "System.Void Tests.M::testMakeThing()";
-                        "Tests.DU/MyUnion Tests.DU/MyUnion::as_bar()";
-                        "Tests.DU/MyUnion Tests.DU/get_MyBar@36::Invoke(Microsoft.FSharp.Core.Unit)";
-                        "Tests.DU/MyUnion Tests.DU::returnBar(System.String)";
-                        "Tests.DU/MyUnion Tests.DU::returnFoo(System.Int32)";
-                        "Tests.M/Thing Tests.M::makeThing(System.String)"]
-      Assert.That(recorded, expected |> Is.EquivalentTo, sprintf "Bad method list %A" recorded)
+    Actions.CheckSample4Content x
 
     printfn "Execute the instrumented tests"
     let sample4 = Path.getFullName "./Sample4/sample4.core.fsproj"
@@ -1842,42 +1822,7 @@ _Target "ReleaseXUnitFSharpTypesDotNetFullRunner" ( fun _ ->
                           sample4)
                           "ReleaseXUnitFSharpTypesDotNetFullRunner test"
 
-    do
-      use coverageFile = new FileStream(x, FileMode.Open, FileAccess.Read, FileShare.None, 4096, FileOptions.SequentialScan)
-      let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
-      let recorded = coverageDocument.Descendants(XName.Get("SequencePoint"))
-                     |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value)
-                     |> Seq.toList
-      let expected = "0 1 1 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 2 1 1 1"
-      Assert.That(recorded, expected.Split() |> Is.EquivalentTo, sprintf "Bad method list %A" recorded)
-
-      coverageDocument.Descendants(XName.Get("SequencePoint"))
-      |> Seq.iter(fun sp -> let vc = Int32.Parse (sp.Attribute(XName.Get("vc")).Value)
-                            let vx = sp.Descendants(XName.Get("Time"))
-                                     |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value |> Int32.Parse)
-                                     |> Seq.sum
-                            Assert.That (vc, Is.EqualTo vx, sp.Value))
-      let tracked = """<TrackedMethods>
-        <TrackedMethod uid="1" token="100663300" name="System.Void Tests.DU::testMakeUnion()" strategy="[Fact]" />
-        <TrackedMethod uid="2" token="100663345" name="System.Void Tests.M::testMakeThing()" strategy="[Fact]" />
-      </TrackedMethods>"""
-      coverageDocument.Descendants(XName.Get("TrackedMethods"))
-      |> Seq.iter (fun x -> Assert.That(x.ToString().Replace("\r\n","\n"), Is.EqualTo <| tracked.Replace("\r\n","\n")))
-
-      Assert.That (coverageDocument.Descendants(XName.Get("TrackedMethodRef")) |> Seq.map (fun x -> x.ToString()),
-                    Is.EquivalentTo ["<TrackedMethodRef uid=\"1\" vc=\"1\" />"
-                                     "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
-                                     "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
-                                     "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
-                                     "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
-                                     "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
-                                     "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
-                                     "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
-                                     "<TrackedMethodRef uid=\"2\" vc=\"2\" />"
-                                     "<TrackedMethodRef uid=\"2\" vc=\"1\" />"
-                                     "<TrackedMethodRef uid=\"2\" vc=\"1\" />"
-                                     "<TrackedMethodRef uid=\"2\" vc=\"1\" />"
-                    ])
+    Actions.CheckSample4Visits x
 )
 
 _Target "MSBuildTest" ( fun _ ->
@@ -1890,75 +1835,21 @@ _Target "MSBuildTest" ( fun _ ->
     Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = sample}) "msbuild"
                           (build @@ "msbuildtest.proj")
                           "MSBuildTest"
+    printfn "Checking samples4 output"
+    Actions.CheckSample4 x
 
-    do
-      use coverageFile = new FileStream(x, FileMode.Open, FileAccess.Read, FileShare.None, 4096, FileOptions.SequentialScan)
-      let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
-      let recorded = coverageDocument.Descendants(XName.Get("Method"))
-                     |> Seq.collect (fun x -> x.Descendants(XName.Get("Name")))
-                     |> Seq.map (fun x -> x.Value)
-                     |> Seq.sort
-                     |> Seq.toList
-      let expected = [  "Microsoft.FSharp.Core.FSharpFunc`2<Microsoft.FSharp.Core.Unit,Tests.DU/MyUnion> Tests.DU/MyUnion::get_MyBar()";
-                        "System.Byte[] Tests.M/Thing::bytes()";
-                        "System.Int32 Program/Program::main(System.String[])";
-                        "System.Void Tests.DU/MyClass::.ctor()";
-                        // "System.Void Tests.DU/get_MyBar@31::.ctor(Tests.DU/MyUnion)";
-                        "System.Void Tests.DU::testMakeUnion()";
-                        "System.Void Tests.M::testMakeThing()";
-                        "Tests.DU/MyUnion Tests.DU/MyUnion::as_bar()";
-                        "Tests.DU/MyUnion Tests.DU/get_MyBar@36::Invoke(Microsoft.FSharp.Core.Unit)";
-                        "Tests.DU/MyUnion Tests.DU::returnBar(System.String)";
-                        "Tests.DU/MyUnion Tests.DU::returnFoo(System.Int32)";
-                        "Tests.M/Thing Tests.M::makeThing(System.String)"]
-      Assert.That(recorded, expected |> Is.EquivalentTo, sprintf "Bad method list %A" recorded)
-
-      let recorded = coverageDocument.Descendants(XName.Get("SequencePoint"))
-                     |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value)
-                     |> Seq.toList
-      let expected = "0 1 1 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 2 1 1 1"
-      Assert.That(recorded, expected.Split() |> Is.EquivalentTo, sprintf "Bad method list %A" recorded)
-
-      coverageDocument.Descendants(XName.Get("SequencePoint"))
-      |> Seq.iter(fun sp -> let vc = Int32.Parse (sp.Attribute(XName.Get("vc")).Value)
-                            let vx = sp.Descendants(XName.Get("Time"))
-                                     |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value |> Int32.Parse)
-                                     |> Seq.sum
-                            Assert.That (vc, Is.EqualTo vx, sp.Value))
-      let tracked = """<TrackedMethods>
-        <TrackedMethod uid="1" token="100663300" name="System.Void Tests.DU::testMakeUnion()" strategy="[Fact]" />
-        <TrackedMethod uid="2" token="100663345" name="System.Void Tests.M::testMakeThing()" strategy="[Fact]" />
-      </TrackedMethods>"""
-      coverageDocument.Descendants(XName.Get("TrackedMethods"))
-      |> Seq.iter (fun x -> Assert.That(x.ToString().Replace("\r\n","\n"), Is.EqualTo <| tracked.Replace("\r\n","\n")))
-
-      Assert.That (coverageDocument.Descendants(XName.Get("TrackedMethodRef")) |> Seq.map (fun x -> x.ToString()),
-                    Is.EquivalentTo ["<TrackedMethodRef uid=\"1\" vc=\"1\" />"
-                                     "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
-                                     "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
-                                     "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
-                                     "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
-                                     "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
-                                     "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
-                                     "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
-                                     "<TrackedMethodRef uid=\"2\" vc=\"2\" />"
-                                     "<TrackedMethodRef uid=\"2\" vc=\"1\" />"
-                                     "<TrackedMethodRef uid=\"2\" vc=\"1\" />"
-                                     "<TrackedMethodRef uid=\"2\" vc=\"1\" />"
-                    ])
-
-      // touch-test framework
-      let unpack = Path.getFullName "_Packaging/Unpack/tools/net45"
-      if (unpack @@ "AltCover.exe") |> File.Exists then
-          MSBuild.build (fun p ->
-                { p with
-                    Verbosity = Some MSBuildVerbosity.Normal
-                    Properties = [
-                                   "Configuration", "Debug"
-                                   "DebugSymbols", "True"
-                                 ]})  "./Sample4/Sample4.prepare.fsproj"
-      else
-        printfn "Skipping touch-test -- AltCover.exe not packaged"
+    // touch-test framework
+    let unpack = Path.getFullName "_Packaging/Unpack/tools/net45"
+    if (unpack @@ "AltCover.exe") |> File.Exists then
+        MSBuild.build (fun p ->
+              { p with
+                  Verbosity = Some MSBuildVerbosity.Normal
+                  Properties = [
+                                 "Configuration", "Debug"
+                                 "DebugSymbols", "True"
+                               ]})  "./Sample4/Sample4.prepare.fsproj"
+    else
+      printfn "Skipping touch-test -- AltCover.exe not packaged"
 )
 
 _Target "DotnetTestIntegration" ( fun _ ->
@@ -1980,66 +1871,11 @@ _Target "DotnetTestIntegration" ( fun _ ->
     Shell.copy "./_DotnetTest" (!! "./Sample4/*.fs")
 
     Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = Path.getFullName "_DotnetTest"}) "test"
-                      ("-v n /p:AltCover=true /p:AltCoverCallContext=[Fact]|0 /p:AltCoverIpmo=true /p:AltCoverGetVersion=true")
+                      ("-v m /p:AltCover=true /p:AltCoverCallContext=[Fact]|0 /p:AltCoverIpmo=true /p:AltCoverGetVersion=true")
                       "sample test returned with a non-zero exit code"
 
     let x = Path.getFullName "./_DotnetTest/coverage.xml"
-
-    do
-      use coverageFile = new FileStream(x, FileMode.Open, FileAccess.Read, FileShare.None, 4096, FileOptions.SequentialScan)
-      let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
-      let recorded = coverageDocument.Descendants(XName.Get("Method"))
-                     |> Seq.collect (fun x -> x.Descendants(XName.Get("Name")))
-                     |> Seq.map (fun x -> x.Value)
-                     |> Seq.sort
-                     |> Seq.toList
-      let expected = [  "Microsoft.FSharp.Core.FSharpFunc`2<Microsoft.FSharp.Core.Unit,Tests.DU/MyUnion> Tests.DU/MyUnion::get_MyBar()";
-                        "System.Byte[] Tests.M/Thing::bytes()";
-                        "System.Int32 Program/Program::main(System.String[])";
-                        "System.Void Tests.DU/MyClass::.ctor()";
-                        // "System.Void Tests.DU/get_MyBar@31::.ctor(Tests.DU/MyUnion)";
-                        "System.Void Tests.DU::testMakeUnion()";
-                        "System.Void Tests.M::testMakeThing()";
-                        "Tests.DU/MyUnion Tests.DU/MyUnion::as_bar()";
-                        "Tests.DU/MyUnion Tests.DU/get_MyBar@36::Invoke(Microsoft.FSharp.Core.Unit)";
-                        "Tests.DU/MyUnion Tests.DU::returnBar(System.String)";
-                        "Tests.DU/MyUnion Tests.DU::returnFoo(System.Int32)";
-                        "Tests.M/Thing Tests.M::makeThing(System.String)"]
-      Assert.That(recorded, expected |> Is.EquivalentTo, sprintf "Bad method list %A" recorded)
-
-      let recorded = coverageDocument.Descendants(XName.Get("SequencePoint"))
-                     |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value)
-                     |> Seq.toList
-      let expected = "0 1 1 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 2 1 1 1"
-      Assert.That(recorded, expected.Split() |> Is.EquivalentTo, sprintf "Bad method list %A" recorded)
-
-      coverageDocument.Descendants(XName.Get("SequencePoint"))
-      |> Seq.iter(fun sp -> let vc = Int32.Parse (sp.Attribute(XName.Get("vc")).Value)
-                            let vx = sp.Descendants(XName.Get("Time"))
-                                     |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value |> Int32.Parse)
-                                     |> Seq.sum
-                            Assert.That (vc, Is.EqualTo vx, sp.Value))
-      let tracked = """<TrackedMethods>
-        <TrackedMethod uid="1" token="100663300" name="System.Void Tests.DU::testMakeUnion()" strategy="[Fact]" />
-        <TrackedMethod uid="2" token="100663345" name="System.Void Tests.M::testMakeThing()" strategy="[Fact]" />
-      </TrackedMethods>"""
-      coverageDocument.Descendants(XName.Get("TrackedMethods"))
-      |> Seq.iter (fun x -> Assert.That(x.ToString().Replace("\r\n","\n"), Is.EqualTo <| tracked.Replace("\r\n","\n")))
-
-      Assert.That (coverageDocument.Descendants(XName.Get("TrackedMethodRef")) |> Seq.map (fun x -> x.ToString()),
-                    Is.EquivalentTo ["<TrackedMethodRef uid=\"1\" vc=\"1\" />"
-                                     "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
-                                     "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
-                                     "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
-                                     "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
-                                     "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
-                                     "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
-                                     "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
-                                     "<TrackedMethodRef uid=\"2\" vc=\"2\" />"
-                                     "<TrackedMethodRef uid=\"2\" vc=\"1\" />"
-                                     "<TrackedMethodRef uid=\"2\" vc=\"1\" />"
-                                     "<TrackedMethodRef uid=\"2\" vc=\"1\" />"
-                    ])
+    Actions.CheckSample4 x
 
 // optest linecover
     Directory.ensure "./_DotnetTestLineCover"
@@ -2059,7 +1895,7 @@ _Target "DotnetTestIntegration" ( fun _ ->
     Shell.copy "./_DotnetTestLineCover" (!! "./Sample10/*.cs")
 
     Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = Path.getFullName "_DotnetTestLineCover"}) "test"
-                      ("-v n /p:AltCover=true /p:AltCoverLineCover=true")
+                      ("-v m /p:AltCover=true /p:AltCoverLineCover=true")
                       "sample test returned with a non-zero exit code"
 
     let x = Path.getFullName "./_DotnetTestLineCover/coverage.xml"
@@ -2088,7 +1924,7 @@ _Target "DotnetTestIntegration" ( fun _ ->
     Shell.copy "./_DotnetTestBranchCover" (!! "./Sample10/*.cs")
 
     Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = Path.getFullName "_DotnetTestBranchCover"}) "test"
-                      ("-v n /p:AltCover=true /p:AltCoverBranchCover=true")
+                      ("-v m /p:AltCover=true /p:AltCoverBranchCover=true")
                       "sample test returned with a non-zero exit code"
 
     let x = Path.getFullName "./_DotnetTestBranchCover/coverage.xml"
@@ -2108,7 +1944,7 @@ _Target "DotnetTestIntegration" ( fun _ ->
         pack.AddBeforeSelf inject
         proj.Save "./RegressionTesting/issue29/issue29.csproj"
         Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = Path.getFullName "RegressionTesting/issue29"}) "test"
-                          ("-v n /p:AltCover=true")
+                          ("-v m /p:AltCover=true")
                           "issue#29 regression test returned with a non-zero exit code"
 
   finally
@@ -2184,28 +2020,7 @@ _Target "DotnetCLIIntegration" ( fun _ ->
     Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = working} ) "altcover"
                           (" --opencover --inplace -c=0 \"-c=[Fact]\" -x \"" + x + "\" -i \"" + o + "\"")
                           "DotnetCLIIntegration"
-
-    do
-      use coverageFile = new FileStream(x, FileMode.Open, FileAccess.Read, FileShare.None, 4096, FileOptions.SequentialScan)
-      let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
-      let recorded = coverageDocument.Descendants(XName.Get("Method"))
-                     |> Seq.collect (fun x -> x.Descendants(XName.Get("Name")))
-                     |> Seq.map (fun x -> x.Value)
-                     |> Seq.sort
-                     |> Seq.toList
-      let expected = [  "Microsoft.FSharp.Core.FSharpFunc`2<Microsoft.FSharp.Core.Unit,Tests.DU/MyUnion> Tests.DU/MyUnion::get_MyBar()";
-                        "System.Byte[] Tests.M/Thing::bytes()";
-                        "System.Int32 Program/Program::main(System.String[])";
-                        "System.Void Tests.DU/MyClass::.ctor()";
-                        // "System.Void Tests.DU/get_MyBar@31::.ctor(Tests.DU/MyUnion)";
-                        "System.Void Tests.DU::testMakeUnion()";
-                        "System.Void Tests.M::testMakeThing()";
-                        "Tests.DU/MyUnion Tests.DU/MyUnion::as_bar()";
-                        "Tests.DU/MyUnion Tests.DU/get_MyBar@36::Invoke(Microsoft.FSharp.Core.Unit)";
-                        "Tests.DU/MyUnion Tests.DU::returnBar(System.String)";
-                        "Tests.DU/MyUnion Tests.DU::returnFoo(System.Int32)";
-                        "Tests.M/Thing Tests.M::makeThing(System.String)"]
-      Assert.That(recorded, expected |> Is.EquivalentTo, sprintf "Bad method list %A" recorded)
+    Actions.CheckSample4Content x
 
     printfn "Execute the instrumented tests"
     Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = working}) "altcover"
@@ -2213,42 +2028,7 @@ _Target "DotnetCLIIntegration" ( fun _ ->
                           "\" -- test --no-build --configuration Debug ")
                           "DotnetCLIIntegration test"
 
-    do
-      use coverageFile = new FileStream(x, FileMode.Open, FileAccess.Read, FileShare.None, 4096, FileOptions.SequentialScan)
-      let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
-      let recorded = coverageDocument.Descendants(XName.Get("SequencePoint"))
-                     |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value)
-                     |> Seq.toList
-      let expected = "0 1 1 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 2 1 1 1"
-      Assert.That(recorded, expected.Split() |> Is.EquivalentTo, sprintf "Bad method list %A" recorded)
-
-      coverageDocument.Descendants(XName.Get("SequencePoint"))
-      |> Seq.iter(fun sp -> let vc = Int32.Parse (sp.Attribute(XName.Get("vc")).Value)
-                            let vx = sp.Descendants(XName.Get("Time"))
-                                     |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value |> Int32.Parse)
-                                     |> Seq.sum
-                            Assert.That (vc, Is.EqualTo vx, sp.Value))
-      let tracked = """<TrackedMethods>
-        <TrackedMethod uid="1" token="100663300" name="System.Void Tests.DU::testMakeUnion()" strategy="[Fact]" />
-        <TrackedMethod uid="2" token="100663345" name="System.Void Tests.M::testMakeThing()" strategy="[Fact]" />
-      </TrackedMethods>"""
-      coverageDocument.Descendants(XName.Get("TrackedMethods"))
-      |> Seq.iter (fun x -> Assert.That(x.ToString().Replace("\r\n","\n"), Is.EqualTo <| tracked.Replace("\r\n","\n")))
-
-      Assert.That (coverageDocument.Descendants(XName.Get("TrackedMethodRef")) |> Seq.map (fun x -> x.ToString()),
-                    Is.EquivalentTo ["<TrackedMethodRef uid=\"1\" vc=\"1\" />"
-                                     "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
-                                     "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
-                                     "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
-                                     "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
-                                     "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
-                                     "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
-                                     "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
-                                     "<TrackedMethodRef uid=\"2\" vc=\"2\" />"
-                                     "<TrackedMethodRef uid=\"2\" vc=\"1\" />"
-                                     "<TrackedMethodRef uid=\"2\" vc=\"1\" />"
-                                     "<TrackedMethodRef uid=\"2\" vc=\"1\" />"
-                    ])
+    Actions.CheckSample4Visits x
 
     let command = """$ipmo = (dotnet altcover ipmo | Out-String).Trim().Split()[1].Trim(@('""')); Import-Module $ipmo; ConvertTo-BarChart -?"""
 
@@ -2317,27 +2097,7 @@ _Target "DotnetGlobalIntegration" ( fun _ ->
                                         Arguments = (" --opencover --inplace -c=0 \"-c=[Fact]\" -x \"" + x + "\" -i \"" + o + "\"")})
                                  "DotnetGlobalIntegration"
 
-    do
-      use coverageFile = new FileStream(x, FileMode.Open, FileAccess.Read, FileShare.None, 4096, FileOptions.SequentialScan)
-      let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
-      let recorded = coverageDocument.Descendants(XName.Get("Method"))
-                     |> Seq.collect (fun x -> x.Descendants(XName.Get("Name")))
-                     |> Seq.map (fun x -> x.Value)
-                     |> Seq.sort
-                     |> Seq.toList
-      let expected = [  "Microsoft.FSharp.Core.FSharpFunc`2<Microsoft.FSharp.Core.Unit,Tests.DU/MyUnion> Tests.DU/MyUnion::get_MyBar()";
-                        "System.Byte[] Tests.M/Thing::bytes()";
-                        "System.Int32 Program/Program::main(System.String[])";
-                        "System.Void Tests.DU/MyClass::.ctor()";
-                        // "System.Void Tests.DU/get_MyBar@31::.ctor(Tests.DU/MyUnion)";
-                        "System.Void Tests.DU::testMakeUnion()";
-                        "System.Void Tests.M::testMakeThing()";
-                        "Tests.DU/MyUnion Tests.DU/MyUnion::as_bar()";
-                        "Tests.DU/MyUnion Tests.DU/get_MyBar@36::Invoke(Microsoft.FSharp.Core.Unit)";
-                        "Tests.DU/MyUnion Tests.DU::returnBar(System.String)";
-                        "Tests.DU/MyUnion Tests.DU::returnFoo(System.Int32)";
-                        "Tests.M/Thing Tests.M::makeThing(System.String)"]
-      Assert.That(recorded, expected |> Is.EquivalentTo, sprintf "Bad method list %A" recorded)
+    Actions.CheckSample4Content x
 
     printfn "Execute the instrumented tests"
     Actions.RunRaw (fun info -> { info with
@@ -2347,43 +2107,7 @@ _Target "DotnetGlobalIntegration" ( fun _ ->
                                                        "\" -- test --no-build --configuration Debug ")})
                                  "DotnetGlobalIntegration test"
 
-    do
-      use coverageFile = new FileStream(x, FileMode.Open, FileAccess.Read, FileShare.None, 4096, FileOptions.SequentialScan)
-      let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
-      let recorded = coverageDocument.Descendants(XName.Get("SequencePoint"))
-                     |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value)
-                     |> Seq.toList
-      let expected = "0 1 1 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 2 1 1 1"
-      Assert.That(recorded, expected.Split() |> Is.EquivalentTo, sprintf "Bad method list %A" recorded)
-
-      coverageDocument.Descendants(XName.Get("SequencePoint"))
-      |> Seq.iter(fun sp -> let vc = Int32.Parse (sp.Attribute(XName.Get("vc")).Value)
-                            let vx = sp.Descendants(XName.Get("Time"))
-                                     |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value |> Int32.Parse)
-                                     |> Seq.sum
-                            Assert.That (vc, Is.EqualTo vx, sp.Value))
-      let tracked = """<TrackedMethods>
-        <TrackedMethod uid="1" token="100663300" name="System.Void Tests.DU::testMakeUnion()" strategy="[Fact]" />
-        <TrackedMethod uid="2" token="100663345" name="System.Void Tests.M::testMakeThing()" strategy="[Fact]" />
-      </TrackedMethods>"""
-      coverageDocument.Descendants(XName.Get("TrackedMethods"))
-      |> Seq.iter (fun x -> Assert.That(x.ToString().Replace("\r\n","\n"), Is.EqualTo <| tracked.Replace("\r\n","\n")))
-
-      Assert.That (coverageDocument.Descendants(XName.Get("TrackedMethodRef")) |> Seq.map (fun x -> x.ToString()),
-                    Is.EquivalentTo ["<TrackedMethodRef uid=\"1\" vc=\"1\" />"
-                                     "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
-                                     "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
-                                     "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
-                                     "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
-                                     "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
-                                     "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
-                                     "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
-                                     "<TrackedMethodRef uid=\"2\" vc=\"2\" />"
-                                     "<TrackedMethodRef uid=\"2\" vc=\"1\" />"
-                                     "<TrackedMethodRef uid=\"2\" vc=\"1\" />"
-                                     "<TrackedMethodRef uid=\"2\" vc=\"1\" />"
-                    ])
-
+    Actions.CheckSample4Visits x
     let command = """$ipmo = (altcover ipmo | Out-String).Trim().Split()[1].Trim(@('""')); Import-Module $ipmo; ConvertTo-BarChart -?"""
 
     Actions.RunRaw (fun info -> { info with
@@ -2398,7 +2122,7 @@ _Target "DotnetGlobalIntegration" ( fun _ ->
     //                   ("package altcover.global")
     //                   "sample test returned with a non-zero exit code"
     // Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = Path.getFullName "_DotnetGlobalTest"}) "test"
-    //                   ("-v n /p:AltCover=true")
+    //                   ("-v m /p:AltCover=true")
     //                   "sample test returned with a non-zero exit code"
     // "./_DotnetGlobalTest/coverage.xml" |> Path.getFullName |> File.Exists |> Assert.That
 
