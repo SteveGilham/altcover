@@ -1917,7 +1917,7 @@ _Target "ReleaseXUnitFSharpTypesDotNetFullRunner" ( fun _ ->
                      |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value)
                      |> Seq.toList
       let expected = "0 1 1 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 2 1 1 1"
-      Assert.That(recorded, expected.Split() |> Is.EquivalentTo, sprintf "Bad method list %A" recorded)
+      Assert.That(recorded, expected.Split() |> Is.EquivalentTo, sprintf "Bad visit list %A" recorded)
 
       coverageDocument.Descendants(XName.Get("SequencePoint"))
       |> Seq.iter(fun sp -> let vc = Int32.Parse (sp.Attribute(XName.Get("vc")).Value)
@@ -1985,7 +1985,7 @@ _Target "MSBuildTest" ( fun _ ->
                      |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value)
                      |> Seq.toList
       let expected = "0 1 1 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 2 1 1 1"
-      Assert.That(recorded, expected.Split() |> Is.EquivalentTo, sprintf "Bad method list %A" recorded)
+      Assert.That(recorded, expected.Split() |> Is.EquivalentTo, sprintf "Bad visit list %A" recorded)
 
       coverageDocument.Descendants(XName.Get("SequencePoint"))
       |> Seq.iter(fun sp -> let vc = Int32.Parse (sp.Attribute(XName.Get("vc")).Value)
@@ -2154,7 +2154,7 @@ group NetcoreBuild
                      |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value)
                      |> Seq.toList
       let expected = "0 1 1 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 2 1 1 1"
-      Assert.That(recorded, expected.Split() |> Is.EquivalentTo, sprintf "Bad method list %A" recorded)
+      Assert.That(recorded, expected.Split() |> Is.EquivalentTo, sprintf "Bad visit list %A" recorded)
 
       coverageDocument.Descendants(XName.Get("SequencePoint"))
       |> Seq.iter(fun sp -> let vc = Int32.Parse (sp.Attribute(XName.Get("vc")).Value)
@@ -2248,7 +2248,7 @@ _Target "DotnetTestIntegration" ( fun _ ->
                      |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value)
                      |> Seq.toList
       let expected = "0 1 1 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 2 1 1 1"
-      Assert.That(recorded, expected.Split() |> Is.EquivalentTo, sprintf "Bad method list %A" recorded)
+      Assert.That(recorded, expected.Split() |> Is.EquivalentTo, sprintf "Bad visit list %A" recorded)
 
       coverageDocument.Descendants(XName.Get("SequencePoint"))
       |> Seq.iter(fun sp -> let vc = Int32.Parse (sp.Attribute(XName.Get("vc")).Value)
@@ -2457,7 +2457,7 @@ _Target "DotnetCLIIntegration" ( fun _ ->
                      |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value)
                      |> Seq.toList
       let expected = "0 1 1 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 2 1 1 1"
-      Assert.That(recorded, expected.Split() |> Is.EquivalentTo, sprintf "Bad method list %A" recorded)
+      Assert.That(recorded, expected.Split() |> Is.EquivalentTo, sprintf "Bad visit list %A" recorded)
 
       coverageDocument.Descendants(XName.Get("SequencePoint"))
       |> Seq.iter(fun sp -> let vc = Int32.Parse (sp.Attribute(XName.Get("vc")).Value)
@@ -2591,7 +2591,7 @@ _Target "DotnetGlobalIntegration" ( fun _ ->
                      |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value)
                      |> Seq.toList
       let expected = "0 1 1 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 2 1 1 1"
-      Assert.That(recorded, expected.Split() |> Is.EquivalentTo, sprintf "Bad method list %A" recorded)
+      Assert.That(recorded, expected.Split() |> Is.EquivalentTo, sprintf "Bad visit list %A" recorded)
 
       coverageDocument.Descendants(XName.Get("SequencePoint"))
       |> Seq.iter(fun sp -> let vc = Int32.Parse (sp.Attribute(XName.Get("vc")).Value)
