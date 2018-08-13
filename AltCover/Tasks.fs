@@ -34,18 +34,38 @@ type CollectParams =
        member self.Validate() =
           let saved = CommandLine.error
 
-          let validateOptional f key x =
+          let validate f x =
             if x |> String.IsNullOrWhiteSpace |> not then
-              f key x |> ignore
-          try
-            validateOptional CommandLine.ValidateDirectory "--recorderDirectory" self.RecorderDirectory
-            validateOptional CommandLine.ValidateDirectory "--workingDirectory" self.WorkingDirectory
-            validateOptional CommandLine.ValidatePath "--executable" self.Executable
-            validateOptional CommandLine.ValidatePath "--lcovReport" self.LcovReport
-            validateOptional CommandLine.ValidatePath "--cobertura" self.Cobertura
-            validateOptional CommandLine.ValidatePath "--outputFile" self.OutputFile
+              f x |> ignore
 
-            CommandLine.error
+          let validateOptional f key x =
+            validate (f key) x
+
+          let toOption s =
+            if s |> String.IsNullOrWhiteSpace 
+            then None
+            else Some s
+
+          try
+            [
+                ("--recorderDirectory", self.RecorderDirectory)
+                ("--workingDirectory", self.WorkingDirectory)
+            ]
+            |> List.iter (fun (n,x) -> validateOptional CommandLine.ValidateDirectory n x)
+
+            [
+                ("--executable", self.Executable)
+                ("--lcovReport", self.LcovReport)
+                ("--cobertura", self.Cobertura)
+                ("--outputFile", self.OutputFile)
+            ]
+            |> List.iter (fun (n,x) -> validateOptional CommandLine.ValidatePath n x)
+
+            validate Runner.ValidateThreshold self.Threshold
+
+            Runner.RequireRecorderTest (self.RecorderDirectory |> toOption) () ()
+
+            CommandLine.error |> List.toArray
           finally
             CommandLine.error <- saved
 
@@ -149,7 +169,7 @@ type PrepareParams =
                                                   CommandLine.resources.GetString "Incompatible",
                                                   "--branchcover", "--linecover") :: CommandLine.error
 
-            CommandLine.error
+            CommandLine.error |> List.toArray
           finally
             CommandLine.error <- saved
 

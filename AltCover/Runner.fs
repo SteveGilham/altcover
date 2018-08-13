@@ -163,6 +163,17 @@ module internal Runner =
 
   let mutable internal Summaries : (XDocument -> Base.ReportFormat -> int -> int) list = []
 
+  let internal ValidateThreshold x =
+     let (q,n) = Int32.TryParse ( if (String.IsNullOrWhiteSpace(x)) then "!"
+                                  else x )
+     let ok =  q && (n >= 0) && (n <= 100)
+     if ok |> not then
+        CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
+                                           CommandLine.resources.GetString "InvalidValue",
+                                           "--threshold",
+                                           x) :: CommandLine.error
+     (ok, n)
+
   let internal DeclareOptions () =
     Summaries <- []
     Summaries <- StandardSummary :: Summaries
@@ -210,20 +221,14 @@ module internal Runner =
                       LCov.path := x |> Path.GetFullPath |> Some
                       Summaries <- LCov.Summary :: Summaries))
       ("t|threshold=",
-       (fun x -> let (q,n) = Int32.TryParse ( if (String.IsNullOrWhiteSpace(x)) then "!"
-                                              else x )
-                 let ok =  q && (n >= 0) && (n <= 100)
+       (fun x -> let ok, n = ValidateThreshold x
                  if ok then
                     if Option.isSome threshold then
                       CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
                                                          CommandLine.resources.GetString "MultiplesNotAllowed",
                                                          "--threshold") :: CommandLine.error
                     else
-                      threshold <- Some n
-                 else CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
-                                                         CommandLine.resources.GetString "InvalidValue",
-                                                         "--threshold",
-                                                         x) :: CommandLine.error))
+                      threshold <- Some n))
       ("c|cobertura=",
        (fun x -> if CommandLine.ValidatePath "--cobertura" x then
                     if Option.isSome !Cobertura.path then
@@ -260,18 +265,21 @@ module internal Runner =
                             | (Some exe, _) -> Right (exe::l, options)
     | fail -> fail
 
+  let internal RequireRecorderTest recordingDirectory success fail =
+    match recordingDirectory with
+    | None -> CommandLine.error <- (CommandLine.resources.GetString "recorderRequired") ::
+                                    CommandLine.error
+              fail
+    | Some path -> let dll = Path.Combine (path, "AltCover.Recorder.g.dll")
+                   if File.Exists dll then success
+                   else CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
+                                    CommandLine.resources.GetString "recorderNotFound",
+                                    dll) :: CommandLine.error
+                        fail
+
   let internal RequireRecorder (parse:(Either<string*OptionSet, string list*OptionSet>)) =
     match parse with
-    | Right (_, options) -> match recordingDirectory with
-                            | None -> CommandLine.error <- (CommandLine.resources.GetString "recorderRequired") ::
-                                                            CommandLine.error
-                                      Left ("UsageError", options)
-                            | Some path -> let dll = Path.Combine (path, "AltCover.Recorder.g.dll")
-                                           if File.Exists dll then parse
-                                           else CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
-                                                         CommandLine.resources.GetString "recorderNotFound",
-                                                         dll) :: CommandLine.error
-                                                Left ("UsageError", options)
+    | Right (_, options) -> RequireRecorderTest recordingDirectory parse (Left ("UsageError", options))
     | fail -> fail
 
   let internal RequireWorker (parse:(Either<string*OptionSet, string list*OptionSet>)) =
