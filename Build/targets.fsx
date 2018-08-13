@@ -1995,7 +1995,7 @@ _Target "DoIt" (fun _ ->
 
   let ipmo = AltCover.Api.Ipmo().Trim().Split().[1].Trim([|'\"'|])
   let command = "$ipmo = '" + ipmo + "'; Import-Module $ipmo; ConvertTo-BarChart -?"
-  
+
   let pwsh = if Environment.isWindows then
                     Tools.findToolInSubPath "pwsh.exe" (Environment.environVar "ProgramFiles" @@ "PowerShell")
              else "pwsh"
