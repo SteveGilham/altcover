@@ -79,7 +79,8 @@ module internal Main =
                                           use stream = new System.IO.FileStream(x,
                                                                                 System.IO.FileMode.Open,
                                                                                 System.IO.FileAccess.Read)
-                                          (StrongNameKeyPair(stream), true))
+                                          let pair = StrongNameKeyPair(stream)
+                                          (pair, pair.PublicKey <> null)) // will throw if invalid
                                           (null, false) false
     else (null, false)
 
@@ -128,8 +129,8 @@ module internal Main =
                 CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
                                                 CommandLine.resources.GetString "MultiplesNotAllowed",
                                                 "--strongNameKey") :: CommandLine.error
-              else Visitor.defaultStrongNameKey <- Some pair
-                   Visitor.Add pair))
+               else Visitor.defaultStrongNameKey <- Some pair
+                    Visitor.Add pair))
 #endif
       ("x|xmlReport=",
        (fun x -> if ValidatePath "--xmlReport" x then
