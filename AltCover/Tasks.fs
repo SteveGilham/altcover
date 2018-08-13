@@ -31,6 +31,12 @@ type CollectParams =
 
             CommandLine = String.Empty
         }
+       member self.Validate() =
+          let saved = CommandLine.error
+          try
+            CommandLine.error
+          finally
+            CommandLine.error <- saved
 
 [<ExcludeFromCodeCoverage>]
 type PrepareParams =
@@ -103,14 +109,14 @@ type PrepareParams =
 
           try
             CommandLine.error <- []
-            validateOptional Main.ValidateDirectory "--inputDirectory" self.InputDirectory
-            validateOptional Main.ValidatePath "--outputDirectory" self.OutputDirectory
+            validateOptional CommandLine.ValidateDirectory "--inputDirectory" self.InputDirectory
+            validateOptional CommandLine.ValidatePath "--outputDirectory" self.OutputDirectory
 
-            validateArray self.SymbolDirectories Main.ValidateDirectory "--symbolDirectory"
-            validateArray self.Dependencies Main.ValidateAssembly "--dependency"
-            validateArray self.Keys Main.ValidateStrongNameKey "--key"
-            validateOptional Main.ValidateStrongNameKey "--strongNameKey" self.StrongNameKey
-            validateOptional Main.ValidatePath "--xmlReport" self.XmlReport
+            validateArray self.SymbolDirectories CommandLine.ValidateDirectory "--symbolDirectory"
+            validateArray self.Dependencies CommandLine.ValidateAssembly "--dependency"
+            validateArray self.Keys CommandLine.ValidateStrongNameKey "--key"
+            validateOptional CommandLine.ValidateStrongNameKey "--strongNameKey" self.StrongNameKey
+            validateOptional CommandLine.ValidatePath "--xmlReport" self.XmlReport
             [
               self.FileFilter
               self.AssemblyFilter
@@ -120,7 +126,7 @@ type PrepareParams =
               self.AttributeFilter
               self.PathFilter
             ]
-            |> Seq.iter (fun a -> validateArraySimple a Main.ValidateRegexes)
+            |> Seq.iter (fun a -> validateArraySimple a CommandLine.ValidateRegexes)
 
             if self.Single && self.CallContext |> isNull |> not && self.CallContext.Any() then
                CommandLine.error <- String.Format(System.Globalization.CultureInfo.CurrentCulture,
@@ -143,7 +149,6 @@ type Logging =
         Warn : (String -> unit)
         Error : (String -> unit)
         Echo : (String -> unit)
-        ////Usage : ((String * obj * obj) -> unit)
     }
   with static member Default
         with get() : Logging = {
@@ -151,7 +156,6 @@ type Logging =
             Warn = ignore
             Error = ignore
             Echo = ignore
-            ////Usage = ignore
         }
 
        static member ActionAdapter (a:Action<String>) =
@@ -164,7 +168,6 @@ type Logging =
           Output.Warn <- self.Warn
           Output.Info <- self.Info
           Output.Echo <- self.Echo
-          ////Output.Usage <- ignore
 
 module internal Args =
   let Item a x =

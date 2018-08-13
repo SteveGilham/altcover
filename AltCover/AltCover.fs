@@ -6,7 +6,6 @@ open System.Globalization
 open System.IO
 open System.Linq
 open System.Reflection
-open System.Text.RegularExpressions
 
 open AltCover.Base
 open Augment
@@ -42,56 +41,9 @@ module internal Main =
     Visitor.single <- false
     Visitor.coverstyle <- CoverStyle.All
 
-  let internal ValidateFileSystemEntity exists key x =
-    CommandLine.doPathOperation (fun () ->
-      if not (String.IsNullOrWhiteSpace x) && x |> Path.GetFullPath |> exists then
-        true
-      else CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
-                                                         CommandLine.resources.GetString "DirectoryNotFound",
-                                                         key,
-                                                         x) :: CommandLine.error
-           false) false false
-
-  let internal ValidateDirectory dir x =
-    ValidateFileSystemEntity Directory.Exists dir x
-
-  let internal ValidateFile file x =
-    ValidateFileSystemEntity File.Exists file x
-
-  let internal ValidatePath path x =
-    ValidateFileSystemEntity (fun _ -> true) path x
-
-  let internal ValidateAssembly assembly x =
-    if ValidateFile assembly x then
-        let name = Instrument.FindAssemblyName x
-        if String.IsNullOrWhiteSpace name then
-                  CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
-                                                     CommandLine.resources.GetString "NotAnAssembly",
-                                                     assembly,
-                                                     x) :: CommandLine.error
-                  (String.Empty, false)
-        else (name, true)
-    else (String.Empty, false)
-
-  let internal ValidateStrongNameKey key x =
-    if ValidateFile key x then
-       CommandLine.doPathOperation (fun () ->
-                                          use stream = new System.IO.FileStream(x,
-                                                                                System.IO.FileMode.Open,
-                                                                                System.IO.FileAccess.Read)
-                                          let pair = StrongNameKeyPair(stream)
-                                          (pair, pair.PublicKey <> null)) // will throw if invalid
-                                          (null, false) false
-    else (null, false)
-
-  let internal ValidateRegexes (x:String) =
-    CommandLine.doPathOperation (fun () ->
-         x.Split([|";"|], StringSplitOptions.RemoveEmptyEntries)
-         |> Array.map Regex) [| |] false
-
   let internal DeclareOptions () =
     [ ("i|inputDirectory=",
-       (fun x -> if ValidateDirectory "--inputDirectory" x then
+       (fun x -> if CommandLine.ValidateDirectory "--inputDirectory" x then
                     if Option.isSome Visitor.inputDirectory then
                       CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
                                                          CommandLine.resources.GetString "MultiplesNotAllowed",
@@ -100,7 +52,7 @@ module internal Main =
                     else
                       Visitor.inputDirectory <- Some (Path.GetFullPath x)))
       ("o|outputDirectory=",
-       (fun x -> if ValidatePath "--outputDirectory" x then
+       (fun x -> if CommandLine.ValidatePath "--outputDirectory" x then
                     if Option.isSome Visitor.outputDirectory then
                       CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
                                                          CommandLine.resources.GetString "MultiplesNotAllowed",
@@ -109,7 +61,7 @@ module internal Main =
                     else
                       CommandLine.doPathOperation (fun _ -> Visitor.outputDirectory <- Some (Path.GetFullPath x)) () false))
       ("y|symbolDirectory=",
-       (fun x -> if ValidateDirectory "--symbolDirectory" x then
+       (fun x -> if CommandLine.ValidateDirectory "--symbolDirectory" x then
                     ProgramDatabase.SymbolFolders.Add x))
 #if NETCOREAPP2_0
       ("d|dependency=",
@@ -119,11 +71,11 @@ module internal Main =
 #else
       ("k|key=",
        (fun x ->
-             let (pair, ok) = ValidateStrongNameKey "--key" x
+             let (pair, ok) = CommandLine.ValidateStrongNameKey "--key" x
              if ok then Visitor.Add pair))
       ("sn|strongNameKey=",
        (fun x ->
-             let (pair, ok) = ValidateStrongNameKey "--strongNameKey" x
+             let (pair, ok) = CommandLine.ValidateStrongNameKey "--strongNameKey" x
              if ok then
                if Option.isSome Visitor.defaultStrongNameKey then
                 CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
@@ -133,7 +85,7 @@ module internal Main =
                     Visitor.Add pair))
 #endif
       ("x|xmlReport=",
-       (fun x -> if ValidatePath "--xmlReport" x then
+       (fun x -> if CommandLine.ValidatePath "--xmlReport" x then
                     if Option.isSome Visitor.reportPath then
                       CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
                                                          CommandLine.resources.GetString "MultiplesNotAllowed",
@@ -142,19 +94,19 @@ module internal Main =
                     else
                       CommandLine.doPathOperation (fun () -> Visitor.reportPath <- Some (Path.GetFullPath x)) () false))
       ("f|fileFilter=",
-       (fun x -> x |> ValidateRegexes |> Seq.iter (FilterClass.File >> Visitor.NameFilters.Add)))
+       (fun x -> x |> CommandLine.ValidateRegexes |> Seq.iter (FilterClass.File >> Visitor.NameFilters.Add)))
       ("p|pathFilter=",
-       (fun x -> x |> ValidateRegexes |> Seq.iter (FilterClass.Path >> Visitor.NameFilters.Add)))
+       (fun x -> x |> CommandLine.ValidateRegexes |> Seq.iter (FilterClass.Path >> Visitor.NameFilters.Add)))
       ("s|assemblyFilter=",
-       (fun x -> x |> ValidateRegexes |> Seq.iter (FilterClass.Assembly >> Visitor.NameFilters.Add)))
+       (fun x -> x |> CommandLine.ValidateRegexes |> Seq.iter (FilterClass.Assembly >> Visitor.NameFilters.Add)))
       ("e|assemblyExcludeFilter=",
-       (fun x -> x |> ValidateRegexes |> Seq.iter (FilterClass.Module >> Visitor.NameFilters.Add)))
+       (fun x -> x |> CommandLine.ValidateRegexes |> Seq.iter (FilterClass.Module >> Visitor.NameFilters.Add)))
       ("t|typeFilter=",
-       (fun x -> x |> ValidateRegexes |> Seq.iter (FilterClass.Type >> Visitor.NameFilters.Add)))
+       (fun x -> x |> CommandLine.ValidateRegexes |> Seq.iter (FilterClass.Type >> Visitor.NameFilters.Add)))
       ("m|methodFilter=",
-       (fun x -> x |> ValidateRegexes |> Seq.iter (FilterClass.Method >> Visitor.NameFilters.Add)))
+       (fun x -> x |> CommandLine.ValidateRegexes |> Seq.iter (FilterClass.Method >> Visitor.NameFilters.Add)))
       ("a|attributeFilter=",
-       (fun x -> x |> ValidateRegexes |> Seq.iter (FilterClass.Attribute >> Visitor.NameFilters.Add)))
+       (fun x -> x |> CommandLine.ValidateRegexes |> Seq.iter (FilterClass.Attribute >> Visitor.NameFilters.Add)))
       ("c|callContext=",
        (fun x -> if Visitor.single then
                          CommandLine.error <- String.Format(CultureInfo.CurrentCulture,

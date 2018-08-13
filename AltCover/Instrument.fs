@@ -242,16 +242,6 @@ module internal Instrument =
     | _ -> null
 #endif
 
-  let internal FindAssemblyName f =
-    try
-      (AssemblyName.GetAssemblyName f).ToString()
-    with
-    | :? ArgumentException
-    | :? FileNotFoundException
-    | :? System.Security.SecurityException
-    | :? BadImageFormatException
-    | :? FileLoadException -> String.Empty
-
 #if NETCOREAPP2_0
   let private nugetCache = Path.Combine(Path.Combine (Environment.GetFolderPath Environment.SpecialFolder.UserProfile,
                                                       ".nuget"), "packages")
@@ -267,7 +257,7 @@ module internal Instrument =
                         |> Seq.filter(fun f -> let x = Path.GetExtension f
                                                x.Equals(".exe", StringComparison.OrdinalIgnoreCase) ||
                                                x.Equals(".dll", StringComparison.OrdinalIgnoreCase))
-                        |> Seq.filter (fun f -> y.ToString().Equals(FindAssemblyName f, StringComparison.Ordinal))
+                        |> Seq.filter (fun f -> y.ToString().Equals(CommandLine.FindAssemblyName f, StringComparison.Ordinal))
                         |> Seq.tryHead
         match candidate with
         | None -> null
