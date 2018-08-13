@@ -2074,9 +2074,50 @@ type AltCoverTests() = class
                               | :? System.UnauthorizedAccessException
                               | :? IOException -> ())
 
+  [<Test>]
+  member self.ShouldBeAbleToTellAnAssembly () =
+    let where = Assembly.GetExecutingAssembly().Location
+    let here = Path.GetDirectoryName where
+    let pdb = Directory.GetFiles(here, "*.pdb")
+    Assert.That (pdb, Is.Not.Empty, "no pdb")
+    pdb
+    |> Seq.iter(fun p -> let a = CommandLine.FindAssemblyName p
+                         Assert.That(String.IsNullOrWhiteSpace a, p))
+
+    let dll = Directory.GetFiles(here, "*.dll")
+    Assert.That (dll, Is.Not.Empty, "no dll")
+    dll
+    |> Seq.iter(fun d -> let a = CommandLine.FindAssemblyName d
+                         Assert.That(a |> String.IsNullOrWhiteSpace |> not, d))
+
+  [<Test>]
+  member self.ShouldBeAbleToValidateAnAssembly () =
+    let where = Assembly.GetExecutingAssembly().Location
+    let here = Path.GetDirectoryName where
+    let pdb = Directory.GetFiles(here, "*.pdb")
+    Assert.That (pdb, Is.Not.Empty, "no pdb")
+    CommandLine.error <- []
+    pdb
+    |> Seq.iter(fun p -> let (a, b) = CommandLine.ValidateAssembly "*" p
+                         Assert.That(String.IsNullOrWhiteSpace a, p)
+                         Assert.That(b |> not))
+    Assert.That (CommandLine.error.Length, Is.EqualTo pdb.Length, "pdb length")
+
+    CommandLine.error <- []
+    let dll = Directory.GetFiles(here, "*.dll")
+    Assert.That (dll, Is.Not.Empty, "no dll")
+    dll
+    |> Seq.iter(fun d -> let (a, b) = CommandLine.ValidateAssembly "*" d
+                         Assert.That(a |> String.IsNullOrWhiteSpace |> not, d)
+                         Assert.That(b) )
+    Assert.That (CommandLine.error |> List.isEmpty)
+
+    let x = CommandLine.ValidateAssembly "*" "**"
+    Assert.That (x, Is.EqualTo (String.Empty, false))
+
 #if NETCOREAPP2_0
   [<Test>]
-  member self.ShouldBeAbleLocateAReference () =
+  member self.ShouldBeAbleToLocateAReference () =
     let where = Assembly.GetExecutingAssembly().Location
     let here = Path.GetDirectoryName where
     let json = Directory.GetFiles(here, "*.json")

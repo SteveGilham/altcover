@@ -134,6 +134,38 @@ module XTests =
             RecursiveValidateOpenCover (r.Elements()) (e.Elements()) (depth+1) zero expectSkipped)
 
   [<Fact>]
+  let CollectParamsCanBeValidated() =
+    let test = CollectParams.Default
+    let scan = test.Validate(false)
+    Assert.Equal (0, scan.Length)
+
+  [<Fact>]
+  let CollectParamsCanBeValidatedWithErrors() =
+    let test = CollectParams.Default
+    let scan = test.Validate(true)
+    Assert.Equal (1, scan.Length)
+
+  [<Fact>]
+  let PrepareParamsCanBeValidated() =
+    let test = PrepareParams.Default
+    let scan = test.Validate()
+    Assert.Equal (0, scan.Length)
+
+  [<Fact>]
+  let PrepareParamsCanBeValidatedAndDetectInconsistency() =
+    let test = { PrepareParams.Default with BranchCover = true
+                                            LineCover = true
+                                            Single = true
+                                            CallContext = [| "0" |] }
+    let scan = test.Validate()
+    Assert.Equal (2, scan.Length)
+
+  [<Fact>]
+  let NullListsAreEmpty() =
+    let test = Args.ItemList String.Empty null
+    Assert.True (test |> List.isEmpty)
+
+  [<Fact>]
   let ADotNetDryRunLooksAsExpected() =
     let where = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
     let here = SolutionDir()
