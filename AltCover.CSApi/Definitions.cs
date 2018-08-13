@@ -45,6 +45,11 @@ namespace AltCover
                 };
             }
         }
+
+        public string[] Validate(bool afterPreparation)
+        {
+            return ToParameters().Validate(afterPreparation);
+        }
     }
 
     public class PrepareArgs
@@ -133,6 +138,11 @@ namespace AltCover
                     CommandLine = string.Empty
                 };
             }
+        }
+
+        public string[] Validate()
+        {
+            return ToParameters().Validate();
         }
     }
 

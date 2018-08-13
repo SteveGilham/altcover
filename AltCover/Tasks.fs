@@ -2,6 +2,7 @@
 
 open System
 open System.Linq
+open AltCover.Augment
 open System.Diagnostics.CodeAnalysis
 open Microsoft.Build.Utilities
 open Microsoft.Build.Framework
@@ -31,7 +32,7 @@ type CollectParams =
 
             CommandLine = String.Empty
         }
-       member self.Validate() =
+       member self.Validate afterPreparation =
           let saved = CommandLine.error
 
           let validate f x =
@@ -42,7 +43,7 @@ type CollectParams =
             validate (f key) x
 
           let toOption s =
-            if s |> String.IsNullOrWhiteSpace 
+            if s |> String.IsNullOrWhiteSpace
             then None
             else Some s
 
@@ -63,7 +64,8 @@ type CollectParams =
 
             validate Runner.ValidateThreshold self.Threshold
 
-            Runner.RequireRecorderTest (self.RecorderDirectory |> toOption) () ()
+            if afterPreparation then
+              Runner.RequireRecorderTest (self.RecorderDirectory |> toOption) () ()
 
             CommandLine.error |> List.toArray
           finally
@@ -168,6 +170,18 @@ type PrepareParams =
                CommandLine.error <- String.Format(System.Globalization.CultureInfo.CurrentCulture,
                                                   CommandLine.resources.GetString "Incompatible",
                                                   "--branchcover", "--linecover") :: CommandLine.error
+
+            if self.CallContext |> isNull |> not then
+              let select state x =
+                  let (_, n) = Main.ValidateCallContext state x
+                  match (state, n) with
+                  | (true, _)
+                  | (_, Left(Some _)) -> true
+                  | _ -> false
+
+              self.CallContext
+              |> Array.fold select false
+              |> ignore
 
             CommandLine.error |> List.toArray
           finally

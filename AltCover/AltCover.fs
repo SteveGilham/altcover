@@ -41,6 +41,32 @@ module internal Main =
     Visitor.single <- false
     Visitor.coverstyle <- CoverStyle.All
 
+  let ValidateCallContext predicate x =
+     if not (String.IsNullOrWhiteSpace x) then
+       let k = x.Trim()
+       if Char.IsDigit <| k.Chars(0) then
+          if predicate || k.Length > 1 then
+                      CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
+                                                         CommandLine.resources.GetString "InvalidValue",
+                                                         "--callContext",
+                                                         x) :: CommandLine.error
+                      (false, Left None)
+          else
+            let (ok, n) = Int32.TryParse(k)
+            if ok then (ok, Left(Some(pown 10 (7 - n))))
+            else CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
+                                                    CommandLine.resources.GetString "InvalidValue",
+                                                    "--callContext",
+                                                    x) :: CommandLine.error
+                 (false, Left None)
+       else
+         (true, Right k)
+     else CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
+                                                         CommandLine.resources.GetString "InvalidValue",
+                                                         "--callContext",
+                                                         x) :: CommandLine.error
+          (false, Left None)
+
   let internal DeclareOptions () =
     [ ("i|inputDirectory=",
        (fun x -> if CommandLine.ValidateDirectory "--inputDirectory" x then
@@ -112,27 +138,12 @@ module internal Main =
                          CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
                                                          CommandLine.resources.GetString "Incompatible",
                                                          "--single","--callContext") :: CommandLine.error
-                 if not (String.IsNullOrWhiteSpace x) then
-                   let k = x.Trim()
-                   if Char.IsDigit <| k.Chars(0) then
-                    if Option.isSome Visitor.interval || k.Length > 1 then
-                      CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
-                                                         CommandLine.resources.GetString "InvalidValue",
-                                                         "--callContext",
-                                                         x) :: CommandLine.error
-                    else
-                      let (ok, n) = Int32.TryParse(k)
-                      if ok then Visitor.interval <- Some (pown 10 (7 - n))
-                      else CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
-                                                              CommandLine.resources.GetString "InvalidValue",
-                                                              "--callContext",
-                                                              x) :: CommandLine.error
-                   else
-                      Visitor.TrackingNames.Add(k)
-                 else CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
-                                                         CommandLine.resources.GetString "InvalidValue",
-                                                         "--callContext",
-                                                         x) :: CommandLine.error))
+                 else
+                   let (ok, selection) = ValidateCallContext (Option.isSome Visitor.interval) x
+                   if ok then
+                     match selection with
+                     | Left n -> Visitor.interval <- n
+                     | Right name -> Visitor.TrackingNames.Add(name)))
       ("opencover",
        (fun _ ->  if Option.isSome Visitor.reportFormat then
                       CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
