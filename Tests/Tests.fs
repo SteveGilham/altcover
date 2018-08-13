@@ -2082,7 +2082,7 @@ type AltCoverTests() = class
     let json = Directory.GetFiles(here, "*.json")
     Assert.That (json, Is.Not.Empty, "no json")
     json
-    |> Seq.iter(fun j -> let a = Instrument.FindAssemblyName j
+    |> Seq.iter(fun j -> let a = CommandLine.FindAssemblyName j
                          Assert.That(String.IsNullOrWhiteSpace a, j))
 
     let raw = Mono.Cecil.AssemblyDefinition.ReadAssembly where

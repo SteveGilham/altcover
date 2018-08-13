@@ -33,7 +33,18 @@ type CollectParams =
         }
        member self.Validate() =
           let saved = CommandLine.error
+
+          let validateOptional f key x =
+            if x |> String.IsNullOrWhiteSpace |> not then
+              f key x |> ignore
           try
+            validateOptional CommandLine.ValidateDirectory "--recorderDirectory" self.RecorderDirectory
+            validateOptional CommandLine.ValidateDirectory "--workingDirectory" self.WorkingDirectory
+            validateOptional CommandLine.ValidatePath "--executable" self.Executable
+            validateOptional CommandLine.ValidatePath "--lcovReport" self.LcovReport
+            validateOptional CommandLine.ValidatePath "--cobertura" self.Cobertura
+            validateOptional CommandLine.ValidatePath "--outputFile" self.OutputFile
+
             CommandLine.error
           finally
             CommandLine.error <- saved

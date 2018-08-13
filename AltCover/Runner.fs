@@ -167,43 +167,31 @@ module internal Runner =
     Summaries <- []
     Summaries <- StandardSummary :: Summaries
     [ ("r|recorderDirectory=",
-       (fun x -> if not (String.IsNullOrWhiteSpace(x)) && Directory.Exists(x) then
+       (fun x -> if CommandLine.ValidateDirectory "--recorderDirectory" x then
                     if Option.isSome recordingDirectory then
                       CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
                                                          CommandLine.resources.GetString "MultiplesNotAllowed",
                                                          "--recorderDirectory") :: CommandLine.error
 
                     else
-                      recordingDirectory <- Some (Path.GetFullPath x)
-                 else CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
-                                                         CommandLine.resources.GetString "DirectoryNotFound",
-                                                         "--recorderDirectory",
-                                                         x) :: CommandLine.error ))
+                      recordingDirectory <- Some (Path.GetFullPath x)))
       ("w|workingDirectory=",
-       (fun x -> if not (String.IsNullOrWhiteSpace(x)) && Directory.Exists(x) then
+       (fun x -> if CommandLine.ValidateDirectory "--workingDirectory" x then
                     if Option.isSome workingDirectory then
                       CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
                                                          CommandLine.resources.GetString "MultiplesNotAllowed",
                                                          "--workingDirectory") :: CommandLine.error
 
                     else
-                      workingDirectory <- Some (Path.GetFullPath x)
-                 else CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
-                                                         CommandLine.resources.GetString "DirectoryNotFound",
-                                                         "--workingDirectory",
-                                                         x) :: CommandLine.error ))
+                      workingDirectory <- Some (Path.GetFullPath x)))
       ("x|executable=",
-       (fun x -> if not (String.IsNullOrWhiteSpace(x)) then
+       (fun x -> if CommandLine.ValidatePath "--executable" x then
                     if Option.isSome !executable then
                       CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
                                                          CommandLine.resources.GetString "MultiplesNotAllowed",
                                                          "--executable") :: CommandLine.error
                     else
-                      executable := Some x
-                 else CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
-                                                         CommandLine.resources.GetString "InvalidValue",
-                                                         "--executable",
-                                                         x) :: CommandLine.error))
+                      executable := Some x))
       ("collect",
        (fun _ ->  if collect then
                       CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
@@ -213,18 +201,14 @@ module internal Runner =
                   else
                       collect <- true))
       ("l|lcovReport=",
-       (fun x -> if not (String.IsNullOrWhiteSpace(x)) then
+       (fun x -> if CommandLine.ValidatePath "--lcovReport" x then
                     if Option.isSome !LCov.path then
                       CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
                                                          CommandLine.resources.GetString "MultiplesNotAllowed",
                                                          "--lcovReport") :: CommandLine.error
                     else
                       LCov.path := x |> Path.GetFullPath |> Some
-                      Summaries <- LCov.Summary :: Summaries
-                 else CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
-                                                         CommandLine.resources.GetString "InvalidValue",
-                                                         "--lcovReport",
-                                                         x) :: CommandLine.error))
+                      Summaries <- LCov.Summary :: Summaries))
       ("t|threshold=",
        (fun x -> let (q,n) = Int32.TryParse ( if (String.IsNullOrWhiteSpace(x)) then "!"
                                               else x )
@@ -241,30 +225,22 @@ module internal Runner =
                                                          "--threshold",
                                                          x) :: CommandLine.error))
       ("c|cobertura=",
-       (fun x -> if not (String.IsNullOrWhiteSpace(x)) then
+       (fun x -> if CommandLine.ValidatePath "--cobertura" x then
                     if Option.isSome !Cobertura.path then
                       CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
                                                          CommandLine.resources.GetString "MultiplesNotAllowed",
                                                          "--cobertura") :: CommandLine.error
                     else
                       Cobertura.path := x |> Path.GetFullPath |> Some
-                      Summaries <- Cobertura.Summary :: Summaries
-                 else CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
-                                                         CommandLine.resources.GetString "InvalidValue",
-                                                         "--cobertura",
-                                                         x) :: CommandLine.error))
+                      Summaries <- Cobertura.Summary :: Summaries))
       ("o|outputFile=",
-       (fun x -> if not (String.IsNullOrWhiteSpace(x)) then
+       (fun x -> if CommandLine.ValidatePath "--outputFile" x then
                     if Option.isSome output then
                       CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
                                                          CommandLine.resources.GetString "MultiplesNotAllowed",
                                                          "--outputFile") :: CommandLine.error
                     else
-                      output <- x |> Path.GetFullPath |> Some
-                 else CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
-                                                         CommandLine.resources.GetString "InvalidValue",
-                                                         "--outputFile",
-                                                         x) :: CommandLine.error))
+                      output <- x |> Path.GetFullPath |> Some))
       ("?|help|h", (fun x -> CommandLine.help <- not (isNull x)))
       ("<>", (fun x -> CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
                                                          CommandLine.resources.GetString "InvalidValue",

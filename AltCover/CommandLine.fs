@@ -207,24 +207,28 @@ module internal CommandLine =
         ReportErrors String.Empty
         Usage (intro, options1, options)
 
-  let internal ValidateFileSystemEntity exists key x =
+  let internal ValidateFileSystemEntity exists message key x =
     doPathOperation (fun () ->
       if not (String.IsNullOrWhiteSpace x) && x |> Path.GetFullPath |> exists then
         true
       else error <- String.Format(CultureInfo.CurrentCulture,
-                                                         resources.GetString "DirectoryNotFound",
+                                                         resources.GetString message,
                                                          key,
                                                          x) :: error
            false) false false
 
+  let internal dnf = "DirectoryNotFound"
+  let internal fnf = "FileNotFound"
+  let internal iv = "InvalidValue"
+
   let internal ValidateDirectory dir x =
-    ValidateFileSystemEntity Directory.Exists dir x
+    ValidateFileSystemEntity Directory.Exists dnf dir x
 
   let internal ValidateFile file x =
-    ValidateFileSystemEntity File.Exists file x
+    ValidateFileSystemEntity File.Exists fnf file x
 
   let internal ValidatePath path x =
-    ValidateFileSystemEntity (fun _ -> true) path x
+    ValidateFileSystemEntity (fun _ -> true) iv path x
 
   let internal FindAssemblyName f =
     try
