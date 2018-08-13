@@ -146,8 +146,20 @@ module XTests =
     Assert.Equal (1, scan.Length)
 
   [<Fact>]
+  let CollectParamsCanBePositivelyValidatedWithErrors() =
+    let test = { CollectParams.Default with RecorderDirectory = Guid.NewGuid().ToString() }
+    let scan = test.Validate(true)
+    Assert.Equal (2, scan.Length)
+
+  [<Fact>]
   let PrepareParamsCanBeValidated() =
-    let test = PrepareParams.Default
+    let test = { PrepareParams.Default with CallContext = [| "[Fact]" |] }
+    let scan = test.Validate()
+    Assert.Equal (0, scan.Length)
+
+  [<Fact>]
+  let PrepareParamsCanBeValidatedWithNulls() =
+    let test = { PrepareParams.Default with CallContext = null }
     let scan = test.Validate()
     Assert.Equal (0, scan.Length)
 
@@ -157,6 +169,13 @@ module XTests =
                                             LineCover = true
                                             Single = true
                                             CallContext = [| "0" |] }
+    let scan = test.Validate()
+    Assert.Equal (2, scan.Length)
+
+  [<Fact>]
+  let PrepareParamsCanBeValidatedWithErrors() =
+    let test = { PrepareParams.Default with XmlReport = "*" 
+                                            CallContext = [| "0"; "1" |] }
     let scan = test.Validate()
     Assert.Equal (2, scan.Length)
 

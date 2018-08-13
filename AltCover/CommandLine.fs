@@ -259,7 +259,7 @@ module internal CommandLine =
                                                                                 System.IO.FileMode.Open,
                                                                                 System.IO.FileAccess.Read)
                                           let pair = StrongNameKeyPair(stream)
-                                          (pair, pair.PublicKey <> null)) // will throw if invalid
+                                          (pair, pair.PublicKey <> null)) // will throw if invalid or NETCORE
                                           (null, false) false
     else (null, false)
 
