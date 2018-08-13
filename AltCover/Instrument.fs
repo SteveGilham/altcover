@@ -242,12 +242,6 @@ module internal Instrument =
     | _ -> null
 #endif
 
-#if NETCOREAPP2_0
-  let private nugetCache = Path.Combine(Path.Combine (Environment.GetFolderPath Environment.SpecialFolder.UserProfile,
-                                                      ".nuget"), "packages")
-
-  let internal ResolutionTable = Dictionary<string, AssemblyDefinition>()
-
   let internal FindAssemblyName f =
     try
       (AssemblyName.GetAssemblyName f).ToString()
@@ -257,6 +251,12 @@ module internal Instrument =
     | :? System.Security.SecurityException
     | :? BadImageFormatException
     | :? FileLoadException -> String.Empty
+
+#if NETCOREAPP2_0
+  let private nugetCache = Path.Combine(Path.Combine (Environment.GetFolderPath Environment.SpecialFolder.UserProfile,
+                                                      ".nuget"), "packages")
+
+  let internal ResolutionTable = Dictionary<string, AssemblyDefinition>()
 
   let internal ResolveFromNugetCache _ (y:AssemblyNameReference) =
     let name = y.ToString()

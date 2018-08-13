@@ -1,6 +1,7 @@
 ﻿namespace AltCover
 
 open System
+open System.Linq
 open System.Diagnostics.CodeAnalysis
 open Microsoft.Build.Utilities
 open Microsoft.Build.Framework
@@ -85,6 +86,55 @@ type PrepareParams =
 
             CommandLine = String.Empty
         }
+       member self.Validate() =
+          let saved = CommandLine.error
+
+          let validateArraySimple a f =
+            if a |> isNull |> not then
+              a
+              |> Array.iter (fun s -> f s |> ignore)
+
+          let validateArray a f key =
+            validateArraySimple a (f key)
+
+          let validateOptional f key x =
+            if x |> String.IsNullOrWhiteSpace |> not then
+              f key x |> ignore
+
+          try
+            CommandLine.error <- []
+            validateOptional Main.ValidateDirectory "--inputDirectory" self.InputDirectory
+            validateOptional Main.ValidatePath "--outputDirectory" self.OutputDirectory
+
+            validateArray self.SymbolDirectories Main.ValidateDirectory "--symbolDirectory"
+            validateArray self.Dependencies Main.ValidateAssembly "--dependency"
+            validateArray self.Keys Main.ValidateStrongNameKey "--key"
+            validateOptional Main.ValidateStrongNameKey "--strongNameKey" self.StrongNameKey
+            validateOptional Main.ValidatePath "--xmlReport" self.XmlReport
+            [
+              self.FileFilter
+              self.AssemblyFilter
+              self.AssemblyExcludeFilter
+              self.TypeFilter
+              self.MethodFilter
+              self.AttributeFilter
+              self.PathFilter
+            ]
+            |> Seq.iter (fun a -> validateArraySimple a Main.ValidateRegexes)
+
+            if self.Single && self.CallContext |> isNull |> not && self.CallContext.Any() then
+               CommandLine.error <- String.Format(System.Globalization.CultureInfo.CurrentCulture,
+                                                  CommandLine.resources.GetString "Incompatible",
+                                                  "--single","--callContext") :: CommandLine.error
+
+            if self.LineCover && self.BranchCover then
+               CommandLine.error <- String.Format(System.Globalization.CultureInfo.CurrentCulture,
+                                                  CommandLine.resources.GetString "Incompatible",
+                                                  "--branchcover", "--linecover") :: CommandLine.error
+
+            CommandLine.error
+          finally
+            CommandLine.error <- saved
 
 [<ExcludeFromCodeCoverage>]
 type Logging =
@@ -121,10 +171,15 @@ module internal Args =
     if x |> String.IsNullOrWhiteSpace
        then []
        else [ a; x ]
+
   let ItemList a x =
-      x
-      |> Seq.collect (fun i -> [ a; i ])
-      |> Seq.toList
+      if x |> isNull then
+        []
+      else
+        x
+        |> Seq.collect (fun i -> [ a; i ])
+        |> Seq.toList
+
   let Flag a x =
     if x
        then [a]

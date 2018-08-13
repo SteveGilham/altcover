@@ -25,6 +25,7 @@ module internal Runner =
   let mutable internal output : Option<string> = None
 
   let init() =
+    CommandLine.error <- []
     recordingDirectory <- None
     workingDirectory <- None
     executable := None
