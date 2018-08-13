@@ -329,6 +329,7 @@ type Prepare () =
     base.Log.LogMessage (MessageImportance.High, x)
 
   override self.Execute () =
+   try
     Output.Task <- true
     let log = { Logging.Default with
                                     Error = base.Log.LogError
@@ -365,6 +366,8 @@ type Prepare () =
                                   CommandLine = self.CommandLine
     }
     Api.Prepare task log = 0
+   finally
+    Output.Task <- false
 
 type Collect () =
   inherit Task(null)
@@ -383,6 +386,7 @@ type Collect () =
     base.Log.LogMessage (MessageImportance.High, x)
 
   override self.Execute () =
+   try
     Output.Task <- true
     let log = { Logging.Default with
                                     Error = base.Log.LogError
@@ -401,6 +405,8 @@ type Collect () =
                                   CommandLine = self.CommandLine
     }
     Api.Collect task log = 0
+   finally
+    Output.Task <- false
 
 type PowerShell () =
   inherit Task(null)
@@ -411,7 +417,6 @@ type PowerShell () =
 
   override self.Execute () =
     let r = Api.Ipmo ()
-    Output.Task <- true
     self.IO.Apply()
     r |> Output.Warn
     true
@@ -425,7 +430,6 @@ type GetVersion () =
 
   override self.Execute () =
     let r = Api.Version ()
-    Output.Task <- true
     self.IO.Apply()
     r |> Output.Warn
     true
