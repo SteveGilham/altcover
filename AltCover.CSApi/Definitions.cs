@@ -27,6 +27,29 @@ namespace AltCover
                 CommandLine
                 );
         }
+
+        public static CollectArgs Default
+        {
+            get
+            {
+                return new CollectArgs
+                {
+                    RecorderDirectory = string.Empty,
+                    WorkingDirectory = string.Empty,
+                    Executable = string.Empty,
+                    LcovReport = string.Empty,
+                    Threshold = string.Empty,
+                    Cobertura = string.Empty,
+                    OutputFile = string.Empty,
+                    CommandLine = string.Empty
+                };
+            }
+        }
+
+        public string[] Validate(bool afterPreparation)
+        {
+            return ToParameters().Validate(afterPreparation);
+        }
     }
 
     public class PrepareArgs
@@ -83,6 +106,44 @@ namespace AltCover
                         CommandLine
                 );
         }
+
+        public static PrepareArgs Default
+        {
+            get
+            {
+                return new PrepareArgs
+                {
+                    InputDirectory = string.Empty,
+                    OutputDirectory = string.Empty,
+                    SymbolDirectories = new string[0],
+                    Dependencies = new string[0],
+                    Keys = new string[0],
+                    StrongNameKey = string.Empty,
+                    XmlReport = string.Empty,
+                    FileFilter = new string[0],
+                    AssemblyFilter = new string[0],
+                    AssemblyExcludeFilter = new string[0],
+                    TypeFilter = new string[0],
+                    MethodFilter = new string[0],
+                    AttributeFilter = new string[0],
+                    PathFilter = new string[0],
+                    CallContext = new string[0],
+
+                    OpenCover = true,
+                    InPlace = true,
+                    Save = true,
+                    Single = false,
+                    LineCover = false,
+                    BranchCover = false,
+                    CommandLine = string.Empty
+                };
+            }
+        }
+
+        public string[] Validate()
+        {
+            return ToParameters().Validate();
+        }
     }
 
     public class LogArgs
@@ -99,6 +160,20 @@ namespace AltCover
                 Logging.ActionAdapter(Warn),
                 Logging.ActionAdapter(Error),
                 Logging.ActionAdapter(Echo));
+        }
+
+        public static LogArgs Default
+        {
+            get
+            {
+                return new LogArgs
+                {
+                    Info = x => { },
+                    Warn = x => { },
+                    Error = x => { },
+                    Echo = x => { }
+                };
+            }
         }
     }
 
