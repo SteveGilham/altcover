@@ -1432,14 +1432,14 @@ _Target "Packaging" (fun _ ->
                                |> Seq.map (fun x -> (x, Some (where + Path.GetDirectoryName(x).Substring(publish).Replace("\\","/")), None))
                                |> Seq.toList
 
-    let publish = (Path.getFullName "./_Publish.api").Length
+    let publishapi = (Path.getFullName "./_Publish.api").Length
     let netstdFiles where = (!! "./_Publish.api/**/*.*")
                                |> Seq.filter (fun f -> let n = f |> Path.GetFileName
                                                        n.StartsWith("altcover.", StringComparison.OrdinalIgnoreCase) ||
                                                        n.StartsWith("Mono.", StringComparison.Ordinal) ||
                                                        n.StartsWith("FSharp.Core.", StringComparison.Ordinal)
                                )
-                               |> Seq.map (fun x -> (x, Some (where + Path.GetDirectoryName(x).Substring(publish).Replace("\\","/")), None))
+                               |> Seq.map (fun x -> (x, Some (where + Path.GetDirectoryName(x).Substring(publishapi).Replace("\\","/")), None))
                                |> Seq.toList
 
     let dotnetFiles = (!! "./_Binaries/dotnet-altcover/Release+AnyCPU/netcoreapp2.0/dotnet-altcover.*")
@@ -1472,6 +1472,7 @@ _Target "Packaging" (fun _ ->
                       netstdFiles "lib/netstandard2.0/"
                       cakeFiles "lib/netstandard2.0/"
                       fakeFiles "lib/netstandard2.0/"
+                      poshFiles "lib/netstandard2.0/"
                       otherFilesApi
                       ],
          "_Packaging.api",
@@ -1480,9 +1481,6 @@ _Target "Packaging" (fun _ ->
         )
 
         (List.concat[netcoreFiles "lib/netcoreapp2.0/"
-                     netstdFiles "lib/netstandard2.0/"
-                     cakeFiles "lib/netstandard2.0/"
-                     fakeFiles "lib/netstandard2.0/"
                      poshFiles "lib/netcoreapp2.0/"
                      dotnetFiles
                      otherFilesDotnet],
@@ -1957,6 +1955,10 @@ open System
 open Fake.IO
 open Fake.Core
 open Fake.DotNet
+open Fake.IO
+open Fake.IO.FileSystemOperators
+open Fake.IO.Globbing
+open Fake.IO.Globbing.Operators
 open AltCover
 open AltCover.Fake.DotNet
 
@@ -1990,6 +1992,19 @@ _Target "DoIt" (fun _ ->
              Verbosity = Some DotNet.Verbosity.Minimal }
 
   DotNet.test (fun to' -> to'.WithCommon(setBaseOptions).WithParameters p2 c2) "dotnettest.fsproj"
+
+  let ipmo = AltCover.Api.Ipmo().Trim().Split().[1].Trim([|'\"'|])
+  let command = "$ipmo = '" + ipmo + "'; Import-Module $ipmo; ConvertTo-BarChart -?"
+
+  let pwsh = if Environment.isWindows then
+                    Tools.findToolInSubPath "pwsh.exe" (Environment.environVar "ProgramFiles" @@ "PowerShell")
+             else "pwsh"
+
+  let r = Fake.Core.Process.execSimple (fun info -> { info with FileName = pwsh
+                                                                WorkingDirectory = "."
+                                                                Arguments = ("-NoProfile -Command \"" + command + "\"")})
+                                   (TimeSpan.FromMinutes 10.0)
+  if (r <> 0) then new InvalidOperationException("Non zero return code") |> raise
 )
 
 Target.runOrDefault "DoIt"

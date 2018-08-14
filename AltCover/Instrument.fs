@@ -248,16 +248,6 @@ module internal Instrument =
 
   let internal ResolutionTable = Dictionary<string, AssemblyDefinition>()
 
-  let internal FindAssemblyName f =
-    try
-      (AssemblyName.GetAssemblyName f).ToString()
-    with
-    | :? ArgumentException
-    | :? FileNotFoundException
-    | :? System.Security.SecurityException
-    | :? BadImageFormatException
-    | :? FileLoadException -> String.Empty
-
   let internal ResolveFromNugetCache _ (y:AssemblyNameReference) =
     let name = y.ToString()
     if ResolutionTable.ContainsKey name then ResolutionTable.[name]
@@ -267,7 +257,7 @@ module internal Instrument =
                         |> Seq.filter(fun f -> let x = Path.GetExtension f
                                                x.Equals(".exe", StringComparison.OrdinalIgnoreCase) ||
                                                x.Equals(".dll", StringComparison.OrdinalIgnoreCase))
-                        |> Seq.filter (fun f -> y.ToString().Equals(FindAssemblyName f, StringComparison.Ordinal))
+                        |> Seq.filter (fun f -> y.ToString().Equals(CommandLine.FindAssemblyName f, StringComparison.Ordinal))
                         |> Seq.tryHead
         match candidate with
         | None -> null

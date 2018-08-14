@@ -7,6 +7,7 @@ open System.IO
 open System.Linq
 open System.Reflection
 open System.Resources
+open System.Text.RegularExpressions
 
 open Augment
 open Mono.Options
@@ -205,3 +206,64 @@ module internal CommandLine =
         Output.Echo String.Empty
         ReportErrors String.Empty
         Usage (intro, options1, options)
+
+  let internal ValidateFileSystemEntity exists message key x =
+    doPathOperation (fun () ->
+      if not (String.IsNullOrWhiteSpace x) && x |> Path.GetFullPath |> exists then
+        true
+      else error <- String.Format(CultureInfo.CurrentCulture,
+                                                         resources.GetString message,
+                                                         key,
+                                                         x) :: error
+           false) false false
+
+  let internal dnf = "DirectoryNotFound"
+  let internal fnf = "FileNotFound"
+  let internal iv = "InvalidValue"
+
+  let internal ValidateDirectory dir x =
+    ValidateFileSystemEntity Directory.Exists dnf dir x
+
+  let internal ValidateFile file x =
+    ValidateFileSystemEntity File.Exists fnf file x
+
+  let internal ValidatePath path x =
+    ValidateFileSystemEntity (fun _ -> true) iv path x
+
+  let internal FindAssemblyName f =
+    try
+      (AssemblyName.GetAssemblyName f).ToString()
+    with
+    | :? ArgumentException
+    | :? FileNotFoundException
+    | :? System.Security.SecurityException
+    | :? BadImageFormatException
+    | :? FileLoadException -> String.Empty
+
+  let internal ValidateAssembly assembly x =
+    if ValidateFile assembly x then
+        let name = FindAssemblyName x
+        if String.IsNullOrWhiteSpace name then
+                  error <- String.Format(CultureInfo.CurrentCulture,
+                                                     resources.GetString "NotAnAssembly",
+                                                     assembly,
+                                                     x) :: error
+                  (String.Empty, false)
+        else (name, true)
+    else (String.Empty, false)
+
+  let internal ValidateStrongNameKey key x =
+    if ValidateFile key x then
+       doPathOperation (fun () ->
+                                          use stream = new System.IO.FileStream(x,
+                                                                                System.IO.FileMode.Open,
+                                                                                System.IO.FileAccess.Read)
+                                          let pair = StrongNameKeyPair(stream)
+                                          (pair, pair.PublicKey <> null)) // will throw if invalid or NETCORE
+                                          (null, false) false
+    else (null, false)
+
+  let internal ValidateRegexes (x:String) =
+    doPathOperation (fun () ->
+         x.Split([|";"|], StringSplitOptions.RemoveEmptyEntries)
+         |> Array.map Regex) [| |] false
