@@ -5073,6 +5073,12 @@ type AltCoverTests() = class
       Console.SetError (snd saved)
 
   [<Test>]
+  member self.StoresAsExpected() =
+    Api.store <- String.Empty
+    Api.LogToStore.Info "23"
+    Assert.That (Api.store, Is.EqualTo "23")
+
+  [<Test>]
   member self.IpmoIsAsExpected() =
     AltCover.ToConsole()
     let saved = Console.Out

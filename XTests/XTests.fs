@@ -135,7 +135,7 @@ module XTests =
 
   [<Fact>]
   let CollectParamsCanBeValidated() =
-    let test = CollectParams.Default
+    let test = { CollectParams.Default with Threshold = "23" }
     let scan = test.Validate(false)
     Assert.Equal (0, scan.Length)
 
@@ -153,9 +153,28 @@ module XTests =
 
   [<Fact>]
   let PrepareParamsCanBeValidated() =
-    let test = { PrepareParams.Default with CallContext = [| "[Fact]" |] }
+    let here = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
+    let test = { PrepareParams.Default with InputDirectory = here
+                                            OutputDirectory = here
+                                            SymbolDirectories =  [| here |]
+                                            Dependencies = [| Assembly.GetExecutingAssembly().Location |] 
+                                            CallContext = [| "[Fact]" |]
+                                            PathFilter = [| "ok" |] }
     let scan = test.Validate()
     Assert.Equal (0, scan.Length)
+
+  [<Fact>]
+  let PrepareParamsStrongNamesCanBeValidated() =
+    let input = Path.Combine(AltCover.SolutionRoot.location, "Build/Infrastructure.snk")
+    let test = { PrepareParams.Default with StrongNameKey = input
+                                            Keys = [| input |] }
+    let scan = test.Validate()
+#if NETCOREAPP2_0
+    ()
+#else
+    Assert.Equal (0, scan.Length)
+#endif
+
 
   [<Fact>]
   let PrepareParamsCanBeValidatedWithNulls() =
@@ -174,7 +193,7 @@ module XTests =
 
   [<Fact>]
   let PrepareParamsCanBeValidatedWithErrors() =
-    let test = { PrepareParams.Default with XmlReport = "*" 
+    let test = { PrepareParams.Default with XmlReport = String(Path.GetInvalidPathChars())
                                             CallContext = [| "0"; "1" |] }
     let scan = test.Validate()
     Assert.Equal (2, scan.Length)

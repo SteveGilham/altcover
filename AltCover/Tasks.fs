@@ -129,8 +129,11 @@ type PrepareParams =
        static member private validateArray a f key =
             PrepareParams.validateArraySimple a (f key)
 
+       static member private nonNull a =
+         a |> isNull |> not
+
        static member private validateArraySimple a f =
-            if a |> isNull |> not then
+            if a  |> PrepareParams.nonNull then
               a
               |> Array.iter (fun s -> f s |> ignore)
 
@@ -139,7 +142,7 @@ type PrepareParams =
               f key x |> ignore
 
        member private self.consistent () =
-            if self.Single && self.CallContext |> isNull |> not && self.CallContext.Any() then
+            if self.Single && self.CallContext |> PrepareParams.nonNull && self.CallContext.Any() then
                CommandLine.error <- String.Format(System.Globalization.CultureInfo.CurrentCulture,
                                                   CommandLine.resources.GetString "Incompatible",
                                                   "--single","--callContext") :: CommandLine.error
@@ -297,28 +300,25 @@ module Api =
     |> List.toArray
     |> AltCover.Main.EffectiveMain
 
-  let mutable private store = String.Empty
+  let mutable internal store = String.Empty
   let private writeToStore s = store <- s
+  let internal LogToStore = { Logging.Default with Info = writeToStore }
+
+  let internal GetStringValue s =
+    writeToStore String.Empty
+    LogToStore.Apply()
+    [|
+        s
+    |]
+    |> AltCover.Main.EffectiveMain
+    |> ignore
+    store
 
   let Ipmo () =
-    writeToStore String.Empty
-    { Logging.Default with Info = writeToStore }.Apply()
-    [|
-        "ipmo"
-    |]
-    |> AltCover.Main.EffectiveMain
-    |> ignore
-    store
+    GetStringValue "ipmo"
 
   let Version () =
-    writeToStore String.Empty
-    { Logging.Default with Info = writeToStore }.Apply()
-    [|
-        "version"
-    |]
-    |> AltCover.Main.EffectiveMain
-    |> ignore
-    store
+    GetStringValue "version"
 
 type Prepare () =
   inherit Task(null)
