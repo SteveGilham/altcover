@@ -125,31 +125,56 @@ type PrepareParams =
 
             CommandLine = String.Empty
         }
-       member self.Validate() =
-          let saved = CommandLine.error
 
-          let validateArraySimple a f =
+       static member private validateArray a f key =
+            PrepareParams.validateArraySimple a (f key)
+
+       static member private validateArraySimple a f =
             if a |> isNull |> not then
               a
               |> Array.iter (fun s -> f s |> ignore)
 
-          let validateArray a f key =
-            validateArraySimple a (f key)
-
-          let validateOptional f key x =
+       static member private validateOptional f key x =
             if x |> String.IsNullOrWhiteSpace |> not then
               f key x |> ignore
 
+       member private self.consistent () =
+            if self.Single && self.CallContext |> isNull |> not && self.CallContext.Any() then
+               CommandLine.error <- String.Format(System.Globalization.CultureInfo.CurrentCulture,
+                                                  CommandLine.resources.GetString "Incompatible",
+                                                  "--single","--callContext") :: CommandLine.error
+       member private self.consistent'() =
+            if self.LineCover && self.BranchCover then
+               CommandLine.error <- String.Format(System.Globalization.CultureInfo.CurrentCulture,
+                                                  CommandLine.resources.GetString "Incompatible",
+                                                  "--branchcover", "--linecover") :: CommandLine.error
+
+       member self.Validate() =
+          let saved = CommandLine.error
+
+          let validateContext context =
+            if context |> isNull |> not then
+              let select state x =
+                  let (_, n) = Main.ValidateCallContext state x
+                  match (state, n) with
+                  | (true, _)
+                  | (_, Left(Some _)) -> true
+                  | _ -> false
+
+              context
+              |> Array.fold select false
+              |> ignore
+
           try
             CommandLine.error <- []
-            validateOptional CommandLine.ValidateDirectory "--inputDirectory" self.InputDirectory
-            validateOptional CommandLine.ValidatePath "--outputDirectory" self.OutputDirectory
+            PrepareParams.validateOptional CommandLine.ValidateDirectory "--inputDirectory" self.InputDirectory
+            PrepareParams.validateOptional CommandLine.ValidatePath "--outputDirectory" self.OutputDirectory
+            PrepareParams.validateOptional CommandLine.ValidateStrongNameKey "--strongNameKey" self.StrongNameKey
+            PrepareParams.validateOptional CommandLine.ValidatePath "--xmlReport" self.XmlReport
 
-            validateArray self.SymbolDirectories CommandLine.ValidateDirectory "--symbolDirectory"
-            validateArray self.Dependencies CommandLine.ValidateAssembly "--dependency"
-            validateArray self.Keys CommandLine.ValidateStrongNameKey "--key"
-            validateOptional CommandLine.ValidateStrongNameKey "--strongNameKey" self.StrongNameKey
-            validateOptional CommandLine.ValidatePath "--xmlReport" self.XmlReport
+            PrepareParams.validateArray self.SymbolDirectories CommandLine.ValidateDirectory "--symbolDirectory"
+            PrepareParams.validateArray self.Dependencies CommandLine.ValidateAssembly "--dependency"
+            PrepareParams.validateArray self.Keys CommandLine.ValidateStrongNameKey "--key"
             [
               self.FileFilter
               self.AssemblyFilter
@@ -159,29 +184,12 @@ type PrepareParams =
               self.AttributeFilter
               self.PathFilter
             ]
-            |> Seq.iter (fun a -> validateArraySimple a CommandLine.ValidateRegexes)
+            |> Seq.iter (fun a -> PrepareParams.validateArraySimple a CommandLine.ValidateRegexes)
 
-            if self.Single && self.CallContext |> isNull |> not && self.CallContext.Any() then
-               CommandLine.error <- String.Format(System.Globalization.CultureInfo.CurrentCulture,
-                                                  CommandLine.resources.GetString "Incompatible",
-                                                  "--single","--callContext") :: CommandLine.error
+            self.consistent ()
+            self.consistent' ()
 
-            if self.LineCover && self.BranchCover then
-               CommandLine.error <- String.Format(System.Globalization.CultureInfo.CurrentCulture,
-                                                  CommandLine.resources.GetString "Incompatible",
-                                                  "--branchcover", "--linecover") :: CommandLine.error
-
-            if self.CallContext |> isNull |> not then
-              let select state x =
-                  let (_, n) = Main.ValidateCallContext state x
-                  match (state, n) with
-                  | (true, _)
-                  | (_, Left(Some _)) -> true
-                  | _ -> false
-
-              self.CallContext
-              |> Array.fold select false
-              |> ignore
+            validateContext self.CallContext
 
             CommandLine.error |> List.toArray
           finally
@@ -289,25 +297,28 @@ module Api =
     |> List.toArray
     |> AltCover.Main.EffectiveMain
 
+  let mutable private store = String.Empty
+  let private writeToStore s = store <- s
+
   let Ipmo () =
-    let mutable v = String.Empty
-    { Logging.Default with Info = (fun s -> v <- s) }.Apply()
+    writeToStore String.Empty
+    { Logging.Default with Info = writeToStore }.Apply()
     [|
         "ipmo"
     |]
     |> AltCover.Main.EffectiveMain
     |> ignore
-    v
+    store
 
   let Version () =
-    let mutable v = String.Empty
-    { Logging.Default with Info = (fun s -> v <- s) }.Apply()
+    writeToStore String.Empty
+    { Logging.Default with Info = writeToStore }.Apply()
     [|
         "version"
     |]
     |> AltCover.Main.EffectiveMain
     |> ignore
-    v
+    store
 
 type Prepare () =
   inherit Task(null)
