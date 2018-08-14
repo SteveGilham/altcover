@@ -258,8 +258,38 @@ module internal CommandLine =
                                           use stream = new System.IO.FileStream(x,
                                                                                 System.IO.FileMode.Open,
                                                                                 System.IO.FileAccess.Read)
-                                          let pair = StrongNameKeyPair(stream)
-                                          (pair, pair.PublicKey <> null)) // will throw if invalid or NETCORE
+
+                                          // see https://www.developerfusion.com/article/84422/the-key-to-strong-names/
+                                          // compare https://msdn.microsoft.com/en-us/library/system.security.cryptography.rsaparameters(v=vs.110).aspx
+                                          use br = new BinaryReader(stream)
+                                          // Read BLOBHEADER
+                                          let keyType = br.ReadByte()
+                                          let _ (*blobVersion*) = br.ReadByte()
+                                          let _ (*reserved*) = br.ReadUInt16()
+                                          let algorithmID = br.ReadUInt32()
+
+                                          // Read RSAPUBKEY
+                                          let magic= String(br.ReadChars(4))
+                                          let keyBitLength = br.ReadUInt32() |> int
+                                          let _(*rsaPublicExponent*)=br.ReadUInt32()
+                                          // Read Modulus
+                                          let _(*rsaModulus*) = br.ReadBytes( keyBitLength / 8 )
+                                          // Read Private Key Parameters
+                                          let _(*rsaPrime1*) = br.ReadBytes( keyBitLength / 16 )
+                                          let _(*rsaPrime2*) = br.ReadBytes( keyBitLength / 16 )
+                                          let _(*rsaExponent1*) = br.ReadBytes( keyBitLength / 16 )
+                                          let _(*rsaExponent2*) = br.ReadBytes( keyBitLength / 16 )
+                                          let _(*rsaCoefficient*) = br.ReadBytes( keyBitLength / 16 )
+                                          let _(*rsaPrivateExponent*) = br.ReadBytes(keyBitLength / 8 )
+
+                                          let ok = (keyType = 7uy) && (algorithmID |> int = 0x2400) &&
+                                                   (magic = "RSA2") && (stream.Position = stream.Length)
+
+                                          let pair = if ok then stream.Position <- 0L
+                                                                StrongNameKeyPair(stream)
+                                                     else new NotSupportedException(x) |> raise
+
+                                          (pair, true))
                                           (null, false) false
     else (null, false)
 

@@ -3307,16 +3307,16 @@ type AltCoverTests() = class
   // CommandLine.fs
   [<Test>]
   member self.StrongNameKeyCanBeValidatedExceptOnNetCore () =
-    let input = Path.Combine(self.IsolateRootPath(), "Build/Infrastructure.snk")
+    let input = Path.Combine(AltCover.SolutionRoot.location, "Build/Infrastructure.snk")
     let (pair, ok) = CommandLine.ValidateStrongNameKey "key" input
-#if NETCOREAPP2_0
-#else
     Assert.That(ok, Is.True, "Strong name is OK")
     Assert.That(pair, Is.Not.Null)
+#if NETCOREAPP2_0
+#else
     Assert.That(pair.PublicKey, Is.Not.Null)
 #endif
 
-    Assert.That(CommandLine.ValidateStrongNameKey "key" "**", Is.EqualTo (null, false))
+    Assert.That(CommandLine.ValidateStrongNameKey "key" (String(Path.GetInvalidPathChars())), Is.EqualTo (null, false))
     Assert.That(CommandLine.ValidateStrongNameKey "key" <| Assembly.GetExecutingAssembly().Location,
                 Is.EqualTo (null, false))
 
