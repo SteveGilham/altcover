@@ -278,6 +278,12 @@ module internal CommandLine =
         else (name, true)
     else (String.Empty, false)
 
+  let internal maybeLoadStrongNameKey x (stream:FileStream) ok = 
+     if ok then 
+        stream.Position <- 0L
+        StrongNameKeyPair(stream)
+     else new NotSupportedException(x) |> raise
+
   let internal ValidateStrongNameKey key x =
     if ValidateFile key x then
        doPathOperation (fun () ->
@@ -311,11 +317,7 @@ module internal CommandLine =
                                           let ok = (keyType = 7uy) && (algorithmID |> int = 0x2400) &&
                                                    (magic = "RSA2") && (stream.Position = stream.Length)
 
-                                          let pair = if ok then stream.Position <- 0L
-                                                                StrongNameKeyPair(stream)
-                                                     else new NotSupportedException(x) |> raise
-
-                                          (pair, true))
+                                          (maybeLoadStrongNameKey x stream ok, true))
                                           (null, false) false
     else (null, false)
 
