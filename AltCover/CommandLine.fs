@@ -17,10 +17,13 @@ open Mono.Options
 [<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage>]
 module internal Process =
   type System.Diagnostics.Process with
+    // Work around observed unreliability of WaitForExit()
+    // with an unbounded wait under mono on travis-ci
     member self.WaitForExitCustom() =
       let rec loop() =
         try
           if self.WaitForExit(1000) then
+             // allow time for I/O redirection to complete
              System.Threading.Thread.Sleep(1000)
              if self.HasExited then ()
              else loop()
@@ -29,7 +32,10 @@ module internal Process =
         | :? SystemException
         | :? InvalidOperationException
         | :? System.ComponentModel.Win32Exception -> ()
-      loop()
+      if System.Environment.GetEnvironmentVariable("OS") = "Windows_NT" &&
+         "Mono.Runtime" |> Type.GetType |> isNull then // only rely on .net Framework on Windows
+        self.WaitForExit()
+      else loop()
 
 open Process
 #endif
