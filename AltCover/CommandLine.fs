@@ -14,12 +14,22 @@ open Mono.Options
 
 #if NETCOREAPP2_0
 #else
+[<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage>]
 module internal Process =
-  let DoNothing _ = () // canary
-
   type System.Diagnostics.Process with
     member self.WaitForExitCustom() =
-      self.WaitForExit()
+      let rec loop() =
+        try
+          if self.WaitForExit(1000) then
+             System.Threading.Thread.Sleep(1000)
+             if self.HasExited then ()
+             else loop()
+          else loop()
+        with
+        | :? SystemException
+        | :? InvalidOperationException
+        | :? System.ComponentModel.Win32Exception -> ()
+      loop()
 
 open Process
 #endif
