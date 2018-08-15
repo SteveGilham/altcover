@@ -12,6 +12,18 @@ open System.Text.RegularExpressions
 open Augment
 open Mono.Options
 
+#if NETCOREAPP2_0
+#else
+module internal Process =
+  let DoNothing _ = () // canary
+
+  type System.Diagnostics.Process with
+    member self.WaitForExitCustom() =
+      self.WaitForExit()
+
+open Process
+#endif
+
 type internal StringSink = delegate of string -> unit
 
 module internal Output =
@@ -132,7 +144,11 @@ module internal CommandLine =
     proc.Start() |> ignore
     proc.BeginErrorReadLine()
     proc.BeginOutputReadLine()
+#if NETCOREAPP2_0
     proc.WaitForExit()
+#else
+    proc.WaitForExitCustom()
+#endif
     proc.ExitCode
 
   let logException store (e : Exception) =
