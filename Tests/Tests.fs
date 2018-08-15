@@ -2074,15 +2074,56 @@ type AltCoverTests() = class
                               | :? System.UnauthorizedAccessException
                               | :? IOException -> ())
 
+  [<Test>]
+  member self.ShouldBeAbleToTellAnAssembly () =
+    let where = Assembly.GetExecutingAssembly().Location
+    let here = Path.GetDirectoryName where
+    let pdb = Directory.GetFiles(here, "*.pdb")
+    Assert.That (pdb, Is.Not.Empty, "no pdb")
+    pdb
+    |> Seq.iter(fun p -> let a = CommandLine.FindAssemblyName p
+                         Assert.That(String.IsNullOrWhiteSpace a, p))
+
+    let dll = Directory.GetFiles(here, "*.dll")
+    Assert.That (dll, Is.Not.Empty, "no dll")
+    dll
+    |> Seq.iter(fun d -> let a = CommandLine.FindAssemblyName d
+                         Assert.That(a |> String.IsNullOrWhiteSpace |> not, d))
+
+  [<Test>]
+  member self.ShouldBeAbleToValidateAnAssembly () =
+    let where = Assembly.GetExecutingAssembly().Location
+    let here = Path.GetDirectoryName where
+    let pdb = Directory.GetFiles(here, "*.pdb")
+    Assert.That (pdb, Is.Not.Empty, "no pdb")
+    CommandLine.error <- []
+    pdb
+    |> Seq.iter(fun p -> let (a, b) = CommandLine.ValidateAssembly "*" p
+                         Assert.That(String.IsNullOrWhiteSpace a, p)
+                         Assert.That(b |> not))
+    Assert.That (CommandLine.error.Length, Is.EqualTo pdb.Length, "pdb length")
+
+    CommandLine.error <- []
+    let dll = Directory.GetFiles(here, "*.dll")
+    Assert.That (dll, Is.Not.Empty, "no dll")
+    dll
+    |> Seq.iter(fun d -> let (a, b) = CommandLine.ValidateAssembly "*" d
+                         Assert.That(a |> String.IsNullOrWhiteSpace |> not, d)
+                         Assert.That(b) )
+    Assert.That (CommandLine.error |> List.isEmpty)
+
+    let x = CommandLine.ValidateAssembly "*" "**"
+    Assert.That (x, Is.EqualTo (String.Empty, false))
+
 #if NETCOREAPP2_0
   [<Test>]
-  member self.ShouldBeAbleLocateAReference () =
+  member self.ShouldBeAbleToLocateAReference () =
     let where = Assembly.GetExecutingAssembly().Location
     let here = Path.GetDirectoryName where
     let json = Directory.GetFiles(here, "*.json")
     Assert.That (json, Is.Not.Empty, "no json")
     json
-    |> Seq.iter(fun j -> let a = Instrument.FindAssemblyName j
+    |> Seq.iter(fun j -> let a = CommandLine.FindAssemblyName j
                          Assert.That(String.IsNullOrWhiteSpace a, j))
 
     let raw = Mono.Cecil.AssemblyDefinition.ReadAssembly where
@@ -3264,6 +3305,21 @@ type AltCoverTests() = class
                               | :? IOException -> ())
 
   // CommandLine.fs
+  [<Test>]
+  member self.StrongNameKeyCanBeValidatedExceptOnNetCore () =
+    let input = Path.Combine(AltCover.SolutionRoot.location, "Build/Infrastructure.snk")
+    let (pair, ok) = CommandLine.ValidateStrongNameKey "key" input
+    Assert.That(ok, Is.True, "Strong name is OK")
+    Assert.That(pair, Is.Not.Null)
+#if NETCOREAPP2_0
+#else
+    Assert.That(pair.PublicKey, Is.Not.Null)
+#endif
+
+    Assert.That(CommandLine.ValidateStrongNameKey "key" (String(Path.GetInvalidPathChars())), Is.EqualTo (null, false))
+    Assert.That(CommandLine.ValidateStrongNameKey "key" <| Assembly.GetExecutingAssembly().Location,
+                Is.EqualTo (null, false))
+
   [<Test>]
   member self.OutputCanBeExercised () =
     let sink = StringSink(ignore)
@@ -5015,6 +5071,12 @@ type AltCoverTests() = class
     finally
       Console.SetOut (fst saved)
       Console.SetError (snd saved)
+
+  [<Test>]
+  member self.StoresAsExpected() =
+    Api.store <- String.Empty
+    Api.LogToStore.Info "23"
+    Assert.That (Api.store, Is.EqualTo "23")
 
   [<Test>]
   member self.IpmoIsAsExpected() =

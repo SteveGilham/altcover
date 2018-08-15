@@ -6,7 +6,6 @@ open System.Globalization
 open System.IO
 open System.Linq
 open System.Reflection
-open System.Text.RegularExpressions
 
 open AltCover.Base
 open Augment
@@ -22,6 +21,7 @@ type internal AssemblyInfo = {
 
 module internal Main =
   let init () =
+    CommandLine.error <- []
     Visitor.inputDirectory <- None
     Visitor.outputDirectory <- None
     ProgramDatabase.SymbolFolders.Clear()
@@ -41,157 +41,109 @@ module internal Main =
     Visitor.single <- false
     Visitor.coverstyle <- CoverStyle.All
 
+  let ValidateCallContext predicate x =
+     if not (String.IsNullOrWhiteSpace x) then
+       let k = x.Trim()
+       if Char.IsDigit <| k.Chars(0) then
+          if predicate || k.Length > 1 then
+                      CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
+                                                         CommandLine.resources.GetString "InvalidValue",
+                                                         "--callContext",
+                                                         x) :: CommandLine.error
+                      (false, Left None)
+          else
+            let (ok, n) = Int32.TryParse(k)
+            if ok then (ok, Left(Some(pown 10 (7 - n))))
+            else CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
+                                                    CommandLine.resources.GetString "InvalidValue",
+                                                    "--callContext",
+                                                    x) :: CommandLine.error
+                 (false, Left None)
+       else
+         (true, Right k)
+     else CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
+                                                         CommandLine.resources.GetString "InvalidValue",
+                                                         "--callContext",
+                                                         x) :: CommandLine.error
+          (false, Left None)
+
   let internal DeclareOptions () =
     [ ("i|inputDirectory=",
-       (fun x -> if not (String.IsNullOrWhiteSpace x) && Directory.Exists x then
+       (fun x -> if CommandLine.ValidateDirectory "--inputDirectory" x then
                     if Option.isSome Visitor.inputDirectory then
                       CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
                                                          CommandLine.resources.GetString "MultiplesNotAllowed",
                                                          "--inputDirectory") :: CommandLine.error
 
                     else
-                      Visitor.inputDirectory <- Some (Path.GetFullPath x)
-                 else CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
-                                                         CommandLine.resources.GetString "DirectoryNotFound",
-                                                         "--inputDirectory",
-                                                         x) :: CommandLine.error))
+                      Visitor.inputDirectory <- Some (Path.GetFullPath x)))
       ("o|outputDirectory=",
-       (fun x -> if not (String.IsNullOrWhiteSpace x) then
+       (fun x -> if CommandLine.ValidatePath "--outputDirectory" x then
                     if Option.isSome Visitor.outputDirectory then
                       CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
                                                          CommandLine.resources.GetString "MultiplesNotAllowed",
                                                          "--outputDirectory") :: CommandLine.error
 
                     else
-                      CommandLine.doPathOperation (fun _ -> Visitor.outputDirectory <- Some (Path.GetFullPath x)) () false
-                 else CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
-                                                         CommandLine.resources.GetString "DirectoryNotFound",
-                                                         "--outputDirectory",
-                                                         x) :: CommandLine.error))
+                      CommandLine.doPathOperation (fun _ -> Visitor.outputDirectory <- Some (Path.GetFullPath x)) () false))
       ("y|symbolDirectory=",
-       (fun x -> if not (String.IsNullOrWhiteSpace x) && Directory.Exists x then
-                    ProgramDatabase.SymbolFolders.Add x
-                 else CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
-                                                         CommandLine.resources.GetString "DirectoryNotFound",
-                                                         "--symbolDirectory",
-                                                         x) :: CommandLine.error))
+       (fun x -> if CommandLine.ValidateDirectory "--symbolDirectory" x then
+                    ProgramDatabase.SymbolFolders.Add x))
 #if NETCOREAPP2_0
       ("d|dependency=",
        (fun x ->
-             if not (String.IsNullOrWhiteSpace x) && File.Exists x then
-               let name = Instrument.FindAssemblyName x
-               if String.IsNullOrWhiteSpace name then
-                  CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
-                                                         CommandLine.resources.GetString "NotAnAssembly",
-                                                         "--dependency",
-                                                         x) :: CommandLine.error
-               else Instrument.ResolutionTable.[name] <- AssemblyDefinition.ReadAssembly x
-             else CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
-                                                         CommandLine.resources.GetString "FileNotFound",
-                                                         "--dependency",
-                                                         x) :: CommandLine.error ))
+           let name, ok = CommandLine.ValidateAssembly "--dependency" x
+           if ok then Instrument.ResolutionTable.[name] <- AssemblyDefinition.ReadAssembly x))
 #else
       ("k|key=",
        (fun x ->
-             if not (String.IsNullOrWhiteSpace x) && File.Exists x then
-               CommandLine.doPathOperation (fun () ->
-                                          use stream = new System.IO.FileStream(x,
-                                                                                System.IO.FileMode.Open,
-                                                                                System.IO.FileAccess.Read)
-                                          let pair = StrongNameKeyPair(stream)
-                                          Visitor.Add pair) () false
-             else CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
-                                                         CommandLine.resources.GetString "FileNotFound",
-                                                         "--key",
-                                                         x) :: CommandLine.error ))
+             let (pair, ok) = CommandLine.ValidateStrongNameKey "--key" x
+             if ok then Visitor.Add pair))
       ("sn|strongNameKey=",
        (fun x ->
-             if not (String.IsNullOrWhiteSpace x ) && File.Exists x then
-               CommandLine.doPathOperation (fun () ->
-                                          use stream = new System.IO.FileStream(x,
-                                                                                System.IO.FileMode.Open,
-                                                                                System.IO.FileAccess.Read)
-                                          // printfn "%A %A" x Visitor.defaultStrongNameKey
-                                          let pair = StrongNameKeyPair(stream)
-                                          if Option.isSome Visitor.defaultStrongNameKey then
-                                             CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
-                                                                                CommandLine.resources.GetString "MultiplesNotAllowed",
-                                                                                "--strongNameKey") :: CommandLine.error
-
-                                          else Visitor.defaultStrongNameKey <- Some pair
-                                               Visitor.Add pair) () false
-             else CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
-                                                         CommandLine.resources.GetString "FileNotFound",
-                                                         "--strongNameKey",
-                                                         x) :: CommandLine.error ))
+             let (pair, ok) = CommandLine.ValidateStrongNameKey "--strongNameKey" x
+             if ok then
+               if Option.isSome Visitor.defaultStrongNameKey then
+                CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
+                                                CommandLine.resources.GetString "MultiplesNotAllowed",
+                                                "--strongNameKey") :: CommandLine.error
+               else Visitor.defaultStrongNameKey <- Some pair
+                    Visitor.Add pair))
 #endif
       ("x|xmlReport=",
-       (fun x -> if not (String.IsNullOrWhiteSpace x) then
+       (fun x -> if CommandLine.ValidatePath "--xmlReport" x then
                     if Option.isSome Visitor.reportPath then
                       CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
                                                          CommandLine.resources.GetString "MultiplesNotAllowed",
                                                          "--xmlReport") :: CommandLine.error
 
                     else
-                      CommandLine.doPathOperation (fun () -> Visitor.reportPath <- Some (Path.GetFullPath x)) () false
-                 else CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
-                                                         CommandLine.resources.GetString "InvalidValue",
-                                                         "--xmlReport",
-                                                         x) :: CommandLine.error))
+                      CommandLine.doPathOperation (fun () -> Visitor.reportPath <- Some (Path.GetFullPath x)) () false))
       ("f|fileFilter=",
-       (fun x -> CommandLine.doPathOperation (fun () ->
-                 x.Split([|";"|], StringSplitOptions.RemoveEmptyEntries)
-                 |> Seq.iter (Regex >> FilterClass.File >> Visitor.NameFilters.Add))() false))
+       (fun x -> x |> CommandLine.ValidateRegexes |> Seq.iter (FilterClass.File >> Visitor.NameFilters.Add)))
       ("p|pathFilter=",
-       (fun x -> CommandLine.doPathOperation (fun () ->
-                 x.Split([|";"|], StringSplitOptions.RemoveEmptyEntries)
-                 |> Seq.iter (Regex >> FilterClass.Path >> Visitor.NameFilters.Add))() false))
+       (fun x -> x |> CommandLine.ValidateRegexes |> Seq.iter (FilterClass.Path >> Visitor.NameFilters.Add)))
       ("s|assemblyFilter=",
-       (fun x -> CommandLine.doPathOperation (fun () ->
-                 x.Split([|";"|], StringSplitOptions.RemoveEmptyEntries)
-                 |> Seq.iter (Regex >> FilterClass.Assembly >> Visitor.NameFilters.Add))() false))
+       (fun x -> x |> CommandLine.ValidateRegexes |> Seq.iter (FilterClass.Assembly >> Visitor.NameFilters.Add)))
       ("e|assemblyExcludeFilter=",
-       (fun x -> CommandLine.doPathOperation (fun () ->
-                 x.Split([|";"|], StringSplitOptions.RemoveEmptyEntries)
-                 |> Seq.iter (Regex >> FilterClass.Module >> Visitor.NameFilters.Add))() false))
+       (fun x -> x |> CommandLine.ValidateRegexes |> Seq.iter (FilterClass.Module >> Visitor.NameFilters.Add)))
       ("t|typeFilter=",
-       (fun x -> CommandLine.doPathOperation (fun () ->
-                 x.Split([|";"|], StringSplitOptions.RemoveEmptyEntries)
-                 |> Seq.iter (Regex >> FilterClass.Type >> Visitor.NameFilters.Add))() false))
+       (fun x -> x |> CommandLine.ValidateRegexes |> Seq.iter (FilterClass.Type >> Visitor.NameFilters.Add)))
       ("m|methodFilter=",
-       (fun x -> CommandLine.doPathOperation (fun () ->
-                 x.Split([|";"|], StringSplitOptions.RemoveEmptyEntries)
-                 |> Seq.iter (Regex >> FilterClass.Method >> Visitor.NameFilters.Add))() false))
+       (fun x -> x |> CommandLine.ValidateRegexes |> Seq.iter (FilterClass.Method >> Visitor.NameFilters.Add)))
       ("a|attributeFilter=",
-       (fun x -> CommandLine.doPathOperation (fun () ->
-                 x.Split([|";"|], StringSplitOptions.RemoveEmptyEntries)
-                 |> Seq.iter (Regex >> FilterClass.Attribute >> Visitor.NameFilters.Add))() false))
+       (fun x -> x |> CommandLine.ValidateRegexes |> Seq.iter (FilterClass.Attribute >> Visitor.NameFilters.Add)))
       ("c|callContext=",
        (fun x -> if Visitor.single then
                          CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
                                                          CommandLine.resources.GetString "Incompatible",
                                                          "--single","--callContext") :: CommandLine.error
-                 if not (String.IsNullOrWhiteSpace x) then
-                   let k = x.Trim()
-                   if Char.IsDigit <| k.Chars(0) then
-                    if Option.isSome Visitor.interval || k.Length > 1 then
-                      CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
-                                                         CommandLine.resources.GetString "InvalidValue",
-                                                         "--callContext",
-                                                         x) :: CommandLine.error
-                    else
-                      let (ok, n) = Int32.TryParse(k)
-                      if ok then Visitor.interval <- Some (pown 10 (7 - n))
-                      else CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
-                                                              CommandLine.resources.GetString "InvalidValue",
-                                                              "--callContext",
-                                                              x) :: CommandLine.error
-                   else
-                      Visitor.TrackingNames.Add(k)
-                 else CommandLine.error <- String.Format(CultureInfo.CurrentCulture,
-                                                         CommandLine.resources.GetString "InvalidValue",
-                                                         "--callContext",
-                                                         x) :: CommandLine.error))
+                 else
+                   let (ok, selection) = ValidateCallContext (Option.isSome Visitor.interval) x
+                   if ok then
+                     match selection with
+                     | Left n -> Visitor.interval <- n
+                     | Right name -> Visitor.TrackingNames.Add(name)))
       ("opencover",
        (fun _ ->  if Option.isSome Visitor.reportFormat then
                       CommandLine.error <- String.Format(CultureInfo.CurrentCulture,

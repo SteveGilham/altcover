@@ -134,6 +134,75 @@ module XTests =
             RecursiveValidateOpenCover (r.Elements()) (e.Elements()) (depth+1) zero expectSkipped)
 
   [<Fact>]
+  let CollectParamsCanBeValidated() =
+    let test = { CollectParams.Default with Threshold = "23" }
+    let scan = test.Validate(false)
+    Assert.Equal (0, scan.Length)
+
+  [<Fact>]
+  let CollectParamsCanBeValidatedWithErrors() =
+    let test = CollectParams.Default
+    let scan = test.Validate(true)
+    Assert.Equal (1, scan.Length)
+
+  [<Fact>]
+  let CollectParamsCanBePositivelyValidatedWithErrors() =
+    let test = { CollectParams.Default with RecorderDirectory = Guid.NewGuid().ToString() }
+    let scan = test.Validate(true)
+    Assert.Equal (2, scan.Length)
+
+  [<Fact>]
+  let PrepareParamsCanBeValidated() =
+    let here = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
+    let test = { PrepareParams.Default with InputDirectory = here
+                                            OutputDirectory = here
+                                            SymbolDirectories =  [| here |]
+                                            Dependencies = [| Assembly.GetExecutingAssembly().Location |]
+                                            CallContext = [| "[Fact]" |]
+                                            PathFilter = [| "ok" |] }
+    let scan = test.Validate()
+    Assert.Equal (0, scan.Length)
+
+  [<Fact>]
+  let PrepareParamsStrongNamesCanBeValidated() =
+    let input = Path.Combine(AltCover.SolutionRoot.location, "Build/Infrastructure.snk")
+    let test = { PrepareParams.Default with StrongNameKey = input
+                                            Keys = [| input |] }
+    let scan = test.Validate()
+#if NETCOREAPP2_0
+    ()
+#else
+    Assert.Equal (0, scan.Length)
+#endif
+
+  [<Fact>]
+  let PrepareParamsCanBeValidatedWithNulls() =
+    let test = { PrepareParams.Default with CallContext = null }
+    let scan = test.Validate()
+    Assert.Equal (0, scan.Length)
+
+  [<Fact>]
+  let PrepareParamsCanBeValidatedAndDetectInconsistency() =
+    let test = { PrepareParams.Default with BranchCover = true
+                                            LineCover = true
+                                            Single = true
+                                            CallContext = [| "0" |] }
+    let scan = test.Validate()
+    Assert.Equal (2, scan.Length)
+
+  [<Fact>]
+  let PrepareParamsCanBeValidatedWithErrors() =
+    let test = { PrepareParams.Default with XmlReport = String(Path.GetInvalidPathChars())
+                                            CallContext = [| "0"; "1" |] }
+    let scan = test.Validate()
+    Assert.Equal (2, scan.Length)
+
+  [<Fact>]
+  let NullListsAreEmpty() =
+    let test = Args.ItemList String.Empty null
+    Assert.True (test |> List.isEmpty)
+
+  [<Fact>]
   let ADotNetDryRunLooksAsExpected() =
     let where = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
     let here = SolutionDir()
