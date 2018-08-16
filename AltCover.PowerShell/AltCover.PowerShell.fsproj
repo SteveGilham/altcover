@@ -10,6 +10,7 @@
     <RootNamespace>AltCover.PowerShell</RootNamespace>
     <AssemblyName>AltCover.PowerShell</AssemblyName>
     <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
+    <ExtraDefines Condition="'$(OS)' != 'Windows_NT'">MONO</ExtraDefines>
     <Name>AltCover.Recorder</Name>
     <TargetFSharpCoreVersion>4.4.1.0</TargetFSharpCoreVersion>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>
@@ -111,12 +112,13 @@
     </Reference>
     <Reference Include="mscorlib" />
     <Reference Include="System" />
+    <Reference Condition="'$(OS)' == 'Windows_NT'" Include="System.Management.Automation" />
     <ProjectReference Include="..\AltCover\AltCover.fsproj">
       <Name>AltCover</Name>
       <Project>{b766260f-6551-4ca8-b2cb-25d2d5092801}</Project>
       <Private>True</Private>
     </ProjectReference>
-    <Reference Include="System.Management.Automation">
+    <Reference Condition="'$(OS)' != 'Windows_NT'" Include="System.Management.Automation">
       <HintPath>..\packages\PowerShellStandard.Library.5.1.0-preview-06\lib\netstandard2.0\System.Management.Automation.dll</HintPath>
       <Private>True</Private>
     </Reference>
