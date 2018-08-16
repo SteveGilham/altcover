@@ -169,7 +169,7 @@ type AltCoverCoreTests() = class
 
     try
       let client = Tracer.Create unique
-      let expected = [("name", client.GetHashCode(), Null); (String.Empty, -1, Null)]
+      let expected = [("name", client.GetHashCode(), Null)]
 
       try
         Adapter.VisitsClear()
