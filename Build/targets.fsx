@@ -2043,6 +2043,38 @@ group NetcoreBuild
                            Shell.deleteDir folder)
 )
 
+_Target "DotnetRunIntegration" ( fun _ ->
+  try
+    Directory.ensure "./_DotnetRun"
+    Shell.cleanDir ("./_DotnetRun")
+    let config = XDocument.Load "./Build/NuGet.config.dotnettest"
+    let repo = config.Descendants(XName.Get("add")) |> Seq.head
+    repo.SetAttributeValue(XName.Get "value", Path.getFullName "./_Packaging" )
+    config.Save "./_DotnetRun/NuGet.config"
+
+    let fsproj = XDocument.Load "./Sample1/sample1.core.csproj"
+    let group = fsproj.Descendants(XName.Get("ItemGroup")) |> Seq.head
+    let inject = XElement(XName.Get "PackageReference",
+                          XAttribute (XName.Get "Include", "altcover"),
+                          XAttribute (XName.Get "Version", !Version) )
+    group.AddFirst inject
+    fsproj.Save "./_DotnetRun/dotnetrun.csproj"
+    Shell.copy "./_DotnetRun" (!! "./Sample1/*.cs")
+
+
+    Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = Path.getFullName "_DotnetRun"
+                                                        Verbosity = Some DotNet.Verbosity.Minimal
+                                                        CustomParams = Some "/p:AltCover=true /p:AltCoverOpenCover=false /p:AltCoverIpmo=true /p:AltCoverGetVersion=true"
+                                 }) "run" "dotnettest.csproj" "running Sample1"
+
+    Actions.ValidateSample1 ((Path.getFullName "_DotnetRun") @@ "coverage.xml") "sigil"
+
+  finally
+    let folder = (nugetCache @@ "altcover") @@ !Version
+    Shell.mkdir folder
+    Shell.deleteDir folder
+)
+
 _Target "DotnetTestIntegration" ( fun _ ->
   try
     Directory.ensure "./_DotnetTest"
@@ -2576,6 +2608,10 @@ Target.activateFinal "ResetConsoleColours"
 
 "Unpack"
 ==> "DotnetTestIntegration"
+==> "Deployment"
+
+"Unpack"
+==> "DotnetRunIntegration"
 ==> "Deployment"
 
 "Unpack"

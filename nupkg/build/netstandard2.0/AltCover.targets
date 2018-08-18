@@ -9,6 +9,10 @@
   <UsingTask TaskName="AltCover.GetVersion"
         AssemblyFile="$(MSBuildThisFileDirectory)../../tools/netcoreapp2.0/AltCover.dll" />
 
+  <PropertyGroup>
+    <RunDependsOn>AltCoverInstrumentModulesForRun</RunDependsOn>
+  </PropertyGroup>
+  
   <ItemGroup>
     <AltCoverSplitContext Include="$(AltCoverCallContext.Split('|'))" />
     <AltCoverFileFilters Include="$(AltCoverFileFilter.Split('|'))" />
@@ -50,12 +54,39 @@
       Dependencies="@(AltCoverDependencies)" />
   </Target>
 
+  <Target Name="AltCoverRunCollection">
+    <AltCover.Collect
+      Condition="'$(AltCover)' == 'true'"
+      RecorderDirectory="$(TargetDir)"
+      LcovReport="$(AltCoverLcovReport)"
+      Threshold="$(AltCoverThreshold)"
+      Cobertura="$(AltCoverCobertura)" />
+    <ItemGroup>
+      <AltCoverRecorderGFiles Include="$(TargetDir)/AltCover.Recorder.g.*" />
+      <AltCoverFSharpFiles Include="$(TargetDir)/FSharp.Core.*" />
+      <AltCoverSavedFiles Include="$(TargetDir)__Saved/*.*" />
+    </ItemGroup>
+    <Delete Files="@(AltCoverRecorderGFiles)" Condition="'$(AltCover)' == 'true'" />
+    <Delete Files="@(AltCoverFSharpFiles)" Condition="'$(AltCover)' == 'true'" />
+    <Move SourceFiles="@(AltCoverSavedFiles)" DestinationFolder="$(TargetDir)" OverwriteReadOnlyFiles="true" Condition="'$(AltCover)' == 'true'" />
+    <RemoveDir Directories="$(TargetDir)__Saved" Condition="Exists('$(TargetDir)__Saved') AND '$(AltCover)' == 'true'" />
+  </Target>
+
   <Target Name="AltCoverInstrumentModulesNoBuild" BeforeTargets="VSTest" Condition="'$(VSTestNoBuild)' == 'true'">
     <CallTarget Targets="AltCoverRunPreparation" />
   </Target>
 
   <Target Name="AltCoverInstrumentModulesAfterBuild" AfterTargets="BuildProject" Condition="'$(VSTestNoBuild)' != 'true'">
     <CallTarget Targets="AltCoverRunPreparation" />
+  </Target>
+
+  <Target Name="AltCoverInstrumentModulesForRun" BeforeTargets="Run">
+    <Message Importance="High" Text="AltCoverInstrumentModulesForRun" />
+    <CallTarget Targets="AltCoverRunPreparation" />
+  </Target>
+
+  <Target Name="AltCoverGenerateCoverageResult" AfterTargets="VSTest;Run">
+    <CallTarget Targets="AltCoverRunCollection" />
   </Target>
 
   <!-- As per Microsoft.TestPlatform.targets v2.1.300, but with OnError clause -->
@@ -81,23 +112,5 @@
       VSTestCollect="$(VSTestCollect)"
       VSTestBlame="$(VSTestBlame)" />
     <OnError ExecuteTargets="AltCoverGenerateCoverageResult" />
-  </Target>
-
-  <Target Name="AltCoverGenerateCoverageResult" AfterTargets="VSTest">
-    <AltCover.Collect
-      Condition="'$(AltCover)' == 'true'"
-      RecorderDirectory="$(TargetDir)"
-      LcovReport="$(AltCoverLcovReport)"
-      Threshold="$(AltCoverThreshold)"
-      Cobertura="$(AltCoverCobertura)" />
-    <ItemGroup>
-      <AltCoverRecorderGFiles Include="$(TargetDir)/AltCover.Recorder.g.*" />
-      <AltCoverFSharpFiles Include="$(TargetDir)/FSharp.Core.*" />
-      <AltCoverSavedFiles Include="$(TargetDir)__Saved/*.*" />
-    </ItemGroup>
-    <Delete Files="@(AltCoverRecorderGFiles)" Condition="'$(AltCover)' == 'true'" />
-    <Delete Files="@(AltCoverFSharpFiles)" Condition="'$(AltCover)' == 'true'" />
-    <Move SourceFiles="@(AltCoverSavedFiles)" DestinationFolder="$(TargetDir)" OverwriteReadOnlyFiles="true" Condition="'$(AltCover)' == 'true'" />
-    <RemoveDir Directories="$(TargetDir)__Saved" Condition="Exists('$(TargetDir)__Saved') AND '$(AltCover)' == 'true'" />
   </Target>
 </Project>
