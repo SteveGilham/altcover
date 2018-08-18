@@ -1,5 +1,3 @@
-**Expect slower/bugfix-only releases for the Summer**
-
 Q. Never mind the fluff -- how do I get started?
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
