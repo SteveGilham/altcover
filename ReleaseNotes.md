@@ -6,6 +6,8 @@ A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wi
 
 # 4.0.6xx (Doruka series release 3)
 * Improved error messages for the GTK# Visualizer
+* [API] strong-name keys can now be meaningfully validated from .net core
+* Minor improvements to reliability on mono
 
 # 4.0.603 (Doruka series release 2)
 * [BUGFIX] PowerShell and GetVersion tasks might produce empty output in 4.0.600 : now fixed
