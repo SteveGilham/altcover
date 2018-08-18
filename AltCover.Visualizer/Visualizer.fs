@@ -531,11 +531,13 @@ module Gui =
       let points = m.SelectChildren("seqpnt", String.Empty)
                    |> Seq.cast<XPathNavigator>      
       if Seq.isEmpty points then
-        let message =  String.Format(System.Globalization.CultureInfo.CurrentCulture,
-                                     GetResourceString "No source location",
-                                     (activation.Column.Cells.[1] :?> Gtk.CellRendererText
-                                       ).Text.Replace("<","&lt;").Replace(">","&gt;"))
-        ShowMessageOnGuiThread handler.mainWindow MessageType.Info message
+        let noSource() = 
+            let message =  String.Format(CultureInfo.CurrentCulture,
+                                         GetResourceString "No source location",
+                                         (activation.Column.Cells.[1] :?> Gtk.CellRendererText
+                                           ).Text.Replace("<","&lt;").Replace(">","&gt;"))
+            ShowMessageOnGuiThread handler.mainWindow MessageType.Info message
+        noSource()
       else
         let child = points |> Seq.head
         let filename = child.GetAttribute("document", String.Empty)
@@ -545,17 +547,19 @@ module Gui =
         else if (info.LastWriteTimeUtc > current.LastWriteTimeUtc) then
           OutdatedCoverageThisFileMessage handler.mainWindow current info
         else
-          let buff = handler.codeView.Buffer
-          buff.Text <- File.ReadAllText(filename)
-          buff.ApplyTag("baseline", buff.StartIter, buff.EndIter)
-          let line = child.GetAttribute("line", String.Empty)
-          let root = m.Clone()
-          root.MoveToRoot()
-          MarkBranches root handler.codeView filename
-          MarkCoverage root buff filename
-          let iter = buff.GetIterAtLine((Int32.TryParse(line) |> snd) - 1)
-          let mark = buff.CreateMark(line, iter, true)
-          handler.codeView.ScrollToMark(mark, 0.0, true, 0.0, 0.3)
+          let showSource() =
+              let buff = handler.codeView.Buffer
+              buff.Text <- File.ReadAllText(filename)
+              buff.ApplyTag("baseline", buff.StartIter, buff.EndIter)
+              let line = child.GetAttribute("line", String.Empty)
+              let root = m.Clone()
+              root.MoveToRoot()
+              MarkBranches root handler.codeView filename
+              MarkCoverage root buff filename
+              let iter = buff.GetIterAtLine((Int32.TryParse(line) |> snd) - 1)
+              let mark = buff.CreateMark(line, iter, true)
+              handler.codeView.ScrollToMark(mark, 0.0, true, 0.0, 0.3)
+          showSource()
 
   [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:DisposeObjectsBeforeLosingScope",
                                                     Justification = "IDisposables are added to other widgets")>]
