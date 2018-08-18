@@ -79,7 +79,7 @@
     <EmbeddedResource Include="Assembly_6212.png" />
     <EmbeddedResource Include="class_16xLG.png" />
     <EmbeddedResource Include="method_16xLG.png" />
-    <EmbeddedResource Include="brackets_Curly_16xLG.png" />
+    <EmbeddedResource Include="Namespace_16x.png" />
     <EmbeddedResource Include="logo.png" />
     <EmbeddedResource Include="Blank_12x_16x.png" />
     <EmbeddedResource Include="Branch_12x_16x_red.png" />
@@ -89,6 +89,7 @@
       <Link>Augment.fs</Link>
     </Compile>
     <Compile Include="CoverageFile.fs" />
+    <Compile Include="GuiCommon.fs" />
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="Visualizer.fs" />
     <None Include="packages.config" />

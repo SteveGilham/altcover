@@ -14,7 +14,7 @@ Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "dotnet-altcover", "AltCover
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "global-altcover", "AltCover.GlobalTool/global-altcover.fsproj", "{C6408656-6016-4F72-8897-63AA3FF4F3C0}"
 EndProject
-Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "AltCover.Avalonia", "Visualizer/AltCover.Avalonia.fsproj", "{8529FB2A-D065-4A36-A997-21121177A8EA}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.avalonia", "AltCover.Avalonia/altcover.avalonia.fsproj", "{8529FB2A-D065-4A36-A997-21121177A8EA}"
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.shadow.core", "AltCover.Shadow/altcover.shadow.core.fsproj", "{1D249F47-8780-4431-8E95-2C3786607B63}"
 EndProject

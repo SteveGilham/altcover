@@ -172,7 +172,7 @@ raportas al ausente fonta dosiero
     <value>Elektu tiparon por fonta ekrano</value>
   </data>
   <data name="SelectXml" xml:space="preserve">
-    <value>xml-dosieroj (* .xml) | * .xml | Ĉiuj dosieroj (*. *) | *. *</value>
+    <value>XML-dosieroj (*.xml)|*.xml|Ĉiuj dosieroj (*.*)|*.*</value>
   </data>
   <data name="showAboutButton.Label" xml:space="preserve">
     <value>p&#x0;_Pri...</value>
@@ -185,5 +185,9 @@ raportas al ausente fonta dosiero
   </data>
   <data name="exitButton.Label" xml:space="preserve">
     <value>_Eliro</value>
+  </data>
+  <data name="No source location" xml:space="preserve">
+    <value>Metodo {0}
+havas neniun respondan fontan lokon</value>
   </data>
 </root>

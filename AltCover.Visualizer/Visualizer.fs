@@ -12,6 +12,7 @@ open System.Xml.XPath
 
 open AltCover.Augment
 open AltCover.Visualizer.Extensions
+open AltCover.Visualizer.GuiCommon
 
 open Gdk
 open Gtk
@@ -64,21 +65,6 @@ type internal Handler() =
   end
 
 module Gui =
-  // Binds class name and XML
-  type internal MethodKey =
-    { m : XPathNavigator
-      spacename : string
-      classname : string
-      name : string }
-
-  // Range colouring information
-  type internal CodeTag =
-    { visitcount : int
-      line : int
-      column : int
-      endline : int
-      endcolumn : int }
-
   // --------------------------  General Purpose ---------------------------
   // Safe event dispatch => GUI update
   let private InvokeOnGuiThread(action : unit -> unit) = Gtk.Application.Invoke(fun (o : obj) (e : EventArgs) -> action())
@@ -91,7 +77,7 @@ module Gui =
   let private AssemblyIcon =
     lazy (new Pixbuf(Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Visualizer.Assembly_6212.png")))
   let private NamespaceIcon =
-    lazy (new Pixbuf(Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Visualizer.brackets_Curly_16xLG.png")))
+    lazy (new Pixbuf(Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Visualizer.Namespace_16x.png")))
   let private ClassIcon =
     lazy (new Pixbuf(Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Visualizer.class_16xLG.png")))
   let private MethodIcon =
@@ -166,27 +152,6 @@ module Gui =
       |> Seq.toList
 
     handler.coverageFiles <- files
-
-  // -------------------------- Method Name Handling ---------------------------
-  let private MethodNameCompare (leftKey : MethodKey) (rightKey : MethodKey) =
-    let HandleSpecialName(name : string) =
-      if name.StartsWith("get_", StringComparison.Ordinal) || name.StartsWith("set_", StringComparison.Ordinal) then
-        (name.Substring(4), true)
-      else (name, false)
-
-    let x = leftKey.name
-    let y = rightKey.name
-    let (left, specialLeft) = HandleSpecialName x
-    let (right, specialRight) = HandleSpecialName y
-    let sort = String.CompareOrdinal(left, right)
-    let specialCase = (0 = sort) && specialLeft && specialRight
-    if 0 = sort then
-      if specialCase then String.CompareOrdinal(x, y)
-      else
-        let l1 = leftKey.m.GetAttribute("fullname", String.Empty)
-        let r1 = rightKey.m.GetAttribute("fullname", String.Empty)
-        String.CompareOrdinal(l1, r1)
-    else sort
 
   // -------------------------- Tree View ---------------------------
   let Mappings = new Dictionary<TreePath, XPathNavigator>()
@@ -563,9 +528,18 @@ module Gui =
     let hits = Mappings.Keys |> Seq.filter (HitFilter activation)
     if not (Seq.isEmpty hits) then
       let m = Mappings.[Seq.head hits]
-      if m.HasChildren then
-        let child = m.Clone()
-        child.MoveToFirstChild() |> ignore
+      let points = m.SelectChildren("seqpnt", String.Empty)
+                   |> Seq.cast<XPathNavigator>      
+      if Seq.isEmpty points then
+        let noSource() = 
+            let message =  String.Format(CultureInfo.CurrentCulture,
+                                         GetResourceString "No source location",
+                                         (activation.Column.Cells.[1] :?> Gtk.CellRendererText
+                                           ).Text.Replace("<","&lt;").Replace(">","&gt;"))
+            ShowMessageOnGuiThread handler.mainWindow MessageType.Info message
+        noSource()
+      else
+        let child = points |> Seq.head
         let filename = child.GetAttribute("document", String.Empty)
         let info = new FileInfo(filename)
         let current = new FileInfo(handler.coverageFiles.Head)
@@ -573,17 +547,19 @@ module Gui =
         else if (info.LastWriteTimeUtc > current.LastWriteTimeUtc) then
           OutdatedCoverageThisFileMessage handler.mainWindow current info
         else
-          let buff = handler.codeView.Buffer
-          buff.Text <- File.ReadAllText(filename)
-          buff.ApplyTag("baseline", buff.StartIter, buff.EndIter)
-          let line = child.GetAttribute("line", String.Empty)
-          let root = m.Clone()
-          root.MoveToRoot()
-          MarkBranches root handler.codeView filename
-          MarkCoverage root buff filename
-          let iter = buff.GetIterAtLine((Int32.TryParse(line) |> snd) - 1)
-          let mark = buff.CreateMark(line, iter, true)
-          handler.codeView.ScrollToMark(mark, 0.0, true, 0.0, 0.3)
+          let showSource() =
+              let buff = handler.codeView.Buffer
+              buff.Text <- File.ReadAllText(filename)
+              buff.ApplyTag("baseline", buff.StartIter, buff.EndIter)
+              let line = child.GetAttribute("line", String.Empty)
+              let root = m.Clone()
+              root.MoveToRoot()
+              MarkBranches root handler.codeView filename
+              MarkCoverage root buff filename
+              let iter = buff.GetIterAtLine((Int32.TryParse(line) |> snd) - 1)
+              let mark = buff.CreateMark(line, iter, true)
+              handler.codeView.ScrollToMark(mark, 0.0, true, 0.0, 0.3)
+          showSource()
 
   [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:DisposeObjectsBeforeLosingScope",
                                                     Justification = "IDisposables are added to other widgets")>]
@@ -772,7 +748,7 @@ module Gui =
              let assemblies = coverage.Document.CreateNavigator().Select("//module") |> Seq.cast<XPathNavigator>
              assemblies
              |> Seq.map (fun node -> (node, node.GetAttribute("assemblyIdentity", String.Empty).Split(',') |> Seq.head))
-             |> Seq.sortBy (fun nodepair -> snd nodepair)
+             |> Seq.sortBy snd
              |> Seq.iter (ApplyToModel model)
              let UpdateUI (theModel : TreeModel) (info : FileInfo) () =
                // File is good so enable the refresh button

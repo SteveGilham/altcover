@@ -117,17 +117,8 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="About" xml:space="preserve">
-    <value> Pri AltCover Visualizer...</value>
-  </data>
-  <data name="AboutDialog.About" xml:space="preserve">
-    <value>Pri</value>
-  </data>
-  <data name="About.dlg" xml:space="preserve">
-    <value>Pri AltCover Visualizer</value>
-  </data>
   <data name="ProgramDescription" xml:space="preserve">
-    <value>Kovrilo-visualizilo por raportoj de NCover kaj OpenCover</value>
+    <value>Coverage visualizer for NCover and OpenCover reports</value>
   </data>
   <data name="License" xml:space="preserve">
     <value>The MIT License
@@ -153,24 +144,90 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.</value>
   </data>
   <data name="AboutDialog.License" xml:space="preserve">
-    <value>Permesilo</value>
+    <value>License</value>
   </data>
   <data name="WebsiteLabel" xml:space="preserve">
     <value>GitHub repo</value>
   </data>
   <data name="Close" xml:space="preserve">
-    <value>Fermi</value>
+    <value>Close</value>
   </data>
   <data name="Visualizer" xml:space="preserve">
     <value>Visualizer</value>
   </data>
   <data name="Open" xml:space="preserve">
-    <value>_Malferma...</value>
+    <value> Open...</value>
   </data>
   <data name="Exit" xml:space="preserve">
-    <value>Eliro</value>
+    <value>Exit</value>
   </data>
   <data name="Font" xml:space="preserve">
-    <value>Tiparo...</value>
+    <value>Font...</value>
+  </data>
+  <data name="Refresh" xml:space="preserve">
+    <value>Refresh</value>
+  </data>
+  <data name="Open Coverage File" xml:space="preserve">
+    <value>Open Coverage File</value>
+  </data>
+  <data name="SelectXml" xml:space="preserve">
+    <value>xml files (*.xml)%xml|All files (*.*)%*</value>
+  </data>
+  <data name="g|geometry" xml:space="preserve">
+    <value>Clear geometry</value>
+  </data>
+  <data name="r|recentFiles" xml:space="preserve">
+    <value>Clear recent file list</value>
+  </data>
+  <data name="InvalidFile" xml:space="preserve">
+    <value>The file
+{0}
+is not a valid coverage file:
+{1}</value>
+  </data>
+  <data name="CoverageOutOfDate" xml:space="preserve">
+    <value>The file
+{0} 
+is out of date with respect to some of the source files.</value>
+  </data>
+  <data name="CoverageOutOfDateThisFile" xml:space="preserve">
+    <value>The file
+{0} 
+is out of date with respect to source file
+{1}.</value>
+  </data>
+  <data name="MissingSourceFile" xml:space="preserve">
+    <value>The file
+{0} 
+refers to source files not found on this computer.</value>
+  </data>
+  <data name="MissingSourceThisFile" xml:space="preserve">
+    <value>The file
+{0} 
+refers to absent to source file
+{1}.</value>
+  </data>
+  <data name="Load Warning" xml:space="preserve">
+    <value>Inconsistent Coverage File</value>
+  </data>
+  <data name="LoadError" xml:space="preserve">
+    <value>Coverage File Load Failed</value>
+  </data>
+  <data name="About" xml:space="preserve">
+    <value>About...</value>
+  </data>
+  <data name="ProgramComments" xml:space="preserve">
+    <value>{0}
+Icons from the Visual Studio 2017 collection
+https://docs.microsoft.com/en-us/visualstudio/designers/the-visual-studio-image-library
+and from the Tango Project
+http://tango.freedesktop.org/Tango_Icon_Library#Download</value>
+  </data>
+  <data name="LoadInfo" xml:space="preserve">
+    <value>Note</value>
+  </data>
+  <data name="No source location" xml:space="preserve">
+    <value>Method {0} 
+has no corresponding source location</value>
   </data>
 </root>

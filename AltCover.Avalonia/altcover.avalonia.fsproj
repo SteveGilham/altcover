@@ -21,20 +21,35 @@
 </PropertyGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="dialog-error.png" />
+    <EmbeddedResource Include="dialog-information.png" />
+    <EmbeddedResource Include="dialog-warning.png" />
+    <EmbeddedResource Include="..\AltCover.Visualizer\Assembly_6212.png" Link="Assembly_6212.png" />
+    <EmbeddedResource Include="..\AltCover.Visualizer\Blank_12x_16x.png" Link="Blank_12x_16x.png" />
+    <EmbeddedResource Include="..\AltCover.Visualizer\Branch_12x_16x.png" Link="Branch_12x_16x.png" />
+    <Content Include="..\AltCover.Visualizer\Branch_12x_16x_grn.png" Link="Branch_12x_16x_grn.png" />
+    <EmbeddedResource Include="..\AltCover.Visualizer\Branch_12x_16x_red.png" Link="Branch_12x_16x_red.png" />
+    <EmbeddedResource Include="..\AltCover.Visualizer\Branch_12x_16x_ylw.png" Link="Branch_12x_16x_ylw.png" />
+    <EmbeddedResource Include="..\AltCover.Visualizer\Namespace_16x.png" Link="Namespace_16x.png" />
+    <EmbeddedResource Include="..\AltCover.Visualizer\XMLFile_16x.png" Link="XMLFile_16x.png" />
+    <EmbeddedResource Include="..\AltCover.Visualizer\class_16xLG.png" Link="class_16xLG.png" />
+    <EmbeddedResource Include="..\AltCover.Visualizer\logo.png" Link="logo.png" />
+    <EmbeddedResource Include="..\AltCover.Visualizer\method_16xLG.png" Link="method_16xLG.png" />
+    <EmbeddedResource Include="..\AltCover.Visualizer\VIcon.ico" Link="VIcon.ico" />
     <None Include="nuget.config" />
-    <EmbeddedResource Include="Assembly_16x.png" />
-    <EmbeddedResource Include="Class_16x.png" />
     <EmbeddedResource Include="Exit_16x.png" />
     <EmbeddedResource Include="ExpandChevronDown_16x.png" />
     <EmbeddedResource Include="ExpandChevronDown_lightGray_16x.png" />
     <EmbeddedResource Include="Font_16x.png" />
-    <EmbeddedResource Include="Method_16x.png" />
-    <EmbeddedResource Include="Namespace_16x.png" />
     <EmbeddedResource Include="Refresh_16x.png" />
     <EmbeddedResource Include="Refresh_greyThin_16x.png" />
     <EmbeddedResource Include="StatusCriticalError_16x.png" />
     <EmbeddedResource Include="StatusInformation_16x.png" />
-    <EmbeddedResource Include="Visualizer.ico" />
+    <EmbeddedResource Include="VSTAAbout_16x.png" />
+    <EmbeddedResource Include="..\AltCover.PowerShell\xsd\NCover.xsd" Link="NCover.xsd" />
+    <EmbeddedResource Include="..\AltCover.PowerShell\xsd\OpenCover.xsd" Link="OpenCover.xsd" />
+    <EmbeddedResource Include="..\AltCover.PowerShell\xsl\OpenCoverToNCoverEx.xsl" Link="OpenCoverToNCoverEx.xsl" />
+    <EmbeddedResource Include="config.xsd" />
     <EmbeddedResource Include="AltCover.Avalonia.MainWindow.xaml">
       <LogicalName>AltCover.Avalonia.MainWindow.xaml</LogicalName>
     </EmbeddedResource>
@@ -47,29 +62,29 @@
   <ItemGroup>
     <Compile Include="..\_Generated\AssemblyVersion.fs" Link="AssemblyVersion.fs" />
     <Compile Include="..\_Generated\VisibleToTest.fs" Link="VisibleToTest.fs" />
+    <Compile Include="..\AltCover\Augment.fs" Link="Augment.fs" />
+    <Compile Include="..\AltCover.Visualizer\CoverageFile.fs" Link="CoverageFile.fs" />
+    <Compile Include="..\AltCover.Visualizer\GuiCommon.fs" Link="GuiCommon.fs" />
     <Compile Include="MainWindow.fs" />
     <Compile Include="App.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Visualizer.png">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </EmbeddedResource>
     <EmbeddedResource Include="Open_6529.png">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </EmbeddedResource>
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Avalonia" Version="0.6.2-build5768-beta" />
-    <PackageReference Include="Avalonia.Desktop" Version="0.6.2-build5768-beta" />
+    <PackageReference Include="Avalonia" Version="0.6.2-build5881-beta" />
+    <PackageReference Include="Avalonia.Desktop" Version="0.6.2-build5881-beta" />
     <PackageReference Include="Avalonia.HtmlRenderer" Version="0.6.1" />
-    <PackageReference Include="Avalonia.ReactiveUI" Version="0.6.2-build5768-beta" />
+    <PackageReference Include="Mono.Options" Version="5.3.0.1" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Update="FSharp.Core" Version="4.5.1" />
+    <PackageReference Update="FSharp.Core" Version="4.5.2" />
   </ItemGroup>
 
 </Project>

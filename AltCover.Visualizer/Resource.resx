@@ -186,4 +186,8 @@ https://docs.microsoft.com/en-us/visualstudio/designers/the-visual-studio-image-
   <data name="exitButton.Label" xml:space="preserve">
     <value>x&#x0;E_xit</value>
   </data>
+  <data name="No source location" xml:space="preserve">
+    <value>Method {0} 
+has no corresponding source location</value>
+  </data>
 </root>
