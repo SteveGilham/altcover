@@ -1203,7 +1203,6 @@ or
 
       let u1 = Guid.NewGuid().ToString()
       let u2 = Guid.NewGuid().ToString()
-      use latch = new ManualResetEvent true
 
       let baseArgs= [program; u1; u2]
       let nonWindows = System.Environment.GetEnvironmentVariable("OS") <> "Windows_NT"
