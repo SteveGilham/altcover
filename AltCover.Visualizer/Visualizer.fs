@@ -16,45 +16,114 @@ open AltCover.Visualizer.GuiCommon
 
 open Gdk
 open Gtk
+#if NETCOREAPP2_1
+#else
 open Glade
 
 open Microsoft.Win32
+#endif
 
 open Mono.Options
 
 type internal Handler() =
   class
-    [<Widget; DefaultValue(true)>]
+    [<
+#if NETCOREAPP2_1
+      Builder.Object;
+#else
+      Widget;
+#endif
+      DefaultValue(true)>]
     val mutable mainWindow : Window
 
-    [<Widget; DefaultValue(true)>]
+    [<
+#if NETCOREAPP2_1
+      Builder.Object;
+#else
+      Widget;
+#endif
+      DefaultValue(true)>]
     val mutable openButton : MenuToolButton
 
-    [<Widget; DefaultValue(true)>]
+    [<
+#if NETCOREAPP2_1
+      Builder.Object;
+#else
+      Widget;
+#endif
+      DefaultValue(true)>]
     val mutable separator1 : SeparatorToolItem
 
-    [<Widget; DefaultValue(true)>]
+    [<
+#if NETCOREAPP2_1
+      Builder.Object;
+#else
+      Widget;
+#endif
+      DefaultValue(true)>]
     val mutable exitButton : ToolButton
 
-    [<Widget; DefaultValue(true)>]
+    [<
+#if NETCOREAPP2_1
+      Builder.Object;
+#else
+      Widget;
+#endif
+      DefaultValue(true)>]
     val mutable refreshButton : ToolButton
 
-    [<Widget; DefaultValue(true)>]
+    [<
+#if NETCOREAPP2_1
+      Builder.Object;
+#else
+      Widget;
+#endif
+      DefaultValue(true)>]
     val mutable fontButton : ToolButton
 
-    [<Widget; DefaultValue(true)>]
+    [<
+#if NETCOREAPP2_1
+      Builder.Object;
+#else
+      Widget;
+#endif
+      DefaultValue(true)>]
     val mutable showAboutButton : ToolButton
 
-    [<Widget; DefaultValue(true)>]
+    [<
+#if NETCOREAPP2_1
+      Builder.Object;
+#else
+      Widget;
+#endif
+      DefaultValue(true)>]
     val mutable aboutVisualizer : AboutDialog
 
-    [<Widget; DefaultValue(true)>]
+    [<
+#if NETCOREAPP2_1
+      Builder.Object;
+#else
+      Widget;
+#endif
+      DefaultValue(true)>]
     val mutable fileOpenMenu : Menu
 
-    [<Widget; DefaultValue(true)>]
+    [<
+#if NETCOREAPP2_1
+      Builder.Object;
+#else
+      Widget;
+#endif
+      DefaultValue(true)>]
     val mutable classStructureTree : TreeView
 
-    [<Widget; DefaultValue(true)>]
+    [<
+#if NETCOREAPP2_1
+      Builder.Object;
+#else
+      Widget;
+#endif
+      DefaultValue(true)>]
     val mutable codeView : TextView
 
     [<DefaultValue(true)>]
@@ -93,6 +162,8 @@ module Gui =
     lazy (new Pixbuf(Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Visualizer.Blank_12x_16x.png")))
 
   // --------------------------  Persistence ---------------------------
+#if NETCOREAPP2_1
+#else
   let private geometry = "SOFTWARE\\AltCover\\Visualizer\\Geometry"
   let private recent = "SOFTWARE\\AltCover\\Visualizer\\Recently Opened"
   let private coveragepath = "SOFTWARE\\AltCover\\Visualizer"
@@ -152,6 +223,7 @@ module Gui =
       |> Seq.toList
 
     handler.coverageFiles <- files
+#endif
 
   // -------------------------- Tree View ---------------------------
   let Mappings = new Dictionary<TreePath, XPathNavigator>()
@@ -284,9 +356,20 @@ module Gui =
   // -------------------------- UI set-up  ---------------------------
   let private InitializeHandler() =
     let handler = new Handler()
+#if NETCOREAPP2_1
+    use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Visualizer.Visualizer.glade")
+    use str = new StreamReader(stream)
+    let xml = str.ReadToEnd().Replace("glade-interface", "interface").Replace("widget", "object")
     [ "mainWindow"; "fileOpenMenu"; "aboutVisualizer" ]
-    |> List.map (fun name -> new Glade.XML("AltCover.Visualizer.Visualizer.glade", name))
-    |> List.iter (fun xml -> xml.Autoconnect(handler))
+    |> List.iter (fun name -> use r = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(xml));
+                              use b = new Builder(r, name)
+                              b.Autoconnect handler)
+    handler.coverageFiles <- []
+#else
+    [ "mainWindow"; "fileOpenMenu"; "aboutVisualizer" ]
+    |> List.iter (fun name -> let xml = new Glade.XML("AltCover.Visualizer.Visualizer.glade", name)
+                              xml.Autoconnect(handler))
+#endif
     handler
 
   // Fill in the menu from the memory cache
@@ -313,8 +396,11 @@ module Gui =
       // TODO -- other OS types
       | _ -> ShowMessage handler.aboutVisualizer link MessageType.Info
     // The first gets the display right, the second the browser launch
+#if NETCOREAPP2_1
+#else
     AboutDialog.SetUrlHook(fun _ link -> ShowUrl link) |> ignore
     LinkButton.SetUriHook(fun _ link -> ShowUrl link) |> ignore
+#endif
     handler.aboutVisualizer.ActionArea.Children.OfType<Button>()
     |> Seq.iter (fun w ->
          let t = GetResourceString w.Label
@@ -323,7 +409,7 @@ module Gui =
             |> not
          then w.Label <- t)
     handler.aboutVisualizer.Title <- GetResourceString("aboutVisualizer.Title")
-    handler.aboutVisualizer.Parent <- handler.mainWindow
+    handler.aboutVisualizer.Modal <- true
     handler.aboutVisualizer.WindowPosition <- WindowPosition.Mouse
     handler.aboutVisualizer.Version <- System.AssemblyVersionInformation.AssemblyFileVersion
     handler.aboutVisualizer.Copyright <- String.Format
@@ -348,6 +434,17 @@ module Gui =
          column.AddAttribute(cell, "text", 2 * i)
          column.AddAttribute(icon, "pixbuf", 1 + (2 * i)))
 
+#if NETCOREAPP2_1
+  let private PrepareOpenFileDialog (handler : Handler)  =
+    // TODO resource
+    let openFileDialog = new FileChooserDialog("Open File...", handler.mainWindow, FileChooserAction.Open)
+    //openFileDialog.InitialDirectory <- readFolder()
+    //openFileDialog.Filter <- GetResourceString("SelectXml")
+    //openFileDialog.FilterIndex <- 0
+    //openFileDialog.RestoreDirectory <- false
+    openFileDialog
+
+#else
   [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:DisposeObjectsBeforeLosingScope",
                                                     Justification = "'openFileDialog' is returned")>]
   let private PrepareOpenFileDialog() =
@@ -357,11 +454,25 @@ module Gui =
     openFileDialog.FilterIndex <- 0
     openFileDialog.RestoreDirectory <- false
     openFileDialog
+#endif
 
   // -------------------------- Event handling  ---------------------------
-  let private HandleOpenClicked (handler : Handler) (openFileDialogFactory : unit -> System.Windows.Forms.OpenFileDialog) =
-    use openFileDialog = openFileDialogFactory()
+  let private HandleOpenClicked (handler : Handler)
+#if NETCOREAPP2_1
+                                (openFileDialogFactory : Handler -> FileChooserDialog) =
+    use openFileDialog = openFileDialogFactory handler
+#else
+                                (openFileDialogFactory : unit -> System.Windows.Forms.OpenFileDialog) =
+    use openFileDialog = openFileDialogFactory ()
+#endif
 
+#if NETCOREAPP2_1
+    let MakeSelection (ofd :FileChooserDialog) x =
+      if ofd.Run() = 0 then
+        let file = new FileInfo(ofd.CurrentFolderFile.Path)
+        Some file
+      else None
+#else
     let MakeSelection (ofd : System.Windows.Forms.OpenFileDialog) x =
       if ofd.ShowDialog() = System.Windows.Forms.DialogResult.OK then
         let file = new FileInfo(ofd.FileName)
@@ -369,6 +480,7 @@ module Gui =
         if save then saveFolder ofd.InitialDirectory
         Some(file)
       else None
+#endif
     handler.openButton.Clicked
     |> Event.map (MakeSelection openFileDialog)
     |> Event.choose id
@@ -386,9 +498,12 @@ module Gui =
       buffer.TagTable.Add(tag)
 
     let baseline = new TextTag("baseline")
+#if NETCOREAPP2_1
+#else
     baseline.Font <- readFont()
+#endif
     baseline.Foreground <- "#c0c0c0"
-    buff.TagTable.Add(baseline)
+    buff.TagTable.Add(baseline) |>  ignore
     [ (// Last declared type is last layer painted
        "visited", "#404040", "#cefdce") // "#98FB98") ; // Dark on Pale Green
       ("declared", "#FFA500", "#FFFFFF") // Orange on White
@@ -397,7 +512,7 @@ module Gui =
       ("notVisited", "#ff0000", "#FFFFFF") // Red on White
       ("excluded", "#87CEEB", "#FFFFFF") // Sky Blue on white
      ]
-    |> Seq.iter (Tag buff)
+    |> Seq.iter (fun x -> Tag buff x |> ignore)
 
   let private ParseIntegerAttribute (element : XPathNavigator) (attribute : string) =
     let text = element.GetAttribute(attribute, String.Empty)
@@ -529,9 +644,9 @@ module Gui =
     if not (Seq.isEmpty hits) then
       let m = Mappings.[Seq.head hits]
       let points = m.SelectChildren("seqpnt", String.Empty)
-                   |> Seq.cast<XPathNavigator>      
+                   |> Seq.cast<XPathNavigator>
       if Seq.isEmpty points then
-        let noSource() = 
+        let noSource() =
             let message =  String.Format(CultureInfo.CurrentCulture,
                                          GetResourceString "No source location",
                                          (activation.Column.Cells.[1] :?> Gtk.CellRendererText
@@ -572,10 +687,10 @@ module Gui =
     tag0.Justification <- Justification.Center
     tag0.Background <- "#FFFFFF"
     let tt = buffer.TagTable
-    tt.Add tag0
+    tt.Add tag0 |> ignore
     let tag = new TextTag("underline")
     tag.Underline <- Pango.Underline.Single
-    tt.Add tag
+    tt.Add tag |> ignore
     let start = keytext.[1].IndexOf('_')
     buffer.Text <- keytext.[1].Replace("_", String.Empty)
 
@@ -613,8 +728,11 @@ module Gui =
     SetToolButtons handler
     PrepareAboutDialog handler
     PrepareTreeView handler
+#if NETCOREAPP2_1
+#else
     readGeometry handler.mainWindow
     readCoverageFiles handler
+#endif
     populateMenu handler
     handler.separator1.Expand <- true
     handler.separator1.Homogeneous <- false
@@ -623,7 +741,10 @@ module Gui =
     handler.refreshButton.Sensitive <- false
     handler.exitButton.Clicked
     |> Event.add(fun _ ->
+#if NETCOREAPP2_1
+#else
              if save then saveGeometry handler.mainWindow
+#endif
              Application.Quit())
     // Initialize graphics and begin
     handler.mainWindow.Icon <- new Pixbuf(Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Visualizer.VIcon.ico"))
@@ -636,6 +757,8 @@ module Gui =
 
   let ParseCommandLine arguments =
     let options = new OptionSet()
+#if NETCOREAPP2_1
+#else
     options.Add("-g", "Clear geometry",
                 (fun _ ->
                 let k1 = Registry.CurrentUser.CreateSubKey(geometry)
@@ -647,6 +770,7 @@ module Gui =
                                                                       k1.Close()
                                                                       Registry.CurrentUser.DeleteSubKeyTree(recent)))
     |> ignore
+#endif
     options.Parse(arguments) |> ignore
 
   [<EntryPoint; STAThread>]
@@ -656,13 +780,17 @@ module Gui =
     let handler = PrepareGui()
     handler.mainWindow.DeleteEvent
     |> Event.add (fun args ->
+#if NETCOREAPP2_1
+#else
          if save then saveGeometry handler.mainWindow
+#endif
          Application.Quit()
          args.RetVal <- true)
     handler.showAboutButton.Clicked
     |> Event.add (fun args ->
          ignore <| handler.aboutVisualizer.Run()
          handler.aboutVisualizer.Hide())
+
     // The Open event
     let click = HandleOpenClicked handler PrepareOpenFileDialog
 
@@ -674,10 +802,14 @@ module Gui =
 
     // The sum of all these events -- we have explicitly selected a file
     let fileSelection = select |> Seq.fold Event.merge click
+
+#if NETCOREAPP2_1
+#else
     // Update the recent files menu and registry store from memory cache
     // with new most recent file
     let RegDeleteKey (key : RegistryKey) (name : string) = key.DeleteValue(name)
     let RegSetKey (key : RegistryKey) (index : int) (name : string) = key.SetValue(index.ToString(), name)
+#endif
 
     let updateMRU (h : Handler) path add =
       let casematch =
@@ -699,9 +831,12 @@ module Gui =
                               | _ -> n.ToUpperInvariant())
                          |> Seq.toList
       populateMenu h
+#if NETCOREAPP2_1
+#else
       use fileKey = Registry.CurrentUser.CreateSubKey(recent)
       fileKey.GetValueNames() |> Seq.iter (RegDeleteKey fileKey)
       h.coverageFiles |> Seq.iteri (RegSetKey fileKey)
+#endif
 
     // Now mix in selecting the file currently loaded
     let refresh = handler.refreshButton.Clicked |> Event.map (fun _ -> 0)
@@ -750,7 +885,13 @@ module Gui =
              |> Seq.map (fun node -> (node, node.GetAttribute("assemblyIdentity", String.Empty).Split(',') |> Seq.head))
              |> Seq.sortBy snd
              |> Seq.iter (ApplyToModel model)
-             let UpdateUI (theModel : TreeModel) (info : FileInfo) () =
+             let UpdateUI (theModel :
+#if NETCOREAPP2_1
+                                       ITreeModel
+#else
+                                       TreeModel
+#endif
+                                                 ) (info : FileInfo) () =
                // File is good so enable the refresh button
                h.refreshButton.Sensitive <- true
                // Do real UI work here
@@ -766,8 +907,11 @@ module Gui =
          let resources = new ResourceManager("AltCover.Visualizer.Resource", executingAssembly)
          let format = resources.GetString("SelectFont")
          let selector = new FontSelectionDialog(format)
+#if NETCOREAPP2_1
+#else
          selector.SetFontName(readFont()) |> ignore
          if Enum.ToObject(typeof<ResponseType>, selector.Run()) :?> ResponseType = ResponseType.Ok then saveFont (selector.FontName)
+#endif
          selector.Destroy())
     // Tree selection events and such
     handler.classStructureTree.RowActivated |> Event.add (OnRowActivated handler)

@@ -7,7 +7,8 @@
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{d5bb91d8-e3ef-4f10-bbdb-752c5ebd689e}</ProjectGuid>
-    <OutputType>WinExe</OutputType>
+    <OutputType  Condition="Exists('$(SolutionDir)Build\Infrastructure.snk')">WinExe</OutputType>
+    <OutputType  Condition="!Exists('$(SolutionDir)Build\Infrastructure.snk')">Exe</OutputType>
     <RootNamespace>AltCover.Visualizer</RootNamespace>
     <AssemblyName>AltCover.Visualizer</AssemblyName>
     <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
@@ -33,7 +34,7 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <WarningsAsErrors>
     </WarningsAsErrors>
-    <OtherFlags>--keyfile:$(SolutionDir)Build\Infrastructure.snk</OtherFlags>
+    <OtherFlags Condition="Exists('$(SolutionDir)Build\Infrastructure.snk')">--keyfile:$(SolutionDir)Build\Infrastructure.snk</OtherFlags>
     <DefineConstants>TRACE;DEBUG;CODE_ANALYSIS;GUI</DefineConstants>
     <WarningLevel>4</WarningLevel>
     <StartArguments>-g -r</StartArguments>
@@ -48,7 +49,7 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <WarningsAsErrors>
     </WarningsAsErrors>
-    <OtherFlags>--keyfile:$(SolutionDir)Build\Infrastructure.snk</OtherFlags>
+    <OtherFlags Condition="Exists('$(SolutionDir)Build\Infrastructure.snk')">--keyfile:$(SolutionDir)Build\Infrastructure.snk</OtherFlags>
     <DefineConstants>TRACE;GUI</DefineConstants>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
