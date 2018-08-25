@@ -574,7 +574,6 @@ module Gui =
                                                 ResponseType.Cancel,
                                                 null
                                                 )
-    openFileDialog.SetCurrentFolder(Persistence.readFolder()) |> ignore
     let data = GetResourceString("SelectXml").Split([| '|' |])
     let filter = new FileFilter()
     filter.Name <- data.[0]
@@ -611,6 +610,8 @@ module Gui =
 
 #if NETCOREAPP2_1
     let MakeSelection (ofd :FileChooserDialog) x =
+     openFileDialog.SetCurrentFolder(Persistence.readFolder()) |> ignore
+      //openFileDialog.SetFilename(Persistence.readFolder()) |> ignore
      try
       if Enum.ToObject(typeof<ResponseType>, ofd.Run()) :?> ResponseType = ResponseType.Ok then
         let file = new FileInfo(ofd.Filename)
@@ -625,7 +626,7 @@ module Gui =
       else None
 #if NETCOREAPP2_1
      finally
-      ofd.Destroy()
+      ofd.Hide()
 #endif
     handler.openButton.Clicked
     |> Event.map (MakeSelection openFileDialog)
