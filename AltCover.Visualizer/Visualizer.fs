@@ -841,8 +841,9 @@ module Gui =
     let start = keytext.[1].IndexOf('_')
     buffer.Text <- keytext.[1].Replace("_", String.Empty)
 #if NETCOREAPP2_1
-    button.TooltipText <- buffer.Text//.Substring(0,start) + "<u>" + buffer.Text.Substring(start, 1) +
-                                     //                      "</u>" + buffer.Text.Substring(start + 1)
+    button.TooltipMarkup <- buffer.Text.Substring(0,start) + "<u>" + 
+                            buffer.Text.Substring(start, 1) +
+                            "</u>" + buffer.Text.Substring(start + 1)
 #endif
 
     buffer.ApplyTag("baseline", buffer.StartIter, buffer.EndIter)
