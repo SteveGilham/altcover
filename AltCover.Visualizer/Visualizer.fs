@@ -1008,9 +1008,15 @@ module Gui =
          let executingAssembly = System.Reflection.Assembly.GetExecutingAssembly()
          let resources = new ResourceManager("AltCover.Visualizer.Resource", executingAssembly)
          let format = resources.GetString("SelectFont")
+#if NETCOREAPP2_1
+         let selector = new FontChooserDialog(format, handler.mainWindow)
+         selector.Font <- Persistence.readFont()
+         if Enum.ToObject(typeof<ResponseType>, selector.Run()) :?> ResponseType = ResponseType.Ok then Persistence.saveFont (selector.Font)
+#else
          let selector = new FontSelectionDialog(format)
          selector.SetFontName(Persistence.readFont()) |> ignore
          if Enum.ToObject(typeof<ResponseType>, selector.Run()) :?> ResponseType = ResponseType.Ok then Persistence.saveFont (selector.FontName)
+#endif
          selector.Destroy())
     // Tree selection events and such
     handler.classStructureTree.RowActivated |> Event.add (OnRowActivated handler)
