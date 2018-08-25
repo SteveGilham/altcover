@@ -400,7 +400,6 @@ module Gui =
 #else
     AboutDialog.SetUrlHook(fun _ link -> ShowUrl link) |> ignore
     LinkButton.SetUriHook(fun _ link -> ShowUrl link) |> ignore
-#endif
     handler.aboutVisualizer.ActionArea.Children.OfType<Button>()
     |> Seq.iter (fun w ->
          let t = GetResourceString w.Label
@@ -408,6 +407,7 @@ module Gui =
             |> String.IsNullOrWhiteSpace
             |> not
          then w.Label <- t)
+#endif
     handler.aboutVisualizer.Title <- GetResourceString("aboutVisualizer.Title")
     handler.aboutVisualizer.Modal <- true
     handler.aboutVisualizer.WindowPosition <- WindowPosition.Mouse
