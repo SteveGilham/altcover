@@ -7,7 +7,9 @@ open System.IO
 open System.Linq
 open System.Reflection
 open System.Resources
+open System.Xml
 open System.Xml.Linq
+open System.Xml.Schema
 open System.Xml.XPath
 
 open AltCover.Augment
@@ -133,6 +135,184 @@ type internal Handler() =
     val mutable justOpened : string
   end
 
+module Persistence =
+  let mutable internal save = true
+
+#if NETCOREAPP2_1
+  let private DefaultDocument () =
+    let doc = XDocument()
+    doc.Add(XElement(XName.Get "AltCover.Visualizer"))
+    doc
+
+  let private EnsureFile () =
+    let profileDir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)
+    let dir = Directory.CreateDirectory(Path.Combine(profileDir, ".altcover"))
+    let file = Path.Combine(dir.FullName, "Visualizer.xml")
+    let mutable o = XDocument()
+    if file |> File.Exists |> not then
+        (file, DefaultDocument())
+    else try
+            let doc = XDocument.Load(file)
+            o <- doc
+            let schemas = new XmlSchemaSet()
+            use xsd = new StreamReader(Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Visualizer.config.xsd"))
+            schemas.Add
+              (String.Empty,
+               XmlReader.Create xsd)
+            |> ignore
+            doc.Validate(schemas, null)
+            (file, doc)
+         with
+         | x -> printfn "%A\r\n\r\n%A" x o
+                (file, DefaultDocument())
+
+  let internal saveFont (font : string) =
+    let file, config = EnsureFile()
+    config.XPathSelectElements("//Font")
+    |> Seq.toList
+    |> Seq.iter(fun x -> x.Remove())
+    let inject = XElement(XName.Get "Font", font)
+    match config.XPathSelectElements("//CoveragePath") |> Seq.toList with
+    | [] -> (config.FirstNode :?> XElement).AddFirst(inject)
+    | x::_ -> inject |> x.Add
+    config.Save file
+
+  let internal readFont() =
+    let _, config = EnsureFile()
+    match config.XPathSelectElements("//Font") |> Seq.toList with
+    | [] -> "Monospace"  // Font defaults to 'Courier New', which is what we want
+    | x::_ -> x.FirstNode.ToString()
+
+  let internal saveFolder (path : string) =
+    let file, config = EnsureFile()
+    match config.XPathSelectElements("//CoveragePath") |> Seq.toList with
+    | [] -> (config.FirstNode :?> XElement).AddFirst(XElement(XName.Get "CoveragePath", path))
+    | x::_ -> x.RemoveAll()
+              x.Add path
+    config.Save file
+
+  let internal readFolder () =
+    let _, config = EnsureFile()
+    match config.XPathSelectElements("//CoveragePath") |> Seq.toList with
+    | [] -> System.IO.Directory.GetCurrentDirectory()
+    | x::_ -> x.FirstNode.ToString()
+
+  let internal saveCoverageFiles (coverageFiles : string list) =
+    let file, config = EnsureFile()
+    config.XPathSelectElements("//RecentlyOpened") |> Seq.toList
+    |> Seq.iter (fun x -> x.Remove())
+    let inject = config.FirstNode :?> XElement
+    coverageFiles |> Seq.iter (fun path -> inject.Add(XElement(XName.Get "RecentlyOpened", path)))
+    config.Save file
+
+  let internal readCoverageFiles (handler : Handler) =
+    let _, config = EnsureFile()
+    let files = config.XPathSelectElements("//RecentlyOpened")
+                    |> Seq.map (fun n -> n.FirstNode.ToString())
+                    |> Seq.toList
+    handler.coverageFiles <- files
+
+  let saveGeometry (w:Window) =
+    let file, config = EnsureFile()
+    config.XPathSelectElements("//Geometry")
+    |> Seq.toList
+    |> Seq.iter (fun x -> x.Remove())
+    let (x, y) = w.GetPosition()
+    let (width, height) = w.GetSize()
+
+    let element= XElement(XName.Get "Geometry",
+                            XAttribute(XName.Get "x", x),
+                            XAttribute(XName.Get "y", y),
+                            XAttribute(XName.Get "width", width),
+                            XAttribute(XName.Get "height", height))
+
+    match config.XPathSelectElements("//RecentlyOpened") |> Seq.toList with
+    | [] -> (config.FirstNode :?> XElement).Add element
+    | x::_ -> x.AddBeforeSelf element
+    config.Save file
+
+  let readGeometry (w:Window) =
+    let _, config = EnsureFile()
+    let attribute (x:XElement) a =
+        x.Attribute(XName.Get a).Value
+        |> Double.TryParse |> snd
+    config.XPathSelectElements("//Geometry")
+    |> Seq.iter (fun e ->  let width = Math.Max(attribute e "width" |> int, 600)
+                           let height = Math.Max(attribute e "height" |> int, 450)
+                           let bounds = w.Display.PrimaryMonitor.Geometry
+                           let x = Math.Min(Math.Max(attribute e "x"|> int, 0), bounds.Width - width)
+                           let y = Math.Min(Math.Max(attribute e "y" |> int, 0), bounds.Height - height)
+                           w.DefaultHeight <- height
+                           w.DefaultWidth <- width
+                           w.Move(x, y))
+
+  let clearGeometry () =
+    let file, config = EnsureFile()
+    config.XPathSelectElements("//Geometry")
+    |> Seq.toList
+    |> Seq.iter (fun f -> f.Remove())
+    config.Save file
+#else
+  let internal geometry = "SOFTWARE\\AltCover\\Visualizer\\Geometry"
+  let internal recent = "SOFTWARE\\AltCover\\Visualizer\\Recently Opened"
+  let internal coveragepath = "SOFTWARE\\AltCover\\Visualizer"
+
+  let internal saveFolder (path : string) =
+    use key = Registry.CurrentUser.CreateSubKey(coveragepath)
+    key.SetValue("path", path)
+
+  let internal readFolder() =
+    use key = Registry.CurrentUser.CreateSubKey(coveragepath)
+    key.GetValue("path", System.IO.Directory.GetCurrentDirectory()) :?> string
+
+  let internal saveFont (font : string) =
+    use key = Registry.CurrentUser.CreateSubKey(coveragepath)
+    key.SetValue("font", font)
+
+  let internal readFont() =
+    use key = Registry.CurrentUser.CreateSubKey(coveragepath)
+    key.GetValue("font", "Monospace Normal 10") :?> string
+
+  let internal saveGeometry (w : Window) =
+    use key = Registry.CurrentUser.CreateSubKey(geometry)
+    let (x, y) = w.GetPosition()
+    key.SetValue("x", x)
+    key.SetValue("y", y)
+    let (width, height) = w.GetSize()
+    key.SetValue("width", width)
+    key.SetValue("height", height)
+
+  let internal readGeometry (w : Window) =
+    use key = Registry.CurrentUser.CreateSubKey(geometry)
+    let width = Math.Max(key.GetValue("width", 600) :?> int, 600)
+    let height = Math.Max(key.GetValue("height", 450) :?> int, 450)
+    let bounds = System.Windows.Forms.Screen.PrimaryScreen.WorkingArea
+    let x = Math.Min(Math.Max(key.GetValue("x", (bounds.Width - width) / 2) :?> int, 0), bounds.Width - width)
+    let y = Math.Min(Math.Max(key.GetValue("y", (bounds.Height - height) / 2) :?> int, 0), bounds.Height - height)
+    w.DefaultHeight <- height
+    w.DefaultWidth <- width
+    w.Move(x, y)
+
+  let internal readCoverageFiles (handler : Handler) =
+    use fileKey = Registry.CurrentUser.CreateSubKey(recent)
+    let KeyToValue (key : RegistryKey) (n : string) = key.GetValue(n, String.Empty)
+
+    let names =
+      fileKey.GetValueNames()
+      |> Array.filter (fun (s : string) -> s.Length = 1 && Char.IsDigit(s.Chars(0)))
+      |> Array.sortBy (fun s -> Int32.TryParse(s) |> snd)
+
+    let files =
+      names
+      |> Array.map (KeyToValue fileKey)
+      |> Seq.cast<string>
+      |> Seq.filter (fun n -> not (String.IsNullOrWhiteSpace(n)))
+      |> Seq.filter (fun n -> File.Exists(n))
+      |> Seq.toList
+
+    handler.coverageFiles <- files
+#endif
+
 module Gui =
   // --------------------------  General Purpose ---------------------------
   // Safe event dispatch => GUI update
@@ -162,68 +342,7 @@ module Gui =
     lazy (new Pixbuf(Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Visualizer.Blank_12x_16x.png")))
 
   // --------------------------  Persistence ---------------------------
-#if NETCOREAPP2_1
-#else
-  let private geometry = "SOFTWARE\\AltCover\\Visualizer\\Geometry"
-  let private recent = "SOFTWARE\\AltCover\\Visualizer\\Recently Opened"
-  let private coveragepath = "SOFTWARE\\AltCover\\Visualizer"
-  let mutable private save = true
 
-  let private saveFolder (path : string) =
-    use key = Registry.CurrentUser.CreateSubKey(coveragepath)
-    key.SetValue("path", path)
-
-  let private readFolder() =
-    use key = Registry.CurrentUser.CreateSubKey(coveragepath)
-    key.GetValue("path", System.IO.Directory.GetCurrentDirectory()) :?> string
-
-  let private saveFont (font : string) =
-    use key = Registry.CurrentUser.CreateSubKey(coveragepath)
-    key.SetValue("font", font)
-
-  let private readFont() =
-    use key = Registry.CurrentUser.CreateSubKey(coveragepath)
-    key.GetValue("font", "Monospace Normal 10") :?> string
-
-  let private saveGeometry (w : Window) =
-    use key = Registry.CurrentUser.CreateSubKey(geometry)
-    let (x, y) = w.GetPosition()
-    key.SetValue("x", x)
-    key.SetValue("y", y)
-    let (width, height) = w.GetSize()
-    key.SetValue("width", width)
-    key.SetValue("height", height)
-
-  let private readGeometry (w : Window) =
-    use key = Registry.CurrentUser.CreateSubKey(geometry)
-    let width = Math.Max(key.GetValue("width", 600) :?> int, 600)
-    let height = Math.Max(key.GetValue("height", 450) :?> int, 450)
-    let bounds = System.Windows.Forms.Screen.PrimaryScreen.WorkingArea
-    let x = Math.Min(Math.Max(key.GetValue("x", (bounds.Width - width) / 2) :?> int, 0), bounds.Width - width)
-    let y = Math.Min(Math.Max(key.GetValue("y", (bounds.Height - height) / 2) :?> int, 0), bounds.Height - height)
-    w.DefaultHeight <- height
-    w.DefaultWidth <- width
-    w.Move(x, y)
-
-  let private readCoverageFiles (handler : Handler) =
-    use fileKey = Registry.CurrentUser.CreateSubKey(recent)
-    let KeyToValue (key : RegistryKey) (n : string) = key.GetValue(n, String.Empty)
-
-    let names =
-      fileKey.GetValueNames()
-      |> Array.filter (fun (s : string) -> s.Length = 1 && Char.IsDigit(s.Chars(0)))
-      |> Array.sortBy (fun s -> Int32.TryParse(s) |> snd)
-
-    let files =
-      names
-      |> Array.map (KeyToValue fileKey)
-      |> Seq.cast<string>
-      |> Seq.filter (fun n -> not (String.IsNullOrWhiteSpace(n)))
-      |> Seq.filter (fun n -> File.Exists(n))
-      |> Seq.toList
-
-    handler.coverageFiles <- files
-#endif
 
   // -------------------------- Tree View ---------------------------
   let Mappings = new Dictionary<TreePath, XPathNavigator>()
@@ -433,7 +552,7 @@ module Gui =
   let private PrepareOpenFileDialog (handler : Handler)  =
     // TODO resource
     let openFileDialog = new FileChooserDialog("Open File...", handler.mainWindow, FileChooserAction.Open)
-    //openFileDialog.InitialDirectory <- readFolder()
+    //openFileDialog.InitialDirectory <- Persistence.readFolder()
     //openFileDialog.Filter <- GetResourceString("SelectXml")
     //openFileDialog.FilterIndex <- 0
     //openFileDialog.RestoreDirectory <- false
@@ -444,7 +563,7 @@ module Gui =
                                                     Justification = "'openFileDialog' is returned")>]
   let private PrepareOpenFileDialog() =
     let openFileDialog = new System.Windows.Forms.OpenFileDialog()
-    openFileDialog.InitialDirectory <- readFolder()
+    openFileDialog.InitialDirectory <- Persistence.readFolder()
     openFileDialog.Filter <- GetResourceString("SelectXml")
     openFileDialog.FilterIndex <- 0
     openFileDialog.RestoreDirectory <- false
@@ -472,7 +591,7 @@ module Gui =
       if ofd.ShowDialog() = System.Windows.Forms.DialogResult.OK then
         let file = new FileInfo(ofd.FileName)
         ofd.InitialDirectory <- file.Directory.FullName
-        if save then saveFolder ofd.InitialDirectory
+        if Persistence.save then Persistence.saveFolder ofd.InitialDirectory
         Some(file)
       else None
 #endif
@@ -493,10 +612,7 @@ module Gui =
       buffer.TagTable.Add(tag)
 
     let baseline = new TextTag("baseline")
-#if NETCOREAPP2_1
-#else
-    baseline.Font <- readFont()
-#endif
+    baseline.Font <- Persistence.readFont()
     baseline.Foreground <- "#c0c0c0"
     buff.TagTable.Add(baseline) |>  ignore
     [ (// Last declared type is last layer painted
@@ -723,11 +839,8 @@ module Gui =
     SetToolButtons handler
     PrepareAboutDialog handler
     PrepareTreeView handler
-#if NETCOREAPP2_1
-#else
-    readGeometry handler.mainWindow
-    readCoverageFiles handler
-#endif
+    Persistence.readGeometry handler.mainWindow
+    Persistence.readCoverageFiles handler
     populateMenu handler
     handler.separator1.Expand <- true
     handler.separator1.Homogeneous <- false
@@ -736,10 +849,7 @@ module Gui =
     handler.refreshButton.Sensitive <- false
     handler.exitButton.Clicked
     |> Event.add(fun _ ->
-#if NETCOREAPP2_1
-#else
-             if save then saveGeometry handler.mainWindow
-#endif
+             if Persistence.save then Persistence.saveGeometry handler.mainWindow
              Application.Quit())
     // Initialize graphics and begin
     handler.mainWindow.Icon <- new Pixbuf(Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Visualizer.VIcon.ico"))
@@ -756,14 +866,14 @@ module Gui =
 #else
     options.Add("-g", "Clear geometry",
                 (fun _ ->
-                let k1 = Registry.CurrentUser.CreateSubKey(geometry)
+                let k1 = Registry.CurrentUser.CreateSubKey(Persistence.geometry)
                 k1.Close()
-                save <- false
-                Registry.CurrentUser.DeleteSubKeyTree(geometry))).Add("-r", "Clear recent file list",
+                Persistence.save <- false
+                Registry.CurrentUser.DeleteSubKeyTree(Persistence.geometry))).Add("-r", "Clear recent file list",
                                                                       (fun _ ->
-                                                                      let k1 = Registry.CurrentUser.CreateSubKey(recent)
+                                                                      let k1 = Registry.CurrentUser.CreateSubKey(Persistence.recent)
                                                                       k1.Close()
-                                                                      Registry.CurrentUser.DeleteSubKeyTree(recent)))
+                                                                      Registry.CurrentUser.DeleteSubKeyTree(Persistence.recent)))
     |> ignore
 #endif
     options.Parse(arguments) |> ignore
@@ -775,10 +885,7 @@ module Gui =
     let handler = PrepareGui()
     handler.mainWindow.DeleteEvent
     |> Event.add (fun args ->
-#if NETCOREAPP2_1
-#else
-         if save then saveGeometry handler.mainWindow
-#endif
+         if Persistence.save then Persistence.saveGeometry handler.mainWindow
          Application.Quit()
          args.RetVal <- true)
     handler.showAboutButton.Clicked
@@ -828,7 +935,7 @@ module Gui =
       populateMenu h
 #if NETCOREAPP2_1
 #else
-      use fileKey = Registry.CurrentUser.CreateSubKey(recent)
+      use fileKey = Registry.CurrentUser.CreateSubKey(Persistence.recent)
       fileKey.GetValueNames() |> Seq.iter (RegDeleteKey fileKey)
       h.coverageFiles |> Seq.iteri (RegSetKey fileKey)
 #endif
@@ -902,11 +1009,8 @@ module Gui =
          let resources = new ResourceManager("AltCover.Visualizer.Resource", executingAssembly)
          let format = resources.GetString("SelectFont")
          let selector = new FontSelectionDialog(format)
-#if NETCOREAPP2_1
-#else
-         selector.SetFontName(readFont()) |> ignore
-         if Enum.ToObject(typeof<ResponseType>, selector.Run()) :?> ResponseType = ResponseType.Ok then saveFont (selector.FontName)
-#endif
+         selector.SetFontName(Persistence.readFont()) |> ignore
+         if Enum.ToObject(typeof<ResponseType>, selector.Run()) :?> ResponseType = ResponseType.Ok then Persistence.saveFont (selector.FontName)
          selector.Destroy())
     // Tree selection events and such
     handler.classStructureTree.RowActivated |> Event.add (OnRowActivated handler)
