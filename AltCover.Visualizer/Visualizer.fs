@@ -138,6 +138,9 @@ type internal Handler() =
 
     [<DefaultValue(true)>]
     val mutable justOpened : string
+
+    [<DefaultValue(true)>]
+    val mutable baseline : TextTag
   end
 
 module Persistence =
@@ -179,13 +182,13 @@ module Persistence =
     let inject = XElement(XName.Get "Font", font)
     match config.XPathSelectElements("//CoveragePath") |> Seq.toList with
     | [] -> (config.FirstNode :?> XElement).AddFirst(inject)
-    | x::_ -> inject |> x.Add
+    | x::_ -> inject |> x.AddAfterSelf
     config.Save file
 
   let internal readFont() =
     let _, config = EnsureFile()
     match config.XPathSelectElements("//Font") |> Seq.toList with
-    | [] -> "Monospace"  // Font defaults to 'Courier New', which is what we want
+    | [] -> "Monospace 10"
     | x::_ -> x.FirstNode.ToString()
 
   let internal saveFolder (path : string) =
@@ -662,6 +665,7 @@ module Gui =
       ("excluded", "#87CEEB", "#FFFFFF") // Sky Blue on white
      ]
     |> Seq.iter (fun x -> Tag buff x |> ignore)
+    baseline
 
   let private ParseIntegerAttribute (element : XPathNavigator) (attribute : string) =
     let text = element.GetAttribute(attribute, String.Empty)
@@ -904,7 +908,7 @@ module Gui =
     handler.separator1.Expand <- true
     handler.separator1.Homogeneous <- false
     handler.codeView.Editable <- false
-    InitializeTextBuffer handler.codeView.Buffer
+    handler.baseline <- InitializeTextBuffer handler.codeView.Buffer
     handler.refreshButton.Sensitive <- false
     handler.exitButton.Clicked
     |> Event.add(fun _ ->
@@ -1048,11 +1052,15 @@ module Gui =
 #if NETCOREAPP2_1
          let selector = new FontChooserDialog(format, handler.mainWindow)
          selector.Font <- Persistence.readFont()
-         if Enum.ToObject(typeof<ResponseType>, selector.Run()) :?> ResponseType = ResponseType.Ok then Persistence.saveFont (selector.Font)
+         if Enum.ToObject(typeof<ResponseType>, selector.Run()) :?> ResponseType = ResponseType.Ok then 
+             Persistence.saveFont (selector.Font)
+             handler.baseline.Font <- selector.Font
 #else
          let selector = new FontSelectionDialog(format)
          selector.SetFontName(Persistence.readFont()) |> ignore
-         if Enum.ToObject(typeof<ResponseType>, selector.Run()) :?> ResponseType = ResponseType.Ok then Persistence.saveFont (selector.FontName)
+         if Enum.ToObject(typeof<ResponseType>, selector.Run()) :?> ResponseType = ResponseType.Ok then 
+             Persistence.saveFont (selector.FontName)
+             handler.baseline.Font <- selector.FontName
 #endif
          selector.Destroy())
     // Tree selection events and such
