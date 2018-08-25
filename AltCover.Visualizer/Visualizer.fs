@@ -356,17 +356,12 @@ module Gui =
   // -------------------------- UI set-up  ---------------------------
   let private InitializeHandler() =
     let handler = new Handler()
-#if NETCOREAPP2_1
-    use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Visualizer.Visualizer.glade")
-    use str = new StreamReader(stream)
-    let xml = str.ReadToEnd().Replace("glade-interface", "interface").Replace("widget", "object")
     [ "mainWindow"; "fileOpenMenu"; "aboutVisualizer" ]
-    |> List.iter (fun name -> use r = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(xml));
-                              use b = new Builder(r, name)
+#if NETCOREAPP2_1
+    |> List.iter (fun name -> use b = new Builder(Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Visualizer.Visualizer3.glade"), name)
                               b.Autoconnect handler)
     handler.coverageFiles <- []
 #else
-    [ "mainWindow"; "fileOpenMenu"; "aboutVisualizer" ]
     |> List.iter (fun name -> let xml = new Glade.XML("AltCover.Visualizer.Visualizer.glade", name)
                               xml.Autoconnect(handler))
 #endif
