@@ -479,11 +479,11 @@ module Gui =
 #if NETCOREAPP2_1
     |> List.iter (fun name -> use b = new Builder(Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Visualizer.Visualizer3.glade"), name)
                               b.Autoconnect handler)
-    handler.coverageFiles <- []
 #else
     |> List.iter (fun name -> let xml = new Glade.XML("AltCover.Visualizer.Visualizer.glade", name)
                               xml.Autoconnect(handler))
 #endif
+    handler.coverageFiles <- []
     handler
 
   // Fill in the menu from the memory cache
@@ -574,7 +574,7 @@ module Gui =
   let private HandleOpenClicked (handler : Handler)
 #if NETCOREAPP2_1
                                 (openFileDialogFactory : Handler -> FileChooserDialog) =
-    use openFileDialog = openFileDialogFactory handler
+    let openFileDialog = openFileDialogFactory handler
 #else
                                 (openFileDialogFactory : unit -> System.Windows.Forms.OpenFileDialog) =
     use openFileDialog = openFileDialogFactory ()
@@ -582,18 +582,21 @@ module Gui =
 
 #if NETCOREAPP2_1
     let MakeSelection (ofd :FileChooserDialog) x =
-      if ofd.Run() = 0 then
+     try
+      if Enum.ToObject(typeof<ResponseType>, ofd.Run()) :?> ResponseType = ResponseType.Ok then
         let file = new FileInfo(ofd.CurrentFolderFile.Path)
-        Some file
-      else None
 #else
     let MakeSelection (ofd : System.Windows.Forms.OpenFileDialog) x =
       if ofd.ShowDialog() = System.Windows.Forms.DialogResult.OK then
         let file = new FileInfo(ofd.FileName)
         ofd.InitialDirectory <- file.Directory.FullName
         if Persistence.save then Persistence.saveFolder ofd.InitialDirectory
-        Some(file)
+#endif
+        Some file
       else None
+#if NETCOREAPP2_1
+     finally
+      ofd.Destroy()
 #endif
     handler.openButton.Clicked
     |> Event.map (MakeSelection openFileDialog)
