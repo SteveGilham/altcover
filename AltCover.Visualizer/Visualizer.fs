@@ -867,8 +867,17 @@ module Gui =
     h.mainWindow.AddAccelGroup(g)
 #if NETCOREAPP2_1
     h.toolbar1.ToolbarStyle <- ToolbarStyle.Both
-    let hue = Color(255uy, 255uy, 255uy)
-    h.toolbar1.ModifyBg (StateType.Normal, hue)
+    //let hue = Color(255uy, 255uy, 255uy)
+    //h.toolbar1.ModifyBg (StateType.Normal, hue)
+    let prov = new CssProvider()
+    let style = """
+* {
+    background-color: white;
+}
+"""
+    prov.LoadFromData(style) |> ignore
+    h.toolbar1.StyleContext.AddProvider (prov, UInt32.MaxValue)
+
 #endif
     [
         (h.openButton :> ToolButton, "openButton.Label")
