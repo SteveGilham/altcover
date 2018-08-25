@@ -7,6 +7,8 @@ Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.visualizer.core", 
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "AltCover.Visualizer", "AltCover.Visualizer.fsproj", "{D5BB91D8-E3EF-4F10-BBDB-752C5EBD689E}"
 EndProject
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.avalonia", "..\AltCover.Avalonia\altcover.avalonia.fsproj", "{E7E0AE00-85CE-461D-9BB1-F5E1F325AE46}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{D5BB91D8-E3EF-4F10-BBDB-752C5EBD689E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D5BB91D8-E3EF-4F10-BBDB-752C5EBD689E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D5BB91D8-E3EF-4F10-BBDB-752C5EBD689E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E7E0AE00-85CE-461D-9BB1-F5E1F325AE46}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E7E0AE00-85CE-461D-9BB1-F5E1F325AE46}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E7E0AE00-85CE-461D-9BB1-F5E1F325AE46}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E7E0AE00-85CE-461D-9BB1-F5E1F325AE46}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
