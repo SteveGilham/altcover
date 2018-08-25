@@ -29,6 +29,11 @@ open Mono.Options
 
 type internal Handler() =
   class
+#if NETCOREAPP2_1
+    [<Builder.Object; DefaultValue(true)>]
+    val mutable toolbar1 : Toolbar
+#endif
+
     [<
 #if NETCOREAPP2_1
       Builder.Object;
@@ -840,11 +845,11 @@ module Gui =
     tt.Add tag |> ignore
     let start = keytext.[1].IndexOf('_')
     buffer.Text <- keytext.[1].Replace("_", String.Empty)
-#if NETCOREAPP2_1
-    button.TooltipMarkup <- buffer.Text.Substring(0,start) + "<u>" + 
-                            buffer.Text.Substring(start, 1) +
-                            "</u>" + buffer.Text.Substring(start + 1)
-#endif
+////#if NETCOREAPP2_1
+////    button.TooltipMarkup <- buffer.Text.Substring(0,start) + "<u>" + 
+////                            buffer.Text.Substring(start, 1) +
+////                            "</u>" + buffer.Text.Substring(start + 1)
+////#endif
 
     buffer.ApplyTag("baseline", buffer.StartIter, buffer.EndIter)
     buffer.ApplyTag("underline",
@@ -860,6 +865,11 @@ module Gui =
   let private SetToolButtons (h:Handler) =
     let g = new AccelGroup()
     h.mainWindow.AddAccelGroup(g)
+#if NETCOREAPP2_1
+    h.toolbar1.ToolbarStyle <- ToolbarStyle.Both
+    let hue = Color(255uy, 255uy, 255uy)
+    h.toolbar1.ModifyBg (StateType.Normal, hue)
+#endif
     [
         (h.openButton :> ToolButton, "openButton.Label")
         (h.refreshButton, "refreshButton.Label")
