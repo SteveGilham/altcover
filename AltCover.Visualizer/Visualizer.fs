@@ -565,12 +565,26 @@ module Gui =
 
 #if NETCOREAPP2_1
   let private PrepareOpenFileDialog (handler : Handler)  =
-    // TODO resource
-    let openFileDialog = new FileChooserDialog("Open File...", handler.mainWindow, FileChooserAction.Open)
-    //openFileDialog.InitialDirectory <- Persistence.readFolder()
-    //openFileDialog.Filter <- GetResourceString("SelectXml")
-    //openFileDialog.FilterIndex <- 0
-    //openFileDialog.RestoreDirectory <- false
+    let openFileDialog = new FileChooserDialog( GetResourceString "OpenFile",
+                                                handler.mainWindow,
+                                                FileChooserAction.Open,
+                                                GetResourceString "OpenFile.Open",
+                                                ResponseType.Ok,
+                                                GetResourceString "OpenFile.Cancel",
+                                                ResponseType.Cancel,
+                                                null
+                                                )
+    openFileDialog.SetCurrentFolder(Persistence.readFolder()) |> ignore
+    let data = GetResourceString("SelectXml").Split([| '|' |])
+    let filter = new FileFilter()
+    filter.Name <- data.[0]
+    filter.AddPattern data.[1]
+    openFileDialog.AddFilter filter
+    
+    let filter = new FileFilter()
+    filter.Name <- data.[2]
+    filter.AddPattern data.[3]
+    openFileDialog.AddFilter filter
     openFileDialog
 
 #else
@@ -599,14 +613,14 @@ module Gui =
     let MakeSelection (ofd :FileChooserDialog) x =
      try
       if Enum.ToObject(typeof<ResponseType>, ofd.Run()) :?> ResponseType = ResponseType.Ok then
-        let file = new FileInfo(ofd.CurrentFolderFile.Path)
+        let file = new FileInfo(ofd.Filename)
 #else
     let MakeSelection (ofd : System.Windows.Forms.OpenFileDialog) x =
       if ofd.ShowDialog() = System.Windows.Forms.DialogResult.OK then
         let file = new FileInfo(ofd.FileName)
         ofd.InitialDirectory <- file.Directory.FullName
-        if Persistence.save then Persistence.saveFolder ofd.InitialDirectory
 #endif
+        if Persistence.save then Persistence.saveFolder file.Directory.FullName
         Some file
       else None
 #if NETCOREAPP2_1
