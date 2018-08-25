@@ -311,6 +311,21 @@ module Persistence =
       |> Seq.toList
 
     handler.coverageFiles <- files
+
+  let saveCoverageFiles files =
+    // Update the recent files menu and registry store from memory cache
+    // with new most recent file
+    let RegDeleteKey (key : RegistryKey) (name : string) = key.DeleteValue(name)
+    let RegSetKey (key : RegistryKey) (index : int) (name : string) = key.SetValue(index.ToString(), name)
+    use fileKey = Registry.CurrentUser.CreateSubKey(recent)
+    fileKey.GetValueNames() |> Seq.iter (RegDeleteKey fileKey)
+    files |> Seq.iteri (RegSetKey fileKey)
+
+  let clearGeometry () =
+    do
+      use k1 = Registry.CurrentUser.CreateSubKey(geometry)
+      ()
+    Registry.CurrentUser.DeleteSubKeyTree(geometry)
 #endif
 
 module Gui =
@@ -864,21 +879,11 @@ module Gui =
     handler
 
   let ParseCommandLine arguments =
-    let options = new OptionSet()
-#if NETCOREAPP2_1
-#else
-    options.Add("-g", "Clear geometry",
-                (fun _ ->
-                let k1 = Registry.CurrentUser.CreateSubKey(Persistence.geometry)
-                k1.Close()
-                Persistence.save <- false
-                Registry.CurrentUser.DeleteSubKeyTree(Persistence.geometry))).Add("-r", "Clear recent file list",
-                                                                      (fun _ ->
-                                                                      let k1 = Registry.CurrentUser.CreateSubKey(Persistence.recent)
-                                                                      k1.Close()
-                                                                      Registry.CurrentUser.DeleteSubKeyTree(Persistence.recent)))
-    |> ignore
-#endif
+    let options =
+        [ ("g|geometry", (fun _ ->  Persistence.clearGeometry ()
+                                    Persistence.save <- false))
+          ("r|recentFiles",  (fun _ -> Persistence.saveCoverageFiles [])) ]
+          |> List.fold (fun (o:OptionSet) (p, a) -> o.Add(p, GetResourceString p, new System.Action<string>(a))) (OptionSet())
     options.Parse(arguments) |> ignore
 
   [<EntryPoint; STAThread>]
@@ -908,14 +913,6 @@ module Gui =
     // The sum of all these events -- we have explicitly selected a file
     let fileSelection = select |> Seq.fold Event.merge click
 
-#if NETCOREAPP2_1
-#else
-    // Update the recent files menu and registry store from memory cache
-    // with new most recent file
-    let RegDeleteKey (key : RegistryKey) (name : string) = key.DeleteValue(name)
-    let RegSetKey (key : RegistryKey) (index : int) (name : string) = key.SetValue(index.ToString(), name)
-#endif
-
     let updateMRU (h : Handler) path add =
       let casematch =
         match System.Environment.GetEnvironmentVariable("OS") with
@@ -936,12 +933,8 @@ module Gui =
                               | _ -> n.ToUpperInvariant())
                          |> Seq.toList
       populateMenu h
-#if NETCOREAPP2_1
-#else
-      use fileKey = Registry.CurrentUser.CreateSubKey(Persistence.recent)
-      fileKey.GetValueNames() |> Seq.iter (RegDeleteKey fileKey)
-      h.coverageFiles |> Seq.iteri (RegSetKey fileKey)
-#endif
+      Persistence.saveCoverageFiles h.coverageFiles
+      handler.refreshButton.Sensitive <- h.coverageFiles.Any()
 
     // Now mix in selecting the file currently loaded
     let refresh = handler.refreshButton.Clicked |> Event.map (fun _ -> 0)

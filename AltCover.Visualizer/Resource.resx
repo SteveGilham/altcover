@@ -190,4 +190,10 @@ https://docs.microsoft.com/en-us/visualstudio/designers/the-visual-studio-image-
     <value>Method {0} 
 has no corresponding source location</value>
   </data>
+  <data name="g|geometry" xml:space="preserve">
+    <value>Clear geometry</value>
+  </data>
+  <data name="r|recentFiles" xml:space="preserve">
+    <value>Clear recent file list</value>
+  </data>
 </root>
