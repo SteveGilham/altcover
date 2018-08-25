@@ -825,6 +825,9 @@ module Gui =
   let private AddLabelWidget g (button:ToolButton, resource) =
     let keytext = (resource |> GetResourceString).Split('\u0000' )
 
+    let key = Keyval.FromName(keytext.[0].Substring(0, 1)) |> int |> enum<Gdk.Key>
+    button.AddAccelerator("clicked", g, new AccelKey(key, ModifierType.Mod1Mask, AccelFlags.Visible))
+
     let label = new TextView()
     let buffer = label.Buffer
     let tag0 = new TextTag("baseline")
@@ -837,6 +840,10 @@ module Gui =
     tt.Add tag |> ignore
     let start = keytext.[1].IndexOf('_')
     buffer.Text <- keytext.[1].Replace("_", String.Empty)
+#if NETCOREAPP2_1
+    button.TooltipText <- buffer.Text//.Substring(0,start) + "<u>" + buffer.Text.Substring(start, 1) +
+                                     //                      "</u>" + buffer.Text.Substring(start + 1)
+#endif
 
     buffer.ApplyTag("baseline", buffer.StartIter, buffer.EndIter)
     buffer.ApplyTag("underline",
@@ -844,9 +851,8 @@ module Gui =
                     buffer.GetIterAtLineOffset(0, start + 1))
     label.CursorVisible <- false
     label.Editable <- false
-    let key = Keyval.FromName(keytext.[0].Substring(0, 1)) |> int |> enum<Gdk.Key>
+    button.Label <- null
     button.LabelWidget <- label
-    button.AddAccelerator("clicked", g, new AccelKey(key, ModifierType.Mod1Mask, AccelFlags.Visible))
 
   [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:DisposeObjectsBeforeLosingScope",
                                                     Justification = "IDisposables are added to other widgets")>]
