@@ -26,6 +26,7 @@
     <Compile Include="..\_Generated\VisibleToTest.fs" Link="VisibleToTest.fs" />
     <Compile Include="..\_Generated\AssemblyVersion.fs" Link="AssemblyVersion.fs" />
     <Compile Include="..\AltCover\Augment.fs" Link="Augment.fs" />
+    <None Include="Visualizer.glade" />
     <EmbeddedResource Include="Visualizer3.glade" />
     <EmbeddedResource Include="Assembly_6212.png" />
     <EmbeddedResource Include="class_16xLG.png" />
