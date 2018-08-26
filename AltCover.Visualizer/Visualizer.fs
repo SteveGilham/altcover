@@ -143,7 +143,7 @@ type internal Handler() =
     val mutable baseline : TextTag
 
     [<DefaultValue(true)>]
-    val mutable codeLine : int
+    val mutable activeRow : int
   end
 
 module Persistence =
@@ -369,7 +369,6 @@ module Gui =
 
   // --------------------------  Persistence ---------------------------
 
-
   // -------------------------- Tree View ---------------------------
   let Mappings = new Dictionary<TreePath, XPathNavigator>()
 
@@ -591,7 +590,7 @@ module Gui =
     filter.Name <- data.[0]
     filter.AddPattern data.[1]
     openFileDialog.AddFilter filter
-    
+
     let filter = new FileFilter()
     filter.Name <- data.[2]
     filter.AddPattern data.[3]
@@ -627,13 +626,15 @@ module Gui =
      try
       if Enum.ToObject(typeof<ResponseType>, ofd.Run()) :?> ResponseType = ResponseType.Ok then
         let file = new FileInfo(ofd.Filename)
+        let dir = file.Directory.FullName
 #else
     let MakeSelection (ofd : System.Windows.Forms.OpenFileDialog) x =
       if ofd.ShowDialog() = System.Windows.Forms.DialogResult.OK then
         let file = new FileInfo(ofd.FileName)
-        ofd.InitialDirectory <- file.Directory.FullName
+        let dir = file.Directory.FullName
+        ofd.InitialDirectory <- dir
 #endif
-        if Persistence.save then Persistence.saveFolder file.Directory.FullName
+        if Persistence.save then Persistence.saveFolder dir
         Some file
       else None
 #if NETCOREAPP2_1
@@ -797,8 +798,8 @@ module Gui =
 
   let internal ScrollToRow (h:Handler) _ =
     let buff = h.codeView.Buffer
-    if buff |> isNull |> not && h.codeLine > 0 then
-        let iter = buff.GetIterAtLine(h.codeLine - 1)
+    if buff |> isNull |> not && h.activeRow > 0 then
+        let iter = buff.GetIterAtLine(h.activeRow - 1)
         let mark = buff.CreateMark("line", iter, false)
         h.codeView.ScrollToMark(mark, 0.0, true, 0.0, 0.3)
         buff.DeleteMark("line")
@@ -836,7 +837,7 @@ module Gui =
               root.MoveToRoot()
               MarkBranches root handler.codeView filename
               MarkCoverage root buff filename
-              handler.codeLine <- Int32.TryParse(line) |> snd
+              handler.activeRow <- Int32.TryParse(line) |> snd
               handler.codeView.CursorVisible <- false
               handler.codeView.QueueDraw()
 #if NETCOREAPP2_1
@@ -944,7 +945,7 @@ module Gui =
     ParseCommandLine arguments
     Application.Init()
     let handler = PrepareGui()
-#if NETCOREAPP2_1    
+#if NETCOREAPP2_1
     handler.codeView.Drawn
     |> Event.add (ScrollToRow handler)
 #endif
@@ -1064,16 +1065,16 @@ module Gui =
 #if NETCOREAPP2_1
          let selector = new FontChooserDialog(format, handler.mainWindow)
          selector.Font <- Persistence.readFont()
-         if Enum.ToObject(typeof<ResponseType>, selector.Run()) :?> ResponseType = ResponseType.Ok then 
-             Persistence.saveFont (selector.Font)
-             handler.baseline.Font <- selector.Font
+         if Enum.ToObject(typeof<ResponseType>, selector.Run()) :?> ResponseType = ResponseType.Ok then
+             let font = selector.Font
 #else
          let selector = new FontSelectionDialog(format)
          selector.SetFontName(Persistence.readFont()) |> ignore
-         if Enum.ToObject(typeof<ResponseType>, selector.Run()) :?> ResponseType = ResponseType.Ok then 
-             Persistence.saveFont (selector.FontName)
-             handler.baseline.Font <- selector.FontName
+         if Enum.ToObject(typeof<ResponseType>, selector.Run()) :?> ResponseType = ResponseType.Ok then
+             let font = selector.FontName
 #endif
+             Persistence.saveFont (font)
+             handler.baseline.Font <- font
              handler.codeView.QueueDraw()
          selector.Destroy())
     // Tree selection events and such
