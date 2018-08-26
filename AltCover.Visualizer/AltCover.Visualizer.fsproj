@@ -7,7 +7,8 @@
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{d5bb91d8-e3ef-4f10-bbdb-752c5ebd689e}</ProjectGuid>
-    <OutputType>WinExe</OutputType>
+    <OutputType Condition="Exists('$(SolutionDir)Build\Infrastructure.snk')">WinExe</OutputType>
+    <OutputType Condition="!Exists('$(SolutionDir)Build\Infrastructure.snk')">Exe</OutputType>
     <RootNamespace>AltCover.Visualizer</RootNamespace>
     <AssemblyName>AltCover.Visualizer</AssemblyName>
     <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
@@ -33,10 +34,11 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <WarningsAsErrors>
     </WarningsAsErrors>
-    <OtherFlags>--keyfile:$(SolutionDir)Build\Infrastructure.snk</OtherFlags>
+    <OtherFlags Condition="Exists('$(SolutionDir)Build\Infrastructure.snk')">--keyfile:$(SolutionDir)Build\Infrastructure.snk</OtherFlags>
     <DefineConstants>TRACE;DEBUG;CODE_ANALYSIS;GUI</DefineConstants>
     <WarningLevel>4</WarningLevel>
-    <StartArguments>-g -r</StartArguments>
+    <StartArguments>
+    </StartArguments>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType Condition="'$(OS)' == 'Windows_NT'">pdbonly</DebugType>
@@ -48,7 +50,7 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <WarningsAsErrors>
     </WarningsAsErrors>
-    <OtherFlags>--keyfile:$(SolutionDir)Build\Infrastructure.snk</OtherFlags>
+    <OtherFlags Condition="Exists('$(SolutionDir)Build\Infrastructure.snk')">--keyfile:$(SolutionDir)Build\Infrastructure.snk</OtherFlags>
     <DefineConstants>TRACE;GUI</DefineConstants>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -66,6 +68,7 @@
   </Choose>
   <Import Project="$(FSharpTargetsPath)" Condition="Exists('$(FSharpTargetsPath)')" />
   <ItemGroup>
+    <None Include="packages.config" />
     <Compile Include="..\_Generated\VisibleToTest.fs">
       <Link>VisibleToTest.fs</Link>
     </Compile>
@@ -85,14 +88,6 @@
     <EmbeddedResource Include="Branch_12x_16x_red.png" />
     <EmbeddedResource Include="Branch_12x_16x_ylw.png" />
     <EmbeddedResource Include="Branch_12x_16x_grn.png" />
-    <Compile Include="..\AltCover\Augment.fs">
-      <Link>Augment.fs</Link>
-    </Compile>
-    <Compile Include="CoverageFile.fs" />
-    <Compile Include="GuiCommon.fs" />
-    <Compile Include="AssemblyInfo.fs" />
-    <Compile Include="Visualizer.fs" />
-    <None Include="packages.config" />
     <EmbeddedResource Include="VIcon.ico" />
     <EmbeddedResource Include="..\AltCover.PowerShell\xsd\NCover.xsd">
       <Link>NCover.xsd</Link>
@@ -103,6 +98,13 @@
     <EmbeddedResource Include="..\AltCover.PowerShell\xsl\OpenCoverToNCoverEx.xsl">
       <Link>OpenCoverToNCoverEx.xsl</Link>
     </EmbeddedResource>
+    <Compile Include="..\AltCover\Augment.fs">
+      <Link>Augment.fs</Link>
+    </Compile>
+    <Compile Include="CoverageFile.fs" />
+    <Compile Include="GuiCommon.fs" />
+    <Compile Include="AssemblyInfo.fs" />
+    <Compile Include="Visualizer.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="atk-sharp">

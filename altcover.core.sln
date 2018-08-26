@@ -2,55 +2,57 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27130.2026
 MinimumVisualStudioVersion = 15.0.26124.0
-Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.core", "AltCover/altcover.core.fsproj", "{26C01B27-9A3E-4460-BB43-5383C8E818FB}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.core", "AltCover\altcover.core.fsproj", "{26C01B27-9A3E-4460-BB43-5383C8E818FB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "altcover.csapi.core", "AltCover.CSApi/altcover.csapi.core.csproj", "{1C898811-75C4-419C-BE29-A4DD2430FBB3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "altcover.csapi.core", "AltCover.CSApi\altcover.csapi.core.csproj", "{1C898811-75C4-419C-BE29-A4DD2430FBB3}"
 EndProject
-Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.recorder.core", "AltCover.Recorder/altcover.recorder.core.fsproj", "{7054B26A-95AA-4194-AAC9-E5E430695FBA}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.recorder.core", "AltCover.Recorder\altcover.recorder.core.fsproj", "{7054B26A-95AA-4194-AAC9-E5E430695FBA}"
 EndProject
-Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.powershell.core", "AltCover.PowerShell/altcover.powershell.core.fsproj", "{208B8925-5626-4E5D-A00B-6A993D850524}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.powershell.core", "AltCover.PowerShell\altcover.powershell.core.fsproj", "{208B8925-5626-4E5D-A00B-6A993D850524}"
 EndProject
-Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "dotnet-altcover", "AltCover.Tool/dotnet-altcover.fsproj", "{B797FCB8-5D00-48EA-916E-587E8751B8A4}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "dotnet-altcover", "AltCover.Tool\dotnet-altcover.fsproj", "{B797FCB8-5D00-48EA-916E-587E8751B8A4}"
 EndProject
-Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "global-altcover", "AltCover.GlobalTool/global-altcover.fsproj", "{C6408656-6016-4F72-8897-63AA3FF4F3C0}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "global-altcover", "AltCover.GlobalTool\global-altcover.fsproj", "{C6408656-6016-4F72-8897-63AA3FF4F3C0}"
 EndProject
-Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.avalonia", "AltCover.Avalonia/altcover.avalonia.fsproj", "{8529FB2A-D065-4A36-A997-21121177A8EA}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.avalonia", "AltCover.Avalonia\altcover.avalonia.fsproj", "{8529FB2A-D065-4A36-A997-21121177A8EA}"
 EndProject
-Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.shadow.core", "AltCover.Shadow/altcover.shadow.core.fsproj", "{1D249F47-8780-4431-8E95-2C3786607B63}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.fsapi.core", "AltCover.FSApi\altcover.fsapi.core.fsproj", "{62218EAC-A2E9-462B-9DF6-96C79629CE63}"
 EndProject
-Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.tests.core", "Tests/altcover.tests.core.fsproj", "{440A79BE-7038-44EA-B683-3ED8EFAEC39C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "altcover.cake.core", "AltCover.Cake\altcover.cake.core.csproj", "{9BBD2D49-C8BD-4213-A97C-F5F3191ACCBD}"
 EndProject
-Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.x.tests.core", "XTests/altcover.x.tests.core.fsproj", "{6EC68908-866F-453F-B38E-30C76A438CBC}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.fake.core", "AltCover.Fake\altcover.fake.core.fsproj", "{E59E33B2-F14C-498A-823C-5E573926EF30}"
 EndProject
-Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.adapter.core", "Shadow.Adapter/altcover.adapter.core.fsproj", "{DDF0D5A2-370B-4827-B5D3-2A258E6677F1}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.visualizer.core", "AltCover.Visualizer\altcover.visualizer.core.fsproj", "{9CC13759-B7AC-4FA4-969A-019EC65F9E1C}"
 EndProject
-Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.recorder.tests.core", "Shadow.Tests/altcover.recorder.tests.core.fsproj", "{CE0C9532-2D52-4225-8E23-98E70A3F2326}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.shadow.core", "AltCover.Shadow\altcover.shadow.core.fsproj", "{1D249F47-8780-4431-8E95-2C3786607B63}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "sample1.core", "Sample1/sample1.core.csproj", "{B2591DB3-481E-4A79-A849-AD6C6547BA7F}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.tests.core", "Tests\altcover.tests.core.fsproj", "{440A79BE-7038-44EA-B683-3ED8EFAEC39C}"
 EndProject
-Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "sample2.core", "Sample2/sample2.core.fsproj", "{FB3B5250-DF9C-478B-BAD4-1D28D89D437A}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.x.tests.core", "XTests\altcover.x.tests.core.fsproj", "{6EC68908-866F-453F-B38E-30C76A438CBC}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "sample3.core", "Sample3/sample3.core.csproj", "{D4FE2C23-980A-46B0-8ECC-DD27FDF11C28}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.adapter.core", "Shadow.Adapter\altcover.adapter.core.fsproj", "{DDF0D5A2-370B-4827-B5D3-2A258E6677F1}"
 EndProject
-Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "sample4.core", "Sample4/sample4.core.fsproj", "{358265A1-C7B3-48E8-9707-2F344ECAAE9F}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.recorder.tests.core", "Shadow.Tests\altcover.recorder.tests.core.fsproj", "{CE0C9532-2D52-4225-8E23-98E70A3F2326}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "sample5.core", "Sample5/sample5.core.csproj", "{8510ED92-510C-42D7-9E4D-85810B4DE86B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "sample1.core", "Sample1\sample1.core.csproj", "{B2591DB3-481E-4A79-A849-AD6C6547BA7F}"
 EndProject
-Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "sample6.core", "Sample6/sample6.core.fsproj", "{54F49C6B-AF20-42E4-95A0-386296CB9125}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "sample2.core", "Sample2\sample2.core.fsproj", "{FB3B5250-DF9C-478B-BAD4-1D28D89D437A}"
 EndProject
-Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "sample7.core", "Sample7/sample7.core.fsproj", "{8E0DC7BC-C322-466C-8409-B69A12062AB6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "sample3.core", "Sample3\sample3.core.csproj", "{D4FE2C23-980A-46B0-8ECC-DD27FDF11C28}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "sample8.core", "Sample8/sample8.core.csproj", "{77F61121-9491-4D63-901F-AD0145491916}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "sample4.core", "Sample4\sample4.core.fsproj", "{358265A1-C7B3-48E8-9707-2F344ECAAE9F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "sample10.core", "Sample10/sample10.core.csproj", "{6D52273D-097D-4C30-82D1-5F276FAB4187}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "sample5.core", "Sample5\sample5.core.csproj", "{8510ED92-510C-42D7-9E4D-85810B4DE86B}"
+EndProject
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "sample6.core", "Sample6\sample6.core.fsproj", "{54F49C6B-AF20-42E4-95A0-386296CB9125}"
+EndProject
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "sample7.core", "Sample7\sample7.core.fsproj", "{8E0DC7BC-C322-466C-8409-B69A12062AB6}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "sample8.core", "Sample8\sample8.core.csproj", "{77F61121-9491-4D63-901F-AD0145491916}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "sample10.core", "Sample10\sample10.core.csproj", "{6D52273D-097D-4C30-82D1-5F276FAB4187}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{2837CE07-B91F-4B8A-89B5-E7BE39A8F340}"
-EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "altcover.fsapi.core", "AltCover.FSApi/altcover.fsapi.core.fsproj", "{62218EAC-A2E9-462B-9DF6-96C79629CE63}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "altcover.cake.core", "AltCover.Cake/altcover.cake.core.csproj", "{9BBD2D49-C8BD-4213-A97C-F5F3191ACCBD}"
-EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "altcover.fake.core", "AltCover.Fake/altcover.fake.core.fsproj", "{E59E33B2-F14C-498A-823C-5E573926EF30}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build Items", "Build Items", "{97367D43-64EF-48E1-B6B4-D951C783E6E1}"
 	ProjectSection(SolutionItems) = preProject
@@ -241,6 +243,14 @@ Global
 		{6D52273D-097D-4C30-82D1-5F276FAB4187}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6D52273D-097D-4C30-82D1-5F276FAB4187}.Release|x64.ActiveCfg = Release|Any CPU
 		{6D52273D-097D-4C30-82D1-5F276FAB4187}.Release|x86.ActiveCfg = Release|Any CPU
+		{62218EAC-A2E9-462B-9DF6-96C79629CE63}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{62218EAC-A2E9-462B-9DF6-96C79629CE63}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{62218EAC-A2E9-462B-9DF6-96C79629CE63}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{62218EAC-A2E9-462B-9DF6-96C79629CE63}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{62218EAC-A2E9-462B-9DF6-96C79629CE63}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{62218EAC-A2E9-462B-9DF6-96C79629CE63}.Release|Any CPU.Build.0 = Release|Any CPU
+		{62218EAC-A2E9-462B-9DF6-96C79629CE63}.Release|x64.ActiveCfg = Release|Any CPU
+		{62218EAC-A2E9-462B-9DF6-96C79629CE63}.Release|x86.ActiveCfg = Release|Any CPU
 		{9BBD2D49-C8BD-4213-A97C-F5F3191ACCBD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{9BBD2D49-C8BD-4213-A97C-F5F3191ACCBD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9BBD2D49-C8BD-4213-A97C-F5F3191ACCBD}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -257,14 +267,18 @@ Global
 		{E59E33B2-F14C-498A-823C-5E573926EF30}.Release|Any CPU.Build.0 = Release|Any CPU
 		{E59E33B2-F14C-498A-823C-5E573926EF30}.Release|x64.ActiveCfg = Release|Any CPU
 		{E59E33B2-F14C-498A-823C-5E573926EF30}.Release|x86.ActiveCfg = Release|Any CPU
-		{62218EAC-A2E9-462B-9DF6-96C79629CE63}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{62218EAC-A2E9-462B-9DF6-96C79629CE63}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{62218EAC-A2E9-462B-9DF6-96C79629CE63}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{62218EAC-A2E9-462B-9DF6-96C79629CE63}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{62218EAC-A2E9-462B-9DF6-96C79629CE63}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{62218EAC-A2E9-462B-9DF6-96C79629CE63}.Release|Any CPU.Build.0 = Release|Any CPU
-		{62218EAC-A2E9-462B-9DF6-96C79629CE63}.Release|x86.ActiveCfg = Release|Any CPU
-		{62218EAC-A2E9-462B-9DF6-96C79629CE63}.Release|x64.ActiveCfg = Release|Any CPU
+		{9CC13759-B7AC-4FA4-969A-019EC65F9E1C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9CC13759-B7AC-4FA4-969A-019EC65F9E1C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9CC13759-B7AC-4FA4-969A-019EC65F9E1C}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{9CC13759-B7AC-4FA4-969A-019EC65F9E1C}.Debug|x64.Build.0 = Debug|Any CPU
+		{9CC13759-B7AC-4FA4-969A-019EC65F9E1C}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{9CC13759-B7AC-4FA4-969A-019EC65F9E1C}.Debug|x86.Build.0 = Debug|Any CPU
+		{9CC13759-B7AC-4FA4-969A-019EC65F9E1C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9CC13759-B7AC-4FA4-969A-019EC65F9E1C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9CC13759-B7AC-4FA4-969A-019EC65F9E1C}.Release|x64.ActiveCfg = Release|Any CPU
+		{9CC13759-B7AC-4FA4-969A-019EC65F9E1C}.Release|x64.Build.0 = Release|Any CPU
+		{9CC13759-B7AC-4FA4-969A-019EC65F9E1C}.Release|x86.ActiveCfg = Release|Any CPU
+		{9CC13759-B7AC-4FA4-969A-019EC65F9E1C}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

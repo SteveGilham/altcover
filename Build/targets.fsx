@@ -1355,7 +1355,7 @@ _Target "Packaging" (fun _ ->
     let cake = Path.getFullName "_Binaries/AltCover.Cake/Release+AnyCPU/AltCover.Cake.dll"
     let vis = Path.getFullName "_Binaries/AltCover.Visualizer/Release+AnyCPU/AltCover.Visualizer.exe"
     let packable = Path.getFullName "./_Binaries/README.html"
-    let resources = DirectoryInfo.getMatchingFilesRecursive "AltCover.resources.dll" (DirectoryInfo.ofPath (Path.getFullName "_Binaries/AltCover/Release+AnyCPU"))
+    let resources = DirectoryInfo.getMatchingFilesRecursive "*.resources.dll" (DirectoryInfo.ofPath (Path.getFullName "_Binaries/AltCover/Release+AnyCPU"))
     let resources2 = DirectoryInfo.getMatchingFilesRecursive "AltCover.Visualizer.resources.dll" (DirectoryInfo.ofPath (Path.getFullName "_Binaries/AltCover.Visualizer/Release+AnyCPU"))
 
     let applicationFiles = if File.Exists AltCover then
@@ -1450,6 +1450,15 @@ _Target "Packaging" (fun _ ->
                        |> Seq.map (fun x -> (x, Some ("tools/netcoreapp2.1/any/" + Path.GetFileName x), None))
                        |> Seq.toList
 
+    let publishV = (Path.getFullName "./_Publish.visualizer").Length
+    let vizFiles where = (!! "./_Publish.visualizer/**/*.*")
+                          |> Seq.map (fun x -> (x, Some (where + Path.GetDirectoryName(x).Substring(publishV).Replace("\\","/")), None))
+                          |> Seq.toList
+
+    let auxVFiles = (!! "./_Binaries/AltCover.Visualizer/Release+AnyCPU/netcoreapp2.1/*.xml")
+                        |> Seq.map (fun x -> (x, Some ("tools/netcoreapp2.1/any/" + Path.GetFileName x), None))
+                        |> Seq.toList
+
     let auxFiles = (!! "./_Binaries/global-altcover/Release+AnyCPU/netcoreapp2.1/*.xml")
                        |> Seq.map (fun x -> (x, Some ("tools/netcoreapp2.1/any/" + Path.GetFileName x), None))
                        |> Seq.toList
@@ -1461,6 +1470,7 @@ _Target "Packaging" (fun _ ->
                       resourceFiles "tools/net45/"
                       netcoreFiles "tools/netcoreapp2.0/"
                       poshFiles "tools/netcoreapp2.0/"
+                      vizFiles "tools/netcoreapp2.1"
                       otherFiles],
          "_Packaging",
          "./Build/AltCover.nuspec",
@@ -1473,6 +1483,7 @@ _Target "Packaging" (fun _ ->
                       cakeFiles "lib/netstandard2.0/"
                       fakeFiles "lib/netstandard2.0/"
                       poshFiles "lib/netstandard2.0/"
+                      vizFiles "tools/netcoreapp2.1"
                       otherFilesApi
                       ],
          "_Packaging.api",
@@ -1496,6 +1507,12 @@ _Target "Packaging" (fun _ ->
          "_Packaging.global",
          "./_Generated/altcover.global.nuspec",
          "altcover.global"
+        )
+        (List.concat [vizFiles "tools/netcoreapp2.1/any/"
+                      auxVFiles],
+         "_Packaging.visualizer",
+         "./_Generated/altcover.visualizer.nuspec",
+         "altcover.visualizer"
         )
     ]
     |> List.iter (fun (files, output, nuspec, project) ->
@@ -1558,11 +1575,16 @@ _Target "PrepareDotNetBuild" (fun _ ->
                                                   Configuration = DotNet.BuildConfiguration.Release
                                                   Framework = Some "netstandard2.0"})
                                                   netcoresource
+    DotNet.publish (fun options -> { options with OutputPath = Some (publish + ".visualizer")
+                                                  Configuration = DotNet.BuildConfiguration.Release
+                                                  Framework = Some "netcoreapp2.1"})
+                                                  (Path.getFullName "./AltCover.Visualizer/altcover.visualizer.core.fsproj")
 
     // dotnet tooling mods
     [
         ("DotnetCliTool", "./_Generated/altcover.dotnet.nuspec", "AltCover (dotnet CLI tool install)")
         ("DotnetTool", "./_Generated/altcover.global.nuspec", "AltCover (dotnet global tool install)")
+        ("DotnetTool", "./_Generated/altcover.visualizer.nuspec", "AltCover.Visualizer (dotnet global tool install)")
         (String.Empty, "./_Generated/altcover.api.nuspec", "AltCover (API install)")
     ]
     |> List.iter (fun (ptype, path, caption) ->

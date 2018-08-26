@@ -190,4 +190,19 @@ https://docs.microsoft.com/en-us/visualstudio/designers/the-visual-studio-image-
     <value>Method {0} 
 has no corresponding source location</value>
   </data>
+  <data name="g|geometry" xml:space="preserve">
+    <value>Clear geometry</value>
+  </data>
+  <data name="r|recentFiles" xml:space="preserve">
+    <value>Clear recent file list</value>
+  </data>
+  <data name="OpenFile" xml:space="preserve">
+    <value>Select coverage file</value>
+  </data>
+  <data name="OpenFile.Open" xml:space="preserve">
+    <value>_Open</value>
+  </data>
+  <data name="OpenFile.Cancel" xml:space="preserve">
+    <value>_Cancel</value>
+  </data>
 </root>

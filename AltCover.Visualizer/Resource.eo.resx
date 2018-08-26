@@ -190,4 +190,19 @@ raportas al ausente fonta dosiero
     <value>Metodo {0}
 havas neniun respondan fontan lokon</value>
   </data>
+  <data name="g|geometry" xml:space="preserve">
+    <value>Klara geometrio</value>
+  </data>
+  <data name="r|recentFiles" xml:space="preserve">
+    <value>Klara lastatempa listo</value>
+  </data>
+  <data name="OpenFile" xml:space="preserve">
+    <value>Elektu kovra dosiero</value>
+  </data>
+  <data name="OpenFile.Open" xml:space="preserve">
+    <value>_Malferma</value>
+  </data>
+  <data name="OpenFile.Cancel" xml:space="preserve">
+    <value>_Nuligi</value>
+  </data>
 </root>

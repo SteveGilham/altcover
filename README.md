@@ -13,11 +13,13 @@ For Mono, .net framework and .net core, except as noted
 
 * `AltCover`, a command-line tool for recording code coverage (including dotnet and global tool versions)
 * MSBuild tasks to drive the tool, including `dotnet test` integration
-* **NEW** An API for the above functionality, with Fake and Cake integration
+* An API for the above functionality, with Fake and Cake integration
 * A PowerShell module (not mono) containing a cmdlet that drives the tool, and other cmdlets for manipulating coverage reports
-* A coverage visualizer tool (.net framework and mono only, so far; for .net framework, needs GTK# v2.12.xx installed separately -- see https://www.mono-project.com/download/stable/#download-win )
-
-![Visualizer screenshot](./AltCover.Visualizer/Screenshot.png)
+* A coverage visualizer tool 
+  * For .net framework and mono (for .net framework, needs GTK# v2.12.xx installed separately -- see https://www.mono-project.com/download/stable/#download-win )
+     ![Visualizer screenshot](./AltCover.Visualizer/Screenshot.png)
+  * **NEW** For .net core (needs GTK+3 installed separately -- for Windows, see e.g. https://github.com/GtkSharp/GtkSharp/wiki/Installing-Gtk-on-Windows)
+    ![Visualizer screenshot](./AltCover.Visualizer/Screenshot-GTK3.png)
 
 ## Why altcover?
 As the name suggests, it's an alternative coverage approach.  Rather than working by hooking the .net profiling API at run-time, it works by weaving the same sort of extra IL into the assemblies of interest ahead of execution.  This means that it should work pretty much everywhere, whatever your platform, so long as the executing process has write access to the results file.  You can even mix-and-match between platforms used to instrument and those under test.
