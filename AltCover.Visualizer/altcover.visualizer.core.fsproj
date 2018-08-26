@@ -1,7 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <ToolCommandName>altcover.visualizer</ToolCommandName>
     <OutputType>WinExe</OutputType>
+    <PackAsTool>True</PackAsTool>
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <RootNamespace>AltCover.Visualizer</RootNamespace>
     <AssemblyName>AltCover.Visualizer</AssemblyName>
