@@ -20,6 +20,13 @@ For Mono, .net framework and .net core, except as noted
      ![Visualizer screenshot](./AltCover.Visualizer/Screenshot.png)
   * **NEW** For .net core (needs GTK+3 installed separately -- for Windows, see e.g. https://github.com/GtkSharp/GtkSharp/wiki/Installing-Gtk-on-Windows)
     ![Visualizer screenshot](./AltCover.Visualizer/Screenshot-GTK3.png)
+    
+### NuGet Packages
+* [General purpose install](https://www.nuget.org/packages/AltCover) -- excludes the C# API and FAKE integration
+* [API install](https://www.nuget.org/packages/AltCover.api) -- excludes the .net Framework/mono/GTK#2 Visualizer
+* [dotnet CLI tool install](https://www.nuget.org/packages/AltCover.dotnet) -- excludes the visualizer in all forms
+* [dotnet global tool install](https://www.nuget.org/packages/AltCover.global) -- excludes the visualizer in all forms
+* [Visualizer dotnet global tool](https://www.nuget.org/packages/AltCover.visualizer) -- just the .net core/GTK#3 Visualizer as a global tool
 
 ## Why altcover?
 As the name suggests, it's an alternative coverage approach.  Rather than working by hooking the .net profiling API at run-time, it works by weaving the same sort of extra IL into the assemblies of interest ahead of execution.  This means that it should work pretty much everywhere, whatever your platform, so long as the executing process has write access to the results file.  You can even mix-and-match between platforms used to instrument and those under test.
@@ -49,6 +56,7 @@ Fast forwards to autumn 2017, and I get the chance to dust the project off, with
 | (.api) | [![Nuget](https://buildstats.info/nuget/altcover.api)](http://nuget.org/packages/altcover.api) [![Nuget](https://img.shields.io/nuget/vpre/altcover.api.svg)](http://nuget.org/packages/altcover.api) |
 | (.dotnet) | [![Nuget](https://buildstats.info/nuget/altcover.dotnet)](http://nuget.org/packages/altcover.dotnet) [![Nuget](https://img.shields.io/nuget/vpre/altcover.dotnet.svg)](http://nuget.org/packages/altcover.dotnet) |
 | (.global) | [![Nuget](https://buildstats.info/nuget/altcover.global)](http://nuget.org/packages/altcover.global) [![Nuget](https://img.shields.io/nuget/vpre/altcover.global.svg)](http://nuget.org/packages/altcover.global) |
+| (.visualizer) | [![Nuget](https://buildstats.info/nuget/altcover.visualizer)](http://nuget.org/packages/altcover.visualizer) [![Nuget](https://img.shields.io/nuget/vpre/altcover.visualizer.svg)](http://nuget.org/packages/altcover.visualizer) |
 
 ## Usage
 
