@@ -1053,6 +1053,7 @@ module Gui =
          if Enum.ToObject(typeof<ResponseType>, selector.Run()) :?> ResponseType = ResponseType.Ok then 
              Persistence.saveFont (selector.FontName)
              handler.baseline.Font <- selector.FontName
+             handler.codeView.QueueDraw()
 #endif
          selector.Destroy())
     // Tree selection events and such
