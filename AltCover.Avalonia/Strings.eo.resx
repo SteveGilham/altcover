@@ -117,17 +117,8 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="About" xml:space="preserve">
-    <value> About AltCover.Visualizer...</value>
-  </data>
-  <data name="AboutDialog.About" xml:space="preserve">
-    <value>About</value>
-  </data>
-  <data name="About.dlg" xml:space="preserve">
-    <value>About AltCover.Visualizer</value>
-  </data>
   <data name="ProgramDescription" xml:space="preserve">
-    <value>Coverage visualizer for NCover and OpenCover reports</value>
+    <value>Kovrilo-visualizilo por raportoj de NCover kaj OpenCover</value>
   </data>
   <data name="License" xml:space="preserve">
     <value>The MIT License
@@ -153,24 +144,89 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.</value>
   </data>
   <data name="AboutDialog.License" xml:space="preserve">
-    <value>License</value>
+    <value>Permesilo</value>
   </data>
   <data name="WebsiteLabel" xml:space="preserve">
     <value>GitHub repo</value>
   </data>
   <data name="Close" xml:space="preserve">
-    <value>Close</value>
+    <value>Fermi</value>
   </data>
   <data name="Visualizer" xml:space="preserve">
     <value>Visualizer</value>
   </data>
   <data name="Open" xml:space="preserve">
-    <value> Open...</value>
+    <value>_Malferma...</value>
   </data>
   <data name="Exit" xml:space="preserve">
-    <value>Exit</value>
+    <value>Eliro</value>
   </data>
   <data name="Font" xml:space="preserve">
-    <value>Font...</value>
+    <value>Tiparo...</value>
+  </data>
+  <data name="Refresh" xml:space="preserve">
+    <value>Refreŝigi</value>
+  </data>
+  <data name="Open Coverage File" xml:space="preserve">
+    <value>Malferma Kovrilo Dosiero</value>
+  </data>
+  <data name="SelectXml" xml:space="preserve">
+    <value>XML-dosieroj (*.xml)%xml|Ĉiuj dosieroj (*.*)%*</value>
+  </data>
+  <data name="g|geometry" xml:space="preserve">
+    <value>Klara geometrio</value>
+  </data>
+  <data name="r|recentFiles" xml:space="preserve">
+    <value>Klara lastatempa listo</value>
+  </data>
+  <data name="InvalidFile" xml:space="preserve">
+    <value>La dosiero
+{0}
+ne estas valida kovra dosiero:
+{1}</value>
+  </data>
+  <data name="CoverageOutOfDate" xml:space="preserve">
+    <value>La dosiero
+{0}
+estas sen dato koncerne iujn el la fontaj dosieroj.</value>
+  </data>
+  <data name="CoverageOutOfDateThisFile" xml:space="preserve">
+    <value>La dosiero
+{0}
+estas sen dato pri respekto al fonta dosiero
+{1}.</value>
+  </data>
+  <data name="MissingSourceFile" xml:space="preserve">
+    <value>La dosiero
+{0} 
+raportas al fontaj dosieroj ne trovitaj en ĉi tiu komputilo.</value>
+  </data>
+  <data name="MissingSourceThisFile" xml:space="preserve">
+    <value>La dosiero
+{0}
+raportas al ausente fonta dosiero
+{1}.</value>
+  </data>
+  <data name="LoadError" xml:space="preserve">
+    <value>Kovrilo Dosiero Ŝarĝo Malsukcesis</value>
+  </data>
+  <data name="LoadWarning" xml:space="preserve">
+    <value>Nekonforma Kovrilo Dosiero</value>
+  </data>
+  <data name="About" xml:space="preserve">
+    <value>Pri...</value>
+  </data>
+  <data name="ProgramComments" xml:space="preserve">
+    <value>Ikonoj de la Visual Studio 2017-kolekto
+https://docs.microsoft.com/en-us/visualstudio/designers/the-visual-studio-image-library
+kaj de la Tango Project
+http://tango.freedesktop.org/Tango_Icon_Library#Download</value>
+  </data>
+  <data name="LoadInfo" xml:space="preserve">
+    <value>Noto</value>
+  </data>
+  <data name="No source location" xml:space="preserve">
+    <value>Metodo {0}
+havas neniun respondan fontan lokon</value>
   </data>
 </root>

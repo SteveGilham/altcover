@@ -1,0 +1,75 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <ToolCommandName>altcover.visualizer</ToolCommandName>
+    <OutputType>WinExe</OutputType>
+    <PackAsTool>True</PackAsTool>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <RootNamespace>AltCover.Visualizer</RootNamespace>
+    <AssemblyName>AltCover.Visualizer</AssemblyName>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <Name>AltCover.Visualizer</Name>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
+    <OutputPath>$(SolutionDir)_Binaries/$(AssemblyName)/$(Configuration)+$(Platform)/</OutputPath>
+    <IntermediateOutputPath>$(SolutionDir)_Intermediate/$(AssemblyName)/$(Configuration)+$(Platform)/</IntermediateOutputPath>
+    <OtherFlags>--tailcalls+</OtherFlags>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)'=='Release'">
+    <SolutionDir Condition="'$(SolutionDir)' == '$(ProjectDir)'">$(ProjectDir)../</SolutionDir>
+    <OutputPath>$(SolutionDir)_Binaries/$(AssemblyName)/$(Configuration)+$(Platform)/</OutputPath>
+    <IntermediateOutputPath>$(SolutionDir)_Intermediate/$(AssemblyName)/$(Configuration)+$(Platform)/</IntermediateOutputPath>
+    <OtherFlags>--keyfile:$(SolutionDir)Build\Infrastructure.snk</OtherFlags>
+</PropertyGroup>
+
+  <ItemGroup>
+    <None Include="DotnetToolSettings.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Prepare.ps1" />
+    <Compile Include="..\_Generated\VisibleToTest.fs" Link="VisibleToTest.fs" />
+    <Compile Include="..\_Generated\AssemblyVersion.fs" Link="AssemblyVersion.fs" />
+    <Compile Include="..\AltCover\Augment.fs" Link="Augment.fs" />
+    <None Include="Visualizer.glade" />
+    <EmbeddedResource Include="Visualizer3.glade" />
+    <EmbeddedResource Include="Assembly_6212.png" />
+    <EmbeddedResource Include="class_16xLG.png" />
+    <EmbeddedResource Include="method_16xLG.png" />
+    <EmbeddedResource Include="Namespace_16x.png" />
+    <EmbeddedResource Include="logo.png" />
+    <EmbeddedResource Include="Blank_12x_16x.png" />
+    <EmbeddedResource Include="Branch_12x_16x_red.png" />
+    <EmbeddedResource Include="Branch_12x_16x_ylw.png" />
+    <EmbeddedResource Include="Branch_12x_16x_grn.png" />
+    <EmbeddedResource Include="VIcon.ico" />
+    <EmbeddedResource Include="..\AltCover.PowerShell\xsd\NCover.xsd">
+      <Link>NCover.xsd</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\AltCover.PowerShell\xsd\OpenCover.xsd">
+      <Link>OpenCover.xsd</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\AltCover.PowerShell\xsl\OpenCoverToNCoverEx.xsl">
+      <Link>OpenCoverToNCoverEx.xsl</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\AltCover.Avalonia\config.xsd" Link="config.xsd" />
+    <Compile Include="AssemblyInfo.fs" />
+    <Compile Include="CoverageFile.fs" />
+    <Compile Include="GuiCommon.fs" />
+    <Compile Include="Visualizer.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="GtkSharp" Version="3.22.24.36" />
+    <PackageReference Include="Mono.Options" Version="5.3.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Update="FSharp.Core" Version="4.5.2" />
+  </ItemGroup>
+
+  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
+    <Exec Command="pwsh Prepare.ps1" />
+  </Target>
+
+</Project>

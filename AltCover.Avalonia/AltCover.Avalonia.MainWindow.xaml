@@ -1,0 +1,132 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:html="clr-namespace:Avalonia.Controls.Html;assembly=Avalonia.HtmlRenderer"
+        Title="AltCover.Avalonia"
+        Icon="resm:AltCover.Visualizer.VIcon.ico"
+        Height="550" Width="750">
+  <DockPanel Height="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Window, AncestorLevel=1}, Path=Height}" Width="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Window, AncestorLevel=1}, Path=Width}">
+    <Menu Name="Menu" DockPanel.Dock="Top" MaxHeight="48" VerticalAlignment="Center">
+      <Menu.ItemsPanel>
+        <ItemsPanelTemplate>
+          <DockPanel HorizontalAlignment="Stretch" />
+        </ItemsPanelTemplate>
+      </Menu.ItemsPanel>
+      <MenuItem Name="Open">
+        <MenuItem.Header>
+          <StackPanel>
+            <Image Source="resm:AltCover.Visualizer.Open_6529.png"  Stretch="None" />
+            <TextBlock Name="OpenText" Text="" />
+          </StackPanel>
+        </MenuItem.Header>
+      </MenuItem>
+      <MenuItem Name="List" IsEnabled="False">
+        <MenuItem.Header>
+          <StackPanel>
+            <Image Name="ListImage" Source="resm:AltCover.Visualizer.ExpandChevronDown_lightGray_16x.png" Stretch="None" Margin="0,8" />
+          </StackPanel>
+        </MenuItem.Header>
+        <MenuItem Header="0"></MenuItem>
+        <MenuItem Header="1"></MenuItem>
+        <MenuItem Header="2"></MenuItem>
+        <MenuItem Header="3"></MenuItem>
+        <MenuItem Header="4"></MenuItem>
+        <MenuItem Header="5"></MenuItem>
+        <MenuItem Header="6"></MenuItem>
+        <MenuItem Header="7"></MenuItem>
+        <MenuItem Header="8"></MenuItem>
+        <MenuItem Header="9"></MenuItem>
+      </MenuItem>
+      <MenuItem Name="Refresh" MinWidth="80" IsEnabled="False">
+        <MenuItem.Header>
+          <StackPanel>
+            <Image Name ="RefreshImage" Source="resm:AltCover.Visualizer.Refresh_greyThin_16x.png"  Stretch="None" />
+            <TextBlock Name="RefreshText" Text="" HorizontalAlignment="Center" />
+          </StackPanel>
+        </MenuItem.Header>
+      </MenuItem>
+      <MenuItem Name="Font" MinWidth="80" IsVisible="false">
+        <MenuItem.Header>
+          <StackPanel>
+            <Image Source="resm:AltCover.Visualizer.Font_16x.png"  Stretch="None" />
+            <TextBlock Name="FontText" Text="" HorizontalAlignment="Center" />
+          </StackPanel>
+        </MenuItem.Header>
+      </MenuItem>
+      <MenuItem IsEnabled="false" Background="DarkGray" Width="4" Height="28" MaxHeight="28">
+        <MenuItem.Header>
+          <Separator />
+        </MenuItem.Header>
+      </MenuItem>
+      <MenuItem Name="About" MinWidth="80">
+        <MenuItem.Header>
+          <StackPanel>
+            <Image Source="resm:AltCover.Visualizer.VSTAAbout_16x.png"  Stretch="None" />
+            <TextBlock Name="AboutText" Text="" HorizontalAlignment="Center" />
+          </StackPanel>
+        </MenuItem.Header>
+      </MenuItem>
+      <MenuItem Name="Exit" HorizontalAlignment="Right" MinWidth="80">
+        <MenuItem.Header>
+          <StackPanel>
+            <Image Source="resm:AltCover.Visualizer.Exit_16x.png" Stretch="None" />
+            <TextBlock Name="ExitText" Text="" HorizontalAlignment="Center" />
+          </StackPanel>
+        </MenuItem.Header>
+      </MenuItem>
+    </Menu>
+    <DockPanel Name="Content" Width="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Window, AncestorLevel=1}, Path=Width}">
+      <StackPanel DockPanel.Dock="Top" Name="MessageBox" IsVisible="false">
+        <TextBlock Name="Caption" Margin="10" FontSize="24" FontWeight="ExtraBold" HorizontalAlignment="Center" />
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+          <Image Name="Status" Source="resm:AltCover.Visualizer.dialog-error.png" Stretch="None" />
+          <TextBox Name="Message" HorizontalAlignment="Center" TextAlignment="Center"
+                   TextWrapping="NoWrap"
+                   AcceptsReturn="true"
+                   IsReadOnly="true" 
+                   MaxWidth="500"
+                   BorderThickness="0" />
+        </StackPanel>
+        <Button Name="DismissMessageBox" HorizontalAlignment="Center">
+        </Button>
+      </StackPanel>
+      <StackPanel DockPanel.Dock="Top" Margin="10" Name="AboutBox" IsVisible="false">
+        <Image Height="128" Stretch="None" Width="128" Source="resm:AltCover.Visualizer.logo.png" HorizontalAlignment="Center" />
+        <TextBlock Name="Program" Margin="10" FontSize="24" FontWeight="ExtraBold" HorizontalAlignment="Center" />
+        <TabControl Name="AboutTab" Margin="40">
+          <TabItem Name="AboutDetails" Height="150">
+            <StackPanel Height="150">
+              <TextBlock Name="Description"  HorizontalAlignment="Center" TextAlignment="Center" />
+              <TextBlock Name="Copyright" Margin="10" FontSize="8" HorizontalAlignment="Center" />
+              <TextBlock Name="Comments" Margin="10" FontSize="8" HorizontalAlignment="Center" />
+              <html:HtmlLabel Name="Link" MinHeight="20" Focusable="True" HorizontalAlignment="Center" />
+            </StackPanel>
+          </TabItem>
+          <TabItem Name="License" Height="150">
+            <StackPanel>
+              <ScrollViewer MaxHeight="150" HorizontalAlignment="Center">
+                <TextBlock Name="MIT" MinHeight="100" Width="500" TextWrapping="NoWrap" xml:space="preserve" />
+              </ScrollViewer>
+            </StackPanel>
+          </TabItem>
+        </TabControl>
+        <Button Name="DismissAboutBox" HorizontalAlignment="Center">
+        </Button>
+      </StackPanel>
+      <StackPanel DockPanel.Dock="Top" Name="FontSelection" IsVisible="false">
+      </StackPanel>
+      <DockPanel DockPanel.Dock="Top" Name="Grid" Width="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Window, AncestorLevel=1}, Path=Width}">
+        <ScrollViewer DockPanel.Dock="Left" MaxWidth="250"
+                      HorizontalScrollBarVisibility="Auto">
+          <TreeView Name="Tree" MinWidth="150" />
+        </ScrollViewer>
+        <TextBox DockPanel.Dock="Right"
+                 Name="Source" MinWidth="150"
+                 TextWrapping="NoWrap"
+                 AcceptsReturn="true"
+                 Background="White"
+                 Foreground="Silver"
+                 IsReadOnly="true" />
+      </DockPanel>
+    </DockPanel>
+  </DockPanel>
+</Window>
