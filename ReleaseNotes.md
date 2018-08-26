@@ -3,7 +3,9 @@ Q. Never mind the fluff -- how do I get started?
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
 # 4.0.6xx (Doruka series release 3)
-* .net core/GTK3 Visualizer implementation
+* [NEW PACKAGE] `altcover.visualizer` containing .net core/GTK3 Visualizer global tool implementation
+  * .net core/GTK3 Visualizer also contained in the general-purpose and the API packages for direct `dotnet path/to/AltCover.Visualizer.dll` use
+  * needs GTK+3 installed separately -- for Windows, see e.g. https://github.com/GtkSharp/GtkSharp/wiki/Installing-Gtk-on-Windows
 * Improved error messages for the GTK# Visualizer
 * Improved font handling for the GTK# Visualizer (now it updates immediately)
 * [API] strong-name keys can now be meaningfully validated from .net core
