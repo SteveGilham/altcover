@@ -175,7 +175,7 @@ open System.Runtime.CompilerServices
                    |> Seq.map (fun x -> x.Attribute(XName.Get("visitcount")).Value)
                    |> Seq.toList
     let expected = "0 1 1 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 2 1 1 1"
-    Assert.That(recorded, expected.Split() |> Is.EquivalentTo, sprintf "Bad method list %A" recorded)
+    Assert.That(recorded, expected.Split() |> Is.EquivalentTo, sprintf "Bad visit list %A" recorded)
 
   let ValidateSample1 simpleReport sigil =
     // get recorded details from here

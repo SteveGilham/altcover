@@ -373,7 +373,7 @@ _Target "JustUnitTest" (fun _ ->
                               Path.GetFileName(f) <> "xunit.runner.visualstudio.testadapter.dll")
       |> NUnit3.run (fun p -> { p   with ToolPath = Tools.findToolInSubPath "nunit3-console.exe" "."
                                          WorkingDir = "."
-                                         Labels = LabelsLevel.All
+                                         // Labels = LabelsLevel.All
                                          ResultSpecs = ["./_Reports/JustUnitTestReport.xml"] })
     with
     | x -> printfn "%A" x
@@ -530,7 +530,7 @@ _Target "UnitTestWithAltCover" (fun _ ->
         |> Seq.concat |> Seq.distinct
         |> NUnit3.run (fun p -> { p with ToolPath = Tools.findToolInSubPath "nunit3-console.exe" "."
                                          WorkingDir = "."
-                                         Labels = LabelsLevel.All
+                                         // Labels = LabelsLevel.All
                                          ResultSpecs = ["./_Reports/UnitTestWithAltCoverReport.xml"] })
       with
       | x -> printfn "%A" x
@@ -627,7 +627,7 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
                 Arguments = ( " Runner -x " + nunit +
                               " -r " + (testDirectory @@ "__UnitTestWithAltCoverRunner") +
                               " -w . -- " +
-                              " --labels=All --noheader --work=. --result=./_Reports/UnitTestWithAltCoverRunnerReport.xml \"" +
+                              " --noheader --work=. --result=./_Reports/UnitTestWithAltCoverRunnerReport.xml \"" +
                               String.Join ("\" \"", [ Path.getFullName  "_Binaries/AltCover.Tests/Debug+AnyCPU/__UnitTestWithAltCoverRunner/AltCover.Tests.dll"
                                                       Path.getFullName  "_Binaries/AltCover.Tests/Debug+AnyCPU/__UnitTestWithAltCoverRunner/Sample2.dll"]) + "\""
                             )}) "Re-instrument tests returned with a non-zero exit code"
@@ -764,7 +764,7 @@ _Target "UnitTestWithAltCoverCore" (fun _ ->
     printfn "Unit test the instrumented code"
     try
       Actions.RunDotnet (fun o -> {dotnetOptions o with WorkingDirectory = Path.getFullName "Tests"}) "test"
-                        ("--no-build --configuration Debug --verbosity normal altcover.tests.core.fsproj")
+                        ("-v m --no-build --configuration Debug --verbosity normal altcover.tests.core.fsproj")
                         "first test returned with a non-zero exit code"
     with
     | x -> printfn "%A" x
@@ -783,7 +783,7 @@ _Target "UnitTestWithAltCoverCore" (fun _ ->
 
     printfn "Execute the shadow tests"
     Actions.RunDotnet(fun o -> {dotnetOptions o with WorkingDirectory = Path.getFullName "Shadow.Tests"}) "test"
-                      ("--no-build --configuration Debug --verbosity normal altcover.recorder.tests.core.fsproj")
+                      ("-v m --no-build --configuration Debug --verbosity normal altcover.recorder.tests.core.fsproj")
                       "second test returned with a non-zero exit code"
 
     printfn "Instrument the XUnit tests"
@@ -799,7 +799,7 @@ _Target "UnitTestWithAltCoverCore" (fun _ ->
 
     printfn "Execute the XUnit tests"
     Actions.RunDotnet(fun o -> {dotnetOptions o with WorkingDirectory = Path.getFullName "XTests"}) "test"
-                      ("--no-build --configuration Debug --verbosity normal altcover.x.tests.core.fsproj")
+                      ("-v m --no-build --configuration Debug --verbosity normal altcover.x.tests.core.fsproj")
                       "xuint test returned with a non-zero exit code"
 
     ReportGenerator.generateReports
@@ -930,7 +930,7 @@ _Target "FSharpTypesDotNet" ( fun _ ->
     // Test the --inplace operation
     Shell.cleanDir sampleRoot
     Actions.RunDotnet (fun o -> {dotnetOptions o with WorkingDirectory = Path.getFullName "Sample2"}) "test"
-                            ("--configuration Debug sample2.core.fsproj")
+                            ("-v m --configuration Debug sample2.core.fsproj")
                              "sample initial test returned with a non-zero exit code"
 
     // inplace instrument
@@ -943,7 +943,7 @@ _Target "FSharpTypesDotNet" ( fun _ ->
 
     printfn "Execute the instrumented tests"
     Actions.RunDotnet (fun o -> {dotnetOptions o with WorkingDirectory = Path.getFullName "Sample2"}) "test"
-                            ("--no-build --configuration Debug sample2.core.fsproj")
+                            ("-v m --no-build --configuration Debug sample2.core.fsproj")
                              "sample coverage test returned with a non-zero exit code"
     Actions.ValidateFSharpTypesCoverage simpleReport
 )
@@ -957,7 +957,7 @@ _Target "FSharpTests" ( fun _ ->
     // Test the --inplace operation
     Shell.cleanDir sampleRoot
     Actions.RunDotnet (fun o -> {dotnetOptions o with WorkingDirectory = Path.getFullName "Sample7"}) "test"
-                            ("--configuration Debug sample7.core.fsproj")
+                            ("-v m --configuration Debug sample7.core.fsproj")
                              "sample initial test returned with a non-zero exit code"
 
     // inplace instrument
@@ -967,7 +967,7 @@ _Target "FSharpTests" ( fun _ ->
 
     printfn "Execute the instrumented tests"
     Actions.RunDotnet (fun o -> {dotnetOptions o with WorkingDirectory = Path.getFullName "Sample7"}) "test"
-                            ("--no-build --configuration Debug sample7.core.fsproj")
+                            ("-v m --no-build --configuration Debug sample7.core.fsproj")
                              "sample coverage test returned with a non-zero exit code"
 )
 
@@ -1020,7 +1020,7 @@ _Target "FSharpTypesDotNetCollecter" ( fun _ ->
 
     printfn "Execute the instrumented tests"
     Actions.RunDotnet (fun o -> {dotnetOptions o with WorkingDirectory = Path.getFullName "Sample2"}) "test"
-                            ("--no-build --configuration Debug sample2.core.fsproj")
+                            ("-v m --no-build --configuration Debug sample2.core.fsproj")
                              "sample coverage test returned with a non-zero exit code"
 
     Actions.RunDotnet (fun o -> {dotnetOptions o with WorkingDirectory = sampleRoot}) ""
@@ -1355,7 +1355,7 @@ _Target "Packaging" (fun _ ->
     let cake = Path.getFullName "_Binaries/AltCover.Cake/Release+AnyCPU/AltCover.Cake.dll"
     let vis = Path.getFullName "_Binaries/AltCover.Visualizer/Release+AnyCPU/AltCover.Visualizer.exe"
     let packable = Path.getFullName "./_Binaries/README.html"
-    let resources = DirectoryInfo.getMatchingFilesRecursive "AltCover.resources.dll" (DirectoryInfo.ofPath (Path.getFullName "_Binaries/AltCover/Release+AnyCPU"))
+    let resources = DirectoryInfo.getMatchingFilesRecursive "*.resources.dll" (DirectoryInfo.ofPath (Path.getFullName "_Binaries/AltCover/Release+AnyCPU"))
     let resources2 = DirectoryInfo.getMatchingFilesRecursive "AltCover.Visualizer.resources.dll" (DirectoryInfo.ofPath (Path.getFullName "_Binaries/AltCover.Visualizer/Release+AnyCPU"))
 
     let applicationFiles = if File.Exists AltCover then
@@ -1450,6 +1450,15 @@ _Target "Packaging" (fun _ ->
                        |> Seq.map (fun x -> (x, Some ("tools/netcoreapp2.1/any/" + Path.GetFileName x), None))
                        |> Seq.toList
 
+    let publishV = (Path.getFullName "./_Publish.visualizer").Length
+    let vizFiles where = (!! "./_Publish.visualizer/**/*.*")
+                          |> Seq.map (fun x -> (x, Some (where + Path.GetDirectoryName(x).Substring(publishV).Replace("\\","/")), None))
+                          |> Seq.toList
+
+    let auxVFiles = (!! "./_Binaries/AltCover.Visualizer/Release+AnyCPU/netcoreapp2.1/*.xml")
+                        |> Seq.map (fun x -> (x, Some ("tools/netcoreapp2.1/any/" + Path.GetFileName x), None))
+                        |> Seq.toList
+
     let auxFiles = (!! "./_Binaries/global-altcover/Release+AnyCPU/netcoreapp2.1/*.xml")
                        |> Seq.map (fun x -> (x, Some ("tools/netcoreapp2.1/any/" + Path.GetFileName x), None))
                        |> Seq.toList
@@ -1461,6 +1470,7 @@ _Target "Packaging" (fun _ ->
                       resourceFiles "tools/net45/"
                       netcoreFiles "tools/netcoreapp2.0/"
                       poshFiles "tools/netcoreapp2.0/"
+                      vizFiles "tools/netcoreapp2.1"
                       otherFiles],
          "_Packaging",
          "./Build/AltCover.nuspec",
@@ -1473,6 +1483,7 @@ _Target "Packaging" (fun _ ->
                       cakeFiles "lib/netstandard2.0/"
                       fakeFiles "lib/netstandard2.0/"
                       poshFiles "lib/netstandard2.0/"
+                      vizFiles "tools/netcoreapp2.1"
                       otherFilesApi
                       ],
          "_Packaging.api",
@@ -1496,6 +1507,12 @@ _Target "Packaging" (fun _ ->
          "_Packaging.global",
          "./_Generated/altcover.global.nuspec",
          "altcover.global"
+        )
+        (List.concat [vizFiles "tools/netcoreapp2.1/any/"
+                      auxVFiles],
+         "_Packaging.visualizer",
+         "./_Generated/altcover.visualizer.nuspec",
+         "altcover.visualizer"
         )
     ]
     |> List.iter (fun (files, output, nuspec, project) ->
@@ -1558,11 +1575,16 @@ _Target "PrepareDotNetBuild" (fun _ ->
                                                   Configuration = DotNet.BuildConfiguration.Release
                                                   Framework = Some "netstandard2.0"})
                                                   netcoresource
+    DotNet.publish (fun options -> { options with OutputPath = Some (publish + ".visualizer")
+                                                  Configuration = DotNet.BuildConfiguration.Release
+                                                  Framework = Some "netcoreapp2.1"})
+                                                  (Path.getFullName "./AltCover.Visualizer/altcover.visualizer.core.fsproj")
 
     // dotnet tooling mods
     [
         ("DotnetCliTool", "./_Generated/altcover.dotnet.nuspec", "AltCover (dotnet CLI tool install)")
         ("DotnetTool", "./_Generated/altcover.global.nuspec", "AltCover (dotnet global tool install)")
+        ("DotnetTool", "./_Generated/altcover.visualizer.nuspec", "AltCover.Visualizer (dotnet global tool install)")
         (String.Empty, "./_Generated/altcover.api.nuspec", "AltCover (API install)")
     ]
     |> List.iter (fun (ptype, path, caption) ->
@@ -1825,7 +1847,7 @@ _Target "ReleaseXUnitFSharpTypesDotNet" ( fun _ ->
 
     printfn "Execute the instrumented tests"
     Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = Path.getFullName "Sample4"}) "test"
-                      ("--no-build --configuration Debug sample4.core.fsproj")
+                      ("-v m --no-build --configuration Debug sample4.core.fsproj -v m")
                       "sample test returned with a non-zero exit code"
     Actions.ValidateFSharpTypesCoverage x
 )
@@ -1909,7 +1931,7 @@ _Target "MSBuildTest" ( fun _ ->
     if (unpack @@ "AltCover.exe") |> File.Exists then
         MSBuild.build (fun p ->
               { p with
-                  Verbosity = Some MSBuildVerbosity.Normal
+                  Verbosity = Some MSBuildVerbosity.Minimal
                   Properties = [
                                  "Configuration", "Debug"
                                  "DebugSymbols", "True"
@@ -2069,7 +2091,7 @@ _Target "DotnetTestIntegration" ( fun _ ->
                         ) "dotnettest.fsproj"
 
 //    Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = Path.getFullName "_DotnetTest"}) "test"
-//                      ("-v n /p:AltCover=true /p:AltCoverCallContext=[Fact]|0 /p:AltCoverIpmo=true /p:AltCoverGetVersion=true")
+//                      ("-v m /p:AltCover=true /p:AltCoverCallContext=[Fact]|0 /p:AltCoverIpmo=true /p:AltCoverGetVersion=true")
 //                      "sample test returned with a non-zero exit code"
 
     let x = Path.getFullName "./_DotnetTest/coverage.xml"
@@ -2174,7 +2196,7 @@ _Target "Issue23" ( fun _ ->
                       "restore returned with a non-zero exit code"
 
     Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = Path.getFullName "_Issue23"}) "test"
-                      ("/p:AltCover=true /p:AltCoverIpmo=true /p:AltCoverGetVersion=true")
+                      ("-v m /p:AltCover=true /p:AltCoverIpmo=true /p:AltCoverGetVersion=true")
                       "sample test returned with a non-zero exit code"
   finally
     let folder = (nugetCache @@ "altcover") @@ !Version
@@ -2240,7 +2262,7 @@ _Target "DotnetCLIIntegration" ( fun _ ->
                       ("package altcover.dotnet --version " + !Version)
                       "sample test returned with a non-zero exit code"
     Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = Path.getFullName "_DotnetCLITest"}) "test"
-                      ("/p:AltCover=true")
+                      ("-v m /p:AltCover=true")
                       "sample test returned with a non-zero exit code"
     "./_DotnetCLITest/coverage.xml" |> Path.getFullName |> File.Exists |> Assert.That
 
@@ -2494,7 +2516,7 @@ Target.activateFinal "ResetConsoleColours"
 
 "Compilation"
 ==> "SelfTest"
-=?> ("OperationalTest", Environment.isWindows)  // OpenCover Mono support AND Mono + F# + Fake build => no symbols
+// =?> ("OperationalTest", Environment.isWindows)  // OpenCover Mono support AND Mono + F# + Fake build => no symbols
 
 "Compilation"
 ?=> "Packaging"
