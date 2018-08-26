@@ -534,6 +534,7 @@ module Gui =
       | _ -> ShowMessage handler.aboutVisualizer link MessageType.Info
     // The first gets the display right, the second the browser launch
 #if NETCOREAPP2_1
+    handler.aboutVisualizer.TransientFor <- handler.mainWindow
 #else
     AboutDialog.SetUrlHook(fun _ link -> ShowUrl link) |> ignore
     LinkButton.SetUriHook(fun _ link -> ShowUrl link) |> ignore
