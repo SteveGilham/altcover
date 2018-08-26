@@ -85,7 +85,6 @@ type Tracer = {
 
     member internal this.OnFinish visits =
       this.CatchUp visits
-      this.Push System.String.Empty -1 Null
       this.Stream.Flush()
       this.Close()
 
