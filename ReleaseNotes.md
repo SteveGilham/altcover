@@ -3,7 +3,9 @@ Q. Never mind the fluff -- how do I get started?
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
 # 4.0.6xx (Doruka series release 3)
+* .net core/GTK3 Visualizer implementation
 * Improved error messages for the GTK# Visualizer
+* Improved font handling for the GTK# Visualizer (now it updates immediately)
 * [API] strong-name keys can now be meaningfully validated from .net core
 * Minor improvements to reliability on mono
 
