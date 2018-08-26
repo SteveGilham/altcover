@@ -79,7 +79,7 @@ For GTK# support, the GTK# latest 2.12 install is expected -- try https://www.mo
 
 #### *nix
 
-It is assumed that `mono` (version 5.12.x) and `dotnet` are on the `PATH` already, and everything is built from the command line, with your favourite editor used for coding.
+It is assumed that `mono` (version 5.14.x) and `dotnet` are on the `PATH` already, and everything is built from the command line, with your favourite editor used for coding.
 
 ### Bootstrapping
 
