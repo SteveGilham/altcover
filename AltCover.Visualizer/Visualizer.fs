@@ -141,6 +141,9 @@ type internal Handler() =
 
     [<DefaultValue(true)>]
     val mutable baseline : TextTag
+
+    [<DefaultValue(true)>]
+    val mutable codeLine : int
   end
 
 module Persistence =
@@ -792,6 +795,14 @@ module Gui =
     |> Seq.filter (FilterCoverage buff)
     |> Seq.iter (TagByCoverage buff)
 
+  let internal ScrollToRow (h:Handler) _ =
+    let buff = h.codeView.Buffer
+    if buff |> isNull |> not && h.codeLine > 0 then
+        let iter = buff.GetIterAtLine(h.codeLine - 1)
+        let mark = buff.CreateMark("line", iter, false)
+        h.codeView.ScrollToMark(mark, 0.0, true, 0.0, 0.3)
+        buff.DeleteMark("line")
+
   let private OnRowActivated (handler : Handler) (activation : RowActivatedArgs) =
     let HitFilter (activated : RowActivatedArgs) (path : TreePath) = activated.Path.Compare(path) = 0
     let hits = Mappings.Keys |> Seq.filter (HitFilter activation)
@@ -825,9 +836,13 @@ module Gui =
               root.MoveToRoot()
               MarkBranches root handler.codeView filename
               MarkCoverage root buff filename
-              let iter = buff.GetIterAtLine((Int32.TryParse(line) |> snd) - 1)
-              let mark = buff.CreateMark(line, iter, true)
-              handler.codeView.ScrollToMark(mark, 0.0, true, 0.0, 0.3)
+              handler.codeLine <- Int32.TryParse(line) |> snd
+              handler.codeView.CursorVisible <- false
+              handler.codeView.QueueDraw()
+#if NETCOREAPP2_1
+#else
+              ScrollToRow handler ()
+#endif
           showSource()
 
   [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:DisposeObjectsBeforeLosingScope",
@@ -929,6 +944,10 @@ module Gui =
     ParseCommandLine arguments
     Application.Init()
     let handler = PrepareGui()
+#if NETCOREAPP2_1    
+    handler.codeView.Drawn
+    |> Event.add (ScrollToRow handler)
+#endif
     handler.mainWindow.DeleteEvent
     |> Event.add (fun args ->
          if Persistence.save then Persistence.saveGeometry handler.mainWindow
