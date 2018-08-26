@@ -849,12 +849,6 @@ module Gui =
     tt.Add tag |> ignore
     let start = keytext.[1].IndexOf('_')
     buffer.Text <- keytext.[1].Replace("_", String.Empty)
-////#if NETCOREAPP2_1
-////    button.TooltipMarkup <- buffer.Text.Substring(0,start) + "<u>" + 
-////                            buffer.Text.Substring(start, 1) +
-////                            "</u>" + buffer.Text.Substring(start + 1)
-////#endif
-
     buffer.ApplyTag("baseline", buffer.StartIter, buffer.EndIter)
     buffer.ApplyTag("underline",
                     buffer.GetIterAtLineOffset(0, start),
@@ -871,8 +865,6 @@ module Gui =
     h.mainWindow.AddAccelGroup(g)
 #if NETCOREAPP2_1
     h.toolbar1.ToolbarStyle <- ToolbarStyle.Both
-    //let hue = Color(255uy, 255uy, 255uy)
-    //h.toolbar1.ModifyBg (StateType.Normal, hue)
     let prov = new CssProvider()
     let style = """
 * {
