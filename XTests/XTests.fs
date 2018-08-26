@@ -157,7 +157,7 @@ module XTests =
     let test = { PrepareParams.Default with InputDirectory = here
                                             OutputDirectory = here
                                             SymbolDirectories =  [| here |]
-                                            Dependencies = [| Assembly.GetExecutingAssembly().Location |] 
+                                            Dependencies = [| Assembly.GetExecutingAssembly().Location |]
                                             CallContext = [| "[Fact]" |]
                                             PathFilter = [| "ok" |] }
     let scan = test.Validate()
@@ -174,7 +174,6 @@ module XTests =
 #else
     Assert.Equal (0, scan.Length)
 #endif
-
 
   [<Fact>]
   let PrepareParamsCanBeValidatedWithNulls() =
