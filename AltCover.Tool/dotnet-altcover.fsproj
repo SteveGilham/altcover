@@ -26,6 +26,10 @@
     <Compile Include="..\_Generated\VisibleToTest.fs" Link="VisibleToTest.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
+  
+  <ItemGroup>
+    <PackageReference Update="FSharp.Core" Version="4.3.4" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\AltCover\altcover.core.fsproj" />

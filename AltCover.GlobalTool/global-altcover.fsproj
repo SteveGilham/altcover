@@ -26,7 +26,9 @@
     <Compile Include="..\AltCover.Tool\Program.fs" />
   </ItemGroup>
 
-  <ItemGroup />
+  <ItemGroup>
+    <PackageReference Update="FSharp.Core" Version="4.3.4" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\AltCover\altcover.core.fsproj" />
