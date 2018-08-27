@@ -62,6 +62,7 @@
   <ItemGroup>
     <Compile Include="..\_Generated\AssemblyVersion.fs" Link="AssemblyVersion.fs" />
     <Compile Include="..\_Generated\VisibleToTest.fs" Link="VisibleToTest.fs" />
+    <Compile Include="..\AltCover.PowerShell\RenderToHtml.fs" Link="RenderToHtml.fs" />
     <Compile Include="..\AltCover\Augment.fs" Link="Augment.fs" />
     <Compile Include="..\AltCover.Visualizer\CoverageFile.fs" Link="CoverageFile.fs" />
     <Compile Include="..\AltCover.Visualizer\GuiCommon.fs" Link="GuiCommon.fs" />

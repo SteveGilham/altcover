@@ -74,6 +74,7 @@
     <Compile Include="..\_Generated\VisibleToTest.fs">
       <Link>VisibleToTest.fs</Link>
     </Compile>
+    <Compile Include="RenderToHtml.fs" />
     <Compile Include="Xml.fs" />
     <Compile Include="OpenCover.fs" />
     <Compile Include="CoverageFormats.fs" />
