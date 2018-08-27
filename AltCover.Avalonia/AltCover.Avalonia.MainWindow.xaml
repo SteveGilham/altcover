@@ -82,7 +82,7 @@
           <TextBox Name="Message" HorizontalAlignment="Center" TextAlignment="Center"
                    TextWrapping="NoWrap"
                    AcceptsReturn="true"
-                   IsReadOnly="true" 
+                   IsReadOnly="true"
                    MaxWidth="500"
                    BorderThickness="0" />
         </StackPanel>

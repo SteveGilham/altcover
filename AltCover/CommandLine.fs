@@ -284,8 +284,8 @@ module internal CommandLine =
         else (name, true)
     else (String.Empty, false)
 
-  let internal maybeLoadStrongNameKey x (stream:FileStream) ok = 
-     if ok then 
+  let internal maybeLoadStrongNameKey x (stream:FileStream) ok =
+     if ok then
         stream.Position <- 0L
         StrongNameKeyPair(stream)
      else new NotSupportedException(x) |> raise

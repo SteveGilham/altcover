@@ -39,4 +39,3 @@ module GuiCommon =
         let r1 = rightKey.m.GetAttribute("fullname", String.Empty)
         String.CompareOrdinal(l1, r1)
     else sort
-
