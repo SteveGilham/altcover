@@ -27,6 +27,10 @@
   <ItemGroup>
     <PackageReference Include="Cake.Core" Version="0.28.0" />
     <PackageReference Include="Cake.Common" Version="0.28.0" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0-beta-63127-02">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>
