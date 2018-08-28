@@ -57,6 +57,9 @@ module Actions =
   let template ="""namespace AltCover
 open System.Reflection
 open System.Runtime.CompilerServices
+
+[<assembly: AssemblyDescription("Part of a cross-platform coverage gathering and processing tool set for .net/.net core and Mono")>]
+
 #if DEBUG
 [<assembly: AssemblyConfiguration("Debug {0}")>]
 #else
@@ -68,8 +71,6 @@ open System.Runtime.CompilerServices
 #else
 #if NETCOREAPP2_0
 [<assembly: InternalsVisibleTo("AltCover.PowerShell")>]
-[<assembly: InternalsVisibleTo("dotnet-altcover")>]
-[<assembly: InternalsVisibleTo("global-altcover")>]
 [<assembly: InternalsVisibleTo("AltCover.Tests")>]
 [<assembly: InternalsVisibleTo("AltCover.XTests")>]
 
