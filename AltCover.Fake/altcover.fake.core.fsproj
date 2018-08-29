@@ -28,6 +28,10 @@
   <ItemGroup>
     <PackageReference Include="FAKE.Core.Trace" Version="5.2.0" />
     <PackageReference Include="FAKE.DotNet.Cli" Version="5.2.0" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0-beta-63127-02">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>

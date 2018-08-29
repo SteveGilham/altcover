@@ -57,25 +57,20 @@ module Actions =
   let template ="""namespace AltCover
 open System.Reflection
 open System.Runtime.CompilerServices
+
+[<assembly: AssemblyDescription("Part of a cross-platform coverage gathering and processing tool set for .net/.net core and Mono")>]
+
 #if DEBUG
 [<assembly: AssemblyConfiguration("Debug {0}")>]
-#else
-[<assembly: AssemblyConfiguration("Release {0}")>]
-#endif
 #if NETSTANDARD2_0
 [<assembly: InternalsVisibleTo("AltCover.Shadow.Adapter")>]
 [<assembly: InternalsVisibleTo("AltCover.Shadow.Tests")>]
 #else
 #if NETCOREAPP2_0
-[<assembly: InternalsVisibleTo("AltCover.PowerShell")>]
-[<assembly: InternalsVisibleTo("dotnet-altcover")>]
-[<assembly: InternalsVisibleTo("global-altcover")>]
 [<assembly: InternalsVisibleTo("AltCover.Tests")>]
 [<assembly: InternalsVisibleTo("AltCover.XTests")>]
-
+[<assembly: InternalsVisibleTo("AltCover.Tests.Visualizer")>]
 #else
-[<assembly: InternalsVisibleTo("AltCover.PowerShell, PublicKey={1}")>]
-[<assembly: InternalsVisibleTo("AltCover.PowerShell, PublicKey={2}")>]
 [<assembly: InternalsVisibleTo("AltCover.Tests, PublicKey={1}")>]
 [<assembly: InternalsVisibleTo("AltCover.Tests, PublicKey={2}")>]
 [<assembly: InternalsVisibleTo("AltCover.XTests, PublicKey={1}")>]
@@ -89,6 +84,9 @@ open System.Runtime.CompilerServices
 [<assembly: InternalsVisibleTo("AltCover.Tests.Visualizer, PublicKey={1}")>]
 [<assembly: InternalsVisibleTo("AltCover.Tests.Visualizer, PublicKey={2}")>]
 #endif
+#endif
+#else
+[<assembly: AssemblyConfiguration("Release {0}")>]
 #endif
 ()"""
 

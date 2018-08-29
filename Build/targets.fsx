@@ -1633,9 +1633,12 @@ _Target "Pester" (fun _ ->
   let report = Path.getFullName "_Reports/Pester.xml"
   let i = ``module`` @@ "tools/netcoreapp2.0"
   let v = (!Version).Split([| '-' |]).[0]
+  let retro = Path.getFullName "_Binaries/AltCover/Release+AnyCPU/AltCover.exe"
+  let key = Path.getFullName "Build/Infrastructure.snk"
 
-  Actions.RunDotnet (fun o -> {dotnetOptions o with WorkingDirectory = unpack}) ""
-                      ("AltCover.dll --inplace --save --opencover -t=System\. \"-s=^((?!AltCover\.PowerShell).)*$\" -x \"" + report + "\" -i \"" + i + "\"")
+  Actions.Run (fun o -> {o with WorkingDirectory = unpack
+                                FileName = retro
+                                Arguments = (" --inplace --save --opencover -t=System\. \"-s=^((?!AltCover\.PowerShell).)*$\" -x \"" + report + "\" -i \"" + i + "\" -sn \"" + key + "\"")})
                              "Pester instrument"
 
   printfn "Execute the instrumented tests"

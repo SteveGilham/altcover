@@ -9,14 +9,17 @@
     <AssemblyName>AltCover.Visualizer</AssemblyName>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <Name>AltCover.Visualizer</Name>
+    <GlobalDefineConstants>NETCOREAPP2_0</GlobalDefineConstants>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
+    <DefineConstants>$(DefineConstants);$(GlobalDefineConstants)</DefineConstants>
     <OutputPath>$(SolutionDir)_Binaries/$(AssemblyName)/$(Configuration)+$(Platform)/</OutputPath>
     <IntermediateOutputPath>$(SolutionDir)_Intermediate/$(AssemblyName)/$(Configuration)+$(Platform)/</IntermediateOutputPath>
     <OtherFlags>--tailcalls+</OtherFlags>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
+    <DefineConstants>$(DefineConstants);$(GlobalDefineConstants)</DefineConstants>
     <SolutionDir Condition="'$(SolutionDir)' == '$(ProjectDir)'">$(ProjectDir)../</SolutionDir>
     <OutputPath>$(SolutionDir)_Binaries/$(AssemblyName)/$(Configuration)+$(Platform)/</OutputPath>
     <IntermediateOutputPath>$(SolutionDir)_Intermediate/$(AssemblyName)/$(Configuration)+$(Platform)/</IntermediateOutputPath>
@@ -61,6 +64,10 @@
 
   <ItemGroup>
     <PackageReference Include="GtkSharp" Version="3.22.24.36" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0-beta-63127-02">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="Mono.Options" Version="5.3.0.1" />
   </ItemGroup>
 
