@@ -4,6 +4,7 @@ A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wi
 
 # 4.0.6xx (Doruka series release 4)
 * [BUGFIX] Work around an apparent change in behaviour in mono 5.14 that loses some recorded coverage in runner mode; the problem does not affect .net framework or .net core, but does impact those travis build self-tests that aren't on .net core
+* Add SourceLink to the build process (and the .nuspec)
 
 # 4.0.618 (Doruka series release 3)
 * [NEW PACKAGE] `altcover.visualizer` containing .net core/GTK3 Visualizer global tool implementation
