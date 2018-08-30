@@ -27,6 +27,7 @@
     <Compile Include="Xhtml.fs" />
     <Compile Include="OpenCover.fs" />
     <Compile Include="CoverageFormats.fs" />
+    <Compile Include="RenderToHtml.fs" />
     <Content Include="packages.config" />
     <EmbeddedResource Include="xsd\NCover.xsd" />
     <EmbeddedResource Include="xsd\OpenCover.xsd" />
