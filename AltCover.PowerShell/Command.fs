@@ -209,9 +209,10 @@ type InvokeAltCoverCommand(runner:bool) =
                                    Api.Collect task
                     | _ -> let task = self.Prepare()
                            Api.Prepare task) log
+      if status <> 0 then status.ToString() |> self.Log().Error
       match self.Fail with
-      | [] -> if status <> 0 then status.ToString() |> makeError
-      | things -> String.Join(Environment.NewLine, things)
-                       |> makeError
+      | [] -> ()
+      | things -> String.Join(Environment.NewLine, things |> List.rev)
+                  |> makeError
     finally
       Directory.SetCurrentDirectory here
