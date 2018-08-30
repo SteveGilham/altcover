@@ -29,9 +29,6 @@ type ConvertToBarChartCommand(outputFile:String) =
       ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
   member val OutputFile:string = outputFile with get, set
 
-  member private self.DoConvert() =
-    AltCover.Xhtml.ConvertToBarChart self.XmlDocument
-
   override self.ProcessRecord() =
     let here = Directory.GetCurrentDirectory()
     try
@@ -40,7 +37,7 @@ type ConvertToBarChartCommand(outputFile:String) =
       if self.ParameterSetName = "FromFile" then
         self.XmlDocument <- XPathDocument self.InputFile
 
-      let rewrite = self.DoConvert()
+      let rewrite = AltCover.Xhtml.ConvertToBarChart self.XmlDocument
 
       if self.OutputFile |> String.IsNullOrWhiteSpace |> not then
         rewrite.Save(self.OutputFile)
