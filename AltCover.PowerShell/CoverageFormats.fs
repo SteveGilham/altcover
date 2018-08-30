@@ -8,7 +8,6 @@ open System.Xml
 open System.Xml.Linq
 open System.Xml.XPath
 
-
 [<Cmdlet(VerbsData.ConvertTo, "XmlDocument")>]
 [<OutputType(typeof<XmlDocument>)>]
 type ConvertToXmlDocumentCommand(xdocument:XDocument) =
