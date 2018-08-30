@@ -1612,7 +1612,7 @@ _Target "Pester" (fun _ ->
 
   Actions.Run (fun o -> {o with WorkingDirectory = unpack
                                 FileName = retro
-                                Arguments = (" --inplace --save --opencover -t=System\. \"-s=^AltCover$\" -s=Recorder -x \"" + report + "\" -i \"" + i + "\" -sn \"" + key + "\"")})
+                                Arguments = (" --inplace --save --opencover -t=DotNet -t=System\. \"-s=^AltCover$\" -s=Recorder -x \"" + report + "\" -i \"" + i + "\" -sn \"" + key + "\"")})
                              "Pester instrument"
 
   printfn "Execute the instrumented tests"
