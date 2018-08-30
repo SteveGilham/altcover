@@ -143,7 +143,7 @@ type InvokeAltCoverCommand(runner:bool) =
       ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
   member val Version:SwitchParameter = SwitchParameter(false) with get, set
 
-  member val private Fail:ErrorRecord option = None with get, set
+  member val private Fail:String list = [] with get, set
 
   member private self.Collect () =
       { CollectParams.Default with RecorderDirectory = self.RecorderDirectory;
@@ -188,7 +188,7 @@ type InvokeAltCoverCommand(runner:bool) =
       }
 
   member private self.Log () =
-    { Logging.Default with Error = (fun s -> self.Fail <- Some <| ErrorRecord(InvalidOperationException(), s, ErrorCategory.FromStdErr, self))
+    { Logging.Default with Error = (fun s -> self.Fail <- s :: self.Fail)
                            Info = (fun s -> self.WriteInformation (s, [| |]))
                            Warn = (fun s -> self.WriteWarning s)
     }
@@ -199,6 +199,8 @@ type InvokeAltCoverCommand(runner:bool) =
     try
       let where = self.SessionState.Path.CurrentLocation.Path
       Directory.SetCurrentDirectory where
+      let makeError s = ErrorRecord(InvalidOperationException(), s, ErrorCategory.InvalidOperation, self)
+                        |> self.WriteError
 
       let status = (match (self.Version.IsPresent, self.Runner.IsPresent) with
                     | (true, _) -> (fun _ -> Api.Version() |> log.Info
@@ -208,9 +210,8 @@ type InvokeAltCoverCommand(runner:bool) =
                     | _ -> let task = self.Prepare()
                            Api.Prepare task) log
       match self.Fail with
-      | Some fail -> self.WriteError fail
-      | _ -> if status <> 0 then
-                let fail = ErrorRecord(InvalidOperationException(), status.ToString(), ErrorCategory.InvalidOperation, self)
-                self.WriteError fail
+      | [] -> if status <> 0 then status.ToString() |> makeError
+      | things -> String.Join(Environment.NewLine, things)
+                       |> makeError
     finally
       Directory.SetCurrentDirectory here
