@@ -63,7 +63,6 @@ type ConvertToLcovCommand(outputFile:String) =
   override self.ProcessRecord() =
     let here = Directory.GetCurrentDirectory()
     try
-     try
       let where = self.SessionState.Path.CurrentLocation.Path
       Directory.SetCurrentDirectory where
       if self.ParameterSetName = "FromFile" then
@@ -71,9 +70,6 @@ type ConvertToLcovCommand(outputFile:String) =
         self.XmlDocument.Load self.InputFile
       use stream = File.Open(self.OutputFile, FileMode.OpenOrCreate, FileAccess.Write)
       AltCover.CoverageFormats.ConvertToLcov self.XmlDocument stream
-     with
-     | x -> printfn "%s" <| x.ToString()
-            reraise()
     finally
       Directory.SetCurrentDirectory here
 
