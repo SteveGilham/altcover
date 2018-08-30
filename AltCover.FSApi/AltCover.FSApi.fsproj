@@ -10,7 +10,7 @@
     <RootNamespace>AltCover.FSApi</RootNamespace>
     <AssemblyName>AltCover.FSApi</AssemblyName>
     <UseStandardResourceNames>true</UseStandardResourceNames>
-    <TargetFrameworkVersion>v4.7.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
     <TargetFSharpCoreVersion>4.4.3.0</TargetFSharpCoreVersion>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Name>AltCover.FSApi</Name>
@@ -68,7 +68,16 @@
       <Link>AssemblyVersion.fs</Link>
     </Compile>
     <Compile Include="Definitions.fs" />
+    <Compile Include="Xml.fs" />
+    <Compile Include="Xhtml.fs" />
+    <Compile Include="OpenCover.fs" />
+    <Compile Include="CoverageFormats.fs" />
     <Content Include="packages.config" />
+    <EmbeddedResource Include="xsd\NCover.xsd" />
+    <EmbeddedResource Include="xsd\OpenCover.xsd" />
+    <EmbeddedResource Include="xsl\OpenCoverToNCover.xsl" />
+    <EmbeddedResource Include="xsl\OpenCoverToNCoverEx.xsl" />
+    <EmbeddedResource Include="xsl\NCoverToBarChart.xsl" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />
@@ -81,6 +90,8 @@
     <Reference Include="System.ValueTuple">
       <Private>True</Private>
     </Reference>
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\AltCover\AltCover.fsproj">

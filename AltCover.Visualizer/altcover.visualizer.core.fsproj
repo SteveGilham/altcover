@@ -46,13 +46,13 @@
     <EmbeddedResource Include="Branch_12x_16x_ylw.png" />
     <EmbeddedResource Include="Branch_12x_16x_grn.png" />
     <EmbeddedResource Include="VIcon.ico" />
-    <EmbeddedResource Include="..\AltCover.PowerShell\xsd\NCover.xsd">
+    <EmbeddedResource Include="..\AltCover.FSApi\xsd\NCover.xsd">
       <Link>NCover.xsd</Link>
     </EmbeddedResource>
-    <EmbeddedResource Include="..\AltCover.PowerShell\xsd\OpenCover.xsd">
+    <EmbeddedResource Include="..\AltCover.FSApi\xsd\OpenCover.xsd">
       <Link>OpenCover.xsd</Link>
     </EmbeddedResource>
-    <EmbeddedResource Include="..\AltCover.PowerShell\xsl\OpenCoverToNCoverEx.xsl">
+    <EmbeddedResource Include="..\AltCover.FSApi\xsl\OpenCoverToNCoverEx.xsl">
       <Link>OpenCoverToNCoverEx.xsl</Link>
     </EmbeddedResource>
     <EmbeddedResource Include="..\AltCover.Avalonia\config.xsd" Link="config.xsd" />
