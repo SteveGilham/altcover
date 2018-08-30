@@ -3,12 +3,9 @@
 open System
 open System.Diagnostics.CodeAnalysis
 open System.IO
-open System.Linq
 open System.Management.Automation
 open System.Xml
 open System.Xml.XPath
-
-open AltCover.PowerShell
 
 [<Cmdlet(VerbsData.ConvertTo, "BarChart")>]
 [<OutputType(typeof<XmlDocument>)>]
@@ -18,7 +15,6 @@ type ConvertToBarChartCommand(outputFile:String) =
 
   new () = ConvertToBarChartCommand(String.Empty)
 
-  [<SuppressMessage("Microsoft.Design", "CA1059", Justification="converts concrete types")>]
   [<Parameter(ParameterSetName = "XmlDoc", Mandatory = true, Position = 1,
       ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
   member val XmlDocument:IXPathNavigable = null with get, set
@@ -33,38 +29,6 @@ type ConvertToBarChartCommand(outputFile:String) =
       ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
   member val OutputFile:string = outputFile with get, set
 
-  member private self.DoConvert() =
-      let navigator = self.XmlDocument.CreateNavigator()
-      let format = if navigator.Select("/CoverageSession").OfType<XPathNavigator>().Any() then
-                    AltCover.Base.ReportFormat.OpenCover
-                   else AltCover.Base.ReportFormat.NCover
-
-      let intermediate = if format = AltCover.Base.ReportFormat.NCover then self.XmlDocument
-                         else
-                          let modify = XmlUtilities.LoadTransform "OpenCoverToNCoverEx"
-                          let temp = XmlDocument()
-                          do
-                            use feed = temp.CreateNavigator().AppendChild()
-                            modify.Transform (self.XmlDocument, feed)
-                          temp :> IXPathNavigable
-
-      let transform = XmlUtilities.LoadTransform "NCoverToBarChart"
-      let rewrite = XmlDocument()
-      do
-        use output = rewrite.CreateNavigator().AppendChild()
-        transform.Transform (intermediate, output)
-
-      rewrite.DocumentElement.SelectNodes("//script[@language='JavaScript']").OfType<XmlNode>()
-      |> Seq.iter(fun n -> let text = n.InnerText
-                           let cdata = rewrite.CreateCDataSection(text)
-                           n.InnerText <- "//"
-                           n.AppendChild cdata |> ignore)
-
-      let doctype = rewrite.CreateDocumentType("html", null, null, null)
-      rewrite.PrependChild(doctype) |> ignore
-      XmlUtilities.PrependDeclaration rewrite
-      rewrite
-
   override self.ProcessRecord() =
     let here = Directory.GetCurrentDirectory()
     try
@@ -73,7 +37,7 @@ type ConvertToBarChartCommand(outputFile:String) =
       if self.ParameterSetName = "FromFile" then
         self.XmlDocument <- XPathDocument self.InputFile
 
-      let rewrite = self.DoConvert()
+      let rewrite = AltCover.Xhtml.ConvertToBarChart self.XmlDocument
 
       if self.OutputFile |> String.IsNullOrWhiteSpace |> not then
         rewrite.Save(self.OutputFile)

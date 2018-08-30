@@ -1609,7 +1609,6 @@ type AltCoverTests3() = class
     try
       use stdout = new StringWriter()
       Console.SetOut stdout
-      Output.Task <- true
       let rc = AltCover.Main.EffectiveMain [| "i" |]
       Assert.That (rc, Is.EqualTo 0)
       let result = stdout.ToString().Replace("\r\n", "\n")
@@ -1623,7 +1622,6 @@ type AltCoverTests3() = class
 
     finally
       Console.SetOut saved
-      Output.Task <- false
 
   [<Test>]
   member self.VersionIsAsExpected() =
@@ -1632,7 +1630,6 @@ type AltCoverTests3() = class
     try
       use stdout = new StringWriter()
       Console.SetOut stdout
-      Output.Task <- true
       let rc = AltCover.Main.EffectiveMain [| "v" |]
       Assert.That (rc, Is.EqualTo 0)
       let result = stdout.ToString().Replace("\r\n", "\n")
@@ -1644,7 +1641,6 @@ type AltCoverTests3() = class
 
     finally
       Console.SetOut saved
-      Output.Task <- false
 
   [<Test>]
   member self.UsageIsAsExpected() =
@@ -1898,7 +1894,6 @@ or
       Main.EffectiveMain <- save
       Output.Info <- fst saved
       Output.Error <- snd saved
-      Output.Task <- false
 
   [<Test>]
   member self.NonDefaultInstrumentIsOK() =
@@ -1930,7 +1925,6 @@ or
       Main.EffectiveMain <- save
       Output.Info <- fst saved
       Output.Error <- snd saved
-      Output.Task <- false
 
   [<Test>]
   member self.EmptyCollectIsJustTheDefaults() =
@@ -1949,7 +1943,6 @@ or
       Main.EffectiveMain <- save
       Output.Info <- fst saved
       Output.Error <- snd saved
-      Output.Task <- false
 
   [<Test>]
   member self.CollectWithExeIsNotCollecting() =
@@ -1974,7 +1967,6 @@ or
       Main.EffectiveMain <- save
       Output.Info <- fst saved
       Output.Error <- snd saved
-      Output.Task <- false
 
   [<Test>]
   member self.EmptyPowerShellIsJustTheDefaults() =
@@ -1998,7 +1990,6 @@ or
       Main.EffectiveMain <- save
       Output.Info <- fst saved
       Output.Error <- snd saved
-      Output.Task <- false
       Output.Warn <- warned
 
   [<Test>]
@@ -2023,7 +2014,6 @@ or
       Main.EffectiveMain <- save
       Output.Info <- fst saved
       Output.Error <- snd saved
-      Output.Task <- false
       Output.Warn <- warned
   // Recorder.fs => Shadow.Tests
 end

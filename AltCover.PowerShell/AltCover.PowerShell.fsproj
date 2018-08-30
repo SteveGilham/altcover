@@ -74,25 +74,13 @@
     <Compile Include="..\_Generated\VisibleToTest.fs">
       <Link>VisibleToTest.fs</Link>
     </Compile>
-    <Compile Include="RenderToHtml.fs" />
-    <Compile Include="Xml.fs" />
     <Compile Include="OpenCover.fs" />
     <Compile Include="CoverageFormats.fs" />
     <Compile Include="XhtmlReports.fs" />
     <Compile Include="Command.fs" />
     <Content Include="packages.config" />
-    <EmbeddedResource Include="xsd\NCover.xsd" />
-    <EmbeddedResource Include="xsd\OpenCover.xsd" />
-    <EmbeddedResource Include="xsl\OpenCoverToNCover.xsl" />
-    <EmbeddedResource Include="xsl\OpenCoverToNCoverEx.xsl" />
-    <EmbeddedResource Include="xsl\NCoverToBarChart.xsl" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\AltCover.Recorder\AltCover.Recorder.fsproj">
-      <Name>AltCover.Recorder</Name>
-      <Project>{02192b55-3a50-4ad2-b519-560f30c14dd4}</Project>
-      <Private>True</Private>
-    </ProjectReference>
     <Reference Include="FSharp.Core">
       <HintPath>..\packages\FSharp.Core.4.5.2\lib\net45\FSharp.Core.dll</HintPath>
     </Reference>
@@ -114,17 +102,24 @@
     <Reference Include="mscorlib" />
     <Reference Include="System" />
     <Reference Condition="'$(OS)' == 'Windows_NT'" Include="System.Management.Automation" />
-    <ProjectReference Include="..\AltCover\AltCover.fsproj">
-      <Name>AltCover</Name>
-      <Project>{b766260f-6551-4ca8-b2cb-25d2d5092801}</Project>
-      <Private>True</Private>
-    </ProjectReference>
     <Reference Condition="'$(OS)' != 'Windows_NT'" Include="System.Management.Automation">
       <HintPath>..\packages\PowerShellStandard.Library.5.1.0-preview-06\lib\netstandard2.0\System.Management.Automation.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\AltCover.FSApi\AltCover.FSApi.fsproj">
+      <Name>AltCover.FSApi</Name>
+      <Project>{0dc0f7bb-c08f-45e1-a86c-62746372dc4b}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\AltCover\AltCover.fsproj">
+      <Name>AltCover</Name>
+      <Project>{b766260f-6551-4ca8-b2cb-25d2d5092801}</Project>
+      <Private>True</Private>
+    </ProjectReference>
   </ItemGroup>
   <!-- Import Project="..\packages\FSharpLint.MSBuild.0.9.1-beta\build\FSharpLint.MSBuild.targets" Condition="Exists('..\packages\FSharpLint.MSBuild.0.9.1-beta\build\FSharpLint.MSBuild.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

@@ -354,8 +354,6 @@ type Prepare () =
     base.Log.LogMessage (MessageImportance.High, x)
 
   override self.Execute () =
-   try
-    Output.Task <- true
     let log = { Logging.Default with
                                     Error = base.Log.LogError
                                     Warn = base.Log.LogWarning
@@ -391,8 +389,6 @@ type Prepare () =
                                   CommandLine = self.CommandLine
     }
     Api.Prepare task log = 0
-   finally
-    Output.Task <- false
 
 type Collect () =
   inherit Task(null)
@@ -411,8 +407,6 @@ type Collect () =
     base.Log.LogMessage (MessageImportance.High, x)
 
   override self.Execute () =
-   try
-    Output.Task <- true
     let log = { Logging.Default with
                                     Error = base.Log.LogError
                                     Warn = base.Log.LogWarning
@@ -430,8 +424,6 @@ type Collect () =
                                   CommandLine = self.CommandLine
     }
     Api.Collect task log = 0
-   finally
-    Output.Task <- false
 
 type PowerShell () =
   inherit Task(null)

@@ -46,9 +46,9 @@
     <EmbeddedResource Include="StatusCriticalError_16x.png" />
     <EmbeddedResource Include="StatusInformation_16x.png" />
     <EmbeddedResource Include="VSTAAbout_16x.png" />
-    <EmbeddedResource Include="..\AltCover.PowerShell\xsd\NCover.xsd" Link="NCover.xsd" />
-    <EmbeddedResource Include="..\AltCover.PowerShell\xsd\OpenCover.xsd" Link="OpenCover.xsd" />
-    <EmbeddedResource Include="..\AltCover.PowerShell\xsl\OpenCoverToNCoverEx.xsl" Link="OpenCoverToNCoverEx.xsl" />
+    <EmbeddedResource Include="..\AltCover.FSApi\xsd\NCover.xsd" Link="NCover.xsd" />
+    <EmbeddedResource Include="..\AltCover.FSApi\xsd\OpenCover.xsd" Link="OpenCover.xsd" />
+    <EmbeddedResource Include="..\AltCover.FSApi\xsl\OpenCoverToNCoverEx.xsl" Link="OpenCoverToNCoverEx.xsl" />
     <EmbeddedResource Include="config.xsd" />
     <EmbeddedResource Include="AltCover.Avalonia.MainWindow.xaml">
       <LogicalName>AltCover.Avalonia.MainWindow.xaml</LogicalName>

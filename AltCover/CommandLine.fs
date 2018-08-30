@@ -43,7 +43,6 @@ open Process
 type internal StringSink = delegate of string -> unit
 
 module internal Output =
-  let mutable internal Task = false
   let mutable internal Info : (String -> unit) = ignore
   let mutable internal Warn : (String -> unit) = ignore
   let mutable internal Echo : (String -> unit) = ignore
@@ -55,7 +54,7 @@ module internal Output =
     Error <- x.Invoke
   let internal SetWarn (x:StringSink) =
     Warn <- x.Invoke
-  let internal WarnOn x = if x && Task
+  let internal WarnOn x = if x
                           then Warn
                           else Info
 

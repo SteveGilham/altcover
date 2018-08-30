@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <RootNamespace>AltCover.PowerShell</RootNamespace>
     <AssemblyName>AltCover.PowerShell</AssemblyName>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
@@ -23,17 +23,10 @@
   <ItemGroup>
     <Compile Include="..\_Generated\AssemblyVersion.fs" Link="AssemblyVersion.fs" />
     <Compile Include="..\_Generated\VisibleToTest.fs" Link="VisibleToTest.fs" />
-    <Compile Include="RenderToHtml.fs" />
-    <Compile Include="Xml.fs" />
     <Compile Include="OpenCover.fs" />
     <Compile Include="CoverageFormats.fs" />
     <Compile Include="XhtmlReports.fs" />
     <Compile Include="Command.fs" />
-    <EmbeddedResource Include="xsd\NCover.xsd" />
-    <EmbeddedResource Include="xsd\OpenCover.xsd" />
-    <EmbeddedResource Include="xsl\OpenCoverToNCover.xsl" />
-    <EmbeddedResource Include="xsl\OpenCoverToNCoverEx.xsl" />
-    <EmbeddedResource Include="xsl\NCoverToBarChart.xsl" />
   </ItemGroup>
 
   <ItemGroup>
@@ -48,6 +41,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\AltCover\altcover.core.fsproj" />
+    <ProjectReference Include="..\AltCover.FSApi\altcover.fsapi.core.fsproj" />
   </ItemGroup>
 
   <ItemGroup>

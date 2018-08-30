@@ -143,6 +143,8 @@ type InvokeAltCoverCommand(runner:bool) =
       ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
   member val Version:SwitchParameter = SwitchParameter(false) with get, set
 
+  member val private Fail:String list = [] with get, set
+
   member private self.Collect () =
       { CollectParams.Default with RecorderDirectory = self.RecorderDirectory;
                                    WorkingDirectory = self.WorkingDirectory;
@@ -186,19 +188,19 @@ type InvokeAltCoverCommand(runner:bool) =
       }
 
   member private self.Log () =
-    { Logging.Default with Error = (fun s -> let fail = ErrorRecord(InvalidOperationException(), s, ErrorCategory.FromStdErr, self)
-                                             self.WriteError fail)
+    { Logging.Default with Error = (fun s -> self.Fail <- s :: self.Fail)
                            Info = (fun s -> self.WriteInformation (s, [| |]))
                            Warn = (fun s -> self.WriteWarning s)
     }
 
   override self.ProcessRecord() =
     let here = Directory.GetCurrentDirectory()
-    Output.Task <- self.Version.IsPresent |> not
     let log = self.Log()
     try
       let where = self.SessionState.Path.CurrentLocation.Path
       Directory.SetCurrentDirectory where
+      let makeError s = ErrorRecord(InvalidOperationException(), s, ErrorCategory.InvalidOperation, self)
+                        |> self.WriteError
 
       let status = (match (self.Version.IsPresent, self.Runner.IsPresent) with
                     | (true, _) -> (fun _ -> Api.Version() |> log.Info
@@ -207,9 +209,10 @@ type InvokeAltCoverCommand(runner:bool) =
                                    Api.Collect task
                     | _ -> let task = self.Prepare()
                            Api.Prepare task) log
-
-      if status <> 0 then
-        let fail = ErrorRecord(InvalidOperationException(), status.ToString(), ErrorCategory.InvalidOperation, self)
-        self.WriteError fail
+      if status <> 0 then status.ToString() |> self.Log().Error
+      match self.Fail with
+      | [] -> ()
+      | things -> String.Join(Environment.NewLine, things |> List.rev)
+                  |> makeError
     finally
       Directory.SetCurrentDirectory here

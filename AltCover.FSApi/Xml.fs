@@ -1,4 +1,4 @@
-﻿namespace AltCover.PowerShell
+﻿namespace AltCover
 
 open System
 open System.Diagnostics.CodeAnalysis
@@ -10,7 +10,7 @@ open System.Xml.Linq
 open System.Xml.Schema
 open System.Xml.Xsl
 
-module internal XmlUtilities =
+module XmlUtilities =
 
   [<SuppressMessage("Microsoft.Design", "CA1059", Justification="converts concrete types")>]
   let ToXmlDocument(xDocument:XDocument) =
@@ -47,13 +47,13 @@ module internal XmlUtilities =
     xdoc
 
   [<SuppressMessage("Microsoft.Usage", "CA2202", Justification="Observably safe")>]
-  let LoadSchema (format:AltCover.Base.ReportFormat) =
+  let internal LoadSchema (format:AltCover.Base.ReportFormat) =
     let schemas = new XmlSchemaSet()
     use stream = match format with
                  | AltCover.Base.ReportFormat.NCover ->
-                  Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.PowerShell.xsd.NCover.xsd")
+                  Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.FSApi.xsd.NCover.xsd")
                  | _ ->
-                  Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.PowerShell.xsd.OpenCover.xsd")
+                  Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.FSApi.xsd.OpenCover.xsd")
     use reader = new StreamReader(stream)
     use xreader = XmlReader.Create(reader)
     schemas.Add(String.Empty, xreader) |> ignore
@@ -62,14 +62,14 @@ module internal XmlUtilities =
   [<SuppressMessage("Microsoft.Usage", "CA2202", Justification="Observably safe")>]
   let LoadTransform (name:string) =
     let transform = new XslCompiledTransform()
-    use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.PowerShell.xsl." + name + ".xsl")
+    use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.FSApi.xsl." + name + ".xsl")
     use reader = new StreamReader(stream)
     use xreader = XmlReader.Create(reader)
     transform.Load (xreader, XsltSettings.TrustedXslt, XmlUrlResolver())
     transform
 
   [<SuppressMessage("Microsoft.Design", "CA1059", Justification="converts concrete types")>]
-  let DiscoverFormat (xmlDocument:XmlDocument) =
+  let internal DiscoverFormat (xmlDocument:XmlDocument) =
     let format = if xmlDocument.SelectNodes("/CoverageSession").OfType<XmlNode>().Any() then
                     AltCover.Base.ReportFormat.OpenCover
                  else AltCover.Base.ReportFormat.NCover
@@ -88,6 +88,7 @@ module internal XmlUtilities =
     | :? BadImageFormatException
     | :? FileLoadException -> fallback
 
+  [<SuppressMessage("Microsoft.Design", "CA1059", Justification="Implies concrete type")>]
   let PrependDeclaration (x:XmlDocument) =
       let xmlDeclaration = x.CreateXmlDeclaration(
                                         "1.0",
