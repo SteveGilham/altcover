@@ -1397,7 +1397,7 @@ _Target "Packaging" (fun _ ->
     let cakeFiles where = (!! "./_Binaries/AltCover.Cake/Release+AnyCPU/netstandard2.0/AltCover.C*.*")
                            |> Seq.map (fun x -> (x, Some (where + Path.GetFileName x), None))
                            |> Seq.toList
-    let fakeFiles where = (!! "./_Binaries/AltCover.Fake/Release+AnyCPU/netstandard2.0/AltCover.F*.*")
+    let fakeFiles where = (!! "./_Binaries/AltCover.Fake/Release+AnyCPU/netstandard2.0/AltCover.Fak*.*")
                            |> Seq.map (fun x -> (x, Some (where + Path.GetFileName x), None))
                            |> Seq.toList
 
