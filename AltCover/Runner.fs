@@ -367,11 +367,14 @@ module internal Runner =
                                        | AltCover.Base.Tag.Both -> Base.Both (formatter.ReadInt64(), formatter.ReadInt32())
                                        | _ -> Base.Null)
                       with
-                      | :? IOException -> (null, -1, Base.Null)
+                      | :? EndOfStreamException -> (null, -1, Base.Null)
+                      | :? IOException as x -> x.ToString() |> Output.Error
+                                               (null, -1, Base.Null)
             let (key, _, _) = hit
             if key |> String.IsNullOrWhiteSpace  |> not then
               hit |> hits.Add
               sink()
+            else sprintf "%A" hit |> Output.Error
           sink()
           timer.Stop()
           after <- hits.Count
