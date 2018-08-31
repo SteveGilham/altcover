@@ -1325,8 +1325,17 @@ _Target "Packaging" (fun _ ->
     let cake = Path.getFullName "_Binaries/AltCover.Cake/Release+AnyCPU/AltCover.Cake.dll"
     let vis = Path.getFullName "_Binaries/AltCover.Visualizer/Release+AnyCPU/AltCover.Visualizer.exe"
     let packable = Path.getFullName "./_Binaries/README.html"
-    let resources = DirectoryInfo.getMatchingFilesRecursive "*.resources.dll" (DirectoryInfo.ofPath (Path.getFullName "_Binaries/AltCover/Release+AnyCPU"))
-    let resources2 = DirectoryInfo.getMatchingFilesRecursive "AltCover.Visualizer.resources.dll" (DirectoryInfo.ofPath (Path.getFullName "_Binaries/AltCover.Visualizer/Release+AnyCPU"))
+
+    let root = Path.getFullName "_Binaries/AltCover/Release+AnyCPU"
+    let subs = Directory.GetDirectories root
+    let resources = subs
+                    |> Seq.map (fun d -> Directory.GetFiles(d, "*.resources.dll"))
+                    |> Seq.concat
+
+
+    let resources2 = Directory.GetDirectories (Path.getFullName "_Binaries/AltCover.Visualizer/Release+AnyCPU")
+                     |> Seq.map (fun d -> Directory.GetFiles(d, "*.resources.dll"))
+                     |> Seq.concat
 
     let applicationFiles = if File.Exists AltCover then
                             [
@@ -1357,8 +1366,8 @@ _Target "Packaging" (fun _ ->
 
     let resourceFiles path = if File.Exists AltCover then
                                   Seq.concat [resources; resources2]
-                                  |> Seq.map (fun x -> x.FullName)
                                   |> Seq.map (fun x -> (x, Some (path + Path.GetFileName(Path.GetDirectoryName(x))), None))
+                                  |> Seq.distinctBy (fun (x,y,z) -> (Option.get y) + "/" + (Path.GetFileName x))
                                   |> Seq.toList
                               else []
 
