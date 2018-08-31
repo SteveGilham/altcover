@@ -230,7 +230,7 @@ _Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standa
             { info with
                     FileName = (Tools.findToolInSubPath "gendarme.exe" "./packages")
                     WorkingDirectory = "."
-                    Arguments = "--severity all --confidence all --config ./Build/rules-posh.xml --console --html ./_Reports/gendarme.html _Binaries/AltCover.PowerShell/Debug+AnyCPU/AltCover.PowerShell.dll ./_Reports/gendarme.html _Binaries/AltCover.FSApi/Debug+AnyCPU/AltCover.FSApi.dll"})
+                    Arguments = "--severity all --confidence all --config ./Build/rules-posh.xml --console --html ./_Reports/gendarme.html _Binaries/AltCover.PowerShell/Debug+AnyCPU/AltCover.PowerShell.dll _Binaries/AltCover.FSApi/Debug+AnyCPU/AltCover.FSApi.dll"})
                     "Gendarme Errors were detected"
 
     Actions.Run (fun info ->
