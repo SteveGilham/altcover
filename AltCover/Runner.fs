@@ -361,17 +361,19 @@ module internal Runner =
                           let id = formatter.ReadString()
                           let strike = formatter.ReadInt32()
                           let tag = formatter.ReadByte() |> int
-                          (id, strike, match enum tag  with
-                                       | AltCover.Base.Tag.Time -> Base.Time <| formatter.ReadInt64()
-                                       | AltCover.Base.Tag.Call -> Base.Call <| formatter.ReadInt32()
-                                       | AltCover.Base.Tag.Both -> Base.Both (formatter.ReadInt64(), formatter.ReadInt32())
-                                       | _ -> Base.Null)
+                          Some (id, strike, match enum tag  with
+                                            | AltCover.Base.Tag.Time -> Base.Time <| formatter.ReadInt64()
+                                            | AltCover.Base.Tag.Call -> Base.Call <| formatter.ReadInt32()
+                                            | AltCover.Base.Tag.Both -> Base.Both (formatter.ReadInt64(), formatter.ReadInt32())
+                                            | _ -> Base.Null)
                       with
-                      | :? IOException -> (null, -1, Base.Null)
-            let (key, _, _) = hit
-            if key |> String.IsNullOrWhiteSpace  |> not then
-              hit |> hits.Add
-              sink()
+                      | :? EndOfStreamException -> None
+            match hit with
+            | Some tuple -> let (key, _, _) = tuple
+                            if key |> String.IsNullOrWhiteSpace  |> not then
+                              tuple |> hits.Add
+                            sink()
+            | None -> ()
           sink()
           timer.Stop()
           after <- hits.Count
