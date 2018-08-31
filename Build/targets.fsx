@@ -230,7 +230,7 @@ _Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standa
             { info with
                     FileName = (Tools.findToolInSubPath "gendarme.exe" "./packages")
                     WorkingDirectory = "."
-                    Arguments = "--severity all --confidence all --config ./Build/rules-posh.xml --console --html ./_Reports/gendarme.html _Binaries/AltCover.PowerShell/Debug+AnyCPU/AltCover.PowerShell.dll ./_Reports/gendarme.html _Binaries/AltCover.FSApi/Debug+AnyCPU/AltCover.FSApi.dll"})
+                    Arguments = "--severity all --confidence all --config ./Build/rules-posh.xml --console --html ./_Reports/gendarme.html _Binaries/AltCover.PowerShell/Debug+AnyCPU/AltCover.PowerShell.dll _Binaries/AltCover.FSApi/Debug+AnyCPU/AltCover.FSApi.dll"})
                     "Gendarme Errors were detected"
 
     Actions.Run (fun info ->
@@ -1325,8 +1325,6 @@ _Target "Packaging" (fun _ ->
     let cake = Path.getFullName "_Binaries/AltCover.Cake/Release+AnyCPU/AltCover.Cake.dll"
     let vis = Path.getFullName "_Binaries/AltCover.Visualizer/Release+AnyCPU/AltCover.Visualizer.exe"
     let packable = Path.getFullName "./_Binaries/README.html"
-    let resources = DirectoryInfo.getMatchingFilesRecursive "*.resources.dll" (DirectoryInfo.ofPath (Path.getFullName "_Binaries/AltCover/Release+AnyCPU"))
-    let resources2 = DirectoryInfo.getMatchingFilesRecursive "AltCover.Visualizer.resources.dll" (DirectoryInfo.ofPath (Path.getFullName "_Binaries/AltCover.Visualizer/Release+AnyCPU"))
 
     let applicationFiles = if File.Exists AltCover then
                             [
@@ -1356,10 +1354,14 @@ _Target "Packaging" (fun _ ->
                            else []
 
     let resourceFiles path = if File.Exists AltCover then
-                                  Seq.concat [resources; resources2]
-                                  |> Seq.map (fun x -> x.FullName)
-                                  |> Seq.map (fun x -> (x, Some (path + Path.GetFileName(Path.GetDirectoryName(x))), None))
-                                  |> Seq.toList
+                                ["_Binaries/AltCover/Release+AnyCPU"; "_Binaries/AltCover.Visualizer/Release+AnyCPU"]
+                                |> List.map (fun f -> Directory.GetDirectories (Path.getFullName f)
+                                                      |> Seq.map (fun d -> Directory.GetFiles(d, "*.resources.dll"))
+                                                      |> Seq.concat)
+                                |> Seq.concat
+                                |> Seq.map (fun x -> (x, Some (path + Path.GetFileName(Path.GetDirectoryName(x))), None))
+                                |> Seq.distinctBy (fun (x,y,_) -> (Option.get y) + "/" + (Path.GetFileName x))
+                                |> Seq.toList
                               else []
 
     let nupkg = (Path.getFullName "./nupkg").Length
