@@ -1326,17 +1326,6 @@ _Target "Packaging" (fun _ ->
     let vis = Path.getFullName "_Binaries/AltCover.Visualizer/Release+AnyCPU/AltCover.Visualizer.exe"
     let packable = Path.getFullName "./_Binaries/README.html"
 
-    let root = Path.getFullName "_Binaries/AltCover/Release+AnyCPU"
-    let subs = Directory.GetDirectories root
-    let resources = subs
-                    |> Seq.map (fun d -> Directory.GetFiles(d, "*.resources.dll"))
-                    |> Seq.concat
-
-
-    let resources2 = Directory.GetDirectories (Path.getFullName "_Binaries/AltCover.Visualizer/Release+AnyCPU")
-                     |> Seq.map (fun d -> Directory.GetFiles(d, "*.resources.dll"))
-                     |> Seq.concat
-
     let applicationFiles = if File.Exists AltCover then
                             [
                                 (AltCover, Some "tools/net45", None)
@@ -1365,10 +1354,14 @@ _Target "Packaging" (fun _ ->
                            else []
 
     let resourceFiles path = if File.Exists AltCover then
-                                  Seq.concat [resources; resources2]
-                                  |> Seq.map (fun x -> (x, Some (path + Path.GetFileName(Path.GetDirectoryName(x))), None))
-                                  |> Seq.distinctBy (fun (x,y,z) -> (Option.get y) + "/" + (Path.GetFileName x))
-                                  |> Seq.toList
+                                ["_Binaries/AltCover/Release+AnyCPU"; "_Binaries/AltCover.Visualizer/Release+AnyCPU"]
+                                |> List.map (fun f -> Directory.GetDirectories (Path.getFullName f)
+                                                      |> Seq.map (fun d -> Directory.GetFiles(d, "*.resources.dll"))
+                                                      |> Seq.concat)
+                                |> Seq.concat
+                                |> Seq.map (fun x -> (x, Some (path + Path.GetFileName(Path.GetDirectoryName(x))), None))
+                                |> Seq.distinctBy (fun (x,y,_) -> (Option.get y) + "/" + (Path.GetFileName x))
+                                |> Seq.toList
                               else []
 
     let nupkg = (Path.getFullName "./nupkg").Length
