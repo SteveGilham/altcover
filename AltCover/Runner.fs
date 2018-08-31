@@ -368,8 +368,10 @@ module internal Runner =
                                             | _ -> Base.Null)
                       with
                       | :? EndOfStreamException -> None
+#if MONO
                       | :? IOException as x -> x.ToString() |> Output.Error
                                                reraise()
+#endif
             match hit with
             | Some tuple -> let (key, _, _) = tuple
                             if key |> String.IsNullOrWhiteSpace  |> not then

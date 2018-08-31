@@ -19,6 +19,8 @@
     <ResolveNuGetPackages>false</ResolveNuGetPackages>
     <UseStandardResourceNames>True</UseStandardResourceNames>
     <Win32Resource>$(ProjectDir)Resource.res</Win32Resource>
+    <ExtraDefines Condition="'$(OS)' == 'Windows_NT'">$(TargetFrameworkVersion)</ExtraDefines>
+    <ExtraDefines Condition="'$(OS)' != 'Windows_NT'">MONO</ExtraDefines>    
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -32,7 +34,7 @@
     <WarningsAsErrors>
     </WarningsAsErrors>
     <OtherFlags>--keyfile:$(SolutionDir)Build\Infrastructure.snk</OtherFlags>
-    <DefineConstants>TRACE;DEBUG;CODE_ANALYSIS;RUNNER</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;CODE_ANALYSIS;RUNNER;$(ExtraDefines)</DefineConstants>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
@@ -46,7 +48,7 @@
     <WarningsAsErrors>
     </WarningsAsErrors>
     <OtherFlags>--keyfile:$(SolutionDir)Build\Infrastructure.snk</OtherFlags>
-    <DefineConstants>TRACE;RUNNER</DefineConstants>
+    <DefineConstants>TRACE;RUNNER;$(ExtraDefines)</DefineConstants>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <Choose>
