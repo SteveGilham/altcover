@@ -80,7 +80,7 @@ module XmlUtilities =
 
   let internal AssemblyNameWithFallback path fallback =
     try
-        System.Reflection.AssemblyName.GetAssemblyName(path).FullName
+        AssemblyName.GetAssemblyName(path).FullName
     with
     | :? ArgumentException
     | :? FileNotFoundException
