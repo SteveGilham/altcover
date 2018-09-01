@@ -51,10 +51,3 @@ module DotNet =
   let ToTestArguments (prepare:PrepareParams) (collect:CollectParams) =
     ToTestArgumentList prepare collect
     |> Join
-
-  let CSToTestArgumentList (prepare:PrepareParams, collect:CollectParams) =
-    ToTestArgumentList prepare collect
-    |> List.toArray
-
-  let CSToTestArguments (prepare:PrepareParams, collect:CollectParams) =
-    ToTestArguments prepare collect
