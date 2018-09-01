@@ -1530,7 +1530,8 @@ type AltCoverTests3() = class
                  Is.EquivalentTo (fromInfo.EnumerateFiles()
                  |>Seq.map (fun x -> x.Name)),
                  "Simple to-from comparison failed")
-    Assert.That (x,
+    Assert.That (x
+                 |> Seq.filter(fun f -> f.EndsWith(".dl_", StringComparison.OrdinalIgnoreCase) |> not) ,
                  Is.EquivalentTo (fromInfo.EnumerateFiles()
                  |> Seq.map (fun x -> x.FullName)
                  |> Seq.filter (fun f -> f.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) ||
@@ -1540,7 +1541,8 @@ type AltCoverTests3() = class
                  "First list mismatch with from files")
     Assert.That (y,
                  Is.EquivalentTo (x
-                 |> Seq.map Path.GetFileNameWithoutExtension),
+                 |> Seq.map Path.GetFileNameWithoutExtension
+                 |> Seq.map (fun f -> if f = "TailCallSample" then "Sample7" else f)),
                  "Second list mismatch")
 
   [<Test>]

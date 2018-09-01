@@ -815,12 +815,15 @@ type AltCoverTests2() = class
 #else
     let shift = "/netcoreapp2.0"
 #endif
-    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack() +
-                            shift, "AltCover.Recorder.dll")
+    let rpath = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack() +
+                             shift, "AltCover.Recorder.dll")
+    let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(),
+                            "TailCallSample.dl_")
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-    let recorder = AltCover.Instrument.RecordingMethod def
-    let target = def.MainModule.GetType("AltCover.Recorder.Instance").Methods
-                 |> Seq.find (fun m -> m.Name = "loop")
+    let rdef = Mono.Cecil.AssemblyDefinition.ReadAssembly rpath 
+    let recorder = AltCover.Instrument.RecordingMethod rdef
+    let target = def.MainModule.GetType("Tests.Problematic").Methods
+                 |> Seq.find (fun m -> m.Name = "Using FsUnit")
     let raw = AltCover.InstrumentContext.Build([])
     let state = {  raw with
                     RecordingMethodRef = { raw.RecordingMethodRef with
