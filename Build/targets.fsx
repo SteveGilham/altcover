@@ -2351,6 +2351,7 @@ _Target "BulkReport" (fun _ ->
 _Target "All" ignore
 
 let resetColours = (fun _ ->
+  // [System.Console]::ForegroundColor = [System.ConsoleColor]::White
   System.Console.ResetColor()
 )
 Target.description "ResetConsoleColours"
