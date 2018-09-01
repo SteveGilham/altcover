@@ -23,7 +23,7 @@ module DotNet =
   let private FromArg name s =
     (Arg name s, IsSet s)
 
-  let Join (l : string list) =
+  let private Join (l : string list) =
     String.Join(" ", l)
 
   let ToTestArgumentList (prepare:PrepareParams) (collect:CollectParams) =
