@@ -60,7 +60,7 @@ module XmlUtilities =
     schemas
 
   [<SuppressMessage("Microsoft.Usage", "CA2202", Justification="Observably safe")>]
-  let LoadTransform (name:string) =
+  let internal LoadTransform (name:string) =
     let transform = new XslCompiledTransform()
     use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.FSApi.xsl." + name + ".xsl")
     use reader = new StreamReader(stream)
@@ -78,9 +78,9 @@ module XmlUtilities =
     xmlDocument.Validate (null)
     format
 
-  let AssemblyNameWithFallback path fallback =
+  let internal AssemblyNameWithFallback path fallback =
     try
-        System.Reflection.AssemblyName.GetAssemblyName(path).FullName
+        AssemblyName.GetAssemblyName(path).FullName
     with
     | :? ArgumentException
     | :? FileNotFoundException

@@ -1344,7 +1344,7 @@ _Target "Packaging" (fun _ ->
                                 (AltCover, Some "lib/net45", None)
                                 (recorder, Some "lib/net45", None)
                                 (posh, Some "lib/net45", None)
-                                (fsapi, Some "tools/net45", None)
+                                (fsapi, Some "lib/net45", None)
                                 (csapi, Some "lib/net45", None)
                                 (cake, Some "lib/net45", None)
                                 (fscore, Some "lib/net45", None)
@@ -2351,6 +2351,7 @@ _Target "BulkReport" (fun _ ->
 _Target "All" ignore
 
 let resetColours = (fun _ ->
+  // [System.Console]::ForegroundColor = [System.ConsoleColor]::White
   System.Console.ResetColor()
 )
 Target.description "ResetConsoleColours"
