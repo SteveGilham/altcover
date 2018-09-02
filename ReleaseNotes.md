@@ -3,10 +3,12 @@ Q. Never mind the fluff -- how do I get started?
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
 # 4.0.6xx (Doruka series release 4)
-* [BUGFIX] Work around an apparent change in behaviour in mono 5.14 that loses some recorded coverage in runner mode; the problem does not affect .net framework or .net core, but does impact those travis build self-tests that aren't on .net core
 * Add SourceLink to the build process (and the .nuspec)
+* [BUGFIX] Work around an apparent change in behaviour in mono 5.14 that loses some recorded coverage in runner mode; the problem does not affect .net framework or .net core, but does impact those travis build self-tests that aren't on .net core
 * [BUGFIX] Fix localization packaging in .netcore 2.1.4xx
+* [BUGFIX] Source scrolling in the global tool version of the visualizer
 * [API] Expose all cmdlets as APIs
+* [Visualizer] add the XML document as a root of the tree view, and the current source file to the application title bar
 
 # 4.0.618 (Doruka series release 3)
 * [NEW PACKAGE] `altcover.visualizer` containing .net core/GTK3 Visualizer global tool implementation
