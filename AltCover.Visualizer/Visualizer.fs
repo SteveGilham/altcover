@@ -349,6 +349,8 @@ module Gui =
     let resources = new ResourceManager("AltCover.Visualizer.Resource", executingAssembly)
     resources.GetString(key)
 
+  let private XmlIcon =
+    lazy (new Pixbuf(Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Visualizer.XMLFile_16x.png")))
   let private AssemblyIcon =
     lazy (new Pixbuf(Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Visualizer.Assembly_6212.png")))
   let private NamespaceIcon =
@@ -1029,18 +1031,24 @@ module Gui =
              if not (Seq.isEmpty newer) then OutdatedCoverageFileMessage h.mainWindow current
              let model =
                new TreeStore(typeof<string>, typeof<Gdk.Pixbuf>, typeof<string>, typeof<Gdk.Pixbuf>, typeof<string>,
-                             typeof<Gdk.Pixbuf>, typeof<string>, typeof<Gdk.Pixbuf>)
+                             typeof<Gdk.Pixbuf>, typeof<string>, typeof<Gdk.Pixbuf>, typeof<string>, typeof<Gdk.Pixbuf>)
              Mappings.Clear()
-             let ApplyToModel (theModel : TreeStore) (group : XPathNavigator * string) =
+             let toprow = model.AppendValues(current.Name, XmlIcon.Force())
+
+             let ApplyToModel (theModel : TreeStore) theRow (group : XPathNavigator * string) =
                let name = snd group
-               let row = theModel.AppendValues(name, AssemblyIcon.Force())
-               PopulateAssemblyNode theModel row (fst group)
+               let newrow =
+                theModel.AppendValues(theRow,
+                                      [| name :> obj
+                                         AssemblyIcon.Force() :> obj |])
+
+               PopulateAssemblyNode theModel newrow (fst group)
 
              let assemblies = coverage.Document.CreateNavigator().Select("//module") |> Seq.cast<XPathNavigator>
              assemblies
              |> Seq.map (fun node -> (node, node.GetAttribute("assemblyIdentity", String.Empty).Split(',') |> Seq.head))
              |> Seq.sortBy snd
-             |> Seq.iter (ApplyToModel model)
+             |> Seq.iter (ApplyToModel model toprow)
              let UpdateUI (theModel :
 #if NETCOREAPP2_1
                                        ITreeModel
