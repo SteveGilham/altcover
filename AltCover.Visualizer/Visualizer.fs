@@ -466,7 +466,7 @@ module Gui =
   let private ShowMessage (parent : Window) (message : string) (messageType : MessageType) =
     use md = new MessageDialog(parent, DialogFlags.Modal ||| DialogFlags.DestroyWithParent, messageType, ButtonsType.Close, message)
     md.Icon <- parent.Icon
-    md.Title <- parent.Title
+    md.Title <- "AltCover.Visualizer"
     md.Run() |> ignore
     md.Destroy()
 
@@ -824,6 +824,7 @@ module Gui =
       else
         let child = points |> Seq.head
         let filename = child.GetAttribute("document", String.Empty)
+        handler.mainWindow.Title <- "AltCover.Visualizer - " + filename
         let info = new FileInfo(filename)
         let current = new FileInfo(handler.coverageFiles.Head)
         if (not info.Exists) then MissingSourceThisFileMessage handler.mainWindow current info
@@ -1060,6 +1061,8 @@ module Gui =
                h.refreshButton.Sensitive <- true
                // Do real UI work here
                h.classStructureTree.Model <- theModel
+               h.codeView.Buffer.Clear()
+               h.mainWindow.Title <- "AltCover.Visualizer"
                updateMRU h info.FullName true
              ////ShowMessage h.mainWindow (sprintf "%s\r\n>%A" info.FullName h.coverageFiles) MessageType.Info
              InvokeOnGuiThread(UpdateUI model current)
