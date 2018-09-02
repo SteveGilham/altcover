@@ -806,6 +806,8 @@ module Gui =
         h.codeView.ScrollToMark(mark, 0.0, true, 0.0, 0.3)
         buff.DeleteMark("line")
 
+  let latch = new Threading.ManualResetEvent false
+
   let private OnRowActivated (handler : Handler) (activation : RowActivatedArgs) =
     let HitFilter (activated : RowActivatedArgs) (path : TreePath) = activated.Path.Compare(path) = 0
     let hits = Mappings.Keys |> Seq.filter (HitFilter activation)
@@ -844,6 +846,10 @@ module Gui =
               handler.codeView.CursorVisible <- false
               handler.codeView.QueueDraw()
 #if NETCOREAPP2_1
+              async {
+                Threading.Thread.Sleep(300)
+                ScrollToRow handler ()
+              } |> Async.Start
 #else
               ScrollToRow handler ()
 #endif
@@ -950,7 +956,7 @@ module Gui =
     let handler = PrepareGui()
 #if NETCOREAPP2_1
     handler.codeView.Drawn
-    |> Event.add (ScrollToRow handler)
+    |> Event.add (fun _ -> latch.Set() |> ignore)
 #endif
     handler.mainWindow.DeleteEvent
     |> Event.add (fun args ->
