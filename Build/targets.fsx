@@ -1558,12 +1558,12 @@ _Target "PrepareDotNetBuild" (fun _ ->
 
     // dotnet tooling mods
     [
-        ("DotnetCliTool", "./_Generated/altcover.dotnet.nuspec", "AltCover (dotnet CLI tool install)")
-        ("DotnetTool", "./_Generated/altcover.global.nuspec", "AltCover (dotnet global tool install)")
-        ("DotnetTool", "./_Generated/altcover.visualizer.nuspec", "AltCover.Visualizer (dotnet global tool install)")
-        (String.Empty, "./_Generated/altcover.api.nuspec", "AltCover (API install)")
+        ("DotnetCliTool", "./_Generated/altcover.dotnet.nuspec", "AltCover (dotnet CLI tool install)", None)
+        ("DotnetTool", "./_Generated/altcover.global.nuspec", "AltCover (dotnet global tool install)", None)
+        ("DotnetTool", "./_Generated/altcover.visualizer.nuspec", "AltCover.Visualizer (dotnet global tool install)", Some "AltCover.Visualizer/logo.png")
+        (String.Empty, "./_Generated/altcover.api.nuspec", "AltCover (API install)", None)
     ]
-    |> List.iter (fun (ptype, path, caption) ->
+    |> List.iter (fun (ptype, path, caption, icon) ->
         let x s = XName.Get(s, "http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd")
         let dotnetNupkg = XDocument.Load "./Build/AltCover.nuspec"
         let title = dotnetNupkg.Descendants(x "title") |> Seq.head
@@ -1574,6 +1574,11 @@ _Target "PrepareDotNetBuild" (fun _ ->
             insert.Add(XElement(x "packageType",
                                 XAttribute (XName.Get "name", ptype)))
             tag.AddAfterSelf insert
+        match icon with
+        | None -> ()
+        | Some logo -> let tag = dotnetNupkg.Descendants(x "iconUrl") |> Seq.head
+                       let text = String.Concat(tag.Nodes()).Replace("Build/AltCover_128.png", logo)
+                       tag.Value <- text
         dotnetNupkg.Save path)
 )
 
