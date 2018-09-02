@@ -230,7 +230,7 @@ _Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standa
             { info with
                     FileName = (Tools.findToolInSubPath "gendarme.exe" "./packages")
                     WorkingDirectory = "."
-                    Arguments = "--severity all --confidence all --config ./Build/rules-posh.xml --console --html ./_Reports/gendarme.html _Binaries/AltCover.PowerShell/Debug+AnyCPU/AltCover.PowerShell.dll"})
+                    Arguments = "--severity all --confidence all --config ./Build/rules-posh.xml --console --html ./_Reports/gendarme.html _Binaries/AltCover.PowerShell/Debug+AnyCPU/AltCover.PowerShell.dll _Binaries/AltCover.FSApi/Debug+AnyCPU/AltCover.FSApi.dll"})
                     "Gendarme Errors were detected"
 
     Actions.Run (fun info ->
@@ -294,51 +294,20 @@ _Target "FxCop" (fun _ -> // Needs debug because release is compiled --standalon
         { info with
                 FileName = fxCop
                 WorkingDirectory = "."
-                Arguments = "/c /f:\"_Binaries/AltCover.Visualizer/Debug+AnyCPU/AltCover.Visualizer.exe\" /o:\"_Reports/FxCopReport.xml\" /rid:-Microsoft.Usage#CA2208 /rid:-Microsoft.Usage#CA2235 /rid:-Microsoft.Maintainability#CA1506 /rid:-Microsoft.Design#CA1004 /rid:-Microsoft.Design#CA1006 /rid:-Microsoft.Naming#CA1707 /rid:-Microsoft.Design#CA1006 /rid:-Microsoft.Naming#CA1715 /rid:-Microsoft.Naming#CA1704 /rid:-Microsoft.Naming#CA1709 /t:AltCover.Augment,AltCover.Visualizer.Transformer,AltCover.Visualizer.CoverageFile,AltCover.Visualizer.Extensions,AltCover.Visualizer.Gui /ignoregeneratedcode /s /gac"
+                Arguments = "/c /f:\"_Binaries/AltCover.FSApi/Debug+AnyCPU/AltCover.FSApi.dll\" /o:\"_Reports/FxCopReport.xml\" /rid:-Microsoft.Usage#CA2235 /rid:-Microsoft.Performance#CA1819 /rid:-Microsoft.Design#CA1020 /rid:-Microsoft.Design#CA1004 /rid:-Microsoft.Design#CA1006 /rid:-Microsoft.Design#CA1011 /rid:-Microsoft.Design#CA1062 /rid:-Microsoft.Maintainability#CA1506 /rid:-Microsoft.Naming#CA1704 /rid:-Microsoft.Naming#CA1707 /rid:-Microsoft.Naming#CA1709 /rid:-Microsoft.Naming#CA1715 /ignoregeneratedcode /s /gac"
         })
         "FxCop Errors were detected"
     Assert.That(File.Exists "_Reports/FxCopReport.xml", Is.False, "FxCop Errors were detected")
 
-    (* where does FakeLib, Version=3.33.0.0 come from??
-    let rules = ["-Microsoft.Design#CA1004"
-                 "-Microsoft.Design#CA1006"
-                 "-Microsoft.Design#CA1011" // maybe sometimes
-                 "-Microsoft.Design#CA1062" // null checks,  In F#!
-                 "-Microsoft.Maintainability#CA1506"
-                 "-Microsoft.Naming#CA1704"
-                 "-Microsoft.Naming#CA1707"
-                 "-Microsoft.Naming#CA1709"
-                 "-Microsoft.Naming#CA1715" ]
-
-    [ ([
-         "_Binaries/AltCover/Debug+AnyCPU/AltCover.exe"
-                                                      ],   ["AltCover.Augment"
-                                                            "AltCover.CommandLine"
-                                                            "AltCover.Filter"
-                                                            "AltCover.FilterClass"
-                                                            "AltCover.Fix"
-                                                            "AltCover.Instrument"
-                                                            "AltCover.KeyRecord"
-                                                            "AltCover.KeyStore"
-                                                            "AltCover.Main"
-                                                            "AltCover.Naming"
-                                                            "AltCover.Node"
-                                                            "AltCover.ProgramDatabase"
-                                                            "AltCover.Report"
-                                                            "AltCover.Runner"
-                                                            "AltCover.Visitor"])
-      (["_Binaries/AltCover.Shadow/Debug+AnyCPU/AltCover.Shadow.dll"], ["AltCover.Recorder.Instance"])]
-    |> Seq.iter (fun (files, types) -> files
-                                       |> FxCop (fun p -> { p with ToolPath = fxCop
-                                                                   WorkingDir = "."
-                                                                   UseGACSwitch = true
-                                                                   Verbose = false
-                                                                   ReportFileName = "_Reports/FxCopReport.xml"
-                                                                   TypeList = types
-                                                                   Rules = rules
-                                                                   IgnoreGeneratedCode  = true})
-                                       Assert.That(File.Exists "_Reports/FxCopReport.xml", Is.False, "FxCop Errors were detected"))
-*))
+    Actions.Run (fun info ->
+        { info with
+                FileName = fxCop
+                WorkingDirectory = "."
+                Arguments = "/c /f:\"_Binaries/AltCover.Visualizer/Debug+AnyCPU/AltCover.Visualizer.exe\" /o:\"_Reports/FxCopReport.xml\" /rid:-Microsoft.Usage#CA2208 /rid:-Microsoft.Usage#CA2235 /rid:-Microsoft.Maintainability#CA1506 /rid:-Microsoft.Design#CA1004 /rid:-Microsoft.Design#CA1006 /rid:-Microsoft.Naming#CA1707 /rid:-Microsoft.Design#CA1006 /rid:-Microsoft.Naming#CA1715 /rid:-Microsoft.Naming#CA1704 /rid:-Microsoft.Naming#CA1709 /t:AltCover.Augment,AltCover.Visualizer.Transformer,AltCover.Visualizer.CoverageFile,AltCover.Visualizer.Extensions,AltCover.Visualizer.Gui /ignoregeneratedcode /s /gac"
+        })
+        "FxCop Errors were detected"
+    Assert.That(File.Exists "_Reports/FxCopReport.xml", Is.False, "FxCop Errors were detected")
+)
 
 // Unit Test
 
@@ -1352,17 +1321,17 @@ _Target "Packaging" (fun _ ->
     let recorder = Path.getFullName "_Binaries/AltCover/Release+AnyCPU/AltCover.Recorder.dll"
     let posh = Path.getFullName "_Binaries/AltCover.PowerShell/Release+AnyCPU/AltCover.PowerShell.dll"
     let csapi = Path.getFullName "_Binaries/AltCover.CSApi/Release+AnyCPU/AltCover.CSApi.dll"
+    let fsapi = Path.getFullName "_Binaries/AltCover.FSApi/Release+AnyCPU/AltCover.FSApi.dll"
     let cake = Path.getFullName "_Binaries/AltCover.Cake/Release+AnyCPU/AltCover.Cake.dll"
     let vis = Path.getFullName "_Binaries/AltCover.Visualizer/Release+AnyCPU/AltCover.Visualizer.exe"
     let packable = Path.getFullName "./_Binaries/README.html"
-    let resources = DirectoryInfo.getMatchingFilesRecursive "*.resources.dll" (DirectoryInfo.ofPath (Path.getFullName "_Binaries/AltCover/Release+AnyCPU"))
-    let resources2 = DirectoryInfo.getMatchingFilesRecursive "AltCover.Visualizer.resources.dll" (DirectoryInfo.ofPath (Path.getFullName "_Binaries/AltCover.Visualizer/Release+AnyCPU"))
 
     let applicationFiles = if File.Exists AltCover then
                             [
                                 (AltCover, Some "tools/net45", None)
                                 (recorder, Some "tools/net45", None)
                                 (posh, Some "tools/net45", None)
+                                (fsapi, Some "tools/net45", None)
                                 (vis, Some "tools/net45", None)
                                 (fscore, Some "tools/net45", None)
                                 (options, Some "tools/net45", None)
@@ -1375,6 +1344,7 @@ _Target "Packaging" (fun _ ->
                                 (AltCover, Some "lib/net45", None)
                                 (recorder, Some "lib/net45", None)
                                 (posh, Some "lib/net45", None)
+                                (fsapi, Some "lib/net45", None)
                                 (csapi, Some "lib/net45", None)
                                 (cake, Some "lib/net45", None)
                                 (fscore, Some "lib/net45", None)
@@ -1384,10 +1354,14 @@ _Target "Packaging" (fun _ ->
                            else []
 
     let resourceFiles path = if File.Exists AltCover then
-                                  Seq.concat [resources; resources2]
-                                  |> Seq.map (fun x -> x.FullName)
-                                  |> Seq.map (fun x -> (x, Some (path + Path.GetFileName(Path.GetDirectoryName(x))), None))
-                                  |> Seq.toList
+                                ["_Binaries/AltCover/Release+AnyCPU"; "_Binaries/AltCover.Visualizer/Release+AnyCPU"]
+                                |> List.map (fun f -> Directory.GetDirectories (Path.getFullName f)
+                                                      |> Seq.map (fun d -> Directory.GetFiles(d, "*.resources.dll"))
+                                                      |> Seq.concat)
+                                |> Seq.concat
+                                |> Seq.map (fun x -> (x, Some (path + Path.GetFileName(Path.GetDirectoryName(x))), None))
+                                |> Seq.distinctBy (fun (x,y,_) -> (Option.get y) + "/" + (Path.GetFileName x))
+                                |> Seq.toList
                               else []
 
     let nupkg = (Path.getFullName "./nupkg").Length
@@ -1416,14 +1390,16 @@ _Target "Packaging" (fun _ ->
                                                        File.WriteAllText(name, text)
                                                        (name,b,c))
 
-    let poshFiles where = (!! "./_Binaries/AltCover.PowerShell/Release+AnyCPU/netcoreapp2.0/*.PowerShell.*")
+    let poshFiles where =  [(!! "./_Binaries/AltCover.PowerShell/Release+AnyCPU/netstandard2.0/*.PowerShell.*")
+                            (!! "./_Binaries/AltCover.FSApi/Release+AnyCPU/netstandard2.0/*.FSApi.*")]
+                           |> Seq.concat
                            |> Seq.map (fun x -> (x, Some (where + Path.GetFileName x), None))
                            |> Seq.toList
 
     let cakeFiles where = (!! "./_Binaries/AltCover.Cake/Release+AnyCPU/netstandard2.0/AltCover.C*.*")
                            |> Seq.map (fun x -> (x, Some (where + Path.GetFileName x), None))
                            |> Seq.toList
-    let fakeFiles where = (!! "./_Binaries/AltCover.Fake/Release+AnyCPU/netstandard2.0/AltCover.F*.*")
+    let fakeFiles where = (!! "./_Binaries/AltCover.Fake/Release+AnyCPU/netstandard2.0/AltCover.Fak*.*")
                            |> Seq.map (fun x -> (x, Some (where + Path.GetFileName x), None))
                            |> Seq.toList
 
@@ -1633,9 +1609,12 @@ _Target "Pester" (fun _ ->
   let report = Path.getFullName "_Reports/Pester.xml"
   let i = ``module`` @@ "tools/netcoreapp2.0"
   let v = (!Version).Split([| '-' |]).[0]
+  let retro = Path.getFullName "_Binaries/AltCover/Release+AnyCPU/AltCover.exe"
+  let key = Path.getFullName "Build/Infrastructure.snk"
 
-  Actions.RunDotnet (fun o -> {dotnetOptions o with WorkingDirectory = unpack}) ""
-                      ("AltCover.dll --inplace --save --opencover -t=System\. \"-s=^((?!AltCover\.PowerShell).)*$\" -x \"" + report + "\" -i \"" + i + "\"")
+  Actions.Run (fun o -> {o with WorkingDirectory = unpack
+                                FileName = retro
+                                Arguments = (" --inplace --save --opencover -t=DotNet -t=System\. \"-s=^AltCover$\" -s=Recorder -x \"" + report + "\" -i \"" + i + "\" -sn \"" + key + "\"")})
                              "Pester instrument"
 
   printfn "Execute the instrumented tests"
@@ -2372,6 +2351,7 @@ _Target "BulkReport" (fun _ ->
 _Target "All" ignore
 
 let resetColours = (fun _ ->
+  // [System.Console]::ForegroundColor = [System.ConsoleColor]::White
   System.Console.ResetColor()
 )
 Target.description "ResetConsoleColours"

@@ -4,7 +4,7 @@ branches:
   - /develop.*/
 skip_tags: true
 image: Visual Studio 2017
-shallow_clone: true
+clone_depth: 2
 environment:
   COVERALLS_REPO_TOKEN:
     secure: qgIIfE76i59qTVO64mT7QwKcAUUYCQLie4XdUdlnt7MXLhrwqTbcfGUsCss/TmLg

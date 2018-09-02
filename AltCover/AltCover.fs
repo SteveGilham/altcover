@@ -378,10 +378,10 @@ module internal Main =
                                "AltCover.PowerShell.dll")
                 |> Path.GetFullPath
                 |> sprintf "Import-Module %A"
-                |> (Output.WarnOn true)
+                |> (Output.Info)
                 0
     | Select "version" _ ->
-                Runner.WriteResourceWithFormatItems "AltCover.Version" [|AssemblyVersionInformation.AssemblyFileVersion |] true
+                Runner.WriteResourceWithFormatItems "AltCover.Version" [|AssemblyVersionInformation.AssemblyFileVersion |] false
                 0
     | _ -> DoInstrumentation arguments
 
