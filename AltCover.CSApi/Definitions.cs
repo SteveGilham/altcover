@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 
 namespace AltCover
 {
@@ -202,13 +203,13 @@ namespace AltCover
         public static string ToTestArguments(PrepareArgs p,
                                              CollectArgs c)
         {
-            return DotNet.CSToTestArguments(p.ToParameters(), c.ToParameters());
+            return DotNet.ToTestArguments(p.ToParameters(), c.ToParameters());
         }
 
         public static string[] ToTestArgumentList(PrepareArgs p,
                                              CollectArgs c)
         {
-            return DotNet.CSToTestArgumentList(p.ToParameters(), c.ToParameters());
+            return DotNet.ToTestArgumentList(p.ToParameters(), c.ToParameters()).ToArray();
         }
     }
 }

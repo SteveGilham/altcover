@@ -349,6 +349,8 @@ module Gui =
     let resources = new ResourceManager("AltCover.Visualizer.Resource", executingAssembly)
     resources.GetString(key)
 
+  let private XmlIcon =
+    lazy (new Pixbuf(Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Visualizer.XMLFile_16x.png")))
   let private AssemblyIcon =
     lazy (new Pixbuf(Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Visualizer.Assembly_6212.png")))
   let private NamespaceIcon =
@@ -464,7 +466,7 @@ module Gui =
   let private ShowMessage (parent : Window) (message : string) (messageType : MessageType) =
     use md = new MessageDialog(parent, DialogFlags.Modal ||| DialogFlags.DestroyWithParent, messageType, ButtonsType.Close, message)
     md.Icon <- parent.Icon
-    md.Title <- parent.Title
+    md.Title <- "AltCover.Visualizer"
     md.Run() |> ignore
     md.Destroy()
 
@@ -804,6 +806,8 @@ module Gui =
         h.codeView.ScrollToMark(mark, 0.0, true, 0.0, 0.3)
         buff.DeleteMark("line")
 
+  let latch = new Threading.ManualResetEvent false
+
   let private OnRowActivated (handler : Handler) (activation : RowActivatedArgs) =
     let HitFilter (activated : RowActivatedArgs) (path : TreePath) = activated.Path.Compare(path) = 0
     let hits = Mappings.Keys |> Seq.filter (HitFilter activation)
@@ -822,6 +826,7 @@ module Gui =
       else
         let child = points |> Seq.head
         let filename = child.GetAttribute("document", String.Empty)
+        handler.mainWindow.Title <- "AltCover.Visualizer - " + filename
         let info = new FileInfo(filename)
         let current = new FileInfo(handler.coverageFiles.Head)
         if (not info.Exists) then MissingSourceThisFileMessage handler.mainWindow current info
@@ -841,6 +846,10 @@ module Gui =
               handler.codeView.CursorVisible <- false
               handler.codeView.QueueDraw()
 #if NETCOREAPP2_1
+              async {
+                Threading.Thread.Sleep(300)
+                ScrollToRow handler ()
+              } |> Async.Start
 #else
               ScrollToRow handler ()
 #endif
@@ -947,7 +956,7 @@ module Gui =
     let handler = PrepareGui()
 #if NETCOREAPP2_1
     handler.codeView.Drawn
-    |> Event.add (ScrollToRow handler)
+    |> Event.add (fun _ -> latch.Set() |> ignore)
 #endif
     handler.mainWindow.DeleteEvent
     |> Event.add (fun args ->
@@ -1029,18 +1038,24 @@ module Gui =
              if not (Seq.isEmpty newer) then OutdatedCoverageFileMessage h.mainWindow current
              let model =
                new TreeStore(typeof<string>, typeof<Gdk.Pixbuf>, typeof<string>, typeof<Gdk.Pixbuf>, typeof<string>,
-                             typeof<Gdk.Pixbuf>, typeof<string>, typeof<Gdk.Pixbuf>)
+                             typeof<Gdk.Pixbuf>, typeof<string>, typeof<Gdk.Pixbuf>, typeof<string>, typeof<Gdk.Pixbuf>)
              Mappings.Clear()
-             let ApplyToModel (theModel : TreeStore) (group : XPathNavigator * string) =
+             let toprow = model.AppendValues(current.Name, XmlIcon.Force())
+
+             let ApplyToModel (theModel : TreeStore) theRow (group : XPathNavigator * string) =
                let name = snd group
-               let row = theModel.AppendValues(name, AssemblyIcon.Force())
-               PopulateAssemblyNode theModel row (fst group)
+               let newrow =
+                theModel.AppendValues(theRow,
+                                      [| name :> obj
+                                         AssemblyIcon.Force() :> obj |])
+
+               PopulateAssemblyNode theModel newrow (fst group)
 
              let assemblies = coverage.Document.CreateNavigator().Select("//module") |> Seq.cast<XPathNavigator>
              assemblies
              |> Seq.map (fun node -> (node, node.GetAttribute("assemblyIdentity", String.Empty).Split(',') |> Seq.head))
              |> Seq.sortBy snd
-             |> Seq.iter (ApplyToModel model)
+             |> Seq.iter (ApplyToModel model toprow)
              let UpdateUI (theModel :
 #if NETCOREAPP2_1
                                        ITreeModel
@@ -1052,6 +1067,8 @@ module Gui =
                h.refreshButton.Sensitive <- true
                // Do real UI work here
                h.classStructureTree.Model <- theModel
+               h.codeView.Buffer.Clear()
+               h.mainWindow.Title <- "AltCover.Visualizer"
                updateMRU h info.FullName true
              ////ShowMessage h.mainWindow (sprintf "%s\r\n>%A" info.FullName h.coverageFiles) MessageType.Info
              InvokeOnGuiThread(UpdateUI model current)

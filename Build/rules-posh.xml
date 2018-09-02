@@ -19,7 +19,7 @@
 		<rules include="*" from="Gendarme.Rules.Interoperability.dll" />
 		<rules include="*" from="Gendarme.Rules.Interoperability.Com.dll" />
 		<rules include="*"
-		       exclude="UseCorrectCasingRule"
+		       exclude="UseCorrectCasingRule | ParameterNamesShouldMatchOverriddenMethodRule"
                from="Gendarme.Rules.Naming.dll" />
 		<rules include="*"
 		       exclude="AvoidReturningArraysOnPropertiesRule | AvoidUnneededFieldInitializationRule "

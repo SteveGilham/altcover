@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <RootNamespace>AltCover.PowerShell</RootNamespace>
     <AssemblyName>AltCover.PowerShell</AssemblyName>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
@@ -23,19 +23,17 @@
   <ItemGroup>
     <Compile Include="..\_Generated\AssemblyVersion.fs" Link="AssemblyVersion.fs" />
     <Compile Include="..\_Generated\VisibleToTest.fs" Link="VisibleToTest.fs" />
-    <Compile Include="Xml.fs" />
     <Compile Include="OpenCover.fs" />
     <Compile Include="CoverageFormats.fs" />
     <Compile Include="XhtmlReports.fs" />
     <Compile Include="Command.fs" />
-    <EmbeddedResource Include="xsd\NCover.xsd" />
-    <EmbeddedResource Include="xsd\OpenCover.xsd" />
-    <EmbeddedResource Include="xsl\OpenCoverToNCover.xsl" />
-    <EmbeddedResource Include="xsl\OpenCoverToNCoverEx.xsl" />
-    <EmbeddedResource Include="xsl\NCoverToBarChart.xsl" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0-beta-63127-02">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="PowerShellStandard.Library" Version="5.1.0-preview-06">
       <PrivateAssets>All</PrivateAssets>
     </PackageReference>
@@ -43,6 +41,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\AltCover\altcover.core.fsproj" />
+    <ProjectReference Include="..\AltCover.FSApi\altcover.fsapi.core.fsproj" />
   </ItemGroup>
 
   <ItemGroup>

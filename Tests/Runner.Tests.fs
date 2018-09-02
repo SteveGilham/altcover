@@ -1312,7 +1312,7 @@ or
                                            ) ["a"; "b"; String.Empty; "c"]
     Assert.That(r, Is.EqualTo 4)
     Assert.That (File.Exists (unique + ".acv"))
-    Assert.That(hits, Is.EquivalentTo [("a",0,Base.Null); ("b",1,Base.Null)])
+    Assert.That(hits, Is.EquivalentTo [("a",0,Base.Null); ("b",1,Base.Null); ("c",3,Base.Null)])
 
   [<Test>]
   member self.JunkPayloadShouldReportAsExpected() =
@@ -1366,7 +1366,7 @@ or
 
     let expected = inputs |> List.zip payloads
                    |> List.mapi (fun i (y,x) -> (x,i,y))
-                   |> List.take 4
+                   |> List.filter (fun (x,_,_) -> x |> String.IsNullOrWhiteSpace |> not)
     Assert.That(r, Is.EqualTo 6)
     Assert.That (File.Exists (unique + ".acv"))
     Assert.That(hits, Is.EquivalentTo expected)

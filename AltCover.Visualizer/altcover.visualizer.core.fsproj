@@ -9,14 +9,17 @@
     <AssemblyName>AltCover.Visualizer</AssemblyName>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <Name>AltCover.Visualizer</Name>
+    <GlobalDefineConstants>NETCOREAPP2_0</GlobalDefineConstants>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
+    <DefineConstants>$(DefineConstants);$(GlobalDefineConstants)</DefineConstants>
     <OutputPath>$(SolutionDir)_Binaries/$(AssemblyName)/$(Configuration)+$(Platform)/</OutputPath>
     <IntermediateOutputPath>$(SolutionDir)_Intermediate/$(AssemblyName)/$(Configuration)+$(Platform)/</IntermediateOutputPath>
     <OtherFlags>--tailcalls+</OtherFlags>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
+    <DefineConstants>$(DefineConstants);$(GlobalDefineConstants)</DefineConstants>
     <SolutionDir Condition="'$(SolutionDir)' == '$(ProjectDir)'">$(ProjectDir)../</SolutionDir>
     <OutputPath>$(SolutionDir)_Binaries/$(AssemblyName)/$(Configuration)+$(Platform)/</OutputPath>
     <IntermediateOutputPath>$(SolutionDir)_Intermediate/$(AssemblyName)/$(Configuration)+$(Platform)/</IntermediateOutputPath>
@@ -37,19 +40,20 @@
     <EmbeddedResource Include="class_16xLG.png" />
     <EmbeddedResource Include="method_16xLG.png" />
     <EmbeddedResource Include="Namespace_16x.png" />
+    <EmbeddedResource Include="XMLFile_16x.png" />
     <EmbeddedResource Include="logo.png" />
     <EmbeddedResource Include="Blank_12x_16x.png" />
     <EmbeddedResource Include="Branch_12x_16x_red.png" />
     <EmbeddedResource Include="Branch_12x_16x_ylw.png" />
     <EmbeddedResource Include="Branch_12x_16x_grn.png" />
     <EmbeddedResource Include="VIcon.ico" />
-    <EmbeddedResource Include="..\AltCover.PowerShell\xsd\NCover.xsd">
+    <EmbeddedResource Include="..\AltCover.FSApi\xsd\NCover.xsd">
       <Link>NCover.xsd</Link>
     </EmbeddedResource>
-    <EmbeddedResource Include="..\AltCover.PowerShell\xsd\OpenCover.xsd">
+    <EmbeddedResource Include="..\AltCover.FSApi\xsd\OpenCover.xsd">
       <Link>OpenCover.xsd</Link>
     </EmbeddedResource>
-    <EmbeddedResource Include="..\AltCover.PowerShell\xsl\OpenCoverToNCoverEx.xsl">
+    <EmbeddedResource Include="..\AltCover.FSApi\xsl\OpenCoverToNCoverEx.xsl">
       <Link>OpenCoverToNCoverEx.xsl</Link>
     </EmbeddedResource>
     <EmbeddedResource Include="..\AltCover.Avalonia\config.xsd" Link="config.xsd" />
@@ -61,6 +65,10 @@
 
   <ItemGroup>
     <PackageReference Include="GtkSharp" Version="3.22.24.36" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0-beta-63127-02">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="Mono.Options" Version="5.3.0.1" />
   </ItemGroup>
 
