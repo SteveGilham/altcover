@@ -143,8 +143,8 @@ module Counter =
     coverageDocument.SelectNodes(m)
     |> Seq.cast<XmlElement>
     |> Seq.map (fun el -> el.GetAttribute(i), el)
-    |> Seq.filter (fun (k,e) -> counts.ContainsKey k)
-    |> Seq.iter (fun(k,affectedModule) ->
+    |> Seq.filter (fun (k, _) -> counts.ContainsKey k)
+    |> Seq.iter (fun(k, affectedModule) ->
         let moduleHits = counts.[k]
 
         // Don't do this in one leap like --
