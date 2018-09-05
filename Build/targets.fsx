@@ -580,7 +580,7 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
           { info with
                 FileName = altcover
                 WorkingDirectory = testDirectory
-                Arguments = ("--opencover /sn=" + keyfile + AltCoverFilter + @"/o=./__UnitTestWithAltCoverRunner -x=" + altReport)})
+                Arguments = ("--single --opencover /sn=" + keyfile + AltCoverFilter + @"/o=./__UnitTestWithAltCoverRunner -x=" + altReport)})
                 "Re-instrument returned with a non-zero exit code"
 
       printfn "Unit test the instrumented code"
@@ -808,7 +808,7 @@ _Target "UnitTestWithAltCoverCoreRunner" (fun _ ->
     Shell.cleanDir output
     Actions.RunDotnet (fun o -> {dotnetOptions o with WorkingDirectory = testDirectory}) ""
                       (altcover +
-                             " --single --opencover " + AltCoverFilter + " -x \"" + altReport + "\" /o \"" + output + "\"")
+                             " --opencover " + AltCoverFilter + " -x \"" + altReport + "\" /o \"" + output + "\"")
                              "Instrument the code"
 
     printfn "Unit test the instrumented code"
