@@ -212,11 +212,6 @@ module Instance =
       trace.OnConnected (fun () -> TraceVisit moduleId hitPointId context)
                         (fun () -> Counter.AddVisit Visits moduleId hitPointId context)
 
-  let internal FlushVisit () = 
-      trace.OnConnected (fun () -> trace.Formatter.Flush()
-                                   trace.Stream.Flush())
-                        ignore
-
   let Fault _ = async { InvalidOperationException() |> raise }
   let internal MakeDefaultMailbox() =
     new MailboxProcessor<Message>(Fault)
@@ -241,12 +236,10 @@ module Instance =
             | AsyncItem s ->
               s |>
               Seq.iter Post
-              FlushVisit ()
               return! loop inbox
             | Item (s, channel) ->
               s |>
               Seq.iter Post
-              FlushVisit ()
               channel.Reply ()
               return! loop inbox
             | Finish (Pause, channel) ->
