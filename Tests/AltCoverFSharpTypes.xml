@@ -4,7 +4,7 @@
   <Modules>
     <Module hash="09-23-DC-B3-65-CE-96-5D-B4-56-2A-3A-0D-5A-1B-09-3E-38-2B-22">
       <Summary numSequencePoints="23" visitedSequencePoints="11" numBranchPoints="11" visitedBranchPoints="0" sequenceCoverage="47.83" branchCoverage="0" maxCyclomaticComplexity="11" minCyclomaticComplexity="1" visitedClasses="4" numClasses="7" visitedMethods="7" numMethods="11" minCrapScore="1" maxCrapScore="67.94" />
-      <ModulePath>./_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.0/Sample4.dll</ModulePath>
+      <ModulePath>./_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1/Sample4.dll</ModulePath>
       <ModuleTime>2018-06-13T15:08:24.8840000Z</ModuleTime>
       <ModuleName>Sample4</ModuleName>
       <Files>
@@ -259,7 +259,7 @@
         </Class>
         <Class>
           <Summary numSequencePoints="0" visitedSequencePoints="0" numBranchPoints="0" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="0" minCyclomaticComplexity="0" visitedClasses="0" numClasses="0" visitedMethods="0" numMethods="0" minCrapScore="0" maxCrapScore="0" />
-          <FullName>&lt;StartupCode$Sample4&gt;.$.NETCoreApp,Version=v2.0.AssemblyAttributes</FullName>
+          <FullName>&lt;StartupCode$Sample4&gt;.$.NETCoreApp,Version=v2.1.AssemblyAttributes</FullName>
           <Methods />
         </Class>
       </Classes>

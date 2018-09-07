@@ -1,7 +1,7 @@
 param([string]$ACV="0.0.0.0")
 $x = "./_Reports/PesterFSharpTypesDotNetRunner.xml"
-$o = "./Sample2/_Binaries/Sample2/Debug+AnyCPU/netcoreapp2.0"
-$i = "./_Binaries/Sample2/Debug+AnyCPU/netcoreapp2.0"
+$o = "./Sample2/_Binaries/Sample2/Debug+AnyCPU/netcoreapp2.1"
+$i = "./_Binaries/Sample2/Debug+AnyCPU/netcoreapp2.1"
 dir "./_Packaging/*.*" | % { if ( -not($_.Name -like "*.nupkg")) { del -force $_.FullName }}
 if (Test-Path $x) { del -force $x }
 
@@ -507,7 +507,7 @@ Describe "ConvertTo-BarChart" {
 Describe "ConvertFrom-NCover" {
   It "converts" {
     $assemblies = @()
-    $assemblies += "./_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.0/Sample4.dll"
+    $assemblies += "./_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1/Sample4.dll"
     $xml = ConvertFrom-NCover -InputFile "./_Reports/ReleaseXUnitFSharpTypesDotNetRunner.xml" -Assembly $Assemblies -OutputFile "./_Packaging/AltCoverFSharpTypes.xml"
     $xml | Should -BeOfType "System.Xml.XmlDocument"
 
@@ -539,7 +539,7 @@ Describe "ConvertFrom-NCover" {
 
   It "converts from the pipeline" {
     $assemblies = @()
-    $assemblies += "./_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.0/Sample4.dll"
+    $assemblies += "./_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1/Sample4.dll"
     $xml = [xml](Get-Content  "./_Reports/ReleaseXUnitFSharpTypesDotNetRunner.xml") | ConvertFrom-NCover -Assembly $Assemblies
     $xml | Should -BeOfType "System.Xml.XmlDocument"
 

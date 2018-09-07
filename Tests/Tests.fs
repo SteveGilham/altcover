@@ -476,7 +476,7 @@ type AltCoverTests() = class
                |> Seq.toList
 
     let expected = [  ".ctor" ; ".ctor" ; "Invoke"; "as_bar"; "bytes"; "get_MyBar" ;
-#if NETCOREAPP2_0
+#if NETCOREAPP2_1
                       "main";
 #endif
                       "makeThing"; "returnBar"; "returnFoo"; "testMakeThing"; "testMakeUnion" ]

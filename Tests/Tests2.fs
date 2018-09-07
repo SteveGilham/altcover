@@ -785,7 +785,7 @@ type AltCoverTests2() = class
 #if NETCOREAPP2_0
     let shift = String.Empty
 #else
-    let shift = "/netcoreapp2.0"
+    let shift = "/netcoreapp2.1"
 #endif
     let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack() +
                             shift, "AltCover.Recorder.dll")
@@ -813,7 +813,7 @@ type AltCoverTests2() = class
 #if NETCOREAPP2_0
     let shift = String.Empty
 #else
-    let shift = "/netcoreapp2.0"
+    let shift = "/netcoreapp2.1"
 #endif
     let rpath = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack() +
                              shift, "AltCover.Recorder.dll")
