@@ -206,9 +206,9 @@ module XTests =
   let ADotNetDryRunLooksAsExpected() =
     let where = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
     let here = SolutionDir()
-    let path = Path.Combine(here, "_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.0")
+    let path = Path.Combine(here, "_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1")
     let key0 = Path.Combine(here, "Build/SelfTest.snk")
-#if NETCOREAPP2_0
+#if NETCOREAPP2_1
     let input = if Directory.Exists path then path
                 else Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "../_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.0")
     let key = if File.Exists key0 then key0
@@ -242,7 +242,7 @@ module XTests =
                     "-o"; output
                     "-x"; report
                     "--opencover"
-#if NETCOREAPP2_0
+#if NETCOREAPP2_1
 #else
                     "-sn"; key
 #endif
@@ -276,7 +276,7 @@ module XTests =
       stream.CopyTo(buffer)
       let snk = StrongNameKeyPair(buffer.ToArray())
 
-#if NETCOREAPP2_0
+#if NETCOREAPP2_1
       Assert.Equal (Visitor.keys.Count, 0)
 #else
       Assert.True (Visitor.keys.ContainsKey(KeyStore.KeyToIndex snk))
@@ -287,7 +287,7 @@ module XTests =
       Assert.True (File.Exists (report + ".acv"))
       let pdb = Path.ChangeExtension(Assembly.GetExecutingAssembly().Location, ".pdb")
       let isWindows =
-#if NETCOREAPP2_0
+#if NETCOREAPP2_1
                         true
 #else
                         System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
@@ -295,7 +295,7 @@ module XTests =
 
       let expected =
                         ["AltCover.Recorder.g.dll"
-#if NETCOREAPP2_0
+#if NETCOREAPP2_1
                          "FSharp.Core.dll"
 #endif
                          "AltCover.Recorder.g.pdb"
@@ -308,7 +308,7 @@ module XTests =
                          "xunit.runner.utility.netcoreapp10.dll"
                          "xunit.runner.visualstudio.dotnetcore.testadapter.dll"
                          ]
-#if NETCOREAPP2_0
+#if NETCOREAPP2_1
 #else
                      |> List.filter (fun f -> isWindows || f = "Sample4.pdb" || f = "Sample1.exe.mdb" || (f.EndsWith("db", StringComparison.Ordinal) |> not))
 #endif
@@ -381,7 +381,7 @@ module XTests =
     let here = SolutionDir()
     let path = Path.Combine(here, "_Mono/Sample1")
     let key0 = Path.Combine(here, "Build/SelfTest.snk")
-#if NETCOREAPP2_0
+#if NETCOREAPP2_1
     let input = if Directory.Exists path then path
                 else Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), monoSample1)
     let key = if File.Exists key0 then key0
@@ -414,7 +414,7 @@ module XTests =
       let args = [| "-i"; input
                     "-o"; output
                     "-x"; report
-#if NETCOREAPP2_0
+#if NETCOREAPP2_1
 #else
                     "-sn"; key
 #endif
@@ -445,7 +445,7 @@ module XTests =
       stream.CopyTo(buffer)
       let snk = StrongNameKeyPair(buffer.ToArray())
 
-#if NETCOREAPP2_0
+#if NETCOREAPP2_1
       Assert.Equal (Visitor.keys.Count, 0)
 #else
       Assert.True (Visitor.keys.ContainsKey(KeyStore.KeyToIndex snk))
@@ -455,7 +455,7 @@ module XTests =
       Assert.True (File.Exists report)
       let pdb = Path.ChangeExtension(Assembly.GetExecutingAssembly().Location, ".pdb")
       let isWindows =
-#if NETCOREAPP2_0
+#if NETCOREAPP2_1
                         true
 #else
                         System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
@@ -465,13 +465,13 @@ module XTests =
                         ["AltCover.Recorder.g.dll"
                          "AltCover.Recorder.g.pdb"
 
-#if NETCOREAPP2_0
+#if NETCOREAPP2_1
                          "FSharp.Core.dll"
 #endif
                          "Sample1.exe"
                          "Sample1.exe.mdb"
                          ] // See Instrument.WriteAssembly
-#if NETCOREAPP2_0
+#if NETCOREAPP2_1
 #else
                      |> List.filter (fun f -> isWindows || f = "Sample1.exe.mdb" || (f.EndsWith("db", StringComparison.Ordinal) |> not))
 #endif
