@@ -383,9 +383,9 @@ _Target "UnitTestDotNetWithCoverlet" (fun _ ->
     try
       let xml = !! (@"./*Tests/*.tests.core.fsproj")
                 |> Seq.zip [
-                    """--no-build --framework netcoreapp2.0 /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Exclude="\"[Sample*]*,[AltCover.Record*]*,[NUnit*]*,[AltCover.Shadow.Adapter]*\"" --configuration Debug """
-                    """--no-build --framework netcoreapp2.0 /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Exclude="\"[Sample*]*,[AltCover.Record*]*,[NUnit*]*,[AltCover.Shadow.Adapter]*\"" --configuration Debug """
-                    """--no-build --framework netcoreapp2.0 /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Exclude="\"[Sample*]*,[AltCover.Record*]*\"" --configuration Debug """
+                    """--no-build --framework netcoreapp2.1 /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Exclude="\"[Sample*]*,[AltCover.Record*]*,[NUnit*]*,[AltCover.Shadow.Adapter]*\"" --configuration Debug """
+                    """--no-build --framework netcoreapp2.1 /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Exclude="\"[Sample*]*,[AltCover.Record*]*,[NUnit*]*,[AltCover.Shadow.Adapter]*\"" --configuration Debug """
+                    """--no-build --framework netcoreapp2.1 /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Exclude="\"[Sample*]*,[AltCover.Record*]*\"" --configuration Debug """
                            ]
                 |> Seq.fold (fun l (p,f) ->
                                             printfn "Testing %s" f
@@ -718,8 +718,8 @@ _Target "UnitTestWithAltCoverCore" (fun _ ->
     let reports = Path.getFullName "./_Reports"
     let altcover = Tools.findToolInSubPath "AltCover.exe" "./_Binaries"
 
-    let testDirectory = Path.getFullName "_Binaries/AltCover.Tests/Debug+AnyCPU/netcoreapp2.0"
-    let output = Path.getFullName "Tests/_Binaries/AltCover.Tests/Debug+AnyCPU/netcoreapp2.0"
+    let testDirectory = Path.getFullName "_Binaries/AltCover.Tests/Debug+AnyCPU/netcoreapp2.1"
+    let output = Path.getFullName "Tests/_Binaries/AltCover.Tests/Debug+AnyCPU/netcoreapp2.1"
 
     let altReport = reports @@ "UnitTestWithAltCoverCore.xml"
     printfn "Instrumented the code"
@@ -740,9 +740,9 @@ _Target "UnitTestWithAltCoverCore" (fun _ ->
            reraise ()
 
     printfn "Instrument the shadow tests"
-    let shadowDir = "_Binaries/AltCover.Shadow.Tests/Debug+AnyCPU/netcoreapp2.0"
+    let shadowDir = "_Binaries/AltCover.Shadow.Tests/Debug+AnyCPU/netcoreapp2.1"
     let shadowReport = reports @@ "ShadowTestWithAltCoverCore.xml"
-    let shadowOut = Path.getFullName "Shadow.Tests/_Binaries/AltCover.Shadow.Tests/Debug+AnyCPU/netcoreapp2.0"
+    let shadowOut = Path.getFullName "Shadow.Tests/_Binaries/AltCover.Shadow.Tests/Debug+AnyCPU/netcoreapp2.1"
     Actions.Run (fun info ->
         { info with
                 FileName = altcover
@@ -758,7 +758,7 @@ _Target "UnitTestWithAltCoverCore" (fun _ ->
     printfn "Instrument the XUnit tests"
     let xDir = "_Binaries/AltCover.XTests/Debug+AnyCPU/netcoreapp2.0"
     let xReport = reports @@ "XTestWithAltCoverCore.xml"
-    let xOut = Path.getFullName "XTests/_Binaries/AltCover.XTests/Debug+AnyCPU/netcoreapp2.0"
+    let xOut = Path.getFullName "XTests/_Binaries/AltCover.XTests/Debug+AnyCPU/netcoreapp2.1"
     Actions.Run (fun info ->
         { info with
                 FileName = altcover
@@ -782,8 +782,8 @@ _Target "UnitTestWithAltCoverCoreRunner" (fun _ ->
     Directory.ensure "./_Reports/_UnitTestWithAltCover"
     let reports = Path.getFullName "./_Reports"
     let altcover = Path.getFullName "./_Binaries/AltCover/Release+AnyCPU/netcoreapp2.0/AltCover.dll"
-    let testDirectory = Path.getFullName "_Binaries/AltCover.Tests/Debug+AnyCPU/netcoreapp2.0"
-    let output = Path.getFullName "Tests/_Binaries/AltCover.Tests/Debug+AnyCPU/netcoreapp2.0"
+    let testDirectory = Path.getFullName "_Binaries/AltCover.Tests/Debug+AnyCPU/netcoreapp2.1"
+    let output = Path.getFullName "Tests/_Binaries/AltCover.Tests/Debug+AnyCPU/netcoreapp2.1"
 
     // W/o --single
     // UnitTestWithAltCoverCoreRunner.xml.0.acv (3,066,500b)
@@ -822,9 +822,9 @@ _Target "UnitTestWithAltCoverCoreRunner" (fun _ ->
                              "Unit test the instrumented code"
 
     printfn "Instrument the shadow tests"
-    let shadowDir = "_Binaries/AltCover.Shadow.Tests/Debug+AnyCPU/netcoreapp2.0"
+    let shadowDir = "_Binaries/AltCover.Shadow.Tests/Debug+AnyCPU/netcoreapp2.1"
     let shadowReport = reports @@ "ShadowTestWithAltCoverCoreRunner.xml"
-    let shadowOut = Path.getFullName "Shadow.Tests/_Binaries/AltCover.Shadow.Tests/Debug+AnyCPU/netcoreapp2.0"
+    let shadowOut = Path.getFullName "Shadow.Tests/_Binaries/AltCover.Shadow.Tests/Debug+AnyCPU/netcoreapp2.1"
 
     Shell.cleanDir shadowOut
     Actions.RunDotnet (fun o -> {dotnetOptions o with WorkingDirectory = shadowDir}) ""
@@ -841,9 +841,9 @@ _Target "UnitTestWithAltCoverCoreRunner" (fun _ ->
                              "Run the shadow tests"
 
     printfn "Instrument the XUnit tests"
-    let xDir = "_Binaries/AltCover.XTests/Debug+AnyCPU/netcoreapp2.0"
+    let xDir = "_Binaries/AltCover.XTests/Debug+AnyCPU/netcoreapp2.1"
     let xReport = reports @@ "XTestWithAltCoverCoreRunner.xml"
-    let xOut = Path.getFullName "XTests/_Binaries/AltCover.XTests/Debug+AnyCPU/netcoreapp2.0"
+    let xOut = Path.getFullName "XTests/_Binaries/AltCover.XTests/Debug+AnyCPU/netcoreapp2.1"
     Shell.cleanDir xOut
 
     Actions.RunDotnet (fun o -> {dotnetOptions o with WorkingDirectory = xDir}) ""
@@ -894,7 +894,7 @@ _Target "FSharpTypesDotNet" ( fun _ ->
     Directory.ensure "./_Reports"
     let altcover = Path.getFullName "./_Binaries/AltCover/Release+AnyCPU/netcoreapp2.0/AltCover.dll"
     let simpleReport = (Path.getFullName "./_Reports") @@ ( "AltCoverFSharpTypesDotNet.xml")
-    let sampleRoot = Path.getFullName "Sample2/_Binaries/Sample2/Debug+AnyCPU/netcoreapp2.0"
+    let sampleRoot = Path.getFullName "Sample2/_Binaries/Sample2/Debug+AnyCPU/netcoreapp2.1"
 
     // Test the --inplace operation
     Shell.cleanDir sampleRoot
@@ -944,8 +944,8 @@ _Target "FSharpTypesDotNetRunner" ( fun _ ->
     Directory.ensure "./_Reports"
     let altcover = Path.getFullName "./_Binaries/AltCover/Release+AnyCPU/netcoreapp2.0/AltCover.dll"
     let simpleReport = (Path.getFullName "./_Reports") @@ ( "AltCoverFSharpTypesDotNetRunner.xml")
-    let sampleRoot = Path.getFullName "_Binaries/Sample2/Debug+AnyCPU/netcoreapp2.0"
-    let instrumented = Path.getFullName "Sample2/_Binaries/Sample2/Debug+AnyCPU/netcoreapp2.0"
+    let sampleRoot = Path.getFullName "_Binaries/Sample2/Debug+AnyCPU/netcoreapp2.1"
+    let instrumented = Path.getFullName "Sample2/_Binaries/Sample2/Debug+AnyCPU/netcoreapp2.1"
 
     // Instrument the code
     Actions.RunDotnet (fun o -> {dotnetOptions o with WorkingDirectory = sampleRoot}) ""
@@ -971,7 +971,7 @@ _Target "FSharpTypesDotNetCollecter" ( fun _ ->
     Directory.ensure "./_Reports"
     let altcover = Path.getFullName "./_Binaries/AltCover/Release+AnyCPU/netcoreapp2.0/AltCover.dll"
     let simpleReport = (Path.getFullName "./_Reports") @@ ( "AltCoverFSharpTypesDotNetCollecter.xml")
-    let sampleRoot = Path.getFullName "Sample2/_Binaries/Sample2/Debug+AnyCPU/netcoreapp2.0"
+    let sampleRoot = Path.getFullName "Sample2/_Binaries/Sample2/Debug+AnyCPU/netcoreapp2.1"
 
     // Test the --inplace operation
     Shell.cleanDir sampleRoot
@@ -1741,8 +1741,8 @@ _Target "ReleaseFSharpTypesDotNetRunner" ( fun _ ->
     Directory.ensure "./_Reports"
     let unpack = Path.getFullName "_Packaging/Unpack/tools/netcoreapp2.0"
     let x = Path.getFullName "./_Reports/AltCoverReleaseFSharpTypesDotNetRunner.xml"
-    let o = Path.getFullName "Sample2/_Binaries/Sample2/Debug+AnyCPU/netcoreapp2.0"
-    let i = Path.getFullName "_Binaries/Sample2/Debug+AnyCPU/netcoreapp2.0"
+    let o = Path.getFullName "Sample2/_Binaries/Sample2/Debug+AnyCPU/netcoreapp2.1"
+    let i = Path.getFullName "_Binaries/Sample2/Debug+AnyCPU/netcoreapp2.1"
 
     Shell.cleanDir o
 
@@ -1773,8 +1773,8 @@ _Target "ReleaseFSharpTypesX86DotNetRunner" ( fun _ ->
     let unpack = Path.getFullName "_Packaging/Unpack/tools/netcoreapp2.0"
     let s = Path.getFullName "."
     let x = Path.getFullName "./_Reports/AltCoverReleaseFSharpTypesX86DotNetRunner.xml"
-    let o = Path.getFullName "Sample2/_Binaries/Sample2/Debug+x86/netcoreapp2.0"
-    let i = Path.getFullName "_Binaries/Sample2/Debug+x86/netcoreapp2.0"
+    let o = Path.getFullName "Sample2/_Binaries/Sample2/Debug+x86/netcoreapp2.1"
+    let i = Path.getFullName "_Binaries/Sample2/Debug+x86/netcoreapp2.1"
 
     Shell.cleanDir o
     try
@@ -1821,8 +1821,8 @@ _Target "ReleaseXUnitFSharpTypesDotNet" ( fun _ ->
     Directory.ensure "./_Reports"
     let unpack = Path.getFullName "_Packaging/Unpack/tools/netcoreapp2.0"
     let x = Path.getFullName "./_Reports/ReleaseXUnitFSharpTypesDotNet.xml"
-    let o = Path.getFullName "Sample4/_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.0"
-    let i = Path.getFullName "_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.0"
+    let o = Path.getFullName "Sample4/_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1"
+    let i = Path.getFullName "_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1"
 
     Shell.cleanDir o
 
@@ -1844,8 +1844,8 @@ _Target "ReleaseXUnitFSharpTypesDotNetRunner" ( fun _ ->
     Directory.ensure "./_Reports"
     let unpack = Path.getFullName "_Packaging/Unpack/tools/netcoreapp2.0"
     let x = Path.getFullName "./_Reports/ReleaseXUnitFSharpTypesDotNetRunner.xml"
-    let o = Path.getFullName "Sample4/_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.0"
-    let i = Path.getFullName "_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.0"
+    let o = Path.getFullName "Sample4/_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1"
+    let i = Path.getFullName "_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1"
 
     Shell.cleanDir o
 
@@ -1874,8 +1874,8 @@ _Target "ReleaseXUnitFSharpTypesDotNetFullRunner" ( fun _ ->
     Directory.ensure "./_Reports"
     let unpack = Path.getFullName "_Packaging/Unpack/tools/netcoreapp2.0"
     let x = Path.getFullName "./_Reports/ReleaseXUnitFSharpTypesDotNetFullRunner.xml"
-    let o = Path.getFullName "Sample4/_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.0"
-    let i = Path.getFullName "_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.0"
+    let o = Path.getFullName "Sample4/_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1"
+    let i = Path.getFullName "_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1"
 
     Shell.cleanDir o
 
@@ -2215,7 +2215,7 @@ _Target "DotnetCLIIntegration" ( fun _ ->
     Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = working} ) "build" "" "Restored"
 
     let x = Path.getFullName "./_Reports/DotnetCLIIntegration.xml"
-    let o = Path.getFullName "./_DotnetCLITest/_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.0"
+    let o = Path.getFullName "./_DotnetCLITest/_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1"
 
     Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = working} ) "altcover"
                           ("ipmo")
@@ -2284,7 +2284,7 @@ _Target "DotnetGlobalIntegration" ( fun _ ->
     Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = working} ) "build" "" "Built"
 
     let x = Path.getFullName "./_Reports/DotnetGlobalIntegration.xml"
-    let o = Path.getFullName "./_DotnetGlobalTest/_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.0"
+    let o = Path.getFullName "./_DotnetGlobalTest/_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1"
 
     Actions.RunRaw (fun info -> { info with
                                         FileName = "altcover"
@@ -2417,7 +2417,7 @@ Target.activateFinal "ResetConsoleColours"
 
 "Compilation"
 ==> "UnitTestWithAltCover"
-==> "UnitTest"
+=?> ("UnitTest", Environment.isWindows)
 
 "Compilation"
 ==> "UnitTestWithAltCoverRunner"
@@ -2434,18 +2434,18 @@ Target.activateFinal "ResetConsoleColours"
 "UnitTestDotNet"
 ==> "BuildForCoverlet"
 ==> "UnitTestDotNetWithCoverlet"
-==> "UnitTest"
+=?> ("UnitTest", Environment.isWindows)
 
 "Compilation"
 ?=> "OperationalTest"
 
 "Compilation"
 ==> "FSharpTypes"
-==> "OperationalTest"
+=?> ("OperationalTest", Environment.isWindows)
 
 "Compilation"
 ==> "FSharpTests"
-==> "OperationalTest"
+=?> ("OperationalTest", Environment.isWindows)
 
 "Compilation"
 ==> "FSharpTypesDotNet"
@@ -2457,7 +2457,7 @@ Target.activateFinal "ResetConsoleColours"
 
 "Compilation"
 ==> "FSharpTypesDotNetCollecter"
-==> "OperationalTest"
+=?> ("OperationalTest", Environment.isWindows)
 
 "Compilation"
 ==> "BasicCSharp"
@@ -2465,7 +2465,7 @@ Target.activateFinal "ResetConsoleColours"
 
 "Compilation"
 ==> "BasicCSharpMono"
-==> "OperationalTest"
+=?> ("OperationalTest", Environment.isWindows)
 
 "Compilation"
 ==> "BasicCSharpUnderMono"
@@ -2485,7 +2485,7 @@ Target.activateFinal "ResetConsoleColours"
 
 "Compilation"
 ==> "CSharpDotNetWithFramework"
-==> "OperationalTest"
+=?> ("OperationalTest", Environment.isWindows)
 
 "Compilation"
 ==> "RecordResumeTest"
@@ -2493,7 +2493,7 @@ Target.activateFinal "ResetConsoleColours"
 
 "Compilation"
 ==> "RecordResumeTrackingTest"
-==> "OperationalTest"
+=?> ("OperationalTest", Environment.isWindows)
 
 //"Compilation"
 //==> "RecordResumeTestUnderMono"
@@ -2603,11 +2603,11 @@ Target.activateFinal "ResetConsoleColours"
 
 "Unpack"
 ==> "ReleaseXUnitFSharpTypesDotNetRunner"
-==> "Deployment"
+=?> ("Deployment", Environment.isWindows)
 
 "Unpack"
 ==> "ReleaseXUnitFSharpTypesDotNetFullRunner"
-==> "Deployment"
+=?> ("Deployment", Environment.isWindows)
 
 "Analysis"
 ==> "All"

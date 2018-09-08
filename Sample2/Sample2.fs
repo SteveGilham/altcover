@@ -42,6 +42,6 @@ module DU =
         Assert.AreEqual(returnBar "s", Bar "s")
         Assert.AreEqual(Bar "10", (Foo 10).as_bar())
 
-#if NETCOREAPP2_0
+#if NETCOREAPP2_1
 module Program = let [<EntryPoint>] main _ = 0
 #endif
