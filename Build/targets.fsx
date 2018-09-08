@@ -2417,7 +2417,7 @@ Target.activateFinal "ResetConsoleColours"
 
 "Compilation"
 ==> "UnitTestWithAltCover"
-==> "UnitTest"
+=?> ("UnitTest", Environment.isWindows)
 
 "Compilation"
 ==> "UnitTestWithAltCoverRunner"
@@ -2434,18 +2434,18 @@ Target.activateFinal "ResetConsoleColours"
 "UnitTestDotNet"
 ==> "BuildForCoverlet"
 ==> "UnitTestDotNetWithCoverlet"
-==> "UnitTest"
+=?> ("UnitTest", Environment.isWindows)
 
 "Compilation"
 ?=> "OperationalTest"
 
 "Compilation"
 ==> "FSharpTypes"
-==> "OperationalTest"
+=?> ("OperationalTest", Environment.isWindows)
 
 "Compilation"
 ==> "FSharpTests"
-==> "OperationalTest"
+=?> ("OperationalTest", Environment.isWindows)
 
 "Compilation"
 ==> "FSharpTypesDotNet"
@@ -2457,7 +2457,7 @@ Target.activateFinal "ResetConsoleColours"
 
 "Compilation"
 ==> "FSharpTypesDotNetCollecter"
-==> "OperationalTest"
+=?> ("OperationalTest", Environment.isWindows)
 
 "Compilation"
 ==> "BasicCSharp"
@@ -2465,7 +2465,7 @@ Target.activateFinal "ResetConsoleColours"
 
 "Compilation"
 ==> "BasicCSharpMono"
-==> "OperationalTest"
+=?> ("OperationalTest", Environment.isWindows)
 
 "Compilation"
 ==> "BasicCSharpUnderMono"
@@ -2485,7 +2485,7 @@ Target.activateFinal "ResetConsoleColours"
 
 "Compilation"
 ==> "CSharpDotNetWithFramework"
-==> "OperationalTest"
+=?> ("OperationalTest", Environment.isWindows)
 
 "Compilation"
 ==> "RecordResumeTest"
@@ -2493,7 +2493,7 @@ Target.activateFinal "ResetConsoleColours"
 
 "Compilation"
 ==> "RecordResumeTrackingTest"
-==> "OperationalTest"
+=?> ("OperationalTest", Environment.isWindows)
 
 //"Compilation"
 //==> "RecordResumeTestUnderMono"
@@ -2603,11 +2603,11 @@ Target.activateFinal "ResetConsoleColours"
 
 "Unpack"
 ==> "ReleaseXUnitFSharpTypesDotNetRunner"
-==> "Deployment"
+=?> ("Deployment", Environment.isWindows)
 
 "Unpack"
 ==> "ReleaseXUnitFSharpTypesDotNetFullRunner"
-==> "Deployment"
+=?> ("Deployment", Environment.isWindows)
 
 "Analysis"
 ==> "All"
