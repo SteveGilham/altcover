@@ -19,7 +19,6 @@ cache:
   timeout: 300
   directories:
   - packages
-  - Demo/Service/packages
   - $HOME/.nuget
 
 script:
