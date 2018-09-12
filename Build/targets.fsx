@@ -24,6 +24,7 @@ open System
 
 let Copyright  = ref String.Empty
 let Version = ref String.Empty
+let consoleBefore = (Console.ForegroundColor, Console.BackgroundColor)
 
 let OpenCoverFilter = "+[AltCove*]* -[*]Microsoft.* -[*]System.* +[*]N.*"
 let AltCoverFilter= @" -m=WaitForExitCustom -e=Adapter -s=Mono -s=\.Recorder -s=Sample -s=nunit -e=Tests -t=System. -t=Sample3\.Class2 "
@@ -2360,8 +2361,8 @@ _Target "BulkReport" (fun _ ->
 _Target "All" ignore
 
 let resetColours = (fun _ ->
-  // [System.Console]::ForegroundColor = [System.ConsoleColor]::White
-  System.Console.ResetColor()
+  Console.ForegroundColor <- consoleBefore |> fst
+  Console.BackgroundColor <- consoleBefore |> snd
 )
 Target.description "ResetConsoleColours"
 Target.createFinal "ResetConsoleColours" resetColours
@@ -2622,4 +2623,7 @@ Target.activateFinal "ResetConsoleColours"
 ==> "BulkReport"
 ==> "All"
 
-Target.runOrDefault "All"
+let defaultTarget () = resetColours()
+                       "All"
+
+Target.runOrDefault <| defaultTarget ()
