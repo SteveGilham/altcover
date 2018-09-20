@@ -118,8 +118,10 @@ module Persistence =
     |> Seq.iter (fun x -> x.Remove())
     let element =
       XElement
-        (XName.Get "Geometry", XAttribute(XName.Get "x", w.Position.X),
-         XAttribute(XName.Get "y", w.Position.Y), XAttribute(XName.Get "width", w.Width),
+        (XName.Get "Geometry",
+         XAttribute(XName.Get "x", w.Position.X),
+         XAttribute(XName.Get "y", w.Position.Y),
+         XAttribute(XName.Get "width", w.Width),
          XAttribute(XName.Get "height", w.Height))
     match config.XPathSelectElements("//RecentlyOpened") |> Seq.toList with
     | [] -> (config.FirstNode :?> XElement).Add element
