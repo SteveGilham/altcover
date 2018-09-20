@@ -5,6 +5,7 @@ open System.Xml.XPath
 
 module GuiCommon =
   // Binds class name and XML
+  [<NoComparison>]
   type internal MethodKey =
     { m : XPathNavigator
       spacename : string

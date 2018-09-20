@@ -33,6 +33,7 @@ type internal Carrier = SequencePoint of String * int * Track
 #else
 [<System.Runtime.InteropServices.ProgIdAttribute("ExcludeFromCodeCoverage hack for OpenCover issue 615")>]
 #endif
+[<NoComparison>]
 type internal Message =
   | AsyncItem of Carrier seq
   | Item of Carrier seq * AsyncReplyChannel<unit>

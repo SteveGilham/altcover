@@ -28,6 +28,7 @@ module internal Exemption =
   [<Literal>]
   let Excluded = -4
 
+[<NoComparison>]
 type InvalidFile =
   { File : FileInfo
     Fault : Exception }
@@ -102,6 +103,7 @@ module Transformer =
     | :? XmlSchemaValidationException as x -> Left(x :> Exception)
     | :? ArgumentException as x -> Left(x :> Exception)
 
+[<NoComparison>]
 type internal CoverageFile =
   { File : FileInfo
     Document : XDocument }

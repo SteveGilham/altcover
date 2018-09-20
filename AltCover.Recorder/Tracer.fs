@@ -4,13 +4,13 @@ open System.Collections.Generic
 open System.IO
 open System.IO.Compression
 
+[<NoComparison>]
 type Tracer =
   { Tracer : string
     Runner : bool
     Definitive : bool
     Stream : System.IO.Stream
     Formatter : System.IO.BinaryWriter }
-
 #if NETSTANDARD2_0
   static member Core() =
     typeof<Microsoft.FSharp.Core.CompilationMappingAttribute>.Assembly.Location

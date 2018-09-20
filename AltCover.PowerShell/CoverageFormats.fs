@@ -27,10 +27,9 @@ type ConvertToXmlDocumentCommand(xdocument : XDocument) =
 [<OutputType(typeof<XDocument>)>]
 type ConvertToXDocumentCommand(xmldocument : XmlDocument) =
   inherit PSCmdlet()
+
   new() = ConvertToXDocumentCommand(null)
 
-  [<SuppressMessage("Microsoft.Design", "CA1059",
-                    Justification = "converts concrete types")>]
   [<Parameter(ParameterSetName = "XmlDoc", Mandatory = true, Position = 1,
               ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
   member val XmlDocument : XmlDocument = xmldocument with get, set
@@ -47,8 +46,6 @@ type ConvertToLcovCommand(outputFile : String) =
   inherit PSCmdlet()
   new() = ConvertToLcovCommand(String.Empty)
 
-  [<SuppressMessage("Microsoft.Design", "CA1059",
-                    Justification = "converts concrete types")>]
   [<Parameter(ParameterSetName = "XmlDoc", Mandatory = true, Position = 1,
               ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
   member val XmlDocument : XmlDocument = null with get, set
@@ -83,8 +80,6 @@ type ConvertToCoberturaCommand(outputFile : String) =
   inherit PSCmdlet()
   new() = ConvertToCoberturaCommand(String.Empty)
 
-  [<SuppressMessage("Microsoft.Design", "CA1059",
-                    Justification = "converts concrete types")>]
   [<Parameter(ParameterSetName = "XmlDoc", Mandatory = true, Position = 1,
               ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
   member val XmlDocument : XmlDocument = null with get, set
