@@ -157,6 +157,12 @@ type AltCoverTests() =
     // passing lambdas or other F# types across the CLR divide doesn't work
 #else
     [<Test>]
+    member self.JunkUspidGivesNegativeIndex() =
+      let key = " "
+      let index = Counter.FindIndexFromUspid 0 key
+      Assert.That(index, Is.LessThan 0)
+
+    [<Test>]
     member self.PayloadGeneratedIsAsExpected() =
       try
         Assert.That (Instance.CallerId(), Is.EqualTo 0)
