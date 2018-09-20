@@ -36,7 +36,8 @@ module Transformer =
   let internal DefaultHelper (_ : XDocument) (document : XDocument) = document
 
   let internal LoadTransform(path : string) =
-    let stylesheet = XmlReader.Create(Assembly.GetExecutingAssembly().GetManifestResourceStream(path))
+    let stylesheet =
+      XmlReader.Create(Assembly.GetExecutingAssembly().GetManifestResourceStream(path))
     let xmlTransform = new XslCompiledTransform()
     xmlTransform.Load(stylesheet, new XsltSettings(false, true), null)
     xmlTransform
@@ -51,14 +52,16 @@ module Transformer =
     XDocument.Load(XmlReader.Create(buffer))
 
   let internal TransformFromOpenCover(document : XNode) =
-    let report = TransformFromOtherCover document "AltCover.Visualizer.OpenCoverToNCoverEx.xsl"
+    let report =
+      TransformFromOtherCover document "AltCover.Visualizer.OpenCoverToNCoverEx.xsl"
     // Blazon it for our benfit
     let element = new XElement(XName.Get("OpenCoverReport"))
     report.XPathSelectElement("//coverage").LastNode.AddAfterSelf(element)
     report
 
   // PartCover to NCover style sheet
-  let internal ConvertFile (helper : CoverageTool -> XDocument -> XDocument -> XDocument) (document : XDocument) =
+  let internal ConvertFile (helper : CoverageTool -> XDocument -> XDocument -> XDocument)
+      (document : XDocument) =
     let schemas = new XmlSchemaSet()
     try
       match document.XPathSelectElements("/CoverageSession").Count() with
@@ -66,7 +69,8 @@ module Transformer =
         schemas.Add
           (String.Empty,
            XmlReader.Create
-             (new StreamReader(Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Visualizer.OpenCover.xsd"))))
+             (new StreamReader(Assembly.GetExecutingAssembly()
+                                       .GetManifestResourceStream("AltCover.Visualizer.OpenCover.xsd"))))
         |> ignore
         document.Validate(schemas, null)
         let report = TransformFromOpenCover document
@@ -76,7 +80,8 @@ module Transformer =
         schemas2.Add
           (String.Empty,
            XmlReader.Create
-             (new StreamReader(Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Visualizer.NCover.xsd"))))
+             (new StreamReader(Assembly.GetExecutingAssembly()
+                                       .GetManifestResourceStream("AltCover.Visualizer.NCover.xsd"))))
         |> ignore
         fixedup.Validate(schemas2, null)
         Right fixedup
@@ -84,7 +89,8 @@ module Transformer =
         schemas.Add
           (String.Empty,
            XmlReader.Create
-             (new StreamReader(Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Visualizer.NCover.xsd"))))
+             (new StreamReader(Assembly.GetExecutingAssembly()
+                                       .GetManifestResourceStream("AltCover.Visualizer.NCover.xsd"))))
         |> ignore
         document.Validate(schemas, null)
         Right document
@@ -100,7 +106,8 @@ type internal CoverageFile =
   { File : FileInfo
     Document : XDocument }
 
-  static member ToCoverageFile (helper : CoverageTool -> XDocument -> XDocument -> XDocument) (file : FileInfo) =
+  static member ToCoverageFile (helper : CoverageTool -> XDocument -> XDocument -> XDocument)
+                (file : FileInfo) =
     try
       let rawDocument = XDocument.Load(file.FullName)
       match Transformer.ConvertFile helper rawDocument with
@@ -121,7 +128,8 @@ type internal CoverageFile =
       Left { Fault = e
              File = file }
 
-  static member LoadCoverageFile(file : FileInfo) = CoverageFile.ToCoverageFile (fun x -> Transformer.DefaultHelper) file
+  static member LoadCoverageFile(file : FileInfo) =
+    CoverageFile.ToCoverageFile (fun x -> Transformer.DefaultHelper) file
 
 type internal Coverage = Either<InvalidFile, CoverageFile>
 

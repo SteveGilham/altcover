@@ -1,7 +1,7 @@
 namespace AltCover
 
 module DotNetAltCover =
-  let internal ToConsole () =
+  let internal ToConsole() =
     Output.Error <- CommandLine.WriteErr
     Output.Usage <- CommandLine.Usage
     Output.Echo <- CommandLine.WriteErr
