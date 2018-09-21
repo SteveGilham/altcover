@@ -573,8 +573,8 @@ module internal Runner =
         let interleave =
           Seq.concat [ sp |> Seq.cast<XmlElement>
                        bp |> Seq.cast<XmlElement> ]
-          |> Seq.sortBy (// inconsistent name to shut Gendarme up
-                         fun x ->
+          |> Seq.sortBy ( // inconsistent name to shut Gendarme up
+                          fun x ->
                x.GetAttribute("offset")
                |> Int32.TryParse
                |> snd)
@@ -743,6 +743,10 @@ module internal Runner =
                                                        (Option.get threshold) :> obj |]
     code
 
+  let LoadReport report =
+    if File.Exists report then XDocument.Load report
+    else XDocument()
+
   let DoCoverage arguments options1 =
     let check1 =
       DeclareOptions()
@@ -782,9 +786,7 @@ module internal Runner =
           Directory.GetFiles
             (Path.GetDirectoryName(report), Path.GetFileName(report) + ".*.acv")
           |> Seq.iter File.Delete
-          let document =
-            if File.Exists report then XDocument.Load report
-            else XDocument()
+          let document = LoadReport report
           DoSummaries document format' result) 255 true
       CommandLine.ReportErrors "Collection"
       value

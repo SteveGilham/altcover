@@ -1466,6 +1466,8 @@ or
             |> List.length) [ "a"; "b"; String.Empty; "c" ]
         Assert.That(r, Is.EqualTo 0)
         Assert.That(File.Exists(unique + ".acv") |> not)
+        let doc = Runner.LoadReport(unique + ".acv")
+        Assert.That(doc.Nodes(), Is.Empty)
         Assert.That(hits, Is.Empty)
       finally
         Runner.collect <- false
