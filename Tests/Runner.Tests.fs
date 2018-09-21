@@ -1441,6 +1441,36 @@ or
                   Is.EquivalentTo [ ("a", 0, Base.Null)
                                     ("b", 1, Base.Null)
                                     ("c", 3, Base.Null) ])
+      if File.Exists(unique + ".acv") then File.Delete(unique + ".acv")
+
+    [<Test>]
+    member self.CollectShouldReportAsExpected() =
+      try
+        Runner.collect <- true
+        let hits = List<string * int * Base.Track>()
+        let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
+        let unique = Path.Combine(where, Guid.NewGuid().ToString())
+
+        let r =
+          Runner.GetMonitor hits unique (fun l ->
+            use sink =
+              new DeflateStream(File.OpenWrite(unique + ".0.acv"),
+                                CompressionMode.Compress)
+            use formatter = new BinaryWriter(sink)
+            l
+            |> List.mapi (fun i x ->
+                 formatter.Write x
+                 formatter.Write i
+                 formatter.Write 0uy
+                 x)
+            |> List.length) [ "a"; "b"; String.Empty; "c" ]
+        Assert.That(r, Is.EqualTo 0)
+        Assert.That(File.Exists(unique + ".acv") |> not)
+        let doc = Runner.LoadReport(unique + ".acv")
+        Assert.That(doc.Nodes(), Is.Empty)
+        Assert.That(hits, Is.Empty)
+      finally
+        Runner.collect <- false
 
     [<Test>]
     member self.JunkPayloadShouldReportAsExpected() =

@@ -24,6 +24,10 @@ module internal Augment =
     | Choice2Of2 x -> Left x
 #if GUI
 #else
+  let Increment b =
+    if b then 1
+    else 0
+
   let internal Split (l:'a list) =
     (l.Head, l.Tail) // since Gendarme thinks the concatenation operator is a hardcoded path!
 #endif

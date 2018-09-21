@@ -81,8 +81,7 @@ module internal LCov =
                       (m.Descendants(X "seqpnt") |> Seq.head).Attribute(X "visitcount").Value
                     let name = fullname m
                     writer.WriteLine("FNDA:" + v + "," + name)
-                    n + (if v = "0" then 0
-                         else 1)) 0
+                    n + (Augment.Increment(v <> "0"))) 0
              // This  list  is followed by two lines containing the number of functions
              // found and hit:
              //

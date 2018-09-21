@@ -520,9 +520,7 @@ module internal Visitor =
 
   let private ExtractBranchPoints dbg methodFullName rawInstructions interesting =
     // Generated MoveNext => skip one branch
-    let skip =
-      if IsMoveNext.IsMatch methodFullName then 1
-      else 0
+    let skip = IsMoveNext.IsMatch methodFullName |> Augment.Increment
     [ rawInstructions |> Seq.cast ]
     |> Seq.filter (fun _ ->
          dbg
@@ -549,8 +547,9 @@ module internal Visitor =
     |> Seq.collect id
     |> Seq.mapi (fun i (path, (from, target, indexes)) ->
          Seq.unfold (fun (state : Cil.Instruction) ->
-           if isNull state then None
-           else Some(state, state.Previous)) from
+           state
+           |> Option.nullable
+           |> Option.map (fun state' -> (state', state'.Previous))) from
          |> (findSequencePoint dbg)
          |> Option.map (fun context ->
               BranchPoint { Path = path
