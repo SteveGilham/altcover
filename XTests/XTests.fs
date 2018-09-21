@@ -507,7 +507,7 @@ module XTests =
 
       Assert.Equal<IEnumerable<String>>(theFiles, actual)
       let expectedXml = XDocument.Load(new System.IO.StringReader(MonoBaseline))
-      let recordedXml = XDocument.Load(report)
+      let recordedXml = Runner.LoadReport report
       RecursiveValidate (recordedXml.Elements()) (expectedXml.Elements()) 0 true
     finally
       Visitor.outputDirectory <- outputSaved
