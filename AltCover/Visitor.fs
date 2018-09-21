@@ -547,8 +547,9 @@ module internal Visitor =
     |> Seq.collect id
     |> Seq.mapi (fun i (path, (from, target, indexes)) ->
          Seq.unfold (fun (state : Cil.Instruction) ->
-           if isNull state then None
-           else Some(state, state.Previous)) from
+           state
+           |> Option.nullable
+           |> Option.map (fun state' -> (state', state'.Previous))) from
          |> (findSequencePoint dbg)
          |> Option.map (fun context ->
               BranchPoint { Path = path
