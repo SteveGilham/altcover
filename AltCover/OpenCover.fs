@@ -414,10 +414,7 @@ module internal OpenCover =
                  else s.Stack
                ModuleSeq = s.ModuleSeq + s.ClassSeq
                ModuleBr = s.ModuleBr + s.ClassBr
-               ClassCC =
-                 ((if min = 0 then 1
-                   else min), max)
-                 :: s.ClassCC
+               ClassCC = (Math.Max(1, min), max) :: s.ClassCC
                ModuleMethods = methods + s.ModuleMethods
                ModuleClasses = classes + s.ModuleClasses
                Excluded = Nothing }

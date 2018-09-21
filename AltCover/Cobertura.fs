@@ -3,6 +3,7 @@ namespace AltCover
 open System
 open System.IO
 open System.Xml.Linq
+open Augment
 
 // based on the sample file at https://raw.githubusercontent.com/jenkinsci/cobertura-plugin/master/src/test/resources/hudson/plugins/cobertura/coverage-with-data.xml
 
@@ -150,8 +151,9 @@ module internal Cobertura =
       let vc = s.Attribute(X "vc")
 
       let vx =
-        if isNull vc then "0"
-        else vc.Value
+        (vc
+         |> Option.nullable
+         |> Option.getOrElse (XAttribute(X "dummy", "0"))).Value
 
       let bec =
         s.Attribute(X "bec").Value

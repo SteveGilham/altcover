@@ -520,9 +520,7 @@ module internal Visitor =
 
   let private ExtractBranchPoints dbg methodFullName rawInstructions interesting =
     // Generated MoveNext => skip one branch
-    let skip =
-      if IsMoveNext.IsMatch methodFullName then 1
-      else 0
+    let skip = IsMoveNext.IsMatch methodFullName |> Augment.Increment
     [ rawInstructions |> Seq.cast ]
     |> Seq.filter (fun _ ->
          dbg

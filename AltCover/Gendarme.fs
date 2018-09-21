@@ -44,12 +44,12 @@ module internal Gendarme =
 
   let ``detect ternary pattern`` (code : Code option) =
     let index = int (Option.getOrElse Code.Nop code)
-    if mask
-       |> Seq.skip (index >>> 6)
-       |> Seq.head
-       &&& (1UL <<< (index &&& 63)) = 0UL
-    then 0
-    else 1
+    mask
+    |> Seq.skip (index >>> 6)
+    |> Seq.head
+    &&& (1UL <<< (index &&& 63))
+    <> 0UL
+    |> Augment.Increment
 
   let SwitchCyclomaticComplexity(instructions : Cil.Instruction seq) =
     let targets = System.Collections.Generic.HashSet<Cil.Instruction>()

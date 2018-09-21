@@ -640,10 +640,9 @@ module internal Instrument =
   let internal Track state (m : MethodDefinition) included (track : (int * string) option) =
     track
     |> Option.iter (fun (n, _) ->
-         let body =
-           if Visitor.IsInstrumented included then state.MethodBody
-           else m.Body
-
+         let body = [ m.Body; state.MethodBody ].[included
+                                                  |> Visitor.IsInstrumented
+                                                  |> Augment.Increment]
          let instructions = body.Instructions
          let methodWorker = body.GetILProcessor()
          let nop = methodWorker.Create(OpCodes.Nop)
