@@ -1,15 +1,15 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <ToolCommandName>altcover.visualizer</ToolCommandName>
     <OutputType>WinExe</OutputType>
-    <PackAsTool>True</PackAsTool>
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <RootNamespace>AltCover.Visualizer</RootNamespace>
     <AssemblyName>AltCover.Visualizer</AssemblyName>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <Name>AltCover.Visualizer</Name>
     <GlobalDefineConstants>NETCOREAPP2_0</GlobalDefineConstants>
+    <PackAsTool>True</PackAsTool>
+    <ToolCommandName>altcover.visualizer</ToolCommandName>
+    <Name>AltCover.Visualizer</Name>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
