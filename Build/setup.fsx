@@ -8,6 +8,7 @@ nuget coveralls.io >= 1.4.2
 nuget FSharpLint.Core prerelease
 nuget NUnit >= 3.9.0
 nuget YamlDotNet >= 4.3.0 //"
+
 open System
 open System.IO
 
@@ -19,14 +20,15 @@ open Microsoft.Win32
 
 // Really bootstrap
 let dotnetPath = "dotnet" |> Fake.Core.Process.tryFindFileOnPath
-let dotnetOptions (o:DotNet.Options) = match dotnetPath with
-                                       | Some f -> {o with DotNetCliPath = f}
-                                       | None -> o
 
-DotNet.restore (fun o -> { o with
-                            Packages = ["./packages"]
-                            Common = dotnetOptions o.Common}) "./Build/dotnet-nuget.fsproj"
+let dotnetOptions (o : DotNet.Options) =
+  match dotnetPath with
+  | Some f -> { o with DotNetCliPath = f }
+  | None -> o
 
+DotNet.restore (fun o ->
+  { o with Packages = [ "./packages" ]
+           Common = dotnetOptions o.Common }) "./Build/dotnet-nuget.fsproj"
 // Restore the NuGet packages used by the build and the Framework version
 RestoreMSSolutionPackages id "./AltCover.sln"
 
@@ -49,16 +51,13 @@ nuget FSharpLint.Core prerelease
 nuget Markdown >= 2.2.1
 nuget NUnit >= 3.10.1
 nuget YamlDotNet >= 5.0.1 //"
-
 #r "System.IO.Compression.FileSystem.dll"
 #r "System.Xml"
 #r "System.Xml.Linq"
-
 #load "actions.fsx"
 #load "targets.fsx"
 #nowarn "988"
-do
-  ()
-"""
+
+do ()"""
 
 File.WriteAllText("./Build/build.fsx", build)
