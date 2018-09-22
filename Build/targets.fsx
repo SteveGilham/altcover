@@ -2532,10 +2532,9 @@ _Target "BulkReport" (fun _ ->
 
 _Target "All" ignore
 
-let resetColours =
-  (fun _ ->
+let resetColours _ =
   Console.ForegroundColor <- consoleBefore |> fst
-  Console.BackgroundColor <- consoleBefore |> snd)
+  Console.BackgroundColor <- consoleBefore |> snd
 
 Target.description "ResetConsoleColours"
 Target.createFinal "ResetConsoleColours" resetColours
@@ -2796,7 +2795,7 @@ Target.activateFinal "ResetConsoleColours"
 ==> "BulkReport"
 ==> "All"
 
-let defaultTarget () = resetColours()
+let defaultTarget () = resetColours ()
                        "All"
 
-Target.runOrDefault <| defaultTarget()
+Target.runOrDefault <| defaultTarget ()
