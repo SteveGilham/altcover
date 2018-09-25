@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>netstandard2.0;net462</TargetFrameworks>
     <RootNamespace>AltCover.Fake</RootNamespace>
     <AssemblyName>AltCover.Fake</AssemblyName>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
@@ -31,8 +31,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="FAKE.Core.Trace" Version="5.2.0" />
-    <PackageReference Include="FAKE.DotNet.Cli" Version="5.2.0" />
+    <PackageReference Include="FAKE.Core.Trace" Version="5.0.0" />
+    <PackageReference Include="FAKE.DotNet.Cli" Version="5.0.0" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0-beta-63127-02">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
