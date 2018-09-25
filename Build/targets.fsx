@@ -1449,6 +1449,7 @@ _Target "Packaging" (fun _ ->
   let fsapi =
     Path.getFullName "_Binaries/AltCover.FSApi/Release+AnyCPU/AltCover.FSApi.dll"
   let cake = Path.getFullName "_Binaries/AltCover.Cake/Release+AnyCPU/AltCover.Cake.dll"
+  let fake = Path.getFullName "_Binaries/AltCover.Fake/Release+AnyCPU/net462/AltCover.Fake.dll"
   let vis =
     Path.getFullName
       "_Binaries/AltCover.Visualizer/Release+AnyCPU/AltCover.Visualizer.exe"
@@ -1474,6 +1475,7 @@ _Target "Packaging" (fun _ ->
         (fsapi, Some "lib/net45", None)
         (csapi, Some "lib/net45", None)
         (cake, Some "lib/net45", None)
+        (fake, Some "lib/net45", None)
         (fscore, Some "lib/net45", None)
         (options, Some "lib/net45", None)
         (packable, Some "", None) ]
