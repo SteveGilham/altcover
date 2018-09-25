@@ -82,6 +82,11 @@ let pwsh =
     Tools.findToolInSubPath "pwsh.exe" (programFiles @@ "PowerShell")
   else "pwsh"
 
+let cliArguments =
+  { MSBuild.CliArguments.Create() with ConsoleLogParameters = []
+                                       DistributedLoggers = None
+                                       DisableInternalBinLog = true }
+
 let _Target s f =
   Target.description s
   Target.create s f
@@ -143,13 +148,17 @@ _Target "BuildRelease" (fun _ ->
     "AltCover.sln"
     |> MSBuild.build (fun p ->
          { p with Verbosity = Some MSBuildVerbosity.Normal
+                  ConsoleLogParameters = []
+                  DistributedLoggers = None
+                  DisableInternalBinLog = true
                   Properties =
                     [ "Configuration", "Release"
                       "DebugSymbols", "True" ] })
     "./altcover.core.sln"
     |> DotNet.build (fun p ->
          { p with Configuration = DotNet.BuildConfiguration.Release
-                  Common = dotnetOptions p.Common })
+                  Common = dotnetOptions p.Common
+                  MSBuildParams = cliArguments })
   with x ->
     printfn "%A" x
     reraise())
@@ -158,13 +167,17 @@ _Target "BuildDebug" (fun _ ->
   "AltCover.sln"
   |> MSBuild.build (fun p ->
        { p with Verbosity = Some MSBuildVerbosity.Normal
+                ConsoleLogParameters = []
+                DistributedLoggers = None
+                DisableInternalBinLog = true
                 Properties =
                   [ "Configuration", "Debug"
                     "DebugSymbols", "True" ] })
   "./altcover.core.sln"
   |> DotNet.build (fun p ->
        { p with Configuration = DotNet.BuildConfiguration.Debug
-                Common = dotnetOptions p.Common }))
+                Common = dotnetOptions p.Common
+                MSBuildParams = cliArguments }))
 
 _Target "BuildMonoSamples" (fun _ ->
   let mcs = "_Binaries/MCS/Release+AnyCPU/MCS.exe"
@@ -923,7 +936,7 @@ _Target "UnitTestWithAltCoverCoreRunner"
 
 _Target "OperationalTest" ignore
 
-_Target "FSharpTypes" ( fun _ ->
+_Target "FSharpTypes" (fun _ ->
   Directory.ensure "./_Reports"
   let simpleReport = (Path.getFullName "./_Reports") @@ ("AltCoverFSharpTypes.xml")
   let binRoot = Path.getFullName "_Binaries/AltCover/Release+AnyCPU"
@@ -2134,11 +2147,19 @@ _Target "DoIt" (fun _ ->
     { o with WorkingDirectory = Path.getFullName "./_DotnetTest"
              Verbosity = Some DotNet.Verbosity.Minimal }
 
-  DotNet.test (fun to' -> to'.WithCommon(setBaseOptions).WithParameters p2 c2)
-    "dotnettest.fsproj"
+  let cliArguments =
+    { MSBuild.CliArguments.Create() with ConsoleLogParameters = []
+                                         DistributedLoggers = None
+                                         DisableInternalBinLog = true }
 
+  DotNet.test
+    (fun to' ->
+    { to'.WithCommon(setBaseOptions).WithParameters p2 c2 with MSBuildParams =
+                                                                 cliArguments })
+    "dotnettest.fsproj"
   let ipmo = AltCover.Api.Ipmo().Trim().Split().[1].Trim([| '\"' |])
   let command = "$ipmo = '" + ipmo + "'; Import-Module $ipmo; ConvertTo-BarChart -?"
+
   let pwsh =
     if Environment.isWindows then
       Tools.findToolInSubPath "pwsh.exe"
