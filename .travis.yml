@@ -1,6 +1,6 @@
 language: csharp
 mono: latest
-dotnet: 2.1.401
+dotnet: 2.1.402
 sudo: false
 addons:
   apt:
@@ -19,7 +19,6 @@ cache:
   timeout: 300
   directories:
   - packages
-  - Demo/Service/packages
   - $HOME/.nuget
 
 script:

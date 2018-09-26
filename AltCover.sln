@@ -84,6 +84,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AltCover.Cake", "AltCover.C
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "AltCover.FSApi", "AltCover.FSApi\AltCover.FSApi.fsproj", "{0DC0F7BB-C08F-45E1-A86C-62746372DC4B}"
 EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "AltCover.Fake", "AltCover.Fake\AltCover.Fake.fsproj", "{1DD4B3C5-19C2-469B-87A3-87E60F20775C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -254,6 +256,14 @@ Global
 		{0DC0F7BB-C08F-45E1-A86C-62746372DC4B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0DC0F7BB-C08F-45E1-A86C-62746372DC4B}.Release|Any CPU.Build.0 = Release|Any CPU
 		{0DC0F7BB-C08F-45E1-A86C-62746372DC4B}.Release|x86.ActiveCfg = Release|Any CPU
+		{1DD4B3C5-19C2-469B-87A3-87E60F20775C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1DD4B3C5-19C2-469B-87A3-87E60F20775C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1DD4B3C5-19C2-469B-87A3-87E60F20775C}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{1DD4B3C5-19C2-469B-87A3-87E60F20775C}.Debug|x86.Build.0 = Debug|Any CPU
+		{1DD4B3C5-19C2-469B-87A3-87E60F20775C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1DD4B3C5-19C2-469B-87A3-87E60F20775C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1DD4B3C5-19C2-469B-87A3-87E60F20775C}.Release|x86.ActiveCfg = Release|Any CPU
+		{1DD4B3C5-19C2-469B-87A3-87E60F20775C}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -36,7 +36,7 @@
     </WarningsAsErrors>
     <OtherFlags Condition="Exists('$(SolutionDir)Build\Infrastructure.snk')">--keyfile:$(SolutionDir)Build\Infrastructure.snk</OtherFlags>
     <DefineConstants>TRACE;DEBUG;CODE_ANALYSIS;GUI</DefineConstants>
-    <WarningLevel>4</WarningLevel>
+    <WarningLevel>5</WarningLevel>
     <StartArguments>
     </StartArguments>
   </PropertyGroup>
