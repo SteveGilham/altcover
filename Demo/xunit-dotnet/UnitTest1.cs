@@ -1,4 +1,3 @@
-using System;
 using Xunit;
 
 namespace xunit_dotnet
@@ -17,7 +16,7 @@ namespace xunit_dotnet
             Assert.Equal(5, Add(2, 2));
         }
 
-        int Add(int x, int y)
+        private int Add(int x, int y)
         {
             return x + y;
         }

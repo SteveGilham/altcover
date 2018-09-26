@@ -1,10 +1,11 @@
-﻿namespace AltCover.Visualizer
+namespace AltCover.Visualizer
 
 open System
 open System.Xml.XPath
 
 module GuiCommon =
   // Binds class name and XML
+  [<NoComparison>]
   type internal MethodKey =
     { m : XPathNavigator
       spacename : string
@@ -22,7 +23,8 @@ module GuiCommon =
   // -------------------------- Method Name Handling ---------------------------
   let internal MethodNameCompare (leftKey : MethodKey) (rightKey : MethodKey) =
     let HandleSpecialName(name : string) =
-      if name.StartsWith("get_", StringComparison.Ordinal) || name.StartsWith("set_", StringComparison.Ordinal) then
+      if name.StartsWith("get_", StringComparison.Ordinal)
+         || name.StartsWith("set_", StringComparison.Ordinal) then
         (name.Substring(4), true)
       else (name, false)
 

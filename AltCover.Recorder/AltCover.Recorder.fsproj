@@ -36,8 +36,8 @@
     </WarningsAsErrors>
     <OtherFlags>--keyfile:$(SolutionDir)\Build\Infrastructure.snk --standalone</OtherFlags>
     <DefineConstants>TRACE;DEBUG;CODE_ANALYSIS;$(ExtraDefines)</DefineConstants>
-    <WarningLevel>4</WarningLevel>
-    <NoWarn>2009</NoWarn>
+    <WarningLevel>5</WarningLevel>
+    <NoWarn>52</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType Condition="'$(OS)' == 'Windows_NT'">pdbonly</DebugType>
