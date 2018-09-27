@@ -16,10 +16,8 @@ For Mono, .net framework and .net core, except as noted
 * An API for the above functionality, with Fake and Cake integration
 * A PowerShell module (not mono) containing a cmdlet that drives the tool, and other cmdlets for manipulating coverage reports
 * A coverage visualizer tool 
-  * For .net framework and mono (for .net framework, needs GTK# v2.12.xx installed separately -- see https://www.mono-project.com/download/stable/#download-win )
+  * For .net framework and mono (for .net framework, needs GTK# v2.12.xx installed separately -- see https://www.mono-project.com/download/stable/#download-win ) and for .net core (needs GTK+3 installed separately -- for Windows, see e.g. https://github.com/GtkSharp/GtkSharp/wiki/Installing-Gtk-on-Windows)
      ![Visualizer screenshot](./AltCover.Visualizer/Screenshot.png)
-  * **NEW** For .net core (needs GTK+3 installed separately -- for Windows, see e.g. https://github.com/GtkSharp/GtkSharp/wiki/Installing-Gtk-on-Windows)
-    ![Visualizer screenshot](./AltCover.Visualizer/Screenshot-GTK3.png)
     
 ### NuGet Packages
 * [General purpose install](https://www.nuget.org/packages/AltCover) -- excludes the C# API and FAKE integration
