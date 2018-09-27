@@ -183,7 +183,7 @@ _Target "BuildMonoSamples" (fun _ ->
   let mcs = "_Binaries/MCS/Release+AnyCPU/MCS.exe"
   [ ("./_Mono/Sample1", "-debug -out:./_Mono/Sample1/Sample1.exe  ./Sample1/Program.cs")
     ("./_Mono/Sample3",
-     "-target:library -debug -out:./_Mono/Sample3/Sample3.dll  -lib:./packages/Mono.Cecil.0.10.0/lib/net40 -r:Mono.Cecil.dll ./Sample3/Class1.cs") ]
+     "-target:library -debug -out:./_Mono/Sample3/Sample3.dll  -lib:./packages/Mono.Cecil.0.10.1/lib/net40 -r:Mono.Cecil.dll ./Sample3/Class1.cs") ]
   |> Seq.iter (fun (dir, cmd) ->
        Directory.ensure dir
        ("Mono compilation of '" + cmd + "' failed")
@@ -1449,7 +1449,7 @@ _Target "Packaging" (fun _ ->
   let fsapi =
     Path.getFullName "_Binaries/AltCover.FSApi/Release+AnyCPU/AltCover.FSApi.dll"
   let cake = Path.getFullName "_Binaries/AltCover.Cake/Release+AnyCPU/AltCover.Cake.dll"
-  let fake = Path.getFullName "_Binaries/AltCover.Fake/Release+AnyCPU/net462/AltCover.Fake.dll"
+  let fake = Path.getFullName "_Binaries/AltCover.Fake/Release+AnyCPU/AltCover.Fake.dll"
   let vis =
     Path.getFullName
       "_Binaries/AltCover.Visualizer/Release+AnyCPU/AltCover.Visualizer.exe"

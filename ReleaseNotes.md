@@ -2,8 +2,8 @@ Q. Never mind the fluff -- how do I get started?
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
-# 4.0.6xx (Doruka series release 5)
-* [API] - FAKE integration now spans from v5.0 up to current, and is now also offered for the .net framework
+# 4.0.644 (Doruka series release 5)
+* [API] - FAKE 5.7.2 support -- FAKE integration now spans from v5.0 up to current (and should be reasonably future-proofed), and is now also offered on an experimental basis for the .net framework
 * various refactorings and rearrangements, some on purely aesthetic grounds, some to improve the reliability of the travis-ci build, but with no functional impact
 
 # 4.0.630 (Doruka series release 4)
