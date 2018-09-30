@@ -7,6 +7,9 @@
     <AssemblyName>AltCover</AssemblyName>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <GlobalDefineConstants>RUNNER;NETCOREAPP2_0</GlobalDefineConstants>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <ContinuousIntegrationBuild Condition="'$(APPVEYOR)'=='True'">true</ContinuousIntegrationBuild>
+    <DeterministicSourcePaths Condition="'$(APPVEYOR)'=='True'">true</DeterministicSourcePaths>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">

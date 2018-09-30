@@ -1625,7 +1625,7 @@ _Target "Packaging" (fun _ ->
 
     (List.concat [ apiFiles
                    resourceFiles "lib/net45/"
-                   netstdFiles "lib/netstandard2.0/"
+                   netstdFiles "lib/netstandard2.0"
                    cakeFiles "lib/netstandard2.0/"
                    fakeFiles "lib/netstandard2.0/"
                    poshFiles "lib/netstandard2.0/"
@@ -1633,20 +1633,20 @@ _Target "Packaging" (fun _ ->
                    otherFilesApi ], "_Packaging.api", "./_Generated/altcover.api.nuspec",
      "altcover.api")
 
-    (List.concat [ netcoreFiles "lib/netcoreapp2.0/"
+    (List.concat [ netcoreFiles "lib/netcoreapp2.0"
                    poshFiles "lib/netcoreapp2.0/"
                    dotnetFiles
                    otherFilesDotnet ], "_Packaging.dotnet",
      "./_Generated/altcover.dotnet.nuspec", "altcover.dotnet")
 
     (List.concat [ globalFiles
-                   netcoreFiles "tools/netcoreapp2.1/any/"
+                   netcoreFiles "tools/netcoreapp2.1/any"
                    poshFiles "tools/netcoreapp2.1/any/"
                    auxFiles
                    otherFilesGlobal ], "_Packaging.global",
      "./_Generated/altcover.global.nuspec", "altcover.global")
 
-    (List.concat [ vizFiles "tools/netcoreapp2.1/any/"
+    (List.concat [ vizFiles "tools/netcoreapp2.1/any"
                    auxVFiles ], "_Packaging.visualizer",
      "./_Generated/altcover.visualizer.nuspec", "altcover.visualizer") ]
   |> List.iter (fun (files, output, nuspec, project) ->
