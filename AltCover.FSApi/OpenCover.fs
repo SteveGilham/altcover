@@ -19,8 +19,10 @@ module OpenCoverUtilities =
           |> List.isEmpty
           |> not
     then
+      let tail = m.OwnerDocument.CreateElement("SequencePoint")
+      tail.SetAttribute("offset", Int32.MaxValue.ToString(CultureInfo.InvariantCulture))
       let interleave =
-        List.concat [ sp; bp ]
+        List.concat [ sp; bp; [tail] ]
         |> List.sortBy (fun x ->
              x.GetAttribute("offset")
              |> Int32.TryParse
