@@ -2341,6 +2341,25 @@ _Target "DotnetTestIntegration" (fun _ ->
         ("-v m /p:AltCover=true")
         "issue#29 regression test returned with a non-zero exit code"
 
+    let proj = XDocument.Load "./RegressionTesting/issue37/issue37.xml"
+    let pack = proj.Descendants(XName.Get("PackageReference")) |> Seq.head
+    let inject =
+      XElement
+        (XName.Get "PackageReference", XAttribute(XName.Get "Include", "altcover"),
+         XAttribute(XName.Get "Version", !Version))
+    pack.AddBeforeSelf inject
+    proj.Save "./RegressionTesting/issue37/issue37.csproj"
+    Actions.RunDotnet
+      (fun o' ->
+      { dotnetOptions o' with WorkingDirectory =
+                                Path.getFullName "RegressionTesting/issue37" }) "test"
+      ("-v m -c Release /p:AltCover=true /p:AltCoverAssemblyFilter=NUnit")
+      "issue#37 regression test returned with a non-zero exit code"
+
+    let cover37 = XDocument.Load "./RegressionTesting/issue37/coverage.xml"
+    Assert.That (cover37.Descendants(XName.Get("BranchPoint")) |> Seq.length,
+                 Is.EqualTo 2)
+
   finally
     let folder = (nugetCache @@ "altcover") @@ !Version
     Shell.mkdir folder

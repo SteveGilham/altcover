@@ -56,5 +56,5 @@ packages/
 Build/build.fsx
 AltCover/Properties/launchSettings.json
 */coverage.opencover.xml
-RegressionTesting/issue29/issue29.csproj
-RegressionTesting/issue29/coverage.xml
+RegressionTesting/issue*/*.csproj
+RegressionTesting/*/coverage.xml
