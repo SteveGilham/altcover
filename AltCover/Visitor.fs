@@ -453,17 +453,21 @@ module internal Visitor =
 
   let fakeSequencePoint genuine (seq : SequencePoint) (instruction : Instruction) =
     match seq with
-    | null -> if genuine = FakeAfterReturn &&
-                 instruction |> isNull |> not &&
-                 instruction.OpCode = OpCodes.Ret then
-                SequencePoint(instruction, Document(null))
-              else null
+    | null ->
+      if genuine = FakeAfterReturn && instruction
+                                      |> isNull
+                                      |> not
+         && instruction.OpCode = OpCodes.Ret
+      then SequencePoint(instruction, Document(null))
+      else null
     | _ -> seq
 
-  let findEffectiveSequencePoint genuine (dbg : MethodDebugInformation) (instructions : Instruction seq) =
+  let findEffectiveSequencePoint genuine (dbg : MethodDebugInformation)
+      (instructions : Instruction seq) =
     instructions
-    |> Seq.map (fun i -> let seq = dbg.GetSequencePoint i
-                         fakeSequencePoint genuine seq i.Previous)
+    |> Seq.map (fun i ->
+         let seq = dbg.GetSequencePoint i
+         fakeSequencePoint genuine seq i.Previous)
     |> Seq.tryFind IsSequencePoint
 
   let findSequencePoint (dbg : MethodDebugInformation) (instructions : Instruction seq) =

@@ -297,10 +297,12 @@ module internal OpenCover =
             |> List.isEmpty
             |> not
       then
-        let tail = XElement(X "SequencePoint",
-                            XAttribute(X "offset", Int32.MaxValue))
+        let tail = XElement(X "SequencePoint", XAttribute(X "offset", Int32.MaxValue))
+
         let interleave =
-          List.concat [ sp; bp; [tail] ]
+          List.concat [ sp
+                        bp
+                        [ tail ] ]
           |> List.sortBy (fun x ->
                x.Attribute(X "offset").Value
                |> Int32.TryParse

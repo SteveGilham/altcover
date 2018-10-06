@@ -569,13 +569,17 @@ module internal Runner =
              s.SetAttribute("minCrapScore", minc)
              s.SetAttribute("maxCrapScore", maxc))
 
-      let computeBranchExitCount (doc:XmlDocument) (sp : XmlNodeList) bp =
+      let computeBranchExitCount (doc : XmlDocument) (sp : XmlNodeList) bp =
         let tail = doc.CreateElement("SequencePoint")
         tail.SetAttribute("offset", Int32.MaxValue.ToString(CultureInfo.InvariantCulture))
-        let nodes = List.concat [ sp |> Seq.cast<XmlElement> |> Seq.toList;
-                                 [tail];
-                                 bp |> Seq.cast<XmlElement> |> Seq.toList
-                        ]
+        let nodes =
+          List.concat [ sp
+                        |> Seq.cast<XmlElement>
+                        |> Seq.toList
+                        [ tail ]
+                        bp
+                        |> Seq.cast<XmlElement>
+                        |> Seq.toList ]
 
         let interleave =
           nodes
@@ -583,6 +587,7 @@ module internal Runner =
                x.GetAttribute("offset")
                |> Int32.TryParse
                |> snd)
+
         interleave
         |> Seq.fold (fun (bev, sq : XmlElement) x ->
              match x.Name with
