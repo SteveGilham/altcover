@@ -3,11 +3,7 @@ nuget Fake.Core.Environment >= 5.7.2
 nuget Fake.Core.Process >= 5.7.2
 nuget Fake.DotNet.Cli >= 5.7.2
 nuget Fake.DotNet.NuGet >= 5.7.2
-nuget Fake.IO.FileSystem >= 5.7.2
-nuget coveralls.io >= 1.4.2
-nuget FSharpLint.Core prerelease
-nuget NUnit >= 3.9.0
-nuget YamlDotNet >= 4.3.0 //"
+nuget Fake.IO.FileSystem >= 5.7.2 //"
 
 open System
 open System.IO
@@ -49,8 +45,8 @@ nuget Fake.Testing.ReportGenerator >= 5.7.2
 nuget coveralls.io >= 1.4.2
 nuget FSharpLint.Core prerelease
 nuget Markdown >= 2.2.1
-nuget NUnit >= 3.10.1
-nuget YamlDotNet >= 5.0.1 //"
+nuget NUnit >= 3.11.0
+nuget YamlDotNet >= 5.2.0 //"
 #r "System.IO.Compression.FileSystem.dll"
 #r "System.Xml"
 #r "System.Xml.Linq"
