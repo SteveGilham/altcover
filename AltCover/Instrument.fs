@@ -241,6 +241,7 @@ module internal Instrument =
            worker.InsertBefore(head, worker.Create(OpCodes.Conv_I8))
            worker.InsertBefore(head, worker.Create(OpCodes.Ret))
            initialBody |> Seq.iter worker.Remove))
+
 #if NETCOREAPP2_0
 #else
   let internal CreateSymbolWriter pdb isWindows isMono =
