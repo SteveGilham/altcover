@@ -509,6 +509,13 @@ _Target "UnitTestWithAltCover" (fun _ ->
                      + @"/o=./__UnitTestWithAltCover -x=" + altReport) })
       "Re-instrument returned with a non-zero exit code"
 
+    if Environment.isWindows then
+      Actions.Run (fun info ->
+        { info with FileName = "sn"
+                    WorkingDirectory = testDirectory
+                    Arguments = " -vf ./__UnitTestWithAltCover/AltCover.Recorder.g.dll" })
+        "Recorder assembly strong-name verified OK"
+
     printfn "Unit test the instrumented code"
     try
       [ !!"_Binaries/AltCover.Tests/Debug+AnyCPU/__UnitTestWithAltCover/*.Tests.dll"
