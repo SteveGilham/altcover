@@ -78,6 +78,9 @@
     <EmbeddedResource Include="..\Build\Infrastructure.snk">
       <Link>Infrastructure.snk</Link>
     </EmbeddedResource>
+    <EmbeddedResource Include="..\Build\Recorder.snk">
+      <Link>Recorder.snk</Link>
+    </EmbeddedResource>
     <EmbeddedResource Include="Sample1.deps.json" />
     <EmbeddedResource Include="Sample1.deps.after.json" />
     <EmbeddedResource Include="Sample2.deps.after.json" />
