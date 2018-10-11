@@ -509,9 +509,10 @@ _Target "UnitTestWithAltCover" (fun _ ->
                      + @"/o=./__UnitTestWithAltCover -x=" + altReport) })
       "Re-instrument returned with a non-zero exit code"
 
-    if Environment.isWindows then
+    let sn = "sn" |> Fake.Core.Process.tryFindFileOnPath
+    if sn |> Option.isSome then
       Actions.Run (fun info ->
-        { info with FileName = "sn"
+        { info with FileName = sn |> Option.get
                     WorkingDirectory = testDirectory
                     Arguments = " -vf ./__UnitTestWithAltCover/AltCover.Recorder.g.dll" })
         "Recorder assembly strong-name verified OK"
