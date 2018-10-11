@@ -569,25 +569,34 @@ module internal Runner =
              s.SetAttribute("minCrapScore", minc)
              s.SetAttribute("maxCrapScore", maxc))
 
-      let computeBranchExitCount (sp : XmlNodeList) bp =
+      let computeBranchExitCount (doc : XmlDocument) (sp : XmlNodeList) bp =
+        let tail = doc.CreateElement("SequencePoint")
+        tail.SetAttribute("offset", Int32.MaxValue.ToString(CultureInfo.InvariantCulture))
+        let nodes =
+          List.concat [ sp
+                        |> Seq.cast<XmlElement>
+                        |> Seq.toList
+                        [ tail ]
+                        bp
+                        |> Seq.cast<XmlElement>
+                        |> Seq.toList ]
+
         let interleave =
-          Seq.concat [ sp |> Seq.cast<XmlElement>
-                       bp |> Seq.cast<XmlElement> ]
-          |> Seq.sortBy ( // inconsistent name to shut Gendarme up
-                          fun x ->
+          nodes
+          |> Seq.sortBy (fun x ->
                x.GetAttribute("offset")
                |> Int32.TryParse
                |> snd)
+
         interleave
-        |> Seq.fold (fun (bev, // mocking points
-                               sq : XmlElement) x ->
+        |> Seq.fold (fun (bev, sq : XmlElement) x ->
              match x.Name with
              | "SequencePoint" ->
                sq.SetAttribute("bev", sprintf "%d" bev)
                (0, x)
              | _ ->
                (bev + (if x.GetAttribute("vc") = "0" then 0
-                       else 1), sq)) (0, sp.[0] :?> XmlElement)
+                       else 1), sq)) (0, nodes.[0])
         |> ignore
 
       let crapScore (method : XmlElement) =
@@ -621,6 +630,8 @@ module internal Runner =
         let mp = method.GetElementsByTagName("MethodPoint") |> Seq.cast<XmlElement>
         let count = sp.Count
         let rawCount = bp.Count
+
+        // inconsistent name to shut Gendarme up
         let numBranches = rawCount + Math.Sign(count + rawCount)
         if count > 0 then CopyFillMethodPoint mp sp
         else FillMethodPoint mp method dict
@@ -636,7 +647,7 @@ module internal Runner =
             method.SetAttribute("branchCoverage", bcover)
             let raw = crapScore method
             setSummary method pointVisits branchVisits 1 None cover bcover raw raw
-            computeBranchExitCount sp bp
+            computeBranchExitCount method.OwnerDocument sp bp
             (vb + branchVisits, vs + pointVisits, vm + 1, pt + count, br + numBranches,
              Math.Min(minc, raw), Math.Max(maxc, raw))
           FillMethod()
@@ -732,6 +743,7 @@ module internal Runner =
     AltCover.Base.Counter.DoFlush (PostProcess counts report) PointProcess true counts
       report
 
+  // mocking points
   let mutable internal GetPayload = PayloadBase
   let mutable internal GetMonitor = MonitorBase
   let mutable internal DoReport = WriteReportBase

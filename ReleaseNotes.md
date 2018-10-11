@@ -2,9 +2,14 @@ Q. Never mind the fluff -- how do I get started?
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
-# 4.0.644 (Doruka series release 5)
-This is mainly the FAKE 5.7 support release, since that made a sufficiently breaking API change (expanding the number of fields in the TestOptions record) to need an update to maintain support.  Meanwhile, harvest time is busy a.f.k., so the time spent on the detailed work on the outstanding road-map items has been slow.
+# 4.0.649 (Doruka series release 6)
+* [BUGFIX] Issue #37 -- handle release builds of C# `return <ternary>;` expressions which don't look like ternaries in their IL.  Fix some corner cases of NPath complexity, branch exit counts and branch visit counts revealed by these cases.
+**NOTE** This form of ternary expression is the first case of a significant user defined branch within a sequence point; the `Compress-Branching -WithinSequencePoint` cmdlet at this release _will_ flatten these constructs.
+* [BUGFIX] Accept coverlet's idiosyncratic OpenCover-style output into cmdlet and Visualizer operations -- it uses Boolean.ToString() at points, which generates capitalized `True` and `False` attribute values, which are not valid XSD `boolean`s
+* [BUGFIX] Issue #38 -- in some .net framework cases, the strong-naming of the recorder assembly was broken; an approach that testing shows to be mroe reliable has been used.
+* [API] Update to FAKE 5.8.5 and validate support from 5.0 up to current
 
+# 4.0.644 (Doruka series release 5)
 * [API] - FAKE 5.7.2 support -- FAKE integration now spans from v5.0 up to current (and should be reasonably future-proofed), and is now also offered on an experimental basis for the .net framework
 * various refactorings and rearrangements, some on purely aesthetic grounds, some to improve the reliability of the travis-ci build, but with no functional impact
 

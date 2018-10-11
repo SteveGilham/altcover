@@ -36,6 +36,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build Items", "Build Items"
 		Build\Apply-Xslt.ps1 = Build\Apply-Xslt.ps1
 		appveyor.yml = appveyor.yml
 		Build\build.fsx = Build\build.fsx
+		Build\get-token.fsx = Build\get-token.fsx
 		Build\Infrastructure.snk = Build\Infrastructure.snk
 		Build\Pester.Tests.ps1 = Build\Pester.Tests.ps1
 		Build\Recorder.snk = Build\Recorder.snk

@@ -1,5 +1,13 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <xs:schema id="NewDataSet" xmlns="" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+  <xs:simpleType name="bool">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="true"/>
+      <xs:enumeration value="false"/>
+      <xs:enumeration value="True"/>
+      <xs:enumeration value="False"/>
+    </xs:restriction>
+  </xs:simpleType>
   <xs:element name="CoverageSession">
     <xs:complexType>
       <xs:sequence>
@@ -123,14 +131,14 @@
                                             <xs:element name="MethodPoint" type="MethodPoint" minOccurs="0" maxOccurs="1">
                                             </xs:element>
                                           </xs:sequence>
-                                          <xs:attribute name="visited" type="xs:boolean" use="required" />
+                                          <xs:attribute name="visited" type="bool" use="required" />
                                           <xs:attribute name="cyclomaticComplexity" type="xs:integer" use="required" />
                                           <xs:attribute name="sequenceCoverage" type="xs:decimal" use="required" />
                                           <xs:attribute name="branchCoverage" type="xs:decimal" use="required" />
-                                          <xs:attribute name="isConstructor" type="xs:boolean" use="required" />
-                                          <xs:attribute name="isStatic" type="xs:boolean" use="required" />
-                                          <xs:attribute name="isGetter" type="xs:boolean" use="required" />
-                                          <xs:attribute name="isSetter" type="xs:boolean" use="required" />
+                                          <xs:attribute name="isConstructor" type="bool" use="required" />
+                                          <xs:attribute name="isStatic" type="bool" use="required" />
+                                          <xs:attribute name="isGetter" type="bool" use="required" />
+                                          <xs:attribute name="isSetter" type="bool" use="required" />
                                           <xs:anyAttribute processContents="skip" />
                                         </xs:complexType>
                                       </xs:element>
