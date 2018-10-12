@@ -177,14 +177,16 @@ module internal Instrument =
     Guard definition (fun () ->
       ProgramDatabase.ReadSymbols definition
       definition.Name.Name <- (extractName definition) + ".g"
+#if NETCOREAPP2_0
+      let pair = None
+#else
+      use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Recorder.snk")
+      use buffer = new MemoryStream()
+      stream.CopyTo(buffer)
+      let pair = Some (StrongNameKeyPair(buffer.ToArray()))
+#endif
 
-      let pair =
-        Visitor.defaultStrongNameKey ::
-          (Visitor.keys.Values |> Seq.map (fun r -> Some r.Pair) |> Seq.toList)
-          |> List.choose id
-          |> List.tryHead
       UpdateStrongNaming definition pair
-
       [ (// set the coverage file path and unique token
          "get_ReportFile", Visitor.ReportPath())
         ("get_Token", "Altcover-" + Guid.NewGuid().ToString()) ]

@@ -19,24 +19,20 @@ type AltCoverTests2() =
     let monoSample1 = "../_Mono/Sample1"
 #else
     let sample1 = "Sample1.exe"
+    let recorderSnk = typeof<AltCover.Node>.Assembly.GetManifestResourceNames()
+                      |> Seq.find (fun n -> n.EndsWith(".Recorder.snk", StringComparison.Ordinal))
 #endif
 
-    let loadKey s =
+    let infrastructureSnk =
       Assembly.GetExecutingAssembly().GetManifestResourceNames()
-      |> Seq.find (fun n -> n.EndsWith(s, StringComparison.Ordinal))
+      |> Seq.find (fun n -> n.EndsWith("Infrastructure.snk", StringComparison.Ordinal))
 
-    let testSnk =
-      loadKey "Recorder.snk"
-
-    let loadKeyPair s =
+    member private self.ProvideKeyPair() =
       use stream =
-        Assembly.GetExecutingAssembly().GetManifestResourceStream(loadKey s)
+        Assembly.GetExecutingAssembly().GetManifestResourceStream(infrastructureSnk)
       use buffer = new MemoryStream()
       stream.CopyTo(buffer)
       StrongNameKeyPair(buffer.ToArray())
-
-    member private self.ProvideKeyPair() =
-      loadKeyPair "Recorder.snk"
 
     // Instrument.fs
     [<Test>]
