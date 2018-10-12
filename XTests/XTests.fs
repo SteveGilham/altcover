@@ -289,7 +289,7 @@ module XTests =
       Assert.Equal(Visitor.keys.Count, 0)
 #else
       Assert.True (Visitor.keys.ContainsKey(KeyStore.KeyToIndex snk))
-      Assert.Equal (Visitor.keys.Count, 1)
+      Assert.Equal (Visitor.keys.Count, 2)
 #endif
 
       Assert.True(File.Exists report)
@@ -466,7 +466,7 @@ module XTests =
       Assert.Equal(Visitor.keys.Count, 0)
 #else
       Assert.True (Visitor.keys.ContainsKey(KeyStore.KeyToIndex snk))
-      Assert.Equal (Visitor.keys.Count, 1)
+      Assert.Equal (Visitor.keys.Count, 2)
 #endif
 
       Assert.True(File.Exists report)

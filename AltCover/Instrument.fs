@@ -183,7 +183,9 @@ module internal Instrument =
       use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Recorder.snk")
       use buffer = new MemoryStream()
       stream.CopyTo(buffer)
-      let pair = Some (StrongNameKeyPair(buffer.ToArray()))
+      let snk = StrongNameKeyPair(buffer.ToArray())
+      Visitor.Add snk
+      let pair = Some (snk)
 #endif
 
       UpdateStrongNaming definition pair
