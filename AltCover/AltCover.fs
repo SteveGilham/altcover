@@ -29,6 +29,12 @@ module internal Main =
 #else
     Visitor.keys.Clear()
     Visitor.defaultStrongNameKey <- None
+    use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Recorder.snk")
+    use buffer = new MemoryStream()
+    stream.CopyTo(buffer)
+    let snk = StrongNameKeyPair(buffer.ToArray())
+    Visitor.Add snk
+    Visitor.recorderStrongNameKey <- Some (snk)
 #endif
     Visitor.reportPath <- None
     Visitor.NameFilters.Clear()
