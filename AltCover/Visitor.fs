@@ -198,6 +198,7 @@ module internal Visitor =
     else fmt
 
   let mutable internal defaultStrongNameKey : option<StrongNameKeyPair> = None
+  let mutable internal recorderStrongNameKey : option<StrongNameKeyPair> = None
   let internal keys = new Dictionary<UInt64, KeyRecord>()
 
   let internal Add(key : StrongNameKeyPair) =

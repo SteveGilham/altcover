@@ -375,6 +375,7 @@ type AltCoverTests2() =
     member self.ShouldBeAbleToPrepareTheAssembly() =
       try
         Visitor.keys.Clear()
+        Main.init()
         let where = Assembly.GetExecutingAssembly().Location
         let path =
           Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample3.dll")
@@ -466,6 +467,7 @@ type AltCoverTests2() =
     member self.ShouldGetNewFilePathFromPreparedAssembly () =
       try
         Visitor.keys.Clear()
+        Main.init()
         let where = Assembly.GetExecutingAssembly().Location
         let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample3.dll")
         let unique = Guid.NewGuid().ToString()
@@ -528,6 +530,7 @@ type AltCoverTests2() =
     member self.ShouldWriteMonoAssemblyOK () =
       try
         Visitor.keys.Clear()
+        Main.init()
         let where = Assembly.GetExecutingAssembly().Location
         let path = Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "_Mono/Sample3/Sample3.dll")
         let unique = Guid.NewGuid().ToString()
