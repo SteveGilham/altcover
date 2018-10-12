@@ -96,8 +96,12 @@ type AltCoverTests2() =
       Assert.That (token0, Is.Not.Empty)
 #endif
 
+#if NETCOREAPP2_0
       use stream =
-        Assembly.GetExecutingAssembly().GetManifestResourceStream(testSnk)
+        Assembly.GetExecutingAssembly().GetManifestResourceStream(infrastructureSnk)
+#else
+      use stream = typeof<AltCover.Node>.Assembly.GetManifestResourceStream(recorderSnk)
+#endif
 
       use buffer = new MemoryStream()
       stream.CopyTo(buffer)
@@ -137,7 +141,7 @@ type AltCoverTests2() =
         let path =
           Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample3.dll")
         let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-        "Infrastructure.snk" |> loadKeyPair |> Visitor.Add
+        self.ProvideKeyPair() |> Visitor.Add
 #if NETCOREAPP2_0
         Assert.That(Option.isNone (Instrument.KnownKey def.Name))
 #else
@@ -206,7 +210,7 @@ type AltCoverTests2() =
         let path =
           Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample3.dll")
         let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-        "Infrastructure.snk" |> loadKeyPair |> Visitor.Add
+        self.ProvideKeyPair() |> Visitor.Add
 #if NETCOREAPP2_0
         Assert.That(Option.isNone (Instrument.KnownToken def.Name))
 #else
@@ -537,8 +541,7 @@ type AltCoverTests2() =
         let output = Path.GetTempFileName()
         let outputdll = output + ".dll"
         let save = Visitor.reportPath
-        use stream =
-          Assembly.GetExecutingAssembly().GetManifestResourceStream(testSnk)
+        use stream = typeof<AltCover.Node>.Assembly.GetManifestResourceStream(recorderSnk)
         use buffer = new MemoryStream()
         stream.CopyTo(buffer)
         let key = StrongNameKeyPair(buffer.ToArray())
@@ -1170,10 +1173,12 @@ type AltCoverTests2() =
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
       ProgramDatabase.ReadSymbols def
       let token0 = def.Name.PublicKeyToken
-
+#if NETCOREAPP2_0
       use stream =
-        Assembly.GetExecutingAssembly().GetManifestResourceStream(testSnk)
-
+        Assembly.GetExecutingAssembly().GetManifestResourceStream(infrastructureSnk)
+#else
+      use stream = typeof<AltCover.Node>.Assembly.GetManifestResourceStream(recorderSnk)
+#endif
       use buffer = new MemoryStream()
       stream.CopyTo(buffer)
       Visitor.defaultStrongNameKey <- Some(StrongNameKeyPair(buffer.ToArray()))
@@ -1236,10 +1241,12 @@ type AltCoverTests2() =
 #endif
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path'
       ProgramDatabase.ReadSymbols def
-
+#if NETCOREAPP2_0
       use stream =
-        Assembly.GetExecutingAssembly().GetManifestResourceStream(testSnk)
-
+        Assembly.GetExecutingAssembly().GetManifestResourceStream(infrastructureSnk)
+#else
+      use stream = typeof<AltCover.Node>.Assembly.GetManifestResourceStream(recorderSnk)
+#endif
       use buffer = new MemoryStream()
       stream.CopyTo(buffer)
       Visitor.defaultStrongNameKey <- Some(StrongNameKeyPair(buffer.ToArray()))
@@ -1255,10 +1262,12 @@ type AltCoverTests2() =
         Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
       ProgramDatabase.ReadSymbols def |> ignore
-
+#if NETCOREAPP2_0
       use stream =
-        Assembly.GetExecutingAssembly().GetManifestResourceStream(testSnk)
-
+        Assembly.GetExecutingAssembly().GetManifestResourceStream(infrastructureSnk)
+#else
+      use stream = typeof<AltCover.Node>.Assembly.GetManifestResourceStream(recorderSnk)
+#endif
       use buffer = new MemoryStream()
       stream.CopyTo(buffer)
       Visitor.defaultStrongNameKey <- Some(StrongNameKeyPair(buffer.ToArray()))
@@ -1287,10 +1296,12 @@ type AltCoverTests2() =
         let npath = typeof<TestAttribute>.Assembly.Location
         let ndef = Mono.Cecil.AssemblyDefinition.ReadAssembly npath
         let key = KeyStore.ArrayToIndex ndef.Name.PublicKey
-
+#if NETCOREAPP2_0
         use stream =
-          Assembly.GetExecutingAssembly().GetManifestResourceStream(testSnk)
-
+          Assembly.GetExecutingAssembly().GetManifestResourceStream(infrastructureSnk)
+#else
+        use stream = typeof<AltCover.Node>.Assembly.GetManifestResourceStream(recorderSnk)
+#endif
         use buffer = new MemoryStream()
         stream.CopyTo(buffer)
         let ourKeyPair = StrongNameKeyPair(buffer.ToArray())
@@ -1324,10 +1335,12 @@ type AltCoverTests2() =
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
       ProgramDatabase.ReadSymbols def
       let refs = def.MainModule.AssemblyReferences |> Seq.toList
-
+#if NETCOREAPP2_0
       use stream =
-        Assembly.GetExecutingAssembly().GetManifestResourceStream(testSnk)
-
+        Assembly.GetExecutingAssembly().GetManifestResourceStream(infrastructureSnk)
+#else
+      use stream = typeof<AltCover.Node>.Assembly.GetManifestResourceStream(recorderSnk)
+#endif
       use buffer = new MemoryStream()
       stream.CopyTo(buffer)
       Visitor.defaultStrongNameKey <- Some(StrongNameKeyPair(buffer.ToArray()))
@@ -1348,10 +1361,12 @@ type AltCoverTests2() =
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
       ProgramDatabase.ReadSymbols def
       let refs = def.MainModule.AssemblyReferences |> Seq.toList
-
+#if NETCOREAPP2_0
       use stream =
-        Assembly.GetExecutingAssembly().GetManifestResourceStream(testSnk)
-
+        Assembly.GetExecutingAssembly().GetManifestResourceStream(infrastructureSnk)
+#else
+      use stream = typeof<AltCover.Node>.Assembly.GetManifestResourceStream(recorderSnk)
+#endif
       use buffer = new MemoryStream()
       stream.CopyTo(buffer)
       Visitor.defaultStrongNameKey <- Some(StrongNameKeyPair(buffer.ToArray()))
@@ -1536,12 +1551,12 @@ type AltCoverTests2() =
 
     [<Test>]
     member self.JSONInjectionTransformsStandaloneFileAsExpected() =
-      let inputName = testSnk.Replace("Recorder.snk", "Sample1.deps.json")
+      let inputName = infrastructureSnk.Replace("Infrastructure.snk", "Sample1.deps.json")
 #if NETCOREAPP2_0
       let resultName =
-        testSnk.Replace("Recorder.snk", "Sample1.deps.ncafter.json")
+        infrastructureSnk.Replace("Infrastructure.snk", "Sample1.deps.ncafter.json")
 #else
-      let resultName = testSnk.Replace("Recorder.snk", "Sample1.deps.after.json")
+      let resultName = infrastructureSnk.Replace("Infrastructure.snk", "Sample1.deps.after.json")
 #endif
       use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(inputName)
       use reader = new StreamReader(stream)
@@ -1559,12 +1574,12 @@ type AltCoverTests2() =
 
     [<Test>]
     member self.JSONInjectionTransformsDependencyFileAsExpected() =
-      let inputName = testSnk.Replace("Recorder.snk", "Sample2.deps.json")
+      let inputName = infrastructureSnk.Replace("Infrastructure.snk", "Sample2.deps.json")
 #if NETCOREAPP2_0
       let resultName =
-        testSnk.Replace("Recorder.snk", "Sample2.deps.ncafter.json")
+        infrastructureSnk.Replace("Infrastructure.snk", "Sample2.deps.ncafter.json")
 #else
-      let resultName = testSnk.Replace("Recorder.snk", "Sample2.deps.after.json")
+      let resultName = infrastructureSnk.Replace("Infrastructure.snk", "Sample2.deps.after.json")
 #endif
       use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(inputName)
       use reader = new StreamReader(stream)
@@ -1584,9 +1599,9 @@ type AltCoverTests2() =
     member self.JSONInjectionIsIdempotent() =
 #if NETCOREAPP2_0
       let resultName =
-        testSnk.Replace("Recorder.snk", "Sample1.deps.ncafter.json")
+        infrastructureSnk.Replace("Infrastructure.snk", "Sample1.deps.ncafter.json")
 #else
-      let resultName = testSnk.Replace("Recorder.snk", "Sample1.deps.after.json")
+      let resultName = infrastructureSnk.Replace("Infrastructure.snk", "Sample1.deps.after.json")
 #endif
       use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resultName)
       use reader = new StreamReader(stream)
@@ -1664,7 +1679,7 @@ type AltCoverTests2() =
     // CommandLine.fs
     [<Test>]
     member self.StrongNameKeyCanBeValidatedExceptOnNetCore() =
-      let input = Path.Combine(AltCover.SolutionRoot.location, "Build/Recorder.snk")
+      let input = Path.Combine(AltCover.SolutionRoot.location, "Build/Infrastructure.snk")
       let (pair, ok) = CommandLine.ValidateStrongNameKey "key" input
       Assert.That(ok, Is.True, "Strong name is OK")
       Assert.That(pair, Is.Not.Null)
