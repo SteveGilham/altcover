@@ -43,6 +43,12 @@ module internal Gendarme =
         |> ignore
 
   let ``detect ternary pattern`` (code : Code option) =
+    // look-up into a bit-string to get
+    // +1 for any Load instruction, basically
+    // Still don't see how that works in my test examples which
+    // have unconditional branches preceded by non-loads
+    // However, ILSpy doesn't decompile a release-build return <ternary> properly
+    // so I'm not going to try to figure that one out on top of this
     let index = int (Option.getOrElse Code.Nop code)
     mask
     |> Seq.skip (index >>> 6)

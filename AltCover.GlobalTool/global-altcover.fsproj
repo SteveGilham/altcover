@@ -7,6 +7,9 @@
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <AssemblyName>global-altcover</AssemblyName>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <ContinuousIntegrationBuild Condition="'$(APPVEYOR)'=='True'">true</ContinuousIntegrationBuild>
+    <DeterministicSourcePaths Condition="'$(APPVEYOR)'=='True'">true</DeterministicSourcePaths>
 </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">

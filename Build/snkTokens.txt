@@ -1,0 +1,8 @@
+Infrastructure.snk : c02b1a9f5b7cade8
+Recorder.snk : 4ebffcaabf10ce6a
+SelfTest.snk : 3eb3cd726036ff71
+
+--
+
+sn -p yourkey.snk publickey.snk
+sn -tp publickey.snk
