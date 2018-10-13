@@ -177,16 +177,10 @@ module internal Instrument =
     Guard definition (fun () ->
       ProgramDatabase.ReadSymbols definition
       definition.Name.Name <- (extractName definition) + ".g"
-#if NETCOREAPP2_0
-      let pair = None
-#else
-      use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Recorder.snk")
-      use buffer = new MemoryStream()
-      stream.CopyTo(buffer)
-      let pair = Some (StrongNameKeyPair(buffer.ToArray()))
-#endif
 
+      let pair = Visitor.recorderStrongNameKey
       UpdateStrongNaming definition pair
+
       [ (// set the coverage file path and unique token
          "get_ReportFile", Visitor.ReportPath())
         ("get_Token", "Altcover-" + Guid.NewGuid().ToString()) ]
@@ -241,6 +235,7 @@ module internal Instrument =
            worker.InsertBefore(head, worker.Create(OpCodes.Conv_I8))
            worker.InsertBefore(head, worker.Create(OpCodes.Ret))
            initialBody |> Seq.iter worker.Remove))
+
 #if NETCOREAPP2_0
 #else
   let internal CreateSymbolWriter pdb isWindows isMono =

@@ -45,7 +45,6 @@ type AltCoverTests() =
     let monoSample1 = "../_Mono/Sample1"
 #else
     let sample1 = "Sample1.exe"
-    let monoSample1 = "_Mono/Sample1"
     let recorderSnk = typeof<AltCover.Node>.Assembly.GetManifestResourceNames()
                       |> Seq.find (fun n -> n.EndsWith(".Recorder.snk", StringComparison.Ordinal))
 #endif
@@ -654,6 +653,27 @@ type AltCoverTests() =
       Assert.That(pass, Is.EquivalentTo(expected), sprintf "Got sequence %A" pass)
 
     // Visitor.fs
+    [<Test>]
+    member self.ReleaseBuildTernaryTest() =
+      let nop = Instruction.Create(OpCodes.Nop)
+      let ret = Instruction.Create(OpCodes.Ret)
+      let seq = SequencePoint(nop, Document(null))
+
+      // transparent
+      Assert.That(Visitor.fakeSequencePoint Genuine seq nop, Is.SameAs seq)
+      Assert.That(Visitor.fakeSequencePoint FakeAfterReturn seq nop, Is.SameAs seq)
+
+      Assert.That(Visitor.fakeSequencePoint Genuine null null, Is.Null)
+      Assert.That(Visitor.fakeSequencePoint FakeAfterReturn null null, Is.Null)
+
+      Assert.That(Visitor.fakeSequencePoint Genuine null nop, Is.Null)
+      Assert.That(Visitor.fakeSequencePoint FakeAfterReturn null nop, Is.Null)
+
+      Assert.That(Visitor.fakeSequencePoint Genuine null ret, Is.Null)
+
+      // One fake-out
+      Assert.That(Visitor.fakeSequencePoint FakeAfterReturn null ret, Is.Not.Null)
+
     [<Test>]
     member self.CSharpNestedMethods() =
       let sample3 =

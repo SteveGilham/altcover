@@ -13,11 +13,8 @@ open NUnit.Framework
 type AltCoverTests3() =
   class
 #if NETCOREAPP2_0
-    let sample1 = "Sample1.dll"
     let monoSample1 = "../_Mono/Sample1"
 #else
-    let sample1 = "Sample1.exe"
-    let monoSample1 = "_Mono/Sample1"
     let recorderSnk = typeof<AltCover.Node>.Assembly.GetManifestResourceNames()
                       |> Seq.find (fun n -> n.EndsWith(".Recorder.snk", StringComparison.Ordinal))
 #endif

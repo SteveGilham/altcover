@@ -92,6 +92,11 @@ type internal KeyRecord =
   { Pair : StrongNameKeyPair
     Token : byte list }
 
+[<ExcludeFromCodeCoverage; NoComparison>]
+type internal SequenceType =
+  | Genuine
+  | FakeAfterReturn
+
 module internal KeyStore =
   let private hash = new System.Security.Cryptography.SHA1CryptoServiceProvider()
   let private publicKeyOfKey (key : StrongNameKeyPair) =
@@ -193,6 +198,7 @@ module internal Visitor =
     else fmt
 
   let mutable internal defaultStrongNameKey : option<StrongNameKeyPair> = None
+  let mutable internal recorderStrongNameKey : option<StrongNameKeyPair> = None
   let internal keys = new Dictionary<UInt64, KeyRecord>()
 
   let internal Add(key : StrongNameKeyPair) =
@@ -446,10 +452,27 @@ module internal Visitor =
      |> not)
     && s.IsHidden |> not
 
-  let findSequencePoint (dbg : MethodDebugInformation) (instructions : Instruction seq) =
+  let fakeSequencePoint genuine (seq : SequencePoint) (instruction : Instruction) =
+    match seq with
+    | null ->
+      if genuine = FakeAfterReturn && instruction
+                                      |> isNull
+                                      |> not
+         && instruction.OpCode = OpCodes.Ret
+      then SequencePoint(instruction, Document(null))
+      else null
+    | _ -> seq
+
+  let findEffectiveSequencePoint genuine (dbg : MethodDebugInformation)
+      (instructions : Instruction seq) =
     instructions
-    |> Seq.map dbg.GetSequencePoint
+    |> Seq.map (fun i ->
+         let seq = dbg.GetSequencePoint i
+         fakeSequencePoint genuine seq i.Previous)
     |> Seq.tryFind IsSequencePoint
+
+  let findSequencePoint (dbg : MethodDebugInformation) (instructions : Instruction seq) =
+    findEffectiveSequencePoint Genuine dbg instructions
 
   let indexList l = l |> List.mapi (fun i x -> (i, x))
 
@@ -478,7 +501,7 @@ module internal Visitor =
         if isNull state || finish = state.Previous then None
         else Some(state, state.Next)) start
       |> Seq.toList
-    findSequencePoint dbg range
+    findEffectiveSequencePoint FakeAfterReturn dbg range
 
   let rec lastOfSequencePoint (dbg : MethodDebugInformation) (i : Instruction) =
     let n = i.Next

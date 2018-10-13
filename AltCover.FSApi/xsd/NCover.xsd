@@ -54,8 +54,6 @@
             <xs:anyAttribute processContents="skip" />
           </xs:complexType>
         </xs:element>
-        <xs:element name="PartCoverReport" type="xs:string" minOccurs="0" msdata:Ordinal="1" />
-        <xs:element name="OpenCoverReport" type="xs:string" minOccurs="0" msdata:Ordinal="1" />
       </xs:sequence>
       <xs:anyAttribute processContents="skip" />
     </xs:complexType>

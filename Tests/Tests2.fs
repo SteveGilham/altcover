@@ -19,7 +19,6 @@ type AltCoverTests2() =
     let monoSample1 = "../_Mono/Sample1"
 #else
     let sample1 = "Sample1.exe"
-    let monoSample1 = "_Mono/Sample1"
     let recorderSnk = typeof<AltCover.Node>.Assembly.GetManifestResourceNames()
                       |> Seq.find (fun n -> n.EndsWith(".Recorder.snk", StringComparison.Ordinal))
 #endif
@@ -380,6 +379,7 @@ type AltCoverTests2() =
     member self.ShouldBeAbleToPrepareTheAssembly() =
       try
         Visitor.keys.Clear()
+        Main.init()
         let where = Assembly.GetExecutingAssembly().Location
         let path =
           Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample3.dll")
@@ -471,6 +471,7 @@ type AltCoverTests2() =
     member self.ShouldGetNewFilePathFromPreparedAssembly () =
       try
         Visitor.keys.Clear()
+        Main.init()
         let where = Assembly.GetExecutingAssembly().Location
         let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample3.dll")
         let unique = Guid.NewGuid().ToString()
@@ -533,6 +534,7 @@ type AltCoverTests2() =
     member self.ShouldWriteMonoAssemblyOK () =
       try
         Visitor.keys.Clear()
+        Main.init()
         let where = Assembly.GetExecutingAssembly().Location
         let path = Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "_Mono/Sample3/Sample3.dll")
         let unique = Guid.NewGuid().ToString()

@@ -509,6 +509,14 @@ _Target "UnitTestWithAltCover" (fun _ ->
                      + @"/o=./__UnitTestWithAltCover -x=" + altReport) })
       "Re-instrument returned with a non-zero exit code"
 
+    let sn = "sn" |> Fake.Core.Process.tryFindFileOnPath
+    if sn |> Option.isSome then
+      Actions.Run (fun info ->
+        { info with FileName = sn |> Option.get
+                    WorkingDirectory = testDirectory
+                    Arguments = " -vf ./__UnitTestWithAltCover/AltCover.Recorder.g.dll" })
+        "Recorder assembly strong-name verified OK"
+
     printfn "Unit test the instrumented code"
     try
       [ !!"_Binaries/AltCover.Tests/Debug+AnyCPU/__UnitTestWithAltCover/*.Tests.dll"
@@ -2183,9 +2191,9 @@ Target.runOrDefault "DoIt"
     let dependencies = """// [ FAKE GROUP ]
 group NetcoreBuild
   source https://api.nuget.org/v3/index.json
-  nuget Fake.Core >= 5.3.0
-  nuget Fake.Core.Target >= 5.3.0
-  nuget Fake.DotNet.Cli >= 5.3.0
+  nuget Fake.Core >= 5.8.4
+  nuget Fake.Core.Target >= 5.8.5
+  nuget Fake.DotNet.Cli >= 5.8.5
 
   source {0}
   nuget AltCover.Api {1} """
@@ -2340,6 +2348,25 @@ _Target "DotnetTestIntegration" (fun _ ->
                                   Path.getFullName "RegressionTesting/issue29" }) "test"
         ("-v m /p:AltCover=true")
         "issue#29 regression test returned with a non-zero exit code"
+
+    let proj = XDocument.Load "./RegressionTesting/issue37/issue37.xml"
+    let pack = proj.Descendants(XName.Get("PackageReference")) |> Seq.head
+    let inject =
+      XElement
+        (XName.Get "PackageReference", XAttribute(XName.Get "Include", "altcover"),
+         XAttribute(XName.Get "Version", !Version))
+    pack.AddBeforeSelf inject
+    proj.Save "./RegressionTesting/issue37/issue37.csproj"
+    Actions.RunDotnet
+      (fun o' ->
+      { dotnetOptions o' with WorkingDirectory =
+                                Path.getFullName "RegressionTesting/issue37" }) "test"
+      ("-v m -c Release /p:AltCover=true /p:AltCoverAssemblyFilter=NUnit")
+      "issue#37 regression test returned with a non-zero exit code"
+
+    let cover37 = XDocument.Load "./RegressionTesting/issue37/coverage.xml"
+    Assert.That (cover37.Descendants(XName.Get("BranchPoint")) |> Seq.length,
+                 Is.EqualTo 2)
 
   finally
     let folder = (nugetCache @@ "altcover") @@ !Version
