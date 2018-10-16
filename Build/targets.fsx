@@ -2390,8 +2390,8 @@ _Target "Issue20" (fun _ ->
     csproj.Save "./RegressionTesting/issue20/xunit-tests/xunit-tests.csproj"
 
     printfn "Nuget cache = %A" nugetCache
-    Directory.GetDirectories nugetCache
-    |> printfn " -- %s"
+    (Directory.GetDirectories nugetCache)
+    |> Seq.iter printfn " -- %s"
 
     Actions.RunDotnet
       (fun o' -> { dotnetOptions o' with WorkingDirectory = Path.getFullName "./RegressionTesting/issue20/classlib" })
