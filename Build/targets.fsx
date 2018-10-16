@@ -2847,7 +2847,8 @@ Target.activateFinal "ResetConsoleColours"
 
 "Unpack"
 ==> "Issue20"
-=?> ("Deployment", Environment.isWindows)
+==> "Deployment"
+//=?> ("Deployment", Environment.isWindows)
 
 "Unpack"
 ==> "DotnetCLIIntegration"
