@@ -2387,7 +2387,7 @@ _Target "Issue20" (fun _ ->
         (XName.Get "PackageReference", XAttribute(XName.Get "Include", "altcover"),
          XAttribute(XName.Get "Version", !Version))
     pack.AddBeforeSelf inject
-    csproj.Save "./RegressionTesting/issue20/xunit-tests/xunit-tests..csproj"
+    csproj.Save "./RegressionTesting/issue20/xunit-tests/xunit-tests.csproj"
 
     Actions.RunDotnet
       (fun o' -> { dotnetOptions o' with WorkingDirectory = Path.getFullName "./RegressionTesting/issue20/xunit-tests" })
