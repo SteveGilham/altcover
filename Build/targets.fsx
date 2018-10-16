@@ -2373,6 +2373,35 @@ _Target "DotnetTestIntegration" (fun _ ->
     Shell.mkdir folder
     Shell.deleteDir folder)
 
+_Target "Issue20" (fun _ ->
+  try
+    let config = XDocument.Load "./Build/NuGet.config.dotnettest"
+    let repo = config.Descendants(XName.Get("add")) |> Seq.head
+    repo.SetAttributeValue(XName.Get "value", Path.getFullName "./_Packaging")
+    config.Save "./RegressionTesting/issue20/NuGet.config"
+
+    let csproj = XDocument.Load "./RegressionTesting/issue20/xunit-tests/xunit-tests.xml"
+    let pack = csproj.Descendants(XName.Get("PackageReference")) |> Seq.head
+    let inject =
+      XElement
+        (XName.Get "PackageReference", XAttribute(XName.Get "Include", "altcover"),
+         XAttribute(XName.Get "Version", !Version))
+    pack.AddBeforeSelf inject
+    csproj.Save "./RegressionTesting/issue20/xunit-tests/xunit-tests..csproj"
+
+    Actions.RunDotnet
+      (fun o' -> { dotnetOptions o' with WorkingDirectory = Path.getFullName "./RegressionTesting/issue20/xunit-tests" })
+      "restore" ("") "restore returned with a non-zero exit code"
+
+    Actions.RunDotnet
+      (fun o' -> { dotnetOptions o' with WorkingDirectory = Path.getFullName "./RegressionTesting/issue20/xunit-tests" })
+      "test" ("-v m /p:AltCover=true")
+      "sample test returned with a non-zero exit code"
+  finally
+    let folder = (nugetCache @@ "altcover") @@ !Version
+    Shell.mkdir folder
+    Shell.deleteDir folder)
+
 _Target "Issue23" (fun _ ->
   try
     Directory.ensure "./_Issue23"
@@ -2814,6 +2843,10 @@ Target.activateFinal "ResetConsoleColours"
 
 "Unpack"
 ==> "Issue23"
+=?> ("Deployment", Environment.isWindows)
+
+"Unpack"
+==> "Issue20"
 =?> ("Deployment", Environment.isWindows)
 
 "Unpack"
