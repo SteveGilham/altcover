@@ -2391,7 +2391,7 @@ _Target "Issue20" (fun _ ->
 
     printfn "Nuget cache = %A" nugetCache
     (Directory.GetDirectories nugetCache)
-    |> Seq.iter printfn " -- %s"
+    |> Seq.iter (printfn " -- %s")
 
     Actions.RunDotnet
       (fun o' -> { dotnetOptions o' with WorkingDirectory = Path.getFullName "./RegressionTesting/issue20/classlib" })
