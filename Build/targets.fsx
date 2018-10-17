@@ -2176,14 +2176,12 @@ _Target "DoIt" (fun _ ->
         (Environment.environVar "ProgramFiles" @@ "PowerShell")
     else "pwsh"
 
-  let r =
-    Fake.Core.Process.execSimple (fun info ->
-      { info with FileName = pwsh
-                  WorkingDirectory = "."
-                  Arguments = ("-NoProfile -Command \"" + command + "\"") })
-      (TimeSpan.FromMinutes 10.0)
 
-  if (r <> 0) then new InvalidOperationException("Non zero return code") |> raise)
+  let r = CreateProcess.fromRawCommand pwsh ["-NoProfile"; "-Command"; command ]
+          |> CreateProcess.withWorkingDirectory "."
+          |> Proc.run
+
+  if (r.ExitCode <> 0) then new InvalidOperationException("Non zero return code") |> raise)
 Target.runOrDefault "DoIt"
 """
     File.WriteAllText("./_ApiUse/DriveApi.fsx", script)
