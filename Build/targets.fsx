@@ -210,11 +210,6 @@ _Target "Lint" (fun _ ->
 _Target "Gendarme"
   (fun _ -> // Needs debug because release is compiled --standalone which contaminates everything
   Directory.ensure "./_Reports"
-  let subjects =
-    String.Join
-      (" ",
-       [ "_Binaries/AltCover/Debug+AnyCPU/AltCover.exe"
-         "_Binaries/AltCover.Shadow/Debug+AnyCPU/AltCover.Shadow.dll" ])
 
   let rules =
     if Environment.isWindows then "./Build/rules.xml"
@@ -222,16 +217,22 @@ _Target "Gendarme"
 
   Actions.Run((Tools.findToolInSubPath "gendarme.exe" "./packages"),
                ".",
-                  ["--severity all --confidence all --config " + rules
-                  + " --console --html ./_Reports/gendarme.html " + subjects ])
+                  ["--severity"; "all"; "--confidence"; "all"; "--config"; rules;
+                   " --console"; "--html"; "./_Reports/gendarme.html"; 
+                   "_Binaries/AltCover/Debug+AnyCPU/AltCover.exe";
+                   "_Binaries/AltCover.Shadow/Debug+AnyCPU/AltCover.Shadow.dll"])
     "Gendarme Errors were detected"
   Actions.Run((Tools.findToolInSubPath "gendarme.exe" "./packages"),
               ".",
-               ["--severity all --confidence all --config ./Build/rules-posh.xml --console --html ./_Reports/gendarme.html _Binaries/AltCover.PowerShell/Debug+AnyCPU/AltCover.PowerShell.dll _Binaries/AltCover.FSApi/Debug+AnyCPU/AltCover.FSApi.dll" ])
+               ["--severity"; "all"; "--confidence"; "all"; "--config"; 
+                "./Build/rules-posh.xml"; "--console"; "--html"; 
+                "./_Reports/gendarme.html _Binaries/AltCover.PowerShell/Debug+AnyCPU/AltCover.PowerShell.dll"; 
+                "_Binaries/AltCover.FSApi/Debug+AnyCPU/AltCover.FSApi.dll" ])
     "Gendarme Errors were detected"
   Actions.Run((Tools.findToolInSubPath "gendarme.exe" "./packages"),
                ".",
-               ["--severity all --confidence all --config ./Build/rules-gtk.xml --console --html ./_Reports/gendarme.html _Binaries/AltCover.Visualizer/Debug+AnyCPU/AltCover.Visualizer.exe"])
+               ["--severity"; "all"; "--confidence"; "all"; "--config"; "./Build/rules-gtk.xml"; 
+               "--console"; "--html"; "./_Reports/gendarme.html"; "_Binaries/AltCover.Visualizer/Debug+AnyCPU/AltCover.Visualizer.exe"])
     "Gendarme Errors were detected")
 
 _Target "FxCop"
@@ -251,37 +252,78 @@ _Target "FxCop"
     Path.combine vsInstallPath "Team Tools/Static Analysis Tools/FxCop/FxCopCmd.exe"
 
   Actions.Run(fxCop, ".",
-               ["""/c /f:"_Binaries/AltCover/Debug+AnyCPU/AltCover.exe" /o:"_Reports/FxCopReport.xml" /rid:-Microsoft.Design#CA1004 /rid:-Microsoft.Design#CA1006 /rid:-Microsoft.Design#CA1011 /rid:-Microsoft.Design#CA1062 /rid:-Microsoft.Maintainability#CA1506 /rid:-Microsoft.Naming#CA1704 /rid:-Microsoft.Naming#CA1707 /rid:-Microsoft.Naming#CA1709 /rid:-Microsoft.Naming#CA1715 /ignoregeneratedcode /s /t:AltCover.Augment,AltCover.CommandLine,AltCover.Filter,AltCover.FilterClass,AltCover.Fix,AltCover.Instrument,AltCover.KeyRecord,AltCover.KeyStore,AltCover.Main,AltCover.Naming,AltCover.Node,AltCover.ProgramDatabase,AltCover.Report,AltCover.Runner,AltCover.Visitor /gac"""])
+               ["/c"; "/f:\"_Binaries/AltCover/Debug+AnyCPU/AltCover.exe\"";
+                "/o:\"_Reports/FxCopReport.xml\"";
+                "/rid:-Microsoft.Design#CA1004"; "/rid:-Microsoft.Design#CA1006";
+                "/rid:-Microsoft.Design#CA1011"; "/rid:-Microsoft.Design#CA1062";
+                "/rid:-Microsoft.Maintainability#CA1506"; "/rid:-Microsoft.Naming#CA1704";
+                "/rid:-Microsoft.Naming#CA1707"; "/rid:-Microsoft.Naming#CA1709";
+                "/rid:-Microsoft.Naming#CA1715"; "/ignoregeneratedcode"; "/s"; 
+                "/t:AltCover.Augment,AltCover.CommandLine,AltCover.Filter,AltCover.FilterClass,AltCover.Fix,AltCover.Instrument,AltCover.KeyRecord,AltCover.KeyStore,AltCover.Main,AltCover.Naming,AltCover.Node,AltCover.ProgramDatabase,AltCover.Report,AltCover.Runner,AltCover.Visitor";
+                "/gac"])
     "FxCop Errors were detected"
   Assert.That
     (File.Exists "_Reports/FxCopReport.xml", Is.False, "FxCop Errors were detected")
 
   Actions.Run(fxCop, ".",
-                ["""/c /f:"_Binaries/AltCover.Shadow/Debug+AnyCPU/AltCover.Shadow.dll" /o:"_Reports/FxCopReport.xml" /rid:-Microsoft.Design#CA1004 /rid:-Microsoft.Design#CA1006 /rid:-Microsoft.Design#CA1011 /rid:-Microsoft.Design#CA1062 /rid:-Microsoft.Maintainability#CA1506 /rid:-Microsoft.Naming#CA1704 /rid:-Microsoft.Naming#CA1707 /rid:-Microsoft.Naming#CA1709 /rid:-Microsoft.Naming#CA1715 /t:AltCover.Recorder.Assist,AltCover.Recorder.Counter,AltCover.Recorder.Assist,AltCover.Recorder.Tracer,AltCover.Recorder.Instance /ignoregeneratedcode /s /gac"""])
+                ["/c"; "/f:\"_Binaries/AltCover.Shadow/Debug+AnyCPU/AltCover.Shadow.dll\""; 
+                "/o:\"_Reports/FxCopReport.xml\""; 
+                "/rid:-Microsoft.Design#CA1004"; "/rid:-Microsoft.Design#CA1006"; 
+                "/rid:-Microsoft.Design#CA1011"; "/rid:-Microsoft.Design#CA1062";
+                "/rid:-Microsoft.Maintainability#CA1506"; "/rid:-Microsoft.Naming#CA1704";
+                "/rid:-Microsoft.Naming#CA1707"; "/rid:-Microsoft.Naming#CA1709"; 
+                "/rid:-Microsoft.Naming#CA1715";
+                "/t:AltCover.Recorder.Assist,AltCover.Recorder.Counter,AltCover.Recorder.Assist,AltCover.Recorder.Tracer,AltCover.Recorder.Instance"; "/ignoregeneratedcode"; "/s"; "/gac"])
     "FxCop Errors were detected"
   Assert.That
     (File.Exists "_Reports/FxCopReport.xml", Is.False, "FxCop Errors were detected")
 
   Actions.Run(fxCop, ".",
-                  ["""/c /f:"_Binaries/AltCover.PowerShell/Debug+AnyCPU/AltCover.PowerShell.dll" /o:\"_Reports/FxCopReport.xml\" /ignoregeneratedcode /s /gac /r:+ThirdParty/Microsoft.PowerShell.CodeAnalysis.15.dll""" ])
+                  ["/c"; "/f:\"_Binaries/AltCover.PowerShell/Debug+AnyCPU/AltCover.PowerShell.dll\""; 
+                  "/o:\"_Reports/FxCopReport.xml\""; "/ignoregeneratedcode"; "/s"; "/gac"; 
+                  "/r:+ThirdParty/Microsoft.PowerShell.CodeAnalysis.15.dll" ])
     "FxCop Errors were detected"
   Assert.That
     (File.Exists "_Reports/FxCopReport.xml", Is.False, "FxCop Errors were detected")
 
   Actions.Run(fxCop, ".", [
-                  """/c /f:"_Binaries/AltCover.PowerShell/Debug+AnyCPU/AltCover.PowerShell.dll" /o:"_Reports/FxCopReport.xml" /rid:-Microsoft.Design#CA1059 /rid:-Microsoft.Usage#CA2235 /rid:-Microsoft.Performance#CA1819 /rid:-Microsoft.Design#CA1020 /rid:-Microsoft.Design#CA1004 /rid:-Microsoft.Design#CA1006 /rid:-Microsoft.Design#CA1011 /rid:-Microsoft.Design#CA1062 /rid:-Microsoft.Maintainability#CA1506 /rid:-Microsoft.Naming#CA1704 /rid:-Microsoft.Naming#CA1707 /rid:-Microsoft.Naming#CA1709 /rid:-Microsoft.Naming#CA1715 /ignoregeneratedcode /s /gac""" ])
+                  "/c"; "/f:\"_Binaries/AltCover.PowerShell/Debug+AnyCPU/AltCover.PowerShell.dll\""; 
+                  "/o:\"_Reports/FxCopReport.xml\""; 
+                  "/rid:-Microsoft.Design#CA1059"; "/rid:-Microsoft.Usage#CA2235"; 
+                  "/rid:-Microsoft.Performance#CA1819"; "/rid:-Microsoft.Design#CA1020"; 
+                  "/rid:-Microsoft.Design#CA1004"; "/rid:-Microsoft.Design#CA1006"; 
+                  "/rid:-Microsoft.Design#CA1011"; "/rid:-Microsoft.Design#CA1062"; 
+                  "/rid:-Microsoft.Maintainability#CA1506"; "/rid:-Microsoft.Naming#CA1704"; 
+                  "/rid:-Microsoft.Naming#CA1707"; "/rid:-Microsoft.Naming#CA1709"; 
+                  "/rid:-Microsoft.Naming#CA1715"; "/ignoregeneratedcode"; "/s"; "/gac" ])
     "FxCop Errors were detected"
   Assert.That
     (File.Exists "_Reports/FxCopReport.xml", Is.False, "FxCop Errors were detected")
 
   Actions.Run(fxCop, ".", [
-                  """/c /f:"_Binaries/AltCover.FSApi/Debug+AnyCPU/AltCover.FSApi.dll" /o:"_Reports/FxCopReport.xml" /rid:-Microsoft.Usage#CA2235 /rid:-Microsoft.Performance#CA1819 /rid:-Microsoft.Design#CA1020 /rid:-Microsoft.Design#CA1004 /rid:-Microsoft.Design#CA1006 /rid:-Microsoft.Design#CA1011 /rid:-Microsoft.Design#CA1062 /rid:-Microsoft.Maintainability#CA1506 /rid:-Microsoft.Naming#CA1704 /rid:-Microsoft.Naming#CA1707 /rid:-Microsoft.Naming#CA1709 /rid:-Microsoft.Naming#CA1715 /ignoregeneratedcode /s /gac""" ])
+                  "/c"; "/f:\"_Binaries/AltCover.FSApi/Debug+AnyCPU/AltCover.FSApi.dll\""; 
+                  "/o:\"_Reports/FxCopReport.xml\""; 
+                  "/rid:-Microsoft.Usage#CA2235"; "/rid:-Microsoft.Performance#CA1819"; 
+                  "/rid:-Microsoft.Design#CA1020"; "/rid:-Microsoft.Design#CA1004"; 
+                  "/rid:-Microsoft.Design#CA1006"; "/rid:-Microsoft.Design#CA1011"; 
+                  "/rid:-Microsoft.Design#CA1062"; "/rid:-Microsoft.Maintainability#CA1506"; 
+                  "/rid:-Microsoft.Naming#CA1704"; "/rid:-Microsoft.Naming#CA1707"; 
+                  "/rid:-Microsoft.Naming#CA1709"; "/rid:-Microsoft.Naming#CA1715"; 
+                  "/ignoregeneratedcode"; "/s"; "/gac" ])
     "FxCop Errors were detected"
   Assert.That
     (File.Exists "_Reports/FxCopReport.xml", Is.False, "FxCop Errors were detected")
 
   Actions.Run(fxCop,  ".", [
-                  """/c /f:"_Binaries/AltCover.Visualizer/Debug+AnyCPU/AltCover.Visualizer.exe" /o:"_Reports/FxCopReport.xml" /rid:-Microsoft.Usage#CA2208 /rid:-Microsoft.Usage#CA2235 /rid:-Microsoft.Maintainability#CA1506 /rid:-Microsoft.Design#CA1004 /rid:-Microsoft.Design#CA1006 /rid:-Microsoft.Naming#CA1707 /rid:-Microsoft.Design#CA1006 /rid:-Microsoft.Naming#CA1715 /rid:-Microsoft.Naming#CA1704 /rid:-Microsoft.Naming#CA1709 /t:AltCover.Augment,AltCover.Visualizer.Transformer,AltCover.Visualizer.CoverageFile,AltCover.Visualizer.Extensions,AltCover.Visualizer.Gui /ignoregeneratedcode /s /gac""" ])
+                  "/c"; "/f:\"_Binaries/AltCover.Visualizer/Debug+AnyCPU/AltCover.Visualizer.exe\""; 
+                  "/o:\"_Reports/FxCopReport.xml\""; 
+                  "/rid:-Microsoft.Usage#CA2208"; "/rid:-Microsoft.Usage#CA2235"; 
+                  "/rid:-Microsoft.Maintainability#CA1506"; "/rid:-Microsoft.Design#CA1004"; 
+                  "/rid:-Microsoft.Design#CA1006"; "/rid:-Microsoft.Naming#CA1707"; 
+                  "/rid:-Microsoft.Naming#CA1715"; "/rid:-Microsoft.Naming#CA1704"; 
+                  "/rid:-Microsoft.Naming#CA1709"; 
+                  "/t:AltCover.Augment,AltCover.Visualizer.Transformer,AltCover.Visualizer.CoverageFile,AltCover.Visualizer.Extensions,AltCover.Visualizer.Gui"; 
+                  "/ignoregeneratedcode"; "/s"; "/gac" ])
     "FxCop Errors were detected"
   Assert.That
     (File.Exists "_Reports/FxCopReport.xml", Is.False, "FxCop Errors were detected"))
