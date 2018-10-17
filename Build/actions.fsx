@@ -282,11 +282,35 @@ do ()"""
         Console.BackgroundColor <- snd save
     Assert.That(result.ExitCode, Is.EqualTo 0, msg)
 
-  let Run (f : Fake.Core.ProcStartInfo -> Fake.Core.ProcStartInfo) msg =
-    Fake.Core.Process.execWithResult (f >> Fake.Core.Process.withFramework)
-      (TimeSpan.FromMinutes 10.0) |> (HandleResults msg)
-  let RunRaw (f : Fake.Core.ProcStartInfo -> Fake.Core.ProcStartInfo) msg =
-    Fake.Core.Process.execWithResult f (TimeSpan.FromMinutes 10.0) |> (HandleResults msg)
+  let HandleResult (msg : string) (result : Fake.Core.ProcessResult<'a>) =
+//    String.Join(Environment.NewLine, result.Messages) |> printfn "%s"
+//    let save = (Console.ForegroundColor, Console.BackgroundColor)
+//    match result.Errors |> Seq.toList with
+//    | [] -> ()
+//    | errors ->
+//      try
+//        Console.ForegroundColor <- ConsoleColor.Black
+//        Console.BackgroundColor <- ConsoleColor.White
+//        String.Join(Environment.NewLine, errors) |> printfn "ERR : %s"
+//      finally
+//        Console.ForegroundColor <- fst save
+//        Console.BackgroundColor <- snd save
+    printfn "result = %A" result
+    Assert.That(result.ExitCode, Is.EqualTo 0, msg)
+
+  let Run (file, dir, args) msg =
+    CreateProcess.fromRawCommand file args
+    |> CreateProcess.withWorkingDirectory dir
+    |> CreateProcess.withFramework
+    |> Proc.run
+    |> (HandleResult msg)
+
+  let RunRaw (file, dir, args) msg =
+    CreateProcess.fromRawCommand file args
+    |> CreateProcess.withWorkingDirectory dir
+    |> Proc.run
+    |> (HandleResult msg)
+
   let RunDotnet (o : DotNet.Options -> DotNet.Options) cmd args msg =
     DotNet.exec o cmd args |> (HandleResults msg)
 
@@ -299,16 +323,9 @@ do ()"""
     let sampleRoot = Path.getFullName samplePath
     let instrumented = "__Instrumented." + reportSigil
     Run
-      (fun info ->
-      { info with FileName = binRoot @@ "AltCover.exe"
-                  WorkingDirectory = sampleRoot
-                  Arguments =
-                    ("\"-t=System\\.\" -x=" + simpleReport + " /o=./" + instrumented) })
+      (binRoot @@ "AltCover.exe", sampleRoot, ["\"-t=System\\.\" -x=" + simpleReport + " /o=./" + instrumented])
       "Simple instrumentation failed"
-    Run (fun info ->
-      { info with FileName = sampleRoot @@ (instrumented + "/Sample1.exe")
-                  WorkingDirectory = (sampleRoot @@ instrumented)
-                  Arguments = "" }) "Instrumented .exe failed"
+    Run (sampleRoot @@ (instrumented + "/Sample1.exe"),  (sampleRoot @@ instrumented), []) "Instrumented .exe failed"
     ValidateSample1 simpleReport reportSigil
 
   let SimpleInstrumentingRunUnderMono (samplePath : string) (binaryPath : string)
@@ -322,18 +339,11 @@ do ()"""
       let binRoot = Path.getFullName binaryPath
       let sampleRoot = Path.getFullName samplePath
       let instrumented = "__Instrumented." + reportSigil
-      Run
-        (fun info ->
-        { info with FileName = mono
-                    WorkingDirectory = sampleRoot
-                    Arguments =
-                      ((binRoot @@ "AltCover.exe") + " \"-t=System\\.\" -x="
-                       + simpleReport + " /o=./" + instrumented) })
+      Run(mono, sampleRoot, [(binRoot @@ "AltCover.exe") + " \"-t=System\\.\" -x="
+                       + simpleReport + " /o=./" + instrumented])
         "Simple instrumentation failed"
-      Run (fun info ->
-        { info with FileName = sampleRoot @@ (instrumented + "/Sample1.exe")
-                    WorkingDirectory = (sampleRoot @@ instrumented)
-                    Arguments = "" }) "Instrumented .exe failed"
+      Run (sampleRoot @@ (instrumented + "/Sample1.exe"),
+           (sampleRoot @@ instrumented), []) "Instrumented .exe failed"
       ValidateSample1 simpleReport reportSigil
     | None -> Assert.Fail "Mono executable expected"
 
