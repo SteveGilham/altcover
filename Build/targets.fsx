@@ -182,13 +182,15 @@ _Target "BuildDebug" (fun _ ->
 
 _Target "BuildMonoSamples" (fun _ ->
   let mcs = "_Binaries/MCS/Release+AnyCPU/MCS.exe"
-  [ ("./_Mono/Sample1", "-debug -out:./_Mono/Sample1/Sample1.exe  ./Sample1/Program.cs")
+  [ ("./_Mono/Sample1", ["-debug"; "-out:./_Mono/Sample1/Sample1.exe";  "./Sample1/Program.cs"])
     ("./_Mono/Sample3",
-     "-target:library -debug -out:./_Mono/Sample3/Sample3.dll  -lib:./packages/Mono.Cecil.0.10.1/lib/net40 -r:Mono.Cecil.dll ./Sample3/Class1.cs") ]
+     ["-target:library"; "-debug"; 
+      "-out:./_Mono/Sample3/Sample3.dll";
+       "-lib:./packages/Mono.Cecil.0.10.1/lib/net40"; "-r:Mono.Cecil.dll"; "./Sample3/Class1.cs" ])]
   |> Seq.iter (fun (dir, cmd) ->
        Directory.ensure dir
-       ("Mono compilation of '" + cmd + "' failed")
-       |> Actions.Run(mcs, ".", [cmd]))
+       ("Mono compilation of '" + String.Join(" ", cmd) + "' failed")
+       |> Actions.Run(mcs, ".", cmd))
   Actions.FixMVId [ "./_Mono/Sample1/Sample1.exe"; "./_Mono/Sample3/Sample3.dll" ])
 
 // Code Analysis
