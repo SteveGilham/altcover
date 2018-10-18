@@ -222,7 +222,7 @@ _Target "Gendarme"
 
   Actions.Run
     ((Tools.findToolInSubPath "gendarme.exe" "./packages"), ".",
-     [ "--severity"; "all"; "--confidence"; "all"; "--config"; rules; " --console";
+     [ "--severity"; "all"; "--confidence"; "all"; "--config"; rules; "--console";
        "--html"; "./_Reports/gendarme.html";
        "_Binaries/AltCover/Debug+AnyCPU/AltCover.exe";
        "_Binaries/AltCover.Shadow/Debug+AnyCPU/AltCover.Shadow.dll" ])
@@ -1367,7 +1367,7 @@ _Target "RecordResumeTestUnderMono"
                  "-s=nunit"
                  "-t=System\\."
                  "-t=Microsoft\\."
-                 " -x=" + simpleReport
+                 "-x=" + simpleReport
                  "/o=./" + instrumented ]) "RecordResumeTestUnderMono 1"
 
   match monoOnWindows with
