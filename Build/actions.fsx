@@ -283,18 +283,18 @@ do ()"""
     Assert.That(result.ExitCode, Is.EqualTo 0, msg)
 
   let HandleResult (msg : string) (result : Fake.Core.ProcessResult<'a>) =
-//    String.Join(Environment.NewLine, result.Messages) |> printfn "%s"
-//    let save = (Console.ForegroundColor, Console.BackgroundColor)
-//    match result.Errors |> Seq.toList with
-//    | [] -> ()
-//    | errors ->
-//      try
-//        Console.ForegroundColor <- ConsoleColor.Black
-//        Console.BackgroundColor <- ConsoleColor.White
-//        String.Join(Environment.NewLine, errors) |> printfn "ERR : %s"
-//      finally
-//        Console.ForegroundColor <- fst save
-//        Console.BackgroundColor <- snd save
+    //    String.Join(Environment.NewLine, result.Messages) |> printfn "%s"
+    //    let save = (Console.ForegroundColor, Console.BackgroundColor)
+    //    match result.Errors |> Seq.toList with
+    //    | [] -> ()
+    //    | errors ->
+    //      try
+    //        Console.ForegroundColor <- ConsoleColor.Black
+    //        Console.BackgroundColor <- ConsoleColor.White
+    //        String.Join(Environment.NewLine, errors) |> printfn "ERR : %s"
+    //      finally
+    //        Console.ForegroundColor <- fst save
+    //        Console.BackgroundColor <- snd save
     printfn "result = %A" result
     Assert.That(result.ExitCode, Is.EqualTo 0, msg)
 
@@ -323,9 +323,11 @@ do ()"""
     let sampleRoot = Path.getFullName samplePath
     let instrumented = "__Instrumented." + reportSigil
     Run
-      (binRoot @@ "AltCover.exe", sampleRoot, ["\"-t=System\\.\" -x=" + simpleReport + " /o=./" + instrumented])
+      (binRoot @@ "AltCover.exe", sampleRoot,
+       [ "\"-t=System\\.\" -x=" + simpleReport + " /o=./" + instrumented ])
       "Simple instrumentation failed"
-    Run (sampleRoot @@ (instrumented + "/Sample1.exe"),  (sampleRoot @@ instrumented), []) "Instrumented .exe failed"
+    Run (sampleRoot @@ (instrumented + "/Sample1.exe"), (sampleRoot @@ instrumented), [])
+      "Instrumented .exe failed"
     ValidateSample1 simpleReport reportSigil
 
   let SimpleInstrumentingRunUnderMono (samplePath : string) (binaryPath : string)
@@ -339,11 +341,13 @@ do ()"""
       let binRoot = Path.getFullName binaryPath
       let sampleRoot = Path.getFullName samplePath
       let instrumented = "__Instrumented." + reportSigil
-      Run(mono, sampleRoot, [(binRoot @@ "AltCover.exe") + " \"-t=System\\.\" -x="
-                       + simpleReport + " /o=./" + instrumented])
-        "Simple instrumentation failed"
-      Run (sampleRoot @@ (instrumented + "/Sample1.exe"),
-           (sampleRoot @@ instrumented), []) "Instrumented .exe failed"
+      Run
+        (mono, sampleRoot,
+         [ (binRoot @@ "AltCover.exe") + " \"-t=System\\.\" -x=" + simpleReport + " /o=./"
+           + instrumented ]) "Simple instrumentation failed"
+      Run
+        (sampleRoot @@ (instrumented + "/Sample1.exe"), (sampleRoot @@ instrumented), [])
+        "Instrumented .exe failed"
       ValidateSample1 simpleReport reportSigil
     | None -> Assert.Fail "Mono executable expected"
 

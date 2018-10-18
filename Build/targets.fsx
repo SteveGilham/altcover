@@ -30,12 +30,14 @@ let consoleBefore = (Console.ForegroundColor, Console.BackgroundColor)
 let OpenCoverFilter = "+[AltCove*]* -[*]Microsoft.* -[*]System.* +[*]N.*"
 
 let AltCoverFilter =
-  @" -m=WaitForExitCustom -e=Adapter -s=Mono -s=\.Recorder -s=Sample -s=nunit -e=Tests -t=System. -t=Sample3\.Class2 "
+  [ "-m=WaitForExitCustom"; "-e=Adapter"; "-s=Mono"; @"-s=\.Recorder"; "-s=Sample";
+    "-s=nunit"; "-e=Tests"; "-t=System."; @"-t=Sample3\.Class2" ]
 let AltCoverFilterX =
-  @" -m=WaitForExitCustom -e=Adapter --s=Mono -s=\.Recorder -s=Sample -s=nunit -t=System\. -t=Sample3\.Class2 "
+  [ "-m=WaitForExitCustom"; "-e=Adapter"; "--s=Mono"; @"-s=\.Recorder"; "-s=Sample";
+    "-s=nunit"; "-t=System\."; @"-t=Sample3\.Class2" ]
 let AltCoverFilterG =
-  @" -m=WaitForExitCustom -e=Adapter --s=Mono -s=\.Recorder\.g -s=Sample -s=nunit -e=Tests -t=System. -t=Sample3\.Class2 "
-
+  [ "-m=WaitForExitCustom"; "-e=Adapter"; "--s=Mono"; @"-s=\.Recorder\.g"; "-s=Sample";
+    "-s=nunit"; "-e=Tests"; "-t=System."; @"-t=Sample3\.Class2" ]
 let programFiles = Environment.environVar "ProgramFiles"
 let programFiles86 = Environment.environVar "ProgramFiles(x86)"
 let dotnetPath = "dotnet" |> Fake.Core.ProcessUtils.tryFindFileOnPath
@@ -182,12 +184,15 @@ _Target "BuildDebug" (fun _ ->
 
 _Target "BuildMonoSamples" (fun _ ->
   let mcs = "_Binaries/MCS/Release+AnyCPU/MCS.exe"
-  [ ("./_Mono/Sample1", ["-debug"; "-out:./_Mono/Sample1/Sample1.exe";  "./Sample1/Program.cs"])
+  [ ("./_Mono/Sample1",
+     [ "-debug"; "-out:./_Mono/Sample1/Sample1.exe"; "./Sample1/Program.cs" ])
+
     ("./_Mono/Sample3",
-     ["-target:library"; "-debug"; 
-      "-out:./_Mono/Sample3/Sample3.dll";
-       "-lib:./packages/Mono.Cecil.0.10.1/lib/net40"; "-r:Mono.Cecil.dll"; "./Sample3/Class1.cs" ])]
-  |> Seq.iter (fun (dir, cmd) ->
+     [ "-target:library"; "-debug"; "-out:./_Mono/Sample3/Sample3.dll";
+       "-lib:./packages/Mono.Cecil.0.10.1/lib/net40"; "-r:Mono.Cecil.dll";
+       "./Sample3/Class1.cs" ]) ]
+  |> Seq.iter
+       (fun (dir, cmd) ->
        Directory.ensure dir
        ("Mono compilation of '" + String.Join(" ", cmd) + "' failed")
        |> Actions.Run(mcs, ".", cmd))
@@ -215,24 +220,25 @@ _Target "Gendarme"
     if Environment.isWindows then "./Build/rules.xml"
     else "./Build/rules-mono.xml"
 
-  Actions.Run((Tools.findToolInSubPath "gendarme.exe" "./packages"),
-               ".",
-                  ["--severity"; "all"; "--confidence"; "all"; "--config"; rules;
-                   " --console"; "--html"; "./_Reports/gendarme.html"; 
-                   "_Binaries/AltCover/Debug+AnyCPU/AltCover.exe";
-                   "_Binaries/AltCover.Shadow/Debug+AnyCPU/AltCover.Shadow.dll"])
+  Actions.Run
+    ((Tools.findToolInSubPath "gendarme.exe" "./packages"), ".",
+     [ "--severity"; "all"; "--confidence"; "all"; "--config"; rules; " --console";
+       "--html"; "./_Reports/gendarme.html";
+       "_Binaries/AltCover/Debug+AnyCPU/AltCover.exe";
+       "_Binaries/AltCover.Shadow/Debug+AnyCPU/AltCover.Shadow.dll" ])
     "Gendarme Errors were detected"
-  Actions.Run((Tools.findToolInSubPath "gendarme.exe" "./packages"),
-              ".",
-               ["--severity"; "all"; "--confidence"; "all"; "--config"; 
-                "./Build/rules-posh.xml"; "--console"; "--html"; 
-                "./_Reports/gendarme.html _Binaries/AltCover.PowerShell/Debug+AnyCPU/AltCover.PowerShell.dll"; 
-                "_Binaries/AltCover.FSApi/Debug+AnyCPU/AltCover.FSApi.dll" ])
+  Actions.Run
+    ((Tools.findToolInSubPath "gendarme.exe" "./packages"), ".",
+     [ "--severity"; "all"; "--confidence"; "all"; "--config"; "./Build/rules-posh.xml";
+       "--console"; "--html"; "./_Reports/gendarme.html";
+       "_Binaries/AltCover.PowerShell/Debug+AnyCPU/AltCover.PowerShell.dll";
+       "_Binaries/AltCover.FSApi/Debug+AnyCPU/AltCover.FSApi.dll" ])
     "Gendarme Errors were detected"
-  Actions.Run((Tools.findToolInSubPath "gendarme.exe" "./packages"),
-               ".",
-               ["--severity"; "all"; "--confidence"; "all"; "--config"; "./Build/rules-gtk.xml"; 
-               "--console"; "--html"; "./_Reports/gendarme.html"; "_Binaries/AltCover.Visualizer/Debug+AnyCPU/AltCover.Visualizer.exe"])
+  Actions.Run
+    ((Tools.findToolInSubPath "gendarme.exe" "./packages"), ".",
+     [ "--severity"; "all"; "--confidence"; "all"; "--config"; "./Build/rules-gtk.xml";
+       "--console"; "--html"; "./_Reports/gendarme.html";
+       "_Binaries/AltCover.Visualizer/Debug+AnyCPU/AltCover.Visualizer.exe" ])
     "Gendarme Errors were detected")
 
 _Target "FxCop"
@@ -251,80 +257,80 @@ _Target "FxCop"
   let fxCop =
     Path.combine vsInstallPath "Team Tools/Static Analysis Tools/FxCop/FxCopCmd.exe"
 
-  Actions.Run(fxCop, ".",
-               ["/c"; "/f:\"_Binaries/AltCover/Debug+AnyCPU/AltCover.exe\"";
-                "/o:\"_Reports/FxCopReport.xml\"";
-                "/rid:-Microsoft.Design#CA1004"; "/rid:-Microsoft.Design#CA1006";
-                "/rid:-Microsoft.Design#CA1011"; "/rid:-Microsoft.Design#CA1062";
-                "/rid:-Microsoft.Maintainability#CA1506"; "/rid:-Microsoft.Naming#CA1704";
-                "/rid:-Microsoft.Naming#CA1707"; "/rid:-Microsoft.Naming#CA1709";
-                "/rid:-Microsoft.Naming#CA1715"; "/ignoregeneratedcode"; "/s"; 
-                "/t:AltCover.Augment,AltCover.CommandLine,AltCover.Filter,AltCover.FilterClass,AltCover.Fix,AltCover.Instrument,AltCover.KeyRecord,AltCover.KeyStore,AltCover.Main,AltCover.Naming,AltCover.Node,AltCover.ProgramDatabase,AltCover.Report,AltCover.Runner,AltCover.Visitor";
-                "/gac"])
+  Actions.Run
+    (fxCop, ".",
+     [ "/c"; "/f:\"_Binaries/AltCover/Debug+AnyCPU/AltCover.exe\"";
+       "/o:\"_Reports/FxCopReport.xml\""; "/rid:-Microsoft.Design#CA1004";
+       "/rid:-Microsoft.Design#CA1006"; "/rid:-Microsoft.Design#CA1011";
+       "/rid:-Microsoft.Design#CA1062"; "/rid:-Microsoft.Maintainability#CA1506";
+       "/rid:-Microsoft.Naming#CA1704"; "/rid:-Microsoft.Naming#CA1707";
+       "/rid:-Microsoft.Naming#CA1709"; "/rid:-Microsoft.Naming#CA1715";
+       "/ignoregeneratedcode"; "/s";
+       "/t:AltCover.Augment,AltCover.CommandLine,AltCover.Filter,AltCover.FilterClass,AltCover.Fix,AltCover.Instrument,AltCover.KeyRecord,AltCover.KeyStore,AltCover.Main,AltCover.Naming,AltCover.Node,AltCover.ProgramDatabase,AltCover.Report,AltCover.Runner,AltCover.Visitor";
+       "/gac" ]) "FxCop Errors were detected"
+  Assert.That
+    (File.Exists "_Reports/FxCopReport.xml", Is.False, "FxCop Errors were detected")
+
+  Actions.Run
+    (fxCop, ".",
+     [ "/c"; "/f:\"_Binaries/AltCover.Shadow/Debug+AnyCPU/AltCover.Shadow.dll\"";
+       "/o:\"_Reports/FxCopReport.xml\""; "/rid:-Microsoft.Design#CA1004";
+       "/rid:-Microsoft.Design#CA1006"; "/rid:-Microsoft.Design#CA1011";
+       "/rid:-Microsoft.Design#CA1062"; "/rid:-Microsoft.Maintainability#CA1506";
+       "/rid:-Microsoft.Naming#CA1704"; "/rid:-Microsoft.Naming#CA1707";
+       "/rid:-Microsoft.Naming#CA1709"; "/rid:-Microsoft.Naming#CA1715";
+       "/t:AltCover.Recorder.Assist,AltCover.Recorder.Counter,AltCover.Recorder.Assist,AltCover.Recorder.Tracer,AltCover.Recorder.Instance";
+       "/ignoregeneratedcode"; "/s"; "/gac" ]) "FxCop Errors were detected"
+  Assert.That
+    (File.Exists "_Reports/FxCopReport.xml", Is.False, "FxCop Errors were detected")
+
+  Actions.Run
+    (fxCop, ".",
+     [ "/c"; "/f:\"_Binaries/AltCover.PowerShell/Debug+AnyCPU/AltCover.PowerShell.dll\"";
+       "/o:\"_Reports/FxCopReport.xml\""; "/ignoregeneratedcode"; "/s"; "/gac";
+       "/r:+ThirdParty/Microsoft.PowerShell.CodeAnalysis.15.dll" ])
     "FxCop Errors were detected"
   Assert.That
     (File.Exists "_Reports/FxCopReport.xml", Is.False, "FxCop Errors were detected")
 
-  Actions.Run(fxCop, ".",
-                ["/c"; "/f:\"_Binaries/AltCover.Shadow/Debug+AnyCPU/AltCover.Shadow.dll\""; 
-                "/o:\"_Reports/FxCopReport.xml\""; 
-                "/rid:-Microsoft.Design#CA1004"; "/rid:-Microsoft.Design#CA1006"; 
-                "/rid:-Microsoft.Design#CA1011"; "/rid:-Microsoft.Design#CA1062";
-                "/rid:-Microsoft.Maintainability#CA1506"; "/rid:-Microsoft.Naming#CA1704";
-                "/rid:-Microsoft.Naming#CA1707"; "/rid:-Microsoft.Naming#CA1709"; 
-                "/rid:-Microsoft.Naming#CA1715";
-                "/t:AltCover.Recorder.Assist,AltCover.Recorder.Counter,AltCover.Recorder.Assist,AltCover.Recorder.Tracer,AltCover.Recorder.Instance"; "/ignoregeneratedcode"; "/s"; "/gac"])
+  Actions.Run
+    (fxCop, ".",
+     [ "/c"; "/f:\"_Binaries/AltCover.PowerShell/Debug+AnyCPU/AltCover.PowerShell.dll\"";
+       "/o:\"_Reports/FxCopReport.xml\""; "/rid:-Microsoft.Design#CA1059";
+       "/rid:-Microsoft.Usage#CA2235"; "/rid:-Microsoft.Performance#CA1819";
+       "/rid:-Microsoft.Design#CA1020"; "/rid:-Microsoft.Design#CA1004";
+       "/rid:-Microsoft.Design#CA1006"; "/rid:-Microsoft.Design#CA1011";
+       "/rid:-Microsoft.Design#CA1062"; "/rid:-Microsoft.Maintainability#CA1506";
+       "/rid:-Microsoft.Naming#CA1704"; "/rid:-Microsoft.Naming#CA1707";
+       "/rid:-Microsoft.Naming#CA1709"; "/rid:-Microsoft.Naming#CA1715";
+       "/ignoregeneratedcode"; "/s"; "/gac" ]) "FxCop Errors were detected"
+  Assert.That
+    (File.Exists "_Reports/FxCopReport.xml", Is.False, "FxCop Errors were detected")
+
+  Actions.Run
+    (fxCop, ".",
+     [ "/c"; "/f:\"_Binaries/AltCover.FSApi/Debug+AnyCPU/AltCover.FSApi.dll\"";
+       "/o:\"_Reports/FxCopReport.xml\""; "/rid:-Microsoft.Usage#CA2235";
+       "/rid:-Microsoft.Performance#CA1819"; "/rid:-Microsoft.Design#CA1020";
+       "/rid:-Microsoft.Design#CA1004"; "/rid:-Microsoft.Design#CA1006";
+       "/rid:-Microsoft.Design#CA1011"; "/rid:-Microsoft.Design#CA1062";
+       "/rid:-Microsoft.Maintainability#CA1506"; "/rid:-Microsoft.Naming#CA1704";
+       "/rid:-Microsoft.Naming#CA1707"; "/rid:-Microsoft.Naming#CA1709";
+       "/rid:-Microsoft.Naming#CA1715"; "/ignoregeneratedcode"; "/s"; "/gac" ])
     "FxCop Errors were detected"
   Assert.That
     (File.Exists "_Reports/FxCopReport.xml", Is.False, "FxCop Errors were detected")
 
-  Actions.Run(fxCop, ".",
-                  ["/c"; "/f:\"_Binaries/AltCover.PowerShell/Debug+AnyCPU/AltCover.PowerShell.dll\""; 
-                  "/o:\"_Reports/FxCopReport.xml\""; "/ignoregeneratedcode"; "/s"; "/gac"; 
-                  "/r:+ThirdParty/Microsoft.PowerShell.CodeAnalysis.15.dll" ])
-    "FxCop Errors were detected"
-  Assert.That
-    (File.Exists "_Reports/FxCopReport.xml", Is.False, "FxCop Errors were detected")
-
-  Actions.Run(fxCop, ".", [
-                  "/c"; "/f:\"_Binaries/AltCover.PowerShell/Debug+AnyCPU/AltCover.PowerShell.dll\""; 
-                  "/o:\"_Reports/FxCopReport.xml\""; 
-                  "/rid:-Microsoft.Design#CA1059"; "/rid:-Microsoft.Usage#CA2235"; 
-                  "/rid:-Microsoft.Performance#CA1819"; "/rid:-Microsoft.Design#CA1020"; 
-                  "/rid:-Microsoft.Design#CA1004"; "/rid:-Microsoft.Design#CA1006"; 
-                  "/rid:-Microsoft.Design#CA1011"; "/rid:-Microsoft.Design#CA1062"; 
-                  "/rid:-Microsoft.Maintainability#CA1506"; "/rid:-Microsoft.Naming#CA1704"; 
-                  "/rid:-Microsoft.Naming#CA1707"; "/rid:-Microsoft.Naming#CA1709"; 
-                  "/rid:-Microsoft.Naming#CA1715"; "/ignoregeneratedcode"; "/s"; "/gac" ])
-    "FxCop Errors were detected"
-  Assert.That
-    (File.Exists "_Reports/FxCopReport.xml", Is.False, "FxCop Errors were detected")
-
-  Actions.Run(fxCop, ".", [
-                  "/c"; "/f:\"_Binaries/AltCover.FSApi/Debug+AnyCPU/AltCover.FSApi.dll\""; 
-                  "/o:\"_Reports/FxCopReport.xml\""; 
-                  "/rid:-Microsoft.Usage#CA2235"; "/rid:-Microsoft.Performance#CA1819"; 
-                  "/rid:-Microsoft.Design#CA1020"; "/rid:-Microsoft.Design#CA1004"; 
-                  "/rid:-Microsoft.Design#CA1006"; "/rid:-Microsoft.Design#CA1011"; 
-                  "/rid:-Microsoft.Design#CA1062"; "/rid:-Microsoft.Maintainability#CA1506"; 
-                  "/rid:-Microsoft.Naming#CA1704"; "/rid:-Microsoft.Naming#CA1707"; 
-                  "/rid:-Microsoft.Naming#CA1709"; "/rid:-Microsoft.Naming#CA1715"; 
-                  "/ignoregeneratedcode"; "/s"; "/gac" ])
-    "FxCop Errors were detected"
-  Assert.That
-    (File.Exists "_Reports/FxCopReport.xml", Is.False, "FxCop Errors were detected")
-
-  Actions.Run(fxCop,  ".", [
-                  "/c"; "/f:\"_Binaries/AltCover.Visualizer/Debug+AnyCPU/AltCover.Visualizer.exe\""; 
-                  "/o:\"_Reports/FxCopReport.xml\""; 
-                  "/rid:-Microsoft.Usage#CA2208"; "/rid:-Microsoft.Usage#CA2235"; 
-                  "/rid:-Microsoft.Maintainability#CA1506"; "/rid:-Microsoft.Design#CA1004"; 
-                  "/rid:-Microsoft.Design#CA1006"; "/rid:-Microsoft.Naming#CA1707"; 
-                  "/rid:-Microsoft.Naming#CA1715"; "/rid:-Microsoft.Naming#CA1704"; 
-                  "/rid:-Microsoft.Naming#CA1709"; 
-                  "/t:AltCover.Augment,AltCover.Visualizer.Transformer,AltCover.Visualizer.CoverageFile,AltCover.Visualizer.Extensions,AltCover.Visualizer.Gui"; 
-                  "/ignoregeneratedcode"; "/s"; "/gac" ])
-    "FxCop Errors were detected"
+  Actions.Run
+    (fxCop, ".",
+     [ "/c"; "/f:\"_Binaries/AltCover.Visualizer/Debug+AnyCPU/AltCover.Visualizer.exe\"";
+       "/o:\"_Reports/FxCopReport.xml\""; "/rid:-Microsoft.Usage#CA2208";
+       "/rid:-Microsoft.Usage#CA2235"; "/rid:-Microsoft.Maintainability#CA1506";
+       "/rid:-Microsoft.Design#CA1004"; "/rid:-Microsoft.Design#CA1006";
+       "/rid:-Microsoft.Naming#CA1707"; "/rid:-Microsoft.Naming#CA1715";
+       "/rid:-Microsoft.Naming#CA1704"; "/rid:-Microsoft.Naming#CA1709";
+       "/t:AltCover.Augment,AltCover.Visualizer.Transformer,AltCover.Visualizer.CoverageFile,AltCover.Visualizer.Extensions,AltCover.Visualizer.Gui";
+       "/ignoregeneratedcode"; "/s"; "/gac" ]) "FxCop Errors were detected"
   Assert.That
     (File.Exists "_Reports/FxCopReport.xml", Is.False, "FxCop Errors were detected"))
 
@@ -407,8 +413,8 @@ _Target "UnitTestDotNetWithCoverlet" (fun _ ->
     let xml =
       !!(@"./*Tests/*.tests.core.fsproj")
       |> Seq.zip
-           [ """--no-build --framework netcoreapp2.1 /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Exclude="\"[Sample*]*,[AltCover.Record*]*,[NUnit*]*,[AltCover.Shadow.Adapter]*\"" --configuration Debug """
-             """--no-build --framework netcoreapp2.1 /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Exclude="\"[Sample*]*,[AltCover.Record*]*,[NUnit*]*,[AltCover.Shadow.Adapter]*\"" --configuration Debug """
+           [ """--no-build --framework netcoreapp2.1 /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Exclude="\"[Sample*]*,[AltCover.Record*]*,[NUnit*]*,[AltCover.Shadow.Adapter]*\"" --configuration Debug """;
+             """--no-build --framework netcoreapp2.1 /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Exclude="\"[Sample*]*,[AltCover.Record*]*,[NUnit*]*,[AltCover.Shadow.Adapter]*\"" --configuration Debug """;
              """--no-build --framework netcoreapp2.1 /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Exclude="\"[Sample*]*,[AltCover.Record*]*\"" --configuration Debug """ ]
       |> Seq.fold (fun l (p, f) ->
            printfn "Testing %s" f
@@ -492,8 +498,9 @@ _Target "UnitTestWithAltCover" (fun _ ->
      |> Seq.length > 0 then
     let xaltReport = reports @@ "XUnitTestWithAltCover.xml"
     printfn "Instrumented the code"
-    Actions.Run(altcover, xtestDirectory, [" /sn=" + keyfile + AltCoverFilter
-                     + @"/o=./__UnitTestWithAltCover -x=" + xaltReport])
+    Actions.Run (altcover, xtestDirectory,
+                 [ "/sn=" + keyfile ] @ AltCoverFilter @ [ "/o=./__UnitTestWithAltCover"
+                                                           "-x=" + xaltReport ])
       "Re-instrument returned with a non-zero exit code"
 
     printfn "Unit test the instrumented code"
@@ -506,13 +513,16 @@ _Target "UnitTestWithAltCover" (fun _ ->
 
     let altReport = reports @@ "UnitTestWithAltCover.xml"
     printfn "Instrumented the code"
-    Actions.Run(altcover, testDirectory, [" /sn=" + keyfile + AltCoverFilter
-                     + @"/o=./__UnitTestWithAltCover -x=" + altReport])
+    Actions.Run (altcover, testDirectory,
+                 [ "/sn=" + keyfile ] @ AltCoverFilter @ [ "/o=./__UnitTestWithAltCover"
+                                                           "-x=" + altReport ])
       "Re-instrument returned with a non-zero exit code"
 
     let sn = "sn" |> Fake.Core.ProcessUtils.tryFindFileOnPath
     if sn |> Option.isSome then
-      Actions.Run (sn |> Option.get, testDirectory, ["-vf"; " ./__UnitTestWithAltCover/AltCover.Recorder.g.dll"])
+      Actions.Run
+        (sn |> Option.get, testDirectory,
+         [ "-vf"; " ./__UnitTestWithAltCover/AltCover.Recorder.g.dll" ])
         "Recorder assembly strong-name verified OK"
 
     printfn "Unit test the instrumented code"
@@ -532,8 +542,11 @@ _Target "UnitTestWithAltCover" (fun _ ->
     printfn "Instrument the weakname tests"
     let weakDir = Path.getFullName "_Binaries/AltCover.WeakNameTests/Debug+AnyCPU"
     let weakReport = reports @@ "WeakNameTestWithAltCover.xml"
-    Actions.Run(altcover, weakDir, ["--opencover /sn=" + keyfile + AltCoverFilter
-                     + " /o=./__WeakNameTestWithAltCover -x=" + weakReport])
+    Actions.Run (altcover, weakDir,
+                 [ "--opencover"
+                   "/sn=" + keyfile ]
+                 @ AltCoverFilter @ [ "/o=./__WeakNameTestWithAltCover"
+                                      "-x=" + weakReport ])
       "Instrumenting the weakname tests failed"
 
     printfn "Execute the weakname tests"
@@ -546,8 +559,11 @@ _Target "UnitTestWithAltCover" (fun _ ->
     printfn "Instrument the shadow tests"
     let shadowDir = Path.getFullName "_Binaries/AltCover.Shadow.Tests/Debug+AnyCPU"
     let shadowReport = reports @@ "ShadowTestWithAltCover.xml"
-    Actions.Run(altcover, shadowDir, ["--opencover /sn=" + keyfile + AltCoverFilter
-                     + @"/o=./__ShadowTestWithAltCover -x=" + shadowReport])
+    Actions.Run (altcover, shadowDir,
+                 [ "--opencover"
+                   "/sn=" + keyfile ]
+                 @ AltCoverFilter @ [ "/o=./__ShadowTestWithAltCover"
+                                      "-x=" + shadowReport ])
       "Instrumenting the shadow tests failed"
 
     printfn "Execute the shadow tests"
@@ -581,8 +597,11 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
     let xaltReport = reports @@ "XUnitTestWithAltCoverRunner.xml"
 
     printfn "Instrumented the code"
-    Actions.Run(altcover, xtestDirectory, ["--opencover  /sn=" + keyfile + AltCoverFilter
-                     + @"/o=./__UnitTestWithAltCoverRunner -x=" + xaltReport])
+    Actions.Run (altcover, xtestDirectory,
+                 [ "--opencover"
+                   "/sn=" + keyfile ]
+                 @ AltCoverFilter @ [ "/o=./__UnitTestWithAltCoverRunner"
+                                      "-x=" + xaltReport ])
       "Re-instrument returned with a non-zero exit code"
 
     printfn "Unit test the instrumented code"
@@ -596,34 +615,41 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
 
     let altReport = reports @@ "UnitTestWithAltCoverRunner.xml"
     printfn "Instrumented the code"
-    Actions.Run(altcover, testDirectory, ["--single --opencover /sn=" + keyfile + AltCoverFilter
-                     + @"/o=./__UnitTestWithAltCoverRunner -x=" + altReport])
+    Actions.Run (altcover, testDirectory,
+                 [ "--single"
+                   "--opencover"
+                   "/sn=" + keyfile ]
+                 @ AltCoverFilter @ [ "/o=./__UnitTestWithAltCoverRunner"
+                                      "-x=" + altReport ])
       "Re-instrument returned with a non-zero exit code"
 
     printfn "Unit test the instrumented code"
     try
-      let r = CreateProcess.fromRawCommand altcover [
-                                                      "Runner"
-                                                      "-x"
-                                                      nunit
-                                                      "-r"
-                                                      (testDirectory @@ "__UnitTestWithAltCoverRunner")
-                                                      "-w"
-                                                      "."
-                                                      "--"
-                                                      "--noheader"
-                                                      "--work=."
-                                                      "--result=./_Reports/UnitTestWithAltCoverRunnerReport.xml"
-                                                      Path.getFullName
-                                                                "_Binaries/AltCover.Tests/Debug+AnyCPU/__UnitTestWithAltCoverRunner/AltCover.Tests.dll"
-                                                      Path.getFullName
-                                                                "_Binaries/AltCover.Tests/Debug+AnyCPU/__UnitTestWithAltCoverRunner/Sample2.dll"
-                                                    ]
-              |> CreateProcess.withWorkingDirectory "."
-              |> CreateProcess.withFramework
-              |> Proc.run
+      let r =
+        CreateProcess.fromRawCommand altcover
+          [ "Runner"
+            "-x"
+            nunit
+            "-r"
+            (testDirectory @@ "__UnitTestWithAltCoverRunner")
+            "-w"
+            "."
+            "--"
+            "--noheader"
+            "--work=."
+            "--result=./_Reports/UnitTestWithAltCoverRunnerReport.xml"
 
-      Assert.That(r.ExitCode, Is.EqualTo 0, "Re-instrument tests returned with a non-zero exit code")    
+            Path.getFullName
+              "_Binaries/AltCover.Tests/Debug+AnyCPU/__UnitTestWithAltCoverRunner/AltCover.Tests.dll"
+
+            Path.getFullName
+              "_Binaries/AltCover.Tests/Debug+AnyCPU/__UnitTestWithAltCoverRunner/Sample2.dll" ]
+        |> CreateProcess.withWorkingDirectory "."
+        |> CreateProcess.withFramework
+        |> Proc.run
+      Assert.That
+        (r.ExitCode, Is.EqualTo 0,
+         "Re-instrument tests returned with a non-zero exit code")
     with x ->
       printfn "%A" x
       reraise()
@@ -631,53 +657,90 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
     printfn "Instrument the weakname tests"
     let weakDir = Path.getFullName "_Binaries/AltCover.WeakNameTests/Debug+AnyCPU"
     let weakReport = reports @@ "WeakNameTestWithAltCoverRunner.xml"
-    Actions.Run(altcover, weakDir, ["--opencover /sn=" + keyfile + AltCoverFilterX
-                     + " -t=WeakNameTest  /o=./__WeakNameTestWithAltCoverRunner -x="
-                     + weakReport]) "Instrumenting the weakname tests failed"
+    Actions.Run (altcover, weakDir,
+                 [ "--opencover"
+                   "/sn=" + keyfile ]
+                 @ AltCoverFilterX @ [ " -t=WeakNameTest"
+                                       "/o=./__WeakNameTestWithAltCoverRunner"
+                                       "-x=" + weakReport ])
+      "Instrumenting the weakname tests failed"
     printfn "Execute the weakname tests"
-    Actions.Run(altcover, ".", [" Runner -x " + nunit + " -r "
-                     + (weakDir @@ "__WeakNameTestWithAltCoverRunner") + " -w . -- "
-                     + " --noheader --work=. --result=./_Reports/ShadowTestWithAltCoverRunnerReport.xml \""
-                     + String.Join
-                         ("\" \"",
-                          [ Path.getFullName
-                              "_Binaries/AltCover.WeakNameTests/Debug+AnyCPU/__WeakNameTestWithAltCoverRunner/AltCover.WeakNameTests.dll" ])
-                     + "\""]) "Re-instrument tests returned with a non-zero exit code"
+    Actions.Run
+      (altcover, ".",
+       [ "Runner"
+         "-x "
+         nunit
+         " -r "
+         (weakDir @@ "__WeakNameTestWithAltCoverRunner")
+         " -w"
+         "."
+         "--"
+         "--noheader"
+         "--work=."
+         "--result=./_Reports/ShadowTestWithAltCoverRunnerReport.xml"
 
+         Path.getFullName
+           "_Binaries/AltCover.WeakNameTests/Debug+AnyCPU/__WeakNameTestWithAltCoverRunner/AltCover.WeakNameTests.dll" ])
+      "Re-instrument tests returned with a non-zero exit code"
     printfn "Instrument the shadow tests"
     let shadowDir = Path.getFullName "_Binaries/AltCover.Shadow.Tests/Debug+AnyCPU"
     let shadowReport = reports @@ "ShadowTestWithAltCoverRunner.xml"
-    Actions.Run(altcover, shadowDir, ["--opencover /sn=" + keyfile + AltCoverFilter
-                     + @"/o=./__ShadowTestWithAltCoverRunner -x=" + shadowReport])
+    Actions.Run (altcover, shadowDir,
+                 [ "--opencover"
+                   "/sn=" + keyfile ]
+                 @ AltCoverFilter @ [ "/o=./__ShadowTestWithAltCoverRunner"
+                                      "-x=" + shadowReport ])
       "Instrumenting the shadow tests failed"
     printfn "Execute the shadow tests"
-    Actions.Run (altcover, ".", ["Runner"; "-x"; nunit; "-r";
-                                  (shadowDir @@ "__ShadowTestWithAltCoverRunner");
-                                  "-w";
-                                  ".";
-                                  "--";
-                                  "--noheader"; "--work=.";
-                                  "--result=./_Reports/ShadowTestWithAltCoverRunnerReport.xml";
-                                  Path.getFullName "_Binaries/AltCover.Shadow.Tests/Debug+AnyCPU/__ShadowTestWithAltCoverRunner/AltCover.Shadow.Tests.dll";
-                                  Path.getFullName "_Binaries/AltCover.Shadow.Tests/Debug+AnyCPU/__ShadowTestWithAltCoverRunner/AltCover.Shadow.Tests2.dll" ])
-                                  "Re-instrument tests returned with a non-zero exit code"
+    Actions.Run
+      (altcover, ".",
+       [ "Runner"
+         "-x"
+         nunit
+         "-r"
+         (shadowDir @@ "__ShadowTestWithAltCoverRunner")
+         "-w"
+         "."
+         "--"
+         "--noheader"
+         "--work=."
+         "--result=./_Reports/ShadowTestWithAltCoverRunnerReport.xml"
 
+         Path.getFullName
+           "_Binaries/AltCover.Shadow.Tests/Debug+AnyCPU/__ShadowTestWithAltCoverRunner/AltCover.Shadow.Tests.dll"
+
+         Path.getFullName
+           "_Binaries/AltCover.Shadow.Tests/Debug+AnyCPU/__ShadowTestWithAltCoverRunner/AltCover.Shadow.Tests2.dll" ])
+      "Re-instrument tests returned with a non-zero exit code"
     printfn "Instrument the GTK# visualizer tests"
     let gtkDir = Path.getFullName "_Binaries/AltCover.Tests.Visualizer/Debug+AnyCPU"
     let gtkReport = reports @@ "GTKVTestWithAltCoverRunner.xml"
-    Actions.Run(altcover, gtkDir, ["--opencover -t=Gui -s=\"\\-sharp\" /sn=" + keyfile + AltCoverFilter
-                     + @"/o=./__GTKVTestWithAltCoverRunner -x=" + gtkReport])
+    Actions.Run (altcover, gtkDir,
+                 [ "--opencover"
+                   "-t=Gui"
+                   "-s=\"\\-sharp\""
+                   "/sn=" + keyfile ]
+                 @ AltCoverFilter @ [ "/o=./__GTKVTestWithAltCoverRunner"
+                                      "-x=" + gtkReport ])
       "Instrumenting the gtk tests failed"
     printfn "Execute the the GTK# visualizer tests"
-    Actions.Run(altcover, ".", [" Runner -x " + nunit + " -r "
-                     + (gtkDir @@ "__GTKVTestWithAltCoverRunner") + " -w . -- "
-                     + " --noheader --work=. --result=./_Reports/ShadowTestWithAltCoverRunnerReport.xml \""
-                     + String.Join
-                         ("\" \"",
-                          [ Path.getFullName
-                              "_Binaries/AltCover.Tests.Visualizer/Debug+AnyCPU/__GTKVTestWithAltCoverRunner/AltCover.Tests.Visualizer.dll" ])
-                     + "\""]) "Re-instrument tests returned with a non-zero exit code"
+    Actions.Run
+      (altcover, ".",
+       [ "Runner"
+         "-x"
+         nunit
+         "-r"
+         (gtkDir @@ "__GTKVTestWithAltCoverRunner")
+         "-w"
+         "."
+         "--"
+         "--noheader"
+         "--work=."
+         "--result=./_Reports/ShadowTestWithAltCoverRunnerReport.xml"
 
+         Path.getFullName
+           "_Binaries/AltCover.Tests.Visualizer/Debug+AnyCPU/__GTKVTestWithAltCoverRunner/AltCover.Tests.Visualizer.dll" ])
+      "Re-instrument tests returned with a non-zero exit code"
     let pester = Path.getFullName "_Reports/Pester.xml"
     ReportGenerator.generateReports (fun p ->
       { p with ExePath = Tools.findToolInSubPath "ReportGenerator.exe" "."
@@ -718,8 +781,9 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
     File.WriteAllLines
       (coverage, Seq.concat [ cover1; cover2; cover3; cover3a; cover4 ] |> Seq.toArray)
     if not <| String.IsNullOrWhiteSpace(Environment.environVar "APPVEYOR_BUILD_NUMBER") then
-      Actions.Run (Tools.findToolInSubPath "coveralls.net.exe" nugetCache,
-                   "_Reports", ["--opencover"; coverage]) "Coveralls upload failed"
+      Actions.Run
+        (Tools.findToolInSubPath "coveralls.net.exe" nugetCache, "_Reports",
+         [ "--opencover"; coverage ]) "Coveralls upload failed"
   else printfn "Symbols not present; skipping")
 
 _Target "UnitTestWithAltCoverCore"
@@ -734,8 +798,10 @@ _Target "UnitTestWithAltCoverCore"
     Path.getFullName "Tests/_Binaries/AltCover.Tests/Debug+AnyCPU/netcoreapp2.1"
   let altReport = reports @@ "UnitTestWithAltCoverCore.xml"
   printfn "Instrumented the code"
-  Actions.Run(altcover, testDirectory, ["/sn=" + keyfile + AltCoverFilter + @"/o=" + output + " -x="
-                   + altReport]) "first instrument returned with a non-zero exit code"
+  Actions.Run (altcover, testDirectory,
+               [ "/sn=" + keyfile ] @ AltCoverFilter @ [ "/o=" + output
+                                                         "-x=" + altReport ])
+    "first instrument returned with a non-zero exit code"
   printfn "Unit test the instrumented code"
   try
     Actions.RunDotnet
@@ -753,8 +819,9 @@ _Target "UnitTestWithAltCoverCore"
   let shadowOut =
     Path.getFullName
       "Shadow.Tests/_Binaries/AltCover.Shadow.Tests/Debug+AnyCPU/netcoreapp2.1"
-  Actions.Run(altcover, shadowDir, ["/sn=" + keyfile + AltCoverFilterG + @"/o=" + shadowOut + " -x="
-                   + shadowReport])
+  Actions.Run (altcover, shadowDir,
+               [ "/sn=" + keyfile ] @ AltCoverFilterG @ [ "/o=" + shadowOut
+                                                          "-x=" + shadowReport ])
     "second instrument returned with a non-zero exit code"
 
   printfn "Execute the shadow tests"
@@ -769,7 +836,9 @@ _Target "UnitTestWithAltCoverCore"
   let xReport = reports @@ "XTestWithAltCoverCore.xml"
   let xOut =
     Path.getFullName "XTests/_Binaries/AltCover.XTests/Debug+AnyCPU/netcoreapp2.1"
-  Actions.Run(altcover, xDir, ["/sn=" + keyfile + AltCoverFilterG + @"/o=" + xOut + " -x=" + xReport])
+  Actions.Run (altcover, xDir,
+               [ "/sn=" + keyfile ] @ AltCoverFilterG @ [ "/o=" + xOut
+                                                          "-x=" + xReport ])
     "xuint instrument returned with a non-zero exit code"
 
   printfn "Execute the XUnit tests"
@@ -820,9 +889,8 @@ _Target "UnitTestWithAltCoverCoreRunner"
   Shell.cleanDir output
   Actions.RunDotnet (fun o -> { dotnetOptions o with WorkingDirectory = testDirectory })
     ""
-    (altcover + " --opencover " + AltCoverFilter + " -x \"" + altReport + "\" /o \""
-     + output + "\"") "Instrument the code"
-
+    (altcover + " --opencover " + String.Join(" ", AltCoverFilter) + " -x \"" + altReport
+     + "\" /o \"" + output + "\"") "Instrument the code"
   printfn "Unit test the instrumented code"
   let testproject = Path.getFullName "./Tests/altcover.tests.core.fsproj"
 
@@ -840,8 +908,8 @@ _Target "UnitTestWithAltCoverCoreRunner"
   Shell.cleanDir shadowOut
 
   Actions.RunDotnet (fun o -> { dotnetOptions o with WorkingDirectory = shadowDir }) ""
-    (altcover + " --single --opencover " + AltCoverFilter + " -x \"" + shadowReport
-     + "\" /o \"" + shadowOut + "\"") "Instrument the shadow tests"
+    (altcover + " --single --opencover " + String.Join(" ", AltCoverFilter) + " -x \""
+     + shadowReport + "\" /o \"" + shadowOut + "\"") "Instrument the shadow tests"
   let shadowProject =
     Path.getFullName "./Shadow.Tests/altcover.recorder.tests.core.fsproj"
   Actions.RunDotnet (fun o -> { dotnetOptions o with WorkingDirectory = shadowOut }) ""
@@ -857,9 +925,8 @@ _Target "UnitTestWithAltCoverCoreRunner"
   Shell.cleanDir xOut
 
   Actions.RunDotnet (fun o -> { dotnetOptions o with WorkingDirectory = xDir }) ""
-    (altcover + " --single --opencover " + AltCoverFilter + " -x \"" + xReport
-     + "\" /o \"" + xOut + "\"") "Instrument the xunit tests"
-
+    (altcover + " --single --opencover " + String.Join(" ", AltCoverFilter) + " -x \""
+     + xReport + "\" /o \"" + xOut + "\"") "Instrument the xunit tests"
   printfn "Execute the XUnit tests"
   let xProject = Path.getFullName "./XTests/altcover.x.tests.core.fsproj"
   Actions.RunDotnet (fun o -> { dotnetOptions o with WorkingDirectory = xOut }) ""
@@ -885,8 +952,13 @@ _Target "FSharpTypes" (fun _ ->
   let sampleRoot = Path.getFullName "_Binaries/Sample2/Debug+AnyCPU"
   let instrumented = "__FSharpTypes"
   if sampleRoot @@ "Sample2.pdb" |> File.Exists then
-    Actions.Run(binRoot @@ "AltCover.exe", sampleRoot, ["-s=Adapter -s=nunit -t=System\. -t=Microsoft\. -x=" + simpleReport
-                     + " /o=./" + instrumented]) "FSharpTypes"
+    Actions.Run (binRoot @@ "AltCover.exe", sampleRoot,
+                 [ "-s=Adapter"
+                   "-s=nunit"
+                   "-t=System\\."
+                   "-t=Microsoft\\."
+                   "-x=" + simpleReport
+                   " /o=./" + instrumented ]) "FSharpTypes"
     Actions.ValidateFSharpTypes simpleReport []
   else printfn "Symbols not present; skipping")
 
@@ -1062,8 +1134,11 @@ _Target "CSharpDotNetWithFramework"
   let instrumented =
     Path.getFullName "_Binaries/Sample1/__Instrumented.CSharpDotNetWithFramework"
 
-  Actions.Run(binRoot @@ "AltCover.exe", sampleRoot, ["-t=System\. -t=Microsoft\. -x=" + simpleReport + " /o=" + instrumented])
-    "CSharpDotNetWithFramework"
+  Actions.Run (binRoot @@ "AltCover.exe", sampleRoot,
+               [ "-t=System\\."
+                 "-t=Microsoft\\."
+                 "-x=" + simpleReport
+                 " /o=" + instrumented ]) "CSharpDotNetWithFramework"
 
   Actions.RunDotnet dotnetOptions (instrumented @@ "Sample1.dll") ""
     "CSharpDotNetWithFramework test"
@@ -1089,19 +1164,19 @@ _Target "SelfTest" (fun _ ->
                "-excludebyattribute:*ExcludeFromCodeCoverageAttribute;*ProgIdAttribute"
              Register = OpenCover.RegisterType.RegisterUser
              Output = report })
-    ("/sn=" + keyfile + AltCoverFilter + "-x=" + altReport + " -o __SelfTest")
-
+    ("/sn=" + keyfile + String.Join(" ", AltCoverFilter) + "-x=" + altReport
+     + " -o __SelfTest")
   ReportGenerator.generateReports (fun p ->
     { p with ExePath = Tools.findToolInSubPath "ReportGenerator.exe" "."
              TargetDir = "_Reports/_OpenCoverSelfTest" }) [ report ]
 
   printfn "Re-instrument everything"
   let altReport2 = reports @@ "AltCoverSelfTestDummy.xml"
-  Actions.Run("_Binaries/AltCover.Tests/Debug+AnyCPU/__SelfTest/AltCover.exe",
-              "_Binaries/AltCover.Tests/Debug+AnyCPU",
-              ["/sn=" + keyfile + AltCoverFilter + @"/o=./__SelfTestDummy -x="
-                   + altReport2]) "Re-instrument returned with a non-zero exit code"
-
+  Actions.Run ("_Binaries/AltCover.Tests/Debug+AnyCPU/__SelfTest/AltCover.exe",
+               "_Binaries/AltCover.Tests/Debug+AnyCPU",
+               [ "/sn=" + keyfile ] @ AltCoverFilter @ [ @"/o=./__SelfTestDummy"
+                                                         "-x=" + altReport2 ])
+    "Re-instrument returned with a non-zero exit code"
   ReportGenerator.generateReports (fun p ->
     { p with ExePath = Tools.findToolInSubPath "ReportGenerator.exe" "."
              TargetDir = "_Reports/_AltCoverSelfTest" }) [ altReport ])
@@ -1114,11 +1189,15 @@ _Target "RecordResumeTest"
   let sampleRoot = Path.getFullName "_Binaries/Sample8/Debug+AnyCPU"
   let instrumented = "__RecordResumeTest"
 
-  Actions.Run(binRoot @@ "AltCover.exe", sampleRoot, ["-s=Adapter -s=nunit -t=System\. -t=Microsoft\. -x=" + simpleReport
-                   + " /o=./" + instrumented]) "RecordResumeTest 1"
-
+  Actions.Run (binRoot @@ "AltCover.exe", sampleRoot,
+               [ "-s=Adapter"
+                 "-s=nunit"
+                 "-t=System\\."
+                 "-t=Microsoft\\."
+                 "-x=" + simpleReport
+                 " /o=./" + instrumented ]) "RecordResumeTest 1"
   let testing = (sampleRoot @@ instrumented) @@ "Sample8.exe"
-  Actions.Run (testing, sampleRoot, [simpleReport + ".acv"]) "RecordResumeTest 2"
+  Actions.Run (testing, sampleRoot, [ simpleReport + ".acv" ]) "RecordResumeTest 2"
   do use coverageFile =
        new FileStream(simpleReport, FileMode.Open, FileAccess.Read, FileShare.None, 4096,
                       FileOptions.SequentialScan)
@@ -1134,8 +1213,10 @@ _Target "RecordResumeTest"
        (recorded, expected |> Is.EquivalentTo,
         sprintf "Bad visit list %A -- should be empty now" recorded)
 
-  Actions.Run (binRoot @@ "AltCover.exe", sampleRoot, ["runner"; "--collect"; "/r=./" + instrumented])
-    "RecordResumeTest 3"
+  Actions.Run (binRoot @@ "AltCover.exe", sampleRoot,
+               [ "runner"
+                 "--collect"
+                 "/r=./" + instrumented ]) "RecordResumeTest 3"
 
   do use coverageFile =
        new FileStream(simpleReport, FileMode.Open, FileAccess.Read, FileShare.None, 4096,
@@ -1162,12 +1243,18 @@ _Target "RecordResumeTrackingTest" (fun _ ->
   let sampleRoot = Path.getFullName "_Binaries/Sample8/Debug+AnyCPU"
   let instrumented = "__RecordResumeTrackingTest"
 
-  Actions.Run(binRoot @@ "AltCover.exe", sampleRoot, ["--opencover -c=Main -s=Adapter -s=nunit -t=System\. -t=Microsoft\. -x="
-                   + simpleReport + " /o=./" + instrumented])
-    "RecordResumeTrackingTest 1"
+  Actions.Run (binRoot @@ "AltCover.exe", sampleRoot,
+               [ "--opencover"
+                 "-c=Main"
+                 "-s=Adapter"
+                 "-s=nunit"
+                 "-t=System\\."
+                 "-t=Microsoft\\."
+                 "-x=" + simpleReport
+                 " /o=./" + instrumented ]) "RecordResumeTrackingTest 1"
   let testing = (sampleRoot @@ instrumented) @@ "Sample8.exe"
-  Actions.Run (testing, sampleRoot, [simpleReport + ".acv"]) "RecordResumeTrackingTest 2"
-
+  Actions.Run (testing, sampleRoot, [ simpleReport + ".acv" ])
+    "RecordResumeTrackingTest 2"
   do use coverageFile =
        new FileStream(simpleReport, FileMode.Open, FileAccess.Read, FileShare.None, 4096,
                       FileOptions.SequentialScan)
@@ -1183,8 +1270,10 @@ _Target "RecordResumeTrackingTest" (fun _ ->
        (recorded, expected |> Is.EquivalentTo,
         sprintf "Bad visit list %A -- should be empty now" recorded)
 
-  Actions.Run (binRoot @@ "AltCover.exe", sampleRoot, ["runner"; "--collect"; "/r=./" + instrumented])
-    "RecordResumeTrackingTest 3"
+  Actions.Run (binRoot @@ "AltCover.exe", sampleRoot,
+               [ "runner"
+                 "--collect"
+                 "/r=./" + instrumented ]) "RecordResumeTrackingTest 3"
 
   do use coverageFile =
        new FileStream(simpleReport, FileMode.Open, FileAccess.Read, FileShare.None, 4096,
@@ -1215,8 +1304,13 @@ _Target "RecordResumeTestDotNet"
   let sampleRoot = Path.getFullName "_Binaries/Sample8/Debug+AnyCPU/netcoreapp2.0"
   let instrumented = "__RecordResumeTestDotNet"
 
-  Actions.Run(binRoot @@ "AltCover.exe", sampleRoot, ["-s=Adapter -s=nunit -t=System\. -t=Microsoft\. -x=" + simpleReport
-                   + " /o=./" + instrumented]) "RecordResumeTestDotNet 1"
+  Actions.Run (binRoot @@ "AltCover.exe", sampleRoot,
+               [ "-s=Adapter"
+                 "-s=nunit"
+                 "-t=System\\."
+                 "-t=Microsoft\\."
+                 "-x=" + simpleReport
+                 " /o=./" + instrumented ]) "RecordResumeTestDotNet 1"
 
   let testing = (sampleRoot @@ instrumented) @@ "Sample8.dll"
   Actions.RunDotnet (fun o -> { dotnetOptions o with WorkingDirectory = sampleRoot })
@@ -1237,8 +1331,10 @@ _Target "RecordResumeTestDotNet"
        (recorded, expected |> Is.EquivalentTo,
         sprintf "Bad visit list %A -- should be empty now" recorded)
 
-  Actions.Run (binRoot @@ "AltCover.exe", sampleRoot, ["runner"; "--collect"; "/r=./" + instrumented])
-    "RecordResumeTestDotNet 3"
+  Actions.Run (binRoot @@ "AltCover.exe", sampleRoot,
+               [ "runner"
+                 "--collect"
+                 "/r=./" + instrumented ]) "RecordResumeTestDotNet 3"
 
   do use coverageFile =
        new FileStream(simpleReport, FileMode.Open, FileAccess.Read, FileShare.None, 4096,
@@ -1266,16 +1362,23 @@ _Target "RecordResumeTestUnderMono"
   let sampleRoot = Path.getFullName "_Binaries/Sample8/Debug+AnyCPU"
   let instrumented = "__RecordResumeTestUnderMono"
 
-  Actions.Run(binRoot @@ "AltCover.exe", sampleRoot, ["-s=Adapter -s=nunit -t=System\. -t=Microsoft\. -x=" + simpleReport
-                   + " /o=./" + instrumented]) "RecordResumeTestUnderMono 1"
+  Actions.Run (binRoot @@ "AltCover.exe", sampleRoot,
+               [ "-s=Adapter"
+                 "-s=nunit"
+                 "-t=System\\."
+                 "-t=Microsoft\\."
+                 " -x=" + simpleReport
+                 " /o=./" + instrumented ]) "RecordResumeTestUnderMono 1"
 
   match monoOnWindows with
   | Some mono ->
     let testing = (sampleRoot @@ instrumented) @@ "Sample8.exe"
-    let r = CreateProcess.fromRawCommand mono [testing; simpleReport + ".acv" ]
-            |> CreateProcess.withWorkingDirectory sampleRoot
-            |> Proc.run
 
+    let r =
+      CreateProcess.fromRawCommand mono [ testing
+                                          simpleReport + ".acv" ]
+      |> CreateProcess.withWorkingDirectory sampleRoot
+      |> Proc.run
     Assert.That(r.ExitCode, Is.EqualTo 0, "RecordResumeTestUnderMono 2")
   | None -> ()
 
@@ -1294,8 +1397,10 @@ _Target "RecordResumeTestUnderMono"
        (recorded, expected |> Is.EquivalentTo,
         sprintf "Bad visit list %A -- should be empty now" recorded)
 
-  Actions.Run (binRoot @@ "AltCover.exe", sampleRoot, ["runner"; "--collect"; "/r=./" + instrumented])
-    "RecordResumeTestUnderMono 3"
+  Actions.Run (binRoot @@ "AltCover.exe", sampleRoot,
+               [ "runner"
+                 "--collect"
+                 "/r=./" + instrumented ]) "RecordResumeTestUnderMono 3"
 
   do use coverageFile =
        new FileStream(simpleReport, FileMode.Open, FileAccess.Read, FileShare.None, 4096,
@@ -1558,8 +1663,19 @@ _Target "PrepareFrameworkBuild"
   let toolpath = Tools.findToolInSubPath "ILMerge.exe" "./packages"
   let ver = String.Join(".", (!Version).Split('.') |> Seq.take 2) + ".0.0"
 
-  Actions.Run(toolpath, ".", ["/out:\"./_Binaries/AltCover/AltCover.exe\" /ver:\"" + ver
-                  + "\" /attr:\"./_Binaries/AltCover/Release+AnyCPU/AltCover.exe\" /keyfile:\"./Build/Infrastructure.snk\" /target:\"exe\" /internalize ./_Binaries/AltCover/Release+AnyCPU/AltCover.exe .\_Binaries\AltCover\Release+AnyCPU\Mono.Cecil.dll .\_Binaries\AltCover\Release+AnyCPU\Mono.Cecil.Mdb.dll .\_Binaries\AltCover\Release+AnyCPU\Mono.Cecil.Pdb.dll .\_Binaries\AltCover\Release+AnyCPU\Mono.Cecil.Rocks.dll .\_Binaries\AltCover\Release+AnyCPU\Newtonsoft.Json.dll"])
+  Actions.Run (toolpath, ".",
+               [ "/out:\"./_Binaries/AltCover/AltCover.exe\""
+                 "/ver:\"" + ver + "\""
+                 "/attr:\"./_Binaries/AltCover/Release+AnyCPU/AltCover.exe\""
+                 "/keyfile:\"./Build/Infrastructure.snk\""
+                 "/target:\"exe\""
+                 "/internalize"
+                 "./_Binaries/AltCover/Release+AnyCPU/AltCover.exe"
+                 ".\_Binaries\AltCover\Release+AnyCPU\Mono.Cecil.dll"
+                 ".\_Binaries\AltCover\Release+AnyCPU\Mono.Cecil.Mdb.dll"
+                 ".\_Binaries\AltCover\Release+AnyCPU\Mono.Cecil.Pdb.dll"
+                 ".\_Binaries\AltCover\Release+AnyCPU\Mono.Cecil.Rocks.dll"
+                 ".\_Binaries\AltCover\Release+AnyCPU\Newtonsoft.Json.dll" ])
     "ILMerge failure")
 
 //    let here = Directory.GetCurrentDirectory()
@@ -1649,8 +1765,9 @@ _Target "Unpack" (fun _ ->
 _Target "WindowsPowerShell"
   (fun _ ->
   let v = (!Version).Split([| '-' |]).[0]
-  Actions.RunRaw ("powershell.exe", ".", ["-NoProfile"; "./Build/powershell.ps1"; "-ACV"; v]) 
-                  "powershell")
+  Actions.RunRaw
+    ("powershell.exe", ".", [ "-NoProfile"; "./Build/powershell.ps1"; "-ACV"; v ])
+    "powershell")
 
 _Target "Pester" (fun _ ->
   Directory.ensure "./_Reports"
@@ -1664,12 +1781,22 @@ _Target "Pester" (fun _ ->
   let retro = Path.getFullName "_Binaries/AltCover/Release+AnyCPU/AltCover.exe"
   let key = Path.getFullName "Build/Infrastructure.snk"
 
-  Actions.Run(retro, unpack, [" --inplace --save --opencover -t=DotNet -t=System\. \"-s=^AltCover$\" -s=Recorder -x \""
-                + report + "\" -i \"" + i + "\" -sn \"" + key + "\""])
-    "Pester instrument"
+  Actions.Run (retro, unpack,
+               [ "--inplace"
+                 "--save"
+                 "--opencover"
+                 "-t=DotNet"
+                 "-t=System\\."
+                 "\"-s=^AltCover$\""
+                 "-s=Recorder"
+                 "-x "
+                 "\"" + report + "\""
+                 "-i"
+                 "\"" + i + "\""
+                 "-sn \"" + key + "\"" ]) "Pester instrument"
 
   printfn "Execute the instrumented tests"
-  Actions.RunRaw (pwsh, ".", ["-NoProfile"; "./Build/pester.ps1"; "-ACV"; v]) "pwsh"
+  Actions.RunRaw (pwsh, ".", [ "-NoProfile"; "./Build/pester.ps1"; "-ACV"; v ]) "pwsh"
   Actions.RunDotnet (fun o -> { dotnetOptions o with WorkingDirectory = unpack }) ""
     ("AltCover.dll Runner --collect -r \"" + i + "\"") "Collect the output"
   ReportGenerator.generateReports (fun p ->
@@ -1728,8 +1855,11 @@ _Target "ReleaseDotNetWithFramework" (fun _ ->
     let sampleRoot = Path.getFullName "./_Binaries/Sample1/Debug+AnyCPU/netcoreapp2.0"
     let instrumented = sampleRoot @@ "__Instrumented.ReleaseDotNetWithFramework"
 
-    Actions.Run(Option.get unpack,  sampleRoot, ["-t=System\."; "-t=Microsoft\."; "-x=" + simpleReport;
-                                                 " /o=" + instrumented]) "ReleaseDotNetWithFramework"
+    Actions.Run (Option.get unpack, sampleRoot,
+                 [ "-t=System\\."
+                   "-t=Microsoft\\."
+                   "-x=" + simpleReport
+                   " /o=" + instrumented ]) "ReleaseDotNetWithFramework"
 
     Actions.RunDotnet (fun o -> { dotnetOptions o with WorkingDirectory = instrumented })
       "Sample1.dll" "" "ReleaseDotNetWithFramework test"
@@ -1806,7 +1936,7 @@ _Target "ReleaseFSharpTypesX86DotNetRunner" (fun _ ->
   try
     try
       Environment.SetEnvironmentVariable("platform", "x86")
-      Actions.Run (dotnetPath86 |> Option.get, ".", ["--info" ]) "dotnet-x86 failed"
+      Actions.Run (dotnetPath86 |> Option.get, ".", [ "--info" ]) "dotnet-x86 failed"
       printfn "Build the sample2 code as x86"
       Actions.RunDotnet (fun o' -> { dotnetOptions o' with WorkingDirectory = s }) "build"
         (" altcover.core.sln --configuration Debug")
@@ -1899,7 +2029,6 @@ _Target "ReleaseXUnitFSharpTypesDotNetFullRunner" (fun _ ->
   Actions.RunDotnet (fun o' -> { dotnetOptions o' with WorkingDirectory = unpack }) ""
     ("AltCover.dll --opencover -c=0 \"-c=[Fact]\" -x \"" + x + "\" -o \"" + o + "\" -i \""
      + i + "\"") "ReleaseXUnitFSharpTypesDotNetFullRunner"
-
   Actions.CheckSample4Content x
 
   printfn "Execute the instrumented tests"
@@ -2212,9 +2341,7 @@ _Target "DotnetTestIntegration" (fun _ ->
       "issue#37 regression test returned with a non-zero exit code"
 
     let cover37 = XDocument.Load "./RegressionTesting/issue37/coverage.xml"
-    Assert.That (cover37.Descendants(XName.Get("BranchPoint")) |> Seq.length,
-                 Is.EqualTo 2)
-
+    Assert.That(cover37.Descendants(XName.Get("BranchPoint")) |> Seq.length, Is.EqualTo 2)
   finally
     let folder = (nugetCache @@ "altcover") @@ !Version
     Shell.mkdir folder
@@ -2237,17 +2364,22 @@ _Target "Issue20" (fun _ ->
     csproj.Save "./RegressionTesting/issue20/xunit-tests/xunit-tests.csproj"
 
     Actions.RunDotnet
-      (fun o' -> { dotnetOptions o' with WorkingDirectory = Path.getFullName "./RegressionTesting/issue20/classlib" })
+      (fun o' ->
+      { dotnetOptions o' with WorkingDirectory =
+                                Path.getFullName "./RegressionTesting/issue20/classlib" })
       "restore" ("") "restore returned with a non-zero exit code"
 
     Actions.RunDotnet
-      (fun o' -> { dotnetOptions o' with WorkingDirectory = Path.getFullName "./RegressionTesting/issue20/xunit-tests" })
+      (fun o' ->
+      { dotnetOptions o' with WorkingDirectory =
+                                Path.getFullName "./RegressionTesting/issue20/xunit-tests" })
       "restore" ("") "restore returned with a non-zero exit code"
 
     Actions.RunDotnet
-      (fun o' -> { dotnetOptions o' with WorkingDirectory = Path.getFullName "./RegressionTesting/issue20/xunit-tests" })
-      "test" ("-v m /p:AltCover=true")
-      "sample test returned with a non-zero exit code"
+      (fun o' ->
+      { dotnetOptions o' with WorkingDirectory =
+                                Path.getFullName "./RegressionTesting/issue20/xunit-tests" })
+      "test" ("-v m /p:AltCover=true") "sample test returned with a non-zero exit code"
   finally
     let folder = (nugetCache @@ "altcover") @@ !Version
     Shell.mkdir folder
@@ -2333,9 +2465,7 @@ _Target "DotnetCLIIntegration" (fun _ ->
 
     let command =
       """$ipmo = (dotnet altcover ipmo | Out-String).Trim().Split()[1].Trim(@('""')); Import-Module $ipmo; ConvertTo-BarChart -?"""
-
-    Actions.RunRaw (pwsh, working, ["-NoProfile"; "-Command"; command]) "pwsh"
-
+    Actions.RunRaw (pwsh, working, [ "-NoProfile"; "-Command"; command ]) "pwsh"
     Actions.RunDotnet
       (fun o' ->
       { dotnetOptions o' with WorkingDirectory = Path.getFullName "_DotnetCLITest" })
@@ -2385,32 +2515,37 @@ _Target "DotnetGlobalIntegration" (fun _ ->
     let o =
       Path.getFullName "./_DotnetGlobalTest/_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1"
 
-    Actions.RunRaw ("altcover", working, ["ipmo"]) "DotnetGlobalIntegration ipmo"
+    Actions.RunRaw ("altcover", working, [ "ipmo" ]) "DotnetGlobalIntegration ipmo"
 
-    Actions.RunRaw ("altcover", working, ["version"]) "DotnetGlobalIntegration version"
+    Actions.RunRaw ("altcover", working, [ "version" ]) "DotnetGlobalIntegration version"
 
-    Actions.RunRaw ("altcover", working, ["--opencover"; "--inplace"; "-c=0"; "-c=[Fact]"; "-x"; x; "-i"; o;]) "DotnetGlobalIntegration"
+    Actions.RunRaw
+      ("altcover", working,
+       [ "--opencover"; "--inplace"; "-c=0"; "-c=[Fact]"; "-x"; x; "-i"; o ])
+      "DotnetGlobalIntegration"
 
     Actions.CheckSample4Content x
 
     printfn "Execute the instrumented tests"
-    Actions.RunRaw ("altcover", working, ["Runner"; "-x"; "dotnet"; "-r"; o; "--"; "test"; "--no-build"; "--configuration"; "Debug"]) "DotnetGlobalIntegration test"
+    Actions.RunRaw
+      ("altcover", working,
+       [ "Runner"; "-x"; "dotnet"; "-r"; o; "--"; "test"; "--no-build"; "--configuration";
+         "Debug" ]) "DotnetGlobalIntegration test"
 
     Actions.CheckSample4Visits x
     let command =
       """$ipmo = (altcover ipmo | Out-String).Trim().Split()[1].Trim(@('`"')); Import-Module $ipmo; ConvertTo-BarChart -?"""
+    Actions.RunRaw (pwsh, working, [ "-NoProfile"; "-Command"; command ]) "pwsh"
 
-    Actions.RunRaw (pwsh, working, ["-NoProfile"; "-Command"; command]) "pwsh"
-
-    // (fsproj.Descendants(XName.Get("TargetFramework")) |> Seq.head).Value <- "netcoreapp2.1"
-    // fsproj.Save "./_DotnetGlobalTest/dotnetglobal.fsproj"
-    // Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = Path.getFullName "_DotnetGlobalTest"}) "add"
-    //                   ("package altcover.global")
-    //                   "sample test returned with a non-zero exit code"
-    // Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = Path.getFullName "_DotnetGlobalTest"}) "test"
-    //                   ("-v m /p:AltCover=true")
-    //                   "sample test returned with a non-zero exit code"
-    // "./_DotnetGlobalTest/coverage.xml" |> Path.getFullName |> File.Exists |> Assert.That
+  // (fsproj.Descendants(XName.Get("TargetFramework")) |> Seq.head).Value <- "netcoreapp2.1"
+  // fsproj.Save "./_DotnetGlobalTest/dotnetglobal.fsproj"
+  // Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = Path.getFullName "_DotnetGlobalTest"}) "add"
+  //                   ("package altcover.global")
+  //                   "sample test returned with a non-zero exit code"
+  // Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = Path.getFullName "_DotnetGlobalTest"}) "test"
+  //                   ("-v m /p:AltCover=true")
+  //                   "sample test returned with a non-zero exit code"
+  // "./_DotnetGlobalTest/coverage.xml" |> Path.getFullName |> File.Exists |> Assert.That
 
   finally
     if set then
@@ -2705,7 +2840,8 @@ Target.activateFinal "ResetConsoleColours"
 ==> "BulkReport"
 ==> "All"
 
-let defaultTarget () = resetColours ()
-                       "All"
+let defaultTarget() =
+  resetColours()
+  "All"
 
 Target.runOrDefault <| defaultTarget ()
