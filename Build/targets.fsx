@@ -660,7 +660,7 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
     Actions.Run (altcover, weakDir,
                  [ "--opencover"
                    "/sn=" + keyfile ]
-                 @ AltCoverFilterX @ [ " -t=WeakNameTest"
+                 @ AltCoverFilterX @ [ "-t=WeakNameTest"
                                        "/o=./__WeakNameTestWithAltCoverRunner"
                                        "-x=" + weakReport ])
       "Instrumenting the weakname tests failed"
@@ -668,11 +668,11 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
     Actions.Run
       (altcover, ".",
        [ "Runner"
-         "-x "
+         "-x"
          nunit
-         " -r "
+         "-r"
          (weakDir @@ "__WeakNameTestWithAltCoverRunner")
-         " -w"
+         "-w"
          "."
          "--"
          "--noheader"
@@ -718,7 +718,7 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
     Actions.Run (altcover, gtkDir,
                  [ "--opencover"
                    "-t=Gui"
-                   "-s=\"\\-sharp\""
+                   "-s=\\-sharp"
                    "/sn=" + keyfile ]
                  @ AltCoverFilter @ [ "/o=./__GTKVTestWithAltCoverRunner"
                                       "-x=" + gtkReport ])
@@ -1787,13 +1787,14 @@ _Target "Pester" (fun _ ->
                  "--opencover"
                  "-t=DotNet"
                  "-t=System\\."
-                 "\"-s=^AltCover$\""
+                 "-s=^AltCover$"
                  "-s=Recorder"
-                 "-x "
-                 "\"" + report + "\""
+                 "-x"
+                 report
                  "-i"
-                 "\"" + i + "\""
-                 "-sn \"" + key + "\"" ]) "Pester instrument"
+                 i
+                 "-sn"
+                 key ]) "Pester instrument"
 
   printfn "Execute the instrumented tests"
   Actions.RunRaw (pwsh, ".", [ "-NoProfile"; "./Build/pester.ps1"; "-ACV"; v ]) "pwsh"
@@ -2153,7 +2154,6 @@ _Target "DoIt" (fun _ ->
       Tools.findToolInSubPath "pwsh.exe"
         (Environment.environVar "ProgramFiles" @@ "PowerShell")
     else "pwsh"
-
 
   let r = CreateProcess.fromRawCommand pwsh ["-NoProfile"; "-Command"; command ]
           |> CreateProcess.withWorkingDirectory "."
