@@ -295,7 +295,7 @@ do ()"""
     //      finally
     //        Console.ForegroundColor <- fst save
     //        Console.BackgroundColor <- snd save
-    printfn "result = %A" result
+    //     printfn "result = %A" result
     Assert.That(result.ExitCode, Is.EqualTo 0, msg)
 
   let Run (file, dir, args) msg =
@@ -324,7 +324,7 @@ do ()"""
     let instrumented = "__Instrumented." + reportSigil
     Run
       (binRoot @@ "AltCover.exe", sampleRoot,
-       [ "\"-t=System\\.\" -x=" + simpleReport + " /o=./" + instrumented ])
+       [ @"-t=System\.";  "-x=" + simpleReport; "/o=./" + instrumented ])
       "Simple instrumentation failed"
     Run (sampleRoot @@ (instrumented + "/Sample1.exe"), (sampleRoot @@ instrumented), [])
       "Instrumented .exe failed"
@@ -343,8 +343,8 @@ do ()"""
       let instrumented = "__Instrumented." + reportSigil
       Run
         (mono, sampleRoot,
-         [ (binRoot @@ "AltCover.exe") + " \"-t=System\\.\" -x=" + simpleReport + " /o=./"
-           + instrumented ]) "Simple instrumentation failed"
+         [ (binRoot @@ "AltCover.exe"); @"-t=System\.";  "-x=" + simpleReport; 
+            "/o=./" + instrumented ]) "Simple instrumentation failed"
       Run
         (sampleRoot @@ (instrumented + "/Sample1.exe"), (sampleRoot @@ instrumented), [])
         "Instrumented .exe failed"

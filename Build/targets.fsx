@@ -522,7 +522,7 @@ _Target "UnitTestWithAltCover" (fun _ ->
     if sn |> Option.isSome then
       Actions.Run
         (sn |> Option.get, testDirectory,
-         [ "-vf"; " ./__UnitTestWithAltCover/AltCover.Recorder.g.dll" ])
+         [ "-vf"; "./__UnitTestWithAltCover/AltCover.Recorder.g.dll" ])
         "Recorder assembly strong-name verified OK"
 
     printfn "Unit test the instrumented code"
@@ -958,7 +958,7 @@ _Target "FSharpTypes" (fun _ ->
                    "-t=System\\."
                    "-t=Microsoft\\."
                    "-x=" + simpleReport
-                   " /o=./" + instrumented ]) "FSharpTypes"
+                   "/o=./" + instrumented ]) "FSharpTypes"
     Actions.ValidateFSharpTypes simpleReport []
   else printfn "Symbols not present; skipping")
 
@@ -1088,7 +1088,7 @@ _Target "BasicCSharpUnderMono"
   (fun _ ->
   monoOnWindows
   |> Actions.SimpleInstrumentingRunUnderMono "_Binaries/Sample1/Debug+AnyCPU"
-       "_Binaries/AltCover/Debug+AnyCPU" "BasicCSharp")
+       "_Binaries/AltCover/Debug+AnyCPU" "BasicCSharpUnderMono")
 
 _Target "BasicCSharpMonoUnderMono"
   (fun _ ->
@@ -1138,7 +1138,7 @@ _Target "CSharpDotNetWithFramework"
                [ "-t=System\\."
                  "-t=Microsoft\\."
                  "-x=" + simpleReport
-                 " /o=" + instrumented ]) "CSharpDotNetWithFramework"
+                 "/o=" + instrumented ]) "CSharpDotNetWithFramework"
 
   Actions.RunDotnet dotnetOptions (instrumented @@ "Sample1.dll") ""
     "CSharpDotNetWithFramework test"
@@ -1195,7 +1195,7 @@ _Target "RecordResumeTest"
                  "-t=System\\."
                  "-t=Microsoft\\."
                  "-x=" + simpleReport
-                 " /o=./" + instrumented ]) "RecordResumeTest 1"
+                 "/o=./" + instrumented ]) "RecordResumeTest 1"
   let testing = (sampleRoot @@ instrumented) @@ "Sample8.exe"
   Actions.Run (testing, sampleRoot, [ simpleReport + ".acv" ]) "RecordResumeTest 2"
   do use coverageFile =
@@ -1251,7 +1251,7 @@ _Target "RecordResumeTrackingTest" (fun _ ->
                  "-t=System\\."
                  "-t=Microsoft\\."
                  "-x=" + simpleReport
-                 " /o=./" + instrumented ]) "RecordResumeTrackingTest 1"
+                 "/o=./" + instrumented ]) "RecordResumeTrackingTest 1"
   let testing = (sampleRoot @@ instrumented) @@ "Sample8.exe"
   Actions.Run (testing, sampleRoot, [ simpleReport + ".acv" ])
     "RecordResumeTrackingTest 2"
@@ -1310,7 +1310,7 @@ _Target "RecordResumeTestDotNet"
                  "-t=System\\."
                  "-t=Microsoft\\."
                  "-x=" + simpleReport
-                 " /o=./" + instrumented ]) "RecordResumeTestDotNet 1"
+                 "/o=./" + instrumented ]) "RecordResumeTestDotNet 1"
 
   let testing = (sampleRoot @@ instrumented) @@ "Sample8.dll"
   Actions.RunDotnet (fun o -> { dotnetOptions o with WorkingDirectory = sampleRoot })
@@ -1368,7 +1368,7 @@ _Target "RecordResumeTestUnderMono"
                  "-t=System\\."
                  "-t=Microsoft\\."
                  " -x=" + simpleReport
-                 " /o=./" + instrumented ]) "RecordResumeTestUnderMono 1"
+                 "/o=./" + instrumented ]) "RecordResumeTestUnderMono 1"
 
   match monoOnWindows with
   | Some mono ->
@@ -1664,18 +1664,18 @@ _Target "PrepareFrameworkBuild"
   let ver = String.Join(".", (!Version).Split('.') |> Seq.take 2) + ".0.0"
 
   Actions.Run (toolpath, ".",
-               [ "/out:\"./_Binaries/AltCover/AltCover.exe\""
-                 "/ver:\"" + ver + "\""
-                 "/attr:\"./_Binaries/AltCover/Release+AnyCPU/AltCover.exe\""
-                 "/keyfile:\"./Build/Infrastructure.snk\""
-                 "/target:\"exe\""
+               [ "/out:./_Binaries/AltCover/AltCover.exe"
+                 "/ver:" + ver
+                 "/attr:./_Binaries/AltCover/Release+AnyCPU/AltCover.exe"
+                 "/keyfile:./Build/Infrastructure.snk"
+                 "/target:exe"
                  "/internalize"
                  "./_Binaries/AltCover/Release+AnyCPU/AltCover.exe"
-                 ".\_Binaries\AltCover\Release+AnyCPU\Mono.Cecil.dll"
-                 ".\_Binaries\AltCover\Release+AnyCPU\Mono.Cecil.Mdb.dll"
-                 ".\_Binaries\AltCover\Release+AnyCPU\Mono.Cecil.Pdb.dll"
-                 ".\_Binaries\AltCover\Release+AnyCPU\Mono.Cecil.Rocks.dll"
-                 ".\_Binaries\AltCover\Release+AnyCPU\Newtonsoft.Json.dll" ])
+                 "./_Binaries/AltCover/Release+AnyCPU/Mono.Cecil.dll"
+                 "./_Binaries/AltCover/Release+AnyCPU/Mono.Cecil.Mdb.dll"
+                 "./_Binaries/AltCover/Release+AnyCPU/Mono.Cecil.Pdb.dll"
+                 "./_Binaries/AltCover/Release+AnyCPU/Mono.Cecil.Rocks.dll"
+                 "./_Binaries/AltCover/Release+AnyCPU/Newtonsoft.Json.dll" ])
     "ILMerge failure")
 
 //    let here = Directory.GetCurrentDirectory()
@@ -1859,7 +1859,7 @@ _Target "ReleaseDotNetWithFramework" (fun _ ->
                  [ "-t=System\\."
                    "-t=Microsoft\\."
                    "-x=" + simpleReport
-                   " /o=" + instrumented ]) "ReleaseDotNetWithFramework"
+                   "/o=" + instrumented ]) "ReleaseDotNetWithFramework"
 
     Actions.RunDotnet (fun o -> { dotnetOptions o with WorkingDirectory = instrumented })
       "Sample1.dll" "" "ReleaseDotNetWithFramework test"
@@ -2464,7 +2464,7 @@ _Target "DotnetCLIIntegration" (fun _ ->
     Actions.CheckSample4Visits x
 
     let command =
-      """$ipmo = (dotnet altcover ipmo | Out-String).Trim().Split()[1].Trim(@('""')); Import-Module $ipmo; ConvertTo-BarChart -?"""
+      """$ipmo = (dotnet altcover ipmo | Out-String).Trim().Split()[1].Trim(@([char]34)); Import-Module $ipmo; ConvertTo-BarChart -?"""
     Actions.RunRaw (pwsh, working, [ "-NoProfile"; "-Command"; command ]) "pwsh"
     Actions.RunDotnet
       (fun o' ->
@@ -2534,7 +2534,7 @@ _Target "DotnetGlobalIntegration" (fun _ ->
 
     Actions.CheckSample4Visits x
     let command =
-      """$ipmo = (altcover ipmo | Out-String).Trim().Split()[1].Trim(@('`"')); Import-Module $ipmo; ConvertTo-BarChart -?"""
+      """$ipmo = (altcover ipmo | Out-String).Trim().Split()[1].Trim(@([char]34)); Import-Module $ipmo; ConvertTo-BarChart -?"""
     Actions.RunRaw (pwsh, working, [ "-NoProfile"; "-Command"; command ]) "pwsh"
 
   // (fsproj.Descendants(XName.Get("TargetFramework")) |> Seq.head).Value <- "netcoreapp2.1"
