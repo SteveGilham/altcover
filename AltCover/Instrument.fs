@@ -266,10 +266,12 @@ module internal Instrument =
                        |> Option.nullable
                        |> (Option.getOrElse "/usr/share"),
            "dotnet/shared")
+          "/usr/share/dotnet/shared"
           nugetCache
         ]
         |> List.filter (String.IsNullOrWhiteSpace >> not)
         |> List.filter Directory.Exists
+        |> Seq.distinct
         |> Seq.collect (fun dir -> Directory.GetFiles(dir,
                                                       y.Name + ".*",
                                                       SearchOption.AllDirectories))
