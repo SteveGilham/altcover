@@ -262,6 +262,8 @@ module internal Instrument =
       let candidate =
         [
           Environment.GetEnvironmentVariable "NUGET_PACKAGES"
+          Path.Combine(Environment.GetEnvironmentVariable "ProgramFiles",
+           "dotnet/shared")
           "/usr/share/dotnet/shared"
           nugetCache
         ]
