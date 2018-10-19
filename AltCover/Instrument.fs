@@ -262,9 +262,10 @@ module internal Instrument =
       let candidate =
         [
           Environment.GetEnvironmentVariable "NUGET_PACKAGES"
-          Path.Combine(Environment.GetEnvironmentVariable "ProgramFiles",
+          Path.Combine(Environment.GetEnvironmentVariable "ProgramFiles"
+                       |> Option.nullable
+                       |> (Option.getOrElse "/usr/share"),
            "dotnet/shared")
-          "/usr/share/dotnet/shared"
           nugetCache
         ]
         |> List.filter (String.IsNullOrWhiteSpace >> not)
