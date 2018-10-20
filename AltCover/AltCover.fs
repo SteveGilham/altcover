@@ -103,8 +103,9 @@ module internal Main =
 #if NETCOREAPP2_0
       ("d|dependency=",
        (fun x ->
-       let name, ok = CommandLine.ValidateAssembly "--dependency" x
-       if ok then Instrument.ResolutionTable.[name] <- AssemblyDefinition.ReadAssembly x))
+       let path = x |> Environment.ExpandEnvironmentVariables |> Path.GetFullPath
+       let name, ok = CommandLine.ValidateAssembly "--dependency" path
+       if ok then Instrument.ResolutionTable.[name] <- AssemblyDefinition.ReadAssembly path))
 #else
       ("k|key=",
        (fun x ->
