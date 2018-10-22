@@ -37,29 +37,24 @@ Describe "Invoke-Altcover" {
         try 
         {
           $ev = ""
-          Invoke-AltCover -XmlReport $x -OutputDirectory  $o -InputDirectory "./NoneSuch/xunit-dotnet/bin/Debug/netcoreapp2.0" -InPlace -ErrorVariable ev
-          $ev | Should -BeTrue
-          $stderr.ToString()  | Should -BeTrue
+          Invoke-AltCover -XmlReport $x -OutputDirectory  $o -InputDirectory "./NoneSuch/xunit-dotnet/bin/Debug/netcoreapp2.0" -InPlace -ErrorVariable ev -ErrorAction SilentlyContinue
         }
+		catch {
+          $ev | Should -BeTrue
+          $stderr.ToString()  | Should -BeTrue	      	
+		}
         finally
         {
             [System.Console]::SetError($saved)     
         }
+
+        $ev | Should -BeTrue
+        $stderr.ToString()  | Should -BeTrue
     }
 
-    It "Reports the version" {
-        $saved = [System.Console]::Out
-        $stdout = new-object System.IO.StringWriter @()
-        [System.Console]::SetOut($stdout)
-        try 
-        {
-          Invoke-AltCover -Version -InformationAction Continue
-          $stdout.ToString().Trim() | Should -Be ("AltCover version " + $ACV)
-        }
-        finally
-        {
-            [System.Console]::SetOut($saved)     
-        }
+    It "Reports the version" {        
+        $version = Invoke-AltCover -Version -InformationAction Continue 6>&1
+        $version.ToString().Trim() | Should -Be ("AltCover version " + $ACV)
     }
 }
 

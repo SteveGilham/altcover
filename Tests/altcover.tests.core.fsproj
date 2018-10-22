@@ -60,7 +60,6 @@
 
   <ItemGroup>
     <EmbeddedResource Include="..\Build\Infrastructure.snk" Link="Infrastructure.snk" />
-    <EmbeddedResource Include="..\Build\Recorder.snk" Link="Recorder.snk" />
     <None Include="TailCallSample.dl_">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

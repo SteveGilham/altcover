@@ -178,11 +178,7 @@ module internal Instrument =
       ProgramDatabase.ReadSymbols definition
       definition.Name.Name <- (extractName definition) + ".g"
 
-      let pair =
-        Visitor.defaultStrongNameKey ::
-          (Visitor.keys.Values |> Seq.map (fun r -> Some r.Pair) |> Seq.toList)
-          |> List.choose id
-          |> List.tryHead
+      let pair = Visitor.recorderStrongNameKey
       UpdateStrongNaming definition pair
 
       [ (// set the coverage file path and unique token
@@ -264,8 +260,22 @@ module internal Instrument =
     if ResolutionTable.ContainsKey name then ResolutionTable.[name]
     else
       let candidate =
-        Directory.GetFiles(nugetCache, y.Name + ".*", SearchOption.AllDirectories)
-        |> Array.rev
+        [
+          Environment.GetEnvironmentVariable "NUGET_PACKAGES"
+          Path.Combine(Environment.GetEnvironmentVariable "ProgramFiles"
+                       |> Option.nullable
+                       |> (Option.getOrElse "/usr/share"),
+           "dotnet/shared")
+          "/usr/share/dotnet/shared"
+          nugetCache
+        ]
+        |> List.filter (String.IsNullOrWhiteSpace >> not)
+        |> List.filter Directory.Exists
+        |> Seq.distinct
+        |> Seq.collect (fun dir -> Directory.GetFiles(dir,
+                                                      y.Name + ".*",
+                                                      SearchOption.AllDirectories))
+        |> Seq.sortDescending
         |> Seq.filter
              (fun f ->
              let x = Path.GetExtension f

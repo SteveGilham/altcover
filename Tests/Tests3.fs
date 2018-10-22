@@ -14,6 +14,9 @@ type AltCoverTests3() =
   class
 #if NETCOREAPP2_0
     let monoSample1 = "../_Mono/Sample1"
+#else
+    let recorderSnk = typeof<AltCover.Node>.Assembly.GetManifestResourceNames()
+                      |> Seq.find (fun n -> n.EndsWith(".Recorder.snk", StringComparison.Ordinal))
 #endif
 
     // AltCover.fs and CommandLine.fs
