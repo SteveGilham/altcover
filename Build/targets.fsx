@@ -2380,6 +2380,17 @@ _Target "Issue20" (fun _ ->
       { dotnetOptions o' with WorkingDirectory =
                                 Path.getFullName "./RegressionTesting/issue20/xunit-tests" })
       "test" ("-v m /p:AltCover=true") "sample test returned with a non-zero exit code"
+
+//    if Environment.isWindows then
+//      Path.getFullName "./RegressionTesting/issue20/xunit-tests/bin"
+//      |> Shell.cleanDir  
+
+//      Actions.RunDotnet
+//        (fun o' ->
+//        { dotnetOptions o' with WorkingDirectory =
+//                                  Path.getFullName "./RegressionTesting/issue20/xunit-tests" })
+//        "test" ("""/p:AltCover=true /p:AltCoverDependencyList="%ProgramFiles%/dotnet/shared/Microsoft.AspNetCore.App/2.1.5/Microsoft.AspNetCore.Cryptography.KeyDerivation.dll" -v m""") "sample test returned with a non-zero exit code"
+
   finally
     let folder = (nugetCache @@ "altcover") @@ !Version
     Shell.mkdir folder
