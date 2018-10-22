@@ -2,11 +2,11 @@ Q. Never mind the fluff -- how do I get started?
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
-# 4.0.6xx (Doruka series release 7)
+# 4.0.653 (Doruka series release 7)
 * Properly resolve the strong-naming of the recorder assembly (a fix for Issue #38 closer to the original intent, compared with the "just-make-it-work" fix in 4.0.649)
 * Look for dependencies -- mostly ASP .net Core assemblies -- under `%ProgramFiles%\dotnet\shared` or `/usr/share/dotnet/shared` as well as under `%USERPROFILE%/.nuget/packages`
 * Look for dependencies under `%NUGET_PACKAGES%`
-* Expand the `-d` argument parser to expand environment variables and to handle relative paths
+* Extend the `-d` argument parser to expand environment variables and to handle relative paths
 
 # 4.0.649 (Doruka series release 6)
 * [BUGFIX] Issue #37 -- handle release builds of C# `return <ternary>;` expressions which don't look like ternaries in their IL.  Fix some corner cases of NPath complexity, branch exit counts and branch visit counts revealed by these cases.
