@@ -247,7 +247,7 @@ module XTests =
     let reportSaved = Visitor.reportPath
     let keySaved = Visitor.defaultStrongNameKey
     let saved = (Console.Out, Console.Error)
-    Visitor.keys.Clear()
+    Main.init()
     let save2 = (Output.Info, Output.Error)
     try
       Output.Error <- CommandLine.WriteErr
@@ -289,7 +289,7 @@ module XTests =
       Assert.Equal(Visitor.keys.Count, 0)
 #else
       Assert.True (Visitor.keys.ContainsKey(KeyStore.KeyToIndex snk))
-      Assert.Equal (Visitor.keys.Count, 1)
+      Assert.Equal (2, Visitor.keys.Count)
 #endif
 
       Assert.True(File.Exists report)
@@ -427,7 +427,7 @@ module XTests =
     let keySaved = Visitor.defaultStrongNameKey
     let saved = (Console.Out, Console.Error)
     let save2 = (Output.Info, Output.Error)
-    Visitor.keys.Clear()
+    Main.init()
     try
       Output.Error <- CommandLine.WriteErr
       Output.Info <- CommandLine.WriteOut
@@ -466,7 +466,7 @@ module XTests =
       Assert.Equal(Visitor.keys.Count, 0)
 #else
       Assert.True (Visitor.keys.ContainsKey(KeyStore.KeyToIndex snk))
-      Assert.Equal (Visitor.keys.Count, 1)
+      Assert.Equal (2, Visitor.keys.Count)
 #endif
 
       Assert.True(File.Exists report)

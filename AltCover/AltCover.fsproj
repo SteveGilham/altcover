@@ -91,6 +91,9 @@
     <Compile Include="Tasks.fs" />
     <Compile Include="Main.fs" />
     <Content Include="packages.config" />
+    <EmbeddedResource Include="..\Build\Recorder.snk">
+      <Link>Recorder.snk</Link>
+    </EmbeddedResource>
     <None Include="AltCover.ico" />
     <None Include="Resource.rc" />
     <None Include="Resource.res" />

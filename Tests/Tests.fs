@@ -45,6 +45,8 @@ type AltCoverTests() =
     let monoSample1 = "../_Mono/Sample1"
 #else
     let sample1 = "Sample1.exe"
+    let recorderSnk = typeof<AltCover.Node>.Assembly.GetManifestResourceNames()
+                      |> Seq.find (fun n -> n.EndsWith(".Recorder.snk", StringComparison.Ordinal))
 #endif
 
     let infrastructureSnk =
