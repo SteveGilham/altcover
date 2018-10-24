@@ -1709,6 +1709,24 @@ _Target "PrepareDotNetBuild" (fun _ ->
                    Framework = Some "netcoreapp2.1" })
     (Path.getFullName "./AltCover.Visualizer/altcover.visualizer.core.fsproj")
 
+//  let toolpath = Tools.findToolInSubPath "ILMerge.exe" "./packages"
+//  let ver = String.Join(".", (!Version).Split('.') |> Seq.take 2) + ".0.0"
+
+//  [ publish; publish + ".api" ]
+//  |> List.iter (fun dir ->
+//    let outDir = Path.Combine(dir, "out")
+//    Directory.ensure outDir
+//    Actions.Run (toolpath, ".",
+//                 [ "/out:" + Path.Combine(outDir, "AltCover.Recorder.dll")
+//                   "/ver:" + ver
+//                   "/attr:" + Path.Combine(dir, "AltCover.Recorder.dll")
+//                   "/keyfile:./Build/Infrastructure.snk"
+//                   "/target:library"
+//                   "/internalize"
+//                   Path.Combine(dir, "AltCover.Recorder.dll")
+//                   Path.Combine(dir, "FSharp.Core.dll") ])
+//      "ILMerge failure")
+
   // dotnet tooling mods
   [ ("DotnetCliTool", "./_Generated/altcover.dotnet.nuspec",
      "AltCover (dotnet CLI tool install)", None, None)
