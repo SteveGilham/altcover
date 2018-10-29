@@ -1663,33 +1663,33 @@ _Target "PrepareFrameworkBuild"
   let toolpath = Tools.findToolInSubPath "ILMerge.exe" "./packages"
   let ver = String.Join(".", (!Version).Split('.') |> Seq.take 2) + ".0.0"
 
-  Actions.Run (toolpath, ".",
-               [ "/out:./_Binaries/AltCover/AltCover.exe"
-                 "/ver:" + ver
-                 "/attr:./_Binaries/AltCover/Release+AnyCPU/AltCover.exe"
-                 "/keyfile:./Build/Infrastructure.snk"
-                 "/target:exe"
-                 "/internalize"
-                 "./_Binaries/AltCover/Release+AnyCPU/AltCover.exe"
-                 "./_Binaries/AltCover/Release+AnyCPU/Mono.Cecil.dll"
-                 "./_Binaries/AltCover/Release+AnyCPU/Mono.Cecil.Mdb.dll"
-                 "./_Binaries/AltCover/Release+AnyCPU/Mono.Cecil.Pdb.dll"
-                 "./_Binaries/AltCover/Release+AnyCPU/Mono.Cecil.Rocks.dll"
-                 "./_Binaries/AltCover/Release+AnyCPU/Newtonsoft.Json.dll" ])
-    "ILMerge failure")
+//  Actions.Run (toolpath, ".",
+//               [ "/out:./_Binaries/AltCover/AltCover.exe"
+//                 "/ver:" + ver
+//                 "/attr:./_Binaries/AltCover/Release+AnyCPU/AltCover.exe"
+//                 "/keyfile:./Build/Infrastructure.snk"
+//                 "/target:exe"
+//                 "/internalize"
+//                 "./_Binaries/AltCover/Release+AnyCPU/AltCover.exe"
+//                 "./_Binaries/AltCover/Release+AnyCPU/Mono.Cecil.dll"
+//                 "./_Binaries/AltCover/Release+AnyCPU/Mono.Cecil.Mdb.dll"
+//                 "./_Binaries/AltCover/Release+AnyCPU/Mono.Cecil.Pdb.dll"
+//                 "./_Binaries/AltCover/Release+AnyCPU/Mono.Cecil.Rocks.dll"
+//                 "./_Binaries/AltCover/Release+AnyCPU/Newtonsoft.Json.dll" ])
+//    "ILMerge failure")
 
-//    let here = Directory.GetCurrentDirectory()
-//    ILMerge (fun p -> { p with DebugInfo = true
-//                               ToolPath = toolpath
-//                               TargetKind = TargetKind.Exe
-//                               KeyFile = "./Build/Infrastructure.snk"
-//                               Version = (String.Join(".", (!Version).Split('.') |> Seq.take 2) + ".0.0")
-//                               Internalize = InternalizeTypes.Internalize
-//                               Libraries = Seq.concat [!! "./_Binaries/AltCover/Release+AnyCPU/Mono.C*.dll"; !! "./_Binaries/AltCover/Release+AnyCPU/Newton*.dll"]
-//                                           |> Seq.map (fun f -> f.Replace(here, "."))
-//                               AttributeFile = "./_Binaries/AltCover/Release+AnyCPU/AltCover.exe"})
-//                               "./_Binaries/AltCover/AltCover.exe"
-//                               "./_Binaries/AltCover/Release+AnyCPU/AltCover.exe"
+  let here = Directory.GetCurrentDirectory()
+  ILMerge.run { ILMerge.Params.Create() with DebugInfo = true
+                                             ToolPath = toolpath
+                                             TargetKind = ILMerge.TargetKind.Exe
+                                             KeyFile = "./Build/Infrastructure.snk"
+                                             Version = Some (System.Version(ver))
+                                             Internalize = ILMerge.InternalizeTypes.Internalize
+                                             Libraries = Seq.concat [!! "./_Binaries/AltCover/Release+AnyCPU/Mono.C*.dll"; !! "./_Binaries/AltCover/Release+AnyCPU/Newton*.dll"]
+                                                         |> Seq.map (fun f -> f.Replace(here, "."))
+                                             AttributeFile = "./_Binaries/AltCover/Release+AnyCPU/AltCover.exe"}
+                               "./_Binaries/AltCover/AltCover.exe"
+                               "./_Binaries/AltCover/Release+AnyCPU/AltCover.exe")
 
 _Target "PrepareDotNetBuild" (fun _ ->
   let netcoresource = Path.getFullName "./AltCover/altcover.core.fsproj"
