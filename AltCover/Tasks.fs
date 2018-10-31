@@ -2,7 +2,6 @@ namespace AltCover
 
 open System
 open System.Diagnostics.CodeAnalysis
-open System.Runtime.CompilerServices
 open Microsoft.Build.Utilities
 open Microsoft.Build.Framework
 
