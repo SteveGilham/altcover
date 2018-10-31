@@ -220,6 +220,24 @@ _Target "Gendarme"
     if Environment.isWindows then "./Build/rules.xml"
     else "./Build/rules-mono.xml"
 
+  [ (rules, ["_Binaries/AltCover/Debug+AnyCPU/AltCover.exe"
+             "_Binaries/AltCover.Shadow/Debug+AnyCPU/AltCover.Shadow.dll"])
+    ("./Build/rules-posh.xml", ["_Binaries/AltCover.PowerShell/Debug+AnyCPU/AltCover.PowerShell.dll"
+                                "_Binaries/AltCover.FSApi/Debug+AnyCPU/AltCover.FSApi.dll"])
+    ("./Build/rules-gtk.xml", ["_Binaries/AltCover.Visualizer/Debug+AnyCPU/AltCover.Visualizer.exe"])
+  ]
+  |> Seq.iter (fun (ruleset, files) -> Gendarme.run { Gendarme.Params.Create() with WorkingDirectory = "."
+                                                                                    Severity = Gendarme.Severity.All
+                                                                                    Confidence = Gendarme.Confidence.All
+                                                                                    Configuration = ruleset
+                                                                                    Console = true
+                                                                                    Log = "./_Reports/gendarme.html"
+                                                                                    LogKind = Gendarme.LogKind.Html
+                                                                                    Targets = files })
+                                              
+  
+
+(*
   Actions.Run
     ((Tools.findToolInSubPath "gendarme.exe" "./packages"), ".",
      [ "--severity"; "all"; "--confidence"; "all"; "--config"; rules; "--console";
@@ -239,7 +257,11 @@ _Target "Gendarme"
      [ "--severity"; "all"; "--confidence"; "all"; "--config"; "./Build/rules-gtk.xml";
        "--console"; "--html"; "./_Reports/gendarme.html";
        "_Binaries/AltCover.Visualizer/Debug+AnyCPU/AltCover.Visualizer.exe" ])
-    "Gendarme Errors were detected")
+    "Gendarme Errors were detected"
+    *)
+    
+    
+    )
 
 _Target "FxCop"
   (fun _ -> // Needs debug because release is compiled --standalone which contaminates everything
