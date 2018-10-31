@@ -7,7 +7,7 @@ open System.Diagnostics.CodeAnalysis
 open Microsoft.Build.Utilities
 open Microsoft.Build.Framework
 
-[<ExcludeFromCodeCoverage>]
+[<ExcludeFromCodeCoverage; NoComparison>]
 type CollectParams =
   { RecorderDirectory : String
     WorkingDirectory : String
@@ -58,23 +58,23 @@ type CollectParams =
     finally
       CommandLine.error <- saved
 
-[<ExcludeFromCodeCoverage>]
+[<ExcludeFromCodeCoverage; NoComparison>]
 type PrepareParams =
   { InputDirectory : String
     OutputDirectory : String
-    SymbolDirectories : string array
-    Dependencies : string array
-    Keys : string array
+    SymbolDirectories : string seq
+    Dependencies : string seq
+    Keys : string seq
     StrongNameKey : String
     XmlReport : String
-    FileFilter : string array
-    AssemblyFilter : string array
-    AssemblyExcludeFilter : string array
-    TypeFilter : string array
-    MethodFilter : string array
-    AttributeFilter : string array
-    PathFilter : string array
-    CallContext : string array
+    FileFilter : string seq
+    AssemblyFilter : string seq
+    AssemblyExcludeFilter : string seq
+    TypeFilter : string seq
+    MethodFilter : string seq
+    AttributeFilter : string seq
+    PathFilter : string seq
+    CallContext : string seq
     OpenCover : bool
     InPlace : bool
     Save : bool
@@ -115,8 +115,10 @@ type PrepareParams =
     |> isNull
     |> not
 
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2208",
+     Justification="Some in-lined code must be creating an ArgumentNullException")>]
   static member private validateArraySimple a f =
-    if a |> PrepareParams.nonNull then a |> Array.iter (fun s -> f s |> ignore)
+    if a |> PrepareParams.nonNull then a |> Seq.iter (fun s -> f s |> ignore)
 
   static member private validateOptional f key x =
     if x
@@ -152,7 +154,7 @@ type PrepareParams =
           | (true, _) | (_, Left(Some _)) -> true
           | _ -> false
         context
-        |> Array.fold select false
+        |> Seq.fold select false
         |> ignore
     try
       CommandLine.error <- []

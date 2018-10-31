@@ -46,11 +46,13 @@ nuget coveralls.io >= 1.4.2
 nuget FSharpLint.Core prerelease
 nuget Markdown >= 2.2.1
 nuget NUnit >= 3.11.0
+nuget BlackFox.VsWhere >= 0.3.2
 nuget YamlDotNet >= 5.2.1 //"
 #r "System.IO.Compression.FileSystem.dll"
 #r "System.Xml"
 #r "System.Xml.Linq"
 #load "ILMerge.fs"
+#load "FxCop.fs"
 #load "actions.fsx"
 #load "targets.fsx"
 #nowarn "988"

@@ -9,7 +9,7 @@ do ()
 
 module DotNet =
   let private Arg name s = (sprintf """/p:AltCover%s="%s" """ name s).Trim()
-  let private ListArg name (s : String array) =
+  let private ListArg name (s : String seq) =
     (sprintf """/p:AltCover%s="%s" """ name <| String.Join("|", s)).Trim()
 
   let private IsSet s =
@@ -17,7 +17,7 @@ module DotNet =
     |> String.IsNullOrWhiteSpace
     |> not
 
-  let private FromList name (s : String array) = (ListArg name s, s.Any())
+  let private FromList name (s : String seq) = (ListArg name s, s.Any())
   let private FromArg name s = (Arg name s, IsSet s)
   let private Join(l : string list) = String.Join(" ", l)
 
