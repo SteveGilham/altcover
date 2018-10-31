@@ -1,4 +1,9 @@
+#if INTERACTIVE
+[<RequireQualifiedAccess>]
+module AltCover.Fake.DotNet.Testing.AltCover
+#else
 namespace AltCover
+#endif
 
 open System
 open System.Diagnostics.CodeAnalysis
@@ -236,3 +241,52 @@ module Args =
       Flag "--collect" (args.Executable |> String.IsNullOrWhiteSpace)
       Item "--" args.CommandLine ]
     |> List.concat
+#if INTERACTIVE
+
+type ArgType =
+  | Collect of CollectParams
+  | Prepare of PrepareParams
+  | ImportModule
+  | GetVersion
+
+type ToolType =
+  | DotNet
+  | Global
+  | Framework
+
+type Params =
+  { /// Path to the Altcover executable.
+    ToolPath : string
+    /// Which version of the tool
+    ToolType : ToolType
+    /// Working directory for relative file paths.  Default is the current working directory
+    WorkingDirectory : string
+    /// Command arguments
+    Args : ArgType }
+
+let internal createArgs parameters =
+  match parameters.Args with
+  | Collect c -> Args.Collect c
+  | Prepare p -> Args.Prepare p
+  | ImportModule -> [ "ipmo" ]
+  | GetVersion -> [ "version" ]
+
+let internal createProcess parameters args =
+  CreateProcess.fromRawCommand parameters.ToolPath args
+  |> if String.IsNullOrWhiteSpace parameters.WorkingDirectory then id
+     else CreateProcess.withWorkingDirectory parameters.WorkingDirectory
+  |> match parameters.ToolType with
+     | Framework -> CreateProcess.withFramework
+     | Global -> id
+     | _ -> id // TODO withDotNet
+
+let internal composeCommandLine parameters =
+  let args = createArgs parameters
+  createProcess parameters args
+
+let run parameters =
+  use __ = Trace.traceTask "AltCover" String.Empty
+  let run = composeCommandLine parameters |> Proc.run
+  if 0 <> run.ExitCode then failwithf "AltCover %s failed." (String.separated " " args)
+  __.MarkSuccess()
+#endif
