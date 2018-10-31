@@ -6,20 +6,6 @@ open System.Runtime.CompilerServices
 open Microsoft.Build.Utilities
 open Microsoft.Build.Framework
 
-[<Extension>]
-module CollectExtensions =
-  open AltCover.ApiExtensions
-  [<Extension>]
-  let Validate (self:CollectParams) afterPreparation =
-    self.Validate afterPreparation
-
-[<Extension>]
-module PrepareExtensions =
-  open AltCover.ApiExtensions
-  [<Extension>]
-  let Validate (self:PrepareParams) =
-    self.Validate()
-
 [<ExcludeFromCodeCoverage; NoComparison; NoEquality>]
 type Logging =
   { Info : String -> unit
