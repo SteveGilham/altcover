@@ -8,7 +8,9 @@ namespace AltCover
 open System
 open System.Diagnostics.CodeAnalysis
 open System.Linq
+#if RUNNER
 open AltCover.Augment
+#endif
 
 [<ExcludeFromCodeCoverage; NoComparison>]
 type CollectParams =
