@@ -1,185 +1,24 @@
 namespace AltCover
 
 open System
-open System.Linq
-open AltCover.Augment
 open System.Diagnostics.CodeAnalysis
+open System.Runtime.CompilerServices
 open Microsoft.Build.Utilities
 open Microsoft.Build.Framework
 
-[<ExcludeFromCodeCoverage; NoComparison>]
-type CollectParams =
-  { RecorderDirectory : String
-    WorkingDirectory : String
-    Executable : String
-    LcovReport : String
-    Threshold : String
-    Cobertura : String
-    OutputFile : String
-    CommandLine : String }
+[<Extension>]
+module CollectExtensions =
+  open AltCover.ApiExtensions
+  [<Extension>]
+  let Validate (self:CollectParams) afterPreparation =
+    self.Validate afterPreparation
 
-  static member Default : CollectParams =
-    { RecorderDirectory = String.Empty
-      WorkingDirectory = String.Empty
-      Executable = String.Empty
-      LcovReport = String.Empty
-      Threshold = String.Empty
-      Cobertura = String.Empty
-      OutputFile = String.Empty
-      CommandLine = String.Empty }
-
-  member self.Validate afterPreparation =
-    let saved = CommandLine.error
-
-    let validate f x =
-      if x
-         |> String.IsNullOrWhiteSpace
-         |> not
-      then f x |> ignore
-
-    let validateOptional f key x = validate (f key) x
-
-    let toOption s =
-      if s |> String.IsNullOrWhiteSpace then None
-      else Some s
-    try
-      [ ("--recorderDirectory", self.RecorderDirectory)
-        ("--workingDirectory", self.WorkingDirectory) ]
-      |> List.iter (fun (n, x) -> validateOptional CommandLine.ValidateDirectory n x)
-      [ ("--executable", self.Executable)
-        ("--lcovReport", self.LcovReport)
-        ("--cobertura", self.Cobertura)
-        ("--outputFile", self.OutputFile) ]
-      |> List.iter (fun (n, x) -> validateOptional CommandLine.ValidatePath n x)
-      validate Runner.ValidateThreshold self.Threshold
-      if afterPreparation then
-        Runner.RequireRecorderTest (self.RecorderDirectory |> toOption) () ()
-      CommandLine.error |> List.toArray
-    finally
-      CommandLine.error <- saved
-
-[<ExcludeFromCodeCoverage; NoComparison>]
-type PrepareParams =
-  { InputDirectory : String
-    OutputDirectory : String
-    SymbolDirectories : string seq
-    Dependencies : string seq
-    Keys : string seq
-    StrongNameKey : String
-    XmlReport : String
-    FileFilter : string seq
-    AssemblyFilter : string seq
-    AssemblyExcludeFilter : string seq
-    TypeFilter : string seq
-    MethodFilter : string seq
-    AttributeFilter : string seq
-    PathFilter : string seq
-    CallContext : string seq
-    OpenCover : bool
-    InPlace : bool
-    Save : bool
-    Single : bool
-    LineCover : bool
-    BranchCover : bool
-    CommandLine : String }
-
-  static member Default : PrepareParams =
-    { InputDirectory = String.Empty
-      OutputDirectory = String.Empty
-      SymbolDirectories = [||]
-      Dependencies = [||]
-      Keys = [||]
-      StrongNameKey = String.Empty
-      XmlReport = String.Empty
-      FileFilter = [||]
-      AssemblyFilter = [||]
-      AssemblyExcludeFilter = [||]
-      TypeFilter = [||]
-      MethodFilter = [||]
-      AttributeFilter = [||]
-      PathFilter = [||]
-      CallContext = [||]
-      OpenCover = true
-      InPlace = true
-      Save = true
-      Single = false
-      LineCover = false
-      BranchCover = false
-      CommandLine = String.Empty }
-
-  static member private validateArray a f key =
-    PrepareParams.validateArraySimple a (f key)
-
-  static member private nonNull a =
-    a
-    |> isNull
-    |> not
-
-  [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2208",
-     Justification="Some in-lined code must be creating an ArgumentNullException")>]
-  static member private validateArraySimple a f =
-    if a |> PrepareParams.nonNull then a |> Seq.iter (fun s -> f s |> ignore)
-
-  static member private validateOptional f key x =
-    if x
-       |> String.IsNullOrWhiteSpace
-       |> not
-    then f key x |> ignore
-
-  member private self.consistent() =
-    if self.Single && self.CallContext |> PrepareParams.nonNull && self.CallContext.Any() then
-      CommandLine.error <- String.Format
-                             (System.Globalization.CultureInfo.CurrentCulture,
-                              CommandLine.resources.GetString "Incompatible", "--single",
-                              "--callContext") :: CommandLine.error
-
-  member private self.consistent'() =
-    if self.LineCover && self.BranchCover then
-      CommandLine.error <- String.Format
-                             (System.Globalization.CultureInfo.CurrentCulture,
-                              CommandLine.resources.GetString "Incompatible",
-                              "--branchcover", "--linecover") :: CommandLine.error
-
-  member self.Validate() =
-    let saved = CommandLine.error
-
-    let validateContext context =
-      if context
-         |> isNull
-         |> not
-      then
-        let select state x =
-          let (_, n) = Main.ValidateCallContext state x
-          match (state, n) with
-          | (true, _) | (_, Left(Some _)) -> true
-          | _ -> false
-        context
-        |> Seq.fold select false
-        |> ignore
-    try
-      CommandLine.error <- []
-      PrepareParams.validateOptional CommandLine.ValidateDirectory "--inputDirectory"
-        self.InputDirectory
-      PrepareParams.validateOptional CommandLine.ValidatePath "--outputDirectory"
-        self.OutputDirectory
-      PrepareParams.validateOptional CommandLine.ValidateStrongNameKey "--strongNameKey"
-        self.StrongNameKey
-      PrepareParams.validateOptional CommandLine.ValidatePath "--xmlReport" self.XmlReport
-      PrepareParams.validateArray self.SymbolDirectories CommandLine.ValidateDirectory
-        "--symbolDirectory"
-      PrepareParams.validateArray self.Dependencies CommandLine.ValidateAssembly
-        "--dependency"
-      PrepareParams.validateArray self.Keys CommandLine.ValidateStrongNameKey "--key"
-      [ self.FileFilter; self.AssemblyFilter; self.AssemblyExcludeFilter; self.TypeFilter;
-        self.MethodFilter; self.AttributeFilter; self.PathFilter ]
-      |> Seq.iter
-           (fun a -> PrepareParams.validateArraySimple a CommandLine.ValidateRegexes)
-      self.consistent()
-      self.consistent'()
-      validateContext self.CallContext
-      CommandLine.error |> List.toArray
-    finally
-      CommandLine.error <- saved
+[<Extension>]
+module PrepareExtensions =
+  open AltCover.ApiExtensions
+  [<Extension>]
+  let Validate (self:PrepareParams) =
+    self.Validate()
 
 [<ExcludeFromCodeCoverage; NoComparison; NoEquality>]
 type Logging =
@@ -205,69 +44,25 @@ type Logging =
     Output.Info <- self.Info
     Output.Echo <- self.Echo
 
-module internal Args =
-  let Item a x =
-    if x |> String.IsNullOrWhiteSpace then []
-    else [ a; x ]
-
-  let ItemList a x =
-    if x |> isNull then []
-    else
-      x
-      |> Seq.collect (fun i -> [ a; i ])
-      |> Seq.toList
-
-  let Flag a x =
-    if x then [ a ]
-    else []
-
 module Api =
   let Prepare (args : PrepareParams) (log : Logging) =
     log.Apply()
-    [ Args.Item "-i" args.InputDirectory
-      Args.Item "-o" args.OutputDirectory
-      Args.ItemList "-y" args.SymbolDirectories
+    Args.Prepare { args with
 #if NETCOREAPP2_0
-      Args.ItemList "-d" args.Dependencies
+                            Keys = []
+                            StrongNameKey = String.Empty
 #else
-      Args.ItemList "-k" args.Keys
-      Args.Item "--sn" args.StrongNameKey
+                            Dependencies = []
 #endif
-      Args.Item "-x" args.XmlReport
-      Args.ItemList "-f" args.FileFilter
-      Args.ItemList "-s" args.AssemblyFilter
-      Args.ItemList "-e" args.AssemblyExcludeFilter
-      Args.ItemList "-t" args.TypeFilter
-      Args.ItemList "-m" args.MethodFilter
-      Args.ItemList "-a" args.AttributeFilter
-      Args.ItemList "-p" args.PathFilter
-      Args.ItemList "-c" args.CallContext
-      Args.Flag "--opencover" args.OpenCover
-      Args.Flag "--inplace" args.InPlace
-      Args.Flag "--save" args.Save
-      Args.Flag "--single" args.Single
-      Args.Flag "--linecover" args.LineCover
-      Args.Flag "--branchcover" args.BranchCover
-      Args.Item "--" args.CommandLine ]
-    |> List.concat
+    }
     |> List.toArray
-    |> AltCover.Main.EffectiveMain
+    |> Main.EffectiveMain
 
   let Collect (args : CollectParams) (log : Logging) =
     log.Apply()
-    [ [ "Runner" ]
-      Args.Item "-r" args.RecorderDirectory
-      Args.Item "-w" args.WorkingDirectory
-      Args.Item "-x" args.Executable
-      Args.Item "-l" args.LcovReport
-      Args.Item "-t" args.Threshold
-      Args.Item "-c" args.Cobertura
-      Args.Item "-o" args.OutputFile
-      Args.Flag "--collect" (args.Executable |> String.IsNullOrWhiteSpace)
-      Args.Item "--" args.CommandLine ]
-    |> List.concat
+    Args.Collect args
     |> List.toArray
-    |> AltCover.Main.EffectiveMain
+    |> Main.EffectiveMain
 
   let mutable internal store = String.Empty
   let private writeToStore s = store <- s
@@ -277,7 +72,7 @@ module Api =
     writeToStore String.Empty
     LogToStore.Apply()
     [| s |]
-    |> AltCover.Main.EffectiveMain
+    |> Main.EffectiveMain
     |> ignore
     store
 

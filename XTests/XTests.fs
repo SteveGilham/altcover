@@ -7,6 +7,7 @@ open System.Reflection
 open System.Xml.Linq
 
 open AltCover
+open AltCover.ApiExtensions
 open Mono.Options
 open Newtonsoft.Json.Linq
 open Xunit
