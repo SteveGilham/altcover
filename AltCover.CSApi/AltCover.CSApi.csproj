@@ -58,8 +58,8 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\AltCover.FSApi\AltCover.FSApi.fsproj">
-      <Project>{0DC0F7BB-C08F-45E1-A86C-62746372DC4B}</Project>
-      <Name>altcover.fsapi.core</Name>
+      <Project>{0dc0f7bb-c08f-45e1-a86c-62746372dc4b}</Project>
+      <Name>AltCover.FSApi</Name>
     </ProjectReference>
     <ProjectReference Include="..\AltCover\AltCover.fsproj">
       <Project>{b766260f-6551-4ca8-b2cb-25d2d5092801}</Project>
