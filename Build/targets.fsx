@@ -234,33 +234,6 @@ _Target "Gendarme"
                                                                                     Log = "./_Reports/gendarme.html"
                                                                                     LogKind = Gendarme.LogKind.Html
                                                                                     Targets = files })
-                                              
-  
-
-(*
-  Actions.Run
-    ((Tools.findToolInSubPath "gendarme.exe" "./packages"), ".",
-     [ "--severity"; "all"; "--confidence"; "all"; "--config"; rules; "--console";
-       "--html"; "./_Reports/gendarme.html";
-       "_Binaries/AltCover/Debug+AnyCPU/AltCover.exe";
-       "_Binaries/AltCover.Shadow/Debug+AnyCPU/AltCover.Shadow.dll" ])
-    "Gendarme Errors were detected"
-  Actions.Run
-    ((Tools.findToolInSubPath "gendarme.exe" "./packages"), ".",
-     [ "--severity"; "all"; "--confidence"; "all"; "--config"; "./Build/rules-posh.xml";
-       "--console"; "--html"; "./_Reports/gendarme.html";
-       "_Binaries/AltCover.PowerShell/Debug+AnyCPU/AltCover.PowerShell.dll";
-       "_Binaries/AltCover.FSApi/Debug+AnyCPU/AltCover.FSApi.dll" ])
-    "Gendarme Errors were detected"
-  Actions.Run
-    ((Tools.findToolInSubPath "gendarme.exe" "./packages"), ".",
-     [ "--severity"; "all"; "--confidence"; "all"; "--config"; "./Build/rules-gtk.xml";
-       "--console"; "--html"; "./_Reports/gendarme.html";
-       "_Binaries/AltCover.Visualizer/Debug+AnyCPU/AltCover.Visualizer.exe" ])
-    "Gendarme Errors were detected"
-    *)
-    
-    
     )
 
 _Target "FxCop"

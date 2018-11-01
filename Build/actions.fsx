@@ -285,19 +285,6 @@ do ()"""
     Assert.That(result.ExitCode, Is.EqualTo 0, msg)
 
   let HandleResult (msg : string) (result : Fake.Core.ProcessResult<'a>) =
-    //    String.Join(Environment.NewLine, result.Messages) |> printfn "%s"
-    //    let save = (Console.ForegroundColor, Console.BackgroundColor)
-    //    match result.Errors |> Seq.toList with
-    //    | [] -> ()
-    //    | errors ->
-    //      try
-    //        Console.ForegroundColor <- ConsoleColor.Black
-    //        Console.BackgroundColor <- ConsoleColor.White
-    //        String.Join(Environment.NewLine, errors) |> printfn "ERR : %s"
-    //      finally
-    //        Console.ForegroundColor <- fst save
-    //        Console.BackgroundColor <- snd save
-    //     printfn "result = %A" result
     Assert.That(result.ExitCode, Is.EqualTo 0, msg)
 
   let Run (file, dir, args) msg =
