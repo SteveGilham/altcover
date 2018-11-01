@@ -1,9 +1,12 @@
 open System
+open System.Diagnostics.Tracing
 open System.IO
+open System.Reflection
 open System.Xml
 open System.Xml.Linq
 
 open Actions
+open AltCover.Fake.DotNet.Testing
 
 open Fake.Core
 open Fake.Core.TargetOperators
@@ -19,9 +22,6 @@ open Fake.IO.Globbing.Operators
 
 open FSharpLint.Application
 open NUnit.Framework
-open System.Reflection
-open System
-open System.Diagnostics.Tracing
 
 let Copyright = ref String.Empty
 let Version = ref String.Empty
@@ -29,15 +29,21 @@ let consoleBefore = (Console.ForegroundColor, Console.BackgroundColor)
 
 let OpenCoverFilter = "+[AltCove*]* -[*]Microsoft.* -[*]System.* +[*]N.*"
 
-let AltCoverFilter =
-  [ "-m=WaitForExitCustom"; "-e=Adapter"; "-s=Mono"; @"-s=\.Recorder"; "-s=Sample";
-    "-s=nunit"; "-e=Tests"; "-t=System."; @"-t=Sample3\.Class2" ]
-let AltCoverFilterX =
-  [ "-m=WaitForExitCustom"; "-e=Adapter"; "--s=Mono"; @"-s=\.Recorder"; "-s=Sample";
-    "-s=nunit"; "-t=System\."; @"-t=Sample3\.Class2" ]
-let AltCoverFilterG =
-  [ "-m=WaitForExitCustom"; "-e=Adapter"; "--s=Mono"; @"-s=\.Recorder\.g"; "-s=Sample";
-    "-s=nunit"; "-e=Tests"; "-t=System."; @"-t=Sample3\.Class2" ]
+let AltCoverFilter (p:AltCover.PrepareParams) = { p with MethodFilter = "WaitForExitCustom" :: (p.MethodFilter |> Seq.toList)
+                                                         AssemblyExcludeFilter = ["Adapter"; "Tests"] @ (p.AssemblyExcludeFilter |> Seq.toList)
+                                                         AssemblyFilter = ["Mono"; @"\.Recorder"; "Sample"; "nunit"] @ (p.AssemblyFilter |> Seq.toList)
+                                                         TypeFilter = [@"System\.";  @"Sample3\.Class2"] @ (p.TypeFilter |> Seq.toList) }
+
+let AltCoverFilterX (p:AltCover.PrepareParams) = { p with MethodFilter = "WaitForExitCustom" :: (p.MethodFilter |> Seq.toList)
+                                                          AssemblyExcludeFilter = "Adapter":: (p.AssemblyExcludeFilter |> Seq.toList)
+                                                          AssemblyFilter = ["Mono"; @"\.Recorder"; "Sample"; "nunit"] @ (p.AssemblyFilter |> Seq.toList)
+                                                          TypeFilter = [@"System\.";  @"Sample3\.Class2"] @ (p.TypeFilter |> Seq.toList) }
+
+let AltCoverFilterG (p:AltCover.PrepareParams) = { p with MethodFilter = "WaitForExitCustom" :: (p.MethodFilter |> Seq.toList)
+                                                          AssemblyExcludeFilter = ["Adapter"; "Tests"] @ (p.AssemblyExcludeFilter |> Seq.toList)
+                                                          AssemblyFilter = ["Mono"; @"\.Recorder\.g"; "Sample"; "nunit"] @ (p.AssemblyFilter |> Seq.toList)
+                                                          TypeFilter = [@"System\.";  @"Sample3\.Class2"] @ (p.TypeFilter |> Seq.toList) }                           
+
 let programFiles = Environment.environVar "ProgramFiles"
 let programFiles86 = Environment.environVar "ProgramFiles(x86)"
 let dotnetPath = "dotnet" |> Fake.Core.ProcessUtils.tryFindFileOnPath
@@ -515,10 +521,20 @@ _Target "UnitTestWithAltCover" (fun _ ->
      |> Seq.length > 0 then
     let xaltReport = reports @@ "XUnitTestWithAltCover.xml"
     printfn "Instrumented the code"
-    Actions.Run (altcover, xtestDirectory,
-                 [ "/sn=" + keyfile ] @ AltCoverFilter @ [ "/o=./__UnitTestWithAltCover"
-                                                           "-x=" + xaltReport ])
-      "Re-instrument returned with a non-zero exit code"
+    let prep = { AltCover.PrepareParams.Create() with XmlReport = xaltReport
+                                                      OutputDirectory = "./__UnitTestWithAltCover"
+                                                      StrongNameKey = keyfile
+                                                      OpenCover = false
+                                                      InPlace = false
+                                                      Save = false}
+               |> AltCoverFilter
+               |> AltCover.Prepare
+
+    { AltCover.Params.Create prep with ToolPath = altcover
+                                       ToolType = AltCover.ToolType.Framework
+                                       WorkingDirectory = xtestDirectory }
+
+    |> AltCover.run
 
     printfn "Unit test the instrumented code"
     !!(@"_Binaries/*Tests/Debug+AnyCPU/__UnitTestWithAltCover/*XTest*.dll")
@@ -530,10 +546,20 @@ _Target "UnitTestWithAltCover" (fun _ ->
 
     let altReport = reports @@ "UnitTestWithAltCover.xml"
     printfn "Instrumented the code"
-    Actions.Run (altcover, testDirectory,
-                 [ "/sn=" + keyfile ] @ AltCoverFilter @ [ "/o=./__UnitTestWithAltCover"
-                                                           "-x=" + altReport ])
-      "Re-instrument returned with a non-zero exit code"
+    let prep = { AltCover.PrepareParams.Create() with XmlReport = altReport
+                                                      OutputDirectory = "./__UnitTestWithAltCover"
+                                                      StrongNameKey = keyfile
+                                                      OpenCover = false
+                                                      InPlace = false
+                                                      Save = false}
+               |> AltCoverFilter
+               |> AltCover.Prepare
+
+    { AltCover.Params.Create prep with ToolPath = altcover
+                                       ToolType = AltCover.ToolType.Framework
+                                       WorkingDirectory = testDirectory }
+
+    |> AltCover.run
 
     let sn = "sn" |> Fake.Core.ProcessUtils.tryFindFileOnPath
     if sn |> Option.isSome then
@@ -559,12 +585,19 @@ _Target "UnitTestWithAltCover" (fun _ ->
     printfn "Instrument the weakname tests"
     let weakDir = Path.getFullName "_Binaries/AltCover.WeakNameTests/Debug+AnyCPU"
     let weakReport = reports @@ "WeakNameTestWithAltCover.xml"
-    Actions.Run (altcover, weakDir,
-                 [ "--opencover"
-                   "/sn=" + keyfile ]
-                 @ AltCoverFilter @ [ "/o=./__WeakNameTestWithAltCover"
-                                      "-x=" + weakReport ])
-      "Instrumenting the weakname tests failed"
+
+    let prep = { AltCover.PrepareParams.Create() with XmlReport = weakReport
+                                                      OutputDirectory = "./__WeakNameTestWithAltCover"
+                                                      StrongNameKey = keyfile
+                                                      InPlace = false
+                                                      Save = false}
+               |> AltCoverFilter
+               |> AltCover.Prepare
+
+    { AltCover.Params.Create prep with ToolPath = altcover
+                                       ToolType = AltCover.ToolType.Framework
+                                       WorkingDirectory = weakDir }
+    |> AltCover.run
 
     printfn "Execute the weakname tests"
     !!("_Binaries/AltCover.WeakNameTests/Debug+AnyCPU/__WeakNameTestWithAltCover/*Test*.dll")
@@ -576,12 +609,19 @@ _Target "UnitTestWithAltCover" (fun _ ->
     printfn "Instrument the shadow tests"
     let shadowDir = Path.getFullName "_Binaries/AltCover.Shadow.Tests/Debug+AnyCPU"
     let shadowReport = reports @@ "ShadowTestWithAltCover.xml"
-    Actions.Run (altcover, shadowDir,
-                 [ "--opencover"
-                   "/sn=" + keyfile ]
-                 @ AltCoverFilter @ [ "/o=./__ShadowTestWithAltCover"
-                                      "-x=" + shadowReport ])
-      "Instrumenting the shadow tests failed"
+
+    let prep = { AltCover.PrepareParams.Create() with XmlReport = shadowReport
+                                                      OutputDirectory = "./__ShadowTestWithAltCover"
+                                                      StrongNameKey = keyfile
+                                                      InPlace = false
+                                                      Save = false}
+               |> AltCoverFilter
+               |> AltCover.Prepare
+
+    { AltCover.Params.Create prep with ToolPath = altcover
+                                       ToolType = AltCover.ToolType.Framework
+                                       WorkingDirectory = shadowDir }
+    |> AltCover.run
 
     printfn "Execute the shadow tests"
     !!("_Binaries/AltCover.Shadow.Tests/Debug+AnyCPU/__ShadowTestWithAltCover/*.Test*.dll")
@@ -614,12 +654,18 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
     let xaltReport = reports @@ "XUnitTestWithAltCoverRunner.xml"
 
     printfn "Instrumented the code"
-    Actions.Run (altcover, xtestDirectory,
-                 [ "--opencover"
-                   "/sn=" + keyfile ]
-                 @ AltCoverFilter @ [ "/o=./__UnitTestWithAltCoverRunner"
-                                      "-x=" + xaltReport ])
-      "Re-instrument returned with a non-zero exit code"
+    let prep = { AltCover.PrepareParams.Create() with XmlReport = xaltReport
+                                                      OutputDirectory = "./__UnitTestWithAltCoverRunner"
+                                                      StrongNameKey = keyfile
+                                                      InPlace = false
+                                                      Save = false}
+               |> AltCoverFilter
+               |> AltCover.Prepare
+
+    { AltCover.Params.Create prep with ToolPath = altcover
+                                       ToolType = AltCover.ToolType.Framework
+                                       WorkingDirectory = xtestDirectory }
+    |> AltCover.run
 
     printfn "Unit test the instrumented code"
     !!(@"_Binaries/*Tests/Debug+AnyCPU/__UnitTestWithAltCoverRunner/*XTest*.dll")
@@ -632,41 +678,36 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
 
     let altReport = reports @@ "UnitTestWithAltCoverRunner.xml"
     printfn "Instrumented the code"
-    Actions.Run (altcover, testDirectory,
-                 [ "--single"
-                   "--opencover"
-                   "/sn=" + keyfile ]
-                 @ AltCoverFilter @ [ "/o=./__UnitTestWithAltCoverRunner"
-                                      "-x=" + altReport ])
-      "Re-instrument returned with a non-zero exit code"
+    let prep = { AltCover.PrepareParams.Create() with XmlReport = altReport
+                                                      OutputDirectory = "./__UnitTestWithAltCoverRunner"
+                                                      StrongNameKey = keyfile
+                                                      Single = true
+                                                      InPlace = false
+                                                      Save = false}
+               |> AltCoverFilter
+               |> AltCover.Prepare
+
+    { AltCover.Params.Create prep with ToolPath = altcover
+                                       ToolType = AltCover.ToolType.Framework
+                                       WorkingDirectory = testDirectory }
+    |> AltCover.run
 
     printfn "Unit test the instrumented code"
     try
-      let r =
-        CreateProcess.fromRawCommand altcover
-          [ "Runner"
-            "-x"
-            nunit
-            "-r"
-            (testDirectory @@ "__UnitTestWithAltCoverRunner")
-            "-w"
-            "."
-            "--"
-            "--noheader"
-            "--work=."
-            "--result=./_Reports/UnitTestWithAltCoverRunnerReport.xml"
-
-            Path.getFullName
-              "_Binaries/AltCover.Tests/Debug+AnyCPU/__UnitTestWithAltCoverRunner/AltCover.Tests.dll"
-
-            Path.getFullName
-              "_Binaries/AltCover.Tests/Debug+AnyCPU/__UnitTestWithAltCoverRunner/Sample2.dll" ]
-        |> CreateProcess.withWorkingDirectory "."
-        |> CreateProcess.withFramework
-        |> Proc.run
-      Assert.That
-        (r.ExitCode, Is.EqualTo 0,
-         "Re-instrument tests returned with a non-zero exit code")
+      let collect = { AltCover.CollectParams.Create() with Executable = nunit
+                                                           RecorderDirectory = testDirectory @@ "__UnitTestWithAltCoverRunner"
+                                                           CommandLine =  (CreateProcess.fromRawCommand String.Empty ["--noheader"
+                                                                                                                      "--work=."
+                                                                                                                      "--result=./_Reports/UnitTestWithAltCoverRunnerReport.xml"
+                                                                                                                      Path.getFullName
+                                                                                                                        "_Binaries/AltCover.Tests/Debug+AnyCPU/__UnitTestWithAltCoverRunner/AltCover.Tests.dll"
+                                                                                                                      Path.getFullName
+                                                                                                                        "_Binaries/AltCover.Tests/Debug+AnyCPU/__UnitTestWithAltCoverRunner/Sample2.dll" ]).CommandLine}
+                    |> AltCover.Collect
+      { AltCover.Params.Create collect with ToolPath = altcover
+                                            ToolType = AltCover.ToolType.Framework
+                                            WorkingDirectory = "." }
+      |> AltCover.run
     with x ->
       printfn "%A" x
       reraise()
@@ -674,90 +715,100 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
     printfn "Instrument the weakname tests"
     let weakDir = Path.getFullName "_Binaries/AltCover.WeakNameTests/Debug+AnyCPU"
     let weakReport = reports @@ "WeakNameTestWithAltCoverRunner.xml"
-    Actions.Run (altcover, weakDir,
-                 [ "--opencover"
-                   "/sn=" + keyfile ]
-                 @ AltCoverFilterX @ [ "-t=WeakNameTest"
-                                       "/o=./__WeakNameTestWithAltCoverRunner"
-                                       "-x=" + weakReport ])
-      "Instrumenting the weakname tests failed"
-    printfn "Execute the weakname tests"
-    Actions.Run
-      (altcover, ".",
-       [ "Runner"
-         "-x"
-         nunit
-         "-r"
-         (weakDir @@ "__WeakNameTestWithAltCoverRunner")
-         "-w"
-         "."
-         "--"
-         "--noheader"
-         "--work=."
-         "--result=./_Reports/ShadowTestWithAltCoverRunnerReport.xml"
 
-         Path.getFullName
-           "_Binaries/AltCover.WeakNameTests/Debug+AnyCPU/__WeakNameTestWithAltCoverRunner/AltCover.WeakNameTests.dll" ])
-      "Re-instrument tests returned with a non-zero exit code"
+    let prep = { AltCover.PrepareParams.Create() with XmlReport = weakReport
+                                                      OutputDirectory = "./__WeakNameTestWithAltCoverRunner"
+                                                      TypeFilter = ["WeakNameTest"]
+                                                      StrongNameKey = keyfile
+                                                      Single = true
+                                                      InPlace = false
+                                                      Save = false}
+               |> AltCoverFilterX
+               |> AltCover.Prepare
+    { AltCover.Params.Create prep with ToolPath = altcover
+                                       ToolType = AltCover.ToolType.Framework
+                                       WorkingDirectory = weakDir }
+    |> AltCover.run
+
+    printfn "Execute the weakname tests"
+    let collect = { AltCover.CollectParams.Create() with Executable = nunit
+                                                         RecorderDirectory = weakDir @@ "__WeakNameTestWithAltCoverRunner"
+                                                         CommandLine =  (CreateProcess.fromRawCommand String.Empty ["--noheader"
+                                                                                                                    "--work=."
+                                                                                                                    "--result=./_Reports/ShadowTestWithAltCoverRunnerReport.xml"
+                                                                                                                    Path.getFullName
+                                                                                                                      "_Binaries/AltCover.WeakNameTests/Debug+AnyCPU/__WeakNameTestWithAltCoverRunner/AltCover.WeakNameTests.dll" ]).CommandLine}
+                  |> AltCover.Collect
+    { AltCover.Params.Create collect with ToolPath = altcover
+                                          ToolType = AltCover.ToolType.Framework
+                                          WorkingDirectory = "." }
+    |> AltCover.run
+
     printfn "Instrument the shadow tests"
     let shadowDir = Path.getFullName "_Binaries/AltCover.Shadow.Tests/Debug+AnyCPU"
     let shadowReport = reports @@ "ShadowTestWithAltCoverRunner.xml"
-    Actions.Run (altcover, shadowDir,
-                 [ "--opencover"
-                   "/sn=" + keyfile ]
-                 @ AltCoverFilter @ [ "/o=./__ShadowTestWithAltCoverRunner"
-                                      "-x=" + shadowReport ])
-      "Instrumenting the shadow tests failed"
-    printfn "Execute the shadow tests"
-    Actions.Run
-      (altcover, ".",
-       [ "Runner"
-         "-x"
-         nunit
-         "-r"
-         (shadowDir @@ "__ShadowTestWithAltCoverRunner")
-         "-w"
-         "."
-         "--"
-         "--noheader"
-         "--work=."
-         "--result=./_Reports/ShadowTestWithAltCoverRunnerReport.xml"
 
-         Path.getFullName
-           "_Binaries/AltCover.Shadow.Tests/Debug+AnyCPU/__ShadowTestWithAltCoverRunner/AltCover.Shadow.Tests.dll"
+    let prep = { AltCover.PrepareParams.Create() with XmlReport = shadowReport
+                                                      OutputDirectory = "./__ShadowTestWithAltCoverRunner"
+                                                      StrongNameKey = keyfile
+                                                      InPlace = false
+                                                      Save = false}
+               |> AltCoverFilter
+               |> AltCover.Prepare
 
-         Path.getFullName
-           "_Binaries/AltCover.Shadow.Tests/Debug+AnyCPU/__ShadowTestWithAltCoverRunner/AltCover.Shadow.Tests2.dll" ])
-      "Re-instrument tests returned with a non-zero exit code"
+    { AltCover.Params.Create prep with ToolPath = altcover
+                                       ToolType = AltCover.ToolType.Framework
+                                       WorkingDirectory = shadowDir }
+    |> AltCover.run
+
+    let collect = { AltCover.CollectParams.Create() with Executable = nunit
+                                                         RecorderDirectory = shadowDir @@ "__ShadowTestWithAltCoverRunner"
+                                                         CommandLine =  (CreateProcess.fromRawCommand String.Empty ["--noheader"
+                                                                                                                    "--work=."
+                                                                                                                    "--result=./_Reports/ShadowTestWithAltCoverRunnerReport.xml"
+                                                                                                                    Path.getFullName
+                                                                                                                      "_Binaries/AltCover.Shadow.Tests/Debug+AnyCPU/__ShadowTestWithAltCoverRunner/AltCover.Shadow.Tests.dll"
+                                                                                                                    Path.getFullName
+                                                                                                                      "_Binaries/AltCover.Shadow.Tests/Debug+AnyCPU/__ShadowTestWithAltCoverRunner/AltCover.Shadow.Tests2.dll" ]).CommandLine}
+                  |> AltCover.Collect
+    { AltCover.Params.Create collect with ToolPath = altcover
+                                          ToolType = AltCover.ToolType.Framework
+                                          WorkingDirectory = "." }
+    |> AltCover.run
     printfn "Instrument the GTK# visualizer tests"
     let gtkDir = Path.getFullName "_Binaries/AltCover.Tests.Visualizer/Debug+AnyCPU"
     let gtkReport = reports @@ "GTKVTestWithAltCoverRunner.xml"
-    Actions.Run (altcover, gtkDir,
-                 [ "--opencover"
-                   "-t=Gui"
-                   "-s=\\-sharp"
-                   "/sn=" + keyfile ]
-                 @ AltCoverFilter @ [ "/o=./__GTKVTestWithAltCoverRunner"
-                                      "-x=" + gtkReport ])
-      "Instrumenting the gtk tests failed"
-    printfn "Execute the the GTK# visualizer tests"
-    Actions.Run
-      (altcover, ".",
-       [ "Runner"
-         "-x"
-         nunit
-         "-r"
-         (gtkDir @@ "__GTKVTestWithAltCoverRunner")
-         "-w"
-         "."
-         "--"
-         "--noheader"
-         "--work=."
-         "--result=./_Reports/ShadowTestWithAltCoverRunnerReport.xml"
 
-         Path.getFullName
-           "_Binaries/AltCover.Tests.Visualizer/Debug+AnyCPU/__GTKVTestWithAltCoverRunner/AltCover.Tests.Visualizer.dll" ])
-      "Re-instrument tests returned with a non-zero exit code"
+    let prep = { AltCover.PrepareParams.Create() with XmlReport = gtkReport
+                                                      OutputDirectory = "./__GTKVTestWithAltCoverRunner"
+                                                      TypeFilter = ["Gui"]
+                                                      AssemblyFilter = ["\\-sharp"]
+                                                      StrongNameKey = keyfile
+                                                      InPlace = false
+                                                      Save = false}
+               |> AltCoverFilter
+               |> AltCover.Prepare
+
+    { AltCover.Params.Create prep with ToolPath = altcover
+                                       ToolType = AltCover.ToolType.Framework
+                                       WorkingDirectory = gtkDir }
+    |> AltCover.run
+
+    printfn "Execute the the GTK# visualizer tests"
+
+    let collect = { AltCover.CollectParams.Create() with Executable = nunit
+                                                         RecorderDirectory = gtkDir @@ "__GTKVTestWithAltCoverRunner"
+                                                         CommandLine =  (CreateProcess.fromRawCommand String.Empty ["--noheader"
+                                                                                                                    "--work=."
+                                                                                                                    "--result=./_Reports/GTKVTestWithAltCoverRunnerReport.xml"
+                                                                                                                    Path.getFullName
+                                                                                                                      "_Binaries/AltCover.Tests.Visualizer/Debug+AnyCPU/__GTKVTestWithAltCoverRunner/AltCover.Tests.Visualizer.dll" ]).CommandLine}
+                  |> AltCover.Collect
+    { AltCover.Params.Create collect with ToolPath = altcover
+                                          ToolType = AltCover.ToolType.Framework
+                                          WorkingDirectory = "." }
+    |> AltCover.run
+
     let pester = Path.getFullName "_Reports/Pester.xml"
     ReportGenerator.generateReports (fun p ->
       { p with ExePath = Tools.findToolInSubPath "ReportGenerator.exe" "."
@@ -815,10 +866,21 @@ _Target "UnitTestWithAltCoverCore"
     Path.getFullName "Tests/_Binaries/AltCover.Tests/Debug+AnyCPU/netcoreapp2.1"
   let altReport = reports @@ "UnitTestWithAltCoverCore.xml"
   printfn "Instrumented the code"
-  Actions.Run (altcover, testDirectory,
-               [ "/sn=" + keyfile ] @ AltCoverFilter @ [ "/o=" + output
-                                                         "-x=" + altReport ])
-    "first instrument returned with a non-zero exit code"
+
+  let prep = { AltCover.PrepareParams.Create() with XmlReport = altReport
+                                                    OutputDirectory = output
+                                                    StrongNameKey = keyfile
+                                                    OpenCover = false
+                                                    InPlace = false
+                                                    Save = false}
+             |> AltCoverFilter
+             |> AltCover.Prepare
+
+  { AltCover.Params.Create prep with ToolPath = altcover
+                                     ToolType = AltCover.ToolType.Framework
+                                     WorkingDirectory = testDirectory }
+  |> AltCover.run
+
   printfn "Unit test the instrumented code"
   try
     Actions.RunDotnet
@@ -836,10 +898,19 @@ _Target "UnitTestWithAltCoverCore"
   let shadowOut =
     Path.getFullName
       "Shadow.Tests/_Binaries/AltCover.Shadow.Tests/Debug+AnyCPU/netcoreapp2.1"
-  Actions.Run (altcover, shadowDir,
-               [ "/sn=" + keyfile ] @ AltCoverFilterG @ [ "/o=" + shadowOut
-                                                          "-x=" + shadowReport ])
-    "second instrument returned with a non-zero exit code"
+  let prep = { AltCover.PrepareParams.Create() with XmlReport = shadowReport
+                                                    OutputDirectory = shadowOut
+                                                    StrongNameKey = keyfile
+                                                    OpenCover = false
+                                                    InPlace = false
+                                                    Save = false}
+             |> AltCoverFilterG
+             |> AltCover.Prepare
+
+  { AltCover.Params.Create prep with ToolPath = altcover
+                                     ToolType = AltCover.ToolType.Framework
+                                     WorkingDirectory = shadowDir }
+  |> AltCover.run
 
   printfn "Execute the shadow tests"
   Actions.RunDotnet
@@ -853,10 +924,19 @@ _Target "UnitTestWithAltCoverCore"
   let xReport = reports @@ "XTestWithAltCoverCore.xml"
   let xOut =
     Path.getFullName "XTests/_Binaries/AltCover.XTests/Debug+AnyCPU/netcoreapp2.1"
-  Actions.Run (altcover, xDir,
-               [ "/sn=" + keyfile ] @ AltCoverFilterG @ [ "/o=" + xOut
-                                                          "-x=" + xReport ])
-    "xuint instrument returned with a non-zero exit code"
+  let prep = { AltCover.PrepareParams.Create() with XmlReport = xReport
+                                                    OutputDirectory = xOut
+                                                    StrongNameKey = keyfile
+                                                    OpenCover = false
+                                                    InPlace = false
+                                                    Save = false}
+             |> AltCoverFilterG
+             |> AltCover.Prepare
+
+  { AltCover.Params.Create prep with ToolPath = altcover
+                                     ToolType = AltCover.ToolType.Framework
+                                     WorkingDirectory = xDir }
+  |> AltCover.run
 
   printfn "Execute the XUnit tests"
   Actions.RunDotnet
@@ -904,11 +984,20 @@ _Target "UnitTestWithAltCoverCoreRunner"
   let altReport = reports @@ "UnitTestWithAltCoverCoreRunner.xml"
   printfn "Instrument the code"
   Shell.cleanDir output
-  Actions.RunDotnet (fun o -> { dotnetOptions o with WorkingDirectory = testDirectory })
-    ""
-    (altcover + " --opencover " + String.Join(" ", AltCoverFilter) + " -x \"" + altReport
-     + "\" /o \"" + output + "\"") "Instrument the code"
+
+  let prep = { AltCover.PrepareParams.Create() with XmlReport = altReport
+                                                    OutputDirectory = output
+                                                    InPlace = false
+                                                    Save = false}
+             |> AltCoverFilter
+             |> AltCover.Prepare
+
+  { AltCover.Params.Create prep with ToolPath = altcover
+                                     ToolType = AltCover.ToolType.DotNet dotnetPath
+                                     WorkingDirectory = testDirectory }
+  |> AltCover.run
   printfn "Unit test the instrumented code"
+
   let testproject = Path.getFullName "./Tests/altcover.tests.core.fsproj"
 
   Actions.RunDotnet (fun o -> { dotnetOptions o with WorkingDirectory = output }) ""
@@ -924,9 +1013,19 @@ _Target "UnitTestWithAltCoverCoreRunner"
       "Shadow.Tests/_Binaries/AltCover.Shadow.Tests/Debug+AnyCPU/netcoreapp2.1"
   Shell.cleanDir shadowOut
 
-  Actions.RunDotnet (fun o -> { dotnetOptions o with WorkingDirectory = shadowDir }) ""
-    (altcover + " --single --opencover " + String.Join(" ", AltCoverFilter) + " -x \""
-     + shadowReport + "\" /o \"" + shadowOut + "\"") "Instrument the shadow tests"
+  let prep = { AltCover.PrepareParams.Create() with XmlReport = shadowReport
+                                                    OutputDirectory = shadowOut
+                                                    Single = true
+                                                    InPlace = false
+                                                    Save = false}
+             |> AltCoverFilter
+             |> AltCover.Prepare
+
+  { AltCover.Params.Create prep with ToolPath = altcover
+                                     ToolType = AltCover.ToolType.DotNet dotnetPath
+                                     WorkingDirectory = shadowDir }
+  |> AltCover.run
+
   let shadowProject =
     Path.getFullName "./Shadow.Tests/altcover.recorder.tests.core.fsproj"
   Actions.RunDotnet (fun o -> { dotnetOptions o with WorkingDirectory = shadowOut }) ""
@@ -941,9 +1040,19 @@ _Target "UnitTestWithAltCoverCoreRunner"
     Path.getFullName "XTests/_Binaries/AltCover.XTests/Debug+AnyCPU/netcoreapp2.1"
   Shell.cleanDir xOut
 
-  Actions.RunDotnet (fun o -> { dotnetOptions o with WorkingDirectory = xDir }) ""
-    (altcover + " --single --opencover " + String.Join(" ", AltCoverFilter) + " -x \""
-     + xReport + "\" /o \"" + xOut + "\"") "Instrument the xunit tests"
+  let prep = { AltCover.PrepareParams.Create() with XmlReport = xReport
+                                                    OutputDirectory = xOut
+                                                    Single = true
+                                                    InPlace = false
+                                                    Save = false}
+             |> AltCoverFilter
+             |> AltCover.Prepare
+
+  { AltCover.Params.Create prep with ToolPath = altcover
+                                     ToolType = AltCover.ToolType.DotNet dotnetPath
+                                     WorkingDirectory = xDir }
+  |> AltCover.run
+
   printfn "Execute the XUnit tests"
   let xProject = Path.getFullName "./XTests/altcover.x.tests.core.fsproj"
   Actions.RunDotnet (fun o -> { dotnetOptions o with WorkingDirectory = xOut }) ""
@@ -1171,6 +1280,19 @@ _Target "SelfTest" (fun _ ->
   let keyfile = Path.getFullName "Build/SelfTest.snk"
 
   printfn "Self-instrument under OpenCover"
+
+  let prep = { AltCover.PrepareParams.Create() with XmlReport = altReport
+                                                    OutputDirectory = "__SelfTest"
+                                                    StrongNameKey = keyfile
+                                                    OpenCover = false
+                                                    InPlace = false
+                                                    Save = false}
+             |> AltCover.Prepare
+  let args = ({ AltCover.Params.Create prep with ToolPath = String.Empty
+                                                 ToolType = AltCover.ToolType.Global
+                                                 WorkingDirectory = "." }
+                                     |> AltCover.composeCommandLine).CommandLine
+
   OpenCover.run (fun p ->
     { p with WorkingDir = targetDir
              ExePath = Tools.findToolInSubPath "OpenCover.Console.exe" "."
@@ -1180,20 +1302,28 @@ _Target "SelfTest" (fun _ ->
              OptionalArguments =
                "-excludebyattribute:*ExcludeFromCodeCoverageAttribute;*ProgIdAttribute"
              Register = OpenCover.RegisterType.RegisterUser
-             Output = report })
-    ("/sn=" + keyfile + String.Join(" ", AltCoverFilter) + "-x=" + altReport
-     + " -o __SelfTest")
+             Output = report }) args
+
   ReportGenerator.generateReports (fun p ->
     { p with ExePath = Tools.findToolInSubPath "ReportGenerator.exe" "."
              TargetDir = "_Reports/_OpenCoverSelfTest" }) [ report ]
 
   printfn "Re-instrument everything"
   let altReport2 = reports @@ "AltCoverSelfTestDummy.xml"
-  Actions.Run ("_Binaries/AltCover.Tests/Debug+AnyCPU/__SelfTest/AltCover.exe",
-               "_Binaries/AltCover.Tests/Debug+AnyCPU",
-               [ "/sn=" + keyfile ] @ AltCoverFilter @ [ @"/o=./__SelfTestDummy"
-                                                         "-x=" + altReport2 ])
-    "Re-instrument returned with a non-zero exit code"
+  let prep = { AltCover.PrepareParams.Create() with XmlReport = altReport2
+                                                    OutputDirectory = "./__SelfTestDummy"
+                                                    StrongNameKey = keyfile
+                                                    OpenCover = false
+                                                    InPlace = false
+                                                    Save = false}
+             |> AltCoverFilter
+             |> AltCover.Prepare
+
+  { AltCover.Params.Create prep with ToolPath = "_Binaries/AltCover.Tests/Debug+AnyCPU/__SelfTest/AltCover.exe"
+                                     ToolType = AltCover.ToolType.Framework
+                                     WorkingDirectory = "_Binaries/AltCover.Tests/Debug+AnyCPU" }
+  |> AltCover.run
+
   ReportGenerator.generateReports (fun p ->
     { p with ExePath = Tools.findToolInSubPath "ReportGenerator.exe" "."
              TargetDir = "_Reports/_AltCoverSelfTest" }) [ altReport ])

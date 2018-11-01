@@ -348,7 +348,7 @@ let internal createProcess parameters args =
   |> if String.IsNullOrWhiteSpace parameters.WorkingDirectory then id
      else CreateProcess.withWorkingDirectory parameters.WorkingDirectory
 
-let internal composeCommandLine parameters =
+let composeCommandLine parameters =
   let args = createArgs parameters
   createProcess parameters args
 
