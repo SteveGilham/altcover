@@ -14,6 +14,8 @@ open HeyRed.MarkdownSharp
 open NUnit.Framework
 open YamlDotNet.RepresentationModel
 
+open AltCover.Fake.DotNet.Testing
+
 module Actions =
   let Clean() =
     let rec Clean1 depth =
@@ -322,10 +324,21 @@ do ()"""
     let binRoot = Path.getFullName binaryPath
     let sampleRoot = Path.getFullName samplePath
     let instrumented = "__Instrumented." + reportSigil
-    Run
-      (binRoot @@ "AltCover.exe", sampleRoot,
-       [ @"-t=System\.";  "-x=" + simpleReport; "/o=./" + instrumented ])
-      "Simple instrumentation failed"
+
+    let prep = { AltCover.PrepareParams.Create() with TypeFilter = ["""System\."""]
+                                                      XmlReport = simpleReport
+                                                      OutputDirectory = "./" + instrumented
+                                                      OpenCover = false
+                                                      InPlace = false
+                                                      Save = false}
+               |> AltCover.Prepare
+
+    let parameters = { AltCover.Params.Create prep with ToolPath = binRoot @@ "AltCover.exe"
+                                                        ToolType = AltCover.ToolType.Framework
+                                                        WorkingDirectory = sampleRoot }
+
+    AltCover.run parameters
+
     Run (sampleRoot @@ (instrumented + "/Sample1.exe"), (sampleRoot @@ instrumented), [])
       "Instrumented .exe failed"
     ValidateSample1 simpleReport reportSigil
@@ -334,22 +347,33 @@ do ()"""
       (reportSigil' : string) (monoOnWindows : string option) =
     printfn "Instrument and run a simple executable under mono"
     match monoOnWindows with
-    | Some mono ->
+    | None -> Assert.Fail "Mono executable expected"
+    | _ ->
       Directory.ensure "./_Reports"
       let reportSigil = reportSigil' + "UnderMono"
       let simpleReport = (Path.getFullName "./_Reports") @@ (reportSigil + ".xml")
       let binRoot = Path.getFullName binaryPath
       let sampleRoot = Path.getFullName samplePath
       let instrumented = "__Instrumented." + reportSigil
-      Run
-        (mono, sampleRoot,
-         [ (binRoot @@ "AltCover.exe"); @"-t=System\.";  "-x=" + simpleReport; 
-            "/o=./" + instrumented ]) "Simple instrumentation failed"
+
+      let prep = { AltCover.PrepareParams.Create() with TypeFilter = ["""System\."""]
+                                                        XmlReport = simpleReport
+                                                        OutputDirectory = "./" + instrumented
+                                                        OpenCover = false
+                                                        InPlace = false
+                                                        Save = false}
+                 |> AltCover.Prepare
+
+      let parameters = { AltCover.Params.Create prep with ToolPath = binRoot @@ "AltCover.exe"
+                                                          ToolType = AltCover.ToolType.Mono monoOnWindows
+                                                          WorkingDirectory = sampleRoot }
+
+      AltCover.run parameters
+
       Run
         (sampleRoot @@ (instrumented + "/Sample1.exe"), (sampleRoot @@ instrumented), [])
         "Instrumented .exe failed"
       ValidateSample1 simpleReport reportSigil
-    | None -> Assert.Fail "Mono executable expected"
 
   let PrepareReadMe packingCopyright =
     let readme = Path.getFullName "README.md"

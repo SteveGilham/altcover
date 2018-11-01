@@ -25,7 +25,18 @@ type CollectParams =
     OutputFile : String
     CommandLine : String }
 
+  [<Obsolete("Please AltCover.CollectParams.Create() instead instead.")>]
   static member Default : CollectParams =
+    { RecorderDirectory = String.Empty
+      WorkingDirectory = String.Empty
+      Executable = String.Empty
+      LcovReport = String.Empty
+      Threshold = String.Empty
+      Cobertura = String.Empty
+      OutputFile = String.Empty
+      CommandLine = String.Empty }
+
+  static member Create() =
     { RecorderDirectory = String.Empty
       WorkingDirectory = String.Empty
       Executable = String.Empty
@@ -92,6 +103,7 @@ type PrepareParams =
     BranchCover : bool
     CommandLine : String }
 
+  [<Obsolete("Please AltCover.CollectParams.Create() instead instead.")>]
   static member Default : PrepareParams =
     { InputDirectory = String.Empty
       OutputDirectory = String.Empty
@@ -108,6 +120,30 @@ type PrepareParams =
       AttributeFilter = [||]
       PathFilter = [||]
       CallContext = [||]
+      OpenCover = true
+      InPlace = true
+      Save = true
+      Single = false
+      LineCover = false
+      BranchCover = false
+      CommandLine = String.Empty }
+
+  static member Create() =
+    { InputDirectory = String.Empty
+      OutputDirectory = String.Empty
+      SymbolDirectories = Seq.empty
+      Dependencies = Seq.empty
+      Keys = Seq.empty
+      StrongNameKey = String.Empty
+      XmlReport = String.Empty
+      FileFilter = Seq.empty
+      AssemblyFilter = Seq.empty
+      AssemblyExcludeFilter = Seq.empty
+      TypeFilter = Seq.empty
+      MethodFilter = Seq.empty
+      AttributeFilter = Seq.empty
+      PathFilter = Seq.empty
+      CallContext = Seq.empty
       OpenCover = true
       InPlace = true
       Save = true
@@ -257,6 +293,7 @@ type ArgType =
 [<NoComparison>]
 type ToolType =
   | DotNet of string option
+  | Mono of string option
   | Global
   | Framework
 
@@ -271,10 +308,23 @@ type Params =
     /// Command arguments
     Args : ArgType }
 
+  static member Create (a:ArgType) =
+    {
+        ToolPath = "altcover"
+        ToolType = Global
+        WorkingDirectory = String.Empty
+        Args = a
+    }
 let internal createArgs parameters =
   match parameters.Args with
   | Collect c -> Args.Collect c
-  | Prepare p -> Args.Prepare p
+  | Prepare p ->
+    (match parameters.ToolType with
+     | Framework
+     | Mono _ -> { p with Dependencies = Seq.empty }
+     | _ -> { p with Keys = Seq.empty
+                     StrongNameKey = String.Empty})
+     |> Args.Prepare
   | ImportModule -> [ "ipmo" ]
   | GetVersion -> [ "version" ]
 
@@ -289,6 +339,12 @@ let internal createProcess parameters args =
          | None -> "dotnet"
          | Some p -> p
        CreateProcess.fromRawCommand path (parameters.ToolPath::args)
+  | Mono monoPath ->
+       let path =
+         match monoPath with
+         | None -> "mono"
+         | Some p -> p
+       CreateProcess.fromRawCommand path ("--debug"::parameters.ToolPath::args)
   |> if String.IsNullOrWhiteSpace parameters.WorkingDirectory then id
      else CreateProcess.withWorkingDirectory parameters.WorkingDirectory
 

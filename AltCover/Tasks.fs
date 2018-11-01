@@ -99,31 +99,31 @@ type Prepare() =
                              Info = self.Message }
 
     let task =
-      { PrepareParams.Default with InputDirectory = self.InputDirectory
-                                   OutputDirectory = self.OutputDirectory
-                                   SymbolDirectories = self.SymbolDirectories
+      { PrepareParams.Create() with InputDirectory = self.InputDirectory
+                                    OutputDirectory = self.OutputDirectory
+                                    SymbolDirectories = self.SymbolDirectories
 #if NETCOREAPP2_0
-                                   Dependencies = self.Dependencies
+                                    Dependencies = self.Dependencies
 #else
-                                   Keys = self.Keys
-                                   StrongNameKey = self.StrongNameKey
+                                    Keys = self.Keys
+                                    StrongNameKey = self.StrongNameKey
 #endif
-                                   XmlReport = self.XmlReport
-                                   FileFilter = self.FileFilter
-                                   AssemblyFilter = self.AssemblyFilter
-                                   AssemblyExcludeFilter = self.AssemblyExcludeFilter
-                                   TypeFilter = self.TypeFilter
-                                   MethodFilter = self.MethodFilter
-                                   AttributeFilter = self.AttributeFilter
-                                   PathFilter = self.PathFilter
-                                   CallContext = self.CallContext
-                                   OpenCover = self.OpenCover
-                                   InPlace = self.InPlace
-                                   Save = self.Save
-                                   Single = self.Single
-                                   LineCover = self.LineCover
-                                   BranchCover = self.BranchCover
-                                   CommandLine = self.CommandLine }
+                                    XmlReport = self.XmlReport
+                                    FileFilter = self.FileFilter
+                                    AssemblyFilter = self.AssemblyFilter
+                                    AssemblyExcludeFilter = self.AssemblyExcludeFilter
+                                    TypeFilter = self.TypeFilter
+                                    MethodFilter = self.MethodFilter
+                                    AttributeFilter = self.AttributeFilter
+                                    PathFilter = self.PathFilter
+                                    CallContext = self.CallContext
+                                    OpenCover = self.OpenCover
+                                    InPlace = self.InPlace
+                                    Save = self.Save
+                                    Single = self.Single
+                                    LineCover = self.LineCover
+                                    BranchCover = self.BranchCover
+                                    CommandLine = self.CommandLine }
 
     Api.Prepare task log = 0
 
@@ -148,14 +148,14 @@ type Collect() =
                              Info = self.Message }
 
     let task =
-      { CollectParams.Default with RecorderDirectory = self.RecorderDirectory
-                                   WorkingDirectory = self.WorkingDirectory
-                                   Executable = self.Executable
-                                   LcovReport = self.LcovReport
-                                   Threshold = self.Threshold
-                                   Cobertura = self.Cobertura
-                                   OutputFile = self.OutputFile
-                                   CommandLine = self.CommandLine }
+      { CollectParams.Create() with RecorderDirectory = self.RecorderDirectory
+                                    WorkingDirectory = self.WorkingDirectory
+                                    Executable = self.Executable
+                                    LcovReport = self.LcovReport
+                                    Threshold = self.Threshold
+                                    Cobertura = self.Cobertura
+                                    OutputFile = self.OutputFile
+                                    CommandLine = self.CommandLine }
 
     Api.Collect task log = 0
 
