@@ -1,8 +1,8 @@
-#if INTERACTIVE
+#if RUNNER
+namespace AltCover
+#else
 [<RequireQualifiedAccess>]
 module AltCover.Fake.DotNet.Testing.AltCover
-#else
-namespace AltCover
 #endif
 
 open System
@@ -10,6 +10,8 @@ open System.Diagnostics.CodeAnalysis
 open System.Linq
 #if RUNNER
 open AltCover.Augment
+#else
+open Fake.Core
 #endif
 
 [<ExcludeFromCodeCoverage; NoComparison>]
@@ -243,19 +245,22 @@ module Args =
       Flag "--collect" (args.Executable |> String.IsNullOrWhiteSpace)
       Item "--" args.CommandLine ]
     |> List.concat
-#if INTERACTIVE
-
+#if RUNNER
+#else
+[<NoComparison>]
 type ArgType =
   | Collect of CollectParams
   | Prepare of PrepareParams
   | ImportModule
   | GetVersion
 
+[<NoComparison>]
 type ToolType =
-  | DotNet
+  | DotNet of string option
   | Global
   | Framework
 
+[<NoComparison>]
 type Params =
   { /// Path to the Altcover executable.
     ToolPath : string
@@ -274,13 +279,18 @@ let internal createArgs parameters =
   | GetVersion -> [ "version" ]
 
 let internal createProcess parameters args =
-  CreateProcess.fromRawCommand parameters.ToolPath args
+  let baseline () = CreateProcess.fromRawCommand parameters.ToolPath args
+  match parameters.ToolType with
+  | Framework -> baseline () |> CreateProcess.withFramework
+  | Global -> baseline ()
+  | DotNet dotnetPath ->
+       let path =
+         match dotnetPath with
+         | None -> "dotnet"
+         | Some p -> p
+       CreateProcess.fromRawCommand path (parameters.ToolPath::args)
   |> if String.IsNullOrWhiteSpace parameters.WorkingDirectory then id
      else CreateProcess.withWorkingDirectory parameters.WorkingDirectory
-  |> match parameters.ToolType with
-     | Framework -> CreateProcess.withFramework
-     | Global -> id
-     | _ -> id // TODO withDotNet
 
 let internal composeCommandLine parameters =
   let args = createArgs parameters
@@ -288,7 +298,8 @@ let internal composeCommandLine parameters =
 
 let run parameters =
   use __ = Trace.traceTask "AltCover" String.Empty
-  let run = composeCommandLine parameters |> Proc.run
-  if 0 <> run.ExitCode then failwithf "AltCover %s failed." (String.separated " " args)
+  let command = composeCommandLine parameters
+  let run = command |> Proc.run
+  if 0 <> run.ExitCode then failwithf "AltCover '%s' failed." command.CommandLine
   __.MarkSuccess()
 #endif
