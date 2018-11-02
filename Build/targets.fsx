@@ -2329,15 +2329,15 @@ _Target "DoIt" (fun _ ->
   AltCover.Fake.Api.Version() |> Trace.trace
   AltCover.CSApi.Version() |> printfn "Returned %A"
 
-  let collect = { AltCover.CollectParams.Default with LcovReport = "x" }
-  let prepare = { AltCover.PrepareParams.Default with TypeFilter = [| "a"; "b" |] }
+  let collect = { AltCover.CollectParams.Create() with LcovReport = "x" }
+  let prepare = { AltCover.PrepareParams.Create() with TypeFilter = [| "a"; "b" |] }
   printfn "%s" (AltCover.DotNet.ToTestArguments prepare collect)
 
   let t = DotNet.TestOptions.Create().WithParameters prepare collect
   printfn "returned '%A'" t.Common.CustomParams
 
-  let p2 = { AltCover.PrepareParams.Default with CallContext = [| "[Fact]"; "0" |] }
-  let c2 = AltCover.CollectParams.Default
+  let p2 = { AltCover.PrepareParams.Create() with CallContext = [| "[Fact]"; "0" |] }
+  let c2 = AltCover.CollectParams.Create()
 
   let setBaseOptions (o : DotNet.Options) =
     { o with WorkingDirectory = Path.getFullName "./_DotnetTest"
