@@ -1638,6 +1638,7 @@ _Target "Packaging" (fun _ ->
     Path.getFullName "_Binaries/AltCover.FSApi/Release+AnyCPU/AltCover.FSApi.dll"
   let cake = Path.getFullName "_Binaries/AltCover.Cake/Release+AnyCPU/AltCover.Cake.dll"
   let fake = Path.getFullName "_Binaries/AltCover.Fake/Release+AnyCPU/AltCover.Fake.dll"
+  let fake2 = Path.getFullName "_Binaries/AltCover.Fake.DotNet.Testing.AltCover/Release+AnyCPU/AltCover.Fake.DotNet.Testing.AltCover.dll"
   let vis =
     Path.getFullName
       "_Binaries/AltCover.Visualizer/Release+AnyCPU/AltCover.Visualizer.exe"
@@ -1664,6 +1665,7 @@ _Target "Packaging" (fun _ ->
         (csapi, Some "lib/net45", None)
         (cake, Some "lib/net45", None)
         (fake, Some "lib/net45", None)
+        (fake2, Some "lib/net45", None)
         (fscore, Some "lib/net45", None)
         (options, Some "lib/net45", None)
         (packable, Some "", None) ]
@@ -1742,7 +1744,7 @@ _Target "Packaging" (fun _ ->
     |> Seq.toList
 
   let fakeFiles where =
-    (!!"./_Binaries/AltCover.Fake/Release+AnyCPU/netstandard2.0/AltCover.Fak*.*")
+    (!!"./_Binaries/AltCover.Fak*/Release+AnyCPU/netstandard2.0/AltCover.Fak*.*")
     |> Seq.map (fun x -> (x, Some(where + Path.GetFileName x), None))
     |> Seq.toList
 
