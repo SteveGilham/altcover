@@ -571,7 +571,6 @@ _Target "UnitTestWithAltCover" (fun _ ->
     { AltCover.Params.Create prep with ToolPath = altcover
                                        ToolType = AltCover.ToolType.Framework
                                        WorkingDirectory = testDirectory }
-
     |> AltCover.run
 
     let sn = "sn" |> Fake.Core.ProcessUtils.tryFindFileOnPath
@@ -721,12 +720,9 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
                                                     String.Empty
                                                     [ "--noheader"
                                                       "--work=."
-
                                                       "--result=./_Reports/UnitTestWithAltCoverRunnerReport.xml"
-
                                                       Path.getFullName
                                                         "_Binaries/AltCover.Tests/Debug+AnyCPU/__UnitTestWithAltCoverRunner/AltCover.Tests.dll"
-
                                                       Path.getFullName
                                                         "_Binaries/AltCover.Tests/Debug+AnyCPU/__UnitTestWithAltCoverRunner/Sample2.dll" ]).CommandLine }
         |> AltCover.Collect
@@ -768,9 +764,7 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
                                                (CreateProcess.fromRawCommand String.Empty
                                                   [ "--noheader"
                                                     "--work=."
-
                                                     "--result=./_Reports/ShadowTestWithAltCoverRunnerReport.xml"
-
                                                     Path.getFullName
                                                       "_Binaries/AltCover.WeakNameTests/Debug+AnyCPU/__WeakNameTestWithAltCoverRunner/AltCover.WeakNameTests.dll" ]).CommandLine }
       |> AltCover.Collect
@@ -806,12 +800,9 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
                                                (CreateProcess.fromRawCommand String.Empty
                                                   [ "--noheader"
                                                     "--work=."
-
                                                     "--result=./_Reports/ShadowTestWithAltCoverRunnerReport.xml"
-
                                                     Path.getFullName
                                                       "_Binaries/AltCover.Shadow.Tests/Debug+AnyCPU/__ShadowTestWithAltCoverRunner/AltCover.Shadow.Tests.dll"
-
                                                     Path.getFullName
                                                       "_Binaries/AltCover.Shadow.Tests/Debug+AnyCPU/__ShadowTestWithAltCoverRunner/AltCover.Shadow.Tests2.dll" ]).CommandLine }
       |> AltCover.Collect
@@ -848,9 +839,7 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
                                                (CreateProcess.fromRawCommand String.Empty
                                                   [ "--noheader"
                                                     "--work=."
-
                                                     "--result=./_Reports/GTKVTestWithAltCoverRunnerReport.xml"
-
                                                     Path.getFullName
                                                       "_Binaries/AltCover.Tests.Visualizer/Debug+AnyCPU/__GTKVTestWithAltCoverRunner/AltCover.Tests.Visualizer.dll" ]).CommandLine }
       |> AltCover.Collect
@@ -1651,6 +1640,7 @@ _Target "Packaging" (fun _ ->
         (posh, Some "tools/net45", None)
         (fsapi, Some "tools/net45", None)
         (vis, Some "tools/net45", None)
+        (fake2, Some "lib/net45", None)
         (fscore, Some "tools/net45", None)
         (options, Some "tools/net45", None)
         (packable, Some "", None) ]
@@ -1744,7 +1734,12 @@ _Target "Packaging" (fun _ ->
     |> Seq.toList
 
   let fakeFiles where =
-    (!!"./_Binaries/AltCover.Fak*/Release+AnyCPU/netstandard2.0/AltCover.Fak*.*")
+    (!!"./_Binaries/AltCover.Fake/Release+AnyCPU/netstandard2.0/AltCover.Fak*.*")
+    |> Seq.map (fun x -> (x, Some(where + Path.GetFileName x), None))
+    |> Seq.toList
+
+  let fake2Files where =
+    (!!"./_Binaries/AltCover.Fake.DotNet.Testing.AltCover/Release+AnyCPU/netstandard2.0/AltCover.Fake.DotNet.*")
     |> Seq.map (fun x -> (x, Some(where + Path.GetFileName x), None))
     |> Seq.toList
 
@@ -1809,6 +1804,7 @@ _Target "Packaging" (fun _ ->
   [ (List.concat [ applicationFiles
                    resourceFiles "tools/net45/"
                    netcoreFiles "tools/netcoreapp2.0/"
+                   fake2Files "lib/netstandard2.0/"
                    poshFiles "tools/netcoreapp2.0/"
                    vizFiles "tools/netcoreapp2.1"
                    otherFiles ], "_Packaging", "./Build/AltCover.nuspec", "altcover")
@@ -1818,6 +1814,7 @@ _Target "Packaging" (fun _ ->
                    netstdFiles "lib/netstandard2.0"
                    cakeFiles "lib/netstandard2.0/"
                    fakeFiles "lib/netstandard2.0/"
+                   fake2Files "lib/netstandard2.0/"
                    poshFiles "lib/netstandard2.0/"
                    vizFiles "tools/netcoreapp2.1"
                    otherFilesApi ], "_Packaging.api", "./_Generated/altcover.api.nuspec",
@@ -1825,6 +1822,7 @@ _Target "Packaging" (fun _ ->
 
     (List.concat [ netcoreFiles "lib/netcoreapp2.0"
                    poshFiles "lib/netcoreapp2.0/"
+                   fake2Files "lib/netstandard2.0/"
                    dotnetFiles
                    otherFilesDotnet ], "_Packaging.dotnet",
      "./_Generated/altcover.dotnet.nuspec", "altcover.dotnet")
@@ -1832,6 +1830,7 @@ _Target "Packaging" (fun _ ->
     (List.concat [ globalFiles
                    netcoreFiles "tools/netcoreapp2.1/any"
                    poshFiles "tools/netcoreapp2.1/any/"
+                   // fake2Files "lib/netstandard2.0/"  -- API like this is incompatible
                    auxFiles
                    otherFilesGlobal ], "_Packaging.global",
      "./_Generated/altcover.global.nuspec", "altcover.global")
@@ -1858,7 +1857,7 @@ _Target "Packaging" (fun _ ->
                   Publish = false
                   ReleaseNotes = Path.getFullName "ReleaseNotes.md" |> File.ReadAllText
                   ToolPath =
-                    if Environment.isWindows then p.ToolPath
+                    if Environment.isWindows then Tools.findToolInSubPath "NuGet.exe" "./packages"
                     else "/usr/bin/nuget" }) nuspec))
 
 _Target "PrepareFrameworkBuild"
@@ -2357,6 +2356,15 @@ _Target "DoIt" (fun _ ->
     "dotnettest.fsproj"
   let ipmo = AltCover.Api.Ipmo().Trim().Split().[1].Trim([| '\"' |])
   let command = "$ipmo = '" + ipmo + "'; Import-Module $ipmo; ConvertTo-BarChart -?"
+
+  let corePath = Testing.AltCover.toolPath Testing.AltCover.ToolType.Global
+  printfn "corePath = %A" corePath
+
+  let frameworkPath = Testing.AltCover.toolPath Testing.AltCover.ToolType.Framework
+  printfn "frameworkPath = %A" frameworkPath
+  { Testing.AltCover.Params.Create Testing.AltCover.ArgType.GetVersion with ToolPath = frameworkPath
+                                                                            ToolType = Testing.AltCover.ToolType.Framework }
+  |> Testing.AltCover.run
 
   let pwsh =
     if Environment.isWindows then

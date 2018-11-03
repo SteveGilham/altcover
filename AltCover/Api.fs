@@ -11,6 +11,8 @@ open System.Linq
 #if RUNNER
 open AltCover.Augment
 #else
+open System.Reflection
+open System.IO
 open Fake.Core
 #endif
 
@@ -25,6 +27,7 @@ type CollectParams =
     OutputFile : String
     CommandLine : String }
 
+#if RUNNER
   [<Obsolete("Please AltCover.CollectParams.Create() instead instead.")>]
   static member Default : CollectParams =
     { RecorderDirectory = String.Empty
@@ -35,6 +38,7 @@ type CollectParams =
       Cobertura = String.Empty
       OutputFile = String.Empty
       CommandLine = String.Empty }
+#endif
 
   static member Create() =
     { RecorderDirectory = String.Empty
@@ -45,8 +49,8 @@ type CollectParams =
       Cobertura = String.Empty
       OutputFile = String.Empty
       CommandLine = String.Empty }
-#if RUNNER
 
+#if RUNNER
   member self.Validate afterPreparation =
     let saved = CommandLine.error
 
@@ -103,6 +107,7 @@ type PrepareParams =
     BranchCover : bool
     CommandLine : String }
 
+#if RUNNER
   [<Obsolete("Please AltCover.CollectParams.Create() instead instead.")>]
   static member Default : PrepareParams =
     { InputDirectory = String.Empty
@@ -127,6 +132,7 @@ type PrepareParams =
       LineCover = false
       BranchCover = false
       CommandLine = String.Empty }
+#endif      
 
   static member Create() =
     { InputDirectory = String.Empty
@@ -151,8 +157,8 @@ type PrepareParams =
       LineCover = false
       BranchCover = false
       CommandLine = String.Empty }
-#if RUNNER
 
+#if RUNNER
   static member private validateArray a f key =
     PrepareParams.validateArraySimple a (f key)
 
@@ -228,8 +234,8 @@ type PrepareParams =
       CommandLine.error <- saved
 #endif
 
-module Args =
-  let internal Item a x =
+module internal Args =
+  let private Item a x =
     if x |> String.IsNullOrWhiteSpace then []
     else [ a; x ]
 
@@ -240,7 +246,7 @@ module Args =
       |> Seq.collect (fun i -> [ a; i ])
       |> Seq.toList
 
-  let internal Flag a x =
+  let private Flag a x =
     if x then [ a ]
     else []
 
@@ -281,6 +287,7 @@ module Args =
       Flag "--collect" (args.Executable |> String.IsNullOrWhiteSpace)
       Item "--" args.CommandLine ]
     |> List.concat
+
 #if RUNNER
 #else
 [<NoComparison>]
@@ -351,6 +358,21 @@ let internal createProcess parameters args =
 let composeCommandLine parameters =
   let args = createArgs parameters
   createProcess parameters args
+
+// Finds the tool from within the .nuget package
+let toolPath toolType =
+  let here = Assembly.GetExecutingAssembly().Location
+  let root = Path.Combine (Path.GetDirectoryName here, "../..")
+  let target = match toolType with
+               | Framework
+               | Mono _ -> "AltCover.exe"
+               | _ -> "AltCover.dll"
+  match Directory.GetFiles(root, target, SearchOption.AllDirectories)
+        |> Seq.filter (fun f -> let coretype = f |> Path.GetDirectoryName |> Path.GetFileName
+                                coretype.StartsWith("netstandard", StringComparison.Ordinal) |> not)
+        |> Seq.tryHead with
+  | Some path -> path
+  | None -> String.Empty
 
 let run parameters =
   use __ = Trace.traceTask "AltCover" String.Empty
