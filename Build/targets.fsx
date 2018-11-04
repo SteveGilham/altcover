@@ -441,9 +441,10 @@ _Target "UnitTestDotNet" (fun _ ->
 
 _Target "BuildForCoverlet" (fun _ ->
   !!(@"./*Tests/*.tests.core.fsproj")
-  |> Seq.iter (fun f ->
-       printfn "Building %s" f
-       Actions.RunDotnet dotnetOptions "build" ("--configuration Debug " + f) f))
+  |> Seq.iter (DotNet.build (fun p ->
+                 { p with Configuration = DotNet.BuildConfiguration.Debug
+                          Common = dotnetOptions p.Common
+                          MSBuildParams = cliArguments })))
 
 _Target "UnitTestDotNetWithCoverlet" (fun _ ->
   Directory.ensure "./_Reports"
@@ -452,10 +453,9 @@ _Target "UnitTestDotNetWithCoverlet" (fun _ ->
       !!(@"./*Tests/*.tests.core.fsproj")
       |> Seq.zip
            [ """/p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Exclude="\"[Sample*]*,[AltCover.Record*]*,[NUnit*]*,[AltCover.Shadow.Adapter]*\""  """;
-             """/p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Exclude="\"[Sample*]*,[AltCover.Record*]*,[NUnit*]*,[AltCover.Shadow.Adapter]*\"" - """;
+             """/p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Exclude="\"[Sample*]*,[AltCover.Record*]*,[NUnit*]*,[AltCover.Shadow.Adapter]*\""  """;
              """/p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Exclude="\"[Sample*]*,[AltCover.Record*]*\""  """ ]
       |> Seq.fold (fun l (p, f) ->
-           printfn "Testing %s" f
            try
              f
              |> DotNet.test (fun o ->
@@ -905,7 +905,7 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
          [ "--opencover"; coverage ]) "Coveralls upload failed"
   else printfn "Symbols not present; skipping")
 
-_Target "UnitTestWithAltCoverCore"
+_Target "UnitTestWithAltCoverCore" // Obsolete
   (fun _ ->
   Directory.ensure "./_Reports/_UnitTestWithAltCover"
   let keyfile = Path.getFullName "Build/SelfTest.snk"
@@ -933,11 +933,16 @@ _Target "UnitTestWithAltCoverCore"
 
   printfn "Unit test the instrumented code"
   try
-    Actions.RunDotnet
-      (fun o -> { dotnetOptions o with WorkingDirectory = Path.getFullName "Tests" })
-      "test"
-      ("-v m --no-build --configuration Debug --verbosity normal altcover.tests.core.fsproj")
-      "first test returned with a non-zero exit code"
+    "altcover.tests.core.fsproj"
+    |> DotNet.test (fun p ->
+         { p with Configuration = DotNet.BuildConfiguration.Debug
+                  NoBuild = true
+                  Common =
+                    { dotnetOptions p.Common with Verbosity =
+                                                    Some DotNet.Verbosity.Minimal
+                                                  WorkingDirectory =
+                                                    Path.getFullName "Tests" }
+                  MSBuildParams = cliArguments })
   with x ->
     printfn "%A" x
     reraise()
@@ -964,14 +969,18 @@ _Target "UnitTestWithAltCoverCore"
   |> AltCover.run
 
   printfn "Execute the shadow tests"
-  Actions.RunDotnet
-    (fun o -> { dotnetOptions o with WorkingDirectory = Path.getFullName "Shadow.Tests" })
-    "test"
-    ("-v m --no-build --configuration Debug --verbosity normal altcover.recorder.tests.core.fsproj")
-    "second test returned with a non-zero exit code"
+  "altcover.recorder.tests.core.fsproj"
+  |> DotNet.test (fun p ->
+       { p with Configuration = DotNet.BuildConfiguration.Debug
+                NoBuild = true
+                Common =
+                  { dotnetOptions p.Common with Verbosity = Some DotNet.Verbosity.Minimal
+                                                WorkingDirectory =
+                                                  Path.getFullName "Shadow.Tests" }
+                MSBuildParams = cliArguments })
 
   printfn "Instrument the XUnit tests"
-  let xDir = "_Binaries/AltCover.XTests/Debug+AnyCPU/netcoreapp2.0"
+  let xDir = "_Binaries/AltCover.XTests/Debug+AnyCPU/netcoreapp2.1"
   let xReport = reports @@ "XTestWithAltCoverCore.xml"
   let xOut =
     Path.getFullName "XTests/_Binaries/AltCover.XTests/Debug+AnyCPU/netcoreapp2.1"
@@ -991,11 +1000,15 @@ _Target "UnitTestWithAltCoverCore"
   |> AltCover.run
 
   printfn "Execute the XUnit tests"
-  Actions.RunDotnet
-    (fun o -> { dotnetOptions o with WorkingDirectory = Path.getFullName "XTests" })
-    "test"
-    ("-v m --no-build --configuration Debug --verbosity normal altcover.x.tests.core.fsproj")
-    "xuint test returned with a non-zero exit code"
+  "altcover.x.tests.core.fsproj"
+  |> DotNet.test (fun p ->
+       { p with Configuration = DotNet.BuildConfiguration.Debug
+                NoBuild = true
+                Common =
+                  { dotnetOptions p.Common with Verbosity = Some DotNet.Verbosity.Minimal
+                                                WorkingDirectory =
+                                                  Path.getFullName "XTests" }
+                MSBuildParams = cliArguments })
 
   ReportGenerator.generateReports (fun p ->
     { p with ExePath = Tools.findToolInSubPath "ReportGenerator.exe" "."
@@ -1004,7 +1017,7 @@ _Target "UnitTestWithAltCoverCore"
              TargetDir = "_Reports/_UnitTestWithAltCoverCore" })
     [ altReport; shadowReport; xReport ])
 
-_Target "UnitTestWithAltCoverCoreRunner"
+_Target "UnitTestWithAltCoverCoreRunner" // Next target TODO modernization
   (fun _ ->
   Directory.ensure "./_Reports/_UnitTestWithAltCover"
   let reports = Path.getFullName "./_Reports"
@@ -1039,6 +1052,7 @@ _Target "UnitTestWithAltCoverCoreRunner"
   let prep =
     { AltCover.PrepareParams.Create() with XmlReport = altReport
                                            OutputDirectory = output
+                                           Single = true
                                            InPlace = false
                                            Save = false }
     |> AltCoverFilter
@@ -2599,18 +2613,20 @@ _Target "Issue20" (fun _ ->
     pack.AddBeforeSelf inject
     csproj.Save "./RegressionTesting/issue20/xunit-tests/xunit-tests.csproj"
 
-    Actions.RunDotnet
+    DotNet.restore
       (fun o' ->
-      { dotnetOptions o' with WorkingDirectory =
-                                Path.getFullName "./RegressionTesting/issue20/classlib" })
-      "restore" ("") "restore returned with a non-zero exit code"
-
-    Actions.RunDotnet
+      { o' with Common =
+                  { dotnetOptions o'.Common with WorkingDirectory =
+                                                   Path.getFullName
+                                                     "./RegressionTesting/issue20/classlib" } })
+      ""
+    DotNet.restore
       (fun o' ->
-      { dotnetOptions o' with WorkingDirectory =
-                                Path.getFullName "./RegressionTesting/issue20/xunit-tests" })
-      "restore" ("") "restore returned with a non-zero exit code"
-
+      { o' with Common =
+                  { dotnetOptions o'.Common with WorkingDirectory =
+                                                   Path.getFullName
+                                                     "./RegressionTesting/issue20/xunit-tests" } })
+      ""
     Actions.RunDotnet
       (fun o' ->
       { dotnetOptions o' with WorkingDirectory =
