@@ -80,6 +80,11 @@ type CollectParams =
       CommandLine.error |> List.toArray
     finally
       CommandLine.error <- saved
+#else
+  member self.withCommandLine args =
+    { self with CommandLine =
+                  (CreateProcess.fromRawCommand String.Empty
+                    args).CommandLine}
 #endif
 
 [<ExcludeFromCodeCoverage; NoComparison>]
@@ -132,7 +137,7 @@ type PrepareParams =
       LineCover = false
       BranchCover = false
       CommandLine = String.Empty }
-#endif      
+#endif
 
   static member Create() =
     { InputDirectory = String.Empty
@@ -232,6 +237,11 @@ type PrepareParams =
       CommandLine.error |> List.toArray
     finally
       CommandLine.error <- saved
+#else
+  member self.withCommandLine args =
+    { self with CommandLine =
+                  (CreateProcess.fromRawCommand String.Empty
+                    args).CommandLine}
 #endif
 
 module internal Args =
