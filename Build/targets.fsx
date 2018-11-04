@@ -69,8 +69,7 @@ let monoOnWindows =
     [ programFiles; programFiles86 ]
     |> List.filter (String.IsNullOrWhiteSpace >> not)
     |> List.map (fun s -> s @@ "Mono/bin/mono.exe")
-    |> List.filter File.Exists
-    |> List.tryFind (fun _ -> true)
+    |> List.tryFind File.Exists
   else None
 
 let dotnetPath86 =
@@ -79,8 +78,7 @@ let dotnetPath86 =
       [ programFiles86 ]
       |> List.filter (String.IsNullOrWhiteSpace >> not)
       |> List.map (fun s -> s @@ "dotnet\dotnet.EXE")
-      |> List.filter File.Exists
-      |> List.tryFind (fun _ -> true)
+      |> List.tryFind File.Exists
     match perhaps with
     | Some path ->
       try // detect if we have the SDK
@@ -255,6 +253,7 @@ _Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standa
                                                     Log = "./_Reports/gendarme.html"
                                                     LogKind = Gendarme.LogKind.Html
                                                     Targets = files }))
+
 _Target "FxCop" (fun _ -> // Needs debug because release is compiled --standalone which contaminates everything
   Directory.ensure "./_Reports"
 
@@ -399,12 +398,14 @@ _Target "JustUnitTest" (fun _ ->
   Directory.ensure "./_Reports"
   try
     let here = Path.getFullName "."
+
     !!(@"_Binaries/*Tests/Debug+AnyCPU/*XTest*.dll")
     |> Fake.DotNet.Testing.XUnit2.run (fun p ->
          { p with ToolPath = Tools.findToolInSubPath "xunit.console.exe" "."
                   NUnitXmlOutputPath = Some "./_Reports/JustXUnitTestReport.xml"
                   WorkingDir = Some here
                   ShadowCopy = false })
+
     !!(@"_Binaries/*Tests*/Debug+AnyCPU/*Test*.dll")
     |> Seq.filter
          (fun f ->
@@ -467,6 +468,7 @@ _Target "UnitTestDotNetWithCoverlet" (fun _ ->
            with x -> eprintf "%A" x
            let here = Path.GetDirectoryName f
            (here @@ "coverage.opencover.xml") :: l) []
+
     ReportGenerator.generateReports (fun p ->
       { p with ExePath = Tools.findToolInSubPath "ReportGenerator.exe" "."
                ReportTypes =
@@ -680,6 +682,7 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
                                              OutputDirectory =
                                                "./__UnitTestWithAltCoverRunner"
                                              StrongNameKey = keyfile
+                                             Single = true
                                              InPlace = false
                                              Save = false }
       |> AltCoverFilter
@@ -690,13 +693,30 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
     |> AltCover.run
 
     printfn "Unit test the instrumented code"
-    !!(@"_Binaries/*Tests/Debug+AnyCPU/__UnitTestWithAltCoverRunner/*XTest*.dll")
-    |> Fake.DotNet.Testing.XUnit2.run (fun p ->
-         { p with ToolPath = Tools.findToolInSubPath "xunit.console.exe" "."
-                  NUnitXmlOutputPath =
-                    Some "./_Reports/XUnitTestWithAltCoverRunnerReport.xml"
-                  WorkingDir = Some here
-                  ShadowCopy = false })
+    try
+      let collect =
+        { AltCover.CollectParams.Create() with Executable = Tools.findToolInSubPath "xunit.console.exe" "."
+                                               RecorderDirectory =
+                                                 xtestDirectory
+                                                 @@ "__UnitTestWithAltCoverRunner"
+                                               CommandLine =
+                                                 (CreateProcess.fromRawCommand
+                                                    String.Empty
+                                                    [ Path.getFullName
+                                                        "_Binaries/AltCover.XTests/Debug+AnyCPU/__UnitTestWithAltCoverRunner/AltCover.XTests.dll"
+                                                      "-parallel"
+                                                      "none"
+                                                      "-noshadow"
+                                                      "-nunit"
+                                                      "./_Reports/XUnitTestWithAltCoverRunnerReport.xml" ]).CommandLine }
+        |> AltCover.Collect
+      { AltCover.Params.Create collect with ToolPath = altcover
+                                            ToolType = AltCover.ToolType.Framework
+                                            WorkingDirectory = here }
+      |> AltCover.run
+    with x ->
+      printfn "%A" x
+      reraise()
 
     let altReport = reports @@ "UnitTestWithAltCoverRunner.xml"
     printfn "Instrumented the code"
