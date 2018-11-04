@@ -2352,7 +2352,8 @@ let _Target s f =
   Target.description s
   Target.create s f
 
-_Target "DoIt" (fun _ ->
+_Target "DoIt"
+  (fun _ ->
   AltCover.Api.Version() |> printfn "Returned %A"
   AltCover.Fake.Api.Version() |> Trace.trace
   AltCover.CSApi.Version() |> printfn "Returned %A"
@@ -2389,9 +2390,12 @@ _Target "DoIt" (fun _ ->
 
   let frameworkPath = Testing.AltCover.toolPath Testing.AltCover.ToolType.Framework
   printfn "frameworkPath = %A" frameworkPath
-  { Testing.AltCover.Params.Create Testing.AltCover.ArgType.GetVersion with ToolPath = frameworkPath
-                                                                            ToolType = Testing.AltCover.ToolType.Framework }
-  |> Testing.AltCover.run
+  if Environment.isWindows then // the Framework version isn't packaged on mono because ILMerge is needed
+    { Testing.AltCover.Params.Create Testing.AltCover.ArgType.GetVersion with ToolPath =
+                                                                                frameworkPath
+                                                                              ToolType =
+                                                                                Testing.AltCover.ToolType.Framework }
+    |> Testing.AltCover.run
 
   let pwsh =
     if Environment.isWindows then
@@ -2399,9 +2403,10 @@ _Target "DoIt" (fun _ ->
         (Environment.environVar "ProgramFiles" @@ "PowerShell")
     else "pwsh"
 
-  let r = CreateProcess.fromRawCommand pwsh ["-NoProfile"; "-Command"; command ]
-          |> CreateProcess.withWorkingDirectory "."
-          |> Proc.run
+  let r =
+    CreateProcess.fromRawCommand pwsh [ "-NoProfile"; "-Command"; command ]
+    |> CreateProcess.withWorkingDirectory "."
+    |> Proc.run
 
   if (r.ExitCode <> 0) then new InvalidOperationException("Non zero return code") |> raise)
 Target.runOrDefault "DoIt"
