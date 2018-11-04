@@ -368,8 +368,7 @@ _Target "FxCop" (fun _ -> // Needs debug because release is compiled --standalon
                                               [ Path.getFullName
                                                   "ThirdParty/Microsoft.PowerShell.CodeAnalysis.15.dll" ]
                                             FailOnError = FxCop.ErrorLevel.Warning
-                                            IgnoreGeneratedCode = true}
-)
+                                            IgnoreGeneratedCode = true })
 
 // Unit Test
 
@@ -421,19 +420,20 @@ _Target "JustUnitTest" (fun _ ->
 
 _Target "BuildForUnitTestDotNet" (fun _ ->
   !!(@"./*Tests/*.tests.core.fsproj")
-  |> Seq.iter (fun f ->
-       printfn "Building %s" f
-       Actions.RunDotnet dotnetOptions "build" ("--configuration Debug " + f) f))
+  |> Seq.iter (DotNet.build (fun p ->
+                 { p with Configuration = DotNet.BuildConfiguration.Debug
+                          Common = dotnetOptions p.Common
+                          MSBuildParams = cliArguments })))
 
 _Target "UnitTestDotNet" (fun _ ->
   Directory.ensure "./_Reports"
   try
     !!(@"./*Tests/*.tests.core.fsproj")
-    |> Seq.iter
-         (fun f ->
-         printfn "Testing %s" f
-         Actions.RunDotnet dotnetOptions "test" ("--no-build --configuration Debug " + f)
-           f)
+    |> Seq.iter (DotNet.test (fun p ->
+                   { p with Configuration = DotNet.BuildConfiguration.Debug
+                            NoBuild = true
+                            Common = dotnetOptions p.Common
+                            MSBuildParams = cliArguments }))
   with x ->
     printfn "%A" x
     reraise())
@@ -450,13 +450,20 @@ _Target "UnitTestDotNetWithCoverlet" (fun _ ->
     let xml =
       !!(@"./*Tests/*.tests.core.fsproj")
       |> Seq.zip
-           [ """--no-build --framework netcoreapp2.1 /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Exclude="\"[Sample*]*,[AltCover.Record*]*,[NUnit*]*,[AltCover.Shadow.Adapter]*\"" --configuration Debug """;
-             """--no-build --framework netcoreapp2.1 /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Exclude="\"[Sample*]*,[AltCover.Record*]*,[NUnit*]*,[AltCover.Shadow.Adapter]*\"" --configuration Debug """;
-             """--no-build --framework netcoreapp2.1 /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Exclude="\"[Sample*]*,[AltCover.Record*]*\"" --configuration Debug """ ]
+           [ """/p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Exclude="\"[Sample*]*,[AltCover.Record*]*,[NUnit*]*,[AltCover.Shadow.Adapter]*\""  """;
+             """/p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Exclude="\"[Sample*]*,[AltCover.Record*]*,[NUnit*]*,[AltCover.Shadow.Adapter]*\"" - """;
+             """/p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Exclude="\"[Sample*]*,[AltCover.Record*]*\""  """ ]
       |> Seq.fold (fun l (p, f) ->
            printfn "Testing %s" f
            try
-             Actions.RunDotnet dotnetOptions "test" (p + f) f
+             f
+             |> DotNet.test (fun o ->
+                  { o with Configuration = DotNet.BuildConfiguration.Debug
+                           NoBuild = true
+                           Framework = Some "netcoreapp2.1"
+                           Common =
+                             { (dotnetOptions o.Common) with CustomParams = Some p }
+                           MSBuildParams = cliArguments })
            with x -> eprintf "%A" x
            let here = Path.GetDirectoryName f
            (here @@ "coverage.opencover.xml") :: l) []
