@@ -284,7 +284,7 @@ do ()"""
         Console.BackgroundColor <- snd save
     Assert.That(result.ExitCode, Is.EqualTo 0, msg)
 
-  let HandleResult (msg : string) (result : Fake.Core.ProcessResult<'a>) =
+  let AssertResult (msg : string) (result : Fake.Core.ProcessResult<'a>) =
     Assert.That(result.ExitCode, Is.EqualTo 0, msg)
 
   let Run (file, dir, args) msg =
@@ -292,13 +292,7 @@ do ()"""
     |> CreateProcess.withWorkingDirectory dir
     |> CreateProcess.withFramework
     |> Proc.run
-    |> (HandleResult msg)
-
-  let RunRaw (file, dir, args) msg =
-    CreateProcess.fromRawCommand file args
-    |> CreateProcess.withWorkingDirectory dir
-    |> Proc.run
-    |> (HandleResult msg)
+    |> (AssertResult msg)
 
   let RunDotnet (o : DotNet.Options -> DotNet.Options) cmd args msg =
     DotNet.exec o cmd args |> (HandleResults msg)

@@ -2001,9 +2001,10 @@ _Target "Unpack" (fun _ ->
 _Target "WindowsPowerShell"
   (fun _ ->
   let v = (!Version).Split([| '-' |]).[0]
-  Actions.RunRaw
-    ("powershell.exe", ".", [ "-NoProfile"; "./Build/powershell.ps1"; "-ACV"; v ])
-    "powershell")
+  CreateProcess.fromRawCommand "powershell.exe" [ "-NoProfile"; "./Build/powershell.ps1"; "-ACV"; v ]
+    |> CreateProcess.withWorkingDirectory "."
+    |> Proc.run
+    |> (Actions.AssertResult "powershell"))
 
 _Target "Pester" (fun _ ->
   Directory.ensure "./_Reports"
@@ -2033,7 +2034,11 @@ _Target "Pester" (fun _ ->
                  key ]) "Pester instrument"
 
   printfn "Execute the instrumented tests"
-  Actions.RunRaw (pwsh, ".", [ "-NoProfile"; "./Build/pester.ps1"; "-ACV"; v ]) "pwsh"
+  CreateProcess.fromRawCommand pwsh [ "-NoProfile"; "./Build/pester.ps1"; "-ACV"; v ]
+    |> CreateProcess.withWorkingDirectory "."
+    |> Proc.run
+    |> (Actions.AssertResult "pwsh")
+
   Actions.RunDotnet (fun o -> { dotnetOptions o with WorkingDirectory = unpack }) ""
     ("AltCover.dll Runner --collect -r \"" + i + "\"") "Collect the output"
   ReportGenerator.generateReports (fun p ->
@@ -2741,7 +2746,11 @@ _Target "DotnetCLIIntegration" (fun _ ->
 
     let command =
       """$ipmo = (dotnet altcover ipmo | Out-String).Trim().Split()[1].Trim(@([char]34)); Import-Module $ipmo; ConvertTo-BarChart -?"""
-    Actions.RunRaw (pwsh, working, [ "-NoProfile"; "-Command"; command ]) "pwsh"
+    CreateProcess.fromRawCommand pwsh [ "-NoProfile"; "-Command"; command ]
+      |> CreateProcess.withWorkingDirectory working
+      |> Proc.run
+      |> (Actions.AssertResult "pwsh")
+
     Actions.RunDotnet
       (fun o' ->
       { dotnetOptions o' with WorkingDirectory = Path.getFullName "_DotnetCLITest" })
@@ -2813,7 +2822,10 @@ _Target "DotnetGlobalIntegration" (fun _ ->
     Actions.CheckSample4Visits x
     let command =
       """$ipmo = (altcover ipmo | Out-String).Trim().Split()[1].Trim(@([char]34)); Import-Module $ipmo; ConvertTo-BarChart -?"""
-    Actions.RunRaw (pwsh, working, [ "-NoProfile"; "-Command"; command ]) "pwsh"
+    CreateProcess.fromRawCommand pwsh [ "-NoProfile"; "-Command"; command ]
+      |> CreateProcess.withWorkingDirectory working
+      |> Proc.run
+      |> (Actions.AssertResult "pwsh")
 
   // (fsproj.Descendants(XName.Get("TargetFramework")) |> Seq.head).Value <- "netcoreapp2.1"
   // fsproj.Save "./_DotnetGlobalTest/dotnetglobal.fsproj"
