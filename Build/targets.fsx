@@ -2627,11 +2627,16 @@ _Target "Issue20" (fun _ ->
                                                    Path.getFullName
                                                      "./RegressionTesting/issue20/xunit-tests" } })
       ""
-    Actions.RunDotnet
-      (fun o' ->
-      { dotnetOptions o' with WorkingDirectory =
-                                Path.getFullName "./RegressionTesting/issue20/xunit-tests" })
-      "test" ("-v m /p:AltCover=true") "sample test returned with a non-zero exit code"
+    DotNet.test (fun p ->
+      { p with Configuration = DotNet.BuildConfiguration.Debug
+               NoBuild = false
+               Common =
+                 { dotnetOptions p.Common with WorkingDirectory =
+                                                 Path.getFullName
+                                                   "./RegressionTesting/issue20/xunit-tests"
+                                               Verbosity = Some DotNet.Verbosity.Minimal
+                                               CustomParams = Some "/p:AltCover=true" }
+               MSBuildParams = cliArguments }) ""
 
   //    if Environment.isWindows then
   //      Path.getFullName "./RegressionTesting/issue20/xunit-tests/bin"
@@ -2666,15 +2671,23 @@ _Target "Issue23" (fun _ ->
     pack.AddBeforeSelf inject
     csproj.Save "./_Issue23/sample9.csproj"
     Shell.copy "./_Issue23" (!!"./Sample9/*.cs")
+    DotNet.restore
+      (fun o' ->
+      { o' with Common =
+                  { dotnetOptions o'.Common with WorkingDirectory =
+                                                   Path.getFullName "_Issue23" } }) ""
+    DotNet.test (fun p ->
+      { p with Configuration = DotNet.BuildConfiguration.Debug
+               NoBuild = false
+               Common =
+                 { dotnetOptions p.Common with WorkingDirectory =
+                                                 Path.getFullName "_Issue23"
+                                               Verbosity = Some DotNet.Verbosity.Minimal
+                                               CustomParams =
+                                                 Some
+                                                   "/p:AltCover=true /p:AltCoverIpmo=true /p:AltCoverGetVersion=true" }
+               MSBuildParams = cliArguments }) ""
 
-    Actions.RunDotnet
-      (fun o' -> { dotnetOptions o' with WorkingDirectory = Path.getFullName "_Issue23" })
-      "restore" ("") "restore returned with a non-zero exit code"
-
-    Actions.RunDotnet
-      (fun o' -> { dotnetOptions o' with WorkingDirectory = Path.getFullName "_Issue23" })
-      "test" ("-v m /p:AltCover=true /p:AltCoverIpmo=true /p:AltCoverGetVersion=true")
-      "sample test returned with a non-zero exit code"
   finally
     let folder = (nugetCache @@ "altcover") @@ !Version
     Shell.mkdir folder
