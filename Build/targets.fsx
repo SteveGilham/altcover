@@ -235,11 +235,11 @@ _Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standa
     else "./Build/rules-mono.xml"
 
   [ (rules,
-     [ "_Binaries/AltCover/Debug+AnyCPU/AltCover.exe";
+     [ "_Binaries/AltCover/Debug+AnyCPU/AltCover.exe"
        "_Binaries/AltCover.Shadow/Debug+AnyCPU/AltCover.Shadow.dll" ])
 
     ("./Build/rules-posh.xml",
-     [ "_Binaries/AltCover.PowerShell/Debug+AnyCPU/AltCover.PowerShell.dll";
+     [ "_Binaries/AltCover.PowerShell/Debug+AnyCPU/AltCover.PowerShell.dll"
        "_Binaries/AltCover.FSApi/Debug+AnyCPU/AltCover.FSApi.dll" ])
 
     ("./Build/rules-gtk.xml",
@@ -257,80 +257,80 @@ _Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standa
 _Target "FxCop" (fun _ -> // Needs debug because release is compiled --standalone which contaminates everything
   Directory.ensure "./_Reports"
 
-  let rules =   ["-Microsoft.Design#CA1004"
-                 "-Microsoft.Design#CA1006"
-                 "-Microsoft.Design#CA1011" // maybe sometimes
-                 "-Microsoft.Design#CA1062" // null checks,  In F#!
-                 "-Microsoft.Maintainability#CA1506"
-                 "-Microsoft.Naming#CA1704"
-                 "-Microsoft.Naming#CA1707"
-                 "-Microsoft.Naming#CA1709"
-                 "-Microsoft.Naming#CA1715" ]
+  let rules = [ "-Microsoft.Design#CA1004"
+                "-Microsoft.Design#CA1006"
+                "-Microsoft.Design#CA1011" // maybe sometimes
+                "-Microsoft.Design#CA1062" // null checks,  In F#!
+                "-Microsoft.Maintainability#CA1506"
+                "-Microsoft.Naming#CA1704"
+                "-Microsoft.Naming#CA1707"
+                "-Microsoft.Naming#CA1709"
+                "-Microsoft.Naming#CA1715" ]
 
-  [   ([
+  [ ([
          "_Binaries/AltCover/Debug+AnyCPU/AltCover.exe"
-       ],   ["AltCover.AltCover"
-             "AltCover.Api"
-             "AltCover.Args"
-             "AltCover.Augment"
-             "AltCover.Collect"
-             "AltCover.CollectParams"
-             "AltCover.CommandLine"
-             "AltCover.Filter"
-             "AltCover.FilterClass"
-             "AltCover.Fix"
-             "AltCover.GetVersion"
-             "AltCover.Instrument"
-             "AltCover.KeyRecord"
-             "AltCover.KeyStore"
-             "AltCover.Logging"
-             "AltCover.Main"
-             "AltCover.Naming"
-             "AltCover.Node"
-             "AltCover.PowerShell"
-             "AltCover.Prepare"
-             "AltCover.PrepareParams"
-             "AltCover.ProgramDatabase"
-             "AltCover.Report"
-             "AltCover.Runner"
-             "AltCover.Visitor"], rules);
-      ([
+       ], [ "AltCover.AltCover"
+            "AltCover.Api"
+            "AltCover.Args"
+            "AltCover.Augment"
+            "AltCover.Collect"
+            "AltCover.CollectParams"
+            "AltCover.CommandLine"
+            "AltCover.Filter"
+            "AltCover.FilterClass"
+            "AltCover.Fix"
+            "AltCover.GetVersion"
+            "AltCover.Instrument"
+            "AltCover.KeyRecord"
+            "AltCover.KeyStore"
+            "AltCover.Logging"
+            "AltCover.Main"
+            "AltCover.Naming"
+            "AltCover.Node"
+            "AltCover.PowerShell"
+            "AltCover.Prepare"
+            "AltCover.PrepareParams"
+            "AltCover.ProgramDatabase"
+            "AltCover.Report"
+            "AltCover.Runner"
+            "AltCover.Visitor" ], rules)
+    ([
           "_Binaries/AltCover.Shadow/Debug+AnyCPU/AltCover.Shadow.dll"
-       ], ["AltCover.Recorder.Assist"
-           "AltCover.Recorder.Counter"
-           "AltCover.Recorder.Assist"
-           "AltCover.Recorder.Tracer"
-           "AltCover.Recorder.Instance"], rules);
-      ([
+       ], [ "AltCover.Recorder.Assist"
+            "AltCover.Recorder.Counter"
+            "AltCover.Recorder.Assist"
+            "AltCover.Recorder.Tracer"
+            "AltCover.Recorder.Instance" ], rules)
+    ([
          "_Binaries/AltCover.PowerShell/Debug+AnyCPU/AltCover.PowerShell.dll"
-       ], [], ["-Microsoft.Design#CA1059"
-               "-Microsoft.Usage#CA2235"
-               "-Microsoft.Performance#CA1819"
-               "-Microsoft.Design#CA1020"
-               "-Microsoft.Design#CA1004"
-               "-Microsoft.Design#CA1006"
-               "-Microsoft.Design#CA1011"
-               "-Microsoft.Design#CA1062"
-               "-Microsoft.Maintainability#CA1506"
-               "-Microsoft.Naming#CA1704"
-               "-Microsoft.Naming#CA1707"
-               "-Microsoft.Naming#CA1709"
-               "-Microsoft.Naming#CA1715"]);
-      ([
+       ], [], [ "-Microsoft.Design#CA1059"
+                "-Microsoft.Usage#CA2235"
+                "-Microsoft.Performance#CA1819"
+                "-Microsoft.Design#CA1020"
+                "-Microsoft.Design#CA1004"
+                "-Microsoft.Design#CA1006"
+                "-Microsoft.Design#CA1011"
+                "-Microsoft.Design#CA1062"
+                "-Microsoft.Maintainability#CA1506"
+                "-Microsoft.Naming#CA1704"
+                "-Microsoft.Naming#CA1707"
+                "-Microsoft.Naming#CA1709"
+                "-Microsoft.Naming#CA1715" ])
+    ([
          "_Binaries/AltCover.FSApi/Debug+AnyCPU/AltCover.FSApi.dll"
-       ], [], ["-Microsoft.Usage#CA2235";
-               "-Microsoft.Performance#CA1819"
-               "-Microsoft.Design#CA1020"
-               "-Microsoft.Design#CA1004"
-               "-Microsoft.Design#CA1006"
-               "-Microsoft.Design#CA1011"
-               "-Microsoft.Design#CA1062"
-               "-Microsoft.Maintainability#CA1506"
-               "-Microsoft.Naming#CA1704"
-               "-Microsoft.Naming#CA1707"
-               "-Microsoft.Naming#CA1709"
-               "-Microsoft.Naming#CA1715"]);
-      ([
+       ], [], [ "-Microsoft.Usage#CA2235"
+                "-Microsoft.Performance#CA1819"
+                "-Microsoft.Design#CA1020"
+                "-Microsoft.Design#CA1004"
+                "-Microsoft.Design#CA1006"
+                "-Microsoft.Design#CA1011"
+                "-Microsoft.Design#CA1062"
+                "-Microsoft.Maintainability#CA1506"
+                "-Microsoft.Naming#CA1704"
+                "-Microsoft.Naming#CA1707"
+                "-Microsoft.Naming#CA1709"
+                "-Microsoft.Naming#CA1715" ])
+    ([
          "_Binaries/AltCover.Visualizer/Debug+AnyCPU/AltCover.Visualizer.exe"
        ], [
             "AltCover.Augment"
@@ -338,15 +338,15 @@ _Target "FxCop" (fun _ -> // Needs debug because release is compiled --standalon
             "AltCover.Visualizer.CoverageFile"
             "AltCover.Visualizer.Extensions"
             "AltCover.Visualizer.Gui"
-           ], ["-Microsoft.Usage#CA2208"
-               "-Microsoft.Usage#CA2235"
-               "-Microsoft.Maintainability#CA1506"
-               "-Microsoft.Design#CA1004"
-               "-Microsoft.Design#CA1006"
-               "-Microsoft.Naming#CA1707"
-               "-Microsoft.Naming#CA1715"
-               "-Microsoft.Naming#CA1704"
-               "-Microsoft.Naming#CA1709"])
+           ], [ "-Microsoft.Usage#CA2208"
+                "-Microsoft.Usage#CA2235"
+                "-Microsoft.Maintainability#CA1506"
+                "-Microsoft.Design#CA1004"
+                "-Microsoft.Design#CA1006"
+                "-Microsoft.Naming#CA1707"
+                "-Microsoft.Naming#CA1715"
+                "-Microsoft.Naming#CA1704"
+                "-Microsoft.Naming#CA1709" ])
       ]
     |> Seq.iter (fun (files, types, ruleset) -> files
                                                 |> FxCop.run { FxCop.Params.Create() with WorkingDirectory = "."
@@ -356,9 +356,9 @@ _Target "FxCop" (fun _ -> // Needs debug because release is compiled --standalon
                                                                                           Types = types
                                                                                           Rules = ruleset
                                                                                           FailOnError = FxCop.ErrorLevel.Warning
-                                                                                          IgnoreGeneratedCode = true})
+                                                                                          IgnoreGeneratedCode = true })
 
-  ["_Binaries/AltCover.PowerShell/Debug+AnyCPU/AltCover.PowerShell.dll"]
+  [ "_Binaries/AltCover.PowerShell/Debug+AnyCPU/AltCover.PowerShell.dll" ]
   |> FxCop.run { FxCop.Params.Create() with WorkingDirectory = "."
                                             UseGAC = true
                                             Verbose = false
@@ -452,8 +452,8 @@ _Target "UnitTestDotNetWithCoverlet" (fun _ ->
     let xml =
       !!(@"./*Tests/*.tests.core.fsproj")
       |> Seq.zip
-           [ """/p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Exclude="\"[Sample*]*,[AltCover.Record*]*,[NUnit*]*,[AltCover.Shadow.Adapter]*\""  """;
-             """/p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Exclude="\"[Sample*]*,[AltCover.Record*]*,[NUnit*]*,[AltCover.Shadow.Adapter]*\""  """;
+           [ """/p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Exclude="\"[Sample*]*,[AltCover.Record*]*,[NUnit*]*,[AltCover.Shadow.Adapter]*\""  """
+             """/p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Exclude="\"[Sample*]*,[AltCover.Record*]*,[NUnit*]*,[AltCover.Shadow.Adapter]*\""  """
              """/p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Exclude="\"[Sample*]*,[AltCover.Record*]*\""  """ ]
       |> Seq.fold (fun l (p, f) ->
            try
@@ -2178,7 +2178,10 @@ _Target "ReleaseFSharpTypesX86DotNetRunner" (fun _ ->
   try
     try
       Environment.SetEnvironmentVariable("platform", "x86")
-      Actions.Run (dotnetPath86 |> Option.get, ".", [ "--info" ]) "dotnet-x86 failed"
+      DotNet.info (fun o' -> { o' with Common = { o'.Common with WorkingDirectory = s
+                                                                 DotNetCliPath = dotnetPath86 |> Option.get } })
+      |> printfn "%A"
+
       printfn "Build the sample2 code as x86"
       Actions.RunDotnet (fun o' -> { dotnetOptions o' with WorkingDirectory = s }) "build"
         (" altcover.core.sln --configuration Debug")
