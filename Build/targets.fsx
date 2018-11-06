@@ -1152,7 +1152,7 @@ _Target "FSharpTypes" (fun _ ->
     Actions.ValidateFSharpTypes simpleReport []
   else printfn "Symbols not present; skipping")
 
-_Target "FSharpTypesDotNet" (fun _ ->
+_Target "FSharpTypesDotNet" (fun _ -> // obsolete
   Directory.ensure "./_Reports"
   let altcover =
     Path.getFullName "./_Binaries/AltCover/Release+AnyCPU/netcoreapp2.0/AltCover.dll"
@@ -1161,10 +1161,15 @@ _Target "FSharpTypesDotNet" (fun _ ->
 
   // Test the --inplace operation
   Shell.cleanDir sampleRoot
-  Actions.RunDotnet
-    (fun o -> { dotnetOptions o with WorkingDirectory = Path.getFullName "Sample2" })
-    "test" ("-v m --configuration Debug sample2.core.fsproj")
-    "sample initial test returned with a non-zero exit code"
+  "sample2.core.fsproj"
+  |> DotNet.test (fun o ->
+       { o with Configuration = DotNet.BuildConfiguration.Debug
+                Common =
+                  { (dotnetOptions o.Common) with WorkingDirectory =
+                                                    Path.getFullName "Sample2"
+                                                  Verbosity =
+                                                    Some DotNet.Verbosity.Minimal }
+                MSBuildParams = cliArguments })
 
   Actions.RunDotnet (fun o -> { dotnetOptions o with WorkingDirectory = sampleRoot }) ""
     (altcover + " --inplace -s=Adapter -t \"System\\.\" -t \"Microsoft\\.\" -x \""
@@ -1173,14 +1178,19 @@ _Target "FSharpTypesDotNet" (fun _ ->
   Assert.That(Path.Combine(sampleRoot, "__Saved") |> Directory.Exists)
 
   printfn "Execute the instrumented tests"
-  Actions.RunDotnet
-    (fun o -> { dotnetOptions o with WorkingDirectory = Path.getFullName "Sample2" })
-    "test" ("-v m --no-build --configuration Debug sample2.core.fsproj")
-    "sample coverage test returned with a non-zero exit code"
+  "sample2.core.fsproj"
+  |> DotNet.test (fun o ->
+       { o with Configuration = DotNet.BuildConfiguration.Debug
+                NoBuild = true
+                Common =
+                  { (dotnetOptions o.Common) with WorkingDirectory =
+                                                    Path.getFullName "Sample2"
+                                                  Verbosity =
+                                                    Some DotNet.Verbosity.Minimal }
+                MSBuildParams = cliArguments })
   Actions.ValidateFSharpTypesCoverage simpleReport)
 
-_Target "FSharpTests"
-  (fun _ ->
+_Target "FSharpTests" (fun _ ->
   Directory.ensure "./_Reports"
   let altcover =
     Path.getFullName "./_Binaries/AltCover/Release+AnyCPU/netcoreapp2.0/AltCover.dll"
@@ -1189,10 +1199,15 @@ _Target "FSharpTests"
 
   // Test the --inplace operation
   Shell.cleanDir sampleRoot
-  Actions.RunDotnet
-    (fun o -> { dotnetOptions o with WorkingDirectory = Path.getFullName "Sample7" })
-    "test" ("-v m --configuration Debug sample7.core.fsproj")
-    "sample initial test returned with a non-zero exit code"
+  "sample7.core.fsproj"
+  |> DotNet.test (fun o ->
+       { o with Configuration = DotNet.BuildConfiguration.Debug
+                Common =
+                  { (dotnetOptions o.Common) with WorkingDirectory =
+                                                    Path.getFullName "Sample7"
+                                                  Verbosity =
+                                                    Some DotNet.Verbosity.Minimal }
+                MSBuildParams = cliArguments })
 
   // inplace instrument
   Actions.RunDotnet (fun o -> { dotnetOptions o with WorkingDirectory = sampleRoot }) ""
@@ -1200,10 +1215,16 @@ _Target "FSharpTests"
      + " --opencover --inplace -c=[Test] -s=Adapter -t \"System\\.\" -t \"Microsoft\\.\" -x \""
      + simpleReport + "\" ") "FSharpTypesDotNet"
   printfn "Execute the instrumented tests"
-  Actions.RunDotnet
-    (fun o -> { dotnetOptions o with WorkingDirectory = Path.getFullName "Sample7" })
-    "test" ("-v m --no-build --configuration Debug sample7.core.fsproj")
-    "sample coverage test returned with a non-zero exit code")
+  "sample7.core.fsproj"
+  |> DotNet.test (fun o ->
+       { o with Configuration = DotNet.BuildConfiguration.Debug
+                NoBuild = true
+                Common =
+                  { (dotnetOptions o.Common) with WorkingDirectory =
+                                                    Path.getFullName "Sample7"
+                                                  Verbosity =
+                                                    Some DotNet.Verbosity.Minimal }
+                MSBuildParams = cliArguments }))
 
 _Target "FSharpTypesDotNetRunner" (fun _ ->
   Directory.ensure "./_Reports"
@@ -1241,10 +1262,15 @@ _Target "FSharpTypesDotNetCollecter" (fun _ ->
 
   // Test the --inplace operation
   Shell.cleanDir sampleRoot
-  Actions.RunDotnet
-    (fun o -> { dotnetOptions o with WorkingDirectory = Path.getFullName "Sample2" })
-    "test" ("--configuration Debug sample2.core.fsproj")
-    "sample initial test returned with a non-zero exit code"
+  "sample2.core.fsproj"
+  |> DotNet.test (fun o ->
+       { o with Configuration = DotNet.BuildConfiguration.Debug
+                Common =
+                  { (dotnetOptions o.Common) with WorkingDirectory =
+                                                    Path.getFullName "Sample2"
+                                                  Verbosity =
+                                                    Some DotNet.Verbosity.Minimal }
+                MSBuildParams = cliArguments })
 
   // inplace instrument and save
   Actions.RunDotnet (fun o -> { dotnetOptions o with WorkingDirectory = sampleRoot }) ""
@@ -1254,10 +1280,16 @@ _Target "FSharpTypesDotNetCollecter" (fun _ ->
   Assert.That(Path.Combine(sampleRoot, "__Saved") |> Directory.Exists)
 
   printfn "Execute the instrumented tests"
-  Actions.RunDotnet
-    (fun o -> { dotnetOptions o with WorkingDirectory = Path.getFullName "Sample2" })
-    "test" ("-v m --no-build --configuration Debug sample2.core.fsproj")
-    "sample coverage test returned with a non-zero exit code"
+  "sample2.core.fsproj"
+  |> DotNet.test (fun o ->
+       { o with Configuration = DotNet.BuildConfiguration.Debug
+                NoBuild = true
+                Common =
+                  { (dotnetOptions o.Common) with WorkingDirectory =
+                                                    Path.getFullName "Sample2"
+                                                  Verbosity =
+                                                    Some DotNet.Verbosity.Minimal }
+                MSBuildParams = cliArguments })
 
   Actions.RunDotnet (fun o -> { dotnetOptions o with WorkingDirectory = sampleRoot }) ""
     (altcover + " Runner --collect -r \"" + sampleRoot + "\"")
@@ -2236,10 +2268,16 @@ _Target "ReleaseXUnitFSharpTypesDotNet" (fun _ ->
   Actions.ValidateFSharpTypes x [ "main" ]
 
   printfn "Execute the instrumented tests"
-  Actions.RunDotnet
-    (fun o' -> { dotnetOptions o' with WorkingDirectory = Path.getFullName "Sample4" })
-    "test" ("-v m --no-build --configuration Debug sample4.core.fsproj -v m")
-    "sample test returned with a non-zero exit code"
+  "sample4.core.fsproj"
+  |> DotNet.test (fun o ->
+       { o with Configuration = DotNet.BuildConfiguration.Debug
+                NoBuild = true
+                Common =
+                  { (dotnetOptions o.Common) with WorkingDirectory =
+                                                    Path.getFullName "Sample4"
+                                                  Verbosity =
+                                                    Some DotNet.Verbosity.Minimal }
+                MSBuildParams = cliArguments })
   Actions.ValidateFSharpTypesCoverage x)
 
 _Target "ReleaseXUnitFSharpTypesDotNetRunner" (fun _ ->
@@ -2516,11 +2554,14 @@ _Target "DotnetTestIntegration" (fun _ ->
     fsproj.Save "./_DotnetTestLineCover/dotnettest.csproj"
     Shell.copy "./_DotnetTestLineCover" (!!"./Sample10/*.cs")
 
-    Actions.RunDotnet
-      (fun o' ->
-      { dotnetOptions o' with WorkingDirectory = Path.getFullName "_DotnetTestLineCover" })
-      "test" ("-v m /p:AltCover=true /p:AltCoverLineCover=true")
-      "sample test returned with a non-zero exit code"
+    DotNet.test
+      (fun to' ->
+      to'.WithCommon
+        (fun o' ->
+        { dotnetOptions o' with WorkingDirectory = Path.getFullName "_DotnetTestLineCover"
+                                Verbosity = Some DotNet.Verbosity.Minimal
+                                CustomParams =
+                                  Some "/p:AltCover=true /p:AltCoverLineCover=true" })) ""
 
     let x = Path.getFullName "./_DotnetTestLineCover/coverage.xml"
 
@@ -2553,11 +2594,16 @@ _Target "DotnetTestIntegration" (fun _ ->
     fsproj.Save "./_DotnetTestBranchCover/dotnettest.csproj"
     Shell.copy "./_DotnetTestBranchCover" (!!"./Sample10/*.cs")
 
-    Actions.RunDotnet
-      (fun o' ->
-      { dotnetOptions o' with WorkingDirectory = Path.getFullName "_DotnetTestBranchCover" })
-      "test" ("-v m /p:AltCover=true /p:AltCoverBranchCover=true")
-      "sample test returned with a non-zero exit code"
+    DotNet.test
+      (fun to' ->
+      to'.WithCommon
+        (fun o' ->
+        { dotnetOptions o' with WorkingDirectory =
+                                  Path.getFullName "_DotnetTestBranchCover"
+                                Verbosity = Some DotNet.Verbosity.Minimal
+                                CustomParams =
+                                  Some "/p:AltCover=true /p:AltCoverBranchCover=true" }))
+      ""
 
     let x = Path.getFullName "./_DotnetTestBranchCover/coverage.xml"
 
@@ -2582,12 +2628,12 @@ _Target "DotnetTestIntegration" (fun _ ->
            XAttribute(XName.Get "Version", !Version))
       pack.AddBeforeSelf inject
       proj.Save "./RegressionTesting/issue29/issue29.csproj"
-      Actions.RunDotnet
-        (fun o' ->
+    DotNet.test (fun to' ->
+      to'.WithCommon(fun o' ->
         { dotnetOptions o' with WorkingDirectory =
-                                  Path.getFullName "RegressionTesting/issue29" }) "test"
-        ("-v m /p:AltCover=true")
-        "issue#29 regression test returned with a non-zero exit code"
+                                  Path.getFullName "RegressionTesting/issue29"
+                                Verbosity = Some DotNet.Verbosity.Minimal
+                                CustomParams = Some "/p:AltCover=true" })) ""
 
     let proj = XDocument.Load "./RegressionTesting/issue37/issue37.xml"
     let pack = proj.Descendants(XName.Get("PackageReference")) |> Seq.head
@@ -2597,12 +2643,18 @@ _Target "DotnetTestIntegration" (fun _ ->
          XAttribute(XName.Get "Version", !Version))
     pack.AddBeforeSelf inject
     proj.Save "./RegressionTesting/issue37/issue37.csproj"
-    Actions.RunDotnet
-      (fun o' ->
-      { dotnetOptions o' with WorkingDirectory =
-                                Path.getFullName "RegressionTesting/issue37" }) "test"
-      ("-v m -c Release /p:AltCover=true /p:AltCoverAssemblyFilter=NUnit")
-      "issue#37 regression test returned with a non-zero exit code"
+    DotNet.test
+      (fun to' ->
+      { to'.WithCommon
+          (fun o' ->
+          { dotnetOptions o' with WorkingDirectory =
+                                    Path.getFullName "RegressionTesting/issue37"
+                                  Verbosity = Some DotNet.Verbosity.Minimal
+                                  CustomParams =
+                                    Some
+                                      "/p:AltCover=true /p:AltCoverAssemblyFilter=NUnit" }) with Configuration =
+                                                                                                   DotNet.BuildConfiguration.Release })
+      ""
 
     let cover37 = XDocument.Load "./RegressionTesting/issue37/coverage.xml"
     Assert.That(cover37.Descendants(XName.Get("BranchPoint")) |> Seq.length, Is.EqualTo 2)
@@ -2770,10 +2822,16 @@ _Target "DotnetCLIIntegration" (fun _ ->
       "add" ("package altcover.dotnet --version " + !Version)
       "sample test returned with a non-zero exit code"
 
-    Actions.RunDotnet
-      (fun o' ->
-      { dotnetOptions o' with WorkingDirectory = Path.getFullName "_DotnetCLITest" })
-      "test" ("-v m /p:AltCover=true") "sample test returned with a non-zero exit code"
+    DotNet.test (fun p ->
+      { p with Configuration = DotNet.BuildConfiguration.Debug
+               NoBuild = false
+               Common =
+                 { dotnetOptions p.Common with WorkingDirectory =
+                                                 Path.getFullName "_DotnetCLITest"
+                                               Verbosity = Some DotNet.Verbosity.Minimal
+                                               CustomParams = Some "/p:AltCover=true" }
+               MSBuildParams = cliArguments }) ""
+
     "./_DotnetCLITest/coverage.xml"
     |> Path.getFullName
     |> File.Exists
