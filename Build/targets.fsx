@@ -1998,13 +1998,13 @@ _Target "Unpack" (fun _ ->
   let unpack = Path.getFullName "_Packaging/Unpack"
   System.IO.Compression.ZipFile.ExtractToDirectory(nugget, unpack))
 
-_Target "WindowsPowerShell"
-  (fun _ ->
+_Target "WindowsPowerShell" (fun _ ->
   let v = (!Version).Split([| '-' |]).[0]
-  CreateProcess.fromRawCommand "powershell.exe" [ "-NoProfile"; "./Build/powershell.ps1"; "-ACV"; v ]
-    |> CreateProcess.withWorkingDirectory "."
-    |> Proc.run
-    |> (Actions.AssertResult "powershell"))
+  CreateProcess.fromRawCommand "powershell.exe"
+    [ "-NoProfile"; "./Build/powershell.ps1"; "-ACV"; v ]
+  |> CreateProcess.withWorkingDirectory "."
+  |> Proc.run
+  |> (Actions.AssertResult "powershell"))
 
 _Target "Pester" (fun _ ->
   Directory.ensure "./_Reports"
@@ -2035,9 +2035,9 @@ _Target "Pester" (fun _ ->
 
   printfn "Execute the instrumented tests"
   CreateProcess.fromRawCommand pwsh [ "-NoProfile"; "./Build/pester.ps1"; "-ACV"; v ]
-    |> CreateProcess.withWorkingDirectory "."
-    |> Proc.run
-    |> (Actions.AssertResult "pwsh")
+  |> CreateProcess.withWorkingDirectory "."
+  |> Proc.run
+  |> (Actions.AssertResult "pwsh")
 
   Actions.RunDotnet (fun o -> { dotnetOptions o with WorkingDirectory = unpack }) ""
     ("AltCover.dll Runner --collect -r \"" + i + "\"") "Collect the output"
@@ -2178,14 +2178,20 @@ _Target "ReleaseFSharpTypesX86DotNetRunner" (fun _ ->
   try
     try
       Environment.SetEnvironmentVariable("platform", "x86")
-      DotNet.info (fun o' -> { o' with Common = { o'.Common with WorkingDirectory = s
-                                                                 DotNetCliPath = dotnetPath86 |> Option.get } })
+      DotNet.info (fun o' ->
+        { o' with Common =
+                    { o'.Common with WorkingDirectory = s
+                                     DotNetCliPath = dotnetPath86 |> Option.get } })
       |> printfn "%A"
 
       printfn "Build the sample2 code as x86"
-      Actions.RunDotnet (fun o' -> { dotnetOptions o' with WorkingDirectory = s }) "build"
-        (" altcover.core.sln --configuration Debug")
-        "ReleaseFSharpTypesX86DotNetRunnerBuild"
+      "./altcover.core.sln"
+      |> DotNet.build (fun p ->
+           { p with Configuration = DotNet.BuildConfiguration.Debug
+                    Common =
+                      { p.Common with WorkingDirectory = s
+                                      DotNetCliPath = dotnetPath86 |> Option.get }
+                    MSBuildParams = cliArguments })
 
       printfn "Instrument the code"
       let altcover = unpack @@ "AltCover.dll"
@@ -2722,8 +2728,12 @@ _Target "DotnetCLIIntegration" (fun _ ->
     Shell.copy "./_DotnetCLITest" (!!"./Sample4/*.fs")
 
     let working = Path.getFullName "./_DotnetCLITest"
-    Actions.RunDotnet (fun o' -> { dotnetOptions o' with WorkingDirectory = working })
-      "build" "" "Restored"
+    ""
+    |> DotNet.build (fun p ->
+         { p with Configuration = DotNet.BuildConfiguration.Debug
+                  Common = { dotnetOptions p.Common with WorkingDirectory = working }
+                  MSBuildParams = cliArguments })
+
     let x = Path.getFullName "./_Reports/DotnetCLIIntegration.xml"
     let o =
       Path.getFullName "./_DotnetCLITest/_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1"
@@ -2750,9 +2760,9 @@ _Target "DotnetCLIIntegration" (fun _ ->
     let command =
       """$ipmo = (dotnet altcover ipmo | Out-String).Trim().Split()[1].Trim(@([char]34)); Import-Module $ipmo; ConvertTo-BarChart -?"""
     CreateProcess.fromRawCommand pwsh [ "-NoProfile"; "-Command"; command ]
-      |> CreateProcess.withWorkingDirectory working
-      |> Proc.run
-      |> (Actions.AssertResult "pwsh")
+    |> CreateProcess.withWorkingDirectory working
+    |> Proc.run
+    |> (Actions.AssertResult "pwsh")
 
     Actions.RunDotnet
       (fun o' ->
@@ -2796,8 +2806,11 @@ _Target "DotnetGlobalIntegration" (fun _ ->
       "tool" ("list -g ") "Checked"
     set <- true
 
-    Actions.RunDotnet (fun o' -> { dotnetOptions o' with WorkingDirectory = working })
-      "build" "" "Built"
+    ""
+    |> DotNet.build (fun p ->
+         { p with Configuration = DotNet.BuildConfiguration.Debug
+                  Common = { dotnetOptions p.Common with WorkingDirectory = working }
+                  MSBuildParams = cliArguments })
 
     let x = Path.getFullName "./_Reports/DotnetGlobalIntegration.xml"
     let o =
@@ -2826,9 +2839,9 @@ _Target "DotnetGlobalIntegration" (fun _ ->
     let command =
       """$ipmo = (altcover ipmo | Out-String).Trim().Split()[1].Trim(@([char]34)); Import-Module $ipmo; ConvertTo-BarChart -?"""
     CreateProcess.fromRawCommand pwsh [ "-NoProfile"; "-Command"; command ]
-      |> CreateProcess.withWorkingDirectory working
-      |> Proc.run
-      |> (Actions.AssertResult "pwsh")
+    |> CreateProcess.withWorkingDirectory working
+    |> Proc.run
+    |> (Actions.AssertResult "pwsh")
 
   // (fsproj.Descendants(XName.Get("TargetFramework")) |> Seq.head).Value <- "netcoreapp2.1"
   // fsproj.Save "./_DotnetGlobalTest/dotnetglobal.fsproj"
