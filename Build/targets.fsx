@@ -6,7 +6,7 @@ open System.Xml
 open System.Xml.Linq
 
 open Actions
-open AltCover.Fake.DotNet.Testing
+open AltCover_Fake.DotNet.Testing
 
 open Fake.Core
 open Fake.Core.TargetOperators
@@ -2400,6 +2400,7 @@ open Fake.IO.Globbing
 open Fake.IO.Globbing.Operators
 open AltCover
 open AltCover.Fake.DotNet
+open AltCover_Fake.DotNet.Testing
 
 let _Target s f =
   Target.description s
@@ -2411,15 +2412,15 @@ _Target "DoIt"
   AltCover.Fake.Api.Version() |> Trace.trace
   AltCover.CSApi.Version() |> printfn "Returned %A"
 
-  let collect = { AltCover.CollectParams.Create() with LcovReport = "x" }
-  let prepare = { AltCover.PrepareParams.Create() with TypeFilter = [| "a"; "b" |] }
-  printfn "%s" (AltCover.DotNet.ToTestArguments prepare collect)
+  let collect = { CollectParams.Create() with LcovReport = "x" }
+  let prepare = { PrepareParams.Create() with TypeFilter = [| "a"; "b" |] }
+  printfn "%s" (DotNet.ToTestArguments prepare collect)
 
   let t = DotNet.TestOptions.Create().WithParameters prepare collect
   printfn "returned '%A'" t.Common.CustomParams
 
-  let p2 = { AltCover.PrepareParams.Create() with CallContext = [| "[Fact]"; "0" |] }
-  let c2 = AltCover.CollectParams.Create()
+  let p2 = { PrepareParams.Create() with CallContext = [| "[Fact]"; "0" |] }
+  let c2 = CollectParams.Create()
 
   let setBaseOptions (o : DotNet.Options) =
     { o with WorkingDirectory = Path.getFullName "./_DotnetTest"
@@ -2438,17 +2439,15 @@ _Target "DoIt"
   let ipmo = AltCover.Api.Ipmo().Trim().Split().[1].Trim([| '\"' |])
   let command = "$ipmo = '" + ipmo + "'; Import-Module $ipmo; ConvertTo-BarChart -?"
 
-  let corePath = Testing.AltCover.toolPath Testing.AltCover.ToolType.Global
+  let corePath = AltCover.toolPath AltCover.ToolType.Global
   printfn "corePath = %A" corePath
 
-  let frameworkPath = Testing.AltCover.toolPath Testing.AltCover.ToolType.Framework
+  let frameworkPath = AltCover.toolPath AltCover.ToolType.Framework
   printfn "frameworkPath = %A" frameworkPath
   if Environment.isWindows then // the Framework version isn't packaged on mono because ILMerge is needed
-    { Testing.AltCover.Params.Create Testing.AltCover.ArgType.GetVersion with ToolPath =
-                                                                                frameworkPath
-                                                                              ToolType =
-                                                                                Testing.AltCover.ToolType.Framework }
-    |> Testing.AltCover.run
+    { AltCover.Params.Create AltCover.ArgType.GetVersion with ToolPath = frameworkPath
+                                                              ToolType = AltCover.ToolType.Framework }
+    |> AltCover.run
 
   let pwsh =
     if Environment.isWindows then

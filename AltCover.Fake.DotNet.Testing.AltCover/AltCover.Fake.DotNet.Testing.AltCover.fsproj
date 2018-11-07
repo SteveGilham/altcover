@@ -16,6 +16,7 @@
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
     <ResolveNuGetPackages>false</ResolveNuGetPackages>
+    <GlobalDefineConstants>FAKEAPI</GlobalDefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -29,7 +30,7 @@
     <WarningsAsErrors>
     </WarningsAsErrors>
     <OtherFlags>--keyfile:$(SolutionDir)Build\Infrastructure.snk</OtherFlags>
-    <DefineConstants>TRACE;DEBUG;CODE_ANALYSIS</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;CODE_ANALYSIS;$(GlobalDefineConstants)</DefineConstants>
     <WarningLevel>5</WarningLevel>
     <NoWarn>52</NoWarn>
   </PropertyGroup>
@@ -44,7 +45,7 @@
     <WarningsAsErrors>
     </WarningsAsErrors>
     <OtherFlags>--keyfile:$(SolutionDir)Build\Infrastructure.snk</OtherFlags>
-    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants>TRACE;$(GlobalDefineConstants)</DefineConstants>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
@@ -61,38 +62,33 @@
     <Compile Include="..\AltCover\Api.fs">
       <Link>Api.fs</Link>
     </Compile>
+    <Compile Include="..\AltCover.FSApi\Definitions.fs">
+      <Link>Definitions.fs</Link>
+    </Compile>
+    <Compile Include="..\AltCover.Fake\Fake.fs">
+      <Link>Fake.fs</Link>
+    </Compile>
     <Content Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="Fake.Core.Context">
-      <HintPath>..\packages\Fake.Core.Context.5.9.3\lib\net46\Fake.Core.Context.dll</HintPath>
-    </Reference>
-    <Reference Include="Fake.Core.Environment">
-      <HintPath>..\packages\Fake.Core.Environment.5.9.3\lib\net46\Fake.Core.Environment.dll</HintPath>
-    </Reference>
-    <Reference Include="Fake.Core.FakeVar">
-      <HintPath>..\packages\Fake.Core.FakeVar.5.9.3\lib\net46\Fake.Core.FakeVar.dll</HintPath>
-    </Reference>
     <Reference Include="Fake.Core.Process">
       <HintPath>..\packages\Fake.Core.Process.5.9.3\lib\net46\Fake.Core.Process.dll</HintPath>
-    </Reference>
-    <Reference Include="Fake.Core.String">
-      <HintPath>..\packages\Fake.Core.String.5.9.3\lib\net46\Fake.Core.String.dll</HintPath>
     </Reference>
     <Reference Include="Fake.Core.Trace">
       <HintPath>..\packages\Fake.Core.Trace.5.9.3\lib\net46\Fake.Core.Trace.dll</HintPath>
     </Reference>
-    <Reference Include="Fake.IO.FileSystem">
-      <HintPath>..\packages\Fake.IO.FileSystem.5.9.3\lib\net46\Fake.IO.FileSystem.dll</HintPath>
+    <Reference Include="Fake.DotNet.Cli">
+      <HintPath>..\packages\Fake.DotNet.Cli.5.9.3\lib\net462\Fake.DotNet.Cli.dll</HintPath>
     </Reference>
     <Reference Include="FSharp.Core">
       <HintPath>..\packages\FSharp.Core.4.5.2\lib\net45\FSharp.Core.dll</HintPath>
     </Reference>
     <Reference Include="mscorlib" />
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Diagnostics.FileVersionInfo">
+    <!-- Reference Include="System.Diagnostics.FileVersionInfo">
       <HintPath>..\packages\System.Diagnostics.FileVersionInfo.4.3.0\lib\net46\System.Diagnostics.FileVersionInfo.dll</HintPath>
       <Private>True</Private>
     </Reference>
@@ -100,13 +96,11 @@
       <HintPath>..\packages\System.Diagnostics.Process.4.3.0\lib\net461\System.Diagnostics.Process.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="System.IO.FileSystem.Watcher">
-      <HintPath>..\packages\System.IO.FileSystem.Watcher.4.3.0\lib\net46\System.IO.FileSystem.Watcher.dll</HintPath>
+    <Reference Include="System.Numerics" / -->
+    <Reference Include="System.Runtime">
       <Private>True</Private>
     </Reference>
-    <Reference Include="System.Numerics" />
-    <Reference Include="System.ValueTuple">
-      <HintPath>..\packages\System.ValueTuple.4.4.0\lib\net461\System.ValueTuple.dll</HintPath>
+    <Reference Include="System.Runtime.InteropServices">
       <Private>True</Private>
     </Reference>
   </ItemGroup>

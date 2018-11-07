@@ -2,7 +2,7 @@
 namespace AltCover
 #else
 [<RequireQualifiedAccess>]
-module AltCover.Fake.DotNet.Testing.AltCover
+module AltCover_Fake.DotNet.Testing.AltCover
 #endif
 
 open System

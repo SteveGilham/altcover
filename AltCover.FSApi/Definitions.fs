@@ -1,4 +1,10 @@
+#if FAKEAPI
+module internal AltCover.Internals
+
+open AltCover_Fake.DotNet.Testing
+#else
 namespace AltCover
+#endif
 
 open System
 open System.Linq
@@ -21,7 +27,13 @@ module DotNet =
   let private FromArg name s = (Arg name s, IsSet s)
   let private Join(l : string list) = String.Join(" ", l)
 
+#if FAKEAPI
+  let ToTestArgumentList (prepare : AltCover.PrepareParams)
+      (collect : AltCover.CollectParams) =
+#else
   let ToTestArgumentList (prepare : PrepareParams) (collect : CollectParams) =
+#endif
+
     [ FromArg String.Empty "true"
       FromArg "XmlReport" prepare.XmlReport
       (Arg "OpenCover" "false", not prepare.OpenCover)
@@ -42,5 +54,10 @@ module DotNet =
     |> List.filter snd
     |> List.map fst
 
+#if FAKEAPI
+  let ToTestArguments (prepare : AltCover.PrepareParams)
+      (collect : AltCover.CollectParams) =
+#else
   let ToTestArguments (prepare : PrepareParams) (collect : CollectParams) =
+#endif
     ToTestArgumentList prepare collect |> Join
