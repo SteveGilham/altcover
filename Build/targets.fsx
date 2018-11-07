@@ -6,6 +6,7 @@ open System.Xml
 open System.Xml.Linq
 
 open Actions
+open AltCover_Fake.DotNet.DotNet
 open AltCover_Fake.DotNet.Testing
 
 open Fake.Core
@@ -2698,27 +2699,42 @@ _Target "Issue20" (fun _ ->
                                                    Path.getFullName
                                                      "./RegressionTesting/issue20/xunit-tests" } })
       ""
-    DotNet.test (fun p ->
-      { p with Configuration = DotNet.BuildConfiguration.Debug
-               NoBuild = false
-               Common =
-                 { dotnetOptions p.Common with WorkingDirectory =
-                                                 Path.getFullName
-                                                   "./RegressionTesting/issue20/xunit-tests"
-                                               Verbosity = Some DotNet.Verbosity.Minimal
-                                               CustomParams = Some "/p:AltCover=true" }
-               MSBuildParams = cliArguments }) ""
 
-  //    if Environment.isWindows then
-  //      Path.getFullName "./RegressionTesting/issue20/xunit-tests/bin"
-  //      |> Shell.cleanDir
-  //
-  //      Actions.RunDotnet
-  //        (fun o' ->
-  //        { dotnetOptions o' with WorkingDirectory =
-  //                                  Path.getFullName "./RegressionTesting/issue20/xunit-tests" })
-  //        "test" ("""/p:AltCover=true /p:AltCoverDependencyList="%ProgramFiles%/dotnet/shared/Microsoft.AspNetCore.App/2.1.5/Microsoft.AspNetCore.Cryptography.KeyDerivation.dll" -v m""") "sample test returned with a non-zero exit code"
-
+    // would like to assert "succeeds with warnings"
+    let p0 = AltCover.PrepareParams.Create()
+    let c0 = AltCover.CollectParams.Create()
+    DotNet.test
+      (fun to' ->
+      { to'.WithCommon(fun c ->
+          { c with WorkingDirectory =
+                     Path.getFullName"./RegressionTesting/issue20/xunit-tests"
+                   Verbosity = Some DotNet.Verbosity.Minimal }).WithParameters p0 c0 with Configuration =
+                                                                                           DotNet.BuildConfiguration.Debug
+                                                                                          NoBuild =
+                                                                                           false
+                                                                                          MSBuildParams =
+                                                                                           cliArguments })
+      ""
+  //let shared =
+  //  if Environment.isWindows then
+  //    [ "%ProgramFiles%/dotnet/shared/Microsoft.AspNetCore.App/2.1.5/Microsoft.AspNetCore.Cryptography.KeyDerivation.dll" ]
+  //  else
+  //    [ "/usr/share/dotnet/shared/Microsoft.AspNetCore.App/2.1.5/Microsoft.AspNetCore.Cryptography.KeyDerivation.dll" ]
+  //Path.getFullName "./RegressionTesting/issue20/xunit-tests/bin" |> Shell.cleanDir
+  //// would like to assert "no warnings"
+  //let p1 = { p0 with Dependencies = shared }
+  //DotNet.test
+  //  (fun to' ->
+  //  { to'.WithCommon(fun c ->
+  //      { c with WorkingDirectory =
+  //                 Path.getFullName"./RegressionTesting/issue20/xunit-tests"
+  //               Verbosity = SomeDotNet.Verbosity.Minimal }).WithParameters p1 c0 with Configuration =
+  //                                                                                       DotNet.BuildConfiguration.Debug
+  //                                                                                     NoBuild =
+  //                                                                                       false
+  //                                                                                     MSBuildParams =
+  //                                                                                       cliArguments })
+  //  ""
   finally
     let folder = (nugetCache @@ "altcover") @@ !Version
     Shell.mkdir folder
@@ -2747,18 +2763,19 @@ _Target "Issue23" (fun _ ->
       { o' with Common =
                   { dotnetOptions o'.Common with WorkingDirectory =
                                                    Path.getFullName "_Issue23" } }) ""
-    DotNet.test (fun p ->
-      { p with Configuration = DotNet.BuildConfiguration.Debug
-               NoBuild = false
-               Common =
-                 { dotnetOptions p.Common with WorkingDirectory =
-                                                 Path.getFullName "_Issue23"
-                                               Verbosity = Some DotNet.Verbosity.Minimal
-                                               CustomParams =
-                                                 Some
-                                                   "/p:AltCover=true /p:AltCoverIpmo=true /p:AltCoverGetVersion=true" }
-               MSBuildParams = cliArguments }) ""
-
+    let p0 = AltCover.PrepareParams.Create()
+    let c0 = AltCover.CollectParams.Create()
+    DotNet.test
+      (fun p ->
+      ({ p.WithCommon(fun c ->
+           { dotnetOptions c with WorkingDirectory = Path.getFullName"_Issue23"
+                                  Verbosity = Some DotNet.Verbosity.Minimal }) with Configuration =
+                                                                                      DotNet.BuildConfiguration.Debug
+                                                                                    NoBuild =
+                                                                                      false
+                                                                                    MSBuildParams =
+                                                                                      cliArguments }).WithParameters
+        p0 c0) "" // TODO .WithIpmo().WithVersion
   finally
     let folder = (nugetCache @@ "altcover") @@ !Version
     Shell.mkdir folder
@@ -2795,22 +2812,41 @@ _Target "DotnetCLIIntegration" (fun _ ->
     let o =
       Path.getFullName "./_DotnetCLITest/_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1"
 
-    Actions.RunDotnet (fun o' -> { dotnetOptions o' with WorkingDirectory = working })
-      "altcover" ("ipmo") "DotnetCLIIntegration ipmo"
-    Actions.RunDotnet (fun o' -> { dotnetOptions o' with WorkingDirectory = working })
-      "altcover" ("version") "DotnetCLIIntegration version"
-    Actions.RunDotnet (fun o' -> { dotnetOptions o' with WorkingDirectory = working })
-      "altcover"
-      (" --opencover --inplace -c=0 \"-c=[Fact]\" -x \"" + x + "\" -i \"" + o + "\"")
-      "DotnetCLIIntegration"
+    { AltCover.Params.Create AltCover.ArgType.ImportModule with ToolPath = "altcover"
+                                                                ToolType =
+                                                                  AltCover.ToolType.DotNet
+                                                                    dotnetPath
+                                                                WorkingDirectory = working }
+    |> AltCover.run
+    { AltCover.Params.Create AltCover.ArgType.GetVersion with ToolPath = "altcover"
+                                                              ToolType =
+                                                                AltCover.ToolType.DotNet
+                                                                  dotnetPath
+                                                              WorkingDirectory = working }
+    |> AltCover.run
+    let prep =
+      { AltCover.PrepareParams.Create() with XmlReport = x
+                                             InputDirectory = o
+                                             CallContext = [ "0"; "[Fact]" ]
+                                             Save = false }
+      |> AltCover.Prepare
+    { AltCover.Params.Create prep with ToolPath = "altcover"
+                                       ToolType = AltCover.ToolType.DotNet dotnetPath
+                                       WorkingDirectory = working }
+    |> AltCover.run
 
     Actions.CheckSample4Content x
 
     printfn "Execute the instrumented tests"
-    Actions.RunDotnet (fun o' -> { dotnetOptions o' with WorkingDirectory = working })
-      "altcover"
-      (" Runner -x \"dotnet\" -r \"" + o + "\" -- test --no-build --configuration Debug ")
-      "DotnetCLIIntegration test"
+    let collect =
+      { AltCover.CollectParams.Create() with Executable = "dotnet"
+                                             RecorderDirectory = o }
+        .withCommandLine [ "test"; "--no-build"; "--configuration"; "Debug" ]
+      |> AltCover.Collect
+    { AltCover.Params.Create collect with ToolPath = "altcover"
+                                          ToolType = AltCover.ToolType.DotNet dotnetPath
+                                          WorkingDirectory = working }
+    |> AltCover.run
 
     Actions.CheckSample4Visits x
 
@@ -2827,15 +2863,19 @@ _Target "DotnetCLIIntegration" (fun _ ->
       "add" ("package altcover.dotnet --version " + !Version)
       "sample test returned with a non-zero exit code"
 
-    DotNet.test (fun p ->
-      { p with Configuration = DotNet.BuildConfiguration.Debug
-               NoBuild = false
-               Common =
-                 { dotnetOptions p.Common with WorkingDirectory =
-                                                 Path.getFullName "_DotnetCLITest"
-                                               Verbosity = Some DotNet.Verbosity.Minimal
-                                               CustomParams = Some "/p:AltCover=true" }
-               MSBuildParams = cliArguments }) ""
+    let p0 = AltCover.PrepareParams.Create()
+    let c0 = AltCover.CollectParams.Create()
+    DotNet.test
+      (fun to' ->
+      { to'.WithCommon(fun c ->
+          { c with WorkingDirectory = Path.getFullName"_DotnetCLITest"
+                   Verbosity = Some DotNet.Verbosity.Minimal }).WithParameters p0 c0 with Configuration =
+                                                                                           DotNet.BuildConfiguration.Debug
+                                                                                          NoBuild =
+                                                                                           false
+                                                                                          MSBuildParams =
+                                                                                           cliArguments })
+      ""
 
     "./_DotnetCLITest/coverage.xml"
     |> Path.getFullName
@@ -2906,6 +2946,8 @@ _Target "DotnetGlobalIntegration" (fun _ ->
     |> Proc.run
     |> (Actions.AssertResult "pwsh")
 
+  // Would be nice to do this, but we can't `dotnet add` a global tool
+  // Actually we would crib the modernized versions from "DotnetCLIIntegration"
   // (fsproj.Descendants(XName.Get("TargetFramework")) |> Seq.head).Value <- "netcoreapp2.1"
   // fsproj.Save "./_DotnetGlobalTest/dotnetglobal.fsproj"
   // Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = Path.getFullName "_DotnetGlobalTest"}) "add"
