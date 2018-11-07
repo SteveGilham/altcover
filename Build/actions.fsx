@@ -306,17 +306,19 @@ do ()"""
     let sampleRoot = Path.getFullName samplePath
     let instrumented = "__Instrumented." + reportSigil
 
-    let prep = { AltCover.PrepareParams.Create() with TypeFilter = ["""System\."""]
-                                                      XmlReport = simpleReport
-                                                      OutputDirectory = "./" + instrumented
-                                                      OpenCover = false
-                                                      InPlace = false
-                                                      Save = false}
-               |> AltCover.Prepare
+    let prep =
+      { AltCover.PrepareParams.Create() with TypeFilter = [ """System\.""" ]
+                                             XmlReport = simpleReport
+                                             OutputDirectory = "./" + instrumented
+                                             OpenCover = false
+                                             InPlace = false
+                                             Save = false }
+      |> AltCover.Prepare
 
-    let parameters = { AltCover.Params.Create prep with ToolPath = binRoot @@ "AltCover.exe"
-                                                        ToolType = AltCover.ToolType.Framework
-                                                        WorkingDirectory = sampleRoot }
+    let parameters =
+      { AltCover.Params.Create prep with ToolPath = binRoot @@ "AltCover.exe"
+                                         ToolType = AltCover.ToolType.Framework
+                                         WorkingDirectory = sampleRoot }
 
     AltCover.run parameters
 
@@ -337,17 +339,19 @@ do ()"""
       let sampleRoot = Path.getFullName samplePath
       let instrumented = "__Instrumented." + reportSigil
 
-      let prep = { AltCover.PrepareParams.Create() with TypeFilter = ["""System\."""]
-                                                        XmlReport = simpleReport
-                                                        OutputDirectory = "./" + instrumented
-                                                        OpenCover = false
-                                                        InPlace = false
-                                                        Save = false}
-                 |> AltCover.Prepare
+      let prep =
+        { AltCover.PrepareParams.Create() with TypeFilter = [ """System\.""" ]
+                                               XmlReport = simpleReport
+                                               OutputDirectory = "./" + instrumented
+                                               OpenCover = false
+                                               InPlace = false
+                                               Save = false }
+        |> AltCover.Prepare
 
-      let parameters = { AltCover.Params.Create prep with ToolPath = binRoot @@ "AltCover.exe"
-                                                          ToolType = AltCover.ToolType.Mono monoOnWindows
-                                                          WorkingDirectory = sampleRoot }
+      let parameters =
+        { AltCover.Params.Create prep with ToolPath = binRoot @@ "AltCover.exe"
+                                           ToolType = AltCover.ToolType.Mono monoOnWindows
+                                           WorkingDirectory = sampleRoot }
 
       AltCover.run parameters
 
