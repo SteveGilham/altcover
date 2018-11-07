@@ -1,13 +1,7 @@
-#if FAKEAPI
-namespace AltCover_Fake.DotNet
-
-open System
-open System.Reflection
-open AltCover.Internals
-open AltCover_Fake.DotNet.Testing
-#else
+#if RUNNER
 namespace AltCover.Fake
 open System
+open System.IO
 open System.Reflection
 open AltCover
 
@@ -26,6 +20,11 @@ module Trace =
     | Some logging -> logging
     | None -> Default
 
+[<NoComparison>]
+type Implementation =
+  | DotNetCore
+  | Framework
+
 type Api =
   static member Prepare(args : PrepareParams, ?log : Logging) =
     AltCover.Api.Prepare args (Trace.DoDefault log)
@@ -33,18 +32,37 @@ type Api =
     AltCover.Api.Collect args (Trace.DoDefault log)
   static member Ipmo() = AltCover.Api.Ipmo()
   static member Version() = AltCover.Api.Version()
+  // Finds the tool from within the .nuget package
+  static member toolPath toolType =
+    let here = Assembly.GetExecutingAssembly().Location
+    let root = Path.Combine (Path.GetDirectoryName here, "../..")
+    let target = match toolType with
+                 | Framework _ -> "AltCover.exe"
+                 | _ -> "AltCover.dll"
+    match Directory.GetFiles(root, target, SearchOption.AllDirectories)
+          |> Seq.filter (fun f -> let coretype = f |> Path.GetDirectoryName |> Path.GetFileName
+                                  coretype.StartsWith("netstandard", StringComparison.Ordinal) |> not)
+          |> Seq.tryHead with
+    | Some path -> path
+    | None -> String.Empty
+#else
+namespace AltCover_Fake.DotNet
 
+open System
+open System.Reflection
+open AltCover.Internals
+open AltCover_Fake.DotNet.Testing
 #endif
 
 module DotNet =
   open Fake.DotNet
 
   type DotNet.TestOptions with
-#if FAKEAPI
+#if RUNNER
+    member self.WithParameters (prepare : PrepareParams) (collect : CollectParams) =
+#else
     member self.WithParameters (prepare : AltCover.PrepareParams)
            (collect : AltCover.CollectParams) =
-#else
-    member self.WithParameters (prepare : PrepareParams) (collect : CollectParams) =
 #endif
 
       let options = DotNet.ToTestArguments prepare collect

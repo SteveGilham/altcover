@@ -1700,7 +1700,6 @@ _Target "Packaging" (fun _ ->
         (posh, Some "tools/net45", None)
         (fsapi, Some "tools/net45", None)
         (vis, Some "tools/net45", None)
-        (fake2, Some "lib/net45", None)
         (fscore, Some "tools/net45", None)
         (options, Some "tools/net45", None)
         (packable, Some "", None) ]
@@ -1715,7 +1714,6 @@ _Target "Packaging" (fun _ ->
         (csapi, Some "lib/net45", None)
         (cake, Some "lib/net45", None)
         (fake, Some "lib/net45", None)
-        (fake2, Some "lib/net45", None)
         (fscore, Some "lib/net45", None)
         (options, Some "lib/net45", None)
         (packable, Some "", None) ]
@@ -1864,7 +1862,6 @@ _Target "Packaging" (fun _ ->
   [ (List.concat [ applicationFiles
                    resourceFiles "tools/net45/"
                    netcoreFiles "tools/netcoreapp2.0/"
-                   fake2Files "lib/netstandard2.0/"
                    poshFiles "tools/netcoreapp2.0/"
                    vizFiles "tools/netcoreapp2.1"
                    otherFiles ], "_Packaging", "./Build/AltCover.nuspec", "altcover")
@@ -1874,7 +1871,6 @@ _Target "Packaging" (fun _ ->
                    netstdFiles "lib/netstandard2.0"
                    cakeFiles "lib/netstandard2.0/"
                    fakeFiles "lib/netstandard2.0/"
-                   fake2Files "lib/netstandard2.0/"
                    poshFiles "lib/netstandard2.0/"
                    vizFiles "tools/netcoreapp2.1"
                    otherFilesApi ], "_Packaging.api", "./_Generated/altcover.api.nuspec",
@@ -1882,7 +1878,6 @@ _Target "Packaging" (fun _ ->
 
     (List.concat [ netcoreFiles "lib/netcoreapp2.0"
                    poshFiles "lib/netcoreapp2.0/"
-                   fake2Files "lib/netstandard2.0/"
                    dotnetFiles
                    otherFilesDotnet ], "_Packaging.dotnet",
      "./_Generated/altcover.dotnet.nuspec", "altcover.dotnet")
@@ -1890,14 +1885,17 @@ _Target "Packaging" (fun _ ->
     (List.concat [ globalFiles
                    netcoreFiles "tools/netcoreapp2.1/any"
                    poshFiles "tools/netcoreapp2.1/any/"
-                   // fake2Files "lib/netstandard2.0/"  -- API like this is incompatible
                    auxFiles
                    otherFilesGlobal ], "_Packaging.global",
      "./_Generated/altcover.global.nuspec", "altcover.global")
 
     (List.concat [ vizFiles "tools/netcoreapp2.1/any"
                    auxVFiles ], "_Packaging.visualizer",
-     "./_Generated/altcover.visualizer.nuspec", "altcover.visualizer") ]
+     "./_Generated/altcover.visualizer.nuspec", "altcover.visualizer")
+
+    (List.concat [ fake2Files "lib/netstandard2.0/"
+                   [ (fake2, Some "lib/net45", None) ] ], "_Packaging.fake",
+     "./_Generated/altcover.fake.nuspec", "altcover.fake") ]
   |> List.iter (fun (files, output, nuspec, project) ->
        let outputPath = "./" + output
        let workingDir = "./_Binaries/" + output
@@ -1989,7 +1987,10 @@ _Target "PrepareDotNetBuild" (fun _ ->
      Some "AltCover.Visualizer/logo.png", Some "codecoverage .netcore cross-platform")
 
     (String.Empty, "./_Generated/altcover.api.nuspec", "AltCover (API install)", None,
-     None) ]
+     None)
+
+    (String.Empty, "./_Generated/altcover.fake.nuspec", "AltCover (FAKE task helpers)",
+     None, Some "codecoverage .net Mono .netcore cross-platform FAKE build") ]
   |> List.iter (fun (ptype, path, caption, icon, tags) ->
        let x s = XName.Get(s, "http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd")
        let dotnetNupkg = XDocument.Load "./Build/AltCover.nuspec"
@@ -2379,14 +2380,16 @@ _Target "ApiUse" (fun _ ->
 <configuration>
   <packageSources>
     <add key="local" value="{0}" />
+    <add key="local2" value="{1}" />
     <add key="nuget.org" value="https://api.nuget.org/v3/index.json" />
   </packageSources>
 </configuration>"""
 
     File.WriteAllText
       ("./_ApiUse/NuGet.config",
-       String.Format(config, Path.getFullName "./_Packaging.api"))
-
+       String.Format
+         (config, Path.getFullName "./_Packaging.api",
+          Path.getFullName "./_Packaging.fake"))
     let script = """#r "paket: groupref netcorebuild //"
 #load ".fake/DriveApi.fsx/intellisense.fsx"
 
@@ -2439,14 +2442,14 @@ _Target "DoIt"
   let ipmo = AltCover.Api.Ipmo().Trim().Split().[1].Trim([| '\"' |])
   let command = "$ipmo = '" + ipmo + "'; Import-Module $ipmo; ConvertTo-BarChart -?"
 
-  let corePath = AltCover.toolPath AltCover.ToolType.Global
+  let corePath = AltCover.Fake.Api.toolPath AltCover.Fake.Implementation.DotNetCore
   printfn "corePath = %A" corePath
-
-  let frameworkPath = AltCover.toolPath AltCover.ToolType.Framework
+  let frameworkPath = AltCover.Fake.Api.toolPath AltCover.Fake.Implementation.Framework
   printfn "frameworkPath = %A" frameworkPath
   if Environment.isWindows then // the Framework version isn't packaged on mono because ILMerge is needed
     { AltCover.Params.Create AltCover.ArgType.GetVersion with ToolPath = frameworkPath
-                                                              ToolType = AltCover.ToolType.Framework }
+                                                              ToolType =
+                                                                AltCover.ToolType.Framework }
     |> AltCover.run
 
   let pwsh =
@@ -2473,12 +2476,15 @@ group NetcoreBuild
   nuget Fake.DotNet.Cli >= 5.8.5
 
   source {0}
-  nuget AltCover.Api {1} """
+  nuget AltCover.Api {1}
 
+  source {2}
+  nuget AltCover.Fake {1} """
     File.WriteAllText
       ("./_ApiUse/paket.dependencies",
-       String.Format(dependencies, Path.getFullName "./_Packaging.api", !Version))
-
+       String.Format
+         (dependencies, Path.getFullName "./_Packaging.api", !Version,
+          Path.getFullName "./_Packaging.fake"))
     Shell.copy "./_ApiUse" (!!"./dotnet*.fsproj")
 
     Actions.RunDotnet

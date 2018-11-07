@@ -1,9 +1,9 @@
-#if FAKEAPI
+#if RUNNER
+namespace AltCover
+#else
 module internal AltCover.Internals
 
 open AltCover_Fake.DotNet.Testing
-#else
-namespace AltCover
 #endif
 
 open System
@@ -27,11 +27,11 @@ module DotNet =
   let private FromArg name s = (Arg name s, IsSet s)
   let private Join(l : string list) = String.Join(" ", l)
 
-#if FAKEAPI
+#if RUNNER
+  let ToTestArgumentList (prepare : PrepareParams) (collect : CollectParams) =
+#else
   let ToTestArgumentList (prepare : AltCover.PrepareParams)
       (collect : AltCover.CollectParams) =
-#else
-  let ToTestArgumentList (prepare : PrepareParams) (collect : CollectParams) =
 #endif
 
     [ FromArg String.Empty "true"
@@ -54,10 +54,10 @@ module DotNet =
     |> List.filter snd
     |> List.map fst
 
-#if FAKEAPI
+#if RUNNER
+  let ToTestArguments (prepare : PrepareParams) (collect : CollectParams) =
+#else
   let ToTestArguments (prepare : AltCover.PrepareParams)
       (collect : AltCover.CollectParams) =
-#else
-  let ToTestArguments (prepare : PrepareParams) (collect : CollectParams) =
 #endif
     ToTestArgumentList prepare collect |> Join

@@ -369,21 +369,6 @@ let composeCommandLine parameters =
   let args = createArgs parameters
   createProcess parameters args
 
-// Finds the tool from within the .nuget package
-let toolPath toolType =
-  let here = Assembly.GetExecutingAssembly().Location
-  let root = Path.Combine (Path.GetDirectoryName here, "../..")
-  let target = match toolType with
-               | Framework
-               | Mono _ -> "AltCover.exe"
-               | _ -> "AltCover.dll"
-  match Directory.GetFiles(root, target, SearchOption.AllDirectories)
-        |> Seq.filter (fun f -> let coretype = f |> Path.GetDirectoryName |> Path.GetFileName
-                                coretype.StartsWith("netstandard", StringComparison.Ordinal) |> not)
-        |> Seq.tryHead with
-  | Some path -> path
-  | None -> String.Empty
-
 let run parameters =
   use __ = Trace.traceTask "AltCover" String.Empty
   let command = composeCommandLine parameters
