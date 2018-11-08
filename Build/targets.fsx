@@ -2767,15 +2767,12 @@ _Target "Issue23" (fun _ ->
     let c0 = AltCover.CollectParams.Create()
     DotNet.test
       (fun p ->
-      ({ p.WithCommon(fun c ->
-           { dotnetOptions c with WorkingDirectory = Path.getFullName"_Issue23"
-                                  Verbosity = Some DotNet.Verbosity.Minimal }) with Configuration =
-                                                                                      DotNet.BuildConfiguration.Debug
-                                                                                    NoBuild =
-                                                                                      false
-                                                                                    MSBuildParams =
-                                                                                      cliArguments }).WithParameters
-        p0 c0) "" // TODO .WithIpmo().WithVersion
+      (({ p.WithCommon(fun c ->
+            { dotnetOptions c with WorkingDirectory = Path.getFullName "_Issue23"
+                                   Verbosity = Some DotNet.Verbosity.Minimal }) with Configuration = DotNet.BuildConfiguration.Debug
+                                                                                     NoBuild = false
+                                                                                     MSBuildParams = cliArguments }).WithParameters p0 c0)
+        .WithImportModule().WithGetVersion()) ""
   finally
     let folder = (nugetCache @@ "altcover") @@ !Version
     Shell.mkdir folder

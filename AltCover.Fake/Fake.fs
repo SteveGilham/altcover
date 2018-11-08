@@ -1,11 +1,12 @@
 #if RUNNER
 namespace AltCover.Fake
+
 open System
 open System.IO
 open System.Reflection
 open AltCover
-
 open AltCover.DotNet
+
 module Trace =
   open Fake.Core
 
@@ -35,13 +36,19 @@ type Api =
   // Finds the tool from within the .nuget package
   static member toolPath toolType =
     let here = Assembly.GetExecutingAssembly().Location
-    let root = Path.Combine (Path.GetDirectoryName here, "../..")
-    let target = match toolType with
-                 | Framework _ -> "AltCover.exe"
-                 | _ -> "AltCover.dll"
+    let root = Path.Combine(Path.GetDirectoryName here, "../..")
+
+    let target =
+      match toolType with
+      | Framework _ -> "AltCover.exe"
+      | _ -> "AltCover.dll"
     match Directory.GetFiles(root, target, SearchOption.AllDirectories)
-          |> Seq.filter (fun f -> let coretype = f |> Path.GetDirectoryName |> Path.GetFileName
-                                  coretype.StartsWith("netstandard", StringComparison.Ordinal) |> not)
+          |> Seq.filter (fun f ->
+               let coretype =
+                 f
+                 |> Path.GetDirectoryName
+                 |> Path.GetFileName
+               coretype.StartsWith("netstandard", StringComparison.Ordinal) |> not)
           |> Seq.tryHead with
     | Some path -> path
     | None -> String.Empty
@@ -58,14 +65,8 @@ module DotNet =
   open Fake.DotNet
 
   type DotNet.TestOptions with
-#if RUNNER
-    member self.WithParameters (prepare : PrepareParams) (collect : CollectParams) =
-#else
-    member self.WithParameters (prepare : AltCover.PrepareParams)
-           (collect : AltCover.CollectParams) =
-#endif
 
-      let options = DotNet.ToTestArguments prepare collect
+    member private self.ExtendCustomParams options =
       let custom = self.Common.CustomParams
 
       let extended =
@@ -131,3 +132,14 @@ module DotNet =
                       (if f.Name <> "Common@" then f.GetValue self
                        else common)))
       result :?> DotNet.TestOptions
+#if RUNNER
+
+    member self.WithParameters (prepare : PrepareParams) (collect : CollectParams) =
+#else
+    member self.WithParameters (prepare : AltCover.PrepareParams)
+           (collect : AltCover.CollectParams) =
+#endif
+
+      DotNet.ToTestArguments prepare collect |> self.ExtendCustomParams
+    member self.WithImportModule() = self.ExtendCustomParams "/p:AltCoverIpmo=true"
+    member self.WithGetVersion() = self.ExtendCustomParams "/p:AltCoverGetVersion=true"
