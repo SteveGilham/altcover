@@ -2524,20 +2524,15 @@ _Target "DotnetTestIntegration" (fun _ ->
     fsproj.Save "./_DotnetTest/dotnettest.fsproj"
     Shell.copy "./_DotnetTest" (!!"./Sample4/*.fs")
 
+    let p0 = AltCover.PrepareParams.Create()
+    let c0 = AltCover.CollectParams.Create()
+    let p1 = { p0 with CallContext = [ "[Fact]"; "0" ] }
     DotNet.test
       (fun to' ->
-      to'.WithCommon
-        (fun o' ->
-        { dotnetOptions o' with WorkingDirectory = Path.getFullName "_DotnetTest"
-                                Verbosity = Some DotNet.Verbosity.Minimal
-                                CustomParams =
-                                  Some
-                                    "/p:AltCover=true /p:AltCoverCallContext=[Fact]|0 /p:AltCoverIpmo=true /p:AltCoverGetVersion=true" }))
-      "dotnettest.fsproj"
-
-    //    Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = Path.getFullName "_DotnetTest"}) "test"
-    //                      ("-v m /p:AltCover=true /p:AltCoverCallContext=[Fact]|0 /p:AltCoverIpmo=true /p:AltCoverGetVersion=true")
-    //                      "sample test returned with a non-zero exit code"
+      ((to'.WithCommon(fun o' ->
+          { dotnetOptions o' with WorkingDirectory = Path.getFullName "_DotnetTest"
+                                  Verbosity = Some DotNet.Verbosity.Minimal }))
+        .WithGetVersion().WithImportModule()).WithParameters p1 c0) "dotnettest.fsproj"
 
     let x = Path.getFullName "./_DotnetTest/coverage.xml"
     Actions.CheckSample4 x
@@ -2560,14 +2555,14 @@ _Target "DotnetTestIntegration" (fun _ ->
     fsproj.Save "./_DotnetTestLineCover/dotnettest.csproj"
     Shell.copy "./_DotnetTestLineCover" (!!"./Sample10/*.cs")
 
+    let p2 = { p0 with LineCover = true }
     DotNet.test
       (fun to' ->
-      to'.WithCommon
-        (fun o' ->
-        { dotnetOptions o' with WorkingDirectory = Path.getFullName "_DotnetTestLineCover"
-                                Verbosity = Some DotNet.Verbosity.Minimal
-                                CustomParams =
-                                  Some "/p:AltCover=true /p:AltCoverLineCover=true" })) ""
+      (to'.WithCommon(fun o' ->
+         { dotnetOptions o' with WorkingDirectory =
+                                   Path.getFullName "_DotnetTestLineCover"
+                                 Verbosity = Some DotNet.Verbosity.Minimal })).WithParameters
+        p2 c0) ""
 
     let x = Path.getFullName "./_DotnetTestLineCover/coverage.xml"
 
@@ -2600,16 +2595,14 @@ _Target "DotnetTestIntegration" (fun _ ->
     fsproj.Save "./_DotnetTestBranchCover/dotnettest.csproj"
     Shell.copy "./_DotnetTestBranchCover" (!!"./Sample10/*.cs")
 
+    let p3 = { p0 with BranchCover = true }
     DotNet.test
       (fun to' ->
-      to'.WithCommon
-        (fun o' ->
-        { dotnetOptions o' with WorkingDirectory =
-                                  Path.getFullName "_DotnetTestBranchCover"
-                                Verbosity = Some DotNet.Verbosity.Minimal
-                                CustomParams =
-                                  Some "/p:AltCover=true /p:AltCoverBranchCover=true" }))
-      ""
+      (to'.WithCommon(fun o' ->
+         { dotnetOptions o' with WorkingDirectory =
+                                   Path.getFullName "_DotnetTestBranchCover"
+                                 Verbosity = Some DotNet.Verbosity.Minimal })).WithParameters
+        p3 c0) ""
 
     let x = Path.getFullName "./_DotnetTestBranchCover/coverage.xml"
 
@@ -2634,12 +2627,14 @@ _Target "DotnetTestIntegration" (fun _ ->
            XAttribute(XName.Get "Version", !Version))
       pack.AddBeforeSelf inject
       proj.Save "./RegressionTesting/issue29/issue29.csproj"
-    DotNet.test (fun to' ->
+
+    DotNet.test
+      (fun to' ->
       to'.WithCommon(fun o' ->
         { dotnetOptions o' with WorkingDirectory =
                                   Path.getFullName "RegressionTesting/issue29"
-                                Verbosity = Some DotNet.Verbosity.Minimal
-                                CustomParams = Some "/p:AltCover=true" })) ""
+                                Verbosity = Some DotNet.Verbosity.Minimal }).WithParameters
+        p0 c0) ""
 
     let proj = XDocument.Load "./RegressionTesting/issue37/issue37.xml"
     let pack = proj.Descendants(XName.Get("PackageReference")) |> Seq.head
@@ -2649,18 +2644,16 @@ _Target "DotnetTestIntegration" (fun _ ->
          XAttribute(XName.Get "Version", !Version))
     pack.AddBeforeSelf inject
     proj.Save "./RegressionTesting/issue37/issue37.csproj"
+
+    let p4 = { p0 with AssemblyFilter = [ "NUnit" ] }
     DotNet.test
       (fun to' ->
-      { to'.WithCommon
-          (fun o' ->
-          { dotnetOptions o' with WorkingDirectory =
-                                    Path.getFullName "RegressionTesting/issue37"
-                                  Verbosity = Some DotNet.Verbosity.Minimal
-                                  CustomParams =
-                                    Some
-                                      "/p:AltCover=true /p:AltCoverAssemblyFilter=NUnit" }) with Configuration =
-                                                                                                   DotNet.BuildConfiguration.Release })
-      ""
+      ({ to'.WithCommon(fun o' ->
+           { dotnetOptions o' with WorkingDirectory =
+                                     Path.getFullName "RegressionTesting/issue37"
+                                   Verbosity = Some DotNet.Verbosity.Minimal }) with Configuration =
+                                                                                       DotNet.BuildConfiguration.Release }).WithParameters
+        p4 c0) ""
 
     let cover37 = XDocument.Load "./RegressionTesting/issue37/coverage.xml"
     Assert.That(cover37.Descendants(XName.Get("BranchPoint")) |> Seq.length, Is.EqualTo 2)
