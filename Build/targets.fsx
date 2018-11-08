@@ -1072,7 +1072,7 @@ _Target "UnitTestWithAltCoverCoreRunner"
                          "--no-build"
                          "--configuration"
                          "Debug"
-                         "--verbosity";
+                         "--verbosity"
                          "normal"
                          testproject ]
     |> AltCover.Collect
@@ -1458,8 +1458,7 @@ _Target "CSharpDotNetWithDotNet"
   Actions.RunDotnet dotnetOptions (o @@ "Sample1.dll") "" "CSharpDotNetWithDotNet test"
   Actions.ValidateSample1 "./_Reports/CSharpDotNetWithDotNet.xml" "CSharpDotNetWithDotNet")
 
-_Target "CSharpDotNetWithFramework"
-  (fun _ ->
+_Target "CSharpDotNetWithFramework" (fun _ ->
   Directory.ensure "./_Reports"
   let simpleReport = (Path.getFullName "./_Reports") @@ ("CSharpDotNetWithFramework.xml")
   let binRoot = Path.getFullName "_Binaries/AltCover/Release+AnyCPU"
@@ -1467,16 +1466,22 @@ _Target "CSharpDotNetWithFramework"
   let instrumented =
     Path.getFullName "_Binaries/Sample1/__Instrumented.CSharpDotNetWithFramework"
 
-  Actions.Run (binRoot @@ "AltCover.exe", sampleRoot,
-               [ "-t=System\\."
-                 "-t=Microsoft\\."
-                 "-x=" + simpleReport
-                 "/o=" + instrumented ]) "CSharpDotNetWithFramework"
+  let prep =
+    { AltCover.PrepareParams.Create() with XmlReport = simpleReport
+                                           OutputDirectory = instrumented
+                                           TypeFilter = [ "System\\."; "Microsoft\\." ]
+                                           InPlace = false
+                                           OpenCover = false
+                                           Save = false }
+    |> AltCover.Prepare
+  { AltCover.Params.Create prep with ToolPath = binRoot @@ "AltCover.exe"
+                                     ToolType = AltCover.ToolType.Framework
+                                     WorkingDirectory = sampleRoot }
+  |> AltCover.run
 
   Actions.RunDotnet dotnetOptions (instrumented @@ "Sample1.dll") ""
     "CSharpDotNetWithFramework test"
-  Actions.ValidateSample1 "./_Reports/CSharpDotNetWithFramework.xml"
-    "CSharpDotNetWithFramework")
+  Actions.ValidateSample1 simpleReport "CSharpDotNetWithFramework")
 
 _Target "SelfTest" (fun _ ->
   Directory.ensure "./_Reports/_Instrumented"
@@ -1548,13 +1553,19 @@ _Target "RecordResumeTest"
   let sampleRoot = Path.getFullName "_Binaries/Sample8/Debug+AnyCPU"
   let instrumented = "__RecordResumeTest"
 
-  Actions.Run (binRoot @@ "AltCover.exe", sampleRoot,
-               [ "-s=Adapter"
-                 "-s=nunit"
-                 "-t=System\\."
-                 "-t=Microsoft\\."
-                 "-x=" + simpleReport
-                 "/o=./" + instrumented ]) "RecordResumeTest 1"
+  let prep =
+    { AltCover.PrepareParams.Create() with XmlReport = simpleReport
+                                           OutputDirectory = instrumented
+                                           TypeFilter = [ "System\\."; "Microsoft\\." ]
+                                           AssemblyFilter = [ "Adapter"; "nunit" ]
+                                           InPlace = false
+                                           OpenCover = false
+                                           Save = false }
+    |> AltCover.Prepare
+  { AltCover.Params.Create prep with ToolPath = binRoot @@ "AltCover.exe"
+                                     ToolType = AltCover.ToolType.Framework
+                                     WorkingDirectory = sampleRoot }
+  |> AltCover.run
   let testing = (sampleRoot @@ instrumented) @@ "Sample8.exe"
   Actions.Run (testing, sampleRoot, [ simpleReport + ".acv" ]) "RecordResumeTest 2"
   do use coverageFile =
@@ -1572,10 +1583,13 @@ _Target "RecordResumeTest"
        (recorded, expected |> Is.EquivalentTo,
         sprintf "Bad visit list %A -- should be empty now" recorded)
 
-  Actions.Run (binRoot @@ "AltCover.exe", sampleRoot,
-               [ "runner"
-                 "--collect"
-                 "/r=./" + instrumented ]) "RecordResumeTest 3"
+  let collect =
+    { AltCover.CollectParams.Create() with RecorderDirectory = instrumented }
+    |> AltCover.Collect
+  { AltCover.Params.Create collect with ToolPath = binRoot @@ "AltCover.exe"
+                                        ToolType = AltCover.ToolType.Framework
+                                        WorkingDirectory = sampleRoot }
+  |> AltCover.run
 
   do use coverageFile =
        new FileStream(simpleReport, FileMode.Open, FileAccess.Read, FileShare.None, 4096,
@@ -1602,15 +1616,20 @@ _Target "RecordResumeTrackingTest" (fun _ ->
   let sampleRoot = Path.getFullName "_Binaries/Sample8/Debug+AnyCPU"
   let instrumented = "__RecordResumeTrackingTest"
 
-  Actions.Run (binRoot @@ "AltCover.exe", sampleRoot,
-               [ "--opencover"
-                 "-c=Main"
-                 "-s=Adapter"
-                 "-s=nunit"
-                 "-t=System\\."
-                 "-t=Microsoft\\."
-                 "-x=" + simpleReport
-                 "/o=./" + instrumented ]) "RecordResumeTrackingTest 1"
+  let prep =
+    { AltCover.PrepareParams.Create() with XmlReport = simpleReport
+                                           OutputDirectory = instrumented
+                                           CallContext = [ "Main" ]
+                                           TypeFilter = [ "System\\."; "Microsoft\\." ]
+                                           AssemblyFilter = [ "Adapter"; "nunit" ]
+                                           InPlace = false
+                                           OpenCover = true
+                                           Save = false }
+    |> AltCover.Prepare
+  { AltCover.Params.Create prep with ToolPath = binRoot @@ "AltCover.exe"
+                                     ToolType = AltCover.ToolType.Framework
+                                     WorkingDirectory = sampleRoot }
+  |> AltCover.run
   let testing = (sampleRoot @@ instrumented) @@ "Sample8.exe"
   Actions.Run (testing, sampleRoot, [ simpleReport + ".acv" ])
     "RecordResumeTrackingTest 2"
@@ -1629,10 +1648,13 @@ _Target "RecordResumeTrackingTest" (fun _ ->
        (recorded, expected |> Is.EquivalentTo,
         sprintf "Bad visit list %A -- should be empty now" recorded)
 
-  Actions.Run (binRoot @@ "AltCover.exe", sampleRoot,
-               [ "runner"
-                 "--collect"
-                 "/r=./" + instrumented ]) "RecordResumeTrackingTest 3"
+  let collect =
+    { AltCover.CollectParams.Create() with RecorderDirectory = instrumented }
+    |> AltCover.Collect
+  { AltCover.Params.Create collect with ToolPath = binRoot @@ "AltCover.exe"
+                                        ToolType = AltCover.ToolType.Framework
+                                        WorkingDirectory = sampleRoot }
+  |> AltCover.run
 
   do use coverageFile =
        new FileStream(simpleReport, FileMode.Open, FileAccess.Read, FileShare.None, 4096,
@@ -1663,13 +1685,19 @@ _Target "RecordResumeTestDotNet"
   let sampleRoot = Path.getFullName "_Binaries/Sample8/Debug+AnyCPU/netcoreapp2.0"
   let instrumented = "__RecordResumeTestDotNet"
 
-  Actions.Run (binRoot @@ "AltCover.exe", sampleRoot,
-               [ "-s=Adapter"
-                 "-s=nunit"
-                 "-t=System\\."
-                 "-t=Microsoft\\."
-                 "-x=" + simpleReport
-                 "/o=./" + instrumented ]) "RecordResumeTestDotNet 1"
+  let prep =
+    { AltCover.PrepareParams.Create() with XmlReport = simpleReport
+                                           OutputDirectory = instrumented
+                                           TypeFilter = [ "System\\."; "Microsoft\\." ]
+                                           AssemblyFilter = [ "Adapter"; "nunit" ]
+                                           InPlace = false
+                                           OpenCover = false
+                                           Save = false }
+    |> AltCover.Prepare
+  { AltCover.Params.Create prep with ToolPath = binRoot @@ "AltCover.exe"
+                                     ToolType = AltCover.ToolType.Framework
+                                     WorkingDirectory = sampleRoot }
+  |> AltCover.run
 
   let testing = (sampleRoot @@ instrumented) @@ "Sample8.dll"
   Actions.RunDotnet (fun o -> { dotnetOptions o with WorkingDirectory = sampleRoot })
@@ -1690,10 +1718,13 @@ _Target "RecordResumeTestDotNet"
        (recorded, expected |> Is.EquivalentTo,
         sprintf "Bad visit list %A -- should be empty now" recorded)
 
-  Actions.Run (binRoot @@ "AltCover.exe", sampleRoot,
-               [ "runner"
-                 "--collect"
-                 "/r=./" + instrumented ]) "RecordResumeTestDotNet 3"
+  let collect =
+    { AltCover.CollectParams.Create() with RecorderDirectory = instrumented }
+    |> AltCover.Collect
+  { AltCover.Params.Create collect with ToolPath = binRoot @@ "AltCover.exe"
+                                        ToolType = AltCover.ToolType.Framework
+                                        WorkingDirectory = sampleRoot }
+  |> AltCover.run
 
   do use coverageFile =
        new FileStream(simpleReport, FileMode.Open, FileAccess.Read, FileShare.None, 4096,
@@ -1713,7 +1744,7 @@ _Target "RecordResumeTestDotNet"
        (recorded |> Seq.length, Is.EqualTo 20,
         sprintf "Bad visit list %A -- should no longer be empty now" recorded))
 
-_Target "RecordResumeTestUnderMono"
+_Target "RecordResumeTestUnderMono" // Fails : System.EntryPointNotFoundException: CreateZStream
   (fun _ ->
   Directory.ensure "./_Reports"
   let simpleReport = (Path.getFullName "./_Reports") @@ ("RecordResumeTestUnderMono.xml")
@@ -1721,13 +1752,19 @@ _Target "RecordResumeTestUnderMono"
   let sampleRoot = Path.getFullName "_Binaries/Sample8/Debug+AnyCPU"
   let instrumented = "__RecordResumeTestUnderMono"
 
-  Actions.Run (binRoot @@ "AltCover.exe", sampleRoot,
-               [ "-s=Adapter"
-                 "-s=nunit"
-                 "-t=System\\."
-                 "-t=Microsoft\\."
-                 "-x=" + simpleReport
-                 "/o=./" + instrumented ]) "RecordResumeTestUnderMono 1"
+  let prep =
+    { AltCover.PrepareParams.Create() with XmlReport = simpleReport
+                                           OutputDirectory = instrumented
+                                           TypeFilter = [ "System\\."; "Microsoft\\." ]
+                                           AssemblyFilter = [ "Adapter"; "nunit" ]
+                                           InPlace = false
+                                           OpenCover = false
+                                           Save = false }
+    |> AltCover.Prepare
+  { AltCover.Params.Create prep with ToolPath = binRoot @@ "AltCover.exe"
+                                     ToolType = AltCover.ToolType.Framework
+                                     WorkingDirectory = sampleRoot }
+  |> AltCover.run
 
   match monoOnWindows with
   | Some mono ->
@@ -1756,10 +1793,13 @@ _Target "RecordResumeTestUnderMono"
        (recorded, expected |> Is.EquivalentTo,
         sprintf "Bad visit list %A -- should be empty now" recorded)
 
-  Actions.Run (binRoot @@ "AltCover.exe", sampleRoot,
-               [ "runner"
-                 "--collect"
-                 "/r=./" + instrumented ]) "RecordResumeTestUnderMono 3"
+  let collect =
+    { AltCover.CollectParams.Create() with RecorderDirectory = instrumented }
+    |> AltCover.Collect
+  { AltCover.Params.Create collect with ToolPath = binRoot @@ "AltCover.exe"
+                                        ToolType = AltCover.ToolType.Framework
+                                        WorkingDirectory = sampleRoot }
+  |> AltCover.run
 
   do use coverageFile =
        new FileStream(simpleReport, FileMode.Open, FileAccess.Read, FileShare.None, 4096,
@@ -2068,7 +2108,8 @@ _Target "PrepareDotNetBuild" (fun _ ->
                    Configuration = DotNet.BuildConfiguration.Release
                    Framework = Some "netcoreapp2.1" })
     (Path.getFullName "./AltCover.Visualizer/altcover.visualizer.core.fsproj")
-  [ (//  let toolpath = Tools.findToolInSubPath "ILMerge.exe" "./packages"
+
+     //  let toolpath = Tools.findToolInSubPath "ILMerge.exe" "./packages"
      //  let ver = String.Join(".", (!Version).Split('.') |> Seq.take 2) + ".0.0"
      //
      //  [ publish; publish + ".api" ]
@@ -2087,7 +2128,7 @@ _Target "PrepareDotNetBuild" (fun _ ->
      //      "ILMerge failure")
 
      // dotnet tooling mods
-     "DotnetCliTool", "./_Generated/altcover.dotnet.nuspec",
+  [ ("DotnetCliTool", "./_Generated/altcover.dotnet.nuspec",
      "AltCover (dotnet CLI tool install)", None, None)
 
     ("DotnetTool", "./_Generated/altcover.global.nuspec",
