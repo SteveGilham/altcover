@@ -17,7 +17,7 @@ A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wi
 * [API] -- `AltCover.Fake.Api`
   * `static member toolPath` for finding the location of an AltCover command-line executable in the same nuget package
 * [API] -- `AltCover.Fake.DotNet`
-  * Extend module with more `Fake.DotNet.DotNet.Options` fluent extension methods `WithImportModule()` and `WithGetVersion()`
+  * Extend module with more `Fake.DotNet.DotNet.TestOptions` fluent extension methods `WithImportModule()` and `WithGetVersion()`
 
 # 4.0.653 (Doruka series release 7)
 * Properly resolve the strong-naming of the recorder assembly (a fix for Issue #38 closer to the original intent, compared with the "just-make-it-work" fix in 4.0.649)
