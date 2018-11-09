@@ -14,7 +14,7 @@ A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wi
   * `static member toolPath` for finding the location of an AltCover command-line executable in the same nuget package
 * [API] -- `AltCover.Fake.DotNet`
   * Extend module with more `Fake.DotNet.DotNet.Options` fluent extension methods `WithImportModule()` and `WithGetVersion()`
-* [NEW PACKAGE] `altcover.fake` containing just helper types for FAKE scripts (v5.9.3 or later) : see Wiki entry [`AltCover.Fake-package`](https://github.com/SteveGilham/altcover/wiki/AltCover.Fake package)
+* [NEW PACKAGE] `altcover.fake` containing just helper types for FAKE scripts (v5.9.3 or later) : see Wiki entry [The `AltCover.Fake` package](https://github.com/SteveGilham/altcover/wiki/The-AltCover.Fake-package)
   * Module `AltCover_Fake.DotNet.Testing.AltCover` containing an `AltCover` task for driving any command-line version of AltCover, along with helper types
   * Module `AltCover_Fake.DotNet.DotNet` equivalent fluent extension methods for `Fake.DotNet.DotNet.TestOptions` using the `AltCover_Fake.DotNet...` helper types
 
