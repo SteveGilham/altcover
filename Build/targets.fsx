@@ -2856,10 +2856,10 @@ _Target "DotnetTestIntegration" (fun _ ->
       pack.AddBeforeSelf inject
       proj.Save "./RegressionTesting/issue29/issue29.csproj"
 
-    DotNet.test
-      (fun to' ->
-      (to'.WithCommon(dotnetOptions >> withWorkingDirectoryVM "RegressionTesting/issue29").WithParameters
-         p0 c0) |> withCLIArgs) ""
+      DotNet.test
+        (fun to' ->
+        (to'.WithCommon(dotnetOptions >> withWorkingDirectoryVM "RegressionTesting/issue29").WithParameters
+           p0 c0) |> withCLIArgs) ""
 
     let proj = XDocument.Load "./RegressionTesting/issue37/issue37.xml"
     let pack = proj.Descendants(XName.Get("PackageReference")) |> Seq.head
