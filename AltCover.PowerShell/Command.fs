@@ -147,42 +147,41 @@ type InvokeAltCoverCommand(runner : bool) =
   member val private Fail : String list = [] with get, set
 
   member private self.Collect() =
-    { CollectParams.Default with RecorderDirectory = self.RecorderDirectory
-                                 WorkingDirectory = self.WorkingDirectory
-                                 Executable = self.Executable
-                                 LcovReport = self.LcovReport
-                                 Threshold = self.Threshold
-                                 Cobertura = self.Cobertura
-                                 OutputFile = self.OutputFile
-                                 CommandLine = String.Join(" ", self.CommandLine) }
+    { CollectParams.Create() with RecorderDirectory = self.RecorderDirectory
+                                  WorkingDirectory = self.WorkingDirectory
+                                  Executable = self.Executable
+                                  LcovReport = self.LcovReport
+                                  Threshold = self.Threshold
+                                  Cobertura = self.Cobertura
+                                  OutputFile = self.OutputFile
+                                  CommandLine = String.Join(" ", self.CommandLine) }
 
   member private self.Prepare() =
-    { PrepareParams.Default with InputDirectory = self.InputDirectory
-                                 OutputDirectory = self.OutputDirectory
-                                 SymbolDirectories = self.SymbolDirectory
+    { PrepareParams.Create() with InputDirectory = self.InputDirectory
+                                  OutputDirectory = self.OutputDirectory
+                                  SymbolDirectories = self.SymbolDirectory
 #if NETCOREAPP2_0
-                                 Dependencies = self.Dependency
+                                  Dependencies = self.Dependency
 #else
-                                 Keys = self.Key;
-                                 StrongNameKey = self.StrongNameKey;
+                                  Keys = self.Key;
+                                  StrongNameKey = self.StrongNameKey;
 #endif
-
-                                 XmlReport = self.XmlReport
-                                 FileFilter = self.FileFilter
-                                 AssemblyFilter = self.AssemblyFilter
-                                 AssemblyExcludeFilter = self.AssemblyExcludeFilter
-                                 TypeFilter = self.TypeFilter
-                                 MethodFilter = self.MethodFilter
-                                 AttributeFilter = self.AttributeFilter
-                                 PathFilter = self.PathFilter
-                                 CallContext = self.CallContext
-                                 OpenCover = self.OpenCover.IsPresent
-                                 InPlace = self.InPlace.IsPresent
-                                 Save = self.Save.IsPresent
-                                 Single = self.Single.IsPresent
-                                 LineCover = self.LineCover.IsPresent
-                                 BranchCover = self.BranchCover.IsPresent
-                                 CommandLine = String.Join(" ", self.CommandLine) }
+                                  XmlReport = self.XmlReport
+                                  FileFilter = self.FileFilter
+                                  AssemblyFilter = self.AssemblyFilter
+                                  AssemblyExcludeFilter = self.AssemblyExcludeFilter
+                                  TypeFilter = self.TypeFilter
+                                  MethodFilter = self.MethodFilter
+                                  AttributeFilter = self.AttributeFilter
+                                  PathFilter = self.PathFilter
+                                  CallContext = self.CallContext
+                                  OpenCover = self.OpenCover.IsPresent
+                                  InPlace = self.InPlace.IsPresent
+                                  Save = self.Save.IsPresent
+                                  Single = self.Single.IsPresent
+                                  LineCover = self.LineCover.IsPresent
+                                  BranchCover = self.BranchCover.IsPresent
+                                  CommandLine = String.Join(" ", self.CommandLine) }
 
   member private self.Log() =
     { Logging.Default with Error = (fun s -> self.Fail <- s :: self.Fail)

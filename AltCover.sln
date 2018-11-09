@@ -36,9 +36,15 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build Items", "Build Items"
 		Build\Apply-Xslt.ps1 = Build\Apply-Xslt.ps1
 		appveyor.yml = appveyor.yml
 		Build\build.fsx = Build\build.fsx
+		Build\FxCop.fs = Build\FxCop.fs
+		Build\Gendarme.fs = Build\Gendarme.fs
 		Build\get-token.fsx = Build\get-token.fsx
+		Build\ILMerge.fs = Build\ILMerge.fs
 		Build\Infrastructure.snk = Build\Infrastructure.snk
+		Build\msbuildtest.proj = Build\msbuildtest.proj
+		Build\pester.ps1 = Build\pester.ps1
 		Build\Pester.Tests.ps1 = Build\Pester.Tests.ps1
+		Build\powershell.ps1 = Build\powershell.ps1
 		Build\Recorder.snk = Build\Recorder.snk
 		ReleaseNotes.md = ReleaseNotes.md
 		Build\rules-mono.xml = Build\rules-mono.xml
@@ -86,6 +92,8 @@ EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "AltCover.FSApi", "AltCover.FSApi\AltCover.FSApi.fsproj", "{0DC0F7BB-C08F-45E1-A86C-62746372DC4B}"
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "AltCover.Fake", "AltCover.Fake\AltCover.Fake.fsproj", "{1DD4B3C5-19C2-469B-87A3-87E60F20775C}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "AltCover.Fake.DotNet.Testing.AltCover", "AltCover.Fake.DotNet.Testing.AltCover\AltCover.Fake.DotNet.Testing.AltCover.fsproj", "{17662DB6-7BB1-4ECE-BF37-D6D439762CFD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -265,6 +273,14 @@ Global
 		{1DD4B3C5-19C2-469B-87A3-87E60F20775C}.Release|Any CPU.Build.0 = Release|Any CPU
 		{1DD4B3C5-19C2-469B-87A3-87E60F20775C}.Release|x86.ActiveCfg = Release|Any CPU
 		{1DD4B3C5-19C2-469B-87A3-87E60F20775C}.Release|x86.Build.0 = Release|Any CPU
+		{17662DB6-7BB1-4ECE-BF37-D6D439762CFD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{17662DB6-7BB1-4ECE-BF37-D6D439762CFD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{17662DB6-7BB1-4ECE-BF37-D6D439762CFD}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{17662DB6-7BB1-4ECE-BF37-D6D439762CFD}.Debug|x86.Build.0 = Debug|Any CPU
+		{17662DB6-7BB1-4ECE-BF37-D6D439762CFD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{17662DB6-7BB1-4ECE-BF37-D6D439762CFD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{17662DB6-7BB1-4ECE-BF37-D6D439762CFD}.Release|x86.ActiveCfg = Release|Any CPU
+		{17662DB6-7BB1-4ECE-BF37-D6D439762CFD}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

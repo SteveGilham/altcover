@@ -10,6 +10,7 @@ open AltCover
 open Mono.Options
 open Newtonsoft.Json.Linq
 open Xunit
+#nowarn "44"
 
 module XTests =
   let Hack() =
@@ -141,7 +142,7 @@ module XTests =
 
   [<Fact>]
   let CollectParamsCanBeValidatedWithErrors() =
-    let test = CollectParams.Default
+    let test = CollectParams.Create()
     let scan = test.Validate(true)
     Assert.Equal(1, scan.Length)
 
@@ -173,8 +174,8 @@ module XTests =
     let input = Path.Combine(AltCover.SolutionRoot.location, "Build/Infrastructure.snk")
 
     let test =
-      { PrepareParams.Default with StrongNameKey = input
-                                   Keys = [| input |] }
+      { PrepareParams.Create() with StrongNameKey = input
+                                    Keys = [| input |] }
 
     let scan = test.Validate()
 #if NETCOREAPP2_0
