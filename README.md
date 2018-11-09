@@ -16,8 +16,9 @@ For Mono, .net framework and .net core, except as noted
 * An API for the above functionality, with Fake and Cake integration
 * A PowerShell module (not mono) containing a cmdlet that drives the tool, and other cmdlets for manipulating coverage reports
 * A coverage visualizer tool 
-  * For .net framework and mono (for .net framework, needs GTK# v2.12.xx installed separately -- see https://www.mono-project.com/download/stable/#download-win ) and for .net core (needs GTK+3 installed separately -- for Windows, see e.g. https://github.com/GtkSharp/GtkSharp/wiki/Installing-Gtk-on-Windows)
-     ![Visualizer screenshot](./AltCover.Visualizer/Screenshot.png)
+  * For .net framework and mono (for .net framework, needs GTK# v2.12.xx installed separately -- see https://www.mono-project.com/download/stable/#download-win )
+  * For .net core (needs GTK+3 installed separately -- for Windows, see e.g. https://github.com/GtkSharp/GtkSharp/wiki/Installing-Gtk-on-Windows)
+  ![Visualizer screenshot](./AltCover.Visualizer/Screenshot.png)
     
 ### NuGet Packages
 * [General purpose install](https://www.nuget.org/packages/AltCover) -- excludes the C# API and FAKE integration
@@ -25,6 +26,7 @@ For Mono, .net framework and .net core, except as noted
 * [dotnet CLI tool install](https://www.nuget.org/packages/AltCover.dotnet) -- excludes the visualizer in all forms
 * [dotnet global tool install](https://www.nuget.org/packages/AltCover.global) -- excludes the visualizer in all forms
 * [Visualizer dotnet global tool](https://www.nuget.org/packages/AltCover.visualizer) -- just the .net core/GTK#3 Visualizer as a global tool
+* [FAKE build task utilities](https://www.nuget.org/packages/AltCover.Fake) -- just AltCover related helper types for FAKE scripts (v5.9.3 or later), only in this package
 
 ## Why altcover?
 As the name suggests, it's an alternative coverage approach.  Rather than working by hooking the .net profiling API at run-time, it works by weaving the same sort of extra IL into the assemblies of interest ahead of execution.  This means that it should work pretty much everywhere, whatever your platform, so long as the executing process has write access to the results file.  You can even mix-and-match between platforms used to instrument and those under test.

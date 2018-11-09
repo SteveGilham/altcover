@@ -1,4 +1,10 @@
+#if RUNNER
 namespace AltCover
+#else
+module internal AltCover.Internals
+
+open AltCover_Fake.DotNet.Testing
+#endif
 
 open System
 open System.Linq
@@ -9,7 +15,7 @@ do ()
 
 module DotNet =
   let private Arg name s = (sprintf """/p:AltCover%s="%s" """ name s).Trim()
-  let private ListArg name (s : String array) =
+  let private ListArg name (s : String seq) =
     (sprintf """/p:AltCover%s="%s" """ name <| String.Join("|", s)).Trim()
 
   let private IsSet s =
@@ -17,11 +23,17 @@ module DotNet =
     |> String.IsNullOrWhiteSpace
     |> not
 
-  let private FromList name (s : String array) = (ListArg name s, s.Any())
+  let private FromList name (s : String seq) = (ListArg name s, s.Any())
   let private FromArg name s = (Arg name s, IsSet s)
   let private Join(l : string list) = String.Join(" ", l)
 
+#if RUNNER
   let ToTestArgumentList (prepare : PrepareParams) (collect : CollectParams) =
+#else
+  let ToTestArgumentList (prepare : AltCover.PrepareParams)
+      (collect : AltCover.CollectParams) =
+#endif
+
     [ FromArg String.Empty "true"
       FromArg "XmlReport" prepare.XmlReport
       (Arg "OpenCover" "false", not prepare.OpenCover)
@@ -42,5 +54,10 @@ module DotNet =
     |> List.filter snd
     |> List.map fst
 
+#if RUNNER
   let ToTestArguments (prepare : PrepareParams) (collect : CollectParams) =
+#else
+  let ToTestArguments (prepare : AltCover.PrepareParams)
+      (collect : AltCover.CollectParams) =
+#endif
     ToTestArgumentList prepare collect |> Join

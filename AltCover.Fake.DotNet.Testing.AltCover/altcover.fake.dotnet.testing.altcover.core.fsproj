@@ -2,20 +2,20 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <RootNamespace>AltCover.FSApi</RootNamespace>
-    <AssemblyName>AltCover.FSApi</AssemblyName>
+    <RootNamespace>AltCover.Fake.DotNet.Testing.AltCover</RootNamespace>
+    <AssemblyName>AltCover.Fake.DotNet.Testing.AltCover</AssemblyName>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <ContinuousIntegrationBuild Condition="'$(APPVEYOR)'=='True'">true</ContinuousIntegrationBuild>
     <DeterministicSourcePaths Condition="'$(APPVEYOR)'=='True'">true</DeterministicSourcePaths>
-    <GlobalDefineConstants>RUNNER</GlobalDefineConstants>
+    <GlobalDefineConstants></GlobalDefineConstants>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
     <DefineConstants>TRACE;DEBUG;CODE_ANALYSIS;$(GlobalDefineConstants)</DefineConstants>
     <OutputPath>$(SolutionDir)_Binaries/$(AssemblyName)/$(Configuration)+$(Platform)/</OutputPath>
     <IntermediateOutputPath>$(SolutionDir)_Intermediate/$(AssemblyName)/$(Configuration)+$(Platform)/</IntermediateOutputPath>
-    <OtherFlags>--tailcalls+ --keyfile:$(SolutionDir)Build\Infrastructure.snk</OtherFlags>
+    <OtherFlags>--tailcalls+</OtherFlags>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
     <DefineConstants>TRACE;$(GlobalDefineConstants)</DefineConstants>
@@ -31,29 +31,18 @@
 
   <ItemGroup>
     <Compile Include="..\_Generated\AssemblyVersion.fs" Link="AssemblyVersion.fs" />
-    <Compile Include="Definitions.fs" />
-    <Compile Include="Xml.fs" />
-    <Compile Include="Xhtml.fs" />
-    <Compile Include="OpenCover.fs" />
-    <Compile Include="CoverageFormats.fs" />
-    <Compile Include="RenderToHtml.fs" />
-    <Content Include="packages.config" />
-    <EmbeddedResource Include="xsd\NCover.xsd" />
-    <EmbeddedResource Include="xsd\OpenCover.xsd" />
-    <EmbeddedResource Include="xsl\OpenCoverToNCover.xsl" />
-    <EmbeddedResource Include="xsl\OpenCoverToNCoverEx.xsl" />
-    <EmbeddedResource Include="xsl\NCoverToBarChart.xsl" />
+    <Compile Include="..\AltCover\Api.fs" Link="Api.fs" />
+    <Compile Include="..\AltCover.FSApi\Definitions.fs" Link="Definitions.fs" />
+    <Compile Include="..\AltCover.Fake\Fake.fs" Link="Fake.fs" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="FAKE.Core.Process" Version="5.9.3" />
+    <PackageReference Include="FAKE.DotNet.Cli" Version="5.9.3" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0-beta-63127-02">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\AltCover\altcover.core.fsproj" />
   </ItemGroup>
 
   <ItemGroup>

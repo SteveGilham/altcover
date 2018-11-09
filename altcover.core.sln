@@ -14,8 +14,6 @@ Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "dotnet-altcover", "AltCover
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "global-altcover", "AltCover.GlobalTool\global-altcover.fsproj", "{C6408656-6016-4F72-8897-63AA3FF4F3C0}"
 EndProject
-Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.avalonia", "AltCover.Avalonia\altcover.avalonia.fsproj", "{8529FB2A-D065-4A36-A997-21121177A8EA}"
-EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.fsapi.core", "AltCover.FSApi\altcover.fsapi.core.fsproj", "{62218EAC-A2E9-462B-9DF6-96C79629CE63}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "altcover.cake.core", "AltCover.Cake\altcover.cake.core.csproj", "{9BBD2D49-C8BD-4213-A97C-F5F3191ACCBD}"
@@ -59,15 +57,22 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build Items", "Build Items"
 		.travis.yml = .travis.yml
 		Build\actions.fsx = Build\actions.fsx
 		Build\AltCover.nuspec = Build\AltCover.nuspec
+		nupkg\build\netstandard2.0\AltCover.props = nupkg\build\netstandard2.0\AltCover.props
+		nupkg\build\netstandard2.0\AltCover.targets = nupkg\build\netstandard2.0\AltCover.targets
 		Build\Apply-Xslt.ps1 = Build\Apply-Xslt.ps1
 		appveyor.yml = appveyor.yml
 		Build\build.fsx = Build\build.fsx
+		Build\FxCop.fs = Build\FxCop.fs
+		Build\Gendarme.fs = Build\Gendarme.fs
+		Build\get-token.fsx = Build\get-token.fsx
+		Build\ILMerge.fs = Build\ILMerge.fs
 		Build\Infrastructure.snk = Build\Infrastructure.snk
 		Build\msbuildtest.proj = Build\msbuildtest.proj
 		Build\pester.ps1 = Build\pester.ps1
 		Build\Pester.Tests.ps1 = Build\Pester.Tests.ps1
 		Build\powershell.ps1 = Build\powershell.ps1
 		Build\Recorder.snk = Build\Recorder.snk
+		ReleaseNotes.md = ReleaseNotes.md
 		Build\rules-mono.xml = Build\rules-mono.xml
 		Build\rules-posh.xml = Build\rules-posh.xml
 		Build\rules.xml = Build\rules.xml
@@ -81,6 +86,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documents", "Documents", "{
 		README.md = README.md
 		ReleaseNotes.md = ReleaseNotes.md
 	EndProjectSection
+EndProject
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.fake.dotnet.testing.altcover.core", "AltCover.Fake.DotNet.Testing.AltCover\altcover.fake.dotnet.testing.altcover.core.fsproj", "{D431AAE4-AD1F-4531-BFBD-A202868B328D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -140,18 +147,6 @@ Global
 		{C6408656-6016-4F72-8897-63AA3FF4F3C0}.Release|Any CPU.Build.0 = Release|Any CPU
 		{C6408656-6016-4F72-8897-63AA3FF4F3C0}.Release|x64.ActiveCfg = Release|Any CPU
 		{C6408656-6016-4F72-8897-63AA3FF4F3C0}.Release|x86.ActiveCfg = Release|Any CPU
-		{8529FB2A-D065-4A36-A997-21121177A8EA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8529FB2A-D065-4A36-A997-21121177A8EA}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8529FB2A-D065-4A36-A997-21121177A8EA}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{8529FB2A-D065-4A36-A997-21121177A8EA}.Debug|x64.Build.0 = Debug|Any CPU
-		{8529FB2A-D065-4A36-A997-21121177A8EA}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{8529FB2A-D065-4A36-A997-21121177A8EA}.Debug|x86.Build.0 = Debug|Any CPU
-		{8529FB2A-D065-4A36-A997-21121177A8EA}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8529FB2A-D065-4A36-A997-21121177A8EA}.Release|Any CPU.Build.0 = Release|Any CPU
-		{8529FB2A-D065-4A36-A997-21121177A8EA}.Release|x64.ActiveCfg = Release|Any CPU
-		{8529FB2A-D065-4A36-A997-21121177A8EA}.Release|x64.Build.0 = Release|Any CPU
-		{8529FB2A-D065-4A36-A997-21121177A8EA}.Release|x86.ActiveCfg = Release|Any CPU
-		{8529FB2A-D065-4A36-A997-21121177A8EA}.Release|x86.Build.0 = Release|Any CPU
 		{62218EAC-A2E9-462B-9DF6-96C79629CE63}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{62218EAC-A2E9-462B-9DF6-96C79629CE63}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{62218EAC-A2E9-462B-9DF6-96C79629CE63}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -289,6 +284,18 @@ Global
 		{6D52273D-097D-4C30-82D1-5F276FAB4187}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6D52273D-097D-4C30-82D1-5F276FAB4187}.Release|x64.ActiveCfg = Release|Any CPU
 		{6D52273D-097D-4C30-82D1-5F276FAB4187}.Release|x86.ActiveCfg = Release|Any CPU
+		{D431AAE4-AD1F-4531-BFBD-A202868B328D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D431AAE4-AD1F-4531-BFBD-A202868B328D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D431AAE4-AD1F-4531-BFBD-A202868B328D}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{D431AAE4-AD1F-4531-BFBD-A202868B328D}.Debug|x64.Build.0 = Debug|Any CPU
+		{D431AAE4-AD1F-4531-BFBD-A202868B328D}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{D431AAE4-AD1F-4531-BFBD-A202868B328D}.Debug|x86.Build.0 = Debug|Any CPU
+		{D431AAE4-AD1F-4531-BFBD-A202868B328D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D431AAE4-AD1F-4531-BFBD-A202868B328D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D431AAE4-AD1F-4531-BFBD-A202868B328D}.Release|x64.ActiveCfg = Release|Any CPU
+		{D431AAE4-AD1F-4531-BFBD-A202868B328D}.Release|x64.Build.0 = Release|Any CPU
+		{D431AAE4-AD1F-4531-BFBD-A202868B328D}.Release|x86.ActiveCfg = Release|Any CPU
+		{D431AAE4-AD1F-4531-BFBD-A202868B328D}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

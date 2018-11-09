@@ -2,6 +2,29 @@ Q. Never mind the fluff -- how do I get started?
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
+# 4.0.655 (Doruka series release 8)
+* [NEW PACKAGE] `altcover.fake` containing just helper types for FAKE scripts (v5.9.3 or later) : see Wiki entry [The `AltCover.Fake` package](https://github.com/SteveGilham/altcover/wiki/The-AltCover.Fake-package)
+  * Module `AltCover_Fake.DotNet.Testing.AltCover` containing an `AltCover` task for driving any command-line version of AltCover, along with helper types
+  * Module `AltCover_Fake.DotNet.DotNet` fluent extension methods for `Fake.DotNet.DotNet.TestOptions` using the `AltCover_Fake.DotNet...` helper types
+  * dog-food these features in the AltCover build process
+* [API] -- `AltCover.Api.CollectParams`
+  * Make `[<NoComparison>]` explicit
+  * Mark the `Default` member `[<Obsolete>]`; prefer new `Create()` instead
+* [API] -- `AltCover.Api.PrepareParams`
+  * Make `[<NoComparison>]` explicit
+  * All `string array` members have been relaxed to become `string seq`
+  * Mark the `Default` member `[<Obsolete>]`; prefer new `Create()` instead
+* [API] -- `AltCover.Fake.Api`
+  * `static member toolPath` for finding the location of an AltCover command-line executable in the same nuget package
+* [API] -- `AltCover.Fake.DotNet`
+  * Extend module with more `Fake.DotNet.DotNet.TestOptions` fluent extension methods `WithImportModule()` and `WithGetVersion()`
+
+# 4.0.653 (Doruka series release 7)
+* Properly resolve the strong-naming of the recorder assembly (a fix for Issue #38 closer to the original intent, compared with the "just-make-it-work" fix in 4.0.649)
+* Look for dependencies -- mostly ASP .net Core assemblies -- under `%ProgramFiles%\dotnet\shared` or `/usr/share/dotnet/shared` as well as under `%USERPROFILE%/.nuget/packages`
+* Look for dependencies under `%NUGET_PACKAGES%`
+* Extend the `-d` argument parser to expand environment variables and to handle relative paths
+
 # 4.0.649 (Doruka series release 6)
 * [BUGFIX] Issue #37 -- handle release builds of C# `return <ternary>;` expressions which don't look like ternaries in their IL.  Fix some corner cases of NPath complexity, branch exit counts and branch visit counts revealed by these cases.
 **NOTE** This form of ternary expression is the first case of a significant user defined branch within a sequence point; the `Compress-Branching -WithinSequencePoint` cmdlet at this release _will_ flatten these constructs.
