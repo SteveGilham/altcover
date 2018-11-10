@@ -2588,7 +2588,8 @@ _Target "MSBuildTest" (fun _ ->
       { p with Verbosity = Some MSBuildVerbosity.Minimal
                Properties =
                  [ "Configuration", "Debug"
-                   "DebugSymbols", "True" ] }) "./Sample4/Sample4.prepare.fsproj"
+                   "MSBuildTest", "true"
+                   "DebugSymbols", "True" ] }) "./Sample4/Sample4.fsproj"
   else printfn "Skipping touch-test -- AltCover.exe not packaged")
 
 _Target "ApiUse" (fun _ ->
