@@ -87,14 +87,14 @@
 
   <ItemGroup>
     <PackageReference Include="Avalonia.HtmlRenderer" Version="0.6.1" />
-    <PackageReference Include="Avalonia" Version="0.6.2-build6440-beta" />
-    <PackageReference Include="Avalonia.Desktop" Version="0.6.2-build6440-beta" />
+    <PackageReference Include="Avalonia" Version="0.7.0" />
+    <PackageReference Include="Avalonia.Desktop" Version="0.7.0" />
     <PackageReference Condition="'$(OS)' == 'Windows_NT' AND '$(Configuration)'=='Release'" Include="Microsoft.SourceLink.GitHub" Version="1.0.0-beta-63127-02">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Mono.Options" Version="5.3.0.1" />
-    <PackageReference Include="System.Reactive.Core" Version="4.1.0" />
+    <PackageReference Include="System.Reactive.Core" Version="4.1.2" />
   </ItemGroup>
 
   <ItemGroup>
