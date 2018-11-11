@@ -1711,7 +1711,7 @@ type AltCoverTests2() =
              [ "Info"; "Echo"; "Error"; "Usage"; "Warn"; "ToConsole"; "SetInfo";
                "SetError"; "SetWarn" ]
            let name = t.Name
-           tokens |> List.exists (fun n -> name.StartsWith n))
+           tokens |> List.exists name.StartsWith)
       |> Seq.iter (fun t ->
            let p = t.GetType().GetProperty("DeclaredConstructors")
            let c = p.GetValue(t, null) :?> ConstructorInfo []

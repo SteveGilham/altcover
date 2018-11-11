@@ -22,6 +22,7 @@ open Fake.IO.Globbing
 open Fake.IO.Globbing.Operators
 
 open FSharpLint.Application
+open FSharpLint.Framework
 open NUnit.Framework
 
 let Copyright = ref String.Empty
@@ -228,14 +229,38 @@ _Target "BuildMonoSamples" (fun _ ->
 _Target "Analysis" ignore
 
 _Target "Lint" (fun _ ->
-//    !! "**/*.fsproj"
-//        |> Seq.filter (fun n -> n.IndexOf(".core.") = -1)
-//        |> Seq.collect (fun n -> !!(Path.GetDirectoryName n @@ "*.fs"))
-//        |> Seq.iter (fun f -> match Lint.lintFile (Lint.OptionalLintParameters.Default) f (new Version "4.0") with
-//                              | Lint.Failure x -> new InvalidOperationException(x.ToString()) |> raise
-//                              | Lint.Success w -> w |> Seq.iter (printfn "%A"))
-// => https://github.com/fsprojects/FSharpLint/issues/266
-  ())
+  let failOnIssuesFound (issuesFound : bool) =
+    Assert.That(issuesFound, Is.False, "Lint issues were found")
+  try
+    let settings =
+      Configuration.SettingsFileName
+      |> Path.getFullName
+      |> File.ReadAllText
+
+    let lintConfig = Configuration.configuration settings
+    let options =
+      { Lint.OptionalLintParameters.Default with Configuration = Some lintConfig }
+    let fsVersion = System.Version("4.0")
+
+    !!"**/*.fsproj"
+    |> Seq.collect (fun n -> !!(Path.GetDirectoryName n @@ "*.fs"))
+    |> Seq.distinct
+    |> Seq.fold (fun _ f ->
+         match Lint.lintFile options f fsVersion with
+         | Lint.LintResult.Failure x -> failwithf "%A" x
+         | Lint.LintResult.Success w ->
+           w
+           |> Seq.filter (fun x ->
+                match x.Fix with
+                | None -> false
+                | Some fix -> fix.FromText <> "AltCover_Fake") // special case
+           |> Seq.fold (fun _ x ->
+                printfn "Info: %A\r\n Range: %A\r\n Fix: %A\r\n====" x.Info x.Range x.Fix
+                true) false) false
+    |> failOnIssuesFound
+  with ex ->
+    printfn "%A" ex
+    reraise())
 
 _Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standalone which contaminates everything
   Directory.ensure "./_Reports"
