@@ -47,7 +47,7 @@ type AltCoverTests() =
         |> Seq.map (fun (n, e, r) ->
              if r <> e then Some(n, e, r)
              else None)
-        |> Seq.filter (fun x -> Option.isSome x)
+        |> Seq.filter Option.isSome
         |> Seq.map (fun x ->
              let n, e, r = Option.get x
              sprintf "Expected %d got %d in %s" e r n)
@@ -81,7 +81,7 @@ type AltCoverTests() =
         |> Seq.map (fun (n, e, r) ->
              if r <> e then Some(n, e, r)
              else None)
-        |> Seq.filter (fun x -> Option.isSome x)
+        |> Seq.filter Option.isSome
         |> Seq.map (fun x ->
              let n, e, r = Option.get x
              sprintf "Expected %d got %d in %s" e r n)
@@ -122,7 +122,7 @@ type AltCoverTests() =
         |> Seq.map (fun (n, e, r) ->
              if r <> e then Some(n, e, r)
              else None)
-        |> Seq.filter (fun x -> Option.isSome x)
+        |> Seq.filter Option.isSome
         |> Seq.map (fun x ->
              let n, e, r = Option.get x
              sprintf "Expected %d got %d in %s" e r n)
