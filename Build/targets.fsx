@@ -2064,23 +2064,23 @@ _Target "PrepareFrameworkBuild"
   (fun _ ->
   let toolpath = Tools.findToolInSubPath "ILMerge.exe" "./packages"
   let ver = String.Join(".", (!Version).Split('.') |> Seq.take 2) + ".0.0"
-  let here = Directory.GetCurrentDirectory()
   ILMerge.run
     { ILMerge.Params.Create() with DebugInfo = true
                                    ToolPath = toolpath
                                    TargetKind = ILMerge.TargetKind.Exe
-                                   KeyFile = "./Build/Infrastructure.snk"
+                                   KeyFile = Path.getFullName "./Build/Infrastructure.snk"
                                    Version = Some(System.Version(ver))
-                                   Internalize = ILMerge.InternalizeTypes.Internalize
+                                   Internalize = ILMerge.Internalize
                                    Libraries =
                                      Seq.concat
                                        [ !!"./_Binaries/AltCover/Release+AnyCPU/Mono.C*.dll"
-
                                          !!"./_Binaries/AltCover/Release+AnyCPU/Newton*.dll" ]
-                                     |> Seq.map (fun f -> f.Replace(here, "."))
+                                     |> Seq.map Path.getFullName
                                    AttributeFile =
-                                     "./_Binaries/AltCover/Release+AnyCPU/AltCover.exe" }
-    "./_Binaries/AltCover/AltCover.exe" "./_Binaries/AltCover/Release+AnyCPU/AltCover.exe")
+                                     Path.getFullName "./_Binaries/AltCover/Release+AnyCPU/AltCover.exe" }
+    (Path.getFullName "./_Binaries/AltCover/AltCover.exe")
+    (Path.getFullName "./_Binaries/AltCover/Release+AnyCPU/AltCover.exe"))
+
 _Target "PrepareDotNetBuild" (fun _ ->
   let netcoresource = Path.getFullName "./AltCover/altcover.core.fsproj"
   let publish = Path.getFullName "./_Publish"

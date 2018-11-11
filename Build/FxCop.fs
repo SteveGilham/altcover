@@ -1,3 +1,20 @@
+/// Contains a task to invoke the FxCop tool
+///
+/// ### Sample
+///
+///        Target.create "FxCop" (fun _ ->
+///            Directory.ensure "./_Reports"
+///            let rules = [ "-Microsoft.Design#CA1011"   // maybe sometimes
+///                          "-Microsoft.Design#CA1062" ] // null checks,  In F#!
+///            !! ("**/bin/Debug/*.dll")
+///            |> FxCop.run { FxCop.Params.Create() with WorkingDirectory = "."
+///                                                      UseGAC = true
+///                                                      Verbose = false
+///                                                      ReportFileName = "_Reports/FxCopReport.xml"
+///                                                      Rules = rules
+///                                                      FailOnError = FxCop.ErrorLevel.Warning
+///                                                      IgnoreGeneratedCode = true})
+///
 [<RequireQualifiedAccess>]
 module Fake.DotNet.FxCop
 
@@ -121,7 +138,7 @@ let mutable internal XmlReadInt = XmlReadIntBase
 
 /// This checks the result file with some XML queries for errors
 /// [omit]
-let checkForErrors resultFile =
+let internal checkForErrors resultFile =
     // original version found at http://blogs.conchango.com/johnrayner/archive/2006/10/05/Getting-FxCop-to-break-the-build.aspx
     let getErrorValue s =
         XmlReadInt false resultFile String.Empty String.Empty
