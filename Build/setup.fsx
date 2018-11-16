@@ -43,6 +43,7 @@ nuget Fake.DotNet.Testing.OpenCover >= 5.10.1
 nuget Fake.DotNet.Testing.XUnit2 >= 5.10.1
 nuget Fake.IO.FileSystem >= 5.10.1
 nuget Fake.Testing.ReportGenerator >= 5.10.1
+nuget AltCode.Fake.DotNet.Gendarme >= 5.9.3.5
 nuget coveralls.io >= 1.4.2
 nuget FSharpLint.Core >= 0.10
 nuget Markdown >= 2.2.1
@@ -56,7 +57,6 @@ nuget YamlDotNet >= 5.2.1 //"
 #load "../AltCover.FSApi/Definitions.fs"
 #load "../AltCover.Fake/Fake.fs"
 #load "ILMerge.fs"
-#load "Gendarme.fs"
 #load "actions.fsx"
 #load "targets.fsx"
 #nowarn "988"

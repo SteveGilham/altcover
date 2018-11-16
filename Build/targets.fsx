@@ -6,6 +6,7 @@ open System.Xml
 open System.Xml.Linq
 
 open Actions
+open AltCode.Fake.DotNet
 open AltCover_Fake.DotNet.DotNet
 open AltCover_Fake.DotNet.Testing
 
