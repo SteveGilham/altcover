@@ -2,7 +2,7 @@ STORAGE: NONE
 RESTRICTION: == netstandard2.0
 NUGET
   remote: https://api.nuget.org/v3/index.json
-    AltCode.Fake.DotNet.Gendarme (5.9.3.7)
+    AltCode.Fake.DotNet.Gendarme (5.9.3.10)
     BlackFox.VsWhere (0.3.2)
       FSharp.Core (>= 4.2.3)
     coveralls.io (1.4.2)
