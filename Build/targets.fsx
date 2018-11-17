@@ -6,6 +6,7 @@ open System.Xml
 open System.Xml.Linq
 
 open Actions
+open AltCode.Fake.DotNet
 open AltCover_Fake.DotNet.DotNet
 open AltCover_Fake.DotNet.Testing
 
@@ -280,7 +281,10 @@ _Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standa
        "_Binaries/AltCover.FSApi/Debug+AnyCPU/AltCover.FSApi.dll" ])
 
     ("./Build/rules-gtk.xml",
-     [ "_Binaries/AltCover.Visualizer/Debug+AnyCPU/AltCover.Visualizer.exe" ]) ]
+     [ "_Binaries/AltCover.Visualizer/Debug+AnyCPU/AltCover.Visualizer.exe" ])
+     
+    ("./Build/rules-fake.xml",
+     ["_Binaries/AltCover.Fake.DotNet.Testing.AltCover/Debug+AnyCPU/AltCover.Fake.DotNet.Testing.AltCover.dll"]) ]
   |> Seq.iter (fun (ruleset, files) ->
        Gendarme.run { Gendarme.Params.Create() with WorkingDirectory = "."
                                                     Severity = Gendarme.Severity.All
@@ -294,6 +298,14 @@ _Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standa
 _Target "FxCop" (fun _ -> // Needs debug because release is compiled --standalone which contaminates everything
   Directory.ensure "./_Reports"
 
+  let installPath () =
+            use hklmKey =
+                Microsoft.Win32.RegistryKey.OpenBaseKey
+                    (Microsoft.Win32.RegistryHive.LocalMachine, Microsoft.Win32.RegistryView.Registry32)
+            use key = hklmKey.OpenSubKey(@"SOFTWARE\Microsoft\VisualStudio\SxS\VS7")
+            key.GetValue("15.0", String.Empty) :?> string
+ 
+  let toolPath = installPath() @@ "Team Tools/Static Analysis Tools/FxCop/FxCopCmd.exe"
   let rules = [ "-Microsoft.Design#CA1004"
                 "-Microsoft.Design#CA1006"
                 "-Microsoft.Design#CA1011" // maybe sometimes
@@ -384,6 +396,28 @@ _Target "FxCop" (fun _ -> // Needs debug because release is compiled --standalon
                 "-Microsoft.Naming#CA1715"
                 "-Microsoft.Naming#CA1704"
                 "-Microsoft.Naming#CA1709" ])
+    ([
+         "_Binaries/AltCover.Fake.DotNet.Testing.AltCover/Debug+AnyCPU/AltCover.Fake.DotNet.Testing.AltCover.dll"
+       ], [ 
+            "AltCover_Fake.DotNet.Testing.AltCover.CollectParams"
+            "AltCover_Fake.DotNet.Testing.AltCover.PrepareParams"
+            "AltCover_Fake.DotNet.Testing.AltCover.Args"
+            "AltCover_Fake.DotNet.Testing.AltCover.ArgType"
+            "AltCover_Fake.DotNet.Testing.AltCover.ToolType"
+            "AltCover_Fake.DotNet.Testing.AltCover.Params"
+            "AltCover_Fake.DotNet.Testing.AltCover.PrepareParams"
+            "AltCover_Fake.DotNet.Testing.AltCover"
+            "AltCover.Internals.DotNet"
+            "AltCover_Fake.DotNet.DotNet"
+           ], [ "-Microsoft.Design#CA1006"
+                "-Microsoft.Design#CA1011"
+                "-Microsoft.Design#CA1020"
+                "-Microsoft.Design#CA1062"
+                "-Microsoft.Naming#CA1704"
+                "-Microsoft.Naming#CA1707"
+                "-Microsoft.Naming#CA1709"
+                "-Microsoft.Naming#CA1724"
+                "-Microsoft.Usage#CA2208" ])
       ]
     |> Seq.iter (fun (files, types, ruleset) -> files
                                                 |> FxCop.run { FxCop.Params.Create() with WorkingDirectory = "."
@@ -393,6 +427,7 @@ _Target "FxCop" (fun _ -> // Needs debug because release is compiled --standalon
                                                                                           Types = types
                                                                                           Rules = ruleset
                                                                                           FailOnError = FxCop.ErrorLevel.Warning
+                                                                                          ToolPath = toolPath
                                                                                           IgnoreGeneratedCode = true })
 
   [ "_Binaries/AltCover.PowerShell/Debug+AnyCPU/AltCover.PowerShell.dll" ]
@@ -404,6 +439,7 @@ _Target "FxCop" (fun _ -> // Needs debug because release is compiled --standalon
                                               [ Path.getFullName
                                                   "ThirdParty/Microsoft.PowerShell.CodeAnalysis.15.dll" ]
                                             FailOnError = FxCop.ErrorLevel.Warning
+                                            ToolPath = toolPath
                                             IgnoreGeneratedCode = true })
 
 // Unit Test

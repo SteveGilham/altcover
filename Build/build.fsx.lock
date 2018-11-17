@@ -2,6 +2,7 @@ STORAGE: NONE
 RESTRICTION: == netstandard2.0
 NUGET
   remote: https://api.nuget.org/v3/index.json
+    AltCode.Fake.DotNet.Gendarme (5.9.3.10)
     BlackFox.VsWhere (0.3.2)
       FSharp.Core (>= 4.2.3)
     coveralls.io (1.4.2)
@@ -156,7 +157,7 @@ NUGET
     FSharp.Control.Reactive (4.1)
       FSharp.Core (>= 4.2.3)
       System.Reactive (>= 4.0)
-    FSharp.Core (4.5.2)
+    FSharp.Core (4.5.3)
     FSharpLint.Core (0.10)
       Dotnet.ProjInfo (>= 0.9)
       FParsec (>= 1.0.3)
@@ -199,7 +200,7 @@ NUGET
       System.Collections.Immutable (>= 1.5)
       System.Runtime.InteropServices.RuntimeInformation (>= 4.3)
       System.Text.Encoding.CodePages (>= 4.4)
-    Microsoft.NETCore.Platforms (2.1.1)
+    Microsoft.NETCore.Platforms (2.1.2)
     Microsoft.NETCore.Targets (2.1)
     Microsoft.Win32.Primitives (4.3)
       Microsoft.NETCore.Platforms (>= 1.1)
