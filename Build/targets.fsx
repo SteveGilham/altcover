@@ -298,14 +298,6 @@ _Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standa
 _Target "FxCop" (fun _ -> // Needs debug because release is compiled --standalone which contaminates everything
   Directory.ensure "./_Reports"
 
-  let installPath () =
-            use hklmKey =
-                Microsoft.Win32.RegistryKey.OpenBaseKey
-                    (Microsoft.Win32.RegistryHive.LocalMachine, Microsoft.Win32.RegistryView.Registry32)
-            use key = hklmKey.OpenSubKey(@"SOFTWARE\Microsoft\VisualStudio\SxS\VS7")
-            key.GetValue("15.0", String.Empty) :?> string
- 
-  let toolPath = installPath() @@ "Team Tools/Static Analysis Tools/FxCop/FxCopCmd.exe"
   let rules = [ "-Microsoft.Design#CA1004"
                 "-Microsoft.Design#CA1006"
                 "-Microsoft.Design#CA1011" // maybe sometimes
@@ -427,7 +419,6 @@ _Target "FxCop" (fun _ -> // Needs debug because release is compiled --standalon
                                                                                           Types = types
                                                                                           Rules = ruleset
                                                                                           FailOnError = FxCop.ErrorLevel.Warning
-                                                                                          ToolPath = toolPath
                                                                                           IgnoreGeneratedCode = true })
 
   [ "_Binaries/AltCover.PowerShell/Debug+AnyCPU/AltCover.PowerShell.dll" ]
@@ -439,7 +430,6 @@ _Target "FxCop" (fun _ -> // Needs debug because release is compiled --standalon
                                               [ Path.getFullName
                                                   "ThirdParty/Microsoft.PowerShell.CodeAnalysis.15.dll" ]
                                             FailOnError = FxCop.ErrorLevel.Warning
-                                            ToolPath = toolPath
                                             IgnoreGeneratedCode = true })
 
 // Unit Test
