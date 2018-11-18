@@ -268,6 +268,7 @@ _Target "Lint" (fun _ ->
 _Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standalone which contaminates everything
   Directory.ensure "./_Reports"
 
+  let toolPath = (Tools.findToolInSubPath "gendarme.exe" "./packages")
   let rules =
     if Environment.isWindows then "./Build/rules.xml"
     else "./Build/rules-mono.xml"
@@ -293,7 +294,9 @@ _Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standa
                                                     Console = true
                                                     Log = "./_Reports/gendarme.html"
                                                     LogKind = Gendarme.LogKind.Html
-                                                    Targets = files }))
+                                                    Targets = files
+                                                    ToolPath = toolPath
+                                                    FailBuildOnDefect = true }))
 
 _Target "FxCop" (fun _ -> // Needs debug because release is compiled --standalone which contaminates everything
   Directory.ensure "./_Reports"

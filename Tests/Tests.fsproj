@@ -101,6 +101,11 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Sample11\Sample11.csproj">
+      <Name>Sample11</Name>
+      <Project>{cef40b51-1128-4ed5-9bb8-70e48ca7573b}</Project>
+      <Private>True</Private>
+    </ProjectReference>
     <ProjectReference Include="..\Sample5\Sample5.csproj">
       <Name>Sample5</Name>
       <Project>{d1f77a3c-6b04-41b7-9507-fc1a7263cd3d}</Project>
