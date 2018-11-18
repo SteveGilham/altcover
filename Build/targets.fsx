@@ -2797,7 +2797,7 @@ group NetcoreBuild
     let x = Path.getFullName "./_ApiUse/_DotnetTest/coverage.xml"
     Actions.CheckSample4 x
   finally
-    [ "altcover"; "altcover.api" ]
+    [ "altcover"; "altcover.api" ; "altcover.fake" ]
     |> List.iter (fun f ->
          let folder = (nugetCache @@ f) @@ !Version
          Shell.mkdir folder
