@@ -321,7 +321,6 @@ module Instance =
       Recording <- finish = Resume
       lock (buffer) (fun () ->
         if not Recording then UnbufferedVisit(fun _ -> true)
-        buffer.Clear()
         buffer.Clear())
       mailbox.TryPostAndReply((fun c -> Finish(finish, c)), 2000) |> ignore
 
