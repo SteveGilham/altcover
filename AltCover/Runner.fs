@@ -418,7 +418,7 @@ module internal Runner =
   let internal CollectResults (hits : Dictionary<string, Dictionary<int, int * Base.Track list>>) report =
     let timer = System.Diagnostics.Stopwatch()
     timer.Start()
-    let mutable before = hits.Count
+    let mutable before = 0
     let mutable after = 0
     Directory.GetFiles(Path.GetDirectoryName(report), Path.GetFileName(report) + ".*.acv")
     |> Seq.iter
@@ -450,11 +450,11 @@ module internal Runner =
                 |> String.IsNullOrWhiteSpace
                 |> not
              then Base.Counter.AddVisit hits key hitPointId hit
+                  after <- after + 1
              sink()
            | None -> ()
          sink()
          timer.Stop()
-         after <- hits.Count
          if after > before then
            let delta = after - before
            before <- after
