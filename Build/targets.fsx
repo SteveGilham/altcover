@@ -248,7 +248,7 @@ _Target "Lint" (fun _ ->
     !!"**/*.fsproj"
     |> Seq.collect (fun n -> !!(Path.GetDirectoryName n @@ "*.fs"))
     |> Seq.distinct
-    |> Seq.fold (fun _ f ->
+    |> Seq.map (fun f ->
          match Lint.lintFile options f fsVersion with
          | Lint.LintResult.Failure x -> failwithf "%A" x
          | Lint.LintResult.Success w ->
@@ -256,10 +256,11 @@ _Target "Lint" (fun _ ->
            |> Seq.filter (fun x ->
                 match x.Fix with
                 | None -> false
-                | Some fix -> fix.FromText <> "AltCover_Fake") // special case
-           |> Seq.fold (fun _ x ->
+                | Some fix -> fix.FromText <> "AltCover_Fake")) // special case
+    |> Seq.concat
+    |> Seq.fold (fun _ x ->
                 printfn "Info: %A\r\n Range: %A\r\n Fix: %A\r\n====" x.Info x.Range x.Fix
-                true) false) false
+                true) false
     |> failOnIssuesFound
   with ex ->
     printfn "%A" ex
@@ -276,7 +277,7 @@ _Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standa
   let baseRules = Path.getFullName "./Build/rules-fake.xml"
   let fakerules =
     if Environment.isWindows then baseRules
-    else 
+    else
       // Gendarme mono doesn't into .pdb files
       let lines = baseRules
                   |> File.ReadAllLines
@@ -295,7 +296,7 @@ _Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standa
 
     ("./Build/rules-gtk.xml",
      [ "_Binaries/AltCover.Visualizer/Debug+AnyCPU/AltCover.Visualizer.exe" ])
-     
+
     (fakerules,
      ["_Binaries/AltCover.Fake.DotNet.Testing.AltCover/Debug+AnyCPU/AltCover.Fake.DotNet.Testing.AltCover.dll"]) ]
   |> Seq.iter (fun (ruleset, files) ->
@@ -405,7 +406,7 @@ _Target "FxCop" (fun _ -> // Needs debug because release is compiled --standalon
                 "-Microsoft.Naming#CA1709" ])
     ([
          "_Binaries/AltCover.Fake.DotNet.Testing.AltCover/Debug+AnyCPU/AltCover.Fake.DotNet.Testing.AltCover.dll"
-       ], [ 
+       ], [
             "AltCover_Fake.DotNet.Testing.AltCover.CollectParams"
             "AltCover_Fake.DotNet.Testing.AltCover.PrepareParams"
             "AltCover_Fake.DotNet.Testing.AltCover.Args"
