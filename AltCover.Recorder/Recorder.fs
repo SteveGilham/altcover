@@ -35,8 +35,8 @@ type internal Carrier = SequencePoint of String * int * Track
 #endif
 [<NoComparison>]
 type internal Message =
-  | AsyncItem of Carrier seq
-  | Item of Carrier seq * AsyncReplyChannel<unit>
+  | AsyncItem
+  | Item of AsyncReplyChannel<unit>
   | Finish of Close * AsyncReplyChannel<unit>
 
 module Instance =
@@ -220,10 +220,20 @@ module Instance =
   let mutable internal mailbox = MakeDefaultMailbox()
   let mutable internal mailboxOK = false
 
+  let internal Queue = Queue<Carrier seq>()
+
   let internal Post(x : Carrier) =
     match x with
     | SequencePoint(moduleId, hitPointId, context) ->
       VisitImpl moduleId hitPointId context
+
+  let internal PostQueue () =
+    lock Queue (fun _ -> let rec march () =
+                           if Queue.Count > 0 then
+                             let s = Queue.Dequeue()
+                             s |> Seq.iter Post
+                             march()
+                         march())
 
   let rec private loop (inbox : MailboxProcessor<Message>) =
     async {
@@ -234,11 +244,11 @@ module Instance =
         | None -> return! loop inbox
         | Some msg ->
           match msg with
-          | AsyncItem s ->
-            s |> Seq.iter Post
+          | AsyncItem ->
+            PostQueue()
             return! loop inbox
-          | Item(s, channel) ->
-            s |> Seq.iter Post
+          | Item channel ->
+            PostQueue()
             channel.Reply()
             return! loop inbox
           | Finish(Pause, channel) ->
@@ -290,12 +300,11 @@ module Instance =
   let mutable internal Capacity = 1023
 
   let UnbufferedVisit(f : unit -> bool) =
-    if f() then mailbox.PostAndReply(fun c -> Item(buffer |> Seq.toArray, c))
+    lock Queue (fun _ -> buffer |> Seq.toArray |> Queue.Enqueue
+                         buffer.Clear())
+    if f() then mailbox.PostAndReply Item
     else
-      buffer
-      |> Seq.toArray
-      |> Array.toSeq
-      |> AsyncItem
+      AsyncItem
       |> mailbox.Post
 
   let internal VisitSelection (f : unit -> bool) track moduleId hitPointId =
@@ -321,6 +330,9 @@ module Instance =
       Recording <- finish = Resume
       lock (buffer) (fun () ->
         if not Recording then UnbufferedVisit(fun _ -> true)
+                              lock Queue PostQueue
+                              if Pause <> finish then
+                                FlushAll()
         buffer.Clear())
       mailbox.TryPostAndReply((fun c -> Finish(finish, c)), 2000) |> ignore
 

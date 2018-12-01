@@ -103,6 +103,8 @@ type AltCoverCoreTests() =
           Adapter.VisitImplNone "name" 23
         finally
           Instance.trace.Close()
+          Instance.trace.Close()
+          Instance.trace.Close()
           Instance.trace <- save
         use stream =
           new DeflateStream(File.OpenRead(unique + ".0.acv"), CompressionMode.Decompress)
