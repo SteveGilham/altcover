@@ -678,12 +678,12 @@ module XTests =
         Assert.Equal(rest, [| "test"; "1" |])
         255
 
-      let monitor (hits : ICollection<string * int * Base.Track>) (token : string) _ _ =
+      let monitor (hits : Dictionary<string, Dictionary<int, int * Base.Track list>>) (token : string) _ _ =
         Assert.Equal(token, codedreport) //, "should be default coverage file")
         Assert.Empty(hits)
         127
 
-      let write (hits : ICollection<string * int * Base.Track>) format (report : string)
+      let write (hits : Dictionary<string, Dictionary<int, int * Base.Track list>>) format (report : string)
           (output : String option) =
         Assert.Equal(report, codedreport) //, "should be default coverage file")
         Assert.Equal(output, Some alternate)

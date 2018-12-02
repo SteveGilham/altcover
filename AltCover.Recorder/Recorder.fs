@@ -35,8 +35,8 @@ type internal Carrier = SequencePoint of String * int * Track
 #endif
 [<NoComparison>]
 type internal Message =
-  | AsyncItem of Carrier seq
-  | Item of Carrier seq * AsyncReplyChannel<unit>
+  | AsyncItem
+  | Item of AsyncReplyChannel<unit>
   | Finish of Close * AsyncReplyChannel<unit>
 
 module Instance =
@@ -113,8 +113,7 @@ module Instance =
     //System.Diagnostics.Debug.WriteLine(s)
     member self.Pop() =
       self.caller <- match self.caller with
-                     | []
-                     | [ 0 ] -> [ 0 ]
+                     | [] | [ 0 ] -> [ 0 ]
                      | _ :: xs -> xs
 
     //let s = sprintf "pop -> %A"self.caller
@@ -181,9 +180,10 @@ module Instance =
     |> GetResource
     |> Option.iter Console.Out.WriteLine
     FlushAll()
-    InitialiseTrace()
+    Recording <- false
 
   let FlushResume() =
+    Recording <- true
     ("ResumeHandler")
     |> GetResource
     |> Option.iter Console.Out.WriteLine
@@ -214,60 +214,11 @@ module Instance =
       trace.OnConnected (fun () -> TraceVisit moduleId hitPointId context)
         (fun () -> Counter.AddVisit Visits moduleId hitPointId context)
 
-  let Fault _ = async { InvalidOperationException() |> raise }
-  let internal MakeDefaultMailbox() = new MailboxProcessor<Message>(Fault)
-
-  let mutable internal mailbox = MakeDefaultMailbox()
-  let mutable internal mailboxOK = false
-
   let internal Post(x : Carrier) =
     match x with
     | SequencePoint(moduleId, hitPointId, context) ->
       VisitImpl moduleId hitPointId context
 
-  let rec private loop (inbox : MailboxProcessor<Message>) =
-    async {
-      if Object.ReferenceEquals(inbox, mailbox) then
-        // release the wait every half second
-        let! opt = inbox.TryReceive(500)
-        match opt with
-        | None -> return! loop inbox
-        | Some msg ->
-          match msg with
-          | AsyncItem s ->
-            s |> Seq.iter Post
-            return! loop inbox
-          | Item(s, channel) ->
-            s |> Seq.iter Post
-            channel.Reply()
-            return! loop inbox
-          | Finish(Pause, channel) ->
-            FlushPause()
-            channel.Reply()
-            return! loop inbox
-          | Finish(Resume, channel) ->
-            FlushResume()
-            channel.Reply()
-            return! loop inbox
-          | Finish(_, channel) ->
-            FlushAll()
-            channel.Reply()
-            mailboxOK <- false
-            Assist.SafeDispose inbox
-    }
-
-  let internal MakeMailbox() = new MailboxProcessor<Message>(loop)
-  let internal Backlog() = mailbox.CurrentQueueLength
-  let internal DefaultErrorAction = ignore
-  let mutable internal ErrorAction = DefaultErrorAction
-
-  let MailboxError x =
-    mailboxOK <- false
-    ErrorAction x
-
-  let DisplayError x = eprintfn "%s - %A" ("Recorder error"
-                                           |> GetResource
-                                           |> Option.get) x
   let private IsOpenCoverRunner() =
     (CoverageFormat = ReportFormat.OpenCoverWithTracking)
     && ((trace.Definitive && trace.Runner)
@@ -288,54 +239,29 @@ module Instance =
   let internal PayloadControl = PayloadSelection Clock
   let internal PayloadSelector enable = PayloadControl Granularity enable
   let mutable internal Capacity = 1023
+  let internal withbuffer f = lock buffer f
 
-  let UnbufferedVisit(f : unit -> bool) =
-    if f() then mailbox.PostAndReply(fun c -> Item(buffer |> Seq.toArray, c))
-    else
-      buffer
-      |> Seq.toArray
-      |> Array.toSeq
-      |> AsyncItem
-      |> mailbox.Post
-
-  let internal VisitSelection (f : unit -> bool) track moduleId hitPointId =
-    // When writing to file for the runner to process,
-    // make this semi-synchronous to avoid choking the mailbox
-    // Backlogs of over 90,000 items were observed in self-test
-    // which failed to drain during the ProcessExit grace period
-    // when sending only async messages.
+  let internal VisitSelection track moduleId hitPointId =
     let message = SequencePoint(moduleId, hitPointId, track)
-    lock (buffer) (fun () ->
+    withbuffer (fun () ->
       buffer.Add message
       if buffer.Count > Capacity then
-        UnbufferedVisit f
+        buffer |> Seq.iter Post
         buffer.Clear())
 
   let Visit moduleId hitPointId =
-    if Recording && mailboxOK then
-      VisitSelection (fun () -> trace.IsConnected() || Backlog() > 0)
-        (PayloadSelector IsOpenCoverRunner) moduleId hitPointId
+    if Recording then
+      VisitSelection (PayloadSelector IsOpenCoverRunner) moduleId hitPointId
 
   let internal FlushCounter (finish : Close) _ =
-    if mailboxOK then
-      Recording <- finish = Resume
-      lock (buffer) (fun () ->
-        if not Recording then UnbufferedVisit(fun _ -> true)
-        buffer.Clear()
-        buffer.Clear())
-      mailbox.TryPostAndReply((fun c -> Finish(finish, c)), 2000) |> ignore
-
-  let internal AddErrorHandler(box : MailboxProcessor<'a>) = box.Error.Add MailboxError
-  let internal SetErrorAction() = ErrorAction <- DisplayError
-
-  let internal RunMailbox() =
-    Recording <- true
-    Assist.SafeDispose mailbox
-    mailbox <- MakeMailbox()
-    mailboxOK <- true
-    AddErrorHandler mailbox
-    SetErrorAction()
-    mailbox.Start()
+    withbuffer (fun () ->
+      if Recording then buffer |> Seq.iter Post
+      buffer.Clear()
+      match finish with
+      | Resume -> FlushResume()
+      | Pause -> FlushPause()
+      | _ ->
+        if Recording then FlushAll())
 
   // Register event handling
   let DoPause = FlushCounter Pause
@@ -354,4 +280,3 @@ module Instance =
      AppDomain.CurrentDomain.ProcessExit.Add(FlushCounter ProcessExit)
      StartWatcher()
      InitialiseTrace()
-     RunMailbox()

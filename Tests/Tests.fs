@@ -540,6 +540,29 @@ type AltCoverTests() =
            Assert.That(Match t (FilterClass.Attribute(Regex "Fix")), Is.True, t.FullName))
 
     [<Test>]
+    member self.CanExcludeCSharpPropertiesByAttribute() =
+      let location = typeof<Sample11.Class1>.Assembly.Location
+      let sourceAssembly = AssemblyDefinition.ReadAssembly(location)
+
+      let direct =
+        sourceAssembly.MainModule.Types
+        |> Seq.filter (fun x -> x.Name = "Class1")
+        |> Seq.head
+
+      let filter = "ExcludeFromCodeCoverage"
+                   |> (Regex >> FilterClass.Attribute)
+
+      let pass =
+        direct.Methods
+        |> Seq.filter (fun x -> Filter.Match x filter |> not)
+        |> Seq.map (fun x -> x.Name)
+        |> Seq.sort
+        |> Seq.toList
+
+      let expected = [ ".ctor" ]
+      Assert.That(pass, Is.EquivalentTo(expected), sprintf "Got sequence %A" pass)
+
+    [<Test>]
     member self.Sample3Class1IsCSharpAutoproperty() =
       let sample3 =
         Path.Combine

@@ -1,9 +1,24 @@
 /// Contains task a task which allows to merge .NET assemblies with [ILMerge](http://research.microsoft.com/en-us/people/mbarnett/ilmerge.aspx).
+///
+/// ### Sample
+///
+///        Target.create "ILMerge" (fun _ ->
+///             let target = !!./bin/Release/*.exe" |> Seq.head
+///             let out = "./bin" @@ (Path.GetFileName target)
+///             ILMerge.run
+///               { ILMerge.Params.Create() with DebugInfo = true
+///                                              TargetKind = ILMerge.TargetKind.Exe
+///                                              Internalize = ILMerge.InternalizeTypes.Internalize
+///                                              Libraries =
+///                                                 Seq.concat
+///                                                   [ !!"./bin/Release/Mono.C*.dll"
+///                                                     !!"./bin/Release/Newton*.dll" ]
+///                                              AttributeFile = target } out target)
+/// 
 [<RequireQualifiedAccess>]
 module Fake.DotNet.ILMerge
 
 open System
-
 open Fake.Core
 open Fake.IO
 open Fake.IO.Globbing
@@ -18,7 +33,7 @@ type AllowDuplicateTypes =
     /// List of types to allow to be duplicated
     | DuplicateTypes of string list
 
-/// Option type to configure ILMerge's processing of internal types.[<System.Obsolete("This API is obsolete. There is no alternative in FAKE 5 yet. You can help by porting this module.")>]
+/// Option type to configure ILMerge's processing of internal types.
 type InternalizeTypes =
     | NoInternalize
     | Internalize
@@ -68,30 +83,29 @@ type Params =
       UnionMerge : bool
       /// True -> XML documentation files are merged to produce an XML documentation file for the target assembly.
       XmlDocs : bool }
-with
+
     /// ILMerge default parameters. Tries to automatically locate ilmerge.exe in a subfolder.
-  static member Create() =
-    { ToolPath =
-          Tools.findToolInSubPath "ilmerge.exe" <| Shell.pwd()
-      Version = None
-      Libraries = []
-      AllowDuplicateTypes = NoDuplicateTypes
-      AllowMultipleAssemblyLevelAttributes = false
-      AllowWildcards = false
-      AllowZeroPeKind = false
-      AttributeFile = null
-      Closed = false
-      CopyAttributes = false
-      DebugInfo = true
-      Internalize = NoInternalize
-      FileAlignment = None
-      KeyFile = null
-      TargetPlatform = null
-      LogFile = null
-      SearchDirectories = []
-      TargetKind = Library
-      UnionMerge = false
-      XmlDocs = false }
+    static member Create() =
+        { ToolPath = Tools.findToolInSubPath "ilmerge.exe" <| Shell.pwd()
+          Version = None
+          Libraries = []
+          AllowDuplicateTypes = NoDuplicateTypes
+          AllowMultipleAssemblyLevelAttributes = false
+          AllowWildcards = false
+          AllowZeroPeKind = false
+          AttributeFile = null
+          Closed = false
+          CopyAttributes = false
+          DebugInfo = true
+          Internalize = NoInternalize
+          FileAlignment = None
+          KeyFile = null
+          TargetPlatform = null
+          LogFile = null
+          SearchDirectories = []
+          TargetKind = Library
+          UnionMerge = false
+          XmlDocs = false }
 
 /// Builds the arguments for the ILMerge task
 /// [omit]
@@ -111,41 +125,44 @@ let internal getArguments outputFile primaryAssembly parameters =
         if predicate then [ a ]
         else []
 
-    [
-       Item "/out:%s" outputFile;
-       Item "/ver:%s" (match parameters.Version with
-                       | Some v -> v.ToString()
-                       | None -> String.Empty);
-       Item "/attr:%s" parameters.AttributeFile;
-       Item "/keyfile:%s" parameters.KeyFile;
-       Item "/log:%s" parameters.LogFile;
-       Item "/target:%s" <| (sprintf "%A" parameters.TargetKind).ToLower();
-       Item "/targetplatform:%s" parameters.TargetPlatform;
-       Item "/align:%s" (match parameters.FileAlignment with
-                         | Some i -> i.ToString(CultureInfo.InvariantCulture)
-                         | None -> String.Empty);
-       (match parameters.Internalize with
-        | NoInternalize -> []
-        | Internalize -> Flag "/internalize" true
-        | InternalizeExcept excludeFile -> Item "/internalize:%s" excludeFile);
+    [ Item "/out:%s" outputFile
+      Item "/ver:%s" (match parameters.Version with
+                      | Some v -> v.ToString()
+                      | None -> String.Empty)
+      Item "/attr:%s" parameters.AttributeFile
+      Item "/keyfile:%s" parameters.KeyFile
+      Item "/log:%s" parameters.LogFile
+      Item "/target:%s" <| (sprintf "%A" parameters.TargetKind).ToLower()
+      Item "/targetplatform:%s" parameters.TargetPlatform
+      Item "/align:%s" (match parameters.FileAlignment with
+                        | Some i -> i.ToString(CultureInfo.InvariantCulture)
+                        | None -> String.Empty)
+      (match parameters.Internalize with
+       | NoInternalize -> []
+       | Internalize -> Flag "/internalize" true
+       | InternalizeExcept excludeFile -> Item "/internalize:%s" excludeFile)
+      Flag "/allowMultiple" parameters.AllowMultipleAssemblyLevelAttributes
+      Flag "/wildcards" parameters.AllowWildcards
+      Flag "/zeroPeKind" parameters.AllowZeroPeKind
+      Flag "/closed" parameters.Closed
+      Flag "/copyattrs" parameters.CopyAttributes
+      Flag "/union" parameters.UnionMerge
+      Flag "/ndebug" (not parameters.DebugInfo)
+      Flag "/xmldocs" parameters.XmlDocs
+      (match parameters.AllowDuplicateTypes with
+       | NoDuplicateTypes -> []
+       | AllPublicTypes -> Flag "/allowDup" true
+       | DuplicateTypes types -> ItemList "/allowDup:%s" types)
+      ItemList "/lib:%s" parameters.SearchDirectories
+      (primaryAssembly :: (parameters.Libraries |> Seq.toList)) ]
+    |> List.concat
 
-       Flag "/allowMultiple" parameters.AllowMultipleAssemblyLevelAttributes;
-       Flag "/wildcards" parameters.AllowWildcards;
-       Flag "/zeroPeKind" parameters.AllowZeroPeKind;
-       Flag "/closed" parameters.Closed;
-       Flag "/copyattrs" parameters.CopyAttributes;
-       Flag "/union" parameters.UnionMerge;
-       Flag "/ndebug" (not parameters.DebugInfo);
-       Flag "/xmldocs" parameters.XmlDocs;
+/// Builds the process to run for the ILMerge task
+/// [omit]
 
-       (match parameters.AllowDuplicateTypes with
-        | NoDuplicateTypes -> []
-        | AllPublicTypes -> Flag "/allowDup" true
-        | DuplicateTypes types -> ItemList "/allowDup:%s" types);
-
-       ItemList "/lib:%s" parameters.SearchDirectories;
-       (primaryAssembly :: (parameters.Libraries |> Seq.toList))
-    ] |> List.concat
+let internal createProcess parameters outputFile primaryAssembly =
+    let args = getArguments outputFile primaryAssembly parameters
+    CreateProcess.fromRawCommand parameters.ToolPath args
 
 /// Uses ILMerge to merge .NET assemblies.
 /// ## Parameters
@@ -155,12 +172,12 @@ let internal getArguments outputFile primaryAssembly parameters =
 ///  - `primaryAssembly` - The assembly you want ILMerge to consider as the primary.
 let run parameters outputFile primaryAssembly =
     use __ = Trace.traceTask "ILMerge" primaryAssembly
-    let args = getArguments outputFile primaryAssembly parameters
-
-    let run =
-        CreateProcess.fromRawCommand parameters.ToolPath args
-        |> Proc.run
-
-    if 0 <> run.ExitCode then
-        failwithf "ILMerge %s failed." (String.separated " " args)
-    __.MarkSuccess()
+  
+    // The type initializer for 'System.Compiler.CoreSystemTypes' throws on Mono.
+    // So let task be a no-op marked as failed on non-Windows platforms  
+    if Environment.isWindows then
+        let run = createProcess parameters outputFile primaryAssembly |> Proc.run
+        if 0 <> run.ExitCode then
+            let args = getArguments outputFile primaryAssembly parameters
+            failwithf "'ILMerge %s' failed." (String.separated " " args)
+        __.MarkSuccess()

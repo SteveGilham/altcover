@@ -6,6 +6,7 @@ open System.Xml
 open System.Xml.Linq
 
 open Actions
+open AltCode.Fake.DotNet
 open AltCover_Fake.DotNet.DotNet
 open AltCover_Fake.DotNet.Testing
 
@@ -22,6 +23,7 @@ open Fake.IO.Globbing
 open Fake.IO.Globbing.Operators
 
 open FSharpLint.Application
+open FSharpLint.Framework
 open NUnit.Framework
 
 let Copyright = ref String.Empty
@@ -109,6 +111,8 @@ let cliArguments =
 let withWorkingDirectoryVM dir o =
   { dotnetOptions o with WorkingDirectory = Path.getFullName dir
                          Verbosity = Some DotNet.Verbosity.Minimal }
+let withWorkingDirectoryOnly dir o =
+  { dotnetOptions o with WorkingDirectory = Path.getFullName dir }
 
 let withCLIArgs (o : Fake.DotNet.DotNet.TestOptions) =
   { o with MSBuildParams = cliArguments }
@@ -228,21 +232,59 @@ _Target "BuildMonoSamples" (fun _ ->
 _Target "Analysis" ignore
 
 _Target "Lint" (fun _ ->
-//    !! "**/*.fsproj"
-//        |> Seq.filter (fun n -> n.IndexOf(".core.") = -1)
-//        |> Seq.collect (fun n -> !!(Path.GetDirectoryName n @@ "*.fs"))
-//        |> Seq.iter (fun f -> match Lint.lintFile (Lint.OptionalLintParameters.Default) f (new Version "4.0") with
-//                              | Lint.Failure x -> new InvalidOperationException(x.ToString()) |> raise
-//                              | Lint.Success w -> w |> Seq.iter (printfn "%A"))
-// => https://github.com/fsprojects/FSharpLint/issues/266
-  ())
+  let failOnIssuesFound (issuesFound : bool) =
+    Assert.That(issuesFound, Is.False, "Lint issues were found")
+  try
+    let settings =
+      Configuration.SettingsFileName
+      |> Path.getFullName
+      |> File.ReadAllText
+
+    let lintConfig = Configuration.configuration settings
+    let options =
+      { Lint.OptionalLintParameters.Default with Configuration = Some lintConfig }
+    let fsVersion = System.Version("4.0")
+
+    !!"**/*.fsproj"
+    |> Seq.collect (fun n -> !!(Path.GetDirectoryName n @@ "*.fs"))
+    |> Seq.distinct
+    |> Seq.map (fun f ->
+         match Lint.lintFile options f fsVersion with
+         | Lint.LintResult.Failure x -> failwithf "%A" x
+         | Lint.LintResult.Success w ->
+           w
+           |> Seq.filter (fun x ->
+                match x.Fix with
+                | None -> false
+                | Some fix -> fix.FromText <> "AltCover_Fake")) // special case
+    |> Seq.concat
+    |> Seq.fold (fun _ x ->
+                printfn "Info: %A\r\n Range: %A\r\n Fix: %A\r\n====" x.Info x.Range x.Fix
+                true) false
+    |> failOnIssuesFound
+  with ex ->
+    printfn "%A" ex
+    reraise())
 
 _Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standalone which contaminates everything
   Directory.ensure "./_Reports"
 
+  let toolPath = (Tools.findToolInSubPath "gendarme.exe" "./packages")
   let rules =
     if Environment.isWindows then "./Build/rules.xml"
     else "./Build/rules-mono.xml"
+
+  let baseRules = Path.getFullName "./Build/rules-fake.xml"
+  let fakerules =
+    if Environment.isWindows then baseRules
+    else
+      // Gendarme mono doesn't into .pdb files
+      let lines = baseRules
+                  |> File.ReadAllLines
+                  |> Seq.map (fun l -> l.Replace ("AvoidSwitchStatementsRule", "AvoidSwitchStatementsRule | AvoidLongMethodsRule"))
+      let fixup = Path.getFullName  "./_Generated/rules-fake.xml"
+      File.WriteAllLines(fixup, lines)
+      fixup
 
   [ (rules,
      [ "_Binaries/AltCover/Debug+AnyCPU/AltCover.exe"
@@ -253,7 +295,10 @@ _Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standa
        "_Binaries/AltCover.FSApi/Debug+AnyCPU/AltCover.FSApi.dll" ])
 
     ("./Build/rules-gtk.xml",
-     [ "_Binaries/AltCover.Visualizer/Debug+AnyCPU/AltCover.Visualizer.exe" ]) ]
+     [ "_Binaries/AltCover.Visualizer/Debug+AnyCPU/AltCover.Visualizer.exe" ])
+
+    (fakerules,
+     ["_Binaries/AltCover.Fake.DotNet.Testing.AltCover/Debug+AnyCPU/AltCover.Fake.DotNet.Testing.AltCover.dll"]) ]
   |> Seq.iter (fun (ruleset, files) ->
        Gendarme.run { Gendarme.Params.Create() with WorkingDirectory = "."
                                                     Severity = Gendarme.Severity.All
@@ -262,7 +307,9 @@ _Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standa
                                                     Console = true
                                                     Log = "./_Reports/gendarme.html"
                                                     LogKind = Gendarme.LogKind.Html
-                                                    Targets = files }))
+                                                    Targets = files
+                                                    ToolPath = toolPath
+                                                    FailBuildOnDefect = true }))
 
 _Target "FxCop" (fun _ -> // Needs debug because release is compiled --standalone which contaminates everything
   Directory.ensure "./_Reports"
@@ -357,6 +404,28 @@ _Target "FxCop" (fun _ -> // Needs debug because release is compiled --standalon
                 "-Microsoft.Naming#CA1715"
                 "-Microsoft.Naming#CA1704"
                 "-Microsoft.Naming#CA1709" ])
+    ([
+         "_Binaries/AltCover.Fake.DotNet.Testing.AltCover/Debug+AnyCPU/AltCover.Fake.DotNet.Testing.AltCover.dll"
+       ], [
+            "AltCover_Fake.DotNet.Testing.AltCover.CollectParams"
+            "AltCover_Fake.DotNet.Testing.AltCover.PrepareParams"
+            "AltCover_Fake.DotNet.Testing.AltCover.Args"
+            "AltCover_Fake.DotNet.Testing.AltCover.ArgType"
+            "AltCover_Fake.DotNet.Testing.AltCover.ToolType"
+            "AltCover_Fake.DotNet.Testing.AltCover.Params"
+            "AltCover_Fake.DotNet.Testing.AltCover.PrepareParams"
+            "AltCover_Fake.DotNet.Testing.AltCover"
+            "AltCover.Internals.DotNet"
+            "AltCover_Fake.DotNet.DotNet"
+           ], [ "-Microsoft.Design#CA1006"
+                "-Microsoft.Design#CA1011"
+                "-Microsoft.Design#CA1020"
+                "-Microsoft.Design#CA1062"
+                "-Microsoft.Naming#CA1704"
+                "-Microsoft.Naming#CA1707"
+                "-Microsoft.Naming#CA1709"
+                "-Microsoft.Naming#CA1724"
+                "-Microsoft.Usage#CA2208" ])
       ]
     |> Seq.iter (fun (files, types, ruleset) -> files
                                                 |> FxCop.run { FxCop.Params.Create() with WorkingDirectory = "."
@@ -751,14 +820,12 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
       let collect =
         { AltCover.CollectParams.Create() with Executable = nunit
                                                RecorderDirectory = testDirectory @@ "__UnitTestWithAltCoverRunner" }
-          .withCommandLine [ "--noheader"
-                             "--work=."
-                             "--result=./_Reports/UnitTestWithAltCoverRunnerReport.xml"
-
+          .withCommandLine [ "--noheader";
+                             "--work=.";
+                             "--result=./_Reports/UnitTestWithAltCoverRunnerReport.xml";
                              Path.getFullName
-                               "_Binaries/AltCover.Tests/Debug+AnyCPU/__UnitTestWithAltCoverRunner/AltCover.Tests.dll"
-
-                             Path.getFullName
+                                "_Binaries/AltCover.Tests/Debug+AnyCPU/__UnitTestWithAltCoverRunner/AltCover.Tests.dll";
+                              Path.getFullName
                                "_Binaries/AltCover.Tests/Debug+AnyCPU/__UnitTestWithAltCoverRunner/Sample2.dll" ]
         |> AltCover.Collect
       { AltCover.Params.Create collect with ToolPath = altcover
@@ -826,14 +893,12 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
     let collect =
       { AltCover.CollectParams.Create() with Executable = nunit
                                              RecorderDirectory = shadowDir @@ "__ShadowTestWithAltCoverRunner" }
-        .withCommandLine [ "--noheader"
-                           "--work=."
-                           "--result=./_Reports/ShadowTestWithAltCoverRunnerReport.xml"
-
+        .withCommandLine [ "--noheader";
+                           "--work=.";
+                           "--result=./_Reports/ShadowTestWithAltCoverRunnerReport.xml";
                            Path.getFullName
-                             "_Binaries/AltCover.Shadow.Tests/Debug+AnyCPU/__ShadowTestWithAltCoverRunner/AltCover.Shadow.Tests.dll"
-
-                           Path.getFullName
+                              "_Binaries/AltCover.Shadow.Tests/Debug+AnyCPU/__ShadowTestWithAltCoverRunner/AltCover.Shadow.Tests.dll";
+                            Path.getFullName
                              "_Binaries/AltCover.Shadow.Tests/Debug+AnyCPU/__ShadowTestWithAltCoverRunner/AltCover.Shadow.Tests2.dll" ]
       |> AltCover.Collect
     { AltCover.Params.Create collect with ToolPath = altcover
@@ -950,10 +1015,10 @@ _Target "UnitTestWithAltCoverCore" // Obsolete
   try
     "altcover.tests.core.fsproj"
     |> DotNet.test (fun p ->
-         { p.WithCommon(dotnetOptions >> withWorkingDirectoryVM "Tests") with Configuration =
-                                                                                DotNet.BuildConfiguration.Debug
-                                                                              NoBuild =
-                                                                                true }
+         { p.WithCommon(withWorkingDirectoryVM "Tests") with Configuration =
+                                                               DotNet.BuildConfiguration.Debug
+                                                             NoBuild =
+                                                               true }
          |> withCLIArgs)
   with x ->
     printfn "%A" x
@@ -983,10 +1048,10 @@ _Target "UnitTestWithAltCoverCore" // Obsolete
   printfn "Execute the shadow tests"
   "altcover.recorder.tests.core.fsproj"
   |> DotNet.test (fun p ->
-       { p.WithCommon(dotnetOptions >> withWorkingDirectoryVM "Shadow.Tests") with Configuration =
-                                                                                     DotNet.BuildConfiguration.Debug
-                                                                                   NoBuild =
-                                                                                     true }
+       { p.WithCommon(withWorkingDirectoryVM "Shadow.Tests") with Configuration =
+                                                                    DotNet.BuildConfiguration.Debug
+                                                                  NoBuild =
+                                                                    true }
        |> withCLIArgs)
 
   printfn "Instrument the XUnit tests"
@@ -1012,10 +1077,10 @@ _Target "UnitTestWithAltCoverCore" // Obsolete
   printfn "Execute the XUnit tests"
   "altcover.x.tests.core.fsproj"
   |> DotNet.test (fun p ->
-       { p.WithCommon(dotnetOptions >> withWorkingDirectoryVM "XTests") with Configuration =
-                                                                               DotNet.BuildConfiguration.Debug
-                                                                             NoBuild =
-                                                                               true }
+       { p.WithCommon(withWorkingDirectoryVM "XTests") with Configuration =
+                                                              DotNet.BuildConfiguration.Debug
+                                                            NoBuild =
+                                                              true }
        |> withCLIArgs)
 
   ReportGenerator.generateReports (fun p ->
@@ -1213,8 +1278,8 @@ _Target "FSharpTypesDotNet" (fun _ -> // obsolete
   "sample2.core.fsproj"
   |> DotNet.test
        (fun o ->
-       { o.WithCommon(dotnetOptions >> withWorkingDirectoryVM "Sample2") with Configuration =
-                                                                                DotNet.BuildConfiguration.Debug }
+       { o.WithCommon(withWorkingDirectoryVM "Sample2") with Configuration =
+                                                              DotNet.BuildConfiguration.Debug }
        |> withCLIArgs)
 
   let prep =
@@ -1236,10 +1301,10 @@ _Target "FSharpTypesDotNet" (fun _ -> // obsolete
   printfn "Execute the instrumented tests"
   "sample2.core.fsproj"
   |> DotNet.test (fun o ->
-       { o.WithCommon(dotnetOptions >> withWorkingDirectoryVM "Sample2") with Configuration =
-                                                                                DotNet.BuildConfiguration.Debug
-                                                                              NoBuild =
-                                                                                true }
+       { o.WithCommon(withWorkingDirectoryVM "Sample2") with Configuration =
+                                                               DotNet.BuildConfiguration.Debug
+                                                             NoBuild =
+                                                               true }
        |> withCLIArgs)
   Actions.ValidateFSharpTypesCoverage simpleReport)
 
@@ -1255,8 +1320,8 @@ _Target "FSharpTests" (fun _ ->
   "sample7.core.fsproj"
   |> DotNet.test
        (fun o ->
-       { o.WithCommon(dotnetOptions >> withWorkingDirectoryVM "Sample7") with Configuration =
-                                                                                DotNet.BuildConfiguration.Debug }
+       { o.WithCommon(withWorkingDirectoryVM "Sample7") with Configuration =
+                                                               DotNet.BuildConfiguration.Debug }
        |> withCLIArgs)
 
   // inplace instrument
@@ -1277,10 +1342,10 @@ _Target "FSharpTests" (fun _ ->
   printfn "Execute the instrumented tests"
   "sample7.core.fsproj"
   |> DotNet.test (fun o ->
-       { o.WithCommon(dotnetOptions >> withWorkingDirectoryVM "Sample7") with Configuration =
-                                                                                DotNet.BuildConfiguration.Debug
-                                                                              NoBuild =
-                                                                                true }
+       { o.WithCommon(withWorkingDirectoryVM "Sample7") with Configuration =
+                                                               DotNet.BuildConfiguration.Debug
+                                                             NoBuild =
+                                                               true }
        |> withCLIArgs))
 
 _Target "FSharpTypesDotNetRunner" (fun _ ->
@@ -1338,8 +1403,8 @@ _Target "FSharpTypesDotNetCollecter" (fun _ ->
   "sample2.core.fsproj"
   |> DotNet.test
        (fun o ->
-       { o.WithCommon(dotnetOptions >> withWorkingDirectoryVM "Sample2") with Configuration =
-                                                                                DotNet.BuildConfiguration.Debug }
+       { o.WithCommon(withWorkingDirectoryVM "Sample2") with Configuration =
+                                                               DotNet.BuildConfiguration.Debug }
        |> withCLIArgs)
 
   // inplace instrument and save
@@ -1361,10 +1426,10 @@ _Target "FSharpTypesDotNetCollecter" (fun _ ->
   printfn "Execute the instrumented tests"
   "sample2.core.fsproj"
   |> DotNet.test (fun o ->
-       { o.WithCommon(dotnetOptions >> withWorkingDirectoryVM "Sample2") with Configuration =
-                                                                                DotNet.BuildConfiguration.Debug
-                                                                              NoBuild =
-                                                                                true }
+       { o.WithCommon(withWorkingDirectoryVM "Sample2") with Configuration =
+                                                               DotNet.BuildConfiguration.Debug
+                                                             NoBuild =
+                                                               true }
        |> withCLIArgs)
 
   let collect =
@@ -2064,23 +2129,23 @@ _Target "PrepareFrameworkBuild"
   (fun _ ->
   let toolpath = Tools.findToolInSubPath "ILMerge.exe" "./packages"
   let ver = String.Join(".", (!Version).Split('.') |> Seq.take 2) + ".0.0"
-  let here = Directory.GetCurrentDirectory()
   ILMerge.run
     { ILMerge.Params.Create() with DebugInfo = true
                                    ToolPath = toolpath
                                    TargetKind = ILMerge.TargetKind.Exe
-                                   KeyFile = "./Build/Infrastructure.snk"
+                                   KeyFile = Path.getFullName "./Build/Infrastructure.snk"
                                    Version = Some(System.Version(ver))
-                                   Internalize = ILMerge.InternalizeTypes.Internalize
+                                   Internalize = ILMerge.Internalize
                                    Libraries =
                                      Seq.concat
                                        [ !!"./_Binaries/AltCover/Release+AnyCPU/Mono.C*.dll"
-
                                          !!"./_Binaries/AltCover/Release+AnyCPU/Newton*.dll" ]
-                                     |> Seq.map (fun f -> f.Replace(here, "."))
+                                     |> Seq.map Path.getFullName
                                    AttributeFile =
-                                     "./_Binaries/AltCover/Release+AnyCPU/AltCover.exe" }
-    "./_Binaries/AltCover/AltCover.exe" "./_Binaries/AltCover/Release+AnyCPU/AltCover.exe")
+                                     Path.getFullName "./_Binaries/AltCover/Release+AnyCPU/AltCover.exe" }
+    (Path.getFullName "./_Binaries/AltCover/AltCover.exe")
+    (Path.getFullName "./_Binaries/AltCover/Release+AnyCPU/AltCover.exe"))
+
 _Target "PrepareDotNetBuild" (fun _ ->
   let netcoresource = Path.getFullName "./AltCover/altcover.core.fsproj"
   let publish = Path.getFullName "./_Publish"
@@ -2479,10 +2544,10 @@ _Target "ReleaseXUnitFSharpTypesDotNet" (fun _ ->
   printfn "Execute the instrumented tests"
   "sample4.core.fsproj"
   |> DotNet.test (fun o ->
-       { o.WithCommon(dotnetOptions >> withWorkingDirectoryVM "Sample4") with Configuration =
-                                                                                DotNet.BuildConfiguration.Debug
-                                                                              NoBuild =
-                                                                                true }
+       { o.WithCommon(withWorkingDirectoryVM "Sample4") with Configuration =
+                                                               DotNet.BuildConfiguration.Debug
+                                                             NoBuild =
+                                                               true }
        |> withCLIArgs)
   Actions.ValidateFSharpTypesCoverage x)
 
@@ -2588,7 +2653,8 @@ _Target "MSBuildTest" (fun _ ->
       { p with Verbosity = Some MSBuildVerbosity.Minimal
                Properties =
                  [ "Configuration", "Debug"
-                   "DebugSymbols", "True" ] }) "./Sample4/Sample4.prepare.fsproj"
+                   "MSBuildTest", "true"
+                   "DebugSymbols", "True" ] }) "./Sample4/Sample4.fsproj"
   else printfn "Skipping touch-test -- AltCover.exe not packaged")
 
 _Target "ApiUse" (fun _ ->
@@ -2704,12 +2770,13 @@ Target.runOrDefault "DoIt"
 """
     File.WriteAllText("./_ApiUse/DriveApi.fsx", script)
 
-    let dependencies = """// [ FAKE GROUP ]
+    let dependencies = """version 5.186.3
+// [ FAKE GROUP ]
 group NetcoreBuild
   source https://api.nuget.org/v3/index.json
   nuget Fake.Core >= 5.8.4
-  nuget Fake.Core.Target >= 5.8.5
-  nuget Fake.DotNet.Cli >= 5.8.5
+  nuget Fake.Core.Target >= 5.10.1
+  nuget Fake.DotNet.Cli >= 5.10.1
 
   source {0}
   nuget AltCover.Api {1}
@@ -2723,18 +2790,15 @@ group NetcoreBuild
           Path.getFullName "./_Packaging.fake"))
     Shell.copy "./_ApiUse" (!!"./dotnet*.fsproj")
 
-    Actions.RunDotnet
-      (fun o' -> { dotnetOptions o' with WorkingDirectory = Path.getFullName "_ApiUse" })
-      "restore" (String.Empty) "restoring dotnet-fake returned with a non-zero exit code"
-    Actions.RunDotnet
-      (fun o' -> { dotnetOptions o' with WorkingDirectory = Path.getFullName "_ApiUse" })
-      "fake" ("run ./DriveApi.fsx")
+    DotNet.restore (fun o -> o.WithCommon(withWorkingDirectoryVM "_ApiUse")) ""
+    Actions.RunDotnet (withWorkingDirectoryOnly "_ApiUse")
+      "fake" "run ./DriveApi.fsx"
       "running fake script returned with a non-zero exit code"
 
     let x = Path.getFullName "./_ApiUse/_DotnetTest/coverage.xml"
     Actions.CheckSample4 x
   finally
-    [ "altcover"; "altcover.api" ]
+    [ "altcover"; "altcover.api" ; "altcover.fake" ]
     |> List.iter (fun f ->
          let folder = (nugetCache @@ f) @@ !Version
          Shell.mkdir folder
@@ -2764,7 +2828,7 @@ _Target "DotnetTestIntegration" (fun _ ->
     let p1 = { p0 with CallContext = [ "[Fact]"; "0" ] }
     DotNet.test
       (fun to' ->
-      (to'.WithCommon(dotnetOptions >> withWorkingDirectoryVM "_DotnetTest")
+      (to'.WithCommon(withWorkingDirectoryVM "_DotnetTest")
           .WithGetVersion().WithImportModule()).WithParameters p1 c0 |> withCLIArgs)
       "dotnettest.fsproj"
 
@@ -2792,7 +2856,7 @@ _Target "DotnetTestIntegration" (fun _ ->
     let p2 = { p0 with LineCover = true }
     DotNet.test
       (fun to' ->
-      to'.WithCommon(dotnetOptions >> withWorkingDirectoryVM "_DotnetTestLineCover").WithParameters
+      to'.WithCommon(withWorkingDirectoryVM "_DotnetTestLineCover").WithParameters
         p2 c0 |> withCLIArgs) ""
 
     let x = Path.getFullName "./_DotnetTestLineCover/coverage.xml"
@@ -2829,7 +2893,7 @@ _Target "DotnetTestIntegration" (fun _ ->
     let p3 = { p0 with BranchCover = true }
     DotNet.test
       (fun to' ->
-      (to'.WithCommon(dotnetOptions >> withWorkingDirectoryVM "_DotnetTestBranchCover").WithParameters
+      (to'.WithCommon(withWorkingDirectoryVM "_DotnetTestBranchCover").WithParameters
          p3 c0) |> withCLIArgs) ""
 
     let x = Path.getFullName "./_DotnetTestBranchCover/coverage.xml"
@@ -2858,7 +2922,7 @@ _Target "DotnetTestIntegration" (fun _ ->
 
       DotNet.test
         (fun to' ->
-        (to'.WithCommon(dotnetOptions >> withWorkingDirectoryVM "RegressionTesting/issue29").WithParameters
+        (to'.WithCommon(withWorkingDirectoryVM "RegressionTesting/issue29").WithParameters
            p0 c0) |> withCLIArgs) ""
 
     let proj = XDocument.Load "./RegressionTesting/issue37/issue37.xml"
@@ -2874,7 +2938,7 @@ _Target "DotnetTestIntegration" (fun _ ->
     DotNet.test
       (fun to' ->
       { ((to'.WithCommon
-            (dotnetOptions >> withWorkingDirectoryVM "RegressionTesting/issue37")).WithParameters
+            (withWorkingDirectoryVM "RegressionTesting/issue37")).WithParameters
            p4 c0) with Configuration = DotNet.BuildConfiguration.Release } |> withCLIArgs)
       ""
 
@@ -2902,19 +2966,9 @@ _Target "Issue20" (fun _ ->
     csproj.Save "./RegressionTesting/issue20/xunit-tests/xunit-tests.csproj"
 
     DotNet.restore
-      (fun o' ->
-      { o' with Common =
-                  { dotnetOptions o'.Common with WorkingDirectory =
-                                                   Path.getFullName
-                                                     "./RegressionTesting/issue20/classlib" } })
-      ""
+      (fun o -> o.WithCommon(withWorkingDirectoryVM "./RegressionTesting/issue20/classlib")) ""
     DotNet.restore
-      (fun o' ->
-      { o' with Common =
-                  { dotnetOptions o'.Common with WorkingDirectory =
-                                                   Path.getFullName
-                                                     "./RegressionTesting/issue20/xunit-tests" } })
-      ""
+      (fun o -> o.WithCommon(withWorkingDirectoryVM "./RegressionTesting/issue20/xunit-tests")) ""
 
     // would like to assert "succeeds with warnings"
     let p0 = AltCover.PrepareParams.Create()
@@ -2970,16 +3024,13 @@ _Target "Issue23" (fun _ ->
     pack.AddBeforeSelf inject
     csproj.Save "./_Issue23/sample9.csproj"
     Shell.copy "./_Issue23" (!!"./Sample9/*.cs")
-    DotNet.restore
-      (fun o' ->
-      { o' with Common =
-                  { dotnetOptions o'.Common with WorkingDirectory =
-                                                   Path.getFullName "_Issue23" } }) ""
+    DotNet.restore (fun o -> o.WithCommon(withWorkingDirectoryVM "_Issue23")) ""
+
     let p0 = AltCover.PrepareParams.Create()
     let c0 = AltCover.CollectParams.Create()
     DotNet.test (fun p ->
-      (({ p.WithCommon(dotnetOptions >> withWorkingDirectoryVM "_Issue23") with Configuration = DotNet.BuildConfiguration.Debug
-                                                                                NoBuild = false }).WithParameters p0 c0)
+      (({ p.WithCommon(withWorkingDirectoryVM "_Issue23") with Configuration = DotNet.BuildConfiguration.Debug
+                                                               NoBuild = false }).WithParameters p0 c0)
         .WithImportModule().WithGetVersion()
       |> withCLIArgs) ""
   finally

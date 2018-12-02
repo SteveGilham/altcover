@@ -128,7 +128,6 @@ type AltCoverTests() =
       self.GetMyMethodName "=>"
       lock Adapter.Lock (fun () ->
         let save = Instance.trace
-        Instance.RunMailbox()
         try
           Adapter.VisitsClear()
           Instance.trace <- { Tracer = null
@@ -137,14 +136,7 @@ type AltCoverTests() =
                               Runner = false
                               Definitive = false }
           let key = " "
-          Assert.That(Instance.Backlog(), Is.EqualTo 0)
-          Thread.Sleep 1000 // provoke a timeout
           Instance.Visit key 23
-          Assert.That(Instance.Backlog(), Is.LessThan 2)
-          while Instance.Backlog() > 0 do
-            Thread.Sleep 100
-            Assert.That(Instance.Backlog(), Is.LessThan 2)
-          Thread.Sleep 100
           Assert.That(Adapter.VisitsSeq() |> Seq.length, Is.EqualTo 1)
           Assert.That(Adapter.VisitsEntrySeq key |> Seq.length, Is.EqualTo 1)
           Assert.That(Adapter.VisitCount key 23, Is.EqualTo 1)
@@ -205,11 +197,10 @@ type AltCoverTests() =
       let save = Instance.trace
       try
         Instance.Visits.Clear()
-        Instance.RunMailbox()
         Instance.trace <- { Tracer=null; Stream=null; Formatter=null;
                             Runner = false; Definitive = false }
         let key = " "
-        Instance.VisitSelection (fun () -> true) Null key 23
+        Instance.VisitSelection Null key 23
         Assert.That (Instance.Visits.Count, Is.EqualTo 1, "A visit that should have happened, didn't")
         Assert.That (Instance.Visits.[key].Count, Is.EqualTo 1, "keys = " + String.Join("; ", Instance.Visits.Keys|> Seq.toArray))
         Assert.That (Instance.Visits.[key].[23], Is.EqualTo (1, []))
@@ -569,10 +560,6 @@ type AltCoverTests() =
                  (fun i ->
                  Adapter.VisitsAdd "f6e3edb3-fb20-44b3-817d-f69d1a22fc2f" i (i + 1))
             Adapter.DoPause()
-            while Instance.Backlog() > 0 do
-              Thread.Sleep 100
-            Thread.Sleep 100
-            Assert.That(Instance.mailboxOK, Is.True, "mailbox should still be OK")
             let head = "Coverage statistics flushing took "
             let tail = " seconds\n"
             let recorded = stdout.ToString().Replace("\r\n", "\n")
@@ -638,10 +625,6 @@ type AltCoverTests() =
                  (fun i ->
                  Adapter.VisitsAdd "f6e3edb3-fb20-44b3-817d-f69d1a22fc2f" i (i + 1))
             Adapter.DoResume()
-            while Instance.Backlog() > 0 do
-              Thread.Sleep 100
-            Thread.Sleep 100
-            Assert.That(Instance.mailboxOK, Is.True, "mailbox should still be OK")
             Assert.That(Adapter.VisitsSeq(), Is.Empty, "Visits should be cleared")
             Assert.That
               (Object.ReferenceEquals(Instance.trace, newTrace), Is.False,
@@ -704,12 +687,6 @@ type AltCoverTests() =
                  (fun i ->
                  Adapter.VisitsAdd "f6e3edb3-fb20-44b3-817d-f69d1a22fc2f" i (i + 1))
             Instance.FlushCounter ProcessExit ()
-            while Instance.Backlog() > 0 do
-              Thread.Sleep 100
-            Thread.Sleep 100
-            Assert.That(Instance.mailboxOK, Is.False)
-            // Restart the mailbox
-            Instance.RunMailbox()
             let head = "Coverage statistics flushing took "
             let tail = " seconds\n"
             let recorded = stdout.ToString().Replace("\r\n", "\n")
@@ -783,102 +760,7 @@ type AltCoverTests() =
         try
           Directory.Delete(unique)
         with :? IOException -> ()
-#if NET4
-#else
-    [<Test>]
-#endif
-    member self.MailboxHandlesErrors() =
-      let save = Instance.mailboxOK
-      let saved = (Console.Out, Console.Error)
-      let e0 = Console.Out.Encoding
-      let e1 = Console.Error.Encoding
-      try
-        use stdout =
-          { new StringWriter() with
-              member self.Encoding = e0 }
 
-        use stderr =
-          { new StringWriter() with
-              member self.Encoding = e1 }
-
-        Console.SetOut stdout
-        Console.SetError stderr
-        Instance.mailboxOK <- true
-        InvalidOperationException() |> Instance.MailboxError
-        Assert.That(Instance.mailboxOK, Is.False)
-        Assert.Throws<InvalidOperationException>
-          (fun () -> Instance.Fault() |> Async.RunSynchronously) |> ignore
-        Assert.That(stdout.ToString(), Is.Empty)
-        let result = stderr.ToString().Trim()
-        Assert.That
-          (result, Does.StartWith "Recorder error - System.InvalidOperationException: ")
-        Instance.DefaultErrorAction result
-      finally
-        Instance.mailboxOK <- save
-        Console.SetOut(fst saved)
-        Console.SetError(snd saved)
-#if NET4
-#else
-    [<Test>]
-#endif
-    member self.DefaultMailboxWorks() =
-      let saved = (Console.Out, Console.Error)
-      let e0 = Console.Out.Encoding
-      let e1 = Console.Error.Encoding
-      try
-        use stdout =
-          { new StringWriter() with
-              member self.Encoding = e0 }
-
-        use stderr =
-          { new StringWriter() with
-              member self.Encoding = e1 }
-
-        Console.SetOut stdout
-        Console.SetError stderr
-        let dummy = Instance.MakeDefaultMailbox()
-        use latch = new ManualResetEvent(false)
-        Instance.ErrorAction <- (fun _ -> latch.Set() |> ignore)
-        Instance.AddErrorHandler dummy
-        dummy.Start()
-        dummy.TryPostAndReply((fun c -> Finish(ProcessExit, c)), 100) |> ignore
-        Assert.That(stdout.ToString(), Is.Empty)
-        Assert.That(stderr.ToString(), Is.Empty)
-        let go = latch.WaitOne(2000)
-        Assert.That(go, Is.True)
-      finally
-        Instance.SetErrorAction()
-        Console.SetOut(fst saved)
-        Console.SetError(snd saved)
-
-    member self.ReplacementMailboxWorks() =
-      let save = Instance.mailboxOK
-      let saved = (Console.Out, Console.Error)
-      let e0 = Console.Out.Encoding
-      let e1 = Console.Error.Encoding
-      try
-        use stdout =
-          { new StringWriter() with
-              member self.Encoding = e0 }
-
-        use stderr =
-          { new StringWriter() with
-              member self.Encoding = e1 }
-
-        Console.SetOut stdout
-        Console.SetError stderr
-        let dummy = Instance.MakeMailbox()
-        Instance.AddErrorHandler dummy
-        dummy.Start()
-        Instance.mailboxOK <- true
-        dummy.TryPostAndReply((fun c -> Finish(ProcessExit, c)), 100) |> ignore
-        Assert.That(stdout.ToString(), Is.Empty)
-        Assert.That(stderr.ToString(), Is.Empty)
-        Assert.That(Instance.mailboxOK, Is.True)
-      finally
-        Instance.mailboxOK <- save
-        Console.SetOut(fst saved)
-        Console.SetError(snd saved)
 #if NET2
 #else
     // Dead simple sequential operation
