@@ -159,7 +159,6 @@ module Persistence =
     let profileDir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)
     let dir = Directory.CreateDirectory(Path.Combine(profileDir, ".altcover"))
     let file = Path.Combine(dir.FullName, "Visualizer.xml")
-    let mutable o = XDocument()
     if file
        |> File.Exists
        |> not
@@ -167,16 +166,19 @@ module Persistence =
     else
       try
         let doc = XDocument.Load(file)
-        o <- doc
-        let schemas = new XmlSchemaSet()
-        use xsd =
-          new StreamReader(Assembly.GetExecutingAssembly()
-                                   .GetManifestResourceStream("AltCover.Visualizer.config.xsd"))
-        schemas.Add(String.Empty, XmlReader.Create xsd) |> ignore
-        doc.Validate(schemas, null)
-        (file, doc)
+        try
+          let schemas = new XmlSchemaSet()
+          use xsd =
+            new StreamReader(Assembly.GetExecutingAssembly()
+                                     .GetManifestResourceStream("AltCover.Visualizer.config.xsd"))
+          schemas.Add(String.Empty, XmlReader.Create xsd) |> ignore
+          doc.Validate(schemas, null)
+          (file, doc)
+        with xx ->
+          printfn "%A\r\n\r\n%A" xx doc
+          (file, DefaultDocument())
       with x ->
-        printfn "%A\r\n\r\n%A" x o
+        printfn "%A" x
         (file, DefaultDocument())
 
   let internal saveFont (font : string) =
