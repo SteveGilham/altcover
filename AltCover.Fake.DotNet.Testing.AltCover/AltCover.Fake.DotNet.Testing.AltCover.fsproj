@@ -72,6 +72,9 @@
     <Content Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <Reference Include="BlackFox.CommandLine">
+      <HintPath>..\ThirdParty\BlackFox.CommandLine.dll</HintPath>
+    </Reference>
     <Reference Include="BlackFox.VsWhere">
       <HintPath>..\packages\BlackFox.VsWhere.1.0.0\lib\net45\BlackFox.VsWhere.dll</HintPath>
     </Reference>

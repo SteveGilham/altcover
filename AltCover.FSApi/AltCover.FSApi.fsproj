@@ -82,6 +82,9 @@
     <EmbeddedResource Include="xsl\NCoverToBarChart.xsl" />
   </ItemGroup>
   <ItemGroup>
+    <Reference Include="BlackFox.CommandLine">
+      <HintPath>..\ThirdParty\BlackFox.CommandLine.dll</HintPath>
+    </Reference>
     <Reference Include="mscorlib" />
     <Reference Include="FSharp.Core">
       <HintPath>..\packages\FSharp.Core.4.5.2\lib\net45\FSharp.Core.dll</HintPath>
