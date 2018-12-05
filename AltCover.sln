@@ -30,6 +30,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build Items", "Build Items"
 	ProjectSection(SolutionItems) = preProject
 		.travis.yml = .travis.yml
 		Build\actions.fsx = Build\actions.fsx
+		Build\AddStrongName.fsx = Build\AddStrongName.fsx
 		Build\AltCover.nuspec = Build\AltCover.nuspec
 		nupkg\build\netstandard2.0\AltCover.props = nupkg\build\netstandard2.0\AltCover.props
 		nupkg\build\netstandard2.0\AltCover.targets = nupkg\build\netstandard2.0\AltCover.targets

@@ -3,6 +3,8 @@ RESTRICTION: == netstandard2.0
 NUGET
   remote: https://api.nuget.org/v3/index.json
     AltCode.Fake.DotNet.Gendarme (5.9.3.10)
+    BlackFox.CommandLine (1.0)
+      FSharp.Core (>= 4.2.3)
     BlackFox.VsWhere (1.0)
       FSharp.Core (>= 4.2.3)
     coveralls.io (1.4.2)

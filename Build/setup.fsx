@@ -45,11 +45,12 @@ nuget Fake.DotNet.Testing.XUnit2 >= 5.11
 nuget Fake.IO.FileSystem >= 5.11
 nuget Fake.Testing.ReportGenerator >= 5.11
 nuget AltCode.Fake.DotNet.Gendarme >= 5.9.3.10
+nuget BlackFox.CommandLine >= 1.0.0
+nuget BlackFox.VsWhere >= 1.0.0
 nuget coveralls.io >= 1.4.2
 nuget FSharpLint.Core >= 0.10.1
 nuget Markdown >= 2.2.1
 nuget NUnit >= 3.11.0
-nuget BlackFox.VsWhere >= 1.0.0
 nuget YamlDotNet >= 5.2.1 //"
 #r "System.IO.Compression.FileSystem.dll"
 #r "System.Xml"
