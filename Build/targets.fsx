@@ -26,6 +26,8 @@ open FSharpLint.Application
 open FSharpLint.Framework
 open NUnit.Framework
 
+#nowarn "44"
+
 let Copyright = ref String.Empty
 let Version = ref String.Empty
 let consoleBefore = (Console.ForegroundColor, Console.BackgroundColor)
@@ -248,7 +250,7 @@ _Target "Lint" (fun _ ->
     !!"**/*.fsproj"
     |> Seq.collect (fun n -> !!(Path.GetDirectoryName n @@ "*.fs"))
     |> Seq.distinct
-    |> Seq.fold (fun _ f ->
+    |> Seq.map (fun f ->
          match Lint.lintFile options f fsVersion with
          | Lint.LintResult.Failure x -> failwithf "%A" x
          | Lint.LintResult.Success w ->
@@ -256,10 +258,11 @@ _Target "Lint" (fun _ ->
            |> Seq.filter (fun x ->
                 match x.Fix with
                 | None -> false
-                | Some fix -> fix.FromText <> "AltCover_Fake") // special case
-           |> Seq.fold (fun _ x ->
+                | Some fix -> fix.FromText <> "AltCover_Fake")) // special case
+    |> Seq.concat
+    |> Seq.fold (fun _ x ->
                 printfn "Info: %A\r\n Range: %A\r\n Fix: %A\r\n====" x.Info x.Range x.Fix
-                true) false) false
+                true) false
     |> failOnIssuesFound
   with ex ->
     printfn "%A" ex
@@ -268,9 +271,22 @@ _Target "Lint" (fun _ ->
 _Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standalone which contaminates everything
   Directory.ensure "./_Reports"
 
+  let toolPath = (Tools.findToolInSubPath "gendarme.exe" "./packages")
   let rules =
     if Environment.isWindows then "./Build/rules.xml"
     else "./Build/rules-mono.xml"
+
+  let baseRules = Path.getFullName "./Build/rules-fake.xml"
+  let fakerules =
+    if Environment.isWindows then baseRules
+    else
+      // Gendarme mono doesn't into .pdb files
+      let lines = baseRules
+                  |> File.ReadAllLines
+                  |> Seq.map (fun l -> l.Replace ("AvoidSwitchStatementsRule", "AvoidSwitchStatementsRule | AvoidLongMethodsRule"))
+      let fixup = Path.getFullName  "./_Generated/rules-fake.xml"
+      File.WriteAllLines(fixup, lines)
+      fixup
 
   [ (rules,
      [ "_Binaries/AltCover/Debug+AnyCPU/AltCover.exe"
@@ -282,8 +298,8 @@ _Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standa
 
     ("./Build/rules-gtk.xml",
      [ "_Binaries/AltCover.Visualizer/Debug+AnyCPU/AltCover.Visualizer.exe" ])
-     
-    ("./Build/rules-fake.xml",
+
+    (fakerules,
      ["_Binaries/AltCover.Fake.DotNet.Testing.AltCover/Debug+AnyCPU/AltCover.Fake.DotNet.Testing.AltCover.dll"]) ]
   |> Seq.iter (fun (ruleset, files) ->
        Gendarme.run { Gendarme.Params.Create() with WorkingDirectory = "."
@@ -293,19 +309,13 @@ _Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standa
                                                     Console = true
                                                     Log = "./_Reports/gendarme.html"
                                                     LogKind = Gendarme.LogKind.Html
-                                                    Targets = files }))
+                                                    Targets = files
+                                                    ToolPath = toolPath
+                                                    FailBuildOnDefect = true }))
 
 _Target "FxCop" (fun _ -> // Needs debug because release is compiled --standalone which contaminates everything
   Directory.ensure "./_Reports"
 
-  let installPath () =
-            use hklmKey =
-                Microsoft.Win32.RegistryKey.OpenBaseKey
-                    (Microsoft.Win32.RegistryHive.LocalMachine, Microsoft.Win32.RegistryView.Registry32)
-            use key = hklmKey.OpenSubKey(@"SOFTWARE\Microsoft\VisualStudio\SxS\VS7")
-            key.GetValue("15.0", String.Empty) :?> string
- 
-  let toolPath = installPath() @@ "Team Tools/Static Analysis Tools/FxCop/FxCopCmd.exe"
   let rules = [ "-Microsoft.Design#CA1004"
                 "-Microsoft.Design#CA1006"
                 "-Microsoft.Design#CA1011" // maybe sometimes
@@ -398,7 +408,7 @@ _Target "FxCop" (fun _ -> // Needs debug because release is compiled --standalon
                 "-Microsoft.Naming#CA1709" ])
     ([
          "_Binaries/AltCover.Fake.DotNet.Testing.AltCover/Debug+AnyCPU/AltCover.Fake.DotNet.Testing.AltCover.dll"
-       ], [ 
+       ], [
             "AltCover_Fake.DotNet.Testing.AltCover.CollectParams"
             "AltCover_Fake.DotNet.Testing.AltCover.PrepareParams"
             "AltCover_Fake.DotNet.Testing.AltCover.Args"
@@ -427,7 +437,6 @@ _Target "FxCop" (fun _ -> // Needs debug because release is compiled --standalon
                                                                                           Types = types
                                                                                           Rules = ruleset
                                                                                           FailOnError = FxCop.ErrorLevel.Warning
-                                                                                          ToolPath = toolPath
                                                                                           IgnoreGeneratedCode = true })
 
   [ "_Binaries/AltCover.PowerShell/Debug+AnyCPU/AltCover.PowerShell.dll" ]
@@ -439,7 +448,6 @@ _Target "FxCop" (fun _ -> // Needs debug because release is compiled --standalon
                                               [ Path.getFullName
                                                   "ThirdParty/Microsoft.PowerShell.CodeAnalysis.15.dll" ]
                                             FailOnError = FxCop.ErrorLevel.Warning
-                                            ToolPath = toolPath
                                             IgnoreGeneratedCode = true })
 
 // Unit Test
@@ -1872,6 +1880,7 @@ _Target "RecordResumeTestUnderMono" // Fails : System.EntryPointNotFoundExceptio
 
 _Target "Packaging" (fun _ ->
   let AltCover = Path.getFullName "_Binaries/AltCover/AltCover.exe"
+  let fox = Path.getFullName "_Binaries/AltCover/Release+AnyCPU/BlackFox.CommandLine.dll"
   let fscore = Path.getFullName "_Binaries/AltCover/Release+AnyCPU/FSharp.Core.dll"
   let options = Path.getFullName "_Binaries/AltCover/Release+AnyCPU/Mono.Options.dll"
   let recorder =
@@ -1901,6 +1910,7 @@ _Target "Packaging" (fun _ ->
         (fsapi, Some "tools/net45", None)
         (vis, Some "tools/net45", None)
         (fscore, Some "tools/net45", None)
+        (fox, Some "tools/net45", None)
         (options, Some "tools/net45", None)
         (packable, Some "", None) ]
     else []
@@ -1915,6 +1925,7 @@ _Target "Packaging" (fun _ ->
         (cake, Some "lib/net45", None)
         (fake, Some "lib/net45", None)
         (fscore, Some "lib/net45", None)
+        (fox, Some "lib/net45", None)
         (options, Some "lib/net45", None)
         (packable, Some "", None) ]
     else []
@@ -2001,6 +2012,11 @@ _Target "Packaging" (fun _ ->
     |> Seq.map (fun x -> (x, Some(where + Path.GetFileName x), None))
     |> Seq.toList
 
+  let fox2Files where =
+    (!!"./_Publish/BlackFox.*")
+    |> Seq.map (fun x -> (x, Some(where + Path.GetFileName x), None))
+    |> Seq.toList
+
   let publish = (Path.getFullName "./_Publish").Length
 
   let netcoreFiles where =
@@ -2020,6 +2036,7 @@ _Target "Packaging" (fun _ ->
          let n = f |> Path.GetFileName
          n.StartsWith("altcover.", StringComparison.OrdinalIgnoreCase)
          || n.StartsWith("Mono.", StringComparison.Ordinal)
+         || n.StartsWith("BlackFox.", StringComparison.Ordinal)
          || n.StartsWith("FSharp.Core.", StringComparison.Ordinal))
     |> Seq.map
          (fun x ->
@@ -2094,7 +2111,9 @@ _Target "Packaging" (fun _ ->
      "./_Generated/altcover.visualizer.nuspec", "altcover.visualizer")
 
     (List.concat [ fake2Files "lib/netstandard2.0/"
-                   [ (fake2, Some "lib/net45", None) ] ], "_Packaging.fake",
+                   fox2Files "lib/netstandard2.0/"
+                   [ (fake2, Some "lib/net45", None)
+                     (fox, Some "lib/net45", None) ] ], "_Packaging.fake",
      "./_Generated/altcover.fake.nuspec", "altcover.fake") ]
   |> List.iter (fun (files, output, nuspec, project) ->
        let outputPath = "./" + output
@@ -2764,7 +2783,7 @@ Target.runOrDefault "DoIt"
 """
     File.WriteAllText("./_ApiUse/DriveApi.fsx", script)
 
-    let dependencies = """version 5.186.3
+    let dependencies = """version 5.193.0
 // [ FAKE GROUP ]
 group NetcoreBuild
   source https://api.nuget.org/v3/index.json
@@ -2792,7 +2811,7 @@ group NetcoreBuild
     let x = Path.getFullName "./_ApiUse/_DotnetTest/coverage.xml"
     Actions.CheckSample4 x
   finally
-    [ "altcover"; "altcover.api" ]
+    [ "altcover"; "altcover.api" ; "altcover.fake" ]
     |> List.iter (fun f ->
          let folder = (nugetCache @@ f) @@ !Version
          Shell.mkdir folder

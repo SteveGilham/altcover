@@ -29,6 +29,8 @@ type Logging =
     Output.Info <- self.Info
     Output.Echo <- self.Echo
 
+#nowarn "44"
+
 module Api =
   let Prepare (args : PrepareParams) (log : Logging) =
     log.Apply()
@@ -90,7 +92,9 @@ type Prepare() =
   member val Single = true |> not with get, set // work around Gendarme insistence on non-default values only
   member val LineCover = true |> not with get, set
   member val BranchCover = true |> not with get, set
+  [<Obsolete("Please use AltCover.Prepare.Command instead instead.")>]
   member val CommandLine = String.Empty with get, set
+  member val Command : string array = [||] with get, set
   member self.Message x = base.Log.LogMessage(MessageImportance.High, x)
   override self.Execute() =
     let log =
@@ -123,7 +127,8 @@ type Prepare() =
                                     Single = self.Single
                                     LineCover = self.LineCover
                                     BranchCover = self.BranchCover
-                                    CommandLine = self.CommandLine }
+                                    CommandLine = self.CommandLine
+                                    Command = self.Command }
 
     Api.Prepare task log = 0
 
@@ -139,7 +144,9 @@ type Collect() =
   member val Threshold = String.Empty with get, set
   member val Cobertura = String.Empty with get, set
   member val OutputFile = String.Empty with get, set
+  [<Obsolete("Please use AltCover.Prepare.Command instead instead.")>]
   member val CommandLine = String.Empty with get, set
+  member val Command : string array = [||] with get, set
   member self.Message x = base.Log.LogMessage(MessageImportance.High, x)
   override self.Execute() =
     let log =
@@ -155,7 +162,8 @@ type Collect() =
                                     Threshold = self.Threshold
                                     Cobertura = self.Cobertura
                                     OutputFile = self.OutputFile
-                                    CommandLine = self.CommandLine }
+                                    CommandLine = self.CommandLine
+                                    Command = self.Command }
 
     Api.Collect task log = 0
 

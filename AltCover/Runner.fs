@@ -415,61 +415,65 @@ module internal Runner =
     "Getting results..." |> WriteResource
     result
 
-  let internal CollectResults (hits : ICollection<string * int * Base.Track>) report =
+  let internal CollectResults (hits : Dictionary<string, Dictionary<int, int * Base.Track list>>)
+      report =
     let timer = System.Diagnostics.Stopwatch()
     timer.Start()
-    let mutable before = hits.Count
-    let mutable after = 0
-    Directory.GetFiles(Path.GetDirectoryName(report), Path.GetFileName(report) + ".*.acv")
-    |> Seq.iter
-         (fun f ->
-         timer.Restart()
-         let length = FileInfo(f).Length.ToString("#,#", CultureInfo.CurrentUICulture)
-         sprintf "... %s (%sb)" f length |> Output.Info
-         use results = new DeflateStream(File.OpenRead f, CompressionMode.Decompress)
-         use formatter = new System.IO.BinaryReader(results)
+    let visits =
+      Directory.GetFiles
+        (Path.GetDirectoryName(report), Path.GetFileName(report) + ".*.acv")
+      |> Seq.fold (fun before f ->
+           timer.Restart()
+           let length = FileInfo(f).Length.ToString("#,#", CultureInfo.CurrentUICulture)
+           sprintf "... %s (%sb)" f length |> Output.Info
+           use results = new DeflateStream(File.OpenRead f, CompressionMode.Decompress)
+           use formatter = new System.IO.BinaryReader(results)
 
-         let rec sink() =
-           let hit =
-             try
-               let id = formatter.ReadString()
-               let strike = formatter.ReadInt32()
-               let tag = formatter.ReadByte() |> int
-               Some(id, strike,
-                    match enum tag with
-                    | AltCover.Base.Tag.Time -> Base.Time <| formatter.ReadInt64()
-                    | AltCover.Base.Tag.Call -> Base.Call <| formatter.ReadInt32()
-                    | AltCover.Base.Tag.Both ->
-                      Base.Both(formatter.ReadInt64(), formatter.ReadInt32())
-                    | _ -> Base.Null)
-             with :? EndOfStreamException -> None
-           match hit with
-           | Some tuple ->
-             let (key, _, _) = tuple
-             if key
-                |> String.IsNullOrWhiteSpace
-                |> not
-             then tuple |> hits.Add
-             sink()
-           | None -> ()
-         sink()
-         timer.Stop()
-         after <- hits.Count
-         if after > before then
-           let delta = after - before
-           before <- after
-           let interval = timer.Elapsed
-           let rate = (float delta) / interval.TotalSeconds
-           WriteResourceWithFormatItems "%d visits recorded in %A (%A visits/sec)"
-             [| delta :> obj
-                interval
-                rate |] false)
+           let rec sink hitcount =
+             let hit =
+               try
+                 let id = formatter.ReadString()
+                 let strike = formatter.ReadInt32()
+                 let tag = formatter.ReadByte() |> int
+                 Some(id, strike,
+                      match enum tag with
+                      | AltCover.Base.Tag.Time -> Base.Time <| formatter.ReadInt64()
+                      | AltCover.Base.Tag.Call -> Base.Call <| formatter.ReadInt32()
+                      | AltCover.Base.Tag.Both ->
+                        Base.Both(formatter.ReadInt64(), formatter.ReadInt32())
+                      | _ -> Base.Null)
+               with :? EndOfStreamException -> None
+             match hit with
+             | Some tuple ->
+               let (key, hitPointId, hit) = tuple
+
+               let increment =
+                 if key
+                    |> String.IsNullOrWhiteSpace
+                    |> not
+                 then
+                   Base.Counter.AddVisit hits key hitPointId hit
+                   1
+                 else 0
+               sink (hitcount + increment)
+             | None -> hitcount
+
+           let after = sink before
+           timer.Stop()
+           if after > before then
+             let delta = after - before
+             let interval = timer.Elapsed
+             let rate = (float delta) / interval.TotalSeconds
+             WriteResourceWithFormatItems "%d visits recorded in %A (%A visits/sec)"
+               [| delta :> obj
+                  interval
+                  rate |] false
+           after) 0
     timer.Stop()
-    let visits = after
     WriteResourceWithFormatItems "%d visits recorded" [| visits |] (visits = 0)
 
-  let internal MonitorBase (hits : ICollection<string * int * Base.Track>) report
-      (payload : string list -> int) (args : string list) =
+  let internal MonitorBase (hits : Dictionary<string, Dictionary<int, int * Base.Track list>>)
+      report (payload : string list -> int) (args : string list) =
     let result =
       if collect then 0
       else RunProcess report payload args
@@ -734,15 +738,9 @@ module internal Runner =
     Point pt times "Times" "Time" "time"
     Point pt calls "TrackedMethodRefs" "TrackedMethodRef" "uid"
 
-  let internal WriteReportBase (hits : ICollection<string * int * Base.Track>) report =
-    let counts = Dictionary<string, Dictionary<int, int * Base.Track list>>()
-    hits
-    |> Seq.iter
-         (fun (moduleId, hitPointId, hit) ->
-         AltCover.Base.Counter.AddVisit counts moduleId hitPointId hit)
-    AltCover.Base.Counter.DoFlush (PostProcess counts report) PointProcess true counts
-      report
-
+  let internal WriteReportBase (hits : Dictionary<string, Dictionary<int, int * Base.Track list>>)
+      report =
+    AltCover.Base.Counter.DoFlush (PostProcess hits report) PointProcess true hits report
   // mocking points
   let mutable internal GetPayload = PayloadBase
   let mutable internal GetMonitor = MonitorBase
@@ -785,7 +783,7 @@ module internal Runner =
 
           let format =
             (GetMethod instance "get_CoverageFormat") |> GetFirstOperandAsNumber
-          let hits = List<string * int * Base.Track>()
+          let hits = Dictionary<string, Dictionary<int, int * Base.Track list>>()
           let payload = GetPayload
           let result = GetMonitor hits report payload rest
           let format' = enum format

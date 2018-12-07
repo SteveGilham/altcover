@@ -9,6 +9,8 @@ open AltCover.Augment
 open Mono.Options
 open NUnit.Framework
 
+#nowarn "44"
+
 [<TestFixture>]
 type AltCoverTests3() =
   class
@@ -76,11 +78,6 @@ type AltCoverTests3() =
         let expected =
           "Command line : '" + quote + exe + quote + " " + args + "\'"
           + Environment.NewLine + "Where is my rocket pack? " + Environment.NewLine
-        // hack for Mono
-        //let computed = (if result.Length = 14 then
-        //                 result |> Encoding.Unicode.GetBytes |> Array.takeWhile (fun c -> c <> 0uy)|> Encoding.UTF8.GetString
-        //               else result).Split('\n') |> Seq.last
-        //if "TRAVIS_JOB_NUMBER" |> Environment.GetEnvironmentVariable |> String.IsNullOrWhiteSpace || result.Length > 0 then
         Assert.That(result, Is.EqualTo(expected))
       finally
         Console.SetOut(fst saved)
@@ -1731,11 +1728,6 @@ type AltCoverTests3() =
           "Command line : '" + quote + args.Head + quote + " "
           + String.Join(" ", args.Tail) + "'" + Environment.NewLine
           + "Where is my rocket pack? " + u1 + "*" + u2 + Environment.NewLine
-        // hack for Mono
-        //let computed = if result.Length = 50 then
-        //                 result |> Encoding.Unicode.GetBytes |> Array.takeWhile (fun c -> c <> 0uy)|> Encoding.UTF8.GetString
-        //               else result
-        //if "TRAVIS_JOB_NUMBER" |> Environment.GetEnvironmentVariable |> String.IsNullOrWhiteSpace || result.Length > 0 then
         Assert.That(result, Is.EqualTo expected)
       finally
         Console.SetOut(fst saved)
@@ -2037,7 +2029,7 @@ or
         Output.Error <- snd saved
 
     [<Test>]
-    member self.NonDefaultInstrumentIsOK() =
+    member self.NonDefaultInstrumentObsoleteIsOK() =
       let subject = Prepare()
       let save = Main.EffectiveMain
       let mutable args = [| "some junk " |]
@@ -2054,7 +2046,35 @@ or
         Assert.That
           (args,
            Is.EquivalentTo
-             [ "-y"; "a"; "-y"; "b"; "--inplace"; "--save"; "--"; "testing 1 2 3" ])
+             [ "-y"; "a"; "-y"; "b"; "--inplace"; "--save"; "--"; "testing"; "1"; "2"; "3" ])
+        Assert.Throws<InvalidOperationException>(fun () -> subject.Message "x") |> ignore
+        Assert.Throws<InvalidOperationException>(fun () -> Output.Info "x") |> ignore
+        Assert.Throws<InvalidOperationException>(fun () -> Output.Warn "x") |> ignore
+        Assert.Throws<InvalidOperationException>(fun () -> Output.Error "x") |> ignore
+      finally
+        Main.EffectiveMain <- save
+        Output.Info <- fst saved
+        Output.Error <- snd saved
+
+    [<Test>]
+    member self.NonDefaultInstrumentIsOK() =
+      let subject = Prepare()
+      let save = Main.EffectiveMain
+      let mutable args = [| "some junk " |]
+      let saved = (Output.Info, Output.Error)
+      try
+        Main.EffectiveMain <- (fun a ->
+        args <- a
+        0)
+        subject.OpenCover <- false
+        subject.Command <- [| "testing"; "1"; "2"; "3" |]
+        subject.SymbolDirectories <- [| "a"; "b" |]
+        let result = subject.Execute()
+        Assert.That(result, Is.True)
+        Assert.That
+          (args,
+           Is.EquivalentTo
+             [ "-y"; "a"; "-y"; "b"; "--inplace"; "--save"; "--"; "testing"; "1"; "2"; "3" ])
         Assert.Throws<InvalidOperationException>(fun () -> subject.Message "x") |> ignore
         Assert.Throws<InvalidOperationException>(fun () -> Output.Info "x") |> ignore
         Assert.Throws<InvalidOperationException>(fun () -> Output.Warn "x") |> ignore
@@ -2093,9 +2113,10 @@ or
         args <- a
         0)
         subject.Executable <- "dotnet"
+        subject.Command <- [|"test"|]
         let result = subject.Execute()
         Assert.That(result, Is.True)
-        Assert.That(args, Is.EquivalentTo [ "Runner"; "-x"; "dotnet" ])
+        Assert.That(args, Is.EquivalentTo [ "Runner"; "-x"; "dotnet"; "--"; "test" ])
         Assert.Throws<InvalidOperationException>(fun () -> subject.Message "x") |> ignore
         Assert.Throws<InvalidOperationException>(fun () -> Output.Info "x") |> ignore
         Assert.Throws<InvalidOperationException>(fun () -> Output.Warn "x") |> ignore

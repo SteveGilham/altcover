@@ -3,6 +3,7 @@ namespace AltCover.Recorder
 open System.Collections.Generic
 open System.IO
 open System.IO.Compression
+open System
 
 [<NoComparison>]
 type Tracer =
@@ -41,7 +42,11 @@ type Tracer =
       |> Seq.head
     else this
 
-  member this.Close() = this.Formatter.Close()
+  member this.Close() = try
+                          this.Stream.Flush()
+                          this.Formatter.Close()
+                        with
+                        | :? ObjectDisposedException -> ()
 
   member internal this.Push (moduleId : string) (hitPointId : int) context =
     this.Formatter.Write moduleId
@@ -85,7 +90,6 @@ type Tracer =
 
   member internal this.OnFinish visits =
     this.CatchUp visits
-    this.Stream.Flush()
     this.Close()
 
   member internal this.OnVisit visits moduleId hitPointId context =

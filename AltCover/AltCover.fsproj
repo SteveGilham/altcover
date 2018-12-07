@@ -103,6 +103,9 @@
     <EmbeddedResource Include="JSONFragments.resx" />
   </ItemGroup>
   <ItemGroup>
+    <Reference Include="BlackFox.CommandLine">
+      <HintPath>..\ThirdParty\BlackFox.CommandLine.dll</HintPath>
+    </Reference>
     <Reference Include="FSharp.Core">
       <HintPath>..\packages\FSharp.Core.4.5.2\lib\net45\FSharp.Core.dll</HintPath>
     </Reference>

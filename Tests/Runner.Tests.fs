@@ -314,11 +314,6 @@ type AltCoverTests() =
         let expected =
           "Command line : '" + quote + exe + quote + " " + args + "\'"
           + Environment.NewLine + "Where is my rocket pack? " + Environment.NewLine
-        // hack for Mono
-        //let computed = if result.Length = 14 then
-        //                 result |> Encoding.Unicode.GetBytes |> Array.takeWhile (fun c -> c <> 0uy)|> Encoding.UTF8.GetString
-        //               else result
-        //if "TRAVIS_JOB_NUMBER" |> Environment.GetEnvironmentVariable |> String.IsNullOrWhiteSpace || result.Length > 0 then
         Assert.That(result, Is.EqualTo(expected))
       finally
         Console.SetOut(fst saved)
@@ -1126,11 +1121,6 @@ type AltCoverTests() =
           "Command line : '" + quote + args.Head + quote + " "
           + String.Join(" ", args.Tail) + "'" + Environment.NewLine
           + "Where is my rocket pack? " + u1 + "*" + u2 + Environment.NewLine
-        // hack for Mono
-        //let computed = if result.Length = 50 then
-        //                 result |> Encoding.Unicode.GetBytes |> Array.takeWhile (fun c -> c <> 0uy)|> Encoding.UTF8.GetString
-        //               else result
-        //if "TRAVIS_JOB_NUMBER" |> Environment.GetEnvironmentVariable |> String.IsNullOrWhiteSpace || result.Length > 0 then
         Assert.That(result, Is.EqualTo expected)
       finally
         Console.SetOut(fst saved)
@@ -1345,11 +1335,6 @@ or
           "Command line : '" + quote + args.Head + quote + " "
           + String.Join(" ", args.Tail) + "'" + Environment.NewLine
           + "Where is my rocket pack? " + u1 + "*" + u2 + Environment.NewLine
-        // hack for Mono
-        //let computed = if result.Length = 50 then
-        //                 result |> Encoding.Unicode.GetBytes |> Array.takeWhile (fun c -> c <> 0uy)|> Encoding.UTF8.GetString
-        //               else result
-        //if "TRAVIS_JOB_NUMBER" |> Environment.GetEnvironmentVariable |> String.IsNullOrWhiteSpace || result.Length > 0 then
         Assert.That(result, Is.EqualTo expected)
       finally
         Console.SetOut(fst saved)
@@ -1364,7 +1349,6 @@ or
       let unique = Path.Combine(where, Guid.NewGuid().ToString())
       let reportFile = Path.Combine(unique, "FlushLeavesExpectedTraces.xml")
       try
-        let visits = new Dictionary<string, Dictionary<int, int>>()
         use stdout = new StringWriter()
         Console.SetOut stdout
         Directory.CreateDirectory(unique) |> ignore
@@ -1385,10 +1369,14 @@ or
              for j = 1 to i + 1 do
                hits.Add("f6e3edb3-fb20-44b3-817d-f69d1a22fc2f", i, Base.Null)
                ignore j)
-        let payload = Dictionary<int, int>()
-        [ 0..9 ] |> Seq.iter (fun i -> payload.[i] <- (i + 1))
-        visits.["f6e3edb3-fb20-44b3-817d-f69d1a22fc2f"] <- payload
-        Runner.DoReport hits AltCover.Base.ReportFormat.NCover reportFile None |> ignore
+
+        let counts = Dictionary<string, Dictionary<int, int * Base.Track list>>()
+        hits
+        |> Seq.iter
+             (fun (moduleId, hitPointId, hit) ->
+             AltCover.Base.Counter.AddVisit counts moduleId hitPointId hit)
+
+        Runner.DoReport counts AltCover.Base.ReportFormat.NCover reportFile None |> ignore
         use worker' = new FileStream(reportFile, FileMode.Open)
         let after = XmlDocument()
         after.Load worker'
@@ -1407,24 +1395,24 @@ or
 
     [<Test>]
     member self.NullPayloadShouldReportNothing() =
-      let hits = List<string * int * Base.Track>()
+      let counts = Dictionary<string, Dictionary<int, int * Base.Track list>>()
       let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
       let unique = Path.Combine(where, Guid.NewGuid().ToString())
       do use s = File.Create(unique + ".0.acv")
          s.Close()
-      let r = Runner.GetMonitor hits unique List.length []
+      let r = Runner.GetMonitor counts unique List.length []
       Assert.That(r, Is.EqualTo 0)
       Assert.That(File.Exists(unique + ".acv"))
-      Assert.That(hits, Is.Empty)
+      Assert.That(counts, Is.Empty)
 
     [<Test>]
     member self.ActivePayloadShouldReportAsExpected() =
-      let hits = List<string * int * Base.Track>()
+      let counts = Dictionary<string, Dictionary<int, int * Base.Track list>>()
       let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
       let unique = Path.Combine(where, Guid.NewGuid().ToString())
 
       let r =
-        Runner.GetMonitor hits unique (fun l ->
+        Runner.GetMonitor counts unique (fun l ->
           use sink =
             new DeflateStream(File.OpenWrite(unique + ".0.acv"), CompressionMode.Compress)
           use formatter = new BinaryWriter(sink)
@@ -1437,22 +1425,31 @@ or
           |> List.length) [ "a"; "b"; String.Empty; "c" ]
       Assert.That(r, Is.EqualTo 4)
       Assert.That(File.Exists(unique + ".acv"))
-      Assert.That(hits,
-                  Is.EquivalentTo [ ("a", 0, Base.Null)
-                                    ("b", 1, Base.Null)
-                                    ("c", 3, Base.Null) ])
+      let expected = Dictionary<string, Dictionary<int, int * Base.Track list>>()
+      let a = Dictionary<int, int * Base.Track list>()
+      a.Add(0, (1, []))
+      let b = Dictionary<int, int * Base.Track list>()
+      b.Add(1, (1, []))
+      let c = Dictionary<int, int * Base.Track list>()
+      c.Add(3, (1, []))
+      expected.Add ("a", a)
+      expected.Add ("b", b)
+      expected.Add ("c", c)
+
+      Assert.That(counts,
+                  Is.EquivalentTo expected)
       if File.Exists(unique + ".acv") then File.Delete(unique + ".acv")
 
     [<Test>]
     member self.CollectShouldReportAsExpected() =
       try
         Runner.collect <- true
-        let hits = List<string * int * Base.Track>()
+        let counts = Dictionary<string, Dictionary<int, int * Base.Track list>>()
         let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
         let unique = Path.Combine(where, Guid.NewGuid().ToString())
 
         let r =
-          Runner.GetMonitor hits unique (fun l ->
+          Runner.GetMonitor counts unique (fun l ->
             use sink =
               new DeflateStream(File.OpenWrite(unique + ".0.acv"),
                                 CompressionMode.Compress)
@@ -1468,19 +1465,19 @@ or
         Assert.That(File.Exists(unique + ".acv") |> not)
         let doc = Runner.LoadReport(unique + ".acv")
         Assert.That(doc.Nodes(), Is.Empty)
-        Assert.That(hits, Is.Empty)
+        Assert.That(counts, Is.Empty)
       finally
         Runner.collect <- false
 
     [<Test>]
     member self.JunkPayloadShouldReportAsExpected() =
-      let hits = List<string * int * Base.Track>()
+      let counts = Dictionary<string, Dictionary<int, int * Base.Track list>>()
       let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
       let unique = Path.Combine(where, Guid.NewGuid().ToString())
       let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
 
       let r =
-        Runner.GetMonitor hits unique (fun l ->
+        Runner.GetMonitor counts unique (fun l ->
           use sink =
             new DeflateStream(File.OpenWrite(unique + ".0.acv"), CompressionMode.Compress)
           l
@@ -1490,11 +1487,11 @@ or
           |> List.length) [ "a"; "b"; String.Empty; "c" ]
       Assert.That(r, Is.EqualTo 4)
       Assert.That(File.Exists(unique + ".acv"))
-      Assert.That(hits, Is.EquivalentTo [])
+      Assert.That(counts, Is.EquivalentTo [])
 
     [<Test>]
     member self.TrackingPayloadShouldReportAsExpected() =
-      let hits = List<string * int * Base.Track>()
+      let counts = Dictionary<string, Dictionary<int, int * Base.Track list>>()
       let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
       let unique = Path.Combine(where, Guid.NewGuid().ToString())
 
@@ -1509,7 +1506,7 @@ or
       let inputs = [ "a"; "b"; "c"; "d"; String.Empty; "e" ]
 
       let r =
-        Runner.GetMonitor hits unique (fun l ->
+        Runner.GetMonitor counts unique (fun l ->
           use sink =
             new DeflateStream(File.OpenWrite(unique + ".0.acv"), CompressionMode.Compress)
           use formatter = new BinaryWriter(sink)
@@ -1533,18 +1530,26 @@ or
                x)
           |> List.length) inputs
 
-      let expected =
-        inputs
-        |> List.zip payloads
-        |> List.mapi (fun i (y, x) -> (x, i, y))
-        |> List.filter (fun (x, _, _) ->
-             x
-             |> String.IsNullOrWhiteSpace
-             |> not)
+      let expected = Dictionary<string, Dictionary<int, int * Base.Track list>>()
+      let a = Dictionary<int, int * Base.Track list>()
+      a.Add(0, (1, []))
+      let b = Dictionary<int, int * Base.Track list>()
+      b.Add(1, (0, [Call 17]))
+      let c = Dictionary<int, int * Base.Track list>()
+      c.Add(2, (0, [Time 23L]))
+      let d = Dictionary<int, int * Base.Track list>()
+      d.Add(3, (0, [Both (5L, 42)]))
+      let e = Dictionary<int, int * Base.Track list>()
+      e.Add(5, (0, [Call 5]))
+      expected.Add ("a", a)
+      expected.Add ("b", b)
+      expected.Add ("c", c)
+      expected.Add ("d", d)
+      expected.Add ("e", e)
 
       Assert.That(r, Is.EqualTo 6)
       Assert.That(File.Exists(unique + ".acv"))
-      Assert.That(hits, Is.EquivalentTo expected)
+      Assert.That(counts, Is.EquivalentTo expected)
 
     [<Test>]
     member self.PointProcessShouldCaptureTimes() =

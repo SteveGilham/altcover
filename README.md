@@ -21,12 +21,12 @@ For Mono, .net framework and .net core, except as noted
   ![Visualizer screenshot](./AltCover.Visualizer/Screenshot.png)
     
 ### NuGet Packages
-* [General purpose install](https://www.nuget.org/packages/AltCover) -- excludes the C# API and FAKE integration
-* [API install](https://www.nuget.org/packages/AltCover.api) -- excludes the .net Framework/mono/GTK#2 Visualizer
-* [dotnet CLI tool install](https://www.nuget.org/packages/AltCover.dotnet) -- excludes the visualizer in all forms
-* [dotnet global tool install](https://www.nuget.org/packages/AltCover.global) -- excludes the visualizer in all forms
-* [Visualizer dotnet global tool](https://www.nuget.org/packages/AltCover.visualizer) -- just the .net core/GTK#3 Visualizer as a global tool
-* [FAKE build task utilities](https://www.nuget.org/packages/AltCover.Fake) -- just AltCover related helper types for FAKE scripts (v5.9.3 or later), only in this package
+* [![Nuget](https://buildstats.info/nuget/AltCover) General purpose install](https://www.nuget.org/packages/AltCover) -- excludes the C# API and FAKE integration
+* [![Nuget](https://buildstats.info/nuget/altcover.api) API install](https://www.nuget.org/packages/AltCover.api) -- excludes the .net Framework/mono/GTK#2 Visualizer
+* [![Nuget](https://buildstats.info/nuget/altcover.dotnet) dotnet CLI tool install](https://www.nuget.org/packages/AltCover.dotnet) -- excludes the visualizer in all forms
+* [![Nuget](https://buildstats.info/nuget/altcover.global) dotnet global tool install](https://www.nuget.org/packages/AltCover.global) -- excludes the visualizer in all forms
+* [![Nuget](https://buildstats.info/nuget/altcover.visualizer) Visualizer dotnet global tool](https://www.nuget.org/packages/AltCover.visualizer) -- just the .net core/GTK#3 Visualizer as a global tool
+* [![Nuget](https://buildstats.info/nuget/altcover.fake) FAKE build task utilities](https://www.nuget.org/packages/AltCover.Fake) -- just AltCover related helper types for FAKE scripts (v5.9.3 or later), only in this package
 
 ## Why altcover?
 As the name suggests, it's an alternative coverage approach.  Rather than working by hooking the .net profiling API at run-time, it works by weaving the same sort of extra IL into the assemblies of interest ahead of execution.  This means that it should work pretty much everywhere, whatever your platform, so long as the executing process has write access to the results file.  You can even mix-and-match between platforms used to instrument and those under test.
@@ -53,12 +53,6 @@ Fast forwards to autumn 2017, and I get the chance to dust the project off, with
 | --- | --- | --- | 
 | **Build** | <sup>AppVeyor</sup> [![Build status](https://img.shields.io/appveyor/ci/SteveGilham/altcover/master.svg)](https://ci.appveyor.com/project/SteveGilham/altcover) [![Test status](https://img.shields.io/appveyor/tests/SteveGilham/altcover/master.svg)](https://ci.appveyor.com/project/SteveGilham/altcover) ![Build history](https://buildstats.info/appveyor/chart/SteveGilham/altcover?branch=master) | <sup>Travis</sup> [![Build status](https://travis-ci.org/SteveGilham/altcover.svg?branch=master)](https://travis-ci.org/SteveGilham/altcover#) [![Build history](https://buildstats.info/travisci/chart/SteveGilham/altcover?branch=master)](https://travis-ci.org/SteveGilham/altcover/builds)|
 | **Unit Test coverage** | <sup>Coveralls</sup> [![Coverage Status](https://coveralls.io/repos/github/SteveGilham/altcover/badge.svg?branch=master)](https://coveralls.io/github/SteveGilham/altcover?branch=master) |
-| **Nuget** | [![Nuget](https://buildstats.info/nuget/AltCover)](http://nuget.org/packages/AltCover) [![Nuget](https://img.shields.io/nuget/vpre/AltCover.svg)](http://nuget.org/packages/AltCover) |
-| (.api) | [![Nuget](https://buildstats.info/nuget/altcover.api)](http://nuget.org/packages/altcover.api) [![Nuget](https://img.shields.io/nuget/vpre/altcover.api.svg)](http://nuget.org/packages/altcover.api) |
-| (.fake) | [![Nuget](https://buildstats.info/nuget/altcover.fake)](http://nuget.org/packages/altcover.fake) [![Nuget](https://img.shields.io/nuget/vpre/altcover.fake.svg)](http://nuget.org/packages/altcover.fake) |
-| (.dotnet) | [![Nuget](https://buildstats.info/nuget/altcover.dotnet)](http://nuget.org/packages/altcover.dotnet) [![Nuget](https://img.shields.io/nuget/vpre/altcover.dotnet.svg)](http://nuget.org/packages/altcover.dotnet) |
-| (.global) | [![Nuget](https://buildstats.info/nuget/altcover.global)](http://nuget.org/packages/altcover.global) [![Nuget](https://img.shields.io/nuget/vpre/altcover.global.svg)](http://nuget.org/packages/altcover.global) |
-| (.visualizer) | [![Nuget](https://buildstats.info/nuget/altcover.visualizer)](http://nuget.org/packages/altcover.visualizer) [![Nuget](https://img.shields.io/nuget/vpre/altcover.visualizer.svg)](http://nuget.org/packages/altcover.visualizer) |
 
 ## Usage
 
@@ -76,12 +70,12 @@ See the [current project](https://github.com/SteveGilham/altcover/projects/7) fo
 
 It is assumed that the following are available
 
-.net core SDK 2.1.401 or later (`dotnet`) -- try https://www.microsoft.com/net/download  
+.net core SDK 2.1.403 or later (`dotnet`) -- try https://www.microsoft.com/net/download  
 PowerShell Core 6.0.2 or later (`pwsh`) -- try https://github.com/powershell/powershell
 
 #### Windows
 
-You will need Visual Studio VS2017 (Community Edition) v15.8.latest with F# language support (or just the associated build tools and your editor of choice).  The NUnit3 Test Runner will simplify the basic in-IDE development cycle.  Note that some of the unit tests expect that the separate build of test assemblies under Mono, full .net framework and .net core has taken place; there will be up to 20 failures when running the unit tests in Visual Studio from clean when those expected assemblies are not found.
+You will need Visual Studio VS2017 (Community Edition) v15.8.9 or later with F# language support (or just the associated build tools and your editor of choice).  The NUnit3 Test Runner will simplify the basic in-IDE development cycle.  Note that some of the unit tests expect that the separate build of test assemblies under Mono, full .net framework and .net core has taken place; there will be up to 20 failures when running the unit tests in Visual Studio from clean when those expected assemblies are not found.
 
 For the .net 2.0 support, if you don't already have FSharp.Core.dll version 2.3.0.0 (usually in Reference Assemblies\Microsoft\FSharp\.NETFramework\v2.0\2.3.0.0), then you will need to install this -- the [Visual F# Tools 4.0 RTM](https://www.microsoft.com/en-us/download/details.aspx?id=48179) `FSharp_Bundle.exe` is the most convenient source. 
 
