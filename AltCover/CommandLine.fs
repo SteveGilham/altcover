@@ -10,6 +10,7 @@ open System.Resources
 open System.Text.RegularExpressions
 
 open Augment
+open BlackFox.CommandLine
 open Mono.Options
 
 #if NETCOREAPP2_0
@@ -220,8 +221,13 @@ module internal CommandLine =
     match rest |> Seq.toList with
     | [] -> 0
     | cmd :: t ->
-      let args = String.Join(" ", (List.toArray t))
-      Launch cmd args toInfo.FullName // Spawn process, echoing asynchronously
+      let args = t
+                 |> CmdLine.fromSeq
+                 |> CmdLine.toString
+      let cmd' = [ cmd ]
+                 |> CmdLine.fromSeq
+                 |> CmdLine.toString
+      Launch cmd' args toInfo.FullName // Spawn process, echoing asynchronously
 
   let logExceptionsToFile name =
     let path = Path.Combine(Visitor.OutputDirectory(), name)

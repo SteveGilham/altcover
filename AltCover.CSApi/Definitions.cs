@@ -13,7 +13,10 @@ namespace AltCover
         public string Cobertura { get; set; }
         public string OutputFile { get; set; }
 
+        [Obsolete("Please use AltCover.CollectArgs.Command instead instead.")]
         public string CommandLine { get; set; }
+
+        public string[] Command { get; set; }
 
         internal CollectParams ToParameters()
         {
@@ -25,7 +28,10 @@ namespace AltCover
                 Threshold,
                 Cobertura,
                 OutputFile,
-                CommandLine
+#pragma warning disable 0618
+                CommandLine,
+#pragma warning restore 0618
+                Command
                 );
         }
 
@@ -42,7 +48,10 @@ namespace AltCover
                     Threshold = string.Empty,
                     Cobertura = string.Empty,
                     OutputFile = string.Empty,
-                    CommandLine = string.Empty
+#pragma warning disable 0618
+                    CommandLine = string.Empty,
+#pragma warning restore 0618
+                    Command = new string[] { }
                 };
             }
         }
@@ -77,7 +86,11 @@ namespace AltCover
         public bool Single { get; set; }
         public bool LineCover { get; set; }
         public bool BranchCover { get; set; }
+
+        [Obsolete("Please use AltCover.PrepareArgs.Command instead instead.")]
         public string CommandLine { get; set; }
+
+        public string[] Command { get; set; }
 
         internal PrepareParams ToParameters()
         {
@@ -104,7 +117,10 @@ namespace AltCover
                         Single,
                         LineCover,
                         BranchCover,
-                        CommandLine
+#pragma warning disable 0618
+                        CommandLine,
+#pragma warning restore 0618
+                        Command
                 );
         }
 
@@ -136,7 +152,10 @@ namespace AltCover
                     Single = false,
                     LineCover = false,
                     BranchCover = false,
-                    CommandLine = string.Empty
+#pragma warning disable 0618
+                    CommandLine = string.Empty,
+#pragma warning restore 0618
+                    Command = new string[] { }
                 };
             }
         }

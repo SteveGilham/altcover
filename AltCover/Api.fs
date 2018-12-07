@@ -8,6 +8,7 @@ module AltCover_Fake.DotNet.Testing.AltCover
 open System
 open System.Diagnostics.CodeAnalysis
 open System.Linq
+open BlackFox.CommandLine
 #if RUNNER
 open AltCover.Augment
 #else
@@ -15,6 +16,8 @@ open System.Reflection
 open System.IO
 open Fake.Core
 #endif
+
+#nowarn "44"
 
 [<ExcludeFromCodeCoverage; NoComparison>]
 type CollectParams =
@@ -25,10 +28,12 @@ type CollectParams =
     Threshold : String
     Cobertura : String
     OutputFile : String
-    CommandLine : String }
+    [<Obsolete("Please use AltCover.CollectParams.Command instead instead.")>]
+    CommandLine : String
+    Command : String seq }
 
 #if RUNNER
-  [<Obsolete("Please AltCover.CollectParams.Create() instead instead.")>]
+  [<Obsolete("Please use AltCover.CollectParams.Create() instead instead.")>]
   static member Default : CollectParams =
     { RecorderDirectory = String.Empty
       WorkingDirectory = String.Empty
@@ -37,7 +42,8 @@ type CollectParams =
       Threshold = String.Empty
       Cobertura = String.Empty
       OutputFile = String.Empty
-      CommandLine = String.Empty }
+      CommandLine = String.Empty
+      Command = [] }
 #endif
 
   static member Create() =
@@ -48,7 +54,8 @@ type CollectParams =
       Threshold = String.Empty
       Cobertura = String.Empty
       OutputFile = String.Empty
-      CommandLine = String.Empty }
+      CommandLine = String.Empty
+      Command = [] }
 
 #if RUNNER
   member self.Validate afterPreparation =
@@ -82,9 +89,8 @@ type CollectParams =
       CommandLine.error <- saved
 #else
   member self.withCommandLine args =
-    { self with CommandLine =
-                  (CreateProcess.fromRawCommand String.Empty
-                    args).CommandLine}
+    { self with Command = args
+                CommandLine = String.Empty}
 #endif
 
 [<ExcludeFromCodeCoverage; NoComparison>]
@@ -110,10 +116,12 @@ type PrepareParams =
     Single : bool
     LineCover : bool
     BranchCover : bool
-    CommandLine : String }
+    [<Obsolete("Please use AltCover.PrepareParams.Command instead instead.")>]
+    CommandLine : String
+    Command : String seq }
 
 #if RUNNER
-  [<Obsolete("Please AltCover.CollectParams.Create() instead instead.")>]
+  [<Obsolete("Please use AltCover.CollectParams.Create() instead instead.")>]
   static member Default : PrepareParams =
     { InputDirectory = String.Empty
       OutputDirectory = String.Empty
@@ -136,7 +144,8 @@ type PrepareParams =
       Single = false
       LineCover = false
       BranchCover = false
-      CommandLine = String.Empty }
+      CommandLine = String.Empty
+      Command = [] }
 #endif
 
   static member Create() =
@@ -161,7 +170,8 @@ type PrepareParams =
       Single = false
       LineCover = false
       BranchCover = false
-      CommandLine = String.Empty }
+      CommandLine = String.Empty
+      Command = [] }
 
 #if RUNNER
   static member private validateArray a f key =
@@ -239,9 +249,8 @@ type PrepareParams =
       CommandLine.error <- saved
 #else
   member self.withCommandLine args =
-    { self with CommandLine =
-                  (CreateProcess.fromRawCommand String.Empty
-                    args).CommandLine}
+    { self with Command = args
+                CommandLine = String.Empty}
 #endif
 
 module internal Args =
@@ -260,7 +269,24 @@ module internal Args =
     if x then [ a ]
     else []
 
+  let internal parse s =
+    let blackfox = typeof<CmdLine>.Assembly
+    let t = blackfox.GetType(if System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
+              then "BlackFox.CommandLine.MsvcrCommandLine"
+              else "BlackFox.CommandLine.MonoUnixCommandLine")
+    let m = t.GetMethod "parse"
+    m.Invoke (m, [| s |]) :?> String seq |> Seq.toList
+
   let Prepare(args : PrepareParams) =
+    let command = args.Command
+                  |> Seq.filter (String.IsNullOrWhiteSpace >> not)
+                  |> Seq.toList
+    let argsList = if List.isEmpty command then
+                     parse args.CommandLine
+                   else command
+    let trailing = if List.isEmpty argsList then []
+                   else "--" :: argsList
+
     [ Item "-i" args.InputDirectory
       Item "-o" args.OutputDirectory
       ItemList "-y" args.SymbolDirectories
@@ -282,10 +308,19 @@ module internal Args =
       Flag "--single" args.Single
       Flag "--linecover" args.LineCover
       Flag "--branchcover" args.BranchCover
-      Item "--" args.CommandLine ]
+      trailing ]
     |> List.concat
 
   let Collect(args : CollectParams) =
+    let command = args.Command
+                  |> Seq.filter (String.IsNullOrWhiteSpace >> not)
+                  |> Seq.toList
+    let argsList = if List.isEmpty command then
+                     parse args.CommandLine
+                   else command
+    let trailing = if List.isEmpty argsList then []
+                   else "--" :: argsList
+
     [ [ "Runner" ]
       Item "-r" args.RecorderDirectory
       Item "-w" args.WorkingDirectory
@@ -295,7 +330,7 @@ module internal Args =
       Item "-c" args.Cobertura
       Item "-o" args.OutputFile
       Flag "--collect" (args.Executable |> String.IsNullOrWhiteSpace)
-      Item "--" args.CommandLine ]
+      trailing ]
     |> List.concat
 
 #if RUNNER

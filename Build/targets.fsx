@@ -26,6 +26,8 @@ open FSharpLint.Application
 open FSharpLint.Framework
 open NUnit.Framework
 
+#nowarn "44"
+
 let Copyright = ref String.Empty
 let Version = ref String.Empty
 let consoleBefore = (Console.ForegroundColor, Console.BackgroundColor)
