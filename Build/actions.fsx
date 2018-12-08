@@ -16,8 +16,6 @@ open YamlDotNet.RepresentationModel
 
 open AltCover_Fake.DotNet.Testing
 
-#nowarn "44"
-
 module Actions =
   let Clean() =
     let rec Clean1 depth =
