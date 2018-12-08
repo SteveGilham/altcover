@@ -1777,10 +1777,13 @@ type AltCoverTests2() =
         let there = Path.Combine(here, Guid.NewGuid().ToString())
         let toInfo = Directory.CreateDirectory there
         Visitor.outputDirectory <- Some toInfo.FullName
+        Visitor.inputDirectory <- Some here
         Assert.That(info.ToString(), Is.Empty)
         Assert.That(err.ToString(), Is.Empty)
-        CommandLine.logExceptionsToFile "ArgumentExceptionWrites"
-        let target = Path.Combine(toInfo.FullName, "ArgumentExceptionWrites")
+        let name = "ArgumentExceptionWrites"
+        CommandLine.logExceptionsToFile name false
+        let target = Path.Combine(toInfo.FullName, name)
+        let target' = Path.Combine(here, name)
         Assert.That(File.Exists target, target)
         let lines =
           target
@@ -1811,6 +1814,67 @@ type AltCoverTests2() =
         Visitor.outputDirectory <- None
 
     [<Test>]
+    member self.ArgumentExceptionWritesEx() =
+      let saved = (Output.Info, Output.Error)
+      let err = System.Text.StringBuilder()
+      let info = System.Text.StringBuilder()
+      try
+        Output.Info <- (fun s -> info.Append(s).Append("|") |> ignore)
+        Output.Error <- (fun s -> err.Append(s).Append("|") |> ignore)
+        let unique = "ArgumentException " + Guid.NewGuid().ToString()
+        CommandLine.error <- []
+        CommandLine.exceptions <- []
+        CommandLine.doPathOperation (fun () ->
+          let inner = InvalidOperationException()
+          ArgumentException(unique, inner) |> raise) () true
+        Assert.That(CommandLine.error, Is.EquivalentTo [ unique ])
+        Assert.That
+          (CommandLine.exceptions |> List.map (fun e -> e.Message),
+           Is.EquivalentTo [ unique ])
+        let here = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
+        let there = Path.Combine(here, Guid.NewGuid().ToString())
+        let toInfo = Directory.CreateDirectory there
+        Visitor.outputDirectory <- Some toInfo.FullName
+        Visitor.inputDirectory <- Some here
+        Assert.That(info.ToString(), Is.Empty)
+        Assert.That(err.ToString(), Is.Empty)
+        let name = "ArgumentExceptionWrites"
+        CommandLine.logExceptionsToFile name true
+        let target = Path.Combine(toInfo.FullName, name)
+        let target' = Path.Combine(here, name)
+        Assert.That(File.Exists target, target)
+        let lines =
+          target
+          |> File.ReadAllLines
+          |> Seq.toList
+        Assert.That
+          (lines.[0],
+           Is.EqualTo
+             ("System.ArgumentException: " + unique
+              + " ---> System.InvalidOperationException: Operation is not valid due to the current state of the object."))
+        Assert.That
+          (lines.[1], Does.StartWith("   --- End of inner exception stack trace ---"))
+        Assert.That
+          (lines.[2].Replace("+", ".").Trim(),
+           Does.StartWith
+             ("at <StartupCode$AltCover-Tests>.$Tests2.ArgumentExceptionWrites"))
+        Assert.That
+          (lines.[3].Trim(), Does.StartWith("at AltCover.CommandLine.doPathOperation"))
+        Assert.That(lines |> List.skip 4, Is.Not.Empty)
+        Assert.That(info.ToString(), Is.Empty)
+        Assert.That
+          (err.ToString().Trim(), Is.EqualTo("Details written to " + target +
+                                               Environment.NewLine +
+                                               "If this problem was detected in the pre-test instrumentation stage of `dotnet test`, then the file will be moved to " +
+                                               target' + " when the task completes.|"))
+      finally
+        CommandLine.error <- []
+        CommandLine.exceptions <- []
+        Output.Info <- (fst saved)
+        Output.Error <- (snd saved)
+        Visitor.outputDirectory <- None
+
+    [<Test>]
     member self.IOExceptionWrites() =
       let saved = (Output.Info, Output.Error)
       let err = System.Text.StringBuilder()
@@ -1823,7 +1887,7 @@ type AltCoverTests2() =
         CommandLine.exceptions <- []
         CommandLine.doPathOperation (fun () -> IOException(unique) |> raise) () false
         Assert.That(CommandLine.error, Is.EquivalentTo [ unique ])
-        CommandLine.ReportErrors "Instrumentation"
+        CommandLine.ReportErrors "Instrumentation" false
         Assert.That(info.ToString(), Is.Empty)
         let logged = err.ToString().Replace("\r", String.Empty).Replace("\n", "|")
         Assert.That

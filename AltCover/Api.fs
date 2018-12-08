@@ -17,8 +17,6 @@ open System.IO
 open Fake.Core
 #endif
 
-#nowarn "44"
-
 [<ExcludeFromCodeCoverage; NoComparison>]
 type CollectParams =
   { RecorderDirectory : String
@@ -28,7 +26,7 @@ type CollectParams =
     Threshold : String
     Cobertura : String
     OutputFile : String
-    [<Obsolete("Please use AltCover.CollectParams.Command instead instead.")>]
+    // [<Obs // olete("Please use AltCover.CollectParams.Command instead instead.")>]
     CommandLine : String
     Command : String seq }
 
@@ -116,7 +114,7 @@ type PrepareParams =
     Single : bool
     LineCover : bool
     BranchCover : bool
-    [<Obsolete("Please use AltCover.PrepareParams.Command instead instead.")>]
+    // [<Obs // olete("Please use AltCover.PrepareParams.Command instead instead.")>]
     CommandLine : String
     Command : String seq }
 

@@ -314,6 +314,11 @@ ERROR *** Instrumentation fazo malsukcesis
     <value>
 Detaloj skribitaj al {0}</value>
   </data>
+  <data name="WrittenToEx" xml:space="preserve">
+    <value>
+Detaloj skribitaj al {0}
+Se ĉi tiu problemo estis detektita en la antaŭprova instrumenta stadio de `dotnet test`, tiam la dosiero moviĝos al {1} kiam la tasko kompletigas.</value>
+  </data>
   <data name="instrumenting" xml:space="preserve">
     <value>   =&gt; {0}</value>
   </data>

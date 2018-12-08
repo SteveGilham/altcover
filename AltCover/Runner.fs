@@ -767,7 +767,7 @@ module internal Runner =
       |> RequireWorker
     match check1 with
     | Left(intro, options) ->
-      CommandLine.HandleBadArguments arguments intro options1 options
+      CommandLine.HandleBadArguments false arguments intro options1 options
       255
     | Right(rest, _) ->
       let value =
@@ -798,5 +798,5 @@ module internal Runner =
           |> Seq.iter File.Delete
           let document = LoadReport report
           DoSummaries document format' result) 255 true
-      CommandLine.ReportErrors "Collection"
+      CommandLine.ReportErrors "Collection" false
       value

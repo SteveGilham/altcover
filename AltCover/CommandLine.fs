@@ -229,17 +229,19 @@ module internal CommandLine =
                  |> CmdLine.toString
       Launch cmd' args toInfo.FullName // Spawn process, echoing asynchronously
 
-  let logExceptionsToFile name =
+  let logExceptionsToFile name extend =
     let path = Path.Combine(Visitor.OutputDirectory(), name)
+    let path' = Path.Combine(Visitor.InputDirectory(), name)
     exceptions |> List.iter (Output.LogExceptionToFile path)
     if exceptions
        |> List.isEmpty
        |> not
     then
-      String.Format(CultureInfo.CurrentCulture, resources.GetString "WrittenTo", path)
+      let resource = if extend then "WrittenToEx" else "WrittenTo"
+      String.Format(CultureInfo.CurrentCulture, resources.GetString resource, path, path')
       |> Output.Error
 
-  let ReportErrors(tag : string) =
+  let ReportErrors(tag : string) extend =
     conditionalOutput (fun () ->
       tag
       |> String.IsNullOrWhiteSpace
@@ -255,12 +257,12 @@ module internal CommandLine =
       "AltCover-"
       + DateTime.Now.ToString("yyyy-MM-dd--HH-mm-ss", CultureInfo.InvariantCulture)
       + ".log"
-    logExceptionsToFile name
+    logExceptionsToFile name extend
 
-  let HandleBadArguments arguments intro options1 options =
+  let HandleBadArguments extend arguments intro options1 options =
     String.Join(" ", arguments |> Seq.map (sprintf "%A")) |> Output.Echo
     Output.Echo String.Empty
-    ReportErrors String.Empty
+    ReportErrors String.Empty extend
     Usage(intro, options1, options)
 
   let internal ValidateFileSystemEntity exists message key x =
