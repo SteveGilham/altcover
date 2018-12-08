@@ -315,6 +315,11 @@ ERROR *** Instrumentation phase failed
     <value>
 Details written to {0}</value>
   </data>
+    <data name="WrittenToEx" xml:space="preserve">
+    <value>
+Details written to {0}
+If this problem was detected in the pre-test instrumentation stage of `dotnet test`, then the file will be moved to {1} when the task completes.</value>
+  </data>
   <data name="instrumenting" xml:space="preserve">
     <value>   =&gt; {0}</value>
   </data>
