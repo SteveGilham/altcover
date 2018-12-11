@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -124,5 +125,55 @@ namespace Sample5
                 Console.WriteLine(2 * label);
             }
         }
+    }
+
+    public class RecursiveSyntheticInvocation<T, K>
+        : IReadOnlyDictionary<T, K>
+    {
+        private int counter;
+
+        // Replace the content of this property's getter with
+        // "=> throw new NotImplementedException();"
+        // and the whole project is instrumented successfully.
+        // As long as this getter is left alone, instrumentation enters an
+        // infinite loop.
+        IEnumerable<K> IReadOnlyDictionary<T, K>.Values
+        {
+            get { yield break; }
+        }
+
+        // This works as is. It seems the problem doesn't appear unless the
+        // property is specifically part of an explicit interface
+        // implementation.
+        public IEnumerable<K> ValuesWorks
+        {
+            get
+            {
+                yield return default(K);
+                yield break;
+            }
+        }
+
+        // This works as is. As long as there isn't a yield used inside this
+        // getter then the property won't cause any trouble to the
+        // instrumentation process.
+        IEnumerable<T> IReadOnlyDictionary<T, K>.Keys
+        {
+            get { counter++; throw new NotImplementedException(); }
+            // The counter variable is just a blind hedge against the compiler
+            // doing something weird. It might optimize the getter out somehow
+            // if the body of the getter was just the exception throw.
+        }
+
+        K IReadOnlyDictionary<T, K>.this[T key] => throw new NotImplementedException();
+        int IReadOnlyCollection<KeyValuePair<T, K>>.Count => throw new NotImplementedException();
+
+        bool IReadOnlyDictionary<T, K>.ContainsKey(T key) => throw new NotImplementedException();
+
+        IEnumerator<KeyValuePair<T, K>> IEnumerable<KeyValuePair<T, K>>.GetEnumerator() => throw new NotImplementedException();
+
+        IEnumerator IEnumerable.GetEnumerator() => throw new NotImplementedException();
+
+        bool IReadOnlyDictionary<T, K>.TryGetValue(T key, out K value) => throw new NotImplementedException();
     }
 }
