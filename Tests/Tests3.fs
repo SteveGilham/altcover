@@ -2017,6 +2017,7 @@ or
       let mutable args = [| "some junk " |]
       let saved = (Output.Info, Output.Error)
       try
+        subject.ACLog <- Some Logging.Default
         Main.EffectiveMain <- (fun a ->
         args <- a
         255)
@@ -2035,6 +2036,7 @@ or
       let mutable args = [| "some junk " |]
       let saved = (Output.Info, Output.Error)
       try
+        subject.ACLog <- Some Logging.Default
         Main.EffectiveMain <- (fun a ->
         args <- a
         0)
@@ -2047,10 +2049,6 @@ or
           (args,
            Is.EquivalentTo
              [ "-y"; "a"; "-y"; "b"; "--inplace"; "--save"; "--"; "testing"; "1"; "2"; "3" ])
-        Assert.Throws<InvalidOperationException>(fun () -> subject.Message "x") |> ignore
-        Assert.Throws<InvalidOperationException>(fun () -> Output.Info "x") |> ignore
-        Assert.Throws<InvalidOperationException>(fun () -> Output.Warn "x") |> ignore
-        Assert.Throws<InvalidOperationException>(fun () -> Output.Error "x") |> ignore
       finally
         Main.EffectiveMain <- save
         Output.Info <- fst saved
@@ -2091,6 +2089,7 @@ or
       let mutable args = [| "some junk " |]
       let saved = (Output.Info, Output.Error)
       try
+        subject.ACLog <- Some Logging.Default
         Main.EffectiveMain <- (fun a ->
         args <- a
         255)

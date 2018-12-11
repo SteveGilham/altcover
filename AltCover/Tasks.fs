@@ -4,6 +4,7 @@ open System
 open System.Diagnostics.CodeAnalysis
 open Microsoft.Build.Utilities
 open Microsoft.Build.Framework
+open Augment
 
 [<ExcludeFromCodeCoverage; NoComparison; NoEquality>]
 type Logging =
@@ -68,6 +69,8 @@ module Api =
 
 type Prepare() =
   inherit Task(null)
+  member val internal ACLog : Logging option = None with get, set
+
   member val InputDirectory = String.Empty with get, set
   member val OutputDirectory = String.Empty with get, set
   member val SymbolDirectories : string array = [||] with get, set
@@ -97,10 +100,9 @@ type Prepare() =
   member val Command : string array = [||] with get, set
   member self.Message x = base.Log.LogMessage(MessageImportance.High, x)
   override self.Execute() =
-    let log =
-      { Logging.Default with Error = base.Log.LogError
-                             Warn = base.Log.LogWarning
-                             Info = self.Message }
+    let log = Option.getOrElse { Logging.Default with Error = base.Log.LogError
+                                                      Warn = base.Log.LogWarning
+                                                      Info = self.Message } self.ACLog
 
     let task =
       { PrepareParams.Create() with InputDirectory = self.InputDirectory
@@ -135,6 +137,8 @@ type Prepare() =
 type Collect() =
   inherit Task(null)
 
+  member val internal ACLog : Logging option = None with get, set
+
   [<Required>]
   member val RecorderDirectory = String.Empty with get, set
 
@@ -149,10 +153,9 @@ type Collect() =
   member val Command : string array = [||] with get, set
   member self.Message x = base.Log.LogMessage(MessageImportance.High, x)
   override self.Execute() =
-    let log =
-      { Logging.Default with Error = base.Log.LogError
-                             Warn = base.Log.LogWarning
-                             Info = self.Message }
+    let log = Option.getOrElse { Logging.Default with Error = base.Log.LogError
+                                                      Warn = base.Log.LogWarning
+                                                      Info = self.Message } self.ACLog
 
     let task =
       { CollectParams.Create() with RecorderDirectory = self.RecorderDirectory
