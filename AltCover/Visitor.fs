@@ -426,7 +426,7 @@ module internal Visitor =
         else
           CSharpContainingMethod name t.DeclaringType index
             // Guard against simple recursion here (mutual will need more work!)
-            (fun mx -> (mx.FullName <> m.FullName) && (MethodConstructsType t mx || MethodLoadsMethod m mx))
+            (fun mx -> (mx.FullName <> m.FullName) && (MethodCallsMethod m mx || MethodConstructsType t mx || MethodLoadsMethod m mx))
       else if n.IndexOf('@') >= 0 then
         let tx =
           if n.EndsWith("T", StringComparison.Ordinal) then

@@ -783,7 +783,7 @@ type AltCoverTests() =
           Some "System.Collections.Generic.IEnumerable<K>.GetEnumerator" // "K Sample5.RecursiveSyntheticInvocation`2/<System-Collections-Generic-IReadOnlyDictionary<T,K>-get_Values>d__2::System.Collections.Generic.IEnumerator<K>.get_Current()"
           Some "System.Collections.Generic.IEnumerable<K>.GetEnumerator" // "System.Void Sample5.RecursiveSyntheticInvocation`2/<System-Collections-Generic-IReadOnlyDictionary<T,K>-get_Values>d__2::System.Collections.IEnumerator.Reset()"
           Some "System.Collections.Generic.IEnumerable<K>.GetEnumerator" // "System.Object Sample5.RecursiveSyntheticInvocation`2/<System-Collections-Generic-IReadOnlyDictionary<T,K>-get_Values>d__2::System.Collections.IEnumerator.get_Current()"
-          Some "System.Collections.Generic.IEnumerable<K>.GetEnumerator" // "System.Collections.Generic.IEnumerator`1<K> Sample5.RecursiveSyntheticInvocation`2/<System-Collections-Generic-IReadOnlyDictionary<T,K>-get_Values>d__2::System.Collections.Generic.IEnumerable<K>.GetEnumerator()"
+          Some "System.Collections.IEnumerable.GetEnumerator" // "System.Collections.Generic.IEnumerator`1<K> Sample5.RecursiveSyntheticInvocation`2/<System-Collections-Generic-IReadOnlyDictionary<T,K>-get_Values>d__2::System.Collections.Generic.IEnumerable<K>.GetEnumerator()"
           Some "System.Collections.Generic.IEnumerable<K>.GetEnumerator" // "System.Collections.IEnumerator Sample5.RecursiveSyntheticInvocation`2/<System-Collections-Generic-IReadOnlyDictionary<T,K>-get_Values>d__2::System.Collections.IEnumerable.GetEnumerator()"
           Some "get_ValuesWorks" // "System.Void Sample5.RecursiveSyntheticInvocation`2/<get_ValuesWorks>d__4::.ctor(System.Int32)"
           Some "get_ValuesWorks" // "System.Void Sample5.RecursiveSyntheticInvocation`2/<get_ValuesWorks>d__4::System.IDisposable.Dispose()"
@@ -800,7 +800,7 @@ type AltCoverTests() =
       methods
       |> List.map Some
       |> List.zip (containing |> Seq.toList)
-      |> List.iteri
+      |> List.iteri // Issue #43
            (fun i (x, y) -> Assert.That(y, Is.Not.EqualTo x, sprintf "%A %A %d" x y i))
 
       result
