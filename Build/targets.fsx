@@ -25,7 +25,6 @@ open Fake.IO.Globbing.Operators
 open FSharpLint.Application
 open FSharpLint.Framework
 open NUnit.Framework
-
 let Copyright = ref String.Empty
 let Version = ref String.Empty
 let consoleBefore = (Console.ForegroundColor, Console.BackgroundColor)
@@ -1878,6 +1877,7 @@ _Target "RecordResumeTestUnderMono" // Fails : System.EntryPointNotFoundExceptio
 
 _Target "Packaging" (fun _ ->
   let AltCover = Path.getFullName "_Binaries/AltCover/AltCover.exe"
+  let fox = Path.getFullName "_Binaries/AltCover/Release+AnyCPU/BlackFox.CommandLine.dll"
   let fscore = Path.getFullName "_Binaries/AltCover/Release+AnyCPU/FSharp.Core.dll"
   let options = Path.getFullName "_Binaries/AltCover/Release+AnyCPU/Mono.Options.dll"
   let recorder =
@@ -1907,6 +1907,7 @@ _Target "Packaging" (fun _ ->
         (fsapi, Some "tools/net45", None)
         (vis, Some "tools/net45", None)
         (fscore, Some "tools/net45", None)
+        (fox, Some "tools/net45", None)
         (options, Some "tools/net45", None)
         (packable, Some "", None) ]
     else []
@@ -1921,6 +1922,7 @@ _Target "Packaging" (fun _ ->
         (cake, Some "lib/net45", None)
         (fake, Some "lib/net45", None)
         (fscore, Some "lib/net45", None)
+        (fox, Some "lib/net45", None)
         (options, Some "lib/net45", None)
         (packable, Some "", None) ]
     else []
@@ -2007,6 +2009,11 @@ _Target "Packaging" (fun _ ->
     |> Seq.map (fun x -> (x, Some(where + Path.GetFileName x), None))
     |> Seq.toList
 
+  let fox2Files where =
+    (!!"./_Publish/BlackFox.*")
+    |> Seq.map (fun x -> (x, Some(where + Path.GetFileName x), None))
+    |> Seq.toList
+
   let publish = (Path.getFullName "./_Publish").Length
 
   let netcoreFiles where =
@@ -2026,6 +2033,7 @@ _Target "Packaging" (fun _ ->
          let n = f |> Path.GetFileName
          n.StartsWith("altcover.", StringComparison.OrdinalIgnoreCase)
          || n.StartsWith("Mono.", StringComparison.Ordinal)
+         || n.StartsWith("BlackFox.", StringComparison.Ordinal)
          || n.StartsWith("FSharp.Core.", StringComparison.Ordinal))
     |> Seq.map
          (fun x ->
@@ -2100,7 +2108,9 @@ _Target "Packaging" (fun _ ->
      "./_Generated/altcover.visualizer.nuspec", "altcover.visualizer")
 
     (List.concat [ fake2Files "lib/netstandard2.0/"
-                   [ (fake2, Some "lib/net45", None) ] ], "_Packaging.fake",
+                   fox2Files "lib/netstandard2.0/"
+                   [ (fake2, Some "lib/net45", None)
+                     (fox, Some "lib/net45", None) ] ], "_Packaging.fake",
      "./_Generated/altcover.fake.nuspec", "altcover.fake") ]
   |> List.iter (fun (files, output, nuspec, project) ->
        let outputPath = "./" + output
@@ -2770,7 +2780,7 @@ Target.runOrDefault "DoIt"
 """
     File.WriteAllText("./_ApiUse/DriveApi.fsx", script)
 
-    let dependencies = """version 5.186.3
+    let dependencies = """version 5.193.0
 // [ FAKE GROUP ]
 group NetcoreBuild
   source https://api.nuget.org/v3/index.json

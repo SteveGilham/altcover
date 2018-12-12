@@ -415,61 +415,65 @@ module internal Runner =
     "Getting results..." |> WriteResource
     result
 
-  let internal CollectResults (hits : Dictionary<string, Dictionary<int, int * Base.Track list>>) report =
+  let internal CollectResults (hits : Dictionary<string, Dictionary<int, int * Base.Track list>>)
+      report =
     let timer = System.Diagnostics.Stopwatch()
     timer.Start()
-    let mutable before = 0
-    let mutable after = 0
-    Directory.GetFiles(Path.GetDirectoryName(report), Path.GetFileName(report) + ".*.acv")
-    |> Seq.iter
-         (fun f ->
-         timer.Restart()
-         let length = FileInfo(f).Length.ToString("#,#", CultureInfo.CurrentUICulture)
-         sprintf "... %s (%sb)" f length |> Output.Info
-         use results = new DeflateStream(File.OpenRead f, CompressionMode.Decompress)
-         use formatter = new System.IO.BinaryReader(results)
+    let visits =
+      Directory.GetFiles
+        (Path.GetDirectoryName(report), Path.GetFileName(report) + ".*.acv")
+      |> Seq.fold (fun before f ->
+           timer.Restart()
+           let length = FileInfo(f).Length.ToString("#,#", CultureInfo.CurrentUICulture)
+           sprintf "... %s (%sb)" f length |> Output.Info
+           use results = new DeflateStream(File.OpenRead f, CompressionMode.Decompress)
+           use formatter = new System.IO.BinaryReader(results)
 
-         let rec sink() =
-           let hit =
-             try
-               let id = formatter.ReadString()
-               let strike = formatter.ReadInt32()
-               let tag = formatter.ReadByte() |> int
-               Some(id, strike,
-                    match enum tag with
-                    | AltCover.Base.Tag.Time -> Base.Time <| formatter.ReadInt64()
-                    | AltCover.Base.Tag.Call -> Base.Call <| formatter.ReadInt32()
-                    | AltCover.Base.Tag.Both ->
-                      Base.Both(formatter.ReadInt64(), formatter.ReadInt32())
-                    | _ -> Base.Null)
-             with :? EndOfStreamException -> None
-           match hit with
-           | Some tuple ->
-             let (key, hitPointId, hit) = tuple
-             if key
-                |> String.IsNullOrWhiteSpace
-                |> not
-             then Base.Counter.AddVisit hits key hitPointId hit
-                  after <- after + 1
-             sink()
-           | None -> ()
-         sink()
-         timer.Stop()
-         if after > before then
-           let delta = after - before
-           before <- after
-           let interval = timer.Elapsed
-           let rate = (float delta) / interval.TotalSeconds
-           WriteResourceWithFormatItems "%d visits recorded in %A (%A visits/sec)"
-             [| delta :> obj
-                interval
-                rate |] false)
+           let rec sink hitcount =
+             let hit =
+               try
+                 let id = formatter.ReadString()
+                 let strike = formatter.ReadInt32()
+                 let tag = formatter.ReadByte() |> int
+                 Some(id, strike,
+                      match enum tag with
+                      | AltCover.Base.Tag.Time -> Base.Time <| formatter.ReadInt64()
+                      | AltCover.Base.Tag.Call -> Base.Call <| formatter.ReadInt32()
+                      | AltCover.Base.Tag.Both ->
+                        Base.Both(formatter.ReadInt64(), formatter.ReadInt32())
+                      | _ -> Base.Null)
+               with :? EndOfStreamException -> None
+             match hit with
+             | Some tuple ->
+               let (key, hitPointId, hit) = tuple
+
+               let increment =
+                 if key
+                    |> String.IsNullOrWhiteSpace
+                    |> not
+                 then
+                   Base.Counter.AddVisit hits key hitPointId hit
+                   1
+                 else 0
+               sink (hitcount + increment)
+             | None -> hitcount
+
+           let after = sink before
+           timer.Stop()
+           if after > before then
+             let delta = after - before
+             let interval = timer.Elapsed
+             let rate = (float delta) / interval.TotalSeconds
+             WriteResourceWithFormatItems "%d visits recorded in %A (%A visits/sec)"
+               [| delta :> obj
+                  interval
+                  rate |] false
+           after) 0
     timer.Stop()
-    let visits = after
     WriteResourceWithFormatItems "%d visits recorded" [| visits |] (visits = 0)
 
-  let internal MonitorBase (hits : Dictionary<string, Dictionary<int, int * Base.Track list>>) report
-      (payload : string list -> int) (args : string list) =
+  let internal MonitorBase (hits : Dictionary<string, Dictionary<int, int * Base.Track list>>)
+      report (payload : string list -> int) (args : string list) =
     let result =
       if collect then 0
       else RunProcess report payload args
@@ -734,10 +738,9 @@ module internal Runner =
     Point pt times "Times" "Time" "time"
     Point pt calls "TrackedMethodRefs" "TrackedMethodRef" "uid"
 
-  let internal WriteReportBase (hits : Dictionary<string, Dictionary<int, int * Base.Track list>>) report =
-    AltCover.Base.Counter.DoFlush (PostProcess hits report) PointProcess true hits
-      report
-
+  let internal WriteReportBase (hits : Dictionary<string, Dictionary<int, int * Base.Track list>>)
+      report =
+    AltCover.Base.Counter.DoFlush (PostProcess hits report) PointProcess true hits report
   // mocking points
   let mutable internal GetPayload = PayloadBase
   let mutable internal GetMonitor = MonitorBase
@@ -764,7 +767,7 @@ module internal Runner =
       |> RequireWorker
     match check1 with
     | Left(intro, options) ->
-      CommandLine.HandleBadArguments arguments intro options1 options
+      CommandLine.HandleBadArguments false arguments intro options1 options
       255
     | Right(rest, _) ->
       let value =
@@ -795,5 +798,5 @@ module internal Runner =
           |> Seq.iter File.Delete
           let document = LoadReport report
           DoSummaries document format' result) 255 true
-      CommandLine.ReportErrors "Collection"
+      CommandLine.ReportErrors "Collection" false
       value

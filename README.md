@@ -5,7 +5,7 @@ Instrumenting coverage tool for .net (framework 2.0+  and core) and Mono, reimpl
 
 Start with the [Quick Start guide](https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide)
 
-The latest releases can be downloaded from [releases](https://github.com/SteveGilham/altcover/releases), but the easiest (and most automated) way is through the [nuget package](https://www.nuget.org/packages/AltCover).
+The latest releases can be downloaded from [releases](https://github.com/SteveGilham/altcover/releases), but the easiest (and most automated) way is through the [nuget packages](#nuget-packages).
 
 ## What's in the box?
 
@@ -45,9 +45,7 @@ Fast forwards to autumn 2017, and I get the chance to dust the project off, with
 
 2. Under Mono on non-Windows platforms the default values of `--debug:full` or `--debug:pdbonly` generate no symbols from F# projects -- and without symbols, such assemblies cannot be instrumented.  Unlike with C# projects, where the substitution appears to be automatic, to use the necessary `--debug:portable` option involves explicitly hand editing the old-school `.fsproj` file to have `<DebugType>portable</DebugType>`.  
 
-
 ## Continuous Integration
-
 
 | | | |
 | --- | --- | --- | 
