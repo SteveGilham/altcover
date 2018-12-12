@@ -74,33 +74,7 @@ module DotNet =
         | None -> Some options
         | Some thing -> Some(thing + " " + options)
 
-      // was
-      //      { self with Common = { self.Common with CustomParams = extended } }
-      // which really means
-      // 	return new global::Fake.DotNet.DotNet.TestOptions(
-      //new global::Fake.DotNet.DotNet.Options(
-      //        common.DotNetCliPath,
-      //        common.WorkingDirectory,
-      //        extended,
-      //        common.Verbosity,
-      //        common.Diagnostics,
-      //        common.RedirectOutput,
-      //        common.Environment),
-      //    self.Settings,
-      //    self.ListTests,
-      //    self.Filter,
-      //    self.TestAdapterPath,
-      //    self.Logger,
-      //    self.Configuration,
-      //    self.Framework,
-      //    self.Output,
-      //    self.Diag,
-      //    self.NoBuild,
-      //    self.ResultsDirectory,
-      //    self.Collect,
-      //    self.NoRestore,
-      //    self.RunSettingsArguments);
-      // where the constructors are version dependent
+      // the constructors are version dependent
       let OptionsConstructor = self.Common.GetType().GetConstructors().[0]
 
       let args =
@@ -132,8 +106,8 @@ module DotNet =
                       (if f.Name <> "Common@" then f.GetValue self
                        else common)))
       result :?> DotNet.TestOptions
-#if RUNNER
 
+#if RUNNER
     member self.WithParameters (prepare : PrepareParams) (collect : CollectParams) =
 #else
     member self.WithParameters (prepare : AltCover.PrepareParams)
