@@ -395,10 +395,14 @@ module internal Main =
     List.unzip sorted
 
   let internal DoInstrumentation arguments =
+#if NETCOREAPP2_0
     let dotnetBuild = Assembly.GetEntryAssembly() // is null for unit tests
                       |> Option.nullable
                       |> Option.map (fun a -> Path.GetFileName(a.Location).Equals("MSBuild.dll"))
                       |> Option.getOrElse false
+#else
+    let dotnetBuild = false
+#endif
     let check1 =
       DeclareOptions()
       |> CommandLine.ParseCommandLine arguments
@@ -434,7 +438,7 @@ module internal Main =
           document.Save(report)
           if Visitor.collect then Runner.SetRecordToFile report
           CommandLine.ProcessTrailingArguments rest toInfo) 255 true
-      CommandLine.ReportErrors "Instrumentation" dotnetBuild
+      CommandLine.ReportErrors "Instrumentation" (dotnetBuild && Visitor.inplace)
       result
 
   let internal (|Select|_|) (pattern : String) offered =

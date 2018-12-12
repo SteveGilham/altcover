@@ -1865,7 +1865,7 @@ type AltCoverTests2() =
         Assert.That
           (err.ToString().Trim(), Is.EqualTo("Details written to " + target +
                                                Environment.NewLine +
-                                               "If this problem was detected in the pre-test instrumentation stage of `dotnet test`, then the file will be moved to " +
+                                               "If this problem was detected in the pre-test instrumentation stage of `dotnet test`, then the file may have been moved to " +
                                                target' + " when the task completes.|"))
       finally
         CommandLine.error <- []
