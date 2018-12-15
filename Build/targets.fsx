@@ -1735,7 +1735,7 @@ _Target "RecordResumeTestDotNet"
   (fun _ ->
   Directory.ensure "./_Reports"
   let simpleReport = (Path.getFullName "./_Reports") @@ ("RecordResumeTestDotNet.xml")
-  let binRoot = Path.getFullName "_Binaries/AltCover/Release+AnyCPU"
+  let binRoot = Path.getFullName "_Binaries/AltCover/Release+AnyCPU/netcoreapp2.0"
   let sampleRoot = Path.getFullName "_Binaries/Sample8/Debug+AnyCPU/netcoreapp2.0"
   let instrumented = "__RecordResumeTestDotNet"
 
@@ -1748,8 +1748,8 @@ _Target "RecordResumeTestDotNet"
                                            OpenCover = false
                                            Save = false }
     |> AltCover.Prepare
-  { AltCover.Params.Create prep with ToolPath = binRoot @@ "AltCover.exe"
-                                     ToolType = AltCover.ToolType.Framework
+  { AltCover.Params.Create prep with ToolPath = binRoot @@ "AltCover.dll"
+                                     ToolType = AltCover.ToolType.DotNet dotnetPath
                                      WorkingDirectory = sampleRoot }
   |> AltCover.run
 
@@ -1775,8 +1775,8 @@ _Target "RecordResumeTestDotNet"
   let collect =
     { AltCover.CollectParams.Create() with RecorderDirectory = instrumented }
     |> AltCover.Collect
-  { AltCover.Params.Create collect with ToolPath = binRoot @@ "AltCover.exe"
-                                        ToolType = AltCover.ToolType.Framework
+  { AltCover.Params.Create collect with ToolPath = binRoot @@ "AltCover.dll"
+                                        ToolType = AltCover.ToolType.DotNet dotnetPath
                                         WorkingDirectory = sampleRoot }
   |> AltCover.run
 
