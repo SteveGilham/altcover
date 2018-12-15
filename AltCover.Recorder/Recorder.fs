@@ -214,8 +214,9 @@ module Instance =
   /// <param name="hitPointId">Sequence Point identifier</param>
   let internal VisitImpl moduleId hitPointId context =
     if not <| String.IsNullOrEmpty(moduleId) && TakeSample Sample moduleId hitPointId then
-      let adder = if trace.IsConnected() then TraceVisit
-                  else AddVisit
+      let adder =
+        if trace.IsConnected() then TraceVisit
+        else AddVisit
       adder moduleId hitPointId context
 
   let internal Post(x : Carrier) =

@@ -402,12 +402,13 @@ module internal Visitor =
 
     // like s.IndexOf('>') but need to match paired nested angle-brackets
     let IndexOfMatchingClosingAngleBracket s =
-        let mutable nesting = 0
-        s
-        |> Seq.takeWhile (fun c -> if c = '<' then nesting <- nesting + 1
-                                   if c = '>' then nesting <- nesting - 1
-                                   nesting > 0)
-        |> Seq.length
+      let mutable nesting = 0
+      s
+      |> Seq.takeWhile (fun c ->
+           if c = '<' then nesting <- nesting + 1
+           if c = '>' then nesting <- nesting - 1
+           nesting > 0)
+      |> Seq.length
 
     if mname.StartsWith("<", StringComparison.Ordinal) && mname.IndexOf('|') > 0 then
       let index = (IndexOfMatchingClosingAngleBracket mname) - 1
@@ -426,7 +427,10 @@ module internal Visitor =
         else
           CSharpContainingMethod name t.DeclaringType index
             // Guard against simple recursion here (mutual will need more work!)
-            (fun mx -> (mx.FullName <> m.FullName) && (MethodCallsMethod m mx || MethodConstructsType t mx || MethodLoadsMethod m mx))
+            (fun mx ->
+            (mx.FullName <> m.FullName)
+            && (MethodCallsMethod m mx || MethodConstructsType t mx
+                || MethodLoadsMethod m mx))
       else if n.IndexOf('@') >= 0 then
         let tx =
           if n.EndsWith("T", StringComparison.Ordinal) then

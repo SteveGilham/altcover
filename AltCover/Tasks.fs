@@ -100,9 +100,10 @@ type Prepare() =
   member val Command : string array = [||] with get, set
   member self.Message x = base.Log.LogMessage(MessageImportance.High, x)
   override self.Execute() =
-    let log = Option.getOrElse { Logging.Default with Error = base.Log.LogError
-                                                      Warn = base.Log.LogWarning
-                                                      Info = self.Message } self.ACLog
+    let log =
+      Option.getOrElse { Logging.Default with Error = base.Log.LogError
+                                              Warn = base.Log.LogWarning
+                                              Info = self.Message } self.ACLog
 
     let task =
       { PrepareParams.Create() with InputDirectory = self.InputDirectory
@@ -153,9 +154,10 @@ type Collect() =
   member val Command : string array = [||] with get, set
   member self.Message x = base.Log.LogMessage(MessageImportance.High, x)
   override self.Execute() =
-    let log = Option.getOrElse { Logging.Default with Error = base.Log.LogError
-                                                      Warn = base.Log.LogWarning
-                                                      Info = self.Message } self.ACLog
+    let log =
+      Option.getOrElse { Logging.Default with Error = base.Log.LogError
+                                              Warn = base.Log.LogWarning
+                                              Info = self.Message } self.ACLog
 
     let task =
       { CollectParams.Create() with RecorderDirectory = self.RecorderDirectory
