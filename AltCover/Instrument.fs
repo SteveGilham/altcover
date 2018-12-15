@@ -260,21 +260,18 @@ module internal Instrument =
     if ResolutionTable.ContainsKey name then ResolutionTable.[name]
     else
       let candidate =
-        [
-          Environment.GetEnvironmentVariable "NUGET_PACKAGES"
+        [ Environment.GetEnvironmentVariable "NUGET_PACKAGES"
           Path.Combine(Environment.GetEnvironmentVariable "ProgramFiles"
                        |> Option.nullable
-                       |> (Option.getOrElse "/usr/share"),
-           "dotnet/shared")
+                       |> (Option.getOrElse "/usr/share"), "dotnet/shared")
           "/usr/share/dotnet/shared"
-          nugetCache
-        ]
+          nugetCache ]
         |> List.filter (String.IsNullOrWhiteSpace >> not)
         |> List.filter Directory.Exists
         |> Seq.distinct
-        |> Seq.collect (fun dir -> Directory.GetFiles(dir,
-                                                      y.Name + ".*",
-                                                      SearchOption.AllDirectories))
+        |> Seq.collect
+             (fun dir ->
+             Directory.GetFiles(dir, y.Name + ".*", SearchOption.AllDirectories))
         |> Seq.sortDescending
         |> Seq.filter
              (fun f ->

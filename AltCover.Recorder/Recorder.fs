@@ -193,6 +193,9 @@ module Instance =
   let internal TraceVisit moduleId hitPointId context =
     trace.OnVisit Visits moduleId hitPointId context
 
+  let internal AddVisit moduleId hitPointId context =
+    Counter.AddVisit Visits moduleId hitPointId context
+
   let internal TakeSample strategy moduleId hitPointId =
     match strategy with
     | Sampling.All -> true
@@ -211,8 +214,10 @@ module Instance =
   /// <param name="hitPointId">Sequence Point identifier</param>
   let internal VisitImpl moduleId hitPointId context =
     if not <| String.IsNullOrEmpty(moduleId) && TakeSample Sample moduleId hitPointId then
-      trace.OnConnected (fun () -> TraceVisit moduleId hitPointId context)
-        (fun () -> Counter.AddVisit Visits moduleId hitPointId context)
+      let adder =
+        if trace.IsConnected() then TraceVisit
+        else AddVisit
+      adder moduleId hitPointId context
 
   let internal Post(x : Carrier) =
     match x with
