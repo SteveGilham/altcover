@@ -36,7 +36,7 @@ let AltCoverFilter(p : AltCover.PrepareParams) =
            AssemblyExcludeFilter =
              [ "Adapter"; "Tests" ] @ (p.AssemblyExcludeFilter |> Seq.toList)
            AssemblyFilter =
-             [ "Mono"; @"\.Recorder"; "Sample"; "nunit" ]
+             [ "Mono"; @"\.Recorder"; "Sample"; "nunit"; "Newton" ]
              @ (p.AssemblyFilter |> Seq.toList)
            TypeFilter = [ @"System\."; @"Sample3\.Class2" ] @ (p.TypeFilter |> Seq.toList) }
 
@@ -44,7 +44,7 @@ let AltCoverFilterX(p : AltCover.PrepareParams) =
   { p with MethodFilter = "WaitForExitCustom" :: (p.MethodFilter |> Seq.toList)
            AssemblyExcludeFilter = "Adapter" :: (p.AssemblyExcludeFilter |> Seq.toList)
            AssemblyFilter =
-             [ "Mono"; @"\.Recorder"; "Sample"; "nunit" ]
+             [ "Mono"; @"\.Recorder"; "Sample"; "nunit"; "Newton" ]
              @ (p.AssemblyFilter |> Seq.toList)
            TypeFilter = [ @"System\."; @"Sample3\.Class2" ] @ (p.TypeFilter |> Seq.toList) }
 
@@ -53,7 +53,7 @@ let AltCoverFilterG(p : AltCover.PrepareParams) =
            AssemblyExcludeFilter =
              [ "Adapter"; "Tests" ] @ (p.AssemblyExcludeFilter |> Seq.toList)
            AssemblyFilter =
-             [ "Mono"; @"\.Recorder\.g"; "Sample"; "nunit" ]
+             [ "Mono"; @"\.Recorder\.g"; "Sample"; "nunit"; "Newton" ]
              @ (p.AssemblyFilter |> Seq.toList)
            TypeFilter = [ @"System\."; @"Sample3\.Class2" ] @ (p.TypeFilter |> Seq.toList) }
 
@@ -1876,7 +1876,7 @@ _Target "RecordResumeTestUnderMono" // Fails : System.EntryPointNotFoundExceptio
 // Packaging
 
 _Target "Packaging" (fun _ ->
-  let AltCover = Path.getFullName "_Binaries/AltCover/AltCover.exe"
+  let AltCover = Path.getFullName "_Binaries/AltCover/Release+AnyCPU/AltCover.exe"
   let fox = Path.getFullName "_Binaries/AltCover/Release+AnyCPU/BlackFox.CommandLine.dll"
   let fscore = Path.getFullName "_Binaries/AltCover/Release+AnyCPU/FSharp.Core.dll"
   let options = Path.getFullName "_Binaries/AltCover/Release+AnyCPU/Mono.Options.dll"
@@ -1899,8 +1899,14 @@ _Target "Packaging" (fun _ ->
       "_Binaries/AltCover.Visualizer/Release+AnyCPU/AltCover.Visualizer.exe"
   let packable = Path.getFullName "./_Binaries/README.html"
 
+  let libFiles path =
+    Seq.concat
+      [ !!"./_Binaries/AltCover/Release+AnyCPU/Mono.C*.dll"
+        !!"./_Binaries/AltCover/Release+AnyCPU/Newton*.dll" ]
+    |> Seq.map (fun f -> (f |> Path.getFullName, Some path, None))
+    |> Seq.toList
+
   let applicationFiles =
-    if File.Exists AltCover then
       [ (AltCover, Some "tools/net45", None)
         (recorder, Some "tools/net45", None)
         (posh, Some "tools/net45", None)
@@ -1910,10 +1916,8 @@ _Target "Packaging" (fun _ ->
         (fox, Some "tools/net45", None)
         (options, Some "tools/net45", None)
         (packable, Some "", None) ]
-    else []
 
   let apiFiles =
-    if File.Exists AltCover then
       [ (AltCover, Some "lib/net45", None)
         (recorder, Some "lib/net45", None)
         (posh, Some "lib/net45", None)
@@ -1925,10 +1929,8 @@ _Target "Packaging" (fun _ ->
         (fox, Some "lib/net45", None)
         (options, Some "lib/net45", None)
         (packable, Some "", None) ]
-    else []
 
   let resourceFiles path =
-    if File.Exists AltCover then
       [ "_Binaries/AltCover/Release+AnyCPU";
         "_Binaries/AltCover.Visualizer/Release+AnyCPU" ]
       |> List.map (fun f ->
@@ -1940,7 +1942,6 @@ _Target "Packaging" (fun _ ->
            (fun x -> (x, Some(path + Path.GetFileName(Path.GetDirectoryName(x))), None))
       |> Seq.distinctBy (fun (x, y, _) -> (Option.get y) + "/" + (Path.GetFileName x))
       |> Seq.toList
-    else []
 
   let nupkg = (Path.getFullName "./nupkg").Length
 
@@ -2075,6 +2076,7 @@ _Target "Packaging" (fun _ ->
   printfn "Executing on %A" Environment.OSVersion
   [ (List.concat [ applicationFiles
                    resourceFiles "tools/net45/"
+                   libFiles "tools/net45/"
                    netcoreFiles "tools/netcoreapp2.0/"
                    poshFiles "tools/netcoreapp2.0/"
                    vizFiles "tools/netcoreapp2.1"
@@ -2082,6 +2084,7 @@ _Target "Packaging" (fun _ ->
 
     (List.concat [ apiFiles
                    resourceFiles "lib/net45/"
+                   libFiles "lib/net45/"
                    netstdFiles "lib/netstandard2.0"
                    cakeFiles "lib/netstandard2.0/"
                    fakeFiles "lib/netstandard2.0/"
@@ -2135,26 +2138,7 @@ _Target "Packaging" (fun _ ->
                       Tools.findToolInSubPath "NuGet.exe" "./packages"
                     else "/usr/bin/nuget" }) nuspec))
 
-_Target "PrepareFrameworkBuild"
-  (fun _ ->
-  let toolpath = Tools.findToolInSubPath "ILMerge.exe" "./packages"
-  let ver = String.Join(".", (!Version).Split('.') |> Seq.take 2) + ".0.0"
-  ILMerge.run
-    { ILMerge.Params.Create() with DebugInfo = true
-                                   ToolPath = toolpath
-                                   TargetKind = ILMerge.TargetKind.Exe
-                                   KeyFile = Path.getFullName "./Build/Infrastructure.snk"
-                                   Version = Some(System.Version(ver))
-                                   Internalize = ILMerge.Internalize
-                                   Libraries =
-                                     Seq.concat
-                                       [ !!"./_Binaries/AltCover/Release+AnyCPU/Mono.C*.dll"
-                                         !!"./_Binaries/AltCover/Release+AnyCPU/Newton*.dll" ]
-                                     |> Seq.map Path.getFullName
-                                   AttributeFile =
-                                     Path.getFullName "./_Binaries/AltCover/Release+AnyCPU/AltCover.exe" }
-    (Path.getFullName "./_Binaries/AltCover/AltCover.exe")
-    (Path.getFullName "./_Binaries/AltCover/Release+AnyCPU/AltCover.exe"))
+_Target "PrepareFrameworkBuild" ignore
 
 _Target "PrepareDotNetBuild" (fun _ ->
   let netcoresource = Path.getFullName "./AltCover/altcover.core.fsproj"
@@ -2173,24 +2157,6 @@ _Target "PrepareDotNetBuild" (fun _ ->
                    Configuration = DotNet.BuildConfiguration.Release
                    Framework = Some "netcoreapp2.1" })
     (Path.getFullName "./AltCover.Visualizer/altcover.visualizer.core.fsproj")
-
-     //  let toolpath = Tools.findToolInSubPath "ILMerge.exe" "./packages"
-     //  let ver = String.Join(".", (!Version).Split('.') |> Seq.take 2) + ".0.0"
-     //
-     //  [ publish; publish + ".api" ]
-     //  |> List.iter (fun dir ->
-     //    let outDir = Path.Combine(dir, "out")
-     //    Directory.ensure outDir
-     //    Actions.Run (toolpath, ".",
-     //                 [ "/out:" + Path.Combine(outDir, "AltCover.Recorder.dll")
-     //                   "/ver:" + ver
-     //                   "/attr:" + Path.Combine(dir, "AltCover.Recorder.dll")
-     //                   "/keyfile:./Build/Infrastructure.snk"
-     //                   "/target:library"
-     //                   "/internalize"
-     //                   Path.Combine(dir, "AltCover.Recorder.dll")
-     //                   Path.Combine(dir, "FSharp.Core.dll") ])
-     //      "ILMerge failure")
 
      // dotnet tooling mods
   [ ("DotnetCliTool", "./_Generated/altcover.dotnet.nuspec",
