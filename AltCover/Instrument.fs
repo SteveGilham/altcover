@@ -460,8 +460,10 @@ module internal Instrument =
 
   let internal injectJSON json =
     let o = JObject.Parse json
+    let x = StringComparison.Ordinal
     let target =
-      ((o.Property "runtimeTarget").Value :?> JObject).Property("name").Value.ToString()
+      ((o.Property("runtimeTarget", x)).Value :?> JObject).Property("name", x)
+        .Value.ToString()
     let targets =
       (o.Properties() |> Seq.find (fun p -> p.Name = "targets")).Value :?> JObject
     let targeted =
@@ -646,9 +648,10 @@ module internal Instrument =
   let internal Track state (m : MethodDefinition) included (track : (int * string) option) =
     track
     |> Option.iter (fun (n, _) ->
-         let body = [ m.Body; state.MethodBody ].[included
-                                                  |> Visitor.IsInstrumented
-                                                  |> Augment.Increment]
+         let body =
+           [ m.Body; state.MethodBody ].[included
+                                         |> Visitor.IsInstrumented
+                                         |> Augment.Increment]
          let instructions = body.Instructions
          let methodWorker = body.GetILProcessor()
          let nop = methodWorker.Create(OpCodes.Nop)
