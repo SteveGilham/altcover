@@ -2,6 +2,18 @@ Q. Never mind the fluff -- how do I get started?
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
+# 4.0.660 (Doruka series release 10)
+* [BUGFIX] Issue #43 Detect and skip simple recursive references when looking from a synthetic method to its containing method
+* [Enhancement] Follow the Fake build system to use [`BlackFox.CommandLine`](https://github.com/vbfox/FoxSharp/tree/master/src/BlackFox.CommandLine) facilities to compose command lines with proper re-escaping/enquoting of items read from the command line following a `--`
+* [BUGFIX] [API] A single string for a command line as in `AltCover.PrepareParams.CommandLine` would not work for anything more than a parameterless invocation.
+  * Add new field `Command` to the F# & C# parameter APIs and to the MSBuild task taking an array or sequence of strings
+  * Deprecate the `CommandLine` field (at compile time for C# API and MSBuild; warning at runtime for F#, because it's not possible to usefully mark a record field as [<Obsolete>])
+  * In the cases where the deprecated `CommandLine` field is used (non-empty with the preferred `.Command` field being empty), use the operating-system specific facilities in `BlackFox.CommandLine` to decompose the string so as to separate out the executable from its arguments)
+  * Expect a thorough and breaking rework in the next major version (5.0) release
+* [BUGFIX] If an error is raised during instrumentation, then a message is logged saying that the exception details have been written to a file in the nominated output directory (for `--inplace` operations, this is where the unaltered binaries are saved off to).  If this happens during `dotnet test`, the tidy-up action actually moves everything from that directory back into the original location and deletes the output directory, moving the log file too.  If the operation could be `dotnet test`, then amend the message appropriately to say that the file may have been moved.
+* Minor improvements to error handling in the Visualizer
+* Minor improvements to the fix for issue #41
+
 # 4.0.659 (Doruka series release 9)
 * [BUGFIX] Issue #42 Remove the need for process-exit handling to rely on non-event-handler threads being scheduled, so allowing the coverage data to be flushed to disk, even on low-spec platforms like Rapberry Pi
 * [BUGFIX] Issue #41 Reduce memory use in processing coverage data (runner mode/`dotnet test` scenarios)

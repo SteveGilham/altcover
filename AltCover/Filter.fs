@@ -25,23 +25,22 @@ module internal Filter =
 
   let rec private MatchAttribute (name : Regex) (nameProvider : Object) =
     (match nameProvider with
-     | :? MethodDefinition  as m-> if m.IsGetter || m.IsSetter then
-                                      let owner =
-                                        m.DeclaringType.Properties
-                                        |> Seq.filter (fun x -> x.GetMethod = m ||
-                                                                x.SetMethod = m)
-                                        |> Seq.head
-                                      MatchAttribute name owner
-                                   else false
-     | _ -> false) ||
-    (
-      match nameProvider with
-     | :? ICustomAttributeProvider as attributeProvider ->
-       attributeProvider.HasCustomAttributes
-       && attributeProvider.CustomAttributes
-          |> Seq.cast<CustomAttribute>
-          |> Seq.exists (fun attr -> name.IsMatch attr.AttributeType.FullName)
+     | :? MethodDefinition as m ->
+       if m.IsGetter || m.IsSetter then
+         let owner =
+           m.DeclaringType.Properties
+           |> Seq.filter (fun x -> x.GetMethod = m || x.SetMethod = m)
+           |> Seq.head
+         MatchAttribute name owner
+       else false
      | _ -> false)
+    || (match nameProvider with
+        | :? ICustomAttributeProvider as attributeProvider ->
+          attributeProvider.HasCustomAttributes
+          && attributeProvider.CustomAttributes
+             |> Seq.cast<CustomAttribute>
+             |> Seq.exists (fun attr -> name.IsMatch attr.AttributeType.FullName)
+        | _ -> false)
 
   let MatchItem<'a> (name : Regex) (nameProvider : Object) (toName : 'a -> string) =
     match nameProvider with

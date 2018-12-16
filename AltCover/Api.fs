@@ -26,7 +26,6 @@ type CollectParams =
     Threshold : String
     Cobertura : String
     OutputFile : String
-    // [<Obs // olete("Please use AltCover.CollectParams.Command instead instead.")>]
     CommandLine : String
     Command : String seq }
 
@@ -114,7 +113,6 @@ type PrepareParams =
     Single : bool
     LineCover : bool
     BranchCover : bool
-    // [<Obs // olete("Please use AltCover.PrepareParams.Command instead instead.")>]
     CommandLine : String
     Command : String seq }
 
@@ -267,23 +265,38 @@ module internal Args =
     if x then [ a ]
     else []
 
-  let internal parse s =
+  let internal parse s tag =
+    if s
+       |> String.IsNullOrWhiteSpace
+       |> not
+    then
+      sprintf "%s.CommandLine is deprecated; please use %s.Command instead" tag tag
+#if RUNNER
+      |> Output.Warn
+#else
+      |> Trace.traceImportant
+#endif
     let blackfox = typeof<CmdLine>.Assembly
-    let t = blackfox.GetType(if System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
-              then "BlackFox.CommandLine.MsvcrCommandLine"
-              else "BlackFox.CommandLine.MonoUnixCommandLine")
+    let t =
+      blackfox.GetType(if System.Environment.GetEnvironmentVariable("OS") = "Windows_NT" then
+                         "BlackFox.CommandLine.MsvcrCommandLine"
+                       else "BlackFox.CommandLine.MonoUnixCommandLine")
     let m = t.GetMethod "parse"
-    m.Invoke (m, [| s |]) :?> String seq |> Seq.toList
+    m.Invoke(m, [| s |]) :?> String seq |> Seq.toList
 
   let Prepare(args : PrepareParams) =
-    let command = args.Command
-                  |> Seq.filter (String.IsNullOrWhiteSpace >> not)
-                  |> Seq.toList
-    let argsList = if List.isEmpty command then
-                     parse args.CommandLine
-                   else command
-    let trailing = if List.isEmpty argsList then []
-                   else "--" :: argsList
+    let command =
+      args.Command
+      |> Seq.filter (String.IsNullOrWhiteSpace >> not)
+      |> Seq.toList
+
+    let argsList =
+      if List.isEmpty command then parse args.CommandLine <| args.GetType().FullName
+      else command
+
+    let trailing =
+      if List.isEmpty argsList then []
+      else "--" :: argsList
 
     [ Item "-i" args.InputDirectory
       Item "-o" args.OutputDirectory
@@ -310,14 +323,18 @@ module internal Args =
     |> List.concat
 
   let Collect(args : CollectParams) =
-    let command = args.Command
-                  |> Seq.filter (String.IsNullOrWhiteSpace >> not)
-                  |> Seq.toList
-    let argsList = if List.isEmpty command then
-                     parse args.CommandLine
-                   else command
-    let trailing = if List.isEmpty argsList then []
-                   else "--" :: argsList
+    let command =
+      args.Command
+      |> Seq.filter (String.IsNullOrWhiteSpace >> not)
+      |> Seq.toList
+
+    let argsList =
+      if List.isEmpty command then parse args.CommandLine <| args.GetType().FullName
+      else command
+
+    let trailing =
+      if List.isEmpty argsList then []
+      else "--" :: argsList
 
     [ [ "Runner" ]
       Item "-r" args.RecorderDirectory
