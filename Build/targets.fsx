@@ -36,7 +36,7 @@ let AltCoverFilter(p : AltCover.PrepareParams) =
            AssemblyExcludeFilter =
              [ "Adapter"; "Tests" ] @ (p.AssemblyExcludeFilter |> Seq.toList)
            AssemblyFilter =
-             [ "Mono"; @"\.Recorder"; "Sample"; "nunit"; "Newton" ]
+             [ "Mono"; @"\.Recorder"; "Sample"; "nunit"; "Newton"; "xunit" ]
              @ (p.AssemblyFilter |> Seq.toList)
            TypeFilter = [ @"System\."; @"Sample3\.Class2" ] @ (p.TypeFilter |> Seq.toList) }
 
@@ -44,7 +44,7 @@ let AltCoverFilterX(p : AltCover.PrepareParams) =
   { p with MethodFilter = "WaitForExitCustom" :: (p.MethodFilter |> Seq.toList)
            AssemblyExcludeFilter = "Adapter" :: (p.AssemblyExcludeFilter |> Seq.toList)
            AssemblyFilter =
-             [ "Mono"; @"\.Recorder"; "Sample"; "nunit"; "Newton" ]
+             [ "Mono"; @"\.Recorder"; "Sample"; "nunit"; "Newton"; "xunit" ]
              @ (p.AssemblyFilter |> Seq.toList)
            TypeFilter = [ @"System\."; @"Sample3\.Class2" ] @ (p.TypeFilter |> Seq.toList) }
 
@@ -53,7 +53,7 @@ let AltCoverFilterG(p : AltCover.PrepareParams) =
            AssemblyExcludeFilter =
              [ "Adapter"; "Tests" ] @ (p.AssemblyExcludeFilter |> Seq.toList)
            AssemblyFilter =
-             [ "Mono"; @"\.Recorder\.g"; "Sample"; "nunit"; "Newton" ]
+             [ "Mono"; @"\.Recorder\.g"; "Sample"; "nunit"; "Newton"; "xunit" ]
              @ (p.AssemblyFilter |> Seq.toList)
            TypeFilter = [ @"System\."; @"Sample3\.Class2" ] @ (p.TypeFilter |> Seq.toList) }
 
