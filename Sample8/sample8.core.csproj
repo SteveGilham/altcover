@@ -5,6 +5,7 @@
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <AssemblyName>Sample8</AssemblyName>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <SolutionDir Condition="'$(SolutionDir)' == '$(ProjectDir)'">$(ProjectDir)../</SolutionDir>
     <ApplicationIcon>$(SolutionDir)AltCover/AltCover.ico</ApplicationIcon>
   </PropertyGroup>
 
