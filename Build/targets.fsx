@@ -3104,7 +3104,7 @@ _Target "DotnetCLIIntegration" (fun _ ->
       "add" ("package altcover.dotnet --version " + !Version)
       "sample test returned with a non-zero exit code"
 
-    Shell.cleanDir ("./_DotnetCLITest/_Binaries")
+    // Shell.cleanDir ("./_DotnetCLITest/_Binaries")
     let p0 = { AltCover.PrepareParams.Create() with AssemblyFilter = [| "xunit" |] }
     let c0 = AltCover.CollectParams.Create()
     DotNet.test (fun to' ->
