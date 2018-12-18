@@ -1661,7 +1661,9 @@ type AltCoverTests3() =
                  || f.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
             |> Seq.filter
                  (fun f ->
-                 File.Exists(Path.ChangeExtension(f, ".pdb")) || File.Exists(f + ".mdb"))),
+                 File.Exists(Path.ChangeExtension(f, ".pdb")) ||
+                 File.Exists(f + ".mdb") ||
+                 f |> Path.GetFileNameWithoutExtension = "Sample8")),
          "First list mismatch with from files")
       Assert.That(y,
                   Is.EquivalentTo(x

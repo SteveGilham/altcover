@@ -36,7 +36,7 @@ let AltCoverFilter(p : AltCover.PrepareParams) =
            AssemblyExcludeFilter =
              [ "Adapter"; "Tests" ] @ (p.AssemblyExcludeFilter |> Seq.toList)
            AssemblyFilter =
-             [ "Mono"; @"\.Recorder"; "Sample"; "nunit"; "Newton" ]
+             [ "Mono"; @"\.Recorder"; "Sample"; "nunit"; "Newton"; "xunit" ]
              @ (p.AssemblyFilter |> Seq.toList)
            TypeFilter = [ @"System\."; @"Sample3\.Class2" ] @ (p.TypeFilter |> Seq.toList) }
 
@@ -44,7 +44,7 @@ let AltCoverFilterX(p : AltCover.PrepareParams) =
   { p with MethodFilter = "WaitForExitCustom" :: (p.MethodFilter |> Seq.toList)
            AssemblyExcludeFilter = "Adapter" :: (p.AssemblyExcludeFilter |> Seq.toList)
            AssemblyFilter =
-             [ "Mono"; @"\.Recorder"; "Sample"; "nunit"; "Newton" ]
+             [ "Mono"; @"\.Recorder"; "Sample"; "nunit"; "Newton"; "xunit" ]
              @ (p.AssemblyFilter |> Seq.toList)
            TypeFilter = [ @"System\."; @"Sample3\.Class2" ] @ (p.TypeFilter |> Seq.toList) }
 
@@ -53,7 +53,7 @@ let AltCoverFilterG(p : AltCover.PrepareParams) =
            AssemblyExcludeFilter =
              [ "Adapter"; "Tests" ] @ (p.AssemblyExcludeFilter |> Seq.toList)
            AssemblyFilter =
-             [ "Mono"; @"\.Recorder\.g"; "Sample"; "nunit"; "Newton" ]
+             [ "Mono"; @"\.Recorder\.g"; "Sample"; "nunit"; "Newton"; "xunit" ]
              @ (p.AssemblyFilter |> Seq.toList)
            TypeFilter = [ @"System\."; @"Sample3\.Class2" ] @ (p.TypeFilter |> Seq.toList) }
 
@@ -2506,6 +2506,7 @@ _Target "ReleaseXUnitFSharpTypesDotNet" (fun _ ->
     { AltCover.PrepareParams.Create() with XmlReport = x
                                            OutputDirectory = o
                                            InputDirectory = i
+                                           AssemblyFilter = [ "xunit" ]
                                            InPlace = false
                                            OpenCover = false
                                            Save = false }
@@ -2541,6 +2542,7 @@ _Target "ReleaseXUnitFSharpTypesDotNetRunner" (fun _ ->
     { AltCover.PrepareParams.Create() with XmlReport = x
                                            OutputDirectory = o
                                            InputDirectory = i
+                                           AssemblyFilter = [ "xunit" ]
                                            InPlace = false
                                            OpenCover = false
                                            Save = false }
@@ -2581,6 +2583,7 @@ _Target "ReleaseXUnitFSharpTypesDotNetFullRunner" (fun _ ->
                                            OutputDirectory = o
                                            InputDirectory = i
                                            CallContext = [ "0"; "[Fact]" ]
+                                           AssemblyFilter = [ "xunit" ]
                                            InPlace = false
                                            OpenCover = true
                                            Save = false }
@@ -2700,7 +2703,8 @@ _Target "DoIt"
   let t = DotNet.TestOptions.Create().WithParameters prepare collect
   printfn "returned '%A'" t.Common.CustomParams
 
-  let p2 = { PrepareParams.Create() with CallContext = [| "[Fact]"; "0" |] }
+  let p2 = { PrepareParams.Create() with CallContext = [| "[Fact]"; "0" |]
+                                         AssemblyFilter = [| "xunit" |] }
   let c2 = CollectParams.Create()
 
   let setBaseOptions (o : DotNet.Options) =
@@ -2801,7 +2805,8 @@ _Target "DotnetTestIntegration" (fun _ ->
 
     let p0 = AltCover.PrepareParams.Create()
     let c0 = AltCover.CollectParams.Create()
-    let p1 = { p0 with CallContext = [ "[Fact]"; "0" ] }
+    let p1 = { p0 with CallContext = [ "[Fact]"; "0" ]
+                       AssemblyFilter = [| "xunit" |] }
     DotNet.test
       (fun to' ->
       (to'.WithCommon(withWorkingDirectoryVM "_DotnetTest")
@@ -2829,7 +2834,8 @@ _Target "DotnetTestIntegration" (fun _ ->
     fsproj.Save "./_DotnetTestLineCover/dotnettest.csproj"
     Shell.copy "./_DotnetTestLineCover" (!!"./Sample10/*.cs")
 
-    let p2 = { p0 with LineCover = true }
+    let p2 = { p0 with LineCover = true
+                       AssemblyFilter = [| "xunit" |] }
     DotNet.test
       (fun to' ->
       to'.WithCommon(withWorkingDirectoryVM "_DotnetTestLineCover").WithParameters
@@ -2866,7 +2872,8 @@ _Target "DotnetTestIntegration" (fun _ ->
     fsproj.Save "./_DotnetTestBranchCover/dotnettest.csproj"
     Shell.copy "./_DotnetTestBranchCover" (!!"./Sample10/*.cs")
 
-    let p3 = { p0 with BranchCover = true }
+    let p3 = { p0 with BranchCover = true
+                       AssemblyFilter = [| "xunit" |] }
     DotNet.test
       (fun to' ->
       (to'.WithCommon(withWorkingDirectoryVM "_DotnetTestBranchCover").WithParameters
@@ -2947,7 +2954,7 @@ _Target "Issue20" (fun _ ->
       (fun o -> o.WithCommon(withWorkingDirectoryVM "./RegressionTesting/issue20/xunit-tests")) ""
 
     // would like to assert "succeeds with warnings"
-    let p0 = AltCover.PrepareParams.Create()
+    let p0 = { AltCover.PrepareParams.Create() with AssemblyFilter = [| "xunit" |] }
     let c0 = AltCover.CollectParams.Create()
     DotNet.test (fun to' ->
       ({ to'.WithCommon(withWorkingDirectoryVM "./RegressionTesting/issue20/xunit-tests") with Configuration =
@@ -3002,7 +3009,7 @@ _Target "Issue23" (fun _ ->
     Shell.copy "./_Issue23" (!!"./Sample9/*.cs")
     DotNet.restore (fun o -> o.WithCommon(withWorkingDirectoryVM "_Issue23")) ""
 
-    let p0 = AltCover.PrepareParams.Create()
+    let p0 = { AltCover.PrepareParams.Create() with AssemblyFilter = [| "xunit" |] }
     let c0 = AltCover.CollectParams.Create()
     DotNet.test (fun p ->
       (({ p.WithCommon(withWorkingDirectoryVM "_Issue23") with Configuration = DotNet.BuildConfiguration.Debug
@@ -3061,6 +3068,7 @@ _Target "DotnetCLIIntegration" (fun _ ->
       { AltCover.PrepareParams.Create() with XmlReport = x
                                              InputDirectory = o
                                              CallContext = [ "0"; "[Fact]" ]
+                                             AssemblyFilter = [| "xunit" |]
                                              Save = false }
       |> AltCover.Prepare
     { AltCover.Params.Create prep with ToolPath = "altcover"
@@ -3096,7 +3104,8 @@ _Target "DotnetCLIIntegration" (fun _ ->
       "add" ("package altcover.dotnet --version " + !Version)
       "sample test returned with a non-zero exit code"
 
-    let p0 = AltCover.PrepareParams.Create()
+    Shell.cleanDir ("./_DotnetCLITest/_Binaries")
+    let p0 = { AltCover.PrepareParams.Create() with AssemblyFilter = [| "xunit" |] }
     let c0 = AltCover.CollectParams.Create()
     DotNet.test (fun to' ->
       { to'.WithCommon(withWorkingDirectoryVM "_DotnetCLITest").WithParameters p0 c0 with Configuration =
@@ -3152,6 +3161,7 @@ _Target "DotnetGlobalIntegration" (fun _ ->
       { AltCover.PrepareParams.Create() with XmlReport = x
                                              InputDirectory = o
                                              CallContext = [ "0"; "[Fact]" ]
+                                             AssemblyFilter = [| "xunit" |]
                                              Save = false }
       |> AltCover.Prepare
     { AltCover.Params.Create prep with WorkingDirectory = working } |> AltCover.run

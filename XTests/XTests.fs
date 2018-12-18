@@ -263,7 +263,7 @@ module XTests =
 #else
            "-sn"; key
 #endif
-           "-s=Adapter";
+           "-s=Adapter"; "-s=xunit"
            "-s=nunit"; "-e=Sample"; "-c=[Test]"; "--save" |]
       let result = Main.DoInstrumentation args
       Assert.Equal(result, 0)
