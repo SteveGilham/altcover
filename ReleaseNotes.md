@@ -3,9 +3,9 @@ Q. Never mind the fluff -- how do I get started?
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
 # 4.0.661 (Doruka series release 11)
-* [BUGFIX] More forms of Issue #43 related to `yield return` synthetic methods.
-* [BUGFIX] Issue #45 by re-working the static linkage of the recorder assembly using `ILMerge /internalise` (rather than `--standalone`).
-* Updating consumed libraries and related changes.
+* [BUGFIX] More forms of Issue #43 related to `yield return` synthetic methods
+* [BUGFIX] Issue #45 by re-working the static linkage of the recorder assembly (using `ILMerge /internalise` rather than `--standalone`)
+* Updating consumed libraries and related changes
 
 # 4.0.660 (Doruka series release 10)
 * [BUGFIX] Issue #43 Detect and skip simple recursive references when looking from a synthetic method to its containing method
