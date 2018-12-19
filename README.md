@@ -58,7 +58,7 @@ See the [Wiki page](https://github.com/SteveGilham/altcover/wiki/Usage) for deta
 
 ## Roadmap
 
-See the [current project](https://github.com/SteveGilham/altcover/projects/7) for details
+See the [current project](https://github.com/SteveGilham/altcover/projects/8) for details
 
 ## Building
 
