@@ -118,6 +118,15 @@ let withCLIArgs (o : Fake.DotNet.DotNet.TestOptions) =
 let withMSBuildParams (o : Fake.DotNet.DotNet.BuildOptions) =
   { o with MSBuildParams = cliArguments }
 
+let NuGetAltCover =
+  let xml = "./MCS/packages.config" |> Path.getFullName |> XDocument.Load
+  xml.Descendants(XName.Get("package"))
+  |> Seq.filter(fun x -> x.Attribute(XName.Get("id")).Value.ToLowerInvariant().Equals("altcover"))
+  |> Seq.map(fun x -> "./packages/altcover." + x.Attribute(XName.Get("version")).Value + "/tools/net45/AltCover.exe")
+  |> Seq.map Path.getFullName
+  |> Seq.filter File.Exists
+  |> Seq.tryHead
+
 let _Target s f =
   Target.description s
   Target.create s f
@@ -2272,11 +2281,7 @@ _Target "Pester" (fun _ ->
   |> printfn "%s")
 
 _Target "SimpleReleaseTest" (fun _ ->
-  let file =
-    Directory.GetFiles("./packages", "AltCover.exe", SearchOption.AllDirectories)
-    |> Seq.tryHead
-
-  let unpack = match file with
+  let unpack = match NuGetAltCover with
                | Some test -> Trace.traceImportant "Using the NuGet package"
                               Path.GetDirectoryName test
                | _ -> Path.getFullName "_Packaging/Unpack/tools/net45"
@@ -2285,11 +2290,7 @@ _Target "SimpleReleaseTest" (fun _ ->
     "SimpleReleaseTest")
 
 _Target "SimpleMonoReleaseTest" (fun _ ->
-  let file =
-    Directory.GetFiles("./packages", "AltCover.exe", SearchOption.AllDirectories)
-    |> Seq.tryHead
-
-  let unpack = match file with
+  let unpack = match NuGetAltCover with
                | Some test -> Trace.traceImportant "Using the NuGet package"
                               Path.GetDirectoryName test
                | _ -> Path.getFullName "_Packaging/Unpack/tools/net45"
@@ -2298,11 +2299,7 @@ _Target "SimpleMonoReleaseTest" (fun _ ->
 
 _Target "ReleaseDotNetWithFramework" (fun _ ->
   Directory.ensure "./_Reports"
-  let file =
-    Directory.GetFiles("./packages", "AltCover.exe", SearchOption.AllDirectories)
-    |> Seq.tryHead
-
-  let unpack = match file with
+  let unpack = match NuGetAltCover with
                | Some test -> Trace.traceImportant "Using the NuGet package"
                               Path.GetDirectoryName test
                | _ -> Path.getFullName "_Packaging/Unpack/tools/net45"
@@ -2620,11 +2617,7 @@ _Target "MSBuildTest" (fun _ ->
   Actions.CheckSample4 x
 
   // touch-test framework
-  let file =
-    Directory.GetFiles("./packages", "AltCover.exe", SearchOption.AllDirectories)
-    |> Seq.tryHead
-
-  let unpack = match file with
+  let unpack = match NuGetAltCover with
                | Some test -> Trace.traceImportant "Using the NuGet package"
                               Path.GetDirectoryName test
                | _ -> Path.getFullName "_Packaging/Unpack/tools/net45"
