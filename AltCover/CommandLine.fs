@@ -221,12 +221,16 @@ module internal CommandLine =
     match rest |> Seq.toList with
     | [] -> 0
     | cmd :: t ->
-      let args = t
-                 |> CmdLine.fromSeq
-                 |> CmdLine.toString
-      let cmd' = [ cmd ]
-                 |> CmdLine.fromSeq
-                 |> CmdLine.toString
+      let args =
+        t
+        |> CmdLine.fromSeq
+        |> CmdLine.toString
+
+      let cmd' =
+        [ cmd ]
+        |> CmdLine.fromSeq
+        |> CmdLine.toString
+
       Launch cmd' args toInfo.FullName // Spawn process, echoing asynchronously
 
   let logExceptionsToFile name extend =
@@ -237,11 +241,13 @@ module internal CommandLine =
        |> List.isEmpty
        |> not
     then
-      let resource = if extend then "WrittenToEx" else "WrittenTo"
+      let resource =
+        if extend then "WrittenToEx"
+        else "WrittenTo"
       String.Format(CultureInfo.CurrentCulture, resources.GetString resource, path, path')
       |> Output.Error
 
-  let ReportErrors(tag : string) extend =
+  let ReportErrors (tag : string) extend =
     conditionalOutput (fun () ->
       tag
       |> String.IsNullOrWhiteSpace
