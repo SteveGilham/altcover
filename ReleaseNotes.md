@@ -4,7 +4,7 @@ A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wi
 
 # 4.0.661 (Doruka series release 11)
 * [BUGFIX] More forms of Issue #43 related to `yield return` synthetic methods
-* [BUGFIX] Issue #45 by re-working the static linakge of the recorder assembly (using `ILMerge /internalise` rather than `--standalone`)
+* [BUGFIX] Issue #45 by re-working the static linkage of the recorder assembly (using `ILMerge /internalise` rather than `--standalone`)
 * Updating consumed libraries and related changes
 
 # 4.0.660 (Doruka series release 10)
