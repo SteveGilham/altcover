@@ -319,7 +319,7 @@ module internal Visitor =
          (id, n))
 
   let private CSharpContainingMethod (name : string) (ct : TypeDefinition) index predicate =
-    let stripped = name.Substring(1, index)
+    let stripped = name.Substring(1, index).Replace('-','.')
     let methods = ct.Methods
 
     let candidates =
