@@ -103,9 +103,14 @@ module internal Main =
 #if NETCOREAPP2_0
       ("d|dependency=",
        (fun x ->
-       let path = x |> Environment.ExpandEnvironmentVariables |> Path.GetFullPath
+       let path =
+         x
+         |> Environment.ExpandEnvironmentVariables
+         |> Path.GetFullPath
+
        let name, ok = CommandLine.ValidateAssembly "--dependency" path
-       if ok then Instrument.ResolutionTable.[name] <- AssemblyDefinition.ReadAssembly path))
+       if ok then
+         Instrument.ResolutionTable.[name] <- AssemblyDefinition.ReadAssembly path))
 #else
       ("k|key=",
        (fun x ->
@@ -396,10 +401,11 @@ module internal Main =
 
   let internal DoInstrumentation arguments =
 #if NETCOREAPP2_0
-    let dotnetBuild = Assembly.GetEntryAssembly() // is null for unit tests
-                      |> Option.nullable
-                      |> Option.map (fun a -> Path.GetFileName(a.Location).Equals("MSBuild.dll"))
-                      |> Option.getOrElse false
+    let dotnetBuild =
+      Assembly.GetEntryAssembly() // is null for unit tests
+      |> Option.nullable
+      |> Option.map (fun a -> Path.GetFileName(a.Location).Equals("MSBuild.dll"))
+      |> Option.getOrElse false
 #else
     let dotnetBuild = false
 #endif
@@ -410,7 +416,8 @@ module internal Main =
       |> ProcessOutputLocation
     match check1 with
     | Left(intro, options) ->
-      CommandLine.HandleBadArguments dotnetBuild arguments intro options (Runner.DeclareOptions())
+      CommandLine.HandleBadArguments dotnetBuild arguments intro options
+        (Runner.DeclareOptions())
       255
     | Right(rest, fromInfo, toInfo, targetInfo) ->
       let report = Visitor.ReportPath()

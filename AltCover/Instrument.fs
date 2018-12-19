@@ -260,21 +260,18 @@ module internal Instrument =
     if ResolutionTable.ContainsKey name then ResolutionTable.[name]
     else
       let candidate =
-        [
-          Environment.GetEnvironmentVariable "NUGET_PACKAGES"
+        [ Environment.GetEnvironmentVariable "NUGET_PACKAGES"
           Path.Combine(Environment.GetEnvironmentVariable "ProgramFiles"
                        |> Option.nullable
-                       |> (Option.getOrElse "/usr/share"),
-           "dotnet/shared")
+                       |> (Option.getOrElse "/usr/share"), "dotnet/shared")
           "/usr/share/dotnet/shared"
-          nugetCache
-        ]
+          nugetCache ]
         |> List.filter (String.IsNullOrWhiteSpace >> not)
         |> List.filter Directory.Exists
         |> Seq.distinct
-        |> Seq.collect (fun dir -> Directory.GetFiles(dir,
-                                                      y.Name + ".*",
-                                                      SearchOption.AllDirectories))
+        |> Seq.collect
+             (fun dir ->
+             Directory.GetFiles(dir, y.Name + ".*", SearchOption.AllDirectories))
         |> Seq.sortDescending
         |> Seq.filter
              (fun f ->
@@ -463,8 +460,10 @@ module internal Instrument =
 
   let internal injectJSON json =
     let o = JObject.Parse json
+    let x = StringComparison.Ordinal
     let target =
-      ((o.Property "runtimeTarget").Value :?> JObject).Property("name").Value.ToString()
+      ((o.Property("runtimeTarget", x)).Value :?> JObject).Property("name", x)
+        .Value.ToString()
     let targets =
       (o.Properties() |> Seq.find (fun p -> p.Name = "targets")).Value :?> JObject
     let targeted =
@@ -649,9 +648,10 @@ module internal Instrument =
   let internal Track state (m : MethodDefinition) included (track : (int * string) option) =
     track
     |> Option.iter (fun (n, _) ->
-         let body = [ m.Body; state.MethodBody ].[included
-                                                  |> Visitor.IsInstrumented
-                                                  |> Augment.Increment]
+         let body =
+           [ m.Body; state.MethodBody ].[included
+                                         |> Visitor.IsInstrumented
+                                         |> Augment.Increment]
          let instructions = body.Instructions
          let methodWorker = body.GetILProcessor()
          let nop = methodWorker.Create(OpCodes.Nop)
