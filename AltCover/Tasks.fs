@@ -30,19 +30,11 @@ type Logging =
     Output.Info <- self.Info
     Output.Echo <- self.Echo
 
-#nowarn "44"
-
 module Api =
   let Prepare (args : PrepareParams) (log : Logging) =
     log.Apply()
-    Args.Prepare { args with
-#if NETCOREAPP2_0
-                            Keys = []
-                            StrongNameKey = String.Empty
-#else
-                            Dependencies = []
-#endif
-    }
+    args
+    |> Args.Prepare
     |> List.toArray
     |> Main.EffectiveMain
 
@@ -95,9 +87,7 @@ type Prepare() =
   member val Single = true |> not with get, set // work around Gendarme insistence on non-default values only
   member val LineCover = true |> not with get, set
   member val BranchCover = true |> not with get, set
-  [<Obsolete("Please use AltCover.Prepare.Command instead instead.")>]
-  member val CommandLine = String.Empty with get, set
-  member val Command : string array = [||] with get, set
+  member val CommandLine : string array = [||] with get, set
   member self.Message x = base.Log.LogMessage(MessageImportance.High, x)
   override self.Execute() =
     let log =
@@ -106,32 +96,35 @@ type Prepare() =
                                               Info = self.Message } self.ACLog
 
     let task =
-      { PrepareParams.Create() with InputDirectory = self.InputDirectory
-                                    OutputDirectory = self.OutputDirectory
-                                    SymbolDirectories = self.SymbolDirectories
+      PrepareParams.Primitive { InputDirectory = self.InputDirectory
+                                OutputDirectory = self.OutputDirectory
+                                SymbolDirectories = self.SymbolDirectories
 #if NETCOREAPP2_0
-                                    Dependencies = self.Dependencies
+                                Dependencies = self.Dependencies
+                                Keys = []
+                                StrongNameKey = String.Empty
 #else
-                                    Keys = self.Keys
-                                    StrongNameKey = self.StrongNameKey
+                                Dependencies = []
+                                Keys = self.Keys
+                                StrongNameKey = self.StrongNameKey
 #endif
-                                    XmlReport = self.XmlReport
-                                    FileFilter = self.FileFilter
-                                    AssemblyFilter = self.AssemblyFilter
-                                    AssemblyExcludeFilter = self.AssemblyExcludeFilter
-                                    TypeFilter = self.TypeFilter
-                                    MethodFilter = self.MethodFilter
-                                    AttributeFilter = self.AttributeFilter
-                                    PathFilter = self.PathFilter
-                                    CallContext = self.CallContext
-                                    OpenCover = self.OpenCover
-                                    InPlace = self.InPlace
-                                    Save = self.Save
-                                    Single = self.Single
-                                    LineCover = self.LineCover
-                                    BranchCover = self.BranchCover
-                                    CommandLine = self.CommandLine
-                                    Command = self.Command }
+
+                                XmlReport = self.XmlReport
+                                FileFilter = self.FileFilter
+                                AssemblyFilter = self.AssemblyFilter
+                                AssemblyExcludeFilter = self.AssemblyExcludeFilter
+                                TypeFilter = self.TypeFilter
+                                MethodFilter = self.MethodFilter
+                                AttributeFilter = self.AttributeFilter
+                                PathFilter = self.PathFilter
+                                CallContext = self.CallContext
+                                OpenCover = self.OpenCover
+                                InPlace = self.InPlace
+                                Save = self.Save
+                                Single = self.Single
+                                LineCover = self.LineCover
+                                BranchCover = self.BranchCover
+                                CommandLine = self.CommandLine }
 
     Api.Prepare task log = 0
 
@@ -149,9 +142,7 @@ type Collect() =
   member val Threshold = String.Empty with get, set
   member val Cobertura = String.Empty with get, set
   member val OutputFile = String.Empty with get, set
-  [<Obsolete("Please use AltCover.Collect.Command instead instead.")>]
-  member val CommandLine = String.Empty with get, set
-  member val Command : string array = [||] with get, set
+  member val CommandLine : string array = [||] with get, set
   member self.Message x = base.Log.LogMessage(MessageImportance.High, x)
   override self.Execute() =
     let log =
@@ -160,15 +151,14 @@ type Collect() =
                                               Info = self.Message } self.ACLog
 
     let task =
-      { CollectParams.Create() with RecorderDirectory = self.RecorderDirectory
-                                    WorkingDirectory = self.WorkingDirectory
-                                    Executable = self.Executable
-                                    LcovReport = self.LcovReport
-                                    Threshold = self.Threshold
-                                    Cobertura = self.Cobertura
-                                    OutputFile = self.OutputFile
-                                    CommandLine = self.CommandLine
-                                    Command = self.Command }
+      CollectParams.Primitive { RecorderDirectory = self.RecorderDirectory
+                                WorkingDirectory = self.WorkingDirectory
+                                Executable = self.Executable
+                                LcovReport = self.LcovReport
+                                Threshold = self.Threshold
+                                Cobertura = self.Cobertura
+                                OutputFile = self.OutputFile
+                                CommandLine = self.CommandLine }
 
     Api.Collect task log = 0
 

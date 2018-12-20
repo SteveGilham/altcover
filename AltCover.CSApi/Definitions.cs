@@ -12,15 +12,11 @@ namespace AltCover
         public string Threshold { get; set; }
         public string Cobertura { get; set; }
         public string OutputFile { get; set; }
-
-        [Obsolete("Please use AltCover.CollectArgs.Command instead instead.")]
-        public string CommandLine { get; set; }
-
-        public string[] Command { get; set; }
+        public string[] CommandLine { get; set; }
 
         internal CollectParams ToParameters()
         {
-            return new CollectParams(
+            var primitive = new PrimitiveCollectParams(
                 RecorderDirectory,
                 WorkingDirectory,
                 Executable,
@@ -28,11 +24,9 @@ namespace AltCover
                 Threshold,
                 Cobertura,
                 OutputFile,
-#pragma warning disable 0618
-                CommandLine,
-#pragma warning restore 0618
-                Command
+                CommandLine
                 );
+            return CollectParams.NewPrimitive(primitive);
         }
 
         public static CollectArgs Default
@@ -48,10 +42,7 @@ namespace AltCover
                     Threshold = string.Empty,
                     Cobertura = string.Empty,
                     OutputFile = string.Empty,
-#pragma warning disable 0618
-                    CommandLine = string.Empty,
-#pragma warning restore 0618
-                    Command = new string[] { }
+                    CommandLine = new string[] { }
                 };
             }
         }
@@ -87,14 +78,11 @@ namespace AltCover
         public bool LineCover { get; set; }
         public bool BranchCover { get; set; }
 
-        [Obsolete("Please use AltCover.PrepareArgs.Command instead instead.")]
-        public string CommandLine { get; set; }
-
-        public string[] Command { get; set; }
+        public string[] CommandLine { get; set; }
 
         internal PrepareParams ToParameters()
         {
-            return new PrepareParams(
+            var primitive = new PrimitivePrepareParams(
                         InputDirectory,
                         OutputDirectory,
                         SymbolDirectories,
@@ -117,11 +105,9 @@ namespace AltCover
                         Single,
                         LineCover,
                         BranchCover,
-#pragma warning disable 0618
-                        CommandLine,
-#pragma warning restore 0618
-                        Command
+                        CommandLine
                 );
+            return PrepareParams.NewPrimitive(primitive);
         }
 
         public static PrepareArgs Default
@@ -152,10 +138,7 @@ namespace AltCover
                     Single = false,
                     LineCover = false,
                     BranchCover = false,
-#pragma warning disable 0618
-                    CommandLine = string.Empty,
-#pragma warning restore 0618
-                    Command = new string[] { }
+                    CommandLine = { }
                 };
             }
         }

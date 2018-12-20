@@ -9,8 +9,6 @@ open AltCover.Augment
 open Mono.Options
 open NUnit.Framework
 
-#nowarn "44"
-
 [<TestFixture>]
 type AltCoverTests3() =
   class
@@ -944,7 +942,7 @@ type AltCoverTests3() =
       finally
         Visitor.defaultStrongNameKey <- None
         Visitor.keys.Clear()
-  #endif
+#endif
 
     [<Test>]
     member self.ParsingTimeGivesTime() =
@@ -2043,7 +2041,7 @@ or
         args <- a
         0)
         subject.OpenCover <- false
-        subject.CommandLine <- "testing 1 2 3"
+        subject.CommandLine <- [| "testing"; "1"; "2"; "3" |]
         subject.SymbolDirectories <- [| "a"; "b" |]
         let result = subject.Execute()
         Assert.That(result, Is.True)
@@ -2067,7 +2065,7 @@ or
         args <- a
         0)
         subject.OpenCover <- false
-        subject.Command <- [| "testing"; "1"; "2"; "3" |]
+        subject.CommandLine <- [| "testing"; "1"; "2"; "3" |]
         subject.SymbolDirectories <- [| "a"; "b" |]
         let result = subject.Execute()
         Assert.That(result, Is.True)
@@ -2114,7 +2112,7 @@ or
         args <- a
         0)
         subject.Executable <- "dotnet"
-        subject.Command <- [|"test"|]
+        subject.CommandLine <- [| "test" |]
         let result = subject.Execute()
         Assert.That(result, Is.True)
         Assert.That(args, Is.EquivalentTo [ "Runner"; "-x"; "dotnet"; "--"; "test" ])

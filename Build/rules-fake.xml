@@ -24,7 +24,7 @@
       exclude="UseCorrectCasingRule | AvoidNonAlphanumericIdentifierRule | UseCorrectPrefixRule | ParameterNamesShouldMatchOverriddenMethodRule | AvoidDeepNamespaceHierarchyRule"
       from="Gendarme.Rules.Naming.dll" />
     <rules include="*"
-      exclude="AvoidUnsealedUninheritedInternalTypeRule"
+      exclude="AvoidUnneededUnboxingRule | AvoidRepetitiveCastsRule | AvoidUnsealedUninheritedInternalTypeRule"
       from="Gendarme.Rules.Performance.dll" />
     <rules include="*"
       from="Gendarme.Rules.Portability.dll" />
@@ -34,7 +34,7 @@
       exclude="MarkAllNonSerializableFieldsRule"
      from="Gendarme.Rules.Serialization.dll" />
     <rules include="*"
-      exclude="AvoidSwitchStatementsRule | AvoidLongParameterListsRule"
+      exclude="AvoidCodeDuplicatedInSameClassRule | AvoidSwitchStatementsRule | AvoidLongParameterListsRule"
       from="Gendarme.Rules.Smells.dll" />
     <rules include="*" from="Gendarme.Rules.Ui.dll" />
     <rules include="*"

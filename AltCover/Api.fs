@@ -7,7 +7,10 @@ module AltCover_Fake.DotNet.Testing.AltCover
 
 open System
 open System.Diagnostics.CodeAnalysis
+open System.Globalization
+open System.IO
 open System.Linq
+open System.Text.RegularExpressions
 open BlackFox.CommandLine
 #if RUNNER
 open AltCover.Augment
@@ -17,8 +20,134 @@ open System.IO
 open Fake.Core
 #endif
 
+// No more primitive obsession!
 [<ExcludeFromCodeCoverage; NoComparison>]
-type CollectParams =
+type FilePath =
+  | FilePath of String
+  | Info of FileInfo
+  | NoFile
+  member self.AsString() =
+    match self with
+    | NoFile -> String.Empty
+    | Info i -> i.FullName
+    | FilePath s -> s
+
+[<ExcludeFromCodeCoverage; NoComparison>]
+type DirectoryPath =
+  | DirectoryPath of String
+  | Info of DirectoryInfo
+  | NoDirectory
+  member self.AsString() =
+    match self with
+    | NoDirectory -> String.Empty
+    | Info i -> i.FullName
+    | DirectoryPath s -> s
+
+[<ExcludeFromCodeCoverage; NoComparison>]
+type CommandArgument =
+  | CommandArgument of String
+  member self.AsString() =
+    match self with
+    | CommandArgument s -> s
+
+[<ExcludeFromCodeCoverage; NoComparison>]
+type Command =
+  | Command of CommandArgument seq
+  | NoCommand
+  member self.AsStrings() =
+    match self with
+    | NoCommand -> Seq.empty<String>
+    | Command c -> c |> Seq.map (fun a -> a.AsString())
+
+[<ExcludeFromCodeCoverage; NoComparison>]
+type Threshold =
+  | Threshold of uint8
+  | NoThreshold
+  member self.AsString() =
+    match self with
+    | NoThreshold -> String.Empty
+    | Threshold t -> t.ToString(CultureInfo.InvariantCulture)
+
+[<ExcludeFromCodeCoverage; NoComparison>]
+type Flag =
+  | Flag of bool
+  | Set
+  | Clear
+  member self.AsBool() =
+    match self with
+    | Set -> true
+    | Clear -> false
+    | Flag b -> b
+
+[<ExcludeFromCodeCoverage; NoComparison>]
+type FilePaths =
+  | FilePaths of FilePath seq
+  | NoPaths
+  member self.AsStrings() =
+    match self with
+    | NoPaths -> List.empty<String>
+    | FilePaths c ->
+      c
+      |> Seq.map (fun a -> a.AsString())
+      |> Seq.toList
+
+[<ExcludeFromCodeCoverage; NoComparison>]
+type DirectoryPaths =
+  | DirectoryPaths of DirectoryPath seq
+  | NoDirectories
+  member self.AsStrings() =
+    match self with
+    | NoDirectories -> List.empty<String>
+    | DirectoryPaths c ->
+      c
+      |> Seq.map (fun a -> a.AsString())
+      |> Seq.toList
+
+[<ExcludeFromCodeCoverage; NoComparison>]
+type FilterItem =
+  | FilterItem of Regex
+  | Raw of String
+  member self.AsString() =
+    match self with
+    | FilterItem r -> r.ToString()
+    | Raw r -> r
+
+[<ExcludeFromCodeCoverage; NoComparison>]
+type Filters =
+  | Filters of FilterItem seq
+  | Unfiltered
+  member self.AsStrings() =
+    match self with
+    | Unfiltered -> List.empty<String>
+    | Filters c ->
+      c
+      |> Seq.map (fun a -> a.AsString())
+      |> Seq.toList
+
+[<ExcludeFromCodeCoverage; NoComparison>]
+type ContextItem =
+  | CallItem of String
+  | TimeItem of uint8
+  member self.AsString() =
+    match self with
+    | CallItem c -> c
+    | TimeItem t -> t.ToString(CultureInfo.InvariantCulture)
+
+[<ExcludeFromCodeCoverage; NoComparison>]
+type Context =
+  | Context of ContextItem seq
+  | NoContext
+  member self.AsStrings() =
+    match self with
+    | NoContext -> List.empty<String>
+    | Context c ->
+      c
+      |> Seq.map (fun a -> a.AsString())
+      |> Seq.toList
+
+// --------------------------------------------------------
+[<ExcludeFromCodeCoverage; NoComparison>]
+type PrimitiveCollectParams =
   { RecorderDirectory : String
     WorkingDirectory : String
     Executable : String
@@ -26,23 +155,7 @@ type CollectParams =
     Threshold : String
     Cobertura : String
     OutputFile : String
-    CommandLine : String
-    Command : String seq }
-
-#if RUNNER
-  [<Obsolete("Please use AltCover.CollectParams.Create() instead instead.")>]
-  static member Default : CollectParams =
-    { RecorderDirectory = String.Empty
-      WorkingDirectory = String.Empty
-      Executable = String.Empty
-      LcovReport = String.Empty
-      Threshold = String.Empty
-      Cobertura = String.Empty
-      OutputFile = String.Empty
-      CommandLine = String.Empty
-      Command = [] }
-#endif
-
+    CommandLine : String seq }
   static member Create() =
     { RecorderDirectory = String.Empty
       WorkingDirectory = String.Empty
@@ -51,8 +164,77 @@ type CollectParams =
       Threshold = String.Empty
       Cobertura = String.Empty
       OutputFile = String.Empty
-      CommandLine = String.Empty
-      Command = [] }
+      CommandLine = [] }
+
+[<ExcludeFromCodeCoverage; NoComparison>]
+type TypeSafeCollectParams =
+  { RecorderDirectory : DirectoryPath
+    WorkingDirectory : DirectoryPath
+    Executable : FilePath
+    LcovReport : FilePath
+    Threshold : Threshold
+    Cobertura : FilePath
+    OutputFile : FilePath
+    CommandLine : Command }
+  static member Create() =
+    { RecorderDirectory = NoDirectory
+      WorkingDirectory = NoDirectory
+      Executable = NoFile
+      LcovReport = NoFile
+      Threshold = NoThreshold
+      Cobertura = NoFile
+      OutputFile = NoFile
+      CommandLine = NoCommand }
+
+[<ExcludeFromCodeCoverage; NoComparison>]
+type CollectParams =
+  | Primitive of PrimitiveCollectParams
+  | TypeSafe of TypeSafeCollectParams
+
+  static member private ToSeq(s : String seq) =
+    match s with
+    | null -> Seq.empty<string>
+    | _ -> s
+
+  member self.RecorderDirectory =
+    match self with
+    | Primitive p -> p.RecorderDirectory
+    | TypeSafe t -> t.RecorderDirectory.AsString()
+
+  member self.WorkingDirectory =
+    match self with
+    | Primitive p -> p.WorkingDirectory
+    | TypeSafe t -> t.WorkingDirectory.AsString()
+
+  member self.Executable =
+    match self with
+    | Primitive p -> p.Executable
+    | TypeSafe t -> t.Executable.AsString()
+
+  member self.LcovReport =
+    match self with
+    | Primitive p -> p.LcovReport
+    | TypeSafe t -> t.LcovReport.AsString()
+
+  member self.Threshold =
+    match self with
+    | Primitive p -> p.Threshold
+    | TypeSafe t -> t.Threshold.AsString()
+
+  member self.Cobertura =
+    match self with
+    | Primitive p -> p.Cobertura
+    | TypeSafe t -> t.Cobertura.AsString()
+
+  member self.OutputFile =
+    match self with
+    | Primitive p -> p.OutputFile
+    | TypeSafe t -> t.OutputFile.AsString()
+
+  member self.CommandLine =
+    match self with
+    | Primitive p -> p.CommandLine |> CollectParams.ToSeq
+    | TypeSafe t -> t.CommandLine.AsStrings()
 
 #if RUNNER
   member self.Validate afterPreparation =
@@ -70,7 +252,8 @@ type CollectParams =
       if s |> String.IsNullOrWhiteSpace then None
       else Some s
     try
-      [ ("--recorderDirectory", self.RecorderDirectory)
+      let recorder = self.RecorderDirectory
+      [ ("--recorderDirectory", recorder)
         ("--workingDirectory", self.WorkingDirectory) ]
       |> List.iter (fun (n, x) -> validateOptional CommandLine.ValidateDirectory n x)
       [ ("--executable", self.Executable)
@@ -80,18 +263,15 @@ type CollectParams =
       |> List.iter (fun (n, x) -> validateOptional CommandLine.ValidatePath n x)
       validate Runner.ValidateThreshold self.Threshold
       if afterPreparation then
-        Runner.RequireRecorderTest (self.RecorderDirectory |> toOption) () ()
+        Runner.RequireRecorderTest (recorder |> toOption) () ()
       CommandLine.error |> List.toArray
     finally
       CommandLine.error <- saved
 #else
-  member self.withCommandLine args =
-    { self with Command = args
-                CommandLine = String.Empty}
 #endif
 
 [<ExcludeFromCodeCoverage; NoComparison>]
-type PrepareParams =
+type PrimitivePrepareParams =
   { InputDirectory : String
     OutputDirectory : String
     SymbolDirectories : string seq
@@ -113,37 +293,7 @@ type PrepareParams =
     Single : bool
     LineCover : bool
     BranchCover : bool
-    CommandLine : String
-    Command : String seq }
-
-#if RUNNER
-  [<Obsolete("Please use AltCover.CollectParams.Create() instead instead.")>]
-  static member Default : PrepareParams =
-    { InputDirectory = String.Empty
-      OutputDirectory = String.Empty
-      SymbolDirectories = [||]
-      Dependencies = [||]
-      Keys = [||]
-      StrongNameKey = String.Empty
-      XmlReport = String.Empty
-      FileFilter = [||]
-      AssemblyFilter = [||]
-      AssemblyExcludeFilter = [||]
-      TypeFilter = [||]
-      MethodFilter = [||]
-      AttributeFilter = [||]
-      PathFilter = [||]
-      CallContext = [||]
-      OpenCover = true
-      InPlace = true
-      Save = true
-      Single = false
-      LineCover = false
-      BranchCover = false
-      CommandLine = String.Empty
-      Command = [] }
-#endif
-
+    CommandLine : String seq }
   static member Create() =
     { InputDirectory = String.Empty
       OutputDirectory = String.Empty
@@ -166,9 +316,180 @@ type PrepareParams =
       Single = false
       LineCover = false
       BranchCover = false
-      CommandLine = String.Empty
-      Command = [] }
+      CommandLine = [] }
 
+[<ExcludeFromCodeCoverage; NoComparison>]
+type TypeSafePrepareParams =
+  { InputDirectory : DirectoryPath
+    OutputDirectory : DirectoryPath
+    SymbolDirectories : DirectoryPaths
+    Dependencies : FilePaths
+    Keys : FilePaths
+    StrongNameKey : FilePath
+    XmlReport : FilePath
+    FileFilter : Filters
+    AssemblyFilter : Filters
+    AssemblyExcludeFilter : Filters
+    TypeFilter : Filters
+    MethodFilter : Filters
+    AttributeFilter : Filters
+    PathFilter : Filters
+    CallContext : Context
+    OpenCover : Flag
+    InPlace : Flag
+    Save : Flag
+    Single : Flag
+    LineCover : Flag
+    BranchCover : Flag
+    CommandLine : Command }
+  static member Create() =
+    { InputDirectory = NoDirectory
+      OutputDirectory = NoDirectory
+      SymbolDirectories = NoDirectories
+      Dependencies = NoPaths
+      Keys = NoPaths
+      StrongNameKey = NoFile
+      XmlReport = NoFile
+      FileFilter = Unfiltered
+      AssemblyFilter = Unfiltered
+      AssemblyExcludeFilter = Unfiltered
+      TypeFilter = Unfiltered
+      MethodFilter = Unfiltered
+      AttributeFilter = Unfiltered
+      PathFilter = Unfiltered
+      CallContext = NoContext
+      OpenCover = Set
+      InPlace = Set
+      Save = Set
+      Single = Clear
+      LineCover = Clear
+      BranchCover = Clear
+      CommandLine = NoCommand }
+
+[<ExcludeFromCodeCoverage; NoComparison>]
+type PrepareParams =
+  | Primitive of PrimitivePrepareParams
+  | TypeSafe of TypeSafePrepareParams
+
+  static member private ToSeq(s : String seq) =
+    match s with
+    | null -> Seq.empty<string>
+    | _ -> s
+
+  static member private ToList(s : String seq) =
+    s
+    |> PrepareParams.ToSeq
+    |> Seq.toList
+
+  member self.InputDirectory =
+    match self with
+    | Primitive p -> p.InputDirectory
+    | TypeSafe t -> t.InputDirectory.AsString()
+
+  member self.OutputDirectory =
+    match self with
+    | Primitive p -> p.OutputDirectory
+    | TypeSafe t -> t.OutputDirectory.AsString()
+
+  member self.SymbolDirectories =
+    match self with
+    | Primitive p -> p.SymbolDirectories |> PrepareParams.ToList
+    | TypeSafe t -> t.SymbolDirectories.AsStrings()
+
+  member self.Dependencies =
+    match self with
+    | Primitive p -> p.Dependencies |> PrepareParams.ToList
+    | TypeSafe t -> t.Dependencies.AsStrings()
+
+  member self.Keys =
+    match self with
+    | Primitive p -> p.Keys |> PrepareParams.ToList
+    | TypeSafe t -> t.Keys.AsStrings()
+
+  member self.StrongNameKey =
+    match self with
+    | Primitive p -> p.StrongNameKey
+    | TypeSafe t -> t.StrongNameKey.AsString()
+
+  member self.XmlReport =
+    match self with
+    | Primitive p -> p.XmlReport
+    | TypeSafe t -> t.XmlReport.AsString()
+
+  member self.FileFilter =
+    match self with
+    | Primitive p -> p.FileFilter |> PrepareParams.ToList
+    | TypeSafe t -> t.FileFilter.AsStrings()
+
+  member self.AssemblyFilter =
+    match self with
+    | Primitive p -> p.AssemblyFilter |> PrepareParams.ToList
+    | TypeSafe t -> t.AssemblyFilter.AsStrings()
+
+  member self.AssemblyExcludeFilter =
+    match self with
+    | Primitive p -> p.AssemblyExcludeFilter |> PrepareParams.ToList
+    | TypeSafe t -> t.AssemblyExcludeFilter.AsStrings()
+
+  member self.TypeFilter =
+    match self with
+    | Primitive p -> p.TypeFilter |> PrepareParams.ToList
+    | TypeSafe t -> t.TypeFilter.AsStrings()
+
+  member self.MethodFilter =
+    match self with
+    | Primitive p -> p.MethodFilter |> PrepareParams.ToList
+    | TypeSafe t -> t.MethodFilter.AsStrings()
+
+  member self.AttributeFilter =
+    match self with
+    | Primitive p -> p.AttributeFilter |> PrepareParams.ToList
+    | TypeSafe t -> t.AttributeFilter.AsStrings()
+
+  member self.PathFilter =
+    match self with
+    | Primitive p -> p.PathFilter |> PrepareParams.ToList
+    | TypeSafe t -> t.PathFilter.AsStrings()
+
+  member self.CallContext =
+    match self with
+    | Primitive p -> p.CallContext |> PrepareParams.ToList
+    | TypeSafe t -> t.CallContext.AsStrings()
+
+  member self.OpenCover =
+    match self with
+    | Primitive p -> p.OpenCover
+    | TypeSafe t -> t.OpenCover.AsBool()
+
+  member self.InPlace =
+    match self with
+    | Primitive p -> p.InPlace
+    | TypeSafe t -> t.InPlace.AsBool()
+
+  member self.Save =
+    match self with
+    | Primitive p -> p.Save
+    | TypeSafe t -> t.Save.AsBool()
+
+  member self.Single =
+    match self with
+    | Primitive p -> p.Single
+    | TypeSafe t -> t.Single.AsBool()
+
+  member self.LineCover =
+    match self with
+    | Primitive p -> p.LineCover
+    | TypeSafe t -> t.LineCover.AsBool()
+
+  member self.BranchCover =
+    match self with
+    | Primitive p -> p.BranchCover
+    | TypeSafe t -> t.BranchCover.AsBool()
+
+  member self.CommandLine =
+    match self with
+    | Primitive p -> p.CommandLine |> PrepareParams.ToSeq
+    | TypeSafe t -> t.CommandLine.AsStrings()
 #if RUNNER
   static member private validateArray a f key =
     PrepareParams.validateArraySimple a (f key)
@@ -190,7 +511,7 @@ type PrepareParams =
     then f key x |> ignore
 
   member private self.consistent() =
-    if self.Single && self.CallContext |> PrepareParams.nonNull && self.CallContext.Any() then
+    if self.Single && self.CallContext.Any() then
       CommandLine.error <- String.Format
                              (System.Globalization.CultureInfo.CurrentCulture,
                               CommandLine.resources.GetString "Incompatible", "--single",
@@ -244,9 +565,8 @@ type PrepareParams =
     finally
       CommandLine.error <- saved
 #else
-  member self.withCommandLine args =
-    { self with Command = args
-                CommandLine = String.Empty}
+[<ExcludeFromCodeCoverage; NoComparison>]
+type CoverageEnvironment = Framework | Dotnet
 #endif
 
 module internal Args =
@@ -265,34 +585,13 @@ module internal Args =
     if x then [ a ]
     else []
 
-  let internal parse s tag =
-    if s
-       |> String.IsNullOrWhiteSpace
-       |> not
-    then
-      sprintf "%s.CommandLine is deprecated; please use %s.Command instead" tag tag
+  let Prepare
 #if RUNNER
-      |> Output.Warn
 #else
-      |> Trace.traceImportant
+      (e : CoverageEnvironment)
 #endif
-    let blackfox = typeof<CmdLine>.Assembly
-    let t =
-      blackfox.GetType(if System.Environment.GetEnvironmentVariable("OS") = "Windows_NT" then
-                         "BlackFox.CommandLine.MsvcrCommandLine"
-                       else "BlackFox.CommandLine.MonoUnixCommandLine")
-    let m = t.GetMethod "parse"
-    m.Invoke(m, [| s |]) :?> String seq |> Seq.toList
-
-  let Prepare(args : PrepareParams) =
-    let command =
-      args.Command
-      |> Seq.filter (String.IsNullOrWhiteSpace >> not)
-      |> Seq.toList
-
-    let argsList =
-      if List.isEmpty command then parse args.CommandLine <| args.GetType().FullName
-      else command
+      (args : PrepareParams) =
+    let argsList = args.CommandLine |> Seq.toList
 
     let trailing =
       if List.isEmpty argsList then []
@@ -301,9 +600,26 @@ module internal Args =
     [ Item "-i" args.InputDirectory
       Item "-o" args.OutputDirectory
       ItemList "-y" args.SymbolDirectories
-      ItemList "-d" args.Dependencies
-      ItemList "-k" args.Keys
-      Item "--sn" args.StrongNameKey
+      ItemList "-d"
+#if RUNNER
+                    args.Dependencies
+#else
+                    (if e = Framework then [] else args.Dependencies)
+#endif
+
+      ItemList "-k"
+#if RUNNER
+                    args.Keys
+#else
+                    (if e = Dotnet then [] else args.Keys)
+#endif
+
+      Item "--sn"
+#if RUNNER
+                    args.StrongNameKey
+#else
+                    (if e = Dotnet then String.Empty else args.StrongNameKey)
+#endif
       Item "-x" args.XmlReport
       ItemList "-f" args.FileFilter
       ItemList "-s" args.AssemblyFilter
@@ -323,28 +639,23 @@ module internal Args =
     |> List.concat
 
   let Collect(args : CollectParams) =
-    let command =
-      args.Command
-      |> Seq.filter (String.IsNullOrWhiteSpace >> not)
-      |> Seq.toList
-
-    let argsList =
-      if List.isEmpty command then parse args.CommandLine <| args.GetType().FullName
-      else command
+    let argsList = args.CommandLine |> Seq.toList
 
     let trailing =
       if List.isEmpty argsList then []
       else "--" :: argsList
 
+    let exe = args.Executable
+
     [ [ "Runner" ]
       Item "-r" args.RecorderDirectory
       Item "-w" args.WorkingDirectory
-      Item "-x" args.Executable
+      Item "-x" exe
       Item "-l" args.LcovReport
       Item "-t" args.Threshold
       Item "-c" args.Cobertura
       Item "-o" args.OutputFile
-      Flag "--collect" (args.Executable |> String.IsNullOrWhiteSpace)
+      Flag "--collect" (exe |> String.IsNullOrWhiteSpace)
       trailing ]
     |> List.concat
 
@@ -382,16 +693,16 @@ type Params =
         WorkingDirectory = String.Empty
         Args = a
     }
+
 let internal createArgs parameters =
   match parameters.Args with
   | Collect c -> Args.Collect c
   | Prepare p ->
-    (match parameters.ToolType with
-     | Framework
-     | Mono _ -> { p with Dependencies = Seq.empty }
-     | _ -> { p with Keys = Seq.empty
-                     StrongNameKey = String.Empty})
-     |> Args.Prepare
+     p
+     |> Args.Prepare (match parameters.ToolType with
+                      | Framework
+                      | Mono _ -> CoverageEnvironment.Framework
+                      | _ -> CoverageEnvironment.Dotnet)
   | ImportModule -> [ "ipmo" ]
   | GetVersion -> [ "version" ]
 

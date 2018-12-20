@@ -3,6 +3,7 @@ using Cake.Common.Tools.DotNetCore.Test;
 using Cake.Core;
 using Cake.Core.Annotations;
 using Cake.Core.IO;
+using FP = Cake.Core.IO.FilePath;
 using System;
 using System.Linq;
 
@@ -21,7 +22,7 @@ namespace AltCover.Cake
         [CakeAliasCategory("Test")]
         public static void DotNetCoreTest(
                     this ICakeContext context,
-                    FilePath project,
+                    FP project,
                     DotNetCoreTestSettings settings,
                     AltCoverSettings altcover)
         {
@@ -33,7 +34,7 @@ namespace AltCover.Cake
         private static ProcessArgumentBuilder ProcessArguments(
                         ICakeContext cakeContext,
                         ProcessArgumentBuilder builder,
-                        FilePath project,
+                        FP project,
                         AltCoverSettings altcover)
         {
             Array.ForEach(
