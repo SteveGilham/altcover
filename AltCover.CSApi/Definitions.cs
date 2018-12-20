@@ -14,9 +14,9 @@ namespace AltCover
         public string OutputFile { get; set; }
         public string[] CommandLine { get; set; }
 
-        internal CollectParams ToParameters()
+        internal FSApi.CollectParams ToParameters()
         {
-            var primitive = new PrimitiveCollectParams(
+            var primitive = new Primitive.CollectParams(
                 RecorderDirectory,
                 WorkingDirectory,
                 Executable,
@@ -26,7 +26,7 @@ namespace AltCover
                 OutputFile,
                 CommandLine
                 );
-            return CollectParams.NewPrimitive(primitive);
+            return FSApi.CollectParams.NewPrimitive(primitive);
         }
 
         public static CollectArgs Default
@@ -80,9 +80,9 @@ namespace AltCover
 
         public string[] CommandLine { get; set; }
 
-        internal PrepareParams ToParameters()
+        internal FSApi.PrepareParams ToParameters()
         {
-            var primitive = new PrimitivePrepareParams(
+            var primitive = new Primitive.PrepareParams(
                         InputDirectory,
                         OutputDirectory,
                         SymbolDirectories,
@@ -107,7 +107,7 @@ namespace AltCover
                         BranchCover,
                         CommandLine
                 );
-            return PrepareParams.NewPrimitive(primitive);
+            return FSApi.PrepareParams.NewPrimitive(primitive);
         }
 
         public static PrepareArgs Default

@@ -5,6 +5,7 @@ open System.Diagnostics.CodeAnalysis
 open Microsoft.Build.Utilities
 open Microsoft.Build.Framework
 open Augment
+open AltCover.FSApi
 
 [<ExcludeFromCodeCoverage; NoComparison; NoEquality>]
 type Logging =

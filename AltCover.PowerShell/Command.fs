@@ -4,6 +4,7 @@ open System
 open System.IO
 open System.Management.Automation
 open AltCover
+open AltCover.FSApi
 
 [<Cmdlet(VerbsLifecycle.Invoke, "AltCover")>]
 [<OutputType("System.Void")>]

@@ -6,6 +6,7 @@ open System.IO
 open System.Reflection
 open AltCover
 open AltCover.DotNet
+open AltCover.FSApi
 
 module Trace =
   open Fake.Core
@@ -58,7 +59,6 @@ namespace AltCover_Fake.DotNet
 open System
 open System.Reflection
 open AltCover.Internals
-open AltCover_Fake.DotNet.Testing
 #endif
 
 module DotNet =
@@ -110,8 +110,8 @@ module DotNet =
 #if RUNNER
     member self.WithParameters (prepare : PrepareParams) (collect : CollectParams) =
 #else
-    member self.WithParameters (prepare : AltCover.PrepareParams)
-           (collect : AltCover.CollectParams) =
+    member self.WithParameters (prepare : AltCover_Fake.DotNet.Testing.AltCover.PrepareParams)
+           (collect : AltCover_Fake.DotNet.Testing.AltCover.CollectParams) =
 #endif
 
       DotNet.ToTestArguments prepare collect |> self.ExtendCustomParams

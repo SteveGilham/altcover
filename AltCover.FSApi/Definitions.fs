@@ -3,7 +3,6 @@ namespace AltCover
 #else
 module internal AltCover.Internals
 
-open AltCover_Fake.DotNet.Testing
 #endif
 
 open System
@@ -28,10 +27,13 @@ module DotNet =
   let private Join(l : string list) = String.Join(" ", l)
 
 #if RUNNER
-  let ToTestArgumentList (prepare : PrepareParams) (collect : CollectParams) =
+  let ToTestArgumentList
+      (prepare : AltCover.FSApi.PrepareParams)
+      (collect : AltCover.FSApi.CollectParams) =
 #else
-  let ToTestArgumentList (prepare : AltCover.PrepareParams)
-      (collect : AltCover.CollectParams) =
+  let ToTestArgumentList
+      (prepare : AltCover_Fake.DotNet.Testing.AltCover.PrepareParams)
+      (collect : AltCover_Fake.DotNet.Testing.AltCover.CollectParams) =
 #endif
 
     [ FromArg String.Empty "true"
@@ -55,9 +57,12 @@ module DotNet =
     |> List.map fst
 
 #if RUNNER
-  let ToTestArguments (prepare : PrepareParams) (collect : CollectParams) =
+  let ToTestArguments
+    (prepare : AltCover.FSApi.PrepareParams)
+    (collect : AltCover.FSApi.CollectParams) =
 #else
-  let ToTestArguments (prepare : AltCover.PrepareParams)
-      (collect : AltCover.CollectParams) =
+  let ToTestArguments
+      (prepare : AltCover_Fake.DotNet.Testing.AltCover.PrepareParams)
+      (collect : AltCover_Fake.DotNet.Testing.AltCover.CollectParams) =
 #endif
     ToTestArgumentList prepare collect |> Join

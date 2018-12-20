@@ -1,5 +1,5 @@
 #if RUNNER
-namespace AltCover
+namespace AltCover.FSApi
 #else
 [<RequireQualifiedAccess>]
 module AltCover_Fake.DotNet.Testing.AltCover
@@ -7,189 +7,19 @@ module AltCover_Fake.DotNet.Testing.AltCover
 
 open System
 open System.Diagnostics.CodeAnalysis
-open System.Globalization
-open System.IO
 open System.Linq
-open System.Text.RegularExpressions
-open BlackFox.CommandLine
 #if RUNNER
+open AltCover
 open AltCover.Augment
 #else
-open System.Reflection
-open System.IO
+open AltCover_Fake.DotNet.Testing
 open Fake.Core
 #endif
 
-// No more primitive obsession!
-[<ExcludeFromCodeCoverage; NoComparison>]
-type FilePath =
-  | FilePath of String
-  | Info of FileInfo
-  | NoFile
-  member self.AsString() =
-    match self with
-    | NoFile -> String.Empty
-    | Info i -> i.FullName
-    | FilePath s -> s
-
-[<ExcludeFromCodeCoverage; NoComparison>]
-type DirectoryPath =
-  | DirectoryPath of String
-  | Info of DirectoryInfo
-  | NoDirectory
-  member self.AsString() =
-    match self with
-    | NoDirectory -> String.Empty
-    | Info i -> i.FullName
-    | DirectoryPath s -> s
-
-[<ExcludeFromCodeCoverage; NoComparison>]
-type CommandArgument =
-  | CommandArgument of String
-  member self.AsString() =
-    match self with
-    | CommandArgument s -> s
-
-[<ExcludeFromCodeCoverage; NoComparison>]
-type Command =
-  | Command of CommandArgument seq
-  | NoCommand
-  member self.AsStrings() =
-    match self with
-    | NoCommand -> Seq.empty<String>
-    | Command c -> c |> Seq.map (fun a -> a.AsString())
-
-[<ExcludeFromCodeCoverage; NoComparison>]
-type Threshold =
-  | Threshold of uint8
-  | NoThreshold
-  member self.AsString() =
-    match self with
-    | NoThreshold -> String.Empty
-    | Threshold t -> t.ToString(CultureInfo.InvariantCulture)
-
-[<ExcludeFromCodeCoverage; NoComparison>]
-type Flag =
-  | Flag of bool
-  | Set
-  | Clear
-  member self.AsBool() =
-    match self with
-    | Set -> true
-    | Clear -> false
-    | Flag b -> b
-
-[<ExcludeFromCodeCoverage; NoComparison>]
-type FilePaths =
-  | FilePaths of FilePath seq
-  | NoPaths
-  member self.AsStrings() =
-    match self with
-    | NoPaths -> List.empty<String>
-    | FilePaths c ->
-      c
-      |> Seq.map (fun a -> a.AsString())
-      |> Seq.toList
-
-[<ExcludeFromCodeCoverage; NoComparison>]
-type DirectoryPaths =
-  | DirectoryPaths of DirectoryPath seq
-  | NoDirectories
-  member self.AsStrings() =
-    match self with
-    | NoDirectories -> List.empty<String>
-    | DirectoryPaths c ->
-      c
-      |> Seq.map (fun a -> a.AsString())
-      |> Seq.toList
-
-[<ExcludeFromCodeCoverage; NoComparison>]
-type FilterItem =
-  | FilterItem of Regex
-  | Raw of String
-  member self.AsString() =
-    match self with
-    | FilterItem r -> r.ToString()
-    | Raw r -> r
-
-[<ExcludeFromCodeCoverage; NoComparison>]
-type Filters =
-  | Filters of FilterItem seq
-  | Unfiltered
-  member self.AsStrings() =
-    match self with
-    | Unfiltered -> List.empty<String>
-    | Filters c ->
-      c
-      |> Seq.map (fun a -> a.AsString())
-      |> Seq.toList
-
-[<ExcludeFromCodeCoverage; NoComparison>]
-type ContextItem =
-  | CallItem of String
-  | TimeItem of uint8
-  member self.AsString() =
-    match self with
-    | CallItem c -> c
-    | TimeItem t -> t.ToString(CultureInfo.InvariantCulture)
-
-[<ExcludeFromCodeCoverage; NoComparison>]
-type Context =
-  | Context of ContextItem seq
-  | NoContext
-  member self.AsStrings() =
-    match self with
-    | NoContext -> List.empty<String>
-    | Context c ->
-      c
-      |> Seq.map (fun a -> a.AsString())
-      |> Seq.toList
-
-// --------------------------------------------------------
-[<ExcludeFromCodeCoverage; NoComparison>]
-type PrimitiveCollectParams =
-  { RecorderDirectory : String
-    WorkingDirectory : String
-    Executable : String
-    LcovReport : String
-    Threshold : String
-    Cobertura : String
-    OutputFile : String
-    CommandLine : String seq }
-  static member Create() =
-    { RecorderDirectory = String.Empty
-      WorkingDirectory = String.Empty
-      Executable = String.Empty
-      LcovReport = String.Empty
-      Threshold = String.Empty
-      Cobertura = String.Empty
-      OutputFile = String.Empty
-      CommandLine = [] }
-
-[<ExcludeFromCodeCoverage; NoComparison>]
-type TypeSafeCollectParams =
-  { RecorderDirectory : DirectoryPath
-    WorkingDirectory : DirectoryPath
-    Executable : FilePath
-    LcovReport : FilePath
-    Threshold : Threshold
-    Cobertura : FilePath
-    OutputFile : FilePath
-    CommandLine : Command }
-  static member Create() =
-    { RecorderDirectory = NoDirectory
-      WorkingDirectory = NoDirectory
-      Executable = NoFile
-      LcovReport = NoFile
-      Threshold = NoThreshold
-      Cobertura = NoFile
-      OutputFile = NoFile
-      CommandLine = NoCommand }
-
 [<ExcludeFromCodeCoverage; NoComparison>]
 type CollectParams =
-  | Primitive of PrimitiveCollectParams
-  | TypeSafe of TypeSafeCollectParams
+  | Primitive of Primitive.CollectParams
+  | TypeSafe of TypeSafe.CollectParams
 
   static member private ToSeq(s : String seq) =
     match s with
@@ -271,105 +101,9 @@ type CollectParams =
 #endif
 
 [<ExcludeFromCodeCoverage; NoComparison>]
-type PrimitivePrepareParams =
-  { InputDirectory : String
-    OutputDirectory : String
-    SymbolDirectories : string seq
-    Dependencies : string seq
-    Keys : string seq
-    StrongNameKey : String
-    XmlReport : String
-    FileFilter : string seq
-    AssemblyFilter : string seq
-    AssemblyExcludeFilter : string seq
-    TypeFilter : string seq
-    MethodFilter : string seq
-    AttributeFilter : string seq
-    PathFilter : string seq
-    CallContext : string seq
-    OpenCover : bool
-    InPlace : bool
-    Save : bool
-    Single : bool
-    LineCover : bool
-    BranchCover : bool
-    CommandLine : String seq }
-  static member Create() =
-    { InputDirectory = String.Empty
-      OutputDirectory = String.Empty
-      SymbolDirectories = Seq.empty
-      Dependencies = Seq.empty
-      Keys = Seq.empty
-      StrongNameKey = String.Empty
-      XmlReport = String.Empty
-      FileFilter = Seq.empty
-      AssemblyFilter = Seq.empty
-      AssemblyExcludeFilter = Seq.empty
-      TypeFilter = Seq.empty
-      MethodFilter = Seq.empty
-      AttributeFilter = Seq.empty
-      PathFilter = Seq.empty
-      CallContext = Seq.empty
-      OpenCover = true
-      InPlace = true
-      Save = true
-      Single = false
-      LineCover = false
-      BranchCover = false
-      CommandLine = [] }
-
-[<ExcludeFromCodeCoverage; NoComparison>]
-type TypeSafePrepareParams =
-  { InputDirectory : DirectoryPath
-    OutputDirectory : DirectoryPath
-    SymbolDirectories : DirectoryPaths
-    Dependencies : FilePaths
-    Keys : FilePaths
-    StrongNameKey : FilePath
-    XmlReport : FilePath
-    FileFilter : Filters
-    AssemblyFilter : Filters
-    AssemblyExcludeFilter : Filters
-    TypeFilter : Filters
-    MethodFilter : Filters
-    AttributeFilter : Filters
-    PathFilter : Filters
-    CallContext : Context
-    OpenCover : Flag
-    InPlace : Flag
-    Save : Flag
-    Single : Flag
-    LineCover : Flag
-    BranchCover : Flag
-    CommandLine : Command }
-  static member Create() =
-    { InputDirectory = NoDirectory
-      OutputDirectory = NoDirectory
-      SymbolDirectories = NoDirectories
-      Dependencies = NoPaths
-      Keys = NoPaths
-      StrongNameKey = NoFile
-      XmlReport = NoFile
-      FileFilter = Unfiltered
-      AssemblyFilter = Unfiltered
-      AssemblyExcludeFilter = Unfiltered
-      TypeFilter = Unfiltered
-      MethodFilter = Unfiltered
-      AttributeFilter = Unfiltered
-      PathFilter = Unfiltered
-      CallContext = NoContext
-      OpenCover = Set
-      InPlace = Set
-      Save = Set
-      Single = Clear
-      LineCover = Clear
-      BranchCover = Clear
-      CommandLine = NoCommand }
-
-[<ExcludeFromCodeCoverage; NoComparison>]
 type PrepareParams =
-  | Primitive of PrimitivePrepareParams
-  | TypeSafe of TypeSafePrepareParams
+  | Primitive of Primitive.PrepareParams
+  | TypeSafe of TypeSafe.PrepareParams
 
   static member private ToSeq(s : String seq) =
     match s with

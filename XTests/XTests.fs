@@ -7,6 +7,7 @@ open System.Reflection
 open System.Xml.Linq
 
 open AltCover
+open AltCover.FSApi
 open Mono.Options
 open Newtonsoft.Json.Linq
 open Xunit
@@ -135,20 +136,20 @@ module XTests =
 
   [<Fact>]
   let CollectParamsCanBeValidated() =
-    let test = { PrimitiveCollectParams.Create() with Threshold = "23" }
+    let test = { Primitive.CollectParams.Create() with Threshold = "23" }
     let scan = (CollectParams.Primitive test).Validate(false)
     Assert.Equal(0, scan.Length)
 
   [<Fact>]
   let CollectParamsCanBeValidatedWithErrors() =
-    let test = PrimitiveCollectParams.Create()
+    let test = Primitive.CollectParams.Create()
     let scan = (CollectParams.Primitive test).Validate(true)
     Assert.Equal(1, scan.Length)
 
   [<Fact>]
   let CollectParamsCanBePositivelyValidatedWithErrors() =
     let test =
-      { PrimitiveCollectParams.Create() with RecorderDirectory = Guid.NewGuid().ToString() }
+      { Primitive.CollectParams.Create() with RecorderDirectory = Guid.NewGuid().ToString() }
     let scan = (CollectParams.Primitive test).Validate(true)
     Assert.Equal(2, scan.Length)
 
@@ -157,13 +158,13 @@ module XTests =
     let here = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
 
     let test =
-      { PrimitivePrepareParams.Create() with InputDirectory = here
-                                             OutputDirectory = here
-                                             SymbolDirectories = [| here |]
-                                             Dependencies =
+      { Primitive.PrepareParams.Create() with InputDirectory = here
+                                              OutputDirectory = here
+                                              SymbolDirectories = [| here |]
+                                              Dependencies =
                                                [| Assembly.GetExecutingAssembly().Location |]
-                                             CallContext = [| "[Fact]" |]
-                                             PathFilter = [| "ok" |] }
+                                              CallContext = [| "[Fact]" |]
+                                              PathFilter = [| "ok" |] }
 
     let scan = (PrepareParams.Primitive test).Validate()
     Assert.Equal(0, scan.Length)
@@ -173,8 +174,8 @@ module XTests =
     let input = Path.Combine(AltCover.SolutionRoot.location, "Build/Infrastructure.snk")
 
     let test =
-      { PrimitivePrepareParams.Create() with StrongNameKey = input
-                                             Keys = [| input |] }
+      { Primitive.PrepareParams.Create() with StrongNameKey = input
+                                              Keys = [| input |] }
 
     let scan = (PrepareParams.Primitive test).Validate()
 #if NETCOREAPP2_0
@@ -185,17 +186,17 @@ module XTests =
 
   [<Fact>]
   let PrepareParamsCanBeValidatedWithNulls() =
-    let test = { PrimitivePrepareParams.Create() with CallContext = null }
+    let test = { Primitive.PrepareParams.Create() with CallContext = null }
     let scan = (PrepareParams.Primitive test).Validate()
     Assert.Equal(0, scan.Length)
 
   [<Fact>]
   let PrepareParamsCanBeValidatedAndDetectInconsistency() =
     let test =
-      { PrimitivePrepareParams.Create() with BranchCover = true
-                                             LineCover = true
-                                             Single = true
-                                             CallContext = [| "0" |] }
+      { Primitive.PrepareParams.Create() with BranchCover = true
+                                              LineCover = true
+                                              Single = true
+                                              CallContext = [| "0" |] }
 
     let scan = (PrepareParams.Primitive test).Validate()
     Assert.Equal(2, scan.Length)
@@ -203,8 +204,8 @@ module XTests =
   [<Fact>]
   let PrepareParamsCanBeValidatedWithErrors() =
     let test =
-      { PrimitivePrepareParams.Create() with XmlReport = String(Path.GetInvalidPathChars())
-                                             CallContext = [| "0"; "1" |] }
+      { Primitive.PrepareParams.Create() with XmlReport = String(Path.GetInvalidPathChars())
+                                              CallContext = [| "0"; "1" |] }
 
     let scan = (PrepareParams.Primitive test).Validate()
     Assert.Equal(2, scan.Length)
