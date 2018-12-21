@@ -141,6 +141,12 @@ module XTests =
     Assert.Equal(0, scan.Length)
 
   [<Fact>]
+  let TypeSafeCollectParamsCanBeValidated() =
+    let test = { TypeSafe.CollectParams.Create() with Threshold = TypeSafe.Threshold 23uy }
+    let scan = (CollectParams.TypeSafe test).Validate(false)
+    Assert.Equal(0, scan.Length)
+
+  [<Fact>]
   let CollectParamsCanBeValidatedWithErrors() =
     let test = Primitive.CollectParams.Create()
     let scan = (CollectParams.Primitive test).Validate(true)
@@ -167,6 +173,22 @@ module XTests =
                                               PathFilter = [| "ok" |] }
 
     let scan = (PrepareParams.Primitive test).Validate()
+    Assert.Equal(0, scan.Length)
+
+  [<Fact>]
+  let TypeSafePrepareParamsCanBeValidated() =
+    let here = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
+
+    let test =
+      { TypeSafe.PrepareParams.Create() with InputDirectory = TypeSafe.DirectoryPath here
+                                             OutputDirectory = TypeSafe.DInfo (DirectoryInfo(here))
+                                             SymbolDirectories = TypeSafe.DirectoryPaths [| TypeSafe.DirectoryPath here |]
+                                             Dependencies = TypeSafe.FilePaths
+                                               [| TypeSafe.FilePath <|  Assembly.GetExecutingAssembly().Location |]
+                                             CallContext = TypeSafe.Context [| TypeSafe.CallItem "[Fact]" |]
+                                             PathFilter = TypeSafe.Filters [| TypeSafe.Raw "ok" |] }
+
+    let scan = (PrepareParams.TypeSafe test).Validate()
     Assert.Equal(0, scan.Length)
 
   [<Fact>]

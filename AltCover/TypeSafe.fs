@@ -1,5 +1,5 @@
 ﻿#if RUNNER
-[<RequireQualifiedAccess>]
+[<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage; RequireQualifiedAccess>] // work around coverlet attribute bug
 module AltCover.TypeSafe
 #else
 [<RequireQualifiedAccess>]
@@ -16,23 +16,23 @@ open System.Text.RegularExpressions
 [<ExcludeFromCodeCoverage; NoComparison>]
 type FilePath =
   | FilePath of String
-  | Info of FileInfo
+  | FInfo of FileInfo
   | NoFile
   member self.AsString() =
     match self with
     | NoFile -> String.Empty
-    | Info i -> i.FullName
+    | FInfo i -> i.FullName
     | FilePath s -> s
 
 [<ExcludeFromCodeCoverage; NoComparison>]
 type DirectoryPath =
   | DirectoryPath of String
-  | Info of DirectoryInfo
+  | DInfo of DirectoryInfo
   | NoDirectory
   member self.AsString() =
     match self with
     | NoDirectory -> String.Empty
-    | Info i -> i.FullName
+    | DInfo i -> i.FullName
     | DirectoryPath s -> s
 
 [<ExcludeFromCodeCoverage; NoComparison>]

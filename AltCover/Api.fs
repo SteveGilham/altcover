@@ -233,10 +233,8 @@ type PrepareParams =
     |> isNull
     |> not
 
-  [<SuppressMessage("Microsoft.Usage", "CA2208",
-                    Justification = "Some in-lined code must be creating an ArgumentNullException")>]
   static member private validateArraySimple a f =
-    if a |> PrepareParams.nonNull then a |> Seq.iter (fun s -> f s |> ignore)
+    a |> Seq.iter (fun s -> f s |> ignore)
 
   static member private validateOptional f key x =
     if x

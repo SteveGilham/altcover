@@ -1,5 +1,5 @@
 ﻿#if RUNNER
-[<RequireQualifiedAccess>]
+[<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage; RequireQualifiedAccess>] // work around coverlet attribute bug
 module AltCover.Primitive
 #else
 [<RequireQualifiedAccess>]
