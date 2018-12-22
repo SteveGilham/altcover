@@ -108,12 +108,15 @@ module DotNet =
       result :?> DotNet.TestOptions
 
 #if RUNNER
-    member self.WithParameters (prepare : PrepareParams) (collect : CollectParams) =
+    member self.WithParameters (prepare : PrepareParams)
+                               (collect : CollectParams)
+                               (force : bool) =
 #else
     member self.WithParameters (prepare : AltCover_Fake.DotNet.Testing.AltCover.PrepareParams)
-           (collect : AltCover_Fake.DotNet.Testing.AltCover.CollectParams) =
+           (collect : AltCover_Fake.DotNet.Testing.AltCover.CollectParams)
+           (force : bool) =
 #endif
 
-      DotNet.ToTestArguments prepare collect |> self.ExtendCustomParams
+      DotNet.ToTestArguments prepare collect force |> self.ExtendCustomParams
     member self.WithImportModule() = self.ExtendCustomParams "/p:AltCoverIpmo=true"
     member self.WithGetVersion() = self.ExtendCustomParams "/p:AltCoverGetVersion=true"

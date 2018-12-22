@@ -29,11 +29,13 @@ module DotNet =
 #if RUNNER
   let ToTestArgumentList
       (prepare : AltCover.FSApi.PrepareParams)
-      (collect : AltCover.FSApi.CollectParams) =
+      (collect : AltCover.FSApi.CollectParams)
+      (force : bool) =
 #else
   let ToTestArgumentList
       (prepare : AltCover_Fake.DotNet.Testing.AltCover.PrepareParams)
-      (collect : AltCover_Fake.DotNet.Testing.AltCover.CollectParams) =
+      (collect : AltCover_Fake.DotNet.Testing.AltCover.CollectParams)
+      (force : bool) =
 #endif
 
     [ FromArg String.Empty "true"
@@ -52,17 +54,20 @@ module DotNet =
       FromArg "Cobertura" collect.Cobertura
       FromArg "Threshold" collect.Threshold
       (Arg "LineCover" "true", prepare.LineCover)
-      (Arg "BranchCover" "true", prepare.BranchCover) ]
+      (Arg "BranchCover" "true", prepare.BranchCover)
+      (Arg "Force" "true", force)]
     |> List.filter snd
     |> List.map fst
 
 #if RUNNER
   let ToTestArguments
     (prepare : AltCover.FSApi.PrepareParams)
-    (collect : AltCover.FSApi.CollectParams) =
+    (collect : AltCover.FSApi.CollectParams)
+    (force : bool) =
 #else
   let ToTestArguments
       (prepare : AltCover_Fake.DotNet.Testing.AltCover.PrepareParams)
-      (collect : AltCover_Fake.DotNet.Testing.AltCover.CollectParams) =
+      (collect : AltCover_Fake.DotNet.Testing.AltCover.CollectParams)
+      (force : bool) =
 #endif
-    ToTestArgumentList prepare collect |> Join
+    ToTestArgumentList prepare collect force |> Join
