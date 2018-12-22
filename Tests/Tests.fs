@@ -145,7 +145,9 @@ type AltCoverTests() =
                Assert.That
                  ("/" + name.Replace("\\", "/"), Does.EndWith("/" + filename),
                   (fst x) + " -> " + name))
-
+#if MONO
+// Mono doesn't embed
+#else
     [<Test>]
     member self.ShouldGetEmbeddedPdbFromImage() =
       let where = Assembly.GetExecutingAssembly().Location
@@ -163,6 +165,7 @@ type AltCoverTests() =
         Assert.That
           (name, Is.EqualTo "Sample8.pdb",
           target + " -> " + name)
+#endif
 
     [<Test>]
     member self.ShouldGetNoMdbFromMonoImage() =

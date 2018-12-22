@@ -28,7 +28,7 @@ module internal ProgramDatabase =
          |> Seq.toArray
          |> System.Text.Encoding.UTF8.GetString)
     |> Option.filter (fun s -> s.Length > 0)
-    |> Option.filter (fun s -> File.Exists s || s |> Path.GetDirectoryName |> String.IsNullOrWhiteSpace)
+    |> Option.filter (fun s -> File.Exists s || s = (assembly.Name.Name + ".pdb") )
 
   let GetSymbolsByFolder fileName folderName =
     let name = Path.Combine(folderName, fileName)
