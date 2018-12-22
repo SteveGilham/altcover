@@ -13,7 +13,7 @@ namespace AltCover.Cake
     {
         public IPrepareArgs PreparationPhase { get; set; }
         public ICollectArgs CollectionPhase { get; set; }
-        public bool Force { get; set; }
+        public ICLIArg Force { get; set; }
     }
 
     [CakeAliasCategory("DotNetCore")]

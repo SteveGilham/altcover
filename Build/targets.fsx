@@ -127,6 +127,9 @@ let NuGetAltCover =
   |> Seq.filter File.Exists
   |> Seq.tryHead
 
+
+let ForceTrue = DotNetTest.CLIArgs.Force true
+
 let _Target s f =
   Target.description s
   Target.create s f
@@ -2755,9 +2758,10 @@ _Target "DoIt"
 
   let collect = FSApi.CollectParams.Primitive { AltCover.Primitive.CollectParams.Create() with LcovReport = "x" }
   let prepare = FSApi.PrepareParams.Primitive { AltCover.Primitive.PrepareParams.Create() with TypeFilter = [| "a"; "b" |] }
-  printfn "%s" (DotNet.ToTestArguments prepare collect true)
+  let ForceTrue = DotNetTest.CLIArgs.Force true
+  printfn "%s" (DotNet.ToTestArguments prepare collect ForceTrue)
 
-  let t = DotNet.TestOptions.Create().WithParameters prepare collect true
+  let t = DotNet.TestOptions.Create().WithParameters prepare collect ForceTrue
   printfn "returned '%A'" t.Common.CustomParams
 
   let p2 = { Primitive.PrepareParams.Create() with CallContext = [| "[Fact]"; "0" |]
@@ -2777,8 +2781,8 @@ _Target "DoIt"
 
   DotNet.test
     (fun to' ->
-    { to'.WithCommon(setBaseOptions).WithParameters pp2 cc2 true with MSBuildParams =
-                                                                        cliArguments })
+    { to'.WithCommon(setBaseOptions).WithParameters pp2 cc2 ForceTrue with MSBuildParams =
+                                                                             cliArguments })
     "dotnettest.fsproj"
   let ipmo = AltCover.Api.Ipmo().Trim().Split().[1].Trim([| '\"' |])
   let command = "$ipmo = '" + ipmo + "'; Import-Module $ipmo; ConvertTo-BarChart -?"
@@ -2873,7 +2877,7 @@ _Target "DotnetTestIntegration" (fun _ ->
     DotNet.test
       (fun to' ->
       (to'.WithCommon(withWorkingDirectoryVM "_DotnetTest")
-          .WithGetVersion().WithImportModule()).WithParameters pp1 cc0 true |> withCLIArgs)
+          .WithGetVersion().WithImportModule()).WithParameters pp1 cc0 ForceTrue |> withCLIArgs)
       "dotnettest.fsproj"
 
     let x = Path.getFullName "./_DotnetTest/coverage.xml"
@@ -2903,7 +2907,7 @@ _Target "DotnetTestIntegration" (fun _ ->
     DotNet.test
       (fun to' ->
       to'.WithCommon(withWorkingDirectoryVM "_DotnetTestLineCover").WithParameters
-        pp2 cc0 true |> withCLIArgs) ""
+        pp2 cc0 ForceTrue |> withCLIArgs) ""
 
     let x = Path.getFullName "./_DotnetTestLineCover/coverage.xml"
 
@@ -2943,7 +2947,7 @@ _Target "DotnetTestIntegration" (fun _ ->
     DotNet.test
       (fun to' ->
       (to'.WithCommon(withWorkingDirectoryVM "_DotnetTestBranchCover").WithParameters
-         pp3 cc0 true) |> withCLIArgs) ""
+         pp3 cc0 ForceTrue) |> withCLIArgs) ""
 
     let x = Path.getFullName "./_DotnetTestBranchCover/coverage.xml"
 
@@ -2972,7 +2976,7 @@ _Target "DotnetTestIntegration" (fun _ ->
       DotNet.test
         (fun to' ->
         (to'.WithCommon(withWorkingDirectoryVM "RegressionTesting/issue29").WithParameters
-           pp0 cc0 true) |> withCLIArgs) ""
+           pp0 cc0 ForceTrue) |> withCLIArgs) ""
 
     let proj = XDocument.Load "./RegressionTesting/issue37/issue37.xml"
     let pack = proj.Descendants(XName.Get("PackageReference")) |> Seq.head
@@ -2989,7 +2993,7 @@ _Target "DotnetTestIntegration" (fun _ ->
       (fun to' ->
       { ((to'.WithCommon
             (withWorkingDirectoryVM "RegressionTesting/issue37")).WithParameters
-           pp4 cc0 true) with Configuration = DotNet.BuildConfiguration.Release } |> withCLIArgs)
+           pp4 cc0 ForceTrue) with Configuration = DotNet.BuildConfiguration.Release } |> withCLIArgs)
       ""
 
     let cover37 = XDocument.Load "./RegressionTesting/issue37/coverage.xml"
@@ -3030,7 +3034,7 @@ _Target "Issue20" (fun _ ->
                                                                                                  DotNet.BuildConfiguration.Debug
                                                                                                NoBuild =
                                                                                                  false }).WithParameters
-        pp0 cc0 true
+        pp0 cc0 ForceTrue
       |> withCLIArgs) ""
 
   //let shared =
@@ -3046,12 +3050,12 @@ _Target "Issue20" (fun _ ->
   //  { to'.WithCommon(fun c ->
   //      { c with WorkingDirectory =
   //                 Path.getFullName"./RegressionTesting/issue20/xunit-tests"
-  //               Verbosity = SomeDotNet.Verbosity.Minimal }).WithParameters p1 c0 with Configuration =
-  //                                                                                       DotNet.BuildConfiguration.Debug
-  //                                                                                     NoBuild =
-  //                                                                                       false
-  //                                                                                     MSBuildParams =
-  //                                                                                       cliArguments })
+  //               Verbosity = SomeDotNet.Verbosity.Minimal }).WithParameters p1 c0 ForceTrue with Configuration =
+  //                                                                                                 DotNet.BuildConfiguration.Debug
+  //                                                                                               NoBuild =
+  //                                                                                                 false
+  //                                                                                               MSBuildParams =
+  //                                                                                                 cliArguments })
   //  ""
   finally
     let folder = (nugetCache @@ "altcover") @@ !Version
@@ -3084,7 +3088,7 @@ _Target "Issue23" (fun _ ->
     let cc0 = AltCover.CollectParams.Primitive c0
     DotNet.test (fun p ->
       (({ p.WithCommon(withWorkingDirectoryVM "_Issue23") with Configuration = DotNet.BuildConfiguration.Debug
-                                                               NoBuild = false }).WithParameters pp0 cc0 true)
+                                                               NoBuild = false }).WithParameters pp0 cc0 ForceTrue)
         .WithImportModule().WithGetVersion()
       |> withCLIArgs) ""
   finally
@@ -3183,10 +3187,10 @@ _Target "DotnetCLIIntegration" (fun _ ->
     let c0 = Primitive.CollectParams.Create()
     let cc0 = AltCover.CollectParams.Primitive c0
     DotNet.test (fun to' ->
-      { to'.WithCommon(withWorkingDirectoryVM "_DotnetCLITest").WithParameters pp0 cc0 true with Configuration =
-                                                                                                   DotNet.BuildConfiguration.Debug
-                                                                                                 NoBuild =
-                                                                                                   false }
+      { to'.WithCommon(withWorkingDirectoryVM "_DotnetCLITest").WithParameters pp0 cc0 ForceTrue with Configuration =
+                                                                                                        DotNet.BuildConfiguration.Debug
+                                                                                                      NoBuild =
+                                                                                                        false }
       |> withCLIArgs) ""
 
     "./_DotnetCLITest/coverage.xml"

@@ -2,11 +2,15 @@
 namespace AltCover
 #else
 module internal AltCover.Internals
-
 #endif
 
 open System
 open System.Linq
+#if RUNNER
+open AltCover.DotNetTest
+#else
+open AltCover_Fake.DotNet.Testing
+#endif
 
 [<assembly:CLSCompliant(true)>]
 [<assembly:System.Runtime.InteropServices.ComVisible(false)>]
@@ -30,12 +34,12 @@ module DotNet =
   let ToTestArgumentList
       (prepare : AltCover.FSApi.PrepareParams)
       (collect : AltCover.FSApi.CollectParams)
-      (force : bool) =
+      (force : DotNetTest.CLIArgs) =
 #else
   let ToTestArgumentList
       (prepare : AltCover_Fake.DotNet.Testing.AltCover.PrepareParams)
       (collect : AltCover_Fake.DotNet.Testing.AltCover.CollectParams)
-      (force : bool) =
+      (force : DotNetTest.CLIArgs) =
 #endif
 
     [ FromArg String.Empty "true"
@@ -55,7 +59,7 @@ module DotNet =
       FromArg "Threshold" collect.Threshold
       (Arg "LineCover" "true", prepare.LineCover)
       (Arg "BranchCover" "true", prepare.BranchCover)
-      (Arg "Force" "true", force)]
+      (Arg "Force" "true", force.ForceDelete)]
     |> List.filter snd
     |> List.map fst
 
@@ -63,11 +67,11 @@ module DotNet =
   let ToTestArguments
     (prepare : AltCover.FSApi.PrepareParams)
     (collect : AltCover.FSApi.CollectParams)
-    (force : bool) =
+    (force : DotNetTest.CLIArgs) =
 #else
   let ToTestArguments
       (prepare : AltCover_Fake.DotNet.Testing.AltCover.PrepareParams)
       (collect : AltCover_Fake.DotNet.Testing.AltCover.CollectParams)
-      (force : bool) =
+      (force : DotNetTest.CLIArgs) =
 #endif
     ToTestArgumentList prepare collect force |> Join

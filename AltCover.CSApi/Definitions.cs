@@ -60,6 +60,11 @@ namespace AltCover.Parameters
 
         Logging ToParameters();
     }
+
+    public interface ICLIArg
+    {
+        bool Force { get; }
+    }
 }
 
 namespace AltCover.Parameters.Primitive
@@ -240,6 +245,11 @@ namespace AltCover.Parameters.Primitive
             }
         }
     }
+
+    public class CLIArgs : ICLIArg
+    {
+        public bool Force { get; set; }
+    }
 }
 
 namespace AltCover
@@ -270,17 +280,21 @@ namespace AltCover
 
         public static string ToTestArguments(IPrepareArgs p,
                                              ICollectArgs c,
-                                             bool force)
+                                             ICLIArg force)
         {
-            return DotNet.ToTestArguments(p.ToParameters(), c.ToParameters(), force);
+            return DotNet.ToTestArguments(p.ToParameters(),
+                                          c.ToParameters(),
+                                          DotNetTest.CLIArgs.NewForce(force.Force));
         }
 
         public static string[] ToTestArgumentList(IPrepareArgs p,
                                                   ICollectArgs c,
-                                                  bool force)
+                                                  ICLIArg force)
         {
-            return DotNet.ToTestArgumentList(p.ToParameters(), c.ToParameters(), force).
-                ToArray();
+            return DotNet.ToTestArgumentList(p.ToParameters(),
+                                             c.ToParameters(),
+                                             DotNetTest.CLIArgs.NewForce(force.Force)).
+            ToArray();
         }
     }
 }

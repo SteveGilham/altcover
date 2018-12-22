@@ -59,6 +59,7 @@ namespace AltCover_Fake.DotNet
 open System
 open System.Reflection
 open AltCover.Internals
+open AltCover_Fake.DotNet.Testing
 #endif
 
 module DotNet =
@@ -110,11 +111,11 @@ module DotNet =
 #if RUNNER
     member self.WithParameters (prepare : PrepareParams)
                                (collect : CollectParams)
-                               (force : bool) =
+                               (force : DotNetTest.CLIArgs) =
 #else
     member self.WithParameters (prepare : AltCover_Fake.DotNet.Testing.AltCover.PrepareParams)
            (collect : AltCover_Fake.DotNet.Testing.AltCover.CollectParams)
-           (force : bool) =
+           (force : DotNetTest.CLIArgs) =
 #endif
 
       DotNet.ToTestArguments prepare collect force |> self.ExtendCustomParams
