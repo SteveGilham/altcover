@@ -105,12 +105,12 @@ type PrepareParams =
   | Primitive of Primitive.PrepareParams
   | TypeSafe of TypeSafe.PrepareParams
 
-  static member private ToSeq(s : String seq) =
+  static member private ToSeq(s : 'a seq) =
     match s with
-    | null -> Seq.empty<string>
+    | null -> Seq.empty<'a>
     | _ -> s
 
-  static member private ToList(s : String seq) =
+  static member private ToList(s : 'a seq) =
     s
     |> PrepareParams.ToSeq
     |> Seq.toList
@@ -228,11 +228,6 @@ type PrepareParams =
   static member private validateArray a f key =
     PrepareParams.validateArraySimple a (f key)
 
-  static member private nonNull a =
-    a
-    |> isNull
-    |> not
-
   static member private validateArraySimple a f =
     a |> Seq.iter (fun s -> f s |> ignore)
 
@@ -260,18 +255,16 @@ type PrepareParams =
     let saved = CommandLine.error
 
     let validateContext context =
-      if context
-         |> isNull
-         |> not
-      then
-        let select state x =
-          let (_, n) = Main.ValidateCallContext state x
-          match (state, n) with
-          | (true, _) | (_, Left(Some _)) -> true
-          | _ -> false
-        context
-        |> Seq.fold select false
-        |> ignore
+      let select state x =
+        let (_, n) = Main.ValidateCallContext state x
+        match (state, n) with
+        | (true, _) | (_, Left(Some _)) -> true
+        | _ -> false
+      context
+      |> PrepareParams.ToSeq
+      |> Seq.fold select false
+      |> ignore
+
     try
       CommandLine.error <- []
       PrepareParams.validateOptional CommandLine.ValidateDirectory "--inputDirectory"

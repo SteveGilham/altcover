@@ -4,6 +4,7 @@ open System
 open System.Collections.Generic
 open System.IO
 open System.Reflection
+open System.Text.RegularExpressions
 open System.Xml.Linq
 
 open AltCover
@@ -136,15 +137,20 @@ module XTests =
 
   [<Fact>]
   let CollectParamsCanBeValidated() =
-    let test = { Primitive.CollectParams.Create() with Threshold = "23" }
+    let test = { Primitive.CollectParams.Create() with Threshold = "23"
+                                                       CommandLine = null }
     let scan = (CollectParams.Primitive test).Validate(false)
     Assert.Equal(0, scan.Length)
+    Assert.Equal<string list>( ["Runner"; "-t"; "23"; "--collect"],
+                 (CollectParams.Primitive test) |> Args.Collect)
 
   [<Fact>]
   let TypeSafeCollectParamsCanBeValidated() =
     let test = { TypeSafe.CollectParams.Create() with Threshold = TypeSafe.Threshold 23uy }
     let scan = (CollectParams.TypeSafe test).Validate(false)
     Assert.Equal(0, scan.Length)
+    Assert.Equal<string list>( ["Runner"; "-t"; "23"; "--collect"],
+                 (CollectParams.TypeSafe test) |> Args.Collect)
 
   [<Fact>]
   let CollectParamsCanBeValidatedWithErrors() =
@@ -153,10 +159,23 @@ module XTests =
     Assert.Equal(1, scan.Length)
 
   [<Fact>]
+  let TypeSafeCollectParamsCanBeValidatedWithErrors() =
+    let test = TypeSafe.CollectParams.Create()
+    let scan = (CollectParams.TypeSafe test).Validate(true)
+    Assert.Equal(1, scan.Length)
+
+  [<Fact>]
   let CollectParamsCanBePositivelyValidatedWithErrors() =
     let test =
       { Primitive.CollectParams.Create() with RecorderDirectory = Guid.NewGuid().ToString() }
     let scan = (CollectParams.Primitive test).Validate(true)
+    Assert.Equal(2, scan.Length)
+
+  [<Fact>]
+  let TypeSafeCollectParamsCanBePositivelyValidatedWithErrors() =
+    let test =
+      { TypeSafe.CollectParams.Create() with RecorderDirectory = TypeSafe.DInfo <| DirectoryInfo(Guid.NewGuid().ToString()) }
+    let scan = (CollectParams.TypeSafe test).Validate(true)
     Assert.Equal(2, scan.Length)
 
   [<Fact>]
@@ -174,6 +193,16 @@ module XTests =
 
     let scan = (PrepareParams.Primitive test).Validate()
     Assert.Equal(0, scan.Length)
+    let rendered = (PrepareParams.Primitive test) |> Args.Prepare
+    Assert.Equal<string list>(["-i"; here; "-o"; here
+                               "-y"; here;
+                               "-d"; Assembly.GetExecutingAssembly().Location
+                               "-p"; "ok"
+                               "-c"; "[Fact]"
+                               "--opencover"
+                               "--inplace"
+                               "--save" ],
+                 rendered)
 
   [<Fact>]
   let TypeSafePrepareParamsCanBeValidated() =
@@ -190,6 +219,40 @@ module XTests =
 
     let scan = (PrepareParams.TypeSafe test).Validate()
     Assert.Equal(0, scan.Length)
+    Assert.Equal<string list>( ["-i"; here; "-o"; here;
+                               "-y"; here;
+                               "-d"; Assembly.GetExecutingAssembly().Location;
+                               "-p"; "ok";
+                               "-c"; "[Fact]";
+                               "--opencover";
+                               "--inplace";
+                               "--save" ],
+                 (PrepareParams.TypeSafe test) |> Args.Prepare)
+
+  [<Fact>]
+  let TypeSafePrepareParamsCanBeValidatedAgain() =
+    let here = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
+
+    let test =
+      { TypeSafe.PrepareParams.Create() with InputDirectory = TypeSafe.DirectoryPath here
+                                             OutputDirectory = TypeSafe.DInfo (DirectoryInfo(here))
+                                             SymbolDirectories = TypeSafe.DirectoryPaths [| TypeSafe.DirectoryPath here |]
+                                             Dependencies = TypeSafe.FilePaths
+                                               [| TypeSafe.FilePath <|  Assembly.GetExecutingAssembly().Location |]
+                                             CommandLine = TypeSafe.Command [| TypeSafe.CommandArgument "[Fact]" |]
+                                             PathFilter = TypeSafe.Filters [| TypeSafe.FilterItem <| Regex "ok" |] }
+
+    let scan = (PrepareParams.TypeSafe test).Validate()
+    Assert.Equal(0, scan.Length)
+    Assert.Equal<string list>( ["-i"; here; "-o"; here;
+                               "-y"; here;
+                               "-d"; Assembly.GetExecutingAssembly().Location;
+                               "-p"; "ok";
+                               "--opencover";
+                               "--inplace";
+                               "--save";
+                               "--"; "[Fact]" ],
+                 (PrepareParams.TypeSafe test) |> Args.Prepare)
 
   [<Fact>]
   let PrepareParamsStrongNamesCanBeValidated() =
@@ -200,6 +263,21 @@ module XTests =
                                               Keys = [| input |] }
 
     let scan = (PrepareParams.Primitive test).Validate()
+#if NETCOREAPP2_0
+    ()
+#else
+    Assert.Equal (0, scan.Length)
+#endif
+
+  [<Fact>]
+  let TypeSafePrepareParamsStrongNamesCanBeValidated() =
+    let input = Path.Combine(AltCover.SolutionRoot.location, "Build/Infrastructure.snk")
+
+    let test =
+      { TypeSafe.PrepareParams.Create() with StrongNameKey = TypeSafe.FInfo <| FileInfo(input)
+                                             Keys = TypeSafe.FilePaths [| TypeSafe.FilePath input |] }
+
+    let scan = (PrepareParams.TypeSafe test).Validate()
 #if NETCOREAPP2_0
     ()
 #else
@@ -222,6 +300,22 @@ module XTests =
 
     let scan = (PrepareParams.Primitive test).Validate()
     Assert.Equal(2, scan.Length)
+
+  [<Fact>]
+  let TypeSafePrepareParamsCanBeValidatedAndDetectInconsistency() =
+    let test =
+      { TypeSafe.PrepareParams.Create() with BranchCover = TypeSafe.Flag true
+                                             LineCover = TypeSafe.Flag true
+                                             Single = TypeSafe.Flag true
+                                             CallContext = TypeSafe.Context [| TypeSafe.TimeItem 0uy |]}
+
+      |> PrepareParams.TypeSafe
+    let scan = test.Validate()
+    Assert.Equal(2, scan.Length)
+    let rendered = test |> Args.Prepare
+    Assert.Equal<string list> (["-c"; "0"; "--opencover"; "--inplace"; "--save";
+                                "--single"; "--linecover"; "--branchcover"],
+                               rendered)
 
   [<Fact>]
   let PrepareParamsCanBeValidatedWithErrors() =
