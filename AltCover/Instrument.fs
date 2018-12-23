@@ -350,7 +350,6 @@ module internal Instrument =
     // If there are portable .pdbs on mono, those fail to write, too with
     // Mono.CompilerServices.SymbolWriter.MonoSymbolFileException :
     // Exception of type 'Mono.CompilerServices.SymbolWriter.MonoSymbolFileException' was thrown.
-    let isWindows = System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
     pkey.WriteSymbols <- isWindows
     pkey.SymbolWriterProvider <- CreateSymbolWriter pdb isWindows monoRuntime
     // Also, there are no strongnames in .net core
