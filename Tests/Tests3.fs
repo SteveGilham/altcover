@@ -1998,17 +1998,17 @@ or
     // Tasks.fs
     [<Test>]
     member self.LoggingCanBeExercised() =
-      Assert.That(Logging.ActionAdapter null, Is.Not.Null)
-      (Logging.ActionAdapter null) "23"
-      Assert.That(Logging.ActionAdapter(new Action<String>(ignore)), Is.Not.Null)
+      Assert.That(FSApi.Logging.ActionAdapter null, Is.Not.Null)
+      (FSApi.Logging.ActionAdapter null) "23"
+      Assert.That(FSApi.Logging.ActionAdapter(new Action<String>(ignore)), Is.Not.Null)
       let mutable x = String.Empty
       let f = (fun s -> x <- s)
-      (Logging.ActionAdapter(new Action<String>(f))) "42"
+      (FSApi.Logging.ActionAdapter(new Action<String>(f))) "42"
       Assert.That(x, Is.EqualTo "42")
-      Logging.Default.Info "32"
-      Logging.Default.Warn "32"
-      Logging.Default.Error "32"
-      Logging.Default.Echo "32"
+      FSApi.Logging.Create().Info "32"
+      FSApi.Logging.Create().Warn "32"
+      FSApi.Logging.Create().Error "32"
+      FSApi.Logging.Create().Echo "32"
 
     [<Test>]
     member self.EmptyInstrumentIsJustTheDefaults() =
@@ -2017,7 +2017,7 @@ or
       let mutable args = [| "some junk " |]
       let saved = (Output.Info, Output.Error)
       try
-        subject.ACLog <- Some Logging.Default
+        subject.ACLog <- Some <| FSApi.Logging.Create()
         Main.EffectiveMain <- (fun a ->
         args <- a
         255)
@@ -2036,7 +2036,7 @@ or
       let mutable args = [| "some junk " |]
       let saved = (Output.Info, Output.Error)
       try
-        subject.ACLog <- Some Logging.Default
+        subject.ACLog <- Some <| FSApi.Logging.Create()
         Main.EffectiveMain <- (fun a ->
         args <- a
         0)
@@ -2089,7 +2089,7 @@ or
       let mutable args = [| "some junk " |]
       let saved = (Output.Info, Output.Error)
       try
-        subject.ACLog <- Some Logging.Default
+        subject.ACLog <- Some <| FSApi.Logging.Create()
         Main.EffectiveMain <- (fun a ->
         args <- a
         255)
@@ -2134,7 +2134,7 @@ or
       let warned = Output.Warn
       Assert.Throws<InvalidOperationException>(fun () -> subject.IO.Warn "x") |> ignore
       Assert.Throws<InvalidOperationException>(fun () -> subject.IO.Error "x") |> ignore
-      subject.IO <- Logging.Default
+      subject.IO <- FSApi.Logging.Create()
       try
         Main.EffectiveMain <- (fun a ->
         args <- a
@@ -2159,7 +2159,7 @@ or
       let warned = Output.Warn
       Assert.Throws<InvalidOperationException>(fun () -> subject.IO.Warn "x") |> ignore
       Assert.Throws<InvalidOperationException>(fun () -> subject.IO.Error "x") |> ignore
-      subject.IO <- Logging.Default
+      subject.IO <- FSApi.Logging.Create()
       try
         Main.EffectiveMain <- (fun a ->
         args <- a

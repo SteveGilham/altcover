@@ -188,9 +188,9 @@ type InvokeAltCoverCommand(runner : bool) =
                               CommandLine = self.CommandLine }
 
   member private self.Log() =
-    { Logging.Default with Error = (fun s -> self.Fail <- s :: self.Fail)
-                           Info = (fun s -> self.WriteInformation(s, [||]))
-                           Warn = (fun s -> self.WriteWarning s) }
+    FSApi.Logging.Primitive { Primitive.Logging.Create() with Error = (fun s -> self.Fail <- s :: self.Fail)
+                                                              Info = (fun s -> self.WriteInformation(s, [||]))
+                                                              Warn = (fun s -> self.WriteWarning s) }
 
   override self.ProcessRecord() =
     let here = Directory.GetCurrentDirectory()

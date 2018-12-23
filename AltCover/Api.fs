@@ -289,6 +289,40 @@ type PrepareParams =
       CommandLine.error |> List.toArray
     finally
       CommandLine.error <- saved
+
+[<ExcludeFromCodeCoverage; NoComparison; NoEquality>]
+type Logging =
+  | Primitive of Primitive.Logging
+
+  static member Create() =
+    Primitive.Logging.Create() |> Primitive
+
+  static member ActionAdapter(a : Action<String>) =
+    match a with
+    | null -> ignore
+    | _ -> a.Invoke
+
+  member self.Error =
+    match self with
+    | Primitive p -> p.Error
+
+  member self.Warn =
+    match self with
+    | Primitive p -> p.Warn
+
+  member self.Echo =
+    match self with
+    | Primitive p -> p.Echo
+
+  member self.Info =
+    match self with
+    | Primitive p -> p.Info
+
+  member internal self.Apply() =
+    Output.Error <- self.Error
+    Output.Warn <- self.Warn
+    Output.Info <- self.Info
+    Output.Echo <- self.Echo
 #else
 [<ExcludeFromCodeCoverage; NoComparison>]
 type CoverageEnvironment = Framework | Dotnet

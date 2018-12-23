@@ -11,16 +11,16 @@ open AltCover.FSApi
 module Trace =
   open Fake.Core
 
-  let Default =
-    { AltCover.Logging.Default with Info = Trace.trace
-                                    Warn = Trace.traceImportant
-                                    Error = Trace.traceError
-                                    Echo = Trace.traceVerbose }
+  let Create() =
+    Logging.Primitive { Primitive.Logging.Create() with Info = Trace.trace
+                                                        Warn = Trace.traceImportant
+                                                        Error = Trace.traceError
+                                                        Echo = Trace.traceVerbose }
 
   let internal DoDefault(log : Logging option) =
     match log with
     | Some logging -> logging
-    | None -> Default
+    | None -> Create()
 
 [<NoComparison>]
 type Implementation =

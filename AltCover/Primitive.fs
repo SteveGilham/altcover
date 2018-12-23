@@ -76,3 +76,18 @@ type PrepareParams =
       LineCover = false
       BranchCover = false
       CommandLine = [] }
+
+#if RUNNER
+[<ExcludeFromCodeCoverage; NoComparison; NoEquality>]
+type Logging =
+  { Info : String -> unit
+    Warn : String -> unit
+    Error : String -> unit
+    Echo : String -> unit }
+
+  static member Create() : Logging =
+    { Info = ignore
+      Warn = ignore
+      Error = ignore
+      Echo = ignore }
+#endif

@@ -58,7 +58,7 @@ namespace AltCover.Parameters
         Action<String> Error { get; }
         Action<String> Echo { get; }
 
-        Logging ToParameters();
+        FSApi.Logging ToParameters();
     }
 
     public interface ICLIArg
@@ -222,13 +222,14 @@ namespace AltCover.Parameters.Primitive
         public Action<String> Error { get; set; }
         public Action<String> Echo { get; set; }
 
-        public Logging ToParameters()
+        public FSApi.Logging ToParameters()
         {
-            return new Logging(
-                Logging.ActionAdapter(Info),
-                Logging.ActionAdapter(Warn),
-                Logging.ActionAdapter(Error),
-                Logging.ActionAdapter(Echo));
+            var primitive = new AltCover.Primitive.Logging(
+                FSApi.Logging.ActionAdapter(Info),
+                FSApi.Logging.ActionAdapter(Warn),
+                FSApi.Logging.ActionAdapter(Error),
+                FSApi.Logging.ActionAdapter(Echo));
+            return FSApi.Logging.NewPrimitive(primitive);
         }
 
         public static LogArgs Default

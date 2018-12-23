@@ -7,30 +7,6 @@ open Microsoft.Build.Framework
 open Augment
 open AltCover.FSApi
 
-[<ExcludeFromCodeCoverage; NoComparison; NoEquality>]
-type Logging =
-  { Info : String -> unit
-    Warn : String -> unit
-    Error : String -> unit
-    Echo : String -> unit }
-
-  static member Default : Logging =
-    { Info = ignore
-      Warn = ignore
-      Error = ignore
-      Echo = ignore }
-
-  static member ActionAdapter(a : Action<String>) =
-    match a with
-    | null -> ignore
-    | _ -> a.Invoke
-
-  member internal self.Apply() =
-    Output.Error <- self.Error
-    Output.Warn <- self.Warn
-    Output.Info <- self.Info
-    Output.Echo <- self.Echo
-
 module Api =
   let Prepare (args : PrepareParams) (log : Logging) =
     log.Apply()
@@ -47,7 +23,7 @@ module Api =
 
   let mutable internal store = String.Empty
   let private writeToStore s = store <- s
-  let internal LogToStore = { Logging.Default with Info = writeToStore }
+  let internal LogToStore = Logging.Primitive { Primitive.Logging.Create() with Info = writeToStore }
 
   let internal GetStringValue s =
     writeToStore String.Empty
@@ -92,9 +68,9 @@ type Prepare() =
   member self.Message x = base.Log.LogMessage(MessageImportance.High, x)
   override self.Execute() =
     let log =
-      Option.getOrElse { Logging.Default with Error = base.Log.LogError
-                                              Warn = base.Log.LogWarning
-                                              Info = self.Message } self.ACLog
+      Option.getOrElse (Logging.Primitive { Primitive.Logging.Create() with Error = base.Log.LogError
+                                                                            Warn = base.Log.LogWarning
+                                                                            Info = self.Message }) self.ACLog
 
     let task =
       PrepareParams.Primitive { InputDirectory = self.InputDirectory
@@ -147,9 +123,9 @@ type Collect() =
   member self.Message x = base.Log.LogMessage(MessageImportance.High, x)
   override self.Execute() =
     let log =
-      Option.getOrElse { Logging.Default with Error = base.Log.LogError
-                                              Warn = base.Log.LogWarning
-                                              Info = self.Message } self.ACLog
+      Option.getOrElse (Logging.Primitive { Primitive.Logging.Create() with Error = base.Log.LogError
+                                                                            Warn = base.Log.LogWarning
+                                                                            Info = self.Message }) self.ACLog
 
     let task =
       CollectParams.Primitive { RecorderDirectory = self.RecorderDirectory
@@ -166,8 +142,8 @@ type Collect() =
 type PowerShell() =
   inherit Task(null)
 
-  member val internal IO = { Logging.Default with Error = base.Log.LogError
-                                                  Warn = base.Log.LogWarning } with get, set
+  member val internal IO = Logging.Primitive { Primitive.Logging.Create() with Error = base.Log.LogError
+                                                                               Warn = base.Log.LogWarning } with get, set
 
   override self.Execute() =
     let r = Api.Ipmo()
@@ -178,8 +154,8 @@ type PowerShell() =
 type GetVersion() =
   inherit Task(null)
 
-  member val internal IO = { Logging.Default with Error = base.Log.LogError
-                                                  Warn = base.Log.LogWarning } with get, set
+  member val internal IO = Logging.Primitive { Primitive.Logging.Create() with Error = base.Log.LogError
+                                                                               Warn = base.Log.LogWarning } with get, set
 
   override self.Execute() =
     let r = Api.Version()
