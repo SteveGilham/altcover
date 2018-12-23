@@ -323,12 +323,13 @@ module internal Instrument =
       |> Path.GetExtension
 #if NETCOREAPP2_0
     // Once Cecil 0.10 beta6 is taken out of the equation, this works
-    pkey.WriteSymbols <- true
-    pkey.SymbolWriterProvider <- match pdb with
-                                 | ".pdb" ->
+    pkey.WriteSymbols <- assembly.MainModule.HasSymbols
+    pkey.SymbolWriterProvider <- match (pdb, pkey.WriteSymbols) with
+                                 | (".pdb", true) ->
                                    Mono.Cecil.Pdb.PdbWriterProvider() :> ISymbolWriterProvider
-                                 | _ ->
+                                 | (_, true) ->
                                    Mono.Cecil.Mdb.MdbWriterProvider() :> ISymbolWriterProvider
+                                 | _ -> null
 #else
     // Assembly with pdb writing fails on mono on Windows when writing with
     // System.NullReferenceException : Object reference not set to an instance of an object.

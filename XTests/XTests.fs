@@ -422,8 +422,9 @@ module XTests =
         [ "AltCover.Recorder.g.dll"
 #if NETCOREAPP2_1
           "FSharp.Core.dll"
-#endif
+#else
           "AltCover.Recorder.g.pdb";
+#endif
           "Sample4.deps.json"; "Sample4.dll"; "Sample4.runtimeconfig.dev.json";
           "Sample4.runtimeconfig.json"; "Sample4.pdb";
           "xunit.runner.reporters.netcoreapp10.dll";
@@ -441,7 +442,12 @@ module XTests =
            |> not
         then
           List.concat [ expected
-                        [ "AltCover.Recorder.g.dll.mdb"; "Sample4.dll.mdb" ] ]
+                        [
+#if NETCOREAPP2_1
+#else
+                            "AltCover.Recorder.g.dll.mdb";
+#endif
+                            "Sample4.dll.mdb" ] ]
           |> List.filter (fun f -> f.EndsWith(".g.pdb", StringComparison.Ordinal) |> not)
           |> List.filter
                (fun f ->
@@ -597,9 +603,11 @@ module XTests =
 
       let theFiles =
         if File.Exists(pdb) then
-          [ "AltCover.Recorder.g.dll"; "AltCover.Recorder.g.pdb"
+          [ "AltCover.Recorder.g.dll";
 #if NETCOREAPP2_1
             "FSharp.Core.dll"
+#else
+            "AltCover.Recorder.g.pdb"
 #endif
             "Sample1.exe"; "Sample1.exe.mdb" ]
            // See Instrument.WriteAssembly
@@ -609,7 +617,12 @@ module XTests =
                                    (f.EndsWith("db", StringComparison.Ordinal) |> not))
 #endif
         else
-          [ "AltCover.Recorder.g.dll"; "AltCover.Recorder.g.dll.mdb"; "Sample1.exe";
+          [ "AltCover.Recorder.g.dll";
+#if NETCOREAPP2_1
+#else
+            "AltCover.Recorder.g.dll.mdb";
+#endif
+            "Sample1.exe";
             "Sample1.exe.mdb" ]
           |> List.filter
                (fun f ->

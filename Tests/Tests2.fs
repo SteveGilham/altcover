@@ -389,6 +389,7 @@ type AltCoverTests2() =
         Assert.That(prepared.Name.Name, Is.EqualTo(raw.Name.Name + ".g"))
 #if NETCOREAPP2_0
         Assert.That(prepared.Name.HasPublicKey, Is.False)
+        Assert.That(prepared.MainModule.HasSymbols, Is.False)
 #else
         Assert.That (prepared.Name.HasPublicKey)
         Assert.That (prepared.Name.PublicKey, Is.Not.EquivalentTo(raw.Name.PublicKey))
