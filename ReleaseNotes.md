@@ -2,6 +2,12 @@ Q. Never mind the fluff -- how do I get started?
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
+# 5.0.66x (Ezoguma series release 1)
+* [BUGFIX] Issue #46 -- handle the case of a left-behind `__Saved` directories by failing in a more obvious fashion (and offering a `/p:AltCoverForce=true` option to force-delete such a directory)
+* Support instrumenting assemblies with embedded PDBs
+  * [BREAKING] the `XUnit` assemblies have embedded PDBs, so will suddenyl be caught up in instrumentation without a `-e xunit` or equivalent to exclude them
+* [BREAKING] Complete API overhaul  
+
 # 4.0.661 (Doruka series release 11)
 * [BUGFIX] More forms of Issue #43 related to `yield return` synthetic methods.
 * [BUGFIX] Issue #45 by re-working the static linkage of the recorder assembly using `ILMerge /internalise` (rather than `--standalone`).
