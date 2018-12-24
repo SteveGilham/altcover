@@ -4,7 +4,6 @@ open System
 open System.IO
 open System.Management.Automation
 open AltCover
-open AltCover.FSApi
 
 [<Cmdlet(VerbsLifecycle.Invoke, "AltCover")>]
 [<OutputType("System.Void")>]
@@ -148,44 +147,44 @@ type InvokeAltCoverCommand(runner : bool) =
   member val private Fail : String list = [] with get, set
 
   member private self.Collect() =
-    CollectParams.Primitive { RecorderDirectory = self.RecorderDirectory
-                              WorkingDirectory = self.WorkingDirectory
-                              Executable = self.Executable
-                              LcovReport = self.LcovReport
-                              Threshold = self.Threshold
-                              Cobertura = self.Cobertura
-                              OutputFile = self.OutputFile
-                              CommandLine = self.CommandLine }
+    FSApi.CollectParams.Primitive { RecorderDirectory = self.RecorderDirectory
+                                    WorkingDirectory = self.WorkingDirectory
+                                    Executable = self.Executable
+                                    LcovReport = self.LcovReport
+                                    Threshold = self.Threshold
+                                    Cobertura = self.Cobertura
+                                    OutputFile = self.OutputFile
+                                    CommandLine = self.CommandLine }
 
   member private self.Prepare() =
-    PrepareParams.Primitive { InputDirectory = self.InputDirectory
-                              OutputDirectory = self.OutputDirectory
-                              SymbolDirectories = self.SymbolDirectory
+    FSApi.PrepareParams.Primitive { InputDirectory = self.InputDirectory
+                                    OutputDirectory = self.OutputDirectory
+                                    SymbolDirectories = self.SymbolDirectory
 #if NETCOREAPP2_0
-                              Dependencies = self.Dependency
-                              Keys = []
-                              StrongNameKey = String.Empty
+                                    Dependencies = self.Dependency
+                                    Keys = []
+                                    StrongNameKey = String.Empty
 #else
-                              Dependencies = []
-                              Keys = self.Key;
-                              StrongNameKey = self.StrongNameKey;
+                                    Dependencies = []
+                                    Keys = self.Key;
+                                    StrongNameKey = self.StrongNameKey;
 #endif
-                              XmlReport = self.XmlReport
-                              FileFilter = self.FileFilter
-                              AssemblyFilter = self.AssemblyFilter
-                              AssemblyExcludeFilter = self.AssemblyExcludeFilter
-                              TypeFilter = self.TypeFilter
-                              MethodFilter = self.MethodFilter
-                              AttributeFilter = self.AttributeFilter
-                              PathFilter = self.PathFilter
-                              CallContext = self.CallContext
-                              OpenCover = self.OpenCover.IsPresent
-                              InPlace = self.InPlace.IsPresent
-                              Save = self.Save.IsPresent
-                              Single = self.Single.IsPresent
-                              LineCover = self.LineCover.IsPresent
-                              BranchCover = self.BranchCover.IsPresent
-                              CommandLine = self.CommandLine }
+                                    XmlReport = self.XmlReport
+                                    FileFilter = self.FileFilter
+                                    AssemblyFilter = self.AssemblyFilter
+                                    AssemblyExcludeFilter = self.AssemblyExcludeFilter
+                                    TypeFilter = self.TypeFilter
+                                    MethodFilter = self.MethodFilter
+                                    AttributeFilter = self.AttributeFilter
+                                    PathFilter = self.PathFilter
+                                    CallContext = self.CallContext
+                                    OpenCover = self.OpenCover.IsPresent
+                                    InPlace = self.InPlace.IsPresent
+                                    Save = self.Save.IsPresent
+                                    Single = self.Single.IsPresent
+                                    LineCover = self.LineCover.IsPresent
+                                    BranchCover = self.BranchCover.IsPresent
+                                    CommandLine = self.CommandLine }
 
   member private self.Log() =
     FSApi.Logging.Primitive { Primitive.Logging.Create() with Error = (fun s -> self.Fail <- s :: self.Fail)

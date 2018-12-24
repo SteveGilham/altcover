@@ -69,9 +69,6 @@
     <Compile Include="..\AltCover\Api.fs">
       <Link>Api.fs</Link>
     </Compile>
-    <Compile Include="..\AltCover.FSApi\CLIArgs.fs">
-      <Link>CLIArgs.fs</Link>
-    </Compile>
     <Compile Include="..\AltCover.FSApi\Definitions.fs">
       <Link>Definitions.fs</Link>
     </Compile>

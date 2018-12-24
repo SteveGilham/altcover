@@ -7,6 +7,7 @@ open System.Linq
 open System.Xml
 open System.Xml.XPath
 
+[<RequireQualifiedAccess>]
 module OpenCoverUtilities =
 
   let private CompressMethod withinSequencePoint sameSpan (m : XmlElement) =

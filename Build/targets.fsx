@@ -128,7 +128,7 @@ let NuGetAltCover =
   |> Seq.tryHead
 
 
-let ForceTrue = DotNetTest.CLIArgs.Force true
+let ForceTrue = DotNet.CLIArgs.Force true
 
 let _Target s f =
   Target.description s
@@ -2758,7 +2758,7 @@ _Target "DoIt"
 
   let collect = FSApi.CollectParams.Primitive { AltCover.Primitive.CollectParams.Create() with LcovReport = "x" }
   let prepare = FSApi.PrepareParams.Primitive { AltCover.Primitive.PrepareParams.Create() with TypeFilter = [| "a"; "b" |] }
-  let ForceTrue = DotNetTest.CLIArgs.Force true
+  let ForceTrue = DotNet.CLIArgs.Force true
   printfn "%s" (DotNet.ToTestArguments prepare collect ForceTrue)
 
   let t = DotNet.TestOptions.Create().WithParameters prepare collect ForceTrue

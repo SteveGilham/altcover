@@ -1,22 +1,32 @@
 #if RUNNER
 namespace AltCover
 #else
-module internal AltCover.Internals
+namespace AltCover_Fake.DotNet.Testing
 #endif
 
 open System
+open System.Diagnostics.CodeAnalysis
 open System.Linq
-#if RUNNER
-open AltCover.DotNetTest
-#else
-open AltCover_Fake.DotNet.Testing
-#endif
 
 [<assembly:CLSCompliant(true)>]
 [<assembly:System.Runtime.InteropServices.ComVisible(false)>]
 do ()
 
+[<RequireQualifiedAccess>]
 module DotNet =
+  [<NoComparison; SuppressMessage("Microsoft.Design", "CA1034",
+                                  Justification = "Idiomatic F#")>]
+  type CLIArgs =
+    | Force of bool
+  with member self.ForceDelete =
+        match self with
+        | Force b -> b
+
+#if RUNNER
+#else
+module internal Internals =
+#endif
+
   let private Arg name s = (sprintf """/p:AltCover%s="%s" """ name s).Trim()
   let private ListArg name (s : String seq) =
     (sprintf """/p:AltCover%s="%s" """ name <| String.Join("|", s)).Trim()
@@ -34,12 +44,12 @@ module DotNet =
   let ToTestArgumentList
       (prepare : AltCover.FSApi.PrepareParams)
       (collect : AltCover.FSApi.CollectParams)
-      (force : DotNetTest.CLIArgs) =
+      (force : CLIArgs) =
 #else
   let ToTestArgumentList
       (prepare : AltCover_Fake.DotNet.Testing.AltCover.PrepareParams)
       (collect : AltCover_Fake.DotNet.Testing.AltCover.CollectParams)
-      (force : DotNetTest.CLIArgs) =
+      (force : DotNet.CLIArgs) =
 #endif
 
     [ FromArg String.Empty "true"
@@ -67,11 +77,11 @@ module DotNet =
   let ToTestArguments
     (prepare : AltCover.FSApi.PrepareParams)
     (collect : AltCover.FSApi.CollectParams)
-    (force : DotNetTest.CLIArgs) =
+    (force : CLIArgs) =
 #else
   let ToTestArguments
       (prepare : AltCover_Fake.DotNet.Testing.AltCover.PrepareParams)
       (collect : AltCover_Fake.DotNet.Testing.AltCover.CollectParams)
-      (force : DotNetTest.CLIArgs) =
+      (force : DotNet.CLIArgs) =
 #endif
     ToTestArgumentList prepare collect force |> Join

@@ -34,7 +34,6 @@
     <Compile Include="..\AltCover\Primitive.fs" Link="Primitive.fs" />
     <Compile Include="..\AltCover\TypeSafe.fs" Link="TypeSafe.fs" />
     <Compile Include="..\AltCover\Api.fs" Link="Api.fs" />
-    <Compile Include="..\AltCover.FSApi\CLIArgs.fs" Link="CLIArgs.fs" />
     <Compile Include="..\AltCover.FSApi\Definitions.fs" Link="Definitions.fs" />
     <Compile Include="..\AltCover.Fake\Fake.fs" Link="Fake.fs" />
   </ItemGroup>

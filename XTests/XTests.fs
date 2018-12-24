@@ -8,7 +8,6 @@ open System.Text.RegularExpressions
 open System.Xml.Linq
 
 open AltCover
-open AltCover.FSApi
 open Mono.Options
 open Newtonsoft.Json.Linq
 open Xunit
@@ -139,43 +138,43 @@ module XTests =
   let CollectParamsCanBeValidated() =
     let test = { Primitive.CollectParams.Create() with Threshold = "23"
                                                        CommandLine = null }
-    let scan = (CollectParams.Primitive test).Validate(false)
+    let scan = (FSApi.CollectParams.Primitive test).Validate(false)
     Assert.Equal(0, scan.Length)
     Assert.Equal<string list>( ["Runner"; "-t"; "23"; "--collect"],
-                 (CollectParams.Primitive test) |> Args.Collect)
+                 (FSApi.CollectParams.Primitive test) |> FSApi.Args.Collect)
 
   [<Fact>]
   let TypeSafeCollectParamsCanBeValidated() =
     let test = { TypeSafe.CollectParams.Create() with Threshold = TypeSafe.Threshold 23uy }
-    let scan = (CollectParams.TypeSafe test).Validate(false)
+    let scan = (FSApi.CollectParams.TypeSafe test).Validate(false)
     Assert.Equal(0, scan.Length)
     Assert.Equal<string list>( ["Runner"; "-t"; "23"; "--collect"],
-                 (CollectParams.TypeSafe test) |> Args.Collect)
+                 (FSApi.CollectParams.TypeSafe test) |> FSApi.Args.Collect)
 
   [<Fact>]
   let CollectParamsCanBeValidatedWithErrors() =
     let test = Primitive.CollectParams.Create()
-    let scan = (CollectParams.Primitive test).Validate(true)
+    let scan = (FSApi.CollectParams.Primitive test).Validate(true)
     Assert.Equal(1, scan.Length)
 
   [<Fact>]
   let TypeSafeCollectParamsCanBeValidatedWithErrors() =
     let test = TypeSafe.CollectParams.Create()
-    let scan = (CollectParams.TypeSafe test).Validate(true)
+    let scan = (FSApi.CollectParams.TypeSafe test).Validate(true)
     Assert.Equal(1, scan.Length)
 
   [<Fact>]
   let CollectParamsCanBePositivelyValidatedWithErrors() =
     let test =
       { Primitive.CollectParams.Create() with RecorderDirectory = Guid.NewGuid().ToString() }
-    let scan = (CollectParams.Primitive test).Validate(true)
+    let scan = (FSApi.CollectParams.Primitive test).Validate(true)
     Assert.Equal(2, scan.Length)
 
   [<Fact>]
   let TypeSafeCollectParamsCanBePositivelyValidatedWithErrors() =
     let test =
       { TypeSafe.CollectParams.Create() with RecorderDirectory = TypeSafe.DInfo <| DirectoryInfo(Guid.NewGuid().ToString()) }
-    let scan = (CollectParams.TypeSafe test).Validate(true)
+    let scan = (FSApi.CollectParams.TypeSafe test).Validate(true)
     Assert.Equal(2, scan.Length)
 
   [<Fact>]
@@ -191,9 +190,9 @@ module XTests =
                                               CallContext = [| "[Fact]" |]
                                               PathFilter = [| "ok" |] }
 
-    let scan = (PrepareParams.Primitive test).Validate()
+    let scan = (FSApi.PrepareParams.Primitive test).Validate()
     Assert.Equal(0, scan.Length)
-    let rendered = (PrepareParams.Primitive test) |> Args.Prepare
+    let rendered = (FSApi.PrepareParams.Primitive test) |> FSApi.Args.Prepare
     Assert.Equal<string list>(["-i"; here; "-o"; here
                                "-y"; here;
                                "-d"; Assembly.GetExecutingAssembly().Location
@@ -217,7 +216,7 @@ module XTests =
                                              CallContext = TypeSafe.Context [| TypeSafe.CallItem "[Fact]" |]
                                              PathFilter = TypeSafe.Filters [| TypeSafe.Raw "ok" |] }
 
-    let scan = (PrepareParams.TypeSafe test).Validate()
+    let scan = (FSApi.PrepareParams.TypeSafe test).Validate()
     Assert.Equal(0, scan.Length)
     Assert.Equal<string list>( ["-i"; here; "-o"; here;
                                "-y"; here;
@@ -227,7 +226,7 @@ module XTests =
                                "--opencover";
                                "--inplace";
                                "--save" ],
-                 (PrepareParams.TypeSafe test) |> Args.Prepare)
+                 (FSApi.PrepareParams.TypeSafe test) |> FSApi.Args.Prepare)
 
   [<Fact>]
   let TypeSafePrepareParamsCanBeValidatedAgain() =
@@ -242,7 +241,7 @@ module XTests =
                                              CommandLine = TypeSafe.Command [| TypeSafe.CommandArgument "[Fact]" |]
                                              PathFilter = TypeSafe.Filters [| TypeSafe.FilterItem <| Regex "ok" |] }
 
-    let scan = (PrepareParams.TypeSafe test).Validate()
+    let scan = (FSApi.PrepareParams.TypeSafe test).Validate()
     Assert.Equal(0, scan.Length)
     Assert.Equal<string list>( ["-i"; here; "-o"; here;
                                "-y"; here;
@@ -252,7 +251,7 @@ module XTests =
                                "--inplace";
                                "--save";
                                "--"; "[Fact]" ],
-                 (PrepareParams.TypeSafe test) |> Args.Prepare)
+                 (FSApi.PrepareParams.TypeSafe test) |> FSApi.Args.Prepare)
 
   [<Fact>]
   let PrepareParamsStrongNamesCanBeValidated() =
@@ -262,7 +261,7 @@ module XTests =
       { Primitive.PrepareParams.Create() with StrongNameKey = input
                                               Keys = [| input |] }
 
-    let scan = (PrepareParams.Primitive test).Validate()
+    let scan = (FSApi.PrepareParams.Primitive test).Validate()
 #if NETCOREAPP2_0
     ()
 #else
@@ -277,7 +276,7 @@ module XTests =
       { TypeSafe.PrepareParams.Create() with StrongNameKey = TypeSafe.FInfo <| FileInfo(input)
                                              Keys = TypeSafe.FilePaths [| TypeSafe.FilePath input |] }
 
-    let scan = (PrepareParams.TypeSafe test).Validate()
+    let scan = (FSApi.PrepareParams.TypeSafe test).Validate()
 #if NETCOREAPP2_0
     ()
 #else
@@ -287,7 +286,7 @@ module XTests =
   [<Fact>]
   let PrepareParamsCanBeValidatedWithNulls() =
     let test = { Primitive.PrepareParams.Create() with CallContext = null }
-    let scan = (PrepareParams.Primitive test).Validate()
+    let scan = (FSApi.PrepareParams.Primitive test).Validate()
     Assert.Equal(0, scan.Length)
 
   [<Fact>]
@@ -298,7 +297,7 @@ module XTests =
                                               Single = true
                                               CallContext = [| "0" |] }
 
-    let scan = (PrepareParams.Primitive test).Validate()
+    let scan = (FSApi.PrepareParams.Primitive test).Validate()
     Assert.Equal(2, scan.Length)
 
   [<Fact>]
@@ -309,10 +308,10 @@ module XTests =
                                              Single = TypeSafe.Flag true
                                              CallContext = TypeSafe.Context [| TypeSafe.TimeItem 0uy |]}
 
-      |> PrepareParams.TypeSafe
+      |> FSApi.PrepareParams.TypeSafe
     let scan = test.Validate()
     Assert.Equal(2, scan.Length)
-    let rendered = test |> Args.Prepare
+    let rendered = test |> FSApi.Args.Prepare
     Assert.Equal<string list> (["-c"; "0"; "--opencover"; "--inplace"; "--save";
                                 "--single"; "--linecover"; "--branchcover"],
                                rendered)
@@ -323,12 +322,12 @@ module XTests =
       { Primitive.PrepareParams.Create() with XmlReport = String(Path.GetInvalidPathChars())
                                               CallContext = [| "0"; "1" |] }
 
-    let scan = (PrepareParams.Primitive test).Validate()
+    let scan = (FSApi.PrepareParams.Primitive test).Validate()
     Assert.Equal(2, scan.Length)
 
   [<Fact>]
   let NullListsAreEmpty() =
-    let test = Args.ItemList String.Empty null
+    let test = FSApi.Args.ItemList String.Empty null
     Assert.True(test |> List.isEmpty)
 
   [<Fact>]

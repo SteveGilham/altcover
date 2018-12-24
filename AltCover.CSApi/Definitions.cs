@@ -95,22 +95,19 @@ namespace AltCover.Parameters.Primitive
             return FSApi.CollectParams.NewPrimitive(primitive);
         }
 
-        public static CollectArgs Default
+        public static CollectArgs Create()
         {
-            get
+            return new CollectArgs
             {
-                return new CollectArgs
-                {
-                    RecorderDirectory = string.Empty,
-                    WorkingDirectory = string.Empty,
-                    Executable = string.Empty,
-                    LcovReport = string.Empty,
-                    Threshold = string.Empty,
-                    Cobertura = string.Empty,
-                    OutputFile = string.Empty,
-                    CommandLine = new string[] { }
-                };
-            }
+                RecorderDirectory = string.Empty,
+                WorkingDirectory = string.Empty,
+                Executable = string.Empty,
+                LcovReport = string.Empty,
+                Threshold = string.Empty,
+                Cobertura = string.Empty,
+                OutputFile = string.Empty,
+                CommandLine = new string[] { }
+            };
         }
 
         public string[] Validate(bool afterPreparation)
@@ -176,37 +173,34 @@ namespace AltCover.Parameters.Primitive
             return FSApi.PrepareParams.NewPrimitive(primitive);
         }
 
-        public static PrepareArgs Default
+        public static PrepareArgs Create()
         {
-            get
+            return new PrepareArgs
             {
-                return new PrepareArgs
-                {
-                    InputDirectory = string.Empty,
-                    OutputDirectory = string.Empty,
-                    SymbolDirectories = new string[0],
-                    Dependencies = new string[0],
-                    Keys = new string[0],
-                    StrongNameKey = string.Empty,
-                    XmlReport = string.Empty,
-                    FileFilter = new string[0],
-                    AssemblyFilter = new string[0],
-                    AssemblyExcludeFilter = new string[0],
-                    TypeFilter = new string[0],
-                    MethodFilter = new string[0],
-                    AttributeFilter = new string[0],
-                    PathFilter = new string[0],
-                    CallContext = new string[0],
+                InputDirectory = string.Empty,
+                OutputDirectory = string.Empty,
+                SymbolDirectories = new string[0],
+                Dependencies = new string[0],
+                Keys = new string[0],
+                StrongNameKey = string.Empty,
+                XmlReport = string.Empty,
+                FileFilter = new string[0],
+                AssemblyFilter = new string[0],
+                AssemblyExcludeFilter = new string[0],
+                TypeFilter = new string[0],
+                MethodFilter = new string[0],
+                AttributeFilter = new string[0],
+                PathFilter = new string[0],
+                CallContext = new string[0],
 
-                    OpenCover = true,
-                    InPlace = true,
-                    Save = true,
-                    Single = false,
-                    LineCover = false,
-                    BranchCover = false,
-                    CommandLine = { }
-                };
-            }
+                OpenCover = true,
+                InPlace = true,
+                Save = true,
+                Single = false,
+                LineCover = false,
+                BranchCover = false,
+                CommandLine = { }
+            };
         }
 
         public string[] Validate()
@@ -285,7 +279,7 @@ namespace AltCover
         {
             return DotNet.ToTestArguments(p.ToParameters(),
                                           c.ToParameters(),
-                                          DotNetTest.CLIArgs.NewForce(force.Force));
+                                          DotNet.CLIArgs.NewForce(force.Force));
         }
 
         public static string[] ToTestArgumentList(IPrepareArgs p,
@@ -294,7 +288,7 @@ namespace AltCover
         {
             return DotNet.ToTestArgumentList(p.ToParameters(),
                                              c.ToParameters(),
-                                             DotNetTest.CLIArgs.NewForce(force.Force)).
+                                             DotNet.CLIArgs.NewForce(force.Force)).
             ToArray();
         }
     }

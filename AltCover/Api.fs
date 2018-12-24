@@ -1,5 +1,6 @@
 #if RUNNER
-namespace AltCover.FSApi
+[<RequireQualifiedAccess>]
+module AltCover.FSApi
 #else
 [<RequireQualifiedAccess>]
 module AltCover_Fake.DotNet.Testing.AltCover

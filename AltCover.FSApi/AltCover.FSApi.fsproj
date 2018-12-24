@@ -69,7 +69,6 @@
     <Compile Include="..\_Generated\AssemblyVersion.fs">
       <Link>AssemblyVersion.fs</Link>
     </Compile>
-    <Compile Include="CLIArgs.fs" />
     <Compile Include="Definitions.fs" />
     <Compile Include="Xml.fs" />
     <Compile Include="Xhtml.fs" />
