@@ -226,18 +226,15 @@ namespace AltCover.Parameters.Primitive
             return FSApi.Logging.NewPrimitive(primitive);
         }
 
-        public static LogArgs Default
+        public static LogArgs Create()
         {
-            get
+            return new LogArgs
             {
-                return new LogArgs
-                {
-                    Info = x => { },
-                    Warn = x => { },
-                    Error = x => { },
-                    Echo = x => { }
-                };
-            }
+                Info = x => { },
+                Warn = x => { },
+                Error = x => { },
+                Echo = x => { }
+            };
         }
     }
 
