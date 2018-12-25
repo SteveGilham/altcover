@@ -60,6 +60,12 @@
     <Compile Include="..\_Generated\AssemblyVersion.fs">
       <Link>AssemblyVersion.fs</Link>
     </Compile>
+    <Compile Include="..\AltCover\Primitive.fs">
+      <Link>Primitive.fs</Link>
+    </Compile>
+    <Compile Include="..\AltCover\TypeSafe.fs">
+      <Link>TypeSafe.fs</Link>
+    </Compile>
     <Compile Include="..\AltCover\Api.fs">
       <Link>Api.fs</Link>
     </Compile>

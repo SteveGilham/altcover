@@ -175,7 +175,10 @@ module internal Instrument =
   let internal PrepareAssembly(location : string) =
     let definition = AssemblyDefinition.ReadAssembly(location)
     Guard definition (fun () ->
+#if NETCOREAPP2_0
+#else
       ProgramDatabase.ReadSymbols definition
+#endif
       definition.Name.Name <- (extractName definition) + ".g"
 
       let pair = Visitor.recorderStrongNameKey
@@ -313,19 +316,27 @@ module internal Instrument =
   /// when asked to strongname.  This writes a new .pdb/.mdb alongside the instrumented assembly</remark>
   let internal WriteAssembly (assembly : AssemblyDefinition) (path : string) =
     let pkey = Mono.Cecil.WriterParameters()
+    let isWindows = System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
 
     let pdb =
       ProgramDatabase.GetPdbWithFallback assembly
       |> Option.getOrElse "x.pdb"
       |> Path.GetExtension
 #if NETCOREAPP2_0
+    let separatePdb = ProgramDatabase.GetPdbFromImage assembly
+                      |> Option.filter (fun s -> s <> (assembly.Name.Name + ".pdb"))
+                      |> Option.isSome
+
     // Once Cecil 0.10 beta6 is taken out of the equation, this works
-    pkey.WriteSymbols <- true
-    pkey.SymbolWriterProvider <- match pdb with
-                                 | ".pdb" ->
+    // apart from renaming assemblies like AltCover.Recorder to AltCover.Recorder.g
+    // or for assemblies with embedded .pdb information (on *nix)
+    pkey.WriteSymbols <- (isWindows || separatePdb) && assembly.MainModule.HasSymbols
+    pkey.SymbolWriterProvider <- match (pdb, pkey.WriteSymbols) with
+                                 | (".pdb", true) ->
                                    Mono.Cecil.Pdb.PdbWriterProvider() :> ISymbolWriterProvider
-                                 | _ ->
+                                 | (_, true) ->
                                    Mono.Cecil.Mdb.MdbWriterProvider() :> ISymbolWriterProvider
+                                 | _ -> null
 #else
     // Assembly with pdb writing fails on mono on Windows when writing with
     // System.NullReferenceException : Object reference not set to an instance of an object.
@@ -339,7 +350,6 @@ module internal Instrument =
     // If there are portable .pdbs on mono, those fail to write, too with
     // Mono.CompilerServices.SymbolWriter.MonoSymbolFileException :
     // Exception of type 'Mono.CompilerServices.SymbolWriter.MonoSymbolFileException' was thrown.
-    let isWindows = System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
     pkey.WriteSymbols <- isWindows
     pkey.SymbolWriterProvider <- CreateSymbolWriter pdb isWindows monoRuntime
     // Also, there are no strongnames in .net core

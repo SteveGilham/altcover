@@ -9,8 +9,6 @@ open AltCover.Augment
 open Mono.Options
 open NUnit.Framework
 
-#nowarn "44"
-
 [<TestFixture>]
 type AltCoverTests3() =
   class
@@ -944,7 +942,7 @@ type AltCoverTests3() =
       finally
         Visitor.defaultStrongNameKey <- None
         Visitor.keys.Clear()
-  #endif
+#endif
 
     [<Test>]
     member self.ParsingTimeGivesTime() =
@@ -1661,7 +1659,9 @@ type AltCoverTests3() =
                  || f.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
             |> Seq.filter
                  (fun f ->
-                 File.Exists(Path.ChangeExtension(f, ".pdb")) || File.Exists(f + ".mdb"))),
+                 File.Exists(Path.ChangeExtension(f, ".pdb")) ||
+                 File.Exists(f + ".mdb") ||
+                 f |> Path.GetFileNameWithoutExtension = "Sample8")),
          "First list mismatch with from files")
       Assert.That(y,
                   Is.EquivalentTo(x
@@ -1998,17 +1998,17 @@ or
     // Tasks.fs
     [<Test>]
     member self.LoggingCanBeExercised() =
-      Assert.That(Logging.ActionAdapter null, Is.Not.Null)
-      (Logging.ActionAdapter null) "23"
-      Assert.That(Logging.ActionAdapter(new Action<String>(ignore)), Is.Not.Null)
+      Assert.That(FSApi.Logging.ActionAdapter null, Is.Not.Null)
+      (FSApi.Logging.ActionAdapter null) "23"
+      Assert.That(FSApi.Logging.ActionAdapter(new Action<String>(ignore)), Is.Not.Null)
       let mutable x = String.Empty
       let f = (fun s -> x <- s)
-      (Logging.ActionAdapter(new Action<String>(f))) "42"
+      (FSApi.Logging.ActionAdapter(new Action<String>(f))) "42"
       Assert.That(x, Is.EqualTo "42")
-      Logging.Default.Info "32"
-      Logging.Default.Warn "32"
-      Logging.Default.Error "32"
-      Logging.Default.Echo "32"
+      FSApi.Logging.Create().Info "32"
+      FSApi.Logging.Create().Warn "32"
+      FSApi.Logging.Create().Error "32"
+      FSApi.Logging.Create().Echo "32"
 
     [<Test>]
     member self.EmptyInstrumentIsJustTheDefaults() =
@@ -2017,7 +2017,7 @@ or
       let mutable args = [| "some junk " |]
       let saved = (Output.Info, Output.Error)
       try
-        subject.ACLog <- Some Logging.Default
+        subject.ACLog <- Some <| FSApi.Logging.Create()
         Main.EffectiveMain <- (fun a ->
         args <- a
         255)
@@ -2036,12 +2036,12 @@ or
       let mutable args = [| "some junk " |]
       let saved = (Output.Info, Output.Error)
       try
-        subject.ACLog <- Some Logging.Default
+        subject.ACLog <- Some <| FSApi.Logging.Create()
         Main.EffectiveMain <- (fun a ->
         args <- a
         0)
         subject.OpenCover <- false
-        subject.CommandLine <- "testing 1 2 3"
+        subject.CommandLine <- [| "testing"; "1"; "2"; "3" |]
         subject.SymbolDirectories <- [| "a"; "b" |]
         let result = subject.Execute()
         Assert.That(result, Is.True)
@@ -2065,7 +2065,7 @@ or
         args <- a
         0)
         subject.OpenCover <- false
-        subject.Command <- [| "testing"; "1"; "2"; "3" |]
+        subject.CommandLine <- [| "testing"; "1"; "2"; "3" |]
         subject.SymbolDirectories <- [| "a"; "b" |]
         let result = subject.Execute()
         Assert.That(result, Is.True)
@@ -2089,7 +2089,7 @@ or
       let mutable args = [| "some junk " |]
       let saved = (Output.Info, Output.Error)
       try
-        subject.ACLog <- Some Logging.Default
+        subject.ACLog <- Some <| FSApi.Logging.Create()
         Main.EffectiveMain <- (fun a ->
         args <- a
         255)
@@ -2112,7 +2112,7 @@ or
         args <- a
         0)
         subject.Executable <- "dotnet"
-        subject.Command <- [|"test"|]
+        subject.CommandLine <- [| "test" |]
         let result = subject.Execute()
         Assert.That(result, Is.True)
         Assert.That(args, Is.EquivalentTo [ "Runner"; "-x"; "dotnet"; "--"; "test" ])
@@ -2134,7 +2134,7 @@ or
       let warned = Output.Warn
       Assert.Throws<InvalidOperationException>(fun () -> subject.IO.Warn "x") |> ignore
       Assert.Throws<InvalidOperationException>(fun () -> subject.IO.Error "x") |> ignore
-      subject.IO <- Logging.Default
+      subject.IO <- FSApi.Logging.Create()
       try
         Main.EffectiveMain <- (fun a ->
         args <- a
@@ -2159,7 +2159,7 @@ or
       let warned = Output.Warn
       Assert.Throws<InvalidOperationException>(fun () -> subject.IO.Warn "x") |> ignore
       Assert.Throws<InvalidOperationException>(fun () -> subject.IO.Error "x") |> ignore
-      subject.IO <- Logging.Default
+      subject.IO <- FSApi.Logging.Create()
       try
         Main.EffectiveMain <- (fun a ->
         args <- a

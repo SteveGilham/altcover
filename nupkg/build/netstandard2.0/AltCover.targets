@@ -22,7 +22,21 @@
     <AltCoverXmlOutput Include="$(AltCoverXmlReport)" />
   </ItemGroup>
 
-  <Target Name="AltCoverRunPreparation">
+  <PropertyGroup>
+    <AltCoverPreFlightCheck Condition="Exists('$(TargetDir)__Saved')">Fail</AltCoverPreFlightCheck>
+    <AltCoverPreFlightCheck Condition="!Exists('$(TargetDir)__Saved')">OK</AltCoverPreFlightCheck>
+  </PropertyGroup>
+
+  <Target Name="AltCoverPreFlight" Condition="'$(AltCover)' == 'true'">
+    <Error Condition="Exists('$(TargetDir)__Saved') AND '$(AltCoverForce)' != 'true'" 
+           Text="Directory '$(TargetDir)__Saved' exists from a previous run.  Either manually examine and delete it, or run with 'p:/AltCoverForce=true' to force deletion" />
+    <Warning Condition="Exists('$(TargetDir)__Saved') AND '$(AltCoverForce)' == 'true'" 
+             Text="Directory '$(TargetDir)__Saved' exists from a previous run.  Forcibly deleting it" />
+    <RemoveDir Directories="$(TargetDir)__Saved"
+               Condition="Exists('$(TargetDir)__Saved') AND '$(AltCoverForce)' == 'true'"  />
+  </Target>
+
+  <Target Name="AltCoverRunPreparation" Condition="'$(AltCover)' == 'true'">
     <PropertyGroup>
       <AltCoverXmlReport Condition="'$(AltCoverXmlReport)' != '' AND '$(TargetFrameworks)' != ''">%(AltCoverXmlOutput.RootDir)/%(AltCoverXmlOutput.Directory)/%(AltCoverXmlOutput.Filename).$(TargetFramework)%(AltCoverXmlOutput.Extension)</AltCoverXmlReport>
       <AltCoverXmlReport Condition="'$(AltCoverXmlReport)' == '' AND '$(TargetFrameworks)' == ''">$(ProjectDir)coverage.xml</AltCoverXmlReport>
@@ -31,7 +45,6 @@
     <AltCover.PowerShell Condition="'$(AltCoverIpmo)' == 'true'" />
     <AltCover.GetVersion Condition="'$(AltCoverGetVersion)' == 'true'" />
     <AltCover.Prepare
-      Condition="'$(AltCover)' == 'true'"
       InputDirectory="$(TargetDir)"
       OutputDirectory="$(TargetDir)__Saved"
       XmlReport="$(AltCoverXmlReport)"
@@ -60,6 +73,8 @@
 
   <!-- As per Microsoft.TestPlatform.targets v2.1.300, but with OnError clause -->
   <Target Name="VSTest">
+    <CallTarget Targets="AltCoverPreFlight" />
+
     <CallTarget Condition="'$(VSTestNoBuild)' != 'true'" Targets="BuildProject" />
 
     <CallTarget Targets="ShowCallOfVSTestTaskWithParameter" />
@@ -80,12 +95,11 @@
       VSTestVerbosity="$(VSTestVerbosity)"
       VSTestCollect="$(VSTestCollect)"
       VSTestBlame="$(VSTestBlame)" />
-    <OnError ExecuteTargets="AltCoverGenerateCoverageResult" />
+    <OnError ExecuteTargets="AltCoverGenerateCoverageResult" Condition="'$(AltCoverPreFlightCheck)' == 'OK'" />
   </Target>
 
-  <Target Name="AltCoverGenerateCoverageResult" AfterTargets="VSTest">
+  <Target Name="AltCoverGenerateCoverageResult" AfterTargets="VSTest" Condition="'$(AltCover)' == 'true'">
     <AltCover.Collect
-      Condition="'$(AltCover)' == 'true'"
       RecorderDirectory="$(TargetDir)"
       LcovReport="$(AltCoverLcovReport)"
       Threshold="$(AltCoverThreshold)"
@@ -95,9 +109,9 @@
       <AltCoverFSharpFiles Include="$(TargetDir)/FSharp.Core.*" />
       <AltCoverSavedFiles Include="$(TargetDir)__Saved/*.*" />
     </ItemGroup>
-    <Delete Files="@(AltCoverRecorderGFiles)" Condition="'$(AltCover)' == 'true'" />
-    <Delete Files="@(AltCoverFSharpFiles)" Condition="'$(AltCover)' == 'true'" />
-    <Move SourceFiles="@(AltCoverSavedFiles)" DestinationFolder="$(TargetDir)" OverwriteReadOnlyFiles="true" Condition="'$(AltCover)' == 'true'" />
-    <RemoveDir Directories="$(TargetDir)__Saved" Condition="Exists('$(TargetDir)__Saved') AND '$(AltCover)' == 'true'" />
+    <Delete Files="@(AltCoverRecorderGFiles)" />
+    <Delete Files="@(AltCoverFSharpFiles)" />
+    <Move SourceFiles="@(AltCoverSavedFiles)" DestinationFolder="$(TargetDir)" OverwriteReadOnlyFiles="true" />
+    <RemoveDir Directories="$(TargetDir)__Saved" Condition="Exists('$(TargetDir)__Saved')" />
   </Target>
 </Project>

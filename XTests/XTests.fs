@@ -4,13 +4,13 @@ open System
 open System.Collections.Generic
 open System.IO
 open System.Reflection
+open System.Text.RegularExpressions
 open System.Xml.Linq
 
 open AltCover
 open Mono.Options
 open Newtonsoft.Json.Linq
 open Xunit
-#nowarn "44"
 
 module XTests =
   let Hack() =
@@ -136,21 +136,45 @@ module XTests =
 
   [<Fact>]
   let CollectParamsCanBeValidated() =
-    let test = { CollectParams.Default with Threshold = "23" }
-    let scan = test.Validate(false)
+    let test = { Primitive.CollectParams.Create() with Threshold = "23"
+                                                       CommandLine = null }
+    let scan = (FSApi.CollectParams.Primitive test).Validate(false)
     Assert.Equal(0, scan.Length)
+    Assert.Equal<string list>( ["Runner"; "-t"; "23"; "--collect"],
+                 (FSApi.CollectParams.Primitive test) |> FSApi.Args.Collect)
+
+  [<Fact>]
+  let TypeSafeCollectParamsCanBeValidated() =
+    let test = { TypeSafe.CollectParams.Create() with Threshold = TypeSafe.Threshold 23uy }
+    let scan = (FSApi.CollectParams.TypeSafe test).Validate(false)
+    Assert.Equal(0, scan.Length)
+    Assert.Equal<string list>( ["Runner"; "-t"; "23"; "--collect"],
+                 (FSApi.CollectParams.TypeSafe test) |> FSApi.Args.Collect)
 
   [<Fact>]
   let CollectParamsCanBeValidatedWithErrors() =
-    let test = CollectParams.Create()
-    let scan = test.Validate(true)
+    let test = Primitive.CollectParams.Create()
+    let scan = (FSApi.CollectParams.Primitive test).Validate(true)
+    Assert.Equal(1, scan.Length)
+
+  [<Fact>]
+  let TypeSafeCollectParamsCanBeValidatedWithErrors() =
+    let test = TypeSafe.CollectParams.Create()
+    let scan = (FSApi.CollectParams.TypeSafe test).Validate(true)
     Assert.Equal(1, scan.Length)
 
   [<Fact>]
   let CollectParamsCanBePositivelyValidatedWithErrors() =
     let test =
-      { CollectParams.Default with RecorderDirectory = Guid.NewGuid().ToString() }
-    let scan = test.Validate(true)
+      { Primitive.CollectParams.Create() with RecorderDirectory = Guid.NewGuid().ToString() }
+    let scan = (FSApi.CollectParams.Primitive test).Validate(true)
+    Assert.Equal(2, scan.Length)
+
+  [<Fact>]
+  let TypeSafeCollectParamsCanBePositivelyValidatedWithErrors() =
+    let test =
+      { TypeSafe.CollectParams.Create() with RecorderDirectory = TypeSafe.DInfo <| DirectoryInfo(Guid.NewGuid().ToString()) }
+    let scan = (FSApi.CollectParams.TypeSafe test).Validate(true)
     Assert.Equal(2, scan.Length)
 
   [<Fact>]
@@ -158,26 +182,101 @@ module XTests =
     let here = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
 
     let test =
-      { PrepareParams.Default with InputDirectory = here
-                                   OutputDirectory = here
-                                   SymbolDirectories = [| here |]
-                                   Dependencies =
-                                     [| Assembly.GetExecutingAssembly().Location |]
-                                   CallContext = [| "[Fact]" |]
-                                   PathFilter = [| "ok" |] }
+      { Primitive.PrepareParams.Create() with InputDirectory = here
+                                              OutputDirectory = here
+                                              SymbolDirectories = [| here |]
+                                              Dependencies =
+                                               [| Assembly.GetExecutingAssembly().Location |]
+                                              CallContext = [| "[Fact]" |]
+                                              PathFilter = [| "ok" |] }
 
-    let scan = test.Validate()
+    let scan = (FSApi.PrepareParams.Primitive test).Validate()
     Assert.Equal(0, scan.Length)
+    let rendered = (FSApi.PrepareParams.Primitive test) |> FSApi.Args.Prepare
+    Assert.Equal<string list>(["-i"; here; "-o"; here
+                               "-y"; here;
+                               "-d"; Assembly.GetExecutingAssembly().Location
+                               "-p"; "ok"
+                               "-c"; "[Fact]"
+                               "--opencover"
+                               "--inplace"
+                               "--save" ],
+                 rendered)
+
+  [<Fact>]
+  let TypeSafePrepareParamsCanBeValidated() =
+    let here = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
+
+    let test =
+      { TypeSafe.PrepareParams.Create() with InputDirectory = TypeSafe.DirectoryPath here
+                                             OutputDirectory = TypeSafe.DInfo (DirectoryInfo(here))
+                                             SymbolDirectories = TypeSafe.DirectoryPaths [| TypeSafe.DirectoryPath here |]
+                                             Dependencies = TypeSafe.FilePaths
+                                               [| TypeSafe.FilePath <|  Assembly.GetExecutingAssembly().Location |]
+                                             CallContext = TypeSafe.Context [| TypeSafe.CallItem "[Fact]" |]
+                                             PathFilter = TypeSafe.Filters [| TypeSafe.Raw "ok" |] }
+
+    let scan = (FSApi.PrepareParams.TypeSafe test).Validate()
+    Assert.Equal(0, scan.Length)
+    Assert.Equal<string list>( ["-i"; here; "-o"; here;
+                               "-y"; here;
+                               "-d"; Assembly.GetExecutingAssembly().Location;
+                               "-p"; "ok";
+                               "-c"; "[Fact]";
+                               "--opencover";
+                               "--inplace";
+                               "--save" ],
+                 (FSApi.PrepareParams.TypeSafe test) |> FSApi.Args.Prepare)
+
+  [<Fact>]
+  let TypeSafePrepareParamsCanBeValidatedAgain() =
+    let here = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
+
+    let test =
+      { TypeSafe.PrepareParams.Create() with InputDirectory = TypeSafe.DirectoryPath here
+                                             OutputDirectory = TypeSafe.DInfo (DirectoryInfo(here))
+                                             SymbolDirectories = TypeSafe.DirectoryPaths [| TypeSafe.DirectoryPath here |]
+                                             Dependencies = TypeSafe.FilePaths
+                                               [| TypeSafe.FilePath <|  Assembly.GetExecutingAssembly().Location |]
+                                             CommandLine = TypeSafe.Command [| TypeSafe.CommandArgument "[Fact]" |]
+                                             PathFilter = TypeSafe.Filters [| TypeSafe.FilterItem <| Regex "ok" |] }
+
+    let scan = (FSApi.PrepareParams.TypeSafe test).Validate()
+    Assert.Equal(0, scan.Length)
+    Assert.Equal<string list>( ["-i"; here; "-o"; here;
+                               "-y"; here;
+                               "-d"; Assembly.GetExecutingAssembly().Location;
+                               "-p"; "ok";
+                               "--opencover";
+                               "--inplace";
+                               "--save";
+                               "--"; "[Fact]" ],
+                 (FSApi.PrepareParams.TypeSafe test) |> FSApi.Args.Prepare)
 
   [<Fact>]
   let PrepareParamsStrongNamesCanBeValidated() =
     let input = Path.Combine(AltCover.SolutionRoot.location, "Build/Infrastructure.snk")
 
     let test =
-      { PrepareParams.Create() with StrongNameKey = input
-                                    Keys = [| input |] }
+      { Primitive.PrepareParams.Create() with StrongNameKey = input
+                                              Keys = [| input |] }
 
-    let scan = test.Validate()
+    let scan = (FSApi.PrepareParams.Primitive test).Validate()
+#if NETCOREAPP2_0
+    ()
+#else
+    Assert.Equal (0, scan.Length)
+#endif
+
+  [<Fact>]
+  let TypeSafePrepareParamsStrongNamesCanBeValidated() =
+    let input = Path.Combine(AltCover.SolutionRoot.location, "Build/Infrastructure.snk")
+
+    let test =
+      { TypeSafe.PrepareParams.Create() with StrongNameKey = TypeSafe.FInfo <| FileInfo(input)
+                                             Keys = TypeSafe.FilePaths [| TypeSafe.FilePath input |] }
+
+    let scan = (FSApi.PrepareParams.TypeSafe test).Validate()
 #if NETCOREAPP2_0
     ()
 #else
@@ -186,33 +285,49 @@ module XTests =
 
   [<Fact>]
   let PrepareParamsCanBeValidatedWithNulls() =
-    let test = { PrepareParams.Default with CallContext = null }
-    let scan = test.Validate()
+    let test = { Primitive.PrepareParams.Create() with CallContext = null }
+    let scan = (FSApi.PrepareParams.Primitive test).Validate()
     Assert.Equal(0, scan.Length)
 
   [<Fact>]
   let PrepareParamsCanBeValidatedAndDetectInconsistency() =
     let test =
-      { PrepareParams.Default with BranchCover = true
-                                   LineCover = true
-                                   Single = true
-                                   CallContext = [| "0" |] }
+      { Primitive.PrepareParams.Create() with BranchCover = true
+                                              LineCover = true
+                                              Single = true
+                                              CallContext = [| "0" |] }
 
+    let scan = (FSApi.PrepareParams.Primitive test).Validate()
+    Assert.Equal(2, scan.Length)
+
+  [<Fact>]
+  let TypeSafePrepareParamsCanBeValidatedAndDetectInconsistency() =
+    let test =
+      { TypeSafe.PrepareParams.Create() with BranchCover = TypeSafe.Flag true
+                                             LineCover = TypeSafe.Flag true
+                                             Single = TypeSafe.Flag true
+                                             CallContext = TypeSafe.Context [| TypeSafe.TimeItem 0uy |]}
+
+      |> FSApi.PrepareParams.TypeSafe
     let scan = test.Validate()
     Assert.Equal(2, scan.Length)
+    let rendered = test |> FSApi.Args.Prepare
+    Assert.Equal<string list> (["-c"; "0"; "--opencover"; "--inplace"; "--save";
+                                "--single"; "--linecover"; "--branchcover"],
+                               rendered)
 
   [<Fact>]
   let PrepareParamsCanBeValidatedWithErrors() =
     let test =
-      { PrepareParams.Default with XmlReport = String(Path.GetInvalidPathChars())
-                                   CallContext = [| "0"; "1" |] }
+      { Primitive.PrepareParams.Create() with XmlReport = String(Path.GetInvalidPathChars())
+                                              CallContext = [| "0"; "1" |] }
 
-    let scan = test.Validate()
+    let scan = (FSApi.PrepareParams.Primitive test).Validate()
     Assert.Equal(2, scan.Length)
 
   [<Fact>]
   let NullListsAreEmpty() =
-    let test = Args.ItemList String.Empty null
+    let test = FSApi.Args.ItemList String.Empty null
     Assert.True(test |> List.isEmpty)
 
   [<Fact>]
@@ -263,7 +378,7 @@ module XTests =
 #else
            "-sn"; key
 #endif
-           "-s=Adapter";
+           "-s=Adapter"; "-s=xunit"
            "-s=nunit"; "-e=Sample"; "-c=[Test]"; "--save" |]
       let result = Main.DoInstrumentation args
       Assert.Equal(result, 0)
@@ -306,8 +421,9 @@ module XTests =
         [ "AltCover.Recorder.g.dll"
 #if NETCOREAPP2_1
           "FSharp.Core.dll"
-#endif
+#else
           "AltCover.Recorder.g.pdb";
+#endif
           "Sample4.deps.json"; "Sample4.dll"; "Sample4.runtimeconfig.dev.json";
           "Sample4.runtimeconfig.json"; "Sample4.pdb";
           "xunit.runner.reporters.netcoreapp10.dll";
@@ -325,7 +441,12 @@ module XTests =
            |> not
         then
           List.concat [ expected
-                        [ "AltCover.Recorder.g.dll.mdb"; "Sample4.dll.mdb" ] ]
+                        [
+#if NETCOREAPP2_1
+#else
+                            "AltCover.Recorder.g.dll.mdb";
+#endif
+                            "Sample4.dll.mdb" ] ]
           |> List.filter (fun f -> f.EndsWith(".g.pdb", StringComparison.Ordinal) |> not)
           |> List.filter
                (fun f ->
@@ -481,9 +602,11 @@ module XTests =
 
       let theFiles =
         if File.Exists(pdb) then
-          [ "AltCover.Recorder.g.dll"; "AltCover.Recorder.g.pdb"
+          [ "AltCover.Recorder.g.dll";
 #if NETCOREAPP2_1
             "FSharp.Core.dll"
+#else
+            "AltCover.Recorder.g.pdb"
 #endif
             "Sample1.exe"; "Sample1.exe.mdb" ]
            // See Instrument.WriteAssembly
@@ -493,7 +616,12 @@ module XTests =
                                    (f.EndsWith("db", StringComparison.Ordinal) |> not))
 #endif
         else
-          [ "AltCover.Recorder.g.dll"; "AltCover.Recorder.g.dll.mdb"; "Sample1.exe";
+          [ "AltCover.Recorder.g.dll";
+#if NETCOREAPP2_1
+#else
+            "AltCover.Recorder.g.dll.mdb";
+#endif
+            "Sample1.exe";
             "Sample1.exe.mdb" ]
           |> List.filter
                (fun f ->

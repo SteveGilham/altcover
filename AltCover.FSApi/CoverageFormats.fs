@@ -10,6 +10,7 @@ open System.Xml
 open System.Xml.Linq
 open System.Xml.XPath
 
+[<RequireQualifiedAccess>]
 module CoverageFormats =
 
   [<SuppressMessage("Microsoft.Design", "CA1059",

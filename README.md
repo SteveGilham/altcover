@@ -49,8 +49,8 @@ Fast forwards to autumn 2017, and I get the chance to dust the project off, with
 
 | | | |
 | --- | --- | --- | 
-| **Build** | <sup>AppVeyor</sup> [![Build status](https://img.shields.io/appveyor/ci/SteveGilham/altcover/master.svg)](https://ci.appveyor.com/project/SteveGilham/altcover) [![Test status](https://img.shields.io/appveyor/tests/SteveGilham/altcover/master.svg)](https://ci.appveyor.com/project/SteveGilham/altcover) ![Build history](https://buildstats.info/appveyor/chart/SteveGilham/altcover?branch=master) | <sup>Travis</sup> [![Build status](https://travis-ci.org/SteveGilham/altcover.svg?branch=master)](https://travis-ci.org/SteveGilham/altcover#) [![Build history](https://buildstats.info/travisci/chart/SteveGilham/altcover?branch=master)](https://travis-ci.org/SteveGilham/altcover/builds)|
-| **Unit Test coverage** | <sup>Coveralls</sup> [![Coverage Status](https://coveralls.io/repos/github/SteveGilham/altcover/badge.svg?branch=master)](https://coveralls.io/github/SteveGilham/altcover?branch=master) |
+| **Build** | <sup>AppVeyor</sup> [![Build status](https://img.shields.io/appveyor/ci/SteveGilham/altcover.svg)](https://ci.appveyor.com/project/SteveGilham/altcover) [![Test status](https://img.shields.io/appveyor/tests/SteveGilham/altcover.svg)](https://ci.appveyor.com/project/SteveGilham/altcover) ![Build history](https://buildstats.info/appveyor/chart/SteveGilham/altcover) | <sup>Travis</sup> [![Build status](https://travis-ci.org/SteveGilham/altcover.svg?branch=master)](https://travis-ci.org/SteveGilham/altcover#) [![Build history](https://buildstats.info/travisci/chart/SteveGilham/altcover?branch=master)](https://travis-ci.org/SteveGilham/altcover/builds)|
+| **Unit Test coverage** | <sup>Coveralls</sup> [![Coverage Status](https://coveralls.io/repos/github/SteveGilham/altcover/badge.svg)](https://coveralls.io/github/SteveGilham/altcover) |
 
 ## Usage
 
@@ -58,7 +58,7 @@ See the [Wiki page](https://github.com/SteveGilham/altcover/wiki/Usage) for deta
 
 ## Roadmap
 
-See the [current project](https://github.com/SteveGilham/altcover/projects/7) for details
+See the [current project](https://github.com/SteveGilham/altcover/projects/8) for details
 
 ## Building
 
@@ -68,12 +68,12 @@ See the [current project](https://github.com/SteveGilham/altcover/projects/7) fo
 
 It is assumed that the following are available
 
-.net core SDK 2.1.403 or later (`dotnet`) -- try https://www.microsoft.com/net/download  
+.net core SDK 2.1.500 or later (`dotnet`) -- try https://www.microsoft.com/net/download  
 PowerShell Core 6.0.2 or later (`pwsh`) -- try https://github.com/powershell/powershell
 
 #### Windows
 
-You will need Visual Studio VS2017 (Community Edition) v15.8.9 or later with F# language support (or just the associated build tools and your editor of choice).  The NUnit3 Test Runner will simplify the basic in-IDE development cycle.  Note that some of the unit tests expect that the separate build of test assemblies under Mono, full .net framework and .net core has taken place; there will be up to 20 failures when running the unit tests in Visual Studio from clean when those expected assemblies are not found.
+You will need Visual Studio VS2017 (Community Edition) v15.9.4 or later with F# language support (or just the associated build tools and your editor of choice).  The NUnit3 Test Runner will simplify the basic in-IDE development cycle.  Note that some of the unit tests expect that the separate build of test assemblies under Mono, full .net framework and .net core has taken place; there will be up to 20 failures when running the unit tests in Visual Studio from clean when those expected assemblies are not found.
 
 For the .net 2.0 support, if you don't already have FSharp.Core.dll version 2.3.0.0 (usually in Reference Assemblies\Microsoft\FSharp\.NETFramework\v2.0\2.3.0.0), then you will need to install this -- the [Visual F# Tools 4.0 RTM](https://www.microsoft.com/en-us/download/details.aspx?id=48179) `FSharp_Bundle.exe` is the most convenient source. 
 
@@ -81,7 +81,7 @@ For GTK# support, the GTK# latest 2.12 install is expected -- try https://www.mo
 
 #### *nix
 
-It is assumed that `mono` (version 5.14.x) and `dotnet` are on the `PATH` already, and everything is built from the command line, with your favourite editor used for coding.
+It is assumed that `mono` (version 5.18.x) and `dotnet` are on the `PATH` already, and everything is built from the command line, with your favourite editor used for coding.
 
 ### Bootstrapping
 

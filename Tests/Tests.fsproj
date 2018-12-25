@@ -18,6 +18,8 @@
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
     <ResolveNuGetPackages>false</ResolveNuGetPackages>
+    <ExtraDefines Condition="'$(OS)' == 'Windows_NT'">NETFRAMEWORK</ExtraDefines>
+    <ExtraDefines Condition="'$(OS)' != 'Windows_NT'">MONO</ExtraDefines>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -30,7 +32,7 @@
     <WarningsAsErrors>
     </WarningsAsErrors>
     <OtherFlags>--keyfile:$(SolutionDir)Build\Infrastructure.snk</OtherFlags>
-    <DefineConstants>TRACE;DEBUG;CODE_ANALYSIS</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;CODE_ANALYSIS;$(ExtraDefines)</DefineConstants>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
@@ -43,7 +45,7 @@
     <WarningsAsErrors>
     </WarningsAsErrors>
     <OtherFlags>--keyfile:$(SolutionDir)Build\Infrastructure.snk</OtherFlags>
-    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants>TRACE;$(ExtraDefines)</DefineConstants>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
@@ -114,6 +116,11 @@
     <ProjectReference Include="..\Sample6\Sample6.fsproj">
       <Name>Sample6</Name>
       <Project>{4fa35926-fb21-4f1b-bb55-465d472ee027}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\Sample8\Sample8.csproj">
+      <Name>Sample8</Name>
+      <Project>{44abc8fe-4277-47fa-bb76-61a105392182}</Project>
       <Private>True</Private>
     </ProjectReference>
     <Reference Include="FSharp.Core">

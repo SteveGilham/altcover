@@ -10,6 +10,7 @@ open System.Xml.Linq
 open System.Xml.Schema
 open System.Xml.Xsl
 
+[<RequireQualifiedAccess>]
 module XmlUtilities =
   [<SuppressMessage("Microsoft.Design", "CA1059",
                     Justification = "converts concrete types")>]
