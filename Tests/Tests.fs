@@ -145,6 +145,27 @@ type AltCoverTests() =
                Assert.That
                  ("/" + name.Replace("\\", "/"), Does.EndWith("/" + filename),
                   (fst x) + " -> " + name))
+#if MONO
+// Mono doesn't embed
+#else
+    [<Test>]
+    member self.ShouldGetEmbeddedPdbFromImage() =
+      let where = Assembly.GetExecutingAssembly().Location
+      let here = where |> Path.GetDirectoryName
+#if NETCOREAPP2_0
+      let target = Path.Combine (here, "Sample8.dll")
+#else
+      let target = Path.Combine (here, "Sample8.exe")
+#endif
+      let image = Mono.Cecil.AssemblyDefinition.ReadAssembly target
+      let pdb = AltCover.ProgramDatabase.GetPdbFromImage image
+      match pdb with
+      | None -> Assert.Fail("No .pdb for " + target)
+      | Some name ->
+        Assert.That
+          (name, Is.EqualTo "Sample8.pdb",
+          target + " -> " + name)
+#endif
 
     [<Test>]
     member self.ShouldGetNoMdbFromMonoImage() =
@@ -342,6 +363,19 @@ type AltCoverTests() =
         |> Seq.iter (fun def ->
              AltCover.ProgramDatabase.ReadSymbols def
              Assert.That(def.MainModule.HasSymbols, def.MainModule.FileName))
+
+    [<Test>]
+    member self.ShouldGetSymbolsFromEmbeddedPdb() =
+      let where = Assembly.GetExecutingAssembly().Location
+      let here = where |> Path.GetDirectoryName
+#if NETCOREAPP2_0
+      let target = Path.Combine (here, "Sample8.dll")
+#else
+      let target = Path.Combine (here, "Sample8.exe")
+#endif
+      let image = Mono.Cecil.AssemblyDefinition.ReadAssembly target
+      AltCover.ProgramDatabase.ReadSymbols image
+      Assert.That(image.MainModule.HasSymbols, image.MainModule.FileName)
 
     [<Test>]
     member self.ShouldNotGetSymbolsWhenNoPdb() =

@@ -2,12 +2,14 @@
 using Cake.Core.Annotations;
 using LogLevel = Cake.Core.Diagnostics.LogLevel;
 using Verbosity = Cake.Core.Diagnostics.Verbosity;
+using AltCover.Parameters;
+using AltCover.Parameters.Primitive;
 
 namespace AltCover.Cake
 {
     public static class Api
     {
-        private static LogArgs MakeLog(ICakeContext context, LogArgs l)
+        private static ILogArgs MakeLog(ICakeContext context, ILogArgs l)
         {
             if (l != null)
                 return l;
@@ -31,13 +33,13 @@ namespace AltCover.Cake
         }
 
         [CakeMethodAlias]
-        public static int Prepare(this ICakeContext context, PrepareArgs p, LogArgs l = null)
+        public static int Prepare(this ICakeContext context, IPrepareArgs p, ILogArgs l = null)
         {
             return CSApi.Prepare(p, MakeLog(context, l));
         }
 
         [CakeMethodAlias]
-        public static int Collect(this ICakeContext context, CollectArgs c, LogArgs l = null)
+        public static int Collect(this ICakeContext context, ICollectArgs c, ILogArgs l = null)
         {
             return CSApi.Collect(c, MakeLog(context, l));
         }

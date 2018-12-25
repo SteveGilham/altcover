@@ -6,6 +6,7 @@ open System.Xml
 open System.Xml.Linq
 open System.Xml.XPath
 
+[<RequireQualifiedAccess>]
 module Xhtml =
   [<SuppressMessage("Microsoft.Design", "CA1059",
                     Justification = "returns a specific concrete type")>]

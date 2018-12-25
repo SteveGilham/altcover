@@ -71,6 +71,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build Items", "Build Items"
 		Build\powershell.ps1 = Build\powershell.ps1
 		Build\Recorder.snk = Build\Recorder.snk
 		ReleaseNotes.md = ReleaseNotes.md
+		Build\rules-fake.xml = Build\rules-fake.xml
 		Build\rules-mono.xml = Build\rules-mono.xml
 		Build\rules-posh.xml = Build\rules-posh.xml
 		Build\rules.xml = Build\rules.xml

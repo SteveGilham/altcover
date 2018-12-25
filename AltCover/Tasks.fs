@@ -1,60 +1,28 @@
 namespace AltCover
 
 open System
-open System.Diagnostics.CodeAnalysis
 open Microsoft.Build.Utilities
 open Microsoft.Build.Framework
 open Augment
 
-[<ExcludeFromCodeCoverage; NoComparison; NoEquality>]
-type Logging =
-  { Info : String -> unit
-    Warn : String -> unit
-    Error : String -> unit
-    Echo : String -> unit }
-
-  static member Default : Logging =
-    { Info = ignore
-      Warn = ignore
-      Error = ignore
-      Echo = ignore }
-
-  static member ActionAdapter(a : Action<String>) =
-    match a with
-    | null -> ignore
-    | _ -> a.Invoke
-
-  member internal self.Apply() =
-    Output.Error <- self.Error
-    Output.Warn <- self.Warn
-    Output.Info <- self.Info
-    Output.Echo <- self.Echo
-
-#nowarn "44"
-
+[<RequireQualifiedAccess>]
 module Api =
-  let Prepare (args : PrepareParams) (log : Logging) =
+  let Prepare (args : FSApi.PrepareParams) (log : FSApi.Logging) =
     log.Apply()
-    Args.Prepare { args with
-#if NETCOREAPP2_0
-                            Keys = []
-                            StrongNameKey = String.Empty
-#else
-                            Dependencies = []
-#endif
-    }
+    args
+    |> FSApi.Args.Prepare
     |> List.toArray
     |> Main.EffectiveMain
 
-  let Collect (args : CollectParams) (log : Logging) =
+  let Collect (args : FSApi.CollectParams) (log : FSApi.Logging) =
     log.Apply()
-    Args.Collect args
+    FSApi.Args.Collect args
     |> List.toArray
     |> Main.EffectiveMain
 
   let mutable internal store = String.Empty
   let private writeToStore s = store <- s
-  let internal LogToStore = { Logging.Default with Info = writeToStore }
+  let internal LogToStore = FSApi.Logging.Primitive { Primitive.Logging.Create() with Info = writeToStore }
 
   let internal GetStringValue s =
     writeToStore String.Empty
@@ -69,7 +37,7 @@ module Api =
 
 type Prepare() =
   inherit Task(null)
-  member val internal ACLog : Logging option = None with get, set
+  member val internal ACLog : FSApi.Logging option = None with get, set
 
   member val InputDirectory = String.Empty with get, set
   member val OutputDirectory = String.Empty with get, set
@@ -95,50 +63,50 @@ type Prepare() =
   member val Single = true |> not with get, set // work around Gendarme insistence on non-default values only
   member val LineCover = true |> not with get, set
   member val BranchCover = true |> not with get, set
-  [<Obsolete("Please use AltCover.Prepare.Command instead instead.")>]
-  member val CommandLine = String.Empty with get, set
-  member val Command : string array = [||] with get, set
+  member val CommandLine : string array = [||] with get, set
   member self.Message x = base.Log.LogMessage(MessageImportance.High, x)
   override self.Execute() =
     let log =
-      Option.getOrElse { Logging.Default with Error = base.Log.LogError
-                                              Warn = base.Log.LogWarning
-                                              Info = self.Message } self.ACLog
+      Option.getOrElse (FSApi.Logging.Primitive { Primitive.Logging.Create() with Error = base.Log.LogError
+                                                                                  Warn = base.Log.LogWarning
+                                                                                  Info = self.Message }) self.ACLog
 
     let task =
-      { PrepareParams.Create() with InputDirectory = self.InputDirectory
-                                    OutputDirectory = self.OutputDirectory
-                                    SymbolDirectories = self.SymbolDirectories
+      FSApi.PrepareParams.Primitive { InputDirectory = self.InputDirectory
+                                      OutputDirectory = self.OutputDirectory
+                                      SymbolDirectories = self.SymbolDirectories
 #if NETCOREAPP2_0
-                                    Dependencies = self.Dependencies
+                                      Dependencies = self.Dependencies
+                                      Keys = []
+                                      StrongNameKey = String.Empty
 #else
-                                    Keys = self.Keys
-                                    StrongNameKey = self.StrongNameKey
+                                      Dependencies = []
+                                      Keys = self.Keys
+                                      StrongNameKey = self.StrongNameKey
 #endif
-                                    XmlReport = self.XmlReport
-                                    FileFilter = self.FileFilter
-                                    AssemblyFilter = self.AssemblyFilter
-                                    AssemblyExcludeFilter = self.AssemblyExcludeFilter
-                                    TypeFilter = self.TypeFilter
-                                    MethodFilter = self.MethodFilter
-                                    AttributeFilter = self.AttributeFilter
-                                    PathFilter = self.PathFilter
-                                    CallContext = self.CallContext
-                                    OpenCover = self.OpenCover
-                                    InPlace = self.InPlace
-                                    Save = self.Save
-                                    Single = self.Single
-                                    LineCover = self.LineCover
-                                    BranchCover = self.BranchCover
-                                    CommandLine = self.CommandLine
-                                    Command = self.Command }
+                                      XmlReport = self.XmlReport
+                                      FileFilter = self.FileFilter
+                                      AssemblyFilter = self.AssemblyFilter
+                                      AssemblyExcludeFilter = self.AssemblyExcludeFilter
+                                      TypeFilter = self.TypeFilter
+                                      MethodFilter = self.MethodFilter
+                                      AttributeFilter = self.AttributeFilter
+                                      PathFilter = self.PathFilter
+                                      CallContext = self.CallContext
+                                      OpenCover = self.OpenCover
+                                      InPlace = self.InPlace
+                                      Save = self.Save
+                                      Single = self.Single
+                                      LineCover = self.LineCover
+                                      BranchCover = self.BranchCover
+                                      CommandLine = self.CommandLine }
 
     Api.Prepare task log = 0
 
 type Collect() =
   inherit Task(null)
 
-  member val internal ACLog : Logging option = None with get, set
+  member val internal ACLog : FSApi.Logging option = None with get, set
 
   [<Required>]
   member val RecorderDirectory = String.Empty with get, set
@@ -149,34 +117,31 @@ type Collect() =
   member val Threshold = String.Empty with get, set
   member val Cobertura = String.Empty with get, set
   member val OutputFile = String.Empty with get, set
-  [<Obsolete("Please use AltCover.Collect.Command instead instead.")>]
-  member val CommandLine = String.Empty with get, set
-  member val Command : string array = [||] with get, set
+  member val CommandLine : string array = [||] with get, set
   member self.Message x = base.Log.LogMessage(MessageImportance.High, x)
   override self.Execute() =
     let log =
-      Option.getOrElse { Logging.Default with Error = base.Log.LogError
-                                              Warn = base.Log.LogWarning
-                                              Info = self.Message } self.ACLog
+      Option.getOrElse (FSApi.Logging.Primitive { Primitive.Logging.Create() with Error = base.Log.LogError
+                                                                                  Warn = base.Log.LogWarning
+                                                                                  Info = self.Message }) self.ACLog
 
     let task =
-      { CollectParams.Create() with RecorderDirectory = self.RecorderDirectory
-                                    WorkingDirectory = self.WorkingDirectory
-                                    Executable = self.Executable
-                                    LcovReport = self.LcovReport
-                                    Threshold = self.Threshold
-                                    Cobertura = self.Cobertura
-                                    OutputFile = self.OutputFile
-                                    CommandLine = self.CommandLine
-                                    Command = self.Command }
+      FSApi.CollectParams.Primitive { RecorderDirectory = self.RecorderDirectory
+                                      WorkingDirectory = self.WorkingDirectory
+                                      Executable = self.Executable
+                                      LcovReport = self.LcovReport
+                                      Threshold = self.Threshold
+                                      Cobertura = self.Cobertura
+                                      OutputFile = self.OutputFile
+                                      CommandLine = self.CommandLine }
 
     Api.Collect task log = 0
 
 type PowerShell() =
   inherit Task(null)
 
-  member val internal IO = { Logging.Default with Error = base.Log.LogError
-                                                  Warn = base.Log.LogWarning } with get, set
+  member val internal IO = FSApi.Logging.Primitive { Primitive.Logging.Create() with Error = base.Log.LogError
+                                                                                     Warn = base.Log.LogWarning } with get, set
 
   override self.Execute() =
     let r = Api.Ipmo()
@@ -187,8 +152,8 @@ type PowerShell() =
 type GetVersion() =
   inherit Task(null)
 
-  member val internal IO = { Logging.Default with Error = base.Log.LogError
-                                                  Warn = base.Log.LogWarning } with get, set
+  member val internal IO = FSApi.Logging.Primitive { Primitive.Logging.Create() with Error = base.Log.LogError
+                                                                                     Warn = base.Log.LogWarning } with get, set
 
   override self.Execute() =
     let r = Api.Version()

@@ -1,9 +1,75 @@
 ﻿using System;
 using System.Linq;
 
-namespace AltCover
+namespace AltCover.Parameters
 {
-    public class CollectArgs
+    public interface ICollectArgs
+    {
+        string RecorderDirectory { get; }
+        string WorkingDirectory { get; }
+        string Executable { get; }
+        string LcovReport { get; }
+        string Threshold { get; }
+        string Cobertura { get; }
+        string OutputFile { get; }
+        string[] CommandLine { get; }
+
+        FSApi.CollectParams ToParameters();
+
+        string[] Validate(bool afterPreparation);
+    }
+
+    public interface IPrepareArgs
+    {
+        string InputDirectory { get; }
+        string OutputDirectory { get; }
+        string[] SymbolDirectories { get; }
+        string[] Dependencies { get; }
+        string[] Keys { get; }
+        string StrongNameKey { get; }
+        string XmlReport { get; }
+        string[] FileFilter { get; }
+        string[] AssemblyFilter { get; }
+        string[] AssemblyExcludeFilter { get; }
+        string[] TypeFilter { get; }
+        string[] MethodFilter { get; }
+        string[] AttributeFilter { get; }
+        string[] PathFilter { get; }
+        string[] CallContext { get; }
+
+        bool OpenCover { get; }
+        bool InPlace { get; }
+        bool Save { get; }
+        bool Single { get; }
+        bool LineCover { get; }
+        bool BranchCover { get; }
+
+        string[] CommandLine { get; }
+
+        FSApi.PrepareParams ToParameters();
+
+        string[] Validate();
+    }
+
+    public interface ILogArgs
+    {
+        Action<String> Info { get; }
+        Action<String> Warn { get; }
+        Action<String> Error { get; }
+        Action<String> Echo { get; }
+
+        FSApi.Logging ToParameters();
+    }
+
+    public interface ICLIArg
+    {
+        bool Force { get; }
+    }
+}
+
+namespace AltCover.Parameters.Primitive
+{
+    public class CollectArgs : ICollectArgs
     {
         public string RecorderDirectory { get; set; }
         public string WorkingDirectory { get; set; }
@@ -12,15 +78,11 @@ namespace AltCover
         public string Threshold { get; set; }
         public string Cobertura { get; set; }
         public string OutputFile { get; set; }
+        public string[] CommandLine { get; set; }
 
-        [Obsolete("Please use AltCover.CollectArgs.Command instead instead.")]
-        public string CommandLine { get; set; }
-
-        public string[] Command { get; set; }
-
-        internal CollectParams ToParameters()
+        public FSApi.CollectParams ToParameters()
         {
-            return new CollectParams(
+            var primitive = new AltCover.Primitive.CollectParams(
                 RecorderDirectory,
                 WorkingDirectory,
                 Executable,
@@ -28,32 +90,24 @@ namespace AltCover
                 Threshold,
                 Cobertura,
                 OutputFile,
-#pragma warning disable 0618
-                CommandLine,
-#pragma warning restore 0618
-                Command
+                CommandLine
                 );
+            return FSApi.CollectParams.NewPrimitive(primitive);
         }
 
-        public static CollectArgs Default
+        public static CollectArgs Create()
         {
-            get
+            return new CollectArgs
             {
-                return new CollectArgs
-                {
-                    RecorderDirectory = string.Empty,
-                    WorkingDirectory = string.Empty,
-                    Executable = string.Empty,
-                    LcovReport = string.Empty,
-                    Threshold = string.Empty,
-                    Cobertura = string.Empty,
-                    OutputFile = string.Empty,
-#pragma warning disable 0618
-                    CommandLine = string.Empty,
-#pragma warning restore 0618
-                    Command = new string[] { }
-                };
-            }
+                RecorderDirectory = string.Empty,
+                WorkingDirectory = string.Empty,
+                Executable = string.Empty,
+                LcovReport = string.Empty,
+                Threshold = string.Empty,
+                Cobertura = string.Empty,
+                OutputFile = string.Empty,
+                CommandLine = new string[] { }
+            };
         }
 
         public string[] Validate(bool afterPreparation)
@@ -62,7 +116,7 @@ namespace AltCover
         }
     }
 
-    public class PrepareArgs
+    public class PrepareArgs : IPrepareArgs
     {
         public string InputDirectory { get; set; }
         public string OutputDirectory { get; set; }
@@ -87,14 +141,11 @@ namespace AltCover
         public bool LineCover { get; set; }
         public bool BranchCover { get; set; }
 
-        [Obsolete("Please use AltCover.PrepareArgs.Command instead instead.")]
-        public string CommandLine { get; set; }
+        public string[] CommandLine { get; set; }
 
-        public string[] Command { get; set; }
-
-        internal PrepareParams ToParameters()
+        public FSApi.PrepareParams ToParameters()
         {
-            return new PrepareParams(
+            var primitive = new AltCover.Primitive.PrepareParams(
                         InputDirectory,
                         OutputDirectory,
                         SymbolDirectories,
@@ -117,47 +168,39 @@ namespace AltCover
                         Single,
                         LineCover,
                         BranchCover,
-#pragma warning disable 0618
-                        CommandLine,
-#pragma warning restore 0618
-                        Command
+                        CommandLine
                 );
+            return FSApi.PrepareParams.NewPrimitive(primitive);
         }
 
-        public static PrepareArgs Default
+        public static PrepareArgs Create()
         {
-            get
+            return new PrepareArgs
             {
-                return new PrepareArgs
-                {
-                    InputDirectory = string.Empty,
-                    OutputDirectory = string.Empty,
-                    SymbolDirectories = new string[0],
-                    Dependencies = new string[0],
-                    Keys = new string[0],
-                    StrongNameKey = string.Empty,
-                    XmlReport = string.Empty,
-                    FileFilter = new string[0],
-                    AssemblyFilter = new string[0],
-                    AssemblyExcludeFilter = new string[0],
-                    TypeFilter = new string[0],
-                    MethodFilter = new string[0],
-                    AttributeFilter = new string[0],
-                    PathFilter = new string[0],
-                    CallContext = new string[0],
+                InputDirectory = string.Empty,
+                OutputDirectory = string.Empty,
+                SymbolDirectories = new string[0],
+                Dependencies = new string[0],
+                Keys = new string[0],
+                StrongNameKey = string.Empty,
+                XmlReport = string.Empty,
+                FileFilter = new string[0],
+                AssemblyFilter = new string[0],
+                AssemblyExcludeFilter = new string[0],
+                TypeFilter = new string[0],
+                MethodFilter = new string[0],
+                AttributeFilter = new string[0],
+                PathFilter = new string[0],
+                CallContext = new string[0],
 
-                    OpenCover = true,
-                    InPlace = true,
-                    Save = true,
-                    Single = false,
-                    LineCover = false,
-                    BranchCover = false,
-#pragma warning disable 0618
-                    CommandLine = string.Empty,
-#pragma warning restore 0618
-                    Command = new string[] { }
-                };
-            }
+                OpenCover = true,
+                InPlace = true,
+                Save = true,
+                Single = false,
+                LineCover = false,
+                BranchCover = false,
+                CommandLine = { }
+            };
         }
 
         public string[] Validate()
@@ -166,45 +209,53 @@ namespace AltCover
         }
     }
 
-    public class LogArgs
+    public class LogArgs : ILogArgs
     {
         public Action<String> Info { get; set; }
         public Action<String> Warn { get; set; }
         public Action<String> Error { get; set; }
         public Action<String> Echo { get; set; }
 
-        internal Logging ToParameters()
+        public FSApi.Logging ToParameters()
         {
-            return new Logging(
-                Logging.ActionAdapter(Info),
-                Logging.ActionAdapter(Warn),
-                Logging.ActionAdapter(Error),
-                Logging.ActionAdapter(Echo));
+            var primitive = new AltCover.Primitive.Logging(
+                FSApi.Logging.ActionAdapter(Info),
+                FSApi.Logging.ActionAdapter(Warn),
+                FSApi.Logging.ActionAdapter(Error),
+                FSApi.Logging.ActionAdapter(Echo));
+            return FSApi.Logging.NewPrimitive(primitive);
         }
 
-        public static LogArgs Default
+        public static LogArgs Create()
         {
-            get
+            return new LogArgs
             {
-                return new LogArgs
-                {
-                    Info = x => { },
-                    Warn = x => { },
-                    Error = x => { },
-                    Echo = x => { }
-                };
-            }
+                Info = x => { },
+                Warn = x => { },
+                Error = x => { },
+                Echo = x => { }
+            };
         }
     }
 
+    public class CLIArgs : ICLIArg
+    {
+        public bool Force { get; set; }
+    }
+}
+
+namespace AltCover
+{
+    using AltCover.Parameters;
+
     public static class CSApi
     {
-        public static int Prepare(PrepareArgs p, LogArgs l)
+        public static int Prepare(IPrepareArgs p, ILogArgs l)
         {
             return Api.Prepare(p.ToParameters(), l.ToParameters());
         }
 
-        public static int Collect(CollectArgs c, LogArgs l)
+        public static int Collect(ICollectArgs c, ILogArgs l)
         {
             return Api.Collect(c.ToParameters(), l.ToParameters());
         }
@@ -219,16 +270,23 @@ namespace AltCover
             return Api.Version();
         }
 
-        public static string ToTestArguments(PrepareArgs p,
-                                             CollectArgs c)
+        public static string ToTestArguments(IPrepareArgs p,
+                                             ICollectArgs c,
+                                             ICLIArg force)
         {
-            return DotNet.ToTestArguments(p.ToParameters(), c.ToParameters());
+            return DotNet.ToTestArguments(p.ToParameters(),
+                                          c.ToParameters(),
+                                          DotNet.CLIArgs.NewForce(force.Force));
         }
 
-        public static string[] ToTestArgumentList(PrepareArgs p,
-                                             CollectArgs c)
+        public static string[] ToTestArgumentList(IPrepareArgs p,
+                                                  ICollectArgs c,
+                                                  ICLIArg force)
         {
-            return DotNet.ToTestArgumentList(p.ToParameters(), c.ToParameters()).ToArray();
+            return DotNet.ToTestArgumentList(p.ToParameters(),
+                                             c.ToParameters(),
+                                             DotNet.CLIArgs.NewForce(force.Force)).
+            ToArray();
         }
     }
 }

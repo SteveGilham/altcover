@@ -5,13 +5,15 @@ using Cake.Core.Annotations;
 using Cake.Core.IO;
 using System;
 using System.Linq;
+using AltCover.Parameters;
 
 namespace AltCover.Cake
 {
     public class AltCoverSettings
     {
-        public PrepareArgs PreparationPhase { get; set; }
-        public CollectArgs CollectionPhase { get; set; }
+        public IPrepareArgs PreparationPhase { get; set; }
+        public ICollectArgs CollectionPhase { get; set; }
+        public ICLIArg Force { get; set; }
     }
 
     [CakeAliasCategory("DotNetCore")]
@@ -37,7 +39,10 @@ namespace AltCover.Cake
                         AltCoverSettings altcover)
         {
             Array.ForEach(
-                CSApi.ToTestArgumentList(altcover.PreparationPhase, altcover.CollectionPhase),
+                CSApi.ToTestArgumentList(
+                    altcover.PreparationPhase,
+                    altcover.CollectionPhase,
+                    altcover.Force),
                 t => builder.Append(t));
             return builder;
         }
