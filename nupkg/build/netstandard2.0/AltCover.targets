@@ -11,13 +11,13 @@
 
   <ItemGroup>
     <AltCoverSplitContext Include="$(AltCoverCallContext.Split('|'))" />
-    <AltCoverFileFilters Include="$(AltCoverFileFilter.Split('|'))" />
-    <AltCoverPathFilters Include="$(AltCoverPathFilter.Split('|'))" />
-    <AltCoverAssemblyFilters Include="$(AltCoverAssemblyFilter.Split('|'))" />
-    <AltCoverAssemblyExcludeFilters Include="$(AltCoverAssemblyExcludeFilter.Split('|'))" />
-    <AltCoverTypeFilters Include="$(AltCoverTypeFilter.Split('|'))" />
-    <AltCoverMethodFilters Include="$(AltCoverMethodFilter.Split('|'))" />
-    <AltCoverAttributeFilters Include="$(AltCoverAttributeFilter.Split('|'))" />
+    <AltCoverFileFilters Include="$(AltCoverFileFilter.Replace('\',%00).Split('|'))" />
+    <AltCoverPathFilters Include="$(AltCoverPathFilter.Replace('\',%00).Split('|'))" />
+    <AltCoverAssemblyFilters Include="$(AltCoverAssemblyFilter.Replace('\',%00).Split('|'))" />
+    <AltCoverAssemblyExcludeFilters Include="$(AltCoverAssemblyExcludeFilter.Replace('\',%00).Split('|'))" />
+    <AltCoverTypeFilters Include="$(AltCoverTypeFilter.Replace('\',%00).Split('|'))" />
+    <AltCoverMethodFilters Include="$(AltCoverMethodFilter.Replace('\',%00).Split('|'))" />
+    <AltCoverAttributeFilters Include="$(AltCoverAttributeFilter.Replace('\',%00).Split('|'))" />
     <AltCoverDependencies Include="$(AltCoverDependencyList.Split('|'))" />
     <AltCoverXmlOutput Include="$(AltCoverXmlReport)" />
   </ItemGroup>
@@ -49,13 +49,13 @@
       OutputDirectory="$(TargetDir)__Saved"
       XmlReport="$(AltCoverXmlReport)"
       OpenCover="$(AltCoverOpenCover)"
-      FileFilter="@(AltCoverFileFilters)"
-      PathFilter="@(AltCoverPathFilters)"
-      AssemblyFilter="@(AltCoverAssemblyFilters)"
-      AssemblyExcludeFilter="@(AltCoverAssemblyExcludeFilters)"
-      TypeFilter="@(AltCoverTypeFilters)"
-      MethodFilter="@(AltCoverMethodFilters)"
-      AttributeFilter="@(AltCoverAttributeFilters)"
+      FileFilter="@(AltCoverFileFilters->Replace(%00, '\'))"
+      PathFilter="@(AltCoverPathFilters->Replace(%00, '\'))"
+      AssemblyFilter="@(AltCoverAssemblyFilters->Replace(%00, '\'))"
+      AssemblyExcludeFilter="@(AltCoverAssemblyExcludeFilters->Replace(%00, '\'))"
+      TypeFilter="@(AltCoverTypeFilters->Replace(%00, '\'))"
+      MethodFilter="@(AltCoverMethodFilters->Replace(%00, '\'))"
+      AttributeFilter="@(AltCoverAttributeFilters->Replace(%00, '\'))"
       CallContext="@(AltCoverSplitContext)"
       Single="$(AltCoverSingle)"
       LineCover="$(AltCoverLineCover)"
