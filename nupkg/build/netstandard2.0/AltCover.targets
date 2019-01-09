@@ -11,13 +11,13 @@
 
   <ItemGroup>
     <AltCoverSplitContext Include="$(AltCoverCallContext.Split('|'))" />
-    <AltCoverFileFilters Include="$(AltCoverFileFilter.Split('|'))" />
-    <AltCoverPathFilters Include="$(AltCoverPathFilter.Split('|'))" />
-    <AltCoverAssemblyFilters Include="$(AltCoverAssemblyFilter.Split('|'))" />
-    <AltCoverAssemblyExcludeFilters Include="$(AltCoverAssemblyExcludeFilter.Split('|'))" />
-    <AltCoverTypeFilters Include="$(AltCoverTypeFilter.Split('|'))" />
-    <AltCoverMethodFilters Include="$(AltCoverMethodFilter.Split('|'))" />
-    <AltCoverAttributeFilters Include="$(AltCoverAttributeFilter.Split('|'))" />
+    <AltCoverFileFilters Include="$(AltCoverFileFilter.Replace('\',%00).Split('|'))" />
+    <AltCoverPathFilters Include="$(AltCoverPathFilter.Replace('\',%00).Split('|'))" />
+    <AltCoverAssemblyFilters Include="$(AltCoverAssemblyFilter.Replace('\',%00).Split('|'))" />
+    <AltCoverAssemblyExcludeFilters Include="$(AltCoverAssemblyExcludeFilter.Replace('\',%00).Split('|'))" />
+    <AltCoverTypeFilters Include="$(AltCoverTypeFilter.Replace('\',%00).Split('|'))" />
+    <AltCoverMethodFilters Include="$(AltCoverMethodFilter.Replace('\',%00).Split('|'))" />
+    <AltCoverAttributeFilters Include="$(AltCoverAttributeFilter.Replace('\',%00).Split('|'))" />
     <AltCoverDependencies Include="$(AltCoverDependencyList.Split('|'))" />
     <AltCoverXmlOutput Include="$(AltCoverXmlReport)" />
   </ItemGroup>
@@ -29,7 +29,7 @@
 
   <Target Name="AltCoverPreFlight" Condition="'$(AltCover)' == 'true'">
     <Error Condition="Exists('$(TargetDir)__Saved') AND '$(AltCoverForce)' != 'true'" 
-           Text="Directory '$(TargetDir)__Saved' exists from a previous run.  Either manually examine and delete it, or run with 'p:/AltCoverForce=true' to force deletion" />
+           Text="Directory '$(TargetDir)__Saved' exists from a previous run.  Either manually examine and delete it, or run with '/p:AltCoverForce=true' to force deletion" />
     <Warning Condition="Exists('$(TargetDir)__Saved') AND '$(AltCoverForce)' == 'true'" 
              Text="Directory '$(TargetDir)__Saved' exists from a previous run.  Forcibly deleting it" />
     <RemoveDir Directories="$(TargetDir)__Saved"
