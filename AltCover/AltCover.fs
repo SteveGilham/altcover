@@ -146,32 +146,32 @@ module internal Main =
        |> Seq.iter (FilterClass.File >> Visitor.NameFilters.Add)))
       ("p|pathFilter=",
        (fun x ->
-       x
+       x.Replace('\u0000', '\\')
        |> CommandLine.ValidateRegexes
        |> Seq.iter (FilterClass.Path >> Visitor.NameFilters.Add)))
       ("s|assemblyFilter=",
        (fun x ->
-       x
+       x.Replace('\u0000', '\\')
        |> CommandLine.ValidateRegexes
        |> Seq.iter (FilterClass.Assembly >> Visitor.NameFilters.Add)))
       ("e|assemblyExcludeFilter=",
        (fun x ->
-       x
+       x.Replace('\u0000', '\\')
        |> CommandLine.ValidateRegexes
        |> Seq.iter (FilterClass.Module >> Visitor.NameFilters.Add)))
       ("t|typeFilter=",
        (fun x ->
-       x
+       x.Replace('\u0000', '\\')
        |> CommandLine.ValidateRegexes
        |> Seq.iter (FilterClass.Type >> Visitor.NameFilters.Add)))
       ("m|methodFilter=",
        (fun x ->
-       x
+       x.Replace('\u0000', '\\')
        |> CommandLine.ValidateRegexes
        |> Seq.iter (FilterClass.Method >> Visitor.NameFilters.Add)))
       ("a|attributeFilter=",
        (fun x ->
-       x
+       x.Replace('\u0000', '\\')
        |> CommandLine.ValidateRegexes
        |> Seq.iter (FilterClass.Attribute >> Visitor.NameFilters.Add)))
       ("c|callContext=",
