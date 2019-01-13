@@ -254,13 +254,12 @@ _Target "Lint" (fun _ ->
     let lintConfig = Configuration.configuration settings
     let options =
       { Lint.OptionalLintParameters.Default with Configuration = Some lintConfig }
-    let fsVersion = System.Version("4.0")
 
     !!"**/*.fsproj"
     |> Seq.collect (fun n -> !!(Path.GetDirectoryName n @@ "*.fs"))
     |> Seq.distinct
     |> Seq.map (fun f ->
-         match Lint.lintFile options f fsVersion with
+         match Lint.lintFile options f with
          | Lint.LintResult.Failure x -> failwithf "%A" x
          | Lint.LintResult.Success w ->
            w
