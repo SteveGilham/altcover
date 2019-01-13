@@ -9,27 +9,9 @@
   <UsingTask TaskName="AltCover.GetVersion"
         AssemblyFile="$(MSBuildThisFileDirectory)../../tools/netcoreapp2.0/AltCover.dll" />
 
-  <ItemGroup>
-    <AltCoverSplitContext Include="$(AltCoverCallContext.Split('|'))" />
-    <AltCoverFileFilters Include="$(AltCoverFileFilter.Split('|'))" />
-    <AltCoverPathFilters Include="$(AltCoverPathFilter.Split('|'))" />
-    <AltCoverAssemblyFilters Include="$(AltCoverAssemblyFilter.Split('|'))" />
-    <AltCoverAssemblyExcludeFilters Include="$(AltCoverAssemblyExcludeFilter.Split('|'))" />
-    <AltCoverTypeFilters Include="$(AltCoverTypeFilter.Split('|'))" />
-    <AltCoverMethodFilters Include="$(AltCoverMethodFilter.Split('|'))" />
-    <AltCoverAttributeFilters Include="$(AltCoverAttributeFilter.Split('|'))" />
-    <AltCoverDependencies Include="$(AltCoverDependencyList.Split('|'))" />
-    <AltCoverXmlOutput Include="$(AltCoverXmlReport)" />
-  </ItemGroup>
-
-  <PropertyGroup>
-    <AltCoverPreFlightCheck Condition="Exists('$(TargetDir)__Saved')">Fail</AltCoverPreFlightCheck>
-    <AltCoverPreFlightCheck Condition="!Exists('$(TargetDir)__Saved')">OK</AltCoverPreFlightCheck>
-  </PropertyGroup>
-
   <Target Name="AltCoverPreFlight" Condition="'$(AltCover)' == 'true'">
     <Error Condition="Exists('$(TargetDir)__Saved') AND '$(AltCoverForce)' != 'true'" 
-           Text="Directory '$(TargetDir)__Saved' exists from a previous run.  Either manually examine and delete it, or run with 'p:/AltCoverForce=true' to force deletion" />
+           Text="Directory '$(TargetDir)__Saved' exists from a previous run.  Either manually examine and delete it, or run with '/p:AltCoverForce=true' to force deletion" />
     <Warning Condition="Exists('$(TargetDir)__Saved') AND '$(AltCoverForce)' == 'true'" 
              Text="Directory '$(TargetDir)__Saved' exists from a previous run.  Forcibly deleting it" />
     <RemoveDir Directories="$(TargetDir)__Saved"
@@ -37,6 +19,10 @@
   </Target>
 
   <Target Name="AltCoverRunPreparation" Condition="'$(AltCover)' == 'true'">
+    <ItemGroup>
+      <AltCoverXmlOutput Include="$(AltCoverXmlReport)" />
+    </ItemGroup>
+
     <PropertyGroup>
       <AltCoverXmlReport Condition="'$(AltCoverXmlReport)' != '' AND '$(TargetFrameworks)' != ''">%(AltCoverXmlOutput.RootDir)/%(AltCoverXmlOutput.Directory)/%(AltCoverXmlOutput.Filename).$(TargetFramework)%(AltCoverXmlOutput.Extension)</AltCoverXmlReport>
       <AltCoverXmlReport Condition="'$(AltCoverXmlReport)' == '' AND '$(TargetFrameworks)' == ''">$(ProjectDir)coverage.xml</AltCoverXmlReport>
@@ -49,14 +35,14 @@
       OutputDirectory="$(TargetDir)__Saved"
       XmlReport="$(AltCoverXmlReport)"
       OpenCover="$(AltCoverOpenCover)"
-      FileFilter="@(AltCoverFileFilters)"
-      PathFilter="@(AltCoverPathFilters)"
-      AssemblyFilter="@(AltCoverAssemblyFilters)"
-      AssemblyExcludeFilter="@(AltCoverAssemblyExcludeFilters)"
-      TypeFilter="@(AltCoverTypeFilters)"
-      MethodFilter="@(AltCoverMethodFilters)"
-      AttributeFilter="@(AltCoverAttributeFilters)"
-      CallContext="@(AltCoverSplitContext)"
+      FileFilter="$(AltCoverFileFilter.Replace('\',%00).Split('|'))"
+      PathFilter="$(AltCoverPathFilter.Replace('\',%00).Split('|'))"
+      AssemblyFilter="$(AltCoverAssemblyFilter.Replace('\',%00).Split('|'))"
+      AssemblyExcludeFilter="$(AltCoverAssemblyExcludeFilter.Replace('\',%00).Split('|'))"
+      TypeFilter="$(AltCoverTypeFilter.Replace('\',%00).Split('|'))"
+      MethodFilter="$(AltCoverMethodFilter.Replace('\',%00).Split('|'))"
+      AttributeFilter="$(AltCoverAttributeFilter.Replace('\',%00).Split('|'))"
+      CallContext="$(AltCoverCallContext.Split('|'))"
       Single="$(AltCoverSingle)"
       LineCover="$(AltCoverLineCover)"
       BranchCover="$(AltCoverBranchCover)"
@@ -73,6 +59,11 @@
 
   <!-- As per Microsoft.TestPlatform.targets v2.1.300, but with OnError clause -->
   <Target Name="VSTest">
+    <PropertyGroup>
+      <AltCoverPreFlightCheck Condition="Exists('$(TargetDir)__Saved')">Fail</AltCoverPreFlightCheck>
+      <AltCoverPreFlightCheck Condition="!Exists('$(TargetDir)__Saved')">OK</AltCoverPreFlightCheck>
+    </PropertyGroup>
+
     <CallTarget Targets="AltCoverPreFlight" />
 
     <CallTarget Condition="'$(VSTestNoBuild)' != 'true'" Targets="BuildProject" />

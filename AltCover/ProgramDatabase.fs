@@ -12,7 +12,17 @@ open Mono.Cecil.Pdb
 module internal ProgramDatabase =
   let internal SymbolFolders = List<String>()
 
-  // We no longer have to violate Cecil encapsulation to get the PDB path!
+  // We no longer have to violate Cecil encapsulation to get the PDB path
+  // but we do to get the embedded PDB info
+  let internal getEmbed =
+    (typeof<Mono.Cecil.AssemblyDefinition>.Assembly.GetTypes()
+     |> Seq.filter (fun m -> m.FullName = "Mono.Cecil.Mixin")
+     |> Seq.head)
+      .GetMethod("GetEmbeddedPortablePdbEntry")
+
+  let internal GetEmbeddedPortablePdbEntry(assembly : AssemblyDefinition) =
+    getEmbed.Invoke(null, [| assembly.MainModule.GetDebugHeader() :> obj |]) :?> ImageDebugHeaderEntry
+
   let GetPdbFromImage(assembly : AssemblyDefinition) =
     Some assembly.MainModule
     |> Option.filter (fun x -> x.HasDebugHeader)
@@ -28,7 +38,11 @@ module internal ProgramDatabase =
          |> Seq.toArray
          |> System.Text.Encoding.UTF8.GetString)
     |> Option.filter (fun s -> s.Length > 0)
-    |> Option.filter (fun s -> File.Exists s || s = (assembly.Name.Name + ".pdb") )
+    |> Option.filter (fun s ->
+         File.Exists s || (s = (assembly.Name.Name + ".pdb") && (assembly
+                                                                 |> GetEmbeddedPortablePdbEntry
+                                                                 |> isNull
+                                                                 |> not)))
 
   let GetSymbolsByFolder fileName folderName =
     let name = Path.Combine(folderName, fileName)
