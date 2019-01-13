@@ -94,7 +94,7 @@ Running `dotnet fake run ./Build/build.fsx` performs a full build/test/package p
 
 Use `dotnet fake run ./Build/build.fsx --target <targetname>` to run to a specific target.
 
-#### If the build fails 
+#### If the build fails
 
 If there's a passing build on the CI servers for this commit, then it's likely to be one of the [intermittent build failures](https://github.com/SteveGilham/altcover/wiki/Intermittent-build-issues) that can arise from the tooling used. The standard remedy is to try again.
 
