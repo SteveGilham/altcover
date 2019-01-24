@@ -499,6 +499,7 @@ _Target "JustUnitTest" (fun _ ->
     |> Seq.filter
          (fun f ->
          Path.GetFileName(f) <> "AltCover.XTests.dll"
+         && Path.GetFileName(f) <> "NUnit3.TestAdapter.dll"
          && Path.GetFileName(f) <> "xunit.runner.visualstudio.testadapter.dll")
     |> NUnit3.run (fun p ->
          { p with ToolPath = Tools.findToolInSubPath "nunit3-console.exe" "."
@@ -580,6 +581,7 @@ _Target "UnitTestWithOpenCover" (fun _ ->
     |> Seq.filter
          (fun f ->
          Path.GetFileName(f) <> "AltCover.XTests.dll"
+         && Path.GetFileName(f) <> "NUnit3.TestAdapter.dll"
          && Path.GetFileName(f) <> "xunit.runner.visualstudio.testadapter.dll")
   let xtestFiles = !!(@"_Binaries/*Tests/Debug+AnyCPU/*XTest*.dll")
   let coverage = Path.getFullName "_Reports/UnitTestWithOpenCover.xml"
@@ -720,7 +722,7 @@ _Target "UnitTestWithAltCover" (fun _ ->
     |> AltCover.run
 
     printfn "Execute the weakname tests"
-    !!("_Binaries/AltCover.WeakNameTests/Debug+AnyCPU/__WeakNameTestWithAltCover/*Test*.dll")
+    !!("_Binaries/AltCover.WeakNameTests/Debug+AnyCPU/__WeakNameTestWithAltCover/Alt*Test*.dll")
     |> NUnit3.run (fun p ->
          { p with ToolPath = Tools.findToolInSubPath "nunit3-console.exe" "."
                   WorkingDir = "."
@@ -746,7 +748,7 @@ _Target "UnitTestWithAltCover" (fun _ ->
     |> AltCover.run
 
     printfn "Execute the shadow tests"
-    !!("_Binaries/AltCover.Shadow.Tests/Debug+AnyCPU/__ShadowTestWithAltCover/*.Test*.dll")
+    !!("_Binaries/AltCover.Shadow.Tests/Debug+AnyCPU/__ShadowTestWithAltCover/Alt*.Test*.dll")
     |> NUnit3.run (fun p ->
          { p with ToolPath = Tools.findToolInSubPath "nunit3-console.exe" "."
                   WorkingDir = "."
