@@ -4,6 +4,7 @@ A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wi
 
 # 5.0.66x (Ezoguma series release 3)
 * [BUGFIX] Restore visualizer support for OpenCover format (internal consistency check failure)
+* [BUGFIX] Issue #52 -- fix OpenCover format output in the case of exclusion by path
 
 # 5.0.664 (Ezoguma series release 2)
 * [BUGFIX] Issue #49 -- `dotnet test` integration : internally, escape the '\' character, which is  is helpfully treated by MSBuild as a path separator and flipped to be '/' on non-Windows platforms when introduced through `/p:AltCover*Filter` arguments.
