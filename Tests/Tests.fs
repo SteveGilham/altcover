@@ -1756,6 +1756,35 @@ type AltCoverTests() =
         Visitor.NameFilters.Clear()
 
     [<Test>]
+    member self.ShouldGenerateExpectedXmlReportFromDotNetWithPathFilter() =
+      let visitor, document = Report.ReportGenerator()
+      // Hack for running while instrumented
+      let where = Assembly.GetExecutingAssembly().Location
+      let path =
+        Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), sample1)
+      try
+        "Program"
+        |> (Regex
+            >> FilterClass.Path
+            >> Visitor.NameFilters.Add)
+        Visitor.Visit [ visitor ] (Visitor.ToSeq path)
+        let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+        let xml = AltCoverTests.TTBaseline
+        let xml' =
+          xml.Replace("Version=1.0.0.0", "Version=" + def.Name.Version.ToString())
+             .Replace("excluded=\"true\" instrumented=\"false\"",
+                      "excluded=\"false\" instrumented=\"true\"")
+        let xml'' = xml'.Replace("name=\"Sample1.exe\"", "name=\"" + sample1 + "\"")
+        let baseline = XDocument.Load(new System.IO.StringReader(xml''))
+        let result = document.Elements()
+        let expected = baseline.Elements()
+        printfn "%A" result
+        printfn "%A" expected
+        AltCoverTests.RecursiveValidate result expected 0 true
+      finally
+        Visitor.NameFilters.Clear()
+
+    [<Test>]
     member self.ShouldGenerateExpectedXmlReportFromDotNetWhenExcluded() =
       let visitor, document = Report.ReportGenerator()
       // Hack for running while instrumented
@@ -2275,6 +2304,41 @@ type AltCoverTests() =
                n.EndsWith("Sample1MethodExclusion.xml", StringComparison.Ordinal))
         use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
         let baseline = XDocument.Load(stream)
+        let result = document.Elements()
+        let expected = baseline.Elements()
+        AltCoverTests.RecursiveValidateOpenCover result expected 0 true false
+      finally
+        Visitor.NameFilters.Clear()
+
+    [<Test>]
+    member self.ShouldGenerateExpectedXmlReportWithFileExclusionOpenCoverStyle() =
+      let visitor, document = OpenCover.ReportGenerator()
+      // Hack for running while instrumented
+      let where = Assembly.GetExecutingAssembly().Location
+      let path =
+        Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), sample1)
+      try
+        "Program"
+        |> (Regex
+            >> FilterClass.Path
+            >> Visitor.NameFilters.Add)
+        Visitor.Visit [ visitor ] (Visitor.ToSeq path)
+        let resource =
+          Assembly.GetExecutingAssembly().GetManifestResourceNames()
+          |> Seq.find
+               (fun n ->
+               n.EndsWith("Sample1MethodExclusion.xml", StringComparison.Ordinal))
+        use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
+        let baseline = XDocument.Load(stream)
+
+        baseline.Descendants(XName.Get "Method")
+        |> Seq.filter (fun x -> x.Attributes(XName.Get "skippedDueTo").Any())
+        |> Seq.iter (fun x -> x.SetAttributeValue(XName.Get "skippedDueTo", "File")
+                              x.Descendants(XName.Get "Summary")
+                              |> Seq.toList
+                              |> Seq.iter (fun x -> x.Remove()))
+                              //|> Seq.iter (fun s -> s.SetAttributeValue(XName.Get "maxCyclomaticComplexity", "2")
+                              //                      s.SetAttributeValue(XName.Get "minCyclomaticComplexity", "2")))
         let result = document.Elements()
         let expected = baseline.Elements()
         AltCoverTests.RecursiveValidateOpenCover result expected 0 true false
