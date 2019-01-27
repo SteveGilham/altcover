@@ -1941,13 +1941,17 @@ or
         LCov.path := None
 
     [<Test>]
-    member self.NCoverShouldGeneratePlausibleLcovBugFix() =
+    member self.NCoverShouldGeneratePlausibleLcovWithMissingFullName() =
       let resource =
         Assembly.GetExecutingAssembly().GetManifestResourceNames()
         |> Seq.find
              (fun n -> n.EndsWith("Sample1WithNCover.xml", StringComparison.Ordinal))
       use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
       let baseline = XDocument.Load(stream)
+      let excluded = XName.Get "excluded"
+      baseline.Descendants()
+      |> Seq.iter (fun x -> if x.Attribute(excluded) |> isNull |> not then
+                               x.SetAttributeValue(excluded, "false"))
       let unique =
         Path.Combine
           (Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName,
@@ -2051,13 +2055,17 @@ or
         Cobertura.path := None
 
     [<Test>]
-    member self.NCoverShouldGeneratePlausibleCoberturaBugFix() =
+    member self.NCoverShouldGeneratePlausibleCoberturaWithMissingFullName() =
       let resource =
         Assembly.GetExecutingAssembly().GetManifestResourceNames()
         |> Seq.find
              (fun n -> n.EndsWith("Sample1WithNCover.xml", StringComparison.Ordinal))
       use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
       let baseline = XDocument.Load(stream)
+      let excluded = XName.Get "excluded"
+      baseline.Descendants()
+      |> Seq.iter (fun x -> if x.Attribute(excluded) |> isNull |> not then
+                               x.SetAttributeValue(excluded, "false"))
       let unique =
         Path.Combine
           (Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName,

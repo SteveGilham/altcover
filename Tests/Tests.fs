@@ -1778,8 +1778,6 @@ type AltCoverTests() =
         let baseline = XDocument.Load(new System.IO.StringReader(xml''))
         let result = document.Elements()
         let expected = baseline.Elements()
-        printfn "%A" result
-        printfn "%A" expected
         AltCoverTests.RecursiveValidate result expected 0 true
       finally
         Visitor.NameFilters.Clear()
