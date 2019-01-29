@@ -286,7 +286,8 @@ Describe "ConvertTo-Cobertura" {
   }
 
   It "Converts With the pipeline" {
-    $x = [xml] (Get-Content "./Tests/Sample1WithNCover.xml") | ConvertTo-Cobertura
+    $lines = (Get-Content "./Tests/Sample1WithNCover.xml") | % { $_.Replace('excluded="true"', 'excluded="false"')}
+    $x = [xml] ($lines) | ConvertTo-Cobertura
     $coverage = $x.Descendants("coverage")
     $v = $coverage.Attribute("version").Value
     $t = $coverage.Attribute("timestamp").Value
