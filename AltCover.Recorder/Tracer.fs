@@ -95,3 +95,5 @@ type Tracer =
   member internal this.OnVisit visits moduleId hitPointId context =
     this.CatchUp visits
     this.Push moduleId hitPointId context
+    this.Formatter.Flush()
+    this.Stream.Flush()

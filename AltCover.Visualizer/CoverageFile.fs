@@ -55,9 +55,6 @@ module Transformer =
   let internal TransformFromOpenCover(document : XNode) =
     let report =
       TransformFromOtherCover document "AltCover.Visualizer.OpenCoverToNCoverEx.xsl"
-    // Blazon it for our benfit
-    let element = new XElement(XName.Get("OpenCoverReport"))
-    report.XPathSelectElement("//coverage").LastNode.AddAfterSelf(element)
     report
 
   // PartCover to NCover style sheet
