@@ -127,7 +127,6 @@ let NuGetAltCover =
   |> Seq.filter File.Exists
   |> Seq.tryHead
 
-
 let ForceTrue = DotNet.CLIArgs.Force true
 
 let _Target s f =
@@ -229,7 +228,7 @@ _Target "BuildMonoSamples" (fun _ ->
 
     ("./_Mono/Sample3",
      [ "-target:library"; "-debug"; "-out:./_Mono/Sample3/Sample3.dll";
-       "-lib:./packages/Mono.Cecil.0.10.1/lib/net40"; "-r:Mono.Cecil.dll";
+       "-lib:./packages/Mono.Cecil.0.10.3/lib/net40"; "-r:Mono.Cecil.dll";
        "./Sample3/Class1.cs" ]) ]
   |> Seq.iter
        (fun (dir, cmd) ->
@@ -499,6 +498,7 @@ _Target "JustUnitTest" (fun _ ->
     |> Seq.filter
          (fun f ->
          Path.GetFileName(f) <> "AltCover.XTests.dll"
+         && Path.GetFileName(f) <> "NUnit3.TestAdapter.dll"
          && Path.GetFileName(f) <> "xunit.runner.visualstudio.testadapter.dll")
     |> NUnit3.run (fun p ->
          { p with ToolPath = Tools.findToolInSubPath "nunit3-console.exe" "."
@@ -580,6 +580,7 @@ _Target "UnitTestWithOpenCover" (fun _ ->
     |> Seq.filter
          (fun f ->
          Path.GetFileName(f) <> "AltCover.XTests.dll"
+         && Path.GetFileName(f) <> "NUnit3.TestAdapter.dll"
          && Path.GetFileName(f) <> "xunit.runner.visualstudio.testadapter.dll")
   let xtestFiles = !!(@"_Binaries/*Tests/Debug+AnyCPU/*XTest*.dll")
   let coverage = Path.getFullName "_Reports/UnitTestWithOpenCover.xml"
@@ -720,7 +721,7 @@ _Target "UnitTestWithAltCover" (fun _ ->
     |> AltCover.run
 
     printfn "Execute the weakname tests"
-    !!("_Binaries/AltCover.WeakNameTests/Debug+AnyCPU/__WeakNameTestWithAltCover/*Test*.dll")
+    !!("_Binaries/AltCover.WeakNameTests/Debug+AnyCPU/__WeakNameTestWithAltCover/Alt*Test*.dll")
     |> NUnit3.run (fun p ->
          { p with ToolPath = Tools.findToolInSubPath "nunit3-console.exe" "."
                   WorkingDir = "."
@@ -746,7 +747,7 @@ _Target "UnitTestWithAltCover" (fun _ ->
     |> AltCover.run
 
     printfn "Execute the shadow tests"
-    !!("_Binaries/AltCover.Shadow.Tests/Debug+AnyCPU/__ShadowTestWithAltCover/*.Test*.dll")
+    !!("_Binaries/AltCover.Shadow.Tests/Debug+AnyCPU/__ShadowTestWithAltCover/Alt*.Test*.dll")
     |> NUnit3.run (fun p ->
          { p with ToolPath = Tools.findToolInSubPath "nunit3-console.exe" "."
                   WorkingDir = "."
@@ -2791,7 +2792,7 @@ _Target "DoIt"
   let frameworkPath = AltCover.Fake.Api.toolPath AltCover.Fake.Implementation.Framework
   printfn "frameworkPath = %A" frameworkPath
 
-  { AltCover_Fake.DotNet.Testing.AltCover.Params.Create 
+  { AltCover_Fake.DotNet.Testing.AltCover.Params.Create
       AltCover_Fake.DotNet.Testing.AltCover.ArgType.GetVersion with ToolPath = frameworkPath
                                                                     ToolType =
                                                                       AltCover_Fake.DotNet.Testing.AltCover.ToolType.Framework }
@@ -2818,8 +2819,9 @@ Target.runOrDefault "DoIt"
 group NetcoreBuild
   source https://api.nuget.org/v3/index.json
   nuget Fake.Core >= 5.8.4
-  nuget Fake.Core.Target >= 5.10.1
-  nuget Fake.DotNet.Cli >= 5.10.1
+  nuget Fake.Core.Target >= 5.12.0
+  nuget Fake.DotNet.Cli >= 5.12.0
+  nuget FSharp.Core = 4.5.0
 
   source {0}
   nuget AltCover.Api {1}

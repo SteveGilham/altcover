@@ -137,7 +137,9 @@ end_of_record
     }
 
   It "Converts NCover Data" {
-      ConvertTo-LCov -InputFile "./Tests/Sample1WithNCover.xml" -OutputFile "./_Packaging/NCover.lcov"
+      $lines = (Get-Content "./Tests/Sample1WithNCover.xml") | % { $_.Replace('excluded="true"', 'excluded="false"')}
+      $lines | Set-Content "./_Packaging/NCover.lcov.xml"
+      ConvertTo-LCov -InputFile "./_Packaging/NCover.lcov.xml" -OutputFile "./_Packaging/NCover.lcov"
       $expected = [String]::Join("`n", (Get-Content "./Tests/NCoverBugFix.lcov"))
       $got = [String]::Join("`n", (Get-Content "./_Packaging/NCover.lcov"))
       $got | Should -Be $expected.Replace("`r", "")
@@ -225,7 +227,9 @@ Describe "ConvertTo-Cobertura" {
   }
 
   It "Converts NCover Data" {
-    $x = ConvertTo-Cobertura -InputFile "./Tests/Sample1WithNCover.xml" -OutputFile "./_Packaging/NCover.cobertura"
+    $lines = (Get-Content "./Tests/Sample1WithNCover.xml") | % { $_.Replace('excluded="true"', 'excluded="false"')}
+    $lines | Set-Content "./_Packaging/NCover.cob.xml"
+    $x = ConvertTo-Cobertura -InputFile "./_Packaging/NCover.cob.xml" -OutputFile "./_Packaging/NCover.cobertura"
     $coverage = $x.Descendants("coverage")
     $v = $coverage.Attribute("version").Value
     $t = $coverage.Attribute("timestamp").Value
@@ -282,7 +286,8 @@ Describe "ConvertTo-Cobertura" {
   }
 
   It "Converts With the pipeline" {
-    $x = [xml] (Get-Content "./Tests/Sample1WithNCover.xml") | ConvertTo-Cobertura
+    $lines = (Get-Content "./Tests/Sample1WithNCover.xml") | % { $_.Replace('excluded="true"', 'excluded="false"')}
+    $x = [xml] ($lines) | ConvertTo-Cobertura
     $coverage = $x.Descendants("coverage")
     $v = $coverage.Attribute("version").Value
     $t = $coverage.Attribute("timestamp").Value

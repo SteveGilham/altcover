@@ -41,6 +41,8 @@ module DU =
   let returnBar v = Bar v
 
   [<Test>]
+  //let testMakeUnion ([<Range(10,136)>] x) = // at buffer limit
+  //  Assert.AreEqual(returnFoo x, Foo x)
   let testMakeUnion() =
     Assert.AreEqual(returnFoo 10, Foo 10)
     Assert.AreEqual(returnBar "s", Bar "s")

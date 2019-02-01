@@ -193,7 +193,6 @@ type AltCoverTests() =
     member self.RealIdShouldIncrementCountSynchronously() =
       self.GetMyMethodName "=>"
       lock Instance.Visits (fun () ->
-      Instance.Capacity <- 0
       let save = Instance.trace
       try
         Instance.Visits.Clear()
@@ -518,7 +517,7 @@ type AltCoverTests() =
           Adapter.VisitsClear()
           use stdout = new StringWriter()
           Console.SetOut stdout
-          Instance.FlushAll()
+          Adapter.FlushAll()
           Assert.That(stdout.ToString(), Is.Empty)
         finally
           Adapter.VisitsClear()
@@ -767,7 +766,6 @@ type AltCoverTests() =
     // run only once in Framework mode to avoid contention
     [<Test>]
     member self.MailboxFunctionsAsExpected() =
-      Instance.Capacity <- 0
       self.RealIdShouldIncrementCount()
       self.PauseLeavesExpectedTraces()
       self.ResumeLeavesExpectedTraces()
