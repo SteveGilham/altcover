@@ -2,9 +2,11 @@ Q. Never mind the fluff -- how do I get started?
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
-# 5.0.66x (Ezoguma series release 3)
+# 5.0.665 (Ezoguma series release 3)
 * [BUGFIX] Restore visualizer support for OpenCover format (internal consistency check failure)
-* [BUGFIX] Issue #52 -- fix OpenCover format output in the case of exclusion by path
+* [BUGFIX] Issue #52 -- fix OpenCover, LCov and Cobertura format output in the case of exclusion by path
+* [BUGFIX] Issue #50 -- take Cecil 0.10.3 with the actual fix in it
+* Some improvements to the throughput of coverage data, reducing time taken by the instrumented self-tests.
 
 # 5.0.664 (Ezoguma series release 2)
 * [BUGFIX] Issue #49 -- `dotnet test` integration : internally, escape the '\' character, which is  is helpfully treated by MSBuild as a path separator and flipped to be '/' on non-Windows platforms when introduced through `/p:AltCover*Filter` arguments.
