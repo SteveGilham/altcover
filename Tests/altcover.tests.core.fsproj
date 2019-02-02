@@ -41,26 +41,20 @@
     <EmbeddedResource Include="Sample1WithNCover.xml" />
     <EmbeddedResource Include="NCoverBugFix.lcov" />
     <EmbeddedResource Include="NCoverBugFix.cobertura" />
-  </ItemGroup>
-
-  <ItemGroup>
     <EmbeddedResource Include="..\Shadow.Tests\SimpleCoverage.xml" Link="SimpleCoverage.xml" />
-  </ItemGroup>
-
-  <ItemGroup>
     <EmbeddedResource Include="Sample1.deps.json" />
     <EmbeddedResource Include="Sample1.deps.ncafter.json" />
     <EmbeddedResource Include="Sample2.deps.json" />
     <EmbeddedResource Include="Sample2.deps.ncafter.json" />
-  </ItemGroup>
-
-  <ItemGroup>
     <EmbeddedResource Include="..\AltCover\Strings.resx" Link="Strings.resx" />
+    <EmbeddedResource Include="..\Build\Infrastructure.snk" Link="Infrastructure.snk" />
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="..\Build\Infrastructure.snk" Link="Infrastructure.snk" />
     <None Include="TailCallSample.dl_">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Sample12.runtimeconfig.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
@@ -88,6 +82,7 @@
     <ProjectReference Include="..\Sample5\sample5.core.csproj" />
     <ProjectReference Include="..\Sample6\sample6.core.fsproj" />
     <ProjectReference Include="..\Sample8\sample8.core.csproj" />
+    <ProjectReference Include="..\Sample12\sample12.core.csproj" />
   </ItemGroup>
 
   <ItemGroup>

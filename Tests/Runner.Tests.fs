@@ -1064,6 +1064,39 @@ type AltCoverTests() =
         Runner.recordingDirectory <- None
 
     [<Test>]
+    member self.ShouldHandleReturnCodes() =
+      // Hack for running while instrumented
+      let where = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
+#if NETCOREAPP2_0
+      let path = Path.Combine(where, "Sample12.dll")
+#else
+      let path = Path.Combine(where, "Sample12.exe")
+#endif
+
+      let nonWindows = System.Environment.GetEnvironmentVariable("OS") <> "Windows_NT"
+
+      let args =
+#if NETCOREAPP2_0
+          [ "dotnet"; path ]
+#else
+          if nonWindows then [ "mono"; path ]
+          else [ path ]
+#endif
+
+      let r = CommandLine.ProcessTrailingArguments args <| DirectoryInfo(where)
+      Assert.That(r, Is.EqualTo 0)
+
+      let r2 = CommandLine.ProcessTrailingArguments (args @ [ "1"; "2" ]) <| DirectoryInfo(where)
+      Assert.That(r2, Is.EqualTo 2)
+
+      try
+        CommandLine.dropReturnCode <- true
+        let r0 = CommandLine.ProcessTrailingArguments (args @ [ "1"; "2" ]) <| DirectoryInfo(where)
+        Assert.That(r0, Is.EqualTo 0)
+      finally
+        CommandLine.dropReturnCode <- false
+
+    [<Test>]
     member self.ShouldProcessTrailingArguments() =
       // Hack for running while instrumented
       let where = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)

@@ -86,6 +86,7 @@ module internal CommandLine =
   let mutable internal help = false
   let mutable internal error : string list = []
   let mutable internal exceptions : Exception list = []
+  let mutable internal dropReturnCode = false
 
   let internal resources =
     ResourceManager("AltCover.Strings", Assembly.GetExecutingAssembly())
@@ -171,7 +172,7 @@ module internal CommandLine =
 #else
     proc.WaitForExitCustom()
 #endif
-    proc.ExitCode
+    proc.ExitCode * (dropReturnCode |> not |> Increment)
 
   let logException store (e : Exception) =
     error <- e.Message :: error
