@@ -15,17 +15,6 @@ open System.Runtime.CompilerServices
 #else
 [<System.Runtime.InteropServices.ProgIdAttribute("ExcludeFromCodeCoverage hack for OpenCover issue 615")>]
 #endif
-type internal Close =
-  | DomainUnload
-  | ProcessExit
-  | Pause
-  | Resume
-
-#if NETSTANDARD2_0
-[<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage>]
-#else
-[<System.Runtime.InteropServices.ProgIdAttribute("ExcludeFromCodeCoverage hack for OpenCover issue 615")>]
-#endif
 type internal Carrier = SequencePoint of String * int * Track
 
 #if NETSTANDARD2_0
@@ -157,8 +146,8 @@ module Instance =
   /// <summary>
   /// This method flushes hit count buffers.
   /// </summary>
-  let internal FlushAll f =
-    trace.OnConnected (fun () -> f Visits)
+  let internal FlushAll finish =
+    trace.OnConnected (fun () -> trace.OnFinish finish Visits)
       (fun () ->
       match Visits.Count with
       | 0 -> ()
@@ -177,7 +166,7 @@ module Instance =
     ("PauseHandler")
     |> GetResource
     |> Option.iter Console.Out.WriteLine
-    FlushAll trace.CatchUp
+    FlushAll Pause
     Recording <- false
 
   let FlushResume() =
@@ -253,7 +242,7 @@ module Instance =
       | Resume -> FlushResume()
       | Pause -> FlushPause()
       | _ ->
-        FlushAll trace.OnFinish)
+        FlushAll finish)
 
   // Register event handling
   let DoPause = FlushCounter Pause
