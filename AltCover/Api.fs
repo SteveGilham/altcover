@@ -67,6 +67,11 @@ type CollectParams =
     | Primitive p -> p.CommandLine |> CollectParams.ToSeq
     | TypeSafe t -> t.CommandLine.AsStrings()
 
+  member self.ExposeReturnCode =
+    match self with
+    | Primitive p -> p.ExposeReturnCode
+    | TypeSafe t -> t.ExposeReturnCode.AsBool()
+
 #if RUNNER
   member self.Validate afterPreparation =
     let saved = CommandLine.error
@@ -225,6 +230,12 @@ type PrepareParams =
     match self with
     | Primitive p -> p.CommandLine |> PrepareParams.ToSeq
     | TypeSafe t -> t.CommandLine.AsStrings()
+
+  member self.ExposeReturnCode =
+    match self with
+    | Primitive p -> p.ExposeReturnCode
+    | TypeSafe t -> t.ExposeReturnCode.AsBool()
+
 #if RUNNER
   static member private validateArray a f key =
     PrepareParams.validateArraySimple a (f key)
@@ -395,6 +406,7 @@ module internal Args =
       Flag "--single" args.Single
       Flag "--linecover" args.LineCover
       Flag "--branchcover" args.BranchCover
+      Flag "--dropReturnCode" (args.ExposeReturnCode |> not)
       trailing ]
     |> List.concat
 
@@ -416,6 +428,7 @@ module internal Args =
       Item "-c" args.Cobertura
       Item "-o" args.OutputFile
       Flag "--collect" (exe |> String.IsNullOrWhiteSpace)
+      Flag "--dropReturnCode" (args.ExposeReturnCode |> not)
       trailing ]
     |> List.concat
 

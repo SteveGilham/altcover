@@ -12,6 +12,7 @@ namespace AltCover.Parameters
         string Threshold { get; }
         string Cobertura { get; }
         string OutputFile { get; }
+        bool ExposeReturnCode { get; }
         string[] CommandLine { get; }
 
         FSApi.CollectParams ToParameters();
@@ -43,6 +44,7 @@ namespace AltCover.Parameters
         bool Single { get; }
         bool LineCover { get; }
         bool BranchCover { get; }
+        bool ExposeReturnCode { get; }
 
         string[] CommandLine { get; }
 
@@ -79,6 +81,7 @@ namespace AltCover.Parameters.Primitive
         public string Cobertura { get; set; }
         public string OutputFile { get; set; }
         public string[] CommandLine { get; set; }
+        public bool ExposeReturnCode { get; set; }
 
         public FSApi.CollectParams ToParameters()
         {
@@ -90,7 +93,8 @@ namespace AltCover.Parameters.Primitive
                 Threshold,
                 Cobertura,
                 OutputFile,
-                CommandLine
+                CommandLine,
+                ExposeReturnCode
                 );
             return FSApi.CollectParams.NewPrimitive(primitive);
         }
@@ -106,7 +110,8 @@ namespace AltCover.Parameters.Primitive
                 Threshold = string.Empty,
                 Cobertura = string.Empty,
                 OutputFile = string.Empty,
-                CommandLine = new string[] { }
+                CommandLine = new string[] { },
+                ExposeReturnCode = true
             };
         }
 
@@ -140,6 +145,7 @@ namespace AltCover.Parameters.Primitive
         public bool Single { get; set; }
         public bool LineCover { get; set; }
         public bool BranchCover { get; set; }
+        public bool ExposeReturnCode { get; set; }
 
         public string[] CommandLine { get; set; }
 
@@ -168,7 +174,8 @@ namespace AltCover.Parameters.Primitive
                         Single,
                         LineCover,
                         BranchCover,
-                        CommandLine
+                        CommandLine,
+                        ExposeReturnCode
                 );
             return FSApi.PrepareParams.NewPrimitive(primitive);
         }
@@ -199,7 +206,9 @@ namespace AltCover.Parameters.Primitive
                 Single = false,
                 LineCover = false,
                 BranchCover = false,
-                CommandLine = { }
+                CommandLine = { },
+
+                ExposeReturnCode = true
             };
         }
 

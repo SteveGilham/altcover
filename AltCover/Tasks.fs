@@ -99,7 +99,8 @@ type Prepare() =
                                       Single = self.Single
                                       LineCover = self.LineCover
                                       BranchCover = self.BranchCover
-                                      CommandLine = self.CommandLine }
+                                      CommandLine = self.CommandLine
+                                      ExposeReturnCode = true}
 
     Api.Prepare task log = 0
 
@@ -133,7 +134,8 @@ type Collect() =
                                       Threshold = self.Threshold
                                       Cobertura = self.Cobertura
                                       OutputFile = self.OutputFile
-                                      CommandLine = self.CommandLine }
+                                      CommandLine = self.CommandLine
+                                      ExposeReturnCode = true }
 
     Api.Collect task log = 0
 
