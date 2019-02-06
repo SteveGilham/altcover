@@ -67,6 +67,11 @@ namespace AltCover.Parameters
     {
         bool Force { get; }
     }
+
+    public interface ICLIArg2 : ICLIArg
+    {
+        bool FailFast { get; }
+    }
 }
 
 namespace AltCover.Parameters.Primitive
@@ -247,9 +252,10 @@ namespace AltCover.Parameters.Primitive
         }
     }
 
-    public class CLIArgs : ICLIArg
+    public class CLIArgs : ICLIArg2
     {
         public bool Force { get; set; }
+        public bool FailFast { get; set; }
     }
 }
 
@@ -279,13 +285,26 @@ namespace AltCover
             return Api.Version();
         }
 
+        private static DotNet.CLIArgs ToCLIArgs(ICLIArg args)
+        {
+            var force = DotNet.CLIArgs.NewForce(args.Force);
+            switch (args)
+            {
+                case ICLIArg2 args2:
+                    var failfast = DotNet.CLIArgs.NewFailFast(args2.FailFast);
+                    return DotNet.CLIArgs.NewMany(new[] { force, failfast });
+
+                default: return force;
+            }
+        }
+
         public static string ToTestArguments(IPrepareArgs p,
                                              ICollectArgs c,
                                              ICLIArg force)
         {
             return DotNet.ToTestArguments(p.ToParameters(),
                                           c.ToParameters(),
-                                          DotNet.CLIArgs.NewForce(force.Force));
+                                          ToCLIArgs(force));
         }
 
         public static string[] ToTestArgumentList(IPrepareArgs p,
@@ -294,7 +313,7 @@ namespace AltCover
         {
             return DotNet.ToTestArgumentList(p.ToParameters(),
                                              c.ToParameters(),
-                                             DotNet.CLIArgs.NewForce(force.Force)).
+                                             ToCLIArgs(force)).
             ToArray();
         }
     }

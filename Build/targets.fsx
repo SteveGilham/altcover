@@ -128,6 +128,7 @@ let NuGetAltCover =
   |> Seq.tryHead
 
 let ForceTrue = DotNet.CLIArgs.Force true
+let FailTrue = DotNet.CLIArgs.FailFast true
 
 let _Target s f =
   Target.description s
@@ -387,6 +388,7 @@ _Target "FxCop" (fun _ -> // Needs debug because release is compiled --standalon
        ], [], [ "-Microsoft.Usage#CA2235"
                 "-Microsoft.Performance#CA1819"
                 "-Microsoft.Design#CA1020"
+                "-Microsoft.Design#CA1034"
                 "-Microsoft.Design#CA1004"
                 "-Microsoft.Design#CA1006"
                 "-Microsoft.Design#CA1011"
@@ -2858,6 +2860,13 @@ _Target "DotnetTestIntegration" (fun _ ->
     repo.SetAttributeValue(XName.Get "value", Path.getFullName "./_Packaging")
     config.Save "./_DotnetTest/NuGet.config"
 
+    Directory.ensure "./_DotnetTestFail"
+    Shell.cleanDir ("./_DotnetTestFail")
+    let config = XDocument.Load "./Build/NuGet.config.dotnettest"
+    let repo = config.Descendants(XName.Get("add")) |> Seq.head
+    repo.SetAttributeValue(XName.Get "value", Path.getFullName "./_Packaging")
+    config.Save "./_DotnetTestFail/NuGet.config"
+
     let fsproj = XDocument.Load "./Sample4/sample4.core.fsproj"
     let pack = fsproj.Descendants(XName.Get("PackageReference")) |> Seq.head
     let inject =
@@ -2883,6 +2892,80 @@ _Target "DotnetTestIntegration" (fun _ ->
 
     let x = Path.getFullName "./_DotnetTest/coverage.xml"
     Actions.CheckSample4 x
+
+    // optest failing test
+    let fsproj = XDocument.Load "./Sample13/sample13.core.fsproj"
+    let pack = fsproj.Descendants(XName.Get("PackageReference")) |> Seq.head
+    let inject =
+      XElement
+        (XName.Get "PackageReference", XAttribute(XName.Get "Include", "altcover"),
+         XAttribute(XName.Get "Version", !Version))
+    pack.AddBeforeSelf inject
+    fsproj.Save "./_DotnetTestFail/dotnettest.fsproj"
+    Shell.copy "./_DotnetTestFail" (!!"./Sample13/*.fs")
+
+    let xx = Path.getFullName "./_DotnetTestFail/coverage.xml"
+    let pf1 = { p0 with AssemblyFilter = [| "NUnit" |] } |> AltCover.PrepareParams.Primitive
+
+    try
+      DotNet.test
+        (fun to' ->
+        (to'.WithCommon(withWorkingDirectoryVM "_DotnetTestFail")).WithParameters pf1 cc0 ForceTrue |> withCLIArgs)
+        "dotnettest.fsproj"
+      Assert.Fail("Build exception should be raised")
+    with
+    | :? Fake.DotNet.MSBuildException -> printfn "Caught expected exception"
+
+    do use coverageFile =
+         new FileStream(xx, FileMode.Open, FileAccess.Read, FileShare.None, 4096,
+                        FileOptions.SequentialScan)
+       let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
+       let recorded =
+         coverageDocument.Descendants(XName.Get("SequencePoint"))
+         |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value)
+         |> Seq.toList
+
+       Assert.That
+         (recorded,
+          Is.EquivalentTo [ "1"; "1"; "1"; "0"] )
+
+    // optest failing fast test
+    Directory.ensure "./_DotnetTestFailFast"
+    Shell.cleanDir ("./_DotnetTestFailFast")
+    let fsproj = XDocument.Load "./Sample13/sample13.core.fsproj"
+    let pack = fsproj.Descendants(XName.Get("PackageReference")) |> Seq.head
+    let inject =
+      XElement
+        (XName.Get "PackageReference", XAttribute(XName.Get "Include", "altcover"),
+         XAttribute(XName.Get "Version", !Version))
+    pack.AddBeforeSelf inject
+    fsproj.Save "./_DotnetTestFailFast/dotnettest.fsproj"
+    Shell.copy "./_DotnetTestFailFast" (!!"./Sample13/*.fs")
+
+    let xx = Path.getFullName "./_DotnetTestFailFast/coverage.xml"
+    let pf1 = { p0 with AssemblyFilter = [| "NUnit" |] } |> AltCover.PrepareParams.Primitive
+
+    try
+      DotNet.test
+        (fun to' ->
+        (to'.WithCommon(withWorkingDirectoryVM "_DotnetTestFailFast")).WithParameters pf1 cc0 FailTrue |> withCLIArgs)
+        "dotnettest.fsproj"
+      Assert.Fail("Build exception should be raised")
+    with
+    | :? Fake.DotNet.MSBuildException -> printfn "Caught expected exception"
+
+    do use coverageFile =
+         new FileStream(xx, FileMode.Open, FileAccess.Read, FileShare.None, 4096,
+                        FileOptions.SequentialScan)
+       let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
+       let recorded =
+         coverageDocument.Descendants(XName.Get("SequencePoint"))
+         |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value)
+         |> Seq.toList
+
+       Assert.That
+         (recorded,
+          Is.EquivalentTo [ "0"; "0"; "0"; "0"] )
 
     // optest linecover
     Directory.ensure "./_DotnetTestLineCover"
