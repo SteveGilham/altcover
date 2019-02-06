@@ -27,6 +27,7 @@ module internal Runner =
 
   let init() =
     CommandLine.error <- []
+    CommandLine.dropReturnCode <- false
     recordingDirectory <- None
     workingDirectory <- None
     executable := None
@@ -309,6 +310,14 @@ module internal Runner =
            output <- x
                      |> Path.GetFullPath
                      |> Some))
+      ("dropReturnCode",
+       (fun _ ->
+       if CommandLine.dropReturnCode then
+         CommandLine.error <- String.Format
+                                (CultureInfo.CurrentCulture,
+                                 CommandLine.resources.GetString "MultiplesNotAllowed",
+                                 "--dropReturnCode") :: CommandLine.error
+       else CommandLine.dropReturnCode <- true))
       ("?|help|h", (fun x -> CommandLine.help <- not (isNull x)))
 
       ("<>",

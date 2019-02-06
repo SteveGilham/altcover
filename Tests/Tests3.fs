@@ -86,9 +86,9 @@ type AltCoverTests3() =
       let options = Main.DeclareOptions()
       Assert.That(options.Count, Is.EqualTo
 #if NETCOREAPP2_0
-                                            21
-#else
                                             22
+#else
+                                            23
 #endif
                  )
       Assert.That
@@ -1418,6 +1418,37 @@ type AltCoverTests3() =
         Visitor.coverstyle <- CoverStyle.All
 
     [<Test>]
+    member self.ParsingDropGivesDrop() =
+      try
+        CommandLine.dropReturnCode <- false
+        let options = Main.DeclareOptions()
+        let input = [| "--dropReturnCode" |]
+        let parse = CommandLine.ParseCommandLine input options
+        match parse with
+        | Left _ -> Assert.Fail()
+        | Right(x, y) ->
+          Assert.That(y, Is.SameAs options)
+          Assert.That(x, Is.Empty)
+        Assert.That(CommandLine.dropReturnCode, Is.True)
+      finally
+        CommandLine.dropReturnCode <- false
+
+    [<Test>]
+    member self.ParsingMultipleDropGivesFailure() =
+      try
+        CommandLine.dropReturnCode <- false
+        let options = Main.DeclareOptions()
+        let input = [| "--dropReturnCode"; "--dropReturnCode" |]
+        let parse = CommandLine.ParseCommandLine input options
+        match parse with
+        | Right _ -> Assert.Fail()
+        | Left(x, y) ->
+          Assert.That(y, Is.SameAs options)
+          Assert.That(x, Is.EqualTo "UsageError")
+      finally
+        CommandLine.dropReturnCode <- false
+
+    [<Test>]
     member self.OutputLeftPassesThrough() =
       let arg = (Guid.NewGuid().ToString(), Main.DeclareOptions())
       let fail = Left arg
@@ -1862,6 +1893,8 @@ type AltCoverTests3() =
       --branchcover          Optional: Do not record line coverage.  Implies,
                                and is compatible with, the --opencover option.
                                    Incompatible with --linecover.
+      --dropReturnCode       Optional: Do not report any non-zero return code
+                               from a launched process.
   -?, --help, -h             Prints out the options.
 or
   ipmo                       Prints out the PowerShell script to import the
@@ -1963,6 +1996,8 @@ or
       --branchcover          Optional: Do not record line coverage.  Implies,
                                and is compatible with, the --opencover option.
                                    Incompatible with --linecover.
+      --dropReturnCode       Optional: Do not report any non-zero return code
+                               from a launched process.
   -?, --help, -h             Prints out the options.
 or
   Runner
@@ -1988,6 +2023,8 @@ or
                                collected data
   -o, --outputFile=VALUE     Optional: write the recorded coverage to this file
                                rather than overwriting the original report file.
+      --dropReturnCode       Optional: Do not report any non-zero return code
+                               from a launched process.
   -?, --help, -h             Prints out the options.
 """
         Assert.That

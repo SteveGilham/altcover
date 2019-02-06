@@ -6,7 +6,6 @@ open System.IO
 open System.IO.Compression
 open System.Reflection
 open System.Text.RegularExpressions
-open System.Threading
 open System.Xml
 open System.Xml.Linq
 
@@ -252,6 +251,8 @@ type AltCoverTests() =
                                collected data
   -o, --outputFile=VALUE     Optional: write the recorded coverage to this file
                                rather than overwriting the original report file.
+      --dropReturnCode       Optional: Do not report any non-zero return code
+                               from a launched process.
   -?, --help, -h             Prints out the options.
 """
         Assert.That
@@ -322,7 +323,7 @@ type AltCoverTests() =
     [<Test>]
     member self.ShouldHaveExpectedOptions() =
       let options = Runner.DeclareOptions()
-      Assert.That(options.Count, Is.EqualTo 10)
+      Assert.That(options.Count, Is.EqualTo 11)
       Assert.That
         (options
          |> Seq.filter (fun x -> x.Prototype <> "<>")
@@ -907,6 +908,37 @@ type AltCoverTests() =
         Runner.output <- None
 
     [<Test>]
+    member self.ParsingDropGivesDrop() =
+      try
+        CommandLine.dropReturnCode <- false
+        let options = Main.DeclareOptions()
+        let input = [| "--dropReturnCode" |]
+        let parse = CommandLine.ParseCommandLine input options
+        match parse with
+        | Left _ -> Assert.Fail()
+        | Right(x, y) ->
+          Assert.That(y, Is.SameAs options)
+          Assert.That(x, Is.Empty)
+        Assert.That(CommandLine.dropReturnCode, Is.True)
+      finally
+        CommandLine.dropReturnCode <- false
+
+    [<Test>]
+    member self.ParsingMultipleDropGivesFailure() =
+      try
+        CommandLine.dropReturnCode <- false
+        let options = Main.DeclareOptions()
+        let input = [| "--dropReturnCode"; "--dropReturnCode" |]
+        let parse = CommandLine.ParseCommandLine input options
+        match parse with
+        | Right _ -> Assert.Fail()
+        | Left(x, y) ->
+          Assert.That(y, Is.SameAs options)
+          Assert.That(x, Is.EqualTo "UsageError")
+      finally
+        CommandLine.dropReturnCode <- false
+
+    [<Test>]
     member self.ShouldRequireExe() =
       lock Runner.executable (fun () ->
         try
@@ -1254,6 +1286,8 @@ type AltCoverTests() =
       --branchcover          Optional: Do not record line coverage.  Implies,
                                and is compatible with, the --opencover option.
                                    Incompatible with --linecover.
+      --dropReturnCode       Optional: Do not report any non-zero return code
+                               from a launched process.
   -?, --help, -h             Prints out the options.
 or
   Runner
@@ -1279,6 +1313,8 @@ or
                                collected data
   -o, --outputFile=VALUE     Optional: write the recorded coverage to this file
                                rather than overwriting the original report file.
+      --dropReturnCode       Optional: Do not report any non-zero return code
+                               from a launched process.
   -?, --help, -h             Prints out the options.
 """
         Assert.That

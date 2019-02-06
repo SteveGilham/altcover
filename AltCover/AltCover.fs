@@ -21,6 +21,7 @@ type internal AssemblyInfo =
 module internal Main =
   let init() =
     CommandLine.error <- []
+    CommandLine.dropReturnCode <- false
     Visitor.inputDirectory <- None
     Visitor.outputDirectory <- None
     ProgramDatabase.SymbolFolders.Clear()
@@ -252,6 +253,14 @@ module internal Main =
                                  CommandLine.resources.GetString "Incompatible",
                                  "--branchcover", "--linecover") :: CommandLine.error
        | _ -> Visitor.coverstyle <- CoverStyle.BranchOnly))
+      ("dropReturnCode",
+       (fun _ ->
+       if CommandLine.dropReturnCode then
+         CommandLine.error <- String.Format
+                                (CultureInfo.CurrentCulture,
+                                 CommandLine.resources.GetString "MultiplesNotAllowed",
+                                 "--dropReturnCode") :: CommandLine.error
+       else CommandLine.dropReturnCode <- true))
       ("?|help|h", (fun x -> CommandLine.help <- not (isNull x)))
 
       ("<>",
