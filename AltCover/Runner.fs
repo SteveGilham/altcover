@@ -254,14 +254,10 @@ module internal Runner =
                                    CommandLine.resources.GetString "MultiplesNotAllowed",
                                    "--executable") :: CommandLine.error
          else executable := Some x))
-      ("collect",
-       (fun _ ->
-       if collect then
-         CommandLine.error <- String.Format
-                                (CultureInfo.CurrentCulture,
-                                 CommandLine.resources.GetString "MultiplesNotAllowed",
-                                 "--collect") :: CommandLine.error
-       else collect <- true))
+      (CommandLine.ddFlag
+        "collect"
+        (fun () -> collect)
+        (fun () -> collect <- true))
       ("l|lcovReport=",
        (fun x ->
        if CommandLine.ValidatePath "--lcovReport" x then
@@ -310,14 +306,10 @@ module internal Runner =
            output <- x
                      |> Path.GetFullPath
                      |> Some))
-      ("dropReturnCode",
-       (fun _ ->
-       if CommandLine.dropReturnCode then
-         CommandLine.error <- String.Format
-                                (CultureInfo.CurrentCulture,
-                                 CommandLine.resources.GetString "MultiplesNotAllowed",
-                                 "--dropReturnCode") :: CommandLine.error
-       else CommandLine.dropReturnCode <- true))
+      (CommandLine.ddFlag
+        "dropReturnCode"
+        (fun () -> CommandLine.dropReturnCode)
+        (fun () -> CommandLine.dropReturnCode <- true))
       ("?|help|h", (fun x -> CommandLine.help <- not (isNull x)))
 
       ("<>",

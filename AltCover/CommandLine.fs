@@ -354,3 +354,13 @@ module internal CommandLine =
       (fun () ->
       x.Split([| ";" |], StringSplitOptions.RemoveEmptyEntries) |> Array.map Regex) [||]
       false
+
+  let internal ddFlag flag isSet makeSet =
+      (flag,
+       (fun _ ->
+       if isSet() then
+         error <- String.Format
+                                (CultureInfo.CurrentCulture,
+                                 resources.GetString "MultiplesNotAllowed",
+                                 "--" + flag) :: error
+       else makeSet()))

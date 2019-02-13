@@ -196,22 +196,14 @@ module internal Main =
                                  CommandLine.resources.GetString "MultiplesNotAllowed",
                                  "--opencover") :: CommandLine.error
        else Visitor.reportFormat <- Some ReportFormat.OpenCover))
-      ("inplace",
-       (fun _ ->
-       if Visitor.inplace then
-         CommandLine.error <- String.Format
-                                (CultureInfo.CurrentCulture,
-                                 CommandLine.resources.GetString "MultiplesNotAllowed",
-                                 "--inplace") :: CommandLine.error
-       else Visitor.inplace <- true))
-      ("save",
-       (fun _ ->
-       if Visitor.collect then
-         CommandLine.error <- String.Format
-                                (CultureInfo.CurrentCulture,
-                                 CommandLine.resources.GetString "MultiplesNotAllowed",
-                                 "--save") :: CommandLine.error
-       else Visitor.collect <- true))
+      (CommandLine.ddFlag
+        "inplace"
+        (fun () -> Visitor.inplace)
+        (fun () -> Visitor.inplace <- true))
+      (CommandLine.ddFlag
+        "save"
+        (fun () -> Visitor.collect)
+        (fun () -> Visitor.collect <- true))
       ("single",
        (fun _ ->
        if Visitor.single then
@@ -253,14 +245,10 @@ module internal Main =
                                  CommandLine.resources.GetString "Incompatible",
                                  "--branchcover", "--linecover") :: CommandLine.error
        | _ -> Visitor.coverstyle <- CoverStyle.BranchOnly))
-      ("dropReturnCode",
-       (fun _ ->
-       if CommandLine.dropReturnCode then
-         CommandLine.error <- String.Format
-                                (CultureInfo.CurrentCulture,
-                                 CommandLine.resources.GetString "MultiplesNotAllowed",
-                                 "--dropReturnCode") :: CommandLine.error
-       else CommandLine.dropReturnCode <- true))
+      (CommandLine.ddFlag
+        "dropReturnCode"
+        (fun () -> CommandLine.dropReturnCode)
+        (fun () -> CommandLine.dropReturnCode <- true))
       ("?|help|h", (fun x -> CommandLine.help <- not (isNull x)))
 
       ("<>",
