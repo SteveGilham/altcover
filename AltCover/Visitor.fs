@@ -18,6 +18,8 @@ open AltCover.Base
 open Mono.Cecil
 open Mono.Cecil.Cil
 open Mono.Cecil.Rocks
+open Newtonsoft.Json
+open Newtonsoft.Json.Linq
 
 [<Flags>]
 type internal Inspect =
@@ -220,6 +222,7 @@ module internal Visitor =
   let mutable private PointNumber : int = 0
   let mutable private BranchNumber : int = 0
   let mutable private MethodNumber : int = 0
+  let mutable private SourceLinkDocuments : Dictionary<string, string> option = None
 
   let significant (m : MethodDefinition) =
     [ (fun _ -> m.HasBody |> not)
@@ -276,9 +279,19 @@ module internal Visitor =
   let private ZeroPoints() =
     PointNumber <- 0
     BranchNumber <- 0
+    SourceLinkDocuments <- None
 
   let private VisitModule (x : ModuleDefinition) included buildSequence =
     ZeroPoints()
+    SourceLinkDocuments <- Some x
+        |> Option.filter (fun _ -> !sourcelink)
+        |> Option.map (fun x -> x.CustomDebugInformations
+                                |> Seq.tryFind (fun i -> i.Kind = CustomDebugInformationKind.SourceLink))
+        |> Option.bind id
+        |> Option.map (fun i -> let c = (i :?> SourceLinkDebugInformation).Content
+                                let j = JObject.Parse(c).["documents"]
+                                JsonConvert.DeserializeObject<Dictionary<string, string>>(j.ToString()))
+
     [ x ]
     |> Seq.takeWhile (fun _ -> included <> Inspect.Ignore)
     |> Seq.collect (fun x -> x.GetAllTypes() |> Seq.cast)
