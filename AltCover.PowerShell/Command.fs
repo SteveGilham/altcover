@@ -54,12 +54,6 @@ type InvokeAltCoverCommand(runner : bool) =
 
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  [<Parameter(ParameterSetName = "Runner", Mandatory = false, ValueFromPipeline = false,
-              ValueFromPipelineByPropertyName = false)>]
-  member val DropReturnCode : SwitchParameter = SwitchParameter(false) with get, set
-
-  [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
-              ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
   member val InputDirectory = String.Empty with get, set
 
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
@@ -150,6 +144,16 @@ type InvokeAltCoverCommand(runner : bool) =
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
   member val Version : SwitchParameter = SwitchParameter(false) with get, set
 
+  [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
+              ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
+  [<Parameter(ParameterSetName = "Runner", Mandatory = false, ValueFromPipeline = false,
+              ValueFromPipelineByPropertyName = false)>]
+  member val DropReturnCode : SwitchParameter = SwitchParameter(false) with get, set
+
+  [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
+              ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
+  member val SourceLink : SwitchParameter = SwitchParameter(false) with get, set
+
   member val private Fail : String list = [] with get, set
 
   member private self.Collect() =
@@ -192,7 +196,8 @@ type InvokeAltCoverCommand(runner : bool) =
                                     LineCover = self.LineCover.IsPresent
                                     BranchCover = self.BranchCover.IsPresent
                                     CommandLine = self.CommandLine
-                                    ExposeReturnCode = not self.DropReturnCode.IsPresent }
+                                    ExposeReturnCode = not self.DropReturnCode.IsPresent
+                                    SourceLink = self.SourceLink.IsPresent }
 
   member private self.Log() =
     FSApi.Logging.Primitive { Primitive.Logging.Create() with Error = (fun s -> self.Fail <- s :: self.Fail)

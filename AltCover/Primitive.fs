@@ -58,6 +58,7 @@ type PrepareParams =
     BranchCover : bool
     CommandLine : String seq
     ExposeReturnCode : bool
+    SourceLink : bool
   }
   static member Create() =
     { InputDirectory = String.Empty
@@ -83,6 +84,7 @@ type PrepareParams =
       BranchCover = false
       CommandLine = []
       ExposeReturnCode = true
+      SourceLink = false
     }
 
 #if RUNNER

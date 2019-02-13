@@ -186,6 +186,7 @@ type PrepareParams =
     BranchCover : Flag
     CommandLine : Command
     ExposeReturnCode : Flag
+    SourceLink : Flag
   }
   static member Create() =
     { InputDirectory = NoDirectory
@@ -211,4 +212,5 @@ type PrepareParams =
       BranchCover = Clear
       CommandLine = NoCommand
       ExposeReturnCode = Set
+      SourceLink = Clear
     }
