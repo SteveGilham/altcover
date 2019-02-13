@@ -1288,6 +1288,8 @@ type AltCoverTests() =
                                    Incompatible with --linecover.
       --dropReturnCode       Optional: Do not report any non-zero return code
                                from a launched process.
+      --sourcelink           Optional: Display sourcelink URLs rather than file
+                               paths if present.
   -?, --help, -h             Prints out the options.
 or
   Runner

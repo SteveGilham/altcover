@@ -156,6 +156,7 @@ module internal Visitor =
 
   let mutable internal inplace = false
   let mutable internal single = false
+  let mutable internal sourcelink = false
 
   let mutable internal inputDirectory : Option<string> = None
   let private defaultInputDirectory = "."

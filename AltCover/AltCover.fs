@@ -46,6 +46,7 @@ module internal Main =
     Visitor.collect <- false
     Visitor.single <- false
     Visitor.coverstyle <- CoverStyle.All
+    Visitor.sourcelink <- false
 
   let ValidateCallContext predicate x =
     if not (String.IsNullOrWhiteSpace x) then
@@ -249,6 +250,10 @@ module internal Main =
         "dropReturnCode"
         (fun () -> CommandLine.dropReturnCode)
         (fun () -> CommandLine.dropReturnCode <- true))
+      (CommandLine.ddFlag
+        "sourcelink"
+        (fun () -> Visitor.sourcelink)
+        (fun () -> Visitor.sourcelink <- true))
       ("?|help|h", (fun x -> CommandLine.help <- not (isNull x)))
 
       ("<>",

@@ -86,9 +86,9 @@ type AltCoverTests3() =
       let options = Main.DeclareOptions()
       Assert.That(options.Count, Is.EqualTo
 #if NETCOREAPP2_0
-                                            22
-#else
                                             23
+#else
+                                            24
 #endif
                  )
       Assert.That
@@ -1895,6 +1895,8 @@ type AltCoverTests3() =
                                    Incompatible with --linecover.
       --dropReturnCode       Optional: Do not report any non-zero return code
                                from a launched process.
+      --sourcelink           Optional: Display sourcelink URLs rather than file
+                               paths if present.
   -?, --help, -h             Prints out the options.
 or
   ipmo                       Prints out the PowerShell script to import the
@@ -1998,6 +2000,8 @@ or
                                    Incompatible with --linecover.
       --dropReturnCode       Optional: Do not report any non-zero return code
                                from a launched process.
+      --sourcelink           Optional: Display sourcelink URLs rather than file
+                               paths if present.
   -?, --help, -h             Prints out the options.
 or
   Runner
