@@ -21,19 +21,19 @@ module internal Runner =
   let mutable internal recordingDirectory : Option<string> = None
   let mutable internal workingDirectory : Option<string> = None
   let internal executable : Option<string> ref = ref None
-  let mutable internal collect = false
+  let internal collect = ref false
   let mutable internal threshold : Option<int> = None
   let mutable internal output : Option<string> = None
 
   let init() =
     CommandLine.error <- []
-    CommandLine.dropReturnCode <- false
+    CommandLine.dropReturnCode := false
     recordingDirectory <- None
     workingDirectory <- None
     executable := None
     LCov.path := None
     Cobertura.path := None
-    collect <- false
+    collect := false
     threshold <- None
     output <- None
 
@@ -254,10 +254,7 @@ module internal Runner =
                                    CommandLine.resources.GetString "MultiplesNotAllowed",
                                    "--executable") :: CommandLine.error
          else executable := Some x))
-      (CommandLine.ddFlag
-        "collect"
-        (fun () -> collect)
-        (fun () -> collect <- true))
+      (CommandLine.ddFlag "collect" collect)
       ("l|lcovReport=",
        (fun x ->
        if CommandLine.ValidatePath "--lcovReport" x then
@@ -306,10 +303,7 @@ module internal Runner =
            output <- x
                      |> Path.GetFullPath
                      |> Some))
-      (CommandLine.ddFlag
-        "dropReturnCode"
-        (fun () -> CommandLine.dropReturnCode)
-        (fun () -> CommandLine.dropReturnCode <- true))
+      (CommandLine.ddFlag "dropReturnCode" CommandLine.dropReturnCode)
       ("?|help|h", (fun x -> CommandLine.help <- not (isNull x)))
 
       ("<>",
@@ -326,7 +320,7 @@ module internal Runner =
   let internal RequireExe(parse : Either<string * OptionSet, string list * OptionSet>) =
     match parse with
     | Right(l, options) ->
-      match (!executable, collect) with
+      match (!executable, !collect) with
       | (None, false) | (Some _, true) ->
         CommandLine.error <- (CommandLine.resources.GetString "executableRequired")
                              :: CommandLine.error
@@ -476,7 +470,7 @@ module internal Runner =
   let internal MonitorBase (hits : Dictionary<string, Dictionary<int, int * Base.Track list>>)
       report (payload : string list -> int) (args : string list) =
     let result =
-      if collect then 0
+      if !collect then 0
       else RunProcess report payload args
     CollectResults hits report
     result

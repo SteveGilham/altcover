@@ -610,7 +610,7 @@ type AltCoverTests() =
     [<Test>]
     member self.ParsingCollectGivesCollect() =
       try
-        Runner.collect <- false
+        Runner.collect := false
         let options = Runner.DeclareOptions()
         let input = [| "--collect" |]
         let parse = CommandLine.ParseCommandLine input options
@@ -619,14 +619,14 @@ type AltCoverTests() =
         | Right(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.Empty)
-        Assert.That(Runner.collect, Is.True)
+        Assert.That(!Runner.collect, Is.True)
       finally
-        Runner.collect <- false
+        Runner.collect := false
 
     [<Test>]
     member self.ParsingMultipleCollectGivesFailure() =
       try
-        Runner.collect <- false
+        Runner.collect := false
         let options = Runner.DeclareOptions()
         let input = [| "--collect"; "--collect" |]
         let parse = CommandLine.ParseCommandLine input options
@@ -636,7 +636,7 @@ type AltCoverTests() =
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
       finally
-        Runner.collect <- false
+        Runner.collect := false
 
     [<Test>]
     member self.ParsingLcovGivesLcov() =
@@ -873,6 +873,7 @@ type AltCoverTests() =
     member self.ParsingMultipleOutputGivesFailure() =
       try
         Runner.output <- None
+        Runner.collect := false
         let options = Runner.DeclareOptions()
         let unique = Guid.NewGuid().ToString()
 
@@ -910,7 +911,7 @@ type AltCoverTests() =
     [<Test>]
     member self.ParsingDropGivesDrop() =
       try
-        CommandLine.dropReturnCode <- false
+        CommandLine.dropReturnCode := false
         let options = Main.DeclareOptions()
         let input = [| "--dropReturnCode" |]
         let parse = CommandLine.ParseCommandLine input options
@@ -919,14 +920,14 @@ type AltCoverTests() =
         | Right(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.Empty)
-        Assert.That(CommandLine.dropReturnCode, Is.True)
+        Assert.That(!CommandLine.dropReturnCode, Is.True)
       finally
-        CommandLine.dropReturnCode <- false
+        CommandLine.dropReturnCode := false
 
     [<Test>]
     member self.ParsingMultipleDropGivesFailure() =
       try
-        CommandLine.dropReturnCode <- false
+        CommandLine.dropReturnCode := false
         let options = Main.DeclareOptions()
         let input = [| "--dropReturnCode"; "--dropReturnCode" |]
         let parse = CommandLine.ParseCommandLine input options
@@ -936,7 +937,7 @@ type AltCoverTests() =
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
       finally
-        CommandLine.dropReturnCode <- false
+        CommandLine.dropReturnCode := false
 
     [<Test>]
     member self.ShouldRequireExe() =
@@ -974,14 +975,14 @@ type AltCoverTests() =
       lock Runner.executable (fun () ->
         try
           Runner.executable := None
-          Runner.collect <- true
+          Runner.collect := true
           let options = Runner.DeclareOptions()
           let parse = Runner.RequireExe(Right([ "a"; "b" ], options))
           match parse with
           | Right([], z) -> Assert.That(z, Is.SameAs options)
           | _ -> Assert.Fail()
         finally
-          Runner.collect <- false
+          Runner.collect := false
           Runner.executable := None)
 
     [<Test>]
@@ -989,7 +990,7 @@ type AltCoverTests() =
       lock Runner.executable (fun () ->
         try
           Runner.executable := Some "xxx"
-          Runner.collect <- true
+          Runner.collect := true
           let options = Runner.DeclareOptions()
           let parse = Runner.RequireExe(Right([ "b" ], options))
           match parse with
@@ -998,7 +999,7 @@ type AltCoverTests() =
             Assert.That(y, Is.SameAs options)
             Assert.That(x, Is.EqualTo "UsageError")
         finally
-          Runner.collect <- false
+          Runner.collect := false
           Runner.executable := None)
 
     [<Test>]
@@ -1122,11 +1123,11 @@ type AltCoverTests() =
       Assert.That(r2, Is.EqualTo 2)
 
       try
-        CommandLine.dropReturnCode <- true
+        CommandLine.dropReturnCode := true
         let r0 = CommandLine.ProcessTrailingArguments (args @ [ "1"; "2" ]) <| DirectoryInfo(where)
         Assert.That(r0, Is.EqualTo 0)
       finally
-        CommandLine.dropReturnCode <- false
+        CommandLine.dropReturnCode := false
 
     [<Test>]
     member self.ShouldProcessTrailingArguments() =
@@ -1514,7 +1515,7 @@ or
     [<Test>]
     member self.CollectShouldReportAsExpected() =
       try
-        Runner.collect <- true
+        Runner.collect := true
         let counts = Dictionary<string, Dictionary<int, int * Base.Track list>>()
         let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
         let unique = Path.Combine(where, Guid.NewGuid().ToString())
@@ -1538,7 +1539,7 @@ or
         Assert.That(doc.Nodes(), Is.Empty)
         Assert.That(counts, Is.Empty)
       finally
-        Runner.collect <- false
+        Runner.collect := false
 
     [<Test>]
     member self.JunkPayloadShouldReportAsExpected() =

@@ -144,7 +144,7 @@ module internal KeyStore =
 type Fix<'T> = delegate of 'T -> Fix<'T>
 
 module internal Visitor =
-  let mutable internal collect = false
+  let internal collect = ref false
   let internal TrackingNames = new List<String>()
 
   let internal NameFilters = new List<FilterClass>()
@@ -154,9 +154,9 @@ module internal Visitor =
       |> Regex
       |> FilterClass.Method ]
 
-  let mutable internal inplace = false
+  let internal inplace = ref false
   let mutable internal single = false
-  let mutable internal sourcelink = false
+  let internal sourcelink = ref false
 
   let mutable internal inputDirectory : Option<string> = None
   let private defaultInputDirectory = "."
@@ -164,7 +164,7 @@ module internal Visitor =
     Path.GetFullPath(Option.getOrElse defaultInputDirectory inputDirectory)
 
   let inplaceSelection a b =
-    if inplace then a
+    if !inplace then a
     else b
 
   let mutable internal outputDirectory : Option<string> = None

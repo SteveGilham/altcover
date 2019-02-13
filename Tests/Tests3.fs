@@ -1128,7 +1128,7 @@ type AltCoverTests3() =
     [<Test>]
     member self.ParsingInPlaceGivesInPlace() =
       try
-        Visitor.inplace <- false
+        Visitor.inplace := false
         let options = Main.DeclareOptions()
         let input = [| "--inplace" |]
         let parse = CommandLine.ParseCommandLine input options
@@ -1137,14 +1137,14 @@ type AltCoverTests3() =
         | Right(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.Empty)
-        Assert.That(Visitor.inplace, Is.True)
+        Assert.That(!Visitor.inplace, Is.True)
       finally
-        Visitor.inplace <- false
+        Visitor.inplace := false
 
     [<Test>]
     member self.ParsingMultipleInPlaceGivesFailure() =
       try
-        Visitor.inplace <- false
+        Visitor.inplace := false
         let options = Main.DeclareOptions()
         let input = [| "--inplace"; "--inplace" |]
         let parse = CommandLine.ParseCommandLine input options
@@ -1154,12 +1154,12 @@ type AltCoverTests3() =
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
       finally
-        Visitor.inplace <- false
+        Visitor.inplace := false
 
     [<Test>]
     member self.ParsingSaveGivesSave() =
       try
-        Visitor.collect <- false
+        Visitor.collect := false
         let options = Main.DeclareOptions()
         let input = [| "--save" |]
         let parse = CommandLine.ParseCommandLine input options
@@ -1168,14 +1168,14 @@ type AltCoverTests3() =
         | Right(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.Empty)
-        Assert.That(Visitor.collect, Is.True)
+        Assert.That(!Visitor.collect, Is.True)
       finally
-        Visitor.collect <- false
+        Visitor.collect := false
 
     [<Test>]
     member self.ParsingMultipleSaveGivesFailure() =
       try
-        Visitor.collect <- false
+        Visitor.collect := false
         let options = Main.DeclareOptions()
         let input = [| "--save"; "--save" |]
         let parse = CommandLine.ParseCommandLine input options
@@ -1185,7 +1185,7 @@ type AltCoverTests3() =
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
       finally
-        Visitor.collect <- false
+        Visitor.collect := false
 
     [<Test>]
     member self.ParsingSingleGivesSingle() =
@@ -1420,7 +1420,7 @@ type AltCoverTests3() =
     [<Test>]
     member self.ParsingDropGivesDrop() =
       try
-        CommandLine.dropReturnCode <- false
+        CommandLine.dropReturnCode := false
         let options = Main.DeclareOptions()
         let input = [| "--dropReturnCode" |]
         let parse = CommandLine.ParseCommandLine input options
@@ -1429,14 +1429,14 @@ type AltCoverTests3() =
         | Right(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.Empty)
-        Assert.That(CommandLine.dropReturnCode, Is.True)
+        Assert.That(!CommandLine.dropReturnCode, Is.True)
       finally
-        CommandLine.dropReturnCode <- false
+        CommandLine.dropReturnCode := false
 
     [<Test>]
     member self.ParsingMultipleDropGivesFailure() =
       try
-        CommandLine.dropReturnCode <- false
+        CommandLine.dropReturnCode := false
         let options = Main.DeclareOptions()
         let input = [| "--dropReturnCode"; "--dropReturnCode" |]
         let parse = CommandLine.ParseCommandLine input options
@@ -1446,7 +1446,7 @@ type AltCoverTests3() =
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
       finally
-        CommandLine.dropReturnCode <- false
+        CommandLine.dropReturnCode := false
 
     [<Test>]
     member self.OutputLeftPassesThrough() =
@@ -1561,7 +1561,7 @@ type AltCoverTests3() =
       let options = Main.DeclareOptions()
       let saved = (Console.Out, Console.Error)
       CommandLine.error <- []
-      Visitor.inplace <- true
+      Visitor.inplace := true
       try
         use stdout = new StringWriter()
         use stderr = new StringWriter()
@@ -1584,7 +1584,7 @@ type AltCoverTests3() =
                [ "Output directory for saved files " + Visitor.OutputDirectory()
                  + " already exists" ])
       finally
-        Visitor.inplace <- false
+        Visitor.inplace := false
         Console.SetOut(fst saved)
         Console.SetError(snd saved)
 
@@ -1593,7 +1593,7 @@ type AltCoverTests3() =
       let options = Main.DeclareOptions()
       let saved = (Console.Out, Console.Error)
       CommandLine.error <- []
-      Visitor.inplace <- true
+      Visitor.inplace := true
       try
         use stdout = new StringWriter()
         use stderr = new StringWriter()
@@ -1624,7 +1624,7 @@ type AltCoverTests3() =
           Assert.That(Visitor.SourceDirectory(), Is.EqualTo there)
           Assert.That(Visitor.InstrumentDirectory(), Is.EqualTo here)
       finally
-        Visitor.inplace <- false
+        Visitor.inplace := false
         Console.SetOut(fst saved)
         Console.SetError(snd saved)
 

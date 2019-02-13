@@ -21,7 +21,7 @@ type internal AssemblyInfo =
 module internal Main =
   let init() =
     CommandLine.error <- []
-    CommandLine.dropReturnCode <- false
+    CommandLine.dropReturnCode := false
     Visitor.inputDirectory <- None
     Visitor.outputDirectory <- None
     ProgramDatabase.SymbolFolders.Clear()
@@ -42,11 +42,11 @@ module internal Main =
     Visitor.interval <- None
     Visitor.TrackingNames.Clear()
     Visitor.reportFormat <- None
-    Visitor.inplace <- false
-    Visitor.collect <- false
+    Visitor.inplace := false
+    Visitor.collect := false
     Visitor.single <- false
     Visitor.coverstyle <- CoverStyle.All
-    Visitor.sourcelink <- false
+    Visitor.sourcelink := false
 
   let ValidateCallContext predicate x =
     if not (String.IsNullOrWhiteSpace x) then
@@ -197,14 +197,8 @@ module internal Main =
                                  CommandLine.resources.GetString "MultiplesNotAllowed",
                                  "--opencover") :: CommandLine.error
        else Visitor.reportFormat <- Some ReportFormat.OpenCover))
-      (CommandLine.ddFlag
-        "inplace"
-        (fun () -> Visitor.inplace)
-        (fun () -> Visitor.inplace <- true))
-      (CommandLine.ddFlag
-        "save"
-        (fun () -> Visitor.collect)
-        (fun () -> Visitor.collect <- true))
+      (CommandLine.ddFlag "inplace" Visitor.inplace)
+      (CommandLine.ddFlag "save" Visitor.collect)
       ("single",
        (fun _ ->
        if Visitor.single then
@@ -246,14 +240,8 @@ module internal Main =
                                  CommandLine.resources.GetString "Incompatible",
                                  "--branchcover", "--linecover") :: CommandLine.error
        | _ -> Visitor.coverstyle <- CoverStyle.BranchOnly))
-      (CommandLine.ddFlag
-        "dropReturnCode"
-        (fun () -> CommandLine.dropReturnCode)
-        (fun () -> CommandLine.dropReturnCode <- true))
-      (CommandLine.ddFlag
-        "sourcelink"
-        (fun () -> Visitor.sourcelink)
-        (fun () -> Visitor.sourcelink <- true))
+      (CommandLine.ddFlag "dropReturnCode" CommandLine.dropReturnCode)
+      (CommandLine.ddFlag "sourcelink" Visitor.sourcelink)
       ("?|help|h", (fun x -> CommandLine.help <- not (isNull x)))
 
       ("<>",
@@ -277,7 +265,7 @@ module internal Main =
         CommandLine.error <- CommandLine.resources.GetString "NotInPlace"
                              :: CommandLine.error
       CommandLine.doPathOperation (fun () ->
-        if Visitor.inplace && CommandLine.error |> List.isEmpty
+        if !Visitor.inplace && CommandLine.error |> List.isEmpty
            && toDirectory |> Directory.Exists then
           CommandLine.error <- String.Format
                                  (CultureInfo.CurrentCulture,
@@ -290,7 +278,7 @@ module internal Main =
          |> not
       then Left("UsageError", options)
       else
-        if Visitor.inplace then
+        if !Visitor.inplace then
           Output.Info
           <| String.Format
                (CultureInfo.CurrentCulture, (CommandLine.resources.GetString "savingto"),
@@ -445,9 +433,9 @@ module internal Main =
 
           Visitor.Visit visitors (assemblies)
           document.Save(report)
-          if Visitor.collect then Runner.SetRecordToFile report
+          if !Visitor.collect then Runner.SetRecordToFile report
           CommandLine.ProcessTrailingArguments rest toInfo) 255 true
-      CommandLine.ReportErrors "Instrumentation" (dotnetBuild && Visitor.inplace)
+      CommandLine.ReportErrors "Instrumentation" (dotnetBuild && !Visitor.inplace)
       result
 
   let internal (|Select|_|) (pattern : String) offered =

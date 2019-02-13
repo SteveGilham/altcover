@@ -86,7 +86,7 @@ module internal CommandLine =
   let mutable internal help = false
   let mutable internal error : string list = []
   let mutable internal exceptions : Exception list = []
-  let mutable internal dropReturnCode = false
+  let internal dropReturnCode = ref false
 
   let internal resources =
     ResourceManager("AltCover.Strings", Assembly.GetExecutingAssembly())
@@ -172,7 +172,7 @@ module internal CommandLine =
 #else
     proc.WaitForExitCustom()
 #endif
-    proc.ExitCode * (dropReturnCode |> not |> Increment)
+    proc.ExitCode * (!dropReturnCode |> not |> Increment)
 
   let logException store (e : Exception) =
     error <- e.Message :: error
@@ -355,12 +355,12 @@ module internal CommandLine =
       x.Split([| ";" |], StringSplitOptions.RemoveEmptyEntries) |> Array.map Regex) [||]
       false
 
-  let internal ddFlag flag isSet makeSet =
-      (flag,
+  let internal ddFlag name flag =
+      (name,
        (fun _ ->
-       if isSet() then
+       if !flag then
          error <- String.Format
                                 (CultureInfo.CurrentCulture,
                                  resources.GetString "MultiplesNotAllowed",
-                                 "--" + flag) :: error
-       else makeSet()))
+                                 "--" + name) :: error
+       else flag := true))
