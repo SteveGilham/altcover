@@ -217,11 +217,19 @@ _Target "BuildDebug" (fun _ ->
                 Properties =
                   [ "Configuration", "Debug"
                     "DebugSymbols", "True" ] })
-  "./altcover.core.sln"
-  |> DotNet.build
-       (fun p ->
-       { p.WithCommon dotnetOptions with Configuration = DotNet.BuildConfiguration.Debug }
-       |> withMSBuildParams))
+
+  [ "./altcover.core.sln"; "./Sample14/Sample14.sln" ]
+  |> Seq.iter (fun s -> s
+                        |> DotNet.build
+                         (fun p ->
+                         { p.WithCommon dotnetOptions with Configuration = DotNet.BuildConfiguration.Debug }
+                         |> withMSBuildParams))
+
+  Directory.ensure "./_SourceLink"
+  Shell.copy "./_SourceLink" (!!"./Sample14/Sample14/bin/Debug/netcoreapp2.1/*")
+
+)
+
 _Target "BuildMonoSamples" (fun _ ->
   let mcs = "_Binaries/MCS/Release+AnyCPU/MCS.exe"
   [ ("./_Mono/Sample1",
