@@ -222,7 +222,7 @@ module internal Visitor =
   let mutable private PointNumber : int = 0
   let mutable private BranchNumber : int = 0
   let mutable private MethodNumber : int = 0
-  let mutable private SourceLinkDocuments : Dictionary<string, string> option = None
+  let mutable internal SourceLinkDocuments : Dictionary<string, string> option = None
 
   let significant (m : MethodDefinition) =
     [ (fun _ -> m.HasBody |> not)
