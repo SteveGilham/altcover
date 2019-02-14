@@ -224,6 +224,11 @@ module internal Visitor =
   let mutable private MethodNumber : int = 0
   let mutable internal SourceLinkDocuments : Dictionary<string, string> option = None
 
+  let internal SourceLinkMapping file =
+    match SourceLinkDocuments with
+    | None -> file
+    | Some _ -> String.Empty // TODO
+
   let significant (m : MethodDefinition) =
     [ (fun _ -> m.HasBody |> not)
       Filter.IsFSharpInternal

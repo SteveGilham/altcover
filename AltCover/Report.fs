@@ -81,7 +81,7 @@ module internal Report =
              XAttribute(X "endline", codeSegment.EndLine),
              XAttribute(X "endcolumn", codeSegment.EndColumn),
              XAttribute(X "excluded", ToExcluded included),
-             XAttribute(X "document", codeSegment.Document))
+             XAttribute(X "document", codeSegment.Document |> Visitor.SourceLinkMapping))
         if head.IsEmpty then head.Add(element)
         else head.FirstNode.AddBeforeSelf(element)
       | None -> ()
