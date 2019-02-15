@@ -235,14 +235,14 @@ module internal Visitor =
                     "CA2208:InstantiateArgumentExceptionsCorrectly",
                     Justification = "F# inlined code")>]
   let internal LocateMatch file (dict : Dictionary<string, string>) =
-    let mutable keys = []
-    dict.Keys |> Seq.iter (fun k -> keys <- k :: keys) // HACK HACK HACK Gendarme
     let find =
-      keys
+      dict.Keys
       |> Seq.filter (fun x -> x |> Path.GetFileName = "*")
       |> Seq.map (fun x -> (x, GetRelativePath (x |> Path.GetDirectoryName) (file |> Path.GetDirectoryName)))
       |> Seq.filter (fun (x, r) -> r.IndexOf("..") < 0)
-      |> Seq.minBy (fun (x, r) -> r.Length)
+      |> Seq.sortBy (fun (x, r) -> r.Length)
+      |> Seq.head
+
     let best, relative = match find with
                          | (k, ".") -> (k, String.Empty)
                          | f -> f
