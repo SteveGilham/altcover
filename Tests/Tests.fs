@@ -1747,10 +1747,6 @@ type AltCoverTests() =
       let path = Path.Combine(here, "_SourceLink/Sample14.dll")
       try
         Visitor.sourcelink := true
-        "Main"
-        |> (Regex
-            >> FilterClass.Method
-            >> Visitor.NameFilters.Add)
         Visitor.Visit [ visitor ] (Visitor.ToSeq path)
         Assert.That(Visitor.SourceLinkDocuments |> Option.isSome, "Documents should be present")
         let map = Visitor.SourceLinkDocuments |> Option.get
