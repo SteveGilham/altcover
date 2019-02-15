@@ -224,12 +224,13 @@ module internal Visitor =
   let mutable private MethodNumber : int = 0
   let mutable internal SourceLinkDocuments : Dictionary<string, string> option = None
 
-  let internal GetRelativePath relativeTo path =
-    let uri = new Uri(relativeTo)
-    let rel = Uri.UnescapeDataString(uri.MakeRelativeUri(new Uri(path)).ToString()).Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar)
-    if not <| rel.Contains(Path.DirectorySeparatorChar.ToString())
-    then sprintf ".%O%s" Path.DirectorySeparatorChar rel
-    else rel
+  let internal GetRelativePath (relativeTo:string) path =
+    let uri = new Uri(if relativeTo.EndsWith(Path.DirectorySeparatorChar.ToString(),
+                                              StringComparison.Ordinal)
+                      then relativeTo
+                      else relativeTo + Path.DirectorySeparatorChar.ToString())
+    Uri.UnescapeDataString(uri.MakeRelativeUri(new Uri(path)).ToString()).
+        Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar)
 
   [<SuppressMessage("Microsoft.Usage",
                     "CA2208:InstantiateArgumentExceptionsCorrectly",
