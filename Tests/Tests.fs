@@ -1753,8 +1753,19 @@ type AltCoverTests() =
             >> Visitor.NameFilters.Add)
         Visitor.Visit [ visitor ] (Visitor.ToSeq path)
         Assert.That(Visitor.SourceLinkDocuments |> Option.isSome, "Documents should be present")
+        let map = Visitor.SourceLinkDocuments |> Option.get
+        let url = map.Values |> Seq.find (fun f -> f.EndsWith ("*", StringComparison.Ordinal))
 
-        // TODO
+        let files = document.Descendants(XName.Get "seqpnt")
+                    |> Seq.map (fun s -> s.Attribute(XName.Get "document").Value)
+                    |> Seq.distinct
+                    |> Seq.sort
+                    |> Seq.toList
+        let expected = [
+                         url.Replace("*", "altcover/Sample14/Sample14/Program.cs")
+                         url.Replace("*", "altcover/Sample5/Class1.cs")
+                       ]
+        Assert.That (files, Is.EquivalentTo expected)
       finally
         Visitor.NameFilters.Clear()
         Visitor.sourcelink := false

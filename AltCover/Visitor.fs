@@ -224,10 +224,39 @@ module internal Visitor =
   let mutable private MethodNumber : int = 0
   let mutable internal SourceLinkDocuments : Dictionary<string, string> option = None
 
+  let internal GetRelativePath relativeTo path =
+    let uri = new Uri(relativeTo)
+    let rel = Uri.UnescapeDataString(uri.MakeRelativeUri(new Uri(path)).ToString()).Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar)
+    if not <| rel.Contains(Path.DirectorySeparatorChar.ToString())
+    then sprintf ".%O%s" Path.DirectorySeparatorChar rel
+    else rel
+
+  [<SuppressMessage("Microsoft.Usage",
+                    "CA2208:InstantiateArgumentExceptionsCorrectly",
+                    Justification = "F# inlined code")>]
+  let internal LocateMatch file (dict : Dictionary<string, string>) =
+    let mutable keys = []
+    dict.Keys |> Seq.iter (fun k -> keys <- k :: keys) // HACK HACK HACK Gendarme
+    let find =
+      keys
+      |> Seq.filter (fun x -> x |> Path.GetFileName = "*")
+      |> Seq.map (fun x -> (x, GetRelativePath (x |> Path.GetDirectoryName) (file |> Path.GetDirectoryName)))
+      |> Seq.filter (fun (x, r) -> r.IndexOf("..") < 0)
+      |> Seq.minBy (fun (x, r) -> r.Length)
+    let best, relative = match find with
+                         | (k, ".") -> (k, String.Empty)
+                         | f -> f
+    let replacement = Path.Combine(relative, Path.GetFileName(file)).Replace('\\', '/')
+    let url = dict.[best].Replace("*", replacement)
+    dict.Add(file, url)
+    url
+
   let internal SourceLinkMapping file =
     match SourceLinkDocuments with
     | None -> file
-    | Some _ -> String.Empty // TODO
+    | Some dict -> match dict.TryGetValue file with
+                   | (true, url) -> url
+                   | _ -> LocateMatch file dict
 
   let significant (m : MethodDefinition) =
     [ (fun _ -> m.HasBody |> not)
