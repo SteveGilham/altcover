@@ -3,6 +3,7 @@ namespace AltCover.Visualizer
 open System
 open System.IO
 open System.Xml.XPath
+open System.Net
 
 module GuiCommon =
   // Binds class name and XML
@@ -52,7 +53,12 @@ module GuiCommon =
       with get() =
         match self with
         | File info -> info.Exists
-        | _ -> true
+        | Url u -> let request = WebRequest.CreateHttp(u)
+                   request.Method <- "HEAD"
+                   use response = request.GetResponse()
+                   response.ContentLength > 0L &&
+                   (response :?> HttpWebResponse).StatusCode |> int < 400
+
     member self.FullName
       with get() =
         match self with
@@ -61,7 +67,7 @@ module GuiCommon =
     member self.Outdated epoch =
       match self with
       | File info -> (info.LastWriteTimeUtc > epoch)
-      | _ -> false
+      | _ -> false // Sensible SourceLink assumed
     member self.ReadAllText () =
       match self with
       | File info -> info.FullName |> File.ReadAllText
