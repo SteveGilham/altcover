@@ -1758,8 +1758,8 @@ type AltCoverTests() =
                     |> Seq.sort
                     |> Seq.toList
         let expected = [
-                         url.Replace("*", "altcover/Sample14/Sample14/Program.cs")
-                         url.Replace("*", "altcover/Sample5/Class1.cs")
+                         url.Replace("*", "Sample14/Sample14/Program.cs")
+                         url.Replace("*", "Sample5/Class1.cs")
                        ]
         Assert.That (files, Is.EquivalentTo expected)
       finally
@@ -2051,8 +2051,8 @@ type AltCoverTests() =
                     |> Seq.sort
                     |> Seq.toList
         let expected = [
-                         url.Replace("*", "altcover/Sample14/Sample14/Program.cs")
-                         url.Replace("*", "altcover/Sample5/Class1.cs")
+                         url.Replace("*", "Sample14/Sample14/Program.cs")
+                         url.Replace("*", "Sample5/Class1.cs")
                        ]
         Assert.That (files, Is.EquivalentTo expected)
       finally
