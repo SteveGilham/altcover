@@ -1,6 +1,7 @@
 namespace AltCover.Visualizer
 
 open System
+open System.IO
 open System.Xml.XPath
 
 module GuiCommon =
@@ -41,3 +42,34 @@ module GuiCommon =
         let r1 = rightKey.m.GetAttribute("fullname", String.Empty)
         String.CompareOrdinal(l1, r1)
     else sort
+
+  // -------------------------- Source file Handling ---------------------------
+  [<NoComparison>]
+  type internal Source =
+    | File of FileInfo
+    | Url of Uri
+    member self.Exists
+      with get() =
+        match self with
+        | File info -> info.Exists
+        | _ -> true
+    member self.FullName
+      with get() =
+        match self with
+        | File info -> info.FullName
+        | Url u -> u.AbsoluteUri
+    member self.Outdated epoch =
+      match self with
+      | File info -> (info.LastWriteTimeUtc > epoch)
+      | _ -> false
+    member self.ReadAllText () =
+      match self with
+      | File info -> info.FullName |> File.ReadAllText
+      | Url u -> use client = new System.Net.WebClient()
+                 client.DownloadString(u)
+
+  let internal GetSource (document : string) =
+    if document.StartsWith("http://", StringComparison.Ordinal) ||
+       document.StartsWith("https://", StringComparison.Ordinal)
+    then System.Uri(document) |> Url
+    else FileInfo(document) |> File
