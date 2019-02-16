@@ -218,6 +218,12 @@ _Target "BuildDebug" (fun _ ->
                   [ "Configuration", "Debug"
                     "DebugSymbols", "True" ] })
 
+  Directory.ensure "./_SourceLink"
+  Shell.copyFile "./_SourceLink/Class2.cs" "./Sample14/Sample14/Class2.txt"
+  let temp = Environment.environVar "TEMP"
+  printfn "%A" temp
+  Shell.copyFile (temp @@ "/Sample14.SourceLink.Class3.cs") "./Sample14/Sample14/Class3.txt"
+
   [ "./altcover.core.sln"; "./Sample14/Sample14.sln" ]
   |> Seq.iter (fun s -> s
                         |> DotNet.build
@@ -225,7 +231,6 @@ _Target "BuildDebug" (fun _ ->
                          { p.WithCommon dotnetOptions with Configuration = DotNet.BuildConfiguration.Debug }
                          |> withMSBuildParams))
 
-  Directory.ensure "./_SourceLink"
   Shell.copy "./_SourceLink" (!!"./Sample14/Sample14/bin/Debug/netcoreapp2.1/*")
 
 )

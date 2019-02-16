@@ -1755,6 +1755,7 @@ type AltCoverTests() =
         let files = document.Descendants(XName.Get "seqpnt")
                     |> Seq.map (fun s -> s.Attribute(XName.Get "document").Value)
                     |> Seq.distinct
+                    |> Seq.filter (fun f -> f.StartsWith("https://", StringComparison.Ordinal))
                     |> Seq.sort
                     |> Seq.toList
         let expected = [
@@ -1762,6 +1763,20 @@ type AltCoverTests() =
                          url.Replace("*", "Sample5/Class1.cs")
                        ]
         Assert.That (files, Is.EquivalentTo expected)
+
+        let untracked = document.Descendants(XName.Get "seqpnt")
+                        |> Seq.map (fun s -> s.Attribute(XName.Get "document").Value)
+                        |> Seq.distinct
+                        |> Seq.filter (fun f -> f.StartsWith("https://", StringComparison.Ordinal) |> not)
+                        |> Seq.map Path.GetFileName
+                        |> Seq.sort
+                        |> Seq.toList
+        let expected2 = [
+                          "Class2.cs"
+                          "Sample14.SourceLink.Class3.cs"
+                        ]
+        Assert.That (untracked, Is.EquivalentTo expected2)
+
       finally
         Visitor.NameFilters.Clear()
         Visitor.sourcelink := false
@@ -2048,6 +2063,7 @@ type AltCoverTests() =
 
         let files = document.Descendants(XName.Get "File")
                     |> Seq.map (fun s -> s.Attribute(XName.Get "fullPath").Value)
+                    |> Seq.filter (fun f -> f.StartsWith("https://", StringComparison.Ordinal))
                     |> Seq.sort
                     |> Seq.toList
         let expected = [
@@ -2055,6 +2071,18 @@ type AltCoverTests() =
                          url.Replace("*", "Sample5/Class1.cs")
                        ]
         Assert.That (files, Is.EquivalentTo expected)
+
+        let untracked = document.Descendants(XName.Get "File")
+                        |> Seq.map (fun s -> s.Attribute(XName.Get "fullPath").Value)
+                        |> Seq.filter (fun f -> f.StartsWith("https://", StringComparison.Ordinal) |> not)
+                        |> Seq.map Path.GetFileName
+                        |> Seq.sort
+                        |> Seq.toList
+        let expected2 = [
+                          "Class2.cs"
+                          "Sample14.SourceLink.Class3.cs"
+                        ]
+        Assert.That (untracked, Is.EquivalentTo expected2)
       finally
         Visitor.NameFilters.Clear()
         Visitor.sourcelink := false

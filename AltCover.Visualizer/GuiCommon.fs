@@ -55,9 +55,12 @@ module GuiCommon =
         | File info -> info.Exists
         | Url u -> let request = WebRequest.CreateHttp(u)
                    request.Method <- "HEAD"
-                   use response = request.GetResponse()
-                   response.ContentLength > 0L &&
-                   (response :?> HttpWebResponse).StatusCode |> int < 400
+                   try
+                     use response = request.GetResponse()
+                     response.ContentLength > 0L &&
+                     (response :?> HttpWebResponse).StatusCode |> int < 400
+                   with
+                   | :? WebException -> false
 
     member self.FullName
       with get() =

@@ -3,10 +3,18 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp2.1</TargetFramework>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>    
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Class2.txt" />
+    <None Remove="Class3.txt" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Include="..\..\Sample5\Class1.cs" Link="Class1.cs" />
+    <Compile Include="..\..\_SourceLink\Class2.cs" Link="Class2.cs" />
+    <Compile Include="$(TEMP)\Sample14.SourceLink.Class3.cs" Link="Class3.cs" />
   </ItemGroup>
 
   <ItemGroup>

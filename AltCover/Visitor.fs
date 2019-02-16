@@ -20,6 +20,7 @@ open Mono.Cecil.Cil
 open Mono.Cecil.Rocks
 open Newtonsoft.Json
 open Newtonsoft.Json.Linq
+open System.Net
 
 [<Flags>]
 type internal Inspect =
@@ -232,6 +233,16 @@ module internal Visitor =
     Uri.UnescapeDataString(uri.MakeRelativeUri(new Uri(path)).ToString()).
         Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar)
 
+  let internal Exists (url:Uri) =
+    let request = System.Net.WebRequest.CreateHttp(url)
+    request.Method <- "HEAD"
+    try
+      use response = request.GetResponse()
+      response.ContentLength > 0L &&
+      (response :?> System.Net.HttpWebResponse).StatusCode |> int < 400
+    with
+    | :? WebException -> false
+
   [<SuppressMessage("Microsoft.Usage",
                     "CA2208:InstantiateArgumentExceptionsCorrectly",
                     Justification = "F# inlined code")>]
@@ -242,15 +253,16 @@ module internal Visitor =
       |> Seq.map (fun x -> (x, GetRelativePath (x |> Path.GetDirectoryName) (file |> Path.GetDirectoryName)))
       |> Seq.filter (fun (x, r) -> r.IndexOf("..") < 0)
       |> Seq.sortBy (fun (x, r) -> r.Length)
-      |> Seq.head
+      |> Seq.tryHead
 
-    let best, relative = match find with
-                         | (k, ".") -> (k, String.Empty)
-                         | f -> f
-    let replacement = Path.Combine(relative, Path.GetFileName(file)).Replace('\\', '/')
-    let url = dict.[best].Replace("*", replacement)
-    dict.Add(file, url)
-    url
+    match find with
+    | Some (best, relative) ->
+      let replacement = Path.Combine(relative, Path.GetFileName(file)).Replace('\\', '/')
+      let url = dict.[best].Replace("*", replacement)
+      let map = if Uri(url) |> Exists then url else file
+      dict.Add(file, map)
+      map
+    | _ -> file
 
   let internal SourceLinkMapping file =
     match SourceLinkDocuments with
