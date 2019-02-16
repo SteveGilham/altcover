@@ -127,8 +127,8 @@ let NuGetAltCover =
   |> Seq.filter File.Exists
   |> Seq.tryHead
 
-
 let ForceTrue = DotNet.CLIArgs.Force true
+let FailTrue = DotNet.CLIArgs.FailFast true
 
 let _Target s f =
   Target.description s
@@ -217,11 +217,27 @@ _Target "BuildDebug" (fun _ ->
                 Properties =
                   [ "Configuration", "Debug"
                     "DebugSymbols", "True" ] })
-  "./altcover.core.sln"
-  |> DotNet.build
-       (fun p ->
-       { p.WithCommon dotnetOptions with Configuration = DotNet.BuildConfiguration.Debug }
-       |> withMSBuildParams))
+
+  Directory.ensure "./_SourceLink"
+  Shell.copyFile "./_SourceLink/Class2.cs" "./Sample14/Sample14/Class2.txt"
+  if Environment.isWindows then  
+    let temp = Environment.environVar "TEMP"
+    Shell.copyFile (temp @@ "/Sample14.SourceLink.Class3.cs") "./Sample14/Sample14/Class3.txt"
+  else
+    Directory.ensure "/tmp/.AltCover_SourceLink"
+    Shell.copyFile "/tmp/.AltCover_SourceLink/Sample14.SourceLink.Class3.cs" "./Sample14/Sample14/Class3.txt"
+
+  [ "./altcover.core.sln"; "./Sample14/Sample14.sln" ]
+  |> Seq.iter (fun s -> s
+                        |> DotNet.build
+                         (fun p ->
+                         { p.WithCommon dotnetOptions with Configuration = DotNet.BuildConfiguration.Debug }
+                         |> withMSBuildParams))
+
+  Shell.copy "./_SourceLink" (!!"./Sample14/Sample14/bin/Debug/netcoreapp2.1/*")
+
+)
+
 _Target "BuildMonoSamples" (fun _ ->
   let mcs = "_Binaries/MCS/Release+AnyCPU/MCS.exe"
   [ ("./_Mono/Sample1",
@@ -229,7 +245,7 @@ _Target "BuildMonoSamples" (fun _ ->
 
     ("./_Mono/Sample3",
      [ "-target:library"; "-debug"; "-out:./_Mono/Sample3/Sample3.dll";
-       "-lib:./packages/Mono.Cecil.0.10.1/lib/net40"; "-r:Mono.Cecil.dll";
+       "-lib:./packages/Mono.Cecil.0.10.3/lib/net40"; "-r:Mono.Cecil.dll";
        "./Sample3/Class1.cs" ]) ]
   |> Seq.iter
        (fun (dir, cmd) ->
@@ -388,6 +404,7 @@ _Target "FxCop" (fun _ -> // Needs debug because release is compiled --standalon
        ], [], [ "-Microsoft.Usage#CA2235"
                 "-Microsoft.Performance#CA1819"
                 "-Microsoft.Design#CA1020"
+                "-Microsoft.Design#CA1034"
                 "-Microsoft.Design#CA1004"
                 "-Microsoft.Design#CA1006"
                 "-Microsoft.Design#CA1011"
@@ -499,6 +516,7 @@ _Target "JustUnitTest" (fun _ ->
     |> Seq.filter
          (fun f ->
          Path.GetFileName(f) <> "AltCover.XTests.dll"
+         && Path.GetFileName(f) <> "NUnit3.TestAdapter.dll"
          && Path.GetFileName(f) <> "xunit.runner.visualstudio.testadapter.dll")
     |> NUnit3.run (fun p ->
          { p with ToolPath = Tools.findToolInSubPath "nunit3-console.exe" "."
@@ -580,6 +598,7 @@ _Target "UnitTestWithOpenCover" (fun _ ->
     |> Seq.filter
          (fun f ->
          Path.GetFileName(f) <> "AltCover.XTests.dll"
+         && Path.GetFileName(f) <> "NUnit3.TestAdapter.dll"
          && Path.GetFileName(f) <> "xunit.runner.visualstudio.testadapter.dll")
   let xtestFiles = !!(@"_Binaries/*Tests/Debug+AnyCPU/*XTest*.dll")
   let coverage = Path.getFullName "_Reports/UnitTestWithOpenCover.xml"
@@ -720,7 +739,7 @@ _Target "UnitTestWithAltCover" (fun _ ->
     |> AltCover.run
 
     printfn "Execute the weakname tests"
-    !!("_Binaries/AltCover.WeakNameTests/Debug+AnyCPU/__WeakNameTestWithAltCover/*Test*.dll")
+    !!("_Binaries/AltCover.WeakNameTests/Debug+AnyCPU/__WeakNameTestWithAltCover/Alt*Test*.dll")
     |> NUnit3.run (fun p ->
          { p with ToolPath = Tools.findToolInSubPath "nunit3-console.exe" "."
                   WorkingDir = "."
@@ -746,7 +765,7 @@ _Target "UnitTestWithAltCover" (fun _ ->
     |> AltCover.run
 
     printfn "Execute the shadow tests"
-    !!("_Binaries/AltCover.Shadow.Tests/Debug+AnyCPU/__ShadowTestWithAltCover/*.Test*.dll")
+    !!("_Binaries/AltCover.Shadow.Tests/Debug+AnyCPU/__ShadowTestWithAltCover/Alt*.Test*.dll")
     |> NUnit3.run (fun p ->
          { p with ToolPath = Tools.findToolInSubPath "nunit3-console.exe" "."
                   WorkingDir = "."
@@ -2791,7 +2810,7 @@ _Target "DoIt"
   let frameworkPath = AltCover.Fake.Api.toolPath AltCover.Fake.Implementation.Framework
   printfn "frameworkPath = %A" frameworkPath
 
-  { AltCover_Fake.DotNet.Testing.AltCover.Params.Create 
+  { AltCover_Fake.DotNet.Testing.AltCover.Params.Create
       AltCover_Fake.DotNet.Testing.AltCover.ArgType.GetVersion with ToolPath = frameworkPath
                                                                     ToolType =
                                                                       AltCover_Fake.DotNet.Testing.AltCover.ToolType.Framework }
@@ -2818,8 +2837,9 @@ Target.runOrDefault "DoIt"
 group NetcoreBuild
   source https://api.nuget.org/v3/index.json
   nuget Fake.Core >= 5.8.4
-  nuget Fake.Core.Target >= 5.10.1
-  nuget Fake.DotNet.Cli >= 5.10.1
+  nuget Fake.Core.Target >= 5.12.1
+  nuget Fake.DotNet.Cli >= 5.12.1
+  nuget FSharp.Core = 4.6.2
 
   source {0}
   nuget AltCover.Api {1}
@@ -2856,6 +2876,13 @@ _Target "DotnetTestIntegration" (fun _ ->
     repo.SetAttributeValue(XName.Get "value", Path.getFullName "./_Packaging")
     config.Save "./_DotnetTest/NuGet.config"
 
+    Directory.ensure "./_DotnetTestFail"
+    Shell.cleanDir ("./_DotnetTestFail")
+    let config = XDocument.Load "./Build/NuGet.config.dotnettest"
+    let repo = config.Descendants(XName.Get("add")) |> Seq.head
+    repo.SetAttributeValue(XName.Get "value", Path.getFullName "./_Packaging")
+    config.Save "./_DotnetTestFail/NuGet.config"
+
     let fsproj = XDocument.Load "./Sample4/sample4.core.fsproj"
     let pack = fsproj.Descendants(XName.Get("PackageReference")) |> Seq.head
     let inject =
@@ -2881,6 +2908,80 @@ _Target "DotnetTestIntegration" (fun _ ->
 
     let x = Path.getFullName "./_DotnetTest/coverage.xml"
     Actions.CheckSample4 x
+
+    // optest failing test
+    let fsproj = XDocument.Load "./Sample13/sample13.core.fsproj"
+    let pack = fsproj.Descendants(XName.Get("PackageReference")) |> Seq.head
+    let inject =
+      XElement
+        (XName.Get "PackageReference", XAttribute(XName.Get "Include", "altcover"),
+         XAttribute(XName.Get "Version", !Version))
+    pack.AddBeforeSelf inject
+    fsproj.Save "./_DotnetTestFail/dotnettest.fsproj"
+    Shell.copy "./_DotnetTestFail" (!!"./Sample13/*.fs")
+
+    let xx = Path.getFullName "./_DotnetTestFail/coverage.xml"
+    let pf1 = { p0 with AssemblyFilter = [| "NUnit" |] } |> AltCover.PrepareParams.Primitive
+
+    try
+      DotNet.test
+        (fun to' ->
+        (to'.WithCommon(withWorkingDirectoryVM "_DotnetTestFail")).WithParameters pf1 cc0 ForceTrue |> withCLIArgs)
+        "dotnettest.fsproj"
+      Assert.Fail("Build exception should be raised")
+    with
+    | :? Fake.DotNet.MSBuildException -> printfn "Caught expected exception"
+
+    do use coverageFile =
+         new FileStream(xx, FileMode.Open, FileAccess.Read, FileShare.None, 4096,
+                        FileOptions.SequentialScan)
+       let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
+       let recorded =
+         coverageDocument.Descendants(XName.Get("SequencePoint"))
+         |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value)
+         |> Seq.toList
+
+       Assert.That
+         (recorded,
+          Is.EquivalentTo [ "1"; "1"; "1"; "0"] )
+
+    // optest failing fast test
+    Directory.ensure "./_DotnetTestFailFast"
+    Shell.cleanDir ("./_DotnetTestFailFast")
+    let fsproj = XDocument.Load "./Sample13/sample13.core.fsproj"
+    let pack = fsproj.Descendants(XName.Get("PackageReference")) |> Seq.head
+    let inject =
+      XElement
+        (XName.Get "PackageReference", XAttribute(XName.Get "Include", "altcover"),
+         XAttribute(XName.Get "Version", !Version))
+    pack.AddBeforeSelf inject
+    fsproj.Save "./_DotnetTestFailFast/dotnettest.fsproj"
+    Shell.copy "./_DotnetTestFailFast" (!!"./Sample13/*.fs")
+
+    let xx = Path.getFullName "./_DotnetTestFailFast/coverage.xml"
+    let pf1 = { p0 with AssemblyFilter = [| "NUnit" |] } |> AltCover.PrepareParams.Primitive
+
+    try
+      DotNet.test
+        (fun to' ->
+        (to'.WithCommon(withWorkingDirectoryVM "_DotnetTestFailFast")).WithParameters pf1 cc0 FailTrue |> withCLIArgs)
+        "dotnettest.fsproj"
+      Assert.Fail("Build exception should be raised")
+    with
+    | :? Fake.DotNet.MSBuildException -> printfn "Caught expected exception"
+
+    do use coverageFile =
+         new FileStream(xx, FileMode.Open, FileAccess.Read, FileShare.None, 4096,
+                        FileOptions.SequentialScan)
+       let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
+       let recorded =
+         coverageDocument.Descendants(XName.Get("SequencePoint"))
+         |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value)
+         |> Seq.toList
+
+       Assert.That
+         (recorded,
+          Is.EquivalentTo [ "0"; "0"; "0"; "0"] )
 
     // optest linecover
     Directory.ensure "./_DotnetTestLineCover"

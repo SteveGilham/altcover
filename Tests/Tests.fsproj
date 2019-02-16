@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\NUnit3TestAdapter.3.12.0\build\net35\NUnit3TestAdapter.props" Condition="Exists('..\packages\NUnit3TestAdapter.3.12.0\build\net35\NUnit3TestAdapter.props')" />
   <Import Project="..\packages\NUnit.3.11.0\build\NUnit.props" Condition="Exists('..\packages\NUnit.3.11.0\build\NUnit.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -108,6 +109,11 @@
       <Project>{cef40b51-1128-4ed5-9bb8-70e48ca7573b}</Project>
       <Private>True</Private>
     </ProjectReference>
+    <ProjectReference Include="..\Sample12\Sample12.csproj">
+      <Name>Sample12</Name>
+      <Project>{120c83ab-ba54-4c36-9641-1d30defe9116}</Project>
+      <Private>True</Private>
+    </ProjectReference>
     <ProjectReference Include="..\Sample5\Sample5.csproj">
       <Name>Sample5</Name>
       <Project>{d1f77a3c-6b04-41b7-9507-fc1a7263cd3d}</Project>
@@ -130,16 +136,16 @@
     <Reference Include="Microsoft.Build.Tasks.v4.0" />
     <Reference Include="Microsoft.Build.Utilities.v4.0" />
     <Reference Include="Mono.Cecil">
-      <HintPath>..\packages\Mono.Cecil.0.10.1\lib\net40\Mono.Cecil.dll</HintPath>
+      <HintPath>..\packages\Mono.Cecil.0.10.3\lib\net40\Mono.Cecil.dll</HintPath>
     </Reference>
     <Reference Include="Mono.Cecil.Mdb">
-      <HintPath>..\packages\Mono.Cecil.0.10.1\lib\net40\Mono.Cecil.Mdb.dll</HintPath>
+      <HintPath>..\packages\Mono.Cecil.0.10.3\lib\net40\Mono.Cecil.Mdb.dll</HintPath>
     </Reference>
     <Reference Include="Mono.Cecil.Pdb">
-      <HintPath>..\packages\Mono.Cecil.0.10.1\lib\net40\Mono.Cecil.Pdb.dll</HintPath>
+      <HintPath>..\packages\Mono.Cecil.0.10.3\lib\net40\Mono.Cecil.Pdb.dll</HintPath>
     </Reference>
     <Reference Include="Mono.Cecil.Rocks">
-      <HintPath>..\packages\Mono.Cecil.0.10.1\lib\net40\Mono.Cecil.Rocks.dll</HintPath>
+      <HintPath>..\packages\Mono.Cecil.0.10.3\lib\net40\Mono.Cecil.Rocks.dll</HintPath>
     </Reference>
     <Reference Include="Mono.Options">
       <HintPath>..\packages\Mono.Options.Signed.0.2.3\lib\net45\Mono.Options.dll</HintPath>
@@ -179,6 +185,7 @@
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\NUnit.3.11.0\build\NUnit.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\NUnit.3.11.0\build\NUnit.props'))" />
+    <Error Condition="!Exists('..\packages\NUnit3TestAdapter.3.12.0\build\net35\NUnit3TestAdapter.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\NUnit3TestAdapter.3.12.0\build\net35\NUnit3TestAdapter.props'))" />
   </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.

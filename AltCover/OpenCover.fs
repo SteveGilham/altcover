@@ -4,6 +4,7 @@ open System
 open System.Diagnostics.CodeAnalysis
 open System.Globalization
 open System.IO
+open System.Linq
 open System.Xml.Linq
 
 open Mono.Cecil
@@ -196,7 +197,7 @@ module internal OpenCover =
       if s.Excluded = Nothing && included <> Inspect.TrackOnly then
         let instrumented = Visitor.IsInstrumented included
         let cc, element = methodElement methodDef
-        if instrumented then element.SetAttributeValue(X "skippedDueTo", null)
+        if instrumented then element.SetAttributeValue(X "skippedDueTo", "File")
         let head = s.Stack |> Seq.head
         head.Add element
         let seqpnts = addMethodContent element methodDef instrumented
@@ -234,21 +235,25 @@ module internal OpenCover =
         s.Files.Add(file, index), index
 
     let VisitCodeSegment (s : OpenCoverContext) (codeSegment : SeqPnt) i =
-      if s.Excluded = Nothing then
-        let fileset, ref = RecordFile s codeSegment.Document
-        let element = MethodPointElement codeSegment ref i
-        let head = s.Stack |> Seq.head
-        if head.IsEmpty then head.Add(element)
-        else head.FirstNode.AddBeforeSelf(element)
-        { s with Files = fileset
-                 Index = ref
-                 MethodSeq = s.MethodSeq + 1 }
-      else s
+      let fileset, ref = RecordFile s (codeSegment.Document |> Visitor.SourceLinkMapping)
+      let element = MethodPointElement codeSegment ref i
+      let head = s.Stack |> Seq.head
+      if head.IsEmpty then head.Add(element)
+      else head.FirstNode.AddBeforeSelf(element)
+      { s with Files = fileset
+               Index = ref
+               MethodSeq = s.MethodSeq + 1 }
 
-    let VisitMethodPoint (s : OpenCoverContext) (codeSegment' : SeqPnt option) i =
-      match codeSegment' with
-      | Some codeSegment -> VisitCodeSegment s codeSegment i
-      | None -> s
+    let VisitMethodPoint (s : OpenCoverContext) (codeSegment' : SeqPnt option) i included =
+      let element = (s.Stack |> Seq.head).Parent
+      let attr = element.Attribute(X "skippedDueTo")
+                 |> Option.nullable
+                 |> Option.map (fun a -> a.Value)
+      if included && attr = Some "File" then
+        element.SetAttributeValue(X "skippedDueTo", null)
+      match (included, codeSegment', s.Excluded) with
+      | (true, Some codeSegment, Nothing) -> VisitCodeSegment s codeSegment i
+      | _ -> s
 
     let VisitGoTo s branch =
       let fileset, ref = RecordFile s branch.Document
@@ -266,7 +271,7 @@ module internal OpenCover =
           XAttribute(X "fileid", fileid)), fileset, ref)
 
     let VisitBranchPoint s branch =
-      if s.Excluded = Nothing then
+      if s.Excluded = Nothing && branch.Included then
         let branches = s.Stack.Head.Parent.Descendants(X "BranchPoints") |> Seq.head
         let (xbranch, fileset, ref) = VisitGoTo s branch
         setChain xbranch branch.Target.Tail
@@ -359,6 +364,7 @@ module internal OpenCover =
 
     let VisitAfterMethodIncluded(s : OpenCoverContext) =
       let head, tail = Augment.Split s.Stack
+      let skipped = head.Parent.Attributes(X "skippedDueTo").Any()
       head.Parent.Elements(X "FileRef")
       |> Seq.toList
       |> Seq.iter (fun fileref ->
@@ -366,9 +372,14 @@ module internal OpenCover =
            else fileref.Add(XAttribute(X "uid", s.Index)))
       let cc = Option.getOrElse 1 s.MethodCC.Head
       let method = head.Parent
-      method.Elements(X "Summary") |> Seq.iter (AddMethodSummary s cc)
+      if skipped then
+        method.Elements(X "Summary")
+        |> Seq.toList
+        |> Seq.iter (fun x -> x.Remove())
+      else
+        method.Elements(X "Summary") |> Seq.iter (AddMethodSummary s cc)
       handleOrdinals method
-      tail
+      (tail, skipped)
 
     let UpdateClassCountsByMethod (s : OpenCoverContext) (tail : XElement list) =
       { s with Stack = tail
@@ -382,8 +393,9 @@ module internal OpenCover =
     let VisitAfterMethod (s : OpenCoverContext) methodDef track included =
       AddTracking s methodDef track
       if s.Excluded = Nothing && included <> Inspect.TrackOnly then
-        let tail = VisitAfterMethodIncluded s
-        UpdateClassCountsByMethod s tail
+        let tail, skipped = VisitAfterMethodIncluded s
+        if skipped |> not then UpdateClassCountsByMethod s tail
+        else { s with Stack = tail }
       else { s with Excluded = passOnClassExclusion s.Excluded }
 
     let VisitAfterType(s : OpenCoverContext) =
@@ -470,7 +482,7 @@ module internal OpenCover =
            summary.SetAttributeValue(X "numSequencePoints", s.TotalSeq)
            summary.SetAttributeValue(X "numBranchPoints", s.TotalBr)
            summary.SetAttributeValue(X "maxCyclomaticComplexity", max)
-           summary.SetAttributeValue(X "minCyclomaticComplexity", min)
+           summary.SetAttributeValue(X "minCyclomaticComplexity", Math.Max(1, min))
            summary.SetAttributeValue(X "numClasses", s.TotalClasses)
            summary.SetAttributeValue(X "numMethods", s.TotalMethods))
       s
@@ -481,7 +493,7 @@ module internal OpenCover =
       | Node.Module(moduleDef, included) -> VisitModule s moduleDef included
       | Node.Type(typeDef, included) -> VisitType s typeDef included
       | Node.Method(methodDef, included, _) -> VisitMethod s methodDef included
-      | MethodPoint(_, codeSegment, i, _) -> VisitMethodPoint s codeSegment i
+      | MethodPoint(_, codeSegment, i, included) -> VisitMethodPoint s codeSegment i included
       | BranchPoint b -> VisitBranchPoint s b
       | AfterMethod(methodDef, included, track) ->
         VisitAfterMethod s methodDef track included

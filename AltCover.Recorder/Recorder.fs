@@ -15,17 +15,6 @@ open System.Runtime.CompilerServices
 #else
 [<System.Runtime.InteropServices.ProgIdAttribute("ExcludeFromCodeCoverage hack for OpenCover issue 615")>]
 #endif
-type internal Close =
-  | DomainUnload
-  | ProcessExit
-  | Pause
-  | Resume
-
-#if NETSTANDARD2_0
-[<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage>]
-#else
-[<System.Runtime.InteropServices.ProgIdAttribute("ExcludeFromCodeCoverage hack for OpenCover issue 615")>]
-#endif
 type internal Carrier = SequencePoint of String * int * Track
 
 #if NETSTANDARD2_0
@@ -60,9 +49,7 @@ module Instance =
   /// Accumulation of visit records
   /// </summary>
   let internal Visits = new Dictionary<string, Dictionary<int, int * Track list>>()
-
   let internal Samples = new Dictionary<string, Dictionary<int, bool>>()
-  let internal buffer = List<Carrier>()
 
   /// <summary>
   /// Gets the unique token for this instance
@@ -159,8 +146,8 @@ module Instance =
   /// <summary>
   /// This method flushes hit count buffers.
   /// </summary>
-  let internal FlushAll() =
-    trace.OnConnected (fun () -> trace.OnFinish Visits)
+  let internal FlushAll finish =
+    trace.OnConnected (fun () -> trace.OnFinish finish Visits)
       (fun () ->
       match Visits.Count with
       | 0 -> ()
@@ -179,7 +166,7 @@ module Instance =
     ("PauseHandler")
     |> GetResource
     |> Option.iter Console.Out.WriteLine
-    FlushAll()
+    FlushAll Pause
     Recording <- false
 
   let FlushResume() =
@@ -213,16 +200,12 @@ module Instance =
   /// <param name="moduleId">Assembly being visited</param>
   /// <param name="hitPointId">Sequence Point identifier</param>
   let internal VisitImpl moduleId hitPointId context =
-    if not <| String.IsNullOrEmpty(moduleId) && TakeSample Sample moduleId hitPointId then
+    if not <| String.IsNullOrEmpty(moduleId) &&
+       TakeSample Sample moduleId hitPointId then
       let adder =
         if trace.IsConnected() then TraceVisit
         else AddVisit
       adder moduleId hitPointId context
-
-  let internal Post(x : Carrier) =
-    match x with
-    | SequencePoint(moduleId, hitPointId, context) ->
-      VisitImpl moduleId hitPointId context
 
   let private IsOpenCoverRunner() =
     (CoverageFormat = ReportFormat.OpenCoverWithTracking)
@@ -243,30 +226,23 @@ module Instance =
 
   let internal PayloadControl = PayloadSelection Clock
   let internal PayloadSelector enable = PayloadControl Granularity enable
-  let mutable internal Capacity = 1023
-  let internal withbuffer f = lock buffer f
+  let internal lockVisits f = lock Visits f
 
   let internal VisitSelection track moduleId hitPointId =
-    let message = SequencePoint(moduleId, hitPointId, track)
-    withbuffer (fun () ->
-      buffer.Add message
-      if buffer.Count > Capacity then
-        buffer |> Seq.iter Post
-        buffer.Clear())
+    lockVisits (fun () ->
+      VisitImpl moduleId hitPointId track)
 
   let Visit moduleId hitPointId =
     if Recording then
       VisitSelection (PayloadSelector IsOpenCoverRunner) moduleId hitPointId
 
   let internal FlushCounter (finish : Close) _ =
-    withbuffer (fun () ->
-      if Recording then buffer |> Seq.iter Post
-      buffer.Clear()
+    lockVisits (fun () ->
       match finish with
       | Resume -> FlushResume()
       | Pause -> FlushPause()
       | _ ->
-        if Recording then FlushAll())
+        FlushAll finish)
 
   // Register event handling
   let DoPause = FlushCounter Pause

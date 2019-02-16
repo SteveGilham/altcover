@@ -41,38 +41,32 @@
     <EmbeddedResource Include="Sample1WithNCover.xml" />
     <EmbeddedResource Include="NCoverBugFix.lcov" />
     <EmbeddedResource Include="NCoverBugFix.cobertura" />
-  </ItemGroup>
-
-  <ItemGroup>
     <EmbeddedResource Include="..\Shadow.Tests\SimpleCoverage.xml" Link="SimpleCoverage.xml" />
-  </ItemGroup>
-
-  <ItemGroup>
     <EmbeddedResource Include="Sample1.deps.json" />
     <EmbeddedResource Include="Sample1.deps.ncafter.json" />
     <EmbeddedResource Include="Sample2.deps.json" />
     <EmbeddedResource Include="Sample2.deps.ncafter.json" />
-  </ItemGroup>
-
-  <ItemGroup>
     <EmbeddedResource Include="..\AltCover\Strings.resx" Link="Strings.resx" />
+    <EmbeddedResource Include="..\Build\Infrastructure.snk" Link="Infrastructure.snk" />
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="..\Build\Infrastructure.snk" Link="Infrastructure.snk" />
     <None Include="TailCallSample.dl_">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Sample12.runtimeconfig.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="coverlet.msbuild" Version="2.5.0">
+    <PackageReference Include="coverlet.msbuild" Version="2.5.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.Build.Utilities.Core" Version="15.9.20" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.9.0" />
-    <PackageReference Include="Mono.Cecil" Version="0.10.1" />
+    <PackageReference Include="Mono.Cecil" Version="0.10.3" />
     <PackageReference Include="Mono.Options" Version="5.3.0.1" />
     <PackageReference Include="NUnit" Version="3.11.0" />
     <PackageReference Include="NUnit3TestAdapter" Version="3.12.0" />
@@ -88,6 +82,7 @@
     <ProjectReference Include="..\Sample5\sample5.core.csproj" />
     <ProjectReference Include="..\Sample6\sample6.core.fsproj" />
     <ProjectReference Include="..\Sample8\sample8.core.csproj" />
+    <ProjectReference Include="..\Sample12\sample12.core.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -27,6 +27,7 @@ module internal Cobertura =
   let internal NCover (report : XDocument) (packages : XElement) =
     let ProcessSeqPnts (method : XElement) (lines : XElement) =
       method.Descendants(X "seqpnt")
+      |> Seq.filter (fun s -> s.Attribute(X "excluded").Value <> "true")
       |> Seq.fold (fun (h, t) s ->
            let vc = s.Attribute(X "visitcount")
 
@@ -84,6 +85,7 @@ module internal Cobertura =
 
     let ExtractClasses (``module`` : XElement) classes =
       ``module``.Descendants(X "method")
+      |> Seq.filter (fun m -> m.Attribute(X "excluded").Value <> "true")
       |> Seq.groupBy (fun method ->
            (method.Attribute(X "class").Value,
             method.Descendants(X "seqpnt")

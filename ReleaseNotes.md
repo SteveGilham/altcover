@@ -2,6 +2,17 @@ Q. Never mind the fluff -- how do I get started?
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
+# 5.1.6xx (Ezoguma series release 4)
+* `--dropReturnCode` ( `-DropReturnCode` in PowerShell, `ExposeReturnCode` with default value `true` in the Fake API) to not pass the return code of any nested process
+* `--sourcelink` to give the source link URL for tracked files rather than the file path (untracked files still have the local file path)
+* Visualizer support for sourcelink URLs
+
+# 5.0.665 (Ezoguma series release 3)
+* [BUGFIX] Restore visualizer support for OpenCover format (internal consistency check failure)
+* [BUGFIX] Issue #52 -- fix OpenCover, LCov and Cobertura format output in the case of exclusion by path
+* [BUGFIX] Issue #50 -- take Cecil 0.10.3 with the actual fix in it
+* Some improvements to the throughput of coverage data, reducing time taken by the instrumented self-tests.
+
 # 5.0.664 (Ezoguma series release 2)
 * [BUGFIX] Issue #49 -- `dotnet test` integration : internally, escape the '\' character, which is  is helpfully treated by MSBuild as a path separator and flipped to be '/' on non-Windows platforms when introduced through `/p:AltCover*Filter` arguments.
 * [BUGFIX] Issue #48 -- fix embedded-PDB detection to avoid false positives

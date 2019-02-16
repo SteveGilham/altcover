@@ -6,7 +6,6 @@ open System.IO
 open System.IO.Compression
 open System.Reflection
 open System.Text.RegularExpressions
-open System.Threading
 open System.Xml
 open System.Xml.Linq
 
@@ -252,6 +251,8 @@ type AltCoverTests() =
                                collected data
   -o, --outputFile=VALUE     Optional: write the recorded coverage to this file
                                rather than overwriting the original report file.
+      --dropReturnCode       Optional: Do not report any non-zero return code
+                               from a launched process.
   -?, --help, -h             Prints out the options.
 """
         Assert.That
@@ -322,7 +323,7 @@ type AltCoverTests() =
     [<Test>]
     member self.ShouldHaveExpectedOptions() =
       let options = Runner.DeclareOptions()
-      Assert.That(options.Count, Is.EqualTo 10)
+      Assert.That(options.Count, Is.EqualTo 11)
       Assert.That
         (options
          |> Seq.filter (fun x -> x.Prototype <> "<>")
@@ -609,7 +610,7 @@ type AltCoverTests() =
     [<Test>]
     member self.ParsingCollectGivesCollect() =
       try
-        Runner.collect <- false
+        Runner.collect := false
         let options = Runner.DeclareOptions()
         let input = [| "--collect" |]
         let parse = CommandLine.ParseCommandLine input options
@@ -618,14 +619,14 @@ type AltCoverTests() =
         | Right(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.Empty)
-        Assert.That(Runner.collect, Is.True)
+        Assert.That(!Runner.collect, Is.True)
       finally
-        Runner.collect <- false
+        Runner.collect := false
 
     [<Test>]
     member self.ParsingMultipleCollectGivesFailure() =
       try
-        Runner.collect <- false
+        Runner.collect := false
         let options = Runner.DeclareOptions()
         let input = [| "--collect"; "--collect" |]
         let parse = CommandLine.ParseCommandLine input options
@@ -635,7 +636,7 @@ type AltCoverTests() =
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
       finally
-        Runner.collect <- false
+        Runner.collect := false
 
     [<Test>]
     member self.ParsingLcovGivesLcov() =
@@ -872,6 +873,7 @@ type AltCoverTests() =
     member self.ParsingMultipleOutputGivesFailure() =
       try
         Runner.output <- None
+        Runner.collect := false
         let options = Runner.DeclareOptions()
         let unique = Guid.NewGuid().ToString()
 
@@ -905,6 +907,37 @@ type AltCoverTests() =
           Assert.That(x, Is.EqualTo "UsageError")
       finally
         Runner.output <- None
+
+    [<Test>]
+    member self.ParsingDropGivesDrop() =
+      try
+        CommandLine.dropReturnCode := false
+        let options = Main.DeclareOptions()
+        let input = [| "--dropReturnCode" |]
+        let parse = CommandLine.ParseCommandLine input options
+        match parse with
+        | Left _ -> Assert.Fail()
+        | Right(x, y) ->
+          Assert.That(y, Is.SameAs options)
+          Assert.That(x, Is.Empty)
+        Assert.That(!CommandLine.dropReturnCode, Is.True)
+      finally
+        CommandLine.dropReturnCode := false
+
+    [<Test>]
+    member self.ParsingMultipleDropGivesFailure() =
+      try
+        CommandLine.dropReturnCode := false
+        let options = Main.DeclareOptions()
+        let input = [| "--dropReturnCode"; "--dropReturnCode" |]
+        let parse = CommandLine.ParseCommandLine input options
+        match parse with
+        | Right _ -> Assert.Fail()
+        | Left(x, y) ->
+          Assert.That(y, Is.SameAs options)
+          Assert.That(x, Is.EqualTo "UsageError")
+      finally
+        CommandLine.dropReturnCode := false
 
     [<Test>]
     member self.ShouldRequireExe() =
@@ -942,14 +975,14 @@ type AltCoverTests() =
       lock Runner.executable (fun () ->
         try
           Runner.executable := None
-          Runner.collect <- true
+          Runner.collect := true
           let options = Runner.DeclareOptions()
           let parse = Runner.RequireExe(Right([ "a"; "b" ], options))
           match parse with
           | Right([], z) -> Assert.That(z, Is.SameAs options)
           | _ -> Assert.Fail()
         finally
-          Runner.collect <- false
+          Runner.collect := false
           Runner.executable := None)
 
     [<Test>]
@@ -957,7 +990,7 @@ type AltCoverTests() =
       lock Runner.executable (fun () ->
         try
           Runner.executable := Some "xxx"
-          Runner.collect <- true
+          Runner.collect := true
           let options = Runner.DeclareOptions()
           let parse = Runner.RequireExe(Right([ "b" ], options))
           match parse with
@@ -966,7 +999,7 @@ type AltCoverTests() =
             Assert.That(y, Is.SameAs options)
             Assert.That(x, Is.EqualTo "UsageError")
         finally
-          Runner.collect <- false
+          Runner.collect := false
           Runner.executable := None)
 
     [<Test>]
@@ -1062,6 +1095,39 @@ type AltCoverTests() =
         | _ -> Assert.Fail()
       finally
         Runner.recordingDirectory <- None
+
+    [<Test>]
+    member self.ShouldHandleReturnCodes() =
+      // Hack for running while instrumented
+      let where = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
+#if NETCOREAPP2_0
+      let path = Path.Combine(where, "Sample12.dll")
+#else
+      let path = Path.Combine(where, "Sample12.exe")
+#endif
+
+      let nonWindows = System.Environment.GetEnvironmentVariable("OS") <> "Windows_NT"
+
+      let args =
+#if NETCOREAPP2_0
+          [ "dotnet"; path ]
+#else
+          if nonWindows then [ "mono"; path ]
+          else [ path ]
+#endif
+
+      let r = CommandLine.ProcessTrailingArguments args <| DirectoryInfo(where)
+      Assert.That(r, Is.EqualTo 0)
+
+      let r2 = CommandLine.ProcessTrailingArguments (args @ [ "1"; "2" ]) <| DirectoryInfo(where)
+      Assert.That(r2, Is.EqualTo 2)
+
+      try
+        CommandLine.dropReturnCode := true
+        let r0 = CommandLine.ProcessTrailingArguments (args @ [ "1"; "2" ]) <| DirectoryInfo(where)
+        Assert.That(r0, Is.EqualTo 0)
+      finally
+        CommandLine.dropReturnCode := false
 
     [<Test>]
     member self.ShouldProcessTrailingArguments() =
@@ -1221,6 +1287,10 @@ type AltCoverTests() =
       --branchcover          Optional: Do not record line coverage.  Implies,
                                and is compatible with, the --opencover option.
                                    Incompatible with --linecover.
+      --dropReturnCode       Optional: Do not report any non-zero return code
+                               from a launched process.
+      --sourcelink           Optional: Display sourcelink URLs rather than file
+                               paths if present.
   -?, --help, -h             Prints out the options.
 or
   Runner
@@ -1246,6 +1316,8 @@ or
                                collected data
   -o, --outputFile=VALUE     Optional: write the recorded coverage to this file
                                rather than overwriting the original report file.
+      --dropReturnCode       Optional: Do not report any non-zero return code
+                               from a launched process.
   -?, --help, -h             Prints out the options.
 """
         Assert.That
@@ -1443,7 +1515,7 @@ or
     [<Test>]
     member self.CollectShouldReportAsExpected() =
       try
-        Runner.collect <- true
+        Runner.collect := true
         let counts = Dictionary<string, Dictionary<int, int * Base.Track list>>()
         let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
         let unique = Path.Combine(where, Guid.NewGuid().ToString())
@@ -1467,7 +1539,7 @@ or
         Assert.That(doc.Nodes(), Is.Empty)
         Assert.That(counts, Is.Empty)
       finally
-        Runner.collect <- false
+        Runner.collect := false
 
     [<Test>]
     member self.JunkPayloadShouldReportAsExpected() =
@@ -1941,13 +2013,17 @@ or
         LCov.path := None
 
     [<Test>]
-    member self.NCoverShouldGeneratePlausibleLcovBugFix() =
+    member self.NCoverShouldGeneratePlausibleLcovWithMissingFullName() =
       let resource =
         Assembly.GetExecutingAssembly().GetManifestResourceNames()
         |> Seq.find
              (fun n -> n.EndsWith("Sample1WithNCover.xml", StringComparison.Ordinal))
       use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
       let baseline = XDocument.Load(stream)
+      let excluded = XName.Get "excluded"
+      baseline.Descendants()
+      |> Seq.iter (fun x -> if x.Attribute(excluded) |> isNull |> not then
+                               x.SetAttributeValue(excluded, "false"))
       let unique =
         Path.Combine
           (Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName,
@@ -2051,13 +2127,17 @@ or
         Cobertura.path := None
 
     [<Test>]
-    member self.NCoverShouldGeneratePlausibleCoberturaBugFix() =
+    member self.NCoverShouldGeneratePlausibleCoberturaWithMissingFullName() =
       let resource =
         Assembly.GetExecutingAssembly().GetManifestResourceNames()
         |> Seq.find
              (fun n -> n.EndsWith("Sample1WithNCover.xml", StringComparison.Ordinal))
       use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
       let baseline = XDocument.Load(stream)
+      let excluded = XName.Get "excluded"
+      baseline.Descendants()
+      |> Seq.iter (fun x -> if x.Attribute(excluded) |> isNull |> not then
+                               x.SetAttributeValue(excluded, "false"))
       let unique =
         Path.Combine
           (Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName,

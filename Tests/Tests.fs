@@ -49,6 +49,9 @@ type AltCoverTests() =
                       |> Seq.find (fun n -> n.EndsWith(".Recorder.snk", StringComparison.Ordinal))
 #endif
 
+    let SolutionDir() =
+      SolutionRoot.location
+
     let infrastructureSnk =
       Assembly.GetExecutingAssembly().GetManifestResourceNames()
       |> Seq.find (fun n -> n.EndsWith("Infrastructure.snk", StringComparison.Ordinal))
@@ -1675,27 +1678,6 @@ type AltCoverTests() =
 </method>
 </module>
 </coverage>"
-    static member MonoBaseline = "<?xml-stylesheet type='text/xsl' href='coverage.xsl'?>
-<coverage profilerVersion=\"0\" driverVersion=\"0\" startTime=\"\" measureTime=\"\">
-  <module moduleId=\"\" name=\"Sample1.exe\" assembly=\"Sample1\" assemblyIdentity=\"Sample1, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null\">
-    <method name=\"Main\" class=\"TouchTest.Program\" metadataToken=\"0\" excluded=\"false\" instrumented=\"true\" fullname=\"System.Void TouchTest.Program.Main(System.String[])\">
-      <seqpnt visitcount=\"0\" line=\"11\" column=\"9\" endline=\"11\" endcolumn=\"10\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
-      <seqpnt visitcount=\"0\" line=\"12\" column=\"32\" endline=\"12\" endcolumn=\"33\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
-      <seqpnt visitcount=\"0\" line=\"13\" column=\"13\" endline=\"13\" endcolumn=\"14\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
-      <seqpnt visitcount=\"0\" line=\"13\" column=\"21\" endline=\"13\" endcolumn=\"22\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
-      <seqpnt visitcount=\"0\" line=\"14\" column=\"13\" endline=\"14\" endcolumn=\"14\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
-      <seqpnt visitcount=\"0\" line=\"15\" column=\"17\" endline=\"15\" endcolumn=\"18\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
-      <seqpnt visitcount=\"0\" line=\"15\" column=\"72\" endline=\"15\" endcolumn=\"73\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
-      <seqpnt visitcount=\"0\" line=\"15\" column=\"25\" endline=\"15\" endcolumn=\"26\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
-      <seqpnt visitcount=\"0\" line=\"16\" column=\"13\" endline=\"16\" endcolumn=\"14\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
-      <seqpnt visitcount=\"0\" line=\"18\" column=\"13\" endline=\"18\" endcolumn=\"14\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
-      <seqpnt visitcount=\"0\" line=\"19\" column=\"17\" endline=\"19\" endcolumn=\"18\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
-      <seqpnt visitcount=\"0\" line=\"19\" column=\"25\" endline=\"19\" endcolumn=\"26\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
-      <seqpnt visitcount=\"0\" line=\"20\" column=\"13\" endline=\"20\" endcolumn=\"14\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
-      <seqpnt visitcount=\"0\" line=\"21\" column=\"9\" endline=\"21\" endcolumn=\"10\" excluded=\"false\" document=\"Sample1\\Program.cs\" />
-    </method>
-  </module>
-</coverage>"
 
     static member private RecursiveValidate result expected depth zero =
       let rcount = result |> Seq.length
@@ -1743,10 +1725,81 @@ type AltCoverTests() =
             >> FilterClass.Method
             >> Visitor.NameFilters.Add)
         Visitor.Visit [ visitor ] (Visitor.ToSeq path)
+
         let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
         let xml = AltCoverTests.TTBaseline
         let xml' =
           xml.Replace("Version=1.0.0.0", "Version=" + def.Name.Version.ToString())
+        let xml'' = xml'.Replace("name=\"Sample1.exe\"", "name=\"" + sample1 + "\"")
+        let baseline = XDocument.Load(new System.IO.StringReader(xml''))
+        let result = document.Elements()
+        let expected = baseline.Elements()
+        AltCoverTests.RecursiveValidate result expected 0 true
+      finally
+        Visitor.NameFilters.Clear()
+
+    [<Test>]
+    member self.ShouldGenerateExpectedXmlReportWithSourceLink() =
+      let visitor, document = Report.ReportGenerator()
+      // Hack for running while instrumented
+      let where = Assembly.GetExecutingAssembly().Location
+      let here = SolutionDir()
+      let path = Path.Combine(here, "_SourceLink/Sample14.dll")
+      try
+        Visitor.sourcelink := true
+        Visitor.Visit [ visitor ] (Visitor.ToSeq path)
+        Assert.That(Visitor.SourceLinkDocuments |> Option.isSome, "Documents should be present")
+        let map = Visitor.SourceLinkDocuments |> Option.get
+        let url = map.Values |> Seq.find (fun f -> f.EndsWith ("*", StringComparison.Ordinal))
+
+        let files = document.Descendants(XName.Get "seqpnt")
+                    |> Seq.map (fun s -> s.Attribute(XName.Get "document").Value)
+                    |> Seq.distinct
+                    |> Seq.filter (fun f -> f.StartsWith("https://", StringComparison.Ordinal))
+                    |> Seq.sort
+                    |> Seq.toList
+        let expected = [
+                         url.Replace("*", "Sample14/Sample14/Program.cs")
+                         url.Replace("*", "Sample5/Class1.cs")
+                       ]
+        Assert.That (files, Is.EquivalentTo expected)
+
+        let untracked = document.Descendants(XName.Get "seqpnt")
+                        |> Seq.map (fun s -> s.Attribute(XName.Get "document").Value)
+                        |> Seq.distinct
+                        |> Seq.filter (fun f -> f.StartsWith("https://", StringComparison.Ordinal) |> not)
+                        |> Seq.map Path.GetFileName
+                        |> Seq.sort
+                        |> Seq.toList
+        let expected2 = [
+                          "Class2.cs"
+                          "Sample14.SourceLink.Class3.cs"
+                        ]
+        Assert.That (untracked, Is.EquivalentTo expected2)
+
+      finally
+        Visitor.NameFilters.Clear()
+        Visitor.sourcelink := false
+
+    [<Test>]
+    member self.ShouldGenerateExpectedXmlReportFromDotNetWithPathFilter() =
+      let visitor, document = Report.ReportGenerator()
+      // Hack for running while instrumented
+      let where = Assembly.GetExecutingAssembly().Location
+      let path =
+        Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), sample1)
+      try
+        "Program"
+        |> (Regex
+            >> FilterClass.Path
+            >> Visitor.NameFilters.Add)
+        Visitor.Visit [ visitor ] (Visitor.ToSeq path)
+        let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+        let xml = AltCoverTests.TTBaseline
+        let xml' =
+          xml.Replace("Version=1.0.0.0", "Version=" + def.Name.Version.ToString())
+             .Replace("excluded=\"true\" instrumented=\"false\"",
+                      "excluded=\"false\" instrumented=\"true\"")
         let xml'' = xml'.Replace("name=\"Sample1.exe\"", "name=\"" + sample1 + "\"")
         let baseline = XDocument.Load(new System.IO.StringReader(xml''))
         let result = document.Elements()
@@ -1993,6 +2046,46 @@ type AltCoverTests() =
                      r.ToString() + " -> " + a1.Name.ToString()))
            AltCoverTests.RecursiveValidateOpenCover (r.Elements()) (e.Elements())
              (depth + 1) zero expectSkipped)
+
+    [<Test>]
+    member self.ShouldGenerateExpectedXmlReportWithSourceLinkOpenCoverStyle() =
+      let visitor, document = OpenCover.ReportGenerator()
+      // Hack for running while instrumented
+      let where = Assembly.GetExecutingAssembly().Location
+      let here = SolutionDir()
+      let path = Path.Combine(here, "_SourceLink/Sample14.dll")
+      try
+        Visitor.sourcelink := true
+        Visitor.Visit [ visitor ] (Visitor.ToSeq path)
+        Assert.That(Visitor.SourceLinkDocuments |> Option.isSome, "Documents should be present")
+        let map = Visitor.SourceLinkDocuments |> Option.get
+        let url = map.Values |> Seq.find (fun f -> f.EndsWith ("*", StringComparison.Ordinal))
+
+        let files = document.Descendants(XName.Get "File")
+                    |> Seq.map (fun s -> s.Attribute(XName.Get "fullPath").Value)
+                    |> Seq.filter (fun f -> f.StartsWith("https://", StringComparison.Ordinal))
+                    |> Seq.sort
+                    |> Seq.toList
+        let expected = [
+                         url.Replace("*", "Sample14/Sample14/Program.cs")
+                         url.Replace("*", "Sample5/Class1.cs")
+                       ]
+        Assert.That (files, Is.EquivalentTo expected)
+
+        let untracked = document.Descendants(XName.Get "File")
+                        |> Seq.map (fun s -> s.Attribute(XName.Get "fullPath").Value)
+                        |> Seq.filter (fun f -> f.StartsWith("https://", StringComparison.Ordinal) |> not)
+                        |> Seq.map Path.GetFileName
+                        |> Seq.sort
+                        |> Seq.toList
+        let expected2 = [
+                          "Class2.cs"
+                          "Sample14.SourceLink.Class3.cs"
+                        ]
+        Assert.That (untracked, Is.EquivalentTo expected2)
+      finally
+        Visitor.NameFilters.Clear()
+        Visitor.sourcelink := false
 
     [<Test>]
     member self.ShouldGenerateExpectedXmlReportFromDotNetOpenCoverStyle() =
@@ -2275,6 +2368,41 @@ type AltCoverTests() =
                n.EndsWith("Sample1MethodExclusion.xml", StringComparison.Ordinal))
         use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
         let baseline = XDocument.Load(stream)
+        let result = document.Elements()
+        let expected = baseline.Elements()
+        AltCoverTests.RecursiveValidateOpenCover result expected 0 true false
+      finally
+        Visitor.NameFilters.Clear()
+
+    [<Test>]
+    member self.ShouldGenerateExpectedXmlReportWithFileExclusionOpenCoverStyle() =
+      let visitor, document = OpenCover.ReportGenerator()
+      // Hack for running while instrumented
+      let where = Assembly.GetExecutingAssembly().Location
+      let path =
+        Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), sample1)
+      try
+        "Program"
+        |> (Regex
+            >> FilterClass.Path
+            >> Visitor.NameFilters.Add)
+        Visitor.Visit [ visitor ] (Visitor.ToSeq path)
+        let resource =
+          Assembly.GetExecutingAssembly().GetManifestResourceNames()
+          |> Seq.find
+               (fun n ->
+               n.EndsWith("Sample1MethodExclusion.xml", StringComparison.Ordinal))
+        use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
+        let baseline = XDocument.Load(stream)
+
+        baseline.Descendants(XName.Get "Method")
+        |> Seq.filter (fun x -> x.Attributes(XName.Get "skippedDueTo").Any())
+        |> Seq.iter (fun x -> x.SetAttributeValue(XName.Get "skippedDueTo", "File")
+                              x.Descendants(XName.Get "Summary")
+                              |> Seq.toList
+                              |> Seq.iter (fun x -> x.Remove()))
+                              //|> Seq.iter (fun s -> s.SetAttributeValue(XName.Get "maxCyclomaticComplexity", "2")
+                              //                      s.SetAttributeValue(XName.Get "minCyclomaticComplexity", "2")))
         let result = document.Elements()
         let expected = baseline.Elements()
         AltCoverTests.RecursiveValidateOpenCover result expected 0 true false

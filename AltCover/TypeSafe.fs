@@ -146,7 +146,9 @@ type CollectParams =
     Threshold : Threshold
     Cobertura : FilePath
     OutputFile : FilePath
-    CommandLine : Command }
+    CommandLine : Command
+    ExposeReturnCode : Flag
+  }
   static member Create() =
     { RecorderDirectory = NoDirectory
       WorkingDirectory = NoDirectory
@@ -155,7 +157,9 @@ type CollectParams =
       Threshold = NoThreshold
       Cobertura = NoFile
       OutputFile = NoFile
-      CommandLine = NoCommand }
+      CommandLine = NoCommand
+      ExposeReturnCode = Set
+    }
 
 [<ExcludeFromCodeCoverage; NoComparison>]
 type PrepareParams =
@@ -180,7 +184,10 @@ type PrepareParams =
     Single : Flag
     LineCover : Flag
     BranchCover : Flag
-    CommandLine : Command }
+    CommandLine : Command
+    ExposeReturnCode : Flag
+    SourceLink : Flag
+  }
   static member Create() =
     { InputDirectory = NoDirectory
       OutputDirectory = NoDirectory
@@ -203,4 +210,7 @@ type PrepareParams =
       Single = Clear
       LineCover = Clear
       BranchCover = Clear
-      CommandLine = NoCommand }
+      CommandLine = NoCommand
+      ExposeReturnCode = Set
+      SourceLink = Clear
+    }

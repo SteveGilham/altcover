@@ -5,6 +5,17 @@ open System.IO
 open System.IO.Compression
 open System
 
+#if NETSTANDARD2_0
+[<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage>]
+#else
+[<System.Runtime.InteropServices.ProgIdAttribute("ExcludeFromCodeCoverage hack for OpenCover issue 615")>]
+#endif
+type internal Close =
+  | DomainUnload
+  | ProcessExit
+  | Pause
+  | Resume
+
 [<NoComparison>]
 type Tracer =
   { Tracer : string
@@ -88,10 +99,13 @@ type Tracer =
     if this.IsConnected() then f()
     else g()
 
-  member internal this.OnFinish visits =
+  member internal this.OnFinish finish visits =
     this.CatchUp visits
-    this.Close()
+    if finish <> Pause
+    then this.Close()
 
   member internal this.OnVisit visits moduleId hitPointId context =
     this.CatchUp visits
     this.Push moduleId hitPointId context
+    this.Formatter.Flush()
+    this.Stream.Flush()

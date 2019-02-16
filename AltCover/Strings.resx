@@ -374,4 +374,10 @@ If this problem was detected in the pre-test instrumentation stage of `dotnet te
   <data name="p|pathFilter=" xml:space="preserve">
     <value>Optional, multiple: source file path to exclude from instrumentation</value>
   </data>
+  <data name="dropReturnCode" xml:space="preserve">
+    <value>Optional: Do not report any non-zero return code from a launched process.</value>
+  </data>
+  <data name="sourcelink" xml:space="preserve">
+    <value>Optional: Display sourcelink URLs rather than file paths if present.</value>
+  </data>
 </root>
