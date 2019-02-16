@@ -220,9 +220,12 @@ _Target "BuildDebug" (fun _ ->
 
   Directory.ensure "./_SourceLink"
   Shell.copyFile "./_SourceLink/Class2.cs" "./Sample14/Sample14/Class2.txt"
-  let temp = Environment.environVar "TEMP"
-  printfn "%A" temp
-  Shell.copyFile (temp @@ "/Sample14.SourceLink.Class3.cs") "./Sample14/Sample14/Class3.txt"
+  if Environment.isWindows then  
+    let temp = Environment.environVar "TEMP"
+    Shell.copyFile (temp @@ "/Sample14.SourceLink.Class3.cs") "./Sample14/Sample14/Class3.txt"
+  else
+    Directory.ensure "/tmp/.AltCover_SourceLink"
+    Shell.copyFile "/tmp/.AltCover_SourceLink/Sample14.SourceLink.Class3.cs" "./Sample14/Sample14/Class3.txt"
 
   [ "./altcover.core.sln"; "./Sample14/Sample14.sln" ]
   |> Seq.iter (fun s -> s
