@@ -92,7 +92,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "sample11.core", "Sample11\s
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "sample12.core", "Sample12\sample12.core.csproj", "{8CCA1249-0561-43D5-9E60-AB284477B48F}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "sample13.core", "Sample13\sample13.core.fsproj", "{D588F8AA-50D3-455D-A070-04EAA48A2E93}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "sample13.core", "Sample13\sample13.core.fsproj", "{D588F8AA-50D3-455D-A070-04EAA48A2E93}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
