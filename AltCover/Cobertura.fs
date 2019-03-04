@@ -274,7 +274,12 @@ module internal Cobertura =
     AddSources report packages.Parent "File" "fullPath"
 
   let ConvertReport (report : XDocument) (format : Base.ReportFormat) =
-    let rewrite = XDocument(XDeclaration("1.0", "utf-8", "yes"), [||])
+    let rewrite = XDocument(XDeclaration("1.0", "utf-8", "no"), [||])
+    let doctype = XDocumentType("coverage",
+                                null,
+                                "http://cobertura.sourceforge.net/xml/coverage-03.dtd",
+                                null)
+    rewrite.Add(doctype)
     let element =
       XElement
         (X "coverage", XAttribute(X "line-rate", 0), XAttribute(X "branch-rate", 0),
