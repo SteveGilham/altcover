@@ -563,9 +563,9 @@ _Target "UnitTestDotNetWithCoverlet" (fun _ ->
     let xml =
       !!(@"./*Tests/*.tests.core.fsproj")
       |> Seq.zip
-           [ """/p:CollectCoverage=true /p:CoverletOutputFormat="\"opencover,cobertura\"" /p:Exclude="\"[xunit*]*,[Sample*]*,[AltCover.Record*]*,[NUnit*]*,[AltCover.Shadow.Adapter]*\""  """
-             """/p:CollectCoverage=true /p:CoverletOutputFormat="\"opencover,cobertura\"" /p:Exclude="\"[xunit*]*,[Sample*]*,[AltCover.Record*]*,[NUnit*]*,[AltCover.Shadow.Adapter]*\""  """
-             """/p:CollectCoverage=true /p:CoverletOutputFormat="\"opencover,cobertura\"" /p:Exclude="\"[xunit*]*,[Sample*]*,[AltCover.Record*]*\""  """ ]
+           [ """/p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Exclude="\"[xunit*]*,[Sample*]*,[AltCover.Record*]*,[NUnit*]*,[AltCover.Shadow.Adapter]*\""  """
+             """/p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Exclude="\"[xunit*]*,[Sample*]*,[AltCover.Record*]*,[NUnit*]*,[AltCover.Shadow.Adapter]*\""  """
+             """/p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Exclude="\"[xunit*]*,[Sample*]*,[AltCover.Record*]*\""  """ ]
       |> Seq.fold (fun l (p, f) ->
            try
              f
@@ -585,7 +585,7 @@ _Target "UnitTestDotNetWithCoverlet" (fun _ ->
     ReportGenerator.generateReports (fun p ->
       { p with ExePath = Tools.findToolInSubPath "ReportGenerator.exe" "."
                ReportTypes =
-                 [ ReportGenerator.ReportType.Html; ReportGenerator.ReportType.Cobertura; ReportGenerator.ReportType.XmlSummary ]
+                 [ ReportGenerator.ReportType.Html; ReportGenerator.ReportType.XmlSummary ]
                TargetDir = "_Reports/_UnitTestWithCoverlet" }) xml
   with x ->
     printfn "%A" x
@@ -639,7 +639,7 @@ _Target "UnitTestWithOpenCover" (fun _ ->
   ReportGenerator.generateReports (fun p ->
     { p with ExePath = Tools.findToolInSubPath "ReportGenerator.exe" "."
              ReportTypes =
-               [ ReportGenerator.ReportType.Html; ReportGenerator.ReportType.Cobertura; ReportGenerator.ReportType.XmlSummary ]
+               [ ReportGenerator.ReportType.Html; ReportGenerator.ReportType.XmlSummary ]
              TargetDir = "_Reports/_UnitTestWithOpenCover" }) [ coverage; xcoverage ])
 
 // Hybrid (Self) Tests
@@ -774,7 +774,7 @@ _Target "UnitTestWithAltCover" (fun _ ->
     ReportGenerator.generateReports (fun p ->
       { p with ExePath = Tools.findToolInSubPath "ReportGenerator.exe" "."
                ReportTypes =
-                 [ ReportGenerator.ReportType.Html; ReportGenerator.ReportType.Cobertura; ReportGenerator.ReportType.XmlSummary ]
+                 [ ReportGenerator.ReportType.Html; ReportGenerator.ReportType.XmlSummary ]
                TargetDir = "_Reports/_UnitTestWithAltCover" })
       [ xaltReport; altReport; weakReport; shadowReport ]
   else printfn "Symbols not present; skipping")
@@ -991,7 +991,7 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
     ReportGenerator.generateReports (fun p ->
       { p with ExePath = Tools.findToolInSubPath "ReportGenerator.exe" "."
                ReportTypes =
-                 [ ReportGenerator.ReportType.Html; ReportGenerator.ReportType.Cobertura; ReportGenerator.ReportType.XmlSummary ]
+                 [ ReportGenerator.ReportType.Html; ReportGenerator.ReportType.XmlSummary ]
                TargetDir = "_Reports/_UnitTestWithAltCoverRunner" })
       [ xaltReport; altReport; shadowReport; weakReport; pester ]
 
@@ -1136,7 +1136,7 @@ _Target "UnitTestWithAltCoverCore" // Obsolete
   ReportGenerator.generateReports (fun p ->
     { p with ExePath = Tools.findToolInSubPath "ReportGenerator.exe" "."
              ReportTypes =
-               [ ReportGenerator.ReportType.Html; ReportGenerator.ReportType.Cobertura; ReportGenerator.ReportType.XmlSummary ]
+               [ ReportGenerator.ReportType.Html; ReportGenerator.ReportType.XmlSummary ]
              TargetDir = "_Reports/_UnitTestWithAltCoverCore" })
     [ altReport; shadowReport; xReport ])
 
@@ -1294,7 +1294,7 @@ _Target "UnitTestWithAltCoverCoreRunner"
   ReportGenerator.generateReports (fun p ->
     { p with ExePath = Tools.findToolInSubPath "ReportGenerator.exe" "."
              ReportTypes =
-               [ ReportGenerator.ReportType.Html; ReportGenerator.ReportType.Cobertura; ReportGenerator.ReportType.XmlSummary ]
+               [ ReportGenerator.ReportType.Html; ReportGenerator.ReportType.XmlSummary ]
              TargetDir = "_Reports/_UnitTestWithAltCoverCoreRunner" })
     [ altReport; shadowReport; xReport ])
 
@@ -2346,7 +2346,7 @@ _Target "Pester" (fun _ ->
   ReportGenerator.generateReports (fun p ->
     { p with ExePath = Tools.findToolInSubPath "ReportGenerator.exe" "."
              ReportTypes =
-               [ ReportGenerator.ReportType.Html; ReportGenerator.ReportType.Cobertura; ReportGenerator.ReportType.XmlSummary ]
+               [ ReportGenerator.ReportType.Html; ReportGenerator.ReportType.XmlSummary ]
              TargetDir = "_Reports/_Pester" }) [ report ]
 
   "_Reports/_Pester/Summary.xml"
