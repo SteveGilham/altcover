@@ -160,7 +160,8 @@ Describe "ConvertTo-Cobertura" {
     $t = $coverage.Attribute("timestamp").Value
 
     $expected = @"
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!DOCTYPE coverage SYSTEM "http://cobertura.sourceforge.net/xml/coverage-03.dtd">
 <coverage line-rate="0.7142857142857143" branch-rate="0.66666666666666663" version="$v" timestamp="$t">
   <sources>
     <source>altcover\Sample1</source>
@@ -235,7 +236,8 @@ Describe "ConvertTo-Cobertura" {
     $t = $coverage.Attribute("timestamp").Value
 
     $expected = @"
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!DOCTYPE coverage SYSTEM "http://cobertura.sourceforge.net/xml/coverage-03.dtd">
 <coverage line-rate="0.7" branch-rate="1" version="$v" timestamp="$t">
   <sources>
     <source>Sample1</source>
@@ -293,7 +295,8 @@ Describe "ConvertTo-Cobertura" {
     $t = $coverage.Attribute("timestamp").Value
 
     $expected = @"
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!DOCTYPE coverage SYSTEM "http://cobertura.sourceforge.net/xml/coverage-03.dtd">
 <coverage line-rate="0.7" branch-rate="1" version="$v" timestamp="$t">
   <sources>
     <source>Sample1</source>
