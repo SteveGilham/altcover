@@ -53,6 +53,7 @@ module internal Cobertura =
       let (mHits, mTotal) = ProcessSeqPnts method lines
       SetRate mHits mTotal "line-rate" mtx
       SetRate 1 1 "branch-rate" mtx
+      SetRate 1 1 "complexity" mtx
       (hits + mHits, total + mTotal)
 
     let SortMethod (n : String) (methods : XElement) (method : XElement seq) =
@@ -193,15 +194,17 @@ module internal Cobertura =
 
     let ProcessMethod (methods : XElement) (b, bv, s, sv, c, cv)
         (key, (signature, method)) =
+      let ccplex = 0 |> AddAttributeValue method "cyclomaticComplexity"
       let mtx, lines = AddMethod (methods : XElement) (key, signature)
       extract method mtx
+      mtx.Add(XAttribute(X "complexity", ccplex))
       method.Descendants(X "SequencePoint") |> Seq.iter (ProcessSeqPnt lines)
       let summary = method.Descendants(X "Summary") |> Seq.head
       (b |> AddAttributeValue summary "numBranchPoints",
        bv |> AddAttributeValue summary "visitedBranchPoints",
        s |> AddAttributeValue summary "numSequencePoints",
        sv |> AddAttributeValue summary "visitedSequencePoints", c + 1,
-       cv |> AddAttributeValue method "cyclomaticComplexity")
+       cv + ccplex)
 
     let ArrangeMethods (name : String) (methods : XElement) (methodSet : XElement seq) =
       methodSet
@@ -277,7 +280,7 @@ module internal Cobertura =
     let rewrite = XDocument(XDeclaration("1.0", "utf-8", "no"), [||])
     let doctype = XDocumentType("coverage",
                                 null,
-                                "http://cobertura.sourceforge.net/xml/coverage-03.dtd",
+                                "http://cobertura.sourceforge.net/xml/coverage-04.dtd",
                                 null)
     rewrite.Add(doctype)
     let element =
