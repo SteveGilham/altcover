@@ -109,8 +109,12 @@ module internal Cobertura =
       (hits + cHits, total + cTotal)
 
     let (hits, total) = report.Descendants(X "module") |> Seq.fold ProcessModule (0, 0)
-    SetRate hits total "line-rate" packages.Parent
-    SetRate 1 1 "branch-rate" packages.Parent
+    let p = packages.Parent
+    SetRate hits total "line-rate" p
+    SetRate 1 1 "branch-rate" p
+    p.Attribute(X "lines-valid").Value <- total.ToString(CultureInfo.InvariantCulture)
+    p.Attribute(X "lines-covered").Value <- hits.ToString(CultureInfo.InvariantCulture)
+
     AddSources report packages.Parent "seqpnt" "document"
 
   let internal OpenCover (report : XDocument) (packages : XElement) =
@@ -141,9 +145,9 @@ module internal Cobertura =
       SetRate bv b "branch-rate" target
       if target.Name.LocalName.Equals("coverage", StringComparison.Ordinal) then
         target.Attribute(X "lines-valid").Value <- s.ToString(CultureInfo.InvariantCulture)
-        target.Attribute(X "lines-covered").Value <- sv .ToString(CultureInfo.InvariantCulture)
+        target.Attribute(X "lines-covered").Value <- sv.ToString(CultureInfo.InvariantCulture)
         target.Attribute(X "branches-valid").Value <- b.ToString(CultureInfo.InvariantCulture)
-        target.Attribute(X "branches-covered").Value <- bv .ToString(CultureInfo.InvariantCulture)
+        target.Attribute(X "branches-covered").Value <- bv.ToString(CultureInfo.InvariantCulture)
         target.Attribute(X "complexity").Value <- summary.Attribute(X "maxCyclomaticComplexity").Value
 
     let doBranch bec bev uspid (line : XElement) =

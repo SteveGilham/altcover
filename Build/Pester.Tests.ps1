@@ -238,7 +238,7 @@ Describe "ConvertTo-Cobertura" {
     $expected = @"
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
 <!DOCTYPE coverage SYSTEM "http://cobertura.sourceforge.net/xml/coverage-04.dtd">
-<coverage line-rate="0.7" branch-rate="1" lines-covered="0" lines-valid="0" branches-covered="0" branches-valid="0" complexity="1" version="$v" timestamp="$t">
+<coverage line-rate="0.7" branch-rate="1" lines-covered="7" lines-valid="10" branches-covered="0" branches-valid="0" complexity="1" version="$v" timestamp="$t">
   <sources>
     <source>Sample1</source>
   </sources>
@@ -297,7 +297,7 @@ Describe "ConvertTo-Cobertura" {
     $expected = @"
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
 <!DOCTYPE coverage SYSTEM "http://cobertura.sourceforge.net/xml/coverage-04.dtd">
-<coverage line-rate="0.7" branch-rate="1" lines-covered="0" lines-valid="0" branches-covered="0" branches-valid="0" complexity="1" version="$v" timestamp="$t">
+<coverage line-rate="0.7" branch-rate="1" lines-covered="7" lines-valid="10" branches-covered="0" branches-valid="0" complexity="1" version="$v" timestamp="$t">
   <sources>
     <source>Sample1</source>
   </sources>
