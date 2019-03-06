@@ -4,6 +4,7 @@ open System
 open System.IO
 open System.Xml.Linq
 open Augment
+open System.Globalization
 
 // based on the sample file at https://raw.githubusercontent.com/jenkinsci/cobertura-plugin/master/src/test/resources/hudson/plugins/cobertura/coverage-with-data.xml
 
@@ -138,6 +139,12 @@ module internal Cobertura =
 
       SetRate sv s "line-rate" target
       SetRate bv b "branch-rate" target
+      if target.Name.LocalName.Equals("coverage", StringComparison.Ordinal) then
+        target.Attribute(X "lines-valid").Value <- s.ToString(CultureInfo.InvariantCulture)
+        target.Attribute(X "lines-covered").Value <- sv .ToString(CultureInfo.InvariantCulture)
+        target.Attribute(X "branches-valid").Value <- b.ToString(CultureInfo.InvariantCulture)
+        target.Attribute(X "branches-covered").Value <- bv .ToString(CultureInfo.InvariantCulture)
+        target.Attribute(X "complexity").Value <- summary.Attribute(X "maxCyclomaticComplexity").Value
 
     let doBranch bec bev uspid (line : XElement) =
       let pc = Math.Round(100.0 * (float bev) / (float bec)) |> int

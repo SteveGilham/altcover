@@ -162,7 +162,7 @@ Describe "ConvertTo-Cobertura" {
     $expected = @"
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
 <!DOCTYPE coverage SYSTEM "http://cobertura.sourceforge.net/xml/coverage-04.dtd">
-<coverage line-rate="0.7142857142857143" branch-rate="0.66666666666666663" lines-covered="0" lines-valid="0" branches-covered="0" branches-valid="0" complexity="1" version="$v" timestamp="$t">
+<coverage line-rate="0.7142857142857143" branch-rate="0.66666666666666663" lines-covered="10" lines-valid="14" branches-covered="2" branches-valid="3" complexity="2" version="$v" timestamp="$t">
   <sources>
     <source>altcover\Sample1</source>
   </sources>
