@@ -120,34 +120,26 @@ module internal Cobertura =
   let internal OpenCover (report : XDocument) (packages : XElement) =
     let extract (owner : XElement) (target : XElement) =
       let summary = owner.Descendants(X "Summary") |> Seq.head
-
-      let b =
-        summary.Attribute(X "numBranchPoints").Value
+      let valueOf name =
+        summary.Attribute(X name).Value
         |> Int32.TryParse
         |> snd
 
-      let bv =
-        summary.Attribute(X "visitedBranchPoints").Value
-        |> Int32.TryParse
-        |> snd
-
-      let s =
-        summary.Attribute(X "numSequencePoints").Value
-        |> Int32.TryParse
-        |> snd
-
-      let sv =
-        summary.Attribute(X "visitedSequencePoints").Value
-        |> Int32.TryParse
-        |> snd
+      let b = valueOf "numBranchPoints"
+      let bv = valueOf "visitedBranchPoints"
+      let s = valueOf "numSequencePoints"
+      let sv = valueOf "visitedSequencePoints"
 
       SetRate sv s "line-rate" target
       SetRate bv b "branch-rate" target
       if target.Name.LocalName.Equals("coverage", StringComparison.Ordinal) then
-        target.Attribute(X "lines-valid").Value <- s.ToString(CultureInfo.InvariantCulture)
-        target.Attribute(X "lines-covered").Value <- sv.ToString(CultureInfo.InvariantCulture)
-        target.Attribute(X "branches-valid").Value <- b.ToString(CultureInfo.InvariantCulture)
-        target.Attribute(X "branches-covered").Value <- bv.ToString(CultureInfo.InvariantCulture)
+        let copyup name (value:int) =
+          target.Attribute(X name).Value <- value.ToString(CultureInfo.InvariantCulture)
+
+        copyup "lines-valid" s
+        copyup "lines-covered" sv
+        copyup "branches-valid" b
+        copyup "branches-covered" bv
         target.Attribute(X "complexity").Value <- summary.Attribute(X "maxCyclomaticComplexity").Value
 
     let doBranch bec bev uspid (line : XElement) =
