@@ -139,14 +139,14 @@ module internal Cobertura =
       SetRate sv s "line-rate" target
       SetRate bv b "branch-rate" target
 
-    let doBranch bec bev (line : XElement) =
+    let doBranch bec bev uspid (line : XElement) =
       let pc = Math.Round(100.0 * (float bev) / (float bec)) |> int
       line.SetAttributeValue(X "condition-coverage", sprintf "%d%% (%d/%d)" pc bev bec)
       let cc = XElement(X "conditions")
       line.Add cc
       let co =
         XElement
-          (X "condition", XAttribute(X "number", 0), XAttribute(X "type", "jump"),
+          (X "condition", XAttribute(X "number", uspid), XAttribute(X "type", "jump"),
            XAttribute(X "coverage", sprintf "%d%%" pc))
       cc.Add co
 
@@ -175,7 +175,9 @@ module internal Cobertura =
                             if bec = 0 then "false"
                             else "true"))
 
-      if bec > 0 then doBranch bec bev line
+      if bec > 0 then
+        let uspid = s.Attribute(X "uspid").Value // KISS approach
+        doBranch bec bev uspid line
       lines.Add line
 
     let AddMethod (methods : XElement) (key, signature) =

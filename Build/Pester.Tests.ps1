@@ -178,7 +178,7 @@ Describe "ConvertTo-Cobertura" {
                 <line number="13" hits="1" branch="false" />
                 <line number="13" hits="1" branch="true" condition-coverage="50% (1/2)">
                   <conditions>
-                    <condition number="0" type="jump" coverage="50%" />
+                    <condition number="10" type="jump" coverage="50%" />
                   </conditions>
                 </line>
                 <line number="14" hits="1" branch="false" />
@@ -200,7 +200,7 @@ Describe "ConvertTo-Cobertura" {
             <line number="13" hits="1" branch="false" />
             <line number="13" hits="1" branch="true" condition-coverage="50% (1/2)">
               <conditions>
-                <condition number="0" type="jump" coverage="50%" />
+                <condition number="10" type="jump" coverage="50%" />
               </conditions>
             </line>
             <line number="14" hits="1" branch="false" />
