@@ -102,6 +102,7 @@
     <None Include="TailCallSample.dl_">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <EmbeddedResource Include="coverage-04.xsd" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Sample11\Sample11.csproj">

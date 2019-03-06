@@ -286,6 +286,9 @@ module internal Cobertura =
     let element =
       XElement
         (X "coverage", XAttribute(X "line-rate", 0), XAttribute(X "branch-rate", 0),
+         XAttribute(X "lines-covered", 0), XAttribute(X "lines-valid", 0),
+         XAttribute(X "branches-covered", 0), XAttribute(X "branches-valid", 0),
+         XAttribute(X "complexity", 1),
          XAttribute(X "version", AssemblyVersionInformation.AssemblyVersion),
          XAttribute
            (X "timestamp",

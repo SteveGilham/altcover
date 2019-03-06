@@ -14,6 +14,8 @@ open AltCover.Augment
 open AltCover.Base
 open Mono.Options
 open NUnit.Framework
+open System.Diagnostics.CodeAnalysis
+open System.Xml.Schema
 
 [<TestFixture>]
 type AltCoverTests() =
@@ -2090,6 +2092,29 @@ or
              ("z", [ """<x><seqpnt line="3" /></x>"""
                      """<x><seqpnt line="5" /></x>""" ]) ])
 
+    [<SuppressMessage("Microsoft.Usage", "CA2202", Justification = "Observably safe")>]
+    member private self.LoadSchema() =
+      let schemas = new XmlSchemaSet()
+
+      use stream =
+          Assembly.GetExecutingAssembly()
+#if NETCOREAPP2_0
+                  .GetManifestResourceStream("altcover.tests.core.coverage-04.xsd")
+#else
+                  .GetManifestResourceStream("coverage-04.xsd")
+#endif
+      use reader = new StreamReader(stream)
+      use xreader = XmlReader.Create(reader)
+      schemas.Add(String.Empty, xreader) |> ignore
+      schemas
+
+    member private self.Validate result =
+        let schema = self.LoadSchema ()
+        let xmlDocument = XmlDocument()
+        xmlDocument.LoadXml(result)
+        xmlDocument.Schemas <- schema
+        xmlDocument.Validate(null)
+
     [<Test>]
     member self.NCoverShouldGeneratePlausibleCobertura() =
       let resource =
@@ -2123,6 +2148,7 @@ or
                          "version=\""
                          + typeof<Tracer>.Assembly.GetName().Version.ToString())
         Assert.That(result.Replace("\r", String.Empty), Is.EqualTo expected, result)
+        self.Validate result
       finally
         Cobertura.path := None
 
@@ -2165,6 +2191,7 @@ or
                          "version=\""
                          + typeof<Tracer>.Assembly.GetName().Version.ToString())
         Assert.That(result.Replace("\r", String.Empty), Is.EqualTo expected, result)
+        self.Validate result
       finally
         Cobertura.path := None
 
@@ -2205,6 +2232,7 @@ or
         Assert.That
           (result.Replace("\r", String.Empty).Replace("\\", "/"), Is.EqualTo expected,
            result)
+        self.Validate result
       finally
         Cobertura.path := None
 
