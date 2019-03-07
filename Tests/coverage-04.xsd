@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="Windows-1252"?>
+<xs:schema elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <xs:element name="coverage">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" maxOccurs="1" ref="sources" />
+                <xs:element ref="packages" />
+            </xs:sequence>
+            <xs:attribute name="line-rate" type="xs:string" use="required" />
+            <xs:attribute name="branch-rate" type="xs:string" use="required" />
+            <xs:attribute name="lines-covered" type="xs:string" use="required" />
+            <xs:attribute name="lines-valid" type="xs:string" use="required" />
+            <xs:attribute name="branches-covered" type="xs:string" use="required" />
+            <xs:attribute name="branches-valid" type="xs:string" use="required" />
+            <xs:attribute name="complexity" type="xs:string" use="required" />
+            <xs:attribute name="version" type="xs:string" use="required" />
+            <xs:attribute name="timestamp" type="xs:string" use="required" />
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="sources">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="source" />
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="source" type="xs:string" />
+    <xs:element name="packages">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="package" />
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="package">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="classes" />
+            </xs:sequence>
+            <xs:attribute name="name" type="xs:string" use="required" />
+            <xs:attribute name="line-rate" type="xs:string" use="required" />
+            <xs:attribute name="branch-rate" type="xs:string" use="required" />
+            <xs:attribute name="complexity" type="xs:string" use="required" />
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="classes">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="class" />
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="class">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="methods" />
+                <xs:element ref="lines" />
+            </xs:sequence>
+            <xs:attribute name="name" type="xs:string" use="required" />
+            <xs:attribute name="filename" type="xs:string" use="required" />
+            <xs:attribute name="line-rate" type="xs:string" use="required" />
+            <xs:attribute name="branch-rate" type="xs:string" use="required" />
+            <xs:attribute name="complexity" type="xs:string" use="required" />
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="methods">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="method" />
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="method">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="lines" />
+            </xs:sequence>
+            <xs:attribute name="name" type="xs:string" use="required" />
+            <xs:attribute name="signature" type="xs:string" use="required" />
+            <xs:attribute name="line-rate" type="xs:string" use="required" />
+            <xs:attribute name="branch-rate" type="xs:string" use="required" />
+            <xs:attribute name="complexity" type="xs:string" use="required" />
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="lines">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="line" />
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="line">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="conditions" />
+            </xs:sequence>
+            <xs:attribute name="number" type="xs:string" use="required" />
+            <xs:attribute name="hits" type="xs:string" use="required" />
+            <xs:attribute default="false" name="branch" type="xs:string" />
+            <xs:attribute default="100%" name="condition-coverage" type="xs:string" />
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="conditions">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="condition" />
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="condition">
+        <xs:complexType>
+            <xs:attribute name="number" type="xs:string" use="required" />
+            <xs:attribute name="type" type="xs:string" use="required" />
+            <xs:attribute name="coverage" type="xs:string" use="required" />
+        </xs:complexType>
+    </xs:element>
+</xs:schema>

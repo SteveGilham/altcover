@@ -18,7 +18,9 @@ type CollectParams =
     Threshold : String
     Cobertura : String
     OutputFile : String
-    CommandLine : String seq }
+    CommandLine : String seq
+    ExposeReturnCode : bool
+  }
   static member Create() =
     { RecorderDirectory = String.Empty
       WorkingDirectory = String.Empty
@@ -27,7 +29,9 @@ type CollectParams =
       Threshold = String.Empty
       Cobertura = String.Empty
       OutputFile = String.Empty
-      CommandLine = [] }
+      CommandLine = []
+      ExposeReturnCode = true
+    }
 
 [<ExcludeFromCodeCoverage; NoComparison>]
 type PrepareParams =
@@ -52,7 +56,10 @@ type PrepareParams =
     Single : bool
     LineCover : bool
     BranchCover : bool
-    CommandLine : String seq }
+    CommandLine : String seq
+    ExposeReturnCode : bool
+    SourceLink : bool
+  }
   static member Create() =
     { InputDirectory = String.Empty
       OutputDirectory = String.Empty
@@ -75,7 +82,10 @@ type PrepareParams =
       Single = false
       LineCover = false
       BranchCover = false
-      CommandLine = [] }
+      CommandLine = []
+      ExposeReturnCode = true
+      SourceLink = false
+    }
 
 #if RUNNER
 [<ExcludeFromCodeCoverage; NoComparison; NoEquality>]

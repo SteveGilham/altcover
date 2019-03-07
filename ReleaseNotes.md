@@ -2,6 +2,12 @@ Q. Never mind the fluff -- how do I get started?
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
+# 5.1.666 (Ezoguma series release 4)
+* `--dropReturnCode` ( `-DropReturnCode` in PowerShell, `ExposeReturnCode` with default value `true` in the Fake API) to not pass the return code of any nested process
+* `--sourcelink` to give the source link URL for tracked files rather than the file path (untracked files still have the local file path)
+* Visualizer support for sourcelink URLs
+* Generate Cobertura to the v4 DTD [http://cobertura.sourceforge.net/xml/coverage-04.dtd](https://github.com/cobertura/cobertura/blob/master/cobertura/src/site/htdocs/xml/coverage-04.dtd)
+
 # 5.0.665 (Ezoguma series release 3)
 * [BUGFIX] Restore visualizer support for OpenCover format (internal consistency check failure)
 * [BUGFIX] Issue #52 -- fix OpenCover, LCov and Cobertura format output in the case of exclusion by path

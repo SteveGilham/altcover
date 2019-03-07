@@ -64,6 +64,8 @@ type Prepare() =
   member val LineCover = true |> not with get, set
   member val BranchCover = true |> not with get, set
   member val CommandLine : string array = [||] with get, set
+  member val SourceLink = false with get, set
+
   member self.Message x = base.Log.LogMessage(MessageImportance.High, x)
   override self.Execute() =
     let log =
@@ -99,7 +101,9 @@ type Prepare() =
                                       Single = self.Single
                                       LineCover = self.LineCover
                                       BranchCover = self.BranchCover
-                                      CommandLine = self.CommandLine }
+                                      CommandLine = self.CommandLine
+                                      ExposeReturnCode = true
+                                      SourceLink = self.SourceLink}
 
     Api.Prepare task log = 0
 
@@ -133,7 +137,8 @@ type Collect() =
                                       Threshold = self.Threshold
                                       Cobertura = self.Cobertura
                                       OutputFile = self.OutputFile
-                                      CommandLine = self.CommandLine }
+                                      CommandLine = self.CommandLine
+                                      ExposeReturnCode = true }
 
     Api.Collect task log = 0
 

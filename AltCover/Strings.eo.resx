@@ -373,4 +373,10 @@ Se ĉi tiu problemo estis detektita en la antaŭprova instrumenta stadio de `dot
   <data name="p|pathFilter=" xml:space="preserve">
     <value>Laŭvola, multobla: fonta dosiero vojo por ekskludi de instrumentado</value>
   </data>
+  <data name="dropReturnCode" xml:space="preserve">
+    <value>Laŭvola: Ne raportu ajnan ne-nula revenan kodon de lanĉita procezo.</value>
+  </data>
+  <data name="sourcelink" xml:space="preserve">
+    <value>Laŭvola: Montru sourcelink-URLojn prefere ol dosieraj vojoj se ĉeestas.</value>
+  </data>
 </root>

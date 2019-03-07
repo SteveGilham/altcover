@@ -8,7 +8,7 @@ module Adapter =
   let DoResume() = Instance.DoResume null
   let VisitsClear() = Instance.Visits.Clear()
   let SamplesClear() = Instance.Samples.Clear()
-  let FlushAll() = Instance.FlushAll Instance.trace.OnFinish
+  let FlushAll() = Instance.FlushAll ProcessExit
 
   let internal prepareName name =
     if name

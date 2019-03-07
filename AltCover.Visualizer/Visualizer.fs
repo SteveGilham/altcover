@@ -524,14 +524,14 @@ module Gui =
     ShowMessageOnGuiThread parent MessageType.Warning message
 
   let private OutdatedCoverageThisFileMessage (parent : Window) (c : FileInfo)
-      (s : FileInfo) =
+      (s : Source) =
     let format = GetResourceString("CoverageOutOfDateThisFile")
     let message =
       String.Format
         (System.Globalization.CultureInfo.CurrentCulture, format, c.FullName, s.FullName)
     ShowMessageOnGuiThread parent MessageType.Warning message
 
-  let private MissingSourceThisFileMessage (parent : Window) (c : FileInfo) (s : FileInfo) =
+  let private MissingSourceThisFileMessage (parent : Window) (c : FileInfo) (s : Source) =
     let format = GetResourceString("MissingSourceThisFile")
     let message =
       String.Format
@@ -891,16 +891,16 @@ module Gui =
         let child = points |> Seq.head
         let filename = child.GetAttribute("document", String.Empty)
         handler.mainWindow.Title <- "AltCover.Visualizer - " + filename
-        let info = new FileInfo(filename)
+        let info = GetSource(filename)
         let current = new FileInfo(handler.coverageFiles.Head)
-        if (not info.Exists) then
+        if (not <| info.Exists) then
           MissingSourceThisFileMessage handler.mainWindow current info
-        else if (info.LastWriteTimeUtc > current.LastWriteTimeUtc) then
+        else if (info.Outdated current.LastWriteTimeUtc) then
           OutdatedCoverageThisFileMessage handler.mainWindow current info
         else
           let showSource() =
             let buff = handler.codeView.Buffer
-            buff.Text <- File.ReadAllText(filename)
+            buff.Text <- info.ReadAllText()
             buff.ApplyTag("baseline", buff.StartIter, buff.EndIter)
             let line = child.GetAttribute("line", String.Empty)
             let root = m.Clone()
@@ -1112,16 +1112,16 @@ module Gui =
 
              let missing =
                sourceFiles
-               |> Seq.map (fun f -> new FileInfo(f))
+               |> Seq.map GetSource
                |> Seq.filter (fun f -> not f.Exists)
 
              if not (Seq.isEmpty missing) then
                MissingSourceFileMessage h.mainWindow current
              let newer =
                sourceFiles
-               |> Seq.map (fun f -> new FileInfo(f))
+               |> Seq.map GetSource
                |> Seq.filter
-                    (fun f -> f.Exists && f.LastWriteTimeUtc > current.LastWriteTimeUtc)
+                    (fun f -> f.Exists && f.Outdated current.LastWriteTimeUtc)
              // warn if not
              if not (Seq.isEmpty newer) then
                OutdatedCoverageFileMessage h.mainWindow current

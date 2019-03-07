@@ -4,6 +4,7 @@ open System
 open System.IO
 open System.Xml.Linq
 open Augment
+open System.Globalization
 
 // based on the sample file at https://raw.githubusercontent.com/jenkinsci/cobertura-plugin/master/src/test/resources/hudson/plugins/cobertura/coverage-with-data.xml
 
@@ -53,6 +54,7 @@ module internal Cobertura =
       let (mHits, mTotal) = ProcessSeqPnts method lines
       SetRate mHits mTotal "line-rate" mtx
       SetRate 1 1 "branch-rate" mtx
+      SetRate 1 1 "complexity" mtx
       (hits + mHits, total + mTotal)
 
     let SortMethod (n : String) (methods : XElement) (method : XElement seq) =
@@ -107,45 +109,47 @@ module internal Cobertura =
       (hits + cHits, total + cTotal)
 
     let (hits, total) = report.Descendants(X "module") |> Seq.fold ProcessModule (0, 0)
-    SetRate hits total "line-rate" packages.Parent
-    SetRate 1 1 "branch-rate" packages.Parent
+    let p = packages.Parent
+    SetRate hits total "line-rate" p
+    SetRate 1 1 "branch-rate" p
+    p.Attribute(X "lines-valid").Value <- total.ToString(CultureInfo.InvariantCulture)
+    p.Attribute(X "lines-covered").Value <- hits.ToString(CultureInfo.InvariantCulture)
+
     AddSources report packages.Parent "seqpnt" "document"
 
   let internal OpenCover (report : XDocument) (packages : XElement) =
     let extract (owner : XElement) (target : XElement) =
       let summary = owner.Descendants(X "Summary") |> Seq.head
-
-      let b =
-        summary.Attribute(X "numBranchPoints").Value
+      let valueOf name =
+        summary.Attribute(X name).Value
         |> Int32.TryParse
         |> snd
 
-      let bv =
-        summary.Attribute(X "visitedBranchPoints").Value
-        |> Int32.TryParse
-        |> snd
-
-      let s =
-        summary.Attribute(X "numSequencePoints").Value
-        |> Int32.TryParse
-        |> snd
-
-      let sv =
-        summary.Attribute(X "visitedSequencePoints").Value
-        |> Int32.TryParse
-        |> snd
+      let b = valueOf "numBranchPoints"
+      let bv = valueOf "visitedBranchPoints"
+      let s = valueOf "numSequencePoints"
+      let sv = valueOf "visitedSequencePoints"
 
       SetRate sv s "line-rate" target
       SetRate bv b "branch-rate" target
+      if target.Name.LocalName.Equals("coverage", StringComparison.Ordinal) then
+        let copyup name (value:int) =
+          target.Attribute(X name).Value <- value.ToString(CultureInfo.InvariantCulture)
 
-    let doBranch bec bev (line : XElement) =
+        copyup "lines-valid" s
+        copyup "lines-covered" sv
+        copyup "branches-valid" b
+        copyup "branches-covered" bv
+        target.Attribute(X "complexity").Value <- summary.Attribute(X "maxCyclomaticComplexity").Value
+
+    let doBranch bec bev uspid (line : XElement) =
       let pc = Math.Round(100.0 * (float bev) / (float bec)) |> int
       line.SetAttributeValue(X "condition-coverage", sprintf "%d%% (%d/%d)" pc bev bec)
       let cc = XElement(X "conditions")
       line.Add cc
       let co =
         XElement
-          (X "condition", XAttribute(X "number", 0), XAttribute(X "type", "jump"),
+          (X "condition", XAttribute(X "number", uspid), XAttribute(X "type", "jump"),
            XAttribute(X "coverage", sprintf "%d%%" pc))
       cc.Add co
 
@@ -174,7 +178,9 @@ module internal Cobertura =
                             if bec = 0 then "false"
                             else "true"))
 
-      if bec > 0 then doBranch bec bev line
+      if bec > 0 then
+        let uspid = s.Attribute(X "uspid").Value // KISS approach
+        doBranch bec bev uspid line
       lines.Add line
 
     let AddMethod (methods : XElement) (key, signature) =
@@ -193,15 +199,17 @@ module internal Cobertura =
 
     let ProcessMethod (methods : XElement) (b, bv, s, sv, c, cv)
         (key, (signature, method)) =
+      let ccplex = 0 |> AddAttributeValue method "cyclomaticComplexity"
       let mtx, lines = AddMethod (methods : XElement) (key, signature)
       extract method mtx
+      mtx.Add(XAttribute(X "complexity", ccplex))
       method.Descendants(X "SequencePoint") |> Seq.iter (ProcessSeqPnt lines)
       let summary = method.Descendants(X "Summary") |> Seq.head
       (b |> AddAttributeValue summary "numBranchPoints",
        bv |> AddAttributeValue summary "visitedBranchPoints",
        s |> AddAttributeValue summary "numSequencePoints",
        sv |> AddAttributeValue summary "visitedSequencePoints", c + 1,
-       cv |> AddAttributeValue method "cyclomaticComplexity")
+       cv + ccplex)
 
     let ArrangeMethods (name : String) (methods : XElement) (methodSet : XElement seq) =
       methodSet
@@ -274,10 +282,18 @@ module internal Cobertura =
     AddSources report packages.Parent "File" "fullPath"
 
   let ConvertReport (report : XDocument) (format : Base.ReportFormat) =
-    let rewrite = XDocument(XDeclaration("1.0", "utf-8", "yes"), [||])
+    let rewrite = XDocument(XDeclaration("1.0", "utf-8", "no"), [||])
+    let doctype = XDocumentType("coverage",
+                                null,
+                                "http://cobertura.sourceforge.net/xml/coverage-04.dtd",
+                                null)
+    rewrite.Add(doctype)
     let element =
       XElement
         (X "coverage", XAttribute(X "line-rate", 0), XAttribute(X "branch-rate", 0),
+         XAttribute(X "lines-covered", 0), XAttribute(X "lines-valid", 0),
+         XAttribute(X "branches-covered", 0), XAttribute(X "branches-valid", 0),
+         XAttribute(X "complexity", 1),
          XAttribute(X "version", AssemblyVersionInformation.AssemblyVersion),
          XAttribute
            (X "timestamp",

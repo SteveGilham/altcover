@@ -1,0 +1,10 @@
+﻿namespace Sample14
+{
+    internal class Class3
+    {
+        public Class3()
+        {
+          System.Console.WriteLine("Making a Class3");
+        }
+    }
+}
