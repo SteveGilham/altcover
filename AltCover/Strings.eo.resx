@@ -154,9 +154,9 @@
     <value>Krei dosierujon {0}</value>
   </data>
   <data name="HelpText" xml:space="preserve">
-    <value>AltCover [/i[nputDirectory]=VALO] [/o[utputDirectory]=VALO] [/y|symbolDirectory=VALO]  [/d[ependency]=VALO] [/sn|strongNameKey=VALO] [/k[ey]=VALO] [/x[mlReport]=VALO] [/f[ileFilter]=VALO] [/p[athFilter]=VALO] [/s|assemblyFilter=VALO] [/t|typeFilter=VALO] [/m|methodFilter=VALO] [/a|attributeFilter=VALO] [/c[allContext]=VALO] [--opencover] [--inplace] [--save] [--single] [--linecover|branchcover] [/?|h[elp]] [-- ] [...]
+    <value>AltCover [/i[nputDirectory]=VALO] [/o[utputDirectory]=VALO] [/y|symbolDirectory=VALO]  [/d[ependency]=VALO] [/sn|strongNameKey=VALO] [/k[ey]=VALO] [/x[mlReport]=VALO] [/f[ileFilter]=VALO] [/p[athFilter]=VALO] [/s|assemblyFilter=VALO] [/t|typeFilter=VALO] [/m|methodFilter=VALO] [/a|attributeFilter=VALO] [/c[allContext]=VALO] [--opencover] [--inplace] [--save] [--single] [--linecover|branchcover] [--dropReturnCode] [--sourceLink] [/?|h[elp]] [-- ] [...]
 aŭ
-AltCover Runner [/r[ecordingDirectory]=VALO] [/w[orkingDirectory]=VALO] [/x||executable=VALO] [--collect] [/l[covReport]=VALO] [/t[hreshold]=VALO] [/c[obertura]=VALO] [/o[utputFile]=VALO] [/?|h[elp]] [-- ] [...]
+AltCover Runner [/r[ecordingDirectory]=VALO] [/w[orkingDirectory]=VALO] [/x||executable=VALO] [--collect] [/l[covReport]=VALO] [/t[hreshold]=VALO] [/c[obertura]=VALO] [/o[utputFile]=VALO] [--dropReturnCode] [/?|h[elp]] [-- ] [...]
 aŭ
 AltCover ipmo
 aŭ
