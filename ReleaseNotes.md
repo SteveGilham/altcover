@@ -2,6 +2,10 @@ Q. Never mind the fluff -- how do I get started?
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
+# 5.0.6xx (Ezoguma series release 5)
+* [BUGFIX] Expose the sourcelink functionality through `dotnet test` as well
+* [BUGFIX] Update help text to current
+
 # 5.1.666 (Ezoguma series release 4)
 * `--dropReturnCode` ( `-DropReturnCode` in PowerShell, `ExposeReturnCode` with default value `true` in the Fake API) to not pass the return code of any nested process
 * `--sourcelink` to give the source link URL for tracked files rather than the file path (untracked files still have the local file path)
