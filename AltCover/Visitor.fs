@@ -18,6 +18,9 @@ open AltCover.Base
 open Mono.Cecil
 open Mono.Cecil.Cil
 open Mono.Cecil.Rocks
+open Newtonsoft.Json
+open Newtonsoft.Json.Linq
+open System.Net
 
 [<Flags>]
 type internal Inspect =
@@ -144,7 +147,7 @@ module internal KeyStore =
 type Fix<'T> = delegate of 'T -> Fix<'T>
 
 module internal Visitor =
-  let mutable internal collect = false
+  let internal collect = ref false
   let internal TrackingNames = new List<String>()
 
   let internal NameFilters = new List<FilterClass>()
@@ -154,8 +157,9 @@ module internal Visitor =
       |> Regex
       |> FilterClass.Method ]
 
-  let mutable internal inplace = false
+  let internal inplace = ref false
   let mutable internal single = false
+  let internal sourcelink = ref false
 
   let mutable internal inputDirectory : Option<string> = None
   let private defaultInputDirectory = "."
@@ -163,7 +167,7 @@ module internal Visitor =
     Path.GetFullPath(Option.getOrElse defaultInputDirectory inputDirectory)
 
   let inplaceSelection a b =
-    if inplace then a
+    if !inplace then a
     else b
 
   let mutable internal outputDirectory : Option<string> = None
@@ -219,6 +223,53 @@ module internal Visitor =
   let mutable private PointNumber : int = 0
   let mutable private BranchNumber : int = 0
   let mutable private MethodNumber : int = 0
+  let mutable internal SourceLinkDocuments : Dictionary<string, string> option = None
+
+  let internal GetRelativePath (relativeTo:string) path =
+    let uri = new Uri(if relativeTo.EndsWith(Path.DirectorySeparatorChar.ToString(),
+                                              StringComparison.Ordinal)
+                      then relativeTo
+                      else relativeTo + Path.DirectorySeparatorChar.ToString())
+    Uri.UnescapeDataString(uri.MakeRelativeUri(new Uri(path)).ToString()).
+        Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar)
+
+  let internal Exists (url:Uri) =
+    let request = System.Net.WebRequest.CreateHttp(url)
+    request.Method <- "HEAD"
+    try
+      use response = request.GetResponse()
+      response.ContentLength > 0L &&
+      (response :?> System.Net.HttpWebResponse).StatusCode |> int < 400
+    with
+    | :? WebException -> false
+
+  [<SuppressMessage("Microsoft.Usage",
+                    "CA2208:InstantiateArgumentExceptionsCorrectly",
+                    Justification = "F# inlined code")>]
+  let internal LocateMatch file (dict : Dictionary<string, string>) =
+    let find =
+      dict.Keys
+      |> Seq.filter (fun x -> x |> Path.GetFileName = "*")
+      |> Seq.map (fun x -> (x, GetRelativePath (x |> Path.GetDirectoryName) (file |> Path.GetDirectoryName)))
+      |> Seq.filter (fun (x, r) -> r.IndexOf("..") < 0)
+      |> Seq.sortBy (fun (x, r) -> r.Length)
+      |> Seq.tryHead
+
+    match find with
+    | Some (best, relative) ->
+      let replacement = Path.Combine(relative, Path.GetFileName(file)).Replace('\\', '/')
+      let url = dict.[best].Replace("*", replacement)
+      let map = if Uri(url) |> Exists then url else file
+      dict.Add(file, map)
+      map
+    | _ -> file
+
+  let internal SourceLinkMapping file =
+    match SourceLinkDocuments with
+    | None -> file
+    | Some dict -> match dict.TryGetValue file with
+                   | (true, url) -> url
+                   | _ -> LocateMatch file dict
 
   let significant (m : MethodDefinition) =
     [ (fun _ -> m.HasBody |> not)
@@ -275,9 +326,19 @@ module internal Visitor =
   let private ZeroPoints() =
     PointNumber <- 0
     BranchNumber <- 0
+    SourceLinkDocuments <- None
 
   let private VisitModule (x : ModuleDefinition) included buildSequence =
     ZeroPoints()
+    SourceLinkDocuments <- Some x
+        |> Option.filter (fun _ -> !sourcelink)
+        |> Option.map (fun x -> x.CustomDebugInformations
+                                |> Seq.tryFind (fun i -> i.Kind = CustomDebugInformationKind.SourceLink))
+        |> Option.bind id
+        |> Option.map (fun i -> let c = (i :?> SourceLinkDebugInformation).Content
+                                let j = JObject.Parse(c).["documents"]
+                                JsonConvert.DeserializeObject<Dictionary<string, string>>(j.ToString()))
+
     [ x ]
     |> Seq.takeWhile (fun _ -> included <> Inspect.Ignore)
     |> Seq.collect (fun x -> x.GetAllTypes() |> Seq.cast)

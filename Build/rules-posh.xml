@@ -1,7 +1,7 @@
 <gendarme>
   <ruleset name="default">
     <rules include="*"
-           exclude="AvoidAssemblyVersionMismatchRule"
+           exclude="AvoidAssemblyVersionMismatchRule | AvoidVisibleConstantFieldRule"
            from="Gendarme.Rules.BadPractice.dll" />
     <rules include="*" from="Gendarme.Rules.Concurrency.dll" />
     <rules include="*"
@@ -22,7 +22,7 @@
            exclude="UseCorrectCasingRule | ParameterNamesShouldMatchOverriddenMethodRule"
            from="Gendarme.Rules.Naming.dll" />
     <rules include="*"
-           exclude="AvoidReturningArraysOnPropertiesRule | AvoidUnneededFieldInitializationRule "
+           exclude="AvoidUnsealedUninheritedInternalTypeRule | AvoidReturningArraysOnPropertiesRule | AvoidUnneededFieldInitializationRule "
            from="Gendarme.Rules.Performance.dll" />
     <rules include="*"
            from="Gendarme.Rules.Portability.dll" />

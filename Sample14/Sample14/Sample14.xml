@@ -1,0 +1,144 @@
+<?xml-stylesheet type="text/xsl" href="coverage.xsl" ?>
+<coverage profilerVersion="AltCover 5.1.6986.11269" driverVersion="0" startTime="9999-12-31T23:59:59.9999999" measureTime="0001-01-01T00:00:00.0000000">
+  <module moduleId="902f769e-9c4b-45ae-b099-4f403af55a2e" name="Sample14.dll" assembly="Sample14" assemblyIdentity="Sample14, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" excluded="false">
+    <method name="F1" class="Sample5.Class1" metadataToken="100663297" excluded="false" instrumented="true" fullname="System.Int32 Sample5.Class1.F1(System.String)">
+      <seqpnt visitcount="0" line="15" column="9" endline="15" endcolumn="10" excluded="false" document="https://raw.githubusercontent.com/SteveGilham/altcover/1db4f291a19ceb23455b7b7073b05fd4aff53ba4/Sample5/Class1.cs" />
+      <seqpnt visitcount="0" line="17" column="13" endline="17" endcolumn="59" excluded="false" document="https://raw.githubusercontent.com/SteveGilham/altcover/1db4f291a19ceb23455b7b7073b05fd4aff53ba4/Sample5/Class1.cs" />
+      <seqpnt visitcount="0" line="33" column="13" endline="37" endcolumn="22" excluded="false" document="https://raw.githubusercontent.com/SteveGilham/altcover/1db4f291a19ceb23455b7b7073b05fd4aff53ba4/Sample5/Class1.cs" />
+      <seqpnt visitcount="0" line="38" column="9" endline="38" endcolumn="10" excluded="false" document="https://raw.githubusercontent.com/SteveGilham/altcover/1db4f291a19ceb23455b7b7073b05fd4aff53ba4/Sample5/Class1.cs" />
+    </method>
+    <method name="G1" class="Sample5.Class1+Inner" metadataToken="100663317" excluded="false" instrumented="true" fullname="System.Int32 Sample5.Class1+Inner.G1(System.String)">
+      <seqpnt visitcount="0" line="63" column="13" endline="63" endcolumn="14" excluded="false" document="https://raw.githubusercontent.com/SteveGilham/altcover/1db4f291a19ceb23455b7b7073b05fd4aff53ba4/Sample5/Class1.cs" />
+      <seqpnt visitcount="0" line="65" column="17" endline="65" endcolumn="67" excluded="false" document="https://raw.githubusercontent.com/SteveGilham/altcover/1db4f291a19ceb23455b7b7073b05fd4aff53ba4/Sample5/Class1.cs" />
+      <seqpnt visitcount="0" line="86" column="17" endline="90" endcolumn="26" excluded="false" document="https://raw.githubusercontent.com/SteveGilham/altcover/1db4f291a19ceb23455b7b7073b05fd4aff53ba4/Sample5/Class1.cs" />
+      <seqpnt visitcount="0" line="91" column="13" endline="91" endcolumn="14" excluded="false" document="https://raw.githubusercontent.com/SteveGilham/altcover/1db4f291a19ceb23455b7b7073b05fd4aff53ba4/Sample5/Class1.cs" />
+    </method>
+    <method name="G1" class="Sample5.Class1+Inner" metadataToken="100663318" excluded="false" instrumented="true" fullname="System.Void Sample5.Class1+Inner.G1(System.Int32)">
+      <seqpnt visitcount="0" line="94" column="13" endline="94" endcolumn="14" excluded="false" document="https://raw.githubusercontent.com/SteveGilham/altcover/1db4f291a19ceb23455b7b7073b05fd4aff53ba4/Sample5/Class1.cs" />
+      <seqpnt visitcount="0" line="95" column="17" endline="95" endcolumn="46" excluded="false" document="https://raw.githubusercontent.com/SteveGilham/altcover/1db4f291a19ceb23455b7b7073b05fd4aff53ba4/Sample5/Class1.cs" />
+      <seqpnt visitcount="0" line="96" column="13" endline="96" endcolumn="14" excluded="false" document="https://raw.githubusercontent.com/SteveGilham/altcover/1db4f291a19ceb23455b7b7073b05fd4aff53ba4/Sample5/Class1.cs" />
+    </method>
+    <method name="G2" class="Sample5.Class1+Inner" metadataToken="100663320" excluded="false" instrumented="true" fullname="System.Void Sample5.Class1+Inner.G2(System.Int32)">
+      <seqpnt visitcount="0" line="110" column="13" endline="110" endcolumn="14" excluded="false" document="https://raw.githubusercontent.com/SteveGilham/altcover/1db4f291a19ceb23455b7b7073b05fd4aff53ba4/Sample5/Class1.cs" />
+      <seqpnt visitcount="0" line="111" column="17" endline="111" endcolumn="46" excluded="false" document="https://raw.githubusercontent.com/SteveGilham/altcover/1db4f291a19ceb23455b7b7073b05fd4aff53ba4/Sample5/Class1.cs" />
+      <seqpnt visitcount="0" line="112" column="13" endline="112" endcolumn="14" excluded="false" document="https://raw.githubusercontent.com/SteveGilham/altcover/1db4f291a19ceb23455b7b7073b05fd4aff53ba4/Sample5/Class1.cs" />
+    </method>
+    <method name="G3" class="Sample5.Class1+Inner" metadataToken="100663322" excluded="false" instrumented="true" fullname="System.Void Sample5.Class1+Inner.G3(System.Int32)">
+      <seqpnt visitcount="0" line="124" column="13" endline="124" endcolumn="14" excluded="false" document="https://raw.githubusercontent.com/SteveGilham/altcover/1db4f291a19ceb23455b7b7073b05fd4aff53ba4/Sample5/Class1.cs" />
+      <seqpnt visitcount="0" line="125" column="17" endline="125" endcolumn="46" excluded="false" document="https://raw.githubusercontent.com/SteveGilham/altcover/1db4f291a19ceb23455b7b7073b05fd4aff53ba4/Sample5/Class1.cs" />
+      <seqpnt visitcount="0" line="126" column="13" endline="126" endcolumn="14" excluded="false" document="https://raw.githubusercontent.com/SteveGilham/altcover/1db4f291a19ceb23455b7b7073b05fd4aff53ba4/Sample5/Class1.cs" />
+    </method>
+    <method name="&lt;G1&gt;b__3" class="Sample5.Class1+Inner+&lt;&gt;c__DisplayClass0_0" metadataToken="100663360" excluded="false" instrumented="true" fullname="System.Int32 Sample5.Class1+Inner+&lt;&gt;c__DisplayClass0_0.&lt;G1&gt;b__3(System.Char)">
+      <seqpnt visitcount="0" line="87" column="17" endline="87" endcolumn="18" excluded="false" document="https://raw.githubusercontent.com/SteveGilham/altcover/1db4f291a19ceb23455b7b7073b05fd4aff53ba4/Sample5/Class1.cs" />
+      <seqpnt visitcount="0" line="88" column="21" endline="88" endcolumn="50" excluded="false" document="https://raw.githubusercontent.com/SteveGilham/altcover/1db4f291a19ceb23455b7b7073b05fd4aff53ba4/Sample5/Class1.cs" />
+      <seqpnt visitcount="0" line="89" column="21" endline="89" endcolumn="60" excluded="false" document="https://raw.githubusercontent.com/SteveGilham/altcover/1db4f291a19ceb23455b7b7073b05fd4aff53ba4/Sample5/Class1.cs" />
+      <seqpnt visitcount="0" line="90" column="17" endline="90" endcolumn="18" excluded="false" document="https://raw.githubusercontent.com/SteveGilham/altcover/1db4f291a19ceb23455b7b7073b05fd4aff53ba4/Sample5/Class1.cs" />
+    </method>
+    <method name="&lt;G1&gt;b__0_0" class="Sample5.Class1+Inner+&lt;&gt;c" metadataToken="100663363" excluded="false" instrumented="true" fullname="System.Int32 Sample5.Class1+Inner+&lt;&gt;c.&lt;G1&gt;b__0_0(System.Char)">
+      <seqpnt visitcount="0" line="65" column="43" endline="65" endcolumn="44" excluded="false" document="https://raw.githubusercontent.com/SteveGilham/altcover/1db4f291a19ceb23455b7b7073b05fd4aff53ba4/Sample5/Class1.cs" />
+      <seqpnt visitcount="0" line="65" column="45" endline="65" endcolumn="63" excluded="false" document="https://raw.githubusercontent.com/SteveGilham/altcover/1db4f291a19ceb23455b7b7073b05fd4aff53ba4/Sample5/Class1.cs" />
+      <seqpnt visitcount="0" line="65" column="64" endline="65" endcolumn="65" excluded="false" document="https://raw.githubusercontent.com/SteveGilham/altcover/1db4f291a19ceb23455b7b7073b05fd4aff53ba4/Sample5/Class1.cs" />
+    </method>
+    <method name="MoveNext" class="Sample5.Class1+Inner+&lt;G2&gt;d__2`1" metadataToken="100663366" excluded="false" instrumented="true" fullname="System.Boolean Sample5.Class1+Inner+&lt;G2&gt;d__2`1.MoveNext()">
+      <seqpnt visitcount="0" line="100" column="13" endline="100" endcolumn="14" excluded="false" document="https://raw.githubusercontent.com/SteveGilham/altcover/1db4f291a19ceb23455b7b7073b05fd4aff53ba4/Sample5/Class1.cs" />
+      <seqpnt visitcount="0" line="102" column="17" endline="102" endcolumn="46" excluded="false" document="https://raw.githubusercontent.com/SteveGilham/altcover/1db4f291a19ceb23455b7b7073b05fd4aff53ba4/Sample5/Class1.cs" />
+      <seqpnt visitcount="0" line="103" column="17" endline="103" endcolumn="24" excluded="false" document="https://raw.githubusercontent.com/SteveGilham/altcover/1db4f291a19ceb23455b7b7073b05fd4aff53ba4/Sample5/Class1.cs" />
+      <seqpnt visitcount="0" line="103" column="35" endline="103" endcolumn="41" excluded="false" document="https://raw.githubusercontent.com/SteveGilham/altcover/1db4f291a19ceb23455b7b7073b05fd4aff53ba4/Sample5/Class1.cs" />
+      <seqpnt visitcount="0" line="103" column="26" endline="103" endcolumn="31" excluded="false" document="https://raw.githubusercontent.com/SteveGilham/altcover/1db4f291a19ceb23455b7b7073b05fd4aff53ba4/Sample5/Class1.cs" />
+      <seqpnt visitcount="0" line="104" column="17" endline="104" endcolumn="18" excluded="false" document="https://raw.githubusercontent.com/SteveGilham/altcover/1db4f291a19ceb23455b7b7073b05fd4aff53ba4/Sample5/Class1.cs" />
+      <seqpnt visitcount="0" line="105" column="21" endline="105" endcolumn="36" excluded="false" document="https://raw.githubusercontent.com/SteveGilham/altcover/1db4f291a19ceb23455b7b7073b05fd4aff53ba4/Sample5/Class1.cs" />
+      <seqpnt visitcount="0" line="106" column="17" endline="106" endcolumn="18" excluded="false" document="https://raw.githubusercontent.com/SteveGilham/altcover/1db4f291a19ceb23455b7b7073b05fd4aff53ba4/Sample5/Class1.cs" />
+      <seqpnt visitcount="0" line="103" column="32" endline="103" endcolumn="34" excluded="false" document="https://raw.githubusercontent.com/SteveGilham/altcover/1db4f291a19ceb23455b7b7073b05fd4aff53ba4/Sample5/Class1.cs" />
+      <seqpnt visitcount="0" line="107" column="13" endline="107" endcolumn="14" excluded="false" document="https://raw.githubusercontent.com/SteveGilham/altcover/1db4f291a19ceb23455b7b7073b05fd4aff53ba4/Sample5/Class1.cs" />
+    </method>
+    <method name="MoveNext" class="Sample5.Class1+Inner+&lt;G3&gt;d__4" metadataToken="100663373" excluded="false" instrumented="true" fullname="System.Void Sample5.Class1+Inner+&lt;G3&gt;d__4.MoveNext()">
+      <seqpnt visitcount="0" line="116" column="13" endline="116" endcolumn="14" excluded="false" document="https://raw.githubusercontent.com/SteveGilham/altcover/1db4f291a19ceb23455b7b7073b05fd4aff53ba4/Sample5/Class1.cs" />
+      <seqpnt visitcount="0" line="118" column="17" endline="118" endcolumn="64" excluded="false" document="https://raw.githubusercontent.com/SteveGilham/altcover/1db4f291a19ceb23455b7b7073b05fd4aff53ba4/Sample5/Class1.cs" />
+      <seqpnt visitcount="0" line="119" column="17" endline="119" endcolumn="50" excluded="false" document="https://raw.githubusercontent.com/SteveGilham/altcover/1db4f291a19ceb23455b7b7073b05fd4aff53ba4/Sample5/Class1.cs" />
+      <seqpnt visitcount="0" line="120" column="17" endline="120" endcolumn="26" excluded="false" document="https://raw.githubusercontent.com/SteveGilham/altcover/1db4f291a19ceb23455b7b7073b05fd4aff53ba4/Sample5/Class1.cs" />
+      <seqpnt visitcount="0" line="121" column="13" endline="121" endcolumn="14" excluded="false" document="https://raw.githubusercontent.com/SteveGilham/altcover/1db4f291a19ceb23455b7b7073b05fd4aff53ba4/Sample5/Class1.cs" />
+    </method>
+    <method name="&lt;F1&gt;b__2" class="Sample5.Class1+&lt;&gt;c__DisplayClass0_0" metadataToken="100663328" excluded="false" instrumented="true" fullname="System.Int32 Sample5.Class1+&lt;&gt;c__DisplayClass0_0.&lt;F1&gt;b__2(System.Char)">
+      <seqpnt visitcount="0" line="34" column="13" endline="34" endcolumn="14" excluded="false" document="https://raw.githubusercontent.com/SteveGilham/altcover/1db4f291a19ceb23455b7b7073b05fd4aff53ba4/Sample5/Class1.cs" />
+      <seqpnt visitcount="0" line="35" column="17" endline="35" endcolumn="46" excluded="false" document="https://raw.githubusercontent.com/SteveGilham/altcover/1db4f291a19ceb23455b7b7073b05fd4aff53ba4/Sample5/Class1.cs" />
+      <seqpnt visitcount="0" line="36" column="17" endline="36" endcolumn="56" excluded="false" document="https://raw.githubusercontent.com/SteveGilham/altcover/1db4f291a19ceb23455b7b7073b05fd4aff53ba4/Sample5/Class1.cs" />
+      <seqpnt visitcount="0" line="37" column="13" endline="37" endcolumn="14" excluded="false" document="https://raw.githubusercontent.com/SteveGilham/altcover/1db4f291a19ceb23455b7b7073b05fd4aff53ba4/Sample5/Class1.cs" />
+    </method>
+    <method name="&lt;F1&gt;b__0_0" class="Sample5.Class1+&lt;&gt;c" metadataToken="100663331" excluded="false" instrumented="true" fullname="System.Int32 Sample5.Class1+&lt;&gt;c.&lt;F1&gt;b__0_0(System.Char)">
+      <seqpnt visitcount="0" line="17" column="39" endline="17" endcolumn="40" excluded="false" document="https://raw.githubusercontent.com/SteveGilham/altcover/1db4f291a19ceb23455b7b7073b05fd4aff53ba4/Sample5/Class1.cs" />
+      <seqpnt visitcount="0" line="17" column="41" endline="17" endcolumn="55" excluded="false" document="https://raw.githubusercontent.com/SteveGilham/altcover/1db4f291a19ceb23455b7b7073b05fd4aff53ba4/Sample5/Class1.cs" />
+      <seqpnt visitcount="0" line="17" column="56" endline="17" endcolumn="57" excluded="false" document="https://raw.githubusercontent.com/SteveGilham/altcover/1db4f291a19ceb23455b7b7073b05fd4aff53ba4/Sample5/Class1.cs" />
+    </method>
+    <method name="MoveNext" class="Sample5.Class1+&lt;F2&gt;d__1" metadataToken="100663334" excluded="false" instrumented="true" fullname="System.Boolean Sample5.Class1+&lt;F2&gt;d__1.MoveNext()">
+      <seqpnt visitcount="0" line="42" column="9" endline="42" endcolumn="10" excluded="false" document="https://raw.githubusercontent.com/SteveGilham/altcover/1db4f291a19ceb23455b7b7073b05fd4aff53ba4/Sample5/Class1.cs" />
+      <seqpnt visitcount="0" line="44" column="13" endline="44" endcolumn="20" excluded="false" document="https://raw.githubusercontent.com/SteveGilham/altcover/1db4f291a19ceb23455b7b7073b05fd4aff53ba4/Sample5/Class1.cs" />
+      <seqpnt visitcount="0" line="44" column="32" endline="44" endcolumn="37" excluded="false" document="https://raw.githubusercontent.com/SteveGilham/altcover/1db4f291a19ceb23455b7b7073b05fd4aff53ba4/Sample5/Class1.cs" />
+      <seqpnt visitcount="0" line="44" column="22" endline="44" endcolumn="28" excluded="false" document="https://raw.githubusercontent.com/SteveGilham/altcover/1db4f291a19ceb23455b7b7073b05fd4aff53ba4/Sample5/Class1.cs" />
+      <seqpnt visitcount="0" line="45" column="13" endline="45" endcolumn="14" excluded="false" document="https://raw.githubusercontent.com/SteveGilham/altcover/1db4f291a19ceb23455b7b7073b05fd4aff53ba4/Sample5/Class1.cs" />
+      <seqpnt visitcount="0" line="46" column="17" endline="46" endcolumn="32" excluded="false" document="https://raw.githubusercontent.com/SteveGilham/altcover/1db4f291a19ceb23455b7b7073b05fd4aff53ba4/Sample5/Class1.cs" />
+      <seqpnt visitcount="0" line="47" column="13" endline="47" endcolumn="14" excluded="false" document="https://raw.githubusercontent.com/SteveGilham/altcover/1db4f291a19ceb23455b7b7073b05fd4aff53ba4/Sample5/Class1.cs" />
+      <seqpnt visitcount="0" line="44" column="29" endline="44" endcolumn="31" excluded="false" document="https://raw.githubusercontent.com/SteveGilham/altcover/1db4f291a19ceb23455b7b7073b05fd4aff53ba4/Sample5/Class1.cs" />
+      <seqpnt visitcount="0" line="48" column="9" endline="48" endcolumn="10" excluded="false" document="https://raw.githubusercontent.com/SteveGilham/altcover/1db4f291a19ceb23455b7b7073b05fd4aff53ba4/Sample5/Class1.cs" />
+    </method>
+    <method name="MoveNext" class="Sample5.Class1+&lt;F3&gt;d__2" metadataToken="100663341" excluded="false" instrumented="true" fullname="System.Void Sample5.Class1+&lt;F3&gt;d__2.MoveNext()">
+      <seqpnt visitcount="0" line="52" column="9" endline="52" endcolumn="10" excluded="false" document="https://raw.githubusercontent.com/SteveGilham/altcover/1db4f291a19ceb23455b7b7073b05fd4aff53ba4/Sample5/Class1.cs" />
+      <seqpnt visitcount="0" line="54" column="13" endline="54" endcolumn="60" excluded="false" document="https://raw.githubusercontent.com/SteveGilham/altcover/1db4f291a19ceb23455b7b7073b05fd4aff53ba4/Sample5/Class1.cs" />
+      <seqpnt visitcount="0" line="55" column="13" endline="55" endcolumn="46" excluded="false" document="https://raw.githubusercontent.com/SteveGilham/altcover/1db4f291a19ceb23455b7b7073b05fd4aff53ba4/Sample5/Class1.cs" />
+      <seqpnt visitcount="0" line="56" column="13" endline="56" endcolumn="22" excluded="false" document="https://raw.githubusercontent.com/SteveGilham/altcover/1db4f291a19ceb23455b7b7073b05fd4aff53ba4/Sample5/Class1.cs" />
+      <seqpnt visitcount="0" line="57" column="9" endline="57" endcolumn="10" excluded="false" document="https://raw.githubusercontent.com/SteveGilham/altcover/1db4f291a19ceb23455b7b7073b05fd4aff53ba4/Sample5/Class1.cs" />
+    </method>
+    <method name="System.Collections.Generic.IReadOnlyDictionary&lt;T,K&gt;.get_Keys" class="Sample5.RecursiveSyntheticInvocation`2" metadataToken="100663305" excluded="false" instrumented="true" fullname="System.Collections.Generic.IEnumerable`1 Sample5.RecursiveSyntheticInvocation`2.System.Collections.Generic.IReadOnlyDictionary&lt;T,K&gt;.get_Keys()">
+      <seqpnt visitcount="0" line="162" column="17" endline="162" endcolumn="18" excluded="false" document="https://raw.githubusercontent.com/SteveGilham/altcover/1db4f291a19ceb23455b7b7073b05fd4aff53ba4/Sample5/Class1.cs" />
+      <seqpnt visitcount="0" line="162" column="19" endline="162" endcolumn="29" excluded="false" document="https://raw.githubusercontent.com/SteveGilham/altcover/1db4f291a19ceb23455b7b7073b05fd4aff53ba4/Sample5/Class1.cs" />
+      <seqpnt visitcount="0" line="162" column="30" endline="162" endcolumn="66" excluded="false" document="https://raw.githubusercontent.com/SteveGilham/altcover/1db4f291a19ceb23455b7b7073b05fd4aff53ba4/Sample5/Class1.cs" />
+    </method>
+    <method name="System.Collections.Generic.IReadOnlyDictionary&lt;T,K&gt;.get_Item" class="Sample5.RecursiveSyntheticInvocation`2" metadataToken="100663306" excluded="false" instrumented="true" fullname="Sample5.RecursiveSyntheticInvocation`2+K Sample5.RecursiveSyntheticInvocation`2.System.Collections.Generic.IReadOnlyDictionary&lt;T,K&gt;.get_Item(Sample5.RecursiveSyntheticInvocation`2+T)">
+      <seqpnt visitcount="0" line="168" column="52" endline="168" endcolumn="87" excluded="false" document="https://raw.githubusercontent.com/SteveGilham/altcover/1db4f291a19ceb23455b7b7073b05fd4aff53ba4/Sample5/Class1.cs" />
+    </method>
+    <method name="System.Collections.Generic.IReadOnlyCollection&lt;System.Collections.Generic.KeyValuePair&lt;T,K&gt;&gt;.get_Count" class="Sample5.RecursiveSyntheticInvocation`2" metadataToken="100663307" excluded="false" instrumented="true" fullname="System.Int32 Sample5.RecursiveSyntheticInvocation`2.System.Collections.Generic.IReadOnlyCollection&lt;System.Collections.Generic.KeyValuePair&lt;T,K&gt;&gt;.get_Count()">
+      <seqpnt visitcount="0" line="169" column="62" endline="169" endcolumn="97" excluded="false" document="https://raw.githubusercontent.com/SteveGilham/altcover/1db4f291a19ceb23455b7b7073b05fd4aff53ba4/Sample5/Class1.cs" />
+    </method>
+    <method name="System.Collections.Generic.IReadOnlyDictionary&lt;T,K&gt;.ContainsKey" class="Sample5.RecursiveSyntheticInvocation`2" metadataToken="100663308" excluded="false" instrumented="true" fullname="System.Boolean Sample5.RecursiveSyntheticInvocation`2.System.Collections.Generic.IReadOnlyDictionary&lt;T,K&gt;.ContainsKey(Sample5.RecursiveSyntheticInvocation`2+T)">
+      <seqpnt visitcount="0" line="171" column="62" endline="171" endcolumn="97" excluded="false" document="https://raw.githubusercontent.com/SteveGilham/altcover/1db4f291a19ceb23455b7b7073b05fd4aff53ba4/Sample5/Class1.cs" />
+    </method>
+    <method name="System.Collections.Generic.IEnumerable&lt;System.Collections.Generic.KeyValuePair&lt;T,K&gt;&gt;.GetEnumerator" class="Sample5.RecursiveSyntheticInvocation`2" metadataToken="100663309" excluded="false" instrumented="true" fullname="System.Collections.Generic.IEnumerator`1 Sample5.RecursiveSyntheticInvocation`2.System.Collections.Generic.IEnumerable&lt;System.Collections.Generic.KeyValuePair&lt;T,K&gt;&gt;.GetEnumerator()">
+      <seqpnt visitcount="0" line="173" column="92" endline="173" endcolumn="127" excluded="false" document="https://raw.githubusercontent.com/SteveGilham/altcover/1db4f291a19ceb23455b7b7073b05fd4aff53ba4/Sample5/Class1.cs" />
+    </method>
+    <method name="System.Collections.IEnumerable.GetEnumerator" class="Sample5.RecursiveSyntheticInvocation`2" metadataToken="100663310" excluded="false" instrumented="true" fullname="System.Collections.IEnumerator Sample5.RecursiveSyntheticInvocation`2.System.Collections.IEnumerable.GetEnumerator()">
+      <seqpnt visitcount="0" line="175" column="52" endline="175" endcolumn="87" excluded="false" document="https://raw.githubusercontent.com/SteveGilham/altcover/1db4f291a19ceb23455b7b7073b05fd4aff53ba4/Sample5/Class1.cs" />
+    </method>
+    <method name="System.Collections.Generic.IReadOnlyDictionary&lt;T,K&gt;.TryGetValue" class="Sample5.RecursiveSyntheticInvocation`2" metadataToken="100663311" excluded="false" instrumented="true" fullname="System.Boolean Sample5.RecursiveSyntheticInvocation`2.System.Collections.Generic.IReadOnlyDictionary&lt;T,K&gt;.TryGetValue(Sample5.RecursiveSyntheticInvocation`2+T,K&amp;)">
+      <seqpnt visitcount="0" line="177" column="75" endline="177" endcolumn="110" excluded="false" document="https://raw.githubusercontent.com/SteveGilham/altcover/1db4f291a19ceb23455b7b7073b05fd4aff53ba4/Sample5/Class1.cs" />
+    </method>
+    <method name="MoveNext" class="Sample5.RecursiveSyntheticInvocation`2+&lt;System-Collections-Generic-IReadOnlyDictionary&lt;T,K&gt;-get_Values&gt;d__2" metadataToken="100663345" excluded="false" instrumented="true" fullname="System.Boolean Sample5.RecursiveSyntheticInvocation`2+&lt;System-Collections-Generic-IReadOnlyDictionary&lt;T,K&gt;-get_Values&gt;d__2.MoveNext()">
+      <seqpnt visitcount="0" line="142" column="17" endline="142" endcolumn="18" excluded="false" document="https://raw.githubusercontent.com/SteveGilham/altcover/1db4f291a19ceb23455b7b7073b05fd4aff53ba4/Sample5/Class1.cs" />
+      <seqpnt visitcount="0" line="142" column="19" endline="142" endcolumn="31" excluded="false" document="https://raw.githubusercontent.com/SteveGilham/altcover/1db4f291a19ceb23455b7b7073b05fd4aff53ba4/Sample5/Class1.cs" />
+    </method>
+    <method name="MoveNext" class="Sample5.RecursiveSyntheticInvocation`2+&lt;get_ValuesWorks&gt;d__4" metadataToken="100663353" excluded="false" instrumented="true" fullname="System.Boolean Sample5.RecursiveSyntheticInvocation`2+&lt;get_ValuesWorks&gt;d__4.MoveNext()">
+      <seqpnt visitcount="0" line="151" column="13" endline="151" endcolumn="14" excluded="false" document="https://raw.githubusercontent.com/SteveGilham/altcover/1db4f291a19ceb23455b7b7073b05fd4aff53ba4/Sample5/Class1.cs" />
+      <seqpnt visitcount="0" line="152" column="17" endline="152" endcolumn="41" excluded="false" document="https://raw.githubusercontent.com/SteveGilham/altcover/1db4f291a19ceb23455b7b7073b05fd4aff53ba4/Sample5/Class1.cs" />
+      <seqpnt visitcount="0" line="153" column="17" endline="153" endcolumn="29" excluded="false" document="https://raw.githubusercontent.com/SteveGilham/altcover/1db4f291a19ceb23455b7b7073b05fd4aff53ba4/Sample5/Class1.cs" />
+    </method>
+    <method name="Main" class="Sample14.Program" metadataToken="100663313" excluded="false" instrumented="true" fullname="System.Void Sample14.Program.Main(System.String[])">
+      <seqpnt visitcount="0" line="8" column="9" endline="8" endcolumn="10" excluded="false" document="https://raw.githubusercontent.com/SteveGilham/altcover/1db4f291a19ceb23455b7b7073b05fd4aff53ba4/Sample14/Sample14/Program.cs" />
+      <seqpnt visitcount="0" line="9" column="13" endline="9" endcolumn="47" excluded="false" document="https://raw.githubusercontent.com/SteveGilham/altcover/1db4f291a19ceb23455b7b7073b05fd4aff53ba4/Sample14/Sample14/Program.cs" />
+      <seqpnt visitcount="0" line="10" column="13" endline="10" endcolumn="42" excluded="false" document="https://raw.githubusercontent.com/SteveGilham/altcover/1db4f291a19ceb23455b7b7073b05fd4aff53ba4/Sample14/Sample14/Program.cs" />
+      <seqpnt visitcount="0" line="11" column="13" endline="11" endcolumn="53" excluded="false" document="https://raw.githubusercontent.com/SteveGilham/altcover/1db4f291a19ceb23455b7b7073b05fd4aff53ba4/Sample14/Sample14/Program.cs" />
+      <seqpnt visitcount="0" line="12" column="13" endline="12" endcolumn="45" excluded="false" document="https://raw.githubusercontent.com/SteveGilham/altcover/1db4f291a19ceb23455b7b7073b05fd4aff53ba4/Sample14/Sample14/Program.cs" />
+      <seqpnt visitcount="0" line="13" column="13" endline="13" endcolumn="45" excluded="false" document="https://raw.githubusercontent.com/SteveGilham/altcover/1db4f291a19ceb23455b7b7073b05fd4aff53ba4/Sample14/Sample14/Program.cs" />
+      <seqpnt visitcount="0" line="14" column="9" endline="14" endcolumn="10" excluded="false" document="https://raw.githubusercontent.com/SteveGilham/altcover/1db4f291a19ceb23455b7b7073b05fd4aff53ba4/Sample14/Sample14/Program.cs" />
+    </method>
+    <method name=".ctor" class="Sample14.Class2" metadataToken="100663315" excluded="false" instrumented="true" fullname="System.Void Sample14.Class2.#ctor()">
+      <seqpnt visitcount="0" line="5" column="9" endline="5" endcolumn="24" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\_SourceLink\Class2.cs" />
+      <seqpnt visitcount="0" line="6" column="9" endline="6" endcolumn="10" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\_SourceLink\Class2.cs" />
+      <seqpnt visitcount="0" line="7" column="11" endline="7" endcolumn="55" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\_SourceLink\Class2.cs" />
+      <seqpnt visitcount="0" line="8" column="9" endline="8" endcolumn="10" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\_SourceLink\Class2.cs" />
+    </method>
+    <method name=".ctor" class="Sample14.Class3" metadataToken="100663316" excluded="false" instrumented="true" fullname="System.Void Sample14.Class3.#ctor()">
+      <seqpnt visitcount="0" line="5" column="9" endline="5" endcolumn="24" excluded="false" document="C:\Users\steve\AppData\Local\Temp\Sample14.SourceLink.Class3.cs" />
+      <seqpnt visitcount="0" line="6" column="9" endline="6" endcolumn="10" excluded="false" document="C:\Users\steve\AppData\Local\Temp\Sample14.SourceLink.Class3.cs" />
+      <seqpnt visitcount="0" line="7" column="11" endline="7" endcolumn="55" excluded="false" document="C:\Users\steve\AppData\Local\Temp\Sample14.SourceLink.Class3.cs" />
+      <seqpnt visitcount="0" line="8" column="9" endline="8" endcolumn="10" excluded="false" document="C:\Users\steve\AppData\Local\Temp\Sample14.SourceLink.Class3.cs" />
+    </method>
+  </module>
+</coverage>

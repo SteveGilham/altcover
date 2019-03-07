@@ -12,6 +12,7 @@ namespace AltCover.Parameters
         string Threshold { get; }
         string Cobertura { get; }
         string OutputFile { get; }
+        bool ExposeReturnCode { get; }
         string[] CommandLine { get; }
 
         FSApi.CollectParams ToParameters();
@@ -43,6 +44,8 @@ namespace AltCover.Parameters
         bool Single { get; }
         bool LineCover { get; }
         bool BranchCover { get; }
+        bool ExposeReturnCode { get; }
+        bool SourceLink { get; }
 
         string[] CommandLine { get; }
 
@@ -65,6 +68,11 @@ namespace AltCover.Parameters
     {
         bool Force { get; }
     }
+
+    public interface ICLIArg2 : ICLIArg
+    {
+        bool FailFast { get; }
+    }
 }
 
 namespace AltCover.Parameters.Primitive
@@ -79,6 +87,7 @@ namespace AltCover.Parameters.Primitive
         public string Cobertura { get; set; }
         public string OutputFile { get; set; }
         public string[] CommandLine { get; set; }
+        public bool ExposeReturnCode { get; set; }
 
         public FSApi.CollectParams ToParameters()
         {
@@ -90,7 +99,8 @@ namespace AltCover.Parameters.Primitive
                 Threshold,
                 Cobertura,
                 OutputFile,
-                CommandLine
+                CommandLine,
+                ExposeReturnCode
                 );
             return FSApi.CollectParams.NewPrimitive(primitive);
         }
@@ -106,7 +116,8 @@ namespace AltCover.Parameters.Primitive
                 Threshold = string.Empty,
                 Cobertura = string.Empty,
                 OutputFile = string.Empty,
-                CommandLine = new string[] { }
+                CommandLine = new string[] { },
+                ExposeReturnCode = true
             };
         }
 
@@ -140,6 +151,8 @@ namespace AltCover.Parameters.Primitive
         public bool Single { get; set; }
         public bool LineCover { get; set; }
         public bool BranchCover { get; set; }
+        public bool ExposeReturnCode { get; set; }
+        public bool SourceLink { get; set; }
 
         public string[] CommandLine { get; set; }
 
@@ -168,7 +181,9 @@ namespace AltCover.Parameters.Primitive
                         Single,
                         LineCover,
                         BranchCover,
-                        CommandLine
+                        CommandLine,
+                        ExposeReturnCode,
+                        SourceLink
                 );
             return FSApi.PrepareParams.NewPrimitive(primitive);
         }
@@ -199,7 +214,10 @@ namespace AltCover.Parameters.Primitive
                 Single = false,
                 LineCover = false,
                 BranchCover = false,
-                CommandLine = { }
+                CommandLine = { },
+
+                ExposeReturnCode = true,
+                SourceLink = false
             };
         }
 
@@ -238,9 +256,10 @@ namespace AltCover.Parameters.Primitive
         }
     }
 
-    public class CLIArgs : ICLIArg
+    public class CLIArgs : ICLIArg2
     {
         public bool Force { get; set; }
+        public bool FailFast { get; set; }
     }
 }
 
@@ -270,13 +289,26 @@ namespace AltCover
             return Api.Version();
         }
 
+        private static DotNet.CLIArgs ToCLIArgs(ICLIArg args)
+        {
+            var force = DotNet.CLIArgs.NewForce(args.Force);
+            switch (args)
+            {
+                case ICLIArg2 args2:
+                    var failfast = DotNet.CLIArgs.NewFailFast(args2.FailFast);
+                    return DotNet.CLIArgs.NewMany(new[] { force, failfast });
+
+                default: return force;
+            }
+        }
+
         public static string ToTestArguments(IPrepareArgs p,
                                              ICollectArgs c,
                                              ICLIArg force)
         {
             return DotNet.ToTestArguments(p.ToParameters(),
                                           c.ToParameters(),
-                                          DotNet.CLIArgs.NewForce(force.Force));
+                                          ToCLIArgs(force));
         }
 
         public static string[] ToTestArgumentList(IPrepareArgs p,
@@ -285,7 +317,7 @@ namespace AltCover
         {
             return DotNet.ToTestArgumentList(p.ToParameters(),
                                              c.ToParameters(),
-                                             DotNet.CLIArgs.NewForce(force.Force)).
+                                             ToCLIArgs(force)).
             ToArray();
         }
     }

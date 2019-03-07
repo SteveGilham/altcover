@@ -49,7 +49,7 @@
       Dependencies="@(AltCoverDependencies)" />
   </Target>
 
-  <Target Name="AltCoverInstrumentModulesNoBuild" BeforeTargets="VSTest" Condition="'$(VSTestNoBuild)' == 'true'">
+  <Target Name="AltCoverInstrumentModulesNoBuild" AfterTargets="AltCoverPreFlight" Condition="'$(VSTestNoBuild)' == 'true'">
     <CallTarget Targets="AltCoverRunPreparation" />
   </Target>
 
@@ -86,7 +86,7 @@
       VSTestVerbosity="$(VSTestVerbosity)"
       VSTestCollect="$(VSTestCollect)"
       VSTestBlame="$(VSTestBlame)" />
-    <OnError ExecuteTargets="AltCoverGenerateCoverageResult" Condition="'$(AltCoverPreFlightCheck)' == 'OK'" />
+    <OnError ExecuteTargets="AltCoverGenerateCoverageResult" Condition="'$(AltCoverPreFlightCheck)' == 'OK' AND '$(AltCoverFailFast)' != 'true' " />
   </Target>
 
   <Target Name="AltCoverGenerateCoverageResult" AfterTargets="VSTest" Condition="'$(AltCover)' == 'true'">

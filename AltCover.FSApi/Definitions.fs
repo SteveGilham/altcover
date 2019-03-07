@@ -18,9 +18,18 @@ module DotNet =
                                   Justification = "Idiomatic F#")>]
   type CLIArgs =
     | Force of bool
+    | FailFast of bool
+    | Many of CLIArgs seq
   with member self.ForceDelete =
         match self with
         | Force b -> b
+        | FailFast _ -> false
+        | Many s -> s |> Seq.exists(fun f -> f.ForceDelete)
+       member self.Fast =
+        match self with
+        | FailFast b -> b
+        | Force _ -> false
+        | Many s -> s |> Seq.exists(fun f -> f.Fast)
 
 #if RUNNER
 #else
@@ -69,7 +78,8 @@ module internal Internals =
       FromArg "Threshold" collect.Threshold
       (Arg "LineCover" "true", prepare.LineCover)
       (Arg "BranchCover" "true", prepare.BranchCover)
-      (Arg "Force" "true", force.ForceDelete)]
+      (Arg "Force" "true", force.ForceDelete)
+      (Arg "FailFast" "true", force.Fast)]
     |> List.filter snd
     |> List.map fst
 

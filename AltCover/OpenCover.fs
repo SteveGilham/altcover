@@ -235,7 +235,7 @@ module internal OpenCover =
         s.Files.Add(file, index), index
 
     let VisitCodeSegment (s : OpenCoverContext) (codeSegment : SeqPnt) i =
-      let fileset, ref = RecordFile s codeSegment.Document
+      let fileset, ref = RecordFile s (codeSegment.Document |> Visitor.SourceLinkMapping)
       let element = MethodPointElement codeSegment ref i
       let head = s.Stack |> Seq.head
       if head.IsEmpty then head.Add(element)

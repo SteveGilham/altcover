@@ -160,8 +160,9 @@ Describe "ConvertTo-Cobertura" {
     $t = $coverage.Attribute("timestamp").Value
 
     $expected = @"
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<coverage line-rate="0.7142857142857143" branch-rate="0.66666666666666663" version="$v" timestamp="$t">
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!DOCTYPE coverage SYSTEM "http://cobertura.sourceforge.net/xml/coverage-04.dtd">
+<coverage line-rate="0.7142857142857143" branch-rate="0.66666666666666663" lines-covered="10" lines-valid="14" branches-covered="2" branches-valid="3" complexity="2" version="$v" timestamp="$t">
   <sources>
     <source>altcover\Sample1</source>
   </sources>
@@ -170,14 +171,14 @@ Describe "ConvertTo-Cobertura" {
       <classes>
         <class name="TouchTest.Program" filename="altcover/Sample1/Program.cs" line-rate="0.7142857142857143" branch-rate="0.66666666666666663" complexity="2">
           <methods>
-            <method name="Main" signature="System.Void System.String[])" line-rate="0.7142857142857143" branch-rate="0.66666666666666663">
+            <method name="Main" signature="System.Void System.String[])" line-rate="0.7142857142857143" branch-rate="0.66666666666666663" complexity="2">
               <lines>
                 <line number="11" hits="1" branch="false" />
                 <line number="12" hits="1" branch="false" />
                 <line number="13" hits="1" branch="false" />
                 <line number="13" hits="1" branch="true" condition-coverage="50% (1/2)">
                   <conditions>
-                    <condition number="0" type="jump" coverage="50%" />
+                    <condition number="10" type="jump" coverage="50%" />
                   </conditions>
                 </line>
                 <line number="14" hits="1" branch="false" />
@@ -199,7 +200,7 @@ Describe "ConvertTo-Cobertura" {
             <line number="13" hits="1" branch="false" />
             <line number="13" hits="1" branch="true" condition-coverage="50% (1/2)">
               <conditions>
-                <condition number="0" type="jump" coverage="50%" />
+                <condition number="10" type="jump" coverage="50%" />
               </conditions>
             </line>
             <line number="14" hits="1" branch="false" />
@@ -235,8 +236,9 @@ Describe "ConvertTo-Cobertura" {
     $t = $coverage.Attribute("timestamp").Value
 
     $expected = @"
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<coverage line-rate="0.7" branch-rate="1" version="$v" timestamp="$t">
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!DOCTYPE coverage SYSTEM "http://cobertura.sourceforge.net/xml/coverage-04.dtd">
+<coverage line-rate="0.7" branch-rate="1" lines-covered="7" lines-valid="10" branches-covered="0" branches-valid="0" complexity="1" version="$v" timestamp="$t">
   <sources>
     <source>Sample1</source>
   </sources>
@@ -245,7 +247,7 @@ Describe "ConvertTo-Cobertura" {
       <classes>
         <class name="TouchTest.Program" filename="Sample1/Program.cs" line-rate="0.7" branch-rate="1" complexity="1">
           <methods>
-            <method name="TouchTest.Program.Main" signature="" line-rate="0.7" branch-rate="1">
+            <method name="TouchTest.Program.Main" signature="" line-rate="0.7" branch-rate="1" complexity="1">
               <lines>
                 <line number="11" hits="1" branch="false" />
                 <line number="12" hits="1" branch="false" />
@@ -293,8 +295,9 @@ Describe "ConvertTo-Cobertura" {
     $t = $coverage.Attribute("timestamp").Value
 
     $expected = @"
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<coverage line-rate="0.7" branch-rate="1" version="$v" timestamp="$t">
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!DOCTYPE coverage SYSTEM "http://cobertura.sourceforge.net/xml/coverage-04.dtd">
+<coverage line-rate="0.7" branch-rate="1" lines-covered="7" lines-valid="10" branches-covered="0" branches-valid="0" complexity="1" version="$v" timestamp="$t">
   <sources>
     <source>Sample1</source>
   </sources>
@@ -303,7 +306,7 @@ Describe "ConvertTo-Cobertura" {
       <classes>
         <class name="TouchTest.Program" filename="Sample1/Program.cs" line-rate="0.7" branch-rate="1" complexity="1">
           <methods>
-            <method name="TouchTest.Program.Main" signature="" line-rate="0.7" branch-rate="1">
+            <method name="TouchTest.Program.Main" signature="" line-rate="0.7" branch-rate="1" complexity="1">
               <lines>
                 <line number="11" hits="1" branch="false" />
                 <line number="12" hits="1" branch="false" />
