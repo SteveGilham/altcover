@@ -714,6 +714,14 @@ type AltCoverTests() =
 
     // Visitor.fs
     [<Test>]
+    member self.FixEnding() =
+      let a = Visitor.EnsureEndsWith "a" "banana"
+      Assert.That (a, Is.EqualTo "banana")
+
+      let s = Visitor.EnsureEndsWith "s" "banana"
+      Assert.That (s, Is.EqualTo "bananas")
+
+    [<Test>]
     member self.ReleaseBuildTernaryTest() =
       let nop = Instruction.Create(OpCodes.Nop)
       let ret = Instruction.Create(OpCodes.Ret)
