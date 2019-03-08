@@ -127,8 +127,11 @@ let NuGetAltCover =
   |> Seq.filter File.Exists
   |> Seq.tryHead
 
-let ForceTrue = DotNet.CLIArgs.Force true
+let ForceTrueOnly = DotNet.CLIArgs.Force true
 let FailTrue = DotNet.CLIArgs.FailFast true
+
+let GreenSummary = DotNet.CLIArgs.ShowSummary "Green"
+let ForceTrue = DotNet.CLIArgs.Many [ ForceTrueOnly; GreenSummary ]
 
 let _Target s f =
   Target.description s
@@ -220,7 +223,7 @@ _Target "BuildDebug" (fun _ ->
 
   Directory.ensure "./_SourceLink"
   Shell.copyFile "./_SourceLink/Class2.cs" "./Sample14/Sample14/Class2.txt"
-  if Environment.isWindows then  
+  if Environment.isWindows then
     let temp = Environment.environVar "TEMP"
     Shell.copyFile (temp @@ "/Sample14.SourceLink.Class3.cs") "./Sample14/Sample14/Class3.txt"
   else
