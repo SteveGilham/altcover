@@ -94,7 +94,8 @@
 
   <Target Name="AltCoverGenerateCoverageResult" AfterTargets="VSTest" Condition="'$(AltCover)' == 'true'">
     <PropertyGroup>
-      <AltCoverColour Condition="'$(AltCoverColour)' == ''">Foreground</AltCoverColour>
+      <AltCoverColour Condition="'$(AltCoverShowSummary)' != ''">$(AltCoverShowSummary)</AltCoverColour>
+      <AltCoverColour Condition="'$(AltCoverShowSummary)' == ''">Foreground</AltCoverColour>
     </PropertyGroup>
 
     <AltCover.Collect
@@ -104,7 +105,7 @@
       Cobertura="$(AltCoverCobertura)">
       <Output TaskParameter="Summary" PropertyName="AltCoverSummary"/>
     </AltCover.Collect>
-    <AltCover.Echo Text="$(AltCoverSummary)" Colour="$(AltCoverColour)" Condition="$(AltCoverSummary) == 'true'"/>
+    <AltCover.Echo Text="$(AltCoverSummary)" Colour="$(AltCoverColour)" Condition="$(AltCoverShowSummary) != ''"/>
     <ItemGroup>
       <AltCoverRecorderGFiles Include="$(TargetDir)/AltCover.Recorder.g.*" />
       <AltCoverFSharpFiles Include="$(TargetDir)/FSharp.Core.*" />
