@@ -174,12 +174,16 @@ type Echo() =
 
   [<Required>]
   member val Text = String.Empty with get, set
+  member val Colour = String.Empty with get, set
 
   override self.Execute() =
     if self.Text |> String.IsNullOrWhiteSpace |>  not then
       let original = Console.ForegroundColor
       try
-        Console.ForegroundColor <- ConsoleColor.Green
+        let ink = match Enum.TryParse<ConsoleColor>(self.Colour, true) with
+                  | (false, _) -> Console.ForegroundColor
+                  | (_, hue) -> hue
+        Console.ForegroundColor <- ink
         printfn "%s" self.Text
       finally
         Console.ForegroundColor <- original
