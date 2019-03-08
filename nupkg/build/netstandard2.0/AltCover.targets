@@ -8,6 +8,8 @@
         AssemblyFile="$(MSBuildThisFileDirectory)../../tools/netcoreapp2.0/AltCover.dll" />
   <UsingTask TaskName="AltCover.GetVersion"
         AssemblyFile="$(MSBuildThisFileDirectory)../../tools/netcoreapp2.0/AltCover.dll" />
+  <UsingTask TaskName="AltCover.Echo"
+        AssemblyFile="$(MSBuildThisFileDirectory)../../tools/netcoreapp2.0/AltCover.dll" />
 
   <Target Name="AltCoverPreFlight" Condition="'$(AltCover)' == 'true'">
     <Error Condition="Exists('$(TargetDir)__Saved') AND '$(AltCoverForce)' != 'true'" 
@@ -95,7 +97,10 @@
       RecorderDirectory="$(TargetDir)"
       LcovReport="$(AltCoverLcovReport)"
       Threshold="$(AltCoverThreshold)"
-      Cobertura="$(AltCoverCobertura)" />
+      Cobertura="$(AltCoverCobertura)">
+      <Output TaskParameter="Summary" PropertyName="AltCoverSummary"/>
+    </AltCover.Collect>
+    <AltCover.Echo Text="$(AltCoverSummary)" />
     <ItemGroup>
       <AltCoverRecorderGFiles Include="$(TargetDir)/AltCover.Recorder.g.*" />
       <AltCoverFSharpFiles Include="$(TargetDir)/FSharp.Core.*" />

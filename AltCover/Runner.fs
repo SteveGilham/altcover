@@ -103,9 +103,10 @@ module internal Runner =
     summarise vpoints points.Length "VisitedPoints"
 
   let AltSummary(report : XDocument) =
-    "Alternative"
-    |> CommandLine.resources.GetString
-    |> Output.Info
+    [Summary.AppendLine >> ignore; Output.Info]
+    |> List.iter (fun f -> "Alternative"
+                           |> CommandLine.resources.GetString
+                           |> f)
     let classes =
       report.Descendants(X "Class")
       |> Seq.filter (fun c -> c.Attribute(X "skippedDueTo") |> isNull)
@@ -189,6 +190,7 @@ module internal Runner =
     summarise "visitedBranchPoints" "numBranchPoints" (Some "branchCoverage")
       "VisitedBranches" |> ignore
     Output.Info String.Empty
+    Summary.AppendLine String.Empty |> ignore
     AltSummary report
     covered
 

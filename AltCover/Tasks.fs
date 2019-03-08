@@ -122,6 +122,9 @@ type Collect() =
   member val Cobertura = String.Empty with get, set
   member val OutputFile = String.Empty with get, set
   member val CommandLine : string array = [||] with get, set
+
+  [<Output>]
+  member self.Summary with get() = Runner.Summary.ToString()
   member self.Message x = base.Log.LogMessage(MessageImportance.High, x)
   override self.Execute() =
     let log =
@@ -164,4 +167,21 @@ type GetVersion() =
     let r = Api.Version()
     self.IO.Apply()
     r |> Output.Warn
+    true
+
+type Echo() =
+  inherit Task(null)
+
+  [<Required>]
+  member val Text = String.Empty with get, set
+
+  override self.Execute() =
+    if self.Text |> String.IsNullOrWhiteSpace |>  not then
+      let original = Console.ForegroundColor
+      try
+        Console.ForegroundColor <- ConsoleColor.Green
+        printfn "%s" self.Text
+      finally
+        Console.ForegroundColor <- original
+
     true
