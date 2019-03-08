@@ -5,6 +5,7 @@ open System.Collections.Generic
 open System.Globalization
 open System.IO
 open System.IO.Compression
+open System.Text
 open System.Xml
 open System.Xml.Linq
 
@@ -24,6 +25,7 @@ module internal Runner =
   let internal collect = ref false
   let mutable internal threshold : Option<int> = None
   let mutable internal output : Option<string> = None
+  let internal Summary = StringBuilder()
 
   let init() =
     CommandLine.error <- []
@@ -36,8 +38,15 @@ module internal Runner =
     collect := false
     threshold <- None
     output <- None
+    Summary.Clear() |> ignore
 
   let X = OpenCover.X
+
+  let WriteSummary key vc nc pc =
+    let line = String.Format(CultureInfo.CurrentCulture,
+                              CommandLine.resources.GetString key, vc, nc, pc)
+    [Summary.AppendLine >> ignore; Output.Info]
+    |> Seq.iter(fun f -> f line)
 
   let NCoverSummary(report : XDocument) =
     let summarise v n key =
@@ -46,9 +55,8 @@ module internal Runner =
         else
           Math.Round((float v) * 100.0 / (float n), 2)
               .ToString(CultureInfo.InvariantCulture)
-      String.Format
-        (CultureInfo.CurrentCulture, CommandLine.resources.GetString key, v, n, pc)
-      |> Output.Info
+
+      WriteSummary key v n pc
       pc
 
     let methods =
@@ -122,9 +130,8 @@ module internal Runner =
       else
         Math.Round((float vclasses) * 100.0 / (float nc), 2)
             .ToString(CultureInfo.InvariantCulture)
-    String.Format
-      (CultureInfo.CurrentCulture, CommandLine.resources.GetString "AltVC", vclasses, nc,
-       pc) |> Output.Info
+    WriteSummary "AltVC" vclasses nc pc
+
     let methods =
       classes
       |> Seq.collect (fun c -> c.Descendants(X "Method"))
@@ -143,9 +150,7 @@ module internal Runner =
       else
         Math.Round((float vm) * 100.0 / (float nm), 2)
             .ToString(CultureInfo.InvariantCulture)
-    String.Format
-      (CultureInfo.CurrentCulture, CommandLine.resources.GetString "AltVM", vm, nm, pm)
-    |> Output.Info
+    WriteSummary "AltVM" vm nm pm
 
   let OpenCoverSummary(report : XDocument) =
     let summary = report.Descendants(X "Summary") |> Seq.head
@@ -173,10 +178,9 @@ module internal Runner =
 
             Math.Round(vc1 * 100.0 / nc1, 2).ToString(CultureInfo.InvariantCulture)
         | Some x -> summary.Attribute(X x).Value
-      String.Format
-        (CultureInfo.CurrentCulture, CommandLine.resources.GetString key, vc, nc, pc)
-      |> Output.Info
+      WriteSummary key vc nc pc
       pc
+
     summarise "visitedClasses" "numClasses" None "VisitedClasses" |> ignore
     summarise "visitedMethods" "numMethods" None "VisitedMethods" |> ignore
     let covered =
