@@ -124,6 +124,9 @@ type Collect() =
   member val CommandLine : string array = [||] with get, set
 
   [<Output>]
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance",
+                                                    "CA1822",
+                                                    Justification = "Instance property needed")>]
   member self.Summary with get() = Runner.Summary.ToString()
   member self.Message x = base.Log.LogMessage(MessageImportance.High, x)
   override self.Execute() =
@@ -180,10 +183,9 @@ type Echo() =
     if self.Text |> String.IsNullOrWhiteSpace |>  not then
       let original = Console.ForegroundColor
       try
-        let ink = match Enum.TryParse<ConsoleColor>(self.Colour, true) with
-                  | (false, _) -> Console.ForegroundColor
-                  | (_, hue) -> hue
-        Console.ForegroundColor <- ink
+        match Enum.TryParse<ConsoleColor>(self.Colour, true) with
+        | (false, _) -> ()
+        | (_, hue) -> Console.ForegroundColor <- hue
         printfn "%s" self.Text
       finally
         Console.ForegroundColor <- original
