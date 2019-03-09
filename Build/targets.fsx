@@ -2902,7 +2902,7 @@ _Target "DotnetTestIntegration" (fun _ ->
     let p1 = { p0 with CallContext = [ "[Fact]"; "0" ]
                        AssemblyFilter = [| "xunit" |] }
     let pp1 = AltCover.PrepareParams.Primitive p1
-    let cc0 = AltCover.CollectParams.Primitive c0
+    let cc0 = AltCover.CollectParams.Primitive { c0 with SummaryFormat = "+B" }
     DotNet.test
       (fun to' ->
       (to'.WithCommon(withWorkingDirectoryVM "_DotnetTest")
