@@ -75,12 +75,7 @@ type CollectParams =
   member self.SummaryFormat =
     match self with
     | Primitive p -> p.SummaryFormat
-    | TypeSafe t -> match t.SummaryFormat with
-                    | TypeSafe.SummaryFormat.Default -> String.Empty
-                    | TypeSafe.SummaryFormat.B -> "B"
-                    | TypeSafe.SummaryFormat.R -> "R"
-                    | TypeSafe.SummaryFormat.BPlus -> "+B"
-                    | TypeSafe.SummaryFormat.RPlus -> "+R"
+    | TypeSafe t -> t.SummaryFormat.AsString()
 
 #if RUNNER
   member self.Validate afterPreparation =

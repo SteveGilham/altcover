@@ -144,6 +144,13 @@ type SummaryFormat =
   | B
   | RPlus
   | BPlus
+  member self.AsString () =
+    match self with
+    | Default -> String.Empty
+    | B -> "B"
+    | R -> "R"
+    | BPlus -> "+B"
+    | RPlus -> "+R"
 
 [<ExcludeFromCodeCoverage; NoComparison>]
 type CollectParams =
