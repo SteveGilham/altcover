@@ -255,6 +255,8 @@ type AltCoverTests() =
                                rather than overwriting the original report file.
       --dropReturnCode       Optional: Do not report any non-zero return code
                                from a launched process.
+      --teamcity[=VALUE]     Optional: Show summary in TeamCity format as well
+                               as/instead of the OpenCover summary
   -?, --help, -h             Prints out the options.
 """
         Assert.That
@@ -325,7 +327,7 @@ type AltCoverTests() =
     [<Test>]
     member self.ShouldHaveExpectedOptions() =
       let options = Runner.DeclareOptions()
-      Assert.That(options.Count, Is.EqualTo 11)
+      Assert.That(options.Count, Is.EqualTo 12)
       Assert.That
         (options
          |> Seq.filter (fun x -> x.Prototype <> "<>")
@@ -942,6 +944,68 @@ type AltCoverTests() =
         CommandLine.dropReturnCode := false
 
     [<Test>]
+    member self.ParsingTCGivesTC() =
+      [ (":+", BPlus)
+        (":+b", BPlus)
+        (":+B", BPlus)
+        (":b+", BPlus)
+        (":B+", BPlus)
+        (":b",B)
+        (":B", B)
+        (String.Empty, B)
+        (":+r", RPlus)
+        (":+R", RPlus)
+        (":r+", RPlus)
+        (":R+", RPlus)
+        (":r", R)
+        (":R", R) ]
+      |> List.iter (fun (a, v) ->
+        lock Runner.SummaryFormat (fun () ->
+          Runner.SummaryFormat <- Default
+          let options = Runner.DeclareOptions()
+          let input = [| "--teamcity" + a |]
+          let parse = CommandLine.ParseCommandLine input options
+          match parse with
+          | Left _ -> Assert.Fail()
+          | Right(x, y) ->
+            Assert.That(y, Is.SameAs options)
+            Assert.That(x, Is.Empty)
+          match Runner.SummaryFormat with
+          | x when v = x -> Assert.Pass()
+          | _ -> Assert.Fail(sprintf "%A %A => %A" a v Runner.SummaryFormat) ))
+
+    [<Test>]
+    member self.ParsingMultipleTCGivesFailure() =
+      try
+        Runner.SummaryFormat <- Default
+        let options = Main.DeclareOptions()
+        let input = [| "--teamcity"; "--teamcity" |]
+        let parse = CommandLine.ParseCommandLine input options
+        match parse with
+        | Right _ -> Assert.Fail()
+        | Left(x, y) ->
+          Assert.That(y, Is.SameAs options)
+          Assert.That(x, Is.EqualTo "UsageError")
+      finally
+        Runner.SummaryFormat <- Default
+
+    [<Test>]
+    member self.ParsingBadTCGivesFailure() =
+      try
+        Runner.SummaryFormat <- Default
+        let options = Runner.DeclareOptions()
+        let blank = " "
+        let input = [| "--teamcity:junk" |]
+        let parse = CommandLine.ParseCommandLine input options
+        match parse with
+        | Right _ -> Assert.Fail()
+        | Left(x, y) ->
+          Assert.That(y, Is.SameAs options)
+          Assert.That(x, Is.EqualTo "UsageError")
+      finally
+        Runner.SummaryFormat <- Default
+
+    [<Test>]
     member self.ShouldRequireExe() =
       lock Runner.executable (fun () ->
         try
@@ -1208,7 +1272,7 @@ type AltCoverTests() =
         Console.SetError stderr
         let unique = Guid.NewGuid().ToString()
         let main =
-          typeof<Tracer>.Assembly.GetType("AltCover.AltCover")
+          typeof<SummaryFormat>.Assembly.GetType("AltCover.AltCover")
             .GetMethod("Main", BindingFlags.NonPublic ||| BindingFlags.Static)
         let returnCode = main.Invoke(null, [| [| "RuNN"; "-r"; unique |] |])
         Assert.That(returnCode, Is.EqualTo 255)
@@ -1320,6 +1384,8 @@ or
                                rather than overwriting the original report file.
       --dropReturnCode       Optional: Do not report any non-zero return code
                                from a launched process.
+      --teamcity[=VALUE]     Optional: Show summary in TeamCity format as well
+                               as/instead of the OpenCover summary
   -?, --help, -h             Prints out the options.
 """
         Assert.That
@@ -2151,7 +2217,7 @@ or
           reader.ReadToEnd().Replace("\r", String.Empty).Replace("\\", "/")
                 .Replace("""version="3.0.0.0""",
                          "version=\""
-                         + typeof<Tracer>.Assembly.GetName().Version.ToString())
+                         + typeof<SummaryFormat>.Assembly.GetName().Version.ToString())
         Assert.That(result.Replace("\r", String.Empty), Is.EqualTo expected, result)
         self.Validate result
       finally
@@ -2194,7 +2260,7 @@ or
           reader.ReadToEnd().Replace("\r", String.Empty).Replace("\\", "/")
                 .Replace("""version="3.5.0.0""",
                          "version=\""
-                         + typeof<Tracer>.Assembly.GetName().Version.ToString())
+                         + typeof<SummaryFormat>.Assembly.GetName().Version.ToString())
         Assert.That(result.Replace("\r", String.Empty), Is.EqualTo expected, result)
         self.Validate result
       finally
@@ -2233,7 +2299,7 @@ or
           reader.ReadToEnd().Replace("\r", String.Empty).Replace("\\", "/")
                 .Replace("""version="3.0.0.0""",
                          "version=\""
-                         + typeof<Tracer>.Assembly.GetName().Version.ToString())
+                         + typeof<SummaryFormat>.Assembly.GetName().Version.ToString())
         Assert.That
           (result.Replace("\r", String.Empty).Replace("\\", "/"), Is.EqualTo expected,
            result)

@@ -2029,6 +2029,8 @@ or
                                rather than overwriting the original report file.
       --dropReturnCode       Optional: Do not report any non-zero return code
                                from a launched process.
+      --teamcity[=VALUE]     Optional: Show summary in TeamCity format as well
+                               as/instead of the OpenCover summary
   -?, --help, -h             Prints out the options.
 """
         Assert.That

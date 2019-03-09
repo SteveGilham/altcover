@@ -14,8 +14,12 @@ open Mono.Options
 open Augment
 
 [<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage>]
-type internal Tracer =
-  { Tracer : string }
+type internal SummaryFormat =
+  | Default
+  | R
+  | B
+  | RPlus
+  | BPlus
 
 module internal Runner =
 
@@ -26,6 +30,7 @@ module internal Runner =
   let mutable internal threshold : Option<int> = None
   let mutable internal output : Option<string> = None
   let internal Summary = StringBuilder()
+  let mutable internal SummaryFormat = SummaryFormat.Default
 
   let init() =
     CommandLine.error <- []
@@ -38,6 +43,7 @@ module internal Runner =
     collect := false
     threshold <- None
     output <- None
+    SummaryFormat <- Default
     Summary.Clear() |> ignore
 
   let X = OpenCover.X
@@ -312,6 +318,34 @@ module internal Runner =
                      |> Path.GetFullPath
                      |> Some))
       (CommandLine.ddFlag "dropReturnCode" CommandLine.dropReturnCode)
+      ("teamcity:",
+        fun x -> if SummaryFormat = Default then
+                   let (|Select|_|) (pattern : String) offered =
+                    if offered
+                       |> String.IsNullOrWhiteSpace
+                       |> not
+                       && pattern.Equals(String (offered |> Seq.sort |> Seq.toArray),
+                                         StringComparison.OrdinalIgnoreCase)
+                    then Some offered
+                    else None
+
+                   SummaryFormat <- match x with
+                                    | null
+                                    | Select "B" _ -> B
+                                    | Select "+" _
+                                    | Select "+B" _ -> BPlus
+                                    | Select "R" _-> R
+                                    | Select "+R" _ -> RPlus
+                                    | _ ->  CommandLine.error <- String.Format
+                                              (CultureInfo.CurrentCulture,
+                                                CommandLine.resources.GetString "InvalidValue",
+                                                "--teamcity", x) :: CommandLine.error
+                                            Default
+                 else
+                   CommandLine.error <- String.Format
+                                      (CultureInfo.CurrentCulture,
+                                       CommandLine.resources.GetString "MultiplesNotAllowed",
+                                       "--teamcity") :: CommandLine.error)
       ("?|help|h", (fun x -> CommandLine.help <- not (isNull x)))
 
       ("<>",
