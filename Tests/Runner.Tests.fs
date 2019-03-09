@@ -976,7 +976,7 @@ type AltCoverTests() =
 
     [<Test>]
     member self.ParsingMultipleTCGivesFailure() =
-      try
+      lock Runner.SummaryFormat (fun () ->
         Runner.SummaryFormat <- Default
         let options = Main.DeclareOptions()
         let input = [| "--teamcity"; "--teamcity" |]
@@ -985,13 +985,11 @@ type AltCoverTests() =
         | Right _ -> Assert.Fail()
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
-          Assert.That(x, Is.EqualTo "UsageError")
-      finally
-        Runner.SummaryFormat <- Default
+          Assert.That(x, Is.EqualTo "UsageError"))
 
     [<Test>]
     member self.ParsingBadTCGivesFailure() =
-      try
+      lock Runner.SummaryFormat (fun () ->
         Runner.SummaryFormat <- Default
         let options = Runner.DeclareOptions()
         let blank = " "
@@ -1001,9 +999,7 @@ type AltCoverTests() =
         | Right _ -> Assert.Fail()
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
-          Assert.That(x, Is.EqualTo "UsageError")
-      finally
-        Runner.SummaryFormat <- Default
+          Assert.That(x, Is.EqualTo "UsageError"))
 
     [<Test>]
     member self.ShouldRequireExe() =
@@ -1934,17 +1930,67 @@ or
       let builder = System.Text.StringBuilder()
       Runner.Summary.Clear() |> ignore
       try
-        let task = Collect()
-        Output.Info <- (fun s -> builder.Append(s).Append("|") |> ignore)
-        let r = Runner.StandardSummary report Base.ReportFormat.NCover 0
-        Assert.That(r, Is.EqualTo 0)
-        let expected = "Visited Classes 0 of 0 (n/a)|Visited Methods 0 of 0 (n/a)|Visited Points 0 of 0 (n/a)|"
-        Assert.That
-          (builder.ToString(),
-           Is.EqualTo expected
-             )
-        let collected = task.Summary.Replace("\r",String.Empty).Replace("\n", "|")
-        Assert.That(collected, Is.EqualTo expected)
+        lock Runner.SummaryFormat (fun () ->
+          Runner.SummaryFormat <- Default
+          let task = Collect()
+          Output.Info <- (fun s -> builder.Append(s).Append("|") |> ignore)
+          let r = Runner.StandardSummary report Base.ReportFormat.NCover 0
+          Assert.That(r, Is.EqualTo 0)
+          let expected = "Visited Classes 0 of 0 (n/a)|Visited Methods 0 of 0 (n/a)|Visited Points 0 of 0 (n/a)|"
+          Assert.That
+            (builder.ToString(),
+             Is.EqualTo expected
+               )
+          let collected = task.Summary.Replace("\r",String.Empty).Replace("\n", "|")
+          Assert.That(collected, Is.EqualTo expected))
+      finally
+        Output.Info <- ignore
+
+    [<Test>]
+    member self.EmptyNCoverGeneratesExpectedTCSummary() =
+      let report = XDocument()
+      let builder = System.Text.StringBuilder()
+      Runner.Summary.Clear() |> ignore
+      try
+        lock Runner.SummaryFormat (fun () ->
+          Runner.SummaryFormat <- B
+          let task = Collect()
+          Output.Info <- (fun s -> builder.Append(s).Append("|") |> ignore)
+          let r = Runner.StandardSummary report Base.ReportFormat.NCover 0
+          Assert.That(r, Is.EqualTo 0)
+          let expected = "##teamcity[buildStatisticValue key='CodeCoverageAbsCTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsCCovered' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsMTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsMCovered' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsSTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsSCovered' value='0']|"
+          let result = builder.ToString()
+          Assert.That
+            (result,
+             Is.EqualTo expected,
+             result
+               )
+          let collected = task.Summary.Replace("\r",String.Empty).Replace("\n", "|")
+          Assert.That(collected, Is.EqualTo expected, collected))
+      finally
+        Output.Info <- ignore
+
+    [<Test>]
+    member self.EmptyNCoverGeneratesExpectedSummaries() =
+      let report = XDocument()
+      let builder = System.Text.StringBuilder()
+      Runner.Summary.Clear() |> ignore
+      try
+        lock Runner.SummaryFormat (fun () ->
+          Runner.SummaryFormat <- BPlus
+          let task = Collect()
+          Output.Info <- (fun s -> builder.Append(s).Append("|") |> ignore)
+          let r = Runner.StandardSummary report Base.ReportFormat.NCover 0
+          Assert.That(r, Is.EqualTo 0)
+          let expected = "Visited Classes 0 of 0 (n/a)|Visited Methods 0 of 0 (n/a)|Visited Points 0 of 0 (n/a)|##teamcity[buildStatisticValue key='CodeCoverageAbsCTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsCCovered' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsMTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsMCovered' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsSTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsSCovered' value='0']|"
+          let result = builder.ToString()
+          Assert.That
+            (result,
+             Is.EqualTo expected,
+             result
+               )
+          let collected = task.Summary.Replace("\r",String.Empty).Replace("\n", "|")
+          Assert.That(collected, Is.EqualTo expected, collected))
       finally
         Output.Info <- ignore
 
@@ -1957,19 +2003,23 @@ or
       let baseline = XDocument.Load(stream)
       let builder = System.Text.StringBuilder()
       try
-        Output.Info <- (fun s -> builder.Append(s).Append("|") |> ignore)
-        let r =
-          try
-            Runner.threshold <- Some 25
-            Runner.StandardSummary baseline Base.ReportFormat.NCover 42
-          finally
-            Runner.threshold <- None
-        // 80% coverage > threshold so expect return code coming in
-        Assert.That(r, Is.EqualTo 42)
-        Assert.That
-          (builder.ToString(),
-           Is.EqualTo
-             "Visited Classes 1 of 1 (100)|Visited Methods 1 of 1 (100)|Visited Points 8 of 10 (80)|")
+        lock Runner.SummaryFormat (fun () ->
+          Runner.SummaryFormat <- RPlus
+          Output.Info <- (fun s -> builder.Append(s).Append("|") |> ignore)
+          let r =
+            try
+              Runner.threshold <- Some 25
+              Runner.StandardSummary baseline Base.ReportFormat.NCover 42
+            finally
+              Runner.threshold <- None
+          // 80% coverage > threshold so expect return code coming in
+          Assert.That(r, Is.EqualTo 42)
+          Assert.That
+            (builder.ToString(),
+             Is.EqualTo
+               ("Visited Classes 1 of 1 (100)|Visited Methods 1 of 1 (100)|Visited Points 8 of 10 (80)|" +
+                "##teamcity[buildStatisticValue key='CodeCoverageAbsCTotal' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsCCovered' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsMTotal' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsMCovered' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsSTotal' value='10']|##teamcity[buildStatisticValue key='CodeCoverageAbsSCovered' value='8']|")
+            ))
       finally
         Output.Info <- ignore
 
@@ -1980,16 +2030,74 @@ or
 </CoverageSession>"""))
       let builder = System.Text.StringBuilder()
       try
-        Output.Info <- (fun s -> builder.Append(s).Append("|") |> ignore)
-        let r = Runner.StandardSummary report Base.ReportFormat.OpenCover 0
-        Assert.That(r, Is.EqualTo 0)
-        Assert.That
-          (builder.ToString(),
-           Is.EqualTo
-             ("Visited Classes 0 of 0 (n/a)|Visited Methods 0 of 0 (n/a)|"
-              + "Visited Points 0 of 0 (0)|Visited Branches 0 of 0 (0)||"
-              + "==== Alternative Results (includes all methods including those without corresponding source) ====|"
-              + "Alternative Visited Classes 0 of 0 (n/a)|Alternative Visited Methods 0 of 0 (n/a)|"))
+        lock Runner.SummaryFormat (fun () ->
+          Runner.SummaryFormat <- Default
+          Output.Info <- (fun s -> builder.Append(s).Append("|") |> ignore)
+          let r = Runner.StandardSummary report Base.ReportFormat.OpenCover 0
+          Assert.That(r, Is.EqualTo 0)
+          Assert.That
+            (builder.ToString(),
+             Is.EqualTo
+               ("Visited Classes 0 of 0 (n/a)|Visited Methods 0 of 0 (n/a)|"
+                + "Visited Points 0 of 0 (0)|Visited Branches 0 of 0 (0)||"
+                + "==== Alternative Results (includes all methods including those without corresponding source) ====|"
+                + "Alternative Visited Classes 0 of 0 (n/a)|Alternative Visited Methods 0 of 0 (n/a)|")))
+      finally
+        Output.Info <- ignore
+
+    [<Test>]
+    member self.EmptyOpenCoverGeneratesExpectedTCSummary() =
+      let report = XDocument.Load(new System.IO.StringReader("""<CoverageSession>
+  <Summary numSequencePoints="0" visitedSequencePoints="0" numBranchPoints="0" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="0" minCyclomaticComplexity="1" visitedClasses="0" numClasses="0" visitedMethods="0" numMethods="0" />
+</CoverageSession>"""))
+      let builder = System.Text.StringBuilder()
+      try
+        lock Runner.SummaryFormat (fun () ->
+          Runner.SummaryFormat <- B
+          Output.Info <- (fun s -> builder.Append(s).Append("|") |> ignore)
+          let r = Runner.StandardSummary report Base.ReportFormat.OpenCover 0
+          Assert.That(r, Is.EqualTo 0)
+          Assert.That
+            (builder.ToString(),
+             Is.EqualTo
+               ("##teamcity[buildStatisticValue key='CodeCoverageAbsCTotal' value='0']|" +
+                "##teamcity[buildStatisticValue key='CodeCoverageAbsCCovered' value='0']|" +
+                "##teamcity[buildStatisticValue key='CodeCoverageAbsMTotal' value='0']|" +
+                "##teamcity[buildStatisticValue key='CodeCoverageAbsMCovered' value='0']|" +
+                "##teamcity[buildStatisticValue key='CodeCoverageAbsSTotal' value='0']|" +
+                "##teamcity[buildStatisticValue key='CodeCoverageAbsSCovered' value='0']|" +
+                "##teamcity[buildStatisticValue key='CodeCoverageAbsBTotal' value='0']|" +
+                "##teamcity[buildStatisticValue key='CodeCoverageAbsBCovered' value='0']|")))
+      finally
+        Output.Info <- ignore
+
+    [<Test>]
+    member self.EmptyOpenCoverGeneratesExpectedSummaries() =
+      let report = XDocument.Load(new System.IO.StringReader("""<CoverageSession>
+  <Summary numSequencePoints="0" visitedSequencePoints="0" numBranchPoints="0" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="0" minCyclomaticComplexity="1" visitedClasses="0" numClasses="0" visitedMethods="0" numMethods="0" />
+</CoverageSession>"""))
+      let builder = System.Text.StringBuilder()
+      try
+        lock Runner.SummaryFormat (fun () ->
+          Runner.SummaryFormat <- RPlus
+          Output.Info <- (fun s -> builder.Append(s).Append("|") |> ignore)
+          let r = Runner.StandardSummary report Base.ReportFormat.OpenCover 0
+          Assert.That(r, Is.EqualTo 0)
+          Assert.That
+            (builder.ToString(),
+             Is.EqualTo
+               ("Visited Classes 0 of 0 (n/a)|Visited Methods 0 of 0 (n/a)|"
+                + "Visited Points 0 of 0 (0)|Visited Branches 0 of 0 (0)||"
+                + "==== Alternative Results (includes all methods including those without corresponding source) ====|"
+                + "Alternative Visited Classes 0 of 0 (n/a)|Alternative Visited Methods 0 of 0 (n/a)|" +
+                "##teamcity[buildStatisticValue key='CodeCoverageAbsCTotal' value='0']|" +
+                "##teamcity[buildStatisticValue key='CodeCoverageAbsCCovered' value='0']|" +
+                "##teamcity[buildStatisticValue key='CodeCoverageAbsMTotal' value='0']|" +
+                "##teamcity[buildStatisticValue key='CodeCoverageAbsMCovered' value='0']|" +
+                "##teamcity[buildStatisticValue key='CodeCoverageAbsSTotal' value='0']|" +
+                "##teamcity[buildStatisticValue key='CodeCoverageAbsSCovered' value='0']|" +
+                "##teamcity[buildStatisticValue key='CodeCoverageAbsRTotal' value='0']|" +
+                "##teamcity[buildStatisticValue key='CodeCoverageAbsRCovered' value='0']|")))
       finally
         Output.Info <- ignore
 
@@ -2003,22 +2111,27 @@ or
       let baseline = XDocument.Load(stream)
       let builder = System.Text.StringBuilder()
       try
-        Output.Info <- (fun s -> builder.Append(s).Append("|") |> ignore)
-        let r =
-          try
-            Runner.threshold <- Some 75
-            Runner.StandardSummary baseline Base.ReportFormat.OpenCover 23
-          finally
-            Runner.threshold <- None
-        // 70% coverage < threshold so expect shortfall
-        Assert.That(r, Is.EqualTo 5)
-        Assert.That
-          (builder.ToString(),
-           Is.EqualTo
-             ("Visited Classes 1 of 1 (100)|Visited Methods 1 of 1 (100)|"
-              + "Visited Points 7 of 10 (70)|Visited Branches 2 of 3 (66.67)||"
-              + "==== Alternative Results (includes all methods including those without corresponding source) ====|"
-              + "Alternative Visited Classes 1 of 1 (100)|Alternative Visited Methods 1 of 2 (50)|"))
+        lock Runner.SummaryFormat (fun () ->
+          Runner.SummaryFormat <- BPlus
+          Output.Info <- (fun s -> builder.Append(s).Append("|") |> ignore)
+          let r =
+            try
+              Runner.threshold <- Some 75
+              Runner.StandardSummary baseline Base.ReportFormat.OpenCover 23
+            finally
+              Runner.threshold <- None
+          // 70% coverage < threshold so expect shortfall
+          Assert.That(r, Is.EqualTo 5)
+          Assert.That
+            (builder.ToString(),
+             Is.EqualTo
+               ("Visited Classes 1 of 1 (100)|Visited Methods 1 of 1 (100)|"
+                + "Visited Points 7 of 10 (70)|Visited Branches 2 of 3 (66.67)||"
+                + "==== Alternative Results (includes all methods including those without corresponding source) ====|"
+                + "Alternative Visited Classes 1 of 1 (100)|Alternative Visited Methods 1 of 2 (50)|"
+                + "##teamcity[buildStatisticValue key='CodeCoverageAbsCTotal' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsCCovered' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsMTotal' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsMCovered' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsSTotal' value='10']|##teamcity[buildStatisticValue key='CodeCoverageAbsSCovered' value='7']|"
+                + "##teamcity[buildStatisticValue key='CodeCoverageAbsBTotal' value='3']|##teamcity[buildStatisticValue key='CodeCoverageAbsBCovered' value='2']|")
+               ))
       finally
         Output.Info <- ignore
 

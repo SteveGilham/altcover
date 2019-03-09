@@ -57,16 +57,24 @@ module internal Runner =
                               CommandLine.resources.GetString key, vc, nc, pc)
     Write line
 
-  let NCoverSummary(report : XDocument) =
-    let summarise v n key =
-      let pc =
-        if n = 0 then "n/a"
-        else
-          Math.Round((float v) * 100.0 / (float n), 2)
-              .ToString(CultureInfo.InvariantCulture)
+  let TCtotal = "##teamcity[buildStatisticValue key='CodeCoverageAbs{0}Total' value='{1}']"
+  let TCcover = "##teamcity[buildStatisticValue key='CodeCoverageAbs{0}Covered' value='{1}']"
 
+  let WriteTC template what value =
+    let line = String.Format(CultureInfo.InvariantCulture,
+                              template, what, value)
+    Write line
+
+  let NCoverSummary(report : XDocument) =
+    let makepc v n =
+      if n = 0 then "n/a"
+      else
+        Math.Round((float v) * 100.0 / (float n), 2)
+            .ToString(CultureInfo.InvariantCulture)
+
+    let summarise v n key =
+      let pc = makepc v n
       WriteSummary key v n pc
-      pc
 
     let methods =
       report.Descendants(X "method")
@@ -107,9 +115,20 @@ module internal Runner =
       |> Seq.filter isVisited
       |> Seq.length
 
-    summarise vclasses classes.Length "VisitedClasses" |> ignore
-    summarise vmethods methods.Length "VisitedMethods" |> ignore
-    summarise vpoints points.Length "VisitedPoints"
+    if [Default; BPlus; RPlus] |> Seq.exists (fun x -> x = SummaryFormat) then
+      summarise vclasses classes.Length "VisitedClasses"
+      summarise vmethods methods.Length "VisitedMethods"
+      summarise vpoints points.Length "VisitedPoints"
+
+    if [B; R; BPlus; RPlus] |> Seq.exists (fun x -> x = SummaryFormat) then
+      WriteTC TCtotal "C" classes.Length
+      WriteTC TCcover "C" vclasses
+      WriteTC TCtotal "M" methods.Length
+      WriteTC TCcover "M" vmethods
+      WriteTC TCtotal "S" points.Length
+      WriteTC TCcover "S" vpoints
+
+    makepc vpoints points.Length
 
   let AltSummary(report : XDocument) =
     "Alternative"
@@ -165,7 +184,7 @@ module internal Runner =
   let OpenCoverSummary(report : XDocument) =
     let summary = report.Descendants(X "Summary") |> Seq.head
 
-    let summarise visit number precalc key =
+    let summarise go visit number precalc key =
       let vc = summary.Attribute(X visit).Value
       let nc = summary.Attribute(X number).Value
 
@@ -188,18 +207,35 @@ module internal Runner =
 
             Math.Round(vc1 * 100.0 / nc1, 2).ToString(CultureInfo.InvariantCulture)
         | Some x -> summary.Attribute(X x).Value
-      WriteSummary key vc nc pc
-      pc
+      if go then WriteSummary key vc nc pc
+      (vc, nc, pc)
 
-    summarise "visitedClasses" "numClasses" None "VisitedClasses" |> ignore
-    summarise "visitedMethods" "numMethods" None "VisitedMethods" |> ignore
-    let covered =
-      summarise "visitedSequencePoints" "numSequencePoints" (Some "sequenceCoverage")
-        "VisitedPoints"
-    summarise "visitedBranchPoints" "numBranchPoints" (Some "branchCoverage")
-      "VisitedBranches" |> ignore
-    Write String.Empty
-    AltSummary report
+    let go = [Default; BPlus; RPlus] |> Seq.exists (fun x -> x = SummaryFormat)
+    let (vc, nc, _) = summarise go "visitedClasses" "numClasses" None "VisitedClasses"
+    let (vm, nm, _) = summarise go "visitedMethods" "numMethods" None "VisitedMethods"
+    let (vs, ns, covered) =
+      summarise go "visitedSequencePoints" "numSequencePoints" (Some "sequenceCoverage")
+          "VisitedPoints"
+    let (vb, nb, _) = summarise go "visitedBranchPoints" "numBranchPoints" (Some "branchCoverage")
+                        "VisitedBranches"
+    if go then
+      Write String.Empty
+      AltSummary report
+
+    if [B; R; BPlus; RPlus] |> Seq.exists (fun x -> x = SummaryFormat) then
+      WriteTC TCtotal "C" nc
+      WriteTC TCcover "C" vc
+      WriteTC TCtotal "M" nm
+      WriteTC TCcover "M" vm
+      WriteTC TCtotal "S" ns
+      WriteTC TCcover "S" vs
+      let tag = match SummaryFormat with
+                | R
+                | RPlus -> "R"
+                | _ -> "B"
+      WriteTC TCtotal tag nb
+      WriteTC TCcover tag vb
+
     covered
 
   let StandardSummary (report : XDocument) (format : Base.ReportFormat) result =
