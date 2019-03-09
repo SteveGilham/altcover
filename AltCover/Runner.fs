@@ -42,11 +42,14 @@ module internal Runner =
 
   let X = OpenCover.X
 
+  let Write line =
+    [Summary.AppendLine >> ignore; Output.Info]
+    |> Seq.iter(fun f -> f line)
+
   let WriteSummary key vc nc pc =
     let line = String.Format(CultureInfo.CurrentCulture,
                               CommandLine.resources.GetString key, vc, nc, pc)
-    [Summary.AppendLine >> ignore; Output.Info]
-    |> Seq.iter(fun f -> f line)
+    Write line
 
   let NCoverSummary(report : XDocument) =
     let summarise v n key =
@@ -103,10 +106,10 @@ module internal Runner =
     summarise vpoints points.Length "VisitedPoints"
 
   let AltSummary(report : XDocument) =
-    [Summary.AppendLine >> ignore; Output.Info]
-    |> List.iter (fun f -> "Alternative"
-                           |> CommandLine.resources.GetString
-                           |> f)
+    "Alternative"
+    |> CommandLine.resources.GetString
+    |> Write
+
     let classes =
       report.Descendants(X "Class")
       |> Seq.filter (fun c -> c.Attribute(X "skippedDueTo") |> isNull)
@@ -189,8 +192,7 @@ module internal Runner =
         "VisitedPoints"
     summarise "visitedBranchPoints" "numBranchPoints" (Some "branchCoverage")
       "VisitedBranches" |> ignore
-    Output.Info String.Empty
-    Summary.AppendLine String.Empty |> ignore
+    Write String.Empty
     AltSummary report
     covered
 

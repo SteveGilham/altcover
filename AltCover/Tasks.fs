@@ -35,6 +35,10 @@ module Api =
   let Ipmo() = GetStringValue "ipmo"
   let Version() = GetStringValue "version"
 
+  let internal Colourize name =
+    let ok, colour = Enum.TryParse<ConsoleColor>(name, true)
+    if ok then Console.ForegroundColor <- colour
+
 type Prepare() =
   inherit Task(null)
   member val internal ACLog : FSApi.Logging option = None with get, set
@@ -183,9 +187,7 @@ type Echo() =
     if self.Text |> String.IsNullOrWhiteSpace |>  not then
       let original = Console.ForegroundColor
       try
-        match Enum.TryParse<ConsoleColor>(self.Colour, true) with
-        | (false, _) -> ()
-        | (_, hue) -> Console.ForegroundColor <- hue
+        Api.Colourize self.Colour
         printfn "%s" self.Text
       finally
         Console.ForegroundColor <- original

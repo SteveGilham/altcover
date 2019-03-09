@@ -2215,5 +2215,55 @@ or
         Output.Info <- fst saved
         Output.Error <- snd saved
         Output.Warn <- warned
+
+#if NETCOREAPP2_0
+  // This fails when self-testing -- it's always .Gray
+  // Operationally, though, it can be seen to work
+#else
+    [<Test>]
+    member self.ColourizeWorks() =
+      let before = Console.ForegroundColor
+      try
+        Api.Colourize "green"
+        Assert.That (Console.ForegroundColor, Is.EqualTo ConsoleColor.Green)
+        Api.Colourize "darkRED"
+        Assert.That (Console.ForegroundColor, Is.EqualTo ConsoleColor.DarkRed)
+        Api.Colourize "foreground"
+        Assert.That (Console.ForegroundColor, Is.EqualTo ConsoleColor.DarkRed)
+      finally
+        Console.ForegroundColor <- before
+#endif
+
+    [<Test>]
+    member self.EchoWorks() =
+      let saved = (Console.Out, Console.Error)
+      let e0 = Console.Out.Encoding
+      let e1 = Console.Error.Encoding
+      let before = Console.ForegroundColor
+
+      try
+        use stdout =
+          { new StringWriter() with
+              member self.Encoding = e0 }
+
+        use stderr =
+         { new StringWriter() with
+              member self.Encoding = e1 }
+
+        Console.SetOut stdout
+        Console.SetError stderr
+
+        let subject = Echo()
+        let unique = Guid.NewGuid().ToString()
+        subject.Text <- unique
+        subject.Colour <- "cyan"
+        Assert.That (subject.Execute(), Is.True)
+        Assert.That (Console.ForegroundColor, Is.EqualTo before)
+        Assert.That (stderr.ToString(), Is.Empty)
+        Assert.That (stdout.ToString(), Is.EqualTo (unique + Environment.NewLine))
+      finally
+        Console.SetOut(fst saved)
+        Console.SetError(snd saved)
+
   // Recorder.fs => Shadow.Tests
   end

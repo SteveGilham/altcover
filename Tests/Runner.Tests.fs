@@ -1866,14 +1866,19 @@ or
     member self.EmptyNCoverGeneratesExpectedSummary() =
       let report = XDocument()
       let builder = System.Text.StringBuilder()
+      Runner.Summary.Clear() |> ignore
       try
+        let task = Collect()
         Output.Info <- (fun s -> builder.Append(s).Append("|") |> ignore)
         let r = Runner.StandardSummary report Base.ReportFormat.NCover 0
         Assert.That(r, Is.EqualTo 0)
+        let expected = "Visited Classes 0 of 0 (n/a)|Visited Methods 0 of 0 (n/a)|Visited Points 0 of 0 (n/a)|"
         Assert.That
           (builder.ToString(),
-           Is.EqualTo
-             "Visited Classes 0 of 0 (n/a)|Visited Methods 0 of 0 (n/a)|Visited Points 0 of 0 (n/a)|")
+           Is.EqualTo expected
+             )
+        let collected = task.Summary.Replace("\r",String.Empty).Replace("\n", "|")
+        Assert.That(collected, Is.EqualTo expected)
       finally
         Output.Info <- ignore
 
