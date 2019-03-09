@@ -1703,7 +1703,7 @@ type AltCoverTests2() =
       Output.Echo <- ignore
       Output.Usage <- ignore
       Assert.That(Output.Usage, Is.Not.Null)
-      typeof<SummaryFormat>.Assembly.GetTypes()
+      typeof<TeamCityFormat>.Assembly.GetTypes()
       |> Seq.filter
            (fun t -> (string t = "AltCover.Output") || (string t = "AltCover.AltCover"))
       |> Seq.collect (fun t -> t.GetNestedTypes(BindingFlags.NonPublic))

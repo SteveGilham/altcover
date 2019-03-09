@@ -1268,7 +1268,7 @@ type AltCoverTests() =
         Console.SetError stderr
         let unique = Guid.NewGuid().ToString()
         let main =
-          typeof<SummaryFormat>.Assembly.GetType("AltCover.AltCover")
+          typeof<TeamCityFormat>.Assembly.GetType("AltCover.AltCover")
             .GetMethod("Main", BindingFlags.NonPublic ||| BindingFlags.Static)
         let returnCode = main.Invoke(null, [| [| "RuNN"; "-r"; unique |] |])
         Assert.That(returnCode, Is.EqualTo 255)
@@ -2330,7 +2330,7 @@ or
           reader.ReadToEnd().Replace("\r", String.Empty).Replace("\\", "/")
                 .Replace("""version="3.0.0.0""",
                          "version=\""
-                         + typeof<SummaryFormat>.Assembly.GetName().Version.ToString())
+                         + typeof<TeamCityFormat>.Assembly.GetName().Version.ToString())
         Assert.That(result.Replace("\r", String.Empty), Is.EqualTo expected, result)
         self.Validate result
       finally
@@ -2373,7 +2373,7 @@ or
           reader.ReadToEnd().Replace("\r", String.Empty).Replace("\\", "/")
                 .Replace("""version="3.5.0.0""",
                          "version=\""
-                         + typeof<SummaryFormat>.Assembly.GetName().Version.ToString())
+                         + typeof<TeamCityFormat>.Assembly.GetName().Version.ToString())
         Assert.That(result.Replace("\r", String.Empty), Is.EqualTo expected, result)
         self.Validate result
       finally
@@ -2412,7 +2412,7 @@ or
           reader.ReadToEnd().Replace("\r", String.Empty).Replace("\\", "/")
                 .Replace("""version="3.0.0.0""",
                          "version=\""
-                         + typeof<SummaryFormat>.Assembly.GetName().Version.ToString())
+                         + typeof<TeamCityFormat>.Assembly.GetName().Version.ToString())
         Assert.That
           (result.Replace("\r", String.Empty).Replace("\\", "/"), Is.EqualTo expected,
            result)

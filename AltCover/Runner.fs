@@ -14,7 +14,7 @@ open Mono.Options
 open Augment
 
 [<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage; NoComparison>]
-type SummaryFormat =
+type TeamCityFormat =
   | Default
   | R
   | B
@@ -30,7 +30,7 @@ module internal Runner =
   let mutable internal threshold : Option<int> = None
   let mutable internal output : Option<string> = None
   let internal Summary = StringBuilder()
-  let mutable internal SummaryFormat = SummaryFormat.Default
+  let mutable internal SummaryFormat = TeamCityFormat.Default
 
   let init() =
     CommandLine.error <- []
