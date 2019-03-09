@@ -13,6 +13,7 @@ namespace AltCover.Parameters
         string Cobertura { get; }
         string OutputFile { get; }
         bool ExposeReturnCode { get; }
+        string SummaryFormat { get; }
         string[] CommandLine { get; }
 
         FSApi.CollectParams ToParameters();
@@ -91,6 +92,7 @@ namespace AltCover.Parameters.Primitive
         public string Threshold { get; set; }
         public string Cobertura { get; set; }
         public string OutputFile { get; set; }
+        public string SummaryFormat { get; set; }
         public string[] CommandLine { get; set; }
         public bool ExposeReturnCode { get; set; }
 
@@ -105,7 +107,8 @@ namespace AltCover.Parameters.Primitive
                 Cobertura,
                 OutputFile,
                 CommandLine,
-                ExposeReturnCode
+                ExposeReturnCode,
+                SummaryFormat
                 );
             return FSApi.CollectParams.NewPrimitive(primitive);
         }
@@ -122,7 +125,8 @@ namespace AltCover.Parameters.Primitive
                 Cobertura = string.Empty,
                 OutputFile = string.Empty,
                 CommandLine = new string[] { },
-                ExposeReturnCode = true
+                ExposeReturnCode = true,
+                SummaryFormat = string.Empty
             };
         }
 

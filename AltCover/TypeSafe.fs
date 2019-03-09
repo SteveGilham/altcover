@@ -138,6 +138,14 @@ type Context =
       |> Seq.toList
 
 [<ExcludeFromCodeCoverage; NoComparison>]
+type SummaryFormat =
+  | Default
+  | R
+  | B
+  | RPlus
+  | BPlus
+
+[<ExcludeFromCodeCoverage; NoComparison>]
 type CollectParams =
   { RecorderDirectory : DirectoryPath
     WorkingDirectory : DirectoryPath
@@ -148,6 +156,7 @@ type CollectParams =
     OutputFile : FilePath
     CommandLine : Command
     ExposeReturnCode : Flag
+    SummaryFormat : SummaryFormat
   }
   static member Create() =
     { RecorderDirectory = NoDirectory
@@ -159,6 +168,7 @@ type CollectParams =
       OutputFile = NoFile
       CommandLine = NoCommand
       ExposeReturnCode = Set
+      SummaryFormat = Default
     }
 
 [<ExcludeFromCodeCoverage; NoComparison>]

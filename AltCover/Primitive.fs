@@ -20,6 +20,7 @@ type CollectParams =
     OutputFile : String
     CommandLine : String seq
     ExposeReturnCode : bool
+    SummaryFormat : String
   }
   static member Create() =
     { RecorderDirectory = String.Empty
@@ -31,6 +32,7 @@ type CollectParams =
       OutputFile = String.Empty
       CommandLine = []
       ExposeReturnCode = true
+      SummaryFormat = String.Empty
     }
 
 [<ExcludeFromCodeCoverage; NoComparison>]

@@ -93,7 +93,8 @@ module internal Internals =
       (Arg "BranchCover" "true", prepare.BranchCover)
       (Arg "Force" "true", force.ForceDelete)
       (Arg "FailFast" "true", force.Fast)
-      (FromArg "ShowSummary" force.Summary)]
+      (FromArg "ShowSummary" force.Summary)
+      (FromArg "SummaryFormat" collect.SummaryFormat)]
     |> List.filter snd
     |> List.map fst
 

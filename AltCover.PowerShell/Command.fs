@@ -5,6 +5,13 @@ open System.IO
 open System.Management.Automation
 open AltCover
 
+type Summary =
+  | Default = 0
+  | R = 1
+  | B = 2
+  | RPlus = 3
+  | BPlus = 4
+
 [<Cmdlet(VerbsLifecycle.Invoke, "AltCover")>]
 [<OutputType("System.Void")>]
 [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.PowerShell",
@@ -154,9 +161,14 @@ type InvokeAltCoverCommand(runner : bool) =
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
   member val SourceLink : SwitchParameter = SwitchParameter(false) with get, set
 
+  [<Parameter(ParameterSetName = "Runner", Mandatory = false, ValueFromPipeline = false,
+              ValueFromPipelineByPropertyName = false)>]
+  member val SummaryFormat : Summary = Summary.Default with get, set
+
   member val private Fail : String list = [] with get, set
 
   member private self.Collect() =
+    let formats = [| String.Empty; "R"; "B"; "+R"; "+B"|]
     FSApi.CollectParams.Primitive { RecorderDirectory = self.RecorderDirectory
                                     WorkingDirectory = self.WorkingDirectory
                                     Executable = self.Executable
@@ -165,7 +177,8 @@ type InvokeAltCoverCommand(runner : bool) =
                                     Cobertura = self.Cobertura
                                     OutputFile = self.OutputFile
                                     CommandLine = self.CommandLine
-                                    ExposeReturnCode = not self.DropReturnCode.IsPresent }
+                                    ExposeReturnCode = not self.DropReturnCode.IsPresent
+                                    SummaryFormat = formats.[self.SummaryFormat |> int]}
 
   member private self.Prepare() =
     FSApi.PrepareParams.Primitive { InputDirectory = self.InputDirectory

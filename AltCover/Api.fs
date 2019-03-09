@@ -72,6 +72,16 @@ type CollectParams =
     | Primitive p -> p.ExposeReturnCode
     | TypeSafe t -> t.ExposeReturnCode.AsBool()
 
+  member self.SummaryFormat =
+    match self with
+    | Primitive p -> p.SummaryFormat
+    | TypeSafe t -> match t.SummaryFormat with
+                    | TypeSafe.SummaryFormat.Default -> String.Empty
+                    | TypeSafe.SummaryFormat.B -> "B"
+                    | TypeSafe.SummaryFormat.R -> "R"
+                    | TypeSafe.SummaryFormat.BPlus -> "+B"
+                    | TypeSafe.SummaryFormat.RPlus -> "+R"
+
 #if RUNNER
   member self.Validate afterPreparation =
     let saved = CommandLine.error
@@ -350,6 +360,10 @@ module internal Args =
     if x |> String.IsNullOrWhiteSpace then []
     else [ a; x ]
 
+  let private OptItem a x =
+    if x |> String.IsNullOrWhiteSpace then []
+    else [ a + ":" + x ]
+
   let internal ItemList a x =
     if x |> isNull then []
     else
@@ -435,6 +449,7 @@ module internal Args =
       Item "-o" args.OutputFile
       Flag "--collect" (exe |> String.IsNullOrWhiteSpace)
       Flag "--dropReturnCode" (args.ExposeReturnCode |> not)
+      OptItem "--teamcity" args.SummaryFormat
       trailing ]
     |> List.concat
 

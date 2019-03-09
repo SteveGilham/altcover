@@ -126,6 +126,7 @@ type Collect() =
   member val Cobertura = String.Empty with get, set
   member val OutputFile = String.Empty with get, set
   member val CommandLine : string array = [||] with get, set
+  member val SummaryFormat = String.Empty with get, set
 
   [<Output>]
   [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance",
@@ -148,7 +149,8 @@ type Collect() =
                                       Cobertura = self.Cobertura
                                       OutputFile = self.OutputFile
                                       CommandLine = self.CommandLine
-                                      ExposeReturnCode = true }
+                                      ExposeReturnCode = true
+                                      SummaryFormat = self.SummaryFormat }
 
     Api.Collect task log = 0
 

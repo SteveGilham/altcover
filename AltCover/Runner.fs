@@ -13,8 +13,8 @@ open Mono.Cecil
 open Mono.Options
 open Augment
 
-[<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage>]
-type internal SummaryFormat =
+[<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage; NoComparison>]
+type SummaryFormat =
   | Default
   | R
   | B
