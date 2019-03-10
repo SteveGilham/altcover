@@ -2218,24 +2218,6 @@ or
         Output.Error <- snd saved
         Output.Warn <- warned
 
-#if NETCOREAPP2_0
-  // This fails when self-testing -- it's always .Gray
-  // Operationally, though, it can be seen to work
-#else
-    [<Test>]
-    member self.ColourizeWorks() =
-      let before = Console.ForegroundColor
-      try
-        Api.Colourize "green"
-        Assert.That (Console.ForegroundColor, Is.EqualTo ConsoleColor.Green)
-        Api.Colourize "darkRED"
-        Assert.That (Console.ForegroundColor, Is.EqualTo ConsoleColor.DarkRed)
-        Api.Colourize "foreground"
-        Assert.That (Console.ForegroundColor, Is.EqualTo ConsoleColor.DarkRed)
-      finally
-        Console.ForegroundColor <- before
-#endif
-
     [<Test>]
     member self.EchoWorks() =
       let saved = (Console.Out, Console.Error)
