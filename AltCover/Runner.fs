@@ -5,6 +5,7 @@ open System.Collections.Generic
 open System.Globalization
 open System.IO
 open System.IO.Compression
+open System.Text
 open System.Xml
 open System.Xml.Linq
 
@@ -12,9 +13,13 @@ open Mono.Cecil
 open Mono.Options
 open Augment
 
-[<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage>]
-type internal Tracer =
-  { Tracer : string }
+[<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage; NoComparison>]
+type TeamCityFormat =
+  | Default
+  | R
+  | B
+  | RPlus
+  | BPlus
 
 module internal Runner =
 
@@ -24,6 +29,8 @@ module internal Runner =
   let internal collect = ref false
   let mutable internal threshold : Option<int> = None
   let mutable internal output : Option<string> = None
+  let internal Summary = StringBuilder()
+  let mutable internal SummaryFormat = TeamCityFormat.Default
 
   let init() =
     CommandLine.error <- []
@@ -36,20 +43,38 @@ module internal Runner =
     collect := false
     threshold <- None
     output <- None
+    SummaryFormat <- Default
+    Summary.Clear() |> ignore
 
   let X = OpenCover.X
 
+  let Write line =
+    [Summary.AppendLine >> ignore; Output.Info]
+    |> Seq.iter(fun f -> f line)
+
+  let WriteSummary key vc nc pc =
+    let line = String.Format(CultureInfo.CurrentCulture,
+                              CommandLine.resources.GetString key, vc, nc, pc)
+    Write line
+
+  let TCtotal = "##teamcity[buildStatisticValue key='CodeCoverageAbs{0}Total' value='{1}']"
+  let TCcover = "##teamcity[buildStatisticValue key='CodeCoverageAbs{0}Covered' value='{1}']"
+
+  let WriteTC template what value =
+    let line = String.Format(CultureInfo.InvariantCulture,
+                              template, what, value)
+    Write line
+
   let NCoverSummary(report : XDocument) =
+    let makepc v n =
+      if n = 0 then "n/a"
+      else
+        Math.Round((float v) * 100.0 / (float n), 2)
+            .ToString(CultureInfo.InvariantCulture)
+
     let summarise v n key =
-      let pc =
-        if n = 0 then "n/a"
-        else
-          Math.Round((float v) * 100.0 / (float n), 2)
-              .ToString(CultureInfo.InvariantCulture)
-      String.Format
-        (CultureInfo.CurrentCulture, CommandLine.resources.GetString key, v, n, pc)
-      |> Output.Info
-      pc
+      let pc = makepc v n
+      WriteSummary key v n pc
 
     let methods =
       report.Descendants(X "method")
@@ -90,14 +115,26 @@ module internal Runner =
       |> Seq.filter isVisited
       |> Seq.length
 
-    summarise vclasses classes.Length "VisitedClasses" |> ignore
-    summarise vmethods methods.Length "VisitedMethods" |> ignore
-    summarise vpoints points.Length "VisitedPoints"
+    if [Default; BPlus; RPlus] |> Seq.exists (fun x -> x = SummaryFormat) then
+      summarise vclasses classes.Length "VisitedClasses"
+      summarise vmethods methods.Length "VisitedMethods"
+      summarise vpoints points.Length "VisitedPoints"
+
+    if [B; R; BPlus; RPlus] |> Seq.exists (fun x -> x = SummaryFormat) then
+      WriteTC TCtotal "C" classes.Length
+      WriteTC TCcover "C" vclasses
+      WriteTC TCtotal "M" methods.Length
+      WriteTC TCcover "M" vmethods
+      WriteTC TCtotal "S" points.Length
+      WriteTC TCcover "S" vpoints
+
+    makepc vpoints points.Length
 
   let AltSummary(report : XDocument) =
     "Alternative"
     |> CommandLine.resources.GetString
-    |> Output.Info
+    |> Write
+
     let classes =
       report.Descendants(X "Class")
       |> Seq.filter (fun c -> c.Attribute(X "skippedDueTo") |> isNull)
@@ -122,9 +159,8 @@ module internal Runner =
       else
         Math.Round((float vclasses) * 100.0 / (float nc), 2)
             .ToString(CultureInfo.InvariantCulture)
-    String.Format
-      (CultureInfo.CurrentCulture, CommandLine.resources.GetString "AltVC", vclasses, nc,
-       pc) |> Output.Info
+    WriteSummary "AltVC" vclasses nc pc
+
     let methods =
       classes
       |> Seq.collect (fun c -> c.Descendants(X "Method"))
@@ -143,14 +179,12 @@ module internal Runner =
       else
         Math.Round((float vm) * 100.0 / (float nm), 2)
             .ToString(CultureInfo.InvariantCulture)
-    String.Format
-      (CultureInfo.CurrentCulture, CommandLine.resources.GetString "AltVM", vm, nm, pm)
-    |> Output.Info
+    WriteSummary "AltVM" vm nm pm
 
   let OpenCoverSummary(report : XDocument) =
     let summary = report.Descendants(X "Summary") |> Seq.head
 
-    let summarise visit number precalc key =
+    let summarise go visit number precalc key =
       let vc = summary.Attribute(X visit).Value
       let nc = summary.Attribute(X number).Value
 
@@ -173,19 +207,35 @@ module internal Runner =
 
             Math.Round(vc1 * 100.0 / nc1, 2).ToString(CultureInfo.InvariantCulture)
         | Some x -> summary.Attribute(X x).Value
-      String.Format
-        (CultureInfo.CurrentCulture, CommandLine.resources.GetString key, vc, nc, pc)
-      |> Output.Info
-      pc
-    summarise "visitedClasses" "numClasses" None "VisitedClasses" |> ignore
-    summarise "visitedMethods" "numMethods" None "VisitedMethods" |> ignore
-    let covered =
-      summarise "visitedSequencePoints" "numSequencePoints" (Some "sequenceCoverage")
-        "VisitedPoints"
-    summarise "visitedBranchPoints" "numBranchPoints" (Some "branchCoverage")
-      "VisitedBranches" |> ignore
-    Output.Info String.Empty
-    AltSummary report
+      if go then WriteSummary key vc nc pc
+      (vc, nc, pc)
+
+    let go = [Default; BPlus; RPlus] |> Seq.exists (fun x -> x = SummaryFormat)
+    let (vc, nc, _) = summarise go "visitedClasses" "numClasses" None "VisitedClasses"
+    let (vm, nm, _) = summarise go "visitedMethods" "numMethods" None "VisitedMethods"
+    let (vs, ns, covered) =
+      summarise go "visitedSequencePoints" "numSequencePoints" (Some "sequenceCoverage")
+          "VisitedPoints"
+    let (vb, nb, _) = summarise go "visitedBranchPoints" "numBranchPoints" (Some "branchCoverage")
+                        "VisitedBranches"
+    if go then
+      Write String.Empty
+      AltSummary report
+
+    if [B; R; BPlus; RPlus] |> Seq.exists (fun x -> x = SummaryFormat) then
+      WriteTC TCtotal "C" nc
+      WriteTC TCcover "C" vc
+      WriteTC TCtotal "M" nm
+      WriteTC TCcover "M" vm
+      WriteTC TCtotal "S" ns
+      WriteTC TCcover "S" vs
+      let tag = match SummaryFormat with
+                | R
+                | RPlus -> "R"
+                | _ -> "B"
+      WriteTC TCtotal tag nb
+      WriteTC TCcover tag vb
+
     covered
 
   let StandardSummary (report : XDocument) (format : Base.ReportFormat) result =
@@ -304,6 +354,34 @@ module internal Runner =
                      |> Path.GetFullPath
                      |> Some))
       (CommandLine.ddFlag "dropReturnCode" CommandLine.dropReturnCode)
+      ("teamcity:",
+        fun x -> if SummaryFormat = Default then
+                   let (|Select|_|) (pattern : String) offered =
+                    if offered
+                       |> String.IsNullOrWhiteSpace
+                       |> not
+                       && pattern.Equals(String (offered |> Seq.sort |> Seq.toArray),
+                                         StringComparison.OrdinalIgnoreCase)
+                    then Some offered
+                    else None
+
+                   SummaryFormat <- match x with
+                                    | null
+                                    | Select "B" _ -> B
+                                    | Select "+" _
+                                    | Select "+B" _ -> BPlus
+                                    | Select "R" _-> R
+                                    | Select "+R" _ -> RPlus
+                                    | _ ->  CommandLine.error <- String.Format
+                                              (CultureInfo.CurrentCulture,
+                                                CommandLine.resources.GetString "InvalidValue",
+                                                "--teamcity", x) :: CommandLine.error
+                                            Default
+                 else
+                   CommandLine.error <- String.Format
+                                      (CultureInfo.CurrentCulture,
+                                       CommandLine.resources.GetString "MultiplesNotAllowed",
+                                       "--teamcity") :: CommandLine.error)
       ("?|help|h", (fun x -> CommandLine.help <- not (isNull x)))
 
       ("<>",

@@ -19,17 +19,30 @@ module DotNet =
   type CLIArgs =
     | Force of bool
     | FailFast of bool
+    | ShowSummary of String
     | Many of CLIArgs seq
   with member self.ForceDelete =
         match self with
         | Force b -> b
+        | ShowSummary _
         | FailFast _ -> false
         | Many s -> s |> Seq.exists(fun f -> f.ForceDelete)
        member self.Fast =
         match self with
         | FailFast b -> b
+        | ShowSummary _
         | Force _ -> false
         | Many s -> s |> Seq.exists(fun f -> f.Fast)
+       member self.Summary =
+        match self with
+        | ShowSummary b -> b
+        | FailFast _
+        | Force _ -> String.Empty
+        | Many s -> match s |> Seq.map(fun f -> f.Summary)
+                            |> Seq.filter (String.IsNullOrWhiteSpace >> not)
+                            |> Seq.tryHead with
+                    | Some x -> x
+                    | _ -> String.Empty
 
 #if RUNNER
 #else
@@ -79,7 +92,9 @@ module internal Internals =
       (Arg "LineCover" "true", prepare.LineCover)
       (Arg "BranchCover" "true", prepare.BranchCover)
       (Arg "Force" "true", force.ForceDelete)
-      (Arg "FailFast" "true", force.Fast)]
+      (Arg "FailFast" "true", force.Fast)
+      (FromArg "ShowSummary" force.Summary)
+      (FromArg "SummaryFormat" collect.SummaryFormat)]
     |> List.filter snd
     |> List.map fst
 

@@ -138,6 +138,21 @@ type Context =
       |> Seq.toList
 
 [<ExcludeFromCodeCoverage; NoComparison>]
+type SummaryFormat =
+  | Default
+  | R
+  | B
+  | RPlus
+  | BPlus
+  member self.AsString () =
+    match self with
+    | Default -> String.Empty
+    | B -> "B"
+    | R -> "R"
+    | BPlus -> "+B"
+    | RPlus -> "+R"
+
+[<ExcludeFromCodeCoverage; NoComparison>]
 type CollectParams =
   { RecorderDirectory : DirectoryPath
     WorkingDirectory : DirectoryPath
@@ -148,6 +163,7 @@ type CollectParams =
     OutputFile : FilePath
     CommandLine : Command
     ExposeReturnCode : Flag
+    SummaryFormat : SummaryFormat
   }
   static member Create() =
     { RecorderDirectory = NoDirectory
@@ -159,6 +175,7 @@ type CollectParams =
       OutputFile = NoFile
       CommandLine = NoCommand
       ExposeReturnCode = Set
+      SummaryFormat = Default
     }
 
 [<ExcludeFromCodeCoverage; NoComparison>]

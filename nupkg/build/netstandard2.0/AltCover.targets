@@ -8,6 +8,8 @@
         AssemblyFile="$(MSBuildThisFileDirectory)../../tools/netcoreapp2.0/AltCover.dll" />
   <UsingTask TaskName="AltCover.GetVersion"
         AssemblyFile="$(MSBuildThisFileDirectory)../../tools/netcoreapp2.0/AltCover.dll" />
+  <UsingTask TaskName="AltCover.Echo"
+        AssemblyFile="$(MSBuildThisFileDirectory)../../tools/netcoreapp2.0/AltCover.dll" />
 
   <Target Name="AltCoverPreFlight" Condition="'$(AltCover)' == 'true'">
     <Error Condition="Exists('$(TargetDir)__Saved') AND '$(AltCoverForce)' != 'true'" 
@@ -46,7 +48,8 @@
       Single="$(AltCoverSingle)"
       LineCover="$(AltCoverLineCover)"
       BranchCover="$(AltCoverBranchCover)"
-      Dependencies="@(AltCoverDependencies)" />
+      Dependencies="@(AltCoverDependencies)"
+      SourceLink="$(AltCoverSourceLink)" />
   </Target>
 
   <Target Name="AltCoverInstrumentModulesNoBuild" AfterTargets="AltCoverPreFlight" Condition="'$(VSTestNoBuild)' == 'true'">
@@ -90,11 +93,20 @@
   </Target>
 
   <Target Name="AltCoverGenerateCoverageResult" AfterTargets="VSTest" Condition="'$(AltCover)' == 'true'">
+    <PropertyGroup>
+      <AltCoverColour Condition="'$(AltCoverShowSummary)' != ''">$(AltCoverShowSummary)</AltCoverColour>
+      <AltCoverColour Condition="'$(AltCoverShowSummary)' == ''">Foreground</AltCoverColour>
+    </PropertyGroup>
+
     <AltCover.Collect
       RecorderDirectory="$(TargetDir)"
       LcovReport="$(AltCoverLcovReport)"
       Threshold="$(AltCoverThreshold)"
-      Cobertura="$(AltCoverCobertura)" />
+      Cobertura="$(AltCoverCobertura)"
+      SummaryFormat="$(AltCoverSummaryFormat)">
+      <Output TaskParameter="Summary" PropertyName="AltCoverSummary"/>
+    </AltCover.Collect>
+    <AltCover.Echo Text="$(AltCoverSummary)" Colour="$(AltCoverColour)" Condition="$(AltCoverShowSummary) != ''"/>
     <ItemGroup>
       <AltCoverRecorderGFiles Include="$(TargetDir)/AltCover.Recorder.g.*" />
       <AltCoverFSharpFiles Include="$(TargetDir)/FSharp.Core.*" />

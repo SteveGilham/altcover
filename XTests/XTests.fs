@@ -147,11 +147,21 @@ module XTests =
 
   [<Fact>]
   let TypeSafeCollectParamsCanBeValidated() =
-    let test = { TypeSafe.CollectParams.Create() with Threshold = TypeSafe.Threshold 23uy }
+    let test = { TypeSafe.CollectParams.Create() with Threshold = TypeSafe.Threshold 23uy
+                                                      SummaryFormat = TypeSafe.BPlus }
     let scan = (FSApi.CollectParams.TypeSafe test).Validate(false)
     Assert.Equal(0, scan.Length)
-    Assert.Equal<string list>( ["Runner"; "-t"; "23"; "--collect"],
+    Assert.Equal<string list>( ["Runner"; "-t"; "23"; "--collect"; "--teamcity:+B" ],
                  (FSApi.CollectParams.TypeSafe test) |> FSApi.Args.Collect)
+
+  [<Fact>]
+  let TypeSafeCollectSummaryCanBeValidated() =
+    let inputs = [TypeSafe.Default; TypeSafe.B; TypeSafe.BPlus; TypeSafe.R; TypeSafe.RPlus ]
+    let expected = [String.Empty; "B"; "+B"; "R"; "+R"]
+    inputs
+    |> List.map (fun i -> i.AsString())
+    |> List.zip expected
+    |> List.iter (fun (a,b) -> Assert.Equal(a, b))
 
   [<Fact>]
   let CollectParamsCanBeValidatedWithErrors() =

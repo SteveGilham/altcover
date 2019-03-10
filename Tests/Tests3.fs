@@ -1696,10 +1696,8 @@ type AltCoverTests3() =
          "First list mismatch with from files")
       Assert.That(y,
                   Is.EquivalentTo(x
-                                  |> Seq.map Path.GetFileNameWithoutExtension
-                                  |> Seq.map (fun f ->
-                                       if f = "TailCallSample" then "Sample7"
-                                       else f)), "Second list mismatch")
+                                  |> Seq.map Path.GetFileNameWithoutExtension),
+                                  "Second list mismatch")
 
     [<Test>]
     member self.ShouldProcessTrailingArguments() =
@@ -2029,6 +2027,8 @@ or
                                rather than overwriting the original report file.
       --dropReturnCode       Optional: Do not report any non-zero return code
                                from a launched process.
+      --teamcity[=VALUE]     Optional: Show summary in TeamCity format as well
+                               as/instead of the OpenCover summary
   -?, --help, -h             Prints out the options.
 """
         Assert.That
@@ -2215,5 +2215,37 @@ or
         Output.Info <- fst saved
         Output.Error <- snd saved
         Output.Warn <- warned
+
+    [<Test>]
+    member self.EchoWorks() =
+      let saved = (Console.Out, Console.Error)
+      let e0 = Console.Out.Encoding
+      let e1 = Console.Error.Encoding
+      let before = Console.ForegroundColor
+
+      try
+        use stdout =
+          { new StringWriter() with
+              member self.Encoding = e0 }
+
+        use stderr =
+         { new StringWriter() with
+              member self.Encoding = e1 }
+
+        Console.SetOut stdout
+        Console.SetError stderr
+
+        let subject = Echo()
+        let unique = Guid.NewGuid().ToString()
+        subject.Text <- unique
+        subject.Colour <- "cyan"
+        Assert.That (subject.Execute(), Is.True)
+        Assert.That (Console.ForegroundColor, Is.EqualTo before)
+        Assert.That (stderr.ToString(), Is.Empty)
+        Assert.That (stdout.ToString(), Is.EqualTo (unique + Environment.NewLine))
+      finally
+        Console.SetOut(fst saved)
+        Console.SetError(snd saved)
+
   // Recorder.fs => Shadow.Tests
   end

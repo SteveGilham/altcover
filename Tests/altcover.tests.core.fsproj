@@ -49,12 +49,12 @@
     <EmbeddedResource Include="Sample2.deps.ncafter.json" />
     <EmbeddedResource Include="..\AltCover\Strings.resx" Link="Strings.resx" />
     <EmbeddedResource Include="..\Build\Infrastructure.snk" Link="Infrastructure.snk" />
+    <EmbeddedResource Include="TailCallSample.dl_" />
+    <EmbeddedResource Include="SwitchSample.dl_" />
+    <EmbeddedResource Include="SwitchSample.pd_" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="TailCallSample.dl_">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <None Include="Sample12.runtimeconfig.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
