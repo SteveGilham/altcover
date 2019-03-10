@@ -402,11 +402,9 @@ module internal Instrument =
       // (in other words - it will be a switch operator's operand)
       | OperandType.InlineSwitch ->
         let operands = instruction.Operand :?> Instruction array
-        let offset = operands |> Seq.tryFindIndex (fun x -> x = oldValue)
-        match offset with
-        | Some i -> // operands.[i] <- newValue : fails with "This expression was expected to have type    ''a [] * int * 'a'    but here has type    'Instruction array'"
-          Array.set operands i newValue // so mutate the array like this instead
-        | _ -> ()
+        operands
+        |> Array.iteri (fun i x -> if x = oldValue
+                                   then Array.set operands i newValue)
       | _ -> ()
 
   let internal InsertVisit (instruction : Instruction) (methodWorker : ILProcessor)

@@ -1696,10 +1696,8 @@ type AltCoverTests3() =
          "First list mismatch with from files")
       Assert.That(y,
                   Is.EquivalentTo(x
-                                  |> Seq.map Path.GetFileNameWithoutExtension
-                                  |> Seq.map (fun f ->
-                                       if f = "TailCallSample" then "Sample7"
-                                       else f)), "Second list mismatch")
+                                  |> Seq.map Path.GetFileNameWithoutExtension),
+                                  "Second list mismatch")
 
     [<Test>]
     member self.ShouldProcessTrailingArguments() =
