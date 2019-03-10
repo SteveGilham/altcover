@@ -20,7 +20,7 @@ type TeamCityFormat =
   | B
   | RPlus
   | BPlus
-  static member Parse s =
+  static member Factory s =
     let (|Select|_|) (pattern : String) offered =
       if offered
           |> String.IsNullOrWhiteSpace
@@ -375,7 +375,7 @@ module internal Runner =
         fun x -> if SummaryFormat = Default then
                     SummaryFormat <- if String.IsNullOrWhiteSpace x
                                      then B
-                                     else TeamCityFormat.Parse x
+                                     else TeamCityFormat.Factory x
                     if SummaryFormat = Default then
                        CommandLine.error <- String.Format
                                               (CultureInfo.CurrentCulture,

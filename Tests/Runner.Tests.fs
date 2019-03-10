@@ -962,7 +962,7 @@ type AltCoverTests() =
         ("R", R)
         ("true", Default)
        ]
-       |> List.iter (fun (x,y) -> Assert.That (TeamCityFormat.Parse x,
+       |> List.iter (fun (x,y) -> Assert.That (TeamCityFormat.Factory x,
                                                Is.EqualTo y,
                                                x))
 
