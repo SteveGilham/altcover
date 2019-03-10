@@ -2,9 +2,12 @@ Q. Never mind the fluff -- how do I get started?
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
-# 5.0.6xx (Ezoguma series release 5)
-* [BUGFIX] Expose the sourcelink functionality through `dotnet test` as well
+# 5.2.6xx (Ezoguma series release 5)
+* [BUGFIX] Expose the sourcelink functionality through `dotnet test` as well (`/p:AltCoverSourceLink=true`)
 * [BUGFIX] Update help text to current
+* [BUGFIX] Fix the case where two or more branches of a switch go to the same location so that all of them go through the instrumentation
+* `/p:AltCoverShowSummary=colour` to echo summary data to stdout in the colour of choice (default: current foreground if `colour` is not a valid `ConsoleColor` case-insensitive name), and equivalent API extensions
+* `--teamcity[]:[+][R|B]]` to put an additional (`+`) or replacement teamcity summary, with branches as teamcity branches with `R` or blocks `B` (which. last I tried, was the value to actually show up in the build report); if no optionas are attached, `B` is understood.  Exposed via API field `SummaryFormat`, PowerShell `-SummaryFormat`, `dotnet test` argument `/p:AltCoverSummaryFormat=...`
 
 # 5.1.666 (Ezoguma series release 4)
 * `--dropReturnCode` ( `-DropReturnCode` in PowerShell, `ExposeReturnCode` with default value `true` in the Fake API) to not pass the return code of any nested process
