@@ -916,7 +916,7 @@ type AltCoverTests() =
     member self.ParsingDropGivesDrop() =
       try
         CommandLine.dropReturnCode := false
-        let options = Main.DeclareOptions()
+        let options = Runner.DeclareOptions()
         let input = [| "--dropReturnCode" |]
         let parse = CommandLine.ParseCommandLine input options
         match parse with
@@ -932,7 +932,7 @@ type AltCoverTests() =
     member self.ParsingMultipleDropGivesFailure() =
       try
         CommandLine.dropReturnCode := false
-        let options = Main.DeclareOptions()
+        let options = Runner.DeclareOptions()
         let input = [| "--dropReturnCode"; "--dropReturnCode" |]
         let parse = CommandLine.ParseCommandLine input options
         match parse with
@@ -944,15 +944,39 @@ type AltCoverTests() =
         CommandLine.dropReturnCode := false
 
     [<Test>]
+    member self.ParsingTCString() =
+       [
+        (String.Empty, Default)
+        ("+", BPlus)
+        ("+b", BPlus)
+        ("+B", BPlus)
+        ("b+", BPlus)
+        ("B+", BPlus)
+        ("b",B)
+        ("B", B)
+        ("+r", RPlus)
+        ("+R", RPlus)
+        ("r+", RPlus)
+        ("R+", RPlus)
+        ("r", R)
+        ("R", R)
+        ("true", Default)
+       ]
+       |> List.iter (fun (x,y) -> Assert.That (TeamCityFormat.Parse x,
+                                               Is.EqualTo y,
+                                               x))
+
+    [<Test>]
     member self.ParsingTCGivesTC() =
-      [ (":+", BPlus)
+      [
+        (String.Empty, B)
+        (":+", BPlus)
         (":+b", BPlus)
         (":+B", BPlus)
         (":b+", BPlus)
         (":B+", BPlus)
         (":b",B)
         (":B", B)
-        (String.Empty, B)
         (":+r", RPlus)
         (":+R", RPlus)
         (":r+", RPlus)
@@ -978,7 +1002,7 @@ type AltCoverTests() =
     member self.ParsingMultipleTCGivesFailure() =
       lock Runner.SummaryFormat (fun () ->
         Runner.SummaryFormat <- Default
-        let options = Main.DeclareOptions()
+        let options = Runner.DeclareOptions()
         let input = [| "--teamcity"; "--teamcity" |]
         let parse = CommandLine.ParseCommandLine input options
         match parse with

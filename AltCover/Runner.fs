@@ -20,6 +20,23 @@ type TeamCityFormat =
   | B
   | RPlus
   | BPlus
+  static member Parse s =
+    let (|Select|_|) (pattern : String) offered =
+      if offered
+          |> String.IsNullOrWhiteSpace
+          |> not
+          && pattern.Equals(String (offered |> Seq.sort |> Seq.toArray),
+                            StringComparison.OrdinalIgnoreCase)
+      then Some offered
+      else None
+
+    match s with
+    | Select "B" _ -> B
+    | Select "+" _
+    | Select "+B" _ -> BPlus
+    | Select "R" _-> R
+    | Select "+R" _ -> RPlus
+    | _ ->  Default
 
 module internal Runner =
 
@@ -356,27 +373,14 @@ module internal Runner =
       (CommandLine.ddFlag "dropReturnCode" CommandLine.dropReturnCode)
       ("teamcity:",
         fun x -> if SummaryFormat = Default then
-                   let (|Select|_|) (pattern : String) offered =
-                    if offered
-                       |> String.IsNullOrWhiteSpace
-                       |> not
-                       && pattern.Equals(String (offered |> Seq.sort |> Seq.toArray),
-                                         StringComparison.OrdinalIgnoreCase)
-                    then Some offered
-                    else None
-
-                   SummaryFormat <- match x with
-                                    | null
-                                    | Select "B" _ -> B
-                                    | Select "+" _
-                                    | Select "+B" _ -> BPlus
-                                    | Select "R" _-> R
-                                    | Select "+R" _ -> RPlus
-                                    | _ ->  CommandLine.error <- String.Format
+                    SummaryFormat <- if String.IsNullOrWhiteSpace x
+                                     then B
+                                     else TeamCityFormat.Parse x
+                    if SummaryFormat = Default then
+                       CommandLine.error <- String.Format
                                               (CultureInfo.CurrentCulture,
                                                 CommandLine.resources.GetString "InvalidValue",
                                                 "--teamcity", x) :: CommandLine.error
-                                            Default
                  else
                    CommandLine.error <- String.Format
                                       (CultureInfo.CurrentCulture,
