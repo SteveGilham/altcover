@@ -35,6 +35,10 @@ module Api =
   let Ipmo() = GetStringValue "ipmo"
   let Version() = GetStringValue "version"
 
+  let internal Colourize name =
+    let ok, colour = Enum.TryParse<ConsoleColor>(name, true)
+    if ok then Console.ForegroundColor <- colour
+
 type Prepare() =
   inherit Task(null)
   member val internal ACLog : FSApi.Logging option = None with get, set
@@ -122,6 +126,13 @@ type Collect() =
   member val Cobertura = String.Empty with get, set
   member val OutputFile = String.Empty with get, set
   member val CommandLine : string array = [||] with get, set
+  member val SummaryFormat = String.Empty with get, set
+
+  [<Output>]
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance",
+                                                    "CA1822",
+                                                    Justification = "Instance property needed")>]
+  member self.Summary with get() = Runner.Summary.ToString()
   member self.Message x = base.Log.LogMessage(MessageImportance.High, x)
   override self.Execute() =
     let log =
@@ -138,7 +149,8 @@ type Collect() =
                                       Cobertura = self.Cobertura
                                       OutputFile = self.OutputFile
                                       CommandLine = self.CommandLine
-                                      ExposeReturnCode = true }
+                                      ExposeReturnCode = true
+                                      SummaryFormat = self.SummaryFormat }
 
     Api.Collect task log = 0
 
@@ -164,4 +176,22 @@ type GetVersion() =
     let r = Api.Version()
     self.IO.Apply()
     r |> Output.Warn
+    true
+
+type Echo() =
+  inherit Task(null)
+
+  [<Required>]
+  member val Text = String.Empty with get, set
+  member val Colour = String.Empty with get, set
+
+  override self.Execute() =
+    if self.Text |> String.IsNullOrWhiteSpace |>  not then
+      let original = Console.ForegroundColor
+      try
+        Api.Colourize self.Colour
+        printfn "%s" self.Text
+      finally
+        Console.ForegroundColor <- original
+
     true

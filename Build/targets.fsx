@@ -127,8 +127,11 @@ let NuGetAltCover =
   |> Seq.filter File.Exists
   |> Seq.tryHead
 
-let ForceTrue = DotNet.CLIArgs.Force true
+let ForceTrueOnly = DotNet.CLIArgs.Force true
 let FailTrue = DotNet.CLIArgs.FailFast true
+
+let GreenSummary = DotNet.CLIArgs.ShowSummary "Green"
+let ForceTrue = DotNet.CLIArgs.Many [ ForceTrueOnly; GreenSummary ]
 
 let _Target s f =
   Target.description s
@@ -220,7 +223,7 @@ _Target "BuildDebug" (fun _ ->
 
   Directory.ensure "./_SourceLink"
   Shell.copyFile "./_SourceLink/Class2.cs" "./Sample14/Sample14/Class2.txt"
-  if Environment.isWindows then  
+  if Environment.isWindows then
     let temp = Environment.environVar "TEMP"
     Shell.copyFile (temp @@ "/Sample14.SourceLink.Class3.cs") "./Sample14/Sample14/Class3.txt"
   else
@@ -2899,7 +2902,7 @@ _Target "DotnetTestIntegration" (fun _ ->
     let p1 = { p0 with CallContext = [ "[Fact]"; "0" ]
                        AssemblyFilter = [| "xunit" |] }
     let pp1 = AltCover.PrepareParams.Primitive p1
-    let cc0 = AltCover.CollectParams.Primitive c0
+    let cc0 = AltCover.CollectParams.Primitive { c0 with SummaryFormat = "+B" }
     DotNet.test
       (fun to' ->
       (to'.WithCommon(withWorkingDirectoryVM "_DotnetTest")

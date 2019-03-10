@@ -225,11 +225,14 @@ module internal Visitor =
   let mutable private MethodNumber : int = 0
   let mutable internal SourceLinkDocuments : Dictionary<string, string> option = None
 
+  let internal EnsureEndsWith c (s:string) =
+    if s.EndsWith (c, StringComparison.Ordinal)
+    then s
+    else s + c
+
   let internal GetRelativePath (relativeTo:string) path =
-    let uri = new Uri(if relativeTo.EndsWith(Path.DirectorySeparatorChar.ToString(),
-                                              StringComparison.Ordinal)
-                      then relativeTo
-                      else relativeTo + Path.DirectorySeparatorChar.ToString())
+    let ender = EnsureEndsWith <| Path.DirectorySeparatorChar.ToString()
+    let uri = new Uri(ender relativeTo)
     Uri.UnescapeDataString(uri.MakeRelativeUri(new Uri(path)).ToString()).
         Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar)
 
