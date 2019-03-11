@@ -231,10 +231,13 @@ module internal Visitor =
     else s + c
 
   let internal GetRelativePath (relativeTo:string) path =
-    let ender = EnsureEndsWith <| Path.DirectorySeparatorChar.ToString()
-    let uri = new Uri(ender relativeTo)
-    Uri.UnescapeDataString(uri.MakeRelativeUri(new Uri(path)).ToString()).
-        Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar)
+    if Path.GetFullPath path = Path.GetFullPath relativeTo
+    then String.Empty
+    else
+      let ender = EnsureEndsWith <| Path.DirectorySeparatorChar.ToString()
+      let uri = new Uri(ender relativeTo)
+      Uri.UnescapeDataString(uri.MakeRelativeUri(new Uri(path)).ToString()).
+            Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar)
 
   let internal Exists (url:Uri) =
     let request = System.Net.WebRequest.CreateHttp(url)
