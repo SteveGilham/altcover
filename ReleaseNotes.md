@@ -2,6 +2,9 @@ Q. Never mind the fluff -- how do I get started?
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
+# 5.2.6xx (Ezoguma series release 6)
+* In the `Invoke-AltCover -Runner` cmdlet, send the summary text (OpenCover and/or TeamCity style) to the object pipeline as well as to the `Information` channel.
+
 # 5.2.667 (Ezoguma series release 5)
 * [BUGFIX] Expose the sourcelink functionality through `dotnet test` as well (`/p:AltCoverSourceLink=true`)
 * [BUGFIX] Update help text to current
