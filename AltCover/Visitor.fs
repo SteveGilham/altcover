@@ -246,17 +246,19 @@ module internal Visitor =
     with
     | :? WebException -> false
 
+  let internal FindClosestMatch  file (dict : Dictionary<string, string>) =
+    dict.Keys
+    |> Seq.filter (fun x -> x |> Path.GetFileName = "*")
+    |> Seq.map (fun x -> (x, GetRelativePath (x |> Path.GetDirectoryName) (file |> Path.GetDirectoryName)))
+    |> Seq.filter (fun (x, r) -> r.IndexOf("..") < 0)
+    |> Seq.sortBy (fun (x, r) -> r.Length)
+    |> Seq.tryHead
+
   [<SuppressMessage("Microsoft.Usage",
                     "CA2208:InstantiateArgumentExceptionsCorrectly",
                     Justification = "F# inlined code")>]
-  let internal LocateMatch file (dict : Dictionary<string, string>) =
-    let find =
-      dict.Keys
-      |> Seq.filter (fun x -> x |> Path.GetFileName = "*")
-      |> Seq.map (fun x -> (x, GetRelativePath (x |> Path.GetDirectoryName) (file |> Path.GetDirectoryName)))
-      |> Seq.filter (fun (x, r) -> r.IndexOf("..") < 0)
-      |> Seq.sortBy (fun (x, r) -> r.Length)
-      |> Seq.tryHead
+  let internal LocateMatch file dict =
+    let find = FindClosestMatch file dict
 
     match find with
     | Some (best, relative) ->
