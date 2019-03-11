@@ -20,6 +20,9 @@ module Api =
     |> List.toArray
     |> Main.EffectiveMain
 
+  let Summary () =
+    Runner.Summary.ToString()
+
   let mutable internal store = String.Empty
   let private writeToStore s = store <- s
   let internal LogToStore = FSApi.Logging.Primitive { Primitive.Logging.Create() with Info = writeToStore }
@@ -132,7 +135,7 @@ type Collect() =
   [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance",
                                                     "CA1822",
                                                     Justification = "Instance property needed")>]
-  member self.Summary with get() = Runner.Summary.ToString()
+  member self.Summary with get() = Api.Summary()
   member self.Message x = base.Log.LogMessage(MessageImportance.High, x)
   override self.Execute() =
     let log =

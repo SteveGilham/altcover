@@ -13,7 +13,7 @@ type Summary =
   | BPlus = 4
 
 [<Cmdlet(VerbsLifecycle.Invoke, "AltCover")>]
-[<OutputType("System.Void")>]
+[<OutputType([|"System.Void";"System.String"|])>]
 [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.PowerShell",
                                                   "PS1101:AllCmdletsShouldAcceptPipelineInput",
                                                   Justification = "No valid input")>]
@@ -240,6 +240,7 @@ type InvokeAltCoverCommand(runner : bool) =
            let task = self.Prepare()
            Api.Prepare task) log
       if status <> 0 then status.ToString() |> self.Log().Error
+      else if self.Runner.IsPresent then Api.Summary () |> self.WriteObject
       match self.Fail with
       | [] -> ()
       | things -> String.Join(Environment.NewLine, things |> List.rev) |> makeError
