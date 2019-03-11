@@ -725,14 +725,15 @@ type AltCoverTests() =
     member self.LocateMatchShouldChooseLongerRelativePath() =
       let dict = System.Collections.Generic.Dictionary<string, string>()
       let file = Assembly.GetExecutingAssembly().Location
-      let p1 = Path.GetDirectoryName file
+      let p0 = Path.GetDirectoryName file
+      let p1 = Path.GetDirectoryName p0
       let p2 = Path.GetDirectoryName p1
       let pp1 = Path.Combine (p1, "*")
       let pp2 = Path.Combine(p2, "*")
       dict.Add(pp1, pp1)
       dict.Add(pp2, pp2)
       let find = Visitor.FindClosestMatch file dict
-      Assert.That(find, Is.EqualTo (Some (pp2, Path.GetFileName p1)))
+      Assert.That(find, Is.EqualTo (Some (pp1, Path.GetFileName p0)))
 
     [<Test>]
     member self.ReleaseBuildTernaryTest() =
