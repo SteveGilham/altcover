@@ -198,7 +198,8 @@ module internal Counter =
                    System.Globalization.CultureInfo.InvariantCulture) |> snd
               // Treat -ve visit counts (an exemption added in analysis) as zero
               let (count, l) = moduleHits.[counter]
-              let visits = (max 0 vc) + count + l.Length
+              let total = (int64 (max 0 vc)) + (int64 count) + (int64 l.Length)
+              let visits = int (min (int64 (Int32.MaxValue)) total)
               pt.SetAttribute(v, visits.ToString(CultureInfo.InvariantCulture))
               pointProcess pt l))
     postProcess coverageDocument
@@ -240,5 +241,7 @@ module internal Counter =
       counts.[moduleId].Add(hitPointId, (0, []))
     let n, l = counts.[moduleId].[hitPointId]
     counts.[moduleId].[hitPointId] <- match context with
-                                      | Null -> (1 + n, l)
+                                      | Null -> let mutable next = n
+                                                if next < Int32.MaxValue then next <- next + 1
+                                                (next, l)
                                       | something -> (n, something :: l)
