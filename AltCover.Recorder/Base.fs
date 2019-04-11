@@ -40,6 +40,7 @@ type
   | Time = 1
   | Call = 2
   | Both = 3
+  | Table = 4
 
 #if NETSTANDARD2_0
 [<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage>]
@@ -50,11 +51,13 @@ type
 [<System.Runtime.InteropServices.ProgIdAttribute("ExcludeFromCodeCoverage hack for OpenCover issue 615")>]
 #endif
 #endif
+[<NoComparison>]
 type internal Track =
   | Null
   | Time of int64
   | Call of int
   | Both of (int64 * int)
+  | Table of Dictionary<string, Dictionary<int, int * Track list>>
 
 module internal Assist =
   let internal SafeDispose x =
@@ -235,13 +238,16 @@ module internal Counter =
 
   let internal AddVisit (counts : Dictionary<string, Dictionary<int, int * Track list>>)
       moduleId hitPointId context =
-    if not (counts.ContainsKey moduleId) then
-      counts.[moduleId] <- Dictionary<int, int * Track list>()
-    if not (counts.[moduleId].ContainsKey hitPointId) then
-      counts.[moduleId].Add(hitPointId, (0, []))
-    let n, l = counts.[moduleId].[hitPointId]
-    counts.[moduleId].[hitPointId] <- match context with
-                                      | Null -> let mutable next = n
-                                                if next < Int32.MaxValue then next <- next + 1
-                                                (next, l)
-                                      | something -> (n, something :: l)
+    match context with
+    | Table _ -> () // TODO
+    | _ ->
+      if not (counts.ContainsKey moduleId) then
+        counts.[moduleId] <- Dictionary<int, int * Track list>()
+      if not (counts.[moduleId].ContainsKey hitPointId) then
+        counts.[moduleId].Add(hitPointId, (0, []))
+      let n, l = counts.[moduleId].[hitPointId]
+      counts.[moduleId].[hitPointId] <- match context with
+                                        | Null -> let mutable next = n
+                                                  if next < Int32.MaxValue then next <- next + 1
+                                                  (next, l)
+                                        | something -> (n, something :: l)

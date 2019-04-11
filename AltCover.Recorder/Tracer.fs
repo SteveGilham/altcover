@@ -74,6 +74,9 @@ type Tracer =
       this.Formatter.Write(Tag.Both |> byte)
       this.Formatter.Write(t')
       this.Formatter.Write(t)
+    | Table _ ->
+      this.Formatter.Write(Tag.Table |> byte)
+      // TODO
 
   member internal this.CatchUp(visits : Dictionary<string, Dictionary<int, int * Track list>>) =
     let empty = Null

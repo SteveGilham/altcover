@@ -514,10 +514,11 @@ module internal Runner =
                  let tag = formatter.ReadByte() |> int
                  Some(id, strike,
                       match enum tag with
-                      | AltCover.Base.Tag.Time -> Base.Time <| formatter.ReadInt64()
-                      | AltCover.Base.Tag.Call -> Base.Call <| formatter.ReadInt32()
-                      | AltCover.Base.Tag.Both ->
+                      | Base.Tag.Time -> Base.Time <| formatter.ReadInt64()
+                      | Base.Tag.Call -> Base.Call <| formatter.ReadInt32()
+                      | Base.Tag.Both ->
                         Base.Both(formatter.ReadInt64(), formatter.ReadInt32())
+                      | Base.Tag.Table -> Base.Table <| null // TODO
                       | _ -> Base.Null)
                with :? EndOfStreamException -> None
              match hit with

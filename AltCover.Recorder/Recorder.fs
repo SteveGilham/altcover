@@ -15,6 +15,7 @@ open System.Runtime.CompilerServices
 #else
 [<System.Runtime.InteropServices.ProgIdAttribute("ExcludeFromCodeCoverage hack for OpenCover issue 615")>]
 #endif
+[<NoComparison>]
 type internal Carrier = SequencePoint of String * int * Track
 
 #if NETSTANDARD2_0

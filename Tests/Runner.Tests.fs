@@ -1687,6 +1687,9 @@ or
                  formatter.Write(Base.Tag.Both |> byte)
                  formatter.Write(t')
                  formatter.Write(t)
+               | Table t ->
+                 formatter.Write(Base.Tag.Table |> byte)
+                 // TODO
                x)
           |> List.length) inputs
 
