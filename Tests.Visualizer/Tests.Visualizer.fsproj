@@ -64,7 +64,7 @@
       </PropertyGroup>
     </Otherwise>
   </Choose>
-  <Import Project="$(FSharpTargetsPath)" />
+  <Import Project="$(FSharpTargetsPath)" Condition=" '$(FSharpTargetsPath)' != '' "/>
   <ItemGroup>
     <Compile Include="..\Tests\AssemblyInfo.fs">
       <Link>AssemblyInfo.fs</Link>

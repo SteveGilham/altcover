@@ -566,9 +566,9 @@ _Target "UnitTestDotNetWithCoverlet" (fun _ ->
     let xml =
       !!(@"./*Tests/*.tests.core.fsproj")
       |> Seq.zip
-           [ """/p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Exclude="\"[xunit*]*,[Sample*]*,[AltCover.Record*]*,[NUnit*]*,[AltCover.Shadow.Adapter]*\""  """
-             """/p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Exclude="\"[xunit*]*,[Sample*]*,[AltCover.Record*]*,[NUnit*]*,[AltCover.Shadow.Adapter]*\""  """
-             """/p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Exclude="\"[xunit*]*,[Sample*]*,[AltCover.Record*]*\""  """ ]
+           [ """/p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Exclude="\"[*.Tests]*,[*.XTests]*,[xunit*]*,[Sample*]*,[AltCover.Record*]*,[NUnit*]*,[AltCover.Shadow.Adapter]*\""  """
+             """/p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Exclude="\"[*.Tests]*,[*.XTests]*,[xunit*]*,[Sample*]*,[AltCover.Record*]*,[NUnit*]*,[AltCover.Shadow.Adapter]*\""  """
+             """/p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Exclude="\"[*.Tests]*,[*.XTests]*,[xunit*]*,[Sample*]*,[AltCover.Record*]*\""  """ ]
       |> Seq.fold (fun l (p, f) ->
            try
              f
@@ -2840,8 +2840,8 @@ Target.runOrDefault "DoIt"
 group NetcoreBuild
   source https://api.nuget.org/v3/index.json
   nuget Fake.Core >= 5.8.4
-  nuget Fake.Core.Target >= 5.12.1
-  nuget Fake.DotNet.Cli >= 5.12.1
+  nuget Fake.Core.Target >= 5.12.6
+  nuget Fake.DotNet.Cli >= 5.12.6
   nuget FSharp.Core = 4.6.2
 
   source {0}

@@ -571,7 +571,8 @@ type AltCoverTests() =
         Mono.Cecil.AssemblyDefinition.ReadAssembly
           (Assembly.GetExecutingAssembly().Location)
       def.MainModule.Types
-      |> Seq.filter (fun t -> t.IsPublic && t.Name.Contains("AltCover")) // exclude the many compiler generted chaff classes
+      |> Seq.filter (fun t -> t.IsPublic && t.Name.Contains("AltCover")
+                                         && (not (t.FullName.Contains("Coverlet.Core.Instrumentation")))) // exclude the many compiler generted chaff classes
       |> Seq.iter
            (fun t ->
            Assert.That(Match t (FilterClass.Attribute(Regex "Fix")), Is.True, t.FullName))
