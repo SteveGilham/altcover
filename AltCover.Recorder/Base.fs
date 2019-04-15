@@ -201,8 +201,7 @@ module internal Counter =
                    System.Globalization.CultureInfo.InvariantCulture) |> snd
               // Treat -ve visit counts (an exemption added in analysis) as zero
               let (count, l) = moduleHits.[counter]
-              let total = (int64 (max 0 vc)) + (int64 count) + (int64 l.Length)
-              let visits = int (min (int64 (Int32.MaxValue)) total)
+              let visits = (max 0 vc) + count + l.Length
               pt.SetAttribute(v, visits.ToString(CultureInfo.InvariantCulture))
               pointProcess pt l))
     postProcess coverageDocument
@@ -241,13 +240,11 @@ module internal Counter =
     match context with
     | Table _ -> () // TODO
     | _ ->
-      if not (counts.ContainsKey moduleId) then
-        counts.[moduleId] <- Dictionary<int, int * Track list>()
-      if not (counts.[moduleId].ContainsKey hitPointId) then
-        counts.[moduleId].Add(hitPointId, (0, []))
-      let n, l = counts.[moduleId].[hitPointId]
-      counts.[moduleId].[hitPointId] <- match context with
-                                        | Null -> let mutable next = n
-                                                  if next < Int32.MaxValue then next <- next + 1
-                                                  (next, l)
-                                        | something -> (n, something :: l)
+    if not (counts.ContainsKey moduleId) then
+      counts.[moduleId] <- Dictionary<int, int * Track list>()
+    if not (counts.[moduleId].ContainsKey hitPointId) then
+      counts.[moduleId].Add(hitPointId, (0, []))
+    let n, l = counts.[moduleId].[hitPointId]
+    counts.[moduleId].[hitPointId] <- match context with
+                                      | Null -> (1 + n, l)
+                                      | something -> (n, something :: l)
