@@ -195,17 +195,17 @@ type AltCoverTests() =
       lock Instance.Visits (fun () ->
       let save = Instance.trace
       try
-        Instance.Visits.Clear()
+        Instance.Visits.[0].Clear()
         Instance.trace <- { Tracer=null; Stream=null; Formatter=null;
                             Runner = false; Definitive = false }
         let key = " "
         Instance.VisitSelection Null key 23
-        Assert.That (Instance.Visits.Count, Is.EqualTo 1, "A visit that should have happened, didn't")
-        Assert.That (Instance.Visits.[key].Count, Is.EqualTo 1, "keys = " + String.Join("; ", Instance.Visits.Keys|> Seq.toArray))
-        Assert.That (Instance.Visits.[key].[23].Count, Is.EqualTo 1)
-        Assert.That (Instance.Visits.[key].[23].Tracks, Is.Empty)
+        Assert.That (Instance.Visits.[0].Count, Is.EqualTo 1, "A visit that should have happened, didn't")
+        Assert.That (Instance.Visits.[0].[key].Count, Is.EqualTo 1, "keys = " + String.Join("; ", Instance.Visits.[0].Keys|> Seq.toArray))
+        Assert.That (Instance.Visits.[0].[key].[23].Count, Is.EqualTo 1)
+        Assert.That (Instance.Visits.[0].[key].[23].Tracks, Is.Empty)
       finally
-        Instance.Visits.Clear()
+        Instance.Visits.[0].Clear()
         Instance.trace <- save)
       self.GetMyMethodName "<="
 
@@ -214,13 +214,13 @@ type AltCoverTests() =
       self.GetMyMethodName "=>"
       lock Instance.Visits (fun () ->
       try
-        Instance.Visits.Clear()
+        Instance.Visits.[0].Clear()
         let key = " "
         Instance.VisitImpl key 23 Null
         Instance.VisitImpl "key" 42 Null
-        Assert.That (Instance.Visits.Count, Is.EqualTo 2)
+        Assert.That (Instance.Visits.[0].Count, Is.EqualTo 2)
       finally
-        Instance.Visits.Clear())
+        Instance.Visits.[0].Clear())
       self.GetMyMethodName "<="
 
     [<Test>]
@@ -228,12 +228,12 @@ type AltCoverTests() =
       self.GetMyMethodName "=>"
       lock Instance.Visits (fun () ->
       try
-        Instance.Visits.Clear()
+        Instance.Visits.[0].Clear()
         let key = " "
         Instance.VisitImpl key 23 Null
         Instance.VisitImpl key 42 Null
-        Assert.That (Instance.Visits.Count, Is.EqualTo 1)
-        Assert.That (Instance.Visits.[key].Count, Is.EqualTo 2)
+        Assert.That (Instance.Visits.[0].Count, Is.EqualTo 1)
+        Assert.That (Instance.Visits.[0].[key].Count, Is.EqualTo 2)
       finally
         Adapter.VisitsClear())
       self.GetMyMethodName "<="
@@ -243,14 +243,14 @@ type AltCoverTests() =
       self.GetMyMethodName "=>"
       lock Instance.Visits (fun () ->
       try
-        Instance.Visits.Clear()
+        Instance.Visits.[0].Clear()
         let key = " "
         Instance.VisitImpl key 23 Null
         Instance.VisitImpl key 23 Null
-        Assert.That (Instance.Visits.[key].[23].Count, Is.EqualTo 2)
-        Assert.That (Instance.Visits.[key].[23].Tracks, Is.Empty)
+        Assert.That (Instance.Visits.[0].[key].[23].Count, Is.EqualTo 2)
+        Assert.That (Instance.Visits.[0].[key].[23].Tracks, Is.Empty)
       finally
-        Instance.Visits.Clear())
+        Instance.Visits.[0].Clear())
       self.GetMyMethodName "<="
 
     [<Test>]
@@ -258,15 +258,15 @@ type AltCoverTests() =
       self.GetMyMethodName "=>"
       lock Instance.Visits (fun () ->
       try
-        Instance.Visits.Clear()
+        Instance.Visits.[0].Clear()
         let key = " "
         let payload = Time DateTime.UtcNow.Ticks
         Instance.VisitImpl key 23 Null
         Instance.VisitImpl key 23 payload
-        Assert.That (Instance.Visits.[key].[23].Count, Is.EqualTo 1)
-        Assert.That (Instance.Visits.[key].[23].Tracks, Is.EquivalentTo [payload])
+        Assert.That (Instance.Visits.[0].[key].[23].Count, Is.EqualTo 1)
+        Assert.That (Instance.Visits.[0].[key].[23].Tracks, Is.EquivalentTo [payload])
       finally
-        Instance.Visits.Clear())
+        Instance.Visits.[0].Clear())
       self.GetMyMethodName "<="
 
     [<Test>]

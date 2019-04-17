@@ -1,9 +1,10 @@
 namespace AltCover.Recorder
 
+open System
 open System.Collections.Generic
 open System.IO
 open System.IO.Compression
-open System
+open System.Threading
 
 #if NETSTANDARD2_0
 [<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage>]
@@ -80,14 +81,23 @@ type Tracer =
       // TODO
     )
 
-  member internal this.CatchUp(visits : Dictionary<string, Dictionary<int, PointVisit>>) =
-    // TODO
+  member internal this.CatchUp(visits : Dictionary<string, Dictionary<int, PointVisit>> array)
+                              (vlock : ReaderWriterLock) =
+    // TODO -- if while visiting
+    //      -- serialization
     let empty = Null
-    visits.Keys
+    let dict = Dictionary<string, Dictionary<int, PointVisit>> ()
+    let counts = try
+                    vlock.AcquireWriterLock(-1)
+                    System.Threading.Interlocked.Exchange(&visits.[0], dict)
+                 finally
+                    vlock.ReleaseWriterLock()
+
+    counts.Keys
     |> Seq.iter (fun moduleId ->
-         visits.[moduleId].Keys
+         counts.[moduleId].Keys
          |> Seq.iter (fun hitPointId ->
-              let count = visits.[moduleId].[hitPointId]
+              let count = counts.[moduleId].[hitPointId]
               let n = count.Count
               let l = count.Tracks
               let push = this.Push moduleId hitPointId
@@ -95,7 +105,6 @@ type Tracer =
                 l |> Seq.cast<Track> ]
               |> Seq.concat
               |> Seq.iter push))
-    visits.Clear()
 
   member this.OnStart() =
     let running =
@@ -107,13 +116,13 @@ type Tracer =
     if this.IsConnected() then f()
     else g()
 
-  member internal this.OnFinish finish visits =
-    this.CatchUp visits
+  member internal this.OnFinish finish visits vlock =
+    this.CatchUp visits vlock
     if finish <> Pause
     then this.Close()
 
-  member internal this.OnVisit visits moduleId hitPointId context =
-    this.CatchUp visits
+  member internal this.OnVisit visits vlock moduleId hitPointId context =
+    this.CatchUp visits vlock
     this.Push moduleId hitPointId context
     this.Formatter.Flush()
     this.Stream.Flush()

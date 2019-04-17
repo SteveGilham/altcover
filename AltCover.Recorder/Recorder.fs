@@ -9,6 +9,7 @@ open System.IO
 open System.Reflection
 open System.Resources
 open System.Runtime.CompilerServices
+open System.Threading
 
 #if NETSTANDARD2_0
 [<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage>]
@@ -49,7 +50,8 @@ module Instance =
   /// <summary>
   /// Accumulation of visit records
   /// </summary>
-  let internal Visits = new Dictionary<string, Dictionary<int, PointVisit>>()
+  let internal Visits = [| new Dictionary<string, Dictionary<int, PointVisit>>() |]
+  let internal VisitLock = new ReaderWriterLock()
   let internal Samples = new Dictionary<string, Dictionary<int, bool>>()
 
   /// <summary>
@@ -148,13 +150,17 @@ module Instance =
   /// This method flushes hit count buffers.
   /// </summary>
   let internal FlushAll finish =
-    trace.OnConnected (fun () -> trace.OnFinish finish Visits)
+    trace.OnConnected (fun () -> trace.OnFinish finish Visits VisitLock)
       (fun () ->
-      match Visits.Count with
+      match Visits.[0].Count with
       | 0 -> ()
       | _ ->
-        let counts = Dictionary<string, Dictionary<int, PointVisit>> Visits
-        Visits.Clear()
+        let empty = Dictionary<string, Dictionary<int, PointVisit>> ()
+        let counts = try
+                        VisitLock.AcquireWriterLock(-1)
+                        System.Threading.Interlocked.Exchange(&Visits.[0], empty)
+                     finally
+                        VisitLock.ReleaseWriterLock()
         WithMutex
           (fun own ->
           let delta =
@@ -167,22 +173,27 @@ module Instance =
     ("PauseHandler")
     |> GetResource
     |> Option.iter Console.Out.WriteLine
-    FlushAll Pause
     Recording <- false
+    FlushAll Pause
 
   let FlushResume() =
-    Recording <- true
     ("ResumeHandler")
     |> GetResource
     |> Option.iter Console.Out.WriteLine
-    Visits.Clear()
+    let empty = Dictionary<string, Dictionary<int, PointVisit>> ()
+    System.Threading.Interlocked.Exchange(&Visits.[0], empty) |> ignore
     InitialiseTrace()
+    Recording <- true
 
   let internal TraceVisit moduleId hitPointId context =
-    trace.OnVisit Visits moduleId hitPointId context
+    trace.OnVisit Visits VisitLock moduleId hitPointId context
 
   let internal AddVisit moduleId hitPointId context =
-    Counter.AddVisit Visits moduleId hitPointId context
+    try
+      VisitLock.AcquireReaderLock(-1)
+      Counter.AddVisit Visits.[0] moduleId hitPointId context
+    finally
+      VisitLock.ReleaseReaderLock()
 
   let internal TakeSample strategy moduleId hitPointId =
     match strategy with
@@ -249,6 +260,7 @@ module Instance =
       | Resume -> FlushResume()
       | Pause -> FlushPause()
       | _ ->
+        Recording <- false
         FlushAll finish
 
   // Register event handling
