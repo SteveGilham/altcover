@@ -15,27 +15,27 @@ module Adapter =
        |> Instance.Visits.ContainsKey
        |> not
     then
-      let entry = Dictionary<int, int * Track list>()
+      let entry = Dictionary<int, PointVisit>()
       Instance.Visits.Add(name, entry)
 
   let VisitsAdd name line number =
     prepareName name
-    Instance.Visits.[name].Add(line, (number, []))
+    let v = PointVisit.Init number []
+    Instance.Visits.[name].Add(line, v)
 
   let VisitsAddTrack name line number =
     prepareName name
-    Instance.Visits.[name].Add(line,
-                               (number,
-                                [ Call 17
-                                  Call 42 ]))
-    Instance.Visits.[name].Add(line + 1,
-                               (number + 1,
-                                [ Time 17L
-                                  Both(42L, 23) ]))
+    let v1 = PointVisit.Init number [ Call 17
+                                      Call 42 ]
+    Instance.Visits.[name].Add(line, v1)
+
+    let v2 = PointVisit.Init (number + 1) [ Time 17L
+                                            Both(42L, 23) ]
+    Instance.Visits.[name].Add(line + 1, v2)
 
   let VisitsSeq() = Instance.Visits |> Seq.cast<obj>
   let VisitsEntrySeq key = Instance.Visits.[key] |> Seq.cast<obj>
-  let VisitCount key key2 = Instance.Visits.[key].[key2] |> fst
+  let VisitCount key key2 = (Instance.Visits.[key].[key2]).Count
   let Lock = Instance.Visits :> obj
 
   let VisitImplNone moduleId hitPointId =

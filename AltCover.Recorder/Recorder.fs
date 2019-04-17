@@ -49,7 +49,7 @@ module Instance =
   /// <summary>
   /// Accumulation of visit records
   /// </summary>
-  let internal Visits = new Dictionary<string, Dictionary<int, int * Track list>>()
+  let internal Visits = new Dictionary<string, Dictionary<int, PointVisit>>()
   let internal Samples = new Dictionary<string, Dictionary<int, bool>>()
 
   /// <summary>
@@ -153,7 +153,7 @@ module Instance =
       match Visits.Count with
       | 0 -> ()
       | _ ->
-        let counts = Dictionary<string, Dictionary<int, int * Track list>> Visits
+        let counts = Dictionary<string, Dictionary<int, PointVisit>> Visits
         Visits.Clear()
         WithMutex
           (fun own ->
@@ -188,12 +188,21 @@ module Instance =
     match strategy with
     | Sampling.All -> true
     | _ ->
-      let hasKey = Samples.ContainsKey(moduleId)
-      if hasKey |> not then Samples.Add(moduleId, Dictionary<int, bool>())
-      let unwanted = hasKey && Samples.[moduleId].ContainsKey(hitPointId)
-      let wanted = unwanted |> not
-      if wanted then Samples.[moduleId].Add(hitPointId, true)
-      wanted
+      let mutable hasModuleKey = Samples.ContainsKey(moduleId)
+      if hasModuleKey |> not then
+        lock Samples (fun () ->
+          hasModuleKey <- Samples.ContainsKey(moduleId)
+          if hasModuleKey |> not
+          then Samples.Add(moduleId, Dictionary<int, bool>())
+        )
+
+      let mutable hasPointKey = Samples.[moduleId].ContainsKey(hitPointId)
+      if hasPointKey |> not then
+          lock Samples.[moduleId] (fun () ->
+            hasPointKey <- Samples.[moduleId].ContainsKey(hitPointId)
+            if hasPointKey |> not
+            then Samples.[moduleId].Add(hitPointId, true))
+      (hasPointKey && hasModuleKey) |> not
 
   /// <summary>
   /// This method is executed from instrumented assemblies.
@@ -227,23 +236,20 @@ module Instance =
 
   let internal PayloadControl = PayloadSelection Clock
   let internal PayloadSelector enable = PayloadControl Granularity enable
-  let internal lockVisits f = lock Visits f
 
   let internal VisitSelection track moduleId hitPointId =
-    lockVisits (fun () ->
-      VisitImpl moduleId hitPointId track)
+      VisitImpl moduleId hitPointId track
 
   let Visit moduleId hitPointId =
     if Recording then
       VisitSelection (PayloadSelector IsOpenCoverRunner) moduleId hitPointId
 
   let internal FlushCounter (finish : Close) _ =
-    lockVisits (fun () ->
       match finish with
       | Resume -> FlushResume()
       | Pause -> FlushPause()
       | _ ->
-        FlushAll finish)
+        FlushAll finish
 
   // Register event handling
   let DoPause = FlushCounter Pause

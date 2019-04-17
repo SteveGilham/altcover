@@ -57,7 +57,19 @@ type internal Track =
   | Time of int64
   | Call of int
   | Both of (int64 * int)
-  | Table of Dictionary<string, Dictionary<int, int * Track list>>
+  | Table of Dictionary<string, Dictionary<int, PointVisit>>
+and [<NoComparison>] internal PointVisit =
+    {
+      mutable Count : int
+      Tracks : List<Track>
+    }
+    static member Create () = { Count = 0; Tracks = List<Track>() }
+    static member Init n l = let tmp = { PointVisit.Create() with Count = n }
+                             tmp.Tracks.AddRange l
+                             tmp
+    member self.Step() = System.Threading.Interlocked.Increment(&self.Count) |> ignore
+    member self.Track something = lock self.Tracks (fun () -> self.Tracks.Add something)
+    member self.Total() = self.Count + self.Tracks.Count
 
 module internal Assist =
   let internal SafeDispose x =
@@ -133,8 +145,8 @@ module internal Counter =
   /// <param name="hitCounts">The coverage results to incorporate</param>
   /// <param name="coverageFile">The coverage file to update as a stream</param>
   let internal UpdateReport (postProcess : XmlDocument -> unit)
-      (pointProcess : XmlElement -> Track list -> unit) own
-      (counts : Dictionary<string, Dictionary<int, int * Track list>>) format coverageFile
+      (pointProcess : XmlElement -> List<Track> -> unit) own
+      (counts : Dictionary<string, Dictionary<int, PointVisit>>) format coverageFile
       (outputFile : Stream) =
     let flushStart = DateTime.UtcNow
     let coverageDocument = ReadXDocument coverageFile
@@ -200,10 +212,10 @@ module internal Counter =
                   (pt.GetAttribute(v), System.Globalization.NumberStyles.Integer,
                    System.Globalization.CultureInfo.InvariantCulture) |> snd
               // Treat -ve visit counts (an exemption added in analysis) as zero
-              let (count, l) = moduleHits.[counter]
-              let visits = (max 0 vc) + count + l.Length
+              let count = moduleHits.[counter]
+              let visits = (max 0 vc) + count.Total()
               pt.SetAttribute(v, visits.ToString(CultureInfo.InvariantCulture))
-              pointProcess pt l))
+              pointProcess pt count.Tracks))
     postProcess coverageDocument
 
     // Save modified xml to a file
@@ -235,16 +247,23 @@ module internal Counter =
       UpdateReport postProcess pointProcess own counts format coverageFile outputFile
     TimeSpan(DateTime.UtcNow.Ticks - flushStart.Ticks)
 
-  let internal AddVisit (counts : Dictionary<string, Dictionary<int, int * Track list>>)
+  let internal AddVisit (counts : Dictionary<string, Dictionary<int, PointVisit>>)
       moduleId hitPointId context =
     match context with
     | Table _ -> () // TODO
     | _ ->
     if not (counts.ContainsKey moduleId) then
-      counts.[moduleId] <- Dictionary<int, int * Track list>()
+      lock counts (fun () ->
+        if not (counts.ContainsKey moduleId)
+        then counts.[moduleId] <- Dictionary<int, PointVisit>()
+      )
+
     if not (counts.[moduleId].ContainsKey hitPointId) then
-      counts.[moduleId].Add(hitPointId, (0, []))
-    let n, l = counts.[moduleId].[hitPointId]
-    counts.[moduleId].[hitPointId] <- match context with
-                                      | Null -> (1 + n, l)
-                                      | something -> (n, something :: l)
+      lock counts.[moduleId] (fun () ->
+      if not (counts.[moduleId].ContainsKey hitPointId)
+      then counts.[moduleId].Add(hitPointId, PointVisit.Create()))
+
+    let v = counts.[moduleId].[hitPointId]
+    match context with
+    | Null -> v.Step()
+    | something -> v.Track something

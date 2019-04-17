@@ -60,6 +60,7 @@ type Tracer =
     with :? ObjectDisposedException -> ()
 
   member internal this.Push (moduleId : string) (hitPointId : int) context =
+    lock this.Formatter (fun () ->
     this.Formatter.Write moduleId
     this.Formatter.Write hitPointId
     match context with
@@ -77,17 +78,21 @@ type Tracer =
     | Table _ ->
       this.Formatter.Write(Tag.Table |> byte)
       // TODO
+    )
 
-  member internal this.CatchUp(visits : Dictionary<string, Dictionary<int, int * Track list>>) =
+  member internal this.CatchUp(visits : Dictionary<string, Dictionary<int, PointVisit>>) =
+    // TODO
     let empty = Null
     visits.Keys
     |> Seq.iter (fun moduleId ->
          visits.[moduleId].Keys
          |> Seq.iter (fun hitPointId ->
-              let n, l = visits.[moduleId].[hitPointId]
+              let count = visits.[moduleId].[hitPointId]
+              let n = count.Count
+              let l = count.Tracks
               let push = this.Push moduleId hitPointId
               [ seq { 1..n } |> Seq.map (fun _ -> empty)
-                l |> List.toSeq ]
+                l |> Seq.cast<Track> ]
               |> Seq.concat
               |> Seq.iter push))
     visits.Clear()

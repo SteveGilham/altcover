@@ -12,6 +12,7 @@ open System.Xml.Linq
 open Mono.Cecil
 open Mono.Options
 open Augment
+open AltCover.Base
 
 [<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage; NoComparison>]
 type TeamCityFormat =
@@ -492,7 +493,7 @@ module internal Runner =
     "Getting results..." |> WriteResource
     result
 
-  let internal CollectResults (hits : Dictionary<string, Dictionary<int, int * Base.Track list>>)
+  let internal CollectResults (hits : Dictionary<string, Dictionary<int, Base.PointVisit>>)
       report =
     let timer = System.Diagnostics.Stopwatch()
     timer.Start()
@@ -550,7 +551,7 @@ module internal Runner =
     timer.Stop()
     WriteResourceWithFormatItems "%d visits recorded" [| visits |] (visits = 0)
 
-  let internal MonitorBase (hits : Dictionary<string, Dictionary<int, int * Base.Track list>>)
+  let internal MonitorBase (hits : Dictionary<string, Dictionary<int, Base.PointVisit>>)
       report (payload : string list -> int) (args : string list) =
     let result =
       if !collect then 0
@@ -570,30 +571,29 @@ module internal Runner =
          |> Seq.collect (fun p -> p.Attributes |> Seq.cast<XmlAttribute>)
          |> Seq.iter (fun a -> m.SetAttribute(a.Name, a.Value)))
 
-  let internal LookUpVisitsByToken token (dict : Dictionary<int, int * Base.Track list>) =
+  let internal LookUpVisitsByToken token (dict : Dictionary<int, Base.PointVisit>) =
     let (ok, index) =
       Int32.TryParse
         (token, System.Globalization.NumberStyles.Integer,
          System.Globalization.CultureInfo.InvariantCulture)
     match dict.TryGetValue(if ok then index
                            else -1) with
-    | (false, _) -> (0, [])
+    | (false, _) -> PointVisit.Create()
     | (_, pair) -> pair
 
   let internal FillMethodPoint (mp : XmlElement seq) (method : XmlElement)
-      (dict : Dictionary<int, int * Base.Track list>) =
+      (dict : Dictionary<int, Base.PointVisit>) =
     let token =
       method.GetElementsByTagName("MetadataToken")
       |> Seq.cast<XmlElement>
       |> Seq.map (fun m -> m.InnerText)
       |> Seq.head
 
-    let (vc0, l) = LookUpVisitsByToken token dict
-    let vc = vc0 + (List.length l)
+    let vc = (LookUpVisitsByToken token dict).Total ()
     mp
     |> Seq.iter (fun m ->
          m.SetAttribute
-           ("vc", vc.ToString(System.Globalization.CultureInfo.InvariantCulture))
+           ("vc", vc.ToString(CultureInfo.InvariantCulture))
          m.SetAttribute("uspid", token)
          m.SetAttribute("ordinal", "0")
          m.SetAttribute("offset", "0"))
@@ -603,8 +603,8 @@ module internal Runner =
     |> Seq.cast<XmlElement>
     |> Seq.filter (fun s -> Int32.TryParse
                               (s.GetAttribute("vc"),
-                               System.Globalization.NumberStyles.Integer,
-                               System.Globalization.CultureInfo.InvariantCulture)
+                               NumberStyles.Integer,
+                               CultureInfo.InvariantCulture)
                             |> snd
                             <> 0)
     |> Seq.length
@@ -614,7 +614,7 @@ module internal Runner =
     | null -> (false, Unchecked.defaultof<'b>)
     | _ -> d.TryGetValue key
 
-  let internal PostProcess (counts : Dictionary<string, Dictionary<int, int * Base.Track list>>)
+  let internal PostProcess (counts : Dictionary<string, Dictionary<int, Base.PointVisit>>)
       format (document : XmlDocument) =
     match format with
     | Base.ReportFormat.OpenCoverWithTracking | Base.ReportFormat.OpenCover ->
@@ -705,7 +705,7 @@ module internal Runner =
         method.SetAttribute("crapScore", score)
         raw
 
-      let updateMethod (dict : Dictionary<int, int * Base.Track list>)
+      let updateMethod (dict : Dictionary<int, Base.PointVisit>)
           (vb, vs, vm, pt, br, minc, maxc) (method : XmlElement) =
         let sp = method.GetElementsByTagName("SequencePoint")
         let bp = method.GetElementsByTagName("BranchPoint")
@@ -735,7 +735,7 @@ module internal Runner =
           FillMethod()
         else (vb, vs, vm, pt + count, br + numBranches, minc, maxc)
 
-      let updateClass (dict : Dictionary<int, int * Base.Track list>)
+      let updateClass (dict : Dictionary<int, Base.PointVisit>)
           (vb, vs, vm, vc, pt, br, minc0, maxc0) (``class`` : XmlElement) =
         let (cvb, cvs, cvm, cpt, cbr, minc, maxc) =
           ``class``.GetElementsByTagName("Method")
@@ -753,11 +753,11 @@ module internal Runner =
         (vb + cvb, vs + cvs, vm + cvm, vc + cvc, pt + cpt, br + cbr, Math.Min(minc, minc0),
          Math.Max(maxc, maxc0))
 
-      let updateModule (counts : Dictionary<string, Dictionary<int, int * Base.Track list>>)
+      let updateModule (counts : Dictionary<string, Dictionary<int, Base.PointVisit>>)
           (vb, vs, vm, vc, pt, br, minc0, maxc0) (``module`` : XmlElement) =
         let dict =
           match (TryGetValue counts) <| ``module``.GetAttribute("hash") with
-          | (false, _) -> Dictionary<int, int * Base.Track list>()
+          | (false, _) -> Dictionary<int, Base.PointVisit>()
           | (true, d) -> d
 
         let (cvb, cvs, cvm, cvc, cpt, cbr, minc, maxc) =
@@ -806,17 +806,18 @@ module internal Runner =
   let internal PointProcess (pt : XmlElement) tracks =
     let (times, calls) =
       tracks
-      |> List.map (fun t ->
+      |> Seq.map (fun t ->
            match t with
            | Base.Time x -> (Some x, None)
            | Base.Both(x, y) -> (Some x, Some y)
            | Base.Call y -> (None, Some y)
            | _ -> (None, None))
+      |> Seq.toList
       |> List.unzip
     Point pt times "Times" "Time" "time"
     Point pt calls "TrackedMethodRefs" "TrackedMethodRef" "uid"
 
-  let internal WriteReportBase (hits : Dictionary<string, Dictionary<int, int * Base.Track list>>)
+  let internal WriteReportBase (hits : Dictionary<string, Dictionary<int, Base.PointVisit>>)
       report =
     AltCover.Base.Counter.DoFlush (PostProcess hits report) PointProcess true hits report
   // mocking points
@@ -861,7 +862,7 @@ module internal Runner =
 
           let format =
             (GetMethod instance "get_CoverageFormat") |> GetFirstOperandAsNumber
-          let hits = Dictionary<string, Dictionary<int, int * Base.Track list>>()
+          let hits = Dictionary<string, Dictionary<int, Base.PointVisit>>()
           let payload = GetPayload
           let result = GetMonitor hits report payload rest
           let format' = enum format
