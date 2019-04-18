@@ -58,11 +58,22 @@ type internal Track =
   | Call of int
   | Both of (int64 * int)
   | Table of Dictionary<string, Dictionary<int, PointVisit>>
-and [<NoComparison>] internal PointVisit =
+and [<NoComparison>]
+#if NETSTANDARD2_0
+[<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage>]
+#else
+#if NETCOREAPP2_0
+[<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage>]
+#else
+[<System.Runtime.InteropServices.ProgIdAttribute("ExcludeFromCodeCoverage hack for OpenCover issue 615")>]
+#endif
+#endif
+    internal PointVisit =
     {
       mutable Count : int
       Tracks : List<Track>
     }
+    with
     static member Create () = { Count = 0; Tracks = List<Track>() }
     static member Init n l = let tmp = { PointVisit.Create() with Count = n }
                              tmp.Tracks.AddRange l
