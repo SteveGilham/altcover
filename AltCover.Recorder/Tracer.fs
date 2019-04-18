@@ -61,7 +61,6 @@ type Tracer =
     with :? ObjectDisposedException -> ()
 
   member internal this.Push (moduleId : string) (hitPointId : int) context =
-    lock this.Formatter (fun () ->
     this.Formatter.Write moduleId
     this.Formatter.Write hitPointId
     match context with
@@ -79,32 +78,31 @@ type Tracer =
     | Table _ ->
       this.Formatter.Write(Tag.Table |> byte)
       // TODO
-    )
 
   member internal this.CatchUp(visits : Dictionary<string, Dictionary<int, PointVisit>> array)
                               (vlock : ReaderWriterLock) =
-    // TODO -- if while visiting
-    //      -- serialization
-    let empty = Null
-    let dict = Dictionary<string, Dictionary<int, PointVisit>> ()
-    let counts = try
-                    vlock.AcquireWriterLock(-1)
-                    System.Threading.Interlocked.Exchange(&visits.[0], dict)
-                 finally
-                    vlock.ReleaseWriterLock()
+    if visits.[0].Count > 0 then
+      // TODO -- serialization
+      let empty = Null
+      let dict = Dictionary<string, Dictionary<int, PointVisit>> ()
+      let counts = try
+                      vlock.AcquireWriterLock(-1)
+                      System.Threading.Interlocked.Exchange(&visits.[0], dict)
+                   finally
+                      vlock.ReleaseWriterLock()
 
-    counts.Keys
-    |> Seq.iter (fun moduleId ->
-         counts.[moduleId].Keys
-         |> Seq.iter (fun hitPointId ->
-              let count = counts.[moduleId].[hitPointId]
-              let n = count.Count
-              let l = count.Tracks
-              let push = this.Push moduleId hitPointId
-              [ seq { 1..n } |> Seq.map (fun _ -> empty)
-                l |> Seq.cast<Track> ]
-              |> Seq.concat
-              |> Seq.iter push))
+      counts.Keys
+      |> Seq.iter (fun moduleId ->
+           counts.[moduleId].Keys
+           |> Seq.iter (fun hitPointId ->
+                let count = counts.[moduleId].[hitPointId]
+                let n = count.Count
+                let l = count.Tracks
+                let push = this.Push moduleId hitPointId
+                [ seq { 1..n } |> Seq.map (fun _ -> empty)
+                  l |> Seq.cast<Track> ]
+                |> Seq.concat
+                |> Seq.iter push))
 
   member this.OnStart() =
     let running =
