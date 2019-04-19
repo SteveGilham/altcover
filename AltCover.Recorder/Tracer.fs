@@ -95,7 +95,6 @@ type Tracer =
   member internal this.CatchUp(visits : Dictionary<string, Dictionary<int, PointVisit>> array)
                               (vlock : ReaderWriterLock) =
     if visits.[0].Count > 0 then
-      let empty = Null
       let dict = Dictionary<string, Dictionary<int, PointVisit>> ()
       let counts = try
                       vlock.AcquireWriterLock(-1)

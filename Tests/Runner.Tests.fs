@@ -1672,7 +1672,7 @@ or
       let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
       let unique = Path.Combine(where, Guid.NewGuid().ToString())
 
-      let payloads =
+      let payloads0 =
         [ Base.Null
           Base.Call 17
           Base.Time 23L
@@ -1680,7 +1680,13 @@ or
           Base.Time 42L
           Base.Call 5 ]
 
-      let inputs = [ "a"; "b"; "c"; "d"; String.Empty; "e" ]
+      let pv = PointVisit.Init 42 (payloads0 |> List.tail)
+      let table = Dictionary<string, Dictionary<int, PointVisit>>()
+      table.Add("Extra", Dictionary<int, PointVisit>())
+      table.["Extra"].Add(3, pv)
+      let payloads = (Table table) :: payloads0
+
+      let inputs = [ String.Empty; "a"; "b"; "c"; "d"; String.Empty; "e" ]
 
       let r =
         Runner.GetMonitor counts unique (fun l ->
@@ -1706,28 +1712,53 @@ or
                  formatter.Write(t)
                | Table t ->
                  formatter.Write(Base.Tag.Table |> byte)
-                 // TODO
+                 t.Keys
+                 |> Seq.iter (fun m -> formatter.Write m
+                                       t.[m].Keys
+                                       |> Seq.iter (fun p -> formatter.Write p
+                                                             let v = t.[m].[p]
+                                                             formatter.Write v.Count
+                                                             v.Tracks
+                                                             |> Seq.iter (fun tx -> match tx with
+                                                                                    | Time t ->
+                                                                                      formatter.Write(Base.Tag.Time |> byte)
+                                                                                      formatter.Write(t)
+                                                                                    | Call t ->
+                                                                                      formatter.Write(Base.Tag.Call |> byte)
+                                                                                      formatter.Write(t)
+                                                                                    | Both(t', t) ->
+                                                                                      formatter.Write(Base.Tag.Both |> byte)
+                                                                                      formatter.Write(t')
+                                                                                      formatter.Write(t)
+                                                                                    | _ -> tx |> (sprintf "%A") |> Assert.Fail)
+                                                             formatter.Write(Base.Tag.Null |> byte))
+                                       formatter.Write 0)
+                 formatter.Write String.Empty
                x)
           |> List.length) inputs
 
       let expected = Dictionary<string, Dictionary<int, int * Base.Track list>>()
       let a = Dictionary<int, int * Base.Track list>()
-      a.Add(0, (1, []))
+      a.Add(1, (1, []))
       let b = Dictionary<int, int * Base.Track list>()
-      b.Add(1, (0, [Call 17]))
+      b.Add(2, (0, [Call 17]))
       let c = Dictionary<int, int * Base.Track list>()
-      c.Add(2, (0, [Time 23L]))
+      c.Add(3, (0, [Time 23L]))
       let d = Dictionary<int, int * Base.Track list>()
-      d.Add(3, (0, [Both (5L, 42)]))
+      d.Add(4, (0, [Both (5L, 42)]))
       let e = Dictionary<int, int * Base.Track list>()
-      e.Add(5, (0, [Call 5]))
+      e.Add(6, (0, [Call 5]))
+      let f = Dictionary<int, int * Base.Track list>()
+      f.Add(3, (42, payloads0 |> List.tail))
+
       expected.Add ("a", a)
       expected.Add ("b", b)
       expected.Add ("c", c)
       expected.Add ("d", d)
       expected.Add ("e", e)
+      expected.Add ("Extra", f)
 
-      Assert.That(r, Is.EqualTo 6)
+      Assert.That(r, Is.EqualTo 7)
       Assert.That(File.Exists(unique + ".acv"))
 
       let result = Dictionary<string, Dictionary<int, int * Base.Track list>>()

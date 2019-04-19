@@ -521,45 +521,49 @@ module internal Runner =
                         Base.Both(formatter.ReadInt64(), formatter.ReadInt32())
                       | Base.Tag.Table ->
                           let t = Dictionary<string, Dictionary<int, PointVisit>>()
-                          let rec sink1 () =
+                          let rec ``module`` () =
                             let m = formatter.ReadString()
                             if String.IsNullOrEmpty m
                             then ()
                             else
                               t.Add(m, Dictionary<int, PointVisit>())
-                              let rec sink2 () =
+                              let rec sequencePoint () =
                                 let p = formatter.ReadInt32()
                                 if p <> 0 then
                                   let n = formatter.ReadInt32()
                                   let pv = PointVisit.Init n []
                                   t.[m].Add(p, pv)
-                                  let rec sink3 () =
+                                  let rec tracking () =
                                     let track = formatter.ReadByte() |> int
                                     match enum track with
                                     | Tag.Time -> pv.Tracks.Add (Time <| formatter.ReadInt64())
-                                                  sink3 ()
+                                                  tracking ()
                                     | Tag.Call -> pv.Tracks.Add (Call <| formatter.ReadInt32())
-                                                  sink3 ()
+                                                  tracking ()
                                     | Tag.Both -> pv.Tracks.Add (Both (formatter.ReadInt64(), formatter.ReadInt32()))
-                                                  sink3 ()
-                                    | Tag.Table -> sink1()
-                                    | _ -> ()
-                                  sink3()
-                              sink2()
-                          sink1 ()
+                                                  tracking ()
+                                    | Tag.Table -> ``module``()
+                                    | _ -> sequencePoint()
+                                  tracking()
+                                else ``module``()
+                              sequencePoint()
+                          ``module`` ()
                           Table t
                       | _ -> Null)
                with :? EndOfStreamException -> None
              match hit with
              | Some tuple ->
-               let (key, hitPointId, hit) = tuple
+               let (key, hitPointId, visit) = tuple
 
                let increment =
                  if key
                     |> String.IsNullOrWhiteSpace
                     |> not
+                    || (key = String.Empty &&
+                        hitPointId = 0 &&
+                        visit.GetType().ToString() = "AltCover.Base.Track+Table")
                  then
-                   Base.Counter.AddVisit hits key hitPointId hit
+                   Base.Counter.AddVisit hits key hitPointId visit
                    1
                  else 0
                sink (hitcount + increment)

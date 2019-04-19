@@ -270,6 +270,29 @@ type AltCoverTests() =
       self.GetMyMethodName "<="
 
     [<Test>]
+    member self.TabledVisitsShouldIncrementCount() =
+      self.GetMyMethodName "=>"
+      lock Instance.Visits (fun () ->
+      try
+        Instance.Visits.[0].Clear()
+        let key = " "
+        Instance.VisitImpl key 23 Null
+        let table = Dictionary<string, Dictionary<int, PointVisit>>()
+        table.Add(key, Dictionary<int, PointVisit>())
+        let payloads =
+          [ Call 17
+            Time 23L
+            Both(5L, 42) ]
+        let pv = PointVisit.Init 42 payloads
+        table.[key].Add(23, pv)
+        Instance.VisitImpl key 23 (Table table)
+        Assert.That (Instance.Visits.[0].[key].[23].Count, Is.EqualTo 43)
+        Assert.That (Instance.Visits.[0].[key].[23].Tracks, Is.EquivalentTo payloads)
+      finally
+        Instance.Visits.[0].Clear())
+      self.GetMyMethodName "<="
+
+    [<Test>]
     member self.OldDocumentStartIsNotUpdated() =
       self.GetMyMethodName "=>"
       lock Instance.Visits (fun () ->
