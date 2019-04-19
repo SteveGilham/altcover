@@ -66,14 +66,48 @@ type AltCoverCoreTests() =
           let tag = formatter.ReadByte() |> int
           (id, strike,
            match enum tag with
-           | AltCover.Recorder.Tag.Time -> Time <| formatter.ReadInt64()
-           | AltCover.Recorder.Tag.Call -> Call <| formatter.ReadInt32()
+           | Tag.Time -> Time <| formatter.ReadInt64()
+           | Tag.Call -> Call <| formatter.ReadInt32()
 #if NET4
-           | AltCover.Recorder.Tag.Both ->
-             Adapter.NewBoth (formatter.ReadInt64()) (formatter.ReadInt32())
+           | Tag.Both -> Adapter.NewBoth (formatter.ReadInt64()) (formatter.ReadInt32())
 #else
-                                       | AltCover.Recorder.Tag.Both -> Both (formatter.ReadInt64(), formatter.ReadInt32())
+           | Tag.Both -> Both (formatter.ReadInt64(), formatter.ReadInt32())
 #endif
+           | Tag.Table -> Assert.That (id, Is.Empty)
+                          Assert.That (strike, Is.EqualTo 0)
+                          let t = Dictionary<string, Dictionary<int, PointVisit>>()
+                          let rec sink1 () =
+                            let m = formatter.ReadString()
+                            if String.IsNullOrEmpty m
+                            then ()
+                            else
+                              t.Add(m, Dictionary<int, PointVisit>())
+                              let rec sink2 () =
+                                let p = formatter.ReadInt32()
+                                if p <> 0 then
+                                  let n = formatter.ReadInt32()
+                                  let pv = PointVisit.Init n []
+                                  t.[m].Add(p, pv)
+                                  let rec sink3 () =
+                                    let track = formatter.ReadByte() |> int
+                                    match enum track with
+                                    | Tag.Time -> pv.Tracks.Add (Time <| formatter.ReadInt64())
+                                                  sink3 ()
+                                    | Tag.Call -> pv.Tracks.Add (Call <| formatter.ReadInt32())
+                                                  sink3 ()
+#if NET4
+                                    | Tag.Both -> pv.Tracks.Add (Adapter.NewBoth (formatter.ReadInt64()) (formatter.ReadInt32()))
+#else
+                                    | Tag.Both -> pv.Tracks.Add (Both (formatter.ReadInt64(), formatter.ReadInt32()))
+#endif
+                                                  sink3 ()
+                                    | Tag.Table -> Assert.Fail ("No nested tables!!")
+                                    | _ -> ()
+                                  sink3()
+                              sink2()
+                          sink1 ()
+                          Table t
+
            | _ -> Null)
           |> hits.Add
           sink()
@@ -89,8 +123,7 @@ type AltCoverCoreTests() =
       let tag = unique + ".acv"
 
       let expected =
-        [ ("name", 23, Null)
-          ("name", 23, Null) ]
+        [ ("name", 23, Null) ]
       do use stream = File.Create tag
          ()
       try
@@ -110,7 +143,13 @@ type AltCoverCoreTests() =
           new DeflateStream(File.OpenRead(unique + ".0.acv"), CompressionMode.Decompress)
         let results = self.ReadResults stream
         Assert.That(Adapter.VisitsSeq(), Is.Empty, "unexpected local write")
-        Assert.That(results, Is.EquivalentTo expected, "unexpected result")
+        let h = Seq.head results
+        let tail = results |> (Seq.skip 1)
+        match h with
+        | ("", 0, Table t) -> Assert.That (t, Is.Not.Empty) // TODO
+        | _ -> h |> (sprintf "%A") |> Assert.Fail
+        Assert.That(tail, Is.EquivalentTo expected, "unexpected result")
+
       finally
         Adapter.VisitsClear()
 

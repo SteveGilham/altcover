@@ -258,23 +258,36 @@ module internal Counter =
       UpdateReport postProcess pointProcess own counts format coverageFile outputFile
     TimeSpan(DateTime.UtcNow.Ticks - flushStart.Ticks)
 
-  let internal AddVisit (counts : Dictionary<string, Dictionary<int, PointVisit>>)
-      moduleId hitPointId context =
-    match context with
-    | Table _ -> () // TODO
-    | _ ->
+  let private EnsureModule (counts : Dictionary<string, Dictionary<int, PointVisit>>) moduleId =
     if not (counts.ContainsKey moduleId) then
       lock counts (fun () ->
         if not (counts.ContainsKey moduleId)
         then counts.[moduleId] <- Dictionary<int, PointVisit>()
       )
 
-    if not (counts.[moduleId].ContainsKey hitPointId) then
-      lock counts.[moduleId] (fun () ->
-      if not (counts.[moduleId].ContainsKey hitPointId)
-      then counts.[moduleId].Add(hitPointId, PointVisit.Create()))
+  let private EnsurePoint (counts : Dictionary<int, PointVisit>) hitPointId =
+    if not (counts.ContainsKey hitPointId) then
+      lock counts (fun () ->
+      if not (counts.ContainsKey hitPointId)
+      then counts.Add(hitPointId, PointVisit.Create()))
 
-    let v = counts.[moduleId].[hitPointId]
+  let internal AddVisit (counts : Dictionary<string, Dictionary<int, PointVisit>>)
+      moduleId hitPointId context =
     match context with
-    | Null -> v.Step()
-    | something -> v.Track something
+    | Table t -> t.Keys
+                 |> Seq.iter (fun m -> EnsureModule counts m
+                                       t.[m].Keys |>
+                                       Seq.iter (fun p -> EnsurePoint counts.[m] p
+                                                          let v = counts.[m].[p]
+                                                          let add = t.[m].[p]
+                                                          lock v (fun () -> v.Count <- v.Count + add.Count
+                                                                            v.Tracks.AddRange(add.Tracks)
+                                       )))
+    | _ ->
+      EnsureModule counts moduleId
+      EnsurePoint counts.[moduleId] hitPointId
+
+      let v = counts.[moduleId].[hitPointId]
+      match context with
+      | Null -> v.Step()
+      | something -> v.Track something

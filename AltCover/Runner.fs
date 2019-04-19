@@ -519,8 +519,36 @@ module internal Runner =
                       | Base.Tag.Call -> Base.Call <| formatter.ReadInt32()
                       | Base.Tag.Both ->
                         Base.Both(formatter.ReadInt64(), formatter.ReadInt32())
-                      | Base.Tag.Table -> Base.Table <| null // TODO
-                      | _ -> Base.Null)
+                      | Base.Tag.Table ->
+                          let t = Dictionary<string, Dictionary<int, PointVisit>>()
+                          let rec sink1 () =
+                            let m = formatter.ReadString()
+                            if String.IsNullOrEmpty m
+                            then ()
+                            else
+                              t.Add(m, Dictionary<int, PointVisit>())
+                              let rec sink2 () =
+                                let p = formatter.ReadInt32()
+                                if p <> 0 then
+                                  let n = formatter.ReadInt32()
+                                  let pv = PointVisit.Init n []
+                                  t.[m].Add(p, pv)
+                                  let rec sink3 () =
+                                    let track = formatter.ReadByte() |> int
+                                    match enum track with
+                                    | Tag.Time -> pv.Tracks.Add (Time <| formatter.ReadInt64())
+                                                  sink3 ()
+                                    | Tag.Call -> pv.Tracks.Add (Call <| formatter.ReadInt32())
+                                                  sink3 ()
+                                    | Tag.Both -> pv.Tracks.Add (Both (formatter.ReadInt64(), formatter.ReadInt32()))
+                                                  sink3 ()
+                                    | Tag.Table -> sink1()
+                                    | _ -> ()
+                                  sink3()
+                              sink2()
+                          sink1 ()
+                          Table t
+                      | _ -> Null)
                with :? EndOfStreamException -> None
              match hit with
              | Some tuple ->
