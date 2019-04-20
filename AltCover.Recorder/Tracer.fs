@@ -92,27 +92,10 @@ type Tracer =
     this.Formatter.Write hitPointId
     this.PushContext context
 
-  member internal this.CatchUp(visits : Dictionary<string, Dictionary<int, PointVisit>> array)
-#if NETSTANDARD2_0
-                              (vlock : ReaderWriterLockSlim) =
-#else
-                              (vlock : ReaderWriterLock) =
-#endif
+  member internal this.CatchUp(visits : Dictionary<string, Dictionary<int, PointVisit>> array) =
     if visits.[0].Count > 0 then
       let dict = Dictionary<string, Dictionary<int, PointVisit>> ()
-      let counts = try
-#if NETSTANDARD2_0
-                      vlock.EnterWriteLock()
-#else
-                      vlock.AcquireWriterLock(-1)
-#endif
-                      System.Threading.Interlocked.Exchange(&visits.[0], dict)
-                   finally
-#if NETSTANDARD2_0
-                      vlock.ExitWriteLock()
-#else
-                      vlock.ReleaseWriterLock()
-#endif
+      let counts = System.Threading.Interlocked.Exchange(&visits.[0], dict)
       counts |> Table |> this.Push String.Empty 0
 
   member this.OnStart() =
@@ -125,13 +108,13 @@ type Tracer =
     if this.IsConnected() then f()
     else g()
 
-  member internal this.OnFinish finish visits vlock =
-    this.CatchUp visits vlock
+  member internal this.OnFinish finish visits =
+    this.CatchUp visits
     if finish <> Pause
     then this.Close()
 
-  member internal this.OnVisit visits vlock moduleId hitPointId context =
-    this.CatchUp visits vlock
+  member internal this.OnVisit visits moduleId hitPointId context =
+    this.CatchUp visits
     this.Push moduleId hitPointId context
     this.Formatter.Flush()
     this.Stream.Flush()

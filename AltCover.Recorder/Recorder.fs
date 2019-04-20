@@ -51,11 +51,7 @@ module Instance =
   /// Accumulation of visit records
   /// </summary>
   let internal Visits = [| new Dictionary<string, Dictionary<int, PointVisit>>() |]
-#if NETSTANDARD2_0
-  let internal VisitLock = new ReaderWriterLockSlim()
-#else
-  let internal VisitLock = new ReaderWriterLock()
-#endif
+
   let internal Samples = new Dictionary<string, Dictionary<int, bool>>()
 
   let internal synchronize = Object()
@@ -156,25 +152,13 @@ module Instance =
   /// This method flushes hit count buffers.
   /// </summary>
   let internal FlushAll finish =
-    trace.OnConnected (fun () -> trace.OnFinish finish Visits VisitLock)
+    trace.OnConnected (fun () -> trace.OnFinish finish Visits)
       (fun () ->
       match Visits.[0].Count with
       | 0 -> ()
       | _ ->
         let empty = Dictionary<string, Dictionary<int, PointVisit>> ()
-        let counts = try
-#if NETSTANDARD2_0
-                        VisitLock.EnterWriteLock()
-#else
-                        VisitLock.AcquireWriterLock(-1)
-#endif
-                        System.Threading.Interlocked.Exchange(&Visits.[0], empty)
-                     finally
-#if NETSTANDARD2_0
-                        VisitLock.ExitWriteLock()
-#else
-                        VisitLock.ReleaseWriterLock()
-#endif
+        let counts = System.Threading.Interlocked.Exchange(&Visits.[0], empty)
         WithMutex
           (fun own ->
           let delta =
@@ -200,22 +184,10 @@ module Instance =
     Recording <- true
 
   let internal TraceVisit moduleId hitPointId context =
-    trace.OnVisit Visits VisitLock moduleId hitPointId context
+    trace.OnVisit Visits moduleId hitPointId context
 
   let internal AddVisit moduleId hitPointId context =
-    try
-#if NETSTANDARD2_0
-      VisitLock.EnterReadLock()
-#else
-      VisitLock.AcquireReaderLock(-1)
-#endif
-      Counter.AddVisit Visits.[0] moduleId hitPointId context
-    finally
-#if NETSTANDARD2_0
-      VisitLock.ExitReadLock()
-#else
-      VisitLock.ReleaseReaderLock()
-#endif
+    Counter.AddVisit Visits.[0] moduleId hitPointId context
 
   let internal TakeSample strategy moduleId hitPointId =
     match strategy with
