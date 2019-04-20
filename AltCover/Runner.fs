@@ -526,13 +526,16 @@ module internal Runner =
                             if String.IsNullOrEmpty m
                             then ()
                             else
-                              t.Add(m, Dictionary<int, PointVisit>())
+                              if m |> t.ContainsKey |> not
+                              then t.Add(m, Dictionary<int, PointVisit>())
                               let rec sequencePoint () =
                                 let p = formatter.ReadInt32()
                                 if p <> 0 then
                                   let n = formatter.ReadInt32()
-                                  let pv = PointVisit.Init n []
-                                  t.[m].Add(p, pv)
+                                  if p |> t.[m].ContainsKey |> not
+                                  then t.[m].Add(p, PointVisit.Create())
+                                  let pv = t.[m].[p]
+                                  pv.Count <- pv.Count + n
                                   let rec tracking () =
                                     let track = formatter.ReadByte() |> int
                                     match enum track with

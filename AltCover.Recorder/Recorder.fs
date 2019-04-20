@@ -225,10 +225,7 @@ module Instance =
   let internal VisitImpl moduleId hitPointId context =
     if not <| String.IsNullOrEmpty(moduleId) &&
        TakeSample Sample moduleId hitPointId then
-      let adder =
-        if trace.IsConnected() then TraceVisit
-        else AddVisit
-      adder moduleId hitPointId context
+      AddVisit moduleId hitPointId context
 
   let private IsOpenCoverRunner() =
     (CoverageFormat = ReportFormat.OpenCoverWithTracking)
@@ -254,8 +251,7 @@ module Instance =
                               else f()
 
   let internal VisitSelection track moduleId hitPointId =
-    lockVisits (fun () ->
-      VisitImpl moduleId hitPointId track)
+    VisitImpl moduleId hitPointId track
 
   let Visit moduleId hitPointId =
     if Recording then
