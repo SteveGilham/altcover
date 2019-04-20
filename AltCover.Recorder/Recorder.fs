@@ -51,7 +51,11 @@ module Instance =
   /// Accumulation of visit records
   /// </summary>
   let internal Visits = [| new Dictionary<string, Dictionary<int, PointVisit>>() |]
+#if NETSTANDARD2_0
+  let internal VisitLock = new ReaderWriterLockSlim()
+#else
   let internal VisitLock = new ReaderWriterLock()
+#endif
   let internal Samples = new Dictionary<string, Dictionary<int, bool>>()
 
   let internal synchronize = Object()
@@ -159,10 +163,18 @@ module Instance =
       | _ ->
         let empty = Dictionary<string, Dictionary<int, PointVisit>> ()
         let counts = try
+#if NETSTANDARD2_0
+                        VisitLock.EnterWriteLock()
+#else
                         VisitLock.AcquireWriterLock(-1)
+#endif
                         System.Threading.Interlocked.Exchange(&Visits.[0], empty)
                      finally
+#if NETSTANDARD2_0
+                        VisitLock.ExitWriteLock()
+#else
                         VisitLock.ReleaseWriterLock()
+#endif
         WithMutex
           (fun own ->
           let delta =
@@ -192,10 +204,18 @@ module Instance =
 
   let internal AddVisit moduleId hitPointId context =
     try
+#if NETSTANDARD2_0
+      VisitLock.EnterReadLock()
+#else
       VisitLock.AcquireReaderLock(-1)
+#endif
       Counter.AddVisit Visits.[0] moduleId hitPointId context
     finally
+#if NETSTANDARD2_0
+      VisitLock.ExitReadLock()
+#else
       VisitLock.ReleaseReaderLock()
+#endif
 
   let internal TakeSample strategy moduleId hitPointId =
     match strategy with

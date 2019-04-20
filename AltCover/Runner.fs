@@ -528,9 +528,10 @@ module internal Runner =
                             else
                               if m |> t.ContainsKey |> not
                               then t.Add(m, Dictionary<int, PointVisit>())
-                              let rec sequencePoint () =
-                                let p = formatter.ReadInt32()
-                                if p <> 0 then
+                              let points = formatter.ReadInt32()
+                              let rec sequencePoint pts =
+                                if pts > 0 then
+                                  let p = formatter.ReadInt32()
                                   let n = formatter.ReadInt32()
                                   if p |> t.[m].ContainsKey |> not
                                   then t.[m].Add(p, PointVisit.Create())
@@ -546,10 +547,10 @@ module internal Runner =
                                     | Tag.Both -> pv.Tracks.Add (Both (formatter.ReadInt64(), formatter.ReadInt32()))
                                                   tracking ()
                                     | Tag.Table -> ``module``()
-                                    | _ -> sequencePoint()
+                                    | _ -> sequencePoint (pts - 1)
                                   tracking()
                                 else ``module``()
-                              sequencePoint()
+                              sequencePoint points
                           ``module`` ()
                           Table t
                       | _ -> Null)

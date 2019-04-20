@@ -77,14 +77,14 @@ type Tracer =
       this.Formatter.Write(Tag.Table |> byte)
       t.Keys
       |> Seq.iter (fun m -> this.Formatter.Write m
+                            this.Formatter.Write t.[m].Keys.Count
                             t.[m].Keys
                             |> Seq.iter (fun p -> this.Formatter.Write p
                                                   let v = t.[m].[p]
                                                   this.Formatter.Write v.Count
                                                   v.Tracks
                                                   |> Seq.iter this.PushContext
-                                                  this.PushContext Null)
-                            this.Formatter.Write 0)
+                                                  this.PushContext Null))
       this.Formatter.Write String.Empty
 
   member internal this.Push (moduleId : string) (hitPointId : int) context =
@@ -93,14 +93,26 @@ type Tracer =
     this.PushContext context
 
   member internal this.CatchUp(visits : Dictionary<string, Dictionary<int, PointVisit>> array)
+#if NETSTANDARD2_0
+                              (vlock : ReaderWriterLockSlim) =
+#else
                               (vlock : ReaderWriterLock) =
+#endif
     if visits.[0].Count > 0 then
       let dict = Dictionary<string, Dictionary<int, PointVisit>> ()
       let counts = try
+#if NETSTANDARD2_0
+                      vlock.EnterWriteLock()
+#else
                       vlock.AcquireWriterLock(-1)
+#endif
                       System.Threading.Interlocked.Exchange(&visits.[0], dict)
                    finally
+#if NETSTANDARD2_0
+                      vlock.ExitWriteLock()
+#else
                       vlock.ReleaseWriterLock()
+#endif
       counts |> Table |> this.Push String.Empty 0
 
   member this.OnStart() =

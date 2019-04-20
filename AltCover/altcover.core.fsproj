@@ -31,6 +31,7 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <WarningsAsErrors />
     <NoWarn>52</NoWarn>
+    <Tailcalls>true</Tailcalls>
   </PropertyGroup>
 
   <ItemGroup>

@@ -82,9 +82,11 @@ type AltCoverCoreTests() =
                             then ()
                             else
                               t.Add(m, Dictionary<int, PointVisit>())
-                              let rec sequencePoint () =
-                                let p = formatter.ReadInt32()
-                                if p <> 0 then
+                              let points = formatter.ReadInt32()
+                              printfn "points = %d" points
+                              let rec sequencePoint pts =
+                                if pts > 0 then
+                                  let p = formatter.ReadInt32()
                                   let n = formatter.ReadInt32()
                                   let pv = PointVisit.Init n []
                                   t.[m].Add(p, pv)
@@ -102,10 +104,10 @@ type AltCoverCoreTests() =
 #endif
                                                   tracking ()
                                     | Tag.Table -> Assert.Fail ("No nested tables!!")
-                                    | _ -> sequencePoint()
+                                    | _ -> sequencePoint (pts - 1)
                                   tracking()
                                 else ``module``()
-                              sequencePoint()
+                              sequencePoint points
                           ``module`` ()
                           Table t
 

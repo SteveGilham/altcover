@@ -1714,6 +1714,7 @@ or
                  formatter.Write(Base.Tag.Table |> byte)
                  t.Keys
                  |> Seq.iter (fun m -> formatter.Write m
+                                       formatter.Write t.[m].Keys.Count
                                        t.[m].Keys
                                        |> Seq.iter (fun p -> formatter.Write p
                                                              let v = t.[m].[p]
@@ -1731,8 +1732,7 @@ or
                                                                                       formatter.Write(t')
                                                                                       formatter.Write(t)
                                                                                     | _ -> tx |> (sprintf "%A") |> Assert.Fail)
-                                                             formatter.Write(Base.Tag.Null |> byte))
-                                       formatter.Write 0)
+                                                             formatter.Write(Base.Tag.Null |> byte)))
                  formatter.Write String.Empty
                x)
           |> List.length) inputs
