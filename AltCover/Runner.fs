@@ -568,7 +568,6 @@ module internal Runner =
                         visit.GetType().ToString() = "AltCover.Base.Track+Table")
                  then
                    Base.Counter.AddVisit hits key hitPointId visit
-                   1
                  else 0
                sink (hitcount + increment)
              | None -> hitcount

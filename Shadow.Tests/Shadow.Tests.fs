@@ -195,17 +195,17 @@ type AltCoverTests() =
       lock Instance.Visits (fun () ->
       let save = Instance.trace
       try
-        Instance.Visits.[0].Clear()
+        Instance.Visits.[Instance.VisitIndex |> int].Clear()
         Instance.trace <- { Tracer=null; Stream=null; Formatter=null;
                             Runner = false; Definitive = false }
         let key = " "
         Instance.VisitSelection Null key 23
-        Assert.That (Instance.Visits.[0].Count, Is.EqualTo 1, "A visit that should have happened, didn't")
-        Assert.That (Instance.Visits.[0].[key].Count, Is.EqualTo 1, "keys = " + String.Join("; ", Instance.Visits.[0].Keys|> Seq.toArray))
-        Assert.That (Instance.Visits.[0].[key].[23].Count, Is.EqualTo 1)
-        Assert.That (Instance.Visits.[0].[key].[23].Tracks, Is.Empty)
+        Assert.That (Instance.Visits.[Instance.VisitIndex |> int].Count, Is.EqualTo 1, "A visit that should have happened, didn't")
+        Assert.That (Instance.Visits.[Instance.VisitIndex |> int].[key].Count, Is.EqualTo 1, "keys = " + String.Join("; ", Instance.Visits.[Instance.VisitIndex |> int].Keys|> Seq.toArray))
+        Assert.That (Instance.Visits.[Instance.VisitIndex |> int].[key].[23].Count, Is.EqualTo 1)
+        Assert.That (Instance.Visits.[Instance.VisitIndex |> int].[key].[23].Tracks, Is.Empty)
       finally
-        Instance.Visits.[0].Clear()
+        Instance.Visits.[Instance.VisitIndex |> int].Clear()
         Instance.trace <- save)
       self.GetMyMethodName "<="
 
@@ -214,13 +214,13 @@ type AltCoverTests() =
       self.GetMyMethodName "=>"
       lock Instance.Visits (fun () ->
       try
-        Instance.Visits.[0].Clear()
+        Instance.Visits.[Instance.VisitIndex |> int].Clear()
         let key = " "
         Instance.VisitImpl key 23 Null
         Instance.VisitImpl "key" 42 Null
-        Assert.That (Instance.Visits.[0].Count, Is.EqualTo 2)
+        Assert.That (Instance.Visits.[Instance.VisitIndex |> int].Count, Is.EqualTo 2)
       finally
-        Instance.Visits.[0].Clear())
+        Instance.Visits.[Instance.VisitIndex |> int].Clear())
       self.GetMyMethodName "<="
 
     [<Test>]
@@ -228,12 +228,12 @@ type AltCoverTests() =
       self.GetMyMethodName "=>"
       lock Instance.Visits (fun () ->
       try
-        Instance.Visits.[0].Clear()
+        Instance.Visits.[Instance.VisitIndex |> int].Clear()
         let key = " "
         Instance.VisitImpl key 23 Null
         Instance.VisitImpl key 42 Null
-        Assert.That (Instance.Visits.[0].Count, Is.EqualTo 1)
-        Assert.That (Instance.Visits.[0].[key].Count, Is.EqualTo 2)
+        Assert.That (Instance.Visits.[Instance.VisitIndex |> int].Count, Is.EqualTo 1)
+        Assert.That (Instance.Visits.[Instance.VisitIndex |> int].[key].Count, Is.EqualTo 2)
       finally
         Adapter.VisitsClear())
       self.GetMyMethodName "<="
@@ -243,14 +243,14 @@ type AltCoverTests() =
       self.GetMyMethodName "=>"
       lock Instance.Visits (fun () ->
       try
-        Instance.Visits.[0].Clear()
+        Instance.Visits.[Instance.VisitIndex |> int].Clear()
         let key = " "
         Instance.VisitImpl key 23 Null
         Instance.VisitImpl key 23 Null
-        Assert.That (Instance.Visits.[0].[key].[23].Count, Is.EqualTo 2)
-        Assert.That (Instance.Visits.[0].[key].[23].Tracks, Is.Empty)
+        Assert.That (Instance.Visits.[Instance.VisitIndex |> int].[key].[23].Count, Is.EqualTo 2)
+        Assert.That (Instance.Visits.[Instance.VisitIndex |> int].[key].[23].Tracks, Is.Empty)
       finally
-        Instance.Visits.[0].Clear())
+        Instance.Visits.[Instance.VisitIndex |> int].Clear())
       self.GetMyMethodName "<="
 
     [<Test>]
@@ -258,15 +258,15 @@ type AltCoverTests() =
       self.GetMyMethodName "=>"
       lock Instance.Visits (fun () ->
       try
-        Instance.Visits.[0].Clear()
+        Instance.Visits.[Instance.VisitIndex |> int].Clear()
         let key = " "
         let payload = Time DateTime.UtcNow.Ticks
         Instance.VisitImpl key 23 Null
         Instance.VisitImpl key 23 payload
-        Assert.That (Instance.Visits.[0].[key].[23].Count, Is.EqualTo 1)
-        Assert.That (Instance.Visits.[0].[key].[23].Tracks, Is.EquivalentTo [payload])
+        Assert.That (Instance.Visits.[Instance.VisitIndex |> int].[key].[23].Count, Is.EqualTo 1)
+        Assert.That (Instance.Visits.[Instance.VisitIndex |> int].[key].[23].Tracks, Is.EquivalentTo [payload])
       finally
-        Instance.Visits.[0].Clear())
+        Instance.Visits.[Instance.VisitIndex |> int].Clear())
       self.GetMyMethodName "<="
 
     [<Test>]
@@ -274,7 +274,7 @@ type AltCoverTests() =
       self.GetMyMethodName "=>"
       lock Instance.Visits (fun () ->
       try
-        Instance.Visits.[0].Clear()
+        Instance.Visits.[Instance.VisitIndex |> int].Clear()
         let key = " "
         Instance.VisitImpl key 23 Null
         let table = Dictionary<string, Dictionary<int, PointVisit>>()
@@ -286,10 +286,10 @@ type AltCoverTests() =
         let pv = PointVisit.Init 42 payloads
         table.[key].Add(23, pv)
         Instance.VisitImpl key 23 (Table table)
-        Assert.That (Instance.Visits.[0].[key].[23].Count, Is.EqualTo 43)
-        Assert.That (Instance.Visits.[0].[key].[23].Tracks, Is.EquivalentTo payloads)
+        Assert.That (Instance.Visits.[Instance.VisitIndex |> int].[key].[23].Count, Is.EqualTo 43)
+        Assert.That (Instance.Visits.[Instance.VisitIndex |> int].[key].[23].Tracks, Is.EquivalentTo payloads)
       finally
-        Instance.Visits.[0].Clear())
+        Instance.Visits.[Instance.VisitIndex |> int].Clear())
       self.GetMyMethodName "<="
 
     [<Test>]
@@ -585,13 +585,11 @@ type AltCoverTests() =
                  (fun i ->
                  Adapter.VisitsAdd "f6e3edb3-fb20-44b3-817d-f69d1a22fc2f" i (i + 1))
             Adapter.DoPause()
-            let head = "Coverage statistics flushing took "
-            let tail = " seconds\n"
-            let recorded = stdout.ToString().Replace("\r\n", "\n")
-            let index1 = recorded.IndexOf(head, StringComparison.Ordinal)
-            let index2 = recorded.IndexOf(tail, StringComparison.Ordinal)
-            Assert.That(index1, Is.GreaterThanOrEqualTo 0, recorded)
-            Assert.That(index2, Is.GreaterThan index1, recorded)
+            Assert.That (Adapter.VisitsSeq (), Is.Not.Empty)
+            Assert.That (Adapter.VisitsEntrySeq "f6e3edb3-fb20-44b3-817d-f69d1a22fc2f" |> Seq.length,
+                         Is.EqualTo 10)
+            let recorded = stdout.ToString().Trim()
+            Assert.That(recorded, Is.EqualTo "Pausing...")
             use worker' = new FileStream(Instance.ReportFile, FileMode.Open)
             let after = XmlDocument()
             after.Load worker'
@@ -599,7 +597,7 @@ type AltCoverTests() =
               (after.SelectNodes("//seqpnt")
                |> Seq.cast<XmlElement>
                |> Seq.map (fun x -> x.GetAttribute("visitcount")),
-               Is.EquivalentTo [ "11"; "10"; "9"; "8"; "7"; "6"; "4"; "3"; "2"; "1" ])
+               Is.EquivalentTo [ "1"; "1"; "1"; "1"; "1"; "1"; "0"; String.Empty; "X"; "-1"  ])
           finally
             Instance.trace <- save
             if File.Exists Instance.ReportFile then File.Delete Instance.ReportFile

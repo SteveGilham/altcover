@@ -1732,13 +1732,13 @@ _Target "RecordResumeTest"
        |> Seq.map (fun x -> x.Attribute(XName.Get("visitcount")).Value)
        |> Seq.toList
 
-     let expected = Array.create 20 "0"
-     Assert.That
-       (recorded, expected |> Is.Not.EquivalentTo,
-        sprintf "Bad visit list %A -- should no longer be empty now" recorded)
      Assert.That
        (recorded |> Seq.length, Is.EqualTo 20,
-        sprintf "Bad visit list %A -- should no longer be empty now" recorded))
+        sprintf "Bad visit list %A -- bad length" recorded)
+
+     let hits = recorded |> Seq.filter (fun i -> i = "1") |> Seq.length
+     Assert.That (hits, Is.GreaterThanOrEqualTo 7 )
+     Assert.That (hits, Is.LessThanOrEqualTo 8))
 
 _Target "RecordResumeTrackingTest" (fun _ ->
   Directory.ensure "./_Reports"
@@ -1798,14 +1798,13 @@ _Target "RecordResumeTrackingTest" (fun _ ->
        coverageDocument.Descendants(XName.Get("SequencePoint"))
        |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value)
        |> Seq.toList
-
-     let expected = Array.create 20 "0"
-     Assert.That
-       (recorded, expected |> Is.Not.EquivalentTo,
-        sprintf "Bad visit list %A -- should no longer be empty now" recorded)
      Assert.That
        (recorded |> Seq.length, Is.EqualTo 20,
-        sprintf "Bad visit list %A -- should no longer be empty now" recorded)
+        sprintf "Bad visit list %A -- bad length" recorded)
+
+     let hits = recorded |> Seq.filter (fun i -> i = "1") |> Seq.length
+     Assert.That (hits, Is.GreaterThanOrEqualTo 7 )
+     Assert.That (hits, Is.LessThanOrEqualTo 8)
      let tracked =
        coverageDocument.Descendants(XName.Get("TrackedMethodRef")) |> Seq.toList
      Assert.That(tracked, Is.Not.Empty))
@@ -1870,14 +1869,14 @@ _Target "RecordResumeTestDotNet"
        coverageDocument.Descendants(XName.Get("seqpnt"))
        |> Seq.map (fun x -> x.Attribute(XName.Get("visitcount")).Value)
        |> Seq.toList
-
-     let expected = Array.create 20 "0"
-     Assert.That
-       (recorded, expected |> Is.Not.EquivalentTo,
-        sprintf "Bad visit list %A -- should no longer be empty now" recorded)
+       
      Assert.That
        (recorded |> Seq.length, Is.EqualTo 20,
-        sprintf "Bad visit list %A -- should no longer be empty now" recorded))
+        sprintf "Bad visit list %A -- bad length" recorded)
+
+     let hits = recorded |> Seq.filter (fun i -> i = "1") |> Seq.length
+     Assert.That (hits, Is.GreaterThanOrEqualTo 7 )
+     Assert.That (hits, Is.LessThanOrEqualTo 8))
 
 _Target "RecordResumeTestUnderMono" // Fails : System.EntryPointNotFoundException: CreateZStream
   (fun _ ->

@@ -274,15 +274,18 @@ module internal Counter =
   let internal AddVisit (counts : Dictionary<string, Dictionary<int, PointVisit>>)
       moduleId hitPointId context =
     match context with
-    | Table t -> t.Keys
+    | Table t -> let mutable hitcount = 0
+                 t.Keys
                  |> Seq.iter (fun m -> EnsureModule counts m
                                        t.[m].Keys |>
                                        Seq.iter (fun p -> EnsurePoint counts.[m] p
                                                           let v = counts.[m].[p]
                                                           let add = t.[m].[p]
+                                                          hitcount <- hitcount + add.Total()
                                                           lock v (fun () -> v.Count <- v.Count + add.Count
                                                                             v.Tracks.AddRange(add.Tracks)
                                        )))
+                 hitcount
     | _ ->
       EnsureModule counts moduleId
       EnsurePoint counts.[moduleId] hitPointId
@@ -291,3 +294,4 @@ module internal Counter =
       match context with
       | Null -> v.Step()
       | something -> v.Track something
+      1

@@ -40,7 +40,8 @@ type AltCoverTests() =
     member self.RealIdShouldIncrementCount() =
       let visits = new Dictionary<string, Dictionary<int, PointVisit>>()
       let key = " "
-      Counter.AddVisit visits key 23 Null
+      let v1 = Counter.AddVisit visits key 23 Null
+      Assert.That(v1, Is.EqualTo 1)
       Assert.That(visits.Count, Is.EqualTo 1)
       Assert.That(visits.[key].Count, Is.EqualTo 1)
       let x = visits.[key].[23]
@@ -52,7 +53,8 @@ type AltCoverTests() =
       let visits = new Dictionary<string, Dictionary<int, PointVisit>>()
       let key = " "
       let payload = Time DateTime.UtcNow.Ticks
-      Counter.AddVisit visits key 23 payload
+      let v2 = Counter.AddVisit visits key 23 payload
+      Assert.That(v2, Is.EqualTo 1)
       Assert.That(visits.Count, Is.EqualTo 1)
       Assert.That(visits.[key].Count, Is.EqualTo 1)
       let x = visits.[key].[23]
@@ -63,16 +65,20 @@ type AltCoverTests() =
     member self.DistinctIdShouldBeDistinct() =
       let visits = new Dictionary<string, Dictionary<int, PointVisit>>()
       let key = " "
-      Counter.AddVisit visits key 23 Null
-      Counter.AddVisit visits "key" 42 Null
+      let v3 = Counter.AddVisit visits key 23 Null
+      Assert.That(v3, Is.EqualTo 1)
+      let v4 = Counter.AddVisit visits "key" 42 Null
       Assert.That(visits.Count, Is.EqualTo 2)
+      Assert.That(v4, Is.EqualTo 1)
 
     [<Test>]
     member self.DistinctLineShouldBeDistinct() =
       let visits = new Dictionary<string, Dictionary<int, PointVisit>>()
       let key = " "
-      Counter.AddVisit visits key 23 Null
-      Counter.AddVisit visits key 42 Null
+      let v5 = Counter.AddVisit visits key 23 Null
+      Assert.That(v5, Is.EqualTo 1)
+      let v6 = Counter.AddVisit visits key 42 Null
+      Assert.That(v6, Is.EqualTo 1)
       Assert.That(visits.Count, Is.EqualTo 1)
       Assert.That(visits.[key].Count, Is.EqualTo 2)
 
@@ -80,8 +86,10 @@ type AltCoverTests() =
     member self.RepeatVisitsShouldIncrementCount() =
       let visits = new Dictionary<string, Dictionary<int, PointVisit>>()
       let key = " "
-      Counter.AddVisit visits key 23 Null
-      Counter.AddVisit visits key 23 Null
+      let v7 = Counter.AddVisit visits key 23 Null
+      Assert.That(v7, Is.EqualTo 1)
+      let v8 = Counter.AddVisit visits key 23 Null
+      Assert.That(v8, Is.EqualTo 1)
       let x = visits.[key].[23]
       Assert.That(x.Count, Is.EqualTo 2)
       Assert.That(x.Tracks, Is.Empty)
@@ -91,8 +99,10 @@ type AltCoverTests() =
       let visits = new Dictionary<string, Dictionary<int, PointVisit>>()
       let key = " "
       let payload = Time DateTime.UtcNow.Ticks
-      Counter.AddVisit visits key 23 Null
-      Counter.AddVisit visits key 23 payload
+      let v9 = Counter.AddVisit visits key 23 Null
+      Assert.That(v9, Is.EqualTo 1)
+      let v10 = Counter.AddVisit visits key 23 payload
+      Assert.That(v10, Is.EqualTo 1)
       let x = visits.[key].[23]
       Assert.That(x.Count, Is.EqualTo 1)
       Assert.That(x.Tracks, Is.EquivalentTo [ payload ])
@@ -1542,7 +1552,7 @@ or
         hits
         |> Seq.iter
              (fun (moduleId, hitPointId, hit) ->
-             AltCover.Base.Counter.AddVisit counts moduleId hitPointId hit)
+             AltCover.Base.Counter.AddVisit counts moduleId hitPointId hit |> ignore)
 
         Runner.DoReport counts AltCover.Base.ReportFormat.NCover reportFile None |> ignore
         use worker' = new FileStream(reportFile, FileMode.Open)

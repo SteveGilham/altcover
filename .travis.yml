@@ -1,5 +1,6 @@
 language: csharp
 mono: latest
+dist: xenial
 dotnet: 2.1.503
 addons:
   apt:

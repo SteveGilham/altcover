@@ -36,7 +36,7 @@ type AltCoverCoreTests() =
       let unique = Path.Combine(where, Guid.NewGuid().ToString())
       let mutable client = Tracer.Create unique
       try
-        client <- client.OnStart()
+        client <- client.OnStart() |> fst
         Assert.That(client.IsConnected(), Is.False)
       with _ ->
         client.Close()
@@ -50,7 +50,7 @@ type AltCoverCoreTests() =
          ()
       let mutable client = Tracer.Create unique
       try
-        client <- client.OnStart()
+        client <- client.OnStart() |> fst
         Assert.That(client.IsConnected(), Is.True)
       finally
         client.Close()
@@ -134,7 +134,7 @@ type AltCoverCoreTests() =
         try
           Adapter.VisitsClear()
           Adapter.VisitsAdd "name" 23 1
-          Instance.trace <- client.OnStart()
+          Instance.trace <- client.OnStart() |> fst
           Assert.That(Instance.trace.IsConnected(), "connection failed")
           Adapter.VisitImplNone "name" 23
         finally
@@ -183,7 +183,7 @@ type AltCoverCoreTests() =
         try
           Adapter.VisitsClear()
           Adapter.VisitsAddTrack "name" 23 1
-          Instance.trace <- client.OnStart()
+          Instance.trace <- client.OnStart() |> fst
           Assert.That(Instance.trace.IsConnected(), "connection failed")
           Adapter.VisitImplMethod "name" 23 5
         finally
@@ -222,7 +222,7 @@ type AltCoverCoreTests() =
         let expected = [ ("name", client.GetHashCode(), Null) ]
         try
           Adapter.VisitsClear()
-          Instance.trace <- client.OnStart()
+          Instance.trace <- client.OnStart() |> fst
           Assert.That(Instance.trace.Equals client, Is.False)
           Assert.That(Instance.trace.Equals expected, Is.False)
           Assert.That(Instance.trace.IsConnected(), "connection failed")

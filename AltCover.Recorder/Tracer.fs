@@ -17,6 +17,11 @@ type internal Close =
   | Pause
   | Resume
 
+// These conditionally internal for Gendarme
+type ReportIndex =
+  | Memory = 0
+  | File = 1
+
 [<NoComparison>]
 type Tracer =
   { Tracer : string
@@ -43,16 +48,16 @@ type Tracer =
 
   member this.Connect() =
     if File.Exists this.Tracer then
-      Seq.initInfinite (fun i -> Path.ChangeExtension(this.Tracer, sprintf ".%d.acv" i))
-      |> Seq.filter (File.Exists >> not)
-      |> Seq.map (fun f ->
-           let fs = File.OpenWrite f
-           let s = new DeflateStream(fs, CompressionMode.Compress)
-           { this with Stream = s
-                       Formatter = new BinaryWriter(s)
-                       Runner = true })
-      |> Seq.head
-    else this
+      (Seq.initInfinite (fun i -> Path.ChangeExtension(this.Tracer, sprintf ".%d.acv" i))
+       |> Seq.filter (File.Exists >> not)
+       |> Seq.map (fun f ->
+            let fs = File.OpenWrite f
+            let s = new DeflateStream(fs, CompressionMode.Compress)
+            { this with Stream = s
+                        Formatter = new BinaryWriter(s)
+                        Runner = true })
+       |> Seq.head, ReportIndex.File)
+    else (this, ReportIndex.Memory)
 
   member this.Close() =
     try
@@ -92,17 +97,15 @@ type Tracer =
     this.Formatter.Write hitPointId
     this.PushContext context
 
-  member internal this.CatchUp(visits : Dictionary<string, Dictionary<int, PointVisit>> array) =
-    if visits.[0].Count > 0 then
-      let dict = Dictionary<string, Dictionary<int, PointVisit>> ()
-      let counts = System.Threading.Interlocked.Exchange(&visits.[0], dict)
-      counts |> Table |> this.Push String.Empty 0
+  member internal this.CatchUp(visits : Dictionary<string, Dictionary<int, PointVisit>> ) =
+    if visits.Count > 0 then
+      visits |> Table |> this.Push String.Empty 0
 
   member this.OnStart() =
-    let running =
+    let running, index =
       if this.Tracer <> "Coverage.Default.xml.acv" then this.Connect()
-      else this
-    { running with Definitive = true }
+      else (this, ReportIndex.Memory)
+    ({ running with Definitive = true }, index)
 
   member this.OnConnected f g =
     if this.IsConnected() then f()

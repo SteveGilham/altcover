@@ -50,9 +50,17 @@ module Instance =
   /// <summary>
   /// Accumulation of visit records
   /// </summary>
-  let internal Visits = [| new Dictionary<string, Dictionary<int, PointVisit>>() |]
+  let internal Visits = [|
+                            new Dictionary<string, Dictionary<int, PointVisit>>()
+                            new Dictionary<string, Dictionary<int, PointVisit>>()
+  |]
 
-  let internal Samples = new Dictionary<string, Dictionary<int, bool>>()
+  let internal Samples = [|
+    new Dictionary<string, Dictionary<int, bool>>()
+    new Dictionary<string, Dictionary<int, bool>>()
+  |]
+
+  let mutable internal VisitIndex = ReportIndex.Memory
 
   let internal synchronize = Object()
 
@@ -143,7 +151,9 @@ module Instance =
   let InitialiseTrace() =
     WithMutex(fun _ ->
       let t = Tracer.Create(SignalFile())
-      trace <- t.OnStart())
+      let tt, ii = t.OnStart()
+      VisitIndex <- ii
+      trace <- tt)
 
   let internal Watcher = new FileSystemWatcher()
   let mutable internal Recording = true
@@ -152,17 +162,15 @@ module Instance =
   /// This method flushes hit count buffers.
   /// </summary>
   let internal FlushAll finish =
-    trace.OnConnected (fun () -> trace.OnFinish finish Visits)
+    trace.OnConnected (fun () -> trace.OnFinish finish Visits.[ReportIndex.File |> int])
       (fun () ->
-      match Visits.[0].Count with
+      match Visits.[ReportIndex.Memory |> int].Count with
       | 0 -> ()
       | _ ->
-        let empty = Dictionary<string, Dictionary<int, PointVisit>> ()
-        let counts = System.Threading.Interlocked.Exchange(&Visits.[0], empty)
         WithMutex
           (fun own ->
           let delta =
-            Counter.DoFlush ignore (fun _ _ -> ()) own counts CoverageFormat ReportFile
+            Counter.DoFlush ignore (fun _ _ -> ()) own Visits.[ReportIndex.Memory |> int] CoverageFormat ReportFile
               None
           GetResource "Coverage statistics flushing took {0:N} seconds"
           |> Option.iter (fun s -> Console.Out.WriteLine(s, delta.TotalSeconds))))
@@ -172,41 +180,41 @@ module Instance =
     |> GetResource
     |> Option.iter Console.Out.WriteLine
     Recording <- false
-    FlushAll Pause
 
   let FlushResume() =
     ("ResumeHandler")
     |> GetResource
     |> Option.iter Console.Out.WriteLine
-    let empty = Dictionary<string, Dictionary<int, PointVisit>> ()
-    System.Threading.Interlocked.Exchange(&Visits.[0], empty) |> ignore
     InitialiseTrace()
+    VisitIndex <- ReportIndex.File // belt and braces
     Recording <- true
 
   let internal TraceVisit moduleId hitPointId context =
-    trace.OnVisit Visits moduleId hitPointId context
+    trace.OnVisit Visits.[ReportIndex.File |> int] moduleId hitPointId context
 
   let internal AddVisit moduleId hitPointId context =
-    Counter.AddVisit Visits.[0] moduleId hitPointId context
+    Counter.AddVisit Visits.[VisitIndex |> int] moduleId hitPointId context
 
   let internal TakeSample strategy moduleId hitPointId =
     match strategy with
     | Sampling.All -> true
     | _ ->
-      let mutable hasModuleKey = Samples.ContainsKey(moduleId)
+      let i = VisitIndex |> int
+      let samples = Samples.[i]
+      let mutable hasModuleKey = samples.ContainsKey(moduleId)
       if hasModuleKey |> not then
         lock Samples (fun () ->
-          hasModuleKey <- Samples.ContainsKey(moduleId)
+          hasModuleKey <- samples.ContainsKey(moduleId)
           if hasModuleKey |> not
-          then Samples.Add(moduleId, Dictionary<int, bool>())
+          then samples.Add(moduleId, Dictionary<int, bool>())
         )
 
-      let mutable hasPointKey = Samples.[moduleId].ContainsKey(hitPointId)
+      let mutable hasPointKey = samples.[moduleId].ContainsKey(hitPointId)
       if hasPointKey |> not then
-          lock Samples.[moduleId] (fun () ->
-            hasPointKey <- Samples.[moduleId].ContainsKey(hitPointId)
+          lock samples.[moduleId] (fun () ->
+            hasPointKey <- samples.[moduleId].ContainsKey(hitPointId)
             if hasPointKey |> not
-            then Samples.[moduleId].Add(hitPointId, true))
+            then samples.[moduleId].Add(hitPointId, true))
       (hasPointKey && hasModuleKey) |> not
 
   /// <summary>
@@ -217,7 +225,7 @@ module Instance =
   let internal VisitImpl moduleId hitPointId context =
     if not <| String.IsNullOrEmpty(moduleId) &&
        TakeSample Sample moduleId hitPointId then
-      AddVisit moduleId hitPointId context
+      AddVisit moduleId hitPointId context |> ignore
 
   let private IsOpenCoverRunner() =
     (CoverageFormat = ReportFormat.OpenCoverWithTracking)
