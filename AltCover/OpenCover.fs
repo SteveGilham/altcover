@@ -487,6 +487,16 @@ module internal OpenCover =
            summary.SetAttributeValue(X "numMethods", s.TotalMethods))
       s
 
+    // split for gendarme
+    let ReportVisitor2 (s : OpenCoverContext) (node : Node) =
+      match node with
+      | AfterMethod(methodDef, included, track) ->
+        VisitAfterMethod s methodDef track included
+      | AfterType _ -> VisitAfterType s
+      | AfterModule _ -> VisitAfterModule s
+      | Finish -> AfterAll s
+      | _ -> s
+
     let ReportVisitor (s : OpenCoverContext) (node : Node) =
       match node with
       | Start _ -> StartVisit s
@@ -495,12 +505,7 @@ module internal OpenCover =
       | Node.Method(methodDef, included, _) -> VisitMethod s methodDef included
       | MethodPoint(_, codeSegment, i, included) -> VisitMethodPoint s codeSegment i included
       | BranchPoint b -> VisitBranchPoint s b
-      | AfterMethod(methodDef, included, track) ->
-        VisitAfterMethod s methodDef track included
-      | AfterType _ -> VisitAfterType s
-      | AfterModule _ -> VisitAfterModule s
-      | Finish -> AfterAll s
-      | _ -> s
+      | _ -> ReportVisitor2 s node
 
     let result = Visitor.EncloseState ReportVisitor (OpenCoverContext.Build())
     (result, document)

@@ -133,18 +133,20 @@ module internal Runner =
       |> Seq.filter isVisited
       |> Seq.length
 
-    if [Default; BPlus; RPlus] |> Seq.exists (fun x -> x = SummaryFormat) then
-      summarise vclasses classes.Length "VisitedClasses"
-      summarise vmethods methods.Length "VisitedMethods"
-      summarise vpoints points.Length "VisitedPoints"
+    let emitSummary () =
+      if [Default; BPlus; RPlus] |> Seq.exists (fun x -> x = SummaryFormat) then
+        summarise vclasses classes.Length "VisitedClasses"
+        summarise vmethods methods.Length "VisitedMethods"
+        summarise vpoints points.Length "VisitedPoints"
 
-    if [B; R; BPlus; RPlus] |> Seq.exists (fun x -> x = SummaryFormat) then
-      WriteTC TCtotal "C" classes.Length
-      WriteTC TCcover "C" vclasses
-      WriteTC TCtotal "M" methods.Length
-      WriteTC TCcover "M" vmethods
-      WriteTC TCtotal "S" points.Length
-      WriteTC TCcover "S" vpoints
+      if [B; R; BPlus; RPlus] |> Seq.exists (fun x -> x = SummaryFormat) then
+        WriteTC TCtotal "C" classes.Length
+        WriteTC TCcover "C" vclasses
+        WriteTC TCtotal "M" methods.Length
+        WriteTC TCcover "M" vmethods
+        WriteTC TCtotal "S" points.Length
+        WriteTC TCcover "S" vpoints
+    emitSummary()
 
     makepc vpoints points.Length
 
