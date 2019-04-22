@@ -262,7 +262,7 @@ module internal Counter =
     if not (counts.ContainsKey moduleId) then
       lock counts (fun () ->
         if not (counts.ContainsKey moduleId)
-        then counts.[moduleId] <- Dictionary<int, PointVisit>()
+        then counts.Add(moduleId, Dictionary<int, PointVisit>())
       )
 
   let private EnsurePoint (counts : Dictionary<int, PointVisit>) hitPointId =
@@ -271,27 +271,37 @@ module internal Counter =
       if not (counts.ContainsKey hitPointId)
       then counts.Add(hitPointId, PointVisit.Create()))
 
+  let internal AddTable (counts : Dictionary<string, Dictionary<int, PointVisit>>)
+                        (t : Dictionary<string, Dictionary<int, PointVisit>>) =
+    let mutable hitcount = 0
+    t.Keys
+    |> Seq.iter (fun m -> EnsureModule counts m
+                          let next = counts.[m]
+                          let here = t.[m]
+                          here.Keys |>
+                          Seq.iter (fun p -> EnsurePoint next p
+                                             let v = next.[p]
+                                             let add = here.[p]
+                                             hitcount <- hitcount + add.Total()
+                                             lock v (fun () -> v.Count <- v.Count + add.Count
+                                                               v.Tracks.AddRange(add.Tracks)
+                          )))
+    hitcount
+
+  let internal AddSingleVisit  (counts : Dictionary<string, Dictionary<int, PointVisit>>)
+      moduleId hitPointId context =
+    EnsureModule counts moduleId
+    let next = counts.[moduleId]
+    EnsurePoint next hitPointId
+
+    let v = next.[hitPointId]
+    match context with
+    | Null -> v.Step()
+    | something -> v.Track something
+
   let internal AddVisit (counts : Dictionary<string, Dictionary<int, PointVisit>>)
       moduleId hitPointId context =
     match context with
-    | Table t -> let mutable hitcount = 0
-                 t.Keys
-                 |> Seq.iter (fun m -> EnsureModule counts m
-                                       t.[m].Keys |>
-                                       Seq.iter (fun p -> EnsurePoint counts.[m] p
-                                                          let v = counts.[m].[p]
-                                                          let add = t.[m].[p]
-                                                          hitcount <- hitcount + add.Total()
-                                                          lock v (fun () -> v.Count <- v.Count + add.Count
-                                                                            v.Tracks.AddRange(add.Tracks)
-                                       )))
-                 hitcount
-    | _ ->
-      EnsureModule counts moduleId
-      EnsurePoint counts.[moduleId] hitPointId
-
-      let v = counts.[moduleId].[hitPointId]
-      match context with
-      | Null -> v.Step()
-      | something -> v.Track something
-      1
+    | Table t -> AddTable counts t
+    | _ -> AddSingleVisit counts moduleId hitPointId context
+           1

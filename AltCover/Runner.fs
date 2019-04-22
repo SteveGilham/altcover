@@ -908,10 +908,10 @@ module internal Runner =
             [| delta.TotalSeconds |] false
 
           // And tidy up after everything's done
-          File.Delete(report + ".acv")
-          Directory.GetFiles
-            (Path.GetDirectoryName(report), Path.GetFileName(report) + ".*.acv")
-          |> Seq.iter File.Delete
+          // File.Delete(report + ".acv")
+          //Directory.GetFiles
+          //  (Path.GetDirectoryName(report), Path.GetFileName(report) + ".*.acv")
+          //|> Seq.iter File.Delete
           let document = LoadReport report
           DoSummaries document format' result) 255 true
       CommandLine.ReportErrors "Collection" false

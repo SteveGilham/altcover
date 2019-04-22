@@ -54,11 +54,14 @@ module Instance =
                             new Dictionary<string, Dictionary<int, PointVisit>>()
                             new Dictionary<string, Dictionary<int, PointVisit>>()
   |]
+  let internal FileVisits = Visits.[ReportIndex.File |> int]
+  let mutable internal ActiveVisits = Visits.[ReportIndex.Memory |> int]
 
   let internal Samples = [|
     new Dictionary<string, Dictionary<int, bool>>()
     new Dictionary<string, Dictionary<int, bool>>()
   |]
+  let mutable internal ActiveSamples = Samples.[ReportIndex.Memory |> int]
 
   let mutable internal VisitIndex = ReportIndex.Memory
 
@@ -152,6 +155,8 @@ module Instance =
     WithMutex(fun _ ->
       let t = Tracer.Create(SignalFile())
       let tt, ii = t.OnStart()
+      ActiveVisits <- Visits.[ii |> int]
+      ActiveSamples <- Samples.[ii |> int]
       VisitIndex <- ii
       trace <- tt)
 
@@ -162,7 +167,7 @@ module Instance =
   /// This method flushes hit count buffers.
   /// </summary>
   let internal FlushAll finish =
-    trace.OnConnected (fun () -> trace.OnFinish finish Visits.[ReportIndex.File |> int])
+    trace.OnConnected (fun () -> trace.OnFinish finish FileVisits)
       (fun () ->
       match Visits.[ReportIndex.Memory |> int].Count with
       | 0 -> ()
@@ -186,14 +191,16 @@ module Instance =
     |> GetResource
     |> Option.iter Console.Out.WriteLine
     InitialiseTrace()
+    ActiveVisits <- FileVisits
+    ActiveSamples <- Samples.[ReportIndex.File |> int]
     VisitIndex <- ReportIndex.File // belt and braces
     Recording <- true
 
   let internal TraceVisit moduleId hitPointId context =
-    trace.OnVisit Visits.[ReportIndex.File |> int] moduleId hitPointId context
+    trace.OnVisit  moduleId hitPointId context
 
   let internal AddVisit moduleId hitPointId context =
-    Counter.AddVisit Visits.[VisitIndex |> int] moduleId hitPointId context
+    Counter.AddSingleVisit ActiveVisits moduleId hitPointId context
 
   let internal TakeSample strategy moduleId hitPointId =
     match strategy with
@@ -209,12 +216,13 @@ module Instance =
           then samples.Add(moduleId, Dictionary<int, bool>())
         )
 
-      let mutable hasPointKey = samples.[moduleId].ContainsKey(hitPointId)
+      let next = samples.[moduleId]
+      let mutable hasPointKey = next.ContainsKey(hitPointId)
       if hasPointKey |> not then
-          lock samples.[moduleId] (fun () ->
-            hasPointKey <- samples.[moduleId].ContainsKey(hitPointId)
+          lock next (fun () ->
+            hasPointKey <- next.ContainsKey(hitPointId)
             if hasPointKey |> not
-            then samples.[moduleId].Add(hitPointId, true))
+            then next.Add(hitPointId, true))
       (hasPointKey && hasModuleKey) |> not
 
   /// <summary>
@@ -223,15 +231,12 @@ module Instance =
   /// <param name="moduleId">Assembly being visited</param>
   /// <param name="hitPointId">Sequence Point identifier</param>
   let internal VisitImpl moduleId hitPointId context =
-    if not <| String.IsNullOrEmpty(moduleId) &&
-       TakeSample Sample moduleId hitPointId then
+    if (Sample = Sampling.All || TakeSample Sample moduleId hitPointId) then
       AddVisit moduleId hitPointId context |> ignore
 
   let private IsOpenCoverRunner() =
     (CoverageFormat = ReportFormat.OpenCoverWithTracking)
-    && ((trace.Definitive && trace.Runner)
-        || (ReportFile <> "Coverage.Default.xml"
-            && System.IO.File.Exists(ReportFile + ".acv")))
+    && (VisitIndex = ReportIndex.File)
   let internal Granularity() = Timer
   let internal Clock() = DateTime.UtcNow.Ticks
 
@@ -246,25 +251,23 @@ module Instance =
 
   let internal PayloadControl = PayloadSelection Clock
   let internal PayloadSelector enable = PayloadControl Granularity enable
-  let internal lockVisits f = if trace.IsConnected()
-                              then lock synchronize f
-                              else f()
 
   let internal VisitSelection track moduleId hitPointId =
     VisitImpl moduleId hitPointId track
 
   let Visit moduleId hitPointId =
     if Recording then
-      VisitSelection (PayloadSelector IsOpenCoverRunner) moduleId hitPointId
+      VisitSelection (if CoverageFormat = ReportFormat.OpenCoverWithTracking
+                      then PayloadSelector IsOpenCoverRunner
+                      else Null) moduleId hitPointId
 
   let internal FlushCounter (finish : Close) _ =
-    lockVisits (fun () ->
       match finish with
       | Resume -> FlushResume()
       | Pause -> FlushPause()
       | _ ->
         Recording <- false
-        FlushAll finish)
+        FlushAll finish
 
   // Register event handling
   let DoPause = FlushCounter Pause

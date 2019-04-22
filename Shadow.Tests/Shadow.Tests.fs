@@ -100,30 +100,6 @@ type AltCoverTests() =
           Adapter.SamplesClear())
       self.GetMyMethodName "<="
 
-    [<Test>]
-    member self.NullIdShouldNotGiveACount() =
-      self.GetMyMethodName "=>"
-      lock Adapter.Lock (fun () ->
-        try
-          Adapter.VisitsClear()
-          Adapter.VisitImplNone null 23
-          Assert.That(Adapter.VisitsSeq(), Is.Empty)
-        finally
-          Adapter.VisitsClear())
-      self.GetMyMethodName "<="
-
-    [<Test>]
-    member self.EmptyIdShouldNotGiveACount() =
-      self.GetMyMethodName "=>"
-      lock Adapter.Lock (fun () ->
-        try
-          Adapter.VisitsClear()
-          Adapter.VisitImplNone String.Empty 23
-          Assert.That(Adapter.VisitsSeq(), Is.Empty)
-        finally
-          Adapter.VisitsClear())
-      self.GetMyMethodName "<="
-
     member self.RealIdShouldIncrementCount() =
       self.GetMyMethodName "=>"
       lock Adapter.Lock (fun () ->
@@ -285,7 +261,8 @@ type AltCoverTests() =
             Both(5L, 42) ]
         let pv = PointVisit.Init 42 payloads
         table.[key].Add(23, pv)
-        Instance.VisitImpl key 23 (Table table)
+        let n = Counter.AddTable Instance.Visits.[Instance.VisitIndex |> int] table
+        Assert.That (n, Is.EqualTo 45)
         Assert.That (Instance.Visits.[Instance.VisitIndex |> int].[key].[23].Count, Is.EqualTo 43)
         Assert.That (Instance.Visits.[Instance.VisitIndex |> int].[key].[23].Tracks, Is.EquivalentTo payloads)
       finally
