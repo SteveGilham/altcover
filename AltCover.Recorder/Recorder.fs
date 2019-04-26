@@ -17,17 +17,6 @@ open System.Runtime.CompilerServices
 #endif
 type internal Carrier = SequencePoint of String * int * Track
 
-#if NETSTANDARD2_0
-[<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage>]
-#else
-[<System.Runtime.InteropServices.ProgIdAttribute("ExcludeFromCodeCoverage hack for OpenCover issue 615")>]
-#endif
-[<NoComparison>]
-type internal Message =
-  | AsyncItem
-  | Item of AsyncReplyChannel<unit>
-  | Finish of Close * AsyncReplyChannel<unit>
-
 module Instance =
   let internal resources =
     ResourceManager("AltCover.Recorder.Strings", Assembly.GetExecutingAssembly())
