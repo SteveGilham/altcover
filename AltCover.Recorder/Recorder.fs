@@ -34,6 +34,13 @@ module Instance =
   [<MethodImplAttribute(MethodImplOptions.NoInlining)>]
   let ReportFile = "Coverage.Default.xml"
 
+  let internal Supervision =
+    AppDomain.CurrentDomain.GetAssemblies()
+    |> Seq.map (fun a -> a.GetName())
+    |> Seq.exists (fun n -> n.Name = "AltCover.DataCollector" &&
+                            n.FullName.EndsWith("PublicKeyToken=c02b1a9f5b7cade8",
+                                                StringComparison.Ordinal))
+
   /// <summary>
   /// Accumulation of visit records
   /// </summary>
@@ -155,7 +162,7 @@ module Instance =
     ("PauseHandler")
     |> GetResource
     |> Option.iter Console.Out.WriteLine
-    FlushAll Pause
+    if Supervision |> not then FlushAll Pause
     Recording <- false
 
   let FlushResume() =
@@ -163,8 +170,9 @@ module Instance =
     ("ResumeHandler")
     |> GetResource
     |> Option.iter Console.Out.WriteLine
-    Visits.Clear()
-    InitialiseTrace()
+    if Recording then
+      Visits.Clear()
+      InitialiseTrace()
 
   let internal TraceVisit moduleId hitPointId context =
     trace.OnVisit Visits moduleId hitPointId context
@@ -192,7 +200,8 @@ module Instance =
     if not <| String.IsNullOrEmpty(moduleId) &&
        TakeSample Sample moduleId hitPointId then
       let adder =
-        if trace.IsConnected() then TraceVisit
+        if trace.IsConnected() &&
+           Supervision |> not then TraceVisit
         else AddVisit
       adder moduleId hitPointId context
 
@@ -231,7 +240,7 @@ module Instance =
       | Resume -> FlushResume()
       | Pause -> FlushPause()
       | _ ->
-        FlushAll finish)
+        if Supervision |> not then FlushAll finish)
 
   // Register event handling
   let DoPause = FlushCounter Pause

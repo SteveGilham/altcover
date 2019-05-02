@@ -13,14 +13,6 @@ namespace AltCover.DataCollector
     {
         public void Initialize(IDataCollectionSink _dataCollectionSink)
         {
-            //System.IO.File.WriteAllText(@"C:\Users\steve\Documents\GitHub\altcover\Initialize.txt",
-            //                            "Initialize!");
-            //Debug.WriteLine("Test Session Initialize");
-            //AppDomain.CurrentDomain.GetAssemblies().ToList().ForEach(a => Debug.WriteLine(a));
-
-            //sprintf "Test Session Initialize" |> Debug.WriteLine
-            //
-            //|> Seq.iter(sprintf "    %A" >> Debug.WriteLine)
         }
 
         public void TestCaseEnd(TestCaseEndArgs _testCaseEndArgs)
@@ -29,7 +21,37 @@ namespace AltCover.DataCollector
         public void TestCaseStart(TestCaseStartArgs _testCaseStartArgs)
         {
             Debug.WriteLine("Test Case Start");
-            AppDomain.CurrentDomain.GetAssemblies().ToList().ForEach(a => Debug.WriteLine(a));
+            var rec =
+            AppDomain.CurrentDomain.GetAssemblies()
+                .Where(a => a.GetName().Name == "AltCover.Recorder.g")
+                .FirstOrDefault();
+            if (rec == null)
+            {
+                Debug.WriteLine("Recorder not found");
+            }
+            else
+            {
+                var i = rec.GetTypes()
+                    .Where(t => t.Name == "Instance")
+                    .FirstOrDefault();
+                if (i == null)
+                {
+                    Debug.WriteLine("Instance not found");
+                }
+                else
+                {
+                    var prop = i.GetProperty("Supervision", BindingFlags.Static | BindingFlags.NonPublic);
+                    if (prop == null)
+                    {
+                        Debug.WriteLine("Supervision not found");
+                    }
+                    else
+                    {
+                        var value = prop.GetValue(null);
+                        Debug.WriteLine("Supervision = " + value.ToString());
+                    }
+                }
+            }
         }
 
         public void TestSessionEnd(TestSessionEndArgs _testSessionEndArgs)
