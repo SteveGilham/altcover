@@ -20,6 +20,10 @@ namespace AltCover.DataCollector
 
         public void TestCaseStart(TestCaseStartArgs _testCaseStartArgs)
         {
+        }
+
+        public void TestSessionEnd(TestSessionEndArgs _testSessionEndArgs)
+        {
             Debug.WriteLine("Test Case Start");
             var rec =
             AppDomain.CurrentDomain.GetAssemblies()
@@ -40,31 +44,21 @@ namespace AltCover.DataCollector
                 }
                 else
                 {
-                    var prop = i.GetProperty("Supervision", BindingFlags.Static | BindingFlags.NonPublic);
-                    if (prop == null)
+                    var flush = i.GetMethod("FlushFinish", BindingFlags.Static | BindingFlags.Public);
+                    if (flush == null)
                     {
-                        Debug.WriteLine("Supervision not found");
+                        Debug.WriteLine("Flush not found");
                     }
                     else
                     {
-                        var value = prop.GetValue(null);
-                        Debug.WriteLine("Supervision = " + value.ToString());
+                        flush.Invoke(null, null);
                     }
                 }
             }
         }
 
-        public void TestSessionEnd(TestSessionEndArgs _testSessionEndArgs)
-        {
-            //    sprintf "Test Session Initialize" |> Debug.WriteLine
-            //    AppDomain.CurrentDomain.GetAssemblies()
-            //|> Seq.iter(sprintf "    %A" >> Debug.WriteLine)
-        }
-
         public void TestSessionStart(TestSessionStartArgs _testSessionStartArgs)
         {
-            Debug.WriteLine("Test Session Start");
-            AppDomain.CurrentDomain.GetAssemblies().ToList().ForEach(a => Debug.WriteLine(a));
         }
     }
 }

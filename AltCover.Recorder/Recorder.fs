@@ -174,6 +174,9 @@ module Instance =
       Visits.Clear()
       InitialiseTrace()
 
+  let FlushFinish () =
+    FlushAll ProcessExit
+
   let internal TraceVisit moduleId hitPointId context =
     trace.OnVisit Visits moduleId hitPointId context
 
