@@ -196,7 +196,8 @@ module Instance =
     FlushAll ProcessExit
 
   let internal TraceVisit moduleId hitPointId context =
-    trace.OnVisit  moduleId hitPointId context
+    lock FileVisits (fun () ->
+    trace.OnVisit FileVisits moduleId hitPointId context)
 
   let internal AddVisit moduleId hitPointId context =
     Counter.AddSingleVisit ActiveVisits moduleId hitPointId context
@@ -231,7 +232,10 @@ module Instance =
   /// <param name="hitPointId">Sequence Point identifier</param>
   let internal VisitImpl moduleId hitPointId context =
     if (Sample = Sampling.All || TakeSample Sample moduleId hitPointId) then
-      AddVisit moduleId hitPointId context |> ignore
+      let adder =
+        if trace.IsConnected() && (Supervision |> not) then TraceVisit
+        else AddVisit
+      adder moduleId hitPointId context
 
   let private IsOpenCoverRunner() =
     (CoverageFormat = ReportFormat.OpenCoverWithTracking)

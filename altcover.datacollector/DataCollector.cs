@@ -11,8 +11,44 @@ namespace AltCover.DataCollector
 {
     public class Recorder : InProcDataCollection
     {
+        private void Supervise()
+        {
+            var rec =
+            AppDomain.CurrentDomain.GetAssemblies()
+                .Where(a => a.GetName().Name == "AltCover.Recorder.g")
+                .FirstOrDefault();
+            if (rec == null)
+            {
+                Debug.WriteLine("Recorder not found");
+            }
+            else
+            {
+                var i = rec.GetTypes()
+                    .Where(t => t.Name == "Instance")
+                    .FirstOrDefault();
+                if (i == null)
+                {
+                    Debug.WriteLine("Instance not found");
+                }
+                else
+                {
+                    var supervision = i.GetProperty("Supervision", BindingFlags.Static | BindingFlags.Public);
+                    if (supervision == null)
+                    {
+                        Debug.WriteLine("Supervision not found");
+                    }
+                    else
+                    {
+                        supervision.SetValue(null, true);
+                    }
+                }
+            }
+        }
+
         public void Initialize(IDataCollectionSink _dataCollectionSink)
         {
+            Debug.WriteLine("Initialize");
+            Supervise();
         }
 
         public void TestCaseEnd(TestCaseEndArgs _testCaseEndArgs)
@@ -59,6 +95,8 @@ namespace AltCover.DataCollector
 
         public void TestSessionStart(TestSessionStartArgs _testSessionStartArgs)
         {
+            Debug.WriteLine("TestSessionStart");
+            Supervise();
         }
     }
 }

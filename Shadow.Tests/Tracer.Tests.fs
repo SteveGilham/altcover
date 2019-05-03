@@ -145,13 +145,8 @@ type AltCoverCoreTests() =
         use stream =
           new DeflateStream(File.OpenRead(unique + ".0.acv"), CompressionMode.Decompress)
         let results = self.ReadResults stream
-        Assert.That(results, Is.Empty, "unexpected local write")
-        let v = Adapter.VisitsSeq() |> Seq.toList
-        Assert.That(List.length v, Is.EqualTo 1)
-        let v2 = Adapter.VisitsEntrySeq "name" |> Seq.toList
-        Assert.That(List.length v2, Is.EqualTo 1)
-        Assert.That (Adapter.VisitCount "name" 23, Is.EqualTo 2)
-        Assert.That (Adapter.VisitTracks "name" 23, Is.Empty)
+        Assert.That(Adapter.VisitsSeq() |> Seq.length, Is.EqualTo 1, "unexpected local write")
+        Assert.That(results, Is.EquivalentTo expected, "unexpected result")
       finally
         Adapter.VisitsClear()
 
@@ -192,20 +187,8 @@ type AltCoverCoreTests() =
         use stream =
           new DeflateStream(File.OpenRead(unique + ".0.acv"), CompressionMode.Decompress)
         let results = self.ReadResults stream
-        Assert.That(results, Is.Empty, "unexpected local write")
-        let v = Adapter.VisitsSeq() |> Seq.toList
-        Assert.That(List.length v, Is.EqualTo 1)
-        let v2 = Adapter.VisitsEntrySeq "name" |> Seq.toList
-        Assert.That(List.length v2, Is.EqualTo 2)
-        Assert.That (Adapter.VisitCount "name" 23, Is.EqualTo 1)
-        Assert.That (Adapter.VisitCount "name" 24, Is.EqualTo 2)
-        Assert.That (Seq.length <| Adapter.VisitTracks "name" 23, Is.EqualTo 3)
-        Assert.That (Seq.length <| Adapter.VisitTracks "name" 24, Is.EqualTo 2)
-        Assert.That (Adapter.VisitTrack "name" 23 0 , Is.EquivalentTo [| int64 Tag.Call; 17L |])
-        Assert.That (Adapter.VisitTrack "name" 23 1 , Is.EquivalentTo [| int64 Tag.Call; 42L |])
-        Assert.That (Adapter.VisitTrack "name" 23 2 , Is.EquivalentTo [| int64 Tag.Call; 5L |])
-        Assert.That (Adapter.VisitTrack "name" 24 0 , Is.EquivalentTo [| int64 Tag.Time; 17L |])
-        Assert.That (Adapter.VisitTrack "name" 24 1 , Is.EquivalentTo [| int64 Tag.Both; 42L; 23L |])
+        Assert.That(Adapter.VisitsSeq() |> Seq.length, Is.EqualTo 1, "unexpected local write")
+        Assert.That(results, Is.EquivalentTo expected, "unexpected result")
       finally
         Adapter.VisitsClear()
 
