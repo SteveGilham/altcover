@@ -96,6 +96,7 @@ type AltCoverTests() =
           Assert.That(Adapter.AddSample "module" 24, Is.True)
           Assert.That(Adapter.AddSample "newmodule" 23, Is.True)
           Assert.That(Adapter.AddSample "module" 23, Is.False)
+          Assert.That(Adapter.AddSampleUnconditional "module" 23, Is.True)
         finally
           Adapter.SamplesClear())
       self.GetMyMethodName "<="
@@ -112,11 +113,19 @@ type AltCoverTests() =
                               Runner = false
                               Definitive = false }
           let key = " "
+          Instance.Recording <- false
+          Instance.Visit "key" 17
+          Instance.Recording <- true
+          Instance.CoverageFormat <- ReportFormat.NCover
+          Instance.Visit key 23
+          Instance.CoverageFormat <- ReportFormat.OpenCoverWithTracking
           Instance.Visit key 23
           Assert.That(Adapter.VisitsSeq() |> Seq.length, Is.EqualTo 1)
           Assert.That(Adapter.VisitsEntrySeq key |> Seq.length, Is.EqualTo 1)
-          Assert.That(Adapter.VisitCount key 23, Is.EqualTo 1)
+          Assert.That(Adapter.VisitCount key 23, Is.EqualTo 2)
         finally
+          Instance.CoverageFormat <- ReportFormat.NCover
+          Instance.Recording <- true
           Adapter.VisitsClear()
           Instance.trace <- save)
       self.GetMyMethodName "<="
@@ -134,9 +143,13 @@ type AltCoverTests() =
     member self.PayloadGeneratedIsAsExpected() =
       try
         Assert.That (Instance.CallerId(), Is.EqualTo 0)
+        Assert.That(Instance.PayloadSelector (fun _ -> false),
+                    Is.EqualTo Null)
         Assert.That(Instance.PayloadSelector (fun _ -> true),
                     Is.EqualTo Null)
         Instance.Push 4321
+        Assert.That(Instance.PayloadSelector (fun _ -> false),
+                    Is.EqualTo Null)
         Assert.That(Instance.PayloadSelector (fun _ -> true),
                     Is.EqualTo (Call 4321))
         try
@@ -713,6 +726,69 @@ type AltCoverTests() =
             with :? IOException -> ()
         with :? AbandonedMutexException -> Instance.mutex.ReleaseMutex())
       self.GetMyMethodName "<="
+
+    [<Test>]
+    member self.SupervisedFlushLeavesExpectedTraces() =
+      self.GetMyMethodName "=>"
+      lock Adapter.Lock (fun () ->
+        try
+          let saved = Console.Out
+          let here = Directory.GetCurrentDirectory()
+          let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
+          let unique = Path.Combine(where, Guid.NewGuid().ToString())
+          let save = Instance.trace
+          Instance.trace <- { Tracer = null
+                              Stream = null
+                              Formatter = null
+                              Runner = false
+                              Definitive = false }
+          Instance.Supervision <- true
+          try
+            Adapter.VisitsClear()
+            use stdout = new StringWriter()
+            Console.SetOut stdout
+            Directory.CreateDirectory(unique) |> ignore
+            Directory.SetCurrentDirectory(unique)
+            Counter.measureTime <- DateTime.ParseExact
+                                     ("2017-12-29T16:33:40.9564026+00:00", "o", null)
+            use stream =
+              Assembly.GetExecutingAssembly().GetManifestResourceStream(self.resource)
+            let size = int stream.Length
+            let buffer = Array.create size 0uy
+            Assert.That(stream.Read(buffer, 0, size), Is.EqualTo size)
+            do use worker = new FileStream(Instance.ReportFile, FileMode.CreateNew)
+               worker.Write(buffer, 0, size)
+               ()
+            [ 0..9 ]
+            |> Seq.iter
+                 (fun i ->
+                 Adapter.VisitsAdd "f6e3edb3-fb20-44b3-817d-f69d1a22fc2f" i (int64(i + 1)))
+            Instance.FlushCounter ProcessExit ()
+            let head = "Coverage statistics flushing took "
+            let tail = " seconds\n"
+            let recorded = stdout.ToString().Replace("\r\n", "\n")
+            Assert.That(recorded, Is.Empty, recorded)
+            use worker' = new FileStream(Instance.ReportFile, FileMode.Open)
+            let after = XmlDocument()
+            after.Load worker'
+            Assert.That
+              (after.SelectNodes("//seqpnt")
+               |> Seq.cast<XmlElement>
+               |> Seq.map (fun x -> x.GetAttribute("visitcount")),
+               Is.EquivalentTo [ "1"; "1"; "1"; "1"; "1"; "1"; "0"; String.Empty; "X"; "-1"  ])
+          finally
+            Instance.trace <- save
+            Instance.Supervision <- false
+            if File.Exists Instance.ReportFile then File.Delete Instance.ReportFile
+            Adapter.VisitsClear()
+            Console.SetOut saved
+            Directory.SetCurrentDirectory(here)
+            try
+              Directory.Delete(unique)
+            with :? IOException -> ()
+        with :? AbandonedMutexException -> Instance.mutex.ReleaseMutex())
+      self.GetMyMethodName "<="
+
 #if NET4
 #else
     [<Test>]

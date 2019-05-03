@@ -8,7 +8,7 @@ module Adapter =
   let DoResume() = Instance.DoResume null
   let VisitsClear() = Instance.Visits.[Instance.VisitIndex |> int].Clear()
   let SamplesClear() = Instance.Samples.[Instance.VisitIndex |> int].Clear()
-  let FlushAll() = Instance.FlushAll ProcessExit
+  let FlushAll() = Instance.FlushFinish ()
 
   let internal prepareName name =
     if name
@@ -54,4 +54,6 @@ module Adapter =
 
   let AddSample moduleId hitPointId =
     Instance.TakeSample Sampling.Single moduleId hitPointId
+  let AddSampleUnconditional moduleId hitPointId =
+    Instance.TakeSample Sampling.All moduleId hitPointId
   let internal NewBoth time track = Both(time, track)

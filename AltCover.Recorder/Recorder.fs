@@ -36,7 +36,14 @@ module Instance =
   [<MethodImplAttribute(MethodImplOptions.NoInlining)>]
   let ReportFile = "Coverage.Default.xml"
 
-  let internal Supervision =
+  /// <summary>
+  /// Gets whether to defer output until process exit
+  /// This property's IL code is modified to store actual file location
+  /// </summary>
+  [<MethodImplAttribute(MethodImplOptions.NoInlining)>]
+  let Defer = false
+
+  let mutable Supervision =
     AppDomain.CurrentDomain.GetAssemblies()
     |> Seq.map (fun a -> a.GetName())
     |> Seq.exists (fun n -> n.Name = "AltCover.DataCollector" &&
@@ -75,7 +82,7 @@ module Instance =
   /// This property's IL code is modified to store the user chosen override if applicable
   /// </summary>
   [<MethodImplAttribute(MethodImplOptions.NoInlining)>]
-  let internal CoverageFormat = ReportFormat.NCover
+  let mutable internal CoverageFormat = ReportFormat.NCover
 
   /// <summary>
   /// Gets the frequency of time sampling
@@ -233,7 +240,7 @@ module Instance =
   let internal VisitImpl moduleId hitPointId context =
     if (Sample = Sampling.All || TakeSample Sample moduleId hitPointId) then
       let adder =
-        if trace.IsConnected() && (Supervision |> not) then TraceVisit
+        if trace.IsConnected() && ((Defer || Supervision) |> not) then TraceVisit
         else AddVisit
       adder moduleId hitPointId context
 

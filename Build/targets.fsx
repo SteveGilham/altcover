@@ -1737,7 +1737,7 @@ _Target "RecordResumeTest"
         sprintf "Bad visit list %A -- bad length" recorded)
 
      let hits = recorded |> Seq.filter (fun i -> i = "1") |> Seq.length
-     Assert.That (hits, Is.GreaterThanOrEqualTo 7 )
+     Assert.That (hits, Is.GreaterThanOrEqualTo 6)
      Assert.That (hits, Is.LessThanOrEqualTo 8))
 
 _Target "RecordResumeTrackingTest" (fun _ ->
@@ -1803,7 +1803,7 @@ _Target "RecordResumeTrackingTest" (fun _ ->
         sprintf "Bad visit list %A -- bad length" recorded)
 
      let hits = recorded |> Seq.filter (fun i -> i = "1") |> Seq.length
-     Assert.That (hits, Is.GreaterThanOrEqualTo 7 )
+     Assert.That (hits, Is.GreaterThanOrEqualTo 6)
      Assert.That (hits, Is.LessThanOrEqualTo 8)
      let tracked =
        coverageDocument.Descendants(XName.Get("TrackedMethodRef")) |> Seq.toList
@@ -1875,7 +1875,7 @@ _Target "RecordResumeTestDotNet"
         sprintf "Bad visit list %A -- bad length" recorded)
 
      let hits = recorded |> Seq.filter (fun i -> i = "1") |> Seq.length
-     Assert.That (hits, Is.GreaterThanOrEqualTo 7 )
+     Assert.That (hits, Is.GreaterThanOrEqualTo 6)
      Assert.That (hits, Is.LessThanOrEqualTo 8))
 
 _Target "RecordResumeTestUnderMono" // Fails : System.EntryPointNotFoundException: CreateZStream
