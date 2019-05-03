@@ -266,7 +266,7 @@ module Instance =
       | Pause -> FlushPause()
       | _ ->
         Recording <- false
-        if Supervision |> not then FlushAll finish)
+        if Supervision |> not then FlushAll finish
 
   // Register event handling
   let DoPause = FlushCounter Pause
