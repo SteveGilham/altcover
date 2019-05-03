@@ -534,7 +534,7 @@ module internal Runner =
                               let rec sequencePoint pts =
                                 if pts > 0 then
                                   let p = formatter.ReadInt32()
-                                  let n = formatter.ReadInt32()
+                                  let n = formatter.ReadInt64()
                                   if p |> t.[m].ContainsKey |> not
                                   then t.[m].Add(p, PointVisit.Create())
                                   let pv = t.[m].[p]
@@ -570,7 +570,7 @@ module internal Runner =
                         visit.GetType().ToString() = "AltCover.Base.Track+Table")
                  then
                    Base.Counter.AddVisit hits key hitPointId visit
-                 else 0
+                 else 0L
                sink (hitcount + increment)
              | None -> hitcount
 
@@ -584,9 +584,9 @@ module internal Runner =
                [| delta :> obj
                   interval
                   rate |] false
-           after) 0
+           after) 0L
     timer.Stop()
-    WriteResourceWithFormatItems "%d visits recorded" [| visits |] (visits = 0)
+    WriteResourceWithFormatItems "%d visits recorded" [| visits |] (visits = 0L)
 
   let internal MonitorBase (hits : Dictionary<string, Dictionary<int, Base.PointVisit>>)
       report (payload : string list -> int) (args : string list) =
@@ -638,12 +638,12 @@ module internal Runner =
   let VisitCount nodes =
     nodes
     |> Seq.cast<XmlElement>
-    |> Seq.filter (fun s -> Int32.TryParse
+    |> Seq.filter (fun s -> Int64.TryParse
                               (s.GetAttribute("vc"),
                                NumberStyles.Integer,
                                CultureInfo.InvariantCulture)
                             |> snd
-                            <> 0)
+                            <> 0L)
     |> Seq.length
 
   let internal TryGetValue (d : Dictionary<'a, 'b>) (key : 'a) =

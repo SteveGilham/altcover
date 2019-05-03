@@ -29,8 +29,8 @@ module Adapter =
                                       Call 42 ]
     Instance.Visits.[Instance.VisitIndex |> int].[name].Add(line, v1)
 
-    let v2 = PointVisit.Init (number + 1) [ Time 17L
-                                            Both(42L, 23) ]
+    let v2 = PointVisit.Init (number + 1L) [ Time 17L
+                                             Both(42L, 23) ]
     Instance.Visits.[Instance.VisitIndex |> int].[name].Add(line + 1, v2)
 
   let VisitsSeq() = Instance.Visits.[Instance.VisitIndex |> int] |> Seq.cast<obj>

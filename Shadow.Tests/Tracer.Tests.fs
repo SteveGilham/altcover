@@ -87,7 +87,7 @@ type AltCoverCoreTests() =
                               let rec sequencePoint pts =
                                 if pts > 0 then
                                   let p = formatter.ReadInt32()
-                                  let n = formatter.ReadInt32()
+                                  let n = formatter.ReadInt64()
                                   let pv = PointVisit.Init n []
                                   t.[m].Add(p, pv)
                                   let rec tracking () =
@@ -133,7 +133,7 @@ type AltCoverCoreTests() =
         let mutable client = Tracer.Create tag
         try
           Adapter.VisitsClear()
-          Adapter.VisitsAdd "name" 23 1
+          Adapter.VisitsAdd "name" 23 1L
           Instance.trace <- client.OnStart() |> fst
           Assert.That(Instance.trace.IsConnected(), "connection failed")
           Adapter.VisitImplNone "name" 23
@@ -182,7 +182,7 @@ type AltCoverCoreTests() =
         let mutable client = Tracer.Create tag
         try
           Adapter.VisitsClear()
-          Adapter.VisitsAddTrack "name" 23 1
+          Adapter.VisitsAddTrack "name" 23 1L
           Instance.trace <- client.OnStart() |> fst
           Assert.That(Instance.trace.IsConnected(), "connection failed")
           Adapter.VisitImplMethod "name" 23 5

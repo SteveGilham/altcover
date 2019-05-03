@@ -24,7 +24,7 @@ namespace AltCover.DataCollector
 
         public void TestSessionEnd(TestSessionEndArgs _testSessionEndArgs)
         {
-            Debug.WriteLine("Test Case Start");
+            Debug.WriteLine("TestSessionEnd");
             var rec =
             AppDomain.CurrentDomain.GetAssemblies()
                 .Where(a => a.GetName().Name == "AltCover.Recorder.g")

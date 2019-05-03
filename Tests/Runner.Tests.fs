@@ -129,8 +129,8 @@ type AltCoverTests() =
       worker.Write(buffer, 0, size)
       worker.Position <- 0L
       let payload = Dictionary<int, PointVisit>()
-      [ 0..9 ] |> Seq.iter (fun i -> payload.[10 - i] <- PointVisit.Init (i + 1) [])
-      [ 11..12 ] |> Seq.iter (fun i -> payload.[i ||| Counter.BranchFlag] <- PointVisit.Init (i - 10) [])
+      [ 0..9 ] |> Seq.iter (fun i -> payload.[10 - i] <- PointVisit.Init (int64(i + 1)) [])
+      [ 11..12 ] |> Seq.iter (fun i -> payload.[i ||| Counter.BranchFlag] <- PointVisit.Init (int64(i - 10)) [])
       let item = Dictionary<string, Dictionary<int, PointVisit>>()
       item.Add("7C-CD-66-29-A3-6C-6D-5F-A7-65-71-0E-22-7D-B2-61-B5-1F-65-9A", payload)
       Counter.UpdateReport ignore (fun _ _ -> ()) true item ReportFormat.OpenCover worker
@@ -172,7 +172,7 @@ type AltCoverTests() =
            worker.Write(buffer, 0, size)
            ()
         let payload = Dictionary<int, PointVisit>()
-        [ 0..9 ] |> Seq.iter (fun i -> payload.[i] <- PointVisit.Init (i + 1) [])
+        [ 0..9 ] |> Seq.iter (fun i -> payload.[i] <- PointVisit.Init (int64(i + 1)) [])
         visits.["f6e3edb3-fb20-44b3-817d-f69d1a22fc2f"] <- payload
         Counter.DoFlush ignore (fun _ _ -> ()) true visits
           AltCover.Base.ReportFormat.NCover reportFile None |> ignore
@@ -217,7 +217,7 @@ type AltCoverTests() =
            worker.Write(buffer, 0, size)
            ()
         let payload = Dictionary<int, PointVisit>()
-        [ 0..9 ] |> Seq.iter (fun i -> payload.[i] <- PointVisit.Init (i + 1) [])
+        [ 0..9 ] |> Seq.iter (fun i -> payload.[i] <- PointVisit.Init (int64(i + 1)) [])
         visits.["f6e3edb3-fb20-44b3-817d-f69d1a22fc2f"] <- payload
         Counter.DoFlush ignore (fun _ _ -> ()) true visits
           AltCover.Base.ReportFormat.NCover reportFile (Some outputFile) |> ignore
@@ -1605,11 +1605,11 @@ or
       Assert.That(File.Exists(unique + ".acv"))
       let expected = Dictionary<string, Dictionary<int, PointVisit>>()
       let a = Dictionary<int, PointVisit>()
-      a.Add(0, PointVisit.Init 1 [])
+      a.Add(0, PointVisit.Init 1L [])
       let b = Dictionary<int, PointVisit>()
-      b.Add(1, PointVisit.Init 1 [])
+      b.Add(1, PointVisit.Init 1L [])
       let c = Dictionary<int, PointVisit>()
-      c.Add(3, PointVisit.Init 1 [])
+      c.Add(3, PointVisit.Init 1L [])
       expected.Add ("a", a)
       expected.Add ("b", b)
       expected.Add ("c", c)
@@ -1690,7 +1690,7 @@ or
           Base.Time 42L
           Base.Call 5 ]
 
-      let pv = PointVisit.Init 42 (payloads0 |> List.tail)
+      let pv = PointVisit.Init 42L (payloads0 |> List.tail)
       let table = Dictionary<string, Dictionary<int, PointVisit>>()
       table.Add("Extra", Dictionary<int, PointVisit>())
       table.["Extra"].Add(3, pv)
@@ -1747,19 +1747,19 @@ or
                x)
           |> List.length) inputs
 
-      let expected = Dictionary<string, Dictionary<int, int * Base.Track list>>()
-      let a = Dictionary<int, int * Base.Track list>()
-      a.Add(1, (1, []))
-      let b = Dictionary<int, int * Base.Track list>()
-      b.Add(2, (0, [Call 17]))
-      let c = Dictionary<int, int * Base.Track list>()
-      c.Add(3, (0, [Time 23L]))
-      let d = Dictionary<int, int * Base.Track list>()
-      d.Add(4, (0, [Both (5L, 42)]))
-      let e = Dictionary<int, int * Base.Track list>()
-      e.Add(6, (0, [Call 5]))
-      let f = Dictionary<int, int * Base.Track list>()
-      f.Add(3, (42, payloads0 |> List.tail))
+      let expected = Dictionary<string, Dictionary<int, int64 * Base.Track list>>()
+      let a = Dictionary<int, int64 * Base.Track list>()
+      a.Add(1, (1L, []))
+      let b = Dictionary<int, int64 * Base.Track list>()
+      b.Add(2, (0L, [Call 17]))
+      let c = Dictionary<int, int64 * Base.Track list>()
+      c.Add(3, (0L, [Time 23L]))
+      let d = Dictionary<int, int64 * Base.Track list>()
+      d.Add(4, (0L, [Both (5L, 42)]))
+      let e = Dictionary<int, int64 * Base.Track list>()
+      e.Add(6, (0L, [Call 5]))
+      let f = Dictionary<int, int64 * Base.Track list>()
+      f.Add(3, (42L, payloads0 |> List.tail))
 
       expected.Add ("a", a)
       expected.Add ("b", b)
@@ -1771,9 +1771,9 @@ or
       Assert.That(r, Is.EqualTo 7)
       Assert.That(File.Exists(unique + ".acv"))
 
-      let result = Dictionary<string, Dictionary<int, int * Base.Track list>>()
+      let result = Dictionary<string, Dictionary<int, int64 * Base.Track list>>()
       counts.Keys
-      |> Seq.iter (fun k -> let inner = Dictionary<int, int * Base.Track list>()
+      |> Seq.iter (fun k -> let inner = Dictionary<int, int64 * Base.Track list>()
                             result.Add(k, inner)
                             counts.[k].Keys
                             |> Seq.iter (fun k2 ->
@@ -1872,8 +1872,8 @@ or
       let visits = Dictionary<string, Dictionary<int, PointVisit>>()
       let visit = Dictionary<int, PointVisit>()
       visits.Add("6A-33-AA-93-82-ED-22-9D-F8-68-2C-39-5B-93-9F-74-01-76-00-9F", visit)
-      visit.Add(100663297, PointVisit.Init 1 []) // should fill in the expected non-zero value
-      visit.Add(100663298, PointVisit.Init 23 []) // should be ignored
+      visit.Add(100663297, PointVisit.Init 1L []) // should fill in the expected non-zero value
+      visit.Add(100663298, PointVisit.Init 23L []) // should be ignored
       Runner.PostProcess visits Base.ReportFormat.OpenCover after
       Assert.That
         (after.OuterXml.Replace("uspid=\"100663298", "uspid=\"13"), Is.EqualTo before,
@@ -2017,7 +2017,7 @@ or
       let key = " "
       let result = Runner.LookUpVisitsByToken key visits
       match (result.Count, result.Tracks |> Seq.toList) with
-      | (0, []) -> ()
+      | (0L, []) -> ()
       | _ -> Assert.Fail(sprintf "%A" result)
 
     [<Test>]

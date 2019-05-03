@@ -70,17 +70,17 @@ and [<NoComparison>]
 #endif
     internal PointVisit =
     {
-      mutable Count : int
+      mutable Count : int64
       Tracks : List<Track>
     }
     with
-    static member Create () = { Count = 0; Tracks = List<Track>() }
+    static member Create () = { Count = 0L; Tracks = List<Track>() }
     static member Init n l = let tmp = { PointVisit.Create() with Count = n }
                              tmp.Tracks.AddRange l
                              tmp
     member self.Step() = System.Threading.Interlocked.Increment(&self.Count) |> ignore
     member self.Track something = lock self.Tracks (fun () -> self.Tracks.Add something)
-    member self.Total() = self.Count + self.Tracks.Count
+    member self.Total() = self.Count + int64 self.Tracks.Count
 
 module internal Assist =
   let internal SafeDispose x =
@@ -219,12 +219,12 @@ module internal Counter =
               let pt = snd x
               let counter = fst x
               let vc =
-                Int32.TryParse
+                Int64.TryParse
                   (pt.GetAttribute(v), System.Globalization.NumberStyles.Integer,
                    System.Globalization.CultureInfo.InvariantCulture) |> snd
               // Treat -ve visit counts (an exemption added in analysis) as zero
               let count = moduleHits.[counter]
-              let visits = (max 0 vc) + count.Total()
+              let visits = (max 0L vc) + count.Total()
               pt.SetAttribute(v, visits.ToString(CultureInfo.InvariantCulture))
               pointProcess pt count.Tracks))
     postProcess coverageDocument
@@ -273,7 +273,7 @@ module internal Counter =
 
   let internal AddTable (counts : Dictionary<string, Dictionary<int, PointVisit>>)
                         (t : Dictionary<string, Dictionary<int, PointVisit>>) =
-    let mutable hitcount = 0
+    let mutable hitcount = 0L
     t.Keys
     |> Seq.iter (fun m -> EnsureModule counts m
                           let next = counts.[m]
@@ -304,4 +304,4 @@ module internal Counter =
     match context with
     | Table t -> AddTable counts t
     | _ -> AddSingleVisit counts moduleId hitPointId context
-           1
+           1L
