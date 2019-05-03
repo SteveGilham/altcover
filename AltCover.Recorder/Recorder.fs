@@ -19,17 +19,6 @@ open System.Threading
 [<NoComparison>]
 type internal Carrier = SequencePoint of String * int * Track
 
-#if NETSTANDARD2_0
-[<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage>]
-#else
-[<System.Runtime.InteropServices.ProgIdAttribute("ExcludeFromCodeCoverage hack for OpenCover issue 615")>]
-#endif
-[<NoComparison>]
-type internal Message =
-  | AsyncItem
-  | Item of AsyncReplyChannel<unit>
-  | Finish of Close * AsyncReplyChannel<unit>
-
 module Instance =
   let internal resources =
     ResourceManager("AltCover.Recorder.Strings", Assembly.GetExecutingAssembly())
@@ -46,6 +35,13 @@ module Instance =
   /// </summary>
   [<MethodImplAttribute(MethodImplOptions.NoInlining)>]
   let ReportFile = "Coverage.Default.xml"
+
+  let internal Supervision =
+    AppDomain.CurrentDomain.GetAssemblies()
+    |> Seq.map (fun a -> a.GetName())
+    |> Seq.exists (fun n -> n.Name = "AltCover.DataCollector" &&
+                            n.FullName.EndsWith("PublicKeyToken=c02b1a9f5b7cade8",
+                                                StringComparison.Ordinal))
 
   /// <summary>
   /// Accumulation of visit records
@@ -196,6 +192,9 @@ module Instance =
     VisitIndex <- ReportIndex.File // belt and braces
     Recording <- true
 
+  let FlushFinish () =
+    FlushAll ProcessExit
+
   let internal TraceVisit moduleId hitPointId context =
     trace.OnVisit  moduleId hitPointId context
 
@@ -267,7 +266,7 @@ module Instance =
       | Pause -> FlushPause()
       | _ ->
         Recording <- false
-        FlushAll finish
+        if Supervision |> not then FlushAll finish)
 
   // Register event handling
   let DoPause = FlushCounter Pause
