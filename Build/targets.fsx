@@ -1869,7 +1869,7 @@ _Target "RecordResumeTestDotNet"
        coverageDocument.Descendants(XName.Get("seqpnt"))
        |> Seq.map (fun x -> x.Attribute(XName.Get("visitcount")).Value)
        |> Seq.toList
-       
+
      Assert.That
        (recorded |> Seq.length, Is.EqualTo 20,
         sprintf "Bad visit list %A -- bad length" recorded)
@@ -2082,6 +2082,11 @@ _Target "Packaging" (fun _ ->
     |> Seq.map (fun x -> (x, Some(where + Path.GetFileName x), None))
     |> Seq.toList
 
+  let dataFiles where =
+    (!!"./_Binaries/AltCover.DataCollector/Release+AnyCPU/netstandard2.0/AltCover.D*.*")
+    |> Seq.map (fun x -> (x, Some(where + Path.GetFileName x), None))
+    |> Seq.toList
+
   let fakeFiles where =
     (!!"./_Binaries/AltCover.Fake/Release+AnyCPU/netstandard2.0/AltCover.Fak*.*")
     |> Seq.map (fun x -> (x, Some(where + Path.GetFileName x), None))
@@ -2162,6 +2167,7 @@ _Target "Packaging" (fun _ ->
                    netcoreFiles "tools/netcoreapp2.0/"
                    poshFiles "tools/netcoreapp2.0/"
                    vizFiles "tools/netcoreapp2.1"
+                   dataFiles "lib/netstandard2.0/"
                    otherFiles ], "_Packaging", "./Build/AltCover.nuspec", "altcover")
 
     (List.concat [ apiFiles
@@ -2169,6 +2175,7 @@ _Target "Packaging" (fun _ ->
                    libFiles "lib/net45/"
                    netstdFiles "lib/netstandard2.0"
                    cakeFiles "lib/netstandard2.0/"
+                   dataFiles "lib/netstandard2.0/"
                    fakeFiles "lib/netstandard2.0/"
                    poshFiles "lib/netstandard2.0/"
                    vizFiles "tools/netcoreapp2.1"
@@ -2177,6 +2184,7 @@ _Target "Packaging" (fun _ ->
 
     (List.concat [ netcoreFiles "lib/netcoreapp2.0"
                    poshFiles "lib/netcoreapp2.0/"
+                   dataFiles "lib/netstandard2.0/"
                    dotnetFiles
                    otherFilesDotnet ], "_Packaging.dotnet",
      "./_Generated/altcover.dotnet.nuspec", "altcover.dotnet")
@@ -2184,6 +2192,7 @@ _Target "Packaging" (fun _ ->
     (List.concat [ globalFiles
                    netcoreFiles "tools/netcoreapp2.1/any"
                    poshFiles "tools/netcoreapp2.1/any/"
+                   dataFiles "lib/netstandard2.0/"
                    auxFiles
                    otherFilesGlobal ], "_Packaging.global",
      "./_Generated/altcover.global.nuspec", "altcover.global")
@@ -2834,7 +2843,7 @@ Target.runOrDefault "DoIt"
 """
     File.WriteAllText("./_ApiUse/DriveApi.fsx", script)
 
-    let dependencies = """version 5.203.3
+    let dependencies = """version 5.203.2
 // [ FAKE GROUP ]
 group NetcoreBuild
   source https://api.nuget.org/v3/index.json
