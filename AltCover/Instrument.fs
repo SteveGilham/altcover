@@ -184,9 +184,22 @@ module internal Instrument =
       let pair = Visitor.recorderStrongNameKey
       UpdateStrongNaming definition pair
 
-      [ (// set the coverage file path and unique token
-         "get_ReportFile", Visitor.ReportPath())
-        ("get_Token", "Altcover-" + Guid.NewGuid().ToString()) ]
+      [ // set the coverage file path and unique token
+        ("get_ReportFile", (fun (w:ILProcessor) ->
+            w.Create(OpCodes.Ldstr, Visitor.ReportPath())))
+        ("get_Token", (fun (w:ILProcessor) ->
+            w.Create(OpCodes.Ldstr, "Altcover-" + Guid.NewGuid().ToString())))
+        ("get_CoverageFormat", (fun (w:ILProcessor) ->
+            w.Create(OpCodes.Ldc_I4, Visitor.ReportFormat() |> int)))
+        ("get_Sample", (fun (w:ILProcessor) ->
+            w.Create(OpCodes.Ldc_I4,
+             (if Visitor.single then Base.Sampling.Single
+              else Base.Sampling.All) |> int)))
+        ("get_Defer", (fun (w:ILProcessor) ->
+            w.Create(if Option.getOrElse false !Visitor.defer
+                     then OpCodes.Ldc_I4_0
+                     else OpCodes.Ldc_I4_1)))
+      ]
       |> List.iter (fun (property, value) ->
            let pathGetterDef =
              definition.MainModule.GetTypes()
@@ -198,29 +211,10 @@ module internal Instrument =
            let worker = body.GetILProcessor()
            let initialBody = body.Instructions |> Seq.toList
            let head = initialBody |> Seq.head
-           worker.InsertBefore(head, worker.Create(OpCodes.Ldstr, value))
+           worker.InsertBefore(head, value(worker))
            worker.InsertBefore(head, worker.Create(OpCodes.Ret))
            initialBody |> Seq.iter worker.Remove)
-      [ (// set the coverage file format and sampling strategy
-         "get_CoverageFormat", Visitor.ReportFormat() |> int)
-        ("get_Sample",
-         (if Visitor.single then Base.Sampling.Single
-          else Base.Sampling.All)
-         |> int) ]
-      |> List.iter (fun (property, value) ->
-           let pathGetterDef =
-             definition.MainModule.GetTypes()
-             |> Seq.collect (fun t -> t.Methods)
-             |> Seq.filter (fun m -> m.Name = property)
-             |> Seq.head
 
-           let body = pathGetterDef.Body
-           let worker = body.GetILProcessor()
-           let initialBody = body.Instructions |> Seq.toList
-           let head = initialBody |> Seq.head
-           worker.InsertBefore(head, worker.Create(OpCodes.Ldc_I4, value))
-           worker.InsertBefore(head, worker.Create(OpCodes.Ret))
-           initialBody |> Seq.iter worker.Remove)
       [ (// set the timer interval in ticks
          "get_Timer", Visitor.Interval()) ]
       |> List.iter (fun (property, value) ->

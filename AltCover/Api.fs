@@ -246,6 +246,11 @@ type PrepareParams =
     | Primitive p -> p.SourceLink
     | TypeSafe t -> t.SourceLink.AsBool()
 
+  member self.Defer =
+    match self with
+    | Primitive p -> p.Defer
+    | TypeSafe t -> t.Defer.AsBool()
+
 #if RUNNER
   static member private validateArray a f key =
     PrepareParams.validateArraySimple a (f key)
@@ -422,6 +427,7 @@ module internal Args =
       Flag "--branchcover" args.BranchCover
       Flag "--dropReturnCode" (args.ExposeReturnCode |> not)
       Flag "--sourcelink" args.SourceLink
+      Flag "--defer" args.Defer
       trailing ]
     |> List.concat
 

@@ -1395,6 +1395,8 @@ type AltCoverTests() =
                                from a launched process.
       --sourcelink           Optional: Display sourcelink URLs rather than file
                                paths if present.
+      --defer[=VALUE]        Optional, defers writing runner-mode coverage data
+                               until process exit.
   -?, --help, -h             Prints out the options.
 or
   Runner

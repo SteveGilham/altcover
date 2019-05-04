@@ -86,9 +86,9 @@ type AltCoverTests3() =
       let options = Main.DeclareOptions()
       Assert.That(options.Count, Is.EqualTo
 #if NETCOREAPP2_0
-                                            23
-#else
                                             24
+#else
+                                            25
 #endif
                  )
       Assert.That
@@ -1449,6 +1449,87 @@ type AltCoverTests3() =
         CommandLine.dropReturnCode := false
 
     [<Test>]
+    member self.ParsingDeferWorks() =
+      try
+        Visitor.defer := None
+        let options = Main.DeclareOptions()
+        let input = [| "--defer" |]
+        let parse = CommandLine.ParseCommandLine input options
+        match parse with
+        | Left _ -> Assert.Fail()
+        | Right(x, y) ->
+          Assert.That(y, Is.SameAs options)
+          Assert.That(x, Is.Empty)
+        Assert.That(Option.isSome !Visitor.defer)
+        Assert.That(Option.get !Visitor.defer)
+      finally
+        Visitor.defer := None
+
+    [<Test>]
+    member self.ParsingDeferPlusWorks() =
+      try
+        Visitor.defer := None
+        let options = Main.DeclareOptions()
+        let input = [| "--defer:+" |]
+        let parse = CommandLine.ParseCommandLine input options
+        match parse with
+        | Left _ -> Assert.Fail()
+        | Right(x, y) ->
+          Assert.That(y, Is.SameAs options)
+          Assert.That(x, Is.Empty)
+        Assert.That(Option.isSome !Visitor.defer)
+        Assert.That(Option.get !Visitor.defer)
+      finally
+        Visitor.defer := None
+
+    [<Test>]
+    member self.ParsingDeferMinusWorks() =
+      try
+        Visitor.defer := None
+        let options = Main.DeclareOptions()
+        let input = [| "--defer:-" |]
+        let parse = CommandLine.ParseCommandLine input options
+        match parse with
+        | Left _ -> Assert.Fail()
+        | Right(x, y) ->
+          Assert.That(y, Is.SameAs options)
+          Assert.That(x, Is.Empty)
+        Assert.That(Option.isSome !Visitor.defer)
+        Assert.That(Option.get !Visitor.defer, Is.False)
+      finally
+        Visitor.defer := None
+
+    [<Test>]
+    member self.ParsingDeferJunkGivesFailure() =
+      try
+        Visitor.defer := None
+        let options = Main.DeclareOptions()
+        let input = [| "--defer:junk" |]
+        let parse = CommandLine.ParseCommandLine input options
+        match parse with
+        | Right _ -> Assert.Fail()
+        | Left(x, y) ->
+          Assert.That(y, Is.SameAs options)
+          Assert.That(x, Is.EqualTo "UsageError")
+      finally
+        Visitor.defer := None
+
+    [<Test>]
+    member self.ParsingMultipleDeferGivesFailure() =
+      try
+        Visitor.defer := None
+        let options = Main.DeclareOptions()
+        let input = [| "--defer"; "--defer" |]
+        let parse = CommandLine.ParseCommandLine input options
+        match parse with
+        | Right _ -> Assert.Fail()
+        | Left(x, y) ->
+          Assert.That(y, Is.SameAs options)
+          Assert.That(x, Is.EqualTo "UsageError")
+      finally
+        Visitor.defer := None
+
+    [<Test>]
     member self.OutputLeftPassesThrough() =
       let arg = (Guid.NewGuid().ToString(), Main.DeclareOptions())
       let fail = Left arg
@@ -1895,6 +1976,8 @@ type AltCoverTests3() =
                                from a launched process.
       --sourcelink           Optional: Display sourcelink URLs rather than file
                                paths if present.
+      --defer[=VALUE]        Optional, defers writing runner-mode coverage data
+                               until process exit.
   -?, --help, -h             Prints out the options.
 or
   ipmo                       Prints out the PowerShell script to import the
@@ -2000,6 +2083,8 @@ or
                                from a launched process.
       --sourcelink           Optional: Display sourcelink URLs rather than file
                                paths if present.
+      --defer[=VALUE]        Optional, defers writing runner-mode coverage data
+                               until process exit.
   -?, --help, -h             Prints out the options.
 or
   Runner

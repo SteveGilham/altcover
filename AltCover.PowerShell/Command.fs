@@ -161,6 +161,10 @@ type InvokeAltCoverCommand(runner : bool) =
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
   member val SourceLink : SwitchParameter = SwitchParameter(false) with get, set
 
+  [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
+              ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
+  member val Defer : SwitchParameter = SwitchParameter(false) with get, set
+
   [<Parameter(ParameterSetName = "Runner", Mandatory = false, ValueFromPipeline = false,
               ValueFromPipelineByPropertyName = false)>]
   member val SummaryFormat : Summary = Summary.Default with get, set
@@ -210,7 +214,8 @@ type InvokeAltCoverCommand(runner : bool) =
                                     BranchCover = self.BranchCover.IsPresent
                                     CommandLine = self.CommandLine
                                     ExposeReturnCode = not self.DropReturnCode.IsPresent
-                                    SourceLink = self.SourceLink.IsPresent }
+                                    SourceLink = self.SourceLink.IsPresent
+                                    Defer = self.Defer.IsPresent }
 
   member private self.Log() =
     FSApi.Logging.Primitive { Primitive.Logging.Create() with Error = (fun s -> self.Fail <- s :: self.Fail)

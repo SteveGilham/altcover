@@ -22,6 +22,7 @@ module internal Main =
   let init() =
     CommandLine.error <- []
     CommandLine.dropReturnCode := false
+    Visitor.defer := None
     Visitor.inputDirectory <- None
     Visitor.outputDirectory <- None
     ProgramDatabase.SymbolFolders.Clear()
@@ -76,6 +77,11 @@ module internal Main =
       (false, Left None)
 
   let internal DeclareOptions() =
+    let makeFilter filterclass (x:String) =
+       x.Replace('\u0000', '\\')
+       |> CommandLine.ValidateRegexes
+       |> Seq.iter (filterclass >> Visitor.NameFilters.Add)
+
     [ ("i|inputDirectory=",
        (fun x ->
        if CommandLine.ValidateDirectory "--inputDirectory" x then
@@ -141,41 +147,13 @@ module internal Main =
          else
            CommandLine.doPathOperation
              (fun () -> Visitor.reportPath <- Some(Path.GetFullPath x)) () false))
-      ("f|fileFilter=",
-       (fun x ->
-       x
-       |> CommandLine.ValidateRegexes
-       |> Seq.iter (FilterClass.File >> Visitor.NameFilters.Add)))
-      ("p|pathFilter=",
-       (fun x ->
-       x.Replace('\u0000', '\\')
-       |> CommandLine.ValidateRegexes
-       |> Seq.iter (FilterClass.Path >> Visitor.NameFilters.Add)))
-      ("s|assemblyFilter=",
-       (fun x ->
-       x.Replace('\u0000', '\\')
-       |> CommandLine.ValidateRegexes
-       |> Seq.iter (FilterClass.Assembly >> Visitor.NameFilters.Add)))
-      ("e|assemblyExcludeFilter=",
-       (fun x ->
-       x.Replace('\u0000', '\\')
-       |> CommandLine.ValidateRegexes
-       |> Seq.iter (FilterClass.Module >> Visitor.NameFilters.Add)))
-      ("t|typeFilter=",
-       (fun x ->
-       x.Replace('\u0000', '\\')
-       |> CommandLine.ValidateRegexes
-       |> Seq.iter (FilterClass.Type >> Visitor.NameFilters.Add)))
-      ("m|methodFilter=",
-       (fun x ->
-       x.Replace('\u0000', '\\')
-       |> CommandLine.ValidateRegexes
-       |> Seq.iter (FilterClass.Method >> Visitor.NameFilters.Add)))
-      ("a|attributeFilter=",
-       (fun x ->
-       x.Replace('\u0000', '\\')
-       |> CommandLine.ValidateRegexes
-       |> Seq.iter (FilterClass.Attribute >> Visitor.NameFilters.Add)))
+      ("f|fileFilter=", makeFilter FilterClass.File)
+      ("p|pathFilter=", makeFilter FilterClass.Path)
+      ("s|assemblyFilter=", makeFilter FilterClass.Assembly)
+      ("e|assemblyExcludeFilter=", makeFilter FilterClass.Module)
+      ("t|typeFilter=", makeFilter FilterClass.Type)
+      ("m|methodFilter=", makeFilter FilterClass.Method)
+      ("a|attributeFilter=", makeFilter FilterClass.Attribute)
       ("c|callContext=",
        (fun x ->
        if Visitor.single then
@@ -242,6 +220,34 @@ module internal Main =
        | _ -> Visitor.coverstyle <- CoverStyle.BranchOnly))
       (CommandLine.ddFlag "dropReturnCode" CommandLine.dropReturnCode)
       (CommandLine.ddFlag "sourcelink" Visitor.sourcelink)
+      ("defer:",
+              fun x ->
+                if !Visitor.defer = None then
+                    Visitor.defer := if String.IsNullOrWhiteSpace x
+                                     then Some true
+                                     else
+                                      let (|Select|_|) (pattern : String) offered =
+                                        if offered
+                                            |> String.IsNullOrWhiteSpace
+                                            |> not
+                                            && pattern.Equals(offered,
+                                                              StringComparison.OrdinalIgnoreCase)
+                                        then Some offered
+                                        else None
+                                      match x with
+                                      | Select "-" _ -> Some false
+                                      | Select "+" _ -> Some true
+                                      | _ ->  None
+                    if !Visitor.defer = None then
+                       CommandLine.error <- String.Format
+                                              (CultureInfo.CurrentCulture,
+                                                CommandLine.resources.GetString "InvalidValue",
+                                                "--defer", x) :: CommandLine.error
+                 else
+                   CommandLine.error <- String.Format
+                                      (CultureInfo.CurrentCulture,
+                                       CommandLine.resources.GetString "MultiplesNotAllowed",
+                                       "--defer") :: CommandLine.error)
       ("?|help|h", (fun x -> CommandLine.help <- not (isNull x)))
 
       ("<>",

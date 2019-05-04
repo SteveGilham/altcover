@@ -1635,9 +1635,10 @@ type AltCoverTests() =
 
       let expected =
         [ "get_Property"; "set_Property"; "#ctor"; "get_Property"; "set_Property"; "#ctor";
-          "get_Visits"; "Log"; "GetOperandType"; "#ctor"; ".cctor"; "get_Property";
-          "set_Property"; "get_ReportFile"; "set_ReportFile"; "get_Timer"; "set_Timer";
-          "get_Token"; "set_Token"; "get_CoverageFormat"; "set_CoverageFormat";
+          "get_Visits"; "Log"; "GetOperandType"; "#ctor"; ".cctor"; "get_Defer"; "set_Defer";
+          "get_Property"; "set_Property"; "get_ReportFile"; "set_ReportFile";
+          "get_Timer"; "set_Timer"; "get_Token"; "set_Token";
+          "get_CoverageFormat"; "set_CoverageFormat";
           "get_Sample"; "set_Sample"; "ToList"; "#ctor" ]
       Assert.That(names, Is.EquivalentTo expected)
 
@@ -1665,6 +1666,8 @@ type AltCoverTests() =
           "System.Void Sample3.Class3.Log(System.String,System.Int32)";
           "System.Int32 Sample3.Class3.GetOperandType(Mono.Cecil.Cil.Instruction)";
           "System.Void Sample3.Class3.#ctor()"; "System.Void Sample3.Class3..cctor()";
+          "System.Boolean Sample3.Class3+Class4.get_Defer()"
+          "System.Void Sample3.Class3+Class4.set_Defer(System.Boolean)"
           "Sample3.Class1 Sample3.Class3+Class4.get_Property()";
           "System.Void Sample3.Class3+Class4.set_Property(Sample3.Class1)";
           "System.String Sample3.Class3+Class4.get_ReportFile()";

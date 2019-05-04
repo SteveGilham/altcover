@@ -72,6 +72,7 @@ type Prepare() =
   member val BranchCover = true |> not with get, set
   member val CommandLine : string array = [||] with get, set
   member val SourceLink = false with get, set
+  member val Defer = false with get, set
 
   member self.Message x = base.Log.LogMessage(MessageImportance.High, x)
   override self.Execute() =
@@ -110,7 +111,8 @@ type Prepare() =
                                       BranchCover = self.BranchCover
                                       CommandLine = self.CommandLine
                                       ExposeReturnCode = true
-                                      SourceLink = self.SourceLink}
+                                      SourceLink = self.SourceLink
+                                      Defer = self.Defer}
 
     Api.Prepare task log = 0
 
