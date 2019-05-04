@@ -83,7 +83,6 @@ type AltCoverCoreTests() =
                             else
                               t.Add(m, Dictionary<int, PointVisit>())
                               let points = formatter.ReadInt32()
-                              printfn "points = %d" points
                               let rec sequencePoint pts =
                                 if pts > 0 then
                                   let p = formatter.ReadInt32()
@@ -156,8 +155,8 @@ type AltCoverCoreTests() =
       let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
       let unique = Path.Combine(where, Guid.NewGuid().ToString())
       let tag = unique + ".acv"
-
-      let expected = [ ("name", 23, Call 5) ]
+      let t = Dictionary<string, Dictionary<int, PointVisit>>()
+      t.["name"] <- Dictionary<int, PointVisit>()
       let expect23 = [
                         Call 17
                         Call 42
@@ -171,24 +170,48 @@ type AltCoverCoreTests() =
 #endif
       ]
 
+      t.["name"].[23] <- PointVisit.Init 1L expect23
+      t.["name"].[24] <- PointVisit.Init 2L expect24
+
+      let expected = [ (String.Empty, 0, Table t)
+                       ("name", 23, Call 5) ]
+
       do use stream = File.Create tag
          ()
       try
         let mutable client = Tracer.Create tag
         try
+          let (a,b) = client.OnStart()
+          Instance.trace <- a
+          Instance.VisitIndex <- b
+          Assert.That(Instance.trace.IsConnected(), "connection failed")
+          Assert.That(b, Is.EqualTo ReportIndex.File)
+
           Adapter.VisitsClear()
           Adapter.VisitsAddTrack "name" 23 1L
-          Instance.trace <- client.OnStart() |> fst
-          Assert.That(Instance.trace.IsConnected(), "connection failed")
           Adapter.VisitImplMethod "name" 23 5
         finally
+          Instance.VisitIndex <- ReportIndex.Memory
           Instance.trace.Close()
           Instance.trace <- save
         use stream =
           new DeflateStream(File.OpenRead(unique + ".0.acv"), CompressionMode.Decompress)
         let results = self.ReadResults stream
-        Assert.That(Adapter.VisitsSeq() |> Seq.length, Is.EqualTo 1, "unexpected local write")
-        Assert.That(results, Is.EquivalentTo expected, "unexpected result")
+        Assert.That(Adapter.VisitsSeq() |> Seq.length, Is.EqualTo 0, "unexpected local write")
+        Assert.That (results.Count, Is.EqualTo 2)
+        Assert.That(results |> Seq.skip 1, Is.EquivalentTo (expected |> Seq.skip 1), "unexpected result")
+        match results |> Seq.head with
+        | (n, p, Table d) ->
+          Assert.That (n, Is.Empty)
+          Assert.That (p, Is.EqualTo 0)
+          Assert.That (d.Count, Is.EqualTo 1)
+          Assert.That (d.["name"] |> Seq.sortBy(fun kv -> kv.Key) |> Seq.map (fun kv -> kv.Key),
+                       Is.EquivalentTo (t.["name"] |> Seq.sortBy(fun kv -> kv.Key) |> Seq.map(fun kv -> kv.Key)))
+          Assert.That (d.["name"] |> Seq.sortBy(fun kv -> kv.Key) |> Seq.map (fun kv -> kv.Value.Count),
+                       Is.EquivalentTo (t.["name"] |> Seq.sortBy(fun kv -> kv.Key) |> Seq.map(fun kv -> kv.Value.Count)))
+          Assert.That (d.["name"] |> Seq.sortBy(fun kv -> kv.Key) |> Seq.map (fun kv -> kv.Value.Tracks),
+                       Is.EquivalentTo (t.["name"] |> Seq.sortBy(fun kv -> kv.Key) |> Seq.map(fun kv -> kv.Value.Tracks)))
+        | _ -> Assert.Fail()
       finally
         Adapter.VisitsClear()
 

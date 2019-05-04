@@ -299,9 +299,11 @@ module internal Counter =
     | Null -> v.Step()
     | something -> v.Track something
 
+#if RUNNER
   let internal AddVisit (counts : Dictionary<string, Dictionary<int, PointVisit>>)
       moduleId hitPointId context =
     match context with
     | Table t -> AddTable counts t
     | _ -> AddSingleVisit counts moduleId hitPointId context
            1L
+#endif
