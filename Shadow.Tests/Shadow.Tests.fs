@@ -28,6 +28,7 @@ open System.Xml
 open AltCover.Recorder
 open AltCover.Shadow
 open NUnit.Framework
+open System.IO.Compression
 
 [<TestFixture>]
 type AltCoverTests() =
@@ -183,6 +184,7 @@ type AltCoverTests() =
       self.GetMyMethodName "=>"
       lock Instance.Visits (fun () ->
       let save = Instance.trace
+      Adapter.Reset()
       try
         Instance.Visits.[Instance.VisitIndex |> int].Clear()
         Instance.trace <- { Tracer=null; Stream=null; Formatter=null;
@@ -231,6 +233,7 @@ type AltCoverTests() =
     member self.RepeatVisitsShouldIncrementCount() =
       self.GetMyMethodName "=>"
       lock Instance.Visits (fun () ->
+      Adapter.Reset()
       try
         Instance.Visits.[Instance.VisitIndex |> int].Clear()
         let key = " "
@@ -246,6 +249,7 @@ type AltCoverTests() =
     member self.RepeatVisitsShouldIncrementTotal() =
       self.GetMyMethodName "=>"
       lock Instance.Visits (fun () ->
+      Adapter.Reset()
       try
         Instance.Visits.[Instance.VisitIndex |> int].Clear()
         let key = " "
@@ -262,6 +266,7 @@ type AltCoverTests() =
     member self.TabledVisitsShouldIncrementCount() =
       self.GetMyMethodName "=>"
       lock Instance.Visits (fun () ->
+      Adapter.Reset()
       try
         Instance.Visits.[Instance.VisitIndex |> int].Clear()
         let key = " "
@@ -549,12 +554,15 @@ type AltCoverTests() =
           let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
           let unique = Path.Combine(where, Guid.NewGuid().ToString())
           let save = Instance.trace
+          use s = new MemoryStream()
+          let s1 = new Compression.DeflateStream(s, CompressionMode.Compress)
           Instance.trace <- { Tracer = null
-                              Stream = null
-                              Formatter = null
-                              Runner = false
+                              Stream = new MemoryStream()
+                              Formatter = new BinaryWriter(s1)
+                              Runner = true
                               Definitive = false }
           try
+            Instance.VisitIndex <- ReportIndex.File
             Adapter.VisitsClear()
             use stdout = new StringWriter()
             Console.SetOut stdout
@@ -575,9 +583,7 @@ type AltCoverTests() =
                  (fun i ->
                  Adapter.VisitsAdd "f6e3edb3-fb20-44b3-817d-f69d1a22fc2f" i (int64(i + 1)))
             Adapter.DoPause()
-            Assert.That (Adapter.VisitsSeq (), Is.Not.Empty)
-            Assert.That (Adapter.VisitsEntrySeq "f6e3edb3-fb20-44b3-817d-f69d1a22fc2f" |> Seq.length,
-                         Is.EqualTo 10)
+            Assert.That (Adapter.VisitsSeq (), Is.Empty)
             let recorded = stdout.ToString().Trim()
             Assert.That(recorded, Is.EqualTo "Pausing...")
             use worker' = new FileStream(Instance.ReportFile, FileMode.Open)
@@ -592,6 +598,7 @@ type AltCoverTests() =
             Instance.trace <- save
             if File.Exists Instance.ReportFile then File.Delete Instance.ReportFile
             Adapter.VisitsClear()
+            Instance.VisitIndex <- ReportIndex.Memory
             Console.SetOut saved
             Directory.SetCurrentDirectory(here)
             try
@@ -668,6 +675,7 @@ type AltCoverTests() =
     member self.FlushLeavesExpectedTraces() =
       self.GetMyMethodName "=>"
       lock Adapter.Lock (fun () ->
+        Instance.VisitIndex <- ReportIndex.Memory
         try
           let saved = Console.Out
           let here = Directory.GetCurrentDirectory()

@@ -9,6 +9,12 @@ module Adapter =
   let VisitsClear() = Instance.Visits.[Instance.VisitIndex |> int].Clear()
   let SamplesClear() = Instance.Samples.[Instance.VisitIndex |> int].Clear()
   let FlushAll() = Instance.FlushFinish ()
+  let Reset () =
+    Instance.VisitIndex <- ReportIndex.Memory
+    Instance.Visits.[0].Clear()
+    Instance.Visits.[1].Clear()
+    Instance.Samples.[0].Clear()
+    Instance.Samples.[1].Clear()
 
   let internal prepareName name =
     if name

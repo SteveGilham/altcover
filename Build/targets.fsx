@@ -36,7 +36,7 @@ let AltCoverFilter(p : Primitive.PrepareParams) =
            AssemblyExcludeFilter =
              [ "Adapter"; "Tests" ] @ (p.AssemblyExcludeFilter |> Seq.toList)
            AssemblyFilter =
-             [ "Mono"; @"\.Recorder"; "Sample"; "nunit"; "Newton"; "xunit"; "BlackFox" ]
+             [ "Mono"; @"\.Recorder"; @"\.DataCollector"; "Sample"; "nunit"; "Newton"; "xunit"; "BlackFox" ]
              @ (p.AssemblyFilter |> Seq.toList)
            TypeFilter = [ @"System\."; @"Sample3\.Class2" ] @ (p.TypeFilter |> Seq.toList) }
 
@@ -44,7 +44,7 @@ let AltCoverFilterX(p : Primitive.PrepareParams) =
   { p with MethodFilter = "WaitForExitCustom" :: (p.MethodFilter |> Seq.toList)
            AssemblyExcludeFilter = "Adapter" :: (p.AssemblyExcludeFilter |> Seq.toList)
            AssemblyFilter =
-             [ "Mono"; @"\.Recorder"; "Sample"; "nunit"; "Newton"; "xunit"; "BlackFox" ]
+             [ "Mono"; @"\.Recorder"; @"\.DataCollector"; "Sample"; "nunit"; "Newton"; "xunit"; "BlackFox" ]
              @ (p.AssemblyFilter |> Seq.toList)
            TypeFilter = [ @"System\."; @"Sample3\.Class2" ] @ (p.TypeFilter |> Seq.toList) }
 
@@ -2331,7 +2331,7 @@ _Target "Pester" (fun _ ->
                                                  InputDirectory = i
                                                  StrongNameKey = key
                                                  TypeFilter = [ "System\\."; "DotNet" ]
-                                                 AssemblyFilter = [ "^AltCover$"; "Recorder" ]
+                                                 AssemblyFilter = [ "^AltCover$"; "Recorder"; "DataCollector" ]
                                                  InPlace = true
                                                  OpenCover = true
                                                  Save = true })

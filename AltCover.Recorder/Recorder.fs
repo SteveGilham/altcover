@@ -57,14 +57,11 @@ module Instance =
                             new Dictionary<string, Dictionary<int, PointVisit>>()
                             new Dictionary<string, Dictionary<int, PointVisit>>()
   |]
-  let internal FileVisits = Visits.[ReportIndex.File |> int]
-  let mutable internal ActiveVisits = Visits.[ReportIndex.Memory |> int]
 
   let internal Samples = [|
     new Dictionary<string, Dictionary<int, bool>>()
     new Dictionary<string, Dictionary<int, bool>>()
   |]
-  let mutable internal ActiveSamples = Samples.[ReportIndex.Memory |> int]
 
   let mutable internal VisitIndex = ReportIndex.Memory
 
@@ -158,8 +155,6 @@ module Instance =
     WithMutex(fun _ ->
       let t = Tracer.Create(SignalFile())
       let tt, ii = t.OnStart()
-      ActiveVisits <- Visits.[ii |> int]
-      ActiveSamples <- Samples.[ii |> int]
       VisitIndex <- ii
       trace <- tt)
 
@@ -169,16 +164,20 @@ module Instance =
   /// <summary>
   /// This method flushes hit count buffers.
   /// </summary>
-  let internal FlushAll finish =
-    trace.OnConnected (fun () -> trace.OnFinish finish FileVisits)
+  let internal FlushAll _ =
+    trace.OnConnected (fun () -> let counts = Interlocked.Exchange(ref Visits.[ReportIndex.File |> int],
+                                                                       Dictionary<string, Dictionary<int, PointVisit>>())
+                                 trace.OnFinish counts)
       (fun () ->
-      match Visits.[ReportIndex.Memory |> int].Count with
+      let counts = Interlocked.Exchange(ref Visits.[ReportIndex.Memory |> int],
+                                            Dictionary<string, Dictionary<int, PointVisit>>())
+      match counts.Count with
       | 0 -> ()
       | _ ->
         WithMutex
           (fun own ->
           let delta =
-            Counter.DoFlush ignore (fun _ _ -> ()) own Visits.[ReportIndex.Memory |> int] CoverageFormat ReportFile
+            Counter.DoFlush ignore (fun _ _ -> ()) own counts CoverageFormat ReportFile
               None
           GetResource "Coverage statistics flushing took {0:N} seconds"
           |> Option.iter (fun s -> Console.Out.WriteLine(s, delta.TotalSeconds))))
@@ -188,14 +187,16 @@ module Instance =
     |> GetResource
     |> Option.iter Console.Out.WriteLine
     Recording <- false
+    FlushAll Pause
+    trace <- Tracer.Create(String.Empty)
 
   let FlushResume() =
     ("ResumeHandler")
     |> GetResource
     |> Option.iter Console.Out.WriteLine
     InitialiseTrace()
-    ActiveVisits <- FileVisits
-    ActiveSamples <- Samples.[ReportIndex.File |> int]
+    Visits.[ReportIndex.Memory |> int].Clear()
+    Visits.[ReportIndex.File |> int].Clear()
     VisitIndex <- ReportIndex.File // belt and braces
     Recording <- true
 
@@ -203,11 +204,12 @@ module Instance =
     FlushAll ProcessExit
 
   let internal TraceVisit moduleId hitPointId context =
+    let FileVisits = Visits.[ReportIndex.File |> int]
     lock FileVisits (fun () ->
     trace.OnVisit FileVisits moduleId hitPointId context)
 
   let internal AddVisit moduleId hitPointId context =
-    Counter.AddSingleVisit ActiveVisits moduleId hitPointId context
+    Counter.AddSingleVisit (Visits.[VisitIndex |> int]) moduleId hitPointId context
 
   let internal TakeSample strategy moduleId hitPointId =
     match strategy with

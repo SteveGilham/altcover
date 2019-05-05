@@ -112,10 +112,9 @@ type Tracer =
     if this.IsConnected() then f()
     else g()
 
-  member internal this.OnFinish finish visits =
+  member internal this.OnFinish visits =
     this.CatchUp visits
-    if finish <> Pause
-    then this.Close()
+    this.Close()
 
   member internal this.OnVisit visits moduleId hitPointId context =
     this.CatchUp visits
