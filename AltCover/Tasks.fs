@@ -215,6 +215,8 @@ type RunSettings() =
   [<Output>]
   member val Extended = String.Empty with get, set
 
+  member val internal DataCollector = "AltCover.DataCollector.dll" with get, set
+
   override self.Execute() =
     let tempFile = Path.GetTempFileName()
 
@@ -241,7 +243,7 @@ type RunSettings() =
                extra
       let here = Assembly.GetExecutingAssembly().Location
       let expected = Path.Combine(Path.GetDirectoryName(here),
-                                   "AltCover.DataCollector.dll")
+                                   self.DataCollector)
 
       let result = File.Exists(expected)
 

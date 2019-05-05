@@ -2332,5 +2332,71 @@ or
         Console.SetOut(fst saved)
         Console.SetError(snd saved)
 
+#if NETCOREAPP2_0
+    [<Test>]
+    member self.RunSettingsFailsIfCollectorNotFound() =
+      let subject = RunSettings()
+      subject.DataCollector <- Guid.NewGuid().ToString();
+      Assert.That (subject.Execute(), Is.False)
+      Assert.That (subject.Extended, Is.Empty)
+
+    member val template = """<?xml version="1.0" encoding="utf-8"?>
+<RunSettings>
+{1}  <InProcDataCollectionRunSettings>
+    <InProcDataCollectors>
+      <InProcDataCollector friendlyName="AltCover" uri="InProcDataCollector://AltCover/Recorder/1.0.0.0" assemblyQualifiedName="AltCover.DataCollector, AltCover.Tests, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" codebase="{0}">
+        <Configuration>
+          <Offload>true</Offload>
+        </Configuration>
+      </InProcDataCollector>
+    </InProcDataCollectors>
+  </InProcDataCollectionRunSettings>
+</RunSettings>""" with get
+
+    [<Test>]
+    member self.RunSettingsWorksIfOK() =
+      let subject = RunSettings()
+      subject.DataCollector <- Assembly.GetExecutingAssembly().Location
+      Assert.That (subject.Execute(), Is.True)
+      Assert.That (subject.Extended.EndsWith(".altcover.runsettings"))
+      let result = subject.Extended
+                   |> File.ReadAllText
+      Assert.That (result.Replace("\r", String.Empty),
+                    Is.EqualTo ((String.Format(self.template,
+                                               Assembly.GetExecutingAssembly().Location,
+                                               String.Empty)).Replace("\r", String.Empty)))
+
+    [<Test>]
+    member self.RunSettingsExtendsOK() =
+      let subject = RunSettings()
+      subject.DataCollector <- Assembly.GetExecutingAssembly().Location
+      let settings = Path.GetTempFileName()
+      File.WriteAllText(settings, "<RunSettings><stuff /></RunSettings>")
+      subject.TestSetting <- settings
+      Assert.That (subject.Execute(), Is.True)
+      Assert.That (subject.Extended.EndsWith(".altcover.runsettings"))
+      let result = subject.Extended
+                   |> File.ReadAllText
+      Assert.That (result.Replace("\r", String.Empty),
+                    Is.EqualTo ((String.Format(self.template,
+                                               Assembly.GetExecutingAssembly().Location,
+                                               "  <stuff />\r\n")).Replace("\r", String.Empty)))
+
+    [<Test>]
+    member self.RunSettingsRecoversOK() =
+      let subject = RunSettings()
+      subject.DataCollector <- Assembly.GetExecutingAssembly().Location
+      let settings = Path.GetTempFileName()
+      File.WriteAllText(settings, "<Not XML")
+      subject.TestSetting <- settings
+      Assert.That (subject.Execute(), Is.True)
+      Assert.That (subject.Extended.EndsWith(".altcover.runsettings"))
+      let result = subject.Extended
+                   |> File.ReadAllText
+      Assert.That (result.Replace("\r", String.Empty),
+                    Is.EqualTo ((String.Format(self.template,
+                                               Assembly.GetExecutingAssembly().Location,
+                                               String.Empty)).Replace("\r", String.Empty)))
+#endif
   // Recorder.fs => Shadow.Tests
   end
