@@ -2167,7 +2167,7 @@ _Target "Packaging" (fun _ ->
                    netcoreFiles "tools/netcoreapp2.0/"
                    poshFiles "tools/netcoreapp2.0/"
                    vizFiles "tools/netcoreapp2.1"
-                   dataFiles "tools/netstandard2.0/"
+                   dataFiles "tools/netcoreapp2.0/"
                    otherFiles ], "_Packaging", "./Build/AltCover.nuspec", "altcover")
 
     (List.concat [ apiFiles
