@@ -2167,7 +2167,7 @@ _Target "Packaging" (fun _ ->
                    netcoreFiles "tools/netcoreapp2.0/"
                    poshFiles "tools/netcoreapp2.0/"
                    vizFiles "tools/netcoreapp2.1"
-                   dataFiles "lib/netstandard2.0/"
+                   dataFiles "tools/netstandard2.0/"
                    otherFiles ], "_Packaging", "./Build/AltCover.nuspec", "altcover")
 
     (List.concat [ apiFiles
@@ -2184,7 +2184,7 @@ _Target "Packaging" (fun _ ->
 
     (List.concat [ netcoreFiles "lib/netcoreapp2.0"
                    poshFiles "lib/netcoreapp2.0/"
-                   dataFiles "lib/netstandard2.0/"
+                   dataFiles "lib/netcoreapp2.0/"
                    dotnetFiles
                    otherFilesDotnet ], "_Packaging.dotnet",
      "./_Generated/altcover.dotnet.nuspec", "altcover.dotnet")
@@ -2192,7 +2192,7 @@ _Target "Packaging" (fun _ ->
     (List.concat [ globalFiles
                    netcoreFiles "tools/netcoreapp2.1/any"
                    poshFiles "tools/netcoreapp2.1/any/"
-                   dataFiles "lib/netstandard2.0/"
+                   dataFiles "tools/netcoreapp2.1/any/"
                    auxFiles
                    otherFilesGlobal ], "_Packaging.global",
      "./_Generated/altcover.global.nuspec", "altcover.global")

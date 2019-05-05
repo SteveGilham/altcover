@@ -10,8 +10,8 @@
         AssemblyFile="$(MSBuildThisFileDirectory)../../tools/netcoreapp2.0/AltCover.dll" />
   <UsingTask TaskName="AltCover.Echo"
         AssemblyFile="$(MSBuildThisFileDirectory)../../tools/netcoreapp2.0/AltCover.dll" />
-  <UsingTask TaskName="AltCover.DataCollector.RunSettings"
-        AssemblyFile="$(MSBuildThisFileDirectory)../../lib/netstandard2.0/AltCover.DataCollector.dll" />
+  <UsingTask TaskName="AltCover.RunSettings"
+        AssemblyFile="$(MSBuildThisFileDirectory)../../tools/netcoreapp2.0/AltCover.dll" />
 
   <Target Name="AltCoverPreFlight" Condition="'$(AltCover)' == 'true'">
     <Error Condition="Exists('$(TargetDir)__Saved') AND '$(AltCoverForce)' != 'true'"
@@ -74,12 +74,12 @@
     <CallTarget Condition="'$(VSTestNoBuild)' != 'true'" Targets="BuildProject" />
 
     <CallTarget Targets="ShowCallOfVSTestTaskWithParameter" />
-    <Message Importance="High" Text="Settings: $(VSTestSetting)" />
-    <AltCover.DataCollector.RunSettings
+    <Message Importance="High" Text="Settings Before: $(VSTestSetting)" />
+    <AltCover.RunSettings
       TestSetting="$(VSTestSetting)">
       <Output TaskParameter="Extended" PropertyName="VSTestSetting" />
-    </AltCover.DataCollector.RunSettings>
-    <Message Importance="High" Text="Settings: $(VSTestSetting)" />
+    </AltCover.RunSettings>
+    <Message Importance="High" Text="Settings After: $(VSTestSetting)" />
 
     <Microsoft.TestPlatform.Build.Tasks.VSTestTask
       TestFileFullPath="$(TargetPath)"
@@ -119,7 +119,9 @@
       <AltCoverRecorderGFiles Include="$(TargetDir)/AltCover.Recorder.g.*" />
       <AltCoverFSharpFiles Include="$(TargetDir)/FSharp.Core.*" />
       <AltCoverSavedFiles Include="$(TargetDir)__Saved/*.*" />
+      <AltCoverRunSettings Include="$(TEMP)/*.altcover.runsettings" />
     </ItemGroup>
+    <Delete Files="@(AltCoverRunSettings)" />
     <Delete Files="@(AltCoverRecorderGFiles)" />
     <Delete Files="@(AltCoverFSharpFiles)" />
     <Move SourceFiles="@(AltCoverSavedFiles)" DestinationFolder="$(TargetDir)" OverwriteReadOnlyFiles="true" />

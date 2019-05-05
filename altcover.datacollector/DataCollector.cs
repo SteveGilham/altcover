@@ -7,9 +7,9 @@ using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollection;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollector.InProcDataCollector;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.InProcDataCollector;
 
-namespace AltCover.DataCollector
+namespace AltCover
 {
-    public class Recorder : InProcDataCollection
+    public class DataCollector : InProcDataCollection
     {
         private void Supervise()
         {

@@ -1,6 +1,13 @@
 namespace AltCover
 
 open System
+#if NETCOREAPP2_0
+open System.IO
+open System.Reflection
+open System.Xml
+open System.Xml.Linq
+#endif
+
 open Microsoft.Build.Utilities
 open Microsoft.Build.Framework
 open Augment
@@ -200,3 +207,63 @@ type Echo() =
         Console.ForegroundColor <- original
 
     true
+#if NETCOREAPP2_0
+type RunSettings() =
+  inherit Task(null)
+
+  member val TestSetting  = String.Empty with get, set
+  [<Output>]
+  member val Extended = String.Empty with get, set
+
+  override self.Execute() =
+    let tempFile = Path.GetTempFileName()
+
+    try
+      let settings =
+        if self.TestSetting |> String.IsNullOrWhiteSpace |> not &&
+           self.TestSetting |> File.Exists
+        then
+          try
+            use s = File.OpenRead(self.TestSetting)
+            XDocument.Load(s)
+          with
+          | :? IOException
+          | :? XmlException -> XDocument()
+        else XDocument()
+
+      let X n = XName.Get n
+
+      let ensureHas (parent:XContainer) childName =
+        match parent.Descendants(X childName) |> Seq.tryHead with
+        | Some child -> child
+        | _ -> let extra = XElement(X childName)
+               parent.Add extra
+               extra
+      let here = Assembly.GetExecutingAssembly().Location
+      let expected = Path.Combine(Path.GetDirectoryName(here),
+                                   "AltCover.DataCollector.dll")
+
+      let result = File.Exists(expected)
+
+      if result then
+        let rs = ensureHas settings "RunSettings"
+        let ip1 = ensureHas rs "InProcDataCollectionRunSettings"
+        let ip2 = ensureHas ip1 "InProcDataCollectors"
+
+        let name = AssemblyName.GetAssemblyName(expected)
+        let altcover = XElement(X "InProcDataCollector",
+                        XAttribute(X "friendlyName", "AltCover"),
+                        XAttribute(X "uri", "InProcDataCollector://AltCover/Recorder/" + name.Version.ToString()),
+                        XAttribute(X "assemblyQualifiedName", "AltCover.DataCollector, " + name.FullName),
+                        XAttribute(X "codebase", expected),
+                        XElement(X "Configuration",
+                            XElement(X "Offload", XText("true"))))
+        ip2.Add(altcover)
+
+        self.Extended <- Path.ChangeExtension(tempFile, ".altcover.runsettings")
+        settings.Save(self.Extended)
+
+      result
+    finally
+      File.Delete(tempFile)
+#endif
