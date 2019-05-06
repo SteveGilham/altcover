@@ -132,8 +132,10 @@ type AltCoverCoreTests() =
         let mutable client = Tracer.Create tag
         try
           Adapter.VisitsClear()
-          Adapter.VisitsAdd "name" 23 1L
-          Instance.trace <- client.OnStart() |> fst
+          let (t, x) =  client.OnStart()
+          Assert.That (x, Is.True)
+          Instance.trace <- t
+          Instance.Connected <- true
           Assert.That(Instance.trace.IsConnected(), "connection failed")
           Adapter.VisitImplNone "name" 23
         finally
@@ -144,10 +146,10 @@ type AltCoverCoreTests() =
         use stream =
           new DeflateStream(File.OpenRead(unique + ".0.acv"), CompressionMode.Decompress)
         let results = self.ReadResults stream
-        Assert.That(Adapter.VisitsSeq() |> Seq.length, Is.EqualTo 1, "unexpected local write")
+        Assert.That(Adapter.VisitsSeq() |> Seq.length, Is.EqualTo 0, "unexpected local write")
         Assert.That(results, Is.EquivalentTo expected, "unexpected result")
       finally
-        Adapter.VisitsClear()
+        Adapter.Reset()
 
     [<Test>]
     member self.VisitShouldSignalTrack() =
@@ -183,15 +185,15 @@ type AltCoverCoreTests() =
         try
           let (a,b) = client.OnStart()
           Instance.trace <- a
-          Instance.VisitIndex <- b
+          Instance.Connected <- b
           Assert.That(Instance.trace.IsConnected(), "connection failed")
-          Assert.That(b, Is.EqualTo ReportIndex.File)
+          Assert.That(b, Is.True)
 
           Adapter.VisitsClear()
           Adapter.VisitsAddTrack "name" 23 1L
           Adapter.VisitImplMethod "name" 23 5
         finally
-          Instance.VisitIndex <- ReportIndex.Memory
+          Instance.Connected <- false
           Instance.trace.Close()
           Instance.trace <- save
         use stream =

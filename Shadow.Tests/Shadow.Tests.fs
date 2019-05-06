@@ -186,17 +186,17 @@ type AltCoverTests() =
       let save = Instance.trace
       Adapter.Reset()
       try
-        Instance.Visits.[Instance.VisitIndex |> int].Clear()
+        Instance.Visits.Clear()
         Instance.trace <- { Tracer=null; Stream=null; Formatter=null;
                             Runner = false; Definitive = false }
         let key = " "
         Instance.VisitSelection Null key 23
-        Assert.That (Instance.Visits.[Instance.VisitIndex |> int].Count, Is.EqualTo 1, "A visit that should have happened, didn't")
-        Assert.That (Instance.Visits.[Instance.VisitIndex |> int].[key].Count, Is.EqualTo 1, "keys = " + String.Join("; ", Instance.Visits.[Instance.VisitIndex |> int].Keys|> Seq.toArray))
-        Assert.That (Instance.Visits.[Instance.VisitIndex |> int].[key].[23].Count, Is.EqualTo 1)
-        Assert.That (Instance.Visits.[Instance.VisitIndex |> int].[key].[23].Tracks, Is.Empty)
+        Assert.That (Instance.Visits.Count, Is.EqualTo 1, "A visit that should have happened, didn't")
+        Assert.That (Instance.Visits.[key].Count, Is.EqualTo 1, "keys = " + String.Join("; ", Instance.Visits.Keys|> Seq.toArray))
+        Assert.That (Instance.Visits.[key].[23].Count, Is.EqualTo 1)
+        Assert.That (Instance.Visits.[key].[23].Tracks, Is.Empty)
       finally
-        Instance.Visits.[Instance.VisitIndex |> int].Clear()
+        Instance.Visits.Clear()
         Instance.trace <- save)
       self.GetMyMethodName "<="
 
@@ -205,13 +205,13 @@ type AltCoverTests() =
       self.GetMyMethodName "=>"
       lock Instance.Visits (fun () ->
       try
-        Instance.Visits.[Instance.VisitIndex |> int].Clear()
+        Instance.Visits.Clear()
         let key = " "
         Instance.VisitImpl key 23 Null
         Instance.VisitImpl "key" 42 Null
-        Assert.That (Instance.Visits.[Instance.VisitIndex |> int].Count, Is.EqualTo 2)
+        Assert.That (Instance.Visits.Count, Is.EqualTo 2)
       finally
-        Instance.Visits.[Instance.VisitIndex |> int].Clear())
+        Instance.Visits.Clear())
       self.GetMyMethodName "<="
 
     [<Test>]
@@ -219,12 +219,12 @@ type AltCoverTests() =
       self.GetMyMethodName "=>"
       lock Instance.Visits (fun () ->
       try
-        Instance.Visits.[Instance.VisitIndex |> int].Clear()
+        Instance.Visits.Clear()
         let key = " "
         Instance.VisitImpl key 23 Null
         Instance.VisitImpl key 42 Null
-        Assert.That (Instance.Visits.[Instance.VisitIndex |> int].Count, Is.EqualTo 1)
-        Assert.That (Instance.Visits.[Instance.VisitIndex |> int].[key].Count, Is.EqualTo 2)
+        Assert.That (Instance.Visits.Count, Is.EqualTo 1)
+        Assert.That (Instance.Visits.[key].Count, Is.EqualTo 2)
       finally
         Adapter.VisitsClear())
       self.GetMyMethodName "<="
@@ -235,14 +235,14 @@ type AltCoverTests() =
       lock Instance.Visits (fun () ->
       Adapter.Reset()
       try
-        Instance.Visits.[Instance.VisitIndex |> int].Clear()
+        Instance.Visits.Clear()
         let key = " "
         Instance.VisitImpl key 23 Null
         Instance.VisitImpl key 23 Null
-        Assert.That (Instance.Visits.[Instance.VisitIndex |> int].[key].[23].Count, Is.EqualTo 2)
-        Assert.That (Instance.Visits.[Instance.VisitIndex |> int].[key].[23].Tracks, Is.Empty)
+        Assert.That (Instance.Visits.[key].[23].Count, Is.EqualTo 2)
+        Assert.That (Instance.Visits.[key].[23].Tracks, Is.Empty)
       finally
-        Instance.Visits.[Instance.VisitIndex |> int].Clear())
+        Instance.Visits.Clear())
       self.GetMyMethodName "<="
 
     [<Test>]
@@ -251,15 +251,15 @@ type AltCoverTests() =
       lock Instance.Visits (fun () ->
       Adapter.Reset()
       try
-        Instance.Visits.[Instance.VisitIndex |> int].Clear()
+        Instance.Visits.Clear()
         let key = " "
         let payload = Time DateTime.UtcNow.Ticks
         Instance.VisitImpl key 23 Null
         Instance.VisitImpl key 23 payload
-        Assert.That (Instance.Visits.[Instance.VisitIndex |> int].[key].[23].Count, Is.EqualTo 1)
-        Assert.That (Instance.Visits.[Instance.VisitIndex |> int].[key].[23].Tracks, Is.EquivalentTo [payload])
+        Assert.That (Instance.Visits.[key].[23].Count, Is.EqualTo 1)
+        Assert.That (Instance.Visits.[key].[23].Tracks, Is.EquivalentTo [payload])
       finally
-        Instance.Visits.[Instance.VisitIndex |> int].Clear())
+        Instance.Visits.Clear())
       self.GetMyMethodName "<="
 
     [<Test>]
@@ -268,7 +268,7 @@ type AltCoverTests() =
       lock Instance.Visits (fun () ->
       Adapter.Reset()
       try
-        Instance.Visits.[Instance.VisitIndex |> int].Clear()
+        Instance.Visits.Clear()
         let key = " "
         Instance.VisitImpl key 23 Null
         let table = Dictionary<string, Dictionary<int, PointVisit>>()
@@ -279,12 +279,12 @@ type AltCoverTests() =
             Both(5L, 42) ]
         let pv = PointVisit.Init 42L payloads
         table.[key].Add(23, pv)
-        let n = Counter.AddTable Instance.Visits.[Instance.VisitIndex |> int] table
+        let n = Counter.AddTable Instance.Visits table
         Assert.That (n, Is.EqualTo 45)
-        Assert.That (Instance.Visits.[Instance.VisitIndex |> int].[key].[23].Count, Is.EqualTo 43)
-        Assert.That (Instance.Visits.[Instance.VisitIndex |> int].[key].[23].Tracks, Is.EquivalentTo payloads)
+        Assert.That (Instance.Visits.[key].[23].Count, Is.EqualTo 43)
+        Assert.That (Instance.Visits.[key].[23].Tracks, Is.EquivalentTo payloads)
       finally
-        Instance.Visits.[Instance.VisitIndex |> int].Clear())
+        Instance.Visits.Clear())
       self.GetMyMethodName "<="
 
     [<Test>]
@@ -562,7 +562,7 @@ type AltCoverTests() =
                               Runner = true
                               Definitive = false }
           try
-            Instance.VisitIndex <- ReportIndex.File
+            Instance.Connected <- true
             Adapter.VisitsClear()
             use stdout = new StringWriter()
             Console.SetOut stdout
@@ -598,7 +598,7 @@ type AltCoverTests() =
             Instance.trace <- save
             if File.Exists Instance.ReportFile then File.Delete Instance.ReportFile
             Adapter.VisitsClear()
-            Instance.VisitIndex <- ReportIndex.Memory
+            Instance.Connected <- false
             Console.SetOut saved
             Directory.SetCurrentDirectory(here)
             try
@@ -616,16 +616,15 @@ type AltCoverTests() =
           let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
           let unique = Path.Combine(where, Guid.NewGuid().ToString())
           let save = Instance.trace
+          let tag = unique + ".xml.acv"
 
-          let newTrace =
-            { Tracer = null
-              Stream = null
-              Formatter = null
-              Runner = false
-              Definitive = false }
-          Instance.trace <- newTrace
+          do use stream = File.Create tag
+             ()
+
           try
-            Adapter.VisitsClear()
+            Adapter.Reset()
+            Instance.trace <- Tracer.Create(tag)
+
             use stdout = new StringWriter()
             Console.SetOut stdout
             Directory.CreateDirectory(unique) |> ignore
@@ -647,7 +646,7 @@ type AltCoverTests() =
             Adapter.DoResume()
             Assert.That(Adapter.VisitsSeq(), Is.Empty, "Visits should be cleared")
             Assert.That
-              (Object.ReferenceEquals(Instance.trace, newTrace), Is.False,
+              (Object.ReferenceEquals(Instance.trace, save), Is.False,
                "trace should be replaced")
             let recorded = stdout.ToString().Trim()
             Assert.That(recorded, Is.EqualTo "Resuming...", recorded)
@@ -661,11 +660,13 @@ type AltCoverTests() =
                Is.EquivalentTo
                  [ "1"; "1"; "1"; "1"; "1"; "1"; "0"; String.Empty; "X"; "-1" ])
           finally
+            Adapter.Reset()
             Instance.trace <- save
             if File.Exists Instance.ReportFile then File.Delete Instance.ReportFile
             Adapter.VisitsClear()
             Console.SetOut saved
             Directory.SetCurrentDirectory(here)
+            File.Delete tag
             try
               Directory.Delete(unique)
             with :? IOException -> ()
@@ -675,7 +676,7 @@ type AltCoverTests() =
     member self.FlushLeavesExpectedTraces() =
       self.GetMyMethodName "=>"
       lock Adapter.Lock (fun () ->
-        Instance.VisitIndex <- ReportIndex.Memory
+        Instance.Connected <- false
         try
           let saved = Console.Out
           let here = Directory.GetCurrentDirectory()

@@ -17,11 +17,6 @@ type internal Close =
   | Pause
   | Resume
 
-// These conditionally internal for Gendarme
-type ReportIndex =
-  | Memory = 0
-  | File = 1
-
 [<NoComparison>]
 type Tracer =
   { Tracer : string
@@ -56,8 +51,8 @@ type Tracer =
             { this with Stream = s
                         Formatter = new BinaryWriter(s)
                         Runner = true })
-       |> Seq.head, ReportIndex.File)
-    else (this, ReportIndex.Memory)
+       |> Seq.head, true)
+    else (this, false)
 
   member this.Close() =
     try
@@ -103,10 +98,10 @@ type Tracer =
       visits.Clear()
 
   member this.OnStart() =
-    let running, index =
+    let running, connection =
       if this.Tracer <> "Coverage.Default.xml.acv" then this.Connect()
-      else (this, ReportIndex.Memory)
-    ({ running with Definitive = true }, index)
+      else (this, false)
+    ({ running with Definitive = true }, connection)
 
   member this.OnConnected f g =
     if this.IsConnected() then f()

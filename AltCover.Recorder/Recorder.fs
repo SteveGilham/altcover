@@ -53,17 +53,9 @@ module Instance =
   /// <summary>
   /// Accumulation of visit records
   /// </summary>
-  let internal Visits = [|
-                            new Dictionary<string, Dictionary<int, PointVisit>>()
-                            new Dictionary<string, Dictionary<int, PointVisit>>()
-  |]
-
-  let internal Samples = [|
-    new Dictionary<string, Dictionary<int, bool>>()
-    new Dictionary<string, Dictionary<int, bool>>()
-  |]
-
-  let mutable internal VisitIndex = ReportIndex.Memory
+  let mutable internal Visits = new Dictionary<string, Dictionary<int, PointVisit>>()
+  let mutable internal Samples = new Dictionary<string, Dictionary<int, bool>>()
+  let mutable internal Connected = false
 
   let internal synchronize = Object()
 
@@ -151,11 +143,10 @@ module Instance =
     finally
       if own then mutex.ReleaseMutex()
 
-  let InitialiseTrace() =
+  let InitialiseTrace (t:Tracer) =
     WithMutex(fun _ ->
-      let t = Tracer.Create(SignalFile())
       let tt, ii = t.OnStart()
-      VisitIndex <- ii
+      Connected <- Connected || ii
       trace <- tt)
 
   let internal Watcher = new FileSystemWatcher()
@@ -165,11 +156,11 @@ module Instance =
   /// This method flushes hit count buffers.
   /// </summary>
   let internal FlushAll _ =
-    trace.OnConnected (fun () -> let counts = Interlocked.Exchange(ref Visits.[ReportIndex.File |> int],
+    trace.OnConnected (fun () -> let counts = Interlocked.Exchange(ref Visits,
                                                                        Dictionary<string, Dictionary<int, PointVisit>>())
                                  trace.OnFinish counts)
       (fun () ->
-      let counts = Interlocked.Exchange(ref Visits.[ReportIndex.Memory |> int],
+      let counts = Interlocked.Exchange(ref Visits,
                                             Dictionary<string, Dictionary<int, PointVisit>>())
       match counts.Count with
       | 0 -> ()
@@ -188,44 +179,42 @@ module Instance =
     |> Option.iter Console.Out.WriteLine
     Recording <- false
     FlushAll Pause
-    trace <- Tracer.Create(String.Empty)
+    trace <- SignalFile() |> Tracer.Create
 
   let FlushResume() =
     ("ResumeHandler")
     |> GetResource
     |> Option.iter Console.Out.WriteLine
-    InitialiseTrace()
-    Visits.[ReportIndex.Memory |> int].Clear()
-    Visits.[ReportIndex.File |> int].Clear()
-    VisitIndex <- ReportIndex.File // belt and braces
+    let wasConnected = Connected
+    InitialiseTrace trace
+    if (wasConnected <> Connected) then
+       Samples <- Dictionary<string, Dictionary<int, bool>>()
+       Visits <- Dictionary<string, Dictionary<int, PointVisit>>()
     Recording <- true
 
   let FlushFinish () =
     FlushAll ProcessExit
 
   let internal TraceVisit moduleId hitPointId context =
-    let FileVisits = Visits.[ReportIndex.File |> int]
-    lock FileVisits (fun () ->
-    trace.OnVisit FileVisits moduleId hitPointId context)
+    lock Visits (fun () ->
+    trace.OnVisit Visits moduleId hitPointId context)
 
   let internal AddVisit moduleId hitPointId context =
-    Counter.AddSingleVisit (Visits.[VisitIndex |> int]) moduleId hitPointId context
+    Counter.AddSingleVisit Visits moduleId hitPointId context
 
   let internal TakeSample strategy moduleId hitPointId =
     match strategy with
     | Sampling.All -> true
     | _ ->
-      let i = VisitIndex |> int
-      let samples = Samples.[i]
-      let mutable hasModuleKey = samples.ContainsKey(moduleId)
+      let mutable hasModuleKey = Samples.ContainsKey(moduleId)
       if hasModuleKey |> not then
         lock Samples (fun () ->
-          hasModuleKey <- samples.ContainsKey(moduleId)
+          hasModuleKey <- Samples.ContainsKey(moduleId)
           if hasModuleKey |> not
-          then samples.Add(moduleId, Dictionary<int, bool>())
+          then Samples.Add(moduleId, Dictionary<int, bool>())
         )
 
-      let next = samples.[moduleId]
+      let next = Samples.[moduleId]
       let mutable hasPointKey = next.ContainsKey(hitPointId)
       if hasPointKey |> not then
           lock next (fun () ->
@@ -248,7 +237,7 @@ module Instance =
 
   let private IsOpenCoverRunner() =
     (CoverageFormat = ReportFormat.OpenCoverWithTracking)
-    && (VisitIndex = ReportIndex.File)
+    && Connected
   let internal Granularity() = Timer
   let internal Clock() = DateTime.UtcNow.Ticks
 
@@ -297,4 +286,6 @@ module Instance =
   do AppDomain.CurrentDomain.DomainUnload.Add(FlushCounter DomainUnload)
      AppDomain.CurrentDomain.ProcessExit.Add(FlushCounter ProcessExit)
      StartWatcher()
-     InitialiseTrace()
+     SignalFile()
+     |> Tracer.Create
+     |> InitialiseTrace
