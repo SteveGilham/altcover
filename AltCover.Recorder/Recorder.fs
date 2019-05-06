@@ -9,7 +9,6 @@ open System.IO
 open System.Reflection
 open System.Resources
 open System.Runtime.CompilerServices
-open System.Threading
 
 #if NETSTANDARD2_0
 [<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage>]
@@ -156,12 +155,10 @@ module Instance =
   /// This method flushes hit count buffers.
   /// </summary>
   let internal FlushAll _ =
-    trace.OnConnected (fun () -> let counts = Interlocked.Exchange(ref Visits,
-                                                                       Dictionary<string, Dictionary<int, PointVisit>>())
-                                 trace.OnFinish counts)
+    let counts = Visits
+    Visits <- Dictionary<string, Dictionary<int, PointVisit>>()
+    trace.OnConnected (fun () -> trace.OnFinish counts)
       (fun () ->
-      let counts = Interlocked.Exchange(ref Visits,
-                                            Dictionary<string, Dictionary<int, PointVisit>>())
       match counts.Count with
       | 0 -> ()
       | _ ->
