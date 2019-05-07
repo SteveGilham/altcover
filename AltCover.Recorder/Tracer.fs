@@ -43,16 +43,16 @@ type Tracer =
 
   member this.Connect() =
     if File.Exists this.Tracer then
-      (Seq.initInfinite (fun i -> Path.ChangeExtension(this.Tracer, sprintf ".%d.acv" i))
-       |> Seq.filter (File.Exists >> not)
-       |> Seq.map (fun f ->
-            let fs = File.OpenWrite f
-            let s = new DeflateStream(fs, CompressionMode.Compress)
-            { this with Stream = s
-                        Formatter = new BinaryWriter(s)
-                        Runner = true })
-       |> Seq.head, true)
-    else (this, false)
+      Seq.initInfinite (fun i -> Path.ChangeExtension(this.Tracer, sprintf ".%d.acv" i))
+      |> Seq.filter (File.Exists >> not)
+      |> Seq.map (fun f ->
+           let fs = File.OpenWrite f
+           let s = new DeflateStream(fs, CompressionMode.Compress)
+           { this with Stream = s
+                       Formatter = new BinaryWriter(s)
+                       Runner = true })
+      |> Seq.head
+    else this
 
   member this.Close() =
     try
@@ -98,10 +98,10 @@ type Tracer =
       visits.Clear()
 
   member this.OnStart() =
-    let running, connection =
+    let running =
       if this.Tracer <> "Coverage.Default.xml.acv" then this.Connect()
-      else (this, false)
-    ({ running with Definitive = true }, connection)
+      else this
+    { running with Definitive = true }
 
   member this.OnConnected f g =
     if this.IsConnected() then f()

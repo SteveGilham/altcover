@@ -10,7 +10,7 @@ module Adapter =
   let SamplesClear() = Instance.Samples.Clear()
   let FlushAll() = Instance.FlushFinish ()
   let Reset () =
-    Instance.Connected <- false
+    Instance.IsRunner <- false
     Instance.Visits.Clear()
     Instance.Samples.Clear()
 

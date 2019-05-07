@@ -36,7 +36,7 @@ type AltCoverCoreTests() =
       let unique = Path.Combine(where, Guid.NewGuid().ToString())
       let mutable client = Tracer.Create unique
       try
-        client <- client.OnStart() |> fst
+        client <- client.OnStart()
         Assert.That(client.IsConnected(), Is.False)
       with _ ->
         client.Close()
@@ -50,7 +50,7 @@ type AltCoverCoreTests() =
          ()
       let mutable client = Tracer.Create unique
       try
-        client <- client.OnStart() |> fst
+        client <- client.OnStart()
         Assert.That(client.IsConnected(), Is.True)
       finally
         client.Close()
@@ -132,11 +132,9 @@ type AltCoverCoreTests() =
         let mutable client = Tracer.Create tag
         try
           Adapter.VisitsClear()
-          let (t, x) =  client.OnStart()
-          Assert.That (x, Is.True)
-          Instance.trace <- t
-          Instance.Connected <- true
+          Instance.trace <- client.OnStart()
           Assert.That(Instance.trace.IsConnected(), "connection failed")
+          Instance.IsRunner <- true
           Adapter.VisitImplNone "name" 23
         finally
           Instance.trace.Close()
@@ -183,17 +181,15 @@ type AltCoverCoreTests() =
       try
         let mutable client = Tracer.Create tag
         try
-          let (a,b) = client.OnStart()
-          Instance.trace <- a
-          Instance.Connected <- b
+          Instance.trace <- client.OnStart()
           Assert.That(Instance.trace.IsConnected(), "connection failed")
-          Assert.That(b, Is.True)
+          Instance.IsRunner <- true
 
           Adapter.VisitsClear()
           Adapter.VisitsAddTrack "name" 23 1L
           Adapter.VisitImplMethod "name" 23 5
         finally
-          Instance.Connected <- false
+          Instance.IsRunner <- false
           Instance.trace.Close()
           Instance.trace <- save
         use stream =
@@ -230,7 +226,7 @@ type AltCoverCoreTests() =
         let expected = [ ("name", client.GetHashCode(), Null) ]
         try
           Adapter.VisitsClear()
-          Instance.trace <- client.OnStart() |> fst
+          Instance.trace <- client.OnStart()
           Assert.That(Instance.trace.Equals client, Is.False)
           Assert.That(Instance.trace.Equals expected, Is.False)
           Assert.That(Instance.trace.IsConnected(), "connection failed")

@@ -562,7 +562,7 @@ type AltCoverTests() =
                               Runner = true
                               Definitive = false }
           try
-            Instance.Connected <- true
+            Instance.IsRunner <- true
             Adapter.VisitsClear()
             use stdout = new StringWriter()
             Console.SetOut stdout
@@ -598,7 +598,7 @@ type AltCoverTests() =
             Instance.trace <- save
             if File.Exists Instance.ReportFile then File.Delete Instance.ReportFile
             Adapter.VisitsClear()
-            Instance.Connected <- false
+            Instance.IsRunner <- false
             Console.SetOut saved
             Directory.SetCurrentDirectory(here)
             try
@@ -676,7 +676,7 @@ type AltCoverTests() =
     member self.FlushLeavesExpectedTraces() =
       self.GetMyMethodName "=>"
       lock Adapter.Lock (fun () ->
-        Instance.Connected <- false
+        Instance.IsRunner <- false
         try
           let saved = Console.Out
           let here = Directory.GetCurrentDirectory()

@@ -54,7 +54,7 @@ module Instance =
   /// </summary>
   let mutable internal Visits = new Dictionary<string, Dictionary<int, PointVisit>>()
   let mutable internal Samples = new Dictionary<string, Dictionary<int, bool>>()
-  let mutable internal Connected = false
+  let mutable internal IsRunner = false
 
   let internal synchronize = Object()
 
@@ -144,9 +144,8 @@ module Instance =
 
   let InitialiseTrace (t:Tracer) =
     WithMutex(fun _ ->
-      let tt, ii = t.OnStart()
-      Connected <- Connected || ii
-      trace <- tt)
+      trace <- t.OnStart()
+      IsRunner <- IsRunner || trace.IsConnected())
 
   let internal Watcher = new FileSystemWatcher()
   let mutable internal Recording = true
@@ -182,9 +181,9 @@ module Instance =
     ("ResumeHandler")
     |> GetResource
     |> Option.iter Console.Out.WriteLine
-    let wasConnected = Connected
+    let wasConnected = IsRunner
     InitialiseTrace trace
-    if (wasConnected <> Connected) then
+    if (wasConnected <> IsRunner) then
        Samples <- Dictionary<string, Dictionary<int, bool>>()
        Visits <- Dictionary<string, Dictionary<int, PointVisit>>()
     Recording <- true
@@ -234,7 +233,7 @@ module Instance =
 
   let private IsOpenCoverRunner() =
     (CoverageFormat = ReportFormat.OpenCoverWithTracking)
-    && Connected
+    && IsRunner
   let internal Granularity() = Timer
   let internal Clock() = DateTime.UtcNow.Ticks
 
