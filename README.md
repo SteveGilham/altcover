@@ -41,7 +41,7 @@ Fast forwards to autumn 2017, and I get the chance to dust the project off, with
 
 ### Other notes
 
-1. On old-fashioned .net framework, the `ProcessExit` event handling window of ~2s is sufficient for processing significant bodies of code under test (several 10s of kloc, as observed in production back in the '10-'11 timeframe); under `dotnet test` the window seems to be rather tighter (about 100ms, experimentally, about enough for 1kloc).  Therefore, the preferred way to perform coverage gathering for .net core, except for the smallest programs, is to run with AltCover in the "runner" mode.  By their nature, unit tests invoking significant frameworks are not small programs, even if the system under test is itself small.
+1. On old-fashioned .net framework, the `ProcessExit` event handling window of ~2s is sufficient for processing significant bodies of code under test (several 10s of kloc, as observed in production back in the '10-'11 timeframe); under `dotnet test` [the `vstest.console` process imposes a 100ms guillotine](https://github.com/Microsoft/vstest/issues/1900#issuecomment-457488472), even though .net Core imposes no time-limit of its own.  This is about enough time to fill in an NCover report for a program of no more than 1kloc, hence the development of a "write it all promptly to file and post-process" `Runner` mode.  With version 5.3 and above, the `dotnet test` integration now hooks the VSTest in-process data collection, allowing an indefinite window to write collected data from memory, thus removing the file I/O bottleneck. 
 
 2. Under Mono on non-Windows platforms the default values of `--debug:full` or `--debug:pdbonly` generate no symbols from F# projects -- and without symbols, such assemblies cannot be instrumented.  Unlike with C# projects, where the substitution appears to be automatic, to use the necessary `--debug:portable` option involves explicitly hand editing the old-school `.fsproj` file to have `<DebugType>portable</DebugType>`.  
 
@@ -68,12 +68,12 @@ See the [current project](https://github.com/SteveGilham/altcover/projects/8) fo
 
 It is assumed that the following are available
 
-.net core SDK 2.1.500 or later (`dotnet`) -- try https://www.microsoft.com/net/download  
+.net core SDK 2.1.503 or later (`dotnet`) -- try https://www.microsoft.com/net/download  
 PowerShell Core 6.0.2 or later (`pwsh`) -- try https://github.com/powershell/powershell
 
 #### Windows
 
-You will need Visual Studio VS2017 (Community Edition) v15.9.4 or later with F# language support (or just the associated build tools and your editor of choice).  The NUnit3 Test Runner will simplify the basic in-IDE development cycle.  Note that some of the unit tests expect that the separate build of test assemblies under Mono, full .net framework and .net core has taken place; there will be up to 20 failures when running the unit tests in Visual Studio from clean when those expected assemblies are not found.
+You will need Visual Studio VS2017 (Community Edition) v15.9.11 or later with F# language support (or just the associated build tools and your editor of choice).  The NUnit3 Test Runner will simplify the basic in-IDE development cycle.  Note that some of the unit tests expect that the separate build of test assemblies under Mono, full .net framework and .net core has taken place; there will be up to 20 failures when running the unit tests in Visual Studio from clean when those expected assemblies are not found.
 
 For the .net 2.0 support, if you don't already have FSharp.Core.dll version 2.3.0.0 (usually in Reference Assemblies\Microsoft\FSharp\.NETFramework\v2.0\2.3.0.0), then you will need to install this -- the [Visual F# Tools 4.0 RTM](https://www.microsoft.com/en-us/download/details.aspx?id=48179) `FSharp_Bundle.exe` is the most convenient source. 
 

@@ -15,18 +15,8 @@ open System.Runtime.CompilerServices
 #else
 [<System.Runtime.InteropServices.ProgIdAttribute("ExcludeFromCodeCoverage hack for OpenCover issue 615")>]
 #endif
-type internal Carrier = SequencePoint of String * int * Track
-
-#if NETSTANDARD2_0
-[<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage>]
-#else
-[<System.Runtime.InteropServices.ProgIdAttribute("ExcludeFromCodeCoverage hack for OpenCover issue 615")>]
-#endif
 [<NoComparison>]
-type internal Message =
-  | AsyncItem
-  | Item of AsyncReplyChannel<unit>
-  | Finish of Close * AsyncReplyChannel<unit>
+type internal Carrier = SequencePoint of String * int * Track
 
 module Instance =
   let internal resources =
@@ -40,16 +30,33 @@ module Instance =
 
   /// <summary>
   /// Gets the location of coverage xml file
-  /// This property's IL code is modified to store actual file location
+  /// This property's IL code is modified to store the actual file location
   /// </summary>
   [<MethodImplAttribute(MethodImplOptions.NoInlining)>]
   let ReportFile = "Coverage.Default.xml"
 
   /// <summary>
+  /// Gets whether to defer output until process exit
+  /// This property's IL code is modified to store the actual value
+  /// </summary>
+  [<MethodImplAttribute(MethodImplOptions.NoInlining)>]
+  let Defer = false
+
+  let mutable Supervision =
+    AppDomain.CurrentDomain.GetAssemblies()
+    |> Seq.map (fun a -> a.GetName())
+    |> Seq.exists (fun n -> n.Name = "AltCover.DataCollector" &&
+                            n.FullName.EndsWith("PublicKeyToken=c02b1a9f5b7cade8",
+                                                StringComparison.Ordinal))
+
+  /// <summary>
   /// Accumulation of visit records
   /// </summary>
-  let internal Visits = new Dictionary<string, Dictionary<int, int * Track list>>()
-  let internal Samples = new Dictionary<string, Dictionary<int, bool>>()
+  let mutable internal Visits = new Dictionary<string, Dictionary<int, PointVisit>>()
+  let mutable internal Samples = new Dictionary<string, Dictionary<int, bool>>()
+  let mutable internal IsRunner = false
+
+  let internal synchronize = Object()
 
   /// <summary>
   /// Gets the unique token for this instance
@@ -63,7 +70,7 @@ module Instance =
   /// This property's IL code is modified to store the user chosen override if applicable
   /// </summary>
   [<MethodImplAttribute(MethodImplOptions.NoInlining)>]
-  let internal CoverageFormat = ReportFormat.NCover
+  let mutable internal CoverageFormat = ReportFormat.NCover
 
   /// <summary>
   /// Gets the frequency of time sampling
@@ -135,10 +142,10 @@ module Instance =
     finally
       if own then mutex.ReleaseMutex()
 
-  let InitialiseTrace() =
+  let InitialiseTrace (t:Tracer) =
     WithMutex(fun _ ->
-      let t = Tracer.Create(SignalFile())
-      trace <- t.OnStart())
+      trace <- t.OnStart()
+      IsRunner <- IsRunner || trace.IsConnected())
 
   let internal Watcher = new FileSystemWatcher()
   let mutable internal Recording = true
@@ -146,14 +153,14 @@ module Instance =
   /// <summary>
   /// This method flushes hit count buffers.
   /// </summary>
-  let internal FlushAll finish =
-    trace.OnConnected (fun () -> trace.OnFinish finish Visits)
+  let internal FlushAll _ =
+    let counts = Visits
+    Visits <- Dictionary<string, Dictionary<int, PointVisit>>()
+    trace.OnConnected (fun () -> trace.OnFinish counts)
       (fun () ->
-      match Visits.Count with
+      match counts.Count with
       | 0 -> ()
       | _ ->
-        let counts = Dictionary<string, Dictionary<int, int * Track list>> Visits
-        Visits.Clear()
         WithMutex
           (fun own ->
           let delta =
@@ -166,33 +173,51 @@ module Instance =
     ("PauseHandler")
     |> GetResource
     |> Option.iter Console.Out.WriteLine
-    FlushAll Pause
     Recording <- false
+    FlushAll Pause
+    trace <- SignalFile() |> Tracer.Create
 
   let FlushResume() =
-    Recording <- true
     ("ResumeHandler")
     |> GetResource
     |> Option.iter Console.Out.WriteLine
-    Visits.Clear()
-    InitialiseTrace()
+    let wasConnected = IsRunner
+    InitialiseTrace trace
+    if (wasConnected <> IsRunner) then
+       Samples <- Dictionary<string, Dictionary<int, bool>>()
+       Visits <- Dictionary<string, Dictionary<int, PointVisit>>()
+    Recording <- true
+
+  let FlushFinish () =
+    FlushAll ProcessExit
 
   let internal TraceVisit moduleId hitPointId context =
-    trace.OnVisit Visits moduleId hitPointId context
+    lock Visits (fun () ->
+    trace.OnVisit Visits moduleId hitPointId context)
 
   let internal AddVisit moduleId hitPointId context =
-    Counter.AddVisit Visits moduleId hitPointId context
+    Counter.AddSingleVisit Visits moduleId hitPointId context
 
   let internal TakeSample strategy moduleId hitPointId =
     match strategy with
     | Sampling.All -> true
     | _ ->
-      let hasKey = Samples.ContainsKey(moduleId)
-      if hasKey |> not then Samples.Add(moduleId, Dictionary<int, bool>())
-      let unwanted = hasKey && Samples.[moduleId].ContainsKey(hitPointId)
-      let wanted = unwanted |> not
-      if wanted then Samples.[moduleId].Add(hitPointId, true)
-      wanted
+      let mutable hasModuleKey = Samples.ContainsKey(moduleId)
+      if hasModuleKey |> not then
+        lock Samples (fun () ->
+          hasModuleKey <- Samples.ContainsKey(moduleId)
+          if hasModuleKey |> not
+          then Samples.Add(moduleId, Dictionary<int, bool>())
+        )
+
+      let next = Samples.[moduleId]
+      let mutable hasPointKey = next.ContainsKey(hitPointId)
+      if hasPointKey |> not then
+          lock next (fun () ->
+            hasPointKey <- next.ContainsKey(hitPointId)
+            if hasPointKey |> not
+            then next.Add(hitPointId, true))
+      (hasPointKey && hasModuleKey) |> not
 
   /// <summary>
   /// This method is executed from instrumented assemblies.
@@ -200,18 +225,15 @@ module Instance =
   /// <param name="moduleId">Assembly being visited</param>
   /// <param name="hitPointId">Sequence Point identifier</param>
   let internal VisitImpl moduleId hitPointId context =
-    if not <| String.IsNullOrEmpty(moduleId) &&
-       TakeSample Sample moduleId hitPointId then
+    if (Sample = Sampling.All || TakeSample Sample moduleId hitPointId) then
       let adder =
-        if trace.IsConnected() then TraceVisit
-        else AddVisit
+        if Defer || Supervision || (trace.IsConnected() |> not) then AddVisit
+        else TraceVisit
       adder moduleId hitPointId context
 
   let private IsOpenCoverRunner() =
     (CoverageFormat = ReportFormat.OpenCoverWithTracking)
-    && ((trace.Definitive && trace.Runner)
-        || (ReportFile <> "Coverage.Default.xml"
-            && System.IO.File.Exists(ReportFile + ".acv")))
+    && IsRunner
   let internal Granularity() = Timer
   let internal Clock() = DateTime.UtcNow.Ticks
 
@@ -226,23 +248,23 @@ module Instance =
 
   let internal PayloadControl = PayloadSelection Clock
   let internal PayloadSelector enable = PayloadControl Granularity enable
-  let internal lockVisits f = lock Visits f
 
   let internal VisitSelection track moduleId hitPointId =
-    lockVisits (fun () ->
-      VisitImpl moduleId hitPointId track)
+    VisitImpl moduleId hitPointId track
 
   let Visit moduleId hitPointId =
     if Recording then
-      VisitSelection (PayloadSelector IsOpenCoverRunner) moduleId hitPointId
+      VisitSelection (if CoverageFormat = ReportFormat.OpenCoverWithTracking
+                      then PayloadSelector IsOpenCoverRunner
+                      else Null) moduleId hitPointId
 
   let internal FlushCounter (finish : Close) _ =
-    lockVisits (fun () ->
       match finish with
       | Resume -> FlushResume()
       | Pause -> FlushPause()
       | _ ->
-        FlushAll finish)
+        Recording <- false
+        if Supervision |> not then FlushAll finish
 
   // Register event handling
   let DoPause = FlushCounter Pause
@@ -260,4 +282,6 @@ module Instance =
   do AppDomain.CurrentDomain.DomainUnload.Add(FlushCounter DomainUnload)
      AppDomain.CurrentDomain.ProcessExit.Add(FlushCounter ProcessExit)
      StartWatcher()
-     InitialiseTrace()
+     SignalFile()
+     |> Tracer.Create
+     |> InitialiseTrace

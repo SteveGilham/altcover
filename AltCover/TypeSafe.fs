@@ -204,6 +204,7 @@ type PrepareParams =
     CommandLine : Command
     ExposeReturnCode : Flag
     SourceLink : Flag
+    Defer : Flag
   }
   static member Create() =
     { InputDirectory = NoDirectory
@@ -230,4 +231,5 @@ type PrepareParams =
       CommandLine = NoCommand
       ExposeReturnCode = Set
       SourceLink = Clear
+      Defer = Clear
     }

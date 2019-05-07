@@ -38,56 +38,74 @@ type AltCoverTests() =
 
     [<Test>]
     member self.RealIdShouldIncrementCount() =
-      let visits = new Dictionary<string, Dictionary<int, int * Track list>>()
+      let visits = new Dictionary<string, Dictionary<int, PointVisit>>()
       let key = " "
-      Counter.AddVisit visits key 23 Null
+      let v1 = Counter.AddVisit visits key 23 Null
+      Assert.That(v1, Is.EqualTo 1)
       Assert.That(visits.Count, Is.EqualTo 1)
       Assert.That(visits.[key].Count, Is.EqualTo 1)
-      Assert.That(visits.[key].[23], Is.EqualTo(1, []))
+      let x = visits.[key].[23]
+      Assert.That(x.Count, Is.EqualTo 1)
+      Assert.That(x.Tracks, Is.Empty)
 
     [<Test>]
     member self.RealIdShouldIncrementList() =
-      let visits = new Dictionary<string, Dictionary<int, int * Track list>>()
+      let visits = new Dictionary<string, Dictionary<int, PointVisit>>()
       let key = " "
       let payload = Time DateTime.UtcNow.Ticks
-      Counter.AddVisit visits key 23 payload
+      let v2 = Counter.AddVisit visits key 23 payload
+      Assert.That(v2, Is.EqualTo 1)
       Assert.That(visits.Count, Is.EqualTo 1)
       Assert.That(visits.[key].Count, Is.EqualTo 1)
-      Assert.That(visits.[key].[23], Is.EqualTo(0, [ payload ]))
+      let x = visits.[key].[23]
+      Assert.That(x.Count, Is.EqualTo 0)
+      Assert.That(x.Tracks, Is.EquivalentTo [ payload ])
 
     [<Test>]
     member self.DistinctIdShouldBeDistinct() =
-      let visits = new Dictionary<string, Dictionary<int, int * Track list>>()
+      let visits = new Dictionary<string, Dictionary<int, PointVisit>>()
       let key = " "
-      Counter.AddVisit visits key 23 Null
-      Counter.AddVisit visits "key" 42 Null
+      let v3 = Counter.AddVisit visits key 23 Null
+      Assert.That(v3, Is.EqualTo 1)
+      let v4 = Counter.AddVisit visits "key" 42 Null
       Assert.That(visits.Count, Is.EqualTo 2)
+      Assert.That(v4, Is.EqualTo 1)
 
     [<Test>]
     member self.DistinctLineShouldBeDistinct() =
-      let visits = new Dictionary<string, Dictionary<int, int * Track list>>()
+      let visits = new Dictionary<string, Dictionary<int, PointVisit>>()
       let key = " "
-      Counter.AddVisit visits key 23 Null
-      Counter.AddVisit visits key 42 Null
+      let v5 = Counter.AddVisit visits key 23 Null
+      Assert.That(v5, Is.EqualTo 1)
+      let v6 = Counter.AddVisit visits key 42 Null
+      Assert.That(v6, Is.EqualTo 1)
       Assert.That(visits.Count, Is.EqualTo 1)
       Assert.That(visits.[key].Count, Is.EqualTo 2)
 
     [<Test>]
     member self.RepeatVisitsShouldIncrementCount() =
-      let visits = new Dictionary<string, Dictionary<int, int * Track list>>()
+      let visits = new Dictionary<string, Dictionary<int, PointVisit>>()
       let key = " "
-      Counter.AddVisit visits key 23 Null
-      Counter.AddVisit visits key 23 Null
-      Assert.That(visits.[key].[23], Is.EqualTo(2, []))
+      let v7 = Counter.AddVisit visits key 23 Null
+      Assert.That(v7, Is.EqualTo 1)
+      let v8 = Counter.AddVisit visits key 23 Null
+      Assert.That(v8, Is.EqualTo 1)
+      let x = visits.[key].[23]
+      Assert.That(x.Count, Is.EqualTo 2)
+      Assert.That(x.Tracks, Is.Empty)
 
     [<Test>]
     member self.RepeatVisitsShouldIncrementTotal() =
-      let visits = new Dictionary<string, Dictionary<int, int * Track list>>()
+      let visits = new Dictionary<string, Dictionary<int, PointVisit>>()
       let key = " "
       let payload = Time DateTime.UtcNow.Ticks
-      Counter.AddVisit visits key 23 Null
-      Counter.AddVisit visits key 23 payload
-      Assert.That(visits.[key].[23], Is.EqualTo(1, [ payload ]))
+      let v9 = Counter.AddVisit visits key 23 Null
+      Assert.That(v9, Is.EqualTo 1)
+      let v10 = Counter.AddVisit visits key 23 payload
+      Assert.That(v10, Is.EqualTo 1)
+      let x = visits.[key].[23]
+      Assert.That(x.Count, Is.EqualTo 1)
+      Assert.That(x.Tracks, Is.EquivalentTo [ payload ])
 
     member self.resource =
       Assembly.GetExecutingAssembly().GetManifestResourceNames()
@@ -110,10 +128,10 @@ type AltCoverTests() =
       use worker2 = new MemoryStream()
       worker.Write(buffer, 0, size)
       worker.Position <- 0L
-      let payload = Dictionary<int, int * Track list>()
-      [ 0..9 ] |> Seq.iter (fun i -> payload.[10 - i] <- (i + 1, []))
-      [ 11..12 ] |> Seq.iter (fun i -> payload.[i ||| Counter.BranchFlag] <- (i - 10, []))
-      let item = Dictionary<string, Dictionary<int, int * Track list>>()
+      let payload = Dictionary<int, PointVisit>()
+      [ 0..9 ] |> Seq.iter (fun i -> payload.[10 - i] <- PointVisit.Init (int64(i + 1)) [])
+      [ 11..12 ] |> Seq.iter (fun i -> payload.[i ||| Counter.BranchFlag] <- PointVisit.Init (int64(i - 10)) [])
+      let item = Dictionary<string, Dictionary<int, PointVisit>>()
       item.Add("7C-CD-66-29-A3-6C-6D-5F-A7-65-71-0E-22-7D-B2-61-B5-1F-65-9A", payload)
       Counter.UpdateReport ignore (fun _ _ -> ()) true item ReportFormat.OpenCover worker
         worker2 |> ignore
@@ -138,7 +156,7 @@ type AltCoverTests() =
       let unique = Path.Combine(where, Guid.NewGuid().ToString())
       let reportFile = Path.Combine(unique, "FlushLeavesExpectedTraces.xml")
       try
-        let visits = new Dictionary<string, Dictionary<int, int * Track list>>()
+        let visits = new Dictionary<string, Dictionary<int, PointVisit>>()
         use stdout = new StringWriter()
         Console.SetOut stdout
         Directory.CreateDirectory(unique) |> ignore
@@ -153,8 +171,8 @@ type AltCoverTests() =
         do use worker = new FileStream(reportFile, FileMode.CreateNew)
            worker.Write(buffer, 0, size)
            ()
-        let payload = Dictionary<int, int * Track list>()
-        [ 0..9 ] |> Seq.iter (fun i -> payload.[i] <- (i + 1, []))
+        let payload = Dictionary<int, PointVisit>()
+        [ 0..9 ] |> Seq.iter (fun i -> payload.[i] <- PointVisit.Init (int64(i + 1)) [])
         visits.["f6e3edb3-fb20-44b3-817d-f69d1a22fc2f"] <- payload
         Counter.DoFlush ignore (fun _ _ -> ()) true visits
           AltCover.Base.ReportFormat.NCover reportFile None |> ignore
@@ -183,7 +201,7 @@ type AltCoverTests() =
       let reportFile = Path.Combine(unique, "FlushLeavesExpectedTraces.xml")
       let outputFile = Path.Combine(unique, "FlushLeavesExpectedTracesWhenDiverted.xml")
       try
-        let visits = new Dictionary<string, Dictionary<int, int * Track list>>()
+        let visits = new Dictionary<string, Dictionary<int, PointVisit>>()
         use stdout = new StringWriter()
         Console.SetOut stdout
         Directory.CreateDirectory(unique) |> ignore
@@ -198,8 +216,8 @@ type AltCoverTests() =
         do use worker = new FileStream(reportFile, FileMode.CreateNew)
            worker.Write(buffer, 0, size)
            ()
-        let payload = Dictionary<int, int * Track list>()
-        [ 0..9 ] |> Seq.iter (fun i -> payload.[i] <- (i + 1, []))
+        let payload = Dictionary<int, PointVisit>()
+        [ 0..9 ] |> Seq.iter (fun i -> payload.[i] <- PointVisit.Init (int64(i + 1)) [])
         visits.["f6e3edb3-fb20-44b3-817d-f69d1a22fc2f"] <- payload
         Counter.DoFlush ignore (fun _ _ -> ()) true visits
           AltCover.Base.ReportFormat.NCover reportFile (Some outputFile) |> ignore
@@ -916,7 +934,7 @@ type AltCoverTests() =
     member self.ParsingDropGivesDrop() =
       try
         CommandLine.dropReturnCode := false
-        let options = Main.DeclareOptions()
+        let options = Runner.DeclareOptions()
         let input = [| "--dropReturnCode" |]
         let parse = CommandLine.ParseCommandLine input options
         match parse with
@@ -932,7 +950,7 @@ type AltCoverTests() =
     member self.ParsingMultipleDropGivesFailure() =
       try
         CommandLine.dropReturnCode := false
-        let options = Main.DeclareOptions()
+        let options = Runner.DeclareOptions()
         let input = [| "--dropReturnCode"; "--dropReturnCode" |]
         let parse = CommandLine.ParseCommandLine input options
         match parse with
@@ -944,15 +962,39 @@ type AltCoverTests() =
         CommandLine.dropReturnCode := false
 
     [<Test>]
+    member self.ParsingTCString() =
+       [
+        (String.Empty, Default)
+        ("+", BPlus)
+        ("+b", BPlus)
+        ("+B", BPlus)
+        ("b+", BPlus)
+        ("B+", BPlus)
+        ("b",B)
+        ("B", B)
+        ("+r", RPlus)
+        ("+R", RPlus)
+        ("r+", RPlus)
+        ("R+", RPlus)
+        ("r", R)
+        ("R", R)
+        ("true", Default)
+       ]
+       |> List.iter (fun (x,y) -> Assert.That (TeamCityFormat.Factory x,
+                                               Is.EqualTo y,
+                                               x))
+
+    [<Test>]
     member self.ParsingTCGivesTC() =
-      [ (":+", BPlus)
+      [
+        (String.Empty, B)
+        (":+", BPlus)
         (":+b", BPlus)
         (":+B", BPlus)
         (":b+", BPlus)
         (":B+", BPlus)
         (":b",B)
         (":B", B)
-        (String.Empty, B)
         (":+r", RPlus)
         (":+R", RPlus)
         (":r+", RPlus)
@@ -978,7 +1020,7 @@ type AltCoverTests() =
     member self.ParsingMultipleTCGivesFailure() =
       lock Runner.SummaryFormat (fun () ->
         Runner.SummaryFormat <- Default
-        let options = Main.DeclareOptions()
+        let options = Runner.DeclareOptions()
         let input = [| "--teamcity"; "--teamcity" |]
         let parse = CommandLine.ParseCommandLine input options
         match parse with
@@ -1353,6 +1395,8 @@ type AltCoverTests() =
                                from a launched process.
       --sourcelink           Optional: Display sourcelink URLs rather than file
                                paths if present.
+      --defer[=VALUE]        Optional, defers writing runner-mode coverage data
+                               until process exit.
   -?, --help, -h             Prints out the options.
 or
   Runner
@@ -1506,11 +1550,11 @@ or
                hits.Add("f6e3edb3-fb20-44b3-817d-f69d1a22fc2f", i, Base.Null)
                ignore j)
 
-        let counts = Dictionary<string, Dictionary<int, int * Base.Track list>>()
+        let counts = Dictionary<string, Dictionary<int, PointVisit>>()
         hits
         |> Seq.iter
              (fun (moduleId, hitPointId, hit) ->
-             AltCover.Base.Counter.AddVisit counts moduleId hitPointId hit)
+             AltCover.Base.Counter.AddVisit counts moduleId hitPointId hit |> ignore)
 
         Runner.DoReport counts AltCover.Base.ReportFormat.NCover reportFile None |> ignore
         use worker' = new FileStream(reportFile, FileMode.Open)
@@ -1531,7 +1575,7 @@ or
 
     [<Test>]
     member self.NullPayloadShouldReportNothing() =
-      let counts = Dictionary<string, Dictionary<int, int * Base.Track list>>()
+      let counts = Dictionary<string, Dictionary<int, PointVisit>>()
       let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
       let unique = Path.Combine(where, Guid.NewGuid().ToString())
       do use s = File.Create(unique + ".0.acv")
@@ -1543,7 +1587,7 @@ or
 
     [<Test>]
     member self.ActivePayloadShouldReportAsExpected() =
-      let counts = Dictionary<string, Dictionary<int, int * Base.Track list>>()
+      let counts = Dictionary<string, Dictionary<int, PointVisit>>()
       let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
       let unique = Path.Combine(where, Guid.NewGuid().ToString())
 
@@ -1561,26 +1605,35 @@ or
           |> List.length) [ "a"; "b"; String.Empty; "c" ]
       Assert.That(r, Is.EqualTo 4)
       Assert.That(File.Exists(unique + ".acv"))
-      let expected = Dictionary<string, Dictionary<int, int * Base.Track list>>()
-      let a = Dictionary<int, int * Base.Track list>()
-      a.Add(0, (1, []))
-      let b = Dictionary<int, int * Base.Track list>()
-      b.Add(1, (1, []))
-      let c = Dictionary<int, int * Base.Track list>()
-      c.Add(3, (1, []))
+      let expected = Dictionary<string, Dictionary<int, PointVisit>>()
+      let a = Dictionary<int, PointVisit>()
+      a.Add(0, PointVisit.Init 1L [])
+      let b = Dictionary<int, PointVisit>()
+      b.Add(1, PointVisit.Init 1L [])
+      let c = Dictionary<int, PointVisit>()
+      c.Add(3, PointVisit.Init 1L [])
       expected.Add ("a", a)
       expected.Add ("b", b)
       expected.Add ("c", c)
 
-      Assert.That(counts,
-                  Is.EquivalentTo expected)
+      Assert.That (counts.Count, Is.EqualTo 3)
+      Assert.That (counts.["a"].Count, Is.EqualTo 1)
+      Assert.That (counts.["b"].Count, Is.EqualTo 1)
+      Assert.That (counts.["c"].Count, Is.EqualTo 1)
+      Assert.That (counts.["a"].[0].Count, Is.EqualTo 1)
+      Assert.That (counts.["a"].[0].Tracks, Is.Empty)
+      Assert.That (counts.["b"].[1].Count, Is.EqualTo 1)
+      Assert.That (counts.["b"].[1].Tracks, Is.Empty)
+      Assert.That (counts.["c"].[3].Count, Is.EqualTo 1)
+      Assert.That (counts.["c"].[3].Tracks, Is.Empty)
+
       if File.Exists(unique + ".acv") then File.Delete(unique + ".acv")
 
     [<Test>]
     member self.CollectShouldReportAsExpected() =
       try
         Runner.collect := true
-        let counts = Dictionary<string, Dictionary<int, int * Base.Track list>>()
+        let counts = Dictionary<string, Dictionary<int, PointVisit>>()
         let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
         let unique = Path.Combine(where, Guid.NewGuid().ToString())
 
@@ -1607,7 +1660,7 @@ or
 
     [<Test>]
     member self.JunkPayloadShouldReportAsExpected() =
-      let counts = Dictionary<string, Dictionary<int, int * Base.Track list>>()
+      let counts = Dictionary<string, Dictionary<int, PointVisit>>()
       let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
       let unique = Path.Combine(where, Guid.NewGuid().ToString())
       let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
@@ -1627,11 +1680,11 @@ or
 
     [<Test>]
     member self.TrackingPayloadShouldReportAsExpected() =
-      let counts = Dictionary<string, Dictionary<int, int * Base.Track list>>()
+      let counts = Dictionary<string, Dictionary<int, PointVisit>>()
       let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
       let unique = Path.Combine(where, Guid.NewGuid().ToString())
 
-      let payloads =
+      let payloads0 =
         [ Base.Null
           Base.Call 17
           Base.Time 23L
@@ -1639,7 +1692,13 @@ or
           Base.Time 42L
           Base.Call 5 ]
 
-      let inputs = [ "a"; "b"; "c"; "d"; String.Empty; "e" ]
+      let pv = PointVisit.Init 42L (payloads0 |> List.tail)
+      let table = Dictionary<string, Dictionary<int, PointVisit>>()
+      table.Add("Extra", Dictionary<int, PointVisit>())
+      table.["Extra"].Add(3, pv)
+      let payloads = (Table table) :: payloads0
+
+      let inputs = [ String.Empty; "a"; "b"; "c"; "d"; String.Empty; "e" ]
 
       let r =
         Runner.GetMonitor counts unique (fun l ->
@@ -1663,29 +1722,68 @@ or
                  formatter.Write(Base.Tag.Both |> byte)
                  formatter.Write(t')
                  formatter.Write(t)
+               | Table t ->
+                 formatter.Write(Base.Tag.Table |> byte)
+                 t.Keys
+                 |> Seq.iter (fun m -> formatter.Write m
+                                       formatter.Write t.[m].Keys.Count
+                                       t.[m].Keys
+                                       |> Seq.iter (fun p -> formatter.Write p
+                                                             let v = t.[m].[p]
+                                                             formatter.Write v.Count
+                                                             v.Tracks
+                                                             |> Seq.iter (fun tx -> match tx with
+                                                                                    | Time t ->
+                                                                                      formatter.Write(Base.Tag.Time |> byte)
+                                                                                      formatter.Write(t)
+                                                                                    | Call t ->
+                                                                                      formatter.Write(Base.Tag.Call |> byte)
+                                                                                      formatter.Write(t)
+                                                                                    | Both(t', t) ->
+                                                                                      formatter.Write(Base.Tag.Both |> byte)
+                                                                                      formatter.Write(t')
+                                                                                      formatter.Write(t)
+                                                                                    | _ -> tx |> (sprintf "%A") |> Assert.Fail)
+                                                             formatter.Write(Base.Tag.Null |> byte)))
+                 formatter.Write String.Empty
                x)
           |> List.length) inputs
 
-      let expected = Dictionary<string, Dictionary<int, int * Base.Track list>>()
-      let a = Dictionary<int, int * Base.Track list>()
-      a.Add(0, (1, []))
-      let b = Dictionary<int, int * Base.Track list>()
-      b.Add(1, (0, [Call 17]))
-      let c = Dictionary<int, int * Base.Track list>()
-      c.Add(2, (0, [Time 23L]))
-      let d = Dictionary<int, int * Base.Track list>()
-      d.Add(3, (0, [Both (5L, 42)]))
-      let e = Dictionary<int, int * Base.Track list>()
-      e.Add(5, (0, [Call 5]))
+      let expected = Dictionary<string, Dictionary<int, int64 * Base.Track list>>()
+      let a = Dictionary<int, int64 * Base.Track list>()
+      a.Add(1, (1L, []))
+      let b = Dictionary<int, int64 * Base.Track list>()
+      b.Add(2, (0L, [Call 17]))
+      let c = Dictionary<int, int64 * Base.Track list>()
+      c.Add(3, (0L, [Time 23L]))
+      let d = Dictionary<int, int64 * Base.Track list>()
+      d.Add(4, (0L, [Both (5L, 42)]))
+      let e = Dictionary<int, int64 * Base.Track list>()
+      e.Add(6, (0L, [Call 5]))
+      let f = Dictionary<int, int64 * Base.Track list>()
+      f.Add(3, (42L, payloads0 |> List.tail))
+
       expected.Add ("a", a)
       expected.Add ("b", b)
       expected.Add ("c", c)
       expected.Add ("d", d)
       expected.Add ("e", e)
+      expected.Add ("Extra", f)
 
-      Assert.That(r, Is.EqualTo 6)
+      Assert.That(r, Is.EqualTo 7)
       Assert.That(File.Exists(unique + ".acv"))
-      Assert.That(counts, Is.EquivalentTo expected)
+
+      let result = Dictionary<string, Dictionary<int, int64 * Base.Track list>>()
+      counts.Keys
+      |> Seq.iter (fun k -> let inner = Dictionary<int, int64 * Base.Track list>()
+                            result.Add(k, inner)
+                            counts.[k].Keys
+                            |> Seq.iter (fun k2 ->
+                                let v = counts.[k].[k2]
+                                inner.Add(k2, (v.Count, v.Tracks |> Seq.toList))
+                            ))
+
+      Assert.That(result, Is.EquivalentTo expected)
 
     [<Test>]
     member self.PointProcessShouldCaptureTimes() =
@@ -1733,7 +1831,7 @@ or
       after.DocumentElement.SelectNodes("//SequencePoint")
       |> Seq.cast<XmlElement>
       |> Seq.iter (fun el -> el.SetAttribute("bev", "0"))
-      let empty = Dictionary<string, Dictionary<int, int * Track list>>()
+      let empty = Dictionary<string, Dictionary<int, PointVisit>>()
       Runner.PostProcess empty Base.ReportFormat.OpenCover after
       Assert.That
         (after.OuterXml.Replace("uspid=\"100663298", "uspid=\"13"), Is.EqualTo before,
@@ -1773,11 +1871,11 @@ or
       |> Seq.cast<XmlElement>
       |> Seq.toList
       |> List.iter (fun el -> el.RemoveAllAttributes())
-      let visits = Dictionary<string, Dictionary<int, int * Track list>>()
-      let visit = Dictionary<int, int * Track list>()
+      let visits = Dictionary<string, Dictionary<int, PointVisit>>()
+      let visit = Dictionary<int, PointVisit>()
       visits.Add("6A-33-AA-93-82-ED-22-9D-F8-68-2C-39-5B-93-9F-74-01-76-00-9F", visit)
-      visit.Add(100663297, (1, [])) // should fill in the expected non-zero value
-      visit.Add(100663298, (23, [])) // should be ignored
+      visit.Add(100663297, PointVisit.Init 1L []) // should fill in the expected non-zero value
+      visit.Add(100663298, PointVisit.Init 23L []) // should be ignored
       Runner.PostProcess visits Base.ReportFormat.OpenCover after
       Assert.That
         (after.OuterXml.Replace("uspid=\"100663298", "uspid=\"13"), Is.EqualTo before,
@@ -1846,7 +1944,7 @@ or
               |> String.IsNullOrWhiteSpace
               |> not
            then el.SetAttribute("crapScore", "0"))
-      let empty = Dictionary<string, Dictionary<int, int * Track list>>()
+      let empty = Dictionary<string, Dictionary<int, PointVisit>>()
       Runner.PostProcess empty Base.ReportFormat.OpenCover after
       Assert.That(after.OuterXml, Is.EqualTo before, after.OuterXml)
 
@@ -1911,17 +2009,17 @@ or
               |> String.IsNullOrWhiteSpace
               |> not
            then el.SetAttribute("crapScore", "0"))
-      let empty = Dictionary<string, Dictionary<int, int * Track list>>()
+      let empty = Dictionary<string, Dictionary<int, PointVisit>>()
       Runner.PostProcess empty Base.ReportFormat.OpenCover after
       Assert.That(after.OuterXml, Is.EqualTo before, after.OuterXml)
 
     [<Test>]
     member self.JunkTokenShouldDefaultZero() =
-      let visits = Dictionary<int, int * Track list>()
+      let visits = Dictionary<int, PointVisit>()
       let key = " "
       let result = Runner.LookUpVisitsByToken key visits
-      match result with
-      | (0, []) -> ()
+      match (result.Count, result.Tracks |> Seq.toList) with
+      | (0L, []) -> ()
       | _ -> Assert.Fail(sprintf "%A" result)
 
     [<Test>]

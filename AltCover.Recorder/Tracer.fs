@@ -1,9 +1,10 @@
 namespace AltCover.Recorder
 
+open System
 open System.Collections.Generic
 open System.IO
 open System.IO.Compression
-open System
+open System.Threading
 
 #if NETSTANDARD2_0
 [<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage>]
@@ -59,9 +60,7 @@ type Tracer =
       this.Formatter.Close()
     with :? ObjectDisposedException -> ()
 
-  member internal this.Push (moduleId : string) (hitPointId : int) context =
-    this.Formatter.Write moduleId
-    this.Formatter.Write hitPointId
+  member private this.PushContext context =
     match context with
     | Null -> this.Formatter.Write(Tag.Null |> byte)
     | Time t ->
@@ -74,20 +73,29 @@ type Tracer =
       this.Formatter.Write(Tag.Both |> byte)
       this.Formatter.Write(t')
       this.Formatter.Write(t)
+    | Table t ->
+      this.Formatter.Write(Tag.Table |> byte)
+      t.Keys
+      |> Seq.iter (fun m -> this.Formatter.Write m
+                            this.Formatter.Write t.[m].Keys.Count
+                            t.[m].Keys
+                            |> Seq.iter (fun p -> this.Formatter.Write p
+                                                  let v = t.[m].[p]
+                                                  this.Formatter.Write v.Count
+                                                  v.Tracks
+                                                  |> Seq.iter this.PushContext
+                                                  this.PushContext Null))
+      this.Formatter.Write String.Empty
 
-  member internal this.CatchUp(visits : Dictionary<string, Dictionary<int, int * Track list>>) =
-    let empty = Null
-    visits.Keys
-    |> Seq.iter (fun moduleId ->
-         visits.[moduleId].Keys
-         |> Seq.iter (fun hitPointId ->
-              let n, l = visits.[moduleId].[hitPointId]
-              let push = this.Push moduleId hitPointId
-              [ seq { 1..n } |> Seq.map (fun _ -> empty)
-                l |> List.toSeq ]
-              |> Seq.concat
-              |> Seq.iter push))
-    visits.Clear()
+  member internal this.Push (moduleId : string) (hitPointId : int) context =
+    this.Formatter.Write moduleId
+    this.Formatter.Write hitPointId
+    this.PushContext context
+
+  member internal this.CatchUp(visits : Dictionary<string, Dictionary<int, PointVisit>> ) =
+    if visits.Count > 0 then
+      visits |> Table |> this.Push String.Empty 0
+      visits.Clear()
 
   member this.OnStart() =
     let running =
@@ -99,10 +107,9 @@ type Tracer =
     if this.IsConnected() then f()
     else g()
 
-  member internal this.OnFinish finish visits =
+  member internal this.OnFinish visits =
     this.CatchUp visits
-    if finish <> Pause
-    then this.Close()
+    this.Close()
 
   member internal this.OnVisit visits moduleId hitPointId context =
     this.CatchUp visits

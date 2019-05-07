@@ -13,7 +13,7 @@ type Summary =
   | BPlus = 4
 
 [<Cmdlet(VerbsLifecycle.Invoke, "AltCover")>]
-[<OutputType("System.Void")>]
+[<OutputType([|"System.Void";"System.String"|])>]
 [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.PowerShell",
                                                   "PS1101:AllCmdletsShouldAcceptPipelineInput",
                                                   Justification = "No valid input")>]
@@ -161,6 +161,10 @@ type InvokeAltCoverCommand(runner : bool) =
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
   member val SourceLink : SwitchParameter = SwitchParameter(false) with get, set
 
+  [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
+              ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
+  member val Defer : SwitchParameter = SwitchParameter(false) with get, set
+
   [<Parameter(ParameterSetName = "Runner", Mandatory = false, ValueFromPipeline = false,
               ValueFromPipelineByPropertyName = false)>]
   member val SummaryFormat : Summary = Summary.Default with get, set
@@ -210,7 +214,8 @@ type InvokeAltCoverCommand(runner : bool) =
                                     BranchCover = self.BranchCover.IsPresent
                                     CommandLine = self.CommandLine
                                     ExposeReturnCode = not self.DropReturnCode.IsPresent
-                                    SourceLink = self.SourceLink.IsPresent }
+                                    SourceLink = self.SourceLink.IsPresent
+                                    Defer = self.Defer.IsPresent }
 
   member private self.Log() =
     FSApi.Logging.Primitive { Primitive.Logging.Create() with Error = (fun s -> self.Fail <- s :: self.Fail)
@@ -240,6 +245,7 @@ type InvokeAltCoverCommand(runner : bool) =
            let task = self.Prepare()
            Api.Prepare task) log
       if status <> 0 then status.ToString() |> self.Log().Error
+      else if self.Runner.IsPresent then Api.Summary () |> self.WriteObject
       match self.Fail with
       | [] -> ()
       | things -> String.Join(Environment.NewLine, things |> List.rev) |> makeError
