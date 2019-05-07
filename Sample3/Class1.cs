@@ -1,7 +1,7 @@
-﻿using Mono.Cecil.Cil;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Mono.Cecil.Cil;
 
 namespace Sample3
 {
@@ -39,6 +39,7 @@ namespace Sample3
             public int CoverageFormat { get; set; }
             public int Sample { get; set; }
             public Int64 Timer { get; set; }
+            public bool Defer { get; set; }
         }
 
         private static List<Tuple<string, int>> log = new List<Tuple<string, int>>();

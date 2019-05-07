@@ -1,6 +1,13 @@
 namespace AltCover
 
 open System
+#if NETCOREAPP2_0
+open System.IO
+open System.Reflection
+open System.Xml
+open System.Xml.Linq
+#endif
+
 open Microsoft.Build.Utilities
 open Microsoft.Build.Framework
 open Augment
@@ -19,6 +26,9 @@ module Api =
     FSApi.Args.Collect args
     |> List.toArray
     |> Main.EffectiveMain
+
+  let Summary () =
+    Runner.Summary.ToString()
 
   let mutable internal store = String.Empty
   let private writeToStore s = store <- s
@@ -69,6 +79,7 @@ type Prepare() =
   member val BranchCover = true |> not with get, set
   member val CommandLine : string array = [||] with get, set
   member val SourceLink = false with get, set
+  member val Defer = false with get, set
 
   member self.Message x = base.Log.LogMessage(MessageImportance.High, x)
   override self.Execute() =
@@ -107,7 +118,8 @@ type Prepare() =
                                       BranchCover = self.BranchCover
                                       CommandLine = self.CommandLine
                                       ExposeReturnCode = true
-                                      SourceLink = self.SourceLink}
+                                      SourceLink = self.SourceLink
+                                      Defer = self.Defer}
 
     Api.Prepare task log = 0
 
@@ -132,7 +144,7 @@ type Collect() =
   [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance",
                                                     "CA1822",
                                                     Justification = "Instance property needed")>]
-  member self.Summary with get() = Runner.Summary.ToString()
+  member self.Summary with get() = Api.Summary()
   member self.Message x = base.Log.LogMessage(MessageImportance.High, x)
   override self.Execute() =
     let log =
@@ -195,3 +207,65 @@ type Echo() =
         Console.ForegroundColor <- original
 
     true
+#if NETCOREAPP2_0
+type RunSettings() =
+  inherit Task(null)
+
+  member val TestSetting  = String.Empty with get, set
+  [<Output>]
+  member val Extended = String.Empty with get, set
+
+  member val internal DataCollector = "AltCover.DataCollector.dll" with get, set
+
+  override self.Execute() =
+    let tempFile = Path.GetTempFileName()
+
+    try
+      let settings =
+        if self.TestSetting |> String.IsNullOrWhiteSpace |> not &&
+           self.TestSetting |> File.Exists
+        then
+          try
+            use s = File.OpenRead(self.TestSetting)
+            XDocument.Load(s)
+          with
+          | :? IOException
+          | :? XmlException -> XDocument()
+        else XDocument()
+
+      let X n = XName.Get n
+
+      let ensureHas (parent:XContainer) childName =
+        match parent.Descendants(X childName) |> Seq.tryHead with
+        | Some child -> child
+        | _ -> let extra = XElement(X childName)
+               parent.Add extra
+               extra
+      let here = Assembly.GetExecutingAssembly().Location
+      let expected = Path.Combine(Path.GetDirectoryName(here),
+                                   self.DataCollector)
+
+      let result = File.Exists(expected)
+
+      if result then
+        let rs = ensureHas settings "RunSettings"
+        let ip1 = ensureHas rs "InProcDataCollectionRunSettings"
+        let ip2 = ensureHas ip1 "InProcDataCollectors"
+
+        let name = AssemblyName.GetAssemblyName(expected)
+        let altcover = XElement(X "InProcDataCollector",
+                        XAttribute(X "friendlyName", "AltCover"),
+                        XAttribute(X "uri", "InProcDataCollector://AltCover/Recorder/" + name.Version.ToString()),
+                        XAttribute(X "assemblyQualifiedName", "AltCover.DataCollector, " + name.FullName),
+                        XAttribute(X "codebase", expected),
+                        XElement(X "Configuration",
+                            XElement(X "Offload", XText("true"))))
+        ip2.Add(altcover)
+
+        self.Extended <- Path.ChangeExtension(tempFile, ".altcover.runsettings")
+        settings.Save(self.Extended)
+
+      result
+    finally
+      File.Delete(tempFile)
+#endif

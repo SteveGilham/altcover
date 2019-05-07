@@ -61,6 +61,7 @@ type PrepareParams =
     CommandLine : String seq
     ExposeReturnCode : bool
     SourceLink : bool
+    Defer : bool
   }
   static member Create() =
     { InputDirectory = String.Empty
@@ -87,6 +88,7 @@ type PrepareParams =
       CommandLine = []
       ExposeReturnCode = true
       SourceLink = false
+      Defer = false
     }
 
 #if RUNNER

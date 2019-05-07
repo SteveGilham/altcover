@@ -12,6 +12,7 @@ open System.Xml.Linq
 open Mono.Cecil
 open Mono.Options
 open Augment
+open AltCover.Base
 
 [<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage; NoComparison>]
 type TeamCityFormat =
@@ -20,6 +21,23 @@ type TeamCityFormat =
   | B
   | RPlus
   | BPlus
+  static member Factory s =
+    let (|Select|_|) (pattern : String) offered =
+      if offered
+          |> String.IsNullOrWhiteSpace
+          |> not
+          && pattern.Equals(String (offered |> Seq.sort |> Seq.toArray),
+                            StringComparison.OrdinalIgnoreCase)
+      then Some offered
+      else None
+
+    match s with
+    | Select "B" _ -> B
+    | Select "+" _
+    | Select "+B" _ -> BPlus
+    | Select "R" _-> R
+    | Select "+R" _ -> RPlus
+    | _ ->  Default
 
 module internal Runner =
 
@@ -115,18 +133,20 @@ module internal Runner =
       |> Seq.filter isVisited
       |> Seq.length
 
-    if [Default; BPlus; RPlus] |> Seq.exists (fun x -> x = SummaryFormat) then
-      summarise vclasses classes.Length "VisitedClasses"
-      summarise vmethods methods.Length "VisitedMethods"
-      summarise vpoints points.Length "VisitedPoints"
+    let emitSummary () =
+      if [Default; BPlus; RPlus] |> Seq.exists (fun x -> x = SummaryFormat) then
+        summarise vclasses classes.Length "VisitedClasses"
+        summarise vmethods methods.Length "VisitedMethods"
+        summarise vpoints points.Length "VisitedPoints"
 
-    if [B; R; BPlus; RPlus] |> Seq.exists (fun x -> x = SummaryFormat) then
-      WriteTC TCtotal "C" classes.Length
-      WriteTC TCcover "C" vclasses
-      WriteTC TCtotal "M" methods.Length
-      WriteTC TCcover "M" vmethods
-      WriteTC TCtotal "S" points.Length
-      WriteTC TCcover "S" vpoints
+      if [B; R; BPlus; RPlus] |> Seq.exists (fun x -> x = SummaryFormat) then
+        WriteTC TCtotal "C" classes.Length
+        WriteTC TCcover "C" vclasses
+        WriteTC TCtotal "M" methods.Length
+        WriteTC TCcover "M" vmethods
+        WriteTC TCtotal "S" points.Length
+        WriteTC TCcover "S" vpoints
+    emitSummary()
 
     makepc vpoints points.Length
 
@@ -356,27 +376,14 @@ module internal Runner =
       (CommandLine.ddFlag "dropReturnCode" CommandLine.dropReturnCode)
       ("teamcity:",
         fun x -> if SummaryFormat = Default then
-                   let (|Select|_|) (pattern : String) offered =
-                    if offered
-                       |> String.IsNullOrWhiteSpace
-                       |> not
-                       && pattern.Equals(String (offered |> Seq.sort |> Seq.toArray),
-                                         StringComparison.OrdinalIgnoreCase)
-                    then Some offered
-                    else None
-
-                   SummaryFormat <- match x with
-                                    | null
-                                    | Select "B" _ -> B
-                                    | Select "+" _
-                                    | Select "+B" _ -> BPlus
-                                    | Select "R" _-> R
-                                    | Select "+R" _ -> RPlus
-                                    | _ ->  CommandLine.error <- String.Format
+                    SummaryFormat <- if String.IsNullOrWhiteSpace x
+                                     then B
+                                     else TeamCityFormat.Factory x
+                    if SummaryFormat = Default then
+                       CommandLine.error <- String.Format
                                               (CultureInfo.CurrentCulture,
                                                 CommandLine.resources.GetString "InvalidValue",
                                                 "--teamcity", x) :: CommandLine.error
-                                            Default
                  else
                    CommandLine.error <- String.Format
                                       (CultureInfo.CurrentCulture,
@@ -488,7 +495,7 @@ module internal Runner =
     "Getting results..." |> WriteResource
     result
 
-  let internal CollectResults (hits : Dictionary<string, Dictionary<int, int * Base.Track list>>)
+  let internal CollectResults (hits : Dictionary<string, Dictionary<int, Base.PointVisit>>)
       report =
     let timer = System.Diagnostics.Stopwatch()
     timer.Start()
@@ -510,24 +517,60 @@ module internal Runner =
                  let tag = formatter.ReadByte() |> int
                  Some(id, strike,
                       match enum tag with
-                      | AltCover.Base.Tag.Time -> Base.Time <| formatter.ReadInt64()
-                      | AltCover.Base.Tag.Call -> Base.Call <| formatter.ReadInt32()
-                      | AltCover.Base.Tag.Both ->
+                      | Base.Tag.Time -> Base.Time <| formatter.ReadInt64()
+                      | Base.Tag.Call -> Base.Call <| formatter.ReadInt32()
+                      | Base.Tag.Both ->
                         Base.Both(formatter.ReadInt64(), formatter.ReadInt32())
-                      | _ -> Base.Null)
+                      | Base.Tag.Table ->
+                          let t = Dictionary<string, Dictionary<int, PointVisit>>()
+                          let rec ``module`` () =
+                            let m = formatter.ReadString()
+                            if String.IsNullOrEmpty m
+                            then ()
+                            else
+                              if m |> t.ContainsKey |> not
+                              then t.Add(m, Dictionary<int, PointVisit>())
+                              let points = formatter.ReadInt32()
+                              let rec sequencePoint pts =
+                                if pts > 0 then
+                                  let p = formatter.ReadInt32()
+                                  let n = formatter.ReadInt64()
+                                  if p |> t.[m].ContainsKey |> not
+                                  then t.[m].Add(p, PointVisit.Create())
+                                  let pv = t.[m].[p]
+                                  pv.Count <- pv.Count + n
+                                  let rec tracking () =
+                                    let track = formatter.ReadByte() |> int
+                                    match enum track with
+                                    | Tag.Time -> pv.Tracks.Add (Time <| formatter.ReadInt64())
+                                                  tracking ()
+                                    | Tag.Call -> pv.Tracks.Add (Call <| formatter.ReadInt32())
+                                                  tracking ()
+                                    | Tag.Both -> pv.Tracks.Add (Both (formatter.ReadInt64(), formatter.ReadInt32()))
+                                                  tracking ()
+// Expect never to happen                                    | Tag.Table -> ``module``()
+                                    | _ -> sequencePoint (pts - 1)
+                                  tracking()
+                                else ``module``()
+                              sequencePoint points
+                          ``module`` ()
+                          Table t
+                      | _ -> Null)
                with :? EndOfStreamException -> None
              match hit with
              | Some tuple ->
-               let (key, hitPointId, hit) = tuple
+               let (key, hitPointId, visit) = tuple
 
                let increment =
                  if key
                     |> String.IsNullOrWhiteSpace
                     |> not
+                    || (key = String.Empty &&
+                        hitPointId = 0 &&
+                        visit.GetType().ToString() = "AltCover.Base.Track+Table")
                  then
-                   Base.Counter.AddVisit hits key hitPointId hit
-                   1
-                 else 0
+                   Base.Counter.AddVisit hits key hitPointId visit
+                 else 0L
                sink (hitcount + increment)
              | None -> hitcount
 
@@ -541,11 +584,11 @@ module internal Runner =
                [| delta :> obj
                   interval
                   rate |] false
-           after) 0
+           after) 0L
     timer.Stop()
-    WriteResourceWithFormatItems "%d visits recorded" [| visits |] (visits = 0)
+    WriteResourceWithFormatItems "%d visits recorded" [| visits |] (visits = 0L)
 
-  let internal MonitorBase (hits : Dictionary<string, Dictionary<int, int * Base.Track list>>)
+  let internal MonitorBase (hits : Dictionary<string, Dictionary<int, Base.PointVisit>>)
       report (payload : string list -> int) (args : string list) =
     let result =
       if !collect then 0
@@ -565,30 +608,29 @@ module internal Runner =
          |> Seq.collect (fun p -> p.Attributes |> Seq.cast<XmlAttribute>)
          |> Seq.iter (fun a -> m.SetAttribute(a.Name, a.Value)))
 
-  let internal LookUpVisitsByToken token (dict : Dictionary<int, int * Base.Track list>) =
+  let internal LookUpVisitsByToken token (dict : Dictionary<int, Base.PointVisit>) =
     let (ok, index) =
       Int32.TryParse
         (token, System.Globalization.NumberStyles.Integer,
          System.Globalization.CultureInfo.InvariantCulture)
     match dict.TryGetValue(if ok then index
                            else -1) with
-    | (false, _) -> (0, [])
+    | (false, _) -> PointVisit.Create()
     | (_, pair) -> pair
 
   let internal FillMethodPoint (mp : XmlElement seq) (method : XmlElement)
-      (dict : Dictionary<int, int * Base.Track list>) =
+      (dict : Dictionary<int, Base.PointVisit>) =
     let token =
       method.GetElementsByTagName("MetadataToken")
       |> Seq.cast<XmlElement>
       |> Seq.map (fun m -> m.InnerText)
       |> Seq.head
 
-    let (vc0, l) = LookUpVisitsByToken token dict
-    let vc = vc0 + (List.length l)
+    let vc = (LookUpVisitsByToken token dict).Total ()
     mp
     |> Seq.iter (fun m ->
          m.SetAttribute
-           ("vc", vc.ToString(System.Globalization.CultureInfo.InvariantCulture))
+           ("vc", vc.ToString(CultureInfo.InvariantCulture))
          m.SetAttribute("uspid", token)
          m.SetAttribute("ordinal", "0")
          m.SetAttribute("offset", "0"))
@@ -596,12 +638,12 @@ module internal Runner =
   let VisitCount nodes =
     nodes
     |> Seq.cast<XmlElement>
-    |> Seq.filter (fun s -> Int32.TryParse
+    |> Seq.filter (fun s -> Int64.TryParse
                               (s.GetAttribute("vc"),
-                               System.Globalization.NumberStyles.Integer,
-                               System.Globalization.CultureInfo.InvariantCulture)
+                               NumberStyles.Integer,
+                               CultureInfo.InvariantCulture)
                             |> snd
-                            <> 0)
+                            <> 0L)
     |> Seq.length
 
   let internal TryGetValue (d : Dictionary<'a, 'b>) (key : 'a) =
@@ -609,7 +651,7 @@ module internal Runner =
     | null -> (false, Unchecked.defaultof<'b>)
     | _ -> d.TryGetValue key
 
-  let internal PostProcess (counts : Dictionary<string, Dictionary<int, int * Base.Track list>>)
+  let internal PostProcess (counts : Dictionary<string, Dictionary<int, Base.PointVisit>>)
       format (document : XmlDocument) =
     match format with
     | Base.ReportFormat.OpenCoverWithTracking | Base.ReportFormat.OpenCover ->
@@ -700,7 +742,7 @@ module internal Runner =
         method.SetAttribute("crapScore", score)
         raw
 
-      let updateMethod (dict : Dictionary<int, int * Base.Track list>)
+      let updateMethod (dict : Dictionary<int, Base.PointVisit>)
           (vb, vs, vm, pt, br, minc, maxc) (method : XmlElement) =
         let sp = method.GetElementsByTagName("SequencePoint")
         let bp = method.GetElementsByTagName("BranchPoint")
@@ -730,7 +772,7 @@ module internal Runner =
           FillMethod()
         else (vb, vs, vm, pt + count, br + numBranches, minc, maxc)
 
-      let updateClass (dict : Dictionary<int, int * Base.Track list>)
+      let updateClass (dict : Dictionary<int, Base.PointVisit>)
           (vb, vs, vm, vc, pt, br, minc0, maxc0) (``class`` : XmlElement) =
         let (cvb, cvs, cvm, cpt, cbr, minc, maxc) =
           ``class``.GetElementsByTagName("Method")
@@ -748,11 +790,11 @@ module internal Runner =
         (vb + cvb, vs + cvs, vm + cvm, vc + cvc, pt + cpt, br + cbr, Math.Min(minc, minc0),
          Math.Max(maxc, maxc0))
 
-      let updateModule (counts : Dictionary<string, Dictionary<int, int * Base.Track list>>)
+      let updateModule (counts : Dictionary<string, Dictionary<int, Base.PointVisit>>)
           (vb, vs, vm, vc, pt, br, minc0, maxc0) (``module`` : XmlElement) =
         let dict =
           match (TryGetValue counts) <| ``module``.GetAttribute("hash") with
-          | (false, _) -> Dictionary<int, int * Base.Track list>()
+          | (false, _) -> Dictionary<int, Base.PointVisit>()
           | (true, d) -> d
 
         let (cvb, cvs, cvm, cvc, cpt, cbr, minc, maxc) =
@@ -801,17 +843,18 @@ module internal Runner =
   let internal PointProcess (pt : XmlElement) tracks =
     let (times, calls) =
       tracks
-      |> List.map (fun t ->
+      |> Seq.map (fun t ->
            match t with
            | Base.Time x -> (Some x, None)
            | Base.Both(x, y) -> (Some x, Some y)
            | Base.Call y -> (None, Some y)
            | _ -> (None, None))
+      |> Seq.toList
       |> List.unzip
     Point pt times "Times" "Time" "time"
     Point pt calls "TrackedMethodRefs" "TrackedMethodRef" "uid"
 
-  let internal WriteReportBase (hits : Dictionary<string, Dictionary<int, int * Base.Track list>>)
+  let internal WriteReportBase (hits : Dictionary<string, Dictionary<int, Base.PointVisit>>)
       report =
     AltCover.Base.Counter.DoFlush (PostProcess hits report) PointProcess true hits report
   // mocking points
@@ -856,7 +899,7 @@ module internal Runner =
 
           let format =
             (GetMethod instance "get_CoverageFormat") |> GetFirstOperandAsNumber
-          let hits = Dictionary<string, Dictionary<int, int * Base.Track list>>()
+          let hits = Dictionary<string, Dictionary<int, Base.PointVisit>>()
           let payload = GetPayload
           let result = GetMonitor hits report payload rest
           let format' = enum format
