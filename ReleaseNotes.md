@@ -4,6 +4,9 @@ A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wi
 
 # 5.2.6xx (Ezoguma series release 6)
 * In the `Invoke-AltCover -Runner` cmdlet, send the summary text (OpenCover and/or TeamCity style) to the object pipeline as well as to the `Information` channel.
+* Option `--defer[:[+|-]]` (default `--defer:-`) (`-Defer` for PowerShell; Defer property on MSBuild task; API field) to keep all the visit data in memory and only write the total out during process exit
+* Automatic defer, with in-process data collection, for `dotnet test` to work around the 100ms limitation on `ProcessExit` handling imposed by the VSTest system that led to the "write everything to disk" runner mode in the first place
+* Other throughput improvements for data collection
 
 # 5.2.667 (Ezoguma series release 5)
 * [BUGFIX] Expose the sourcelink functionality through `dotnet test` as well (`/p:AltCoverSourceLink=true`)
