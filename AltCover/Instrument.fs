@@ -192,13 +192,9 @@ module internal Instrument =
         ("get_CoverageFormat", (fun (w:ILProcessor) ->
             w.Create(OpCodes.Ldc_I4, Visitor.ReportFormat() |> int)))
         ("get_Sample", (fun (w:ILProcessor) ->
-            w.Create(OpCodes.Ldc_I4,
-             (if Visitor.single then Base.Sampling.Single
-              else Base.Sampling.All) |> int)))
+            w.Create(OpCodes.Ldc_I4, Visitor.Sampling())))
         ("get_Defer", (fun (w:ILProcessor) ->
-            w.Create(if Option.getOrElse false !Visitor.defer
-                     then OpCodes.Ldc_I4_0
-                     else OpCodes.Ldc_I4_1)))
+            w.Create(Visitor.deferOpCode())))
       ]
       |> List.iter (fun (property, value) ->
            let pathGetterDef =

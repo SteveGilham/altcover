@@ -486,6 +486,7 @@ type AltCoverTests2() =
           Visitor.reportFormat <- Some AltCover.Base.ReportFormat.OpenCover
           Visitor.interval <- Some 1234567890
           Visitor.single <- true
+          Assert.That(Visitor.Sampling(), Base.Sampling.Single |> int |> Is.EqualTo)
           let prepared = Instrument.PrepareAssembly path
           Instrument.WriteAssembly prepared outputdll
           let expectedSymbols = if "Mono.Runtime" |> Type.GetType |> isNull |> not then ".dll.mdb" else ".pdb"
@@ -528,6 +529,7 @@ type AltCoverTests2() =
                                 with // occasionally the dll file is locked by another process
                                 | :? System.UnauthorizedAccessException
                                 | :? IOException -> ())
+          Assert.That(Visitor.Sampling(), Base.Sampling.All |> int |> Is.EqualTo)
       finally
         Visitor.keys.Clear()
 

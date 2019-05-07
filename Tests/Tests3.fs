@@ -8,6 +8,7 @@ open AltCover
 open AltCover.Augment
 open Mono.Options
 open NUnit.Framework
+open Mono.Cecil.Cil
 
 [<TestFixture>]
 type AltCoverTests3() =
@@ -1462,6 +1463,7 @@ type AltCoverTests3() =
           Assert.That(x, Is.Empty)
         Assert.That(Option.isSome !Visitor.defer)
         Assert.That(Option.get !Visitor.defer)
+        Assert.That(Visitor.deferOpCode(), Is.EqualTo OpCodes.Ldc_I4_1)
       finally
         Visitor.defer := None
 
@@ -1479,6 +1481,7 @@ type AltCoverTests3() =
           Assert.That(x, Is.Empty)
         Assert.That(Option.isSome !Visitor.defer)
         Assert.That(Option.get !Visitor.defer)
+        Assert.That(Visitor.deferOpCode(), Is.EqualTo OpCodes.Ldc_I4_1)
       finally
         Visitor.defer := None
 
@@ -1496,6 +1499,7 @@ type AltCoverTests3() =
           Assert.That(x, Is.Empty)
         Assert.That(Option.isSome !Visitor.defer)
         Assert.That(Option.get !Visitor.defer, Is.False)
+        Assert.That(Visitor.deferOpCode(), Is.EqualTo OpCodes.Ldc_I4_0)
       finally
         Visitor.defer := None
 

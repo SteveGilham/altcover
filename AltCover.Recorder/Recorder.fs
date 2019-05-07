@@ -30,14 +30,14 @@ module Instance =
 
   /// <summary>
   /// Gets the location of coverage xml file
-  /// This property's IL code is modified to store actual file location
+  /// This property's IL code is modified to store the actual file location
   /// </summary>
   [<MethodImplAttribute(MethodImplOptions.NoInlining)>]
   let ReportFile = "Coverage.Default.xml"
 
   /// <summary>
   /// Gets whether to defer output until process exit
-  /// This property's IL code is modified to store actual file location
+  /// This property's IL code is modified to store the actual value
   /// </summary>
   [<MethodImplAttribute(MethodImplOptions.NoInlining)>]
   let Defer = false
@@ -227,8 +227,8 @@ module Instance =
   let internal VisitImpl moduleId hitPointId context =
     if (Sample = Sampling.All || TakeSample Sample moduleId hitPointId) then
       let adder =
-        if trace.IsConnected() && ((Defer || Supervision) |> not) then TraceVisit
-        else AddVisit
+        if Defer || Supervision || (trace.IsConnected() |> not) then AddVisit
+        else TraceVisit
       adder moduleId hitPointId context
 
   let private IsOpenCoverRunner() =

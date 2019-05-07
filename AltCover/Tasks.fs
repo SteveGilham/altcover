@@ -79,7 +79,11 @@ type Prepare() =
   member val BranchCover = true |> not with get, set
   member val CommandLine : string array = [||] with get, set
   member val SourceLink = false with get, set
+#if NETCOREAPP2_0
+  member val internal Defer = false with get, set
+#else
   member val Defer = false with get, set
+#endif
 
   member self.Message x = base.Log.LogMessage(MessageImportance.High, x)
   override self.Execute() =

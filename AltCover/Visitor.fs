@@ -159,8 +159,15 @@ module internal Visitor =
 
   let internal inplace = ref false
   let mutable internal single = false
+  let Sampling() =
+    (if single then Base.Sampling.Single
+               else Base.Sampling.All) |> int
   let internal sourcelink = ref false
   let internal defer = ref (Some false)
+  let internal deferOpCode () =
+    if Option.getOrElse false !defer
+                         then OpCodes.Ldc_I4_1
+                         else OpCodes.Ldc_I4_0
 
   let mutable internal inputDirectory : Option<string> = None
   let private defaultInputDirectory = "."

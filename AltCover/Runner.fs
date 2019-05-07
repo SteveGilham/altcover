@@ -548,7 +548,7 @@ module internal Runner =
                                                   tracking ()
                                     | Tag.Both -> pv.Tracks.Add (Both (formatter.ReadInt64(), formatter.ReadInt32()))
                                                   tracking ()
-                                    | Tag.Table -> ``module``()
+// Expect never to happen                                    | Tag.Table -> ``module``()
                                     | _ -> sequencePoint (pts - 1)
                                   tracking()
                                 else ``module``()
