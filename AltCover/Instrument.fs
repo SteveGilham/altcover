@@ -58,7 +58,7 @@ type internal InstrumentContext =
 /// Module to handle instrumentation visitor
 /// </summary>
 module internal Instrument =
-  let internal modules = List<int * int * int>()
+  let internal modules = List<string * int * int>()
 
   let private resources =
     ResourceManager("AltCover.JSONFragments", Assembly.GetExecutingAssembly())
@@ -638,6 +638,50 @@ module internal Instrument =
       let counterAssemblyFile =
         Path.Combine
           (Visitor.InstrumentDirectory(), (extractName state.RecordingAssembly) + ".dll")
+      let instrument =
+            state.RecordingAssembly.MainModule.GetTypes()
+            |> Seq.collect (fun t -> t.Methods)
+            |> Seq.filter (fun m -> m.Name = "Instrumentation")
+            |> Seq.head
+
+      let mtype = state.RecordingAssembly.MainModule.GetTypes()
+                  |> Seq.filter (fun t -> t.FullName = "AltCover.Recorder.Module")
+                  |> Seq.head
+
+      let ctor = mtype.Methods
+                 |> Seq.filter (fun m -> m.Name = ".ctor")
+                 |> Seq.head
+
+      let body = instrument.Body
+      let worker = body.GetILProcessor()
+      let initialBody = body.Instructions |> Seq.toList
+      // expect
+//  IL_0000: ldc.i4.0
+//  IL_0001: newarr AltCover.Recorder.Module
+//  IL_0006: ret
+
+      let head = initialBody |> Seq.head
+      let next = initialBody |> Seq.skip 1 |> Seq.head
+      let ret = initialBody |> Seq.last
+      worker.Remove head
+      worker.InsertBefore(next, worker.Create(OpCodes.Ldc_I4, modules.Count))
+      modules
+      |> Seq.iteri (fun n (a,b,c) ->
+//	IL_0006: dup
+//	IL_0007: ldc.i4 0
+//	IL_0008: ldstr "m1"
+//	IL_000d: ldc.i4 5
+//	IL_000e: ldc.i4 3
+// 	IL_0017: newobj instance void AltCover.Recorder.Module::.ctor(string, int32, int32)
+//	IL_001c: stelem.any AltCover.Recorder.Module
+        worker.InsertBefore(ret, worker.Create(OpCodes.Dup))
+        worker.InsertBefore(ret, worker.Create(OpCodes.Ldc_I4, n))
+        worker.InsertBefore(ret, worker.Create(OpCodes.Ldstr, a))
+        worker.InsertBefore(ret, worker.Create(OpCodes.Ldc_I4, b))
+        worker.InsertBefore(ret, worker.Create(OpCodes.Ldc_I4, c))
+        worker.InsertBefore(ret, worker.Create(OpCodes.Newobj, ctor))
+        worker.InsertBefore(ret, worker.Create(OpCodes.Stelem_Any, mtype)))
+
       WriteAssembly (state.RecordingAssembly) counterAssemblyFile
       Directory.GetFiles
         (Visitor.InstrumentDirectory(), "*.deps.json", SearchOption.TopDirectoryOnly)
@@ -667,7 +711,6 @@ module internal Instrument =
                                          |> Augment.Increment]
          let instructions = body.Instructions
          let methodWorker = body.GetILProcessor()
-         let nop = methodWorker.Create(OpCodes.Nop)
 
          let rets =
            instructions
@@ -733,7 +776,7 @@ module internal Instrument =
     { state with RecordingAssembly = recordingAssembly }
 
   let private VisitAfterModule state =
-    modules.Add ((state.ModuleNumber, state.ModulePoints, state.ModuleBranches))
+    modules.Add ((state.ModuleId, state.ModulePoints, state.ModuleBranches))
     state
 
   /// <summary>

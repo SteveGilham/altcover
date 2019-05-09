@@ -101,7 +101,7 @@ module Instance =
 //	IL_002c: ret
 //} // end of method Instance::UrVisits
 
-  let internal UrVisits () : Module array = [| |]
+  let internal Instrumentation () : Module array = [| |]
 
   let internal makeVisitInstance _ = PointVisit.Create()
   let internal makePointsArray n =
@@ -114,10 +114,10 @@ module Instance =
     }
 
   let internal NewVisits () =
-    UrVisits ()
+    Instrumentation ()
     |> Array.map makeCarryingInstance
 
-  let internal NewVisitData = NewVisits()
+  let internal VisitData = NewVisits()
 
   let internal synchronize = Object()
 
