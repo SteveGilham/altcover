@@ -343,7 +343,8 @@ _Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standa
 _Target "FxCop" (fun _ -> // Needs debug because release is compiled --standalone which contaminates everything
   Directory.ensure "./_Reports"
 
-  let rules = [ "-Microsoft.Design#CA1004"
+  let rules = [ "-Microsoft.Usage#CA2208"
+                "-Microsoft.Design#CA1004"
                 "-Microsoft.Design#CA1006"
                 "-Microsoft.Design#CA1011" // maybe sometimes
                 "-Microsoft.Design#CA1062" // null checks,  In F#!

@@ -34,6 +34,9 @@ type internal RecorderRefs =
 type internal InstrumentContext =
   { InstrumentedAssemblies : string list
     ModuleId : String
+    ModuleNumber : int
+    ModulePoints : int
+    ModuleBranches : int
     RecordingAssembly : AssemblyDefinition
     RecordingMethod : MethodDefinition list // initialised once
     RecordingMethodRef : RecorderRefs // updated each module
@@ -42,6 +45,9 @@ type internal InstrumentContext =
   static member Build assemblies =
     { InstrumentedAssemblies = assemblies
       ModuleId = String.Empty
+      ModuleNumber = 0
+      ModulePoints = 0
+      ModuleBranches = 0
       RecordingAssembly = null
       RecordingMethod = []
       RecordingMethodRef = RecorderRefs.Build()
@@ -52,6 +58,8 @@ type internal InstrumentContext =
 /// Module to handle instrumentation visitor
 /// </summary>
 module internal Instrument =
+  let internal modules = List<int * int * int>()
+
   let private resources =
     ResourceManager("AltCover.JSONFragments", Assembly.GetExecutingAssembly())
   let version = typeof<AltCover.Recorder.Tracer>.Assembly.GetName().Version.ToString()
@@ -532,7 +540,10 @@ module internal Instrument =
                      match Visitor.ReportKind() with
                      | AltCover.Base.ReportFormat.OpenCover ->
                        KeyStore.HashFile m.FileName
-                     | _ -> m.Mvid.ToString() }
+                     | _ -> m.Mvid.ToString()
+                   ModuleNumber = modules.Count
+                   ModulePoints = 0
+                   ModuleBranches = 0 }
 
   let private VisitMethod (state : InstrumentContext) (m : MethodDefinition) included =
     match Visitor.IsInstrumented included with
@@ -554,7 +565,9 @@ module internal Instrument =
         InsertVisit instruction state.MethodWorker state.RecordingMethodRef.Visit
           state.ModuleId point
       UpdateBranchReferences state.MethodBody instruction instrLoadModuleId
-    state
+      { state with ModulePoints = state.ModulePoints + 1 }
+    else
+      state
 
   let internal VisitBranchPoint (state : InstrumentContext) branch =
     if branch.Included && state.MethodWorker
@@ -616,7 +629,9 @@ module internal Instrument =
         let preamble = instrument jump
         if branch.Start.OpCode = OpCodes.Switch then updateSwitch preamble
         else branch.Start.Operand <- preamble
-    state
+      { state with ModuleBranches = state.ModuleBranches + 1 }
+    else
+      state
 
   let private FinishVisit(state : InstrumentContext) =
     try
@@ -712,9 +727,14 @@ module internal Instrument =
     state
 
   let private VisitStart state =
+    modules.Clear()
     let recorder = typeof<AltCover.Recorder.Tracer>
     let recordingAssembly = PrepareAssembly(recorder.Assembly.Location)
     { state with RecordingAssembly = recordingAssembly }
+
+  let private VisitAfterModule state =
+    modules.Add ((state.ModuleNumber, state.ModulePoints, state.ModuleBranches))
+    state
 
   /// <summary>
   /// Perform visitor operations
@@ -738,7 +758,7 @@ module internal Instrument =
     | BranchPoint branch -> VisitBranchPoint state branch
     | AfterMethod(m, included, track) -> VisitAfterMethod state m included track
     | AfterType -> state
-    | AfterModule -> state
+    | AfterModule -> VisitAfterModule state
     | AfterAssembly assembly -> VisitAfterAssembly state assembly
     | Finish -> FinishVisit state
 

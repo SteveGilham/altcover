@@ -1462,10 +1462,12 @@ type AltCoverTests2() =
       let state = InstrumentContext.Build [ "nunit.framework"; "nonesuch" ]
       let result = Instrument.InstrumentationVisitor state visited
       Assert.That
-        (result, Is.EqualTo { state with ModuleId = def.MainModule.Mvid.ToString() })
+        (result, Is.EqualTo { state with ModuleId = def.MainModule.Mvid.ToString()
+                                         ModuleNumber = 1 })
 
     [<Test>]
     member self.IncludedModuleEnsuresRecorder() =
+      Instrument.modules.Clear()
       let where = Assembly.GetExecutingAssembly().Location
       let path =
         Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
@@ -1569,11 +1571,12 @@ type AltCoverTests2() =
                                                   Pop = null } }
 
         let result = Instrument.InstrumentationVisitor state visited
-        Assert.That(result, Is.SameAs state)
+        Assert.That(result, Is.EqualTo { state with ModulePoints = 1 })
         Assert.That(target.Previous.OpCode, Is.EqualTo OpCodes.Call)
 
     [<Test>]
     member self.IncludedModuleDoesNotChangeRecorderJustTheReference() =
+      Instrument.modules.Clear()
       let where = Assembly.GetExecutingAssembly().Location
       let path =
         Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")

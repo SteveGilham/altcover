@@ -16,7 +16,22 @@ open System.Runtime.CompilerServices
 [<System.Runtime.InteropServices.ProgIdAttribute("ExcludeFromCodeCoverage hack for OpenCover issue 615")>]
 #endif
 [<NoComparison>]
-type internal Carrier = SequencePoint of String * int * Track
+type internal Carrier =
+  { ModuleId : string
+    Points : PointVisit array
+    Branches : PointVisit array }
+
+#if NETSTANDARD2_0
+[<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage>]
+#else
+[<System.Runtime.InteropServices.ProgIdAttribute("ExcludeFromCodeCoverage hack for OpenCover issue 615")>]
+#endif
+type internal Module =
+  {
+    ModuleId : string
+    PointCount : int
+    BranchCount : int
+  }
 
 module Instance =
   let internal resources =
@@ -55,6 +70,54 @@ module Instance =
   let mutable internal Visits = new Dictionary<string, Dictionary<int, PointVisit>>()
   let mutable internal Samples = new Dictionary<string, Dictionary<int, bool>>()
   let mutable internal IsRunner = false
+
+//.method public static
+//	class AltCover.Recorder.Module[] UrVisits () cil managed
+//{
+
+// from
+//  IL_0000: ldc.i4.0
+//  IL_0001: newarr AltCover.Recorder.Module
+//  IL_0006: ret
+
+// to
+//	IL_0000: ldc.i4 11
+//	IL_0001: newarr AltCover.Recorder.Module
+//	IL_0006: dup
+//	IL_0007: ldc.i4 0
+//	IL_0008: ldstr "m1"
+//	IL_000d: ldc.i4 5
+//	IL_000e: ldc.i4 3
+// 	IL_0017: newobj instance void AltCover.Recorder.Module::.ctor(string, int32, int32)
+//	IL_001c: stelem.any AltCover.Recorder.Module
+//	IL_0019: dup
+//	IL_001a: ldc.i4 1
+//	IL_001b: ldstr "m2"
+//	IL_0020: ldc.i4 7
+//	IL_0021: ldc.i4 4
+//	IL_0032: newobj instance void AltCover.Recorder.Module::.ctor(string, int32, int32)
+//	IL_0037: stelem.any AltCover.Recorder.Module
+// ...
+//	IL_002c: ret
+//} // end of method Instance::UrVisits
+
+  let internal UrVisits () : Module array = [| |]
+
+  let internal makeVisitInstance _ = PointVisit.Create()
+  let internal makePointsArray n =
+    Array.init n makeVisitInstance
+  let internal makeCarryingInstance a =
+    {
+      ModuleId = a.ModuleId
+      Points = makePointsArray a.PointCount
+      Branches = makePointsArray a.BranchCount
+    }
+
+  let internal NewVisits () =
+    UrVisits ()
+    |> Array.map makeCarryingInstance
+
+  let internal NewVisitData = NewVisits()
 
   let internal synchronize = Object()
 
