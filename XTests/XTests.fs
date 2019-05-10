@@ -755,7 +755,7 @@ module XTests =
       if local.IndexOf("_Binaries") > 0 then local
       else hack
 
-    let path = Path.Combine(where + Hack(), "Sample4.dll")
+    let path = Path.Combine(where + Hack(), "AltCover.Recorder.dll")
     let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
     ProgramDatabase.ReadSymbols def
     let unique = Guid.NewGuid().ToString()
@@ -767,7 +767,7 @@ module XTests =
       let input = { InstrumentContext.Build [] with RecordingAssembly = def }
       let result = Instrument.InstrumentationVisitor input Finish
       Assert.True(result.RecordingAssembly |> isNull)
-      let created = Path.Combine(output, "Sample4.dll")
+      let created = Path.Combine(output, "AltCover.Recorder.dll")
       Assert.True(File.Exists created, created + " not found")
 #if NETCOREAPP2_0
       Assert.True(File.Exists(Path.Combine(output, "FSharp.Core.dll")), "Core not found")
