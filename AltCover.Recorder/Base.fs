@@ -14,6 +14,7 @@ type internal Branching =
   /// <summary>
   /// The offset flag for branch counts
   /// </summary>
+  | None = 0
   | Flag = 0x80000000
   | Mask = 0x7FFFFFFF
 
@@ -391,7 +392,7 @@ module internal Counter =
                 let next = o.[moduleId]
                 EnsurePoint next hitPointId
                 next.[hitPointId]
-            | Update519 u ->
+            | Update519 _ ->
                 counts.[moduleId].[hitPointId]
 
     match context with
