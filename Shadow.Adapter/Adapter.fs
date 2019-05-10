@@ -2,17 +2,17 @@ namespace AltCover.Shadow
 
 open System.Collections.Generic
 open AltCover.Recorder
+open AltCover.Recorder.ExtendBatch
+open AltCover.Recorder.ExtendPointVisit
 
 module Adapter =
   let DoPause() = Instance.DoPause null
   let DoResume() = Instance.DoResume null
-  let VisitsClear() = Instance.Visits.Clear()
-  let SamplesClear() = Instance.Samples.Clear()
+  let VisitsClear() = Instance.Visits <- Update519 <| Instance.NewVisits()
   let FlushAll() = Instance.FlushFinish ()
   let Reset () =
     Instance.IsRunner <- false
-    Instance.Visits.Clear()
-    Instance.Samples.Clear()
+    VisitsClear()
 
   let internal prepareName name =
     if name

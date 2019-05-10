@@ -4,22 +4,13 @@
 namespace AltCover.Recorder
 
 open System
-open System.Collections.Generic
 open System.IO
 open System.Reflection
 open System.Resources
 open System.Runtime.CompilerServices
 
-#if NETSTANDARD2_0
-[<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage>]
-#else
-[<System.Runtime.InteropServices.ProgIdAttribute("ExcludeFromCodeCoverage hack for OpenCover issue 615")>]
-#endif
-[<NoComparison>]
-type internal Carrier =
-  { ModuleId : string
-    Points : PointVisit array
-    Branches : PointVisit array }
+open ExtendPointVisit
+open ExtendBatch
 
 #if NETSTANDARD2_0
 [<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage>]
@@ -63,13 +54,6 @@ module Instance =
     |> Seq.exists (fun n -> n.Name = "AltCover.DataCollector" &&
                             n.FullName.EndsWith("PublicKeyToken=c02b1a9f5b7cade8",
                                                 StringComparison.Ordinal))
-
-  /// <summary>
-  /// Accumulation of visit records
-  /// </summary>
-  let mutable internal Visits = new Dictionary<string, Dictionary<int, PointVisit>>()
-  let mutable internal Samples = new Dictionary<string, Dictionary<int, bool>>()
-  let mutable internal IsRunner = false
 
 //.method public static
 //	class AltCover.Recorder.Module[] UrVisits () cil managed
@@ -118,6 +102,11 @@ module Instance =
     |> Array.map makeCarryingInstance
 
   let internal VisitData = NewVisits()
+  /// <summary>
+  /// Accumulation of visit records
+  /// </summary>
+  let mutable internal Visits = Update519 <| NewVisits()
+  let mutable internal IsRunner = false
 
   let internal synchronize = Object()
 
@@ -218,12 +207,9 @@ module Instance =
   /// </summary>
   let internal FlushAll _ =
     let counts = Visits
-    Visits <- Dictionary<string, Dictionary<int, PointVisit>>()
+    Visits <- NewVisits() |> Update519
     trace.OnConnected (fun () -> trace.OnFinish counts)
       (fun () ->
-      match counts.Count with
-      | 0 -> ()
-      | _ ->
         WithMutex
           (fun own ->
           let delta =
@@ -247,8 +233,7 @@ module Instance =
     let wasConnected = IsRunner
     InitialiseTrace trace
     if (wasConnected <> IsRunner) then
-       Samples <- Dictionary<string, Dictionary<int, bool>>()
-       Visits <- Dictionary<string, Dictionary<int, PointVisit>>()
+       Visits <- Update519 <| NewVisits()
     Recording <- true
 
   let FlushFinish () =
@@ -264,23 +249,7 @@ module Instance =
   let internal TakeSample strategy moduleId hitPointId =
     match strategy with
     | Sampling.All -> true
-    | _ ->
-      let mutable hasModuleKey = Samples.ContainsKey(moduleId)
-      if hasModuleKey |> not then
-        lock Samples (fun () ->
-          hasModuleKey <- Samples.ContainsKey(moduleId)
-          if hasModuleKey |> not
-          then Samples.Add(moduleId, Dictionary<int, bool>())
-        )
-
-      let next = Samples.[moduleId]
-      let mutable hasPointKey = next.ContainsKey(hitPointId)
-      if hasPointKey |> not then
-          lock next (fun () ->
-            hasPointKey <- next.ContainsKey(hitPointId)
-            if hasPointKey |> not
-            then next.Add(hitPointId, true))
-      (hasPointKey && hasModuleKey) |> not
+    | _ -> (Visits.[moduleId].[hitPointId]).Count = 0L
 
   /// <summary>
   /// This method is executed from instrumented assemblies.

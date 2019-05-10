@@ -12,6 +12,7 @@ open System.Xml.Linq
 open AltCover
 open AltCover.Augment
 open AltCover.Base
+open AltCover.Base.ExtendPointVisit
 open Mono.Options
 open NUnit.Framework
 open System.Diagnostics.CodeAnalysis
@@ -40,7 +41,7 @@ type AltCoverTests() =
     member self.RealIdShouldIncrementCount() =
       let visits = new Dictionary<string, Dictionary<int, PointVisit>>()
       let key = " "
-      let v1 = Counter.AddVisit visits key 23 Null
+      let v1 = Counter.AddVisit (Original visits) key 23 Null
       Assert.That(v1, Is.EqualTo 1)
       Assert.That(visits.Count, Is.EqualTo 1)
       Assert.That(visits.[key].Count, Is.EqualTo 1)
@@ -53,7 +54,7 @@ type AltCoverTests() =
       let visits = new Dictionary<string, Dictionary<int, PointVisit>>()
       let key = " "
       let payload = Time DateTime.UtcNow.Ticks
-      let v2 = Counter.AddVisit visits key 23 payload
+      let v2 = Counter.AddVisit (Original visits) key 23 payload
       Assert.That(v2, Is.EqualTo 1)
       Assert.That(visits.Count, Is.EqualTo 1)
       Assert.That(visits.[key].Count, Is.EqualTo 1)
@@ -65,9 +66,9 @@ type AltCoverTests() =
     member self.DistinctIdShouldBeDistinct() =
       let visits = new Dictionary<string, Dictionary<int, PointVisit>>()
       let key = " "
-      let v3 = Counter.AddVisit visits key 23 Null
+      let v3 = Counter.AddVisit (Original visits) key 23 Null
       Assert.That(v3, Is.EqualTo 1)
-      let v4 = Counter.AddVisit visits "key" 42 Null
+      let v4 = Counter.AddVisit (Original visits) "key" 42 Null
       Assert.That(visits.Count, Is.EqualTo 2)
       Assert.That(v4, Is.EqualTo 1)
 
@@ -75,9 +76,9 @@ type AltCoverTests() =
     member self.DistinctLineShouldBeDistinct() =
       let visits = new Dictionary<string, Dictionary<int, PointVisit>>()
       let key = " "
-      let v5 = Counter.AddVisit visits key 23 Null
+      let v5 = Counter.AddVisit (Original visits) key 23 Null
       Assert.That(v5, Is.EqualTo 1)
-      let v6 = Counter.AddVisit visits key 42 Null
+      let v6 = Counter.AddVisit (Original visits) key 42 Null
       Assert.That(v6, Is.EqualTo 1)
       Assert.That(visits.Count, Is.EqualTo 1)
       Assert.That(visits.[key].Count, Is.EqualTo 2)
@@ -86,9 +87,9 @@ type AltCoverTests() =
     member self.RepeatVisitsShouldIncrementCount() =
       let visits = new Dictionary<string, Dictionary<int, PointVisit>>()
       let key = " "
-      let v7 = Counter.AddVisit visits key 23 Null
+      let v7 = Counter.AddVisit (Original visits) key 23 Null
       Assert.That(v7, Is.EqualTo 1)
-      let v8 = Counter.AddVisit visits key 23 Null
+      let v8 = Counter.AddVisit (Original visits) key 23 Null
       Assert.That(v8, Is.EqualTo 1)
       let x = visits.[key].[23]
       Assert.That(x.Count, Is.EqualTo 2)
@@ -99,9 +100,9 @@ type AltCoverTests() =
       let visits = new Dictionary<string, Dictionary<int, PointVisit>>()
       let key = " "
       let payload = Time DateTime.UtcNow.Ticks
-      let v9 = Counter.AddVisit visits key 23 Null
+      let v9 = Counter.AddVisit (Original visits) key 23 Null
       Assert.That(v9, Is.EqualTo 1)
-      let v10 = Counter.AddVisit visits key 23 payload
+      let v10 = Counter.AddVisit (Original visits) key 23 payload
       Assert.That(v10, Is.EqualTo 1)
       let x = visits.[key].[23]
       Assert.That(x.Count, Is.EqualTo 1)
@@ -130,7 +131,7 @@ type AltCoverTests() =
       worker.Position <- 0L
       let payload = Dictionary<int, PointVisit>()
       [ 0..9 ] |> Seq.iter (fun i -> payload.[10 - i] <- PointVisit.Init (int64(i + 1)) [])
-      [ 11..12 ] |> Seq.iter (fun i -> payload.[i ||| Counter.BranchFlag] <- PointVisit.Init (int64(i - 10)) [])
+      [ 11..12 ] |> Seq.iter (fun i -> payload.[i ||| (int Branching.Flag)] <- PointVisit.Init (int64(i - 10)) [])
       let item = Dictionary<string, Dictionary<int, PointVisit>>()
       item.Add("7C-CD-66-29-A3-6C-6D-5F-A7-65-71-0E-22-7D-B2-61-B5-1F-65-9A", payload)
       Counter.UpdateReport ignore (fun _ _ -> ()) true item ReportFormat.OpenCover worker

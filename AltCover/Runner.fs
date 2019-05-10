@@ -13,6 +13,7 @@ open Mono.Cecil
 open Mono.Options
 open Augment
 open AltCover.Base
+open AltCover.Base.ExtendPointVisit
 
 [<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage; NoComparison>]
 type TeamCityFormat =
@@ -554,7 +555,7 @@ module internal Runner =
                                 else ``module``()
                               sequencePoint points
                           ``module`` ()
-                          Table t
+                          Table (Original t)
                       | _ -> Null)
                with :? EndOfStreamException -> None
              match hit with
@@ -569,7 +570,7 @@ module internal Runner =
                         hitPointId = 0 &&
                         visit.GetType().ToString() = "AltCover.Base.Track+Table")
                  then
-                   Base.Counter.AddVisit hits key hitPointId visit
+                   Base.Counter.AddVisit (Original hits) key hitPointId visit
                  else 0L
                sink (hitcount + increment)
              | None -> hitcount
@@ -856,7 +857,7 @@ module internal Runner =
 
   let internal WriteReportBase (hits : Dictionary<string, Dictionary<int, Base.PointVisit>>)
       report =
-    AltCover.Base.Counter.DoFlush (PostProcess hits report) PointProcess true hits report
+    AltCover.Base.Counter.DoFlush (PostProcess hits report) PointProcess true (Original hits) report
   // mocking points
   let mutable internal GetPayload = PayloadBase
   let mutable internal GetMonitor = MonitorBase

@@ -574,7 +574,7 @@ module internal Instrument =
                           |> isNull
                           |> not
     then
-      let point = (branch.Uid ||| Base.Counter.BranchFlag)
+      let point = (branch.Uid ||| (Base.Branching.Flag |> int))
       let instrument instruction =
         InsertVisit instruction state.MethodWorker state.RecordingMethodRef.Visit
           state.ModuleId point

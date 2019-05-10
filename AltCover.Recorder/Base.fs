@@ -10,6 +10,13 @@ open System.Globalization
 open System.IO
 open System.Xml
 
+type internal Branching =
+  /// <summary>
+  /// The offset flag for branch counts
+  /// </summary>
+  | Flag = 0x80000000
+  | Mask = 0x7FFFFFFF
+
 // These conditionally internal for Gendarme
 type
 #if DEBUG
@@ -52,12 +59,41 @@ type
 #endif
 #endif
 [<NoComparison>]
-type internal Track =
+type internal Carrier =
+    {
+      ModuleId : string
+      Points : PointVisit array
+      Branches : PointVisit array
+    }
+and [<NoComparison>]
+#if NETSTANDARD2_0
+[<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage>]
+#else
+#if NETCOREAPP2_0
+[<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage>]
+#else
+[<System.Runtime.InteropServices.ProgIdAttribute("ExcludeFromCodeCoverage hack for OpenCover issue 615")>]
+#endif
+#endif
+  internal Track =
   | Null
   | Time of int64
   | Call of int
   | Both of (int64 * int)
-  | Table of Dictionary<string, Dictionary<int, PointVisit>>
+  | Table of Batch
+and [<NoComparison>]
+#if NETSTANDARD2_0
+[<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage>]
+#else
+#if NETCOREAPP2_0
+[<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage>]
+#else
+[<System.Runtime.InteropServices.ProgIdAttribute("ExcludeFromCodeCoverage hack for OpenCover issue 615")>]
+#endif
+#endif
+  internal Batch =
+  | Original of Dictionary<string, Dictionary<int, PointVisit>>
+  | Update519 of Carrier array
 and [<NoComparison>]
 #if NETSTANDARD2_0
 [<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage>]
@@ -73,7 +109,67 @@ and [<NoComparison>]
       mutable Count : int64
       Tracks : List<Track>
     }
-    with
+
+[<NoComparison>]
+#if NETSTANDARD2_0
+[<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage>]
+#else
+#if NETCOREAPP2_0
+[<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage>]
+#else
+[<System.Runtime.InteropServices.ProgIdAttribute("ExcludeFromCodeCoverage hack for OpenCover issue 615")>]
+#endif
+#endif
+type internal ModuleContents =
+  | OMC of Dictionary<int, PointVisit>
+  | UMC of Carrier
+  with
+  static member FindPoint c hitPointId =
+    let index = hitPointId &&& (Branching.Mask |> int)
+    if index = hitPointId
+    then c.Points.[hitPointId]
+    else c.Branches.[index]
+
+  static member HasPoint c hitPointId =
+    let index = hitPointId &&& (Branching.Mask |> int)
+    index >= 0 && index <
+      if index = hitPointId
+      then c.Points.Length
+      else c.Branches.Length
+
+  member self.ContainsKey k =
+    match self with
+    | OMC o -> o.ContainsKey k
+    | UMC u -> ModuleContents.HasPoint u k
+
+  member self.Item k =
+    match self with
+    | OMC o -> o.[k]
+    | UMC u -> ModuleContents.FindPoint u k
+
+  member self.ModuleId =
+    match self with
+    | UMC u -> u.ModuleId
+    | _ -> String.Empty
+
+module internal ExtendBatch =
+  type Batch with
+  member self.ContainsKey k =
+    match self with
+    | Original o -> o.ContainsKey k
+    | Update519 a -> a
+                     |> Seq.exists (fun m -> m.ModuleId = k)
+
+  member self.Item k =
+    match self with
+    | Original o -> OMC o.[k]
+    | Update519 a -> a
+                     |> Seq.filter (fun m -> m.ModuleId = k)
+                     |> Seq.head
+                     |> UMC
+
+module internal ExtendPointVisit =
+  type PointVisit with
     static member Create () = { Count = 0L; Tracks = List<Track>() }
     static member Init n l = let tmp = { PointVisit.Create() with Count = n }
                              tmp.Tracks.AddRange l
@@ -82,19 +178,17 @@ and [<NoComparison>]
     member self.Track something = lock self.Tracks (fun () -> self.Tracks.Add something)
     member self.Total() = self.Count + int64 self.Tracks.Count
 
+open ExtendBatch
+open ExtendPointVisit
+
 module internal Assist =
+
   let internal SafeDispose x =
     try
       (x :> IDisposable).Dispose()
     with :? ObjectDisposedException -> ()
 
 module internal Counter =
-  /// <summary>
-  /// The offset flag for branch counts
-  /// </summary>
-  let internal BranchFlag = 0x80000000
-
-  let internal BranchMask = 0x7FFFFFFF
 
   /// <summary>
   /// The time at which coverage run began
@@ -139,7 +233,7 @@ module internal Counter =
   let internal OpenCoverXml =
     ("//Module", "hash", "Classes/Class/Methods/Method",
      [ ("SequencePoints/SequencePoint", 0)
-       ("BranchPoints/BranchPoint", BranchFlag) ], "vc")
+       ("BranchPoints/BranchPoint", Branching.Flag |> int) ], "vc")
 
   let internal NCoverXml =
     ("//module", "moduleId", "method", [ ("seqpnt", 0) ], "visitcount")
@@ -157,7 +251,7 @@ module internal Counter =
   /// <param name="coverageFile">The coverage file to update as a stream</param>
   let internal UpdateReport (postProcess : XmlDocument -> unit)
       (pointProcess : XmlElement -> List<Track> -> unit) own
-      (counts : Dictionary<string, Dictionary<int, PointVisit>>) format coverageFile
+      (counts : Batch) format coverageFile
       (outputFile : Stream) =
     let flushStart = DateTime.UtcNow
     let coverageDocument = ReadXDocument coverageFile
@@ -288,22 +382,30 @@ module internal Counter =
                           )))
     hitcount
 
-  let internal AddSingleVisit  (counts : Dictionary<string, Dictionary<int, PointVisit>>)
+  let internal AddSingleVisit  (counts : Batch)
       moduleId hitPointId context =
-    EnsureModule counts moduleId
-    let next = counts.[moduleId]
-    EnsurePoint next hitPointId
 
-    let v = next.[hitPointId]
+    let v = match counts with
+            | Original o ->
+                EnsureModule o moduleId
+                let next = o.[moduleId]
+                EnsurePoint next hitPointId
+                next.[hitPointId]
+            | Update519 u ->
+                counts.[moduleId].[hitPointId]
+
     match context with
     | Null -> v.Step()
     | something -> v.Track something
 
 #if RUNNER
-  let internal AddVisit (counts : Dictionary<string, Dictionary<int, PointVisit>>)
+  let internal AddVisit (counts : Batch)
       moduleId hitPointId context =
     match context with
-    | Table t -> AddTable counts t
+    | Table (Original t) -> match counts with
+                            | Original o -> AddTable o t
+                            | _ -> 0L
+    | Table _ -> 0L
     | _ -> AddSingleVisit counts moduleId hitPointId context
            1L
 #endif
