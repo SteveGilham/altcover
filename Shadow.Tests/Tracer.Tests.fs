@@ -41,7 +41,7 @@ type AltCoverCoreTests() =
       with _ ->
         client.Close()
         reraise()
-
+#if SPLAT
     [<Test>]
     member self.ValidTokenWillConnect() =
       let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
@@ -251,5 +251,5 @@ type AltCoverCoreTests() =
     member self.CoreFindsThePlace() =
       Assert.That(AltCover.Recorder.Tracer.Core(), Does.EndWith("FSharp.Core.dll"))
 #endif
-
+#endif
   end

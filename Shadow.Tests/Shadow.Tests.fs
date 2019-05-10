@@ -86,7 +86,7 @@ type AltCoverTests() =
           Formatter = null }
       Assert.That(tracer.GetType().Assembly.GetName().Name, Is.EqualTo "AltCover.Shadow")
       self.GetMyMethodName "<="
-
+#if SPLAT
     [<Test>]
     member self.OnlyNewIdPairShouldBeSampled() =
       self.GetMyMethodName "=>"
@@ -857,5 +857,5 @@ type AltCoverTests() =
       self.ResumeLeavesExpectedTraces()
       self.FlushLeavesExpectedTraces()
 #endif
-
+#endif
   end

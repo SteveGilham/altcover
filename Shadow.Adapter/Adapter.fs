@@ -14,6 +14,7 @@ module Adapter =
     Instance.IsRunner <- false
     VisitsClear()
 
+#if SPLAT
   let internal prepareName name =
     if name
        |> Instance.Visits.ContainsKey
@@ -39,6 +40,8 @@ module Adapter =
 
   let VisitsSeq() = Instance.Visits |> Seq.cast<obj>
   let VisitsEntrySeq key = Instance.Visits.[key] |> Seq.cast<obj>
+#endif
+
   let VisitCount key key2 = (Instance.Visits.[key].[key2]).Count
   let VisitTracks key key2 = (Instance.Visits.[key].[key2]).Tracks |> Seq.cast<obj>
   let VisitTrack key key2 key3 =

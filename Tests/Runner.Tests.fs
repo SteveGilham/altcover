@@ -94,7 +94,7 @@ type AltCoverTests() =
       let x = visits.[key].[23]
       Assert.That(x.Count, Is.EqualTo 2)
       Assert.That(x.Tracks, Is.Empty)
-
+#if SPLAT
     [<Test>]
     member self.RepeatVisitsShouldIncrementTotal() =
       let visits = new Dictionary<string, Dictionary<int, PointVisit>>()
@@ -2543,4 +2543,5 @@ or
     member self.TryGetValueHandlesNull() =
       let dict : Dictionary<int, int> = null
       Assert.That(Runner.TryGetValue dict 0 |> fst, Is.False)
+#endif
   end

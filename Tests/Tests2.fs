@@ -1064,9 +1064,9 @@ type AltCoverTests2() =
         Assert.That(switches.[1], Is.EqualTo inject.[0])
         Assert.That(inject.[0].Operand, Is.EqualTo inject.[5])
         Assert.That
-          ((inject.[2].Operand :?> int) &&& Base.Counter.BranchMask, Is.EqualTo 1)
+          ((inject.[2].Operand :?> int) &&& (Base.Branching.Mask |> int), Is.EqualTo 1)
         Assert.That
-          ((inject.[6].Operand :?> int) &&& Base.Counter.BranchMask, Is.EqualTo 0)
+          ((inject.[6].Operand :?> int) &&& (Base.Branching.Mask |> int), Is.EqualTo 0)
       finally
         Visitor.NameFilters.Clear()
         Visitor.reportFormat <- None
@@ -1122,9 +1122,9 @@ type AltCoverTests2() =
         Assert.That(inject.Length, Is.EqualTo 8)
         Assert.That(inject.[0].Operand, Is.EqualTo inject.[5])
         Assert.That
-          ((inject.[2].Operand :?> int) &&& Base.Counter.BranchMask, Is.EqualTo 1)
+          ((inject.[2].Operand :?> int) &&& (Base.Branching.Mask |> int), Is.EqualTo 1)
         Assert.That
-          ((inject.[6].Operand :?> int) &&& Base.Counter.BranchMask, Is.EqualTo 0)
+          ((inject.[6].Operand :?> int) &&& (Base.Branching.Mask |> int), Is.EqualTo 0)
       finally
         Visitor.NameFilters.Clear()
         Visitor.reportFormat <- None
