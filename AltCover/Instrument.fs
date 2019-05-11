@@ -409,9 +409,11 @@ module internal Instrument =
       (recordingMethodRef : MethodReference) (moduleId : string) (point : int) =
     let counterMethodCall = methodWorker.Create(OpCodes.Call, recordingMethodRef)
     let instrLoadModuleId = methodWorker.Create(OpCodes.Ldstr, moduleId)
+    let instrLoadMidx = methodWorker.Create(OpCodes.Ldc_I4, modules.Count)
     let instrLoadPointId = methodWorker.Create(OpCodes.Ldc_I4, point)
     methodWorker.InsertBefore(instruction, instrLoadModuleId)
-    methodWorker.InsertAfter(instrLoadModuleId, instrLoadPointId)
+    methodWorker.InsertAfter(instrLoadModuleId, instrLoadMidx)
+    methodWorker.InsertAfter(instrLoadMidx, instrLoadPointId)
     methodWorker.InsertAfter(instrLoadPointId, counterMethodCall)
     instrLoadModuleId
 
@@ -565,7 +567,7 @@ module internal Instrument =
         InsertVisit instruction state.MethodWorker state.RecordingMethodRef.Visit
           state.ModuleId point
       UpdateBranchReferences state.MethodBody instruction instrLoadModuleId
-      { state with ModulePoints = state.ModulePoints + 1 }
+      { state with ModulePoints = Math.Max(state.ModulePoints, point) }
     else
       state
 
@@ -629,7 +631,7 @@ module internal Instrument =
         let preamble = instrument jump
         if branch.Start.OpCode = OpCodes.Switch then updateSwitch preamble
         else branch.Start.Operand <- preamble
-      { state with ModuleBranches = state.ModuleBranches + 1 }
+      { state with ModuleBranches = Math.Max(state.ModuleBranches, branch.Uid) }
     else
       state
 
@@ -776,7 +778,7 @@ module internal Instrument =
     { state with RecordingAssembly = recordingAssembly }
 
   let private VisitAfterModule state =
-    modules.Add ((state.ModuleId, state.ModulePoints, state.ModuleBranches))
+    modules.Add ((state.ModuleId, state.ModulePoints + 1, state.ModuleBranches + 1))
     state
 
   /// <summary>

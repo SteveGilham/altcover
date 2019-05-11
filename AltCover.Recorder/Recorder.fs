@@ -85,6 +85,7 @@ module Instance =
 //	IL_002c: ret
 //} // end of method Instance::UrVisits
 
+  [<MethodImplAttribute(MethodImplOptions.NoInlining)>]
   let internal Instrumentation () : Module array = [| |]
 
   let internal makeVisitInstance _ = PointVisit.Create()
@@ -96,15 +97,15 @@ module Instance =
       Points = makePointsArray a.PointCount
       Branches = makePointsArray a.BranchCount
     }
-
+  [<MethodImplAttribute(MethodImplOptions.NoInlining)>]
   let internal NewVisits () =
     Instrumentation ()
     |> Array.map makeCarryingInstance
 
-  let internal VisitData = NewVisits()
   /// <summary>
   /// Accumulation of visit records
   /// </summary>
+  [<MethodImplAttribute(MethodImplOptions.NoInlining)>]
   let mutable internal Visits = Update519 <| NewVisits()
   let mutable internal IsRunner = false
 
@@ -243,8 +244,8 @@ module Instance =
     lock Visits (fun () ->
     trace.OnVisit Visits moduleId hitPointId context)
 
-  let internal AddVisit moduleId hitPointId context =
-    Counter.AddSingleVisit Visits moduleId hitPointId context
+  let internal AddVisit mindex _ hitPointId context =
+    Counter.AddSingleVisit Visits mindex hitPointId context
 
   let internal TakeSample strategy moduleId hitPointId =
     match strategy with
@@ -256,10 +257,10 @@ module Instance =
   /// </summary>
   /// <param name="moduleId">Assembly being visited</param>
   /// <param name="hitPointId">Sequence Point identifier</param>
-  let internal VisitImpl moduleId hitPointId context =
+  let internal VisitImpl moduleId mindex hitPointId context =
     if (Sample = Sampling.All || TakeSample Sample moduleId hitPointId) then
       let adder =
-        if Defer || Supervision || (trace.IsConnected() |> not) then AddVisit
+        if Defer || Supervision || (trace.IsConnected() |> not) then (AddVisit mindex)
         else TraceVisit
       adder moduleId hitPointId context
 
@@ -281,14 +282,21 @@ module Instance =
   let internal PayloadControl = PayloadSelection Clock
   let internal PayloadSelector enable = PayloadControl Granularity enable
 
-  let internal VisitSelection track moduleId hitPointId =
-    VisitImpl moduleId hitPointId track
+  let internal VisitSelection track moduleId mindex hitPointId =
+    VisitImpl moduleId mindex hitPointId track
 
-  let Visit moduleId hitPointId =
+  let Visit moduleId mindex hitPointId =
+   try
     if Recording then
       VisitSelection (if CoverageFormat = ReportFormat.OpenCoverWithTracking
                       then PayloadSelector IsOpenCoverRunner
-                      else Null) moduleId hitPointId
+                      else Null) moduleId mindex hitPointId
+   with
+   | x -> let m1 = sprintf "Visit %A %A %A" moduleId mindex hitPointId
+          let m2 = x.StackTrace.ToString()
+          // let m2 = sprintf "from %A" (Instrumentation())
+          InvalidOperationException(m1 + Environment.NewLine + m2 + Environment.NewLine + x.Message)
+           |> raise
 
   let internal FlushCounter (finish : Close) _ =
       match finish with

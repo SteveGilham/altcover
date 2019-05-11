@@ -1571,7 +1571,7 @@ type AltCoverTests2() =
                                                   Pop = null } }
 
         let result = Instrument.InstrumentationVisitor state visited
-        Assert.That(result, Is.EqualTo { state with ModulePoints = 1 })
+        Assert.That(result, Is.EqualTo { state with ModulePoints = 32767 })
         Assert.That(target.Previous.OpCode, Is.EqualTo OpCodes.Call)
 
     [<Test>]

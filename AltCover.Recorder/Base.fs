@@ -127,9 +127,14 @@ type internal ModuleContents =
   with
   static member FindPoint c hitPointId =
     let index = hitPointId &&& (Branching.Mask |> int)
-    if index = hitPointId
-    then c.Points.[hitPointId]
-    else c.Branches.[index]
+    try
+      if index = hitPointId
+      then c.Points.[hitPointId]
+      else c.Branches.[index]
+    with
+    | x -> let m = sprintf "m %A hitPoint %A index %A points %A branches %A" c.ModuleId hitPointId index c.Points.Length c.Branches.Length
+           InvalidOperationException(m + Environment.NewLine + x.Message)
+           |> raise
 
   static member HasPoint c hitPointId =
     let index = hitPointId &&& (Branching.Mask |> int)
@@ -388,12 +393,19 @@ module internal Counter =
 
     let v = match counts with
             | Original o ->
+#if RUNNER
                 EnsureModule o moduleId
                 let next = o.[moduleId]
                 EnsurePoint next hitPointId
                 next.[hitPointId]
-            | Update519 _ ->
-                counts.[moduleId].[hitPointId]
+            | _ ->
+#endif
+                PointVisit.Create()
+#if RUNNER
+#else
+            | Update519 u ->
+                (u.[moduleId] |> UMC).[hitPointId]
+#endif
 
     match context with
     | Null -> v.Step()

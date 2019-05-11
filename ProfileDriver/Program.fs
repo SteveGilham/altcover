@@ -1,7 +1,7 @@
 ﻿open System
 
 open AltCover.Recorder
-
+#if SPLAT
 let run _ =
    let mutable step = 0
    {0..3}
@@ -25,10 +25,10 @@ let runMany m n =
         })
     |> Async.Parallel
     |> Async.Ignore
-
+#endif
 [<EntryPoint>]
 let main argv =
-    runMany 100 10000
-    |> Async.RunSynchronously
+//    runMany 100 10000
+//    |> Async.RunSynchronously
 
     0 // return an integer exit code

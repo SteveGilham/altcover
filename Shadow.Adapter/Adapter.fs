@@ -54,10 +54,12 @@ module Adapter =
     | Table _ -> [| int64 Tag.Table |]
   let Lock = Instance.Visits :> obj
 
+#if SPLAT
   let VisitImplNone moduleId hitPointId =
     Instance.VisitImpl moduleId hitPointId Track.Null
   let VisitImplMethod moduleId hitPointId mId =
     Instance.VisitImpl moduleId hitPointId (Call mId)
+#endif
 
   let AddSample moduleId hitPointId =
     Instance.TakeSample Sampling.Single moduleId hitPointId
