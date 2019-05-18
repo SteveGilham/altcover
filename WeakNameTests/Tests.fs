@@ -11,11 +11,9 @@ open NUnit.Framework
 
 module Rocks =
   let rec GetAllTypes(t : TypeDefinition) =
-    t :: (t.NestedTypes
+    t :: (List.collect GetAllTypes (t.NestedTypes
           |> Seq.cast<TypeDefinition>
-          |> Seq.toList
-          |> List.map GetAllTypes
-          |> List.concat)
+          |> Seq.toList))
 
 [<TestFixture>]
 type AltCoverTests() =
@@ -32,21 +30,18 @@ type AltCoverTests() =
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
 
       let failures =
-        def.MainModule.Types
+        (Seq.map ((fun (m:MethodDefinition) ->
+             (m.FullName,
+              Gendarme.Rules.Maintainability.AvoidComplexMethodsRule.GetCyclomaticComplexity
+                m, Gendarme.CyclomaticComplexity m)) >> (fun (n, e, r) ->
+             if r <> e then Some(n, e, r)
+             else None)) (def.MainModule.Types
         |> Seq.cast<TypeDefinition>
         |> Seq.map Rocks.GetAllTypes
         |> List.concat
         |> List.map (fun t -> t.Methods |> Seq.cast<MethodDefinition>)
         |> Seq.concat
-        |> Seq.sortBy (fun m -> m.FullName)
-        |> Seq.map
-             (fun m ->
-             (m.FullName,
-              Gendarme.Rules.Maintainability.AvoidComplexMethodsRule.GetCyclomaticComplexity
-                m, Gendarme.CyclomaticComplexity m))
-        |> Seq.map (fun (n, e, r) ->
-             if r <> e then Some(n, e, r)
-             else None)
+        |> Seq.sortBy (fun m -> m.FullName)))
         |> Seq.filter Option.isSome
         |> Seq.map (fun x ->
              let n, e, r = Option.get x
@@ -65,22 +60,18 @@ type AltCoverTests() =
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
 
       let failures =
-        def.MainModule.Types
+        (Seq.map ((fun (m:MethodDefinition) ->
+             (m.FullName,
+              Gendarme.Rules.Maintainability.AvoidComplexMethodsRule.GetCyclomaticComplexity
+                m, Gendarme.CyclomaticComplexity m)) >> (fun (n, e, r) ->
+             if r <> e then Some(n, e, r)
+             else None)) (def.MainModule.Types
         |> Seq.cast<TypeDefinition>
         |> Seq.map Rocks.GetAllTypes
         |> List.concat
         |> List.map (fun t -> t.Methods |> Seq.cast<MethodDefinition>)
         |> Seq.concat
-        |> Seq.sortBy (fun m -> m.FullName)
-        /// |> Seq.filter(fun m -> m.FullName.StartsWith("System.Void "))
-        |> Seq.map
-             (fun m ->
-             (m.FullName,
-              Gendarme.Rules.Maintainability.AvoidComplexMethodsRule.GetCyclomaticComplexity
-                m, Gendarme.CyclomaticComplexity m))
-        |> Seq.map (fun (n, e, r) ->
-             if r <> e then Some(n, e, r)
-             else None)
+        |> Seq.sortBy (fun m -> m.FullName)))
         |> Seq.filter Option.isSome
         |> Seq.map (fun x ->
              let n, e, r = Option.get x
@@ -106,22 +97,18 @@ type AltCoverTests() =
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
 
       let failures =
-        def.MainModule.Types
+        (Seq.map ((fun (m:MethodDefinition) ->
+             (m.FullName,
+              Gendarme.Rules.Maintainability.AvoidComplexMethodsRule.GetCyclomaticComplexity
+                m, Gendarme.CyclomaticComplexity m)) >> (fun (n, e, r) ->
+             if r <> e then Some(n, e, r)
+             else None)) (def.MainModule.Types
         |> Seq.cast<TypeDefinition>
         |> Seq.map Rocks.GetAllTypes
         |> List.concat
         |> List.map (fun t -> t.Methods |> Seq.cast<MethodDefinition>)
         |> Seq.concat
-        |> Seq.sortBy (fun m -> m.FullName)
-        /// |> Seq.filter(fun m -> m.FullName.StartsWith("System.Void "))
-        |> Seq.map
-             (fun m ->
-             (m.FullName,
-              Gendarme.Rules.Maintainability.AvoidComplexMethodsRule.GetCyclomaticComplexity
-                m, Gendarme.CyclomaticComplexity m))
-        |> Seq.map (fun (n, e, r) ->
-             if r <> e then Some(n, e, r)
-             else None)
+        |> Seq.sortBy (fun m -> m.FullName)))
         |> Seq.filter Option.isSome
         |> Seq.map (fun x ->
              let n, e, r = Option.get x

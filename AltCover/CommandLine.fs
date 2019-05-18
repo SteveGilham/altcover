@@ -314,7 +314,7 @@ module internal CommandLine =
     if ok then
       stream.Position <- 0L
       StrongNameKeyPair(stream)
-    else new NotSupportedException(x) |> raise
+    else NotSupportedException(x) |> raise
 
   let internal ValidateStrongNameKey key x =
     if ValidateFile key x then

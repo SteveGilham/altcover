@@ -27,7 +27,7 @@ open Avalonia.Threading
 module UICommon =
   let GetResourceString(key : string) =
     let executingAssembly = System.Reflection.Assembly.GetExecutingAssembly()
-    let resources = new ResourceManager("AltCover.Visualizer.Strings", executingAssembly)
+    let resources = ResourceManager("AltCover.Visualizer.Strings", executingAssembly)
     resources.GetString(key)
 
 module Persistence =
@@ -470,10 +470,9 @@ type MainWindow() as this =
                    if scroll >= textLines.Length then textLines.Length - 1
                    else scroll
                  // Scroll into mid-view -- not entirely reliable
-                 text.CaretIndex <- textLines
-                                    |> Seq.take capped
-                                    |> Seq.map (fun l -> l.Length + 1) //System.Environment.NewLine.Length)
-                                    |> Seq.sum
+                 text.CaretIndex <- Seq.sumBy (fun (l:String) -> l.Length + 1) (textLines //System.Environment.NewLine.Length
+                                    |> Seq.take capped)
+
                  // TODO -- colouring
                  let root = x.m.Clone()
                  root.MoveToRoot()
@@ -692,7 +691,7 @@ type MainWindow() as this =
                  + UICommon.GetResourceString "WebsiteLabel" + "</a></center>"
     link.PointerPressed |> Event.add (fun _ -> armed <- true)
     link.PointerLeave |> Event.add (fun _ -> armed <- false)
-    link.PointerReleased |> Event.add (fun _ -> ())
+    link.PointerReleased |> Event.add ignore
     // Windows -- Process Start (url)
     // Mac -- ("open", url)
     // *nix -- ("xdg-open", url)
