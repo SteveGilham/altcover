@@ -13,6 +13,7 @@ namespace AltCover.Parameters
         string Cobertura { get; }
         string OutputFile { get; }
         bool ExposeReturnCode { get; }
+        string SummaryFormat { get; }
         string[] CommandLine { get; }
 
         FSApi.CollectParams ToParameters();
@@ -46,6 +47,7 @@ namespace AltCover.Parameters
         bool BranchCover { get; }
         bool ExposeReturnCode { get; }
         bool SourceLink { get; }
+        bool Defer { get; }
 
         string[] CommandLine { get; }
 
@@ -73,6 +75,11 @@ namespace AltCover.Parameters
     {
         bool FailFast { get; }
     }
+
+    public interface ICLIArg3 : ICLIArg2
+    {
+        string ShowSummary { get; }
+    }
 }
 
 namespace AltCover.Parameters.Primitive
@@ -86,6 +93,7 @@ namespace AltCover.Parameters.Primitive
         public string Threshold { get; set; }
         public string Cobertura { get; set; }
         public string OutputFile { get; set; }
+        public string SummaryFormat { get; set; }
         public string[] CommandLine { get; set; }
         public bool ExposeReturnCode { get; set; }
 
@@ -100,7 +108,8 @@ namespace AltCover.Parameters.Primitive
                 Cobertura,
                 OutputFile,
                 CommandLine,
-                ExposeReturnCode
+                ExposeReturnCode,
+                SummaryFormat
                 );
             return FSApi.CollectParams.NewPrimitive(primitive);
         }
@@ -117,7 +126,8 @@ namespace AltCover.Parameters.Primitive
                 Cobertura = string.Empty,
                 OutputFile = string.Empty,
                 CommandLine = new string[] { },
-                ExposeReturnCode = true
+                ExposeReturnCode = true,
+                SummaryFormat = string.Empty
             };
         }
 
@@ -153,38 +163,40 @@ namespace AltCover.Parameters.Primitive
         public bool BranchCover { get; set; }
         public bool ExposeReturnCode { get; set; }
         public bool SourceLink { get; set; }
+        public bool Defer { get; set; }
 
         public string[] CommandLine { get; set; }
 
         public FSApi.PrepareParams ToParameters()
         {
             var primitive = new AltCover.Primitive.PrepareParams(
-                        InputDirectory,
-                        OutputDirectory,
-                        SymbolDirectories,
-                        Dependencies,
-                        Keys,
-                        StrongNameKey,
-                        XmlReport,
-                        FileFilter,
-                        AssemblyFilter,
-                        AssemblyExcludeFilter,
-                        TypeFilter,
-                        MethodFilter,
-                        AttributeFilter,
-                        PathFilter,
-                        CallContext,
+                            InputDirectory,
+                            OutputDirectory,
+                            SymbolDirectories,
+                            Dependencies,
+                            Keys,
+                            StrongNameKey,
+                            XmlReport,
+                            FileFilter,
+                            AssemblyFilter,
+                            AssemblyExcludeFilter,
+                            TypeFilter,
+                            MethodFilter,
+                            AttributeFilter,
+                            PathFilter,
+                            CallContext,
 
-                        OpenCover,
-                        InPlace,
-                        Save,
-                        Single,
-                        LineCover,
-                        BranchCover,
-                        CommandLine,
-                        ExposeReturnCode,
-                        SourceLink
-                );
+                            OpenCover,
+                            InPlace,
+                            Save,
+                            Single,
+                            LineCover,
+                            BranchCover,
+                            CommandLine,
+                            ExposeReturnCode,
+                            SourceLink,
+                            Defer
+                                                                );
             return FSApi.PrepareParams.NewPrimitive(primitive);
         }
 
@@ -217,7 +229,8 @@ namespace AltCover.Parameters.Primitive
                 CommandLine = { },
 
                 ExposeReturnCode = true,
-                SourceLink = false
+                SourceLink = false,
+                Defer = false
             };
         }
 
@@ -256,10 +269,11 @@ namespace AltCover.Parameters.Primitive
         }
     }
 
-    public class CLIArgs : ICLIArg2
+    public class CLIArgs : ICLIArg3
     {
         public bool Force { get; set; }
         public bool FailFast { get; set; }
+        public string ShowSummary { get; set; }
     }
 }
 
@@ -294,6 +308,11 @@ namespace AltCover
             var force = DotNet.CLIArgs.NewForce(args.Force);
             switch (args)
             {
+                case ICLIArg3 args3:
+                    var failfast3 = DotNet.CLIArgs.NewFailFast(args3.FailFast);
+                    var showsummary = DotNet.CLIArgs.NewShowSummary(args3.ShowSummary);
+                    return DotNet.CLIArgs.NewMany(new[] { force, failfast3, showsummary });
+
                 case ICLIArg2 args2:
                     var failfast = DotNet.CLIArgs.NewFailFast(args2.FailFast);
                     return DotNet.CLIArgs.NewMany(new[] { force, failfast });

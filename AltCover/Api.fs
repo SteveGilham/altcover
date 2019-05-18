@@ -72,6 +72,11 @@ type CollectParams =
     | Primitive p -> p.ExposeReturnCode
     | TypeSafe t -> t.ExposeReturnCode.AsBool()
 
+  member self.SummaryFormat =
+    match self with
+    | Primitive p -> p.SummaryFormat
+    | TypeSafe t -> t.SummaryFormat.AsString()
+
 #if RUNNER
   member self.Validate afterPreparation =
     let saved = CommandLine.error
@@ -241,6 +246,11 @@ type PrepareParams =
     | Primitive p -> p.SourceLink
     | TypeSafe t -> t.SourceLink.AsBool()
 
+  member self.Defer =
+    match self with
+    | Primitive p -> p.Defer
+    | TypeSafe t -> t.Defer.AsBool()
+
 #if RUNNER
   static member private validateArray a f key =
     PrepareParams.validateArraySimple a (f key)
@@ -350,6 +360,10 @@ module internal Args =
     if x |> String.IsNullOrWhiteSpace then []
     else [ a; x ]
 
+  let private OptItem a x =
+    if x |> String.IsNullOrWhiteSpace then []
+    else [ a + ":" + x ]
+
   let internal ItemList a x =
     if x |> isNull then []
     else
@@ -413,6 +427,7 @@ module internal Args =
       Flag "--branchcover" args.BranchCover
       Flag "--dropReturnCode" (args.ExposeReturnCode |> not)
       Flag "--sourcelink" args.SourceLink
+      Flag "--defer" args.Defer
       trailing ]
     |> List.concat
 
@@ -435,6 +450,7 @@ module internal Args =
       Item "-o" args.OutputFile
       Flag "--collect" (exe |> String.IsNullOrWhiteSpace)
       Flag "--dropReturnCode" (args.ExposeReturnCode |> not)
+      OptItem "--teamcity" args.SummaryFormat
       trailing ]
     |> List.concat
 

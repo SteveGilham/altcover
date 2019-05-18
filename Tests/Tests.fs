@@ -571,7 +571,8 @@ type AltCoverTests() =
         Mono.Cecil.AssemblyDefinition.ReadAssembly
           (Assembly.GetExecutingAssembly().Location)
       def.MainModule.Types
-      |> Seq.filter (fun t -> t.IsPublic && t.Name.Contains("AltCover")) // exclude the many compiler generted chaff classes
+      |> Seq.filter (fun t -> t.IsPublic && t.Name.Contains("AltCover")
+                                         && (not (t.FullName.Contains("Coverlet.Core.Instrumentation")))) // exclude the many compiler generted chaff classes
       |> Seq.iter
            (fun t ->
            Assert.That(Match t (FilterClass.Attribute(Regex "Fix")), Is.True, t.FullName))
@@ -713,6 +714,27 @@ type AltCoverTests() =
       Assert.That(pass, Is.EquivalentTo(expected), sprintf "Got sequence %A" pass)
 
     // Visitor.fs
+    [<Test>]
+    member self.FixEnding() =
+      let a = Visitor.EnsureEndsWith "a" "banana"
+      Assert.That (a, Is.EqualTo "banana")
+
+      let s = Visitor.EnsureEndsWith "s" "banana"
+      Assert.That (s, Is.EqualTo "bananas")
+
+    [<Test>]
+    member self.LocateMatchShouldChooseLongerWildCardPath() =
+      let dict = System.Collections.Generic.Dictionary<string, string>()
+      let file = Assembly.GetExecutingAssembly().Location
+      let p1 = Path.GetDirectoryName file
+      let p2 = Path.GetDirectoryName p1
+      let pp1 = Path.Combine (p1, "*")
+      let pp2 = Path.Combine(p2, "*")
+      dict.Add(pp1, pp1)
+      dict.Add(pp2, pp2)
+      let find = Visitor.FindClosestMatch file dict
+      Assert.That(find, Is.EqualTo (Some (pp1, String.Empty)))
+
     [<Test>]
     member self.ReleaseBuildTernaryTest() =
       let nop = Instruction.Create(OpCodes.Nop)
@@ -1613,9 +1635,10 @@ type AltCoverTests() =
 
       let expected =
         [ "get_Property"; "set_Property"; "#ctor"; "get_Property"; "set_Property"; "#ctor";
-          "get_Visits"; "Log"; "GetOperandType"; "#ctor"; ".cctor"; "get_Property";
-          "set_Property"; "get_ReportFile"; "set_ReportFile"; "get_Timer"; "set_Timer";
-          "get_Token"; "set_Token"; "get_CoverageFormat"; "set_CoverageFormat";
+          "get_Visits"; "Log"; "GetOperandType"; "#ctor"; ".cctor"; "get_Defer"; "set_Defer";
+          "get_Property"; "set_Property"; "get_ReportFile"; "set_ReportFile";
+          "get_Timer"; "set_Timer"; "get_Token"; "set_Token";
+          "get_CoverageFormat"; "set_CoverageFormat";
           "get_Sample"; "set_Sample"; "ToList"; "#ctor" ]
       Assert.That(names, Is.EquivalentTo expected)
 
@@ -1643,6 +1666,8 @@ type AltCoverTests() =
           "System.Void Sample3.Class3.Log(System.String,System.Int32)";
           "System.Int32 Sample3.Class3.GetOperandType(Mono.Cecil.Cil.Instruction)";
           "System.Void Sample3.Class3.#ctor()"; "System.Void Sample3.Class3..cctor()";
+          "System.Boolean Sample3.Class3+Class4.get_Defer()"
+          "System.Void Sample3.Class3+Class4.set_Defer(System.Boolean)"
           "Sample3.Class1 Sample3.Class3+Class4.get_Property()";
           "System.Void Sample3.Class3+Class4.set_Property(Sample3.Class1)";
           "System.String Sample3.Class3+Class4.get_ReportFile()";

@@ -36,7 +36,7 @@ let AltCoverFilter(p : Primitive.PrepareParams) =
            AssemblyExcludeFilter =
              [ "Adapter"; "Tests" ] @ (p.AssemblyExcludeFilter |> Seq.toList)
            AssemblyFilter =
-             [ "Mono"; @"\.Recorder"; "Sample"; "nunit"; "Newton"; "xunit"; "BlackFox" ]
+             [ "Mono"; @"\.Recorder"; @"\.DataCollector"; "Sample"; "nunit"; "Newton"; "xunit"; "BlackFox" ]
              @ (p.AssemblyFilter |> Seq.toList)
            TypeFilter = [ @"System\."; @"Sample3\.Class2" ] @ (p.TypeFilter |> Seq.toList) }
 
@@ -44,7 +44,7 @@ let AltCoverFilterX(p : Primitive.PrepareParams) =
   { p with MethodFilter = "WaitForExitCustom" :: (p.MethodFilter |> Seq.toList)
            AssemblyExcludeFilter = "Adapter" :: (p.AssemblyExcludeFilter |> Seq.toList)
            AssemblyFilter =
-             [ "Mono"; @"\.Recorder"; "Sample"; "nunit"; "Newton"; "xunit"; "BlackFox" ]
+             [ "Mono"; @"\.Recorder"; @"\.DataCollector"; "Sample"; "nunit"; "Newton"; "xunit"; "BlackFox" ]
              @ (p.AssemblyFilter |> Seq.toList)
            TypeFilter = [ @"System\."; @"Sample3\.Class2" ] @ (p.TypeFilter |> Seq.toList) }
 
@@ -127,8 +127,11 @@ let NuGetAltCover =
   |> Seq.filter File.Exists
   |> Seq.tryHead
 
-let ForceTrue = DotNet.CLIArgs.Force true
+let ForceTrueOnly = DotNet.CLIArgs.Force true
 let FailTrue = DotNet.CLIArgs.FailFast true
+
+let GreenSummary = DotNet.CLIArgs.ShowSummary "Green"
+let ForceTrue = DotNet.CLIArgs.Many [ ForceTrueOnly; GreenSummary ]
 
 let _Target s f =
   Target.description s
@@ -220,7 +223,7 @@ _Target "BuildDebug" (fun _ ->
 
   Directory.ensure "./_SourceLink"
   Shell.copyFile "./_SourceLink/Class2.cs" "./Sample14/Sample14/Class2.txt"
-  if Environment.isWindows then  
+  if Environment.isWindows then
     let temp = Environment.environVar "TEMP"
     Shell.copyFile (temp @@ "/Sample14.SourceLink.Class3.cs") "./Sample14/Sample14/Class3.txt"
   else
@@ -563,9 +566,9 @@ _Target "UnitTestDotNetWithCoverlet" (fun _ ->
     let xml =
       !!(@"./*Tests/*.tests.core.fsproj")
       |> Seq.zip
-           [ """/p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Exclude="\"[xunit*]*,[Sample*]*,[AltCover.Record*]*,[NUnit*]*,[AltCover.Shadow.Adapter]*\""  """
-             """/p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Exclude="\"[xunit*]*,[Sample*]*,[AltCover.Record*]*,[NUnit*]*,[AltCover.Shadow.Adapter]*\""  """
-             """/p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Exclude="\"[xunit*]*,[Sample*]*,[AltCover.Record*]*\""  """ ]
+           [ """/p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Exclude="\"[*.Tests]*,[*.XTests]*,[xunit*]*,[Sample*]*,[AltCover.Record*]*,[NUnit*]*,[AltCover.Shadow.Adapter]*\""  """
+             """/p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Exclude="\"[*.Tests]*,[*.XTests]*,[xunit*]*,[Sample*]*,[AltCover.Record*]*,[NUnit*]*,[AltCover.Shadow.Adapter]*\""  """
+             """/p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Exclude="\"[*.Tests]*,[*.XTests]*,[xunit*]*,[Sample*]*,[AltCover.Record*]*\""  """ ]
       |> Seq.fold (fun l (p, f) ->
            try
              f
@@ -1729,13 +1732,13 @@ _Target "RecordResumeTest"
        |> Seq.map (fun x -> x.Attribute(XName.Get("visitcount")).Value)
        |> Seq.toList
 
-     let expected = Array.create 20 "0"
-     Assert.That
-       (recorded, expected |> Is.Not.EquivalentTo,
-        sprintf "Bad visit list %A -- should no longer be empty now" recorded)
      Assert.That
        (recorded |> Seq.length, Is.EqualTo 20,
-        sprintf "Bad visit list %A -- should no longer be empty now" recorded))
+        sprintf "Bad visit list %A -- bad length" recorded)
+
+     let hits = recorded |> Seq.filter (fun i -> i = "1") |> Seq.length
+     Assert.That (hits, Is.GreaterThanOrEqualTo 6)
+     Assert.That (hits, Is.LessThanOrEqualTo 8))
 
 _Target "RecordResumeTrackingTest" (fun _ ->
   Directory.ensure "./_Reports"
@@ -1795,14 +1798,13 @@ _Target "RecordResumeTrackingTest" (fun _ ->
        coverageDocument.Descendants(XName.Get("SequencePoint"))
        |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value)
        |> Seq.toList
-
-     let expected = Array.create 20 "0"
-     Assert.That
-       (recorded, expected |> Is.Not.EquivalentTo,
-        sprintf "Bad visit list %A -- should no longer be empty now" recorded)
      Assert.That
        (recorded |> Seq.length, Is.EqualTo 20,
-        sprintf "Bad visit list %A -- should no longer be empty now" recorded)
+        sprintf "Bad visit list %A -- bad length" recorded)
+
+     let hits = recorded |> Seq.filter (fun i -> i = "1") |> Seq.length
+     Assert.That (hits, Is.GreaterThanOrEqualTo 6)
+     Assert.That (hits, Is.LessThanOrEqualTo 8)
      let tracked =
        coverageDocument.Descendants(XName.Get("TrackedMethodRef")) |> Seq.toList
      Assert.That(tracked, Is.Not.Empty))
@@ -1868,13 +1870,13 @@ _Target "RecordResumeTestDotNet"
        |> Seq.map (fun x -> x.Attribute(XName.Get("visitcount")).Value)
        |> Seq.toList
 
-     let expected = Array.create 20 "0"
-     Assert.That
-       (recorded, expected |> Is.Not.EquivalentTo,
-        sprintf "Bad visit list %A -- should no longer be empty now" recorded)
      Assert.That
        (recorded |> Seq.length, Is.EqualTo 20,
-        sprintf "Bad visit list %A -- should no longer be empty now" recorded))
+        sprintf "Bad visit list %A -- bad length" recorded)
+
+     let hits = recorded |> Seq.filter (fun i -> i = "1") |> Seq.length
+     Assert.That (hits, Is.GreaterThanOrEqualTo 6)
+     Assert.That (hits, Is.LessThanOrEqualTo 8))
 
 _Target "RecordResumeTestUnderMono" // Fails : System.EntryPointNotFoundException: CreateZStream
   (fun _ ->
@@ -2080,6 +2082,11 @@ _Target "Packaging" (fun _ ->
     |> Seq.map (fun x -> (x, Some(where + Path.GetFileName x), None))
     |> Seq.toList
 
+  let dataFiles where =
+    (!!"./_Binaries/AltCover.DataCollector/Release+AnyCPU/netstandard2.0/AltCover.D*.*")
+    |> Seq.map (fun x -> (x, Some(where + Path.GetFileName x), None))
+    |> Seq.toList
+
   let fakeFiles where =
     (!!"./_Binaries/AltCover.Fake/Release+AnyCPU/netstandard2.0/AltCover.Fak*.*")
     |> Seq.map (fun x -> (x, Some(where + Path.GetFileName x), None))
@@ -2160,6 +2167,7 @@ _Target "Packaging" (fun _ ->
                    netcoreFiles "tools/netcoreapp2.0/"
                    poshFiles "tools/netcoreapp2.0/"
                    vizFiles "tools/netcoreapp2.1"
+                   dataFiles "tools/netcoreapp2.0/"
                    otherFiles ], "_Packaging", "./Build/AltCover.nuspec", "altcover")
 
     (List.concat [ apiFiles
@@ -2167,6 +2175,7 @@ _Target "Packaging" (fun _ ->
                    libFiles "lib/net45/"
                    netstdFiles "lib/netstandard2.0"
                    cakeFiles "lib/netstandard2.0/"
+                   dataFiles "lib/netstandard2.0/"
                    fakeFiles "lib/netstandard2.0/"
                    poshFiles "lib/netstandard2.0/"
                    vizFiles "tools/netcoreapp2.1"
@@ -2175,6 +2184,7 @@ _Target "Packaging" (fun _ ->
 
     (List.concat [ netcoreFiles "lib/netcoreapp2.0"
                    poshFiles "lib/netcoreapp2.0/"
+                   dataFiles "lib/netcoreapp2.0/"
                    dotnetFiles
                    otherFilesDotnet ], "_Packaging.dotnet",
      "./_Generated/altcover.dotnet.nuspec", "altcover.dotnet")
@@ -2182,6 +2192,7 @@ _Target "Packaging" (fun _ ->
     (List.concat [ globalFiles
                    netcoreFiles "tools/netcoreapp2.1/any"
                    poshFiles "tools/netcoreapp2.1/any/"
+                   dataFiles "tools/netcoreapp2.1/any/"
                    auxFiles
                    otherFilesGlobal ], "_Packaging.global",
      "./_Generated/altcover.global.nuspec", "altcover.global")
@@ -2320,7 +2331,7 @@ _Target "Pester" (fun _ ->
                                                  InputDirectory = i
                                                  StrongNameKey = key
                                                  TypeFilter = [ "System\\."; "DotNet" ]
-                                                 AssemblyFilter = [ "^AltCover$"; "Recorder" ]
+                                                 AssemblyFilter = [ "^AltCover$"; "Recorder"; "DataCollector" ]
                                                  InPlace = true
                                                  OpenCover = true
                                                  Save = true })
@@ -2832,13 +2843,13 @@ Target.runOrDefault "DoIt"
 """
     File.WriteAllText("./_ApiUse/DriveApi.fsx", script)
 
-    let dependencies = """version 5.193.0
+    let dependencies = """version 5.203.2
 // [ FAKE GROUP ]
 group NetcoreBuild
   source https://api.nuget.org/v3/index.json
   nuget Fake.Core >= 5.8.4
-  nuget Fake.Core.Target >= 5.12.1
-  nuget Fake.DotNet.Cli >= 5.12.1
+  nuget Fake.Core.Target >= 5.13.5
+  nuget Fake.DotNet.Cli >= 5.13.5
   nuget FSharp.Core = 4.6.2
 
   source {0}
@@ -2899,7 +2910,7 @@ _Target "DotnetTestIntegration" (fun _ ->
     let p1 = { p0 with CallContext = [ "[Fact]"; "0" ]
                        AssemblyFilter = [| "xunit" |] }
     let pp1 = AltCover.PrepareParams.Primitive p1
-    let cc0 = AltCover.CollectParams.Primitive c0
+    let cc0 = AltCover.CollectParams.Primitive { c0 with SummaryFormat = "+B" }
     DotNet.test
       (fun to' ->
       (to'.WithCommon(withWorkingDirectoryVM "_DotnetTest")

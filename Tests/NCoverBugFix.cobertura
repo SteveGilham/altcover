@@ -1,5 +1,6 @@
-﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<coverage line-rate="0.7" branch-rate="1" version="3.5.0.0" timestamp="xx">
+﻿<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!DOCTYPE coverage SYSTEM "http://cobertura.sourceforge.net/xml/coverage-04.dtd">
+<coverage line-rate="0.7" branch-rate="1" lines-covered="7" lines-valid="10" branches-covered="0" branches-valid="0" complexity="1" version="3.5.0.0" timestamp="xx">
   <sources>
     <source>Sample1</source>
   </sources>
@@ -8,7 +9,7 @@
       <classes>
         <class name="TouchTest.Program" filename="Sample1/Program.cs" line-rate="0.7" branch-rate="1" complexity="1">
           <methods>
-            <method name="TouchTest.Program.Main" signature="" line-rate="0.7" branch-rate="1">
+            <method name="TouchTest.Program.Main" signature="" line-rate="0.7" branch-rate="1" complexity="1">
               <lines>
                 <line number="11" hits="1" branch="false" />
                 <line number="12" hits="1" branch="false" />

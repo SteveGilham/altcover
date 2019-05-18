@@ -8,6 +8,7 @@ open AltCover
 open AltCover.Augment
 open Mono.Options
 open NUnit.Framework
+open Mono.Cecil.Cil
 
 [<TestFixture>]
 type AltCoverTests3() =
@@ -86,9 +87,9 @@ type AltCoverTests3() =
       let options = Main.DeclareOptions()
       Assert.That(options.Count, Is.EqualTo
 #if NETCOREAPP2_0
-                                            23
-#else
                                             24
+#else
+                                            25
 #endif
                  )
       Assert.That
@@ -1449,6 +1450,90 @@ type AltCoverTests3() =
         CommandLine.dropReturnCode := false
 
     [<Test>]
+    member self.ParsingDeferWorks() =
+      try
+        Visitor.defer := None
+        let options = Main.DeclareOptions()
+        let input = [| "--defer" |]
+        let parse = CommandLine.ParseCommandLine input options
+        match parse with
+        | Left _ -> Assert.Fail()
+        | Right(x, y) ->
+          Assert.That(y, Is.SameAs options)
+          Assert.That(x, Is.Empty)
+        Assert.That(Option.isSome !Visitor.defer)
+        Assert.That(Option.get !Visitor.defer)
+        Assert.That(Visitor.deferOpCode(), Is.EqualTo OpCodes.Ldc_I4_1)
+      finally
+        Visitor.defer := None
+
+    [<Test>]
+    member self.ParsingDeferPlusWorks() =
+      try
+        Visitor.defer := None
+        let options = Main.DeclareOptions()
+        let input = [| "--defer:+" |]
+        let parse = CommandLine.ParseCommandLine input options
+        match parse with
+        | Left _ -> Assert.Fail()
+        | Right(x, y) ->
+          Assert.That(y, Is.SameAs options)
+          Assert.That(x, Is.Empty)
+        Assert.That(Option.isSome !Visitor.defer)
+        Assert.That(Option.get !Visitor.defer)
+        Assert.That(Visitor.deferOpCode(), Is.EqualTo OpCodes.Ldc_I4_1)
+      finally
+        Visitor.defer := None
+
+    [<Test>]
+    member self.ParsingDeferMinusWorks() =
+      try
+        Visitor.defer := None
+        let options = Main.DeclareOptions()
+        let input = [| "--defer:-" |]
+        let parse = CommandLine.ParseCommandLine input options
+        match parse with
+        | Left _ -> Assert.Fail()
+        | Right(x, y) ->
+          Assert.That(y, Is.SameAs options)
+          Assert.That(x, Is.Empty)
+        Assert.That(Option.isSome !Visitor.defer)
+        Assert.That(Option.get !Visitor.defer, Is.False)
+        Assert.That(Visitor.deferOpCode(), Is.EqualTo OpCodes.Ldc_I4_0)
+      finally
+        Visitor.defer := None
+
+    [<Test>]
+    member self.ParsingDeferJunkGivesFailure() =
+      try
+        Visitor.defer := None
+        let options = Main.DeclareOptions()
+        let input = [| "--defer:junk" |]
+        let parse = CommandLine.ParseCommandLine input options
+        match parse with
+        | Right _ -> Assert.Fail()
+        | Left(x, y) ->
+          Assert.That(y, Is.SameAs options)
+          Assert.That(x, Is.EqualTo "UsageError")
+      finally
+        Visitor.defer := None
+
+    [<Test>]
+    member self.ParsingMultipleDeferGivesFailure() =
+      try
+        Visitor.defer := None
+        let options = Main.DeclareOptions()
+        let input = [| "--defer"; "--defer" |]
+        let parse = CommandLine.ParseCommandLine input options
+        match parse with
+        | Right _ -> Assert.Fail()
+        | Left(x, y) ->
+          Assert.That(y, Is.SameAs options)
+          Assert.That(x, Is.EqualTo "UsageError")
+      finally
+        Visitor.defer := None
+
+    [<Test>]
     member self.OutputLeftPassesThrough() =
       let arg = (Guid.NewGuid().ToString(), Main.DeclareOptions())
       let fail = Left arg
@@ -1696,10 +1781,8 @@ type AltCoverTests3() =
          "First list mismatch with from files")
       Assert.That(y,
                   Is.EquivalentTo(x
-                                  |> Seq.map Path.GetFileNameWithoutExtension
-                                  |> Seq.map (fun f ->
-                                       if f = "TailCallSample" then "Sample7"
-                                       else f)), "Second list mismatch")
+                                  |> Seq.map Path.GetFileNameWithoutExtension),
+                                  "Second list mismatch")
 
     [<Test>]
     member self.ShouldProcessTrailingArguments() =
@@ -1897,6 +1980,8 @@ type AltCoverTests3() =
                                from a launched process.
       --sourcelink           Optional: Display sourcelink URLs rather than file
                                paths if present.
+      --defer[=VALUE]        Optional, defers writing runner-mode coverage data
+                               until process exit.
   -?, --help, -h             Prints out the options.
 or
   ipmo                       Prints out the PowerShell script to import the
@@ -2002,6 +2087,8 @@ or
                                from a launched process.
       --sourcelink           Optional: Display sourcelink URLs rather than file
                                paths if present.
+      --defer[=VALUE]        Optional, defers writing runner-mode coverage data
+                               until process exit.
   -?, --help, -h             Prints out the options.
 or
   Runner
@@ -2029,6 +2116,8 @@ or
                                rather than overwriting the original report file.
       --dropReturnCode       Optional: Do not report any non-zero return code
                                from a launched process.
+      --teamcity[=VALUE]     Optional: Show summary in TeamCity format as well
+                               as/instead of the OpenCover summary
   -?, --help, -h             Prints out the options.
 """
         Assert.That
@@ -2215,5 +2304,103 @@ or
         Output.Info <- fst saved
         Output.Error <- snd saved
         Output.Warn <- warned
+
+    [<Test>]
+    member self.EchoWorks() =
+      let saved = (Console.Out, Console.Error)
+      let e0 = Console.Out.Encoding
+      let e1 = Console.Error.Encoding
+      let before = Console.ForegroundColor
+
+      try
+        use stdout =
+          { new StringWriter() with
+              member self.Encoding = e0 }
+
+        use stderr =
+         { new StringWriter() with
+              member self.Encoding = e1 }
+
+        Console.SetOut stdout
+        Console.SetError stderr
+
+        let subject = Echo()
+        let unique = Guid.NewGuid().ToString()
+        subject.Text <- unique
+        subject.Colour <- "cyan"
+        Assert.That (subject.Execute(), Is.True)
+        Assert.That (Console.ForegroundColor, Is.EqualTo before)
+        Assert.That (stderr.ToString(), Is.Empty)
+        Assert.That (stdout.ToString(), Is.EqualTo (unique + Environment.NewLine))
+      finally
+        Console.SetOut(fst saved)
+        Console.SetError(snd saved)
+
+#if NETCOREAPP2_0
+    [<Test>]
+    member self.RunSettingsFailsIfCollectorNotFound() =
+      let subject = RunSettings()
+      subject.DataCollector <- Guid.NewGuid().ToString();
+      Assert.That (subject.Execute(), Is.False)
+      Assert.That (subject.Extended, Is.Empty)
+
+    member val template = """<?xml version="1.0" encoding="utf-8"?>
+<RunSettings>
+{1}  <InProcDataCollectionRunSettings>
+    <InProcDataCollectors>
+      <InProcDataCollector friendlyName="AltCover" uri="InProcDataCollector://AltCover/Recorder/1.0.0.0" assemblyQualifiedName="AltCover.DataCollector, AltCover.Tests, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" codebase="{0}">
+        <Configuration>
+          <Offload>true</Offload>
+        </Configuration>
+      </InProcDataCollector>
+    </InProcDataCollectors>
+  </InProcDataCollectionRunSettings>
+</RunSettings>""" with get
+
+    [<Test>]
+    member self.RunSettingsWorksIfOK() =
+      let subject = RunSettings()
+      subject.DataCollector <- Assembly.GetExecutingAssembly().Location
+      Assert.That (subject.Execute(), Is.True)
+      Assert.That (subject.Extended.EndsWith(".altcover.runsettings"))
+      let result = subject.Extended
+                   |> File.ReadAllText
+      Assert.That (result.Replace("\r", String.Empty),
+                    Is.EqualTo ((String.Format(self.template,
+                                               Assembly.GetExecutingAssembly().Location,
+                                               String.Empty)).Replace("\r", String.Empty)))
+
+    [<Test>]
+    member self.RunSettingsExtendsOK() =
+      let subject = RunSettings()
+      subject.DataCollector <- Assembly.GetExecutingAssembly().Location
+      let settings = Path.GetTempFileName()
+      File.WriteAllText(settings, "<RunSettings><stuff /></RunSettings>")
+      subject.TestSetting <- settings
+      Assert.That (subject.Execute(), Is.True)
+      Assert.That (subject.Extended.EndsWith(".altcover.runsettings"))
+      let result = subject.Extended
+                   |> File.ReadAllText
+      Assert.That (result.Replace("\r", String.Empty),
+                    Is.EqualTo ((String.Format(self.template,
+                                               Assembly.GetExecutingAssembly().Location,
+                                               "  <stuff />\r\n")).Replace("\r", String.Empty)))
+
+    [<Test>]
+    member self.RunSettingsRecoversOK() =
+      let subject = RunSettings()
+      subject.DataCollector <- Assembly.GetExecutingAssembly().Location
+      let settings = Path.GetTempFileName()
+      File.WriteAllText(settings, "<Not XML")
+      subject.TestSetting <- settings
+      Assert.That (subject.Execute(), Is.True)
+      Assert.That (subject.Extended.EndsWith(".altcover.runsettings"))
+      let result = subject.Extended
+                   |> File.ReadAllText
+      Assert.That (result.Replace("\r", String.Empty),
+                    Is.EqualTo ((String.Format(self.template,
+                                               Assembly.GetExecutingAssembly().Location,
+                                               String.Empty)).Replace("\r", String.Empty)))
+#endif
   // Recorder.fs => Shadow.Tests
   end

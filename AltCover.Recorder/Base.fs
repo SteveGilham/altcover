@@ -40,6 +40,7 @@ type
   | Time = 1
   | Call = 2
   | Both = 3
+  | Table = 4
 
 #if NETSTANDARD2_0
 [<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage>]
@@ -50,11 +51,36 @@ type
 [<System.Runtime.InteropServices.ProgIdAttribute("ExcludeFromCodeCoverage hack for OpenCover issue 615")>]
 #endif
 #endif
+[<NoComparison>]
 type internal Track =
   | Null
   | Time of int64
   | Call of int
   | Both of (int64 * int)
+  | Table of Dictionary<string, Dictionary<int, PointVisit>>
+and [<NoComparison>]
+#if NETSTANDARD2_0
+[<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage>]
+#else
+#if NETCOREAPP2_0
+[<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage>]
+#else
+[<System.Runtime.InteropServices.ProgIdAttribute("ExcludeFromCodeCoverage hack for OpenCover issue 615")>]
+#endif
+#endif
+    internal PointVisit =
+    {
+      mutable Count : int64
+      Tracks : List<Track>
+    }
+    with
+    static member Create () = { Count = 0L; Tracks = List<Track>() }
+    static member Init n l = let tmp = { PointVisit.Create() with Count = n }
+                             tmp.Tracks.AddRange l
+                             tmp
+    member self.Step() = System.Threading.Interlocked.Increment(&self.Count) |> ignore
+    member self.Track something = lock self.Tracks (fun () -> self.Tracks.Add something)
+    member self.Total() = self.Count + int64 self.Tracks.Count
 
 module internal Assist =
   let internal SafeDispose x =
@@ -130,8 +156,8 @@ module internal Counter =
   /// <param name="hitCounts">The coverage results to incorporate</param>
   /// <param name="coverageFile">The coverage file to update as a stream</param>
   let internal UpdateReport (postProcess : XmlDocument -> unit)
-      (pointProcess : XmlElement -> Track list -> unit) own
-      (counts : Dictionary<string, Dictionary<int, int * Track list>>) format coverageFile
+      (pointProcess : XmlElement -> List<Track> -> unit) own
+      (counts : Dictionary<string, Dictionary<int, PointVisit>>) format coverageFile
       (outputFile : Stream) =
     let flushStart = DateTime.UtcNow
     let coverageDocument = ReadXDocument coverageFile
@@ -193,14 +219,14 @@ module internal Counter =
               let pt = snd x
               let counter = fst x
               let vc =
-                Int32.TryParse
+                Int64.TryParse
                   (pt.GetAttribute(v), System.Globalization.NumberStyles.Integer,
                    System.Globalization.CultureInfo.InvariantCulture) |> snd
               // Treat -ve visit counts (an exemption added in analysis) as zero
-              let (count, l) = moduleHits.[counter]
-              let visits = (max 0 vc) + count + l.Length
+              let count = moduleHits.[counter]
+              let visits = (max 0L vc) + count.Total()
               pt.SetAttribute(v, visits.ToString(CultureInfo.InvariantCulture))
-              pointProcess pt l))
+              pointProcess pt count.Tracks))
     postProcess coverageDocument
 
     // Save modified xml to a file
@@ -232,13 +258,52 @@ module internal Counter =
       UpdateReport postProcess pointProcess own counts format coverageFile outputFile
     TimeSpan(DateTime.UtcNow.Ticks - flushStart.Ticks)
 
-  let internal AddVisit (counts : Dictionary<string, Dictionary<int, int * Track list>>)
-      moduleId hitPointId context =
+  let private EnsureModule (counts : Dictionary<string, Dictionary<int, PointVisit>>) moduleId =
     if not (counts.ContainsKey moduleId) then
-      counts.[moduleId] <- Dictionary<int, int * Track list>()
-    if not (counts.[moduleId].ContainsKey hitPointId) then
-      counts.[moduleId].Add(hitPointId, (0, []))
-    let n, l = counts.[moduleId].[hitPointId]
-    counts.[moduleId].[hitPointId] <- match context with
-                                      | Null -> (1 + n, l)
-                                      | something -> (n, something :: l)
+      lock counts (fun () ->
+        if not (counts.ContainsKey moduleId)
+        then counts.Add(moduleId, Dictionary<int, PointVisit>())
+      )
+
+  let private EnsurePoint (counts : Dictionary<int, PointVisit>) hitPointId =
+    if not (counts.ContainsKey hitPointId) then
+      lock counts (fun () ->
+      if not (counts.ContainsKey hitPointId)
+      then counts.Add(hitPointId, PointVisit.Create()))
+
+  let internal AddTable (counts : Dictionary<string, Dictionary<int, PointVisit>>)
+                        (t : Dictionary<string, Dictionary<int, PointVisit>>) =
+    let mutable hitcount = 0L
+    t.Keys
+    |> Seq.iter (fun m -> EnsureModule counts m
+                          let next = counts.[m]
+                          let here = t.[m]
+                          here.Keys |>
+                          Seq.iter (fun p -> EnsurePoint next p
+                                             let v = next.[p]
+                                             let add = here.[p]
+                                             hitcount <- hitcount + add.Total()
+                                             lock v (fun () -> v.Count <- v.Count + add.Count
+                                                               v.Tracks.AddRange(add.Tracks)
+                          )))
+    hitcount
+
+  let internal AddSingleVisit  (counts : Dictionary<string, Dictionary<int, PointVisit>>)
+      moduleId hitPointId context =
+    EnsureModule counts moduleId
+    let next = counts.[moduleId]
+    EnsurePoint next hitPointId
+
+    let v = next.[hitPointId]
+    match context with
+    | Null -> v.Step()
+    | something -> v.Track something
+
+#if RUNNER
+  let internal AddVisit (counts : Dictionary<string, Dictionary<int, PointVisit>>)
+      moduleId hitPointId context =
+    match context with
+    | Table t -> AddTable counts t
+    | _ -> AddSingleVisit counts moduleId hitPointId context
+           1L
+#endif

@@ -184,9 +184,18 @@ module internal Instrument =
       let pair = Visitor.recorderStrongNameKey
       UpdateStrongNaming definition pair
 
-      [ (// set the coverage file path and unique token
-         "get_ReportFile", Visitor.ReportPath())
-        ("get_Token", "Altcover-" + Guid.NewGuid().ToString()) ]
+      [ // set the coverage file path and unique token
+        ("get_ReportFile", (fun (w:ILProcessor) ->
+            w.Create(OpCodes.Ldstr, Visitor.ReportPath())))
+        ("get_Token", (fun (w:ILProcessor) ->
+            w.Create(OpCodes.Ldstr, "Altcover-" + Guid.NewGuid().ToString())))
+        ("get_CoverageFormat", (fun (w:ILProcessor) ->
+            w.Create(OpCodes.Ldc_I4, Visitor.ReportFormat() |> int)))
+        ("get_Sample", (fun (w:ILProcessor) ->
+            w.Create(OpCodes.Ldc_I4, Visitor.Sampling())))
+        ("get_Defer", (fun (w:ILProcessor) ->
+            w.Create(Visitor.deferOpCode())))
+      ]
       |> List.iter (fun (property, value) ->
            let pathGetterDef =
              definition.MainModule.GetTypes()
@@ -198,29 +207,10 @@ module internal Instrument =
            let worker = body.GetILProcessor()
            let initialBody = body.Instructions |> Seq.toList
            let head = initialBody |> Seq.head
-           worker.InsertBefore(head, worker.Create(OpCodes.Ldstr, value))
+           worker.InsertBefore(head, value(worker))
            worker.InsertBefore(head, worker.Create(OpCodes.Ret))
            initialBody |> Seq.iter worker.Remove)
-      [ (// set the coverage file format and sampling strategy
-         "get_CoverageFormat", Visitor.ReportFormat() |> int)
-        ("get_Sample",
-         (if Visitor.single then Base.Sampling.Single
-          else Base.Sampling.All)
-         |> int) ]
-      |> List.iter (fun (property, value) ->
-           let pathGetterDef =
-             definition.MainModule.GetTypes()
-             |> Seq.collect (fun t -> t.Methods)
-             |> Seq.filter (fun m -> m.Name = property)
-             |> Seq.head
 
-           let body = pathGetterDef.Body
-           let worker = body.GetILProcessor()
-           let initialBody = body.Instructions |> Seq.toList
-           let head = initialBody |> Seq.head
-           worker.InsertBefore(head, worker.Create(OpCodes.Ldc_I4, value))
-           worker.InsertBefore(head, worker.Create(OpCodes.Ret))
-           initialBody |> Seq.iter worker.Remove)
       [ (// set the timer interval in ticks
          "get_Timer", Visitor.Interval()) ]
       |> List.iter (fun (property, value) ->
@@ -402,11 +392,9 @@ module internal Instrument =
       // (in other words - it will be a switch operator's operand)
       | OperandType.InlineSwitch ->
         let operands = instruction.Operand :?> Instruction array
-        let offset = operands |> Seq.tryFindIndex (fun x -> x = oldValue)
-        match offset with
-        | Some i -> // operands.[i] <- newValue : fails with "This expression was expected to have type    ''a [] * int * 'a'    but here has type    'Instruction array'"
-          Array.set operands i newValue // so mutate the array like this instead
-        | _ -> ()
+        operands
+        |> Array.iteri (fun i x -> if x = oldValue
+                                   then Array.set operands i newValue)
       | _ -> ()
 
   let internal InsertVisit (instruction : Instruction) (methodWorker : ILProcessor)

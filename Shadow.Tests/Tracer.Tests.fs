@@ -66,14 +66,50 @@ type AltCoverCoreTests() =
           let tag = formatter.ReadByte() |> int
           (id, strike,
            match enum tag with
-           | AltCover.Recorder.Tag.Time -> Time <| formatter.ReadInt64()
-           | AltCover.Recorder.Tag.Call -> Call <| formatter.ReadInt32()
+           | Tag.Time -> Time <| formatter.ReadInt64()
+           | Tag.Call -> Call <| formatter.ReadInt32()
 #if NET4
-           | AltCover.Recorder.Tag.Both ->
-             Adapter.NewBoth (formatter.ReadInt64()) (formatter.ReadInt32())
+           | Tag.Both -> Adapter.NewBoth (formatter.ReadInt64()) (formatter.ReadInt32())
 #else
-                                       | AltCover.Recorder.Tag.Both -> Both (formatter.ReadInt64(), formatter.ReadInt32())
+           | Tag.Both -> Both (formatter.ReadInt64(), formatter.ReadInt32())
 #endif
+           | Tag.Table -> Assert.That (id, Is.Empty)
+                          Assert.That (strike, Is.EqualTo 0)
+                          let t = Dictionary<string, Dictionary<int, PointVisit>>()
+                          let rec ``module`` () =
+                            let m = formatter.ReadString()
+                            if String.IsNullOrEmpty m
+                            then ()
+                            else
+                              t.Add(m, Dictionary<int, PointVisit>())
+                              let points = formatter.ReadInt32()
+                              let rec sequencePoint pts =
+                                if pts > 0 then
+                                  let p = formatter.ReadInt32()
+                                  let n = formatter.ReadInt64()
+                                  let pv = PointVisit.Init n []
+                                  t.[m].Add(p, pv)
+                                  let rec tracking () =
+                                    let track = formatter.ReadByte() |> int
+                                    match enum track with
+                                    | Tag.Time -> pv.Tracks.Add (Time <| formatter.ReadInt64())
+                                                  tracking ()
+                                    | Tag.Call -> pv.Tracks.Add (Call <| formatter.ReadInt32())
+                                                  tracking ()
+#if NET4
+                                    | Tag.Both -> pv.Tracks.Add (Adapter.NewBoth (formatter.ReadInt64()) (formatter.ReadInt32()))
+#else
+                                    | Tag.Both -> pv.Tracks.Add (Both (formatter.ReadInt64(), formatter.ReadInt32()))
+#endif
+                                                  tracking ()
+                                    | Tag.Table -> Assert.Fail ("No nested tables!!")
+                                    | _ -> sequencePoint (pts - 1)
+                                  tracking()
+                                else ``module``()
+                              sequencePoint points
+                          ``module`` ()
+                          Table t
+
            | _ -> Null)
           |> hits.Add
           sink()
@@ -89,17 +125,16 @@ type AltCoverCoreTests() =
       let tag = unique + ".acv"
 
       let expected =
-        [ ("name", 23, Null)
-          ("name", 23, Null) ]
+        [ ("name", 23, Null) ]
       do use stream = File.Create tag
          ()
       try
         let mutable client = Tracer.Create tag
         try
           Adapter.VisitsClear()
-          Adapter.VisitsAdd "name" 23 1
           Instance.trace <- client.OnStart()
           Assert.That(Instance.trace.IsConnected(), "connection failed")
+          Instance.IsRunner <- true
           Adapter.VisitImplNone "name" 23
         finally
           Instance.trace.Close()
@@ -109,10 +144,10 @@ type AltCoverCoreTests() =
         use stream =
           new DeflateStream(File.OpenRead(unique + ".0.acv"), CompressionMode.Decompress)
         let results = self.ReadResults stream
-        Assert.That(Adapter.VisitsSeq(), Is.Empty, "unexpected local write")
+        Assert.That(Adapter.VisitsSeq() |> Seq.length, Is.EqualTo 0, "unexpected local write")
         Assert.That(results, Is.EquivalentTo expected, "unexpected result")
       finally
-        Adapter.VisitsClear()
+        Adapter.Reset()
 
     [<Test>]
     member self.VisitShouldSignalTrack() =
@@ -120,39 +155,61 @@ type AltCoverCoreTests() =
       let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
       let unique = Path.Combine(where, Guid.NewGuid().ToString())
       let tag = unique + ".acv"
-
-      let expected =
-        [ ("name", 23, Null)
-          ("name", 23, Call 17)
-          ("name", 23, Call 42)
-          ("name", 24, Null)
-          ("name", 24, Null)
-          ("name", 24, Time 17L)
+      let t = Dictionary<string, Dictionary<int, PointVisit>>()
+      t.["name"] <- Dictionary<int, PointVisit>()
+      let expect23 = [
+                        Call 17
+                        Call 42
+                     ]
+      let expect24 = [
+                        Time 17L
 #if NET4
-          ("name", 24, Adapter.NewBoth 42L 23)
+                        Adapter.NewBoth 42L 23
 #else
-          ("name", 24, Both (42L, 23))
+                        Both (42L, 23)
 #endif
+      ]
 
-          ("name", 23, Call 5) ]
+      t.["name"].[23] <- PointVisit.Init 1L expect23
+      t.["name"].[24] <- PointVisit.Init 2L expect24
+
+      let expected = [ (String.Empty, 0, Table t)
+                       ("name", 23, Call 5) ]
+
       do use stream = File.Create tag
          ()
       try
         let mutable client = Tracer.Create tag
         try
-          Adapter.VisitsClear()
-          Adapter.VisitsAddTrack "name" 23 1
           Instance.trace <- client.OnStart()
           Assert.That(Instance.trace.IsConnected(), "connection failed")
+          Instance.IsRunner <- true
+
+          Adapter.VisitsClear()
+          Adapter.VisitsAddTrack "name" 23 1L
           Adapter.VisitImplMethod "name" 23 5
         finally
+          Instance.IsRunner <- false
           Instance.trace.Close()
           Instance.trace <- save
         use stream =
           new DeflateStream(File.OpenRead(unique + ".0.acv"), CompressionMode.Decompress)
         let results = self.ReadResults stream
-        Assert.That(Adapter.VisitsSeq(), Is.Empty, "unexpected local write")
-        Assert.That(results, Is.EquivalentTo expected, "unexpected result")
+        Assert.That(Adapter.VisitsSeq() |> Seq.length, Is.EqualTo 0, "unexpected local write")
+        Assert.That (results.Count, Is.EqualTo 2)
+        Assert.That(results |> Seq.skip 1, Is.EquivalentTo (expected |> Seq.skip 1), "unexpected result")
+        match results |> Seq.head with
+        | (n, p, Table d) ->
+          Assert.That (n, Is.Empty)
+          Assert.That (p, Is.EqualTo 0)
+          Assert.That (d.Count, Is.EqualTo 1)
+          Assert.That (d.["name"] |> Seq.sortBy(fun kv -> kv.Key) |> Seq.map (fun kv -> kv.Key),
+                       Is.EquivalentTo (t.["name"] |> Seq.sortBy(fun kv -> kv.Key) |> Seq.map(fun kv -> kv.Key)))
+          Assert.That (d.["name"] |> Seq.sortBy(fun kv -> kv.Key) |> Seq.map (fun kv -> kv.Value.Count),
+                       Is.EquivalentTo (t.["name"] |> Seq.sortBy(fun kv -> kv.Key) |> Seq.map(fun kv -> kv.Value.Count)))
+          Assert.That (d.["name"] |> Seq.sortBy(fun kv -> kv.Key) |> Seq.map (fun kv -> kv.Value.Tracks),
+                       Is.EquivalentTo (t.["name"] |> Seq.sortBy(fun kv -> kv.Key) |> Seq.map(fun kv -> kv.Value.Tracks)))
+        | _ -> Assert.Fail()
       finally
         Adapter.VisitsClear()
 

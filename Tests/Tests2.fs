@@ -486,6 +486,7 @@ type AltCoverTests2() =
           Visitor.reportFormat <- Some AltCover.Base.ReportFormat.OpenCover
           Visitor.interval <- Some 1234567890
           Visitor.single <- true
+          Assert.That(Visitor.Sampling(), Base.Sampling.Single |> int |> Is.EqualTo)
           let prepared = Instrument.PrepareAssembly path
           Instrument.WriteAssembly prepared outputdll
           let expectedSymbols = if "Mono.Runtime" |> Type.GetType |> isNull |> not then ".dll.mdb" else ".pdb"
@@ -528,6 +529,7 @@ type AltCoverTests2() =
                                 with // occasionally the dll file is locked by another process
                                 | :? System.UnauthorizedAccessException
                                 | :? IOException -> ())
+          Assert.That(Visitor.Sampling(), Base.Sampling.All |> int |> Is.EqualTo)
       finally
         Visitor.keys.Clear()
 
@@ -898,10 +900,13 @@ type AltCoverTests2() =
         Path.Combine
           (Path.GetDirectoryName(where) + AltCoverTests.Hack() + shift,
            "AltCover.Recorder.dll")
-      let path =
-        Path.Combine
-          (Path.GetDirectoryName(where) + AltCoverTests.Hack(), "TailCallSample.dl_")
-      let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+      let res =
+        Assembly.GetExecutingAssembly().GetManifestResourceNames()
+        |> Seq.find (fun n -> n.EndsWith("TailCallSample.dl_", StringComparison.Ordinal))
+      use stream =
+        Assembly.GetExecutingAssembly().GetManifestResourceStream(res)
+
+      let def = Mono.Cecil.AssemblyDefinition.ReadAssembly stream
       let rdef = Mono.Cecil.AssemblyDefinition.ReadAssembly rpath
       let recorder = AltCover.Instrument.RecordingMethod rdef
       let target =
@@ -927,6 +932,71 @@ type AltCoverTests2() =
       Assert.That
         (target.Body.Instructions.Count, Is.EqualTo(countBefore + 5 - tailsBefore))
       Assert.That(target.Body.ExceptionHandlers.Count, Is.EqualTo(handlersBefore + 1))
+
+    [<Test>]
+    member self.ShouldBeAbleToInstrumentASwitchForNCover() =
+      let where = Assembly.GetExecutingAssembly().Location
+#if NETCOREAPP2_0
+      let shift = String.Empty
+#else
+      let shift = "/netcoreapp2.1"
+#endif
+      let rpath =
+        Path.Combine
+          (Path.GetDirectoryName(where) + AltCoverTests.Hack() + shift,
+           "AltCover.Recorder.dll")
+      let res =
+        Assembly.GetExecutingAssembly().GetManifestResourceNames()
+        |> Seq.find (fun n -> n.EndsWith("SwitchSample.dl_", StringComparison.Ordinal))
+      use stream =
+        Assembly.GetExecutingAssembly().GetManifestResourceStream(res)
+
+      let res2 =
+        Assembly.GetExecutingAssembly().GetManifestResourceNames()
+        |> Seq.find (fun n -> n.EndsWith("SwitchSample.pd_", StringComparison.Ordinal))
+      use stream2 =
+        Assembly.GetExecutingAssembly().GetManifestResourceStream(res2)
+
+      let def = Mono.Cecil.AssemblyDefinition.ReadAssembly stream
+      let r = Mono.Cecil.Pdb.PdbReaderProvider()
+      use rr = r.GetSymbolReader(def.MainModule, stream2)
+      def.MainModule.ReadSymbols(rr)
+
+      let rdef = Mono.Cecil.AssemblyDefinition.ReadAssembly rpath
+      let recorder = AltCover.Instrument.RecordingMethod rdef
+      let target =
+        def.MainModule.GetType("Sample15.Class1").Methods
+        |> Seq.find (fun m -> m.Name = "OpenCoverSummary")
+      let raw = AltCover.InstrumentContext.Build([])
+
+      let state =
+        { raw with RecordingMethodRef =
+                     { raw.RecordingMethodRef with Visit = recorder.[1]
+                                                   Push = recorder.[1]
+                                                   Pop = recorder.[2] } }
+
+      let switch = target.Body.Instructions
+                   |> Seq.find (fun i -> i.OpCode = OpCodes.Switch)
+      let targets = switch.Operand :?> Instruction array
+                    |> Array.map (fun i -> i.Offset)
+      Assert.That (targets, Is.EquivalentTo [ 31; 33; 31; 33; 31 ])
+
+      let m = Node.Method (target, Inspect.Instrument, None)
+      let steps = Visitor.BuildSequence m
+
+      Assert.That(steps, Is.Not.Empty)
+
+      let visitors = [ Visitor.EncloseState Instrument.InstrumentationVisitor state ]
+
+      steps
+      |> Seq.fold Visitor.apply (visitors |> Seq.toList)
+      |> ignore
+
+      let switch2 = target.Body.Instructions
+                   |> Seq.find (fun i -> i.OpCode = OpCodes.Switch)
+      let targets2 = switch2.Operand :?> Instruction array
+                    |> Array.map (fun i -> i.Offset)
+      Assert.That (targets2, Is.EquivalentTo [ 43; 45; 43; 45; 43 ])
 
     [<Test>]
     member self.ShouldNotChangeAnUntrackedMethod() =
@@ -1703,7 +1773,7 @@ type AltCoverTests2() =
       Output.Echo <- ignore
       Output.Usage <- ignore
       Assert.That(Output.Usage, Is.Not.Null)
-      typeof<Tracer>.Assembly.GetTypes()
+      typeof<TeamCityFormat>.Assembly.GetTypes()
       |> Seq.filter
            (fun t -> (string t = "AltCover.Output") || (string t = "AltCover.AltCover"))
       |> Seq.collect (fun t -> t.GetNestedTypes(BindingFlags.NonPublic))

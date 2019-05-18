@@ -159,7 +159,15 @@ module internal Visitor =
 
   let internal inplace = ref false
   let mutable internal single = false
+  let Sampling() =
+    (if single then Base.Sampling.Single
+               else Base.Sampling.All) |> int
   let internal sourcelink = ref false
+  let internal defer = ref (Some false)
+  let internal deferOpCode () =
+    if Option.getOrElse false !defer
+                         then OpCodes.Ldc_I4_1
+                         else OpCodes.Ldc_I4_0
 
   let mutable internal inputDirectory : Option<string> = None
   let private defaultInputDirectory = "."
@@ -225,13 +233,19 @@ module internal Visitor =
   let mutable private MethodNumber : int = 0
   let mutable internal SourceLinkDocuments : Dictionary<string, string> option = None
 
+  let internal EnsureEndsWith c (s:string) =
+    if s.EndsWith (c, StringComparison.Ordinal)
+    then s
+    else s + c
+
   let internal GetRelativePath (relativeTo:string) path =
-    let uri = new Uri(if relativeTo.EndsWith(Path.DirectorySeparatorChar.ToString(),
-                                              StringComparison.Ordinal)
-                      then relativeTo
-                      else relativeTo + Path.DirectorySeparatorChar.ToString())
-    Uri.UnescapeDataString(uri.MakeRelativeUri(new Uri(path)).ToString()).
-        Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar)
+    if Path.GetFullPath path = Path.GetFullPath relativeTo
+    then String.Empty
+    else
+      let ender = EnsureEndsWith <| Path.DirectorySeparatorChar.ToString()
+      let uri = new Uri(ender relativeTo)
+      Uri.UnescapeDataString(uri.MakeRelativeUri(new Uri(path)).ToString()).
+            Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar)
 
   let internal Exists (url:Uri) =
     let request = System.Net.WebRequest.CreateHttp(url)
@@ -243,17 +257,19 @@ module internal Visitor =
     with
     | :? WebException -> false
 
+  let internal FindClosestMatch  file (dict : Dictionary<string, string>) =
+    dict.Keys
+    |> Seq.filter (fun x -> x |> Path.GetFileName = "*")
+    |> Seq.map (fun x -> (x, GetRelativePath (x |> Path.GetDirectoryName) (file |> Path.GetDirectoryName)))
+    |> Seq.filter (fun (x, r) -> r.IndexOf("..") < 0)
+    |> Seq.sortBy (fun (x, r) -> r.Length)
+    |> Seq.tryHead
+
   [<SuppressMessage("Microsoft.Usage",
                     "CA2208:InstantiateArgumentExceptionsCorrectly",
                     Justification = "F# inlined code")>]
-  let internal LocateMatch file (dict : Dictionary<string, string>) =
-    let find =
-      dict.Keys
-      |> Seq.filter (fun x -> x |> Path.GetFileName = "*")
-      |> Seq.map (fun x -> (x, GetRelativePath (x |> Path.GetDirectoryName) (file |> Path.GetDirectoryName)))
-      |> Seq.filter (fun (x, r) -> r.IndexOf("..") < 0)
-      |> Seq.sortBy (fun (x, r) -> r.Length)
-      |> Seq.tryHead
+  let internal LocateMatch file dict =
+    let find = FindClosestMatch file dict
 
     match find with
     | Some (best, relative) ->
