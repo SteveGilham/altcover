@@ -238,7 +238,34 @@ _Target "BuildDebug" (fun _ ->
                          |> withMSBuildParams))
 
   Shell.copy "./_SourceLink" (!!"./Sample14/Sample14/bin/Debug/netcoreapp2.1/*")
+)
 
+_Target "AvaloniaDebug" (fun _ ->
+  DotNet.restore (fun o -> o.WithCommon(withWorkingDirectoryVM "AltCover.Avalonia")) ""
+
+  "./AltCover.Visualizer/altcover.visualizer.core.sln"
+  |> MSBuild.build (fun p ->
+       { p with Verbosity = Some MSBuildVerbosity.Normal
+                ConsoleLogParameters = []
+                DistributedLoggers = None
+                DisableInternalBinLog = true
+                Properties =
+                  [ "Configuration", "Debug"
+                    "DebugSymbols", "True" ] })
+)
+
+_Target "AvaloniaRelease" (fun _ ->
+  DotNet.restore (fun o -> o.WithCommon(withWorkingDirectoryVM "AltCover.Avalonia")) ""
+
+  "./AltCover.Visualizer/altcover.visualizer.core.sln"
+  |> MSBuild.build (fun p ->
+       { p with Verbosity = Some MSBuildVerbosity.Normal
+                ConsoleLogParameters = []
+                DistributedLoggers = None
+                DisableInternalBinLog = true
+                Properties =
+                  [ "Configuration", "Release"
+                    "DebugSymbols", "True" ] })
 )
 
 _Target "BuildMonoSamples" (fun _ ->
@@ -270,7 +297,7 @@ _Target "Lint" (fun _ ->
       |> Path.getFullName
       |> File.ReadAllText
 
-    let lintConfig = Configuration.configuration settings
+    let lintConfig = FSharpLint.Application.ConfigurationManagement.loadConfigurationFile  settings
     let options =
       { Lint.OptionalLintParameters.Default with Configuration = Some lintConfig }
 
@@ -2843,13 +2870,13 @@ Target.runOrDefault "DoIt"
 """
     File.WriteAllText("./_ApiUse/DriveApi.fsx", script)
 
-    let dependencies = """version 5.203.2
+    let dependencies = """version 5.206.0
 // [ FAKE GROUP ]
 group NetcoreBuild
   source https://api.nuget.org/v3/index.json
   nuget Fake.Core >= 5.8.4
-  nuget Fake.Core.Target >= 5.13.5
-  nuget Fake.DotNet.Cli >= 5.13.5
+  nuget Fake.Core.Target >= 5.13.7
+  nuget Fake.DotNet.Cli >= 5.13.7
   nuget FSharp.Core = 4.6.2
 
   source {0}

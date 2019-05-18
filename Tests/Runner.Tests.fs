@@ -2334,6 +2334,10 @@ or
 
     [<Test>]
     member self.MultiSortDoesItsThing() =
+      let load f =
+        use r = new System.IO.StringReader(f)
+        XDocument.Load r
+
       let input =
         [ ("m", [ 3; 2; 1 ])
           ("a", [ 4; 9; 7 ])
@@ -2341,9 +2345,9 @@ or
         |> List.map (fun (x, y) ->
              (x,
               y
-              |> List.map (sprintf "<x><seqpnt line=\"%d\" /></x>")
-              |> List.map (fun x -> XDocument.Load(new System.IO.StringReader(x)))
-              |> List.map (fun x -> x.Descendants(XName.Get "x") |> Seq.head)
+              |> List.map (sprintf "<x><seqpnt line=\"%d\" /></x>"
+                           >> load
+                           >> (fun x -> x.Descendants(XName.Get "x") |> Seq.head))
               |> List.toSeq))
         |> List.toSeq
 

@@ -361,7 +361,7 @@ module Gui =
 
   let private GetResourceString(key : string) =
     let executingAssembly = System.Reflection.Assembly.GetExecutingAssembly()
-    let resources = new ResourceManager("AltCover.Visualizer.Resource", executingAssembly)
+    let resources = ResourceManager("AltCover.Visualizer.Resource", executingAssembly)
     resources.GetString(key)
 
   let private XmlIcon =
@@ -540,7 +540,7 @@ module Gui =
 
   // -------------------------- UI set-up  ---------------------------
   let private InitializeHandler() =
-    let handler = new Handler()
+    let handler = Handler()
     [ "mainWindow"; "fileOpenMenu"; "aboutVisualizer" ]
 #if NETCOREAPP2_1
     |> List.iter (fun name ->
@@ -1177,7 +1177,7 @@ module Gui =
     |> Event.add (fun x ->
          let executingAssembly = System.Reflection.Assembly.GetExecutingAssembly()
          let resources =
-           new ResourceManager("AltCover.Visualizer.Resource", executingAssembly)
+           ResourceManager("AltCover.Visualizer.Resource", executingAssembly)
          let format = resources.GetString("SelectFont")
 #if NETCOREAPP2_1
          let selector = new FontChooserDialog(format, handler.mainWindow)

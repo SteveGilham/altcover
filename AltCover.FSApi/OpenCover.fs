@@ -63,11 +63,10 @@ module OpenCoverUtilities =
                    |> List.fold (fun (ki, ke) (_, bz) ->
                         let totalVisits =
                           bz
-                          |> Seq.map (fun b ->
+                          |> Seq.sumBy (fun b ->
                                b.GetAttribute("vc")
                                |> Int32.TryParse
                                |> snd)
-                          |> Seq.sum
 
                         let h = bz |> Seq.head
                         h.SetAttribute

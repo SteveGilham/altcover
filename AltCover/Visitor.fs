@@ -637,18 +637,7 @@ module internal Visitor =
   let private ExtractBranchPoints dbg methodFullName rawInstructions interesting =
     // Generated MoveNext => skip one branch
     let skip = IsMoveNext.IsMatch methodFullName |> Augment.Increment
-    [ rawInstructions |> Seq.cast ]
-    |> Seq.filter (fun _ ->
-         dbg
-         |> isNull
-         |> not)
-    |> Seq.concat
-    |> Seq.filter
-         (fun (i : Instruction) -> i.OpCode.FlowControl = FlowControl.Cond_Branch)
-    |> Seq.mapi (fun n i -> (n, i)) //
-    |> Seq.filter (fun (n, _) -> n >= skip) // like skip, but OK if there aren't enough elements
-    |> Seq.map snd //
-    |> Seq.map (fun (i : Instruction) ->
+    (Seq.map (snd >> (fun (i : Instruction) ->
          getJumps dbg i // if two or more jumps go between the same two places, coalesce them
          |> List.groupBy (fun (_, _, o, _) -> o)
          |> List.map (fun (_, records) ->
@@ -658,7 +647,16 @@ module internal Visitor =
                |> List.map (fun (_, _, _, n) -> n)
                |> List.sort))
          |> List.sortBy (fun (_, _, l) -> l.Head)
-         |> indexList)
+         |> indexList)) ([ rawInstructions |> Seq.cast ]
+    |> Seq.filter (fun _ ->
+         dbg
+         |> isNull
+         |> not)
+    |> Seq.concat
+    |> Seq.filter
+         (fun (i : Instruction) -> i.OpCode.FlowControl = FlowControl.Cond_Branch)
+    |> Seq.mapi (fun n i -> (n, i)) //
+    |> Seq.filter (fun (n, _) -> n >= skip)))
     |> Seq.filter (fun l -> l.Length > 1)
     |> Seq.collect id
     |> Seq.mapi (fun i (path, (from, target, indexes)) ->
