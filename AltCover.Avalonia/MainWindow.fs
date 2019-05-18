@@ -133,18 +133,18 @@ module Persistence =
 
     let attribute (x : XElement) a =
       x.Attribute(XName.Get a).Value
-      |> Double.TryParse
+      |> Int32.TryParse
       |> snd
     config.XPathSelectElements("//Geometry")
     |> Seq.iter (fun e ->
-         let width = Math.Min(attribute e "width", 750.0)
-         let height = Math.Min(attribute e "height", 550.0)
+         let width = Math.Min(attribute e "width", 750)
+         let height = Math.Min(attribute e "height", 550)
          let bounds = w.Screens.Primary.WorkingArea
-         let x = Math.Min(Math.Max(attribute e "x", 0.0), bounds.Width - width)
-         let y = Math.Min(Math.Max(attribute e "y", 0.0), bounds.Height - height)
-         w.Height <- height
-         w.Width <- width
-         w.Position <- Point(x, y))
+         let x = Math.Min(Math.Max(attribute e "x", 0), bounds.Width - width)
+         let y = Math.Min(Math.Max(attribute e "y", 0), bounds.Height - height)
+         w.Height <- float height
+         w.Width <- float width
+         w.Position <- PixelPoint(x, y))
 
   let clearGeometry() =
     let file, config = EnsureFile()
