@@ -696,9 +696,6 @@ module internal Visitor =
            else false)
       |> Seq.toList
 
-    let number = instructions.Length
-    let point = PointNumber
-    PointNumber <- point + number
     let interesting = IsInstrumented included
 
     let wanted i (s : SequencePoint) =
@@ -719,6 +716,8 @@ module internal Visitor =
         |> Seq.take 1
         |> Seq.map (fun i -> MethodPoint(i, None, m.MetadataToken.ToInt32(), interesting))
       else
+        let point = PointNumber
+        PointNumber <- point + instructions.Length
         instructions.OrderByDescending(fun (x : Instruction) -> x.Offset)
         |> Seq.mapi (fun i x ->
              let s = dbg.GetSequencePoint(x)
