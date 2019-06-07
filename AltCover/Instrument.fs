@@ -398,12 +398,15 @@ module internal Instrument =
       | _ -> ()
 
   let internal InsertVisit (instruction : Instruction) (methodWorker : ILProcessor)
-      (recordingMethodRef : MethodReference) (moduleId : string) (point : int) =
+      (recordingMethodRef : MethodReference) (moduleId : string)
+      (kind : Base.VisitKind)  (point : int) =
     let counterMethodCall = methodWorker.Create(OpCodes.Call, recordingMethodRef)
     let instrLoadModuleId = methodWorker.Create(OpCodes.Ldstr, moduleId)
+    let instrLoadPointKind = methodWorker.Create(OpCodes.Ldc_I4, int kind)
     let instrLoadPointId = methodWorker.Create(OpCodes.Ldc_I4, point)
     methodWorker.InsertBefore(instruction, instrLoadModuleId)
-    methodWorker.InsertAfter(instrLoadModuleId, instrLoadPointId)
+    methodWorker.InsertAfter(instrLoadModuleId, instrLoadPointKind)
+    methodWorker.InsertAfter(instrLoadPointKind, instrLoadPointId)
     methodWorker.InsertAfter(instrLoadPointId, counterMethodCall)
     instrLoadModuleId
 
@@ -550,9 +553,12 @@ module internal Instrument =
 
   let private VisitMethodPoint (state : InstrumentContext) instruction point included =
     if included then // by construction the sequence point is included
+      let (kind, pt) = if point &&& Base.Counter.MethodFlagged <> 0
+                       then (Base.VisitKind.Method, point &&& Base.Counter.MethodMask)
+                       else (Base.VisitKind.Sequence, point)
       let instrLoadModuleId =
         InsertVisit instruction state.MethodWorker state.RecordingMethodRef.Visit
-          state.ModuleId point
+          state.ModuleId kind pt
       UpdateBranchReferences state.MethodBody instruction instrLoadModuleId
     state
 
@@ -561,10 +567,9 @@ module internal Instrument =
                           |> isNull
                           |> not
     then
-      let point = (branch.Uid ||| Base.Counter.BranchFlag)
       let instrument instruction =
         InsertVisit instruction state.MethodWorker state.RecordingMethodRef.Visit
-          state.ModuleId point
+          state.ModuleId Base.VisitKind.Branch branch.Uid
 
       let updateSwitch update =
         let operands = branch.Start.Operand :?> Instruction []

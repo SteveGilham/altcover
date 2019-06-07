@@ -115,12 +115,12 @@ type AltCoverTests() =
                               Definitive = false }
           let key = " "
           Instance.Recording <- false
-          Instance.Visit "key" 17
+          Instance.Visit "key" 0 17
           Instance.Recording <- true
           Instance.CoverageFormat <- ReportFormat.NCover
-          Instance.Visit key 23
+          Instance.Visit key 0 23
           Instance.CoverageFormat <- ReportFormat.OpenCoverWithTracking
-          Instance.Visit key 23
+          Instance.Visit key 0 23
           Assert.That(Adapter.VisitsSeq() |> Seq.length, Is.EqualTo 1)
           Assert.That(Adapter.VisitsEntrySeq key |> Seq.length, Is.EqualTo 1)
           Assert.That(Adapter.VisitCount key 23, Is.EqualTo 2)

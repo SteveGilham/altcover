@@ -1662,7 +1662,7 @@ type AltCoverTests() =
           "System.Void Sample3.Class2.set_Property(System.Int32)";
           "System.Void Sample3.Class2.#ctor()";
           "System.Collections.Generic.List`1 Sample3.Class3.get_Visits()";
-          "System.Void Sample3.Class3.Log(System.String,System.Int32)";
+          "System.Void Sample3.Class3.Log(System.String,System.Int32,System.Int32)";
           "System.Int32 Sample3.Class3.GetOperandType(Mono.Cecil.Cil.Instruction)";
           "System.Void Sample3.Class3.#ctor()"; "System.Void Sample3.Class3..cctor()";
           "System.Boolean Sample3.Class3+Class4.get_Defer()"

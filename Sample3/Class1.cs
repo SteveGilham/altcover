@@ -42,9 +42,9 @@ namespace Sample3
             public bool Defer { get; set; }
         }
 
-        private static List<Tuple<string, int>> log = new List<Tuple<string, int>>();
+        private static List<Tuple<string, int, int>> log = new List<Tuple<string, int, int>>();
 
-        public List<Tuple<string, int>> Visits
+        public List<Tuple<string, int, int>> Visits
         {
             get
             {
@@ -52,9 +52,9 @@ namespace Sample3
             }
         }
 
-        public static void Log(string id, int num)
+        public static void Log(string id, int kind, int num)
         {
-            log.Add(Tuple.Create(id, num));
+            log.Add(Tuple.Create(id, kind, num));
         }
 
         public static int GetOperandType(Instruction self)

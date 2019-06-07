@@ -252,11 +252,12 @@ module Instance =
   let internal VisitSelection track moduleId hitPointId =
     VisitImpl moduleId hitPointId track
 
-  let Visit moduleId hitPointId =
+  let Visit moduleId hitPointKind hitPointId =
     if Recording then
+      let id = hitPointId ||| Counter.Flagging.[hitPointKind]
       VisitSelection (if CoverageFormat = ReportFormat.OpenCoverWithTracking
                       then PayloadSelector IsOpenCoverRunner
-                      else Null) moduleId hitPointId
+                      else Null) moduleId id
 
   let internal FlushCounter (finish : Close) _ =
       match finish with

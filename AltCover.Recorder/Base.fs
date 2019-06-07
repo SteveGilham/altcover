@@ -10,6 +10,11 @@ open System.Globalization
 open System.IO
 open System.Xml
 
+type VisitKind =
+  | Sequence = 0
+  | Branch = 1
+  | Method = 2
+
 // These conditionally internal for Gendarme
 type
 #if DEBUG
@@ -95,6 +100,12 @@ module internal Counter =
   let internal BranchFlag = 0x80000000
 
   let internal BranchMask = 0x7FFFFFFF
+
+  let internal MethodFlagged = 0x6000000 // 6 -shl 24
+
+  let internal MethodMask = 0x1FFFFFF
+
+  let internal Flagging = [| 0; BranchFlag; MethodFlagged |]
 
   /// <summary>
   /// The time at which coverage run began

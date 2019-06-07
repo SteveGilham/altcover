@@ -52,7 +52,7 @@ type AltCoverTests2() =
       let recorder = AltCover.Instrument.RecordingMethod def
       recorder
       |> List.zip
-           [ "System.Void AltCover.Recorder.Instance.Visit(System.String,System.Int32)";
+           [ "System.Void AltCover.Recorder.Instance.Visit(System.String,System.Int32,System.Int32)";
              "System.Void AltCover.Recorder.Instance.Push(System.Int32)";
              "System.Void AltCover.Recorder.Instance.Pop()" ]
       |> List.iter (fun (n, m) -> Assert.That(Naming.FullMethodName m, Is.EqualTo n))
@@ -599,7 +599,7 @@ type AltCoverTests2() =
           let func = clazz.GetMethods() |> Seq.find (fun x -> x.Name = "get_Property")
           let clazz' = def.MainModule.GetType("Sample3.Class3")
           let func' = clazz'.GetMethods() |> Seq.find (fun x -> x.Name = "Log")
-          let newValue = Instrument.InsertVisit (func.Body.Instructions.[0]) (func.Body.GetILProcessor()) func' unique 42
+          let newValue = Instrument.InsertVisit (func.Body.Instructions.[0]) (func.Body.GetILProcessor()) func' unique Base.VisitKind.Sequence 42
           Assert.That (newValue.Operand, Is.EqualTo unique)
           Assert.That (newValue.OpCode, Is.EqualTo OpCodes.Ldstr)
           Instrument.WriteAssembly def outputdll
@@ -636,9 +636,9 @@ type AltCoverTests2() =
 #endif
               let proxyObject' = ad.CreateInstanceFromAndUnwrap(typeof<ProxyObject>.Assembly.Location,"Tests.ProxyObject") :?> ProxyObject
               proxyObject'.InstantiateObject(outputdll,"Sample3.Class3",[||])
-              let log = proxyObject'.InvokeMethod("get_Visits",[||]) :?> seq<Tuple<string, int>>
+              let log = proxyObject'.InvokeMethod("get_Visits",[||]) :?> seq<Tuple<string, int, int>>
               if isWindows then // HACK HACK HACK
-                Assert.That (log, Is.EquivalentTo[(unique, 42)])
+                Assert.That (log, Is.EquivalentTo[(unique, 0, 42)])
             finally
               AppDomain.Unload(ad)
         finally
@@ -979,7 +979,8 @@ type AltCoverTests2() =
                    |> Seq.find (fun i -> i.OpCode = OpCodes.Switch)
       let targets = switch.Operand :?> Instruction array
                     |> Array.map (fun i -> i.Offset)
-      Assert.That (targets, Is.EquivalentTo [ 31; 33; 31; 33; 31 ])
+      let before = [ 31; 33; 31; 33; 31 ]
+      Assert.That (targets, Is.EquivalentTo before)
 
       let m = Node.Method (target, Inspect.Instrument, None)
       let steps = Visitor.BuildSequence m
@@ -996,7 +997,8 @@ type AltCoverTests2() =
                    |> Seq.find (fun i -> i.OpCode = OpCodes.Switch)
       let targets2 = switch2.Operand :?> Instruction array
                     |> Array.map (fun i -> i.Offset)
-      Assert.That (targets2, Is.EquivalentTo [ 43; 45; 43; 45; 43 ])
+      let after = before |> List.map (fun i -> i + 13)
+      Assert.That (targets2, Is.EquivalentTo after)
 
     [<Test>]
     member self.ShouldNotChangeAnUntrackedMethod() =
@@ -1058,15 +1060,19 @@ type AltCoverTests2() =
             else Some(state, state.Next)) branches.Head.Start
           |> Seq.skip 1
           |> Seq.toList
-        Assert.That(inject.Length, Is.EqualTo 8)
+        Assert.That(inject.Length, Is.EqualTo 10)
         let switches = branches.Head.Start.Operand :?> Instruction [] |> Seq.toList
         Assert.That(switches.[0], Is.EqualTo inject.[1])
         Assert.That(switches.[1], Is.EqualTo inject.[0])
-        Assert.That(inject.[0].Operand, Is.EqualTo inject.[5])
+        Assert.That(inject.[0].Operand, Is.EqualTo inject.[6])
         Assert.That
-          ((inject.[2].Operand :?> int) &&& Base.Counter.BranchMask, Is.EqualTo 1)
+          (inject.[3].Operand :?> int, Is.EqualTo 1)
         Assert.That
-          ((inject.[6].Operand :?> int) &&& Base.Counter.BranchMask, Is.EqualTo 0)
+          (inject.[8].Operand :?> int, Is.EqualTo 0)
+        Assert.That
+          (inject.[2].Operand :?> Base.VisitKind, Is.EqualTo Base.VisitKind.Branch)
+        Assert.That
+          (inject.[7].Operand :?> Base.VisitKind, Is.EqualTo Base.VisitKind.Branch)
       finally
         Visitor.NameFilters.Clear()
         Visitor.reportFormat <- None
@@ -1119,12 +1125,16 @@ type AltCoverTests2() =
             else Some(state, state.Next)) branches.Head.Start
           |> Seq.skip 1
           |> Seq.toList
-        Assert.That(inject.Length, Is.EqualTo 8)
-        Assert.That(inject.[0].Operand, Is.EqualTo inject.[5])
+        Assert.That(inject.Length, Is.EqualTo 10)
+        Assert.That(inject.[0].Operand, Is.EqualTo inject.[6])
         Assert.That
-          ((inject.[2].Operand :?> int) &&& Base.Counter.BranchMask, Is.EqualTo 1)
+          (inject.[2].Operand :?> Base.VisitKind, Is.EqualTo Base.VisitKind.Branch)
         Assert.That
-          ((inject.[6].Operand :?> int) &&& Base.Counter.BranchMask, Is.EqualTo 0)
+          (inject.[3].Operand :?> int, Is.EqualTo 1)
+        Assert.That
+          (inject.[7].Operand :?> Base.VisitKind, Is.EqualTo Base.VisitKind.Branch)
+        Assert.That
+          (inject.[8].Operand :?> int, Is.EqualTo 0)
       finally
         Visitor.NameFilters.Clear()
         Visitor.reportFormat <- None

@@ -6,12 +6,12 @@ let run _ =
    let mutable step = 0
    {0..3}
    |> Seq.iter (fun i -> step <- step + 1
-                         Instance.Visit "module1" i)
+                         Instance.Visit "module1" 0 i)
 
    {0..5}
    |> Seq.iter( fun i -> {0..5}
                          |> Seq.iter (fun j -> step <- step + 1
-                                               Instance.Visit "module1" j))
+                                               Instance.Visit "module1" 0 j))
    step
 
 let runALot n =
