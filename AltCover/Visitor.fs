@@ -714,7 +714,9 @@ module internal Visitor =
       if MethodPointOnly() then
         rawInstructions
         |> Seq.take 1
-        |> Seq.map (fun i -> MethodPoint(i, None, m.MetadataToken.ToInt32(), interesting))
+        |> Seq.map (fun i -> MethodPoint(i, None,
+                                         m.MetadataToken.ToInt32() &&& Counter.MethodMask,
+                                         interesting))
       else
         let point = PointNumber
         PointNumber <- point + instructions.Length

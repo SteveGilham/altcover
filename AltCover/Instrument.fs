@@ -551,14 +551,14 @@ module internal Instrument =
     body.Instructions |> Seq.iter subs.SubstituteInstructionOperand
     body.ExceptionHandlers |> Seq.iter subs.SubstituteExceptionBoundary
 
-  let private VisitMethodPoint (state : InstrumentContext) instruction point included =
+  let private VisitMethodPoint (state : InstrumentContext) instruction s point included =
     if included then // by construction the sequence point is included
-      let (kind, pt) = if point &&& Base.Counter.MethodFlagged <> 0
-                       then (Base.VisitKind.Method, point &&& Base.Counter.MethodMask)
-                       else (Base.VisitKind.Sequence, point)
+      let kind = if Option.isNone s
+                 then Base.VisitKind.Method
+                 else Base.VisitKind.Sequence
       let instrLoadModuleId =
         InsertVisit instruction state.MethodWorker state.RecordingMethodRef.Visit
-          state.ModuleId kind pt
+          state.ModuleId kind point
       UpdateBranchReferences state.MethodBody instruction instrLoadModuleId
     state
 
@@ -738,8 +738,8 @@ module internal Instrument =
     | Module(m, included) -> VisitModule state m included
     | Type _ -> state
     | Method(m, included, _) -> VisitMethod state m included
-    | MethodPoint(instruction, _, point, included) ->
-      VisitMethodPoint state instruction point included
+    | MethodPoint(instruction, s, point, included) ->
+      VisitMethodPoint state instruction s point included
     | BranchPoint branch -> VisitBranchPoint state branch
     | AfterMethod(m, included, track) -> VisitAfterMethod state m included track
     | AfterType -> state
