@@ -2870,13 +2870,13 @@ Target.runOrDefault "DoIt"
 """
     File.WriteAllText("./_ApiUse/DriveApi.fsx", script)
 
-    let dependencies = """version 5.206.0
+    let dependencies = """version 5.210.1
 // [ FAKE GROUP ]
 group NetcoreBuild
   source https://api.nuget.org/v3/index.json
   nuget Fake.Core >= 5.8.4
-  nuget Fake.Core.Target >= 5.13.7
-  nuget Fake.DotNet.Cli >= 5.13.7
+  nuget Fake.Core.Target >= 5.14.1
+  nuget Fake.DotNet.Cli >= 5.14.1
   nuget FSharp.Core = 4.6.2
 
   source {0}
