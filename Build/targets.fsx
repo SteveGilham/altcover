@@ -2875,8 +2875,8 @@ Target.runOrDefault "DoIt"
 group NetcoreBuild
   source https://api.nuget.org/v3/index.json
   nuget Fake.Core >= 5.8.4
-  nuget Fake.Core.Target >= 5.14.1
-  nuget Fake.DotNet.Cli >= 5.14.1
+  nuget Fake.Core.Target >= 5.15.0
+  nuget Fake.DotNet.Cli >= 5.15.0
   nuget FSharp.Core = 4.6.2
 
   source {0}
