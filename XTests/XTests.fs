@@ -10,9 +10,16 @@ open System.Xml.Linq
 open AltCover
 open Mono.Options
 open Newtonsoft.Json.Linq
+open Swensen.Unquote
 open Xunit
 
 module XTests =
+  let test' x message =
+    try
+      test x
+    with
+    | fail -> AssertionFailedException(message + Environment.NewLine + fail.Message, fail) |> raise
+
   let Hack() =
     let where = Assembly.GetExecutingAssembly().Location
 
@@ -25,14 +32,14 @@ module XTests =
     | _ -> String.Empty
 
   let SolutionDir() =
-#if NETCOREAPP2_0
+#if NETCOREAPP2_1
     let where = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
     where.Substring(0, where.IndexOf("_Binaries"))
 #else
     SolutionRoot.location
 #endif
 
-#if NETCOREAPP2_0
+#if NETCOREAPP2_1
   let sample1 = "Sample1.dll"
   let monoSample1 = "../_Mono/Sample1"
 #else
@@ -67,10 +74,10 @@ module XTests =
   let rec RecursiveValidate result expected depth zero =
     let rcount = result |> Seq.length
     let ecount = expected |> Seq.length
-    Assert.Equal(rcount, (ecount)) //, "Mismatch at depth " + depth.ToString())
+    test' <@ rcount = ecount @> ("Mismatch at depth " + depth.ToString())
     Seq.zip result expected
     |> Seq.iter (fun (r : XElement, e : XElement) ->
-         Assert.Equal(r.Name, (e.Name)) //, "Expected name " + e.Name.ToString())
+         test <@ r.Name = e.Name @>
          let ra = r.Attributes()
          let ea = e.Attributes()
          Seq.zip ra ea
@@ -106,12 +113,12 @@ module XTests =
       |> Seq.toList
 
     let ecount = expected |> Seq.length
-    Assert.Equal(rcount, (ecount)) //, "Mismatch at depth " + depth.ToString() + " : " +
-    //        expected.ToString() + " but got" + (result |> Seq.toList).ToString())
+    test' <@ rcount = ecount @> ("Mismatch at depth " + depth.ToString() + " : " +
+            expected.ToString() + " but got" + (result |> Seq.toList).ToString())
     Seq.zip result expected
     |> Seq.iter
          (fun (r : XElement, e : XElement) ->
-         Assert.Equal(r.Name, (e.Name)) //, "Expected name " + e.Name.ToString())
+         test <@ r.Name = e.Name @>
          let ra = r.Attributes()
          let ea = e.Attributes()
          Seq.zip ra ea
@@ -180,7 +187,7 @@ module XTests =
     let test =
       { Primitive.CollectParams.Create() with RecorderDirectory = Guid.NewGuid().ToString() }
     let scan = (FSApi.CollectParams.Primitive test).Validate(true)
-    Assert.Equal(2, scan.Length)
+    test' <@ scan.Length = 2 @> <| String.Join(Environment.NewLine, scan)
 
   [<Fact>]
   let TypeSafeCollectParamsCanBePositivelyValidatedWithErrors() =
@@ -276,7 +283,7 @@ module XTests =
                                               Keys = [| input |] }
 
     let scan = (FSApi.PrepareParams.Primitive test).Validate()
-#if NETCOREAPP2_0
+#if NETCOREAPP2_1
     ()
 #else
     Assert.Equal (0, scan.Length)
@@ -291,7 +298,7 @@ module XTests =
                                              Keys = TypeSafe.FilePaths [| TypeSafe.FilePath input |] }
 
     let scan = (FSApi.PrepareParams.TypeSafe test).Validate()
-#if NETCOREAPP2_0
+#if NETCOREAPP2_1
     ()
 #else
     Assert.Equal (0, scan.Length)
@@ -356,7 +363,7 @@ module XTests =
       else
         Path.Combine
           (where.Substring(0, where.IndexOf("_Binaries")),
-           "../_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.0")
+           "../_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1")
 
     let key =
       if File.Exists key0 then key0
@@ -690,7 +697,7 @@ module XTests =
       let pdb = Path.ChangeExtension(Assembly.GetExecutingAssembly().Location, ".pdb")
       if File.Exists pdb then
         let isWindows =
-#if NETCOREAPP2_0
+#if NETCOREAPP2_1
                         true
 #else
                         System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
@@ -709,7 +716,7 @@ module XTests =
     let where = Assembly.GetExecutingAssembly().Location
     let here = SolutionDir()
     let path = Path.Combine(here, "_Mono/Sample1/Sample1.exe")
-#if NETCOREAPP2_0
+#if NETCOREAPP2_1
 
     let path' =
       if File.Exists path then path
@@ -735,7 +742,7 @@ module XTests =
       let created = Path.Combine(output, "Sample1.exe")
       Assert.True(File.Exists created, created + " not found")
       let isDotNet =
-#if NETCOREAPP2_0
+#if NETCOREAPP2_1
                      true
 #else
                      System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
@@ -769,13 +776,13 @@ module XTests =
       Assert.True(result.RecordingAssembly |> isNull)
       let created = Path.Combine(output, "Sample4.dll")
       Assert.True(File.Exists created, created + " not found")
-#if NETCOREAPP2_0
+#if NETCOREAPP2_1
       Assert.True(File.Exists(Path.Combine(output, "FSharp.Core.dll")), "Core not found")
 #else
       let pdb = Path.ChangeExtension(Assembly.GetExecutingAssembly().Location, ".pdb")
       if File.Exists pdb then
         let isWindows =
-#if NETCOREAPP2_0
+#if NETCOREAPP2_1
                         true
 #else
                         System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
@@ -863,7 +870,7 @@ module XTests =
     let where = Assembly.GetExecutingAssembly().Location
     let here = SolutionDir()
     let path = Path.Combine(here, "_Mono/Sample1/Sample1.exe")
-#if NETCOREAPP2_0
+#if NETCOREAPP2_1
     let path' =
       if File.Exists path then path
       else
@@ -884,7 +891,7 @@ module XTests =
     // Hack for running while instrumented
     let here = SolutionDir()
     let path = Path.Combine(here, "_Mono/Sample1/Sample1.exe")
-#if NETCOREAPP2_0
+#if NETCOREAPP2_1
     let where = Assembly.GetExecutingAssembly().Location
 
     let path' =
