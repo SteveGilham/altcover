@@ -677,6 +677,7 @@ _Target "UnitTestWithOpenCover" (fun _ ->
 _Target "UnitTestWithAltCover" (fun _ ->
   Directory.ensure "./_Reports/_UnitTestWithAltCover"
   let keyfile = Path.getFullName "Build/SelfTest.snk"
+  let shadowkeyfile = Path.getFullName "Build/Infrastructure.snk"  
   let reports = Path.getFullName "./_Reports"
   let altcover = Tools.findToolInSubPath "AltCover.exe" "./_Binaries"
   let here = Path.getFullName "."
@@ -784,7 +785,7 @@ _Target "UnitTestWithAltCover" (fun _ ->
         ({ Primitive.PrepareParams.Create() with XmlReport = shadowReport
                                                  OutputDirectory =
                                                    "./__ShadowTestWithAltCover"
-                                                 StrongNameKey = keyfile
+                                                 StrongNameKey = shadowkeyfile
                                                  InPlace = false
                                                  Save = false }
          |> AltCoverFilter)
@@ -812,6 +813,7 @@ _Target "UnitTestWithAltCover" (fun _ ->
 _Target "UnitTestWithAltCoverRunner" (fun _ ->
   Directory.ensure "./_Reports/_UnitTestWithAltCover"
   let keyfile = Path.getFullName "Build/SelfTest.snk"
+  let shadowkeyfile = Path.getFullName "Build/Infrastructure.snk"  
   let reports = Path.getFullName "./_Reports"
   let altcover =
     Tools.findToolInSubPath "AltCover.exe" "./_Binaries/AltCover/Debug+AnyCPU"
@@ -952,7 +954,7 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
         ({ Primitive.PrepareParams.Create() with XmlReport = shadowReport
                                                  OutputDirectory =
                                                    "./__ShadowTestWithAltCoverRunner"
-                                                 StrongNameKey = keyfile
+                                                 StrongNameKey = shadowkeyfile
                                                  InPlace = false
                                                  Save = false }
           |> AltCoverFilter)
