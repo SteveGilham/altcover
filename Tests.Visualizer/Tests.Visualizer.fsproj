@@ -74,6 +74,9 @@
     </Compile>
     <Compile Include="GtkVisualizerTests.fs" />
     <Content Include="packages.config" />
+    <Content Include="..\WeakNameTests\App.config">
+      <Link>App.config</Link>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <Reference Include="FSharp.Core">
@@ -86,6 +89,9 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Numerics" />
+    <Reference Include="Unquote">
+      <HintPath>..\ThirdParty\Unquote.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\AltCover.Visualizer\AltCover.Visualizer.fsproj">

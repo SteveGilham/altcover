@@ -167,6 +167,9 @@
     <Reference Include="System.Numerics" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
+    <Reference Include="Unquote">
+      <HintPath>..\ThirdParty\Unquote.dll</HintPath>
+    </Reference>
     <ProjectReference Include="..\AltCover\AltCover.fsproj">
       <Name>AltCover</Name>
       <Project>{b766260f-6551-4ca8-b2cb-25d2d5092801}</Project>
