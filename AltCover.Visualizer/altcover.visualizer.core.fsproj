@@ -85,7 +85,7 @@
   </ItemGroup>
 
   <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
-    <Exec Command="pwsh Prepare.ps1" />
+    <Exec Command="pwsh -NoProfile Prepare.ps1" />
   </Target>
 
 </Project>
