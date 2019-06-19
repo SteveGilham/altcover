@@ -63,6 +63,7 @@
     <Error Condition="!Exists('..\packages\NUnit.3.12.0\build\NUnit.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\NUnit.3.12.0\build\NUnit.props'))" />
   </Target>
   <ItemGroup>
+    <Content Include="App.config"  Condition="'$(OS)' == 'Windows_NT'" />
     <Compile Include="..\Shadow.Tests\AssemblyInfo.fs">
       <Link>AssemblyInfo.fs</Link>
     </Compile>
@@ -98,12 +99,24 @@
     <Reference Condition="'$(OS)' != 'Windows_NT'" Include="FSharp.Core">
       <HintPath>..\packages\FSharp.Core.4.5.2\lib\net45\FSharp.Core.dll</HintPath>
     </Reference>
+    <Reference Include="FSharp.PowerPack" Condition="'$(OS)' == 'Windows_NT'">
+      <HintPath>..\packages\FSPowerPack.Community.2.0.0.0\lib\Net20\FSharp.PowerPack.dll</HintPath>
+    </Reference>
+    <Reference Include="FSharp.PowerPack.Linq" Condition="'$(OS)' == 'Windows_NT'">
+      <HintPath>..\packages\FSPowerPack.Community.2.0.0.0\lib\Net20\FSharp.PowerPack.Linq.dll</HintPath>
+    </Reference>
+    <Reference Include="FSharp.PowerPack.Metadata" Condition="'$(OS)' == 'Windows_NT'">
+      <HintPath>..\packages\FSPowerPack.Community.2.0.0.0\lib\Net20\FSharp.PowerPack.Metadata.dll</HintPath>
+    </Reference>
+    <Reference Include="Unquote2" Condition="'$(OS)' == 'Windows_NT'">
+      <HintPath>..\ThirdParty\Unquote2.dll</HintPath>
+    </Reference>
+    <Reference Include="Unquote" Condition="'$(OS)' != 'Windows_NT'">
+      <HintPath>..\ThirdParty\Unquote.dll</HintPath>
+    </Reference>
     <Reference Include="mscorlib" />
     <Reference Include="nunit.framework">
       <HintPath>..\packages\NUnit.3.12.0\lib\net35\nunit.framework.dll</HintPath>
-    </Reference>
-    <Reference Include="NUnit.System.Linq">
-      <HintPath>..\packages\NUnit.3.12.0\lib\net35\NUnit.System.Linq.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Xml" />

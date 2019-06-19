@@ -89,6 +89,9 @@
     <Reference Include="System.Numerics" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
+    <Reference Include="Unquote">
+      <HintPath>..\ThirdParty\Unquote.dll</HintPath>
+    </Reference>
     <ProjectReference Include="..\AltCover.Recorder\AltCover.Shadow.fsproj">
       <Name>AltCover.Shadow</Name>
       <Project>{62480be3-4479-4a47-a23f-50858ecd74b3}</Project>

@@ -25,10 +25,22 @@ open System.Reflection
 open AltCover.Recorder
 open AltCover.Shadow
 open NUnit.Framework
+open Swensen.Unquote
 
 [<TestFixture>]
 type AltCoverCoreTests() =
   class
+    let test' x message =
+      try
+        test x
+      with
+      | fail ->
+        let extended = message + Environment.NewLine + fail.Message
+#if NET2
+        Assert.Fail(extended)
+#else
+        AssertionFailedException(extended, fail)|> raise
+#endif
 
     [<Test>]
     member self.WillNotConnectSpontaneously() =
@@ -37,7 +49,7 @@ type AltCoverCoreTests() =
       let mutable client = Tracer.Create unique
       try
         client <- client.OnStart()
-        Assert.That(client.IsConnected(), Is.False)
+        test <@ client.IsConnected() |> not @>
       with _ ->
         client.Close()
         reraise()
@@ -51,7 +63,7 @@ type AltCoverCoreTests() =
       let mutable client = Tracer.Create unique
       try
         client <- client.OnStart()
-        Assert.That(client.IsConnected(), Is.True)
+        test <@ client.IsConnected() @>
       finally
         client.Close()
 
@@ -73,8 +85,8 @@ type AltCoverCoreTests() =
 #else
            | Tag.Both -> Both (formatter.ReadInt64(), formatter.ReadInt32())
 #endif
-           | Tag.Table -> Assert.That (id, Is.Empty)
-                          Assert.That (strike, Is.EqualTo 0)
+           | Tag.Table -> test <@ id = String.Empty @>
+                          test <@ strike = 0 @>
                           let t = Dictionary<string, Dictionary<int, PointVisit>>()
                           let rec ``module`` () =
                             let m = formatter.ReadString()
@@ -102,7 +114,7 @@ type AltCoverCoreTests() =
                                     | Tag.Both -> pv.Tracks.Add (Both (formatter.ReadInt64(), formatter.ReadInt32()))
 #endif
                                                   tracking ()
-                                    | Tag.Table -> Assert.Fail ("No nested tables!!")
+                                    | Tag.Table -> test' <@ false @> "No nested tables!!"
                                     | _ -> sequencePoint (pts - 1)
                                   tracking()
                                 else ``module``()
@@ -133,7 +145,7 @@ type AltCoverCoreTests() =
         try
           Adapter.VisitsClear()
           Instance.trace <- client.OnStart()
-          Assert.That(Instance.trace.IsConnected(), "connection failed")
+          test' <@ Instance.trace.IsConnected() @> "connection failed"
           Instance.IsRunner <- true
           Adapter.VisitImplNone "name" 23
         finally
@@ -143,9 +155,9 @@ type AltCoverCoreTests() =
           Instance.trace <- save
         use stream =
           new DeflateStream(File.OpenRead(unique + ".0.acv"), CompressionMode.Decompress)
-        let results = self.ReadResults stream
-        Assert.That(Adapter.VisitsSeq() |> Seq.length, Is.EqualTo 0, "unexpected local write")
-        Assert.That(results, Is.EquivalentTo expected, "unexpected result")
+        let results = self.ReadResults stream |> Seq.toList
+        test' <@ Adapter.VisitsSeq() |> Seq.isEmpty @> "unexpected local write"
+        test' <@ results = expected @> "unexpected result"
       finally
         Adapter.Reset()
 
@@ -182,7 +194,7 @@ type AltCoverCoreTests() =
         let mutable client = Tracer.Create tag
         try
           Instance.trace <- client.OnStart()
-          Assert.That(Instance.trace.IsConnected(), "connection failed")
+          test' <@ Instance.trace.IsConnected() @> "connection failed"
           Instance.IsRunner <- true
 
           Adapter.VisitsClear()
@@ -195,9 +207,9 @@ type AltCoverCoreTests() =
         use stream =
           new DeflateStream(File.OpenRead(unique + ".0.acv"), CompressionMode.Decompress)
         let results = self.ReadResults stream
-        Assert.That(Adapter.VisitsSeq() |> Seq.length, Is.EqualTo 0, "unexpected local write")
-        Assert.That (results.Count, Is.EqualTo 2)
-        Assert.That(results |> Seq.skip 1, Is.EquivalentTo (expected |> Seq.skip 1), "unexpected result")
+        test' <@ Adapter.VisitsSeq() |> Seq.isEmpty @> "unexpected local write"
+        test <@ results.Count = 2 @>
+        test' <@ (results |> Seq.skip 1 |> Seq.head) = (expected |> Seq.skip 1 |> Seq.head) @> "unexpected result"
         match results |> Seq.head with
         | (n, p, Table d) ->
           Assert.That (n, Is.Empty)
