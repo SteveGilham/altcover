@@ -741,13 +741,7 @@ module XTests =
       Assert.Same(result, input) //, "result differs")
       let created = Path.Combine(output, "Sample1.exe")
       Assert.True(File.Exists created, created + " not found")
-      let isDotNet =
-#if NETCOREAPP2_1
-                     true
-#else
-                     System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
-#endif
-
+      let isDotNet = System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
       if isDotNet then
         Assert.True(File.Exists(created + ".mdb"), created + ".mdb not found")
     finally
