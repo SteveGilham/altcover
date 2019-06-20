@@ -378,7 +378,9 @@ _Target "FxCop" (fun _ -> // Needs debug because release is compiled --standalon
                 "-Microsoft.Naming#CA1704"
                 "-Microsoft.Naming#CA1707"
                 "-Microsoft.Naming#CA1709"
-                "-Microsoft.Naming#CA1715" ]
+                "-Microsoft.Naming#CA1715"
+                "-Microsoft.Usage#CA2208"
+                 ]
 
   [ ([
          "_Binaries/AltCover/Debug+AnyCPU/AltCover.exe"
