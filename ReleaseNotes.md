@@ -2,6 +2,10 @@ Q. Never mind the fluff -- how do I get started?
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
+# 5.3.xxx (Ezoguma series release 7)
+* Add the search of the nuget cache into the Framework/Mono build to address issue 20 corner case
+* On Windows Terminal 0.2.x, the default foreground is ConsoleColor.Gray, and ConsoleColor.White can be the same as ConsoleColor.Black (e.g. Solarized Light), so don't set the colour to White, but use Foreground instead.
+
 # 5.3.675 (Ezoguma series release 6)
 * In the `Invoke-AltCover -Runner` cmdlet, send the summary text (OpenCover and/or TeamCity style) to the object pipeline as well as to the `Information` channel.
 * Option `--defer[:[+|-]]` (default `--defer:-`) (`-Defer` for PowerShell; Defer property on MSBuild task; API field) to keep all the visit data in memory and only write the total out during process exit
