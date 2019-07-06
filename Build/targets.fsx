@@ -679,7 +679,7 @@ _Target "UnitTestWithOpenCover" (fun _ ->
 _Target "UnitTestWithAltCover" (fun _ ->
   Directory.ensure "./_Reports/_UnitTestWithAltCover"
   let keyfile = Path.getFullName "Build/SelfTest.snk"
-  let shadowkeyfile = Path.getFullName "Build/Infrastructure.snk"  
+  let shadowkeyfile = Path.getFullName "Build/Infrastructure.snk"
   let reports = Path.getFullName "./_Reports"
   let altcover = Tools.findToolInSubPath "AltCover.exe" "./_Binaries"
   let here = Path.getFullName "."
@@ -815,7 +815,7 @@ _Target "UnitTestWithAltCover" (fun _ ->
 _Target "UnitTestWithAltCoverRunner" (fun _ ->
   Directory.ensure "./_Reports/_UnitTestWithAltCover"
   let keyfile = Path.getFullName "Build/SelfTest.snk"
-  let shadowkeyfile = Path.getFullName "Build/Infrastructure.snk"  
+  let shadowkeyfile = Path.getFullName "Build/Infrastructure.snk"
   let reports = Path.getFullName "./_Reports"
   let altcover =
     Tools.findToolInSubPath "AltCover.exe" "./_Binaries/AltCover/Debug+AnyCPU"
@@ -2874,13 +2874,13 @@ Target.runOrDefault "DoIt"
 """
     File.WriteAllText("./_ApiUse/DriveApi.fsx", script)
 
-    let dependencies = """version 5.210.1
+    let dependencies = """version 5.215.0
 // [ FAKE GROUP ]
 group NetcoreBuild
   source https://api.nuget.org/v3/index.json
   nuget Fake.Core >= 5.8.4
-  nuget Fake.Core.Target >= 5.15.0
-  nuget Fake.DotNet.Cli >= 5.15.0
+  nuget Fake.Core.Target >= 5.15.3
+  nuget Fake.DotNet.Cli >= 5.15.3
   nuget FSharp.Core = 4.6.2
 
   source {0}
