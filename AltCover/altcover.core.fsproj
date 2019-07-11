@@ -42,6 +42,7 @@
     <Compile Include="..\AltCover.Recorder\Base.fs" Link="Base.fs" />
     <Compile Include="ProgramDatabase.fs" />
     <Compile Include="Filter.fs" />
+    <Compile Include="Exemption.fs" />
     <Compile Include="Visitor.fs" />
     <Compile Include="Naming.fs" />
     <Compile Include="Report.fs" />

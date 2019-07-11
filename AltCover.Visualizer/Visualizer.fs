@@ -12,8 +12,8 @@ open System.Xml.Linq
 open System.Xml.Schema
 open System.Xml.XPath
 
+open AltCover
 open AltCover.Augment
-open AltCover.Visualizer.Extensions
 open AltCover.Visualizer.GuiCommon
 
 open Gdk
@@ -798,7 +798,7 @@ module Gui =
     | Select "tool-generated: " _ -> Exemption.Automatic
     | Select "static analysis: " _ -> Exemption.StaticAnalysis
     | (_, true) -> Exemption.Excluded
-    | _ -> 0
+    | _ -> Exemption.None
 
   let private CoverageToTag(n : XPathNavigator) =
     let excluded = Boolean.TryParse(n.GetAttribute("excluded", String.Empty)) |> snd
@@ -810,7 +810,7 @@ module Gui =
     // Extension behaviour for textual signalling for three lines
     n.MoveToParent() |> ignore
     let because = n.GetAttribute("excluded-because", String.Empty)
-    let fallback = SelectStyle because excluded
+    let fallback = SelectStyle because excluded |> int
     { visitcount =
         if visitcount = 0 then fallback
         else visitcount
@@ -840,8 +840,8 @@ module Gui =
           (n.endline - 1, Math.Min(n.endcolumn, endline.CharsInLine) - 1)
 
     let tag =
-      match n.visitcount with
-      | 0 -> "notVisited"
+      match enum n.visitcount with
+      | Exemption.None -> "notVisited"
       | Exemption.Declared -> "declared"
       | Exemption.Automatic -> "automatic"
       | Exemption.StaticAnalysis -> "static"
