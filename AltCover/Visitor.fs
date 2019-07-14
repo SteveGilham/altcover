@@ -293,6 +293,7 @@ module internal Visitor =
       Filter.IsCSharpAutoProperty
       (fun m -> specialCaseFilters |> Seq.exists (Filter.Match m))
 
+      // Constructors of compiler generated types otherwise pollute F# coverage
       (fun m ->
       let t = m.DeclaringType
       m.IsConstructor
