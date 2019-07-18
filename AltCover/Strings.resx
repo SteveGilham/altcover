@@ -121,7 +121,8 @@
     <value>Optional: The folder containing assemblies to instrument (default: current directory)</value>
   </data>
   <data name="o|outputDirectory=" xml:space="preserve">
-    <value>Optional: The folder to receive the instrumented assemblies and their companions (default: sub-folder '__Instrumented' of the current directory; or '__Saved' if 'inplace' is set)</value>
+    <value>Optional: The folder to receive the instrumented assemblies and their companions (default: sub-folder '__Instrumented' of the current directory; or '__Saved' if '--inplace' is set).
+See also '--inplace'</value>
   </data>
   <data name="k|key=" xml:space="preserve">
     <value>Optional, multiple: any other strong-name key to use</value>

@@ -1908,7 +1908,8 @@ type AltCoverTests3() =
                              Optional: The folder to receive the instrumented
                                assemblies and their companions (default: sub-
                                folder '__Instrumented' of the current directory;
-                                or '__Saved' if 'inplace' is set)
+                                or '__Saved' if '--inplace' is set).
+                               See also '--inplace'
   -y, --symbolDirectory=VALUE
                              Optional, multiple: Additional directory to search
                                for matching symbols for the assemblies in the
@@ -2015,7 +2016,8 @@ or
                              Optional: The folder to receive the instrumented
                                assemblies and their companions (default: sub-
                                folder '__Instrumented' of the current directory;
-                                or '__Saved' if 'inplace' is set)
+                                or '__Saved' if '--inplace' is set).
+                               See also '--inplace'
   -y, --symbolDirectory=VALUE
                              Optional, multiple: Additional directory to search
                                for matching symbols for the assemblies in the

@@ -121,7 +121,8 @@
     <value>Laŭvola: La dosierujo enhavanta asembleojn al instrumento (defaŭlta: aktuala dosierujo)</value>
   </data>
   <data name="o|outputDirectory=" xml:space="preserve">
-    <value>Laŭvola: La dosierujo ricevi la instrumentajn asembleojn kaj iliajn kunulojn (defaŭlte: sub-dosierujo '__Instrumented' de la aktuala dosierujo; aŭ '__Saved' se 'inplace' estas aro)</value>
+    <value>Laŭvola: La dosierujo ricevi la instrumentajn asembleojn kaj iliajn kunulojn (defaŭlte: sub-dosierujo '__Instrumented' de la aktuala dosierujo; aŭ '__Saved' se '--inplace' estas aro).
+Vidu ankaŭ '--inplace'</value>
   </data>
   <data name="k|key=" xml:space="preserve">
     <value>Laŭvola, multobla: iu ajn alia forta-nomo ŝlosilo por uzi</value>
