@@ -3516,7 +3516,7 @@ Target.activateFinal "ResetConsoleColours"
 ==> "UnitTestWithAltCoverCoreRunner"
 ==> "UnitTest"
 
-"UnitTestDotNet"
+"UnitTestWithAltCoverRunner"
 ==> "BuildForCoverlet"
 ==> "UnitTestDotNetWithCoverlet"
 =?> ("UnitTest", Environment.isWindows)
@@ -3703,6 +3703,7 @@ Target.activateFinal "ResetConsoleColours"
 ==> "All"
 
 "UnitTest"
+==> "BulkReport"
 ==> "All"
 
 "OperationalTest"
