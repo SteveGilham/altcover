@@ -258,13 +258,15 @@ module internal Runner =
 
     covered
 
+  let InvariantParseDouble d = Double.TryParse(d, NumberStyles.Number, CultureInfo.InvariantCulture)
+
   let StandardSummary (report : XDocument) (format : Base.ReportFormat) result =
     let covered =
       report
       |> match format with
          | Base.ReportFormat.NCover -> NCoverSummary
          | _ -> OpenCoverSummary
-      |> Double.TryParse
+      |> InvariantParseDouble
 
     let value =
       match covered with
@@ -656,6 +658,10 @@ module internal Runner =
     match format with
     | Base.ReportFormat.OpenCoverWithTracking | Base.ReportFormat.OpenCover ->
       let scoreToString raw = (sprintf "%.2f" raw).TrimEnd([| '0' |]).TrimEnd([| '.' |])
+      let stringToScore (node:XmlElement) name =
+            node.GetAttribute(name)
+            |> InvariantParseDouble
+            |> snd
 
       let percentCover visits points =
         if points = 0 then "0"
@@ -720,20 +726,11 @@ module internal Runner =
 
       let crapScore (method : XmlElement) =
         let coverage =
-          let cover =
-            method.GetAttribute("sequenceCoverage")
-            |> Double.TryParse
-            |> snd
+          let cover = stringToScore method "sequenceCoverage"
           if cover > 0.0 then cover
-          else
-            method.GetAttribute("branchCoverage")
-            |> Double.TryParse
-            |> snd
+          else stringToScore method "branchCoverage"
 
-        let complexity =
-          method.GetAttribute("cyclomaticComplexity")
-          |> Double.TryParse
-          |> snd
+        let complexity = stringToScore method "cyclomaticComplexity"
 
         let raw =
           (Math.Pow(complexity, 2.0) * Math.Pow((1.0 - (coverage / 100.0)), 3.0)
