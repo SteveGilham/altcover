@@ -895,10 +895,9 @@ type AltCoverTests() =
 
       let result =
         methods
-        |> Seq.map Visitor.ContainingMethod
-        |> Seq.map
-             (fun (mo : MethodDefinition option) ->
-             mo |> Option.map (fun m -> m.DeclaringType.Name + "::" + m.Name))
+        |> Seq.map ( Visitor.ContainingMethod
+                     >> (fun (mo : MethodDefinition option) ->
+                             mo |> Option.map (fun m -> m.DeclaringType.Name + "::" + m.Name)))
         |> Seq.toList
 
       let expected =

@@ -133,7 +133,7 @@ module internal CommandLine =
       WriteColoured writer colour (fun w -> w.WriteLine(data))
 
   let internal WriteErr line = Write Console.Error ConsoleColor.Yellow line
-  let internal WriteOut line = Write Console.Out ConsoleColor.White line
+  let internal WriteOut line = Write Console.Out Console.ForegroundColor line
 
   let internal Filter line f =
     if line
@@ -314,7 +314,7 @@ module internal CommandLine =
     if ok then
       stream.Position <- 0L
       StrongNameKeyPair(stream)
-    else new NotSupportedException(x) |> raise
+    else NotSupportedException(x) |> raise
 
   let internal ValidateStrongNameKey key x =
     if ValidateFile key x then

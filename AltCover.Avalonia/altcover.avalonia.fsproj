@@ -12,15 +12,15 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
-    <OutputPath>$(SolutionDir)_Binaries/$(AssemblyName)/$(Configuration)+$(Platform)/</OutputPath>
-    <IntermediateOutputPath>$(SolutionDir)_Intermediate/$(AssemblyName)/$(Configuration)+$(Platform)/</IntermediateOutputPath>
+    <OutputPath>$(SolutionDir)_Binaries/$(AssemblyName).Avalonia/$(Configuration)+$(Platform)/</OutputPath>
+    <IntermediateOutputPath>$(SolutionDir)_Intermediate/$(AssemblyName).Avalonia/$(Configuration)+$(Platform)/</IntermediateOutputPath>
     <OtherFlags>--tailcalls+</OtherFlags>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
     <SolutionDir Condition="'$(SolutionDir)' == '$(ProjectDir)'">$(ProjectDir)../</SolutionDir>
-    <OutputPath>$(SolutionDir)_Binaries/$(AssemblyName)/$(Configuration)+$(Platform)/</OutputPath>
-    <IntermediateOutputPath>$(SolutionDir)_Intermediate/$(AssemblyName)/$(Configuration)+$(Platform)/</IntermediateOutputPath>
-    <OtherFlags>--keyfile:$(SolutionDir)Build\Infrastructure.snk</OtherFlags>
+    <OutputPath>$(SolutionDir)_Binaries/$(AssemblyName).Avalonia/$(Configuration)+$(Platform)/</OutputPath>
+    <IntermediateOutputPath>$(SolutionDir)_Intermediate/$(AssemblyName).Avalonia/$(Configuration)+$(Platform)/</IntermediateOutputPath>
+    <OtherFlags Condition="Exists('$(SolutionDir)Build\Infrastructure.snk')">--keyfile:$(SolutionDir)Build\Infrastructure.snk</OtherFlags>
 </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <WarningLevel>4</WarningLevel>
@@ -86,8 +86,8 @@
 
   <ItemGroup>
     <PackageReference Include="Avalonia.HtmlRenderer" Version="0.6.1" />
-    <PackageReference Include="Avalonia" Version="0.6.2-build6440-beta" />
-    <PackageReference Include="Avalonia.Desktop" Version="0.6.2-build6440-beta" />
+    <PackageReference Include="Avalonia" Version="0.8.0" />
+    <PackageReference Include="Avalonia.Desktop" Version="0.8.0" />
     <PackageReference Condition="'$(OS)' == 'Windows_NT' AND '$(Configuration)'=='Release'" Include="Microsoft.SourceLink.GitHub" Version="1.0.0-beta-63127-02">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
@@ -96,7 +96,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Update="FSharp.Core" Version="4.5.2" />
+    <PackageReference Update="FSharp.Core" Version="4.6.2" />
   </ItemGroup>
 
 </Project>

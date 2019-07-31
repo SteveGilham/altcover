@@ -1,0 +1,3 @@
+ildasm /all /out=Unquote.il Unquote.dll
+-- set FSharp.Core version to 4.5.0.0
+ilasm /dll /output=...\ThirdParty\Unquote.dll /key=...\ThirdParty\ThirdParty.snk /resource=Unquote.res Unquote.il  

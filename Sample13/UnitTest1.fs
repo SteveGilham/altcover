@@ -2,8 +2,8 @@ namespace Tests
 
 open NUnit.Framework
 
-[<TestClass>]
-type TestClass () =
+[<TestFixture>]
+type SimpleTest () =
 
     [<SetUp>]
     member this.Setup () =
