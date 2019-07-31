@@ -2,7 +2,7 @@ Q. Never mind the fluff -- how do I get started?
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
-# 5.3.xxx (Ezoguma series release 7)
+# 5.3.679 (Ezoguma series release 7)
 * Add the search of the .net core nuget cache into the Framework/Mono build to address issue 20 corner case
 * Minor change to usage text for `-o` option to refer to `--inplace`
 * On Windows Terminal 0.2.x, the default foreground is ConsoleColor.Gray, and ConsoleColor.White can have the same RGB values as the default background hue ConsoleColor.Black (e.g. the supplied Solarized Light), so don't set the colour to White, but use Foreground instead.
