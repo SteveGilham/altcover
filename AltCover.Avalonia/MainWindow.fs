@@ -27,7 +27,7 @@ open Avalonia.Threading
 module UICommon =
   let GetResourceString(key : string) =
     let executingAssembly = System.Reflection.Assembly.GetExecutingAssembly()
-    let resources = new ResourceManager("AltCover.Visualizer.Strings", executingAssembly)
+    let resources = ResourceManager("AltCover.Visualizer.Strings", executingAssembly)
     resources.GetString(key)
 
 module Persistence =
@@ -133,18 +133,18 @@ module Persistence =
 
     let attribute (x : XElement) a =
       x.Attribute(XName.Get a).Value
-      |> Double.TryParse
+      |> Int32.TryParse
       |> snd
     config.XPathSelectElements("//Geometry")
     |> Seq.iter (fun e ->
-         let width = Math.Min(attribute e "width", 750.0)
-         let height = Math.Min(attribute e "height", 550.0)
+         let width = Math.Min(attribute e "width", 750)
+         let height = Math.Min(attribute e "height", 550)
          let bounds = w.Screens.Primary.WorkingArea
-         let x = Math.Min(Math.Max(attribute e "x", 0.0), bounds.Width - width)
-         let y = Math.Min(Math.Max(attribute e "y", 0.0), bounds.Height - height)
-         w.Height <- height
-         w.Width <- width
-         w.Position <- Point(x, y))
+         let x = Math.Min(Math.Max(attribute e "x", 0), bounds.Width - width)
+         let y = Math.Min(Math.Max(attribute e "y", 0), bounds.Height - height)
+         w.Height <- float height
+         w.Width <- float width
+         w.Position <- PixelPoint(x, y))
 
   let clearGeometry() =
     let file, config = EnsureFile()
@@ -470,10 +470,9 @@ type MainWindow() as this =
                    if scroll >= textLines.Length then textLines.Length - 1
                    else scroll
                  // Scroll into mid-view -- not entirely reliable
-                 text.CaretIndex <- textLines
-                                    |> Seq.take capped
-                                    |> Seq.map (fun l -> l.Length + 1) //System.Environment.NewLine.Length)
-                                    |> Seq.sum
+                 text.CaretIndex <- Seq.sumBy (fun (l:String) -> l.Length + 1) (textLines //System.Environment.NewLine.Length
+                                    |> Seq.take capped)
+
                  // TODO -- colouring
                  let root = x.m.Clone()
                  root.MoveToRoot()
@@ -692,7 +691,7 @@ type MainWindow() as this =
                  + UICommon.GetResourceString "WebsiteLabel" + "</a></center>"
     link.PointerPressed |> Event.add (fun _ -> armed <- true)
     link.PointerLeave |> Event.add (fun _ -> armed <- false)
-    link.PointerReleased |> Event.add (fun _ -> ())
+    link.PointerReleased |> Event.add ignore
     // Windows -- Process Start (url)
     // Mac -- ("open", url)
     // *nix -- ("xdg-open", url)

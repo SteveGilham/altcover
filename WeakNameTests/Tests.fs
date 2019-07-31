@@ -8,14 +8,13 @@ open AltCover
 open AltCover.Augment
 open Mono.Cecil
 open NUnit.Framework
+open Swensen.Unquote
 
 module Rocks =
   let rec GetAllTypes(t : TypeDefinition) =
-    t :: (t.NestedTypes
+    t :: (List.collect GetAllTypes (t.NestedTypes
           |> Seq.cast<TypeDefinition>
-          |> Seq.toList
-          |> List.map GetAllTypes
-          |> List.concat)
+          |> Seq.toList))
 
 [<TestFixture>]
 type AltCoverTests() =
@@ -32,27 +31,24 @@ type AltCoverTests() =
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
 
       let failures =
-        def.MainModule.Types
+        (Seq.map ((fun (m:MethodDefinition) ->
+             (m.FullName,
+              Gendarme.Rules.Maintainability.AvoidComplexMethodsRule.GetCyclomaticComplexity
+                m, Gendarme.CyclomaticComplexity m)) >> (fun (n, e, r) ->
+             if r <> e then Some(n, e, r)
+             else None)) (def.MainModule.Types
         |> Seq.cast<TypeDefinition>
         |> Seq.map Rocks.GetAllTypes
         |> List.concat
         |> List.map (fun t -> t.Methods |> Seq.cast<MethodDefinition>)
         |> Seq.concat
-        |> Seq.sortBy (fun m -> m.FullName)
-        |> Seq.map
-             (fun m ->
-             (m.FullName,
-              Gendarme.Rules.Maintainability.AvoidComplexMethodsRule.GetCyclomaticComplexity
-                m, Gendarme.CyclomaticComplexity m))
-        |> Seq.map (fun (n, e, r) ->
-             if r <> e then Some(n, e, r)
-             else None)
+        |> Seq.sortBy (fun m -> m.FullName)))
         |> Seq.filter Option.isSome
         |> Seq.map (fun x ->
              let n, e, r = Option.get x
              sprintf "Expected %d got %d in %s" e r n)
         |> Seq.toList
-      Assert.That(failures, Is.Empty, String.Join(Environment.NewLine, failures))
+      test <@ List.isEmpty failures @>
 
     [<Test>]
     member self.ShouldMatchGendarmeComplexityInSamples() =
@@ -65,28 +61,24 @@ type AltCoverTests() =
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
 
       let failures =
-        def.MainModule.Types
+        (Seq.map ((fun (m:MethodDefinition) ->
+             (m.FullName,
+              Gendarme.Rules.Maintainability.AvoidComplexMethodsRule.GetCyclomaticComplexity
+                m, Gendarme.CyclomaticComplexity m)) >> (fun (n, e, r) ->
+             if r <> e then Some(n, e, r)
+             else None)) (def.MainModule.Types
         |> Seq.cast<TypeDefinition>
         |> Seq.map Rocks.GetAllTypes
         |> List.concat
         |> List.map (fun t -> t.Methods |> Seq.cast<MethodDefinition>)
         |> Seq.concat
-        |> Seq.sortBy (fun m -> m.FullName)
-        /// |> Seq.filter(fun m -> m.FullName.StartsWith("System.Void "))
-        |> Seq.map
-             (fun m ->
-             (m.FullName,
-              Gendarme.Rules.Maintainability.AvoidComplexMethodsRule.GetCyclomaticComplexity
-                m, Gendarme.CyclomaticComplexity m))
-        |> Seq.map (fun (n, e, r) ->
-             if r <> e then Some(n, e, r)
-             else None)
+        |> Seq.sortBy (fun m -> m.FullName)))
         |> Seq.filter Option.isSome
         |> Seq.map (fun x ->
              let n, e, r = Option.get x
              sprintf "Expected %d got %d in %s" e r n)
         |> Seq.toList
-      Assert.That(failures, Is.Empty, String.Join(Environment.NewLine, failures))
+      test <@ List.isEmpty failures @>
 
     [<Test>]
     member self.ShouldMatchGendarmeComplexityInMonoSamples() =
@@ -106,28 +98,24 @@ type AltCoverTests() =
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
 
       let failures =
-        def.MainModule.Types
+        (Seq.map ((fun (m:MethodDefinition) ->
+             (m.FullName,
+              Gendarme.Rules.Maintainability.AvoidComplexMethodsRule.GetCyclomaticComplexity
+                m, Gendarme.CyclomaticComplexity m)) >> (fun (n, e, r) ->
+             if r <> e then Some(n, e, r)
+             else None)) (def.MainModule.Types
         |> Seq.cast<TypeDefinition>
         |> Seq.map Rocks.GetAllTypes
         |> List.concat
         |> List.map (fun t -> t.Methods |> Seq.cast<MethodDefinition>)
         |> Seq.concat
-        |> Seq.sortBy (fun m -> m.FullName)
-        /// |> Seq.filter(fun m -> m.FullName.StartsWith("System.Void "))
-        |> Seq.map
-             (fun m ->
-             (m.FullName,
-              Gendarme.Rules.Maintainability.AvoidComplexMethodsRule.GetCyclomaticComplexity
-                m, Gendarme.CyclomaticComplexity m))
-        |> Seq.map (fun (n, e, r) ->
-             if r <> e then Some(n, e, r)
-             else None)
+        |> Seq.sortBy (fun m -> m.FullName)))
         |> Seq.filter Option.isSome
         |> Seq.map (fun x ->
              let n, e, r = Option.get x
              sprintf "Expected %d got %d in %s" e r n)
         |> Seq.toList
-      Assert.That(failures, Is.Empty, String.Join(Environment.NewLine, failures))
+      test <@ List.isEmpty failures @>
 
     [<Test>]
     member self.GratuitousCoverage() =
@@ -144,5 +132,5 @@ type AltCoverTests() =
                       |> Seq.rev
                       |> Seq.toArray))
         |> Split
-      Assert.That(output, Is.EqualTo("TRUE", [ "32" ]))
+      test <@ output = ("TRUE", [ "32" ]) @>
   end

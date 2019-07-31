@@ -238,7 +238,34 @@ _Target "BuildDebug" (fun _ ->
                          |> withMSBuildParams))
 
   Shell.copy "./_SourceLink" (!!"./Sample14/Sample14/bin/Debug/netcoreapp2.1/*")
+)
 
+_Target "AvaloniaDebug" (fun _ ->
+  DotNet.restore (fun o -> o.WithCommon(withWorkingDirectoryVM "AltCover.Avalonia")) ""
+
+  "./AltCover.Visualizer/altcover.visualizer.core.sln"
+  |> MSBuild.build (fun p ->
+       { p with Verbosity = Some MSBuildVerbosity.Normal
+                ConsoleLogParameters = []
+                DistributedLoggers = None
+                DisableInternalBinLog = true
+                Properties =
+                  [ "Configuration", "Debug"
+                    "DebugSymbols", "True" ] })
+)
+
+_Target "AvaloniaRelease" (fun _ ->
+  DotNet.restore (fun o -> o.WithCommon(withWorkingDirectoryVM "AltCover.Avalonia")) ""
+
+  "./AltCover.Visualizer/altcover.visualizer.core.sln"
+  |> MSBuild.build (fun p ->
+       { p with Verbosity = Some MSBuildVerbosity.Normal
+                ConsoleLogParameters = []
+                DistributedLoggers = None
+                DisableInternalBinLog = true
+                Properties =
+                  [ "Configuration", "Release"
+                    "DebugSymbols", "True" ] })
 )
 
 _Target "BuildMonoSamples" (fun _ ->
@@ -248,7 +275,7 @@ _Target "BuildMonoSamples" (fun _ ->
 
     ("./_Mono/Sample3",
      [ "-target:library"; "-debug"; "-out:./_Mono/Sample3/Sample3.dll";
-       "-lib:./packages/Mono.Cecil.0.10.3/lib/net40"; "-r:Mono.Cecil.dll";
+       "-lib:./packages/Mono.Cecil.0.10.4/lib/net40"; "-r:Mono.Cecil.dll";
        "./Sample3/Class1.cs" ]) ]
   |> Seq.iter
        (fun (dir, cmd) ->
@@ -270,7 +297,7 @@ _Target "Lint" (fun _ ->
       |> Path.getFullName
       |> File.ReadAllText
 
-    let lintConfig = Configuration.configuration settings
+    let lintConfig = FSharpLint.Application.ConfigurationManagement.loadConfigurationFile  settings
     let options =
       { Lint.OptionalLintParameters.Default with Configuration = Some lintConfig }
 
@@ -351,7 +378,9 @@ _Target "FxCop" (fun _ -> // Needs debug because release is compiled --standalon
                 "-Microsoft.Naming#CA1704"
                 "-Microsoft.Naming#CA1707"
                 "-Microsoft.Naming#CA1709"
-                "-Microsoft.Naming#CA1715" ]
+                "-Microsoft.Naming#CA1715"
+                "-Microsoft.Usage#CA2208"
+                 ]
 
   [ ([
          "_Binaries/AltCover/Debug+AnyCPU/AltCover.exe"
@@ -650,6 +679,7 @@ _Target "UnitTestWithOpenCover" (fun _ ->
 _Target "UnitTestWithAltCover" (fun _ ->
   Directory.ensure "./_Reports/_UnitTestWithAltCover"
   let keyfile = Path.getFullName "Build/SelfTest.snk"
+  let shadowkeyfile = Path.getFullName "Build/Infrastructure.snk"
   let reports = Path.getFullName "./_Reports"
   let altcover = Tools.findToolInSubPath "AltCover.exe" "./_Binaries"
   let here = Path.getFullName "."
@@ -757,7 +787,7 @@ _Target "UnitTestWithAltCover" (fun _ ->
         ({ Primitive.PrepareParams.Create() with XmlReport = shadowReport
                                                  OutputDirectory =
                                                    "./__ShadowTestWithAltCover"
-                                                 StrongNameKey = keyfile
+                                                 StrongNameKey = shadowkeyfile
                                                  InPlace = false
                                                  Save = false }
          |> AltCoverFilter)
@@ -785,6 +815,7 @@ _Target "UnitTestWithAltCover" (fun _ ->
 _Target "UnitTestWithAltCoverRunner" (fun _ ->
   Directory.ensure "./_Reports/_UnitTestWithAltCover"
   let keyfile = Path.getFullName "Build/SelfTest.snk"
+  let shadowkeyfile = Path.getFullName "Build/Infrastructure.snk"
   let reports = Path.getFullName "./_Reports"
   let altcover =
     Tools.findToolInSubPath "AltCover.exe" "./_Binaries/AltCover/Debug+AnyCPU"
@@ -925,7 +956,7 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
         ({ Primitive.PrepareParams.Create() with XmlReport = shadowReport
                                                  OutputDirectory =
                                                    "./__ShadowTestWithAltCoverRunner"
-                                                 StrongNameKey = keyfile
+                                                 StrongNameKey = shadowkeyfile
                                                  InPlace = false
                                                  Save = false }
           |> AltCoverFilter)
@@ -1959,6 +1990,7 @@ _Target "RecordResumeTestUnderMono" // Fails : System.EntryPointNotFoundExceptio
 
 _Target "Packaging" (fun _ ->
   let AltCover = Path.getFullName "_Binaries/AltCover/Release+AnyCPU/AltCover.exe"
+  let config = AltCover + ".config"
   let fox = Path.getFullName "_Binaries/AltCover/Release+AnyCPU/BlackFox.CommandLine.dll"
   let fscore = Path.getFullName "_Binaries/AltCover/Release+AnyCPU/FSharp.Core.dll"
   let options = Path.getFullName "_Binaries/AltCover/Release+AnyCPU/Mono.Options.dll"
@@ -1990,6 +2022,7 @@ _Target "Packaging" (fun _ ->
 
   let applicationFiles =
       [ (AltCover, Some "tools/net45", None)
+        (config, Some "tools/net45", None)
         (recorder, Some "tools/net45", None)
         (posh, Some "tools/net45", None)
         (fsapi, Some "tools/net45", None)
@@ -2001,6 +2034,7 @@ _Target "Packaging" (fun _ ->
 
   let apiFiles =
       [ (AltCover, Some "lib/net45", None)
+        (config, Some "lib/net45", None)
         (recorder, Some "lib/net45", None)
         (posh, Some "lib/net45", None)
         (fsapi, Some "lib/net45", None)
@@ -2185,6 +2219,7 @@ _Target "Packaging" (fun _ ->
     (List.concat [ netcoreFiles "lib/netcoreapp2.0"
                    poshFiles "lib/netcoreapp2.0/"
                    dataFiles "lib/netcoreapp2.0/"
+                   [ (packable, Some "", None) ]
                    dotnetFiles
                    otherFilesDotnet ], "_Packaging.dotnet",
      "./_Generated/altcover.dotnet.nuspec", "altcover.dotnet")
@@ -2193,16 +2228,19 @@ _Target "Packaging" (fun _ ->
                    netcoreFiles "tools/netcoreapp2.1/any"
                    poshFiles "tools/netcoreapp2.1/any/"
                    dataFiles "tools/netcoreapp2.1/any/"
+                   [ (packable, Some "", None) ]
                    auxFiles
                    otherFilesGlobal ], "_Packaging.global",
      "./_Generated/altcover.global.nuspec", "altcover.global")
 
     (List.concat [ vizFiles "tools/netcoreapp2.1/any"
+                   [ (packable, Some "", None) ]
                    auxVFiles ], "_Packaging.visualizer",
      "./_Generated/altcover.visualizer.nuspec", "altcover.visualizer")
 
     (List.concat [ fake2Files "lib/netstandard2.0/"
                    fox2Files "lib/netstandard2.0/"
+                   [ (packable, Some "", None) ]
                    [ (fake2, Some "lib/net45", None)
                      (fox, Some "lib/net45", None) ] ], "_Packaging.fake",
      "./_Generated/altcover.fake.nuspec", "altcover.fake") ]
@@ -2843,13 +2881,13 @@ Target.runOrDefault "DoIt"
 """
     File.WriteAllText("./_ApiUse/DriveApi.fsx", script)
 
-    let dependencies = """version 5.203.2
+    let dependencies = """version 5.215.0
 // [ FAKE GROUP ]
 group NetcoreBuild
   source https://api.nuget.org/v3/index.json
   nuget Fake.Core >= 5.8.4
-  nuget Fake.Core.Target >= 5.13.5
-  nuget Fake.DotNet.Cli >= 5.13.5
+  nuget Fake.Core.Target >= 5.15.3
+  nuget Fake.DotNet.Cli >= 5.15.3
   nuget FSharp.Core = 4.6.2
 
   source {0}
@@ -3485,7 +3523,7 @@ Target.activateFinal "ResetConsoleColours"
 ==> "UnitTestWithAltCoverCoreRunner"
 ==> "UnitTest"
 
-"UnitTestDotNet"
+"UnitTestWithAltCoverRunner"
 ==> "BuildForCoverlet"
 ==> "UnitTestDotNetWithCoverlet"
 =?> ("UnitTest", Environment.isWindows)
@@ -3672,6 +3710,7 @@ Target.activateFinal "ResetConsoleColours"
 ==> "All"
 
 "UnitTest"
+==> "BulkReport"
 ==> "All"
 
 "OperationalTest"

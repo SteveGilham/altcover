@@ -47,9 +47,7 @@ module internal LCov =
              m.Attribute(X "excluded").Value <> "true"
              &&
              m.Descendants(X "seqpnt")
-             |> Seq.filter (fun s -> s.Attribute(X "excluded").Value <> "true")
-             |> Seq.isEmpty
-             |> not)
+             |> Seq.exists (fun s -> s.Attribute(X "excluded").Value <> "true"))
         |> Seq.groupBy
              (fun m ->
              (m.Descendants(X "seqpnt") |> Seq.head).Attribute(X "document").Value)

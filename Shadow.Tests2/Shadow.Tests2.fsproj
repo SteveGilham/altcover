@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\packages\NUnit.3.11.0\build\NUnit.props" Condition="Exists('..\packages\NUnit.3.11.0\build\NUnit.props')" />
+  <Import Project="..\packages\NUnit.3.12.0\build\NUnit.props" Condition="Exists('..\packages\NUnit.3.12.0\build\NUnit.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -10,7 +10,7 @@
     <OutputType>Library</OutputType>
     <RootNamespace>Shadow.Tests2</RootNamespace>
     <AssemblyName>AltCover.Shadow.Tests2</AssemblyName>
-    <TargetFrameworkVersion Condition="'$(OS)' == 'Windows_NT'">v2.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion Condition="'$(OS)' == 'Windows_NT'">v3.5</TargetFrameworkVersion>
     <TargetFrameworkVersion Condition="'$(OS)' != 'Windows_NT'">v4.7</TargetFrameworkVersion>
     <ExtraDefines Condition="'$(OS)' == 'Windows_NT'">NET2</ExtraDefines>
     <ExtraDefines Condition="'$(OS)' != 'Windows_NT'">MONO</ExtraDefines>
@@ -60,9 +60,10 @@
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\packages\NUnit.3.11.0\build\NUnit.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\NUnit.3.11.0\build\NUnit.props'))" />
+    <Error Condition="!Exists('..\packages\NUnit.3.12.0\build\NUnit.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\NUnit.3.12.0\build\NUnit.props'))" />
   </Target>
   <ItemGroup>
+    <Content Include="App.config"  Condition="'$(OS)' == 'Windows_NT'" />
     <Compile Include="..\Shadow.Tests\AssemblyInfo.fs">
       <Link>AssemblyInfo.fs</Link>
     </Compile>
@@ -98,12 +99,24 @@
     <Reference Condition="'$(OS)' != 'Windows_NT'" Include="FSharp.Core">
       <HintPath>..\packages\FSharp.Core.4.5.2\lib\net45\FSharp.Core.dll</HintPath>
     </Reference>
+    <Reference Include="FSharp.PowerPack" Condition="'$(OS)' == 'Windows_NT'">
+      <HintPath>..\packages\FSPowerPack.Community.2.0.0.0\lib\Net20\FSharp.PowerPack.dll</HintPath>
+    </Reference>
+    <Reference Include="FSharp.PowerPack.Linq" Condition="'$(OS)' == 'Windows_NT'">
+      <HintPath>..\packages\FSPowerPack.Community.2.0.0.0\lib\Net20\FSharp.PowerPack.Linq.dll</HintPath>
+    </Reference>
+    <Reference Include="FSharp.PowerPack.Metadata" Condition="'$(OS)' == 'Windows_NT'">
+      <HintPath>..\packages\FSPowerPack.Community.2.0.0.0\lib\Net20\FSharp.PowerPack.Metadata.dll</HintPath>
+    </Reference>
+    <Reference Include="Unquote2" Condition="'$(OS)' == 'Windows_NT'">
+      <HintPath>..\ThirdParty\Unquote2.dll</HintPath>
+    </Reference>
+    <Reference Include="Unquote" Condition="'$(OS)' != 'Windows_NT'">
+      <HintPath>..\ThirdParty\Unquote.dll</HintPath>
+    </Reference>
     <Reference Include="mscorlib" />
     <Reference Include="nunit.framework">
-      <HintPath>..\packages\NUnit.3.11.0\lib\net20\nunit.framework.dll</HintPath>
-    </Reference>
-    <Reference Include="NUnit.System.Linq">
-      <HintPath>..\packages\NUnit.3.11.0\lib\net20\NUnit.System.Linq.dll</HintPath>
+      <HintPath>..\packages\NUnit.3.12.0\lib\net35\nunit.framework.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Xml" />

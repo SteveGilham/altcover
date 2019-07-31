@@ -15,7 +15,7 @@ let run _ =
    step
 
 let runALot n =
-    {0..n} |> Seq.map run |> Seq.sum
+    Seq.sumBy run ({0..n})
 
 let runMany m n =
     {0..m}
