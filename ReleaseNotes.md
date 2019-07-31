@@ -6,6 +6,8 @@ A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wi
 * Add the search of the .net core nuget cache into the Framework/Mono build to address issue 20 corner case
 * Minor change to usage text for `-o` option to refer to `--inplace`
 * On Windows Terminal 0.2.x, the default foreground is ConsoleColor.Gray, and ConsoleColor.White can have the same RGB values as the default background hue ConsoleColor.Black (e.g. the supplied Solarized Light), so don't set the colour to White, but use Foreground instead.
+* Use locale-independent string-to-number interconversion in the calculation of CRAP score
+* Package `AltCover.exe.config` for the .net framework build, and add `README.html` to the packages that lacked it.
 * Updating consumed libraries and related changes to build process (no functional differences)
 
 # 5.3.675 (Ezoguma series release 6)
