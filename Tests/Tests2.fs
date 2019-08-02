@@ -356,14 +356,14 @@ type AltCoverTests2() =
         |> Seq.filter
              (fun f -> f.Name.IndexOf("Mono.Cecil", StringComparison.Ordinal) >= 0)
         |> Seq.iter (fun f ->
-             let resolved = Instrument.ResolveFromNugetCache null f
+             let resolved = Instrument.HookResolveHandler.Invoke(null, f)
              test' <@ resolved |> isNull |> not @> <| f.ToString())
         raw.MainModule.AssemblyReferences
         |> Seq.filter
              (fun f -> f.Name.IndexOf("Mono.Cecil", StringComparison.Ordinal) >= 0)
         |> Seq.iter (fun f ->
              f.Version <- System.Version("666.666.666.666")
-             let resolved = Instrument.ResolveFromNugetCache null f
+             let resolved = Instrument.HookResolveHandler.Invoke(null, f)
              test' <@ resolved |> isNull @> <| f.ToString())
         let found = Instrument.ResolutionTable.Keys |> Seq.toList
         found
@@ -377,7 +377,7 @@ type AltCoverTests2() =
              (fun f -> f.Name.IndexOf("Mono.Cecil", StringComparison.Ordinal) >= 0)
         |> Seq.iter (fun f ->
              f.Version <- System.Version("666.666.666.666")
-             let resolved = Instrument.ResolveFromNugetCache null f
+             let resolved = Instrument.HookResolveHandler.Invoke(null, f)
              test' <@ resolved |> isNull |> not @> <| f.ToString())
       finally
         Instrument.ResolutionTable.Clear()
