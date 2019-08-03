@@ -519,7 +519,8 @@ _Target "UnitTest" (fun _ ->
               let coverage = e.Value.Split('%').[0]
               match Double.TryParse coverage with
               | (false, _) ->
-                Assert.Fail("Could not parse coverage " + coverage)
+                printfn "%A" xml
+                Assert.Fail("Could not parse coverage '" + e.Value + "'")
                 0.0
               | (_, numeric) ->
                 printfn "%s : %A" (f
