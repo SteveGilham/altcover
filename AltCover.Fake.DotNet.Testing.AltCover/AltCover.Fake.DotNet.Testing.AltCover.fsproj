@@ -55,7 +55,7 @@
   <PropertyGroup Condition=" '$(FSharpTargetsPath)' == '' AND Exists('$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\FSharp\Microsoft.FSharp.Targets') ">
     <FSharpTargetsPath>$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\FSharp\Microsoft.FSharp.Targets</FSharpTargetsPath>
   </PropertyGroup>
-  <Import Project="$(FSharpTargetsPath)" Condition=" '$(FSharpTargetsPath)' != '' "/>
+  <Import Project="$(FSharpTargetsPath)" Condition=" '$(FSharpTargetsPath)' != '' " />
   <ItemGroup>
     <Compile Include="..\_Generated\AssemblyVersion.fs">
       <Link>AssemblyVersion.fs</Link>
@@ -93,8 +93,19 @@
     <Reference Include="Fake.DotNet.Cli">
       <HintPath>..\packages\Fake.DotNet.Cli.5.9.3\lib\net462\Fake.DotNet.Cli.dll</HintPath>
     </Reference>
+    <Reference Include="Fake.DotNet.MSBuild">
+      <HintPath>..\packages\Fake.DotNet.MSBuild.5.9.3\lib\net462\Fake.DotNet.MSBuild.dll</HintPath>
+    </Reference>
     <Reference Include="FSharp.Core">
       <HintPath>..\packages\FSharp.Core.4.5.2\lib\net45\FSharp.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Collections.Immutable">
+      <HintPath>..\packages\System.Collections.Immutable.1.5.0\lib\netstandard2.0\System.Collections.Immutable.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="StructuredLogger">
+      <HintPath>..\packages\MSBuild.StructuredLogger.2.0.11\lib\net46\StructuredLogger.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="mscorlib" />
     <Reference Include="System" />
