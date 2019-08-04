@@ -578,7 +578,9 @@ module internal Visitor =
         let target = (state.Operand :?> Instruction)
         accumulate target (target :: l)
       else if (state.Offset > terminal.Offset
-               || state.OpCode.FlowControl = FlowControl.Cond_Branch) then l
+               || state.OpCode.FlowControl = FlowControl.Cond_Branch
+               || state.OpCode.FlowControl = FlowControl.Throw
+               || state.OpCode.FlowControl = FlowControl.Return) then l
       else accumulate state.Next gendarme
     accumulate i [ i ]
 
