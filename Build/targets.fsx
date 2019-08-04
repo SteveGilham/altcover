@@ -510,7 +510,7 @@ _Target "FxCop" (fun _ -> // Needs debug because release is compiled --standalon
 // Unit Test
 
 _Target "UnitTest" (fun _ ->
-  let mutable misses = 0
+  let misses = ref 0
   let numbers =
     !!(@"_Reports/_Unit*/Summary.xml")
     |> Seq.collect (fun f ->
@@ -519,7 +519,7 @@ _Target "UnitTest" (fun _ ->
          |> Seq.filter (fun x -> match String.IsNullOrWhiteSpace x.Value with
                                  | false -> true
                                  | _ -> sprintf "No coverage from '%s'" f |> Trace.traceImportant
-                                        misses <- misses + 1
+                                        misses := 1 + !misses
                                         false)
          |> Seq.map (fun e ->
               let coverage = e.Value.Split('%').[0]
@@ -537,7 +537,7 @@ _Target "UnitTest" (fun _ ->
   if numbers
      |> List.tryFind (fun n -> n <= 99.0)
      |> Option.isSome
-     || misses > 1
+     || !misses > 1
   then Assert.Fail("Coverage is too low"))
 
 _Target "JustUnitTest" (fun _ ->
