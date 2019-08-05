@@ -2,7 +2,7 @@ Q. Never mind the fluff -- how do I get started?
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
-# 5.3.xxx (Ezoguma series release 8)
+# 5.3.688 (Ezoguma series release 8)
 * [BUGFIX] Branch-chasing could enter an infinite loop burning memory as it went by ignoring instructions that would exit that loop (e.g. return, throw, break)
 * Updating consumed libraries and related changes to build process (no functional differences)
 
