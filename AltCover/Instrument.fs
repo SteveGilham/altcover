@@ -288,6 +288,8 @@ module internal Instrument =
         ResolutionTable.[name] <- a
         a
 
+  let internal HookResolveHandler = new AssemblyResolveEventHandler(ResolveFromNugetCache)
+
   let internal HookResolver(resolver : IAssemblyResolver) =
     if resolver
        |> isNull
@@ -295,7 +297,7 @@ module internal Instrument =
     then
       let hook = resolver.GetType().GetMethod("add_ResolveFailure")
       hook.Invoke
-        (resolver, [| new AssemblyResolveEventHandler(ResolveFromNugetCache) :> obj |])
+        (resolver, [| HookResolveHandler :> obj |])
       |> ignore
 
   /// <summary>
