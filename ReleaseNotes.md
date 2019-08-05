@@ -2,6 +2,10 @@ Q. Never mind the fluff -- how do I get started?
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
+# 5.3.688 (Ezoguma series release 8)
+* [BUGFIX] Branch-chasing could enter an infinite loop burning memory as it went by ignoring instructions that would exit that loop (e.g. return, throw, break)
+* Updating consumed libraries and related changes to build process (no functional differences)
+
 # 5.3.679 (Ezoguma series release 7)
 * Add the search of the .net core nuget cache into the Framework/Mono build to address issue 20 corner case
 * Minor change to usage text for `-o` option to refer to `--inplace`
