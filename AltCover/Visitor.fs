@@ -578,7 +578,10 @@ module internal Visitor =
         let target = (state.Operand :?> Instruction)
         accumulate target (target :: l)
       else if (state.Offset > terminal.Offset
+               // depart current context, especially important if in-lined
                || state.OpCode.FlowControl = FlowControl.Cond_Branch
+               || state.OpCode.FlowControl = FlowControl.Branch // Leave or Leave_S
+               || state.OpCode.FlowControl = FlowControl.Break
                || state.OpCode.FlowControl = FlowControl.Throw
                || state.OpCode.FlowControl = FlowControl.Return) then l
       else accumulate state.Next gendarme
