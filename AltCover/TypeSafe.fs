@@ -180,8 +180,8 @@ type CollectParams =
 
 [<ExcludeFromCodeCoverage; NoComparison>]
 type PrepareParams =
-  { InputDirectory : DirectoryPath
-    OutputDirectory : DirectoryPath
+  { InputDirectories : DirectoryPaths
+    OutputDirectories : DirectoryPaths
     SymbolDirectories : DirectoryPaths
     Dependencies : FilePaths
     Keys : FilePaths
@@ -207,8 +207,8 @@ type PrepareParams =
     Defer : Flag
   }
   static member Create() =
-    { InputDirectory = NoDirectory
-      OutputDirectory = NoDirectory
+    { InputDirectories = NoDirectories
+      OutputDirectories = NoDirectories
       SymbolDirectories = NoDirectories
       Dependencies = NoPaths
       Keys = NoPaths

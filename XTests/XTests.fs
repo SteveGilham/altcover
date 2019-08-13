@@ -231,8 +231,8 @@ module XTests =
     let here = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
 
     let subject =
-      { Primitive.PrepareParams.Create() with InputDirectory = here
-                                              OutputDirectory = here
+      { Primitive.PrepareParams.Create() with InputDirectories = [| here |]
+                                              OutputDirectories = [| here |]
                                               SymbolDirectories = [| here |]
                                               Dependencies =
                                                 [| Assembly.GetExecutingAssembly().Location |]
@@ -254,9 +254,12 @@ module XTests =
     let here = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
 
     let subject =
-      { TypeSafe.PrepareParams.Create() with InputDirectory = TypeSafe.DirectoryPath here
-                                             OutputDirectory =
-                                               TypeSafe.DInfo(DirectoryInfo(here))
+      { TypeSafe.PrepareParams.Create() with InputDirectories =
+                                               TypeSafe.DirectoryPaths
+                                                  [| TypeSafe.DirectoryPath here |]
+                                             OutputDirectories =
+                                               TypeSafe.DirectoryPaths
+                                                [| TypeSafe.DInfo(DirectoryInfo(here)) |]
                                              SymbolDirectories =
                                                TypeSafe.DirectoryPaths
                                                  [| TypeSafe.DirectoryPath here |]
@@ -284,9 +287,10 @@ module XTests =
     let here = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
 
     let subject =
-      { TypeSafe.PrepareParams.Create() with InputDirectory = TypeSafe.DirectoryPath here
-                                             OutputDirectory =
-                                               TypeSafe.DInfo(DirectoryInfo(here))
+      { TypeSafe.PrepareParams.Create() with InputDirectories =
+                                               TypeSafe.DirectoryPaths [| TypeSafe.DirectoryPath here |]
+                                             OutputDirectories =
+                                               TypeSafe.DirectoryPaths [| TypeSafe.DInfo(DirectoryInfo(here)) |]
                                              SymbolDirectories =
                                                TypeSafe.DirectoryPaths
                                                  [| TypeSafe.DirectoryPath here |]

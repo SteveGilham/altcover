@@ -23,8 +23,8 @@ namespace AltCover.Parameters
 
     public interface IPrepareArgs
     {
-        string InputDirectory { get; }
-        string OutputDirectory { get; }
+        string[] InputDirectories { get; }
+        string[] OutputDirectories { get; }
         string[] SymbolDirectories { get; }
         string[] Dependencies { get; }
         string[] Keys { get; }
@@ -139,8 +139,8 @@ namespace AltCover.Parameters.Primitive
 
     public class PrepareArgs : IPrepareArgs
     {
-        public string InputDirectory { get; set; }
-        public string OutputDirectory { get; set; }
+        public string[] InputDirectories { get; set; }
+        public string[] OutputDirectories { get; set; }
         public string[] SymbolDirectories { get; set; }
         public string[] Dependencies { get; set; }
         public string[] Keys { get; set; }
@@ -170,8 +170,8 @@ namespace AltCover.Parameters.Primitive
         public FSApi.PrepareParams ToParameters()
         {
             var primitive = new AltCover.Primitive.PrepareParams(
-                            InputDirectory,
-                            OutputDirectory,
+                            InputDirectories,
+                            OutputDirectories,
                             SymbolDirectories,
                             Dependencies,
                             Keys,
@@ -204,8 +204,8 @@ namespace AltCover.Parameters.Primitive
         {
             return new PrepareArgs
             {
-                InputDirectory = string.Empty,
-                OutputDirectory = string.Empty,
+                InputDirectories = new string[0],
+                OutputDirectories = new string[0],
                 SymbolDirectories = new string[0],
                 Dependencies = new string[0],
                 Keys = new string[0],

@@ -673,7 +673,7 @@ _Target "UnitTestWithAltCover" (fun _ ->
     let prep =
       AltCover.PrepareParams.Primitive
         ({ Primitive.PrepareParams.Create() with XmlReport = xaltReport
-                                                 OutputDirectory = "./__UnitTestWithAltCover"
+                                                 OutputDirectories = [| "./__UnitTestWithAltCover" |]
                                                  StrongNameKey = keyfile
                                                  OpenCover = false
                                                  InPlace = false
@@ -698,7 +698,7 @@ _Target "UnitTestWithAltCover" (fun _ ->
     let prep =
       AltCover.PrepareParams.Primitive
         ({ Primitive.PrepareParams.Create() with XmlReport = altReport
-                                                 OutputDirectory = "./__UnitTestWithAltCover"
+                                                 OutputDirectories = [| "./__UnitTestWithAltCover" |]
                                                  StrongNameKey = keyfile
                                                  OpenCover = false
                                                  InPlace = false
@@ -738,8 +738,8 @@ _Target "UnitTestWithAltCover" (fun _ ->
     let prep =
       AltCover.PrepareParams.Primitive
         ({ Primitive.PrepareParams.Create() with XmlReport = weakReport
-                                                 OutputDirectory =
-                                                   "./__WeakNameTestWithAltCover"
+                                                 OutputDirectories =
+                                                   [| "./__WeakNameTestWithAltCover" |]
                                                  StrongNameKey = keyfile
                                                  InPlace = false
                                                  Save = false }
@@ -764,8 +764,8 @@ _Target "UnitTestWithAltCover" (fun _ ->
     let prep =
       AltCover.PrepareParams.Primitive
         ({ Primitive.PrepareParams.Create() with XmlReport = shadowReport
-                                                 OutputDirectory =
-                                                   "./__ShadowTestWithAltCover"
+                                                 OutputDirectories =
+                                                   [| "./__ShadowTestWithAltCover" |]
                                                  StrongNameKey = shadowkeyfile
                                                  InPlace = false
                                                  Save = false }
@@ -811,8 +811,8 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
     let prep =
       AltCover.PrepareParams.Primitive
         ({ Primitive.PrepareParams.Create() with XmlReport = xaltReport
-                                                 OutputDirectory =
-                                                   "./__UnitTestWithAltCoverRunner"
+                                                 OutputDirectories =
+                                                   [| "./__UnitTestWithAltCoverRunner" |]
                                                  StrongNameKey = keyfile
                                                  Single = true
                                                  InPlace = false
@@ -852,8 +852,8 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
     let prep =
       AltCover.PrepareParams.Primitive
         ({ Primitive.PrepareParams.Create() with XmlReport = altReport
-                                                 OutputDirectory =
-                                                   "./__UnitTestWithAltCoverRunner"
+                                                 OutputDirectories =
+                                                   [| "./__UnitTestWithAltCoverRunner" |]
                                                  StrongNameKey = keyfile
                                                  Single = true
                                                  InPlace = false
@@ -895,8 +895,8 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
     let prep =
       AltCover.PrepareParams.Primitive
         ({ Primitive.PrepareParams.Create() with XmlReport = weakReport
-                                                 OutputDirectory =
-                                                   "./__WeakNameTestWithAltCoverRunner"
+                                                 OutputDirectories =
+                                                   [| "./__WeakNameTestWithAltCoverRunner" |]
                                                  TypeFilter = [ "WeakNameTest" ]
                                                  StrongNameKey = keyfile
                                                  Single = true
@@ -933,8 +933,8 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
     let prep =
       AltCover.PrepareParams.Primitive
         ({ Primitive.PrepareParams.Create() with XmlReport = shadowReport
-                                                 OutputDirectory =
-                                                   "./__ShadowTestWithAltCoverRunner"
+                                                 OutputDirectories =
+                                                   [| "./__ShadowTestWithAltCoverRunner" |]
                                                  StrongNameKey = shadowkeyfile
                                                  InPlace = false
                                                  Save = false }
@@ -969,8 +969,8 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
     let prep =
       AltCover.PrepareParams.Primitive
         ({ Primitive.PrepareParams.Create() with XmlReport = gtkReport
-                                                 OutputDirectory =
-                                                   "./__GTKVTestWithAltCoverRunner"
+                                                 OutputDirectories =
+                                                   [| "./__GTKVTestWithAltCoverRunner" |]
                                                  TypeFilter = [ "Gui" ]
                                                  AssemblyFilter = [ "\\-sharp" ]
                                                  StrongNameKey = keyfile
@@ -1060,7 +1060,7 @@ _Target "UnitTestWithAltCoverCore" // Obsolete
   let prep =
       AltCover.PrepareParams.Primitive
         ({ Primitive.PrepareParams.Create() with XmlReport = altReport
-                                                 OutputDirectory = output
+                                                 OutputDirectories = [| output |]
                                                  StrongNameKey = keyfile
                                                  OpenCover = false
                                                  InPlace = false
@@ -1095,7 +1095,7 @@ _Target "UnitTestWithAltCoverCore" // Obsolete
   let prep =
       AltCover.PrepareParams.Primitive
         ({ Primitive.PrepareParams.Create() with XmlReport = shadowReport
-                                                 OutputDirectory = shadowOut
+                                                 OutputDirectories = [| shadowOut |]
                                                  StrongNameKey = keyfile
                                                  OpenCover = false
                                                  InPlace = false
@@ -1125,7 +1125,7 @@ _Target "UnitTestWithAltCoverCore" // Obsolete
   let prep =
       AltCover.PrepareParams.Primitive
         ({ Primitive.PrepareParams.Create() with XmlReport = xReport
-                                                 OutputDirectory = xOut
+                                                 OutputDirectories = [| xOut |]
                                                  StrongNameKey = keyfile
                                                  OpenCover = false
                                                  InPlace = false
@@ -1188,7 +1188,7 @@ _Target "UnitTestWithAltCoverCoreRunner"
   let prep =
       AltCover.PrepareParams.Primitive
         ({ Primitive.PrepareParams.Create() with XmlReport = altReport
-                                                 OutputDirectory = output
+                                                 OutputDirectories = [| output |]
                                                  Single = true
                                                  InPlace = false
                                                  Save = false }
@@ -1230,7 +1230,7 @@ _Target "UnitTestWithAltCoverCoreRunner"
   let prep =
       AltCover.PrepareParams.Primitive
         ({ Primitive.PrepareParams.Create() with XmlReport = shadowReport
-                                                 OutputDirectory = shadowOut
+                                                 OutputDirectories = [| shadowOut |]
                                                  Single = true
                                                  InPlace = false
                                                  Save = false }
@@ -1272,7 +1272,7 @@ _Target "UnitTestWithAltCoverCoreRunner"
   let prep =
       AltCover.PrepareParams.Primitive
         ({ Primitive.PrepareParams.Create() with XmlReport = xReport
-                                                 OutputDirectory = xOut
+                                                 OutputDirectories = [| xOut |]
                                                  Single = true
                                                  InPlace = false
                                                  Save = false }
@@ -1325,7 +1325,7 @@ _Target "FSharpTypes" (fun _ ->
     let prep =
       AltCover.PrepareParams.Primitive
         ({ Primitive.PrepareParams.Create() with XmlReport = simpleReport
-                                                 OutputDirectory = "./" + instrumented
+                                                 OutputDirectories = [| "./" + instrumented |]
                                                  AssemblyFilter = [ "Adapter"; "nunit" ]
                                                  TypeFilter = [ "System\\."; "Microsoft\\." ]
                                                  InPlace = false
@@ -1437,7 +1437,7 @@ _Target "FSharpTypesDotNetRunner" (fun _ ->
   let prep =
       AltCover.PrepareParams.Primitive
         ({ Primitive.PrepareParams.Create() with XmlReport = simpleReport
-                                                 OutputDirectory = instrumented
+                                                 OutputDirectories = [ instrumented ]
                                                  AssemblyFilter = [ "Adapter" ]
                                                  TypeFilter = [ "System\\."; "Microsoft\\." ]
                                                  InPlace = false
@@ -1553,8 +1553,8 @@ _Target "CSharpMonoWithDotNet" (fun _ ->
   let prep =
       AltCover.PrepareParams.Primitive
         ({ Primitive.PrepareParams.Create() with XmlReport = x
-                                                 OutputDirectory = o
-                                                 InputDirectory = i
+                                                 OutputDirectories = [ o ]
+                                                 InputDirectories = [ i ]
                                                  TypeFilter = [ "System\\." ]
                                                  InPlace = false
                                                  OpenCover = false
@@ -1578,8 +1578,8 @@ _Target "CSharpDotNetWithDotNet"
   let prep =
       AltCover.PrepareParams.Primitive
         ({ Primitive.PrepareParams.Create() with XmlReport = x
-                                                 OutputDirectory = o
-                                                 InputDirectory = i
+                                                 OutputDirectories = [ o ]
+                                                 InputDirectories = [ i ]
                                                  TypeFilter = [ "System\\." ]
                                                  InPlace = false
                                                  OpenCover = false
@@ -1605,7 +1605,7 @@ _Target "CSharpDotNetWithFramework" (fun _ ->
   let prep =
       AltCover.PrepareParams.Primitive
         ({ Primitive.PrepareParams.Create() with XmlReport = simpleReport
-                                                 OutputDirectory = instrumented
+                                                 OutputDirectories = [| instrumented |]
                                                  TypeFilter = [ "System\\."; "Microsoft\\." ]
                                                  InPlace = false
                                                  OpenCover = false
@@ -1632,7 +1632,7 @@ _Target "SelfTest" (fun _ ->
   let prep =
       AltCover.PrepareParams.Primitive
         ({ Primitive.PrepareParams.Create() with XmlReport = altReport
-                                                 OutputDirectory = "__SelfTest"
+                                                 OutputDirectories = [| "__SelfTest" |]
                                                  StrongNameKey = keyfile
                                                  OpenCover = false
                                                  InPlace = false
@@ -1666,7 +1666,7 @@ _Target "SelfTest" (fun _ ->
   let prep =
       AltCover.PrepareParams.Primitive
         ({ Primitive.PrepareParams.Create() with XmlReport = altReport2
-                                                 OutputDirectory = "./__SelfTestDummy"
+                                                 OutputDirectories = [| "./__SelfTestDummy" |]
                                                  StrongNameKey = keyfile
                                                  OpenCover = false
                                                  InPlace = false
@@ -1695,7 +1695,7 @@ _Target "RecordResumeTest"
   let prep =
       AltCover.PrepareParams.Primitive
         ({ Primitive.PrepareParams.Create() with XmlReport = simpleReport
-                                                 OutputDirectory = instrumented
+                                                 OutputDirectories = [ instrumented ]
                                                  TypeFilter = [ "System\\."; "Microsoft\\." ]
                                                  AssemblyFilter = [ "Adapter"; "nunit" ]
                                                  InPlace = false
@@ -1760,7 +1760,7 @@ _Target "RecordResumeTrackingTest" (fun _ ->
   let prep =
       AltCover.PrepareParams.Primitive
         ({ Primitive.PrepareParams.Create() with XmlReport = simpleReport
-                                                 OutputDirectory = instrumented
+                                                 OutputDirectories = [ instrumented ]
                                                  CallContext = [ "Main" ]
                                                  TypeFilter = [ "System\\."; "Microsoft\\." ]
                                                  AssemblyFilter = [ "Adapter"; "nunit" ]
@@ -1830,7 +1830,7 @@ _Target "RecordResumeTestDotNet"
   let prep =
       AltCover.PrepareParams.Primitive
         ({ Primitive.PrepareParams.Create() with XmlReport = simpleReport
-                                                 OutputDirectory = instrumented
+                                                 OutputDirectories = [ instrumented ]
                                                  TypeFilter = [ "System\\."; "Microsoft\\." ]
                                                  AssemblyFilter = [ "Adapter"; "nunit" ]
                                                  InPlace = false
@@ -1899,7 +1899,7 @@ _Target "RecordResumeTestUnderMono" // Fails : System.EntryPointNotFoundExceptio
   let prep =
       AltCover.PrepareParams.Primitive
         ({ Primitive.PrepareParams.Create() with XmlReport = simpleReport
-                                                 OutputDirectory = instrumented
+                                                 OutputDirectories = [ instrumented ]
                                                  TypeFilter = [ "System\\."; "Microsoft\\." ]
                                                  AssemblyFilter = [ "Adapter"; "nunit" ]
                                                  InPlace = false
@@ -2345,7 +2345,7 @@ _Target "Pester" (fun _ ->
   let prep =
       AltCover.PrepareParams.Primitive
         ({ Primitive.PrepareParams.Create() with XmlReport = report
-                                                 InputDirectory = i
+                                                 InputDirectories = [ i ]
                                                  StrongNameKey = key
                                                  TypeFilter = [ "System\\."; "DotNet" ]
                                                  AssemblyFilter = [ "^AltCover$"; "Recorder"; "DataCollector" ]
@@ -2413,7 +2413,7 @@ _Target "ReleaseDotNetWithFramework" (fun _ ->
   let prep =
       AltCover.PrepareParams.Primitive
         ({ Primitive.PrepareParams.Create() with XmlReport = simpleReport
-                                                 OutputDirectory = instrumented
+                                                 OutputDirectories = [ instrumented ]
                                                  TypeFilter = [ "System\\."; "Microsoft\\." ]
                                                  InPlace = false
                                                  OpenCover = false
@@ -2440,8 +2440,8 @@ _Target "ReleaseMonoWithDotNet" (fun _ ->
   let prep =
       AltCover.PrepareParams.Primitive
         ({ Primitive.PrepareParams.Create() with XmlReport = x
-                                                 OutputDirectory = o
-                                                 InputDirectory = i
+                                                 OutputDirectories = [ o ]
+                                                 InputDirectories = [ i ]
                                                  InPlace = false
                                                  OpenCover = false
                                                  Save = false })
@@ -2465,8 +2465,8 @@ _Target "ReleaseDotNetWithDotNet"
   let prep =
       AltCover.PrepareParams.Primitive
         ({ Primitive.PrepareParams.Create() with XmlReport = x
-                                                 OutputDirectory = o
-                                                 InputDirectory = i
+                                                 OutputDirectories = [ o ]
+                                                 InputDirectories = [ i ]
                                                  InPlace = false
                                                  OpenCover = false
                                                  Save = false })
@@ -2492,8 +2492,8 @@ _Target "ReleaseFSharpTypesDotNetRunner" (fun _ ->
   let prep =
       AltCover.PrepareParams.Primitive
         ({ Primitive.PrepareParams.Create() with XmlReport = x
-                                                 OutputDirectory = o
-                                                 InputDirectory = i
+                                                 OutputDirectories = [ o ]
+                                                 InputDirectories = [ i ]
                                                  AssemblyFilter = [ "Adapter" ]
                                                  InPlace = false
                                                  OpenCover = false
@@ -2556,8 +2556,8 @@ _Target "ReleaseFSharpTypesX86DotNetRunner" (fun _ ->
       let prep =
         AltCover.PrepareParams.Primitive
           ({ Primitive.PrepareParams.Create() with XmlReport = x
-                                                   OutputDirectory = o
-                                                   InputDirectory = i
+                                                   OutputDirectories = [ o ]
+                                                   InputDirectories = [ i ]
                                                    AssemblyFilter = [ "Adapter" ]
                                                    InPlace = false
                                                    OpenCover = false
@@ -2604,8 +2604,8 @@ _Target "ReleaseXUnitFSharpTypesDotNet" (fun _ ->
   let prep =
       AltCover.PrepareParams.Primitive
         ({ Primitive.PrepareParams.Create() with XmlReport = x
-                                                 OutputDirectory = o
-                                                 InputDirectory = i
+                                                 OutputDirectories = [ o ]
+                                                 InputDirectories = [ i ]
                                                  AssemblyFilter = [ "xunit" ]
                                                  InPlace = false
                                                  OpenCover = false
@@ -2641,8 +2641,8 @@ _Target "ReleaseXUnitFSharpTypesDotNetRunner" (fun _ ->
   let prep =
       AltCover.PrepareParams.Primitive
         ({ Primitive.PrepareParams.Create() with XmlReport = x
-                                                 OutputDirectory = o
-                                                 InputDirectory = i
+                                                 OutputDirectories = [ o ]
+                                                 InputDirectories = [ i ]
                                                  AssemblyFilter = [ "xunit" ]
                                                  InPlace = false
                                                  OpenCover = false
@@ -2683,8 +2683,8 @@ _Target "ReleaseXUnitFSharpTypesDotNetFullRunner" (fun _ ->
   let prep =
       AltCover.PrepareParams.Primitive
         ({ Primitive.PrepareParams.Create() with XmlReport = x
-                                                 OutputDirectory = o
-                                                 InputDirectory = i
+                                                 OutputDirectories = [ o ]
+                                                 InputDirectories = [ i ]
                                                  CallContext = [ "0"; "[Fact]" ]
                                                  AssemblyFilter = [ "xunit" ]
                                                  InPlace = false
@@ -3270,7 +3270,7 @@ _Target "DotnetCLIIntegration" (fun _ ->
     let prep =
       AltCover.PrepareParams.Primitive
         ({ Primitive.PrepareParams.Create() with XmlReport = x
-                                                 InputDirectory = o
+                                                 InputDirectories = [ o ]
                                                  CallContext = [ "0"; "[Fact]" ]
                                                  AssemblyFilter = [| "xunit" |]
                                                  Save = false })
@@ -3367,7 +3367,7 @@ _Target "DotnetGlobalIntegration" (fun _ ->
     let prep =
       AltCover.PrepareParams.Primitive
         ({ Primitive.PrepareParams.Create() with XmlReport = x
-                                                 InputDirectory = o
+                                                 InputDirectories = [ o ]
                                                  CallContext = [ "0"; "[Fact]" ]
                                                  AssemblyFilter = [| "xunit" |]
                                                  Save = false })

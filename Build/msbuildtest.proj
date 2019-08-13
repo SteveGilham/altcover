@@ -1,20 +1,22 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <UsingTask TaskName="AltCover.Prepare"   
-        AssemblyFile="$(MSBuildThisFileDirectory)../_Packaging/Unpack/tools/netcoreapp2.0/AltCover.dll"/>  
-  <UsingTask TaskName="AltCover.Collect"   
-        AssemblyFile="$(MSBuildThisFileDirectory)../_Packaging/Unpack/tools/netcoreapp2.0/AltCover.dll"/>  
+  <UsingTask TaskName="AltCover.Prepare"
+        AssemblyFile="$(MSBuildThisFileDirectory)../_Packaging/Unpack/tools/netcoreapp2.0/AltCover.dll" />
+  <UsingTask TaskName="AltCover.Collect"
+        AssemblyFile="$(MSBuildThisFileDirectory)../_Packaging/Unpack/tools/netcoreapp2.0/AltCover.dll" />
 
   <ItemGroup>
     <CallContext Include="0" />
     <CallContext Include="[Fact]" />
     <AssemblyFilter Include="xunit" />
+    <InputDirectory Include="$(MSBuildThisFileDirectory)../Sample4/_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1" />
+    <OutputDirectory Include="$(MSBuildThisFileDirectory)../Sample4/_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1/__Saved$([System.DateTime]::UtcNow.ToString().Replace(':','-').Replace('/','-').Replace(' ','+'))" />
   </ItemGroup>
   <Target Name="MSBuildTest">
     <Exec Command="dotnet build $(MSBuildThisFileDirectory)../Sample4/sample4.core.fsproj" />
-    <Message Text="1"/>
-    <AltCover.Prepare 
-      InputDirectory="$(MSBuildThisFileDirectory)../Sample4/_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1"  
-      OutputDirectory="$(MSBuildThisFileDirectory)../Sample4/_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1/__Saved$([System.DateTime]::UtcNow.ToString().Replace(':','-').Replace('/','-').Replace(' ','+'))"  
+    <Message Text="1" />
+    <AltCover.Prepare
+      InputDirectories="@(InputDirectory)"
+      OutputDirectories= "@(OutputDirectory)"
       XmlReport="$(MSBuildThisFileDirectory)../_Reports/MSBuildTest.xml"
       CallContext="@(CallContext)"
       AssemblyFilter="@(AssemblyFilter)"
