@@ -623,17 +623,17 @@ module internal Instrument =
     try
       let counterAssemblyFile =
         Path.Combine
-          (Visitor.InstrumentDirectory(), (extractName state.RecordingAssembly) + ".dll")
+          (Visitor.InstrumentDirectories() |> Seq.head, (extractName state.RecordingAssembly) + ".dll")
       WriteAssembly (state.RecordingAssembly) counterAssemblyFile
       Directory.GetFiles
-        (Visitor.InstrumentDirectory(), "*.deps.json", SearchOption.TopDirectoryOnly)
+        (Visitor.InstrumentDirectories() |> Seq.head, "*.deps.json", SearchOption.TopDirectoryOnly)
       |> Seq.iter (fun f ->
            File.WriteAllText(f,
                              (f
                               |> File.ReadAllText
                               |> injectJSON)))
 #if NETCOREAPP2_0
-      let fsharplib = Path.Combine(Visitor.InstrumentDirectory(), "FSharp.Core.dll")
+      let fsharplib = Path.Combine(Visitor.InstrumentDirectories() |> Seq.head, "FSharp.Core.dll")
       if not (File.Exists fsharplib) then
         use fsharpbytes =
           new FileStream(AltCover.Recorder.Tracer.Core(), FileMode.Open, FileAccess.Read)
@@ -705,7 +705,7 @@ module internal Instrument =
 
   let private VisitAfterAssembly state (assembly : AssemblyDefinition) =
     let originalFileName = Path.GetFileName assembly.MainModule.FileName
-    let path = Path.Combine(Visitor.InstrumentDirectory(), originalFileName)
+    let path = Path.Combine(Visitor.InstrumentDirectories() |> Seq.head, originalFileName)
     String.Format
       (System.Globalization.CultureInfo.CurrentCulture,
        CommandLine.resources.GetString "instrumented", assembly, path) |> Output.Info

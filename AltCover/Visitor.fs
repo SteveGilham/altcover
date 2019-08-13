@@ -169,22 +169,28 @@ module internal Visitor =
                          then OpCodes.Ldc_I4_1
                          else OpCodes.Ldc_I4_0
 
-  let mutable internal inputDirectory : Option<string> = None
+  let internal inputDirectories = List<string>()
   let private defaultInputDirectory = "."
-  let InputDirectory() =
-    Path.GetFullPath(Option.getOrElse defaultInputDirectory inputDirectory)
+  let InputDirectories() = if inputDirectories.Any()
+                           then inputDirectories :> string seq
+                           else [ defaultInputDirectory ] |> List.toSeq
+                           |> Seq.map Path.GetFullPath
+                           |> Seq.toList
 
   let inplaceSelection a b =
     if !inplace then a
     else b
 
-  let mutable internal outputDirectory : Option<string> = None
-  let private defaultOutputDirectory() = inplaceSelection "__Saved" "__Instrumented"
-  let OutputDirectory() =
-    Path.GetFullPath(Option.getOrElse (defaultOutputDirectory()) outputDirectory)
+  let internal outputDirectories = List<string>()
+  let private defaultOutputDirectory _ = inplaceSelection "__Saved" "__Instrumented"
+  let OutputDirectories() = let paired = InputDirectories()
+                            Seq.append (outputDirectories :> string seq) (Seq.initInfinite defaultOutputDirectory)
+                            |> Seq.zip paired
+                            |> Seq.map (fun (i, o) -> Path.Combine(i, o) |> Path.GetFullPath)
+                            |> Seq.toList
 
-  let InstrumentDirectory() = (inplaceSelection InputDirectory OutputDirectory)()
-  let SourceDirectory() = (inplaceSelection OutputDirectory InputDirectory)()
+  let InstrumentDirectories() = (inplaceSelection InputDirectories OutputDirectories)()
+  let SourceDirectories() = (inplaceSelection OutputDirectories InputDirectories)()
 
   let mutable internal reportPath : Option<string> = None
   let defaultReportPath = "coverage.xml"

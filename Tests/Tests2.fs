@@ -1854,8 +1854,10 @@ type AltCoverTests2() =
         let here = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
         let there = Path.Combine(here, Guid.NewGuid().ToString())
         let toInfo = Directory.CreateDirectory there
-        Visitor.outputDirectory <- Some toInfo.FullName
-        Visitor.inputDirectory <- Some here
+        Visitor.outputDirectories.Clear()
+        Visitor.inputDirectories.Clear()
+        Visitor.outputDirectories.Add toInfo.FullName
+        Visitor.inputDirectories.Add here
         Assert.That(info.ToString(), Is.Empty)
         Assert.That(err.ToString(), Is.Empty)
         let name = "ArgumentExceptionWrites"
@@ -1889,7 +1891,7 @@ type AltCoverTests2() =
         CommandLine.exceptions <- []
         Output.Info <- (fst saved)
         Output.Error <- (snd saved)
-        Visitor.outputDirectory <- None
+        Visitor.outputDirectories.Clear()
 
     [<Test>]
     member self.ArgumentExceptionWritesEx() =
@@ -1912,8 +1914,10 @@ type AltCoverTests2() =
         let here = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
         let there = Path.Combine(here, Guid.NewGuid().ToString())
         let toInfo = Directory.CreateDirectory there
-        Visitor.outputDirectory <- Some toInfo.FullName
-        Visitor.inputDirectory <- Some here
+        Visitor.outputDirectories.Clear()
+        Visitor.inputDirectories.Clear()
+        Visitor.outputDirectories.Add toInfo.FullName
+        Visitor.inputDirectories.Add here
         Assert.That(info.ToString(), Is.Empty)
         Assert.That(err.ToString(), Is.Empty)
         let name = "ArgumentExceptionWrites"
@@ -1949,7 +1953,7 @@ type AltCoverTests2() =
         CommandLine.exceptions <- []
         Output.Info <- (fst saved)
         Output.Error <- (snd saved)
-        Visitor.outputDirectory <- None
+        Visitor.outputDirectories.Clear()
 
     [<Test>]
     member self.IOExceptionWrites() =

@@ -23,8 +23,8 @@ module internal Main =
     CommandLine.error <- []
     CommandLine.dropReturnCode := false
     Visitor.defer := None
-    Visitor.inputDirectory <- None
-    Visitor.outputDirectory <- None
+    Visitor.inputDirectories.Clear()
+    Visitor.outputDirectories.Clear()
     ProgramDatabase.SymbolFolders.Clear()
 #if NETCOREAPP2_0
     Instrument.ResolutionTable.Clear()
@@ -85,24 +85,24 @@ module internal Main =
     [ ("i|inputDirectory=",
        (fun x ->
        if CommandLine.ValidateDirectory "--inputDirectory" x then
-         if Option.isSome Visitor.inputDirectory then
+         if Visitor.inputDirectories.Any() then
            CommandLine.error <- String.Format
                                   (CultureInfo.CurrentCulture,
                                    CommandLine.resources.GetString "MultiplesNotAllowed",
                                    "--inputDirectory") :: CommandLine.error
-         else Visitor.inputDirectory <- Some(Path.GetFullPath x)))
+         else Visitor.inputDirectories.Add (Path.GetFullPath x)))
 
       ("o|outputDirectory=",
        (fun x ->
        if CommandLine.ValidatePath "--outputDirectory" x then
-         if Option.isSome Visitor.outputDirectory then
+         if Visitor.outputDirectories.Any() then
            CommandLine.error <- String.Format
                                   (CultureInfo.CurrentCulture,
                                    CommandLine.resources.GetString "MultiplesNotAllowed",
                                    "--outputDirectory") :: CommandLine.error
          else
            CommandLine.doPathOperation
-             (fun _ -> Visitor.outputDirectory <- Some(Path.GetFullPath x)) () false))
+             (fun _ -> Visitor.outputDirectories.Add (Path.GetFullPath x)) () false))
 
       ("y|symbolDirectory=",
        (fun x ->
@@ -265,8 +265,8 @@ module internal Main =
     match action with
     | Right(rest, options) ->
       // Check that the directories are distinct
-      let fromDirectory = Visitor.InputDirectory()
-      let toDirectory = Visitor.OutputDirectory()
+      let fromDirectory = Visitor.InputDirectories() |> Seq.head
+      let toDirectory = Visitor.OutputDirectories() |> Seq.head
       if fromDirectory = toDirectory then
         CommandLine.error <- CommandLine.resources.GetString "NotInPlace"
                              :: CommandLine.error
@@ -304,7 +304,7 @@ module internal Main =
                 (CommandLine.resources.GetString "instrumentingto"), toDirectory)
         Right
           (rest, DirectoryInfo(fromDirectory), DirectoryInfo(toDirectory),
-           DirectoryInfo(Visitor.SourceDirectory()))
+           DirectoryInfo(Visitor.SourceDirectories() |> Seq.head))
     | Left intro -> Left intro
 
   let internal ImageLoadResilient (f : unit -> 'a) (tidy : unit -> 'a) =

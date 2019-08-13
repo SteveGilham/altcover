@@ -469,7 +469,7 @@ type AltCoverTests3() =
     [<Test>]
     member self.ParsingInputGivesInput() =
       try
-        Visitor.inputDirectory <- None
+        Visitor.inputDirectories.Clear()
         let options = Main.DeclareOptions()
         let unique = Path.GetFullPath(".")
         let input = [| "-i"; unique |]
@@ -479,16 +479,16 @@ type AltCoverTests3() =
         | Right(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.Empty)
-        match Visitor.inputDirectory with
-        | None -> Assert.Fail()
-        | Some x -> Assert.That(x, Is.EqualTo unique)
+        match Visitor.inputDirectories |> Seq.toList with
+        | [ x ] -> Assert.That(x, Is.EqualTo unique)
+        | _ -> Assert.Fail()
       finally
-        Visitor.inputDirectory <- None
+        Visitor.inputDirectories.Clear()
 
     [<Test>]
     member self.ParsingMultipleInputGivesFailure() =
       try
-        Visitor.inputDirectory <- None
+        Visitor.inputDirectories.Clear()
         let options = Main.DeclareOptions()
 
         let input =
@@ -504,12 +504,12 @@ type AltCoverTests3() =
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
       finally
-        Visitor.inputDirectory <- None
+        Visitor.inputDirectories.Clear()
 
     [<Test>]
     member self.ParsingBadInputGivesFailure() =
       try
-        Visitor.inputDirectory <- None
+        Visitor.inputDirectories.Clear()
         let options = Main.DeclareOptions()
         let unique = Guid.NewGuid().ToString().Replace("-", "*")
         let input = [| "-i"; unique |]
@@ -520,12 +520,12 @@ type AltCoverTests3() =
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
       finally
-        Visitor.inputDirectory <- None
+        Visitor.inputDirectories.Clear()
 
     [<Test>]
     member self.ParsingNoInputGivesFailure() =
       try
-        Visitor.inputDirectory <- None
+        Visitor.inputDirectories.Clear()
         let options = Main.DeclareOptions()
         let input = [| "-i" |]
         let parse = CommandLine.ParseCommandLine input options
@@ -535,12 +535,12 @@ type AltCoverTests3() =
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
       finally
-        Visitor.inputDirectory <- None
+        Visitor.inputDirectories.Clear()
 
     [<Test>]
     member self.ParsingOutputGivesOutput() =
       try
-        Visitor.outputDirectory <- None
+        Visitor.outputDirectories.Clear()
         let options = Main.DeclareOptions()
         let unique = Guid.NewGuid().ToString()
         let input = [| "-o"; unique |]
@@ -550,16 +550,16 @@ type AltCoverTests3() =
         | Right(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.Empty)
-        match Visitor.outputDirectory with
-        | None -> Assert.Fail()
-        | Some x -> Assert.That(Path.GetFileName x, Is.EqualTo unique)
+        match Visitor.outputDirectories |> Seq.toList with
+        | [ x ] -> Assert.That(Path.GetFileName x, Is.EqualTo unique)
+        | _ -> Assert.Fail()
       finally
-        Visitor.outputDirectory <- None
+        Visitor.outputDirectories.Clear()
 
     [<Test>]
     member self.ParsingMultipleOutputGivesFailure() =
       try
-        Visitor.outputDirectory <- None
+        Visitor.outputDirectories.Clear()
         let options = Main.DeclareOptions()
         let unique = Guid.NewGuid().ToString()
 
@@ -576,12 +576,12 @@ type AltCoverTests3() =
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
       finally
-        Visitor.outputDirectory <- None
+        Visitor.outputDirectories.Clear()
 
     [<Test>]
     member self.ParsingBadOutputGivesFailure() =
       try
-        Visitor.outputDirectory <- None
+        Visitor.outputDirectories.Clear()
         let options = Main.DeclareOptions()
         let unique = Guid.NewGuid().ToString()
 
@@ -596,12 +596,12 @@ type AltCoverTests3() =
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
       finally
-        Visitor.outputDirectory <- None
+        Visitor.outputDirectories.Clear()
 
     [<Test>]
     member self.ParsingNoOutputGivesFailure() =
       try
-        Visitor.outputDirectory <- None
+        Visitor.outputDirectories.Clear()
         let options = Main.DeclareOptions()
         let input = [| "-o" |]
         let parse = CommandLine.ParseCommandLine input options
@@ -611,12 +611,12 @@ type AltCoverTests3() =
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
       finally
-        Visitor.outputDirectory <- None
+        Visitor.outputDirectories.Clear()
 
     [<Test>]
     member self.ParsingEmptyOutputGivesFailure() =
       try
-        Visitor.outputDirectory <- None
+        Visitor.outputDirectories.Clear()
         let options = Main.DeclareOptions()
         let input = [| "-o"; " " |]
         let parse = CommandLine.ParseCommandLine input options
@@ -626,7 +626,7 @@ type AltCoverTests3() =
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
       finally
-        Visitor.outputDirectory <- None
+        Visitor.outputDirectories.Clear()
 
     member private self.IsolateRootPath() =
       let where = Assembly.GetExecutingAssembly().Location
@@ -1550,10 +1550,11 @@ type AltCoverTests3() =
         use stderr = new StringWriter()
         Console.SetOut stdout
         Console.SetError stderr
-        Visitor.inputDirectory <- Some
-                                    (Path.GetDirectoryName
+        Visitor.inputDirectories.Clear()
+        Visitor.inputDirectories.Add (Path.GetDirectoryName
                                        (Assembly.GetExecutingAssembly().Location))
-        Visitor.outputDirectory <- Visitor.inputDirectory
+        Visitor.outputDirectories.Clear()
+        Visitor.outputDirectories.AddRange Visitor.inputDirectories
         let arg = ([], options)
         let fail = Right arg
         match Main.ProcessOutputLocation fail with
@@ -1582,8 +1583,10 @@ type AltCoverTests3() =
         Console.SetOut stdout
         Console.SetError stderr
         let here = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
-        Visitor.inputDirectory <- Some here
-        Visitor.outputDirectory <- Some(Path.GetDirectoryName here)
+        Visitor.inputDirectories.Clear()
+        Visitor.inputDirectories.Add here
+        Visitor.outputDirectories.Clear()
+        Visitor.outputDirectories.Add (Path.GetDirectoryName here)
         let rest = [ Guid.NewGuid().ToString() ]
         let arg = (rest, options)
         let ok = Right arg
@@ -1617,8 +1620,11 @@ type AltCoverTests3() =
         Console.SetError stderr
         let here = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
         let there = Path.Combine(here, Guid.NewGuid().ToString())
-        Visitor.inputDirectory <- Some here
-        Visitor.outputDirectory <- Some there
+        Visitor.outputDirectories.Clear()
+        Visitor.inputDirectories.Clear()
+
+        Visitor.inputDirectories.Add here
+        Visitor.outputDirectories.Add there
         let rest = [ Guid.NewGuid().ToString() ]
         let arg = (rest, options)
         let ok = Right arg
@@ -1653,8 +1659,10 @@ type AltCoverTests3() =
         Console.SetOut stdout
         Console.SetError stderr
         let here = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
-        Visitor.inputDirectory <- Some here
-        Visitor.outputDirectory <- Some(Path.GetDirectoryName here)
+        Visitor.outputDirectories.Clear()
+        Visitor.inputDirectories.Clear()
+        Visitor.inputDirectories.Add here
+        Visitor.outputDirectories.Add (Path.GetDirectoryName here)
         let rest = [ Guid.NewGuid().ToString() ]
         let arg = (rest, options)
         let ok = Right arg
@@ -1666,7 +1674,7 @@ type AltCoverTests3() =
           Assert.That
             (CommandLine.error,
              Is.EquivalentTo
-               [ "Output directory for saved files " + Visitor.OutputDirectory()
+               [ "Output directory for saved files " + (Visitor.OutputDirectories() |> Seq.head)
                  + " already exists" ])
       finally
         Visitor.inplace := false
@@ -1686,8 +1694,10 @@ type AltCoverTests3() =
         Console.SetError stderr
         let here = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
         let there = Path.Combine(here, Guid.NewGuid().ToString())
-        Visitor.inputDirectory <- Some here
-        Visitor.outputDirectory <- Some there
+        Visitor.outputDirectories.Clear()
+        Visitor.inputDirectories.Clear()
+        Visitor.inputDirectories.Add here
+        Visitor.outputDirectories.Add there
         let rest = [ Guid.NewGuid().ToString() ]
         let arg = (rest, options)
         let ok = Right arg
@@ -1706,8 +1716,8 @@ type AltCoverTests3() =
                 + "\nInstrumenting files in " + here + "\n"))
           Assert.That(stderr.ToString(), Is.Empty)
           Assert.That(Directory.Exists there)
-          Assert.That(Visitor.SourceDirectory(), Is.EqualTo there)
-          Assert.That(Visitor.InstrumentDirectory(), Is.EqualTo here)
+          Assert.That(Visitor.SourceDirectories() |> Seq.head, Is.EqualTo there)
+          Assert.That(Visitor.InstrumentDirectories() |> Seq.head, Is.EqualTo here)
       finally
         Visitor.inplace := false
         Console.SetOut(fst saved)
