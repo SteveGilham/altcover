@@ -20,6 +20,7 @@ open System
 open System.Collections.Generic
 open System.Diagnostics
 open System.IO
+open System.IO.Compression
 open System.Reflection
 open System.Runtime.CompilerServices
 open System.Threading
@@ -28,22 +29,33 @@ open System.Xml
 open AltCover.Recorder
 open AltCover.Shadow
 open NUnit.Framework
-open System.IO.Compression
+open Swensen.Unquote
 
 [<TestFixture>]
 type AltCoverTests() =
   class
 
+    let test' x message =
+      try
+        test x
+      with fail ->
+        let extended = message + Environment.NewLine + fail.Message
+#if NET2
+        Assert.Fail(extended)
+#else
+        AssertionFailedException(extended, fail)|> raise
+#endif
+
     [<MethodImpl(MethodImplOptions.NoInlining)>]
     member private self.GetMyMethodName tag =
       ignore tag
-//    let st = StackTrace(StackFrame(1))
-//    st.GetFrame(0).GetMethod().Name |>
-//#if NET2
-//    printfn "%s %s 2" tag
-//#else
-//    printfn "%s %s" tag
-//#endif
+    //    let st = StackTrace(StackFrame(1))
+    //    st.GetFrame(0).GetMethod().Name |>
+    //#if NET2
+    //    printfn "%s %s 2" tag
+    //#else
+    //    printfn "%s %s" tag
+    //#endif
 
     member self.resource =
       Assembly.GetExecutingAssembly().GetManifestResourceNames()
@@ -64,16 +76,16 @@ type AltCoverTests() =
         { new System.IDisposable with
             member x.Dispose() = ObjectDisposedException("Bang!") |> raise }
       Assist.SafeDispose obj1
-      Assert.Pass()
+      test <@ true @>
 
     [<Test>]
     member self.DefaultAccessorsBehaveAsExpected() =
       let v1 = DateTime.UtcNow.Ticks
       let probe = Instance.Clock()
       let v2 = DateTime.UtcNow.Ticks
-      Assert.That(Instance.Granularity(), Is.EqualTo 0)
-      Assert.That(probe, Is.GreaterThanOrEqualTo v1)
-      Assert.That(probe, Is.LessThanOrEqualTo v2)
+      test <@ Instance.Granularity() = 0L @>
+      test <@ probe >= v1 @>
+      test <@ probe <= v2 @>
 
     [<Test>]
     member self.ShouldBeLinkingTheCorrectCopyOfThisCode() =
@@ -84,7 +96,7 @@ type AltCoverTests() =
           Definitive = false
           Stream = null
           Formatter = null }
-      Assert.That(tracer.GetType().Assembly.GetName().Name, Is.EqualTo "AltCover.Shadow")
+      test <@ tracer.GetType().Assembly.GetName().Name = "AltCover.Shadow" @>
       self.GetMyMethodName "<="
 
     [<Test>]
@@ -93,11 +105,11 @@ type AltCoverTests() =
       lock Adapter.Lock (fun () ->
         try
           Adapter.SamplesClear()
-          Assert.That(Adapter.AddSample "module" 23, Is.True)
-          Assert.That(Adapter.AddSample "module" 24, Is.True)
-          Assert.That(Adapter.AddSample "newmodule" 23, Is.True)
-          Assert.That(Adapter.AddSample "module" 23, Is.False)
-          Assert.That(Adapter.AddSampleUnconditional "module" 23, Is.True)
+          test <@ Adapter.AddSample "module" 23 @>
+          test <@ Adapter.AddSample "module" 24 @>
+          test <@ Adapter.AddSample "newmodule" 23 @>
+          test <@ Adapter.AddSample "module" 23 |> not @>
+          test <@ Adapter.AddSampleUnconditional "module" 23 @>
         finally
           Adapter.SamplesClear())
       self.GetMyMethodName "<="
@@ -121,9 +133,11 @@ type AltCoverTests() =
           Instance.Visit key 23
           Instance.CoverageFormat <- ReportFormat.OpenCoverWithTracking
           Instance.Visit key 23
-          Assert.That(Adapter.VisitsSeq() |> Seq.length, Is.EqualTo 1)
-          Assert.That(Adapter.VisitsEntrySeq key |> Seq.length, Is.EqualTo 1)
-          Assert.That(Adapter.VisitCount key 23, Is.EqualTo 2)
+          test <@ Adapter.VisitsSeq()
+                  |> Seq.length = 1 @>
+          test <@ Adapter.VisitsEntrySeq key
+                  |> Seq.length = 1 @>
+          test <@ Adapter.VisitCount key 23 = 2L @>
         finally
           Instance.CoverageFormat <- ReportFormat.NCover
           Instance.Recording <- true
@@ -138,46 +152,42 @@ type AltCoverTests() =
     member self.JunkUspidGivesNegativeIndex() =
       let key = " "
       let index = Counter.FindIndexFromUspid 0 key
-      Assert.That(index, Is.LessThan 0)
+      test <@ index < 0 @>
 
     [<Test>]
     member self.PayloadGeneratedIsAsExpected() =
       try
-        Assert.That (Instance.CallerId(), Is.EqualTo 0)
-        Assert.That(Instance.PayloadSelector (fun _ -> false),
-                    Is.EqualTo Null)
-        Assert.That(Instance.PayloadSelector (fun _ -> true),
-                    Is.EqualTo Null)
+        test <@ Instance.CallerId() = 0 @>
+        test <@ Instance.PayloadSelector (fun _ -> false) = Null @>
+        test <@ Instance.PayloadSelector (fun _ -> true) = Null @>
         Instance.Push 4321
-        Assert.That(Instance.PayloadSelector (fun _ -> false),
-                    Is.EqualTo Null)
-        Assert.That(Instance.PayloadSelector (fun _ -> true),
-                    Is.EqualTo (Call 4321))
+        test <@ Instance.PayloadSelector (fun _ -> false) = Null @>
+        test <@ Instance.PayloadSelector (fun _ -> true) = (Call 4321) @>
         try
           Instance.Push 6789
           // 0x1234123412341234 == 1311693406324658740
-          Assert.That(Instance.PayloadSelection (fun _ -> 0x1234123412341234L) (fun _ -> 1000L) (fun _ -> true),
-                    Is.EqualTo (Both (1311693406324658000L, 6789)))
+          test <@ Instance.PayloadSelection (fun _ -> 0x1234123412341234L) (fun _ -> 1000L) (fun _ -> true)
+                   = (Both (1311693406324658000L, 6789)) @>
         finally
           Instance.Pop()
-        Assert.That(Instance.PayloadSelector (fun _ -> true),
-                    Is.EqualTo (Call 4321))
+        test <@ Instance.PayloadSelector (fun _ -> true) =
+                    (Call 4321) @>
       finally
         Instance.Pop()
-      Assert.That(Instance.PayloadSelection (fun _ -> 0x1234123412341234L) (fun _ -> 1000L) (fun _ -> true) ,
-                Is.EqualTo (Time 1311693406324658000L))
+      test <@ Instance.PayloadSelection (fun _ -> 0x1234123412341234L) (fun _ -> 1000L) (fun _ -> true) =
+                (Time 1311693406324658000L) @>
       let v1 = DateTime.UtcNow.Ticks
       let probed = Instance.PayloadControl (fun _ -> 1000L) (fun _ -> true)
       let v2 = DateTime.UtcNow.Ticks
       match probed with
       | Time probe ->
-        Assert.That(probe % 1000L, Is.EqualTo 0L)
-        Assert.That(probe, Is.LessThanOrEqualTo v2)
-        Assert.That(probe, Is.GreaterThanOrEqualTo (1000L*(v1/1000L)))
-      | _ -> Assert.Fail()
-      Assert.That (Instance.CallerId(), Is.EqualTo 0)
+        test <@ probe % 1000L = 0L @>
+        test <@ probe <= v2 @>
+        test <@ probe >= (1000L*(v1/1000L)) @>
+      | _ -> test <@ false @>
+      test <@ Instance.CallerId() = 0 @>
       Instance.Pop()
-      Assert.That (Instance.CallerId(), Is.EqualTo 0)
+      test <@ Instance.CallerId() = 0 @>
 
     [<Test>]
     member self.RealIdShouldIncrementCountSynchronously() =
@@ -581,9 +591,10 @@ type AltCoverTests() =
             [ 0..9 ]
             |> Seq.iter
                  (fun i ->
-                 Adapter.VisitsAdd "f6e3edb3-fb20-44b3-817d-f69d1a22fc2f" i (int64(i + 1)))
+                 Adapter.VisitsAdd "f6e3edb3-fb20-44b3-817d-f69d1a22fc2f" i
+                   (int64 (i + 1)))
             Adapter.DoPause()
-            Assert.That (Adapter.VisitsSeq (), Is.Empty)
+            Assert.That(Adapter.VisitsSeq(), Is.Empty)
             let recorded = stdout.ToString().Trim()
             Assert.That(recorded, Is.EqualTo "Pausing...")
             use worker' = new FileStream(Instance.ReportFile, FileMode.Open)
@@ -593,7 +604,8 @@ type AltCoverTests() =
               (after.SelectNodes("//seqpnt")
                |> Seq.cast<XmlElement>
                |> Seq.map (fun x -> x.GetAttribute("visitcount")),
-               Is.EquivalentTo [ "1"; "1"; "1"; "1"; "1"; "1"; "0"; String.Empty; "X"; "-1"  ])
+               Is.EquivalentTo
+                 [ "1"; "1"; "1"; "1"; "1"; "1"; "0"; String.Empty; "X"; "-1" ])
           finally
             Instance.trace <- save
             if File.Exists Instance.ReportFile then File.Delete Instance.ReportFile
@@ -642,7 +654,8 @@ type AltCoverTests() =
             [ 0..9 ]
             |> Seq.iter
                  (fun i ->
-                 Adapter.VisitsAdd "f6e3edb3-fb20-44b3-817d-f69d1a22fc2f" i (int64(i + 1)))
+                 Adapter.VisitsAdd "f6e3edb3-fb20-44b3-817d-f69d1a22fc2f" i
+                   (int64 (i + 1)))
             Adapter.DoResume()
             Assert.That(Adapter.VisitsSeq(), Is.Empty, "Visits should be cleared")
             Assert.That
@@ -707,7 +720,8 @@ type AltCoverTests() =
             [ 0..9 ]
             |> Seq.iter
                  (fun i ->
-                 Adapter.VisitsAdd "f6e3edb3-fb20-44b3-817d-f69d1a22fc2f" i (int64(i + 1)))
+                 Adapter.VisitsAdd "f6e3edb3-fb20-44b3-817d-f69d1a22fc2f" i
+                   (int64 (i + 1)))
             Instance.FlushCounter ProcessExit ()
             let head = "Coverage statistics flushing took "
             let tail = " seconds\n"
@@ -771,7 +785,8 @@ type AltCoverTests() =
             [ 0..9 ]
             |> Seq.iter
                  (fun i ->
-                 Adapter.VisitsAdd "f6e3edb3-fb20-44b3-817d-f69d1a22fc2f" i (int64(i + 1)))
+                 Adapter.VisitsAdd "f6e3edb3-fb20-44b3-817d-f69d1a22fc2f" i
+                   (int64 (i + 1)))
             Instance.FlushCounter ProcessExit ()
             let head = "Coverage statistics flushing took "
             let tail = " seconds\n"
@@ -784,7 +799,8 @@ type AltCoverTests() =
               (after.SelectNodes("//seqpnt")
                |> Seq.cast<XmlElement>
                |> Seq.map (fun x -> x.GetAttribute("visitcount")),
-               Is.EquivalentTo [ "1"; "1"; "1"; "1"; "1"; "1"; "0"; String.Empty; "X"; "-1"  ])
+               Is.EquivalentTo
+                 [ "1"; "1"; "1"; "1"; "1"; "1"; "0"; String.Empty; "X"; "-1" ])
           finally
             Instance.trace <- save
             Instance.Supervision <- false
@@ -826,7 +842,7 @@ type AltCoverTests() =
            worker.Write(buffer, 0, size)
            ()
         let payload = Dictionary<int, PointVisit>()
-        [ 0..9 ] |> Seq.iter (fun i -> payload.[i] <- PointVisit.Init (int64(i + 1)) [])
+        [ 0..9 ] |> Seq.iter (fun i -> payload.[i] <- PointVisit.Init (int64 (i + 1)) [])
         visits.["f6e3edb3-fb20-44b3-817d-f69d1a22fc2f"] <- payload
         Counter.DoFlush ignore (fun _ _ -> ()) true visits
           AltCover.Recorder.ReportFormat.NCover reportFile (Some outputFile) |> ignore

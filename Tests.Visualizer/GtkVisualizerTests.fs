@@ -2,6 +2,7 @@ namespace Tests.Visualizer
 
 open AltCover.Augment
 open NUnit.Framework
+open Swensen.Unquote
 
 [<TestFixture>]
 type AltCoverTests() =
@@ -12,13 +13,13 @@ type AltCoverTests() =
     [<Test>]
     member self.AugmentNullableDetectNulls() =
       let input = [ "string"; null; "another string" ]
-      let nulls = input |> Seq.map (Option.nullable >> Option.isNone)
-      Assert.That(nulls, Is.EquivalentTo([ false; true; false ]))
+      let nulls = input |> List.map (Option.nullable >> Option.isNone)
+      test <@ nulls = [ false; true; false ] @>
 
     [<Test>]
     member self.AugmentGetOrElseFillsInNone() =
       let input = [ "string"; null; "another string" ]
-      let strings = input |> Seq.map (Option.nullable >> (Option.getOrElse "fallback"))
-      Assert.That(strings, Is.EquivalentTo([ "string"; "fallback"; "another string" ]))
+      let strings = input |> List.map (Option.nullable >> (Option.getOrElse "fallback"))
+      test <@ strings =[ "string"; "fallback"; "another string" ] @>
 
   end

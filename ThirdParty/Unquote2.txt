@@ -1,0 +1,4 @@
+-- nuget Unquote 1.3.0
+ildasm /all /out=Unquote.il Unquote.dll
+-- patch per Unquote2.patch
+C:\Windows\Microsoft.NET\Framework\v2.0.50727\ilasm.exe /dll /output=C:\Users\steve\Documents\GitHub\altcover\ThirdParty\Unquote2.dll /key=C:\Users\steve\Documents\GitHub\altcover\ThirdParty\ThirdParty.snk /resource=Unquote.res Unquote2.il

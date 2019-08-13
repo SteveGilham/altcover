@@ -10,6 +10,7 @@ open Mono.Cecil.Cil
 open Mono.Cecil.Rocks
 open Mono.Options
 open NUnit.Framework
+open Swensen.Unquote
 
 [<TestFixture>]
 type AltCoverTests2() =
@@ -22,6 +23,12 @@ type AltCoverTests2() =
     let recorderSnk = typeof<AltCover.Node>.Assembly.GetManifestResourceNames()
                       |> Seq.find (fun n -> n.EndsWith(".Recorder.snk", StringComparison.Ordinal))
 #endif
+
+    let test' x message =
+      try
+        test x
+      with
+      | fail -> AssertionFailedException(message + Environment.NewLine + fail.Message, fail) |> raise
 
     let infrastructureSnk =
       Assembly.GetExecutingAssembly().GetManifestResourceNames()
@@ -330,17 +337,18 @@ type AltCoverTests2() =
       let x = CommandLine.ValidateAssembly "*" "**"
       Assert.That(x, Is.EqualTo(String.Empty, false))
 
-#if NETCOREAPP2_0
     [<Test>]
     member self.ShouldBeAbleToLocateAReference() =
       let where = Assembly.GetExecutingAssembly().Location
       let here = Path.GetDirectoryName where
+#if NETCOREAPP2_0
       let json = Directory.GetFiles(here, "*.json")
-      Assert.That(json, Is.Not.Empty, "no json")
+      test' <@ json |> Seq.isEmpty |> not @> "no json"
       json
       |> Seq.iter (fun j ->
            let a = CommandLine.FindAssemblyName j
-           Assert.That(String.IsNullOrWhiteSpace a, j))
+           test' <@ String.IsNullOrWhiteSpace a @> j)
+#endif
       let raw = Mono.Cecil.AssemblyDefinition.ReadAssembly where
       Instrument.ResolutionTable.Clear()
       try
@@ -348,15 +356,15 @@ type AltCoverTests2() =
         |> Seq.filter
              (fun f -> f.Name.IndexOf("Mono.Cecil", StringComparison.Ordinal) >= 0)
         |> Seq.iter (fun f ->
-             let resolved = Instrument.ResolveFromNugetCache null f
-             Assert.That(resolved, Is.Not.Null, f.ToString()))
+             let resolved = Instrument.HookResolveHandler.Invoke(null, f)
+             test' <@ resolved |> isNull |> not @> <| f.ToString())
         raw.MainModule.AssemblyReferences
         |> Seq.filter
              (fun f -> f.Name.IndexOf("Mono.Cecil", StringComparison.Ordinal) >= 0)
         |> Seq.iter (fun f ->
              f.Version <- System.Version("666.666.666.666")
-             let resolved = Instrument.ResolveFromNugetCache null f
-             Assert.That(resolved, Is.Null, f.ToString()))
+             let resolved = Instrument.HookResolveHandler.Invoke(null, f)
+             test' <@ resolved |> isNull @> <| f.ToString())
         let found = Instrument.ResolutionTable.Keys |> Seq.toList
         found
         |> Seq.iter (fun k ->
@@ -369,11 +377,10 @@ type AltCoverTests2() =
              (fun f -> f.Name.IndexOf("Mono.Cecil", StringComparison.Ordinal) >= 0)
         |> Seq.iter (fun f ->
              f.Version <- System.Version("666.666.666.666")
-             let resolved = Instrument.ResolveFromNugetCache null f
-             Assert.That(resolved, Is.Not.Null, f.ToString()))
+             let resolved = Instrument.HookResolveHandler.Invoke(null, f)
+             test' <@ resolved |> isNull |> not @> <| f.ToString())
       finally
         Instrument.ResolutionTable.Clear()
-#endif
 
     [<Test>]
     member self.ShouldBeAbleToPrepareTheAssembly() =

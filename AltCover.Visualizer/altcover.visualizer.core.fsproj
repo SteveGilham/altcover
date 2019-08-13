@@ -81,11 +81,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Update="FSharp.Core" Version="4.6.2" />
+    <PackageReference Update="FSharp.Core" Version="4.7.0" />
   </ItemGroup>
 
   <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
-    <Exec Command="pwsh Prepare.ps1" />
+    <Exec Command="pwsh -NoProfile Prepare.ps1" />
   </Target>
 
 </Project>

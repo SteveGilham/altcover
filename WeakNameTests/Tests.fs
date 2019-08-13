@@ -8,6 +8,7 @@ open AltCover
 open AltCover.Augment
 open Mono.Cecil
 open NUnit.Framework
+open Swensen.Unquote
 
 module Rocks =
   let rec GetAllTypes(t : TypeDefinition) =
@@ -47,7 +48,7 @@ type AltCoverTests() =
              let n, e, r = Option.get x
              sprintf "Expected %d got %d in %s" e r n)
         |> Seq.toList
-      Assert.That(failures, Is.Empty, String.Join(Environment.NewLine, failures))
+      test <@ List.isEmpty failures @>
 
     [<Test>]
     member self.ShouldMatchGendarmeComplexityInSamples() =
@@ -77,7 +78,7 @@ type AltCoverTests() =
              let n, e, r = Option.get x
              sprintf "Expected %d got %d in %s" e r n)
         |> Seq.toList
-      Assert.That(failures, Is.Empty, String.Join(Environment.NewLine, failures))
+      test <@ List.isEmpty failures @>
 
     [<Test>]
     member self.ShouldMatchGendarmeComplexityInMonoSamples() =
@@ -114,7 +115,7 @@ type AltCoverTests() =
              let n, e, r = Option.get x
              sprintf "Expected %d got %d in %s" e r n)
         |> Seq.toList
-      Assert.That(failures, Is.Empty, String.Join(Environment.NewLine, failures))
+      test <@ List.isEmpty failures @>
 
     [<Test>]
     member self.GratuitousCoverage() =
@@ -131,5 +132,5 @@ type AltCoverTests() =
                       |> Seq.rev
                       |> Seq.toArray))
         |> Split
-      Assert.That(output, Is.EqualTo("TRUE", [ "32" ]))
+      test <@ output = ("TRUE", [ "32" ]) @>
   end

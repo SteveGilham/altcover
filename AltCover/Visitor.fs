@@ -293,6 +293,7 @@ module internal Visitor =
       Filter.IsCSharpAutoProperty
       (fun m -> specialCaseFilters |> Seq.exists (Filter.Match m))
 
+      // Constructors of compiler generated types otherwise pollute F# coverage
       (fun m ->
       let t = m.DeclaringType
       m.IsConstructor
@@ -572,12 +573,17 @@ module internal Visitor =
   let getJumpChain (terminal : Instruction) (i : Instruction) =
     let rec accumulate (state : Instruction) l =
       let gendarme = l
-      if isNull state then gendarme
-      else if state.OpCode = OpCodes.Br || state.OpCode = OpCodes.Br_S then
+      if state.OpCode = OpCodes.Br || state.OpCode = OpCodes.Br_S then
         let target = (state.Operand :?> Instruction)
         accumulate target (target :: l)
       else if (state.Offset > terminal.Offset
-               || state.OpCode.FlowControl = FlowControl.Cond_Branch) then l
+               // depart current context, especially important if inlined
+               || state.OpCode.FlowControl = FlowControl.Cond_Branch
+               || state.OpCode.FlowControl = FlowControl.Branch // Leave or Leave_S
+               || state.OpCode.FlowControl = FlowControl.Break
+               || state.OpCode.FlowControl = FlowControl.Throw
+               || state.OpCode.FlowControl = FlowControl.Return // includes state.Next = null
+               || isNull state.Next) then l
       else accumulate state.Next gendarme
     accumulate i [ i ]
 

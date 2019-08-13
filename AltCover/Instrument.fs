@@ -240,7 +240,6 @@ module internal Instrument =
     | _ -> null
 #endif
 
-#if NETCOREAPP2_0
   let private nugetCache =
     Path.Combine
       (Path.Combine
@@ -252,12 +251,15 @@ module internal Instrument =
     let name = y.ToString()
     if ResolutionTable.ContainsKey name then ResolutionTable.[name]
     else
+      // Placate Gendarme here
+      let share = "|usr|share".Replace('|', Path.DirectorySeparatorChar)
+      let shared = "dotnet|shared".Replace('|', Path.DirectorySeparatorChar)
       let candidate =
         [ Environment.GetEnvironmentVariable "NUGET_PACKAGES"
           Path.Combine(Environment.GetEnvironmentVariable "ProgramFiles"
                        |> Option.nullable
-                       |> (Option.getOrElse "/usr/share"), "dotnet/shared")
-          "/usr/share/dotnet/shared"
+                       |> (Option.getOrElse share), shared)
+          Path.Combine(share, shared)
           nugetCache ]
         |> List.filter (String.IsNullOrWhiteSpace >> not)
         |> List.filter Directory.Exists
@@ -286,6 +288,8 @@ module internal Instrument =
         ResolutionTable.[name] <- a
         a
 
+  let internal HookResolveHandler = new AssemblyResolveEventHandler(ResolveFromNugetCache)
+
   let internal HookResolver(resolver : IAssemblyResolver) =
     if resolver
        |> isNull
@@ -293,9 +297,8 @@ module internal Instrument =
     then
       let hook = resolver.GetType().GetMethod("add_ResolveFailure")
       hook.Invoke
-        (resolver, [| new AssemblyResolveEventHandler(ResolveFromNugetCache) :> obj |])
+        (resolver, [| HookResolveHandler :> obj |])
       |> ignore
-#endif
 
   /// <summary>
   /// Commit an instrumented assembly to disk
@@ -353,10 +356,8 @@ module internal Instrument =
       let write (a : AssemblyDefinition) p pk =
         use sink = File.Open(p, FileMode.Create, FileAccess.ReadWrite)
         a.Write(sink, pk)
-#if NETCOREAPP2_0
       let resolver = assembly.MainModule.AssemblyResolver
       HookResolver resolver
-#endif
       write assembly path pkey
     finally
       Directory.SetCurrentDirectory(here)
