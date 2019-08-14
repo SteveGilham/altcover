@@ -85,22 +85,11 @@ module internal Main =
     [ ("i|inputDirectory=",
        (fun x ->
        if CommandLine.ValidateDirectory "--inputDirectory" x then
-         if Visitor.inputDirectories.Any() then
-           CommandLine.error <- String.Format
-                                  (CultureInfo.CurrentCulture,
-                                   CommandLine.resources.GetString "MultiplesNotAllowed",
-                                   "--inputDirectory") :: CommandLine.error
-         else Visitor.inputDirectories.Add (Path.GetFullPath x)))
+         Visitor.inputDirectories.Add (Path.GetFullPath x)))
 
       ("o|outputDirectory=",
        (fun x ->
        if CommandLine.ValidatePath "--outputDirectory" x then
-         if Visitor.outputDirectories.Any() then
-           CommandLine.error <- String.Format
-                                  (CultureInfo.CurrentCulture,
-                                   CommandLine.resources.GetString "MultiplesNotAllowed",
-                                   "--outputDirectory") :: CommandLine.error
-         else
            CommandLine.doPathOperation
              (fun _ -> Visitor.outputDirectories.Add (Path.GetFullPath x)) () false))
 

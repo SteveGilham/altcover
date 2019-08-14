@@ -486,9 +486,11 @@ type AltCoverTests3() =
         Visitor.inputDirectories.Clear()
 
     [<Test>]
-    member self.ParsingMultipleInputGivesFailure() =
+    member self.ParsingMultipleInputIsOKToo() =
       try
         Visitor.inputDirectories.Clear()
+        Visitor.outputDirectories.Clear()
+        Visitor.inplace := false
         let options = Main.DeclareOptions()
 
         let input =
@@ -498,13 +500,26 @@ type AltCoverTests3() =
              Path.GetFullPath("..") |]
 
         let parse = CommandLine.ParseCommandLine input options
+        let pcom a b = Path.Combine(b,a) |> Path.GetFullPath
         match parse with
-        | Right _ -> Assert.Fail()
-        | Left(x, y) ->
-          Assert.That(y, Is.SameAs options)
-          Assert.That(x, Is.EqualTo "UsageError")
+        | Left _ -> Assert.Fail()
+        | _ -> Visitor.inputDirectories |> Seq.toList
+               |> List.zip ([ "."; ".." ] |> List.map Path.GetFullPath)
+               |> List.iter Assert.AreEqual
+               Visitor.OutputDirectories() |> Seq.toList
+               |> List.zip ([ "."; ".." ] |> List.map (pcom "__Instrumented") )
+               |> List.iter Assert.AreEqual
+
+               Visitor.inplace := true
+               Visitor.outputDirectories.Add "maybe"
+               Visitor.OutputDirectories() |> Seq.toList
+               |> List.zip [ Path.GetFullPath "maybe"; ".." |> (pcom "__Saved")]
+               |> List.iter Assert.AreEqual
+
       finally
+        Visitor.outputDirectories.Clear()
         Visitor.inputDirectories.Clear()
+        Visitor.inplace := false
 
     [<Test>]
     member self.ParsingBadInputGivesFailure() =
@@ -557,24 +572,27 @@ type AltCoverTests3() =
         Visitor.outputDirectories.Clear()
 
     [<Test>]
-    member self.ParsingMultipleOutputGivesFailure() =
+    member self.ParsingMultipleOutputIsOK() =
       try
+        Visitor.inputDirectories.Clear()
         Visitor.outputDirectories.Clear()
         let options = Main.DeclareOptions()
         let unique = Guid.NewGuid().ToString()
+        let u2 = unique.Replace("-", "+")
+        let outs = [ unique; u2 ] |> List.map Path.GetFullPath
 
         let input =
           [| "-o"
              unique
              "/o"
-             unique.Replace("-", "+") |]
+             u2
+          |]
 
         let parse = CommandLine.ParseCommandLine input options
         match parse with
-        | Right _ -> Assert.Fail()
-        | Left(x, y) ->
-          Assert.That(y, Is.SameAs options)
-          Assert.That(x, Is.EqualTo "UsageError")
+        | Left _ -> Assert.Fail()
+        | _ -> Assert.That (Visitor.outputDirectories, Is.EquivalentTo outs)
+               Assert.That (Visitor.OutputDirectories(), Is.EquivalentTo (outs |> Seq.take 1))
       finally
         Visitor.outputDirectories.Clear()
 
