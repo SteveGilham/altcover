@@ -739,7 +739,7 @@ module XTests =
     try
       Visitor.outputDirectories.Clear()
       Visitor.outputDirectories.Add output
-      let visited = Node.AfterAssembly def
+      let visited = Node.AfterAssembly (def, Visitor.OutputDirectories())
       let input = InstrumentContext.Build []
       let result = Instrument.InstrumentationVisitor input visited
       Assert.Same(result, input) //, "result differs")
@@ -787,7 +787,7 @@ module XTests =
     try
       Visitor.outputDirectories.Clear()
       Visitor.outputDirectories.AddRange [ output ]
-      let visited = Node.AfterAssembly def
+      let visited = Node.AfterAssembly (def, Visitor.OutputDirectories())
       let input = InstrumentContext.Build []
       let result = Instrument.InstrumentationVisitor input visited
       Assert.Same(result, input) //, "result differs")
@@ -929,7 +929,7 @@ module XTests =
 #else
     let path' = path
 #endif
-    Visitor.Visit [ visitor ] (Visitor.ToSeq path')
+    Visitor.Visit [ visitor ] (Visitor.ToSeq (path',[]))
     let baseline = XDocument.Load(new System.IO.StringReader(MonoBaseline))
     let result = document.Elements()
     let expected = baseline.Elements()
@@ -955,7 +955,7 @@ module XTests =
     try
       Visitor.NameFilters.Clear()
       Visitor.reportFormat <- Some Base.ReportFormat.OpenCover
-      Visitor.Visit [ visitor ] (Visitor.ToSeq path')
+      Visitor.Visit [ visitor ] (Visitor.ToSeq (path',[]))
       let resource =
         Assembly.GetExecutingAssembly().GetManifestResourceNames()
         |> Seq.find

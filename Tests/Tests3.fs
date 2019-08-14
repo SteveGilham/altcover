@@ -522,6 +522,22 @@ type AltCoverTests3() =
         Visitor.inplace := false
 
     [<Test>]
+    member self.ParsingDuplicateInputGivesFailure() =
+      try
+        Visitor.inputDirectories.Clear()
+        let options = Main.DeclareOptions()
+        let unique = Guid.NewGuid().ToString().Replace("-", "*")
+        let input = [| "-i"; unique; "-i"; unique |]
+        let parse = CommandLine.ParseCommandLine input options
+        match parse with
+        | Right _ -> Assert.Fail()
+        | Left(x, y) ->
+          Assert.That(y, Is.SameAs options)
+          Assert.That(x, Is.EqualTo "UsageError")
+      finally
+        Visitor.inputDirectories.Clear()
+
+    [<Test>]
     member self.ParsingBadInputGivesFailure() =
       try
         Visitor.inputDirectories.Clear()
@@ -568,6 +584,22 @@ type AltCoverTests3() =
         match Visitor.outputDirectories |> Seq.toList with
         | [ x ] -> Assert.That(Path.GetFileName x, Is.EqualTo unique)
         | _ -> Assert.Fail()
+      finally
+        Visitor.outputDirectories.Clear()
+
+    [<Test>]
+    member self.ParsingDuplicateOutputGivesFailure() =
+      try
+        Visitor.outputDirectories.Clear()
+        let options = Main.DeclareOptions()
+        let unique = Guid.NewGuid().ToString().Replace("-", "*")
+        let input = [| "-o"; unique; "-o"; unique |]
+        let parse = CommandLine.ParseCommandLine input options
+        match parse with
+        | Right _ -> Assert.Fail()
+        | Left(x, y) ->
+          Assert.That(y, Is.SameAs options)
+          Assert.That(x, Is.EqualTo "UsageError")
       finally
         Visitor.outputDirectories.Clear()
 
@@ -1568,9 +1600,9 @@ type AltCoverTests3() =
         use stderr = new StringWriter()
         Console.SetOut stdout
         Console.SetError stderr
+        let here = Path.GetDirectoryName (Assembly.GetExecutingAssembly().Location)
         Visitor.inputDirectories.Clear()
-        Visitor.inputDirectories.Add (Path.GetDirectoryName
-                                       (Assembly.GetExecutingAssembly().Location))
+        Visitor.inputDirectories.Add here
         Visitor.outputDirectories.Clear()
         Visitor.outputDirectories.AddRange Visitor.inputDirectories
         let arg = ([], options)
@@ -1583,7 +1615,8 @@ type AltCoverTests3() =
           Assert.That(stderr.ToString(), Is.Empty)
           Assert.That
             (CommandLine.error,
-             Is.EquivalentTo [ "From and to directories are identical" ])
+             Is.EquivalentTo [ "From and to directories " +
+                               here + " are identical" ])
           Assert.That(stdout.ToString(), Is.Empty)
       finally
         Console.SetOut(fst saved)
@@ -1612,9 +1645,11 @@ type AltCoverTests3() =
         | Left _ -> Assert.Fail()
         | Right(x, y, z, t) ->
           Assert.That(x, Is.SameAs rest)
-          Assert.That(y.FullName, Is.EqualTo here)
-          Assert.That(z.FullName, Is.EqualTo(Path.GetDirectoryName here))
-          Assert.That(t.FullName, Is.EqualTo y.FullName)
+          y |> Seq.iter (fun y' -> Assert.That(y'.FullName, Is.EqualTo here))
+          z |> Seq.iter (fun z' -> Assert.That(z'.FullName, Is.EqualTo(Path.GetDirectoryName here)))
+          t
+          |> Seq.zip y
+          |> Seq.iter (fun (t', y') -> Assert.That(t'.FullName, Is.EqualTo y'.FullName))
           Assert.That
             (stdout.ToString().Replace("\r", String.Empty),
              Is.EqualTo
@@ -1651,9 +1686,9 @@ type AltCoverTests3() =
         | Left _ -> Assert.Fail()
         | Right(x, y, z, t) ->
           Assert.That(x, Is.SameAs rest)
-          Assert.That(y.FullName, Is.EqualTo here)
-          Assert.That(z.FullName, Is.EqualTo there)
-          Assert.That(t.FullName, Is.EqualTo here)
+          y |> Seq.iter (fun y' -> Assert.That(y'.FullName, Is.EqualTo here))
+          z |> Seq.iter (fun z' -> Assert.That(z'.FullName, Is.EqualTo there))
+          t |> Seq.iter (fun t' -> Assert.That(t'.FullName, Is.EqualTo here))
           Assert.That
             (stdout.ToString().Replace("\r", String.Empty),
              Is.EqualTo
@@ -1724,9 +1759,9 @@ type AltCoverTests3() =
         | Left _ -> Assert.Fail()
         | Right(x, y, z, t) ->
           Assert.That(x, Is.SameAs rest)
-          Assert.That(y.FullName, Is.EqualTo here)
-          Assert.That(z.FullName, Is.EqualTo there)
-          Assert.That(t.FullName, Is.EqualTo there)
+          y |> Seq.iter (fun y' -> Assert.That(y'.FullName, Is.EqualTo here))
+          z |> Seq.iter (fun z' -> Assert.That(z'.FullName, Is.EqualTo there))
+          t |> Seq.iter (fun t' -> Assert.That(t'.FullName, Is.EqualTo there))
           Assert.That
             (stdout.ToString().Replace("\r", String.Empty),
              Is.EqualTo
@@ -1783,34 +1818,38 @@ type AltCoverTests3() =
     member self.PreparingNewPlaceShouldCopyEverything() =
       let here = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
       let there = Path.Combine(here, Guid.NewGuid().ToString())
-      let toInfo = Directory.CreateDirectory there
-      let fromInfo = DirectoryInfo(here)
-      let (x, y) = Main.PrepareTargetFiles fromInfo toInfo fromInfo
-      Assert.That
-        (toInfo.EnumerateFiles() |> Seq.map (fun x -> x.Name),
-         Is.EquivalentTo(fromInfo.EnumerateFiles() |> Seq.map (fun x -> x.Name)),
-         "Simple to-from comparison failed")
-      Assert.That
-        (x
-         |> Seq.filter
-              (fun f -> f.EndsWith(".dl_", StringComparison.OrdinalIgnoreCase) |> not),
-         Is.EquivalentTo
-           (fromInfo.EnumerateFiles()
-            |> Seq.map (fun x -> x.FullName)
-            |> Seq.filter
-                 (fun f ->
-                 f.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)
-                 || f.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
-            |> Seq.filter
-                 (fun f ->
-                 File.Exists(Path.ChangeExtension(f, ".pdb")) ||
-                 File.Exists(f + ".mdb") ||
-                 f |> Path.GetFileNameWithoutExtension = "Sample8")),
-         "First list mismatch with from files")
-      Assert.That(y,
-                  Is.EquivalentTo(x
-                                  |> Seq.map Path.GetFileNameWithoutExtension),
-                                  "Second list mismatch")
+      let toInfo = [ Directory.CreateDirectory there ]
+      let fromInfo = [ DirectoryInfo(here) ]
+      let (x, y) = Main.PrepareTargetFiles fromInfo toInfo fromInfo [there]
+      Seq.zip fromInfo toInfo
+      |> Seq.iter (fun (f,t) ->
+        Assert.That
+          (t.EnumerateFiles() |> Seq.map (fun x -> x.Name),
+           Is.EquivalentTo(f.EnumerateFiles() |> Seq.map (fun x -> x.Name)),
+           "Simple to-from comparison failed")
+        Assert.That
+          (x
+           |> Seq.filter (fun (_,l) -> l |> List.exists (fun i -> i = t.FullName))
+           |> Seq.map fst
+           |> Seq.filter
+                (fun f -> f.EndsWith(".dl_", StringComparison.OrdinalIgnoreCase) |> not),
+           Is.EquivalentTo
+             (f.EnumerateFiles()
+              |> Seq.map (fun x -> x.FullName)
+              |> Seq.filter
+                   (fun f ->
+                   f.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)
+                   || f.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
+              |> Seq.filter
+                   (fun f ->
+                   File.Exists(Path.ChangeExtension(f, ".pdb")) ||
+                   File.Exists(f + ".mdb") ||
+                   f |> Path.GetFileNameWithoutExtension = "Sample8")),
+           "First list mismatch with from files")
+        Assert.That(y,
+                    Is.EquivalentTo(x
+                                    |> Seq.map (fst >> Path.GetFileNameWithoutExtension)),
+                                    "Second list mismatch"))
 
     [<Test>]
     member self.ShouldProcessTrailingArguments() =

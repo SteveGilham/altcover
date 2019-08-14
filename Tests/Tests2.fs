@@ -1426,7 +1426,7 @@ type AltCoverTests2() =
         Mono.Cecil.AssemblyDefinition.ReadAssembly
           (Assembly.GetExecutingAssembly().Location)
       let state = InstrumentContext.Build [ "nunit.framework"; "nonesuch" ]
-      let visited = Node.Assembly(def, Inspect.Ignore)
+      let visited = Node.Assembly(def, Inspect.Ignore, [])
       let result =
         Instrument.InstrumentationVisitor { state with RecordingAssembly = fake } visited
       Assert.That(def.MainModule.AssemblyReferences, Is.EquivalentTo refs)
@@ -1452,7 +1452,7 @@ type AltCoverTests2() =
         Mono.Cecil.AssemblyDefinition.ReadAssembly
           (Assembly.GetExecutingAssembly().Location)
       let state = InstrumentContext.Build [ "nunit.framework"; "nonesuch" ]
-      let visited = Node.Assembly(def, Inspect.Instrument)
+      let visited = Node.Assembly(def, Inspect.Instrument, [])
       let result =
         Instrument.InstrumentationVisitor { state with RecordingAssembly = fake } visited
       Assert.That

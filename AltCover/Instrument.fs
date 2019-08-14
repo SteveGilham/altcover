@@ -619,12 +619,24 @@ module internal Instrument =
         else branch.Start.Operand <- preamble
     state
 
+  let WriteAssemblies definition file targets sink =
+    let first = Path.Combine (targets |> Seq.head, file)
+    String.Format
+      (System.Globalization.CultureInfo.CurrentCulture,
+       CommandLine.resources.GetString "instrumented", definition, first) |> sink
+    WriteAssembly definition first
+    targets
+    |> Seq.tail
+    |> Seq.iter (fun p -> let pathn = Path.Combine(p, file)
+                          String.Format
+                            (System.Globalization.CultureInfo.CurrentCulture,
+                             CommandLine.resources.GetString "instrumented", definition, pathn) |> sink
+                          File.Copy(first, pathn))
+
   let private FinishVisit(state : InstrumentContext) =
     try
-      let counterAssemblyFile =
-        Path.Combine
-          (Visitor.InstrumentDirectories() |> Seq.head, (extractName state.RecordingAssembly) + ".dll")
-      WriteAssembly (state.RecordingAssembly) counterAssemblyFile
+      let recorderFileName = (extractName state.RecordingAssembly) + ".dll"
+      WriteAssemblies (state.RecordingAssembly) recorderFileName (Visitor.InstrumentDirectories()) ignore
       Directory.GetFiles
         (Visitor.InstrumentDirectories() |> Seq.head, "*.deps.json", SearchOption.TopDirectoryOnly)
       |> Seq.iter (fun f ->
@@ -703,13 +715,9 @@ module internal Instrument =
     Track state m included track
     state
 
-  let private VisitAfterAssembly state (assembly : AssemblyDefinition) =
+  let private VisitAfterAssembly state (assembly : AssemblyDefinition) (paths : string list) =
     let originalFileName = Path.GetFileName assembly.MainModule.FileName
-    let path = Path.Combine(Visitor.InstrumentDirectories() |> Seq.head, originalFileName)
-    String.Format
-      (System.Globalization.CultureInfo.CurrentCulture,
-       CommandLine.resources.GetString "instrumented", assembly, path) |> Output.Info
-    WriteAssembly assembly path
+    WriteAssemblies assembly originalFileName paths Output.Info
     state
 
   let private VisitStart state =
@@ -726,7 +734,7 @@ module internal Instrument =
   let internal InstrumentationVisitorCore (state : InstrumentContext) (node : Node) =
     match node with
     | Start _ -> VisitStart state
-    | Assembly(assembly, included) ->
+    | Assembly(assembly, included, _) ->
       UpdateStrongReferences assembly state.InstrumentedAssemblies |> ignore
       if included <> Inspect.Ignore then
         assembly.MainModule.AssemblyReferences.Add(state.RecordingAssembly.Name)
@@ -740,7 +748,7 @@ module internal Instrument =
     | AfterMethod(m, included, track) -> VisitAfterMethod state m included track
     | AfterType -> state
     | AfterModule -> state
-    | AfterAssembly assembly -> VisitAfterAssembly state assembly
+    | AfterAssembly (assembly, paths) -> VisitAfterAssembly state assembly paths
     | Finish -> FinishVisit state
 
   let internal InstrumentationVisitorWrapper (core : InstrumentContext -> Node -> InstrumentContext)

@@ -68,8 +68,8 @@ type internal GoTo =
 
 [<ExcludeFromCodeCoverage; NoComparison>]
 type internal Node =
-  | Start of seq<string>
-  | Assembly of AssemblyDefinition * Inspect
+  | Start of seq<string * string list>
+  | Assembly of AssemblyDefinition * Inspect * string list
   | Module of ModuleDefinition * Inspect
   | Type of TypeDefinition * Inspect
   | Method of MethodDefinition * Inspect * (int * string) option
@@ -78,12 +78,12 @@ type internal Node =
   | AfterMethod of MethodDefinition * Inspect * (int * string) option
   | AfterType
   | AfterModule
-  | AfterAssembly of AssemblyDefinition
+  | AfterAssembly of AssemblyDefinition * string list
   | Finish
   member this.After() =
     (match this with
      | Start _ -> [ Finish ]
-     | Assembly(a, _) -> [ AfterAssembly a ]
+     | Assembly(a, _, l) -> [ AfterAssembly (a, l) ]
      | Module _ -> [ AfterModule ]
      | Type _ -> [ AfterType ]
      | Method(m, included, track) -> [ AfterMethod(m, included, track) ]
@@ -317,23 +317,24 @@ module internal Visitor =
 
   let private accumulator = HashSet<AssemblyDefinition>()
 
-  let private StartVisit (paths : seq<string>) buildSequence =
+  let private StartVisit (paths : seq<string * string list>) buildSequence =
     paths
-    |> Seq.collect (AssemblyDefinition.ReadAssembly
-                    >> (fun x ->
-                    x
-                    |> accumulator.Add
-                    |> ignore
-                    // Reject completely if filtered here
-                    let inspection = IsIncluded x
+    |> Seq.collect (fun (path, targets) -> path
+                                           |> (AssemblyDefinition.ReadAssembly
+                                                >> (fun x ->
+                                                x
+                                                |> accumulator.Add
+                                                |> ignore
+                                                // Reject completely if filtered here
+                                                let inspection = IsIncluded x
 
-                    let included =
-                      inspection ||| if inspection = Inspect.Instrument
-                                        && ReportFormat() = Base.ReportFormat.OpenCoverWithTracking then
-                                       Inspect.Track
-                                     else Inspect.Ignore
-                    ProgramDatabase.ReadSymbols(x)
-                    Assembly(x, included))
+                                                let included =
+                                                  inspection ||| if inspection = Inspect.Instrument
+                                                                    && ReportFormat() = Base.ReportFormat.OpenCoverWithTracking then
+                                                                   Inspect.Track
+                                                                 else Inspect.Ignore
+                                                ProgramDatabase.ReadSymbols(x)
+                                                Assembly(x, included, targets)))
                     >> buildSequence)
 
   let private VisitAssembly (a : AssemblyDefinition) included buildSequence =
@@ -760,7 +761,7 @@ module internal Visitor =
     // The pattern here is map x |> map y |> map x |> concat => collect (x >> y >> z)
     match node with
     | Start paths -> StartVisit paths BuildSequence
-    | Assembly(a, included) -> VisitAssembly a included BuildSequence
+    | Assembly(a, included, _) -> VisitAssembly a included BuildSequence
     | Module(x, included) -> VisitModule x included BuildSequence
     | Type(t, included) -> VisitType t included BuildSequence
     | Method(m, included, _) -> VisitMethod m included
@@ -775,7 +776,7 @@ module internal Visitor =
   let internal apply (visitors : list<Fix<Node>>) (node : Node) =
     visitors |> List.map (invoke node)
 
-  let internal Visit (visitors : seq<Fix<Node>>) (assemblies : seq<string>) =
+  let internal Visit (visitors : seq<Fix<Node>>) (assemblies : seq<string * string list>) =
     ZeroPoints()
     MethodNumber <- 0
     try
