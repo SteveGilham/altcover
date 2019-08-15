@@ -485,6 +485,11 @@ type AltCoverTests2() =
         let unique = Guid.NewGuid().ToString()
         let output = Path.GetTempFileName()
         let outputdll = output + ".dll"
+        let where = output |> Path.GetDirectoryName
+        let what = outputdll |> Path.GetFileName
+        let second = Path.Combine(where, Guid.NewGuid().ToString())
+        let alter = Path.Combine (second, what)
+        Directory.CreateDirectory(second) |> ignore
         let save = Visitor.reportPath
         let save2 = Visitor.reportFormat
         let save3 = Visitor.interval
@@ -495,7 +500,13 @@ type AltCoverTests2() =
           Visitor.single <- true
           Assert.That(Visitor.Sampling(), Base.Sampling.Single |> int |> Is.EqualTo)
           let prepared = Instrument.PrepareAssembly path
-          Instrument.WriteAssembly prepared outputdll
+          let traces = System.Collections.Generic.List<string>()
+          Instrument.WriteAssemblies prepared what [where;second] (fun s -> s.Replace("\r", String.Empty).Replace("\n", String.Empty) |> traces.Add)
+          let expectedTraces = [
+            "    " + outputdll + "                <=  Sample3.g, Version=0.0.0.0, Culture=neutral, PublicKeyToken=4ebffcaabf10ce6a"
+            "    " + alter + "                <=  Sample3.g, Version=0.0.0.0, Culture=neutral, PublicKeyToken=4ebffcaabf10ce6a"
+          ]
+          Assert.That(traces, Is.EquivalentTo expectedTraces)
           let expectedSymbols = if "Mono.Runtime" |> Type.GetType |> isNull |> not then ".dll.mdb" else ".pdb"
           let isWindows =
 #if NETCOREAPP2_0
@@ -505,6 +516,8 @@ type AltCoverTests2() =
 #endif
           if isWindows then Assert.That (File.Exists (outputdll.Replace(".dll", expectedSymbols)))
           let raw = Mono.Cecil.AssemblyDefinition.ReadAssembly outputdll
+          let raw2 = Mono.Cecil.AssemblyDefinition.ReadAssembly alter
+          Assert.That (raw.MainModule.Mvid, Is.EqualTo raw2.MainModule.Mvid)
           Assert.That raw.Name.HasPublicKey
           // Assert.That (Option.isSome <| Instrument.KnownKey raw.Name) <- not needed
           let token' = String.Join(String.Empty, raw.Name.PublicKeyToken|> Seq.map (fun x -> x.ToString("x2")))
@@ -531,7 +544,8 @@ type AltCoverTests2() =
           Visitor.reportFormat <- save2
           Visitor.interval <- save3
           Directory.EnumerateFiles(Path.GetDirectoryName output,
-                                   (Path.GetFileNameWithoutExtension output) + ".*")
+                                   (Path.GetFileNameWithoutExtension output) + ".*",
+                                   SearchOption.AllDirectories)
           |> Seq.iter (fun f -> try File.Delete f
                                 with // occasionally the dll file is locked by another process
                                 | :? System.UnauthorizedAccessException

@@ -526,7 +526,7 @@ type AltCoverTests3() =
       try
         Visitor.inputDirectories.Clear()
         let options = Main.DeclareOptions()
-        let unique = Guid.NewGuid().ToString().Replace("-", "*")
+        let unique = Guid.NewGuid().ToString()
         let input = [| "-i"; unique; "-i"; unique |]
         let parse = CommandLine.ParseCommandLine input options
         match parse with
@@ -592,7 +592,7 @@ type AltCoverTests3() =
       try
         Visitor.outputDirectories.Clear()
         let options = Main.DeclareOptions()
-        let unique = Guid.NewGuid().ToString().Replace("-", "*")
+        let unique = Guid.NewGuid().ToString()
         let input = [| "-o"; unique; "-o"; unique |]
         let parse = CommandLine.ParseCommandLine input options
         match parse with
