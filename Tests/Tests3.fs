@@ -526,14 +526,16 @@ type AltCoverTests3() =
       try
         Visitor.inputDirectories.Clear()
         let options = Main.DeclareOptions()
-        let unique = Guid.NewGuid().ToString()
-        let input = [| "-i"; unique; "-i"; unique |]
+        let here = Path.GetFullPath(".")
+        let input = [| "-i"; here; "-i"; here |]
         let parse = CommandLine.ParseCommandLine input options
         match parse with
         | Right _ -> Assert.Fail()
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
+          Assert.That(CommandLine.error,
+                      Is.EquivalentTo ([here + " was already specified for --inputDirectory"]))
       finally
         Visitor.inputDirectories.Clear()
 
@@ -600,6 +602,8 @@ type AltCoverTests3() =
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
+          Assert.That(CommandLine.error,
+                      Is.EquivalentTo ([Path.GetFullPath(unique) + " was already specified for --outputDirectory"]))
       finally
         Visitor.outputDirectories.Clear()
 
