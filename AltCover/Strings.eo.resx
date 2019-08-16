@@ -118,10 +118,10 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="i|inputDirectory=" xml:space="preserve">
-    <value>Laŭvola: La dosierujo enhavanta asembleojn al instrumento (defaŭlta: aktuala dosierujo)</value>
+    <value>Laŭvola, multobla: Dosierujo enhavanta asembleojn al instrumento (defaŭlta: aktuala dosierujo)</value>
   </data>
   <data name="o|outputDirectory=" xml:space="preserve">
-    <value>Laŭvola: La dosierujo ricevi la instrumentajn asembleojn kaj iliajn kunulojn (defaŭlte: sub-dosierujo '__Instrumented' de la aktuala dosierujo; aŭ '__Saved' se '--inplace' estas aro).
+    <value>Laŭvola, multobla: Dosierujo ricevi la instrumentajn asembleojn kaj iliajn kunulojn (defaŭlte: sub-dosierujo '__Instrumented' de la aktuala dosierujo; aŭ '__Saved' se '--inplace' estas aro).
 Vidu ankaŭ '--inplace'</value>
   </data>
   <data name="k|key=" xml:space="preserve">

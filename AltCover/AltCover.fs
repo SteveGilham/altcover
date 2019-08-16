@@ -27,8 +27,8 @@ module internal Main =
     Visitor.inputDirectories.Clear()
     Visitor.outputDirectories.Clear()
     ProgramDatabase.SymbolFolders.Clear()
-#if NETCOREAPP2_0
     Instrument.ResolutionTable.Clear()
+#if NETCOREAPP2_0
 #else
     Visitor.keys.Clear()
     Visitor.defaultStrongNameKey <- None
@@ -115,17 +115,20 @@ module internal Main =
        (fun x ->
        if CommandLine.ValidateDirectory "--symbolDirectory" x then
          ProgramDatabase.SymbolFolders.Add x))
-#if NETCOREAPP2_0
       ("d|dependency=",
        (fun x ->
-       let path =
-         x
-         |> Environment.ExpandEnvironmentVariables
-         |> Path.GetFullPath
+       CommandLine.doPathOperation
+         (fun _ ->
+         let path =
+           x
+           |> Environment.ExpandEnvironmentVariables
+           |> Path.GetFullPath
 
-       let name, ok = CommandLine.ValidateAssembly "--dependency" path
-       if ok then
-         Instrument.ResolutionTable.[name] <- AssemblyDefinition.ReadAssembly path))
+         let name, ok = CommandLine.ValidateAssembly "--dependency" path
+         if ok then
+           Instrument.ResolutionTable.[name] <- AssemblyDefinition.ReadAssembly path) ()
+         false))
+#if NETCOREAPP2_0
 #else
       ("k|key=",
        (fun x ->
@@ -236,7 +239,7 @@ module internal Main =
       (CommandLine.ddFlag "dropReturnCode" CommandLine.dropReturnCode)
       (CommandLine.ddFlag "sourcelink" Visitor.sourcelink)
       ("defer:",
-       fun x ->
+       (fun x ->
          if !Visitor.defer = None then
            Visitor.defer := if String.IsNullOrWhiteSpace x then Some true
                             else
@@ -263,7 +266,7 @@ module internal Main =
              String.Format
                (CultureInfo.CurrentCulture,
                 CommandLine.resources.GetString "MultiplesNotAllowed", "--defer")
-             :: CommandLine.error)
+             :: CommandLine.error))
       ("?|help|h", (fun x -> CommandLine.help <- not (isNull x)))
 
       ("<>",

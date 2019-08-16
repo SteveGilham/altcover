@@ -390,13 +390,7 @@ module internal Args =
     [ ItemList "-i" args.InputDirectories
       ItemList "-o" args.OutputDirectories
       ItemList "-y" args.SymbolDirectories
-      ItemList "-d"
-#if RUNNER
-                    args.Dependencies
-#else
-                    (if e = Framework then [] else args.Dependencies)
-#endif
-
+      ItemList "-d" args.Dependencies
       ItemList "-k"
 #if RUNNER
                     args.Keys

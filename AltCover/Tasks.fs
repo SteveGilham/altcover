@@ -56,8 +56,8 @@ type Prepare() =
   member val InputDirectories : string array = [||] with get, set
   member val OutputDirectories : string array = [||] with get, set
   member val SymbolDirectories : string array = [||] with get, set
-#if NETCOREAPP2_0
   member val Dependencies : string array = [||] with get, set
+#if NETCOREAPP2_0
 #else
   member val Keys : string array = [| |] with get, set
   member val StrongNameKey = String.Empty with get, set
@@ -92,12 +92,11 @@ type Prepare() =
       FSApi.PrepareParams.Primitive { InputDirectories = self.InputDirectories
                                       OutputDirectories = self.OutputDirectories
                                       SymbolDirectories = self.SymbolDirectories
-#if NETCOREAPP2_0
                                       Dependencies = self.Dependencies
+#if NETCOREAPP2_0
                                       Keys = []
                                       StrongNameKey = String.Empty
 #else
-                                      Dependencies = []
                                       Keys = self.Keys
                                       StrongNameKey = self.StrongNameKey
 #endif

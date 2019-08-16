@@ -89,7 +89,7 @@ type AltCoverTests3() =
 #if NETCOREAPP2_0
                                             24
 #else
-                                            25
+                                            26
 #endif
                  )
       Assert.That
@@ -762,7 +762,6 @@ type AltCoverTests3() =
           Assert.That(x, Is.EqualTo "UsageError")
       finally
         ProgramDatabase.SymbolFolders.Clear()
-#if NETCOREAPP2_0
 
     [<Test>]
     member self.ParsingMultipleDependencyIsOk() =
@@ -834,6 +833,7 @@ type AltCoverTests3() =
       finally
         Visitor.defaultStrongNameKey <- None
         Visitor.keys.Clear()
+#if NETCOREAPP2_0
 #else
     [<Test>]
     member self.ParsingStrongNameGivesStrongName() =
@@ -1973,23 +1973,23 @@ type AltCoverTests3() =
         CommandLine.Usage("UsageError", options, empty)
         let result = stderr.ToString().Replace("\r\n", "\n")
         let expected = """Error - usage is:
-  -i, --inputDirectory=VALUE Optional: The folder containing assemblies to
-                               instrument (default: current directory)
+  -i, --inputDirectory=VALUE Optional, multiple: A folder containing assemblies
+                               to instrument (default: current directory)
   -o, --outputDirectory=VALUE
-                             Optional: The folder to receive the instrumented
-                               assemblies and their companions (default: sub-
-                               folder '__Instrumented' of the current directory;
-                                or '__Saved' if '--inplace' is set).
+                             Optional, multiple: A folder to receive the
+                               instrumented assemblies and their companions (
+                               default: sub-folder '__Instrumented' of the
+                               current directory; or '__Saved' if '--inplace'
+                               is set).
                                See also '--inplace'
   -y, --symbolDirectory=VALUE
                              Optional, multiple: Additional directory to search
                                for matching symbols for the assemblies in the
                                input directory
-"""
-#if NETCOREAPP2_0
-                     + """  -d, --dependency=VALUE     Optional,multiple: assembly path to resolve
+  -d, --dependency=VALUE     Optional, multiple: assembly path to resolve
                                missing reference.
 """
+#if NETCOREAPP2_0
 #else
                      + """  -k, --key=VALUE            Optional, multiple: any other strong-name key to
                                use
@@ -2081,23 +2081,23 @@ or
         let result = stderr.ToString().Replace("\r\n", "\n")
         let expected = "\"-i\" \"" + unique + "\"\n" + "--inputDirectory : Directory "
                        + unique + " not found\n" + """Error - usage is:
-  -i, --inputDirectory=VALUE Optional: The folder containing assemblies to
-                               instrument (default: current directory)
+  -i, --inputDirectory=VALUE Optional, multiple: A folder containing assemblies
+                               to instrument (default: current directory)
   -o, --outputDirectory=VALUE
-                             Optional: The folder to receive the instrumented
-                               assemblies and their companions (default: sub-
-                               folder '__Instrumented' of the current directory;
-                                or '__Saved' if '--inplace' is set).
+                             Optional, multiple: A folder to receive the
+                               instrumented assemblies and their companions (
+                               default: sub-folder '__Instrumented' of the
+                               current directory; or '__Saved' if '--inplace'
+                               is set).
                                See also '--inplace'
   -y, --symbolDirectory=VALUE
                              Optional, multiple: Additional directory to search
                                for matching symbols for the assemblies in the
                                input directory
-"""
-#if NETCOREAPP2_0
-                     + """  -d, --dependency=VALUE     Optional,multiple: assembly path to resolve
+  -d, --dependency=VALUE     Optional, multiple: assembly path to resolve
                                missing reference.
 """
+#if NETCOREAPP2_0
 #else
                      + """  -k, --key=VALUE            Optional, multiple: any other strong-name key to
                                use

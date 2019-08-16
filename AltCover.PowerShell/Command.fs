@@ -73,12 +73,12 @@ type InvokeAltCoverCommand(runner : bool) =
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
   [<Alias("SymbolDirectories")>]
   member val SymbolDirectory : string array = [||] with get, set
-#if NETCOREAPP2_0
 
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
   [<Alias("Dependencies")>]
   member val Dependency : string array = [||] with get, set
+#if NETCOREAPP2_0
 #else
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
       ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
@@ -190,12 +190,11 @@ type InvokeAltCoverCommand(runner : bool) =
     FSApi.PrepareParams.Primitive { InputDirectories = self.InputDirectory
                                     OutputDirectories = self.OutputDirectory
                                     SymbolDirectories = self.SymbolDirectory
-#if NETCOREAPP2_0
                                     Dependencies = self.Dependency
+#if NETCOREAPP2_0
                                     Keys = []
                                     StrongNameKey = String.Empty
 #else
-                                    Dependencies = []
                                     Keys = self.Key;
                                     StrongNameKey = self.StrongNameKey;
 #endif
