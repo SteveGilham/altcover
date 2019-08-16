@@ -68,8 +68,8 @@ type internal GoTo =
 
 [<ExcludeFromCodeCoverage; NoComparison>]
 type internal Node =
-  | Start of seq<string>
-  | Assembly of AssemblyDefinition * Inspect
+  | Start of seq<string * string list>
+  | Assembly of AssemblyDefinition * Inspect * string list
   | Module of ModuleDefinition * Inspect
   | Type of TypeDefinition * Inspect
   | Method of MethodDefinition * Inspect * (int * string) option
@@ -78,12 +78,12 @@ type internal Node =
   | AfterMethod of MethodDefinition * Inspect * (int * string) option
   | AfterType
   | AfterModule
-  | AfterAssembly of AssemblyDefinition
+  | AfterAssembly of AssemblyDefinition * string list
   | Finish
   member this.After() =
     (match this with
      | Start _ -> [ Finish ]
-     | Assembly(a, _) -> [ AfterAssembly a ]
+     | Assembly(a, _, l) -> [ AfterAssembly (a, l) ]
      | Module _ -> [ AfterModule ]
      | Type _ -> [ AfterType ]
      | Method(m, included, track) -> [ AfterMethod(m, included, track) ]
@@ -169,22 +169,28 @@ module internal Visitor =
                          then OpCodes.Ldc_I4_1
                          else OpCodes.Ldc_I4_0
 
-  let mutable internal inputDirectory : Option<string> = None
+  let internal inputDirectories = List<string>()
   let private defaultInputDirectory = "."
-  let InputDirectory() =
-    Path.GetFullPath(Option.getOrElse defaultInputDirectory inputDirectory)
+  let InputDirectories() = if inputDirectories.Any()
+                           then inputDirectories :> string seq
+                           else [ defaultInputDirectory ] |> List.toSeq
+                           |> Seq.map Path.GetFullPath
+                           |> Seq.toList
 
   let inplaceSelection a b =
     if !inplace then a
     else b
 
-  let mutable internal outputDirectory : Option<string> = None
-  let private defaultOutputDirectory() = inplaceSelection "__Saved" "__Instrumented"
-  let OutputDirectory() =
-    Path.GetFullPath(Option.getOrElse (defaultOutputDirectory()) outputDirectory)
+  let internal outputDirectories = List<string>()
+  let private defaultOutputDirectory _ = inplaceSelection "__Saved" "__Instrumented"
+  let OutputDirectories() = let paired = InputDirectories()
+                            Seq.append (outputDirectories :> string seq) (Seq.initInfinite defaultOutputDirectory)
+                            |> Seq.zip paired
+                            |> Seq.map (fun (i, o) -> Path.Combine(i, o) |> Path.GetFullPath)
+                            |> Seq.toList
 
-  let InstrumentDirectory() = (inplaceSelection InputDirectory OutputDirectory)()
-  let SourceDirectory() = (inplaceSelection OutputDirectory InputDirectory)()
+  let InstrumentDirectories() = (inplaceSelection InputDirectories OutputDirectories)()
+  let SourceDirectories() = (inplaceSelection OutputDirectories InputDirectories)()
 
   let mutable internal reportPath : Option<string> = None
   let defaultReportPath = "coverage.xml"
@@ -311,23 +317,24 @@ module internal Visitor =
 
   let private accumulator = HashSet<AssemblyDefinition>()
 
-  let private StartVisit (paths : seq<string>) buildSequence =
+  let private StartVisit (paths : seq<string * string list>) buildSequence =
     paths
-    |> Seq.collect (AssemblyDefinition.ReadAssembly
-                    >> (fun x ->
-                    x
-                    |> accumulator.Add
-                    |> ignore
-                    // Reject completely if filtered here
-                    let inspection = IsIncluded x
+    |> Seq.collect (fun (path, targets) -> path
+                                           |> (AssemblyDefinition.ReadAssembly
+                                                >> (fun x ->
+                                                x
+                                                |> accumulator.Add
+                                                |> ignore
+                                                // Reject completely if filtered here
+                                                let inspection = IsIncluded x
 
-                    let included =
-                      inspection ||| if inspection = Inspect.Instrument
-                                        && ReportFormat() = Base.ReportFormat.OpenCoverWithTracking then
-                                       Inspect.Track
-                                     else Inspect.Ignore
-                    ProgramDatabase.ReadSymbols(x)
-                    Assembly(x, included))
+                                                let included =
+                                                  inspection ||| if inspection = Inspect.Instrument
+                                                                    && ReportFormat() = Base.ReportFormat.OpenCoverWithTracking then
+                                                                   Inspect.Track
+                                                                 else Inspect.Ignore
+                                                ProgramDatabase.ReadSymbols(x)
+                                                Assembly(x, included, targets)))
                     >> buildSequence)
 
   let private VisitAssembly (a : AssemblyDefinition) included buildSequence =
@@ -754,7 +761,7 @@ module internal Visitor =
     // The pattern here is map x |> map y |> map x |> concat => collect (x >> y >> z)
     match node with
     | Start paths -> StartVisit paths BuildSequence
-    | Assembly(a, included) -> VisitAssembly a included BuildSequence
+    | Assembly(a, included, _) -> VisitAssembly a included BuildSequence
     | Module(x, included) -> VisitModule x included BuildSequence
     | Type(t, included) -> VisitType t included BuildSequence
     | Method(m, included, _) -> VisitMethod m included
@@ -769,7 +776,7 @@ module internal Visitor =
   let internal apply (visitors : list<Fix<Node>>) (node : Node) =
     visitors |> List.map (invoke node)
 
-  let internal Visit (visitors : seq<Fix<Node>>) (assemblies : seq<string>) =
+  let internal Visit (visitors : seq<Fix<Node>>) (assemblies : seq<string * string list>) =
     ZeroPoints()
     MethodNumber <- 0
     try

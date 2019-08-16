@@ -231,8 +231,8 @@ module XTests =
     let here = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
 
     let subject =
-      { Primitive.PrepareParams.Create() with InputDirectory = here
-                                              OutputDirectory = here
+      { Primitive.PrepareParams.Create() with InputDirectories = [| here |]
+                                              OutputDirectories = [| here |]
                                               SymbolDirectories = [| here |]
                                               Dependencies =
                                                 [| Assembly.GetExecutingAssembly().Location |]
@@ -254,9 +254,12 @@ module XTests =
     let here = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
 
     let subject =
-      { TypeSafe.PrepareParams.Create() with InputDirectory = TypeSafe.DirectoryPath here
-                                             OutputDirectory =
-                                               TypeSafe.DInfo(DirectoryInfo(here))
+      { TypeSafe.PrepareParams.Create() with InputDirectories =
+                                               TypeSafe.DirectoryPaths
+                                                  [| TypeSafe.DirectoryPath here |]
+                                             OutputDirectories =
+                                               TypeSafe.DirectoryPaths
+                                                [| TypeSafe.DInfo(DirectoryInfo(here)) |]
                                              SymbolDirectories =
                                                TypeSafe.DirectoryPaths
                                                  [| TypeSafe.DirectoryPath here |]
@@ -284,9 +287,10 @@ module XTests =
     let here = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
 
     let subject =
-      { TypeSafe.PrepareParams.Create() with InputDirectory = TypeSafe.DirectoryPath here
-                                             OutputDirectory =
-                                               TypeSafe.DInfo(DirectoryInfo(here))
+      { TypeSafe.PrepareParams.Create() with InputDirectories =
+                                               TypeSafe.DirectoryPaths [| TypeSafe.DirectoryPath here |]
+                                             OutputDirectories =
+                                               TypeSafe.DirectoryPaths [| TypeSafe.DInfo(DirectoryInfo(here)) |]
                                              SymbolDirectories =
                                                TypeSafe.DirectoryPaths
                                                  [| TypeSafe.DirectoryPath here |]
@@ -421,8 +425,8 @@ module XTests =
     Directory.CreateDirectory unique' |> ignore
     let report = Path.Combine(unique', "ADotNetDryRunLooksAsExpected.xml")
     let output = Path.Combine(Path.GetDirectoryName(where), unique)
-    let outputSaved = Visitor.outputDirectory
-    let inputSaved = Visitor.inputDirectory
+    let outputSaved = Visitor.outputDirectories |> Seq.toList
+    let inputSaved = Visitor.inputDirectories |> Seq.toList
     let reportSaved = Visitor.reportPath
     let keySaved = Visitor.defaultStrongNameKey
     let saved = (Console.Out, Console.Error)
@@ -455,9 +459,9 @@ module XTests =
       Assert.Equal
         (stdout.ToString().Replace("\r\n", "\n").Replace("\\", "/"),
          (expected.Replace("\\", "/")))
-      Assert.Equal(Visitor.OutputDirectory(), output)
+      Assert.Equal(Visitor.OutputDirectories() |> Seq.head, output)
       Assert.Equal
-        (Visitor.InputDirectory().Replace("\\", "/"),
+        ((Visitor.InputDirectories() |> Seq.head).Replace("\\", "/"),
          ((Path.GetFullPath input).Replace("\\", "/")))
       Assert.Equal(Visitor.ReportPath(), report)
       use stream = new FileStream(key, FileMode.Open)
@@ -530,8 +534,10 @@ module XTests =
       Output.Usage("dummy", OptionSet(), OptionSet())
       Visitor.TrackingNames.Clear()
       Visitor.reportFormat <- None
-      Visitor.outputDirectory <- outputSaved
-      Visitor.inputDirectory <- inputSaved
+      Visitor.outputDirectories.Clear()
+      Visitor.inputDirectories.Clear()
+      Visitor.outputDirectories.AddRange outputSaved
+      Visitor.inputDirectories.AddRange inputSaved
       Visitor.reportPath <- reportSaved
       Visitor.defaultStrongNameKey <- keySaved
       Console.SetOut(fst saved)
@@ -606,8 +612,8 @@ module XTests =
     Directory.CreateDirectory unique' |> ignore
     let report = Path.Combine(unique', "ADryRunLooksAsExpected.xml")
     let output = Path.Combine(Path.GetDirectoryName(where), unique)
-    let outputSaved = Visitor.outputDirectory
-    let inputSaved = Visitor.inputDirectory
+    let outputSaved = Visitor.outputDirectories |> Seq.toList
+    let inputSaved = Visitor.inputDirectories |> Seq.toList
     let reportSaved = Visitor.reportPath
     let keySaved = Visitor.defaultStrongNameKey
     let saved = (Console.Out, Console.Error)
@@ -638,9 +644,9 @@ module XTests =
       let console = stdout.ToString()
       Assert.Equal
         (console.Replace("\r\n", "\n").Replace("\\", "/"), (expected.Replace("\\", "/")))
-      Assert.Equal(Visitor.OutputDirectory(), output)
+      Assert.Equal(Visitor.OutputDirectories() |> Seq.head, output)
       Assert.Equal
-        (Visitor.InputDirectory().Replace("\\", "/"),
+        ((Visitor.InputDirectories() |> Seq.head).Replace("\\", "/"),
          ((Path.GetFullPath input).Replace("\\", "/")))
       Assert.Equal(Visitor.ReportPath(), report)
       use stream = new FileStream(key, FileMode.Open)
@@ -702,8 +708,10 @@ module XTests =
       let recordedXml = Runner.LoadReport report
       RecursiveValidate (recordedXml.Elements()) (expectedXml.Elements()) 0 true
     finally
-      Visitor.outputDirectory <- outputSaved
-      Visitor.inputDirectory <- inputSaved
+      Visitor.outputDirectories.Clear()
+      Visitor.inputDirectories.Clear()
+      Visitor.outputDirectories.AddRange outputSaved
+      Visitor.inputDirectories.AddRange inputSaved
       Visitor.reportPath <- reportSaved
       Visitor.defaultStrongNameKey <- keySaved
       Console.SetOut(fst saved)
@@ -727,10 +735,11 @@ module XTests =
     let unique = Guid.NewGuid().ToString()
     let output = Path.Combine(Path.GetDirectoryName(where), unique)
     Directory.CreateDirectory(output) |> ignore
-    let saved = Visitor.outputDirectory
+    let saved = Visitor.outputDirectories |> Seq.toList
     try
-      Visitor.outputDirectory <- Some output
-      let visited = Node.AfterAssembly def
+      Visitor.outputDirectories.Clear()
+      Visitor.outputDirectories.Add output
+      let visited = Node.AfterAssembly (def, Visitor.OutputDirectories())
       let input = InstrumentContext.Build []
       let result = Instrument.InstrumentationVisitor input visited
       Assert.Same(result, input) //, "result differs")
@@ -750,7 +759,7 @@ module XTests =
            || File.Exists(Path.ChangeExtension(created, ".pdb")),
            created + " pdb not found")
     finally
-      Visitor.outputDirectory <- saved
+      Visitor.outputDirectories.AddRange saved
 
   [<Fact>]
   let AfterAssemblyCommitsThatAssemblyForMono() =
@@ -774,10 +783,11 @@ module XTests =
     let unique = Guid.NewGuid().ToString()
     let output = Path.Combine(Path.GetDirectoryName(where), unique)
     Directory.CreateDirectory(output) |> ignore
-    let saved = Visitor.outputDirectory
+    let saved = Visitor.outputDirectories |> Seq.toList
     try
-      Visitor.outputDirectory <- Some output
-      let visited = Node.AfterAssembly def
+      Visitor.outputDirectories.Clear()
+      Visitor.outputDirectories.AddRange [ output ]
+      let visited = Node.AfterAssembly (def, Visitor.OutputDirectories())
       let input = InstrumentContext.Build []
       let result = Instrument.InstrumentationVisitor input visited
       Assert.Same(result, input) //, "result differs")
@@ -787,7 +797,8 @@ module XTests =
       if isDotNet then
         Assert.True(File.Exists(created + ".mdb"), created + ".mdb not found")
     finally
-      Visitor.outputDirectory <- saved
+      Visitor.outputDirectories.Clear()
+      Visitor.outputDirectories.AddRange saved
 
   [<Fact>]
   let FinishCommitsTheRecordingAssembly() =
@@ -804,9 +815,10 @@ module XTests =
     let unique = Guid.NewGuid().ToString()
     let output = Path.Combine(Path.GetDirectoryName(where), unique)
     Directory.CreateDirectory(output) |> ignore
-    let saved = Visitor.outputDirectory
+    let saved = Visitor.outputDirectories |> Seq.toList
     try
-      Visitor.outputDirectory <- Some output
+      Visitor.outputDirectories.Clear()
+      Visitor.outputDirectories.Add output
       let input = { InstrumentContext.Build [] with RecordingAssembly = def }
       let result = Instrument.InstrumentationVisitor input Finish
       Assert.True(result.RecordingAssembly |> isNull)
@@ -828,7 +840,8 @@ module XTests =
 #endif
 
     finally
-      Visitor.outputDirectory <- saved
+      Visitor.outputDirectories.Clear()
+      Visitor.outputDirectories.AddRange saved
 
   [<Fact>]
   let ShouldDoCoverage() =
@@ -916,7 +929,7 @@ module XTests =
 #else
     let path' = path
 #endif
-    Visitor.Visit [ visitor ] (Visitor.ToSeq path')
+    Visitor.Visit [ visitor ] (Visitor.ToSeq (path',[]))
     let baseline = XDocument.Load(new System.IO.StringReader(MonoBaseline))
     let result = document.Elements()
     let expected = baseline.Elements()
@@ -942,7 +955,7 @@ module XTests =
     try
       Visitor.NameFilters.Clear()
       Visitor.reportFormat <- Some Base.ReportFormat.OpenCover
-      Visitor.Visit [ visitor ] (Visitor.ToSeq path')
+      Visitor.Visit [ visitor ] (Visitor.ToSeq (path',[]))
       let resource =
         Assembly.GetExecutingAssembly().GetManifestResourceNames()
         |> Seq.find

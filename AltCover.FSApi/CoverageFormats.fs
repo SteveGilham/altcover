@@ -46,7 +46,9 @@ module CoverageFormats =
            XmlUtilities.AssemblyNameWithFallback p (Path.GetFileNameWithoutExtension p)
          paths.Add(p, a))
     let usefulAssemblies =
-      assemblies |> Seq.filter (fun p -> identities.ContainsKey paths.[p])
+      assemblies
+      |> Seq.filter (fun p -> identities.ContainsKey paths.[p])
+      |> Seq.map (fun p -> (p,[]))
 
     // ensure default state -- this switches branch recording off
     AltCover.Main.init()

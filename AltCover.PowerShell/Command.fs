@@ -61,11 +61,13 @@ type InvokeAltCoverCommand(runner : bool) =
 
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  member val InputDirectory = String.Empty with get, set
+  [<Alias("InputDirectories")>]
+  member val InputDirectory : string array = [||] with get, set
 
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  member val OutputDirectory = String.Empty with get, set
+  [<Alias("OutputDirectories")>]
+  member val OutputDirectory : string array = [||] with get, set
 
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
@@ -185,8 +187,8 @@ type InvokeAltCoverCommand(runner : bool) =
                                     SummaryFormat = formats.[self.SummaryFormat |> int]}
 
   member private self.Prepare() =
-    FSApi.PrepareParams.Primitive { InputDirectory = self.InputDirectory
-                                    OutputDirectory = self.OutputDirectory
+    FSApi.PrepareParams.Primitive { InputDirectories = self.InputDirectory
+                                    OutputDirectories = self.OutputDirectory
                                     SymbolDirectories = self.SymbolDirectory
 #if NETCOREAPP2_0
                                     Dependencies = self.Dependency
