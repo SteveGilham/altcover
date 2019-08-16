@@ -631,7 +631,7 @@ module internal Instrument =
                           String.Format
                             (System.Globalization.CultureInfo.CurrentCulture,
                              CommandLine.resources.GetString "instrumented", definition, pathn) |> sink
-                          File.Copy(first, pathn))
+                          File.Copy(first, pathn, true))
 
   let private FinishVisit(state : InstrumentContext) =
     try

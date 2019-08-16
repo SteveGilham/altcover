@@ -46,7 +46,7 @@ let AltCoverFilterX(p : Primitive.PrepareParams) =
            AssemblyFilter =
              [ "Mono"; @"\.Recorder"; @"\.DataCollector"; "Sample"; "nunit"; "Newton"; "xunit"; "BlackFox" ]
              @ (p.AssemblyFilter |> Seq.toList)
-           TypeFilter = [ @"System\."; @"Sample3\.Class2" ] @ (p.TypeFilter |> Seq.toList) }
+           TypeFilter = [ @"System\."; @"Sample3\.Class2"; "Tests" ] @ (p.TypeFilter |> Seq.toList) }
 
 let AltCoverFilterG(p : Primitive.PrepareParams) =
   { p with MethodFilter = "WaitForExitCustom" :: (p.MethodFilter |> Seq.toList)
@@ -694,16 +694,18 @@ _Target "UnitTestWithAltCover" (fun _ ->
                   ShadowCopy = false })
 
     let altReport = reports @@ "UnitTestWithAltCover.xml"
+    let weakDir = Path.getFullName "_Binaries/AltCover.WeakNameTests/Debug+AnyCPU"
     printfn "Instrumented the code"
     let prep =
       AltCover.PrepareParams.Primitive
         ({ Primitive.PrepareParams.Create() with XmlReport = altReport
-                                                 OutputDirectories = [| "./__UnitTestWithAltCover" |]
+                                                 InputDirectories = [| "."; weakDir|]
+                                                 OutputDirectories = [| "./__UnitTestWithAltCover"; weakDir @@ "__WeakNameTestWithAltCover" |]
                                                  StrongNameKey = keyfile
                                                  OpenCover = false
                                                  InPlace = false
                                                  Save = false }
-        |> AltCoverFilter)
+        |> AltCoverFilterX)
       |> AltCover.Prepare
     { AltCover.Params.Create prep with ToolPath = altcover
                                        ToolType = AltCover.ToolType.Framework
@@ -720,6 +722,7 @@ _Target "UnitTestWithAltCover" (fun _ ->
     printfn "Unit test the instrumented code"
     try
       [ !!"_Binaries/AltCover.Tests/Debug+AnyCPU/__UnitTestWithAltCover/*.Tests.dll"
+        !!"_Binaries/AltCover.WeakNameTests/Debug+AnyCPU/__WeakNameTestWithAltCover/Alt*Test*.dll"
         !!"_Binaries/AltCover.Tests/Debug+AnyCPU/__UnitTestWithAltCover/*ple2.dll" ]
       |> Seq.concat
       |> Seq.distinct
@@ -730,32 +733,6 @@ _Target "UnitTestWithAltCover" (fun _ ->
     with x ->
       printfn "%A" x
       reraise()
-
-    printfn "Instrument the weakname tests"
-    let weakDir = Path.getFullName "_Binaries/AltCover.WeakNameTests/Debug+AnyCPU"
-    let weakReport = reports @@ "WeakNameTestWithAltCover.xml"
-
-    let prep =
-      AltCover.PrepareParams.Primitive
-        ({ Primitive.PrepareParams.Create() with XmlReport = weakReport
-                                                 OutputDirectories =
-                                                   [| "./__WeakNameTestWithAltCover" |]
-                                                 StrongNameKey = keyfile
-                                                 InPlace = false
-                                                 Save = false }
-          |> AltCoverFilter)
-      |> AltCover.Prepare
-    { AltCover.Params.Create prep with ToolPath = altcover
-                                       ToolType = AltCover.ToolType.Framework
-                                       WorkingDirectory = weakDir }
-    |> AltCover.run
-
-    printfn "Execute the weakname tests"
-    !!("_Binaries/AltCover.WeakNameTests/Debug+AnyCPU/__WeakNameTestWithAltCover/Alt*Test*.dll")
-    |> NUnit3.run (fun p ->
-         { p with ToolPath = Tools.findToolInSubPath "nunit3-console.exe" "."
-                  WorkingDir = "."
-                  ResultSpecs = [ "./_Reports/WeakNameTestWithAltCoverReport.xml" ] })
 
     printfn "Instrument the shadow tests"
     let shadowDir = Path.getFullName "_Binaries/AltCover.Shadow.Tests/Debug+AnyCPU"
@@ -788,7 +765,7 @@ _Target "UnitTestWithAltCover" (fun _ ->
                ReportTypes =
                  [ ReportGenerator.ReportType.Html; ReportGenerator.ReportType.XmlSummary ]
                TargetDir = "_Reports/_UnitTestWithAltCover" })
-      [ xaltReport; altReport; weakReport; shadowReport ]
+      [ xaltReport; altReport; shadowReport ]
   else printfn "Symbols not present; skipping")
 
 _Target "UnitTestWithAltCoverRunner" (fun _ ->
@@ -3456,7 +3433,7 @@ _Target "BulkReport" (fun _ ->
      |> List.tryFind (fun n -> n <= 99.0)
      |> Option.isSome
      || !misses > 1
-  then Assert.Fail("Coverage is too low"))                
+  then Assert.Fail("Coverage is too low"))
 
 _Target "All" ignore
 
