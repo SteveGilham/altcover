@@ -89,6 +89,8 @@ module internal Internals =
       FromArg "LcovReport" collect.LcovReport
       FromArg "Cobertura" collect.Cobertura
       FromArg "Threshold" collect.Threshold
+      FromArg "StrongNameKey" prepare.StrongNameKey
+      FromList "Keys" prepare.Keys
       (Arg "LineCover" "true", prepare.LineCover)
       (Arg "BranchCover" "true", prepare.BranchCover)
       (Arg "Force" "true", force.ForceDelete)

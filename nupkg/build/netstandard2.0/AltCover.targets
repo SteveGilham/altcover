@@ -39,6 +39,8 @@
     <AltCover.Prepare
       InputDirectories="@(InputDirectory)"
       OutputDirectories="@(OutputDirectory)"
+      StrongNameKey="$(AltCoverStrongNameKey)"
+      Keys="$(AltCoverKeys.Split('|'))"
       XmlReport="$(AltCoverXmlReport)"
       OpenCover="$(AltCoverOpenCover)"
       FileFilter="$(AltCoverFileFilter.Replace('\',%00).Split('|'))"

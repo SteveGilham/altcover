@@ -57,11 +57,8 @@ type Prepare() =
   member val OutputDirectories : string array = [||] with get, set
   member val SymbolDirectories : string array = [||] with get, set
   member val Dependencies : string array = [||] with get, set
-#if NETCOREAPP2_0
-#else
   member val Keys : string array = [| |] with get, set
   member val StrongNameKey = String.Empty with get, set
-#endif
   member val XmlReport = String.Empty with get, set
   member val FileFilter : string array = [||] with get, set
   member val AssemblyFilter : string array = [||] with get, set
@@ -93,13 +90,8 @@ type Prepare() =
                                       OutputDirectories = self.OutputDirectories
                                       SymbolDirectories = self.SymbolDirectories
                                       Dependencies = self.Dependencies
-#if NETCOREAPP2_0
-                                      Keys = []
-                                      StrongNameKey = String.Empty
-#else
                                       Keys = self.Keys
                                       StrongNameKey = self.StrongNameKey
-#endif
                                       XmlReport = self.XmlReport
                                       FileFilter = self.FileFilter
                                       AssemblyFilter = self.AssemblyFilter
