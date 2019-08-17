@@ -10,7 +10,6 @@ open System.Collections.Generic
 open System.Diagnostics.CodeAnalysis
 open System.IO
 open System.Linq
-open System.Reflection
 open System.Text.RegularExpressions
 
 open AltCover.Augment
@@ -93,7 +92,7 @@ type internal Node =
 [<ExcludeFromCodeCoverage; NoComparison>]
 type internal StrongNameKeyData =
     {
-      Pair : StrongNameKeyPair
+      Blob : byte list
       Parameters : System.Security.Cryptography.RSAParameters
     }
     member this.PublicKey
@@ -140,13 +139,14 @@ type internal StrongNameKeyData =
     static member Make (data : byte array) =
       use csp = new System.Security.Cryptography.RSACryptoServiceProvider()
       csp.ImportCspBlob(data)
+      let blob = csp.ExportCspBlob(true)
       {
-        Pair = StrongNameKeyPair(csp.ExportCspBlob(true))
+        Blob = blob |> Array.toList
         Parameters = csp.ExportParameters(true)
       }
     static member Empty () =
      {
-        Pair = null
+        Blob = []
         Parameters = System.Security.Cryptography.RSAParameters()
      }
 

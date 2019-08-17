@@ -1019,7 +1019,7 @@ type AltCoverTests() =
 #if NETCOREAPP2_0
 #else
       let computed = pair.PublicKey
-      let definitive = pair.Pair.PublicKey
+      let definitive = StrongNameKeyPair(pair.Blob |> List.toArray).PublicKey
       Assert.That(computed, Is.EquivalentTo definitive)
 #endif
 
