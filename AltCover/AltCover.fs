@@ -28,8 +28,7 @@ module internal Main =
     Visitor.outputDirectories.Clear()
     ProgramDatabase.SymbolFolders.Clear()
     Instrument.ResolutionTable.Clear()
-#if NETCOREAPP2_0
-#else
+
     Visitor.keys.Clear()
     Visitor.defaultStrongNameKey <- None
     use stream =
@@ -39,7 +38,7 @@ module internal Main =
     let snk = StrongNameKeyPair(buffer.ToArray())
     Visitor.Add snk
     Visitor.recorderStrongNameKey <- Some(snk)
-#endif
+
     Visitor.reportPath <- None
     Visitor.NameFilters.Clear()
     Visitor.interval <- None

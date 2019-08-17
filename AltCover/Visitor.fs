@@ -103,11 +103,7 @@ type internal SequenceType =
 module internal KeyStore =
   let private hash = new System.Security.Cryptography.SHA1CryptoServiceProvider()
   let private publicKeyOfKey (key : StrongNameKeyPair) =
-#if NETCOREAPP2_0
-    [||]
-#else
     key.PublicKey
-#endif
 
   let internal TokenOfArray(key : byte array) =
     hash.ComputeHash(key)
