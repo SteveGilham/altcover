@@ -1333,17 +1333,12 @@ type AltCoverTests() =
                                input directory
   -d, --dependency=VALUE     Optional, multiple: assembly path to resolve
                                missing reference.
-"""
-#if NETCOREAPP2_0
-#else
-                     + """  -k, --key=VALUE            Optional, multiple: any other strong-name key to
+  -k, --key=VALUE            Optional, multiple: any other strong-name key to
                                use
       --sn, --strongNameKey=VALUE
                              Optional: The default strong naming key to apply
                                to instrumented assemblies (default: None)
-"""
-#endif
-                     + """  -x, --xmlReport=VALUE      Optional: The output report template file (default:
+  -x, --xmlReport=VALUE      Optional: The output report template file (default:
                                 coverage.xml in the current directory)
   -f, --fileFilter=VALUE     Optional, multiple: source file name to exclude
                                from instrumentation

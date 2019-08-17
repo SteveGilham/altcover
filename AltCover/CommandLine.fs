@@ -310,15 +310,15 @@ module internal CommandLine =
       else (name, true)
     else (String.Empty, false)
 
-  let internal maybeLoadStrongNameKey x (stream : FileStream) ok =
+  let internal maybeLoadStrongNameKey x data ok =
     if ok then
-      stream.Position <- 0L
-      StrongNameKeyPair(stream)
+      StrongNameKeyData.Make data
     else NotSupportedException(x) |> raise
 
   let internal ValidateStrongNameKey key x =
     if ValidateFile key x then
       doPathOperation (fun () ->
+        let raw = File.ReadAllBytes x
         use stream =
           new System.IO.FileStream(x, System.IO.FileMode.Open, System.IO.FileAccess.Read)
         // see https://www.developerfusion.com/article/84422/the-key-to-strong-names/
@@ -346,8 +346,8 @@ module internal CommandLine =
           (keyType = 7uy) && (algorithmID
                               |> int = 0x2400) && (magic = "RSA2")
           && (stream.Position = stream.Length)
-        (maybeLoadStrongNameKey x stream ok, true)) (null, false) false
-    else (null, false)
+        (maybeLoadStrongNameKey x raw ok, true)) (StrongNameKeyData.Empty(), false) false
+    else (StrongNameKeyData.Empty(), false)
 
   let internal ValidateRegexes(x : String) =
     doPathOperation

@@ -91,8 +91,68 @@ type internal Node =
     |> List.toSeq
 
 [<ExcludeFromCodeCoverage; NoComparison>]
+type internal StrongNameKeyData =
+    {
+      Pair : StrongNameKeyPair
+      Parameters : System.Security.Cryptography.RSAParameters
+    }
+    member this.PublicKey
+      with get() =
+        let lead = [
+          0uy  // RSA
+          36uy
+          0uy
+          0uy
+          4uy  // SHA
+          128uy
+          0uy
+          0uy
+          148uy  // modulus length + 20
+          0uy
+          0uy
+          0uy
+          6uy // public key
+          2uy // version
+          0uy // zero
+          0uy
+          0uy  // RSA
+          36uy
+          0uy
+          0uy
+          82uy // "RSA1"
+          83uy
+          65uy
+          49uy
+          0uy // key bit length
+          4uy
+          0uy
+          0uy
+          ]
+          // possibly reverse exponent too?
+        let exponent = Seq.append this.Parameters.Exponent (Seq.initInfinite (fun _ -> 0uy))
+                       |> Seq.take 4
+                       |> Seq.toList
+        Seq.concat [lead
+                    exponent
+                    this.Parameters.Modulus |> Seq.toList |> List.rev ]
+        |> Seq.toArray
+
+    static member Make (data : byte array) =
+      use csp = new System.Security.Cryptography.RSACryptoServiceProvider()
+      csp.ImportCspBlob(data)
+      {
+        Pair = StrongNameKeyPair(csp.ExportCspBlob(true))
+        Parameters = csp.ExportParameters(true)
+      }
+    static member Empty () =
+     {
+        Pair = null
+        Parameters = System.Security.Cryptography.RSAParameters()
+     }
+
+[<ExcludeFromCodeCoverage; NoComparison>]
 type internal KeyRecord =
-  { Pair : StrongNameKeyPair
+  { Pair : StrongNameKeyData
     Token : byte list }
 
 [<ExcludeFromCodeCoverage; NoComparison>]
@@ -102,7 +162,7 @@ type internal SequenceType =
 
 module internal KeyStore =
   let private hash = new System.Security.Cryptography.SHA1CryptoServiceProvider()
-  let private publicKeyOfKey (key : StrongNameKeyPair) =
+  let private publicKeyOfKey (key : StrongNameKeyData) =
     key.PublicKey
 
   let internal TokenOfArray(key : byte array) =
@@ -110,7 +170,7 @@ module internal KeyStore =
     |> Array.rev
     |> Array.take 8
 
-  let internal TokenOfKey(key : StrongNameKeyPair) =
+  let internal TokenOfKey(key : StrongNameKeyData) =
     key
     |> publicKeyOfKey
     |> TokenOfArray
@@ -118,7 +178,7 @@ module internal KeyStore =
 
   let internal TokenAsULong(token : byte array) = BitConverter.ToUInt64(token, 0)
 
-  let internal KeyToIndex(key : StrongNameKeyPair) =
+  let internal KeyToIndex(key : StrongNameKeyData) =
     key
     |> TokenOfKey
     |> List.toArray
@@ -129,7 +189,7 @@ module internal KeyStore =
     |> TokenOfArray
     |> TokenAsULong
 
-  let internal KeyToRecord(key : StrongNameKeyPair) =
+  let internal KeyToRecord(key : StrongNameKeyData) =
     { Pair = key
       Token = TokenOfKey key }
 
@@ -211,11 +271,11 @@ module internal Visitor =
       ReportFormat.OpenCoverWithTracking
     else fmt
 
-  let mutable internal defaultStrongNameKey : option<StrongNameKeyPair> = None
-  let mutable internal recorderStrongNameKey : option<StrongNameKeyPair> = None
+  let mutable internal defaultStrongNameKey : option<StrongNameKeyData> = None
+  let mutable internal recorderStrongNameKey : option<StrongNameKeyData> = None
   let internal keys = new Dictionary<UInt64, KeyRecord>()
 
-  let internal Add(key : StrongNameKeyPair) =
+  let internal Add(key : StrongNameKeyData) =
     let index = KeyStore.KeyToIndex key
     keys.[index] <- KeyStore.KeyToRecord key
 

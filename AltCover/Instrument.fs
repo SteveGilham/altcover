@@ -110,7 +110,7 @@ module internal Instrument =
   /// <param name="assemblyName">The name to update</param>
   /// <param name="key">The possibly empty key to use</param>
   let internal UpdateStrongNaming (assembly : AssemblyDefinition)
-      (key : StrongNameKeyPair option) =
+      (key : StrongNameKeyData option) =
     let assemblyName = assembly.Name
     match key with
     | None ->
@@ -340,7 +340,7 @@ module internal Instrument =
     pkey.SymbolWriterProvider <- CreateSymbolWriter pdb isWindows monoRuntime
     // Also, there are no strongnames in .net core
     KnownKey assembly.Name
-    |> Option.iter (fun key -> pkey.StrongNameKeyPair <- key)
+    |> Option.iter (fun key -> pkey.StrongNameKeyPair <- key.Pair)
 #endif
 
     let here = Directory.GetCurrentDirectory()
