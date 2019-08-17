@@ -112,23 +112,16 @@ module internal Instrument =
   let internal UpdateStrongNaming (assembly : AssemblyDefinition)
       (key : StrongNameKeyPair option) =
     let assemblyName = assembly.Name
-#if NETCOREAPP2_0
-    do
-#else
     match key with
     | None ->
-#endif
        assembly.MainModule.Attributes <- assembly.MainModule.Attributes
                                          &&& (~~~ModuleAttributes.StrongNameSigned)
        assemblyName.HasPublicKey <- false
        assemblyName.PublicKey <- null
        assemblyName.PublicKeyToken <- null
-#if NETCOREAPP2_0
-#else
     | Some key' ->
        assemblyName.HasPublicKey <- true
        assemblyName.PublicKey <- key'.PublicKey // sets token implicitly
-#endif
 
   /// <summary>
   /// Locate the key, if any, which was used to name this assembly.
@@ -432,9 +425,6 @@ module internal Instrument =
     |> Seq.iter
          (fun r ->
          let original = r.ToString()
-#if NETCOREAPP2_0
-         do
-#else
          let token = KnownToken r
          let effectiveKey = match token with
                             | None -> Visitor.defaultStrongNameKey
@@ -442,15 +432,11 @@ module internal Instrument =
                             | Some _ -> token
          match effectiveKey with
          | None ->
-#endif
             r.HasPublicKey <- false
             r.PublicKeyToken <- null
             r.PublicKey <- null
-#if NETCOREAPP2_0
-#else
          | Some key -> r.HasPublicKey <- true
                        r.PublicKey <- key.Pair.PublicKey // implicitly sets token
-#endif
 
          let updated = r.ToString()
          if not <| updated.Equals(original, StringComparison.Ordinal) then
