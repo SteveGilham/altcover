@@ -127,14 +127,16 @@ type internal StrongNameKeyData =
           0uy
           0uy
           ]
-          // possibly reverse exponent too?
-        let exponent = Seq.append this.Parameters.Exponent (Seq.initInfinite (fun _ -> 0uy))
-                       |> Seq.take 4
-                       |> Seq.toList
-        Seq.concat [lead
-                    exponent
-                    this.Parameters.Modulus |> Seq.toList |> List.rev ]
-        |> Seq.toArray
+        if Seq.isEmpty this.Blob then null
+        else
+            // possibly reverse exponent too?
+          let exponent = Seq.append this.Parameters.Exponent (Seq.initInfinite (fun _ -> 0uy))
+                         |> Seq.take 4
+                         |> Seq.toList
+          Seq.concat [lead
+                      exponent
+                      this.Parameters.Modulus |> Seq.toList |> List.rev ]
+          |> Seq.toArray
 
     static member Make (data : byte array) =
       use csp = new System.Security.Cryptography.RSACryptoServiceProvider()

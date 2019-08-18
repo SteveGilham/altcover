@@ -16,6 +16,7 @@ open Mono.Cecil
 open Mono.Cecil.Cil
 open Mono.Cecil.Rocks
 open Newtonsoft.Json.Linq
+open System.Security.Cryptography
 
 [<ExcludeFromCodeCoverage; NoComparison>]
 type internal Cecil11WriterParameters =
@@ -26,55 +27,75 @@ type internal Cecil11WriterParameters =
       Blob = None }
 
 module Cecil11ModuleWriter =
+
   let NonPublicPropertyValue<'a> target name =
     let prop =
-      target.GetType().GetProperty(name, BindingFlags.NonPublic ||| BindingFlags.Instance)
+      target.GetType().GetProperty(name, BindingFlags.Public ||| BindingFlags.NonPublic ||| BindingFlags.Instance)
     prop.GetValue(target) :?> 'a
 
   let NonPublicFieldValue<'a> target name =
     let prop =
-      target.GetType().GetField(name, BindingFlags.NonPublic ||| BindingFlags.Instance)
+      target.GetType().GetField(name, BindingFlags.Public ||| BindingFlags.NonPublic ||| BindingFlags.Instance)
     prop.GetValue(target) :?> 'a
 
   let NonPublicPropertyUpdate target name value =
     let prop =
-      target.GetType().GetProperty(name, BindingFlags.NonPublic ||| BindingFlags.Instance)
+      target.GetType().GetProperty(name, BindingFlags.Public ||| BindingFlags.NonPublic ||| BindingFlags.Instance)
     prop.SetValue(target, value)
 
   let NonPublicFieldUpdate target name value =
     let prop =
-      target.GetType().GetField(name, BindingFlags.NonPublic ||| BindingFlags.Instance)
+      target.GetType().GetField(name, BindingFlags.Public ||| BindingFlags.NonPublic ||| BindingFlags.Instance)
     prop.SetValue(target, value)
 
-  let NonPublicMethodCall target name args =
+  let NonPublicMethodCallTypes target name args types =
     let call =
       target.GetType()
             .GetMethod(name,
                        BindingFlags.Public ||| BindingFlags.NonPublic
                        ||| BindingFlags.Instance, null,
-                       args |> Array.map (fun x -> x.GetType()), [||])
+                       types, [||])
 
-    call.Invoke(target, args)
+    try
+      call.Invoke(target, args)
+    with
+    | x when x.InnerException |> isNull |> not &&
+             x.InnerException.GetType() = typeof<ArgumentException> ->
+      (x.InnerException. Message, x) |> ArgumentException |> raise
+
+  let NonPublicMethodCall target name args =
+    NonPublicMethodCallTypes target name args (args |> Array.map (fun x -> x.GetType()))
 
   let NonPublicType name =
     typeof<AssemblyDefinition>.Assembly.GetTypes()
     |> Seq.find (fun t -> t.Name = name)
 
-  let NonPublicConstruct typename args =
+  let NonPublicConstructTypes typename args types =
     let nptype = NonPublicType typename
     let call =
-      nptype.GetConstructor(args |> Array.map (fun x -> x.GetType()))
-    call.Invoke(args)
+      nptype.GetConstructor(types)
+    try
+      call.Invoke(args)
+    with
+    | x when x.InnerException |> isNull |> not &&
+             x.InnerException.GetType() = typeof<ArgumentException> ->
+      (x.InnerException. Message, x) |> ArgumentException |> raise
 
-  let NonPublicStaticCall typename name args =
+  let NonPublicConstruct typename args =
+    NonPublicConstructTypes typename args (args |> Array.map (fun x -> x.GetType()))
+
+  let NonPublicStaticCallTypes typename name args types =
     let nptype = NonPublicType typename
     let call =
       nptype.GetMethod(name,
                        BindingFlags.Public ||| BindingFlags.NonPublic
                        ||| BindingFlags.Static, null,
-                       args |> Array.map (fun x -> x.GetType()), [||])
+                       types, [||])
 
     call.Invoke(null, args)
+
+  let NonPublicStaticCall typename name args =
+    NonPublicStaticCallTypes  typename name args (args |> Array.map (fun x -> x.GetType()))
 
   let NonPublicByNameGenericStaticCall typename name  generics args =
     let nptype = NonPublicType typename
@@ -85,32 +106,89 @@ module Cecil11ModuleWriter =
     let specific = call.MakeGenericMethod generics
     specific.Invoke(null, args)
 
-  let StrongName stream writer parameters = ()
+  let PatchStrongName (stream:Stream) strongNamePointer strongName =
+        stream.Seek(strongNamePointer, SeekOrigin.Begin) |> ignore
+        stream.Write(strongName, 0, strongName.Length)
 
-  let internal Write (``module``: ModuleDefinition) (stream: FileStream) parameters fq_name =
+  let internal CreateRSA writerParameters =
+      let csp = RSA.Create()
+      csp.ImportParameters (writerParameters.Blob |> Option.get).Parameters
+      csp
+
+  let internal CreateStrongName parameters (hash : byte array) =
+    try
+        let hashAlgo = "SHA1"
+        use rsa = CreateRSA(parameters)
+        let formatter = new RSAPKCS1SignatureFormatter(rsa)
+        formatter.SetHashAlgorithm(hashAlgo)
+        let signature = formatter.CreateSignature(hash)
+        Array.Reverse(signature)
+        signature
+    with
+    | :? CryptographicException as x -> let extra = sprintf "%s : %A" x.Message parameters
+                                        new CryptographicUnexpectedOperationException(extra, x)
+                                        |> raise
+
+  let rec CopyStreamChunk (stream: Stream) (dest : Stream) buffer (length:int64) =
+        if length > 0L then
+          let read = stream.Read(buffer, 0, int <| System.Math.Min(buffer.LongLength, length))
+          dest.Write(buffer, 0, read)
+          CopyStreamChunk (stream: Stream) (dest : Stream) buffer (length - int64 read)
+
+  let HashStream (stream:Stream) writer =
+        let text = NonPublicFieldValue writer "text"
+        let headerSize = NonPublicMethodCall writer "GetHeaderSize" [| |] :?> UInt32 |> int64
+        let textSectionPointer =  NonPublicFieldValue<UInt32> text "PointerToRawData" |> int64
+        let strongNameDirectory = NonPublicMethodCall writer "GetStrongNameSignatureDirectory" [| |]
+        let strongNameLength = NonPublicFieldValue<uint32> strongNameDirectory "Size"
+        if strongNameLength = 0u then InvalidOperationException() |> raise
+        else
+            let va = NonPublicFieldValue<uint32> strongNameDirectory "VirtualAddress" |> int64
+            let va2 = NonPublicFieldValue<uint32> text "VirtualAddress" |> int64
+            let strongNamePointer = textSectionPointer + va - va2
+            use sha1 = new SHA1Managed()
+            let buffer = Array.zeroCreate<byte> 8192
+            do
+              use cryptoStream = new CryptoStream(Stream.Null, sha1, CryptoStreamMode.Write)
+              stream.Seek(0L, SeekOrigin.Begin) |> ignore
+              CopyStreamChunk stream cryptoStream buffer headerSize
+              stream.Seek(textSectionPointer, SeekOrigin.Begin) |> ignore
+              CopyStreamChunk
+                  stream cryptoStream buffer (strongNamePointer - textSectionPointer)
+              stream.Seek(strongNameLength |> int64, SeekOrigin.Current) |> ignore
+              CopyStreamChunk
+                  stream cryptoStream buffer (stream.Length - (strongNamePointer + int64 strongNameLength))
+            (sha1.Hash, strongNamePointer)
+
+  let internal StrongName stream writer parameters =
+    let (hash, strongNamePointer) = HashStream stream writer
+    let strongName = CreateStrongName parameters hash
+    PatchStrongName stream strongNamePointer strongName
+
+  let internal Write (``module``: ModuleDefinition) (stream: FileStream) parameters =
     if int (``module``.Attributes &&& ModuleAttributes.ILOnly) = 0 then
       NotSupportedException("Writing mixed-mode assemblies is not supported") |> raise
 
     if (NonPublicPropertyValue<bool> ``module`` "HasImage")
        && (NonPublicFieldValue<ReadingMode> ``module`` "ReadingMode") = ReadingMode.Deferred then
-      let immediate_reader = NonPublicConstruct "ImmediateModuleReader" [| NonPublicFieldValue<obj> ``module`` "Image" |]
-      NonPublicMethodCall immediate_reader "ReadModule" [| ``module``; false |] |> ignore
-      NonPublicMethodCall immediate_reader "ReadSymbols" [| ``module`` |] |> ignore
+      let immediateReader = NonPublicConstruct "ImmediateModuleReader" [| NonPublicFieldValue<obj> ``module`` "Image" |]
+      NonPublicMethodCall immediateReader "ReadModule" [| ``module``; false |] |> ignore
+      NonPublicMethodCall immediateReader "ReadSymbols" [| ``module`` |] |> ignore
 
-    let metadata_system = NonPublicFieldValue<obj> ``module`` "MetadataSystem"
-    NonPublicMethodCall metadata_system "Clear" [||] |> ignore
+    let metadataSystem = NonPublicFieldValue<obj> ``module`` "MetadataSystem"
+    NonPublicMethodCall metadataSystem "Clear" [||] |> ignore
 
-    let symbol_reader = NonPublicFieldValue<IDisposable> ``module`` "symbol_reader"
-    if symbol_reader
+    let symbolReader = NonPublicFieldValue<IDisposable> ``module`` "symbol_reader"
+    if symbolReader
        |> isNull
        |> not
-    then symbol_reader.Dispose()
+    then symbolReader.Dispose()
 
     let timestamp =
       if parameters.Parameters.Timestamp.HasValue then
         parameters.Parameters.Timestamp.Value
       else NonPublicFieldValue<UInt32> ``module`` "timestamp"
-    let symbol_writer_provider =
+    let symbolWriterProvider =
       if parameters.Parameters.SymbolWriterProvider
          |> isNull
          && parameters.Parameters.WriteSymbols then
@@ -128,18 +206,24 @@ module Cecil11ModuleWriter =
        && Option.isSome parameters.Blob
     then
       let blob = Option.get parameters.Blob
-      name.PublicKey <- blob.PublicKey
-      ``module``.Attributes <- ``module``.Attributes ||| ModuleAttributes.StrongNameSigned
+      if blob.Blob |> Seq.isEmpty |> not
+      then name.PublicKey <- blob.PublicKey
+           ``module``.Attributes <- ``module``.Attributes ||| ModuleAttributes.StrongNameSigned
 
+    let path = stream.Name
     let metadata =
-      NonPublicConstruct "MetadataBuilder" [| ``module``; fq_name; timestamp; symbol_writer_provider |]
+      NonPublicConstructTypes "MetadataBuilder" [| ``module``; path; timestamp; symbolWriterProvider |]
+                                                [| typeof<ModuleDefinition>; typeof<string>
+                                                   typeof<UInt32>; typeof<ISymbolWriterProvider> |]
     try
       NonPublicFieldUpdate ``module`` "metadata_builder" metadata
 
-      use symbol_writer =
-        NonPublicStaticCall "ModuleWriter" "GetSymbolWriter"
-         [| ``module``; fq_name; symbol_writer_provider; parameters.Parameters |] :?> IDisposable
-      NonPublicMethodCall metadata "SetSymbolWriter" [| symbol_writer |] |> ignore
+      use symbolWriter =
+        NonPublicStaticCallTypes "ModuleWriter" "GetSymbolWriter"
+         [| ``module``; path; symbolWriterProvider; parameters.Parameters |]
+         [| typeof<ModuleDefinition>; typeof<string>; typeof<ISymbolWriterProvider>; typeof<WriterParameters> |]
+         :?> IDisposable
+      NonPublicMethodCallTypes metadata "SetSymbolWriter" [| symbolWriter |] [| typeof<ISymbolWriter> |] |> ignore
       NonPublicStaticCall "ModuleWriter" "BuildMetadata" [| ``module``; metadata |] |> ignore
 
       let wrapper = NonPublicByNameGenericStaticCall "Disposable" "NotOwned" [| typeof<Stream> |] [| stream |]
@@ -147,7 +231,10 @@ module Cecil11ModuleWriter =
         NonPublicStaticCall "ImageWriter" "CreateWriter" [| ``module``; metadata; wrapper |]
       stream.SetLength 0L
       NonPublicMethodCall writer "WriteImage" [| |] |> ignore
-      if Option.isSome parameters.Blob then StrongName wrapper writer parameters
+      if Option.isSome parameters.Blob then
+        let blob = Option.get parameters.Blob
+        if blob.Blob.Length > 0 then
+          StrongName stream writer parameters
     finally
       NonPublicFieldUpdate ``module`` "metadata_builder" null
 
@@ -430,7 +517,7 @@ module internal Instrument =
   /// </summary>
   /// <param name="assembly">The instrumented assembly object</param>
   /// <param name="path">The full path of the output file</param>
-  /// <remark>Can raise "System.Security.Cryptography.CryptographicException: Keyset does not exist" at random
+  /// <remark>Can raise "CryptographicException: Keyset does not exist" at random
   /// when asked to strongname.  This writes a new .pdb/.mdb alongside the instrumented assembly</remark>
   let internal WriteAssembly (assembly: AssemblyDefinition) (path: string) =
     let pkey = Cecil11WriterParameters.Create()
@@ -485,7 +572,11 @@ module internal Instrument =
           a.MainModule.Attributes <-
             a.MainModule.Attributes ||| ModuleAttributes.StrongNameSigned
         use sink = File.Open(p, FileMode.Create, FileAccess.ReadWrite)
-        Cecil11ModuleWriter.Write a.MainModule sink pk (Path.GetFullPath path)
+        try
+          Cecil11ModuleWriter.Write a.MainModule sink pk
+        with
+        | x -> eprintfn "Failure to save %s : %A" path x
+               reraise()
 
       let resolver = assembly.MainModule.AssemblyResolver
       HookResolver resolver
