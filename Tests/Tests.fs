@@ -994,7 +994,7 @@ type AltCoverTests() =
     member self.KeyHasExpectedToken() =
       let token = KeyStore.TokenOfKey <| self.ProvideKeyPair()
       let token' =
-        String.Join(String.Empty, token |> List.map (fun x -> x.ToString("x2")))
+        String.Join(String.Empty, token |> Option.get |> List.map (fun x -> x.ToString("x2")))
       Assert.That(token', Is.EqualTo( "c02b1a9f5b7cade8"))
 
     [<Test>]
@@ -1004,7 +1004,9 @@ type AltCoverTests() =
 
     [<Test>]
     member self.KeyHasExpectedIndex() =
-      let token = KeyStore.KeyToIndex <| self.ProvideKeyPair()
+      let token =  self.ProvideKeyPair()
+                   |> KeyStore.KeyToIndex
+                   |> Option.get
       Assert.That(token, Is.EqualTo(
                                     0xe8ad7c5b9f1a2bc0UL
                   ), sprintf "%x" token)
@@ -1018,7 +1020,7 @@ type AltCoverTests() =
       let pair = self.ProvideKeyPair()
 #if NETCOREAPP2_0
 #else
-      let computed = pair.PublicKey
+      let computed = pair.PublicKey |> Option.get
       let definitive = StrongNameKeyPair(pair.Blob |> List.toArray).PublicKey
       Assert.That(computed, Is.EquivalentTo definitive)
 #endif
