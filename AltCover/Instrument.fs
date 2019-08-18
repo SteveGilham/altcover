@@ -31,9 +31,19 @@ module Cecil11ModuleWriter =
       target.GetType().GetProperty(name, BindingFlags.NonPublic ||| BindingFlags.Instance)
     prop.GetValue(target) :?> 'a
 
+  let NonPublicFieldValue<'a> target name =
+    let prop =
+      target.GetType().GetField(name, BindingFlags.NonPublic ||| BindingFlags.Instance)
+    prop.GetValue(target) :?> 'a
+
   let NonPublicPropertyUpdate target name value =
     let prop =
       target.GetType().GetProperty(name, BindingFlags.NonPublic ||| BindingFlags.Instance)
+    prop.SetValue(target, value)
+
+  let NonPublicFieldUpdate target name value =
+    let prop =
+      target.GetType().GetField(name, BindingFlags.NonPublic ||| BindingFlags.Instance)
     prop.SetValue(target, value)
 
   let NonPublicMethodCall target name args =
@@ -56,22 +66,41 @@ module Cecil11ModuleWriter =
       nptype.GetConstructor(args |> Array.map (fun x -> x.GetType()))
     call.Invoke(args)
 
+  let NonPublicStaticCall typename name args =
+    let nptype = NonPublicType typename
+    let call =
+      nptype.GetMethod(name,
+                       BindingFlags.Public ||| BindingFlags.NonPublic
+                       ||| BindingFlags.Static, null,
+                       args |> Array.map (fun x -> x.GetType()), [||])
+
+    call.Invoke(null, args)
+
+  let NonPublicByNameGenericStaticCall typename name  generics args =
+    let nptype = NonPublicType typename
+    let call =
+      nptype.GetMethod(name,
+                       BindingFlags.Public ||| BindingFlags.NonPublic
+                       ||| BindingFlags.Static)
+    let specific = call.MakeGenericMethod generics
+    specific.Invoke(null, args)
+
   let StrongName stream writer parameters = ()
 
-  let Write (``module``: ModuleDefinition) (stream: FileStream) parameters fq_name =
+  let internal Write (``module``: ModuleDefinition) (stream: FileStream) parameters fq_name =
     if int (``module``.Attributes &&& ModuleAttributes.ILOnly) = 0 then
       NotSupportedException("Writing mixed-mode assemblies is not supported") |> raise
 
     if (NonPublicPropertyValue<bool> ``module`` "HasImage")
-       && (NonPublicPropertyValue<ReadingMode> ``module`` "ReadingMode") = ReadingMode.Deferred then
-      let immediate_reader = NonPublicConstruct "ImmediateModuleReader" [| NonPublicPropertyValue<obj> ``module`` "Image" |]
+       && (NonPublicFieldValue<ReadingMode> ``module`` "ReadingMode") = ReadingMode.Deferred then
+      let immediate_reader = NonPublicConstruct "ImmediateModuleReader" [| NonPublicFieldValue<obj> ``module`` "Image" |]
       NonPublicMethodCall immediate_reader "ReadModule" [| ``module``; false |] |> ignore
       NonPublicMethodCall immediate_reader "ReadSymbols" [| ``module`` |] |> ignore
 
-    let metadata_system = NonPublicPropertyValue<obj> ``module`` "MetadataSystem"
+    let metadata_system = NonPublicFieldValue<obj> ``module`` "MetadataSystem"
     NonPublicMethodCall metadata_system "Clear" [||] |> ignore
 
-    let symbol_reader = NonPublicPropertyValue<IDisposable> ``module`` "symbol_reader"
+    let symbol_reader = NonPublicFieldValue<IDisposable> ``module`` "symbol_reader"
     if symbol_reader
        |> isNull
        |> not
@@ -80,7 +109,7 @@ module Cecil11ModuleWriter =
     let timestamp =
       if parameters.Parameters.Timestamp.HasValue then
         parameters.Parameters.Timestamp.Value
-      else NonPublicPropertyValue<UInt32> ``module`` "timestamp"
+      else NonPublicFieldValue<UInt32> ``module`` "timestamp"
     let symbol_writer_provider =
       if parameters.Parameters.SymbolWriterProvider
          |> isNull
@@ -88,7 +117,7 @@ module Cecil11ModuleWriter =
         DefaultSymbolWriterProvider() :> ISymbolWriterProvider
       else parameters.Parameters.SymbolWriterProvider
 
-    let assembly = NonPublicPropertyValue<AssemblyDefinition> ``module`` "assebly"
+    let assembly = NonPublicFieldValue<AssemblyDefinition> ``module`` "assembly"
 
     let name =
       if assembly |> isNull then null
@@ -105,18 +134,22 @@ module Cecil11ModuleWriter =
     let metadata =
       NonPublicConstruct "MetadataBuilder" [| ``module``; fq_name; timestamp; symbol_writer_provider |]
     try
-      NonPublicPropertyUpdate ``module`` "metadata_builder" metadata
+      NonPublicFieldUpdate ``module`` "metadata_builder" metadata
 
       use symbol_writer =
-        GetSymbolWriter(``module``, fq_name, symbol_writer_provider, parameters)
+        NonPublicStaticCall "ModuleWriter" "GetSymbolWriter"
+         [| ``module``; fq_name; symbol_writer_provider; parameters.Parameters |] :?> IDisposable
       NonPublicMethodCall metadata "SetSymbolWriter" [| symbol_writer |] |> ignore
-      BuildMetadata(``module``, metadata)
-      let writer = ImageWriter.CreateWriter(``module``, metadata, stream)
+      NonPublicStaticCall "ModuleWriter" "BuildMetadata" [| ``module``; metadata |] |> ignore
+
+      let wrapper = NonPublicByNameGenericStaticCall "Disposable" "NotOwned" [| typeof<Stream> |] [| stream |]
+      let writer =
+        NonPublicStaticCall "ImageWriter" "CreateWriter" [| ``module``; metadata; wrapper |]
       stream.SetLength 0L
       NonPublicMethodCall writer "WriteImage" [| |] |> ignore
-      if Option.isSome parameters.Blob then StrongName stream writer parameters
+      if Option.isSome parameters.Blob then StrongName wrapper writer parameters
     finally
-      NonPublicPropertyUpdate ``module`` "metadata_builder" null
+      NonPublicFieldUpdate ``module`` "metadata_builder" null
 
 [<ExcludeFromCodeCoverage; NoComparison>]
 type internal RecorderRefs =
@@ -416,9 +449,9 @@ module internal Instrument =
     // Once Cecil 0.10 beta6 is taken out of the equation, this works
     // apart from renaming assemblies like AltCover.Recorder to AltCover.Recorder.g
     // or for assemblies with embedded .pdb information (on *nix)
-    pkey.WriteSymbols <- (isWindows || separatePdb) && assembly.MainModule.HasSymbols
-    pkey.SymbolWriterProvider <-
-      match (pdb, pkey.WriteSymbols) with
+    pkey.Parameters.WriteSymbols <- (isWindows || separatePdb) && assembly.MainModule.HasSymbols
+    pkey.Parameters.SymbolWriterProvider <-
+      match (pdb, pkey.Parameters.WriteSymbols) with
       | (".pdb", true) -> Mono.Cecil.Pdb.PdbWriterProvider() :> ISymbolWriterProvider
       | (_, true) -> Mono.Cecil.Mdb.MdbWriterProvider() :> ISymbolWriterProvider
       | _ -> null
@@ -745,7 +778,6 @@ module internal Instrument =
               (f
                |> File.ReadAllText
                |> injectJSON)))
-    finally
 #if NETCOREAPP2_0
       let fsharplib =
         Path.Combine(Visitor.InstrumentDirectories() |> Seq.head, "FSharp.Core.dll")
@@ -754,8 +786,8 @@ module internal Instrument =
           new FileStream(AltCover.Recorder.Tracer.Core(), FileMode.Open, FileAccess.Read)
         use libstream = new FileStream(fsharplib, FileMode.Create)
         fsharpbytes.CopyTo libstream
-    finally
 #endif
+    finally
       (state.RecordingAssembly :> IDisposable).Dispose()
     { state with RecordingAssembly = null }
 
