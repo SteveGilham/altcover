@@ -165,35 +165,6 @@ module Cecil11ModuleWriter =
     let strongName = CreateStrongName parameters hash
     PatchStrongName stream strongNamePointer strongName
 
-  let internal WriteMetadata ``module`` (stream:FileStream) parameters timestamp symbolWriterProvider =
-    let path = stream.Name
-    let metadata =
-      NonPublicConstructTypes "MetadataBuilder" [| ``module``; path; timestamp; symbolWriterProvider |]
-                                                [| typeof<ModuleDefinition>; typeof<string>
-                                                   typeof<UInt32>; typeof<ISymbolWriterProvider> |]
-    try
-      NonPublicFieldUpdate ``module`` "metadata_builder" metadata
-
-      use symbolWriter =
-        NonPublicStaticCallTypes "ModuleWriter" "GetSymbolWriter"
-         [| ``module``; path; symbolWriterProvider; parameters.Parameters |]
-         [| typeof<ModuleDefinition>; typeof<string>; typeof<ISymbolWriterProvider>; typeof<WriterParameters> |]
-         :?> IDisposable
-      NonPublicMethodCallTypes metadata "SetSymbolWriter" [| symbolWriter |] [| typeof<ISymbolWriter> |] |> ignore
-      NonPublicStaticCall "ModuleWriter" "BuildMetadata" [| ``module``; metadata |] |> ignore
-
-      let wrapper = NonPublicByNameGenericStaticCall "Disposable" "NotOwned" [| typeof<Stream> |] [| stream |]
-      let writer =
-        NonPublicStaticCall "ImageWriter" "CreateWriter" [| ``module``; metadata; wrapper |]
-      stream.SetLength 0L
-      NonPublicMethodCall writer "WriteImage" [| |] |> ignore
-      if Option.isSome parameters.Blob then
-        let blob = Option.get parameters.Blob
-        if blob.Blob.Length > 0 then
-          StrongName stream writer parameters
-    finally
-      NonPublicFieldUpdate ``module`` "metadata_builder" null
-
   let internal Write (``module``: ModuleDefinition) (stream: FileStream) parameters =
     if int (``module``.Attributes &&& ModuleAttributes.ILOnly) = 0 then
       NotSupportedException("Writing mixed-mode assemblies is not supported") |> raise
@@ -236,12 +207,36 @@ module Cecil11ModuleWriter =
     then
       let blob = Option.get parameters.Blob
       if blob.Blob |> Seq.isEmpty |> not
-      then match blob.PublicKey with
-           | None -> ()
-           | Some pkey -> name.PublicKey <- pkey
-                          ``module``.Attributes <- ``module``.Attributes ||| ModuleAttributes.StrongNameSigned
+      then name.PublicKey <- blob.PublicKey
+           ``module``.Attributes <- ``module``.Attributes ||| ModuleAttributes.StrongNameSigned
 
-    WriteMetadata ``module`` stream parameters timestamp symbolWriterProvider
+    let path = stream.Name
+    let metadata =
+      NonPublicConstructTypes "MetadataBuilder" [| ``module``; path; timestamp; symbolWriterProvider |]
+                                                [| typeof<ModuleDefinition>; typeof<string>
+                                                   typeof<UInt32>; typeof<ISymbolWriterProvider> |]
+    try
+      NonPublicFieldUpdate ``module`` "metadata_builder" metadata
+
+      use symbolWriter =
+        NonPublicStaticCallTypes "ModuleWriter" "GetSymbolWriter"
+         [| ``module``; path; symbolWriterProvider; parameters.Parameters |]
+         [| typeof<ModuleDefinition>; typeof<string>; typeof<ISymbolWriterProvider>; typeof<WriterParameters> |]
+         :?> IDisposable
+      NonPublicMethodCallTypes metadata "SetSymbolWriter" [| symbolWriter |] [| typeof<ISymbolWriter> |] |> ignore
+      NonPublicStaticCall "ModuleWriter" "BuildMetadata" [| ``module``; metadata |] |> ignore
+
+      let wrapper = NonPublicByNameGenericStaticCall "Disposable" "NotOwned" [| typeof<Stream> |] [| stream |]
+      let writer =
+        NonPublicStaticCall "ImageWriter" "CreateWriter" [| ``module``; metadata; wrapper |]
+      stream.SetLength 0L
+      NonPublicMethodCall writer "WriteImage" [| |] |> ignore
+      if Option.isSome parameters.Blob then
+        let blob = Option.get parameters.Blob
+        if blob.Blob.Length > 0 then
+          StrongName stream writer parameters
+    finally
+      NonPublicFieldUpdate ``module`` "metadata_builder" null
 
 [<ExcludeFromCodeCoverage; NoComparison>]
 type internal RecorderRefs =
@@ -346,10 +341,8 @@ module internal Instrument =
       assemblyName.PublicKey <- null
       assemblyName.PublicKeyToken <- null
     | Some key' ->
-      assemblyName.HasPublicKey <- match key'.PublicKey with
-                                   | None -> false
-                                   | Some pk -> assemblyName.PublicKey <- pk // sets token implicitly
-                                                true
+      assemblyName.HasPublicKey <- true
+      assemblyName.PublicKey <- key'.PublicKey // sets token implicitly
 
   /// <summary>
   /// Locate the key, if any, which was used to name this assembly.
@@ -674,10 +667,8 @@ module internal Instrument =
            r.PublicKeyToken <- null
            r.PublicKey <- null
          | Some key ->
-           r.HasPublicKey <- match key.Pair.PublicKey with
-                             | None -> false
-                             | Some pk -> r.PublicKey <- pk // sets token implicitly
-                                          true
+           r.HasPublicKey <- true
+           r.PublicKey <- key.Pair.PublicKey // implicitly sets token
 
          let updated = r.ToString()
          if not <| updated.Equals(original, StringComparison.Ordinal) then

@@ -465,7 +465,7 @@ module XTests =
       use buffer = new MemoryStream()
       stream.CopyTo(buffer)
       let snk = StrongNameKeyData.Make(buffer.ToArray())
-      Assert.True (Visitor.keys.ContainsKey(KeyStore.KeyToIndex snk |> Option.get))
+      Assert.True (Visitor.keys.ContainsKey(KeyStore.KeyToIndex snk))
       Assert.Equal (2, Visitor.keys.Count)
 
       Assert.True(File.Exists report)
@@ -643,7 +643,7 @@ module XTests =
       use buffer = new MemoryStream()
       stream.CopyTo(buffer)
       let snk = StrongNameKeyData.Make(buffer.ToArray())
-      Assert.True (Visitor.keys.ContainsKey(KeyStore.KeyToIndex snk |> Option.get))
+      Assert.True (Visitor.keys.ContainsKey(KeyStore.KeyToIndex snk))
       Assert.Equal (2, Visitor.keys.Count)
 
       Assert.True(File.Exists report)

@@ -845,7 +845,6 @@ type AltCoverTests3() =
         | None -> Assert.Fail()
         | Some x -> let token = x
                                 |> KeyStore.TokenOfKey
-                                |> Option.get
                                 |> List.map (fun x -> x.ToString("x2"))
                     Assert.That (String.Join (String.Empty, token), Is.EqualTo("c02b1a9f5b7cade8"))
       finally

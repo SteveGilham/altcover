@@ -127,7 +127,7 @@ type internal StrongNameKeyData =
           0uy
           0uy
           ]
-        if Seq.isEmpty this.Blob then None
+        if Seq.isEmpty this.Blob then null
         else
             // possibly reverse exponent too?
           let exponent = Seq.append this.Parameters.Exponent (Seq.initInfinite (fun _ -> 0uy))
@@ -136,7 +136,7 @@ type internal StrongNameKeyData =
           Seq.concat [lead
                       exponent
                       this.Parameters.Modulus |> Seq.toList |> List.rev ]
-          |> Seq.toArray |> Some
+          |> Seq.toArray
 
     static member Make (data : byte array) =
       use csp = new System.Security.Cryptography.RSACryptoServiceProvider()
@@ -175,16 +175,16 @@ module internal KeyStore =
   let internal TokenOfKey(key : StrongNameKeyData) =
     key
     |> publicKeyOfKey
-    |> Option.map TokenOfArray
-    |> Option.map Array.toList
+    |> TokenOfArray
+    |> Array.toList
 
   let internal TokenAsULong(token : byte array) = BitConverter.ToUInt64(token, 0)
 
   let internal KeyToIndex(key : StrongNameKeyData) =
     key
     |> TokenOfKey
-    |> Option.map List.toArray
-    |> Option.map TokenAsULong
+    |> List.toArray
+    |> TokenAsULong
 
   let internal ArrayToIndex(key : byte array) =
     key
@@ -193,7 +193,7 @@ module internal KeyStore =
 
   let internal KeyToRecord(key : StrongNameKeyData) =
     { Pair = key
-      Token = TokenOfKey key |> Option.getOrElse [] }
+      Token = TokenOfKey key }
 
   let internal HashFile sPath =
     use stream = File.OpenRead sPath
@@ -279,9 +279,7 @@ module internal Visitor =
 
   let internal Add(key : StrongNameKeyData) =
     let index = KeyStore.KeyToIndex key
-    match index with
-    | None -> ()
-    | Some i -> keys.[i] <- KeyStore.KeyToRecord key
+    keys.[index] <- KeyStore.KeyToRecord key
 
   let IsIncluded(nameProvider : Object) =
     if (NameFilters |> Seq.exists (Filter.Match nameProvider)) then Inspect.Ignore
