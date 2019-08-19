@@ -170,6 +170,7 @@ module Cecil11ModuleWriter =
     PatchStrongName stream strongNamePointer strongName
 
   let private DoWriteMetadata (stream:Stream) ``module`` metadata parameters =
+      NonPublicStaticCall "ModuleWriter" "BuildMetadata" [| ``module``; metadata |] |> ignore
       let wrapper = NonPublicByNameGenericStaticCall "Disposable" "NotOwned" [| typeof<Stream> |] [| stream |]
       let writer =
         NonPublicStaticCall "ImageWriter" "CreateWriter" [| ``module``; metadata; wrapper |]
@@ -195,7 +196,6 @@ module Cecil11ModuleWriter =
          [| typeof<ModuleDefinition>; typeof<string>; typeof<ISymbolWriterProvider>; typeof<WriterParameters> |]
          :?> IDisposable
       NonPublicMethodCallTypes metadata "SetSymbolWriter" [| symbolWriter |] [| typeof<ISymbolWriter> |] |> ignore
-      NonPublicStaticCall "ModuleWriter" "BuildMetadata" [| ``module``; metadata |] |> ignore
 
       DoWriteMetadata stream ``module`` metadata parameters
     finally
