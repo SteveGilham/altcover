@@ -574,9 +574,9 @@ _Target "UnitTestDotNetWithCoverlet" (fun _ ->
     let xml =
       !!(@"./*Tests/*.tests.core.fsproj")
       |> Seq.zip
-           [ """/p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Exclude="\"[*.Tests]*,[*.XTests]*,[xunit*]*,[Sample*]*,[AltCover.Record*]*,[NUnit*]*,[AltCover.Shadow.Adapter]*,[*]*Cecil11*\""  """
-             """/p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Exclude="\"[*.Tests]*,[*.XTests]*,[xunit*]*,[Sample*]*,[AltCover.Record*]*,[NUnit*]*,[AltCover.Shadow.Adapter]*,[*]*Cecil11*\""  """
-             """/p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Exclude="\"[*.Tests]*,[*.XTests]*,[xunit*]*,[Sample*]*,[AltCover.Record*]*,[*]*Cecil11*\""  """ ]
+           [ """/p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Exclude="\"[*.Tests]*,[*.XTests]*,[xunit*]*,[Sample*]*,[AltCover.Record*]*,[NUnit*]*,[AltCover.Shadow.Adapter]*\""  """
+             """/p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Exclude="\"[*.Tests]*,[*.XTests]*,[xunit*]*,[Sample*]*,[AltCover.Record*]*,[NUnit*]*,[AltCover.Shadow.Adapter]*\""  """
+             """/p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Exclude="\"[*.Tests]*,[*.XTests]*,[xunit*]*,[Sample*]*,[AltCover.Record*]*\""  """ ]
       |> Seq.fold (fun l (p, f) ->
            try
              f
