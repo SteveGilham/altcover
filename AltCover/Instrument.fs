@@ -136,6 +136,24 @@ module Cecil11ModuleWriter =
           dest.Write(buffer, 0, read)
           CopyStreamChunk (stream: Stream) (dest : Stream) buffer (length - int64 read)
 
+  let private DoStreamHash (stream:Stream) strongNameDirectory text textSectionPointer headerSize strongNameLength =
+          let va = NonPublicFieldValue<uint32> strongNameDirectory "VirtualAddress" |> int64
+          let va2 = NonPublicFieldValue<uint32> text "VirtualAddress" |> int64
+          let strongNamePointer = textSectionPointer + va - va2
+          use sha1 = new SHA1Managed()
+          let buffer = Array.zeroCreate<byte> 8192
+          do
+            use cryptoStream = new CryptoStream(Stream.Null, sha1, CryptoStreamMode.Write)
+            stream.Seek(0L, SeekOrigin.Begin) |> ignore
+            CopyStreamChunk stream cryptoStream buffer headerSize
+            stream.Seek(textSectionPointer, SeekOrigin.Begin) |> ignore
+            CopyStreamChunk
+                stream cryptoStream buffer (strongNamePointer - textSectionPointer)
+            stream.Seek(strongNameLength |> int64, SeekOrigin.Current) |> ignore
+            CopyStreamChunk
+                stream cryptoStream buffer (stream.Length - (strongNamePointer + int64 strongNameLength))
+          (sha1.Hash, strongNamePointer)
+
   let HashStream (stream:Stream) writer =
         let text = NonPublicFieldValue writer "text"
         let headerSize = NonPublicMethodCall writer "GetHeaderSize" [| |] :?> UInt32 |> int64
@@ -144,27 +162,23 @@ module Cecil11ModuleWriter =
         let strongNameLength = NonPublicFieldValue<uint32> strongNameDirectory "Size"
         if strongNameLength = 0u then InvalidOperationException() |> raise
         else
-            let va = NonPublicFieldValue<uint32> strongNameDirectory "VirtualAddress" |> int64
-            let va2 = NonPublicFieldValue<uint32> text "VirtualAddress" |> int64
-            let strongNamePointer = textSectionPointer + va - va2
-            use sha1 = new SHA1Managed()
-            let buffer = Array.zeroCreate<byte> 8192
-            do
-              use cryptoStream = new CryptoStream(Stream.Null, sha1, CryptoStreamMode.Write)
-              stream.Seek(0L, SeekOrigin.Begin) |> ignore
-              CopyStreamChunk stream cryptoStream buffer headerSize
-              stream.Seek(textSectionPointer, SeekOrigin.Begin) |> ignore
-              CopyStreamChunk
-                  stream cryptoStream buffer (strongNamePointer - textSectionPointer)
-              stream.Seek(strongNameLength |> int64, SeekOrigin.Current) |> ignore
-              CopyStreamChunk
-                  stream cryptoStream buffer (stream.Length - (strongNamePointer + int64 strongNameLength))
-            (sha1.Hash, strongNamePointer)
+          DoStreamHash stream strongNameDirectory text textSectionPointer headerSize strongNameLength
 
   let internal StrongName stream writer parameters =
     let (hash, strongNamePointer) = HashStream stream writer
     let strongName = CreateStrongName parameters hash
     PatchStrongName stream strongNamePointer strongName
+
+  let private DoWriteMetadata (stream:Stream) ``module`` metadata parameters =
+      let wrapper = NonPublicByNameGenericStaticCall "Disposable" "NotOwned" [| typeof<Stream> |] [| stream |]
+      let writer =
+        NonPublicStaticCall "ImageWriter" "CreateWriter" [| ``module``; metadata; wrapper |]
+      stream.SetLength 0L
+      NonPublicMethodCall writer "WriteImage" [| |] |> ignore
+      if Option.isSome parameters.Blob then
+        let blob = Option.get parameters.Blob
+        if blob.Blob.Length > 0 then
+          StrongName stream writer parameters
 
   let internal WriteMetadata ``module`` (stream:FileStream) parameters timestamp symbolWriterProvider =
     let path = stream.Name
@@ -183,19 +197,11 @@ module Cecil11ModuleWriter =
       NonPublicMethodCallTypes metadata "SetSymbolWriter" [| symbolWriter |] [| typeof<ISymbolWriter> |] |> ignore
       NonPublicStaticCall "ModuleWriter" "BuildMetadata" [| ``module``; metadata |] |> ignore
 
-      let wrapper = NonPublicByNameGenericStaticCall "Disposable" "NotOwned" [| typeof<Stream> |] [| stream |]
-      let writer =
-        NonPublicStaticCall "ImageWriter" "CreateWriter" [| ``module``; metadata; wrapper |]
-      stream.SetLength 0L
-      NonPublicMethodCall writer "WriteImage" [| |] |> ignore
-      if Option.isSome parameters.Blob then
-        let blob = Option.get parameters.Blob
-        if blob.Blob.Length > 0 then
-          StrongName stream writer parameters
+      DoWriteMetadata stream ``module`` metadata parameters
     finally
       NonPublicFieldUpdate ``module`` "metadata_builder" null
 
-  let internal Write (``module``: ModuleDefinition) (stream: FileStream) parameters =
+  let private PrepareWrite (``module``: ModuleDefinition) =
     if int (``module``.Attributes &&& ModuleAttributes.ILOnly) = 0 then
       NotSupportedException("Writing mixed-mode assemblies is not supported") |> raise
 
@@ -214,6 +220,8 @@ module Cecil11ModuleWriter =
        |> not
     then symbolReader.Dispose()
 
+  let internal Write (``module``: ModuleDefinition) (stream: FileStream) parameters =
+    PrepareWrite ``module``
     let timestamp =
       if parameters.Parameters.Timestamp.HasValue then
         parameters.Parameters.Timestamp.Value
