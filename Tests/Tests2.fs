@@ -544,12 +544,18 @@ type AltCoverTests2() =
           Visitor.reportFormat <- save2
           Visitor.interval <- save3
           Directory.EnumerateFiles(Path.GetDirectoryName output,
-                                   (Path.GetFileNameWithoutExtension output) + ".*",
-                                   SearchOption.AllDirectories)
+                                   (Path.GetFileNameWithoutExtension output) + ".*")
           |> Seq.iter (fun f -> try File.Delete f
                                 with // occasionally the dll file is locked by another process
                                 | :? System.UnauthorizedAccessException
                                 | :? IOException -> ())
+          Directory.EnumerateFiles(Path.GetDirectoryName alter,
+                                   (Path.GetFileNameWithoutExtension alter) + ".*")
+          |> Seq.iter (fun f -> try File.Delete f
+                                with // occasionally the dll file is locked by another process
+                                | :? System.UnauthorizedAccessException
+                                | :? IOException -> ())
+
           Assert.That(Visitor.Sampling(), Base.Sampling.All |> int |> Is.EqualTo)
       finally
         Visitor.keys.Clear()
