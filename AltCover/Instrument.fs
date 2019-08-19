@@ -26,6 +26,7 @@ type internal Cecil11WriterParameters =
     { Parameters = WriterParameters()
       Blob = None }
 
+[<ExcludeFromCodeCoverage>]
 module Cecil11ModuleWriter =
 
   let NonPublicPropertyValue<'a> target name =
