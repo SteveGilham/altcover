@@ -29,7 +29,7 @@ let Copyright = ref String.Empty
 let Version = ref String.Empty
 let consoleBefore = (Console.ForegroundColor, Console.BackgroundColor)
 
-let OpenCoverFilter = "+[AltCove*]* -[*]Microsoft.* -[*]System.* +[*]N.* -[*]*Cecil11*"
+let OpenCoverFilter = "+[AltCove*]* -[*]Microsoft.* -[*]System.* +[*]N.* -[AltCover]AltCover.Cecil11*"
 
 let AltCoverFilter(p : Primitive.PrepareParams) =
   { p with MethodFilter = "WaitForExitCustom" :: (p.MethodFilter |> Seq.toList)

@@ -127,7 +127,8 @@ type internal StrongNameKeyData =
           0uy
           0uy
           ]
-        if Seq.isEmpty this.Blob then null
+        if Seq.isEmpty this.Blob
+        then InvalidOperationException() |> raise
         else
             // possibly reverse exponent too?
           let exponent = Seq.append this.Parameters.Exponent (Seq.initInfinite (fun _ -> 0uy))
