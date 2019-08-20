@@ -19,8 +19,14 @@ module RenderToHtml =
                 |> Seq.map (fun n -> n.Value)
                 |> Seq.distinct
 
-    files // TODO repeated names in different folders
+    files // TODO handle repeated names in different folders
     |> Seq.map (fun path ->
             let doc = XmlDocument()
-            doc.CreateComment(path) |> doc.AppendChild |> ignore
+            [
+             doc.CreateXmlDeclaration("1.0",null,null) :> XmlNode
+             doc.CreateComment(path)  :> XmlNode
+             doc.CreateElement("html")  :> XmlNode
+            ]
+            |> List.iter (doc.AppendChild >> ignore)
+
             (Path.GetFileName path, doc))
