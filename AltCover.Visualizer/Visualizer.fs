@@ -497,7 +497,11 @@ module Gui =
     md.Icon <- parent.Icon
     md.Title <- "AltCover.Visualizer"
     md.Run() |> ignore
+#if NETCOREAPP2_1
+    // implicit Dispose()
+#else
     md.Destroy()
+#endif
 
   let private ShowMessageOnGuiThread (parent : Window) (severity : MessageType) message =
     let SendMessageToWindow() = ShowMessage parent message severity
@@ -1180,7 +1184,7 @@ module Gui =
            ResourceManager("AltCover.Visualizer.Resource", executingAssembly)
          let format = resources.GetString("SelectFont")
 #if NETCOREAPP2_1
-         let selector = new FontChooserDialog(format, handler.mainWindow)
+         use selector = new FontChooserDialog(format, handler.mainWindow)
          selector.Font <- Persistence.readFont()
          if Enum.ToObject(typeof<ResponseType>, selector.Run()) :?> ResponseType = ResponseType.Ok then
            let font = selector.Font
@@ -1194,7 +1198,11 @@ module Gui =
            Persistence.saveFont (font)
            handler.baseline.Font <- font
            handler.codeView.QueueDraw()
+#if NETCOREAPP2_1
+         ) // implicit Dispose()
+#else
          selector.Destroy())
+#endif
     // Tree selection events and such
     handler.classStructureTree.RowActivated |> Event.add (OnRowActivated handler)
     Application.Run()
