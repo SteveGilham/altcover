@@ -641,3 +641,21 @@ Describe "Compress-Branching" {
 	$fail | Should -BeFalse
   }
 }
+
+Describe "ConvertTo-SourceMap" {
+  It "finds files from NCover" {
+    $result = "./_Reports/ReleaseXUnitFSharpTypesDotNetRunner.xml" | ConvertTo-SourceMap -OutputFolder "./_Packaging/NCoverSourceMap"
+
+    $result.Count | Should -Be 2
+    $result.Keys | Should -Be @('Program.fs', 'Tests.fs')
+
+    dir "./_Packaging/NCoverSourceMap" | % { $_.Name }  | Should -Be @('Program.fs.html', 'Tests.fs.html')
+  }
+
+  It "finds files from OpenCover" {
+    $result = "./_Reports/AltCoverFSharpTests.xml" | ConvertTo-SourceMap
+
+    $result.Count | Should -Be 1
+    $result.Keys | Should -Be 'Library.fs'
+  }
+}

@@ -1,6 +1,7 @@
 namespace AltCover.Commands
 
 open System
+open System.Collections.Generic
 open System.Diagnostics.CodeAnalysis
 open System.IO
 open System.Management.Automation
@@ -45,7 +46,7 @@ type ConvertToBarChartCommand(outputFile : String) =
       Directory.SetCurrentDirectory here
 
 [<Cmdlet(VerbsData.ConvertTo, "SourceMap")>]
-[<OutputType(typeof<XmlDocument array>)>]
+[<OutputType(typeof<Dictionary<string, XmlDocument>>)>]
 [<SuppressMessage("Microsoft.PowerShell", "PS1008", Justification = "Cobertura is OK")>]
 type ConvertToSourceMapCommand(outputFolder : String) =
   inherit PSCmdlet()
@@ -53,7 +54,7 @@ type ConvertToSourceMapCommand(outputFolder : String) =
 
   [<Parameter(ParameterSetName = "XmlDoc", Mandatory = true, Position = 1,
               ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
-  member val XmlDocument : IXPathNavigable = null with get, set
+  member val XmlDocument : XmlDocument = null with get, set
 
   [<Parameter(ParameterSetName = "FromFile", Mandatory = true, Position = 1,
               ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
@@ -71,7 +72,9 @@ type ConvertToSourceMapCommand(outputFolder : String) =
       let where = self.SessionState.Path.CurrentLocation.Path
       Directory.SetCurrentDirectory where
       if self.ParameterSetName = "FromFile" then
-        self.XmlDocument <- XPathDocument self.InputFile
+        let doc = XmlDocument()
+        doc.Load self.InputFile
+        self.XmlDocument <- doc
       let rewrite = AltCover.RenderToHtml.Action self.XmlDocument
       if self.OutputFolder
          |> String.IsNullOrWhiteSpace
@@ -79,7 +82,9 @@ type ConvertToSourceMapCommand(outputFolder : String) =
       then
         let folder = Directory.CreateDirectory(self.OutputFolder)
         rewrite
-        |> Seq.iter( fun (name, doc) -> Path.Combine(folder.FullName, name) |> doc.Save)
-      rewrite |> Seq.map snd |> self.WriteObject
+        |> Seq.iter( fun (name, doc) -> Path.Combine(folder.FullName, name + ".html") |> doc.Save)
+      let result = new Dictionary<string, XmlDocument>()
+      rewrite |> Seq.iter (fun (name, doc) -> result.Add(name, doc))
+      result |> self.WriteObject
     finally
       Directory.SetCurrentDirectory here
