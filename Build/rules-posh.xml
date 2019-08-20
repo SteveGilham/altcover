@@ -11,6 +11,7 @@
            exclude="AvoidMultidimensionalIndexerRule | AvoidVisibleNestedTypesRule | AvoidSmallNamespaceRule | PreferXmlAbstractionsRule"
            from="Gendarme.Rules.Design.dll" />
     <rules include="*"
+           exclude="DoNotExposeNestedGenericSignaturesRule"
            from="Gendarme.Rules.Design.Generic.dll" />
     <rules include="*"
            from="Gendarme.Rules.Design.Linq.dll" />
