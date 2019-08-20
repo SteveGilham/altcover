@@ -240,7 +240,6 @@ module internal Instrument =
     | _ -> null
 #endif
 
-#if NETCOREAPP2_0
   let private nugetCache =
     Path.Combine
       (Path.Combine
@@ -252,12 +251,15 @@ module internal Instrument =
     let name = y.ToString()
     if ResolutionTable.ContainsKey name then ResolutionTable.[name]
     else
+      // Placate Gendarme here
+      let share = "|usr|share".Replace('|', Path.DirectorySeparatorChar)
+      let shared = "dotnet|shared".Replace('|', Path.DirectorySeparatorChar)
       let candidate =
         [ Environment.GetEnvironmentVariable "NUGET_PACKAGES"
           Path.Combine(Environment.GetEnvironmentVariable "ProgramFiles"
                        |> Option.nullable
-                       |> (Option.getOrElse "/usr/share"), "dotnet/shared")
-          "/usr/share/dotnet/shared"
+                       |> (Option.getOrElse share), shared)
+          Path.Combine(share, shared)
           nugetCache ]
         |> List.filter (String.IsNullOrWhiteSpace >> not)
         |> List.filter Directory.Exists
@@ -286,6 +288,8 @@ module internal Instrument =
         ResolutionTable.[name] <- a
         a
 
+  let internal HookResolveHandler = new AssemblyResolveEventHandler(ResolveFromNugetCache)
+
   let internal HookResolver(resolver : IAssemblyResolver) =
     if resolver
        |> isNull
@@ -293,9 +297,8 @@ module internal Instrument =
     then
       let hook = resolver.GetType().GetMethod("add_ResolveFailure")
       hook.Invoke
-        (resolver, [| new AssemblyResolveEventHandler(ResolveFromNugetCache) :> obj |])
+        (resolver, [| HookResolveHandler :> obj |])
       |> ignore
-#endif
 
   /// <summary>
   /// Commit an instrumented assembly to disk
@@ -353,10 +356,8 @@ module internal Instrument =
       let write (a : AssemblyDefinition) p pk =
         use sink = File.Open(p, FileMode.Create, FileAccess.ReadWrite)
         a.Write(sink, pk)
-#if NETCOREAPP2_0
       let resolver = assembly.MainModule.AssemblyResolver
       HookResolver resolver
-#endif
       write assembly path pkey
     finally
       Directory.SetCurrentDirectory(here)
@@ -618,21 +619,33 @@ module internal Instrument =
         else branch.Start.Operand <- preamble
     state
 
+  let WriteAssemblies definition file targets sink =
+    let first = Path.Combine (targets |> Seq.head, file)
+    String.Format
+      (System.Globalization.CultureInfo.CurrentCulture,
+       CommandLine.resources.GetString "instrumented", definition, first) |> sink
+    WriteAssembly definition first
+    targets
+    |> Seq.tail
+    |> Seq.iter (fun p -> let pathn = Path.Combine(p, file)
+                          String.Format
+                            (System.Globalization.CultureInfo.CurrentCulture,
+                             CommandLine.resources.GetString "instrumented", definition, pathn) |> sink
+                          File.Copy(first, pathn, true))
+
   let private FinishVisit(state : InstrumentContext) =
     try
-      let counterAssemblyFile =
-        Path.Combine
-          (Visitor.InstrumentDirectory(), (extractName state.RecordingAssembly) + ".dll")
-      WriteAssembly (state.RecordingAssembly) counterAssemblyFile
+      let recorderFileName = (extractName state.RecordingAssembly) + ".dll"
+      WriteAssemblies (state.RecordingAssembly) recorderFileName (Visitor.InstrumentDirectories()) ignore
       Directory.GetFiles
-        (Visitor.InstrumentDirectory(), "*.deps.json", SearchOption.TopDirectoryOnly)
+        (Visitor.InstrumentDirectories() |> Seq.head, "*.deps.json", SearchOption.TopDirectoryOnly)
       |> Seq.iter (fun f ->
            File.WriteAllText(f,
                              (f
                               |> File.ReadAllText
                               |> injectJSON)))
 #if NETCOREAPP2_0
-      let fsharplib = Path.Combine(Visitor.InstrumentDirectory(), "FSharp.Core.dll")
+      let fsharplib = Path.Combine(Visitor.InstrumentDirectories() |> Seq.head, "FSharp.Core.dll")
       if not (File.Exists fsharplib) then
         use fsharpbytes =
           new FileStream(AltCover.Recorder.Tracer.Core(), FileMode.Open, FileAccess.Read)
@@ -702,13 +715,9 @@ module internal Instrument =
     Track state m included track
     state
 
-  let private VisitAfterAssembly state (assembly : AssemblyDefinition) =
+  let private VisitAfterAssembly state (assembly : AssemblyDefinition) (paths : string list) =
     let originalFileName = Path.GetFileName assembly.MainModule.FileName
-    let path = Path.Combine(Visitor.InstrumentDirectory(), originalFileName)
-    String.Format
-      (System.Globalization.CultureInfo.CurrentCulture,
-       CommandLine.resources.GetString "instrumented", assembly, path) |> Output.Info
-    WriteAssembly assembly path
+    WriteAssemblies assembly originalFileName paths Output.Info
     state
 
   let private VisitStart state =
@@ -725,7 +734,7 @@ module internal Instrument =
   let internal InstrumentationVisitorCore (state : InstrumentContext) (node : Node) =
     match node with
     | Start _ -> VisitStart state
-    | Assembly(assembly, included) ->
+    | Assembly(assembly, included, _) ->
       UpdateStrongReferences assembly state.InstrumentedAssemblies |> ignore
       if included <> Inspect.Ignore then
         assembly.MainModule.AssemblyReferences.Add(state.RecordingAssembly.Name)
@@ -739,7 +748,7 @@ module internal Instrument =
     | AfterMethod(m, included, track) -> VisitAfterMethod state m included track
     | AfterType -> state
     | AfterModule -> state
-    | AfterAssembly assembly -> VisitAfterAssembly state assembly
+    | AfterAssembly (assembly, paths) -> VisitAfterAssembly state assembly paths
     | Finish -> FinishVisit state
 
   let internal InstrumentationVisitorWrapper (core : InstrumentContext -> Node -> InstrumentContext)

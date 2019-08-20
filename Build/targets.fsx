@@ -46,7 +46,7 @@ let AltCoverFilterX(p : Primitive.PrepareParams) =
            AssemblyFilter =
              [ "Mono"; @"\.Recorder"; @"\.DataCollector"; "Sample"; "nunit"; "Newton"; "xunit"; "BlackFox" ]
              @ (p.AssemblyFilter |> Seq.toList)
-           TypeFilter = [ @"System\."; @"Sample3\.Class2" ] @ (p.TypeFilter |> Seq.toList) }
+           TypeFilter = [ @"System\."; @"Sample3\.Class2"; "Tests" ] @ (p.TypeFilter |> Seq.toList) }
 
 let AltCoverFilterG(p : Primitive.PrepareParams) =
   { p with MethodFilter = "WaitForExitCustom" :: (p.MethodFilter |> Seq.toList)
@@ -275,7 +275,7 @@ _Target "BuildMonoSamples" (fun _ ->
 
     ("./_Mono/Sample3",
      [ "-target:library"; "-debug"; "-out:./_Mono/Sample3/Sample3.dll";
-       "-lib:./packages/Mono.Cecil.0.10.3/lib/net40"; "-r:Mono.Cecil.dll";
+       "-lib:./packages/Mono.Cecil.0.10.4/lib/net40"; "-r:Mono.Cecil.dll";
        "./Sample3/Class1.cs" ]) ]
   |> Seq.iter
        (fun (dir, cmd) ->
@@ -378,7 +378,9 @@ _Target "FxCop" (fun _ -> // Needs debug because release is compiled --standalon
                 "-Microsoft.Naming#CA1704"
                 "-Microsoft.Naming#CA1707"
                 "-Microsoft.Naming#CA1709"
-                "-Microsoft.Naming#CA1715" ]
+                "-Microsoft.Naming#CA1715"
+                "-Microsoft.Usage#CA2208"
+                 ]
 
   [ ([
          "_Binaries/AltCover/Debug+AnyCPU/AltCover.exe"
@@ -507,28 +509,7 @@ _Target "FxCop" (fun _ -> // Needs debug because release is compiled --standalon
 
 // Unit Test
 
-_Target "UnitTest" (fun _ ->
-  let numbers =
-    !!(@"_Reports/_Unit*/Summary.xml")
-    |> Seq.collect (fun f ->
-         let xml = XDocument.Load f
-         xml.Descendants(XName.Get("Linecoverage"))
-         |> Seq.map (fun e ->
-              let coverage = e.Value.Split('%').[0]
-              match Double.TryParse coverage with
-              | (false, _) ->
-                Assert.Fail("Could not parse coverage " + coverage)
-                0.0
-              | (_, numeric) ->
-                printfn "%s : %A" (f
-                                   |> Path.GetDirectoryName
-                                   |> Path.GetFileName) numeric
-                numeric))
-    |> Seq.toList
-  if numbers
-     |> List.tryFind (fun n -> n <= 99.0)
-     |> Option.isSome
-  then Assert.Fail("Coverage is too low"))
+_Target "UnitTest" ignore
 
 _Target "JustUnitTest" (fun _ ->
   Directory.ensure "./_Reports"
@@ -677,6 +658,7 @@ _Target "UnitTestWithOpenCover" (fun _ ->
 _Target "UnitTestWithAltCover" (fun _ ->
   Directory.ensure "./_Reports/_UnitTestWithAltCover"
   let keyfile = Path.getFullName "Build/SelfTest.snk"
+  let shadowkeyfile = Path.getFullName "Build/Infrastructure.snk"
   let reports = Path.getFullName "./_Reports"
   let altcover = Tools.findToolInSubPath "AltCover.exe" "./_Binaries"
   let here = Path.getFullName "."
@@ -691,7 +673,7 @@ _Target "UnitTestWithAltCover" (fun _ ->
     let prep =
       AltCover.PrepareParams.Primitive
         ({ Primitive.PrepareParams.Create() with XmlReport = xaltReport
-                                                 OutputDirectory = "./__UnitTestWithAltCover"
+                                                 OutputDirectories = [| "./__UnitTestWithAltCover" |]
                                                  StrongNameKey = keyfile
                                                  OpenCover = false
                                                  InPlace = false
@@ -712,16 +694,18 @@ _Target "UnitTestWithAltCover" (fun _ ->
                   ShadowCopy = false })
 
     let altReport = reports @@ "UnitTestWithAltCover.xml"
+    let weakDir = Path.getFullName "_Binaries/AltCover.WeakNameTests/Debug+AnyCPU"
     printfn "Instrumented the code"
     let prep =
       AltCover.PrepareParams.Primitive
         ({ Primitive.PrepareParams.Create() with XmlReport = altReport
-                                                 OutputDirectory = "./__UnitTestWithAltCover"
+                                                 InputDirectories = [| "."; weakDir|]
+                                                 OutputDirectories = [| "./__UnitTestWithAltCover"; weakDir @@ "__WeakNameTestWithAltCover" |]
                                                  StrongNameKey = keyfile
                                                  OpenCover = false
                                                  InPlace = false
                                                  Save = false }
-        |> AltCoverFilter)
+        |> AltCoverFilterX)
       |> AltCover.Prepare
     { AltCover.Params.Create prep with ToolPath = altcover
                                        ToolType = AltCover.ToolType.Framework
@@ -738,6 +722,7 @@ _Target "UnitTestWithAltCover" (fun _ ->
     printfn "Unit test the instrumented code"
     try
       [ !!"_Binaries/AltCover.Tests/Debug+AnyCPU/__UnitTestWithAltCover/*.Tests.dll"
+        !!"_Binaries/AltCover.WeakNameTests/Debug+AnyCPU/__WeakNameTestWithAltCover/Alt*Test*.dll"
         !!"_Binaries/AltCover.Tests/Debug+AnyCPU/__UnitTestWithAltCover/*ple2.dll" ]
       |> Seq.concat
       |> Seq.distinct
@@ -749,32 +734,6 @@ _Target "UnitTestWithAltCover" (fun _ ->
       printfn "%A" x
       reraise()
 
-    printfn "Instrument the weakname tests"
-    let weakDir = Path.getFullName "_Binaries/AltCover.WeakNameTests/Debug+AnyCPU"
-    let weakReport = reports @@ "WeakNameTestWithAltCover.xml"
-
-    let prep =
-      AltCover.PrepareParams.Primitive
-        ({ Primitive.PrepareParams.Create() with XmlReport = weakReport
-                                                 OutputDirectory =
-                                                   "./__WeakNameTestWithAltCover"
-                                                 StrongNameKey = keyfile
-                                                 InPlace = false
-                                                 Save = false }
-          |> AltCoverFilter)
-      |> AltCover.Prepare
-    { AltCover.Params.Create prep with ToolPath = altcover
-                                       ToolType = AltCover.ToolType.Framework
-                                       WorkingDirectory = weakDir }
-    |> AltCover.run
-
-    printfn "Execute the weakname tests"
-    !!("_Binaries/AltCover.WeakNameTests/Debug+AnyCPU/__WeakNameTestWithAltCover/Alt*Test*.dll")
-    |> NUnit3.run (fun p ->
-         { p with ToolPath = Tools.findToolInSubPath "nunit3-console.exe" "."
-                  WorkingDir = "."
-                  ResultSpecs = [ "./_Reports/WeakNameTestWithAltCoverReport.xml" ] })
-
     printfn "Instrument the shadow tests"
     let shadowDir = Path.getFullName "_Binaries/AltCover.Shadow.Tests/Debug+AnyCPU"
     let shadowReport = reports @@ "ShadowTestWithAltCover.xml"
@@ -782,9 +741,9 @@ _Target "UnitTestWithAltCover" (fun _ ->
     let prep =
       AltCover.PrepareParams.Primitive
         ({ Primitive.PrepareParams.Create() with XmlReport = shadowReport
-                                                 OutputDirectory =
-                                                   "./__ShadowTestWithAltCover"
-                                                 StrongNameKey = keyfile
+                                                 OutputDirectories =
+                                                   [| "./__ShadowTestWithAltCover" |]
+                                                 StrongNameKey = shadowkeyfile
                                                  InPlace = false
                                                  Save = false }
          |> AltCoverFilter)
@@ -806,12 +765,13 @@ _Target "UnitTestWithAltCover" (fun _ ->
                ReportTypes =
                  [ ReportGenerator.ReportType.Html; ReportGenerator.ReportType.XmlSummary ]
                TargetDir = "_Reports/_UnitTestWithAltCover" })
-      [ xaltReport; altReport; weakReport; shadowReport ]
+      [ xaltReport; altReport; shadowReport ]
   else printfn "Symbols not present; skipping")
 
 _Target "UnitTestWithAltCoverRunner" (fun _ ->
   Directory.ensure "./_Reports/_UnitTestWithAltCover"
   let keyfile = Path.getFullName "Build/SelfTest.snk"
+  let shadowkeyfile = Path.getFullName "Build/Infrastructure.snk"
   let reports = Path.getFullName "./_Reports"
   let altcover =
     Tools.findToolInSubPath "AltCover.exe" "./_Binaries/AltCover/Debug+AnyCPU"
@@ -828,8 +788,8 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
     let prep =
       AltCover.PrepareParams.Primitive
         ({ Primitive.PrepareParams.Create() with XmlReport = xaltReport
-                                                 OutputDirectory =
-                                                   "./__UnitTestWithAltCoverRunner"
+                                                 OutputDirectories =
+                                                   [| "./__UnitTestWithAltCoverRunner" |]
                                                  StrongNameKey = keyfile
                                                  Single = true
                                                  InPlace = false
@@ -869,8 +829,8 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
     let prep =
       AltCover.PrepareParams.Primitive
         ({ Primitive.PrepareParams.Create() with XmlReport = altReport
-                                                 OutputDirectory =
-                                                   "./__UnitTestWithAltCoverRunner"
+                                                 OutputDirectories =
+                                                   [| "./__UnitTestWithAltCoverRunner" |]
                                                  StrongNameKey = keyfile
                                                  Single = true
                                                  InPlace = false
@@ -912,8 +872,8 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
     let prep =
       AltCover.PrepareParams.Primitive
         ({ Primitive.PrepareParams.Create() with XmlReport = weakReport
-                                                 OutputDirectory =
-                                                   "./__WeakNameTestWithAltCoverRunner"
+                                                 OutputDirectories =
+                                                   [| "./__WeakNameTestWithAltCoverRunner" |]
                                                  TypeFilter = [ "WeakNameTest" ]
                                                  StrongNameKey = keyfile
                                                  Single = true
@@ -950,9 +910,9 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
     let prep =
       AltCover.PrepareParams.Primitive
         ({ Primitive.PrepareParams.Create() with XmlReport = shadowReport
-                                                 OutputDirectory =
-                                                   "./__ShadowTestWithAltCoverRunner"
-                                                 StrongNameKey = keyfile
+                                                 OutputDirectories =
+                                                   [| "./__ShadowTestWithAltCoverRunner" |]
+                                                 StrongNameKey = shadowkeyfile
                                                  InPlace = false
                                                  Save = false }
           |> AltCoverFilter)
@@ -986,8 +946,8 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
     let prep =
       AltCover.PrepareParams.Primitive
         ({ Primitive.PrepareParams.Create() with XmlReport = gtkReport
-                                                 OutputDirectory =
-                                                   "./__GTKVTestWithAltCoverRunner"
+                                                 OutputDirectories =
+                                                   [| "./__GTKVTestWithAltCoverRunner" |]
                                                  TypeFilter = [ "Gui" ]
                                                  AssemblyFilter = [ "\\-sharp" ]
                                                  StrongNameKey = keyfile
@@ -1077,7 +1037,7 @@ _Target "UnitTestWithAltCoverCore" // Obsolete
   let prep =
       AltCover.PrepareParams.Primitive
         ({ Primitive.PrepareParams.Create() with XmlReport = altReport
-                                                 OutputDirectory = output
+                                                 OutputDirectories = [| output |]
                                                  StrongNameKey = keyfile
                                                  OpenCover = false
                                                  InPlace = false
@@ -1112,7 +1072,7 @@ _Target "UnitTestWithAltCoverCore" // Obsolete
   let prep =
       AltCover.PrepareParams.Primitive
         ({ Primitive.PrepareParams.Create() with XmlReport = shadowReport
-                                                 OutputDirectory = shadowOut
+                                                 OutputDirectories = [| shadowOut |]
                                                  StrongNameKey = keyfile
                                                  OpenCover = false
                                                  InPlace = false
@@ -1142,7 +1102,7 @@ _Target "UnitTestWithAltCoverCore" // Obsolete
   let prep =
       AltCover.PrepareParams.Primitive
         ({ Primitive.PrepareParams.Create() with XmlReport = xReport
-                                                 OutputDirectory = xOut
+                                                 OutputDirectories = [| xOut |]
                                                  StrongNameKey = keyfile
                                                  OpenCover = false
                                                  InPlace = false
@@ -1205,7 +1165,7 @@ _Target "UnitTestWithAltCoverCoreRunner"
   let prep =
       AltCover.PrepareParams.Primitive
         ({ Primitive.PrepareParams.Create() with XmlReport = altReport
-                                                 OutputDirectory = output
+                                                 OutputDirectories = [| output |]
                                                  Single = true
                                                  InPlace = false
                                                  Save = false }
@@ -1247,7 +1207,7 @@ _Target "UnitTestWithAltCoverCoreRunner"
   let prep =
       AltCover.PrepareParams.Primitive
         ({ Primitive.PrepareParams.Create() with XmlReport = shadowReport
-                                                 OutputDirectory = shadowOut
+                                                 OutputDirectories = [| shadowOut |]
                                                  Single = true
                                                  InPlace = false
                                                  Save = false }
@@ -1289,7 +1249,7 @@ _Target "UnitTestWithAltCoverCoreRunner"
   let prep =
       AltCover.PrepareParams.Primitive
         ({ Primitive.PrepareParams.Create() with XmlReport = xReport
-                                                 OutputDirectory = xOut
+                                                 OutputDirectories = [| xOut |]
                                                  Single = true
                                                  InPlace = false
                                                  Save = false }
@@ -1342,7 +1302,7 @@ _Target "FSharpTypes" (fun _ ->
     let prep =
       AltCover.PrepareParams.Primitive
         ({ Primitive.PrepareParams.Create() with XmlReport = simpleReport
-                                                 OutputDirectory = "./" + instrumented
+                                                 OutputDirectories = [| "./" + instrumented |]
                                                  AssemblyFilter = [ "Adapter"; "nunit" ]
                                                  TypeFilter = [ "System\\."; "Microsoft\\." ]
                                                  InPlace = false
@@ -1454,7 +1414,7 @@ _Target "FSharpTypesDotNetRunner" (fun _ ->
   let prep =
       AltCover.PrepareParams.Primitive
         ({ Primitive.PrepareParams.Create() with XmlReport = simpleReport
-                                                 OutputDirectory = instrumented
+                                                 OutputDirectories = [ instrumented ]
                                                  AssemblyFilter = [ "Adapter" ]
                                                  TypeFilter = [ "System\\."; "Microsoft\\." ]
                                                  InPlace = false
@@ -1570,8 +1530,8 @@ _Target "CSharpMonoWithDotNet" (fun _ ->
   let prep =
       AltCover.PrepareParams.Primitive
         ({ Primitive.PrepareParams.Create() with XmlReport = x
-                                                 OutputDirectory = o
-                                                 InputDirectory = i
+                                                 OutputDirectories = [ o ]
+                                                 InputDirectories = [ i ]
                                                  TypeFilter = [ "System\\." ]
                                                  InPlace = false
                                                  OpenCover = false
@@ -1595,8 +1555,8 @@ _Target "CSharpDotNetWithDotNet"
   let prep =
       AltCover.PrepareParams.Primitive
         ({ Primitive.PrepareParams.Create() with XmlReport = x
-                                                 OutputDirectory = o
-                                                 InputDirectory = i
+                                                 OutputDirectories = [ o ]
+                                                 InputDirectories = [ i ]
                                                  TypeFilter = [ "System\\." ]
                                                  InPlace = false
                                                  OpenCover = false
@@ -1622,7 +1582,7 @@ _Target "CSharpDotNetWithFramework" (fun _ ->
   let prep =
       AltCover.PrepareParams.Primitive
         ({ Primitive.PrepareParams.Create() with XmlReport = simpleReport
-                                                 OutputDirectory = instrumented
+                                                 OutputDirectories = [| instrumented |]
                                                  TypeFilter = [ "System\\."; "Microsoft\\." ]
                                                  InPlace = false
                                                  OpenCover = false
@@ -1649,7 +1609,7 @@ _Target "SelfTest" (fun _ ->
   let prep =
       AltCover.PrepareParams.Primitive
         ({ Primitive.PrepareParams.Create() with XmlReport = altReport
-                                                 OutputDirectory = "__SelfTest"
+                                                 OutputDirectories = [| "__SelfTest" |]
                                                  StrongNameKey = keyfile
                                                  OpenCover = false
                                                  InPlace = false
@@ -1683,7 +1643,7 @@ _Target "SelfTest" (fun _ ->
   let prep =
       AltCover.PrepareParams.Primitive
         ({ Primitive.PrepareParams.Create() with XmlReport = altReport2
-                                                 OutputDirectory = "./__SelfTestDummy"
+                                                 OutputDirectories = [| "./__SelfTestDummy" |]
                                                  StrongNameKey = keyfile
                                                  OpenCover = false
                                                  InPlace = false
@@ -1712,7 +1672,7 @@ _Target "RecordResumeTest"
   let prep =
       AltCover.PrepareParams.Primitive
         ({ Primitive.PrepareParams.Create() with XmlReport = simpleReport
-                                                 OutputDirectory = instrumented
+                                                 OutputDirectories = [ instrumented ]
                                                  TypeFilter = [ "System\\."; "Microsoft\\." ]
                                                  AssemblyFilter = [ "Adapter"; "nunit" ]
                                                  InPlace = false
@@ -1777,7 +1737,7 @@ _Target "RecordResumeTrackingTest" (fun _ ->
   let prep =
       AltCover.PrepareParams.Primitive
         ({ Primitive.PrepareParams.Create() with XmlReport = simpleReport
-                                                 OutputDirectory = instrumented
+                                                 OutputDirectories = [ instrumented ]
                                                  CallContext = [ "Main" ]
                                                  TypeFilter = [ "System\\."; "Microsoft\\." ]
                                                  AssemblyFilter = [ "Adapter"; "nunit" ]
@@ -1847,7 +1807,7 @@ _Target "RecordResumeTestDotNet"
   let prep =
       AltCover.PrepareParams.Primitive
         ({ Primitive.PrepareParams.Create() with XmlReport = simpleReport
-                                                 OutputDirectory = instrumented
+                                                 OutputDirectories = [ instrumented ]
                                                  TypeFilter = [ "System\\."; "Microsoft\\." ]
                                                  AssemblyFilter = [ "Adapter"; "nunit" ]
                                                  InPlace = false
@@ -1916,7 +1876,7 @@ _Target "RecordResumeTestUnderMono" // Fails : System.EntryPointNotFoundExceptio
   let prep =
       AltCover.PrepareParams.Primitive
         ({ Primitive.PrepareParams.Create() with XmlReport = simpleReport
-                                                 OutputDirectory = instrumented
+                                                 OutputDirectories = [ instrumented ]
                                                  TypeFilter = [ "System\\."; "Microsoft\\." ]
                                                  AssemblyFilter = [ "Adapter"; "nunit" ]
                                                  InPlace = false
@@ -1986,6 +1946,7 @@ _Target "RecordResumeTestUnderMono" // Fails : System.EntryPointNotFoundExceptio
 
 _Target "Packaging" (fun _ ->
   let AltCover = Path.getFullName "_Binaries/AltCover/Release+AnyCPU/AltCover.exe"
+  let config = AltCover + ".config"
   let fox = Path.getFullName "_Binaries/AltCover/Release+AnyCPU/BlackFox.CommandLine.dll"
   let fscore = Path.getFullName "_Binaries/AltCover/Release+AnyCPU/FSharp.Core.dll"
   let options = Path.getFullName "_Binaries/AltCover/Release+AnyCPU/Mono.Options.dll"
@@ -2017,6 +1978,7 @@ _Target "Packaging" (fun _ ->
 
   let applicationFiles =
       [ (AltCover, Some "tools/net45", None)
+        (config, Some "tools/net45", None)
         (recorder, Some "tools/net45", None)
         (posh, Some "tools/net45", None)
         (fsapi, Some "tools/net45", None)
@@ -2028,6 +1990,7 @@ _Target "Packaging" (fun _ ->
 
   let apiFiles =
       [ (AltCover, Some "lib/net45", None)
+        (config, Some "lib/net45", None)
         (recorder, Some "lib/net45", None)
         (posh, Some "lib/net45", None)
         (fsapi, Some "lib/net45", None)
@@ -2212,6 +2175,7 @@ _Target "Packaging" (fun _ ->
     (List.concat [ netcoreFiles "lib/netcoreapp2.0"
                    poshFiles "lib/netcoreapp2.0/"
                    dataFiles "lib/netcoreapp2.0/"
+                   [ (packable, Some "", None) ]
                    dotnetFiles
                    otherFilesDotnet ], "_Packaging.dotnet",
      "./_Generated/altcover.dotnet.nuspec", "altcover.dotnet")
@@ -2220,16 +2184,19 @@ _Target "Packaging" (fun _ ->
                    netcoreFiles "tools/netcoreapp2.1/any"
                    poshFiles "tools/netcoreapp2.1/any/"
                    dataFiles "tools/netcoreapp2.1/any/"
+                   [ (packable, Some "", None) ]
                    auxFiles
                    otherFilesGlobal ], "_Packaging.global",
      "./_Generated/altcover.global.nuspec", "altcover.global")
 
     (List.concat [ vizFiles "tools/netcoreapp2.1/any"
+                   [ (packable, Some "", None) ]
                    auxVFiles ], "_Packaging.visualizer",
      "./_Generated/altcover.visualizer.nuspec", "altcover.visualizer")
 
     (List.concat [ fake2Files "lib/netstandard2.0/"
                    fox2Files "lib/netstandard2.0/"
+                   [ (packable, Some "", None) ]
                    [ (fake2, Some "lib/net45", None)
                      (fox, Some "lib/net45", None) ] ], "_Packaging.fake",
      "./_Generated/altcover.fake.nuspec", "altcover.fake") ]
@@ -2355,7 +2322,7 @@ _Target "Pester" (fun _ ->
   let prep =
       AltCover.PrepareParams.Primitive
         ({ Primitive.PrepareParams.Create() with XmlReport = report
-                                                 InputDirectory = i
+                                                 InputDirectories = [ i ]
                                                  StrongNameKey = key
                                                  TypeFilter = [ "System\\."; "DotNet" ]
                                                  AssemblyFilter = [ "^AltCover$"; "Recorder"; "DataCollector" ]
@@ -2423,7 +2390,7 @@ _Target "ReleaseDotNetWithFramework" (fun _ ->
   let prep =
       AltCover.PrepareParams.Primitive
         ({ Primitive.PrepareParams.Create() with XmlReport = simpleReport
-                                                 OutputDirectory = instrumented
+                                                 OutputDirectories = [ instrumented ]
                                                  TypeFilter = [ "System\\."; "Microsoft\\." ]
                                                  InPlace = false
                                                  OpenCover = false
@@ -2450,8 +2417,8 @@ _Target "ReleaseMonoWithDotNet" (fun _ ->
   let prep =
       AltCover.PrepareParams.Primitive
         ({ Primitive.PrepareParams.Create() with XmlReport = x
-                                                 OutputDirectory = o
-                                                 InputDirectory = i
+                                                 OutputDirectories = [ o ]
+                                                 InputDirectories = [ i ]
                                                  InPlace = false
                                                  OpenCover = false
                                                  Save = false })
@@ -2475,8 +2442,8 @@ _Target "ReleaseDotNetWithDotNet"
   let prep =
       AltCover.PrepareParams.Primitive
         ({ Primitive.PrepareParams.Create() with XmlReport = x
-                                                 OutputDirectory = o
-                                                 InputDirectory = i
+                                                 OutputDirectories = [ o ]
+                                                 InputDirectories = [ i ]
                                                  InPlace = false
                                                  OpenCover = false
                                                  Save = false })
@@ -2502,8 +2469,8 @@ _Target "ReleaseFSharpTypesDotNetRunner" (fun _ ->
   let prep =
       AltCover.PrepareParams.Primitive
         ({ Primitive.PrepareParams.Create() with XmlReport = x
-                                                 OutputDirectory = o
-                                                 InputDirectory = i
+                                                 OutputDirectories = [ o ]
+                                                 InputDirectories = [ i ]
                                                  AssemblyFilter = [ "Adapter" ]
                                                  InPlace = false
                                                  OpenCover = false
@@ -2566,8 +2533,8 @@ _Target "ReleaseFSharpTypesX86DotNetRunner" (fun _ ->
       let prep =
         AltCover.PrepareParams.Primitive
           ({ Primitive.PrepareParams.Create() with XmlReport = x
-                                                   OutputDirectory = o
-                                                   InputDirectory = i
+                                                   OutputDirectories = [ o ]
+                                                   InputDirectories = [ i ]
                                                    AssemblyFilter = [ "Adapter" ]
                                                    InPlace = false
                                                    OpenCover = false
@@ -2614,8 +2581,8 @@ _Target "ReleaseXUnitFSharpTypesDotNet" (fun _ ->
   let prep =
       AltCover.PrepareParams.Primitive
         ({ Primitive.PrepareParams.Create() with XmlReport = x
-                                                 OutputDirectory = o
-                                                 InputDirectory = i
+                                                 OutputDirectories = [ o ]
+                                                 InputDirectories = [ i ]
                                                  AssemblyFilter = [ "xunit" ]
                                                  InPlace = false
                                                  OpenCover = false
@@ -2651,8 +2618,8 @@ _Target "ReleaseXUnitFSharpTypesDotNetRunner" (fun _ ->
   let prep =
       AltCover.PrepareParams.Primitive
         ({ Primitive.PrepareParams.Create() with XmlReport = x
-                                                 OutputDirectory = o
-                                                 InputDirectory = i
+                                                 OutputDirectories = [ o ]
+                                                 InputDirectories = [ i ]
                                                  AssemblyFilter = [ "xunit" ]
                                                  InPlace = false
                                                  OpenCover = false
@@ -2693,8 +2660,8 @@ _Target "ReleaseXUnitFSharpTypesDotNetFullRunner" (fun _ ->
   let prep =
       AltCover.PrepareParams.Primitive
         ({ Primitive.PrepareParams.Create() with XmlReport = x
-                                                 OutputDirectory = o
-                                                 InputDirectory = i
+                                                 OutputDirectories = [ o ]
+                                                 InputDirectories = [ i ]
                                                  CallContext = [ "0"; "[Fact]" ]
                                                  AssemblyFilter = [ "xunit" ]
                                                  InPlace = false
@@ -2870,14 +2837,14 @@ Target.runOrDefault "DoIt"
 """
     File.WriteAllText("./_ApiUse/DriveApi.fsx", script)
 
-    let dependencies = """version 5.206.0
+    let dependencies = """version 5.216.0
 // [ FAKE GROUP ]
 group NetcoreBuild
   source https://api.nuget.org/v3/index.json
   nuget Fake.Core >= 5.8.4
-  nuget Fake.Core.Target >= 5.13.7
-  nuget Fake.DotNet.Cli >= 5.13.7
-  nuget FSharp.Core = 4.6.2
+  nuget Fake.Core.Target >= 5.16
+  nuget Fake.DotNet.Cli >= 5.16
+  nuget FSharp.Core = 4.7
 
   source {0}
   nuget AltCover.Api {1}
@@ -3280,7 +3247,7 @@ _Target "DotnetCLIIntegration" (fun _ ->
     let prep =
       AltCover.PrepareParams.Primitive
         ({ Primitive.PrepareParams.Create() with XmlReport = x
-                                                 InputDirectory = o
+                                                 InputDirectories = [ o ]
                                                  CallContext = [ "0"; "[Fact]" ]
                                                  AssemblyFilter = [| "xunit" |]
                                                  Save = false })
@@ -3377,7 +3344,7 @@ _Target "DotnetGlobalIntegration" (fun _ ->
     let prep =
       AltCover.PrepareParams.Primitive
         ({ Primitive.PrepareParams.Create() with XmlReport = x
-                                                 InputDirectory = o
+                                                 InputDirectories = [ o ]
                                                  CallContext = [ "0"; "[Fact]" ]
                                                  AssemblyFilter = [| "xunit" |]
                                                  Save = false })
@@ -3436,7 +3403,37 @@ _Target "BulkReport" (fun _ ->
   |> ReportGenerator.generateReports (fun p ->
        { p with ExePath = Tools.findToolInSubPath "ReportGenerator.exe" "."
                 ReportTypes = [ ReportGenerator.ReportType.Html ]
-                TargetDir = "_Reports/_BulkReport" }))
+                TargetDir = "_Reports/_BulkReport" })
+
+  let misses = ref 0
+  let numbers =
+    !!(@"_Reports/_Unit*/Summary.xml")
+    |> Seq.collect (fun f ->
+         let xml = XDocument.Load f
+         xml.Descendants(XName.Get("Linecoverage"))
+         |> Seq.filter (fun x -> match String.IsNullOrWhiteSpace x.Value with
+                                 | false -> true
+                                 | _ -> sprintf "No coverage from '%s'" f |> Trace.traceImportant
+                                        misses := 1 + !misses
+                                        false)
+         |> Seq.map (fun e ->
+              let coverage = e.Value.Split('%').[0]
+              match Double.TryParse coverage with
+              | (false, _) ->
+                printfn "%A" xml
+                Assert.Fail("Could not parse coverage '" + e.Value + "'")
+                0.0
+              | (_, numeric) ->
+                printfn "%s : %A" (f
+                                   |> Path.GetDirectoryName
+                                   |> Path.GetFileName) numeric
+                numeric))
+    |> Seq.toList
+  if numbers
+     |> List.tryFind (fun n -> n <= 99.0)
+     |> Option.isSome
+     || !misses > 1
+  then Assert.Fail("Coverage is too low"))
 
 _Target "All" ignore
 
@@ -3512,7 +3509,7 @@ Target.activateFinal "ResetConsoleColours"
 ==> "UnitTestWithAltCoverCoreRunner"
 ==> "UnitTest"
 
-"UnitTestDotNet"
+"UnitTestWithAltCoverRunner"
 ==> "BuildForCoverlet"
 ==> "UnitTestDotNetWithCoverlet"
 =?> ("UnitTest", Environment.isWindows)
@@ -3699,6 +3696,7 @@ Target.activateFinal "ResetConsoleColours"
 ==> "All"
 
 "UnitTest"
+==> "BulkReport"
 ==> "All"
 
 "OperationalTest"

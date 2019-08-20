@@ -2,20 +2,21 @@ namespace Tests.Runner
 
 open System
 open System.Collections.Generic
+open System.Diagnostics.CodeAnalysis
 open System.IO
 open System.IO.Compression
 open System.Reflection
 open System.Text.RegularExpressions
 open System.Xml
 open System.Xml.Linq
+open System.Xml.Schema
 
 open AltCover
 open AltCover.Augment
 open AltCover.Base
 open Mono.Options
 open NUnit.Framework
-open System.Diagnostics.CodeAnalysis
-open System.Xml.Schema
+open Swensen.Unquote
 
 [<TestFixture>]
 type AltCoverTests() =
@@ -28,13 +29,13 @@ type AltCoverTests() =
         { new System.IDisposable with
             member x.Dispose() = ObjectDisposedException("Bang!") |> raise }
       Assist.SafeDispose obj1
-      Assert.Pass()
+      test <@ true @>
 
     [<Test>]
     member self.JunkUspidGivesNegativeIndex() =
       let key = " "
       let index = Counter.FindIndexFromUspid 0 key
-      Assert.That(index, Is.LessThan 0)
+      test <@ index < 0 @>
 
     [<Test>]
     member self.RealIdShouldIncrementCount() =
@@ -1317,22 +1318,23 @@ type AltCoverTests() =
         let result = stderr.ToString().Replace("\r\n", "\n")
         let expected = "\"RuNN\" \"-r\" \"" + unique + "\"\n"
                        + "--recorderDirectory : Directory " + unique + " not found\n" + """Error - usage is:
-  -i, --inputDirectory=VALUE Optional: The folder containing assemblies to
-                               instrument (default: current directory)
+  -i, --inputDirectory=VALUE Optional, multiple: A folder containing assemblies
+                               to instrument (default: current directory)
   -o, --outputDirectory=VALUE
-                             Optional: The folder to receive the instrumented
-                               assemblies and their companions (default: sub-
-                               folder '__Instrumented' of the current directory;
-                                or '__Saved' if 'inplace' is set)
+                             Optional, multiple: A folder to receive the
+                               instrumented assemblies and their companions (
+                               default: sub-folder '__Instrumented' of the
+                               current directory; or '__Saved' if '--inplace'
+                               is set).
+                               See also '--inplace'
   -y, --symbolDirectory=VALUE
                              Optional, multiple: Additional directory to search
                                for matching symbols for the assemblies in the
                                input directory
-"""
-#if NETCOREAPP2_0
-                     + """  -d, --dependency=VALUE     Optional,multiple: assembly path to resolve
+  -d, --dependency=VALUE     Optional, multiple: assembly path to resolve
                                missing reference.
 """
+#if NETCOREAPP2_0
 #else
                      + """  -k, --key=VALUE            Optional, multiple: any other strong-name key to
                                use

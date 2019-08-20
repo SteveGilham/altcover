@@ -1098,21 +1098,21 @@ type AltCoverTests() =
 
       let inputs =
         [ Node.Start []
-          Node.Assembly(def, Inspect.Instrument)
+          Node.Assembly(def, Inspect.Instrument, [])
           Node.Module(null, Inspect.Ignore)
           Node.Type(null, Inspect.Instrument)
           Node.Method(null, Inspect.Ignore, None)
           Node.MethodPoint(null, None, 0, true)
           Node.AfterMethod(null, Inspect.Ignore, None)
           Node.AfterModule
-          Node.AfterAssembly def
+          Node.AfterAssembly (def, [])
           Node.Finish ]
 
       let outputs = inputs |> Seq.map (fun n -> n.After() |> Seq.toList)
 
       let expected =
         [ [ Finish ]
-          [ AfterAssembly def ]
+          [ AfterAssembly (def, []) ]
           [ AfterModule ]
           [ AfterType ]
           [ AfterMethod(null, Inspect.Ignore, None) ]
@@ -1157,7 +1157,7 @@ type AltCoverTests() =
         [ Node.MethodPoint(null, None, 0, true)
           Node.AfterMethod(null, Inspect.Ignore, None)
           Node.AfterModule
-          Node.AfterAssembly def
+          Node.AfterAssembly (def, [])
           Node.Finish ]
 
       let outputs = inputs |> Seq.map (Visitor.Deeper >> Seq.toList)
@@ -1290,7 +1290,7 @@ type AltCoverTests() =
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
       ProgramDatabase.ReadSymbols def
       Visitor.Visit [] [] // cheat reset
-      let deeper = Visitor.Deeper <| Node.Assembly(def, Inspect.Instrument) |> Seq.toList
+      let deeper = Visitor.Deeper <| Node.Assembly(def, Inspect.Instrument, []) |> Seq.toList
       Visitor.Visit [] [] // cheat reset
       let expected =
         def.Modules // we have no nested types in this test
@@ -1308,22 +1308,22 @@ type AltCoverTests() =
       let where = Assembly.GetExecutingAssembly().Location
       let path =
         Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), sample1)
-      let deeper = Visitor.Deeper <| Node.Start [ path ] |> Seq.toList
+      let deeper = Visitor.Deeper <| Node.Start [ path, [] ] |> Seq.toList
 
       // assembly definitions care about being separate references in equality tests
       let def =
         match Seq.head deeper with
-        | Node.Assembly(def', Inspect.Instrument) -> def'
+        | Node.Assembly(def', Inspect.Instrument, []) -> def'
         | _ ->
           Assert.Fail()
           null
 
-      let assembly = Node.Assembly(def, Inspect.Instrument)
+      let assembly = Node.Assembly(def, Inspect.Instrument, [])
 
       let expected =
         List.concat [ [ assembly ]
                       (Visitor.Deeper >> Seq.toList) assembly
-                      [ AfterAssembly def ] ]
+                      [ AfterAssembly (def, []) ] ]
       Assert.That(deeper.Length, Is.EqualTo 23)
       Assert.That(deeper |> Seq.map string, Is.EquivalentTo(expected |> Seq.map string))
 
@@ -1338,22 +1338,22 @@ type AltCoverTests() =
         |> (Regex
             >> FilterClass.Assembly
             >> Visitor.NameFilters.Add)
-        let deeper = Visitor.Deeper <| Node.Start [ path ] |> Seq.toList
+        let deeper = Visitor.Deeper <| Node.Start [ path, [] ] |> Seq.toList
 
         // assembly definitions care about being separate references in equality tests
         let def =
           match Seq.head deeper with
-          | Node.Assembly(def', Inspect.Ignore) -> def'
+          | Node.Assembly(def', Inspect.Ignore, []) -> def'
           | _ ->
             Assert.Fail()
             null
 
-        let assembly = Node.Assembly(def, Inspect.Ignore)
+        let assembly = Node.Assembly(def, Inspect.Ignore, [])
 
         let expected =
           List.concat [ [ assembly ]
                         (Visitor.Deeper >> Seq.toList) assembly
-                        [ AfterAssembly def ] ]
+                        [ AfterAssembly (def, []) ] ]
         Assert.That(deeper.Length, Is.EqualTo 4)
         Assert.That(deeper, Is.EquivalentTo expected)
       finally
@@ -1404,22 +1404,26 @@ type AltCoverTests() =
         Visitor.EncloseState (fun (x : System.Collections.Generic.List<Node>) t ->
           x.Add t
           x) accumulator
-      Visitor.Visit [ fix ] [ path ]
+
+      let u = Guid.NewGuid().ToString()
+      let u2 = Guid.NewGuid().ToString()
+      let ux = [ u; u2 ]
+      Visitor.Visit [ fix ] [ path, ux ]
       // assembly definitions care about being separate references in equality tests
       let def =
         match accumulator.[1] with
-        | Node.Assembly(def', Inspect.Instrument) -> def'
+        | Node.Assembly(def', Inspect.Instrument, ux) -> def'
         | _ ->
           Assert.Fail()
           null
 
-      let assembly = Node.Assembly(def, Inspect.Instrument)
+      let assembly = Node.Assembly(def, Inspect.Instrument, ux)
 
       let expected =
-        List.concat [ [ Start [ path ]
+        List.concat [ [ Start [ path, ux ]
                         assembly ]
                       (Visitor.Deeper >> Seq.toList) assembly
-                      [ AfterAssembly def
+                      [ AfterAssembly (def, ux)
                         Finish ] ]
       Assert.That
         (accumulator |> Seq.map string, Is.EquivalentTo(expected |> Seq.map string))
@@ -1748,7 +1752,7 @@ type AltCoverTests() =
         |> (Regex
             >> FilterClass.Method
             >> Visitor.NameFilters.Add)
-        Visitor.Visit [ visitor ] (Visitor.ToSeq path)
+        Visitor.Visit [ visitor ] (Visitor.ToSeq (path, []))
 
         let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
         let xml = AltCoverTests.TTBaseline
@@ -1771,7 +1775,7 @@ type AltCoverTests() =
       let path = Path.Combine(here, "_SourceLink/Sample14.dll")
       try
         Visitor.sourcelink := true
-        Visitor.Visit [ visitor ] (Visitor.ToSeq path)
+        Visitor.Visit [ visitor ] (Visitor.ToSeq (path, []))
         Assert.That(Visitor.SourceLinkDocuments |> Option.isSome, "Documents should be present")
         let map = Visitor.SourceLinkDocuments |> Option.get
         let url = map.Values |> Seq.find (fun f -> f.EndsWith ("*", StringComparison.Ordinal))
@@ -1817,7 +1821,7 @@ type AltCoverTests() =
         |> (Regex
             >> FilterClass.Path
             >> Visitor.NameFilters.Add)
-        Visitor.Visit [ visitor ] (Visitor.ToSeq path)
+        Visitor.Visit [ visitor ] (Visitor.ToSeq (path, []))
         let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
         let xml = AltCoverTests.TTBaseline
         let xml' =
@@ -1844,7 +1848,7 @@ type AltCoverTests() =
         |> (Regex
             >> FilterClass.Module
             >> Visitor.NameFilters.Add)
-        Visitor.Visit [ visitor ] (Visitor.ToSeq path)
+        Visitor.Visit [ visitor ] (Visitor.ToSeq (path, []))
         let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
         let xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>
 <?xml-stylesheet href=\"coverage.xsl\" type=\"text/xsl\"?>
@@ -1874,7 +1878,7 @@ type AltCoverTests() =
             >> FilterClass.Module
             >> Visitor.NameFilters.Add)
         Visitor.TrackingNames.Add("Main")
-        Visitor.Visit [ visitor ] (Visitor.ToSeq path)
+        Visitor.Visit [ visitor ] (Visitor.ToSeq (path, []))
         let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
         let xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>
 <?xml-stylesheet href=\"coverage.xsl\" type=\"text/xsl\"?>
@@ -2080,7 +2084,7 @@ type AltCoverTests() =
       let path = Path.Combine(here, "_SourceLink/Sample14.dll")
       try
         Visitor.sourcelink := true
-        Visitor.Visit [ visitor ] (Visitor.ToSeq path)
+        Visitor.Visit [ visitor ] (Visitor.ToSeq (path, []))
         Assert.That(Visitor.SourceLinkDocuments |> Option.isSome, "Documents should be present")
         let map = Visitor.SourceLinkDocuments |> Option.get
         let url = map.Values |> Seq.find (fun f -> f.EndsWith ("*", StringComparison.Ordinal))
@@ -2121,7 +2125,7 @@ type AltCoverTests() =
       try
         Visitor.NameFilters.Clear()
         Visitor.reportFormat <- Some Base.ReportFormat.OpenCover
-        Visitor.Visit [ visitor ] (Visitor.ToSeq path)
+        Visitor.Visit [ visitor ] (Visitor.ToSeq (path, []))
         let resource =
           Assembly.GetExecutingAssembly().GetManifestResourceNames()
           |> Seq.find
@@ -2147,7 +2151,7 @@ type AltCoverTests() =
         Visitor.NameFilters.Clear()
         Visitor.reportFormat <- Some Base.ReportFormat.OpenCover
         Visitor.coverstyle <- CoverStyle.LineOnly
-        Visitor.Visit [ visitor ] (Visitor.ToSeq path)
+        Visitor.Visit [ visitor ] (Visitor.ToSeq (path,[]))
         let resource =
           Assembly.GetExecutingAssembly().GetManifestResourceNames()
           |> Seq.find
@@ -2185,7 +2189,7 @@ type AltCoverTests() =
         Visitor.NameFilters.Clear()
         Visitor.reportFormat <- Some Base.ReportFormat.OpenCover
         Visitor.coverstyle <- CoverStyle.BranchOnly
-        Visitor.Visit [ visitor ] (Visitor.ToSeq path)
+        Visitor.Visit [ visitor ] (Visitor.ToSeq (path, []))
         let resource =
           Assembly.GetExecutingAssembly().GetManifestResourceNames()
           |> Seq.find
@@ -2237,7 +2241,7 @@ type AltCoverTests() =
         Visitor.TrackingNames.Clear()
         Visitor.TrackingNames.Add("Main")
         Visitor.reportFormat <- Some Base.ReportFormat.OpenCover
-        Visitor.Visit [ visitor ] (Visitor.ToSeq path)
+        Visitor.Visit [ visitor ] (Visitor.ToSeq (path, []))
         let baseline = self.AddTrackingForMain "Sample1WithOpenCover.xml"
         let result = document.Elements()
         let expected = baseline.Elements()
@@ -2259,7 +2263,7 @@ type AltCoverTests() =
         |> (Regex
             >> FilterClass.Module
             >> Visitor.NameFilters.Add)
-        Visitor.Visit [ visitor ] (Visitor.ToSeq path)
+        Visitor.Visit [ visitor ] (Visitor.ToSeq (path, []))
         let raw = "<CoverageSession xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">
         <Summary numSequencePoints=\"0\" visitedSequencePoints=\"0\" numBranchPoints=\"0\" visitedBranchPoints=\"0\" sequenceCoverage=\"0\" branchCoverage=\"0\" maxCyclomaticComplexity=\"0\" minCyclomaticComplexity=\"1\" visitedClasses=\"0\" numClasses=\"0\" visitedMethods=\"0\" numMethods=\"0\" />
         <Modules>
@@ -2293,7 +2297,7 @@ type AltCoverTests() =
         |> (Regex
             >> FilterClass.Module
             >> Visitor.NameFilters.Add)
-        Visitor.Visit [ visitor ] (Visitor.ToSeq path)
+        Visitor.Visit [ visitor ] (Visitor.ToSeq (path, []))
         let raw = "<CoverageSession xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">
         <Summary numSequencePoints=\"0\" visitedSequencePoints=\"0\" numBranchPoints=\"0\" visitedBranchPoints=\"0\" sequenceCoverage=\"0\" branchCoverage=\"0\" maxCyclomaticComplexity=\"0\" minCyclomaticComplexity=\"1\" visitedClasses=\"0\" numClasses=\"0\" visitedMethods=\"0\" numMethods=\"0\" />
         <Modules>
@@ -2331,7 +2335,7 @@ type AltCoverTests() =
         |> (Regex
             >> FilterClass.Type
             >> Visitor.NameFilters.Add)
-        Visitor.Visit [ visitor ] (Visitor.ToSeq path)
+        Visitor.Visit [ visitor ] (Visitor.ToSeq (path, []))
         let resource =
           Assembly.GetExecutingAssembly().GetManifestResourceNames()
           |> Seq.find
@@ -2362,7 +2366,7 @@ type AltCoverTests() =
         |> (Regex
             >> FilterClass.Type
             >> Visitor.NameFilters.Add)
-        Visitor.Visit [ visitor ] (Visitor.ToSeq path)
+        Visitor.Visit [ visitor ] (Visitor.ToSeq (path, []))
         let baseline = self.AddTrackingForMain "Sample1ClassExclusion.xml"
         let result = document.Elements()
         let expected = baseline.Elements()
@@ -2384,7 +2388,7 @@ type AltCoverTests() =
         |> (Regex
             >> FilterClass.Method
             >> Visitor.NameFilters.Add)
-        Visitor.Visit [ visitor ] (Visitor.ToSeq path)
+        Visitor.Visit [ visitor ] (Visitor.ToSeq (path, []))
         let resource =
           Assembly.GetExecutingAssembly().GetManifestResourceNames()
           |> Seq.find
@@ -2410,7 +2414,7 @@ type AltCoverTests() =
         |> (Regex
             >> FilterClass.Path
             >> Visitor.NameFilters.Add)
-        Visitor.Visit [ visitor ] (Visitor.ToSeq path)
+        Visitor.Visit [ visitor ] (Visitor.ToSeq (path,[]))
         let resource =
           Assembly.GetExecutingAssembly().GetManifestResourceNames()
           |> Seq.find
@@ -2450,7 +2454,7 @@ type AltCoverTests() =
         |> (Regex
             >> FilterClass.Method
             >> Visitor.NameFilters.Add)
-        Visitor.Visit [ visitor ] (Visitor.ToSeq path)
+        Visitor.Visit [ visitor ] (Visitor.ToSeq (path,[]))
         let baseline = self.AddTrackingForMain "Sample1MethodExclusion.xml"
         let result = document.Elements()
         let expected = baseline.Elements()
@@ -2481,7 +2485,7 @@ type AltCoverTests() =
 #else
       let path' = path
 #endif
-      Visitor.Visit [ visitor ] (Visitor.ToSeq path')
+      Visitor.Visit [ visitor ] (Visitor.ToSeq (path',[]))
       Assert.That(document.Descendants(X "Module") |> Seq.length, Is.EqualTo 1)
       Assert.That(document.Descendants(X "File") |> Seq.length, Is.GreaterThan 1)
       document.Descendants(X "File")

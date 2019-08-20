@@ -126,15 +126,15 @@ type PrepareParams =
     |> PrepareParams.ToSeq
     |> Seq.toList
 
-  member self.InputDirectory =
+  member self.InputDirectories =
     match self with
-    | Primitive p -> p.InputDirectory
-    | TypeSafe t -> t.InputDirectory.AsString()
+    | Primitive p -> p.InputDirectories |> PrepareParams.ToList
+    | TypeSafe t -> t.InputDirectories.AsStrings()
 
-  member self.OutputDirectory =
+  member self.OutputDirectories =
     match self with
-    | Primitive p -> p.OutputDirectory
-    | TypeSafe t -> t.OutputDirectory.AsString()
+    | Primitive p -> p.OutputDirectories |> PrepareParams.ToList
+    | TypeSafe t -> t.OutputDirectories.AsStrings()
 
   member self.SymbolDirectories =
     match self with
@@ -294,10 +294,10 @@ type PrepareParams =
 
     try
       CommandLine.error <- []
-      PrepareParams.validateOptional CommandLine.ValidateDirectory "--inputDirectory"
-        self.InputDirectory
-      PrepareParams.validateOptional CommandLine.ValidatePath "--outputDirectory"
-        self.OutputDirectory
+      PrepareParams.validateArray self.InputDirectories CommandLine.ValidateDirectory
+        "--inputDirectory"
+      PrepareParams.validateArray self.OutputDirectories CommandLine.ValidatePath
+        "--outputDirectory"
       PrepareParams.validateOptional CommandLine.ValidateStrongNameKey "--strongNameKey"
         self.StrongNameKey
       PrepareParams.validateOptional CommandLine.ValidatePath "--xmlReport" self.XmlReport
@@ -387,16 +387,10 @@ module internal Args =
       if List.isEmpty argsList then []
       else "--" :: argsList
 
-    [ Item "-i" args.InputDirectory
-      Item "-o" args.OutputDirectory
+    [ ItemList "-i" args.InputDirectories
+      ItemList "-o" args.OutputDirectories
       ItemList "-y" args.SymbolDirectories
-      ItemList "-d"
-#if RUNNER
-                    args.Dependencies
-#else
-                    (if e = Framework then [] else args.Dependencies)
-#endif
-
+      ItemList "-d" args.Dependencies
       ItemList "-k"
 #if RUNNER
                     args.Keys

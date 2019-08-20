@@ -103,11 +103,15 @@
   -->
   <ItemGroup>
     <AssemblyFilter Include="xunit" />
-  </ItemGroup>  
-  <Target Name="AfterBuild" Condition="'$(MSBuildTest)' == 'true'" >
-    <AltCover.Prepare 
-      InputDirectory="$(MSBuildThisFileDirectory)../_Binaries/Sample4/Debug+AnyCPU"  
-      OutputDirectory="$(MSBuildThisFileDirectory)../_Binaries/Sample4/Debug+AnyCPU/__Saved$([System.DateTime]::UtcNow.ToString().Replace(':','-').Replace('/','-').Replace(' ','+'))"  
+  </ItemGroup>
+  <Target Name="AfterBuild" Condition="'$(MSBuildTest)' == 'true'">
+    <ItemGroup>
+      <InputDirectory Include="$(MSBuildThisFileDirectory)../_Binaries/Sample4/Debug+AnyCPU" />
+      <OutputDirectory Include="$(MSBuildThisFileDirectory)../_Binaries/Sample4/Debug+AnyCPU/__Saved$([System.DateTime]::UtcNow.ToString().Replace(':','-').Replace('/','-').Replace(' ','+'))" />
+    </ItemGroup>
+    <AltCover.Prepare
+      InputDirectories="@(InputDirectory)"
+      OutputDirectories= "@(OutputDirectory)"
       XmlReport="$(MSBuildThisFileDirectory)../_Reports/Sample4.Prepare.xml"
       AssemblyFilter="@(AssemblyFilter)"
       />  

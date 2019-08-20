@@ -1,4 +1,4 @@
-version: 5.3.{build}-pre
+version: 6.0.{build}-pre
 branches:
   except:
   - /develop.*/
@@ -8,9 +8,6 @@ clone_depth: 2
 environment:
   COVERALLS_REPO_TOKEN:
     secure: qgIIfE76i59qTVO64mT7QwKcAUUYCQLie4XdUdlnt7MXLhrwqTbcfGUsCss/TmLg
-cache: 
-  - packages -> **\packages.config
-  - '%USERPROFILE%\.nuget\packages -> **\*.*proj'
 nuget:
   disable_publish_on_pr: true
 install:

@@ -10,6 +10,7 @@ open Mono.Cecil.Cil
 open Mono.Cecil.Rocks
 open Mono.Options
 open NUnit.Framework
+open Swensen.Unquote
 
 [<TestFixture>]
 type AltCoverTests2() =
@@ -22,6 +23,12 @@ type AltCoverTests2() =
     let recorderSnk = typeof<AltCover.Node>.Assembly.GetManifestResourceNames()
                       |> Seq.find (fun n -> n.EndsWith(".Recorder.snk", StringComparison.Ordinal))
 #endif
+
+    let test' x message =
+      try
+        test x
+      with
+      | fail -> AssertionFailedException(message + Environment.NewLine + fail.Message, fail) |> raise
 
     let infrastructureSnk =
       Assembly.GetExecutingAssembly().GetManifestResourceNames()
@@ -330,17 +337,18 @@ type AltCoverTests2() =
       let x = CommandLine.ValidateAssembly "*" "**"
       Assert.That(x, Is.EqualTo(String.Empty, false))
 
-#if NETCOREAPP2_0
     [<Test>]
     member self.ShouldBeAbleToLocateAReference() =
       let where = Assembly.GetExecutingAssembly().Location
       let here = Path.GetDirectoryName where
+#if NETCOREAPP2_0
       let json = Directory.GetFiles(here, "*.json")
-      Assert.That(json, Is.Not.Empty, "no json")
+      test' <@ json |> Seq.isEmpty |> not @> "no json"
       json
       |> Seq.iter (fun j ->
            let a = CommandLine.FindAssemblyName j
-           Assert.That(String.IsNullOrWhiteSpace a, j))
+           test' <@ String.IsNullOrWhiteSpace a @> j)
+#endif
       let raw = Mono.Cecil.AssemblyDefinition.ReadAssembly where
       Instrument.ResolutionTable.Clear()
       try
@@ -348,15 +356,15 @@ type AltCoverTests2() =
         |> Seq.filter
              (fun f -> f.Name.IndexOf("Mono.Cecil", StringComparison.Ordinal) >= 0)
         |> Seq.iter (fun f ->
-             let resolved = Instrument.ResolveFromNugetCache null f
-             Assert.That(resolved, Is.Not.Null, f.ToString()))
+             let resolved = Instrument.HookResolveHandler.Invoke(null, f)
+             test' <@ resolved |> isNull |> not @> <| f.ToString())
         raw.MainModule.AssemblyReferences
         |> Seq.filter
              (fun f -> f.Name.IndexOf("Mono.Cecil", StringComparison.Ordinal) >= 0)
         |> Seq.iter (fun f ->
              f.Version <- System.Version("666.666.666.666")
-             let resolved = Instrument.ResolveFromNugetCache null f
-             Assert.That(resolved, Is.Null, f.ToString()))
+             let resolved = Instrument.HookResolveHandler.Invoke(null, f)
+             test' <@ resolved |> isNull @> <| f.ToString())
         let found = Instrument.ResolutionTable.Keys |> Seq.toList
         found
         |> Seq.iter (fun k ->
@@ -369,11 +377,10 @@ type AltCoverTests2() =
              (fun f -> f.Name.IndexOf("Mono.Cecil", StringComparison.Ordinal) >= 0)
         |> Seq.iter (fun f ->
              f.Version <- System.Version("666.666.666.666")
-             let resolved = Instrument.ResolveFromNugetCache null f
-             Assert.That(resolved, Is.Not.Null, f.ToString()))
+             let resolved = Instrument.HookResolveHandler.Invoke(null, f)
+             test' <@ resolved |> isNull |> not @> <| f.ToString())
       finally
         Instrument.ResolutionTable.Clear()
-#endif
 
     [<Test>]
     member self.ShouldBeAbleToPrepareTheAssembly() =
@@ -478,6 +485,11 @@ type AltCoverTests2() =
         let unique = Guid.NewGuid().ToString()
         let output = Path.GetTempFileName()
         let outputdll = output + ".dll"
+        let where = output |> Path.GetDirectoryName
+        let what = outputdll |> Path.GetFileName
+        let second = Path.Combine(where, Guid.NewGuid().ToString())
+        let alter = Path.Combine (second, what)
+        Directory.CreateDirectory(second) |> ignore
         let save = Visitor.reportPath
         let save2 = Visitor.reportFormat
         let save3 = Visitor.interval
@@ -488,7 +500,13 @@ type AltCoverTests2() =
           Visitor.single <- true
           Assert.That(Visitor.Sampling(), Base.Sampling.Single |> int |> Is.EqualTo)
           let prepared = Instrument.PrepareAssembly path
-          Instrument.WriteAssembly prepared outputdll
+          let traces = System.Collections.Generic.List<string>()
+          Instrument.WriteAssemblies prepared what [where;second] (fun s -> s.Replace("\r", String.Empty).Replace("\n", String.Empty) |> traces.Add)
+          let expectedTraces = [
+            "    " + outputdll + "                <=  Sample3.g, Version=0.0.0.0, Culture=neutral, PublicKeyToken=4ebffcaabf10ce6a"
+            "    " + alter + "                <=  Sample3.g, Version=0.0.0.0, Culture=neutral, PublicKeyToken=4ebffcaabf10ce6a"
+          ]
+          Assert.That(traces, Is.EquivalentTo expectedTraces)
           let expectedSymbols = if "Mono.Runtime" |> Type.GetType |> isNull |> not then ".dll.mdb" else ".pdb"
           let isWindows =
 #if NETCOREAPP2_0
@@ -498,6 +516,8 @@ type AltCoverTests2() =
 #endif
           if isWindows then Assert.That (File.Exists (outputdll.Replace(".dll", expectedSymbols)))
           let raw = Mono.Cecil.AssemblyDefinition.ReadAssembly outputdll
+          let raw2 = Mono.Cecil.AssemblyDefinition.ReadAssembly alter
+          Assert.That (raw.MainModule.Mvid, Is.EqualTo raw2.MainModule.Mvid)
           Assert.That raw.Name.HasPublicKey
           // Assert.That (Option.isSome <| Instrument.KnownKey raw.Name) <- not needed
           let token' = String.Join(String.Empty, raw.Name.PublicKeyToken|> Seq.map (fun x -> x.ToString("x2")))
@@ -529,6 +549,13 @@ type AltCoverTests2() =
                                 with // occasionally the dll file is locked by another process
                                 | :? System.UnauthorizedAccessException
                                 | :? IOException -> ())
+          Directory.EnumerateFiles(Path.GetDirectoryName alter,
+                                   (Path.GetFileNameWithoutExtension alter) + ".*")
+          |> Seq.iter (fun f -> try File.Delete f
+                                with // occasionally the dll file is locked by another process
+                                | :? System.UnauthorizedAccessException
+                                | :? IOException -> ())
+
           Assert.That(Visitor.Sampling(), Base.Sampling.All |> int |> Is.EqualTo)
       finally
         Visitor.keys.Clear()
@@ -1419,7 +1446,7 @@ type AltCoverTests2() =
         Mono.Cecil.AssemblyDefinition.ReadAssembly
           (Assembly.GetExecutingAssembly().Location)
       let state = InstrumentContext.Build [ "nunit.framework"; "nonesuch" ]
-      let visited = Node.Assembly(def, Inspect.Ignore)
+      let visited = Node.Assembly(def, Inspect.Ignore, [])
       let result =
         Instrument.InstrumentationVisitor { state with RecordingAssembly = fake } visited
       Assert.That(def.MainModule.AssemblyReferences, Is.EquivalentTo refs)
@@ -1445,7 +1472,7 @@ type AltCoverTests2() =
         Mono.Cecil.AssemblyDefinition.ReadAssembly
           (Assembly.GetExecutingAssembly().Location)
       let state = InstrumentContext.Build [ "nunit.framework"; "nonesuch" ]
-      let visited = Node.Assembly(def, Inspect.Instrument)
+      let visited = Node.Assembly(def, Inspect.Instrument, [])
       let result =
         Instrument.InstrumentationVisitor { state with RecordingAssembly = fake } visited
       Assert.That
@@ -1847,8 +1874,10 @@ type AltCoverTests2() =
         let here = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
         let there = Path.Combine(here, Guid.NewGuid().ToString())
         let toInfo = Directory.CreateDirectory there
-        Visitor.outputDirectory <- Some toInfo.FullName
-        Visitor.inputDirectory <- Some here
+        Visitor.outputDirectories.Clear()
+        Visitor.inputDirectories.Clear()
+        Visitor.outputDirectories.Add toInfo.FullName
+        Visitor.inputDirectories.Add here
         Assert.That(info.ToString(), Is.Empty)
         Assert.That(err.ToString(), Is.Empty)
         let name = "ArgumentExceptionWrites"
@@ -1882,7 +1911,7 @@ type AltCoverTests2() =
         CommandLine.exceptions <- []
         Output.Info <- (fst saved)
         Output.Error <- (snd saved)
-        Visitor.outputDirectory <- None
+        Visitor.outputDirectories.Clear()
 
     [<Test>]
     member self.ArgumentExceptionWritesEx() =
@@ -1905,8 +1934,10 @@ type AltCoverTests2() =
         let here = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
         let there = Path.Combine(here, Guid.NewGuid().ToString())
         let toInfo = Directory.CreateDirectory there
-        Visitor.outputDirectory <- Some toInfo.FullName
-        Visitor.inputDirectory <- Some here
+        Visitor.outputDirectories.Clear()
+        Visitor.inputDirectories.Clear()
+        Visitor.outputDirectories.Add toInfo.FullName
+        Visitor.inputDirectories.Add here
         Assert.That(info.ToString(), Is.Empty)
         Assert.That(err.ToString(), Is.Empty)
         let name = "ArgumentExceptionWrites"
@@ -1942,7 +1973,7 @@ type AltCoverTests2() =
         CommandLine.exceptions <- []
         Output.Info <- (fst saved)
         Output.Error <- (snd saved)
-        Visitor.outputDirectory <- None
+        Visitor.outputDirectories.Clear()
 
     [<Test>]
     member self.IOExceptionWrites() =
