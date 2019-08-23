@@ -38,7 +38,7 @@
 * Some improvements to the throughput of coverage data, reducing time taken by the instrumented self-tests.
 
 # 5.0.664 (Ezoguma series release 2)
-* [BUGFIX] Issue #49 -- `dotnet test` integration : internally, escape the '\' character, which is  is helpfully treated by MSBuild as a path separator and flipped to be '/' on non-Windows platforms when introduced through `/p:AltCover*Filter` arguments.
+* [BUGFIX] Issue #49 -- `dotnet test` integration : internally, escape the `'\'` character, which is  is helpfully treated by MSBuild as a path separator and flipped to be `'/'` on non-Windows platforms when introduced through `/p:AltCover*Filter` arguments.
 * [BUGFIX] Issue #48 -- fix embedded-PDB detection to avoid false positives
 * Updating consumed libraries and related changes.
 
