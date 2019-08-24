@@ -339,17 +339,8 @@ module internal Instrument =
     pkey.WriteSymbols <- isWindows
     pkey.SymbolWriterProvider <- CreateSymbolWriter pdb isWindows monoRuntime
 #endif
-#if CECIL_0_11
     KnownKey assembly.Name
-    |> Option.iter (fun key -> pkey.StrongNameKeyBlob <- key.Blob)
-#else
-#if NETCOREAPP2_0
-#else
-    // Also, there are no strongnames in .net core
-    KnownKey assembly.Name
-    |> Option.iter (fun key -> pkey.StrongNameKeyPair <- StrongNameKeyPair(key.Blob |> List.toArray))
-#endif
-#endif
+    |> Option.iter (fun key -> pkey.StrongNameKeyBlob <- key.Blob |> List.toArray)
 
     let here = Directory.GetCurrentDirectory()
     try
