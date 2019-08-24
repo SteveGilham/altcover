@@ -441,10 +441,7 @@ module XTests =
       Console.SetError stderr
       let args =
         [| "-i"; input; "-o"; output; "-x"; report; "--opencover"
-#if NETCOREAPP2_1
-#else
-           "-sn"; key
-#endif
+           "--sn"; key
            "-s=Adapter"; "-s=xunit"
            "-s=nunit"; "-e=Sample"; "-c=[Test]"; "--save" |]
       let result = Main.DoInstrumentation args
@@ -467,13 +464,9 @@ module XTests =
       use stream = new FileStream(key, FileMode.Open)
       use buffer = new MemoryStream()
       stream.CopyTo(buffer)
-      let snk = StrongNameKeyPair(buffer.ToArray())
-#if NETCOREAPP2_1
-      Assert.Equal(Visitor.keys.Count, 0)
-#else
+      let snk = StrongNameKeyData.Make(buffer.ToArray())
       Assert.True (Visitor.keys.ContainsKey(KeyStore.KeyToIndex snk))
       Assert.Equal (2, Visitor.keys.Count)
-#endif
 
       Assert.True(File.Exists report)
       Assert.True(File.Exists(report + ".acv"))
@@ -627,10 +620,7 @@ module XTests =
       Console.SetOut stdout
       Console.SetError stderr
       let args = [| "-i"; input; "-o"; output; "-x"; report
-#if NETCOREAPP2_1
-#else
                     "-sn"; key
-#endif
                  |]
       let result = Main.DoInstrumentation args
       Assert.Equal(result, 0)
@@ -652,13 +642,9 @@ module XTests =
       use stream = new FileStream(key, FileMode.Open)
       use buffer = new MemoryStream()
       stream.CopyTo(buffer)
-      let snk = StrongNameKeyPair(buffer.ToArray())
-#if NETCOREAPP2_1
-      Assert.Equal(Visitor.keys.Count, 0)
-#else
+      let snk = StrongNameKeyData.Make(buffer.ToArray())
       Assert.True (Visitor.keys.ContainsKey(KeyStore.KeyToIndex snk))
       Assert.Equal (2, Visitor.keys.Count)
-#endif
 
       Assert.True(File.Exists report)
       let pdb = Path.ChangeExtension(Assembly.GetExecutingAssembly().Location, ".pdb")

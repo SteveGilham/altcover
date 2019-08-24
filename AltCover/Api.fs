@@ -378,7 +378,7 @@ module internal Args =
   let Prepare
 #if RUNNER
 #else
-      (e : CoverageEnvironment)
+      (_ : CoverageEnvironment)
 #endif
       (args : PrepareParams) =
     let argsList = args.CommandLine |> Seq.toList
@@ -391,19 +391,8 @@ module internal Args =
       ItemList "-o" args.OutputDirectories
       ItemList "-y" args.SymbolDirectories
       ItemList "-d" args.Dependencies
-      ItemList "-k"
-#if RUNNER
-                    args.Keys
-#else
-                    (if e = Dotnet then [] else args.Keys)
-#endif
-
-      Item "--sn"
-#if RUNNER
-                    args.StrongNameKey
-#else
-                    (if e = Dotnet then String.Empty else args.StrongNameKey)
-#endif
+      ItemList "-k" args.Keys
+      Item "--sn" args.StrongNameKey
       Item "-x" args.XmlReport
       ItemList "-f" args.FileFilter
       ItemList "-s" args.AssemblyFilter
