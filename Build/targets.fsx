@@ -3201,6 +3201,40 @@ _Target "Issue23" (fun _ ->
     Shell.mkdir folder
     Shell.deleteDir folder)
 
+_Target "Issue67" (fun _ ->
+  try
+    Directory.ensure "./_Issue67"
+    Shell.cleanDir ("./_Issue67")
+    let config = XDocument.Load "./Build/NuGet.config.dotnettest"
+    let repo = config.Descendants(XName.Get("add")) |> Seq.head
+    repo.SetAttributeValue(XName.Get "value", Path.getFullName "./_Packaging")
+    config.Save "./_Issue67/NuGet.config"
+
+    let csproj = XDocument.Load "./Sample9/sample9.csproj"
+    let pack = csproj.Descendants(XName.Get("PackageReference")) |> Seq.head
+    let inject =
+      XElement
+        (XName.Get "PackageReference", XAttribute(XName.Get "Include", "altcover"),
+         XAttribute(XName.Get "Version", !Version))
+    pack.AddBeforeSelf inject
+    csproj.Save "./_Issue67/sample9.csproj"
+    Shell.copy "./_Issue67" (!!"./Sample9/*.cs")
+    DotNet.restore (fun o -> o.WithCommon(withWorkingDirectoryVM "_Issue67")) ""
+
+    let p0 = { Primitive.PrepareParams.Create() with AssemblyExcludeFilter = [| "^(?!(NamespaceA|NamespaceB)).*$" |] }
+    let pp0 = AltCover.PrepareParams.Primitive p0
+    let c0 = Primitive.CollectParams.Create()
+    let cc0 = AltCover.CollectParams.Primitive c0
+    DotNet.test (fun p ->
+      (({ p.WithCommon(withWorkingDirectoryVM "_Issue67") with Configuration = DotNet.BuildConfiguration.Debug
+                                                               NoBuild = false }).WithParameters pp0 cc0 ForceTrue)
+        .WithImportModule().WithGetVersion()
+      |> withCLIArgs) ""
+  finally
+    let folder = (nugetCache @@ "altcover") @@ !Version
+    Shell.mkdir folder
+    Shell.deleteDir folder)
+
 _Target "DotnetCLIIntegration" (fun _ ->
   try
     Directory.ensure "./_DotnetCLITest"
@@ -3670,6 +3704,10 @@ Target.activateFinal "ResetConsoleColours"
 "Unpack"
 ==> "Issue23"
 =?> ("Deployment", Environment.isWindows)
+
+"Unpack"
+==> "Issue67"
+==> "Deployment"
 
 "Unpack"
 ==> "Issue20"
