@@ -325,9 +325,13 @@ module internal CommandLine =
     else (StrongNameKeyData.Empty(), false)
 
   let internal ValidateRegexes(x : String) =
+    let descape (s:string) =
+      s.Replace('\u0000',';')
+
     doPathOperation
       (fun () ->
-      x.Split([| ";" |], StringSplitOptions.RemoveEmptyEntries) |> Array.map Regex) [||]
+      x.Replace(";;","\u0000").Split([| ";" |], StringSplitOptions.RemoveEmptyEntries)
+      |> Array.map (descape >> Regex)) [||]
       false
 
   let internal ddFlag name flag =

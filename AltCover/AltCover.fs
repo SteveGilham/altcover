@@ -80,7 +80,7 @@ module internal Main =
 
   let internal DeclareOptions() =
     let makeFilter filterclass (x: String) =
-      x.Replace('\u0000', '\\')
+      x.Replace('\u0000', '\\').Replace('\u0001','|')
       |> CommandLine.ValidateRegexes
       |> Seq.iter (filterclass >> Visitor.NameFilters.Add)
 

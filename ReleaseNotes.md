@@ -2,8 +2,8 @@ Q. Never mind the fluff -- how do I get started?
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
-# 6.0.xxx (Fukurou series release 2)
-* ...
+# 6.0.700 (Fukurou series release 2)
+* [BUGFIX] in `dotnet test` the pipe character `|` is used as a separator because the previous choice of `;` didn't play nice with MSBuild.  To escape inside regular expressions, double them up `||`.  See the [Usage](https://github.com/SteveGilham/altcover/wiki/Usage) and [`dotnet test`](https://github.com/SteveGilham/altcover/wiki/%60dotnet-test%60-integration) wiki pages for more detail.
 
 # 6.0.698 (Fukurou series release 1)
 * [BREAKING] Allow multiple input and output directories for instrumentation into a single report.  This changes the types in API structures from `string` to `string seq` (F#) or `string[]` (C#) where appropriate.  Use case : [instrument multiple unit test assemblies in one go](https://github.com/SteveGilham/altcover/blob/9f6ed07e9d5d1c35d8c99a589fb77fe1868cecab/Build/targets.fsx#L702-L703) for running as [a single test step](https://github.com/SteveGilham/altcover/blob/9f6ed07e9d5d1c35d8c99a589fb77fe1868cecab/Build/targets.fsx#L724-L726) to collect coverage.
