@@ -988,20 +988,14 @@ type AltCoverTests() =
         Assembly.GetExecutingAssembly().GetManifestResourceStream(infrastructureSnk)
       use buffer = new MemoryStream()
       stream.CopyTo(buffer)
-      StrongNameKeyPair(buffer.ToArray())
+      StrongNameKeyData.Make(buffer.ToArray())
 
     [<Test>]
     member self.KeyHasExpectedToken() =
       let token = KeyStore.TokenOfKey <| self.ProvideKeyPair()
       let token' =
         String.Join(String.Empty, token |> List.map (fun x -> x.ToString("x2")))
-      Assert.That(token', Is.EqualTo( //"c02b1a9f5b7cade8"))
-#if NETCOREAPP2_0
-                                    "0907d8af90186095"
-#else
-                                    "c02b1a9f5b7cade8"
-#endif
-                  ), token')
+      Assert.That(token', Is.EqualTo( "c02b1a9f5b7cade8"))
 
     [<Test>]
     member self.TokenGeneratesExpectedULong() =
@@ -1012,11 +1006,7 @@ type AltCoverTests() =
     member self.KeyHasExpectedIndex() =
       let token = KeyStore.KeyToIndex <| self.ProvideKeyPair()
       Assert.That(token, Is.EqualTo(
-#if NETCOREAPP2_0
-                                    0x95601890afd80709UL
-#else
                                     0xe8ad7c5b9f1a2bc0UL
-#endif
                   ), sprintf "%x" token)
 
     [<Test>]
@@ -1026,17 +1016,20 @@ type AltCoverTests() =
     [<Test>]
     member self.KeyHasExpectedRecord() =
       let pair = self.ProvideKeyPair()
+#if NETCOREAPP2_0
+#else
+      let computed = pair.PublicKey
+      let definitive = StrongNameKeyPair(pair.Blob |> List.toArray).PublicKey
+      Assert.That(computed, Is.EquivalentTo definitive)
+#endif
+
       let token = KeyStore.KeyToRecord <| pair
       Assert.That
         (token,
          Is.EqualTo
            ({ Pair = pair
               Token = BitConverter.GetBytes(
-#if NETCOREAPP2_0
-                                            0x95601890afd80709UL
-#else
                                             0xe8ad7c5b9f1a2bc0UL
-#endif
                                            ) |> Array.toList }))
 
     [<Test>]
@@ -1046,11 +1039,7 @@ type AltCoverTests() =
         let pair = self.ProvideKeyPair()
         Visitor.Add(pair)
         let key =
-#if NETCOREAPP2_0
-                   0x95601890afd80709UL
-#else
                    0xe8ad7c5b9f1a2bc0UL
-#endif
 
         Assert.That(Visitor.keys.ContainsKey(key))
         Assert.That(Visitor.keys.[key],

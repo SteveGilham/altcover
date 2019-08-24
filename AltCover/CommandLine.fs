@@ -318,13 +318,11 @@ module internal CommandLine =
         let blob = File.ReadAllBytes x
         // Available in .netstandard 2.0
         try
-          use csp = new RSACryptoServiceProvider()
-          csp.ImportCspBlob(blob)  // validates and throws as required
-          (csp.ExportCspBlob(true) |> StrongNameKeyPair, true)
+          (blob |> StrongNameKeyData.Make, true)
         with
         | :? CryptographicException as c -> (c.Message, c) |> SecurityException |> raise
-          ) (null, false) false
-    else (null, false)
+        ) (StrongNameKeyData.Empty(), false) false
+    else (StrongNameKeyData.Empty(), false)
 
   let internal ValidateRegexes(x : String) =
     let descape (s:string) =

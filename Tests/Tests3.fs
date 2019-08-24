@@ -85,13 +85,7 @@ type AltCoverTests3() =
     [<Test>]
     member self.ShouldHaveExpectedOptions() =
       let options = Main.DeclareOptions()
-      Assert.That(options.Count, Is.EqualTo
-#if NETCOREAPP2_0
-                                            24
-#else
-                                            26
-#endif
-                 )
+      Assert.That(options.Count, Is.EqualTo 26)
       Assert.That
         (options
          |> Seq.filter (fun x -> x.Prototype <> "<>")
@@ -2015,17 +2009,12 @@ type AltCoverTests3() =
                                input directory
   -d, --dependency=VALUE     Optional, multiple: assembly path to resolve
                                missing reference.
-"""
-#if NETCOREAPP2_0
-#else
-                     + """  -k, --key=VALUE            Optional, multiple: any other strong-name key to
+  -k, --key=VALUE            Optional, multiple: any other strong-name key to
                                use
       --sn, --strongNameKey=VALUE
                              Optional: The default strong naming key to apply
                                to instrumented assemblies (default: None)
-"""
-#endif
-                     + """  -x, --xmlReport=VALUE      Optional: The output report template file (default:
+  -x, --xmlReport=VALUE      Optional: The output report template file (default:
                                 coverage.xml in the current directory)
   -f, --fileFilter=VALUE     Optional, multiple: source file name to exclude
                                from instrumentation
@@ -2123,17 +2112,12 @@ or
                                input directory
   -d, --dependency=VALUE     Optional, multiple: assembly path to resolve
                                missing reference.
-"""
-#if NETCOREAPP2_0
-#else
-                     + """  -k, --key=VALUE            Optional, multiple: any other strong-name key to
+  -k, --key=VALUE            Optional, multiple: any other strong-name key to
                                use
       --sn, --strongNameKey=VALUE
                              Optional: The default strong naming key to apply
                                to instrumented assemblies (default: None)
-"""
-#endif
-                     + """  -x, --xmlReport=VALUE      Optional: The output report template file (default:
+  -x, --xmlReport=VALUE      Optional: The output report template file (default:
                                 coverage.xml in the current directory)
   -f, --fileFilter=VALUE     Optional, multiple: source file name to exclude
                                from instrumentation

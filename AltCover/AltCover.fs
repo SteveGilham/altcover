@@ -28,18 +28,17 @@ module internal Main =
     Visitor.outputDirectories.Clear()
     ProgramDatabase.SymbolFolders.Clear()
     Instrument.ResolutionTable.Clear()
-#if NETCOREAPP2_0
-#else
+
     Visitor.keys.Clear()
     Visitor.defaultStrongNameKey <- None
     use stream =
       Assembly.GetExecutingAssembly().GetManifestResourceStream("AltCover.Recorder.snk")
     use buffer = new MemoryStream()
     stream.CopyTo(buffer)
-    let snk = StrongNameKeyPair(buffer.ToArray())
+    let snk = StrongNameKeyData.Make(buffer.ToArray())
     Visitor.Add snk
     Visitor.recorderStrongNameKey <- Some(snk)
-#endif
+
     Visitor.reportPath <- None
     Visitor.NameFilters.Clear()
     Visitor.interval <- None
@@ -128,8 +127,7 @@ module internal Main =
          if ok then
            Instrument.ResolutionTable.[name] <- AssemblyDefinition.ReadAssembly path) ()
          false))
-#if NETCOREAPP2_0
-#else
+
       ("k|key=",
        (fun x ->
        let (pair, ok) = CommandLine.ValidateStrongNameKey "--key" x
@@ -147,7 +145,6 @@ module internal Main =
          else
            Visitor.defaultStrongNameKey <- Some pair
            Visitor.Add pair))
-#endif
 
       ("x|xmlReport=",
        (fun x ->
