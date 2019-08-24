@@ -46,7 +46,7 @@ module internal Report =
       let element =
         XElement
           (X "module", XAttribute(X "moduleId", moduleDef.Mvid.ToString()),
-           XAttribute(X "name", moduleDef.Name),
+           XAttribute(X "name", moduleDef.FileName |> System.IO.Path.GetFullPath),
            XAttribute(X "assembly", moduleDef.Assembly.Name.Name),
            XAttribute(X "assemblyIdentity", moduleDef.Assembly.Name.FullName),
            XAttribute(X "excluded", ToExcluded included))

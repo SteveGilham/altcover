@@ -535,6 +535,8 @@ Describe "ConvertFrom-NCover" {
     $expected = $expected.Replace("2018-06-13T15:08:24.8840000Z", $time)
     $expected = $expected.Replace("Sample4|Program.fs", (Join-Path $fullpath "Program.fs"))
     $expected = $expected.Replace("Sample4|Tests.fs", (Join-Path $fullpath "Tests.fs"))
+    $expected = $expected.Replace("<ModulePath>./_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1/Sample4.dll",
+                                  "<ModulePath>" + [System.IO.Path]::GetFullPath("./_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1/Sample4.dll"))
 
     $result = $sw.ToString().Replace("`r", "").Replace("utf-16", "utf-8") 
     $result | Should -Be $expected.Replace("`r", "")
@@ -567,6 +569,8 @@ Describe "ConvertFrom-NCover" {
     $expected = $expected.Replace("2018-06-13T15:08:24.8840000Z", $time)
     $expected = $expected.Replace("Sample4|Program.fs", (Join-Path $fullpath "Program.fs"))
     $expected = $expected.Replace("Sample4|Tests.fs", (Join-Path $fullpath "Tests.fs"))
+    $expected = $expected.Replace("<ModulePath>./_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1/Sample4.dll",
+                                  "<ModulePath>" + [System.IO.Path]::GetFullPath("./_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1/Sample4.dll"))
 
     $result = $sw.ToString().Replace("`r", "").Replace("utf-16", "utf-8") 
     $result | Should -Be $expected.Replace("`r", "") ###.Substring(0,11680)

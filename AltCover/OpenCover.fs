@@ -122,7 +122,7 @@ module internal OpenCover =
       element.SetAttributeValue(X "hash", KeyStore.HashFile moduleDef.FileName)
       let head = s.Stack |> Seq.head
       head.Add(element)
-      element.Add(XElement(X "ModulePath", moduleDef.FileName))
+      element.Add(XElement(X "ModulePath", moduleDef.FileName |> Path.GetFullPath))
       element.Add(XElement(X "ModuleTime", File.GetLastWriteTimeUtc moduleDef.FileName))
       element.Add(XElement(X "ModuleName", moduleDef.Assembly.Name.Name))
       if instrumented then element.Add(XElement(X "Files"))

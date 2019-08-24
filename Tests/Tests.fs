@@ -1736,6 +1736,7 @@ type AltCoverTests() =
       let where = Assembly.GetExecutingAssembly().Location
       let path =
         Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), sample1)
+        |> Path.GetFullPath
       try
         "Main"
         |> (Regex
@@ -1747,7 +1748,7 @@ type AltCoverTests() =
         let xml = AltCoverTests.TTBaseline
         let xml' =
           xml.Replace("Version=1.0.0.0", "Version=" + def.Name.Version.ToString())
-        let xml'' = xml'.Replace("name=\"Sample1.exe\"", "name=\"" + sample1 + "\"")
+        let xml'' = xml'.Replace("name=\"Sample1.exe\"", "name=\"" + path + "\"")
         let baseline = XDocument.Load(new System.IO.StringReader(xml''))
         let result = document.Elements()
         let expected = baseline.Elements()
@@ -1805,6 +1806,7 @@ type AltCoverTests() =
       let where = Assembly.GetExecutingAssembly().Location
       let path =
         Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), sample1)
+        |> Path.GetFullPath
       try
         "Program"
         |> (Regex
@@ -1817,7 +1819,7 @@ type AltCoverTests() =
           xml.Replace("Version=1.0.0.0", "Version=" + def.Name.Version.ToString())
              .Replace("excluded=\"true\" instrumented=\"false\"",
                       "excluded=\"false\" instrumented=\"true\"")
-        let xml'' = xml'.Replace("name=\"Sample1.exe\"", "name=\"" + sample1 + "\"")
+        let xml'' = xml'.Replace("name=\"Sample1.exe\"", "name=\"" + path + "\"")
         let baseline = XDocument.Load(new System.IO.StringReader(xml''))
         let result = document.Elements()
         let expected = baseline.Elements()
@@ -1832,6 +1834,7 @@ type AltCoverTests() =
       let where = Assembly.GetExecutingAssembly().Location
       let path =
         Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), sample1)
+        |> Path.GetFullPath
       try
         "Sample"
         |> (Regex
@@ -1846,7 +1849,7 @@ type AltCoverTests() =
 </coverage>"
         let xml' =
           xml.Replace("Version=1.0.0.0", "Version=" + def.Name.Version.ToString())
-        let xml'' = xml'.Replace("name=\"Sample1.exe\"", "name=\"" + sample1 + "\"")
+        let xml'' = xml'.Replace("name=\"Sample1.exe\"", "name=\"" + path + "\"")
         let baseline = XDocument.Load(new System.IO.StringReader(xml''))
         let result = document.Elements()
         let expected = baseline.Elements()
@@ -1861,6 +1864,7 @@ type AltCoverTests() =
       let where = Assembly.GetExecutingAssembly().Location
       let path =
         Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), sample1)
+        |> Path.GetFullPath
       try
         "Sample"
         |> (Regex
@@ -1876,7 +1880,7 @@ type AltCoverTests() =
 </coverage>"
         let xml' =
           xml.Replace("Version=1.0.0.0", "Version=" + def.Name.Version.ToString())
-        let xml'' = xml'.Replace("name=\"Sample1.exe\"", "name=\"" + sample1 + "\"")
+        let xml'' = xml'.Replace("name=\"Sample1.exe\"", "name=\"" + path + "\"")
         let baseline = XDocument.Load(new System.IO.StringReader(xml''))
         let result = document.Elements()
         let expected = baseline.Elements()

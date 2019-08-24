@@ -625,10 +625,11 @@ module XTests =
       let result = Main.DoInstrumentation args
       Assert.Equal(result, 0)
       Assert.Empty(stderr.ToString())
+      let subjectAssembly = Path.Combine(Path.GetFullPath input, "Sample1.exe")
       let expected =
         "Creating folder " + output + "\nInstrumenting files from "
         + (Path.GetFullPath input) + "\nWriting files to " + output + "\n   => "
-        + Path.Combine(Path.GetFullPath input, "Sample1.exe") + "\n\nCoverage Report: "
+        + subjectAssembly + "\n\nCoverage Report: "
         + report + "\n\n\n    " + Path.Combine(Path.GetFullPath output, "Sample1.exe")
         + "\n                <=  Sample1, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null\n"
       let console = stdout.ToString()
@@ -690,7 +691,8 @@ module XTests =
         |> List.sortBy (fun f -> f.ToUpperInvariant())
 
       Assert.Equal<IEnumerable<String>>(theFiles, actual)
-      let expectedXml = XDocument.Load(new System.IO.StringReader(MonoBaseline))
+      let expectedText = MonoBaseline.Replace("name=\"Sample1.exe\"", "name=\"" + subjectAssembly + "\"")
+      let expectedXml = XDocument.Load(new StringReader(expectedText))
       let recordedXml = Runner.LoadReport report
       RecursiveValidate (recordedXml.Elements()) (expectedXml.Elements()) 0 true
     finally
@@ -916,7 +918,8 @@ module XTests =
     let path' = path
 #endif
     Visitor.Visit [ visitor ] (Visitor.ToSeq (path',[]))
-    let baseline = XDocument.Load(new System.IO.StringReader(MonoBaseline))
+    let expectedText = MonoBaseline.Replace("name=\"Sample1.exe\"", "name=\"" + (path' |> Path.GetFullPath) + "\"")
+    let baseline = XDocument.Load(new System.IO.StringReader(expectedText))
     let result = document.Elements()
     let expected = baseline.Elements()
     RecursiveValidate result expected 0 true
@@ -948,6 +951,11 @@ module XTests =
              (fun n -> n.EndsWith("HandRolledMonoCoverage.xml", StringComparison.Ordinal))
       use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
       let baseline = XDocument.Load(stream)
+      ("ModulePath"
+       |> XName.Get
+       |> baseline.Descendants
+       |> Seq.head).SetValue path'
+
       let result = document.Elements()
       let expected = baseline.Elements()
       RecursiveValidateOpenCover result expected 0 true false
