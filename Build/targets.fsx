@@ -3211,6 +3211,9 @@ _Target "Issue67" (fun _ ->
     config.Save "./_Issue67/NuGet.config"
 
     let csproj = XDocument.Load "./Sample9/sample9.csproj"
+    let target = csproj.Descendants(XName.Get("TargetFramework")) |> Seq.head
+    target.SetValue "netcoreapp2.1"
+
     let pack = csproj.Descendants(XName.Get("PackageReference")) |> Seq.head
     let inject =
       XElement
@@ -3221,7 +3224,7 @@ _Target "Issue67" (fun _ ->
     Shell.copy "./_Issue67" (!!"./Sample9/*.cs")
     DotNet.restore (fun o -> o.WithCommon(withWorkingDirectoryVM "_Issue67")) ""
 
-    let p0 = { Primitive.PrepareParams.Create() with AssemblyExcludeFilter = [| "^(?!(NamespaceA|NamespaceB)).*$" |] }
+    let p0 = { Primitive.PrepareParams.Create() with AssemblyExcludeFilter = [| "^(?!(sample9||xunit.runner.reporters.netcoreapp10)).*$" |] }
     let pp0 = AltCover.PrepareParams.Primitive p0
     let c0 = Primitive.CollectParams.Create()
     let cc0 = AltCover.CollectParams.Primitive c0
@@ -3230,6 +3233,13 @@ _Target "Issue67" (fun _ ->
                                                                NoBuild = false }).WithParameters pp0 cc0 ForceTrue)
         .WithImportModule().WithGetVersion()
       |> withCLIArgs) ""
+
+    let cover = XDocument.Load "./_Issue67/coverage.xml"
+    let passed = cover.Descendants(XName.Get("Module"))
+                 |> Seq.filter(fun x -> x.Attribute(XName.Get("skippedDueTo")) |> isNull)
+                 |> Seq.length
+
+    Assert.That (passed, Is.EqualTo 2)
   finally
     let folder = (nugetCache @@ "altcover") @@ !Version
     Shell.mkdir folder
