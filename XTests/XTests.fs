@@ -480,7 +480,6 @@ module XTests =
       let expected =
         [ "AltCover.Recorder.g.dll"
 #if NETCOREAPP2_1
-          "FSharp.Core.dll"
 #else
           "AltCover.Recorder.g.pdb";
 #endif

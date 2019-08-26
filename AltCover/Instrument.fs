@@ -618,25 +618,52 @@ module internal Instrument =
                              CommandLine.resources.GetString "instrumented", definition, pathn) |> sink
                           File.Copy(first, pathn, true))
 
+  let seekFSharpCore version =
+    Directory.GetDirectories(nugetCache, "fsharp.core", SearchOption.AllDirectories)
+    |> Seq.collect Directory.GetDirectories
+    |> Seq.exists (fun path -> let d = path |> Path.GetFileName
+                               let f,c = Version.TryParse d
+                               if f
+                               then c >= Version(version)
+                               else false)
+
   let private FinishVisit(state : InstrumentContext) =
     try
       let recorderFileName = (extractName state.RecordingAssembly) + ".dll"
       WriteAssemblies (state.RecordingAssembly) recorderFileName (Visitor.InstrumentDirectories()) ignore
-      Directory.GetFiles
-        (Visitor.InstrumentDirectories() |> Seq.head, "*.deps.json", SearchOption.TopDirectoryOnly)
+#if NETCOREAPP2_0
+      let haveNuget = seekFSharpCore "4.3.4"
+#endif
+
+      Visitor.InstrumentDirectories()
+      |> Seq.iter (fun instrument ->
+#if NETCOREAPP2_0
+      let mutable deps = false
+#endif
+
+      Directory.GetFiles(instrument, "*.deps.json", SearchOption.TopDirectoryOnly)
       |> Seq.iter (fun f ->
+#if NETCOREAPP2_0
+           deps <- true
+#endif
            File.WriteAllText(f,
                              (f
                               |> File.ReadAllText
                               |> injectJSON)))
+
 #if NETCOREAPP2_0
+      // need f# if it's not a .net core project or we don't have a suitable nuget
+      let needfslib = (deps && haveNuget) |> not
       let fsharplib = Path.Combine(Visitor.InstrumentDirectories() |> Seq.head, "FSharp.Core.dll")
-      if not (File.Exists fsharplib) then
+
+      if needfslib && not (File.Exists fsharplib)
+      then
         use fsharpbytes =
           new FileStream(AltCover.Recorder.Tracer.Core(), FileMode.Open, FileAccess.Read)
         use libstream = new FileStream(fsharplib, FileMode.Create)
         fsharpbytes.CopyTo libstream
 #endif
+      )
     finally
       (state.RecordingAssembly :> IDisposable).Dispose()
     { state with RecordingAssembly = null }
