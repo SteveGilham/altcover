@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 
+using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollection;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollector.InProcDataCollector;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.InProcDataCollector;
@@ -19,7 +20,11 @@ namespace AltCover
                 .FirstOrDefault();
             if (rec == null)
             {
-                Debug.WriteLine("Recorder not found");
+                if (EqtTrace.IsErrorEnabled)
+                {
+                    // resgen /PublicClass /compile .\Resources\Resources.resx
+                    EqtTrace.Warning(Resources.Resources.RecorderNotFound);
+                }
             }
             else
             {
@@ -28,14 +33,20 @@ namespace AltCover
                     .FirstOrDefault();
                 if (i == null)
                 {
-                    Debug.WriteLine("Instance not found");
+                    if (EqtTrace.IsErrorEnabled)
+                    {
+                        EqtTrace.Warning(Resources.Resources.InstanceNotFound);
+                    }
                 }
                 else
                 {
                     var supervision = i.GetProperty("Supervision", BindingFlags.Static | BindingFlags.Public);
                     if (supervision == null)
                     {
-                        Debug.WriteLine("Supervision not found");
+                        if (EqtTrace.IsErrorEnabled)
+                        {
+                            EqtTrace.Warning(Resources.Resources.SupervisionNotFound);
+                        }
                     }
                     else
                     {
@@ -67,7 +78,10 @@ namespace AltCover
                 .FirstOrDefault();
             if (rec == null)
             {
-                Debug.WriteLine("Recorder not found");
+                if (EqtTrace.IsErrorEnabled)
+                {
+                    EqtTrace.Warning(Resources.Resources.RecorderNotFound);
+                }
             }
             else
             {
@@ -76,14 +90,20 @@ namespace AltCover
                     .FirstOrDefault();
                 if (i == null)
                 {
-                    Debug.WriteLine("Instance not found");
+                    if (EqtTrace.IsErrorEnabled)
+                    {
+                        EqtTrace.Warning(Resources.Resources.InstanceNotFound);
+                    }
                 }
                 else
                 {
                     var flush = i.GetMethod("FlushFinish", BindingFlags.Static | BindingFlags.Public);
                     if (flush == null)
                     {
-                        Debug.WriteLine("Flush not found");
+                        if (EqtTrace.IsErrorEnabled)
+                        {
+                            EqtTrace.Warning(Resources.Resources.FlushNotFound);
+                        }
                     }
                     else
                     {
