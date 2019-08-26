@@ -624,8 +624,8 @@ _Target "UnitTestWithOpenCover" (fun _ ->
                  "+[AltCover]* +[AltCover.Shadow]* +[AltCover.Runner]* +[AltCover.WeakNameTests]Alt* -[*]Microsoft.* -[*]System.* -[Sample*]*"
                MergeByHash = true
                OptionalArguments =
-                 "-excludebyattribute:*ExcludeFromCodeCoverageAttribute;*ProgIdAttribute"
-               Register = OpenCover.RegisterType.RegisterUser
+                 "-excludebyattribute:*ExcludeFromCodeCoverageAttribute;*ProgIdAttribute -register:Path64"
+               //Register = OpenCover.RegisterType.RegisterUser
                Output = xcoverage })
       (String.Join(" ", xtestFiles)
        + " -parallel none -noshadow -nunit _Reports/XUnitTestWithOpenCoverReport.xml")
@@ -638,8 +638,8 @@ _Target "UnitTestWithOpenCover" (fun _ ->
                  "+[AltCover]* +[AltCover.Shadow]* +[AltCover.Runner]* +[AltCover.WeakNameTests]Alt* -[*]Microsoft.* -[*]System.* -[Sample*]*"
                MergeByHash = true
                OptionalArguments =
-                 "-excludebyattribute:*ExcludeFromCodeCoverageAttribute;*ProgIdAttribute"
-               Register = OpenCover.RegisterType.RegisterUser
+                 "-excludebyattribute:*ExcludeFromCodeCoverageAttribute;*ProgIdAttribute -register:Path64"
+               //Register = OpenCover.RegisterType.RegisterUser
                Output = coverage })
       (String.Join(" ", testFiles)
        + " --result=./_Reports/UnitTestWithOpenCoverReport.xml")
@@ -1629,8 +1629,8 @@ _Target "SelfTest" (fun _ ->
              Filter = OpenCoverFilter
              MergeByHash = true
              OptionalArguments =
-               "-excludebyattribute:*ExcludeFromCodeCoverageAttribute;*ProgIdAttribute"
-             Register = OpenCover.RegisterType.RegisterUser
+               "-excludebyattribute:*ExcludeFromCodeCoverageAttribute;*ProgIdAttribute -register:Path64"
+               //Register = OpenCover.RegisterType.RegisterUser
              Output = report }) args
 
   ReportGenerator.generateReports (fun p ->
