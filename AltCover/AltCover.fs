@@ -499,6 +499,10 @@ module internal Main =
               Instrument.InstrumentGenerator assemblyNames ]
 
           Visitor.Visit visitors (assemblies)
+          report
+          |> Path.GetDirectoryName
+          |> Directory.CreateDirectory
+          |> ignore
           document.Save(report)
           if !Visitor.collect then Runner.SetRecordToFile report
           CommandLine.ProcessTrailingArguments rest (toInfo |> Seq.head)) 255 true
