@@ -7,6 +7,8 @@ open System.IO
 open System.Linq
 open System.Reflection
 open System.Resources
+open System.Security
+open System.Security.Cryptography
 open System.Text.RegularExpressions
 
 open Augment
@@ -235,8 +237,8 @@ module internal CommandLine =
       Launch cmd' args toInfo.FullName // Spawn process, echoing asynchronously
 
   let logExceptionsToFile name extend =
-    let path = Path.Combine(Visitor.OutputDirectory(), name)
-    let path' = Path.Combine(Visitor.InputDirectory(), name)
+    let path = Path.Combine(Visitor.OutputDirectories() |> Seq.head, name)
+    let path' = Path.Combine(Visitor.InputDirectories() |> Seq.head, name)
     exceptions |> List.iter (Output.LogExceptionToFile path)
     if exceptions
        |> List.isEmpty
@@ -310,49 +312,26 @@ module internal CommandLine =
       else (name, true)
     else (String.Empty, false)
 
-  let internal maybeLoadStrongNameKey x (stream : FileStream) ok =
-    if ok then
-      stream.Position <- 0L
-      StrongNameKeyPair(stream)
-    else NotSupportedException(x) |> raise
-
   let internal ValidateStrongNameKey key x =
     if ValidateFile key x then
       doPathOperation (fun () ->
-        use stream =
-          new System.IO.FileStream(x, System.IO.FileMode.Open, System.IO.FileAccess.Read)
-        // see https://www.developerfusion.com/article/84422/the-key-to-strong-names/
-        // compare https://msdn.microsoft.com/en-us/library/system.security.cryptography.rsaparameters(v=vs.110).aspx
-        use br = new BinaryReader(stream)
-        // Read BLOBHEADER
-        let keyType = br.ReadByte()
-        let _ (*blobVersion*) = br.ReadByte()
-        let _ (*reserved*) = br.ReadUInt16()
-        let algorithmID = br.ReadUInt32()
-        // Read RSAPUBKEY
-        let magic = String(br.ReadChars(4))
-        let keyBitLength = br.ReadUInt32() |> int
-        let _ (*rsaPublicExponent*) = br.ReadUInt32()
-        // Read Modulus
-        let _ (*rsaModulus*) = br.ReadBytes(keyBitLength / 8)
-        // Read Private Key Parameters
-        let _ (*rsaPrime1*) = br.ReadBytes(keyBitLength / 16)
-        let _ (*rsaPrime2*) = br.ReadBytes(keyBitLength / 16)
-        let _ (*rsaExponent1*) = br.ReadBytes(keyBitLength / 16)
-        let _ (*rsaExponent2*) = br.ReadBytes(keyBitLength / 16)
-        let _ (*rsaCoefficient*) = br.ReadBytes(keyBitLength / 16)
-        let _ (*rsaPrivateExponent*) = br.ReadBytes(keyBitLength / 8)
-        let ok =
-          (keyType = 7uy) && (algorithmID
-                              |> int = 0x2400) && (magic = "RSA2")
-          && (stream.Position = stream.Length)
-        (maybeLoadStrongNameKey x stream ok, true)) (null, false) false
-    else (null, false)
+        let blob = File.ReadAllBytes x
+        // Available in .netstandard 2.0
+        try
+          (blob |> StrongNameKeyData.Make, true)
+        with
+        | :? CryptographicException as c -> (c.Message, c) |> SecurityException |> raise
+        ) (StrongNameKeyData.Empty(), false) false
+    else (StrongNameKeyData.Empty(), false)
 
   let internal ValidateRegexes(x : String) =
+    let descape (s:string) =
+      s.Replace('\u0000',';')
+
     doPathOperation
       (fun () ->
-      x.Split([| ";" |], StringSplitOptions.RemoveEmptyEntries) |> Array.map Regex) [||]
+      x.Replace(";;","\u0000").Split([| ";" |], StringSplitOptions.RemoveEmptyEntries)
+      |> Array.map (descape >> Regex)) [||]
       false
 
   let internal ddFlag name flag =

@@ -1318,32 +1318,27 @@ type AltCoverTests() =
         let result = stderr.ToString().Replace("\r\n", "\n")
         let expected = "\"RuNN\" \"-r\" \"" + unique + "\"\n"
                        + "--recorderDirectory : Directory " + unique + " not found\n" + """Error - usage is:
-  -i, --inputDirectory=VALUE Optional: The folder containing assemblies to
-                               instrument (default: current directory)
+  -i, --inputDirectory=VALUE Optional, multiple: A folder containing assemblies
+                               to instrument (default: current directory)
   -o, --outputDirectory=VALUE
-                             Optional: The folder to receive the instrumented
-                               assemblies and their companions (default: sub-
-                               folder '__Instrumented' of the current directory;
-                                or '__Saved' if '--inplace' is set).
+                             Optional, multiple: A folder to receive the
+                               instrumented assemblies and their companions (
+                               default: sub-folder '__Instrumented' of the
+                               current directory; or '__Saved' if '--inplace'
+                               is set).
                                See also '--inplace'
   -y, --symbolDirectory=VALUE
                              Optional, multiple: Additional directory to search
                                for matching symbols for the assemblies in the
                                input directory
-"""
-#if NETCOREAPP2_0
-                     + """  -d, --dependency=VALUE     Optional,multiple: assembly path to resolve
+  -d, --dependency=VALUE     Optional, multiple: assembly path to resolve
                                missing reference.
-"""
-#else
-                     + """  -k, --key=VALUE            Optional, multiple: any other strong-name key to
+  -k, --key=VALUE            Optional, multiple: any other strong-name key to
                                use
       --sn, --strongNameKey=VALUE
                              Optional: The default strong naming key to apply
                                to instrumented assemblies (default: None)
-"""
-#endif
-                     + """  -x, --xmlReport=VALUE      Optional: The output report template file (default:
+  -x, --xmlReport=VALUE      Optional: The output report template file (default:
                                 coverage.xml in the current directory)
   -f, --fileFilter=VALUE     Optional, multiple: source file name to exclude
                                from instrumentation

@@ -110,25 +110,18 @@ module internal Instrument =
   /// <param name="assemblyName">The name to update</param>
   /// <param name="key">The possibly empty key to use</param>
   let internal UpdateStrongNaming (assembly : AssemblyDefinition)
-      (key : StrongNameKeyPair option) =
+      (key : StrongNameKeyData option) =
     let assemblyName = assembly.Name
-#if NETCOREAPP2_0
-    do
-#else
     match key with
     | None ->
-#endif
        assembly.MainModule.Attributes <- assembly.MainModule.Attributes
                                          &&& (~~~ModuleAttributes.StrongNameSigned)
        assemblyName.HasPublicKey <- false
        assemblyName.PublicKey <- null
        assemblyName.PublicKeyToken <- null
-#if NETCOREAPP2_0
-#else
     | Some key' ->
        assemblyName.HasPublicKey <- true
        assemblyName.PublicKey <- key'.PublicKey // sets token implicitly
-#endif
 
   /// <summary>
   /// Locate the key, if any, which was used to name this assembly.
@@ -345,10 +338,9 @@ module internal Instrument =
     // Exception of type 'Mono.CompilerServices.SymbolWriter.MonoSymbolFileException' was thrown.
     pkey.WriteSymbols <- isWindows
     pkey.SymbolWriterProvider <- CreateSymbolWriter pdb isWindows monoRuntime
-    // Also, there are no strongnames in .net core
-    KnownKey assembly.Name
-    |> Option.iter (fun key -> pkey.StrongNameKeyPair <- key)
 #endif
+    KnownKey assembly.Name
+    |> Option.iter (fun key -> pkey.StrongNameKeyBlob <- key.Blob |> List.toArray)
 
     let here = Directory.GetCurrentDirectory()
     try
@@ -432,9 +424,6 @@ module internal Instrument =
     |> Seq.iter
          (fun r ->
          let original = r.ToString()
-#if NETCOREAPP2_0
-         do
-#else
          let token = KnownToken r
          let effectiveKey = match token with
                             | None -> Visitor.defaultStrongNameKey
@@ -442,15 +431,11 @@ module internal Instrument =
                             | Some _ -> token
          match effectiveKey with
          | None ->
-#endif
             r.HasPublicKey <- false
             r.PublicKeyToken <- null
             r.PublicKey <- null
-#if NETCOREAPP2_0
-#else
          | Some key -> r.HasPublicKey <- true
                        r.PublicKey <- key.Pair.PublicKey // implicitly sets token
-#endif
 
          let updated = r.ToString()
          if not <| updated.Equals(original, StringComparison.Ordinal) then
@@ -619,27 +604,67 @@ module internal Instrument =
         else branch.Start.Operand <- preamble
     state
 
+  let WriteAssemblies definition file targets sink =
+    let first = Path.Combine (targets |> Seq.head, file)
+    String.Format
+      (System.Globalization.CultureInfo.CurrentCulture,
+       CommandLine.resources.GetString "instrumented", definition, first) |> sink
+    WriteAssembly definition first
+    targets
+    |> Seq.tail
+    |> Seq.iter (fun p -> let pathn = Path.Combine(p, file)
+                          String.Format
+                            (System.Globalization.CultureInfo.CurrentCulture,
+                             CommandLine.resources.GetString "instrumented", definition, pathn) |> sink
+                          File.Copy(first, pathn, true))
+
+  let seekFSharpCore version =
+    Directory.GetDirectories(nugetCache, "fsharp.core", SearchOption.AllDirectories)
+    |> Seq.collect Directory.GetDirectories
+    |> Seq.exists (fun path -> let d = path |> Path.GetFileName
+                               let _,c = Version.TryParse d
+                               c // hide the "never happens" branch
+                               |> Option.nullable
+                               |> Option.map (fun v -> v >= Version(version))
+                               |> Option.getOrElse false)
+
   let private FinishVisit(state : InstrumentContext) =
     try
-      let counterAssemblyFile =
-        Path.Combine
-          (Visitor.InstrumentDirectory(), (extractName state.RecordingAssembly) + ".dll")
-      WriteAssembly (state.RecordingAssembly) counterAssemblyFile
-      Directory.GetFiles
-        (Visitor.InstrumentDirectory(), "*.deps.json", SearchOption.TopDirectoryOnly)
+      let recorderFileName = (extractName state.RecordingAssembly) + ".dll"
+      WriteAssemblies (state.RecordingAssembly) recorderFileName (Visitor.InstrumentDirectories()) ignore
+#if NETCOREAPP2_0
+      let haveNuget = seekFSharpCore "4.3.4"
+#endif
+
+      Visitor.InstrumentDirectories()
+      |> Seq.iter (fun instrument ->
+#if NETCOREAPP2_0
+      let mutable deps = false
+#endif
+
+      Directory.GetFiles(instrument, "*.deps.json", SearchOption.TopDirectoryOnly)
       |> Seq.iter (fun f ->
+#if NETCOREAPP2_0
+           deps <- true
+#endif
            File.WriteAllText(f,
                              (f
                               |> File.ReadAllText
                               |> injectJSON)))
+
 #if NETCOREAPP2_0
-      let fsharplib = Path.Combine(Visitor.InstrumentDirectory(), "FSharp.Core.dll")
-      if not (File.Exists fsharplib) then
+      // need f# if it's not a .net core project or we don't have a suitable nuget
+      let needfslib = (deps && haveNuget) |> not
+      let fsharplib = Path.Combine(Visitor.InstrumentDirectories() |> Seq.head, "FSharp.Core.dll")
+
+      if needfslib && not (File.Exists fsharplib)
+      then
         use fsharpbytes =
           new FileStream(AltCover.Recorder.Tracer.Core(), FileMode.Open, FileAccess.Read)
         use libstream = new FileStream(fsharplib, FileMode.Create)
         fsharpbytes.CopyTo libstream
 #endif
+      )
     finally
       (state.RecordingAssembly :> IDisposable).Dispose()
     { state with RecordingAssembly = null }
@@ -703,13 +728,9 @@ module internal Instrument =
     Track state m included track
     state
 
-  let private VisitAfterAssembly state (assembly : AssemblyDefinition) =
+  let private VisitAfterAssembly state (assembly : AssemblyDefinition) (paths : string list) =
     let originalFileName = Path.GetFileName assembly.MainModule.FileName
-    let path = Path.Combine(Visitor.InstrumentDirectory(), originalFileName)
-    String.Format
-      (System.Globalization.CultureInfo.CurrentCulture,
-       CommandLine.resources.GetString "instrumented", assembly, path) |> Output.Info
-    WriteAssembly assembly path
+    WriteAssemblies assembly originalFileName paths Output.Info
     state
 
   let private VisitStart state =
@@ -726,7 +747,7 @@ module internal Instrument =
   let internal InstrumentationVisitorCore (state : InstrumentContext) (node : Node) =
     match node with
     | Start _ -> VisitStart state
-    | Assembly(assembly, included) ->
+    | Assembly(assembly, included, _) ->
       UpdateStrongReferences assembly state.InstrumentedAssemblies |> ignore
       if included <> Inspect.Ignore then
         assembly.MainModule.AssemblyReferences.Add(state.RecordingAssembly.Name)
@@ -740,7 +761,7 @@ module internal Instrument =
     | AfterMethod(m, included, track) -> VisitAfterMethod state m included track
     | AfterType -> state
     | AfterModule -> state
-    | AfterAssembly assembly -> VisitAfterAssembly state assembly
+    | AfterAssembly (assembly, paths) -> VisitAfterAssembly state assembly paths
     | Finish -> FinishVisit state
 
   let internal InstrumentationVisitorWrapper (core : InstrumentContext -> Node -> InstrumentContext)

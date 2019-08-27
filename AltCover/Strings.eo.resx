@@ -118,10 +118,10 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="i|inputDirectory=" xml:space="preserve">
-    <value>Laŭvola: La dosierujo enhavanta asembleojn al instrumento (defaŭlta: aktuala dosierujo)</value>
+    <value>Laŭvola, multobla: Dosierujo enhavanta asembleojn al instrumento (defaŭlta: aktuala dosierujo)</value>
   </data>
   <data name="o|outputDirectory=" xml:space="preserve">
-    <value>Laŭvola: La dosierujo ricevi la instrumentajn asembleojn kaj iliajn kunulojn (defaŭlte: sub-dosierujo '__Instrumented' de la aktuala dosierujo; aŭ '__Saved' se '--inplace' estas aro).
+    <value>Laŭvola, multobla: Dosierujo ricevi la instrumentajn asembleojn kaj iliajn kunulojn (defaŭlte: sub-dosierujo '__Instrumented' de la aktuala dosierujo; aŭ '__Saved' se '--inplace' estas aro).
 Vidu ankaŭ '--inplace'</value>
   </data>
   <data name="k|key=" xml:space="preserve">
@@ -165,7 +165,7 @@ AltCover version
 Vidu https://github.com/SteveGilham/altcover/wiki/Usage por plenaj detaloj.</value>
   </data>
   <data name="NotInPlace" xml:space="preserve">
-    <value>De kaj al adresaroj estas identaj</value>
+    <value>De kaj al adresaroj {0} estas identaj</value>
   </data>
   <data name="UsageError" xml:space="preserve">
     <value>Eraro - uzado estas:</value>
@@ -385,5 +385,8 @@ Se ĉi tiu problemo estis detektita en la antaŭprova instrumenta stadio de `dot
   </data>
   <data name="defer:" xml:space="preserve">
     <value>Laŭvola, transdono de skriba kurant-reĝimaj priraportado ĝis elira procezo.</value>
+  </data>
+  <data name="DuplicatesNotAllowed" xml:space="preserve">
+    <value>{0} estis jam specifita por {1}</value>
   </data>
 </root>

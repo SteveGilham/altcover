@@ -10,7 +10,6 @@ open System.Collections.Generic
 open System.Diagnostics.CodeAnalysis
 open System.IO
 open System.Linq
-open System.Reflection
 open System.Text.RegularExpressions
 
 open AltCover.Augment
@@ -68,8 +67,8 @@ type internal GoTo =
 
 [<ExcludeFromCodeCoverage; NoComparison>]
 type internal Node =
-  | Start of seq<string>
-  | Assembly of AssemblyDefinition * Inspect
+  | Start of seq<string * string list>
+  | Assembly of AssemblyDefinition * Inspect * string list
   | Module of ModuleDefinition * Inspect
   | Type of TypeDefinition * Inspect
   | Method of MethodDefinition * Inspect * (int * string) option
@@ -78,12 +77,12 @@ type internal Node =
   | AfterMethod of MethodDefinition * Inspect * (int * string) option
   | AfterType
   | AfterModule
-  | AfterAssembly of AssemblyDefinition
+  | AfterAssembly of AssemblyDefinition * string list
   | Finish
   member this.After() =
     (match this with
      | Start _ -> [ Finish ]
-     | Assembly(a, _) -> [ AfterAssembly a ]
+     | Assembly(a, _, l) -> [ AfterAssembly (a, l) ]
      | Module _ -> [ AfterModule ]
      | Type _ -> [ AfterType ]
      | Method(m, included, track) -> [ AfterMethod(m, included, track) ]
@@ -91,8 +90,69 @@ type internal Node =
     |> List.toSeq
 
 [<ExcludeFromCodeCoverage; NoComparison>]
+type internal StrongNameKeyData =
+    {
+      Blob : byte list
+      Parameters : System.Security.Cryptography.RSAParameters
+    }
+    member this.PublicKey
+      with get() =
+        let lead = [
+          0uy  // RSA
+          36uy
+          0uy
+          0uy
+          4uy  // SHA
+          128uy
+          0uy
+          0uy
+          148uy  // modulus length + 20
+          0uy
+          0uy
+          0uy
+          6uy // public key
+          2uy // version
+          0uy // zero
+          0uy
+          0uy  // RSA
+          36uy
+          0uy
+          0uy
+          82uy // "RSA1"
+          83uy
+          65uy
+          49uy
+          0uy // key bit length
+          4uy
+          0uy
+          0uy
+          ]
+          // possibly reverse exponent too?
+        let exponent = Seq.append this.Parameters.Exponent (Seq.initInfinite (fun _ -> 0uy))
+                       |> Seq.take 4
+                       |> Seq.toList
+        Seq.concat [lead
+                    exponent
+                    this.Parameters.Modulus |> Seq.toList |> List.rev ]
+        |> Seq.toArray
+
+    static member Make (data : byte array) =
+      use csp = new System.Security.Cryptography.RSACryptoServiceProvider()
+      csp.ImportCspBlob(data)
+      let blob = csp.ExportCspBlob(true)
+      {
+        Blob = blob |> Array.toList
+        Parameters = csp.ExportParameters(true)
+      }
+    static member Empty () =
+     {
+        Blob = []
+        Parameters = System.Security.Cryptography.RSAParameters()
+     }
+
+[<ExcludeFromCodeCoverage; NoComparison>]
 type internal KeyRecord =
-  { Pair : StrongNameKeyPair
+  { Pair : StrongNameKeyData
     Token : byte list }
 
 [<ExcludeFromCodeCoverage; NoComparison>]
@@ -102,19 +162,15 @@ type internal SequenceType =
 
 module internal KeyStore =
   let private hash = new System.Security.Cryptography.SHA1CryptoServiceProvider()
-  let private publicKeyOfKey (key : StrongNameKeyPair) =
-#if NETCOREAPP2_0
-    [||]
-#else
+  let private publicKeyOfKey (key : StrongNameKeyData) =
     key.PublicKey
-#endif
 
   let internal TokenOfArray(key : byte array) =
     hash.ComputeHash(key)
     |> Array.rev
     |> Array.take 8
 
-  let internal TokenOfKey(key : StrongNameKeyPair) =
+  let internal TokenOfKey(key : StrongNameKeyData) =
     key
     |> publicKeyOfKey
     |> TokenOfArray
@@ -122,7 +178,7 @@ module internal KeyStore =
 
   let internal TokenAsULong(token : byte array) = BitConverter.ToUInt64(token, 0)
 
-  let internal KeyToIndex(key : StrongNameKeyPair) =
+  let internal KeyToIndex(key : StrongNameKeyData) =
     key
     |> TokenOfKey
     |> List.toArray
@@ -133,7 +189,7 @@ module internal KeyStore =
     |> TokenOfArray
     |> TokenAsULong
 
-  let internal KeyToRecord(key : StrongNameKeyPair) =
+  let internal KeyToRecord(key : StrongNameKeyData) =
     { Pair = key
       Token = TokenOfKey key }
 
@@ -169,22 +225,28 @@ module internal Visitor =
                          then OpCodes.Ldc_I4_1
                          else OpCodes.Ldc_I4_0
 
-  let mutable internal inputDirectory : Option<string> = None
+  let internal inputDirectories = List<string>()
   let private defaultInputDirectory = "."
-  let InputDirectory() =
-    Path.GetFullPath(Option.getOrElse defaultInputDirectory inputDirectory)
+  let InputDirectories() = if inputDirectories.Any()
+                           then inputDirectories :> string seq
+                           else [ defaultInputDirectory ] |> List.toSeq
+                           |> Seq.map Path.GetFullPath
+                           |> Seq.toList
 
   let inplaceSelection a b =
     if !inplace then a
     else b
 
-  let mutable internal outputDirectory : Option<string> = None
-  let private defaultOutputDirectory() = inplaceSelection "__Saved" "__Instrumented"
-  let OutputDirectory() =
-    Path.GetFullPath(Option.getOrElse (defaultOutputDirectory()) outputDirectory)
+  let internal outputDirectories = List<string>()
+  let private defaultOutputDirectory _ = inplaceSelection "__Saved" "__Instrumented"
+  let OutputDirectories() = let paired = InputDirectories()
+                            Seq.append (outputDirectories :> string seq) (Seq.initInfinite defaultOutputDirectory)
+                            |> Seq.zip paired
+                            |> Seq.map (fun (i, o) -> Path.Combine(i, o) |> Path.GetFullPath)
+                            |> Seq.toList
 
-  let InstrumentDirectory() = (inplaceSelection InputDirectory OutputDirectory)()
-  let SourceDirectory() = (inplaceSelection OutputDirectory InputDirectory)()
+  let InstrumentDirectories() = (inplaceSelection InputDirectories OutputDirectories)()
+  let SourceDirectories() = (inplaceSelection OutputDirectories InputDirectories)()
 
   let mutable internal reportPath : Option<string> = None
   let defaultReportPath = "coverage.xml"
@@ -209,11 +271,11 @@ module internal Visitor =
       ReportFormat.OpenCoverWithTracking
     else fmt
 
-  let mutable internal defaultStrongNameKey : option<StrongNameKeyPair> = None
-  let mutable internal recorderStrongNameKey : option<StrongNameKeyPair> = None
+  let mutable internal defaultStrongNameKey : option<StrongNameKeyData> = None
+  let mutable internal recorderStrongNameKey : option<StrongNameKeyData> = None
   let internal keys = new Dictionary<UInt64, KeyRecord>()
 
-  let internal Add(key : StrongNameKeyPair) =
+  let internal Add(key : StrongNameKeyData) =
     let index = KeyStore.KeyToIndex key
     keys.[index] <- KeyStore.KeyToRecord key
 
@@ -311,23 +373,24 @@ module internal Visitor =
 
   let private accumulator = HashSet<AssemblyDefinition>()
 
-  let private StartVisit (paths : seq<string>) buildSequence =
+  let private StartVisit (paths : seq<string * string list>) buildSequence =
     paths
-    |> Seq.collect (AssemblyDefinition.ReadAssembly
-                    >> (fun x ->
-                    x
-                    |> accumulator.Add
-                    |> ignore
-                    // Reject completely if filtered here
-                    let inspection = IsIncluded x
+    |> Seq.collect (fun (path, targets) -> path
+                                           |> (AssemblyDefinition.ReadAssembly
+                                                >> (fun x ->
+                                                x
+                                                |> accumulator.Add
+                                                |> ignore
+                                                // Reject completely if filtered here
+                                                let inspection = IsIncluded x
 
-                    let included =
-                      inspection ||| if inspection = Inspect.Instrument
-                                        && ReportFormat() = Base.ReportFormat.OpenCoverWithTracking then
-                                       Inspect.Track
-                                     else Inspect.Ignore
-                    ProgramDatabase.ReadSymbols(x)
-                    Assembly(x, included))
+                                                let included =
+                                                  inspection ||| if inspection = Inspect.Instrument
+                                                                    && ReportFormat() = Base.ReportFormat.OpenCoverWithTracking then
+                                                                   Inspect.Track
+                                                                 else Inspect.Ignore
+                                                ProgramDatabase.ReadSymbols(x)
+                                                Assembly(x, included, targets)))
                     >> buildSequence)
 
   let private VisitAssembly (a : AssemblyDefinition) included buildSequence =
@@ -754,7 +817,7 @@ module internal Visitor =
     // The pattern here is map x |> map y |> map x |> concat => collect (x >> y >> z)
     match node with
     | Start paths -> StartVisit paths BuildSequence
-    | Assembly(a, included) -> VisitAssembly a included BuildSequence
+    | Assembly(a, included, _) -> VisitAssembly a included BuildSequence
     | Module(x, included) -> VisitModule x included BuildSequence
     | Type(t, included) -> VisitType t included BuildSequence
     | Method(m, included, _) -> VisitMethod m included
@@ -769,7 +832,7 @@ module internal Visitor =
   let internal apply (visitors : list<Fix<Node>>) (node : Node) =
     visitors |> List.map (invoke node)
 
-  let internal Visit (visitors : seq<Fix<Node>>) (assemblies : seq<string>) =
+  let internal Visit (visitors : seq<Fix<Node>>) (assemblies : seq<string * string list>) =
     ZeroPoints()
     MethodNumber <- 0
     try

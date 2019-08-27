@@ -310,8 +310,8 @@ do ()"""
       AltCover.PrepareParams.Primitive
         { Primitive.PrepareParams.Create() with TypeFilter = [ """System\.""" ]
                                                 XmlReport = simpleReport
-                                                OutputDirectory =
-                                                  "./" + instrumented
+                                                OutputDirectories =
+                                                  [| "./" + instrumented |]
                                                 OpenCover = false
                                                 InPlace = false
                                                 Save = false }
@@ -345,8 +345,8 @@ do ()"""
         AltCover.PrepareParams.Primitive
           { Primitive.PrepareParams.Create() with TypeFilter = [ """System\.""" ]
                                                   XmlReport = simpleReport
-                                                  OutputDirectory =
-                                                    "./" + instrumented
+                                                  OutputDirectories =
+                                                    [| "./" + instrumented |]
                                                   OpenCover = false
                                                   InPlace = false
                                                   Save = false }

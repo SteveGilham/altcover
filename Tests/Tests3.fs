@@ -85,13 +85,7 @@ type AltCoverTests3() =
     [<Test>]
     member self.ShouldHaveExpectedOptions() =
       let options = Main.DeclareOptions()
-      Assert.That(options.Count, Is.EqualTo
-#if NETCOREAPP2_0
-                                            24
-#else
-                                            25
-#endif
-                 )
+      Assert.That(options.Count, Is.EqualTo 26)
       Assert.That
         (options
          |> Seq.filter (fun x -> x.Prototype <> "<>")
@@ -291,6 +285,33 @@ type AltCoverTests3() =
         Visitor.NameFilters.Clear()
 
     [<Test>]
+    member self.ParsingEscapeCasesWork() =
+      try
+        Visitor.NameFilters.Clear()
+        let options = Main.DeclareOptions()
+        let input = [| "-s"; "1\u0001a"; "--s"; "\u0000d"; "/s"; "3"; "-s=4;;p;q"; "--s=5"; "/s=6" |]
+        let parse = CommandLine.ParseCommandLine input options
+        match parse with
+        | Left _ -> Assert.Fail()
+        | Right(x, y) ->
+          Assert.That(y, Is.SameAs options)
+          Assert.That(x, Is.Empty)
+        Assert.That(Visitor.NameFilters.Count, Is.EqualTo 7)
+        Assert.That(Visitor.NameFilters
+                    |> Seq.forall (fun x ->
+                         match x with
+                         | FilterClass.Assembly _ -> true
+                         | _ -> false))
+        Assert.That
+          (Visitor.NameFilters
+           |> Seq.map (fun x ->
+                match x with
+                | FilterClass.Assembly i -> i.ToString()
+                | _ -> "*"), Is.EquivalentTo [| "1|a"; "\\d"; "3"; "4;p"; "q"; "5"; "6" |])
+      finally
+        Visitor.NameFilters.Clear()
+
+    [<Test>]
     member self.ParsingModulesGivesModules() =
       try
         Visitor.NameFilters.Clear()
@@ -469,7 +490,7 @@ type AltCoverTests3() =
     [<Test>]
     member self.ParsingInputGivesInput() =
       try
-        Visitor.inputDirectory <- None
+        Visitor.inputDirectories.Clear()
         let options = Main.DeclareOptions()
         let unique = Path.GetFullPath(".")
         let input = [| "-i"; unique |]
@@ -479,16 +500,18 @@ type AltCoverTests3() =
         | Right(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.Empty)
-        match Visitor.inputDirectory with
-        | None -> Assert.Fail()
-        | Some x -> Assert.That(x, Is.EqualTo unique)
+        match Visitor.inputDirectories |> Seq.toList with
+        | [ x ] -> Assert.That(x, Is.EqualTo unique)
+        | _ -> Assert.Fail()
       finally
-        Visitor.inputDirectory <- None
+        Visitor.inputDirectories.Clear()
 
     [<Test>]
-    member self.ParsingMultipleInputGivesFailure() =
+    member self.ParsingMultipleInputIsOKToo() =
       try
-        Visitor.inputDirectory <- None
+        Visitor.inputDirectories.Clear()
+        Visitor.outputDirectories.Clear()
+        Visitor.inplace := false
         let options = Main.DeclareOptions()
 
         let input =
@@ -498,18 +521,49 @@ type AltCoverTests3() =
              Path.GetFullPath("..") |]
 
         let parse = CommandLine.ParseCommandLine input options
+        let pcom a b = Path.Combine(b,a) |> Path.GetFullPath
+        match parse with
+        | Left _ -> Assert.Fail()
+        | _ -> Visitor.inputDirectories |> Seq.toList
+               |> List.zip ([ "."; ".." ] |> List.map Path.GetFullPath)
+               |> List.iter Assert.AreEqual
+               Visitor.OutputDirectories() |> Seq.toList
+               |> List.zip ([ "."; ".." ] |> List.map (pcom "__Instrumented") )
+               |> List.iter Assert.AreEqual
+
+               Visitor.inplace := true
+               Visitor.outputDirectories.Add "maybe"
+               Visitor.OutputDirectories() |> Seq.toList
+               |> List.zip [ Path.GetFullPath "maybe"; ".." |> (pcom "__Saved")]
+               |> List.iter Assert.AreEqual
+
+      finally
+        Visitor.outputDirectories.Clear()
+        Visitor.inputDirectories.Clear()
+        Visitor.inplace := false
+
+    [<Test>]
+    member self.ParsingDuplicateInputGivesFailure() =
+      try
+        Visitor.inputDirectories.Clear()
+        let options = Main.DeclareOptions()
+        let here = Path.GetFullPath(".")
+        let input = [| "-i"; here; "-i"; here |]
+        let parse = CommandLine.ParseCommandLine input options
         match parse with
         | Right _ -> Assert.Fail()
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
+          Assert.That(CommandLine.error,
+                      Is.EquivalentTo ([here + " was already specified for --inputDirectory"]))
       finally
-        Visitor.inputDirectory <- None
+        Visitor.inputDirectories.Clear()
 
     [<Test>]
     member self.ParsingBadInputGivesFailure() =
       try
-        Visitor.inputDirectory <- None
+        Visitor.inputDirectories.Clear()
         let options = Main.DeclareOptions()
         let unique = Guid.NewGuid().ToString().Replace("-", "*")
         let input = [| "-i"; unique |]
@@ -520,12 +574,12 @@ type AltCoverTests3() =
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
       finally
-        Visitor.inputDirectory <- None
+        Visitor.inputDirectories.Clear()
 
     [<Test>]
     member self.ParsingNoInputGivesFailure() =
       try
-        Visitor.inputDirectory <- None
+        Visitor.inputDirectories.Clear()
         let options = Main.DeclareOptions()
         let input = [| "-i" |]
         let parse = CommandLine.ParseCommandLine input options
@@ -535,12 +589,12 @@ type AltCoverTests3() =
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
       finally
-        Visitor.inputDirectory <- None
+        Visitor.inputDirectories.Clear()
 
     [<Test>]
     member self.ParsingOutputGivesOutput() =
       try
-        Visitor.outputDirectory <- None
+        Visitor.outputDirectories.Clear()
         let options = Main.DeclareOptions()
         let unique = Guid.NewGuid().ToString()
         let input = [| "-o"; unique |]
@@ -550,38 +604,59 @@ type AltCoverTests3() =
         | Right(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.Empty)
-        match Visitor.outputDirectory with
-        | None -> Assert.Fail()
-        | Some x -> Assert.That(Path.GetFileName x, Is.EqualTo unique)
+        match Visitor.outputDirectories |> Seq.toList with
+        | [ x ] -> Assert.That(Path.GetFileName x, Is.EqualTo unique)
+        | _ -> Assert.Fail()
       finally
-        Visitor.outputDirectory <- None
+        Visitor.outputDirectories.Clear()
 
     [<Test>]
-    member self.ParsingMultipleOutputGivesFailure() =
+    member self.ParsingDuplicateOutputGivesFailure() =
       try
-        Visitor.outputDirectory <- None
+        Visitor.outputDirectories.Clear()
         let options = Main.DeclareOptions()
         let unique = Guid.NewGuid().ToString()
-
-        let input =
-          [| "-o"
-             unique
-             "/o"
-             unique.Replace("-", "+") |]
-
+        let input = [| "-o"; unique; "-o"; unique |]
         let parse = CommandLine.ParseCommandLine input options
         match parse with
         | Right _ -> Assert.Fail()
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
+          Assert.That(CommandLine.error,
+                      Is.EquivalentTo ([Path.GetFullPath(unique) + " was already specified for --outputDirectory"]))
       finally
-        Visitor.outputDirectory <- None
+        Visitor.outputDirectories.Clear()
+
+    [<Test>]
+    member self.ParsingMultipleOutputIsOK() =
+      try
+        Visitor.inputDirectories.Clear()
+        Visitor.outputDirectories.Clear()
+        let options = Main.DeclareOptions()
+        let unique = Guid.NewGuid().ToString()
+        let u2 = unique.Replace("-", "+")
+        let outs = [ unique; u2 ] |> List.map Path.GetFullPath
+
+        let input =
+          [| "-o"
+             unique
+             "/o"
+             u2
+          |]
+
+        let parse = CommandLine.ParseCommandLine input options
+        match parse with
+        | Left _ -> Assert.Fail()
+        | _ -> Assert.That (Visitor.outputDirectories, Is.EquivalentTo outs)
+               Assert.That (Visitor.OutputDirectories(), Is.EquivalentTo (outs |> Seq.take 1))
+      finally
+        Visitor.outputDirectories.Clear()
 
     [<Test>]
     member self.ParsingBadOutputGivesFailure() =
       try
-        Visitor.outputDirectory <- None
+        Visitor.outputDirectories.Clear()
         let options = Main.DeclareOptions()
         let unique = Guid.NewGuid().ToString()
 
@@ -596,12 +671,12 @@ type AltCoverTests3() =
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
       finally
-        Visitor.outputDirectory <- None
+        Visitor.outputDirectories.Clear()
 
     [<Test>]
     member self.ParsingNoOutputGivesFailure() =
       try
-        Visitor.outputDirectory <- None
+        Visitor.outputDirectories.Clear()
         let options = Main.DeclareOptions()
         let input = [| "-o" |]
         let parse = CommandLine.ParseCommandLine input options
@@ -611,12 +686,12 @@ type AltCoverTests3() =
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
       finally
-        Visitor.outputDirectory <- None
+        Visitor.outputDirectories.Clear()
 
     [<Test>]
     member self.ParsingEmptyOutputGivesFailure() =
       try
-        Visitor.outputDirectory <- None
+        Visitor.outputDirectories.Clear()
         let options = Main.DeclareOptions()
         let input = [| "-o"; " " |]
         let parse = CommandLine.ParseCommandLine input options
@@ -626,7 +701,7 @@ type AltCoverTests3() =
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
       finally
-        Visitor.outputDirectory <- None
+        Visitor.outputDirectories.Clear()
 
     member private self.IsolateRootPath() =
       let where = Assembly.GetExecutingAssembly().Location
@@ -708,7 +783,6 @@ type AltCoverTests3() =
           Assert.That(x, Is.EqualTo "UsageError")
       finally
         ProgramDatabase.SymbolFolders.Clear()
-#if NETCOREAPP2_0
 
     [<Test>]
     member self.ParsingMultipleDependencyIsOk() =
@@ -780,6 +854,7 @@ type AltCoverTests3() =
       finally
         Visitor.defaultStrongNameKey <- None
         Visitor.keys.Clear()
+#if NETCOREAPP2_0
 #else
     [<Test>]
     member self.ParsingStrongNameGivesStrongName() =
@@ -1550,10 +1625,11 @@ type AltCoverTests3() =
         use stderr = new StringWriter()
         Console.SetOut stdout
         Console.SetError stderr
-        Visitor.inputDirectory <- Some
-                                    (Path.GetDirectoryName
-                                       (Assembly.GetExecutingAssembly().Location))
-        Visitor.outputDirectory <- Visitor.inputDirectory
+        let here = Path.GetDirectoryName (Assembly.GetExecutingAssembly().Location)
+        Visitor.inputDirectories.Clear()
+        Visitor.inputDirectories.Add here
+        Visitor.outputDirectories.Clear()
+        Visitor.outputDirectories.AddRange Visitor.inputDirectories
         let arg = ([], options)
         let fail = Right arg
         match Main.ProcessOutputLocation fail with
@@ -1564,7 +1640,8 @@ type AltCoverTests3() =
           Assert.That(stderr.ToString(), Is.Empty)
           Assert.That
             (CommandLine.error,
-             Is.EquivalentTo [ "From and to directories are identical" ])
+             Is.EquivalentTo [ "From and to directories " +
+                               here + " are identical" ])
           Assert.That(stdout.ToString(), Is.Empty)
       finally
         Console.SetOut(fst saved)
@@ -1582,8 +1659,10 @@ type AltCoverTests3() =
         Console.SetOut stdout
         Console.SetError stderr
         let here = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
-        Visitor.inputDirectory <- Some here
-        Visitor.outputDirectory <- Some(Path.GetDirectoryName here)
+        Visitor.inputDirectories.Clear()
+        Visitor.inputDirectories.Add here
+        Visitor.outputDirectories.Clear()
+        Visitor.outputDirectories.Add (Path.GetDirectoryName here)
         let rest = [ Guid.NewGuid().ToString() ]
         let arg = (rest, options)
         let ok = Right arg
@@ -1591,9 +1670,11 @@ type AltCoverTests3() =
         | Left _ -> Assert.Fail()
         | Right(x, y, z, t) ->
           Assert.That(x, Is.SameAs rest)
-          Assert.That(y.FullName, Is.EqualTo here)
-          Assert.That(z.FullName, Is.EqualTo(Path.GetDirectoryName here))
-          Assert.That(t.FullName, Is.EqualTo y.FullName)
+          y |> Seq.iter (fun y' -> Assert.That(y'.FullName, Is.EqualTo here))
+          z |> Seq.iter (fun z' -> Assert.That(z'.FullName, Is.EqualTo(Path.GetDirectoryName here)))
+          t
+          |> Seq.zip y
+          |> Seq.iter (fun (t', y') -> Assert.That(t'.FullName, Is.EqualTo y'.FullName))
           Assert.That
             (stdout.ToString().Replace("\r", String.Empty),
              Is.EqualTo
@@ -1617,8 +1698,11 @@ type AltCoverTests3() =
         Console.SetError stderr
         let here = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
         let there = Path.Combine(here, Guid.NewGuid().ToString())
-        Visitor.inputDirectory <- Some here
-        Visitor.outputDirectory <- Some there
+        Visitor.outputDirectories.Clear()
+        Visitor.inputDirectories.Clear()
+
+        Visitor.inputDirectories.Add here
+        Visitor.outputDirectories.Add there
         let rest = [ Guid.NewGuid().ToString() ]
         let arg = (rest, options)
         let ok = Right arg
@@ -1627,9 +1711,9 @@ type AltCoverTests3() =
         | Left _ -> Assert.Fail()
         | Right(x, y, z, t) ->
           Assert.That(x, Is.SameAs rest)
-          Assert.That(y.FullName, Is.EqualTo here)
-          Assert.That(z.FullName, Is.EqualTo there)
-          Assert.That(t.FullName, Is.EqualTo here)
+          y |> Seq.iter (fun y' -> Assert.That(y'.FullName, Is.EqualTo here))
+          z |> Seq.iter (fun z' -> Assert.That(z'.FullName, Is.EqualTo there))
+          t |> Seq.iter (fun t' -> Assert.That(t'.FullName, Is.EqualTo here))
           Assert.That
             (stdout.ToString().Replace("\r", String.Empty),
              Is.EqualTo
@@ -1653,8 +1737,10 @@ type AltCoverTests3() =
         Console.SetOut stdout
         Console.SetError stderr
         let here = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
-        Visitor.inputDirectory <- Some here
-        Visitor.outputDirectory <- Some(Path.GetDirectoryName here)
+        Visitor.outputDirectories.Clear()
+        Visitor.inputDirectories.Clear()
+        Visitor.inputDirectories.Add here
+        Visitor.outputDirectories.Add (Path.GetDirectoryName here)
         let rest = [ Guid.NewGuid().ToString() ]
         let arg = (rest, options)
         let ok = Right arg
@@ -1666,7 +1752,7 @@ type AltCoverTests3() =
           Assert.That
             (CommandLine.error,
              Is.EquivalentTo
-               [ "Output directory for saved files " + Visitor.OutputDirectory()
+               [ "Output directory for saved files " + (Visitor.OutputDirectories() |> Seq.head)
                  + " already exists" ])
       finally
         Visitor.inplace := false
@@ -1686,8 +1772,10 @@ type AltCoverTests3() =
         Console.SetError stderr
         let here = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
         let there = Path.Combine(here, Guid.NewGuid().ToString())
-        Visitor.inputDirectory <- Some here
-        Visitor.outputDirectory <- Some there
+        Visitor.outputDirectories.Clear()
+        Visitor.inputDirectories.Clear()
+        Visitor.inputDirectories.Add here
+        Visitor.outputDirectories.Add there
         let rest = [ Guid.NewGuid().ToString() ]
         let arg = (rest, options)
         let ok = Right arg
@@ -1696,9 +1784,9 @@ type AltCoverTests3() =
         | Left _ -> Assert.Fail()
         | Right(x, y, z, t) ->
           Assert.That(x, Is.SameAs rest)
-          Assert.That(y.FullName, Is.EqualTo here)
-          Assert.That(z.FullName, Is.EqualTo there)
-          Assert.That(t.FullName, Is.EqualTo there)
+          y |> Seq.iter (fun y' -> Assert.That(y'.FullName, Is.EqualTo here))
+          z |> Seq.iter (fun z' -> Assert.That(z'.FullName, Is.EqualTo there))
+          t |> Seq.iter (fun t' -> Assert.That(t'.FullName, Is.EqualTo there))
           Assert.That
             (stdout.ToString().Replace("\r", String.Empty),
              Is.EqualTo
@@ -1706,8 +1794,8 @@ type AltCoverTests3() =
                 + "\nInstrumenting files in " + here + "\n"))
           Assert.That(stderr.ToString(), Is.Empty)
           Assert.That(Directory.Exists there)
-          Assert.That(Visitor.SourceDirectory(), Is.EqualTo there)
-          Assert.That(Visitor.InstrumentDirectory(), Is.EqualTo here)
+          Assert.That(Visitor.SourceDirectories() |> Seq.head, Is.EqualTo there)
+          Assert.That(Visitor.InstrumentDirectories() |> Seq.head, Is.EqualTo here)
       finally
         Visitor.inplace := false
         Console.SetOut(fst saved)
@@ -1755,34 +1843,38 @@ type AltCoverTests3() =
     member self.PreparingNewPlaceShouldCopyEverything() =
       let here = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
       let there = Path.Combine(here, Guid.NewGuid().ToString())
-      let toInfo = Directory.CreateDirectory there
-      let fromInfo = DirectoryInfo(here)
-      let (x, y) = Main.PrepareTargetFiles fromInfo toInfo fromInfo
-      Assert.That
-        (toInfo.EnumerateFiles() |> Seq.map (fun x -> x.Name),
-         Is.EquivalentTo(fromInfo.EnumerateFiles() |> Seq.map (fun x -> x.Name)),
-         "Simple to-from comparison failed")
-      Assert.That
-        (x
-         |> Seq.filter
-              (fun f -> f.EndsWith(".dl_", StringComparison.OrdinalIgnoreCase) |> not),
-         Is.EquivalentTo
-           (fromInfo.EnumerateFiles()
-            |> Seq.map (fun x -> x.FullName)
-            |> Seq.filter
-                 (fun f ->
-                 f.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)
-                 || f.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
-            |> Seq.filter
-                 (fun f ->
-                 File.Exists(Path.ChangeExtension(f, ".pdb")) ||
-                 File.Exists(f + ".mdb") ||
-                 f |> Path.GetFileNameWithoutExtension = "Sample8")),
-         "First list mismatch with from files")
-      Assert.That(y,
-                  Is.EquivalentTo(x
-                                  |> Seq.map Path.GetFileNameWithoutExtension),
-                                  "Second list mismatch")
+      let toInfo = [ Directory.CreateDirectory there ]
+      let fromInfo = [ DirectoryInfo(here) ]
+      let (x, y) = Main.PrepareTargetFiles fromInfo toInfo fromInfo [there]
+      Seq.zip fromInfo toInfo
+      |> Seq.iter (fun (f,t) ->
+        Assert.That
+          (t.EnumerateFiles() |> Seq.map (fun x -> x.Name),
+           Is.EquivalentTo(f.EnumerateFiles() |> Seq.map (fun x -> x.Name)),
+           "Simple to-from comparison failed")
+        Assert.That
+          (x
+           |> Seq.filter (fun (_,l) -> l |> List.exists (fun i -> i = t.FullName))
+           |> Seq.map fst
+           |> Seq.filter
+                (fun f -> f.EndsWith(".dl_", StringComparison.OrdinalIgnoreCase) |> not),
+           Is.EquivalentTo
+             (f.EnumerateFiles()
+              |> Seq.map (fun x -> x.FullName)
+              |> Seq.filter
+                   (fun f ->
+                   f.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)
+                   || f.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
+              |> Seq.filter
+                   (fun f ->
+                   File.Exists(Path.ChangeExtension(f, ".pdb")) ||
+                   File.Exists(f + ".mdb") ||
+                   f |> Path.GetFileNameWithoutExtension = "Sample8")),
+           "First list mismatch with from files")
+        Assert.That(y,
+                    Is.EquivalentTo(x
+                                    |> Seq.map (fst >> Path.GetFileNameWithoutExtension)),
+                                    "Second list mismatch"))
 
     [<Test>]
     member self.ShouldProcessTrailingArguments() =
@@ -1902,32 +1994,27 @@ type AltCoverTests3() =
         CommandLine.Usage("UsageError", options, empty)
         let result = stderr.ToString().Replace("\r\n", "\n")
         let expected = """Error - usage is:
-  -i, --inputDirectory=VALUE Optional: The folder containing assemblies to
-                               instrument (default: current directory)
+  -i, --inputDirectory=VALUE Optional, multiple: A folder containing assemblies
+                               to instrument (default: current directory)
   -o, --outputDirectory=VALUE
-                             Optional: The folder to receive the instrumented
-                               assemblies and their companions (default: sub-
-                               folder '__Instrumented' of the current directory;
-                                or '__Saved' if '--inplace' is set).
+                             Optional, multiple: A folder to receive the
+                               instrumented assemblies and their companions (
+                               default: sub-folder '__Instrumented' of the
+                               current directory; or '__Saved' if '--inplace'
+                               is set).
                                See also '--inplace'
   -y, --symbolDirectory=VALUE
                              Optional, multiple: Additional directory to search
                                for matching symbols for the assemblies in the
                                input directory
-"""
-#if NETCOREAPP2_0
-                     + """  -d, --dependency=VALUE     Optional,multiple: assembly path to resolve
+  -d, --dependency=VALUE     Optional, multiple: assembly path to resolve
                                missing reference.
-"""
-#else
-                     + """  -k, --key=VALUE            Optional, multiple: any other strong-name key to
+  -k, --key=VALUE            Optional, multiple: any other strong-name key to
                                use
       --sn, --strongNameKey=VALUE
                              Optional: The default strong naming key to apply
                                to instrumented assemblies (default: None)
-"""
-#endif
-                     + """  -x, --xmlReport=VALUE      Optional: The output report template file (default:
+  -x, --xmlReport=VALUE      Optional: The output report template file (default:
                                 coverage.xml in the current directory)
   -f, --fileFilter=VALUE     Optional, multiple: source file name to exclude
                                from instrumentation
@@ -2010,32 +2097,27 @@ or
         let result = stderr.ToString().Replace("\r\n", "\n")
         let expected = "\"-i\" \"" + unique + "\"\n" + "--inputDirectory : Directory "
                        + unique + " not found\n" + """Error - usage is:
-  -i, --inputDirectory=VALUE Optional: The folder containing assemblies to
-                               instrument (default: current directory)
+  -i, --inputDirectory=VALUE Optional, multiple: A folder containing assemblies
+                               to instrument (default: current directory)
   -o, --outputDirectory=VALUE
-                             Optional: The folder to receive the instrumented
-                               assemblies and their companions (default: sub-
-                               folder '__Instrumented' of the current directory;
-                                or '__Saved' if '--inplace' is set).
+                             Optional, multiple: A folder to receive the
+                               instrumented assemblies and their companions (
+                               default: sub-folder '__Instrumented' of the
+                               current directory; or '__Saved' if '--inplace'
+                               is set).
                                See also '--inplace'
   -y, --symbolDirectory=VALUE
                              Optional, multiple: Additional directory to search
                                for matching symbols for the assemblies in the
                                input directory
-"""
-#if NETCOREAPP2_0
-                     + """  -d, --dependency=VALUE     Optional,multiple: assembly path to resolve
+  -d, --dependency=VALUE     Optional, multiple: assembly path to resolve
                                missing reference.
-"""
-#else
-                     + """  -k, --key=VALUE            Optional, multiple: any other strong-name key to
+  -k, --key=VALUE            Optional, multiple: any other strong-name key to
                                use
       --sn, --strongNameKey=VALUE
                              Optional: The default strong naming key to apply
                                to instrumented assemblies (default: None)
-"""
-#endif
-                     + """  -x, --xmlReport=VALUE      Optional: The output report template file (default:
+  -x, --xmlReport=VALUE      Optional: The output report template file (default:
                                 coverage.xml in the current directory)
   -f, --fileFilter=VALUE     Optional, multiple: source file name to exclude
                                from instrumentation

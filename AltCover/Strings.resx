@@ -118,10 +118,10 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="i|inputDirectory=" xml:space="preserve">
-    <value>Optional: The folder containing assemblies to instrument (default: current directory)</value>
+    <value>Optional, multiple: A folder containing assemblies to instrument (default: current directory)</value>
   </data>
   <data name="o|outputDirectory=" xml:space="preserve">
-    <value>Optional: The folder to receive the instrumented assemblies and their companions (default: sub-folder '__Instrumented' of the current directory; or '__Saved' if '--inplace' is set).
+    <value>Optional, multiple: A folder to receive the instrumented assemblies and their companions (default: sub-folder '__Instrumented' of the current directory; or '__Saved' if '--inplace' is set).
 See also '--inplace'</value>
   </data>
   <data name="k|key=" xml:space="preserve">
@@ -166,7 +166,7 @@ See https://github.com/SteveGilham/altcover/wiki/Usage for full details.
 </value>
   </data>
   <data name="NotInPlace" xml:space="preserve">
-    <value>From and to directories are identical</value>
+    <value>From and to directories {0} are identical</value>
   </data>
   <data name="UsageError" xml:space="preserve">
     <value>Error - usage is:</value>
@@ -343,7 +343,7 @@ If this problem was detected in the pre-test instrumentation stage of `dotnet te
     <value>Resolved assembly reference '{0}' as file '{1}'.</value>
   </data>
   <data name="d|dependency=" xml:space="preserve">
-    <value>Optional,multiple: assembly path to resolve missing reference.</value>
+    <value>Optional, multiple: assembly path to resolve missing reference.</value>
   </data>
   <data name="NotAnAssembly" xml:space="preserve">
     <value>{0} : File {1} is not an assembly</value>
@@ -386,5 +386,8 @@ If this problem was detected in the pre-test instrumentation stage of `dotnet te
   </data>
   <data name="defer:" xml:space="preserve">
     <value>Optional, defers writing runner-mode coverage data until process exit.</value>
+  </data>
+  <data name="DuplicatesNotAllowed" xml:space="preserve">
+    <value>{0} was already specified for {1}</value>
   </data>
 </root>

@@ -25,6 +25,8 @@
   <Target Name="AltCoverRunPreparation" Condition="'$(AltCover)' == 'true'">
     <ItemGroup>
       <AltCoverXmlOutput Include="$(AltCoverXmlReport)" />
+      <InputDirectory Include="$(TargetDir)" />
+      <OutputDirectory Include="$(TargetDir)__Saved" />
     </ItemGroup>
 
     <PropertyGroup>
@@ -35,17 +37,19 @@
     <AltCover.PowerShell Condition="'$(AltCoverIpmo)' == 'true'" />
     <AltCover.GetVersion Condition="'$(AltCoverGetVersion)' == 'true'" />
     <AltCover.Prepare
-      InputDirectory="$(TargetDir)"
-      OutputDirectory="$(TargetDir)__Saved"
+      InputDirectories="@(InputDirectory)"
+      OutputDirectories="@(OutputDirectory)"
+      StrongNameKey="$(AltCoverStrongNameKey)"
+      Keys="$(AltCoverKeys.Split('|'))"
       XmlReport="$(AltCoverXmlReport)"
       OpenCover="$(AltCoverOpenCover)"
-      FileFilter="$(AltCoverFileFilter.Replace('\',%00).Split('|'))"
-      PathFilter="$(AltCoverPathFilter.Replace('\',%00).Split('|'))"
-      AssemblyFilter="$(AltCoverAssemblyFilter.Replace('\',%00).Split('|'))"
-      AssemblyExcludeFilter="$(AltCoverAssemblyExcludeFilter.Replace('\',%00).Split('|'))"
-      TypeFilter="$(AltCoverTypeFilter.Replace('\',%00).Split('|'))"
-      MethodFilter="$(AltCoverMethodFilter.Replace('\',%00).Split('|'))"
-      AttributeFilter="$(AltCoverAttributeFilter.Replace('\',%00).Split('|'))"
+      FileFilter="$(AltCoverFileFilter.Replace('\',%00).Replace('||',%01).Split('|'))"
+      PathFilter="$(AltCoverPathFilter.Replace('\',%00).Replace('||',%01).Split('|'))"
+      AssemblyFilter="$(AltCoverAssemblyFilter.Replace('\',%00).Replace('||',%01).Split('|'))"
+      AssemblyExcludeFilter="$(AltCoverAssemblyExcludeFilter.Replace('\',%00).Replace('||',%01).Split('|'))"
+      TypeFilter="$(AltCoverTypeFilter.Replace('\',%00).Replace('||',%01).Split('|'))"
+      MethodFilter="$(AltCoverMethodFilter.Replace('\',%00).Replace('||',%01).Split('|'))"
+      AttributeFilter="$(AltCoverAttributeFilter.Replace('\',%00).Replace('||',%01).Split('|'))"
       CallContext="$(AltCoverCallContext.Split('|'))"
       Single="$(AltCoverSingle)"
       LineCover="$(AltCoverLineCover)"

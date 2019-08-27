@@ -53,15 +53,12 @@ type Prepare() =
   inherit Task(null)
   member val internal ACLog : FSApi.Logging option = None with get, set
 
-  member val InputDirectory = String.Empty with get, set
-  member val OutputDirectory = String.Empty with get, set
+  member val InputDirectories : string array = [||] with get, set
+  member val OutputDirectories : string array = [||] with get, set
   member val SymbolDirectories : string array = [||] with get, set
-#if NETCOREAPP2_0
   member val Dependencies : string array = [||] with get, set
-#else
   member val Keys : string array = [| |] with get, set
   member val StrongNameKey = String.Empty with get, set
-#endif
   member val XmlReport = String.Empty with get, set
   member val FileFilter : string array = [||] with get, set
   member val AssemblyFilter : string array = [||] with get, set
@@ -89,18 +86,12 @@ type Prepare() =
                                                                                   Info = self.Message }) self.ACLog
 
     let task =
-      FSApi.PrepareParams.Primitive { InputDirectory = self.InputDirectory
-                                      OutputDirectory = self.OutputDirectory
+      FSApi.PrepareParams.Primitive { InputDirectories = self.InputDirectories
+                                      OutputDirectories = self.OutputDirectories
                                       SymbolDirectories = self.SymbolDirectories
-#if NETCOREAPP2_0
                                       Dependencies = self.Dependencies
-                                      Keys = []
-                                      StrongNameKey = String.Empty
-#else
-                                      Dependencies = []
                                       Keys = self.Keys
                                       StrongNameKey = self.StrongNameKey
-#endif
                                       XmlReport = self.XmlReport
                                       FileFilter = self.FileFilter
                                       AssemblyFilter = self.AssemblyFilter
