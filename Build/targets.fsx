@@ -776,8 +776,7 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
   let keyfile = Path.getFullName "Build/SelfTest.snk"
   let shadowkeyfile = Path.getFullName "Build/Infrastructure.snk"
   let reports = Path.getFullName "./_Reports"
-  let altcover =
-    findToolInSubPath "AltCover.exe" "./_Binaries/AltCover/Debug+AnyCPU"
+  let altcover =  "./_Binaries/AltCover/Debug+AnyCPU/AltCover.exe" |> Path.getFullName
   let nunit = findToolInSubPath "nunit3-console.exe" "."
   let here = Path.getFullName "."
 
