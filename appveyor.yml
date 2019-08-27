@@ -1,4 +1,4 @@
-version: 6.0.{build}-pre
+version: 6.0.{build}
 branches:
   except:
   - /develop.*/
