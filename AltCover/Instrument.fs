@@ -622,10 +622,11 @@ module internal Instrument =
     Directory.GetDirectories(nugetCache, "fsharp.core", SearchOption.AllDirectories)
     |> Seq.collect Directory.GetDirectories
     |> Seq.exists (fun path -> let d = path |> Path.GetFileName
-                               let f,c = Version.TryParse d
-                               if f
-                               then c >= Version(version)
-                               else false)
+                               let _,c = Version.TryParse d
+                               c // hide the "never happens" branch
+                               |> Option.nullable
+                               |> Option.map (fun v -> v >= Version(version))
+                               |> Option.getOrElse false)
 
   let private FinishVisit(state : InstrumentContext) =
     try
