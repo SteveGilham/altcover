@@ -2,7 +2,7 @@ Q. Never mind the fluff -- how do I get started?
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
-# 6.1.7xx (Fukurou series release 3)
+# 6.1.7xx (Fukurou series release 4)
 * [BUGFIX] reinstate the PowerShell Core (`pwsh`) `Invoke-AltCover` support for strongnaming .
 
 # 6.0.705 (Fukurou series release 3)
