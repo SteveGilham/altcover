@@ -352,6 +352,7 @@ module internal Main =
     try
       f()
     with
+    | :? Mono.Cecil.Cil.SymbolsNotMatchingException
     | :? BadImageFormatException
     | :? ArgumentException
     | :? IOException -> tidy()
