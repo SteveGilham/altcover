@@ -726,8 +726,8 @@ type AltCoverTests() =
     member self.LocalSource() =
       Visitor.local <- false
       Visitor.NameFilters.Clear()
-      let fscore = Path.Combine(SolutionRoot.location, "packages\\fsharp.core\\4.6.2\\lib\\net45")
-      let nuget = Path.Combine(SolutionRoot.location, "packages\\nuget.commandline\\5.1.0\\tools")
+      let fscore = Path.Combine(SolutionRoot.location, "packages/fsharp.core/4.6.2/lib/net45")
+      let nuget = Path.Combine(SolutionRoot.location, "packages/nuget.commandline/5.1.0/tools")
       let exe = Path.Combine(nuget, "NuGet.exe")
       Assert.That(File.Exists exe, Is.True, "NuGet.exe")
       let pdb = Path.Combine(nuget, "NuGet.pdb")
