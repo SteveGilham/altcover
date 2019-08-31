@@ -723,6 +723,36 @@ type AltCoverTests() =
       Assert.That (s, Is.EqualTo "bananas")
 
     [<Test>]
+    member self.LocalSource() =
+      Visitor.local <- false
+      let nuget = Path.Combine(SolutionRoot.location, "packages\\nuget.commandline\\5.1.0\\tools")
+      let exe = Path.Combine(nuget, "NuGet.exe")
+      Assert.That(File.Exists exe, Is.True, "NuGet.exe")
+      let pdb = Path.Combine(nuget, "NuGet.pdb")
+      Assert.That(File.Exists pdb, Is.True, "NuGet.pdb")
+
+      let a = AssemblyDefinition.ReadAssembly exe
+      ProgramDatabase.ReadSymbols a
+
+      Assert.That (Visitor.scanModule a.MainModule, Is.True, "MainModule non-local")
+      try
+        Visitor.local <- true
+        Assert.That (Visitor.scanModule a.MainModule, Is.False, "MainModule local")
+        Assert.That (a.MainModule.GetAllTypes()
+                     |> Seq.take 5
+                     |> Seq.map Visitor.scanType
+                     |> Seq.exists id, Is.False, "MainModule types local")
+        Assert.That (a.MainModule.GetAllTypes()
+                     |> Seq.take 5
+                     |> Seq.collect (fun t -> t.Methods)
+                     |> Seq.take 5
+                     |> Seq.map Visitor.scanMethod
+                     |> Seq.exists id, Is.False, "MainModule methods local")
+
+      finally
+        Visitor.local <- false
+
+    [<Test>]
     member self.LocateMatchShouldChooseLongerWildCardPath() =
       let dict = System.Collections.Generic.Dictionary<string, string>()
       let file = Assembly.GetExecutingAssembly().Location

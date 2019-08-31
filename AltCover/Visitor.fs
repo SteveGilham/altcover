@@ -394,9 +394,48 @@ module internal Visitor =
                                                 Assembly(x, included, targets)))
                     >> buildSequence)
 
+  let sourceFileExists s =
+    s
+    |> Option.map File.Exists
+    |> Option.getOrElse false
+
+  let methodFile (m : MethodDefinition) =
+    m.DebugInformation.SequencePoints
+    |> Seq.tryHead // assume methods can only be in one file
+    |> Option.map (fun sp -> sp.Document.Url)
+
+  let typeFiles (t : TypeDefinition) =
+    Option.nullable t.Methods
+    |> Option.map (fun ms -> ms
+                             |> Seq.map methodFile
+                             |> Seq.choose id
+                             |> Seq.distinct)
+
+  let moduleFiles (m : ModuleDefinition) =
+    m.GetAllTypes()
+    |> Seq.map typeFiles
+    |> Seq.choose id
+    |> Seq.collect id
+    |> Seq.distinct
+
+  let scanMethod (m : MethodDefinition) =
+    local |> not || m |> methodFile |> sourceFileExists
+
+  let scanType (t : TypeDefinition) =
+    local |> not || t
+                    |> typeFiles
+                    |> Option.getOrElse ([] |> List.toSeq)
+                    |> Seq.exists File.Exists
+
+  let scanModule (m : ModuleDefinition) =
+    local |> not || m
+                    |> moduleFiles
+                    |> Seq.exists File.Exists
+
   let private VisitAssembly (a : AssemblyDefinition) included buildSequence =
     a.Modules
     |> Seq.cast
+    |> Seq.filter scanModule
     |> Seq.collect ((fun x ->
                     let interim = UpdateInspection included x
                     Module(x,
@@ -423,6 +462,7 @@ module internal Visitor =
     [ x ]
     |> Seq.takeWhile (fun _ -> included <> Inspect.Ignore)
     |> Seq.collect (fun x -> x.GetAllTypes() |> Seq.cast)
+    |> Seq.filter scanType
     |> Seq.collect ((fun t ->
                     let types =
                       Seq.unfold (fun (state : TypeDefinition) ->
@@ -592,7 +632,8 @@ module internal Visitor =
     |> Seq.cast
     |> Seq.filter
          (fun (m : MethodDefinition) ->
-         not m.IsAbstract && not m.IsRuntime && not m.IsPInvokeImpl && significant m)
+         not m.IsAbstract && not m.IsRuntime && not m.IsPInvokeImpl && significant m
+         && scanMethod m)
     |> Seq.collect ((fun m ->
                     let methods =
                       Seq.unfold (fun (state : MethodDefinition option) ->
