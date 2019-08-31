@@ -389,4 +389,7 @@ Se ĉi tiu problemo estis detektita en la antaŭprova instrumenta stadio de `dot
   <data name="DuplicatesNotAllowed" xml:space="preserve">
     <value>{0} estis jam specifita por {1}</value>
   </data>
+  <data name="l|localSource" xml:space="preserve">
+    <value>Ne instrumentu kodon por kiu la fontdosiero ne ĉeestas.</value>
+  </data>
 </root>

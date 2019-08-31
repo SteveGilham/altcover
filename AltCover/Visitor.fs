@@ -215,6 +215,7 @@ module internal Visitor =
 
   let internal inplace = ref false
   let mutable internal single = false
+  let mutable internal local = false
   let Sampling() =
     (if single then Base.Sampling.Single
                else Base.Sampling.All) |> int

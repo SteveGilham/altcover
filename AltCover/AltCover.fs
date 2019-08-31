@@ -47,6 +47,7 @@ module internal Main =
     Visitor.inplace := false
     Visitor.collect := false
     Visitor.single <- false
+    Visitor.local <- false
     Visitor.coverstyle <- CoverStyle.All
     Visitor.sourcelink := false
 
@@ -165,6 +166,15 @@ module internal Main =
       ("t|typeFilter=", makeFilter FilterClass.Type)
       ("m|methodFilter=", makeFilter FilterClass.Method)
       ("a|attributeFilter=", makeFilter FilterClass.Attribute)
+      ("l|localSource",
+       (fun _ ->
+       if Visitor.local then
+         CommandLine.error <-
+           String.Format
+             (CultureInfo.CurrentCulture,
+              CommandLine.resources.GetString "MultiplesNotAllowed", "--localSource")
+           :: CommandLine.error
+       else Visitor.local <- true))
       ("c|callContext=",
        (fun x ->
        if Visitor.single then
