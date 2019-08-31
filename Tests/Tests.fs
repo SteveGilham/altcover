@@ -734,20 +734,12 @@ type AltCoverTests() =
       let a = AssemblyDefinition.ReadAssembly exe
       ProgramDatabase.ReadSymbols a
 
-      Assert.That (Visitor.scanModule a.MainModule, Is.True, "MainModule non-local")
+      Assert.That (Visitor.localFilter a, Is.False, "MainModule non-local")
+      Assert.That (Visitor.localFilter a.MainModule, Is.False, "Assembly non-local")
       try
         Visitor.local <- true
-        Assert.That (Visitor.scanModule a.MainModule, Is.False, "MainModule local")
-        Assert.That (a.MainModule.GetAllTypes()
-                     |> Seq.take 5
-                     |> Seq.map Visitor.scanType
-                     |> Seq.exists id, Is.False, "MainModule types local")
-        Assert.That (a.MainModule.GetAllTypes()
-                     |> Seq.take 5
-                     |> Seq.collect (fun t -> t.Methods)
-                     |> Seq.take 5
-                     |> Seq.map Visitor.scanMethod
-                     |> Seq.exists id, Is.False, "MainModule methods local")
+        Assert.That (Visitor.localFilter a, Is.False, "MainModule local")
+        Assert.That (Visitor.localFilter a.MainModule, Is.True, "Assembly local")
 
       finally
         Visitor.local <- false
