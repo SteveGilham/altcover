@@ -78,8 +78,7 @@ type InvokeAltCoverCommand(runner : bool) =
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
   [<Alias("Dependencies")>]
   member val Dependency : string array = [||] with get, set
-#if NETCOREAPP2_0
-#else
+
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
       ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
   [<Alias("Keys")>]
@@ -87,7 +86,6 @@ type InvokeAltCoverCommand(runner : bool) =
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
       ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
   member val StrongNameKey = String.Empty with get, set
-#endif
 
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]

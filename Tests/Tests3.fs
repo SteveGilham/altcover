@@ -703,10 +703,6 @@ type AltCoverTests3() =
       finally
         Visitor.outputDirectories.Clear()
 
-    member private self.IsolateRootPath() =
-      let where = Assembly.GetExecutingAssembly().Location
-      where.Substring(0, where.IndexOf("_Binaries"))
-
     [<Test>]
     member self.ParsingSymbolGivesSymbol() =
       try
@@ -861,7 +857,7 @@ type AltCoverTests3() =
         Visitor.defaultStrongNameKey <- None
         Visitor.keys.Clear()
         let options = Main.DeclareOptions ()
-        let input = [| "-sn"; Path.Combine(self.IsolateRootPath(), "Build/Infrastructure.snk") |]
+        let input = [| "-sn"; Path.Combine(SolutionRoot.location, "Build/Infrastructure.snk") |]
         let parse = CommandLine.ParseCommandLine input options
         match parse with
         | Left _ -> Assert.Fail()
@@ -883,7 +879,7 @@ type AltCoverTests3() =
         Visitor.defaultStrongNameKey <- None
         Visitor.keys.Clear()
         let options = Main.DeclareOptions ()
-        let path = self.IsolateRootPath()
+        let path = SolutionRoot.location
         let input = [| "-sn"; Path.Combine(path, "Build/Infrastructure.snk") ; "/sn"; Path.GetFullPath("Build/Recorder.snk") |]
         let parse = CommandLine.ParseCommandLine input options
         match parse with
@@ -950,7 +946,7 @@ type AltCoverTests3() =
         Visitor.defaultStrongNameKey <- None
         Visitor.keys.Clear()
         let options = Main.DeclareOptions ()
-        let path = self.IsolateRootPath()
+        let path = SolutionRoot.location
         let input = [| "-k"; Path.Combine(path, "Build/Infrastructure.snk");
                        "/k"; Path.Combine(path, "Build/Recorder.snk") |]
         let parse = CommandLine.ParseCommandLine input options
@@ -1091,7 +1087,7 @@ type AltCoverTests3() =
         Visitor.interval <- None
         Visitor.TrackingNames.Clear()
         let options = Main.DeclareOptions()
-        let path = self.IsolateRootPath()
+        let path = SolutionRoot.location
         let input = [| "-c"; "3"; "/c"; "5" |]
         let parse = CommandLine.ParseCommandLine input options
         match parse with
@@ -1110,7 +1106,7 @@ type AltCoverTests3() =
         Visitor.interval <- None
         Visitor.TrackingNames.Clear()
         let options = Main.DeclareOptions()
-        let path = self.IsolateRootPath()
+        let path = SolutionRoot.location
         let input = [| "-c"; "3"; "/c"; "x"; "--callContext"; "Hello, World!" |]
         let parse = CommandLine.ParseCommandLine input options
         match parse with
