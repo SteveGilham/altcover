@@ -725,21 +725,33 @@ type AltCoverTests() =
     [<Test>]
     member self.LocalSource() =
       Visitor.local <- false
+      Visitor.NameFilters.Clear()
+      let fscore = Path.Combine(SolutionRoot.location, "packages\\fsharp.core\\4.6.2\\lib\\net45")
       let nuget = Path.Combine(SolutionRoot.location, "packages\\nuget.commandline\\5.1.0\\tools")
       let exe = Path.Combine(nuget, "NuGet.exe")
       Assert.That(File.Exists exe, Is.True, "NuGet.exe")
       let pdb = Path.Combine(nuget, "NuGet.pdb")
       Assert.That(File.Exists pdb, Is.True, "NuGet.pdb")
 
+      let dll = Path.Combine(fscore, "FSharp.Core.dll")
+      Assert.That(File.Exists dll, Is.True, "FSharp.Core.dll")
+
       let a = AssemblyDefinition.ReadAssembly exe
       ProgramDatabase.ReadSymbols a
 
-      Assert.That (Visitor.localFilter a, Is.False, "MainModule non-local")
-      Assert.That (Visitor.localFilter a.MainModule, Is.False, "Assembly non-local")
+      let f = AssemblyDefinition.ReadAssembly dll
+      ProgramDatabase.ReadSymbols f
+
+      Assert.That (Visitor.localFilter a, Is.False, "Assembly non-local")
+      Assert.That (Visitor.localFilter a.MainModule, Is.False, "MainModule non-local")
+      Assert.That (Visitor.localFilter f, Is.False, "F# Assembly non-local")
+      Assert.That (Visitor.localFilter f.MainModule, Is.False, "f# MainModule non-local")
       try
         Visitor.local <- true
-        Assert.That (Visitor.localFilter a, Is.False, "MainModule local")
-        Assert.That (Visitor.localFilter a.MainModule, Is.True, "Assembly local")
+        Assert.That (Visitor.localFilter a, Is.True, "Assembly local")
+        Assert.That (Visitor.localFilter a.MainModule, Is.False, "MainModule local")
+        Assert.That (Visitor.localFilter f, Is.True, "F# Assembly non-local")
+        Assert.That (Visitor.localFilter f.MainModule, Is.False, "f# MainModule non-local")
 
       finally
         Visitor.local <- false

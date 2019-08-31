@@ -384,11 +384,11 @@ module internal Main =
                 ImageLoadResilient (fun () ->
                   use stream = File.OpenRead(fullName)
                   use def = AssemblyDefinition.ReadAssembly(stream)
-                  let assemblyPdb = ProgramDatabase.GetPdbWithFallback def
-                  if def
+                  ProgramDatabase.ReadSymbols def
+                  if def.MainModule.HasSymbols &&
+                     def
                      |> Visitor.IsIncluded
                      |> Visitor.IsInstrumented
-                     && Option.isSome assemblyPdb
                   then
                     String.Format
                       (CultureInfo.CurrentCulture,

@@ -301,13 +301,13 @@ module internal Visitor =
 
   let localFilter (nameProvider : Object) =
     match nameProvider with
-    | :? ModuleDefinition as m -> local &&
-                                  m
-                                  |> moduleFiles
-                                  |> Seq.tryHead
-                                  |> Option.map File.Exists
-                                  |> Option.getOrElse false
-                                  |> not
+    | :? AssemblyDefinition as a -> local &&
+                                    a.MainModule
+                                    |> moduleFiles
+                                    |> Seq.tryHead
+                                    |> Option.map File.Exists
+                                    |> Option.getOrElse false
+                                    |> not
     | _ -> false
 
   let IsIncluded(nameProvider : Object) =
@@ -413,6 +413,10 @@ module internal Visitor =
                                                 x
                                                 |> accumulator.Add
                                                 |> ignore
+
+                                                // can't delay reading symbols any more
+                                                ProgramDatabase.ReadSymbols(x)
+
                                                 // Reject completely if filtered here
                                                 let inspection = IsIncluded x
 
@@ -421,7 +425,6 @@ module internal Visitor =
                                                                     && ReportFormat() = Base.ReportFormat.OpenCoverWithTracking then
                                                                    Inspect.Track
                                                                  else Inspect.Ignore
-                                                ProgramDatabase.ReadSymbols(x)
                                                 Assembly(x, included, targets)))
                     >> buildSequence)
 
