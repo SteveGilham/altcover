@@ -167,6 +167,10 @@ type InvokeAltCoverCommand(runner : bool) =
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
   member val Defer : SwitchParameter = SwitchParameter(false) with get, set
 
+  [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
+              ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
+  member val LocalSource : SwitchParameter = SwitchParameter(false) with get, set
+
   [<Parameter(ParameterSetName = "Runner", Mandatory = false, ValueFromPipeline = false,
               ValueFromPipelineByPropertyName = false)>]
   member val SummaryFormat : Summary = Summary.Default with get, set
@@ -191,13 +195,8 @@ type InvokeAltCoverCommand(runner : bool) =
                                     OutputDirectories = self.OutputDirectory
                                     SymbolDirectories = self.SymbolDirectory
                                     Dependencies = self.Dependency
-#if NETCOREAPP2_0
-                                    Keys = []
-                                    StrongNameKey = String.Empty
-#else
                                     Keys = self.Key;
                                     StrongNameKey = self.StrongNameKey;
-#endif
                                     XmlReport = self.XmlReport
                                     FileFilter = self.FileFilter
                                     AssemblyFilter = self.AssemblyFilter
@@ -216,7 +215,8 @@ type InvokeAltCoverCommand(runner : bool) =
                                     CommandLine = self.CommandLine
                                     ExposeReturnCode = not self.DropReturnCode.IsPresent
                                     SourceLink = self.SourceLink.IsPresent
-                                    Defer = self.Defer.IsPresent }
+                                    Defer = self.Defer.IsPresent
+                                    LocalSource = self.LocalSource.IsPresent}
 
   member private self.Log() =
     FSApi.Logging.Primitive { Primitive.Logging.Create() with Error = (fun s -> self.Fail <- s :: self.Fail)

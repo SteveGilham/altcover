@@ -84,6 +84,7 @@ module internal Internals =
       FromList "TypeFilter" prepare.TypeFilter
       FromList "MethodFilter" prepare.MethodFilter
       FromList "AttributeFilter" prepare.AttributeFilter
+      (Arg "LocalSource" "true", prepare.LocalSource)
       FromList "CallContext" prepare.CallContext
       FromList "DependencyList" prepare.Dependencies
       FromArg "LcovReport" collect.LcovReport

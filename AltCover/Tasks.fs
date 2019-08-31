@@ -68,6 +68,7 @@ type Prepare() =
   member val AttributeFilter : string array = [||] with get, set
   member val PathFilter : string array = [||] with get, set
   member val CallContext : string array = [||] with get, set
+  member val LocalSource = false with get, set
   member val OpenCover = true with get, set
   member val InPlace = true with get, set
   member val Save = true with get, set
@@ -110,7 +111,8 @@ type Prepare() =
                                       CommandLine = self.CommandLine
                                       ExposeReturnCode = true
                                       SourceLink = self.SourceLink
-                                      Defer = self.Defer}
+                                      Defer = self.Defer
+                                      LocalSource = self.LocalSource}
 
     Api.Prepare task log = 0
 
