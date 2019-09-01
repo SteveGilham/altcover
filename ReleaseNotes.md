@@ -2,7 +2,7 @@ Q. Never mind the fluff -- how do I get started?
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
-# 6.1.7xx (Fukurou series release 4)
+# 6.1.708 (Fukurou series release 4)
 * [BUGFIX] reinstate the PowerShell Core (`pwsh`) `Invoke-AltCover` support for strongnaming.
 * [API] `-l|--localSource` option (bool `LocalSource` default false in API, `-LocalSource` PowerShell flag) to ignore .pdb files that refer to source files not present on the current computer (test is if the first file found exists or not, and assumes that this is all-or-nothing, and assume no coincidences in naming).
 ---
