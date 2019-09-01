@@ -36,16 +36,18 @@ let AltCoverFilter(p : Primitive.PrepareParams) =
            AssemblyExcludeFilter =
              [ "Adapter"; "Tests" ] @ (p.AssemblyExcludeFilter |> Seq.toList)
            AssemblyFilter =
-             [ "Mono"; @"\.Recorder"; @"\.DataCollector"; "Sample"; "nunit"; "Newton"; "xunit"; "BlackFox" ]
+             [ "Mono"; @"\.Recorder"; @"\.DataCollector"; "Sample" ]
              @ (p.AssemblyFilter |> Seq.toList)
+           LocalSource = true
            TypeFilter = [ @"System\."; @"Sample3\.Class2" ] @ (p.TypeFilter |> Seq.toList) }
 
 let AltCoverFilterX(p : Primitive.PrepareParams) =
   { p with MethodFilter = "WaitForExitCustom" :: (p.MethodFilter |> Seq.toList)
            AssemblyExcludeFilter = "Adapter" :: (p.AssemblyExcludeFilter |> Seq.toList)
            AssemblyFilter =
-             [ "Mono"; @"\.Recorder"; @"\.DataCollector"; "Sample"; "nunit"; "Newton"; "xunit"; "BlackFox" ]
+             [ "Mono"; @"\.Recorder"; @"\.DataCollector"; "Sample" ]
              @ (p.AssemblyFilter |> Seq.toList)
+           LocalSource = true
            TypeFilter = [ @"System\."; @"Sample3\.Class2"; "Tests" ] @ (p.TypeFilter |> Seq.toList) }
 
 let AltCoverFilterG(p : Primitive.PrepareParams) =
@@ -53,8 +55,9 @@ let AltCoverFilterG(p : Primitive.PrepareParams) =
            AssemblyExcludeFilter =
              [ "Adapter"; "Tests" ] @ (p.AssemblyExcludeFilter |> Seq.toList)
            AssemblyFilter =
-             [ "Mono"; @"\.Recorder\.g"; "Sample"; "nunit"; "Newton"; "xunit"; "BlackFox" ]
+             [ "Mono"; @"\.Recorder\.g"; "Sample" ]
              @ (p.AssemblyFilter |> Seq.toList)
+           LocalSource = true
            TypeFilter = [ @"System\."; @"Sample3\.Class2" ] @ (p.TypeFilter |> Seq.toList) }
 
 let programFiles = Environment.environVar "ProgramFiles"
@@ -2727,6 +2730,14 @@ _Target "ApiUse" (fun _ ->
     Directory.ensure "./_ApiUse"
     Shell.cleanDir ("./_ApiUse")
     Directory.ensure "./_ApiUse/_DotnetTest"
+
+    let apiroot = Path.GetFullPath "./_Packaging.api"
+    let fakeroot = Path.GetFullPath "./_Packaging.fake"
+    // manage the dependencies
+    let lines = "./Build/paket.lock"
+                |> File.ReadAllLines 
+                |> Array.map (fun line -> String.Format(line, !Version, apiroot, fakeroot))
+    File.WriteAllLines ("./_ApiUse/paket.lock", lines)
 
     let config = XDocument.Load "./Build/NuGet.config.dotnettest"
     let repo = config.Descendants(XName.Get("add")) |> Seq.head
