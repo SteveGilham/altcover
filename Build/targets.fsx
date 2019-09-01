@@ -2731,6 +2731,14 @@ _Target "ApiUse" (fun _ ->
     Shell.cleanDir ("./_ApiUse")
     Directory.ensure "./_ApiUse/_DotnetTest"
 
+    let apiroot = Path.GetFullPath "./_Packaging.api"
+    let fakeroot = Path.GetFullPath "./_Packaging.fake"
+    // manage the dependencies
+    let lines = "./Build/paket.lock"
+                |> File.ReadAllLines 
+                |> Array.map (fun line -> String.Format(line, !Version, apiroot, fakeroot))
+    File.WriteAllLines ("./_ApiUse/paket.lock", lines)
+
     let config = XDocument.Load "./Build/NuGet.config.dotnettest"
     let repo = config.Descendants(XName.Get("add")) |> Seq.head
     repo.SetAttributeValue(XName.Get "value", Path.getFullName "./_Packaging")
