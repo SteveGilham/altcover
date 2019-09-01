@@ -1866,7 +1866,16 @@ type AltCoverTests3() =
 
     [<Test>]
     member self.PreparingNewPlaceShouldCopyEverything() =
-      let here = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
+      let monoRuntime =
+        "Mono.Runtime"
+        |> Type.GetType
+        |> isNull
+        |> not
+      // because mono symbol-writing is broken, work around trying to
+      // examine the instrumented files in a self-test run.
+      let here = if monoRuntime
+                 then Path.Combine(SolutionRoot.location, "_Binaries/AltCover/Debug+AnyCPU")
+                 else Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
       let there = Path.Combine(here, Guid.NewGuid().ToString())
       let toInfo = [ Directory.CreateDirectory there ]
       let fromInfo = [ DirectoryInfo(here) ]
