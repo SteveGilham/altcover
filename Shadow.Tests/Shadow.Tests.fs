@@ -61,6 +61,8 @@ type AltCoverTests() =
       Assembly.GetExecutingAssembly().GetManifestResourceNames()
       |> Seq.find (fun n -> n.EndsWith("SimpleCoverage.xml", StringComparison.Ordinal))
 
+#if NET4
+#else
     member private self.UpdateReport a b =
       Counter.UpdateReport ignore (fun _ _ -> ()) true a ReportFormat.NCover b b |> ignore
 
@@ -69,6 +71,7 @@ type AltCoverTests() =
       |> Seq.find
            (fun n ->
            n.EndsWith("Sample1WithModifiedOpenCover.xml", StringComparison.Ordinal))
+#endif
 
     [<Test>]
     member self.SafeDisposalProtects() =
@@ -114,6 +117,8 @@ type AltCoverTests() =
           Adapter.SamplesClear())
       self.GetMyMethodName "<="
 
+#if NET2
+#else
     member self.RealIdShouldIncrementCount() =
       self.GetMyMethodName "=>"
       lock Adapter.Lock (fun () ->
@@ -144,6 +149,7 @@ type AltCoverTests() =
           Adapter.VisitsClear()
           Instance.trace <- save)
       self.GetMyMethodName "<="
+#endif
 
 #if NET4
     // passing lambdas or other F# types across the CLR divide doesn't work
@@ -555,6 +561,8 @@ type AltCoverTests() =
           Console.SetOut saved)
       self.GetMyMethodName "<="
 
+#if NET2
+#else
     member self.PauseLeavesExpectedTraces() =
       self.GetMyMethodName "=>"
       lock Adapter.Lock (fun () ->
@@ -749,6 +757,7 @@ type AltCoverTests() =
             with :? IOException -> ()
         with :? AbandonedMutexException -> Instance.mutex.ReleaseMutex())
       self.GetMyMethodName "<="
+#endif 
 
     [<Test>]
     member self.SupervisedFlushLeavesExpectedTraces() =
