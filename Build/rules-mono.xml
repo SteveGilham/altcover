@@ -8,7 +8,7 @@
            exclude="CheckParametersNullityInVisibleMethodsRule | MethodCanBeMadeStaticRule | EnsureLocalDisposalRule"
            from="Gendarme.Rules.Correctness.dll" />
     <rules include="*"
-           exclude="AvoidMultidimensionalIndexerRule | AvoidVisibleNestedTypesRule | AbstractTypesShouldNotHavePublicConstructorsRule | ImplementIComparableCorrectlyRule | ConsiderConvertingMethodToPropertyRule | AvoidSmallNamespaceRule | FlagsShouldNotDefineAZeroValueRule"
+           exclude="EnumsShouldUseInt32Rule | EnumsShouldDefineAZeroValueRule | AvoidMultidimensionalIndexerRule | AvoidVisibleNestedTypesRule | AbstractTypesShouldNotHavePublicConstructorsRule | ImplementIComparableCorrectlyRule | ConsiderConvertingMethodToPropertyRule | AvoidSmallNamespaceRule | FlagsShouldNotDefineAZeroValueRule"
            from="Gendarme.Rules.Design.dll" />
     <rules include="*"
            exclude="AvoidMethodWithUnusedGenericTypeRule | AvoidDeclaringCustomDelegatesRule | DoNotExposeNestedGenericSignaturesRule"

@@ -99,11 +99,11 @@
     <EmbeddedResource Include="..\AltCover.FSApi\xsl\OpenCoverToNCoverEx.xsl">
       <Link>OpenCoverToNCoverEx.xsl</Link>
     </EmbeddedResource>
-    <Compile Include="..\AltCover\Augment.fs">
-      <Link>Augment.fs</Link>
-    </Compile>
     <Compile Include="..\AltCover\Exemption.fs">
       <Link>Exemption.fs</Link>
+    </Compile>
+    <Compile Include="..\AltCover\Augment.fs">
+      <Link>Augment.fs</Link>
     </Compile>
     <Compile Include="CoverageFile.fs" />
     <Compile Include="GuiCommon.fs" />

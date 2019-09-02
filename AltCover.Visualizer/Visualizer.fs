@@ -844,7 +844,7 @@ module Gui =
           (n.endline - 1, Math.Min(n.endcolumn, endline.CharsInLine) - 1)
 
     let tag =
-      match enum n.visitcount with
+      match Exemption.OfInt n.visitcount with
       | Exemption.None -> "notVisited"
       | Exemption.Declared -> "declared"
       | Exemption.Automatic -> "automatic"

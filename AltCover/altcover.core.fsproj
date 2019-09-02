@@ -38,11 +38,11 @@
     <Compile Include="..\_Generated\AssemblyVersion.fs" Link="AssemblyVersion.fs" />
     <Compile Include="..\_Generated\VisibleToTest.fs" Link="VisibleToTest.fs" />
     <Compile Include="AssemblyInfo.fs" />
+    <Compile Include="Exemption.fs" />
     <Compile Include="Augment.fs" />
     <Compile Include="..\AltCover.Recorder\Base.fs" Link="Base.fs" />
     <Compile Include="ProgramDatabase.fs" />
     <Compile Include="Filter.fs" />
-    <Compile Include="Exemption.fs" />
     <Compile Include="Visitor.fs" />
     <Compile Include="Naming.fs" />
     <Compile Include="Report.fs" />

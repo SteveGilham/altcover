@@ -22,6 +22,16 @@ module internal Augment =
     function
     | Choice1Of2 x -> Right x
     | Choice2Of2 x -> Left x
+
+#if WEAK_NAME
+#else
+  type Exemption with
+    static member OfInt i =
+     if i > 0 then Exemption.Visited
+     else if i < -4
+          then Exemption.None
+          else i |> sbyte |> Microsoft.FSharp.Core.LanguagePrimitives.EnumOfValue<sbyte, Exemption>
+#endif
 #if GUI
 #else
   let Increment b =

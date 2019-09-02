@@ -15,6 +15,7 @@ open Mono.Cecil.Cil
 open Mono.Cecil.Rocks
 open N
 open NUnit.Framework
+open Swensen.Unquote
 
 type ProxyObject() =
   inherit MarshalByRefObject()
@@ -70,16 +71,32 @@ type AltCoverTests() =
 
     // Augment.fs
     [<Test>]
+    member self.ZeroIsNotVisited() =
+      test <@ Exemption.OfInt 0 = Exemption.None @>
+
+    [<Test>]
+    member self.PositiveIsVisited() =
+      test <@ [ 1 .. 255 ]
+              |> Seq.map Exemption.OfInt
+              |> Seq.tryFind (fun x -> x <> Exemption.Visited) = None @>
+
+    [<Test>]
+    member self.NegativesSpray() =
+      test <@ [ 0 .. 5]
+              |> Seq.map (( ~- ) >> Exemption.OfInt)
+              |> Seq.toList = [ Exemption.None; Exemption.Declared; Exemption.Automatic; Exemption.StaticAnalysis; Exemption.Excluded; Exemption.None ] @>
+
+    [<Test>]
     member self.AugmentNullableDetectNulls() =
       let input = [ "string"; null; "another string" ]
-      let nulls = input |> Seq.map (Option.nullable >> Option.isNone)
-      Assert.That(nulls, Is.EquivalentTo([ false; true; false ]))
+      let nulls = input |> List.map (Option.nullable >> Option.isNone)
+      test <@ nulls = [ false; true; false ] @>
 
     [<Test>]
     member self.AugmentGetOrElseFillsInNone() =
       let input = [ "string"; null; "another string" ]
-      let strings = input |> Seq.map (Option.nullable >> (Option.getOrElse "fallback"))
-      Assert.That(strings, Is.EquivalentTo([ "string"; "fallback"; "another string" ]))
+      let strings = input |> List.map (Option.nullable >> (Option.getOrElse "fallback"))
+      test <@ strings = [ "string"; "fallback"; "another string" ] @>
 
     // ProgramDatabase.fs
     [<Test>]
@@ -134,7 +151,7 @@ type AltCoverTests() =
           |> Seq.filter (fun x -> (snd x).FullName.EndsWith("PublicKeyToken=c02b1a9f5b7cade8", StringComparison.OrdinalIgnoreCase))
 #endif
           |> Seq.toList
-        Assert.That(files, Is.Not.Empty)
+        test <@ files <> [] @>
         files
         |> Seq.iter
              (fun x ->
