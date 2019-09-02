@@ -66,6 +66,7 @@
     </EmbeddedResource>
     <EmbeddedResource Include="..\AltCover.Avalonia\config.xsd" Link="config.xsd" />
     <Compile Include="AssemblyInfo.fs" />
+    <Compile Include="..\AltCover\Exemption.fs" Link="Exemption.fs" />
     <Compile Include="CoverageFile.fs" />
     <Compile Include="GuiCommon.fs" />
     <Compile Include="Visualizer.fs" />
