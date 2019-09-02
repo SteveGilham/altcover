@@ -10,7 +10,7 @@
     <RootNamespace>AltCover.Fake.DotNet.Testing.AltCover</RootNamespace>
     <AssemblyName>AltCover.Fake.DotNet.Testing.AltCover</AssemblyName>
     <UseStandardResourceNames>true</UseStandardResourceNames>
-    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Name>AltCover.Fake.DotNet.Testing.AltCover</Name>
     <NuGetPackageImportStamp>
@@ -18,6 +18,7 @@
     <ResolveNuGetPackages>false</ResolveNuGetPackages>
     <GlobalDefineConstants>
     </GlobalDefineConstants>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>

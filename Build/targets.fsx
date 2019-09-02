@@ -69,6 +69,15 @@ let dotnetOptions (o : DotNet.Options) =
   | Some f -> { o with DotNetCliPath = f }
   | None -> o
 
+let fxcop = 
+  if Environment.isWindows then
+    BlackFox.VsWhere.VsInstances.getAll()
+    |> Seq.filter (fun i -> System.Version(i.InstallationVersion).Major = 16)
+    |> Seq.map (fun i -> i.InstallationPath @@ "Team Tools/Static Analysis Tools/FxCop/FxCopCmd.exe")
+    |> Seq.filter File.Exists
+    |> Seq.tryHead
+  else None
+
 let monoOnWindows =
   if Environment.isWindows then
     [ programFiles; programFiles86 ]
@@ -494,6 +503,7 @@ _Target "FxCop" (fun _ -> // Needs debug because release is compiled --standalon
       ]
     |> Seq.iter (fun (files, types, ruleset) -> files
                                                 |> FxCop.run { FxCop.Params.Create() with WorkingDirectory = "."
+                                                                                          ToolPath = Option.get fxcop
                                                                                           UseGAC = true
                                                                                           Verbose = false
                                                                                           ReportFileName = "_Reports/FxCopReport.xml"
@@ -504,12 +514,13 @@ _Target "FxCop" (fun _ -> // Needs debug because release is compiled --standalon
 
   [ "_Binaries/AltCover.PowerShell/Debug+AnyCPU/AltCover.PowerShell.dll" ]
   |> FxCop.run { FxCop.Params.Create() with WorkingDirectory = "."
+                                            ToolPath = Option.get fxcop
                                             UseGAC = true
                                             Verbose = false
                                             ReportFileName = "_Reports/FxCopReport.xml"
                                             RuleLibraries =
                                               [ Path.getFullName
-                                                  "ThirdParty/Microsoft.PowerShell.CodeAnalysis.15.dll" ]
+                                                  "ThirdParty/Microsoft.PowerShell.CodeAnalysis.16.dll" ]
                                             FailOnError = FxCop.ErrorLevel.Warning
                                             IgnoreGeneratedCode = true })
 
@@ -3527,7 +3538,7 @@ Target.activateFinal "ResetConsoleColours"
 
 "Compilation"
 ==> "FxCop"
-=?> ("Analysis", Environment.isWindows) // not supported
+=?> ("Analysis", Environment.isWindows && fxcop |> Option.isSome) // not supported
 
 "Compilation"
 ==> "Gendarme"
