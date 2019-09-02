@@ -44,6 +44,16 @@ type AltCoverTests2() =
 
     // Instrument.fs
     [<Test>]
+    member self.ShouldNotHaveHighFSCore() =
+      let high = AltCover.Instrument.seekFSharpCore "666.666.666"
+      Assert.That(high, Is.False)
+
+    [<Test>]
+    member self.ShouldHaveLowFSCore() =
+      let high = AltCover.Instrument.seekFSharpCore "4.3.4"
+      Assert.That(high, Is.True)
+
+    [<Test>]
     member self.ShouldBeAbleToGetTheDefaultReportFileName() =
       let recorder = AltCover.Instrument.RecorderInstanceType()
       Assert.That

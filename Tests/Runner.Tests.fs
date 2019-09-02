@@ -1357,6 +1357,8 @@ type AltCoverTests() =
   -a, --attributeFilter=VALUE
                              Optional, multiple: attribute name to exclude from
                                instrumentation
+  -l, --localSource          Don't instrument code for which the source file is
+                               not present.
   -c, --callContext=VALUE    Optional, multiple: Tracking either times of
                                visits in ticks or designated method calls
                                leading to the visits.
