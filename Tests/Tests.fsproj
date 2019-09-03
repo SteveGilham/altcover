@@ -110,6 +110,9 @@
     <EmbeddedResource Include="coverage-04.xsd" />
     <EmbeddedResource Include="SwitchSample.dl_" />
     <EmbeddedResource Include="SwitchSample.pd_" />
+    <Content Include="..\WeakNameTests\App.config">
+      <Link>App.config</Link>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Sample11\Sample11.csproj">
