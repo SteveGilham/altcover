@@ -63,7 +63,7 @@
     <Error Condition="!Exists('..\packages\NUnit.3.12.0\build\NUnit.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\NUnit.3.12.0\build\NUnit.props'))" />
   </Target>
   <ItemGroup>
-    <Content Include="App.config"  Condition="'$(OS)' == 'Windows_NT'" />
+    <Content Include="App.config" Condition="'$(OS)' == 'Windows_NT'" />
     <Compile Include="..\Shadow.Tests\AssemblyInfo.fs">
       <Link>AssemblyInfo.fs</Link>
     </Compile>
@@ -93,11 +93,11 @@
       <Project>{24bfb835-2dac-45d4-afda-f9c2f13b41dd}</Project>
       <Private>True</Private>
     </ProjectReference>
-    <Reference Condition="'$(OS)' == 'Windows_NT'" Include="FSharp.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-      <HintPath>..\packages\FSharp.Core.3.0.2\lib\net35\FSharp.Core.dll</HintPath>
-    </Reference>
     <Reference Condition="'$(OS)' != 'Windows_NT'" Include="FSharp.Core">
       <HintPath>..\packages\FSharp.Core.4.5.2\lib\net45\FSharp.Core.dll</HintPath>
+    </Reference>
+    <Reference Condition="'$(OS)' == 'Windows_NT'" Include="FSharp.Core">
+      <HintPath>..\packages\FSharp.Core.3.0.2\lib\net35\FSharp.Core.dll</HintPath>
     </Reference>
     <Reference Include="FSharp.PowerPack" Condition="'$(OS)' == 'Windows_NT'">
       <HintPath>..\packages\FSPowerPack.Community.2.0.0.0\lib\Net20\FSharp.PowerPack.dll</HintPath>

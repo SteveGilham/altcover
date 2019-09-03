@@ -228,7 +228,7 @@ _Target "BuildRelease" (fun _ ->
 _Target "BuildDebug" (fun _ ->
   "AltCover.sln"
   |> MSBuild.build (fun p ->
-       { p with Verbosity = Some MSBuildVerbosity.Normal
+       { p with Verbosity = Some MSBuildVerbosity.Detailed
                 ConsoleLogParameters = []
                 DistributedLoggers = None
                 DisableInternalBinLog = true
