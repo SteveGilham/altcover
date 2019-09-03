@@ -543,17 +543,24 @@ _Target "JustUnitTest" (fun _ ->
     !!(@"_Binaries/*Tests/Debug+AnyCPU/*Tests.dll")
     |> Seq.filter
          (fun f ->
-         Path.GetFileName(f) <> "AltCover.XTests.dll")
+         Path.GetFileName(f) <> "AltCover.XTests.dll" && 
+         Path.GetFileName(f) <> "AltCover.Shadow.Tests.dll")
     |> NUnit3.run (fun p ->
          { p with ToolPath = findToolInSubPath "nunit3-console.exe" "."
                   WorkingDir = "."
                   ResultSpecs = [ "./_Reports/JustUnitTestReport.xml" ] })
 
-    !!(@"_Binaries/*Tests2/Debug+AnyCPU/*Test*.dll")
+    !!(@"_Binaries/*Tests/Debug+AnyCPU/AltCover.Shadow.Tests.dll")
     |> NUnit3.run (fun p ->
          { p with ToolPath = findToolInSubPath "nunit3-console.exe" "."
                   WorkingDir = "."
                   ResultSpecs = [ "./_Reports/ShadowUnitTestReport.xml" ] })
+
+    !!(@"_Binaries/*Tests2/Debug+AnyCPU/*Test*.dll")
+    |> NUnit3.run (fun p ->
+         { p with ToolPath = findToolInSubPath "nunit3-console.exe" "."
+                  WorkingDir = "."
+                  ResultSpecs = [ "./_Reports/Shadow2UnitTestReport.xml" ] })
   with x ->
     printfn "%A" x
     reraise())
@@ -629,13 +636,18 @@ _Target "UnitTestWithOpenCover" (fun _ ->
     !!(@"_Binaries/*Tests/Debug+AnyCPU/*Tests.dll")
     |> Seq.filter
          (fun f ->
-         Path.GetFileName(f) <> "AltCover.XTests.dll")
+         Path.GetFileName(f) <> "AltCover.XTests.dll" && 
+         Path.GetFileName(f) <> "AltCover.Shadow.Tests.dll")
+  let shadow4Files =
+    !!(@"_Binaries/*Tests/Debug+AnyCPU/*Shadow.Tests.dll")
+
   let shadowFiles =
     !!(@"_Binaries/*Tests2/Debug+AnyCPU/*Test*.dll")
   let xtestFiles = !!(@"_Binaries/*Tests/Debug+AnyCPU/*XTest*.dll")
   let coverage = Path.getFullName "_Reports/UnitTestWithOpenCover.xml"
   let xcoverage = Path.getFullName "_Reports/XUnitTestWithOpenCover.xml"
   let scoverage = Path.getFullName "_Reports/ShadowTestWithOpenCover.xml"
+  let s4coverage = Path.getFullName "_Reports/Shadow4TestWithOpenCover.xml"
 
   try
     OpenCover.run (fun p ->
@@ -645,6 +657,7 @@ _Target "UnitTestWithOpenCover" (fun _ ->
                Filter =
                  "+[AltCover]* +[AltCover.Shadow]* +[AltCover.Runner]* +[AltCover.WeakNameTests]Alt* -[*]Microsoft.* -[*]System.* -[Sample*]*"
                MergeByHash = true
+               ReturnTargetCode = ReturnTargetCodeType.Yes
                OptionalArguments =
                  "-excludebyattribute:*ExcludeFromCodeCoverageAttribute;*ProgIdAttribute -register:Path64"
                //Register = OpenCover.RegisterType.RegisterUser
@@ -659,6 +672,7 @@ _Target "UnitTestWithOpenCover" (fun _ ->
                Filter =
                  "+[AltCover]* +[AltCover.Shadow]* +[AltCover.Runner]* +[AltCover.WeakNameTests]Alt* -[*]Microsoft.* -[*]System.* -[Sample*]*"
                MergeByHash = true
+               ReturnTargetCode = ReturnTargetCodeType.Yes
                OptionalArguments =
                  "-excludebyattribute:*ExcludeFromCodeCoverageAttribute;*ProgIdAttribute -register:Path64"
                //Register = OpenCover.RegisterType.RegisterUser
@@ -673,11 +687,27 @@ _Target "UnitTestWithOpenCover" (fun _ ->
                Filter =
                  "+[AltCover]* +[AltCover.Shadow]* +[AltCover.Runner]* +[AltCover.WeakNameTests]Alt* -[*]Microsoft.* -[*]System.* -[Sample*]*"
                MergeByHash = true
+               ReturnTargetCode = ReturnTargetCodeType.Yes
                OptionalArguments =
                  "-excludebyattribute:*ExcludeFromCodeCoverageAttribute;*ProgIdAttribute -register:Path64"
                //Register = OpenCover.RegisterType.RegisterUser
                Output = scoverage })
       (String.Join(" ", shadowFiles)
+       + " --result=./_Reports/ShadowTestWithOpenCoverReport.xml")
+
+    OpenCover.run (fun p ->
+      { p with WorkingDir = "."
+               ExePath = findToolInSubPath "OpenCover.Console.exe" "."
+               TestRunnerExePath = findToolInSubPath "nunit3-console.exe" "."
+               Filter =
+                 "+[AltCover]* +[AltCover.Shadow]* +[AltCover.Runner]* +[AltCover.WeakNameTests]Alt* -[*]Microsoft.* -[*]System.* -[Sample*]*"
+               MergeByHash = true
+               ReturnTargetCode = ReturnTargetCodeType.Yes
+               OptionalArguments =
+                 "-excludebyattribute:*ExcludeFromCodeCoverageAttribute;*ProgIdAttribute -register:Path64"
+               //Register = OpenCover.RegisterType.RegisterUser
+               Output = s4coverage })
+      (String.Join(" ", shadow4Files)
        + " --result=./_Reports/ShadowTestWithOpenCoverReport.xml")
 
   with x ->
@@ -688,7 +718,7 @@ _Target "UnitTestWithOpenCover" (fun _ ->
     { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
              ReportTypes =
                [ ReportGenerator.ReportType.Html; ReportGenerator.ReportType.XmlSummary ]
-             TargetDir = "_Reports/_UnitTestWithOpenCover" }) [ coverage; xcoverage; scoverage ])
+             TargetDir = "_Reports/_UnitTestWithOpenCover" }) [ coverage; xcoverage; scoverage; s4coverage ])
 
 // Hybrid (Self) Tests
 
