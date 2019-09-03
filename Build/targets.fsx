@@ -712,12 +712,13 @@ _Target "UnitTestWithAltCover" (fun _ ->
 
     let altReport = reports @@ "UnitTestWithAltCover.xml"
     let weakDir = Path.getFullName "_Binaries/AltCover.WeakNameTests/Debug+AnyCPU"
+    let shadow4Dir = Path.getFullName "_Binaries/AltCover.Shadow.Tests/Debug+AnyCPU"
     printfn "Instrumented the code"
     let prep =
       AltCover.PrepareParams.Primitive
         ({ Primitive.PrepareParams.Create() with XmlReport = altReport
-                                                 InputDirectories = [| "."; weakDir|]
-                                                 OutputDirectories = [| "./__UnitTestWithAltCover"; weakDir @@ "__WeakNameTestWithAltCover" |]
+                                                 InputDirectories = [| "."; weakDir; shadow4Dir|]
+                                                 OutputDirectories = [| "./__UnitTestWithAltCover"; weakDir @@ "__WeakNameTestWithAltCover"; shadow4Dir @@ "__ShadowTestWithAltCover" |]
                                                  StrongNameKey = keyfile
                                                  OpenCover = false
                                                  InPlace = false
@@ -740,6 +741,7 @@ _Target "UnitTestWithAltCover" (fun _ ->
     try
       [ !!"_Binaries/AltCover.Tests/Debug+AnyCPU/__UnitTestWithAltCover/*.Tests.dll"
         !!"_Binaries/AltCover.WeakNameTests/Debug+AnyCPU/__WeakNameTestWithAltCover/Alt*Test*.dll"
+        !!"_Binaries/AltCover.Shadow.Tests/Debug+AnyCPU/_ShadowTestWithAltCover/Alt*Test*.dll"
         !!"_Binaries/AltCover.Tests/Debug+AnyCPU/__UnitTestWithAltCover/*ple2.dll" ]
       |> Seq.concat
       |> Seq.distinct
@@ -752,7 +754,7 @@ _Target "UnitTestWithAltCover" (fun _ ->
       reraise()
 
     printfn "Instrument the shadow tests"
-    let shadowDir = Path.getFullName "_Binaries/AltCover.Shadow.Tests/Debug+AnyCPU"
+    let shadowDir = Path.getFullName "_Binaries/AltCover.Shadow.Tests2/Debug+AnyCPU"
     let shadowReport = reports @@ "ShadowTestWithAltCover.xml"
 
     let prep =
@@ -771,7 +773,7 @@ _Target "UnitTestWithAltCover" (fun _ ->
     |> AltCover.run
 
     printfn "Execute the shadow tests"
-    !!("_Binaries/AltCover.Shadow.Tests/Debug+AnyCPU/__ShadowTestWithAltCover/Alt*.Test*.dll")
+    !!("_Binaries/AltCover.Shadow.Tests2/Debug+AnyCPU/__ShadowTestWithAltCover/Alt*.Test*.dll")
     |> NUnit3.run (fun p ->
          { p with ToolPath = findToolInSubPath "nunit3-console.exe" "."
                   WorkingDir = "."

@@ -102,11 +102,6 @@
       <Project>{24bfb835-2dac-45d4-afda-f9c2f13b41dd}</Project>
       <Private>True</Private>
     </ProjectReference>
-    <ProjectReference Include="..\Shadow.Tests2\Shadow.Tests2.fsproj">
-      <Name>Shadow.Tests2</Name>
-      <Project>{d6ed39d2-ea21-4141-96d7-2b5f234fcd3e}</Project>
-      <Private>True</Private>
-    </ProjectReference>
   </ItemGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
