@@ -657,7 +657,7 @@ _Target "UnitTestWithOpenCover" (fun _ ->
                Filter =
                  "+[AltCover]* +[AltCover.Shadow]* +[AltCover.Runner]* +[AltCover.WeakNameTests]Alt* -[*]Microsoft.* -[*]System.* -[Sample*]*"
                MergeByHash = true
-               ReturnTargetCode = ReturnTargetCodeType.Yes
+               ReturnTargetCode =  Fake.DotNet.Testing.OpenCover.ReturnTargetCodeType.Yes
                OptionalArguments =
                  "-excludebyattribute:*ExcludeFromCodeCoverageAttribute;*ProgIdAttribute -register:Path64"
                //Register = OpenCover.RegisterType.RegisterUser
@@ -672,7 +672,7 @@ _Target "UnitTestWithOpenCover" (fun _ ->
                Filter =
                  "+[AltCover]* +[AltCover.Shadow]* +[AltCover.Runner]* +[AltCover.WeakNameTests]Alt* -[*]Microsoft.* -[*]System.* -[Sample*]*"
                MergeByHash = true
-               ReturnTargetCode = ReturnTargetCodeType.Yes
+               ReturnTargetCode =  Fake.DotNet.Testing.OpenCover.ReturnTargetCodeType.Yes
                OptionalArguments =
                  "-excludebyattribute:*ExcludeFromCodeCoverageAttribute;*ProgIdAttribute -register:Path64"
                //Register = OpenCover.RegisterType.RegisterUser
@@ -687,7 +687,7 @@ _Target "UnitTestWithOpenCover" (fun _ ->
                Filter =
                  "+[AltCover]* +[AltCover.Shadow]* +[AltCover.Runner]* +[AltCover.WeakNameTests]Alt* -[*]Microsoft.* -[*]System.* -[Sample*]*"
                MergeByHash = true
-               ReturnTargetCode = ReturnTargetCodeType.Yes
+               ReturnTargetCode =  Fake.DotNet.Testing.OpenCover.ReturnTargetCodeType.Yes
                OptionalArguments =
                  "-excludebyattribute:*ExcludeFromCodeCoverageAttribute;*ProgIdAttribute -register:Path64"
                //Register = OpenCover.RegisterType.RegisterUser
@@ -702,7 +702,7 @@ _Target "UnitTestWithOpenCover" (fun _ ->
                Filter =
                  "+[AltCover]* +[AltCover.Shadow]* +[AltCover.Runner]* +[AltCover.WeakNameTests]Alt* -[*]Microsoft.* -[*]System.* -[Sample*]*"
                MergeByHash = true
-               ReturnTargetCode = ReturnTargetCodeType.Yes
+               ReturnTargetCode =  Fake.DotNet.Testing.OpenCover.ReturnTargetCodeType.Yes
                OptionalArguments =
                  "-excludebyattribute:*ExcludeFromCodeCoverageAttribute;*ProgIdAttribute -register:Path64"
                //Register = OpenCover.RegisterType.RegisterUser
