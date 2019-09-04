@@ -79,12 +79,7 @@ type AltCoverCoreTests() =
            match enum tag with
            | Tag.Time -> Time <| formatter.ReadInt64()
            | Tag.Call -> Call <| formatter.ReadInt32()
-#if NET4
            | Tag.Both -> Adapter.NewBoth (formatter.ReadInt64()) (formatter.ReadInt32())
-#else
-           | Tag.Both -> Both (formatter.ReadInt64(), formatter.ReadInt32())
-#endif
-
            | Tag.Table ->
              test <@ id = String.Empty @>
              test <@ strike = 0 @>
@@ -112,15 +107,10 @@ type AltCoverCoreTests() =
                        | Tag.Call ->
                          pv.Tracks.Add(Call <| formatter.ReadInt32())
                          tracking()
-#if NET4
                        | Tag.Both ->
                          pv.Tracks.Add
                            (Adapter.NewBoth (formatter.ReadInt64())
                               (formatter.ReadInt32()))
-#else
-                                    | Tag.Both -> pv.Tracks.Add (Both (formatter.ReadInt64(), formatter.ReadInt32()))
-#endif
-
                          tracking()
                        | Tag.Table -> test' <@ false @> "No nested tables!!"
                        | _ -> sequencePoint (pts - 1)
@@ -181,11 +171,7 @@ type AltCoverCoreTests() =
 
       let expect24 =
         [ Time 17L
-#if NET4
           Adapter.NewBoth 42L 23
-#else
-          Both (42L, 23)
-#endif
         ]
 
       t.["name"].[23] <- PointVisit.Init 1L expect23

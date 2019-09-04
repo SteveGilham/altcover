@@ -92,14 +92,11 @@
     <Reference Include="Unquote">
       <HintPath>..\ThirdParty\Unquote.dll</HintPath>
     </Reference>
-    <ProjectReference Include="..\AltCover.Recorder\AltCover.Shadow.fsproj">
-      <Name>AltCover.Shadow</Name>
-      <Project>{62480be3-4479-4a47-a23f-50858ecd74b3}</Project>
-      <Private>True</Private>
-    </ProjectReference>
-    <ProjectReference Include="..\Shadow.Adapter\Shadow.Adapter.fsproj">
-      <Name>Shadow.Adapter</Name>
-      <Project>{24bfb835-2dac-45d4-afda-f9c2f13b41dd}</Project>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\AltCover.Recorder\AltCover.Recorder.fsproj">
+      <Name>AltCover.Recorder</Name>
+      <Project>{02192b55-3a50-4ad2-b519-560f30c14dd4}</Project>
       <Private>True</Private>
     </ProjectReference>
   </ItemGroup>

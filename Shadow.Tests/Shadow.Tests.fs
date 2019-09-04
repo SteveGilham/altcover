@@ -61,17 +61,14 @@ type AltCoverTests() =
       Assembly.GetExecutingAssembly().GetManifestResourceNames()
       |> Seq.find (fun n -> n.EndsWith("SimpleCoverage.xml", StringComparison.Ordinal))
 
-#if NET4
-#else
     member private self.UpdateReport a b =
-      Counter.UpdateReport ignore (fun _ _ -> ()) true a ReportFormat.NCover b b |> ignore
+      Adapter.UpdateReport a ReportFormat.NCover b b |> ignore
 
     member self.resource2 =
       Assembly.GetExecutingAssembly().GetManifestResourceNames()
       |> Seq.find
            (fun n ->
            n.EndsWith("Sample1WithModifiedOpenCover.xml", StringComparison.Ordinal))
-#endif
 
     [<Test>]
     member self.SafeDisposalProtects() =
@@ -99,7 +96,7 @@ type AltCoverTests() =
           Definitive = false
           Stream = null
           Formatter = null }
-      test <@ tracer.GetType().Assembly.GetName().Name = "AltCover.Shadow" @>
+      test <@ tracer.GetType().Assembly.GetName().Name = "AltCover.Recorder" @>
       self.GetMyMethodName "<="
 
     [<Test>]
@@ -151,9 +148,6 @@ type AltCoverTests() =
       self.GetMyMethodName "<="
 #endif
 
-#if NET4
-    // passing lambdas or other F# types across the CLR divide doesn't work
-#else
     [<Test>]
     member self.JunkUspidGivesNegativeIndex() =
       let key = " "
@@ -164,26 +158,26 @@ type AltCoverTests() =
     member self.PayloadGeneratedIsAsExpected() =
       try
         test <@ Instance.CallerId() = 0 @>
-        test <@ Instance.PayloadSelector (fun _ -> false) = Null @>
-        test <@ Instance.PayloadSelector (fun _ -> true) = Null @>
+        test <@ Adapter.PayloadSelector false = Adapter.Null() @>
+        test <@ Adapter.PayloadSelector true = Adapter.Null() @>
         Instance.Push 4321
-        test <@ Instance.PayloadSelector (fun _ -> false) = Null @>
-        test <@ Instance.PayloadSelector (fun _ -> true) = (Call 4321) @>
+        test <@ Adapter.PayloadSelector false = Adapter.Null() @>
+        test <@ Adapter.PayloadSelector true = (Adapter.Call 4321) @>
         try
           Instance.Push 6789
           // 0x1234123412341234 == 1311693406324658740
-          test <@ Instance.PayloadSelection (fun _ -> 0x1234123412341234L) (fun _ -> 1000L) (fun _ -> true)
-                   = (Both (1311693406324658000L, 6789)) @>
+          test <@ Adapter.PayloadSelection 0x1234123412341234L 1000L true
+                   = (Adapter.NewBoth 1311693406324658000L 6789) @>
         finally
           Instance.Pop()
-        test <@ Instance.PayloadSelector (fun _ -> true) =
-                    (Call 4321) @>
+        test <@ Adapter.PayloadSelector true =
+                    (Adapter.Call 4321) @>
       finally
         Instance.Pop()
-      test <@ Instance.PayloadSelection (fun _ -> 0x1234123412341234L) (fun _ -> 1000L) (fun _ -> true) =
-                (Time 1311693406324658000L) @>
+      test <@ Adapter.PayloadSelection 0x1234123412341234L 1000L true =
+                (Adapter.Time 1311693406324658000L) @>
       let v1 = DateTime.UtcNow.Ticks
-      let probed = Instance.PayloadControl (fun _ -> 1000L) (fun _ -> true)
+      let probed = Adapter.PayloadControl 1000L true
       let v2 = DateTime.UtcNow.Ticks
       match probed with
       | Time probe ->
@@ -292,7 +286,7 @@ type AltCoverTests() =
         let payloads =
           [ Call 17
             Time 23L
-            Both(5L, 42) ]
+            Adapter.NewBoth 5L 42 ]
         let pv = PointVisit.Init 42L payloads
         table.[key].Add(23, pv)
         let n = Counter.AddTable Instance.Visits table
@@ -530,7 +524,7 @@ type AltCoverTests() =
       |> Seq.iter(fun i -> payload.[i ||| Counter.BranchFlag] <- PointVisit.Init (int64(i-10)) [])
       let item = Dictionary<string, Dictionary<int, PointVisit>>()
       item.Add("7C-CD-66-29-A3-6C-6D-5F-A7-65-71-0E-22-7D-B2-61-B5-1F-65-9A", payload)
-      Counter.UpdateReport ignore (fun _ _ -> ()) true item ReportFormat.OpenCover worker worker |> ignore
+      Adapter.UpdateReport item ReportFormat.OpenCover worker worker |> ignore
       worker.Position <- 0L
       let after = XmlDocument()
       after.Load worker
@@ -543,7 +537,6 @@ type AltCoverTests() =
                    |> Seq.map (fun x -> x.GetAttribute("vc")),
                    Is.EquivalentTo [ "2"; "2"]))
       self.GetMyMethodName "<="
-#endif
 
     [<Test>]
     member self.EmptyFlushLeavesNoTrace() =
@@ -757,7 +750,7 @@ type AltCoverTests() =
             with :? IOException -> ()
         with :? AbandonedMutexException -> Instance.mutex.ReleaseMutex())
       self.GetMyMethodName "<="
-#endif 
+#endif
 
     [<Test>]
     member self.SupervisedFlushLeavesExpectedTraces() =
@@ -853,8 +846,8 @@ type AltCoverTests() =
         let payload = Dictionary<int, PointVisit>()
         [ 0..9 ] |> Seq.iter (fun i -> payload.[i] <- PointVisit.Init (int64 (i + 1)) [])
         visits.["f6e3edb3-fb20-44b3-817d-f69d1a22fc2f"] <- payload
-        Counter.DoFlush ignore (fun _ _ -> ()) true visits
-          AltCover.Recorder.ReportFormat.NCover reportFile (Some outputFile) |> ignore
+        Adapter.DoFlush visits
+          AltCover.Recorder.ReportFormat.NCover reportFile outputFile |> ignore
         use worker' = new FileStream(outputFile, FileMode.Open)
         let after = XmlDocument()
         after.Load worker'

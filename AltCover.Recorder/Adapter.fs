@@ -3,6 +3,7 @@ namespace AltCover.Shadow
 open System.Collections.Generic
 open AltCover.Recorder
 
+#if DEBUG
 module Adapter =
   let DoPause() = Instance.DoPause null
   let DoResume() = Instance.DoResume null
@@ -61,3 +62,18 @@ module Adapter =
   let AddSampleUnconditional moduleId hitPointId =
     Instance.TakeSample Sampling.All moduleId hitPointId
   let internal NewBoth time track = Both(time, track)
+  let internal Call track = Call track
+  let internal Time at = Time at
+  let internal Null () = Null
+
+  let internal DoFlush visits format report output =
+    let output' = if System.String.IsNullOrEmpty output
+                  then None
+                  else Some output
+    Counter.DoFlush ignore (fun _ _ -> ()) true visits format report output'
+  let internal UpdateReport counts format coverageFile outputFile =
+    Counter.UpdateReport ignore (fun _ _ -> ()) true counts format coverageFile outputFile
+  let internal PayloadSelector x = Instance.PayloadSelector (fun _ -> x)
+  let internal PayloadControl x y = Instance.PayloadControl (fun _ -> x) (fun _ -> y)
+  let internal PayloadSelection x y z = Instance.PayloadSelection (fun _ -> x) (fun _ -> y) (fun _ -> z)
+#endif
