@@ -67,6 +67,13 @@ type AltCoverTests() =
       Adapter.UpdateReport a ReportFormat.NCover b b |> ignore
 #endif
 
+    member private self.PointVisitInit a b =
+#if MONO
+      PointVisit.Init (a, b)
+#else
+      PointVisit.Init a b
+#endif
+
     member self.resource2 =
       Assembly.GetExecutingAssembly().GetManifestResourceNames()
       |> Seq.find
@@ -291,7 +298,7 @@ type AltCoverTests() =
           [ Adapter.Call 17
             Adapter.Time 23L
             Adapter.NewBoth 5L 42 ]
-        let pv = PointVisit.Init 42L payloads
+        let pv = self.PointVisitInit 42L payloads
         table.[key].Add(23, pv)
         let n = Counter.AddTable Instance.Visits table
         Assert.That (n, Is.EqualTo 45)
@@ -467,8 +474,8 @@ type AltCoverTests() =
       worker.Position <- 0L
       use before = new StreamReader (Assembly.GetExecutingAssembly().GetManifestResourceStream(self.resource))
       let payload = Dictionary<int,PointVisit>()
-      payload.[-1] <- PointVisit.Init 10L []
-      payload.[100] <- PointVisit.Init 10L []
+      payload.[-1] <- self.PointVisitInit 10L []
+      payload.[100] <- self.PointVisitInit 10L []
       let item = Dictionary<string, Dictionary<int, PointVisit>>()
       item.Add("f6e3edb3-fb20-44b3-817d-f69d1a22fc2f", payload)
       self.UpdateReport item worker
@@ -496,7 +503,7 @@ type AltCoverTests() =
       worker.Position <- 0L
       let payload = Dictionary<int,PointVisit>()
       [0..9 ]
-      |> Seq.iter(fun i -> payload.[i] <- PointVisit.Init (int64(i+1)) [])
+      |> Seq.iter(fun i -> payload.[i] <- self.PointVisitInit (int64(i+1)) [])
       let item = Dictionary<string, Dictionary<int, PointVisit>>()
       item.Add("f6e3edb3-fb20-44b3-817d-f69d1a22fc2f", payload)
       self.UpdateReport item worker
@@ -523,9 +530,9 @@ type AltCoverTests() =
       worker.Position <- 0L
       let payload = Dictionary<int,PointVisit>()
       [0..9 ]
-      |> Seq.iter(fun i -> payload.[10 - i] <- PointVisit.Init (int64(i+1)) [])
+      |> Seq.iter(fun i -> payload.[10 - i] <- self.PointVisitInit (int64(i+1)) [])
       [11..12]
-      |> Seq.iter(fun i -> payload.[i ||| Counter.BranchFlag] <- PointVisit.Init (int64(i-10)) [])
+      |> Seq.iter(fun i -> payload.[i ||| Counter.BranchFlag] <- self.PointVisitInit (int64(i-10)) [])
       let item = Dictionary<string, Dictionary<int, PointVisit>>()
       item.Add("7C-CD-66-29-A3-6C-6D-5F-A7-65-71-0E-22-7D-B2-61-B5-1F-65-9A", payload)
       Adapter.UpdateReport item ReportFormat.OpenCover worker worker |> ignore
@@ -788,9 +795,18 @@ type AltCoverTests() =
             [ 0..9 ]
             |> Seq.iter
                  (fun i ->
+#if MONO
+                 Adapter.VisitsAdd ("f6e3edb3-fb20-44b3-817d-f69d1a22fc2f", i,
+                   (int64 (i + 1))))
+#else
                  Adapter.VisitsAdd "f6e3edb3-fb20-44b3-817d-f69d1a22fc2f" i
                    (int64 (i + 1)))
+#endif
+#if MONO
+            Instance.FlushCounter (Adapter.ProcessExit(),  ())
+#else
             Instance.FlushCounter ProcessExit ()
+#endif
             let head = "Coverage statistics flushing took "
             let tail = " seconds\n"
             let recorded = stdout.ToString().Replace("\r\n", "\n")
@@ -842,10 +858,15 @@ type AltCoverTests() =
            worker.Write(buffer, 0, size)
            ()
         let payload = Dictionary<int, PointVisit>()
-        [ 0..9 ] |> Seq.iter (fun i -> payload.[i] <- PointVisit.Init (int64 (i + 1)) [])
+        [ 0..9 ] |> Seq.iter (fun i -> payload.[i] <- self.PointVisitInit (int64 (i + 1)) [])
         visits.["f6e3edb3-fb20-44b3-817d-f69d1a22fc2f"] <- payload
+#if MONO
+        Adapter.DoFlush (visits,
+          AltCover.Recorder.ReportFormat.NCover, reportFile, outputFile) |> ignore
+#else
         Adapter.DoFlush visits
           AltCover.Recorder.ReportFormat.NCover reportFile outputFile |> ignore
+#endif
         use worker' = new FileStream(outputFile, FileMode.Open)
         let after = XmlDocument()
         after.Load worker'

@@ -81,4 +81,8 @@ module Adapter =
   let internal PayloadSelector x = Instance.PayloadSelector (fun _ -> x)
   let internal PayloadControl x y = Instance.PayloadControl (fun _ -> x) (fun _ -> y)
   let internal PayloadSelection x y z = Instance.PayloadSelection (fun _ -> x) (fun _ -> y) (fun _ -> z)
+
+#if MONO
+  let internal ProcessExit() = ProcessExit
+#endif
 #endif
