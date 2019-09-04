@@ -179,8 +179,8 @@ type AltCoverTests() =
       let v1 = DateTime.UtcNow.Ticks
       let probed = Adapter.PayloadControl 1000L true
       let v2 = DateTime.UtcNow.Ticks
-      match probed with
-      | Time probe ->
+      match Adapter.untime probed |> Seq.toList with
+      | [probe] ->
         test <@ probe % 1000L = 0L @>
         test <@ probe <= v2 @>
         test <@ probe >= (1000L*(v1/1000L)) @>
@@ -200,7 +200,7 @@ type AltCoverTests() =
         Instance.trace <- { Tracer=null; Stream=null; Formatter=null;
                             Runner = false; Definitive = false }
         let key = " "
-        Instance.VisitSelection Null key 23
+        Instance.VisitSelection (Adapter.Null()) key 23
         Assert.That (Instance.Visits.Count, Is.EqualTo 1, "A visit that should have happened, didn't")
         Assert.That (Instance.Visits.[key].Count, Is.EqualTo 1, "keys = " + String.Join("; ", Instance.Visits.Keys|> Seq.toArray))
         Assert.That (Instance.Visits.[key].[23].Count, Is.EqualTo 1)
@@ -263,7 +263,7 @@ type AltCoverTests() =
       try
         Instance.Visits.Clear()
         let key = " "
-        let payload = Time DateTime.UtcNow.Ticks
+        let payload = Adapter.Time DateTime.UtcNow.Ticks
         Instance.VisitImpl key 23 Null
         Instance.VisitImpl key 23 payload
         Assert.That (Instance.Visits.[key].[23].Count, Is.EqualTo 1)
@@ -280,12 +280,12 @@ type AltCoverTests() =
       try
         Instance.Visits.Clear()
         let key = " "
-        Instance.VisitImpl key 23 Null
+        Instance.VisitImpl key 23 (Adapter.Null())
         let table = Dictionary<string, Dictionary<int, PointVisit>>()
         table.Add(key, Dictionary<int, PointVisit>())
         let payloads =
-          [ Call 17
-            Time 23L
+          [ Adapter.Call 17
+            Adapter.Time 23L
             Adapter.NewBoth 5L 42 ]
         let pv = PointVisit.Init 42L payloads
         table.[key].Add(23, pv)

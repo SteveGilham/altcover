@@ -54,7 +54,22 @@ module Adapter =
   let internal NewBoth time track = Both(time, track)
   let internal Call track = Call track
   let internal Time at = Time at
+  let internal untime at =
+    let r = List<System.Int64>()
+    match at with
+    | Time t ->r.Add(t)
+    | _ -> ()
+    r
   let internal Null () = Null
+  let internal Table t = Table t
+  let internal untable t =
+    let r = List<System.Object>()
+    match t with
+    | (n, p, Table d) -> r.Add(n)
+                         r.Add(p)
+                         r.Add(d)
+    | _ -> ()
+    r
 
   let internal DoFlush visits format report output =
     let output' = if System.String.IsNullOrEmpty output

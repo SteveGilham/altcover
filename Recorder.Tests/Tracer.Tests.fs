@@ -76,8 +76,8 @@ type AltCoverCoreTests() =
           let tag = formatter.ReadByte() |> int
           (id, strike,
            match enum tag with
-           | Tag.Time -> Time <| formatter.ReadInt64()
-           | Tag.Call -> Call <| formatter.ReadInt32()
+           | Tag.Time -> Adapter.Time <| formatter.ReadInt64()
+           | Tag.Call -> Adapter.Call <| formatter.ReadInt32()
            | Tag.Both -> Adapter.NewBoth (formatter.ReadInt64()) (formatter.ReadInt32())
            | Tag.Table ->
              test <@ id = String.Empty @>
@@ -101,10 +101,10 @@ type AltCoverCoreTests() =
                        let track = formatter.ReadByte() |> int
                        match enum track with
                        | Tag.Time ->
-                         pv.Tracks.Add(Time <| formatter.ReadInt64())
+                         pv.Tracks.Add(Adapter.Time <| formatter.ReadInt64())
                          tracking()
                        | Tag.Call ->
-                         pv.Tracks.Add(Call <| formatter.ReadInt32())
+                         pv.Tracks.Add(Adapter.Call <| formatter.ReadInt32())
                          tracking()
                        | Tag.Both ->
                          pv.Tracks.Add
@@ -117,8 +117,8 @@ type AltCoverCoreTests() =
                    else ``module``()
                  sequencePoint points
              ``module``()
-             Table t
-           | _ -> Null)
+             Adapter.Table t
+           | _ -> Adapter.Null())
           |> hits.Add
           sink()
         with :? System.IO.IOException -> ()
@@ -132,7 +132,7 @@ type AltCoverCoreTests() =
       let unique = Path.Combine(where, Guid.NewGuid().ToString())
       let tag = unique + ".acv"
 
-      let expected = [ ("name", 23, Null) ]
+      let expected = [ ("name", 23, Adapter.Null()) ]
       do use stream = File.Create tag
          ()
       try
@@ -165,11 +165,11 @@ type AltCoverCoreTests() =
       let t = Dictionary<string, Dictionary<int, PointVisit>>()
       t.["name"] <- Dictionary<int, PointVisit>()
       let expect23 =
-        [ Call 17
-          Call 42 ]
+        [ Adapter.Call 17
+          Adapter.Call 42 ]
 
       let expect24 =
-        [ Time 17L
+        [ Adapter.Time 17L
           Adapter.NewBoth 42L 23
         ]
 
@@ -177,8 +177,8 @@ type AltCoverCoreTests() =
       t.["name"].[24] <- PointVisit.Init 2L expect24
 
       let expected =
-        [ (String.Empty, 0, Table t)
-          ("name", 23, Call 5) ]
+        [ (String.Empty, 0, Adapter.Table t)
+          ("name", 23, Adapter.Call 5) ]
       do use stream = File.Create tag
          ()
       try
@@ -205,8 +205,11 @@ type AltCoverCoreTests() =
                   |> Seq.head) = (expected
                                   |> Seq.skip 1
                                   |> Seq.head) @> "unexpected result"
-        match results |> Seq.head with
-        | (n, p, Table d) ->
+        match results |> Seq.head |> Adapter.untable |> Seq.toList with
+        | [n'; p'; d'] ->
+          let n = n' :?> String
+          let p = p' :?> int
+          let d = d' :?> Dictionary<string, Dictionary<int, PointVisit>>
           test <@ n |> Seq.isEmpty @>
           test <@ p = 0 @>
           test <@ d.Count = 1 @>
@@ -257,7 +260,7 @@ type AltCoverCoreTests() =
          ()
       try
         let client = Tracer.Create unique
-        let expected = [ ("name", client.GetHashCode(), Null) ]
+        let expected = [ ("name", client.GetHashCode(), Adapter.Null ()) ]
         try
           Adapter.VisitsClear()
           Instance.trace <- client.OnStart()
