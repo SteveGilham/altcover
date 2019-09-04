@@ -2061,6 +2061,9 @@ _Target "Packaging" (fun _ ->
   let posh =
     Path.getFullName
       "_Binaries/AltCover.PowerShell/Release+AnyCPU/AltCover.PowerShell.dll"
+  let poshc =
+    Path.getFullName
+      "_Binaries/AltCover.PowerShell/Release+AnyCPU/AltCover.PowerShell.dll.config"
   let csapi =
     Path.getFullName "_Binaries/AltCover.CSApi/Release+AnyCPU/AltCover.CSApi.dll"
   let fsapi =
@@ -2087,6 +2090,7 @@ _Target "Packaging" (fun _ ->
         (config, Some "tools/net45", None)
         (recorder, Some "tools/net45", None)
         (posh, Some "tools/net45", None)
+        (poshc, Some "tools/net45", None)
         (fsapi, Some "tools/net45", None)
         (vis, Some "tools/net45", None)
         (fscore, Some "tools/net45", None)
@@ -2099,6 +2103,7 @@ _Target "Packaging" (fun _ ->
         (config, Some "lib/net45", None)
         (recorder, Some "lib/net45", None)
         (posh, Some "lib/net45", None)
+        (poshc, Some "lib/net45", None)
         (fsapi, Some "lib/net45", None)
         (csapi, Some "lib/net45", None)
         (cake, Some "lib/net45", None)
