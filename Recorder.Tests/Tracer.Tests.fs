@@ -78,7 +78,11 @@ type AltCoverCoreTests() =
            match enum tag with
            | Tag.Time -> Adapter.Time <| formatter.ReadInt64()
            | Tag.Call -> Adapter.Call <| formatter.ReadInt32()
+#if MONO
+           | Tag.Both -> Adapter.NewBoth ((formatter.ReadInt64()), (formatter.ReadInt32()))
+#else
            | Tag.Both -> Adapter.NewBoth (formatter.ReadInt64()) (formatter.ReadInt32())
+#endif
            | Tag.Table ->
              test <@ id = String.Empty @>
              test <@ strike = 0 @>
