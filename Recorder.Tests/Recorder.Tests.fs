@@ -61,7 +61,11 @@ type AltCoverTests() =
       |> Seq.find (fun n -> n.EndsWith("SimpleCoverage.xml", StringComparison.Ordinal))
 
     member private self.UpdateReport a b =
+#if MONO
+      Adapter.UpdateReport (a, ReportFormat.NCover, b, b) |> ignore
+#else
       Adapter.UpdateReport a ReportFormat.NCover b b |> ignore
+#endif
 
     member self.resource2 =
       Assembly.GetExecutingAssembly().GetManifestResourceNames()
