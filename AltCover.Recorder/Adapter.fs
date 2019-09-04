@@ -1,7 +1,6 @@
-namespace AltCover.Shadow
+namespace AltCover.Recorder
 
 open System.Collections.Generic
-open AltCover.Recorder
 
 #if DEBUG
 module Adapter =
@@ -41,15 +40,6 @@ module Adapter =
   let VisitsSeq() = Instance.Visits |> Seq.cast<obj>
   let VisitsEntrySeq key = Instance.Visits.[key] |> Seq.cast<obj>
   let VisitCount key key2 = (Instance.Visits.[key].[key2]).Count
-  let VisitTracks key key2 = (Instance.Visits.[key].[key2]).Tracks |> Seq.cast<obj>
-  let VisitTrack key key2 key3 =
-    let raw = (Instance.Visits.[key].[key2]).Tracks.[key3]
-    match raw with
-    | Null -> [| int64 Tag.Null |]
-    | Call t -> [| int64 Tag.Call; int64 t |]
-    | Time t -> [| int64 Tag.Time; t |]
-    | Both (t, t2) -> [| int64 Tag.Both; t; int64 t2 |]
-    | Table _ -> [| int64 Tag.Table |]
   let Lock = Instance.Visits :> obj
 
   let VisitImplNone moduleId hitPointId =

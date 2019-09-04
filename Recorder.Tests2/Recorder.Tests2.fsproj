@@ -8,14 +8,14 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>d6ed39d2-ea21-4141-96d7-2b5f234fcd3e</ProjectGuid>
     <OutputType>Library</OutputType>
-    <RootNamespace>Shadow.Tests2</RootNamespace>
-    <AssemblyName>AltCover.Shadow.Tests2</AssemblyName>
+    <RootNamespace>Recorder.Tests2</RootNamespace>
+    <AssemblyName>AltCover.Recorder.Tests2</AssemblyName>
     <TargetFrameworkVersion Condition="'$(OS)' == 'Windows_NT'">v3.5</TargetFrameworkVersion>
     <TargetFrameworkVersion Condition="'$(OS)' != 'Windows_NT'">v4.7</TargetFrameworkVersion>
     <ExtraDefines Condition="'$(OS)' == 'Windows_NT'">NET2</ExtraDefines>
     <ExtraDefines Condition="'$(OS)' != 'Windows_NT'">MONO</ExtraDefines>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <Name>Shadow.Tests2</Name>
+    <Name>Recorder.Tests2</Name>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
   </PropertyGroup>
@@ -64,7 +64,7 @@
   </Target>
   <ItemGroup>
     <Content Include="App.config" Condition="'$(OS)' == 'Windows_NT'" />
-    <Compile Include="..\Shadow.Tests\AssemblyInfo.fs">
+    <Compile Include="..\Recorder.Tests\AssemblyInfo.fs">
       <Link>AssemblyInfo.fs</Link>
     </Compile>
     <Compile Include="..\_Generated\AssemblyVersion.fs">
@@ -73,16 +73,16 @@
     <Compile Include="..\_Generated\VisibleToTest.fs">
       <Link>VisibleToTest.fs</Link>
     </Compile>
-    <Compile Include="..\Shadow.Tests\Tracer.Tests.fs">
+    <Compile Include="..\Recorder.Tests\Tracer.Tests.fs">
       <Link>Tracer.Tests.fs</Link>
     </Compile>
-    <Compile Include="..\Shadow.Tests\Shadow.Tests.fs">
-      <Link>Shadow.Tests.fs</Link>
+    <Compile Include="..\Recorder.Tests\Recorder.Tests.fs">
+      <Link>Recorder.Tests.fs</Link>
     </Compile>
-    <EmbeddedResource Include="..\Shadow.Tests\SimpleCoverage.xml">
+    <EmbeddedResource Include="..\Recorder.Tests\SimpleCoverage.xml">
       <Link>SimpleCoverage.xml</Link>
     </EmbeddedResource>
-    <EmbeddedResource Include="..\Shadow.Tests\Sample1WithModifiedOpenCover.xml">
+    <EmbeddedResource Include="..\Recorder.Tests\Sample1WithModifiedOpenCover.xml">
       <Link>Sample1WithModifiedOpenCover.xml</Link>
     </EmbeddedResource>
     <Content Include="packages.config" />

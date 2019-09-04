@@ -92,7 +92,7 @@
     <EmbeddedResource Include="Sample1.deps.after.json" />
     <EmbeddedResource Include="Sample2.deps.after.json" />
     <EmbeddedResource Include="Sample2.deps.json" />
-    <EmbeddedResource Include="..\Shadow.Tests\SimpleCoverage.xml">
+    <EmbeddedResource Include="..\Recorder.Tests\SimpleCoverage.xml">
       <Link>SimpleCoverage.xml</Link>
     </EmbeddedResource>
     <EmbeddedResource Include="Sample1WithOpenCover.xml" />

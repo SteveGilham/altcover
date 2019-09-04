@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <IsPackable>false</IsPackable>
-    <AssemblyName>AltCover.Shadow.Tests</AssemblyName>
+    <AssemblyName>AltCover.Recorder.Tests</AssemblyName>
     <GenerateProgramFile>false</GenerateProgramFile>
   </PropertyGroup>
 
@@ -21,7 +21,7 @@
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="Tracer.Tests.fs" />
-    <Compile Include="Shadow.Tests.fs" />
+    <Compile Include="Recorder.Tests.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 

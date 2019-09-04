@@ -42,7 +42,7 @@
     <EmbeddedResource Include="Sample1WithNCover.xml" />
     <EmbeddedResource Include="NCoverBugFix.lcov" />
     <EmbeddedResource Include="NCoverBugFix.cobertura" />
-    <EmbeddedResource Include="..\Shadow.Tests\SimpleCoverage.xml" Link="SimpleCoverage.xml" />
+    <EmbeddedResource Include="..\Recorder.Tests\SimpleCoverage.xml" Link="SimpleCoverage.xml" />
     <EmbeddedResource Include="Sample1.deps.json" />
     <EmbeddedResource Include="Sample1.deps.ncafter.json" />
     <EmbeddedResource Include="Sample2.deps.json" />

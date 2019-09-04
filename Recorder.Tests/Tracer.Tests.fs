@@ -1,16 +1,16 @@
 #if NETCOREAPP2_0
-namespace Tests.Shadow.Core
+namespace Tests.Recorder.Core
 #else
 #if NET4
-namespace Tests.Shadow.Clr4
+namespace Tests.Recorder.Clr4
 #else
 #if NET2
-namespace Tests.Shadow.Clr2
+namespace Tests.Recorder.Clr2
 #else
 #if MONO
-namespace Tests.Shadow.Mono
+namespace Tests.Recorder.Mono
 #else
-namespace Tests.Shadow.Unknown
+namespace Tests.Recorder.Unknown
 #endif
 #endif
 #endif
@@ -22,7 +22,6 @@ open System.IO
 open System.IO.Compression
 open System.Reflection
 open AltCover.Recorder
-open AltCover.Shadow
 open NUnit.Framework
 open Swensen.Unquote
 

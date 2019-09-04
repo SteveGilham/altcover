@@ -1,16 +1,16 @@
 #if NETCOREAPP2_0
-namespace Tests.Shadow.Core
+namespace Tests.Recorder.Core
 #else
 #if NET4
-namespace Tests.Shadow.Clr4
+namespace Tests.Recorder.Clr4
 #else
 #if NET2
-namespace Tests.Shadow.Clr2
+namespace Tests.Recorder.Clr2
 #else
 #if MONO
-namespace Tests.Shadow.Mono
+namespace Tests.Recorder.Mono
 #else
-namespace Tests.Shadow.Unknown
+namespace Tests.Recorder.Unknown
 #endif
 #endif
 #endif
@@ -27,7 +27,6 @@ open System.Threading
 open System.Xml
 
 open AltCover.Recorder
-open AltCover.Shadow
 open NUnit.Framework
 open Swensen.Unquote
 
@@ -69,6 +68,10 @@ type AltCoverTests() =
       |> Seq.find
            (fun n ->
            n.EndsWith("Sample1WithModifiedOpenCover.xml", StringComparison.Ordinal))
+
+    [<Test>]
+    member self.ShouldBeAbleToGetTheDefaultReportFileName() =
+      test <@ Instance.ReportFile = "Coverage.Default.xml" @>
 
     [<Test>]
     member self.SafeDisposalProtects() =
@@ -114,8 +117,6 @@ type AltCoverTests() =
           Adapter.SamplesClear())
       self.GetMyMethodName "<="
 
-#if NET2
-#else
     member self.RealIdShouldIncrementCount() =
       self.GetMyMethodName "=>"
       lock Adapter.Lock (fun () ->
@@ -146,7 +147,6 @@ type AltCoverTests() =
           Adapter.VisitsClear()
           Instance.trace <- save)
       self.GetMyMethodName "<="
-#endif
 
     [<Test>]
     member self.JunkUspidGivesNegativeIndex() =
@@ -554,8 +554,6 @@ type AltCoverTests() =
           Console.SetOut saved)
       self.GetMyMethodName "<="
 
-#if NET2
-#else
     member self.PauseLeavesExpectedTraces() =
       self.GetMyMethodName "=>"
       lock Adapter.Lock (fun () ->
@@ -750,7 +748,6 @@ type AltCoverTests() =
             with :? IOException -> ()
         with :? AbandonedMutexException -> Instance.mutex.ReleaseMutex())
       self.GetMyMethodName "<="
-#endif
 
     [<Test>]
     member self.SupervisedFlushLeavesExpectedTraces() =
@@ -816,10 +813,7 @@ type AltCoverTests() =
         with :? AbandonedMutexException -> Instance.mutex.ReleaseMutex())
       self.GetMyMethodName "<="
 
-#if NET4
-#else
     [<Test>]
-#endif
     member self.FlushLeavesExpectedTracesWhenDiverted() =
       let saved = Console.Out
       let here = Directory.GetCurrentDirectory()
@@ -864,8 +858,6 @@ type AltCoverTests() =
           Directory.Delete(unique)
         with :? IOException -> ()
 
-#if NET2
-#else
     // Dead simple sequential operation
     // run only once in Framework mode to avoid contention
     [<Test>]
@@ -874,6 +866,5 @@ type AltCoverTests() =
       self.PauseLeavesExpectedTraces()
       self.ResumeLeavesExpectedTraces()
       self.FlushLeavesExpectedTraces()
-#endif
 
   end

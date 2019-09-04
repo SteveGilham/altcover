@@ -26,7 +26,7 @@ Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.tests.core", "Test
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.x.tests.core", "XTests\altcover.x.tests.core.fsproj", "{6EC68908-866F-453F-B38E-30C76A438CBC}"
 EndProject
-Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.recorder.tests.core", "Shadow.Tests\altcover.recorder.tests.core.fsproj", "{CE0C9532-2D52-4225-8E23-98E70A3F2326}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.recorder.tests.core", "Recorder.Tests\altcover.recorder.tests.core.fsproj", "{CE0C9532-2D52-4225-8E23-98E70A3F2326}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "sample1.core", "Sample1\sample1.core.csproj", "{B2591DB3-481E-4A79-A849-AD6C6547BA7F}"
 EndProject
