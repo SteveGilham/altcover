@@ -326,7 +326,7 @@ type AltCoverTests() =
           [ Adapter.Call 17
             Adapter.Time 23L
             Adapter.NewBoth <|| (5L, 42) ]
-        let pv = self.PointVisitInit <|| (42L, payloads)
+        let pv = self.PointVisitInit 42L payloads
         table.[key].Add(23, pv)
         let n = Counter.AddTable <|| (Instance.Visits, table)
         Assert.That (n, Is.EqualTo 45)
