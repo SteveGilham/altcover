@@ -399,18 +399,7 @@ module XTests =
 
   [<Fact>]
   let ADotNetDryRunLooksAsExpected() =
-    let monoRuntime =
-      "Mono.Runtime"
-      |> Type.GetType
-      |> isNull
-      |> not
-
-    // because mono symbol-writing is broken, work around trying to
-    // examine the instrumented files in a self-test run.
-    let where = if monoRuntime
-                then Path.Combine(SolutionRoot.location, "_Binaries/AltCover/Debug+AnyCPU")
-                else Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
-
+    let where = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
     let here = SolutionDir()
     let path = Path.Combine(here, "_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1")
     let key0 = Path.Combine(here, "Build/SelfTest.snk")
@@ -592,18 +581,7 @@ module XTests =
 
   [<Fact>]
   let ADryRunLooksAsExpected() =
-    let monoRuntime =
-      "Mono.Runtime"
-      |> Type.GetType
-      |> isNull
-      |> not
-
-    // because mono symbol-writing is broken, work around trying to
-    // examine the instrumented files in a self-test run.
-    let where = if monoRuntime
-                then Path.Combine(SolutionRoot.location, "_Binaries/AltCover/Debug+AnyCPU")
-                else Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
-
+    let where = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
     let here = SolutionDir()
     let path = Path.Combine(here, "_Mono/Sample1")
     let key0 = Path.Combine(here, "Build/SelfTest.snk")
