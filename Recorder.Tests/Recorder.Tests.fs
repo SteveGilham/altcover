@@ -30,6 +30,29 @@ open AltCover.Recorder
 open NUnit.Framework
 open Swensen.Unquote
 
+[<AutoOpen>]
+module Helper =
+  let ( <|| ) f (a,b) =
+#if MONO
+    f (a,b)
+#else
+    f a b
+#endif
+
+  let ( <||| ) f (a,b,c) =
+#if MONO
+    f (a,b,c)
+#else
+    f a b c
+#endif
+
+  let ( <|||| ) f (a,b,c,d) =
+#if MONO
+    f (a,b,c,d)
+#else
+    f a b c d
+#endif
+
 [<TestFixture>]
 type AltCoverTests() =
   class
@@ -61,18 +84,10 @@ type AltCoverTests() =
       |> Seq.find (fun n -> n.EndsWith("SimpleCoverage.xml", StringComparison.Ordinal))
 
     member private self.UpdateReport a b =
-#if MONO
-      Adapter.UpdateReport (a, ReportFormat.NCover, b, b) |> ignore
-#else
-      Adapter.UpdateReport a ReportFormat.NCover b b |> ignore
-#endif
+      Adapter.UpdateReport <|||| (a, ReportFormat.NCover, b, b) |> ignore
 
     member private self.PointVisitInit a b =
-#if MONO
-      PointVisit.Init (a, b)
-#else
-      PointVisit.Init a b
-#endif
+      PointVisit.Init <|| (a, b)
 
     member self.resource2 =
       Assembly.GetExecutingAssembly().GetManifestResourceNames()
@@ -105,11 +120,16 @@ type AltCoverTests() =
     member self.ShouldBeLinkingTheCorrectCopyOfThisCode() =
       self.GetMyMethodName "=>"
       let tracer =
+#if MONO
+                    Adapter.MakeNullTrace String.Empty
+#else
+
         { Tracer = String.Empty
           Runner = false
           Definitive = false
           Stream = null
           Formatter = null }
+#endif
       test <@ tracer.GetType().Assembly.GetName().Name = "AltCover.Recorder" @>
       self.GetMyMethodName "<="
 
@@ -134,11 +154,15 @@ type AltCoverTests() =
         let save = Instance.trace
         try
           Adapter.VisitsClear()
+#if MONO
+          Instance.trace <- Adapter.MakeNullTrace null
+#else
           Instance.trace <- { Tracer = null
                               Stream = null
                               Formatter = null
                               Runner = false
                               Definitive = false }
+#endif
           let key = " "
           Instance.Recording <- false
           Instance.Visit "key" 17
@@ -208,8 +232,12 @@ type AltCoverTests() =
       Adapter.Reset()
       try
         Instance.Visits.Clear()
+#if MONO
+        Instance.trace <- Adapter.MakeNullTrace null
+#else
         Instance.trace <- { Tracer=null; Stream=null; Formatter=null;
                             Runner = false; Definitive = false }
+#endif
         let key = " "
         Instance.VisitSelection (Adapter.Null()) key 23
         Assert.That (Instance.Visits.Count, Is.EqualTo 1, "A visit that should have happened, didn't")
@@ -706,11 +734,15 @@ type AltCoverTests() =
           let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
           let unique = Path.Combine(where, Guid.NewGuid().ToString())
           let save = Instance.trace
+#if MONO
+          Instance.trace <- Adapter.MakeNullTrace null
+#else
           Instance.trace <- { Tracer = null
                               Stream = null
                               Formatter = null
                               Runner = false
                               Definitive = false }
+#endif
           try
             Adapter.VisitsClear()
             use stdout = new StringWriter()
@@ -732,7 +764,11 @@ type AltCoverTests() =
                  (fun i ->
                  Adapter.VisitsAdd "f6e3edb3-fb20-44b3-817d-f69d1a22fc2f" i
                    (int64 (i + 1)))
+#if MONO
+            Instance.FlushCounter (Adapter.ProcessExit(),  ())
+#else
             Instance.FlushCounter ProcessExit ()
+#endif
             let head = "Coverage statistics flushing took "
             let tail = " seconds\n"
             let recorded = stdout.ToString().Replace("\r\n", "\n")
@@ -770,11 +806,15 @@ type AltCoverTests() =
           let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
           let unique = Path.Combine(where, Guid.NewGuid().ToString())
           let save = Instance.trace
+#if MONO
+          Instance.trace <- Adapter.MakeNullTrace null
+#else
           Instance.trace <- { Tracer = null
                               Stream = null
                               Formatter = null
                               Runner = false
                               Definitive = false }
+#endif
           Instance.Supervision <- true
           try
             Adapter.VisitsClear()
@@ -795,18 +835,9 @@ type AltCoverTests() =
             [ 0..9 ]
             |> Seq.iter
                  (fun i ->
-#if MONO
-                 Adapter.VisitsAdd ("f6e3edb3-fb20-44b3-817d-f69d1a22fc2f", i,
+                 Adapter.VisitsAdd <||| ("f6e3edb3-fb20-44b3-817d-f69d1a22fc2f", i,
                    (int64 (i + 1))))
-#else
-                 Adapter.VisitsAdd "f6e3edb3-fb20-44b3-817d-f69d1a22fc2f" i
-                   (int64 (i + 1)))
-#endif
-#if MONO
-            Instance.FlushCounter (Adapter.ProcessExit(),  ())
-#else
-            Instance.FlushCounter ProcessExit ()
-#endif
+            Instance.FlushCounter <|| (Adapter.ProcessExit(),  ())
             let head = "Coverage statistics flushing took "
             let tail = " seconds\n"
             let recorded = stdout.ToString().Replace("\r\n", "\n")
@@ -860,13 +891,8 @@ type AltCoverTests() =
         let payload = Dictionary<int, PointVisit>()
         [ 0..9 ] |> Seq.iter (fun i -> payload.[i] <- self.PointVisitInit (int64 (i + 1)) [])
         visits.["f6e3edb3-fb20-44b3-817d-f69d1a22fc2f"] <- payload
-#if MONO
-        Adapter.DoFlush (visits,
+        Adapter.DoFlush <|||| (visits,
           AltCover.Recorder.ReportFormat.NCover, reportFile, outputFile) |> ignore
-#else
-        Adapter.DoFlush visits
-          AltCover.Recorder.ReportFormat.NCover reportFile outputFile |> ignore
-#endif
         use worker' = new FileStream(outputFile, FileMode.Open)
         let after = XmlDocument()
         after.Load worker'

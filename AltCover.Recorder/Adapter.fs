@@ -82,7 +82,13 @@ module Adapter =
   let internal PayloadControl x y = Instance.PayloadControl (fun _ -> x) (fun _ -> y)
   let internal PayloadSelection x y z = Instance.PayloadSelection (fun _ -> x) (fun _ -> y) (fun _ -> z)
 
-#if MONO
   let internal ProcessExit() = ProcessExit
+
+#if MONO
+  let internal MakeNullTrace name = { Tracer = name
+                                      Stream = null
+                                      Formatter = null
+                                      Runner = false
+                                      Definitive = false }
 #endif
 #endif
