@@ -68,20 +68,20 @@ See the [current project](https://github.com/SteveGilham/altcover/projects/8) fo
 
 It is assumed that the following are available
 
-.net core SDK 2.1.701 or later (`dotnet`) -- try https://www.microsoft.com/net/download  
+.net core SDK 2.1.801 or later (`dotnet`) -- try https://www.microsoft.com/net/download  
 PowerShell Core 6.2.1 or later (`pwsh`) -- try https://github.com/powershell/powershell
 
 #### Windows
 
-You will need Visual Studio VS2017 (Community Edition) v15.9.14 or later with F# language support (or just the associated build tools and your editor of choice).  The NUnit3 Test Runner will simplify the basic in-IDE development cycle.  Note that some of the unit tests expect that the separate build of test assemblies under Mono, full .net framework and .net core has taken place; there will be up to 20 failures when running the unit tests in Visual Studio from clean when those expected assemblies are not found.
-
-For the .net 2.0 support, if you don't already have FSharp.Core.dll version 2.3.0.0 (usually in Reference Assemblies\Microsoft\FSharp\.NETFramework\v2.0\2.3.0.0), then you will need to install this -- the [Visual F# Tools 4.0 RTM](https://www.microsoft.com/en-us/download/details.aspx?id=48179) `FSharp_Bundle.exe` is the most convenient source. 
+You will need Visual Studio VS2019 (Community Edition) v16.2.3 or later with F# language support (or just the associated build tools and your editor of choice).  The NUnit3 Test Runner will simplify the basic in-IDE development cycle.  Note that some of the unit tests expect that the separate build of test assemblies under Mono, full .net framework and .net core has taken place; there will be around 20 failures when running the unit tests in Visual Studio from clean when those expected assemblies are not found.
 
 For GTK# support, the GTK# latest 2.12 install is expected -- try https://www.mono-project.com/download/stable/#download-win  
 
 #### *nix
 
 It is assumed that `mono` (version 6.0.x) and `dotnet` are on the `PATH` already, and everything is built from the command line, with your favourite editor used for coding.
+
+The real release version needs building on Windows to pick up the .NET 2.0 environment for the recorder assembly and its associated tests.
 
 ### Bootstrapping
 

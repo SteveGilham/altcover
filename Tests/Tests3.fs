@@ -2524,5 +2524,5 @@ or
                                                Assembly.GetExecutingAssembly().Location,
                                                String.Empty)).Replace("\r", String.Empty)))
 #endif
-  // Recorder.fs => Shadow.Tests
+  // Recorder.fs => Recorder.Tests
   end

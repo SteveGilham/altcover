@@ -1,16 +1,16 @@
 #if NETCOREAPP2_0
-namespace Tests.Shadow.Core
+namespace Tests.Recorder.Core
 #else
 #if NET4
-namespace Tests.Shadow.Clr4
+namespace Tests.Recorder.Clr4
 #else
 #if NET2
-namespace Tests.Shadow.Clr2
+namespace Tests.Recorder.Clr2
 #else
 #if MONO
-namespace Tests.Shadow.Mono
+namespace Tests.Recorder.Mono
 #else
-namespace Tests.Shadow.Unknown
+namespace Tests.Recorder.Unknown
 #endif
 #endif
 #endif
@@ -27,9 +27,31 @@ open System.Threading
 open System.Xml
 
 open AltCover.Recorder
-open AltCover.Shadow
 open NUnit.Framework
 open Swensen.Unquote
+
+[<AutoOpen>]
+module Helper =
+  let ( <|| ) f (a,b) =
+#if MONO
+    f (a,b)
+#else
+    f a b
+#endif
+
+  let ( <||| ) f (a,b,c) =
+#if MONO
+    f (a,b,c)
+#else
+    f a b c
+#endif
+
+  let ( <|||| ) f (a,b,c,d) =
+#if MONO
+    f (a,b,c,d)
+#else
+    f a b c d
+#endif
 
 [<TestFixture>]
 type AltCoverTests() =
@@ -61,17 +83,21 @@ type AltCoverTests() =
       Assembly.GetExecutingAssembly().GetManifestResourceNames()
       |> Seq.find (fun n -> n.EndsWith("SimpleCoverage.xml", StringComparison.Ordinal))
 
-#if NET4
-#else
     member private self.UpdateReport a b =
-      Counter.UpdateReport ignore (fun _ _ -> ()) true a ReportFormat.NCover b b |> ignore
+      Adapter.UpdateReport <|||| (a, ReportFormat.NCover, b, b) |> ignore
+
+    member private self.PointVisitInit a b =
+      PointVisit.Init <|| (a, b)
 
     member self.resource2 =
       Assembly.GetExecutingAssembly().GetManifestResourceNames()
       |> Seq.find
            (fun n ->
            n.EndsWith("Sample1WithModifiedOpenCover.xml", StringComparison.Ordinal))
-#endif
+
+    [<Test>]
+    member self.ShouldBeAbleToGetTheDefaultReportFileName() =
+      test <@ Instance.ReportFile = "Coverage.Default.xml" @>
 
     [<Test>]
     member self.SafeDisposalProtects() =
@@ -94,12 +120,17 @@ type AltCoverTests() =
     member self.ShouldBeLinkingTheCorrectCopyOfThisCode() =
       self.GetMyMethodName "=>"
       let tracer =
+#if MONO
+                    Adapter.MakeNullTrace String.Empty
+#else
+
         { Tracer = String.Empty
           Runner = false
           Definitive = false
           Stream = null
           Formatter = null }
-      test <@ tracer.GetType().Assembly.GetName().Name = "AltCover.Shadow" @>
+#endif
+      test <@ tracer.GetType().Assembly.GetName().Name = "AltCover.Recorder" @>
       self.GetMyMethodName "<="
 
     [<Test>]
@@ -108,85 +139,84 @@ type AltCoverTests() =
       lock Adapter.Lock (fun () ->
         try
           Adapter.SamplesClear()
-          test <@ Adapter.AddSample "module" 23 @>
-          test <@ Adapter.AddSample "module" 24 @>
-          test <@ Adapter.AddSample "newmodule" 23 @>
-          test <@ Adapter.AddSample "module" 23 |> not @>
-          test <@ Adapter.AddSampleUnconditional "module" 23 @>
+          test <@ Adapter.AddSample <|| ("module", 23) @>
+          test <@ Adapter.AddSample <|| ("module", 24) @>
+          test <@ Adapter.AddSample <|| ("newmodule", 23) @>
+          test <@ Adapter.AddSample <|| ("module", 23) |> not @>
+          test <@ Adapter.AddSampleUnconditional <|| ("module", 23) @>
         finally
           Adapter.SamplesClear())
       self.GetMyMethodName "<="
 
-#if NET2
-#else
     member self.RealIdShouldIncrementCount() =
       self.GetMyMethodName "=>"
       lock Adapter.Lock (fun () ->
         let save = Instance.trace
         try
           Adapter.VisitsClear()
+#if MONO
+          Instance.trace <- Adapter.MakeNullTrace null
+#else
           Instance.trace <- { Tracer = null
                               Stream = null
                               Formatter = null
                               Runner = false
                               Definitive = false }
+#endif
           let key = " "
           Instance.Recording <- false
-          Instance.Visit "key" 17
+          Instance.Visit <|| ("key", 17)
           Instance.Recording <- true
           Instance.CoverageFormat <- ReportFormat.NCover
-          Instance.Visit key 23
+          Instance.Visit <|| (key, 23)
           Instance.CoverageFormat <- ReportFormat.OpenCoverWithTracking
-          Instance.Visit key 23
+          Instance.Visit <|| (key, 23)
           test <@ Adapter.VisitsSeq()
                   |> Seq.length = 1 @>
           test <@ Adapter.VisitsEntrySeq key
                   |> Seq.length = 1 @>
-          test <@ Adapter.VisitCount key 23 = 2L @>
+          test <@ Adapter.VisitCount <|| (key, 23) = 2L @>
         finally
           Instance.CoverageFormat <- ReportFormat.NCover
           Instance.Recording <- true
           Adapter.VisitsClear()
           Instance.trace <- save)
       self.GetMyMethodName "<="
-#endif
 
-#if NET4
-    // passing lambdas or other F# types across the CLR divide doesn't work
-#else
     [<Test>]
     member self.JunkUspidGivesNegativeIndex() =
       let key = " "
-      let index = Counter.FindIndexFromUspid 0 key
+      let index = Counter.FindIndexFromUspid <|| (0, key)
       test <@ index < 0 @>
 
     [<Test>]
     member self.PayloadGeneratedIsAsExpected() =
       try
         test <@ Instance.CallerId() = 0 @>
-        test <@ Instance.PayloadSelector (fun _ -> false) = Null @>
-        test <@ Instance.PayloadSelector (fun _ -> true) = Null @>
+        test <@ Adapter.PayloadSelector false = Adapter.Null() @>
+        test <@ Adapter.PayloadSelector true = Adapter.Null() @>
         Instance.Push 4321
-        test <@ Instance.PayloadSelector (fun _ -> false) = Null @>
-        test <@ Instance.PayloadSelector (fun _ -> true) = (Call 4321) @>
+        test <@ Adapter.PayloadSelector false = Adapter.Null() @>
+        test <@ Adapter.PayloadSelector true = (Adapter.Call 4321) @>
         try
           Instance.Push 6789
           // 0x1234123412341234 == 1311693406324658740
-          test <@ Instance.PayloadSelection (fun _ -> 0x1234123412341234L) (fun _ -> 1000L) (fun _ -> true)
-                   = (Both (1311693406324658000L, 6789)) @>
+          test <@ Adapter.PayloadSelection <||| (0x1234123412341234L, 1000L, true)
+                   = (Adapter.NewBoth <|| (1311693406324658000L, 6789)) @>
         finally
           Instance.Pop()
-        test <@ Instance.PayloadSelector (fun _ -> true) =
-                    (Call 4321) @>
+        test <@ Adapter.PayloadSelector true =
+                    (Adapter.Call 4321) @>
       finally
         Instance.Pop()
-      test <@ Instance.PayloadSelection (fun _ -> 0x1234123412341234L) (fun _ -> 1000L) (fun _ -> true) =
-                (Time 1311693406324658000L) @>
+      test <@ Adapter.PayloadSelection <||| (0x1234123412341234L, 1000L, true) =
+                (Adapter.Time 1311693406324658000L) @>
       let v1 = DateTime.UtcNow.Ticks
-      let probed = Instance.PayloadControl (fun _ -> 1000L) (fun _ -> true)
+      let probed = Adapter.PayloadControl <|| (1000L, true)
       let v2 = DateTime.UtcNow.Ticks
-      match probed with
-      | Time probe ->
+      test <@ Adapter.Null() |> Adapter.untime |> Seq.isEmpty @>
+      match Adapter.untime probed |> Seq.toList with
+      | [probe] ->
         test <@ probe % 1000L = 0L @>
         test <@ probe <= v2 @>
         test <@ probe >= (1000L*(v1/1000L)) @>
@@ -203,10 +233,14 @@ type AltCoverTests() =
       Adapter.Reset()
       try
         Instance.Visits.Clear()
+#if MONO
+        Instance.trace <- Adapter.MakeNullTrace null
+#else
         Instance.trace <- { Tracer=null; Stream=null; Formatter=null;
                             Runner = false; Definitive = false }
+#endif
         let key = " "
-        Instance.VisitSelection Null key 23
+        Instance.VisitSelection <||| ((Adapter.Null()), key, 23)
         Assert.That (Instance.Visits.Count, Is.EqualTo 1, "A visit that should have happened, didn't")
         Assert.That (Instance.Visits.[key].Count, Is.EqualTo 1, "keys = " + String.Join("; ", Instance.Visits.Keys|> Seq.toArray))
         Assert.That (Instance.Visits.[key].[23].Count, Is.EqualTo 1)
@@ -223,8 +257,8 @@ type AltCoverTests() =
       try
         Instance.Visits.Clear()
         let key = " "
-        Instance.VisitImpl key 23 Null
-        Instance.VisitImpl "key" 42 Null
+        Instance.VisitImpl <||| (key, 23, (Adapter.Null()))
+        Instance.VisitImpl <||| ("key", 42, (Adapter.Null()))
         Assert.That (Instance.Visits.Count, Is.EqualTo 2)
       finally
         Instance.Visits.Clear())
@@ -237,8 +271,8 @@ type AltCoverTests() =
       try
         Instance.Visits.Clear()
         let key = " "
-        Instance.VisitImpl key 23 Null
-        Instance.VisitImpl key 42 Null
+        Instance.VisitImpl <||| (key, 23, (Adapter.Null()))
+        Instance.VisitImpl <||| (key, 42, (Adapter.Null()))
         Assert.That (Instance.Visits.Count, Is.EqualTo 1)
         Assert.That (Instance.Visits.[key].Count, Is.EqualTo 2)
       finally
@@ -253,8 +287,8 @@ type AltCoverTests() =
       try
         Instance.Visits.Clear()
         let key = " "
-        Instance.VisitImpl key 23 Null
-        Instance.VisitImpl key 23 Null
+        Instance.VisitImpl <||| (key, 23, (Adapter.Null()))
+        Instance.VisitImpl <||| (key, 23, (Adapter.Null()))
         Assert.That (Instance.Visits.[key].[23].Count, Is.EqualTo 2)
         Assert.That (Instance.Visits.[key].[23].Tracks, Is.Empty)
       finally
@@ -269,9 +303,9 @@ type AltCoverTests() =
       try
         Instance.Visits.Clear()
         let key = " "
-        let payload = Time DateTime.UtcNow.Ticks
-        Instance.VisitImpl key 23 Null
-        Instance.VisitImpl key 23 payload
+        let payload = Adapter.Time DateTime.UtcNow.Ticks
+        Instance.VisitImpl <||| (key, 23, (Adapter.Null()))
+        Instance.VisitImpl <||| (key, 23, payload)
         Assert.That (Instance.Visits.[key].[23].Count, Is.EqualTo 1)
         Assert.That (Instance.Visits.[key].[23].Tracks, Is.EquivalentTo [payload])
       finally
@@ -286,16 +320,16 @@ type AltCoverTests() =
       try
         Instance.Visits.Clear()
         let key = " "
-        Instance.VisitImpl key 23 Null
+        Instance.VisitImpl <||| (key, 23, (Adapter.Null()))
         let table = Dictionary<string, Dictionary<int, PointVisit>>()
         table.Add(key, Dictionary<int, PointVisit>())
         let payloads =
-          [ Call 17
-            Time 23L
-            Both(5L, 42) ]
-        let pv = PointVisit.Init 42L payloads
+          [ Adapter.Call 17
+            Adapter.Time 23L
+            Adapter.NewBoth <|| (5L, 42) ]
+        let pv = self.PointVisitInit 42L payloads
         table.[key].Add(23, pv)
-        let n = Counter.AddTable Instance.Visits table
+        let n = Counter.AddTable <|| (Instance.Visits, table)
         Assert.That (n, Is.EqualTo 45)
         Assert.That (Instance.Visits.[key].[23].Count, Is.EqualTo 43)
         Assert.That (Instance.Visits.[key].[23].Tracks, Is.EquivalentTo payloads)
@@ -469,8 +503,8 @@ type AltCoverTests() =
       worker.Position <- 0L
       use before = new StreamReader (Assembly.GetExecutingAssembly().GetManifestResourceStream(self.resource))
       let payload = Dictionary<int,PointVisit>()
-      payload.[-1] <- PointVisit.Init 10L []
-      payload.[100] <- PointVisit.Init 10L []
+      payload.[-1] <- self.PointVisitInit 10L []
+      payload.[100] <- self.PointVisitInit 10L []
       let item = Dictionary<string, Dictionary<int, PointVisit>>()
       item.Add("f6e3edb3-fb20-44b3-817d-f69d1a22fc2f", payload)
       self.UpdateReport item worker
@@ -498,7 +532,7 @@ type AltCoverTests() =
       worker.Position <- 0L
       let payload = Dictionary<int,PointVisit>()
       [0..9 ]
-      |> Seq.iter(fun i -> payload.[i] <- PointVisit.Init (int64(i+1)) [])
+      |> Seq.iter(fun i -> payload.[i] <- self.PointVisitInit (int64(i+1)) [])
       let item = Dictionary<string, Dictionary<int, PointVisit>>()
       item.Add("f6e3edb3-fb20-44b3-817d-f69d1a22fc2f", payload)
       self.UpdateReport item worker
@@ -525,12 +559,12 @@ type AltCoverTests() =
       worker.Position <- 0L
       let payload = Dictionary<int,PointVisit>()
       [0..9 ]
-      |> Seq.iter(fun i -> payload.[10 - i] <- PointVisit.Init (int64(i+1)) [])
+      |> Seq.iter(fun i -> payload.[10 - i] <- self.PointVisitInit (int64(i+1)) [])
       [11..12]
-      |> Seq.iter(fun i -> payload.[i ||| Counter.BranchFlag] <- PointVisit.Init (int64(i-10)) [])
+      |> Seq.iter(fun i -> payload.[i ||| Counter.BranchFlag] <- self.PointVisitInit (int64(i-10)) [])
       let item = Dictionary<string, Dictionary<int, PointVisit>>()
       item.Add("7C-CD-66-29-A3-6C-6D-5F-A7-65-71-0E-22-7D-B2-61-B5-1F-65-9A", payload)
-      Counter.UpdateReport ignore (fun _ _ -> ()) true item ReportFormat.OpenCover worker worker |> ignore
+      Adapter.UpdateReport <|||| (item, ReportFormat.OpenCover, worker, worker) |> ignore
       worker.Position <- 0L
       let after = XmlDocument()
       after.Load worker
@@ -543,7 +577,6 @@ type AltCoverTests() =
                    |> Seq.map (fun x -> x.GetAttribute("vc")),
                    Is.EquivalentTo [ "2"; "2"]))
       self.GetMyMethodName "<="
-#endif
 
     [<Test>]
     member self.EmptyFlushLeavesNoTrace() =
@@ -561,8 +594,6 @@ type AltCoverTests() =
           Console.SetOut saved)
       self.GetMyMethodName "<="
 
-#if NET2
-#else
     member self.PauseLeavesExpectedTraces() =
       self.GetMyMethodName "=>"
       lock Adapter.Lock (fun () ->
@@ -574,11 +605,15 @@ type AltCoverTests() =
           let save = Instance.trace
           use s = new MemoryStream()
           let s1 = new Compression.DeflateStream(s, CompressionMode.Compress)
+#if MONO
+          Instance.trace <- Adapter.MakeStreamTrace s1
+#else
           Instance.trace <- { Tracer = null
                               Stream = new MemoryStream()
                               Formatter = new BinaryWriter(s1)
                               Runner = true
                               Definitive = false }
+#endif
           try
             Instance.IsRunner <- true
             Adapter.VisitsClear()
@@ -599,8 +634,8 @@ type AltCoverTests() =
             [ 0..9 ]
             |> Seq.iter
                  (fun i ->
-                 Adapter.VisitsAdd "f6e3edb3-fb20-44b3-817d-f69d1a22fc2f" i
-                   (int64 (i + 1)))
+                 Adapter.VisitsAdd <||| ("f6e3edb3-fb20-44b3-817d-f69d1a22fc2f", i,
+                   (int64 (i + 1))))
             Adapter.DoPause()
             Assert.That(Adapter.VisitsSeq(), Is.Empty)
             let recorded = stdout.ToString().Trim()
@@ -662,8 +697,8 @@ type AltCoverTests() =
             [ 0..9 ]
             |> Seq.iter
                  (fun i ->
-                 Adapter.VisitsAdd "f6e3edb3-fb20-44b3-817d-f69d1a22fc2f" i
-                   (int64 (i + 1)))
+                 Adapter.VisitsAdd <||| ("f6e3edb3-fb20-44b3-817d-f69d1a22fc2f", i,
+                   (int64 (i + 1))))
             Adapter.DoResume()
             Assert.That(Adapter.VisitsSeq(), Is.Empty, "Visits should be cleared")
             Assert.That
@@ -704,11 +739,15 @@ type AltCoverTests() =
           let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
           let unique = Path.Combine(where, Guid.NewGuid().ToString())
           let save = Instance.trace
+#if MONO
+          Instance.trace <- Adapter.MakeNullTrace null
+#else
           Instance.trace <- { Tracer = null
                               Stream = null
                               Formatter = null
                               Runner = false
                               Definitive = false }
+#endif
           try
             Adapter.VisitsClear()
             use stdout = new StringWriter()
@@ -728,9 +767,9 @@ type AltCoverTests() =
             [ 0..9 ]
             |> Seq.iter
                  (fun i ->
-                 Adapter.VisitsAdd "f6e3edb3-fb20-44b3-817d-f69d1a22fc2f" i
-                   (int64 (i + 1)))
-            Instance.FlushCounter ProcessExit ()
+                 Adapter.VisitsAdd <||| ("f6e3edb3-fb20-44b3-817d-f69d1a22fc2f", i,
+                   (int64 (i + 1))))
+            Instance.FlushCounter <|| (Adapter.ProcessExit(),  ())
             let head = "Coverage statistics flushing took "
             let tail = " seconds\n"
             let recorded = stdout.ToString().Replace("\r\n", "\n")
@@ -757,7 +796,6 @@ type AltCoverTests() =
             with :? IOException -> ()
         with :? AbandonedMutexException -> Instance.mutex.ReleaseMutex())
       self.GetMyMethodName "<="
-#endif 
 
     [<Test>]
     member self.SupervisedFlushLeavesExpectedTraces() =
@@ -769,11 +807,15 @@ type AltCoverTests() =
           let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
           let unique = Path.Combine(where, Guid.NewGuid().ToString())
           let save = Instance.trace
+#if MONO
+          Instance.trace <- Adapter.MakeNullTrace null
+#else
           Instance.trace <- { Tracer = null
                               Stream = null
                               Formatter = null
                               Runner = false
                               Definitive = false }
+#endif
           Instance.Supervision <- true
           try
             Adapter.VisitsClear()
@@ -794,9 +836,9 @@ type AltCoverTests() =
             [ 0..9 ]
             |> Seq.iter
                  (fun i ->
-                 Adapter.VisitsAdd "f6e3edb3-fb20-44b3-817d-f69d1a22fc2f" i
-                   (int64 (i + 1)))
-            Instance.FlushCounter ProcessExit ()
+                 Adapter.VisitsAdd <||| ("f6e3edb3-fb20-44b3-817d-f69d1a22fc2f", i,
+                   (int64 (i + 1))))
+            Instance.FlushCounter <|| (Adapter.ProcessExit(),  ())
             let head = "Coverage statistics flushing took "
             let tail = " seconds\n"
             let recorded = stdout.ToString().Replace("\r\n", "\n")
@@ -823,10 +865,7 @@ type AltCoverTests() =
         with :? AbandonedMutexException -> Instance.mutex.ReleaseMutex())
       self.GetMyMethodName "<="
 
-#if NET4
-#else
     [<Test>]
-#endif
     member self.FlushLeavesExpectedTracesWhenDiverted() =
       let saved = Console.Out
       let here = Directory.GetCurrentDirectory()
@@ -851,10 +890,10 @@ type AltCoverTests() =
            worker.Write(buffer, 0, size)
            ()
         let payload = Dictionary<int, PointVisit>()
-        [ 0..9 ] |> Seq.iter (fun i -> payload.[i] <- PointVisit.Init (int64 (i + 1)) [])
+        [ 0..9 ] |> Seq.iter (fun i -> payload.[i] <- self.PointVisitInit (int64 (i + 1)) [])
         visits.["f6e3edb3-fb20-44b3-817d-f69d1a22fc2f"] <- payload
-        Counter.DoFlush ignore (fun _ _ -> ()) true visits
-          AltCover.Recorder.ReportFormat.NCover reportFile (Some outputFile) |> ignore
+        Adapter.DoFlush <|||| (visits,
+          AltCover.Recorder.ReportFormat.NCover, reportFile, outputFile) |> ignore
         use worker' = new FileStream(outputFile, FileMode.Open)
         let after = XmlDocument()
         after.Load worker'
@@ -871,8 +910,6 @@ type AltCoverTests() =
           Directory.Delete(unique)
         with :? IOException -> ()
 
-#if NET2
-#else
     // Dead simple sequential operation
     // run only once in Framework mode to avoid contention
     [<Test>]
@@ -881,6 +918,5 @@ type AltCoverTests() =
       self.PauseLeavesExpectedTraces()
       self.ResumeLeavesExpectedTraces()
       self.FlushLeavesExpectedTraces()
-#endif
 
   end

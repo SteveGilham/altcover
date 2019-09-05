@@ -34,6 +34,7 @@
     <Compile Include="Base.fs" />
     <Compile Include="Tracer.fs" />
     <Compile Include="Recorder.fs" />
+    <Compile Include="Adapter.fs" />
   </ItemGroup>
 
   <ItemGroup>

@@ -83,10 +83,11 @@
     <Compile Include="Recorder.fs" />
     <EmbeddedResource Include="Strings.resx" />
     <Content Include="packages.config" />
+    <Compile Include="Adapter.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Condition="'$(OS)' == 'Windows_NT'" Include="FSharp.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-      <Private>True</Private>
+      <HintPath>..\packages\FSharp.Core.3.0.2\lib\net35\FSharp.Core.dll</HintPath>
     </Reference>
     <Reference Condition="'$(OS)' != 'Windows_NT'" Include="FSharp.Core">
       <HintPath>..\packages\FSharp.Core.4.5.2\lib\net45\FSharp.Core.dll</HintPath>
@@ -108,18 +109,15 @@
 	<Target Name="AfterBuild">
 	</Target>
 	-->
-  <Target Name="StaticLink" BeforeTargets="AfterBuild" Condition="'$(OS)' == 'Windows_NT'" >
-    <PropertyGroup>  
-      <WorkDirectory>$(OutDir)Raw</WorkDirectory>  
+  <Target Name="StaticLink" BeforeTargets="AfterBuild" Condition="'$(OS)' == 'Windows_NT'">
+    <PropertyGroup>
+      <WorkDirectory>$(OutDir)Raw</WorkDirectory>
     </PropertyGroup>
-    <ItemGroup>  
-      <BuiltFiles Include="$(OutDir)*.*"/>  
-    </ItemGroup>   
-
-    <MakeDir Directories="$(WorkDirectory)"/>
-    <Move SourceFiles="@(BuiltFiles)"
-          DestinationFolder="$(WorkDirectory)" />
-    <Exec WorkingDirectory="$(WorkDirectory)"
-          Command="$(ILMergeConsolePath) /out:$(TargetPath) /v2 /attr=$(TargetFileName) /keyfile=$(SolutionDir)\Build\Infrastructure.snk /target:library /internalize $(TargetFileName) FSharp.Core.dll" />
-	</Target>
+    <ItemGroup>
+      <BuiltFiles Include="$(OutDir)*.*" />
+    </ItemGroup>
+    <MakeDir Directories="$(WorkDirectory)" />
+    <Move SourceFiles="@(BuiltFiles)" DestinationFolder="$(WorkDirectory)" />
+    <Exec WorkingDirectory="$(WorkDirectory)" Command="$(ILMergeConsolePath) /out:$(TargetPath) /v2 /attr=$(TargetFileName) /keyfile=$(SolutionDir)\Build\Infrastructure.snk /target:library /internalize $(TargetFileName) FSharp.Core.dll" />
+  </Target>
 </Project>
