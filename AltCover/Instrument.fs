@@ -93,7 +93,7 @@ module internal Instrument =
     |> Seq.collect (fun t -> t.Methods)
     |> Seq.map (fun t -> (t.Name, t))
     |> Seq.filter (fun (n,_) -> n = "Visit" || n = "Push" || n = "Pop")
-    |> Seq.sortBy (fun (n,_) -> n)
+    |> Seq.sortBy fst
     |> Seq.map snd
     |> Seq.toList
     |> List.rev
