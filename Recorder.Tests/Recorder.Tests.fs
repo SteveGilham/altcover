@@ -214,6 +214,7 @@ type AltCoverTests() =
       let v1 = DateTime.UtcNow.Ticks
       let probed = Adapter.PayloadControl <|| (1000L, true)
       let v2 = DateTime.UtcNow.Ticks
+      test <@ Adapter.Null() |> Adapter.untime |> Seq.isEmpty @>
       match Adapter.untime probed |> Seq.toList with
       | [probe] ->
         test <@ probe % 1000L = 0L @>

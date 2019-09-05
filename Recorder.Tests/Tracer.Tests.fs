@@ -229,6 +229,7 @@ type AltCoverCoreTests() =
         use stream =
           new DeflateStream(File.OpenRead(unique + ".0.acv"), CompressionMode.Decompress)
         let results = self.ReadResults stream
+        test <@ ("no", 0, Adapter.Null()) |> Adapter.untable |> Seq.isEmpty @>
         test' <@ Adapter.VisitsSeq() |> Seq.isEmpty @> "unexpected local write"
         test <@ results.Count = 2 @>
         test' <@ (results
