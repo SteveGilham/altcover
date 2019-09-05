@@ -162,6 +162,11 @@ module internal Instrument =
   let internal PrepareAssembly(location : string) =
     let definition = AssemblyDefinition.ReadAssembly(location)
     Guard definition (fun () ->
+#if NETCOREAPP2_0
+#else
+      if monoRuntime |> not
+      then ProgramDatabase.ReadSymbols definition
+#endif
       definition.Name.Name <- (extractName definition) + ".g"
 
       let pair = Visitor.recorderStrongNameKey
