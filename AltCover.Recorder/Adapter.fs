@@ -90,5 +90,10 @@ module Adapter =
                                       Formatter = null
                                       Runner = false
                                       Definitive = false }
+  let internam MakeStreamTrace s1 = { Tracer = null
+                                      Stream = new System.IO.MemoryStream()
+                                      Formatter = new System.IO.BinaryWriter(s1)
+                                      Runner = true
+                                      Definitive = false }
 #endif
 #endif
