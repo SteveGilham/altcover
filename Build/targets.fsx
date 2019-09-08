@@ -3315,7 +3315,7 @@ _Target "Issue23" (fun _ ->
 
 _Target "Issue67" (fun _ ->
   try
-    Directory.ensure "./_Issue67"
+    Directory.ensure "./_Issue67" // escaping the | in a regex by doubling
     Shell.cleanDir ("./_Issue67")
     let config = XDocument.Load "./Build/NuGet.config.dotnettest"
     let repo = config.Descendants(XName.Get("add")) |> Seq.head
@@ -3336,7 +3336,7 @@ _Target "Issue67" (fun _ ->
     Shell.copy "./_Issue67" (!!"./Sample9/*.cs")
     DotNet.restore (fun o -> o.WithCommon(withWorkingDirectoryVM "_Issue67")) ""
 
-    let p0 = { Primitive.PrepareParams.Create() with AssemblyExcludeFilter = [| "^(?!(sample9||xunit.runner.reporters.netcoreapp10)).*$" |] }
+    let p0 = { Primitive.PrepareParams.Create() with AssemblyExcludeFilter = [| "?(sample9||xunit.runner.reporters.netcoreapp10)" |] }
     let pp0 = AltCover.PrepareParams.Primitive p0
     let c0 = Primitive.CollectParams.Create()
     let cc0 = AltCover.CollectParams.Primitive c0
