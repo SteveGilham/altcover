@@ -930,7 +930,7 @@ module Gui =
                                                     "CA2000:DisposeObjectsBeforeLosingScope",
                                                     Justification = "IDisposables are added to other widgets")>]
   let private AddLabelWidget g (button : ToolButton, resource) =
-    let keytext = (resource |> GetResourceString).Split('\u0000')
+    let keytext = (resource |> GetResourceString).Split('\u2028')
 
     let key =
       Keyval.FromName(keytext.[0].Substring(0, 1))

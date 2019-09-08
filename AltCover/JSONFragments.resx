@@ -123,6 +123,7 @@
           "AltCover.Recorder.g": "version" 
         }
 }</value>
+    <comment>@Invariant</comment>
   </data>
   <data name="frameworkLibraries" xml:space="preserve">
     <value>{
@@ -132,6 +133,7 @@
       "sha512": ""
     }
 }</value>
+    <comment>@Invariant</comment>
   </data>
   <data name="frameworkRuntime" xml:space="preserve">
     <value>{
@@ -141,6 +143,7 @@
         }
       }
 }</value>
+    <comment>@Invariant</comment>
   </data>
   <data name="netcoreDependencies" xml:space="preserve">
     <value>{
@@ -149,6 +152,7 @@
           "FSharp.Core": "4.3.4" 
         }
 }</value>
+    <comment>@Invariant</comment>
   </data>
   <data name="netcoreRuntime" xml:space="preserve">
     <value>{
@@ -166,6 +170,7 @@
           }
       }
     }</value>
+    <comment>@Invariant</comment>
   </data>
   <data name="netcoreLibraries" xml:space="preserve">
     <value>{
@@ -182,5 +187,6 @@
       "hashPath": "fsharp.core.4.3.4.nupkg.sha512"
     }
 }</value>
+    <comment>@Invariant</comment>
   </data>
 </root>

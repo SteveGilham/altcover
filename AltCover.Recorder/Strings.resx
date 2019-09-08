@@ -119,62 +119,82 @@
   </resheader>
   <data name="Coverage statistics flushing took {0:N} seconds.en" xml:space="preserve">
     <value>Coverage statistics flushing took {0:N} seconds</value>
+    <comment>@Invariant</comment>
   </data>
   <data name="Coverage statistics flushing took {0:N} seconds.eo" xml:space="preserve">
     <value>Kovraj statistika skribado prenis {0:N} sekundojn</value>
+    <comment>@Invariant</comment>
   </data>
   <data name="DomainUnload.en" xml:space="preserve">
     <value>AppDomain shutdown started</value>
+    <comment>@Invariant</comment>
   </data>
   <data name="DomainUnload.eo" xml:space="preserve">
     <value>AppDomain sistemfermo komenciĝis</value>
+    <comment>@Invariant</comment>
   </data>
   <data name="DomainUnloadHandler.en" xml:space="preserve">
     <value>Finalizing AppDomain coverage report</value>
+    <comment>@Invariant</comment>
   </data>
   <data name="DomainUnloadHandler.eo" xml:space="preserve">
     <value>Finante AppDomain kovraj raporto</value>
+    <comment>@Invariant</comment>
   </data>
   <data name="Pause.en" xml:space="preserve">
     <value>Pause command received</value>
+    <comment>@Invariant</comment>
   </data>
   <data name="Pause.eo" xml:space="preserve">
     <value>Paŭzo komandon ricevita</value>
+    <comment>@Invariant</comment>
   </data>
   <data name="PauseHandler.en" xml:space="preserve">
     <value>Pausing...</value>
+    <comment>@Invariant</comment>
   </data>
   <data name="PauseHandler.eo" xml:space="preserve">
     <value>Paŭzante ...</value>
+    <comment>@Invariant</comment>
   </data>
   <data name="ProcessExit.en" xml:space="preserve">
     <value>Shutdown started</value>
+    <comment>@Invariant</comment>
   </data>
   <data name="ProcessExit.eo" xml:space="preserve">
     <value>Sistemfermo komenciĝis</value>
+    <comment>@Invariant</comment>
   </data>
   <data name="ProcessExitHandler.en" xml:space="preserve">
     <value>Finalizing overall coverage report</value>
+    <comment>@Invariant</comment>
   </data>
   <data name="ProcessExitHandler.eo" xml:space="preserve">
     <value>Finante totala kovraj raporto</value>
+    <comment>@Invariant</comment>
   </data>
   <data name="Resume.en" xml:space="preserve">
     <value>Resume command received</value>
+    <comment>@Invariant</comment>
   </data>
   <data name="Resume.eo" xml:space="preserve">
     <value>Rekomenci komandon ricevita</value>
+    <comment>@Invariant</comment>
   </data>
   <data name="ResumeHandler.en" xml:space="preserve">
     <value>Resuming...</value>
+    <comment>@Invariant</comment>
   </data>
   <data name="ResumeHandler.eo" xml:space="preserve">
     <value>Resumante...</value>
+    <comment>@Invariant</comment>
   </data>
   <data name="Recorder error.en" xml:space="preserve">
     <value>Recorder error</value>
+    <comment>@Invariant</comment>
   </data>
   <data name="Recorder error.eo" xml:space="preserve">
     <value>Registra eraro</value>
+    <comment>@Invariant</comment>
   </data>
 </root>

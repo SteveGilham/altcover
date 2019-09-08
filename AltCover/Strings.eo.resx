@@ -170,9 +170,6 @@ Vidu https://github.com/SteveGilham/altcover/wiki/Usage por plenaj detaloj.</val
   <data name="UsageError" xml:space="preserve">
     <value>Eraro - uzado estas:</value>
   </data>
-  <data name="&quot;&lt;&gt;&quot;" xml:space="preserve">
-    <value>"n/a"</value>
-  </data>
   <data name="instrumentingfrom" xml:space="preserve">
     <value>Instrumentaj dosieroj de {0}</value>
   </data>
