@@ -173,6 +173,7 @@ See https://github.com/SteveGilham/altcover/wiki/Usage for full details.
   </data>
   <data name="&lt;&gt;" xml:space="preserve">
     <value>"n/a"</value>
+    <comment>@Invariant</comment>
   </data>
   <data name="instrumentingfrom" xml:space="preserve">
     <value>Instrumenting files from {0}</value>
