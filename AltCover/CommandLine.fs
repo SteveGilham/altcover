@@ -329,7 +329,7 @@ module internal CommandLine =
       s.Replace('\u0000',';')
 
     let qRegex (s : String) =
-      if s.[0] = '?'
+      if s.Substring(0,1) = "?"
       then (s.Substring(1), Include)
       else (s, Exclude)
       |> (fun (a,b) -> (Regex a, b))
