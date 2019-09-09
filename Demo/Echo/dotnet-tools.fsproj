@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <DotNetCliToolReference Include="dotnet-fake" Version="5.16.1" />
+    <DotNetCliToolReference Include="altcover.dotnet" Version="6.1.708" />
+    <DotNetCliToolReference Include="dotnet-reportgenerator-cli" Version="4.2.19" />    
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AltCover" Version="6.1.708" />
+  </ItemGroup>
+</Project>
