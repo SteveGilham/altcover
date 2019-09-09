@@ -258,6 +258,7 @@ type AltCoverTests() =
         Instance.Visits.Clear()
         let key = " "
         Instance.VisitImpl <||| (key, 23, (Adapter.Null()))
+        Instance.VisitImpl <||| (null, 17, (Adapter.Null()))
         Instance.VisitImpl <||| ("key", 42, (Adapter.Null()))
         Assert.That (Instance.Visits.Count, Is.EqualTo 2)
       finally
