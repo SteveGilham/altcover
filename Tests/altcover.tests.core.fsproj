@@ -47,7 +47,6 @@
     <EmbeddedResource Include="Sample1.deps.ncafter.json" />
     <EmbeddedResource Include="Sample2.deps.json" />
     <EmbeddedResource Include="Sample2.deps.ncafter.json" />
-    <EmbeddedResource Include="..\AltCover\Strings.resx" Link="Strings.resx" />
     <EmbeddedResource Include="..\Build\Infrastructure.snk" Link="Infrastructure.snk" />
     <EmbeddedResource Include="TailCallSample.dl_" />
     <EmbeddedResource Include="SwitchSample.dl_" />

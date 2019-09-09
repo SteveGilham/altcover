@@ -34,26 +34,23 @@ let OpenCoverFilter = "+[AltCove*]* -[*]Microsoft.* -[*]System.* +[*]N.*"
 let AltCoverFilter(p : Primitive.PrepareParams) =
   { p with MethodFilter = "WaitForExitCustom" :: (p.MethodFilter |> Seq.toList)
            AssemblyExcludeFilter = "Tests" :: (p.AssemblyExcludeFilter |> Seq.toList)
-           AssemblyFilter =
-             [ "Mono"; @"\.DataCollector"; "Sample" ]
-             @ (p.AssemblyFilter |> Seq.toList)
+           AssemblyFilter = [ @"\.DataCollector"; "Sample" ]
+                            @ (p.AssemblyFilter |> Seq.toList)
            LocalSource = true
            TypeFilter = [ @"System\."; @"Sample3\.Class2"; "Microsoft" ] @ (p.TypeFilter |> Seq.toList) }
 
 let AltCoverFilterX(p : Primitive.PrepareParams) =
   { p with MethodFilter = "WaitForExitCustom" :: (p.MethodFilter |> Seq.toList)
-           AssemblyFilter =
-             [ "Mono"; @"\.DataCollector"; "Sample" ]
-             @ (p.AssemblyFilter |> Seq.toList)
+           AssemblyFilter = [ @"\.DataCollector"; "Sample" ]
+                            @ (p.AssemblyFilter |> Seq.toList)
            LocalSource = true
            TypeFilter = [ @"System\."; @"Sample3\.Class2"; "Tests"; "Microsoft" ] @ (p.TypeFilter |> Seq.toList) }
 
 let AltCoverFilterG(p : Primitive.PrepareParams) =
   { p with MethodFilter = "WaitForExitCustom" :: (p.MethodFilter |> Seq.toList)
            AssemblyExcludeFilter = "Tests" :: (p.AssemblyExcludeFilter |> Seq.toList)
-           AssemblyFilter =
-             [ "Mono"; @"\.Recorder\.g"; "Sample" ]
-             @ (p.AssemblyFilter |> Seq.toList)
+           AssemblyFilter = [ @"\.Recorder\.g"; "Sample" ]
+                            @ (p.AssemblyFilter |> Seq.toList)
            LocalSource = true
            TypeFilter = [ @"System\."; @"Sample3\.Class2"; "Microsoft" ] @ (p.TypeFilter |> Seq.toList) }
 
@@ -807,8 +804,7 @@ _Target "UnitTestWithAltCover" (fun _ ->
     let prep =
       AltCover.PrepareParams.Primitive
         ({ Primitive.PrepareParams.Create() with XmlReport = RecorderReport
-                                                 OutputDirectories =
-                                                   [| "./__RecorderTestWithAltCover" |]
+                                                 OutputDirectories = [| "./__RecorderTestWithAltCover" |]
                                                  StrongNameKey = shadowkeyfile
                                                  OpenCover = false
                                                  InPlace = false
@@ -854,8 +850,7 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
     let prep =
       AltCover.PrepareParams.Primitive
         ({ Primitive.PrepareParams.Create() with XmlReport = xaltReport
-                                                 OutputDirectories =
-                                                   [| "./__UnitTestWithAltCoverRunner" |]
+                                                 OutputDirectories = [| "./__UnitTestWithAltCoverRunner" |]
                                                  StrongNameKey = keyfile
                                                  Single = true
                                                  InPlace = false
@@ -895,8 +890,7 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
     let prep =
       AltCover.PrepareParams.Primitive
         ({ Primitive.PrepareParams.Create() with XmlReport = altReport
-                                                 OutputDirectories =
-                                                   [| "./__UnitTestWithAltCoverRunner" |]
+                                                 OutputDirectories = [| "./__UnitTestWithAltCoverRunner" |]
                                                  StrongNameKey = keyfile
                                                  Single = true
                                                  InPlace = false
@@ -938,8 +932,7 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
     let prep =
       AltCover.PrepareParams.Primitive
         ({ Primitive.PrepareParams.Create() with XmlReport = weakReport
-                                                 OutputDirectories =
-                                                   [| "./__WeakNameTestWithAltCoverRunner" |]
+                                                 OutputDirectories = [| "./__WeakNameTestWithAltCoverRunner" |]
                                                  TypeFilter = [ "WeakNameTest" ]
                                                  StrongNameKey = keyfile
                                                  Single = true
@@ -976,8 +969,7 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
     let prep =
       AltCover.PrepareParams.Primitive
         ({ Primitive.PrepareParams.Create() with XmlReport = RecorderReport
-                                                 OutputDirectories =
-                                                   [| "./__RecorderTestWithAltCoverRunner" |]
+                                                 OutputDirectories = [| "./__RecorderTestWithAltCoverRunner" |]
                                                  StrongNameKey = shadowkeyfile
                                                  InPlace = false
                                                  Save = false }
@@ -1011,8 +1003,7 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
     let prep =
       AltCover.PrepareParams.Primitive
         ({ Primitive.PrepareParams.Create() with XmlReport = Recorder2Report
-                                                 OutputDirectories =
-                                                   [| "./__RecorderTest2WithAltCoverRunner" |]
+                                                 OutputDirectories = [| "./__RecorderTest2WithAltCoverRunner" |]
                                                  StrongNameKey = shadowkeyfile
                                                  InPlace = false
                                                  Save = false }
@@ -1046,8 +1037,7 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
     let prep =
       AltCover.PrepareParams.Primitive
         ({ Primitive.PrepareParams.Create() with XmlReport = gtkReport
-                                                 OutputDirectories =
-                                                   [| "./__GTKVTestWithAltCoverRunner" |]
+                                                 OutputDirectories = [| "./__GTKVTestWithAltCoverRunner" |]
                                                  TypeFilter = [ "Gui" ]
                                                  AssemblyFilter = [ "\\-sharp" ]
                                                  StrongNameKey = keyfile
@@ -3315,7 +3305,7 @@ _Target "Issue23" (fun _ ->
 
 _Target "Issue67" (fun _ ->
   try
-    Directory.ensure "./_Issue67"
+    Directory.ensure "./_Issue67" // escaping the | in a regex by doubling
     Shell.cleanDir ("./_Issue67")
     let config = XDocument.Load "./Build/NuGet.config.dotnettest"
     let repo = config.Descendants(XName.Get("add")) |> Seq.head
@@ -3336,7 +3326,7 @@ _Target "Issue67" (fun _ ->
     Shell.copy "./_Issue67" (!!"./Sample9/*.cs")
     DotNet.restore (fun o -> o.WithCommon(withWorkingDirectoryVM "_Issue67")) ""
 
-    let p0 = { Primitive.PrepareParams.Create() with AssemblyExcludeFilter = [| "^(?!(sample9||xunit.runner.reporters.netcoreapp10)).*$" |] }
+    let p0 = { Primitive.PrepareParams.Create() with AssemblyExcludeFilter = [| "?(sample9||xunit.runner.reporters.netcoreapp10)" |] }
     let pp0 = AltCover.PrepareParams.Primitive p0
     let c0 = Primitive.CollectParams.Create()
     let cc0 = AltCover.CollectParams.Primitive c0
