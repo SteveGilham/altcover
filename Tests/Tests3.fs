@@ -265,7 +265,7 @@ type AltCoverTests3() =
       try
         Visitor.NameFilters.Clear()
         let options = Main.DeclareOptions()
-        let input = [| "-s"; "1"; "--s"; "2"; "/s"; "3"; "-s=4;p;q"; "--s=5"; "/s=6" |]
+        let input = [| "-s"; "?1"; "--s"; "2"; "/s"; "3"; "-s=4;p;q"; "--s=5"; "/s=6" |]
         let parse = CommandLine.ParseCommandLine input options
         match parse with
         | Left _ -> Assert.Fail()
@@ -285,7 +285,8 @@ type AltCoverTests3() =
                 | FilterClass.Assembly i -> i.ToString()
                 | _ -> "*"),
            Is.EquivalentTo ([| "1"; "2"; "3"; "4"; "p"; "q"; "5"; "6" |]
-                            |> Seq.map (sprintf "(%s, Exclude)") ))
+                            |> Seq.mapi (fun i r -> let k = if i = 0 then "Include" else "Exclude"
+                                                    sprintf "(%s, %s)" r k )) )
       finally
         Visitor.NameFilters.Clear()
 
