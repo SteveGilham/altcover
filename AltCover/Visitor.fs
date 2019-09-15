@@ -56,10 +56,10 @@ type internal SeqPnt =
 [<ExcludeFromCodeCoverage; NoComparison>]
 type internal GoTo =
   { Start : Instruction
+    SequencePoint: SequencePoint
     Indexes : int list
     Uid : int
     Path : int
-    StartLine : int
     Offset : int
     Target : int list
     Document : string
@@ -773,11 +773,11 @@ module internal Visitor =
            |> Option.map (fun state' -> (state', state'.Previous))) from
          |> (findSequencePoint dbg)
          |> Option.map (fun context ->
-              BranchPoint { Path = path
+              BranchPoint { Start = from
+                            SequencePoint = context
                             Indexes = indexes
                             Uid = i + BranchNumber
-                            Start = from
-                            StartLine = context.StartLine
+                            Path = path
                             Offset = from.Offset
                             Target = target |> List.map (fun i -> i.Offset)
                             Document = context.Document.Url

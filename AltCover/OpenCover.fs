@@ -264,7 +264,7 @@ module internal OpenCover =
           XAttribute(X "uspid", branch.Uid),
           XAttribute(X "ordinal", 0),
           XAttribute(X "offset", branch.Offset),
-          XAttribute(X "sl", branch.StartLine),
+          XAttribute(X "sl", branch.SequencePoint.StartLine),
           XAttribute(X "path", branch.Path),
           XAttribute(X "offsetchain", 0),
           XAttribute(X "offsetend", branch.Target.Head),
