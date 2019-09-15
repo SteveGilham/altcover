@@ -1319,13 +1319,13 @@ type AltCoverTests() =
           Visitor.Deeper <| Node.Method(method, Inspect.Instrument, None) |> Seq.toList
         Assert.That(deeper.Length, Is.EqualTo 14)
         deeper
-        |> List.skip 12
+        |> List.skip 9
         |> List.iteri (fun i node ->
              match node with
              | (BranchPoint b) -> Assert.That(b.Uid, Is.EqualTo i, "branch point number")
              | _ -> Assert.Fail("branch point expected"))
         deeper
-        |> List.take 12
+        |> List.take 9
         |> List.iteri (fun i node ->
              match node with
              | (MethodPoint(_, _, n, b)) ->
@@ -2108,41 +2108,17 @@ type AltCoverTests() =
 
     [<Test>]
     member self.BranchChainsSerialize() =
-      let where = Assembly.GetExecutingAssembly().Location
-      let path = Path.Combine(Path.GetDirectoryName(where), "Sample2.dll")
-      use def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
-      ProgramDatabase.ReadSymbols def
-      let method =
-        def.MainModule.GetAllTypes()
-        |> Seq.collect (fun t -> t.Methods)
-        |> Seq.find (fun m -> m.Name = "as_bar")
-      Visitor.Visit [] [] // cheat reset
-      try
-        Visitor.reportFormat <- Some Base.ReportFormat.OpenCover
-        "Program"
-        |> (Regex
-            >> Visitor.DefaultFilter
-            >> FilterClass.File
-            >> Visitor.NameFilters.Add)
-        let branches =
-          Visitor.Deeper <| Node.Method(method, Inspect.Instrument, None)
-          |> Seq.map (fun n ->
-               match n with
-               | BranchPoint b -> Some b
-               | _ -> None)
-          |> Seq.choose id
-          |> Seq.toList
-        // The only overt branching in this function are the 4 match cases
-        // Internal IL conditional branching is a compiler thing from inlining "string"
-        Assert.That(branches |> Seq.length, Is.EqualTo 4)
-        let branch = branches |> Seq.head
-        Assert.That(branch.Target.Length, Is.EqualTo 2)
-        let xbranch = XElement(XName.Get "test")
-        OpenCover.setChain xbranch branch.Target.Tail
-        Assert.That(xbranch.ToString(), Is.EqualTo """<test offsetchain="29" />""")
-      finally
-        Visitor.NameFilters.Clear()
-        Visitor.reportFormat <- None
+      let branch = { Start = null
+                     SequencePoint = null
+                     Indexes = []
+                     Uid = -1
+                     Path = -1
+                     Offset = -1
+                     Target = [ 112; 50; 29 ]
+                     Included = true }
+      let xbranch = XElement(XName.Get "test")
+      OpenCover.setChain xbranch branch.Target.Tail
+      Assert.That(xbranch.ToString(), Is.EqualTo """<test offsetchain="50 29" />""")
 
     [<Test>]
     member self.BranchChainsTerminate() =

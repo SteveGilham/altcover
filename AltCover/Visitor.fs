@@ -676,6 +676,9 @@ module internal Visitor =
       if state.OpCode = OpCodes.Br || state.OpCode = OpCodes.Br_S then
         let target = (state.Operand :?> Instruction)
         accumulate target (target :: l)
+      else if (state.Offset = terminal.Offset
+               && state.OpCode.FlowControl = FlowControl.Next)
+      then accumulate state.Next (state :: l)
       else if (state.Offset > terminal.Offset
                // depart current context, especially important if inlined
                || state.OpCode.FlowControl = FlowControl.Cond_Branch
@@ -686,21 +689,6 @@ module internal Visitor =
                || isNull state.Next) then l
       else accumulate state.Next gendarme
     accumulate i [ i ]
-
-  let private boundaryOfList (f : (Instruction -> int) -> Instruction list -> Instruction)
-      (places : Instruction list) = places |> f (fun i -> i.Offset)
-
-  let includedSequencePoint dbg (toNext : Instruction list) toJump =
-    let places = List.concat [ toNext; toJump ]
-    let start = places |> (boundaryOfList List.minBy)
-    let finish = places |> (boundaryOfList List.maxBy)
-
-    let range =
-      Seq.unfold (fun (state : Cil.Instruction) ->
-        if isNull state || finish = state.Previous then None
-        else Some(state, state.Next)) start
-      |> Seq.toList
-    findEffectiveSequencePoint FakeAfterReturn dbg range
 
   let rec lastOfSequencePoint (dbg : MethodDebugInformation) (i : Instruction) =
     let n = i.Next
@@ -726,13 +714,9 @@ module internal Visitor =
       let jump = i.Operand :?> Instruction
       let toNext = getJumpChain terminal next
       let toJump = getJumpChain terminal jump
-      // Eliminate the "all inside one SeqPnt" jumps
-      // This covers a multitude of compiler generated branching cases
-      match includedSequencePoint dbg toNext toJump with
-      | Some _ ->
-        [ (i, toNext, next.Offset, -1)
-          (i, toJump, jump.Offset, 0) ]
-      | None -> []
+
+      [ (i, toNext, next.Offset, -1)
+        (i, toJump, jump.Offset, 0) ]
 
   // cribbed from OpenCover's CecilSymbolManager -- internals of C# yield return iterators
   let private IsMoveNext =
@@ -744,13 +728,18 @@ module internal Visitor =
     bps
     |> Seq.groupBy (fun b -> b.SequencePoint.Offset)
     |> Seq.map (fun (_,bs) -> let last = lastOfSequencePoint dbg (bs |> Seq.head).Start
+                              let lastOffset = last.Offset
+                              let (>?) = if last.OpCode.FlowControl = FlowControl.Branch
+                                         then (>) else (>=)
                               bs
-                              |> Seq.groupBy (fun b -> b.Target.Head)
+                              |> Seq.map (fun b -> { b with Target = b.Target
+                                                                     |> List.takeWhile (fun i -> i >? lastOffset || i < b.SequencePoint.Offset)})
+                              |> Seq.filter (fun b -> b.Target |> Seq.isEmpty |> not)
+                              |> Seq.groupBy (fun b -> b.Target)
                               |> Seq.map (snd >> Seq.head)
                               |> Seq.sortBy (fun b -> b.Offset)
-                              |> Seq.filter (fun b -> let immediate = b.Target |> Seq.last
-                                                      immediate > last.Offset || immediate < b.SequencePoint.Offset)
                               |> Seq.mapi (fun i b -> {b with Path = i} ))
+    |> Seq.filter (fun l -> l |> Seq.length > 1)
     |> Seq.collect id
     |> Seq.mapi (fun i b -> {b with Uid = i + BranchNumber} )
     |> Seq.map BranchPoint
@@ -778,7 +767,6 @@ module internal Visitor =
          (fun (i : Instruction) -> i.OpCode.FlowControl = FlowControl.Cond_Branch)
     |> Seq.mapi (fun n i -> (n, i)) //
     |> Seq.filter (fun (n, _) -> n >= skip)))
-    |> Seq.filter (fun l -> l.Length > 1)
     |> Seq.collect id
     |> Seq.mapi (fun i (path, (from, target, indexes)) ->
          Seq.unfold (fun (state : Cil.Instruction) ->
