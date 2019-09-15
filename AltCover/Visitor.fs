@@ -741,6 +741,13 @@ module internal Visitor =
       (@"\<[^\s>]+\>\w__\w(\w)?::MoveNext\(\)$",
        RegexOptions.Compiled ||| RegexOptions.ExplicitCapture)
 
+  let private CoalesceBranchPoints (bps : GoTo seq) =
+    bps
+    |> Seq.groupBy (fun b -> b.SequencePoint.Offset)
+    // magic goes here
+    |> Seq.collect snd
+    |> Seq.map BranchPoint
+
   let private ExtractBranchPoints dbg methodFullName rawInstructions interesting =
     // Generated MoveNext => skip one branch
     let skip = IsMoveNext.IsMatch methodFullName |> Augment.Increment
@@ -773,7 +780,7 @@ module internal Visitor =
            |> Option.map (fun state' -> (state', state'.Previous))) from
          |> (findSequencePoint dbg)
          |> Option.map (fun context ->
-              BranchPoint { Start = from
+                          { Start = from
                             SequencePoint = context
                             Indexes = indexes
                             Uid = i + BranchNumber
@@ -783,6 +790,7 @@ module internal Visitor =
                             Document = context.Document.Url
                             Included = interesting }))
     |> Seq.choose id
+    |> CoalesceBranchPoints
     |> Seq.toList
 
   let private VisitMethod (m : MethodDefinition) (included : Inspect) =
