@@ -125,6 +125,16 @@
       <Project>{120c83ab-ba54-4c36-9641-1d30defe9116}</Project>
       <Private>True</Private>
     </ProjectReference>
+    <ProjectReference Include="..\Sample16\Sample16.csproj">
+      <Name>Sample16</Name>
+      <Project>{2db4978c-9685-4e64-b7ae-9e7b860c7f5c}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\Sample17\Sample17.fsproj">
+      <Name>Sample17</Name>
+      <Project>{88a4d1e6-147d-4f1f-8c36-2143f16a8340}</Project>
+      <Private>True</Private>
+    </ProjectReference>
     <ProjectReference Include="..\Sample5\Sample5.csproj">
       <Name>Sample5</Name>
       <Project>{d1f77a3c-6b04-41b7-9507-fc1a7263cd3d}</Project>
