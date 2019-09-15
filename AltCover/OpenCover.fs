@@ -256,8 +256,9 @@ module internal OpenCover =
       | _ -> s
 
     let VisitGoTo s branch =
-      let fileset, ref = RecordFile s branch.Document
-      let fileid = fileset.Item branch.Document
+      let doc = branch.SequencePoint.Document.Url
+      let fileset, ref = RecordFile s doc
+      let fileid = fileset.Item doc
       (XElement
          (X "BranchPoint",
           XAttribute(X "vc", 0),

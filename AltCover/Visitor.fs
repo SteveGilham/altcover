@@ -62,7 +62,6 @@ type internal GoTo =
     Path : int
     Offset : int
     Target : int list
-    Document : string
     Included : bool }
 
 [<ExcludeFromCodeCoverage; NoComparison>]
@@ -741,11 +740,19 @@ module internal Visitor =
       (@"\<[^\s>]+\>\w__\w(\w)?::MoveNext\(\)$",
        RegexOptions.Compiled ||| RegexOptions.ExplicitCapture)
 
-  let private CoalesceBranchPoints (bps : GoTo seq) =
+  let private CoalesceBranchPoints dbg (bps : GoTo seq) =
     bps
     |> Seq.groupBy (fun b -> b.SequencePoint.Offset)
-    // magic goes here
-    |> Seq.collect snd
+    |> Seq.map (fun (_,bs) -> let last = lastOfSequencePoint dbg (bs |> Seq.head).Start
+                              bs
+                              |> Seq.groupBy (fun b -> b.Target.Head)
+                              |> Seq.map (snd >> Seq.head)
+                              |> Seq.sortBy (fun b -> b.Offset)
+                              |> Seq.filter (fun b -> let immediate = b.Target |> Seq.last
+                                                      immediate > last.Offset || immediate < b.SequencePoint.Offset)
+                              |> Seq.mapi (fun i b -> {b with Path = i} ))
+    |> Seq.collect id
+    |> Seq.mapi (fun i b -> {b with Uid = i + BranchNumber} )
     |> Seq.map BranchPoint
 
   let private ExtractBranchPoints dbg methodFullName rawInstructions interesting =
@@ -783,14 +790,13 @@ module internal Visitor =
                           { Start = from
                             SequencePoint = context
                             Indexes = indexes
-                            Uid = i + BranchNumber
-                            Path = path
+                            Uid = -1
+                            Path = -1
                             Offset = from.Offset
                             Target = target |> List.map (fun i -> i.Offset)
-                            Document = context.Document.Url
                             Included = interesting }))
     |> Seq.choose id
-    |> CoalesceBranchPoints
+    |> CoalesceBranchPoints dbg
     |> Seq.toList
 
   let private VisitMethod (m : MethodDefinition) (included : Inspect) =

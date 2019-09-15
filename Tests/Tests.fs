@@ -1259,6 +1259,84 @@ type AltCoverTests() =
         Visitor.reportFormat <- None
 
     [<Test>]
+    member self.BranchPointsAreComputedForSwitch() =
+      let where = Assembly.GetExecutingAssembly().Location
+      let path =
+        Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), sample1).
+         Replace("Sample1", "Sample16").Replace(".exe", ".dll")
+      let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+      ProgramDatabase.ReadSymbols def
+      let method =
+        (def.MainModule.GetAllTypes()
+         |> Seq.filter (fun t -> t.Name = "Foo")
+         |> Seq.head).Methods
+        |> Seq.filter (fun m -> m.Name = "Bar")
+        |> Seq.head
+      Visitor.Visit [] [] // cheat reset
+      try
+        Visitor.reportFormat <- Some Base.ReportFormat.OpenCover
+        Visitor.NameFilters.Clear()
+        let deeper =
+          Visitor.Deeper <| Node.Method(method, Inspect.Instrument, None) |> Seq.toList
+        Assert.That(deeper.Length, Is.EqualTo 16)
+        deeper
+        |> List.skip 12
+        |> List.iteri (fun i node ->
+             match node with
+             | (BranchPoint b) -> Assert.That(b.Uid, Is.EqualTo i, "branch point number")
+             | _ -> Assert.Fail("branch point expected"))
+        deeper
+        |> List.take 12
+        |> List.iteri (fun i node ->
+             match node with
+             | (MethodPoint(_, _, n, b)) ->
+               Assert.That(n, Is.EqualTo i, "point number")
+               Assert.That(b, Is.True, "flag " + i.ToString())
+             | _ -> Assert.Fail("sequence point expected"))
+      finally
+        Visitor.NameFilters.Clear()
+        Visitor.reportFormat <- None
+
+    [<Test>]
+    member self.BranchPointsAreComputedForMatch() =
+      let where = Assembly.GetExecutingAssembly().Location
+      let path =
+        Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), sample1).
+         Replace("Sample1", "Sample17").Replace(".exe", ".dll")
+      let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+      ProgramDatabase.ReadSymbols def
+      let method =
+        (def.MainModule.GetAllTypes()
+         |> Seq.filter (fun t -> t.Name = "Carrier")
+         |> Seq.head).Methods
+        |> Seq.filter (fun m -> m.Name = "Function")
+        |> Seq.head
+      Visitor.Visit [] [] // cheat reset
+      try
+        Visitor.reportFormat <- Some Base.ReportFormat.OpenCover
+        Visitor.NameFilters.Clear()
+        let deeper =
+          Visitor.Deeper <| Node.Method(method, Inspect.Instrument, None) |> Seq.toList
+        Assert.That(deeper.Length, Is.EqualTo 14)
+        deeper
+        |> List.skip 12
+        |> List.iteri (fun i node ->
+             match node with
+             | (BranchPoint b) -> Assert.That(b.Uid, Is.EqualTo i, "branch point number")
+             | _ -> Assert.Fail("branch point expected"))
+        deeper
+        |> List.take 12
+        |> List.iteri (fun i node ->
+             match node with
+             | (MethodPoint(_, _, n, b)) ->
+               Assert.That(n, Is.EqualTo i, "point number")
+               Assert.That(b, Is.True, "flag " + i.ToString())
+             | _ -> Assert.Fail("sequence point expected"))
+      finally
+        Visitor.NameFilters.Clear()
+        Visitor.reportFormat <- None
+
+    [<Test>]
     member self.MethodsAreDeeperThanTypes() =
       let where = Assembly.GetExecutingAssembly().Location
       let path =
