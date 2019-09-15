@@ -51,6 +51,7 @@
     <EmbeddedResource Include="TailCallSample.dl_" />
     <EmbeddedResource Include="SwitchSample.dl_" />
     <EmbeddedResource Include="SwitchSample.pd_" />
+    <EmbeddedResource Include="issue37.dl_" />
   </ItemGroup>
 
   <ItemGroup>

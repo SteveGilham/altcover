@@ -113,6 +113,7 @@
     <Content Include="..\WeakNameTests\App.config">
       <Link>App.config</Link>
     </Content>
+    <EmbeddedResource Include="issue37.dl_" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Sample11\Sample11.csproj">
