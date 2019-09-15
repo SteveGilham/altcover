@@ -141,6 +141,7 @@ let FailTrue = DotNet.CLIArgs.FailFast true
 
 let GreenSummary = DotNet.CLIArgs.ShowSummary "Green"
 let ForceTrue = DotNet.CLIArgs.Many [ ForceTrueOnly; GreenSummary ]
+let ForceTrueFast = DotNet.CLIArgs.Many [ FailTrue; ForceTrueOnly; GreenSummary ]
 
 let _Target s f =
   Target.description s
@@ -3179,11 +3180,13 @@ _Target "DotnetTestIntegration" (fun _ ->
            XAttribute(XName.Get "Version", !Version))
       pack.AddBeforeSelf inject
       proj.Save "./RegressionTesting/issue29/issue29.csproj"
+      let p29 = { p0 with AssemblyFilter = [ "NUnit" ] }
+      let pp29 = AltCover.PrepareParams.Primitive p29
 
       DotNet.test
         (fun to' ->
         (to'.WithCommon(withWorkingDirectoryVM "RegressionTesting/issue29").WithParameters
-           pp0 cc0 ForceTrue) |> withCLIArgs) ""
+           pp29 cc0 ForceTrueFast) |> withCLIArgs) ""
 
     let proj = XDocument.Load "./RegressionTesting/issue37/issue37.xml"
     let pack = proj.Descendants(XName.Get("PackageReference")) |> Seq.head
