@@ -61,7 +61,7 @@ type internal GoTo =
     Uid : int
     Path : int
     Offset : int
-    Target : int list
+    Target : Instruction list
     Included : bool }
 
 [<ExcludeFromCodeCoverage; NoComparison>]
@@ -676,9 +676,6 @@ module internal Visitor =
       if state.OpCode = OpCodes.Br || state.OpCode = OpCodes.Br_S then
         let target = (state.Operand :?> Instruction)
         accumulate target (target :: l)
-      else if (state.Offset = terminal.Offset
-               && state.OpCode.FlowControl = FlowControl.Next)
-      then accumulate state.Next (state :: l)
       else if (state.Offset > terminal.Offset
                // depart current context, especially important if inlined
                || state.OpCode.FlowControl = FlowControl.Cond_Branch
@@ -686,7 +683,7 @@ module internal Visitor =
                || state.OpCode.FlowControl = FlowControl.Break
                || state.OpCode.FlowControl = FlowControl.Throw
                || state.OpCode.FlowControl = FlowControl.Return // includes state.Next = null
-               || isNull state.Next) then l
+               || isNull state.Next) then (if state <> l.Head then state :: l else l)
       else accumulate state.Next gendarme
     accumulate i [ i ]
 
@@ -729,11 +726,12 @@ module internal Visitor =
     |> Seq.groupBy (fun b -> b.SequencePoint.Offset)
     |> Seq.map (fun (_,bs) -> let last = lastOfSequencePoint dbg (bs |> Seq.head).Start
                               let lastOffset = last.Offset
-                              let (>?) = if last.OpCode.FlowControl = FlowControl.Branch
-                                         then (>) else (>=)
                               bs
                               |> Seq.map (fun b -> { b with Target = b.Target
-                                                                     |> List.takeWhile (fun i -> i >? lastOffset || i < b.SequencePoint.Offset)})
+                                                                     |> List.takeWhile (fun i -> let o = i.Offset
+                                                                                                 o > lastOffset ||
+                                                                                                 o < b.SequencePoint.Offset ||
+                                                                                                 i.OpCode.FlowControl = FlowControl.Return)})
                               |> Seq.filter (fun b -> b.Target |> Seq.isEmpty |> not)
                               |> Seq.groupBy (fun b -> b.Target)
                               |> Seq.map (snd >> Seq.head)
@@ -781,7 +779,7 @@ module internal Visitor =
                             Uid = -1
                             Path = -1
                             Offset = from.Offset
-                            Target = target |> List.map (fun i -> i.Offset)
+                            Target = target
                             Included = interesting }))
     |> Seq.choose id
     |> CoalesceBranchPoints dbg

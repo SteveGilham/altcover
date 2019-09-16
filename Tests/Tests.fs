@@ -2158,16 +2158,8 @@ type AltCoverTests() =
 
     [<Test>]
     member self.BranchChainsSerialize() =
-      let branch = { Start = null
-                     SequencePoint = null
-                     Indexes = []
-                     Uid = -1
-                     Path = -1
-                     Offset = -1
-                     Target = [ 112; 50; 29 ]
-                     Included = true }
       let xbranch = XElement(XName.Get "test")
-      OpenCover.setChain xbranch branch.Target.Tail
+      OpenCover.setChain xbranch [ 112; 50; 29 ].Tail
       Assert.That(xbranch.ToString(), Is.EqualTo """<test offsetchain="50 29" />""")
 
     [<Test>]
