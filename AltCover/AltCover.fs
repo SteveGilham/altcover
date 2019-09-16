@@ -362,7 +362,8 @@ module internal Main =
     // Copy all the files into the target directory
     let mapping = Dictionary<string, string>()
     Seq.zip sourceInfos targets
-    |> Seq.map (fun (x, y) -> (x.FullName, y))
+    |> Seq.map (fun (x, y) -> let f = x.FullName // trim separator
+                              (Path.Combine (f |> Path.GetDirectoryName, f |> Path.GetFileName), y))
     |> Seq.iter mapping.Add
 
     Seq.zip fromInfos toInfos
