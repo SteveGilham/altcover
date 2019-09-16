@@ -114,6 +114,7 @@
       <Link>App.config</Link>
     </Content>
     <EmbeddedResource Include="issue37.dl_" />
+    <EmbeddedResource Include="issue37.pd_" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Sample11\Sample11.csproj">

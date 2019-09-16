@@ -52,6 +52,7 @@
     <EmbeddedResource Include="SwitchSample.dl_" />
     <EmbeddedResource Include="SwitchSample.pd_" />
     <EmbeddedResource Include="issue37.dl_" />
+    <EmbeddedResource Include="issue37.pc_" />
   </ItemGroup>
 
   <ItemGroup>
