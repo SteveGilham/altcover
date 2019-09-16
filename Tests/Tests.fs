@@ -815,6 +815,56 @@ type AltCoverTests() =
       Assert.That(Visitor.fakeSequencePoint FakeAfterReturn null ret, Is.Not.Null)
 
     [<Test>]
+    member self.ReleaseBuildTernaryTestInContext() =
+      let res =
+        Assembly.GetExecutingAssembly().GetManifestResourceNames()
+        |> Seq.find (fun n -> n.EndsWith("issue37.dl_", StringComparison.Ordinal))
+      use stream =
+        Assembly.GetExecutingAssembly().GetManifestResourceStream(res)
+
+      let res2 =
+        Assembly.GetExecutingAssembly().GetManifestResourceNames()
+        |> Seq.find (fun n -> n.EndsWith("issue37.pd_", StringComparison.Ordinal))
+      use stream2 =
+        Assembly.GetExecutingAssembly().GetManifestResourceStream(res2)
+
+      let def = Mono.Cecil.AssemblyDefinition.ReadAssembly stream
+      let r = Mono.Cecil.Pdb.PdbReaderProvider()
+      use rr = r.GetSymbolReader(def.MainModule, stream2)
+      def.MainModule.ReadSymbols(rr)
+
+      let method =
+        (def.MainModule.GetAllTypes()
+         |> Seq.filter (fun t -> t.Name = "Tests")
+         |> Seq.head).Methods
+        |> Seq.filter (fun m -> m.Name = "Ternary")
+        |> Seq.head
+      Visitor.Visit [] [] // cheat reset
+      try
+        Visitor.reportFormat <- Some Base.ReportFormat.OpenCover
+        Visitor.NameFilters.Clear()
+        let deeper =
+          Visitor.Deeper <| Node.Method(method, Inspect.Instrument, None) |> Seq.toList
+        Assert.That(deeper.Length, Is.EqualTo 3)
+        deeper
+        |> List.skip 1
+        |> List.iteri (fun i node ->
+             match node with
+             | (BranchPoint b) -> Assert.That(b.Uid, Is.EqualTo i, "branch point number")
+             | _ -> Assert.Fail("branch point expected"))
+        deeper
+        |> List.take 1
+        |> List.iteri (fun i node ->
+             match node with
+             | (MethodPoint(_, _, n, b)) ->
+               Assert.That(n, Is.EqualTo i, "point number")
+               Assert.That(b, Is.True, "flag " + i.ToString())
+             | _ -> Assert.Fail("sequence point expected"))
+      finally
+        Visitor.NameFilters.Clear()
+        Visitor.reportFormat <- None
+
+    [<Test>]
     member self.CSharpNestedMethods() =
       let sample3 =
         Path.Combine
