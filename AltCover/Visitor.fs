@@ -733,14 +733,17 @@ module internal Visitor =
                                                                                                  o > lastOffset ||
                                                                                                  o < b.SequencePoint.Offset ||
                                                                                                  i.OpCode.FlowControl = FlowControl.Return)})
-                              |> Seq.filter (fun b -> b.Target |> Seq.isEmpty |> not)
                               |> Seq.groupBy (fun b -> b.Target)
-                              |> Seq.map (snd >> Seq.head)
-                              |> Seq.sortBy (fun b -> b.Offset)
-                              |> Seq.mapi (fun i b -> {b with Path = i} ))
-    |> Seq.filter (fun l -> l |> Seq.length > 1)
+                              |> Seq.map (snd >> (fun bg -> bg
+                                                            |> Seq.mapi  (fun i bx -> { bx with Representative = i=0 &&
+                                                                                                                 bx.Target |> Seq.isEmpty |> not})))
+                              |> Seq.sortBy (fun b -> (b |> Seq.head).Offset)
+                              |> Seq.mapi (fun i b -> b |> Seq.map (fun bx -> {bx with Path = i} )))
+    |> Seq.map (fun l -> let x = l |> Seq.length > 1
+                         l |> Seq.map (fun bs -> bs |> Seq.map (fun b -> { b with Representative = x && b.Representative})))
     |> Seq.collect id
-    |> Seq.mapi (fun i b -> {b with Uid = i + BranchNumber} )
+    |> Seq.mapi (fun i b -> b |> Seq.map (fun bx -> {bx with Uid = i + BranchNumber} ))
+    |> Seq.collect id
     |> Seq.map BranchPoint
 
   let private ExtractBranchPoints dbg methodFullName rawInstructions interesting =

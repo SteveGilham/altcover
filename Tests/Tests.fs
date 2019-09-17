@@ -1327,7 +1327,11 @@ type AltCoverTests() =
         Visitor.reportFormat <- Some Base.ReportFormat.OpenCover
         Visitor.NameFilters.Clear()
         let deeper =
-          Visitor.Deeper <| Node.Method(method, Inspect.Instrument, None) |> Seq.toList
+          Visitor.Deeper <| Node.Method(method, Inspect.Instrument, None)
+          |> Seq.toList
+          |> List.filter (fun n -> match n with
+                                   | BranchPoint b -> b.Representative
+                                   | _ -> true)
         Assert.That(deeper.Length, Is.EqualTo 16)
         deeper
         |> List.skip 12
@@ -1366,7 +1370,11 @@ type AltCoverTests() =
         Visitor.reportFormat <- Some Base.ReportFormat.OpenCover
         Visitor.NameFilters.Clear()
         let deeper =
-          Visitor.Deeper <| Node.Method(method, Inspect.Instrument, None) |> Seq.toList
+          Visitor.Deeper <| Node.Method(method, Inspect.Instrument, None)
+          |> Seq.toList
+          |> List.filter (fun n -> match n with
+                                   | BranchPoint b -> b.Representative
+                                   | _ -> true)
         Assert.That(deeper.Length, Is.EqualTo 14)
         deeper
         |> List.skip 9
