@@ -723,24 +723,27 @@ module internal Visitor =
        RegexOptions.Compiled ||| RegexOptions.ExplicitCapture)
 
   let private CoalesceBranchPoints dbg (bps : GoTo seq) =
+    let selectRepresentatives (_, bs) =
+      let last = lastOfSequencePoint dbg (bs |> Seq.head).Start
+      let lastOffset = last.Offset
+      bs
+      |> Seq.map (fun b -> { b with Target = b.Target
+                                             |> List.takeWhile (fun i -> let o = i.Offset
+                                                                         o > lastOffset ||
+                                                                         o < b.SequencePoint.Offset ||
+                                                                         i.OpCode.FlowControl = FlowControl.Return)})
+      |> Seq.groupBy (fun b -> b.Target)
+      |> Seq.map (snd >> (fun bg -> bg
+                                    |> Seq.mapi  (fun i bx -> { bx with Representative = i=0 &&
+                                                                                         bx.Target |> Seq.isEmpty |> not})))
+      |> Seq.sortBy (fun b -> (b |> Seq.head).Offset)
+      |> Seq.mapi (fun i b -> b |> Seq.map (fun bx -> {bx with Path = i} ))
+    let demoteSingletons l =
+      let x = l |> Seq.length > 1
+      l |> Seq.map (fun bs -> bs |> Seq.map (fun b -> { b with Representative = x && b.Representative}))
     bps
     |> Seq.groupBy (fun b -> b.SequencePoint.Offset)
-    |> Seq.map (fun (_,bs) -> let last = lastOfSequencePoint dbg (bs |> Seq.head).Start
-                              let lastOffset = last.Offset
-                              bs
-                              |> Seq.map (fun b -> { b with Target = b.Target
-                                                                     |> List.takeWhile (fun i -> let o = i.Offset
-                                                                                                 o > lastOffset ||
-                                                                                                 o < b.SequencePoint.Offset ||
-                                                                                                 i.OpCode.FlowControl = FlowControl.Return)})
-                              |> Seq.groupBy (fun b -> b.Target)
-                              |> Seq.map (snd >> (fun bg -> bg
-                                                            |> Seq.mapi  (fun i bx -> { bx with Representative = i=0 &&
-                                                                                                                 bx.Target |> Seq.isEmpty |> not})))
-                              |> Seq.sortBy (fun b -> (b |> Seq.head).Offset)
-                              |> Seq.mapi (fun i b -> b |> Seq.map (fun bx -> {bx with Path = i} )))
-    |> Seq.map (fun l -> let x = l |> Seq.length > 1
-                         l |> Seq.map (fun bs -> bs |> Seq.map (fun b -> { b with Representative = x && b.Representative})))
+    |> Seq.map (selectRepresentatives >> demoteSingletons)
     |> Seq.collect id
     |> Seq.mapi (fun i b -> b |> Seq.map (fun bx -> {bx with Uid = i + BranchNumber} ))
     |> Seq.collect id

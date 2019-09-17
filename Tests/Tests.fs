@@ -1329,15 +1329,18 @@ type AltCoverTests() =
         let deeper =
           Visitor.Deeper <| Node.Method(method, Inspect.Instrument, None)
           |> Seq.toList
+
+        let reported =
+          deeper
           |> List.filter (fun n -> match n with
                                    | BranchPoint b -> b.Representative
                                    | _ -> true)
-        Assert.That(deeper.Length, Is.EqualTo 16)
-        deeper
+        Assert.That(reported.Length, Is.EqualTo 16)
+        reported
         |> List.skip 12
         |> List.iteri (fun i node ->
              match node with
-             | (BranchPoint b) -> Assert.That(b.Uid, Is.EqualTo i, "branch point number")
+             | (BranchPoint b) -> Assert.That(b.Uid, Is.EqualTo (1 + i), "branch point number")
              | _ -> Assert.Fail("branch point expected"))
         deeper
         |> List.take 12
@@ -1372,15 +1375,18 @@ type AltCoverTests() =
         let deeper =
           Visitor.Deeper <| Node.Method(method, Inspect.Instrument, None)
           |> Seq.toList
+
+        let reported =
+          deeper
           |> List.filter (fun n -> match n with
                                    | BranchPoint b -> b.Representative
                                    | _ -> true)
-        Assert.That(deeper.Length, Is.EqualTo 14)
-        deeper
+        Assert.That(reported.Length, Is.EqualTo 14)
+        reported
         |> List.skip 9
         |> List.iteri (fun i node ->
              match node with
-             | (BranchPoint b) -> Assert.That(b.Uid, Is.EqualTo i, "branch point number")
+             | (BranchPoint b) -> Assert.That(b.Uid, Is.EqualTo (i + 1), "branch point number")
              | _ -> Assert.Fail("branch point expected"))
         deeper
         |> List.take 9
