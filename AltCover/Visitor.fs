@@ -63,7 +63,8 @@ type internal GoTo =
     Offset : int
     Target : Instruction list
     Included : bool
-    Representative : bool}
+    Representative : bool
+    Key : int }
 
 [<ExcludeFromCodeCoverage; NoComparison>]
 type internal Node =
@@ -747,6 +748,7 @@ module internal Visitor =
     |> Seq.collect id
     |> Seq.mapi (fun i b -> b |> Seq.map (fun bx -> {bx with Uid = i + BranchNumber} ))
     |> Seq.collect id
+    |> Seq.sortBy (fun b -> b.Key)  // important! instrumentation assumes we work in the order we started with
     |> Seq.map BranchPoint
 
   let private ExtractBranchPoints dbg methodFullName rawInstructions interesting =
@@ -788,7 +790,8 @@ module internal Visitor =
                             Offset = from.Offset
                             Target = target
                             Included = interesting
-                            Representative = false}))
+                            Representative = false
+                            Key = i }))
     |> Seq.choose id
     |> CoalesceBranchPoints dbg
     |> Seq.toList
