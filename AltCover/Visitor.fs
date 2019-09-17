@@ -62,7 +62,8 @@ type internal GoTo =
     Path : int
     Offset : int
     Target : Instruction list
-    Included : bool }
+    Included : bool
+    Representative : bool}
 
 [<ExcludeFromCodeCoverage; NoComparison>]
 type internal Node =
@@ -780,7 +781,8 @@ module internal Visitor =
                             Path = -1
                             Offset = from.Offset
                             Target = target
-                            Included = interesting }))
+                            Included = interesting
+                            Representative = false}))
     |> Seq.choose id
     |> CoalesceBranchPoints dbg
     |> Seq.toList
