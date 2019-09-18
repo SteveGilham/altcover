@@ -50,6 +50,7 @@ module internal Main =
     Visitor.local <- false
     Visitor.coverstyle <- CoverStyle.All
     Visitor.sourcelink := false
+    Visitor.coalesceBranches <- false
 
   let ValidateCallContext predicate x =
     if not (String.IsNullOrWhiteSpace x) then
@@ -274,6 +275,15 @@ module internal Main =
                (CultureInfo.CurrentCulture,
                 CommandLine.resources.GetString "MultiplesNotAllowed", "--defer")
              :: CommandLine.error))
+      ("v|visibleBranches",
+       (fun _ ->
+       if Visitor.coalesceBranches then
+         CommandLine.error <-
+           String.Format
+             (CultureInfo.CurrentCulture,
+              CommandLine.resources.GetString "MultiplesNotAllowed", "--visibleBranches")
+           :: CommandLine.error
+       else Visitor.coalesceBranches <- true))
       ("?|help|h", (fun x -> CommandLine.help <- not (isNull x)))
 
       ("<>",

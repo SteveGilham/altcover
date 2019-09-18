@@ -85,7 +85,7 @@ type AltCoverTests3() =
     [<Test>]
     member self.ShouldHaveExpectedOptions() =
       let options = Main.DeclareOptions()
-      Assert.That(options.Count, Is.EqualTo 27)
+      Assert.That(options.Count, Is.EqualTo 28)
       Assert.That
         (options
          |> Seq.filter (fun x -> x.Prototype <> "<>")
@@ -1054,6 +1054,37 @@ type AltCoverTests3() =
           Assert.That(x, Is.EqualTo "UsageError")
       finally
         Visitor.local <- false
+
+    [<Test>]
+    member self.ParsingVisibleGivesVisible() =
+      try
+        Visitor.coalesceBranches <- false
+        let options = Main.DeclareOptions()
+        let input = [| "--visibleBranches" |]
+        let parse = CommandLine.ParseCommandLine input options
+        match parse with
+        | Left _ -> Assert.Fail()
+        | Right(x, y) ->
+          Assert.That(y, Is.SameAs options)
+          Assert.That(x, Is.Empty)
+        Assert.That(Visitor.coalesceBranches, Is.True)
+      finally
+        Visitor.coalesceBranches <- false
+
+    [<Test>]
+    member self.ParsingMultipleVisibleGivesFailure() =
+      try
+        Visitor.coalesceBranches <- false
+        let options = Main.DeclareOptions()
+        let input = [| "-v"; "--visibleBranches" |]
+        let parse = CommandLine.ParseCommandLine input options
+        match parse with
+        | Right _ -> Assert.Fail()
+        | Left(x, y) ->
+          Assert.That(y, Is.SameAs options)
+          Assert.That(x, Is.EqualTo "UsageError")
+      finally
+        Visitor.coalesceBranches <- false
 
     [<Test>]
     member self.ParsingTimeGivesTime() =
@@ -2116,6 +2147,9 @@ type AltCoverTests3() =
                                paths if present.
       --defer[=VALUE]        Optional, defers writing runner-mode coverage data
                                until process exit.
+  -v, --visibleBranches      Hide complex internal IL branching implementation
+                               details in switch/match constructs, and just
+                               show what the source level logic implies.
   -?, --help, -h             Prints out the options.
 or
   ipmo                       Prints out the PowerShell script to import the
@@ -2221,6 +2255,9 @@ or
                                paths if present.
       --defer[=VALUE]        Optional, defers writing runner-mode coverage data
                                until process exit.
+  -v, --visibleBranches      Hide complex internal IL branching implementation
+                               details in switch/match constructs, and just
+                               show what the source level logic implies.
   -?, --help, -h             Prints out the options.
 or
   Runner

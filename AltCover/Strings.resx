@@ -155,7 +155,7 @@ See also '--inplace'</value>
     <value>Creating folder {0}</value>
   </data>
   <data name="HelpText" xml:space="preserve">
-    <value>AltCover [/i[nputDirectory]=VALUE] [/o[utputDirectory]=VALUE] [/y|symbolDirectory=VALUE] [/d[ependency]=VALUE] [/sn|strongNameKey=VALUE] [/k[ey]=VALUE] [/x[mlReport]=VALUE] [/f[ileFilter]=VALUE] [/p[athFilter]=VALUE] [/s|assemblyFilter=VALUE] [/t|typeFilter=VALUE] [/m|methodFilter=VALUE] [/a|attributeFilter=VALUE] [/l[ocalSource]] [/c[allContext]=VALUE] [--opencover] [--inplace] [--save] [--single] [--linecover|branchcover] [--dropReturnCode] [--sourceLink] [--defer[:[+|-]]] [/?|h[elp]] [-- ] [...]
+    <value>AltCover [/i[nputDirectory]=VALUE] [/o[utputDirectory]=VALUE] [/y|symbolDirectory=VALUE] [/d[ependency]=VALUE] [/sn|strongNameKey=VALUE] [/k[ey]=VALUE] [/x[mlReport]=VALUE] [/f[ileFilter]=VALUE] [/p[athFilter]=VALUE] [/s|assemblyFilter=VALUE] [/t|typeFilter=VALUE] [/m|methodFilter=VALUE] [/a|attributeFilter=VALUE] [/l[ocalSource]] [/c[allContext]=VALUE] [--opencover] [--inplace] [--save] [--single] [--linecover|branchcover] [--dropReturnCode] [--sourceLink] [--defer[:[+|-]]] [/v[isibleBranches]] [/?|h[elp]] [-- ] [...]
 or
 AltCover Runner [/r[ecordingDirectory]=VALUE] [/w[orkingDirectory]=VALUE] [/x|executable=VALUE] [--collect] [/l[covReport]=VALUE] [/t[hreshold]=VALUE] [/c[obertura]=VALUE] [/o[utputFile]=VALUE] [--dropReturnCode] [--teamcity[:[+][R|B]]] [/?|h[elp]] [-- ] [...]
 or
@@ -393,5 +393,8 @@ If this problem was detected in the pre-test instrumentation stage of `dotnet te
   </data>
   <data name="l|localSource" xml:space="preserve">
     <value>Don't instrument code for which the source file is not present.</value>
+  </data>
+  <data name="v|visibleBranches" xml:space="preserve">
+    <value>Hide complex internal IL branching implementation details in switch/match constructs, and just show what the source level logic implies.</value>
   </data>
 </root>

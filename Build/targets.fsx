@@ -63,7 +63,7 @@ let dotnetOptions (o : DotNet.Options) =
   | Some f -> { o with DotNetCliPath = f }
   | None -> o
 
-let fxcop = 
+let fxcop =
   if Environment.isWindows then
     BlackFox.VsWhere.VsInstances.getAll()
     |> Seq.filter (fun i -> System.Version(i.InstallationVersion).Major = 16)
@@ -538,7 +538,7 @@ _Target "JustUnitTest" (fun _ ->
     !!(@"_Binaries/*Tests/Debug+AnyCPU/*Tests.dll")
     |> Seq.filter
          (fun f ->
-         Path.GetFileName(f) <> "AltCover.XTests.dll" && 
+         Path.GetFileName(f) <> "AltCover.XTests.dll" &&
          Path.GetFileName(f) <> "AltCover.Recorder.Tests.dll")
     |> NUnit3.run (fun p ->
          { p with ToolPath = findToolInSubPath "nunit3-console.exe" "."
@@ -631,7 +631,7 @@ _Target "UnitTestWithOpenCover" (fun _ ->
     !!(@"_Binaries/*Tests/Debug+AnyCPU/*Tests.dll")
     |> Seq.filter
          (fun f ->
-         Path.GetFileName(f) <> "AltCover.XTests.dll" && 
+         Path.GetFileName(f) <> "AltCover.XTests.dll" &&
          Path.GetFileName(f) <> "AltCover.Recorder.Tests.dll")
   let Recorder4Files =
     !!(@"_Binaries/*Tests/Debug+AnyCPU/*Recorder.Tests.dll")
@@ -1263,6 +1263,7 @@ _Target "UnitTestWithAltCoverCoreRunner"
       AltCover.PrepareParams.Primitive
         ({ Primitive.PrepareParams.Create() with XmlReport = altReport
                                                  OutputDirectories = [| output |]
+                                                 VisibleBranches = true
                                                  Single = true
                                                  InPlace = false
                                                  Save = false }
@@ -1305,6 +1306,7 @@ _Target "UnitTestWithAltCoverCoreRunner"
       AltCover.PrepareParams.Primitive
         ({ Primitive.PrepareParams.Create() with XmlReport = RecorderReport
                                                  OutputDirectories = [| RecorderOut |]
+                                                 VisibleBranches = true
                                                  Single = true
                                                  InPlace = false
                                                  Save = false }
@@ -1347,6 +1349,7 @@ _Target "UnitTestWithAltCoverCoreRunner"
       AltCover.PrepareParams.Primitive
         ({ Primitive.PrepareParams.Create() with XmlReport = xReport
                                                  OutputDirectories = [| xOut |]
+                                                 VisibleBranches = true
                                                  Single = true
                                                  InPlace = false
                                                  Save = false }
@@ -2424,7 +2427,8 @@ _Target "Pester" (fun _ ->
                                                  AssemblyFilter = [ "^AltCover$"; "Recorder"; "DataCollector" ]
                                                  InPlace = true
                                                  OpenCover = true
-                                                 Save = true })
+                                                 Save = true
+                                                 VisibleBranches = true})
     |> AltCover.Prepare
   { AltCover.Params.Create prep with ToolPath = retro
                                      ToolType = AltCover.ToolType.Framework
@@ -2826,7 +2830,7 @@ _Target "ApiUse" (fun _ ->
     let fakeroot = Path.GetFullPath "./_Packaging.fake"
     // manage the dependencies
     let lines = "./Build/paket.lock"
-                |> File.ReadAllLines 
+                |> File.ReadAllLines
                 |> Array.map (fun line -> String.Format(line, !Version, apiroot, fakeroot))
     File.WriteAllLines ("./_ApiUse/paket.lock", lines)
 

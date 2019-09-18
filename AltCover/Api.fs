@@ -256,6 +256,11 @@ type PrepareParams =
     | Primitive p -> p.LocalSource
     | TypeSafe t -> t.LocalSource.AsBool()
 
+  member self.VisibleBranches =
+    match self with
+    | Primitive p -> p.VisibleBranches
+    | TypeSafe t -> t.VisibleBranches.AsBool()
+
 #if RUNNER
   static member private validateArray a f key =
     PrepareParams.validateArraySimple a (f key)
@@ -417,6 +422,7 @@ module internal Args =
       Flag "--sourcelink" args.SourceLink
       Flag "--defer" args.Defer
       Flag "--localSource" args.LocalSource
+      Flag "--visibleBranches" args.VisibleBranches
       trailing ]
     |> List.concat
 
