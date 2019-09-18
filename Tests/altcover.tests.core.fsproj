@@ -51,6 +51,8 @@
     <EmbeddedResource Include="TailCallSample.dl_" />
     <EmbeddedResource Include="SwitchSample.dl_" />
     <EmbeddedResource Include="SwitchSample.pd_" />
+    <EmbeddedResource Include="issue37.dl_" />
+    <EmbeddedResource Include="issue37.pd_" />
   </ItemGroup>
 
   <ItemGroup>
@@ -77,6 +79,8 @@
     <ProjectReference Include="..\AltCover.Recorder\altcover.recorder.core.fsproj" />
     <ProjectReference Include="..\AltCover\altcover.core.fsproj" />
     <ProjectReference Include="..\Sample11\sample11.core.csproj" />
+    <ProjectReference Include="..\Sample16\sample16.core.csproj" />
+    <ProjectReference Include="..\Sample17\sample17.core.fsproj" />
     <ProjectReference Include="..\Sample1\sample1.core.csproj" />
     <ProjectReference Include="..\Sample2\sample2.core.fsproj" />
     <ProjectReference Include="..\Sample3\sample3.core.csproj" />

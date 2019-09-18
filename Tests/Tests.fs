@@ -832,6 +832,108 @@ type AltCoverTests() =
       Assert.That(Visitor.fakeSequencePoint FakeAfterReturn null ret, Is.Not.Null)
 
     [<Test>]
+    member self.ReleaseBuildTernaryTestInContext() =
+      let res =
+        Assembly.GetExecutingAssembly().GetManifestResourceNames()
+        |> Seq.find (fun n -> n.EndsWith("issue37.dl_", StringComparison.Ordinal))
+      use stream =
+        Assembly.GetExecutingAssembly().GetManifestResourceStream(res)
+
+      let res2 =
+        Assembly.GetExecutingAssembly().GetManifestResourceNames()
+        |> Seq.find (fun n -> n.EndsWith("issue37.pd_", StringComparison.Ordinal))
+      use stream2 =
+        Assembly.GetExecutingAssembly().GetManifestResourceStream(res2)
+
+      let def = Mono.Cecil.AssemblyDefinition.ReadAssembly stream
+      let r = Mono.Cecil.Pdb.PdbReaderProvider()
+      use rr = r.GetSymbolReader(def.MainModule, stream2)
+      def.MainModule.ReadSymbols(rr)
+
+      let method =
+        (def.MainModule.GetAllTypes()
+         |> Seq.filter (fun t -> t.Name = "Tests")
+         |> Seq.head).Methods
+        |> Seq.filter (fun m -> m.Name = "Ternary")
+        |> Seq.head
+      Visitor.Visit [] [] // cheat reset
+      try
+        Visitor.reportFormat <- Some Base.ReportFormat.OpenCover
+        Visitor.NameFilters.Clear()
+        let deeper =
+          Visitor.Deeper <| Node.Method(method, Inspect.Instrument, None) |> Seq.toList
+        Assert.That(deeper.Length, Is.EqualTo 3)
+        deeper
+        |> List.skip 1
+        |> List.iteri (fun i node ->
+             match node with
+             | (BranchPoint b) -> Assert.That(b.Uid, Is.EqualTo i, "branch point number")
+             | _ -> Assert.Fail("branch point expected"))
+        deeper
+        |> List.take 1
+        |> List.iteri (fun i node ->
+             match node with
+             | (MethodPoint(_, _, n, b)) ->
+               Assert.That(n, Is.EqualTo i, "point number")
+               Assert.That(b, Is.True, "flag " + i.ToString())
+             | _ -> Assert.Fail("sequence point expected"))
+      finally
+        Visitor.NameFilters.Clear()
+        Visitor.reportFormat <- None
+
+    [<Test>]
+    member self.ReleaseBuildTernaryTestInContextWithCoalescence() =
+      let res =
+        Assembly.GetExecutingAssembly().GetManifestResourceNames()
+        |> Seq.find (fun n -> n.EndsWith("issue37.dl_", StringComparison.Ordinal))
+      use stream =
+        Assembly.GetExecutingAssembly().GetManifestResourceStream(res)
+
+      let res2 =
+        Assembly.GetExecutingAssembly().GetManifestResourceNames()
+        |> Seq.find (fun n -> n.EndsWith("issue37.pd_", StringComparison.Ordinal))
+      use stream2 =
+        Assembly.GetExecutingAssembly().GetManifestResourceStream(res2)
+
+      let def = Mono.Cecil.AssemblyDefinition.ReadAssembly stream
+      let r = Mono.Cecil.Pdb.PdbReaderProvider()
+      use rr = r.GetSymbolReader(def.MainModule, stream2)
+      def.MainModule.ReadSymbols(rr)
+
+      let method =
+        (def.MainModule.GetAllTypes()
+         |> Seq.filter (fun t -> t.Name = "Tests")
+         |> Seq.head).Methods
+        |> Seq.filter (fun m -> m.Name = "Ternary")
+        |> Seq.head
+      Visitor.Visit [] [] // cheat reset
+      try
+        Visitor.coalesceBranches <- true
+        Visitor.reportFormat <- Some Base.ReportFormat.OpenCover
+        Visitor.NameFilters.Clear()
+        let deeper =
+          Visitor.Deeper <| Node.Method(method, Inspect.Instrument, None) |> Seq.toList
+        Assert.That(deeper.Length, Is.EqualTo 3)
+        deeper
+        |> List.skip 1
+        |> List.iteri (fun i node ->
+             match node with
+             | (BranchPoint b) -> Assert.That(b.Uid, Is.EqualTo i, "branch point number")
+             | _ -> Assert.Fail("branch point expected"))
+        deeper
+        |> List.take 1
+        |> List.iteri (fun i node ->
+             match node with
+             | (MethodPoint(_, _, n, b)) ->
+               Assert.That(n, Is.EqualTo i, "point number")
+               Assert.That(b, Is.True, "flag " + i.ToString())
+             | _ -> Assert.Fail("sequence point expected"))
+      finally
+        Visitor.coalesceBranches <- false
+        Visitor.NameFilters.Clear()
+        Visitor.reportFormat <- None
+
+    [<Test>]
     member self.CSharpNestedMethods() =
       let sample3 =
         Path.Combine
@@ -1272,6 +1374,102 @@ type AltCoverTests() =
                Assert.That(b, Is.False, "flag")
              | _ -> Assert.Fail())
       finally
+        Visitor.NameFilters.Clear()
+        Visitor.reportFormat <- None
+
+    [<Test>]
+    member self.BranchPointsAreComputedForSwitch() =
+      let where = Assembly.GetExecutingAssembly().Location
+      let path =
+        Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), sample1).
+         Replace("Sample1", "Sample16").Replace(".exe", ".dll")
+      let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+      ProgramDatabase.ReadSymbols def
+      let method =
+        (def.MainModule.GetAllTypes()
+         |> Seq.filter (fun t -> t.Name = "Foo")
+         |> Seq.head).Methods
+        |> Seq.filter (fun m -> m.Name = "Bar")
+        |> Seq.head
+      Visitor.Visit [] [] // cheat reset
+      try
+        Visitor.coalesceBranches <- true
+        Visitor.reportFormat <- Some Base.ReportFormat.OpenCover
+        Visitor.NameFilters.Clear()
+        let deeper =
+          Visitor.Deeper <| Node.Method(method, Inspect.Instrument, None)
+          |> Seq.toList
+
+        let reported =
+          deeper
+          |> List.filter (fun n -> match n with
+                                   | BranchPoint b -> b.Representative
+                                   | _ -> true)
+        Assert.That(reported.Length, Is.EqualTo 16)
+        reported
+        |> List.skip 12
+        |> List.iteri (fun i node ->
+             match node with
+             | (BranchPoint b) -> Assert.That(b.Uid, Is.EqualTo (1 + i), "branch point number")
+             | _ -> Assert.Fail("branch point expected"))
+        deeper
+        |> List.take 12
+        |> List.iteri (fun i node ->
+             match node with
+             | (MethodPoint(_, _, n, b)) ->
+               Assert.That(n, Is.EqualTo i, "point number")
+               Assert.That(b, Is.True, "flag " + i.ToString())
+             | _ -> Assert.Fail("sequence point expected"))
+      finally
+        Visitor.coalesceBranches <- false
+        Visitor.NameFilters.Clear()
+        Visitor.reportFormat <- None
+
+    [<Test>]
+    member self.BranchPointsAreComputedForMatch() =
+      let where = Assembly.GetExecutingAssembly().Location
+      let path =
+        Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), sample1).
+         Replace("Sample1", "Sample17").Replace(".exe", ".dll")
+      let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+      ProgramDatabase.ReadSymbols def
+      let method =
+        (def.MainModule.GetAllTypes()
+         |> Seq.filter (fun t -> t.Name = "Carrier")
+         |> Seq.head).Methods
+        |> Seq.filter (fun m -> m.Name = "Function")
+        |> Seq.head
+      Visitor.Visit [] [] // cheat reset
+      try
+        Visitor.reportFormat <- Some Base.ReportFormat.OpenCover
+        Visitor.NameFilters.Clear()
+        Visitor.coalesceBranches <- true
+        let deeper =
+          Visitor.Deeper <| Node.Method(method, Inspect.Instrument, None)
+          |> Seq.toList
+
+        let reported =
+          deeper
+          |> List.filter (fun n -> match n with
+                                   | BranchPoint b -> b.Representative
+                                   | _ -> true)
+        Assert.That(reported.Length, Is.EqualTo 14)
+        reported
+        |> List.skip 9
+        |> List.iteri (fun i node ->
+             match node with
+             | (BranchPoint b) -> Assert.That(b.Uid, Is.EqualTo (i + 1), "branch point number")
+             | _ -> Assert.Fail("branch point expected"))
+        deeper
+        |> List.take 9
+        |> List.iteri (fun i node ->
+             match node with
+             | (MethodPoint(_, _, n, b)) ->
+               Assert.That(n, Is.EqualTo i, "point number")
+               Assert.That(b, Is.True, "flag " + i.ToString())
+             | _ -> Assert.Fail("sequence point expected"))
+      finally
+        Visitor.coalesceBranches <- false
         Visitor.NameFilters.Clear()
         Visitor.reportFormat <- None
 
@@ -2081,7 +2279,7 @@ type AltCoverTests() =
         let branch = branches |> Seq.head
         Assert.That(branch.Target.Length, Is.EqualTo 2)
         let xbranch = XElement(XName.Get "test")
-        OpenCover.setChain xbranch branch.Target.Tail
+        OpenCover.setChain xbranch (branch.Target.Tail|> List.map (fun i -> i.Offset))
         Assert.That(xbranch.ToString(), Is.EqualTo """<test offsetchain="29" />""")
       finally
         Visitor.NameFilters.Clear()

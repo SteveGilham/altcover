@@ -113,6 +113,8 @@
     <Content Include="..\WeakNameTests\App.config">
       <Link>App.config</Link>
     </Content>
+    <EmbeddedResource Include="issue37.dl_" />
+    <EmbeddedResource Include="issue37.pd_" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Sample11\Sample11.csproj">
@@ -123,6 +125,16 @@
     <ProjectReference Include="..\Sample12\Sample12.csproj">
       <Name>Sample12</Name>
       <Project>{120c83ab-ba54-4c36-9641-1d30defe9116}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\Sample16\Sample16.csproj">
+      <Name>Sample16</Name>
+      <Project>{2db4978c-9685-4e64-b7ae-9e7b860c7f5c}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\Sample17\Sample17.fsproj">
+      <Name>Sample17</Name>
+      <Project>{88a4d1e6-147d-4f1f-8c36-2143f16a8340}</Project>
       <Private>True</Private>
     </ProjectReference>
     <ProjectReference Include="..\Sample5\Sample5.csproj">

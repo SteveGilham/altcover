@@ -63,7 +63,7 @@ let dotnetOptions (o : DotNet.Options) =
   | Some f -> { o with DotNetCliPath = f }
   | None -> o
 
-let fxcop = 
+let fxcop =
   if Environment.isWindows then
     BlackFox.VsWhere.VsInstances.getAll()
     |> Seq.filter (fun i -> System.Version(i.InstallationVersion).Major = 16)
@@ -141,6 +141,7 @@ let FailTrue = DotNet.CLIArgs.FailFast true
 
 let GreenSummary = DotNet.CLIArgs.ShowSummary "Green"
 let ForceTrue = DotNet.CLIArgs.Many [ ForceTrueOnly; GreenSummary ]
+let ForceTrueFast = DotNet.CLIArgs.Many [ FailTrue; ForceTrueOnly; GreenSummary ]
 
 let _Target s f =
   Target.description s
@@ -537,7 +538,7 @@ _Target "JustUnitTest" (fun _ ->
     !!(@"_Binaries/*Tests/Debug+AnyCPU/*Tests.dll")
     |> Seq.filter
          (fun f ->
-         Path.GetFileName(f) <> "AltCover.XTests.dll" && 
+         Path.GetFileName(f) <> "AltCover.XTests.dll" &&
          Path.GetFileName(f) <> "AltCover.Recorder.Tests.dll")
     |> NUnit3.run (fun p ->
          { p with ToolPath = findToolInSubPath "nunit3-console.exe" "."
@@ -630,7 +631,7 @@ _Target "UnitTestWithOpenCover" (fun _ ->
     !!(@"_Binaries/*Tests/Debug+AnyCPU/*Tests.dll")
     |> Seq.filter
          (fun f ->
-         Path.GetFileName(f) <> "AltCover.XTests.dll" && 
+         Path.GetFileName(f) <> "AltCover.XTests.dll" &&
          Path.GetFileName(f) <> "AltCover.Recorder.Tests.dll")
   let Recorder4Files =
     !!(@"_Binaries/*Tests/Debug+AnyCPU/*Recorder.Tests.dll")
@@ -1262,6 +1263,7 @@ _Target "UnitTestWithAltCoverCoreRunner"
       AltCover.PrepareParams.Primitive
         ({ Primitive.PrepareParams.Create() with XmlReport = altReport
                                                  OutputDirectories = [| output |]
+                                                 VisibleBranches = true
                                                  Single = true
                                                  InPlace = false
                                                  Save = false }
@@ -1304,6 +1306,7 @@ _Target "UnitTestWithAltCoverCoreRunner"
       AltCover.PrepareParams.Primitive
         ({ Primitive.PrepareParams.Create() with XmlReport = RecorderReport
                                                  OutputDirectories = [| RecorderOut |]
+                                                 VisibleBranches = true
                                                  Single = true
                                                  InPlace = false
                                                  Save = false }
@@ -1346,6 +1349,7 @@ _Target "UnitTestWithAltCoverCoreRunner"
       AltCover.PrepareParams.Primitive
         ({ Primitive.PrepareParams.Create() with XmlReport = xReport
                                                  OutputDirectories = [| xOut |]
+                                                 VisibleBranches = true
                                                  Single = true
                                                  InPlace = false
                                                  Save = false }
@@ -2423,7 +2427,8 @@ _Target "Pester" (fun _ ->
                                                  AssemblyFilter = [ "^AltCover$"; "Recorder"; "DataCollector" ]
                                                  InPlace = true
                                                  OpenCover = true
-                                                 Save = true })
+                                                 Save = true
+                                                 VisibleBranches = true})
     |> AltCover.Prepare
   { AltCover.Params.Create prep with ToolPath = retro
                                      ToolType = AltCover.ToolType.Framework
@@ -2825,7 +2830,7 @@ _Target "ApiUse" (fun _ ->
     let fakeroot = Path.GetFullPath "./_Packaging.fake"
     // manage the dependencies
     let lines = "./Build/paket.lock"
-                |> File.ReadAllLines 
+                |> File.ReadAllLines
                 |> Array.map (fun line -> String.Format(line, !Version, apiroot, fakeroot))
     File.WriteAllLines ("./_ApiUse/paket.lock", lines)
 
@@ -3001,7 +3006,6 @@ _Target "DotnetTestIntegration" (fun _ ->
     Shell.copy "./_DotnetTest" (!!"./Sample4/*.fs")
 
     let p0 = Primitive.PrepareParams.Create()
-    let pp0 = AltCover.PrepareParams.Primitive p0
     let c0 = Primitive.CollectParams.Create()
     let p1 = { p0 with CallContext = [ "[Fact]"; "0" ]
                        AssemblyFilter = [| "xunit" |] }
@@ -3179,11 +3183,13 @@ _Target "DotnetTestIntegration" (fun _ ->
            XAttribute(XName.Get "Version", !Version))
       pack.AddBeforeSelf inject
       proj.Save "./RegressionTesting/issue29/issue29.csproj"
+      let p29 = { p0 with AssemblyFilter = [ "NUnit" ] }
+      let pp29 = AltCover.PrepareParams.Primitive p29
 
       DotNet.test
         (fun to' ->
         (to'.WithCommon(withWorkingDirectoryVM "RegressionTesting/issue29").WithParameters
-           pp0 cc0 ForceTrue) |> withCLIArgs) ""
+           pp29 cc0 ForceTrueFast) |> withCLIArgs) ""
 
     let proj = XDocument.Load "./RegressionTesting/issue37/issue37.xml"
     let pack = proj.Descendants(XName.Get("PackageReference")) |> Seq.head
@@ -3342,6 +3348,75 @@ _Target "Issue67" (fun _ ->
                  |> Seq.length
 
     Assert.That (passed, Is.EqualTo 2)
+  finally
+    let folder = (nugetCache @@ "altcover") @@ !Version
+    Shell.mkdir folder
+    Shell.deleteDir folder)
+
+_Target "Issue72" (fun _ ->
+  try
+    Directory.ensure "./Sample16/Test/_Issue72"
+    Shell.cleanDir ("./Sample16/Test/_Issue72")
+
+    let config = XDocument.Load "./Build/NuGet.config.dotnettest"
+    let repo = config.Descendants(XName.Get("add")) |> Seq.head
+    repo.SetAttributeValue(XName.Get "value", Path.getFullName "./_Packaging")
+    config.Save "./Sample16/Test/_Issue72/NuGet.config"
+
+    Shell.copy "./Sample16/Test/_Issue72" (!!"./Sample16/Test/Test/*.cs")
+
+    let csproj = XDocument.Load "./Sample16/Test/Test/Test.csproj"
+
+    let pack = csproj.Descendants(XName.Get("PackageReference")) |> Seq.head
+    let inject =
+      XElement
+        (XName.Get "PackageReference", XAttribute(XName.Get "Include", "altcover"),
+         XAttribute(XName.Get "Version", !Version))
+    pack.AddBeforeSelf inject
+    csproj.Save "./Sample16/Test/_Issue72/Test.csproj"
+
+    let p0 = { Primitive.PrepareParams.Create() with LocalSource = true
+                                                     VisibleBranches = false
+                                                     XmlReport = "./original.xml" }
+    let pp0 = AltCover.PrepareParams.Primitive p0
+    let c0 = Primitive.CollectParams.Create()
+    let cc0 = AltCover.CollectParams.Primitive c0
+    DotNet.test (fun p ->
+      (({ p.WithCommon(withWorkingDirectoryVM "./Sample16/Test/_Issue72") with Configuration = DotNet.BuildConfiguration.Debug
+                                                                               NoBuild = false }).WithParameters pp0 cc0 ForceTrue)
+        .WithImportModule().WithGetVersion()
+      |> withCLIArgs) ""
+
+    do use coverageFile =
+         new FileStream("./Sample16/Test/_Issue72/original.xml", FileMode.Open, FileAccess.Read, FileShare.None, 4096,
+                        FileOptions.SequentialScan)
+       let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
+       Assert.That
+         (coverageDocument.Descendants(XName.Get("BranchPoint")) 
+         |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value),
+          Is.EquivalentTo ["4"; "1"; "3"; "1"; "2"; "1"; "1"; "1" ])
+
+    let p1 = { Primitive.PrepareParams.Create() with LocalSource = true
+                                                     VisibleBranches = true
+                                                     XmlReport = "./combined.xml" }
+    let pp1 = AltCover.PrepareParams.Primitive p1
+    let c0 = Primitive.CollectParams.Create()
+    let cc0 = AltCover.CollectParams.Primitive c0
+    DotNet.test (fun p ->
+      (({ p.WithCommon(withWorkingDirectoryVM "./Sample16/Test/_Issue72") with Configuration = DotNet.BuildConfiguration.Debug
+                                                                               NoBuild = false }).WithParameters pp1 cc0 ForceTrue)
+        .WithImportModule().WithGetVersion()
+      |> withCLIArgs) ""
+
+    do use coverageFile =
+         new FileStream("./Sample16/Test/_Issue72/combined.xml", FileMode.Open, FileAccess.Read, FileShare.None, 4096,
+                        FileOptions.SequentialScan)
+       let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
+       Assert.That
+         (coverageDocument.Descendants(XName.Get("BranchPoint")) 
+         |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value),
+          Is.EquivalentTo ["2"; "1"; "1"; "1"])
+
   finally
     let folder = (nugetCache @@ "altcover") @@ !Version
     Shell.mkdir folder
@@ -3823,6 +3898,10 @@ Target.activateFinal "ResetConsoleColours"
 
 "Unpack"
 ==> "Issue67"
+==> "Deployment"
+
+"Unpack"
+==> "Issue72"
 ==> "Deployment"
 
 "Unpack"

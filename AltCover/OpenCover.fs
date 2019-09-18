@@ -256,25 +256,26 @@ module internal OpenCover =
       | _ -> s
 
     let VisitGoTo s branch =
-      let fileset, ref = RecordFile s branch.Document
-      let fileid = fileset.Item branch.Document
+      let doc = branch.SequencePoint.Document.Url
+      let fileset, ref = RecordFile s doc
+      let fileid = fileset.Item doc
       (XElement
          (X "BranchPoint",
           XAttribute(X "vc", 0),
           XAttribute(X "uspid", branch.Uid),
           XAttribute(X "ordinal", 0),
           XAttribute(X "offset", branch.Offset),
-          XAttribute(X "sl", branch.StartLine),
+          XAttribute(X "sl", branch.SequencePoint.StartLine),
           XAttribute(X "path", branch.Path),
           XAttribute(X "offsetchain", 0),
-          XAttribute(X "offsetend", branch.Target.Head),
+          XAttribute(X "offsetend", branch.Target.Head.Offset),
           XAttribute(X "fileid", fileid)), fileset, ref)
 
     let VisitBranchPoint s branch =
-      if s.Excluded = Nothing && branch.Included then
+      if s.Excluded = Nothing && branch.Included && branch.Representative then
         let branches = s.Stack.Head.Parent.Descendants(X "BranchPoints") |> Seq.head
         let (xbranch, fileset, ref) = VisitGoTo s branch
-        setChain xbranch branch.Target.Tail
+        setChain xbranch (branch.Target.Tail |> List.map (fun i -> i.Offset))
         if branches.IsEmpty then branches.Add(xbranch)
         else branches.LastNode.AddAfterSelf(xbranch)
         { s with Files = fileset

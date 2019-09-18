@@ -56,14 +56,15 @@ type internal SeqPnt =
 [<ExcludeFromCodeCoverage; NoComparison>]
 type internal GoTo =
   { Start : Instruction
+    SequencePoint: SequencePoint
     Indexes : int list
     Uid : int
     Path : int
-    StartLine : int
     Offset : int
-    Target : int list
-    Document : string
-    Included : bool }
+    Target : Instruction list
+    Included : bool
+    Representative : bool
+    Key : int }
 
 [<ExcludeFromCodeCoverage; NoComparison>]
 type internal Node =
@@ -217,6 +218,7 @@ module internal Visitor =
       |> FilterClass.Method ]
 
   let internal inplace = ref false
+  let mutable internal coalesceBranches = false
   let mutable internal single = false
   let mutable internal local = false
   let Sampling() =
@@ -684,7 +686,7 @@ module internal Visitor =
                || state.OpCode.FlowControl = FlowControl.Break
                || state.OpCode.FlowControl = FlowControl.Throw
                || state.OpCode.FlowControl = FlowControl.Return // includes state.Next = null
-               || isNull state.Next) then l
+               || isNull state.Next) then (if coalesceBranches && state <> l.Head then state :: l else l)
       else accumulate state.Next gendarme
     accumulate i [ i ]
 
@@ -729,11 +731,13 @@ module internal Visitor =
       let toJump = getJumpChain terminal jump
       // Eliminate the "all inside one SeqPnt" jumps
       // This covers a multitude of compiler generated branching cases
-      match includedSequencePoint dbg toNext toJump with
-      | Some _ ->
+      // TODO can we simplify
+      match (coalesceBranches, includedSequencePoint dbg toNext toJump) with
+      | (true, _)
+      | (_, Some _) ->
         [ (i, toNext, next.Offset, -1)
           (i, toJump, jump.Offset, 0) ]
-      | None -> []
+      | _ -> []
 
   // cribbed from OpenCover's CecilSymbolManager -- internals of C# yield return iterators
   let private IsMoveNext =
@@ -741,7 +745,44 @@ module internal Visitor =
       (@"\<[^\s>]+\>\w__\w(\w)?::MoveNext\(\)$",
        RegexOptions.Compiled ||| RegexOptions.ExplicitCapture)
 
+  let private CoalesceBranchPoints dbg (bps : GoTo seq) =
+    let selectRepresentatives (_, bs) =
+      let last = lastOfSequencePoint dbg (bs |> Seq.head).Start
+      let lastOffset = last.Offset
+      bs
+      |> Seq.map (fun b -> { b with Target = b.Target
+                                             |> List.takeWhile (fun i -> let o = i.Offset
+                                                                         o > lastOffset ||
+                                                                         o < b.SequencePoint.Offset ||
+                                                                         i.OpCode.FlowControl = FlowControl.Return)})
+      |> Seq.groupBy (fun b -> b.Target)
+      |> Seq.map (snd >> (fun bg -> bg
+                                    |> Seq.mapi  (fun i bx -> { bx with Representative = i=0 &&
+                                                                                         bx.Target |> Seq.isEmpty |> not})))
+      |> Seq.sortBy (fun b -> (b |> Seq.head).Offset)
+      |> Seq.mapi (fun i b -> b |> Seq.map (fun bx -> {bx with Path = i} ))
+    let demoteSingletons l = // TODO revisit
+      let x = l |> Seq.length > 1
+      l |> Seq.map (fun bs -> bs |> Seq.map (fun b -> { b with Representative = x && b.Representative}))
+    bps
+    |> Seq.groupBy (fun b -> b.SequencePoint.Offset)
+    |> Seq.map (selectRepresentatives >> demoteSingletons)
+    |> Seq.collect id
+    |> Seq.mapi (fun i b -> b |> Seq.map (fun bx -> {bx with Uid = i + BranchNumber} ))
+    |> Seq.collect id
+    |> Seq.sortBy (fun b -> b.Key)  // important! instrumentation assumes we work in the order we started with
+
   let private ExtractBranchPoints dbg methodFullName rawInstructions interesting =
+    let makeDefault i =
+      if coalesceBranches
+      then -1
+      else i
+
+    let processBranches =
+      if coalesceBranches
+      then CoalesceBranchPoints dbg
+      else id
+
     // Generated MoveNext => skip one branch
     let skip = IsMoveNext.IsMatch methodFullName |> Augment.Increment
     (Seq.map (snd >> (fun (i : Instruction) ->
@@ -764,7 +805,7 @@ module internal Visitor =
          (fun (i : Instruction) -> i.OpCode.FlowControl = FlowControl.Cond_Branch)
     |> Seq.mapi (fun n i -> (n, i)) //
     |> Seq.filter (fun (n, _) -> n >= skip)))
-    |> Seq.filter (fun l -> l.Length > 1)
+    |> Seq.filter (fun l -> coalesceBranches || l.Length > 1) // TODO revisit
     |> Seq.collect id
     |> Seq.mapi (fun i (path, (from, target, indexes)) ->
          Seq.unfold (fun (state : Cil.Instruction) ->
@@ -773,16 +814,19 @@ module internal Visitor =
            |> Option.map (fun state' -> (state', state'.Previous))) from
          |> (findSequencePoint dbg)
          |> Option.map (fun context ->
-              BranchPoint { Path = path
+                          { Start = from
+                            SequencePoint = context
                             Indexes = indexes
-                            Uid = i + BranchNumber
-                            Start = from
-                            StartLine = context.StartLine
+                            Uid = makeDefault (i + BranchNumber)
+                            Path = makeDefault path
                             Offset = from.Offset
-                            Target = target |> List.map (fun i -> i.Offset)
-                            Document = context.Document.Url
-                            Included = interesting }))
+                            Target = target
+                            Included = interesting
+                            Representative = coalesceBranches |> not
+                            Key = i}))
     |> Seq.choose id
+    |> processBranches
+    |> Seq.map BranchPoint
     |> Seq.toList
 
   let private VisitMethod (m : MethodDefinition) (included : Inspect) =

@@ -206,6 +206,7 @@ type PrepareParams =
     SourceLink : Flag
     Defer : Flag
     LocalSource : Flag
+    VisibleBranches : Flag
   }
   static member Create() =
     { InputDirectories = NoDirectories
@@ -234,4 +235,5 @@ type PrepareParams =
       SourceLink = Clear
       Defer = Clear
       LocalSource = Clear
+      VisibleBranches = Clear
     }

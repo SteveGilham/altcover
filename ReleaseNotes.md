@@ -2,9 +2,12 @@ Q. Never mind the fluff -- how do I get started?
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
-# 6.1.7xx (Fukurou series release 5)
+# 6.2.714 (Fukurou series release 5)
+* [BUGFIX] Finish wiring up `/p:AltCoverLocalSource` support
+* [BUGFIX] Fix failure when input/output directories were specified with a trailing separator character
 * [HACK] mitigate Issue #71 by simply ignoring null module identifiers.
-* Use a leading `?` as a negator for filter matches e.g. `?(a|b)` means "exclude anything that doesn't match a or match b", or `?MyApp` means exclude anything that doesn't contain `MyApp`; no valid .net regex begins with this so it's backwards compatible.  Between this and the previous release's `--localSource` option, the need to resort to cumbersome constructs involving negative lookahead regexes should be reduced.
+* [API] `-v|--visibleBranches` option (bool `VisibleBranches` default false in API, `-VisibleBranches` PowerShell flag) to simplify the reporting of `switch` or `match` cases where the compiler produces a tangle of `if`/`else` branches that give surprising results in a `ReportGenerator` output (e.g. `null` taking a different branch to a `default` case than a non-`null` value as per Issue 72)
+* Use a leading `?` as a negator for filter matches e.g. `?(a|b)` means "exclude anything that doesn't match a or match b", or `?MyApp` means exclude anything that doesn't contain `MyApp`; no valid .net regex begins with this so it's backwards compatible.  Between this and the previous release's `--localSource` (now fully supported) option, the need to resort to cumbersome constructs involving negative lookahead regexes should be reduced.
 
 # 6.1.708 (Fukurou series release 4)
 * [BUGFIX] reinstate the PowerShell Core (`pwsh`) `Invoke-AltCover` support for strongnaming.

@@ -1398,6 +1398,9 @@ type AltCoverTests() =
                                paths if present.
       --defer[=VALUE]        Optional, defers writing runner-mode coverage data
                                until process exit.
+  -v, --visibleBranches      Hide complex internal IL branching implementation
+                               details in switch/match constructs, and just
+                               show what the source level logic implies.
   -?, --help, -h             Prints out the options.
 or
   Runner
