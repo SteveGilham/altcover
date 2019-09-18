@@ -1,16 +1,16 @@
 #if NETCOREAPP2_0
-namespace Tests.Shadow.Core
+namespace Tests.Recorder.Core
 #else
 #if NET4
-namespace Tests.Shadow.Clr4
+namespace Tests.Recorder.Clr4
 #else
 #if NET2
-namespace Tests.Shadow.Clr2
+namespace Tests.Recorder.Clr2
 #else
 #if MONO
-namespace Tests.Shadow.Mono
+namespace Tests.Recorder.Mono
 #else
-namespace Tests.Shadow.Unknown
+namespace Tests.Recorder.Unknown
 #endif
 #endif
 #endif
@@ -22,7 +22,6 @@ open System.IO
 open System.IO.Compression
 open System.Reflection
 open AltCover.Recorder
-open AltCover.Shadow
 open NUnit.Framework
 open Swensen.Unquote
 
@@ -77,14 +76,13 @@ type AltCoverCoreTests() =
           let tag = formatter.ReadByte() |> int
           (id, strike,
            match enum tag with
-           | Tag.Time -> Time <| formatter.ReadInt64()
-           | Tag.Call -> Call <| formatter.ReadInt32()
-#if NET4
-           | Tag.Both -> Adapter.NewBoth (formatter.ReadInt64()) (formatter.ReadInt32())
+           | Tag.Time -> Adapter.Time <| formatter.ReadInt64()
+           | Tag.Call -> Adapter.Call <| formatter.ReadInt32()
+#if MONO
+           | Tag.Both -> Adapter.NewBoth ((formatter.ReadInt64()), (formatter.ReadInt32()))
 #else
-           | Tag.Both -> Both (formatter.ReadInt64(), formatter.ReadInt32())
+           | Tag.Both -> Adapter.NewBoth (formatter.ReadInt64()) (formatter.ReadInt32())
 #endif
-
            | Tag.Table ->
              test <@ id = String.Empty @>
              test <@ strike = 0 @>
@@ -101,26 +99,30 @@ type AltCoverCoreTests() =
                    if pts > 0 then
                      let p = formatter.ReadInt32()
                      let n = formatter.ReadInt64()
+#if MONO
+                     let pv = PointVisit.Init (n, [])
+#else
                      let pv = PointVisit.Init n []
+#endif
                      t.[m].Add(p, pv)
                      let rec tracking() =
                        let track = formatter.ReadByte() |> int
                        match enum track with
                        | Tag.Time ->
-                         pv.Tracks.Add(Time <| formatter.ReadInt64())
+                         pv.Tracks.Add(Adapter.Time <| formatter.ReadInt64())
                          tracking()
                        | Tag.Call ->
-                         pv.Tracks.Add(Call <| formatter.ReadInt32())
+                         pv.Tracks.Add(Adapter.Call <| formatter.ReadInt32())
                          tracking()
-#if NET4
                        | Tag.Both ->
                          pv.Tracks.Add
+#if MONO
+                           (Adapter.NewBoth ((formatter.ReadInt64()),
+                              (formatter.ReadInt32())))
+#else
                            (Adapter.NewBoth (formatter.ReadInt64())
                               (formatter.ReadInt32()))
-#else
-                                    | Tag.Both -> pv.Tracks.Add (Both (formatter.ReadInt64(), formatter.ReadInt32()))
 #endif
-
                          tracking()
                        | Tag.Table -> test' <@ false @> "No nested tables!!"
                        | _ -> sequencePoint (pts - 1)
@@ -128,8 +130,8 @@ type AltCoverCoreTests() =
                    else ``module``()
                  sequencePoint points
              ``module``()
-             Table t
-           | _ -> Null)
+             Adapter.Table t
+           | _ -> Adapter.Null())
           |> hits.Add
           sink()
         with :? System.IO.IOException -> ()
@@ -143,7 +145,7 @@ type AltCoverCoreTests() =
       let unique = Path.Combine(where, Guid.NewGuid().ToString())
       let tag = unique + ".acv"
 
-      let expected = [ ("name", 23, Null) ]
+      let expected = [ ("name", 23, Adapter.Null()) ]
       do use stream = File.Create tag
          ()
       try
@@ -153,7 +155,11 @@ type AltCoverCoreTests() =
           Instance.trace <- client.OnStart()
           test' <@ Instance.trace.IsConnected() @> "connection failed"
           Instance.IsRunner <- true
+#if MONO
+          Adapter.VisitImplNone ("name", 23)
+#else
           Adapter.VisitImplNone "name" 23
+#endif
         finally
           Instance.trace.Close()
           Instance.trace.Close()
@@ -176,24 +182,29 @@ type AltCoverCoreTests() =
       let t = Dictionary<string, Dictionary<int, PointVisit>>()
       t.["name"] <- Dictionary<int, PointVisit>()
       let expect23 =
-        [ Call 17
-          Call 42 ]
+        [ Adapter.Call 17
+          Adapter.Call 42 ]
 
       let expect24 =
-        [ Time 17L
-#if NET4
-          Adapter.NewBoth 42L 23
+        [ Adapter.Time 17L
+#if MONO
+          Adapter.NewBoth (42L, 23)
 #else
-          Both (42L, 23)
+          Adapter.NewBoth 42L 23
 #endif
         ]
 
+#if MONO
+      t.["name"].[23] <- PointVisit.Init (1L, expect23)
+      t.["name"].[24] <- PointVisit.Init (2L, expect24)
+#else
       t.["name"].[23] <- PointVisit.Init 1L expect23
       t.["name"].[24] <- PointVisit.Init 2L expect24
+#endif
 
       let expected =
-        [ (String.Empty, 0, Table t)
-          ("name", 23, Call 5) ]
+        [ (String.Empty, 0, Adapter.Table t)
+          ("name", 23, Adapter.Call 5) ]
       do use stream = File.Create tag
          ()
       try
@@ -204,8 +215,13 @@ type AltCoverCoreTests() =
           Instance.IsRunner <- true
 
           Adapter.VisitsClear()
+#if MONO
+          Adapter.VisitsAddTrack ("name", 23, 1L)
+          Adapter.VisitImplMethod ("name", 23, 5)
+#else
           Adapter.VisitsAddTrack "name" 23 1L
           Adapter.VisitImplMethod "name" 23 5
+#endif
         finally
           Instance.IsRunner <- false
           Instance.trace.Close()
@@ -213,6 +229,7 @@ type AltCoverCoreTests() =
         use stream =
           new DeflateStream(File.OpenRead(unique + ".0.acv"), CompressionMode.Decompress)
         let results = self.ReadResults stream
+        test <@ ("no", 0, Adapter.Null()) |> Adapter.untable |> Seq.isEmpty @>
         test' <@ Adapter.VisitsSeq() |> Seq.isEmpty @> "unexpected local write"
         test <@ results.Count = 2 @>
         test' <@ (results
@@ -220,8 +237,11 @@ type AltCoverCoreTests() =
                   |> Seq.head) = (expected
                                   |> Seq.skip 1
                                   |> Seq.head) @> "unexpected result"
-        match results |> Seq.head with
-        | (n, p, Table d) ->
+        match results |> Seq.head |> Adapter.untable |> Seq.toList with
+        | [n'; p'; d'] ->
+          let n = n' :?> String
+          let p = p' :?> int
+          let d = d' :?> Dictionary<string, Dictionary<int, PointVisit>>
           test <@ n |> Seq.isEmpty @>
           test <@ p = 0 @>
           test <@ d.Count = 1 @>
@@ -272,7 +292,7 @@ type AltCoverCoreTests() =
          ()
       try
         let client = Tracer.Create unique
-        let expected = [ ("name", client.GetHashCode(), Null) ]
+        let expected = [ ("name", client.GetHashCode(), Adapter.Null ()) ]
         try
           Adapter.VisitsClear()
           Instance.trace <- client.OnStart()
@@ -281,7 +301,11 @@ type AltCoverCoreTests() =
           Assert.That(Instance.trace.IsConnected(), "connection failed")
           let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
           let (a, b, c) = expected |> Seq.head
+#if MONO
+          Instance.trace.Push(a,b,c)
+#else
           Instance.trace.Push a b c
+#endif
           Adapter.FlushAll()
         finally
           Instance.trace.Close()

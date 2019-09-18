@@ -69,8 +69,10 @@ type AltCoverTests() =
       let v3 = Counter.AddVisit visits key 23 Null
       Assert.That(v3, Is.EqualTo 1)
       let v4 = Counter.AddVisit visits "key" 42 Null
-      Assert.That(visits.Count, Is.EqualTo 2)
       Assert.That(v4, Is.EqualTo 1)
+      let v4a = Counter.AddVisit visits null 42 Null
+      Assert.That(v4a, Is.EqualTo 0)
+      Assert.That(visits.Count, Is.EqualTo 2)
 
     [<Test>]
     member self.DistinctLineShouldBeDistinct() =
@@ -1396,6 +1398,9 @@ type AltCoverTests() =
                                paths if present.
       --defer[=VALUE]        Optional, defers writing runner-mode coverage data
                                until process exit.
+  -v, --visibleBranches      Hide complex internal IL branching implementation
+                               details in switch/match constructs, and just
+                               show what the source level logic implies.
   -?, --help, -h             Prints out the options.
 or
   Runner

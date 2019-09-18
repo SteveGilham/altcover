@@ -85,7 +85,7 @@ type AltCoverTests3() =
     [<Test>]
     member self.ShouldHaveExpectedOptions() =
       let options = Main.DeclareOptions()
-      Assert.That(options.Count, Is.EqualTo 27)
+      Assert.That(options.Count, Is.EqualTo 28)
       Assert.That
         (options
          |> Seq.filter (fun x -> x.Prototype <> "<>")
@@ -198,7 +198,8 @@ type AltCoverTests3() =
            |> Seq.map (fun x ->
                 match x with
                 | FilterClass.Attribute i -> i.ToString()
-                | _ -> "*"), Is.EquivalentTo [| "1"; "a"; "2"; "3"; "4"; "5"; "6" |])
+                | _ -> "*"), Is.EquivalentTo ([| "1"; "a"; "2"; "3"; "4"; "5"; "6" |]
+                                              |> Seq.map (sprintf "(%s, Exclude)") ))
       finally
         Visitor.NameFilters.Clear()
 
@@ -225,7 +226,8 @@ type AltCoverTests3() =
            |> Seq.map (fun x ->
                 match x with
                 | FilterClass.Method i -> i.ToString()
-                | _ -> "*"), Is.EquivalentTo [| "1"; "2"; "b"; "c"; "3"; "4"; "5"; "6" |])
+                | _ -> "*"), Is.EquivalentTo ([| "1"; "2"; "b"; "c"; "3"; "4"; "5"; "6" |]
+                                              |> Seq.map (sprintf "(%s, Exclude)") ))
       finally
         Visitor.NameFilters.Clear()
 
@@ -253,7 +255,8 @@ type AltCoverTests3() =
                 match x with
                 | FilterClass.Type i -> i.ToString()
                 | _ -> "*"),
-           Is.EquivalentTo [| "1"; "2"; "3"; "x"; "y"; "z"; "4"; "5"; "6" |])
+           Is.EquivalentTo ([| "1"; "2"; "3"; "x"; "y"; "z"; "4"; "5"; "6" |]
+                            |> Seq.map (sprintf "(%s, Exclude)") ))
       finally
         Visitor.NameFilters.Clear()
 
@@ -262,7 +265,7 @@ type AltCoverTests3() =
       try
         Visitor.NameFilters.Clear()
         let options = Main.DeclareOptions()
-        let input = [| "-s"; "1"; "--s"; "2"; "/s"; "3"; "-s=4;p;q"; "--s=5"; "/s=6" |]
+        let input = [| "-s"; "?1"; "--s"; "2"; "/s"; "3"; "-s=4;p;q"; "--s=5"; "/s=6" |]
         let parse = CommandLine.ParseCommandLine input options
         match parse with
         | Left _ -> Assert.Fail()
@@ -280,7 +283,10 @@ type AltCoverTests3() =
            |> Seq.map (fun x ->
                 match x with
                 | FilterClass.Assembly i -> i.ToString()
-                | _ -> "*"), Is.EquivalentTo [| "1"; "2"; "3"; "4"; "p"; "q"; "5"; "6" |])
+                | _ -> "*"),
+           Is.EquivalentTo ([| "1"; "2"; "3"; "4"; "p"; "q"; "5"; "6" |]
+                            |> Seq.mapi (fun i r -> let k = if i = 0 then "Include" else "Exclude"
+                                                    sprintf "(%s, %s)" r k )) )
       finally
         Visitor.NameFilters.Clear()
 
@@ -307,7 +313,8 @@ type AltCoverTests3() =
            |> Seq.map (fun x ->
                 match x with
                 | FilterClass.Assembly i -> i.ToString()
-                | _ -> "*"), Is.EquivalentTo [| "1|a"; "\\d"; "3"; "4;p"; "q"; "5"; "6" |])
+                | _ -> "*"), Is.EquivalentTo ([| "1|a"; "\\d"; "3"; "4;p"; "q"; "5"; "6" |]
+                                              |> Seq.map (sprintf "(%s, Exclude)") ))
       finally
         Visitor.NameFilters.Clear()
 
@@ -334,7 +341,8 @@ type AltCoverTests3() =
            |> Seq.map (fun x ->
                 match x with
                 | FilterClass.Module i -> i.ToString()
-                | _ -> "*"), Is.EquivalentTo [| "1"; "2"; "3"; "4"; "p"; "q"; "5"; "6" |])
+                | _ -> "*"), Is.EquivalentTo ([| "1"; "2"; "3"; "4"; "p"; "q"; "5"; "6" |]
+                                              |> Seq.map (sprintf "(%s, Exclude)") ))
       finally
         Visitor.NameFilters.Clear()
 
@@ -361,7 +369,8 @@ type AltCoverTests3() =
            |> Seq.map (fun x ->
                 match x with
                 | FilterClass.File i -> i.ToString()
-                | _ -> "*"), Is.EquivalentTo [| "1"; "2"; "3"; "4"; "5"; "m"; "n"; "6" |])
+                | _ -> "*"), Is.EquivalentTo ([| "1"; "2"; "3"; "4"; "5"; "m"; "n"; "6" |]
+                                              |> Seq.map (sprintf "(%s, Exclude)") ))
       finally
         Visitor.NameFilters.Clear()
 
@@ -388,7 +397,8 @@ type AltCoverTests3() =
            |> Seq.map (fun x ->
                 match x with
                 | FilterClass.Path i -> i.ToString()
-                | _ -> "*"), Is.EquivalentTo [| "1"; "2"; "3"; "4"; "5"; "m"; "n"; "6" |])
+                | _ -> "*"), Is.EquivalentTo ([| "1"; "2"; "3"; "4"; "5"; "m"; "n"; "6" |]
+                                              |> Seq.map (sprintf "(%s, Exclude)") ))
       finally
         Visitor.NameFilters.Clear()
 
@@ -1044,6 +1054,37 @@ type AltCoverTests3() =
           Assert.That(x, Is.EqualTo "UsageError")
       finally
         Visitor.local <- false
+
+    [<Test>]
+    member self.ParsingVisibleGivesVisible() =
+      try
+        Visitor.coalesceBranches <- false
+        let options = Main.DeclareOptions()
+        let input = [| "--visibleBranches" |]
+        let parse = CommandLine.ParseCommandLine input options
+        match parse with
+        | Left _ -> Assert.Fail()
+        | Right(x, y) ->
+          Assert.That(y, Is.SameAs options)
+          Assert.That(x, Is.Empty)
+        Assert.That(Visitor.coalesceBranches, Is.True)
+      finally
+        Visitor.coalesceBranches <- false
+
+    [<Test>]
+    member self.ParsingMultipleVisibleGivesFailure() =
+      try
+        Visitor.coalesceBranches <- false
+        let options = Main.DeclareOptions()
+        let input = [| "-v"; "--visibleBranches" |]
+        let parse = CommandLine.ParseCommandLine input options
+        match parse with
+        | Right _ -> Assert.Fail()
+        | Left(x, y) ->
+          Assert.That(y, Is.SameAs options)
+          Assert.That(x, Is.EqualTo "UsageError")
+      finally
+        Visitor.coalesceBranches <- false
 
     [<Test>]
     member self.ParsingTimeGivesTime() =
@@ -2106,6 +2147,9 @@ type AltCoverTests3() =
                                paths if present.
       --defer[=VALUE]        Optional, defers writing runner-mode coverage data
                                until process exit.
+  -v, --visibleBranches      Hide complex internal IL branching implementation
+                               details in switch/match constructs, and just
+                               show what the source level logic implies.
   -?, --help, -h             Prints out the options.
 or
   ipmo                       Prints out the PowerShell script to import the
@@ -2211,6 +2255,9 @@ or
                                paths if present.
       --defer[=VALUE]        Optional, defers writing runner-mode coverage data
                                until process exit.
+  -v, --visibleBranches      Hide complex internal IL branching implementation
+                               details in switch/match constructs, and just
+                               show what the source level logic implies.
   -?, --help, -h             Prints out the options.
 or
   Runner
@@ -2524,5 +2571,5 @@ or
                                                Assembly.GetExecutingAssembly().Location,
                                                String.Empty)).Replace("\r", String.Empty)))
 #endif
-  // Recorder.fs => Shadow.Tests
+  // Recorder.fs => Recorder.Tests
   end

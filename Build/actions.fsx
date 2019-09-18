@@ -76,8 +76,7 @@ open System.Runtime.CompilerServices
 #if DEBUG
 [<assembly: AssemblyConfiguration("Debug {0}")>]
 #if NETSTANDARD2_0
-[<assembly: InternalsVisibleTo("AltCover.Shadow.Adapter")>]
-[<assembly: InternalsVisibleTo("AltCover.Shadow.Tests")>]
+[<assembly: InternalsVisibleTo("AltCover.Recorder.Tests")>]
 #else
 #if NETCOREAPP2_0
 [<assembly: InternalsVisibleTo("AltCover.Tests")>]
@@ -88,12 +87,10 @@ open System.Runtime.CompilerServices
 [<assembly: InternalsVisibleTo("AltCover.Tests, PublicKey={2}")>]
 [<assembly: InternalsVisibleTo("AltCover.XTests, PublicKey={1}")>]
 [<assembly: InternalsVisibleTo("AltCover.XTests, PublicKey={2}")>]
-[<assembly: InternalsVisibleTo("AltCover.Shadow.Adapter, PublicKey={1}")>]
-[<assembly: InternalsVisibleTo("AltCover.Shadow.Adapter, PublicKey={2}")>]
-[<assembly: InternalsVisibleTo("AltCover.Shadow.Tests, PublicKey={1}")>]
-[<assembly: InternalsVisibleTo("AltCover.Shadow.Tests, PublicKey={2}")>]
-[<assembly: InternalsVisibleTo("AltCover.Shadow.Tests2, PublicKey={1}")>]
-[<assembly: InternalsVisibleTo("AltCover.Shadow.Tests2, PublicKey={2}")>]
+[<assembly: InternalsVisibleTo("AltCover.Recorder.Tests, PublicKey={1}")>]
+[<assembly: InternalsVisibleTo("AltCover.Recorder.Tests, PublicKey={2}")>]
+[<assembly: InternalsVisibleTo("AltCover.Recorder.Tests2, PublicKey={1}")>]
+[<assembly: InternalsVisibleTo("AltCover.Recorder.Tests2, PublicKey={2}")>]
 [<assembly: InternalsVisibleTo("AltCover.Tests.Visualizer, PublicKey={1}")>]
 [<assembly: InternalsVisibleTo("AltCover.Tests.Visualizer, PublicKey={2}")>]
 #endif

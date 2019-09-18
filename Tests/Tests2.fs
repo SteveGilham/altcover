@@ -54,13 +54,6 @@ type AltCoverTests2() =
       Assert.That(high, Is.True)
 
     [<Test>]
-    member self.ShouldBeAbleToGetTheDefaultReportFileName() =
-      let recorder = AltCover.Instrument.RecorderInstanceType()
-      Assert.That
-        (recorder.GetProperty("ReportFile").GetValue(null),
-         Is.EqualTo "Coverage.Default.xml")
-
-    [<Test>]
     member self.ShouldBeAbleToGetTheVisitReportMethod() =
       let where = Assembly.GetExecutingAssembly().Location
       let path =
@@ -73,7 +66,7 @@ type AltCoverTests2() =
            [ "System.Void AltCover.Recorder.Instance.Visit(System.String,System.Int32)";
              "System.Void AltCover.Recorder.Instance.Push(System.Int32)";
              "System.Void AltCover.Recorder.Instance.Pop()" ]
-      |> List.iter (fun (n, m) -> Assert.That(Naming.FullMethodName m, Is.EqualTo n))
+      |> List.iter (fun (n, m) -> test <@ Naming.FullMethodName m = n @>)
 
     [<Test>]
     member self.ShouldBeAbleToClearTheStrongNameKey() =
@@ -1457,7 +1450,7 @@ type AltCoverTests2() =
 
       let visit =
         def'.MainModule.GetAllTypes()
-        |> Seq.filter (fun t -> t.Name = "Instance")
+        |> Seq.filter (fun t -> t.FullName = "AltCover.Recorder.Instance")
         |> Seq.collect (fun t -> t.Methods)
         |> Seq.filter (fun m -> m.Name = "Visit" || m.Name = "Push" || m.Name = "Pop")
         |> Seq.sortBy (fun m -> m.Name)
@@ -1466,34 +1459,32 @@ type AltCoverTests2() =
 
       let state' = { state with RecordingAssembly = def' }
       let result = Instrument.InstrumentationVisitor state' visited
-      Assert.That(result.RecordingMethodRef.Visit.Module, Is.EqualTo(def.MainModule))
-      Assert.That(string result.RecordingMethodRef.Visit,
-                  visit
+
+      test <@ result.RecordingMethodRef.Visit.Module = def.MainModule @>
+      test <@ string result.RecordingMethodRef.Visit =
+                 (visit
                   |> Seq.head
-                  |> string
-                  |> Is.EqualTo)
-      Assert.That(string result.RecordingMethodRef.Push,
-                  visit
+                  |> string) @>
+      test <@ string result.RecordingMethodRef.Push =
+                 (visit
                   |> Seq.skip 1
                   |> Seq.head
-                  |> string
-                  |> Is.EqualTo)
-      Assert.That(string result.RecordingMethodRef.Pop,
-                  visit
+                  |> string) @>
+      test <@ string result.RecordingMethodRef.Pop =
+                 (visit
                   |> Seq.skip 2
                   |> Seq.head
-                  |> string
-                  |> Is.EqualTo)
-      Assert.That({ result with RecordingMethodRef =
+                  |> string) @>
+      test <@ { result with RecordingMethodRef =
                                   { Visit = null
                                     Push = null
-                                    Pop = null } },
-                  Is.EqualTo { state' with ModuleId = def.MainModule.Mvid.ToString()
+                                    Pop = null } } =
+                             { state' with ModuleId = def.MainModule.Mvid.ToString()
                                            RecordingMethod = visit
                                            RecordingMethodRef =
                                              { Visit = null
                                                Push = null
-                                               Pop = null } })
+                                               Pop = null } } @>
 
     [<Test>]
     member self.ExcludedMethodPointIsPassThrough() =

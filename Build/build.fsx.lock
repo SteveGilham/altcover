@@ -209,7 +209,7 @@ NUGET
       System.Memory (>= 4.5)
       System.Security.AccessControl (>= 4.5)
       System.Security.Principal.Windows (>= 4.5)
-    MSBuild.StructuredLogger (2.0.94)
+    MSBuild.StructuredLogger (2.0.110)
       Microsoft.Build (>= 15.8.166)
       Microsoft.Build.Framework (>= 15.8.166)
       Microsoft.Build.Tasks.Core (>= 15.8.166)

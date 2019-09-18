@@ -163,19 +163,19 @@ https://docs.microsoft.com/en-us/visualstudio/designers/the-visual-studio-image-
     <value>C_redits</value>
   </data>
   <data name="fontButton.Label" xml:space="preserve">
-    <value>f&#x0;_Font...</value>
+    <value>f&#x2028;_Font...</value>
   </data>
   <data name="gtk-close" xml:space="preserve">
     <value>_Close</value>
   </data>
   <data name="openButton.Label" xml:space="preserve">
-    <value>o&#x0;_Open...</value>
+    <value>o&#x2028;_Open...</value>
   </data>
   <data name="refreshButton.Label" xml:space="preserve">
-    <value>r&#x0;_Refresh</value>
+    <value>r&#x2028;_Refresh</value>
   </data>
   <data name="showAboutButton.Label" xml:space="preserve">
-    <value>a&#x0;_About...</value>
+    <value>a&#x2028;_About...</value>
   </data>
   <data name="_License" xml:space="preserve">
     <value>_License</value>
@@ -184,7 +184,7 @@ https://docs.microsoft.com/en-us/visualstudio/designers/the-visual-studio-image-
     <value>{0} of {1} branches visited</value>
   </data>
   <data name="exitButton.Label" xml:space="preserve">
-    <value>x&#x0;E_xit</value>
+    <value>x&#x2028;E_xit</value>
   </data>
   <data name="No source location" xml:space="preserve">
     <value>Method {0} 
