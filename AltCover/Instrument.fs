@@ -83,26 +83,20 @@ module internal Instrument =
 #endif
 
   /// <summary>
-  /// Workround for not being able to take typeof<SomeModule> even across
-  /// assembly boundaries -- start with a pure type then iterate to the module
-  /// </summary>
-  /// <returns>A representation of the type used to record all coverage visits.</returns>
-  let internal RecorderInstanceType() =
-    let trace = typeof<AltCover.Recorder.Tracer>
-    trace.Assembly.GetExportedTypes()
-    |> Seq.find (fun (t : Type) -> t.FullName = "AltCover.Recorder.Instance")
-
-  /// <summary>
   /// Locate the method that must be called to register a code point for coverage visit.
   /// </summary>
   /// <param name="assembly">The assembly containing the recorder method</param>
   /// <returns>A representation of the method to call to signal a coverage visit.</returns>
   let internal RecordingMethod(recordingAssembly : AssemblyDefinition) =
-    let other = RecorderInstanceType()
-    [ "Visit"; "Push"; "Pop" ]
-    |> List.map (fun n ->
-         let t = other.GetMethod(n).MetadataToken
-         recordingAssembly.MainModule.LookupToken(t) :?> MethodDefinition)
+    recordingAssembly.MainModule.GetAllTypes()
+    |> Seq.filter (fun t -> t.FullName = "AltCover.Recorder.Instance")
+    |> Seq.collect (fun t -> t.Methods)
+    |> Seq.map (fun t -> (t.Name, t))
+    |> Seq.filter (fun (n,_) -> n = "Visit" || n = "Push" || n = "Pop")
+    |> Seq.sortBy fst
+    |> Seq.map snd
+    |> Seq.toList
+    |> List.rev
 
   /// <summary>
   /// Applies a new key to an assembly name
@@ -170,7 +164,8 @@ module internal Instrument =
     Guard definition (fun () ->
 #if NETCOREAPP2_0
 #else
-      ProgramDatabase.ReadSymbols definition
+      if monoRuntime |> not
+      then ProgramDatabase.ReadSymbols definition
 #endif
       definition.Name.Name <- (extractName definition) + ".g"
 

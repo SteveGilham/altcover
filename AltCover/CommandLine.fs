@@ -328,10 +328,16 @@ module internal CommandLine =
     let descape (s:string) =
       s.Replace('\u0000',';')
 
+    let qRegex (s : String) =
+      if s.Substring(0,1) = "?"
+      then (s.Substring(1), Include)
+      else (s, Exclude)
+      |> (fun (a,b) -> (Regex a, b))
+
     doPathOperation
       (fun () ->
       x.Replace(";;","\u0000").Split([| ";" |], StringSplitOptions.RemoveEmptyEntries)
-      |> Array.map (descape >> Regex)) [||]
+      |> Array.map (descape >> qRegex)) [||]
       false
 
   let internal ddFlag name flag =

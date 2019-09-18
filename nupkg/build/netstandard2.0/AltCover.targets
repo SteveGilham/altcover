@@ -55,7 +55,9 @@
       LineCover="$(AltCoverLineCover)"
       BranchCover="$(AltCoverBranchCover)"
       Dependencies="@(AltCoverDependencies)"
-      SourceLink="$(AltCoverSourceLink)" />
+      SourceLink="$(AltCoverSourceLink)"
+      LocalSource="$(AltCoverLocalSource)"
+      VisibleBranches="$(AltCoverVisibleBranches)" />
   </Target>
 
   <Target Name="AltCoverInstrumentModulesNoBuild" AfterTargets="AltCoverPreFlight" Condition="'$(VSTestNoBuild)' == 'true'">

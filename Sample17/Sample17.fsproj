@@ -5,68 +5,40 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>24bfb835-2dac-45d4-afda-f9c2f13b41dd</ProjectGuid>
+    <ProjectGuid>{88a4d1e6-147d-4f1f-8c36-2143f16a8340}</ProjectGuid>
     <OutputType>Library</OutputType>
-    <RootNamespace>Shadow.Adapter</RootNamespace>
-    <AssemblyName>AltCover.Shadow.Adapter</AssemblyName>
+    <RootNamespace>Sample17</RootNamespace>
+    <AssemblyName>Sample17</AssemblyName>
     <UseStandardResourceNames>true</UseStandardResourceNames>
-    <TargetFrameworkVersion Condition="'$(OS)' == 'Windows_NT'">v2.0</TargetFrameworkVersion>
-    <TargetFrameworkVersion Condition="'$(OS)' != 'Windows_NT'">v4.7</TargetFrameworkVersion>
-    <ExtraDefines Condition="'$(OS)' == 'Windows_NT'">NET2</ExtraDefines>
-    <ExtraDefines Condition="'$(OS)' != 'Windows_NT'">MONO</ExtraDefines>
+    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <TargetFSharpCoreVersion>4.4.0.0</TargetFSharpCoreVersion>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <Name>Shadow.Adapter</Name>
+    <Name>Sample6</Name>
+    <ResolveNuGetPackages>false</ResolveNuGetPackages>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
+    <DebugType Condition="'$(OS)' == 'Windows_NT'">full</DebugType>
+    <DebugType Condition="'$(OS)' != 'Windows_NT'">portable</DebugType>
     <Optimize>false</Optimize>
     <Tailcalls>false</Tailcalls>
     <OutputPath>$(SolutionDir)_Binaries\$(AssemblyName)\$(Configuration)+$(Platform)\</OutputPath>
     <IntermediateOutputPath>$(SolutionDir)_Intermediate\$(AssemblyName)\$(Configuration)+$(Platform)\</IntermediateOutputPath>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <WarningsAsErrors>
-    </WarningsAsErrors>
-    <OtherFlags>--keyfile:$(SolutionDir)Build\Infrastructure.snk</OtherFlags>
-    <DefineConstants>TRACE;DEBUG;CODE_ANALYSIS;$(ExtraDefines)</DefineConstants>
-    <WarningLevel>4</WarningLevel>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <WarningLevel>3</WarningLevel>
+    <OtherFlags>--keyfile:$(SolutionDir)\Build\Infrastructure.snk</OtherFlags>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
+    <DebugType Condition="'$(OS)' == 'Windows_NT'">pdbonly</DebugType>
+    <DebugType Condition="'$(OS)' != 'Windows_NT'">portable</DebugType>
     <Optimize>true</Optimize>
     <Tailcalls>true</Tailcalls>
     <OutputPath>$(SolutionDir)_Binaries\$(AssemblyName)\$(Configuration)+$(Platform)\</OutputPath>
     <IntermediateOutputPath>$(SolutionDir)_Intermediate\$(AssemblyName)\$(Configuration)+$(Platform)\</IntermediateOutputPath>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <WarningsAsErrors>
-    </WarningsAsErrors>
-    <OtherFlags>--keyfile:$(SolutionDir)Build\Infrastructure.snk</OtherFlags>
-    <DefineConstants>TRACE;$(ExtraDefines)</DefineConstants>
-    <WarningLevel>4</WarningLevel>
+    <DefineConstants>TRACE</DefineConstants>
+    <WarningLevel>3</WarningLevel>
+    <OtherFlags>--keyfile:$(SolutionDir)\Build\Infrastructure.snk --standalone</OtherFlags>
   </PropertyGroup>
-  <ItemGroup>
-    <Reference Include="mscorlib" />
-    <Reference Condition="'$(OS)' == 'Windows_NT'" Include="FSharp.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-      <Private>True</Private>
-    </Reference>
-    <Reference Condition="'$(OS)' != 'Windows_NT'" Include="FSharp.Core">
-      <HintPath>..\packages\FSharp.Core.4.5.2\lib\net45\FSharp.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="System" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Adapter.fs" />
-    <Compile Include="..\_Generated\VisibleToTest.fs">
-      <Link>VisibleToTest.fs</Link>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\AltCover.Recorder\AltCover.Shadow.fsproj">
-      <Name>AltCover.Shadow</Name>
-      <Project>{62480be3-4479-4a47-a23f-50858ecd74b3}</Project>
-      <Private>True</Private>
-    </ProjectReference>
-  </ItemGroup>
   <PropertyGroup>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>
   </PropertyGroup>
@@ -82,8 +54,20 @@
       </PropertyGroup>
     </Otherwise>
   </Choose>
-  <Import Project="$(FSharpTargetsPath)" Condition=" '$(FSharpTargetsPath)' != '' "/>
-  <Target Name="ResolveNuGetPackageAssets" />
+  <Import Project="$(FSharpTargetsPath)" Condition=" '$(FSharpTargetsPath)' != '' " />
+  <ItemGroup>
+    <Compile Include="AssemblyInfo.fs" />
+    <Compile Include="Library1.fs" />
+    <Content Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="FSharp.Core">
+      <HintPath>..\packages\FSharp.Core.4.5.2\lib\net45\FSharp.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="mscorlib" />
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+  </ItemGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

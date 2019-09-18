@@ -50,6 +50,7 @@ module internal Main =
     Visitor.local <- false
     Visitor.coverstyle <- CoverStyle.All
     Visitor.sourcelink := false
+    Visitor.coalesceBranches <- false
 
   let ValidateCallContext predicate x =
     if not (String.IsNullOrWhiteSpace x) then
@@ -274,6 +275,15 @@ module internal Main =
                (CultureInfo.CurrentCulture,
                 CommandLine.resources.GetString "MultiplesNotAllowed", "--defer")
              :: CommandLine.error))
+      ("v|visibleBranches",
+       (fun _ ->
+       if Visitor.coalesceBranches then
+         CommandLine.error <-
+           String.Format
+             (CultureInfo.CurrentCulture,
+              CommandLine.resources.GetString "MultiplesNotAllowed", "--visibleBranches")
+           :: CommandLine.error
+       else Visitor.coalesceBranches <- true))
       ("?|help|h", (fun x -> CommandLine.help <- not (isNull x)))
 
       ("<>",
@@ -362,7 +372,8 @@ module internal Main =
     // Copy all the files into the target directory
     let mapping = Dictionary<string, string>()
     Seq.zip sourceInfos targets
-    |> Seq.map (fun (x, y) -> (x.FullName, y))
+    |> Seq.map (fun (x, y) -> let f = x.FullName // trim separator
+                              (Path.Combine (f |> Path.GetDirectoryName, f |> Path.GetFileName), y))
     |> Seq.iter mapping.Add
 
     Seq.zip fromInfos toInfos
