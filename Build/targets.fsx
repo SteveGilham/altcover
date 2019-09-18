@@ -3006,7 +3006,6 @@ _Target "DotnetTestIntegration" (fun _ ->
     Shell.copy "./_DotnetTest" (!!"./Sample4/*.fs")
 
     let p0 = Primitive.PrepareParams.Create()
-    let pp0 = AltCover.PrepareParams.Primitive p0
     let c0 = Primitive.CollectParams.Create()
     let p1 = { p0 with CallContext = [ "[Fact]"; "0" ]
                        AssemblyFilter = [| "xunit" |] }
@@ -3349,6 +3348,75 @@ _Target "Issue67" (fun _ ->
                  |> Seq.length
 
     Assert.That (passed, Is.EqualTo 2)
+  finally
+    let folder = (nugetCache @@ "altcover") @@ !Version
+    Shell.mkdir folder
+    Shell.deleteDir folder)
+
+_Target "Issue72" (fun _ ->
+  try
+    Directory.ensure "./Sample16/Test/_Issue72"
+    Shell.cleanDir ("./Sample16/Test/_Issue72")
+
+    let config = XDocument.Load "./Build/NuGet.config.dotnettest"
+    let repo = config.Descendants(XName.Get("add")) |> Seq.head
+    repo.SetAttributeValue(XName.Get "value", Path.getFullName "./_Packaging")
+    config.Save "./Sample16/Test/_Issue72/NuGet.config"
+
+    Shell.copy "./Sample16/Test/_Issue72" (!!"./Sample16/Test/Test/*.cs")
+
+    let csproj = XDocument.Load "./Sample16/Test/Test/Test.csproj"
+
+    let pack = csproj.Descendants(XName.Get("PackageReference")) |> Seq.head
+    let inject =
+      XElement
+        (XName.Get "PackageReference", XAttribute(XName.Get "Include", "altcover"),
+         XAttribute(XName.Get "Version", !Version))
+    pack.AddBeforeSelf inject
+    csproj.Save "./Sample16/Test/_Issue72/Test.csproj"
+
+    let p0 = { Primitive.PrepareParams.Create() with LocalSource = true
+                                                     VisibleBranches = false
+                                                     XmlReport = "./original.xml" }
+    let pp0 = AltCover.PrepareParams.Primitive p0
+    let c0 = Primitive.CollectParams.Create()
+    let cc0 = AltCover.CollectParams.Primitive c0
+    DotNet.test (fun p ->
+      (({ p.WithCommon(withWorkingDirectoryVM "./Sample16/Test/_Issue72") with Configuration = DotNet.BuildConfiguration.Debug
+                                                                               NoBuild = false }).WithParameters pp0 cc0 ForceTrue)
+        .WithImportModule().WithGetVersion()
+      |> withCLIArgs) ""
+
+    do use coverageFile =
+         new FileStream("./Sample16/Test/_Issue72/original.xml", FileMode.Open, FileAccess.Read, FileShare.None, 4096,
+                        FileOptions.SequentialScan)
+       let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
+       Assert.That
+         (coverageDocument.Descendants(XName.Get("BranchPoint")) 
+         |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value),
+          Is.EquivalentTo ["4"; "1"; "3"; "1"; "2"; "1"; "1"; "1" ])
+
+    let p1 = { Primitive.PrepareParams.Create() with LocalSource = true
+                                                     VisibleBranches = true
+                                                     XmlReport = "./combined.xml" }
+    let pp1 = AltCover.PrepareParams.Primitive p1
+    let c0 = Primitive.CollectParams.Create()
+    let cc0 = AltCover.CollectParams.Primitive c0
+    DotNet.test (fun p ->
+      (({ p.WithCommon(withWorkingDirectoryVM "./Sample16/Test/_Issue72") with Configuration = DotNet.BuildConfiguration.Debug
+                                                                               NoBuild = false }).WithParameters pp1 cc0 ForceTrue)
+        .WithImportModule().WithGetVersion()
+      |> withCLIArgs) ""
+
+    do use coverageFile =
+         new FileStream("./Sample16/Test/_Issue72/combined.xml", FileMode.Open, FileAccess.Read, FileShare.None, 4096,
+                        FileOptions.SequentialScan)
+       let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
+       Assert.That
+         (coverageDocument.Descendants(XName.Get("BranchPoint")) 
+         |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value),
+          Is.EquivalentTo ["2"; "1"; "1"; "1"])
+
   finally
     let folder = (nugetCache @@ "altcover") @@ !Version
     Shell.mkdir folder
@@ -3826,6 +3894,10 @@ Target.activateFinal "ResetConsoleColours"
 
 "Unpack"
 ==> "Issue67"
+==> "Deployment"
+
+"Unpack"
+==> "Issue72"
 ==> "Deployment"
 
 "Unpack"
