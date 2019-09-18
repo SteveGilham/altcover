@@ -2,7 +2,7 @@ Q. Never mind the fluff -- how do I get started?
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
-# 6.1.7xx (Fukurou series release 5)
+# 6.2.714 (Fukurou series release 5)
 * [BUGFIX] Finish wiring up `/p:AltCoverLocalSource` support
 * [BUGFIX] Fix failure when input/output directories were specified with a trailing separator character
 * [HACK] mitigate Issue #71 by simply ignoring null module identifiers.
