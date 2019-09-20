@@ -3377,6 +3377,7 @@ _Target "Issue72" (fun _ ->
 
     let p0 = { Primitive.PrepareParams.Create() with LocalSource = true
                                                      VisibleBranches = false
+                                                     TypeFilter = [ "UnitTest" ]
                                                      XmlReport = "./original.xml" }
     let pp0 = AltCover.PrepareParams.Primitive p0
     let c0 = Primitive.CollectParams.Create()
@@ -3391,13 +3392,27 @@ _Target "Issue72" (fun _ ->
          new FileStream("./Sample16/Test/_Issue72/original.xml", FileMode.Open, FileAccess.Read, FileShare.None, 4096,
                         FileOptions.SequentialScan)
        let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
+       let found = coverageDocument.Descendants(XName.Get("BranchPoint"))
+                   |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value)
+                   |> Seq.toList
        Assert.That
-         (coverageDocument.Descendants(XName.Get("BranchPoint")) 
-         |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value),
-          Is.EquivalentTo ["4"; "1"; "3"; "1"; "2"; "1"; "1"; "1" ])
+         (found,
+          Is.EquivalentTo [ "1"
+                            "4"
+                            "4"
+                            "0"
+                            "3"
+                            "1"
+                            "2"
+                            "1"
+                            "1"
+                            "1"
+                            "5"
+                            "5"], sprintf "original: %A" found)
 
     let p1 = { Primitive.PrepareParams.Create() with LocalSource = true
                                                      VisibleBranches = true
+                                                     TypeFilter = [ "UnitTest" ]
                                                      XmlReport = "./combined.xml" }
     let pp1 = AltCover.PrepareParams.Primitive p1
     let c0 = Primitive.CollectParams.Create()
@@ -3412,10 +3427,19 @@ _Target "Issue72" (fun _ ->
          new FileStream("./Sample16/Test/_Issue72/combined.xml", FileMode.Open, FileAccess.Read, FileShare.None, 4096,
                         FileOptions.SequentialScan)
        let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
+       let found = coverageDocument.Descendants(XName.Get("BranchPoint"))
+                   |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value)
+                   |> Seq.toList
        Assert.That
-         (coverageDocument.Descendants(XName.Get("BranchPoint")) 
-         |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value),
-          Is.EquivalentTo ["2"; "1"; "1"; "1"])
+         (found,
+          Is.EquivalentTo ["1"
+                           "4"
+                           "1"
+                           "1"
+                           "1"
+                           "1"
+                           "5"
+                           "5"], sprintf "combined: %A" found)
 
   finally
     let folder = (nugetCache @@ "altcover") @@ !Version

@@ -1383,20 +1383,24 @@ type AltCoverTests() =
           Visitor.Deeper <| Node.Method(method, Inspect.Instrument, None)
           |> Seq.toList
 
+        //deeper |> List.skip 21 |> Seq.iter (fun n -> match n with
+        //                                             | BranchPoint x -> printfn "deeper = %A sl = %A offset = %A" x x.SequencePoint.StartLine x.SequencePoint.Offset
+        //                                             | _ ->())
         let reported =
           deeper
           |> List.filter (fun n -> match n with
-                                   | BranchPoint b -> b.Representative
+                                   | BranchPoint b -> b.Representative = Reporting.Representative
                                    | _ -> true)
-        Assert.That(reported.Length, Is.EqualTo 16)
+        //reported |> List.skip 21 |> Seq.iter (printfn "reported = %A")
+        Assert.That(reported.Length, Is.EqualTo 29)
         reported
-        |> List.skip 12
+        |> List.skip 21
         |> List.iteri (fun i node ->
              match node with
-             | (BranchPoint b) -> Assert.That(b.Uid, Is.EqualTo (1 + i), "branch point number")
+             | (BranchPoint b) -> Assert.That(b.Uid, Is.EqualTo i, "branch point number")
              | _ -> Assert.Fail("branch point expected"))
         deeper
-        |> List.take 12
+        |> List.take 21
         |> List.iteri (fun i node ->
              match node with
              | (MethodPoint(_, _, n, b)) ->
@@ -1434,14 +1438,14 @@ type AltCoverTests() =
         let reported =
           deeper
           |> List.filter (fun n -> match n with
-                                   | BranchPoint b -> b.Representative
+                                   | BranchPoint b -> b.Representative = Reporting.Representative
                                    | _ -> true)
         Assert.That(reported.Length, Is.EqualTo 14)
         reported
         |> List.skip 9
         |> List.iteri (fun i node ->
              match node with
-             | (BranchPoint b) -> Assert.That(b.Uid, Is.EqualTo (i + 1), "branch point number")
+             | (BranchPoint b) -> Assert.That(b.Uid, Is.EqualTo i, "branch point number")
              | _ -> Assert.Fail("branch point expected"))
         deeper
         |> List.take 9

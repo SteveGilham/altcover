@@ -33,6 +33,11 @@ type internal CoverStyle =
   | LineOnly = 1
   | BranchOnly = 2
 
+type internal Reporting =
+  | None = 0
+  | Representative = 1
+  | Contributing = 2
+
 [<ExcludeFromCodeCoverage>]
 type internal SeqPnt =
   { StartLine : int
@@ -63,7 +68,7 @@ type internal GoTo =
     Offset : int
     Target : Instruction list
     Included : bool
-    Representative : bool
+    Representative : Reporting
     Key : int }
 
 [<ExcludeFromCodeCoverage; NoComparison>]
@@ -754,21 +759,32 @@ module internal Visitor =
                                              |> List.takeWhile (fun i -> let o = i.Offset
                                                                          o > lastOffset ||
                                                                          o < b.SequencePoint.Offset ||
-                                                                         i.OpCode.FlowControl = FlowControl.Return)})
-      |> Seq.groupBy (fun b -> b.Target)
+                                                                         i.OpCode.FlowControl = FlowControl.Return ||
+                                                                         i.OpCode.FlowControl = FlowControl.Branch)}) // more??
+      |> Seq.groupBy (fun b -> b.Target |> Seq.tryHead)
       |> Seq.map (snd >> (fun bg -> bg
-                                    |> Seq.mapi  (fun i bx -> { bx with Representative = i=0 &&
-                                                                                         bx.Target |> Seq.isEmpty |> not})))
+                                    |> Seq.mapi  (fun i bx -> { bx with Representative = if i=0 &&
+                                                                                            bx.Target |> Seq.isEmpty |> not
+                                                                                            then Reporting.Representative
+                                                                                            else Reporting.Contributing})))
       |> Seq.sortBy (fun b -> (b |> Seq.head).Offset)
       |> Seq.mapi (fun i b -> b |> Seq.map (fun bx -> {bx with Path = i} ))
     let demoteSingletons l = // TODO revisit
       let x = l |> Seq.length > 1
-      l |> Seq.map (fun bs -> bs |> Seq.map (fun b -> { b with Representative = x && b.Representative}))
+      l |> Seq.map (fun bs -> bs |> Seq.map (fun b -> { b with Representative = if x then b.Representative
+                                                                                else Reporting.None }))
+
+    let mutable uid = 0
     bps
     |> Seq.groupBy (fun b -> b.SequencePoint.Offset)
     |> Seq.map (selectRepresentatives >> demoteSingletons)
     |> Seq.collect id
-    |> Seq.mapi (fun i b -> b |> Seq.map (fun bx -> {bx with Uid = i + BranchNumber} ))
+    |> Seq.map(fun bs -> bs |>
+                         if (bs |> Seq.head).Representative = Reporting.Representative
+                         then let i = uid
+                              uid <- uid + 1
+                              Seq.map (fun bx -> {bx with Uid = i + BranchNumber})
+                         else Seq.map (fun bx -> { bx with Representative = Reporting.None} ))
     |> Seq.collect id
     |> Seq.sortBy (fun b -> b.Key)  // important! instrumentation assumes we work in the order we started with
 
@@ -822,7 +838,9 @@ module internal Visitor =
                             Offset = from.Offset
                             Target = target
                             Included = interesting
-                            Representative = coalesceBranches |> not
+                            Representative = if coalesceBranches
+                                             then Reporting.Contributing
+                                             else Reporting.Representative
                             Key = i}))
     |> Seq.choose id
     |> processBranches
