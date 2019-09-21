@@ -59,8 +59,9 @@ module internal Main =
         if predicate || k.Length > 1 then
           CommandLine.error <-
             String.Format
-              (CultureInfo.CurrentCulture, CommandLine.resources.GetString "InvalidValue",
-               "--callContext", x) :: CommandLine.error
+              (CultureInfo.CurrentCulture, CommandLine.resources.GetString(
+                (if predicate then "MultiplesNotAllowed" else "InvalidValue")),
+                "--callContext", x) :: CommandLine.error
           (false, Left None)
         else
           let (ok, n) = Int32.TryParse(k)
