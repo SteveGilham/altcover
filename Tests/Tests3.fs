@@ -20,6 +20,10 @@ type AltCoverTests3() =
                       |> Seq.find (fun n -> n.EndsWith(".Recorder.snk", StringComparison.Ordinal))
 #endif
 
+    [<SetUp>]
+    member self.SetUp() =
+      Main.init()
+
     // AltCover.fs and CommandLine.fs
 
     [<Test>]
@@ -442,6 +446,7 @@ type AltCoverTests3() =
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
+          Assert.That(CommandLine.error |> Seq.head, Is.EqualTo "--xmlReport : specify this only once")
       finally
         Visitor.reportPath <- None
 
@@ -890,12 +895,14 @@ type AltCoverTests3() =
         Visitor.keys.Clear()
         let options = Main.DeclareOptions ()
         let path = SolutionRoot.location
-        let input = [| "-sn"; Path.Combine(path, "Build/Infrastructure.snk") ; "/sn"; Path.GetFullPath("Build/Recorder.snk") |]
+        let input = [| "-sn"; Path.Combine(path, "Build/Infrastructure.snk") ;
+                       "/sn"; Path.Combine(path, "Build/Recorder.snk") |]
         let parse = CommandLine.ParseCommandLine input options
         match parse with
         | Right _ -> Assert.Fail()
         | Left (x, y) -> Assert.That (y, Is.SameAs options)
                          Assert.That (x, Is.EqualTo "UsageError")
+                         Assert.That(CommandLine.error |> Seq.head, Is.EqualTo "--strongNameKey : specify this only once")
       finally
         Visitor.defaultStrongNameKey <- None
         Visitor.keys.Clear()
@@ -1027,7 +1034,7 @@ type AltCoverTests3() =
     [<Test>]
     member self.ParsingLocalGivesLocal() =
       try
-        Visitor.local <- false
+        Visitor.local := false
         let options = Main.DeclareOptions()
         let input = [| "--localSource" |]
         let parse = CommandLine.ParseCommandLine input options
@@ -1036,14 +1043,14 @@ type AltCoverTests3() =
         | Right(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.Empty)
-        Assert.That(Visitor.local, Is.True)
+        Assert.That(!Visitor.local, Is.True)
       finally
-        Visitor.local <- false
+        Visitor.local := false
 
     [<Test>]
     member self.ParsingMultipleLocalGivesFailure() =
       try
-        Visitor.local <- false
+        Visitor.local := false
         let options = Main.DeclareOptions()
         let input = [| "-l"; "--localSource" |]
         let parse = CommandLine.ParseCommandLine input options
@@ -1052,13 +1059,14 @@ type AltCoverTests3() =
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
+          Assert.That(CommandLine.error |> Seq.head, Is.EqualTo "--localSource : specify this only once")
       finally
-        Visitor.local <- false
+        Visitor.local := false
 
     [<Test>]
     member self.ParsingVisibleGivesVisible() =
       try
-        Visitor.coalesceBranches <- false
+        Visitor.coalesceBranches := false
         let options = Main.DeclareOptions()
         let input = [| "--visibleBranches" |]
         let parse = CommandLine.ParseCommandLine input options
@@ -1067,14 +1075,14 @@ type AltCoverTests3() =
         | Right(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.Empty)
-        Assert.That(Visitor.coalesceBranches, Is.True)
+        Assert.That(!Visitor.coalesceBranches, Is.True)
       finally
-        Visitor.coalesceBranches <- false
+        Visitor.coalesceBranches := false
 
     [<Test>]
     member self.ParsingMultipleVisibleGivesFailure() =
       try
-        Visitor.coalesceBranches <- false
+        Visitor.coalesceBranches := false
         let options = Main.DeclareOptions()
         let input = [| "-v"; "--visibleBranches" |]
         let parse = CommandLine.ParseCommandLine input options
@@ -1083,8 +1091,9 @@ type AltCoverTests3() =
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
+          Assert.That(CommandLine.error |> Seq.head, Is.EqualTo "--visibleBranches : specify this only once")
       finally
-        Visitor.coalesceBranches <- false
+        Visitor.coalesceBranches := false
 
     [<Test>]
     member self.ParsingTimeGivesTime() =
@@ -1136,7 +1145,8 @@ type AltCoverTests3() =
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
-        Assert.That(Visitor.Interval(), Is.EqualTo 10000)
+          Assert.That(Visitor.Interval(), Is.EqualTo 10000)
+          Assert.That(CommandLine.error |> Seq.head, Is.EqualTo "--callContext : specify this only once")
       finally
         Visitor.interval <- None
         Visitor.TrackingNames.Clear()
@@ -1264,6 +1274,7 @@ type AltCoverTests3() =
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
+          Assert.That(CommandLine.error |> Seq.head, Is.EqualTo "--opencover : specify this only once")
       finally
         Visitor.reportFormat <- None
 
@@ -1295,6 +1306,7 @@ type AltCoverTests3() =
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
+          Assert.That(CommandLine.error |> Seq.head, Is.EqualTo "--inplace : specify this only once")
       finally
         Visitor.inplace := false
 
@@ -1310,7 +1322,7 @@ type AltCoverTests3() =
         | Right(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.Empty)
-        Assert.That(!Visitor.collect, Is.True)
+          Assert.That(!Visitor.collect, Is.True)
       finally
         Visitor.collect := false
 
@@ -1326,6 +1338,7 @@ type AltCoverTests3() =
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
+          Assert.That(CommandLine.error |> Seq.head, Is.EqualTo "--save : specify this only once")
       finally
         Visitor.collect := false
 
@@ -1357,6 +1370,7 @@ type AltCoverTests3() =
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
+          Assert.That(CommandLine.error |> Seq.head, Is.EqualTo "--single : specify this only once")
       finally
         Visitor.single <- false
 
@@ -1450,6 +1464,7 @@ type AltCoverTests3() =
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
+          Assert.That(CommandLine.error |> Seq.head, Is.EqualTo "--linecover : specify this only once")
       finally
         Visitor.coverstyle <- CoverStyle.All
 
@@ -1541,6 +1556,7 @@ type AltCoverTests3() =
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
+          Assert.That(CommandLine.error |> Seq.head, Is.EqualTo "--branchcover : specify this only once")
       finally
         Visitor.coverstyle <- CoverStyle.All
 
@@ -1587,6 +1603,7 @@ type AltCoverTests3() =
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
+          Assert.That(CommandLine.error |> Seq.head, Is.EqualTo "--dropReturnCode : specify this only once")
       finally
         CommandLine.dropReturnCode := false
 
@@ -1671,6 +1688,8 @@ type AltCoverTests3() =
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
+          Assert.That(CommandLine.error |> Seq.head, Is.EqualTo "--defer : specify this only once")
+
       finally
         Visitor.defer := None
 

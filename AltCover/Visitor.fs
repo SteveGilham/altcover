@@ -209,7 +209,7 @@ module internal KeyStore =
 type Fix<'T> = delegate of 'T -> Fix<'T>
 
 module internal Visitor =
-  let internal collect = ref false
+  let internal collect = ref false // ddFlag
   let internal TrackingNames = new List<String>()
   let internal DefaultFilter (s : Regex) =
     (s, Exclude)
@@ -222,14 +222,15 @@ module internal Visitor =
       |> DefaultFilter
       |> FilterClass.Method ]
 
-  let internal inplace = ref false
-  let mutable internal coalesceBranches = false
-  let mutable internal single = false
-  let mutable internal local = false
+  let internal inplace = ref false // ddFlag
+  let internal coalesceBranches = ref false // ddFlag
+  let internal local = ref false // ddFlag
+
+  let mutable internal single = false // more complicated
   let Sampling() =
     (if single then Base.Sampling.Single
                else Base.Sampling.All) |> int
-  let internal sourcelink = ref false
+  let internal sourcelink = ref false // ddFlag
   let internal defer = ref (Some false)
   let internal deferOpCode () =
     if Option.getOrElse false !defer
@@ -311,7 +312,7 @@ module internal Visitor =
 
   let localFilter (nameProvider : Object) =
     match nameProvider with
-    | :? AssemblyDefinition as a -> local &&
+    | :? AssemblyDefinition as a -> !local &&
                                     a.MainModule
                                     |> moduleFiles
                                     |> Seq.tryHead
@@ -691,7 +692,7 @@ module internal Visitor =
                || state.OpCode.FlowControl = FlowControl.Break
                || state.OpCode.FlowControl = FlowControl.Throw
                || state.OpCode.FlowControl = FlowControl.Return // includes state.Next = null
-               || isNull state.Next) then (if coalesceBranches && state <> l.Head then state :: l else l)
+               || isNull state.Next) then (if !coalesceBranches && state <> l.Head then state :: l else l)
       else accumulate state.Next gendarme
     accumulate i [ i ]
 
@@ -737,7 +738,7 @@ module internal Visitor =
       // Eliminate the "all inside one SeqPnt" jumps
       // This covers a multitude of compiler generated branching cases
       // TODO can we simplify
-      match (coalesceBranches, includedSequencePoint dbg toNext toJump) with
+      match (!coalesceBranches, includedSequencePoint dbg toNext toJump) with
       | (true, _)
       | (_, Some _) ->
         [ (i, toNext, next.Offset, -1)
@@ -792,12 +793,12 @@ module internal Visitor =
 
   let private ExtractBranchPoints dbg methodFullName rawInstructions interesting =
     let makeDefault i =
-      if coalesceBranches
+      if !coalesceBranches
       then -1
       else i
 
     let processBranches =
-      if coalesceBranches
+      if !coalesceBranches
       then CoalesceBranchPoints dbg
       else id
 
@@ -823,7 +824,7 @@ module internal Visitor =
          (fun (i : Instruction) -> i.OpCode.FlowControl = FlowControl.Cond_Branch)
     |> Seq.mapi (fun n i -> (n, i)) //
     |> Seq.filter (fun (n, _) -> n >= skip)))
-    |> Seq.filter (fun l -> coalesceBranches || l.Length > 1) // TODO revisit
+    |> Seq.filter (fun l -> !coalesceBranches || l.Length > 1) // TODO revisit
     |> Seq.collect id
     |> Seq.mapi (fun i (path, (from, target, indexes)) ->
          Seq.unfold (fun (state : Cil.Instruction) ->
@@ -840,7 +841,7 @@ module internal Visitor =
                             Offset = from.Offset
                             Target = target
                             Included = interesting
-                            Representative = if coalesceBranches
+                            Representative = if !coalesceBranches
                                              then Reporting.Contributing
                                              else Reporting.Representative
                             Key = i}))
