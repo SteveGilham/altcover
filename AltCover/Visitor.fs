@@ -755,6 +755,7 @@ module internal Visitor =
     let selectRepresentatives (_, bs) =
       let last = lastOfSequencePoint dbg (bs |> Seq.head).Start
       let lastOffset = last.Offset
+      let mutable path = 0
       bs
       |> Seq.map (fun b -> { b with Target = b.Target
                                              |> List.takeWhile (fun i -> let o = i.Offset
@@ -771,7 +772,12 @@ module internal Visitor =
                                                                                             then Reporting.Representative
                                                                                             else Reporting.Contributing})))
       |> Seq.sortBy (fun b -> (b |> Seq.head).Offset)
-      |> Seq.mapi (fun i b -> b |> Seq.map (fun bx -> {bx with Path = i} ))
+      |> Seq.mapi (fun i b -> if i = 0 then path <- 0
+                              if (b |> Seq.head).Representative = Reporting.Representative
+                              then let p = path
+                                   path <- path + 1
+                                   b |> Seq.map (fun bx -> {bx with Path = p})
+                              else b)
     let demoteSingletons l = // TODO revisit
       let x = l |> Seq.length > 1
       l |> Seq.map (fun bs -> bs |> Seq.map (fun b -> { b with Representative = if x then b.Representative

@@ -1393,12 +1393,16 @@ type AltCoverTests() =
                                    | _ -> true)
         //reported |> List.skip 21 |> Seq.iter (printfn "reported = %A")
         Assert.That(reported.Length, Is.EqualTo 29)
-        reported
-        |> List.skip 21
-        |> List.iteri (fun i node ->
-             match node with
-             | (BranchPoint b) -> Assert.That(b.Uid, Is.EqualTo i, "branch point number")
-             | _ -> Assert.Fail("branch point expected"))
+        let branches =
+          reported
+          |> List.skip 21
+          |> List.mapi (fun i node ->
+               match node with
+               | (BranchPoint b) -> Assert.That(b.Uid, Is.EqualTo i, "branch point number")
+                                    Some b
+               | _ -> Assert.Fail("branch point expected")
+                      None)
+          |> List.choose id
         deeper
         |> List.take 21
         |> List.iteri (fun i node ->
@@ -1407,6 +1411,12 @@ type AltCoverTests() =
                Assert.That(n, Is.EqualTo i, "point number")
                Assert.That(b, Is.True, "flag " + i.ToString())
              | _ -> Assert.Fail("sequence point expected"))
+
+        Assert.That (
+          branches
+          |> List.map (fun b -> b.Path),
+          Is.EquivalentTo [ 0; 1; 0; 1; 2; 3; 0; 1]
+        )
       finally
         Visitor.coalesceBranches := false
         Visitor.NameFilters.Clear()
