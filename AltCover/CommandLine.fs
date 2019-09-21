@@ -88,7 +88,7 @@ module internal CommandLine =
   let mutable internal help = false
   let mutable internal error : string list = []
   let mutable internal exceptions : Exception list = []
-  let internal dropReturnCode = ref false
+  let internal dropReturnCode = ref false // ddFlag
 
   let internal resources =
     ResourceManager("AltCover.Strings", Assembly.GetExecutingAssembly())
@@ -340,12 +340,12 @@ module internal CommandLine =
       |> Array.map (descape >> qRegex)) [||]
       false
 
-  let internal ddFlag name flag =
+  let internal ddFlag (name:string) flag =
       (name,
        (fun _ ->
        if !flag then
          error <- String.Format
                                 (CultureInfo.CurrentCulture,
                                  resources.GetString "MultiplesNotAllowed",
-                                 "--" + name) :: error
+                                 "--" + (name.Split('|')|> Seq.last)) :: error
        else flag := true))

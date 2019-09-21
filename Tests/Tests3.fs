@@ -1058,7 +1058,7 @@ type AltCoverTests3() =
     [<Test>]
     member self.ParsingVisibleGivesVisible() =
       try
-        Visitor.coalesceBranches <- false
+        Visitor.coalesceBranches := false
         let options = Main.DeclareOptions()
         let input = [| "--visibleBranches" |]
         let parse = CommandLine.ParseCommandLine input options
@@ -1067,14 +1067,14 @@ type AltCoverTests3() =
         | Right(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.Empty)
-        Assert.That(Visitor.coalesceBranches, Is.True)
+        Assert.That(!Visitor.coalesceBranches, Is.True)
       finally
-        Visitor.coalesceBranches <- false
+        Visitor.coalesceBranches := false
 
     [<Test>]
     member self.ParsingMultipleVisibleGivesFailure() =
       try
-        Visitor.coalesceBranches <- false
+        Visitor.coalesceBranches := false
         let options = Main.DeclareOptions()
         let input = [| "-v"; "--visibleBranches" |]
         let parse = CommandLine.ParseCommandLine input options
@@ -1084,7 +1084,7 @@ type AltCoverTests3() =
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
       finally
-        Visitor.coalesceBranches <- false
+        Visitor.coalesceBranches := false
 
     [<Test>]
     member self.ParsingTimeGivesTime() =

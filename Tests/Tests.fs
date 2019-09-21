@@ -891,7 +891,7 @@ type AltCoverTests() =
         |> Seq.head
       Visitor.Visit [] [] // cheat reset
       try
-        Visitor.coalesceBranches <- true
+        Visitor.coalesceBranches := true
         Visitor.reportFormat <- Some Base.ReportFormat.OpenCover
         Visitor.NameFilters.Clear()
         let deeper =
@@ -912,7 +912,7 @@ type AltCoverTests() =
                Assert.That(b, Is.True, "flag " + i.ToString())
              | _ -> Assert.Fail("sequence point expected"))
       finally
-        Visitor.coalesceBranches <- false
+        Visitor.coalesceBranches := false
         Visitor.NameFilters.Clear()
         Visitor.reportFormat <- None
 
@@ -1376,7 +1376,7 @@ type AltCoverTests() =
         |> Seq.head
       Visitor.Visit [] [] // cheat reset
       try
-        Visitor.coalesceBranches <- true
+        Visitor.coalesceBranches := true
         Visitor.reportFormat <- Some Base.ReportFormat.OpenCover
         Visitor.NameFilters.Clear()
         let deeper =
@@ -1404,7 +1404,7 @@ type AltCoverTests() =
                Assert.That(b, Is.True, "flag " + i.ToString())
              | _ -> Assert.Fail("sequence point expected"))
       finally
-        Visitor.coalesceBranches <- false
+        Visitor.coalesceBranches := false
         Visitor.NameFilters.Clear()
         Visitor.reportFormat <- None
 
@@ -1426,7 +1426,7 @@ type AltCoverTests() =
       try
         Visitor.reportFormat <- Some Base.ReportFormat.OpenCover
         Visitor.NameFilters.Clear()
-        Visitor.coalesceBranches <- true
+        Visitor.coalesceBranches := true
         let deeper =
           Visitor.Deeper <| Node.Method(method, Inspect.Instrument, None)
           |> Seq.toList
@@ -1452,7 +1452,7 @@ type AltCoverTests() =
                Assert.That(b, Is.True, "flag " + i.ToString())
              | _ -> Assert.Fail("sequence point expected"))
       finally
-        Visitor.coalesceBranches <- false
+        Visitor.coalesceBranches := false
         Visitor.NameFilters.Clear()
         Visitor.reportFormat <- None
 

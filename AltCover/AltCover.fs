@@ -22,7 +22,7 @@ type internal AssemblyInfo =
 module internal Main =
   let init() =
     CommandLine.error <- []
-    CommandLine.dropReturnCode := false
+    CommandLine.dropReturnCode := false // ddFlag
     Visitor.defer := None
     Visitor.inputDirectories.Clear()
     Visitor.outputDirectories.Clear()
@@ -44,13 +44,13 @@ module internal Main =
     Visitor.interval <- None
     Visitor.TrackingNames.Clear()
     Visitor.reportFormat <- None
-    Visitor.inplace := false
-    Visitor.collect := false
+    Visitor.inplace := false // ddFlag
+    Visitor.collect := false // ddFlag
     Visitor.single <- false
     Visitor.local <- false
     Visitor.coverstyle <- CoverStyle.All
-    Visitor.sourcelink := false
-    Visitor.coalesceBranches <- false
+    Visitor.sourcelink := false // ddFlag
+    Visitor.coalesceBranches := false // ddFlag
 
   let ValidateCallContext predicate x =
     if not (String.IsNullOrWhiteSpace x) then
@@ -275,15 +275,7 @@ module internal Main =
                (CultureInfo.CurrentCulture,
                 CommandLine.resources.GetString "MultiplesNotAllowed", "--defer")
              :: CommandLine.error))
-      ("v|visibleBranches",
-       (fun _ ->
-       if Visitor.coalesceBranches then
-         CommandLine.error <-
-           String.Format
-             (CultureInfo.CurrentCulture,
-              CommandLine.resources.GetString "MultiplesNotAllowed", "--visibleBranches")
-           :: CommandLine.error
-       else Visitor.coalesceBranches <- true))
+      (CommandLine.ddFlag "v|visibleBranches" Visitor.coalesceBranches)
       ("?|help|h", (fun x -> CommandLine.help <- not (isNull x)))
 
       ("<>",
