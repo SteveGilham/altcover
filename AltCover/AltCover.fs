@@ -46,8 +46,8 @@ module internal Main =
     Visitor.reportFormat <- None
     Visitor.inplace := false // ddFlag
     Visitor.collect := false // ddFlag
-    Visitor.single <- false
-    Visitor.local <- false
+    Visitor.local := false // ddFlag
+    Visitor.single <- false // more complicated
     Visitor.coverstyle <- CoverStyle.All
     Visitor.sourcelink := false // ddFlag
     Visitor.coalesceBranches := false // ddFlag
@@ -167,15 +167,7 @@ module internal Main =
       ("t|typeFilter=", makeFilter FilterClass.Type)
       ("m|methodFilter=", makeFilter FilterClass.Method)
       ("a|attributeFilter=", makeFilter FilterClass.Attribute)
-      ("l|localSource",
-       (fun _ ->
-       if Visitor.local then
-         CommandLine.error <-
-           String.Format
-             (CultureInfo.CurrentCulture,
-              CommandLine.resources.GetString "MultiplesNotAllowed", "--localSource")
-           :: CommandLine.error
-       else Visitor.local <- true))
+      (CommandLine.ddFlag "l|localSource" Visitor.local)
       ("c|callContext=",
        (fun x ->
        if Visitor.single then

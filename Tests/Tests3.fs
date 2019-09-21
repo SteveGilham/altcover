@@ -1027,7 +1027,7 @@ type AltCoverTests3() =
     [<Test>]
     member self.ParsingLocalGivesLocal() =
       try
-        Visitor.local <- false
+        Visitor.local := false
         let options = Main.DeclareOptions()
         let input = [| "--localSource" |]
         let parse = CommandLine.ParseCommandLine input options
@@ -1036,14 +1036,14 @@ type AltCoverTests3() =
         | Right(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.Empty)
-        Assert.That(Visitor.local, Is.True)
+        Assert.That(!Visitor.local, Is.True)
       finally
-        Visitor.local <- false
+        Visitor.local := false
 
     [<Test>]
     member self.ParsingMultipleLocalGivesFailure() =
       try
-        Visitor.local <- false
+        Visitor.local := false
         let options = Main.DeclareOptions()
         let input = [| "-l"; "--localSource" |]
         let parse = CommandLine.ParseCommandLine input options
@@ -1053,7 +1053,7 @@ type AltCoverTests3() =
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
       finally
-        Visitor.local <- false
+        Visitor.local := false
 
     [<Test>]
     member self.ParsingVisibleGivesVisible() =

@@ -219,8 +219,9 @@ module internal Visitor =
 
   let internal inplace = ref false // ddFlag
   let internal coalesceBranches = ref false // ddFlag
-  let mutable internal single = false
-  let mutable internal local = false
+  let internal local = ref false // ddFlag
+
+  let mutable internal single = false // more complicated
   let Sampling() =
     (if single then Base.Sampling.Single
                else Base.Sampling.All) |> int
@@ -306,7 +307,7 @@ module internal Visitor =
 
   let localFilter (nameProvider : Object) =
     match nameProvider with
-    | :? AssemblyDefinition as a -> local &&
+    | :? AssemblyDefinition as a -> !local &&
                                     a.MainModule
                                     |> moduleFiles
                                     |> Seq.tryHead

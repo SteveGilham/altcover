@@ -748,7 +748,7 @@ type AltCoverTests() =
 
     [<Test>]
     member self.LocalSource() =
-      Visitor.local <- false
+      Visitor.local := false
       Visitor.NameFilters.Clear()
       let fscore = Path.Combine(SolutionRoot.location, "packages/FSharp.Core.3.0.2/lib/net35")
       let nuget = Path.Combine(SolutionRoot.location, "packages/nuget.commandline/5.1.0/tools")
@@ -771,14 +771,14 @@ type AltCoverTests() =
       Assert.That (Visitor.localFilter f, Is.False, "F# Assembly non-local")
       Assert.That (Visitor.localFilter f.MainModule, Is.False, "f# MainModule non-local")
       try
-        Visitor.local <- true
+        Visitor.local := true
         Assert.That (Visitor.localFilter a, Is.True, "Assembly local")
         Assert.That (Visitor.localFilter a.MainModule, Is.False, "MainModule local")
         Assert.That (Visitor.localFilter f, Is.True, "F# Assembly non-local")
         Assert.That (Visitor.localFilter f.MainModule, Is.False, "f# MainModule non-local")
 
       finally
-        Visitor.local <- false
+        Visitor.local := false
 
     [<Test>]
     member self.LocateMatchShouldChooseLongerWildCardPath() =
