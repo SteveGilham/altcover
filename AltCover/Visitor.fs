@@ -760,6 +760,8 @@ module internal Visitor =
                                                                          o > lastOffset ||
                                                                          o < b.SequencePoint.Offset ||
                                                                          i.OpCode.FlowControl = FlowControl.Return ||
+                                                                         i.OpCode.FlowControl = FlowControl.Break ||
+                                                                         i.OpCode.FlowControl = FlowControl.Throw ||
                                                                          i.OpCode.FlowControl = FlowControl.Branch)}) // more??
       |> Seq.groupBy (fun b -> b.Target |> Seq.tryHead)
       |> Seq.map (snd >> (fun bg -> bg
