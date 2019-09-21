@@ -1001,7 +1001,15 @@ type AltCoverTests2() =
                    |> Seq.find (fun i -> i.OpCode = OpCodes.Switch)
       let targets2 = switch2.Operand :?> Instruction array
                     |> Array.map (fun i -> i.Offset)
-      Assert.That (targets2, Is.EquivalentTo [ 43; 45; 43; 45; 43 ])
+
+      let next = switch2.Next.Offset
+      let n2 = next + 2
+      // Need to check the heisenstate here
+      if next <> 42
+      then target.Body.Instructions
+           |> Seq.iter (printfn "%A")
+      Assert.That (next, Is.EqualTo 42)
+      Assert.That (targets2, Is.EquivalentTo [ next; n2; next; n2; next ])
 
     [<Test>]
     member self.ShouldNotChangeAnUntrackedMethod() =
@@ -1075,6 +1083,66 @@ type AltCoverTests2() =
       finally
         Visitor.NameFilters.Clear()
         Visitor.reportFormat <- None
+
+    [<Test>]
+    member self.PseudoSwitchVisibleBranchesShouldSkipNonRepresentativeCases() =
+      let where = Assembly.GetExecutingAssembly().Location
+      let path = Path.Combine(Path.GetDirectoryName(where), "Sample16.dll")
+      let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+      ProgramDatabase.ReadSymbols def
+      Visitor.coalesceBranches := true
+      let method =
+        def.MainModule.GetAllTypes()
+        |> Seq.collect (fun t -> t.Methods)
+        |> Seq.find (fun m -> m.Name = "Bar")
+      Visitor.Visit [] [] // cheat reset
+      try
+        Visitor.reportFormat <- Some Base.ReportFormat.OpenCover
+        let branches =
+          Visitor.Deeper <| Node.Method(method, Inspect.Instrument, None)
+          |> Seq.map (fun n ->
+               match n with
+               | BranchPoint b -> Some b
+               | _ -> None)
+          |> Seq.choose id
+          |> Seq.take 2 // start of a switch
+          |> Seq.toList
+        match branches with
+        | [ b1; b2 ] ->
+          Assert.That(b1.Start.OpCode, Is.EqualTo OpCodes.Switch)
+          Assert.That(b2.Start.OpCode, Is.EqualTo OpCodes.Switch)
+          Assert.That(b1.Start.Offset, Is.EqualTo b2.Start.Offset)
+        | _ -> Assert.Fail("wrong number of items")
+        let raw = AltCover.InstrumentContext.Build([])
+
+        let state =
+          { raw with RecordingMethodRef =
+                       { raw.RecordingMethodRef with Visit = method
+                                                     Push = null
+                                                     Pop = null }
+                     MethodWorker = method.Body.GetILProcessor() }
+
+        let next = branches.Head.Start.Next
+        branches |> Seq.iter (fun b -> Instrument.VisitBranchPoint state b |> ignore)
+        let inject =
+          Seq.unfold (fun (state : Cil.Instruction) ->
+            if isNull state || state = next then None
+            else Some(state, state.Next)) branches.Head.Start
+          |> Seq.skip 1
+          |> Seq.toList
+        Assert.That(inject.Length, Is.EqualTo 8)
+        let switches = branches.Head.Start.Operand :?> Instruction [] |> Seq.toList
+        Assert.That(switches.[0], Is.EqualTo inject.[1])
+        Assert.That(switches.[1], Is.EqualTo inject.[0])
+        Assert.That(inject.[0].Operand, Is.EqualTo inject.[5])
+        Assert.That
+          ((inject.[2].Operand :?> int) &&& Base.Counter.BranchMask, Is.EqualTo 1)
+        Assert.That
+          ((inject.[6].Operand :?> int) &&& Base.Counter.BranchMask, Is.EqualTo 0)
+      finally
+        Visitor.NameFilters.Clear()
+        Visitor.reportFormat <- None
+        Visitor.coalesceBranches := false
 
     [<Test>]
     member self.SimpleBranchShouldInstrumentByPushingDown() =
