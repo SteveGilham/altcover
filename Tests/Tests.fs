@@ -751,31 +751,48 @@ type AltCoverTests() =
       Visitor.local := false
       Visitor.NameFilters.Clear()
       let fscore = Path.Combine(SolutionRoot.location, "packages/FSharp.Core.3.0.2/lib/net35")
+      let mono = Path.Combine(SolutionRoot.location, "packages/Mono.Cecil.0.11.0/lib/net40")
       let nuget = Path.Combine(SolutionRoot.location, "packages/nuget.commandline/5.1.0/tools")
       let exe = Path.Combine(nuget, "NuGet.exe")
       Assert.That(File.Exists exe, Is.True, "NuGet.exe")
       let pdb = Path.Combine(nuget, "NuGet.pdb")
       Assert.That(File.Exists pdb, Is.True, "NuGet.pdb")
 
-      let dll = Path.Combine(fscore, "FSharp.Core.dll")
-      Assert.That(File.Exists dll, Is.True, "FSharp.Core.dll")
+      let fdll = Path.Combine(fscore, "FSharp.Core.dll")
+      Assert.That(File.Exists fdll, Is.True, "FSharp.Core.dll")
+
+      let dll = Path.Combine(mono, "Mono.Cecil.dll")
+      Assert.That(File.Exists dll, Is.True, "Mono.Cecil.dll")
 
       let a = AssemblyDefinition.ReadAssembly exe
       ProgramDatabase.ReadSymbols a
 
-      let f = AssemblyDefinition.ReadAssembly dll
+      let m = AssemblyDefinition.ReadAssembly dll
+      ProgramDatabase.ReadSymbols m
+
+      let f = AssemblyDefinition.ReadAssembly fdll
       ProgramDatabase.ReadSymbols f
 
       Assert.That (Visitor.localFilter a, Is.False, "Assembly non-local")
       Assert.That (Visitor.localFilter a.MainModule, Is.False, "MainModule non-local")
-      Assert.That (Visitor.localFilter f, Is.False, "F# Assembly non-local")
+      Assert.That (Visitor.localFilter m, Is.False, "dll Assembly non-local")
+      Assert.That (Visitor.localFilter m.MainModule, Is.False, "dll MainModule non-local")
+      Assert.That (Visitor.localFilter f,
+#if NETCOREAPP2_0
+                    Is.True,
+#else
+                    Is.False,
+#endif
+                    "f# Assembly non-local")
       Assert.That (Visitor.localFilter f.MainModule, Is.False, "f# MainModule non-local")
       try
         Visitor.local := true
         Assert.That (Visitor.localFilter a, Is.True, "Assembly local")
         Assert.That (Visitor.localFilter a.MainModule, Is.False, "MainModule local")
-        Assert.That (Visitor.localFilter f, Is.True, "F# Assembly non-local")
-        Assert.That (Visitor.localFilter f.MainModule, Is.False, "f# MainModule non-local")
+        Assert.That (Visitor.localFilter m, Is.True, "dll Assembly local")
+        Assert.That (Visitor.localFilter m.MainModule, Is.False, "dll MainModule local")
+        Assert.That (Visitor.localFilter f, Is.True, "f# Assembly local")
+        Assert.That (Visitor.localFilter f.MainModule, Is.False, "f# MainModule local")
 
       finally
         Visitor.local := false

@@ -312,13 +312,17 @@ module internal Visitor =
 
   let localFilter (nameProvider : Object) =
     match nameProvider with
-    | :? AssemblyDefinition as a -> !local &&
-                                    a.MainModule
-                                    |> moduleFiles
-                                    |> Seq.tryHead
-                                    |> Option.map File.Exists
-                                    |> Option.getOrElse false
-                                    |> not
+    | :? AssemblyDefinition as a ->
+#if NETCOREAPP2_0
+        a.Name.Name = "FSharp.Core" || // HACK HACK HACK Issue 73
+#endif
+        (!local &&
+         a.MainModule
+         |> moduleFiles
+         |> Seq.tryHead
+         |> Option.map File.Exists
+         |> Option.getOrElse false
+         |> not)
     | _ -> false
 
   let IsIncluded(nameProvider : Object) =
@@ -778,15 +782,15 @@ module internal Visitor =
                                    path <- path + 1
                                    b |> Seq.map (fun bx -> {bx with Path = p})
                               else b)
-    let demoteSingletons l = // TODO revisit
-      let x = l |> Seq.length > 1
-      l |> Seq.map (fun bs -> bs |> Seq.map (fun b -> { b with Representative = if x then b.Representative
-                                                                                else Reporting.None }))
+    //let demoteSingletons l = // TODO revisit
+    //  let x = l |> Seq.length > 1
+    //  l |> Seq.map (fun bs -> bs |> Seq.map (fun b -> { b with Representative = if x then b.Representative
+    //                                                                            else Reporting.None }))
 
     let mutable uid = 0
     bps
     |> Seq.groupBy (fun b -> b.SequencePoint.Offset)
-    |> Seq.map (selectRepresentatives >> demoteSingletons)
+    |> Seq.map selectRepresentatives // >> demoteSingletons)
     |> Seq.collect id
     |> Seq.map(fun bs -> bs |>
                          if (bs |> Seq.head).Representative = Reporting.Representative
