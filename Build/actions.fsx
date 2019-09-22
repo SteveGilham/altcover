@@ -320,9 +320,12 @@ do ()"""
                                          WorkingDirectory = sampleRoot }
 
     AltCover.run parameters
+    System.Threading.Thread.Sleep(1000)
 
     Run (sampleRoot @@ (instrumented + "/Sample1.exe"), (sampleRoot @@ instrumented), [])
       "Instrumented .exe failed"
+    System.Threading.Thread.Sleep(1000)
+
     ValidateSample1 simpleReport reportSigil
 
   let SimpleInstrumentingRunUnderMono (samplePath : string) (binaryPath : string)

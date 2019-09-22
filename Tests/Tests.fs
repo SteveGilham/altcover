@@ -748,37 +748,54 @@ type AltCoverTests() =
 
     [<Test>]
     member self.LocalSource() =
-      Visitor.local <- false
+      Visitor.local := false
       Visitor.NameFilters.Clear()
       let fscore = Path.Combine(SolutionRoot.location, "packages/FSharp.Core.3.0.2/lib/net35")
+      let mono = Path.Combine(SolutionRoot.location, "packages/Mono.Cecil.0.11.0/lib/net40")
       let nuget = Path.Combine(SolutionRoot.location, "packages/nuget.commandline/5.1.0/tools")
       let exe = Path.Combine(nuget, "NuGet.exe")
       Assert.That(File.Exists exe, Is.True, "NuGet.exe")
       let pdb = Path.Combine(nuget, "NuGet.pdb")
       Assert.That(File.Exists pdb, Is.True, "NuGet.pdb")
 
-      let dll = Path.Combine(fscore, "FSharp.Core.dll")
-      Assert.That(File.Exists dll, Is.True, "FSharp.Core.dll")
+      let fdll = Path.Combine(fscore, "FSharp.Core.dll")
+      Assert.That(File.Exists fdll, Is.True, "FSharp.Core.dll")
+
+      let dll = Path.Combine(mono, "Mono.Cecil.dll")
+      Assert.That(File.Exists dll, Is.True, "Mono.Cecil.dll")
 
       let a = AssemblyDefinition.ReadAssembly exe
       ProgramDatabase.ReadSymbols a
 
-      let f = AssemblyDefinition.ReadAssembly dll
+      let m = AssemblyDefinition.ReadAssembly dll
+      ProgramDatabase.ReadSymbols m
+
+      let f = AssemblyDefinition.ReadAssembly fdll
       ProgramDatabase.ReadSymbols f
 
       Assert.That (Visitor.localFilter a, Is.False, "Assembly non-local")
       Assert.That (Visitor.localFilter a.MainModule, Is.False, "MainModule non-local")
-      Assert.That (Visitor.localFilter f, Is.False, "F# Assembly non-local")
+      Assert.That (Visitor.localFilter m, Is.False, "dll Assembly non-local")
+      Assert.That (Visitor.localFilter m.MainModule, Is.False, "dll MainModule non-local")
+      Assert.That (Visitor.localFilter f,
+#if NETCOREAPP2_0
+                    Is.True,
+#else
+                    Is.False,
+#endif
+                    "f# Assembly non-local")
       Assert.That (Visitor.localFilter f.MainModule, Is.False, "f# MainModule non-local")
       try
-        Visitor.local <- true
+        Visitor.local := true
         Assert.That (Visitor.localFilter a, Is.True, "Assembly local")
         Assert.That (Visitor.localFilter a.MainModule, Is.False, "MainModule local")
-        Assert.That (Visitor.localFilter f, Is.True, "F# Assembly non-local")
-        Assert.That (Visitor.localFilter f.MainModule, Is.False, "f# MainModule non-local")
+        Assert.That (Visitor.localFilter m, Is.True, "dll Assembly local")
+        Assert.That (Visitor.localFilter m.MainModule, Is.False, "dll MainModule local")
+        Assert.That (Visitor.localFilter f, Is.True, "f# Assembly local")
+        Assert.That (Visitor.localFilter f.MainModule, Is.False, "f# MainModule local")
 
       finally
-        Visitor.local <- false
+        Visitor.local := false
 
     [<Test>]
     member self.LocateMatchShouldChooseLongerWildCardPath() =
@@ -891,7 +908,7 @@ type AltCoverTests() =
         |> Seq.head
       Visitor.Visit [] [] // cheat reset
       try
-        Visitor.coalesceBranches <- true
+        Visitor.coalesceBranches := true
         Visitor.reportFormat <- Some Base.ReportFormat.OpenCover
         Visitor.NameFilters.Clear()
         let deeper =
@@ -912,7 +929,7 @@ type AltCoverTests() =
                Assert.That(b, Is.True, "flag " + i.ToString())
              | _ -> Assert.Fail("sequence point expected"))
       finally
-        Visitor.coalesceBranches <- false
+        Visitor.coalesceBranches := false
         Visitor.NameFilters.Clear()
         Visitor.reportFormat <- None
 
@@ -1376,35 +1393,49 @@ type AltCoverTests() =
         |> Seq.head
       Visitor.Visit [] [] // cheat reset
       try
-        Visitor.coalesceBranches <- true
+        Visitor.coalesceBranches := true
         Visitor.reportFormat <- Some Base.ReportFormat.OpenCover
         Visitor.NameFilters.Clear()
         let deeper =
           Visitor.Deeper <| Node.Method(method, Inspect.Instrument, None)
           |> Seq.toList
 
+        //deeper |> List.skip 21 |> Seq.iter (fun n -> match n with
+        //                                             | BranchPoint x -> printfn "deeper = %A sl = %A offset = %A" x x.SequencePoint.StartLine x.SequencePoint.Offset
+        //                                             | _ ->())
         let reported =
           deeper
           |> List.filter (fun n -> match n with
-                                   | BranchPoint b -> b.Representative
+                                   | BranchPoint b -> b.Representative = Reporting.Representative
                                    | _ -> true)
-        Assert.That(reported.Length, Is.EqualTo 16)
-        reported
-        |> List.skip 12
-        |> List.iteri (fun i node ->
-             match node with
-             | (BranchPoint b) -> Assert.That(b.Uid, Is.EqualTo (1 + i), "branch point number")
-             | _ -> Assert.Fail("branch point expected"))
+        //reported |> List.skip 21 |> Seq.iter (printfn "reported = %A")
+        Assert.That(reported.Length, Is.EqualTo 29)
+        let branches =
+          reported
+          |> List.skip 21
+          |> List.mapi (fun i node ->
+               match node with
+               | (BranchPoint b) -> Assert.That(b.Uid, Is.EqualTo i, "branch point number")
+                                    Some b
+               | _ -> Assert.Fail("branch point expected")
+                      None)
+          |> List.choose id
         deeper
-        |> List.take 12
+        |> List.take 21
         |> List.iteri (fun i node ->
              match node with
              | (MethodPoint(_, _, n, b)) ->
                Assert.That(n, Is.EqualTo i, "point number")
                Assert.That(b, Is.True, "flag " + i.ToString())
              | _ -> Assert.Fail("sequence point expected"))
+
+        Assert.That (
+          branches
+          |> List.map (fun b -> b.Path),
+          Is.EquivalentTo [ 0; 1; 0; 1; 2; 3; 0; 1]
+        )
       finally
-        Visitor.coalesceBranches <- false
+        Visitor.coalesceBranches := false
         Visitor.NameFilters.Clear()
         Visitor.reportFormat <- None
 
@@ -1426,7 +1457,7 @@ type AltCoverTests() =
       try
         Visitor.reportFormat <- Some Base.ReportFormat.OpenCover
         Visitor.NameFilters.Clear()
-        Visitor.coalesceBranches <- true
+        Visitor.coalesceBranches := true
         let deeper =
           Visitor.Deeper <| Node.Method(method, Inspect.Instrument, None)
           |> Seq.toList
@@ -1434,14 +1465,14 @@ type AltCoverTests() =
         let reported =
           deeper
           |> List.filter (fun n -> match n with
-                                   | BranchPoint b -> b.Representative
+                                   | BranchPoint b -> b.Representative = Reporting.Representative
                                    | _ -> true)
         Assert.That(reported.Length, Is.EqualTo 14)
         reported
         |> List.skip 9
         |> List.iteri (fun i node ->
              match node with
-             | (BranchPoint b) -> Assert.That(b.Uid, Is.EqualTo (i + 1), "branch point number")
+             | (BranchPoint b) -> Assert.That(b.Uid, Is.EqualTo i, "branch point number")
              | _ -> Assert.Fail("branch point expected"))
         deeper
         |> List.take 9
@@ -1452,7 +1483,7 @@ type AltCoverTests() =
                Assert.That(b, Is.True, "flag " + i.ToString())
              | _ -> Assert.Fail("sequence point expected"))
       finally
-        Visitor.coalesceBranches <- false
+        Visitor.coalesceBranches := false
         Visitor.NameFilters.Clear()
         Visitor.reportFormat <- None
 

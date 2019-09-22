@@ -544,8 +544,10 @@ module internal Instrument =
     then
       let point = (branch.Uid ||| Base.Counter.BranchFlag)
       let instrument instruction =
-        InsertVisit instruction state.MethodWorker state.RecordingMethodRef.Visit
-          state.ModuleId point
+        if branch.Representative <> Reporting.None
+        then InsertVisit instruction state.MethodWorker state.RecordingMethodRef.Visit
+               state.ModuleId point
+        else instruction // maybe have to insert NOPs?
 
       let updateSwitch update =
         let operands = branch.Start.Operand :?> Instruction []

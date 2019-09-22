@@ -272,7 +272,7 @@ module internal OpenCover =
           XAttribute(X "fileid", fileid)), fileset, ref)
 
     let VisitBranchPoint s branch =
-      if s.Excluded = Nothing && branch.Included && branch.Representative then
+      if s.Excluded = Nothing && branch.Included && branch.Representative = Reporting.Representative then
         let branches = s.Stack.Head.Parent.Descendants(X "BranchPoints") |> Seq.head
         let (xbranch, fileset, ref) = VisitGoTo s branch
         setChain xbranch (branch.Target.Tail |> List.map (fun i -> i.Offset))
