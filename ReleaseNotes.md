@@ -3,7 +3,7 @@ Q. Never mind the fluff -- how do I get started?
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
 # 6.2.7xx (Fukurou series release 6)
-* [BUGFIX] #Issue73 In .net core 3.0 preview and RC, `dotnet build` does a `dotnet publish` to the output directory, including FSharp.Core in F# projects.  Automatically exclude the file from instrumentation by the .net core tool (the Frameowrk/Mono tool static links its dependencies) to avoid mutally recursive calls between the recorder assembly and FSharp.Core that cause a stack overflow.
+* [BUGFIX] #Issue73 In .net core 3.0 preview and RC, `dotnet build` does a `dotnet publish` to the output directory, including FSharp.Core in F# projects.  Automatically exclude the file from instrumentation by the .net core tool to avoid mutally recursive calls between the recorder assembly and FSharp.Core that cause a stack overflow.  This  is not required for the Framework/Mono tool as that static links its dependency; I've not found a way to static-link FSharp.Core in the .net core world that doesn't fail with errors.
 * [BUGFIX] For --visibleBranches, fix up C# loops, and the path numbering
 
 # 6.2.714 (Fukurou series release 5)
