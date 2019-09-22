@@ -1005,10 +1005,21 @@ type AltCoverTests2() =
       let next = switch2.Next.Offset
       let n2 = next + 2
       // Need to check the heisenstate here
-      if next <> 42
+
+      //case of 43
+      //IL_0000: ldstr ""
+      //IL_0005: ldc.i4.s 24
+      //IL_0007: call System.Void AltCover.Recorder.Instance::Push(System.Int32)
+      //IL_000c: ldarg.0
+      //IL_000d: call System.Int32 Sample15.TeamCityFormat::get_Tag()
+      //IL_0012: switch IL_002b,IL_002d,IL_002b,IL_002d,IL_002b
+      //IL_002b: br.s IL_0041
+
+      let expected = 43
+      if next <> expected
       then target.Body.Instructions
            |> Seq.iter (printfn "%A")
-      Assert.That (next, Is.EqualTo 42)
+      Assert.That (next, Is.EqualTo expected)
       Assert.That (targets2, Is.EquivalentTo [ next; n2; next; n2; next ])
 
     [<Test>]
@@ -1105,12 +1116,14 @@ type AltCoverTests2() =
                | BranchPoint b -> Some b
                | _ -> None)
           |> Seq.choose id
-          |> Seq.take 2 // start of a switch
+          |> Seq.skip 2
+          |> Seq.take 2 // first of "switch"
           |> Seq.toList
         match branches with
         | [ b1; b2 ] ->
-          Assert.That(b1.Start.OpCode, Is.EqualTo OpCodes.Switch)
-          Assert.That(b2.Start.OpCode, Is.EqualTo OpCodes.Switch)
+          Assert.That(b1.Start.OpCode, Is.EqualTo OpCodes.Brfalse_S)
+          Assert.That(b2.Start.OpCode, Is.EqualTo OpCodes.Brfalse_S)
+
           Assert.That(b1.Start.Offset, Is.EqualTo b2.Start.Offset)
         | _ -> Assert.Fail("wrong number of items")
         let raw = AltCover.InstrumentContext.Build([])
@@ -1130,15 +1143,12 @@ type AltCoverTests2() =
             else Some(state, state.Next)) branches.Head.Start
           |> Seq.skip 1
           |> Seq.toList
-        Assert.That(inject.Length, Is.EqualTo 8)
-        let switches = branches.Head.Start.Operand :?> Instruction [] |> Seq.toList
-        Assert.That(switches.[0], Is.EqualTo inject.[1])
-        Assert.That(switches.[1], Is.EqualTo inject.[0])
-        Assert.That(inject.[0].Operand, Is.EqualTo inject.[5])
+        Assert.That(inject.Length, Is.EqualTo 5)
+        let jump = branches.Head.Start.Operand :?> Instruction
+        Assert.That(jump, Is.EqualTo inject.[1])
+        Assert.That(inject.[0].Operand, Is.EqualTo inject.[4].Next)
         Assert.That
-          ((inject.[2].Operand :?> int) &&& Base.Counter.BranchMask, Is.EqualTo 1)
-        Assert.That
-          ((inject.[6].Operand :?> int) &&& Base.Counter.BranchMask, Is.EqualTo 0)
+          ((inject.[2].Operand :?> int) &&& Base.Counter.BranchMask, Is.EqualTo branches.[1].Uid)
       finally
         Visitor.NameFilters.Clear()
         Visitor.reportFormat <- None
