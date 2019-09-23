@@ -312,17 +312,13 @@ module internal Visitor =
 
   let localFilter (nameProvider : Object) =
     match nameProvider with
-    | :? AssemblyDefinition as a ->
-#if NETCOREAPP2_0
-        a.Name.Name = "FSharp.Core" || // HACK HACK HACK Issue 73
-#endif
-        (!local &&
-         a.MainModule
-         |> moduleFiles
-         |> Seq.tryHead
-         |> Option.map File.Exists
-         |> Option.getOrElse false
-         |> not)
+    | :? AssemblyDefinition as a -> !local &&
+                                    a.MainModule
+                                    |> moduleFiles
+                                    |> Seq.tryHead
+                                    |> Option.map File.Exists
+                                    |> Option.getOrElse false
+                                    |> not
     | _ -> false
 
   let IsIncluded(nameProvider : Object) =

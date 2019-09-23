@@ -778,11 +778,7 @@ type AltCoverTests() =
       Assert.That (Visitor.localFilter m, Is.False, "dll Assembly non-local")
       Assert.That (Visitor.localFilter m.MainModule, Is.False, "dll MainModule non-local")
       Assert.That (Visitor.localFilter f,
-#if NETCOREAPP2_0
-                    Is.True,
-#else
                     Is.False,
-#endif
                     "f# Assembly non-local")
       Assert.That (Visitor.localFilter f.MainModule, Is.False, "f# MainModule non-local")
       try
