@@ -11,6 +11,7 @@
     <ContinuousIntegrationBuild Condition="'$(APPVEYOR)'=='True'">true</ContinuousIntegrationBuild>
     <DeterministicSourcePaths Condition="'$(APPVEYOR)'=='True'">true</DeterministicSourcePaths>
     <ApplicationIcon>AltCover.ico</ApplicationIcon>
+    <SolutionDir Condition="'$(SolutionDir)' == '$(ProjectDir)'">$(ProjectDir)../</SolutionDir>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
