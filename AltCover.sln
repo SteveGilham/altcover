@@ -22,8 +22,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{1441
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample1", "Sample1\Sample1.csproj", "{25F279C3-2032-4AE1-ACEB-EABE5EFC739B}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "AltCover.Shadow", "AltCover.Recorder\AltCover.Shadow.fsproj", "{62480BE3-4479-4A47-A23F-50858ECD74B3}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build Items", "Build Items", "{B9D49110-CE75-418C-BF97-1F94D741EA19}"
 	ProjectSection(SolutionItems) = preProject
 		.travis.yml = .travis.yml
@@ -141,13 +139,6 @@ Global
 		{25F279C3-2032-4AE1-ACEB-EABE5EFC739B}.Release|Any CPU.Build.0 = Debug|Any CPU
 		{25F279C3-2032-4AE1-ACEB-EABE5EFC739B}.Release|x86.ActiveCfg = Release|Any CPU
 		{25F279C3-2032-4AE1-ACEB-EABE5EFC739B}.Release|x86.Build.0 = Release|Any CPU
-		{62480BE3-4479-4A47-A23F-50858ECD74B3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{62480BE3-4479-4A47-A23F-50858ECD74B3}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{62480BE3-4479-4A47-A23F-50858ECD74B3}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{62480BE3-4479-4A47-A23F-50858ECD74B3}.Debug|x86.Build.0 = Debug|Any CPU
-		{62480BE3-4479-4A47-A23F-50858ECD74B3}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{62480BE3-4479-4A47-A23F-50858ECD74B3}.Release|x86.ActiveCfg = Release|Any CPU
-		{62480BE3-4479-4A47-A23F-50858ECD74B3}.Release|x86.Build.0 = Release|Any CPU
 		{0A513AA9-84D8-46E1-BAB7-08C73ACE5FCA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{0A513AA9-84D8-46E1-BAB7-08C73ACE5FCA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0A513AA9-84D8-46E1-BAB7-08C73ACE5FCA}.Debug|x86.ActiveCfg = Debug|Any CPU
@@ -329,7 +320,7 @@ Global
 		{88A4D1E6-147D-4F1F-8C36-2143F16A8340} = {1441B3F4-72F8-4BB5-B9DF-29767F6719F1}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {9BBC0EFA-53F6-4254-B7D9-EF1BAC0AD19E}
 		RESX_NeutralResourcesLanguage = en-GB
+		SolutionGuid = {9BBC0EFA-53F6-4254-B7D9-EF1BAC0AD19E}
 	EndGlobalSection
 EndGlobal
