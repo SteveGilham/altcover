@@ -2916,7 +2916,10 @@ _Target "DoIt"
     { to'.WithCommon(setBaseOptions).WithParameters pp2 cc2 ForceTrue with MSBuildParams =
                                                                              cliArguments })
     "dotnettest.fsproj"
-  let ipmo = AltCover.Api.Ipmo().Trim().Split().[1].Trim([| '\"' |])
+  let ipmo = (AltCover.Api.Ipmo().Trim().Split()
+              |> Seq.take 2
+              |> Seq.skip 1
+              |> Seq.head).Trim([| '\"' |])
   let command = "$ipmo = '" + ipmo + "'; Import-Module $ipmo; ConvertTo-BarChart -?"
 
   let corePath = AltCover.Fake.Api.toolPath AltCover.Fake.Implementation.DotNetCore

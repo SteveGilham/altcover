@@ -5,6 +5,8 @@ VisualStudioVersion = 16.0.29318.209
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.recorder.core", "AltCover.Recorder\altcover.recorder.core.fsproj", "{85B49E3C-F5B0-40F5-8DB5-1464BEC10E3A}"
 EndProject
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.recorder.tests.core", "Recorder.Tests\altcover.recorder.tests.core.fsproj", "{7F197884-A015-4D01-9543-AF0837A4BE33}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,8 @@ Global
 		{85B49E3C-F5B0-40F5-8DB5-1464BEC10E3A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{85B49E3C-F5B0-40F5-8DB5-1464BEC10E3A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{85B49E3C-F5B0-40F5-8DB5-1464BEC10E3A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7F197884-A015-4D01-9543-AF0837A4BE33}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7F197884-A015-4D01-9543-AF0837A4BE33}.Debug|Any CPU.Build.0 = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
