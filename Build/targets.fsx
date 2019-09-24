@@ -210,12 +210,13 @@ _Target "BuildRelease" (fun _ ->
                   Properties =
                     [ "Configuration", "Release"
                       "DebugSymbols", "True" ] })
-    "./altcover.core.sln"
-    |> DotNet.build
-         (fun p ->
-         { p.WithCommon dotnetOptions with Configuration =
-                                             DotNet.BuildConfiguration.Release }
-         |> withMSBuildParams)
+
+    ["./altcover.recorder.core.sln"; "./altcover.core.sln"]
+    |> Seq.iter (fun s -> s
+                          |> DotNet.build
+                           (fun p ->
+                           { p.WithCommon dotnetOptions with Configuration = DotNet.BuildConfiguration.Release }
+                           |> withMSBuildParams))
   with x ->
     printfn "%A" x
     reraise())
@@ -240,7 +241,7 @@ _Target "BuildDebug" (fun _ ->
     Directory.ensure "/tmp/.AltCover_SourceLink"
     Shell.copyFile "/tmp/.AltCover_SourceLink/Sample14.SourceLink.Class3.cs" "./Sample14/Sample14/Class3.txt"
 
-  [ "./altcover.core.sln"; "./Sample14/Sample14.sln" ]
+  [ "./altcover.recorder.core.sln"; "./altcover.core.sln"; "./Sample14/Sample14.sln" ]
   |> Seq.iter (fun s -> s
                         |> DotNet.build
                          (fun p ->

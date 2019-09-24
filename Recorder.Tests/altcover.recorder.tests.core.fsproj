@@ -45,10 +45,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\AltCover.Recorder\altcover.recorder.core.fsproj" />
+    <PackageReference Update="FSharp.Core" Version="4.7.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Update="FSharp.Core" Version="4.7.0" />
+    <Reference Include="AltCover.Recorder">
+      <HintPath>$(SolutionDir)_Binaries\AltCover.Recorder\$(Configuration)+$(Platform)\netstandard2.0\AltCover.Recorder.dll</HintPath>
+    </Reference>
   </ItemGroup>
+
 </Project>

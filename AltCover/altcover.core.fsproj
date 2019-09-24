@@ -82,7 +82,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\AltCover.Recorder\altcover.recorder.core.fsproj" />
+    <Reference Include="AltCover.Recorder">
+      <HintPath>$(SolutionDir)_Binaries\AltCover.Recorder\$(Configuration)+$(Platform)\netstandard2.0\AltCover.Recorder.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
   <ItemGroup>
