@@ -45,9 +45,9 @@
     <EmbeddedResource Include="NCoverBugFix.cobertura" />
     <EmbeddedResource Include="..\Recorder.Tests\SimpleCoverage.xml" Link="SimpleCoverage.xml" />
     <EmbeddedResource Include="Sample1.deps.json" />
-    <EmbeddedResource Include="Sample1.deps.ncafter.json" />
+    <EmbeddedResource Include="Sample1.deps.after.json" />
     <EmbeddedResource Include="Sample2.deps.json" />
-    <EmbeddedResource Include="Sample2.deps.ncafter.json" />
+    <EmbeddedResource Include="Sample2.deps.after.json" />
     <EmbeddedResource Include="..\Build\Infrastructure.snk" Link="Infrastructure.snk" />
     <EmbeddedResource Include="TailCallSample.dl_" />
     <EmbeddedResource Include="SwitchSample.dl_" />

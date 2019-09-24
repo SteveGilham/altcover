@@ -44,16 +44,6 @@ type AltCoverTests2() =
 
     // Instrument.fs
     [<Test>]
-    member self.ShouldNotHaveHighFSCore() =
-      let high = AltCover.Instrument.seekFSharpCore "666.666.666"
-      Assert.That(high, Is.False)
-
-    [<Test>]
-    member self.ShouldHaveLowFSCore() =
-      let high = AltCover.Instrument.seekFSharpCore "4.3.4"
-      Assert.That(high, Is.True)
-
-    [<Test>]
     member self.ShouldBeAbleToGetTheVisitReportMethod() =
       let where = Assembly.GetExecutingAssembly().Location
       let path =
@@ -1669,12 +1659,7 @@ type AltCoverTests2() =
     [<Test>]
     member self.JSONInjectionTransformsStandaloneFileAsExpected() =
       let inputName = infrastructureSnk.Replace("Infrastructure.snk", "Sample1.deps.json")
-#if NETCOREAPP2_0
-      let resultName =
-        infrastructureSnk.Replace("Infrastructure.snk", "Sample1.deps.ncafter.json")
-#else
       let resultName = infrastructureSnk.Replace("Infrastructure.snk", "Sample1.deps.after.json")
-#endif
       use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(inputName)
       use reader = new StreamReader(stream)
       let result = Instrument.injectJSON <| reader.ReadToEnd()
@@ -1692,12 +1677,7 @@ type AltCoverTests2() =
     [<Test>]
     member self.JSONInjectionTransformsDependencyFileAsExpected() =
       let inputName = infrastructureSnk.Replace("Infrastructure.snk", "Sample2.deps.json")
-#if NETCOREAPP2_0
-      let resultName =
-        infrastructureSnk.Replace("Infrastructure.snk", "Sample2.deps.ncafter.json")
-#else
       let resultName = infrastructureSnk.Replace("Infrastructure.snk", "Sample2.deps.after.json")
-#endif
       use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(inputName)
       use reader = new StreamReader(stream)
       let result = Instrument.injectJSON <| reader.ReadToEnd()
@@ -1714,12 +1694,7 @@ type AltCoverTests2() =
 
     [<Test>]
     member self.JSONInjectionIsIdempotent() =
-#if NETCOREAPP2_0
-      let resultName =
-        infrastructureSnk.Replace("Infrastructure.snk", "Sample1.deps.ncafter.json")
-#else
       let resultName = infrastructureSnk.Replace("Infrastructure.snk", "Sample1.deps.after.json")
-#endif
       use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resultName)
       use reader = new StreamReader(stream)
       let expected = reader.ReadToEnd()

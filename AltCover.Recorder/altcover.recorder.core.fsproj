@@ -11,6 +11,7 @@
     <SolutionDir Condition="'$(SolutionDir)' == '$(ProjectDir)'">$(ProjectDir)../</SolutionDir>
     <OutputPath>$(SolutionDir)_Binaries/$(AssemblyName)/$(Configuration)+$(Platform)/</OutputPath>
     <IntermediateOutputPath>$(SolutionDir)_Intermediate/$(AssemblyName)/$(Configuration)+$(Platform)/</IntermediateOutputPath>
+    <OtherFlags>--keyfile:$(SolutionDir)Build\Infrastructure.snk --standalone</OtherFlags>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
@@ -18,9 +19,6 @@
     <NoWarn>52</NoWarn>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <WarningsAsErrors />
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)'=='Release'">
-    <OtherFlags>--keyfile:$(SolutionDir)Build\Infrastructure.snk --standalone</OtherFlags>
   </PropertyGroup>
 
   <ItemGroup>
@@ -40,11 +38,7 @@
     </PackageReference>
   </ItemGroup>
 
-  <ItemGroup Condition="'$(Configuration)'=='Release'">
+  <ItemGroup>
     <PackageReference Update="FSharp.Core" Version="4.7.0" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(Configuration)'=='Debug'">
-    <PackageReference Update="FSharp.Core" Version="4.3.4" />
   </ItemGroup>
 </Project>

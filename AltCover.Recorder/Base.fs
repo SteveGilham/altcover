@@ -42,14 +42,10 @@ type
   | Both = 3
   | Table = 4
 
-#if NETSTANDARD2_0
-[<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage>]
-#else
-#if NETCOREAPP2_0
-[<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage>]
-#else
+#if NET2
 [<System.Runtime.InteropServices.ProgIdAttribute("ExcludeFromCodeCoverage hack for OpenCover issue 615")>]
-#endif
+#else
+[<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage>]
 #endif
 [<NoComparison>]
 type internal Track =
@@ -59,14 +55,10 @@ type internal Track =
   | Both of (int64 * int)
   | Table of Dictionary<string, Dictionary<int, PointVisit>>
 and [<NoComparison>]
-#if NETSTANDARD2_0
-[<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage>]
-#else
-#if NETCOREAPP2_0
-[<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage>]
-#else
+#if NET2
 [<System.Runtime.InteropServices.ProgIdAttribute("ExcludeFromCodeCoverage hack for OpenCover issue 615")>]
-#endif
+#else
+[<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage>]
 #endif
     internal PointVisit =
     {
