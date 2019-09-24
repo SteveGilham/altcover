@@ -21,6 +21,9 @@ open Swensen.Unquote
 [<TestFixture>]
 type AltCoverTests() =
   class
+    [<SetUp>]
+    member self.SetUp() =
+      Runner.init()
 
     // Base.fs
     [<Test>]
@@ -470,6 +473,7 @@ type AltCoverTests() =
           | Left(x, y) ->
             Assert.That(y, Is.SameAs options)
             Assert.That(x, Is.EqualTo "UsageError")
+            Assert.That(CommandLine.error |> Seq.head, Is.EqualTo "--executable : specify this only once")
         finally
           Runner.executable := None)
 
@@ -527,6 +531,7 @@ type AltCoverTests() =
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
+          Assert.That(CommandLine.error |> Seq.head, Is.EqualTo "--workingDirectory : specify this only once")
       finally
         Runner.workingDirectory <- None
 
@@ -598,6 +603,7 @@ type AltCoverTests() =
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
+          Assert.That(CommandLine.error |> Seq.head, Is.EqualTo "--recorderDirectory : specify this only once")
       finally
         Runner.recordingDirectory <- None
 
@@ -660,6 +666,7 @@ type AltCoverTests() =
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
+          Assert.That(CommandLine.error |> Seq.head, Is.EqualTo "--collect : specify this only once")
       finally
         Runner.collect := false
 
@@ -707,6 +714,7 @@ type AltCoverTests() =
           | Left(x, y) ->
             Assert.That(y, Is.SameAs options)
             Assert.That(x, Is.EqualTo "UsageError")
+            Assert.That(CommandLine.error |> Seq.head, Is.EqualTo "--lcovReport : specify this only once")
         finally
           Runner.Summaries <- [ Runner.StandardSummary ]
           LCov.path := None)
@@ -760,6 +768,7 @@ type AltCoverTests() =
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
+          Assert.That(CommandLine.error |> Seq.head, Is.EqualTo "--threshold : specify this only once")
       finally
         Runner.threshold <- None
 
@@ -852,6 +861,7 @@ type AltCoverTests() =
           | Left(x, y) ->
             Assert.That(y, Is.SameAs options)
             Assert.That(x, Is.EqualTo "UsageError")
+            Assert.That(CommandLine.error |> Seq.head, Is.EqualTo "--cobertura : specify this only once")
         finally
           Runner.Summaries <- [ Runner.StandardSummary ]
           Cobertura.path := None)
@@ -914,6 +924,7 @@ type AltCoverTests() =
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
+          Assert.That(CommandLine.error |> Seq.head, Is.EqualTo "--outputFile : specify this only once")
       finally
         Runner.output <- None
 
@@ -961,6 +972,7 @@ type AltCoverTests() =
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
+          Assert.That(CommandLine.error |> Seq.head, Is.EqualTo "--dropReturnCode : specify this only once")
       finally
         CommandLine.dropReturnCode := false
 
@@ -1030,7 +1042,8 @@ type AltCoverTests() =
         | Right _ -> Assert.Fail()
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
-          Assert.That(x, Is.EqualTo "UsageError"))
+          Assert.That(x, Is.EqualTo "UsageError")
+          Assert.That(CommandLine.error |> Seq.head, Is.EqualTo "--teamcity : specify this only once"))
 
     [<Test>]
     member self.ParsingBadTCGivesFailure() =

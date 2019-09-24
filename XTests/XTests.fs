@@ -659,7 +659,6 @@ module XTests =
         if File.Exists(pdb) then
           [ "AltCover.Recorder.g.dll";
 #if NETCOREAPP2_1
-            "FSharp.Core.dll"
 #else
             "AltCover.Recorder.g.pdb"
 #endif
@@ -811,9 +810,6 @@ module XTests =
       Assert.True(result.RecordingAssembly |> isNull)
       let created = Path.Combine(output, "Sample4.dll")
       Assert.True(File.Exists created, created + " not found")
-#if NETCOREAPP2_1
-      Assert.True(File.Exists(Path.Combine(output, "FSharp.Core.dll")), "Core not found")
-#else
       let pdb = Path.ChangeExtension(Assembly.GetExecutingAssembly().Location, ".pdb")
       if File.Exists pdb then
         let isWindows =
@@ -824,8 +820,6 @@ module XTests =
 #endif
         Assert.True (isWindows |> not ||
                      File.Exists (Path.ChangeExtension(created, ".pdb")), created + " pdb not found")
-#endif
-
     finally
       Visitor.outputDirectories.Clear()
       Visitor.outputDirectories.AddRange saved

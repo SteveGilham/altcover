@@ -44,16 +44,6 @@ type AltCoverTests2() =
 
     // Instrument.fs
     [<Test>]
-    member self.ShouldNotHaveHighFSCore() =
-      let high = AltCover.Instrument.seekFSharpCore "666.666.666"
-      Assert.That(high, Is.False)
-
-    [<Test>]
-    member self.ShouldHaveLowFSCore() =
-      let high = AltCover.Instrument.seekFSharpCore "4.3.4"
-      Assert.That(high, Is.True)
-
-    [<Test>]
     member self.ShouldBeAbleToGetTheVisitReportMethod() =
       let where = Assembly.GetExecutingAssembly().Location
       let path =
@@ -1001,7 +991,26 @@ type AltCoverTests2() =
                    |> Seq.find (fun i -> i.OpCode = OpCodes.Switch)
       let targets2 = switch2.Operand :?> Instruction array
                     |> Array.map (fun i -> i.Offset)
-      Assert.That (targets2, Is.EquivalentTo [ 43; 45; 43; 45; 43 ])
+
+      let next = switch2.Next.Offset
+      let n2 = next + 2
+      // Need to check the heisenstate here
+
+      //case of 43
+      //IL_0000: ldstr ""
+      //IL_0005: ldc.i4.s 24
+      //IL_0007: call System.Void AltCover.Recorder.Instance::Push(System.Int32)
+      //IL_000c: ldarg.0
+      //IL_000d: call System.Int32 Sample15.TeamCityFormat::get_Tag()
+      //IL_0012: switch IL_002b,IL_002d,IL_002b,IL_002d,IL_002b
+      //IL_002b: br.s IL_0041
+
+      let expected = 43
+      if next <> expected
+      then target.Body.Instructions
+           |> Seq.iter (printfn "%A")
+      Assert.That (next, Is.EqualTo expected)
+      Assert.That (targets2, Is.EquivalentTo [ next; n2; next; n2; next ])
 
     [<Test>]
     member self.ShouldNotChangeAnUntrackedMethod() =
@@ -1075,6 +1084,65 @@ type AltCoverTests2() =
       finally
         Visitor.NameFilters.Clear()
         Visitor.reportFormat <- None
+
+    [<Test>]
+    member self.PseudoSwitchVisibleBranchesShouldSkipNonRepresentativeCases() =
+      let where = Assembly.GetExecutingAssembly().Location
+      let path = Path.Combine(Path.GetDirectoryName(where), "Sample16.dll")
+      let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+      ProgramDatabase.ReadSymbols def
+      Visitor.coalesceBranches := true
+      let method =
+        def.MainModule.GetAllTypes()
+        |> Seq.collect (fun t -> t.Methods)
+        |> Seq.find (fun m -> m.Name = "Bar")
+      Visitor.Visit [] [] // cheat reset
+      try
+        Visitor.reportFormat <- Some Base.ReportFormat.OpenCover
+        let branches =
+          Visitor.Deeper <| Node.Method(method, Inspect.Instrument, None)
+          |> Seq.map (fun n ->
+               match n with
+               | BranchPoint b -> Some b
+               | _ -> None)
+          |> Seq.choose id
+          |> Seq.skip 2
+          |> Seq.take 2 // first of "switch"
+          |> Seq.toList
+        match branches with
+        | [ b1; b2 ] ->
+          Assert.That(b1.Start.OpCode, Is.EqualTo OpCodes.Brfalse_S)
+          Assert.That(b2.Start.OpCode, Is.EqualTo OpCodes.Brfalse_S)
+
+          Assert.That(b1.Start.Offset, Is.EqualTo b2.Start.Offset)
+        | _ -> Assert.Fail("wrong number of items")
+        let raw = AltCover.InstrumentContext.Build([])
+
+        let state =
+          { raw with RecordingMethodRef =
+                       { raw.RecordingMethodRef with Visit = method
+                                                     Push = null
+                                                     Pop = null }
+                     MethodWorker = method.Body.GetILProcessor() }
+
+        let next = branches.Head.Start.Next
+        branches |> Seq.iter (fun b -> Instrument.VisitBranchPoint state b |> ignore)
+        let inject =
+          Seq.unfold (fun (state : Cil.Instruction) ->
+            if isNull state || state = next then None
+            else Some(state, state.Next)) branches.Head.Start
+          |> Seq.skip 1
+          |> Seq.toList
+        Assert.That(inject.Length, Is.EqualTo 5)
+        let jump = branches.Head.Start.Operand :?> Instruction
+        Assert.That(jump, Is.EqualTo inject.[1])
+        Assert.That(inject.[0].Operand, Is.EqualTo inject.[4].Next)
+        Assert.That
+          ((inject.[2].Operand :?> int) &&& Base.Counter.BranchMask, Is.EqualTo branches.[1].Uid)
+      finally
+        Visitor.NameFilters.Clear()
+        Visitor.reportFormat <- None
+        Visitor.coalesceBranches := false
 
     [<Test>]
     member self.SimpleBranchShouldInstrumentByPushingDown() =
@@ -1591,12 +1659,7 @@ type AltCoverTests2() =
     [<Test>]
     member self.JSONInjectionTransformsStandaloneFileAsExpected() =
       let inputName = infrastructureSnk.Replace("Infrastructure.snk", "Sample1.deps.json")
-#if NETCOREAPP2_0
-      let resultName =
-        infrastructureSnk.Replace("Infrastructure.snk", "Sample1.deps.ncafter.json")
-#else
       let resultName = infrastructureSnk.Replace("Infrastructure.snk", "Sample1.deps.after.json")
-#endif
       use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(inputName)
       use reader = new StreamReader(stream)
       let result = Instrument.injectJSON <| reader.ReadToEnd()
@@ -1614,12 +1677,7 @@ type AltCoverTests2() =
     [<Test>]
     member self.JSONInjectionTransformsDependencyFileAsExpected() =
       let inputName = infrastructureSnk.Replace("Infrastructure.snk", "Sample2.deps.json")
-#if NETCOREAPP2_0
-      let resultName =
-        infrastructureSnk.Replace("Infrastructure.snk", "Sample2.deps.ncafter.json")
-#else
       let resultName = infrastructureSnk.Replace("Infrastructure.snk", "Sample2.deps.after.json")
-#endif
       use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(inputName)
       use reader = new StreamReader(stream)
       let result = Instrument.injectJSON <| reader.ReadToEnd()
@@ -1636,12 +1694,7 @@ type AltCoverTests2() =
 
     [<Test>]
     member self.JSONInjectionIsIdempotent() =
-#if NETCOREAPP2_0
-      let resultName =
-        infrastructureSnk.Replace("Infrastructure.snk", "Sample1.deps.ncafter.json")
-#else
       let resultName = infrastructureSnk.Replace("Infrastructure.snk", "Sample1.deps.after.json")
-#endif
       use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resultName)
       use reader = new StreamReader(stream)
       let expected = reader.ReadToEnd()

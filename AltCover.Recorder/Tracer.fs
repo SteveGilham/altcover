@@ -6,10 +6,10 @@ open System.IO
 open System.IO.Compression
 open System.Threading
 
-#if NETSTANDARD2_0
-[<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage>]
-#else
+#if NET2
 [<System.Runtime.InteropServices.ProgIdAttribute("ExcludeFromCodeCoverage hack for OpenCover issue 615")>]
+#else
+[<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage>]
 #endif
 type internal Close =
   | DomainUnload
@@ -24,10 +24,6 @@ type Tracer =
     Definitive : bool
     Stream : System.IO.Stream
     Formatter : System.IO.BinaryWriter }
-#if NETSTANDARD2_0
-  static member Core() =
-    typeof<Microsoft.FSharp.Core.CompilationMappingAttribute>.Assembly.Location
-#endif
 
   static member Create(name : string) =
     { Tracer = name

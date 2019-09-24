@@ -210,12 +210,13 @@ _Target "BuildRelease" (fun _ ->
                   Properties =
                     [ "Configuration", "Release"
                       "DebugSymbols", "True" ] })
-    "./altcover.core.sln"
-    |> DotNet.build
-         (fun p ->
-         { p.WithCommon dotnetOptions with Configuration =
-                                             DotNet.BuildConfiguration.Release }
-         |> withMSBuildParams)
+
+    ["./altcover.recorder.core.sln"; "./altcover.core.sln"]
+    |> Seq.iter (fun s -> s
+                          |> DotNet.build
+                           (fun p ->
+                           { p.WithCommon dotnetOptions with Configuration = DotNet.BuildConfiguration.Release }
+                           |> withMSBuildParams))
   with x ->
     printfn "%A" x
     reraise())
@@ -240,7 +241,7 @@ _Target "BuildDebug" (fun _ ->
     Directory.ensure "/tmp/.AltCover_SourceLink"
     Shell.copyFile "/tmp/.AltCover_SourceLink/Sample14.SourceLink.Class3.cs" "./Sample14/Sample14/Class3.txt"
 
-  [ "./altcover.core.sln"; "./Sample14/Sample14.sln" ]
+  [ "./altcover.recorder.core.sln"; "./altcover.core.sln"; "./Sample14/Sample14.sln" ]
   |> Seq.iter (fun s -> s
                         |> DotNet.build
                          (fun p ->
@@ -2915,7 +2916,10 @@ _Target "DoIt"
     { to'.WithCommon(setBaseOptions).WithParameters pp2 cc2 ForceTrue with MSBuildParams =
                                                                              cliArguments })
     "dotnettest.fsproj"
-  let ipmo = AltCover.Api.Ipmo().Trim().Split().[1].Trim([| '\"' |])
+  let ipmo = (AltCover.Api.Ipmo().Trim().Split()
+              |> Seq.take 2
+              |> Seq.skip 1
+              |> Seq.head).Trim([| '\"' |])
   let command = "$ipmo = '" + ipmo + "'; Import-Module $ipmo; ConvertTo-BarChart -?"
 
   let corePath = AltCover.Fake.Api.toolPath AltCover.Fake.Implementation.DotNetCore
@@ -3377,6 +3381,7 @@ _Target "Issue72" (fun _ ->
 
     let p0 = { Primitive.PrepareParams.Create() with LocalSource = true
                                                      VisibleBranches = false
+                                                     TypeFilter = [ "UnitTest" ]
                                                      XmlReport = "./original.xml" }
     let pp0 = AltCover.PrepareParams.Primitive p0
     let c0 = Primitive.CollectParams.Create()
@@ -3391,13 +3396,27 @@ _Target "Issue72" (fun _ ->
          new FileStream("./Sample16/Test/_Issue72/original.xml", FileMode.Open, FileAccess.Read, FileShare.None, 4096,
                         FileOptions.SequentialScan)
        let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
+       let found = coverageDocument.Descendants(XName.Get("BranchPoint"))
+                   |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value)
+                   |> Seq.toList
        Assert.That
-         (coverageDocument.Descendants(XName.Get("BranchPoint")) 
-         |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value),
-          Is.EquivalentTo ["4"; "1"; "3"; "1"; "2"; "1"; "1"; "1" ])
+         (found,
+          Is.EquivalentTo [ "1"
+                            "4"
+                            "4"
+                            "0"
+                            "3"
+                            "1"
+                            "2"
+                            "1"
+                            "1"
+                            "1"
+                            "5"
+                            "5"], sprintf "original: %A" found)
 
     let p1 = { Primitive.PrepareParams.Create() with LocalSource = true
                                                      VisibleBranches = true
+                                                     TypeFilter = [ "UnitTest" ]
                                                      XmlReport = "./combined.xml" }
     let pp1 = AltCover.PrepareParams.Primitive p1
     let c0 = Primitive.CollectParams.Create()
@@ -3412,10 +3431,19 @@ _Target "Issue72" (fun _ ->
          new FileStream("./Sample16/Test/_Issue72/combined.xml", FileMode.Open, FileAccess.Read, FileShare.None, 4096,
                         FileOptions.SequentialScan)
        let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
+       let found = coverageDocument.Descendants(XName.Get("BranchPoint"))
+                   |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value)
+                   |> Seq.toList
        Assert.That
-         (coverageDocument.Descendants(XName.Get("BranchPoint")) 
-         |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value),
-          Is.EquivalentTo ["2"; "1"; "1"; "1"])
+         (found,
+          Is.EquivalentTo ["1"
+                           "4"
+                           "1"
+                           "1"
+                           "1"
+                           "1"
+                           "5"
+                           "5"], sprintf "combined: %A" found)
 
   finally
     let folder = (nugetCache @@ "altcover") @@ !Version

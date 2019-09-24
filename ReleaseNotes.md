@@ -2,6 +2,13 @@ Q. Never mind the fluff -- how do I get started?
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
+# 6.2.7xx (Fukurou series release 7)
+* [BUGFIX] Revisit #Issue73, because static linking FSharp.Core into the recorder does work at F#4.7 -- consequently FSharp.Core no longer needs to be excluded from instrumentation in the .net core tool any more than in the Framework tool.
+
+# 6.2.719 (Fukurou series release 6)
+* [BUGFIX] #Issue73 In .net core 3.0 preview and RC, `dotnet build` does a `dotnet publish` to the output directory, including FSharp.Core in F# projects.  Automatically exclude that file from instrumentation by the .net core tool to avoid mutually recursive calls between the recorder assembly and FSharp.Core that cause a stack overflow.  This  is not required for the Framework/Mono tool as that static links its dependency. I've not found a way to static-link FSharp.Core in the .net core world that doesn't fail with errors.
+* [BUGFIX] For --visibleBranches, fix up C# loops, and the path numbering for decompiled `switch`/`match` logic
+
 # 6.2.714 (Fukurou series release 5)
 * [BUGFIX] Finish wiring up `/p:AltCoverLocalSource` support
 * [BUGFIX] Fix failure when input/output directories were specified with a trailing separator character

@@ -84,7 +84,6 @@ module Adapter =
 
   let internal ProcessExit() = ProcessExit
 
-#if MONO
   let internal MakeNullTrace name = { Tracer = name
                                       Stream = null
                                       Formatter = null
@@ -95,5 +94,4 @@ module Adapter =
                                       Formatter = new System.IO.BinaryWriter(s1)
                                       Runner = true
                                       Definitive = false }
-#endif
 #endif

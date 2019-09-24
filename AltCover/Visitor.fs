@@ -33,6 +33,11 @@ type internal CoverStyle =
   | LineOnly = 1
   | BranchOnly = 2
 
+type internal Reporting =
+  | None = 0
+  | Representative = 1
+  | Contributing = 2
+
 [<ExcludeFromCodeCoverage>]
 type internal SeqPnt =
   { StartLine : int
@@ -63,7 +68,7 @@ type internal GoTo =
     Offset : int
     Target : Instruction list
     Included : bool
-    Representative : bool
+    Representative : Reporting
     Key : int }
 
 [<ExcludeFromCodeCoverage; NoComparison>]
@@ -204,7 +209,7 @@ module internal KeyStore =
 type Fix<'T> = delegate of 'T -> Fix<'T>
 
 module internal Visitor =
-  let internal collect = ref false
+  let internal collect = ref false // ddFlag
   let internal TrackingNames = new List<String>()
   let internal DefaultFilter (s : Regex) =
     (s, Exclude)
@@ -217,14 +222,15 @@ module internal Visitor =
       |> DefaultFilter
       |> FilterClass.Method ]
 
-  let internal inplace = ref false
-  let mutable internal coalesceBranches = false
-  let mutable internal single = false
-  let mutable internal local = false
+  let internal inplace = ref false // ddFlag
+  let internal coalesceBranches = ref false // ddFlag
+  let internal local = ref false // ddFlag
+
+  let mutable internal single = false // more complicated
   let Sampling() =
     (if single then Base.Sampling.Single
                else Base.Sampling.All) |> int
-  let internal sourcelink = ref false
+  let internal sourcelink = ref false // ddFlag
   let internal defer = ref (Some false)
   let internal deferOpCode () =
     if Option.getOrElse false !defer
@@ -306,7 +312,7 @@ module internal Visitor =
 
   let localFilter (nameProvider : Object) =
     match nameProvider with
-    | :? AssemblyDefinition as a -> local &&
+    | :? AssemblyDefinition as a -> !local &&
                                     a.MainModule
                                     |> moduleFiles
                                     |> Seq.tryHead
@@ -686,7 +692,7 @@ module internal Visitor =
                || state.OpCode.FlowControl = FlowControl.Break
                || state.OpCode.FlowControl = FlowControl.Throw
                || state.OpCode.FlowControl = FlowControl.Return // includes state.Next = null
-               || isNull state.Next) then (if coalesceBranches && state <> l.Head then state :: l else l)
+               || isNull state.Next) then (if !coalesceBranches && state <> l.Head then state :: l else l)
       else accumulate state.Next gendarme
     accumulate i [ i ]
 
@@ -732,7 +738,7 @@ module internal Visitor =
       // Eliminate the "all inside one SeqPnt" jumps
       // This covers a multitude of compiler generated branching cases
       // TODO can we simplify
-      match (coalesceBranches, includedSequencePoint dbg toNext toJump) with
+      match (!coalesceBranches, includedSequencePoint dbg toNext toJump) with
       | (true, _)
       | (_, Some _) ->
         [ (i, toNext, next.Offset, -1)
@@ -749,37 +755,56 @@ module internal Visitor =
     let selectRepresentatives (_, bs) =
       let last = lastOfSequencePoint dbg (bs |> Seq.head).Start
       let lastOffset = last.Offset
+      let mutable path = 0
       bs
       |> Seq.map (fun b -> { b with Target = b.Target
                                              |> List.takeWhile (fun i -> let o = i.Offset
                                                                          o > lastOffset ||
                                                                          o < b.SequencePoint.Offset ||
-                                                                         i.OpCode.FlowControl = FlowControl.Return)})
-      |> Seq.groupBy (fun b -> b.Target)
+                                                                         i.OpCode.FlowControl = FlowControl.Return ||
+                                                                         i.OpCode.FlowControl = FlowControl.Break ||
+                                                                         i.OpCode.FlowControl = FlowControl.Throw ||
+                                                                         i.OpCode.FlowControl = FlowControl.Branch)}) // more??
+      |> Seq.groupBy (fun b -> b.Target |> Seq.tryHead)
       |> Seq.map (snd >> (fun bg -> bg
-                                    |> Seq.mapi  (fun i bx -> { bx with Representative = i=0 &&
-                                                                                         bx.Target |> Seq.isEmpty |> not})))
+                                    |> Seq.mapi  (fun i bx -> { bx with Representative = if i=0 &&
+                                                                                            bx.Target |> Seq.isEmpty |> not
+                                                                                            then Reporting.Representative
+                                                                                            else Reporting.Contributing})))
       |> Seq.sortBy (fun b -> (b |> Seq.head).Offset)
-      |> Seq.mapi (fun i b -> b |> Seq.map (fun bx -> {bx with Path = i} ))
-    let demoteSingletons l = // TODO revisit
-      let x = l |> Seq.length > 1
-      l |> Seq.map (fun bs -> bs |> Seq.map (fun b -> { b with Representative = x && b.Representative}))
+      |> Seq.mapi (fun i b -> if i = 0 then path <- 0
+                              if (b |> Seq.head).Representative = Reporting.Representative
+                              then let p = path
+                                   path <- path + 1
+                                   b |> Seq.map (fun bx -> {bx with Path = p})
+                              else b)
+    //let demoteSingletons l = // TODO revisit
+    //  let x = l |> Seq.length > 1
+    //  l |> Seq.map (fun bs -> bs |> Seq.map (fun b -> { b with Representative = if x then b.Representative
+    //                                                                            else Reporting.None }))
+
+    let mutable uid = 0
     bps
     |> Seq.groupBy (fun b -> b.SequencePoint.Offset)
-    |> Seq.map (selectRepresentatives >> demoteSingletons)
+    |> Seq.map selectRepresentatives // >> demoteSingletons)
     |> Seq.collect id
-    |> Seq.mapi (fun i b -> b |> Seq.map (fun bx -> {bx with Uid = i + BranchNumber} ))
+    |> Seq.map(fun bs -> bs |>
+                         if (bs |> Seq.head).Representative = Reporting.Representative
+                         then let i = uid
+                              uid <- uid + 1
+                              Seq.map (fun bx -> {bx with Uid = i + BranchNumber})
+                         else Seq.map (fun bx -> { bx with Representative = Reporting.None} ))
     |> Seq.collect id
     |> Seq.sortBy (fun b -> b.Key)  // important! instrumentation assumes we work in the order we started with
 
   let private ExtractBranchPoints dbg methodFullName rawInstructions interesting =
     let makeDefault i =
-      if coalesceBranches
+      if !coalesceBranches
       then -1
       else i
 
     let processBranches =
-      if coalesceBranches
+      if !coalesceBranches
       then CoalesceBranchPoints dbg
       else id
 
@@ -805,7 +830,7 @@ module internal Visitor =
          (fun (i : Instruction) -> i.OpCode.FlowControl = FlowControl.Cond_Branch)
     |> Seq.mapi (fun n i -> (n, i)) //
     |> Seq.filter (fun (n, _) -> n >= skip)))
-    |> Seq.filter (fun l -> coalesceBranches || l.Length > 1) // TODO revisit
+    |> Seq.filter (fun l -> !coalesceBranches || l.Length > 1) // TODO revisit
     |> Seq.collect id
     |> Seq.mapi (fun i (path, (from, target, indexes)) ->
          Seq.unfold (fun (state : Cil.Instruction) ->
@@ -822,7 +847,9 @@ module internal Visitor =
                             Offset = from.Offset
                             Target = target
                             Included = interesting
-                            Representative = coalesceBranches |> not
+                            Representative = if !coalesceBranches
+                                             then Reporting.Contributing
+                                             else Reporting.Representative
                             Key = i}))
     |> Seq.choose id
     |> processBranches

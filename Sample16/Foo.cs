@@ -1,28 +1,35 @@
-﻿namespace Sample16
+﻿using System.Collections.Generic;
+
+namespace Sample16
 {
     public static class Foo
     {
-        public static string Bar(string value)
+        public static List<string> Bar(List<string> values)
         {
-            string ret;
+            List<string> ret = new List<string>();
 
-            switch (value)
+            foreach (string val in values)
             {
-                case "a":
-                    ret = "a";
-                    break;
+                if (string.IsNullOrEmpty(val)) continue;
 
-                case "b":
-                    ret = "b";
-                    break;
+                switch (val)
+                {
+                    case "a":
+                        ret.Add("a");
+                        break;
 
-                case "c":
-                    ret = "c";
-                    break;
+                    case "b":
+                        ret.Add("b");
+                        break;
 
-                default:
-                    ret = "d";
-                    break;
+                    case "c":
+                        ret.Add("c");
+                        break;
+
+                    default:
+                        ret.Add("d");
+                        break;
+                }
             }
 
             return ret;

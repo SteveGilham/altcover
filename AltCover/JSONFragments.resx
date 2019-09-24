@@ -145,48 +145,4 @@
 }</value>
     <comment>@Invariant</comment>
   </data>
-  <data name="netcoreDependencies" xml:space="preserve">
-    <value>{
-        "dependencies": {
-          "AltCover.Recorder.g": "version",
-          "FSharp.Core": "4.3.4" 
-        }
-}</value>
-    <comment>@Invariant</comment>
-  </data>
-  <data name="netcoreRuntime" xml:space="preserve">
-    <value>{
-      "AltCover.Recorder.g/version": {
-        "dependencies": {
-          "FSharp.Core": "4.3.4"
-        },
-        "runtime": {
-          "AltCover.Recorder.g.dll": {}
-        },
-      },
-      "FSharp.Core/4.3.4": {
-        "runtime": {
-          "lib/netstandard1.6/FSharp.Core.dll": {}
-          }
-      }
-    }</value>
-    <comment>@Invariant</comment>
-  </data>
-  <data name="netcoreLibraries" xml:space="preserve">
-    <value>{
-    "AltCover.Recorder.g/version": {
-      "type": "project",
-      "serviceable": false,
-      "sha512": ""
-    },
-    "FSharp.Core/4.3.4": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-u2UeaUl1pt/Lktdpzq3AsaRmOV1mOiQaSbZgYqQQYuqBSjnILWemetff4xMZIAZi0241jlIkcrJQsU5PlLwIJA==",
-      "path": "fsharp.core/4.3.4",
-      "hashPath": "fsharp.core.4.3.4.nupkg.sha512"
-    }
-}</value>
-    <comment>@Invariant</comment>
-  </data>
 </root>
