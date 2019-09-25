@@ -235,7 +235,7 @@ module Instance =
       | (0L, 0) -> Null
       | (t, 0) -> Time(t * (clock() / t))
       | (0L, n) -> Call n
-      | (t, n) -> Both(t * (clock() / t), n)
+      | (t, n) -> Both{ Time = t * (clock() / t); Call = n }
     else Null
 
   let internal PayloadControl = PayloadSelection Clock

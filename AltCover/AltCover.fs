@@ -478,8 +478,8 @@ module internal Main =
       |> ProcessOutputLocation
     match check1 with
     | Left(intro, options) ->
-      CommandLine.HandleBadArguments dotnetBuild arguments intro options
-        (Runner.DeclareOptions())
+      CommandLine.HandleBadArguments dotnetBuild arguments
+        { Intro = intro; Options = options; Options2 = Runner.DeclareOptions() }
       255
     | Right(rest, fromInfo, toInfo, targetInfo) ->
       let report = Visitor.ReportPath()

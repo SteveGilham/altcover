@@ -1816,7 +1816,7 @@ type AltCoverTests2() =
 
            let arg : obj =
              if param.ParameterType = typeof<String> then String.Empty :> obj
-             else (String.Empty, OptionSet() :> obj, OptionSet() :> obj) :> obj
+             else { Intro = String.Empty; Options = OptionSet(); Options2 = OptionSet() } :> obj
            invoke.Invoke(o, [| arg |]) |> ignore)
 
     [<Test>]

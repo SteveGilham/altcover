@@ -2094,7 +2094,7 @@ type AltCoverTests3() =
         use stderr = new StringWriter()
         Console.SetError stderr
         let empty = OptionSet()
-        CommandLine.Usage("UsageError", options, empty)
+        CommandLine.Usage { Intro = "UsageError"; Options = options; Options2 = empty }
         let result = stderr.ToString().Replace("\r\n", "\n")
         let expected = """Error - usage is:
   -i, --inputDirectory=VALUE Optional, multiple: A folder containing assemblies

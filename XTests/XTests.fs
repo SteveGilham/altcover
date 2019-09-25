@@ -523,7 +523,7 @@ module XTests =
 
       Assert.Equal<IEnumerable<String>>(theFiles, actualFiles)
     finally
-      Output.Usage("dummy", OptionSet(), OptionSet())
+      Output.Usage { Intro ="dummy"; Options = OptionSet(); Options2 = OptionSet()}
       Visitor.TrackingNames.Clear()
       Visitor.reportFormat <- None
       Visitor.outputDirectories.Clear()
