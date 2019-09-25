@@ -324,20 +324,19 @@ module internal CommandLine =
         ) (StrongNameKeyData.Empty(), false) false
     else (StrongNameKeyData.Empty(), false)
 
-  let internal ValidateRegexes(x : String) =
+  let internal ValidateRegexes (x : String) =
     let descape (s:string) =
       s.Replace('\u0000',';')
 
     let qRegex (s : String) =
       if s.Substring(0,1) = "?"
-      then (s.Substring(1), Include)
-      else (s, Exclude)
-      |> (fun (a,b) -> (Regex a, b))
+      then { Regex = Regex <| s.Substring(1); Sense = Include }
+      else { Regex = Regex s; Sense= Exclude }
 
     doPathOperation
       (fun () ->
       x.Replace(";;","\u0000").Split([| ";" |], StringSplitOptions.RemoveEmptyEntries)
-      |> Array.map (descape >> qRegex)) [||]
+      |> Array.map (descape >> qRegex)) [| |]
       false
 
   let internal ddFlag (name:string) flag =

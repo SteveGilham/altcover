@@ -17,25 +17,31 @@ type internal FilterSense =
   | Include
 
 [<ExcludeFromCodeCoverage; NoComparison>]
+type internal FilterScope =
+  | File
+  | Assembly
+  | Module
+  | Type
+  | Method
+  | Attribute
+  | Path
+
+[<ExcludeFromCodeCoverage; NoComparison>]
+type internal FilterRegex =
+  { Regex : Regex; Sense : FilterSense}
+  static member Exclude (s : Regex) =
+    {Regex = s; Sense = Exclude}
+
+[<ExcludeFromCodeCoverage; NoComparison>]
 type internal FilterClass =
-  | File of (Regex * FilterSense)
-  | Assembly of (Regex * FilterSense)
-  | Module of (Regex * FilterSense)
-  | Type of (Regex * FilterSense)
-  | Method of (Regex * FilterSense)
-  | Attribute of (Regex * FilterSense)
-  | Path of (Regex * FilterSense)
+  { Scope : FilterScope; Regex : Regex; Sense : FilterSense}
+  static member Build scope (regex:FilterRegex) =
+    { Scope = scope; Regex = regex.Regex; Sense = regex.Sense }
   member this.Apply
     with get () =
-      match this with
-      | File (_, Exclude)
-      | Assembly (_, Exclude)
-      | Module (_, Exclude)
-      | Type (_, Exclude)
-      | Method (_, Exclude)
-      | Attribute (_, Exclude)
-      | Path (_, Exclude) -> id
-      | _ -> not
+      if this.Sense = Exclude
+      then id
+      else not
 
 module internal Filter =
 
@@ -70,19 +76,19 @@ module internal Filter =
 
   let internal Match (nameProvider : Object) (filter : FilterClass) =
     let f = filter.Apply
-    match filter with
-    | File (name, _) -> MatchItem<string> name f nameProvider Path.GetFileName
-    | Assembly (name, _) ->
-      MatchItem<AssemblyDefinition> name f nameProvider (fun assembly -> assembly.Name.Name)
-    | Module (name, _) ->
-      MatchItem<ModuleDefinition> name f nameProvider
+    match filter.Scope with
+    | File -> MatchItem<string> filter.Regex f nameProvider Path.GetFileName
+    | Assembly ->
+      MatchItem<AssemblyDefinition> filter.Regex f nameProvider (fun assembly -> assembly.Name.Name)
+    | Module ->
+      MatchItem<ModuleDefinition> filter.Regex f nameProvider
         (fun ``module`` -> ``module``.Assembly.Name.Name)
-    | Type (name, _) ->
-      MatchItem<TypeDefinition> name f nameProvider (fun typeDef -> typeDef.FullName)
-    | Method (name, _) ->
-      MatchItem<MethodDefinition> name f nameProvider (fun methodDef -> methodDef.Name)
-    | Attribute (name, _) -> MatchAttribute name f nameProvider
-    | Path (name, _) -> MatchItem<string> name f nameProvider Path.GetFullPath
+    | Type ->
+      MatchItem<TypeDefinition> filter.Regex f nameProvider (fun typeDef -> typeDef.FullName)
+    | Method ->
+      MatchItem<MethodDefinition> filter.Regex f nameProvider (fun methodDef -> methodDef.Name)
+    | Attribute  -> MatchAttribute filter.Regex f nameProvider
+    | Path -> MatchItem<string> filter.Regex f nameProvider Path.GetFullPath
 
   let internal IsCSharpAutoProperty(m : MethodDefinition) =
     (m.IsSetter || m.IsGetter) && m.HasCustomAttributes

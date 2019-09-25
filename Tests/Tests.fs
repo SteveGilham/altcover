@@ -56,6 +56,8 @@ type AltCoverTests() =
       Assembly.GetExecutingAssembly().GetManifestResourceNames()
       |> Seq.find (fun n -> n.EndsWith("Infrastructure.snk", StringComparison.Ordinal))
 
+    let FF(a,b,c) = { Scope = a; Regex = b; Sense = c }
+
     // Hack for running while instrumented
     static member Hack() =
       let where = Assembly.GetExecutingAssembly().Location
@@ -431,58 +433,58 @@ type AltCoverTests() =
     // Filter.fs
     [<Test>]
     member self.NoneOfTheAboveMatchesNoType() =
-      Assert.That(Match () (FilterClass.Type(Regex "23", Exclude)), Is.False)
-      Assert.That(Match () (FilterClass.Type(Regex "23", Include)), Is.False)
+      Assert.That(Match () (FF(FilterScope.Type, Regex "23", Exclude)), Is.False)
+      Assert.That(Match () (FF(FilterScope.Type, Regex "23", Include)), Is.False)
 
     [<Test>]
     member self.NoneOfTheAboveMatchesNoAttribute() =
-      Assert.That(Match () (FilterClass.Attribute(Regex "23", Exclude)), Is.False)
-      Assert.That(Match () (FilterClass.Type(Regex "23", Include)), Is.False)
+      Assert.That(Match () (FF(FilterScope.Attribute, Regex "23", Exclude)), Is.False)
+      Assert.That(Match () (FF(FilterScope.Attribute,Regex "23", Include)), Is.False)
 
     [<Test>]
     member self.NoneOfTheAboveMatchesNoAssembly() =
-      Assert.That(Match () (FilterClass.Assembly(Regex "23", Exclude)), Is.False)
-      Assert.That(Match () (FilterClass.Assembly(Regex "23", Include)), Is.False)
+      Assert.That(Match () (FF(FilterScope.Assembly, Regex "23", Exclude)), Is.False)
+      Assert.That(Match () (FF(FilterScope.Assembly, Regex "23", Include)), Is.False)
 
     [<Test>]
     member self.NoneOfTheAboveMatchesNoModule() =
-      Assert.That(Match () (FilterClass.Module(Regex "23", Exclude)), Is.False)
-      Assert.That(Match () (FilterClass.Module(Regex "23", Include)), Is.False)
+      Assert.That(Match () (FF(FilterScope.Module, Regex "23", Exclude)), Is.False)
+      Assert.That(Match () (FF(FilterScope.Module, Regex "23", Include)), Is.False)
 
     [<Test>]
     member self.NoneOfTheAboveMatchesNoFile() =
-      Assert.That(Match () (FilterClass.File(Regex "23", Exclude)), Is.False)
-      Assert.That(Match () (FilterClass.File(Regex "23", Include)), Is.False)
+      Assert.That(Match () (FF(FilterScope.File, Regex "23", Exclude)), Is.False)
+      Assert.That(Match () (FF(FilterScope.File, Regex "23", Include)), Is.False)
 
     [<Test>]
     member self.NoneOfTheAboveMatchesNoPath() =
-      Assert.That(Match () (FilterClass.Path(Regex "23", Exclude)), Is.False)
-      Assert.That(Match () (FilterClass.Path(Regex "23", Include)), Is.False)
+      Assert.That(Match () (FF(FilterScope.Path, Regex "23", Exclude)), Is.False)
+      Assert.That(Match () (FF(FilterScope.Path, Regex "23", Include)), Is.False)
 
     [<Test>]
     member self.NoneOfTheAboveMatchesNoMethod() =
-      Assert.That(Match () (FilterClass.Method(Regex "23", Exclude)), Is.False)
-      Assert.That(Match () (FilterClass.Method(Regex "23", Include)), Is.False)
+      Assert.That(Match () (FF(FilterScope.Method, Regex "23", Exclude)), Is.False)
+      Assert.That(Match () (FF(FilterScope.Method, Regex "23", Include)), Is.False)
 
     [<Test>]
     member self.FileDoesNotMatchNonFileClass() =
       Assert.That
-        (Match (Assembly.GetExecutingAssembly().Location) (FilterClass.Type(Regex "23", Exclude)),
+        (Match (Assembly.GetExecutingAssembly().Location) (FF(FilterScope.Type, Regex "23", Exclude)),
          Is.False)
 
     [<Test>]
     member self.FileDoesMatchFileClass() =
       Assert.That
-        (Match (Assembly.GetExecutingAssembly().Location) (FilterClass.File(Regex "Cove", Exclude)),
+        (Match (Assembly.GetExecutingAssembly().Location) (FF(FilterScope.File, Regex "Cove", Exclude)),
          Is.True)
       Assert.That
-        (Match (Assembly.GetExecutingAssembly().Location) (FilterClass.File(Regex "Cove", Include)),
+        (Match (Assembly.GetExecutingAssembly().Location) (FF(FilterScope.File, Regex "Cove", Include)),
          Is.False)
 
     [<Test>]
     member self.PathDoesNotMatchNonPathClass() =
       Assert.That
-        (Match (Assembly.GetExecutingAssembly().Location) (FilterClass.Type(Regex "23", Exclude)),
+        (Match (Assembly.GetExecutingAssembly().Location) (FF(FilterScope.Type, Regex "23", Exclude)),
          Is.False)
 
     [<Test>]
@@ -490,41 +492,41 @@ type AltCoverTests() =
       let x = String [| '\\'; Path.DirectorySeparatorChar |]
       Assert.That
         (Match (Assembly.GetExecutingAssembly().Location)
-           (FilterClass.Path(Regex(x + "_Binaries" + x), Exclude)), Is.True)
+           (FF(FilterScope.Path, Regex(x + "_Binaries" + x), Exclude)), Is.True)
       Assert.That
         (Match (Assembly.GetExecutingAssembly().Location)
-           (FilterClass.Path(Regex(x + "_Binaries" + x), Include)), Is.False)
+           (FF(FilterScope.Path, Regex(x + "_Binaries" + x), Include)), Is.False)
 
     [<Test>]
     member self.AssemblyDoesNotMatchNonAssemblyClass() =
       let def =
         Mono.Cecil.AssemblyDefinition.ReadAssembly
           (Assembly.GetExecutingAssembly().Location)
-      Assert.That(Match def (FilterClass.Type(Regex "23", Exclude)), Is.False)
-      Assert.That(Match def (FilterClass.Module(Regex "23", Include)), Is.False)
+      Assert.That(Match def (FF(FilterScope.Type, Regex "23", Exclude)), Is.False)
+      Assert.That(Match def (FF(FilterScope.Type, Regex "23", Include)), Is.False)
 
     [<Test>]
     member self.AssemblyDoesMatchAssemblyClass() =
       let def =
         Mono.Cecil.AssemblyDefinition.ReadAssembly
           (Assembly.GetExecutingAssembly().Location)
-      Assert.That(Match def (FilterClass.Assembly(Regex "Cove", Exclude)), Is.True)
-      Assert.That(Match def (FilterClass.Assembly(Regex "Cove", Include)), Is.False)
+      Assert.That(Match def (FF(FilterScope.Assembly, Regex "Cove", Exclude)), Is.True)
+      Assert.That(Match def (FF(FilterScope.Assembly, Regex "Cove", Include)), Is.False)
 
     [<Test>]
     member self.ModuleDoesNotMatchNonModuleClass() =
       let def =
         Mono.Cecil.AssemblyDefinition.ReadAssembly
           (Assembly.GetExecutingAssembly().Location)
-      Assert.That(Match def.MainModule (FilterClass.Type(Regex "23", Exclude)), Is.False)
+      Assert.That(Match def.MainModule (FF(FilterScope.Type, Regex "23", Exclude)), Is.False)
 
     [<Test>]
     member self.ModuleDoesMatchModuleClass() =
       let def =
         Mono.Cecil.AssemblyDefinition.ReadAssembly
           (Assembly.GetExecutingAssembly().Location)
-      Assert.That(Match def.MainModule (FilterClass.Module(Regex "Cove", Exclude)), Is.True)
-      Assert.That(Match def.MainModule (FilterClass.Module(Regex "Cove", Include)), Is.False)
+      Assert.That(Match def.MainModule (FF(FilterScope.Module, Regex "Cove", Exclude)), Is.True)
+      Assert.That(Match def.MainModule (FF(FilterScope.Module, Regex "Cove", Include)), Is.False)
 
     [<Test>]
     member self.TypeDoesNotMatchNonTypeClass() =
@@ -534,7 +536,7 @@ type AltCoverTests() =
       def.MainModule.Types
       |> Seq.iter
            (fun t ->
-           Assert.That(Match t (FilterClass.File(Regex "23", Exclude)), Is.False, t.FullName))
+           Assert.That(Match t (FF(FilterScope.File, Regex "23", Exclude)), Is.False, t.FullName))
 
     [<Test>]
     member self.TypeDoesMatchTypeClass() =
@@ -545,8 +547,8 @@ type AltCoverTests() =
       |> Seq.filter (fun t -> t.IsPublic && t.Name.Contains("AltCover")) // exclude the many compiler generted chaff classes
       |> Seq.iter
            (fun t ->
-           Assert.That(Match t (FilterClass.Type(Regex "Cove", Exclude)), Is.True, t.FullName)
-           Assert.That(Match t (FilterClass.Type(Regex "Cove", Include)), Is.False, t.FullName))
+           Assert.That(Match t (FF(FilterScope.Type, Regex "Cove", Exclude)), Is.True, t.FullName)
+           Assert.That(Match t (FF(FilterScope.Type, Regex "Cove", Include)), Is.False, t.FullName))
 
     [<Test>]
     member self.MethodDoesNotMatchNonMethodClass() =
@@ -556,7 +558,7 @@ type AltCoverTests() =
       def.MainModule.Types
       |> Seq.filter (fun t -> t.IsPublic)
       |> Seq.collect (fun t -> t.Methods)
-      |> Seq.iter (fun m -> Assert.That(Match m (FilterClass.Type(Regex "23", Exclude)), Is.False))
+      |> Seq.iter (fun m -> Assert.That(Match m (FF(FilterScope.Type, Regex "23", Exclude)), Is.False))
 
     [<Test>]
     member self.MethodDoesMatchMethodClass() =
@@ -567,13 +569,13 @@ type AltCoverTests() =
                   |> Seq.filter (fun t -> t.IsPublic) // exclude the many compiler generted chaff classes
                   |> Seq.collect (fun t -> t.Methods)
                   |> Seq.filter (fun m -> m.IsPublic && (not m.IsConstructor))
-                  |> Seq.filter (fun m -> Match m (FilterClass.Method(Regex "Augment", Exclude)))
+                  |> Seq.filter (fun m -> Match m (FF(FilterScope.Method, Regex "Augment", Exclude)))
                   |> Seq.length, Is.EqualTo(2))
       Assert.That(def.MainModule.Types
                   |> Seq.filter (fun t -> t.IsPublic) // exclude the many compiler generted chaff classes
                   |> Seq.collect (fun t -> t.Methods)
                   |> Seq.filter (fun m -> m.IsPublic && (not m.IsConstructor))
-                  |> Seq.filter (fun m -> Match m (FilterClass.Method(Regex "Augment", Include)) |> not)
+                  |> Seq.filter (fun m -> Match m (FF(FilterScope.Method, Regex "Augment", Include)) |> not)
                   |> Seq.length, Is.EqualTo(2))
 
     [<Test>]
@@ -585,7 +587,7 @@ type AltCoverTests() =
       |> Seq.iter
            (fun t ->
            Assert.That
-             (Match t.CustomAttributes (FilterClass.File(Regex "23", Exclude)), Is.False,
+             (Match t.CustomAttributes (FF(FilterScope.File, Regex "23", Exclude)), Is.False,
               t.FullName))
 
     [<Test>]
@@ -598,8 +600,8 @@ type AltCoverTests() =
                                          && (not (t.FullName.Contains("Coverlet.Core.Instrumentation")))) // exclude the many compiler generted chaff classes
       |> Seq.iter
            (fun t ->
-           Assert.That(Match t (FilterClass.Attribute(Regex "Fix", Exclude)), Is.True, t.FullName)
-           Assert.That(Match t (FilterClass.Attribute(Regex "Fix", Include)), Is.False, t.FullName))
+           Assert.That(Match t (FF(FilterScope.Attribute, Regex "Fix", Exclude)), Is.True, t.FullName)
+           Assert.That(Match t (FF(FilterScope.Attribute, Regex "Fix", Include)), Is.False, t.FullName))
 
     [<Test>]
     member self.CanExcludeCSharpPropertiesByAttribute() =
@@ -612,7 +614,7 @@ type AltCoverTests() =
         |> Seq.head
 
       let filter = "ExcludeFromCodeCoverage"
-                   |> (Regex >> Visitor.DefaultFilter >> FilterClass.Attribute)
+                   |> (Regex >> FilterRegex.Exclude >> FilterClass.Build FilterScope.Attribute)
 
       let pass =
         direct.Methods
@@ -1236,8 +1238,8 @@ type AltCoverTests() =
     member self.NonEmptyFiltersCatchAnExpectedValue() =
       try
         Assert.That(Visitor.NameFilters.Count, Is.EqualTo(0))
-        Visitor.NameFilters.AddRange([ FilterClass.File(Regex "Cove", Exclude)
-                                       FilterClass.Method(Regex "Augment", Exclude) ])
+        Visitor.NameFilters.AddRange([ FF(FilterScope.File, Regex "Cove", Exclude)
+                                       FF(FilterScope.Method, Regex "Augment", Exclude) ])
         Assert.That(self.IsIncluded(Assembly.GetExecutingAssembly().Location), Is.False)
       finally
         Visitor.NameFilters.Clear()
@@ -1246,8 +1248,8 @@ type AltCoverTests() =
     member self.NonEmptyFiltersPassAnExpectedValue() =
       try
         Assert.That(Visitor.NameFilters.Count, Is.EqualTo(0))
-        Visitor.NameFilters.AddRange([ FilterClass.File(Regex "System", Exclude)
-                                       FilterClass.Method(Regex "Augment", Exclude) ])
+        Visitor.NameFilters.AddRange([ FF(FilterScope.File, Regex "System", Exclude)
+                                       FF(FilterScope.Method, Regex "Augment", Exclude) ])
         Assert.That(self.IsIncluded(Assembly.GetExecutingAssembly().Location))
       finally
         Visitor.NameFilters.Clear()
@@ -1349,8 +1351,8 @@ type AltCoverTests() =
         Visitor.reportFormat <- Some Base.ReportFormat.OpenCover
         "Program"
         |> (Regex
-            >> Visitor.DefaultFilter
-            >> FilterClass.File
+            >> FilterRegex.Exclude
+            >> FilterClass.Build FilterScope.File
             >> Visitor.NameFilters.Add)
         let deeper =
           Visitor.Deeper <| Node.Method(method, Inspect.Instrument, None) |> Seq.toList
@@ -1499,8 +1501,8 @@ type AltCoverTests() =
         Visitor.reportFormat <- Some Base.ReportFormat.OpenCover
         "Main"
         |> (Regex
-            >> Visitor.DefaultFilter
-            >> FilterClass.Method
+            >> FilterRegex.Exclude
+            >> FilterClass.Build FilterScope.Method
             >> Visitor.NameFilters.Add)
         let deeper = Visitor.Deeper <| Node.Type(type', Inspect.Instrument) |> Seq.toList
         Visitor.Visit [] [] // cheat reset
@@ -1534,8 +1536,8 @@ type AltCoverTests() =
       try
         "Program"
         |> (Regex
-            >> Visitor.DefaultFilter
-            >> FilterClass.Type
+            >> FilterRegex.Exclude
+            >> FilterClass.Build FilterScope.Type
             >> Visitor.NameFilters.Add)
         let deeper =
           Visitor.Deeper <| Node.Module(module', Inspect.Instrument) |> Seq.toList
@@ -1611,8 +1613,8 @@ type AltCoverTests() =
         Assert.That(Visitor.ReportFormat(), Is.EqualTo Base.ReportFormat.NCover)
         "Sample"
         |> (Regex
-            >> Visitor.DefaultFilter
-            >> FilterClass.Assembly
+            >> FilterRegex.Exclude
+            >> FilterClass.Build FilterScope.Assembly
             >> Visitor.NameFilters.Add)
         let deeper = Visitor.Deeper <| Node.Start [ path, [] ] |> Seq.toList
 
@@ -2026,8 +2028,8 @@ type AltCoverTests() =
       try
         "Main"
         |> (Regex
-            >> Visitor.DefaultFilter
-            >> FilterClass.Method
+            >> FilterRegex.Exclude
+            >> FilterClass.Build FilterScope.Method
             >> Visitor.NameFilters.Add)
         Visitor.Visit [ visitor ] (Visitor.ToSeq (path, []))
 
@@ -2096,8 +2098,8 @@ type AltCoverTests() =
       try
         "Program"
         |> (Regex
-            >> Visitor.DefaultFilter
-            >> FilterClass.Path
+            >> FilterRegex.Exclude
+            >> FilterClass.Build FilterScope.Path
             >> Visitor.NameFilters.Add)
         Visitor.Visit [ visitor ] (Visitor.ToSeq (path, []))
         let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
@@ -2124,8 +2126,8 @@ type AltCoverTests() =
       try
         "Sample"
         |> (Regex
-            >> Visitor.DefaultFilter
-            >> FilterClass.Module
+            >> FilterRegex.Exclude
+            >> FilterClass.Build FilterScope.Module
             >> Visitor.NameFilters.Add)
         Visitor.Visit [ visitor ] (Visitor.ToSeq (path, []))
         let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
@@ -2154,8 +2156,8 @@ type AltCoverTests() =
       try
         "Sample"
         |> (Regex
-            >> Visitor.DefaultFilter
-            >> FilterClass.Module
+            >> FilterRegex.Exclude
+            >> FilterClass.Build FilterScope.Module
             >> Visitor.NameFilters.Add)
         Visitor.TrackingNames.Add("Main")
         Visitor.Visit [ visitor ] (Visitor.ToSeq (path, []))
@@ -2268,8 +2270,8 @@ type AltCoverTests() =
         Visitor.reportFormat <- Some Base.ReportFormat.OpenCover
         "Program"
         |> (Regex
-            >> Visitor.DefaultFilter
-            >> FilterClass.File
+            >> FilterRegex.Exclude
+            >> FilterClass.Build FilterScope.File
             >> Visitor.NameFilters.Add)
         let branches =
           Visitor.Deeper <| Node.Method(method, Inspect.Instrument, None)
@@ -2542,8 +2544,8 @@ type AltCoverTests() =
       try
         "Sample"
         |> (Regex
-            >> Visitor.DefaultFilter
-            >> FilterClass.Module
+            >> FilterRegex.Exclude
+            >> FilterClass.Build FilterScope.Module
             >> Visitor.NameFilters.Add)
         Visitor.Visit [ visitor ] (Visitor.ToSeq (path, []))
         let raw = "<CoverageSession xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">
@@ -2577,8 +2579,8 @@ type AltCoverTests() =
         Visitor.reportFormat <- Some Base.ReportFormat.OpenCover
         "Sample"
         |> (Regex
-            >> Visitor.DefaultFilter
-            >> FilterClass.Module
+            >> FilterRegex.Exclude
+            >> FilterClass.Build FilterScope.Module
             >> Visitor.NameFilters.Add)
         Visitor.Visit [ visitor ] (Visitor.ToSeq (path, []))
         let raw = "<CoverageSession xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">
@@ -2616,8 +2618,8 @@ type AltCoverTests() =
         Assert.That(Visitor.ReportFormat(), Is.EqualTo Base.ReportFormat.OpenCover)
         "Program"
         |> (Regex
-            >> Visitor.DefaultFilter
-            >> FilterClass.Type
+            >> FilterRegex.Exclude
+            >> FilterClass.Build FilterScope.Type
             >> Visitor.NameFilters.Add)
         Visitor.Visit [ visitor ] (Visitor.ToSeq (path, []))
         let resource =
@@ -2648,8 +2650,8 @@ type AltCoverTests() =
           (Visitor.ReportFormat(), Is.EqualTo Base.ReportFormat.OpenCoverWithTracking)
         "Program"
         |> (Regex
-            >> Visitor.DefaultFilter
-            >> FilterClass.Type
+            >> FilterRegex.Exclude
+            >> FilterClass.Build FilterScope.Type
             >> Visitor.NameFilters.Add)
         Visitor.Visit [ visitor ] (Visitor.ToSeq (path, []))
         let baseline = self.AddTrackingForMain "Sample1ClassExclusion.xml"
@@ -2671,8 +2673,8 @@ type AltCoverTests() =
       try
         "Main"
         |> (Regex
-            >> Visitor.DefaultFilter
-            >> FilterClass.Method
+            >> FilterRegex.Exclude
+            >> FilterClass.Build FilterScope.Method
             >> Visitor.NameFilters.Add)
         Visitor.Visit [ visitor ] (Visitor.ToSeq (path, []))
         let resource =
@@ -2698,8 +2700,8 @@ type AltCoverTests() =
       try
         "Program"
         |> (Regex
-            >> Visitor.DefaultFilter
-            >> FilterClass.Path
+            >> FilterRegex.Exclude
+            >> FilterClass.Build FilterScope.Path
             >> Visitor.NameFilters.Add)
         Visitor.Visit [ visitor ] (Visitor.ToSeq (path,[]))
         let resource =
@@ -2739,8 +2741,8 @@ type AltCoverTests() =
           (Visitor.ReportFormat(), Is.EqualTo Base.ReportFormat.OpenCoverWithTracking)
         "Main"
         |> (Regex
-            >> Visitor.DefaultFilter
-            >> FilterClass.Method
+            >> FilterRegex.Exclude
+            >> FilterClass.Build FilterScope.Method
             >> Visitor.NameFilters.Add)
         Visitor.Visit [ visitor ] (Visitor.ToSeq (path,[]))
         let baseline = self.AddTrackingForMain "Sample1MethodExclusion.xml"

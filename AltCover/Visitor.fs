@@ -211,16 +211,13 @@ type Fix<'T> = delegate of 'T -> Fix<'T>
 module internal Visitor =
   let internal collect = ref false // ddFlag
   let internal TrackingNames = new List<String>()
-  let internal DefaultFilter (s : Regex) =
-    (s, Exclude)
-
   let internal NameFilters = new List<FilterClass>()
 
   let private specialCaseFilters =
     [ @"^CompareTo\$cont\@\d+\-?\d$"
       |> Regex
-      |> DefaultFilter
-      |> FilterClass.Method ]
+      |> FilterRegex.Exclude
+      |> FilterClass.Build FilterScope.Method ]
 
   let internal inplace = ref false // ddFlag
   let internal coalesceBranches = ref false // ddFlag
