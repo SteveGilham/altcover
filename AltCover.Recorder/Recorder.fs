@@ -10,14 +10,6 @@ open System.Reflection
 open System.Resources
 open System.Runtime.CompilerServices
 
-#if NET2
-[<System.Runtime.InteropServices.ProgIdAttribute("ExcludeFromCodeCoverage hack for OpenCover issue 615")>]
-#else
-[<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage>]
-#endif
-[<NoComparison>]
-type internal Carrier = SequencePoint of String * int * Track
-
 module Instance =
   let internal resources =
     ResourceManager("AltCover.Recorder.Strings", Assembly.GetExecutingAssembly())
