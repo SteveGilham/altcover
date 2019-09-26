@@ -90,13 +90,13 @@
       <HintPath>..\packages\FSharp.Core.3.0.2\lib\net35\FSharp.Core.dll</HintPath>
     </Reference>
     <Reference Include="FSharp.PowerPack">
-      <HintPath>..\packages\FSPowerPack.Community.2.0.0.0\lib\Net20\FSharp.PowerPack.dll</HintPath>
+      <HintPath>..\packages\FSPowerPack.Community.2.0.0.0\Lib\Net20\FSharp.PowerPack.dll</HintPath>
     </Reference>
     <Reference Include="FSharp.PowerPack.Linq">
-      <HintPath>..\packages\FSPowerPack.Community.2.0.0.0\lib\Net20\FSharp.PowerPack.Linq.dll</HintPath>
+      <HintPath>..\packages\FSPowerPack.Community.2.0.0.0\Lib\Net20\FSharp.PowerPack.Linq.dll</HintPath>
     </Reference>
     <Reference Include="FSharp.PowerPack.Metadata">
-      <HintPath>..\packages\FSPowerPack.Community.2.0.0.0\lib\Net20\FSharp.PowerPack.Metadata.dll</HintPath>
+      <HintPath>..\packages\FSPowerPack.Community.2.0.0.0\Lib\Net20\FSharp.PowerPack.Metadata.dll</HintPath>
     </Reference>
     <Reference Include="Unquote2">
       <HintPath>..\ThirdParty\Unquote2.dll</HintPath>
