@@ -96,6 +96,7 @@ type AltCoverTests() =
                (fun x ->
                x.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)
                || x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
+          |> Seq.filter (fun f -> f |> Path.GetFileNameWithoutExtension <> "testhost")
           |> Seq.map (fun x -> (x, Mono.Cecil.AssemblyDefinition.ReadAssembly x))
           |> Seq.filter (fun x ->
                (fst x) + ".mdb"
@@ -217,6 +218,7 @@ type AltCoverTests() =
            (x + ".mdb")
            |> File.Exists
            |> not)
+      |> Seq.filter (fun f -> f |> Path.GetFileNameWithoutExtension <> "testhost")
       |> Seq.iter
            (fun x ->
            let def = Mono.Cecil.AssemblyDefinition.ReadAssembly x
@@ -350,6 +352,7 @@ type AltCoverTests() =
              (fun x ->
              x.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)
              || x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
+        |> Seq.filter (fun f -> f |> Path.GetFileNameWithoutExtension <> "testhost")
         |> Seq.map Mono.Cecil.AssemblyDefinition.ReadAssembly
 #if COVERLET
         |> Seq.filter
@@ -754,17 +757,21 @@ type AltCoverTests() =
       Visitor.NameFilters.Clear()
       let fscore = Path.Combine(SolutionRoot.location, "packages/FSharp.Core.3.0.2/lib/net35")
       let mono = Path.Combine(SolutionRoot.location, "packages/Mono.Cecil.0.11.0/lib/net40")
-      let nuget = Path.Combine(SolutionRoot.location, "packages/nuget.commandline/5.1.0/tools")
+      let nuget = Path.Combine(SolutionRoot.location, "packages/nuget.commandline/5.2.0/tools")
       let exe = Path.Combine(nuget, "NuGet.exe")
-      Assert.That(File.Exists exe, Is.True, "NuGet.exe")
+      Assert.That(File.Exists exe, Is.True, "NuGet.exe not found")
       let pdb = Path.Combine(nuget, "NuGet.pdb")
-      Assert.That(File.Exists pdb, Is.True, "NuGet.pdb")
+      Assert.That(File.Exists pdb, Is.True, "NuGet.pdb not found")
 
       let fdll = Path.Combine(fscore, "FSharp.Core.dll")
-      Assert.That(File.Exists fdll, Is.True, "FSharp.Core.dll")
+      Assert.That(File.Exists fdll, Is.True, "FSharp.Core.dll not found")
+      //let pdb2 = Path.Combine(fscore, "FSharp.Core.pdb")
+      //Assert.That(File.Exists pdb2, Is.True, "FSharp.Core.pdb not found")
 
       let dll = Path.Combine(mono, "Mono.Cecil.dll")
-      Assert.That(File.Exists dll, Is.True, "Mono.Cecil.dll")
+      Assert.That(File.Exists dll, Is.True, "Mono.Cecil.dll not found")
+      let pdb3 = Path.Combine(mono, "Mono.Cecil.pdb")
+      Assert.That(File.Exists pdb3, Is.True, "Mono.Cecil.pdb not found")
 
       let a = AssemblyDefinition.ReadAssembly exe
       ProgramDatabase.ReadSymbols a
@@ -779,9 +786,7 @@ type AltCoverTests() =
       Assert.That (Visitor.localFilter a.MainModule, Is.False, "MainModule non-local")
       Assert.That (Visitor.localFilter m, Is.False, "dll Assembly non-local")
       Assert.That (Visitor.localFilter m.MainModule, Is.False, "dll MainModule non-local")
-      Assert.That (Visitor.localFilter f,
-                    Is.False,
-                    "f# Assembly non-local")
+      Assert.That (Visitor.localFilter f, Is.False, "f# Assembly non-local")
       Assert.That (Visitor.localFilter f.MainModule, Is.False, "f# MainModule non-local")
       try
         Visitor.local := true
