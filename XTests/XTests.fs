@@ -497,6 +497,9 @@ module XTests =
                                  f = "Sample1.exe.mdb" ||
                                  (f.EndsWith("db", StringComparison.Ordinal) |> not))
 #endif
+        |> List.filter (fun f -> isNT ||
+                                 (f.StartsWith("testhost.", StringComparison.Ordinal) |> not))
+
       let theFiles =
         if pdb
            |> File.Exists
@@ -509,8 +512,6 @@ module XTests =
                             "AltCover.Recorder.g.dll.mdb";
 #endif
                             "Sample4.dll.mdb" ] ]
-          |> List.filter (fun f -> isNT ||
-                                   (f.StartsWith("testhost.", StringComparison.Ordinal) |> not))
           |> List.filter (fun f -> f.EndsWith(".g.pdb", StringComparison.Ordinal) |> not)
           |> List.filter
                (fun f ->
