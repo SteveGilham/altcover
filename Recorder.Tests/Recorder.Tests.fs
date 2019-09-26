@@ -7,11 +7,7 @@ namespace Tests.Recorder.Clr4
 #if NET2
 namespace Tests.Recorder.Clr2
 #else
-#if MONO
-namespace Tests.Recorder.Mono
-#else
 namespace Tests.Recorder.Unknown
-#endif
 #endif
 #endif
 #endif
