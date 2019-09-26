@@ -69,8 +69,8 @@ See the [current project](https://github.com/SteveGilham/altcover/projects/8) fo
 It is assumed that the following are available
 
 .net core SDK 3.0.100 or later (`dotnet`) -- try https://www.microsoft.com/net/download  
-A .net core 2.x runtime e.g. 2.1.13 LTS release
-PowerShell Core 6.2.1 or later (`pwsh`) -- try https://github.com/powershell/powershell
+A .net core 2.x runtime e.g. 2.1.13 LTS release  
+PowerShell Core 6.2.1 or later (`pwsh`) -- try https://github.com/powershell/powershell  
 
 #### Windows
 
