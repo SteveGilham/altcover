@@ -471,11 +471,12 @@ module XTests =
       Assert.True(File.Exists report)
       Assert.True(File.Exists(report + ".acv"))
       let pdb = Path.ChangeExtension(Assembly.GetExecutingAssembly().Location, ".pdb")
+      let isNT = System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
       let isWindows =
 #if NETCOREAPP2_1
                         true
 #else
-                        System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
+                        isNT
 #endif
       let expected =
         [ "AltCover.Recorder.g.dll"
@@ -508,7 +509,7 @@ module XTests =
                             "AltCover.Recorder.g.dll.mdb";
 #endif
                             "Sample4.dll.mdb" ] ]
-          |> List.filter (fun f -> isWindows ||
+          |> List.filter (fun f -> isNT ||
                                    (f.StartsWith("testhost.", StringComparison.Ordinal) |> not))
           |> List.filter (fun f -> f.EndsWith(".g.pdb", StringComparison.Ordinal) |> not)
           |> List.filter
