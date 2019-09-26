@@ -526,7 +526,10 @@ module XTests =
       theFiles |> Seq.iter (printfn "expected %s")
       actualFiles |> Seq.iter (printfn "actual %s")
 
-      Assert.Equal<IEnumerable<String>>(theFiles, actualFiles)
+      // Assert.Equal<IEnumerable<String>>(theFiles, actualFiles)
+      let expected = String.Join("; ", theFiles)
+      let actual = String.Join("; ", actualFiles)
+      Assert.Equal(expected, actual)
     finally
       Output.Usage { Intro ="dummy"; Options = OptionSet(); Options2 = OptionSet()}
       Visitor.TrackingNames.Clear()
