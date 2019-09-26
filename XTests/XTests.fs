@@ -485,8 +485,10 @@ module XTests =
 #endif
           "Sample4.deps.json"; "Sample4.dll"; "Sample4.runtimeconfig.dev.json";
           "Sample4.runtimeconfig.json"; "Sample4.pdb";
+#if MONO
           "testhost.dll"
           "testhost.exe"
+#endif
           "xunit.runner.reporters.netcoreapp10.dll";
           "xunit.runner.utility.netcoreapp10.dll";
           "xunit.runner.visualstudio.dotnetcore.testadapter.dll" ]
@@ -522,9 +524,6 @@ module XTests =
         |> Seq.filter (fun f -> f.EndsWith(".tmp", StringComparison.Ordinal) |> not)
         |> Seq.sortBy (fun f -> f.ToUpperInvariant())
         |> Seq.toList
-
-      theFiles |> Seq.iter (printfn "expected %s")
-      actualFiles |> Seq.iter (printfn "actual %s")
 
       // Assert.Equal<IEnumerable<String>>(theFiles, actualFiles)
       let expected = String.Join("; ", theFiles)
