@@ -495,8 +495,6 @@ module XTests =
         |> List.filter (fun f -> isWindows || f = "Sample4.pdb" ||
                                  f = "Sample1.exe.mdb" ||
                                  (f.EndsWith("db", StringComparison.Ordinal) |> not))
-        |> List.filter (fun f -> isWindows ||
-                                 (f.StartsWith("testhost.", StringComparison.Ordinal) |> not))
 #endif
       let theFiles =
         if pdb
@@ -510,6 +508,8 @@ module XTests =
                             "AltCover.Recorder.g.dll.mdb";
 #endif
                             "Sample4.dll.mdb" ] ]
+          |> List.filter (fun f -> isWindows ||
+                                   (f.StartsWith("testhost.", StringComparison.Ordinal) |> not))
           |> List.filter (fun f -> f.EndsWith(".g.pdb", StringComparison.Ordinal) |> not)
           |> List.filter
                (fun f ->
