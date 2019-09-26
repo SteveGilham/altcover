@@ -523,6 +523,9 @@ module XTests =
         |> Seq.sortBy (fun f -> f.ToUpperInvariant())
         |> Seq.toList
 
+      theFiles |> Seq.iter (printfn "expected %s")
+      actualFiles |> Seq.iter (printfn "actual %s")
+
       Assert.Equal<IEnumerable<String>>(theFiles, actualFiles)
     finally
       Output.Usage { Intro ="dummy"; Options = OptionSet(); Options2 = OptionSet()}
