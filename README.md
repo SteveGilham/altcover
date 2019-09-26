@@ -79,9 +79,7 @@ For GTK# support, the GTK# latest 2.12 install is expected -- try https://www.mo
 
 #### *nix
 
-It is assumed that `mono` (version 6.0.x) and `dotnet` are on the `PATH` already, and everything is built from the command line, with your favourite editor used for coding.
-
-The real release version needs building on Windows to pick up the .NET 2.0 environment for the recorder assembly and its associated tests.
+It is assumed that `mono` (version 6.4.x) and `dotnet` are on the `PATH` already, and everything is built from the command line, with your favourite editor used for coding.
 
 ### Bootstrapping
 
