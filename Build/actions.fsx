@@ -222,9 +222,9 @@ do ()"""
       |> Seq.map (fun x -> x.Attribute(XName.Get("visitcount")).Value)
       |> Seq.toList
 
-    let expected = "0 1 1 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 2 1 1 1"
+    let expected = "0 1 1 1 1 1 1 0 0 0 0 0 0 0 2 1 1 1"
     Assert.That
-      (recorded, expected.Split() |> Is.EquivalentTo, sprintf "Bad visit list %A" recorded)
+      (String.Join(" ", recorded), expected |> Is.EqualTo, sprintf "Bad visit list %A" recorded)
 
   let ValidateSample1 simpleReport sigil =
     // get recorded details from here
@@ -454,9 +454,9 @@ a:hover {color: #ecc;}
       |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value)
       |> Seq.toList
 
-    let expected = "0 1 1 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 2 1 1 1"
+    let expected = "0 1 1 1 1 1 1 0 0 0 0 0 0 0 2 1 1 1"
     Assert.That
-      (recorded, expected.Split() |> Is.EquivalentTo, sprintf "Bad visit list %A" recorded)
+      (String.Join(" ", recorded), expected |> Is.EqualTo, sprintf "Bad visit list %A" recorded)
     printfn "Visits OK"
     coverageDocument.Descendants(XName.Get("SequencePoint"))
     |> Seq.iter (fun sp ->
@@ -483,7 +483,6 @@ a:hover {color: #ecc;}
        |> Seq.map (fun x -> x.ToString()),
        Is.EquivalentTo
          [ "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
-           "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
            "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
            "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
            "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
