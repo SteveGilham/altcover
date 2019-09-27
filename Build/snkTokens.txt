@@ -7,3 +7,9 @@ ThirdParty.snk : 9aa26ad8b6cf2594
 
 sn -p yourkey.snk publickey.snk
 sn -tp publickey.snk
+
+Genbu Gabiaru
+Habu
+Indori
+Jinmengyo
+Kaban
