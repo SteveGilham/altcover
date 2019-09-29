@@ -3041,9 +3041,7 @@ group NetcoreBuild
        String.Format
          (dependencies, Path.getFullName "./_Packaging.api", !Version,
           Path.getFullName "./_Packaging.fake"))
-    Shell.copy "./_ApiUse" (!!"./dotnet*.fsproj")
 
-    DotNet.restore (fun o -> o.WithCommon(withWorkingDirectoryVM "_ApiUse")) ""
     Actions.RunDotnet (withWorkingDirectoryOnly "_ApiUse")
       "fake" "run ./DriveApi.fsx"
       "running fake script returned with a non-zero exit code"
