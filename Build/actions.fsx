@@ -23,13 +23,6 @@ module Actions =
         (DirectoryInfo ".").GetDirectories("*", SearchOption.AllDirectories)
         |> Seq.filter (fun x -> x.Name.StartsWith "_" || x.Name = "bin" || x.Name = "obj")
         |> Seq.filter (fun n ->
-             match n.Name with
-             | "obj" ->
-               Path.Combine(n.FullName, "dotnet-fake.fsproj.nuget.g.props")
-               |> File.Exists
-               |> not
-             | _ -> true)
-        |> Seq.filter (fun n ->
              "packages"
              |> Path.GetFullPath
              |> n.FullName.StartsWith

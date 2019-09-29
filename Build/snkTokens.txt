@@ -13,3 +13,5 @@ Habu
 Indori
 Jinmengyo
 Kaban
+
+https://stu.dev/dotnet-core-3-local-tools/

@@ -16,7 +16,7 @@ build_script:
 - ps: >-
     $ErrorActionPreference = 'Continue'
 
-    & dotnet restore dotnet-fake.fsproj
+    & dotnet tool restore
 
     & dotnet fake run .\Build\setup.fsx
 

@@ -7,6 +7,12 @@
       "commands": [
         "reportgenerator"
       ]
+    },
+    "fake-cli": {
+      "version": "5.16.1",
+      "commands": [
+        "fake"
+      ]
     }
   }
 }

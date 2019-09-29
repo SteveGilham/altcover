@@ -84,7 +84,7 @@ It is assumed that `mono` (version 6.4.x) and `dotnet` are on the `PATH` already
 
 ### Bootstrapping
 
-Start by setting up `dotnet fake` with `dotnet restore dotnet-fake.fsproj`
+Start by setting up `dotnet fake` and other local tools with `dotnet tool restore`
 Then `dotnet fake run ./Build/setup.fsx` to do the rest of the set-up.
 
 ### Normal builds
