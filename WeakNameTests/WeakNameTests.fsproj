@@ -87,19 +87,19 @@
       <HintPath>..\packages\FSharp.Core.4.5.2\lib\net45\FSharp.Core.dll</HintPath>
     </Reference>
     <Reference Include="Gendarme.Framework">
-      <HintPath>..\packages\Mono.Gendarme.2.11.0.20121120\tools\Gendarme.Framework.dll</HintPath>
+      <HintPath>..\packages\mono.gendarme\2.11.0.20121120\tools\Gendarme.Framework.dll</HintPath>
     </Reference>
     <Reference Include="Gendarme.Rules.Maintainability">
-      <HintPath>..\packages\Mono.Gendarme.2.11.0.20121120\tools\Gendarme.Rules.Maintainability.dll</HintPath>
+      <HintPath>..\packages\mono.gendarme\2.11.0.20121120\tools\Gendarme.Rules.Maintainability.dll</HintPath>
     </Reference>
     <Reference Include="Mono.Cecil">
-      <HintPath>..\packages\Mono.Gendarme.2.11.0.20121120\tools\Mono.Cecil.dll</HintPath>
+      <HintPath>..\packages\mono.gendarme\2.11.0.20121120\tools\Mono.Cecil.dll</HintPath>
     </Reference>
     <Reference Include="Mono.Cecil.Mdb">
-      <HintPath>..\packages\Mono.Gendarme.2.11.0.20121120\tools\Mono.Cecil.Mdb.dll</HintPath>
+      <HintPath>..\packages\mono.gendarme\2.11.0.20121120\tools\Mono.Cecil.Mdb.dll</HintPath>
     </Reference>
     <Reference Include="Mono.Cecil.Pdb">
-      <HintPath>..\packages\Mono.Gendarme.2.11.0.20121120\tools\Mono.Cecil.Pdb.dll</HintPath>
+      <HintPath>..\packages\mono.gendarme\2.11.0.20121120\tools\Mono.Cecil.Pdb.dll</HintPath>
     </Reference>
     <Reference Include="Mono.Options">
       <HintPath>..\packages\Mono.Options.Signed.0.2.3\lib\net45\Mono.Options.dll</HintPath>

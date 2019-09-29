@@ -15,3 +15,6 @@ Jinmengyo
 Kaban
 
 https://stu.dev/dotnet-core-3-local-tools/
+bootstrap -- dotnet new tool-manifest
+add -- dotnet tool install $(TOOL)
+restore -- dotnet tool restore
