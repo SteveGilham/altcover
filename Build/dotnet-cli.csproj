@@ -5,6 +5,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="*.*" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="NuGet.CommandLine" version="5.2.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
