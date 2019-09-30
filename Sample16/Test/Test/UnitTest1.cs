@@ -12,10 +12,10 @@ namespace Test
             var outof = Foo.Bar(into);
             if (t == null)
             {
-                Assert.Equal(0, outof.Count);
+                Assert.Empty(outof);
                 return "d";
             }
-            Assert.Equal(1, outof.Count);
+            Assert.Single(outof);
             return outof[0];
         }
 

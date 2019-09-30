@@ -82,10 +82,10 @@ module internal Main =
       (false, Left None)
 
   let internal DeclareOptions() =
-    let makeFilter filterclass (x: String) =
+    let makeFilter filterscope (x: String) =
       x.Replace('\u0000', '\\').Replace('\u0001','|')
       |> CommandLine.ValidateRegexes
-      |> Seq.iter (filterclass >> Visitor.NameFilters.Add)
+      |> Seq.iter (FilterClass.Build filterscope >> Visitor.NameFilters.Add)
 
     [ ("i|inputDirectory=",
        (fun x ->
@@ -161,13 +161,13 @@ module internal Main =
          else
            CommandLine.doPathOperation
              (fun () -> Visitor.reportPath <- Some(Path.GetFullPath x)) () false))
-      ("f|fileFilter=", makeFilter FilterClass.File)
-      ("p|pathFilter=", makeFilter FilterClass.Path)
-      ("s|assemblyFilter=", makeFilter FilterClass.Assembly)
-      ("e|assemblyExcludeFilter=", makeFilter FilterClass.Module)
-      ("t|typeFilter=", makeFilter FilterClass.Type)
-      ("m|methodFilter=", makeFilter FilterClass.Method)
-      ("a|attributeFilter=", makeFilter FilterClass.Attribute)
+      ("f|fileFilter=", makeFilter FilterScope.File)
+      ("p|pathFilter=", makeFilter FilterScope.Path)
+      ("s|assemblyFilter=", makeFilter FilterScope.Assembly)
+      ("e|assemblyExcludeFilter=", makeFilter FilterScope.Module)
+      ("t|typeFilter=", makeFilter FilterScope.Type)
+      ("m|methodFilter=", makeFilter FilterScope.Method)
+      ("a|attributeFilter=", makeFilter FilterScope.Attribute)
       (CommandLine.ddFlag "l|localSource" Visitor.local)
       ("c|callContext=",
        (fun x ->
@@ -478,8 +478,8 @@ module internal Main =
       |> ProcessOutputLocation
     match check1 with
     | Left(intro, options) ->
-      CommandLine.HandleBadArguments dotnetBuild arguments intro options
-        (Runner.DeclareOptions())
+      CommandLine.HandleBadArguments dotnetBuild arguments
+        { Intro = intro; Options = options; Options2 = Runner.DeclareOptions() }
       255
     | Right(rest, fromInfo, toInfo, targetInfo) ->
       let report = Visitor.ReportPath()

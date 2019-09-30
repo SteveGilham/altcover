@@ -1,6 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\packages\ILMerge.3.0.29\build\ILMerge.props" Condition="Exists('..\packages\ILMerge.3.0.29\build\ILMerge.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
@@ -10,10 +9,8 @@
     <OutputType>Library</OutputType>
     <RootNamespace>AltCover.Recorder</RootNamespace>
     <AssemblyName>AltCover.Recorder</AssemblyName>
-    <TargetFrameworkVersion Condition="'$(OS)' == 'Windows_NT'">v2.0</TargetFrameworkVersion>
-    <TargetFrameworkVersion Condition="'$(OS)' != 'Windows_NT'">v4.7</TargetFrameworkVersion>
-    <ExtraDefines Condition="'$(OS)' == 'Windows_NT'">NET2</ExtraDefines>
-    <ExtraDefines Condition="'$(OS)' != 'Windows_NT'">MONO</ExtraDefines>
+    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
+    <ExtraDefines>NET2</ExtraDefines>
     <Name>AltCover.Recorder</Name>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>
     <TargetFrameworkProfile>
@@ -23,6 +20,9 @@
     <ResolveNuGetPackages>false</ResolveNuGetPackages>
     <UseStandardResourceNames>True</UseStandardResourceNames>
     <Win32Resource>$(ProjectDir)../AltCover/Resource.res</Win32Resource>
+    <OtherFlags>--keyfile:$(SolutionDir)\Build\Infrastructure.snk --standalone</OtherFlags>
+    <OutputPath>$(SolutionDir)_Binaries\$(AssemblyName)\$(Configuration)+$(Platform)\</OutputPath>
+    <IntermediateOutputPath>$(SolutionDir)_Intermediate\$(AssemblyName)\$(Configuration)+$(Platform)\</IntermediateOutputPath>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -30,13 +30,9 @@
     <DebugType Condition="'$(OS)' != 'Windows_NT'">portable</DebugType>
     <Optimize>false</Optimize>
     <Tailcalls>false</Tailcalls>
-    <OutputPath>$(SolutionDir)_Binaries\$(AssemblyName)\$(Configuration)+$(Platform)\</OutputPath>
-    <IntermediateOutputPath>$(SolutionDir)_Intermediate\$(AssemblyName)\$(Configuration)+$(Platform)\</IntermediateOutputPath>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <WarningsAsErrors>
     </WarningsAsErrors>
-    <OtherFlags Condition="'$(OS)' != 'Windows_NT'">--keyfile:$(SolutionDir)\Build\Infrastructure.snk --standalone</OtherFlags>
-    <OtherFlags Condition="'$(OS)' == 'Windows_NT'">--keyfile:$(SolutionDir)\Build\Infrastructure.snk</OtherFlags>
     <DefineConstants>TRACE;DEBUG;CODE_ANALYSIS;$(ExtraDefines)</DefineConstants>
     <WarningLevel>5</WarningLevel>
     <NoWarn>52</NoWarn>
@@ -46,13 +42,9 @@
     <DebugType Condition="'$(OS)' != 'Windows_NT'">portable</DebugType>
     <Optimize>true</Optimize>
     <Tailcalls>true</Tailcalls>
-    <OutputPath>$(SolutionDir)_Binaries\$(AssemblyName)\$(Configuration)+$(Platform)\</OutputPath>
-    <IntermediateOutputPath>$(SolutionDir)_Intermediate\$(AssemblyName)\$(Configuration)+$(Platform)\</IntermediateOutputPath>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <WarningsAsErrors>
     </WarningsAsErrors>
-    <OtherFlags Condition="'$(OS)' != 'Windows_NT'">--keyfile:$(SolutionDir)\Build\Infrastructure.snk --standalone</OtherFlags>
-    <OtherFlags Condition="'$(OS)' == 'Windows_NT'">--keyfile:$(SolutionDir)\Build\Infrastructure.snk</OtherFlags>
     <DefineConstants>TRACE;$(ExtraDefines)</DefineConstants>
     <WarningLevel>4</WarningLevel>
     <NoWarn>2009</NoWarn>
@@ -86,22 +78,13 @@
     <Compile Include="Adapter.fs" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Condition="'$(OS)' == 'Windows_NT'" Include="FSharp.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <Reference Include="FSharp.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
       <HintPath>..\packages\FSharp.Core.3.0.2\lib\net35\FSharp.Core.dll</HintPath>
-    </Reference>
-    <Reference Condition="'$(OS)' != 'Windows_NT'" Include="FSharp.Core">
-      <HintPath>..\packages\FSharp.Core.4.5.2\lib\net45\FSharp.Core.dll</HintPath>
     </Reference>
     <Reference Include="mscorlib" />
     <Reference Include="System" />
     <Reference Include="System.Xml" />
   </ItemGroup>
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('..\packages\ILMerge.3.0.29\build\ILMerge.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\ILMerge.3.0.29\build\ILMerge.props'))" />
-  </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
 	     Other similar extension points exist, see Microsoft.Common.targets.
 	<Target Name="BeforeBuild">
@@ -109,15 +92,4 @@
 	<Target Name="AfterBuild">
 	</Target>
 	-->
-  <Target Name="StaticLink" BeforeTargets="AfterBuild" Condition="'$(OS)' == 'Windows_NT'">
-    <PropertyGroup>
-      <WorkDirectory>$(OutDir)Raw</WorkDirectory>
-    </PropertyGroup>
-    <ItemGroup>
-      <BuiltFiles Include="$(OutDir)*.*" />
-    </ItemGroup>
-    <MakeDir Directories="$(WorkDirectory)" />
-    <Move SourceFiles="@(BuiltFiles)" DestinationFolder="$(WorkDirectory)" />
-    <Exec WorkingDirectory="$(WorkDirectory)" Command="$(ILMergeConsolePath) /out:$(TargetPath) /v2 /attr=$(TargetFileName) /keyfile=$(SolutionDir)\Build\Infrastructure.snk /target:library /internalize $(TargetFileName) FSharp.Core.dll" />
-  </Target>
 </Project>

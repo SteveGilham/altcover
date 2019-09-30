@@ -13,8 +13,7 @@
     <AssemblyName>AltCover.Recorder.Tests</AssemblyName>
     <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
     <TargetFSharpCoreVersion>4.4.1.0</TargetFSharpCoreVersion>
-    <ExtraDefines Condition="'$(OS)' == 'Windows_NT'">NET4</ExtraDefines>
-    <ExtraDefines Condition="'$(OS)' != 'Windows_NT'">MONO</ExtraDefines>
+    <ExtraDefines>NET4</ExtraDefines>
     <UseStandardResourceNames>true</UseStandardResourceNames>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Name>Recorder.Tests</Name>

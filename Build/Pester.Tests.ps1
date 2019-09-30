@@ -15,20 +15,20 @@ Describe "Invoke-Altcover" {
         $x | Should -Exist
         $xm = [xml](Get-Content $x)
         [string]::Join(" ", $xm.coverage.module.method.name) | Should -Be "main returnFoo returnBar testMakeUnion as_bar get_MyBar Invoke .ctor makeThing testMakeThing bytes"
-        [string]::Join(" ", $xm.coverage.module.method.seqpnt.visitcount) | Should -Be "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"
+        [string]::Join(" ", $xm.coverage.module.method.seqpnt.visitcount) | Should -Be "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"
 
         $w = ""
         Invoke-AltCover -Runner -RecorderDirectory $o -WarningVariable w
         $xm = [xml](Get-Content $x)
         [string]::Join(" ", $xm.coverage.module.method.name) | Should -Be "main returnFoo returnBar testMakeUnion as_bar get_MyBar Invoke .ctor makeThing testMakeThing bytes"
-        [string]::Join(" ", $xm.coverage.module.method.seqpnt.visitcount) | Should -Be "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"
+        [string]::Join(" ", $xm.coverage.module.method.seqpnt.visitcount) | Should -Be "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"
         $w | Should -Be "A total of 0 visits recorded"
 
         $summary = Invoke-AltCover  -InformationAction Continue -Runner -RecorderDirectory $o -WorkingDirectory "./Sample2" -Executable "dotnet" -CommandLine @("test", "--no-build", "--configuration", "Debug",  "sample2.core.fsproj")
         $xm2 = [xml](Get-Content $x)
         Remove-Item -Force -Recurse $o
-        [string]::Join(" ", $xm2.coverage.module.method.seqpnt.visitcount) | Should -Be "0 1 1 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 2 1 1 1"
-        $summary.Replace("`r", [String]::Empty).Replace("`n", "|") | Should -Be "Visited Classes 4 of 7 (57.14)|Visited Methods 7 of 11 (63.64)|Visited Points 11 of 23 (47.83)|"
+        [string]::Join(" ", $xm2.coverage.module.method.seqpnt.visitcount) | Should -Be "0 1 1 1 1 1 1 0 0 0 0 0 0 0 2 1 1 1"
+        $summary.Replace("`r", [String]::Empty).Replace("`n", "|") | Should -Be "Visited Classes 4 of 7 (57.14)|Visited Methods 7 of 11 (63.64)|Visited Points 10 of 18 (55.56)|"
     }
 
     It "Fails on garbage" {
@@ -523,7 +523,7 @@ Describe "ConvertFrom-NCover" {
     $xml.WriteTo($xw)
     $xw.Close()
     $written = [System.IO.File]::ReadAllText("./_Packaging/AltCoverFSharpTypes.xml")
-    $expected = [System.IO.File]::ReadAllText("./Tests/AltCoverFSharpTypes.xml")
+    $expected = [System.IO.File]::ReadAllText("./Tests/AltCoverFSharpTypes.n3.xml")
 
     $xml = ConvertTo-XDocument $xml
     $hash = $xml.Descendants("Module").Attribute("hash").Value
@@ -555,7 +555,7 @@ Describe "ConvertFrom-NCover" {
     $xml.WriteTo($xw)
     $xw.Close()
 
-    $expected = [System.IO.File]::ReadAllText("./Tests/AltCoverFSharpTypes.xml")
+    $expected = [System.IO.File]::ReadAllText("./Tests/AltCoverFSharpTypes.n3.xml")
 
     $xml = ConvertTo-XDocument $xml
     $hash = $xml.Descendants("Module").Attribute("hash").Value

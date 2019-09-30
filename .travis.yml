@@ -1,7 +1,7 @@
 language: csharp
 mono: latest
 dist: xenial
-dotnet: 2.1.801
+dotnet: 3.0.100
 addons:
   apt:
     sources:
@@ -9,6 +9,7 @@ addons:
         key_url: "https://packages.microsoft.com/keys/microsoft.asc"
     packages:
       - powershell
+      - dotnet-runtime-2.1
 
 git:
   depth: false
@@ -23,6 +24,6 @@ cache:
 
 script:
   - export PATH="$PATH:/home/travis/.dotnet/tools"
-  - dotnet restore ./dotnet-fake.fsproj
+  - dotnet tool restore
   - dotnet fake run ./Build/setup.fsx
   - dotnet fake run ./Build/build.fsx

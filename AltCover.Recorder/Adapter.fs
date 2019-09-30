@@ -34,7 +34,7 @@ module Adapter =
     Instance.Visits.[name].Add(line, v1)
 
     let v2 = PointVisit.Init (number + 1L) [ Time 17L
-                                             Both(42L, 23) ]
+                                             Both { Time = 42L; Call = 23} ]
     Instance.Visits.[name].Add(line + 1, v2)
 
   let VisitsSeq() = Instance.Visits |> Seq.cast<obj>
@@ -51,7 +51,7 @@ module Adapter =
     Instance.TakeSample Sampling.Single moduleId hitPointId
   let AddSampleUnconditional moduleId hitPointId =
     Instance.TakeSample Sampling.All moduleId hitPointId
-  let internal NewBoth time track = Both(time, track)
+  let internal NewBoth time call = Both { Time = time; Call = call }
   let internal Call track = Call track
   let internal Time at = Time at
   let internal untime at =
@@ -84,7 +84,6 @@ module Adapter =
 
   let internal ProcessExit() = ProcessExit
 
-#if MONO
   let internal MakeNullTrace name = { Tracer = name
                                       Stream = null
                                       Formatter = null
@@ -95,5 +94,4 @@ module Adapter =
                                       Formatter = new System.IO.BinaryWriter(s1)
                                       Runner = true
                                       Definitive = false }
-#endif
 #endif

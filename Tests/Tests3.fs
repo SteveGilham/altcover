@@ -194,16 +194,17 @@ type AltCoverTests3() =
         Assert.That(Visitor.NameFilters.Count, Is.EqualTo 7)
         Assert.That(Visitor.NameFilters
                     |> Seq.forall (fun x ->
-                         match x with
-                         | FilterClass.Attribute _ -> true
+                         match x.Scope with
+                         | FilterScope.Attribute -> true
                          | _ -> false))
         Assert.That
           (Visitor.NameFilters
            |> Seq.map (fun x ->
-                match x with
-                | FilterClass.Attribute i -> i.ToString()
-                | _ -> "*"), Is.EquivalentTo ([| "1"; "a"; "2"; "3"; "4"; "5"; "6" |]
-                                              |> Seq.map (sprintf "(%s, Exclude)") ))
+                match x.Scope with
+                | FilterScope.Attribute -> x.Regex.ToString()
+                | _ -> "*"), Is.EquivalentTo ([| "1"; "a"; "2"; "3"; "4"; "5"; "6" |] ))
+        Assert.That
+          (Visitor.NameFilters |> Seq.forall (fun x -> x.Sense = Exclude))
       finally
         Visitor.NameFilters.Clear()
 
@@ -222,16 +223,17 @@ type AltCoverTests3() =
         Assert.That(Visitor.NameFilters.Count, Is.EqualTo 8)
         Assert.That(Visitor.NameFilters
                     |> Seq.forall (fun x ->
-                         match x with
-                         | FilterClass.Method _ -> true
+                         match x.Scope with
+                         | FilterScope.Method -> true
                          | _ -> false))
         Assert.That
           (Visitor.NameFilters
            |> Seq.map (fun x ->
-                match x with
-                | FilterClass.Method i -> i.ToString()
-                | _ -> "*"), Is.EquivalentTo ([| "1"; "2"; "b"; "c"; "3"; "4"; "5"; "6" |]
-                                              |> Seq.map (sprintf "(%s, Exclude)") ))
+                match x.Scope with
+                | FilterScope.Method -> x.Regex.ToString()
+                | _ -> "*"), Is.EquivalentTo ([| "1"; "2"; "b"; "c"; "3"; "4"; "5"; "6" |] ))
+        Assert.That
+          (Visitor.NameFilters |> Seq.forall (fun x -> x.Sense = Exclude))
       finally
         Visitor.NameFilters.Clear()
 
@@ -250,17 +252,18 @@ type AltCoverTests3() =
         Assert.That(Visitor.NameFilters.Count, Is.EqualTo 9)
         Assert.That(Visitor.NameFilters
                     |> Seq.forall (fun x ->
-                         match x with
-                         | FilterClass.Type _ -> true
+                         match x.Scope with
+                         | FilterScope.Type -> true
                          | _ -> false))
         Assert.That
           (Visitor.NameFilters
            |> Seq.map (fun x ->
-                match x with
-                | FilterClass.Type i -> i.ToString()
+                match x.Scope with
+                | FilterScope.Type -> x.Regex.ToString()
                 | _ -> "*"),
-           Is.EquivalentTo ([| "1"; "2"; "3"; "x"; "y"; "z"; "4"; "5"; "6" |]
-                            |> Seq.map (sprintf "(%s, Exclude)") ))
+           Is.EquivalentTo ([| "1"; "2"; "3"; "x"; "y"; "z"; "4"; "5"; "6" |] ))
+        Assert.That
+          (Visitor.NameFilters |> Seq.forall (fun x -> x.Sense = Exclude))
       finally
         Visitor.NameFilters.Clear()
 
@@ -279,18 +282,20 @@ type AltCoverTests3() =
         Assert.That(Visitor.NameFilters.Count, Is.EqualTo 8)
         Assert.That(Visitor.NameFilters
                     |> Seq.forall (fun x ->
-                         match x with
-                         | FilterClass.Assembly _ -> true
+                         match x.Scope with
+                         | FilterScope.Assembly -> true
                          | _ -> false))
         Assert.That
           (Visitor.NameFilters
            |> Seq.map (fun x ->
-                match x with
-                | FilterClass.Assembly i -> i.ToString()
+                match x.Scope with
+                | FilterScope.Assembly -> x.Regex.ToString()
                 | _ -> "*"),
-           Is.EquivalentTo ([| "1"; "2"; "3"; "4"; "p"; "q"; "5"; "6" |]
-                            |> Seq.mapi (fun i r -> let k = if i = 0 then "Include" else "Exclude"
-                                                    sprintf "(%s, %s)" r k )) )
+           Is.EquivalentTo ([| "1"; "2"; "3"; "4"; "p"; "q"; "5"; "6" |]) )
+        Assert.That
+           (Visitor.NameFilters
+            |> Seq.map (fun x -> if x.Sense = Include then 1 else 0),
+            Is.EquivalentTo ([| 1; 0; 0; 0; 0; 0;  0; 0 |]) )
       finally
         Visitor.NameFilters.Clear()
 
@@ -309,16 +314,17 @@ type AltCoverTests3() =
         Assert.That(Visitor.NameFilters.Count, Is.EqualTo 7)
         Assert.That(Visitor.NameFilters
                     |> Seq.forall (fun x ->
-                         match x with
-                         | FilterClass.Assembly _ -> true
+                         match x.Scope with
+                         | FilterScope.Assembly -> true
                          | _ -> false))
         Assert.That
           (Visitor.NameFilters
            |> Seq.map (fun x ->
-                match x with
-                | FilterClass.Assembly i -> i.ToString()
-                | _ -> "*"), Is.EquivalentTo ([| "1|a"; "\\d"; "3"; "4;p"; "q"; "5"; "6" |]
-                                              |> Seq.map (sprintf "(%s, Exclude)") ))
+                match x.Scope with
+                | FilterScope.Assembly -> x.Regex.ToString()
+                | _ -> "*"), Is.EquivalentTo ([| "1|a"; "\\d"; "3"; "4;p"; "q"; "5"; "6" |] ))
+        Assert.That
+          (Visitor.NameFilters |> Seq.forall (fun x -> x.Sense = Exclude))
       finally
         Visitor.NameFilters.Clear()
 
@@ -337,16 +343,17 @@ type AltCoverTests3() =
         Assert.That(Visitor.NameFilters.Count, Is.EqualTo 8)
         Assert.That(Visitor.NameFilters
                     |> Seq.forall (fun x ->
-                         match x with
-                         | FilterClass.Module _ -> true
+                         match x.Scope with
+                         | FilterScope.Module -> true
                          | _ -> false))
         Assert.That
           (Visitor.NameFilters
            |> Seq.map (fun x ->
-                match x with
-                | FilterClass.Module i -> i.ToString()
-                | _ -> "*"), Is.EquivalentTo ([| "1"; "2"; "3"; "4"; "p"; "q"; "5"; "6" |]
-                                              |> Seq.map (sprintf "(%s, Exclude)") ))
+                match x.Scope with
+                | FilterScope.Module -> x.Regex.ToString()
+                | _ -> "*"), Is.EquivalentTo ([| "1"; "2"; "3"; "4"; "p"; "q"; "5"; "6" |] ))
+        Assert.That
+          (Visitor.NameFilters |> Seq.forall (fun x -> x.Sense = Exclude))
       finally
         Visitor.NameFilters.Clear()
 
@@ -365,16 +372,17 @@ type AltCoverTests3() =
         Assert.That(Visitor.NameFilters.Count, Is.EqualTo 8)
         Assert.That(Visitor.NameFilters
                     |> Seq.forall (fun x ->
-                         match x with
-                         | FilterClass.File _ -> true
+                         match x.Scope with
+                         | FilterScope.File -> true
                          | _ -> false))
         Assert.That
           (Visitor.NameFilters
            |> Seq.map (fun x ->
-                match x with
-                | FilterClass.File i -> i.ToString()
-                | _ -> "*"), Is.EquivalentTo ([| "1"; "2"; "3"; "4"; "5"; "m"; "n"; "6" |]
-                                              |> Seq.map (sprintf "(%s, Exclude)") ))
+                match x.Scope with
+                | FilterScope.File -> x.Regex.ToString()
+                | _ -> "*"), Is.EquivalentTo ([| "1"; "2"; "3"; "4"; "5"; "m"; "n"; "6" |] ))
+        Assert.That
+          (Visitor.NameFilters |> Seq.forall (fun x -> x.Sense = Exclude))
       finally
         Visitor.NameFilters.Clear()
 
@@ -393,16 +401,17 @@ type AltCoverTests3() =
         Assert.That(Visitor.NameFilters.Count, Is.EqualTo 8)
         Assert.That(Visitor.NameFilters
                     |> Seq.forall (fun x ->
-                         match x with
-                         | FilterClass.Path _ -> true
+                         match x.Scope with
+                         | FilterScope.Path -> true
                          | _ -> false))
         Assert.That
           (Visitor.NameFilters
            |> Seq.map (fun x ->
-                match x with
-                | FilterClass.Path i -> i.ToString()
-                | _ -> "*"), Is.EquivalentTo ([| "1"; "2"; "3"; "4"; "5"; "m"; "n"; "6" |]
-                                              |> Seq.map (sprintf "(%s, Exclude)") ))
+                match x.Scope with
+                | FilterScope.Path -> x.Regex.ToString()
+                | _ -> "*"), Is.EquivalentTo ([| "1"; "2"; "3"; "4"; "5"; "m"; "n"; "6" |] ))
+        Assert.That
+          (Visitor.NameFilters |> Seq.forall (fun x -> x.Sense = Exclude))
       finally
         Visitor.NameFilters.Clear()
 
@@ -2085,7 +2094,7 @@ type AltCoverTests3() =
         use stderr = new StringWriter()
         Console.SetError stderr
         let empty = OptionSet()
-        CommandLine.Usage("UsageError", options, empty)
+        CommandLine.Usage { Intro = "UsageError"; Options = options; Options2 = empty }
         let result = stderr.ToString().Replace("\r\n", "\n")
         let expected = """Error - usage is:
   -i, --inputDirectory=VALUE Optional, multiple: A folder containing assemblies

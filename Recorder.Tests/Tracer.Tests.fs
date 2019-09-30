@@ -7,11 +7,7 @@ namespace Tests.Recorder.Clr4
 #if NET2
 namespace Tests.Recorder.Clr2
 #else
-#if MONO
-namespace Tests.Recorder.Mono
-#else
 namespace Tests.Recorder.Unknown
-#endif
 #endif
 #endif
 #endif
@@ -78,11 +74,7 @@ type AltCoverCoreTests() =
            match enum tag with
            | Tag.Time -> Adapter.Time <| formatter.ReadInt64()
            | Tag.Call -> Adapter.Call <| formatter.ReadInt32()
-#if MONO
            | Tag.Both -> Adapter.NewBoth ((formatter.ReadInt64()), (formatter.ReadInt32()))
-#else
-           | Tag.Both -> Adapter.NewBoth (formatter.ReadInt64()) (formatter.ReadInt32())
-#endif
            | Tag.Table ->
              test <@ id = String.Empty @>
              test <@ strike = 0 @>
@@ -99,11 +91,7 @@ type AltCoverCoreTests() =
                    if pts > 0 then
                      let p = formatter.ReadInt32()
                      let n = formatter.ReadInt64()
-#if MONO
                      let pv = PointVisit.Init (n, [])
-#else
-                     let pv = PointVisit.Init n []
-#endif
                      t.[m].Add(p, pv)
                      let rec tracking() =
                        let track = formatter.ReadByte() |> int
@@ -116,13 +104,8 @@ type AltCoverCoreTests() =
                          tracking()
                        | Tag.Both ->
                          pv.Tracks.Add
-#if MONO
                            (Adapter.NewBoth ((formatter.ReadInt64()),
                               (formatter.ReadInt32())))
-#else
-                           (Adapter.NewBoth (formatter.ReadInt64())
-                              (formatter.ReadInt32()))
-#endif
                          tracking()
                        | Tag.Table -> test' <@ false @> "No nested tables!!"
                        | _ -> sequencePoint (pts - 1)
@@ -155,11 +138,7 @@ type AltCoverCoreTests() =
           Instance.trace <- client.OnStart()
           test' <@ Instance.trace.IsConnected() @> "connection failed"
           Instance.IsRunner <- true
-#if MONO
           Adapter.VisitImplNone ("name", 23)
-#else
-          Adapter.VisitImplNone "name" 23
-#endif
         finally
           Instance.trace.Close()
           Instance.trace.Close()
@@ -187,20 +166,11 @@ type AltCoverCoreTests() =
 
       let expect24 =
         [ Adapter.Time 17L
-#if MONO
           Adapter.NewBoth (42L, 23)
-#else
-          Adapter.NewBoth 42L 23
-#endif
         ]
 
-#if MONO
       t.["name"].[23] <- PointVisit.Init (1L, expect23)
       t.["name"].[24] <- PointVisit.Init (2L, expect24)
-#else
-      t.["name"].[23] <- PointVisit.Init 1L expect23
-      t.["name"].[24] <- PointVisit.Init 2L expect24
-#endif
 
       let expected =
         [ (String.Empty, 0, Adapter.Table t)
@@ -215,13 +185,8 @@ type AltCoverCoreTests() =
           Instance.IsRunner <- true
 
           Adapter.VisitsClear()
-#if MONO
           Adapter.VisitsAddTrack ("name", 23, 1L)
           Adapter.VisitImplMethod ("name", 23, 5)
-#else
-          Adapter.VisitsAddTrack "name" 23 1L
-          Adapter.VisitImplMethod "name" 23 5
-#endif
         finally
           Instance.IsRunner <- false
           Instance.trace.Close()
@@ -301,11 +266,7 @@ type AltCoverCoreTests() =
           Assert.That(Instance.trace.IsConnected(), "connection failed")
           let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
           let (a, b, c) = expected |> Seq.head
-#if MONO
-          Instance.trace.Push(a,b,c)
-#else
-          Instance.trace.Push a b c
-#endif
+          Instance.trace.Push (a,b,c)
           Adapter.FlushAll()
         finally
           Instance.trace.Close()
@@ -322,11 +283,5 @@ type AltCoverCoreTests() =
         test' <@ results = expected @> "unexpected result"
       finally
         Adapter.VisitsClear()
-
-#if NETCOREAPP2_0
-    [<Test>]
-    member self.CoreFindsThePlace() = test <@ AltCover.Recorder.Tracer.Core()
-                                              |> Path.GetFileName = "FSharp.Core.dll" @>
-#endif
 
   end
