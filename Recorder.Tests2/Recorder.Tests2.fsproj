@@ -10,10 +10,8 @@
     <OutputType>Library</OutputType>
     <RootNamespace>Recorder.Tests2</RootNamespace>
     <AssemblyName>AltCover.Recorder.Tests2</AssemblyName>
-    <TargetFrameworkVersion Condition="'$(OS)' == 'Windows_NT'">v3.5</TargetFrameworkVersion>
-    <TargetFrameworkVersion Condition="'$(OS)' != 'Windows_NT'">v4.7</TargetFrameworkVersion>
-    <ExtraDefines Condition="'$(OS)' == 'Windows_NT'">NET2</ExtraDefines>
-    <ExtraDefines Condition="'$(OS)' != 'Windows_NT'">MONO</ExtraDefines>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <ExtraDefines>NET2</ExtraDefines>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Name>Recorder.Tests2</Name>
     <NuGetPackageImportStamp>
@@ -63,7 +61,7 @@
     <Error Condition="!Exists('..\packages\NUnit.3.12.0\build\NUnit.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\NUnit.3.12.0\build\NUnit.props'))" />
   </Target>
   <ItemGroup>
-    <Content Include="App.config" Condition="'$(OS)' == 'Windows_NT'" />
+    <Content Include="App.config" />
     <Compile Include="..\Recorder.Tests\AssemblyInfo.fs">
       <Link>AssemblyInfo.fs</Link>
     </Compile>
@@ -88,26 +86,20 @@
     <Content Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Condition="'$(OS)' != 'Windows_NT'" Include="FSharp.Core">
-      <HintPath>..\packages\FSharp.Core.4.5.2\lib\net45\FSharp.Core.dll</HintPath>
-    </Reference>
-    <Reference Condition="'$(OS)' == 'Windows_NT'" Include="FSharp.Core">
+    <Reference Include="FSharp.Core">
       <HintPath>..\packages\FSharp.Core.3.0.2\lib\net35\FSharp.Core.dll</HintPath>
     </Reference>
-    <Reference Include="FSharp.PowerPack" Condition="'$(OS)' == 'Windows_NT'">
-      <HintPath>..\packages\FSPowerPack.Community.2.0.0.0\lib\Net20\FSharp.PowerPack.dll</HintPath>
+    <Reference Include="FSharp.PowerPack">
+      <HintPath>..\packages\FSPowerPack.Community.2.0.0.0\Lib\Net20\FSharp.PowerPack.dll</HintPath>
     </Reference>
-    <Reference Include="FSharp.PowerPack.Linq" Condition="'$(OS)' == 'Windows_NT'">
-      <HintPath>..\packages\FSPowerPack.Community.2.0.0.0\lib\Net20\FSharp.PowerPack.Linq.dll</HintPath>
+    <Reference Include="FSharp.PowerPack.Linq">
+      <HintPath>..\packages\FSPowerPack.Community.2.0.0.0\Lib\Net20\FSharp.PowerPack.Linq.dll</HintPath>
     </Reference>
-    <Reference Include="FSharp.PowerPack.Metadata" Condition="'$(OS)' == 'Windows_NT'">
-      <HintPath>..\packages\FSPowerPack.Community.2.0.0.0\lib\Net20\FSharp.PowerPack.Metadata.dll</HintPath>
+    <Reference Include="FSharp.PowerPack.Metadata">
+      <HintPath>..\packages\FSPowerPack.Community.2.0.0.0\Lib\Net20\FSharp.PowerPack.Metadata.dll</HintPath>
     </Reference>
-    <Reference Include="Unquote2" Condition="'$(OS)' == 'Windows_NT'">
+    <Reference Include="Unquote2">
       <HintPath>..\ThirdParty\Unquote2.dll</HintPath>
-    </Reference>
-    <Reference Include="Unquote" Condition="'$(OS)' != 'Windows_NT'">
-      <HintPath>..\ThirdParty\Unquote.dll</HintPath>
     </Reference>
     <Reference Include="mscorlib" />
     <Reference Include="nunit.framework">

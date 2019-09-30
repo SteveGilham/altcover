@@ -65,10 +65,10 @@ type Tracer =
     | Call t ->
       this.Formatter.Write(Tag.Call |> byte)
       this.Formatter.Write(t)
-    | Both(t', t) ->
+    | Both b ->
       this.Formatter.Write(Tag.Both |> byte)
-      this.Formatter.Write(t')
-      this.Formatter.Write(t)
+      this.Formatter.Write(b.Time)
+      this.Formatter.Write(b.Call)
     | Table t ->
       this.Formatter.Write(Tag.Table |> byte)
       t.Keys

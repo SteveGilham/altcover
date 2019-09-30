@@ -9,10 +9,8 @@
     <OutputType>Library</OutputType>
     <RootNamespace>AltCover.Recorder</RootNamespace>
     <AssemblyName>AltCover.Recorder</AssemblyName>
-    <TargetFrameworkVersion Condition="'$(OS)' == 'Windows_NT'">v2.0</TargetFrameworkVersion>
-    <TargetFrameworkVersion Condition="'$(OS)' != 'Windows_NT'">v4.7</TargetFrameworkVersion>
-    <ExtraDefines Condition="'$(OS)' == 'Windows_NT'">NET2</ExtraDefines>
-    <ExtraDefines Condition="'$(OS)' != 'Windows_NT'">MONO</ExtraDefines>
+    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
+    <ExtraDefines>NET2</ExtraDefines>
     <Name>AltCover.Recorder</Name>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>
     <TargetFrameworkProfile>
@@ -80,11 +78,8 @@
     <Compile Include="Adapter.fs" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Condition="'$(OS)' == 'Windows_NT'" Include="FSharp.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <Reference Include="FSharp.Core, Version=2.3.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
       <HintPath>..\packages\FSharp.Core.3.0.2\lib\net35\FSharp.Core.dll</HintPath>
-    </Reference>
-    <Reference Condition="'$(OS)' != 'Windows_NT'" Include="FSharp.Core">
-      <HintPath>..\packages\FSharp.Core.4.5.2\lib\net45\FSharp.Core.dll</HintPath>
     </Reference>
     <Reference Include="mscorlib" />
     <Reference Include="System" />

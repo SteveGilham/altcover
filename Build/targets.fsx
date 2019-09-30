@@ -103,13 +103,23 @@ let nugetCache =
   Path.Combine
     (Environment.GetFolderPath Environment.SpecialFolder.UserProfile, ".nuget/packages")
 
-let findToolInSubPath file dir =
-  Fake.Core.ProcessUtils.findLocalTool String.Empty file [dir]
+let pwsh = match "pwsh" |> Fake.Core.ProcessUtils.tryFindFileOnPath with
+           | Some path -> path
+           | _ -> "pwsh"
 
-let pwsh =
-  if Environment.isWindows then
-    findToolInSubPath "pwsh.exe" (programFiles @@ "PowerShell")
-  else "pwsh"
+let toolPackages =
+  let xml = "./Build/dotnet-cli.csproj" |> Path.getFullName |> XDocument.Load
+  xml.Descendants(XName.Get("PackageReference"))
+  |> Seq.map (fun x -> (x.Attribute(XName.Get("Include")).Value, x.Attribute(XName.Get("version")).Value))
+  |> Map.ofSeq
+
+let packageVersion (p:string) =
+  p.ToLowerInvariant() + "/" + (toolPackages.Item p)
+
+// MCS packages.config
+let openCoverConsole = ("./packages/" + (packageVersion "OpenCover") + "/tools/OpenCover.Console.exe") |> Path.getFullName
+let nunitConsole = ("./packages/" + (packageVersion "NUnit.ConsoleRunner") + "/tools/nunit3-console.exe")  |> Path.getFullName
+let xunitConsole =  ("./packages/" + (packageVersion "xunit.runner.console") + "/tools/net452/xunit.console.exe") |> Path.getFullName
 
 let cliArguments =
   { MSBuild.CliArguments.Create() with ConsoleLogParameters = []
@@ -128,11 +138,10 @@ let withMSBuildParams (o : Fake.DotNet.DotNet.BuildOptions) =
   { o with MSBuildParams = cliArguments }
 
 let NuGetAltCover =
-  let xml = "./MCS/packages.config" |> Path.getFullName |> XDocument.Load
-  xml.Descendants(XName.Get("package"))
-  |> Seq.filter(fun x -> x.Attribute(XName.Get("id")).Value.ToLowerInvariant().Equals("altcover"))
-  |> Seq.map(fun x -> "./packages/altcover." + x.Attribute(XName.Get("version")).Value + "/tools/net45/AltCover.exe")
-  |> Seq.map Path.getFullName
+  toolPackages
+  |> Seq.filter (fun kv -> kv.Key = "altcover")
+  |> Seq.map (fun _ -> ("./packages/" + (packageVersion "altcover")+ "/tools/net45/AltCover.exe")
+                       |> Path.getFullName)
   |> Seq.filter File.Exists
   |> Seq.tryHead
 
@@ -336,7 +345,7 @@ _Target "Lint" (fun _ ->
 _Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standalone which contaminates everything
   Directory.ensure "./_Reports"
 
-  let toolPath = (findToolInSubPath "gendarme.exe" "./packages")
+  let toolPath = "./packages/" + (packageVersion "Mono.Gendarme") + "/tools/gendarme.exe"
   let rules =
     if Environment.isWindows then "./Build/rules.xml"
     else "./Build/rules-mono.xml"
@@ -531,7 +540,7 @@ _Target "JustUnitTest" (fun _ ->
 
     !!(@"_Binaries/*Tests/Debug+AnyCPU/*XTest*.dll")
     |> Fake.DotNet.Testing.XUnit2.run (fun p ->
-         { p with ToolPath = findToolInSubPath "xunit.console.exe" "."
+         { p with ToolPath = xunitConsole
                   NUnitXmlOutputPath = Some "./_Reports/JustXUnitTestReport.xml"
                   WorkingDir = Some here
                   ShadowCopy = false })
@@ -542,19 +551,19 @@ _Target "JustUnitTest" (fun _ ->
          Path.GetFileName(f) <> "AltCover.XTests.dll" &&
          Path.GetFileName(f) <> "AltCover.Recorder.Tests.dll")
     |> NUnit3.run (fun p ->
-         { p with ToolPath = findToolInSubPath "nunit3-console.exe" "."
+         { p with ToolPath = nunitConsole
                   WorkingDir = "."
                   ResultSpecs = [ "./_Reports/JustUnitTestReport.xml" ] })
 
     !!(@"_Binaries/*Tests/Debug+AnyCPU/AltCover.Recorder.Tests.dll")
     |> NUnit3.run (fun p ->
-         { p with ToolPath = findToolInSubPath "nunit3-console.exe" "."
+         { p with ToolPath = nunitConsole
                   WorkingDir = "."
                   ResultSpecs = [ "./_Reports/RecorderUnitTestReport.xml" ] })
 
     !!(@"_Binaries/*Tests2/Debug+AnyCPU/*Test*.dll")
     |> NUnit3.run (fun p ->
-         { p with ToolPath = findToolInSubPath "nunit3-console.exe" "."
+         { p with ToolPath = nunitConsole
                   WorkingDir = "."
                   ResultSpecs = [ "./_Reports/Recorder2UnitTestReport.xml" ] })
   with x ->
@@ -617,11 +626,19 @@ _Target "UnitTestDotNetWithCoverlet" (fun _ ->
            let here = Path.GetDirectoryName f
            (here @@ "coverage.opencover.xml") :: l) []
 
-    ReportGenerator.generateReports (fun p ->
-      { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
-               ReportTypes =
-                 [ ReportGenerator.ReportType.Html; ReportGenerator.ReportType.XmlSummary ]
-               TargetDir = "_Reports/_UnitTestWithCoverlet" }) xml
+//    ReportGenerator.generateReports (fun p ->
+//      { p with ExePath = "dotnet reportgenerator"
+//               ReportTypes =
+//                 [ ReportGenerator.ReportType.Html; ReportGenerator.ReportType.XmlSummary ]
+//               TargetDir = "_Reports/_UnitTestWithCoverlet" }) xml
+    let args = [
+                 "\"-reports:" + String.Join(";", xml) + "\""
+                 "-targetdir:" + "_Reports/_UnitTestWithCoverlet"
+                 "-reporttypes:Html;XmlSummary"
+                 "-verbosity:Verbose"
+               ]
+    Actions.RunDotnet dotnetOptions "reportgenerator" (String.Join(" ", args)) "ReportGenerator"
+
   with x ->
     printfn "%A" x
     reraise())
@@ -648,8 +665,8 @@ _Target "UnitTestWithOpenCover" (fun _ ->
   try
     OpenCover.run (fun p ->
       { p with WorkingDir = "."
-               ExePath = findToolInSubPath "OpenCover.Console.exe" "."
-               TestRunnerExePath = findToolInSubPath "xunit.console.exe" "."
+               ExePath = openCoverConsole
+               TestRunnerExePath = xunitConsole
                Filter =
                  "+[AltCover]* +[AltCover.Recorder]* +[AltCover.Runner]* +[AltCover.WeakNameTests]Alt* -[*]Microsoft.* -[*]System.* -[Sample*]*"
                MergeByHash = true
@@ -663,8 +680,8 @@ _Target "UnitTestWithOpenCover" (fun _ ->
 
     OpenCover.run (fun p ->
       { p with WorkingDir = "."
-               ExePath = findToolInSubPath "OpenCover.Console.exe" "."
-               TestRunnerExePath = findToolInSubPath "nunit3-console.exe" "."
+               ExePath = openCoverConsole
+               TestRunnerExePath = nunitConsole
                Filter =
                  "+[AltCover]* +[AltCover.Recorder]* +[AltCover.Runner]* +[AltCover.WeakNameTests]Alt* -[*]Microsoft.* -[*]System.* -[Sample*]*"
                MergeByHash = true
@@ -678,8 +695,8 @@ _Target "UnitTestWithOpenCover" (fun _ ->
 
     OpenCover.run (fun p ->
       { p with WorkingDir = "."
-               ExePath = findToolInSubPath "OpenCover.Console.exe" "."
-               TestRunnerExePath = findToolInSubPath "nunit3-console.exe" "."
+               ExePath = openCoverConsole
+               TestRunnerExePath = nunitConsole
                Filter =
                  "+[AltCover]* +[AltCover.Recorder]* +[AltCover.Runner]* +[AltCover.WeakNameTests]Alt* -[*]Microsoft.* -[*]System.* -[Sample*]*"
                MergeByHash = true
@@ -693,8 +710,8 @@ _Target "UnitTestWithOpenCover" (fun _ ->
 
     OpenCover.run (fun p ->
       { p with WorkingDir = "."
-               ExePath = findToolInSubPath "OpenCover.Console.exe" "."
-               TestRunnerExePath = findToolInSubPath "nunit3-console.exe" "."
+               ExePath = openCoverConsole
+               TestRunnerExePath = nunitConsole
                Filter =
                  "+[AltCover]* +[AltCover.Recorder]* +[AltCover.Runner]* +[AltCover.WeakNameTests]Alt* -[*]Microsoft.* -[*]System.* -[Sample*]*"
                MergeByHash = true
@@ -710,11 +727,20 @@ _Target "UnitTestWithOpenCover" (fun _ ->
     printfn "%A" x
     reraise()
 
-  ReportGenerator.generateReports (fun p ->
-    { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
-             ReportTypes =
-               [ ReportGenerator.ReportType.Html; ReportGenerator.ReportType.XmlSummary ]
-             TargetDir = "_Reports/_UnitTestWithOpenCover" }) [ coverage; xcoverage; scoverage; s4coverage ])
+  let args = [
+               "\"-reports:" + String.Join(";", [ coverage; xcoverage; scoverage; s4coverage ]) + "\""
+               "-targetdir:" + "_Reports/_UnitTestWithOpenCover"
+               "-reporttypes:Html;XmlSummary"
+               "-verbosity:Verbose"
+             ]
+  Actions.RunDotnet dotnetOptions "reportgenerator" (String.Join(" ", args)) "ReportGenerator"
+
+  //ReportGenerator.generateReports (fun p ->
+  //  { p with ExePath = "dotnet reportgenerator"
+  //           ReportTypes =
+  //             [ ReportGenerator.ReportType.Html; ReportGenerator.ReportType.XmlSummary ]
+  //           TargetDir = "_Reports/_UnitTestWithOpenCover" }) [ coverage; xcoverage; scoverage; s4coverage ]
+)
 
 // Hybrid (Self) Tests
 
@@ -723,7 +749,7 @@ _Target "UnitTestWithAltCover" (fun _ ->
   let keyfile = Path.getFullName "Build/SelfTest.snk"
   let shadowkeyfile = Path.getFullName "Build/Infrastructure.snk"
   let reports = Path.getFullName "./_Reports"
-  let altcover = findToolInSubPath "AltCover.exe" "./_Binaries"
+  let altcover = "./_Binaries/AltCover/Debug+AnyCPU/AltCover.exe"
   let here = Path.getFullName "."
 
   let testDirectory = Path.getFullName "_Binaries/AltCover.Tests/Debug+AnyCPU"
@@ -751,7 +777,7 @@ _Target "UnitTestWithAltCover" (fun _ ->
     printfn "Unit test the instrumented code"
     !!(@"_Binaries/*Tests/Debug+AnyCPU/__UnitTestWithAltCover/*XTest*.dll")
     |> Fake.DotNet.Testing.XUnit2.run (fun p ->
-         { p with ToolPath = findToolInSubPath "xunit.console.exe" "."
+         { p with ToolPath = xunitConsole
                   NUnitXmlOutputPath = Some "./_Reports/XUnitTestWithAltCoverReport.xml"
                   WorkingDir = Some here
                   ShadowCopy = false })
@@ -792,7 +818,7 @@ _Target "UnitTestWithAltCover" (fun _ ->
       |> Seq.concat
       |> Seq.distinct
       |> NUnit3.run (fun p ->
-           { p with ToolPath = findToolInSubPath "nunit3-console.exe" "."
+           { p with ToolPath = nunitConsole
                     WorkingDir = "."
                     ResultSpecs = [ "./_Reports/UnitTestWithAltCoverReport.xml" ] })
     with x ->
@@ -821,16 +847,25 @@ _Target "UnitTestWithAltCover" (fun _ ->
     printfn "Execute the Recorder2 tests"
     !!("_Binaries/AltCover.Recorder.Tests2/Debug+AnyCPU/__RecorderTestWithAltCover/Alt*.Test*.dll")
     |> NUnit3.run (fun p ->
-         { p with ToolPath = findToolInSubPath "nunit3-console.exe" "."
+         { p with ToolPath = nunitConsole
                   WorkingDir = "."
                   ResultSpecs = [ "./_Reports/RecorderTestWithAltCoverReport.xml" ] })
 
-    ReportGenerator.generateReports (fun p ->
-      { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
-               ReportTypes =
-                 [ ReportGenerator.ReportType.Html; ReportGenerator.ReportType.XmlSummary ]
-               TargetDir = "_Reports/_UnitTestWithAltCover" })
-      [ xaltReport; altReport; RecorderReport ]
+    let args = [
+                 "\"-reports:" + String.Join(";", [ xaltReport; altReport; RecorderReport ]) + "\""
+                 "-targetdir:" + "_Reports/_UnitTestWithAltCover"
+                 "-reporttypes:Html;XmlSummary"
+                 "-verbosity:Verbose"
+               ]
+    Actions.RunDotnet dotnetOptions "reportgenerator" (String.Join(" ", args)) "ReportGenerator"
+
+//    ReportGenerator.generateReports (fun p ->
+//      { p with ExePath = "dotnet reportgenerator"
+//               ReportTypes =
+//                 [ ReportGenerator.ReportType.Html; ReportGenerator.ReportType.XmlSummary ]
+//               TargetDir = "_Reports/_UnitTestWithAltCover" })
+//      [ xaltReport; altReport; RecorderReport ]
+
   else printfn "Symbols not present; skipping")
 
 _Target "UnitTestWithAltCoverRunner" (fun _ ->
@@ -839,7 +874,6 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
   let shadowkeyfile = Path.getFullName "Build/Infrastructure.snk"
   let reports = Path.getFullName "./_Reports"
   let altcover =  "./_Binaries/AltCover/Debug+AnyCPU/AltCover.exe" |> Path.getFullName
-  let nunit = findToolInSubPath "nunit3-console.exe" "."
   let here = Path.getFullName "."
 
   let testDirectory = Path.getFullName "_Binaries/AltCover.Tests/Debug+AnyCPU"
@@ -868,7 +902,7 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
     try
       let collect =
        AltCover.CollectParams.Primitive
-        { Primitive.CollectParams.Create() with Executable = findToolInSubPath "xunit.console.exe" "."
+        { Primitive.CollectParams.Create() with Executable = xunitConsole
                                                 RecorderDirectory = xtestDirectory @@ "__UnitTestWithAltCoverRunner"
                                                 CommandLine =
                                                  [ Path.getFullName
@@ -908,7 +942,7 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
     try
       let collect =
        AltCover.CollectParams.Primitive
-        { Primitive.CollectParams.Create() with Executable = nunit
+        { Primitive.CollectParams.Create() with Executable = nunitConsole
                                                 RecorderDirectory = testDirectory @@ "__UnitTestWithAltCoverRunner"
                                                 CommandLine =
                                                  [ "--noheader";
@@ -950,7 +984,7 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
     printfn "Execute the weakname tests"
     let collect =
      AltCover.CollectParams.Primitive
-      { Primitive.CollectParams.Create() with Executable = nunit
+      { Primitive.CollectParams.Create() with Executable = nunitConsole
                                               RecorderDirectory = weakDir @@ "__WeakNameTestWithAltCoverRunner"
                                               CommandLine  =
                                                [ "--noheader"
@@ -984,7 +1018,7 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
 
     let collect =
      AltCover.CollectParams.Primitive
-      { Primitive.CollectParams.Create() with Executable = nunit
+      { Primitive.CollectParams.Create() with Executable = nunitConsole
                                               RecorderDirectory = RecorderDir @@ "__RecorderTestWithAltCoverRunner"
                                               CommandLine =
                                                [ "--noheader";
@@ -1018,7 +1052,7 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
 
     let collect =
      AltCover.CollectParams.Primitive
-      { Primitive.CollectParams.Create() with Executable = nunit
+      { Primitive.CollectParams.Create() with Executable = nunitConsole
                                               RecorderDirectory = Recorder2Dir @@ "__RecorderTest2WithAltCoverRunner"
                                               CommandLine =
                                                [ "--noheader";
@@ -1055,7 +1089,7 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
     printfn "Execute the the GTK# visualizer tests"
     let collect =
      AltCover.CollectParams.Primitive
-      { Primitive.CollectParams.Create() with Executable = nunit
+      { Primitive.CollectParams.Create() with Executable = nunitConsole
                                               RecorderDirectory = gtkDir @@ "__GTKVTestWithAltCoverRunner"
                                               CommandLine =
                                                [ "--noheader"
@@ -1070,12 +1104,20 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
     |> AltCover.run
 
     let pester = Path.getFullName "_Reports/Pester.xml"
-    ReportGenerator.generateReports (fun p ->
-      { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
-               ReportTypes =
-                 [ ReportGenerator.ReportType.Html; ReportGenerator.ReportType.XmlSummary ]
-               TargetDir = "_Reports/_UnitTestWithAltCoverRunner" })
-      [ xaltReport; altReport; RecorderReport; Recorder2Report; weakReport; pester ]
+    let args = [
+                 "\"-reports:" + String.Join(";", [ xaltReport; altReport; RecorderReport; Recorder2Report; weakReport; pester ]) + "\""
+                 "-targetdir:" + "_Reports/_UnitTestWithAltCoverRunner"
+                 "-reporttypes:Html;XmlSummary"
+                 "-verbosity:Verbose"
+               ]
+    Actions.RunDotnet dotnetOptions "reportgenerator" (String.Join(" ", args)) "ReportGenerator"
+
+//    ReportGenerator.generateReports (fun p ->
+//      { p with ExePath = "dotnet reportgenerator"
+//               ReportTypes =
+//                 [ ReportGenerator.ReportType.Html; ReportGenerator.ReportType.XmlSummary ]
+//               TargetDir = "_Reports/_UnitTestWithAltCoverRunner" })
+//      [ xaltReport; altReport; RecorderReport; Recorder2Report; weakReport; pester ]
 
     let cover1 =
       altReport
@@ -1112,12 +1154,13 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
       |> Seq.skipWhile (fun l -> l.StartsWith("    <Module") |> not)
 
     let coverage = reports @@ "CombinedTestWithAltCoverRunner.coveralls"
+    let coveralls = ("./packages/" + (packageVersion "coveralls.io") + "/tools/coveralls.net.exe")
+                    |> Path.getFullName
+
     File.WriteAllLines
       (coverage, Seq.concat [ cover1; cover2; cover2a; cover3; cover3a; cover4 ] |> Seq.toArray)
     if not <| String.IsNullOrWhiteSpace(Environment.environVar "APPVEYOR_BUILD_NUMBER") then
-      Actions.Run
-        (findToolInSubPath "coveralls.net.exe" nugetCache, "_Reports",
-         [ "--opencover"; coverage ]) "Coveralls upload failed"
+      Actions.Run (coveralls, "_Reports", [ "--opencover"; coverage ]) "Coveralls upload failed"
   else printfn "Symbols not present; skipping")
 
 _Target "UnitTestWithAltCoverCore" // Obsolete
@@ -1125,7 +1168,7 @@ _Target "UnitTestWithAltCoverCore" // Obsolete
   Directory.ensure "./_Reports/_UnitTestWithAltCover"
   let keyfile = Path.getFullName "Build/SelfTest.snk"
   let reports = Path.getFullName "./_Reports"
-  let altcover = findToolInSubPath "AltCover.exe" "./_Binaries"
+  let altcover = "./_Binaries/AltCover/Debug+AnyCPU/AltCover.exe"
   let testDirectory =
     Path.getFullName "_Binaries/AltCover.Tests/Debug+AnyCPU/netcoreapp2.1"
   let output =
@@ -1221,12 +1264,20 @@ _Target "UnitTestWithAltCoverCore" // Obsolete
                                                               true }
        |> withCLIArgs)
 
-  ReportGenerator.generateReports (fun p ->
-    { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
-             ReportTypes =
-               [ ReportGenerator.ReportType.Html; ReportGenerator.ReportType.XmlSummary ]
-             TargetDir = "_Reports/_UnitTestWithAltCoverCore" })
-    [ altReport; RecorderReport; xReport ])
+  let args = [
+               "\"-reports:" + String.Join(";", [ altReport; RecorderReport; xReport ]) + "\""
+               "-targetdir:" + "_Reports/_UnitTestWithAltCoverCore"
+               "-reporttypes:Html;XmlSummary"
+               "-verbosity:Verbose"
+             ]
+  Actions.RunDotnet dotnetOptions "reportgenerator" (String.Join(" ", args)) "ReportGenerator")
+
+//  ReportGenerator.generateReports (fun p ->
+//    { p with ExePath = "dotnet reportgenerator"
+//             ReportTypes =
+//               [ ReportGenerator.ReportType.Html; ReportGenerator.ReportType.XmlSummary ]
+//             TargetDir = "_Reports/_UnitTestWithAltCoverCore" })
+//    [ altReport; RecorderReport; xReport ])
 
 _Target "UnitTestWithAltCoverCoreRunner"
   (fun _ ->
@@ -1382,12 +1433,20 @@ _Target "UnitTestWithAltCoverCoreRunner"
                                         WorkingDirectory = xOut }
   |> AltCover.run
 
-  ReportGenerator.generateReports (fun p ->
-    { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
-             ReportTypes =
-               [ ReportGenerator.ReportType.Html; ReportGenerator.ReportType.XmlSummary ]
-             TargetDir = "_Reports/_UnitTestWithAltCoverCoreRunner" })
-    [ altReport; RecorderReport; xReport ])
+  let args = [
+               "\"-reports:" + String.Join(";", [ altReport; RecorderReport; xReport ]) + "\""
+               "-targetdir:" + "_Reports/_UnitTestWithAltCoverCoreRunner"
+               "-reporttypes:Html;XmlSummary"
+               "-verbosity:Verbose"
+             ]
+  Actions.RunDotnet dotnetOptions "reportgenerator" (String.Join(" ", args)) "ReportGenerator")
+
+//  ReportGenerator.generateReports (fun p ->
+//    { p with ExePath = "dotnet reportgenerator"
+//             ReportTypes =
+//               [ ReportGenerator.ReportType.Html; ReportGenerator.ReportType.XmlSummary ]
+//             TargetDir = "_Reports/_UnitTestWithAltCoverCoreRunner" })
+//    [ altReport; RecorderReport; xReport ])
 
 // Pure OperationalTests
 
@@ -1725,8 +1784,8 @@ _Target "SelfTest" (fun _ ->
 
   OpenCover.run (fun p ->
     { p with WorkingDir = targetDir
-             ExePath = findToolInSubPath "OpenCover.Console.exe" "."
-             TestRunnerExePath = findToolInSubPath "AltCover.exe" targetDir
+             ExePath = openCoverConsole
+             TestRunnerExePath = "./_Binaries/AltCover/Debug+AnyCPU/AltCover.exe"
              Filter = OpenCoverFilter
              MergeByHash = true
              OptionalArguments =
@@ -1734,9 +1793,17 @@ _Target "SelfTest" (fun _ ->
                //Register = OpenCover.RegisterType.RegisterUser
              Output = report }) args
 
-  ReportGenerator.generateReports (fun p ->
-    { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
-             TargetDir = "_Reports/_OpenCoverSelfTest" }) [ report ]
+  let args = [
+               "\"-reports:" + String.Join(";", [ report ]) + "\""
+               "-targetdir:" + "_Reports/_OpenCoverSelfTest"
+               "-reporttypes:Html;XmlSummary"
+               "-verbosity:Verbose"
+             ]
+  Actions.RunDotnet dotnetOptions "reportgenerator" (String.Join(" ", args)) "ReportGenerator"
+
+//  ReportGenerator.generateReports (fun p ->
+//    { p with ExePath = "dotnet reportgenerator"
+//             TargetDir = "_Reports/_OpenCoverSelfTest" }) [ report ]
 
   printfn "Re-instrument everything"
   let altReport2 = reports @@ "AltCoverSelfTestDummy.xml"
@@ -1758,9 +1825,17 @@ _Target "SelfTest" (fun _ ->
                                        "_Binaries/AltCover.Tests/Debug+AnyCPU" }
   |> AltCover.run
 
-  ReportGenerator.generateReports (fun p ->
-    { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
-             TargetDir = "_Reports/_AltCoverSelfTest" }) [ altReport ])
+  let args = [
+               "\"-reports:" + String.Join(";", [ altReport ]) + "\""
+               "-targetdir:" + "_Reports/_AltCoverSelfTest"
+               "-reporttypes:Html;XmlSummary"
+               "-verbosity:Verbose"
+             ]
+  Actions.RunDotnet dotnetOptions "reportgenerator" (String.Join(" ", args)) "ReportGenerator")
+
+//  ReportGenerator.generateReports (fun p ->
+//    { p with ExePath = "dotnet reportgenerator"
+//             TargetDir = "_Reports/_AltCoverSelfTest" }) [ altReport ])
 
 _Target "RecordResumeTest"
   (fun _ ->
@@ -2048,7 +2123,7 @@ _Target "RecordResumeTestUnderMono" // Fails : System.EntryPointNotFoundExceptio
 _Target "Packaging" (fun _ ->
   let AltCover = Path.getFullName "_Binaries/AltCover/Release+AnyCPU/AltCover.exe"
   let config = AltCover + ".config"
-  Assert.That (config |> File.Exists, Is.False, config)
+  Assert.That (Environment.isWindows && config |> File.Exists, Is.False, config)
   let fox = Path.getFullName "_Binaries/AltCover/Release+AnyCPU/BlackFox.CommandLine.dll"
   let fscore = Path.getFullName "_Binaries/AltCover/Release+AnyCPU/FSharp.Core.dll"
   let options = Path.getFullName "_Binaries/AltCover/Release+AnyCPU/Mono.Options.dll"
@@ -2319,8 +2394,9 @@ _Target "Packaging" (fun _ ->
                   Publish = false
                   ReleaseNotes = Path.getFullName "ReleaseNotes.md" |> File.ReadAllText
                   ToolPath =
-                    if Environment.isWindows then
-                      findToolInSubPath "NuGet.exe" "./packages"
+                    if Environment.isWindows then                      
+                      ("./packages/" + (packageVersion "NuGet.CommandLine") + "/tools/NuGet.exe")
+                      |> Path.getFullName
                     else "/usr/bin/nuget" }) nuspec))
 
 _Target "PrepareFrameworkBuild" ignore
@@ -2449,11 +2525,19 @@ _Target "Pester" (fun _ ->
                                         ToolType = AltCover.ToolType.DotNet dotnetPath
                                         WorkingDirectory = unpack }
   |> AltCover.run
-  ReportGenerator.generateReports (fun p ->
-    { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
-             ReportTypes =
-               [ ReportGenerator.ReportType.Html; ReportGenerator.ReportType.XmlSummary ]
-             TargetDir = "_Reports/_Pester" }) [ report ]
+  let args = [
+               "\"-reports:" + String.Join(";", [ report ]) + "\""
+               "-targetdir:" + "_Reports/_Pester"
+               "-reporttypes:Html;XmlSummary"
+               "-verbosity:Verbose"
+             ]
+  Actions.RunDotnet dotnetOptions "reportgenerator" (String.Join(" ", args)) "ReportGenerator"
+
+//  ReportGenerator.generateReports (fun p ->
+//    { p with ExePath = "dotnet reportgenerator"
+//             ReportTypes =
+//               [ ReportGenerator.ReportType.Html; ReportGenerator.ReportType.XmlSummary ]
+//             TargetDir = "_Reports/_Pester" }) [ report ]
 
   "_Reports/_Pester/Summary.xml"
   |> File.ReadAllText
@@ -2967,9 +3051,7 @@ group NetcoreBuild
        String.Format
          (dependencies, Path.getFullName "./_Packaging.api", !Version,
           Path.getFullName "./_Packaging.fake"))
-    Shell.copy "./_ApiUse" (!!"./dotnet*.fsproj")
 
-    DotNet.restore (fun o -> o.WithCommon(withWorkingDirectoryVM "_ApiUse")) ""
     Actions.RunDotnet (withWorkingDirectoryOnly "_ApiUse")
       "fake" "run ./DriveApi.fsx"
       "running fake script returned with a non-zero exit code"
@@ -3645,14 +3727,21 @@ _Target "BulkReport" (fun _ ->
   printfn "Overall coverage reporting"
   Directory.ensure "./_Reports/_BulkReport"
 
-  !!"./_Reports/*.xml"
-  |> Seq.filter
-       (fun f -> not <| f.EndsWith("Report.xml", StringComparison.OrdinalIgnoreCase))
-  |> Seq.toList
-  |> ReportGenerator.generateReports (fun p ->
-       { p with ExePath = findToolInSubPath "ReportGenerator.exe" "."
-                ReportTypes = [ ReportGenerator.ReportType.Html ]
-                TargetDir = "_Reports/_BulkReport" })
+  let r = !!"./_Reports/*.xml"
+          |> Seq.filter (fun f -> not <| f.EndsWith("Report.xml", StringComparison.OrdinalIgnoreCase))
+          |> Seq.toList
+  let args = [
+               "\"-reports:" + String.Join(";", r) + "\""
+               "-targetdir:" + "_Reports/_BulkReport"
+               "-reporttypes:Html;XmlSummary"
+               "-verbosity:Verbose"
+             ]
+  Actions.RunDotnet dotnetOptions "reportgenerator" (String.Join(" ", args)) "ReportGenerator"
+
+//  |> ReportGenerator.generateReports (fun p ->
+//       { p with ExePath = "dotnet reportgenerator"
+//                ReportTypes = [ ReportGenerator.ReportType.Html ]
+//                TargetDir = "_Reports/_BulkReport" })
 
   let misses = ref 0
   let numbers =

@@ -24,7 +24,7 @@ let dotnetOptions (o : DotNet.Options) =
 
 DotNet.restore (fun o ->
   { o with Packages = [ "./packages" ]
-           Common = dotnetOptions o.Common }) "./Build/dotnet-nuget.fsproj"
+           Common = dotnetOptions o.Common }) "./Build/dotnet-cli.csproj"
 // Restore the NuGet packages used by the build and the Framework version
 RestoreMSSolutionPackages id "./AltCover.sln"
 
@@ -47,11 +47,10 @@ nuget Fake.Testing.ReportGenerator >= 5.16.1
 nuget AltCode.Fake.DotNet.Gendarme >= 5.9.3.10
 nuget BlackFox.CommandLine >= 1.0.0
 nuget BlackFox.VsWhere >= 1.0.0
-nuget coveralls.io >= 1.4.2
 nuget FSharpLint.Core >= 0.12.3
 nuget Markdown >= 2.2.1
 nuget NUnit >= 3.12.0
-nuget YamlDotNet >= 6.1.2 //"
+nuget YamlDotNet >= 7.0.0 //"
 #r "System.IO.Compression.FileSystem.dll"
 #r "System.Xml"
 #r "System.Xml.Linq"
