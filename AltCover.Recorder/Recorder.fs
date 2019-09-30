@@ -10,14 +10,6 @@ open System.Reflection
 open System.Resources
 open System.Runtime.CompilerServices
 
-#if NETSTANDARD2_0
-[<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage>]
-#else
-[<System.Runtime.InteropServices.ProgIdAttribute("ExcludeFromCodeCoverage hack for OpenCover issue 615")>]
-#endif
-[<NoComparison>]
-type internal Carrier = SequencePoint of String * int * Track
-
 module Instance =
   let internal resources =
     ResourceManager("AltCover.Recorder.Strings", Assembly.GetExecutingAssembly())
@@ -243,7 +235,7 @@ module Instance =
       | (0L, 0) -> Null
       | (t, 0) -> Time(t * (clock() / t))
       | (0L, n) -> Call n
-      | (t, n) -> Both(t * (clock() / t), n)
+      | (t, n) -> Both{ Time = t * (clock() / t); Call = n }
     else Null
 
   let internal PayloadControl = PayloadSelection Clock

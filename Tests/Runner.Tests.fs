@@ -252,7 +252,7 @@ type AltCoverTests() =
         use stderr = new StringWriter()
         Console.SetError stderr
         let empty = OptionSet()
-        CommandLine.Usage("UsageError", empty, options)
+        CommandLine.Usage { Intro = "UsageError"; Options = empty; Options2 = options}
         let result = stderr.ToString().Replace("\r\n", "\n")
         let expected = """Error - usage is:
   -r, --recorderDirectory=VALUE
@@ -1705,7 +1705,7 @@ or
         [ Base.Null
           Base.Call 17
           Base.Time 23L
-          Base.Both(5L, 42)
+          Base.Both { Time = 5L; Call = 42 }
           Base.Time 42L
           Base.Call 5 ]
 
@@ -1735,10 +1735,10 @@ or
                | Call t ->
                  formatter.Write(Base.Tag.Call |> byte)
                  formatter.Write(t)
-               | Both(t', t) ->
+               | Both b ->
                  formatter.Write(Base.Tag.Both |> byte)
-                 formatter.Write(t')
-                 formatter.Write(t)
+                 formatter.Write(b.Time)
+                 formatter.Write(b.Call)
                | Table t ->
                  formatter.Write(Base.Tag.Table |> byte)
                  t.Keys
@@ -1756,10 +1756,10 @@ or
                                                                                     | Call t ->
                                                                                       formatter.Write(Base.Tag.Call |> byte)
                                                                                       formatter.Write(t)
-                                                                                    | Both(t', t) ->
+                                                                                    | Both b ->
                                                                                       formatter.Write(Base.Tag.Both |> byte)
-                                                                                      formatter.Write(t')
-                                                                                      formatter.Write(t)
+                                                                                      formatter.Write(b.Time)
+                                                                                      formatter.Write(b.Call)
                                                                                     | _ -> tx |> (sprintf "%A") |> Assert.Fail)
                                                              formatter.Write(Base.Tag.Null |> byte)))
                  formatter.Write String.Empty
@@ -1774,7 +1774,7 @@ or
       let c = Dictionary<int, int64 * Base.Track list>()
       c.Add(3, (0L, [Time 23L]))
       let d = Dictionary<int, int64 * Base.Track list>()
-      d.Add(4, (0L, [Both (5L, 42)]))
+      d.Add(4, (0L, [Both { Time = 5L; Call = 42 } ]))
       let e = Dictionary<int, int64 * Base.Track list>()
       e.Add(6, (0L, [Call 5]))
       let f = Dictionary<int, int64 * Base.Track list>()
@@ -1812,7 +1812,7 @@ or
         [ Base.Null
           Base.Call 17
           Base.Time 23L
-          Base.Both(5L, 42)
+          Base.Both { Time = 5L;  Call = 42 }
           Base.Time 42L
           Base.Time 5L ]
       Runner.PointProcess root hits

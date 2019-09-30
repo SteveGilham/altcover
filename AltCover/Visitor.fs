@@ -211,16 +211,13 @@ type Fix<'T> = delegate of 'T -> Fix<'T>
 module internal Visitor =
   let internal collect = ref false // ddFlag
   let internal TrackingNames = new List<String>()
-  let internal DefaultFilter (s : Regex) =
-    (s, Exclude)
-
   let internal NameFilters = new List<FilterClass>()
 
   let private specialCaseFilters =
     [ @"^CompareTo\$cont\@\d+\-?\d$"
       |> Regex
-      |> DefaultFilter
-      |> FilterClass.Method ]
+      |> FilterRegex.Exclude
+      |> FilterClass.Build FilterScope.Method ]
 
   let internal inplace = ref false // ddFlag
   let internal coalesceBranches = ref false // ddFlag
@@ -312,17 +309,13 @@ module internal Visitor =
 
   let localFilter (nameProvider : Object) =
     match nameProvider with
-    | :? AssemblyDefinition as a ->
-#if NETCOREAPP2_0
-        a.Name.Name = "FSharp.Core" || // HACK HACK HACK Issue 73
-#endif
-        (!local &&
-         a.MainModule
-         |> moduleFiles
-         |> Seq.tryHead
-         |> Option.map File.Exists
-         |> Option.getOrElse false
-         |> not)
+    | :? AssemblyDefinition as a -> !local &&
+                                    a.MainModule
+                                    |> moduleFiles
+                                    |> Seq.tryHead
+                                    |> Option.map File.Exists
+                                    |> Option.getOrElse false
+                                    |> not
     | _ -> false
 
   let IsIncluded(nameProvider : Object) =
