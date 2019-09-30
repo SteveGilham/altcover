@@ -2,7 +2,8 @@ Q. Never mind the fluff -- how do I get started?
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
-# 6.2.726 (Fukurou series release 7)
+# 6.2.727 (Fukurou series release 7 respin)
+* [BUGFIX] Issue #74 -- Strip unwanted dependencies from released code.
 * Generally, move to .net core 3.0 for build (many other changes in process only)
 * With the F# 4.7 compiler, static linking FSharp.Core into the recorder has been fixed, and has been adopted
 * In .net core 3.0 release, `dotnet build` no longer does a `dotnet publish` to the output directory
