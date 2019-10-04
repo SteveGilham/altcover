@@ -1,7 +1,11 @@
 #if RUNNER
 namespace AltCover.Base
 #else
+#if AVALONIA
+namespace AltCover.Base
+#else
 namespace AltCover.Recorder
+#endif
 #endif
 
 open System
@@ -21,6 +25,8 @@ type
   | OpenCover = 1
   | OpenCoverWithTracking = 2
 
+#if AVALONIA
+#else
 type
 #if DEBUG
 #else
@@ -318,4 +324,6 @@ module internal Counter =
     match context with
     | Table t -> AddTable counts t
     | _ -> AddSingleVisit counts moduleId hitPointId context
+#endif
+
 #endif

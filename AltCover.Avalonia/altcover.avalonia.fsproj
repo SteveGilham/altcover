@@ -9,23 +9,25 @@
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <ContinuousIntegrationBuild Condition="'$(APPVEYOR)'=='True'">true</ContinuousIntegrationBuild>
     <DeterministicSourcePaths Condition="'$(APPVEYOR)'=='True'">true</DeterministicSourcePaths>
+    <DefineConstants>AVALONIA</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
     <OutputPath>$(SolutionDir)_Binaries/$(AssemblyName).Avalonia/$(Configuration)+$(Platform)/</OutputPath>
     <IntermediateOutputPath>$(SolutionDir)_Intermediate/$(AssemblyName).Avalonia/$(Configuration)+$(Platform)/</IntermediateOutputPath>
     <OtherFlags>--tailcalls+</OtherFlags>
+    <WarningLevel>5</WarningLevel>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <WarningsAsErrors />
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
     <SolutionDir Condition="'$(SolutionDir)' == '$(ProjectDir)'">$(ProjectDir)../</SolutionDir>
     <OutputPath>$(SolutionDir)_Binaries/$(AssemblyName).Avalonia/$(Configuration)+$(Platform)/</OutputPath>
     <IntermediateOutputPath>$(SolutionDir)_Intermediate/$(AssemblyName).Avalonia/$(Configuration)+$(Platform)/</IntermediateOutputPath>
     <OtherFlags Condition="Exists('$(SolutionDir)Build\Infrastructure.snk')">--keyfile:$(SolutionDir)Build\Infrastructure.snk</OtherFlags>
-</PropertyGroup>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <WarningLevel>4</WarningLevel>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <WarningsAsErrors />
+    <NoWarn>52</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -70,7 +72,10 @@
   <ItemGroup>
     <Compile Include="..\_Generated\AssemblyVersion.fs" Link="AssemblyVersion.fs" />
     <Compile Include="..\_Generated\VisibleToTest.fs" Link="VisibleToTest.fs" />
+    <Compile Include="..\AltCover.Recorder\Base.fs" Link="Base.fs" />
+    <Compile Include="..\AltCover.FSApi\Xml.fs" Link="Xml.fs" />
     <Compile Include="..\AltCover.FSApi\RenderToHtml.fs" Link="RenderToHtml.fs" />
+    <Compile Include="..\AltCover\Exemption.fs" Link="Exemption.fs" />
     <Compile Include="..\AltCover\Augment.fs" Link="Augment.fs" />
     <Compile Include="..\AltCover.Visualizer\CoverageFile.fs" Link="CoverageFile.fs" />
     <Compile Include="..\AltCover.Visualizer\GuiCommon.fs" Link="GuiCommon.fs" />
@@ -87,18 +92,18 @@
 
   <ItemGroup>
     <PackageReference Include="Avalonia.HtmlRenderer" Version="0.6.1" />
-    <PackageReference Include="Avalonia" Version="0.8.0" />
-    <PackageReference Include="Avalonia.Desktop" Version="0.8.0" />
+    <PackageReference Include="Avalonia" Version="0.8.2" />
+    <PackageReference Include="Avalonia.Desktop" Version="0.8.2" />
     <PackageReference Condition="'$(OS)' == 'Windows_NT' AND '$(Configuration)'=='Release'" Include="Microsoft.SourceLink.GitHub" Version="1.0.0-beta-63127-02">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Mono.Options" Version="5.3.0.1" />
-    <PackageReference Include="System.Reactive.Core" Version="4.1.5" />
+    <PackageReference Include="System.Reactive.Core" Version="4.1.6" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Update="FSharp.Core" Version="4.6.2" />
+    <PackageReference Update="FSharp.Core" Version="4.7.0" />
   </ItemGroup>
 
 </Project>

@@ -217,7 +217,8 @@ raportas al ausente fonta dosiero
     <value>Pri...</value>
   </data>
   <data name="ProgramComments" xml:space="preserve">
-    <value>Ikonoj de la Visual Studio 2017-kolekto
+    <value>{0}
+Ikonoj de la Visual Studio 2017-kolekto
 https://docs.microsoft.com/en-us/visualstudio/designers/the-visual-studio-image-library
 kaj de la Tango Project
 http://tango.freedesktop.org/Tango_Icon_Library#Download</value>

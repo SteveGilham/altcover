@@ -207,7 +207,7 @@ refers to source files not found on this computer.</value>
 refers to absent to source file
 {1}.</value>
   </data>
-  <data name="Load Warning" xml:space="preserve">
+  <data name="LoadWarning" xml:space="preserve">
     <value>Inconsistent Coverage File</value>
   </data>
   <data name="LoadError" xml:space="preserve">
