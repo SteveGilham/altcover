@@ -672,8 +672,8 @@ _Target "UnitTestWithOpenCover" (fun _ ->
                MergeByHash = true
                ReturnTargetCode =  Fake.DotNet.Testing.OpenCover.ReturnTargetCodeType.Yes
                OptionalArguments =
-                 "-excludebyattribute:*ExcludeFromCodeCoverageAttribute;*ProgIdAttribute -register:Path64"
-               //Register = OpenCover.RegisterType.RegisterUser
+                 "-excludebyattribute:*ExcludeFromCodeCoverageAttribute;*ProgIdAttribute"
+               Register = OpenCover.RegisterType.Path64
                Output = xcoverage })
       (String.Join(" ", xtestFiles)
        + " -parallel none -noshadow -nunit _Reports/XUnitTestWithOpenCoverReport.xml")
@@ -687,8 +687,8 @@ _Target "UnitTestWithOpenCover" (fun _ ->
                MergeByHash = true
                ReturnTargetCode =  Fake.DotNet.Testing.OpenCover.ReturnTargetCodeType.Yes
                OptionalArguments =
-                 "-excludebyattribute:*ExcludeFromCodeCoverageAttribute;*ProgIdAttribute -register:Path64"
-               //Register = OpenCover.RegisterType.RegisterUser
+                 "-excludebyattribute:*ExcludeFromCodeCoverageAttribute;*ProgIdAttribute"
+               Register = OpenCover.RegisterType.Path64
                Output = coverage })
       (String.Join(" ", testFiles)
        + " --result=./_Reports/UnitTestWithOpenCoverReport.xml")
@@ -702,8 +702,8 @@ _Target "UnitTestWithOpenCover" (fun _ ->
                MergeByHash = true
                ReturnTargetCode =  Fake.DotNet.Testing.OpenCover.ReturnTargetCodeType.Yes
                OptionalArguments =
-                 "-excludebyattribute:*ExcludeFromCodeCoverageAttribute;*ProgIdAttribute -register:Path64"
-               //Register = OpenCover.RegisterType.RegisterUser
+                 "-excludebyattribute:*ExcludeFromCodeCoverageAttribute;*ProgIdAttribute"
+               Register = OpenCover.RegisterType.RegisterUser // TODO
                Output = scoverage })
       (String.Join(" ", RecorderFiles)
        + " --result=./_Reports/RecorderTestWithOpenCoverReport.xml")
@@ -717,8 +717,8 @@ _Target "UnitTestWithOpenCover" (fun _ ->
                MergeByHash = true
                ReturnTargetCode =  Fake.DotNet.Testing.OpenCover.ReturnTargetCodeType.Yes
                OptionalArguments =
-                 "-excludebyattribute:*ExcludeFromCodeCoverageAttribute;*ProgIdAttribute -register:Path64"
-               //Register = OpenCover.RegisterType.RegisterUser
+                 "-excludebyattribute:*ExcludeFromCodeCoverageAttribute;*ProgIdAttribute"
+               Register = OpenCover.RegisterType.Path64
                Output = s4coverage })
       (String.Join(" ", Recorder4Files)
        + " --result=./_Reports/RecorderTest4WithOpenCoverReport.xml")
@@ -2913,11 +2913,12 @@ _Target "ApiUse" (fun _ ->
 
     let apiroot = Path.GetFullPath "./_Packaging.api"
     let fakeroot = Path.GetFullPath "./_Packaging.fake"
-    // manage the dependencies
-    let lines = "./Build/paket.lock"
-                |> File.ReadAllLines
-                |> Array.map (fun line -> String.Format(line, !Version, apiroot, fakeroot))
-    File.WriteAllLines ("./_ApiUse/paket.lock", lines)
+    if "./Build/paket.lock" |> File.Exists then
+      // manage the dependencies
+      let lines = "./Build/paket.lock"
+                  |> File.ReadAllLines
+                  |> Array.map (fun line -> String.Format(line, !Version, apiroot, fakeroot))
+      File.WriteAllLines ("./_ApiUse/paket.lock", lines)
 
     let config = XDocument.Load "./Build/NuGet.config.dotnettest"
     let repo = config.Descendants(XName.Get("add")) |> Seq.head
@@ -3036,9 +3037,9 @@ Target.runOrDefault "DoIt"
 // [ FAKE GROUP ]
 group NetcoreBuild
   source https://api.nuget.org/v3/index.json
-  nuget Fake.Core >= 5.8.4
-  nuget Fake.Core.Target >= 5.16.1
-  nuget Fake.DotNet.Cli >= 5.16.1
+  nuget Fake.Core >= 5.16.0
+  nuget Fake.Core.Target >= 5.17.0
+  nuget Fake.DotNet.Cli >= 5.17.0
   nuget FSharp.Core >= 4.7
 
   source {0}
