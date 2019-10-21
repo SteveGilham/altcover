@@ -3,7 +3,7 @@ Q. Never mind the fluff -- how do I get started?
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
 # 6.2.7xx (Fukurou series release 8)
-*
+* Filter out assemblies without the `ILOnly` bit set (i.e. pretty much anything C++/CLI)
 
 # 6.2.727 (Fukurou series release 7 respin)
 * [BUGFIX] Issue #74 -- Strip unwanted dependencies from released code.
