@@ -626,19 +626,11 @@ _Target "UnitTestDotNetWithCoverlet" (fun _ ->
            let here = Path.GetDirectoryName f
            (here @@ "coverage.opencover.xml") :: l) []
 
-//    ReportGenerator.generateReports (fun p ->
-//      { p with ExePath = "dotnet reportgenerator"
-//               ReportTypes =
-//                 [ ReportGenerator.ReportType.Html; ReportGenerator.ReportType.XmlSummary ]
-//               TargetDir = "_Reports/_UnitTestWithCoverlet" }) xml
-    let args = [
-                 "\"-reports:" + String.Join(";", xml) + "\""
-                 "-targetdir:" + "_Reports/_UnitTestWithCoverlet"
-                 "-reporttypes:Html;XmlSummary"
-                 "-verbosity:Verbose"
-               ]
-    Actions.RunDotnet dotnetOptions "reportgenerator" (String.Join(" ", args)) "ReportGenerator"
-
+    ReportGenerator.generateReports (fun p ->
+      { p with ToolType = ToolType.CreateLocalTool()
+               ReportTypes =
+                 [ ReportGenerator.ReportType.Html; ReportGenerator.ReportType.XmlSummary ]
+               TargetDir = "_Reports/_UnitTestWithCoverlet" }) xml
   with x ->
     printfn "%A" x
     reraise())
@@ -727,19 +719,11 @@ _Target "UnitTestWithOpenCover" (fun _ ->
     printfn "%A" x
     reraise()
 
-  let args = [
-               "\"-reports:" + String.Join(";", [ coverage; xcoverage; scoverage; s4coverage ]) + "\""
-               "-targetdir:" + "_Reports/_UnitTestWithOpenCover"
-               "-reporttypes:Html;XmlSummary"
-               "-verbosity:Verbose"
-             ]
-  Actions.RunDotnet dotnetOptions "reportgenerator" (String.Join(" ", args)) "ReportGenerator"
-
-  //ReportGenerator.generateReports (fun p ->
-  //  { p with ExePath = "dotnet reportgenerator"
-  //           ReportTypes =
-  //             [ ReportGenerator.ReportType.Html; ReportGenerator.ReportType.XmlSummary ]
-  //           TargetDir = "_Reports/_UnitTestWithOpenCover" }) [ coverage; xcoverage; scoverage; s4coverage ]
+  ReportGenerator.generateReports (fun p ->
+    { p with ToolType = ToolType.CreateLocalTool()
+             ReportTypes =
+               [ ReportGenerator.ReportType.Html; ReportGenerator.ReportType.XmlSummary ]
+             TargetDir = "_Reports/_UnitTestWithOpenCover" }) [ coverage; xcoverage; scoverage; s4coverage ]
 )
 
 // Hybrid (Self) Tests
@@ -851,20 +835,12 @@ _Target "UnitTestWithAltCover" (fun _ ->
                   WorkingDir = "."
                   ResultSpecs = [ "./_Reports/RecorderTestWithAltCoverReport.xml" ] })
 
-    let args = [
-                 "\"-reports:" + String.Join(";", [ xaltReport; altReport; RecorderReport ]) + "\""
-                 "-targetdir:" + "_Reports/_UnitTestWithAltCover"
-                 "-reporttypes:Html;XmlSummary"
-                 "-verbosity:Verbose"
-               ]
-    Actions.RunDotnet dotnetOptions "reportgenerator" (String.Join(" ", args)) "ReportGenerator"
-
-//    ReportGenerator.generateReports (fun p ->
-//      { p with ExePath = "dotnet reportgenerator"
-//               ReportTypes =
-//                 [ ReportGenerator.ReportType.Html; ReportGenerator.ReportType.XmlSummary ]
-//               TargetDir = "_Reports/_UnitTestWithAltCover" })
-//      [ xaltReport; altReport; RecorderReport ]
+    ReportGenerator.generateReports (fun p ->
+      { p with ToolType = ToolType.CreateLocalTool()
+               ReportTypes =
+                 [ ReportGenerator.ReportType.Html; ReportGenerator.ReportType.XmlSummary ]
+               TargetDir = "_Reports/_UnitTestWithAltCover" })
+      [ xaltReport; altReport; RecorderReport ]
 
   else printfn "Symbols not present; skipping")
 
@@ -1104,20 +1080,13 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
     |> AltCover.run
 
     let pester = Path.getFullName "_Reports/Pester.xml"
-    let args = [
-                 "\"-reports:" + String.Join(";", [ xaltReport; altReport; RecorderReport; Recorder2Report; weakReport; pester ]) + "\""
-                 "-targetdir:" + "_Reports/_UnitTestWithAltCoverRunner"
-                 "-reporttypes:Html;XmlSummary"
-                 "-verbosity:Verbose"
-               ]
-    Actions.RunDotnet dotnetOptions "reportgenerator" (String.Join(" ", args)) "ReportGenerator"
 
-//    ReportGenerator.generateReports (fun p ->
-//      { p with ExePath = "dotnet reportgenerator"
-//               ReportTypes =
-//                 [ ReportGenerator.ReportType.Html; ReportGenerator.ReportType.XmlSummary ]
-//               TargetDir = "_Reports/_UnitTestWithAltCoverRunner" })
-//      [ xaltReport; altReport; RecorderReport; Recorder2Report; weakReport; pester ]
+    ReportGenerator.generateReports (fun p ->
+      { p with ToolType = ToolType.CreateLocalTool()
+               ReportTypes =
+                 [ ReportGenerator.ReportType.Html; ReportGenerator.ReportType.XmlSummary ]
+               TargetDir = "_Reports/_UnitTestWithAltCoverRunner" })
+      [ xaltReport; altReport; RecorderReport; Recorder2Report; weakReport; pester ]
 
     let cover1 =
       altReport
@@ -1264,20 +1233,12 @@ _Target "UnitTestWithAltCoverCore" // Obsolete
                                                               true }
        |> withCLIArgs)
 
-  let args = [
-               "\"-reports:" + String.Join(";", [ altReport; RecorderReport; xReport ]) + "\""
-               "-targetdir:" + "_Reports/_UnitTestWithAltCoverCore"
-               "-reporttypes:Html;XmlSummary"
-               "-verbosity:Verbose"
-             ]
-  Actions.RunDotnet dotnetOptions "reportgenerator" (String.Join(" ", args)) "ReportGenerator")
-
-//  ReportGenerator.generateReports (fun p ->
-//    { p with ExePath = "dotnet reportgenerator"
-//             ReportTypes =
-//               [ ReportGenerator.ReportType.Html; ReportGenerator.ReportType.XmlSummary ]
-//             TargetDir = "_Reports/_UnitTestWithAltCoverCore" })
-//    [ altReport; RecorderReport; xReport ])
+  ReportGenerator.generateReports (fun p ->
+    { p with ToolType = ToolType.CreateLocalTool()
+             ReportTypes =
+               [ ReportGenerator.ReportType.Html; ReportGenerator.ReportType.XmlSummary ]
+             TargetDir = "_Reports/_UnitTestWithAltCoverCore" })
+    [ altReport; RecorderReport; xReport ])
 
 _Target "UnitTestWithAltCoverCoreRunner"
   (fun _ ->
@@ -1433,20 +1394,12 @@ _Target "UnitTestWithAltCoverCoreRunner"
                                         WorkingDirectory = xOut }
   |> AltCover.run
 
-  let args = [
-               "\"-reports:" + String.Join(";", [ altReport; RecorderReport; xReport ]) + "\""
-               "-targetdir:" + "_Reports/_UnitTestWithAltCoverCoreRunner"
-               "-reporttypes:Html;XmlSummary"
-               "-verbosity:Verbose"
-             ]
-  Actions.RunDotnet dotnetOptions "reportgenerator" (String.Join(" ", args)) "ReportGenerator")
-
-//  ReportGenerator.generateReports (fun p ->
-//    { p with ExePath = "dotnet reportgenerator"
-//             ReportTypes =
-//               [ ReportGenerator.ReportType.Html; ReportGenerator.ReportType.XmlSummary ]
-//             TargetDir = "_Reports/_UnitTestWithAltCoverCoreRunner" })
-//    [ altReport; RecorderReport; xReport ])
+  ReportGenerator.generateReports (fun p ->
+    { p with ToolType = ToolType.CreateLocalTool()
+             ReportTypes =
+               [ ReportGenerator.ReportType.Html; ReportGenerator.ReportType.XmlSummary ]
+             TargetDir = "_Reports/_UnitTestWithAltCoverCoreRunner" })
+    [ altReport; RecorderReport; xReport ])
 
 // Pure OperationalTests
 
@@ -1793,17 +1746,9 @@ _Target "SelfTest" (fun _ ->
                //Register = OpenCover.RegisterType.RegisterUser
              Output = report }) args
 
-  let args = [
-               "\"-reports:" + String.Join(";", [ report ]) + "\""
-               "-targetdir:" + "_Reports/_OpenCoverSelfTest"
-               "-reporttypes:Html;XmlSummary"
-               "-verbosity:Verbose"
-             ]
-  Actions.RunDotnet dotnetOptions "reportgenerator" (String.Join(" ", args)) "ReportGenerator"
-
-//  ReportGenerator.generateReports (fun p ->
-//    { p with ExePath = "dotnet reportgenerator"
-//             TargetDir = "_Reports/_OpenCoverSelfTest" }) [ report ]
+  ReportGenerator.generateReports (fun p ->
+    { p with ToolType = ToolType.CreateLocalTool()
+             TargetDir = "_Reports/_OpenCoverSelfTest" }) [ report ]
 
   printfn "Re-instrument everything"
   let altReport2 = reports @@ "AltCoverSelfTestDummy.xml"
@@ -1825,17 +1770,9 @@ _Target "SelfTest" (fun _ ->
                                        "_Binaries/AltCover.Tests/Debug+AnyCPU" }
   |> AltCover.run
 
-  let args = [
-               "\"-reports:" + String.Join(";", [ altReport ]) + "\""
-               "-targetdir:" + "_Reports/_AltCoverSelfTest"
-               "-reporttypes:Html;XmlSummary"
-               "-verbosity:Verbose"
-             ]
-  Actions.RunDotnet dotnetOptions "reportgenerator" (String.Join(" ", args)) "ReportGenerator")
-
-//  ReportGenerator.generateReports (fun p ->
-//    { p with ExePath = "dotnet reportgenerator"
-//             TargetDir = "_Reports/_AltCoverSelfTest" }) [ altReport ])
+  ReportGenerator.generateReports (fun p ->
+    { p with ToolType = ToolType.CreateLocalTool()
+             TargetDir = "_Reports/_AltCoverSelfTest" }) [ altReport ])
 
 _Target "RecordResumeTest"
   (fun _ ->
@@ -2525,19 +2462,12 @@ _Target "Pester" (fun _ ->
                                         ToolType = AltCover.ToolType.DotNet dotnetPath
                                         WorkingDirectory = unpack }
   |> AltCover.run
-  let args = [
-               "\"-reports:" + String.Join(";", [ report ]) + "\""
-               "-targetdir:" + "_Reports/_Pester"
-               "-reporttypes:Html;XmlSummary"
-               "-verbosity:Verbose"
-             ]
-  Actions.RunDotnet dotnetOptions "reportgenerator" (String.Join(" ", args)) "ReportGenerator"
 
-//  ReportGenerator.generateReports (fun p ->
-//    { p with ExePath = "dotnet reportgenerator"
-//             ReportTypes =
-//               [ ReportGenerator.ReportType.Html; ReportGenerator.ReportType.XmlSummary ]
-//             TargetDir = "_Reports/_Pester" }) [ report ]
+  ReportGenerator.generateReports (fun p ->
+    { p with ToolType = ToolType.CreateLocalTool()
+             ReportTypes =
+               [ ReportGenerator.ReportType.Html; ReportGenerator.ReportType.XmlSummary ]
+             TargetDir = "_Reports/_Pester" }) [ report ]
 
   "_Reports/_Pester/Summary.xml"
   |> File.ReadAllText
@@ -3033,13 +2963,13 @@ Target.runOrDefault "DoIt"
 """
     File.WriteAllText("./_ApiUse/DriveApi.fsx", script)
 
-    let dependencies = """version 5.216.0
+    let dependencies = """version 5.224.0
 // [ FAKE GROUP ]
 group NetcoreBuild
   source https://api.nuget.org/v3/index.json
   nuget Fake.Core >= 5.16.0
-  nuget Fake.Core.Target >= 5.17.0
-  nuget Fake.DotNet.Cli >= 5.17.0
+  nuget Fake.Core.Target >= 5.18.0
+  nuget Fake.DotNet.Cli >= 5.18.0
   nuget FSharp.Core >= 4.7
 
   source {0}
@@ -3728,21 +3658,13 @@ _Target "BulkReport" (fun _ ->
   printfn "Overall coverage reporting"
   Directory.ensure "./_Reports/_BulkReport"
 
-  let r = !!"./_Reports/*.xml"
-          |> Seq.filter (fun f -> not <| f.EndsWith("Report.xml", StringComparison.OrdinalIgnoreCase))
-          |> Seq.toList
-  let args = [
-               "\"-reports:" + String.Join(";", r) + "\""
-               "-targetdir:" + "_Reports/_BulkReport"
-               "-reporttypes:Html;XmlSummary"
-               "-verbosity:Verbose"
-             ]
-  Actions.RunDotnet dotnetOptions "reportgenerator" (String.Join(" ", args)) "ReportGenerator"
-
-//  |> ReportGenerator.generateReports (fun p ->
-//       { p with ExePath = "dotnet reportgenerator"
-//                ReportTypes = [ ReportGenerator.ReportType.Html ]
-//                TargetDir = "_Reports/_BulkReport" })
+  !!"./_Reports/*.xml"
+  |> Seq.filter (fun f -> not <| f.EndsWith("Report.xml", StringComparison.OrdinalIgnoreCase))
+  |> Seq.toList
+  |> ReportGenerator.generateReports (fun p ->
+       { p with ToolType = ToolType.CreateLocalTool()
+                ReportTypes = [ ReportGenerator.ReportType.Html ]
+                TargetDir = "_Reports/_BulkReport" })
 
   let misses = ref 0
   let numbers =
