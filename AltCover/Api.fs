@@ -13,8 +13,10 @@ open System.Linq
 open AltCover
 open AltCover.Augment
 #else
+open System.Reflection
 open AltCover_Fake.DotNet.Testing
 open Fake.Core
+open Fake.DotNet
 #endif
 
 [<ExcludeFromCodeCoverage; NoComparison>]
@@ -361,8 +363,6 @@ type Logging =
     Output.Info <- self.Info
     Output.Echo <- self.Echo
 #else
-[<ExcludeFromCodeCoverage; NoComparison>]
-type CoverageEnvironment = Framework | Dotnet
 #endif
 
 module internal Args =
@@ -385,12 +385,7 @@ module internal Args =
     if x then [ a ]
     else []
 
-  let Prepare
-#if RUNNER
-#else
-      (_ : CoverageEnvironment)
-#endif
-      (args : PrepareParams) =
+  let Prepare (args : PrepareParams) =
     let argsList = args.CommandLine |> Seq.toList
 
     let trailing =
@@ -458,19 +453,22 @@ type ArgType =
   | ImportModule
   | GetVersion
 
-[<NoComparison>]
+#nowarn "44"
+[<NoComparison; Obsolete("Use Fake.DotNet.ToolType instead")>]
 type ToolType =
   | DotNet of string option
   | Mono of string option
   | Global
   | Framework
 
-[<NoComparison>]
+[<NoComparison;NoEquality>]
 type Params =
   { /// Path to the Altcover executable.
     ToolPath : string
     /// Which version of the tool
     ToolType : ToolType
+    /// Define the tool through FAKE 5.18 ToolType -- if set, overrides
+    FakeToolType : Fake.DotNet.ToolType option
     /// Working directory for relative file paths.  Default is the current working directory
     WorkingDirectory : string
     /// Command arguments
@@ -480,41 +478,82 @@ type Params =
     {
         ToolPath = "altcover"
         ToolType = Global
+        FakeToolType = None
         WorkingDirectory = String.Empty
         Args = a
     }
+
+  member this.WithToolType (tool:Fake.DotNet.ToolType) =
+    { this with FakeToolType = Some tool }
 
 let internal createArgs parameters =
   match parameters.Args with
   | Collect c -> Args.Collect c
   | Prepare p ->
      p
-     |> Args.Prepare (match parameters.ToolType with
-                      | Framework
-                      | Mono _ -> CoverageEnvironment.Framework
-                      | _ -> CoverageEnvironment.Dotnet)
+     |> Args.Prepare
   | ImportModule -> [ "ipmo" ]
   | GetVersion -> [ "version" ]
 
+// When this goes, check if dependencies on Fake.DotNet.MSBuild, Fake.DotNet.NuGet
+// and System.Collections.Immutable are still required
+[<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming",
+                                                  "CA1715",
+                                                  Justification = "Generic types are implicit")>]
+let Fixup518 tool (toolPath:string) workingDirectory (command:CreateProcess<_>) =
+  if tool.GetType().FullName = "Fake.DotNet.ToolType+FrameworkDependentDeployment" &&
+     command.CommandLine.IndexOf (toolPath, StringComparison.Ordinal) < 6
+  then
+    let pi = tool.GetType().GetProperty("dotnetOptions", BindingFlags.Instance ||| BindingFlags.NonPublic)
+    let indirect = pi.GetValue(tool)
+    let pi2 = indirect.GetType().GetProperty("Options", BindingFlags.Instance ||| BindingFlags.NonPublic)
+    let dotnetOptions = pi2.GetValue(indirect) :?> FSharpFunc<DotNet.Options, DotNet.Options>
+    command
+    |> DotNet.prefixProcess (dotnetOptions>>(fun o -> if String.IsNullOrWhiteSpace workingDirectory then o
+                                                      else { o with WorkingDirectory = workingDirectory })) [toolPath]
+  else
+    command
+
 let internal createProcess parameters args =
-  let baseline () = CreateProcess.fromRawCommand parameters.ToolPath args
-  match parameters.ToolType with
-  | Framework -> baseline () |> CreateProcess.withFramework
-  | Global -> baseline ()
-  | DotNet dotnetPath ->
-       let path =
-         match dotnetPath with
-         | None -> "dotnet"
-         | Some p -> p
-       CreateProcess.fromRawCommand path (parameters.ToolPath::args)
-  | Mono monoPath ->
-       let path =
-         match monoPath with
-         | None -> "mono"
-         | Some p -> p
-       CreateProcess.fromRawCommand path ("--debug"::parameters.ToolPath::args)
-  |> if String.IsNullOrWhiteSpace parameters.WorkingDirectory then id
-     else CreateProcess.withWorkingDirectory parameters.WorkingDirectory
+  let doFakeTool (tool:Fake.DotNet.ToolType) =
+    CreateProcess.fromCommand (RawCommand(parameters.ToolPath, args |> Arguments.OfArgs))
+    |> CreateProcess.withToolType (tool.WithDefaultToolCommandName "altcover")
+    |> (Fixup518 tool parameters.ToolPath parameters.WorkingDirectory)
+
+  let doAltCoverTool () =
+    let baseline () = CreateProcess.fromRawCommand parameters.ToolPath args
+    match parameters.ToolType with
+    | Framework -> baseline () |> CreateProcess.withFramework
+    | Global -> baseline ()
+    | DotNet dotnetPath ->
+         let path =
+           match dotnetPath with
+           | None -> "dotnet"
+           | Some p -> p
+         CreateProcess.fromRawCommand path (parameters.ToolPath::args)
+    | Mono monoPath ->
+         let path =
+           match monoPath with
+           | None -> "mono"
+           | Some p -> p
+         CreateProcess.fromRawCommand path ("--debug"::parameters.ToolPath::args)
+  let doTool () =
+    match parameters.FakeToolType with
+    | Some tool -> doFakeTool tool
+    | None -> doAltCoverTool ()
+
+  let doWorkingDirectory c =
+    c
+    |> if String.IsNullOrWhiteSpace parameters.WorkingDirectory
+       then id
+       else CreateProcess.withWorkingDirectory parameters.WorkingDirectory
+
+  doTool ()
+  |> doWorkingDirectory
+  |> CreateProcess.ensureExitCode
+  |> fun command ->
+      Trace.trace command.CommandLine
+      command
 
 let composeCommandLine parameters =
   let args = createArgs parameters

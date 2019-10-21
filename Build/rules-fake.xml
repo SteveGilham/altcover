@@ -37,8 +37,9 @@
       exclude="AvoidLargeClassesRule | AvoidCodeDuplicatedInSameClassRule | AvoidSwitchStatementsRule | AvoidLongParameterListsRule"
       from="Gendarme.Rules.Smells.dll" />
     <rules include="*" from="Gendarme.Rules.Ui.dll" />
+    <!--  exclude RemoveDependenceOnObsoleteCodeRule only until we pull AltCover.ToolType-->
     <rules include="*"
-      exclude="VariableNamesShouldNotMatchFieldNamesRule | AvoidUnnecessarySpecializationRule"
+      exclude="RemoveDependenceOnObsoleteCodeRule| VariableNamesShouldNotMatchFieldNamesRule | AvoidUnnecessarySpecializationRule"
       from="Gendarme.Rules.Maintainability.dll" />
     <rules include="*" 
       from="Gendarme.Rules.Gendarme.dll" />

@@ -2,8 +2,9 @@ Q. Never mind the fluff -- how do I get started?
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
-# 6.2.7xx (Fukurou series release 8)
+# 6.3.7xx (Fukurou series release 8)
 * Filter out assemblies without the `ILOnly` bit set (i.e. pretty much anything C++/CLI)
+* [FAKE Helper API] Obsolete `AltCover_Fake.DotNet.Testing.AltCover.ToolType` in favour of `Fake.DotNet.ToolType` in the `AltCover_Fake.DotNet.Testing.AltCover.Params` record structure.  Setting the new tool type using the `WithToolType` member is the preferred forward-compatible way to do this
 
 # 6.2.727 (Fukurou series release 7 respin)
 * [BUGFIX] Issue #74 -- Strip unwanted dependencies from released code.
