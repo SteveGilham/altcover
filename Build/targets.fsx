@@ -189,6 +189,14 @@ let dotnet_altcover86 =
   Fake.DotNet.ToolType.CreateFrameworkDependentDeployment dotnetOptions86
 let framework_altcover = Fake.DotNet.ToolType.CreateFullFramework()
 
+let splitCommandLine s =
+  let blackfox = typeof<BlackFox.CommandLine.CmdLine>.Assembly
+  let t = blackfox.GetType(if Environment.isWindows
+            then "BlackFox.CommandLine.MsvcrCommandLine"
+            else "BlackFox.CommandLine.MonoUnixCommandLine")
+  let m = t.GetMethod "parse"
+  m.Invoke (m, [| s |]) :?> String seq |> Seq.toList
+
 let _Target s f =
   Target.description s
   Target.create s f
@@ -993,20 +1001,24 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
     |> AltCover.run
 
     printfn "Unit test the instrumented code"
+    let nunitparams = { NUnit3Defaults with ToolPath = nunitConsole 
+                                            WorkingDir = "."
+                                            ResultSpecs = [ "./_Reports/UnitTestWithAltCoverRunnerReport.xml" ]
+                         }
+    let nunitcmd = NUnit3.buildArgs nunitparams
+                                    [
+                                      Path.getFullName
+                                        "_Binaries/AltCover.Tests/Debug+AnyCPU/__UnitTestWithAltCoverRunner/AltCover.Tests.dll"
+                                      Path.getFullName
+                                        "_Binaries/AltCover.Tests/Debug+AnyCPU/__UnitTestWithAltCoverRunner/Sample2.dll" ]
+
     try
       let collect =
         AltCover.CollectParams.Primitive
           { Primitive.CollectParams.Create() with
               Executable = nunitConsole
               RecorderDirectory = testDirectory @@ "__UnitTestWithAltCoverRunner"
-              CommandLine =
-                [ "--noheader"
-                  "--work=."
-                  "--result=./_Reports/UnitTestWithAltCoverRunnerReport.xml"
-                  Path.getFullName
-                    "_Binaries/AltCover.Tests/Debug+AnyCPU/__UnitTestWithAltCoverRunner/AltCover.Tests.dll"
-                  Path.getFullName
-                    "_Binaries/AltCover.Tests/Debug+AnyCPU/__UnitTestWithAltCoverRunner/Sample2.dll" ] }
+              CommandLine = splitCommandLine nunitcmd }
         |> AltCover.Collect
       { AltCover.Params.Create collect with
           ToolPath = altcover
