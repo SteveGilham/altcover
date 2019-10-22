@@ -79,6 +79,9 @@
     <Content Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <Reference Include="Fake.Core.Environment">
+      <HintPath>..\packages\Fake.Core.Environment.5.18.0\lib\net462\Fake.Core.Environment.dll</HintPath>
+    </Reference>
     <Reference Include="Fake.Core.Process">
       <HintPath>..\packages\Fake.Core.Process.5.18.0\lib\net462\Fake.Core.Process.dll</HintPath>
     </Reference>

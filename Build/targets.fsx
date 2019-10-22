@@ -1601,13 +1601,13 @@ _Target "BasicCSharpMono"
 _Target "BasicCSharpUnderMono"
   (fun _ ->
   monoOnWindows
-  |> ActionsMono.SimpleInstrumentingRunUnderMono "_Binaries/Sample1/Debug+AnyCPU"
+  |> Actions.SimpleInstrumentingRunUnderMono "_Binaries/Sample1/Debug+AnyCPU"
        "_Binaries/AltCover/Debug+AnyCPU" "BasicCSharpUnderMono")
 
 _Target "BasicCSharpMonoUnderMono"
   (fun _ ->
   monoOnWindows
-  |> ActionsMono.SimpleInstrumentingRunUnderMono "_Mono/Sample1"
+  |> Actions.SimpleInstrumentingRunUnderMono "_Mono/Sample1"
        "_Binaries/AltCover/Debug+AnyCPU" "BasicCSharpMono")
 
 _Target "CSharpMonoWithDotNet" (fun _ ->
@@ -2893,10 +2893,10 @@ _Target "DoIt"
   let frameworkPath = AltCover.Fake.Api.toolPath AltCover.Fake.Implementation.Framework
   printfn "frameworkPath = %A" frameworkPath
 
+  let framework = Fake.DotNet.ToolType.CreateFullFramework()
+
   { AltCover_Fake.DotNet.Testing.AltCover.Params.Create
-      AltCover_Fake.DotNet.Testing.AltCover.ArgType.GetVersion with ToolPath = frameworkPath
-                                                                    ToolType =
-                                                                      AltCover_Fake.DotNet.Testing.AltCover.ToolType.Framework }
+      AltCover_Fake.DotNet.Testing.AltCover.ArgType.GetVersion with ToolPath = frameworkPath }.WithToolType framework
   |> AltCover_Fake.DotNet.Testing.AltCover.run
 
   let pwsh =
