@@ -44,6 +44,14 @@ type CollectParams =
     | Primitive p -> p.Executable
     | TypeSafe t -> t.Executable.AsString()
 
+#if RUNNER
+#else
+  member internal self.SetExecutable tool =
+    match self with
+    | Primitive p -> Primitive { p with Executable = tool }
+    | TypeSafe t -> TypeSafe { t with Executable = TypeSafe.FilePath tool }
+#endif
+
   member self.LcovReport =
     match self with
     | Primitive p -> p.LcovReport
@@ -68,6 +76,19 @@ type CollectParams =
     match self with
     | Primitive p -> p.CommandLine |> CollectParams.ToSeq
     | TypeSafe t -> t.CommandLine.AsStrings()
+
+#if RUNNER
+#else
+  member internal self.SetCommandLine (args:string seq) =
+    match self with
+    | Primitive p -> Primitive { p with CommandLine = args }
+    | TypeSafe t -> TypeSafe { t with CommandLine = let newargs = args
+                                                                  |> (Seq.map TypeSafe.CommandArgument)
+                                                                  |> Seq.toList
+                                                    match newargs with
+                                                    | [] -> TypeSafe.NoCommand
+                                                    | _ -> TypeSafe.Command newargs }
+#endif
 
   member self.ExposeReturnCode =
     match self with
@@ -236,6 +257,19 @@ type PrepareParams =
     match self with
     | Primitive p -> p.CommandLine |> PrepareParams.ToSeq
     | TypeSafe t -> t.CommandLine.AsStrings()
+
+#if RUNNER
+#else
+  member internal self.SetCommandLine (args:string seq) =
+    match self with
+    | Primitive p -> Primitive { p with CommandLine = args }
+    | TypeSafe t -> TypeSafe { t with CommandLine = let newargs = args
+                                                                  |> (Seq.map TypeSafe.CommandArgument)
+                                                                  |> Seq.toList
+                                                    match newargs with
+                                                    | [] -> TypeSafe.NoCommand
+                                                    | _ -> TypeSafe.Command newargs }
+#endif
 
   member self.ExposeReturnCode =
     match self with
@@ -452,6 +486,34 @@ module internal Args =
 
 #if RUNNER
 #else
+// When this goes, check if dependencies on Fake.DotNet.MSBuild, Fake.DotNet.NuGet
+// and System.Collections.Immutable are still required
+[<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1715",
+                                                  Justification =
+                                                    "Generic types are implicit")>]
+let internal Fixup5x18x0 tool (toolPath: string) workingDirectory
+    (command: CreateProcess<_>) =
+  let ttype = tool.GetType()
+  if ttype.FullName = "Fake.DotNet.ToolType+FrameworkDependentDeployment"
+     && ttype.Assembly.GetName().Version < Version(5, 18, 1) then
+    let pi =
+      tool.GetType()
+          .GetProperty("dotnetOptions", BindingFlags.Instance ||| BindingFlags.NonPublic)
+    let indirect = pi.GetValue(tool)
+    let pi2 =
+      indirect.GetType()
+              .GetProperty("Options", BindingFlags.Instance ||| BindingFlags.NonPublic)
+    let dotnetOptions =
+      pi2.GetValue(indirect) :?> FSharpFunc<DotNet.Options, DotNet.Options>
+    command
+    |> DotNet.prefixProcess
+         (dotnetOptions
+          >> (fun o ->
+          if String.IsNullOrWhiteSpace workingDirectory then o
+          else { o with WorkingDirectory = workingDirectory })) [ toolPath ]
+  else
+    command
+
 [<NoComparison>]
 type ArgType =
   | Collect of CollectParams
@@ -488,43 +550,32 @@ type Params =
       WorkingDirectory = String.Empty
       Args = a }
 
+  member this.WithCreateProcess (command: CreateProcess<_>) =
+    match command.Command with
+    | RawCommand(tool, args) ->
+      match this.Args with
+      | Collect c -> { this with Args = ArgType.Collect ((c.SetExecutable tool).SetCommandLine(Arguments.toList args))}
+      | Prepare p -> { this with Args = ArgType.Prepare ( p.SetCommandLine(tool::(Arguments.toList args)))}
+      | ImportModule -> this
+      | GetVersion -> this
+    | _ -> this
+
+  //member this.WithCreate5x18x0ToolProcess  (tool: Fake.DotNet.ToolType) workingDirectory (command: CreateProcess<_>) =
+  //  let newCommand = match command.Command with
+  //                   | RawCommand(toolPath, args) ->
+  //                     Fixup5x18x0 tool toolPath workingDirectory command
+  //                   | _ -> command
+  //  this.WithCreateProcess newCommand
+
   member this.WithToolType(tool: Fake.DotNet.ToolType) =
     { this with FakeToolType = Some tool }
 
 let internal createArgs parameters =
   match parameters.Args with
   | Collect c -> Args.Collect c
-  | Prepare p -> p |> Args.Prepare
+  | Prepare p -> Args.Prepare p
   | ImportModule -> [ "ipmo" ]
   | GetVersion -> [ "version" ]
-
-// When this goes, check if dependencies on Fake.DotNet.MSBuild, Fake.DotNet.NuGet
-// and System.Collections.Immutable are still required
-[<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1715",
-                                                  Justification =
-                                                    "Generic types are implicit")>]
-let internal Fixup5x18x0 tool (toolPath: string) workingDirectory
-    (command: CreateProcess<_>) =
-  let ttype = tool.GetType()
-  if ttype.FullName = "Fake.DotNet.ToolType+FrameworkDependentDeployment"
-     && ttype.Assembly.GetName().Version < Version(5, 18, 1) then
-    let pi =
-      tool.GetType()
-          .GetProperty("dotnetOptions", BindingFlags.Instance ||| BindingFlags.NonPublic)
-    let indirect = pi.GetValue(tool)
-    let pi2 =
-      indirect.GetType()
-              .GetProperty("Options", BindingFlags.Instance ||| BindingFlags.NonPublic)
-    let dotnetOptions =
-      pi2.GetValue(indirect) :?> FSharpFunc<DotNet.Options, DotNet.Options>
-    command
-    |> DotNet.prefixProcess
-         (dotnetOptions
-          >> (fun o ->
-          if String.IsNullOrWhiteSpace workingDirectory then o
-          else { o with WorkingDirectory = workingDirectory })) [ toolPath ]
-  else
-    command
 
 let internal createProcess parameters args =
   let doFakeTool (tool: Fake.DotNet.ToolType) =
@@ -607,4 +658,5 @@ let runWithMono monoPath parameters =
 
   runCore parameters withMono
 
+// TODO -- helpers for XUnit, NUnit, dotnet test
 #endif
