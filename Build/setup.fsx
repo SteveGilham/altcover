@@ -17,14 +17,15 @@ open Microsoft.Win32
 // Really bootstrap
 let dotnetPath = "dotnet" |> Fake.Core.ProcessUtils.tryFindFileOnPath
 
-let dotnetOptions (o : DotNet.Options) =
+let dotnetOptions (o: DotNet.Options) =
   match dotnetPath with
   | Some f -> { o with DotNetCliPath = f }
   | None -> o
 
 DotNet.restore (fun o ->
-  { o with Packages = [ "./packages" ]
-           Common = dotnetOptions o.Common }) "./Build/dotnet-cli.csproj"
+  { o with
+      Packages = [ "./packages" ]
+      Common = dotnetOptions o.Common }) "./Build/dotnet-cli.csproj"
 // Restore the NuGet packages used by the build and the Framework version
 RestoreMSSolutionPackages id "./AltCover.sln"
 
