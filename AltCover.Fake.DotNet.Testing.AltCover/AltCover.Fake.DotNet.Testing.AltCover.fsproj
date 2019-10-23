@@ -80,48 +80,35 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="BlackFox.CommandLine">
-      <HintPath>..\ThirdParty\BlackFox.CommandLine.dll</HintPath>
+      <HintPath>..\packages\BlackFox.CommandLine.1.0.0\lib\net45\BlackFox.CommandLine.dll</HintPath>
     </Reference>
-    <Reference Include="BlackFox.VsWhere">
-      <HintPath>..\packages\BlackFox.VsWhere.1.0.0\lib\net45\BlackFox.VsWhere.dll</HintPath>
+    <Reference Include="Fake.Core.Environment">
+      <HintPath>..\packages\Fake.Core.Environment.5.18.0\lib\net462\Fake.Core.Environment.dll</HintPath>
     </Reference>
     <Reference Include="Fake.Core.Process">
-      <HintPath>..\packages\Fake.Core.Process.5.9.3\lib\net46\Fake.Core.Process.dll</HintPath>
+      <HintPath>..\packages\Fake.Core.Process.5.18.0\lib\net462\Fake.Core.Process.dll</HintPath>
     </Reference>
     <Reference Include="Fake.Core.Trace">
-      <HintPath>..\packages\Fake.Core.Trace.5.9.3\lib\net46\Fake.Core.Trace.dll</HintPath>
+      <HintPath>..\packages\Fake.Core.Trace.5.18.0\lib\net462\Fake.Core.Trace.dll</HintPath>
     </Reference>
     <Reference Include="Fake.DotNet.Cli">
-      <HintPath>..\packages\Fake.DotNet.Cli.5.9.3\lib\net462\Fake.DotNet.Cli.dll</HintPath>
+      <HintPath>..\packages\Fake.DotNet.Cli.5.18.0\lib\net462\Fake.DotNet.Cli.dll</HintPath>
     </Reference>
     <Reference Include="Fake.DotNet.MSBuild">
-      <HintPath>..\packages\Fake.DotNet.MSBuild.5.9.3\lib\net462\Fake.DotNet.MSBuild.dll</HintPath>
+      <HintPath>..\packages\Fake.DotNet.MSBuild.5.18.0\lib\net462\Fake.DotNet.MSBuild.dll</HintPath>
+    </Reference>
+    <Reference Include="Fake.DotNet.NuGet">
+      <HintPath>..\packages\Fake.DotNet.NuGet.5.18.0\lib\net462\Fake.DotNet.NuGet.dll</HintPath>
     </Reference>
     <Reference Include="FSharp.Core">
-      <HintPath>..\packages\FSharp.Core.4.5.2\lib\net45\FSharp.Core.dll</HintPath>
+      <HintPath>..\packages\FSharp.Core.4.7.0\lib\net45\FSharp.Core.dll</HintPath>
     </Reference>
+    <Reference Include="mscorlib" />
+    <Reference Include="System" />
     <Reference Include="System.Collections.Immutable">
       <HintPath>..\packages\System.Collections.Immutable.1.5.0\lib\netstandard2.0\System.Collections.Immutable.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="StructuredLogger">
-      <HintPath>..\packages\MSBuild.StructuredLogger.2.0.11\lib\net46\StructuredLogger.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="mscorlib" />
-    <Reference Include="System" />
-    <Reference Include="System.ComponentModel.Composition" />
-    <Reference Include="System.Configuration" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.IO.Compression" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Reflection" />
-    <Reference Include="System.Runtime.Serialization" />
-    <Reference Include="System.Security" />
-    <Reference Include="System.Windows.Forms" />
-    <Reference Include="System.Xaml" />
-    <Reference Include="System.Xml" />
-    <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
