@@ -92,12 +92,13 @@ open System.Runtime.CompilerServices
 [<assembly: AssemblyConfiguration("Release {0}")>]
 #endif
 do ()"""
+
   let prefix =
     [| 0x00uy; 0x24uy; 0x00uy; 0x00uy; 0x04uy
        0x80uy; 0x00uy; 0x00uy; 0x94uy; 0x00uy
        0x00uy; 0x00uy |]
 
-  let GetPublicKey(stream : Stream) =
+  let GetPublicKey(stream: Stream) =
     // see https://social.msdn.microsoft.com/Forums/vstudio/en-US/d9ef264e-1a74-4f48-b93f-3e2c7902f660/determine-contents-of-a-strong-name-key-file-snk?forum=netfxbcl
     // for the exact format; this is a stripped down hack
 
@@ -155,7 +156,7 @@ do ()"""
     let mapping = ystream.Documents.[0].RootNode :?> YamlMappingNode
     string mapping.Children.[YamlScalarNode("version")]
 
-  let LocalVersion appveyor (version : string) =
+  let LocalVersion appveyor (version: string) =
     let now = DateTimeOffset.UtcNow
     let epoch = DateTimeOffset(2000, 1, 1, 0, 0, 0, TimeSpan(int64 0))
     let diff = now.Subtract(epoch)
@@ -217,7 +218,8 @@ do ()"""
 
     let expected = "0 1 1 1 1 1 1 0 0 0 0 0 0 0 2 1 1 1"
     Assert.That
-      (String.Join(" ", recorded), expected |> Is.EqualTo, sprintf "Bad visit list %A" recorded)
+      (String.Join(" ", recorded), expected |> Is.EqualTo,
+       sprintf "Bad visit list %A" recorded)
 
   let ValidateSample1 simpleReport sigil =
     // get recorded details from here
@@ -259,7 +261,7 @@ do ()"""
       (ones', Is.EquivalentTo [ "11"; "12"; "13"; "14"; "15"; "16"; "21" ],
        "wrong number of visited in " + sigil + " : " + (sprintf "%A" zero'))
 
-  let HandleResults (msg : string) (result : Fake.Core.ProcessResult) =
+  let HandleResults (msg: string) (result: Fake.Core.ProcessResult) =
     String.Join(Environment.NewLine, result.Messages) |> printfn "%s"
     let save = (Console.ForegroundColor, Console.BackgroundColor)
     match result.Errors |> Seq.toList with
@@ -274,7 +276,7 @@ do ()"""
         Console.BackgroundColor <- snd save
     Assert.That(result.ExitCode, Is.EqualTo 0, msg)
 
-  let AssertResult (msg : string) (result : Fake.Core.ProcessResult<'a>) =
+  let AssertResult (msg: string) (result: Fake.Core.ProcessResult<'a>) =
     Assert.That(result.ExitCode, Is.EqualTo 0, msg)
 
   let Run (file, dir, args) msg =
@@ -284,33 +286,34 @@ do ()"""
     |> Proc.run
     |> (AssertResult msg)
 
-  let RunDotnet (o : DotNet.Options -> DotNet.Options) cmd args msg =
+  let RunDotnet (o: DotNet.Options -> DotNet.Options) cmd args msg =
     DotNet.exec o cmd args |> (HandleResults msg)
 
-  let SimpleInstrumentingRun (samplePath : string) (binaryPath : string)
-      (reportSigil : string) =
+  let SimpleInstrumentingRun (samplePath: string) (binaryPath: string)
+      (reportSigil: string) =
     printfn "Instrument and run a simple executable"
     Directory.ensure "./_Reports"
     let simpleReport = (Path.getFullName "./_Reports") @@ (reportSigil + ".xml")
     let binRoot = Path.getFullName binaryPath
     let sampleRoot = Path.getFullName samplePath
     let instrumented = "__Instrumented." + reportSigil
+    let framework = Fake.DotNet.ToolType.CreateFullFramework()
 
     let prep =
       AltCover.PrepareParams.Primitive
-        { Primitive.PrepareParams.Create() with TypeFilter = [ """System\.""" ]
-                                                XmlReport = simpleReport
-                                                OutputDirectories =
-                                                  [| "./" + instrumented |]
-                                                OpenCover = false
-                                                InPlace = false
-                                                Save = false }
+        { Primitive.PrepareParams.Create() with
+            TypeFilter = [ """System\.""" ]
+            XmlReport = simpleReport
+            OutputDirectories = [| "./" + instrumented |]
+            OpenCover = false
+            InPlace = false
+            Save = false }
       |> AltCover.Prepare
 
     let parameters =
-      { AltCover.Params.Create prep with ToolPath = binRoot @@ "AltCover.exe"
-                                         ToolType = AltCover.ToolType.Framework
-                                         WorkingDirectory = sampleRoot }
+      { AltCover.Params.Create prep with
+          ToolPath = binRoot @@ "AltCover.exe"
+          WorkingDirectory = sampleRoot }.WithToolType framework
 
     AltCover.run parameters
     System.Threading.Thread.Sleep(1000)
@@ -321,8 +324,8 @@ do ()"""
 
     ValidateSample1 simpleReport reportSigil
 
-  let SimpleInstrumentingRunUnderMono (samplePath : string) (binaryPath : string)
-      (reportSigil' : string) (monoOnWindows : string option) =
+  let SimpleInstrumentingRunUnderMono (samplePath: string) (binaryPath: string)
+      (reportSigil': string) (monoOnWindows: string option) =
     printfn "Instrument and run a simple executable under mono"
     match monoOnWindows with
     | None -> Assert.Fail "Mono executable expected"
@@ -333,24 +336,25 @@ do ()"""
       let binRoot = Path.getFullName binaryPath
       let sampleRoot = Path.getFullName samplePath
       let instrumented = "__Instrumented." + reportSigil
+      let framework = Fake.DotNet.ToolType.CreateFullFramework()
 
       let prep =
         AltCover.PrepareParams.Primitive
-          { Primitive.PrepareParams.Create() with TypeFilter = [ """System\.""" ]
-                                                  XmlReport = simpleReport
-                                                  OutputDirectories =
-                                                    [| "./" + instrumented |]
-                                                  OpenCover = false
-                                                  InPlace = false
-                                                  Save = false }
+          { Primitive.PrepareParams.Create() with
+              TypeFilter = [ """System\.""" ]
+              XmlReport = simpleReport
+              OutputDirectories = [| "./" + instrumented |]
+              OpenCover = false
+              InPlace = false
+              Save = false }
         |> AltCover.Prepare
 
       let parameters =
-        { AltCover.Params.Create prep with ToolPath = binRoot @@ "AltCover.exe"
-                                           ToolType = AltCover.ToolType.Mono monoOnWindows
-                                           WorkingDirectory = sampleRoot }
+        { AltCover.Params.Create prep with
+            ToolPath = binRoot @@ "AltCover.exe"
+            WorkingDirectory = sampleRoot }.WithToolType framework
 
-      AltCover.run parameters
+      AltCover.runWithMono monoOnWindows parameters
 
       Run
         (sampleRoot @@ (instrumented + "/Sample1.exe"), (sampleRoot @@ instrumented), [])
@@ -409,7 +413,7 @@ a:hover {color: #ecc;}
     let packable = Path.getFullName "./_Binaries/README.html"
     xmlform.Save packable
 
-  let Check4Content(coverageDocument : XDocument) =
+  let Check4Content(coverageDocument: XDocument) =
     let recorded =
       coverageDocument.Descendants(XName.Get("Method"))
       |> Seq.collect (fun x -> x.Descendants(XName.Get("Name")))
@@ -425,7 +429,7 @@ a:hover {color: #ecc;}
         // "System.Void Tests.DU/get_MyBar@31::.ctor(Tests.DU/MyUnion)"
         "System.Void Tests.DU::testMakeUnion()"
         "System.Void Tests.M::testMakeThing()"
-        "Tests.DU/MyUnion Tests.DU/MyUnion::as_bar()";
+        "Tests.DU/MyUnion Tests.DU/MyUnion::as_bar()"
         "Tests.DU/MyUnion Tests.DU/get_MyBar@40::Invoke(Microsoft.FSharp.Core.Unit)"
         "Tests.DU/MyUnion Tests.DU::returnBar(System.String)"
         "Tests.DU/MyUnion Tests.DU::returnFoo(System.Int32)"
@@ -441,7 +445,7 @@ a:hover {color: #ecc;}
        let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
        Check4Content coverageDocument
 
-  let Check4Visits(coverageDocument : XDocument) =
+  let Check4Visits(coverageDocument: XDocument) =
     let recorded =
       coverageDocument.Descendants(XName.Get("SequencePoint"))
       |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value)
@@ -449,7 +453,8 @@ a:hover {color: #ecc;}
 
     let expected = "0 1 1 1 1 1 1 0 0 0 0 0 0 0 2 1 1 1"
     Assert.That
-      (String.Join(" ", recorded), expected |> Is.EqualTo, sprintf "Bad visit list %A" recorded)
+      (String.Join(" ", recorded), expected |> Is.EqualTo,
+       sprintf "Bad visit list %A" recorded)
     printfn "Visits OK"
     coverageDocument.Descendants(XName.Get("SequencePoint"))
     |> Seq.iter (fun sp ->
