@@ -79,15 +79,20 @@ type CollectParams =
 
 #if RUNNER
 #else
-  member internal self.SetCommandLine (args:string seq) =
+  member internal self.SetCommandLine(args: string seq) =
     match self with
     | Primitive p -> Primitive { p with CommandLine = args }
-    | TypeSafe t -> TypeSafe { t with CommandLine = let newargs = args
-                                                                  |> (Seq.map TypeSafe.CommandArgument)
-                                                                  |> Seq.toList
-                                                    match newargs with
-                                                    | [] -> TypeSafe.NoCommand
-                                                    | _ -> TypeSafe.Command newargs }
+    | TypeSafe t ->
+      TypeSafe
+        { t with
+            CommandLine =
+              let newargs =
+                args
+                |> (Seq.map TypeSafe.CommandArgument)
+                |> Seq.toList
+              match newargs with
+              | [] -> TypeSafe.NoCommand
+              | _ -> TypeSafe.Command newargs }
 #endif
 
   member self.ExposeReturnCode =
@@ -260,15 +265,20 @@ type PrepareParams =
 
 #if RUNNER
 #else
-  member internal self.SetCommandLine (args:string seq) =
+  member internal self.SetCommandLine(args: string seq) =
     match self with
     | Primitive p -> Primitive { p with CommandLine = args }
-    | TypeSafe t -> TypeSafe { t with CommandLine = let newargs = args
-                                                                  |> (Seq.map TypeSafe.CommandArgument)
-                                                                  |> Seq.toList
-                                                    match newargs with
-                                                    | [] -> TypeSafe.NoCommand
-                                                    | _ -> TypeSafe.Command newargs }
+    | TypeSafe t ->
+      TypeSafe
+        { t with
+            CommandLine =
+              let newargs =
+                args
+                |> (Seq.map TypeSafe.CommandArgument)
+                |> Seq.toList
+              match newargs with
+              | [] -> TypeSafe.NoCommand
+              | _ -> TypeSafe.Command newargs }
 #endif
 
   member self.ExposeReturnCode =
@@ -488,10 +498,29 @@ module internal Args =
 #else
 let splitCommandLine s =
   s
-  |> if Environment.isWindows
-     then BlackFox.CommandLine.MsvcrCommandLine.parse
+  |> if Environment.isWindows then BlackFox.CommandLine.MsvcrCommandLine.parse
      else BlackFox.CommandLine.MonoUnixCommandLine.parse
   |> Seq.toList
+
+let buildDotNetTestCommandLine (options: DotNet.TestOptions -> DotNet.TestOptions) project =
+  let dotnet = typeof<Fake.DotNet.DotNet.TestOptions>.DeclaringType
+  let builder =
+    dotnet.GetMethod("buildTestArgs", BindingFlags.Static ||| BindingFlags.NonPublic)
+  let builder2 =
+    dotnet.GetMethod("buildCommand", BindingFlags.Static ||| BindingFlags.NonPublic)
+  let parameters = Fake.DotNet.DotNet.TestOptions.Create() |> options
+  let args = builder.Invoke(null, [| parameters |]) :?> string list
+
+  let cmdArgs =
+    builder2.Invoke
+      (null,
+       [| ("test"
+           |> Args.fromWindowsCommandLine
+           |> Seq.toList)
+          project :: args
+          parameters.Common |]) :?> string list
+  (parameters.Common.DotNetCliPath,
+   cmdArgs |> List.filter (String.IsNullOrWhiteSpace >> not))
 
 // When this goes, check if dependencies on Fake.DotNet.MSBuild, Fake.DotNet.NuGet
 // and System.Collections.Immutable are still required
@@ -557,22 +586,22 @@ type Params =
       WorkingDirectory = String.Empty
       Args = a }
 
-  member this.WithCreateProcess (command: CreateProcess<_>) =
+  member this.WithCreateProcess(command: CreateProcess<_>) =
     match command.Command with
     | RawCommand(tool, args) ->
       match this.Args with
-      | Collect c -> { this with Args = ArgType.Collect ((c.SetExecutable tool).SetCommandLine(Arguments.toList args))}
-      | Prepare p -> { this with Args = ArgType.Prepare ( p.SetCommandLine(tool::(Arguments.toList args)))}
+      | Collect c ->
+        { this with
+            Args =
+              ArgType.Collect
+                ((c.SetExecutable tool).SetCommandLine(Arguments.toList args)) }
+      | Prepare p ->
+        { this with
+            Args =
+              ArgType.Prepare(p.SetCommandLine(tool :: (Arguments.toList args))) }
       | ImportModule -> this
       | GetVersion -> this
     | _ -> this
-
-  //member this.WithCreate5x18x0ToolProcess  (tool: Fake.DotNet.ToolType) workingDirectory (command: CreateProcess<_>) =
-  //  let newCommand = match command.Command with
-  //                   | RawCommand(toolPath, args) ->
-  //                     Fixup5x18x0 tool toolPath workingDirectory command
-  //                   | _ -> command
-  //  this.WithCreateProcess newCommand
 
   member this.WithToolType(tool: Fake.DotNet.ToolType) =
     { this with FakeToolType = Some tool }
@@ -664,6 +693,4 @@ let runWithMono monoPath parameters =
     | None -> command
 
   runCore parameters withMono
-
-// TODO -- helper for dotnet test
 #endif
