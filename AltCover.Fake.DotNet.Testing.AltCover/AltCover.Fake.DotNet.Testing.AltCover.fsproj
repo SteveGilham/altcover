@@ -79,6 +79,9 @@
     <Content Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <Reference Include="BlackFox.CommandLine">
+      <HintPath>..\packages\BlackFox.CommandLine.1.0.0\lib\net45\BlackFox.CommandLine.dll</HintPath>
+    </Reference>
     <Reference Include="Fake.Core.Environment">
       <HintPath>..\packages\Fake.Core.Environment.5.18.0\lib\net462\Fake.Core.Environment.dll</HintPath>
     </Reference>

@@ -39,6 +39,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="BlackFox.CommandLine" Version="1.0.0" />
     <PackageReference Include="FAKE.Core.Environment" Version="5.18.0" />
     <PackageReference Include="FAKE.Core.Process" Version="5.18.0" />
     <PackageReference Include="FAKE.DotNet.Cli" Version="5.18.0" />

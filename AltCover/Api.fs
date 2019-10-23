@@ -486,6 +486,13 @@ module internal Args =
 
 #if RUNNER
 #else
+let splitCommandLine s =
+  s
+  |> if Environment.isWindows
+     then BlackFox.CommandLine.MsvcrCommandLine.parse
+     else BlackFox.CommandLine.MonoUnixCommandLine.parse
+  |> Seq.toList
+
 // When this goes, check if dependencies on Fake.DotNet.MSBuild, Fake.DotNet.NuGet
 // and System.Collections.Immutable are still required
 [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1715",
@@ -658,5 +665,5 @@ let runWithMono monoPath parameters =
 
   runCore parameters withMono
 
-// TODO -- helpers for XUnit, NUnit, dotnet test
+// TODO -- helper for dotnet test
 #endif
