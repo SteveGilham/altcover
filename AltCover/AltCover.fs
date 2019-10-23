@@ -385,7 +385,8 @@ module internal Main =
                   if def.MainModule.HasSymbols &&
                      def
                      |> Visitor.IsIncluded
-                     |> Visitor.IsInstrumented
+                     |> Visitor.IsInstrumented &&
+                     (def.MainModule.Attributes &&& ModuleAttributes.ILOnly = ModuleAttributes.ILOnly)
                   then
                     String.Format
                       (CultureInfo.CurrentCulture,
