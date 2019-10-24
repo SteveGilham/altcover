@@ -203,6 +203,67 @@ type AltCoverTests() =
       self.GetMyMethodName "<="
 
     [<Test>]
+    member self.ExceptionLoggedToFile() =
+      let path = Instance.ReportFile
+                 |> Path.GetFullPath
+      let where = path
+                  |> Path.GetDirectoryName
+      let before = Directory.GetFiles(where, "*.exn")
+      Instance.LogException ("a","b","c","ex")
+      let after = Directory.GetFiles(where, "*.exn")
+      Assert.That(after.Length, Is.GreaterThan before.Length)
+      let all = HashSet<String>(after)
+      before
+      |> Seq.iter(fun x -> Assert.That(all.Contains x)
+                           all.Remove x |> ignore)
+      Assert.That(all.Count, Is.EqualTo 1)
+      let file = all |> Seq.head
+      let lines = file |> File.ReadAllLines
+      File.Delete file
+      Assert.That(lines.Length, Is.EqualTo 4)
+      lines
+      |> Seq.zip [ "ModuleId = \"a\""
+                   "hitPointId = \"b\""
+                   "context = \"c\""
+                   "exception = ex" ]
+      |> Seq.iter (fun (a,b) -> Assert.That(a, Is.EqualTo b))
+      let third = Directory.GetFiles(where, "*.exn")
+      Assert.That(third.Length, Is.EqualTo before.Length)
+
+    [<Test>]
+    member self.Issue71WrapperHandlesKeyNotFoundException() =
+     let pair = [| false; false|]
+     let unique = System.Guid.NewGuid().ToString()
+     Adapter.InvokeIssue71Wrapper<KeyNotFoundException>(unique, pair)
+     Assert.That(pair |> Seq.head, Is.True)
+     Assert.That(pair |> Seq.last, Is.True)
+
+    [<Test>]
+    member self.Issue71WrapperHandlesNullReferenceException() =
+      let pair = [| false; false|]
+      let unique = System.Guid.NewGuid().ToString()
+      Adapter.InvokeIssue71Wrapper<NullReferenceException>(unique, pair)
+      Assert.That(pair |> Seq.head, Is.True)
+      Assert.That(pair |> Seq.last, Is.True)
+
+    [<Test>]
+    member self.Issue71WrapperHandlesArgumentNullException() =
+      let pair = [| false; false|]
+      let unique = System.Guid.NewGuid().ToString()
+      Adapter.InvokeIssue71Wrapper<ArgumentNullException>(unique, pair)
+      Assert.That(pair |> Seq.head, Is.True)
+      Assert.That(pair |> Seq.last, Is.True)
+
+    [<Test>]
+    member self.Issue71WrapperDoesntHandleOtherException() =
+      let pair = [| false; false|]
+      let unique = System.Guid.NewGuid().ToString()
+      let exn = Assert.Throws<InvalidOperationException>(fun () -> Adapter.InvokeIssue71Wrapper<InvalidOperationException>(unique, pair))
+      Assert.That(pair |> Seq.head, Is.False)
+      Assert.That(pair |> Seq.last, Is.False)
+      Assert.That(exn.Message, Is.EqualTo unique)
+
+    [<Test>]
     member self.DistinctIdShouldBeDistinct() =
       self.GetMyMethodName "=>"
       lock Instance.Visits (fun () ->
