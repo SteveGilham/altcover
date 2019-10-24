@@ -3146,8 +3146,10 @@ _Target "DoIt"
   let framework = Fake.DotNet.ToolType.CreateFullFramework()
 
   { AltCover_Fake.DotNet.Testing.AltCover.Params.Create
-      AltCover_Fake.DotNet.Testing.AltCover.ArgType.GetVersion with ToolPath =
-      frameworkPath }.WithToolType framework |> AltCover_Fake.DotNet.Testing.AltCover.run
+      AltCover_Fake.DotNet.Testing.AltCover.ArgType.GetVersion 
+        with 
+          ToolPath = frameworkPath }.WithToolType framework 
+  |> AltCover_Fake.DotNet.Testing.AltCover.run
 
   let pwsh =
     if Environment.isWindows then
