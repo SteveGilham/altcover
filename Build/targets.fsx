@@ -3916,7 +3916,13 @@ _Target "BulkReport" (fun _ ->
      |> List.tryFind (fun n -> n <= 99.0)
      |> Option.isSome
      || !misses > 1
-  then Assert.Fail("Coverage is too low"))
+  then Assert.Fail("Coverage is too low")
+  
+  let issue71 = !!(@"./**/*.exn") |> Seq.toList
+  match issue71 with
+  | [] -> ()
+  | _ -> issue71 |> Seq.iter (printfn "%s")
+         Assert.Fail("Issue #71 experienced"))
 
 _Target "All" ignore
 

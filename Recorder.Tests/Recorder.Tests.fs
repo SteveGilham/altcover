@@ -220,8 +220,9 @@ type AltCoverTests() =
       let file = all |> Seq.head
       let lines = file |> File.ReadAllLines
       File.Delete file
-      Assert.That(lines.Length, Is.EqualTo 4)
+      Assert.That(lines.Length, Is.GreaterThan 4)
       lines
+      |> Seq.take 4
       |> Seq.zip [ "ModuleId = \"a\""
                    "hitPointId = \"b\""
                    "context = \"c\""

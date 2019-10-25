@@ -5,6 +5,7 @@ namespace AltCover.Recorder
 
 open System
 open System.Collections.Generic
+open System.Diagnostics
 open System.IO
 open System.Reflection
 
@@ -197,6 +198,7 @@ module Instance =
                   sprintf "hitPointId = %A" hitPointId
                   sprintf "context = %A" context
                   sprintf "exception = %s" (x.ToString())
+                  StackTrace().ToString()
                 |]
     let stamp = sprintf "%A"DateTime.UtcNow.Ticks
     let filename = ReportFile + "." + stamp + ".exn"
