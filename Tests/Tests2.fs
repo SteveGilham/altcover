@@ -44,13 +44,6 @@ type AltCoverTests2() =
 
     // Instrument.fs
     [<Test>]
-    member self.ShouldBeAbleToGetTheDefaultReportFileName() =
-      let recorder = AltCover.Instrument.RecorderInstanceType()
-      Assert.That
-        (recorder.GetProperty("ReportFile").GetValue(null),
-         Is.EqualTo "Coverage.Default.xml")
-
-    [<Test>]
     member self.ShouldBeAbleToGetTheVisitReportMethod() =
       let where = Assembly.GetExecutingAssembly().Location
       let path =
@@ -63,7 +56,7 @@ type AltCoverTests2() =
            [ "System.Void AltCover.Recorder.Instance.Visit(System.String,System.Int32)";
              "System.Void AltCover.Recorder.Instance.Push(System.Int32)";
              "System.Void AltCover.Recorder.Instance.Pop()" ]
-      |> List.iter (fun (n, m) -> Assert.That(Naming.FullMethodName m, Is.EqualTo n))
+      |> List.iter (fun (n, m) -> test <@ Naming.FullMethodName m = n @>)
 
     [<Test>]
     member self.ShouldBeAbleToClearTheStrongNameKey() =
@@ -998,7 +991,26 @@ type AltCoverTests2() =
                    |> Seq.find (fun i -> i.OpCode = OpCodes.Switch)
       let targets2 = switch2.Operand :?> Instruction array
                     |> Array.map (fun i -> i.Offset)
-      Assert.That (targets2, Is.EquivalentTo [ 43; 45; 43; 45; 43 ])
+
+      let next = switch2.Next.Offset
+      let n2 = next + 2
+      // Need to check the heisenstate here
+
+      //case of 43
+      //IL_0000: ldstr ""
+      //IL_0005: ldc.i4.s 24
+      //IL_0007: call System.Void AltCover.Recorder.Instance::Push(System.Int32)
+      //IL_000c: ldarg.0
+      //IL_000d: call System.Int32 Sample15.TeamCityFormat::get_Tag()
+      //IL_0012: switch IL_002b,IL_002d,IL_002b,IL_002d,IL_002b
+      //IL_002b: br.s IL_0041
+
+      let expected = 43
+      if next <> expected
+      then target.Body.Instructions
+           |> Seq.iter (printfn "%A")
+      Assert.That (next, Is.EqualTo expected)
+      Assert.That (targets2, Is.EquivalentTo [ next; n2; next; n2; next ])
 
     [<Test>]
     member self.ShouldNotChangeAnUntrackedMethod() =
@@ -1072,6 +1084,65 @@ type AltCoverTests2() =
       finally
         Visitor.NameFilters.Clear()
         Visitor.reportFormat <- None
+
+    [<Test>]
+    member self.PseudoSwitchVisibleBranchesShouldSkipNonRepresentativeCases() =
+      let where = Assembly.GetExecutingAssembly().Location
+      let path = Path.Combine(Path.GetDirectoryName(where), "Sample16.dll")
+      let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+      ProgramDatabase.ReadSymbols def
+      Visitor.coalesceBranches := true
+      let method =
+        def.MainModule.GetAllTypes()
+        |> Seq.collect (fun t -> t.Methods)
+        |> Seq.find (fun m -> m.Name = "Bar")
+      Visitor.Visit [] [] // cheat reset
+      try
+        Visitor.reportFormat <- Some Base.ReportFormat.OpenCover
+        let branches =
+          Visitor.Deeper <| Node.Method(method, Inspect.Instrument, None)
+          |> Seq.map (fun n ->
+               match n with
+               | BranchPoint b -> Some b
+               | _ -> None)
+          |> Seq.choose id
+          |> Seq.skip 2
+          |> Seq.take 2 // first of "switch"
+          |> Seq.toList
+        match branches with
+        | [ b1; b2 ] ->
+          Assert.That(b1.Start.OpCode, Is.EqualTo OpCodes.Brfalse_S)
+          Assert.That(b2.Start.OpCode, Is.EqualTo OpCodes.Brfalse_S)
+
+          Assert.That(b1.Start.Offset, Is.EqualTo b2.Start.Offset)
+        | _ -> Assert.Fail("wrong number of items")
+        let raw = AltCover.InstrumentContext.Build([])
+
+        let state =
+          { raw with RecordingMethodRef =
+                       { raw.RecordingMethodRef with Visit = method
+                                                     Push = null
+                                                     Pop = null }
+                     MethodWorker = method.Body.GetILProcessor() }
+
+        let next = branches.Head.Start.Next
+        branches |> Seq.iter (fun b -> Instrument.VisitBranchPoint state b |> ignore)
+        let inject =
+          Seq.unfold (fun (state : Cil.Instruction) ->
+            if isNull state || state = next then None
+            else Some(state, state.Next)) branches.Head.Start
+          |> Seq.skip 1
+          |> Seq.toList
+        Assert.That(inject.Length, Is.EqualTo 5)
+        let jump = branches.Head.Start.Operand :?> Instruction
+        Assert.That(jump, Is.EqualTo inject.[1])
+        Assert.That(inject.[0].Operand, Is.EqualTo inject.[4].Next)
+        Assert.That
+          ((inject.[2].Operand :?> int) &&& Base.Counter.BranchMask, Is.EqualTo branches.[1].Uid)
+      finally
+        Visitor.NameFilters.Clear()
+        Visitor.reportFormat <- None
+        Visitor.coalesceBranches := false
 
     [<Test>]
     member self.SimpleBranchShouldInstrumentByPushingDown() =
@@ -1447,7 +1518,7 @@ type AltCoverTests2() =
 
       let visit =
         def'.MainModule.GetAllTypes()
-        |> Seq.filter (fun t -> t.Name = "Instance")
+        |> Seq.filter (fun t -> t.FullName = "AltCover.Recorder.Instance")
         |> Seq.collect (fun t -> t.Methods)
         |> Seq.filter (fun m -> m.Name = "Visit" || m.Name = "Push" || m.Name = "Pop")
         |> Seq.sortBy (fun m -> m.Name)
@@ -1456,34 +1527,32 @@ type AltCoverTests2() =
 
       let state' = { state with RecordingAssembly = def' }
       let result = Instrument.InstrumentationVisitor state' visited
-      Assert.That(result.RecordingMethodRef.Visit.Module, Is.EqualTo(def.MainModule))
-      Assert.That(string result.RecordingMethodRef.Visit,
-                  visit
+
+      test <@ result.RecordingMethodRef.Visit.Module = def.MainModule @>
+      test <@ string result.RecordingMethodRef.Visit =
+                 (visit
                   |> Seq.head
-                  |> string
-                  |> Is.EqualTo)
-      Assert.That(string result.RecordingMethodRef.Push,
-                  visit
+                  |> string) @>
+      test <@ string result.RecordingMethodRef.Push =
+                 (visit
                   |> Seq.skip 1
                   |> Seq.head
-                  |> string
-                  |> Is.EqualTo)
-      Assert.That(string result.RecordingMethodRef.Pop,
-                  visit
+                  |> string) @>
+      test <@ string result.RecordingMethodRef.Pop =
+                 (visit
                   |> Seq.skip 2
                   |> Seq.head
-                  |> string
-                  |> Is.EqualTo)
-      Assert.That({ result with RecordingMethodRef =
+                  |> string) @>
+      test <@ { result with RecordingMethodRef =
                                   { Visit = null
                                     Push = null
-                                    Pop = null } },
-                  Is.EqualTo { state' with ModuleId = def.MainModule.Mvid.ToString()
+                                    Pop = null } } =
+                             { state' with ModuleId = def.MainModule.Mvid.ToString()
                                            RecordingMethod = visit
                                            RecordingMethodRef =
                                              { Visit = null
                                                Push = null
-                                               Pop = null } })
+                                               Pop = null } } @>
 
     [<Test>]
     member self.ExcludedMethodPointIsPassThrough() =
@@ -1590,12 +1659,7 @@ type AltCoverTests2() =
     [<Test>]
     member self.JSONInjectionTransformsStandaloneFileAsExpected() =
       let inputName = infrastructureSnk.Replace("Infrastructure.snk", "Sample1.deps.json")
-#if NETCOREAPP2_0
-      let resultName =
-        infrastructureSnk.Replace("Infrastructure.snk", "Sample1.deps.ncafter.json")
-#else
       let resultName = infrastructureSnk.Replace("Infrastructure.snk", "Sample1.deps.after.json")
-#endif
       use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(inputName)
       use reader = new StreamReader(stream)
       let result = Instrument.injectJSON <| reader.ReadToEnd()
@@ -1613,12 +1677,7 @@ type AltCoverTests2() =
     [<Test>]
     member self.JSONInjectionTransformsDependencyFileAsExpected() =
       let inputName = infrastructureSnk.Replace("Infrastructure.snk", "Sample2.deps.json")
-#if NETCOREAPP2_0
-      let resultName =
-        infrastructureSnk.Replace("Infrastructure.snk", "Sample2.deps.ncafter.json")
-#else
       let resultName = infrastructureSnk.Replace("Infrastructure.snk", "Sample2.deps.after.json")
-#endif
       use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(inputName)
       use reader = new StreamReader(stream)
       let result = Instrument.injectJSON <| reader.ReadToEnd()
@@ -1635,12 +1694,7 @@ type AltCoverTests2() =
 
     [<Test>]
     member self.JSONInjectionIsIdempotent() =
-#if NETCOREAPP2_0
-      let resultName =
-        infrastructureSnk.Replace("Infrastructure.snk", "Sample1.deps.ncafter.json")
-#else
       let resultName = infrastructureSnk.Replace("Infrastructure.snk", "Sample1.deps.after.json")
-#endif
       use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resultName)
       use reader = new StreamReader(stream)
       let expected = reader.ReadToEnd()
@@ -1762,7 +1816,7 @@ type AltCoverTests2() =
 
            let arg : obj =
              if param.ParameterType = typeof<String> then String.Empty :> obj
-             else (String.Empty, OptionSet() :> obj, OptionSet() :> obj) :> obj
+             else { Intro = String.Empty; Options = OptionSet(); Options2 = OptionSet() } :> obj
            invoke.Invoke(o, [| arg |]) |> ignore)
 
     [<Test>]

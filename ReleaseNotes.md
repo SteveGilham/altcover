@@ -2,6 +2,48 @@ Q. Never mind the fluff -- how do I get started?
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
+# 6.3.7xx (Fukurou series release 9)
+* [FAKE Helper API] Fake >= 5.18.1 is required for this release (the work-round for FAKE issue #2412 has been removed)
+* Trap and log exceptions reported in Issue #71 as files `<coverage report path>.<timestamp>.exn`
+
+# 6.3.729 (Fukurou series release 8)
+* Filter out assemblies without the `ILOnly` bit set (i.e. pretty much anything C++/CLI, even with the deprecated /clr:pure compiler flag set)
+* [FAKE Helper API] Fake >= 5.18.0 is required for this release
+* [FAKE Helper API] Deprecate `AltCover_Fake.DotNet.Testing.AltCover.ToolType` in favour of `Fake.DotNet.ToolType` in the `AltCover_Fake.DotNet.Testing.AltCover.Params` record structure.  
+* [FAKE Helper API] Helper functions in `AltCover_Fake.DotNet.Testing.AltCover`
+  * `splitCommandLine: string -> string list` for breaking up composed command lines e.g. from `Fake.DotNet.Testing.NUnit3.buildArgs` or ``Fake.DotNet.Testing.XUnit2.buildArgs`
+  * `buildDotNetTestCommandLine: (DotNet.TestOptions -> DotNet.TestOptions) -> string -> (string * string list)` taking the arguments for `DotNet.test` and returning the `dotnet` path and the rest of the command line
+  * `runWithMono: string option -> Params -> 'a` to execute the `Params` using the path to the Mono executable if it's a FAKE-style full framework tool on Windows (equivalent to the deprecated `AltCover.ToolType.Mono`)
+  * `Params.WithToolType: Fake.DotNet.ToolType -> Params` Setting the new tool type using this member is the preferred forward-compatible way to do this
+
+# 6.2.727 (Fukurou series release 7 respin)
+* [BUGFIX] Issue #74 -- Strip unwanted dependencies from released code.
+* Generally, move to .net core 3.0 for build (many other changes in process only)
+  * In .net core 3.0 release, `dotnet build` no longer does a `dotnet publish` to the output directory
+  * With the F# 4.7 compiler, static linking FSharp.Core into the recorder has been fixed, and has been adopted
+  * Issues #68 and #73 and their fixes are now moot; in particular, `FSharp.Core` no longer needs to be auto-excluded from instrumentation in the .net core tool any more than in the Framework tool; nor does that assembly need to be copied if otherwise absent.
+
+# 6.2.719 (Fukurou series release 6)
+* [BUGFIX] #Issue73 In .net core 3.0 preview and RC, `dotnet build` does a `dotnet publish` to the output directory, including FSharp.Core in F# projects.  Automatically exclude that file from instrumentation by the .net core tool to avoid mutually recursive calls between the recorder assembly and FSharp.Core that cause a stack overflow.  This  is not required for the Framework/Mono tool as that static links its dependency. I've not found a way to static-link FSharp.Core in the .net core world that doesn't fail with errors.
+* [BUGFIX] For --visibleBranches, fix up C# loops, and the path numbering for decompiled `switch`/`match` logic
+
+# 6.2.714 (Fukurou series release 5)
+* [BUGFIX] Finish wiring up `/p:AltCoverLocalSource` support
+* [BUGFIX] Fix failure when input/output directories were specified with a trailing separator character
+* [HACK] mitigate Issue #71 by simply ignoring null module identifiers.
+* [API] `-v|--visibleBranches` option (bool `VisibleBranches` default false in API, `-VisibleBranches` PowerShell flag) to simplify the reporting of `switch` or `match` cases where the compiler produces a tangle of `if`/`else` branches that give surprising results in a `ReportGenerator` output (e.g. `null` taking a different branch to a `default` case than a non-`null` value as per Issue 72)
+* Use a leading `?` as a negator for filter matches e.g. `?(a|b)` means "exclude anything that doesn't match a or match b", or `?MyApp` means exclude anything that doesn't contain `MyApp`; no valid .net regex begins with this so it's backwards compatible.  Between this and the previous release's `--localSource` (now fully supported) option, the need to resort to cumbersome constructs involving negative lookahead regexes should be reduced.
+
+# 6.1.708 (Fukurou series release 4)
+* [BUGFIX] reinstate the PowerShell Core (`pwsh`) `Invoke-AltCover` support for strongnaming.
+* [API] `-l|--localSource` option (bool `LocalSource` default false in API, `-LocalSource` PowerShell flag) to ignore .pdb files that refer to source files not present on the current computer (test is if the first file found exists or not, and assumes that this is all-or-nothing, and assume no coincidences in naming).
+---
+# 6.0.705 (Fukurou series release 3)
+* [BUGFIX] in the case of multiple output folders, properly weave the AltCover recorder assembly dependency into all `dotnet` projects, not just the first.
+* [BUGFIX] when using the `dotnet` version of the tools, and when a suitable FSharp.Core package is present in the nuget cache, it is not necessary to copy one from the AltCover deployment to the output folder for a `dotnet` project
+* [BUGFIX] create the directory to hold the report file if it does not already exists
+* Use Mono.Cecil 0.11 for strongnaming in `dotnet`, removing the local reimplementation of assembly writing with strongnaming.
+
 # 6.0.700 (Fukurou series release 2)
 * [BUGFIX] in `dotnet test` the pipe character `|` is used as a separator because the previous choice of `;` didn't play nice with MSBuild.  To escape pipe characters inside regular expressions, double them up `||`.  See the [Usage](https://github.com/SteveGilham/altcover/wiki/Usage) and [`dotnet test`](https://github.com/SteveGilham/altcover/wiki/%60dotnet-test%60-integration) wiki pages for more detail.
 

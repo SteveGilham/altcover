@@ -44,7 +44,7 @@ module internal Runner =
   let mutable internal recordingDirectory : Option<string> = None
   let mutable internal workingDirectory : Option<string> = None
   let internal executable : Option<string> ref = ref None
-  let internal collect = ref false
+  let internal collect = ref false // ddFlag
   let mutable internal threshold : Option<int> = None
   let mutable internal output : Option<string> = None
   let internal Summary = StringBuilder()
@@ -522,7 +522,9 @@ module internal Runner =
                       | Base.Tag.Time -> Base.Time <| formatter.ReadInt64()
                       | Base.Tag.Call -> Base.Call <| formatter.ReadInt32()
                       | Base.Tag.Both ->
-                        Base.Both(formatter.ReadInt64(), formatter.ReadInt32())
+                        let time = formatter.ReadInt64()
+                        let call = formatter.ReadInt32()
+                        Base.Both { Time = time; Call = call }
                       | Base.Tag.Table ->
                           let t = Dictionary<string, Dictionary<int, PointVisit>>()
                           let rec ``module`` () =
@@ -548,7 +550,9 @@ module internal Runner =
                                                   tracking ()
                                     | Tag.Call -> pv.Tracks.Add (Call <| formatter.ReadInt32())
                                                   tracking ()
-                                    | Tag.Both -> pv.Tracks.Add (Both (formatter.ReadInt64(), formatter.ReadInt32()))
+                                    | Tag.Both -> pv.Tracks.Add (let time = formatter.ReadInt64()
+                                                                 let call = formatter.ReadInt32()
+                                                                 Base.Both { Time = time; Call = call })
                                                   tracking ()
 // Expect never to happen                                    | Tag.Table -> ``module``()
                                     | _ -> sequencePoint (pts - 1)
@@ -843,7 +847,7 @@ module internal Runner =
       |> Seq.map (fun t ->
            match t with
            | Base.Time x -> (Some x, None)
-           | Base.Both(x, y) -> (Some x, Some y)
+           | Base.Both b -> (Some b.Time, Some b.Call)
            | Base.Call y -> (None, Some y)
            | _ -> (None, None))
       |> Seq.toList
@@ -880,7 +884,8 @@ module internal Runner =
       |> RequireWorker
     match check1 with
     | Left(intro, options) ->
-      CommandLine.HandleBadArguments false arguments intro options1 options
+      CommandLine.HandleBadArguments false arguments
+        { Intro = intro; Options = options1; Options2 = options}
       255
     | Right(rest, _) ->
       let value =

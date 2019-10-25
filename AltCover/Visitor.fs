@@ -33,6 +33,11 @@ type internal CoverStyle =
   | LineOnly = 1
   | BranchOnly = 2
 
+type internal Reporting =
+  | None = 0
+  | Representative = 1
+  | Contributing = 2
+
 [<ExcludeFromCodeCoverage>]
 type internal SeqPnt =
   { StartLine : int
@@ -56,14 +61,15 @@ type internal SeqPnt =
 [<ExcludeFromCodeCoverage; NoComparison>]
 type internal GoTo =
   { Start : Instruction
+    SequencePoint: SequencePoint
     Indexes : int list
     Uid : int
     Path : int
-    StartLine : int
     Offset : int
-    Target : int list
-    Document : string
-    Included : bool }
+    Target : Instruction list
+    Included : bool
+    Representative : Reporting
+    Key : int }
 
 [<ExcludeFromCodeCoverage; NoComparison>]
 type internal Node =
@@ -203,22 +209,25 @@ module internal KeyStore =
 type Fix<'T> = delegate of 'T -> Fix<'T>
 
 module internal Visitor =
-  let internal collect = ref false
+  let internal collect = ref false // ddFlag
   let internal TrackingNames = new List<String>()
-
   let internal NameFilters = new List<FilterClass>()
 
   let private specialCaseFilters =
     [ @"^CompareTo\$cont\@\d+\-?\d$"
       |> Regex
-      |> FilterClass.Method ]
+      |> FilterRegex.Exclude
+      |> FilterClass.Build FilterScope.Method ]
 
-  let internal inplace = ref false
-  let mutable internal single = false
+  let internal inplace = ref false // ddFlag
+  let internal coalesceBranches = ref false // ddFlag
+  let internal local = ref false // ddFlag
+
+  let mutable internal single = false // more complicated
   let Sampling() =
     (if single then Base.Sampling.Single
                else Base.Sampling.All) |> int
-  let internal sourcelink = ref false
+  let internal sourcelink = ref false // ddFlag
   let internal defer = ref (Some false)
   let internal deferOpCode () =
     if Option.getOrElse false !defer
@@ -279,8 +288,39 @@ module internal Visitor =
     let index = KeyStore.KeyToIndex key
     keys.[index] <- KeyStore.KeyToRecord key
 
+  let methodFile (m : MethodDefinition) =
+    m.DebugInformation.SequencePoints
+    |> Seq.tryHead // assume methods can only be in one file
+    |> Option.map (fun sp -> sp.Document.Url)
+
+  let typeFiles (t : TypeDefinition) =
+    Option.nullable t.Methods
+    |> Option.map (fun ms -> ms
+                             |> Seq.map methodFile
+                             |> Seq.choose id
+                             |> Seq.distinct)
+
+  let moduleFiles (m : ModuleDefinition) =
+    m.GetAllTypes()
+    |> Seq.map typeFiles
+    |> Seq.choose id
+    |> Seq.collect id
+    |> Seq.distinct
+
+  let localFilter (nameProvider : Object) =
+    match nameProvider with
+    | :? AssemblyDefinition as a -> !local &&
+                                    a.MainModule
+                                    |> moduleFiles
+                                    |> Seq.tryHead
+                                    |> Option.map File.Exists
+                                    |> Option.getOrElse false
+                                    |> not
+    | _ -> false
+
   let IsIncluded(nameProvider : Object) =
-    if (NameFilters |> Seq.exists (Filter.Match nameProvider)) then Inspect.Ignore
+    if (NameFilters |> Seq.exists (Filter.Match nameProvider))
+       || localFilter nameProvider then Inspect.Ignore
     else Inspect.Instrument
 
   let Mask = ~~~Inspect.Instrument
@@ -381,6 +421,10 @@ module internal Visitor =
                                                 x
                                                 |> accumulator.Add
                                                 |> ignore
+
+                                                // can't delay reading symbols any more
+                                                ProgramDatabase.ReadSymbols(x)
+
                                                 // Reject completely if filtered here
                                                 let inspection = IsIncluded x
 
@@ -389,7 +433,6 @@ module internal Visitor =
                                                                     && ReportFormat() = Base.ReportFormat.OpenCoverWithTracking then
                                                                    Inspect.Track
                                                                  else Inspect.Ignore
-                                                ProgramDatabase.ReadSymbols(x)
                                                 Assembly(x, included, targets)))
                     >> buildSequence)
 
@@ -646,7 +689,7 @@ module internal Visitor =
                || state.OpCode.FlowControl = FlowControl.Break
                || state.OpCode.FlowControl = FlowControl.Throw
                || state.OpCode.FlowControl = FlowControl.Return // includes state.Next = null
-               || isNull state.Next) then l
+               || isNull state.Next) then (if !coalesceBranches && state <> l.Head then state :: l else l)
       else accumulate state.Next gendarme
     accumulate i [ i ]
 
@@ -691,11 +734,13 @@ module internal Visitor =
       let toJump = getJumpChain terminal jump
       // Eliminate the "all inside one SeqPnt" jumps
       // This covers a multitude of compiler generated branching cases
-      match includedSequencePoint dbg toNext toJump with
-      | Some _ ->
+      // TODO can we simplify
+      match (!coalesceBranches, includedSequencePoint dbg toNext toJump) with
+      | (true, _)
+      | (_, Some _) ->
         [ (i, toNext, next.Offset, -1)
           (i, toJump, jump.Offset, 0) ]
-      | None -> []
+      | _ -> []
 
   // cribbed from OpenCover's CecilSymbolManager -- internals of C# yield return iterators
   let private IsMoveNext =
@@ -703,7 +748,63 @@ module internal Visitor =
       (@"\<[^\s>]+\>\w__\w(\w)?::MoveNext\(\)$",
        RegexOptions.Compiled ||| RegexOptions.ExplicitCapture)
 
+  let private CoalesceBranchPoints dbg (bps : GoTo seq) =
+    let selectRepresentatives (_, bs) =
+      let last = lastOfSequencePoint dbg (bs |> Seq.head).Start
+      let lastOffset = last.Offset
+      let mutable path = 0
+      bs
+      |> Seq.map (fun b -> { b with Target = b.Target
+                                             |> List.takeWhile (fun i -> let o = i.Offset
+                                                                         o > lastOffset ||
+                                                                         o < b.SequencePoint.Offset ||
+                                                                         i.OpCode.FlowControl = FlowControl.Return ||
+                                                                         i.OpCode.FlowControl = FlowControl.Break ||
+                                                                         i.OpCode.FlowControl = FlowControl.Throw ||
+                                                                         i.OpCode.FlowControl = FlowControl.Branch)}) // more??
+      |> Seq.groupBy (fun b -> b.Target |> Seq.tryHead)
+      |> Seq.map (snd >> (fun bg -> bg
+                                    |> Seq.mapi  (fun i bx -> { bx with Representative = if i=0 &&
+                                                                                            bx.Target |> Seq.isEmpty |> not
+                                                                                            then Reporting.Representative
+                                                                                            else Reporting.Contributing})))
+      |> Seq.sortBy (fun b -> (b |> Seq.head).Offset)
+      |> Seq.mapi (fun i b -> if i = 0 then path <- 0
+                              if (b |> Seq.head).Representative = Reporting.Representative
+                              then let p = path
+                                   path <- path + 1
+                                   b |> Seq.map (fun bx -> {bx with Path = p})
+                              else b)
+    //let demoteSingletons l = // TODO revisit
+    //  let x = l |> Seq.length > 1
+    //  l |> Seq.map (fun bs -> bs |> Seq.map (fun b -> { b with Representative = if x then b.Representative
+    //                                                                            else Reporting.None }))
+
+    let mutable uid = 0
+    bps
+    |> Seq.groupBy (fun b -> b.SequencePoint.Offset)
+    |> Seq.map selectRepresentatives // >> demoteSingletons)
+    |> Seq.collect id
+    |> Seq.map(fun bs -> bs |>
+                         if (bs |> Seq.head).Representative = Reporting.Representative
+                         then let i = uid
+                              uid <- uid + 1
+                              Seq.map (fun bx -> {bx with Uid = i + BranchNumber})
+                         else Seq.map (fun bx -> { bx with Representative = Reporting.None} ))
+    |> Seq.collect id
+    |> Seq.sortBy (fun b -> b.Key)  // important! instrumentation assumes we work in the order we started with
+
   let private ExtractBranchPoints dbg methodFullName rawInstructions interesting =
+    let makeDefault i =
+      if !coalesceBranches
+      then -1
+      else i
+
+    let processBranches =
+      if !coalesceBranches
+      then CoalesceBranchPoints dbg
+      else id
+
     // Generated MoveNext => skip one branch
     let skip = IsMoveNext.IsMatch methodFullName |> Augment.Increment
     (Seq.map (snd >> (fun (i : Instruction) ->
@@ -726,7 +827,7 @@ module internal Visitor =
          (fun (i : Instruction) -> i.OpCode.FlowControl = FlowControl.Cond_Branch)
     |> Seq.mapi (fun n i -> (n, i)) //
     |> Seq.filter (fun (n, _) -> n >= skip)))
-    |> Seq.filter (fun l -> l.Length > 1)
+    |> Seq.filter (fun l -> !coalesceBranches || l.Length > 1) // TODO revisit
     |> Seq.collect id
     |> Seq.mapi (fun i (path, (from, target, indexes)) ->
          Seq.unfold (fun (state : Cil.Instruction) ->
@@ -735,16 +836,21 @@ module internal Visitor =
            |> Option.map (fun state' -> (state', state'.Previous))) from
          |> (findSequencePoint dbg)
          |> Option.map (fun context ->
-              BranchPoint { Path = path
+                          { Start = from
+                            SequencePoint = context
                             Indexes = indexes
-                            Uid = i + BranchNumber
-                            Start = from
-                            StartLine = context.StartLine
+                            Uid = makeDefault (i + BranchNumber)
+                            Path = makeDefault path
                             Offset = from.Offset
-                            Target = target |> List.map (fun i -> i.Offset)
-                            Document = context.Document.Url
-                            Included = interesting }))
+                            Target = target
+                            Included = interesting
+                            Representative = if !coalesceBranches
+                                             then Reporting.Contributing
+                                             else Reporting.Representative
+                            Key = i}))
     |> Seq.choose id
+    |> processBranches
+    |> Seq.map BranchPoint
     |> Seq.toList
 
   let private VisitMethod (m : MethodDefinition) (included : Inspect) =

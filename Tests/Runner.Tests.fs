@@ -21,6 +21,9 @@ open Swensen.Unquote
 [<TestFixture>]
 type AltCoverTests() =
   class
+    [<SetUp>]
+    member self.SetUp() =
+      Runner.init()
 
     // Base.fs
     [<Test>]
@@ -247,7 +250,7 @@ type AltCoverTests() =
         use stderr = new StringWriter()
         Console.SetError stderr
         let empty = OptionSet()
-        CommandLine.Usage("UsageError", empty, options)
+        CommandLine.Usage { Intro = "UsageError"; Options = empty; Options2 = options}
         let result = stderr.ToString().Replace("\r\n", "\n")
         let expected = """Error - usage is:
   -r, --recorderDirectory=VALUE
@@ -468,6 +471,7 @@ type AltCoverTests() =
           | Left(x, y) ->
             Assert.That(y, Is.SameAs options)
             Assert.That(x, Is.EqualTo "UsageError")
+            Assert.That(CommandLine.error |> Seq.head, Is.EqualTo "--executable : specify this only once")
         finally
           Runner.executable := None)
 
@@ -525,6 +529,7 @@ type AltCoverTests() =
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
+          Assert.That(CommandLine.error |> Seq.head, Is.EqualTo "--workingDirectory : specify this only once")
       finally
         Runner.workingDirectory <- None
 
@@ -596,6 +601,7 @@ type AltCoverTests() =
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
+          Assert.That(CommandLine.error |> Seq.head, Is.EqualTo "--recorderDirectory : specify this only once")
       finally
         Runner.recordingDirectory <- None
 
@@ -658,6 +664,7 @@ type AltCoverTests() =
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
+          Assert.That(CommandLine.error |> Seq.head, Is.EqualTo "--collect : specify this only once")
       finally
         Runner.collect := false
 
@@ -705,6 +712,7 @@ type AltCoverTests() =
           | Left(x, y) ->
             Assert.That(y, Is.SameAs options)
             Assert.That(x, Is.EqualTo "UsageError")
+            Assert.That(CommandLine.error |> Seq.head, Is.EqualTo "--lcovReport : specify this only once")
         finally
           Runner.Summaries <- [ Runner.StandardSummary ]
           LCov.path := None)
@@ -758,6 +766,7 @@ type AltCoverTests() =
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
+          Assert.That(CommandLine.error |> Seq.head, Is.EqualTo "--threshold : specify this only once")
       finally
         Runner.threshold <- None
 
@@ -850,6 +859,7 @@ type AltCoverTests() =
           | Left(x, y) ->
             Assert.That(y, Is.SameAs options)
             Assert.That(x, Is.EqualTo "UsageError")
+            Assert.That(CommandLine.error |> Seq.head, Is.EqualTo "--cobertura : specify this only once")
         finally
           Runner.Summaries <- [ Runner.StandardSummary ]
           Cobertura.path := None)
@@ -912,6 +922,7 @@ type AltCoverTests() =
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
+          Assert.That(CommandLine.error |> Seq.head, Is.EqualTo "--outputFile : specify this only once")
       finally
         Runner.output <- None
 
@@ -959,6 +970,7 @@ type AltCoverTests() =
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError")
+          Assert.That(CommandLine.error |> Seq.head, Is.EqualTo "--dropReturnCode : specify this only once")
       finally
         CommandLine.dropReturnCode := false
 
@@ -1028,7 +1040,8 @@ type AltCoverTests() =
         | Right _ -> Assert.Fail()
         | Left(x, y) ->
           Assert.That(y, Is.SameAs options)
-          Assert.That(x, Is.EqualTo "UsageError"))
+          Assert.That(x, Is.EqualTo "UsageError")
+          Assert.That(CommandLine.error |> Seq.head, Is.EqualTo "--teamcity : specify this only once"))
 
     [<Test>]
     member self.ParsingBadTCGivesFailure() =
@@ -1357,6 +1370,8 @@ type AltCoverTests() =
   -a, --attributeFilter=VALUE
                              Optional, multiple: attribute name to exclude from
                                instrumentation
+  -l, --localSource          Don't instrument code for which the source file is
+                               not present.
   -c, --callContext=VALUE    Optional, multiple: Tracking either times of
                                visits in ticks or designated method calls
                                leading to the visits.
@@ -1394,6 +1409,9 @@ type AltCoverTests() =
                                paths if present.
       --defer[=VALUE]        Optional, defers writing runner-mode coverage data
                                until process exit.
+  -v, --visibleBranches      Hide complex internal IL branching implementation
+                               details in switch/match constructs, and just
+                               show what the source level logic implies.
   -?, --help, -h             Prints out the options.
 or
   Runner
@@ -1685,7 +1703,7 @@ or
         [ Base.Null
           Base.Call 17
           Base.Time 23L
-          Base.Both(5L, 42)
+          Base.Both { Time = 5L; Call = 42 }
           Base.Time 42L
           Base.Call 5 ]
 
@@ -1715,10 +1733,10 @@ or
                | Call t ->
                  formatter.Write(Base.Tag.Call |> byte)
                  formatter.Write(t)
-               | Both(t', t) ->
+               | Both b ->
                  formatter.Write(Base.Tag.Both |> byte)
-                 formatter.Write(t')
-                 formatter.Write(t)
+                 formatter.Write(b.Time)
+                 formatter.Write(b.Call)
                | Table t ->
                  formatter.Write(Base.Tag.Table |> byte)
                  t.Keys
@@ -1736,10 +1754,10 @@ or
                                                                                     | Call t ->
                                                                                       formatter.Write(Base.Tag.Call |> byte)
                                                                                       formatter.Write(t)
-                                                                                    | Both(t', t) ->
+                                                                                    | Both b ->
                                                                                       formatter.Write(Base.Tag.Both |> byte)
-                                                                                      formatter.Write(t')
-                                                                                      formatter.Write(t)
+                                                                                      formatter.Write(b.Time)
+                                                                                      formatter.Write(b.Call)
                                                                                     | _ -> tx |> (sprintf "%A") |> Assert.Fail)
                                                              formatter.Write(Base.Tag.Null |> byte)))
                  formatter.Write String.Empty
@@ -1754,7 +1772,7 @@ or
       let c = Dictionary<int, int64 * Base.Track list>()
       c.Add(3, (0L, [Time 23L]))
       let d = Dictionary<int, int64 * Base.Track list>()
-      d.Add(4, (0L, [Both (5L, 42)]))
+      d.Add(4, (0L, [Both { Time = 5L; Call = 42 } ]))
       let e = Dictionary<int, int64 * Base.Track list>()
       e.Add(6, (0L, [Call 5]))
       let f = Dictionary<int, int64 * Base.Track list>()
@@ -1792,7 +1810,7 @@ or
         [ Base.Null
           Base.Call 17
           Base.Time 23L
-          Base.Both(5L, 42)
+          Base.Both { Time = 5L;  Call = 42 }
           Base.Time 42L
           Base.Time 5L ]
       Runner.PointProcess root hits

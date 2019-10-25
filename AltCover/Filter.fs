@@ -12,18 +12,40 @@ open Mono.Cecil.Cil
 open AltCover.Augment
 
 [<ExcludeFromCodeCoverage; NoComparison>]
+type internal FilterSense =
+  | Exclude
+  | Include
+
+[<ExcludeFromCodeCoverage; NoComparison>]
+type internal FilterScope =
+  | File
+  | Assembly
+  | Module
+  | Type
+  | Method
+  | Attribute
+  | Path
+
+[<ExcludeFromCodeCoverage; NoComparison>]
+type internal FilterRegex =
+  { Regex : Regex; Sense : FilterSense}
+  static member Exclude (s : Regex) =
+    {Regex = s; Sense = Exclude}
+
+[<ExcludeFromCodeCoverage; NoComparison>]
 type internal FilterClass =
-  | File of Regex
-  | Assembly of Regex
-  | Module of Regex
-  | Type of Regex
-  | Method of Regex
-  | Attribute of Regex
-  | Path of Regex
+  { Scope : FilterScope; Regex : Regex; Sense : FilterSense}
+  static member Build scope (regex:FilterRegex) =
+    { Scope = scope; Regex = regex.Regex; Sense = regex.Sense }
+  member this.Apply
+    with get () =
+      if this.Sense = Exclude
+      then id
+      else not
 
 module internal Filter =
 
-  let rec private MatchAttribute (name : Regex) (nameProvider : Object) =
+  let rec private MatchAttribute (name : Regex) f (nameProvider : Object) =
     (match nameProvider with
      | :? MethodDefinition as m ->
        if m.IsGetter || m.IsSetter then
@@ -31,7 +53,7 @@ module internal Filter =
            m.DeclaringType.Properties
            |> Seq.filter (fun x -> x.GetMethod = m || x.SetMethod = m)
            |> Seq.head
-         MatchAttribute name owner
+         MatchAttribute name f owner
        else false
      | _ -> false)
     || (match nameProvider with
@@ -40,30 +62,33 @@ module internal Filter =
           && attributeProvider.CustomAttributes
              |> Seq.cast<CustomAttribute>
              |> Seq.exists (fun attr -> name.IsMatch attr.AttributeType.FullName)
+             |> f
         | _ -> false)
 
-  let MatchItem<'a> (name : Regex) (nameProvider : Object) (toName : 'a -> string) =
+  let MatchItem<'a> (name : Regex) f (nameProvider : Object) (toName : 'a -> string) =
     match nameProvider with
     | :? 'a as item ->
       item
       |> toName
       |> name.IsMatch
+      |> f
     | _ -> false
 
   let internal Match (nameProvider : Object) (filter : FilterClass) =
-    match filter with
-    | File name -> MatchItem<string> name nameProvider Path.GetFileName
-    | Assembly name ->
-      MatchItem<AssemblyDefinition> name nameProvider (fun assembly -> assembly.Name.Name)
-    | Module name ->
-      MatchItem<ModuleDefinition> name nameProvider
+    let f = filter.Apply
+    match filter.Scope with
+    | File -> MatchItem<string> filter.Regex f nameProvider Path.GetFileName
+    | Assembly ->
+      MatchItem<AssemblyDefinition> filter.Regex f nameProvider (fun assembly -> assembly.Name.Name)
+    | Module ->
+      MatchItem<ModuleDefinition> filter.Regex f nameProvider
         (fun ``module`` -> ``module``.Assembly.Name.Name)
-    | Type name ->
-      MatchItem<TypeDefinition> name nameProvider (fun typeDef -> typeDef.FullName)
-    | Method name ->
-      MatchItem<MethodDefinition> name nameProvider (fun methodDef -> methodDef.Name)
-    | Attribute name -> MatchAttribute name nameProvider
-    | Path name -> MatchItem<string> name nameProvider Path.GetFullPath
+    | Type ->
+      MatchItem<TypeDefinition> filter.Regex f nameProvider (fun typeDef -> typeDef.FullName)
+    | Method ->
+      MatchItem<MethodDefinition> filter.Regex f nameProvider (fun methodDef -> methodDef.Name)
+    | Attribute  -> MatchAttribute filter.Regex f nameProvider
+    | Path -> MatchItem<string> filter.Regex f nameProvider Path.GetFullPath
 
   let internal IsCSharpAutoProperty(m : MethodDefinition) =
     (m.IsSetter || m.IsGetter) && m.HasCustomAttributes

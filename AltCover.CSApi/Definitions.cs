@@ -48,6 +48,8 @@ namespace AltCover.Parameters
         bool ExposeReturnCode { get; }
         bool SourceLink { get; }
         bool Defer { get; }
+        bool LocalSource { get; }
+        bool VisibleBranches { get; }
 
         string[] CommandLine { get; }
 
@@ -110,7 +112,7 @@ namespace AltCover.Parameters.Primitive
                 CommandLine,
                 ExposeReturnCode,
                 SummaryFormat
-                );
+                                                                );
             return FSApi.CollectParams.NewPrimitive(primitive);
         }
 
@@ -164,6 +166,8 @@ namespace AltCover.Parameters.Primitive
         public bool ExposeReturnCode { get; set; }
         public bool SourceLink { get; set; }
         public bool Defer { get; set; }
+        public bool LocalSource { get; set; }
+        public bool VisibleBranches { get; set; }
 
         public string[] CommandLine { get; set; }
 
@@ -195,7 +199,9 @@ namespace AltCover.Parameters.Primitive
                             CommandLine,
                             ExposeReturnCode,
                             SourceLink,
-                            Defer
+                            Defer,
+                            LocalSource,
+                            VisibleBranches
                                                                 );
             return FSApi.PrepareParams.NewPrimitive(primitive);
         }

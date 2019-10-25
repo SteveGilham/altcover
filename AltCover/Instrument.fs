@@ -62,16 +62,6 @@ module internal Instrument =
     |> isNull
     |> not
 
-#if NETCOREAPP2_0
-  let dependencies =
-    (resources.GetString "netcoreDependencies").Replace("version", version)
-  let runtime =
-    (resources.GetString "netcoreRuntime")
-      .Replace("AltCover.Recorder.g/version", "AltCover.Recorder.g/" + version)
-  let newLibraries =
-    (resources.GetString "netcoreLibraries")
-      .Replace("AltCover.Recorder.g/version", "AltCover.Recorder.g/" + version)
-#else
   let dependencies =
     (resources.GetString "frameworkDependencies").Replace("version", version)
   let runtime =
@@ -80,17 +70,6 @@ module internal Instrument =
   let newLibraries =
     (resources.GetString "frameworkLibraries")
       .Replace("AltCover.Recorder.g/version", "AltCover.Recorder.g/" + version)
-#endif
-
-  /// <summary>
-  /// Workround for not being able to take typeof<SomeModule> even across
-  /// assembly boundaries -- start with a pure type then iterate to the module
-  /// </summary>
-  /// <returns>A representation of the type used to record all coverage visits.</returns>
-  let internal RecorderInstanceType() =
-    let trace = typeof<AltCover.Recorder.Tracer>
-    trace.Assembly.GetExportedTypes()
-    |> Seq.find (fun (t : Type) -> t.FullName = "AltCover.Recorder.Instance")
 
   /// <summary>
   /// Locate the method that must be called to register a code point for coverage visit.
@@ -98,11 +77,15 @@ module internal Instrument =
   /// <param name="assembly">The assembly containing the recorder method</param>
   /// <returns>A representation of the method to call to signal a coverage visit.</returns>
   let internal RecordingMethod(recordingAssembly : AssemblyDefinition) =
-    let other = RecorderInstanceType()
-    [ "Visit"; "Push"; "Pop" ]
-    |> List.map (fun n ->
-         let t = other.GetMethod(n).MetadataToken
-         recordingAssembly.MainModule.LookupToken(t) :?> MethodDefinition)
+    recordingAssembly.MainModule.GetAllTypes()
+    |> Seq.filter (fun t -> t.FullName = "AltCover.Recorder.Instance")
+    |> Seq.collect (fun t -> t.Methods)
+    |> Seq.map (fun t -> (t.Name, t))
+    |> Seq.filter (fun (n,_) -> n = "Visit" || n = "Push" || n = "Pop")
+    |> Seq.sortBy fst
+    |> Seq.map snd
+    |> Seq.toList
+    |> List.rev
 
   /// <summary>
   /// Applies a new key to an assembly name
@@ -170,7 +153,8 @@ module internal Instrument =
     Guard definition (fun () ->
 #if NETCOREAPP2_0
 #else
-      ProgramDatabase.ReadSymbols definition
+      if monoRuntime |> not
+      then ProgramDatabase.ReadSymbols definition
 #endif
       definition.Name.Name <- (extractName definition) + ".g"
 
@@ -549,8 +533,10 @@ module internal Instrument =
     then
       let point = (branch.Uid ||| Base.Counter.BranchFlag)
       let instrument instruction =
-        InsertVisit instruction state.MethodWorker state.RecordingMethodRef.Visit
-          state.ModuleId point
+        if branch.Representative <> Reporting.None
+        then InsertVisit instruction state.MethodWorker state.RecordingMethodRef.Visit
+               state.ModuleId point
+        else instruction // maybe have to insert NOPs?
 
       let updateSwitch update =
         let operands = branch.Start.Operand :?> Instruction []
@@ -622,21 +608,18 @@ module internal Instrument =
     try
       let recorderFileName = (extractName state.RecordingAssembly) + ".dll"
       WriteAssemblies (state.RecordingAssembly) recorderFileName (Visitor.InstrumentDirectories()) ignore
-      Directory.GetFiles
-        (Visitor.InstrumentDirectories() |> Seq.head, "*.deps.json", SearchOption.TopDirectoryOnly)
+
+      Visitor.InstrumentDirectories()
+      |> Seq.iter (fun instrument ->
+
+      Directory.GetFiles(instrument, "*.deps.json", SearchOption.TopDirectoryOnly)
       |> Seq.iter (fun f ->
+
            File.WriteAllText(f,
                              (f
                               |> File.ReadAllText
                               |> injectJSON)))
-#if NETCOREAPP2_0
-      let fsharplib = Path.Combine(Visitor.InstrumentDirectories() |> Seq.head, "FSharp.Core.dll")
-      if not (File.Exists fsharplib) then
-        use fsharpbytes =
-          new FileStream(AltCover.Recorder.Tracer.Core(), FileMode.Open, FileAccess.Read)
-        use libstream = new FileStream(fsharplib, FileMode.Create)
-        fsharpbytes.CopyTo libstream
-#endif
+      )
     finally
       (state.RecordingAssembly :> IDisposable).Dispose()
     { state with RecordingAssembly = null }

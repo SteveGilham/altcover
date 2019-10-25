@@ -205,6 +205,8 @@ type PrepareParams =
     ExposeReturnCode : Flag
     SourceLink : Flag
     Defer : Flag
+    LocalSource : Flag
+    VisibleBranches : Flag
   }
   static member Create() =
     { InputDirectories = NoDirectories
@@ -232,4 +234,6 @@ type PrepareParams =
       ExposeReturnCode = Set
       SourceLink = Clear
       Defer = Clear
+      LocalSource = Clear
+      VisibleBranches = Clear
     }
