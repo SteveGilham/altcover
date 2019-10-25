@@ -3146,8 +3146,10 @@ _Target "DoIt"
   let framework = Fake.DotNet.ToolType.CreateFullFramework()
 
   { AltCover_Fake.DotNet.Testing.AltCover.Params.Create
-      AltCover_Fake.DotNet.Testing.AltCover.ArgType.GetVersion with ToolPath =
-      frameworkPath }.WithToolType framework |> AltCover_Fake.DotNet.Testing.AltCover.run
+      AltCover_Fake.DotNet.Testing.AltCover.ArgType.GetVersion 
+        with 
+          ToolPath = frameworkPath }.WithToolType framework 
+  |> AltCover_Fake.DotNet.Testing.AltCover.run
 
   let pwsh =
     if Environment.isWindows then
@@ -3170,8 +3172,8 @@ Target.runOrDefault "DoIt"
 group NetcoreBuild
   source https://api.nuget.org/v3/index.json
   nuget Fake.Core >= 5.16.0
-  nuget Fake.Core.Target >= 5.18.0
-  nuget Fake.DotNet.Cli >= 5.18.0
+  nuget Fake.Core.Target >= 5.18.1
+  nuget Fake.DotNet.Cli >= 5.18.1
   nuget FSharp.Core >= 4.7
   source {0}
   nuget AltCover.Api {1}
@@ -3914,7 +3916,13 @@ _Target "BulkReport" (fun _ ->
      |> List.tryFind (fun n -> n <= 99.0)
      |> Option.isSome
      || !misses > 1
-  then Assert.Fail("Coverage is too low"))
+  then Assert.Fail("Coverage is too low")
+  
+  let issue71 = !!(@"./**/*.exn") |> Seq.toList
+  match issue71 with
+  | [] -> ()
+  | _ -> issue71 |> Seq.iter (printfn "%s")
+         Assert.Fail("Issue #71 experienced"))
 
 _Target "All" ignore
 

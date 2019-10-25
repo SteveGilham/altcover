@@ -5,8 +5,10 @@ namespace AltCover.Recorder
 
 open System
 open System.Collections.Generic
+open System.Diagnostics
 open System.IO
 open System.Reflection
+
 open System.Resources
 open System.Runtime.CompilerServices
 
@@ -187,8 +189,41 @@ module Instance =
     lock Visits (fun () ->
     trace.OnVisit Visits moduleId hitPointId context)
 
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage",
+                                                    "CA2202:DisposeObjectsBeforeLosingScope",
+                                                    Justification = "Damned if you do, damned if you don't Dispose()")>]
+  let LogException moduleId hitPointId context x =
+    let text = [|
+                  sprintf "ModuleId = %A" moduleId
+                  sprintf "hitPointId = %A" hitPointId
+                  sprintf "context = %A" context
+                  sprintf "exception = %s" (x.ToString())
+                  StackTrace().ToString()
+                |]
+    let stamp = sprintf "%A"DateTime.UtcNow.Ticks
+    let filename = ReportFile + "." + stamp + ".exn"
+    use file = File.Open(filename, FileMode.OpenOrCreate, FileAccess.Write)
+    use writer = new StreamWriter(file)
+    text |> Seq.iter(fun line -> writer.WriteLine("{0}", line))
+
+  let
+#if DEBUG
+#else
+      inline
+#endif
+             internal Issue71Wrapper visits moduleId hitPointId context handler add =
+    try
+      add visits moduleId hitPointId context
+    with
+    | x ->
+      match x with
+      | :? KeyNotFoundException
+      | :? NullReferenceException
+      | :? ArgumentNullException -> handler moduleId hitPointId context x
+      | _ -> reraise()
+
   let internal AddVisit moduleId hitPointId context =
-    Counter.AddSingleVisit Visits moduleId hitPointId context
+    Issue71Wrapper Visits moduleId hitPointId context LogException Counter.AddSingleVisit
 
   let internal TakeSample strategy moduleId hitPointId =
     match strategy with
