@@ -58,7 +58,9 @@ See the [Wiki page](https://github.com/SteveGilham/altcover/wiki/Usage) for deta
 
 ## Roadmap
 
-See the [current project](https://github.com/SteveGilham/altcover/projects/8) for details
+See the [current project](https://github.com/SteveGilham/altcover/projects/8) and [long term research items](https://github.com/SteveGilham/altcover/projects/9) for details; though _ad hoc_ items not in the projects will get added as inspiration or need arise.
+
+All `To do` and  `On Hold` items are implicitly up for grabs and `Help Wanted`; most of the current project items are XML manipulation or GUI programming.
 
 ## Building
 
@@ -74,7 +76,7 @@ PowerShell Core 6.2.3 or later (`pwsh`) -- try https://github.com/powershell/pow
 
 #### Windows
 
-You will need Visual Studio VS2019 (Community Edition) v16.3.1 or later with F# language support (or just the associated build tools and your editor of choice).  The NUnit3 Test Runner will simplify the basic in-IDE development cycle.  Note that some of the unit tests expect that the separate build of test assemblies under Mono, full .net framework and .net core has taken place; there will be around 20 failures when running the unit tests in Visual Studio from clean when those expected assemblies are not found.
+You will need Visual Studio VS2019 (Community Edition) v16.3.6 or later with F# language support (or just the associated build tools and your editor of choice).  The NUnit3 Test Runner will simplify the basic in-IDE development cycle.  Note that some of the unit tests expect that the separate build of test assemblies under Mono, full .net framework and .net core has taken place; there will be around 20 failures when running the unit tests in Visual Studio from clean when those expected assemblies are not found.
 
 For GTK# support, the GTK# latest 2.12 install is expected -- try https://www.mono-project.com/download/stable/#download-win  
 
@@ -84,7 +86,7 @@ It is assumed that `mono` (version 6.4.x) and `dotnet` are on the `PATH` already
 
 ### Bootstrapping
 
-Start by setting up `dotnet fake` and other local tools with `dotnet tool restore`
+Start by setting up with `dotnet tool restore`; this sets up local tools including `dotnet fake`.
 Then `dotnet fake run ./Build/setup.fsx` to do the rest of the set-up.
 
 ### Normal builds
