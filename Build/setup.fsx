@@ -40,6 +40,7 @@ nuget Fake.DotNet.FxCop >= 5.18.2
 nuget Fake.DotNet.ILMerge >= 5.18.2
 nuget Fake.DotNet.MSBuild >= 5.18.2
 nuget Fake.DotNet.NuGet >= 5.18.2
+nuget Fake.DotNet.Testing.Coverlet >= 5.18.2
 nuget Fake.DotNet.Testing.NUnit >= 5.18.2
 nuget Fake.DotNet.Testing.OpenCover >= 5.18.2
 nuget Fake.DotNet.Testing.XUnit2 >= 5.18.2
