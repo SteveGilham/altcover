@@ -201,6 +201,22 @@ let defaultDotNetTestCommandLine project =
 let defaultDotNetTestCommandLine86 project =
   AltCover.buildDotNetTestCommandLine (defaultTestOptions dotnetOptions86) project
 
+let coverletOptions (o : Coverlet.CoverletParams) = 
+  { o with OutputFormat = Coverlet.OutputFormat.OpenCover
+           Exclude = [ ("*.Tests", "*")
+                       ("*.XTests", "*")
+                       ("xunit*", "*")
+                       ("Sample*", "*")
+                       ("AltCover.Record*", "M*")
+                       ("NUnit*", "*")] }
+
+let coverletTestOptions (o : DotNet.TestOptions) =
+  { o.WithCommon dotnetOptions with Configuration = DotNet.BuildConfiguration.Debug
+                                    NoBuild = true
+                                    Framework = Some "netcoreapp2.1" }
+  |> withCLIArgs
+  |> Coverlet.withDotNetTestOptions coverletOptions
+
 let _Target s f =
   Target.description s
   Target.create s f
@@ -679,20 +695,9 @@ _Target "UnitTestDotNetWithCoverlet" (fun _ ->
   try
     let xml =
       !!(@"./*Tests/*.tests.core.fsproj")
-      |> Seq.zip
-           [ """/p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Exclude="\"[*.Tests]*,[*.XTests]*,[xunit*]*,[Sample*]*,[AltCover.Record*]M*,[NUnit*]*\""  """
-             """/p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Exclude="\"[*.Tests]*,[*.XTests]*,[xunit*]*,[Sample*]*,[AltCover.Record*]M*,[NUnit*]*\""  """
-             """/p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Exclude="\"[*.Tests]*,[*.XTests]*,[xunit*]*,[Sample*]*,[AltCover.Record*]M*,[NUnit*]*\""  """ ]
-      |> Seq.fold (fun l (p, f) ->
+      |> Seq.fold (fun l f ->
            try
-             f
-             |> DotNet.test (fun o ->
-                  { o.WithCommon
-                      (fun c -> { dotnetOptions c with CustomParams = Some p }) with
-                      Configuration = DotNet.BuildConfiguration.Debug
-                      NoBuild = true
-                      Framework = Some "netcoreapp2.1" }
-                  |> withCLIArgs)
+             f |> DotNet.test coverletTestOptions
            with x -> eprintf "%A" x
            let here = Path.GetDirectoryName f
            (here @@ "coverage.opencover.xml") :: l) []
