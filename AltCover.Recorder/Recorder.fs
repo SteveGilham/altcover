@@ -144,13 +144,15 @@ module Instance =
   let internal Watcher = new FileSystemWatcher()
   let mutable internal Recording = true
 
+  let Clear () =
+    Visits <- Dictionary<string, Dictionary<int, PointVisit>>()
+
   /// <summary>
   /// This method flushes hit count buffers.
   /// </summary>
   let internal FlushAll _ =
     let counts = Visits
-    Visits <- Dictionary<string, Dictionary<int, PointVisit>>()
-    trace.OnConnected (fun () -> trace.OnFinish counts)
+    trace.OnConnected (fun () -> trace.OnFinish Clear counts)
       (fun () ->
       match counts.Count with
       | 0 -> ()
@@ -179,7 +181,7 @@ module Instance =
     InitialiseTrace trace
     if (wasConnected <> IsRunner) then
        Samples <- Dictionary<string, Dictionary<int, bool>>()
-       Visits <- Dictionary<string, Dictionary<int, PointVisit>>()
+       Clear()
     Recording <- true
 
   let FlushFinish () =
@@ -187,7 +189,7 @@ module Instance =
 
   let internal TraceVisit moduleId hitPointId context =
     lock Visits (fun () ->
-    trace.OnVisit Visits moduleId hitPointId context)
+    trace.OnVisit Clear Visits moduleId hitPointId context)
 
   [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage",
                                                     "CA2202:DisposeObjectsBeforeLosingScope",
