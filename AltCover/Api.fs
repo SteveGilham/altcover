@@ -49,7 +49,7 @@ type CollectParams =
   member internal self.SetExecutable tool =
     match self with
     | Primitive p -> Primitive { p with Executable = tool }
-    | TypeSafe t -> TypeSafe { t with Executable = TypeSafe.FilePath tool }
+    | TypeSafe t -> TypeSafe { t with Executable = TypeSafe.Tool tool }
 #endif
 
   member self.LcovReport =
