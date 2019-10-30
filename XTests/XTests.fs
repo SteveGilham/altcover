@@ -253,6 +253,10 @@ module XTests =
   let TypeSafePrepareParamsCanBeValidated() =
     let here = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
 
+    test <@ (TypeSafe.Tool ".").AsString() = "." @>
+    test <@ (TypeSafe.FilePath ".").AsString() = ("." |> Path.GetFullPath) @>
+    test <@ ("fred" |> Regex |> TypeSafe.IncludeItem ).AsString() = "?fred" @>
+
     let subject =
       { TypeSafe.PrepareParams.Create() with InputDirectories =
                                                TypeSafe.DirectoryPaths
