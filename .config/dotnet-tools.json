@@ -3,13 +3,13 @@
   "isRoot": true,
   "tools": {
     "dotnet-reportgenerator-globaltool": {
-      "version": "4.2.20",
+      "version": "4.3.2",
       "commands": [
         "reportgenerator"
       ]
     },
     "fake-cli": {
-      "version": "5.18.0",
+      "version": "5.18.2",
       "commands": [
         "fake"
       ]

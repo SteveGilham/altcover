@@ -312,7 +312,7 @@ _Target "BuildDebug" (fun _ ->
        s
        |> DotNet.build
             (fun p ->
-            { p.WithCommon dotnetOptions with 
+            { p.WithCommon dotnetOptions with
                 Configuration =
                   DotNet.BuildConfiguration.Debug } |> withMSBuildParams))
 
@@ -1864,8 +1864,8 @@ _Target "SelfTest" (fun _ ->
     |> AltCover.Prepare
 
   let args =
-    ({ AltCover.Params.Create prep 
-         with 
+    ({ AltCover.Params.Create prep
+         with
            ToolPath = String.Empty
            WorkingDirectory = "." }
      |> AltCover.composeCommandLine).CommandLine
@@ -2420,7 +2420,7 @@ _Target "Packaging" (fun _ ->
          poshFiles "tools/netcoreapp2.0/"
          vizFiles "tools/netcoreapp2.1"
          dataFiles "tools/netcoreapp2.0/"
-         otherFiles ], "_Packaging", "./Build/AltCover.nuspec", "altcover")
+         otherFiles ], [], "_Packaging", "./Build/AltCover.nuspec", "altcover")
 
     (List.concat
       [ apiFiles
@@ -2432,8 +2432,13 @@ _Target "Packaging" (fun _ ->
         fakeFiles "lib/netstandard2.0/"
         poshFiles "lib/netstandard2.0/"
         vizFiles "tools/netcoreapp2.1"
-        otherFilesApi ], "_Packaging.api", "./_Generated/altcover.api.nuspec",
-     "altcover.api")
+        otherFilesApi ],
+      [ // these are and should be opt-in, depnding which if any you want
+//        ("Cake.Common", "0.28")
+//        ("Cake.Core", "0.28" )
+//        ("Fake.Core.Trace", "5.0.0")
+//        ("Fake.DotNet.Cli", "5.0.0")
+        ], "_Packaging.api", "./_Generated/altcover.api.nuspec", "altcover.api")
 
     (List.concat
       [ netcoreFiles "lib/netcoreapp2.0"
@@ -2441,8 +2446,7 @@ _Target "Packaging" (fun _ ->
         dataFiles "lib/netcoreapp2.0/"
         [ (packable, Some "", None) ]
         dotnetFiles
-        otherFilesDotnet ], "_Packaging.dotnet", "./_Generated/altcover.dotnet.nuspec",
-     "altcover.dotnet")
+        otherFilesDotnet ], [], "_Packaging.dotnet", "./_Generated/altcover.dotnet.nuspec", "altcover.dotnet")
 
     (List.concat
       [ globalFiles
@@ -2451,13 +2455,13 @@ _Target "Packaging" (fun _ ->
         dataFiles "tools/netcoreapp2.1/any/"
         [ (packable, Some "", None) ]
         auxFiles
-        otherFilesGlobal ], "_Packaging.global", "./_Generated/altcover.global.nuspec",
+        otherFilesGlobal ], [],  "_Packaging.global", "./_Generated/altcover.global.nuspec",
      "altcover.global")
 
     (List.concat
       [ vizFiles "tools/netcoreapp2.1/any"
         [ (packable, Some "", None) ]
-        auxVFiles ], "_Packaging.visualizer", "./_Generated/altcover.visualizer.nuspec",
+        auxVFiles ], [], "_Packaging.visualizer", "./_Generated/altcover.visualizer.nuspec",
      "altcover.visualizer")
 
     (List.concat
@@ -2465,9 +2469,16 @@ _Target "Packaging" (fun _ ->
         fox2Files "lib/netstandard2.0/"
         [ (packable, Some "", None) ]
         [ (fake2, Some "lib/net45", None)
-          (fox, Some "lib/net45", None) ] ], "_Packaging.fake",
-     "./_Generated/altcover.fake.nuspec", "altcover.fake") ]
-  |> List.iter (fun (files, output, nuspec, project) ->
+          (fox, Some "lib/net45", None) ] ],
+      [ // make these explicit, as this package implies an opt-in
+        ("Fake.Core.Environment", "5.18.1")
+        ("Fake.DotNet.Cli", "5.18.1")
+        ("FSharp.Core", "4.7")
+        ("System.Collections.Immutable", "1.6.0")
+      ],
+      "_Packaging.fake",
+      "./_Generated/altcover.fake.nuspec", "altcover.fake") ]
+  |> List.iter (fun (files, dependencies, output, nuspec, project) ->
        let outputPath = "./" + output
        let workingDir = "./_Binaries/" + output
        Directory.ensure workingDir
@@ -2482,6 +2493,7 @@ _Target "Packaging" (fun _ ->
              OutputPath = outputPath
              WorkingDir = workingDir
              Files = files
+             Dependencies = dependencies
              Version = !Version
              Copyright = (!Copyright).Replace("©", "(c)")
              Publish = false
@@ -3146,8 +3158,10 @@ _Target "DoIt"
   let framework = Fake.DotNet.ToolType.CreateFullFramework()
 
   { AltCover_Fake.DotNet.Testing.AltCover.Params.Create
-      AltCover_Fake.DotNet.Testing.AltCover.ArgType.GetVersion with ToolPath =
-      frameworkPath }.WithToolType framework |> AltCover_Fake.DotNet.Testing.AltCover.run
+      AltCover_Fake.DotNet.Testing.AltCover.ArgType.GetVersion
+        with
+          ToolPath = frameworkPath }.WithToolType framework
+  |> AltCover_Fake.DotNet.Testing.AltCover.run
 
   let pwsh =
     if Environment.isWindows then
@@ -3165,13 +3179,13 @@ Target.runOrDefault "DoIt"
 """
     File.WriteAllText("./_ApiUse/DriveApi.fsx", script)
 
-    let dependencies = """version 5.224.0
+    let dependencies = """version 5.226.0
 // [ FAKE GROUP ]
 group NetcoreBuild
   source https://api.nuget.org/v3/index.json
   nuget Fake.Core >= 5.16.0
-  nuget Fake.Core.Target >= 5.18.0
-  nuget Fake.DotNet.Cli >= 5.18.0
+  nuget Fake.Core.Target >= 5.18.2
+  nuget Fake.DotNet.Cli >= 5.18.2
   nuget FSharp.Core >= 4.7
   source {0}
   nuget AltCover.Api {1}
@@ -3914,7 +3928,13 @@ _Target "BulkReport" (fun _ ->
      |> List.tryFind (fun n -> n <= 99.0)
      |> Option.isSome
      || !misses > 1
-  then Assert.Fail("Coverage is too low"))
+  then Assert.Fail("Coverage is too low")
+
+  let issue71 = !!(@"./**/*.exn") |> Seq.toList
+  match issue71 with
+  | [] -> ()
+  | _ -> issue71 |> Seq.iter (printfn "%s")
+         Assert.Fail("Issue #71 experienced"))
 
 _Target "All" ignore
 

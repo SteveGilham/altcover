@@ -91,7 +91,6 @@ type Tracer =
   member internal this.CatchUp(visits : Dictionary<string, Dictionary<int, PointVisit>> ) =
     if visits.Count > 0 then
       visits |> Table |> this.Push String.Empty 0
-      visits.Clear()
 
   member this.OnStart() =
     let running =

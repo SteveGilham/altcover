@@ -49,7 +49,7 @@ type CollectParams =
   member internal self.SetExecutable tool =
     match self with
     | Primitive p -> Primitive { p with Executable = tool }
-    | TypeSafe t -> TypeSafe { t with Executable = TypeSafe.FilePath tool }
+    | TypeSafe t -> TypeSafe { t with Executable = TypeSafe.Tool tool }
 #endif
 
   member self.LcovReport =
@@ -522,34 +522,6 @@ let buildDotNetTestCommandLine (options: DotNet.TestOptions -> DotNet.TestOption
   (parameters.Common.DotNetCliPath,
    cmdArgs |> List.filter (String.IsNullOrWhiteSpace >> not))
 
-// When this goes, check if dependencies on Fake.DotNet.MSBuild, Fake.DotNet.NuGet
-// and System.Collections.Immutable are still required
-[<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1715",
-                                                  Justification =
-                                                    "Generic types are implicit")>]
-let internal Fixup5x18x0 tool (toolPath: string) workingDirectory
-    (command: CreateProcess<_>) =
-  let ttype = tool.GetType()
-  if ttype.FullName = "Fake.DotNet.ToolType+FrameworkDependentDeployment"
-     && ttype.Assembly.GetName().Version < Version(5, 18, 1) then
-    let pi =
-      tool.GetType()
-          .GetProperty("dotnetOptions", BindingFlags.Instance ||| BindingFlags.NonPublic)
-    let indirect = pi.GetValue(tool)
-    let pi2 =
-      indirect.GetType()
-              .GetProperty("Options", BindingFlags.Instance ||| BindingFlags.NonPublic)
-    let dotnetOptions =
-      pi2.GetValue(indirect) :?> FSharpFunc<DotNet.Options, DotNet.Options>
-    command
-    |> DotNet.prefixProcess
-         (dotnetOptions
-          >> (fun o ->
-          if String.IsNullOrWhiteSpace workingDirectory then o
-          else { o with WorkingDirectory = workingDirectory })) [ toolPath ]
-  else
-    command
-
 [<NoComparison>]
 type ArgType =
   | Collect of CollectParams
@@ -617,7 +589,6 @@ let internal createProcess parameters args =
   let doFakeTool (tool: Fake.DotNet.ToolType) =
     CreateProcess.fromCommand (RawCommand(parameters.ToolPath, args |> Arguments.OfArgs))
     |> CreateProcess.withToolType (tool.WithDefaultToolCommandName "altcover")
-    |> (Fixup5x18x0 tool parameters.ToolPath parameters.WorkingDirectory)
 
   let doAltCoverTool() =
     let baseline() = CreateProcess.fromRawCommand parameters.ToolPath args
