@@ -64,6 +64,8 @@ module DotNet =
 
   type DotNet.TestOptions with
 
+    // NOTE: the MSBuildParams member of TestOptions did not exist in Fake 5.0.0
+    // so do it this way for backwards compatibility
     member private self.ExtendCustomParams options =
       let custom = self.Common.CustomParams
 

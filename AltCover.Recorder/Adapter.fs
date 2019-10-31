@@ -6,12 +6,12 @@ open System.Collections.Generic
 module Adapter =
   let DoPause() = Instance.DoPause null
   let DoResume() = Instance.DoResume null
-  let VisitsClear() = Instance.Visits.Clear()
+  let VisitsClear() = Instance.Clear()
   let SamplesClear() = Instance.Samples.Clear()
   let FlushAll() = Instance.FlushFinish ()
   let Reset () =
     Instance.IsRunner <- false
-    Instance.Visits.Clear()
+    Instance.Clear()
     Instance.Samples.Clear()
 
   let internal prepareName name =
@@ -94,4 +94,24 @@ module Adapter =
                                       Formatter = new System.IO.BinaryWriter(s1)
                                       Runner = true
                                       Definitive = false }
+
+  let internal InvokeIssue71Wrapper<'T when 'T:> System.Exception>
+    (unique:string) (called: bool array)  =
+      let constructor = typeof<'T>.GetConstructor([| typeof<System.String> |])
+      let pitcher =
+        fun _ _ _ _ ->
+         constructor.Invoke([| unique |])
+         :?> System.Exception
+         |> raise
+
+      let catcher =
+        fun _ _ _ (x:System.Exception) ->
+          called.[0] <- true
+          called.[1] <- match x with
+                        | :? System.ArgumentNullException as ane ->
+                          ane.ParamName = unique
+                        | _ -> x.Message = unique
+
+      Instance.Issue71Wrapper () () () () catcher pitcher
+
 #endif

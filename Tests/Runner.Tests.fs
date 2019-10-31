@@ -72,10 +72,8 @@ type AltCoverTests() =
       let v3 = Counter.AddVisit visits key 23 Null
       Assert.That(v3, Is.EqualTo 1)
       let v4 = Counter.AddVisit visits "key" 42 Null
-      Assert.That(v4, Is.EqualTo 1)
-      let v4a = Counter.AddVisit visits null 42 Null
-      Assert.That(v4a, Is.EqualTo 0)
       Assert.That(visits.Count, Is.EqualTo 2)
+      Assert.That(v4, Is.EqualTo 1)
 
     [<Test>]
     member self.DistinctLineShouldBeDistinct() =
