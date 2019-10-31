@@ -2,9 +2,13 @@ Q. Never mind the fluff -- how do I get started?
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
-# 6.3.7xx (Fukurou series release 9)
+# 6.4.7xx (Fukurou series release 9)
 * [FAKE Helper API] Fake >= 5.18.1 is required for this release (the work-round for FAKE issue #2412 has been removed)
+* [FAKE Helper API] Add this constraint as an explicit dependency
+* [API] Add `Tool of String` a literal alongside `FilePath of String`, which is expanded to a full path to `TypeSafe.FilePath`
+* [API] Add `IncludeItem of Regex` which represents a `?`-prefix regex string to `TypeSafe.FilterItem`
 * Trap and log exceptions reported in Issue #71 as files `<coverage report path>.<timestamp>.exn`
+* Other housekeeping
 
 # 6.3.729 (Fukurou series release 8)
 * Filter out assemblies without the `ILOnly` bit set (i.e. pretty much anything C++/CLI, even with the deprecated /clr:pure compiler flag set)
