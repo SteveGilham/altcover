@@ -143,9 +143,6 @@ let openCoverConsole =
 let nunitConsole =
   ("./packages/" + (packageVersion "NUnit.ConsoleRunner") + "/tools/nunit3-console.exe")
   |> Path.getFullName
-let xunitConsole =
-  ("./packages/" + (packageVersion "xunit.runner.console")
-   + "/tools/net452/xunit.console.exe") |> Path.getFullName
 
 let cliArguments =
   { MSBuild.CliArguments.Create() with
@@ -606,19 +603,9 @@ _Target "JustUnitTest" (fun _ ->
   try
     let here = Path.getFullName "."
 
-    !!(@"_Binaries/*Tests/Debug+AnyCPU/*XTest*.dll")
-    |> Fake.DotNet.Testing.XUnit2.run (fun p ->
-         { p with
-             ToolPath = xunitConsole
-             NUnitXmlOutputPath = Some "./_Reports/JustXUnitTestReport.xml"
-             WorkingDir = Some here
-             ShadowCopy = false })
-
     !!(@"_Binaries/*Tests/Debug+AnyCPU/*Tests.dll")
     |> Seq.filter
-         (fun f ->
-         Path.GetFileName(f) <> "AltCover.XTests.dll"
-         && Path.GetFileName(f) <> "AltCover.Recorder.Tests.dll")
+         (fun f -> Path.GetFileName(f) <> "AltCover.Recorder.Tests.dll")
     |> NUnit3.run (fun p ->
          { p with
              ToolPath = nunitConsole
@@ -713,35 +700,15 @@ _Target "UnitTestWithOpenCover"
   let testFiles =
     !!(@"_Binaries/*Tests/Debug+AnyCPU/*Tests.dll")
     |> Seq.filter
-         (fun f ->
-         Path.GetFileName(f) <> "AltCover.XTests.dll"
-         && Path.GetFileName(f) <> "AltCover.Recorder.Tests.dll")
+         (fun f -> Path.GetFileName(f) <> "AltCover.Recorder.Tests.dll")
   let Recorder4Files = !!(@"_Binaries/*Tests/Debug+AnyCPU/*Recorder.Tests.dll")
 
   let RecorderFiles = !!(@"_Binaries/*Tests2/Debug+AnyCPU/*Test*.dll")
-  let xtestFiles = !!(@"_Binaries/*Tests/Debug+AnyCPU/*XTest*.dll")
   let coverage = Path.getFullName "_Reports/UnitTestWithOpenCover.xml"
-  let xcoverage = Path.getFullName "_Reports/XUnitTestWithOpenCover.xml"
   let scoverage = Path.getFullName "_Reports/RecorderTestWithOpenCover.xml"
   let s4coverage = Path.getFullName "_Reports/Recorder4TestWithOpenCover.xml"
 
   try
-    OpenCover.run (fun p ->
-      { p with
-          WorkingDir = "."
-          ExePath = openCoverConsole
-          TestRunnerExePath = xunitConsole
-          Filter =
-            "+[AltCover]* +[AltCover.Recorder]* +[AltCover.Runner]* +[AltCover.WeakNameTests]Alt* -[*]Microsoft.* -[*]System.* -[Sample*]*"
-          MergeByHash = true
-          ReturnTargetCode = Fake.DotNet.Testing.OpenCover.ReturnTargetCodeType.Yes
-          OptionalArguments =
-            "-excludebyattribute:*ExcludeFromCodeCoverageAttribute;*ProgIdAttribute"
-          Register = OpenCover.RegisterType.Path64
-          Output = xcoverage })
-      (String.Join(" ", xtestFiles)
-       + " -parallel none -noshadow -nunit _Reports/XUnitTestWithOpenCoverReport.xml")
-
     OpenCover.run (fun p ->
       { p with
           WorkingDir = "."
@@ -800,7 +767,7 @@ _Target "UnitTestWithOpenCover"
         ReportTypes =
           [ ReportGenerator.ReportType.Html; ReportGenerator.ReportType.XmlSummary ]
         TargetDir = "_Reports/_UnitTestWithOpenCover" })
-    [ coverage; xcoverage; scoverage; s4coverage ])
+    [ coverage; scoverage; s4coverage ])
 
 // Hybrid (Self) Tests
 
@@ -817,32 +784,8 @@ _Target "UnitTestWithAltCover" (fun _ ->
 
   if !!(testDirectory @@ "AltCov*.pdb")
      |> Seq.length > 0 then
-    let xaltReport = reports @@ "XUnitTestWithAltCover.xml"
+    let xaltReport = reports @@ "XTestWithAltCover.xml"
     printfn "Instrumented the code"
-    let prep =
-      AltCover.PrepareParams.Primitive
-        ({ Primitive.PrepareParams.Create() with
-             XmlReport = xaltReport
-             OutputDirectories = [| "./__UnitTestWithAltCover" |]
-             StrongNameKey = keyfile
-             OpenCover = false
-             InPlace = false
-             Save = false }
-         |> AltCoverFilter)
-      |> AltCover.Prepare
-    { AltCover.Params.Create prep with
-        ToolPath = altcover
-        WorkingDirectory = xtestDirectory }.WithToolType framework_altcover
-    |> AltCover.run
-
-    printfn "Unit test the instrumented code"
-    !!(@"_Binaries/*Tests/Debug+AnyCPU/__UnitTestWithAltCover/*XTest*.dll")
-    |> Fake.DotNet.Testing.XUnit2.run (fun p ->
-         { p with
-             ToolPath = xunitConsole
-             NUnitXmlOutputPath = Some "./_Reports/XUnitTestWithAltCoverReport.xml"
-             WorkingDir = Some here
-             ShadowCopy = false })
 
     let altReport = reports @@ "UnitTestWithAltCover.xml"
     let weakDir = Path.getFullName "_Binaries/AltCover.WeakNameTests/Debug+AnyCPU"
@@ -852,11 +795,12 @@ _Target "UnitTestWithAltCover" (fun _ ->
       AltCover.PrepareParams.Primitive
         ({ Primitive.PrepareParams.Create() with
              XmlReport = altReport
-             InputDirectories = [| "."; weakDir; Recorder4Dir |]
+             InputDirectories = [| "."; weakDir; Recorder4Dir; xtestDirectory |]
              OutputDirectories =
                [| "./__UnitTestWithAltCover"
                   weakDir @@ "__WeakNameTestWithAltCover"
-                  Recorder4Dir @@ "__RecorderTestWithAltCover" |]
+                  Recorder4Dir @@ "__RecorderTestWithAltCover"
+                  xtestDirectory @@ "__UnitTestWithAltCover"|]
              StrongNameKey = keyfile
              OpenCover = false
              InPlace = false
@@ -926,7 +870,7 @@ _Target "UnitTestWithAltCover" (fun _ ->
           ReportTypes =
             [ ReportGenerator.ReportType.Html; ReportGenerator.ReportType.XmlSummary ]
           TargetDir = "_Reports/_UnitTestWithAltCover" })
-      [ xaltReport; altReport; RecorderReport ]
+      [ altReport; RecorderReport ]
 
   else
     printfn "Symbols not present; skipping")
@@ -940,52 +884,8 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
   let here = Path.getFullName "."
 
   let testDirectory = Path.getFullName "_Binaries/AltCover.Tests/Debug+AnyCPU"
-  let xtestDirectory = Path.getFullName "_Binaries/AltCover.XTests/Debug+AnyCPU"
   if !!(testDirectory @@ "AltCov*.pdb")
      |> Seq.length > 0 then
-    let xaltReport = reports @@ "XUnitTestWithAltCoverRunner.xml"
-
-    printfn "Instrumented the code"
-    let prep =
-      AltCover.PrepareParams.Primitive
-        ({ Primitive.PrepareParams.Create() with
-             XmlReport = xaltReport
-             OutputDirectories = [| "./__UnitTestWithAltCoverRunner" |]
-             StrongNameKey = keyfile
-             Single = true
-             InPlace = false
-             Save = false }
-         |> AltCoverFilter)
-      |> AltCover.Prepare
-    { AltCover.Params.Create prep with
-        ToolPath = altcover
-        WorkingDirectory = xtestDirectory }.WithToolType framework_altcover
-    |> AltCover.run
-
-    printfn "Unit test the instrumented code"
-    let xunitcmd =
-      XUnit2.buildArgs
-        { XUnit2.XUnit2Defaults with
-            ToolPath = xunitConsole
-            NUnitXmlOutputPath = Some "./_Reports/XUnitTestWithAltCoverRunnerReport.xml"
-            WorkingDir = Some here
-            ShadowCopy = false }
-        [ "_Binaries/AltCover.XTests/Debug+AnyCPU/__UnitTestWithAltCoverRunner/AltCover.XTests.dll" ]
-    try
-      let collect =
-        AltCover.CollectParams.Primitive
-          { Primitive.CollectParams.Create() with
-              Executable = xunitConsole
-              RecorderDirectory = xtestDirectory @@ "__UnitTestWithAltCoverRunner"
-              CommandLine = AltCover.splitCommandLine xunitcmd }
-        |> AltCover.Collect
-      { AltCover.Params.Create collect with
-          ToolPath = altcover
-          WorkingDirectory = here }.WithToolType framework_altcover
-      |> AltCover.run
-    with x ->
-      printfn "%A" x
-      reraise()
 
     let altReport = reports @@ "UnitTestWithAltCoverRunner.xml"
     printfn "Instrumented the code"
@@ -1015,6 +915,8 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
     let nunitcmd =
       NUnit3.buildArgs nunitparams
         [ Path.getFullName
+            "_Binaries/AltCover.XTests/Debug+AnyCPU/__UnitTestWithAltCoverRunner/AltCover.XTests.dll"
+          Path.getFullName
             "_Binaries/AltCover.Tests/Debug+AnyCPU/__UnitTestWithAltCoverRunner/AltCover.Tests.dll"
           Path.getFullName
             "_Binaries/AltCover.Tests/Debug+AnyCPU/__UnitTestWithAltCoverRunner/Sample2.dll" ]
@@ -1338,7 +1240,7 @@ _Target "UnitTestWithAltCoverCore" // Obsolete
            NoBuild = true }
        |> withCLIArgs)
 
-  printfn "Instrument the XUnit tests"
+  printfn "Instrument the X tests"
   let xDir = "_Binaries/AltCover.XTests/Debug+AnyCPU/netcoreapp2.1"
   let xReport = reports @@ "XTestWithAltCoverCore.xml"
   let xOut =
@@ -1360,7 +1262,7 @@ _Target "UnitTestWithAltCoverCore" // Obsolete
       WorkingDirectory = xDir }.WithToolType framework_altcover
   |> AltCover.run
 
-  printfn "Execute the XUnit tests"
+  printfn "Execute the X tests"
   "altcover.x.tests.core.fsproj"
   |> DotNet.test (fun p ->
        { p.WithCommon(withWorkingDirectoryVM "XTests") with
@@ -1480,7 +1382,7 @@ _Target "UnitTestWithAltCoverCoreRunner"
       WorkingDirectory = RecorderOut }.WithToolType dotnet_altcover
   |> AltCover.run
 
-  printfn "Instrument the XUnit tests"
+  printfn "Instrument the X tests"
   let xDir = "_Binaries/AltCover.XTests/Debug+AnyCPU/netcoreapp2.1"
   let xReport = reports @@ "XTestWithAltCoverCoreRunner.xml"
   let xOut =
@@ -1503,7 +1405,7 @@ _Target "UnitTestWithAltCoverCoreRunner"
       WorkingDirectory = xDir }.WithToolType dotnet_altcover
   |> AltCover.run
 
-  printfn "Execute the XUnit tests"
+  printfn "Execute the X tests"
   let xProject = Path.getFullName "./XTests/altcover.x.tests.core.fsproj"
   let (dotnetexe, args) = defaultDotNetTestCommandLine xProject
 
