@@ -102,6 +102,10 @@ type AltCoverTests() =
                (fst x) + ".mdb"
                |> File.Exists
                |> not)
+          |> Seq.filter
+               (fun x ->
+               not
+               <| (snd x).FullName.StartsWith("altcode.", StringComparison.OrdinalIgnoreCase))
 #if NETCOREAPP2_0
           |> Seq.filter
                (fun x ->
@@ -354,6 +358,10 @@ type AltCoverTests() =
              || x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
         |> Seq.filter (fun f -> f |> Path.GetFileNameWithoutExtension <> "testhost")
         |> Seq.map Mono.Cecil.AssemblyDefinition.ReadAssembly
+        |> Seq.filter
+             (fun x ->
+             not
+             <| x.FullName.StartsWith("altcode.", StringComparison.OrdinalIgnoreCase))
 #if COVERLET
         |> Seq.filter
              (fun x ->

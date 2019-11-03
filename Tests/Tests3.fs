@@ -1960,7 +1960,9 @@ type AltCoverTests3() =
            |> Seq.filter (fun (_,l) -> l |> List.exists (fun i -> i = t.FullName))
            |> Seq.map fst
            |> Seq.filter
-                (fun f -> f.EndsWith(".dl_", StringComparison.OrdinalIgnoreCase) |> not),
+                (fun f -> f.EndsWith(".dl_", StringComparison.OrdinalIgnoreCase) |> not)
+           |> Seq.filter
+                (fun f -> (f |> Path.GetFileName).StartsWith("xunit.", StringComparison.OrdinalIgnoreCase) |> not),
            Is.EquivalentTo
              (f.EnumerateFiles()
               |> Seq.map (fun x -> x.FullName)

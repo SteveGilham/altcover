@@ -712,7 +712,7 @@ module XTests =
 
   [<Test>]
   let AfterAssemblyCommitsThatAssembly() =
-    let hack = Path.Combine(SolutionDir(), "_Binaries/AltCover.XTests/Debug+AnyCPU")
+    let hack = Path.Combine(SolutionDir(), "_Binaries/AltCover.Tests/Debug+AnyCPU")
     let local = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
 
     let where =
@@ -792,7 +792,7 @@ module XTests =
 
   [<Test>]
   let FinishCommitsTheRecordingAssembly() =
-    let hack = Path.Combine(SolutionDir(), "_Binaries/AltCover.XTests/Debug+AnyCPU")
+    let hack = Path.Combine(SolutionDir(), "_Binaries/AltCover.Tests/Debug+AnyCPU")
     let local = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
 
     let where =
