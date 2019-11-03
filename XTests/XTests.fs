@@ -12,8 +12,6 @@ open Mono.Options
 open Newtonsoft.Json.Linq
 open Swensen.Unquote
 open Xunit
-open AltCode.Test.Common
-open AltCode.Test.Xunit
 
 module XTests =
   let test' x message =
@@ -451,34 +449,28 @@ module XTests =
            "-s=Adapter"; "-s=xunit"
            "-s=nunit"; "-e=Sample"; "-c=[Test]"; "--save" |]
       let result = Main.DoInstrumentation args
-      let args = AssertionMatch<int>.Create().WithActual(result).WithExpected(0)
-      AltAssert.Equal args
-      Assert.Empty(stderr.ToString())
+      test <@ result = 0 @>
+      test <@ stderr.ToString() |> Seq.isEmpty @>
       let expected =
         "Creating folder " + output + "\nInstrumenting files from "
         + (Path.GetFullPath input) + "\nWriting files to " + output + "\n   => "
         + Path.Combine(Path.GetFullPath input, "Sample4.dll") + "\n\nCoverage Report: "
         + report + "\n\n\n    " + Path.Combine(Path.GetFullPath output, "Sample4.dll")
         + "\n                <=  Sample4, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null\n"
-      AltAssert.Equal
-        { AssertionMatch<String>.Create() with
-                                               Expected = (expected.Replace("\\", "/"))
-                                               Actual = stdout.ToString().Replace("\r\n", "\n").Replace("\\", "/")
-                                                          }
-      AltAssert.Equal{ Expected = Visitor.OutputDirectories() |> Seq.head; Actual = output}
-      AltAssert.Equal
-        { Expected = (Visitor.InputDirectories() |> Seq.head).Replace("\\", "/")
-          Actual = ((Path.GetFullPath input).Replace("\\", "/"))}
-      AltAssert.Equal { Expected = Visitor.ReportPath(); Actual = report }
+      test <@ (expected.Replace("\\", "/")) = stdout.ToString().Replace("\r\n", "\n").Replace("\\", "/") @>
+      test <@ Visitor.OutputDirectories() |> Seq.head = output @>
+      test <@ (Visitor.InputDirectories() |> Seq.head).Replace("\\", "/") =
+               ((Path.GetFullPath input).Replace("\\", "/")) @>
+      test <@ Visitor.ReportPath() = report  @>
       use stream = new FileStream(key, FileMode.Open)
       use buffer = new MemoryStream()
       stream.CopyTo(buffer)
       let snk = StrongNameKeyData.Make(buffer.ToArray())
-      Assert.True (Visitor.keys.ContainsKey(KeyStore.KeyToIndex snk))
-      AltAssert.Equal<int> { Expected = 2; Actual = Visitor.keys.Count}
+      test <@ (Visitor.keys.ContainsKey(KeyStore.KeyToIndex snk)) @>
+      test <@ Visitor.keys.Count = 2 @>
 
-      Assert.True(File.Exists report)
-      Assert.True(File.Exists(report + ".acv"))
+      test <@ (File.Exists report) @>
+      test <@ (File.Exists(report + ".acv")) @>
       let pdb = Path.ChangeExtension(Assembly.GetExecutingAssembly().Location, ".pdb")
       let isNT = System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
       let isWindows =
@@ -536,10 +528,7 @@ module XTests =
         |> Seq.sortBy (fun f -> f.ToUpperInvariant())
         |> Seq.toList
 
-      // AltAssert.Equal<IEnumerable<String>>(theFiles, actualFiles)
-      let expected = String.Join("; ", theFiles)
-      let actual = String.Join("; ", actualFiles)
-      AltAssert.Equal { Expected = expected; Actual = actual }
+      test <@ String.Join("; ", actualFiles) = String.Join("; ", theFiles) @>
     finally
       Output.Usage { Intro ="dummy"; Options = OptionSet(); Options2 = OptionSet()}
       Visitor.TrackingNames.Clear()
@@ -557,7 +546,7 @@ module XTests =
       Output.Error <- snd save2
       Output.Info <- fst save2
     let before = File.ReadAllText(Path.Combine(input, "Sample4.deps.json"))
-    AltAssert.Equal { Actual = before.IndexOf("AltCover.Recorder.g"); Expected =  -1}
+    test <@ before.IndexOf("AltCover.Recorder.g") =  -1 @>
     let o = JObject.Parse(File.ReadAllText(Path.Combine(output, "Sample4.deps.json")))
     let target =
       ((o.Property "runtimeTarget").Value :?> JObject).Property("name").Value.ToString()
@@ -576,15 +565,15 @@ module XTests =
         (p.Value :?> JObject).Properties()
         |> Seq.map (fun p -> p.Name)
         |> Set.ofSeq
-    Assert.True(reset |> Set.contains "AltCover.Recorder.g")
+    test <@ reset |> Set.contains "AltCover.Recorder.g" @>
     let aux =
       targeted.Properties()
       |> Seq.map (fun p -> p.Name)
       |> Set.ofSeq
-    Assert.True
-      (aux
-       |> Set.contains
-            ("AltCover.Recorder.g/" + System.AssemblyVersionInformation.AssemblyVersion))
+    test <@
+            (aux
+             |> Set.contains
+                  ("AltCover.Recorder.g/" + System.AssemblyVersionInformation.AssemblyVersion)) @>
     let libraries =
       (o.Properties() |> Seq.find (fun p -> p.Name = "libraries")).Value :?> JObject
 
@@ -592,10 +581,10 @@ module XTests =
       libraries.Properties()
       |> Seq.map (fun p -> p.Name)
       |> Set.ofSeq
-    Assert.True
-      (lib
-       |> Set.contains
-            ("AltCover.Recorder.g/" + System.AssemblyVersionInformation.AssemblyVersion))
+    test <@
+            (lib
+             |> Set.contains
+                  ("AltCover.Recorder.g/" + System.AssemblyVersionInformation.AssemblyVersion)) @>
 
   [<Fact>]
   let ADryRunLooksAsExpected() =
@@ -640,8 +629,8 @@ module XTests =
                     "-sn"; key
                  |]
       let result = Main.DoInstrumentation args
-      AltAssert.Equal { Actual =result; Expected = 0}
-      Assert.Empty(stderr.ToString())
+      test <@ result = 0 @>
+      test <@ stderr.ToString() |> Seq.isEmpty @>
       let expected =
         "Creating folder " + output + "\nInstrumenting files from "
         + (Path.GetFullPath input) + "\nWriting files to " + output + "\n   => "
@@ -649,21 +638,19 @@ module XTests =
         + report + "\n\n\n    " + Path.Combine(Path.GetFullPath output, "Sample1.exe")
         + "\n                <=  Sample1, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null\n"
       let console = stdout.ToString()
-      AltAssert.Equal
-        { Actual = console.Replace("\r\n", "\n").Replace("\\", "/"); Expected = (expected.Replace("\\", "/"))}
-      AltAssert.Equal { Expected = Visitor.OutputDirectories() |> Seq.head; Actual = output}
-      AltAssert.Equal
-        { Expected =(Visitor.InputDirectories() |> Seq.head).Replace("\\", "/")
-          Actual = ((Path.GetFullPath input).Replace("\\", "/"))}
-      AltAssert.Equal { Expected = Visitor.ReportPath(); Actual = report}
+      test <@ console.Replace("\r\n", "\n").Replace("\\", "/") = (expected.Replace("\\", "/")) @>
+      test <@  Visitor.OutputDirectories() |> Seq.head = output @>
+      test <@ (Visitor.InputDirectories() |> Seq.head).Replace("\\", "/") =
+               ((Path.GetFullPath input).Replace("\\", "/")) @>
+      test <@ Visitor.ReportPath() = report @>
       use stream = new FileStream(key, FileMode.Open)
       use buffer = new MemoryStream()
       stream.CopyTo(buffer)
       let snk = StrongNameKeyData.Make(buffer.ToArray())
-      Assert.True (Visitor.keys.ContainsKey(KeyStore.KeyToIndex snk))
-      AltAssert.Equal { Expected = 2; Actual = Visitor.keys.Count}
+      test <@ Visitor.keys.ContainsKey(KeyStore.KeyToIndex snk) @>
+      test <@ Visitor.keys.Count = 2 @>
 
-      Assert.True(File.Exists report)
+      test <@ File.Exists report @>
       let pdb = Path.ChangeExtension(Assembly.GetExecutingAssembly().Location, ".pdb")
       let isWindows =
 #if NETCOREAPP2_1
@@ -705,7 +692,7 @@ module XTests =
         |> Seq.toList
         |> List.sortBy (fun f -> f.ToUpperInvariant())
 
-      AltAssert.Equal { Expected = theFiles; Actual = actual}
+      test <@ actual = theFiles @>
       let expectedXml = XDocument.Load(new System.IO.StringReader(MonoBaseline))
       let recordedXml = Runner.LoadReport report
       RecursiveValidate (recordedXml.Elements()) (expectedXml.Elements()) 0 true
@@ -744,9 +731,9 @@ module XTests =
       let visited = Node.AfterAssembly (def, Visitor.OutputDirectories())
       let input = InstrumentContext.Build []
       let result = Instrument.InstrumentationVisitor input visited
-      Assert.Same(result, input) //, "result differs")
+      test' <@ Object.ReferenceEquals(result, input) @> "result differs"
       let created = Path.Combine(output, "Sample4.dll")
-      Assert.True(File.Exists created, created + " not found")
+      test' <@ File.Exists created@> (created + " not found")
       let pdb = Path.ChangeExtension(Assembly.GetExecutingAssembly().Location, ".pdb")
       if File.Exists pdb then
         let isWindows =
@@ -755,11 +742,11 @@ module XTests =
 #else
                         System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
 #endif
-        Assert.True
-          (isWindows
-           |> not
-           || File.Exists(Path.ChangeExtension(created, ".pdb")),
-           created + " pdb not found")
+        test' <@
+                 isWindows
+                 |> not
+                 || File.Exists(Path.ChangeExtension(created, ".pdb")) @>
+           (created + " pdb not found")
     finally
       Visitor.outputDirectories.AddRange saved
 
@@ -792,12 +779,12 @@ module XTests =
       let visited = Node.AfterAssembly (def, Visitor.OutputDirectories())
       let input = InstrumentContext.Build []
       let result = Instrument.InstrumentationVisitor input visited
-      Assert.Same(result, input) //, "result differs")
+      test' <@ Object.ReferenceEquals(result, input) @> "result differs"
       let created = Path.Combine(output, "Sample1.exe")
-      Assert.True(File.Exists created, created + " not found")
+      test' <@ File.Exists created @> (created + " not found")
       let isDotNet = System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
       if isDotNet then
-        Assert.True(File.Exists(created + ".mdb"), created + ".mdb not found")
+        test' <@ File.Exists(created + ".mdb") @> (created + ".mdb not found")
     finally
       Visitor.outputDirectories.Clear()
       Visitor.outputDirectories.AddRange saved
@@ -823,9 +810,9 @@ module XTests =
       Visitor.outputDirectories.Add output
       let input = { InstrumentContext.Build [] with RecordingAssembly = def }
       let result = Instrument.InstrumentationVisitor input Finish
-      Assert.True(result.RecordingAssembly |> isNull)
+      test <@ result.RecordingAssembly |> isNull @>
       let created = Path.Combine(output, "Sample4.dll")
-      Assert.True(File.Exists created, created + " not found")
+      test' <@ File.Exists created @> (created + " not found")
       let pdb = Path.ChangeExtension(Assembly.GetExecutingAssembly().Location, ".pdb")
       if File.Exists pdb then
         let isWindows =
@@ -834,8 +821,8 @@ module XTests =
 #else
                         System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
 #endif
-        Assert.True (isWindows |> not ||
-                     File.Exists (Path.ChangeExtension(created, ".pdb")), created + " pdb not found")
+        test' <@  isWindows |> not ||
+                     File.Exists (Path.ChangeExtension(created, ".pdb")) @> (created + " pdb not found")
     finally
       Visitor.outputDirectories.Clear()
       Visitor.outputDirectories.AddRange saved
@@ -870,20 +857,20 @@ module XTests =
     try
       Runner.RecorderName <- "AltCover.Recorder.g.dll"
       let payload (rest : string list) =
-        AltAssert.Equal { Actual = rest; Expected = [ "test"; "1" ]}
+        test <@ rest = [ "test"; "1" ] @>
         255
 
       let monitor (hits : Dictionary<string, Dictionary<int, Base.PointVisit>>)
           (token : string) _ _ =
-        AltAssert.Equal { Actual = token; Expected = codedreport} //, "should be default coverage file")
-        Assert.Empty(hits)
+        test' <@ token  = codedreport@> "should be default coverage file"
+        test <@ hits |> Seq.isEmpty @>
         127
 
       let write (hits : Dictionary<string, Dictionary<int, Base.PointVisit>>) format
           (report : string) (output : String option) =
-        AltAssert.Equal { Actual = report; Expected = codedreport}//, "should be default coverage file")
-        AltAssert.Equal { Actual = output; Expected = Some alternate}
-        Assert.Empty(hits)
+        test' <@ report = codedreport@> "should be default coverage file"
+        test <@ output = Some alternate @>
+        test <@ hits |> Seq.isEmpty @>
         TimeSpan.Zero
 
       Runner.GetPayload <- payload
@@ -892,17 +879,14 @@ module XTests =
       let empty = OptionSet()
       let dummy = codedreport + ".xx.acv"
       do use temp = File.Create dummy
-         dummy
-         |> File.Exists
-         |> Assert.True
+         test <@ dummy |> File.Exists @>
       let r =
         Runner.DoCoverage
           [| "Runner"; "-x"; "test"; "-r"; where; "-o"; alternate; "--"; "1" |] empty
-      dummy
-      |> File.Exists
-      |> not
-      |> Assert.True
-      AltAssert.Equal { Actual = r; Expected = 127}
+      test <@ dummy
+              |> File.Exists
+              |> not @>
+      test <@ r = 127 @>
     finally
       Runner.GetPayload <- save1
       Runner.GetMonitor <- save2
