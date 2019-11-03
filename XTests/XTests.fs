@@ -451,7 +451,7 @@ module XTests =
            "-s=Adapter"; "-s=xunit"
            "-s=nunit"; "-e=Sample"; "-c=[Test]"; "--save" |]
       let result = Main.DoInstrumentation args
-      let args = Match<int>.Create().WithActual(result).WithExpected(0)
+      let args = AssertionMatch<int>.Create().WithActual(result).WithExpected(0)
       AltAssert.Equal args
       Assert.Empty(stderr.ToString())
       let expected =
@@ -461,9 +461,11 @@ module XTests =
         + report + "\n\n\n    " + Path.Combine(Path.GetFullPath output, "Sample4.dll")
         + "\n                <=  Sample4, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null\n"
       AltAssert.Equal
-        { Actual = stdout.ToString().Replace("\r\n", "\n").Replace("\\", "/")
-          Expected = (expected.Replace("\\", "/")) }
-      AltAssert.Equal { Expected = Visitor.OutputDirectories() |> Seq.head; Actual = output}
+        { AssertionMatch<String>.Create() with
+                                               Expected = (expected.Replace("\\", "/"))
+                                               Actual = stdout.ToString().Replace("\r\n", "\n").Replace("\\", "/")
+                                                          }
+      AltAssert.Equal{ Expected = Visitor.OutputDirectories() |> Seq.head; Actual = output}
       AltAssert.Equal
         { Expected = (Visitor.InputDirectories() |> Seq.head).Replace("\\", "/")
           Actual = ((Path.GetFullPath input).Replace("\\", "/"))}
@@ -473,7 +475,7 @@ module XTests =
       stream.CopyTo(buffer)
       let snk = StrongNameKeyData.Make(buffer.ToArray())
       Assert.True (Visitor.keys.ContainsKey(KeyStore.KeyToIndex snk))
-      AltAssert.Equal { Expected = 2; Actual = Visitor.keys.Count}
+      AltAssert.Equal<int> { Expected = 2; Actual = Visitor.keys.Count}
 
       Assert.True(File.Exists report)
       Assert.True(File.Exists(report + ".acv"))
@@ -649,7 +651,7 @@ module XTests =
       let console = stdout.ToString()
       AltAssert.Equal
         { Actual = console.Replace("\r\n", "\n").Replace("\\", "/"); Expected = (expected.Replace("\\", "/"))}
-      AltAssert.Equal { Expected = (Visitor.OutputDirectories() |> Seq.head; Actual = output}
+      AltAssert.Equal { Expected = Visitor.OutputDirectories() |> Seq.head; Actual = output}
       AltAssert.Equal
         { Expected =(Visitor.InputDirectories() |> Seq.head).Replace("\\", "/")
           Actual = ((Path.GetFullPath input).Replace("\\", "/"))}
@@ -658,10 +660,10 @@ module XTests =
       use buffer = new MemoryStream()
       stream.CopyTo(buffer)
       let snk = StrongNameKeyData.Make(buffer.ToArray())
-      AltAssert.True (Visitor.keys.ContainsKey(KeyStore.KeyToIndex snk))
-      AltAssert.Equal (2, Visitor.keys.Count)
+      Assert.True (Visitor.keys.ContainsKey(KeyStore.KeyToIndex snk))
+      AltAssert.Equal { Expected = 2; Actual = Visitor.keys.Count}
 
-      AltAssert.True(File.Exists report)
+      Assert.True(File.Exists report)
       let pdb = Path.ChangeExtension(Assembly.GetExecutingAssembly().Location, ".pdb")
       let isWindows =
 #if NETCOREAPP2_1
@@ -703,7 +705,7 @@ module XTests =
         |> Seq.toList
         |> List.sortBy (fun f -> f.ToUpperInvariant())
 
-      AltAssert.Equal<IEnumerable<String>> { Expected = theFiles; Actual = actual}
+      AltAssert.Equal { Expected = theFiles; Actual = actual}
       let expectedXml = XDocument.Load(new System.IO.StringReader(MonoBaseline))
       let recordedXml = Runner.LoadReport report
       RecursiveValidate (recordedXml.Elements()) (expectedXml.Elements()) 0 true
@@ -868,7 +870,7 @@ module XTests =
     try
       Runner.RecorderName <- "AltCover.Recorder.g.dll"
       let payload (rest : string list) =
-        AltAssert.Equal { Actual = rest; Expected = [| "test"; "1" |]}
+        AltAssert.Equal { Actual = rest; Expected = [ "test"; "1" ]}
         255
 
       let monitor (hits : Dictionary<string, Dictionary<int, Base.PointVisit>>)

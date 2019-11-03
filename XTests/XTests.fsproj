@@ -96,7 +96,7 @@
       <Private>True</Private>
     </ProjectReference>
     <Reference Include="altcode.test.xunit">
-      <HintPath>..\packages\altcode.test.xunit.1.0.4\lib\net47\altcode.test.xunit.dll</HintPath>
+      <HintPath>..\packages\altcode.test.xunit.1.0.8\lib\net47\altcode.test.xunit.dll</HintPath>
     </Reference>
     <Reference Include="FSharp.Core">
       <HintPath>..\packages\FSharp.Core.4.5.2\lib\net45\FSharp.Core.dll</HintPath>
