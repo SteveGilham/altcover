@@ -601,8 +601,6 @@ _Target "UnitTest" ignore
 _Target "JustUnitTest" (fun _ ->
   Directory.ensure "./_Reports"
   try
-    let here = Path.getFullName "."
-
     !!(@"_Binaries/*Tests/Debug+AnyCPU/*Tests.dll")
     |> Seq.filter
          (fun f -> Path.GetFileName(f) <> "AltCover.Recorder.Tests.dll")
@@ -777,7 +775,6 @@ _Target "UnitTestWithAltCover" (fun _ ->
   let shadowkeyfile = Path.getFullName "Build/Infrastructure.snk"
   let reports = Path.getFullName "./_Reports"
   let altcover = "./_Binaries/AltCover/Debug+AnyCPU/AltCover.exe"
-  let here = Path.getFullName "."
 
   let testDirectory = Path.getFullName "_Binaries/AltCover.Tests/Debug+AnyCPU"
 
@@ -878,7 +875,6 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
   let shadowkeyfile = Path.getFullName "Build/Infrastructure.snk"
   let reports = Path.getFullName "./_Reports"
   let altcover = "./_Binaries/AltCover/Debug+AnyCPU/AltCover.exe" |> Path.getFullName
-  let here = Path.getFullName "."
 
   let testDirectory = Path.getFullName "_Binaries/AltCover.Tests/Debug+AnyCPU"
   if !!(testDirectory @@ "AltCov*.pdb")
