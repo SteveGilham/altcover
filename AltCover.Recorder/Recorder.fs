@@ -152,7 +152,8 @@ module Instance =
   /// </summary>
   let internal FlushAll _ =
     let counts = Visits
-    trace.OnConnected (fun () -> trace.OnFinish Clear counts)
+    Clear()
+    trace.OnConnected (fun () -> trace.OnFinish counts)
       (fun () ->
       match counts.Count with
       | 0 -> ()
@@ -188,8 +189,10 @@ module Instance =
     FlushAll ProcessExit
 
   let internal TraceVisit moduleId hitPointId context =
-    lock Visits (fun () ->
-    trace.OnVisit Clear Visits moduleId hitPointId context)
+    lock synchronize (fun () ->
+    let counts = Visits
+    if counts.Count > 0 then Clear()
+    trace.OnVisit counts moduleId hitPointId context)
 
   [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage",
                                                     "CA2202:DisposeObjectsBeforeLosingScope",

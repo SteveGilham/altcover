@@ -753,11 +753,25 @@ type AltCoverTests() =
 
     [<Test>]
     member self.LocalSource() =
+
+      let toolPackages =
+        let xml =
+          Path.Combine(SolutionRoot.location, "./Build/dotnet-cli.csproj")
+          |> Path.GetFullPath
+          |> XDocument.Load
+        xml.Descendants(XName.Get("PackageReference"))
+        |> Seq.map
+             (fun x ->
+             (x.Attribute(XName.Get("Include")).Value.ToLowerInvariant(), x.Attribute(XName.Get("version")).Value))
+        |> Map.ofSeq
+
       Visitor.local := false
       Visitor.NameFilters.Clear()
       let fscore = Path.Combine(SolutionRoot.location, "packages/FSharp.Core.3.0.2/lib/net35")
       let mono = Path.Combine(SolutionRoot.location, "packages/Mono.Cecil.0.11.0/lib/net40")
-      let nuget = Path.Combine(SolutionRoot.location, "packages/nuget.commandline/5.3.0/tools")
+      let nuget = Path.Combine(SolutionRoot.location, "packages/nuget.commandline/" +
+                                                      (toolPackages.Item "nuget.commandline") +
+                                                      "/tools")
       let exe = Path.Combine(nuget, "NuGet.exe")
       Assert.That(File.Exists exe, Is.True, "NuGet.exe not found")
       let pdb = Path.Combine(nuget, "NuGet.pdb")

@@ -88,10 +88,9 @@ type Tracer =
     this.Formatter.Write hitPointId
     this.PushContext context
 
-  member internal this.CatchUp(visits : Dictionary<string, Dictionary<int, PointVisit>>) clear =
+  member internal this.CatchUp(visits : Dictionary<string, Dictionary<int, PointVisit>> ) =
     if visits.Count > 0 then
       visits |> Table |> this.Push String.Empty 0
-      clear()
 
   member this.OnStart() =
     let running =
@@ -103,12 +102,12 @@ type Tracer =
     if this.IsConnected() then f()
     else g()
 
-  member internal this.OnFinish clear visits =
-    this.CatchUp visits clear
+  member internal this.OnFinish visits =
+    this.CatchUp visits
     this.Close()
 
-  member internal this.OnVisit clear visits moduleId hitPointId context =
-    this.CatchUp visits clear
+  member internal this.OnVisit visits moduleId hitPointId context =
+    this.CatchUp visits
     this.Push moduleId hitPointId context
     this.Formatter.Flush()
     this.Stream.Flush()
