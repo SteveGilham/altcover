@@ -430,7 +430,7 @@ a:hover {color: #ecc;}
         "System.Void Tests.DU::testMakeUnion()"
         "System.Void Tests.M::testMakeThing()"
         "Tests.DU/MyUnion Tests.DU/MyUnion::as_bar()"
-        "Tests.DU/MyUnion Tests.DU/get_MyBar@40::Invoke(Microsoft.FSharp.Core.Unit)"
+        "Tests.DU/MyUnion Tests.DU/get_MyBar@42::Invoke(Microsoft.FSharp.Core.Unit)"
         "Tests.DU/MyUnion Tests.DU::returnBar(System.String)"
         "Tests.DU/MyUnion Tests.DU::returnFoo(System.Int32)"
         "Tests.M/Thing Tests.M::makeThing(System.String)" ]
