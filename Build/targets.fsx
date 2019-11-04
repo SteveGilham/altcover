@@ -1424,7 +1424,7 @@ _Target "FSharpTests" (fun _ ->
     Path.getFullName "./_Binaries/AltCover/Release+AnyCPU/netcoreapp2.0/AltCover.dll"
   let simpleReport = (Path.getFullName "./_Reports") @@ ("AltCoverFSharpTests.xml")
   let sampleRoot =
-    Path.getFullName "Sample7/_Binaries/Sample7/Debug+AnyCPU/netcoreapp2.0"
+    Path.getFullName "Sample7/_Binaries/Sample7/Debug+AnyCPU/netcoreapp2.1"
 
   // Test the --inplace operation
   Shell.cleanDir sampleRoot
