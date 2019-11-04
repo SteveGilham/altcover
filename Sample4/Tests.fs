@@ -3,6 +3,8 @@ namespace Tests
 open System
 open System.Reflection
 open Xunit
+open AltCode.Test.Common
+open AltCode.Test.Xunit
 
 [<assembly:AssemblyVersionAttribute("1.0.0.0")>]
 [<assembly:AssemblyFileVersionAttribute("1.0.0.0")>]
@@ -17,8 +19,8 @@ module M =
 
   [<Fact>]
   let testMakeThing() =
-    Assert.Equal("s", (makeThing "s").Thing)
-    Assert.Equal(5, (makeThing "aeiou").bytes().Length)
+    AltAssert.Equal { Expected = "s"; Actual = (makeThing "s").Thing}
+    AltAssert.Equal { Expected = 5; Actual = (makeThing "aeiou").bytes().Length}
 
 module DU =
   type MyUnion =
@@ -47,6 +49,6 @@ module DU =
 
   [<Fact>]
   let testMakeUnion() =
-    Assert.Equal(returnFoo 10, Foo 10)
-    Assert.Equal(returnBar "s", Bar "s")
-    Assert.Equal(Bar "10", (Foo 10).as_bar())
+    AltAssert.Equal { Actual = returnFoo 10; Expected = Foo 10}
+    AltAssert.Equal { Actual = returnBar "s"; Expected = Bar "s"}
+    AltAssert.Equal { Expected = Bar "10"; Actual = (Foo 10).as_bar()}

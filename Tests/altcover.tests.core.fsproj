@@ -27,6 +27,7 @@
     <Compile Include="Tests.fs" />
     <Compile Include="Tests2.fs" />
     <Compile Include="Tests3.fs" />
+    <Compile Include="XTests.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 
@@ -72,6 +73,7 @@
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.3.0" />
     <PackageReference Include="Mono.Cecil" Version="0.11.0" />
     <PackageReference Include="Mono.Options" Version="5.3.0.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
     <PackageReference Include="NUnit" Version="3.12.0" />
     <PackageReference Include="NUnit3TestAdapter" Version="3.15.1" />
   </ItemGroup>
@@ -84,6 +86,7 @@
     <ProjectReference Include="..\Sample1\sample1.core.csproj" />
     <ProjectReference Include="..\Sample2\sample2.core.fsproj" />
     <ProjectReference Include="..\Sample3\sample3.core.csproj" />
+    <ProjectReference Include="..\Sample4\sample4.core.fsproj" />
     <ProjectReference Include="..\Sample5\sample5.core.csproj" />
     <ProjectReference Include="..\Sample6\sample6.core.fsproj" />
     <ProjectReference Include="..\Sample8\sample8.core.csproj" />
