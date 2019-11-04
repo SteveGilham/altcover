@@ -1452,12 +1452,21 @@ _Target "FSharpTests" (fun _ ->
   |> AltCover.run
 
   printfn "Execute the instrumented tests"
-  "sample7.core.fsproj"
-  |> DotNet.test (fun o ->
-       { o.WithCommon(withWorkingDirectoryVM "Sample7") with
-           Configuration = DotNet.BuildConfiguration.Debug
-           NoBuild = true }
-       |> withCLIArgs))
+
+  let sample7 = Path.getFullName "./Sample7/sample7.core.fsproj"
+  let (dotnetexe, args) = defaultDotNetTestCommandLine sample7
+
+  let collect =
+    AltCover.CollectParams.Primitive
+      { Primitive.CollectParams.Create() with
+          Executable = dotnetexe
+          RecorderDirectory = sampleRoot
+          CommandLine = args }
+    |> AltCover.Collect
+  { AltCover.Params.Create collect with
+      ToolPath = altcover
+      WorkingDirectory = "Sample7" }.WithToolType dotnet_altcover
+  |> AltCover.run)
 
 _Target "FSharpTypesDotNetRunner" (fun _ ->
   Directory.ensure "./_Reports"
