@@ -2933,7 +2933,7 @@ _Target "DoIt"
   let ForceTrue = DotNet.CLIArgs.Force true
   printfn "%s" (DotNet.ToTestArguments prepare collect ForceTrue)
 
-  let t = DotNet.TestOptions.Create().WithParameters prepare collect ForceTrue
+  let t = DotNet.TestOptions.Create().WithAltCoverParameters prepare collect ForceTrue
   printfn "returned '%A'" t.Common.CustomParams
 
   let p2 =
@@ -2958,7 +2958,7 @@ _Target "DoIt"
 
   DotNet.test
     (fun to' ->
-    { to'.WithCommon(setBaseOptions).WithParameters pp2 cc2 ForceTrue with
+    { to'.WithCommon(setBaseOptions).WithAltCoverParameters pp2 cc2 ForceTrue with
         MSBuildParams = cliArguments }) "dotnettest.fsproj"
   let ipmo =
     (AltCover.Api.Ipmo().Trim().Split()
@@ -3067,7 +3067,7 @@ _Target "DotnetTestIntegration" (fun _ ->
     DotNet.test
       (fun to' ->
       (to'.WithCommon(withWorkingDirectoryVM "_DotnetTest").WithGetVersion()
-          .WithImportModule()).WithParameters pp1 cc0 ForceTrue |> withCLIArgs)
+          .WithImportModule()).WithAltCoverParameters pp1 cc0 ForceTrue |> withCLIArgs)
       "dotnettest.fsproj"
 
     let x = Path.getFullName "./_DotnetTest/coverage.xml"
@@ -3091,7 +3091,7 @@ _Target "DotnetTestIntegration" (fun _ ->
     try
       DotNet.test
         (fun to' ->
-        (to'.WithCommon(withWorkingDirectoryVM "_DotnetTestFail")).WithParameters pf1 cc0
+        (to'.WithCommon(withWorkingDirectoryVM "_DotnetTestFail")).WithAltCoverParameters pf1 cc0
           ForceTrue |> withCLIArgs) "dotnettest.fsproj"
       Assert.Fail("Build exception should be raised")
     with :? Fake.DotNet.MSBuildException -> printfn "Caught expected exception"
@@ -3128,7 +3128,7 @@ _Target "DotnetTestIntegration" (fun _ ->
     try
       DotNet.test
         (fun to' ->
-        (to'.WithCommon(withWorkingDirectoryVM "_DotnetTestFailFast")).WithParameters pf1
+        (to'.WithCommon(withWorkingDirectoryVM "_DotnetTestFailFast")).WithAltCoverParameters pf1
           cc0 FailTrue |> withCLIArgs) "dotnettest.fsproj"
       Assert.Fail("Build exception should be raised")
     with :? Fake.DotNet.MSBuildException -> printfn "Caught expected exception"
@@ -3171,7 +3171,7 @@ _Target "DotnetTestIntegration" (fun _ ->
     let pp2 = AltCover.PrepareParams.Primitive p2
     DotNet.test
       (fun to' ->
-      to'.WithCommon(withWorkingDirectoryVM "_DotnetTestLineCover").WithParameters pp2 cc0
+      to'.WithCommon(withWorkingDirectoryVM "_DotnetTestLineCover").WithAltCoverParameters pp2 cc0
         ForceTrue |> withCLIArgs) ""
 
     let x = Path.getFullName "./_DotnetTestLineCover/coverage.xml"
@@ -3214,7 +3214,7 @@ _Target "DotnetTestIntegration" (fun _ ->
 
     DotNet.test
       (fun to' ->
-      (to'.WithCommon(withWorkingDirectoryVM "_DotnetTestBranchCover").WithParameters pp3
+      (to'.WithCommon(withWorkingDirectoryVM "_DotnetTestBranchCover").WithAltCoverParameters pp3
          cc0 ForceTrue) |> withCLIArgs) ""
 
     let x = Path.getFullName "./_DotnetTestBranchCover/coverage.xml"
@@ -3245,7 +3245,7 @@ _Target "DotnetTestIntegration" (fun _ ->
 
       DotNet.test
         (fun to' ->
-        (to'.WithCommon(withWorkingDirectoryVM "RegressionTesting/issue29").WithParameters
+        (to'.WithCommon(withWorkingDirectoryVM "RegressionTesting/issue29").WithAltCoverParameters
           pp29 cc0 ForceTrueFast) |> withCLIArgs) ""
 
     let proj = XDocument.Load "./RegressionTesting/issue37/issue37.xml"
@@ -3261,7 +3261,7 @@ _Target "DotnetTestIntegration" (fun _ ->
     let pp4 = AltCover.PrepareParams.Primitive p4
     DotNet.test
       (fun to' ->
-      { ((to'.WithCommon(withWorkingDirectoryVM "RegressionTesting/issue37")).WithParameters
+      { ((to'.WithCommon(withWorkingDirectoryVM "RegressionTesting/issue37")).WithAltCoverParameters
           pp4 cc0 ForceTrue) with Configuration = DotNet.BuildConfiguration.Release }
       |> withCLIArgs) ""
 
@@ -3303,7 +3303,7 @@ _Target "Issue20" (fun _ ->
     DotNet.test (fun to' ->
       ({ to'.WithCommon(withWorkingDirectoryVM "./RegressionTesting/issue20/xunit-tests") with
            Configuration = DotNet.BuildConfiguration.Debug
-           NoBuild = false }).WithParameters pp0 cc0 ForceTrue
+           NoBuild = false }).WithAltCoverParameters pp0 cc0 ForceTrue
       |> withCLIArgs) ""
 
   //let shared =
@@ -3319,7 +3319,7 @@ _Target "Issue20" (fun _ ->
   //  { to'.WithCommon(fun c ->
   //      { c with WorkingDirectory =
   //                 Path.getFullName"./RegressionTesting/issue20/xunit-tests"
-  //               Verbosity = SomeDotNet.Verbosity.Minimal }).WithParameters p1 c0 ForceTrue with Configuration =
+  //               Verbosity = SomeDotNet.Verbosity.Minimal }).WithAltCoverParameters p1 c0 ForceTrue with Configuration =
   //                                                                                                 DotNet.BuildConfiguration.Debug
   //                                                                                               NoBuild =
   //                                                                                                 false
@@ -3358,7 +3358,7 @@ _Target "Issue23" (fun _ ->
     DotNet.test (fun p ->
       (({ p.WithCommon(withWorkingDirectoryVM "_Issue23") with
             Configuration = DotNet.BuildConfiguration.Debug
-            NoBuild = false }).WithParameters pp0 cc0 ForceTrue).WithImportModule()
+            NoBuild = false }).WithAltCoverParameters pp0 cc0 ForceTrue).WithImportModule()
         .WithGetVersion()
       |> withCLIArgs) ""
   finally
@@ -3398,7 +3398,7 @@ _Target "Issue67" (fun _ ->
     DotNet.test (fun p ->
       (({ p.WithCommon(withWorkingDirectoryVM "_Issue67") with
             Configuration = DotNet.BuildConfiguration.Debug
-            NoBuild = false }).WithParameters pp0 cc0 ForceTrue).WithImportModule()
+            NoBuild = false }).WithAltCoverParameters pp0 cc0 ForceTrue).WithImportModule()
         .WithGetVersion()
       |> withCLIArgs) ""
 
@@ -3450,7 +3450,7 @@ _Target "Issue72" (fun _ ->
     DotNet.test (fun p ->
       (({ p.WithCommon(withWorkingDirectoryVM "./Sample16/Test/_Issue72") with
             Configuration = DotNet.BuildConfiguration.Debug
-            NoBuild = false }).WithParameters pp0 cc0 ForceTrue).WithImportModule()
+            NoBuild = false }).WithAltCoverParameters pp0 cc0 ForceTrue).WithImportModule()
         .WithGetVersion()
       |> withCLIArgs) ""
 
@@ -3481,7 +3481,7 @@ _Target "Issue72" (fun _ ->
     DotNet.test (fun p ->
       (({ p.WithCommon(withWorkingDirectoryVM "./Sample16/Test/_Issue72") with
             Configuration = DotNet.BuildConfiguration.Debug
-            NoBuild = false }).WithParameters pp1 cc0 ForceTrue).WithImportModule()
+            NoBuild = false }).WithAltCoverParameters pp1 cc0 ForceTrue).WithImportModule()
         .WithGetVersion()
       |> withCLIArgs) ""
 
@@ -3595,7 +3595,7 @@ _Target "DotnetCLIIntegration" (fun _ ->
     let c0 = Primitive.CollectParams.Create()
     let cc0 = AltCover.CollectParams.Primitive c0
     DotNet.test (fun to' ->
-      { to'.WithCommon(withWorkingDirectoryVM "_DotnetCLITest").WithParameters pp0 cc0
+      { to'.WithCommon(withWorkingDirectoryVM "_DotnetCLITest").WithAltCoverParameters pp0 cc0
           ForceTrue with
           Configuration = DotNet.BuildConfiguration.Debug
           NoBuild = false }
