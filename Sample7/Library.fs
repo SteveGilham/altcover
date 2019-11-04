@@ -63,3 +63,7 @@ module Problematic =
             (System.Drawing.Rectangle(col, row, col, row), g.Rectangle(col, row))
     finally
       System.Console.WriteLine("Finally")
+
+module Program =
+  [<EntryPoint>]
+  let main _ = 0      
