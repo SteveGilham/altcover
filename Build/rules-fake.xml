@@ -33,8 +33,9 @@
     <rules include="*"
       exclude="MarkAllNonSerializableFieldsRule"
      from="Gendarme.Rules.Serialization.dll" />
+    <!--  exclude AvoidSpeculativeGeneralityRule only until we pull DotNet.TestOptions.WithParameters -->
     <rules include="*"
-      exclude="AvoidLargeClassesRule | AvoidCodeDuplicatedInSameClassRule | AvoidSwitchStatementsRule | AvoidLongParameterListsRule"
+      exclude="AvoidSpeculativeGeneralityRule | AvoidLargeClassesRule | AvoidCodeDuplicatedInSameClassRule | AvoidSwitchStatementsRule | AvoidLongParameterListsRule"
       from="Gendarme.Rules.Smells.dll" />
     <rules include="*" from="Gendarme.Rules.Ui.dll" />
     <!--  exclude RemoveDependenceOnObsoleteCodeRule only until we pull AltCover.ToolType-->

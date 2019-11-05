@@ -6,12 +6,12 @@ open System.Collections.Generic
 module Adapter =
   let DoPause() = Instance.DoPause null
   let DoResume() = Instance.DoResume null
-  let VisitsClear() = Instance.Visits.Clear()
+  let VisitsClear() = Instance.Clear()
   let SamplesClear() = Instance.Samples.Clear()
   let FlushAll() = Instance.FlushFinish ()
   let Reset () =
     Instance.IsRunner <- false
-    Instance.Visits.Clear()
+    Instance.Clear()
     Instance.Samples.Clear()
 
   let internal prepareName name =
