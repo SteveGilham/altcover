@@ -377,7 +377,7 @@ _Target "BuildMonoSamples" (fun _ ->
      [ "-target:library"
        "-debug"
        "-out:./_Mono/Sample3/Sample3.dll"
-       "-lib:./packages/Mono.Cecil.0.11.0/lib/net40"
+       "-lib:./packages/Mono.Cecil.0.11.1/lib/net40"
        "-r:Mono.Cecil.dll"
        "./Sample3/Class1.cs" ]) ]
   |> Seq.iter

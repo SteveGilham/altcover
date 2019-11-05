@@ -760,7 +760,7 @@ type AltCoverTests() =
       Assert.That (s, Is.EqualTo "bananas")
 
     [<Test>]
-    member self.LocalSource() =
+    member self.DetectLocalSource() =
 
       let toolPackages =
         let xml =
@@ -773,10 +773,23 @@ type AltCoverTests() =
              (x.Attribute(XName.Get("Include")).Value.ToLowerInvariant(), x.Attribute(XName.Get("version")).Value))
         |> Map.ofSeq
 
+      let libPackages =
+        let xml =
+          Path.Combine(SolutionRoot.location, "./AltCover/packages.config")
+          |> Path.GetFullPath
+          |> XDocument.Load
+        xml.Descendants(XName.Get("package"))
+        |> Seq.map
+             (fun x ->
+             (x.Attribute(XName.Get("id")).Value.ToLowerInvariant(), x.Attribute(XName.Get("version")).Value))
+        |> Map.ofSeq
+
       Visitor.local := false
       Visitor.NameFilters.Clear()
-      let fscore = Path.Combine(SolutionRoot.location, "packages/FSharp.Core.3.0.2/lib/net35")
-      let mono = Path.Combine(SolutionRoot.location, "packages/Mono.Cecil.0.11.0/lib/net40")
+      let fscore = Path.Combine(SolutionRoot.location, "packages/FSharp.Core.3.0.2/lib/net35") // stable retro version
+      let mono = Path.Combine(SolutionRoot.location, "packages/Mono.Cecil." +
+                                                      (libPackages.Item "mono.cecil") +
+                                                      "/lib/net40")
       let nuget = Path.Combine(SolutionRoot.location, "packages/nuget.commandline/" +
                                                       (toolPackages.Item "nuget.commandline") +
                                                       "/tools")
