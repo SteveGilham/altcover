@@ -207,12 +207,21 @@ let coverletOptions (o : Coverlet.CoverletParams) =
                        ("AltCover.Record*", "M*")
                        ("NUnit*", "*")] }
 
+let coverlet5_18_3fixup (o : DotNet.TestOptions) =      
+  if o.MSBuildParams.Properties |> List.exists (fun (p,_) -> p = "CoverletOutput")
+  then { o with MSBuildParams = { o.MSBuildParams with Properties = o.MSBuildParams.Properties 
+                                                                    |> List.map (fun (p,v) -> if p = "OutputFormat"
+                                                                                              then ("CoverletOutputFormat", v)
+                                                                                              else (p,v))}}
+  else o       
+
 let coverletTestOptions (o : DotNet.TestOptions) =
   { o.WithCommon dotnetOptions with Configuration = DotNet.BuildConfiguration.Debug
                                     NoBuild = true
                                     Framework = Some "netcoreapp2.1" }
   |> withCLIArgs
   |> Coverlet.withDotNetTestOptions coverletOptions
+  |> coverlet5_18_3fixup
 
 let _Target s f =
   Target.description s
