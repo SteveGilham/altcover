@@ -3,7 +3,9 @@ Q. Never mind the fluff -- how do I get started?
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
 # 6.5.7xx  (Fukurou series release 10)
-* Deprecate the `DotNet.TestOptions.WithParameters` extension method in favour of the otherwise identical `DotNet.TestOptions.WithAltCoverParameters`; the obsolete name now just calls through to the preferred one.
+* [API, Fake Helper API] Deprecate the `DotNet.TestOptions.WithParameters` extension method in favour of the otherwise identical `DotNet.TestOptions.WithAltCoverParameters`; the obsolete name now just calls through to the preferred one.
+* [Visualizer tool] Update GTK# for .net Core
+* [BUGFIX] In `ConvertFrom-NCover`, don't add classes for which there is no method coverage data.  This mainly affects system generated classes implementation details, including ones actually called `<PrivateImplementationDetails$...>...`
 
 # 6.4.734 (Fukurou series release 9)
 * [FAKE Helper API] Fake >= 5.18.1 is required for this release (the work-round for FAKE issue #2412 has been removed)

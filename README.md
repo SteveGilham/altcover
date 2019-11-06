@@ -62,6 +62,8 @@ See the [current project](https://github.com/SteveGilham/altcover/projects/8) an
 
 All `To do` and  `On Hold` items are implicitly up for grabs and `Help Wanted`; most of the current project items are XML manipulation or GUI programming.
 
+I am considering retiring the legacy framework/Mono support after the release of .net 5, contingent on having suitable replacements for Framework-only static analysis tools.
+
 ## Building
 
 ### Tooling
@@ -76,7 +78,7 @@ PowerShell Core 6.2.3 or later (`pwsh`) -- try https://github.com/powershell/pow
 
 #### Windows
 
-You will need Visual Studio VS2019 (Community Edition) v16.3.6 or later with F# language support (or just the associated build tools and your editor of choice).  The NUnit3 Test Runner will simplify the basic in-IDE development cycle.  Note that some of the unit tests expect that the separate build of test assemblies under Mono, full .net framework and .net core has taken place; there will be around 20 failures when running the unit tests in Visual Studio from clean when those expected assemblies are not found.
+You will need Visual Studio VS2019 (Community Edition) v16.3.8 or later with F# language support (or just the associated build tools and your editor of choice).  The NUnit3 Test Runner will simplify the basic in-IDE development cycle.  Note that some of the unit tests expect that the separate build of test assemblies under Mono, full .net framework and .net core has taken place; there will be around 20 failures when running the unit tests in Visual Studio from clean when those expected assemblies are not found.
 
 For GTK# support, the GTK# latest 2.12 install is expected -- try https://www.mono-project.com/download/stable/#download-win  
 
