@@ -99,7 +99,7 @@ module CoverageFormats =
 
     rewrite.Descendants(XName.Get "Class")
     |> Seq.filter (fun c -> c.Descendants(XName.Get "Method") |> Seq.isEmpty)
-    |> Seq.toList
+    |> Seq.toList // reify before making changes
     |> Seq.iter (fun c -> c.Remove())
 
     let dec = rewrite.Declaration
