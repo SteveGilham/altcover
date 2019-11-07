@@ -1884,7 +1884,8 @@ type AltCoverTests2() =
           (lines.[0],
            Is.EqualTo
              ("System.ArgumentException: " + unique
-              + " ---> System.InvalidOperationException: Operation is not valid due to the current state of the object."))
+              + " ---> System.InvalidOperationException: Operation is not valid due to the current state of the object."),
+            sprintf "lines = %A" lines)
         Assert.That
           (lines.[1], Does.StartWith("   --- End of inner exception stack trace ---"))
         Assert.That
@@ -1944,7 +1945,8 @@ type AltCoverTests2() =
           (lines.[0],
            Is.EqualTo
              ("System.ArgumentException: " + unique
-              + " ---> System.InvalidOperationException: Operation is not valid due to the current state of the object."))
+              + " ---> System.InvalidOperationException: Operation is not valid due to the current state of the object."),
+              sprintf "lines = %A" lines)
         Assert.That
           (lines.[1], Does.StartWith("   --- End of inner exception stack trace ---"))
         Assert.That
