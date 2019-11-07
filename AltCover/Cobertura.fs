@@ -13,7 +13,9 @@ module internal Cobertura =
   let X = OpenCover.X
 
   let SetRate hits total rate (target : XElement) =
-    if total > 0 then target.SetAttributeValue(X rate, (float hits) / (float total))
+    if total > 0 then
+      let ratio = (float hits) / (float total)
+      target.SetAttributeValue(X rate, String.Format("{0:0.##}", ratio))
 
   let AddSources (report : XDocument) (target : XElement) tag attribute =
     report.Descendants(X tag)
