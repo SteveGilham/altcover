@@ -23,6 +23,7 @@ cache:
 
 script:
   - export PATH="$PATH:/home/travis/.dotnet/tools"
+  - export DOTNET_ROLL_FORWARD="Major"
   - dotnet tool restore
   - dotnet fake run ./Build/setup.fsx
   - dotnet fake run ./Build/build.fsx
