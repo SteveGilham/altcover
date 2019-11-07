@@ -1876,10 +1876,18 @@ type AltCoverTests2() =
         let target = Path.Combine(toInfo.FullName, name)
         let target' = Path.Combine(here, name)
         Assert.That(File.Exists target, target)
-        let lines =
+        let lines' =
           target
           |> File.ReadAllLines
           |> Seq.toList
+
+        let head = lines' |> List.head
+
+        let lines = if head.Length > 80
+                    then lines'
+                    else let t = lines' |> List.tail
+                         (head + List.head t) :: (List.tail t)
+
         Assert.That
           (lines.[0],
            Is.EqualTo
@@ -1937,10 +1945,18 @@ type AltCoverTests2() =
         let target = Path.Combine(toInfo.FullName, name)
         let target' = Path.Combine(here, name)
         Assert.That(File.Exists target, target)
-        let lines =
+        let lines' =
           target
           |> File.ReadAllLines
           |> Seq.toList
+
+        let head = lines' |> List.head
+
+        let lines = if head.Length > 80
+                    then lines'
+                    else let t = lines' |> List.tail
+                         (head + List.head t) :: (List.tail t)
+
         Assert.That
           (lines.[0],
            Is.EqualTo
