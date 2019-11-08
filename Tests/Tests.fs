@@ -112,6 +112,22 @@ type AltCoverTests() =
                not
                <| (snd x).FullName.StartsWith("Mono.", StringComparison.OrdinalIgnoreCase))
           |> Seq.filter
+                (fun x ->
+                not
+                <| (snd x).FullName.StartsWith("BlackFox.", StringComparison.OrdinalIgnoreCase))
+          |> Seq.filter
+                (fun x ->
+                not
+                <| (snd x).FullName.StartsWith("Microsoft.", StringComparison.OrdinalIgnoreCase))
+          |> Seq.filter
+                (fun x ->
+                not
+                <| (snd x).FullName.StartsWith("Newtonsoft.", StringComparison.OrdinalIgnoreCase))
+          |> Seq.filter
+                (fun x ->
+                not
+                <| (snd x).FullName.StartsWith("NuGet.", StringComparison.OrdinalIgnoreCase))
+          |> Seq.filter
                (fun x ->
                not
                <| (snd x).FullName.StartsWith("nunit", StringComparison.OrdinalIgnoreCase))
@@ -131,6 +147,18 @@ type AltCoverTests() =
                not
                <| (snd x)
                  .FullName.StartsWith("AltCover,", StringComparison.OrdinalIgnoreCase))
+          |> Seq.filter
+                (fun x ->
+                not
+                <| (snd x).FullName.StartsWith("System.", StringComparison.OrdinalIgnoreCase))
+          |> Seq.filter
+                (fun x ->
+                not
+                <| (snd x).FullName.StartsWith("Unquote", StringComparison.OrdinalIgnoreCase))
+          |> Seq.filter
+               (fun x ->
+               not
+               <| (snd x).FullName.StartsWith("xunit", StringComparison.OrdinalIgnoreCase))
           |> Seq.filter
                (fun x ->
                not
@@ -405,7 +433,7 @@ type AltCoverTests() =
            || x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
       |> Seq.filter
            (fun x ->
-           Path.GetFileName(x).StartsWith("FSharp", StringComparison.OrdinalIgnoreCase))
+           Path.GetFileName(x).StartsWith("BlackFox", StringComparison.OrdinalIgnoreCase))
       |> Seq.map Mono.Cecil.AssemblyDefinition.ReadAssembly
       |> Seq.filter
            (fun x ->
