@@ -3091,8 +3091,8 @@ _Target "DotnetTestIntegration" (fun _ ->
     let cc0 = AltCover.CollectParams.Primitive { c0 with SummaryFormat = "+B" }
     DotNet.test
       (fun to' ->
-      (to'.WithCommon(withWorkingDirectoryVM "_DotnetTest").WithGetVersion()
-          .WithImportModule()).WithAltCoverParameters pp1 cc0 ForceTrue |> withCLIArgs)
+      (to'.WithCommon(withWorkingDirectoryVM "_DotnetTest").WithAltCoverGetVersion()
+          .WithAltCoverImportModule()).WithAltCoverParameters pp1 cc0 ForceTrue |> withCLIArgs)
       "dotnettest.fsproj"
 
     let x = Path.getFullName "./_DotnetTest/coverage.xml"
@@ -3388,8 +3388,8 @@ _Target "Issue23" (fun _ ->
     DotNet.test (fun p ->
       (({ p.WithCommon(withWorkingDirectoryVM "_Issue23") with
             Configuration = DotNet.BuildConfiguration.Debug
-            NoBuild = false }).WithAltCoverParameters pp0 cc0 ForceTrue).WithImportModule()
-        .WithGetVersion()
+            NoBuild = false }).WithAltCoverParameters pp0 cc0 ForceTrue).WithAltCoverImportModule()
+        .WithAltCoverGetVersion()
       |> withCLIArgs) ""
   finally
     let folder = (nugetCache @@ "altcover") @@ !Version
@@ -3429,8 +3429,8 @@ _Target "Issue67" (fun _ ->
     DotNet.test (fun p ->
       (({ p.WithCommon(withWorkingDirectoryVM "_Issue67") with
             Configuration = DotNet.BuildConfiguration.Debug
-            NoBuild = false }).WithAltCoverParameters pp0 cc0 ForceTrue).WithImportModule()
-        .WithGetVersion()
+            NoBuild = false }).WithAltCoverParameters pp0 cc0 ForceTrue).WithAltCoverImportModule()
+        .WithAltCoverGetVersion()
       |> withCLIArgs) ""
 
     let cover = XDocument.Load "./_Issue67/coverage.xml"
@@ -3482,8 +3482,8 @@ _Target "Issue72" (fun _ ->
     DotNet.test (fun p ->
       (({ p.WithCommon(withWorkingDirectoryVM "./Sample16/Test/_Issue72") with
             Configuration = DotNet.BuildConfiguration.Debug
-            NoBuild = false }).WithAltCoverParameters pp0 cc0 ForceTrue).WithImportModule()
-        .WithGetVersion()
+            NoBuild = false }).WithAltCoverParameters pp0 cc0 ForceTrue).WithAltCoverImportModule()
+        .WithAltCoverGetVersion()
       |> withCLIArgs) ""
 
     do use coverageFile =
@@ -3513,8 +3513,8 @@ _Target "Issue72" (fun _ ->
     DotNet.test (fun p ->
       (({ p.WithCommon(withWorkingDirectoryVM "./Sample16/Test/_Issue72") with
             Configuration = DotNet.BuildConfiguration.Debug
-            NoBuild = false }).WithAltCoverParameters pp1 cc0 ForceTrue).WithImportModule()
-        .WithGetVersion()
+            NoBuild = false }).WithAltCoverParameters pp1 cc0 ForceTrue).WithAltCoverImportModule()
+        .WithAltCoverGetVersion()
       |> withCLIArgs) ""
 
     do use coverageFile =

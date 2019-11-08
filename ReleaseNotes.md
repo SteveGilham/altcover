@@ -2,6 +2,9 @@ Q. Never mind the fluff -- how do I get started?
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
+# 6.6.7xx  (Fukurou series release 11)
+* [API, Fake Helper API] Deprecate the `DotNet.TestOptions.WithImportModule` and `.WithGetVersion` extension methods in favour of the otherwise identical `DotNet.TestOptions.WithAltCoverImportModule` and `.WithAltCoverGetVersion`; the obsolete name now just calls through to the preferred one.
+
 # 6.5.739  (Fukurou series release 10)
 * [Command-line and CLI tool] Rolling forwards with `runtimeconfig.template.json` -- it's not just for global tools : make all the executables .net core 3+ compatible.
   * this now packages the GTK# assemblies, and GTK+ native libraries for win-x64, for the .net core visualizer
