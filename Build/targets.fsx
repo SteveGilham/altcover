@@ -218,7 +218,7 @@ let coverlet5_18_3fixup (o : DotNet.TestOptions) =
 let coverletTestOptions (o : DotNet.TestOptions) =
   { o.WithCommon dotnetOptions with Configuration = DotNet.BuildConfiguration.Debug
                                     NoBuild = true
-                                    Framework = Some "netcoreapp2.1" }
+                                    Framework = Some "netcoreapp3.0" }
   |> withCLIArgs
   |> Coverlet.withDotNetTestOptions coverletOptions
   |> coverlet5_18_3fixup
@@ -1175,9 +1175,9 @@ _Target "UnitTestWithAltCoverCore" // Obsolete
   let reports = Path.getFullName "./_Reports"
   let altcover = "./_Binaries/AltCover/Debug+AnyCPU/AltCover.exe"
   let testDirectory =
-    Path.getFullName "_Binaries/AltCover.Tests/Debug+AnyCPU/netcoreapp2.1"
+    Path.getFullName "_Binaries/AltCover.Tests/Debug+AnyCPU/netcoreapp3.0"
   let output =
-    Path.getFullName "Tests/_Binaries/AltCover.Tests/Debug+AnyCPU/netcoreapp2.1"
+    Path.getFullName "Tests/_Binaries/AltCover.Tests/Debug+AnyCPU/netcoreapp3.0"
   let altReport = reports @@ "UnitTestWithAltCoverCore.xml"
   printfn "Instrumented the code"
   let prep =
@@ -1209,11 +1209,11 @@ _Target "UnitTestWithAltCoverCore" // Obsolete
     reraise()
 
   printfn "Instrument the Recorder tests"
-  let RecorderDir = "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/netcoreapp2.1"
+  let RecorderDir = "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/netcoreapp3.0"
   let RecorderReport = reports @@ "RecorderTestWithAltCoverCore.xml"
   let RecorderOut =
     Path.getFullName
-      "Recorder.Tests/_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/netcoreapp2.1"
+      "Recorder.Tests/_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/netcoreapp3.0"
 
   let prep =
     AltCover.PrepareParams.Primitive
@@ -1254,9 +1254,9 @@ _Target "UnitTestWithAltCoverCoreRunner"
   let altcover =
     Path.getFullName "./_Binaries/AltCover/Release+AnyCPU/netcoreapp2.0/AltCover.dll"
   let testDirectory =
-    Path.getFullName "_Binaries/AltCover.Tests/Debug+AnyCPU/netcoreapp2.1"
+    Path.getFullName "_Binaries/AltCover.Tests/Debug+AnyCPU/netcoreapp3.0"
   let output =
-    Path.getFullName "Tests/_Binaries/AltCover.Tests/Debug+AnyCPU/netcoreapp2.1"
+    Path.getFullName "Tests/_Binaries/AltCover.Tests/Debug+AnyCPU/netcoreapp3.0"
 
   // W/o --single
   // UnitTestWithAltCoverCoreRunner.xml.0.acv (3,066,500b)
@@ -1312,11 +1312,11 @@ _Target "UnitTestWithAltCoverCoreRunner"
   |> AltCover.run
 
   printfn "Instrument the Recorder tests"
-  let RecorderDir = "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/netcoreapp2.1"
+  let RecorderDir = "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/netcoreapp3.0"
   let RecorderReport = reports @@ "RecorderTestWithAltCoverCoreRunner.xml"
   let RecorderOut =
     Path.getFullName
-      "Recorder.Tests/_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/netcoreapp2.1"
+      "Recorder.Tests/_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/netcoreapp3.0"
   Shell.cleanDir RecorderOut
   let prep =
     AltCover.PrepareParams.Primitive
