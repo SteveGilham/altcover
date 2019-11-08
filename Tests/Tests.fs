@@ -102,11 +102,31 @@ type AltCoverTests() =
                (fst x) + ".mdb"
                |> File.Exists
                |> not)
+          |> Seq.filter
+               (fun x ->
+               not
+               <| (snd x).FullName.StartsWith("altcode.", StringComparison.OrdinalIgnoreCase))
 #if NETCOREAPP2_0
           |> Seq.filter
                (fun x ->
                not
                <| (snd x).FullName.StartsWith("Mono.", StringComparison.OrdinalIgnoreCase))
+          |> Seq.filter
+                (fun x ->
+                not
+                <| (snd x).FullName.StartsWith("BlackFox.", StringComparison.OrdinalIgnoreCase))
+          |> Seq.filter
+                (fun x ->
+                not
+                <| (snd x).FullName.StartsWith("Microsoft.", StringComparison.OrdinalIgnoreCase))
+          |> Seq.filter
+                (fun x ->
+                not
+                <| (snd x).FullName.StartsWith("Newtonsoft.", StringComparison.OrdinalIgnoreCase))
+          |> Seq.filter
+                (fun x ->
+                not
+                <| (snd x).FullName.StartsWith("NuGet.", StringComparison.OrdinalIgnoreCase))
           |> Seq.filter
                (fun x ->
                not
@@ -127,6 +147,18 @@ type AltCoverTests() =
                not
                <| (snd x)
                  .FullName.StartsWith("AltCover,", StringComparison.OrdinalIgnoreCase))
+          |> Seq.filter
+                (fun x ->
+                not
+                <| (snd x).FullName.StartsWith("System.", StringComparison.OrdinalIgnoreCase))
+          |> Seq.filter
+                (fun x ->
+                not
+                <| (snd x).FullName.StartsWith("Unquote", StringComparison.OrdinalIgnoreCase))
+          |> Seq.filter
+               (fun x ->
+               not
+               <| (snd x).FullName.StartsWith("xunit", StringComparison.OrdinalIgnoreCase))
           |> Seq.filter
                (fun x ->
                not
@@ -354,6 +386,10 @@ type AltCoverTests() =
              || x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
         |> Seq.filter (fun f -> f |> Path.GetFileNameWithoutExtension <> "testhost")
         |> Seq.map Mono.Cecil.AssemblyDefinition.ReadAssembly
+        |> Seq.filter
+             (fun x ->
+             not
+             <| x.FullName.StartsWith("altcode.", StringComparison.OrdinalIgnoreCase))
 #if COVERLET
         |> Seq.filter
              (fun x ->
@@ -397,7 +433,7 @@ type AltCoverTests() =
            || x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
       |> Seq.filter
            (fun x ->
-           Path.GetFileName(x).StartsWith("FSharp", StringComparison.OrdinalIgnoreCase))
+           Path.GetFileName(x).StartsWith("BlackFox", StringComparison.OrdinalIgnoreCase))
       |> Seq.map Mono.Cecil.AssemblyDefinition.ReadAssembly
       |> Seq.filter
            (fun x ->
@@ -752,7 +788,7 @@ type AltCoverTests() =
       Assert.That (s, Is.EqualTo "bananas")
 
     [<Test>]
-    member self.LocalSource() =
+    member self.DetectLocalSource() =
 
       let toolPackages =
         let xml =
@@ -765,10 +801,23 @@ type AltCoverTests() =
              (x.Attribute(XName.Get("Include")).Value.ToLowerInvariant(), x.Attribute(XName.Get("version")).Value))
         |> Map.ofSeq
 
+      let libPackages =
+        let xml =
+          Path.Combine(SolutionRoot.location, "./AltCover/packages.config")
+          |> Path.GetFullPath
+          |> XDocument.Load
+        xml.Descendants(XName.Get("package"))
+        |> Seq.map
+             (fun x ->
+             (x.Attribute(XName.Get("id")).Value.ToLowerInvariant(), x.Attribute(XName.Get("version")).Value))
+        |> Map.ofSeq
+
       Visitor.local := false
       Visitor.NameFilters.Clear()
-      let fscore = Path.Combine(SolutionRoot.location, "packages/FSharp.Core.3.0.2/lib/net35")
-      let mono = Path.Combine(SolutionRoot.location, "packages/Mono.Cecil.0.11.0/lib/net40")
+      let fscore = Path.Combine(SolutionRoot.location, "packages/FSharp.Core.3.0.2/lib/net35") // stable retro version
+      let mono = Path.Combine(SolutionRoot.location, "packages/Mono.Cecil." +
+                                                      (libPackages.Item "mono.cecil") +
+                                                      "/lib/net40")
       let nuget = Path.Combine(SolutionRoot.location, "packages/nuget.commandline/" +
                                                       (toolPackages.Item "nuget.commandline") +
                                                       "/tools")
