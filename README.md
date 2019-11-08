@@ -17,7 +17,7 @@ For Mono, .net framework and .net core, except as noted
 * A PowerShell module (not mono) containing a cmdlet that drives the tool, and other cmdlets for manipulating coverage reports
 * A coverage visualizer tool 
   * For .net framework and mono (for .net framework, needs GTK# v2.12.xx installed separately -- see https://www.mono-project.com/download/stable/#download-win )
-  * For .net core (needs GTK+3 installed separately -- for Windows, see e.g. https://github.com/GtkSharp/GtkSharp/wiki/Installing-Gtk-on-Windows)
+  * For .net core : from v6.5, packages the win-x64 GTK+ native libraries, otherwise needs GTK+3 installed separately -- for Windows, see e.g. https://github.com/GtkSharp/GtkSharp/wiki/Installing-Gtk-on-Windows
   ![Visualizer screenshot](./AltCover.Visualizer/Screenshot.png)
     
 ### NuGet Packages
@@ -79,7 +79,7 @@ PowerShell Core 6.2.3 or later (`pwsh`) -- try https://github.com/powershell/pow
 
 You will need Visual Studio VS2019 (Community Edition) v16.3.8 or later with F# language support (or just the associated build tools and your editor of choice).  The NUnit3 Test Runner will simplify the basic in-IDE development cycle.  Note that some of the unit tests expect that the separate build of test assemblies under Mono, full .net framework and .net core has taken place; there will be around 20 failures when running the unit tests in Visual Studio from clean when those expected assemblies are not found.
 
-For GTK# support, the GTK# latest 2.12 install is expected -- try https://www.mono-project.com/download/stable/#download-win  
+For GTK# support, the GTK# latest 2.12 install is expected -- try https://www.mono-project.com/download/stable/#download-win  -- and also the GTK+3 native libraries see e.g. https://github.com/GtkSharp/GtkSharp/wiki/Installing-Gtk-on-Windows
 
 #### *nix
 
