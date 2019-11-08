@@ -4,6 +4,8 @@ open System
 open System.Reflection
 open Xunit
 
+open Swensen.Unquote
+
 [<assembly:AssemblyVersionAttribute("1.0.0.0")>]
 [<assembly:AssemblyFileVersionAttribute("1.0.0.0")>]
 do ()
@@ -17,8 +19,8 @@ module M =
 
   [<Fact>]
   let testMakeThing() =
-    Assert.Equal("s", (makeThing "s").Thing)
-    Assert.Equal(5, (makeThing "aeiou").bytes().Length)
+    test <@ (makeThing "s").Thing = "s" @>
+    test <@ (makeThing "aeiou").bytes().Length = 5 @>
 
 module DU =
   type MyUnion =
@@ -47,6 +49,6 @@ module DU =
 
   [<Fact>]
   let testMakeUnion() =
-    Assert.Equal(returnFoo 10, Foo 10)
-    Assert.Equal(returnBar "s", Bar "s")
-    Assert.Equal(Bar "10", (Foo 10).as_bar())
+    test <@ returnFoo 10 = Foo 10 @>
+    test <@ returnBar "s" = Bar "s" @>
+    test <@ (Foo 10).as_bar() = Bar "10" @>

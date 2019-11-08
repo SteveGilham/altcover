@@ -853,7 +853,7 @@ type AltCoverTests2() =
 #if NETCOREAPP2_0
       let shift = String.Empty
 #else
-      let shift = "/netcoreapp2.1"
+      let shift = "/netcoreapp3.0"
 #endif
       let path =
         Path.Combine
@@ -889,7 +889,7 @@ type AltCoverTests2() =
 #if NETCOREAPP2_0
       let shift = String.Empty
 #else
-      let shift = "/netcoreapp2.1"
+      let shift = "/netcoreapp3.0"
 #endif
       let rpath =
         Path.Combine
@@ -934,7 +934,7 @@ type AltCoverTests2() =
 #if NETCOREAPP2_0
       let shift = String.Empty
 #else
-      let shift = "/netcoreapp2.1"
+      let shift = "/netcoreapp3.0"
 #endif
       let rpath =
         Path.Combine
@@ -1876,15 +1876,24 @@ type AltCoverTests2() =
         let target = Path.Combine(toInfo.FullName, name)
         let target' = Path.Combine(here, name)
         Assert.That(File.Exists target, target)
-        let lines =
+        let lines' =
           target
           |> File.ReadAllLines
           |> Seq.toList
+
+        let head = lines' |> List.head
+
+        let lines = if head.Length > 80
+                    then lines'
+                    else let t = lines' |> List.tail
+                         (head + List.head t) :: (List.tail t)
+
         Assert.That
           (lines.[0],
            Is.EqualTo
              ("System.ArgumentException: " + unique
-              + " ---> System.InvalidOperationException: Operation is not valid due to the current state of the object."))
+              + " ---> System.InvalidOperationException: Operation is not valid due to the current state of the object."),
+            sprintf "lines = %A" lines)
         Assert.That
           (lines.[1], Does.StartWith("   --- End of inner exception stack trace ---"))
         Assert.That
@@ -1936,15 +1945,24 @@ type AltCoverTests2() =
         let target = Path.Combine(toInfo.FullName, name)
         let target' = Path.Combine(here, name)
         Assert.That(File.Exists target, target)
-        let lines =
+        let lines' =
           target
           |> File.ReadAllLines
           |> Seq.toList
+
+        let head = lines' |> List.head
+
+        let lines = if head.Length > 80
+                    then lines'
+                    else let t = lines' |> List.tail
+                         (head + List.head t) :: (List.tail t)
+
         Assert.That
           (lines.[0],
            Is.EqualTo
              ("System.ArgumentException: " + unique
-              + " ---> System.InvalidOperationException: Operation is not valid due to the current state of the object."))
+              + " ---> System.InvalidOperationException: Operation is not valid due to the current state of the object."),
+              sprintf "lines = %A" lines)
         Assert.That
           (lines.[1], Does.StartWith("   --- End of inner exception stack trace ---"))
         Assert.That
