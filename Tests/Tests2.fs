@@ -853,7 +853,7 @@ type AltCoverTests2() =
 #if NETCOREAPP2_0
       let shift = String.Empty
 #else
-      let shift = "/netcoreapp2.1"
+      let shift = "/netcoreapp3.0"
 #endif
       let path =
         Path.Combine
@@ -889,7 +889,7 @@ type AltCoverTests2() =
 #if NETCOREAPP2_0
       let shift = String.Empty
 #else
-      let shift = "/netcoreapp2.1"
+      let shift = "/netcoreapp3.0"
 #endif
       let rpath =
         Path.Combine
@@ -934,7 +934,7 @@ type AltCoverTests2() =
 #if NETCOREAPP2_0
       let shift = String.Empty
 #else
-      let shift = "/netcoreapp2.1"
+      let shift = "/netcoreapp3.0"
 #endif
       let rpath =
         Path.Combine

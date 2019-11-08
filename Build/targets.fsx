@@ -1654,7 +1654,7 @@ _Target "CSharpDotNetWithDotNet"
       WorkingDirectory = "." }.WithToolType dotnet_altcover
   |> AltCover.run
 
-  Actions.RunDotnet dotnetOptions (o @@ "Sample1.dll") "" "CSharpDotNetWithDotNet test"
+  Actions.RunDotnet dotnetOptions "" (o @@ "Sample1.dll") "CSharpDotNetWithDotNet test"
   Actions.ValidateSample1 "./_Reports/CSharpDotNetWithDotNet.xml" "CSharpDotNetWithDotNet")
 
 _Target "CSharpDotNetWithFramework" (fun _ ->
@@ -1680,7 +1680,7 @@ _Target "CSharpDotNetWithFramework" (fun _ ->
       WorkingDirectory = sampleRoot }.WithToolType framework_altcover
   |> AltCover.run
 
-  Actions.RunDotnet dotnetOptions (instrumented @@ "Sample1.dll") ""
+  Actions.RunDotnet dotnetOptions "" (instrumented @@ "Sample1.dll") 
     "CSharpDotNetWithFramework test"
   Actions.ValidateSample1 simpleReport "CSharpDotNetWithFramework")
 
@@ -1920,7 +1920,7 @@ _Target "RecordResumeTestDotNet" (fun _ ->
 
   let testing = (sampleRoot @@ instrumented) @@ "Sample8.dll"
   Actions.RunDotnet (fun o -> { dotnetOptions o with WorkingDirectory = sampleRoot })
-    (testing + " " + simpleReport + ".acv") "" "RecordResumeTestDotNet 2"
+    "" (testing + " " + simpleReport + ".acv") "RecordResumeTestDotNet 2"
 
   do use coverageFile =
        new FileStream(simpleReport, FileMode.Open, FileAccess.Read, FileShare.None, 4096,
@@ -2540,7 +2540,7 @@ _Target "ReleaseDotNetWithFramework"
   |> AltCover.run
 
   Actions.RunDotnet (fun o -> { dotnetOptions o with WorkingDirectory = instrumented })
-    "Sample1.dll" "" "ReleaseDotNetWithFramework test"
+    "" "Sample1.dll" "ReleaseDotNetWithFramework test"
 
   Actions.ValidateSample1 "./_Reports/ReleaseDotNetWithFramework.xml"
     "ReleaseDotNetWithFramework")
@@ -2592,7 +2592,7 @@ _Target "ReleaseDotNetWithDotNet"
       ToolPath = "AltCover.dll"
       WorkingDirectory = unpack }.WithToolType dotnet_altcover
   |> AltCover.run
-  Actions.RunDotnet dotnetOptions (o @@ "Sample1.dll") "" "ReleaseDotNetWithDotNet test"
+  Actions.RunDotnet dotnetOptions "" (o @@ "Sample1.dll") "ReleaseDotNetWithDotNet test"
   Actions.ValidateSample1 "./_Reports/ReleaseDotNetWithDotNet.xml"
     "ReleaseDotNetWithDotNet")
 
@@ -2908,6 +2908,7 @@ _Target "ApiUse" (fun _ ->
     pack.AddBeforeSelf inject
     fsproj.Save "./_ApiUse/_DotnetTest/dotnettest.fsproj"
     Shell.copy "./_ApiUse/_DotnetTest" (!!"./Sample4/*.fs")
+    Shell.copy "./_ApiUse/_DotnetTest" (!!"./Sample4/*.json")
 
     let config = """<?xml version="1.0" encoding="utf-8"?>
 <configuration>
@@ -3076,6 +3077,7 @@ _Target "DotnetTestIntegration" (fun _ ->
     pack.AddBeforeSelf inject
     fsproj.Save "./_DotnetTest/dotnettest.fsproj"
     Shell.copy "./_DotnetTest" (!!"./Sample4/*.fs")
+    Shell.copy "./_DotnetTest" (!!"./Sample4/*.json")
 
     let p0 = Primitive.PrepareParams.Create()
     let c0 = Primitive.CollectParams.Create()
@@ -3106,6 +3108,7 @@ _Target "DotnetTestIntegration" (fun _ ->
     pack.AddBeforeSelf inject
     fsproj.Save "./_DotnetTestFail/dotnettest.fsproj"
     Shell.copy "./_DotnetTestFail" (!!"./Sample13/*.fs")
+    Shell.copy "./_DotnetTestFail" (!!"./Sample13/*.json")
 
     let xx = Path.getFullName "./_DotnetTestFail/coverage.xml"
     let pf1 =
@@ -3143,6 +3146,7 @@ _Target "DotnetTestIntegration" (fun _ ->
     pack.AddBeforeSelf inject
     fsproj.Save "./_DotnetTestFailFast/dotnettest.fsproj"
     Shell.copy "./_DotnetTestFailFast" (!!"./Sample13/*.fs")
+    Shell.copy "./_DotnetTestFailFast" (!!"./Sample13/*.json")
 
     let xx = Path.getFullName "./_DotnetTestFailFast/coverage.xml"
     let pf1 =
@@ -3185,6 +3189,7 @@ _Target "DotnetTestIntegration" (fun _ ->
     pack.AddBeforeSelf inject
     fsproj.Save "./_DotnetTestLineCover/dotnettest.csproj"
     Shell.copy "./_DotnetTestLineCover" (!!"./Sample10/*.cs")
+    Shell.copy "./_DotnetTestLineCover" (!!"./Sample10/*.json")
 
     let p2 =
       { p0 with
@@ -3227,6 +3232,7 @@ _Target "DotnetTestIntegration" (fun _ ->
     pack.AddBeforeSelf inject
     fsproj.Save "./_DotnetTestBranchCover/dotnettest.csproj"
     Shell.copy "./_DotnetTestBranchCover" (!!"./Sample10/*.cs")
+    Shell.copy "./_DotnetTestBranchCover" (!!"./Sample10/*.json")
 
     let p3 =
       { p0 with
@@ -3372,6 +3378,7 @@ _Target "Issue23" (fun _ ->
     pack.AddBeforeSelf inject
     csproj.Save "./_Issue23/sample9.csproj"
     Shell.copy "./_Issue23" (!!"./Sample9/*.cs")
+    Shell.copy "./_Issue23" (!!"./Sample9/*.json")
     DotNet.restore (fun o -> o.WithCommon(withWorkingDirectoryVM "_Issue23")) ""
 
     let p0 = { Primitive.PrepareParams.Create() with AssemblyFilter = [| "xunit" |] }
@@ -3410,6 +3417,7 @@ _Target "Issue67" (fun _ ->
     pack.AddBeforeSelf inject
     csproj.Save "./_Issue67/sample9.csproj"
     Shell.copy "./_Issue67" (!!"./Sample9/*.cs")
+    Shell.copy "./_Issue67" (!!"./Sample9/*.json")
     DotNet.restore (fun o -> o.WithCommon(withWorkingDirectoryVM "_Issue67")) ""
 
     let p0 =
@@ -3449,6 +3457,7 @@ _Target "Issue72" (fun _ ->
     config.Save "./Sample16/Test/_Issue72/NuGet.config"
 
     Shell.copy "./Sample16/Test/_Issue72" (!!"./Sample16/Test/Test/*.cs")
+    Shell.copy "./Sample16/Test/_Issue72" (!!"./Sample16/Test/Test/*.json")
 
     let csproj = XDocument.Load "./Sample16/Test/Test/Test.csproj"
 
@@ -3545,6 +3554,7 @@ _Target "DotnetCLIIntegration" (fun _ ->
     pack.AddBeforeSelf inject
     fsproj.Save "./_DotnetCLITest/dotnetcli.fsproj"
     Shell.copy "./_DotnetCLITest" (!!"./Sample4/*.fs")
+    Shell.copy "./_DotnetCLITest" (!!"./Sample4/*.json")
 
     let working = Path.getFullName "./_DotnetCLITest"
     ""
@@ -3646,6 +3656,7 @@ _Target "DotnetGlobalIntegration" (fun _ ->
     let fsproj = XDocument.Load "./Sample4/sample4.core.fsproj"
     fsproj.Save "./_DotnetGlobalTest/dotnetglobal.fsproj"
     Shell.copy "./_DotnetGlobalTest" (!!"./Sample4/*.fs")
+    Shell.copy "./_DotnetGlobalTest" (!!"./Sample4/*.json")
 
     Actions.RunDotnet (fun o' -> { dotnetOptions o' with WorkingDirectory = working })
       "tool"
@@ -3829,7 +3840,7 @@ Target.activateFinal "ResetConsoleColours"
 "Compilation"
 ==> "BuildForUnitTestDotNet"
 ==> "UnitTestDotNet"
-==> "UnitTest"
+=?> ("UnitTest", Environment.isWindows) 
 
 "Compilation"
 ==> "UnitTestWithOpenCover"
@@ -3844,12 +3855,11 @@ Target.activateFinal "ResetConsoleColours"
 ==> "UnitTest"
 
 "UnitTestDotNet"
-==> "UnitTestWithAltCoverCore"
-// ==> "UnitTest"
+=?> ("UnitTestWithAltCoverCore", Environment.isWindows)
 
 "UnitTestDotNet"
 ==> "UnitTestWithAltCoverCoreRunner"
-==> "UnitTest"
+=?> ("UnitTest", Environment.isWindows)
 
 "UnitTestWithAltCoverRunner"
 ==> "BuildForCoverlet"
@@ -3869,11 +3879,9 @@ Target.activateFinal "ResetConsoleColours"
 
 "Compilation"
 ==> "FSharpTypesDotNet"
-// ==> "OperationalTest"
 
 "Compilation"
 ==> "FSharpTypesDotNetRunner"
-// ==> "OperationalTest" // test is duplicated in the Pester testing
 
 "Compilation"
 ==> "FSharpTypesDotNetCollecter"
