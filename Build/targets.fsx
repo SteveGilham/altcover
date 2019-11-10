@@ -3840,7 +3840,7 @@ Target.activateFinal "ResetConsoleColours"
 "Compilation"
 ==> "BuildForUnitTestDotNet"
 ==> "UnitTestDotNet"
-=?> ("UnitTest", Environment.isWindows) 
+==> "UnitTest"
 
 "Compilation"
 ==> "UnitTestWithOpenCover"
@@ -3855,11 +3855,12 @@ Target.activateFinal "ResetConsoleColours"
 ==> "UnitTest"
 
 "UnitTestDotNet"
-=?> ("UnitTestWithAltCoverCore", Environment.isWindows)
+==> "UnitTestWithAltCoverCore"
+// ==> "UnitTest"
 
 "UnitTestDotNet"
 ==> "UnitTestWithAltCoverCoreRunner"
-=?> ("UnitTest", Environment.isWindows)
+==> "UnitTest"
 
 "UnitTestWithAltCoverRunner"
 ==> "BuildForCoverlet"
@@ -3879,9 +3880,11 @@ Target.activateFinal "ResetConsoleColours"
 
 "Compilation"
 ==> "FSharpTypesDotNet"
+// ==> "OperationalTest"
 
 "Compilation"
 ==> "FSharpTypesDotNetRunner"
+// ==> "OperationalTest" // test is duplicated in the Pester testing
 
 "Compilation"
 ==> "FSharpTypesDotNetCollecter"

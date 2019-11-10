@@ -6,6 +6,7 @@
     <AssemblyName>AltCover.Tests</AssemblyName>
     <AssetTargetFallback>$(AssetTargetFallback);netcoreapp1.0;</AssetTargetFallback>
     <GenerateProgramFile>false</GenerateProgramFile>
+    <OutputType>Exe</OutputType>
     <!-- NO!! SolutionDir Condition="'$(SolutionDir)' == '$(ProjectDir)'">$(ProjectDir)../</SolutionDir -->
   </PropertyGroup>
 
@@ -58,12 +59,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="Sample12.runtimeconfig.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
-  <ItemGroup>
+    <PackageReference Include="Expecto" Version="8.12.0" />
+    <PackageReference Include="Expecto.TestResults" Version="8.12.0" />
     <PackageReference Include="Unquote" Version="5.0.0" />
     <PackageReference Include="coverlet.msbuild" Version="2.7.0">
       <PrivateAssets>all</PrivateAssets>
@@ -75,7 +72,7 @@
     <PackageReference Include="Mono.Options" Version="5.3.0.1" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
     <PackageReference Include="NUnit" Version="3.12.0" />
-    <PackageReference Include="NUnit3TestAdapter" Version="3.15.1" />
+    <PackageReference Include="YoloDev.Expecto.TestSdk" Version="0.8.0" />
   </ItemGroup>
 
   <ItemGroup>
