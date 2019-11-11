@@ -81,7 +81,7 @@ The build may target netstandard2.0 or netcoreapp2.x, but does not need any pre-
 
 You will need Visual Studio VS2019 (Community Edition) v16.3.x or later with F# language support (or just the associated build tools and your editor of choice).  The NUnit3 Test Runner will simplify the basic in-IDE development cycle.  Note that some of the unit tests expect that the separate build of test assemblies under Mono, full .net framework and .net core has taken place; there will be around 20 failures when running the unit tests in Visual Studio from clean when those expected assemblies are not found.
 
-For GTK# support, the GTK# latest 2.12 install is expected -- try https://www.mono-project.com/download/stable/#download-win  -- and also the GTK+3 native libraries see e.g. https://github.com/GtkSharp/GtkSharp/wiki/Installing-Gtk-on-Windows
+For GTK# support, the GTK# latest 2.12 install is expected -- try https://www.mono-project.com/download/stable/#download-win  -- while the latest releases of the GTK#3 libraries will download the native support if the expected version is not detected.  Otherwise see e.g. https://github.com/GtkSharp/GtkSharp/wiki/Installing-Gtk-on-Windows 
 
 #### *nix
 

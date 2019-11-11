@@ -486,8 +486,6 @@ module AltCoverXTests =
 #endif
           "Sample4.deps.json"; "Sample4.dll"; "Sample4.runtimeconfig.dev.json";
           "Sample4.runtimeconfig.json"; "Sample4.pdb";
-          "testhost.dll"
-          "testhost.exe"
           "xunit.runner.reporters.netcoreapp10.dll";
           "xunit.runner.utility.netcoreapp10.dll";
           "xunit.runner.visualstudio.dotnetcore.testadapter.dll" ]
@@ -497,8 +495,6 @@ module AltCoverXTests =
                                  f = "Sample1.exe.mdb" ||
                                  (f.EndsWith("db", StringComparison.Ordinal) |> not))
 #endif
-        |> List.filter (fun f -> isNT ||
-                                 (f.StartsWith("testhost.", StringComparison.Ordinal) |> not))
 
       let theFiles =
         if pdb

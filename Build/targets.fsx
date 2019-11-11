@@ -3805,10 +3805,10 @@ Target.activateFinal "ResetConsoleColours"
 ==> "Preparation"
 
 "Preparation"
-==> "BuildRelease"
-
-"BuildRelease"
 ==> "BuildDebug"
+
+"BuildDebug"
+==> "BuildRelease"
 ==> "Compilation"
 
 "BuildRelease"
