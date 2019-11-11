@@ -1,4 +1,4 @@
-namespace AltCover
+namespace Tests
 
 open System
 open System.Collections.Generic
@@ -11,10 +11,8 @@ open AltCover
 open Mono.Options
 open Newtonsoft.Json.Linq
 open Swensen.Unquote
-open NUnit.Framework
 
-[<TestFixture>]
-module XTests =
+module AltCoverXTests =
   let test' x message =
     try
       test x

@@ -17,7 +17,7 @@ For Mono, .net framework and .net core, except as noted
 * A PowerShell module (not mono) containing a cmdlet that drives the tool, and other cmdlets for manipulating coverage reports
 * A coverage visualizer tool 
   * For .net framework and mono (for .net framework, needs GTK# v2.12.xx installed separately -- see https://www.mono-project.com/download/stable/#download-win )
-  * For .net core (needs GTK+3 installed separately -- for Windows, see e.g. https://github.com/GtkSharp/GtkSharp/wiki/Installing-Gtk-on-Windows)
+  * For .net core : from v6.5, packages the win-x64 GTK+ native libraries, otherwise needs GTK+3 installed separately -- for Windows, see e.g. https://github.com/GtkSharp/GtkSharp/wiki/Installing-Gtk-on-Windows
   ![Visualizer screenshot](./AltCover.Visualizer/Screenshot.png)
     
 ### NuGet Packages
@@ -73,14 +73,15 @@ I am considering retiring the legacy framework/Mono support after the release of
 It is assumed that the following are available
 
 .net core SDK 3.0.100 (`dotnet`) -- try https://www.microsoft.com/net/download  
-A .net core 2.x runtime e.g. 2.1.13 LTS release  
 PowerShell Core 6.2.3 or later (`pwsh`) -- try https://github.com/powershell/powershell  
+
+The build may target netstandard2.0 or netcoreapp2.x, but does not need any pre-3.0 runtimes to be installed.
 
 #### Windows
 
-You will need Visual Studio VS2019 (Community Edition) v16.3.8 or later with F# language support (or just the associated build tools and your editor of choice).  The NUnit3 Test Runner will simplify the basic in-IDE development cycle.  Note that some of the unit tests expect that the separate build of test assemblies under Mono, full .net framework and .net core has taken place; there will be around 20 failures when running the unit tests in Visual Studio from clean when those expected assemblies are not found.
+You will need Visual Studio VS2019 (Community Edition) v16.3.x or later with F# language support (or just the associated build tools and your editor of choice).  The NUnit3 Test Runner will simplify the basic in-IDE development cycle.  Note that some of the unit tests expect that the separate build of test assemblies under Mono, full .net framework and .net core has taken place; there will be around 20 failures when running the unit tests in Visual Studio from clean when those expected assemblies are not found.
 
-For GTK# support, the GTK# latest 2.12 install is expected -- try https://www.mono-project.com/download/stable/#download-win  
+For GTK# support, the GTK# latest 2.12 install is expected -- try https://www.mono-project.com/download/stable/#download-win  -- and also the GTK+3 native libraries see e.g. https://github.com/GtkSharp/GtkSharp/wiki/Installing-Gtk-on-Windows
 
 #### *nix
 
@@ -103,7 +104,7 @@ If there's a passing build on the CI servers for this commit, then it's likely t
 
 ### Unit Tests
 
-The tests in the `Tests.fs` file are ordered in the same dependency order as the code within the AltCover project (the later `Runner` tests aside).  While working on any given layer, it would make sense to comment out all the tests for later files so as to show what is and isn't being covered by explicit testing, rather than merely being cascaded through.
+The tests in the `AltCover.Test` project are ordered in the same dependency order as the code within the AltCover project (the later `Runner` tests aside).  While working on any given layer, it would make sense to comment out all the tests for later files so as to show what is and isn't being covered by explicit testing, rather than merely being cascaded through.
 
 ## Thanks to
 
