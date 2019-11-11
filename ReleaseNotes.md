@@ -4,6 +4,7 @@ A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wi
 
 # 6.6.7xx  (Fukurou series release 11)
 * [API, Fake Helper API] Deprecate the `DotNet.TestOptions.WithImportModule` and `.WithGetVersion` extension methods in favour of the otherwise identical `DotNet.TestOptions.WithAltCoverImportModule` and `.WithAltCoverGetVersion`; the obsolete name now just calls through to the preferred one.
+* [3rd Party] With the latest GTK#3 update, the GTK+ native libraries for win-x64 are no longer bundled into the nuget -- this seems to have been a transient behaviour in GtkSharp v3.22.25.49 only
 
 # 6.5.739  (Fukurou series release 10)
 * [Command-line and CLI tool] Rolling forwards with `runtimeconfig.template.json` -- it's not just for global tools : make all the executables .net core 3+ compatible.
