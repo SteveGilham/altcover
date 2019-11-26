@@ -55,6 +55,8 @@ module XmlUtilities =
     xdoc
 
   [<SuppressMessage("Microsoft.Usage", "CA2202", Justification = "Observably safe")>]
+  // Approved way is ugly -- https://docs.microsoft.com/en-us/visualstudio/code-quality/ca2202?view=vs-2019
+  // Also, this rule is deprecated
   let internal LoadSchema(format : AltCover.Base.ReportFormat) =
     let schemas = new XmlSchemaSet()
     let resource =
