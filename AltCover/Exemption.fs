@@ -1,6 +1,6 @@
 ﻿namespace AltCover
 
-type Exemption =
+type internal Exemption =
   | None = 0             // Red (uncovered) or Green (covered) on White
   | Declared = -1        // Orange on White (other user-defined exemptions TBD)
   | Automatic = -2       // Grey on Yellow (other compiler generated code)
