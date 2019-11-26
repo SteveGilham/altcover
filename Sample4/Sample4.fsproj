@@ -14,7 +14,7 @@
     <OutputType>Library</OutputType>
     <RootNamespace>Sample4</RootNamespace>
     <AssemblyName>Sample4</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
     <TargetFSharpCoreVersion>4.4.1.0</TargetFSharpCoreVersion>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Name>Sample4</Name>
@@ -73,6 +73,9 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Numerics" />
+    <Reference Include="Unquote">
+      <HintPath>..\ThirdParty\Unquote.dll</HintPath>
+    </Reference>
     <Reference Include="xunit.abstractions">
       <HintPath>..\packages\xunit.abstractions.2.0.3\lib\net35\xunit.abstractions.dll</HintPath>
     </Reference>
@@ -103,11 +106,15 @@
   -->
   <ItemGroup>
     <AssemblyFilter Include="xunit" />
-  </ItemGroup>  
-  <Target Name="AfterBuild" Condition="'$(MSBuildTest)' == 'true'" >
-    <AltCover.Prepare 
-      InputDirectory="$(MSBuildThisFileDirectory)../_Binaries/Sample4/Debug+AnyCPU"  
-      OutputDirectory="$(MSBuildThisFileDirectory)../_Binaries/Sample4/Debug+AnyCPU/__Saved$([System.DateTime]::UtcNow.ToString().Replace(':','-').Replace('/','-').Replace(' ','+'))"  
+  </ItemGroup>
+  <Target Name="AfterBuild" Condition="'$(MSBuildTest)' == 'true'">
+    <ItemGroup>
+      <InputDirectory Include="$(MSBuildThisFileDirectory)../_Binaries/Sample4/Debug+AnyCPU" />
+      <OutputDirectory Include="$(MSBuildThisFileDirectory)../_Binaries/Sample4/Debug+AnyCPU/__Saved$([System.DateTime]::UtcNow.ToString().Replace(':','-').Replace('/','-').Replace(' ','+'))" />
+    </ItemGroup>
+    <AltCover.Prepare
+      InputDirectories="@(InputDirectory)"
+      OutputDirectories= "@(OutputDirectory)"
       XmlReport="$(MSBuildThisFileDirectory)../_Reports/Sample4.Prepare.xml"
       AssemblyFilter="@(AssemblyFilter)"
       />  

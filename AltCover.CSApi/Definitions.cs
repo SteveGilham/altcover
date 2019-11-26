@@ -23,8 +23,8 @@ namespace AltCover.Parameters
 
     public interface IPrepareArgs
     {
-        string InputDirectory { get; }
-        string OutputDirectory { get; }
+        string[] InputDirectories { get; }
+        string[] OutputDirectories { get; }
         string[] SymbolDirectories { get; }
         string[] Dependencies { get; }
         string[] Keys { get; }
@@ -48,6 +48,8 @@ namespace AltCover.Parameters
         bool ExposeReturnCode { get; }
         bool SourceLink { get; }
         bool Defer { get; }
+        bool LocalSource { get; }
+        bool VisibleBranches { get; }
 
         string[] CommandLine { get; }
 
@@ -110,7 +112,7 @@ namespace AltCover.Parameters.Primitive
                 CommandLine,
                 ExposeReturnCode,
                 SummaryFormat
-                );
+                                                                );
             return FSApi.CollectParams.NewPrimitive(primitive);
         }
 
@@ -139,8 +141,8 @@ namespace AltCover.Parameters.Primitive
 
     public class PrepareArgs : IPrepareArgs
     {
-        public string InputDirectory { get; set; }
-        public string OutputDirectory { get; set; }
+        public string[] InputDirectories { get; set; }
+        public string[] OutputDirectories { get; set; }
         public string[] SymbolDirectories { get; set; }
         public string[] Dependencies { get; set; }
         public string[] Keys { get; set; }
@@ -164,14 +166,16 @@ namespace AltCover.Parameters.Primitive
         public bool ExposeReturnCode { get; set; }
         public bool SourceLink { get; set; }
         public bool Defer { get; set; }
+        public bool LocalSource { get; set; }
+        public bool VisibleBranches { get; set; }
 
         public string[] CommandLine { get; set; }
 
         public FSApi.PrepareParams ToParameters()
         {
             var primitive = new AltCover.Primitive.PrepareParams(
-                            InputDirectory,
-                            OutputDirectory,
+                            InputDirectories,
+                            OutputDirectories,
                             SymbolDirectories,
                             Dependencies,
                             Keys,
@@ -195,7 +199,9 @@ namespace AltCover.Parameters.Primitive
                             CommandLine,
                             ExposeReturnCode,
                             SourceLink,
-                            Defer
+                            Defer,
+                            LocalSource,
+                            VisibleBranches
                                                                 );
             return FSApi.PrepareParams.NewPrimitive(primitive);
         }
@@ -204,8 +210,8 @@ namespace AltCover.Parameters.Primitive
         {
             return new PrepareArgs
             {
-                InputDirectory = string.Empty,
-                OutputDirectory = string.Empty,
+                InputDirectories = new string[0],
+                OutputDirectories = new string[0],
                 SymbolDirectories = new string[0],
                 Dependencies = new string[0],
                 Keys = new string[0],

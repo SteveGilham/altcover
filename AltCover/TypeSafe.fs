@@ -15,6 +15,7 @@ open System.Text.RegularExpressions
 // No more primitive obsession!
 [<ExcludeFromCodeCoverage; NoComparison>]
 type FilePath =
+  | Tool of String
   | FilePath of String
   | FInfo of FileInfo
   | NoFile
@@ -22,7 +23,8 @@ type FilePath =
     match self with
     | NoFile -> String.Empty
     | FInfo i -> i.FullName
-    | FilePath s -> s
+    | FilePath s -> Path.GetFullPath s
+    | Tool t -> t
 
 [<ExcludeFromCodeCoverage; NoComparison>]
 type DirectoryPath =
@@ -98,10 +100,12 @@ type DirectoryPaths =
 [<ExcludeFromCodeCoverage; NoComparison>]
 type FilterItem =
   | FilterItem of Regex
+  | IncludeItem of Regex
   | Raw of String
   member self.AsString() =
     match self with
     | FilterItem r -> r.ToString()
+    | IncludeItem r -> "?" + r.ToString()
     | Raw r -> r
 
 [<ExcludeFromCodeCoverage; NoComparison>]
@@ -180,8 +184,8 @@ type CollectParams =
 
 [<ExcludeFromCodeCoverage; NoComparison>]
 type PrepareParams =
-  { InputDirectory : DirectoryPath
-    OutputDirectory : DirectoryPath
+  { InputDirectories : DirectoryPaths
+    OutputDirectories : DirectoryPaths
     SymbolDirectories : DirectoryPaths
     Dependencies : FilePaths
     Keys : FilePaths
@@ -205,10 +209,12 @@ type PrepareParams =
     ExposeReturnCode : Flag
     SourceLink : Flag
     Defer : Flag
+    LocalSource : Flag
+    VisibleBranches : Flag
   }
   static member Create() =
-    { InputDirectory = NoDirectory
-      OutputDirectory = NoDirectory
+    { InputDirectories = NoDirectories
+      OutputDirectories = NoDirectories
       SymbolDirectories = NoDirectories
       Dependencies = NoPaths
       Keys = NoPaths
@@ -232,4 +238,6 @@ type PrepareParams =
       ExposeReturnCode = Set
       SourceLink = Clear
       Defer = Clear
+      LocalSource = Clear
+      VisibleBranches = Clear
     }

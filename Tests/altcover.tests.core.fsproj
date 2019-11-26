@@ -1,17 +1,19 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
     <IsPackable>false</IsPackable>
     <AssemblyName>AltCover.Tests</AssemblyName>
     <AssetTargetFallback>$(AssetTargetFallback);netcoreapp1.0;</AssetTargetFallback>
     <GenerateProgramFile>false</GenerateProgramFile>
+    <OutputType>Exe</OutputType>
+    <!-- NO!! SolutionDir Condition="'$(SolutionDir)' == '$(ProjectDir)'">$(ProjectDir)../</SolutionDir -->
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <OutputPath>$(SolutionDir)_Binaries/$(AssemblyName)/$(Configuration)+$(Platform)/</OutputPath>
     <IntermediateOutputPath>$(SolutionDir)_Intermediate/$(AssemblyName)/$(Configuration)+$(Platform)/</IntermediateOutputPath>
-    <DefineConstants>NETCOREAPP2_0;$(DefineConstants);$(OtherConstants)</DefineConstants>
+    <DefineConstants>TRACE;NETCOREAPP2_0;NETCOREAPP2_1;</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <OutputPath>$(SolutionDir)_Binaries/$(AssemblyName)/$(Configuration)+$(Platform)/</OutputPath>
@@ -26,6 +28,7 @@
     <Compile Include="Tests.fs" />
     <Compile Include="Tests2.fs" />
     <Compile Include="Tests3.fs" />
+    <Compile Include="XTests.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 
@@ -42,45 +45,45 @@
     <EmbeddedResource Include="Sample1WithNCover.xml" />
     <EmbeddedResource Include="NCoverBugFix.lcov" />
     <EmbeddedResource Include="NCoverBugFix.cobertura" />
-    <EmbeddedResource Include="..\Shadow.Tests\SimpleCoverage.xml" Link="SimpleCoverage.xml" />
+    <EmbeddedResource Include="..\Recorder.Tests\SimpleCoverage.xml" Link="SimpleCoverage.xml" />
     <EmbeddedResource Include="Sample1.deps.json" />
-    <EmbeddedResource Include="Sample1.deps.ncafter.json" />
+    <EmbeddedResource Include="Sample1.deps.after.json" />
     <EmbeddedResource Include="Sample2.deps.json" />
-    <EmbeddedResource Include="Sample2.deps.ncafter.json" />
-    <EmbeddedResource Include="..\AltCover\Strings.resx" Link="Strings.resx" />
+    <EmbeddedResource Include="Sample2.deps.after.json" />
     <EmbeddedResource Include="..\Build\Infrastructure.snk" Link="Infrastructure.snk" />
     <EmbeddedResource Include="TailCallSample.dl_" />
     <EmbeddedResource Include="SwitchSample.dl_" />
     <EmbeddedResource Include="SwitchSample.pd_" />
+    <EmbeddedResource Include="issue37.dl_" />
+    <EmbeddedResource Include="issue37.pd_" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="Sample12.runtimeconfig.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Unquote" Version="4.0.0" />
-    <PackageReference Include="coverlet.msbuild" Version="2.6.3">
+    <PackageReference Include="Expecto" Version="8.12.0" />
+    <PackageReference Include="Expecto.TestResults" Version="8.12.0" />
+    <PackageReference Include="Unquote" Version="5.0.0" />
+    <PackageReference Include="coverlet.msbuild" Version="2.7.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.Build.Utilities.Core" Version="16.0.461" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.2.0" />
-    <PackageReference Include="Mono.Cecil" Version="0.10.4" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.4.0" />
+    <PackageReference Include="Mono.Cecil" Version="0.11.1" />
     <PackageReference Include="Mono.Options" Version="5.3.0.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     <PackageReference Include="NUnit" Version="3.12.0" />
-    <PackageReference Include="NUnit3TestAdapter" Version="3.13.0" />
+    <PackageReference Include="YoloDev.Expecto.TestSdk" Version="0.8.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\AltCover.Recorder\altcover.recorder.core.fsproj" />
     <ProjectReference Include="..\AltCover\altcover.core.fsproj" />
     <ProjectReference Include="..\Sample11\sample11.core.csproj" />
+    <ProjectReference Include="..\Sample16\sample16.core.csproj" />
+    <ProjectReference Include="..\Sample17\sample17.core.fsproj" />
     <ProjectReference Include="..\Sample1\sample1.core.csproj" />
     <ProjectReference Include="..\Sample2\sample2.core.fsproj" />
     <ProjectReference Include="..\Sample3\sample3.core.csproj" />
+    <ProjectReference Include="..\Sample4\sample4.core.fsproj" />
     <ProjectReference Include="..\Sample5\sample5.core.csproj" />
     <ProjectReference Include="..\Sample6\sample6.core.fsproj" />
     <ProjectReference Include="..\Sample8\sample8.core.csproj" />
@@ -88,6 +91,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Update="FSharp.Core" Version="4.3.4" />
+    <PackageReference Update="FSharp.Core" Version="4.7.0" />
+    <PackageReference Include="System.Security.Permissions" Version="4.6.0" />
   </ItemGroup>
 </Project>

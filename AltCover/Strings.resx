@@ -118,10 +118,11 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="i|inputDirectory=" xml:space="preserve">
-    <value>Optional: The folder containing assemblies to instrument (default: current directory)</value>
+    <value>Optional, multiple: A folder containing assemblies to instrument (default: current directory)</value>
   </data>
   <data name="o|outputDirectory=" xml:space="preserve">
-    <value>Optional: The folder to receive the instrumented assemblies and their companions (default: sub-folder '__Instrumented' of the current directory; or '__Saved' if 'inplace' is set)</value>
+    <value>Optional, multiple: A folder to receive the instrumented assemblies and their companions (default: sub-folder '__Instrumented' of the current directory; or '__Saved' if '--inplace' is set).
+See also '--inplace'</value>
   </data>
   <data name="k|key=" xml:space="preserve">
     <value>Optional, multiple: any other strong-name key to use</value>
@@ -154,7 +155,7 @@
     <value>Creating folder {0}</value>
   </data>
   <data name="HelpText" xml:space="preserve">
-    <value>AltCover [/i[nputDirectory]=VALUE] [/o[utputDirectory]=VALUE] [/y|symbolDirectory=VALUE] [/d[ependency]=VALUE] [/sn|strongNameKey=VALUE] [/k[ey]=VALUE] [/x[mlReport]=VALUE] [/f[ileFilter]=VALUE] [/p[athFilter]=VALUE] [/s|assemblyFilter=VALUE] [/t|typeFilter=VALUE] [/m|methodFilter=VALUE] [/a|attributeFilter=VALUE] [/c[allContext]=VALUE] [--opencover] [--inplace] [--save] [--single] [--linecover|branchcover] [--dropReturnCode] [--sourceLink] [--defer[:[+|-]]] [/?|h[elp]] [-- ] [...]
+    <value>AltCover [/i[nputDirectory]=VALUE] [/o[utputDirectory]=VALUE] [/y|symbolDirectory=VALUE] [/d[ependency]=VALUE] [/sn|strongNameKey=VALUE] [/k[ey]=VALUE] [/x[mlReport]=VALUE] [/f[ileFilter]=VALUE] [/p[athFilter]=VALUE] [/s|assemblyFilter=VALUE] [/t|typeFilter=VALUE] [/m|methodFilter=VALUE] [/a|attributeFilter=VALUE] [/l[ocalSource]] [/c[allContext]=VALUE] [--opencover] [--inplace] [--save] [--single] [--linecover|branchcover] [--dropReturnCode] [--sourceLink] [--defer[:[+|-]]] [/v[isibleBranches]] [/?|h[elp]] [-- ] [...]
 or
 AltCover Runner [/r[ecordingDirectory]=VALUE] [/w[orkingDirectory]=VALUE] [/x|executable=VALUE] [--collect] [/l[covReport]=VALUE] [/t[hreshold]=VALUE] [/c[obertura]=VALUE] [/o[utputFile]=VALUE] [--dropReturnCode] [--teamcity[:[+][R|B]]] [/?|h[elp]] [-- ] [...]
 or
@@ -165,13 +166,14 @@ See https://github.com/SteveGilham/altcover/wiki/Usage for full details.
 </value>
   </data>
   <data name="NotInPlace" xml:space="preserve">
-    <value>From and to directories are identical</value>
+    <value>From and to directories {0} are identical</value>
   </data>
   <data name="UsageError" xml:space="preserve">
     <value>Error - usage is:</value>
   </data>
   <data name="&lt;&gt;" xml:space="preserve">
     <value>"n/a"</value>
+    <comment>@Invariant</comment>
   </data>
   <data name="instrumentingfrom" xml:space="preserve">
     <value>Instrumenting files from {0}</value>
@@ -342,7 +344,7 @@ If this problem was detected in the pre-test instrumentation stage of `dotnet te
     <value>Resolved assembly reference '{0}' as file '{1}'.</value>
   </data>
   <data name="d|dependency=" xml:space="preserve">
-    <value>Optional,multiple: assembly path to resolve missing reference.</value>
+    <value>Optional, multiple: assembly path to resolve missing reference.</value>
   </data>
   <data name="NotAnAssembly" xml:space="preserve">
     <value>{0} : File {1} is not an assembly</value>
@@ -385,5 +387,14 @@ If this problem was detected in the pre-test instrumentation stage of `dotnet te
   </data>
   <data name="defer:" xml:space="preserve">
     <value>Optional, defers writing runner-mode coverage data until process exit.</value>
+  </data>
+  <data name="DuplicatesNotAllowed" xml:space="preserve">
+    <value>{0} was already specified for {1}</value>
+  </data>
+  <data name="l|localSource" xml:space="preserve">
+    <value>Don't instrument code for which the source file is not present.</value>
+  </data>
+  <data name="v|visibleBranches" xml:space="preserve">
+    <value>Hide complex internal IL branching implementation details in switch/match constructs, and just show what the source level logic implies.</value>
   </data>
 </root>

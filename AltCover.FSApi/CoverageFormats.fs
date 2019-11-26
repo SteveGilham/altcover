@@ -46,7 +46,9 @@ module CoverageFormats =
            XmlUtilities.AssemblyNameWithFallback p (Path.GetFileNameWithoutExtension p)
          paths.Add(p, a))
     let usefulAssemblies =
-      assemblies |> Seq.filter (fun p -> identities.ContainsKey paths.[p])
+      assemblies
+      |> Seq.filter (fun p -> identities.ContainsKey paths.[p])
+      |> Seq.map (fun p -> (p,[]))
 
     // ensure default state -- this switches branch recording off
     AltCover.Main.init()
@@ -94,6 +96,12 @@ module CoverageFormats =
               let visits = (max 0 v) + (max 0 vc)
               sp.Attribute(XName.Get "vc").Value <- visits.ToString
                                                       (System.Globalization.CultureInfo.InvariantCulture)))
+
+    rewrite.Descendants(XName.Get "Class")
+    |> Seq.filter (fun c -> c.Descendants(XName.Get "Method") |> Seq.isEmpty)
+    |> Seq.toList // reify before making changes
+    |> Seq.iter (fun c -> c.Remove())
+
     let dec = rewrite.Declaration
     dec.Encoding <- "utf-8"
     dec.Standalone <- null

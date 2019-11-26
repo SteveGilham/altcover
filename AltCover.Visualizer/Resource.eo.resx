@@ -144,10 +144,10 @@ estas sen dato pri respekto al fonta dosiero
     <value>_Kreditoj</value>
   </data>
   <data name="fontButton.Label" xml:space="preserve">
-    <value>t&#x0;_Tiparo...</value>
+    <value>t&#x2028;_Tiparo...</value>
   </data>
   <data name="gtk-close" xml:space="preserve">
-    <value>f&#x0;_Fermi</value>
+    <value>f&#x2028;_Fermi</value>
   </data>
   <data name="InvalidFile" xml:space="preserve">
     <value>La dosiero {0} ne estas valida kovra dosiero:
@@ -163,10 +163,10 @@ raportas al ausente fonta dosiero
 {1}.</value>
   </data>
   <data name="openButton.Label" xml:space="preserve">
-    <value>m&#x0;_Malferma ...</value>
+    <value>m&#x2028;_Malferma ...</value>
   </data>
   <data name="refreshButton.Label" xml:space="preserve">
-    <value>r&#x0;_Refreŝigi</value>
+    <value>r&#x2028;_Refreŝigi</value>
   </data>
   <data name="SelectFont" xml:space="preserve">
     <value>Elektu tiparon por fonta ekrano</value>
@@ -175,7 +175,7 @@ raportas al ausente fonta dosiero
     <value>XML-dosieroj (*.xml)|*.xml|Ĉiuj dosieroj (*.*)|*.*</value>
   </data>
   <data name="showAboutButton.Label" xml:space="preserve">
-    <value>p&#x0;_Pri...</value>
+    <value>p&#x2028;_Pri...</value>
   </data>
   <data name="_License" xml:space="preserve">
     <value>_Permesilo</value>

@@ -1,0 +1,37 @@
+--- ./Microsoft.PowerShell.CodeAnalysis.15.il	2019-09-02 18:33:17.906927000 +0100
++++ ./Microsoft.PowerShell.CodeAnalysis.16.il	2019-09-02 18:36:47.191923500 +0100
+@@ -347,7 +347,7 @@
+ .assembly extern /*23000001*/ FxCopSdk
+ {
+   .publickeytoken = (B0 3F 5F 7F 11 D5 0A 3A )                         // .?_....:
+-  .ver 15:0:0:0
++  .ver 16:0:0:0
+ }
+ .assembly extern /*23000002*/ mscorlib
+ {
+@@ -357,7 +357,7 @@
+ .assembly extern /*23000003*/ Microsoft.Cci
+ {
+   .publickeytoken = (B0 3F 5F 7F 11 D5 0A 3A )                         // .?_....:
+-  .ver 15:0:0:0
++  .ver 16:0:0:0
+ }
+ .assembly extern /*23000004*/ System.Core
+ {
+@@ -399,16 +399,6 @@
+   .custom /*0C00000F:0A000005*/ instance void [mscorlib/*23000002*/]System.Runtime.InteropServices.ComVisibleAttribute/*01000005*/::.ctor(bool) /* 0A000005 */ = ( 01 00 00 00 00 ) 
+   .custom /*0C000010:0A000006*/ instance void [mscorlib/*23000002*/]System.Runtime.CompilerServices.RuntimeCompatibilityAttribute/*01000006*/::.ctor() /* 0A000006 */ = ( 01 00 01 00 54 02 16 57 72 61 70 4E 6F 6E 45 78   // ....T..WrapNonEx
+                                                                                                                                                                           63 65 70 74 69 6F 6E 54 68 72 6F 77 73 01 )       // ceptionThrows.
+-  .publickey = (00 24 00 00 04 80 00 00 94 00 00 00 06 02 00 00   // .$..............
+-                00 24 00 00 52 53 41 31 00 04 00 00 01 00 01 00   // .$..RSA1........
+-                91 64 43 A2 EE 1D 29 4E 8C FA 76 66 FB 3F 51 2D   // .dC...)N..vf.?Q-
+-                99 8D 7C EA C4 90 9E 35 ED B2 AC 1E 10 4D E6 88   // ..|....5.....M..
+-                90 A9 37 16 D1 D1 93 1F 72 28 AA C0 52 3C AC F5   // ..7.....r(..R<..
+-                0F D8 2C DB 4C CF 4F F4 BF 0D ED 95 E3 A3 83 F4   // ..,.L.O.........
+-                F3 71 E3 B8 2C 45 50 2C E7 4D 7D 57 25 83 49 52   // .q..,EP,.M}W%.IR
+-                08 C1 90 5E 0F 1E 8A 3C CE 66 C4 C7 5E 4C A3 2E   // ...^...<.f..^L..
+-                9A 8F 8D EE 64 E0 59 C0 DC 02 66 E8 D2 CB 6D 7E   // ....d.Y...f...m~
+-                BD 46 4B 47 E0 62 F8 0B 63 D3 90 E3 89 21 7F B7 ) // .FKG.b..c....!..
+   .hash algorithm 0x00008004
+   .ver 2:1:0:0
+ }

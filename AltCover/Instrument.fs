@@ -62,16 +62,6 @@ module internal Instrument =
     |> isNull
     |> not
 
-#if NETCOREAPP2_0
-  let dependencies =
-    (resources.GetString "netcoreDependencies").Replace("version", version)
-  let runtime =
-    (resources.GetString "netcoreRuntime")
-      .Replace("AltCover.Recorder.g/version", "AltCover.Recorder.g/" + version)
-  let newLibraries =
-    (resources.GetString "netcoreLibraries")
-      .Replace("AltCover.Recorder.g/version", "AltCover.Recorder.g/" + version)
-#else
   let dependencies =
     (resources.GetString "frameworkDependencies").Replace("version", version)
   let runtime =
@@ -80,17 +70,6 @@ module internal Instrument =
   let newLibraries =
     (resources.GetString "frameworkLibraries")
       .Replace("AltCover.Recorder.g/version", "AltCover.Recorder.g/" + version)
-#endif
-
-  /// <summary>
-  /// Workround for not being able to take typeof<SomeModule> even across
-  /// assembly boundaries -- start with a pure type then iterate to the module
-  /// </summary>
-  /// <returns>A representation of the type used to record all coverage visits.</returns>
-  let internal RecorderInstanceType() =
-    let trace = typeof<AltCover.Recorder.Tracer>
-    trace.Assembly.GetExportedTypes()
-    |> Seq.find (fun (t : Type) -> t.FullName = "AltCover.Recorder.Instance")
 
   /// <summary>
   /// Locate the method that must be called to register a code point for coverage visit.
@@ -98,11 +77,15 @@ module internal Instrument =
   /// <param name="assembly">The assembly containing the recorder method</param>
   /// <returns>A representation of the method to call to signal a coverage visit.</returns>
   let internal RecordingMethod(recordingAssembly : AssemblyDefinition) =
-    let other = RecorderInstanceType()
-    [ "Visit"; "Push"; "Pop" ]
-    |> List.map (fun n ->
-         let t = other.GetMethod(n).MetadataToken
-         recordingAssembly.MainModule.LookupToken(t) :?> MethodDefinition)
+    recordingAssembly.MainModule.GetAllTypes()
+    |> Seq.filter (fun t -> t.FullName = "AltCover.Recorder.Instance")
+    |> Seq.collect (fun t -> t.Methods)
+    |> Seq.map (fun t -> (t.Name, t))
+    |> Seq.filter (fun (n,_) -> n = "Visit" || n = "Push" || n = "Pop")
+    |> Seq.sortBy fst
+    |> Seq.map snd
+    |> Seq.toList
+    |> List.rev
 
   /// <summary>
   /// Applies a new key to an assembly name
@@ -110,25 +93,18 @@ module internal Instrument =
   /// <param name="assemblyName">The name to update</param>
   /// <param name="key">The possibly empty key to use</param>
   let internal UpdateStrongNaming (assembly : AssemblyDefinition)
-      (key : StrongNameKeyPair option) =
+      (key : StrongNameKeyData option) =
     let assemblyName = assembly.Name
-#if NETCOREAPP2_0
-    do
-#else
     match key with
     | None ->
-#endif
        assembly.MainModule.Attributes <- assembly.MainModule.Attributes
                                          &&& (~~~ModuleAttributes.StrongNameSigned)
        assemblyName.HasPublicKey <- false
        assemblyName.PublicKey <- null
        assemblyName.PublicKeyToken <- null
-#if NETCOREAPP2_0
-#else
     | Some key' ->
        assemblyName.HasPublicKey <- true
        assemblyName.PublicKey <- key'.PublicKey // sets token implicitly
-#endif
 
   /// <summary>
   /// Locate the key, if any, which was used to name this assembly.
@@ -177,7 +153,8 @@ module internal Instrument =
     Guard definition (fun () ->
 #if NETCOREAPP2_0
 #else
-      ProgramDatabase.ReadSymbols definition
+      if monoRuntime |> not
+      then ProgramDatabase.ReadSymbols definition
 #endif
       definition.Name.Name <- (extractName definition) + ".g"
 
@@ -288,6 +265,8 @@ module internal Instrument =
         ResolutionTable.[name] <- a
         a
 
+  let internal HookResolveHandler = new AssemblyResolveEventHandler(ResolveFromNugetCache)
+
   let internal HookResolver(resolver : IAssemblyResolver) =
     if resolver
        |> isNull
@@ -295,7 +274,7 @@ module internal Instrument =
     then
       let hook = resolver.GetType().GetMethod("add_ResolveFailure")
       hook.Invoke
-        (resolver, [| new AssemblyResolveEventHandler(ResolveFromNugetCache) :> obj |])
+        (resolver, [| HookResolveHandler :> obj |])
       |> ignore
 
   /// <summary>
@@ -343,10 +322,9 @@ module internal Instrument =
     // Exception of type 'Mono.CompilerServices.SymbolWriter.MonoSymbolFileException' was thrown.
     pkey.WriteSymbols <- isWindows
     pkey.SymbolWriterProvider <- CreateSymbolWriter pdb isWindows monoRuntime
-    // Also, there are no strongnames in .net core
-    KnownKey assembly.Name
-    |> Option.iter (fun key -> pkey.StrongNameKeyPair <- key)
 #endif
+    KnownKey assembly.Name
+    |> Option.iter (fun key -> pkey.StrongNameKeyBlob <- key.Blob |> List.toArray)
 
     let here = Directory.GetCurrentDirectory()
     try
@@ -430,9 +408,6 @@ module internal Instrument =
     |> Seq.iter
          (fun r ->
          let original = r.ToString()
-#if NETCOREAPP2_0
-         do
-#else
          let token = KnownToken r
          let effectiveKey = match token with
                             | None -> Visitor.defaultStrongNameKey
@@ -440,15 +415,11 @@ module internal Instrument =
                             | Some _ -> token
          match effectiveKey with
          | None ->
-#endif
             r.HasPublicKey <- false
             r.PublicKeyToken <- null
             r.PublicKey <- null
-#if NETCOREAPP2_0
-#else
          | Some key -> r.HasPublicKey <- true
                        r.PublicKey <- key.Pair.PublicKey // implicitly sets token
-#endif
 
          let updated = r.ToString()
          if not <| updated.Equals(original, StringComparison.Ordinal) then
@@ -562,8 +533,10 @@ module internal Instrument =
     then
       let point = (branch.Uid ||| Base.Counter.BranchFlag)
       let instrument instruction =
-        InsertVisit instruction state.MethodWorker state.RecordingMethodRef.Visit
-          state.ModuleId point
+        if branch.Representative <> Reporting.None
+        then InsertVisit instruction state.MethodWorker state.RecordingMethodRef.Visit
+               state.ModuleId point
+        else instruction // maybe have to insert NOPs?
 
       let updateSwitch update =
         let operands = branch.Start.Operand :?> Instruction []
@@ -617,27 +590,36 @@ module internal Instrument =
         else branch.Start.Operand <- preamble
     state
 
+  let WriteAssemblies definition file targets sink =
+    let first = Path.Combine (targets |> Seq.head, file)
+    String.Format
+      (System.Globalization.CultureInfo.CurrentCulture,
+       CommandLine.resources.GetString "instrumented", definition, first) |> sink
+    WriteAssembly definition first
+    targets
+    |> Seq.tail
+    |> Seq.iter (fun p -> let pathn = Path.Combine(p, file)
+                          String.Format
+                            (System.Globalization.CultureInfo.CurrentCulture,
+                             CommandLine.resources.GetString "instrumented", definition, pathn) |> sink
+                          File.Copy(first, pathn, true))
+
   let private FinishVisit(state : InstrumentContext) =
     try
-      let counterAssemblyFile =
-        Path.Combine
-          (Visitor.InstrumentDirectory(), (extractName state.RecordingAssembly) + ".dll")
-      WriteAssembly (state.RecordingAssembly) counterAssemblyFile
-      Directory.GetFiles
-        (Visitor.InstrumentDirectory(), "*.deps.json", SearchOption.TopDirectoryOnly)
+      let recorderFileName = (extractName state.RecordingAssembly) + ".dll"
+      WriteAssemblies (state.RecordingAssembly) recorderFileName (Visitor.InstrumentDirectories()) ignore
+
+      Visitor.InstrumentDirectories()
+      |> Seq.iter (fun instrument ->
+
+      Directory.GetFiles(instrument, "*.deps.json", SearchOption.TopDirectoryOnly)
       |> Seq.iter (fun f ->
+
            File.WriteAllText(f,
                              (f
                               |> File.ReadAllText
                               |> injectJSON)))
-#if NETCOREAPP2_0
-      let fsharplib = Path.Combine(Visitor.InstrumentDirectory(), "FSharp.Core.dll")
-      if not (File.Exists fsharplib) then
-        use fsharpbytes =
-          new FileStream(AltCover.Recorder.Tracer.Core(), FileMode.Open, FileAccess.Read)
-        use libstream = new FileStream(fsharplib, FileMode.Create)
-        fsharpbytes.CopyTo libstream
-#endif
+      )
     finally
       (state.RecordingAssembly :> IDisposable).Dispose()
     { state with RecordingAssembly = null }
@@ -701,13 +683,9 @@ module internal Instrument =
     Track state m included track
     state
 
-  let private VisitAfterAssembly state (assembly : AssemblyDefinition) =
+  let private VisitAfterAssembly state (assembly : AssemblyDefinition) (paths : string list) =
     let originalFileName = Path.GetFileName assembly.MainModule.FileName
-    let path = Path.Combine(Visitor.InstrumentDirectory(), originalFileName)
-    String.Format
-      (System.Globalization.CultureInfo.CurrentCulture,
-       CommandLine.resources.GetString "instrumented", assembly, path) |> Output.Info
-    WriteAssembly assembly path
+    WriteAssemblies assembly originalFileName paths Output.Info
     state
 
   let private VisitStart state =
@@ -724,7 +702,7 @@ module internal Instrument =
   let internal InstrumentationVisitorCore (state : InstrumentContext) (node : Node) =
     match node with
     | Start _ -> VisitStart state
-    | Assembly(assembly, included) ->
+    | Assembly(assembly, included, _) ->
       UpdateStrongReferences assembly state.InstrumentedAssemblies |> ignore
       if included <> Inspect.Ignore then
         assembly.MainModule.AssemblyReferences.Add(state.RecordingAssembly.Name)
@@ -738,7 +716,7 @@ module internal Instrument =
     | AfterMethod(m, included, track) -> VisitAfterMethod state m included track
     | AfterType -> state
     | AfterModule -> state
-    | AfterAssembly assembly -> VisitAfterAssembly state assembly
+    | AfterAssembly (assembly, paths) -> VisitAfterAssembly state assembly paths
     | Finish -> FinishVisit state
 
   let internal InstrumentationVisitorWrapper (core : InstrumentContext -> Node -> InstrumentContext)

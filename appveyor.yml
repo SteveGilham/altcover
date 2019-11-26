@@ -1,16 +1,13 @@
-version: 5.3.{build}-pre
+version: 6.6.{build}-pre
 branches:
   except:
   - /develop.*/
 skip_tags: true
-image: Visual Studio 2017
+image: Visual Studio 2019
 clone_depth: 2
 environment:
   COVERALLS_REPO_TOKEN:
     secure: qgIIfE76i59qTVO64mT7QwKcAUUYCQLie4XdUdlnt7MXLhrwqTbcfGUsCss/TmLg
-cache: 
-  - packages -> **\packages.config
-  - '%USERPROFILE%\.nuget\packages -> **\*.*proj'
 nuget:
   disable_publish_on_pr: true
 install:
@@ -19,7 +16,7 @@ build_script:
 - ps: >-
     $ErrorActionPreference = 'Continue'
 
-    & dotnet restore dotnet-fake.fsproj
+    & dotnet tool restore
 
     & dotnet fake run .\Build\setup.fsx
 

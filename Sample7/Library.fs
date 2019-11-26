@@ -64,8 +64,6 @@ module Problematic =
     finally
       System.Console.WriteLine("Finally")
 
-#if NETCOREAPP2_0
 module Program =
   [<EntryPoint>]
-  let main _ = 0
-#endif
+  let main _ = 0      

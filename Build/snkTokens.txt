@@ -7,3 +7,14 @@ ThirdParty.snk : 9aa26ad8b6cf2594
 
 sn -p yourkey.snk publickey.snk
 sn -tp publickey.snk
+
+Genbu Gabiaru
+Habu
+Indori
+Jinmengyo
+Kaban
+
+https://stu.dev/dotnet-core-3-local-tools/
+bootstrap -- dotnet new tool-manifest
+add -- dotnet tool install $(TOOL)
+restore -- dotnet tool restore

@@ -118,10 +118,11 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="i|inputDirectory=" xml:space="preserve">
-    <value>Laŭvola: La dosierujo enhavanta asembleojn al instrumento (defaŭlta: aktuala dosierujo)</value>
+    <value>Laŭvola, multobla: Dosierujo enhavanta asembleojn al instrumento (defaŭlta: aktuala dosierujo)</value>
   </data>
   <data name="o|outputDirectory=" xml:space="preserve">
-    <value>Laŭvola: La dosierujo ricevi la instrumentajn asembleojn kaj iliajn kunulojn (defaŭlte: sub-dosierujo '__Instrumented' de la aktuala dosierujo; aŭ '__Saved' se 'inplace' estas aro)</value>
+    <value>Laŭvola, multobla: Dosierujo ricevi la instrumentajn asembleojn kaj iliajn kunulojn (defaŭlte: sub-dosierujo '__Instrumented' de la aktuala dosierujo; aŭ '__Saved' se '--inplace' estas aro).
+Vidu ankaŭ '--inplace'</value>
   </data>
   <data name="k|key=" xml:space="preserve">
     <value>Laŭvola, multobla: iu ajn alia forta-nomo ŝlosilo por uzi</value>
@@ -154,7 +155,7 @@
     <value>Krei dosierujon {0}</value>
   </data>
   <data name="HelpText" xml:space="preserve">
-    <value>AltCover [/i[nputDirectory]=VALO] [/o[utputDirectory]=VALO] [/y|symbolDirectory=VALO]  [/d[ependency]=VALO] [/sn|strongNameKey=VALO] [/k[ey]=VALO] [/x[mlReport]=VALO] [/f[ileFilter]=VALO] [/p[athFilter]=VALO] [/s|assemblyFilter=VALO] [/t|typeFilter=VALO] [/m|methodFilter=VALO] [/a|attributeFilter=VALO] [/c[allContext]=VALO] [--opencover] [--inplace] [--save] [--single] [--linecover|branchcover] [--dropReturnCode] [--sourceLink] [--defer[:[+|-]]] [/?|h[elp]] [-- ] [...]
+    <value>AltCover [/i[nputDirectory]=VALO] [/o[utputDirectory]=VALO] [/y|symbolDirectory=VALO]  [/d[ependency]=VALO] [/sn|strongNameKey=VALO] [/k[ey]=VALO] [/x[mlReport]=VALO] [/f[ileFilter]=VALO] [/p[athFilter]=VALO] [/s|assemblyFilter=VALO] [/t|typeFilter=VALO] [/m|methodFilter=VALO] [/a|attributeFilter=VALO] [/l[ocalSource]] [/c[allContext]=VALO] [--opencover] [--inplace] [--save] [--single] [--linecover|branchcover] [--dropReturnCode] [--sourceLink] [--defer[:[+|-]]] [/v[isibleBranches]] [/?|h[elp]] [-- ] [...]
 aŭ
 AltCover Runner [/r[ecordingDirectory]=VALO] [/w[orkingDirectory]=VALO] [/x||executable=VALO] [--collect] [/l[covReport]=VALO] [/t[hreshold]=VALO] [/c[obertura]=VALO] [/o[utputFile]=VALO] [--dropReturnCode] [--teamcity[:[+][R|B]]] [/?|h[elp]] [-- ] [...]
 aŭ
@@ -164,13 +165,10 @@ AltCover version
 Vidu https://github.com/SteveGilham/altcover/wiki/Usage por plenaj detaloj.</value>
   </data>
   <data name="NotInPlace" xml:space="preserve">
-    <value>De kaj al adresaroj estas identaj</value>
+    <value>De kaj al adresaroj {0} estas identaj</value>
   </data>
   <data name="UsageError" xml:space="preserve">
     <value>Eraro - uzado estas:</value>
-  </data>
-  <data name="&quot;&lt;&gt;&quot;" xml:space="preserve">
-    <value>"n/a"</value>
   </data>
   <data name="instrumentingfrom" xml:space="preserve">
     <value>Instrumentaj dosieroj de {0}</value>
@@ -384,5 +382,14 @@ Se ĉi tiu problemo estis detektita en la antaŭprova instrumenta stadio de `dot
   </data>
   <data name="defer:" xml:space="preserve">
     <value>Laŭvola, transdono de skriba kurant-reĝimaj priraportado ĝis elira procezo.</value>
+  </data>
+  <data name="DuplicatesNotAllowed" xml:space="preserve">
+    <value>{0} estis jam specifita por {1}</value>
+  </data>
+  <data name="l|localSource" xml:space="preserve">
+    <value>Ne instrumentu kodon por kiu la fontdosiero ne ĉeestas.</value>
+  </data>
+  <data name="v|visibleBranches" xml:space="preserve">
+    <value>Kaŝu kompleksajn internajn IL-branĉajn efektivigajn detalojn en ŝaltilo / matĉaj konstruaĵoj, kaj nur montru, kion implicas la fontnivela logiko.</value>
   </data>
 </root>

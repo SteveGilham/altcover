@@ -73,8 +73,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="GtkSharp" Version="3.22.24.37" />
-    <PackageReference Condition="'$(OS)' == 'Windows_NT' AND '$(Configuration)'=='Release'" Include="Microsoft.SourceLink.GitHub" Version="1.0.0-beta-63127-02">
+    <PackageReference Include="GtkSharp" Version="3.22.25.56" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0-beta2-19554-01">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
@@ -82,7 +82,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Update="FSharp.Core" Version="4.6.2" />
+    <PackageReference Update="FSharp.Core" Version="4.7.0" />
   </ItemGroup>
 
   <Target Name="PreBuild" BeforeTargets="PreBuildEvent">

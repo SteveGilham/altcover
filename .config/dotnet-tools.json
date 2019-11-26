@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "isRoot": true,
+  "tools": {
+    "dotnet-reportgenerator-globaltool": {
+      "version": "4.3.6",
+      "commands": [
+        "reportgenerator"
+      ]
+    },
+    "fake-cli": {
+      "version": "5.18.3",
+      "commands": [
+        "fake"
+      ]
+    }
+  }
+}

@@ -37,8 +37,8 @@ type CollectParams =
 
 [<ExcludeFromCodeCoverage; NoComparison>]
 type PrepareParams =
-  { InputDirectory : String
-    OutputDirectory : String
+  { InputDirectories : String seq
+    OutputDirectories : String seq
     SymbolDirectories : String seq
     Dependencies : String seq
     Keys : String seq
@@ -62,10 +62,12 @@ type PrepareParams =
     ExposeReturnCode : bool
     SourceLink : bool
     Defer : bool
+    LocalSource : bool
+    VisibleBranches : bool
   }
   static member Create() =
-    { InputDirectory = String.Empty
-      OutputDirectory = String.Empty
+    { InputDirectories = Seq.empty
+      OutputDirectories = Seq.empty
       SymbolDirectories = Seq.empty
       Dependencies = Seq.empty
       Keys = Seq.empty
@@ -89,6 +91,8 @@ type PrepareParams =
       ExposeReturnCode = true
       SourceLink = false
       Defer = false
+      LocalSource = false
+      VisibleBranches = false
     }
 
 #if RUNNER

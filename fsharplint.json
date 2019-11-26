@@ -27,7 +27,7 @@
     },
     "conventions": {
         "recursiveAsyncFunction": { "enabled": false },
-        "redundantNewKeyword": { "enabled": true },
+        "redundantNewKeyword": { "enabled": false },
         "nestedStatements": {
             "enabled": false,
             "config": {

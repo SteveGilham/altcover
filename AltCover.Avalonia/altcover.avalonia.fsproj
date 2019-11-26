@@ -88,7 +88,7 @@
     <PackageReference Include="Avalonia.HtmlRenderer" Version="0.6.1" />
     <PackageReference Include="Avalonia" Version="0.8.0" />
     <PackageReference Include="Avalonia.Desktop" Version="0.8.0" />
-    <PackageReference Condition="'$(OS)' == 'Windows_NT' AND '$(Configuration)'=='Release'" Include="Microsoft.SourceLink.GitHub" Version="1.0.0-beta-63127-02">
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0-beta2-19554-01">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>

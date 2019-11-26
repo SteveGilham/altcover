@@ -5,18 +5,12 @@ namespace AltCover.Recorder
 
 open System
 open System.Collections.Generic
+open System.Diagnostics
 open System.IO
 open System.Reflection
+
 open System.Resources
 open System.Runtime.CompilerServices
-
-#if NETSTANDARD2_0
-[<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage>]
-#else
-[<System.Runtime.InteropServices.ProgIdAttribute("ExcludeFromCodeCoverage hack for OpenCover issue 615")>]
-#endif
-[<NoComparison>]
-type internal Carrier = SequencePoint of String * int * Track
 
 module Instance =
   let internal resources =
@@ -150,12 +144,15 @@ module Instance =
   let internal Watcher = new FileSystemWatcher()
   let mutable internal Recording = true
 
+  let Clear () =
+    Visits <- Dictionary<string, Dictionary<int, PointVisit>>()
+
   /// <summary>
   /// This method flushes hit count buffers.
   /// </summary>
   let internal FlushAll _ =
     let counts = Visits
-    Visits <- Dictionary<string, Dictionary<int, PointVisit>>()
+    Clear()
     trace.OnConnected (fun () -> trace.OnFinish counts)
       (fun () ->
       match counts.Count with
@@ -185,18 +182,53 @@ module Instance =
     InitialiseTrace trace
     if (wasConnected <> IsRunner) then
        Samples <- Dictionary<string, Dictionary<int, bool>>()
-       Visits <- Dictionary<string, Dictionary<int, PointVisit>>()
+       Clear()
     Recording <- true
 
   let FlushFinish () =
     FlushAll ProcessExit
 
   let internal TraceVisit moduleId hitPointId context =
-    lock Visits (fun () ->
-    trace.OnVisit Visits moduleId hitPointId context)
+    lock synchronize (fun () ->
+    let counts = Visits
+    if counts.Count > 0 then Clear()
+    trace.OnVisit counts moduleId hitPointId context)
+
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage",
+                                                    "CA2202:DisposeObjectsBeforeLosingScope",
+                                                    Justification = "Damned if you do, damned if you don't Dispose()")>]
+  let LogException moduleId hitPointId context x =
+    let text = [|
+                  sprintf "ModuleId = %A" moduleId
+                  sprintf "hitPointId = %A" hitPointId
+                  sprintf "context = %A" context
+                  sprintf "exception = %s" (x.ToString())
+                  StackTrace().ToString()
+                |]
+    let stamp = sprintf "%A"DateTime.UtcNow.Ticks
+    let filename = ReportFile + "." + stamp + ".exn"
+    use file = File.Open(filename, FileMode.OpenOrCreate, FileAccess.Write)
+    use writer = new StreamWriter(file)
+    text |> Seq.iter(fun line -> writer.WriteLine("{0}", line))
+
+  let
+#if DEBUG
+#else
+      inline
+#endif
+             internal Issue71Wrapper visits moduleId hitPointId context handler add =
+    try
+      add visits moduleId hitPointId context
+    with
+    | x ->
+      match x with
+      | :? KeyNotFoundException
+      | :? NullReferenceException
+      | :? ArgumentNullException -> handler moduleId hitPointId context x
+      | _ -> reraise()
 
   let internal AddVisit moduleId hitPointId context =
-    Counter.AddSingleVisit Visits moduleId hitPointId context
+    Issue71Wrapper Visits moduleId hitPointId context LogException Counter.AddSingleVisit
 
   let internal TakeSample strategy moduleId hitPointId =
     match strategy with
@@ -243,7 +275,7 @@ module Instance =
       | (0L, 0) -> Null
       | (t, 0) -> Time(t * (clock() / t))
       | (0L, n) -> Call n
-      | (t, n) -> Both(t * (clock() / t), n)
+      | (t, n) -> Both{ Time = t * (clock() / t); Call = n }
     else Null
 
   let internal PayloadControl = PayloadSelection Clock

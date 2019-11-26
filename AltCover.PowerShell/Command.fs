@@ -61,23 +61,24 @@ type InvokeAltCoverCommand(runner : bool) =
 
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  member val InputDirectory = String.Empty with get, set
+  [<Alias("InputDirectories")>]
+  member val InputDirectory : string array = [||] with get, set
 
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  member val OutputDirectory = String.Empty with get, set
+  [<Alias("OutputDirectories")>]
+  member val OutputDirectory : string array = [||] with get, set
 
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
   [<Alias("SymbolDirectories")>]
   member val SymbolDirectory : string array = [||] with get, set
-#if NETCOREAPP2_0
 
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
   [<Alias("Dependencies")>]
   member val Dependency : string array = [||] with get, set
-#else
+
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
       ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
   [<Alias("Keys")>]
@@ -85,7 +86,6 @@ type InvokeAltCoverCommand(runner : bool) =
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
       ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
   member val StrongNameKey = String.Empty with get, set
-#endif
 
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
@@ -165,6 +165,14 @@ type InvokeAltCoverCommand(runner : bool) =
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
   member val Defer : SwitchParameter = SwitchParameter(false) with get, set
 
+  [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
+              ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
+  member val LocalSource : SwitchParameter = SwitchParameter(false) with get, set
+
+  [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
+              ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
+  member val VisibleBranches : SwitchParameter = SwitchParameter(false) with get, set
+
   [<Parameter(ParameterSetName = "Runner", Mandatory = false, ValueFromPipeline = false,
               ValueFromPipelineByPropertyName = false)>]
   member val SummaryFormat : Summary = Summary.Default with get, set
@@ -185,18 +193,12 @@ type InvokeAltCoverCommand(runner : bool) =
                                     SummaryFormat = formats.[self.SummaryFormat |> int]}
 
   member private self.Prepare() =
-    FSApi.PrepareParams.Primitive { InputDirectory = self.InputDirectory
-                                    OutputDirectory = self.OutputDirectory
+    FSApi.PrepareParams.Primitive { InputDirectories = self.InputDirectory
+                                    OutputDirectories = self.OutputDirectory
                                     SymbolDirectories = self.SymbolDirectory
-#if NETCOREAPP2_0
                                     Dependencies = self.Dependency
-                                    Keys = []
-                                    StrongNameKey = String.Empty
-#else
-                                    Dependencies = []
                                     Keys = self.Key;
                                     StrongNameKey = self.StrongNameKey;
-#endif
                                     XmlReport = self.XmlReport
                                     FileFilter = self.FileFilter
                                     AssemblyFilter = self.AssemblyFilter
@@ -215,7 +217,9 @@ type InvokeAltCoverCommand(runner : bool) =
                                     CommandLine = self.CommandLine
                                     ExposeReturnCode = not self.DropReturnCode.IsPresent
                                     SourceLink = self.SourceLink.IsPresent
-                                    Defer = self.Defer.IsPresent }
+                                    Defer = self.Defer.IsPresent
+                                    LocalSource = self.LocalSource.IsPresent
+                                    VisibleBranches = self.VisibleBranches.IsPresent}
 
   member private self.Log() =
     FSApi.Logging.Primitive { Primitive.Logging.Create() with Error = (fun s -> self.Fail <- s :: self.Fail)

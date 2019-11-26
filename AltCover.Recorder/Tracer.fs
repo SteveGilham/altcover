@@ -6,10 +6,10 @@ open System.IO
 open System.IO.Compression
 open System.Threading
 
-#if NETSTANDARD2_0
-[<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage>]
-#else
+#if NET2
 [<System.Runtime.InteropServices.ProgIdAttribute("ExcludeFromCodeCoverage hack for OpenCover issue 615")>]
+#else
+[<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage>]
 #endif
 type internal Close =
   | DomainUnload
@@ -24,10 +24,6 @@ type Tracer =
     Definitive : bool
     Stream : System.IO.Stream
     Formatter : System.IO.BinaryWriter }
-#if NETSTANDARD2_0
-  static member Core() =
-    typeof<Microsoft.FSharp.Core.CompilationMappingAttribute>.Assembly.Location
-#endif
 
   static member Create(name : string) =
     { Tracer = name
@@ -69,10 +65,10 @@ type Tracer =
     | Call t ->
       this.Formatter.Write(Tag.Call |> byte)
       this.Formatter.Write(t)
-    | Both(t', t) ->
+    | Both b ->
       this.Formatter.Write(Tag.Both |> byte)
-      this.Formatter.Write(t')
-      this.Formatter.Write(t)
+      this.Formatter.Write(b.Time)
+      this.Formatter.Write(b.Call)
     | Table t ->
       this.Formatter.Write(Tag.Table |> byte)
       t.Keys
@@ -95,7 +91,6 @@ type Tracer =
   member internal this.CatchUp(visits : Dictionary<string, Dictionary<int, PointVisit>> ) =
     if visits.Count > 0 then
       visits |> Table |> this.Push String.Empty 0
-      visits.Clear()
 
   member this.OnStart() =
     let running =

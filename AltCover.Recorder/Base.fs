@@ -42,31 +42,32 @@ type
   | Both = 3
   | Table = 4
 
-#if NETSTANDARD2_0
-[<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage>]
-#else
-#if NETCOREAPP2_0
-[<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage>]
-#else
+#if NET2
 [<System.Runtime.InteropServices.ProgIdAttribute("ExcludeFromCodeCoverage hack for OpenCover issue 615")>]
+#else
+[<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage>]
 #endif
+[<NoComparison>]
+type internal Pair =
+  { Time : int64; Call : int }
+
+#if NET2
+[<System.Runtime.InteropServices.ProgIdAttribute("ExcludeFromCodeCoverage hack for OpenCover issue 615")>]
+#else
+[<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage>]
 #endif
 [<NoComparison>]
 type internal Track =
   | Null
   | Time of int64
   | Call of int
-  | Both of (int64 * int)
+  | Both of Pair
   | Table of Dictionary<string, Dictionary<int, PointVisit>>
 and [<NoComparison>]
-#if NETSTANDARD2_0
-[<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage>]
-#else
-#if NETCOREAPP2_0
-[<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage>]
-#else
+#if NET2
 [<System.Runtime.InteropServices.ProgIdAttribute("ExcludeFromCodeCoverage hack for OpenCover issue 615")>]
-#endif
+#else
+[<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage>]
 #endif
     internal PointVisit =
     {
@@ -113,6 +114,8 @@ module internal Counter =
   /// <remarks>Idiom to work with CA2202; we still double dispose the stream, but elude the rule.
   /// If this is ever a problem, we will need mutability and two streams, with explicit
   /// stream disposal if and only if the reader or writer doesn't take ownership
+  /// Approved way is ugly -- https://docs.microsoft.com/en-us/visualstudio/code-quality/ca2202?view=vs-2019
+  /// Also, this rule is deprecated
   /// </remarks>
   let private ReadXDocument(stream : Stream) =
     let doc = XmlDocument()
