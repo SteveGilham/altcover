@@ -713,12 +713,12 @@ module Gui =
     baseline.Foreground <- "#8080A0"
     buff.TagTable.Add(baseline) |> ignore
     [ (// Last declared type is last layer painted
-       "visited", "#404040", "#cefdce") // "#98FB98") ; // Dark on Pale Green
-      ("declared", "#FF8C00", "#FFFFFF") // Orange on White
-      ("static", "#F5F5F5", "#808080") // Grey on White Smoke
+       "visited", "#404040", "#cefdce") // Dark on Pale Green
+      ("declared", "#FF8C00", "#FFFFFF") // Dark Orange on White
+      ("static", "#F5F5F5", "#808080") // White Smoke on Grey
       ("automatic", "#808080", "#FFFF00") // Grey on Yellow
       ("notVisited", "#ff0000", "#FFFFFF") // Red on White
-      ("excluded", "#00BFFF", "#FFFFFF") // Sky Blue on white
+      ("excluded", "#00BFFF", "#FFFFFF") // Deep Sky Blue on white
                                          ]
     |> Seq.iter (fun x -> Tag buff x |> ignore)
     baseline
