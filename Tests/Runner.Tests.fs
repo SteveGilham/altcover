@@ -1677,6 +1677,13 @@ module AltCoverRunnerTests =
   -v, --visibleBranches      Hide complex internal IL branching implementation
                                details in switch/match constructs, and just
                                show what the source level logic implies.
+      --showstatic[=VALUE]   Optional: Instrument and show code that is by
+                               default skipped as trivial.  --showstatic:- is
+                               equivalent to omitting the parameter; --
+                               showstatic by itself sets the unvisited count to
+                               a negative value interpreted by the visualizer (
+                               but treated as zero by ReportGenerator) ; --
+                               showstatic:+ sets the unvisited count to zero.
   -?, --help, -h             Prints out the options.
 or
   Runner

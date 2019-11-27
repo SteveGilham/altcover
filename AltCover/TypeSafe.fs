@@ -157,6 +157,17 @@ type SummaryFormat =
     | RPlus -> "+R"
 
 [<ExcludeFromCodeCoverage; NoComparison>]
+type StaticFormat =
+  | Default
+  | Show
+  | ShowZero
+  member self.AsString () =
+    match self with
+    | Default -> "-"
+    | Show -> String.Empty
+    | ShowZero -> "+"
+
+[<ExcludeFromCodeCoverage; NoComparison>]
 type CollectParams =
   { RecorderDirectory : DirectoryPath
     WorkingDirectory : DirectoryPath
@@ -179,7 +190,7 @@ type CollectParams =
       OutputFile = NoFile
       CommandLine = NoCommand
       ExposeReturnCode = Set
-      SummaryFormat = Default
+      SummaryFormat = SummaryFormat.Default
     }
 
 [<ExcludeFromCodeCoverage; NoComparison>]
@@ -211,6 +222,7 @@ type PrepareParams =
     Defer : Flag
     LocalSource : Flag
     VisibleBranches : Flag
+    ShowStatic : StaticFormat
   }
   static member Create() =
     { InputDirectories = NoDirectories
@@ -240,4 +252,5 @@ type PrepareParams =
       Defer = Clear
       LocalSource = Clear
       VisibleBranches = Clear
+      ShowStatic = StaticFormat.Default
     }
