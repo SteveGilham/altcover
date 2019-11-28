@@ -17,16 +17,16 @@ type CoverageTool =
 
 module internal Exemption =
   [<Literal>]
-  let Declared = -1
+  let Declared = -1         // Dark Orange on White (other user-defined exemptions TBD)
 
   [<Literal>]
-  let Automatic = -2
+  let Automatic = -2        // Grey on Yellow (other compiler generated code)
 
   [<Literal>]
-  let StaticAnalysis = -3
+  let StaticAnalysis = -3   // White Smoke on Grey (e.g. auto-properties)
 
   [<Literal>]
-  let Excluded = -4
+  let Excluded = -4         // Deep Sky Blue on white (filtered)
 
 [<NoComparison>]
 type InvalidFile =
