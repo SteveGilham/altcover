@@ -164,8 +164,8 @@ type StaticFormat =
   member self.AsString () =
     match self with
     | Default -> "-"
-    | Show -> String.Empty
-    | ShowZero -> "+"
+    | Show -> "+"
+    | ShowZero -> "++"
 
 [<ExcludeFromCodeCoverage; NoComparison>]
 type CollectParams =

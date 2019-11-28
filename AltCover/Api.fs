@@ -306,6 +306,11 @@ type PrepareParams =
     | Primitive p -> p.VisibleBranches
     | TypeSafe t -> t.VisibleBranches.AsBool()
 
+  member self.ShowStatic =
+    match self with
+    | Primitive p -> p.ShowStatic
+    | TypeSafe t -> t.ShowStatic.AsString()
+
 #if RUNNER
   static member private validateArray a f key =
     PrepareParams.validateArraySimple a (f key)
@@ -419,8 +424,9 @@ module internal Args =
     if x |> String.IsNullOrWhiteSpace then []
     else [ a; x ]
 
-  let private OptItem a x =
-    if x |> String.IsNullOrWhiteSpace then []
+  let private OptItem a x l =
+    if x |> String.IsNullOrWhiteSpace ||
+       l |> List.exists (fun i -> i = x) then []
     else [ a + ":" + x ]
 
   let internal ItemList a x =
@@ -468,6 +474,7 @@ module internal Args =
       Flag "--defer" args.Defer
       Flag "--localSource" args.LocalSource
       Flag "--visibleBranches" args.VisibleBranches
+      OptItem "--showstatic" args.ShowStatic ["-"]
       trailing ]
     |> List.concat
 
@@ -490,7 +497,7 @@ module internal Args =
       Item "-o" args.OutputFile
       Flag "--collect" (exe |> String.IsNullOrWhiteSpace)
       Flag "--dropReturnCode" (args.ExposeReturnCode |> not)
-      OptItem "--teamcity" args.SummaryFormat
+      OptItem "--teamcity" args.SummaryFormat []
       trailing ]
     |> List.concat
 

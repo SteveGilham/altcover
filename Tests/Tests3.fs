@@ -2290,10 +2290,11 @@ module AltCoverTests3 =
       --showstatic[=VALUE]   Optional: Instrument and show code that is by
                                default skipped as trivial.  --showstatic:- is
                                equivalent to omitting the parameter; --
-                               showstatic by itself sets the unvisited count to
-                               a negative value interpreted by the visualizer (
-                               but treated as zero by ReportGenerator) ; --
-                               showstatic:+ sets the unvisited count to zero.
+                               showstatic or --showstatic:+ sets the unvisited
+                               count to a negative value interpreted by the
+                               visualizer (but treated as zero by
+                               ReportGenerator) ; --showstatic:++ sets the
+                               unvisited count to zero.
   -?, --help, -h             Prints out the options.
 or
   ipmo                       Prints out the PowerShell script to import the
@@ -2406,10 +2407,11 @@ or
       --showstatic[=VALUE]   Optional: Instrument and show code that is by
                                default skipped as trivial.  --showstatic:- is
                                equivalent to omitting the parameter; --
-                               showstatic by itself sets the unvisited count to
-                               a negative value interpreted by the visualizer (
-                               but treated as zero by ReportGenerator) ; --
-                               showstatic:+ sets the unvisited count to zero.
+                               showstatic or --showstatic:+ sets the unvisited
+                               count to a negative value interpreted by the
+                               visualizer (but treated as zero by
+                               ReportGenerator) ; --showstatic:++ sets the
+                               unvisited count to zero.
   -?, --help, -h             Prints out the options.
 or
   Runner

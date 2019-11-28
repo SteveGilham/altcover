@@ -272,9 +272,10 @@ module internal Main =
       (CommandLine.ddFlag "v|visibleBranches" Visitor.coalesceBranches)
       ("showstatic:",
         fun x -> if Visitor.staticFilter = None then
-                    Visitor.staticFilter <- if String.IsNullOrWhiteSpace x
+                    Visitor.staticFilter <- if String.IsNullOrWhiteSpace x ||
+                                               x = "+"
                                             then Some StaticFilter.AsCovered
-                                            else if x = "+" then Some StaticFilter.NoFilter
+                                            else if x = "++" then Some StaticFilter.NoFilter
                                                  else if x = "-" then Some StaticFilter.Hidden
                                                       else None
                     if Visitor.staticFilter = None then
