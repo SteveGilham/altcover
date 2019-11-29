@@ -1149,6 +1149,85 @@ module AltCoverTests3 =
         Visitor.coalesceBranches := false
 
     [<Test>]
+    let ParsingStaticGivesStatic() =
+      Main.init()
+      let options = Main.DeclareOptions()
+      let input = [| "--showstatic" |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Left _ -> Assert.Fail()
+      | Right(x, y) ->
+        Assert.That(y, Is.SameAs options)
+        Assert.That(x, Is.Empty)
+      Assert.That(Visitor.staticFilter, StaticFilter.AsCovered |> Some |> Is.EqualTo )
+
+    [<Test>]
+    let ParsingStaticPlusGivesStatic() =
+      Main.init()
+      let options = Main.DeclareOptions()
+      let input = [| "--showstatic:+" |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Left _ -> Assert.Fail()
+      | Right(x, y) ->
+        Assert.That(y, Is.SameAs options)
+        Assert.That(x, Is.Empty)
+      Assert.That(Visitor.staticFilter, StaticFilter.AsCovered |> Some |> Is.EqualTo )
+
+    [<Test>]
+    let ParsingStaticPlusPlusGivesStaticPlus() =
+      Main.init()
+      let options = Main.DeclareOptions()
+      let input = [| "--showstatic:++" |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Left _ -> Assert.Fail()
+      | Right(x, y) ->
+        Assert.That(y, Is.SameAs options)
+        Assert.That(x, Is.Empty)
+      Assert.That(Visitor.staticFilter, StaticFilter.NoFilter |> Some |> Is.EqualTo )
+
+    [<Test>]
+    let ParsingStaticMinusGivesNoStatic() =
+      Main.init()
+      let options = Main.DeclareOptions()
+      let input = [| "--showstatic=-" |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Left _ -> Assert.Fail()
+      | Right(x, y) ->
+        Assert.That(y, Is.SameAs options)
+        Assert.That(x, Is.Empty)
+      Assert.That(Visitor.staticFilter, StaticFilter.Hidden |> Some |> Is.EqualTo )
+
+    [<Test>]
+    let ParsingMultipleStaticGivesFailure() =
+      Main.init()
+      let options = Main.DeclareOptions()
+      let input = [| "--showstatic:-"; "--showstatic:-" |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Right _ -> Assert.Fail()
+      | Left(x, y) ->
+        Assert.That(y, Is.SameAs options)
+        Assert.That(x, Is.EqualTo "UsageError")
+        Assert.That(CommandLine.error |> Seq.head, Is.EqualTo "--showstatic : specify this only once")
+
+    [<Test>]
+    let ParsingJunkStaticGivesFailure() =
+      Main.init()
+      let options = Main.DeclareOptions()
+      let tag = Guid.NewGuid().ToString()
+      let input = [| "--showstatic:" + tag  |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Right _ -> Assert.Fail()
+      | Left(x, y) ->
+        Assert.That(y, Is.SameAs options)
+        Assert.That(x, Is.EqualTo "UsageError")
+        Assert.That(CommandLine.error |> Seq.head, Is.EqualTo ("--showstatic : cannot be '" + tag + "'"))
+
+    [<Test>]
     let ParsingTimeGivesTime() =
       Main.init()
       try

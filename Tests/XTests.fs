@@ -386,6 +386,17 @@ module AltCoverXTests =
                       "--linecover"; "--branchcover" ] @>
 
   [<Test>]
+  let TypeSafePrepareStaticCanBeValidated() =
+    let inputs =
+      [
+        TypeSafe.StaticFormat.Default
+        TypeSafe.StaticFormat.Show
+        TypeSafe.StaticFormat.ShowZero
+      ]
+    let expected = [ "-"; "+"; "++" ]
+    test <@  inputs |> List.map (fun i -> i.AsString()) = expected @>
+
+  [<Test>]
   let PrepareParamsCanBeValidatedWithErrors() =
     let subject =
       { Primitive.PrepareParams.Create() with XmlReport =

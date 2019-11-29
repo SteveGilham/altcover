@@ -85,6 +85,7 @@
     <Compile Include="Tests2.fs" />
     <Compile Include="Tests3.fs" />
     <Compile Include="XTests.fs" />
+    <None Include="Program.fs" />
     <Content Include="packages.config" />
     <EmbeddedResource Include="..\Build\Infrastructure.snk">
       <Link>Infrastructure.snk</Link>
