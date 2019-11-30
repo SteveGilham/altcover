@@ -1204,7 +1204,7 @@ module AltCoverTests3 =
     let ParsingMultipleStaticGivesFailure() =
       Main.init()
       let options = Main.DeclareOptions()
-      let input = [| "--showstatic:-"; "--showstatic:-" |]
+      let input = [| "--showstatic:++"; "--showstatic:-" |]
       let parse = CommandLine.ParseCommandLine input options
       match parse with
       | Right _ -> Assert.Fail()
@@ -1212,6 +1212,7 @@ module AltCoverTests3 =
         Assert.That(y, Is.SameAs options)
         Assert.That(x, Is.EqualTo "UsageError")
         Assert.That(CommandLine.error |> Seq.head, Is.EqualTo "--showstatic : specify this only once")
+        Assert.That(Visitor.staticFilter, StaticFilter.NoFilter |> Some |> Is.EqualTo )
 
     [<Test>]
     let ParsingJunkStaticGivesFailure() =
