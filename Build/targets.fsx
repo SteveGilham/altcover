@@ -626,9 +626,10 @@ _Target "UnitTest" ignore
 _Target "JustUnitTest" (fun _ ->
   Directory.ensure "./_Reports"
   try
-    !!(@"_Binaries/*Tests/Debug+AnyCPU/*Tests.dll")
+    !!(@"_Binaries/*Test*/Debug+AnyCPU/*Test*.dll")
     |> Seq.filter
-         (fun f -> Path.GetFileName(f) <> "AltCover.Recorder.Tests.dll")
+         (fun f -> Path.GetFileName(f) <> "AltCover.Recorder.Tests.dll" &&
+                   Path.GetFileName(f).Contains("Tests."))
     |> NUnit3.run (fun p ->
          { p with
              ToolPath = nunitConsole

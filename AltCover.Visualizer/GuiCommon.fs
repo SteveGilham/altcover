@@ -5,7 +5,7 @@ open System.IO
 open System.Xml.XPath
 open System.Net
 
-module GuiCommon =
+module internal GuiCommon =
   // Binds class name and XML
   [<NoComparison>]
   type internal MethodKey =
@@ -30,15 +30,25 @@ module GuiCommon =
         (name.Substring(4), true)
       else (name, false)
 
-    let x = leftKey.name
-    let y = rightKey.name
+    let DisplayName (name:string) =
+      let offset =
+        match name.LastIndexOf("::", StringComparison.Ordinal) with
+        | -1 -> 0
+        | o -> o + 2
+
+      name.Substring(offset)
+
+    let x = DisplayName leftKey.name
+    let y = DisplayName rightKey.name
     let (left, specialLeft) = HandleSpecialName x
     let (right, specialRight) = HandleSpecialName y
     let sort = String.Compare(left, right, StringComparison.OrdinalIgnoreCase)
+    let tiebreaker = String.Compare(left, right, StringComparison.Ordinal)
     match (sort, specialLeft, specialRight) with
-    | (0, true, false) -> 1
-    | (0, false, true) -> -1
-    | (0, true, true) -> String.Compare(left, right, StringComparison.Ordinal)
+    | (0, true, false) -> if tiebreaker = 0 then -1 else tiebreaker
+    | (0, false, true) -> if tiebreaker = 0 then 1 else tiebreaker
+    | (0, false, false)
+    | (0, true, true) -> String.Compare(x, y, StringComparison.Ordinal)
     | _ -> sort
 
   // -------------------------- Source file Handling ---------------------------

@@ -30,8 +30,7 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <WarningsAsErrors>
     </WarningsAsErrors>
-    <OtherFlags>
-    </OtherFlags>
+    <OtherFlags>--keyfile:$(SolutionDir)Build\Infrastructure.snk</OtherFlags>
     <DefineConstants>TRACE;DEBUG;CODE_ANALYSIS</DefineConstants>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -77,6 +76,8 @@
     <Content Include="..\WeakNameTests\App.config">
       <Link>App.config</Link>
     </Content>
+    <EmbeddedResource Include="Methods.txt" />
+    <EmbeddedResource Include="Sorted.txt" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="FSharp.Core">
@@ -89,6 +90,7 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Numerics" />
+    <Reference Include="System.Xml" />
     <Reference Include="Unquote">
       <HintPath>..\ThirdParty\Unquote.dll</HintPath>
     </Reference>
