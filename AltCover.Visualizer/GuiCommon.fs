@@ -34,15 +34,12 @@ module GuiCommon =
     let y = rightKey.name
     let (left, specialLeft) = HandleSpecialName x
     let (right, specialRight) = HandleSpecialName y
-    let sort = String.CompareOrdinal(left, right)
-    let specialCase = (0 = sort) && specialLeft && specialRight
-    if 0 = sort then
-      if specialCase then String.CompareOrdinal(x, y)
-      else
-        let l1 = leftKey.m.GetAttribute("fullname", String.Empty)
-        let r1 = rightKey.m.GetAttribute("fullname", String.Empty)
-        String.CompareOrdinal(l1, r1)
-    else sort
+    let sort = String.Compare(left, right, StringComparison.OrdinalIgnoreCase)
+    match (sort, specialLeft, specialRight) with
+    | (0, true, false) -> 1
+    | (0, false, true) -> -1
+    | (0, true, true) -> String.Compare(left, right, StringComparison.Ordinal)
+    | _ -> sort
 
   // -------------------------- Source file Handling ---------------------------
   [<NoComparison>]

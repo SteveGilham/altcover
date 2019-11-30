@@ -441,9 +441,18 @@ module Gui =
     let isNested (name : string) n =
       name.StartsWith(n + "+", StringComparison.Ordinal)
       || name.StartsWith(n + "/", StringComparison.Ordinal)
-    nodes
-    |> Seq.groupBy (fun x -> x.classname)
-    |> Seq.sortBy fst
+    let classes = nodes
+                  |> Seq.groupBy (fun x -> x.classname)
+                  |> Seq.toArray
+
+    Array.sortInPlaceWith (fun l r ->
+                            let left = fst l
+                            let right = fst r
+                            let sort = String.Compare(left, right, StringComparison.OrdinalIgnoreCase)
+                            if sort = 0
+                            then String.Compare(left, right, StringComparison.Ordinal)
+                            else sort) classes
+    classes
     |> Seq.fold (fun stack c ->
          let name = fst c
          let restack = stack |> List.filter (fst >> (isNested name))
