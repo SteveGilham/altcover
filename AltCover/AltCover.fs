@@ -52,6 +52,7 @@ module internal Main =
     Visitor.sourcelink := false // ddFlag
     Visitor.coalesceBranches := false // ddFlag
     Visitor.staticFilter <- None
+    Visitor.showGenerated <- false
 
   let ValidateCallContext predicate x =
     if not (String.IsNullOrWhiteSpace x) then

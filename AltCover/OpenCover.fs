@@ -216,7 +216,7 @@ module internal OpenCover =
     let MethodPointElement (codeSegment : SeqPnt) ref i vc =
       XElement
         (X "SequencePoint",
-         XAttribute(X "vc", vc),
+         XAttribute(X "vc", int vc),
          XAttribute(X "uspid", i),
          XAttribute(X "ordinal", 0),
          XAttribute(X "offset", codeSegment.Offset),
@@ -261,7 +261,7 @@ module internal OpenCover =
       let fileid = fileset.Item doc
       (XElement
          (X "BranchPoint",
-          XAttribute(X "vc", branch.VisitCount),
+          XAttribute(X "vc", int branch.VisitCount),
           XAttribute(X "uspid", branch.Uid),
           XAttribute(X "ordinal", 0),
           XAttribute(X "offset", branch.Offset),
@@ -502,7 +502,7 @@ module internal OpenCover =
       match node with
       | Start _ -> StartVisit s
       | Node.Module(moduleDef, included) -> VisitModule s moduleDef included
-      | Node.Type(typeDef, included) -> VisitType s typeDef included
+      | Node.Type(typeDef, included, _) -> VisitType s typeDef included
       | Node.Method(methodDef, included, _, _) -> VisitMethod s methodDef included
       | MethodPoint(_, codeSegment, i, included, vc) -> VisitMethodPoint s codeSegment i included vc
       | BranchPoint b -> VisitBranchPoint s b

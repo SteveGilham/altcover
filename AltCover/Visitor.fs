@@ -68,7 +68,7 @@ type internal GoTo =
     Offset : int
     Target : Instruction list
     Included : bool
-    VisitCount : int
+    VisitCount : Exemption
     Representative : Reporting
     Key : int }
 
@@ -77,9 +77,9 @@ type internal Node =
   | Start of seq<string * string list>
   | Assembly of AssemblyDefinition * Inspect * string list
   | Module of ModuleDefinition * Inspect
-  | Type of TypeDefinition * Inspect
-  | Method of MethodDefinition * Inspect * (int * string) option * int
-  | MethodPoint of Instruction * SeqPnt option * int * bool * int
+  | Type of TypeDefinition * Inspect * Exemption
+  | Method of MethodDefinition * Inspect * (int * string) option * Exemption
+  | MethodPoint of Instruction * SeqPnt option * int * bool * Exemption
   | BranchPoint of GoTo
   | AfterMethod of MethodDefinition * Inspect * (int * string) option
   | AfterType
@@ -215,6 +215,14 @@ module internal Visitor =
   let internal NameFilters = new List<FilterClass>()
 
   let mutable internal staticFilter : StaticFilter option = None
+  let mutable internal showGenerated = false
+  let generationFilter =
+    [
+      "CompilerGeneratedAttribute"
+      "GeneratedCodeAttribute"
+    ]
+    |> List.map (Regex >> FilterRegex.Exclude >> (FilterClass.Build FilterScope.Attribute))
+
   let private specialCaseFilters =
     [ @"^CompareTo\$cont\@\d+\-?\d$"
       |> Regex
@@ -471,9 +479,17 @@ module internal Visitor =
                       Seq.unfold (fun (state : TypeDefinition) ->
                         if isNull state then None
                         else Some(state, state.DeclaringType)) t
+                      |> Seq.toList
 
                     let inclusion = Seq.fold UpdateInspection included types
-                    Type(t, inclusion))
+                    let visitcount = if showGenerated
+                                     then if types
+                                             |> Seq.exists (fun t' -> (generationFilter
+                                                                       |> Seq.exists (Filter.Match t')))
+                                          then Exemption.Automatic
+                                          else Exemption.None
+                                     else Exemption.None
+                    Type(t, inclusion, visitcount))
                     >> buildSequence)
 
   let internal Track(m : MethodDefinition) =
@@ -630,7 +646,7 @@ module internal Visitor =
         FSharpContainingMethod t tx
       else None
 
-  let private VisitType (t : TypeDefinition) included buildSequence =
+  let private VisitType (t : TypeDefinition) included basevc buildSequence =
     t.Methods
     |> Seq.cast
     |> Seq.filter
@@ -649,10 +665,19 @@ module internal Visitor =
                         match state with
                         | None -> None
                         | Some x -> Some(x, ContainingMethod x)) (Some m)
+                      |> Seq.toList
+                    let visitcount = if k = StaticFilter.AsCovered
+                                     then Exemption.StaticAnalysis
+                                     else if showGenerated
+                                          then if methods
+                                                  |> Seq.exists (fun m' -> (generationFilter
+                                                                             |> Seq.exists (Filter.Match m')))
+                                               then Exemption.Automatic
+                                               else basevc
+                                          else basevc
 
                     let inclusion = Seq.fold UpdateInspection included methods
-                    let vc = if k = StaticFilter.NoFilter then Exemption.None else Exemption.StaticAnalysis
-                    Method(m, inclusion, Track m, int vc))
+                    Method(m, inclusion, Track m, visitcount))
                     >> buildSequence)
 
   let IsSequencePoint(s : SequencePoint) =
@@ -935,7 +960,7 @@ module internal Visitor =
     | Start paths -> StartVisit paths BuildSequence
     | Assembly(a, included, _) -> VisitAssembly a included BuildSequence
     | Module(x, included) -> VisitModule x included BuildSequence
-    | Type(t, included) -> VisitType t included BuildSequence
+    | Type(t, included, vc) -> VisitType t included vc BuildSequence
     | Method(m, included, _, vc) -> VisitMethod m included vc
     | _ -> Seq.empty<Node>
 

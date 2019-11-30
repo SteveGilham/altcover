@@ -75,7 +75,7 @@ module internal Report =
       | Some codeSegment ->
         let element =
           XElement
-            (X "seqpnt", XAttribute(X "visitcount", vc),
+            (X "seqpnt", XAttribute(X "visitcount", int vc),
              XAttribute(X "line", codeSegment.StartLine),
              XAttribute(X "column", codeSegment.StartColumn),
              XAttribute(X "endline", codeSegment.EndLine),

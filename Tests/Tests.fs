@@ -932,7 +932,7 @@ module AltCoverTests =
         Visitor.reportFormat <- Some Base.ReportFormat.OpenCover
         Visitor.NameFilters.Clear()
         let deeper =
-          Visitor.Deeper <| Node.Method(method, Inspect.Instrument, None, 0) |> Seq.toList
+          Visitor.Deeper <| Node.Method(method, Inspect.Instrument, None, Exemption.None) |> Seq.toList
         Assert.That(deeper.Length, Is.EqualTo 3)
         deeper
         |> List.skip 1
@@ -944,7 +944,7 @@ module AltCoverTests =
         |> List.take 1
         |> List.iteri (fun i node ->
              match node with
-             | (MethodPoint(_, _, n, b, 0)) ->
+             | (MethodPoint(_, _, n, b, Exemption.None)) ->
                Assert.That(n, Is.EqualTo i, "point number")
                Assert.That(b, Is.True, "flag " + i.ToString())
              | _ -> Assert.Fail("sequence point expected"))
@@ -983,7 +983,7 @@ module AltCoverTests =
         Visitor.reportFormat <- Some Base.ReportFormat.OpenCover
         Visitor.NameFilters.Clear()
         let deeper =
-          Visitor.Deeper <| Node.Method(method, Inspect.Instrument, None, -2) |> Seq.toList
+          Visitor.Deeper <| Node.Method(method, Inspect.Instrument, None, Exemption.Automatic) |> Seq.toList
         Assert.That(deeper.Length, Is.EqualTo 3)
         deeper
         |> List.skip 1
@@ -995,7 +995,7 @@ module AltCoverTests =
         |> List.take 1
         |> List.iteri (fun i node ->
              match node with
-             | (MethodPoint(_, _, n, b, -2)) ->
+             | (MethodPoint(_, _, n, b, Exemption.Automatic)) ->
                Assert.That(n, Is.EqualTo i, "point number")
                Assert.That(b, Is.True, "flag " + i.ToString())
              | _ -> Assert.Fail("sequence point expected"))
@@ -1338,9 +1338,9 @@ module AltCoverTests =
         [ Node.Start []
           Node.Assembly(def, Inspect.Instrument, [])
           Node.Module(null, Inspect.Ignore)
-          Node.Type(null, Inspect.Instrument)
-          Node.Method(null, Inspect.Ignore, None, 0)
-          Node.MethodPoint(null, None, 0, true, 0)
+          Node.Type(null, Inspect.Instrument, Exemption.None)
+          Node.Method(null, Inspect.Ignore, None, Exemption.None)
+          Node.MethodPoint(null, None, 0, true, Exemption.None)
           Node.AfterMethod(null, Inspect.Ignore, None)
           Node.AfterModule
           Node.AfterAssembly (def, [])
@@ -1392,7 +1392,7 @@ module AltCoverTests =
           (Assembly.GetExecutingAssembly().Location)
 
       let inputs =
-        [ Node.MethodPoint(null, None, 0, true, 0)
+        [ Node.MethodPoint(null, None, 0, true, Exemption.None)
           Node.AfterMethod(null, Inspect.Ignore, None)
           Node.AfterModule
           Node.AfterAssembly (def, [])
@@ -1429,7 +1429,7 @@ module AltCoverTests =
             >> FilterClass.Build FilterScope.File
             >> Visitor.NameFilters.Add)
         let deeper =
-          Visitor.Deeper <| Node.Method(method, Inspect.Instrument, None, 0) |> Seq.toList
+          Visitor.Deeper <| Node.Method(method, Inspect.Instrument, None, Exemption.None) |> Seq.toList
         Assert.That(deeper.Length, Is.EqualTo 12)
         deeper
         |> List.skip 10
@@ -1441,7 +1441,7 @@ module AltCoverTests =
         |> List.take 10
         |> List.iteri (fun i node ->
              match node with
-             | (MethodPoint(_, _, n, b, 0)) ->
+             | (MethodPoint(_, _, n, b, Exemption.None)) ->
                Assert.That(n, Is.EqualTo i, "point number")
                Assert.That(b, Is.False, "flag")
              | _ -> Assert.Fail())
@@ -1469,7 +1469,7 @@ module AltCoverTests =
         Visitor.reportFormat <- Some Base.ReportFormat.OpenCover
         Visitor.NameFilters.Clear()
         let deeper =
-          Visitor.Deeper <| Node.Method(method, Inspect.Instrument, None, -1)
+          Visitor.Deeper <| Node.Method(method, Inspect.Instrument, None, Exemption.Declared)
           |> Seq.toList
 
         //deeper |> List.skip 21 |> Seq.iter (fun n -> match n with
@@ -1496,7 +1496,7 @@ module AltCoverTests =
         |> List.take 21
         |> List.iteri (fun i node ->
              match node with
-             | (MethodPoint(_, _, n, b, -1)) ->
+             | (MethodPoint(_, _, n, b, Exemption.Declared)) ->
                Assert.That(n, Is.EqualTo i, "point number")
                Assert.That(b, Is.True, "flag " + i.ToString())
              | _ -> Assert.Fail("sequence point expected"))
@@ -1531,7 +1531,7 @@ module AltCoverTests =
         Visitor.NameFilters.Clear()
         Visitor.coalesceBranches := true
         let deeper =
-          Visitor.Deeper <| Node.Method(method, Inspect.Instrument, None, -3)
+          Visitor.Deeper <| Node.Method(method, Inspect.Instrument, None, Exemption.StaticAnalysis)
           |> Seq.toList
 
         let reported =
@@ -1550,7 +1550,7 @@ module AltCoverTests =
         |> List.take 9
         |> List.iteri (fun i node ->
              match node with
-             | (MethodPoint(_, _, n, b, -3)) ->
+             | (MethodPoint(_, _, n, b, Exemption.StaticAnalysis)) ->
                Assert.That(n, Is.EqualTo i, "point number")
                Assert.That(b, Is.True, "flag " + i.ToString())
              | _ -> Assert.Fail("sequence point expected"))
@@ -1578,7 +1578,7 @@ module AltCoverTests =
             >> FilterRegex.Exclude
             >> FilterClass.Build FilterScope.Method
             >> Visitor.NameFilters.Add)
-        let deeper = Visitor.Deeper <| Node.Type(type', Inspect.Instrument) |> Seq.toList
+        let deeper = Visitor.Deeper <| Node.Type(type', Inspect.Instrument, Exemption.None) |> Seq.toList
         Visitor.Visit [] [] // cheat reset
         let expected =
           type'.Methods
@@ -1587,7 +1587,7 @@ module AltCoverTests =
                  if m.Name = ".ctor" then Inspect.Instrument
                  else Inspect.Ignore
 
-               let node = Node.Method(m, flag, None, 0)
+               let node = Node.Method(m, flag, None, Exemption.None)
                List.concat [ [ node ]
                              (Visitor.Deeper >> Seq.toList) node
                              [ Node.AfterMethod(m, flag, None) ] ])
@@ -1623,7 +1623,7 @@ module AltCoverTests =
                  if t.Name <> "Program" then Inspect.Instrument
                  else Inspect.Ignore
 
-               let node = Node.Type(t, flag)
+               let node = Node.Type(t, flag, Exemption.None)
                List.concat [ [ node ]
                              (Visitor.Deeper >> Seq.toList) node
                              [ Node.AfterType ] ])
@@ -2348,7 +2348,7 @@ module AltCoverTests =
             >> FilterClass.Build FilterScope.File
             >> Visitor.NameFilters.Add)
         let branches =
-          Visitor.Deeper <| Node.Method(method, Inspect.Instrument, None, 0)
+          Visitor.Deeper <| Node.Method(method, Inspect.Instrument, None, Exemption.None)
           |> Seq.map (fun n ->
                match n with
                | BranchPoint b -> Some b
