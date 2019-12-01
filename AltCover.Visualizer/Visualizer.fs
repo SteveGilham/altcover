@@ -370,6 +370,9 @@ module Gui =
   let private AssemblyIcon =
     lazy (new Pixbuf(Assembly.GetExecutingAssembly()
                              .GetManifestResourceStream("AltCover.Visualizer.Assembly_6212.png")))
+  let private EventIcon =
+    lazy (new Pixbuf(Assembly.GetExecutingAssembly()
+                             .GetManifestResourceStream("AltCover.Visualizer.Event_16x.png")))
   let private NamespaceIcon =
     lazy (new Pixbuf(Assembly.GetExecutingAssembly()
                              .GetManifestResourceStream("AltCover.Visualizer.Namespace_16x.png")))
@@ -403,32 +406,57 @@ module Gui =
 
   let private PopulateClassNode (model : TreeStore) (row : TreeIter)
       (nodes : seq<MethodKey>) =
-    let ApplyToModel (theModel : TreeStore) (theRow : TreeIter) (x : MethodKey) =
-      let fullname = x.m.GetAttribute("fullname", String.Empty)
+    let ApplyToModel (theModel : TreeStore) (theRow : TreeIter) (item : ((string * MethodType) * MethodKey seq)) =
+      let ((display, special), keys) = item
 
-      let args =
-        if String.IsNullOrEmpty(fullname) || x.name.IndexOf('(') > 0 then String.Empty
-        else
-          let bracket = fullname.IndexOf('(')
-          if bracket < 0 then String.Empty
-          else fullname.Substring(bracket)
+      let ApplyMethod (mmodel : TreeStore) (mrow : TreeIter) (x : MethodKey) =
+        let fullname = x.m.GetAttribute("fullname", String.Empty)
 
-      let displayname = x.name + args
+        let args =
+          if String.IsNullOrEmpty(fullname) || x.name.IndexOf('(') > 0 then String.Empty
+          else
+            let bracket = fullname.IndexOf('(')
+            if bracket < 0 then String.Empty
+            else fullname.Substring(bracket)
 
-      let offset =
-        match displayname.LastIndexOf("::", StringComparison.Ordinal) with
-        | -1 -> 0
-        | o -> o + 2
+        let displayname = x.name + args
 
-      let newrow =
-        theModel.AppendValues(theRow,
-                              [| displayname.Substring(offset) :> obj
-                                 MethodIcon.Force() :> obj |])
+        let offset =
+          match displayname.LastIndexOf("::", StringComparison.Ordinal) with
+          | -1 -> 0
+          | o -> o + 2
 
-      Mappings.Add(theModel.GetPath(newrow), x.m)
+        let newrow =
+          mmodel.AppendValues(mrow,
+                                [| displayname.Substring(offset) :> obj
+                                   MethodIcon.Force() :> obj |])
 
-    let methods = nodes |> Seq.toArray
-    Array.sortInPlaceWith MethodNameCompare methods
+        Mappings.Add(mmodel.GetPath(newrow), x.m)
+
+      if special <> MethodType.Normal
+      then let newrow =
+             theModel.AppendValues(theRow,
+                                  [| display :> obj
+                                     (if special = MethodType.Property
+                                      then PropertyIcon
+                                      else EventIcon).Force()  :> obj |])
+           keys
+           |> Seq.sortBy (fun key -> key.name |> DisplayName)
+           |> Seq.iter (ApplyMethod theModel newrow)
+      else ApplyMethod theModel theRow (keys |> Seq.head)
+
+    let methods = nodes
+                  |> Seq.groupBy (fun key -> key.name |> DisplayName |> HandleSpecialName)
+                  |> Seq.toArray
+    methods
+    |> Array.sortInPlaceWith (fun ((l,lb),_) ((r, rb),_) ->
+                                let sort1 = String.Compare(l, r, StringComparison.OrdinalIgnoreCase)
+                                let sort2 = if sort1 = 0
+                                            then String.Compare(l, r, StringComparison.Ordinal)
+                                            else sort1
+                                if sort2 = 0
+                                then lb.CompareTo rb
+                                else sort2)
     methods |> Array.iter (ApplyToModel model row)
 
   let private PopulateNamespaceNode (model : TreeStore) (row : TreeIter)

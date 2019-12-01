@@ -22,34 +22,29 @@ module internal GuiCommon =
       endline : int
       endcolumn : int }
 
+  type internal MethodType =
+    | Normal = 0
+    | Property = -1
+    | Event = -2
+
   // -------------------------- Method Name Handling ---------------------------
-  let internal MethodNameCompare (leftKey : MethodKey) (rightKey : MethodKey) =
-    let HandleSpecialName(name : string) =
-      if name.StartsWith("get_", StringComparison.Ordinal)
-         || name.StartsWith("set_", StringComparison.Ordinal) then
-        (name.Substring(4), true)
-      else (name, false)
+  let DisplayName (name:string) =
+    let offset =
+      match name.LastIndexOf("::", StringComparison.Ordinal) with
+      | -1 -> 0
+      | o -> o + 2
 
-    let DisplayName (name:string) =
-      let offset =
-        match name.LastIndexOf("::", StringComparison.Ordinal) with
-        | -1 -> 0
-        | o -> o + 2
+    name.Substring(offset).Split('(') |> Seq.head
 
-      name.Substring(offset)
-
-    let x = DisplayName leftKey.name
-    let y = DisplayName rightKey.name
-    let (left, specialLeft) = HandleSpecialName x
-    let (right, specialRight) = HandleSpecialName y
-    let sort = String.Compare(left, right, StringComparison.OrdinalIgnoreCase)
-    let tiebreaker = String.Compare(left, right, StringComparison.Ordinal)
-    match (sort, specialLeft, specialRight) with
-    | (0, true, false) -> if tiebreaker = 0 then -1 else tiebreaker
-    | (0, false, true) -> if tiebreaker = 0 then 1 else tiebreaker
-    | (0, false, false)
-    | (0, true, true) -> String.Compare(x, y, StringComparison.Ordinal)
-    | _ -> sort
+  let HandleSpecialName(name : string) =
+    if name.StartsWith("get_", StringComparison.Ordinal)
+        || name.StartsWith("set_", StringComparison.Ordinal) then
+      (name.Substring(4), MethodType.Property)
+    else if name.StartsWith("add_", StringComparison.Ordinal) then
+      (name.Substring(4), MethodType.Event)
+    else if name.StartsWith("remove_", StringComparison.Ordinal) then
+      (name.Substring(7), MethodType.Event)
+    else (name, MethodType.Normal)
 
   // -------------------------- Source file Handling ---------------------------
   [<NoComparison>]

@@ -76,8 +76,6 @@
     <Content Include="..\WeakNameTests\App.config">
       <Link>App.config</Link>
     </Content>
-    <EmbeddedResource Include="Methods.txt" />
-    <EmbeddedResource Include="Sorted.txt" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="FSharp.Core">
