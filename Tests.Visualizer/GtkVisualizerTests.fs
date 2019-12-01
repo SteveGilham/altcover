@@ -52,8 +52,6 @@ type AltCoverTests() =
                                           else Some (line, r))
                   |> Seq.toArray
 
-      printfn "%A" names
-
       let keys = names
                  |> Array.map (fun n -> {
                                           AltCover.Visualizer.GuiCommon.MethodKey.m = null
@@ -64,12 +62,9 @@ type AltCoverTests() =
       Array.sortInPlaceWith AltCover.Visualizer.GuiCommon.MethodNameCompare keys
       let sorted = keys
                    |> Array.map (fun k -> k.name)
-      printfn "%A" sorted
 
       Seq.zip sorts sorted
       |> Seq.iteri (fun i (l,r) -> let k = i.ToString()
                                    test <@ (k + " " + l) = (k + " " + r) @>)
-
-      //test <@ String.Join("; ", sorted) =  String.Join("; ", sorts) @>
 
   end
