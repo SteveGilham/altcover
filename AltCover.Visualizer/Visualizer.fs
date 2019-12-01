@@ -373,9 +373,15 @@ module Gui =
   let private NamespaceIcon =
     lazy (new Pixbuf(Assembly.GetExecutingAssembly()
                              .GetManifestResourceStream("AltCover.Visualizer.Namespace_16x.png")))
+  let private ModuleIcon =
+    lazy (new Pixbuf(Assembly.GetExecutingAssembly()
+                             .GetManifestResourceStream("AltCover.Visualizer.Module_16x.png")))
   let private ClassIcon =
     lazy (new Pixbuf(Assembly.GetExecutingAssembly()
                              .GetManifestResourceStream("AltCover.Visualizer.class_16xLG.png")))
+  let private PropertyIcon =
+    lazy (new Pixbuf(Assembly.GetExecutingAssembly()
+                             .GetManifestResourceStream("AltCover.Visualizer.Property_16x.png")))
   let private MethodIcon =
     lazy (new Pixbuf(Assembly.GetExecutingAssembly()
                              .GetManifestResourceStream("AltCover.Visualizer.method_16xLG.png")))
@@ -430,19 +436,34 @@ module Gui =
     let ApplyToModel (theModel : TreeStore) (theRow : TreeIter)
         (group : string * seq<MethodKey>) =
       let name = fst group
+      let icon = if group |> snd |> Seq.isEmpty
+                 then ModuleIcon.Force()
+                 else ClassIcon.Force()
 
       let newrow =
         theModel.AppendValues(theRow,
                               [| name :> obj
-                                 ClassIcon.Force() :> obj |])
+                                 icon :> obj |])
       PopulateClassNode theModel newrow (snd group)
       newrow
 
     let isNested (name : string) n =
       name.StartsWith(n + "+", StringComparison.Ordinal)
       || name.StartsWith(n + "/", StringComparison.Ordinal)
-    let classes = nodes
-                  |> Seq.groupBy (fun x -> x.classname)
+    let classlist = nodes
+                    |> Seq.groupBy (fun x -> x.classname)
+                    |> Seq.toList
+
+    let classnames = classlist |> Seq.map fst |> Set.ofSeq
+
+    let modularize = classnames
+                     |> Seq.filter (fun cn -> cn.Contains("+") || cn.Contains("/"))
+                     |> Seq.map (fun cn -> cn.Split([| "+"; "/" |], StringSplitOptions.RemoveEmptyEntries).[0])
+                     |> Seq.distinct
+                     |> Seq.filter (fun mn -> classnames |> Set.contains mn |> not)
+                     |> Seq.map (fun mn -> (mn, Seq.empty<MethodKey>))
+                     |> Seq.toList
+    let classes = Seq.append classlist modularize
                   |> Seq.toArray
 
     Array.sortInPlaceWith (fun l r ->
