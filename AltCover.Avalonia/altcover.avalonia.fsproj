@@ -39,6 +39,7 @@
     <EmbeddedResource Include="..\AltCover.Visualizer\Branch_12x_16x_red.png" Link="Branch_12x_16x_red.png" />
     <EmbeddedResource Include="..\AltCover.Visualizer\Branch_12x_16x_ylw.png" Link="Branch_12x_16x_ylw.png" />
     <EmbeddedResource Include="..\AltCover.Visualizer\Event_16x.png" Link="Event_16x.png" />
+    <EmbeddedResource Include="..\AltCover.Visualizer\Effects_16x.png" Link="Effects_16x.png" />
     <EmbeddedResource Include="..\AltCover.Visualizer\method_16xLG.png" Link="method_16xLG.png" />
     <EmbeddedResource Include="..\AltCover.Visualizer\Module_16x.png" Link="Module_16x.png" />
     <EmbeddedResource Include="..\AltCover.Visualizer\Namespace_16x.png" Link="Namespace_16x.png" />

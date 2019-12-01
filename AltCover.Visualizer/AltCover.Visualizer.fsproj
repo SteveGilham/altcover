@@ -81,6 +81,7 @@
     <EmbeddedResource Include="Visualizer.glade" />
     <EmbeddedResource Include="Assembly_6212.png" />
     <EmbeddedResource Include="class_16xLG.png" />
+    <EmbeddedResource Include="Effects_16x.png" />
     <EmbeddedResource Include="Event_16x.png" />
     <EmbeddedResource Include="method_16xLG.png" />
     <EmbeddedResource Include="Module_16x.png" />

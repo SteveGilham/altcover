@@ -379,6 +379,9 @@ module Gui =
   let private ModuleIcon =
     lazy (new Pixbuf(Assembly.GetExecutingAssembly()
                              .GetManifestResourceStream("AltCover.Visualizer.Module_16x.png")))
+  let private EffectIcon =
+    lazy (new Pixbuf(Assembly.GetExecutingAssembly()
+                             .GetManifestResourceStream("AltCover.Visualizer.Effects_16x.png")))
   let private ClassIcon =
     lazy (new Pixbuf(Assembly.GetExecutingAssembly()
                              .GetManifestResourceStream("AltCover.Visualizer.class_16xLG.png")))
@@ -466,7 +469,11 @@ module Gui =
       let name = fst group
       let icon = if group |> snd |> Seq.isEmpty
                  then ModuleIcon.Force()
-                 else ClassIcon.Force()
+                 else if group |> snd |> Seq.exists (fun key -> let d = key.name |> DisplayName
+                                                                (d.StartsWith(".", StringComparison.Ordinal)
+                                                                 || d.Equals("Invoke")) |> not)
+                      then ClassIcon.Force()
+                      else EffectIcon.Force()
 
       let newrow =
         theModel.AppendValues(theRow,
