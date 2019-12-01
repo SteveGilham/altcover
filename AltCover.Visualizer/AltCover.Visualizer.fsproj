@@ -82,7 +82,9 @@
     <EmbeddedResource Include="Assembly_6212.png" />
     <EmbeddedResource Include="class_16xLG.png" />
     <EmbeddedResource Include="method_16xLG.png" />
+    <EmbeddedResource Include="Module_16x.png" />
     <EmbeddedResource Include="Namespace_16x.png" />
+    <EmbeddedResource Include="Property_16x.png" />
     <EmbeddedResource Include="XMLFile_16x.png" />
     <EmbeddedResource Include="logo.png" />
     <EmbeddedResource Include="Blank_12x_16x.png" />
