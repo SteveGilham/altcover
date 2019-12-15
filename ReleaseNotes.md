@@ -9,7 +9,6 @@ A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wi
 * [Visualizer] group property `get_` and `set_`, and event `add_` and `remove_`,  methods together, under an appropriate icon
 * [Visualizer] For F# modules containing only types, group the contents together under a module entry at class level, just as they would have been were the module to directly contain any functions
 * [Visualizer] Types that only contain an `Invoke` method and constructors are shown with an approriate icon, too.
-
 * [3rd Party] With the latest GTK#3 update, the GTK+ native libraries for win-x64 are no longer bundled into the nuget -- this seems to have been a transient behaviour in GtkSharp v3.22.25.49 only
 
 # 6.5.739  (Fukurou series release 10)
