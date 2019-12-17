@@ -218,8 +218,8 @@ module internal Visitor =
   let internal showGenerated = ref false
   let generationFilter =
     [
-      "CompilerGeneratedAttribute"
-      "GeneratedCodeAttribute"
+      "System.Runtime.CompilerServices.CompilerGeneratedAttribute"
+      "System.CodeDom.Compiler.GeneratedCodeAttribute"
     ]
     |> List.map (Regex >> FilterRegex.Exclude >> (FilterClass.Build FilterScope.Attribute))
 

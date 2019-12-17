@@ -104,11 +104,9 @@
   <Target Name="AfterBuild">
   </Target>
   -->
-  <ItemGroup>
-    <AssemblyFilter Include="xunit" />
-  </ItemGroup>
   <Target Name="AfterBuild" Condition="'$(MSBuildTest)' == 'true'">
     <ItemGroup>
+      <AssemblyFilter Include="xunit" />
       <InputDirectory Include="$(MSBuildThisFileDirectory)../_Binaries/Sample4/Debug+AnyCPU" />
       <OutputDirectory Include="$(MSBuildThisFileDirectory)../_Binaries/Sample4/Debug+AnyCPU/__Saved$([System.DateTime]::UtcNow.ToString().Replace(':','-').Replace('/','-').Replace(' ','+'))" />
     </ItemGroup>

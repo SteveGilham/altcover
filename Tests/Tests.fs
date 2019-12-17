@@ -1656,27 +1656,32 @@ module AltCoverTests =
 
     [<Test>]
     let AssembliesAreDeeperThanPaths() =
-      let where = Assembly.GetExecutingAssembly().Location
-      let path =
-        Path.Combine(Path.GetDirectoryName(where) + Hack(), sample1)
-      let deeper = Visitor.Deeper <| Node.Start [ path, [] ] |> Seq.toList
+      try
+        Visitor.staticFilter <- Some StaticFilter.AsCovered
 
-      // assembly definitions care about being separate references in equality tests
-      let def =
-        match Seq.head deeper with
-        | Node.Assembly(def', Inspect.Instrument, []) -> def'
-        | _ ->
-          Assert.Fail()
-          null
+        let where = Assembly.GetExecutingAssembly().Location
+        let path =
+          Path.Combine(Path.GetDirectoryName(where) + Hack(), sample1)
+        let deeper = Visitor.Deeper <| Node.Start [ path, [] ] |> Seq.toList
 
-      let assembly = Node.Assembly(def, Inspect.Instrument, [])
+        // assembly definitions care about being separate references in equality tests
+        let def =
+          match Seq.head deeper with
+          | Node.Assembly(def', Inspect.Instrument, []) -> def'
+          | _ ->
+            Assert.Fail()
+            null
 
-      let expected =
-        List.concat [ [ assembly ]
-                      (Visitor.Deeper >> Seq.toList) assembly
-                      [ AfterAssembly (def, []) ] ]
-      Assert.That(deeper.Length, Is.EqualTo 23)
-      Assert.That(deeper |> Seq.map string, Is.EquivalentTo(expected |> Seq.map string))
+        let assembly = Node.Assembly(def, Inspect.Instrument, [])
+
+        let expected =
+          List.concat [ [ assembly ]
+                        (Visitor.Deeper >> Seq.toList) assembly
+                        [ AfterAssembly (def, []) ] ]
+        Assert.That(deeper.Length, Is.EqualTo 23)
+        Assert.That(deeper |> Seq.map string, Is.EquivalentTo(expected |> Seq.map string))
+      finally
+        Visitor.staticFilter <- None
 
     [<Test>]
     let FilteredAssembliesDoNotHaveSequencePoints() =
@@ -1747,38 +1752,42 @@ module AltCoverTests =
 
     [<Test>]
     let PathsAreDeeperThanAVisit() =
-      let where = Assembly.GetExecutingAssembly().Location
-      let path =
-        Path.Combine(Path.GetDirectoryName(where) + Hack(), sample1)
-      let accumulator = System.Collections.Generic.List<Node>()
+      try
+        Visitor.showGenerated := true
+        let where = Assembly.GetExecutingAssembly().Location
+        let path =
+          Path.Combine(Path.GetDirectoryName(where) + Hack(), sample1)
+        let accumulator = System.Collections.Generic.List<Node>()
 
-      let fix =
-        Visitor.EncloseState (fun (x : System.Collections.Generic.List<Node>) t ->
-          x.Add t
-          x) accumulator
+        let fix =
+          Visitor.EncloseState (fun (x : System.Collections.Generic.List<Node>) t ->
+            x.Add t
+            x) accumulator
 
-      let u = Guid.NewGuid().ToString()
-      let u2 = Guid.NewGuid().ToString()
-      let ux = [ u; u2 ]
-      Visitor.Visit [ fix ] [ path, ux ]
-      // assembly definitions care about being separate references in equality tests
-      let def =
-        match accumulator.[1] with
-        | Node.Assembly(def', Inspect.Instrument, ux) -> def'
-        | _ ->
-          Assert.Fail()
-          null
+        let u = Guid.NewGuid().ToString()
+        let u2 = Guid.NewGuid().ToString()
+        let ux = [ u; u2 ]
+        Visitor.Visit [ fix ] [ path, ux ]
+        // assembly definitions care about being separate references in equality tests
+        let def =
+          match accumulator.[1] with
+          | Node.Assembly(def', Inspect.Instrument, ux) -> def'
+          | _ ->
+            Assert.Fail()
+            null
 
-      let assembly = Node.Assembly(def, Inspect.Instrument, ux)
+        let assembly = Node.Assembly(def, Inspect.Instrument, ux)
 
-      let expected =
-        List.concat [ [ Start [ path, ux ]
-                        assembly ]
-                      (Visitor.Deeper >> Seq.toList) assembly
-                      [ AfterAssembly (def, ux)
-                        Finish ] ]
-      Assert.That
-        (accumulator |> Seq.map string, Is.EquivalentTo(expected |> Seq.map string))
+        let expected =
+          List.concat [ [ Start [ path, ux ]
+                          assembly ]
+                        (Visitor.Deeper >> Seq.toList) assembly
+                        [ AfterAssembly (def, ux)
+                          Finish ] ]
+        Assert.That
+          (accumulator |> Seq.map string, Is.EquivalentTo(expected |> Seq.map string))
+      finally
+        Visitor.showGenerated := false
 
     [<Test>]
     let TrackingDetectsTests() =
