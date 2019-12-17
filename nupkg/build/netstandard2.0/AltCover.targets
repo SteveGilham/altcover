@@ -59,7 +59,8 @@
       SourceLink="$(AltCoverSourceLink)"
       LocalSource="$(AltCoverLocalSource)"
       VisibleBranches="$(AltCoverVisibleBranches)"
-      ShowStatic="$(AltCoverShowStatic)" />
+      ShowStatic="$(AltCoverShowStatic)"
+      ShowGenerated="$(AltCoverShowGenerated)"/>
   </Target>
 
   <Target Name="AltCoverInstrumentModulesNoBuild" AfterTargets="AltCoverPreFlight" Condition="'$(VSTestNoBuild)' == 'true'">

@@ -80,6 +80,7 @@ type Prepare() =
   member val Defer = false with get, set
   member val VisibleBranches = false with get, set
   member val ShowStatic = "-" with get, set
+  member val ShowGenerated = false with get, set
 
   member self.Message x = base.Log.LogMessage(MessageImportance.High, x)
   override self.Execute() =
@@ -116,7 +117,8 @@ type Prepare() =
                                       Defer = self.Defer
                                       LocalSource = self.LocalSource
                                       VisibleBranches = self.VisibleBranches
-                                      ShowStatic = self.ShowStatic}
+                                      ShowStatic = self.ShowStatic
+                                      ShowGenerated = self.ShowGenerated}
 
     Api.Prepare task log = 0
 

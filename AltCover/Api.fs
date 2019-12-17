@@ -311,6 +311,11 @@ type PrepareParams =
     | Primitive p -> p.ShowStatic
     | TypeSafe t -> t.ShowStatic.AsString()
 
+  member self.ShowGenerated =
+    match self with
+    | Primitive p -> p.ShowGenerated
+    | TypeSafe t -> t.ShowGenerated.AsBool()
+
 #if RUNNER
   static member private validateArray a f key =
     PrepareParams.validateArraySimple a (f key)
@@ -475,6 +480,7 @@ module internal Args =
       Flag "--localSource" args.LocalSource
       Flag "--visibleBranches" args.VisibleBranches
       OptItem "--showstatic" args.ShowStatic ["-"]
+      Flag "--showGenerated" args.ShowGenerated
       trailing ]
     |> List.concat
 

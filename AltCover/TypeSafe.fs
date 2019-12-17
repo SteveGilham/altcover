@@ -223,6 +223,7 @@ type PrepareParams =
     LocalSource : Flag
     VisibleBranches : Flag
     ShowStatic : StaticFormat
+    ShowGenerated : Flag
   }
   static member Create() =
     { InputDirectories = NoDirectories
@@ -253,4 +254,5 @@ type PrepareParams =
       LocalSource = Clear
       VisibleBranches = Clear
       ShowStatic = StaticFormat.Default
+      ShowGenerated = Clear
     }

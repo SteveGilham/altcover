@@ -1685,6 +1685,8 @@ module AltCoverRunnerTests =
                                visualizer (but treated as zero by
                                ReportGenerator) ; --showstatic:++ sets the
                                unvisited count to zero.
+      --showGenerated        Mark generated code with a visit count of -2 (
+                               Automatic) for the Visualizer if unvisited
   -?, --help, -h             Prints out the options.
 or
   Runner

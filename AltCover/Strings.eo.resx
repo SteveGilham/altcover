@@ -395,4 +395,7 @@ Se ĉi tiu problemo estis detektita en la antaŭprova instrumenta stadio de `dot
   <data name="showstatic:" xml:space="preserve">
     <value>Laŭvola: Instrumenta kaj spektakla kodo defaŭlte saltis kiel bagatela. --showstatic:- egalas al preterlasado de la parametro; --spektakla au --showstatic:+ fiksas la nevideblan kalkulon al negativa valoro interpretita de la vidigilo (sed traktata kiel nulo de ReportGenerator); --showstatic: ++ agordas la nevideblan nombron al nulo.</value>
   </data>
+  <data name="showGenerated" xml:space="preserve">
+    <value>Marko generis kodon kun defaŭlta vizitkalkulo de -2 (Aŭtomata) por la Vidigilo</value>
+  </data>
 </root>

@@ -51,6 +51,7 @@ namespace AltCover.Parameters
     bool LocalSource { get; }
     bool VisibleBranches { get; }
     string ShowStatic { get; }
+    bool ShowGenerated { get; }
 
     string[] CommandLine { get; }
 
@@ -170,6 +171,7 @@ namespace AltCover.Parameters.Primitive
     public bool LocalSource { get; set; }
     public bool VisibleBranches { get; set; }
     public string ShowStatic { get; set; }
+    public bool ShowGenerated { get; set; }
 
     public string[] CommandLine { get; set; }
 
@@ -204,7 +206,8 @@ namespace AltCover.Parameters.Primitive
                       Defer,
                       LocalSource,
                       VisibleBranches,
-                      ShowStatic
+                      ShowStatic,
+                      ShowGenerated
                                                           );
       return FSApi.PrepareParams.NewPrimitive(primitive);
     }

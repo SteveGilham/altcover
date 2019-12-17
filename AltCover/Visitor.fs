@@ -215,7 +215,7 @@ module internal Visitor =
   let internal NameFilters = new List<FilterClass>()
 
   let mutable internal staticFilter : StaticFilter option = None
-  let mutable internal showGenerated = false
+  let internal showGenerated = ref false
   let generationFilter =
     [
       "CompilerGeneratedAttribute"
@@ -482,7 +482,7 @@ module internal Visitor =
                       |> Seq.toList
 
                     let inclusion = Seq.fold UpdateInspection included types
-                    let visitcount = if showGenerated
+                    let visitcount = if !showGenerated
                                      then if types
                                              |> Seq.exists (fun t' -> (generationFilter
                                                                        |> Seq.exists (Filter.Match t')))
@@ -668,7 +668,7 @@ module internal Visitor =
                       |> Seq.toList
                     let visitcount = if k = StaticFilter.AsCovered
                                      then Exemption.StaticAnalysis
-                                     else if showGenerated
+                                     else if !showGenerated
                                           then if methods
                                                   |> Seq.exists (fun m' -> (generationFilter
                                                                              |> Seq.exists (Filter.Match m')))

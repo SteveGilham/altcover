@@ -83,7 +83,7 @@ module AltCoverTests3 =
     let ShouldHaveExpectedOptions() =
       Main.init()
       let options = Main.DeclareOptions()
-      Assert.That(options.Count, Is.EqualTo 29)
+      Assert.That(options.Count, Is.EqualTo 30)
       Assert.That
         (options
          |> Seq.filter (fun x -> x.Prototype <> "<>")
@@ -2375,6 +2375,8 @@ module AltCoverTests3 =
                                visualizer (but treated as zero by
                                ReportGenerator) ; --showstatic:++ sets the
                                unvisited count to zero.
+      --showGenerated        Mark generated code with a visit count of -2 (
+                               Automatic) for the Visualizer if unvisited
   -?, --help, -h             Prints out the options.
 or
   ipmo                       Prints out the PowerShell script to import the
@@ -2492,6 +2494,8 @@ or
                                visualizer (but treated as zero by
                                ReportGenerator) ; --showstatic:++ sets the
                                unvisited count to zero.
+      --showGenerated        Mark generated code with a visit count of -2 (
+                               Automatic) for the Visualizer if unvisited
   -?, --help, -h             Prints out the options.
 or
   Runner

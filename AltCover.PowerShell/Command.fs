@@ -175,6 +175,10 @@ type InvokeAltCoverCommand(runner : bool) =
 
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
+  member val ShowGenerated : SwitchParameter = SwitchParameter(false) with get, set
+
+  [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
+              ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
   member val ShowStatic : String = "-" with get, set
 
   [<Parameter(ParameterSetName = "Runner", Mandatory = false, ValueFromPipeline = false,
@@ -224,7 +228,8 @@ type InvokeAltCoverCommand(runner : bool) =
                                     Defer = self.Defer.IsPresent
                                     LocalSource = self.LocalSource.IsPresent
                                     VisibleBranches = self.VisibleBranches.IsPresent
-                                    ShowStatic = self.ShowStatic}
+                                    ShowStatic = self.ShowStatic
+                                    ShowGenerated = self.ShowGenerated.IsPresent}
 
   member private self.Log() =
     FSApi.Logging.Primitive { Primitive.Logging.Create() with Error = (fun s -> self.Fail <- s :: self.Fail)
