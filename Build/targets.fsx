@@ -2802,6 +2802,162 @@ _Target "ReleaseXUnitFSharpTypesDotNetRunner" (fun _ ->
   |> AltCover.run
   Actions.ValidateFSharpTypesCoverage x)
 
+_Target "ReleaseXUnitFSharpTypesShowVisualized" (fun _ ->
+  Directory.ensure "./_Reports"
+  let unpack = Path.getFullName "_Packaging/Unpack/tools/netcoreapp2.0"
+  let x = Path.getFullName "./_Reports/ShowStatic.xml"
+  let x1 = Path.getFullName "./_Reports/ShowStaticPP.xml"
+  let x2 = Path.getFullName "./_Reports/ShowGenerated.xml"
+  let x3 = Path.getFullName "./_Reports/ShowGeneratedRun.xml"
+  let o = Path.getFullName "Sample4/_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1"
+  let i = Path.getFullName "_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1"
+
+  Shell.cleanDir o
+
+  // Instrument the code
+  let prep =
+    AltCover.PrepareParams.Primitive
+      ({ Primitive.PrepareParams.Create() with
+           XmlReport = x
+           OutputDirectories = [ o ]
+           InputDirectories = [ i ]
+           AssemblyFilter = [ "xunit" ]
+           InPlace = false
+           OpenCover = false
+           Save = false
+           ShowStatic = "+" })
+    |> AltCover.Prepare
+  { AltCover.Params.Create prep with
+      ToolPath = "AltCover.dll"
+      WorkingDirectory = unpack }.WithToolType dotnet_altcover
+  |> AltCover.run
+
+  do
+    use coverageFile =
+      new FileStream(x, FileMode.Open, FileAccess.Read, FileShare.None, 4096,
+                     FileOptions.SequentialScan)
+    // Edit xml report to store new hits
+    let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
+    let vcs = coverageDocument.Descendants(XName.Get("seqpnt"))
+              |> Seq.map (fun x -> x.Attribute(XName.Get "visitcount").Value |> int)
+              |> Seq.groupBy id
+              |> Seq.sortBy fst
+              |> Seq.toList
+    Assert.That (vcs |> List.map fst, Is.EqualTo [ -3; 0])
+    Assert.That (vcs |> List.map (snd >> Seq.length), Is.EqualTo [10 ; 23])    
+
+  let prep =
+    AltCover.PrepareParams.Primitive
+      ({ Primitive.PrepareParams.Create() with
+           XmlReport = x1
+           OutputDirectories = [ o ]
+           InputDirectories = [ i ]
+           AssemblyFilter = [ "xunit" ]
+           InPlace = false
+           OpenCover = false
+           Save = false
+           ShowStatic = "++" })
+    |> AltCover.Prepare
+  { AltCover.Params.Create prep with
+      ToolPath = "AltCover.dll"
+      WorkingDirectory = unpack }.WithToolType dotnet_altcover
+  |> AltCover.run
+
+  do
+    use coverageFile =
+      new FileStream(x1, FileMode.Open, FileAccess.Read, FileShare.None, 4096,
+                     FileOptions.SequentialScan)
+    // Edit xml report to store new hits
+    let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
+    let vcs = coverageDocument.Descendants(XName.Get("seqpnt"))
+              |> Seq.map (fun x -> x.Attribute(XName.Get "visitcount").Value |> int)
+              |> Seq.groupBy id
+              |> Seq.sortBy fst
+              |> Seq.toList
+    Assert.That (vcs |> List.map fst, Is.EqualTo [ 0])
+    Assert.That (vcs |> List.map (snd >> Seq.length), Is.EqualTo [33])    
+
+  let prep =
+    AltCover.PrepareParams.Primitive
+      ({ Primitive.PrepareParams.Create() with
+           XmlReport = x2
+           OutputDirectories = [ o ]
+           InputDirectories = [ i ]
+           AssemblyFilter = [ "xunit" ]
+           InPlace = false
+           OpenCover = false
+           Save = false
+           ShowGenerated = true })
+    |> AltCover.Prepare
+  { AltCover.Params.Create prep with
+      ToolPath = "AltCover.dll"
+      WorkingDirectory = unpack }.WithToolType dotnet_altcover
+  |> AltCover.run
+
+  do
+    use coverageFile =
+      new FileStream(x2, FileMode.Open, FileAccess.Read, FileShare.None, 4096,
+                     FileOptions.SequentialScan)
+    // Edit xml report to store new hits
+    let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
+    let vcs = coverageDocument.Descendants(XName.Get("seqpnt"))
+              |> Seq.map (fun x -> x.Attribute(XName.Get "visitcount").Value |> int)
+              |> Seq.groupBy id
+              |> Seq.sortBy fst
+              |> Seq.toList
+    Assert.That (vcs |> List.map fst, Is.EqualTo [ -2; 0])
+    Assert.That (vcs |> List.map (snd >> Seq.length), Is.EqualTo [6 ; 17])    
+
+  let prep =
+    AltCover.PrepareParams.Primitive
+      ({ Primitive.PrepareParams.Create() with
+           XmlReport = x3
+           OutputDirectories = [ o ]
+           InputDirectories = [ i ]
+           AssemblyFilter = [ "xunit" ]
+           InPlace = false
+           OpenCover = false
+           Save = false
+           ShowGenerated = true })
+    |> AltCover.Prepare
+  { AltCover.Params.Create prep with
+      ToolPath = "AltCover.dll"
+      WorkingDirectory = unpack }.WithToolType dotnet_altcover
+  |> AltCover.run
+
+  printfn "Execute the instrumented tests"
+  let sample4 = Path.getFullName "./Sample4/sample4.core.fsproj"
+  let runner = Path.getFullName "_Packaging/Unpack/tools/netcoreapp2.0/AltCover.dll"
+  let (dotnetexe, args) = defaultDotNetTestCommandLine sample4
+
+  // Run
+  let collect =
+    AltCover.CollectParams.Primitive
+      { Primitive.CollectParams.Create() with
+          Executable = dotnetexe
+          RecorderDirectory = o
+          CommandLine = args }
+    |> AltCover.Collect
+  { AltCover.Params.Create collect with
+      ToolPath = runner
+      WorkingDirectory = o }.WithToolType dotnet_altcover
+  |> AltCover.run
+
+  do
+    use coverageFile =
+      new FileStream(x3, FileMode.Open, FileAccess.Read, FileShare.None, 4096,
+                     FileOptions.SequentialScan)
+    // Edit xml report to store new hits
+    let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
+    let vcs = coverageDocument.Descendants(XName.Get("seqpnt"))
+              |> Seq.map (fun x -> x.Attribute(XName.Get "visitcount").Value |> int)
+              |> Seq.groupBy id
+              |> Seq.sortBy fst
+              |> Seq.toList
+    Assert.That (vcs |> List.map fst, Is.EqualTo [ -2; 0; 1; 2])
+    Assert.That (vcs |> List.map (snd >> Seq.length), Is.EqualTo [3 ; 10; 9; 1])
+)
+
 _Target "ReleaseXUnitFSharpTypesDotNetFullRunner" (fun _ ->
   Directory.ensure "./_Reports"
   let unpack = Path.getFullName "_Packaging/Unpack/tools/netcoreapp2.0"
@@ -4008,6 +4164,11 @@ Target.activateFinal "ResetConsoleColours"
 "Unpack"
 ==> "ReleaseXUnitFSharpTypesDotNet"
 //==> "Deployment"
+
+"Unpack"
+==> "ReleaseXUnitFSharpTypesShowVisualized"
+==> "Deployment"
+
 
 "Unpack"
 ==> "MSBuildTest"
