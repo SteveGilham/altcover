@@ -460,6 +460,13 @@ module internal Visitor =
     BranchNumber <- 0
     SourceLinkDocuments <- None
 
+  let internal SelectAutomatic items exemption =
+    if items
+       |> Seq.exists (fun t' -> (generationFilter
+                                 |> Seq.exists (Filter.Match t')))
+       then Exemption.Automatic
+       else exemption
+
   let private VisitModule (x : ModuleDefinition) included buildSequence =
     ZeroPoints()
     SourceLinkDocuments <- Some x
@@ -483,11 +490,7 @@ module internal Visitor =
 
                     let inclusion = Seq.fold UpdateInspection included types
                     let visitcount = if !showGenerated
-                                     then if types
-                                             |> Seq.exists (fun t' -> (generationFilter
-                                                                       |> Seq.exists (Filter.Match t')))
-                                          then Exemption.Automatic
-                                          else Exemption.None
+                                     then SelectAutomatic types Exemption.None
                                      else Exemption.None
                     Type(t, inclusion, visitcount))
                     >> buildSequence)
@@ -646,6 +649,13 @@ module internal Visitor =
         FSharpContainingMethod t tx
       else None
 
+  let internal SelectExemption k items exemption =
+    if k = StaticFilter.AsCovered
+    then Exemption.StaticAnalysis
+    else if !showGenerated
+         then SelectAutomatic items exemption
+         else exemption
+
   let private VisitType (t : TypeDefinition) included basevc buildSequence =
     t.Methods
     |> Seq.cast
@@ -666,15 +676,7 @@ module internal Visitor =
                         | None -> None
                         | Some x -> Some(x, ContainingMethod x)) (Some m)
                       |> Seq.toList
-                    let visitcount = if k = StaticFilter.AsCovered
-                                     then Exemption.StaticAnalysis
-                                     else if !showGenerated
-                                          then if methods
-                                                  |> Seq.exists (fun m' -> (generationFilter
-                                                                             |> Seq.exists (Filter.Match m')))
-                                               then Exemption.Automatic
-                                               else basevc
-                                          else basevc
+                    let visitcount = SelectExemption k methods basevc
 
                     let inclusion = Seq.fold UpdateInspection included methods
                     Method(m, inclusion, Track m, visitcount))

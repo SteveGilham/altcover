@@ -2137,6 +2137,7 @@ module AltCoverTests =
       let path = Path.Combine(here, "_SourceLink/Sample14.dll")
       try
         Visitor.sourcelink := true
+        Visitor.staticFilter <- Some StaticFilter.NoFilter
         Visitor.Visit [ visitor ] (Visitor.ToSeq (path, []))
         Assert.That(Visitor.SourceLinkDocuments |> Option.isSome, "Documents should be present")
         let map = Visitor.SourceLinkDocuments |> Option.get
@@ -2170,6 +2171,7 @@ module AltCoverTests =
       finally
         Visitor.NameFilters.Clear()
         Visitor.sourcelink := false
+        Visitor.staticFilter <- None
 
     [<Test>]
     let ShouldGenerateExpectedXmlReportFromDotNetWithPathFilter() =
