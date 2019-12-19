@@ -207,21 +207,12 @@ let coverletOptions (o : Coverlet.CoverletParams) =
                        ("AltCover.Record*", "M*")
                        ("NUnit*", "*")] }
 
-let coverlet5_18_3fixup (o : DotNet.TestOptions) =      
-  if o.MSBuildParams.Properties |> List.exists (fun (p,_) -> p = "CoverletOutput")
-  then { o with MSBuildParams = { o.MSBuildParams with Properties = o.MSBuildParams.Properties 
-                                                                    |> List.map (fun (p,v) -> if p = "OutputFormat"
-                                                                                              then ("CoverletOutputFormat", v)
-                                                                                              else (p,v))}}
-  else o       
-
 let coverletTestOptions (o : DotNet.TestOptions) =
   { o.WithCommon dotnetOptions with Configuration = DotNet.BuildConfiguration.Debug
                                     NoBuild = true
                                     Framework = Some "netcoreapp3.0" }
   |> withCLIArgs
   |> Coverlet.withDotNetTestOptions coverletOptions
-  |> coverlet5_18_3fixup
 
 let _Target s f =
   Target.description s
@@ -3178,13 +3169,13 @@ Target.runOrDefault "DoIt"
 """
     File.WriteAllText("./_ApiUse/DriveApi.fsx", script)
 
-    let dependencies = """version 5.226.0
+    let dependencies = """version 5.241.2
 // [ FAKE GROUP ]
 group NetcoreBuild
   source https://api.nuget.org/v3/index.json
   nuget Fake.Core >= 5.16.0
-  nuget Fake.Core.Target >= 5.18.3
-  nuget Fake.DotNet.Cli >= 5.18.3
+  nuget Fake.Core.Target >= 5.19
+  nuget Fake.DotNet.Cli >= 5.19
   nuget FSharp.Core >= 4.7
   source {0}
   nuget AltCover.Api {1}
