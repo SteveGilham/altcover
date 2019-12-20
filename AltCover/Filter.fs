@@ -27,6 +27,12 @@ type internal FilterScope =
   | Path
 
 [<ExcludeFromCodeCoverage; NoComparison>]
+type internal StaticFilter =
+  | NoFilter
+  | AsCovered
+  | Hidden
+
+[<ExcludeFromCodeCoverage; NoComparison>]
 type internal FilterRegex =
   { Regex : Regex; Sense : FilterSense}
   static member Exclude (s : Regex) =

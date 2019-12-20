@@ -55,18 +55,20 @@ module XmlUtilities =
     xdoc
 
   [<SuppressMessage("Microsoft.Usage", "CA2202", Justification = "Observably safe")>]
+  // Approved way is ugly -- https://docs.microsoft.com/en-us/visualstudio/code-quality/ca2202?view=vs-2019
+  // Also, this rule is deprecated
   let internal LoadSchema(format : AltCover.Base.ReportFormat) =
     let schemas = new XmlSchemaSet()
-
-    use stream =
+    let resource =
       match format with
       | AltCover.Base.ReportFormat.NCover ->
-        Assembly.GetExecutingAssembly()
-                .GetManifestResourceStream("AltCover.FSApi.xsd.NCover.xsd")
+        "AltCover.FSApi.xsd.NCover.xsd"
       | _ ->
-        Assembly.GetExecutingAssembly()
-                .GetManifestResourceStream("AltCover.FSApi.xsd.OpenCover.xsd")
+        "AltCover.FSApi.xsd.OpenCover.xsd"
 
+    use stream =
+        Assembly.GetExecutingAssembly()
+                .GetManifestResourceStream(resource)
     use reader = new StreamReader(stream)
     use xreader = XmlReader.Create(reader)
     schemas.Add(String.Empty, xreader) |> ignore

@@ -64,6 +64,8 @@ module DotNet =
 
   type DotNet.TestOptions with
 
+    // NOTE: the MSBuildParams member of TestOptions did not exist in Fake 5.0.0
+    // so do it this way for backwards compatibility
     member private self.ExtendCustomParams options =
       let custom = self.Common.CustomParams
 
@@ -106,16 +108,24 @@ module DotNet =
       result :?> DotNet.TestOptions
 
 #if RUNNER
-    member self.WithParameters (prepare : FSApi.PrepareParams)
+    member self.WithAltCoverParameters (prepare : FSApi.PrepareParams)
                                (collect : FSApi.CollectParams)
                                (force : DotNet.CLIArgs) =
       DotNet.ToTestArguments
 #else
-    member self.WithParameters (prepare : AltCover_Fake.DotNet.Testing.AltCover.PrepareParams)
+    member self.WithAltCoverParameters (prepare : AltCover_Fake.DotNet.Testing.AltCover.PrepareParams)
            (collect : AltCover_Fake.DotNet.Testing.AltCover.CollectParams)
            (force : AltCover_Fake.DotNet.Testing.DotNet.CLIArgs) =
       AltCover_Fake.DotNet.Testing.Internals.ToTestArguments
 #endif
         prepare collect force |> self.ExtendCustomParams
-    member self.WithImportModule() = self.ExtendCustomParams "/p:AltCoverIpmo=true"
-    member self.WithGetVersion() = self.ExtendCustomParams "/p:AltCoverGetVersion=true"
+    member self.WithAltCoverImportModule() = self.ExtendCustomParams "/p:AltCoverIpmo=true"
+    member self.WithAltCoverGetVersion() = self.ExtendCustomParams "/p:AltCoverGetVersion=true"
+
+    [<Obsolete("Prefer equivalent member .WithAltCoverParameters")>]
+    member self.WithParameters a b c =
+      self.WithAltCoverParameters a b c
+    [<Obsolete("Prefer equivalent member .WithAltCoverImportModule")>]
+    member self.WithImportModule() = self.WithAltCoverImportModule()
+    [<Obsolete("Prefer equivalent member .WithAltCoverGetVersion")>]
+    member self.WithGetVersion() = self.WithAltCoverGetVersion()

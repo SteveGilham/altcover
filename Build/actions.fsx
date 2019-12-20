@@ -216,7 +216,7 @@ do ()"""
       |> Seq.map (fun x -> x.Attribute(XName.Get("visitcount")).Value)
       |> Seq.toList
 
-    let expected = "0 1 1 1 1 1 1 0 0 0 0 0 0 0 2 1 1 1"
+    let expected = "0 1 1 1 0 1 0 1 0 1 0 0 0 0 0 0 0 2 1 0 1 0 1"
     Assert.That
       (String.Join(" ", recorded), expected |> Is.EqualTo,
        sprintf "Bad visit list %A" recorded)
@@ -430,7 +430,7 @@ a:hover {color: #ecc;}
         "System.Void Tests.DU::testMakeUnion()"
         "System.Void Tests.M::testMakeThing()"
         "Tests.DU/MyUnion Tests.DU/MyUnion::as_bar()"
-        "Tests.DU/MyUnion Tests.DU/get_MyBar@40::Invoke(Microsoft.FSharp.Core.Unit)"
+        "Tests.DU/MyUnion Tests.DU/get_MyBar@42::Invoke(Microsoft.FSharp.Core.Unit)"
         "Tests.DU/MyUnion Tests.DU::returnBar(System.String)"
         "Tests.DU/MyUnion Tests.DU::returnFoo(System.Int32)"
         "Tests.M/Thing Tests.M::makeThing(System.String)" ]
@@ -451,7 +451,7 @@ a:hover {color: #ecc;}
       |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value)
       |> Seq.toList
 
-    let expected = "0 1 1 1 1 1 1 0 0 0 0 0 0 0 2 1 1 1"
+    let expected = "0 1 1 1 0 1 0 1 0 1 0 0 0 0 0 0 0 2 1 0 1 0 1"
     Assert.That
       (String.Join(" ", recorded), expected |> Is.EqualTo,
        sprintf "Bad visit list %A" recorded)
@@ -487,7 +487,10 @@ a:hover {color: #ecc;}
            "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
            "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
            "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
+           "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
+           "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
            "<TrackedMethodRef uid=\"2\" vc=\"2\" />"
+           "<TrackedMethodRef uid=\"2\" vc=\"1\" />"
            "<TrackedMethodRef uid=\"2\" vc=\"1\" />"
            "<TrackedMethodRef uid=\"2\" vc=\"1\" />"
            "<TrackedMethodRef uid=\"2\" vc=\"1\" />" ])

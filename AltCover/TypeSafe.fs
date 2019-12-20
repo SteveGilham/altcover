@@ -15,6 +15,7 @@ open System.Text.RegularExpressions
 // No more primitive obsession!
 [<ExcludeFromCodeCoverage; NoComparison>]
 type FilePath =
+  | Tool of String
   | FilePath of String
   | FInfo of FileInfo
   | NoFile
@@ -22,7 +23,8 @@ type FilePath =
     match self with
     | NoFile -> String.Empty
     | FInfo i -> i.FullName
-    | FilePath s -> s
+    | FilePath s -> Path.GetFullPath s
+    | Tool t -> t
 
 [<ExcludeFromCodeCoverage; NoComparison>]
 type DirectoryPath =
@@ -98,10 +100,12 @@ type DirectoryPaths =
 [<ExcludeFromCodeCoverage; NoComparison>]
 type FilterItem =
   | FilterItem of Regex
+  | IncludeItem of Regex
   | Raw of String
   member self.AsString() =
     match self with
     | FilterItem r -> r.ToString()
+    | IncludeItem r -> "?" + r.ToString()
     | Raw r -> r
 
 [<ExcludeFromCodeCoverage; NoComparison>]
@@ -153,6 +157,17 @@ type SummaryFormat =
     | RPlus -> "+R"
 
 [<ExcludeFromCodeCoverage; NoComparison>]
+type StaticFormat =
+  | Default
+  | Show
+  | ShowZero
+  member self.AsString () =
+    match self with
+    | Default -> "-"
+    | Show -> "+"
+    | ShowZero -> "++"
+
+[<ExcludeFromCodeCoverage; NoComparison>]
 type CollectParams =
   { RecorderDirectory : DirectoryPath
     WorkingDirectory : DirectoryPath
@@ -175,7 +190,7 @@ type CollectParams =
       OutputFile = NoFile
       CommandLine = NoCommand
       ExposeReturnCode = Set
-      SummaryFormat = Default
+      SummaryFormat = SummaryFormat.Default
     }
 
 [<ExcludeFromCodeCoverage; NoComparison>]
@@ -207,6 +222,8 @@ type PrepareParams =
     Defer : Flag
     LocalSource : Flag
     VisibleBranches : Flag
+    ShowStatic : StaticFormat
+    ShowGenerated : Flag
   }
   static member Create() =
     { InputDirectories = NoDirectories
@@ -236,4 +253,6 @@ type PrepareParams =
       Defer = Clear
       LocalSource = Clear
       VisibleBranches = Clear
+      ShowStatic = StaticFormat.Default
+      ShowGenerated = Clear
     }

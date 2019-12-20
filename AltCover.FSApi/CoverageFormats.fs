@@ -96,6 +96,12 @@ module CoverageFormats =
               let visits = (max 0 v) + (max 0 vc)
               sp.Attribute(XName.Get "vc").Value <- visits.ToString
                                                       (System.Globalization.CultureInfo.InvariantCulture)))
+
+    rewrite.Descendants(XName.Get "Class")
+    |> Seq.filter (fun c -> c.Descendants(XName.Get "Method") |> Seq.isEmpty)
+    |> Seq.toList // reify before making changes
+    |> Seq.iter (fun c -> c.Remove())
+
     let dec = rewrite.Declaration
     dec.Encoding <- "utf-8"
     dec.Standalone <- null

@@ -213,10 +213,10 @@ module internal OpenCover =
                  MethodCC = Some cc :: s.MethodCC }
       else s
 
-    let MethodPointElement (codeSegment : SeqPnt) ref i =
+    let MethodPointElement (codeSegment : SeqPnt) ref i vc =
       XElement
         (X "SequencePoint",
-         XAttribute(X "vc", 0),
+         XAttribute(X "vc", int vc),
          XAttribute(X "uspid", i),
          XAttribute(X "ordinal", 0),
          XAttribute(X "offset", codeSegment.Offset),
@@ -234,9 +234,9 @@ module internal OpenCover =
         let index = s.Files.Count + 1
         s.Files.Add(file, index), index
 
-    let VisitCodeSegment (s : OpenCoverContext) (codeSegment : SeqPnt) i =
+    let VisitCodeSegment (s : OpenCoverContext) (codeSegment : SeqPnt) i vc =
       let fileset, ref = RecordFile s (codeSegment.Document |> Visitor.SourceLinkMapping)
-      let element = MethodPointElement codeSegment ref i
+      let element = MethodPointElement codeSegment ref i vc
       let head = s.Stack |> Seq.head
       if head.IsEmpty then head.Add(element)
       else head.FirstNode.AddBeforeSelf(element)
@@ -244,7 +244,7 @@ module internal OpenCover =
                Index = ref
                MethodSeq = s.MethodSeq + 1 }
 
-    let VisitMethodPoint (s : OpenCoverContext) (codeSegment' : SeqPnt option) i included =
+    let VisitMethodPoint (s : OpenCoverContext) (codeSegment' : SeqPnt option) i included vc =
       let element = (s.Stack |> Seq.head).Parent
       let attr = element.Attribute(X "skippedDueTo")
                  |> Option.nullable
@@ -252,7 +252,7 @@ module internal OpenCover =
       if included && attr = Some "File" then
         element.SetAttributeValue(X "skippedDueTo", null)
       match (included, codeSegment', s.Excluded) with
-      | (true, Some codeSegment, Nothing) -> VisitCodeSegment s codeSegment i
+      | (true, Some codeSegment, Nothing) -> VisitCodeSegment s codeSegment i vc
       | _ -> s
 
     let VisitGoTo s branch =
@@ -261,7 +261,7 @@ module internal OpenCover =
       let fileid = fileset.Item doc
       (XElement
          (X "BranchPoint",
-          XAttribute(X "vc", 0),
+          XAttribute(X "vc", int branch.VisitCount),
           XAttribute(X "uspid", branch.Uid),
           XAttribute(X "ordinal", 0),
           XAttribute(X "offset", branch.Offset),
@@ -502,9 +502,9 @@ module internal OpenCover =
       match node with
       | Start _ -> StartVisit s
       | Node.Module(moduleDef, included) -> VisitModule s moduleDef included
-      | Node.Type(typeDef, included) -> VisitType s typeDef included
-      | Node.Method(methodDef, included, _) -> VisitMethod s methodDef included
-      | MethodPoint(_, codeSegment, i, included) -> VisitMethodPoint s codeSegment i included
+      | Node.Type(typeDef, included, _) -> VisitType s typeDef included
+      | Node.Method(methodDef, included, _, _) -> VisitMethod s methodDef included
+      | MethodPoint(_, codeSegment, i, included, vc) -> VisitMethodPoint s codeSegment i included vc
       | BranchPoint b -> VisitBranchPoint s b
       | _ -> ReportVisitor2 s node
 

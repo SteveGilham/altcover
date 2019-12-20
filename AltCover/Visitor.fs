@@ -68,6 +68,7 @@ type internal GoTo =
     Offset : int
     Target : Instruction list
     Included : bool
+    VisitCount : Exemption
     Representative : Reporting
     Key : int }
 
@@ -76,9 +77,9 @@ type internal Node =
   | Start of seq<string * string list>
   | Assembly of AssemblyDefinition * Inspect * string list
   | Module of ModuleDefinition * Inspect
-  | Type of TypeDefinition * Inspect
-  | Method of MethodDefinition * Inspect * (int * string) option
-  | MethodPoint of Instruction * SeqPnt option * int * bool
+  | Type of TypeDefinition * Inspect * Exemption
+  | Method of MethodDefinition * Inspect * (int * string) option * Exemption
+  | MethodPoint of Instruction * SeqPnt option * int * bool * Exemption
   | BranchPoint of GoTo
   | AfterMethod of MethodDefinition * Inspect * (int * string) option
   | AfterType
@@ -91,7 +92,7 @@ type internal Node =
      | Assembly(a, _, l) -> [ AfterAssembly (a, l) ]
      | Module _ -> [ AfterModule ]
      | Type _ -> [ AfterType ]
-     | Method(m, included, track) -> [ AfterMethod(m, included, track) ]
+     | Method(m, included, track, _) -> [ AfterMethod(m, included, track) ]
      | _ -> [])
     |> List.toSeq
 
@@ -212,6 +213,15 @@ module internal Visitor =
   let internal collect = ref false // ddFlag
   let internal TrackingNames = new List<String>()
   let internal NameFilters = new List<FilterClass>()
+
+  let mutable internal staticFilter : StaticFilter option = None
+  let internal showGenerated = ref false
+  let generationFilter =
+    [
+      "System.Runtime.CompilerServices.CompilerGeneratedAttribute"
+      "System.CodeDom.Compiler.GeneratedCodeAttribute"
+    ]
+    |> List.map (Regex >> FilterRegex.Exclude >> (FilterClass.Build FilterScope.Attribute))
 
   let private specialCaseFilters =
     [ @"^CompareTo\$cont\@\d+\-?\d$"
@@ -390,8 +400,7 @@ module internal Visitor =
                    | _ -> LocateMatch file dict
 
   let significant (m : MethodDefinition) =
-    [ (fun _ -> m.HasBody |> not)
-      Filter.IsFSharpInternal
+    [ Filter.IsFSharpInternal
       Filter.IsCSharpAutoProperty
       (fun m -> specialCaseFilters |> Seq.exists (Filter.Match m))
 
@@ -451,6 +460,13 @@ module internal Visitor =
     BranchNumber <- 0
     SourceLinkDocuments <- None
 
+  let internal SelectAutomatic items exemption =
+    if items
+       |> Seq.exists (fun t' -> (generationFilter
+                                 |> Seq.exists (Filter.Match t')))
+       then Exemption.Automatic
+       else exemption
+
   let private VisitModule (x : ModuleDefinition) included buildSequence =
     ZeroPoints()
     SourceLinkDocuments <- Some x
@@ -470,9 +486,13 @@ module internal Visitor =
                       Seq.unfold (fun (state : TypeDefinition) ->
                         if isNull state then None
                         else Some(state, state.DeclaringType)) t
+                      |> Seq.toList
 
                     let inclusion = Seq.fold UpdateInspection included types
-                    Type(t, inclusion))
+                    let visitcount = if !showGenerated
+                                     then SelectAutomatic types Exemption.None
+                                     else Exemption.None
+                    Type(t, inclusion, visitcount))
                     >> buildSequence)
 
   let internal Track(m : MethodDefinition) =
@@ -629,21 +649,37 @@ module internal Visitor =
         FSharpContainingMethod t tx
       else None
 
-  let private VisitType (t : TypeDefinition) included buildSequence =
+  let internal SelectExemption k items exemption =
+    if k = StaticFilter.AsCovered
+    then Exemption.StaticAnalysis
+    else if !showGenerated
+         then SelectAutomatic items exemption
+         else exemption
+
+  let private VisitType (t : TypeDefinition) included basevc buildSequence =
     t.Methods
     |> Seq.cast
     |> Seq.filter
          (fun (m : MethodDefinition) ->
-         not m.IsAbstract && not m.IsRuntime && not m.IsPInvokeImpl && significant m)
-    |> Seq.collect ((fun m ->
+         not m.IsAbstract && not m.IsRuntime && not m.IsPInvokeImpl && m.HasBody)
+    |> Seq.map (fun m -> let key = if significant m
+                                      then StaticFilter.NoFilter
+                                      else match staticFilter with
+                                           | None -> StaticFilter.Hidden
+                                           | Some f -> f
+                         (m, key))
+    |> Seq.filter (fun (m,k) -> k <> StaticFilter.Hidden)
+    |> Seq.collect ((fun (m,k) ->
                     let methods =
                       Seq.unfold (fun (state : MethodDefinition option) ->
                         match state with
                         | None -> None
                         | Some x -> Some(x, ContainingMethod x)) (Some m)
+                      |> Seq.toList
+                    let visitcount = SelectExemption k methods basevc
 
                     let inclusion = Seq.fold UpdateInspection included methods
-                    Method(m, inclusion, Track m))
+                    Method(m, inclusion, Track m, visitcount))
                     >> buildSequence)
 
   let IsSequencePoint(s : SequencePoint) =
@@ -794,7 +830,7 @@ module internal Visitor =
     |> Seq.collect id
     |> Seq.sortBy (fun b -> b.Key)  // important! instrumentation assumes we work in the order we started with
 
-  let private ExtractBranchPoints dbg methodFullName rawInstructions interesting =
+  let private ExtractBranchPoints dbg methodFullName rawInstructions interesting vc =
     let makeDefault i =
       if !coalesceBranches
       then -1
@@ -844,6 +880,7 @@ module internal Visitor =
                             Offset = from.Offset
                             Target = target
                             Included = interesting
+                            VisitCount = vc
                             Representative = if !coalesceBranches
                                              then Reporting.Contributing
                                              else Reporting.Representative
@@ -853,7 +890,7 @@ module internal Visitor =
     |> Seq.map BranchPoint
     |> Seq.toList
 
-  let private VisitMethod (m : MethodDefinition) (included : Inspect) =
+  let private VisitMethod (m : MethodDefinition) (included : Inspect) vc =
     let rawInstructions = m.Body.Instructions
     let dbg = m.DebugInformation
 
@@ -892,7 +929,7 @@ module internal Visitor =
       if MethodPointOnly() then
         rawInstructions
         |> Seq.take 1
-        |> Seq.map (fun i -> MethodPoint(i, None, m.MetadataToken.ToInt32(), interesting))
+        |> Seq.map (fun i -> MethodPoint(i, None, m.MetadataToken.ToInt32(), interesting, vc))
       else
         instructions.OrderByDescending(fun (x : Instruction) -> x.Offset)
         |> Seq.mapi (fun i x ->
@@ -900,7 +937,7 @@ module internal Visitor =
              MethodPoint(x,
                          s
                          |> SeqPnt.Build
-                         |> Some, i + point, wanted interesting s))
+                         |> Some, i + point, wanted interesting s, vc))
 
     let IncludeBranches() =
       instructions.Any() && ReportKind() = Base.ReportFormat.OpenCover
@@ -914,7 +951,7 @@ module internal Visitor =
           |> dbg.GetSequencePoint
 
         let branches = wanted interesting spnt
-        ExtractBranchPoints dbg m.FullName rawInstructions branches
+        ExtractBranchPoints dbg m.FullName rawInstructions branches vc
       else []
     BranchNumber <- BranchNumber + List.length bp
     Seq.append sp bp
@@ -925,8 +962,8 @@ module internal Visitor =
     | Start paths -> StartVisit paths BuildSequence
     | Assembly(a, included, _) -> VisitAssembly a included BuildSequence
     | Module(x, included) -> VisitModule x included BuildSequence
-    | Type(t, included) -> VisitType t included BuildSequence
-    | Method(m, included, _) -> VisitMethod m included
+    | Type(t, included, vc) -> VisitType t included vc BuildSequence
+    | Method(m, included, _, vc) -> VisitMethod m included vc
     | _ -> Seq.empty<Node>
 
   and internal BuildSequence node =

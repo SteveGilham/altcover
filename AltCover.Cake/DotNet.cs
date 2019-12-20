@@ -14,6 +14,39 @@ namespace AltCover.Cake
         public IPrepareArgs PreparationPhase { get; set; }
         public ICollectArgs CollectionPhase { get; set; }
         public ICLIArg Force { get; set; }
+
+        public Func<ProcessArgumentBuilder, ProcessArgumentBuilder> Customize()
+        {
+            return pabIn => {
+                var pabOut = new ProcessArgumentBuilder();
+                if (pabIn != null) 
+                {
+                    pabIn.CopyTo(pabOut);
+                }
+                var args = CSApi.ToTestArgumentList(
+                            this.PreparationPhase,
+                            this.CollectionPhase,
+                            this.Force);
+                Array.Reverse(args);
+                Array.ForEach(
+                    args,
+                    t => pabOut.Prepend(t));
+                return pabOut;
+            };
+        }
+
+        public Func<ProcessArgumentBuilder, ProcessArgumentBuilder> Concatenate(Func<ProcessArgumentBuilder, ProcessArgumentBuilder> customIn)
+        {
+            var altcover = Customize();
+            if (customIn == null)
+            {
+                return altcover;
+            }
+            else 
+            {
+                return args => altcover(customIn(args));
+            }
+        }
     }
 
     [CakeAliasCategory("DotNetCore")]
@@ -27,24 +60,8 @@ namespace AltCover.Cake
                     DotNetCoreTestSettings settings,
                     AltCoverSettings altcover)
         {
-            var currentCustomization = settings.ArgumentCustomization;
-            settings.ArgumentCustomization = (args) => ProcessArguments(context, currentCustomization?.Invoke(args) ?? args, project, altcover);
+            settings.ArgumentCustomization = altcover.Concatenate(settings.ArgumentCustomization);
             context.DotNetCoreTest(project.FullPath, settings);
-        }
-
-        private static ProcessArgumentBuilder ProcessArguments(
-                        ICakeContext cakeContext,
-                        ProcessArgumentBuilder builder,
-                        FilePath project,
-                        AltCoverSettings altcover)
-        {
-            Array.ForEach(
-                CSApi.ToTestArgumentList(
-                    altcover.PreparationPhase,
-                    altcover.CollectionPhase,
-                    altcover.Force),
-                t => builder.Append(t));
-            return builder;
         }
     }
 }

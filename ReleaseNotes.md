@@ -2,16 +2,39 @@ Q. Never mind the fluff -- how do I get started?
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
-# 6.3.7xx (Fukurou series release 9)
+# 6.6.747  (Fukurou series release 11)
+* [API, Fake Helper API] Deprecate the `DotNet.TestOptions.WithImportModule` and `.WithGetVersion` extension methods in favour of the otherwise identical `DotNet.TestOptions.WithAltCoverImportModule` and `.WithAltCoverGetVersion`; the obsolete name now just calls through to the preferred one.
+* [API] `--showstatic[:[-|+|++]]` (string `ShowStatic` default "-" in API, `-ShowStatic string` PowerShell) to reveal the code usually auto-filtered (e.g. auto-properties, somwe system generated types, structure comparison methods in F#...); either with coverage value `-3` (option '+') which is highlighted in the Visualizer but treated as 0 by [ReportGenerator](https://danielpalme.github.io/ReportGenerator/), or the value '0' (option '++')
+* [API] `--showGenerated` (bool `ShowGenerated` default false in API, `-ShowSGenerated` PowerShell) to reveal the code marked by [CompilerGenerated] or [GeneratedCode] with coverage value `-2`which is highlighted in the Visualizer but treated as 0 by [ReportGenerator](https://danielpalme.github.io/ReportGenerator/)
+* [Visualizer, BUGFIX] fix the sorting of method by name for NCover format
+* [Visualizer] group property `get_` and `set_`, and event `add_` and `remove_`,  methods together, under an appropriate icon
+* [Visualizer] For F# modules containing only types, group the contents together under a module entry at class level, just as they would have been were the module to directly contain any functions
+* [Visualizer] Types that only contain an `Invoke` method and constructors are shown with an approriate icon, too.
+* [3rd Party] With the latest GTK#3 update, the GTK+ native libraries for win-x64 are no longer bundled into the nuget -- this seems to have been a transient behaviour in GtkSharp v3.22.25.49 only
+
+# 6.5.739  (Fukurou series release 10)
+* [Command-line and CLI tool] Rolling forwards with `runtimeconfig.template.json` -- it's not just for global tools : make all the executables .net core 3+ compatible.
+  * this now packages the GTK# assemblies, and GTK+ native libraries for win-x64, for the .net core visualizer
+  * also enable the build to execute on hosts with nothing before .net core 3 runtime
+* [API, Fake Helper API] Deprecate the `DotNet.TestOptions.WithParameters` extension method in favour of the otherwise identical `DotNet.TestOptions.WithAltCoverParameters`; the obsolete name now just calls through to the preferred one.
+* [Visualizer tool] Update GTK# for .net Core
+* [BUGFIX] In `ConvertFrom-NCover`, don't add classes for which there is no method coverage data.  This mainly affects system generated classes implementation details, including ones actually called `<PrivateImplementationDetails$...>...`
+* In cobertura format output, including the `ConvertTo-Cobertura` cmdlet, truncate rates to 2 decimal places (equivalent to integral percentages used elsewhere)
+
+# 6.4.734 (Fukurou series release 9)
 * [FAKE Helper API] Fake >= 5.18.1 is required for this release (the work-round for FAKE issue #2412 has been removed)
+* [FAKE Helper API] Add this constraint as an explicit dependency
+* [API] Add `Tool of String` a literal alongside `FilePath of String`, which is expanded to a full path to `TypeSafe.FilePath`
+* [API] Add `IncludeItem of Regex` which represents a `?`-prefix regex string to `TypeSafe.FilterItem`
 * Trap and log exceptions reported in Issue #71 as files `<coverage report path>.<timestamp>.exn`
+* Other housekeeping
 
 # 6.3.729 (Fukurou series release 8)
 * Filter out assemblies without the `ILOnly` bit set (i.e. pretty much anything C++/CLI, even with the deprecated /clr:pure compiler flag set)
 * [FAKE Helper API] Fake >= 5.18.0 is required for this release
 * [FAKE Helper API] Deprecate `AltCover_Fake.DotNet.Testing.AltCover.ToolType` in favour of `Fake.DotNet.ToolType` in the `AltCover_Fake.DotNet.Testing.AltCover.Params` record structure.  
 * [FAKE Helper API] Helper functions in `AltCover_Fake.DotNet.Testing.AltCover`
-  * `splitCommandLine: string -> string list` for breaking up composed command lines e.g. from `Fake.DotNet.Testing.NUnit3.buildArgs` or ``Fake.DotNet.Testing.XUnit2.buildArgs`
+  * `splitCommandLine: string -> string list` for breaking up composed command lines e.g. from `Fake.DotNet.Testing.NUnit3.buildArgs` or `Fake.DotNet.Testing.XUnit2.buildArgs`
   * `buildDotNetTestCommandLine: (DotNet.TestOptions -> DotNet.TestOptions) -> string -> (string * string list)` taking the arguments for `DotNet.test` and returning the `dotnet` path and the rest of the command line
   * `runWithMono: string option -> Params -> 'a` to execute the `Params` using the path to the Mono executable if it's a FAKE-style full framework tool on Windows (equivalent to the deprecated `AltCover.ToolType.Mono`)
   * `Params.WithToolType: Fake.DotNet.ToolType -> Params` Setting the new tool type using this member is the preferred forward-compatible way to do this
