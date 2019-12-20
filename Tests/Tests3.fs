@@ -83,7 +83,7 @@ module AltCoverTests3 =
     let ShouldHaveExpectedOptions() =
       Main.init()
       let options = Main.DeclareOptions()
-      Assert.That(options.Count, Is.EqualTo 28)
+      Assert.That(options.Count, Is.EqualTo 30)
       Assert.That
         (options
          |> Seq.filter (fun x -> x.Prototype <> "<>")
@@ -1147,6 +1147,86 @@ module AltCoverTests3 =
           Assert.That(CommandLine.error |> Seq.head, Is.EqualTo "--visibleBranches : specify this only once")
       finally
         Visitor.coalesceBranches := false
+
+    [<Test>]
+    let ParsingStaticGivesStatic() =
+      Main.init()
+      let options = Main.DeclareOptions()
+      let input = [| "--showstatic" |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Left _ -> Assert.Fail()
+      | Right(x, y) ->
+        Assert.That(y, Is.SameAs options)
+        Assert.That(x, Is.Empty)
+      Assert.That(Visitor.staticFilter, StaticFilter.AsCovered |> Some |> Is.EqualTo )
+
+    [<Test>]
+    let ParsingStaticPlusGivesStatic() =
+      Main.init()
+      let options = Main.DeclareOptions()
+      let input = [| "--showstatic:+" |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Left _ -> Assert.Fail()
+      | Right(x, y) ->
+        Assert.That(y, Is.SameAs options)
+        Assert.That(x, Is.Empty)
+      Assert.That(Visitor.staticFilter, StaticFilter.AsCovered |> Some |> Is.EqualTo )
+
+    [<Test>]
+    let ParsingStaticPlusPlusGivesStaticPlus() =
+      Main.init()
+      let options = Main.DeclareOptions()
+      let input = [| "--showstatic:++" |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Left _ -> Assert.Fail()
+      | Right(x, y) ->
+        Assert.That(y, Is.SameAs options)
+        Assert.That(x, Is.Empty)
+      Assert.That(Visitor.staticFilter, StaticFilter.NoFilter |> Some |> Is.EqualTo )
+
+    [<Test>]
+    let ParsingStaticMinusGivesNoStatic() =
+      Main.init()
+      let options = Main.DeclareOptions()
+      let input = [| "--showstatic=-" |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Left _ -> Assert.Fail()
+      | Right(x, y) ->
+        Assert.That(y, Is.SameAs options)
+        Assert.That(x, Is.Empty)
+      Assert.That(Visitor.staticFilter, StaticFilter.Hidden |> Some |> Is.EqualTo )
+
+    [<Test>]
+    let ParsingMultipleStaticGivesFailure() =
+      Main.init()
+      let options = Main.DeclareOptions()
+      let input = [| "--showstatic:++"; "--showstatic:-" |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Right _ -> Assert.Fail()
+      | Left(x, y) ->
+        Assert.That(y, Is.SameAs options)
+        Assert.That(x, Is.EqualTo "UsageError")
+        Assert.That(CommandLine.error |> Seq.head, Is.EqualTo "--showstatic : specify this only once")
+        Assert.That(Visitor.staticFilter, StaticFilter.NoFilter |> Some |> Is.EqualTo )
+
+    [<Test>]
+    let ParsingJunkStaticGivesFailure() =
+      Main.init()
+      let options = Main.DeclareOptions()
+      let tag = Guid.NewGuid().ToString()
+      let input = [| "--showstatic:" + tag  |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Right _ -> Assert.Fail()
+      | Left(x, y) ->
+        Assert.That(y, Is.SameAs options)
+        Assert.That(x, Is.EqualTo "UsageError")
+        Assert.That(CommandLine.error |> Seq.head, Is.EqualTo ("--showstatic : cannot be '" + tag + "'"))
 
     [<Test>]
     let ParsingTimeGivesTime() =
@@ -2287,6 +2367,16 @@ module AltCoverTests3 =
   -v, --visibleBranches      Hide complex internal IL branching implementation
                                details in switch/match constructs, and just
                                show what the source level logic implies.
+      --showstatic[=VALUE]   Optional: Instrument and show code that is by
+                               default skipped as trivial.  --showstatic:- is
+                               equivalent to omitting the parameter; --
+                               showstatic or --showstatic:+ sets the unvisited
+                               count to a negative value interpreted by the
+                               visualizer (but treated as zero by
+                               ReportGenerator) ; --showstatic:++ sets the
+                               unvisited count to zero.
+      --showGenerated        Mark generated code with a visit count of -2 (
+                               Automatic) for the Visualizer if unvisited
   -?, --help, -h             Prints out the options.
 or
   ipmo                       Prints out the PowerShell script to import the
@@ -2396,6 +2486,16 @@ or
   -v, --visibleBranches      Hide complex internal IL branching implementation
                                details in switch/match constructs, and just
                                show what the source level logic implies.
+      --showstatic[=VALUE]   Optional: Instrument and show code that is by
+                               default skipped as trivial.  --showstatic:- is
+                               equivalent to omitting the parameter; --
+                               showstatic or --showstatic:+ sets the unvisited
+                               count to a negative value interpreted by the
+                               visualizer (but treated as zero by
+                               ReportGenerator) ; --showstatic:++ sets the
+                               unvisited count to zero.
+      --showGenerated        Mark generated code with a visit count of -2 (
+                               Automatic) for the Visualizer if unvisited
   -?, --help, -h             Prints out the options.
 or
   Runner

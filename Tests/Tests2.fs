@@ -972,7 +972,7 @@ module AltCoverTests2 =
                     |> Array.map (fun i -> i.Offset)
       Assert.That (targets, Is.EquivalentTo [ 31; 33; 31; 33; 31 ])
 
-      let m = Node.Method (target, Inspect.Instrument, None)
+      let m = Node.Method (target, Inspect.Instrument, None, Exemption.None)
       let steps = Visitor.BuildSequence m
 
       Assert.That(steps, Is.Not.Empty)
@@ -1042,7 +1042,7 @@ module AltCoverTests2 =
       try
         Visitor.reportFormat <- Some Base.ReportFormat.OpenCover
         let branches =
-          Visitor.Deeper <| Node.Method(method, Inspect.Instrument, None)
+          Visitor.Deeper <| Node.Method(method, Inspect.Instrument, None, Exemption.None)
           |> Seq.map (fun n ->
                match n with
                | BranchPoint b -> Some b
@@ -1101,7 +1101,7 @@ module AltCoverTests2 =
       try
         Visitor.reportFormat <- Some Base.ReportFormat.OpenCover
         let branches =
-          Visitor.Deeper <| Node.Method(method, Inspect.Instrument, None)
+          Visitor.Deeper <| Node.Method(method, Inspect.Instrument, None, Exemption.None)
           |> Seq.map (fun n ->
                match n with
                | BranchPoint b -> Some b
@@ -1165,7 +1165,7 @@ module AltCoverTests2 =
       try
         Visitor.reportFormat <- Some Base.ReportFormat.OpenCover
         let branches =
-          Visitor.Deeper <| Node.Method(method, Inspect.Instrument, None)
+          Visitor.Deeper <| Node.Method(method, Inspect.Instrument, None, Exemption.None)
           |> Seq.map (fun n ->
                match n with
                | BranchPoint b -> Some b
@@ -1214,14 +1214,14 @@ module AltCoverTests2 =
     let TypeShouldNotChangeState() =
       let input = InstrumentContext.Build []
       let output =
-        Instrument.InstrumentationVisitor input (Node.Type(null, Inspect.Ignore))
+        Instrument.InstrumentationVisitor input (Node.Type(null, Inspect.Ignore, Exemption.None))
       Assert.That(output, Is.SameAs input)
 
     [<Test>]
     let ExcludedMethodShouldNotChangeState() =
       let input = InstrumentContext.Build []
       let output =
-        Instrument.InstrumentationVisitor input (Node.Method(null, Inspect.Ignore, None))
+        Instrument.InstrumentationVisitor input (Node.Method(null, Inspect.Ignore, None, Exemption.None))
       Assert.That(output, Is.SameAs input)
 
     [<Test>]
@@ -1242,7 +1242,7 @@ module AltCoverTests2 =
       let input = InstrumentContext.Build []
       let output =
         Instrument.InstrumentationVisitor input
-          (Node.Method(func, Inspect.Instrument, None))
+          (Node.Method(func, Inspect.Instrument, None, Exemption.None))
       Assert.That(output.MethodBody, Is.SameAs func.Body)
 
     [<Test>]
@@ -1562,7 +1562,7 @@ module AltCoverTests2 =
         Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
       ProgramDatabase.ReadSymbols def
-      let visited = Node.MethodPoint(null, None, 0, false)
+      let visited = Node.MethodPoint(null, None, 0, false, Exemption.None)
       let state = InstrumentContext.Build []
       let result = Instrument.InstrumentationVisitor state visited
       Assert.That(result, Is.SameAs state)
@@ -1594,7 +1594,7 @@ module AltCoverTests2 =
                          >> not)
           |> Seq.head
 
-        let visited = Node.MethodPoint(target, None, 32767, true)
+        let visited = Node.MethodPoint(target, None, 32767, true, Exemption.None)
         Assert.That(target.Previous, Is.Null)
         let state =
           { (InstrumentContext.Build []) with MethodWorker = proc

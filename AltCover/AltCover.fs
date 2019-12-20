@@ -51,6 +51,8 @@ module internal Main =
     Visitor.coverstyle <- CoverStyle.All
     Visitor.sourcelink := false // ddFlag
     Visitor.coalesceBranches := false // ddFlag
+    Visitor.staticFilter <- None
+    Visitor.showGenerated := false
 
   let ValidateCallContext predicate x =
     if not (String.IsNullOrWhiteSpace x) then
@@ -269,6 +271,25 @@ module internal Main =
                 CommandLine.resources.GetString "MultiplesNotAllowed", "--defer")
              :: CommandLine.error))
       (CommandLine.ddFlag "v|visibleBranches" Visitor.coalesceBranches)
+      ("showstatic:",
+        fun x -> if Visitor.staticFilter = None then
+                    Visitor.staticFilter <- if String.IsNullOrWhiteSpace x ||
+                                               x = "+"
+                                            then Some StaticFilter.AsCovered
+                                            else if x = "++" then Some StaticFilter.NoFilter
+                                                 else if x = "-" then Some StaticFilter.Hidden
+                                                      else None
+                    if Visitor.staticFilter = None then
+                       CommandLine.error <- String.Format
+                                              (CultureInfo.CurrentCulture,
+                                                CommandLine.resources.GetString "InvalidValue",
+                                                "--showstatic", x) :: CommandLine.error
+                 else
+                   CommandLine.error <- String.Format
+                                      (CultureInfo.CurrentCulture,
+                                       CommandLine.resources.GetString "MultiplesNotAllowed",
+                                       "--showstatic") :: CommandLine.error)
+      (CommandLine.ddFlag "showGenerated" Visitor.showGenerated)
       ("?|help|h", (fun x -> CommandLine.help <- not (isNull x)))
 
       ("<>",

@@ -64,6 +64,8 @@ type PrepareParams =
     Defer : bool
     LocalSource : bool
     VisibleBranches : bool
+    ShowStatic : string
+    ShowGenerated : bool
   }
   static member Create() =
     { InputDirectories = Seq.empty
@@ -93,6 +95,8 @@ type PrepareParams =
       Defer = false
       LocalSource = false
       VisibleBranches = false
+      ShowStatic = "-"
+      ShowGenerated = false
     }
 
 #if RUNNER

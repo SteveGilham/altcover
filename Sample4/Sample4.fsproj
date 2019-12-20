@@ -104,7 +104,7 @@
   <Target Name="AfterBuild">
   </Target>
   -->
-  <ItemGroup>
+  <ItemGroup Condition="'$(MSBuildTest)' == 'true'">
     <AssemblyFilter Include="xunit" />
   </ItemGroup>
   <Target Name="AfterBuild" Condition="'$(MSBuildTest)' == 'true'">

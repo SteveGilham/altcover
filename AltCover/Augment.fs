@@ -25,8 +25,8 @@ module internal Augment =
 
 #if WEAK_NAME
 #else
-  type Exemption with
-    static member OfInt i =
+  type internal Exemption with
+    static member internal OfInt i =
      if i > 0 then Exemption.Visited
      else if i < -4
           then Exemption.None

@@ -33,6 +33,7 @@
       <AltCoverXmlReport Condition="'$(AltCoverXmlReport)' != '' AND '$(TargetFrameworks)' != ''">%(AltCoverXmlOutput.RootDir)/%(AltCoverXmlOutput.Directory)/%(AltCoverXmlOutput.Filename).$(TargetFramework)%(AltCoverXmlOutput.Extension)</AltCoverXmlReport>
       <AltCoverXmlReport Condition="'$(AltCoverXmlReport)' == '' AND '$(TargetFrameworks)' == ''">$(ProjectDir)coverage.xml</AltCoverXmlReport>
       <AltCoverXmlReport Condition="'$(AltCoverXmlReport)' == '' AND '$(TargetFrameworks)' != ''">$(ProjectDir)coverage.$(TargetFramework).xml</AltCoverXmlReport>
+      <AltCoverShowStatic Condition="'$(AltCoverShowStatic' != '+' AND '$(AltCoverShowStatic' != '++'">-</AltCoverShowStatic>
     </PropertyGroup>
     <AltCover.PowerShell Condition="'$(AltCoverIpmo)' == 'true'" />
     <AltCover.GetVersion Condition="'$(AltCoverGetVersion)' == 'true'" />
@@ -57,7 +58,9 @@
       Dependencies="@(AltCoverDependencies)"
       SourceLink="$(AltCoverSourceLink)"
       LocalSource="$(AltCoverLocalSource)"
-      VisibleBranches="$(AltCoverVisibleBranches)" />
+      VisibleBranches="$(AltCoverVisibleBranches)"
+      ShowStatic="$(AltCoverShowStatic)"
+      ShowGenerated="$(AltCoverShowGenerated)"/>
   </Target>
 
   <Target Name="AltCoverInstrumentModulesNoBuild" AfterTargets="AltCoverPreFlight" Condition="'$(VSTestNoBuild)' == 'true'">

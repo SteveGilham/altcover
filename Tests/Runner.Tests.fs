@@ -1677,6 +1677,16 @@ module AltCoverRunnerTests =
   -v, --visibleBranches      Hide complex internal IL branching implementation
                                details in switch/match constructs, and just
                                show what the source level logic implies.
+      --showstatic[=VALUE]   Optional: Instrument and show code that is by
+                               default skipped as trivial.  --showstatic:- is
+                               equivalent to omitting the parameter; --
+                               showstatic or --showstatic:+ sets the unvisited
+                               count to a negative value interpreted by the
+                               visualizer (but treated as zero by
+                               ReportGenerator) ; --showstatic:++ sets the
+                               unvisited count to zero.
+      --showGenerated        Mark generated code with a visit count of -2 (
+                               Automatic) for the Visualizer if unvisited
   -?, --help, -h             Prints out the options.
 or
   Runner
@@ -2764,6 +2774,8 @@ or
                      """<x><seqpnt line="5" /></x>""" ]) ])
 
     [<SuppressMessage("Microsoft.Usage", "CA2202", Justification = "Observably safe")>]
+    // Approved way is ugly -- https://docs.microsoft.com/en-us/visualstudio/code-quality/ca2202?view=vs-2019
+    // Also, this rule is deprecated
     let private LoadSchema() =
       let schemas = new XmlSchemaSet()
 
