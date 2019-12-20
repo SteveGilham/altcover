@@ -306,6 +306,16 @@ type PrepareParams =
     | Primitive p -> p.VisibleBranches
     | TypeSafe t -> t.VisibleBranches.AsBool()
 
+  member self.ShowStatic =
+    match self with
+    | Primitive p -> p.ShowStatic
+    | TypeSafe t -> t.ShowStatic.AsString()
+
+  member self.ShowGenerated =
+    match self with
+    | Primitive p -> p.ShowGenerated
+    | TypeSafe t -> t.ShowGenerated.AsBool()
+
 #if RUNNER
   static member private validateArray a f key =
     PrepareParams.validateArraySimple a (f key)
@@ -419,8 +429,9 @@ module internal Args =
     if x |> String.IsNullOrWhiteSpace then []
     else [ a; x ]
 
-  let private OptItem a x =
-    if x |> String.IsNullOrWhiteSpace then []
+  let private OptItem a x l =
+    if x |> String.IsNullOrWhiteSpace ||
+       l |> List.exists (fun i -> i = x) then []
     else [ a + ":" + x ]
 
   let internal ItemList a x =
@@ -435,6 +446,52 @@ module internal Args =
     if x then [ a ]
     else []
 
+  let ItemLists (args: PrepareParams) =
+    [ ("-i", args.InputDirectories)
+      ("-o", args.OutputDirectories)
+      ("-y", args.SymbolDirectories)
+      ("-d", args.Dependencies)
+      ("-k", args.Keys)
+      ("-f", args.FileFilter)
+      ("-s", args.AssemblyFilter)
+      ("-e", args.AssemblyExcludeFilter)
+      ("-t", args.TypeFilter)
+      ("-m", args.MethodFilter)
+      ("-a", args.AttributeFilter)
+      ("-p", args.PathFilter)
+      ("-c", args.CallContext) ]
+    |> List.collect (fun (a,b) -> ItemList a b)
+
+  let Items (args: PrepareParams) =
+    [
+      ("--sn", args.StrongNameKey)
+      ("-x", args.XmlReport)
+    ]
+    |> List.collect (fun (a,b) -> Item a b)
+
+  let OptItems (args: PrepareParams) =
+    [
+      ("--showstatic", args.ShowStatic, ["-"])
+    ]
+    |> List.collect (fun (a,b,c) -> OptItem a b c)
+
+  let Flags (args: PrepareParams) =
+    [
+      ("--opencover", args.OpenCover)
+      ("--inplace", args.InPlace)
+      ("--save", args.Save)
+      ("--single", args.Single)
+      ("--linecover", args.LineCover)
+      ("--branchcover", args.BranchCover)
+      ("--dropReturnCode", (args.ExposeReturnCode |> not))
+      ("--sourcelink", args.SourceLink)
+      ("--defer", args.Defer)
+      ("--localSource", args.LocalSource)
+      ("--visibleBranches", args.VisibleBranches)
+      ("--showGenerated", args.ShowGenerated)
+    ]
+    |> List.collect (fun (a,b) -> Flag a b)
+
   let Prepare(args: PrepareParams) =
     let argsList = args.CommandLine |> Seq.toList
 
@@ -442,33 +499,18 @@ module internal Args =
       if List.isEmpty argsList then []
       else "--" :: argsList
 
-    [ ItemList "-i" args.InputDirectories
-      ItemList "-o" args.OutputDirectories
-      ItemList "-y" args.SymbolDirectories
-      ItemList "-d" args.Dependencies
-      ItemList "-k" args.Keys
-      Item "--sn" args.StrongNameKey
-      Item "-x" args.XmlReport
-      ItemList "-f" args.FileFilter
-      ItemList "-s" args.AssemblyFilter
-      ItemList "-e" args.AssemblyExcludeFilter
-      ItemList "-t" args.TypeFilter
-      ItemList "-m" args.MethodFilter
-      ItemList "-a" args.AttributeFilter
-      ItemList "-p" args.PathFilter
-      ItemList "-c" args.CallContext
-      Flag "--opencover" args.OpenCover
-      Flag "--inplace" args.InPlace
-      Flag "--save" args.Save
-      Flag "--single" args.Single
-      Flag "--linecover" args.LineCover
-      Flag "--branchcover" args.BranchCover
-      Flag "--dropReturnCode" (args.ExposeReturnCode |> not)
-      Flag "--sourcelink" args.SourceLink
-      Flag "--defer" args.Defer
-      Flag "--localSource" args.LocalSource
-      Flag "--visibleBranches" args.VisibleBranches
-      trailing ]
+    let parameters =
+      [ ItemLists
+        Items
+        OptItems
+        Flags
+      ]
+      |> List.collect (fun f -> f args)
+
+    [
+      parameters
+      trailing
+    ]
     |> List.concat
 
   let Collect(args: CollectParams) =
@@ -490,7 +532,7 @@ module internal Args =
       Item "-o" args.OutputFile
       Flag "--collect" (exe |> String.IsNullOrWhiteSpace)
       Flag "--dropReturnCode" (args.ExposeReturnCode |> not)
-      OptItem "--teamcity" args.SummaryFormat
+      OptItem "--teamcity" args.SummaryFormat []
       trailing ]
     |> List.concat
 

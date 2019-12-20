@@ -98,7 +98,10 @@ module internal Internals =
       (Arg "Force" "true", force.ForceDelete)
       (Arg "FailFast" "true", force.Fast)
       (FromArg "ShowSummary" force.Summary)
-      (FromArg "SummaryFormat" collect.SummaryFormat)]
+      (FromArg "SummaryFormat" collect.SummaryFormat)
+      (FromArg "ShowStatic" prepare.ShowStatic)
+      (Arg "ShowGenerated" "true", prepare.ShowGenerated)
+    ]
     |> List.filter snd
     |> List.map fst
 

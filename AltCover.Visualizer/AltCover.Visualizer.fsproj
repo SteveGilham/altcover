@@ -81,8 +81,12 @@
     <EmbeddedResource Include="Visualizer.glade" />
     <EmbeddedResource Include="Assembly_6212.png" />
     <EmbeddedResource Include="class_16xLG.png" />
+    <EmbeddedResource Include="Effects_16x.png" />
+    <EmbeddedResource Include="Event_16x.png" />
     <EmbeddedResource Include="method_16xLG.png" />
+    <EmbeddedResource Include="Module_16x.png" />
     <EmbeddedResource Include="Namespace_16x.png" />
+    <EmbeddedResource Include="Property_16x.png" />
     <EmbeddedResource Include="XMLFile_16x.png" />
     <EmbeddedResource Include="logo.png" />
     <EmbeddedResource Include="Blank_12x_16x.png" />
@@ -101,6 +105,9 @@
     </EmbeddedResource>
     <Compile Include="..\AltCover\Augment.fs">
       <Link>Augment.fs</Link>
+    </Compile>
+    <Compile Include="..\AltCover\Exemption.fs">
+      <Link>Exemption.fs</Link>
     </Compile>
     <Compile Include="CoverageFile.fs" />
     <Compile Include="GuiCommon.fs" />

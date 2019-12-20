@@ -7,27 +7,20 @@ open System.Reflection
 open AltCover
 open AltCover.Augment
 open Mono.Options
-open NUnit.Framework
 open Mono.Cecil.Cil
 
-[<TestFixture>]
-type AltCoverTests3() =
-  class
+module AltCoverTests3 =
 #if NETCOREAPP2_0
     let monoSample1 = "../_Mono/Sample1"
 #else
     let recorderSnk = typeof<AltCover.Node>.Assembly.GetManifestResourceNames()
                       |> Seq.find (fun n -> n.EndsWith(".Recorder.snk", StringComparison.Ordinal))
 #endif
-
-    [<SetUp>]
-    member self.SetUp() =
-      Main.init()
-
     // AltCover.fs and CommandLine.fs
 
     [<Test>]
-    member self.ShouldLaunchWithExpectedOutput() =
+    let ShouldLaunchWithExpectedOutput() =
+      Main.init()
       // Hack for running while instrumented
       let where = Assembly.GetExecutingAssembly().Location
       let path =
@@ -87,9 +80,10 @@ type AltCoverTests3() =
         Console.SetError(snd saved)
 
     [<Test>]
-    member self.ShouldHaveExpectedOptions() =
+    let ShouldHaveExpectedOptions() =
+      Main.init()
       let options = Main.DeclareOptions()
-      Assert.That(options.Count, Is.EqualTo 28)
+      Assert.That(options.Count, Is.EqualTo 30)
       Assert.That
         (options
          |> Seq.filter (fun x -> x.Prototype <> "<>")
@@ -99,7 +93,8 @@ type AltCoverTests3() =
                   |> Seq.length, Is.EqualTo 1)
 
     [<Test>]
-    member self.ParsingJunkIsAnError() =
+    let ParsingJunkIsAnError() =
+      Main.init()
       let options = Main.DeclareOptions()
       let parse = CommandLine.ParseCommandLine [| "/@thisIsNotAnOption" |] options
       match parse with
@@ -109,7 +104,8 @@ type AltCoverTests3() =
         Assert.That(y, Is.SameAs options)
 
     [<Test>]
-    member self.ParsingJunkBeforeSeparatorIsAnError() =
+    let ParsingJunkBeforeSeparatorIsAnError() =
+      Main.init()
       let options = Main.DeclareOptions()
       let parse =
         CommandLine.ParseCommandLine
@@ -121,7 +117,8 @@ type AltCoverTests3() =
         Assert.That(y, Is.SameAs options)
 
     [<Test>]
-    member self.ParsingJunkAfterSeparatorIsExpected() =
+    let ParsingJunkAfterSeparatorIsExpected() =
+      Main.init()
       let options = Main.DeclareOptions()
       let input = [| "--"; "/@thisIsNotAnOption"; "this should be OK" |]
       let parse = CommandLine.ParseCommandLine input options
@@ -132,7 +129,8 @@ type AltCoverTests3() =
         Assert.That(y, Is.SameAs options)
 
     [<Test>]
-    member self.ParsingHelpGivesHelp() =
+    let ParsingHelpGivesHelp() =
+      Main.init()
       let options = Main.DeclareOptions()
       let input = [| "--?" |]
       let parse = CommandLine.ParseCommandLine input options
@@ -153,7 +151,8 @@ type AltCoverTests3() =
         Assert.That(x, Is.Empty)
 
     [<Test>]
-    member self.ParsingErrorHelpGivesHelp() =
+    let ParsingErrorHelpGivesHelp() =
+      Main.init()
       let options = Main.DeclareOptions()
 
       let input =
@@ -180,7 +179,8 @@ type AltCoverTests3() =
         Assert.That(x, Is.Empty)
 
     [<Test>]
-    member self.ParsingAttributesGivesAttributes() =
+    let ParsingAttributesGivesAttributes() =
+      Main.init()
       try
         Visitor.NameFilters.Clear()
         let options = Main.DeclareOptions()
@@ -209,7 +209,8 @@ type AltCoverTests3() =
         Visitor.NameFilters.Clear()
 
     [<Test>]
-    member self.ParsingMethodsGivesMethods() =
+    let ParsingMethodsGivesMethods() =
+      Main.init()
       try
         Visitor.NameFilters.Clear()
         let options = Main.DeclareOptions()
@@ -238,7 +239,8 @@ type AltCoverTests3() =
         Visitor.NameFilters.Clear()
 
     [<Test>]
-    member self.ParsingTypesGivesTypes() =
+    let ParsingTypesGivesTypes() =
+      Main.init()
       try
         Visitor.NameFilters.Clear()
         let options = Main.DeclareOptions()
@@ -268,7 +270,8 @@ type AltCoverTests3() =
         Visitor.NameFilters.Clear()
 
     [<Test>]
-    member self.ParsingAssembliesGivesAssemblies() =
+    let ParsingAssembliesGivesAssemblies() =
+      Main.init()
       try
         Visitor.NameFilters.Clear()
         let options = Main.DeclareOptions()
@@ -300,7 +303,8 @@ type AltCoverTests3() =
         Visitor.NameFilters.Clear()
 
     [<Test>]
-    member self.ParsingEscapeCasesWork() =
+    let ParsingEscapeCasesWork() =
+      Main.init()
       try
         Visitor.NameFilters.Clear()
         let options = Main.DeclareOptions()
@@ -329,7 +333,8 @@ type AltCoverTests3() =
         Visitor.NameFilters.Clear()
 
     [<Test>]
-    member self.ParsingModulesGivesModules() =
+    let ParsingModulesGivesModules() =
+      Main.init()
       try
         Visitor.NameFilters.Clear()
         let options = Main.DeclareOptions()
@@ -358,7 +363,8 @@ type AltCoverTests3() =
         Visitor.NameFilters.Clear()
 
     [<Test>]
-    member self.ParsingFilesGivesFiles() =
+    let ParsingFilesGivesFiles() =
+      Main.init()
       try
         Visitor.NameFilters.Clear()
         let options = Main.DeclareOptions()
@@ -387,7 +393,8 @@ type AltCoverTests3() =
         Visitor.NameFilters.Clear()
 
     [<Test>]
-    member self.ParsingPathsGivesPaths() =
+    let ParsingPathsGivesPaths() =
+      Main.init()
       try
         Visitor.NameFilters.Clear()
         let options = Main.DeclareOptions()
@@ -416,7 +423,8 @@ type AltCoverTests3() =
         Visitor.NameFilters.Clear()
 
     [<Test>]
-    member self.ParsingXmlGivesXml() =
+    let ParsingXmlGivesXml() =
+      Main.init()
       try
         Visitor.reportPath <- None
         let options = Main.DeclareOptions()
@@ -437,7 +445,8 @@ type AltCoverTests3() =
         Visitor.reportPath <- None
 
     [<Test>]
-    member self.ParsingMultipleXmlGivesFailure() =
+    let ParsingMultipleXmlGivesFailure() =
+      Main.init()
       try
         Visitor.reportPath <- None
         let options = Main.DeclareOptions()
@@ -460,7 +469,8 @@ type AltCoverTests3() =
         Visitor.reportPath <- None
 
     [<Test>]
-    member self.ParsingBadXmlGivesFailure() =
+    let ParsingBadXmlGivesFailure() =
+      Main.init()
       try
         Visitor.reportPath <- None
         let options = Main.DeclareOptions()
@@ -480,7 +490,8 @@ type AltCoverTests3() =
         Visitor.reportPath <- None
 
     [<Test>]
-    member self.ParsingNoXmlGivesFailure() =
+    let ParsingNoXmlGivesFailure() =
+      Main.init()
       try
         Visitor.reportPath <- None
         let options = Main.DeclareOptions()
@@ -496,7 +507,8 @@ type AltCoverTests3() =
         Visitor.reportPath <- None
 
     [<Test>]
-    member self.ParsingEmptyXmlGivesFailure() =
+    let ParsingEmptyXmlGivesFailure() =
+      Main.init()
       try
         Visitor.reportPath <- None
         let options = Main.DeclareOptions()
@@ -512,7 +524,8 @@ type AltCoverTests3() =
         Visitor.reportPath <- None
 
     [<Test>]
-    member self.ParsingInputGivesInput() =
+    let ParsingInputGivesInput() =
+      Main.init()
       try
         Visitor.inputDirectories.Clear()
         let options = Main.DeclareOptions()
@@ -531,7 +544,8 @@ type AltCoverTests3() =
         Visitor.inputDirectories.Clear()
 
     [<Test>]
-    member self.ParsingMultipleInputIsOKToo() =
+    let ParsingMultipleInputIsOKToo() =
+      Main.init()
       try
         Visitor.inputDirectories.Clear()
         Visitor.outputDirectories.Clear()
@@ -567,7 +581,8 @@ type AltCoverTests3() =
         Visitor.inplace := false
 
     [<Test>]
-    member self.ParsingDuplicateInputGivesFailure() =
+    let ParsingDuplicateInputGivesFailure() =
+      Main.init()
       try
         Visitor.inputDirectories.Clear()
         let options = Main.DeclareOptions()
@@ -585,7 +600,8 @@ type AltCoverTests3() =
         Visitor.inputDirectories.Clear()
 
     [<Test>]
-    member self.ParsingBadInputGivesFailure() =
+    let ParsingBadInputGivesFailure() =
+      Main.init()
       try
         Visitor.inputDirectories.Clear()
         let options = Main.DeclareOptions()
@@ -601,7 +617,8 @@ type AltCoverTests3() =
         Visitor.inputDirectories.Clear()
 
     [<Test>]
-    member self.ParsingNoInputGivesFailure() =
+    let ParsingNoInputGivesFailure() =
+      Main.init()
       try
         Visitor.inputDirectories.Clear()
         let options = Main.DeclareOptions()
@@ -616,7 +633,8 @@ type AltCoverTests3() =
         Visitor.inputDirectories.Clear()
 
     [<Test>]
-    member self.ParsingOutputGivesOutput() =
+    let ParsingOutputGivesOutput() =
+      Main.init()
       try
         Visitor.outputDirectories.Clear()
         let options = Main.DeclareOptions()
@@ -635,7 +653,8 @@ type AltCoverTests3() =
         Visitor.outputDirectories.Clear()
 
     [<Test>]
-    member self.ParsingDuplicateOutputGivesFailure() =
+    let ParsingDuplicateOutputGivesFailure() =
+      Main.init()
       try
         Visitor.outputDirectories.Clear()
         let options = Main.DeclareOptions()
@@ -653,7 +672,8 @@ type AltCoverTests3() =
         Visitor.outputDirectories.Clear()
 
     [<Test>]
-    member self.ParsingMultipleOutputIsOK() =
+    let ParsingMultipleOutputIsOK() =
+      Main.init()
       try
         Visitor.inputDirectories.Clear()
         Visitor.outputDirectories.Clear()
@@ -678,7 +698,8 @@ type AltCoverTests3() =
         Visitor.outputDirectories.Clear()
 
     [<Test>]
-    member self.ParsingBadOutputGivesFailure() =
+    let ParsingBadOutputGivesFailure() =
+      Main.init()
       try
         Visitor.outputDirectories.Clear()
         let options = Main.DeclareOptions()
@@ -698,7 +719,8 @@ type AltCoverTests3() =
         Visitor.outputDirectories.Clear()
 
     [<Test>]
-    member self.ParsingNoOutputGivesFailure() =
+    let ParsingNoOutputGivesFailure() =
+      Main.init()
       try
         Visitor.outputDirectories.Clear()
         let options = Main.DeclareOptions()
@@ -713,7 +735,8 @@ type AltCoverTests3() =
         Visitor.outputDirectories.Clear()
 
     [<Test>]
-    member self.ParsingEmptyOutputGivesFailure() =
+    let ParsingEmptyOutputGivesFailure() =
+      Main.init()
       try
         Visitor.outputDirectories.Clear()
         let options = Main.DeclareOptions()
@@ -728,7 +751,8 @@ type AltCoverTests3() =
         Visitor.outputDirectories.Clear()
 
     [<Test>]
-    member self.ParsingSymbolGivesSymbol() =
+    let ParsingSymbolGivesSymbol() =
+      Main.init()
       try
         ProgramDatabase.SymbolFolders.Clear()
         let options = Main.DeclareOptions()
@@ -747,7 +771,8 @@ type AltCoverTests3() =
         ProgramDatabase.SymbolFolders.Clear()
 
     [<Test>]
-    member self.ParsingMultipleSymbolGivesOK() =
+    let ParsingMultipleSymbolGivesOK() =
+      Main.init()
       try
         ProgramDatabase.SymbolFolders.Clear()
         let options = Main.DeclareOptions()
@@ -774,7 +799,8 @@ type AltCoverTests3() =
         ProgramDatabase.SymbolFolders.Clear()
 
     [<Test>]
-    member self.ParsingBadSymbolGivesFailure() =
+    let ParsingBadSymbolGivesFailure() =
+      Main.init()
       try
         ProgramDatabase.SymbolFolders.Clear()
         let options = Main.DeclareOptions()
@@ -790,7 +816,8 @@ type AltCoverTests3() =
         ProgramDatabase.SymbolFolders.Clear()
 
     [<Test>]
-    member self.ParsingNoSymbolGivesFailure() =
+    let ParsingNoSymbolGivesFailure() =
+      Main.init()
       try
         ProgramDatabase.SymbolFolders.Clear()
         let options = Main.DeclareOptions()
@@ -805,7 +832,8 @@ type AltCoverTests3() =
         ProgramDatabase.SymbolFolders.Clear()
 
     [<Test>]
-    member self.ParsingMultipleDependencyIsOk() =
+    let ParsingMultipleDependencyIsOk() =
+      Main.init()
       try
         Instrument.ResolutionTable.Clear()
         let options = Main.DeclareOptions()
@@ -827,7 +855,8 @@ type AltCoverTests3() =
       finally
         Instrument.ResolutionTable.Clear()
 
-    member self.ParsingNoDependencyGivesFailure() =
+    let ParsingNoDependencyGivesFailure() =
+      Main.init()
       try
         Instrument.ResolutionTable.Clear()
         let options = Main.DeclareOptions()
@@ -842,7 +871,8 @@ type AltCoverTests3() =
         Instrument.ResolutionTable.Clear()
 
     [<Test>]
-    member self.ParsingBadDependencyGivesFailure() =
+    let ParsingBadDependencyGivesFailure() =
+      Main.init()
       try
         Instrument.ResolutionTable.Clear()
         let options = Main.DeclareOptions()
@@ -858,7 +888,8 @@ type AltCoverTests3() =
         Instrument.ResolutionTable.Clear()
 
     [<Test>]
-    member self.ParsingNonDependencyGivesFailure() =
+    let ParsingNonDependencyGivesFailure() =
+      Main.init()
       try
         Visitor.defaultStrongNameKey <- None
         Visitor.keys.Clear()
@@ -876,7 +907,8 @@ type AltCoverTests3() =
         Visitor.keys.Clear()
 
     [<Test>]
-    member self.ParsingStrongNameGivesStrongName() =
+    let ParsingStrongNameGivesStrongName() =
+      Main.init()
       try
         Visitor.defaultStrongNameKey <- None
         Visitor.keys.Clear()
@@ -898,7 +930,8 @@ type AltCoverTests3() =
         Visitor.keys.Clear()
 
     [<Test>]
-    member self.ParsingMultipleStrongNameGivesFailure() =
+    let ParsingMultipleStrongNameGivesFailure() =
+      Main.init()
       try
         Visitor.defaultStrongNameKey <- None
         Visitor.keys.Clear()
@@ -917,7 +950,8 @@ type AltCoverTests3() =
         Visitor.keys.Clear()
 
     [<Test>]
-    member self.ParsingBadStrongNameGivesFailure() =
+    let ParsingBadStrongNameGivesFailure() =
+      Main.init()
       try
         Visitor.defaultStrongNameKey <- None
         Visitor.keys.Clear()
@@ -934,7 +968,8 @@ type AltCoverTests3() =
         Visitor.keys.Clear()
 
     [<Test>]
-    member self.ParsingNonStrongNameGivesFailure() =
+    let ParsingNonStrongNameGivesFailure() =
+      Main.init()
       try
         Visitor.defaultStrongNameKey <- None
         Visitor.keys.Clear()
@@ -951,7 +986,8 @@ type AltCoverTests3() =
         Visitor.keys.Clear()
 
     [<Test>]
-    member self.ParsingNoStrongNameGivesFailure() =
+    let ParsingNoStrongNameGivesFailure() =
+      Main.init()
       try
         Visitor.defaultStrongNameKey <- None
         Visitor.keys.Clear()
@@ -967,7 +1003,8 @@ type AltCoverTests3() =
         Visitor.keys.Clear()
 
     [<Test>]
-    member self.ParsingMultipleAltStrongNameIsOk() =
+    let ParsingMultipleAltStrongNameIsOk() =
+      Main.init()
       try
         Visitor.defaultStrongNameKey <- None
         Visitor.keys.Clear()
@@ -991,7 +1028,8 @@ type AltCoverTests3() =
         Visitor.keys.Clear()
 
     [<Test>]
-    member self.ParsingNoAltStrongNameGivesFailure() =
+    let ParsingNoAltStrongNameGivesFailure() =
+      Main.init()
       try
         Visitor.defaultStrongNameKey <- None
         Visitor.keys.Clear()
@@ -1007,7 +1045,8 @@ type AltCoverTests3() =
       Visitor.keys.Clear()
 
     [<Test>]
-    member self.ParsingBadAltStrongNameGivesFailure() =
+    let ParsingBadAltStrongNameGivesFailure() =
+      Main.init()
       try
         Visitor.defaultStrongNameKey <- None
         Visitor.keys.Clear()
@@ -1024,7 +1063,8 @@ type AltCoverTests3() =
         Visitor.keys.Clear()
 
     [<Test>]
-    member self.ParsingNonAltsStrongNameGivesFailure() =
+    let ParsingNonAltsStrongNameGivesFailure() =
+      Main.init()
       try
         Visitor.defaultStrongNameKey <- None
         Visitor.keys.Clear()
@@ -1041,7 +1081,8 @@ type AltCoverTests3() =
         Visitor.keys.Clear()
 
     [<Test>]
-    member self.ParsingLocalGivesLocal() =
+    let ParsingLocalGivesLocal() =
+      Main.init()
       try
         Visitor.local := false
         let options = Main.DeclareOptions()
@@ -1057,7 +1098,8 @@ type AltCoverTests3() =
         Visitor.local := false
 
     [<Test>]
-    member self.ParsingMultipleLocalGivesFailure() =
+    let ParsingMultipleLocalGivesFailure() =
+      Main.init()
       try
         Visitor.local := false
         let options = Main.DeclareOptions()
@@ -1073,7 +1115,8 @@ type AltCoverTests3() =
         Visitor.local := false
 
     [<Test>]
-    member self.ParsingVisibleGivesVisible() =
+    let ParsingVisibleGivesVisible() =
+      Main.init()
       try
         Visitor.coalesceBranches := false
         let options = Main.DeclareOptions()
@@ -1089,7 +1132,8 @@ type AltCoverTests3() =
         Visitor.coalesceBranches := false
 
     [<Test>]
-    member self.ParsingMultipleVisibleGivesFailure() =
+    let ParsingMultipleVisibleGivesFailure() =
+      Main.init()
       try
         Visitor.coalesceBranches := false
         let options = Main.DeclareOptions()
@@ -1105,7 +1149,88 @@ type AltCoverTests3() =
         Visitor.coalesceBranches := false
 
     [<Test>]
-    member self.ParsingTimeGivesTime() =
+    let ParsingStaticGivesStatic() =
+      Main.init()
+      let options = Main.DeclareOptions()
+      let input = [| "--showstatic" |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Left _ -> Assert.Fail()
+      | Right(x, y) ->
+        Assert.That(y, Is.SameAs options)
+        Assert.That(x, Is.Empty)
+      Assert.That(Visitor.staticFilter, StaticFilter.AsCovered |> Some |> Is.EqualTo )
+
+    [<Test>]
+    let ParsingStaticPlusGivesStatic() =
+      Main.init()
+      let options = Main.DeclareOptions()
+      let input = [| "--showstatic:+" |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Left _ -> Assert.Fail()
+      | Right(x, y) ->
+        Assert.That(y, Is.SameAs options)
+        Assert.That(x, Is.Empty)
+      Assert.That(Visitor.staticFilter, StaticFilter.AsCovered |> Some |> Is.EqualTo )
+
+    [<Test>]
+    let ParsingStaticPlusPlusGivesStaticPlus() =
+      Main.init()
+      let options = Main.DeclareOptions()
+      let input = [| "--showstatic:++" |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Left _ -> Assert.Fail()
+      | Right(x, y) ->
+        Assert.That(y, Is.SameAs options)
+        Assert.That(x, Is.Empty)
+      Assert.That(Visitor.staticFilter, StaticFilter.NoFilter |> Some |> Is.EqualTo )
+
+    [<Test>]
+    let ParsingStaticMinusGivesNoStatic() =
+      Main.init()
+      let options = Main.DeclareOptions()
+      let input = [| "--showstatic=-" |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Left _ -> Assert.Fail()
+      | Right(x, y) ->
+        Assert.That(y, Is.SameAs options)
+        Assert.That(x, Is.Empty)
+      Assert.That(Visitor.staticFilter, StaticFilter.Hidden |> Some |> Is.EqualTo )
+
+    [<Test>]
+    let ParsingMultipleStaticGivesFailure() =
+      Main.init()
+      let options = Main.DeclareOptions()
+      let input = [| "--showstatic:++"; "--showstatic:-" |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Right _ -> Assert.Fail()
+      | Left(x, y) ->
+        Assert.That(y, Is.SameAs options)
+        Assert.That(x, Is.EqualTo "UsageError")
+        Assert.That(CommandLine.error |> Seq.head, Is.EqualTo "--showstatic : specify this only once")
+        Assert.That(Visitor.staticFilter, StaticFilter.NoFilter |> Some |> Is.EqualTo )
+
+    [<Test>]
+    let ParsingJunkStaticGivesFailure() =
+      Main.init()
+      let options = Main.DeclareOptions()
+      let tag = Guid.NewGuid().ToString()
+      let input = [| "--showstatic:" + tag  |]
+      let parse = CommandLine.ParseCommandLine input options
+      match parse with
+      | Right _ -> Assert.Fail()
+      | Left(x, y) ->
+        Assert.That(y, Is.SameAs options)
+        Assert.That(x, Is.EqualTo "UsageError")
+        Assert.That(CommandLine.error |> Seq.head, Is.EqualTo ("--showstatic : cannot be '" + tag + "'"))
+
+    [<Test>]
+    let ParsingTimeGivesTime() =
+      Main.init()
       try
         Visitor.TrackingNames.Clear()
         Visitor.interval <- None
@@ -1123,7 +1248,8 @@ type AltCoverTests3() =
         Visitor.TrackingNames.Clear()
 
     [<Test>]
-    member self.ParsingOnlyArabicNumeralsNotThatSortofArabicNumeralsGivesTime() =
+    let ParsingOnlyArabicNumeralsNotThatSortofArabicNumeralsGivesTime() =
+      Main.init()
       try
         Visitor.TrackingNames.Clear()
         Visitor.interval <- None
@@ -1141,7 +1267,8 @@ type AltCoverTests3() =
         Visitor.TrackingNames.Clear()
 
     [<Test>]
-    member self.ParsingMultipleTimesGivesFailure() =
+    let ParsingMultipleTimesGivesFailure() =
+      Main.init()
       try
         Visitor.interval <- None
         Visitor.TrackingNames.Clear()
@@ -1161,7 +1288,8 @@ type AltCoverTests3() =
         Visitor.TrackingNames.Clear()
 
     [<Test>]
-    member self.ParsingTimeAndNamesGivesOK() =
+    let ParsingTimeAndNamesGivesOK() =
+      Main.init()
       try
         Visitor.interval <- None
         Visitor.TrackingNames.Clear()
@@ -1181,7 +1309,8 @@ type AltCoverTests3() =
         Visitor.TrackingNames.Clear()
 
     [<Test>]
-    member self.ParsingBadTimeGivesNoOp() =
+    let ParsingBadTimeGivesNoOp() =
+      Main.init()
       try
         Visitor.interval <- None
         Visitor.TrackingNames.Clear()
@@ -1200,7 +1329,8 @@ type AltCoverTests3() =
         Visitor.TrackingNames.Clear()
 
     [<Test>]
-    member self.ParsingNonTimeGivesFailure() = //TODO
+    let ParsingNonTimeGivesFailure() =
+      Main.init()
       try
         Visitor.interval <- None
         Visitor.TrackingNames.Clear()
@@ -1218,7 +1348,8 @@ type AltCoverTests3() =
         Visitor.TrackingNames.Clear()
 
     [<Test>]
-    member self.ParsingNoTimeGivesFailure() =
+    let ParsingNoTimeGivesFailure() =
+      Main.init()
       try
         Visitor.interval <- None
         Visitor.TrackingNames.Clear()
@@ -1235,7 +1366,8 @@ type AltCoverTests3() =
         Visitor.TrackingNames.Clear()
 
     [<Test>]
-    member self.ParsingAfterSingleGivesFailure() =
+    let ParsingAfterSingleGivesFailure() =
+      Main.init()
       try
         Visitor.single <- true
         Visitor.interval <- None
@@ -1254,7 +1386,8 @@ type AltCoverTests3() =
         Visitor.TrackingNames.Clear()
 
     [<Test>]
-    member self.ParsingOpenCoverGivesOpenCover() =
+    let ParsingOpenCoverGivesOpenCover() =
+      Main.init()
       try
         Visitor.reportFormat <- None
         let options = Main.DeclareOptions()
@@ -1272,7 +1405,8 @@ type AltCoverTests3() =
         Visitor.reportFormat <- None
 
     [<Test>]
-    member self.ParsingMultipleOpenCoverGivesFailure() =
+    let ParsingMultipleOpenCoverGivesFailure() =
+      Main.init()
       try
         Visitor.reportFormat <- None
         let options = Main.DeclareOptions()
@@ -1288,7 +1422,8 @@ type AltCoverTests3() =
         Visitor.reportFormat <- None
 
     [<Test>]
-    member self.ParsingInPlaceGivesInPlace() =
+    let ParsingInPlaceGivesInPlace() =
+      Main.init()
       try
         Visitor.inplace := false
         let options = Main.DeclareOptions()
@@ -1304,7 +1439,8 @@ type AltCoverTests3() =
         Visitor.inplace := false
 
     [<Test>]
-    member self.ParsingMultipleInPlaceGivesFailure() =
+    let ParsingMultipleInPlaceGivesFailure() =
+      Main.init()
       try
         Visitor.inplace := false
         let options = Main.DeclareOptions()
@@ -1320,7 +1456,8 @@ type AltCoverTests3() =
         Visitor.inplace := false
 
     [<Test>]
-    member self.ParsingSaveGivesSave() =
+    let ParsingSaveGivesSave() =
+      Main.init()
       try
         Visitor.collect := false
         let options = Main.DeclareOptions()
@@ -1336,7 +1473,8 @@ type AltCoverTests3() =
         Visitor.collect := false
 
     [<Test>]
-    member self.ParsingMultipleSaveGivesFailure() =
+    let ParsingMultipleSaveGivesFailure() =
+      Main.init()
       try
         Visitor.collect := false
         let options = Main.DeclareOptions()
@@ -1352,7 +1490,8 @@ type AltCoverTests3() =
         Visitor.collect := false
 
     [<Test>]
-    member self.ParsingSingleGivesSingle() =
+    let ParsingSingleGivesSingle() =
+      Main.init()
       try
         Visitor.single <- false
         let options = Main.DeclareOptions()
@@ -1368,7 +1507,8 @@ type AltCoverTests3() =
         Visitor.single <- false
 
     [<Test>]
-    member self.ParsingMultipleSingleGivesFailure() =
+    let ParsingMultipleSingleGivesFailure() =
+      Main.init()
       try
         Visitor.single <- false
         let options = Main.DeclareOptions()
@@ -1384,7 +1524,8 @@ type AltCoverTests3() =
         Visitor.single <- false
 
     [<Test>]
-    member self.ParsingSingleAfterContextGivesFailure() =
+    let ParsingSingleAfterContextGivesFailure() =
+      Main.init()
       try
         Visitor.single <- false
         Visitor.interval <- Some 0
@@ -1401,7 +1542,8 @@ type AltCoverTests3() =
         Visitor.interval <- None
 
     [<Test>]
-    member self.ParsingLineCoverGivesLineCover() =
+    let ParsingLineCoverGivesLineCover() =
+      Main.init()
       try
         Visitor.coverstyle <- CoverStyle.All
         let options = Main.DeclareOptions()
@@ -1414,13 +1556,18 @@ type AltCoverTests3() =
           Assert.That(x, Is.Empty)
         Assert.That(Visitor.coverstyle, Is.EqualTo CoverStyle.LineOnly)
         match Visitor.reportFormat with
+#if NETCOREAPP2_0
+        | None -> ()
+#else
         | None -> Assert.Pass()
+#endif
         | Some x -> Assert.Fail()
       finally
         Visitor.coverstyle <- CoverStyle.All
 
     [<Test>]
-    member self.OpenCoverIsCompatibleWithLineCover() =
+    let OpenCoverIsCompatibleWithLineCover() =
+      Main.init()
       try
         Visitor.coverstyle <- CoverStyle.All
         Visitor.reportFormat <- None
@@ -1441,7 +1588,8 @@ type AltCoverTests3() =
         Visitor.coverstyle <- CoverStyle.All
 
     [<Test>]
-    member self.LineCoverIsCompatibleWithOpenCover() =
+    let LineCoverIsCompatibleWithOpenCover() =
+      Main.init()
       try
         Visitor.coverstyle <- CoverStyle.All
         Visitor.reportFormat <- None
@@ -1462,7 +1610,8 @@ type AltCoverTests3() =
         Visitor.coverstyle <- CoverStyle.All
 
     [<Test>]
-    member self.ParsingMultipleLineCoverGivesFailure() =
+    let ParsingMultipleLineCoverGivesFailure() =
+      Main.init()
       try
         Visitor.coverstyle <- CoverStyle.All
         let options = Main.DeclareOptions()
@@ -1478,7 +1627,8 @@ type AltCoverTests3() =
         Visitor.coverstyle <- CoverStyle.All
 
     [<Test>]
-    member self.LineCoverIsNotCompatibleWithBranchCover() =
+    let LineCoverIsNotCompatibleWithBranchCover() =
+      Main.init()
       try
         Visitor.coverstyle <- CoverStyle.All
         let options = Main.DeclareOptions()
@@ -1493,7 +1643,8 @@ type AltCoverTests3() =
         Visitor.coverstyle <- CoverStyle.All
 
     [<Test>]
-    member self.ParsingBranchCoverGivesBranchCover() =
+    let ParsingBranchCoverGivesBranchCover() =
+      Main.init()
       try
         Visitor.coverstyle <- CoverStyle.All
         let options = Main.DeclareOptions()
@@ -1506,13 +1657,19 @@ type AltCoverTests3() =
           Assert.That(x, Is.Empty)
         Assert.That(Visitor.coverstyle, Is.EqualTo CoverStyle.BranchOnly)
         match Visitor.reportFormat with
-        | None -> Assert.Pass()
+        | None ->
+#if NETCOREAPP2_0
+          ()
+#else
+          Assert.Pass()
+#endif
         | Some x -> Assert.Fail()
       finally
         Visitor.coverstyle <- CoverStyle.All
 
     [<Test>]
-    member self.OpenCoverIsCompatibleWithBranchCover() =
+    let OpenCoverIsCompatibleWithBranchCover() =
+      Main.init()
       try
         Visitor.reportFormat <- None
         Visitor.coverstyle <- CoverStyle.All
@@ -1533,7 +1690,8 @@ type AltCoverTests3() =
         Visitor.coverstyle <- CoverStyle.All
 
     [<Test>]
-    member self.BranchCoverIsCompatibleWithOpenCover() =
+    let BranchCoverIsCompatibleWithOpenCover() =
+      Main.init()
       try
         Visitor.reportFormat <- None
         Visitor.coverstyle <- CoverStyle.All
@@ -1554,7 +1712,8 @@ type AltCoverTests3() =
         Visitor.reportFormat <- None
 
     [<Test>]
-    member self.ParsingMultipleBranchCoverGivesFailure() =
+    let ParsingMultipleBranchCoverGivesFailure() =
+      Main.init()
       try
         Visitor.coverstyle <- CoverStyle.All
         let options = Main.DeclareOptions()
@@ -1570,7 +1729,8 @@ type AltCoverTests3() =
         Visitor.coverstyle <- CoverStyle.All
 
     [<Test>]
-    member self.BranchCoverIsNotCompatibleWithLineCover() =
+    let BranchCoverIsNotCompatibleWithLineCover() =
+      Main.init()
       try
         Visitor.coverstyle <- CoverStyle.All
         let options = Main.DeclareOptions()
@@ -1585,7 +1745,8 @@ type AltCoverTests3() =
         Visitor.coverstyle <- CoverStyle.All
 
     [<Test>]
-    member self.ParsingDropGivesDrop() =
+    let ParsingDropGivesDrop() =
+      Main.init()
       try
         CommandLine.dropReturnCode := false
         let options = Main.DeclareOptions()
@@ -1601,7 +1762,8 @@ type AltCoverTests3() =
         CommandLine.dropReturnCode := false
 
     [<Test>]
-    member self.ParsingMultipleDropGivesFailure() =
+    let ParsingMultipleDropGivesFailure() =
+      Main.init()
       try
         CommandLine.dropReturnCode := false
         let options = Main.DeclareOptions()
@@ -1617,7 +1779,8 @@ type AltCoverTests3() =
         CommandLine.dropReturnCode := false
 
     [<Test>]
-    member self.ParsingDeferWorks() =
+    let ParsingDeferWorks() =
+      Main.init()
       try
         Visitor.defer := None
         let options = Main.DeclareOptions()
@@ -1635,7 +1798,8 @@ type AltCoverTests3() =
         Visitor.defer := None
 
     [<Test>]
-    member self.ParsingDeferPlusWorks() =
+    let ParsingDeferPlusWorks() =
+      Main.init()
       try
         Visitor.defer := None
         let options = Main.DeclareOptions()
@@ -1653,7 +1817,8 @@ type AltCoverTests3() =
         Visitor.defer := None
 
     [<Test>]
-    member self.ParsingDeferMinusWorks() =
+    let ParsingDeferMinusWorks() =
+      Main.init()
       try
         Visitor.defer := None
         let options = Main.DeclareOptions()
@@ -1671,7 +1836,8 @@ type AltCoverTests3() =
         Visitor.defer := None
 
     [<Test>]
-    member self.ParsingDeferJunkGivesFailure() =
+    let ParsingDeferJunkGivesFailure() =
+      Main.init()
       try
         Visitor.defer := None
         let options = Main.DeclareOptions()
@@ -1686,7 +1852,8 @@ type AltCoverTests3() =
         Visitor.defer := None
 
     [<Test>]
-    member self.ParsingMultipleDeferGivesFailure() =
+    let ParsingMultipleDeferGivesFailure() =
+      Main.init()
       try
         Visitor.defer := None
         let options = Main.DeclareOptions()
@@ -1703,7 +1870,8 @@ type AltCoverTests3() =
         Visitor.defer := None
 
     [<Test>]
-    member self.OutputLeftPassesThrough() =
+    let OutputLeftPassesThrough() =
+      Main.init()
       let arg = (Guid.NewGuid().ToString(), Main.DeclareOptions())
       let fail = Left arg
       match Main.ProcessOutputLocation fail with
@@ -1711,7 +1879,8 @@ type AltCoverTests3() =
       | Left x -> Assert.That(x, Is.SameAs arg)
 
     [<Test>]
-    member self.OutputInPlaceFails() =
+    let OutputInPlaceFails() =
+      Main.init()
       let options = Main.DeclareOptions()
       let saved = (Console.Out, Console.Error)
       try
@@ -1742,7 +1911,8 @@ type AltCoverTests3() =
         Console.SetError(snd saved)
 
     [<Test>]
-    member self.OutputToNewPlaceIsOK() =
+    let OutputToNewPlaceIsOK() =
+      Main.init()
       let options = Main.DeclareOptions()
       let saved = (Console.Out, Console.Error)
       AltCover.ToConsole()
@@ -1780,7 +1950,8 @@ type AltCoverTests3() =
         Console.SetError(snd saved)
 
     [<Test>]
-    member self.OutputToReallyNewPlaceIsOK() =
+    let OutputToReallyNewPlaceIsOK() =
+      Main.init()
       let options = Main.DeclareOptions()
       AltCover.ToConsole()
       let saved = (Console.Out, Console.Error)
@@ -1820,7 +1991,8 @@ type AltCoverTests3() =
         Console.SetError(snd saved)
 
     [<Test>]
-    member self.InPlaceToExistingPlaceFails() =
+    let InPlaceToExistingPlaceFails() =
+      Main.init()
       let options = Main.DeclareOptions()
       let saved = (Console.Out, Console.Error)
       CommandLine.error <- []
@@ -1854,7 +2026,8 @@ type AltCoverTests3() =
         Console.SetError(snd saved)
 
     [<Test>]
-    member self.InPlaceOperationIsAsExpected() =
+    let InPlaceOperationIsAsExpected() =
+      Main.init()
       let options = Main.DeclareOptions()
       let saved = (Console.Out, Console.Error)
       CommandLine.error <- []
@@ -1896,7 +2069,8 @@ type AltCoverTests3() =
         Console.SetError(snd saved)
 
     [<Test>]
-    member self.ImageLoadResilientPassesThrough() =
+    let ImageLoadResilientPassesThrough() =
+      Main.init()
       let one = ref false
       let two = ref false
       Main.ImageLoadResilient (fun () -> one := true) (fun () -> two := true)
@@ -1904,7 +2078,8 @@ type AltCoverTests3() =
       Assert.That(!two, Is.False)
 
     [<Test>]
-    member self.ResilientHandlesIOException() =
+    let ResilientHandlesIOException() =
+      Main.init()
       let one = ref false
       let two = ref false
       Main.ImageLoadResilient (fun () ->
@@ -1914,7 +2089,8 @@ type AltCoverTests3() =
       Assert.That(!two)
 
     [<Test>]
-    member self.ResilientHandlesBadImageFormatException() =
+    let ResilientHandlesBadImageFormatException() =
+      Main.init()
       let one = ref false
       let two = ref false
       Main.ImageLoadResilient (fun () ->
@@ -1924,7 +2100,8 @@ type AltCoverTests3() =
       Assert.That(!two)
 
     [<Test>]
-    member self.ResilientHandlesArgumentException() =
+    let ResilientHandlesArgumentException() =
+      Main.init()
       let one = ref false
       let two = ref false
       Main.ImageLoadResilient (fun () ->
@@ -1934,7 +2111,8 @@ type AltCoverTests3() =
       Assert.That(!two)
 
     [<Test>]
-    member self.PreparingNewPlaceShouldCopyEverything() =
+    let PreparingNewPlaceShouldCopyEverything() =
+      Main.init()
       let monoRuntime =
         "Mono.Runtime"
         |> Type.GetType
@@ -1964,7 +2142,8 @@ type AltCoverTests3() =
            |> Seq.filter
                 (fun f -> (f |> Path.GetFileName).StartsWith("xunit.", StringComparison.OrdinalIgnoreCase) |> not)
            |> Seq.filter
-                (fun f -> (f |> Path.GetFileName).StartsWith("FSharp.", StringComparison.OrdinalIgnoreCase) |> not),
+                (fun f -> (f |> Path.GetFileName).StartsWith("FSharp.", StringComparison.OrdinalIgnoreCase) |> not)
+           |> Seq.sort,
            Is.EquivalentTo
              (f.EnumerateFiles()
               |> Seq.map (fun x -> x.FullName)
@@ -1972,11 +2151,13 @@ type AltCoverTests3() =
                    (fun f ->
                    f.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)
                    || f.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
+              |> Seq.filter (fun f -> f |> Path.GetFileName <> "AltCover.Tests.exe")
               |> Seq.filter
                    (fun f ->
                    File.Exists(Path.ChangeExtension(f, ".pdb")) ||
                    File.Exists(f + ".mdb") ||
-                   f |> Path.GetFileNameWithoutExtension = "Sample8")),
+                   f |> Path.GetFileNameWithoutExtension = "Sample8")
+             |> Seq.sort),
            "First list mismatch with from files")
         Assert.That(y,
                     Is.EquivalentTo(x
@@ -1984,7 +2165,7 @@ type AltCoverTests3() =
                                     "Second list mismatch"))
 
     [<Test>]
-    member self.ShouldProcessTrailingArguments() =
+    let ShouldProcessTrailingArguments() =
       // Hack for running while instrumented
       let where = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
       let path =
@@ -2047,13 +2228,15 @@ type AltCoverTests3() =
         Console.SetError(snd saved)
 
     [<Test>]
-    member self.StoresAsExpected() =
+    let StoresAsExpected() =
+      Main.init()
       Api.store <- String.Empty
       Api.LogToStore.Info "23"
       Assert.That(Api.store, Is.EqualTo "23")
 
     [<Test>]
-    member self.IpmoIsAsExpected() =
+    let IpmoIsAsExpected() =
+      Main.init()
       AltCover.ToConsole()
       let saved = Console.Out
       try
@@ -2073,7 +2256,8 @@ type AltCoverTests3() =
         Console.SetOut saved
 
     [<Test>]
-    member self.VersionIsAsExpected() =
+    let VersionIsAsExpected() =
+      Main.init()
       AltCover.ToConsole()
       let saved = Console.Out
       try
@@ -2091,7 +2275,8 @@ type AltCoverTests3() =
         Console.SetOut saved
 
     [<Test>]
-    member self.UsageIsAsExpected() =
+    let UsageIsAsExpected() =
+      Main.init()
       let options = Main.DeclareOptions()
       let saved = Console.Error
       try
@@ -2182,6 +2367,16 @@ type AltCoverTests3() =
   -v, --visibleBranches      Hide complex internal IL branching implementation
                                details in switch/match constructs, and just
                                show what the source level logic implies.
+      --showstatic[=VALUE]   Optional: Instrument and show code that is by
+                               default skipped as trivial.  --showstatic:- is
+                               equivalent to omitting the parameter; --
+                               showstatic or --showstatic:+ sets the unvisited
+                               count to a negative value interpreted by the
+                               visualizer (but treated as zero by
+                               ReportGenerator) ; --showstatic:++ sets the
+                               unvisited count to zero.
+      --showGenerated        Mark generated code with a visit count of -2 (
+                               Automatic) for the Visualizer if unvisited
   -?, --help, -h             Prints out the options.
 or
   ipmo                       Prints out the PowerShell script to import the
@@ -2195,7 +2390,8 @@ or
         Console.SetError saved
 
     [<Test>]
-    member self.ErrorResponseIsAsExpected() =
+    let ErrorResponseIsAsExpected() =
+      Main.init()
       let saved = Console.Error
       try
         use stderr = new StringWriter()
@@ -2290,6 +2486,16 @@ or
   -v, --visibleBranches      Hide complex internal IL branching implementation
                                details in switch/match constructs, and just
                                show what the source level logic implies.
+      --showstatic[=VALUE]   Optional: Instrument and show code that is by
+                               default skipped as trivial.  --showstatic:- is
+                               equivalent to omitting the parameter; --
+                               showstatic or --showstatic:+ sets the unvisited
+                               count to a negative value interpreted by the
+                               visualizer (but treated as zero by
+                               ReportGenerator) ; --showstatic:++ sets the
+                               unvisited count to zero.
+      --showGenerated        Mark generated code with a visit count of -2 (
+                               Automatic) for the Visualizer if unvisited
   -?, --help, -h             Prints out the options.
 or
   Runner
@@ -2328,7 +2534,8 @@ or
 
     // Tasks.fs
     [<Test>]
-    member self.LoggingCanBeExercised() =
+    let LoggingCanBeExercised() =
+      Main.init()
       Assert.That(FSApi.Logging.ActionAdapter null, Is.Not.Null)
       (FSApi.Logging.ActionAdapter null) "23"
       Assert.That(FSApi.Logging.ActionAdapter(new Action<String>(ignore)), Is.Not.Null)
@@ -2342,7 +2549,8 @@ or
       FSApi.Logging.Create().Echo "32"
 
     [<Test>]
-    member self.EmptyInstrumentIsJustTheDefaults() =
+    let EmptyInstrumentIsJustTheDefaults() =
+      Main.init()
       let subject = Prepare()
       let save = Main.EffectiveMain
       let mutable args = [| "some junk " |]
@@ -2361,7 +2569,8 @@ or
         Output.Error <- snd saved
 
     [<Test>]
-    member self.NonDefaultInstrumentObsoleteIsOK() =
+    let NonDefaultInstrumentObsoleteIsOK() =
+      Main.init()
       let subject = Prepare()
       let save = Main.EffectiveMain
       let mutable args = [| "some junk " |]
@@ -2386,7 +2595,8 @@ or
         Output.Error <- snd saved
 
     [<Test>]
-    member self.NonDefaultInstrumentIsOK() =
+    let NonDefaultInstrumentIsOK() =
+      Main.init()
       let subject = Prepare()
       let save = Main.EffectiveMain
       let mutable args = [| "some junk " |]
@@ -2414,7 +2624,8 @@ or
         Output.Error <- snd saved
 
     [<Test>]
-    member self.EmptyCollectIsJustTheDefaults() =
+    let EmptyCollectIsJustTheDefaults() =
+      Main.init()
       let subject = Collect()
       let save = Main.EffectiveMain
       let mutable args = [| "some junk " |]
@@ -2433,7 +2644,8 @@ or
         Output.Error <- snd saved
 
     [<Test>]
-    member self.CollectWithExeIsNotCollecting() =
+    let CollectWithExeIsNotCollecting() =
+      Main.init()
       let subject = Collect()
       let save = Main.EffectiveMain
       let mutable args = [| "some junk " |]
@@ -2457,7 +2669,8 @@ or
         Output.Error <- snd saved
 
     [<Test>]
-    member self.EmptyPowerShellIsJustTheDefaults() =
+    let EmptyPowerShellIsJustTheDefaults() =
+      Main.init()
       let subject = PowerShell()
       let save = Main.EffectiveMain
       let mutable args = [| "some junk " |]
@@ -2482,7 +2695,8 @@ or
         Output.Warn <- warned
 
     [<Test>]
-    member self.EmptyVersionIsJustTheDefaults() =
+    let EmptyVersionIsJustTheDefaults() =
+      Main.init()
       let subject = GetVersion()
       let save = Main.EffectiveMain
       let mutable args = [| "some junk " |]
@@ -2507,7 +2721,8 @@ or
         Output.Warn <- warned
 
     [<Test>]
-    member self.EchoWorks() =
+    let EchoWorks() =
+      Main.init()
       let saved = (Console.Out, Console.Error)
       let e0 = Console.Out.Encoding
       let e1 = Console.Error.Encoding
@@ -2519,7 +2734,7 @@ or
               member self.Encoding = e0 }
 
         use stderr =
-         { new StringWriter() with
+          { new StringWriter() with
               member self.Encoding = e1 }
 
         Console.SetOut stdout
@@ -2539,13 +2754,14 @@ or
 
 #if NETCOREAPP2_0
     [<Test>]
-    member self.RunSettingsFailsIfCollectorNotFound() =
+    let RunSettingsFailsIfCollectorNotFound() =
+      Main.init()
       let subject = RunSettings()
       subject.DataCollector <- Guid.NewGuid().ToString();
       Assert.That (subject.Execute(), Is.False)
       Assert.That (subject.Extended, Is.Empty)
 
-    member val template = """<?xml version="1.0" encoding="utf-8"?>
+    let template = """<?xml version="1.0" encoding="utf-8"?>
 <RunSettings>
 {1}  <InProcDataCollectionRunSettings>
     <InProcDataCollectors>
@@ -2556,10 +2772,11 @@ or
       </InProcDataCollector>
     </InProcDataCollectors>
   </InProcDataCollectionRunSettings>
-</RunSettings>""" with get
+</RunSettings>"""
 
     [<Test>]
-    member self.RunSettingsWorksIfOK() =
+    let RunSettingsWorksIfOK() =
+      Main.init()
       let subject = RunSettings()
       subject.DataCollector <- Assembly.GetExecutingAssembly().Location
       Assert.That (subject.Execute(), Is.True)
@@ -2567,12 +2784,13 @@ or
       let result = subject.Extended
                    |> File.ReadAllText
       Assert.That (result.Replace("\r", String.Empty),
-                    Is.EqualTo ((String.Format(self.template,
+                    Is.EqualTo ((String.Format(template,
                                                Assembly.GetExecutingAssembly().Location,
                                                String.Empty)).Replace("\r", String.Empty)))
 
     [<Test>]
-    member self.RunSettingsExtendsOK() =
+    let RunSettingsExtendsOK() =
+      Main.init()
       let subject = RunSettings()
       subject.DataCollector <- Assembly.GetExecutingAssembly().Location
       let settings = Path.GetTempFileName()
@@ -2583,12 +2801,13 @@ or
       let result = subject.Extended
                    |> File.ReadAllText
       Assert.That (result.Replace("\r", String.Empty),
-                    Is.EqualTo ((String.Format(self.template,
+                    Is.EqualTo ((String.Format(template,
                                                Assembly.GetExecutingAssembly().Location,
                                                "  <stuff />\r\n")).Replace("\r", String.Empty)))
 
     [<Test>]
-    member self.RunSettingsRecoversOK() =
+    let RunSettingsRecoversOK() =
+      Main.init()
       let subject = RunSettings()
       subject.DataCollector <- Assembly.GetExecutingAssembly().Location
       let settings = Path.GetTempFileName()
@@ -2599,9 +2818,8 @@ or
       let result = subject.Extended
                    |> File.ReadAllText
       Assert.That (result.Replace("\r", String.Empty),
-                    Is.EqualTo ((String.Format(self.template,
+                    Is.EqualTo ((String.Format(template,
                                                Assembly.GetExecutingAssembly().Location,
                                                String.Empty)).Replace("\r", String.Empty)))
 #endif
   // Recorder.fs => Recorder.Tests
-  end
