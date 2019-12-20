@@ -70,12 +70,12 @@ module internal Report =
       element :: s
 
     let VisitMethodPoint (s : list<XElement>) (head : XElement)
-        (codeSegment' : SeqPnt option) included =
+        (codeSegment' : SeqPnt option) included vc =
       match codeSegment' with
       | Some codeSegment ->
         let element =
           XElement
-            (X "seqpnt", XAttribute(X "visitcount", 0),
+            (X "seqpnt", XAttribute(X "visitcount", int vc),
              XAttribute(X "line", codeSegment.StartLine),
              XAttribute(X "column", codeSegment.StartColumn),
              XAttribute(X "endline", codeSegment.EndLine),
@@ -100,10 +100,10 @@ module internal Report =
       | Start _ -> StartVisit s
       | Module(moduleDef, included) ->
         VisitModule s head moduleDef (Visitor.IsInstrumented included)
-      | Method(methodDef, included, _) ->
+      | Method(methodDef, included, _, _) ->
         VisitMethod s head methodDef (Visitor.IsInstrumented included)
-      | MethodPoint(_, codeSegment, _, included) ->
-        VisitMethodPoint s head codeSegment included
+      | MethodPoint(_, codeSegment, _, included, vc) ->
+        VisitMethodPoint s head codeSegment included vc
       | AfterMethod _ ->
         if head.IsEmpty then head.Remove()
         tail

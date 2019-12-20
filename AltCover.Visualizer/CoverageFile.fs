@@ -15,19 +15,6 @@ type CoverageTool =
   | NCoverAlike = 0
   | OpenCover = 2
 
-module internal Exemption =
-  [<Literal>]
-  let Declared = -1
-
-  [<Literal>]
-  let Automatic = -2
-
-  [<Literal>]
-  let StaticAnalysis = -3
-
-  [<Literal>]
-  let Excluded = -4
-
 [<NoComparison>]
 type InvalidFile =
   { File : FileInfo

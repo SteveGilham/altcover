@@ -709,8 +709,8 @@ module internal Instrument =
       state
     | Module(m, included) -> VisitModule state m included
     | Type _ -> state
-    | Method(m, included, _) -> VisitMethod state m included
-    | MethodPoint(instruction, _, point, included) ->
+    | Method(m, included, _, _) -> VisitMethod state m included
+    | MethodPoint(instruction, _, point, included, _) ->
       VisitMethodPoint state instruction point included
     | BranchPoint branch -> VisitBranchPoint state branch
     | AfterMethod(m, included, track) -> VisitAfterMethod state m included track

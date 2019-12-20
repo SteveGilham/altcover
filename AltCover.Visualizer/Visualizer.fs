@@ -12,8 +12,8 @@ open System.Xml.Linq
 open System.Xml.Schema
 open System.Xml.XPath
 
+open AltCover
 open AltCover.Augment
-open AltCover.Visualizer.Extensions
 open AltCover.Visualizer.GuiCommon
 
 open Gdk
@@ -370,12 +370,24 @@ module Gui =
   let private AssemblyIcon =
     lazy (new Pixbuf(Assembly.GetExecutingAssembly()
                              .GetManifestResourceStream("AltCover.Visualizer.Assembly_6212.png")))
+  let private EventIcon =
+    lazy (new Pixbuf(Assembly.GetExecutingAssembly()
+                             .GetManifestResourceStream("AltCover.Visualizer.Event_16x.png")))
   let private NamespaceIcon =
     lazy (new Pixbuf(Assembly.GetExecutingAssembly()
                              .GetManifestResourceStream("AltCover.Visualizer.Namespace_16x.png")))
+  let private ModuleIcon =
+    lazy (new Pixbuf(Assembly.GetExecutingAssembly()
+                             .GetManifestResourceStream("AltCover.Visualizer.Module_16x.png")))
+  let private EffectIcon =
+    lazy (new Pixbuf(Assembly.GetExecutingAssembly()
+                             .GetManifestResourceStream("AltCover.Visualizer.Effects_16x.png")))
   let private ClassIcon =
     lazy (new Pixbuf(Assembly.GetExecutingAssembly()
                              .GetManifestResourceStream("AltCover.Visualizer.class_16xLG.png")))
+  let private PropertyIcon =
+    lazy (new Pixbuf(Assembly.GetExecutingAssembly()
+                             .GetManifestResourceStream("AltCover.Visualizer.Property_16x.png")))
   let private MethodIcon =
     lazy (new Pixbuf(Assembly.GetExecutingAssembly()
                              .GetManifestResourceStream("AltCover.Visualizer.method_16xLG.png")))
@@ -397,32 +409,57 @@ module Gui =
 
   let private PopulateClassNode (model : TreeStore) (row : TreeIter)
       (nodes : seq<MethodKey>) =
-    let ApplyToModel (theModel : TreeStore) (theRow : TreeIter) (x : MethodKey) =
-      let fullname = x.m.GetAttribute("fullname", String.Empty)
+    let ApplyToModel (theModel : TreeStore) (theRow : TreeIter) (item : ((string * MethodType) * MethodKey seq)) =
+      let ((display, special), keys) = item
 
-      let args =
-        if String.IsNullOrEmpty(fullname) || x.name.IndexOf('(') > 0 then String.Empty
-        else
-          let bracket = fullname.IndexOf('(')
-          if bracket < 0 then String.Empty
-          else fullname.Substring(bracket)
+      let ApplyMethod (mmodel : TreeStore) (mrow : TreeIter) (x : MethodKey) =
+        let fullname = x.m.GetAttribute("fullname", String.Empty)
 
-      let displayname = x.name + args
+        let args =
+          if String.IsNullOrEmpty(fullname) || x.name.IndexOf('(') > 0 then String.Empty
+          else
+            let bracket = fullname.IndexOf('(')
+            if bracket < 0 then String.Empty
+            else fullname.Substring(bracket)
 
-      let offset =
-        match displayname.LastIndexOf("::", StringComparison.Ordinal) with
-        | -1 -> 0
-        | o -> o + 2
+        let displayname = x.name + args
 
-      let newrow =
-        theModel.AppendValues(theRow,
-                              [| displayname.Substring(offset) :> obj
-                                 MethodIcon.Force() :> obj |])
+        let offset =
+          match displayname.LastIndexOf("::", StringComparison.Ordinal) with
+          | -1 -> 0
+          | o -> o + 2
 
-      Mappings.Add(theModel.GetPath(newrow), x.m)
+        let newrow =
+          mmodel.AppendValues(mrow,
+                                [| displayname.Substring(offset) :> obj
+                                   MethodIcon.Force() :> obj |])
 
-    let methods = nodes |> Seq.toArray
-    Array.sortInPlaceWith MethodNameCompare methods
+        Mappings.Add(mmodel.GetPath(newrow), x.m)
+
+      if special <> MethodType.Normal
+      then let newrow =
+             theModel.AppendValues(theRow,
+                                  [| display :> obj
+                                     (if special = MethodType.Property
+                                      then PropertyIcon
+                                      else EventIcon).Force()  :> obj |])
+           keys
+           |> Seq.sortBy (fun key -> key.name |> DisplayName)
+           |> Seq.iter (ApplyMethod theModel newrow)
+      else ApplyMethod theModel theRow (keys |> Seq.head)
+
+    let methods = nodes
+                  |> Seq.groupBy (fun key -> key.name |> DisplayName |> HandleSpecialName)
+                  |> Seq.toArray
+    methods
+    |> Array.sortInPlaceWith (fun ((l,lb),_) ((r, rb),_) ->
+                                let sort1 = String.Compare(l, r, StringComparison.OrdinalIgnoreCase)
+                                let sort2 = if sort1 = 0
+                                            then String.Compare(l, r, StringComparison.Ordinal)
+                                            else sort1
+                                if sort2 = 0
+                                then lb.CompareTo rb
+                                else sort2)
     methods |> Array.iter (ApplyToModel model row)
 
   let private PopulateNamespaceNode (model : TreeStore) (row : TreeIter)
@@ -430,20 +467,48 @@ module Gui =
     let ApplyToModel (theModel : TreeStore) (theRow : TreeIter)
         (group : string * seq<MethodKey>) =
       let name = fst group
+      let icon = if group |> snd |> Seq.isEmpty
+                 then ModuleIcon.Force()
+                 else if group |> snd |> Seq.exists (fun key -> let d = key.name |> DisplayName
+                                                                (d.StartsWith(".", StringComparison.Ordinal)
+                                                                 || d.Equals("Invoke")) |> not)
+                      then ClassIcon.Force()
+                      else EffectIcon.Force()
 
       let newrow =
         theModel.AppendValues(theRow,
                               [| name :> obj
-                                 ClassIcon.Force() :> obj |])
+                                 icon :> obj |])
       PopulateClassNode theModel newrow (snd group)
       newrow
 
     let isNested (name : string) n =
       name.StartsWith(n + "+", StringComparison.Ordinal)
       || name.StartsWith(n + "/", StringComparison.Ordinal)
-    nodes
-    |> Seq.groupBy (fun x -> x.classname)
-    |> Seq.sortBy fst
+    let classlist = nodes
+                    |> Seq.groupBy (fun x -> x.classname)
+                    |> Seq.toList
+
+    let classnames = classlist |> Seq.map fst |> Set.ofSeq
+
+    let modularize = classnames
+                     |> Seq.filter (fun cn -> cn.Contains("+") || cn.Contains("/"))
+                     |> Seq.map (fun cn -> cn.Split([| "+"; "/" |], StringSplitOptions.RemoveEmptyEntries).[0])
+                     |> Seq.distinct
+                     |> Seq.filter (fun mn -> classnames |> Set.contains mn |> not)
+                     |> Seq.map (fun mn -> (mn, Seq.empty<MethodKey>))
+                     |> Seq.toList
+    let classes = Seq.append classlist modularize
+                  |> Seq.toArray
+
+    Array.sortInPlaceWith (fun l r ->
+                            let left = fst l
+                            let right = fst r
+                            let sort = String.Compare(left, right, StringComparison.OrdinalIgnoreCase)
+                            if sort = 0
+                            then String.Compare(left, right, StringComparison.Ordinal)
+                            else sort) classes
+    classes
     |> Seq.fold (fun stack c ->
          let name = fst c
          let restack = stack |> List.filter (fst >> (isNested name))
@@ -710,15 +775,15 @@ module Gui =
 
     let baseline = new TextTag("baseline")
     baseline.Font <- Persistence.readFont()
-    baseline.Foreground <- "#c0c0c0"
+    baseline.Foreground <- "#8080A0"
     buff.TagTable.Add(baseline) |> ignore
     [ (// Last declared type is last layer painted
-       "visited", "#404040", "#cefdce") // "#98FB98") ; // Dark on Pale Green
-      ("declared", "#FFA500", "#FFFFFF") // Orange on White
-      ("static", "#808080", "#F5F5F5") // Grey on White Smoke
+       "visited", "#404040", "#cefdce") // Dark on Pale Green
+      ("declared", "#FF8C00", "#FFFFFF") // Dark Orange on White
+      ("static", "#F5F5F5", "#808080") // White Smoke on Grey
       ("automatic", "#808080", "#FFFF00") // Grey on Yellow
       ("notVisited", "#ff0000", "#FFFFFF") // Red on White
-      ("excluded", "#87CEEB", "#FFFFFF") // Sky Blue on white
+      ("excluded", "#00BFFF", "#FFFFFF") // Deep Sky Blue on white
                                          ]
     |> Seq.iter (fun x -> Tag buff x |> ignore)
     baseline
@@ -802,7 +867,7 @@ module Gui =
     | Select "tool-generated: " _ -> Exemption.Automatic
     | Select "static analysis: " _ -> Exemption.StaticAnalysis
     | (_, true) -> Exemption.Excluded
-    | _ -> 0
+    | _ -> Exemption.None
 
   let private CoverageToTag(n : XPathNavigator) =
     let excluded = Boolean.TryParse(n.GetAttribute("excluded", String.Empty)) |> snd
@@ -814,7 +879,7 @@ module Gui =
     // Extension behaviour for textual signalling for three lines
     n.MoveToParent() |> ignore
     let because = n.GetAttribute("excluded-because", String.Empty)
-    let fallback = SelectStyle because excluded
+    let fallback = SelectStyle because excluded |> int
     { visitcount =
         if visitcount = 0 then fallback
         else visitcount
@@ -844,8 +909,8 @@ module Gui =
           (n.endline - 1, Math.Min(n.endcolumn, endline.CharsInLine) - 1)
 
     let tag =
-      match n.visitcount with
-      | 0 -> "notVisited"
+      match enum n.visitcount with
+      | Exemption.None -> "notVisited"
       | Exemption.Declared -> "declared"
       | Exemption.Automatic -> "automatic"
       | Exemption.StaticAnalysis -> "static"

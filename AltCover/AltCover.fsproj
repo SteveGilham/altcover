@@ -78,6 +78,7 @@
     </Compile>
     <Compile Include="ProgramDatabase.fs" />
     <Compile Include="Filter.fs" />
+    <Compile Include="Exemption.fs" />
     <Compile Include="Visitor.fs" />
     <Compile Include="Naming.fs" />
     <Compile Include="Report.fs" />
@@ -131,7 +132,7 @@
     </Reference>
     <Reference Include="mscorlib" />
     <Reference Include="Newtonsoft.Json">
-      <HintPath>..\packages\Newtonsoft.Json.12.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\packages\Newtonsoft.Json.12.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core">

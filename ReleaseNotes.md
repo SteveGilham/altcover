@@ -2,8 +2,19 @@ Q. Never mind the fluff -- how do I get started?
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
+# 6.6.747  (Fukurou series release 11)
+* [API, Fake Helper API] Deprecate the `DotNet.TestOptions.WithImportModule` and `.WithGetVersion` extension methods in favour of the otherwise identical `DotNet.TestOptions.WithAltCoverImportModule` and `.WithAltCoverGetVersion`; the obsolete name now just calls through to the preferred one.
+* [API] `--showstatic[:[-|+|++]]` (string `ShowStatic` default "-" in API, `-ShowStatic string` PowerShell) to reveal the code usually auto-filtered (e.g. auto-properties, somwe system generated types, structure comparison methods in F#...); either with coverage value `-3` (option '+') which is highlighted in the Visualizer but treated as 0 by [ReportGenerator](https://danielpalme.github.io/ReportGenerator/), or the value '0' (option '++')
+* [API] `--showGenerated` (bool `ShowGenerated` default false in API, `-ShowSGenerated` PowerShell) to reveal the code marked by [CompilerGenerated] or [GeneratedCode] with coverage value `-2`which is highlighted in the Visualizer but treated as 0 by [ReportGenerator](https://danielpalme.github.io/ReportGenerator/)
+* [Visualizer, BUGFIX] fix the sorting of method by name for NCover format
+* [Visualizer] group property `get_` and `set_`, and event `add_` and `remove_`,  methods together, under an appropriate icon
+* [Visualizer] For F# modules containing only types, group the contents together under a module entry at class level, just as they would have been were the module to directly contain any functions
+* [Visualizer] Types that only contain an `Invoke` method and constructors are shown with an approriate icon, too.
+* [3rd Party] With the latest GTK#3 update, the GTK+ native libraries for win-x64 are no longer bundled into the nuget -- this seems to have been a transient behaviour in GtkSharp v3.22.25.49 only
+
 # 6.5.739  (Fukurou series release 10)
 * [Command-line and CLI tool] Rolling forwards with `runtimeconfig.template.json` -- it's not just for global tools : make all the executables .net core 3+ compatible.
+  * this now packages the GTK# assemblies, and GTK+ native libraries for win-x64, for the .net core visualizer
   * also enable the build to execute on hosts with nothing before .net core 3 runtime
 * [API, Fake Helper API] Deprecate the `DotNet.TestOptions.WithParameters` extension method in favour of the otherwise identical `DotNet.TestOptions.WithAltCoverParameters`; the obsolete name now just calls through to the preferred one.
 * [Visualizer tool] Update GTK# for .net Core

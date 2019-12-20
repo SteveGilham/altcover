@@ -47,7 +47,7 @@ module DU =
   let returnFoo v = Foo v
   let returnBar v = Bar v
 
-  [<Fact>]
+  [<Fact; System.CodeDom.Compiler.GeneratedCodeAttribute("Not really", "0.0")>]
   let testMakeUnion() =
     test <@ returnFoo 10 = Foo 10 @>
     test <@ returnBar "s" = Bar "s" @>

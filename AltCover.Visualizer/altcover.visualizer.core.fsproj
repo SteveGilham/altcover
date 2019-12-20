@@ -46,8 +46,12 @@
     <EmbeddedResource Include="Visualizer3.glade" />
     <EmbeddedResource Include="Assembly_6212.png" />
     <EmbeddedResource Include="class_16xLG.png" />
+    <EmbeddedResource Include="Effects_16x.png" />
+    <EmbeddedResource Include="Event_16x.png" />
     <EmbeddedResource Include="method_16xLG.png" />
+    <EmbeddedResource Include="Module_16x.png" />
     <EmbeddedResource Include="Namespace_16x.png" />
+    <EmbeddedResource Include="Property_16x.png" />
     <EmbeddedResource Include="XMLFile_16x.png" />
     <EmbeddedResource Include="logo.png" />
     <EmbeddedResource Include="Blank_12x_16x.png" />
@@ -66,14 +70,15 @@
     </EmbeddedResource>
     <EmbeddedResource Include="..\AltCover.Avalonia\config.xsd" Link="config.xsd" />
     <Compile Include="AssemblyInfo.fs" />
+    <Compile Include="..\AltCover\Exemption.fs" Link="Exemption.fs" />
     <Compile Include="CoverageFile.fs" />
     <Compile Include="GuiCommon.fs" />
     <Compile Include="Visualizer.fs" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="GtkSharp" Version="3.22.25.49" />
-    <PackageReference Condition="'$(OS)' == 'Windows_NT' AND '$(Configuration)'=='Release'" Include="Microsoft.SourceLink.GitHub" Version="1.0.0-beta-63127-02">
+    <PackageReference Include="GtkSharp" Version="3.22.25.56" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
