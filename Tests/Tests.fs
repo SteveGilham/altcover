@@ -14,6 +14,7 @@ open Mono.Cecil
 open Mono.Cecil.Cil
 open Mono.Cecil.Rocks
 open N
+open Swensen.Unquote
 
 [<NUnit.Framework.IncludeExcludeAttribute>]
 type ProxyObject() =
@@ -791,6 +792,42 @@ module AltCoverTests =
 
       let s = Visitor.EnsureEndsWith "s" "banana"
       Assert.That (s, Is.EqualTo "bananas")
+
+    [<Test>]
+    let ValidateStaticExemption() =
+      let result =
+        [
+          StaticFilter.AsCovered
+          StaticFilter.Hidden
+          StaticFilter.NoFilter
+        ]
+        |> List.map (fun k -> Visitor.SelectExemption k [] Exemption.None)
+      test <@ result = [ Exemption.StaticAnalysis; Exemption.None; Exemption.None ] @>
+
+    [<Test>]
+    let ValidateAutomaticExemption() =
+      try
+        Visitor.showGenerated := true
+        let where = Assembly.GetExecutingAssembly().Location
+        let path =
+          Path.Combine(Path.GetDirectoryName(where) + Hack(), "Sample4.dll")
+        use def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+        let items =
+          def.MainModule.GetAllTypes()
+          |> Seq.collect (fun t -> t.Methods)
+          |> Seq.filter (fun m -> m.Name = "testMakeUnion")
+          |> Seq.toList
+
+        let result =
+          [
+            StaticFilter.AsCovered
+            StaticFilter.Hidden
+            StaticFilter.NoFilter
+          ]
+          |> List.map (fun k -> Visitor.SelectExemption k items Exemption.None)
+        test <@ result = [ Exemption.StaticAnalysis; Exemption.Automatic; Exemption.Automatic ] @>
+      finally
+        Visitor.showGenerated := false
 
     [<Test>]
     let DetectLocalSource() =
@@ -1658,7 +1695,6 @@ module AltCoverTests =
     let AssembliesAreDeeperThanPaths() =
       try
         Visitor.staticFilter <- Some StaticFilter.AsCovered
-
         let where = Assembly.GetExecutingAssembly().Location
         let path =
           Path.Combine(Path.GetDirectoryName(where) + Hack(), sample1)
