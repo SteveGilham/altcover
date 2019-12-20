@@ -2,9 +2,9 @@ Q. Never mind the fluff -- how do I get started?
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
-# 6.6.7xx  (Fukurou series release 11)
+# 6.6.747  (Fukurou series release 11)
 * [API, Fake Helper API] Deprecate the `DotNet.TestOptions.WithImportModule` and `.WithGetVersion` extension methods in favour of the otherwise identical `DotNet.TestOptions.WithAltCoverImportModule` and `.WithAltCoverGetVersion`; the obsolete name now just calls through to the preferred one.
-* [API] `--showstatic[:[-|+|++]]` (string `ShowStatic` default "-" in API, `-ShowStatic string` PowerShell) to reveal the code usually auto-filtered (e.g. auto-properties, cstructure comparison methods in F#...); either with coverage value `-3` (option '+') which is highlighted in the Visualizer but treated as 0 by [ReportGenerator](https://danielpalme.github.io/ReportGenerator/), or the value '0' (option '++')
+* [API] `--showstatic[:[-|+|++]]` (string `ShowStatic` default "-" in API, `-ShowStatic string` PowerShell) to reveal the code usually auto-filtered (e.g. auto-properties, somwe system generated types, structure comparison methods in F#...); either with coverage value `-3` (option '+') which is highlighted in the Visualizer but treated as 0 by [ReportGenerator](https://danielpalme.github.io/ReportGenerator/), or the value '0' (option '++')
 * [API] `--showGenerated` (bool `ShowGenerated` default false in API, `-ShowSGenerated` PowerShell) to reveal the code marked by [CompilerGenerated] or [GeneratedCode] with coverage value `-2`which is highlighted in the Visualizer but treated as 0 by [ReportGenerator](https://danielpalme.github.io/ReportGenerator/)
 * [Visualizer, BUGFIX] fix the sorting of method by name for NCover format
 * [Visualizer] group property `get_` and `set_`, and event `add_` and `remove_`,  methods together, under an appropriate icon
