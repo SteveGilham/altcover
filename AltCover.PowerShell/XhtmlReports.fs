@@ -40,7 +40,7 @@ type ConvertToBarChartCommand(outputFile : String) =
          |> String.IsNullOrWhiteSpace
          |> not
       then
-        use w = { new StringWriter() with
+        use w = { new StringWriter(System.Globalization.CultureInfo.InvariantCulture) with
                   member self.Encoding = System.Text.Encoding.UTF8 }
         rewrite.Save(w)
         File.WriteAllText(self.OutputFile,
