@@ -13,9 +13,9 @@
             <xs:attribute name="height" type="xs:integer" use="required" />
           </xs:complexType>
         </xs:element>
-        <xs:element name="RecentlyOpened" minOccurs="0" maxOccurs="10">
-        </xs:element>
+        <xs:element name="RecentlyOpened" minOccurs="0" maxOccurs="10" />
       </xs:sequence>
+      <xs:attribute name="GSettingsSchemaDir" type="xs:string" use="optional" />
     </xs:complexType>
   </xs:element>
 </xs:schema>

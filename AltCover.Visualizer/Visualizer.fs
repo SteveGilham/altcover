@@ -181,6 +181,16 @@ module Persistence =
         printfn "%A" x
         (file, DefaultDocument())
 
+  let internal saveSchemaDir (s : string) =
+    let file, config = EnsureFile()
+    let node = config.XPathSelectElements("AltCover.Visualizer")
+               |> Seq.toList
+               |> Seq.head
+    match node.Attribute(XName.Get "GSettingsSchemaDir") with
+    | null -> node.Add(XAttribute(XName.Get "GSettingsSchemaDir", s))
+    | a -> a.Value <- s
+    config.Save file
+
   let internal saveFont (font : string) =
     let file, config = EnsureFile()
     config.XPathSelectElements("//Font")
@@ -197,6 +207,15 @@ module Persistence =
     match config.XPathSelectElements("//Font") |> Seq.toList with
     | [] -> "Monospace 10"
     | x :: _ -> x.FirstNode.ToString()
+
+  let internal readSchemaDir() =
+    let file, config = EnsureFile()
+    let node = config.XPathSelectElements("AltCover.Visualizer")
+               |> Seq.toList
+               |> Seq.head
+    match node.Attribute(XName.Get "GSettingsSchemaDir") with
+    | null -> String.Empty
+    | a -> a.Value
 
   let internal saveFolder (path : string) =
     let file, config = EnsureFile()
@@ -1099,6 +1118,10 @@ module Gui =
          (fun _ ->
          Persistence.clearGeometry()
          Persistence.save <- false))
+#if NETCOREAPP2_1
+        ("s|schemadir=",
+         (fun s -> Persistence.saveSchemaDir s))
+#endif
         ("r|recentFiles", (fun _ -> Persistence.saveCoverageFiles [])) ]
       |> List.fold
            (fun (o : OptionSet) (p, a) ->
@@ -1112,6 +1135,9 @@ module Gui =
     let handler = PrepareGui()
 #if NETCOREAPP2_1
     handler.codeView.Drawn |> Event.add (fun _ -> latch.Set() |> ignore)
+    let schemaDir = Persistence.readSchemaDir()
+    if schemaDir |> String.IsNullOrWhiteSpace |> not
+    then Environment.SetEnvironmentVariable("GSETTINGS_SCHEMA_DIR", schemaDir)
 #endif
 
     handler.mainWindow.DeleteEvent
