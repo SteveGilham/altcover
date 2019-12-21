@@ -500,7 +500,7 @@ Describe "ConvertTo-BarChart" {
     $xml.WriteTo($xw)
     $xw.Close()
     $written = [System.IO.File]::ReadAllText("./_Packaging/HandRolledMonoCoverage.html")
-    $expected = [System.IO.File]::ReadAllText("./Tests/HandRolledMonoCoverage.html")
+    $expected = [System.IO.File]::ReadAllText("./Tests/HandRolledMonoCoverage.html").Replace("&#x2442;", "\u2442")
 
     $result = $sw.ToString().Replace("`r", "").Replace("html >", "html>") 
     $result | Should -Be $expected.Replace("`r", "")
