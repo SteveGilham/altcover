@@ -1,0 +1,81 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<?xml-stylesheet type="text/xsl" href="coverage.xsl" ?>
+<coverage profilerVersion="AltCover 6.6.7294.19057" driverVersion="0" startTime="9999-12-31T23:59:59.9999999" measureTime="0001-01-01T00:00:00.0000000">
+  <module moduleId="1958b2e4-7152-729c-bddd-d2ed13b44004" name="Sample4.exe" assembly="Sample4" assemblyIdentity="Sample4, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" excluded="false">
+    <method name="main" class="Program+Program" metadataToken="100663297" excluded="false" instrumented="true" fullname="System.Int32 Program+Program.main(System.String[])">
+      <seqpnt visitcount="0" line="3" column="16" endline="3" endcolumn="17" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample4\Program.fs" />
+    </method>
+    <method name="returnFoo" class="Tests.DU" metadataToken="100663298" excluded="false" instrumented="true" fullname="Tests.DU+MyUnion Tests.DU.returnFoo(System.Int32)">
+      <seqpnt visitcount="1" line="47" column="21" endline="47" endcolumn="26" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample4\Tests.fs" />
+    </method>
+    <method name="returnBar" class="Tests.DU" metadataToken="100663299" excluded="false" instrumented="true" fullname="Tests.DU+MyUnion Tests.DU.returnBar(System.String)">
+      <seqpnt visitcount="1" line="48" column="21" endline="48" endcolumn="26" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample4\Tests.fs" />
+    </method>
+    <method name="testMakeUnion" class="Tests.DU" metadataToken="100663300" excluded="false" instrumented="true" fullname="System.Void Tests.DU.testMakeUnion()">
+      <seqpnt visitcount="1" line="52" column="5" endline="52" endcolumn="37" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample4\Tests.fs" />
+      <seqpnt visitcount="-2" line="52" column="5" endline="52" endcolumn="9" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample4\Tests.fs" />
+      <seqpnt visitcount="1" line="53" column="5" endline="53" endcolumn="39" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample4\Tests.fs" />
+      <seqpnt visitcount="-2" line="53" column="5" endline="53" endcolumn="9" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample4\Tests.fs" />
+      <seqpnt visitcount="1" line="54" column="5" endline="54" endcolumn="44" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample4\Tests.fs" />
+      <seqpnt visitcount="-2" line="54" column="5" endline="54" endcolumn="9" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample4\Tests.fs" />
+    </method>
+    <method name="CompareTo" class="Tests.DU+MyUnion" metadataToken="100663314" excluded="false" instrumented="true" fullname="System.Int32 Tests.DU+MyUnion.CompareTo(System.Object)">
+      <seqpnt visitcount="-3" line="26" column="8" endline="26" endcolumn="15" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample4\Tests.fs" />
+    </method>
+    <method name="CompareTo" class="Tests.DU+MyUnion" metadataToken="100663315" excluded="false" instrumented="true" fullname="System.Int32 Tests.DU+MyUnion.CompareTo(System.Object,System.Collections.IComparer)">
+      <seqpnt visitcount="-3" line="26" column="8" endline="26" endcolumn="15" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample4\Tests.fs" />
+    </method>
+    <method name="GetHashCode" class="Tests.DU+MyUnion" metadataToken="100663317" excluded="false" instrumented="true" fullname="System.Int32 Tests.DU+MyUnion.GetHashCode()">
+      <seqpnt visitcount="-3" line="26" column="8" endline="26" endcolumn="15" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample4\Tests.fs" />
+    </method>
+    <method name="as_bar" class="Tests.DU+MyUnion" metadataToken="100663319" excluded="false" instrumented="true" fullname="Tests.DU+MyUnion Tests.DU+MyUnion.as_bar()">
+      <seqpnt visitcount="1" line="34" column="9" endline="34" endcolumn="24" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample4\Tests.fs" />
+      <seqpnt visitcount="0" line="39" column="16" endline="39" endcolumn="20" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample4\Tests.fs" />
+      <seqpnt visitcount="0" line="40" column="7" endline="40" endcolumn="11" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample4\Tests.fs" />
+      <seqpnt visitcount="0" line="40" column="17" endline="40" endcolumn="27" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample4\Tests.fs" />
+    </method>
+    <method name="get_MyBar" class="Tests.DU+MyUnion" metadataToken="100663320" excluded="false" instrumented="true" fullname="Microsoft.FSharp.Core.FSharpFunc`2 Tests.DU+MyUnion.get_MyBar()">
+      <seqpnt visitcount="0" line="42" column="25" endline="42" endcolumn="36" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample4\Tests.fs" />
+    </method>
+    <method name="Equals" class="Tests.DU+MyUnion" metadataToken="100663322" excluded="false" instrumented="true" fullname="System.Boolean Tests.DU+MyUnion.Equals(System.Object)">
+      <seqpnt visitcount="-3" line="26" column="8" endline="26" endcolumn="15" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample4\Tests.fs" />
+    </method>
+    <method name="Invoke" class="Tests.DU+get_MyBar@42" metadataToken="100663340" excluded="false" instrumented="true" fullname="Tests.DU+MyUnion Tests.DU+get_MyBar@42.Invoke(Microsoft.FSharp.Core.Unit)">
+      <seqpnt visitcount="0" line="42" column="25" endline="42" endcolumn="36" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample4\Tests.fs" />
+    </method>
+    <method name=".ctor" class="Tests.DU+MyClass" metadataToken="100663341" excluded="false" instrumented="true" fullname="System.Void Tests.DU+MyClass.#ctor()">
+      <seqpnt visitcount="0" line="45" column="27" endline="45" endcolumn="28" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample4\Tests.fs" />
+      <seqpnt visitcount="0" line="44" column="8" endline="44" endcolumn="15" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample4\Tests.fs" />
+    </method>
+    <method name="get_Property" class="Tests.DU+MyClass" metadataToken="100663342" excluded="false" instrumented="true" fullname="System.Int32 Tests.DU+MyClass.get_Property()">
+      <seqpnt visitcount="-3" line="45" column="16" endline="45" endcolumn="24" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample4\Tests.fs" />
+    </method>
+    <method name="set_Property" class="Tests.DU+MyClass" metadataToken="100663343" excluded="false" instrumented="true" fullname="System.Void Tests.DU+MyClass.set_Property(System.Int32)">
+      <seqpnt visitcount="-3" line="45" column="16" endline="45" endcolumn="24" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample4\Tests.fs" />
+    </method>
+    <method name="makeThing" class="Tests.M" metadataToken="100663344" excluded="false" instrumented="true" fullname="Tests.M+Thing Tests.M.makeThing(System.String)">
+      <seqpnt visitcount="2" line="18" column="21" endline="18" endcolumn="34" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample4\Tests.fs" />
+    </method>
+    <method name="testMakeThing" class="Tests.M" metadataToken="100663345" excluded="false" instrumented="true" fullname="System.Void Tests.M.testMakeThing()">
+      <seqpnt visitcount="1" line="22" column="5" endline="22" endcolumn="43" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample4\Tests.fs" />
+      <seqpnt visitcount="0" line="22" column="5" endline="22" endcolumn="9" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample4\Tests.fs" />
+      <seqpnt visitcount="1" line="23" column="5" endline="23" endcolumn="54" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample4\Tests.fs" />
+      <seqpnt visitcount="0" line="23" column="5" endline="23" endcolumn="9" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample4\Tests.fs" />
+    </method>
+    <method name="CompareTo" class="Tests.M+Thing" metadataToken="100663350" excluded="false" instrumented="true" fullname="System.Int32 Tests.M+Thing.CompareTo(System.Object)">
+      <seqpnt visitcount="-3" line="14" column="8" endline="14" endcolumn="13" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample4\Tests.fs" />
+    </method>
+    <method name="CompareTo" class="Tests.M+Thing" metadataToken="100663351" excluded="false" instrumented="true" fullname="System.Int32 Tests.M+Thing.CompareTo(System.Object,System.Collections.IComparer)">
+      <seqpnt visitcount="-3" line="14" column="8" endline="14" endcolumn="13" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample4\Tests.fs" />
+    </method>
+    <method name="GetHashCode" class="Tests.M+Thing" metadataToken="100663353" excluded="false" instrumented="true" fullname="System.Int32 Tests.M+Thing.GetHashCode()">
+      <seqpnt visitcount="-3" line="14" column="8" endline="14" endcolumn="13" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample4\Tests.fs" />
+    </method>
+    <method name="bytes" class="Tests.M+Thing" metadataToken="100663355" excluded="false" instrumented="true" fullname="System.Byte[] Tests.M+Thing.bytes()">
+      <seqpnt visitcount="1" line="16" column="27" endline="16" endcolumn="73" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample4\Tests.fs" />
+    </method>
+    <method name="Equals" class="Tests.M+Thing" metadataToken="100663357" excluded="false" instrumented="true" fullname="System.Boolean Tests.M+Thing.Equals(System.Object)">
+      <seqpnt visitcount="-3" line="14" column="8" endline="14" endcolumn="13" excluded="false" document="C:\Users\steve\Documents\GitHub\altcover\Sample4\Tests.fs" />
+    </method>
+  </module>
+</coverage>

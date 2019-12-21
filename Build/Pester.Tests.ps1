@@ -457,7 +457,7 @@ Describe "ConvertTo-BarChart" {
   }
 
   It "converts NCover through the pipeline" {
-    $xml = [xml](Get-Content "./Tests/GenuineNCover158.Xml" ) | ConvertTo-BarChart
+    $xml = [xml](Get-Content "./Tests/HandRolledVisualized.Xml" ) | ConvertTo-BarChart ## -OutputFile "./_Packaging/HandRolledVisualized.html"
     $xml | Should -BeOfType "System.Xml.XmlDocument"
 
     $sw = new-object System.IO.StringWriter @()
@@ -467,7 +467,7 @@ Describe "ConvertTo-BarChart" {
     $xw = [System.Xml.XmlWriter]::Create($sw, $settings)
     $xml.WriteTo($xw)
     $xw.Close()
-    $expected = [System.IO.File]::ReadAllText("./Tests/GenuineNCover158Chart.html")
+    $expected = [System.IO.File]::ReadAllText("./Tests/HandRolledVisualized.html")
 
     # swap out unique identifiers
     $result = $sw.ToString().Replace("`r", "").Replace("html >", "html>")
@@ -500,11 +500,11 @@ Describe "ConvertTo-BarChart" {
     $xml.WriteTo($xw)
     $xw.Close()
     $written = [System.IO.File]::ReadAllText("./_Packaging/HandRolledMonoCoverage.html")
-    $expected = [System.IO.File]::ReadAllText("./Tests/HandRolledMonoCoverage.html").Replace("&#x2442;", "\u2442")
+    $expected = [System.IO.File]::ReadAllText("./Tests/HandRolledMonoCoverage.html")
 
     $result = $sw.ToString().Replace("`r", "").Replace("html >", "html>") 
-    $result | Should -Be $expected.Replace("`r", "")
-    $result | Should -Be $written.Replace("`r", "")
+    $result | Should -Be $expected.Replace("`r", "").Replace("&#x2442;", ([char]0x2442).ToString())
+    $result | Should -Be $written.Replace("`r", "").Replace("&#x2442;", ([char]0x2442).ToString())
   }
 }
 
