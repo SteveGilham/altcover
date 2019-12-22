@@ -1,0 +1,1115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html>
+<html lang="en" xmlns:msxsl="urn:schemas-microsoft-com:xslt">
+  <head>
+    <meta charset="utf-8" />
+    <title>AltCover Code Coverage Report</title>
+    <style>
+          body {
+          font: small verdana, arial, helvetica;
+          color:#000000;
+          }
+
+          p {
+          line-height:1.5em;
+          margin-top:0.5em; margin-bottom:1.0em;
+          }
+          h1 {
+          margin: 0px 0px 5px;
+          font: bold larger arial, verdana, helvetica;
+          }
+          h2 {
+          margin-top: 1em; margin-bottom: 0.5em;
+          font: larger verdana,arial,helvetica
+          }
+          h3 {
+          margin-bottom: 0.5em; font: bold 13px verdana,arial,helvetica
+          }
+          h4 {
+          margin-bottom: 0.5em; font: bold 100% verdana,arial,helvetica
+          }
+          h5 {
+          margin-bottom: 0.5em; font: bold 100% verdana,arial,helvetica
+          }
+          h6 {
+          margin-bottom: 0.5em; font: bold 100% verdana,arial,helvetica
+          }
+          .notVisited { background:red; }
+          .excluded { background: skyblue; }
+          .visited { background: lightgreen; }
+          .declared { background:orange; }
+          .automatic { background:yellow; }
+          .static { background:silver;}
+          .notVisited0 { background:lightpink; }
+          .excluded0 { background: lightskyblue; }
+          .visited0 { background: palegreen; }
+          .declared0 { background: sandybrown; }
+          .automatic0 { background: lightyellow; }
+          .static0 { background: gainsboro;}
+
+          .title { font-size: 12px; font-weight: bold; }
+          .assembly { font-size: 100%; font-weight: bold; font-size: 11px}
+          .class { font-size:100%; cursor: pointer; color: #444444; font-size: 11px}
+          .module { color: navy; font-size: 12px; }
+          .method {cursor: pointer; color: #444444; font-size: 10px; font-weight: bold; }
+          .subtitle { color: black; font-size: 10px; font-weight: bold; }
+          th  {font-size:9px; background-color: powderblue; }
+          .datacell tbody {font-size:9px; text-align: right; }
+          .datacell td {background-color: lightyellow;}
+          .branchcell td {background-color: whitesmoke;}
+          .branchcell td span {font-size: 200%; line-height: 50%;}
+          .datacell td:last-child, .datacell th:last-child { width:100%; text-align: left; }
+          .branchcell td.datacell { background-color: aquamarine; }
+          td.hldatacell {background-color: pink; }
+          td.exdatacell {background-color: powderblue; }
+          .detailPercent {  font-size: 9px; font-weight: bold; padding-top: 1px; padding-bottom: 1px; padding-left: 3px; padding-right: 3px;}
+        </style>
+    <script language="JavaScript">//<![CDATA[
+          
+				function toggle (field)
+				{ field.style.display = (field.style.display == "block") ? "none" : "block"; }
+
+				function SwitchAll(how)
+				{	var len = document.all.length-1;
+					for(i=0;i!=len;i++)	{
+						var block = document.all[i];
+						if (block != null && block.id != '')
+						{ block.style.display=how;}
+					}
+				}
+
+				function ExpandAll()
+				{SwitchAll('block');}
+
+				function CollapseAll()
+				{SwitchAll('none');}
+				//]]></script>
+  </head>
+  <body>
+    <a name="#top" />
+    <h1>
+      <b>AltCover</b> Code Coverage Report
+    </h1>
+    <table>
+      <tr>
+        <td class="class">
+          <a onClick="ExpandAll();">Expand</a>
+        </td>
+        <td> | </td>
+        <td class="class">
+          <a onClick="CollapseAll();">Collapse</a>
+        </td>
+      </tr>
+    </table>
+    <hr size="1" />
+    <h3>Legend</h3>
+    <table width="30%">
+      <tbody>
+        <tr>
+          <td width="70%">Uncovered code</td>
+          <td width="30%" class="notVisited" />
+        </tr>
+        <tr>
+          <td width="70%">Generated code</td>
+          <td width="30%" class="automatic" />
+        </tr>
+        <tr>
+          <td width="70%">Statically analyzed</td>
+          <td width="30%" class="static" />
+        </tr>
+        <tr>
+          <td width="70%">Empty/Otherwise excluded</td>
+          <td width="30%" class="excluded" />
+        </tr>
+        <tr>
+          <td width="70%">Covered code</td>
+          <td width="30%" class="visited" />
+        </tr>
+      </tbody>
+    </table>
+    <hr />
+    <H2>Modules summary</H2>
+    <table width="90%">
+      <tr>
+        <td width="30%">
+          <div class="assembly">
+            <a href="#ID0ACAA">Sample4</a>
+          </div>
+        </td>
+        <td width="70%">
+          <table width="100%" class="detailPercent">
+            <tr>
+              <td class="notVisited" width="30.303030303030304%">30.3%</td>
+              <td class="automatic" width="9.090909090909091%">9.09%</td>
+              <td class="static" width="30.303030303030304%">30.3%</td>
+              <td class="visited" width="30.303030303030304%">30.3%</td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+    <hr size="1" />
+    <div class="assembly">
+      <a name="#ID0ACAA">
+          Module
+          Sample4</a>
+    </div>
+    <table width="90%">
+      <tr>
+        <td width="40%" class="class" onclick="javascript:toggle(ID0EUAAclass)">Program+Program</td>
+        <td width="60%">
+          <table width="100%" class="detailPercent">
+            <tr>
+              <td class="notVisited" width="100%">100%</td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+      <tr>
+        <div style="display: block;" width="100%">
+          <div id="ID0EUAAclass">
+            <table cellpadding="3" cellspacing="0" width="90%">
+              <tr>
+                <td width="45%" class="method" onclick="javascript:toggle(ID0EUAA)">main</td>
+                <td width="55%">
+                  <table width="100%" class="detailPercent">
+                    <tr>
+                      <td class="notVisited" width="100%">100%</td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+            <table class="datacell" cellpadding="3" cellspacing="0" border="1" width="90%" bordercolor="black" style="display: block;" id="ID0EUAA">
+              <thead>
+                <tr>
+                  <th>Visits</th>
+                  <th>Line</th>
+                  <th>End</th>
+                  <th>Column</th>
+                  <th>End</th>
+                  <th>Document</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="hldatacell">0</td>
+                  <td>3</td>
+                  <td>3</td>
+                  <td>16</td>
+                  <td>17</td>
+                  <td>C:\Users\steve\Documents\GitHub\altcover\Sample4\Program.fs</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </tr>
+    </table>
+    <hr size="1" width="90%" align="left" style=" border-bottom: 1px dotted #999;" />
+    <table width="90%">
+      <tr>
+        <td width="40%" class="class" onclick="javascript:toggle(ID0ETAAclass)">Tests.DU</td>
+        <td width="60%">
+          <table width="100%" class="detailPercent">
+            <tr>
+              <td class="automatic" width="37.5%">37.5%</td>
+              <td class="visited" width="62.5%">62.5%</td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+      <tr>
+        <div style="display: block;" width="100%">
+          <div id="ID0ETAAclass">
+            <table cellpadding="3" cellspacing="0" width="90%">
+              <tr>
+                <td width="45%" class="method" onclick="javascript:toggle(ID0ESAA)">returnBar</td>
+                <td width="55%">
+                  <table width="100%" class="detailPercent">
+                    <tr>
+                      <td class="visited" width="100%">100%</td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+            <table class="datacell" cellpadding="3" cellspacing="0" border="1" width="90%" bordercolor="black" style="display: block;" id="ID0ESAA">
+              <thead>
+                <tr>
+                  <th>Visits</th>
+                  <th>Line</th>
+                  <th>End</th>
+                  <th>Column</th>
+                  <th>End</th>
+                  <th>Document</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="datacell">1</td>
+                  <td>48</td>
+                  <td>48</td>
+                  <td>21</td>
+                  <td>26</td>
+                  <td>C:\Users\steve\Documents\GitHub\altcover\Sample4\Tests.fs</td>
+                </tr>
+              </tbody>
+            </table>
+            <table cellpadding="3" cellspacing="0" width="90%">
+              <tr>
+                <td width="45%" class="method" onclick="javascript:toggle(ID0ETAA)">returnFoo</td>
+                <td width="55%">
+                  <table width="100%" class="detailPercent">
+                    <tr>
+                      <td class="visited" width="100%">100%</td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+            <table class="datacell" cellpadding="3" cellspacing="0" border="1" width="90%" bordercolor="black" style="display: block;" id="ID0ETAA">
+              <thead>
+                <tr>
+                  <th>Visits</th>
+                  <th>Line</th>
+                  <th>End</th>
+                  <th>Column</th>
+                  <th>End</th>
+                  <th>Document</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="datacell">1</td>
+                  <td>47</td>
+                  <td>47</td>
+                  <td>21</td>
+                  <td>26</td>
+                  <td>C:\Users\steve\Documents\GitHub\altcover\Sample4\Tests.fs</td>
+                </tr>
+              </tbody>
+            </table>
+            <table cellpadding="3" cellspacing="0" width="90%">
+              <tr>
+                <td width="45%" class="method" onclick="javascript:toggle(ID0ERAA)">testMakeUnion</td>
+                <td width="55%">
+                  <table width="100%" class="detailPercent">
+                    <tr>
+                      <td class="automatic" width="50%">50%</td>
+                      <td class="visited" width="50%">50%</td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+            <table class="datacell" cellpadding="3" cellspacing="0" border="1" width="90%" bordercolor="black" style="display: block;" id="ID0ERAA">
+              <thead>
+                <tr>
+                  <th>Visits</th>
+                  <th>Line</th>
+                  <th>End</th>
+                  <th>Column</th>
+                  <th>End</th>
+                  <th>Document</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="datacell">1</td>
+                  <td>52</td>
+                  <td>52</td>
+                  <td>5</td>
+                  <td>37</td>
+                  <td>C:\Users\steve\Documents\GitHub\altcover\Sample4\Tests.fs</td>
+                </tr>
+                <tr>
+                  <td class="datacell">-2</td>
+                  <td>52</td>
+                  <td>52</td>
+                  <td>5</td>
+                  <td>9</td>
+                  <td>C:\Users\steve\Documents\GitHub\altcover\Sample4\Tests.fs</td>
+                </tr>
+                <tr>
+                  <td class="datacell">1</td>
+                  <td>53</td>
+                  <td>53</td>
+                  <td>5</td>
+                  <td>39</td>
+                  <td>C:\Users\steve\Documents\GitHub\altcover\Sample4\Tests.fs</td>
+                </tr>
+                <tr>
+                  <td class="datacell">-2</td>
+                  <td>53</td>
+                  <td>53</td>
+                  <td>5</td>
+                  <td>9</td>
+                  <td>C:\Users\steve\Documents\GitHub\altcover\Sample4\Tests.fs</td>
+                </tr>
+                <tr>
+                  <td class="datacell">1</td>
+                  <td>54</td>
+                  <td>54</td>
+                  <td>5</td>
+                  <td>44</td>
+                  <td>C:\Users\steve\Documents\GitHub\altcover\Sample4\Tests.fs</td>
+                </tr>
+                <tr>
+                  <td class="datacell">-2</td>
+                  <td>54</td>
+                  <td>54</td>
+                  <td>5</td>
+                  <td>9</td>
+                  <td>C:\Users\steve\Documents\GitHub\altcover\Sample4\Tests.fs</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </tr>
+    </table>
+    <hr size="1" width="90%" align="left" style=" border-bottom: 1px dotted #999;" />
+    <table width="90%">
+      <tr>
+        <td width="40%" class="class" onclick="javascript:toggle(ID0EKAAclass)">Tests.DU+get_MyBar@42</td>
+        <td width="60%">
+          <table width="100%" class="detailPercent">
+            <tr>
+              <td class="notVisited" width="100%">100%</td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+      <tr>
+        <div style="display: block;" width="100%">
+          <div id="ID0EKAAclass">
+            <table cellpadding="3" cellspacing="0" width="90%">
+              <tr>
+                <td width="45%" class="method" onclick="javascript:toggle(ID0EKAA)">Invoke</td>
+                <td width="55%">
+                  <table width="100%" class="detailPercent">
+                    <tr>
+                      <td class="notVisited" width="100%">100%</td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+            <table class="datacell" cellpadding="3" cellspacing="0" border="1" width="90%" bordercolor="black" style="display: block;" id="ID0EKAA">
+              <thead>
+                <tr>
+                  <th>Visits</th>
+                  <th>Line</th>
+                  <th>End</th>
+                  <th>Column</th>
+                  <th>End</th>
+                  <th>Document</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="hldatacell">0</td>
+                  <td>42</td>
+                  <td>42</td>
+                  <td>25</td>
+                  <td>36</td>
+                  <td>C:\Users\steve\Documents\GitHub\altcover\Sample4\Tests.fs</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </tr>
+    </table>
+    <hr size="1" width="90%" align="left" style=" border-bottom: 1px dotted #999;" />
+    <table width="90%">
+      <tr>
+        <td width="40%" class="class" onclick="javascript:toggle(ID0EJAAclass)">Tests.DU+MyClass</td>
+        <td width="60%">
+          <table width="100%" class="detailPercent">
+            <tr>
+              <td class="notVisited" width="50%">50%</td>
+              <td class="static" width="50%">50%</td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+      <tr>
+        <div style="display: block;" width="100%">
+          <div id="ID0EJAAclass">
+            <table cellpadding="3" cellspacing="0" width="90%">
+              <tr>
+                <td width="45%" class="method" onclick="javascript:toggle(ID0EJAA)">.ctor</td>
+                <td width="55%">
+                  <table width="100%" class="detailPercent">
+                    <tr>
+                      <td class="notVisited" width="100%">100%</td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+            <table class="datacell" cellpadding="3" cellspacing="0" border="1" width="90%" bordercolor="black" style="display: block;" id="ID0EJAA">
+              <thead>
+                <tr>
+                  <th>Visits</th>
+                  <th>Line</th>
+                  <th>End</th>
+                  <th>Column</th>
+                  <th>End</th>
+                  <th>Document</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="hldatacell">0</td>
+                  <td>44</td>
+                  <td>44</td>
+                  <td>8</td>
+                  <td>15</td>
+                  <td>C:\Users\steve\Documents\GitHub\altcover\Sample4\Tests.fs</td>
+                </tr>
+                <tr>
+                  <td class="hldatacell">0</td>
+                  <td>45</td>
+                  <td>45</td>
+                  <td>27</td>
+                  <td>28</td>
+                  <td>C:\Users\steve\Documents\GitHub\altcover\Sample4\Tests.fs</td>
+                </tr>
+              </tbody>
+            </table>
+            <table cellpadding="3" cellspacing="0" width="90%">
+              <tr>
+                <td width="45%" class="method" onclick="javascript:toggle(ID0EIAA)">get_Property</td>
+                <td width="55%">
+                  <table width="100%" class="detailPercent">
+                    <tr>
+                      <td class="static" width="100%">100%</td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+            <table class="datacell" cellpadding="3" cellspacing="0" border="1" width="90%" bordercolor="black" style="display: block;" id="ID0EIAA">
+              <thead>
+                <tr>
+                  <th>Visits</th>
+                  <th>Line</th>
+                  <th>End</th>
+                  <th>Column</th>
+                  <th>End</th>
+                  <th>Document</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="datacell">-3</td>
+                  <td>45</td>
+                  <td>45</td>
+                  <td>16</td>
+                  <td>24</td>
+                  <td>C:\Users\steve\Documents\GitHub\altcover\Sample4\Tests.fs</td>
+                </tr>
+              </tbody>
+            </table>
+            <table cellpadding="3" cellspacing="0" width="90%">
+              <tr>
+                <td width="45%" class="method" onclick="javascript:toggle(ID0EHAA)">set_Property</td>
+                <td width="55%">
+                  <table width="100%" class="detailPercent">
+                    <tr>
+                      <td class="static" width="100%">100%</td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+            <table class="datacell" cellpadding="3" cellspacing="0" border="1" width="90%" bordercolor="black" style="display: block;" id="ID0EHAA">
+              <thead>
+                <tr>
+                  <th>Visits</th>
+                  <th>Line</th>
+                  <th>End</th>
+                  <th>Column</th>
+                  <th>End</th>
+                  <th>Document</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="datacell">-3</td>
+                  <td>45</td>
+                  <td>45</td>
+                  <td>16</td>
+                  <td>24</td>
+                  <td>C:\Users\steve\Documents\GitHub\altcover\Sample4\Tests.fs</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </tr>
+    </table>
+    <hr size="1" width="90%" align="left" style=" border-bottom: 1px dotted #999;" />
+    <table width="90%">
+      <tr>
+        <td width="40%" class="class" onclick="javascript:toggle(ID0EQAAclass)">Tests.DU+MyUnion</td>
+        <td width="60%">
+          <table width="100%" class="detailPercent">
+            <tr>
+              <td class="notVisited" width="44.44444444444444%">44.44%</td>
+              <td class="static" width="44.44444444444444%">44.44%</td>
+              <td class="visited" width="11.11111111111111%">11.11%</td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+      <tr>
+        <div style="display: block;" width="100%">
+          <div id="ID0EQAAclass">
+            <table cellpadding="3" cellspacing="0" width="90%">
+              <tr>
+                <td width="45%" class="method" onclick="javascript:toggle(ID0ENAA)">as_bar</td>
+                <td width="55%">
+                  <table width="100%" class="detailPercent">
+                    <tr>
+                      <td class="notVisited" width="75%">75%</td>
+                      <td class="visited" width="25%">25%</td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+            <table class="datacell" cellpadding="3" cellspacing="0" border="1" width="90%" bordercolor="black" style="display: block;" id="ID0ENAA">
+              <thead>
+                <tr>
+                  <th>Visits</th>
+                  <th>Line</th>
+                  <th>End</th>
+                  <th>Column</th>
+                  <th>End</th>
+                  <th>Document</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="datacell">1</td>
+                  <td>34</td>
+                  <td>34</td>
+                  <td>9</td>
+                  <td>24</td>
+                  <td>C:\Users\steve\Documents\GitHub\altcover\Sample4\Tests.fs</td>
+                </tr>
+                <tr>
+                  <td class="hldatacell">0</td>
+                  <td>39</td>
+                  <td>39</td>
+                  <td>16</td>
+                  <td>20</td>
+                  <td>C:\Users\steve\Documents\GitHub\altcover\Sample4\Tests.fs</td>
+                </tr>
+                <tr>
+                  <td class="hldatacell">0</td>
+                  <td>40</td>
+                  <td>40</td>
+                  <td>7</td>
+                  <td>11</td>
+                  <td>C:\Users\steve\Documents\GitHub\altcover\Sample4\Tests.fs</td>
+                </tr>
+                <tr>
+                  <td class="hldatacell">0</td>
+                  <td>40</td>
+                  <td>40</td>
+                  <td>17</td>
+                  <td>27</td>
+                  <td>C:\Users\steve\Documents\GitHub\altcover\Sample4\Tests.fs</td>
+                </tr>
+              </tbody>
+            </table>
+            <table cellpadding="3" cellspacing="0" width="90%">
+              <tr>
+                <td width="45%" class="method" onclick="javascript:toggle(ID0EQAA)">CompareTo</td>
+                <td width="55%">
+                  <table width="100%" class="detailPercent">
+                    <tr>
+                      <td class="static" width="100%">100%</td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+            <table class="datacell" cellpadding="3" cellspacing="0" border="1" width="90%" bordercolor="black" style="display: block;" id="ID0EQAA">
+              <thead>
+                <tr>
+                  <th>Visits</th>
+                  <th>Line</th>
+                  <th>End</th>
+                  <th>Column</th>
+                  <th>End</th>
+                  <th>Document</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="datacell">-3</td>
+                  <td>26</td>
+                  <td>26</td>
+                  <td>8</td>
+                  <td>15</td>
+                  <td>C:\Users\steve\Documents\GitHub\altcover\Sample4\Tests.fs</td>
+                </tr>
+              </tbody>
+            </table>
+            <table cellpadding="3" cellspacing="0" width="90%">
+              <tr>
+                <td width="45%" class="method" onclick="javascript:toggle(ID0EPAA)">CompareTo</td>
+                <td width="55%">
+                  <table width="100%" class="detailPercent">
+                    <tr>
+                      <td class="static" width="100%">100%</td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+            <table class="datacell" cellpadding="3" cellspacing="0" border="1" width="90%" bordercolor="black" style="display: block;" id="ID0EPAA">
+              <thead>
+                <tr>
+                  <th>Visits</th>
+                  <th>Line</th>
+                  <th>End</th>
+                  <th>Column</th>
+                  <th>End</th>
+                  <th>Document</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="datacell">-3</td>
+                  <td>26</td>
+                  <td>26</td>
+                  <td>8</td>
+                  <td>15</td>
+                  <td>C:\Users\steve\Documents\GitHub\altcover\Sample4\Tests.fs</td>
+                </tr>
+              </tbody>
+            </table>
+            <table cellpadding="3" cellspacing="0" width="90%">
+              <tr>
+                <td width="45%" class="method" onclick="javascript:toggle(ID0ELAA)">Equals</td>
+                <td width="55%">
+                  <table width="100%" class="detailPercent">
+                    <tr>
+                      <td class="static" width="100%">100%</td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+            <table class="datacell" cellpadding="3" cellspacing="0" border="1" width="90%" bordercolor="black" style="display: block;" id="ID0ELAA">
+              <thead>
+                <tr>
+                  <th>Visits</th>
+                  <th>Line</th>
+                  <th>End</th>
+                  <th>Column</th>
+                  <th>End</th>
+                  <th>Document</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="datacell">-3</td>
+                  <td>26</td>
+                  <td>26</td>
+                  <td>8</td>
+                  <td>15</td>
+                  <td>C:\Users\steve\Documents\GitHub\altcover\Sample4\Tests.fs</td>
+                </tr>
+              </tbody>
+            </table>
+            <table cellpadding="3" cellspacing="0" width="90%">
+              <tr>
+                <td width="45%" class="method" onclick="javascript:toggle(ID0EMAA)">get_MyBar</td>
+                <td width="55%">
+                  <table width="100%" class="detailPercent">
+                    <tr>
+                      <td class="notVisited" width="100%">100%</td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+            <table class="datacell" cellpadding="3" cellspacing="0" border="1" width="90%" bordercolor="black" style="display: block;" id="ID0EMAA">
+              <thead>
+                <tr>
+                  <th>Visits</th>
+                  <th>Line</th>
+                  <th>End</th>
+                  <th>Column</th>
+                  <th>End</th>
+                  <th>Document</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="hldatacell">0</td>
+                  <td>42</td>
+                  <td>42</td>
+                  <td>25</td>
+                  <td>36</td>
+                  <td>C:\Users\steve\Documents\GitHub\altcover\Sample4\Tests.fs</td>
+                </tr>
+              </tbody>
+            </table>
+            <table cellpadding="3" cellspacing="0" width="90%">
+              <tr>
+                <td width="45%" class="method" onclick="javascript:toggle(ID0EOAA)">GetHashCode</td>
+                <td width="55%">
+                  <table width="100%" class="detailPercent">
+                    <tr>
+                      <td class="static" width="100%">100%</td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+            <table class="datacell" cellpadding="3" cellspacing="0" border="1" width="90%" bordercolor="black" style="display: block;" id="ID0EOAA">
+              <thead>
+                <tr>
+                  <th>Visits</th>
+                  <th>Line</th>
+                  <th>End</th>
+                  <th>Column</th>
+                  <th>End</th>
+                  <th>Document</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="datacell">-3</td>
+                  <td>26</td>
+                  <td>26</td>
+                  <td>8</td>
+                  <td>15</td>
+                  <td>C:\Users\steve\Documents\GitHub\altcover\Sample4\Tests.fs</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </tr>
+    </table>
+    <hr size="1" width="90%" align="left" style=" border-bottom: 1px dotted #999;" />
+    <table width="90%">
+      <tr>
+        <td width="40%" class="class" onclick="javascript:toggle(ID0EGAAclass)">Tests.M</td>
+        <td width="60%">
+          <table width="100%" class="detailPercent">
+            <tr>
+              <td class="notVisited" width="40%">40%</td>
+              <td class="visited" width="60%">60%</td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+      <tr>
+        <div style="display: block;" width="100%">
+          <div id="ID0EGAAclass">
+            <table cellpadding="3" cellspacing="0" width="90%">
+              <tr>
+                <td width="45%" class="method" onclick="javascript:toggle(ID0EGAA)">makeThing</td>
+                <td width="55%">
+                  <table width="100%" class="detailPercent">
+                    <tr>
+                      <td class="visited" width="100%">100%</td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+            <table class="datacell" cellpadding="3" cellspacing="0" border="1" width="90%" bordercolor="black" style="display: block;" id="ID0EGAA">
+              <thead>
+                <tr>
+                  <th>Visits</th>
+                  <th>Line</th>
+                  <th>End</th>
+                  <th>Column</th>
+                  <th>End</th>
+                  <th>Document</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="datacell">2</td>
+                  <td>18</td>
+                  <td>18</td>
+                  <td>21</td>
+                  <td>34</td>
+                  <td>C:\Users\steve\Documents\GitHub\altcover\Sample4\Tests.fs</td>
+                </tr>
+              </tbody>
+            </table>
+            <table cellpadding="3" cellspacing="0" width="90%">
+              <tr>
+                <td width="45%" class="method" onclick="javascript:toggle(ID0EFAA)">testMakeThing</td>
+                <td width="55%">
+                  <table width="100%" class="detailPercent">
+                    <tr>
+                      <td class="notVisited" width="50%">50%</td>
+                      <td class="visited" width="50%">50%</td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+            <table class="datacell" cellpadding="3" cellspacing="0" border="1" width="90%" bordercolor="black" style="display: block;" id="ID0EFAA">
+              <thead>
+                <tr>
+                  <th>Visits</th>
+                  <th>Line</th>
+                  <th>End</th>
+                  <th>Column</th>
+                  <th>End</th>
+                  <th>Document</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="datacell">1</td>
+                  <td>22</td>
+                  <td>22</td>
+                  <td>5</td>
+                  <td>43</td>
+                  <td>C:\Users\steve\Documents\GitHub\altcover\Sample4\Tests.fs</td>
+                </tr>
+                <tr>
+                  <td class="hldatacell">0</td>
+                  <td>22</td>
+                  <td>22</td>
+                  <td>5</td>
+                  <td>9</td>
+                  <td>C:\Users\steve\Documents\GitHub\altcover\Sample4\Tests.fs</td>
+                </tr>
+                <tr>
+                  <td class="datacell">1</td>
+                  <td>23</td>
+                  <td>23</td>
+                  <td>5</td>
+                  <td>54</td>
+                  <td>C:\Users\steve\Documents\GitHub\altcover\Sample4\Tests.fs</td>
+                </tr>
+                <tr>
+                  <td class="hldatacell">0</td>
+                  <td>23</td>
+                  <td>23</td>
+                  <td>5</td>
+                  <td>9</td>
+                  <td>C:\Users\steve\Documents\GitHub\altcover\Sample4\Tests.fs</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </tr>
+    </table>
+    <hr size="1" width="90%" align="left" style=" border-bottom: 1px dotted #999;" />
+    <table width="90%">
+      <tr>
+        <td width="40%" class="class" onclick="javascript:toggle(ID0EEAAclass)">Tests.M+Thing</td>
+        <td width="60%">
+          <table width="100%" class="detailPercent">
+            <tr>
+              <td class="static" width="80%">80%</td>
+              <td class="visited" width="20%">20%</td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+      <tr>
+        <div style="display: block;" width="100%">
+          <div id="ID0EEAAclass">
+            <table cellpadding="3" cellspacing="0" width="90%">
+              <tr>
+                <td width="45%" class="method" onclick="javascript:toggle(ID0EBAA)">bytes</td>
+                <td width="55%">
+                  <table width="100%" class="detailPercent">
+                    <tr>
+                      <td class="visited" width="100%">100%</td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+            <table class="datacell" cellpadding="3" cellspacing="0" border="1" width="90%" bordercolor="black" style="display: block;" id="ID0EBAA">
+              <thead>
+                <tr>
+                  <th>Visits</th>
+                  <th>Line</th>
+                  <th>End</th>
+                  <th>Column</th>
+                  <th>End</th>
+                  <th>Document</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="datacell">1</td>
+                  <td>16</td>
+                  <td>16</td>
+                  <td>27</td>
+                  <td>73</td>
+                  <td>C:\Users\steve\Documents\GitHub\altcover\Sample4\Tests.fs</td>
+                </tr>
+              </tbody>
+            </table>
+            <table cellpadding="3" cellspacing="0" width="90%">
+              <tr>
+                <td width="45%" class="method" onclick="javascript:toggle(ID0EEAA)">CompareTo</td>
+                <td width="55%">
+                  <table width="100%" class="detailPercent">
+                    <tr>
+                      <td class="static" width="100%">100%</td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+            <table class="datacell" cellpadding="3" cellspacing="0" border="1" width="90%" bordercolor="black" style="display: block;" id="ID0EEAA">
+              <thead>
+                <tr>
+                  <th>Visits</th>
+                  <th>Line</th>
+                  <th>End</th>
+                  <th>Column</th>
+                  <th>End</th>
+                  <th>Document</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="datacell">-3</td>
+                  <td>14</td>
+                  <td>14</td>
+                  <td>8</td>
+                  <td>13</td>
+                  <td>C:\Users\steve\Documents\GitHub\altcover\Sample4\Tests.fs</td>
+                </tr>
+              </tbody>
+            </table>
+            <table cellpadding="3" cellspacing="0" width="90%">
+              <tr>
+                <td width="45%" class="method" onclick="javascript:toggle(ID0EDAA)">CompareTo</td>
+                <td width="55%">
+                  <table width="100%" class="detailPercent">
+                    <tr>
+                      <td class="static" width="100%">100%</td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+            <table class="datacell" cellpadding="3" cellspacing="0" border="1" width="90%" bordercolor="black" style="display: block;" id="ID0EDAA">
+              <thead>
+                <tr>
+                  <th>Visits</th>
+                  <th>Line</th>
+                  <th>End</th>
+                  <th>Column</th>
+                  <th>End</th>
+                  <th>Document</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="datacell">-3</td>
+                  <td>14</td>
+                  <td>14</td>
+                  <td>8</td>
+                  <td>13</td>
+                  <td>C:\Users\steve\Documents\GitHub\altcover\Sample4\Tests.fs</td>
+                </tr>
+              </tbody>
+            </table>
+            <table cellpadding="3" cellspacing="0" width="90%">
+              <tr>
+                <td width="45%" class="method" onclick="javascript:toggle(ID0EAAA)">Equals</td>
+                <td width="55%">
+                  <table width="100%" class="detailPercent">
+                    <tr>
+                      <td class="static" width="100%">100%</td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+            <table class="datacell" cellpadding="3" cellspacing="0" border="1" width="90%" bordercolor="black" style="display: block;" id="ID0EAAA">
+              <thead>
+                <tr>
+                  <th>Visits</th>
+                  <th>Line</th>
+                  <th>End</th>
+                  <th>Column</th>
+                  <th>End</th>
+                  <th>Document</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="datacell">-3</td>
+                  <td>14</td>
+                  <td>14</td>
+                  <td>8</td>
+                  <td>13</td>
+                  <td>C:\Users\steve\Documents\GitHub\altcover\Sample4\Tests.fs</td>
+                </tr>
+              </tbody>
+            </table>
+            <table cellpadding="3" cellspacing="0" width="90%">
+              <tr>
+                <td width="45%" class="method" onclick="javascript:toggle(ID0ECAA)">GetHashCode</td>
+                <td width="55%">
+                  <table width="100%" class="detailPercent">
+                    <tr>
+                      <td class="static" width="100%">100%</td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+            <table class="datacell" cellpadding="3" cellspacing="0" border="1" width="90%" bordercolor="black" style="display: block;" id="ID0ECAA">
+              <thead>
+                <tr>
+                  <th>Visits</th>
+                  <th>Line</th>
+                  <th>End</th>
+                  <th>Column</th>
+                  <th>End</th>
+                  <th>Document</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="datacell">-3</td>
+                  <td>14</td>
+                  <td>14</td>
+                  <td>8</td>
+                  <td>13</td>
+                  <td>C:\Users\steve\Documents\GitHub\altcover\Sample4\Tests.fs</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </tr>
+    </table>
+    <hr size="1" width="90%" align="left" style=" border-bottom: 1px dotted #999;" />
+    <hr />
+    <hr size="1" />
+    <a class="detailPercent" href="#">Top</a>
+    <script language="JavaScript">//<![CDATA[
+          CollapseAll();//]]></script>
+  </body>
+</html>
