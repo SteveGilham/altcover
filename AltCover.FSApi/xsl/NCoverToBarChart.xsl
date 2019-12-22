@@ -95,10 +95,10 @@
               <td width="70%">Uncovered code</td>
               <td width="30%" class="notVisited"></td>
             </tr>
-            <tr>
+            <!-- tr>
               <td width="70%">User exempted</td>
               <td width="30%" class="declared"></td>
-            </tr>
+            </tr -->
             <tr>
               <td width="70%">Generated code</td>
               <td width="30%" class="automatic"></td>
@@ -123,7 +123,7 @@
         <xsl:call-template name="ModuleSummary" />
         <xsl:call-template name="module" />
         <hr />
-        <xsl:call-template name="justifications" />
+        <!-- xsl:call-template name="justifications" / -->
         <xsl:call-template name="footer" />
         <script language="JavaScript">
           CollapseAll();//</script>
@@ -578,7 +578,7 @@
     </table>
   </xsl:template>
 
-  <xsl:key name="justification" match="method" use="@excluded-because" />
+  <!-- xsl:key name="justification" match="method" use="@excluded-because" />
 
   <xsl:template name="justifications">
     <h2>
@@ -601,5 +601,5 @@
         </xsl:for-each>
       </xsl:for-each>
     </dl>
-  </xsl:template>
+  </xsl:template -->
 </xsl:stylesheet>
