@@ -2,6 +2,13 @@ Q. Never mind the fluff -- how do I get started?
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
+# 6.7.7xx  (Fukurou series release 12)
+* [PowerShell] Improve the `ConvertTo-BarChart`  cmdlet following the previous release
+* [PowerShell] Add `-WhatIf` capability to `Invoke-AltCover` for prepare and collect operations (but not for `-Version`)
+* [PowerShell] Make the `Invoke-AltCover -ShowStatic` parameter take a typesafe enum (as well as untyped strings)
+* [Visualizer] new `--schemadir[=path]` command-line parameter to set or clear an application-level `GSETTINGS_SCHEMA_DIR` value
+* [API] Publish module `AltCover.FSApi.Args` with members `Prepare : AltCover.FSApi.PrepareParams -> string list` and `Collect : AltCover.FSApi.CollectParams -> string list` to take the records to the equivalent set of command-line arguments
+
 # 6.6.747  (Fukurou series release 11)
 * [API, Fake Helper API] Deprecate the `DotNet.TestOptions.WithImportModule` and `.WithGetVersion` extension methods in favour of the otherwise identical `DotNet.TestOptions.WithAltCoverImportModule` and `.WithAltCoverGetVersion`; the obsolete name now just calls through to the preferred one.
 * [API] `--showstatic[:[-|+|++]]` (string `ShowStatic` default "-" in API, `-ShowStatic string` PowerShell) to reveal the code usually auto-filtered (e.g. auto-properties, somwe system generated types, structure comparison methods in F#...); either with coverage value `-3` (option '+') which is highlighted in the Visualizer but treated as 0 by [ReportGenerator](https://danielpalme.github.io/ReportGenerator/), or the value '0' (option '++')

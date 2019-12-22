@@ -57,6 +57,29 @@ Describe "Invoke-Altcover" {
         $version = Invoke-AltCover -Version -InformationAction Continue 6>&1
         $version.ToString().Trim() | Should -Be ("AltCover version " + $ACV)
     }
+
+    It "Shows WhatIf" {
+        $m = [AltCover.Commands.ShowHidden]::Reveal
+        Start-Transcript -Path "./_Packaging/WhatIf.txt"
+        Invoke-AltCover -WhatIf -ShowStatic "junk"
+        Invoke-AltCover -WhatIf -ShowStatic "mark"
+        Invoke-AltCover -WhatIf -ShowStatic "++"
+        Invoke-AltCover -WhatIf -ShowStatic "+"
+        Invoke-AltCover -WhatIf -ShowStatic $m
+        Invoke-AltCover -Runner -RecorderDirectory $o -WhatIf
+        Stop-Transcript
+        $expected = @"
+What if: Performing the operation "Invoke-AltCover" on target "Command Line : altcover ".
+What if: Performing the operation "Invoke-AltCover" on target "Command Line : altcover --showstatic:+".
+What if: Performing the operation "Invoke-AltCover" on target "Command Line : altcover --showstatic:++ ".
+What if: Performing the operation "Invoke-AltCover" on target "Command Line : altcover --showstatic:+".
+What if: Performing the operation "Invoke-AltCover" on target "Command Line : altcover --showstatic:++ ".
+What if: Performing the operation "Invoke-AltCover" on target "Command Line : altcover Runner -r ./Sample2/_Binaries/Sample2/Debug+AnyCPU/netcoreapp2.1 --collect".
+"@
+        $lines = Get-Content "./_Packaging/WhatIf.txt"
+        $ll = $lines | ? { $_ -like "What if: *" }
+        [string]::Join("`r", $ll) | Should -Be $expected.Replace("`n","")
+    }
 }
 
 Describe "ConvertTo-XDocument" {
