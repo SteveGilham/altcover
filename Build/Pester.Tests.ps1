@@ -57,6 +57,29 @@ Describe "Invoke-Altcover" {
         $version = Invoke-AltCover -Version -InformationAction Continue 6>&1
         $version.ToString().Trim() | Should -Be ("AltCover version " + $ACV)
     }
+
+    It "Shows WhatIf" {
+        $m = [AltCover.Commands.ShowHidden]::Reveal
+        Start-Transcript -Path "./_Packaging/WhatIf.txt"
+        Invoke-AltCover -WhatIf -ShowStatic "junk"
+        Invoke-AltCover -WhatIf -ShowStatic "mark"
+        Invoke-AltCover -WhatIf -ShowStatic "++"
+        Invoke-AltCover -WhatIf -ShowStatic "+"
+        Invoke-AltCover -WhatIf -ShowStatic $m
+        Invoke-AltCover -Runner -RecorderDirectory $o -WhatIf
+        Stop-Transcript
+        $expected = @"
+What if: Performing the operation "Invoke-AltCover" on target "Command Line : altcover ".
+What if: Performing the operation "Invoke-AltCover" on target "Command Line : altcover --showstatic:+".
+What if: Performing the operation "Invoke-AltCover" on target "Command Line : altcover --showstatic:++ ".
+What if: Performing the operation "Invoke-AltCover" on target "Command Line : altcover --showstatic:+".
+What if: Performing the operation "Invoke-AltCover" on target "Command Line : altcover --showstatic:++ ".
+What if: Performing the operation "Invoke-AltCover" on target "Command Line : altcover Runner -r ./Sample2/_Binaries/Sample2/Debug+AnyCPU/netcoreapp2.1 --collect".
+"@
+        $lines = Get-Content "./_Packaging/WhatIf.txt"
+        $ll = $lines | ? { $_ -like "What if: *" }
+        [string]::Join("`r", $ll) | Should -Be $expected.Replace("`n","")
+    }
 }
 
 Describe "ConvertTo-XDocument" {
@@ -457,7 +480,7 @@ Describe "ConvertTo-BarChart" {
   }
 
   It "converts NCover through the pipeline" {
-    $xml = [xml](Get-Content "./Tests/GenuineNCover158.Xml" ) | ConvertTo-BarChart
+    $xml = [xml](Get-Content "./Tests/HandRolledVisualized.Xml" ) | ConvertTo-BarChart ## -OutputFile "./_Packaging/HandRolledVisualized.html"
     $xml | Should -BeOfType "System.Xml.XmlDocument"
 
     $sw = new-object System.IO.StringWriter @()
@@ -467,7 +490,7 @@ Describe "ConvertTo-BarChart" {
     $xw = [System.Xml.XmlWriter]::Create($sw, $settings)
     $xml.WriteTo($xw)
     $xw.Close()
-    $expected = [System.IO.File]::ReadAllText("./Tests/GenuineNCover158Chart.html")
+    $expected = [System.IO.File]::ReadAllText("./Tests/HandRolledVisualized.html")
 
     # swap out unique identifiers
     $result = $sw.ToString().Replace("`r", "").Replace("html >", "html>")
@@ -503,8 +526,8 @@ Describe "ConvertTo-BarChart" {
     $expected = [System.IO.File]::ReadAllText("./Tests/HandRolledMonoCoverage.html")
 
     $result = $sw.ToString().Replace("`r", "").Replace("html >", "html>") 
-    $result | Should -Be $expected.Replace("`r", "")
-    $result | Should -Be $written.Replace("`r", "")
+    $result | Should -Be $expected.Replace("`r", "").Replace("&#x2442;", ([char]0x2442).ToString())
+    $result | Should -Be $written.Replace("`r", "").Replace("&#x2442;", ([char]0x2442).ToString())
   }
 }
 
