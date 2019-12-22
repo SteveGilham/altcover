@@ -186,10 +186,15 @@ module Persistence =
     let node = config.XPathSelectElements("AltCover.Visualizer")
                |> Seq.toList
                |> Seq.head
-    match node.Attribute(XName.Get "GSettingsSchemaDir") with
-    | null -> node.Add(XAttribute(XName.Get "GSettingsSchemaDir", s))
-    | a -> a.Value <- s
-    config.Save file
+    if match (node.Attribute(XName.Get "GSettingsSchemaDir"), String.IsNullOrWhiteSpace s) with
+       | (null, false) -> node.Add(XAttribute(XName.Get "GSettingsSchemaDir", s))
+                          true
+       | (a, false) -> a.Value <- s
+                       true
+       | (null, true) -> false
+       | (a, true) -> a.Remove()
+                      true
+    then config.Save file
 
   let internal saveFont (font : string) =
     let file, config = EnsureFile()
@@ -1119,7 +1124,7 @@ module Gui =
          Persistence.clearGeometry()
          Persistence.save <- false))
 #if NETCOREAPP2_1
-        ("s|schemadir=",
+        ("schemadir:",
          (fun s -> Persistence.saveSchemaDir s))
 #endif
         ("r|recentFiles", (fun _ -> Persistence.saveCoverageFiles [])) ]
