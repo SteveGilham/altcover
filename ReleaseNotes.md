@@ -3,9 +3,9 @@ Q. Never mind the fluff -- how do I get started?
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
 # 6.7.7xx  (Fukurou series release 12)
-* [PowerShell] Improve the `ConvertTo-BarChart`  cmdlet following the previous release
-* [PowerShell] Add `-WhatIf` capability to `Invoke-AltCover` for prepare and collect operations (but not for `-Version`)
-* [PowerShell] Make the `Invoke-AltCover -ShowStatic` parameter take a typesafe enum (as well as untyped strings)
+* [PowerShell] Improve the `ConvertTo-BarChart`  cmdlet following the Visualizer-focussed enhancements in the previous release
+* [PowerShell] Add `-WhatIf` capability to `Invoke-AltCover` for prepare and collect operations (syntax permitted, but meaningless for `-Version`)
+* [PowerShell] Make the `Invoke-AltCover -ShowStatic` parameter take a typesafe enum (as well as untyped strings); a backwards compatible API extension.
 * [Visualizer] new `--schemadir[=path]` command-line parameter to set or clear an application-level `GSETTINGS_SCHEMA_DIR` value
 * [API] Publish module `AltCover.FSApi.Args` with members `Prepare : AltCover.FSApi.PrepareParams -> string list` and `Collect : AltCover.FSApi.CollectParams -> string list` to take the records to the equivalent set of command-line arguments
 
