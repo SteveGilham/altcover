@@ -7,7 +7,9 @@ A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wi
 * [PowerShell] Add `-WhatIf` capability to `Invoke-AltCover` for prepare and collect operations (syntax permitted, but meaningless for `-Version`)
 * [PowerShell] Make the `Invoke-AltCover -ShowStatic` parameter take a typesafe enum (as well as untyped strings); a backwards compatible API extension.
 * [Visualizer] new `--schemadir[=path]` command-line parameter to set or clear an application-level `GSETTINGS_SCHEMA_DIR` value
-* [API] Publish module `AltCover.FSApi.Args` with members `Prepare : AltCover.FSApi.PrepareParams -> string list` and `Collect : AltCover.FSApi.CollectParams -> string list` to take the records to the equivalent set of command-line arguments
+* [API] `PrepareParams.WhatIf : unit -> FSApi.ValidatedCommandLine`; and `CollectParams.WhatIf : bool -> FSApi.ValidatedCommandLine` to do read-only parameter validation and command line composition
+* [API] The equivalent `public FSApi.ValidatedCommandLine PrepareArgs.WhatIf()` and `public FSApi.ValidatedCommandLine CollectArgs.WhatIf(bool afterPreparation)` for the CSApi types
+
 
 # 6.6.747  (Fukurou series release 11)
 * [API, Fake Helper API] Deprecate the `DotNet.TestOptions.WithImportModule` and `.WithGetVersion` extension methods in favour of the otherwise identical `DotNet.TestOptions.WithAltCoverImportModule` and `.WithAltCoverGetVersion`; the obsolete name now just calls through to the preferred one.

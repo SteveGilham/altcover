@@ -66,15 +66,15 @@ Describe "Invoke-Altcover" {
         Invoke-AltCover -WhatIf -ShowStatic "++"
         Invoke-AltCover -WhatIf -ShowStatic "+"
         Invoke-AltCover -WhatIf -ShowStatic $m
-        Invoke-AltCover -Runner -RecorderDirectory $o -WhatIf
+        Invoke-AltCover -Runner -RecorderDirectory "./Sample2" -WhatIf
         Stop-Transcript
         $expected = @"
-What if: Performing the operation "Invoke-AltCover" on target "Command Line : altcover ".
+What if: Performing the operation "Invoke-AltCover" on target "Command Line : altcover".
 What if: Performing the operation "Invoke-AltCover" on target "Command Line : altcover --showstatic:+".
 What if: Performing the operation "Invoke-AltCover" on target "Command Line : altcover --showstatic:++ ".
 What if: Performing the operation "Invoke-AltCover" on target "Command Line : altcover --showstatic:+".
 What if: Performing the operation "Invoke-AltCover" on target "Command Line : altcover --showstatic:++ ".
-What if: Performing the operation "Invoke-AltCover" on target "Command Line : altcover Runner -r ./Sample2/_Binaries/Sample2/Debug+AnyCPU/netcoreapp2.1 --collect".
+What if: Performing the operation "Invoke-AltCover" on target "Command Line : altcover Runner -r ./Sample2 --collect".
 "@
         $lines = Get-Content "./_Packaging/WhatIf.txt"
         $ll = $lines | ? { $_ -like "What if: *" }

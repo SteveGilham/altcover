@@ -537,6 +537,30 @@ module Args =
     |> List.concat
 
 #if RUNNER
+
+type ValidatedCommandLine =
+  {
+    Command: string list
+    Errors: string array
+  }
+  with override self.ToString() =
+        let cl = String.Join(" ", Seq.concat [ ["altcover"]; self.Command])
+        String.Join(Environment.NewLine, Seq.concat [[| cl |]; self.Errors])
+
+type CollectParams with
+  member self.WhatIf afterPreparation =
+    {
+      Command = Args.Collect self
+      Errors = self.Validate afterPreparation
+    }
+
+type PrepareParams with
+  member self.WhatIf () =
+    {
+      Command = Args.Prepare self
+      Errors = self.Validate ()
+    }
+
 #else
 let splitCommandLine s =
   s
