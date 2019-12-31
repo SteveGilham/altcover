@@ -480,7 +480,7 @@ Describe "ConvertTo-BarChart" {
   }
 
   It "converts NCover through the pipeline" {
-    $xml = [xml](Get-Content "./Tests/HandRolledVisualized.Xml" ) | ConvertTo-BarChart ## -OutputFile "./_Packaging/HandRolledVisualized.html"
+    $xml = [xml](Get-Content "./Tests/HandRolledVisualized.xml" ) | ConvertTo-BarChart ## -OutputFile "./_Packaging/HandRolledVisualized.html"
     $xml | Should -BeOfType "System.Xml.XmlDocument"
 
     $sw = new-object System.IO.StringWriter @()
