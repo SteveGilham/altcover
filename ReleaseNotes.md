@@ -2,14 +2,13 @@ Q. Never mind the fluff -- how do I get started?
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
-# 6.7.7xx  (Fukurou series release 12)
+# 6.7.750  (Fukurou series release 12)
 * [PowerShell] Improve the `ConvertTo-BarChart`  cmdlet following the Visualizer-focussed enhancements in the previous release
 * [PowerShell] Add `-WhatIf` capability to `Invoke-AltCover` for prepare and collect operations (syntax permitted, but meaningless for `-Version`)
 * [PowerShell] Make the `Invoke-AltCover -ShowStatic` parameter take a typesafe enum (as well as untyped strings); a backwards compatible API extension.
 * [Visualizer] new `--schemadir[=path]` command-line parameter to set or clear an application-level `GSETTINGS_SCHEMA_DIR` value
 * [API] `PrepareParams.WhatIf : unit -> FSApi.ValidatedCommandLine`; and `CollectParams.WhatIf : bool -> FSApi.ValidatedCommandLine` to do read-only parameter validation and command line composition
 * [API] The equivalent `public FSApi.ValidatedCommandLine PrepareArgs.WhatIf()` and `public FSApi.ValidatedCommandLine CollectArgs.WhatIf(bool afterPreparation)` for the CSApi types
-
 
 # 6.6.747  (Fukurou series release 11)
 * [API, Fake Helper API] Deprecate the `DotNet.TestOptions.WithImportModule` and `.WithGetVersion` extension methods in favour of the otherwise identical `DotNet.TestOptions.WithAltCoverImportModule` and `.WithAltCoverGetVersion`; the obsolete name now just calls through to the preferred one.
