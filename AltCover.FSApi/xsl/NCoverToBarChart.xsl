@@ -53,13 +53,15 @@
           .module { color: navy; font-size: 12px; }
           .method {cursor: pointer; color: #444444; font-size: 10px; font-weight: bold; }
           .subtitle { color: black; font-size: 10px; font-weight: bold; }
-          th  {font-size:9px; background-color: #powderblue; }
+          th  {font-size:9px; background-color: powderblue; }
           .datacell tbody {font-size:9px; text-align: right; }
           .datacell td {background-color: lightyellow;}
-          .branchcell td {background-color: aquamarine;}
+          .branchcell td {background-color: whitesmoke;}
+          .branchcell td span {font-size: 200%; line-height: 50%;}
           .datacell td:last-child, .datacell th:last-child { width:100%; text-align: left; }
+          .branchcell td.datacell { background-color: aquamarine; }
           td.hldatacell {background-color: pink; }
-          td.exdatacell {background-color: #powderblue; }
+          td.exdatacell {background-color: powderblue; }
           .detailPercent {  font-size: 9px; font-weight: bold; padding-top: 1px; padding-bottom: 1px; padding-left: 3px; padding-right: 3px;}
         </style>
         <script language="JavaScript">
@@ -90,24 +92,28 @@
         <table width="30%">
           <tbody>
             <tr>
-              <td width="50%">Uncovered code</td>
-              <td width="50%" class="notVisited"></td>
+              <td width="70%">Uncovered code</td>
+              <td width="30%" class="notVisited"></td>
+            </tr>
+            <!-- tr>
+              <td width="70%">User exempted</td>
+              <td width="30%" class="declared"></td>
+            </tr -->
+            <tr>
+              <td width="70%">Generated code</td>
+              <td width="30%" class="automatic"></td>
             </tr>
             <tr>
-              <td width="50%">User exempted</td>
-              <td width="50%" class="declared"></td>
+              <td width="70%">Statically analyzed</td>
+              <td width="30%" class="static"></td>
             </tr>
             <tr>
-              <td width="50%">Generated code</td>
-              <td width="50%" class="automatic"></td>
+              <td width="70%">Empty/Otherwise excluded</td>
+              <td width="30%" class="excluded"></td>
             </tr>
             <tr>
-              <td width="50%">Statically analyzed</td>
-              <td width="50%" class="static"></td>
-            </tr>
-            <tr>
-              <td width="50%">Covered code</td>
-              <td width="50%" class="visited"></td>
+              <td width="70%">Covered code</td>
+              <td width="30%" class="visited"></td>
             </tr>
           </tbody>
         </table>
@@ -117,7 +123,7 @@
         <xsl:call-template name="ModuleSummary" />
         <xsl:call-template name="module" />
         <hr />
-        <xsl:call-template name="justifications" />
+        <!-- xsl:call-template name="justifications" / -->
         <xsl:call-template name="footer" />
         <script language="JavaScript">
           CollapseAll();//</script>
@@ -155,7 +161,8 @@
       <xsl:variable name="declared" select="count(./seqpnt[(@visitcount='-1')] )" />
       <xsl:variable name="auto" select="count(./seqpnt[(@visitcount='-2')] )" />
       <xsl:variable name="static" select="count(./seqpnt[(@visitcount='-3')] )" />
-      <xsl:variable name="visited" select="$rawvisited - ($declared + $auto + $static)" />
+      <xsl:variable name="excluded" select="count(./seqpnt[(@visitcount='-4')] )" />
+      <xsl:variable name="visited" select="$rawvisited - ($declared + $auto + $static + $excluded)" />
       <xsl:variable name="methid" select="generate-id(.)" />
 
       <xsl:variable name="totalb" select="count(./branch)" />
@@ -164,7 +171,8 @@
       <xsl:variable name="declaredb" select="count(./branch[(@visitcount='-1')] )" />
       <xsl:variable name="autob" select="count(./branch[(@visitcount='-2')] )" />
       <xsl:variable name="staticb" select="count(./branch[(@visitcount='-3')] )" />
-      <xsl:variable name="visitedb" select="$rawvisitedb - ($declaredb + $autob + $staticb)" />
+      <xsl:variable name="excludedb" select="count(./branch[(@visitcount='-4')] )" />
+      <xsl:variable name="visitedb" select="$rawvisitedb - ($declaredb + $autob + $staticb + $excludedb)" />
 
       <table cellpadding="3" cellspacing="0" width="90%">
         <tr>
@@ -178,20 +186,21 @@
               <xsl:with-param name="declared" select="$declared" />
               <xsl:with-param name="auto" select="$auto" />
               <xsl:with-param name="static" select="$static" />
+              <xsl:with-param name="excluded" select="$excluded" />
               <xsl:with-param name="notVisited" select="$notvisited" />
               <xsl:with-param name="total" select="$total" />
             </xsl:call-template>
             <xsl:if test="not ($totalb = 0)">
-            <br />
-            <xsl:call-template name="detailPercent">
-              <xsl:with-param name="visited" select="$visitedb" />
-              <xsl:with-param name="declared" select="$declaredb" />
-              <xsl:with-param name="auto" select="$autob" />
-              <xsl:with-param name="static" select="$staticb" />
-              <xsl:with-param name="notVisited" select="$notvisitedb" />
-              <xsl:with-param name="total" select="$totalb" />
-              <xsl:with-param name="mode" select="$totalb - $totalb" />
-            </xsl:call-template>
+              <xsl:call-template name="detailPercent">
+                <xsl:with-param name="visited" select="$visitedb" />
+                <xsl:with-param name="declared" select="$declaredb" />
+                <xsl:with-param name="auto" select="$autob" />
+                <xsl:with-param name="static" select="$staticb" />
+                <xsl:with-param name="excluded" select="$excludedb" />
+                <xsl:with-param name="notVisited" select="$notvisitedb" />
+                <xsl:with-param name="total" select="$totalb" />
+                <xsl:with-param name="mode" select="$totalb - $totalb" />
+              </xsl:call-template>
             </xsl:if>
           </td>
         </tr>
@@ -222,78 +231,77 @@
         </tr>
       </thead>
       <tbody>
-      <xsl:for-each select="./*">
-        <xsl:sort select="@line" data-type="number" />
-        <xsl:sort select="@offset" data-type="number" />
-        <tr>
-          <xsl:choose>
-          <xsl:when test="name(.) = 'seqpnt'">
-          <td>
-            <xsl:attribute name="class">
-              <xsl:choose>
-                <xsl:when test="@excluded = 'true'">exdatacell</xsl:when>
-                <xsl:when test="@visitcount = 0">hldatacell</xsl:when>
-                <xsl:otherwise>datacell</xsl:otherwise>
-              </xsl:choose>
-            </xsl:attribute>
+        <xsl:for-each select="./*">
+          <xsl:sort select="@line" data-type="number" />
+          <xsl:sort select="@offset" data-type="number" />
+          <tr>
             <xsl:choose>
-              <xsl:when test="@excluded = 'true'">---</xsl:when>
+              <xsl:when test="name(.) = 'seqpnt'">
+                <td>
+                  <xsl:attribute name="class">
+                    <xsl:choose>
+                      <xsl:when test="@excluded = 'true'">exdatacell</xsl:when>
+                      <xsl:when test="@visitcount = 0">hldatacell</xsl:when>
+                      <xsl:otherwise>datacell</xsl:otherwise>
+                    </xsl:choose>
+                  </xsl:attribute>
+                  <xsl:choose>
+                    <xsl:when test="@excluded = 'true'">---</xsl:when>
+                    <xsl:otherwise>
+                      <xsl:value-of select="@visitcount" />
+                    </xsl:otherwise>
+                  </xsl:choose>
+                </td>
+                <td>
+                  <xsl:value-of select="@line" />
+                </td>
+                <td>
+                  <xsl:value-of select="@endline" />
+                </td>
+                <td>
+                  <xsl:value-of select="@column" />
+                </td>
+                <td>
+                  <xsl:value-of select="@endcolumn" />
+                </td>
+                <td>
+                  <xsl:value-of select="@document" />
+                </td>
+              </xsl:when>
               <xsl:otherwise>
-                <xsl:value-of select="@visitcount" />
+                <xsl:attribute name="class">branchcell</xsl:attribute>
+                <td>
+                  <xsl:attribute name="class">
+                    <xsl:choose>
+                      <xsl:when test="@excluded = 'true'">exdatacell</xsl:when>
+                      <xsl:when test="@visitcount = 0">hldatacell</xsl:when>
+                      <xsl:otherwise>datacell</xsl:otherwise>
+                    </xsl:choose>
+                  </xsl:attribute>
+                  <xsl:choose>
+                    <xsl:when test="@excluded = 'true'">---</xsl:when>
+                    <xsl:otherwise><span>&#x2442;</span><xsl:value-of select="concat(' ', @visitcount)" />
+                    </xsl:otherwise>
+                  </xsl:choose>
+                </td>
+                <td>
+                  <xsl:value-of select="@line" />
+                </td>
+                <td>
+                  <xsl:value-of select="@offset" />
+                </td>
+                <td>
+                  <xsl:value-of select="@path" />
+                </td>
+                <td>
+                  <xsl:value-of select="@offsetend" />
+                </td>
+                <td>
+                </td>
               </xsl:otherwise>
             </xsl:choose>
-          </td>
-          <td>
-            <xsl:value-of select="@line" />
-          </td>
-          <td>
-            <xsl:value-of select="@endline" />
-          </td>
-          <td>
-            <xsl:value-of select="@column" />
-          </td>
-          <td>
-            <xsl:value-of select="@endcolumn" />
-          </td>
-          <td>
-            <xsl:value-of select="@document" />
-          </td>
-          </xsl:when>
-          <xsl:otherwise>
-          <xsl:attribute name="class">branchcell</xsl:attribute>
-          <td>
-            <xsl:attribute name="class">
-              <xsl:choose>
-                <xsl:when test="@excluded = 'true'">exdatacell</xsl:when>
-                <xsl:when test="@visitcount = 0">hldatacell</xsl:when>
-                <xsl:otherwise>datacell</xsl:otherwise>
-              </xsl:choose>
-            </xsl:attribute>
-            <xsl:choose>
-              <xsl:when test="@excluded = 'true'">---</xsl:when>
-              <xsl:otherwise>
-                <xsl:value-of select="concat('&#x2523; ', @visitcount)" />
-              </xsl:otherwise>
-            </xsl:choose>
-          </td>
-          <td>
-            <xsl:value-of select="@line" />
-          </td>
-          <td>
-            <xsl:value-of select="@offset" />
-          </td>
-          <td>
-            <xsl:value-of select="@path" />
-          </td>
-          <td>
-            <xsl:value-of select="@offsetend" />
-          </td>
-          <td>
-          </td>
-          </xsl:otherwise>
-          </xsl:choose>
-        </tr>
-      </xsl:for-each>
+          </tr>
+        </xsl:for-each>
       </tbody>
     </table>
   </xsl:template>
@@ -307,7 +315,8 @@
     <xsl:variable name="declared" select="count(//seqpnt[(parent::method/parent::module/@assembly=$module)and (parent::method/@class=$class) and (@visitcount='-1') and (@excluded='false')] )" />
     <xsl:variable name="auto" select="count(//seqpnt[(parent::method/parent::module/@assembly=$module)and (parent::method/@class=$class) and (@visitcount='-2') and (@excluded='false')] )" />
     <xsl:variable name="static" select="count(//seqpnt[(parent::method/parent::module/@assembly=$module)and (parent::method/@class=$class) and (@visitcount='-3') and (@excluded='false')] )" />
-    <xsl:variable name="visited" select="$rawvisited - ($declared + $auto + $static)" />
+    <xsl:variable name="excluded" select="count(//seqpnt[(parent::method/parent::module/@assembly=$module)and (parent::method/@class=$class) and (@visitcount='-4') and (@excluded='false')] )" />
+    <xsl:variable name="visited" select="$rawvisited - ($declared + $auto + $static + $excluded)" />
 
     <xsl:variable name="totalb" select="count(//branch[(parent::method/parent::module/@assembly=$module) and (parent::method/@class=$class) ])" />
     <xsl:variable name="notvisitedb" select="count(//branch[(parent::method/parent::module/@assembly=$module)and (parent::method/@class=$class) and (@visitcount='0') ] )" />
@@ -315,7 +324,8 @@
     <xsl:variable name="declaredb" select="count(//branch[(parent::method/parent::module/@assembly=$module)and (parent::method/@class=$class) and (@visitcount='-1')] )" />
     <xsl:variable name="autob" select="count(//branch[(parent::method/parent::module/@assembly=$module)and (parent::method/@class=$class) and (@visitcount='-2')] )" />
     <xsl:variable name="staticb" select="count(//branch[(parent::method/parent::module/@assembly=$module)and (parent::method/@class=$class) and (@visitcount='-3')] )" />
-    <xsl:variable name="visitedb" select="$rawvisitedb - ($declaredb + $autob + $staticb)" />
+    <xsl:variable name="excludedb" select="count(//branch[(parent::method/parent::module/@assembly=$module)and (parent::method/@class=$class) and (@visitcount='-4')] )" />
+    <xsl:variable name="visitedb" select="$rawvisitedb - ($declaredb + $autob + $staticb + $excludedb)" />
 
     <xsl:variable name="newid" select="concat (generate-id(), 'class')" />
     <table width='90%'>
@@ -330,34 +340,35 @@
             <xsl:with-param name="declared" select="$declared" />
             <xsl:with-param name="auto" select="$auto" />
             <xsl:with-param name="static" select="$static" />
+            <xsl:with-param name="excluded" select="$excluded" />
             <xsl:with-param name="notVisited" select="$notvisited" />
             <xsl:with-param name="total" select="$total" />
           </xsl:call-template>
           <xsl:if test="not ($totalb = 0)">
-          <br />
-          <xsl:call-template name="detailPercent">
-            <xsl:with-param name="visited" select="$visitedb" />
-            <xsl:with-param name="declared" select="$declaredb" />
-            <xsl:with-param name="auto" select="$autob" />
-            <xsl:with-param name="static" select="$staticb" />
-            <xsl:with-param name="notVisited" select="$notvisitedb" />
-            <xsl:with-param name="total" select="$totalb" />
-            <xsl:with-param name="mode" select="$totalb - $totalb" />
-          </xsl:call-template>
+            <xsl:call-template name="detailPercent">
+              <xsl:with-param name="visited" select="$visitedb" />
+              <xsl:with-param name="declared" select="$declaredb" />
+              <xsl:with-param name="auto" select="$autob" />
+              <xsl:with-param name="static" select="$staticb" />
+              <xsl:with-param name="excluded" select="$excludedb" />
+              <xsl:with-param name="notVisited" select="$notvisitedb" />
+              <xsl:with-param name="total" select="$totalb" />
+              <xsl:with-param name="mode" select="$totalb - $totalb" />
+            </xsl:call-template>
           </xsl:if>
         </td>
       </tr>
       <tr>
         <div style="display: block;" width="100%">
-            <div>
-              <xsl:attribute name="id">
-                <xsl:value-of select="$newid" />
-              </xsl:attribute>
-              <xsl:call-template name="Methods">
-                <xsl:with-param name="module" select="$module" />
-                <xsl:with-param name="class" select="$class" />
-              </xsl:call-template>
-            </div>
+          <div>
+            <xsl:attribute name="id">
+              <xsl:value-of select="$newid" />
+            </xsl:attribute>
+            <xsl:call-template name="Methods">
+              <xsl:with-param name="module" select="$module" />
+              <xsl:with-param name="class" select="$class" />
+            </xsl:call-template>
+          </div>
         </div>
       </tr>
     </table>
@@ -371,7 +382,8 @@
     <xsl:variable name="declared" select="count(./method/seqpnt[(@visitcount='-1')] )" />
     <xsl:variable name="auto" select="count(./method/seqpnt[(@visitcount='-2')] )" />
     <xsl:variable name="static" select="count(./method/seqpnt[(@visitcount='-3')] )" />
-    <xsl:variable name="visited" select="count(./method/seqpnt[not(@visitcount='0')] )" />
+    <xsl:variable name="excluded" select="count(./method/seqpnt[(@visitcount='-4')] )" />
+    <xsl:variable name="visited" select="$rawvisited - ($declared + $auto + $static + $excluded)" />
 
     <xsl:variable name="totalb" select="count(./method/branch[ @excluded='false' ])" />
     <xsl:variable name="notVisitedb" select="count( ./method/branch[ @visitcount='0'] )" />
@@ -379,7 +391,8 @@
     <xsl:variable name="declaredb" select="count(./method/branch[(@visitcount='-1')] )" />
     <xsl:variable name="autob" select="count(./method/branch[(@visitcount='-2')] )" />
     <xsl:variable name="staticb" select="count(./method/branch[(@visitcount='-3')] )" />
-    <xsl:variable name="visitedb" select="count(./method/branch[not(@visitcount='0')] )" />
+    <xsl:variable name="excludedb" select="count(./method/branch[(@visitcount='-4')] )" />
+    <xsl:variable name="visitedb" select="$rawvisitedb - ($declaredb + $autob + $staticb + $excluded)" />
     <td width="35%">
       <div class="assembly">
         <a href="#{generate-id($module)}">
@@ -393,20 +406,21 @@
         <xsl:with-param name="declared" select="$declared" />
         <xsl:with-param name="auto" select="$auto" />
         <xsl:with-param name="static" select="$static" />
+        <xsl:with-param name="excluded" select="$excluded" />
         <xsl:with-param name="notVisited" select="$notVisited" />
         <xsl:with-param name="total" select="$total" />
       </xsl:call-template>
       <xsl:if test="not ($totalb = 0)">
-      <br />
-      <xsl:call-template name="detailPercent">
-        <xsl:with-param name="visited" select="$visitedb" />
-        <xsl:with-param name="declared" select="$declaredb" />
-        <xsl:with-param name="auto" select="$autob" />
-        <xsl:with-param name="static" select="$staticb" />
-        <xsl:with-param name="notVisited" select="$notVisitedb" />
-        <xsl:with-param name="total" select="$totalb" />
-        <xsl:with-param name="mode" select="$totalb - $totalb" />
-      </xsl:call-template>
+        <xsl:call-template name="detailPercent">
+          <xsl:with-param name="visited" select="$visitedb" />
+          <xsl:with-param name="declared" select="$declaredb" />
+          <xsl:with-param name="auto" select="$autob" />
+          <xsl:with-param name="static" select="$staticb" />
+          <xsl:with-param name="excluded" select="$excludedb" />
+          <xsl:with-param name="notVisited" select="$notVisitedb" />
+          <xsl:with-param name="total" select="$totalb" />
+          <xsl:with-param name="mode" select="$totalb - $totalb" />
+        </xsl:call-template>
       </xsl:if>
     </td>
   </xsl:template>
@@ -433,7 +447,8 @@
     <xsl:variable name="declared" select="count(./method/seqpnt[(@visitcount='-1')] )" />
     <xsl:variable name="auto" select="count(./method/seqpnt[(@visitcount='-2')] )" />
     <xsl:variable name="static" select="count(./method/seqpnt[(@visitcount='-3')] )" />
-    <xsl:variable name="visited" select="$rawvisited - ($declared + $auto + $static)" />
+    <xsl:variable name="excluded" select="count(./method/seqpnt[(@visitcount='-4')] )" />
+    <xsl:variable name="visited" select="$rawvisited - ($declared + $auto + $static + $excluded)" />
 
     <xsl:variable name="totalb" select="count(./method/branch)" />
     <xsl:variable name="notVisitedb" select="count( ./method/branch[ @visitcount='0' ] )" />
@@ -441,7 +456,8 @@
     <xsl:variable name="declaredb" select="count(./method/branch[(@visitcount='-1')] )" />
     <xsl:variable name="autob" select="count(./method/branch[(@visitcount='-2')] )" />
     <xsl:variable name="staticb" select="count(./method/branch[(@visitcount='-3')] )" />
-    <xsl:variable name="visitedb" select="$rawvisitedb - ($declaredb + $autob + $staticb)" />
+    <xsl:variable name="excludedb" select="count(./method/branch[(@visitcount='-4')] )" />
+    <xsl:variable name="visitedb" select="$rawvisitedb - ($declaredb + $autob + $staticb + $excludedb)" />
     <td width="30%">
       <div class="assembly">
         <a href="#{generate-id($module)}">
@@ -455,20 +471,21 @@
         <xsl:with-param name="declared" select="$declared" />
         <xsl:with-param name="auto" select="$auto" />
         <xsl:with-param name="static" select="$static" />
+        <xsl:with-param name="excluded" select="$excluded" />
         <xsl:with-param name="notVisited" select="$notVisited" />
         <xsl:with-param name="total" select="$total" />
       </xsl:call-template>
       <xsl:if test="not ($totalb = 0)">
-      <br />
-      <xsl:call-template name="detailPercent">
-        <xsl:with-param name="visited" select="$visitedb" />
-        <xsl:with-param name="declared" select="$declaredb" />
-        <xsl:with-param name="auto" select="$autob" />
-        <xsl:with-param name="static" select="$staticb" />
-        <xsl:with-param name="notVisited" select="$notVisitedb" />
-        <xsl:with-param name="total" select="$totalb" />
-        <xsl:with-param name="mode" select="$totalb - $totalb" />
-      </xsl:call-template>
+        <xsl:call-template name="detailPercent">
+          <xsl:with-param name="visited" select="$visitedb" />
+          <xsl:with-param name="declared" select="$declaredb" />
+          <xsl:with-param name="auto" select="$autob" />
+          <xsl:with-param name="static" select="$staticb" />
+          <xsl:with-param name="excluded" select="$excludedb" />
+          <xsl:with-param name="notVisited" select="$notVisitedb" />
+          <xsl:with-param name="total" select="$totalb" />
+          <xsl:with-param name="mode" select="$totalb - $totalb" />
+        </xsl:call-template>
       </xsl:if>
     </td>
   </xsl:template>
@@ -500,6 +517,7 @@
     <xsl:param name="declared" />
     <xsl:param name="auto" />
     <xsl:param name="static" />
+    <xsl:param name="excluded" />
     <xsl:param name="notVisited" />
     <xsl:param name="total" />
     <xsl:param name="mode" />
@@ -540,6 +558,14 @@
             <xsl:value-of select="concat (format-number($static div $total * 100,'#.##'), '%')" />
           </td>
         </xsl:if>
+        <xsl:if test="not ($excluded=0)">
+          <td class="{concat('excluded', $mode)}">
+            <xsl:attribute name="width">
+              <xsl:value-of select="concat($excluded div $total * 100,'%')" />
+            </xsl:attribute>
+            <xsl:value-of select="concat (format-number($excluded div $total * 100,'#.##'), '%')" />
+          </td>
+        </xsl:if>
         <xsl:if test="not ($visited=0)">
           <td class="{concat('visited', $mode)}">
             <xsl:attribute name="width">
@@ -552,7 +578,7 @@
     </table>
   </xsl:template>
 
-  <xsl:key name="justification" match="method" use="@excluded-because" />
+  <!-- xsl:key name="justification" match="method" use="@excluded-because" />
 
   <xsl:template name="justifications">
     <h2>
@@ -575,5 +601,5 @@
         </xsl:for-each>
       </xsl:for-each>
     </dl>
-  </xsl:template>
+  </xsl:template -->
 </xsl:stylesheet>

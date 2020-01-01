@@ -19,6 +19,8 @@ namespace AltCover.Parameters
     FSApi.CollectParams ToParameters();
 
     string[] Validate(bool afterPreparation);
+
+    FSApi.ValidatedCommandLine WhatIf(bool afterPreparation);
   }
 
   public interface IPrepareArgs
@@ -58,6 +60,8 @@ namespace AltCover.Parameters
     FSApi.PrepareParams ToParameters();
 
     string[] Validate();
+
+    FSApi.ValidatedCommandLine WhatIf();
   }
 
   public interface ILogArgs
@@ -138,6 +142,11 @@ namespace AltCover.Parameters.Primitive
     public string[] Validate(bool afterPreparation)
     {
       return ToParameters().Validate(afterPreparation);
+    }
+
+    public FSApi.ValidatedCommandLine WhatIf(bool afterPreparation)
+    {
+      return ToParameters().WhatIf(afterPreparation);
     }
   }
 
@@ -249,6 +258,11 @@ namespace AltCover.Parameters.Primitive
     public string[] Validate()
     {
       return ToParameters().Validate();
+    }
+
+    public FSApi.ValidatedCommandLine WhatIf()
+    {
+      return ToParameters().WhatIf();
     }
   }
 
