@@ -446,7 +446,7 @@ module internal Args =
     if x then [ a ]
     else []
 
-  let ItemLists (args: PrepareParams) =
+  let internal ItemLists (args: PrepareParams) =
     [ ("-i", args.InputDirectories)
       ("-o", args.OutputDirectories)
       ("-y", args.SymbolDirectories)
@@ -462,20 +462,20 @@ module internal Args =
       ("-c", args.CallContext) ]
     |> List.collect (fun (a,b) -> ItemList a b)
 
-  let Items (args: PrepareParams) =
+  let internal Items (args: PrepareParams) =
     [
       ("--sn", args.StrongNameKey)
       ("-x", args.XmlReport)
     ]
     |> List.collect (fun (a,b) -> Item a b)
 
-  let OptItems (args: PrepareParams) =
+  let internal OptItems (args: PrepareParams) =
     [
       ("--showstatic", args.ShowStatic, ["-"])
     ]
     |> List.collect (fun (a,b,c) -> OptItem a b c)
 
-  let Flags (args: PrepareParams) =
+  let internal Flags (args: PrepareParams) =
     [
       ("--opencover", args.OpenCover)
       ("--inplace", args.InPlace)
@@ -537,6 +537,30 @@ module internal Args =
     |> List.concat
 
 #if RUNNER
+
+type ValidatedCommandLine =
+  {
+    Command: string list
+    Errors: string array
+  }
+  with override self.ToString() =
+        let cl = String.Join(" ", Seq.concat [ ["altcover"]; self.Command])
+        String.Join(Environment.NewLine, Seq.concat [[| cl |]; self.Errors])
+
+type CollectParams with
+  member self.WhatIf afterPreparation =
+    {
+      Command = Args.Collect self
+      Errors = self.Validate afterPreparation
+    }
+
+type PrepareParams with
+  member self.WhatIf () =
+    {
+      Command = Args.Prepare self
+      Errors = self.Validate ()
+    }
+
 #else
 let splitCommandLine s =
   s
