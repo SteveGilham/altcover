@@ -424,7 +424,7 @@ type Logging =
 #else
 #endif
 
-module Args =
+module internal Args =
   let private Item a x =
     if x |> String.IsNullOrWhiteSpace then []
     else [ a; x ]
