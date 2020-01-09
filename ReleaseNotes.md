@@ -2,6 +2,8 @@ Q. Never mind the fluff -- how do I get started?
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
+# 7.0.xxx (Genbu series release 1)
+
 # 6.7.750  (Fukurou series release 12)
 * [PowerShell] Improve the `ConvertTo-BarChart`  cmdlet following the Visualizer-focussed enhancements in the previous release
 * [PowerShell] Add `-WhatIf` capability to `Invoke-AltCover` for prepare and collect operations (syntax permitted, but meaningless for `-Version`)

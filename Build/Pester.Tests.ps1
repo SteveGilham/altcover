@@ -61,18 +61,12 @@ Describe "Invoke-Altcover" {
     It "Shows WhatIf" {
         $m = [AltCover.Commands.ShowHidden]::Reveal
         Start-Transcript -Path "./_Packaging/WhatIf.txt"
-        Invoke-AltCover -WhatIf -ShowStatic "junk"
         Invoke-AltCover -WhatIf -ShowStatic "mark"
-        Invoke-AltCover -WhatIf -ShowStatic "++"
-        Invoke-AltCover -WhatIf -ShowStatic "+"
         Invoke-AltCover -WhatIf -ShowStatic $m
         Invoke-AltCover -Runner -RecorderDirectory "./Sample2" -WhatIf
         Stop-Transcript
         $expected = [string]::Join([System.Environment]::NewLine, 
-                    ('What if: Performing the operation "Invoke-AltCover" on target "Command Line : altcover".',
-                     'What if: Performing the operation "Invoke-AltCover" on target "Command Line : altcover --showstatic:+".',
-                     'What if: Performing the operation "Invoke-AltCover" on target "Command Line : altcover --showstatic:++ ".',
-                     'What if: Performing the operation "Invoke-AltCover" on target "Command Line : altcover --showstatic:+".',
+                    ('What if: Performing the operation "Invoke-AltCover" on target "Command Line : altcover --showstatic:+".',
                      'What if: Performing the operation "Invoke-AltCover" on target "Command Line : altcover --showstatic:++ ".',
                      'What if: Performing the operation "Invoke-AltCover" on target "Command Line : altcover Runner -r ./Sample2 --collect".'))
 

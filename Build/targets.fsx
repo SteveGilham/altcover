@@ -422,7 +422,9 @@ _Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standa
 
   let toolPath = "./packages/" + (packageVersion "Mono.Gendarme") + "/tools/gendarme.exe"
 
-  let rules = "./Build/rules.xml"
+  let rules =
+    if Environment.isWindows then "./Build/rules.xml"
+    else "./Build/rules-mono.xml"
 
   let baseRules = Path.getFullName "./Build/rules-fake.xml"
 
@@ -3974,7 +3976,7 @@ Target.activateFinal "ResetConsoleColours"
 
 "Compilation"
 ==> "Gendarme"
-=?> ("Analysis", Environment.isWindows) // different behaviour
+==> "Analysis"
 
 "Compilation"
 ?=> "UnitTest"

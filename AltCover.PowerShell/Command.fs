@@ -17,22 +17,6 @@ type ShowHidden =
   | Mark = 1
   | Reveal = 2
 
-[<Sealed; AttributeUsage(AttributeTargets.Property)>]
-type ShowStaticTransformationAttribute() =
-  inherit ArgumentTransformationAttribute()
-  override self.Transform(engineIntrinsics:EngineIntrinsics, inputData:Object) =
-    if inputData.GetType() = typeof<ShowHidden>
-    then inputData
-    else
-      let o = inputData.ToString()
-      let (a,b) = Enum.TryParse<ShowHidden>(o, true)
-      (if a
-       then b
-       else match o with
-            | "+" -> ShowHidden.Mark
-            | "++" -> ShowHidden.Reveal
-            | _ -> ShowHidden.KeepHidden ) :> obj
-
 [<Cmdlet(VerbsLifecycle.Invoke, "AltCover",
          SupportsShouldProcess = true,
          ConfirmImpact =ConfirmImpact.Medium)>]
@@ -201,8 +185,7 @@ type InvokeAltCoverCommand(runner : bool) =
   member val ShowGenerated : SwitchParameter = SwitchParameter(false) with get, set
 
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
-              ValueFromPipeline = false, ValueFromPipelineByPropertyName = false);
-              ShowStaticTransformation>]
+              ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
   member val ShowStatic = ShowHidden.KeepHidden with get, set
 
   [<Parameter(ParameterSetName = "Runner", Mandatory = false, ValueFromPipeline = false,
