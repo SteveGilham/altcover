@@ -244,9 +244,32 @@ type InvokeAltCoverCommand(runner : bool) =
                                                               Info = (fun s -> self.WriteInformation(s, [||]))
                                                               Warn = (fun s -> self.WriteWarning s) }
 
+  member private self.Dispatch () =
+    let log = self.Log()
+    let zero _ =
+      0
+
+    (match (self.Version.IsPresent, self.Runner.IsPresent) with
+      | (true, _) ->
+        (fun _ ->
+        Api.Version() |> log.Info
+        0)
+      | (_, true) ->
+        let task = self.Collect()
+        // unset is error, but if set the recorder may not exist yet
+        let recording = self.RecorderDirectory |> String.IsNullOrWhiteSpace ||
+                        Path.Combine(self.RecorderDirectory, "AltCover.Recorder.g.dll") |> File.Exists
+        if (self.ShouldProcess("Command Line : " + task.WhatIf(recording).ToString()))
+        then Api.Collect task
+        else zero
+      | _ ->
+        let task = self.Prepare()
+        if (self.ShouldProcess("Command Line : " + task.WhatIf().ToString()))
+        then Api.Prepare task
+        else zero) log
+
   override self.ProcessRecord() =
     let here = Directory.GetCurrentDirectory()
-    let log = self.Log()
     try
       let where = self.SessionState.Path.CurrentLocation.Path
       Directory.SetCurrentDirectory where
@@ -254,28 +277,7 @@ type InvokeAltCoverCommand(runner : bool) =
         ErrorRecord(InvalidOperationException(), s, ErrorCategory.InvalidOperation, self)
         |> self.WriteError
 
-      let zero _ =
-        0
-
-      let status =
-        (match (self.Version.IsPresent, self.Runner.IsPresent) with
-         | (true, _) ->
-           (fun _ ->
-           Api.Version() |> log.Info
-           0)
-         | (_, true) ->
-           let task = self.Collect()
-           // unset is error, but if set the recorder may not exist yet
-           let recording = self.RecorderDirectory |> String.IsNullOrWhiteSpace ||
-                           Path.Combine(self.RecorderDirectory, "AltCover.Recorder.g.dll") |> File.Exists
-           if (self.ShouldProcess("Command Line : " + task.WhatIf(recording).ToString()))
-           then Api.Collect task
-           else zero
-         | _ ->
-           let task = self.Prepare()
-           if (self.ShouldProcess("Command Line : " + task.WhatIf().ToString()))
-           then Api.Prepare task
-           else zero) log
+      let status = self.Dispatch ()
       if status <> 0 then status.ToString() |> self.Log().Error
       else if self.Runner.IsPresent then Api.Summary () |> self.WriteObject
       match self.Fail with
