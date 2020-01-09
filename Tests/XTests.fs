@@ -185,6 +185,8 @@ module AltCoverXTests =
     test
       <@ (FSApi.CollectParams.TypeSafe subject)
          |> FSApi.Args.Collect = [ "Runner"; "-t"; "23"; "--collect"; "--teamcity:+B" ] @>
+    let validate = (FSApi.CollectParams.TypeSafe subject).WhatIf(false).ToString()
+    test <@ validate = "altcover Runner -t 23 --collect --teamcity:+B" @>
 
   [<Test>]
   let TypeSafeCollectSummaryCanBeValidated() =
@@ -284,6 +286,8 @@ module AltCoverXTests =
          |> FSApi.Args.Prepare = [ "-i"; here; "-o"; here; "-y"; here; "-d"; location;
                                    "-p"; "ok"; "-c"; "[Fact]"; "--opencover"; "--inplace";
                                    "--save" ] @>
+    let validate = (FSApi.PrepareParams.TypeSafe subject).WhatIf().ToString()
+    test <@ validate = "altcover -i " + here + " -o " + here + " -y " + here + " -d " + location + " -p ok -c [Fact] --opencover --inplace --save" @>
 
   [<Test>]
   let TypeSafePrepareParamsCanBeValidatedAgain() =

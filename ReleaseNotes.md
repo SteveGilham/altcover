@@ -2,17 +2,18 @@ Q. Never mind the fluff -- how do I get started?
 
 A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wiki/QuickStart-Guide
 
-# 6.7.7xx  (Fukurou series release 12)
-* [PowerShell] Improve the `ConvertTo-BarChart`  cmdlet following the previous release
-* [PowerShell] Add `-WhatIf` capability to `Invoke-AltCover` for prepare and collect operations (but not for `-Version`)
-* [PowerShell] Make the `Invoke-AltCover -ShowStatic` parameter take a typesafe enum (as well as untyped strings)
+# 6.7.750  (Fukurou series release 12)
+* [PowerShell] Improve the `ConvertTo-BarChart`  cmdlet following the Visualizer-focussed enhancements in the previous release
+* [PowerShell] Add `-WhatIf` capability to `Invoke-AltCover` for prepare and collect operations (syntax permitted, but meaningless for `-Version`)
+* [PowerShell] Make the `Invoke-AltCover -ShowStatic` parameter take a typesafe enum (as well as untyped strings); a backwards compatible API extension.
 * [Visualizer] new `--schemadir[=path]` command-line parameter to set or clear an application-level `GSETTINGS_SCHEMA_DIR` value
-* [API] Publish module `AltCover.FSApi.Args` with members `Prepare : AltCover.FSApi.PrepareParams -> string list` and `Collect : AltCover.FSApi.CollectParams -> string list` to take the records to the equivalent set of command-line arguments
+* [API] `PrepareParams.WhatIf : unit -> FSApi.ValidatedCommandLine`; and `CollectParams.WhatIf : bool -> FSApi.ValidatedCommandLine` to do read-only parameter validation and command line composition
+* [API] The equivalent `public FSApi.ValidatedCommandLine PrepareArgs.WhatIf()` and `public FSApi.ValidatedCommandLine CollectArgs.WhatIf(bool afterPreparation)` for the CSApi types
 
 # 6.6.747  (Fukurou series release 11)
 * [API, Fake Helper API] Deprecate the `DotNet.TestOptions.WithImportModule` and `.WithGetVersion` extension methods in favour of the otherwise identical `DotNet.TestOptions.WithAltCoverImportModule` and `.WithAltCoverGetVersion`; the obsolete name now just calls through to the preferred one.
-* [API] `--showstatic[:[-|+|++]]` (string `ShowStatic` default "-" in API, `-ShowStatic string` PowerShell) to reveal the code usually auto-filtered (e.g. auto-properties, somwe system generated types, structure comparison methods in F#...); either with coverage value `-3` (option '+') which is highlighted in the Visualizer but treated as 0 by [ReportGenerator](https://danielpalme.github.io/ReportGenerator/), or the value '0' (option '++')
-* [API] `--showGenerated` (bool `ShowGenerated` default false in API, `-ShowSGenerated` PowerShell) to reveal the code marked by [CompilerGenerated] or [GeneratedCode] with coverage value `-2`which is highlighted in the Visualizer but treated as 0 by [ReportGenerator](https://danielpalme.github.io/ReportGenerator/)
+* [API] `--showstatic[:[-|+|++]]` (string `ShowStatic` default "-" in API, `-ShowStatic string` PowerShell) to reveal the code usually auto-filtered (e.g. auto-properties, some system generated types, structure comparison methods in F#...); either with coverage value `-3` (option '+') which is highlighted in the Visualizer but treated as 0 by [ReportGenerator](https://danielpalme.github.io/ReportGenerator/), or the value '0' (option '++')
+* [API] `--showGenerated` (bool `ShowGenerated` default false in API, `-ShowGenerated` PowerShell) to reveal the code marked by [CompilerGenerated] or [GeneratedCode] with coverage value `-2`which is highlighted in the Visualizer but treated as 0 by [ReportGenerator](https://danielpalme.github.io/ReportGenerator/)
 * [Visualizer, BUGFIX] fix the sorting of method by name for NCover format
 * [Visualizer] group property `get_` and `set_`, and event `add_` and `remove_`,  methods together, under an appropriate icon
 * [Visualizer] For F# modules containing only types, group the contents together under a module entry at class level, just as they would have been were the module to directly contain any functions

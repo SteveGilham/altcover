@@ -273,8 +273,6 @@ type InvokeAltCoverCommand(runner : bool) =
 
       let zero _ =
         0
-      let join (l: string list) =
-        String.Join(" ", l)
 
       let status =
         (match (self.Version.IsPresent, self.Runner.IsPresent) with
@@ -284,12 +282,15 @@ type InvokeAltCoverCommand(runner : bool) =
            0)
          | (_, true) ->
            let task = self.Collect()
-           if (self.ShouldProcess("Command Line : altcover " + (task |> FSApi.Args.Collect |> join)))
+           // unset is error, but if set the recorder may not exist yet
+           let recording = self.RecorderDirectory |> String.IsNullOrWhiteSpace ||
+                           Path.Combine(self.RecorderDirectory, "AltCover.Recorder.g.dll") |> File.Exists
+           if (self.ShouldProcess("Command Line : " + task.WhatIf(recording).ToString()))
            then Api.Collect task
            else zero
          | _ ->
            let task = self.Prepare()
-           if (self.ShouldProcess("Command Line : altcover " + (task |> FSApi.Args.Prepare |> join)))
+           if (self.ShouldProcess("Command Line : " + task.WhatIf().ToString()))
            then Api.Prepare task
            else zero) log
       if status <> 0 then status.ToString() |> self.Log().Error
