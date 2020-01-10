@@ -26,19 +26,21 @@ module internal Process =
       let rec loop() =
         try
           if self.WaitForExit(1000) then
-             // allow time for I/O redirection to complete
-             System.Threading.Thread.Sleep(1000)
-             if self.HasExited then ()
-             else loop()
-          else loop()
+            // allow time for I/O redirection to complete
+            System.Threading.Thread.Sleep(1000)
+            if self.HasExited then () else loop()
+          else
+            loop()
         with
         | :? SystemException
         | :? InvalidOperationException
         | :? System.ComponentModel.Win32Exception -> ()
-      if System.Environment.GetEnvironmentVariable("OS") = "Windows_NT" &&
-         "Mono.Runtime" |> Type.GetType |> isNull then // only rely on .net Framework on Windows
+      if System.Environment.GetEnvironmentVariable("OS") = "Windows_NT" && "Mono.Runtime"
+                                                                           |> Type.GetType
+                                                                           |> isNull then // only rely on .net Framework on Windows
         self.WaitForExit()
-      else loop()
+      else
+        loop()
 
 open Process
 #endif
@@ -47,21 +49,22 @@ type internal StringSink = delegate of string -> unit
 
 [<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage; NoComparison>]
 type internal UsageInfo =
-  { Intro : String;  Options : OptionSet;  Options2 : OptionSet }
+  { Intro: String
+    Options: OptionSet
+    Options2: OptionSet }
 
 module internal Output =
-  let mutable internal Info : String -> unit = ignore
-  let mutable internal Warn : String -> unit = ignore
-  let mutable internal Echo : String -> unit = ignore
-  let mutable internal Error : String -> unit = ignore
-  let mutable internal Usage : UsageInfo -> unit = ignore
-  let internal SetInfo(x : StringSink) = Info <- x.Invoke
-  let internal SetError(x : StringSink) = Error <- x.Invoke
-  let internal SetWarn(x : StringSink) = Warn <- x.Invoke
+  let mutable internal Info: String -> unit = ignore
+  let mutable internal Warn: String -> unit = ignore
+  let mutable internal Echo: String -> unit = ignore
+  let mutable internal Error: String -> unit = ignore
+  let mutable internal Usage: UsageInfo -> unit = ignore
+  let internal SetInfo(x: StringSink) = Info <- x.Invoke
+  let internal SetError(x: StringSink) = Error <- x.Invoke
+  let internal SetWarn(x: StringSink) = Warn <- x.Invoke
 
   let internal WarnOn x =
-    if x then Warn
-    else Info
+    if x then Warn else Info
 
   [<CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202",
                                  Justification = "Multiple Close() should be safe")>]
@@ -82,16 +85,16 @@ module internal Output =
            match p.GetValue(ex) with
            | :? Exception as exx -> logException ("  " + padding) exx
            | v ->
-             v
-             |> sprintf "%A"
-             |> writer.WriteLine)
+               v
+               |> sprintf "%A"
+               |> writer.WriteLine)
     logException String.Empty e
 
 module internal CommandLine =
 
   let mutable internal help = false
-  let mutable internal error : string list = []
-  let mutable internal exceptions : Exception list = []
+  let mutable internal error: string list = []
+  let mutable internal exceptions: Exception list = []
   let internal dropReturnCode = ref false // ddFlag
 
   let internal resources =
@@ -110,7 +113,7 @@ module internal CommandLine =
            (CultureInfo.CurrentCulture, (resources.GetString "CreateFolder"), directory)
       Directory.CreateDirectory(directory) |> ignore)
 
-  let internal WriteColoured (writer : TextWriter) colour operation =
+  let internal WriteColoured (writer: TextWriter) colour operation =
     let original = Console.ForegroundColor
     try
       Console.ForegroundColor <- colour
@@ -120,19 +123,22 @@ module internal CommandLine =
 
   let enquotes = Map.empty |> Map.add "Windows_NT" "\""
 
-  let internal Usage u=
+  let internal Usage u =
     WriteColoured Console.Error ConsoleColor.Yellow (fun w ->
       if u.Options.Any() || u.Options2.Any() then w.WriteLine(resources.GetString u.Intro)
       if u.Options.Any() then u.Options.WriteOptionDescriptions(w)
-      if u.Options.Any() && u.Options2.Any() then w.WriteLine(resources.GetString "binder")
-      if u.Options2.Any() then u.Options2.WriteOptionDescriptions(w)
+      if u.Options.Any() && u.Options2.Any() then
+        w.WriteLine(resources.GetString "binder")
+      if u.Options2.Any() then
+        u.Options2.WriteOptionDescriptions(w)
       else if u.Options.Any() then
         w.WriteLine(resources.GetString "orbinder")
         w.WriteLine(resources.GetString "ipmo")
         w.WriteLine(resources.GetString "orbinder")
-        w.WriteLine(resources.GetString "version"))
+        w.WriteLine(resources.GetString "version")
+      )
 
-  let internal Write (writer : TextWriter) colour data =
+  let internal Write (writer: TextWriter) colour data =
     if not (String.IsNullOrEmpty(data)) then
       WriteColoured writer colour (fun w -> w.WriteLine(data))
 
@@ -145,14 +151,14 @@ module internal CommandLine =
        |> not
     then f line
 
-  let internal Launch (cmd : string) args toDirectory =
+  let internal Launch (cmd: string) args toDirectory =
     Directory.SetCurrentDirectory(toDirectory)
     let quote =
       enquotes
       |> Map.tryFind (System.Environment.GetEnvironmentVariable "OS")
       |> Option.getOrElse String.Empty
 
-    let enquoted = quote + cmd.Trim([| '"'; '\'' |]) + quote
+    let enquoted = quote + cmd.Trim([| '"'; ''' |]) + quote
     String.Format
       (CultureInfo.CurrentCulture, resources.GetString "CommandLine", enquoted, args)
     |> Output.Info
@@ -176,13 +182,15 @@ module internal CommandLine =
 #else
     proc.WaitForExitCustom()
 #endif
-    proc.ExitCode * (!dropReturnCode |> not |> Increment)
+    proc.ExitCode * (!dropReturnCode
+                     |> not
+                     |> Increment)
 
-  let logException store (e : Exception) =
+  let logException store (e: Exception) =
     error <- e.Message :: error
     if store then exceptions <- e :: exceptions
 
-  let internal doPathOperation (f : unit -> 'a) (defaultValue : 'a) store =
+  let internal doPathOperation (f: unit -> 'a) (defaultValue: 'a) store =
     let mutable result = defaultValue
     try
       result <- f()
@@ -193,7 +201,7 @@ module internal CommandLine =
     | :? System.Security.SecurityException as s -> s :> Exception |> (logException store)
     result
 
-  let internal ParseCommandLine (arguments : string array) (options : OptionSet) =
+  let internal ParseCommandLine (arguments: string array) (options: OptionSet) =
     help <- false
     error <- []
     try
@@ -209,34 +217,34 @@ module internal CommandLine =
       if error
          |> List.isEmpty
          |> not
-         || (parse.Count <> 0)
-      then Left("UsageError", options)
-      else Right(after, options)
+         || (parse.Count <> 0) then
+        Left("UsageError", options)
+      else
+        Right(after, options)
     with :? OptionException -> Left("UsageError", options)
 
-  let internal ProcessHelpOption(parse : Either<string * OptionSet, string list * OptionSet>) =
+  let internal ProcessHelpOption(parse: Either<string * OptionSet, string list * OptionSet>) =
     match parse with
     | Right(_, options) ->
-      if help then Left("HelpText", options)
-      else parse
+        if help then Left("HelpText", options) else parse
     | fail -> fail
 
-  let internal ProcessTrailingArguments (rest : string list) (toInfo : DirectoryInfo) =
+  let internal ProcessTrailingArguments (rest: string list) (toInfo: DirectoryInfo) =
     // If we have some arguments in rest execute that command line
     match rest |> Seq.toList with
     | [] -> 0
     | cmd :: t ->
-      let args =
-        t
-        |> CmdLine.fromSeq
-        |> CmdLine.toString
+        let args =
+          t
+          |> CmdLine.fromSeq
+          |> CmdLine.toString
 
-      let cmd' =
-        [ cmd ]
-        |> CmdLine.fromSeq
-        |> CmdLine.toString
+        let cmd' =
+          [ cmd ]
+          |> CmdLine.fromSeq
+          |> CmdLine.toString
 
-      Launch cmd' args toInfo.FullName // Spawn process, echoing asynchronously
+        Launch cmd' args toInfo.FullName // Spawn process, echoing asynchronously
 
   let logExceptionsToFile name extend =
     let path = Path.Combine(Visitor.OutputDirectories() |> Seq.head, name)
@@ -247,12 +255,11 @@ module internal CommandLine =
        |> not
     then
       let resource =
-        if extend then "WrittenToEx"
-        else "WrittenTo"
+        if extend then "WrittenToEx" else "WrittenTo"
       String.Format(CultureInfo.CurrentCulture, resources.GetString resource, path, path')
       |> Output.Error
 
-  let ReportErrors (tag : string) extend =
+  let ReportErrors (tag: string) extend =
     conditionalOutput (fun () ->
       tag
       |> String.IsNullOrWhiteSpace
@@ -280,12 +287,12 @@ module internal CommandLine =
     doPathOperation (fun () ->
       if not (String.IsNullOrWhiteSpace x) && x
                                               |> Path.GetFullPath
-                                              |> exists
-      then true
+                                              |> exists then
+        true
       else
-        error <- String.Format
-                   (CultureInfo.CurrentCulture, resources.GetString message, key, x)
-                 :: error
+        error <-
+          String.Format(CultureInfo.CurrentCulture, resources.GetString message, key, x)
+          :: error
         false) false false
 
   let internal dnf = "DirectoryNotFound"
@@ -295,24 +302,32 @@ module internal CommandLine =
   let internal ValidateDirectory dir x =
     ValidateFileSystemEntity Directory.Exists dnf dir x
   let internal ValidateFile file x = ValidateFileSystemEntity File.Exists fnf file x
-  let internal ValidatePath path x = ValidateFileSystemEntity (fun _ -> true) iv path x
+  let internal ValidatePath path x =
+    ValidateFileSystemEntity (fun _ -> true) iv path x
 
   let internal FindAssemblyName f =
     try
       (AssemblyName.GetAssemblyName f).ToString()
-    with :? ArgumentException | :? FileNotFoundException | :? System.Security.SecurityException | :? BadImageFormatException | :? FileLoadException ->
-      String.Empty
+    with
+    | :? ArgumentException
+    | :? FileNotFoundException
+    | :? System.Security.SecurityException
+    | :? BadImageFormatException
+    | :? FileLoadException -> String.Empty
 
   let internal ValidateAssembly assembly x =
     if ValidateFile assembly x then
       let name = FindAssemblyName x
       if String.IsNullOrWhiteSpace name then
-        error <- String.Format
-                   (CultureInfo.CurrentCulture, resources.GetString "NotAnAssembly",
-                    assembly, x) :: error
+        error <-
+          String.Format
+            (CultureInfo.CurrentCulture, resources.GetString "NotAnAssembly", assembly, x)
+          :: error
         (String.Empty, false)
-      else (name, true)
-    else (String.Empty, false)
+      else
+        (name, true)
+    else
+      (String.Empty, false)
 
   let internal ValidateStrongNameKey key x =
     if ValidateFile key x then
@@ -321,32 +336,35 @@ module internal CommandLine =
         // Available in .netstandard 2.0
         try
           (blob |> StrongNameKeyData.Make, true)
-        with
-        | :? CryptographicException as c -> (c.Message, c) |> SecurityException |> raise
-        ) (StrongNameKeyData.Empty(), false) false
-    else (StrongNameKeyData.Empty(), false)
+        with :? CryptographicException as c ->
+          (c.Message, c)
+          |> SecurityException
+          |> raise) (StrongNameKeyData.Empty(), false) false
+    else
+      (StrongNameKeyData.Empty(), false)
 
-  let internal ValidateRegexes (x : String) =
-    let descape (s:string) =
-      s.Replace('\u0000',';')
+  let internal ValidateRegexes(x: String) =
+    let descape (s: string) = s.Replace(char 0, ';')
 
-    let qRegex (s : String) =
-      if s.Substring(0,1) = "?"
-      then { Regex = Regex <| s.Substring(1); Sense = Include }
-      else { Regex = Regex s; Sense= Exclude }
+    let qRegex (s: String) =
+      if s.Substring(0, 1) = "?" then
+        { Regex = Regex <| s.Substring(1)
+          Sense = Include }
+      else
+        { Regex = Regex s
+          Sense = Exclude }
 
-    doPathOperation
-      (fun () ->
-      x.Replace(";;","\u0000").Split([| ";" |], StringSplitOptions.RemoveEmptyEntries)
-      |> Array.map (descape >> qRegex)) [| |]
-      false
+    doPathOperation (fun () ->
+      x.Replace(";;", "\u0000").Split([| ";" |], StringSplitOptions.RemoveEmptyEntries)
+      |> Array.map (descape >> qRegex)) [||] false
 
-  let internal ddFlag (name:string) flag =
-      (name,
-       (fun _ ->
+  let internal ddFlag (name: string) flag =
+    (name,
+     (fun _ ->
        if !flag then
-         error <- String.Format
-                                (CultureInfo.CurrentCulture,
-                                 resources.GetString "MultiplesNotAllowed",
-                                 "--" + (name.Split('|')|> Seq.last)) :: error
-       else flag := true))
+         error <-
+           String.Format
+             (CultureInfo.CurrentCulture, resources.GetString "MultiplesNotAllowed",
+              "--" + (name.Split('|') |> Seq.last)) :: error
+       else
+         flag := true))

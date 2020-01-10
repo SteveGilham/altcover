@@ -1,4 +1,4 @@
-﻿#if RUNNER
+#if RUNNER
 [<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage; RequireQualifiedAccess>] // work around coverlet attribute bug
 module AltCover.Primitive
 #else
@@ -11,17 +11,16 @@ open System.Diagnostics.CodeAnalysis
 
 [<ExcludeFromCodeCoverage; NoComparison>]
 type CollectParams =
-  { RecorderDirectory : String
-    WorkingDirectory : String
-    Executable : String
-    LcovReport : String
-    Threshold : String
-    Cobertura : String
-    OutputFile : String
-    CommandLine : String seq
-    ExposeReturnCode : bool
-    SummaryFormat : String
-  }
+  { RecorderDirectory: String
+    WorkingDirectory: String
+    Executable: String
+    LcovReport: String
+    Threshold: String
+    Cobertura: String
+    OutputFile: String
+    CommandLine: String seq
+    ExposeReturnCode: bool
+    SummaryFormat: String }
   static member Create() =
     { RecorderDirectory = String.Empty
       WorkingDirectory = String.Empty
@@ -32,41 +31,39 @@ type CollectParams =
       OutputFile = String.Empty
       CommandLine = []
       ExposeReturnCode = true
-      SummaryFormat = String.Empty
-    }
+      SummaryFormat = String.Empty }
 
 [<ExcludeFromCodeCoverage; NoComparison>]
 type PrepareParams =
-  { InputDirectories : String seq
-    OutputDirectories : String seq
-    SymbolDirectories : String seq
-    Dependencies : String seq
-    Keys : String seq
-    StrongNameKey : String
-    XmlReport : String
-    FileFilter : String seq
-    AssemblyFilter : String seq
-    AssemblyExcludeFilter : String seq
-    TypeFilter : String seq
-    MethodFilter : String seq
-    AttributeFilter : String seq
-    PathFilter : String seq
-    CallContext : String seq
-    OpenCover : bool
-    InPlace : bool
-    Save : bool
-    Single : bool
-    LineCover : bool
-    BranchCover : bool
-    CommandLine : String seq
-    ExposeReturnCode : bool
-    SourceLink : bool
-    Defer : bool
-    LocalSource : bool
-    VisibleBranches : bool
-    ShowStatic : string
-    ShowGenerated : bool
-  }
+  { InputDirectories: String seq
+    OutputDirectories: String seq
+    SymbolDirectories: String seq
+    Dependencies: String seq
+    Keys: String seq
+    StrongNameKey: String
+    XmlReport: String
+    FileFilter: String seq
+    AssemblyFilter: String seq
+    AssemblyExcludeFilter: String seq
+    TypeFilter: String seq
+    MethodFilter: String seq
+    AttributeFilter: String seq
+    PathFilter: String seq
+    CallContext: String seq
+    OpenCover: bool
+    InPlace: bool
+    Save: bool
+    Single: bool
+    LineCover: bool
+    BranchCover: bool
+    CommandLine: String seq
+    ExposeReturnCode: bool
+    SourceLink: bool
+    Defer: bool
+    LocalSource: bool
+    VisibleBranches: bool
+    ShowStatic: string
+    ShowGenerated: bool }
   static member Create() =
     { InputDirectories = Seq.empty
       OutputDirectories = Seq.empty
@@ -96,18 +93,17 @@ type PrepareParams =
       LocalSource = false
       VisibleBranches = false
       ShowStatic = "-"
-      ShowGenerated = false
-    }
+      ShowGenerated = false }
 
 #if RUNNER
 [<ExcludeFromCodeCoverage; NoComparison; NoEquality>]
 type Logging =
-  { Info : String -> unit
-    Warn : String -> unit
-    Error : String -> unit
-    Echo : String -> unit }
+  { Info: String -> unit
+    Warn: String -> unit
+    Error: String -> unit
+    Echo: String -> unit }
 
-  static member Create() : Logging =
+  static member Create(): Logging =
     { Info = ignore
       Warn = ignore
       Error = ignore

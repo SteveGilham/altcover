@@ -83,16 +83,16 @@ type CollectParams =
     match self with
     | Primitive p -> Primitive { p with CommandLine = args }
     | TypeSafe t ->
-      TypeSafe
-        { t with
-            CommandLine =
-              let newargs =
-                args
-                |> (Seq.map TypeSafe.CommandArgument)
-                |> Seq.toList
-              match newargs with
-              | [] -> TypeSafe.NoCommand
-              | _ -> TypeSafe.Command newargs }
+        TypeSafe
+          { t with
+              CommandLine =
+                let newargs =
+                  args
+                  |> (Seq.map TypeSafe.CommandArgument)
+                  |> Seq.toList
+                match newargs with
+                | [] -> TypeSafe.NoCommand
+                | _ -> TypeSafe.Command newargs }
 #endif
 
   member self.ExposeReturnCode =
@@ -118,8 +118,7 @@ type CollectParams =
     let validateOptional f key x = validate (f key) x
 
     let toOption s =
-      if s |> String.IsNullOrWhiteSpace then None
-      else Some s
+      if s |> String.IsNullOrWhiteSpace then None else Some s
     try
       let recorder = self.RecorderDirectory
       [ ("--recorderDirectory", recorder)
@@ -269,16 +268,16 @@ type PrepareParams =
     match self with
     | Primitive p -> Primitive { p with CommandLine = args }
     | TypeSafe t ->
-      TypeSafe
-        { t with
-            CommandLine =
-              let newargs =
-                args
-                |> (Seq.map TypeSafe.CommandArgument)
-                |> Seq.toList
-              match newargs with
-              | [] -> TypeSafe.NoCommand
-              | _ -> TypeSafe.Command newargs }
+        TypeSafe
+          { t with
+              CommandLine =
+                let newargs =
+                  args
+                  |> (Seq.map TypeSafe.CommandArgument)
+                  |> Seq.toList
+                match newargs with
+                | [] -> TypeSafe.NoCommand
+                | _ -> TypeSafe.Command newargs }
 #endif
 
   member self.ExposeReturnCode =
@@ -367,7 +366,8 @@ type PrepareParams =
         "--outputDirectory"
       PrepareParams.validateOptional CommandLine.ValidateStrongNameKey "--strongNameKey"
         self.StrongNameKey
-      PrepareParams.validateOptional CommandLine.ValidatePath "--xmlReport" self.XmlReport
+      PrepareParams.validateOptional CommandLine.ValidatePath "--xmlReport"
+        self.XmlReport
       PrepareParams.validateArray self.SymbolDirectories CommandLine.ValidateDirectory
         "--symbolDirectory"
       PrepareParams.validateArray self.Dependencies CommandLine.ValidateAssembly
@@ -426,13 +426,15 @@ type Logging =
 
 module internal Args =
   let private Item a x =
-    if x |> String.IsNullOrWhiteSpace then []
-    else [ a; x ]
+    if x |> String.IsNullOrWhiteSpace then [] else [ a; x ]
 
   let private OptItem a x l =
-    if x |> String.IsNullOrWhiteSpace ||
-       l |> List.exists (fun i -> i = x) then []
-    else [ a + ":" + x ]
+    if x
+       |> String.IsNullOrWhiteSpace
+       || l |> List.exists (fun i -> i = x) then
+      []
+    else
+      [ a + ":" + x ]
 
   let internal ItemList a x =
     if x |> isNull then
@@ -443,10 +445,9 @@ module internal Args =
       |> Seq.toList
 
   let private Flag a x =
-    if x then [ a ]
-    else []
+    if x then [ a ] else []
 
-  let internal ItemLists (args: PrepareParams) =
+  let internal ItemLists(args: PrepareParams) =
     [ ("-i", args.InputDirectories)
       ("-o", args.OutputDirectories)
       ("-y", args.SymbolDirectories)
@@ -460,24 +461,19 @@ module internal Args =
       ("-a", args.AttributeFilter)
       ("-p", args.PathFilter)
       ("-c", args.CallContext) ]
-    |> List.collect (fun (a,b) -> ItemList a b)
+    |> List.collect (fun (a, b) -> ItemList a b)
 
-  let internal Items (args: PrepareParams) =
-    [
-      ("--sn", args.StrongNameKey)
-      ("-x", args.XmlReport)
-    ]
-    |> List.collect (fun (a,b) -> Item a b)
+  let internal Items(args: PrepareParams) =
+    [ ("--sn", args.StrongNameKey)
+      ("-x", args.XmlReport) ]
+    |> List.collect (fun (a, b) -> Item a b)
 
-  let internal OptItems (args: PrepareParams) =
-    [
-      ("--showstatic", args.ShowStatic, ["-"])
-    ]
-    |> List.collect (fun (a,b,c) -> OptItem a b c)
+  let internal OptItems(args: PrepareParams) =
+    [ ("--showstatic", args.ShowStatic, [ "-" ]) ]
+    |> List.collect (fun (a, b, c) -> OptItem a b c)
 
-  let internal Flags (args: PrepareParams) =
-    [
-      ("--opencover", args.OpenCover)
+  let internal Flags(args: PrepareParams) =
+    [ ("--opencover", args.OpenCover)
       ("--inplace", args.InPlace)
       ("--save", args.Save)
       ("--single", args.Single)
@@ -488,37 +484,25 @@ module internal Args =
       ("--defer", args.Defer)
       ("--localSource", args.LocalSource)
       ("--visibleBranches", args.VisibleBranches)
-      ("--showGenerated", args.ShowGenerated)
-    ]
-    |> List.collect (fun (a,b) -> Flag a b)
+      ("--showGenerated", args.ShowGenerated) ]
+    |> List.collect (fun (a, b) -> Flag a b)
 
   let Prepare(args: PrepareParams) =
     let argsList = args.CommandLine |> Seq.toList
 
     let trailing =
-      if List.isEmpty argsList then []
-      else "--" :: argsList
+      if List.isEmpty argsList then [] else "--" :: argsList
 
     let parameters =
-      [ ItemLists
-        Items
-        OptItems
-        Flags
-      ]
-      |> List.collect (fun f -> f args)
+      [ ItemLists; Items; OptItems; Flags ] |> List.collect (fun f -> f args)
 
-    [
-      parameters
-      trailing
-    ]
-    |> List.concat
+    [ parameters; trailing ] |> List.concat
 
   let Collect(args: CollectParams) =
     let argsList = args.CommandLine |> Seq.toList
 
     let trailing =
-      if List.isEmpty argsList then []
-      else "--" :: argsList
+      if List.isEmpty argsList then [] else "--" :: argsList
 
     let exe = args.Executable
 
@@ -539,32 +523,36 @@ module internal Args =
 #if RUNNER
 
 type ValidatedCommandLine =
-  {
-    Command: string list
-    Errors: string array
-  }
-  with override self.ToString() =
-        let cl = String.Join(" ", Seq.concat [ ["altcover"]; self.Command])
-        String.Join(Environment.NewLine, Seq.concat [[| cl |]; self.Errors])
+  { Command: string list
+    Errors: string array }
+  override self.ToString() =
+    let cl =
+      String.Join
+        (" ",
+         Seq.concat
+           [ [ "altcover" ]
+             self.Command ])
+    String.Join
+      (Environment.NewLine,
+       Seq.concat
+         [ [| cl |]
+           self.Errors ])
 
 type CollectParams with
   member self.WhatIf afterPreparation =
-    {
-      Command = Args.Collect self
-      Errors = self.Validate afterPreparation
-    }
+    { Command = Args.Collect self
+      Errors = self.Validate afterPreparation }
 
 type PrepareParams with
-  member self.WhatIf () =
-    {
-      Command = Args.Prepare self
-      Errors = self.Validate ()
-    }
+  member self.WhatIf() =
+    { Command = Args.Prepare self
+      Errors = self.Validate() }
 
 #else
 let splitCommandLine s =
   s
-  |> if Environment.isWindows then BlackFox.CommandLine.MsvcrCommandLine.parse
+  |> if Environment.isWindows
+     then BlackFox.CommandLine.MsvcrCommandLine.parse
      else BlackFox.CommandLine.MonoUnixCommandLine.parse
   |> Seq.toList
 
@@ -627,18 +615,17 @@ type Params =
   member this.WithCreateProcess(command: CreateProcess<_>) =
     match command.Command with
     | RawCommand(tool, args) ->
-      match this.Args with
-      | Collect c ->
-        { this with
-            Args =
-              ArgType.Collect
-                ((c.SetExecutable tool).SetCommandLine(Arguments.toList args)) }
-      | Prepare p ->
-        { this with
-            Args =
-              ArgType.Prepare(p.SetCommandLine(tool :: (Arguments.toList args))) }
-      | ImportModule -> this
-      | GetVersion -> this
+        match this.Args with
+        | Collect c ->
+            { this with
+                Args =
+                  ArgType.Collect
+                    ((c.SetExecutable tool).SetCommandLine(Arguments.toList args)) }
+        | Prepare p ->
+            { this with
+                Args = ArgType.Prepare(p.SetCommandLine(tool :: (Arguments.toList args))) }
+        | ImportModule -> this
+        | GetVersion -> this
     | _ -> this
 
   member this.WithToolType(tool: Fake.DotNet.ToolType) =
@@ -662,17 +649,17 @@ let internal createProcess parameters args =
     | Framework -> baseline() |> CreateProcess.withFramework
     | Global -> baseline()
     | DotNet dotnetPath ->
-      let path =
-        match dotnetPath with
-        | None -> "dotnet"
-        | Some p -> p
-      CreateProcess.fromRawCommand path (parameters.ToolPath :: args)
+        let path =
+          match dotnetPath with
+          | None -> "dotnet"
+          | Some p -> p
+        CreateProcess.fromRawCommand path (parameters.ToolPath :: args)
     | Mono monoPath ->
-      let path =
-        match monoPath with
-        | None -> "mono"
-        | Some p -> p
-      CreateProcess.fromRawCommand path ("--debug" :: parameters.ToolPath :: args)
+        let path =
+          match monoPath with
+          | None -> "mono"
+          | Some p -> p
+        CreateProcess.fromRawCommand path ("--debug" :: parameters.ToolPath :: args)
 
   let doTool() =
     match parameters.FakeToolType with
@@ -681,7 +668,8 @@ let internal createProcess parameters args =
 
   let doWorkingDirectory c =
     c
-    |> if String.IsNullOrWhiteSpace parameters.WorkingDirectory then id
+    |> if String.IsNullOrWhiteSpace parameters.WorkingDirectory
+       then id
        else CreateProcess.withWorkingDirectory parameters.WorkingDirectory
 
   doTool()
@@ -711,22 +699,22 @@ let runWithMono monoPath parameters =
   let withMono (command: CreateProcess<_>) =
     match parameters.FakeToolType with
     | Some tool ->
-      if tool.GetType().FullName = "Fake.DotNet.ToolType+FullFramework"
-         && Fake.Core.Environment.isWindows then
-        match command.Command with
-        | RawCommand(tool, args) ->
-          let newArgs = tool :: "--debug" :: (Arguments.toList args)
+        if tool.GetType().FullName = "Fake.DotNet.ToolType+FullFramework"
+           && Fake.Core.Environment.isWindows then
+          match command.Command with
+          | RawCommand(tool, args) ->
+              let newArgs = tool :: "--debug" :: (Arguments.toList args)
 
-          let newRaw =
-            RawCommand
-              ((match monoPath with
-                | Some x -> x
-                | _ -> "mono"), Arguments.OfArgs newArgs)
-          command |> CreateProcess.withCommand newRaw
+              let newRaw =
+                RawCommand
+                  ((match monoPath with
+                    | Some x -> x
+                    | _ -> "mono"), Arguments.OfArgs newArgs)
+              command |> CreateProcess.withCommand newRaw
 
-        | _ -> command
-      else
-        command
+          | _ -> command
+        else
+          command
     | None -> command
 
   runCore parameters withMono

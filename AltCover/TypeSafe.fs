@@ -1,4 +1,4 @@
-﻿#if RUNNER
+#if RUNNER
 [<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage; RequireQualifiedAccess>] // work around coverlet attribute bug
 module AltCover.TypeSafe
 #else
@@ -81,9 +81,9 @@ type FilePaths =
     match self with
     | NoPaths -> List.empty<String>
     | FilePaths c ->
-      c
-      |> Seq.map (fun a -> a.AsString())
-      |> Seq.toList
+        c
+        |> Seq.map (fun a -> a.AsString())
+        |> Seq.toList
 
 [<ExcludeFromCodeCoverage; NoComparison>]
 type DirectoryPaths =
@@ -93,9 +93,9 @@ type DirectoryPaths =
     match self with
     | NoDirectories -> List.empty<String>
     | DirectoryPaths c ->
-      c
-      |> Seq.map (fun a -> a.AsString())
-      |> Seq.toList
+        c
+        |> Seq.map (fun a -> a.AsString())
+        |> Seq.toList
 
 [<ExcludeFromCodeCoverage; NoComparison>]
 type FilterItem =
@@ -116,9 +116,9 @@ type Filters =
     match self with
     | Unfiltered -> List.empty<String>
     | Filters c ->
-      c
-      |> Seq.map (fun a -> a.AsString())
-      |> Seq.toList
+        c
+        |> Seq.map (fun a -> a.AsString())
+        |> Seq.toList
 
 [<ExcludeFromCodeCoverage; NoComparison>]
 type ContextItem =
@@ -137,9 +137,9 @@ type Context =
     match self with
     | NoContext -> List.empty<String>
     | Context c ->
-      c
-      |> Seq.map (fun a -> a.AsString())
-      |> Seq.toList
+        c
+        |> Seq.map (fun a -> a.AsString())
+        |> Seq.toList
 
 [<ExcludeFromCodeCoverage; NoComparison>]
 type SummaryFormat =
@@ -148,7 +148,7 @@ type SummaryFormat =
   | B
   | RPlus
   | BPlus
-  member self.AsString () =
+  member self.AsString() =
     match self with
     | Default -> String.Empty
     | B -> "B"
@@ -161,7 +161,7 @@ type StaticFormat =
   | Default
   | Show
   | ShowZero
-  member self.AsString () =
+  member self.AsString() =
     match self with
     | Default -> "-"
     | Show -> "+"
@@ -169,17 +169,16 @@ type StaticFormat =
 
 [<ExcludeFromCodeCoverage; NoComparison>]
 type CollectParams =
-  { RecorderDirectory : DirectoryPath
-    WorkingDirectory : DirectoryPath
-    Executable : FilePath
-    LcovReport : FilePath
-    Threshold : Threshold
-    Cobertura : FilePath
-    OutputFile : FilePath
-    CommandLine : Command
-    ExposeReturnCode : Flag
-    SummaryFormat : SummaryFormat
-  }
+  { RecorderDirectory: DirectoryPath
+    WorkingDirectory: DirectoryPath
+    Executable: FilePath
+    LcovReport: FilePath
+    Threshold: Threshold
+    Cobertura: FilePath
+    OutputFile: FilePath
+    CommandLine: Command
+    ExposeReturnCode: Flag
+    SummaryFormat: SummaryFormat }
   static member Create() =
     { RecorderDirectory = NoDirectory
       WorkingDirectory = NoDirectory
@@ -190,41 +189,39 @@ type CollectParams =
       OutputFile = NoFile
       CommandLine = NoCommand
       ExposeReturnCode = Set
-      SummaryFormat = SummaryFormat.Default
-    }
+      SummaryFormat = SummaryFormat.Default }
 
 [<ExcludeFromCodeCoverage; NoComparison>]
 type PrepareParams =
-  { InputDirectories : DirectoryPaths
-    OutputDirectories : DirectoryPaths
-    SymbolDirectories : DirectoryPaths
-    Dependencies : FilePaths
-    Keys : FilePaths
-    StrongNameKey : FilePath
-    XmlReport : FilePath
-    FileFilter : Filters
-    AssemblyFilter : Filters
-    AssemblyExcludeFilter : Filters
-    TypeFilter : Filters
-    MethodFilter : Filters
-    AttributeFilter : Filters
-    PathFilter : Filters
-    CallContext : Context
-    OpenCover : Flag
-    InPlace : Flag
-    Save : Flag
-    Single : Flag
-    LineCover : Flag
-    BranchCover : Flag
-    CommandLine : Command
-    ExposeReturnCode : Flag
-    SourceLink : Flag
-    Defer : Flag
-    LocalSource : Flag
-    VisibleBranches : Flag
-    ShowStatic : StaticFormat
-    ShowGenerated : Flag
-  }
+  { InputDirectories: DirectoryPaths
+    OutputDirectories: DirectoryPaths
+    SymbolDirectories: DirectoryPaths
+    Dependencies: FilePaths
+    Keys: FilePaths
+    StrongNameKey: FilePath
+    XmlReport: FilePath
+    FileFilter: Filters
+    AssemblyFilter: Filters
+    AssemblyExcludeFilter: Filters
+    TypeFilter: Filters
+    MethodFilter: Filters
+    AttributeFilter: Filters
+    PathFilter: Filters
+    CallContext: Context
+    OpenCover: Flag
+    InPlace: Flag
+    Save: Flag
+    Single: Flag
+    LineCover: Flag
+    BranchCover: Flag
+    CommandLine: Command
+    ExposeReturnCode: Flag
+    SourceLink: Flag
+    Defer: Flag
+    LocalSource: Flag
+    VisibleBranches: Flag
+    ShowStatic: StaticFormat
+    ShowGenerated: Flag }
   static member Create() =
     { InputDirectories = NoDirectories
       OutputDirectories = NoDirectories
@@ -254,5 +251,4 @@ type PrepareParams =
       LocalSource = Clear
       VisibleBranches = Clear
       ShowStatic = StaticFormat.Default
-      ShowGenerated = Clear
-    }
+      ShowGenerated = Clear }
