@@ -169,16 +169,16 @@ type StaticFormat =
 
 [<ExcludeFromCodeCoverage; NoComparison>]
 type CollectParams =
-  { RecorderDirectory: DirectoryPath
-    WorkingDirectory: DirectoryPath
-    Executable: FilePath
-    LcovReport: FilePath
-    Threshold: Threshold
-    Cobertura: FilePath
-    OutputFile: FilePath
-    CommandLine: Command
-    ExposeReturnCode: Flag
-    SummaryFormat: SummaryFormat }
+  { RecorderDirectory : DirectoryPath
+    WorkingDirectory : DirectoryPath
+    Executable : FilePath
+    LcovReport : FilePath
+    Threshold : Threshold
+    Cobertura : FilePath
+    OutputFile : FilePath
+    CommandLine : Command
+    ExposeReturnCode : Flag
+    SummaryFormat : SummaryFormat }
   static member Create() =
     { RecorderDirectory = NoDirectory
       WorkingDirectory = NoDirectory
@@ -193,35 +193,35 @@ type CollectParams =
 
 [<ExcludeFromCodeCoverage; NoComparison>]
 type PrepareParams =
-  { InputDirectories: DirectoryPaths
-    OutputDirectories: DirectoryPaths
-    SymbolDirectories: DirectoryPaths
-    Dependencies: FilePaths
-    Keys: FilePaths
-    StrongNameKey: FilePath
-    XmlReport: FilePath
-    FileFilter: Filters
-    AssemblyFilter: Filters
-    AssemblyExcludeFilter: Filters
-    TypeFilter: Filters
-    MethodFilter: Filters
-    AttributeFilter: Filters
-    PathFilter: Filters
-    CallContext: Context
-    OpenCover: Flag
-    InPlace: Flag
-    Save: Flag
-    Single: Flag
-    LineCover: Flag
-    BranchCover: Flag
-    CommandLine: Command
-    ExposeReturnCode: Flag
-    SourceLink: Flag
-    Defer: Flag
-    LocalSource: Flag
-    VisibleBranches: Flag
-    ShowStatic: StaticFormat
-    ShowGenerated: Flag }
+  { InputDirectories : DirectoryPaths
+    OutputDirectories : DirectoryPaths
+    SymbolDirectories : DirectoryPaths
+    Dependencies : FilePaths
+    Keys : FilePaths
+    StrongNameKey : FilePath
+    XmlReport : FilePath
+    FileFilter : Filters
+    AssemblyFilter : Filters
+    AssemblyExcludeFilter : Filters
+    TypeFilter : Filters
+    MethodFilter : Filters
+    AttributeFilter : Filters
+    PathFilter : Filters
+    CallContext : Context
+    OpenCover : Flag
+    InPlace : Flag
+    Save : Flag
+    Single : Flag
+    LineCover : Flag
+    BranchCover : Flag
+    CommandLine : Command
+    ExposeReturnCode : Flag
+    SourceLink : Flag
+    Defer : Flag
+    LocalSource : Flag
+    VisibleBranches : Flag
+    ShowStatic : StaticFormat
+    ShowGenerated : Flag }
   static member Create() =
     { InputDirectories = NoDirectories
       OutputDirectories = NoDirectories

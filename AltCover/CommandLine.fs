@@ -49,19 +49,19 @@ type internal StringSink = delegate of string -> unit
 
 [<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage; NoComparison>]
 type internal UsageInfo =
-  { Intro: String
-    Options: OptionSet
-    Options2: OptionSet }
+  { Intro : String
+    Options : OptionSet
+    Options2 : OptionSet }
 
 module internal Output =
-  let mutable internal Info: String -> unit = ignore
-  let mutable internal Warn: String -> unit = ignore
-  let mutable internal Echo: String -> unit = ignore
-  let mutable internal Error: String -> unit = ignore
-  let mutable internal Usage: UsageInfo -> unit = ignore
-  let internal SetInfo(x: StringSink) = Info <- x.Invoke
-  let internal SetError(x: StringSink) = Error <- x.Invoke
-  let internal SetWarn(x: StringSink) = Warn <- x.Invoke
+  let mutable internal Info : String -> unit = ignore
+  let mutable internal Warn : String -> unit = ignore
+  let mutable internal Echo : String -> unit = ignore
+  let mutable internal Error : String -> unit = ignore
+  let mutable internal Usage : UsageInfo -> unit = ignore
+  let internal SetInfo(x : StringSink) = Info <- x.Invoke
+  let internal SetError(x : StringSink) = Error <- x.Invoke
+  let internal SetWarn(x : StringSink) = Warn <- x.Invoke
 
   let internal WarnOn x =
     if x then Warn else Info
@@ -93,8 +93,8 @@ module internal Output =
 module internal CommandLine =
 
   let mutable internal help = false
-  let mutable internal error: string list = []
-  let mutable internal exceptions: Exception list = []
+  let mutable internal error : string list = []
+  let mutable internal exceptions : Exception list = []
   let internal dropReturnCode = ref false // ddFlag
 
   let internal resources =
@@ -113,7 +113,7 @@ module internal CommandLine =
            (CultureInfo.CurrentCulture, (resources.GetString "CreateFolder"), directory)
       Directory.CreateDirectory(directory) |> ignore)
 
-  let internal WriteColoured (writer: TextWriter) colour operation =
+  let internal WriteColoured (writer : TextWriter) colour operation =
     let original = Console.ForegroundColor
     try
       Console.ForegroundColor <- colour
@@ -138,7 +138,7 @@ module internal CommandLine =
         w.WriteLine(resources.GetString "version")
       )
 
-  let internal Write (writer: TextWriter) colour data =
+  let internal Write (writer : TextWriter) colour data =
     if not (String.IsNullOrEmpty(data)) then
       WriteColoured writer colour (fun w -> w.WriteLine(data))
 
@@ -151,7 +151,7 @@ module internal CommandLine =
        |> not
     then f line
 
-  let internal Launch (cmd: string) args toDirectory =
+  let internal Launch (cmd : string) args toDirectory =
     Directory.SetCurrentDirectory(toDirectory)
     let quote =
       enquotes
@@ -186,11 +186,11 @@ module internal CommandLine =
                      |> not
                      |> Increment)
 
-  let logException store (e: Exception) =
+  let logException store (e : Exception) =
     error <- e.Message :: error
     if store then exceptions <- e :: exceptions
 
-  let internal doPathOperation (f: unit -> 'a) (defaultValue: 'a) store =
+  let internal doPathOperation (f : unit -> 'a) (defaultValue : 'a) store =
     let mutable result = defaultValue
     try
       result <- f()
@@ -201,7 +201,7 @@ module internal CommandLine =
     | :? System.Security.SecurityException as s -> s :> Exception |> (logException store)
     result
 
-  let internal ParseCommandLine (arguments: string array) (options: OptionSet) =
+  let internal ParseCommandLine (arguments : string array) (options : OptionSet) =
     help <- false
     error <- []
     try
@@ -223,13 +223,13 @@ module internal CommandLine =
         Right(after, options)
     with :? OptionException -> Left("UsageError", options)
 
-  let internal ProcessHelpOption(parse: Either<string * OptionSet, string list * OptionSet>) =
+  let internal ProcessHelpOption(parse : Either<string * OptionSet, string list * OptionSet>) =
     match parse with
     | Right(_, options) ->
         if help then Left("HelpText", options) else parse
     | fail -> fail
 
-  let internal ProcessTrailingArguments (rest: string list) (toInfo: DirectoryInfo) =
+  let internal ProcessTrailingArguments (rest : string list) (toInfo : DirectoryInfo) =
     // If we have some arguments in rest execute that command line
     match rest |> Seq.toList with
     | [] -> 0
@@ -259,7 +259,7 @@ module internal CommandLine =
       String.Format(CultureInfo.CurrentCulture, resources.GetString resource, path, path')
       |> Output.Error
 
-  let ReportErrors (tag: string) extend =
+  let ReportErrors (tag : string) extend =
     conditionalOutput (fun () ->
       tag
       |> String.IsNullOrWhiteSpace
@@ -343,10 +343,10 @@ module internal CommandLine =
     else
       (StrongNameKeyData.Empty(), false)
 
-  let internal ValidateRegexes(x: String) =
-    let descape (s: string) = s.Replace(char 0, ';')
+  let internal ValidateRegexes(x : String) =
+    let descape (s : string) = s.Replace(char 0, ';')
 
-    let qRegex (s: String) =
+    let qRegex (s : String) =
       if s.Substring(0, 1) = "?" then
         { Regex = Regex <| s.Substring(1)
           Sense = Include }
@@ -358,7 +358,7 @@ module internal CommandLine =
       x.Replace(";;", "\u0000").Split([| ";" |], StringSplitOptions.RemoveEmptyEntries)
       |> Array.map (descape >> qRegex)) [||] false
 
-  let internal ddFlag (name: string) flag =
+  let internal ddFlag (name : string) flag =
     (name,
      (fun _ ->
        if !flag then

@@ -14,14 +14,14 @@ open Augment
 
 [<RequireQualifiedAccess>]
 module Api =
-  let Prepare (args: FSApi.PrepareParams) (log: FSApi.Logging) =
+  let Prepare (args : FSApi.PrepareParams) (log : FSApi.Logging) =
     log.Apply()
     args
     |> FSApi.Args.Prepare
     |> List.toArray
     |> Main.EffectiveMain
 
-  let Collect (args: FSApi.CollectParams) (log: FSApi.Logging) =
+  let Collect (args : FSApi.CollectParams) (log : FSApi.Logging) =
     log.Apply()
     FSApi.Args.Collect args
     |> List.toArray
@@ -51,31 +51,31 @@ module Api =
 
 type Prepare() =
   inherit Task(null)
-  member val internal ACLog: FSApi.Logging option = None with get, set
+  member val internal ACLog : FSApi.Logging option = None with get, set
 
-  member val InputDirectories: string array = [||] with get, set
-  member val OutputDirectories: string array = [||] with get, set
-  member val SymbolDirectories: string array = [||] with get, set
-  member val Dependencies: string array = [||] with get, set
-  member val Keys: string array = [||] with get, set
+  member val InputDirectories : string array = [||] with get, set
+  member val OutputDirectories : string array = [||] with get, set
+  member val SymbolDirectories : string array = [||] with get, set
+  member val Dependencies : string array = [||] with get, set
+  member val Keys : string array = [||] with get, set
   member val StrongNameKey = String.Empty with get, set
   member val XmlReport = String.Empty with get, set
-  member val FileFilter: string array = [||] with get, set
-  member val AssemblyFilter: string array = [||] with get, set
-  member val AssemblyExcludeFilter: string array = [||] with get, set
-  member val TypeFilter: string array = [||] with get, set
-  member val MethodFilter: string array = [||] with get, set
-  member val AttributeFilter: string array = [||] with get, set
-  member val PathFilter: string array = [||] with get, set
-  member val CallContext: string array = [||] with get, set
+  member val FileFilter : string array = [||] with get, set
+  member val AssemblyFilter : string array = [||] with get, set
+  member val AssemblyExcludeFilter : string array = [||] with get, set
+  member val TypeFilter : string array = [||] with get, set
+  member val MethodFilter : string array = [||] with get, set
+  member val AttributeFilter : string array = [||] with get, set
+  member val PathFilter : string array = [||] with get, set
+  member val CallContext : string array = [||] with get, set
   member val LocalSource = false with get, set
   member val OpenCover = true with get, set
   member val InPlace = true with get, set
   member val Save = true with get, set
-  member val Single = false with get, set // work around Gendarme insistence on non-default values only
+  member val Single = false with get, set
   member val LineCover = false with get, set
   member val BranchCover = false with get, set
-  member val CommandLine: string array = [||] with get, set
+  member val CommandLine : string array = [||] with get, set
   member val SourceLink = false with get, set
   member val Defer = false with get, set
   member val VisibleBranches = false with get, set
@@ -129,7 +129,7 @@ type Prepare() =
 type Collect() =
   inherit Task(null)
 
-  member val internal ACLog: FSApi.Logging option = None with get, set
+  member val internal ACLog : FSApi.Logging option = None with get, set
 
   [<Required>]
   member val RecorderDirectory = String.Empty with get, set
@@ -140,7 +140,7 @@ type Collect() =
   member val Threshold = String.Empty with get, set
   member val Cobertura = String.Empty with get, set
   member val OutputFile = String.Empty with get, set
-  member val CommandLine: string array = [||] with get, set
+  member val CommandLine : string array = [||] with get, set
   member val SummaryFormat = String.Empty with get, set
 
   [<Output>]
@@ -254,7 +254,7 @@ type RunSettings() =
 
       let X n = XName.Get n
 
-      let ensureHas (parent: XContainer) childName =
+      let ensureHas (parent : XContainer) childName =
         match parent.Descendants(X childName) |> Seq.tryHead with
         | Some child -> child
         | _ ->

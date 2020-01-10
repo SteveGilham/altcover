@@ -22,7 +22,7 @@ type TeamCityFormat =
   | RPlus
   | BPlus
   static member Factory s =
-    let (|Select|_|) (pattern: String) offered =
+    let (|Select|_|) (pattern : String) offered =
       if offered
          |> String.IsNullOrWhiteSpace
          |> not
@@ -45,12 +45,12 @@ type TeamCityFormat =
 
 module internal Runner =
 
-  let mutable internal recordingDirectory: Option<string> = None
-  let mutable internal workingDirectory: Option<string> = None
-  let internal executable: Option<string> ref = ref None
+  let mutable internal recordingDirectory : Option<string> = None
+  let mutable internal workingDirectory : Option<string> = None
+  let internal executable : Option<string> ref = ref None
   let internal collect = ref false // ddFlag
-  let mutable internal threshold: Option<int> = None
-  let mutable internal output: Option<string> = None
+  let mutable internal threshold : Option<int> = None
+  let mutable internal output : Option<string> = None
   let internal Summary = StringBuilder()
   let mutable internal SummaryFormat = TeamCityFormat.Default
 
@@ -90,7 +90,7 @@ module internal Runner =
     let line = String.Format(CultureInfo.InvariantCulture, template, what, value)
     Write line
 
-  let NCoverSummary(report: XDocument) =
+  let NCoverSummary(report : XDocument) =
     let makepc v n =
       if n = 0 then
         "n/a"
@@ -112,7 +112,7 @@ module internal Runner =
       |> Seq.groupBy (fun m -> m.Attribute(X "class").Value)
       |> Seq.toList
 
-    let isVisited (x: XElement) =
+    let isVisited (x : XElement) =
       let v = x.Attribute(X "visitcount")
       (v
        |> isNull
@@ -158,7 +158,7 @@ module internal Runner =
 
     makepc vpoints points.Length
 
-  let AltSummary(report: XDocument) =
+  let AltSummary(report : XDocument) =
     "Alternative"
     |> CommandLine.resources.GetString
     |> Write
@@ -210,7 +210,7 @@ module internal Runner =
             .ToString(CultureInfo.InvariantCulture)
     WriteSummary "AltVM" vm nm pm
 
-  let OpenCoverSummary(report: XDocument) =
+  let OpenCoverSummary(report : XDocument) =
     let summary = report.Descendants(X "Summary") |> Seq.head
 
     let summarise go visit number precalc key =
@@ -275,7 +275,7 @@ module internal Runner =
   let InvariantParseDouble d =
     Double.TryParse(d, NumberStyles.Number, CultureInfo.InvariantCulture)
 
-  let StandardSummary (report: XDocument) (format: Base.ReportFormat) result =
+  let StandardSummary (report : XDocument) (format : Base.ReportFormat) result =
     let covered =
       report
       |> match format with
@@ -294,7 +294,8 @@ module internal Runner =
         let f = float x
         if f <= value then result else Math.Ceiling(f - value) |> int
 
-  let mutable internal Summaries: (XDocument -> Base.ReportFormat -> int -> int) list = []
+  let mutable internal Summaries : (XDocument -> Base.ReportFormat -> int -> int) list =
+    []
 
   let internal ValidateThreshold x =
     let (q, n) =
@@ -426,11 +427,11 @@ module internal Runner =
              (CultureInfo.CurrentCulture, CommandLine.resources.GetString "InvalidValue",
               "AltCover", x) :: CommandLine.error)) ] // default end stop
     |> List.fold
-         (fun (o: OptionSet) (p, a) ->
+         (fun (o : OptionSet) (p, a) ->
            o.Add(p, CommandLine.resources.GetString(p), new System.Action<string>(a)))
          (OptionSet())
 
-  let internal RequireExe(parse: Either<string * OptionSet, string list * OptionSet>) =
+  let internal RequireExe(parse : Either<string * OptionSet, string list * OptionSet>) =
     match parse with
     | Right(l, options) ->
         match (!executable, !collect) with
@@ -461,13 +462,13 @@ module internal Runner =
             :: CommandLine.error
           fail
 
-  let internal RequireRecorder(parse: Either<string * OptionSet, string list * OptionSet>) =
+  let internal RequireRecorder(parse : Either<string * OptionSet, string list * OptionSet>) =
     match parse with
     | Right(_, options) ->
         RequireRecorderTest recordingDirectory parse (Left("UsageError", options))
     | fail -> fail
 
-  let internal RequireWorker(parse: Either<string * OptionSet, string list * OptionSet>) =
+  let internal RequireWorker(parse : Either<string * OptionSet, string list * OptionSet>) =
     match parse with
     | Right _ ->
         match workingDirectory with
@@ -484,24 +485,24 @@ module internal Runner =
     let definition = AssemblyDefinition.ReadAssembly recorderPath
     (definition, definition.MainModule.GetType("AltCover.Recorder.Instance"))
 
-  let GetMethod (t: TypeDefinition) (name: string) =
+  let GetMethod (t : TypeDefinition) (name : string) =
     t.Methods
     |> Seq.filter (fun m -> m.Name = name)
     |> Seq.head
 
-  let GetFirstOperandAsString(m: MethodDefinition) =
+  let GetFirstOperandAsString(m : MethodDefinition) =
     m.Body.Instructions
     |> Seq.filter (fun i -> i.OpCode = Cil.OpCodes.Ldstr)
     |> Seq.map (fun i -> i.Operand :?> string)
     |> Seq.head
 
-  let GetFirstOperandAsNumber(m: MethodDefinition) =
+  let GetFirstOperandAsNumber(m : MethodDefinition) =
     m.Body.Instructions
     |> Seq.filter (fun i -> i.OpCode = Cil.OpCodes.Ldc_I4)
     |> Seq.map (fun i -> i.Operand :?> int)
     |> Seq.head
 
-  let PayloadBase(rest: string list) =
+  let PayloadBase(rest : string list) =
     CommandLine.doPathOperation
       (fun () ->
         CommandLine.ProcessTrailingArguments rest
@@ -519,14 +520,14 @@ module internal Runner =
       let binpath = report + ".acv"
       File.Create(binpath)) ignore
 
-  let internal RunProcess report (payload: string list -> int) (args: string list) =
+  let internal RunProcess report (payload : string list -> int) (args : string list) =
     SetRecordToFile report
     "Beginning run..." |> WriteResource
     let result = payload args
     "Getting results..." |> WriteResource
     result
 
-  let internal CollectResults (hits: Dictionary<string, Dictionary<int, Base.PointVisit>>)
+  let internal CollectResults (hits : Dictionary<string, Dictionary<int, Base.PointVisit>>)
       report =
     let timer = System.Diagnostics.Stopwatch()
     timer.Start()
@@ -638,14 +639,14 @@ module internal Runner =
     timer.Stop()
     WriteResourceWithFormatItems "%d visits recorded" [| visits |] (visits = 0L)
 
-  let internal MonitorBase (hits: Dictionary<string, Dictionary<int, Base.PointVisit>>)
-      report (payload: string list -> int) (args: string list) =
+  let internal MonitorBase (hits : Dictionary<string, Dictionary<int, Base.PointVisit>>)
+      report (payload : string list -> int) (args : string list) =
     let result =
       if !collect then 0 else RunProcess report payload args
     CollectResults hits report
     result
 
-  let internal CopyFillMethodPoint (mp: XmlElement seq) sp =
+  let internal CopyFillMethodPoint (mp : XmlElement seq) sp =
     mp
     |> Seq.iter (fun m ->
          m.SetAttribute
@@ -657,7 +658,7 @@ module internal Runner =
          |> Seq.collect (fun p -> p.Attributes |> Seq.cast<XmlAttribute>)
          |> Seq.iter (fun a -> m.SetAttribute(a.Name, a.Value)))
 
-  let internal LookUpVisitsByToken token (dict: Dictionary<int, Base.PointVisit>) =
+  let internal LookUpVisitsByToken token (dict : Dictionary<int, Base.PointVisit>) =
     let (ok, index) =
       Int32.TryParse
         (token, System.Globalization.NumberStyles.Integer,
@@ -666,8 +667,8 @@ module internal Runner =
     | (false, _) -> PointVisit.Create()
     | (_, pair) -> pair
 
-  let internal FillMethodPoint (mp: XmlElement seq) (method: XmlElement)
-      (dict: Dictionary<int, Base.PointVisit>) =
+  let internal FillMethodPoint (mp : XmlElement seq) (method : XmlElement)
+      (dict : Dictionary<int, Base.PointVisit>) =
     let token =
       method.GetElementsByTagName("MetadataToken")
       |> Seq.cast<XmlElement>
@@ -692,20 +693,20 @@ module internal Runner =
          <> 0L)
     |> Seq.length
 
-  let internal TryGetValue (d: Dictionary<'a, 'b>) (key: 'a) =
+  let internal TryGetValue (d : Dictionary<'a, 'b>) (key : 'a) =
     match d with
     | null -> (false, Unchecked.defaultof<'b>)
     | _ -> d.TryGetValue key
 
-  let internal PostProcess (counts: Dictionary<string, Dictionary<int, Base.PointVisit>>)
-      format (document: XmlDocument) =
+  let internal PostProcess (counts : Dictionary<string, Dictionary<int, Base.PointVisit>>)
+      format (document : XmlDocument) =
     match format with
     | Base.ReportFormat.OpenCoverWithTracking
     | Base.ReportFormat.OpenCover ->
         let scoreToString raw =
           (sprintf "%.2f" raw).TrimEnd([| '0' |]).TrimEnd([| '.' |])
 
-        let stringToScore (node: XmlElement) name =
+        let stringToScore (node : XmlElement) name =
           node.GetAttribute(name)
           |> InvariantParseDouble
           |> snd
@@ -715,7 +716,7 @@ module internal Runner =
           then "0"
           else ((float (visits * 100)) / (float points)) |> scoreToString
 
-        let setSummary (x: XmlElement) pointVisits branchVisits methodVisits classVisits
+        let setSummary (x : XmlElement) pointVisits branchVisits methodVisits classVisits
             ptcover brcover minCrap maxCrap =
           x.GetElementsByTagName("Summary")
           |> Seq.cast<XmlElement>
@@ -740,7 +741,7 @@ module internal Runner =
                s.SetAttribute("minCrapScore", minc)
                s.SetAttribute("maxCrapScore", maxc))
 
-        let computeBranchExitCount (doc: XmlDocument) (sp: XmlNodeList) bp =
+        let computeBranchExitCount (doc : XmlDocument) (sp : XmlNodeList) bp =
           let tail = doc.CreateElement("SequencePoint")
           tail.SetAttribute
             ("offset", Int32.MaxValue.ToString(CultureInfo.InvariantCulture))
@@ -762,7 +763,7 @@ module internal Runner =
                  |> snd)
 
           interleave
-          |> Seq.fold (fun (bev, sq: XmlElement) x ->
+          |> Seq.fold (fun (bev, sq : XmlElement) x ->
                match x.Name with
                | "SequencePoint" ->
                    sq.SetAttribute("bev", sprintf "%d" bev)
@@ -772,7 +773,7 @@ module internal Runner =
                (0, nodes.[0])
           |> ignore
 
-        let crapScore (method: XmlElement) =
+        let crapScore (method : XmlElement) =
           let coverage =
             let cover = stringToScore method "sequenceCoverage"
             if cover > 0.0 then cover else stringToScore method "branchCoverage"
@@ -786,8 +787,8 @@ module internal Runner =
           method.SetAttribute("crapScore", score)
           raw
 
-        let updateMethod (dict: Dictionary<int, Base.PointVisit>)
-            (vb, vs, vm, pt, br, minc, maxc) (method: XmlElement) =
+        let updateMethod (dict : Dictionary<int, Base.PointVisit>)
+            (vb, vs, vm, pt, br, minc, maxc) (method : XmlElement) =
           let sp = method.GetElementsByTagName("SequencePoint")
           let bp = method.GetElementsByTagName("BranchPoint")
           let mp = method.GetElementsByTagName("MethodPoint") |> Seq.cast<XmlElement>
@@ -819,8 +820,8 @@ module internal Runner =
           else
             (vb, vs, vm, pt + count, br + numBranches, minc, maxc)
 
-        let updateClass (dict: Dictionary<int, Base.PointVisit>)
-            (vb, vs, vm, vc, pt, br, minc0, maxc0) (``class``: XmlElement) =
+        let updateClass (dict : Dictionary<int, Base.PointVisit>)
+            (vb, vs, vm, vc, pt, br, minc0, maxc0) (``class`` : XmlElement) =
           let (cvb, cvs, cvm, cpt, cbr, minc, maxc) =
             ``class``.GetElementsByTagName("Method")
             |> Seq.cast<XmlElement>
@@ -836,8 +837,8 @@ module internal Runner =
           (vb + cvb, vs + cvs, vm + cvm, vc + cvc, pt + cpt, br + cbr,
            Math.Min(minc, minc0), Math.Max(maxc, maxc0))
 
-        let updateModule (counts: Dictionary<string, Dictionary<int, Base.PointVisit>>)
-            (vb, vs, vm, vc, pt, br, minc0, maxc0) (``module``: XmlElement) =
+        let updateModule (counts : Dictionary<string, Dictionary<int, Base.PointVisit>>)
+            (vb, vs, vm, vc, pt, br, minc0, maxc0) (``module`` : XmlElement) =
           let dict =
             match (TryGetValue counts) <| ``module``.GetAttribute("hash") with
             | (false, _) -> Dictionary<int, Base.PointVisit>()
@@ -866,7 +867,7 @@ module internal Runner =
         setSummary document.DocumentElement vs vb vm (Some vc) cover bcover minc maxc
     | _ -> ()
 
-  let internal Point (pt: XmlElement) items outername innername attribute =
+  let internal Point (pt : XmlElement) items outername innername attribute =
     match items with
     | [] -> ()
     | _ ->
@@ -886,7 +887,7 @@ module internal Runner =
              inner.SetAttribute(attribute, t.ToString())
              inner.SetAttribute("vc", sprintf "%d" n))
 
-  let internal PointProcess (pt: XmlElement) tracks =
+  let internal PointProcess (pt : XmlElement) tracks =
     let (times, calls) =
       tracks
       |> Seq.map (fun t ->
@@ -900,7 +901,7 @@ module internal Runner =
     Point pt times "Times" "Time" "time"
     Point pt calls "TrackedMethodRefs" "TrackedMethodRef" "uid"
 
-  let internal WriteReportBase (hits: Dictionary<string, Dictionary<int, Base.PointVisit>>)
+  let internal WriteReportBase (hits : Dictionary<string, Dictionary<int, Base.PointVisit>>)
       report =
     AltCover.Base.Counter.DoFlush (PostProcess hits report) PointProcess true hits report
   // mocking points
@@ -908,7 +909,7 @@ module internal Runner =
   let mutable internal GetMonitor = MonitorBase
   let mutable internal DoReport = WriteReportBase
 
-  let DoSummaries (document: XDocument) (format: Base.ReportFormat) result =
+  let DoSummaries (document : XDocument) (format : Base.ReportFormat) result =
     let code =
       Summaries |> List.fold (fun r summary -> summary document format r) result
     if (code > 0 && code <> result) then

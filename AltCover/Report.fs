@@ -17,7 +17,7 @@ module internal Report =
     let ToExcluded included =
       if included then "false" else "true"
 
-    let StartVisit(s: list<XElement>) =
+    let StartVisit(s : list<XElement>) =
       let element =
         XElement
           (X "coverage",
@@ -38,7 +38,7 @@ module internal Report =
       document.Add(element)
       element :: s
 
-    let VisitModule (s: list<XElement>) (head: XElement) (moduleDef: ModuleDefinition)
+    let VisitModule (s : list<XElement>) (head : XElement) (moduleDef : ModuleDefinition)
         included =
       let element =
         XElement
@@ -50,7 +50,7 @@ module internal Report =
       head.Add(element)
       element :: s
 
-    let VisitMethod (s: list<XElement>) (head: XElement) (methodDef: MethodDefinition)
+    let VisitMethod (s : list<XElement>) (head : XElement) (methodDef : MethodDefinition)
         included =
       let element =
         XElement
@@ -66,8 +66,8 @@ module internal Report =
       head.Add(element)
       element :: s
 
-    let VisitMethodPoint (s: list<XElement>) (head: XElement)
-        (codeSegment': SeqPnt option) included vc =
+    let VisitMethodPoint (s : list<XElement>) (head : XElement)
+        (codeSegment' : SeqPnt option) included vc =
       match codeSegment' with
       | Some codeSegment ->
           let element =
@@ -86,7 +86,7 @@ module internal Report =
       | None -> ()
       s
 
-    let ReportVisitor (s: list<XElement>) (node: Node) =
+    let ReportVisitor (s : list<XElement>) (node : Node) =
       let head =
         if List.isEmpty s then null else s.Head
 

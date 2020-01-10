@@ -15,9 +15,9 @@ open Mono.Options
 
 [<ExcludeFromCodeCoverage>]
 type internal AssemblyInfo =
-  { Path: string list
-    Name: string
-    Refs: string list }
+  { Path : string list
+    Name : string
+    Refs : string list }
 
 module internal Main =
   let init() =
@@ -88,8 +88,8 @@ module internal Main =
       (false, Left None)
 
   let internal DeclareOptions() =
-    let makeFilter filterscope (x: String) =
-      x.Replace(char 0, '\\').Replace(char 1,'|')
+    let makeFilter filterscope (x : String) =
+      x.Replace(char 0, '\\').Replace(char 1, '|')
       |> CommandLine.ValidateRegexes
       |> Seq.iter (FilterClass.Build filterscope >> Visitor.NameFilters.Add)
 
@@ -255,7 +255,7 @@ module internal Main =
            Visitor.defer := if String.IsNullOrWhiteSpace x then
                               Some true
                             else
-                              let (|Select|_|) (pattern: String) offered =
+                              let (|Select|_|) (pattern : String) offered =
                                 if offered
                                    |> String.IsNullOrWhiteSpace
                                    |> not
@@ -311,11 +311,11 @@ module internal Main =
              (CultureInfo.CurrentCulture, CommandLine.resources.GetString "InvalidValue",
               "AltCover", x) :: CommandLine.error)) ] // default end stop
     |> List.fold
-         (fun (o: OptionSet) (p, a) ->
+         (fun (o : OptionSet) (p, a) ->
            o.Add(p, CommandLine.resources.GetString(p), new System.Action<string>(a)))
          (OptionSet())
 
-  let internal ProcessOutputLocation(action: Either<string * OptionSet, string list * OptionSet>) =
+  let internal ProcessOutputLocation(action : Either<string * OptionSet, string list * OptionSet>) =
     match action with
     | Right(rest, options) ->
         // Check that the directories are distinct
@@ -374,7 +374,7 @@ module internal Main =
              Visitor.SourceDirectories() |> Seq.map DirectoryInfo)
     | Left intro -> Left intro
 
-  let internal ImageLoadResilient (f: unit -> 'a) (tidy: unit -> 'a) =
+  let internal ImageLoadResilient (f : unit -> 'a) (tidy : unit -> 'a) =
     try
       f()
     with
@@ -383,8 +383,9 @@ module internal Main =
     | :? ArgumentException
     | :? IOException -> tidy()
 
-  let internal PrepareTargetFiles (fromInfos: DirectoryInfo seq)
-      (toInfos: DirectoryInfo seq) (sourceInfos: DirectoryInfo seq) (targets: string seq) =
+  let internal PrepareTargetFiles (fromInfos : DirectoryInfo seq)
+      (toInfos : DirectoryInfo seq) (sourceInfos : DirectoryInfo seq)
+      (targets : string seq) =
     // Copy all the files into the target directory
     let mapping = Dictionary<string, string>()
     Seq.zip sourceInfos targets
@@ -408,7 +409,7 @@ module internal Main =
       sourceInfos
       |> Seq.map (fun sourceInfo ->
            sourceInfo.GetFiles()
-           |> Seq.fold (fun (accumulator: AssemblyInfo list) info ->
+           |> Seq.fold (fun (accumulator : AssemblyInfo list) info ->
                 let fullName = info.FullName
                 ImageLoadResilient (fun () ->
                   use stream = File.OpenRead(fullName)
@@ -450,7 +451,7 @@ module internal Main =
     let candidates =
       assemblies
       |> Seq.map (fun a -> a.Name)
-      |> Seq.fold (fun (s: Set<string>) n -> Set.add n s) Set.empty<string>
+      |> Seq.fold (fun (s : Set<string>) n -> Set.add n s) Set.empty<string>
 
     let simplified =
       assemblies
@@ -550,7 +551,7 @@ module internal Main =
         CommandLine.ReportErrors "Instrumentation" (dotnetBuild && !Visitor.inplace)
         result
 
-  let internal (|Select|_|) (pattern: String) offered =
+  let internal (|Select|_|) (pattern : String) offered =
     if offered
        |> String.IsNullOrWhiteSpace
        |> not

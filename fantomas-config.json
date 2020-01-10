@@ -3,7 +3,7 @@
   "PageWidth":90,
   "SemicolonAtEndOfLine":false,
   "SpaceBeforeArgument":true ,
-  "SpaceBeforeColon":false,
+  "SpaceBeforeColon":true,
   "SpaceAfterComma":true ,
   "SpaceAfterSemicolon":true ,
   "IndentOnTryWith":false,

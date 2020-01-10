@@ -19,10 +19,10 @@ module internal ProgramDatabase =
      |> Seq.filter (fun m -> m.FullName = "Mono.Cecil.Mixin")
      |> Seq.head).GetMethod("GetEmbeddedPortablePdbEntry")
 
-  let internal GetEmbeddedPortablePdbEntry(assembly: AssemblyDefinition) =
+  let internal GetEmbeddedPortablePdbEntry(assembly : AssemblyDefinition) =
     getEmbed.Invoke(null, [| assembly.MainModule.GetDebugHeader() :> obj |]) :?> ImageDebugHeaderEntry
 
-  let GetPdbFromImage(assembly: AssemblyDefinition) =
+  let GetPdbFromImage(assembly : AssemblyDefinition) =
     Some assembly.MainModule
     |> Option.filter (fun x -> x.HasDebugHeader)
     |> Option.map (fun x -> x.GetDebugHeader())
@@ -53,7 +53,7 @@ module internal ProgramDatabase =
       // Note -- the assembly path, not the mdb path, because GetSymbolReader wants the assembly path for Mono
       if File.Exists(fallback2) then Some name else None
 
-  let GetPdbWithFallback(assembly: AssemblyDefinition) =
+  let GetPdbWithFallback(assembly : AssemblyDefinition) =
     match GetPdbFromImage assembly with
     | None ->
         let foldername = Path.GetDirectoryName assembly.MainModule.FileName
@@ -67,10 +67,10 @@ module internal ProgramDatabase =
   // Ensure that we read symbols from the .pdb path we discovered.
   // Cecil currently only does the Path.ChangeExtension(path, ".pdb") fallback if left to its own devices
   // Will fail  with InvalidOperationException if there is a malformed file with the expected name
-  let ReadSymbols(assembly: AssemblyDefinition) =
+  let ReadSymbols(assembly : AssemblyDefinition) =
     GetPdbWithFallback assembly
     |> Option.iter (fun pdbpath ->
-         let provider: ISymbolReaderProvider =
+         let provider : ISymbolReaderProvider =
            if pdbpath.EndsWith(".pdb", StringComparison.OrdinalIgnoreCase)
            then PdbReaderProvider() :> ISymbolReaderProvider
            else MdbReaderProvider() :> ISymbolReaderProvider

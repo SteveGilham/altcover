@@ -40,13 +40,13 @@ type internal Reporting =
 
 [<ExcludeFromCodeCoverage>]
 type internal SeqPnt =
-  { StartLine: int
-    StartColumn: int
-    EndLine: int
-    EndColumn: int
-    Document: string
-    Offset: int }
-  static member Build(codeSegment: Cil.SequencePoint) =
+  { StartLine : int
+    StartColumn : int
+    EndLine : int
+    EndColumn : int
+    Document : string
+    Offset : int }
+  static member Build(codeSegment : Cil.SequencePoint) =
     { StartLine = codeSegment.StartLine
       StartColumn = codeSegment.StartColumn
       EndLine =
@@ -61,17 +61,17 @@ type internal SeqPnt =
 
 [<ExcludeFromCodeCoverage; NoComparison>]
 type internal GoTo =
-  { Start: Instruction
-    SequencePoint: SequencePoint
-    Indexes: int list
-    Uid: int
-    Path: int
-    Offset: int
-    Target: Instruction list
-    Included: bool
-    VisitCount: Exemption
-    Representative: Reporting
-    Key: int }
+  { Start : Instruction
+    SequencePoint : SequencePoint
+    Indexes : int list
+    Uid : int
+    Path : int
+    Offset : int
+    Target : Instruction list
+    Included : bool
+    VisitCount : Exemption
+    Representative : Reporting
+    Key : int }
 
 [<ExcludeFromCodeCoverage; NoComparison>]
 type internal Node =
@@ -99,8 +99,8 @@ type internal Node =
 
 [<ExcludeFromCodeCoverage; NoComparison>]
 type internal StrongNameKeyData =
-  { Blob: byte list
-    Parameters: System.Security.Cryptography.RSAParameters }
+  { Blob : byte list
+    Parameters : System.Security.Cryptography.RSAParameters }
 
   member this.PublicKey =
     let lead =
@@ -145,7 +145,7 @@ type internal StrongNameKeyData =
         |> List.rev ]
     |> Seq.toArray
 
-  static member Make(data: byte array) =
+  static member Make(data : byte array) =
     use csp = new System.Security.Cryptography.RSACryptoServiceProvider()
     csp.ImportCspBlob(data)
     let blob = csp.ExportCspBlob(true)
@@ -158,8 +158,8 @@ type internal StrongNameKeyData =
 
 [<ExcludeFromCodeCoverage; NoComparison>]
 type internal KeyRecord =
-  { Pair: StrongNameKeyData
-    Token: byte list }
+  { Pair : StrongNameKeyData
+    Token : byte list }
 
 [<ExcludeFromCodeCoverage; NoComparison>]
 type internal SequenceType =
@@ -168,33 +168,33 @@ type internal SequenceType =
 
 module internal KeyStore =
   let private hash = new System.Security.Cryptography.SHA1CryptoServiceProvider()
-  let private publicKeyOfKey (key: StrongNameKeyData) = key.PublicKey
+  let private publicKeyOfKey (key : StrongNameKeyData) = key.PublicKey
 
-  let internal TokenOfArray(key: byte array) =
+  let internal TokenOfArray(key : byte array) =
     hash.ComputeHash(key)
     |> Array.rev
     |> Array.take 8
 
-  let internal TokenOfKey(key: StrongNameKeyData) =
+  let internal TokenOfKey(key : StrongNameKeyData) =
     key
     |> publicKeyOfKey
     |> TokenOfArray
     |> Array.toList
 
-  let internal TokenAsULong(token: byte array) = BitConverter.ToUInt64(token, 0)
+  let internal TokenAsULong(token : byte array) = BitConverter.ToUInt64(token, 0)
 
-  let internal KeyToIndex(key: StrongNameKeyData) =
+  let internal KeyToIndex(key : StrongNameKeyData) =
     key
     |> TokenOfKey
     |> List.toArray
     |> TokenAsULong
 
-  let internal ArrayToIndex(key: byte array) =
+  let internal ArrayToIndex(key : byte array) =
     key
     |> TokenOfArray
     |> TokenAsULong
 
-  let internal KeyToRecord(key: StrongNameKeyData) =
+  let internal KeyToRecord(key : StrongNameKeyData) =
     { Pair = key
       Token = TokenOfKey key }
 
@@ -212,7 +212,7 @@ module internal Visitor =
   let internal TrackingNames = new List<String>()
   let internal NameFilters = new List<FilterClass>()
 
-  let mutable internal staticFilter: StaticFilter option = None
+  let mutable internal staticFilter : StaticFilter option = None
   let internal showGenerated = ref false
 
   let generationFilter =
@@ -270,15 +270,15 @@ module internal Visitor =
   let InstrumentDirectories() = (inplaceSelection InputDirectories OutputDirectories)()
   let SourceDirectories() = (inplaceSelection OutputDirectories InputDirectories)()
 
-  let mutable internal reportPath: Option<string> = None
+  let mutable internal reportPath : Option<string> = None
   let defaultReportPath = "coverage.xml"
   let ReportPath() = Path.GetFullPath(Option.getOrElse defaultReportPath reportPath)
 
-  let mutable internal interval: Option<int> = None
+  let mutable internal interval : Option<int> = None
   let defaultInterval = 0
   let Interval() = (Option.getOrElse defaultInterval interval)
 
-  let mutable internal reportFormat: Option<ReportFormat> = None
+  let mutable internal reportFormat : Option<ReportFormat> = None
   let mutable internal coverstyle = CoverStyle.All
 
   let defaultReportFormat() =
@@ -292,20 +292,20 @@ module internal Visitor =
     then ReportFormat.OpenCoverWithTracking
     else fmt
 
-  let mutable internal defaultStrongNameKey: option<StrongNameKeyData> = None
-  let mutable internal recorderStrongNameKey: option<StrongNameKeyData> = None
+  let mutable internal defaultStrongNameKey : option<StrongNameKeyData> = None
+  let mutable internal recorderStrongNameKey : option<StrongNameKeyData> = None
   let internal keys = new Dictionary<UInt64, KeyRecord>()
 
-  let internal Add(key: StrongNameKeyData) =
+  let internal Add(key : StrongNameKeyData) =
     let index = KeyStore.KeyToIndex key
     keys.[index] <- KeyStore.KeyToRecord key
 
-  let methodFile (m: MethodDefinition) =
+  let methodFile (m : MethodDefinition) =
     m.DebugInformation.SequencePoints
     |> Seq.tryHead // assume methods can only be in one file
     |> Option.map (fun sp -> sp.Document.Url)
 
-  let typeFiles (t: TypeDefinition) =
+  let typeFiles (t : TypeDefinition) =
     Option.nullable t.Methods
     |> Option.map (fun ms ->
          ms
@@ -313,14 +313,14 @@ module internal Visitor =
          |> Seq.choose id
          |> Seq.distinct)
 
-  let moduleFiles (m: ModuleDefinition) =
+  let moduleFiles (m : ModuleDefinition) =
     m.GetAllTypes()
     |> Seq.map typeFiles
     |> Seq.choose id
     |> Seq.collect id
     |> Seq.distinct
 
-  let localFilter (nameProvider: Object) =
+  let localFilter (nameProvider : Object) =
     match nameProvider with
     | :? AssemblyDefinition as a ->
         !local && a.MainModule
@@ -331,7 +331,7 @@ module internal Visitor =
                   |> not
     | _ -> false
 
-  let IsIncluded(nameProvider: Object) =
+  let IsIncluded(nameProvider : Object) =
     if (NameFilters |> Seq.exists (Filter.Match nameProvider))
        || localFilter nameProvider then
       Inspect.Ignore
@@ -345,15 +345,15 @@ module internal Visitor =
   let IsInstrumented x = (x &&& Inspect.Instrument) = Inspect.Instrument
   let ToSeq node = List.toSeq [ node ]
 
-  let mutable private PointNumber: int = 0
-  let mutable private BranchNumber: int = 0
-  let mutable private MethodNumber: int = 0
-  let mutable internal SourceLinkDocuments: Dictionary<string, string> option = None
+  let mutable private PointNumber : int = 0
+  let mutable private BranchNumber : int = 0
+  let mutable private MethodNumber : int = 0
+  let mutable internal SourceLinkDocuments : Dictionary<string, string> option = None
 
-  let internal EnsureEndsWith c (s: string) =
+  let internal EnsureEndsWith c (s : string) =
     if s.EndsWith(c, StringComparison.Ordinal) then s else s + c
 
-  let internal GetRelativePath (relativeTo: string) path =
+  let internal GetRelativePath (relativeTo : string) path =
     if Path.GetFullPath path = Path.GetFullPath relativeTo then
       String.Empty
     else
@@ -362,7 +362,7 @@ module internal Visitor =
       Uri.UnescapeDataString(uri.MakeRelativeUri(new Uri(path)).ToString())
          .Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar)
 
-  let internal Exists(url: Uri) =
+  let internal Exists(url : Uri) =
     let request = System.Net.WebRequest.CreateHttp(url)
     request.Method <- "HEAD"
     try
@@ -371,7 +371,7 @@ module internal Visitor =
                                      |> int < 400
     with :? WebException -> false
 
-  let internal FindClosestMatch file (dict: Dictionary<string, string>) =
+  let internal FindClosestMatch file (dict : Dictionary<string, string>) =
     dict.Keys
     |> Seq.filter (fun x ->
          x
@@ -408,7 +408,7 @@ module internal Visitor =
         | (true, url) -> url
         | _ -> LocateMatch file dict
 
-  let significant (m: MethodDefinition) =
+  let significant (m : MethodDefinition) =
     [ Filter.IsFSharpInternal
       Filter.IsCSharpAutoProperty
       (fun m -> specialCaseFilters |> Seq.exists (Filter.Match m))
@@ -433,8 +433,8 @@ module internal Visitor =
 
   let private accumulator = HashSet<AssemblyDefinition>()
 
-  let private StartVisit (paths: seq<string * string list>)
-      (buildSequence: Node -> seq<Node>) =
+  let private StartVisit (paths : seq<string * string list>)
+      (buildSequence : Node -> seq<Node>) =
     paths
     |> Seq.collect (fun (path, targets) ->
          let makeInspection x =
@@ -461,7 +461,7 @@ module internal Visitor =
              >> makeInspection
              >> buildSequence))
 
-  let private VisitAssembly (a: AssemblyDefinition) included buildSequence =
+  let private VisitAssembly (a : AssemblyDefinition) included buildSequence =
     a.Modules
     |> Seq.cast
     |> Seq.collect
@@ -482,7 +482,7 @@ module internal Visitor =
     then Exemption.Automatic
     else exemption
 
-  let private VisitModule (x: ModuleDefinition) included buildSequence =
+  let private VisitModule (x : ModuleDefinition) included buildSequence =
     ZeroPoints()
     SourceLinkDocuments <-
       Some x
@@ -503,7 +503,7 @@ module internal Visitor =
          ((fun t ->
            let types =
              Seq.unfold
-               (fun (state: TypeDefinition) ->
+               (fun (state : TypeDefinition) ->
                  if isNull state then None else Some(state, state.DeclaringType)) t
              |> Seq.toList
 
@@ -517,7 +517,7 @@ module internal Visitor =
            Type(t, inclusion, visitcount))
           >> buildSequence)
 
-  let internal Track(m: MethodDefinition) =
+  let internal Track(m : MethodDefinition) =
     let name = m.Name
     let fullname = m.DeclaringType.FullName.Replace('/', '.') + "." + name
     TrackingNames
@@ -548,7 +548,7 @@ module internal Visitor =
          MethodNumber <- id
          (id, n))
 
-  let private CSharpContainingMethod (name: string) (ct: TypeDefinition) index predicate =
+  let private CSharpContainingMethod (name : string) (ct : TypeDefinition) index predicate =
     let stripped = name.Substring(1, index).Replace('-', '.')
     let methods = ct.Methods
 
@@ -576,7 +576,7 @@ module internal Visitor =
                                         (tag, StringComparison.Ordinal) >= 0)))
         |> Seq.tryFind predicate
 
-  let SameType (target: TypeReference) (candidate: TypeReference) =
+  let SameType (target : TypeReference) (candidate : TypeReference) =
     if target = candidate then
       true
     else if target.HasGenericParameters then
@@ -591,7 +591,7 @@ module internal Visitor =
     else
       false
 
-  let SameFunction (target: MethodReference) (candidate: MethodReference) =
+  let SameFunction (target : MethodReference) (candidate : MethodReference) =
     if target = candidate then
       true
     else if SameType target.DeclaringType candidate.DeclaringType then
@@ -601,14 +601,14 @@ module internal Visitor =
     else
       false
 
-  let MethodConstructsType (t: TypeReference) (m: MethodDefinition) =
+  let MethodConstructsType (t : TypeReference) (m : MethodDefinition) =
     m.Body.Instructions
     |> Seq.filter (fun i -> i.OpCode = OpCodes.Newobj)
     |> Seq.exists (fun i ->
          let tn = (i.Operand :?> MethodReference).DeclaringType
          SameType t tn)
 
-  let private FSharpContainingMethod (t: TypeDefinition) (tx: TypeReference) =
+  let private FSharpContainingMethod (t : TypeDefinition) (tx : TypeReference) =
     let candidates =
       t.DeclaringType.Methods.Concat
         (t.DeclaringType.NestedTypes
@@ -617,21 +617,21 @@ module internal Visitor =
       |> Seq.filter (fun m -> m.HasBody)
     candidates |> Seq.tryFind (MethodConstructsType tx)
 
-  let MethodCallsMethod (t: MethodReference) (m: MethodDefinition) =
+  let MethodCallsMethod (t : MethodReference) (m : MethodDefinition) =
     m.Body.Instructions
     |> Seq.filter (fun i -> i.OpCode = OpCodes.Call)
     |> Seq.exists (fun i ->
          let tn = (i.Operand :?> MethodReference)
          SameFunction t tn)
 
-  let MethodLoadsMethod (t: MethodReference) (m: MethodDefinition) =
+  let MethodLoadsMethod (t : MethodReference) (m : MethodDefinition) =
     m.Body.Instructions
     |> Seq.filter (fun i -> i.OpCode = OpCodes.Ldftn)
     |> Seq.exists (fun i ->
          let tn = (i.Operand :?> MethodReference)
          SameFunction t tn)
 
-  let internal ContainingMethod(m: MethodDefinition) =
+  let internal ContainingMethod(m : MethodDefinition) =
     let mname = m.Name
     let t = m.DeclaringType
 
@@ -689,10 +689,10 @@ module internal Visitor =
     else if !showGenerated then SelectAutomatic items exemption
     else exemption
 
-  let private VisitType (t: TypeDefinition) included basevc buildSequence =
+  let private VisitType (t : TypeDefinition) included basevc buildSequence =
     t.Methods
     |> Seq.cast
-    |> Seq.filter (fun (m: MethodDefinition) ->
+    |> Seq.filter (fun (m : MethodDefinition) ->
          not m.IsAbstract && not m.IsRuntime && not m.IsPInvokeImpl && m.HasBody)
     |> Seq.map (fun m ->
          let key =
@@ -707,7 +707,7 @@ module internal Visitor =
     |> Seq.collect
          ((fun (m, k) ->
            let methods =
-             Seq.unfold (fun (state: MethodDefinition option) ->
+             Seq.unfold (fun (state : MethodDefinition option) ->
                match state with
                | None -> None
                | Some x -> Some(x, ContainingMethod x)) (Some m)
@@ -719,13 +719,13 @@ module internal Visitor =
            Method(m, inclusion, Track m, visitcount))
           >> buildSequence)
 
-  let IsSequencePoint(s: SequencePoint) =
+  let IsSequencePoint(s : SequencePoint) =
     (s
      |> isNull
      |> not)
     && s.IsHidden |> not
 
-  let fakeSequencePoint genuine (seq: SequencePoint) (instruction: Instruction) =
+  let fakeSequencePoint genuine (seq : SequencePoint) (instruction : Instruction) =
     match seq with
     | null ->
         if genuine = FakeAfterReturn && instruction
@@ -737,21 +737,21 @@ module internal Visitor =
           null
     | _ -> seq
 
-  let findEffectiveSequencePoint genuine (dbg: MethodDebugInformation)
-      (instructions: Instruction seq) =
+  let findEffectiveSequencePoint genuine (dbg : MethodDebugInformation)
+      (instructions : Instruction seq) =
     instructions
     |> Seq.map (fun i ->
          let seq = dbg.GetSequencePoint i
          fakeSequencePoint genuine seq i.Previous)
     |> Seq.tryFind IsSequencePoint
 
-  let findSequencePoint (dbg: MethodDebugInformation) (instructions: Instruction seq) =
+  let findSequencePoint (dbg : MethodDebugInformation) (instructions : Instruction seq) =
     findEffectiveSequencePoint Genuine dbg instructions
 
   let indexList l = l |> List.mapi (fun i x -> (i, x))
 
-  let getJumpChain (terminal: Instruction) (i: Instruction) =
-    let rec accumulate (state: Instruction) l =
+  let getJumpChain (terminal : Instruction) (i : Instruction) =
+    let rec accumulate (state : Instruction) l =
       let gendarme = l
       if state.OpCode = OpCodes.Br || state.OpCode = OpCodes.Br_S then
         let target = (state.Operand :?> Instruction)
@@ -769,22 +769,22 @@ module internal Visitor =
         accumulate state.Next gendarme
     accumulate i [ i ]
 
-  let private boundaryOfList (f: (Instruction -> int) -> Instruction list -> Instruction)
-      (places: Instruction list) = places |> f (fun i -> i.Offset)
+  let private boundaryOfList (f : (Instruction -> int) -> Instruction list -> Instruction)
+      (places : Instruction list) = places |> f (fun i -> i.Offset)
 
-  let includedSequencePoint dbg (toNext: Instruction list) toJump =
+  let includedSequencePoint dbg (toNext : Instruction list) toJump =
     let places = List.concat [ toNext; toJump ]
     let start = places |> (boundaryOfList List.minBy)
     let finish = places |> (boundaryOfList List.maxBy)
 
     let range =
-      Seq.unfold (fun (state: Cil.Instruction) ->
+      Seq.unfold (fun (state : Cil.Instruction) ->
         if isNull state || finish = state.Previous then None else Some(state, state.Next))
         start
       |> Seq.toList
     findEffectiveSequencePoint FakeAfterReturn dbg range
 
-  let rec lastOfSequencePoint (dbg: MethodDebugInformation) (i: Instruction) =
+  let rec lastOfSequencePoint (dbg : MethodDebugInformation) (i : Instruction) =
     let n = i.Next
     if n
        |> isNull
@@ -795,7 +795,7 @@ module internal Visitor =
     else
       lastOfSequencePoint dbg n
 
-  let getJumps (dbg: MethodDebugInformation) (i: Instruction) =
+  let getJumps (dbg : MethodDebugInformation) (i : Instruction) =
     let terminal = lastOfSequencePoint dbg i
     let next = i.Next
     if i.OpCode = OpCodes.Switch then
@@ -826,7 +826,7 @@ module internal Visitor =
       (@"\<[^\s>]+\>\w__\w(\w)?::MoveNext\(\)$",
        RegexOptions.Compiled ||| RegexOptions.ExplicitCapture)
 
-  let private CoalesceBranchPoints dbg (bps: GoTo seq) =
+  let private CoalesceBranchPoints dbg (bps : GoTo seq) =
     let selectRepresentatives (_, bs) =
       let last = lastOfSequencePoint dbg (bs |> Seq.head).Start
       let lastOffset = last.Offset
@@ -899,7 +899,7 @@ module internal Visitor =
     let skip = IsMoveNext.IsMatch methodFullName |> Augment.Increment
     (Seq.map
       (snd
-       >> (fun (i: Instruction) ->
+       >> (fun (i : Instruction) ->
        getJumps dbg
          i // if two or more jumps go between the same two places, coalesce them
        |> List.groupBy (fun (_, _, o, _) -> o)
@@ -918,13 +918,13 @@ module internal Visitor =
              |> not)
         |> Seq.concat
         |> Seq.filter
-             (fun (i: Instruction) -> i.OpCode.FlowControl = FlowControl.Cond_Branch)
+             (fun (i : Instruction) -> i.OpCode.FlowControl = FlowControl.Cond_Branch)
         |> Seq.mapi (fun n i -> (n, i)) //
         |> Seq.filter (fun (n, _) -> n >= skip)))
     |> Seq.filter (fun l -> !coalesceBranches || l.Length > 1) // TODO revisit
     |> Seq.collect id
     |> Seq.mapi (fun i (path, (from, target, indexes)) ->
-         Seq.unfold (fun (state: Cil.Instruction) ->
+         Seq.unfold (fun (state : Cil.Instruction) ->
            state
            |> Option.nullable
            |> Option.map (fun state' -> (state', state'.Previous))) from
@@ -950,7 +950,7 @@ module internal Visitor =
     |> Seq.map BranchPoint
     |> Seq.toList
 
-  let private VisitMethod (m: MethodDefinition) (included: Inspect) vc =
+  let private VisitMethod (m : MethodDefinition) (included : Inspect) vc =
     let rawInstructions = m.Body.Instructions
     let dbg = m.DebugInformation
 
@@ -961,7 +961,7 @@ module internal Visitor =
            |> isNull
            |> not)
       |> Seq.concat
-      |> Seq.filter (fun (x: Instruction) ->
+      |> Seq.filter (fun (x : Instruction) ->
            if dbg.HasSequencePoints then
              let s = dbg.GetSequencePoint x
              (not << isNull) s && (s.IsHidden |> not)
@@ -974,7 +974,7 @@ module internal Visitor =
     PointNumber <- point + number
     let interesting = IsInstrumented included
 
-    let wanted i (s: SequencePoint) =
+    let wanted i (s : SequencePoint) =
       i && (s.Document.Url
             |> IsIncluded
             |> IsInstrumented)
@@ -993,7 +993,7 @@ module internal Visitor =
         |> Seq.map
              (fun i -> MethodPoint(i, None, m.MetadataToken.ToInt32(), interesting, vc))
       else
-        instructions.OrderByDescending(fun (x: Instruction) -> x.Offset)
+        instructions.OrderByDescending(fun (x : Instruction) -> x.Offset)
         |> Seq.mapi (fun i x ->
              let s = dbg.GetSequencePoint(x)
              MethodPoint
@@ -1036,11 +1036,11 @@ module internal Visitor =
         Deeper node
         node.After() ]
 
-  let internal invoke (node: Node) (visitor: Fix<Node>) = visitor.Invoke(node)
-  let internal apply (visitors: list<Fix<Node>>) (node: Node) =
+  let internal invoke (node : Node) (visitor : Fix<Node>) = visitor.Invoke(node)
+  let internal apply (visitors : list<Fix<Node>>) (node : Node) =
     visitors |> List.map (invoke node)
 
-  let internal Visit (visitors: seq<Fix<Node>>) (assemblies: seq<string * string list>) =
+  let internal Visit (visitors : seq<Fix<Node>>) (assemblies : seq<string * string list>) =
     ZeroPoints()
     MethodNumber <- 0
     try
@@ -1052,9 +1052,9 @@ module internal Visitor =
       accumulator |> Seq.iter (fun a -> (a :> IDisposable).Dispose())
       accumulator.Clear()
 
-  let EncloseState (visitor: 'State -> 'T -> 'State) (current: 'State) =
+  let EncloseState (visitor : 'State -> 'T -> 'State) (current : 'State) =
     let rec stateful l =
-      new Fix<'T>(fun (node: 'T) ->
+      new Fix<'T>(fun (node : 'T) ->
       let next = visitor l node
       stateful next)
     stateful current

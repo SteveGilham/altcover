@@ -13,28 +13,28 @@ module internal Naming =
   let suffixIfNotIsNullOrWhiteSpace name suffix =
     if String.IsNullOrWhiteSpace name then String.Empty else (name + suffix)
 
-  let TypeName(def: TypeDefinition) = emptyIfIsNullOrWhiteSpace def.Name
-  let TypeRefName(def: TypeReference) = emptyIfIsNullOrWhiteSpace def.Name
+  let TypeName(def : TypeDefinition) = emptyIfIsNullOrWhiteSpace def.Name
+  let TypeRefName(def : TypeReference) = emptyIfIsNullOrWhiteSpace def.Name
 
-  let rec FullTypeName(def: TypeDefinition) =
+  let rec FullTypeName(def : TypeDefinition) =
     let deft = def.DeclaringType
     if isNotNull deft
     then (FullTypeName deft) + "+" + (TypeName def)
     else (suffixIfNotIsNullOrWhiteSpace def.Namespace ".") + TypeName def
 
-  let rec FullTypeRefName(def: TypeReference) =
+  let rec FullTypeRefName(def : TypeReference) =
     let deft = def.DeclaringType
     if isNotNull deft
     then (FullTypeRefName deft) + "+" + (TypeRefName def)
     else (suffixIfNotIsNullOrWhiteSpace def.Namespace ".") + TypeRefName def
 
-  let MethodName(def: MethodDefinition) =
+  let MethodName(def : MethodDefinition) =
     if def.IsConstructor && (not def.IsStatic) then
       "#ctor"
     else
       emptyIfIsNullOrWhiteSpace def.Name
 
-  let FullMethodName(def: MethodDefinition) =
+  let FullMethodName(def : MethodDefinition) =
     let parameters =
       String.Join
         (",",

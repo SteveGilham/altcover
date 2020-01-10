@@ -6,22 +6,22 @@ open System.IO
 open System.Xml.Linq
 
 module internal LCov =
-  let internal path: Option<string> ref = ref None
+  let internal path : Option<string> ref = ref None
 
-  let DoWith (create: unit -> 'a) (action: 'a -> unit) =
+  let DoWith (create : unit -> 'a) (action : 'a -> unit) =
     use stream = create()
     action stream
 
   let X = OpenCover.X
 
-  let lineOfMethod (m: XElement) =
+  let lineOfMethod (m : XElement) =
     (m.Descendants(X "seqpnt") |> Seq.head).Attribute(X "line").Value
     |> Int32.TryParse
     |> snd
 
   let SortByFirst s = s |> Seq.sortBy fst
 
-  let multiSort (by: 'a -> int) (l: (string * 'a seq) seq) =
+  let multiSort (by : 'a -> int) (l : (string * 'a seq) seq) =
     l
     |> Seq.map (fun (f, ms) ->
          (f,
@@ -30,10 +30,10 @@ module internal LCov =
           |> Seq.toList))
     |> SortByFirst
 
-  let multiSortByNameAndStartLine (l: (string * XElement seq) seq) =
+  let multiSortByNameAndStartLine (l : (string * XElement seq) seq) =
     multiSort lineOfMethod l
 
-  let ConvertReport (report: XDocument) (format: Base.ReportFormat) (stream: Stream) =
+  let ConvertReport (report : XDocument) (format : Base.ReportFormat) (stream : Stream) =
     DoWith (fun () -> new StreamWriter(stream)) (fun writer ->
       //If available, a tracefile begins with the testname which
       //   is stored in the following format:
@@ -56,7 +56,7 @@ module internal LCov =
                //
                //  SF:<absolute path to the source file>
                writer.WriteLine("SF:" + f)
-               let fullname (m: XElement) =
+               let fullname (m : XElement) =
                  let fna = m.Attribute(X "fullname")
                  if fna |> isNull
                  then m.Attribute(X "class").Value + "." + m.Attribute(X "name").Value
@@ -159,7 +159,7 @@ module internal LCov =
                       |> Seq.exists (fun r -> r.Attribute(X "uid").Value = uid))
                  |> Seq.toList
 
-               let FN(ms: XElement list) =
+               let FN(ms : XElement list) =
                  ms
                  |> Seq.iter (fun m ->
                       m.Descendants(X "SequencePoint")
@@ -178,7 +178,7 @@ module internal LCov =
                // Next, there is a list of execution counts for each  instrumented  function:
                //
                // FNDA:<execution count>,<function name>
-               let FNDA(ms: XElement list) =
+               let FNDA(ms : XElement list) =
                  ms
                  |> Seq.iter (fun m ->
                       m.Descendants(X "SequencePoint")
@@ -212,7 +212,7 @@ module internal LCov =
                // Block number and branch number are gcc internal  IDs  for  the  branch.
                // Taken  is either '-' if the basic block containing the branch was never
                // executed or a number indicating how often that branch was taken.
-               let Branch(ms: XElement list) =
+               let Branch(ms : XElement list) =
                  let (brf, brh, _) =
                    ms
                    |> Seq.collect (fun m -> m.Descendants(X "BranchPoint"))
@@ -272,7 +272,7 @@ module internal LCov =
                // end_of_record
                writer.WriteLine "end_of_record"))
 
-  let Summary (report: XDocument) (format: Base.ReportFormat) result =
+  let Summary (report : XDocument) (format : Base.ReportFormat) result =
     DoWith (fun () -> File.OpenWrite(!path |> Option.get))
       (ConvertReport report format)
     result

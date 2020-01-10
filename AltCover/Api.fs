@@ -24,7 +24,7 @@ type CollectParams =
   | Primitive of Primitive.CollectParams
   | TypeSafe of TypeSafe.CollectParams
 
-  static member private ToSeq(s: String seq) =
+  static member private ToSeq(s : String seq) =
     match s with
     | null -> Seq.empty<string>
     | _ -> s
@@ -79,7 +79,7 @@ type CollectParams =
 
 #if RUNNER
 #else
-  member internal self.SetCommandLine(args: string seq) =
+  member internal self.SetCommandLine(args : string seq) =
     match self with
     | Primitive p -> Primitive { p with CommandLine = args }
     | TypeSafe t ->
@@ -142,12 +142,12 @@ type PrepareParams =
   | Primitive of Primitive.PrepareParams
   | TypeSafe of TypeSafe.PrepareParams
 
-  static member private ToSeq(s: 'a seq) =
+  static member private ToSeq(s : 'a seq) =
     match s with
     | null -> Seq.empty<'a>
     | _ -> s
 
-  static member private ToList(s: 'a seq) =
+  static member private ToList(s : 'a seq) =
     s
     |> PrepareParams.ToSeq
     |> Seq.toList
@@ -264,7 +264,7 @@ type PrepareParams =
 
 #if RUNNER
 #else
-  member internal self.SetCommandLine(args: string seq) =
+  member internal self.SetCommandLine(args : string seq) =
     match self with
     | Primitive p -> Primitive { p with CommandLine = args }
     | TypeSafe t ->
@@ -395,7 +395,7 @@ type Logging =
 
   static member Create() = Primitive.Logging.Create() |> Primitive
 
-  static member ActionAdapter(a: Action<String>) =
+  static member ActionAdapter(a : Action<String>) =
     match a with
     | null -> ignore
     | _ -> a.Invoke
@@ -447,7 +447,7 @@ module internal Args =
   let private Flag a x =
     if x then [ a ] else []
 
-  let internal ItemLists(args: PrepareParams) =
+  let internal ItemLists(args : PrepareParams) =
     [ ("-i", args.InputDirectories)
       ("-o", args.OutputDirectories)
       ("-y", args.SymbolDirectories)
@@ -463,16 +463,16 @@ module internal Args =
       ("-c", args.CallContext) ]
     |> List.collect (fun (a, b) -> ItemList a b)
 
-  let internal Items(args: PrepareParams) =
+  let internal Items(args : PrepareParams) =
     [ ("--sn", args.StrongNameKey)
       ("-x", args.XmlReport) ]
     |> List.collect (fun (a, b) -> Item a b)
 
-  let internal OptItems(args: PrepareParams) =
+  let internal OptItems(args : PrepareParams) =
     [ ("--showstatic", args.ShowStatic, [ "-" ]) ]
     |> List.collect (fun (a, b, c) -> OptItem a b c)
 
-  let internal Flags(args: PrepareParams) =
+  let internal Flags(args : PrepareParams) =
     [ ("--opencover", args.OpenCover)
       ("--inplace", args.InPlace)
       ("--save", args.Save)
@@ -487,7 +487,7 @@ module internal Args =
       ("--showGenerated", args.ShowGenerated) ]
     |> List.collect (fun (a, b) -> Flag a b)
 
-  let Prepare(args: PrepareParams) =
+  let Prepare(args : PrepareParams) =
     let argsList = args.CommandLine |> Seq.toList
 
     let trailing =
@@ -498,7 +498,7 @@ module internal Args =
 
     [ parameters; trailing ] |> List.concat
 
-  let Collect(args: CollectParams) =
+  let Collect(args : CollectParams) =
     let argsList = args.CommandLine |> Seq.toList
 
     let trailing =
@@ -523,8 +523,8 @@ module internal Args =
 #if RUNNER
 
 type ValidatedCommandLine =
-  { Command: string list
-    Errors: string array }
+  { Command : string list
+    Errors : string array }
   override self.ToString() =
     let cl =
       String.Join
@@ -556,7 +556,8 @@ let splitCommandLine s =
      else BlackFox.CommandLine.MonoUnixCommandLine.parse
   |> Seq.toList
 
-let buildDotNetTestCommandLine (options: DotNet.TestOptions -> DotNet.TestOptions) project =
+let buildDotNetTestCommandLine (options : DotNet.TestOptions -> DotNet.TestOptions)
+    project =
   let dotnet = typeof<Fake.DotNet.DotNet.TestOptions>.DeclaringType
   let builder =
     dotnet.GetMethod("buildTestArgs", BindingFlags.Static ||| BindingFlags.NonPublic)
@@ -595,24 +596,24 @@ type ToolType =
 [<NoComparison; NoEquality>]
 type Params =
   { /// Path to the Altcover executable.
-    ToolPath: string
+    ToolPath : string
     /// Which version of the tool
-    ToolType: ToolType
+    ToolType : ToolType
     /// Define the tool through FAKE 5.18 ToolType -- if set, overrides
-    FakeToolType: Fake.DotNet.ToolType option
+    FakeToolType : Fake.DotNet.ToolType option
     /// Working directory for relative file paths.  Default is the current working directory
-    WorkingDirectory: string
+    WorkingDirectory : string
     /// Command arguments
-    Args: ArgType }
+    Args : ArgType }
 
-  static member Create(a: ArgType) =
+  static member Create(a : ArgType) =
     { ToolPath = "altcover"
       ToolType = Global
       FakeToolType = None
       WorkingDirectory = String.Empty
       Args = a }
 
-  member this.WithCreateProcess(command: CreateProcess<_>) =
+  member this.WithCreateProcess(command : CreateProcess<_>) =
     match command.Command with
     | RawCommand(tool, args) ->
         match this.Args with
@@ -628,7 +629,7 @@ type Params =
         | GetVersion -> this
     | _ -> this
 
-  member this.WithToolType(tool: Fake.DotNet.ToolType) =
+  member this.WithToolType(tool : Fake.DotNet.ToolType) =
     { this with FakeToolType = Some tool }
 
 let internal createArgs parameters =
@@ -639,7 +640,7 @@ let internal createArgs parameters =
   | GetVersion -> [ "version" ]
 
 let internal createProcess parameters args =
-  let doFakeTool (tool: Fake.DotNet.ToolType) =
+  let doFakeTool (tool : Fake.DotNet.ToolType) =
     CreateProcess.fromCommand (RawCommand(parameters.ToolPath, args |> Arguments.OfArgs))
     |> CreateProcess.withToolType (tool.WithDefaultToolCommandName "altcover")
 
@@ -696,7 +697,7 @@ let runCore parameters modifyCommand =
 let run parameters = runCore parameters id
 
 let runWithMono monoPath parameters =
-  let withMono (command: CreateProcess<_>) =
+  let withMono (command : CreateProcess<_>) =
     match parameters.FakeToolType with
     | Some tool ->
         if tool.GetType().FullName = "Fake.DotNet.ToolType+FullFramework"

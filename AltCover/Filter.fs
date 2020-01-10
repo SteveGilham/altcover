@@ -34,19 +34,19 @@ type internal StaticFilter =
 
 [<ExcludeFromCodeCoverage; NoComparison>]
 type internal FilterRegex =
-  { Regex: Regex
-    Sense: FilterSense }
-  static member Exclude(s: Regex) =
+  { Regex : Regex
+    Sense : FilterSense }
+  static member Exclude(s : Regex) =
     { Regex = s
       Sense = Exclude }
 
 [<ExcludeFromCodeCoverage; NoComparison>]
 type internal FilterClass =
-  { Scope: FilterScope
-    Regex: Regex
-    Sense: FilterSense }
+  { Scope : FilterScope
+    Regex : Regex
+    Sense : FilterSense }
 
-  static member Build scope (regex: FilterRegex) =
+  static member Build scope (regex : FilterRegex) =
     { Scope = scope
       Regex = regex.Regex
       Sense = regex.Sense }
@@ -56,7 +56,7 @@ type internal FilterClass =
 
 module internal Filter =
 
-  let rec private MatchAttribute (name: Regex) f (nameProvider: Object) =
+  let rec private MatchAttribute (name : Regex) f (nameProvider : Object) =
     (match nameProvider with
      | :? MethodDefinition as m ->
          if m.IsGetter || m.IsSetter then
@@ -79,7 +79,7 @@ module internal Filter =
                                                      |> f
         | _ -> false)
 
-  let MatchItem<'a> (name: Regex) f (nameProvider: Object) (toName: 'a -> string) =
+  let MatchItem<'a> (name : Regex) f (nameProvider : Object) (toName : 'a -> string) =
     match nameProvider with
     | :? 'a as item ->
         item
@@ -88,7 +88,7 @@ module internal Filter =
         |> f
     | _ -> false
 
-  let internal Match (nameProvider: Object) (filter: FilterClass) =
+  let internal Match (nameProvider : Object) (filter : FilterClass) =
     let f = filter.Apply
     match filter.Scope with
     | File -> MatchItem<string> filter.Regex f nameProvider Path.GetFileName
@@ -107,14 +107,14 @@ module internal Filter =
     | Attribute -> MatchAttribute filter.Regex f nameProvider
     | Path -> MatchItem<string> filter.Regex f nameProvider Path.GetFullPath
 
-  let internal IsCSharpAutoProperty(m: MethodDefinition) =
+  let internal IsCSharpAutoProperty(m : MethodDefinition) =
     (m.IsSetter || m.IsGetter) && m.HasCustomAttributes
     && m.CustomAttributes
        |> Seq.exists
             (fun x ->
               x.AttributeType.FullName = typeof<CompilerGeneratedAttribute>.FullName)
 
-  let internal IsFSharpInternalAlgebraic(m: MethodDefinition) =
+  let internal IsFSharpInternalAlgebraic(m : MethodDefinition) =
     // Discriminated Union/Sum/Algebraic data types are implemented as
     // subtypes nested in the base type
     // Algebraic types have debug proxies nested in the base type which are not attributed at the type level
@@ -187,7 +187,7 @@ module internal Filter =
                     || fullName = typeof<DebuggerNonUserCodeAttribute>.FullName
                     || fullName = typeof<CompilationMappingAttribute>.FullName)))
 
-  let internal IsFSharpAutoProperty(m: MethodDefinition) =
+  let internal IsFSharpAutoProperty(m : MethodDefinition) =
     let body = m.Body.Instructions
     if m.IsSetter then
       body
@@ -208,5 +208,5 @@ module internal Filter =
     else
       false
 
-  let internal IsFSharpInternal(m: MethodDefinition) =
+  let internal IsFSharpInternal(m : MethodDefinition) =
     IsFSharpAutoProperty m || IsFSharpInternalAlgebraic m
