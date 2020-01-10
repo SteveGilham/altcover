@@ -19,7 +19,7 @@ let getFileExists f =
     eprintfn "Treating %s as a file caused %A" f x
     None
 
-let loadInCecil (path: string) =
+let loadInCecil (path : string) =
   try
     path
     |> AssemblyDefinition.ReadAssembly
@@ -28,7 +28,7 @@ let loadInCecil (path: string) =
     eprintfn "Treating %s as an assembly caused %A" path x
     None
 
-let checkCalls (m: MethodDefinition) =
+let checkCalls (m : MethodDefinition) =
   let il = m.Body.Instructions
   il
   |> Seq.filter (fun i -> i.OpCode = OpCodes.Call)
@@ -69,7 +69,7 @@ let checkCalls (m: MethodDefinition) =
                        eprintfn "Suspicious jump in %s from %A to %A" m.FullName o p)
             | _ -> ()))
 
-let inspect (def: AssemblyDefinition) =
+let inspect (def : AssemblyDefinition) =
   def.MainModule.GetAllTypes()
   |> Seq.collect (fun t -> t.Methods)
   |> Seq.filter (fun m -> m.HasBody)

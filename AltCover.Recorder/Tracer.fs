@@ -19,13 +19,13 @@ type internal Close =
 
 [<NoComparison>]
 type Tracer =
-  { Tracer: string
-    Runner: bool
-    Definitive: bool
-    Stream: System.IO.Stream
-    Formatter: System.IO.BinaryWriter }
+  { Tracer : string
+    Runner : bool
+    Definitive : bool
+    Stream : System.IO.Stream
+    Formatter : System.IO.BinaryWriter }
 
-  static member Create(name: string) =
+  static member Create(name : string) =
     { Tracer = name
       Runner = false
       Definitive = false
@@ -86,12 +86,12 @@ type Tracer =
                   this.PushContext Null))
         this.Formatter.Write String.Empty
 
-  member internal this.Push (moduleId: string) (hitPointId: int) context =
+  member internal this.Push (moduleId : string) (hitPointId : int) context =
     this.Formatter.Write moduleId
     this.Formatter.Write hitPointId
     this.PushContext context
 
-  member internal this.CatchUp(visits: Dictionary<string, Dictionary<int, PointVisit>>) =
+  member internal this.CatchUp(visits : Dictionary<string, Dictionary<int, PointVisit>>) =
     if visits.Count > 0 then
       visits
       |> Table

@@ -188,7 +188,8 @@ module internal Instrument =
            worker.InsertBefore(head, worker.Create(OpCodes.Ret))
            initialBody |> Seq.iter worker.Remove)
 
-      [ ("get_Timer", Visitor.Interval()) ]
+      [ (// set the timer interval in ticks
+         "get_Timer", Visitor.Interval()) ]
       |> List.iter (fun (property, value) ->
            let pathGetterDef =
              definition.MainModule.GetTypes()

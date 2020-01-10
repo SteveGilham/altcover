@@ -17,20 +17,20 @@ type CoverageTool =
 
 [<NoComparison>]
 type InvalidFile =
-  { File: FileInfo
-    Fault: Exception }
+  { File : FileInfo
+    Fault : Exception }
 
 module Transformer =
-  let internal DefaultHelper (_: XDocument) (document: XDocument) = document
+  let internal DefaultHelper (_ : XDocument) (document : XDocument) = document
 
-  let internal LoadTransform(path: string) =
+  let internal LoadTransform(path : string) =
     let stylesheet =
       XmlReader.Create(Assembly.GetExecutingAssembly().GetManifestResourceStream(path))
     let xmlTransform = new XslCompiledTransform()
     xmlTransform.Load(stylesheet, new XsltSettings(false, true), null)
     xmlTransform
 
-  let internal TransformFromOtherCover (document: XNode) (path: string) =
+  let internal TransformFromOtherCover (document : XNode) (path : string) =
     let xmlTransform = LoadTransform path
     use buffer = new MemoryStream()
     let sw = new StreamWriter(buffer)
@@ -39,14 +39,14 @@ module Transformer =
     buffer.Position <- 0L
     XDocument.Load(XmlReader.Create(buffer))
 
-  let internal TransformFromOpenCover(document: XNode) =
+  let internal TransformFromOpenCover(document : XNode) =
     let report =
       TransformFromOtherCover document "AltCover.Visualizer.OpenCoverToNCoverEx.xsl"
     report
 
   // PartCover to NCover style sheet
-  let internal ConvertFile (helper: CoverageTool -> XDocument -> XDocument -> XDocument)
-      (document: XDocument) =
+  let internal ConvertFile (helper : CoverageTool -> XDocument -> XDocument -> XDocument)
+      (document : XDocument) =
     let schemas = new XmlSchemaSet()
     try
       match document.XPathSelectElements("/CoverageSession").Count() with
@@ -89,11 +89,11 @@ module Transformer =
 
 [<NoComparison>]
 type internal CoverageFile =
-  { File: FileInfo
-    Document: XDocument }
+  { File : FileInfo
+    Document : XDocument }
 
-  static member ToCoverageFile (helper: CoverageTool -> XDocument -> XDocument -> XDocument)
-                (file: FileInfo) =
+  static member ToCoverageFile (helper : CoverageTool -> XDocument -> XDocument -> XDocument)
+                (file : FileInfo) =
     try
       let rawDocument = XDocument.Load(file.FullName)
       match Transformer.ConvertFile helper rawDocument with
@@ -119,14 +119,14 @@ type internal CoverageFile =
           { Fault = e
             File = file }
 
-  static member LoadCoverageFile(file: FileInfo) =
+  static member LoadCoverageFile(file : FileInfo) =
     CoverageFile.ToCoverageFile (fun x -> Transformer.DefaultHelper) file
 
 type internal Coverage = Either<InvalidFile, CoverageFile>
 
 module Extensions =
   type Choice<'b, 'a> with
-    static member toOption (x: Either<'a, 'b>) =
+    static member toOption (x : Either<'a, 'b>) =
       match x with
       | Right y -> Some y
       | _ -> None

@@ -20,7 +20,7 @@ type ShowHidden =
 [<Sealed; AttributeUsage(AttributeTargets.Property)>]
 type ShowStaticTransformationAttribute() =
   inherit ArgumentTransformationAttribute()
-  override self.Transform(engineIntrinsics: EngineIntrinsics, inputData: Object) =
+  override self.Transform(engineIntrinsics : EngineIntrinsics, inputData : Object) =
     if inputData.GetType() = typeof<ShowHidden> then
       inputData
     else
@@ -40,13 +40,13 @@ type ShowStaticTransformationAttribute() =
 [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.PowerShell",
                                                   "PS1101:AllCmdletsShouldAcceptPipelineInput",
                                                   Justification = "No valid input")>]
-type InvokeAltCoverCommand(runner: bool) =
+type InvokeAltCoverCommand(runner : bool) =
   inherit PSCmdlet()
   new() = InvokeAltCoverCommand(false)
 
   [<Parameter(ParameterSetName = "Runner", Mandatory = true, Position = 1,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  member val Runner: SwitchParameter = SwitchParameter(runner) with get, set
+  member val Runner : SwitchParameter = SwitchParameter(runner) with get, set
 
   [<Parameter(ParameterSetName = "Runner", Mandatory = true, ValueFromPipeline = false,
               ValueFromPipelineByPropertyName = false)>]
@@ -80,32 +80,32 @@ type InvokeAltCoverCommand(runner: bool) =
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
   [<Parameter(ParameterSetName = "Runner", Mandatory = false, ValueFromPipeline = false,
               ValueFromPipelineByPropertyName = false)>]
-  member val CommandLine: string array = [||] with get, set
+  member val CommandLine : string array = [||] with get, set
 
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
   [<Alias("InputDirectories")>]
-  member val InputDirectory: string array = [||] with get, set
+  member val InputDirectory : string array = [||] with get, set
 
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
   [<Alias("OutputDirectories")>]
-  member val OutputDirectory: string array = [||] with get, set
+  member val OutputDirectory : string array = [||] with get, set
 
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
   [<Alias("SymbolDirectories")>]
-  member val SymbolDirectory: string array = [||] with get, set
+  member val SymbolDirectory : string array = [||] with get, set
 
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
   [<Alias("Dependencies")>]
-  member val Dependency: string array = [||] with get, set
+  member val Dependency : string array = [||] with get, set
 
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
   [<Alias("Keys")>]
-  member val Key: string array = [||] with get, set
+  member val Key : string array = [||] with get, set
 
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
@@ -117,89 +117,89 @@ type InvokeAltCoverCommand(runner: bool) =
 
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  member val FileFilter: string array = [||] with get, set
+  member val FileFilter : string array = [||] with get, set
 
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  member val PathFilter: string array = [||] with get, set
+  member val PathFilter : string array = [||] with get, set
 
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  member val AssemblyFilter: string array = [||] with get, set
+  member val AssemblyFilter : string array = [||] with get, set
 
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  member val AssemblyExcludeFilter: string array = [||] with get, set
+  member val AssemblyExcludeFilter : string array = [||] with get, set
 
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  member val TypeFilter: string array = [||] with get, set
+  member val TypeFilter : string array = [||] with get, set
 
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  member val MethodFilter: string array = [||] with get, set
+  member val MethodFilter : string array = [||] with get, set
 
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  member val AttributeFilter: string array = [||] with get, set
+  member val AttributeFilter : string array = [||] with get, set
 
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  member val CallContext: string array = [||] with get, set
+  member val CallContext : string array = [||] with get, set
 
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  member val OpenCover: SwitchParameter = SwitchParameter(false) with get, set
+  member val OpenCover : SwitchParameter = SwitchParameter(false) with get, set
 
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  member val InPlace: SwitchParameter = SwitchParameter(false) with get, set
+  member val InPlace : SwitchParameter = SwitchParameter(false) with get, set
 
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  member val Save: SwitchParameter = SwitchParameter(false) with get, set
+  member val Save : SwitchParameter = SwitchParameter(false) with get, set
 
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  member val Single: SwitchParameter = SwitchParameter(false) with get, set
+  member val Single : SwitchParameter = SwitchParameter(false) with get, set
 
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  member val LineCover: SwitchParameter = SwitchParameter(false) with get, set
+  member val LineCover : SwitchParameter = SwitchParameter(false) with get, set
 
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  member val BranchCover: SwitchParameter = SwitchParameter(false) with get, set
+  member val BranchCover : SwitchParameter = SwitchParameter(false) with get, set
 
   [<Parameter(ParameterSetName = "Version", Mandatory = true, Position = 1,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  member val Version: SwitchParameter = SwitchParameter(false) with get, set
+  member val Version : SwitchParameter = SwitchParameter(false) with get, set
 
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
   [<Parameter(ParameterSetName = "Runner", Mandatory = false, ValueFromPipeline = false,
               ValueFromPipelineByPropertyName = false)>]
-  member val DropReturnCode: SwitchParameter = SwitchParameter(false) with get, set
+  member val DropReturnCode : SwitchParameter = SwitchParameter(false) with get, set
 
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  member val SourceLink: SwitchParameter = SwitchParameter(false) with get, set
+  member val SourceLink : SwitchParameter = SwitchParameter(false) with get, set
 
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  member val Defer: SwitchParameter = SwitchParameter(false) with get, set
+  member val Defer : SwitchParameter = SwitchParameter(false) with get, set
 
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  member val LocalSource: SwitchParameter = SwitchParameter(false) with get, set
+  member val LocalSource : SwitchParameter = SwitchParameter(false) with get, set
 
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  member val VisibleBranches: SwitchParameter = SwitchParameter(false) with get, set
+  member val VisibleBranches : SwitchParameter = SwitchParameter(false) with get, set
 
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  member val ShowGenerated: SwitchParameter = SwitchParameter(false) with get, set
+  member val ShowGenerated : SwitchParameter = SwitchParameter(false) with get, set
 
   [<Parameter(ParameterSetName = "Instrument", Mandatory = false,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false); ShowStaticTransformation>]
@@ -207,9 +207,9 @@ type InvokeAltCoverCommand(runner: bool) =
 
   [<Parameter(ParameterSetName = "Runner", Mandatory = false, ValueFromPipeline = false,
               ValueFromPipelineByPropertyName = false)>]
-  member val SummaryFormat: Summary = Summary.Default with get, set
+  member val SummaryFormat : Summary = Summary.Default with get, set
 
-  member val private Fail: String list = [] with get, set
+  member val private Fail : String list = [] with get, set
 
   member private self.Collect() =
     let formats = [| String.Empty; "R"; "B"; "+R"; "+B" |]

@@ -17,7 +17,7 @@ module Trace =
           Error = Trace.traceError
           Echo = Trace.traceVerbose }
 
-  let internal DoDefault(log: FSApi.Logging option) =
+  let internal DoDefault(log : FSApi.Logging option) =
     match log with
     | Some logging -> logging
     | None -> Create()
@@ -28,9 +28,9 @@ type Implementation =
   | Framework
 
 type Api =
-  static member Prepare(args: FSApi.PrepareParams, ?log: FSApi.Logging) =
+  static member Prepare(args : FSApi.PrepareParams, ?log : FSApi.Logging) =
     AltCover.Api.Prepare args (Trace.DoDefault log)
-  static member Collect(args: FSApi.CollectParams, ?log: FSApi.Logging) =
+  static member Collect(args : FSApi.CollectParams, ?log : FSApi.Logging) =
     AltCover.Api.Collect args (Trace.DoDefault log)
   static member Ipmo() = AltCover.Api.Ipmo()
   static member Version() = AltCover.Api.Version()
@@ -111,13 +111,13 @@ module DotNet =
       result :?> DotNet.TestOptions
 
 #if RUNNER
-    member self.WithAltCoverParameters (prepare: FSApi.PrepareParams)
-           (collect: FSApi.CollectParams) (force: DotNet.CLIArgs) =
+    member self.WithAltCoverParameters (prepare : FSApi.PrepareParams)
+           (collect : FSApi.CollectParams) (force : DotNet.CLIArgs) =
       DotNet.ToTestArguments
 #else
-    member self.WithAltCoverParameters (prepare: AltCover_Fake.DotNet.Testing.AltCover.PrepareParams)
-           (collect: AltCover_Fake.DotNet.Testing.AltCover.CollectParams)
-           (force: AltCover_Fake.DotNet.Testing.DotNet.CLIArgs) =
+    member self.WithAltCoverParameters (prepare : AltCover_Fake.DotNet.Testing.AltCover.PrepareParams)
+           (collect : AltCover_Fake.DotNet.Testing.AltCover.CollectParams)
+           (force : AltCover_Fake.DotNet.Testing.DotNet.CLIArgs) =
       AltCover_Fake.DotNet.Testing.Internals.ToTestArguments
 #endif
         prepare collect force |> self.ExtendCustomParams

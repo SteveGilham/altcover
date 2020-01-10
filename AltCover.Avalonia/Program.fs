@@ -19,7 +19,7 @@ let main arguments =
          Persistence.save <- false))
       ("r|recentFiles", (fun _ -> Persistence.saveCoverageFiles [])) ]
     |> List.fold
-         (fun (o: OptionSet) (p, a) ->
+         (fun (o : OptionSet) (p, a) ->
            o.Add(p, UICommon.GetResourceString p, new System.Action<string>(a)))
          (OptionSet())
   options.Parse(arguments) |> ignore

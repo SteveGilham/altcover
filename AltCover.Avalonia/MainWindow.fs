@@ -25,7 +25,7 @@ open Avalonia.Media.Imaging
 open Avalonia.Threading
 
 module UICommon =
-  let GetResourceString(key: string) =
+  let GetResourceString(key : string) =
     let executingAssembly = System.Reflection.Assembly.GetExecutingAssembly()
     let resources = ResourceManager("AltCover.Visualizer.Strings", executingAssembly)
     resources.GetString(key)
@@ -62,7 +62,7 @@ module Persistence =
         printfn "%A\r\n\r\n%A" x o
         (file, DefaultDocument())
 
-  let saveFont (font: string) =
+  let saveFont (font : string) =
     let file, config = EnsureFile()
     config.XPathSelectElements("//Font")
     |> Seq.toList
@@ -79,7 +79,7 @@ module Persistence =
     | [] -> "Monospace" // Font defaults to 'Courier New', which is what we want
     | x :: _ -> x.FirstNode.ToString()
 
-  let saveFolder (path: string) =
+  let saveFolder (path : string) =
     let file, config = EnsureFile()
     match config.XPathSelectElements("//CoveragePath") |> Seq.toList with
     | [] ->
@@ -95,7 +95,7 @@ module Persistence =
     | [] -> System.IO.Directory.GetCurrentDirectory()
     | x :: _ -> x.FirstNode.ToString()
 
-  let saveCoverageFiles (coverageFiles: string list) =
+  let saveCoverageFiles (coverageFiles : string list) =
     let file, config = EnsureFile()
     config.XPathSelectElements("//RecentlyOpened")
     |> Seq.toList
@@ -111,7 +111,7 @@ module Persistence =
     |> Seq.map (fun n -> n.FirstNode.ToString())
     |> Seq.toList
 
-  let saveGeometry (w: Window) =
+  let saveGeometry (w : Window) =
     let file, config = EnsureFile()
     config.XPathSelectElements("//Geometry")
     |> Seq.toList
@@ -126,10 +126,10 @@ module Persistence =
     | x :: _ -> x.AddBeforeSelf element
     config.Save file
 
-  let readGeometry (w: Window) =
+  let readGeometry (w : Window) =
     let _, config = EnsureFile()
 
-    let attribute (x: XElement) a =
+    let attribute (x : XElement) a =
       x.Attribute(XName.Get a).Value
       |> Int32.TryParse
       |> snd
@@ -157,8 +157,8 @@ type MessageType =
   | Error = 2
 
 type TextTag =
-  { Foreground: string
-    Background: string }
+  { Foreground : string
+    Background : string }
 
   static member Make a b =
     { Foreground = a
@@ -174,17 +174,17 @@ type TextTag =
 
 // Range colouring information
 type internal ColourTag =
-  { style: TextTag
-    line: int
-    column: int
-    endline: int
-    endcolumn: int }
+  { style : TextTag
+    line : int
+    column : int
+    endline : int
+    endcolumn : int }
 
 type MainWindow() as this =
   inherit Window()
   let mutable armed = false
   let mutable justOpened = String.Empty
-  let mutable coverageFiles: string list = []
+  let mutable coverageFiles : string list = []
   let ofd = OpenFileDialog()
   let infoIcon =
     lazy
@@ -266,7 +266,7 @@ type MainWindow() as this =
 
   do this.InitializeComponent()
 
-  member private this.ShowMessageBox (status: MessageType) caption message =
+  member private this.ShowMessageBox (status : MessageType) caption message =
     Dispatcher.UIThread.Post(fun _ ->
       this.FindControl<Image>("Status").Source <- (match status with
                                                    | MessageType.Info -> infoIcon
@@ -284,7 +284,7 @@ type MainWindow() as this =
     let items = listitem.Items.OfType<MenuItem>()
     // blank the whole menu
     items
-    |> Seq.iter (fun (i: MenuItem) ->
+    |> Seq.iter (fun (i : MenuItem) ->
          i.IsVisible <- false
          i.Header <- String.Empty)
     // fill in with the items we have
@@ -326,7 +326,7 @@ type MainWindow() as this =
                                                        else
                                                          refreshInactiveIcon).Force()
 
-  member private this.InvalidCoverageFileMessage(x: InvalidFile) =
+  member private this.InvalidCoverageFileMessage(x : InvalidFile) =
     let caption = UICommon.GetResourceString "LoadError"
     let format = UICommon.GetResourceString "InvalidFile"
     let message =
@@ -335,21 +335,21 @@ type MainWindow() as this =
          x.Fault.Message)
     this.ShowMessageBox MessageType.Error caption message
 
-  member private this.OutdatedCoverageFileMessage(x: FileInfo) =
+  member private this.OutdatedCoverageFileMessage(x : FileInfo) =
     let caption = UICommon.GetResourceString "LoadWarning"
     let format = UICommon.GetResourceString "CoverageOutOfDate"
     let message =
       String.Format(System.Globalization.CultureInfo.CurrentCulture, format, x.FullName)
     this.ShowMessageBox MessageType.Warning caption message
 
-  member private this.MissingSourceFileMessage(x: FileInfo) =
+  member private this.MissingSourceFileMessage(x : FileInfo) =
     let caption = UICommon.GetResourceString "LoadWarning"
     let format = UICommon.GetResourceString "MissingSourceFile"
     let message =
       String.Format(System.Globalization.CultureInfo.CurrentCulture, format, x.FullName)
     this.ShowMessageBox MessageType.Warning caption message
 
-  member private this.OutdatedCoverageThisFileMessage (c: FileInfo) (s: FileInfo) =
+  member private this.OutdatedCoverageThisFileMessage (c : FileInfo) (s : FileInfo) =
     let caption = UICommon.GetResourceString "LoadWarning"
     let format = UICommon.GetResourceString "CoverageOutOfDateThisFile"
     let message =
@@ -357,7 +357,7 @@ type MainWindow() as this =
         (System.Globalization.CultureInfo.CurrentCulture, format, c.FullName, s.FullName)
     this.ShowMessageBox MessageType.Warning caption message
 
-  member private this.MissingSourceThisFileMessage (c: FileInfo) (s: FileInfo) =
+  member private this.MissingSourceThisFileMessage (c : FileInfo) (s : FileInfo) =
     let caption = UICommon.GetResourceString "LoadWarning"
     let format = UICommon.GetResourceString "MissingSourceThisFile"
     let message =
@@ -370,9 +370,9 @@ type MainWindow() as this =
     this.FindControl<Menu>("Menu").IsVisible <- true
     this.FindControl<DockPanel>("Grid").IsVisible <- true
 
-  member private this.PopulateClassNode (model: List<TreeViewItem>) (row: TreeViewItem)
-         (nodes: seq<MethodKey>) =
-    let ApplyToModel (model: List<TreeViewItem>) (theRow: TreeViewItem) (x: MethodKey) =
+  member private this.PopulateClassNode (model : List<TreeViewItem>) (row : TreeViewItem)
+         (nodes : seq<MethodKey>) =
+    let ApplyToModel (model : List<TreeViewItem>) (theRow : TreeViewItem) (x : MethodKey) =
       let fullname = x.m.GetAttribute("fullname", String.Empty)
 
       let args =
@@ -391,7 +391,7 @@ type MainWindow() as this =
 
       let visbleName = displayname.Substring(offset)
 
-      let (|Select|_|) (pattern: String) offered =
+      let (|Select|_|) (pattern : String) offered =
         if (fst offered)
            |> String.IsNullOrWhiteSpace
            |> not
@@ -408,7 +408,7 @@ type MainWindow() as this =
         | (_, true) -> TextTag.Excluded
         | _ -> TextTag.NotVisited
 
-      let CoverageToTag(n: XPathNavigator) =
+      let CoverageToTag(n : XPathNavigator) =
         let excluded = Boolean.TryParse(n.GetAttribute("excluded", String.Empty)) |> snd
         let visitcount = Int32.TryParse(n.GetAttribute("visitcount", String.Empty)) |> snd
         let line = n.GetAttribute("line", String.Empty)
@@ -425,7 +425,7 @@ type MainWindow() as this =
           endline = Int32.TryParse(endline) |> snd
           endcolumn = (Int32.TryParse(endcolumn) |> snd) }
 
-      let FilterCoverage lines (n: ColourTag) =
+      let FilterCoverage lines (n : ColourTag) =
         n.line > 0 && n.endline > 0 && n.line <= lines && n.endline <= lines
       let TagByCoverage _ _ _ = //(buff : TextBox) lines (n : ColourTag) =
         ()
@@ -441,7 +441,7 @@ type MainWindow() as this =
       //  else buff.GetIterAtLineOffset(n.endline - 1, Math.Min(n.endcolumn, endline.CharsInLine) - 1)
       //buff.ApplyTag(tag, from, until)
 
-      let MarkCoverage (root: XPathNavigator) textBox (lines: string []) filename =
+      let MarkCoverage (root : XPathNavigator) textBox (lines : string []) filename =
         let lc = lines.Length
         root.Select("//seqpnt[@document='" + filename + "']")
         |> Seq.cast<XPathNavigator>
@@ -489,8 +489,8 @@ type MainWindow() as this =
                    if scroll >= textLines.Length then textLines.Length - 1 else scroll
                  // Scroll into mid-view -- not entirely reliable
                  text.CaretIndex <-
-                   Seq.sumBy (fun (l: String) -> l.Length + 1)
-                     (textLines |> Seq.take  capped) //System.Environment.NewLine.Length
+                   Seq.sumBy (fun (l : String) -> l.Length + 1)
+                     (textLines |> Seq.take capped) //System.Environment.NewLine.Length
 
                  // TODO -- colouring
                  let root = x.m.Clone()
@@ -508,10 +508,10 @@ type MainWindow() as this =
     Array.sortInPlaceWith MethodNameCompare methods
     methods |> Array.iter (ApplyToModel model row)
 
-  member private this.PopulateNamespaceNode (model: List<TreeViewItem>)
-         (row: TreeViewItem) (nodes: seq<MethodKey>) =
-    let ApplyToModel (model: List<TreeViewItem>) (theRow: TreeViewItem)
-        (group: string * seq<MethodKey>) =
+  member private this.PopulateNamespaceNode (model : List<TreeViewItem>)
+         (row : TreeViewItem) (nodes : seq<MethodKey>) =
+    let ApplyToModel (model : List<TreeViewItem>) (theRow : TreeViewItem)
+        (group : string * seq<MethodKey>) =
       let name = fst group
       let newrow = TreeViewItem()
       model.Add newrow
@@ -522,7 +522,7 @@ type MainWindow() as this =
       newrow.Items <- items
       newrow
 
-    let isNested (name: string) n =
+    let isNested (name : string) n =
       name.StartsWith(n + "+", StringComparison.Ordinal)
       || name.StartsWith(n + "/", StringComparison.Ordinal)
     nodes
@@ -536,7 +536,7 @@ type MainWindow() as this =
            match restack with
            | [] -> model, row
            | (_, r) :: _ ->
-               let tmp: TreeViewItem = r
+               let tmp : TreeViewItem = r
                tmp.Items.OfType<TreeViewItem>().ToList(), r
 
          let nr = ApplyToModel rowModel pr c
@@ -544,11 +544,11 @@ type MainWindow() as this =
          (name, nr) :: restack) []
     |> ignore
 
-  member private this.PopulateAssemblyNode (model: List<TreeViewItem>) (row: TreeViewItem)
-         (node: XPathNavigator) =
+  member private this.PopulateAssemblyNode (model : List<TreeViewItem>)
+         (row : TreeViewItem) (node : XPathNavigator) =
     // within the <module> we have <method> nodes with name="get_module" class="AltCover.Coverage.CoverageSchema.coverage"
-    let ApplyToModel (model: List<TreeViewItem>) (theRow: TreeViewItem)
-        (group: string * seq<MethodKey>) =
+    let ApplyToModel (model : List<TreeViewItem>) (theRow : TreeViewItem)
+        (group : string * seq<MethodKey>) =
       let name = fst group
       let newrow = TreeViewItem()
       model.Add newrow
@@ -629,7 +629,7 @@ type MainWindow() as this =
 
     let select =
       this.FindControl<MenuItem>("List").Items.OfType<MenuItem>()
-      |> Seq.mapi (fun n (i: MenuItem) -> i.Click |> Event.map (fun _ -> n))
+      |> Seq.mapi (fun n (i : MenuItem) -> i.Click |> Event.map (fun _ -> n))
     // The sum of all these events -- we have explicitly selected a file
     let fileSelection = select |> Seq.fold Event.merge click
     let refresh = this.FindControl<MenuItem>("Refresh").Click |> Event.map (fun _ -> 0)
@@ -666,8 +666,8 @@ type MainWindow() as this =
                       f.Exists && f.LastWriteTimeUtc > current.LastWriteTimeUtc)
                // warn if not
                if not (Seq.isEmpty newer) then this.OutdatedCoverageFileMessage current
-               let ApplyToModel (model: List<TreeViewItem>)
-                   (group: XPathNavigator * string) =
+               let ApplyToModel (model : List<TreeViewItem>)
+                   (group : XPathNavigator * string) =
                  let name = snd group
                  let row = TreeViewItem()
                  model.Add row

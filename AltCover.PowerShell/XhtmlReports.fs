@@ -10,23 +10,23 @@ open System.Xml.XPath
 [<Cmdlet(VerbsData.ConvertTo, "BarChart")>]
 [<OutputType(typeof<XmlDocument>)>]
 [<SuppressMessage("Microsoft.PowerShell", "PS1008", Justification = "Cobertura is OK")>]
-type ConvertToBarChartCommand(outputFile: String) =
+type ConvertToBarChartCommand(outputFile : String) =
   inherit PSCmdlet()
   new() = ConvertToBarChartCommand(String.Empty)
 
   [<Parameter(ParameterSetName = "XmlDoc", Mandatory = true, Position = 1,
               ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
-  member val XmlDocument: IXPathNavigable = null with get, set
+  member val XmlDocument : IXPathNavigable = null with get, set
 
   [<Parameter(ParameterSetName = "FromFile", Mandatory = true, Position = 1,
               ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
-  member val InputFile: string = null with get, set
+  member val InputFile : string = null with get, set
 
   [<Parameter(ParameterSetName = "XmlDoc", Mandatory = false, Position = 2,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
   [<Parameter(ParameterSetName = "FromFile", Mandatory = false, Position = 2,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  member val OutputFile: string = outputFile with get, set
+  member val OutputFile : string = outputFile with get, set
 
   override self.ProcessRecord() =
     let here = Directory.GetCurrentDirectory()

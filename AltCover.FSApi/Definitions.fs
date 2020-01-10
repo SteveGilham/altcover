@@ -55,7 +55,7 @@ module internal Internals =
 #endif
 
   let private Arg name s = (sprintf """/p:AltCover%s="%s" """ name s).Trim()
-  let private ListArg name (s: String seq) =
+  let private ListArg name (s : String seq) =
     (sprintf """/p:AltCover%s="%s" """ name <| String.Join("|", s)).Trim()
 
   let private IsSet s =
@@ -63,17 +63,17 @@ module internal Internals =
     |> String.IsNullOrWhiteSpace
     |> not
 
-  let private FromList name (s: String seq) = (ListArg name s, s.Any())
+  let private FromList name (s : String seq) = (ListArg name s, s.Any())
   let private FromArg name s = (Arg name s, IsSet s)
-  let private Join(l: string list) = String.Join(" ", l)
+  let private Join(l : string list) = String.Join(" ", l)
 
 #if RUNNER
-  let ToTestArgumentList (prepare: AltCover.FSApi.PrepareParams)
-      (collect: AltCover.FSApi.CollectParams) (force: CLIArgs) =
+  let ToTestArgumentList (prepare : AltCover.FSApi.PrepareParams)
+      (collect : AltCover.FSApi.CollectParams) (force : CLIArgs) =
 #else
-  let ToTestArgumentList (prepare: AltCover_Fake.DotNet.Testing.AltCover.PrepareParams)
-      (collect: AltCover_Fake.DotNet.Testing.AltCover.CollectParams)
-      (force: DotNet.CLIArgs) =
+  let ToTestArgumentList (prepare : AltCover_Fake.DotNet.Testing.AltCover.PrepareParams)
+      (collect : AltCover_Fake.DotNet.Testing.AltCover.CollectParams)
+      (force : DotNet.CLIArgs) =
 #endif
 
     [ FromArg String.Empty "true"
@@ -107,11 +107,11 @@ module internal Internals =
     |> List.map fst
 
 #if RUNNER
-  let ToTestArguments (prepare: AltCover.FSApi.PrepareParams)
-      (collect: AltCover.FSApi.CollectParams) (force: CLIArgs) =
+  let ToTestArguments (prepare : AltCover.FSApi.PrepareParams)
+      (collect : AltCover.FSApi.CollectParams) (force : CLIArgs) =
 #else
-  let ToTestArguments (prepare: AltCover_Fake.DotNet.Testing.AltCover.PrepareParams)
-      (collect: AltCover_Fake.DotNet.Testing.AltCover.CollectParams)
-      (force: DotNet.CLIArgs) =
+  let ToTestArguments (prepare : AltCover_Fake.DotNet.Testing.AltCover.PrepareParams)
+      (collect : AltCover_Fake.DotNet.Testing.AltCover.CollectParams)
+      (force : DotNet.CLIArgs) =
 #endif
     ToTestArgumentList prepare collect force |> Join

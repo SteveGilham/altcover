@@ -10,7 +10,7 @@ open System.Xml.XPath
 module Xhtml =
   [<SuppressMessage("Microsoft.Design", "CA1059",
                     Justification = "returns a specific concrete type")>]
-  let ConvertToBarChart(navigable: IXPathNavigable) =
+  let ConvertToBarChart(navigable : IXPathNavigable) =
     let navigator = navigable.CreateNavigator()
 
     let format =

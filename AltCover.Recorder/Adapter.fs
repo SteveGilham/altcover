@@ -117,14 +117,14 @@ module Adapter =
       Runner = true
       Definitive = false }
 
-  let internal InvokeIssue71Wrapper<'T when 'T :> System.Exception> (unique: string)
-      (called: bool array) =
+  let internal InvokeIssue71Wrapper<'T when 'T :> System.Exception> (unique : string)
+      (called : bool array) =
     let constructor = typeof<'T>.GetConstructor([| typeof<System.String> |])
     let pitcher =
       fun _ _ _ _ -> constructor.Invoke([| unique |]) :?> System.Exception |> raise
 
     let catcher =
-      fun _ _ _ (x: System.Exception) ->
+      fun _ _ _ (x : System.Exception) ->
         called.[0] <- true
         called.[1] <- match x with
                       | :? System.ArgumentNullException as ane -> ane.ParamName = unique

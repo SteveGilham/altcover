@@ -10,7 +10,7 @@ open System.Xml.XPath
 [<RequireQualifiedAccess>]
 module OpenCoverUtilities =
 
-  let private CompressMethod withinSequencePoint sameSpan (m: XmlElement) =
+  let private CompressMethod withinSequencePoint sameSpan (m : XmlElement) =
     let sp = m.GetElementsByTagName("SequencePoint").OfType<XmlElement>() |> Seq.toList
     let bp = m.GetElementsByTagName("BranchPoint").OfType<XmlElement>() |> Seq.toList
     if sp
@@ -32,7 +32,7 @@ module OpenCoverUtilities =
              |> Int32.TryParse
              |> snd)
       interleave
-      |> Seq.fold (fun (s: XmlElement, bs: XmlElement list) x ->
+      |> Seq.fold (fun (s : XmlElement, bs : XmlElement list) x ->
            match x.Name with
            | "SequencePoint" ->
                let bx =
@@ -105,7 +105,7 @@ module OpenCoverUtilities =
 
   [<SuppressMessage("Microsoft.Design", "CA1059",
                     Justification = "returns a specific concrete type")>]
-  let CompressBranching (navigable: IXPathNavigable) withinSequencePoint sameSpan =
+  let CompressBranching (navigable : IXPathNavigable) withinSequencePoint sameSpan =
     // Validate
     let xmlDocument = new XmlDocument()
     navigable.CreateNavigator().ReadSubtree() |> xmlDocument.Load

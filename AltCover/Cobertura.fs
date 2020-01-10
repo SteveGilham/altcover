@@ -182,7 +182,7 @@ module internal Cobertura =
               (if bec = 0 then "false" else "true")))
 
       if bec > 0 then
-        let uspid = s.Attribute(X "uspid").Value
+        let uspid = s.Attribute(X "uspid").Value // KISS approach
         doBranch bec bev uspid line
       lines.Add line
 

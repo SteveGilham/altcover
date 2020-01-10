@@ -8,7 +8,7 @@ open System.Xml.XPath
 
 [<Cmdlet(VerbsData.Compress, "Branching")>]
 [<OutputType(typeof<XmlDocument>)>]
-type CompressBranchingCommand(outputFile: String) =
+type CompressBranchingCommand(outputFile : String) =
   inherit PSCmdlet()
   new() = CompressBranchingCommand(String.Empty)
 
@@ -16,13 +16,13 @@ type CompressBranchingCommand(outputFile: String) =
               ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
   [<Parameter(ParameterSetName = "XmlDocB", Mandatory = true, Position = 1,
               ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
-  member val XmlDocument: IXPathNavigable = null with get, set
+  member val XmlDocument : IXPathNavigable = null with get, set
 
   [<Parameter(ParameterSetName = "FromFileA", Mandatory = true, Position = 1,
               ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
   [<Parameter(ParameterSetName = "FromFileB", Mandatory = true, Position = 1,
               ValueFromPipeline = true, ValueFromPipelineByPropertyName = false)>]
-  member val InputFile: string = null with get, set
+  member val InputFile : string = null with get, set
 
   [<Parameter(ParameterSetName = "XmlDocA", Mandatory = false, Position = 3,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
@@ -32,13 +32,13 @@ type CompressBranchingCommand(outputFile: String) =
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
   [<Parameter(ParameterSetName = "FromFileB", Mandatory = false, Position = 3,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  member val OutputFile: string = outputFile with get, set
+  member val OutputFile : string = outputFile with get, set
 
   [<Parameter(ParameterSetName = "XmlDocA", Mandatory = true, Position = 4,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
   [<Parameter(ParameterSetName = "FromFileA", Mandatory = true, Position = 4,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  member val SameSpan: SwitchParameter = SwitchParameter(false) with get, set
+  member val SameSpan : SwitchParameter = SwitchParameter(false) with get, set
 
   [<Parameter(ParameterSetName = "XmlDocA", Mandatory = false, Position = 4,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
@@ -48,7 +48,7 @@ type CompressBranchingCommand(outputFile: String) =
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
   [<Parameter(ParameterSetName = "FromFileB", Mandatory = true, Position = 4,
               ValueFromPipeline = false, ValueFromPipelineByPropertyName = false)>]
-  member val WithinSequencePoint: SwitchParameter = SwitchParameter(false) with get, set
+  member val WithinSequencePoint : SwitchParameter = SwitchParameter(false) with get, set
 
   override self.ProcessRecord() =
     let here = Directory.GetCurrentDirectory()

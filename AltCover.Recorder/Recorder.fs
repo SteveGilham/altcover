@@ -88,9 +88,9 @@ module Instance =
   /// </summary>
   type private CallStack =
     [<ThreadStatic; DefaultValue>]
-    static val mutable private instance: Option<CallStack>
-    val mutable private caller: int list
-    private new(x: int) = { caller = [ x ] }
+    static val mutable private instance : Option<CallStack>
+    val mutable private caller : int list
+    private new(x : int) = { caller = [ x ] }
 
     static member Instance =
       match CallStack.instance with
@@ -134,14 +134,14 @@ module Instance =
   /// </summary>
   let mutable internal trace = Tracer.Create(SignalFile())
 
-  let internal WithMutex(f: bool -> 'a) =
+  let internal WithMutex(f : bool -> 'a) =
     let own = mutex.WaitOne(1000)
     try
       f (own)
     finally
       if own then mutex.ReleaseMutex()
 
-  let InitialiseTrace(t: Tracer) =
+  let InitialiseTrace(t : Tracer) =
     WithMutex(fun _ ->
       trace <- t.OnStart()
       IsRunner <- IsRunner || trace.IsConnected())
@@ -291,7 +291,7 @@ module Instance =
          then PayloadSelector IsOpenCoverRunner
          else Null) moduleId hitPointId
 
-  let internal FlushCounter (finish: Close) _ =
+  let internal FlushCounter (finish : Close) _ =
     match finish with
     | Resume -> FlushResume()
     | Pause -> FlushPause()

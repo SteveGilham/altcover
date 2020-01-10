@@ -9,18 +9,18 @@ module internal GuiCommon =
   // Binds class name and XML
   [<NoComparison>]
   type internal MethodKey =
-    { m: XPathNavigator
-      spacename: string
-      classname: string
-      name: string }
+    { m : XPathNavigator
+      spacename : string
+      classname : string
+      name : string }
 
   // Range colouring information
   type internal CodeTag =
-    { visitcount: int
-      line: int
-      column: int
-      endline: int
-      endcolumn: int }
+    { visitcount : int
+      line : int
+      column : int
+      endline : int
+      endcolumn : int }
 
   type internal MethodType =
     | Normal = 0
@@ -28,7 +28,7 @@ module internal GuiCommon =
     | Event = -2
 
   // -------------------------- Method Name Handling ---------------------------
-  let DisplayName(name: string) =
+  let DisplayName(name : string) =
     let offset =
       match name.LastIndexOf("::", StringComparison.Ordinal) with
       | -1 -> 0
@@ -36,7 +36,7 @@ module internal GuiCommon =
 
     name.Substring(offset).Split('(') |> Seq.head
 
-  let HandleSpecialName(name: string) =
+  let HandleSpecialName(name : string) =
     if name.StartsWith("get_", StringComparison.Ordinal)
        || name.StartsWith("set_", StringComparison.Ordinal) then
       (name.Substring(4), MethodType.Property)
@@ -82,7 +82,7 @@ module internal GuiCommon =
           use client = new System.Net.WebClient()
           client.DownloadString(u)
 
-  let internal GetSource(document: string) =
+  let internal GetSource(document : string) =
     if document.StartsWith("http://", StringComparison.Ordinal)
        || document.StartsWith("https://", StringComparison.Ordinal) then
       System.Uri(document) |> Url

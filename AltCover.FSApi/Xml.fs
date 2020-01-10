@@ -14,7 +14,7 @@ open System.Xml.Xsl
 module XmlUtilities =
   [<SuppressMessage("Microsoft.Design", "CA1059",
                     Justification = "converts concrete types")>]
-  let ToXmlDocument(xDocument: XDocument) =
+  let ToXmlDocument(xDocument : XDocument) =
     let xmlDocument = XmlDocument()
     use xmlReader = xDocument.CreateReader()
     xmlDocument.Load(xmlReader)
@@ -33,7 +33,7 @@ module XmlUtilities =
 
   [<SuppressMessage("Microsoft.Design", "CA1059",
                     Justification = "converts concrete types")>]
-  let ToXDocument(xmlDocument: XmlDocument) =
+  let ToXDocument(xmlDocument : XmlDocument) =
     use nodeReader = new XmlNodeReader(xmlDocument)
     nodeReader.MoveToContent() |> ignore // skips leading comments
     let xdoc = XDocument.Load(nodeReader)
@@ -49,10 +49,10 @@ module XmlUtilities =
          (fun func -> xdoc.AddFirst(XProcessingInstruction(func.Target, func.Data)))
     xdoc
 
-  [<SuppressMessage("Microsoft.Usage", "CA2202", Justification = "Observably safe")>]
   // Approved way is ugly -- https://docs.microsoft.com/en-us/visualstudio/code-quality/ca2202?view=vs-2019
   // Also, this rule is deprecated
-  let internal LoadSchema(format: AltCover.Base.ReportFormat) =
+  [<SuppressMessage("Microsoft.Usage", "CA2202", Justification = "Observably safe")>]
+  let internal LoadSchema(format : AltCover.Base.ReportFormat) =
     let schemas = new XmlSchemaSet()
 
     let resource =
@@ -67,7 +67,7 @@ module XmlUtilities =
     schemas
 
   [<SuppressMessage("Microsoft.Usage", "CA2202", Justification = "Observably safe")>]
-  let internal LoadTransform(name: string) =
+  let internal LoadTransform(name : string) =
     let transform = new XslCompiledTransform()
     use stream =
       Assembly.GetExecutingAssembly()
@@ -79,7 +79,7 @@ module XmlUtilities =
 
   [<SuppressMessage("Microsoft.Design", "CA1059",
                     Justification = "converts concrete types")>]
-  let internal DiscoverFormat(xmlDocument: XmlDocument) =
+  let internal DiscoverFormat(xmlDocument : XmlDocument) =
     let format =
       if xmlDocument.SelectNodes("/CoverageSession").OfType<XmlNode>().Any()
       then AltCover.Base.ReportFormat.OpenCover
@@ -101,6 +101,6 @@ module XmlUtilities =
     | :? FileLoadException -> fallback
 
   [<SuppressMessage("Microsoft.Design", "CA1059", Justification = "Implies concrete type")>]
-  let PrependDeclaration(x: XmlDocument) =
+  let PrependDeclaration(x : XmlDocument) =
     let xmlDeclaration = x.CreateXmlDeclaration("1.0", "utf-8", null)
     x.InsertBefore(xmlDeclaration, x.FirstChild) |> ignore

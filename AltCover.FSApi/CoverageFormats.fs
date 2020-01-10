@@ -29,7 +29,7 @@ module CoverageFormats =
 
   [<SuppressMessage("Microsoft.Design", "CA1059",
                     Justification = "returns a specific concrete type")>]
-  let ConvertFromNCover (navigable: IXPathNavigable) (assemblies: string array) =
+  let ConvertFromNCover (navigable : IXPathNavigable) (assemblies : string array) =
     let reporter, rewrite = AltCover.OpenCover.ReportGenerator()
     let visitors = [ reporter ]
     let navigator = navigable.CreateNavigator()
@@ -110,7 +110,7 @@ module CoverageFormats =
 
   [<SuppressMessage("Microsoft.Design", "CA1059",
                     Justification = "returns a specific concrete type")>]
-  let ConvertToNCover(navigable: IXPathNavigable) =
+  let ConvertToNCover(navigable : IXPathNavigable) =
     let transform = XmlUtilities.LoadTransform "OpenCoverToNCover"
     let rewrite = XmlDocument()
     do use output = rewrite.CreateNavigator().AppendChild()
