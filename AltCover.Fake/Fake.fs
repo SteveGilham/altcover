@@ -10,12 +10,14 @@ module Trace =
   open Fake.Core
 
   let Create() =
-    FSApi.Logging.Primitive { Primitive.Logging.Create() with Info = Trace.trace
-                                                              Warn = Trace.traceImportant
-                                                              Error = Trace.traceError
-                                                              Echo = Trace.traceVerbose }
+    FSApi.Logging.Primitive
+      { Primitive.Logging.Create() with
+          Info = Trace.trace
+          Warn = Trace.traceImportant
+          Error = Trace.traceError
+          Echo = Trace.traceVerbose }
 
-  let internal DoDefault(log : FSApi.Logging option) =
+  let internal DoDefault(log: FSApi.Logging option) =
     match log with
     | Some logging -> logging
     | None -> Create()
@@ -26,9 +28,9 @@ type Implementation =
   | Framework
 
 type Api =
-  static member Prepare(args : FSApi.PrepareParams, ?log : FSApi.Logging) =
+  static member Prepare(args: FSApi.PrepareParams, ?log: FSApi.Logging) =
     AltCover.Api.Prepare args (Trace.DoDefault log)
-  static member Collect(args : FSApi.CollectParams, ?log : FSApi.Logging) =
+  static member Collect(args: FSApi.CollectParams, ?log: FSApi.Logging) =
     AltCover.Api.Collect args (Trace.DoDefault log)
   static member Ipmo() = AltCover.Api.Ipmo()
   static member Version() = AltCover.Api.Version()
@@ -81,51 +83,54 @@ module DotNet =
         OptionsConstructor.GetParameters()
         |> Array.map (fun info ->
              let t = info.ParameterType
-             if t.GetTypeInfo().IsValueType then Activator.CreateInstance(t)
-             else null)
+             if t.GetTypeInfo().IsValueType then Activator.CreateInstance(t) else null)
 
       let common = OptionsConstructor.Invoke(args)
       self.Common.GetType().GetFields(BindingFlags.NonPublic ||| BindingFlags.Instance)
       |> Array.iter (fun f ->
-           f.SetValue(common,
-                      (if f.Name <> "CustomParams@" then f.GetValue self.Common
-                       else extended :> obj)))
+           f.SetValue
+             (common,
+              (if f.Name <> "CustomParams@" then
+                f.GetValue self.Common
+               else
+                 extended :> obj)))
       let TestOptionsConstructor = self.GetType().GetConstructors().[0]
 
       let args' =
         TestOptionsConstructor.GetParameters()
         |> Array.map (fun info ->
              let t = info.ParameterType
-             if t.GetTypeInfo().IsValueType then Activator.CreateInstance(t)
-             else null)
+             if t.GetTypeInfo().IsValueType then Activator.CreateInstance(t) else null)
 
       let result = TestOptionsConstructor.Invoke(args')
       self.GetType().GetFields(BindingFlags.NonPublic ||| BindingFlags.Instance)
       |> Array.iter (fun f ->
-           f.SetValue(result,
-                      (if f.Name <> "Common@" then f.GetValue self
-                       else common)))
+           f.SetValue
+             (result,
+              (if f.Name <> "Common@" then f.GetValue self else common)))
       result :?> DotNet.TestOptions
 
 #if RUNNER
-    member self.WithAltCoverParameters (prepare : FSApi.PrepareParams)
-                               (collect : FSApi.CollectParams)
-                               (force : DotNet.CLIArgs) =
+    member self.WithAltCoverParameters (prepare: FSApi.PrepareParams)
+           (collect: FSApi.CollectParams) (force: DotNet.CLIArgs) =
       DotNet.ToTestArguments
 #else
-    member self.WithAltCoverParameters (prepare : AltCover_Fake.DotNet.Testing.AltCover.PrepareParams)
-           (collect : AltCover_Fake.DotNet.Testing.AltCover.CollectParams)
-           (force : AltCover_Fake.DotNet.Testing.DotNet.CLIArgs) =
+    member self.WithAltCoverParameters (prepare: AltCover_Fake.DotNet.Testing.AltCover.PrepareParams)
+           (collect: AltCover_Fake.DotNet.Testing.AltCover.CollectParams)
+           (force: AltCover_Fake.DotNet.Testing.DotNet.CLIArgs) =
       AltCover_Fake.DotNet.Testing.Internals.ToTestArguments
 #endif
         prepare collect force |> self.ExtendCustomParams
-    member self.WithAltCoverImportModule() = self.ExtendCustomParams "/p:AltCoverIpmo=true"
-    member self.WithAltCoverGetVersion() = self.ExtendCustomParams "/p:AltCoverGetVersion=true"
+    member self.WithAltCoverImportModule() =
+      self.ExtendCustomParams "/p:AltCoverIpmo=true"
+    member self.WithAltCoverGetVersion() =
+      self.ExtendCustomParams "/p:AltCoverGetVersion=true"
 
     [<Obsolete("Prefer equivalent member .WithAltCoverParameters")>]
-    member self.WithParameters a b c =
-      self.WithAltCoverParameters a b c
+    member self.WithParameters a b c = self.WithAltCoverParameters a b c
+
     [<Obsolete("Prefer equivalent member .WithAltCoverImportModule")>]
     member self.WithImportModule() = self.WithAltCoverImportModule()
+
     [<Obsolete("Prefer equivalent member .WithAltCoverGetVersion")>]
     member self.WithGetVersion() = self.WithAltCoverGetVersion()

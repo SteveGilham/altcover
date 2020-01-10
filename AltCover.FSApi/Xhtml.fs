@@ -10,16 +10,17 @@ open System.Xml.XPath
 module Xhtml =
   [<SuppressMessage("Microsoft.Design", "CA1059",
                     Justification = "returns a specific concrete type")>]
-  let ConvertToBarChart(navigable : IXPathNavigable) =
+  let ConvertToBarChart(navigable: IXPathNavigable) =
     let navigator = navigable.CreateNavigator()
 
     let format =
-      if navigator.Select("/CoverageSession").OfType<XPathNavigator>().Any() then
-        AltCover.Base.ReportFormat.OpenCover
+      if navigator.Select("/CoverageSession").OfType<XPathNavigator>().Any()
+      then AltCover.Base.ReportFormat.OpenCover
       else AltCover.Base.ReportFormat.NCover
 
     let intermediate =
-      if format = AltCover.Base.ReportFormat.NCover then navigable
+      if format = AltCover.Base.ReportFormat.NCover then
+        navigable
       else
         let modify = XmlUtilities.LoadTransform "OpenCoverToNCoverEx"
         let temp = XmlDocument()
@@ -32,8 +33,8 @@ module Xhtml =
     do use output = rewrite.CreateNavigator().AppendChild()
        transform.Transform(intermediate, output)
 
-    rewrite.DocumentElement.SelectNodes("//script[@language='JavaScript']")
-           .OfType<XmlNode>()
+    rewrite.DocumentElement.SelectNodes("//script[@language='JavaScript']").OfType<XmlNode>
+      ()
     |> Seq.iter (fun n ->
          let text = n.InnerText
          let cdata = rewrite.CreateCDataSection(text)
