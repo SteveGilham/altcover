@@ -34,50 +34,58 @@ type internal StaticFilter =
 
 [<ExcludeFromCodeCoverage; NoComparison>]
 type internal FilterRegex =
-  { Regex : Regex; Sense : FilterSense}
-  static member Exclude (s : Regex) =
-    {Regex = s; Sense = Exclude}
+  { Regex : Regex
+    Sense : FilterSense }
+  static member Exclude(s : Regex) =
+    { Regex = s
+      Sense = Exclude }
 
 [<ExcludeFromCodeCoverage; NoComparison>]
 type internal FilterClass =
-  { Scope : FilterScope; Regex : Regex; Sense : FilterSense}
-  static member Build scope (regex:FilterRegex) =
-    { Scope = scope; Regex = regex.Regex; Sense = regex.Sense }
-  member this.Apply
-    with get () =
-      if this.Sense = Exclude
-      then id
-      else not
+  { Scope : FilterScope
+    Regex : Regex
+    Sense : FilterSense }
+
+  static member Build scope (regex : FilterRegex) =
+    { Scope = scope
+      Regex = regex.Regex
+      Sense = regex.Sense }
+
+  member this.Apply =
+    if this.Sense = Exclude then id else not
 
 module internal Filter =
 
   let rec private MatchAttribute (name : Regex) f (nameProvider : Object) =
     (match nameProvider with
      | :? MethodDefinition as m ->
-       if m.IsGetter || m.IsSetter then
-         let owner =
-           m.DeclaringType.Properties
-           |> Seq.filter (fun x -> x.GetMethod = m || x.SetMethod = m)
-           |> Seq.head
-         MatchAttribute name f owner
-       else false
+         if m.IsGetter || m.IsSetter then
+           let owner =
+             m.DeclaringType.Properties
+             |> Seq.filter (fun x -> x.GetMethod = m || x.SetMethod = m)
+             |> Seq.head
+           MatchAttribute name f owner
+         else
+           false
      | _ -> false)
     || (match nameProvider with
         | :? ICustomAttributeProvider as attributeProvider ->
-          attributeProvider.HasCustomAttributes
-          && attributeProvider.CustomAttributes
-             |> Seq.cast<CustomAttribute>
-             |> Seq.exists (fun attr -> name.IsMatch attr.AttributeType.FullName)
-             |> f
+            attributeProvider.HasCustomAttributes && attributeProvider.CustomAttributes
+                                                     |> Seq.cast<CustomAttribute>
+                                                     |> Seq.exists
+                                                          (fun attr ->
+                                                            name.IsMatch
+                                                              attr.AttributeType.FullName)
+                                                     |> f
         | _ -> false)
 
   let MatchItem<'a> (name : Regex) f (nameProvider : Object) (toName : 'a -> string) =
     match nameProvider with
     | :? 'a as item ->
-      item
-      |> toName
-      |> name.IsMatch
-      |> f
+        item
+        |> toName
+        |> name.IsMatch
+        |> f
     | _ -> false
 
   let internal Match (nameProvider : Object) (filter : FilterClass) =
@@ -85,15 +93,18 @@ module internal Filter =
     match filter.Scope with
     | File -> MatchItem<string> filter.Regex f nameProvider Path.GetFileName
     | Assembly ->
-      MatchItem<AssemblyDefinition> filter.Regex f nameProvider (fun assembly -> assembly.Name.Name)
+        MatchItem<AssemblyDefinition> filter.Regex f nameProvider
+          (fun assembly -> assembly.Name.Name)
     | Module ->
-      MatchItem<ModuleDefinition> filter.Regex f nameProvider
-        (fun ``module`` -> ``module``.Assembly.Name.Name)
+        MatchItem<ModuleDefinition> filter.Regex f nameProvider
+          (fun ``module`` -> ``module``.Assembly.Name.Name)
     | Type ->
-      MatchItem<TypeDefinition> filter.Regex f nameProvider (fun typeDef -> typeDef.FullName)
+        MatchItem<TypeDefinition> filter.Regex f nameProvider
+          (fun typeDef -> typeDef.FullName)
     | Method ->
-      MatchItem<MethodDefinition> filter.Regex f nameProvider (fun methodDef -> methodDef.Name)
-    | Attribute  -> MatchAttribute filter.Regex f nameProvider
+        MatchItem<MethodDefinition> filter.Regex f nameProvider
+          (fun methodDef -> methodDef.Name)
+    | Attribute -> MatchAttribute filter.Regex f nameProvider
     | Path -> MatchItem<string> filter.Regex f nameProvider Path.GetFullPath
 
   let internal IsCSharpAutoProperty(m : MethodDefinition) =
@@ -101,7 +112,7 @@ module internal Filter =
     && m.CustomAttributes
        |> Seq.exists
             (fun x ->
-            x.AttributeType.FullName = typeof<CompilerGeneratedAttribute>.FullName)
+              x.AttributeType.FullName = typeof<CompilerGeneratedAttribute>.FullName)
 
   let internal IsFSharpInternalAlgebraic(m : MethodDefinition) =
     // Discriminated Union/Sum/Algebraic data types are implemented as
@@ -126,15 +137,17 @@ module internal Filter =
       Seq.concat [ baseType; thisType ]
       |> Seq.filter
            (fun x ->
-           x.AttributeType.FullName = "Microsoft.FSharp.Core.CompilationMappingAttribute")
+             x.AttributeType.FullName = "Microsoft.FSharp.Core.CompilationMappingAttribute")
       |> Seq.exists (fun x ->
            let arg1 =
-             Enum.ToObject(typeof<SourceConstructFlags>,
-                           x.GetBlob()
-                           |> Seq.skip 2
-                           |> Seq.head) // (x.ConstructorArguments |> Seq.head).Value
+             Enum.ToObject
+               (typeof<SourceConstructFlags>,
+                x.GetBlob()
+                |> Seq.skip 2
+                |> Seq.head) // (x.ConstructorArguments |> Seq.head).Value
            match (arg1 :?> SourceConstructFlags) &&& SourceConstructFlags.KindMask with
-           | SourceConstructFlags.SumType | SourceConstructFlags.RecordType -> true
+           | SourceConstructFlags.SumType
+           | SourceConstructFlags.RecordType -> true
            | _ -> false)
 
     // record type has getters marked as field
@@ -142,31 +155,33 @@ module internal Filter =
       match m.IsGetter with
       | false -> false
       | _ ->
-        let owner =
-          m.DeclaringType.Properties
-          |> Seq.filter (fun x -> x.GetMethod = m)
-          |> Seq.head
-        if owner.HasCustomAttributes then
-          owner.CustomAttributes
-          |> Seq.filter
-               (fun x ->
-               x.AttributeType.FullName = "Microsoft.FSharp.Core.CompilationMappingAttribute")
-          |> Seq.exists
-               (fun x ->
-               let arg1 =
-                 Enum.ToObject(typeof<SourceConstructFlags>,
-                               x.GetBlob()
-                               |> Seq.skip 2
-                               |> Seq.head) // (x.ConstructorArguments |> Seq.head).Value
-               (arg1 :?> SourceConstructFlags) &&& SourceConstructFlags.KindMask = SourceConstructFlags.Field)
-        else false
+          let owner =
+            m.DeclaringType.Properties
+            |> Seq.filter (fun x -> x.GetMethod = m)
+            |> Seq.head
+          if owner.HasCustomAttributes then
+            owner.CustomAttributes
+            |> Seq.filter
+                 (fun x ->
+                   x.AttributeType.FullName =
+                     "Microsoft.FSharp.Core.CompilationMappingAttribute")
+            |> Seq.exists (fun x ->
+                 let arg1 =
+                   Enum.ToObject
+                     (typeof<SourceConstructFlags>,
+                      x.GetBlob()
+                      |> Seq.skip 2
+                      |> Seq.head) // (x.ConstructorArguments |> Seq.head).Value
+                 (arg1 :?> SourceConstructFlags) &&& SourceConstructFlags.KindMask =
+                   SourceConstructFlags.Field)
+          else
+            false
 
     mappings
     && (fieldGetter || m.IsConstructor
         || (m.HasCustomAttributes
             && m.CustomAttributes
-               |> Seq.exists
-                    (fun x ->
+               |> Seq.exists (fun x ->
                     let fullName = x.AttributeType.FullName
                     fullName = typeof<CompilerGeneratedAttribute>.FullName
                     || fullName = typeof<DebuggerNonUserCodeAttribute>.FullName
@@ -177,8 +192,7 @@ module internal Filter =
     if m.IsSetter then
       body
       |> Seq.tryFind (fun i -> i.OpCode = OpCodes.Stfld)
-      |> Option.map
-           (fun i ->
+      |> Option.map (fun i ->
            let f = i.Operand :?> FieldReference
            (f.DeclaringType.FullName = m.DeclaringType.FullName)
            && m.Name.Replace("set_", String.Empty) + "@" = f.Name)
@@ -186,13 +200,13 @@ module internal Filter =
     else if m.IsGetter then
       body
       |> Seq.tryFind (fun i -> i.OpCode = OpCodes.Ldfld)
-      |> Option.map
-           (fun i ->
+      |> Option.map (fun i ->
            let f = i.Operand :?> FieldReference
            (f.DeclaringType.FullName = m.DeclaringType.FullName)
            && m.Name.Replace("get_", String.Empty) + "@" = f.Name)
       |> Option.getOrElse false
-    else false
+    else
+      false
 
   let internal IsFSharpInternal(m : MethodDefinition) =
     IsFSharpAutoProperty m || IsFSharpInternalAlgebraic m

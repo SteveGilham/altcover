@@ -28,7 +28,7 @@ module internal GuiCommon =
     | Event = -2
 
   // -------------------------- Method Name Handling ---------------------------
-  let DisplayName (name:string) =
+  let DisplayName(name : string) =
     let offset =
       match name.LastIndexOf("::", StringComparison.Ordinal) with
       | -1 -> 0
@@ -38,49 +38,53 @@ module internal GuiCommon =
 
   let HandleSpecialName(name : string) =
     if name.StartsWith("get_", StringComparison.Ordinal)
-        || name.StartsWith("set_", StringComparison.Ordinal) then
+       || name.StartsWith("set_", StringComparison.Ordinal) then
       (name.Substring(4), MethodType.Property)
     else if name.StartsWith("add_", StringComparison.Ordinal) then
       (name.Substring(4), MethodType.Event)
     else if name.StartsWith("remove_", StringComparison.Ordinal) then
       (name.Substring(7), MethodType.Event)
-    else (name, MethodType.Normal)
+    else
+      (name, MethodType.Normal)
 
   // -------------------------- Source file Handling ---------------------------
   [<NoComparison>]
   type internal Source =
     | File of FileInfo
     | Url of Uri
-    member self.Exists
-      with get() =
-        match self with
-        | File info -> info.Exists
-        | Url u -> let request = WebRequest.CreateHttp(u)
-                   request.Method <- "HEAD"
-                   try
-                     use response = request.GetResponse()
-                     response.ContentLength > 0L &&
-                     (response :?> HttpWebResponse).StatusCode |> int < 400
-                   with
-                   | :? WebException -> false
 
-    member self.FullName
-      with get() =
-        match self with
-        | File info -> info.FullName
-        | Url u -> u.AbsoluteUri
+    member self.Exists =
+      match self with
+      | File info -> info.Exists
+      | Url u ->
+          let request = WebRequest.CreateHttp(u)
+          request.Method <- "HEAD"
+          try
+            use response = request.GetResponse()
+            response.ContentLength > 0L && (response :?> HttpWebResponse).StatusCode
+                                           |> int < 400
+          with :? WebException -> false
+
+    member self.FullName =
+      match self with
+      | File info -> info.FullName
+      | Url u -> u.AbsoluteUri
+
     member self.Outdated epoch =
       match self with
       | File info -> (info.LastWriteTimeUtc > epoch)
       | _ -> false // Sensible SourceLink assumed
-    member self.ReadAllText () =
+
+    member self.ReadAllText() =
       match self with
       | File info -> info.FullName |> File.ReadAllText
-      | Url u -> use client = new System.Net.WebClient()
-                 client.DownloadString(u)
+      | Url u ->
+          use client = new System.Net.WebClient()
+          client.DownloadString(u)
 
-  let internal GetSource (document : string) =
-    if document.StartsWith("http://", StringComparison.Ordinal) ||
-       document.StartsWith("https://", StringComparison.Ordinal)
-    then System.Uri(document) |> Url
-    else FileInfo(document) |> File
+  let internal GetSource(document : string) =
+    if document.StartsWith("http://", StringComparison.Ordinal)
+       || document.StartsWith("https://", StringComparison.Ordinal) then
+      System.Uri(document) |> Url
+    else
+      FileInfo(document) |> File

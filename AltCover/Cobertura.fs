@@ -22,8 +22,7 @@ module internal Cobertura =
     |> Seq.map (fun s -> s.Attribute(X attribute).Value |> Path.GetDirectoryName)
     |> Seq.fold (fun s f -> s |> Set.add f) Set.empty<String>
     |> Seq.sort
-    |> Seq.iter
-         (fun f ->
+    |> Seq.iter (fun f ->
          target.Descendants(X "sources")
          |> Seq.iter (fun s -> s.Add(XElement(X "source", XText(f)))))
 
@@ -35,16 +34,14 @@ module internal Cobertura =
            let vc = s.Attribute(X "visitcount")
 
            let vx =
-             if isNull vc then "0"
-             else vc.Value
+             if isNull vc then "0" else vc.Value
 
            let line =
              XElement
                (X "line", XAttribute(X "number", s.Attribute(X "line").Value),
                 XAttribute(X "hits", vx), XAttribute(X "branch", "false"))
            lines.Add line
-           (h + (if vx = "0" then 0
-                 else 1), t + 1)) (0, 0)
+           (h + (if vx = "0" then 0 else 1), t + 1)) (0, 0)
 
     let ProcessMethod (methods : XElement) (hits, total) (key, (signature, method)) =
       let mtx =
@@ -122,6 +119,7 @@ module internal Cobertura =
   let internal OpenCover (report : XDocument) (packages : XElement) =
     let extract (owner : XElement) (target : XElement) =
       let summary = owner.Descendants(X "Summary") |> Seq.head
+
       let valueOf name =
         summary.Attribute(X name).Value
         |> Int32.TryParse
@@ -135,18 +133,20 @@ module internal Cobertura =
       SetRate sv s "line-rate" target
       SetRate bv b "branch-rate" target
       if target.Name.LocalName.Equals("coverage", StringComparison.Ordinal) then
-        let copyup name (value:int) =
+        let copyup name (value : int) =
           target.Attribute(X name).Value <- value.ToString(CultureInfo.InvariantCulture)
 
         copyup "lines-valid" s
         copyup "lines-covered" sv
         copyup "branches-valid" b
         copyup "branches-covered" bv
-        target.Attribute(X "complexity").Value <- summary.Attribute(X "maxCyclomaticComplexity").Value
+        target.Attribute(X "complexity").Value <- (summary.Attribute
+                                                     (X "maxCyclomaticComplexity")).Value
 
     let doBranch bec bev uspid (line : XElement) =
       let pc = Math.Round(100.0 * (float bev) / (float bec)) |> int
-      line.SetAttributeValue(X "condition-coverage", sprintf "%d%% (%d/%d)" pc bev bec)
+      line.SetAttributeValue
+        (X "condition-coverage", sprintf "%d%% (%d/%d)" pc bev bec)
       let cc = XElement(X "conditions")
       line.Add cc
       let co =
@@ -174,11 +174,12 @@ module internal Cobertura =
         |> snd
 
       let line =
-        XElement(X "line", XAttribute(X "number", s.Attribute(X "sl").Value),
-                 XAttribute(X "hits", vx),
-                 XAttribute(X "branch",
-                            if bec = 0 then "false"
-                            else "true"))
+        XElement
+          (X "line", XAttribute(X "number", s.Attribute(X "sl").Value),
+           XAttribute(X "hits", vx),
+           XAttribute
+             (X "branch",
+              (if bec = 0 then "false" else "true")))
 
       if bec > 0 then
         let uspid = s.Attribute(X "uspid").Value // KISS approach
@@ -210,8 +211,7 @@ module internal Cobertura =
       (b |> AddAttributeValue summary "numBranchPoints",
        bv |> AddAttributeValue summary "visitedBranchPoints",
        s |> AddAttributeValue summary "numSequencePoints",
-       sv |> AddAttributeValue summary "visitedSequencePoints", c + 1,
-       cv + ccplex)
+       sv |> AddAttributeValue summary "visitedSequencePoints", c + 1, cv + ccplex)
 
     let ArrangeMethods (name : String) (methods : XElement) (methodSet : XElement seq) =
       methodSet
@@ -257,8 +257,7 @@ module internal Cobertura =
 
     let lookUpFiles (``module`` : XElement) =
       ``module``.Descendants(X "File")
-      |> Seq.fold
-           (fun m x ->
+      |> Seq.fold (fun m x ->
            m |> Map.add (x.Attribute(X "uid").Value) (x.Attribute(X "fullPath").Value))
            Map.empty
     report.Descendants(X "Module")
@@ -285,10 +284,9 @@ module internal Cobertura =
 
   let ConvertReport (report : XDocument) (format : Base.ReportFormat) =
     let rewrite = XDocument(XDeclaration("1.0", "utf-8", "no"), [||])
-    let doctype = XDocumentType("coverage",
-                                null,
-                                "http://cobertura.sourceforge.net/xml/coverage-04.dtd",
-                                null)
+    let doctype =
+      XDocumentType
+        ("coverage", null, "http://cobertura.sourceforge.net/xml/coverage-04.dtd", null)
     rewrite.Add(doctype)
     let element =
       XElement

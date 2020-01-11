@@ -25,10 +25,8 @@ module XmlUtilities =
        |> not
     then
       let xmlDeclaration =
-        xmlDocument.CreateXmlDeclaration(
-            xDeclaration.Version,
-            xDeclaration.Encoding,
-            xDeclaration.Standalone)
+        xmlDocument.CreateXmlDeclaration
+          (xDeclaration.Version, xDeclaration.Encoding, xDeclaration.Standalone)
 
       xmlDocument.InsertBefore(xmlDeclaration, xmlDocument.FirstChild) |> ignore
     xmlDocument
@@ -44,31 +42,25 @@ module XmlUtilities =
     match decl' with
     | None -> ()
     | Some decl ->
-      xdoc.Declaration <- XDeclaration(
-                            decl.Version,
-                            decl.Encoding,
-                            decl.Standalone)
+        xdoc.Declaration <- XDeclaration(decl.Version, decl.Encoding, decl.Standalone)
     cn.OfType<XmlProcessingInstruction>()
     |> Seq.rev
     |> Seq.iter
          (fun func -> xdoc.AddFirst(XProcessingInstruction(func.Target, func.Data)))
     xdoc
 
-  [<SuppressMessage("Microsoft.Usage", "CA2202", Justification = "Observably safe")>]
   // Approved way is ugly -- https://docs.microsoft.com/en-us/visualstudio/code-quality/ca2202?view=vs-2019
   // Also, this rule is deprecated
+  [<SuppressMessage("Microsoft.Usage", "CA2202", Justification = "Observably safe")>]
   let internal LoadSchema(format : AltCover.Base.ReportFormat) =
     let schemas = new XmlSchemaSet()
+
     let resource =
       match format with
-      | AltCover.Base.ReportFormat.NCover ->
-        "AltCover.FSApi.xsd.NCover.xsd"
-      | _ ->
-        "AltCover.FSApi.xsd.OpenCover.xsd"
+      | AltCover.Base.ReportFormat.NCover -> "AltCover.FSApi.xsd.NCover.xsd"
+      | _ -> "AltCover.FSApi.xsd.OpenCover.xsd"
 
-    use stream =
-        Assembly.GetExecutingAssembly()
-                .GetManifestResourceStream(resource)
+    use stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
     use reader = new StreamReader(stream)
     use xreader = XmlReader.Create(reader)
     schemas.Add(String.Empty, xreader) |> ignore
@@ -89,8 +81,8 @@ module XmlUtilities =
                     Justification = "converts concrete types")>]
   let internal DiscoverFormat(xmlDocument : XmlDocument) =
     let format =
-      if xmlDocument.SelectNodes("/CoverageSession").OfType<XmlNode>().Any() then
-        AltCover.Base.ReportFormat.OpenCover
+      if xmlDocument.SelectNodes("/CoverageSession").OfType<XmlNode>().Any()
+      then AltCover.Base.ReportFormat.OpenCover
       else AltCover.Base.ReportFormat.NCover
 
     let schema = LoadSchema format
@@ -106,13 +98,9 @@ module XmlUtilities =
     | :? FileNotFoundException
     | :? System.Security.SecurityException
     | :? BadImageFormatException
-    | :? FileLoadException ->
-      fallback
+    | :? FileLoadException -> fallback
 
   [<SuppressMessage("Microsoft.Design", "CA1059", Justification = "Implies concrete type")>]
   let PrependDeclaration(x : XmlDocument) =
-    let xmlDeclaration = x.CreateXmlDeclaration(
-                           "1.0",
-                           "utf-8",
-                           null)
+    let xmlDeclaration = x.CreateXmlDeclaration("1.0", "utf-8", null)
     x.InsertBefore(xmlDeclaration, x.FirstChild) |> ignore
