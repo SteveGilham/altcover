@@ -3900,7 +3900,7 @@ _Target "BulkReport" (fun _ ->
     !!(@"_Reports/_Unit*/Summary.xml")
     |> Seq.collect (fun f ->
          let xml = XDocument.Load f
-         xml.Descendants(XName.Get("Linecoverage"))
+         xml.Descendants(XName.Get("Uncoveredlines"))
          |> Seq.filter (fun x ->
               match String.IsNullOrWhiteSpace x.Value with
               | false -> true
@@ -3909,12 +3909,12 @@ _Target "BulkReport" (fun _ ->
                 misses := 1 + !misses
                 false)
          |> Seq.map (fun e ->
-              let coverage = e.Value.Split('%').[0]
-              match Double.TryParse coverage with
+              let coverage = e.Value
+              match Int32.TryParse coverage with
               | (false, _) ->
                 printfn "%A" xml
-                Assert.Fail("Could not parse coverage '" + e.Value + "'")
-                0.0
+                Assert.Fail("Could not parse uncovered line value '" + coverage + "'")
+                0
               | (_, numeric) ->
                 printfn "%s : %A"
                   (f
@@ -3923,7 +3923,7 @@ _Target "BulkReport" (fun _ ->
                 numeric))
     |> Seq.toList
   if numbers
-     |> List.tryFind (fun n -> n <= 99.0)
+     |> List.tryFind (fun n -> n > 0)
      |> Option.isSome
      || !misses > 1
   then Assert.Fail("Coverage is too low")

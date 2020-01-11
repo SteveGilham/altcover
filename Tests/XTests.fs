@@ -185,8 +185,9 @@ module AltCoverXTests =
     test
       <@ (FSApi.CollectParams.TypeSafe subject)
          |> FSApi.Args.Collect = [ "Runner"; "-t"; "23"; "--collect"; "--teamcity:+B" ] @>
-    let validate = (FSApi.CollectParams.TypeSafe subject).WhatIf(false).ToString()
-    test <@ validate = "altcover Runner -t 23 --collect --teamcity:+B" @>
+    let validate = (FSApi.CollectParams.TypeSafe subject).WhatIf(false)
+    test <@ validate.GetHashCode() :> obj |> isNull |> not @> // gratuitous coverage for coverlet
+    test <@ validate.ToString() = "altcover Runner -t 23 --collect --teamcity:+B" @>
 
   [<Test>]
   let TypeSafeCollectSummaryCanBeValidated() =
