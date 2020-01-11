@@ -55,7 +55,8 @@ module Actions =
     and Clean' x depth =
       printfn "looping after %A" x
       System.Threading.Thread.Sleep(500)
-      if depth < 10 then Clean1(depth + 1)
+      if depth < 10
+      then Clean1(depth + 1)
       else Assert.Fail "Could not clean all the files"
 
     Clean1 0
@@ -94,11 +95,9 @@ open System.Runtime.CompilerServices
 do ()"""
 
   let prefix =
-    [| 0x00uy; 0x24uy; 0x00uy; 0x00uy; 0x04uy
-       0x80uy; 0x00uy; 0x00uy; 0x94uy; 0x00uy
-       0x00uy; 0x00uy |]
+    [| 0x00uy; 0x24uy; 0x00uy; 0x00uy; 0x04uy; 0x80uy; 0x00uy; 0x00uy; 0x94uy; 0x00uy; 0x00uy; 0x00uy |]
 
-  let GetPublicKey(stream: Stream) =
+  let GetPublicKey(stream : Stream) =
     // see https://social.msdn.microsoft.com/Forums/vstudio/en-US/d9ef264e-1a74-4f48-b93f-3e2c7902f660/determine-contents-of-a-strong-name-key-file-snk?forum=netfxbcl
     // for the exact format; this is a stripped down hack
 
@@ -142,8 +141,7 @@ do ()"""
 
     // Update the file only if it would change
     let old =
-      if File.Exists(path) then File.ReadAllText(path)
-      else String.Empty
+      if File.Exists(path) then File.ReadAllText(path) else String.Empty
     if not (old.Equals(file)) then File.WriteAllText(path, file)
 
   let GetVersionFromYaml() =
@@ -156,7 +154,7 @@ do ()"""
     let mapping = ystream.Documents.[0].RootNode :?> YamlMappingNode
     string mapping.Children.[YamlScalarNode("version")]
 
-  let LocalVersion appveyor (version: string) =
+  let LocalVersion appveyor (version : string) =
     let now = DateTimeOffset.UtcNow
     let epoch = DateTimeOffset(2000, 1, 1, 0, 0, 0, TimeSpan(int64 0))
     let diff = now.Subtract(epoch)
@@ -165,8 +163,8 @@ do ()"""
     let majmin = String.Join(".", version.Split('.') |> Seq.take 2)
 
     let result =
-      if String.IsNullOrWhiteSpace appveyor then
-        sprintf "%s.%d.%d" majmin diff.Days revision
+      if String.IsNullOrWhiteSpace appveyor
+      then sprintf "%s.%d.%d" majmin diff.Days revision
       else appveyor
     printfn "Build version : %s" version
     (result, majmin, now.Year)
@@ -261,22 +259,22 @@ do ()"""
       (ones', Is.EquivalentTo [ "11"; "12"; "13"; "14"; "15"; "16"; "21" ],
        "wrong number of visited in " + sigil + " : " + (sprintf "%A" zero'))
 
-  let HandleResults (msg: string) (result: Fake.Core.ProcessResult) =
+  let HandleResults (msg : string) (result : Fake.Core.ProcessResult) =
     String.Join(Environment.NewLine, result.Messages) |> printfn "%s"
     let save = (Console.ForegroundColor, Console.BackgroundColor)
     match result.Errors |> Seq.toList with
     | [] -> ()
     | errors ->
-      try
-        Console.ForegroundColor <- ConsoleColor.Black
-        Console.BackgroundColor <- ConsoleColor.White
-        String.Join(Environment.NewLine, errors) |> printfn "ERR : %s"
-      finally
-        Console.ForegroundColor <- fst save
-        Console.BackgroundColor <- snd save
+        try
+          Console.ForegroundColor <- ConsoleColor.Black
+          Console.BackgroundColor <- ConsoleColor.White
+          String.Join(Environment.NewLine, errors) |> printfn "ERR : %s"
+        finally
+          Console.ForegroundColor <- fst save
+          Console.BackgroundColor <- snd save
     Assert.That(result.ExitCode, Is.EqualTo 0, msg)
 
-  let AssertResult (msg: string) (result: Fake.Core.ProcessResult<'a>) =
+  let AssertResult (msg : string) (result : Fake.Core.ProcessResult<'a>) =
     Assert.That(result.ExitCode, Is.EqualTo 0, msg)
 
   let Run (file, dir, args) msg =
@@ -286,11 +284,11 @@ do ()"""
     |> Proc.run
     |> (AssertResult msg)
 
-  let RunDotnet (o: DotNet.Options -> DotNet.Options) cmd args msg =
+  let RunDotnet (o : DotNet.Options -> DotNet.Options) cmd args msg =
     DotNet.exec o cmd args |> (HandleResults msg)
 
-  let SimpleInstrumentingRun (samplePath: string) (binaryPath: string)
-      (reportSigil: string) =
+  let SimpleInstrumentingRun (samplePath : string) (binaryPath : string)
+      (reportSigil : string) =
     printfn "Instrument and run a simple executable"
     Directory.ensure "./_Reports"
     let simpleReport = (Path.getFullName "./_Reports") @@ (reportSigil + ".xml")
@@ -324,42 +322,42 @@ do ()"""
 
     ValidateSample1 simpleReport reportSigil
 
-  let SimpleInstrumentingRunUnderMono (samplePath: string) (binaryPath: string)
-      (reportSigil': string) (monoOnWindows: string option) =
+  let SimpleInstrumentingRunUnderMono (samplePath : string) (binaryPath : string)
+      (reportSigil' : string) (monoOnWindows : string option) =
     printfn "Instrument and run a simple executable under mono"
     match monoOnWindows with
     | None -> Assert.Fail "Mono executable expected"
     | _ ->
-      Directory.ensure "./_Reports"
-      let reportSigil = reportSigil' + "UnderMono"
-      let simpleReport = (Path.getFullName "./_Reports") @@ (reportSigil + ".xml")
-      let binRoot = Path.getFullName binaryPath
-      let sampleRoot = Path.getFullName samplePath
-      let instrumented = "__Instrumented." + reportSigil
-      let framework = Fake.DotNet.ToolType.CreateFullFramework()
+        Directory.ensure "./_Reports"
+        let reportSigil = reportSigil' + "UnderMono"
+        let simpleReport = (Path.getFullName "./_Reports") @@ (reportSigil + ".xml")
+        let binRoot = Path.getFullName binaryPath
+        let sampleRoot = Path.getFullName samplePath
+        let instrumented = "__Instrumented." + reportSigil
+        let framework = Fake.DotNet.ToolType.CreateFullFramework()
 
-      let prep =
-        AltCover.PrepareParams.Primitive
-          { Primitive.PrepareParams.Create() with
-              TypeFilter = [ """System\.""" ]
-              XmlReport = simpleReport
-              OutputDirectories = [| "./" + instrumented |]
-              OpenCover = false
-              InPlace = false
-              Save = false }
-        |> AltCover.Prepare
+        let prep =
+          AltCover.PrepareParams.Primitive
+            { Primitive.PrepareParams.Create() with
+                TypeFilter = [ """System\.""" ]
+                XmlReport = simpleReport
+                OutputDirectories = [| "./" + instrumented |]
+                OpenCover = false
+                InPlace = false
+                Save = false }
+          |> AltCover.Prepare
 
-      let parameters =
-        { AltCover.Params.Create prep with
-            ToolPath = binRoot @@ "AltCover.exe"
-            WorkingDirectory = sampleRoot }.WithToolType framework
+        let parameters =
+          { AltCover.Params.Create prep with
+              ToolPath = binRoot @@ "AltCover.exe"
+              WorkingDirectory = sampleRoot }.WithToolType framework
 
-      AltCover.runWithMono monoOnWindows parameters
+        AltCover.runWithMono monoOnWindows parameters
 
-      Run
-        (sampleRoot @@ (instrumented + "/Sample1.exe"), (sampleRoot @@ instrumented), [])
-        "Instrumented .exe failed"
-      ValidateSample1 simpleReport reportSigil
+        Run
+          (sampleRoot @@ (instrumented + "/Sample1.exe"), (sampleRoot @@ instrumented), [])
+          "Instrumented .exe failed"
+        ValidateSample1 simpleReport reportSigil
 
   let PrepareReadMe packingCopyright =
     let readme = Path.getFullName "README.md"
@@ -397,13 +395,12 @@ a:hover {color: #ecc;}
       |> Seq.map (fun x ->
            match x.Name.LocalName with
            | "h2" ->
-             keep
-             := (List.tryFind (fun e -> e = String.Concat(x.Nodes())) eliminate)
-                |> Option.isNone
+               keep
+               := (List.tryFind (fun e -> e = String.Concat(x.Nodes())) eliminate)
+                  |> Option.isNone
            | "footer" -> keep := true
            | _ -> ()
-           if !keep then None
-           else Some x)
+           if !keep then None else Some x)
       |> Seq.toList
     kill
     |> Seq.iter (fun q ->
@@ -413,7 +410,7 @@ a:hover {color: #ecc;}
     let packable = Path.getFullName "./_Binaries/README.html"
     xmlform.Save packable
 
-  let Check4Content(coverageDocument: XDocument) =
+  let Check4Content(coverageDocument : XDocument) =
     let recorded =
       coverageDocument.Descendants(XName.Get("Method"))
       |> Seq.collect (fun x -> x.Descendants(XName.Get("Name")))
@@ -445,7 +442,7 @@ a:hover {color: #ecc;}
        let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
        Check4Content coverageDocument
 
-  let Check4Visits(coverageDocument: XDocument) =
+  let Check4Visits(coverageDocument : XDocument) =
     let recorded =
       coverageDocument.Descendants(XName.Get("SequencePoint"))
       |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value)
@@ -470,8 +467,7 @@ a:hover {color: #ecc;}
         <TrackedMethod uid="2" token="100663345" name="System.Void Tests.M::testMakeThing()" strategy="[Fact]" />
       </TrackedMethods>"""
     coverageDocument.Descendants(XName.Get("TrackedMethods"))
-    |> Seq.iter
-         (fun x ->
+    |> Seq.iter (fun x ->
          Assert.That
            (x.ToString().Replace("\r\n", "\n"),
             Is.EqualTo <| tracked.Replace("\r\n", "\n")))

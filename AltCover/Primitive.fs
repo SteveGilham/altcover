@@ -1,4 +1,4 @@
-﻿#if RUNNER
+#if RUNNER
 [<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage; RequireQualifiedAccess>] // work around coverlet attribute bug
 module AltCover.Primitive
 #else
@@ -20,8 +20,7 @@ type CollectParams =
     OutputFile : String
     CommandLine : String seq
     ExposeReturnCode : bool
-    SummaryFormat : String
-  }
+    SummaryFormat : String }
   static member Create() =
     { RecorderDirectory = String.Empty
       WorkingDirectory = String.Empty
@@ -32,8 +31,7 @@ type CollectParams =
       OutputFile = String.Empty
       CommandLine = []
       ExposeReturnCode = true
-      SummaryFormat = String.Empty
-    }
+      SummaryFormat = String.Empty }
 
 [<ExcludeFromCodeCoverage; NoComparison>]
 type PrepareParams =
@@ -65,8 +63,7 @@ type PrepareParams =
     LocalSource : bool
     VisibleBranches : bool
     ShowStatic : string
-    ShowGenerated : bool
-  }
+    ShowGenerated : bool }
   static member Create() =
     { InputDirectories = Seq.empty
       OutputDirectories = Seq.empty
@@ -96,8 +93,7 @@ type PrepareParams =
       LocalSource = false
       VisibleBranches = false
       ShowStatic = "-"
-      ShowGenerated = false
-    }
+      ShowGenerated = false }
 
 #if RUNNER
 [<ExcludeFromCodeCoverage; NoComparison; NoEquality>]

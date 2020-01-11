@@ -27,12 +27,12 @@ module Api =
     |> List.toArray
     |> Main.EffectiveMain
 
-  let Summary () =
-    Runner.Summary.ToString()
+  let Summary() = Runner.Summary.ToString()
 
   let mutable internal store = String.Empty
   let private writeToStore s = store <- s
-  let internal LogToStore = FSApi.Logging.Primitive { Primitive.Logging.Create() with Info = writeToStore }
+  let internal LogToStore =
+    FSApi.Logging.Primitive { Primitive.Logging.Create() with Info = writeToStore }
 
   let internal GetStringValue s =
     writeToStore String.Empty
@@ -57,7 +57,7 @@ type Prepare() =
   member val OutputDirectories : string array = [||] with get, set
   member val SymbolDirectories : string array = [||] with get, set
   member val Dependencies : string array = [||] with get, set
-  member val Keys : string array = [| |] with get, set
+  member val Keys : string array = [||] with get, set
   member val StrongNameKey = String.Empty with get, set
   member val XmlReport = String.Empty with get, set
   member val FileFilter : string array = [||] with get, set
@@ -85,40 +85,44 @@ type Prepare() =
   member self.Message x = base.Log.LogMessage(MessageImportance.High, x)
   override self.Execute() =
     let log =
-      Option.getOrElse (FSApi.Logging.Primitive { Primitive.Logging.Create() with Error = base.Log.LogError
-                                                                                  Warn = base.Log.LogWarning
-                                                                                  Info = self.Message }) self.ACLog
+      Option.getOrElse
+        (FSApi.Logging.Primitive
+          { Primitive.Logging.Create() with
+              Error = base.Log.LogError
+              Warn = base.Log.LogWarning
+              Info = self.Message }) self.ACLog
 
     let task =
-      FSApi.PrepareParams.Primitive { InputDirectories = self.InputDirectories
-                                      OutputDirectories = self.OutputDirectories
-                                      SymbolDirectories = self.SymbolDirectories
-                                      Dependencies = self.Dependencies
-                                      Keys = self.Keys
-                                      StrongNameKey = self.StrongNameKey
-                                      XmlReport = self.XmlReport
-                                      FileFilter = self.FileFilter
-                                      AssemblyFilter = self.AssemblyFilter
-                                      AssemblyExcludeFilter = self.AssemblyExcludeFilter
-                                      TypeFilter = self.TypeFilter
-                                      MethodFilter = self.MethodFilter
-                                      AttributeFilter = self.AttributeFilter
-                                      PathFilter = self.PathFilter
-                                      CallContext = self.CallContext
-                                      OpenCover = self.OpenCover
-                                      InPlace = self.InPlace
-                                      Save = self.Save
-                                      Single = self.Single
-                                      LineCover = self.LineCover
-                                      BranchCover = self.BranchCover
-                                      CommandLine = self.CommandLine
-                                      ExposeReturnCode = true
-                                      SourceLink = self.SourceLink
-                                      Defer = self.Defer
-                                      LocalSource = self.LocalSource
-                                      VisibleBranches = self.VisibleBranches
-                                      ShowStatic = self.ShowStatic
-                                      ShowGenerated = self.ShowGenerated}
+      FSApi.PrepareParams.Primitive
+        { InputDirectories = self.InputDirectories
+          OutputDirectories = self.OutputDirectories
+          SymbolDirectories = self.SymbolDirectories
+          Dependencies = self.Dependencies
+          Keys = self.Keys
+          StrongNameKey = self.StrongNameKey
+          XmlReport = self.XmlReport
+          FileFilter = self.FileFilter
+          AssemblyFilter = self.AssemblyFilter
+          AssemblyExcludeFilter = self.AssemblyExcludeFilter
+          TypeFilter = self.TypeFilter
+          MethodFilter = self.MethodFilter
+          AttributeFilter = self.AttributeFilter
+          PathFilter = self.PathFilter
+          CallContext = self.CallContext
+          OpenCover = self.OpenCover
+          InPlace = self.InPlace
+          Save = self.Save
+          Single = self.Single
+          LineCover = self.LineCover
+          BranchCover = self.BranchCover
+          CommandLine = self.CommandLine
+          ExposeReturnCode = true
+          SourceLink = self.SourceLink
+          Defer = self.Defer
+          LocalSource = self.LocalSource
+          VisibleBranches = self.VisibleBranches
+          ShowStatic = self.ShowStatic
+          ShowGenerated = self.ShowGenerated }
 
     Api.Prepare task log = 0
 
@@ -140,36 +144,43 @@ type Collect() =
   member val SummaryFormat = String.Empty with get, set
 
   [<Output>]
-  [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance",
-                                                    "CA1822",
-                                                    Justification = "Instance property needed")>]
-  member self.Summary with get() = Api.Summary()
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1822",
+                                                    Justification =
+                                                      "Instance property needed")>]
+  member self.Summary = Api.Summary()
+
   member self.Message x = base.Log.LogMessage(MessageImportance.High, x)
   override self.Execute() =
     let log =
-      Option.getOrElse (FSApi.Logging.Primitive { Primitive.Logging.Create() with Error = base.Log.LogError
-                                                                                  Warn = base.Log.LogWarning
-                                                                                  Info = self.Message }) self.ACLog
+      Option.getOrElse
+        (FSApi.Logging.Primitive
+          { Primitive.Logging.Create() with
+              Error = base.Log.LogError
+              Warn = base.Log.LogWarning
+              Info = self.Message }) self.ACLog
 
     let task =
-      FSApi.CollectParams.Primitive { RecorderDirectory = self.RecorderDirectory
-                                      WorkingDirectory = self.WorkingDirectory
-                                      Executable = self.Executable
-                                      LcovReport = self.LcovReport
-                                      Threshold = self.Threshold
-                                      Cobertura = self.Cobertura
-                                      OutputFile = self.OutputFile
-                                      CommandLine = self.CommandLine
-                                      ExposeReturnCode = true
-                                      SummaryFormat = self.SummaryFormat }
+      FSApi.CollectParams.Primitive
+        { RecorderDirectory = self.RecorderDirectory
+          WorkingDirectory = self.WorkingDirectory
+          Executable = self.Executable
+          LcovReport = self.LcovReport
+          Threshold = self.Threshold
+          Cobertura = self.Cobertura
+          OutputFile = self.OutputFile
+          CommandLine = self.CommandLine
+          ExposeReturnCode = true
+          SummaryFormat = self.SummaryFormat }
 
     Api.Collect task log = 0
 
 type PowerShell() =
   inherit Task(null)
 
-  member val internal IO = FSApi.Logging.Primitive { Primitive.Logging.Create() with Error = base.Log.LogError
-                                                                                     Warn = base.Log.LogWarning } with get, set
+  member val internal IO = FSApi.Logging.Primitive
+                             { Primitive.Logging.Create() with
+                                 Error = base.Log.LogError
+                                 Warn = base.Log.LogWarning } with get, set
 
   override self.Execute() =
     let r = Api.Ipmo()
@@ -180,8 +191,10 @@ type PowerShell() =
 type GetVersion() =
   inherit Task(null)
 
-  member val internal IO = FSApi.Logging.Primitive { Primitive.Logging.Create() with Error = base.Log.LogError
-                                                                                     Warn = base.Log.LogWarning } with get, set
+  member val internal IO = FSApi.Logging.Primitive
+                             { Primitive.Logging.Create() with
+                                 Error = base.Log.LogError
+                                 Warn = base.Log.LogWarning } with get, set
 
   override self.Execute() =
     let r = Api.Version()
@@ -194,10 +207,14 @@ type Echo() =
 
   [<Required>]
   member val Text = String.Empty with get, set
+
   member val Colour = String.Empty with get, set
 
   override self.Execute() =
-    if self.Text |> String.IsNullOrWhiteSpace |>  not then
+    if self.Text
+       |> String.IsNullOrWhiteSpace
+       |> not
+    then
       let original = Console.ForegroundColor
       try
         Api.Colourize self.Colour
@@ -210,7 +227,8 @@ type Echo() =
 type RunSettings() =
   inherit Task(null)
 
-  member val TestSetting  = String.Empty with get, set
+  member val TestSetting = String.Empty with get, set
+
   [<Output>]
   member val Extended = String.Empty with get, set
 
@@ -221,28 +239,31 @@ type RunSettings() =
 
     try
       let settings =
-        if self.TestSetting |> String.IsNullOrWhiteSpace |> not &&
-           self.TestSetting |> File.Exists
-        then
+        if self.TestSetting
+           |> String.IsNullOrWhiteSpace
+           |> not
+           && self.TestSetting |> File.Exists then
           try
             use s = File.OpenRead(self.TestSetting)
             XDocument.Load(s)
           with
           | :? IOException
           | :? XmlException -> XDocument()
-        else XDocument()
+        else
+          XDocument()
 
       let X n = XName.Get n
 
-      let ensureHas (parent:XContainer) childName =
+      let ensureHas (parent : XContainer) childName =
         match parent.Descendants(X childName) |> Seq.tryHead with
         | Some child -> child
-        | _ -> let extra = XElement(X childName)
-               parent.Add extra
-               extra
+        | _ ->
+            let extra = XElement(X childName)
+            parent.Add extra
+            extra
+
       let here = Assembly.GetExecutingAssembly().Location
-      let expected = Path.Combine(Path.GetDirectoryName(here),
-                                   self.DataCollector)
+      let expected = Path.Combine(Path.GetDirectoryName(here), self.DataCollector)
 
       let result = File.Exists(expected)
 
@@ -252,13 +273,16 @@ type RunSettings() =
         let ip2 = ensureHas ip1 "InProcDataCollectors"
 
         let name = AssemblyName.GetAssemblyName(expected)
-        let altcover = XElement(X "InProcDataCollector",
-                        XAttribute(X "friendlyName", "AltCover"),
-                        XAttribute(X "uri", "InProcDataCollector://AltCover/Recorder/" + name.Version.ToString()),
-                        XAttribute(X "assemblyQualifiedName", "AltCover.DataCollector, " + name.FullName),
-                        XAttribute(X "codebase", expected),
-                        XElement(X "Configuration",
-                            XElement(X "Offload", XText("true"))))
+        let altcover =
+          XElement
+            (X "InProcDataCollector", XAttribute(X "friendlyName", "AltCover"),
+             XAttribute
+               (X "uri",
+                "InProcDataCollector://AltCover/Recorder/" + name.Version.ToString()),
+             XAttribute
+               (X "assemblyQualifiedName", "AltCover.DataCollector, " + name.FullName),
+             XAttribute(X "codebase", expected),
+             XElement(X "Configuration", XElement(X "Offload", XText("true"))))
         ip2.Add(altcover)
 
         self.Extended <- Path.ChangeExtension(tempFile, ".altcover.runsettings")

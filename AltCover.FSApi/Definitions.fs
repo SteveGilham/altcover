@@ -21,28 +21,33 @@ module DotNet =
     | FailFast of bool
     | ShowSummary of String
     | Many of CLIArgs seq
-  with member self.ForceDelete =
-        match self with
-        | Force b -> b
-        | ShowSummary _
-        | FailFast _ -> false
-        | Many s -> s |> Seq.exists(fun f -> f.ForceDelete)
-       member self.Fast =
-        match self with
-        | FailFast b -> b
-        | ShowSummary _
-        | Force _ -> false
-        | Many s -> s |> Seq.exists(fun f -> f.Fast)
-       member self.Summary =
-        match self with
-        | ShowSummary b -> b
-        | FailFast _
-        | Force _ -> String.Empty
-        | Many s -> match s |> Seq.map(fun f -> f.Summary)
-                            |> Seq.filter (String.IsNullOrWhiteSpace >> not)
-                            |> Seq.tryHead with
-                    | Some x -> x
-                    | _ -> String.Empty
+
+    member self.ForceDelete =
+      match self with
+      | Force b -> b
+      | ShowSummary _
+      | FailFast _ -> false
+      | Many s -> s |> Seq.exists (fun f -> f.ForceDelete)
+
+    member self.Fast =
+      match self with
+      | FailFast b -> b
+      | ShowSummary _
+      | Force _ -> false
+      | Many s -> s |> Seq.exists (fun f -> f.Fast)
+
+    member self.Summary =
+      match self with
+      | ShowSummary b -> b
+      | FailFast _
+      | Force _ -> String.Empty
+      | Many s ->
+          match s
+                |> Seq.map (fun f -> f.Summary)
+                |> Seq.filter (String.IsNullOrWhiteSpace >> not)
+                |> Seq.tryHead with
+          | Some x -> x
+          | _ -> String.Empty
 
 #if RUNNER
 #else
@@ -63,13 +68,10 @@ module internal Internals =
   let private Join(l : string list) = String.Join(" ", l)
 
 #if RUNNER
-  let ToTestArgumentList
-      (prepare : AltCover.FSApi.PrepareParams)
-      (collect : AltCover.FSApi.CollectParams)
-      (force : CLIArgs) =
+  let ToTestArgumentList (prepare : AltCover.FSApi.PrepareParams)
+      (collect : AltCover.FSApi.CollectParams) (force : CLIArgs) =
 #else
-  let ToTestArgumentList
-      (prepare : AltCover_Fake.DotNet.Testing.AltCover.PrepareParams)
+  let ToTestArgumentList (prepare : AltCover_Fake.DotNet.Testing.AltCover.PrepareParams)
       (collect : AltCover_Fake.DotNet.Testing.AltCover.CollectParams)
       (force : DotNet.CLIArgs) =
 #endif
@@ -100,19 +102,15 @@ module internal Internals =
       (FromArg "ShowSummary" force.Summary)
       (FromArg "SummaryFormat" collect.SummaryFormat)
       (FromArg "ShowStatic" prepare.ShowStatic)
-      (Arg "ShowGenerated" "true", prepare.ShowGenerated)
-    ]
+      (Arg "ShowGenerated" "true", prepare.ShowGenerated) ]
     |> List.filter snd
     |> List.map fst
 
 #if RUNNER
-  let ToTestArguments
-    (prepare : AltCover.FSApi.PrepareParams)
-    (collect : AltCover.FSApi.CollectParams)
-    (force : CLIArgs) =
+  let ToTestArguments (prepare : AltCover.FSApi.PrepareParams)
+      (collect : AltCover.FSApi.CollectParams) (force : CLIArgs) =
 #else
-  let ToTestArguments
-      (prepare : AltCover_Fake.DotNet.Testing.AltCover.PrepareParams)
+  let ToTestArguments (prepare : AltCover_Fake.DotNet.Testing.AltCover.PrepareParams)
       (collect : AltCover_Fake.DotNet.Testing.AltCover.CollectParams)
       (force : DotNet.CLIArgs) =
 #endif

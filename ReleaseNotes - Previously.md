@@ -128,7 +128,7 @@ Bringing gifts, as is appropriate for the season
 * [BUGFIX] pack the pwsh support into the API module (omission in 4.0.600)
 * [API] Defaults provided for CSApi types `CollectArgs` and `PrepareArgs` equivalent to the F# defaults
 * [API] `PrepareParams.Vaildate : unit -> string array`; and `CollectParams.Validate : bool -> string array` to do read-only parameter validation
-* [API] The equivalent `public string[] PrepareArgs()` and `public string[] CollectArgs(bool afterPreparation)` for the CSApi types
+* [API] The equivalent `public string[] PrepareArgs.Validate()` and `public string[] CollectArgs.Validate(bool afterPreparation)` for the CSApi types
 
 # 4.0.600 (Doruka series release 1)
 * [NEW PACKAGE] AltCover.Api exposing the shared API used by both the MSBuild tasks and the PowerShell `Invoke-AltCover` cmdlet, in native F# and with a C#-friendly adapter layer
