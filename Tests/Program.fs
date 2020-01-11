@@ -4,12 +4,15 @@ open Expecto
 
 module TestMain =
   let sync = System.Object()
-  let specials = {0 .. 31}
-                 |> Seq.map (fun i -> testCase (sprintf "Tests2.ShouldUpdateHandlerOK(%d)" i) <|
-                                       (fun () -> lock sync (fun () ->
-                                                  AltCover.Main.init()
-                                                  Tests.AltCoverTests2.ShouldUpdateHandlerOK i)))
-                 |> Seq.toList
+
+  let specials =
+    { 0 .. 31 }
+    |> Seq.map (fun i ->
+         testCase (sprintf "Tests2.ShouldUpdateHandlerOK(%d)" i) <| (fun () ->
+         lock sync (fun () ->
+           AltCover.Main.init()
+           Tests.AltCoverTests2.ShouldUpdateHandlerOK i)))
+    |> Seq.toList
 
   [<Tests>]
   let tests =

@@ -213,10 +213,12 @@ module Instance =
     use writer = new StreamWriter(file)
     text |> Seq.iter (fun line -> writer.WriteLine("{0}", line))
 
+  let
 #if DEBUG
 #else
+      inline
 #endif
-  let inline internal Issue71Wrapper visits moduleId hitPointId context handler add =
+             internal Issue71Wrapper visits moduleId hitPointId context handler add =
     try
       add visits moduleId hitPointId context
     with x ->
