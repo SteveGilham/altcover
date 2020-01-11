@@ -15,12 +15,12 @@ let main arguments =
   let options =
     [ ("g|geometry",
        (fun _ ->
-       Persistence.clearGeometry()
-       Persistence.save <- false))
+         Persistence.clearGeometry()
+         Persistence.save <- false))
       ("r|recentFiles", (fun _ -> Persistence.saveCoverageFiles [])) ]
     |> List.fold
          (fun (o : OptionSet) (p, a) ->
-         o.Add(p, UICommon.GetResourceString p, new System.Action<string>(a)))
+           o.Add(p, UICommon.GetResourceString p, new System.Action<string>(a)))
          (OptionSet())
   options.Parse(arguments) |> ignore
   AppBuilder.Configure<App>().UsePlatformDetect().Start<MainWindow>()

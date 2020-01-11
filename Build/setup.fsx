@@ -17,7 +17,7 @@ open Microsoft.Win32
 // Really bootstrap
 let dotnetPath = "dotnet" |> Fake.Core.ProcessUtils.tryFindFileOnPath
 
-let dotnetOptions (o: DotNet.Options) =
+let dotnetOptions (o : DotNet.Options) =
   match dotnetPath with
   | Some f -> { o with DotNetCliPath = f }
   | None -> o
