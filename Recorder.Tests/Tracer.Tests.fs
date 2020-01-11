@@ -21,9 +21,8 @@ open AltCover.Recorder
 open NUnit.Framework
 open Swensen.Unquote
 
-[<TestFixture>]
-type AltCoverCoreTests() =
-  class
+//[<TestFixture>]
+module AltCoverCoreTests =
 
     let test' x message =
       try
@@ -37,7 +36,7 @@ type AltCoverCoreTests() =
 #endif
 
     [<Test>]
-    member self.WillNotConnectSpontaneously() =
+    let WillNotConnectSpontaneously() =
       let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
       let unique = Path.Combine(where, Guid.NewGuid().ToString())
       let mutable client = Tracer.Create unique
@@ -49,7 +48,7 @@ type AltCoverCoreTests() =
         reraise()
 
     [<Test>]
-    member self.ValidTokenWillConnect() =
+    let ValidTokenWillConnect() =
       let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
       let unique = Path.Combine(where, Guid.NewGuid().ToString())
       do use stream = File.Create(unique)
@@ -61,7 +60,7 @@ type AltCoverCoreTests() =
       finally
         client.Close()
 
-    member internal self.ReadResults(stream : Stream) =
+    let internal ReadResults(stream : Stream) =
       let hits = List<string * int * Track>()
       use formatter = new System.IO.BinaryReader(stream)
 
@@ -122,7 +121,7 @@ type AltCoverCoreTests() =
       hits
 
     [<Test>]
-    member self.VisitShouldSignal() =
+    let VisitShouldSignal() =
       let save = Instance.trace
       let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
       let unique = Path.Combine(where, Guid.NewGuid().ToString())
@@ -146,14 +145,14 @@ type AltCoverCoreTests() =
           Instance.trace <- save
         use stream =
           new DeflateStream(File.OpenRead(unique + ".0.acv"), CompressionMode.Decompress)
-        let results = self.ReadResults stream |> Seq.toList
+        let results = ReadResults stream |> Seq.toList
         test' <@ Adapter.VisitsSeq() |> Seq.isEmpty @> "unexpected local write"
         test' <@ results = expected @> "unexpected result"
       finally
         Adapter.Reset()
 
     [<Test>]
-    member self.VisitShouldSignalTrack() =
+    let VisitShouldSignalTrack() =
       let save = Instance.trace
       let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
       let unique = Path.Combine(where, Guid.NewGuid().ToString())
@@ -193,7 +192,7 @@ type AltCoverCoreTests() =
           Instance.trace <- save
         use stream =
           new DeflateStream(File.OpenRead(unique + ".0.acv"), CompressionMode.Decompress)
-        let results = self.ReadResults stream
+        let results = ReadResults stream
         test <@ ("no", 0, Adapter.Null()) |> Adapter.untable |> Seq.isEmpty @>
         test' <@ Adapter.VisitsSeq() |> Seq.isEmpty @> "unexpected local write"
         test <@ results.Count = 2 @>
@@ -248,7 +247,7 @@ type AltCoverCoreTests() =
         Adapter.VisitsClear()
 
     [<Test>]
-    member self.FlushShouldTidyUp() = // also throw a bone to OpenCover 615
+    let FlushShouldTidyUp() = // also throw a bone to OpenCover 615
       let save = Instance.trace
       let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
       let root = Path.Combine(where, Guid.NewGuid().ToString())
@@ -277,11 +276,9 @@ type AltCoverCoreTests() =
 
         let results =
           stream
-          |> self.ReadResults
+          |> ReadResults
           |> Seq.toList
         test' <@ Adapter.VisitsSeq() |> Seq.isEmpty @> "unexpected local write"
         test' <@ results = expected @> "unexpected result"
       finally
         Adapter.VisitsClear()
-
-  end

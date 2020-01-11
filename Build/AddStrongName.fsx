@@ -50,8 +50,8 @@ let definition = AssemblyDefinition.ReadAssembly(!assemblyName)
 
 // Do what CorFlags /32BIT+ /Force does if required
 if !cor32plus then
-  definition.MainModule.Attributes <- ModuleAttributes.Required32Bit
-                                      ||| definition.MainModule.Attributes
+  definition.MainModule.Attributes <-
+    ModuleAttributes.Required32Bit ||| definition.MainModule.Attributes
 // The headline section : strong-naming ---------------------------------
 // (Re-)apply the strong name
 definition.Name.HasPublicKey <- true

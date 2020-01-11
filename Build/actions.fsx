@@ -55,7 +55,8 @@ module Actions =
     and Clean' x depth =
       printfn "looping after %A" x
       System.Threading.Thread.Sleep(500)
-      if depth < 10 then Clean1(depth + 1)
+      if depth < 10
+      then Clean1(depth + 1)
       else Assert.Fail "Could not clean all the files"
 
     Clean1 0
@@ -92,10 +93,9 @@ open System.Runtime.CompilerServices
 [<assembly: AssemblyConfiguration("Release {0}")>]
 #endif
 do ()"""
+
   let prefix =
-    [| 0x00uy; 0x24uy; 0x00uy; 0x00uy; 0x04uy
-       0x80uy; 0x00uy; 0x00uy; 0x94uy; 0x00uy
-       0x00uy; 0x00uy |]
+    [| 0x00uy; 0x24uy; 0x00uy; 0x00uy; 0x04uy; 0x80uy; 0x00uy; 0x00uy; 0x94uy; 0x00uy; 0x00uy; 0x00uy |]
 
   let GetPublicKey(stream : Stream) =
     // see https://social.msdn.microsoft.com/Forums/vstudio/en-US/d9ef264e-1a74-4f48-b93f-3e2c7902f660/determine-contents-of-a-strong-name-key-file-snk?forum=netfxbcl
@@ -141,8 +141,7 @@ do ()"""
 
     // Update the file only if it would change
     let old =
-      if File.Exists(path) then File.ReadAllText(path)
-      else String.Empty
+      if File.Exists(path) then File.ReadAllText(path) else String.Empty
     if not (old.Equals(file)) then File.WriteAllText(path, file)
 
   let GetVersionFromYaml() =
@@ -164,8 +163,8 @@ do ()"""
     let majmin = String.Join(".", version.Split('.') |> Seq.take 2)
 
     let result =
-      if String.IsNullOrWhiteSpace appveyor then
-        sprintf "%s.%d.%d" majmin diff.Days revision
+      if String.IsNullOrWhiteSpace appveyor
+      then sprintf "%s.%d.%d" majmin diff.Days revision
       else appveyor
     printfn "Build version : %s" version
     (result, majmin, now.Year)
@@ -215,9 +214,10 @@ do ()"""
       |> Seq.map (fun x -> x.Attribute(XName.Get("visitcount")).Value)
       |> Seq.toList
 
-    let expected = "0 1 1 1 1 1 1 0 0 0 0 0 0 0 2 1 1 1"
+    let expected = "0 1 1 1 0 1 0 1 0 1 0 0 0 0 0 0 0 2 1 0 1 0 1"
     Assert.That
-      (String.Join(" ", recorded), expected |> Is.EqualTo, sprintf "Bad visit list %A" recorded)
+      (String.Join(" ", recorded), expected |> Is.EqualTo,
+       sprintf "Bad visit list %A" recorded)
 
   let ValidateSample1 simpleReport sigil =
     // get recorded details from here
@@ -265,13 +265,13 @@ do ()"""
     match result.Errors |> Seq.toList with
     | [] -> ()
     | errors ->
-      try
-        Console.ForegroundColor <- ConsoleColor.Black
-        Console.BackgroundColor <- ConsoleColor.White
-        String.Join(Environment.NewLine, errors) |> printfn "ERR : %s"
-      finally
-        Console.ForegroundColor <- fst save
-        Console.BackgroundColor <- snd save
+        try
+          Console.ForegroundColor <- ConsoleColor.Black
+          Console.BackgroundColor <- ConsoleColor.White
+          String.Join(Environment.NewLine, errors) |> printfn "ERR : %s"
+        finally
+          Console.ForegroundColor <- fst save
+          Console.BackgroundColor <- snd save
     Assert.That(result.ExitCode, Is.EqualTo 0, msg)
 
   let AssertResult (msg : string) (result : Fake.Core.ProcessResult<'a>) =
@@ -295,22 +295,23 @@ do ()"""
     let binRoot = Path.getFullName binaryPath
     let sampleRoot = Path.getFullName samplePath
     let instrumented = "__Instrumented." + reportSigil
+    let framework = Fake.DotNet.ToolType.CreateFullFramework()
 
     let prep =
       AltCover.PrepareParams.Primitive
-        { Primitive.PrepareParams.Create() with TypeFilter = [ """System\.""" ]
-                                                XmlReport = simpleReport
-                                                OutputDirectories =
-                                                  [| "./" + instrumented |]
-                                                OpenCover = false
-                                                InPlace = false
-                                                Save = false }
+        { Primitive.PrepareParams.Create() with
+            TypeFilter = [ """System\.""" ]
+            XmlReport = simpleReport
+            OutputDirectories = [| "./" + instrumented |]
+            OpenCover = false
+            InPlace = false
+            Save = false }
       |> AltCover.Prepare
 
     let parameters =
-      { AltCover.Params.Create prep with ToolPath = binRoot @@ "AltCover.exe"
-                                         ToolType = AltCover.ToolType.Framework
-                                         WorkingDirectory = sampleRoot }
+      { AltCover.Params.Create prep with
+          ToolPath = binRoot @@ "AltCover.exe"
+          WorkingDirectory = sampleRoot }.WithToolType framework
 
     AltCover.run parameters
     System.Threading.Thread.Sleep(1000)
@@ -327,35 +328,36 @@ do ()"""
     match monoOnWindows with
     | None -> Assert.Fail "Mono executable expected"
     | _ ->
-      Directory.ensure "./_Reports"
-      let reportSigil = reportSigil' + "UnderMono"
-      let simpleReport = (Path.getFullName "./_Reports") @@ (reportSigil + ".xml")
-      let binRoot = Path.getFullName binaryPath
-      let sampleRoot = Path.getFullName samplePath
-      let instrumented = "__Instrumented." + reportSigil
+        Directory.ensure "./_Reports"
+        let reportSigil = reportSigil' + "UnderMono"
+        let simpleReport = (Path.getFullName "./_Reports") @@ (reportSigil + ".xml")
+        let binRoot = Path.getFullName binaryPath
+        let sampleRoot = Path.getFullName samplePath
+        let instrumented = "__Instrumented." + reportSigil
+        let framework = Fake.DotNet.ToolType.CreateFullFramework()
 
-      let prep =
-        AltCover.PrepareParams.Primitive
-          { Primitive.PrepareParams.Create() with TypeFilter = [ """System\.""" ]
-                                                  XmlReport = simpleReport
-                                                  OutputDirectories =
-                                                    [| "./" + instrumented |]
-                                                  OpenCover = false
-                                                  InPlace = false
-                                                  Save = false }
-        |> AltCover.Prepare
+        let prep =
+          AltCover.PrepareParams.Primitive
+            { Primitive.PrepareParams.Create() with
+                TypeFilter = [ """System\.""" ]
+                XmlReport = simpleReport
+                OutputDirectories = [| "./" + instrumented |]
+                OpenCover = false
+                InPlace = false
+                Save = false }
+          |> AltCover.Prepare
 
-      let parameters =
-        { AltCover.Params.Create prep with ToolPath = binRoot @@ "AltCover.exe"
-                                           ToolType = AltCover.ToolType.Mono monoOnWindows
-                                           WorkingDirectory = sampleRoot }
+        let parameters =
+          { AltCover.Params.Create prep with
+              ToolPath = binRoot @@ "AltCover.exe"
+              WorkingDirectory = sampleRoot }.WithToolType framework
 
-      AltCover.run parameters
+        AltCover.runWithMono monoOnWindows parameters
 
-      Run
-        (sampleRoot @@ (instrumented + "/Sample1.exe"), (sampleRoot @@ instrumented), [])
-        "Instrumented .exe failed"
-      ValidateSample1 simpleReport reportSigil
+        Run
+          (sampleRoot @@ (instrumented + "/Sample1.exe"), (sampleRoot @@ instrumented), [])
+          "Instrumented .exe failed"
+        ValidateSample1 simpleReport reportSigil
 
   let PrepareReadMe packingCopyright =
     let readme = Path.getFullName "README.md"
@@ -393,13 +395,12 @@ a:hover {color: #ecc;}
       |> Seq.map (fun x ->
            match x.Name.LocalName with
            | "h2" ->
-             keep
-             := (List.tryFind (fun e -> e = String.Concat(x.Nodes())) eliminate)
-                |> Option.isNone
+               keep
+               := (List.tryFind (fun e -> e = String.Concat(x.Nodes())) eliminate)
+                  |> Option.isNone
            | "footer" -> keep := true
            | _ -> ()
-           if !keep then None
-           else Some x)
+           if !keep then None else Some x)
       |> Seq.toList
     kill
     |> Seq.iter (fun q ->
@@ -425,8 +426,8 @@ a:hover {color: #ecc;}
         // "System.Void Tests.DU/get_MyBar@31::.ctor(Tests.DU/MyUnion)"
         "System.Void Tests.DU::testMakeUnion()"
         "System.Void Tests.M::testMakeThing()"
-        "Tests.DU/MyUnion Tests.DU/MyUnion::as_bar()";
-        "Tests.DU/MyUnion Tests.DU/get_MyBar@40::Invoke(Microsoft.FSharp.Core.Unit)"
+        "Tests.DU/MyUnion Tests.DU/MyUnion::as_bar()"
+        "Tests.DU/MyUnion Tests.DU/get_MyBar@42::Invoke(Microsoft.FSharp.Core.Unit)"
         "Tests.DU/MyUnion Tests.DU::returnBar(System.String)"
         "Tests.DU/MyUnion Tests.DU::returnFoo(System.Int32)"
         "Tests.M/Thing Tests.M::makeThing(System.String)" ]
@@ -447,9 +448,10 @@ a:hover {color: #ecc;}
       |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value)
       |> Seq.toList
 
-    let expected = "0 1 1 1 1 1 1 0 0 0 0 0 0 0 2 1 1 1"
+    let expected = "0 1 1 1 0 1 0 1 0 1 0 0 0 0 0 0 0 2 1 0 1 0 1"
     Assert.That
-      (String.Join(" ", recorded), expected |> Is.EqualTo, sprintf "Bad visit list %A" recorded)
+      (String.Join(" ", recorded), expected |> Is.EqualTo,
+       sprintf "Bad visit list %A" recorded)
     printfn "Visits OK"
     coverageDocument.Descendants(XName.Get("SequencePoint"))
     |> Seq.iter (fun sp ->
@@ -465,8 +467,7 @@ a:hover {color: #ecc;}
         <TrackedMethod uid="2" token="100663345" name="System.Void Tests.M::testMakeThing()" strategy="[Fact]" />
       </TrackedMethods>"""
     coverageDocument.Descendants(XName.Get("TrackedMethods"))
-    |> Seq.iter
-         (fun x ->
+    |> Seq.iter (fun x ->
          Assert.That
            (x.ToString().Replace("\r\n", "\n"),
             Is.EqualTo <| tracked.Replace("\r\n", "\n")))
@@ -482,7 +483,10 @@ a:hover {color: #ecc;}
            "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
            "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
            "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
+           "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
+           "<TrackedMethodRef uid=\"1\" vc=\"1\" />"
            "<TrackedMethodRef uid=\"2\" vc=\"2\" />"
+           "<TrackedMethodRef uid=\"2\" vc=\"1\" />"
            "<TrackedMethodRef uid=\"2\" vc=\"1\" />"
            "<TrackedMethodRef uid=\"2\" vc=\"1\" />"
            "<TrackedMethodRef uid=\"2\" vc=\"1\" />" ])

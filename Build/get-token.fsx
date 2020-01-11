@@ -4,8 +4,7 @@ open System.Reflection
 open System.Security.Cryptography
 
 let key = fsi.CommandLineArgs.[1]
-let stream =
-  new FileStream(key, System.IO.FileMode.Open, System.IO.FileAccess.Read)
+let stream = new FileStream(key, System.IO.FileMode.Open, System.IO.FileAccess.Read)
 let pair = new StrongNameKeyPair(stream)
 // get the public key token as 8 bytes from the end of a SHA1 hash of the key material
 let hash = new SHA1CryptoServiceProvider()
@@ -26,7 +25,8 @@ let rec chunkArray (s : string list) =
   |> Seq.truncate chunk
   |> Seq.iter Console.Write
   Console.WriteLine(String.Empty)
-  if chunk > (List.length s) then ()
+  if chunk > (List.length s) then
+    ()
   else
     s
     |> Seq.skip chunk

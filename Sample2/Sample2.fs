@@ -1,7 +1,14 @@
 namespace N
 
 open System
+open System.Reflection
 open NUnit.Framework
+
+open Swensen.Unquote
+
+[<assembly:AssemblyVersionAttribute("1.0.0.0")>]
+[<assembly:AssemblyFileVersionAttribute("1.0.0.0")>]
+do ()
 
 module M =
   type Thing =
@@ -12,8 +19,8 @@ module M =
 
   [<Test>]
   let testMakeThing() =
-    Assert.AreEqual("s", (makeThing "s").Thing)
-    Assert.AreEqual(5, (makeThing "aeiou").bytes().Length)
+    test <@ (makeThing "s").Thing = "s" @>
+    test <@ (makeThing "aeiou").bytes().Length = 5 @>
 
 module DU =
   type MyUnion =
@@ -41,12 +48,12 @@ module DU =
   let returnBar v = Bar v
 
   [<Test>]
+  let testMakeUnion() =
   //let testMakeUnion ([<Range(10,136)>] x) = // at buffer limit
   //  Assert.AreEqual(returnFoo x, Foo x)
-  let testMakeUnion() =
-    Assert.AreEqual(returnFoo 10, Foo 10)
-    Assert.AreEqual(returnBar "s", Bar "s")
-    Assert.AreEqual(Bar "10", (Foo 10).as_bar())
+    test <@ returnFoo 10 = Foo 10 @>
+    test <@ returnBar "s" = Bar "s" @>
+    test <@ (Foo 10).as_bar() = Bar "10" @>
 #if NETCOREAPP2_1
 
 module Program =

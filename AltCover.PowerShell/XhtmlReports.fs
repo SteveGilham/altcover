@@ -40,7 +40,12 @@ type ConvertToBarChartCommand(outputFile : String) =
       if self.OutputFile
          |> String.IsNullOrWhiteSpace
          |> not
-      then rewrite.Save(self.OutputFile)
+      then
+        use w =
+          { new StringWriter(System.Globalization.CultureInfo.InvariantCulture) with
+              override self.Encoding = System.Text.Encoding.UTF8 }
+        rewrite.Save(w)
+        File.WriteAllText(self.OutputFile, w.ToString().Replace("\u2442", "&#x2442;"))
       self.WriteObject rewrite
     finally
       Directory.SetCurrentDirectory here

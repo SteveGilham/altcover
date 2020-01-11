@@ -120,6 +120,8 @@ module internal Counter =
   /// <remarks>Idiom to work with CA2202; we still double dispose the stream, but elude the rule.
   /// If this is ever a problem, we will need mutability and two streams, with explicit
   /// stream disposal if and only if the reader or writer doesn't take ownership
+  /// Approved way is ugly -- https://docs.microsoft.com/en-us/visualstudio/code-quality/ca2202?view=vs-2019
+  /// Also, this rule is deprecated
   /// </remarks>
   let private ReadXDocument(stream : Stream) =
     let doc = XmlDocument()
@@ -297,7 +299,6 @@ module internal Counter =
 
   let internal AddSingleVisit  (counts : Dictionary<string, Dictionary<int, PointVisit>>)
       moduleId hitPointId context =
-    try
       EnsureModule counts moduleId
       let next = counts.[moduleId]
       EnsurePoint next hitPointId
@@ -306,17 +307,6 @@ module internal Counter =
       match context with
       | Null -> v.Step()
       | something -> v.Track something
-#if RUNNER
-      1L
-#endif
-    with
-    | :? NullReferenceException
-    | :? ArgumentNullException ->
-#if RUNNER
-      0L
-#else
-      ()
-#endif
 
 #if RUNNER
   let internal AddVisit (counts : Dictionary<string, Dictionary<int, PointVisit>>)
@@ -324,6 +314,7 @@ module internal Counter =
     match context with
     | Table t -> AddTable counts t
     | _ -> AddSingleVisit counts moduleId hitPointId context
+           1L
 #endif
 
 #endif

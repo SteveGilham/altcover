@@ -49,7 +49,7 @@ module CoverageFormats =
       assemblies
       |> Seq.map Path.GetFullPath
       |> Seq.filter (fun p -> identities.ContainsKey paths.[p])
-      |> Seq.map (fun p -> (p,[]))
+      |> Seq.map (fun p -> (p, []))
 
     // ensure default state -- this switches branch recording off
     AltCover.Main.init()
@@ -62,8 +62,7 @@ module CoverageFormats =
          System.Globalization.CultureInfo.InvariantCulture) |> snd
     // Match modules
     rewrite.Descendants(XName.Get "Module")
-    |> Seq.iter
-         (fun target ->
+    |> Seq.iter (fun target ->
          let path =
            target.Descendants(XName.Get "ModulePath")
            |> Seq.map (fun n -> n.Value)
@@ -76,14 +75,13 @@ module CoverageFormats =
          target.Descendants(XName.Get "File").OfType<XElement>()
          |> Seq.iter
               (fun f ->
-              files.Add
-                (f.Attribute(XName.Get "fullPath").Value,
-                 f.Attribute(XName.Get "uid").Value))
+                files.Add
+                  (f.Attribute(XName.Get "fullPath").Value,
+                   f.Attribute(XName.Get "uid").Value))
 
          // Copy sequence points across
          source.Select(".//seqpnt").OfType<XPathNavigator>()
-         |> Seq.iter
-              (fun s ->
+         |> Seq.iter (fun s ->
               let sl = s.GetAttribute("line", String.Empty)
               let sc = s.GetAttribute("column", String.Empty)
               let el = s.GetAttribute("endline", String.Empty)
@@ -98,6 +96,12 @@ module CoverageFormats =
               let visits = (max 0 v) + (max 0 vc)
               sp.Attribute(XName.Get "vc").Value <- visits.ToString
                                                       (System.Globalization.CultureInfo.InvariantCulture)))
+
+    rewrite.Descendants(XName.Get "Class")
+    |> Seq.filter (fun c -> c.Descendants(XName.Get "Method") |> Seq.isEmpty)
+    |> Seq.toList // reify before making changes
+    |> Seq.iter (fun c -> c.Remove())
+
     let dec = rewrite.Declaration
     dec.Encoding <- "utf-8"
     dec.Standalone <- null
@@ -124,8 +128,7 @@ module CoverageFormats =
          m.SetAttribute("name", lead.Substring(0, lead.IndexOf('('))))
 
     rewrite.SelectNodes("//module").OfType<XmlElement>()
-    |> Seq.iter
-         (fun m ->
+    |> Seq.iter (fun m ->
          let path = m.GetAttribute("name")
          let info = System.IO.FileInfo path
          m.SetAttribute("name", info.Name)

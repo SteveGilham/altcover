@@ -5,7 +5,7 @@
            from="Gendarme.Rules.BadPractice.dll" />
     <rules include="*" from="Gendarme.Rules.Concurrency.dll" />
     <rules include="*"
-           exclude="CheckParametersNullityInVisibleMethodsRule | EnsureLocalDisposalRule"
+           exclude=" BadRecursiveInvocationRule | CheckParametersNullityInVisibleMethodsRule | EnsureLocalDisposalRule"
            from="Gendarme.Rules.Correctness.dll" />
     <rules include="*"
            exclude="AvoidMultidimensionalIndexerRule | AvoidVisibleNestedTypesRule | AvoidSmallNamespaceRule | PreferXmlAbstractionsRule"

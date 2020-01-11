@@ -1,4 +1,4 @@
-namespace Tests.Runner
+namespace Tests
 
 open System
 open System.Collections.Generic
@@ -15,33 +15,49 @@ open AltCover
 open AltCover.Augment
 open AltCover.Base
 open Mono.Options
-open NUnit.Framework
 open Swensen.Unquote
 
-[<TestFixture>]
-type AltCoverTests() =
-  class
-    [<SetUp>]
-    member self.SetUp() =
-      Runner.init()
+type Assert = NUnit.Framework.Assert
+type Does = NUnit.Framework.Does
+type Is = NUnit.Framework.Is
 
+#if NETCOREAPP2_1
+[<AttributeUsage(AttributeTargets.Method)>]
+type TestAttribute() = class
+    inherit Attribute()
+end
+#else
+type TestAttribute = NUnit.Framework.TestAttribute
+#endif
+
+module AltCoverRunnerTests =
     // Base.fs
+
     [<Test>]
-    member self.SafeDisposalProtects() =
+    let SafeDisposalProtects() =
+      Runner.init()
       let obj1 =
         { new System.IDisposable with
             member x.Dispose() = ObjectDisposedException("Bang!") |> raise }
       Assist.SafeDispose obj1
       test <@ true @>
 
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.JunkUspidGivesNegativeIndex() =
+#endif
+    let JunkUspidGivesNegativeIndex() =
+      Runner.init()
       let key = " "
       let index = Counter.FindIndexFromUspid 0 key
       test <@ index < 0 @>
 
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.RealIdShouldIncrementCount() =
+#endif
+    let RealIdShouldIncrementCount() =
+      Runner.init()
       let visits = new Dictionary<string, Dictionary<int, PointVisit>>()
       let key = " "
       let v1 = Counter.AddVisit visits key 23 Null
@@ -52,8 +68,12 @@ type AltCoverTests() =
       Assert.That(x.Count, Is.EqualTo 1)
       Assert.That(x.Tracks, Is.Empty)
 
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.RealIdShouldIncrementList() =
+#endif
+    let RealIdShouldIncrementList() =
+      Runner.init()
       let visits = new Dictionary<string, Dictionary<int, PointVisit>>()
       let key = " "
       let payload = Time DateTime.UtcNow.Ticks
@@ -65,20 +85,26 @@ type AltCoverTests() =
       Assert.That(x.Count, Is.EqualTo 0)
       Assert.That(x.Tracks, Is.EquivalentTo [ payload ])
 
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.DistinctIdShouldBeDistinct() =
+#endif
+    let DistinctIdShouldBeDistinct() =
+      Runner.init()
       let visits = new Dictionary<string, Dictionary<int, PointVisit>>()
       let key = " "
       let v3 = Counter.AddVisit visits key 23 Null
       Assert.That(v3, Is.EqualTo 1)
       let v4 = Counter.AddVisit visits "key" 42 Null
-      Assert.That(v4, Is.EqualTo 1)
-      let v4a = Counter.AddVisit visits null 42 Null
-      Assert.That(v4a, Is.EqualTo 0)
       Assert.That(visits.Count, Is.EqualTo 2)
+      Assert.That(v4, Is.EqualTo 1)
 
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.DistinctLineShouldBeDistinct() =
+#endif
+    let DistinctLineShouldBeDistinct() =
+      Runner.init()
       let visits = new Dictionary<string, Dictionary<int, PointVisit>>()
       let key = " "
       let v5 = Counter.AddVisit visits key 23 Null
@@ -88,8 +114,12 @@ type AltCoverTests() =
       Assert.That(visits.Count, Is.EqualTo 1)
       Assert.That(visits.[key].Count, Is.EqualTo 2)
 
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.RepeatVisitsShouldIncrementCount() =
+#endif
+    let RepeatVisitsShouldIncrementCount() =
+      Runner.init()
       let visits = new Dictionary<string, Dictionary<int, PointVisit>>()
       let key = " "
       let v7 = Counter.AddVisit visits key 23 Null
@@ -100,8 +130,12 @@ type AltCoverTests() =
       Assert.That(x.Count, Is.EqualTo 2)
       Assert.That(x.Tracks, Is.Empty)
 
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.RepeatVisitsShouldIncrementTotal() =
+#endif
+    let RepeatVisitsShouldIncrementTotal() =
+      Runner.init()
       let visits = new Dictionary<string, Dictionary<int, PointVisit>>()
       let key = " "
       let payload = Time DateTime.UtcNow.Ticks
@@ -113,20 +147,24 @@ type AltCoverTests() =
       Assert.That(x.Count, Is.EqualTo 1)
       Assert.That(x.Tracks, Is.EquivalentTo [ payload ])
 
-    member self.resource =
+    let resource =
       Assembly.GetExecutingAssembly().GetManifestResourceNames()
       |> Seq.find (fun n -> n.EndsWith("SimpleCoverage.xml", StringComparison.Ordinal))
-    member self.resource2 =
+    let resource2 =
       Assembly.GetExecutingAssembly().GetManifestResourceNames()
       |> Seq.find
            (fun n -> n.EndsWith("Sample1WithOpenCover.xml", StringComparison.Ordinal))
 
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.KnownModuleWithPayloadMakesExpectedChangeInOpenCover() =
+#endif
+    let KnownModuleWithPayloadMakesExpectedChangeInOpenCover() =
+      Runner.init()
       Counter.measureTime <- DateTime.ParseExact
                                ("2017-12-29T16:33:40.9564026+00:00", "o", null)
       use stream =
-        Assembly.GetExecutingAssembly().GetManifestResourceStream(self.resource2)
+        Assembly.GetExecutingAssembly().GetManifestResourceStream(resource2)
       let size = int stream.Length
       let buffer = Array.create size 0uy
       Assert.That(stream.Read(buffer, 0, size), Is.EqualTo size)
@@ -154,8 +192,12 @@ type AltCoverTests() =
          |> Seq.cast<XmlElement>
          |> Seq.map (fun x -> x.GetAttribute("vc")), Is.EquivalentTo [ "2"; "2" ])
 
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.FlushLeavesExpectedTraces() =
+#endif
+    let FlushLeavesExpectedTraces() =
+      Runner.init()
       let saved = Console.Out
       let here = Directory.GetCurrentDirectory()
       let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
@@ -170,7 +212,7 @@ type AltCoverTests() =
         Counter.measureTime <- DateTime.ParseExact
                                  ("2017-12-29T16:33:40.9564026+00:00", "o", null)
         use stream =
-          Assembly.GetExecutingAssembly().GetManifestResourceStream(self.resource)
+          Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
         let size = int stream.Length
         let buffer = Array.create size 0uy
         Assert.That(stream.Read(buffer, 0, size), Is.EqualTo size)
@@ -198,8 +240,12 @@ type AltCoverTests() =
           Directory.Delete(unique)
         with :? IOException -> ()
 
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.FlushLeavesExpectedTracesWhenDiverted() =
+#endif
+    let FlushLeavesExpectedTracesWhenDiverted() =
+      Runner.init()
       let saved = Console.Out
       let here = Directory.GetCurrentDirectory()
       let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
@@ -215,7 +261,7 @@ type AltCoverTests() =
         Counter.measureTime <- DateTime.ParseExact
                                  ("2017-12-29T16:33:40.9564026+00:00", "o", null)
         use stream =
-          Assembly.GetExecutingAssembly().GetManifestResourceStream(self.resource)
+          Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
         let size = int stream.Length
         let buffer = Array.create size 0uy
         Assert.That(stream.Read(buffer, 0, size), Is.EqualTo size)
@@ -244,8 +290,12 @@ type AltCoverTests() =
         with :? IOException -> ()
 
     // Runner.fs and CommandLine.fs
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.UsageIsAsExpected() =
+#endif
+    let UsageIsAsExpected() =
+      Runner.init()
       let options = Runner.DeclareOptions()
       let saved = Console.Error
       try
@@ -288,8 +338,12 @@ type AltCoverTests() =
       finally
         Console.SetError saved
 
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.ShouldLaunchWithExpectedOutput() =
+#endif
+    let ShouldLaunchWithExpectedOutput() =
+      Runner.init()
       // Hack for running while instrumented
       let where = Assembly.GetExecutingAssembly().Location
       let path =
@@ -348,8 +402,12 @@ type AltCoverTests() =
         Console.SetOut(fst saved)
         Console.SetError(snd saved)
 
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.ShouldHaveExpectedOptions() =
+#endif
+    let ShouldHaveExpectedOptions() =
+      Runner.init()
       let options = Runner.DeclareOptions()
       Assert.That(options.Count, Is.EqualTo 12)
       Assert.That
@@ -360,8 +418,12 @@ type AltCoverTests() =
                   |> Seq.filter (fun x -> x.Prototype = "<>")
                   |> Seq.length, Is.EqualTo 1)
 
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.ParsingJunkIsAnError() =
+#endif
+    let ParsingJunkIsAnError() =
+      Runner.init()
       let options = Runner.DeclareOptions()
       let parse = CommandLine.ParseCommandLine [| "/@thisIsNotAnOption" |] options
       match parse with
@@ -370,8 +432,12 @@ type AltCoverTests() =
         Assert.That(x, Is.EqualTo "UsageError")
         Assert.That(y, Is.SameAs options)
 
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.ParsingJunkAfterSeparatorIsExpected() =
+#endif
+    let ParsingJunkAfterSeparatorIsExpected() =
+      Runner.init()
       let options = Runner.DeclareOptions()
       let input = [| "--"; "/@thisIsNotAnOption"; "this should be OK" |]
       let parse = CommandLine.ParseCommandLine input options
@@ -381,8 +447,12 @@ type AltCoverTests() =
         Assert.That(x, Is.EquivalentTo(input |> Seq.skip 1))
         Assert.That(y, Is.SameAs options)
 
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.ParsingHelpGivesHelp() =
+#endif
+    let ParsingHelpGivesHelp() =
+      Runner.init()
       let options = Runner.DeclareOptions()
       let input = [| "--?" |]
       let parse = CommandLine.ParseCommandLine input options
@@ -404,8 +474,12 @@ type AltCoverTests() =
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.Empty))
 
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.ParsingErrorHelpGivesHelp() =
+#endif
+    let ParsingErrorHelpGivesHelp() =
+      Runner.init()
       let options = Runner.DeclareOptions()
 
       let input =
@@ -433,8 +507,12 @@ type AltCoverTests() =
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.Empty))
 
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.ParsingExeGivesExe() =
+#endif
+    let ParsingExeGivesExe() =
+      Runner.init()
       lock Runner.executable (fun () ->
         try
           Runner.executable := None
@@ -453,8 +531,12 @@ type AltCoverTests() =
         finally
           Runner.executable := None)
 
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.ParsingMultipleExeGivesFailure() =
+#endif
+    let ParsingMultipleExeGivesFailure() =
+      Runner.init()
       lock Runner.executable (fun () ->
         try
           Runner.executable := None
@@ -477,8 +559,12 @@ type AltCoverTests() =
         finally
           Runner.executable := None)
 
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.ParsingNoExeGivesFailure() =
+#endif
+    let ParsingNoExeGivesFailure() =
+      Runner.init()
       lock Runner.executable (fun () ->
         try
           Runner.executable := None
@@ -494,8 +580,12 @@ type AltCoverTests() =
         finally
           Runner.executable := None)
 
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.ParsingWorkerGivesWorker() =
+#endif
+    let ParsingWorkerGivesWorker() =
+      Runner.init()
       try
         Runner.workingDirectory <- None
         let options = Runner.DeclareOptions()
@@ -513,8 +603,12 @@ type AltCoverTests() =
       finally
         Runner.workingDirectory <- None
 
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.ParsingMultipleWorkerGivesFailure() =
+#endif
+    let ParsingMultipleWorkerGivesFailure() =
+      Runner.init()
       try
         Runner.workingDirectory <- None
         let options = Runner.DeclareOptions()
@@ -535,8 +629,12 @@ type AltCoverTests() =
       finally
         Runner.workingDirectory <- None
 
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.ParsingBadWorkerGivesFailure() =
+#endif
+    let ParsingBadWorkerGivesFailure() =
+      Runner.init()
       try
         Runner.workingDirectory <- None
         let options = Runner.DeclareOptions()
@@ -551,8 +649,12 @@ type AltCoverTests() =
       finally
         Runner.workingDirectory <- None
 
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.ParsingNoWorkerGivesFailure() =
+#endif
+    let ParsingNoWorkerGivesFailure() =
+      Runner.init()
       try
         Runner.workingDirectory <- None
         let options = Runner.DeclareOptions()
@@ -566,8 +668,12 @@ type AltCoverTests() =
       finally
         Runner.workingDirectory <- None
 
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.ParsingRecorderGivesRecorder() =
+#endif
+    let ParsingRecorderGivesRecorder() =
+      Runner.init()
       try
         Runner.recordingDirectory <- None
         let options = Runner.DeclareOptions()
@@ -585,8 +691,12 @@ type AltCoverTests() =
       finally
         Runner.recordingDirectory <- None
 
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.ParsingMultipleRecorderGivesFailure() =
+#endif
+    let ParsingMultipleRecorderGivesFailure() =
+      Runner.init()
       try
         Runner.recordingDirectory <- None
         let options = Runner.DeclareOptions()
@@ -607,8 +717,12 @@ type AltCoverTests() =
       finally
         Runner.recordingDirectory <- None
 
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.ParsingBadRecorderGivesFailure() =
+#endif
+    let ParsingBadRecorderGivesFailure() =
+      Runner.init()
       try
         Runner.recordingDirectory <- None
         let options = Runner.DeclareOptions()
@@ -623,8 +737,12 @@ type AltCoverTests() =
       finally
         Runner.recordingDirectory <- None
 
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.ParsingNoRecorderGivesFailure() =
+#endif
+    let ParsingNoRecorderGivesFailure() =
+      Runner.init()
       try
         Runner.recordingDirectory <- None
         let options = Runner.DeclareOptions()
@@ -638,8 +756,12 @@ type AltCoverTests() =
       finally
         Runner.recordingDirectory <- None
 
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.ParsingCollectGivesCollect() =
+#endif
+    let ParsingCollectGivesCollect() =
+      Runner.init()
       try
         Runner.collect := false
         let options = Runner.DeclareOptions()
@@ -654,8 +776,12 @@ type AltCoverTests() =
       finally
         Runner.collect := false
 
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.ParsingMultipleCollectGivesFailure() =
+#endif
+    let ParsingMultipleCollectGivesFailure() =
+      Runner.init()
       try
         Runner.collect := false
         let options = Runner.DeclareOptions()
@@ -670,8 +796,12 @@ type AltCoverTests() =
       finally
         Runner.collect := false
 
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.ParsingLcovGivesLcov() =
+#endif
+    let ParsingLcovGivesLcov() =
+      Runner.init()
       lock LCov.path (fun () ->
         try
           LCov.path := None
@@ -693,8 +823,12 @@ type AltCoverTests() =
           Runner.Summaries <- [ Runner.StandardSummary ]
           LCov.path := None)
 
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.ParsingMultipleLcovGivesFailure() =
+#endif
+    let ParsingMultipleLcovGivesFailure() =
+      Runner.init()
       lock LCov.path (fun () ->
         try
           LCov.path := None
@@ -719,8 +853,12 @@ type AltCoverTests() =
           Runner.Summaries <- [ Runner.StandardSummary ]
           LCov.path := None)
 
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.ParsingNoLcovGivesFailure() =
+#endif
+    let ParsingNoLcovGivesFailure() =
+      Runner.init()
       lock LCov.path (fun () ->
         try
           LCov.path := None
@@ -738,8 +876,12 @@ type AltCoverTests() =
           Runner.Summaries <- [ Runner.StandardSummary ]
           LCov.path := None)
 
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.ParsingThresholdGivesThreshold() =
+#endif
+    let ParsingThresholdGivesThreshold() =
+      Runner.init()
       try
         Runner.threshold <- None
         let options = Runner.DeclareOptions()
@@ -756,8 +898,12 @@ type AltCoverTests() =
       finally
         Runner.threshold <- None
 
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.ParsingMultipleThresholdGivesFailure() =
+#endif
+    let ParsingMultipleThresholdGivesFailure() =
+      Runner.init()
       try
         Runner.threshold <- None
         let options = Runner.DeclareOptions()
@@ -772,8 +918,12 @@ type AltCoverTests() =
       finally
         Runner.threshold <- None
 
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.ParsingBadThresholdGivesFailure() =
+#endif
+    let ParsingBadThresholdGivesFailure() =
+      Runner.init()
       try
         Runner.threshold <- None
         let options = Runner.DeclareOptions()
@@ -787,8 +937,12 @@ type AltCoverTests() =
       finally
         Runner.threshold <- None
 
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.ParsingEmptyThresholdGivesFailure() =
+#endif
+    let ParsingEmptyThresholdGivesFailure() =
+      Runner.init()
       try
         Runner.threshold <- None
         let options = Runner.DeclareOptions()
@@ -802,8 +956,12 @@ type AltCoverTests() =
       finally
         Runner.threshold <- None
 
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.ParsingNoThresholdGivesFailure() =
+#endif
+    let ParsingNoThresholdGivesFailure() =
+      Runner.init()
       try
         Runner.threshold <- None
         let options = Runner.DeclareOptions()
@@ -817,8 +975,12 @@ type AltCoverTests() =
       finally
         Runner.threshold <- None
 
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.ParsingCoberturaGivesCobertura() =
+#endif
+    let ParsingCoberturaGivesCobertura() =
+      Runner.init()
       lock Cobertura.path (fun () ->
         try
           Cobertura.path := None
@@ -840,8 +1002,12 @@ type AltCoverTests() =
           Runner.Summaries <- [ Runner.StandardSummary ]
           Cobertura.path := None)
 
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.ParsingMultipleCoberturaGivesFailure() =
+#endif
+    let ParsingMultipleCoberturaGivesFailure() =
+      Runner.init()
       lock Cobertura.path (fun () ->
         try
           Cobertura.path := None
@@ -866,8 +1032,12 @@ type AltCoverTests() =
           Runner.Summaries <- [ Runner.StandardSummary ]
           Cobertura.path := None)
 
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.ParsingNoCoberturaGivesFailure() =
+#endif
+    let ParsingNoCoberturaGivesFailure() =
+      Runner.init()
       lock Cobertura.path (fun () ->
         try
           Cobertura.path := None
@@ -885,8 +1055,12 @@ type AltCoverTests() =
           Runner.Summaries <- [ Runner.StandardSummary ]
           Cobertura.path := None)
 
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.ParsingOutputGivesOutput() =
+#endif
+    let ParsingOutputGivesOutput() =
+      Runner.init()
       try
         Runner.output <- None
         let options = Runner.DeclareOptions()
@@ -904,8 +1078,12 @@ type AltCoverTests() =
       finally
         Runner.output <- None
 
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.ParsingMultipleOutputGivesFailure() =
+#endif
+    let ParsingMultipleOutputGivesFailure() =
+      Runner.init()
       try
         Runner.output <- None
         Runner.collect := false
@@ -928,8 +1106,12 @@ type AltCoverTests() =
       finally
         Runner.output <- None
 
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.ParsingNoOutputGivesFailure() =
+#endif
+    let ParsingNoOutputGivesFailure() =
+      Runner.init()
       try
         Runner.output <- None
         let options = Runner.DeclareOptions()
@@ -944,8 +1126,12 @@ type AltCoverTests() =
       finally
         Runner.output <- None
 
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.ParsingDropGivesDrop() =
+#endif
+    let ParsingDropGivesDrop() =
+      Runner.init()
       try
         CommandLine.dropReturnCode := false
         let options = Runner.DeclareOptions()
@@ -960,8 +1146,12 @@ type AltCoverTests() =
       finally
         CommandLine.dropReturnCode := false
 
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.ParsingMultipleDropGivesFailure() =
+#endif
+    let ParsingMultipleDropGivesFailure() =
+      Runner.init()
       try
         CommandLine.dropReturnCode := false
         let options = Runner.DeclareOptions()
@@ -976,9 +1166,13 @@ type AltCoverTests() =
       finally
         CommandLine.dropReturnCode := false
 
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.ParsingTCString() =
-       [
+#endif
+    let ParsingTCString() =
+      Runner.init()
+      [
         (String.Empty, Default)
         ("+", BPlus)
         ("+b", BPlus)
@@ -999,8 +1193,12 @@ type AltCoverTests() =
                                                Is.EqualTo y,
                                                x))
 
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.ParsingTCGivesTC() =
+#endif
+    let ParsingTCGivesTC() =
+      Runner.init()
       [
         (String.Empty, B)
         (":+", BPlus)
@@ -1028,11 +1226,20 @@ type AltCoverTests() =
             Assert.That(y, Is.SameAs options)
             Assert.That(x, Is.Empty)
           match Runner.SummaryFormat with
-          | x when v = x -> Assert.Pass()
+          | x when v = x ->
+#if NETCOREAPP2_0
+            ()
+#else
+            Assert.Pass()
+#endif
           | _ -> Assert.Fail(sprintf "%A %A => %A" a v Runner.SummaryFormat) ))
 
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.ParsingMultipleTCGivesFailure() =
+#endif
+    let ParsingMultipleTCGivesFailure() =
+      Runner.init()
       lock Runner.SummaryFormat (fun () ->
         Runner.SummaryFormat <- Default
         let options = Runner.DeclareOptions()
@@ -1045,8 +1252,12 @@ type AltCoverTests() =
           Assert.That(x, Is.EqualTo "UsageError")
           Assert.That(CommandLine.error |> Seq.head, Is.EqualTo "--teamcity : specify this only once"))
 
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.ParsingBadTCGivesFailure() =
+#endif
+    let ParsingBadTCGivesFailure() =
+      Runner.init()
       lock Runner.SummaryFormat (fun () ->
         Runner.SummaryFormat <- Default
         let options = Runner.DeclareOptions()
@@ -1059,8 +1270,12 @@ type AltCoverTests() =
           Assert.That(y, Is.SameAs options)
           Assert.That(x, Is.EqualTo "UsageError"))
 
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.ShouldRequireExe() =
+#endif
+    let ShouldRequireExe() =
+      Runner.init()
       lock Runner.executable (fun () ->
         try
           Runner.executable := None
@@ -1074,8 +1289,12 @@ type AltCoverTests() =
         finally
           Runner.executable := None)
 
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.ShouldAcceptExe() =
+#endif
+    let ShouldAcceptExe() =
+      Runner.init()
       lock Runner.executable (fun () ->
         try
           Runner.executable := Some "xxx"
@@ -1090,8 +1309,12 @@ type AltCoverTests() =
         finally
           Runner.executable := None)
 
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.ShouldRequireCollectIfNotExe() =
+#endif
+    let ShouldRequireCollectIfNotExe() =
+      Runner.init()
       lock Runner.executable (fun () ->
         try
           Runner.executable := None
@@ -1105,8 +1328,12 @@ type AltCoverTests() =
           Runner.collect := false
           Runner.executable := None)
 
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.ShouldRejectExeIfCollect() =
+#endif
+    let ShouldRejectExeIfCollect() =
+      Runner.init()
       lock Runner.executable (fun () ->
         try
           Runner.executable := Some "xxx"
@@ -1122,8 +1349,12 @@ type AltCoverTests() =
           Runner.collect := false
           Runner.executable := None)
 
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.ShouldRequireWorker() =
+#endif
+    let ShouldRequireWorker() =
+      Runner.init()
       try
         Runner.workingDirectory <- None
         let options = Runner.DeclareOptions()
@@ -1137,8 +1368,12 @@ type AltCoverTests() =
       finally
         Runner.workingDirectory <- None
 
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.ShouldAcceptWorker() =
+#endif
+    let ShouldAcceptWorker() =
+      Runner.init()
       try
         Runner.workingDirectory <- Some "ShouldAcceptWorker"
         let options = Runner.DeclareOptions()
@@ -1152,8 +1387,12 @@ type AltCoverTests() =
       finally
         Runner.workingDirectory <- None
 
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.ShouldRequireRecorder() =
+#endif
+    let ShouldRequireRecorder() =
+      Runner.init()
       try
         Runner.recordingDirectory <- None
         let options = Runner.DeclareOptions()
@@ -1167,8 +1406,12 @@ type AltCoverTests() =
       finally
         Runner.recordingDirectory <- None
 
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.ShouldRequireRecorderDll() =
+#endif
+    let ShouldRequireRecorderDll() =
+      Runner.init()
       try
         let where = Assembly.GetExecutingAssembly().Location
         let path =
@@ -1191,8 +1434,12 @@ type AltCoverTests() =
       finally
         Runner.recordingDirectory <- None
 
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.ShouldAcceptRecorder() =
+#endif
+    let ShouldAcceptRecorder() =
+      Runner.init()
       try
         let here = (Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName)
         let where = Path.Combine(here, Guid.NewGuid().ToString())
@@ -1216,12 +1463,16 @@ type AltCoverTests() =
       finally
         Runner.recordingDirectory <- None
 
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.ShouldHandleReturnCodes() =
+#endif
+    let ShouldHandleReturnCodes() =
+      Runner.init()
       // Hack for running while instrumented
       let where = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
 #if NETCOREAPP2_0
-      let path = Path.Combine(where, "Sample12.dll")
+      let path = Path.Combine(SolutionRoot.location, "_Binaries/Sample12/Debug+AnyCPU/netcoreapp2.0/Sample12.dll")
 #else
       let path = Path.Combine(where, "Sample12.exe")
 #endif
@@ -1249,8 +1500,12 @@ type AltCoverTests() =
       finally
         CommandLine.dropReturnCode := false
 
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.ShouldProcessTrailingArguments() =
+#endif
+    let ShouldProcessTrailingArguments() =
+      Runner.init()
       // Hack for running while instrumented
       let where = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
       let path =
@@ -1312,14 +1567,22 @@ type AltCoverTests() =
         Console.SetOut(fst saved)
         Console.SetError(snd saved)
 
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.ShouldNoOp() =
+#endif
+    let ShouldNoOp() =
+      Runner.init()
       let where = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
       let r = CommandLine.ProcessTrailingArguments [] <| DirectoryInfo(where)
       Assert.That(r, Is.EqualTo 0)
 
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.ErrorResponseIsAsExpected() =
+#endif
+    let ErrorResponseIsAsExpected() =
+      Runner.init()
       let saved = Console.Error
       try
         use stderr = new StringWriter()
@@ -1414,6 +1677,16 @@ type AltCoverTests() =
   -v, --visibleBranches      Hide complex internal IL branching implementation
                                details in switch/match constructs, and just
                                show what the source level logic implies.
+      --showstatic[=VALUE]   Optional: Instrument and show code that is by
+                               default skipped as trivial.  --showstatic:- is
+                               equivalent to omitting the parameter; --
+                               showstatic or --showstatic:+ sets the unvisited
+                               count to a negative value interpreted by the
+                               visualizer (but treated as zero by
+                               ReportGenerator) ; --showstatic:++ sets the
+                               unvisited count to zero.
+      --showGenerated        Mark generated code with a visit count of -2 (
+                               Automatic) for the Visualizer if unvisited
   -?, --help, -h             Prints out the options.
 or
   Runner
@@ -1450,11 +1723,17 @@ or
       finally
         Console.SetError saved
 
+    let synchronized = Object()
+
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.ShouldGetStringConstants() =
+#endif
+    let ShouldGetStringConstants() =
+      Runner.init()
       let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
       let save = Runner.RecorderName
-      lock self (fun () ->
+      lock synchronized (fun () ->
         try
           Runner.recordingDirectory <- Some where
           Runner.RecorderName <- "AltCover.Recorder.dll"
@@ -1473,8 +1752,12 @@ or
           Runner.recordingDirectory <- None
           Runner.RecorderName <- save)
 
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.ShouldProcessPayload() =
+#endif
+    let ShouldProcessPayload() =
+      Runner.init()
       // Hack for running while instrumented
       let where = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
       let path =
@@ -1538,8 +1821,12 @@ or
         Console.SetError(snd saved)
         Runner.workingDirectory <- None
 
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.WriteLeavesExpectedTraces() =
+#endif
+    let WriteLeavesExpectedTraces() =
+      Runner.init()
       let saved = Console.Out
       let here = Directory.GetCurrentDirectory()
       let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
@@ -1553,7 +1840,7 @@ or
         Counter.measureTime <- DateTime.ParseExact
                                  ("2017-12-29T16:33:40.9564026+00:00", "o", null)
         use stream =
-          Assembly.GetExecutingAssembly().GetManifestResourceStream(self.resource)
+          Assembly.GetExecutingAssembly().GetManifestResourceStream(resource)
         let size = int stream.Length
         let buffer = Array.create size 0uy
         Assert.That(stream.Read(buffer, 0, size), Is.EqualTo size)
@@ -1590,8 +1877,12 @@ or
           Directory.Delete(unique)
         with :? IOException -> ()
 
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.NullPayloadShouldReportNothing() =
+#endif
+    let NullPayloadShouldReportNothing() =
+      Runner.init()
       let counts = Dictionary<string, Dictionary<int, PointVisit>>()
       let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
       let unique = Path.Combine(where, Guid.NewGuid().ToString())
@@ -1602,8 +1893,12 @@ or
       Assert.That(File.Exists(unique + ".acv"))
       Assert.That(counts, Is.Empty)
 
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.ActivePayloadShouldReportAsExpected() =
+#endif
+    let ActivePayloadShouldReportAsExpected() =
+      Runner.init()
       let counts = Dictionary<string, Dictionary<int, PointVisit>>()
       let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
       let unique = Path.Combine(where, Guid.NewGuid().ToString())
@@ -1646,8 +1941,12 @@ or
 
       if File.Exists(unique + ".acv") then File.Delete(unique + ".acv")
 
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.CollectShouldReportAsExpected() =
+#endif
+    let CollectShouldReportAsExpected() =
+      Runner.init()
       try
         Runner.collect := true
         let counts = Dictionary<string, Dictionary<int, PointVisit>>()
@@ -1675,8 +1974,12 @@ or
       finally
         Runner.collect := false
 
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.JunkPayloadShouldReportAsExpected() =
+#endif
+    let JunkPayloadShouldReportAsExpected() =
+      Runner.init()
       let counts = Dictionary<string, Dictionary<int, PointVisit>>()
       let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
       let unique = Path.Combine(where, Guid.NewGuid().ToString())
@@ -1695,8 +1998,12 @@ or
       Assert.That(File.Exists(unique + ".acv"))
       Assert.That(counts, Is.EquivalentTo [])
 
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.TrackingPayloadShouldReportAsExpected() =
+#endif
+    let TrackingPayloadShouldReportAsExpected() =
+      Runner.init()
       let counts = Dictionary<string, Dictionary<int, PointVisit>>()
       let where = Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
       let unique = Path.Combine(where, Guid.NewGuid().ToString())
@@ -1802,8 +2109,12 @@ or
 
       Assert.That(result, Is.EquivalentTo expected)
 
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.PointProcessShouldCaptureTimes() =
+#endif
+    let PointProcessShouldCaptureTimes() =
+      Runner.init()
       let x = XmlDocument()
       x.LoadXml("<root />")
       let root = x.DocumentElement
@@ -1821,12 +2132,16 @@ or
          Is.EqualTo
            """<root><Times><Time time="5" vc="2" /><Time time="23" vc="1" /><Time time="42" vc="1" /></Times><TrackedMethodRefs><TrackedMethodRef uid="17" vc="1" /><TrackedMethodRef uid="42" vc="1" /></TrackedMethodRefs></root>""")
 
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.PostprocessShouldRestoreKnownOpenCoverState() =
+#endif
+    let PostprocessShouldRestoreKnownOpenCoverState() =
+      Runner.init()
       Counter.measureTime <- DateTime.ParseExact
                                ("2017-12-29T16:33:40.9564026+00:00", "o", null)
       use stream =
-        Assembly.GetExecutingAssembly().GetManifestResourceStream(self.resource2)
+        Assembly.GetExecutingAssembly().GetManifestResourceStream(resource2)
       let after = XmlDocument()
       after.Load stream
       let before = after.OuterXml
@@ -1854,8 +2169,11 @@ or
         (after.OuterXml.Replace("uspid=\"100663298", "uspid=\"13"), Is.EqualTo before,
          after.OuterXml)
 
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.PostprocessShouldRestoreKnownOpenCoverStateFromMono() =
+#endif
+    let PostprocessShouldRestoreKnownOpenCoverStateFromMono() =
       Counter.measureTime <- DateTime.ParseExact
                                ("2017-12-29T16:33:40.9564026+00:00", "o", null)
       let resource =
@@ -1898,12 +2216,16 @@ or
         (after.OuterXml.Replace("uspid=\"100663298", "uspid=\"13"), Is.EqualTo before,
          after.OuterXml)
 
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.PostprocessShouldRestoreDegenerateOpenCoverState() =
+#endif
+    let PostprocessShouldRestoreDegenerateOpenCoverState() =
+      Runner.init()
       Counter.measureTime <- DateTime.ParseExact
                                ("2017-12-29T16:33:40.9564026+00:00", "o", null)
       use stream =
-        Assembly.GetExecutingAssembly().GetManifestResourceStream(self.resource2)
+        Assembly.GetExecutingAssembly().GetManifestResourceStream(resource2)
       let after = XmlDocument()
       after.Load stream
       after.DocumentElement.SelectNodes("//Summary")
@@ -1965,12 +2287,16 @@ or
       Runner.PostProcess empty Base.ReportFormat.OpenCover after
       Assert.That(after.OuterXml, Is.EqualTo before, after.OuterXml)
 
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.PostprocessShouldRestoreBranchOnlyOpenCoverState() =
+#endif
+    let PostprocessShouldRestoreBranchOnlyOpenCoverState() =
+      Runner.init()
       Counter.measureTime <- DateTime.ParseExact
                                ("2017-12-29T16:33:40.9564026+00:00", "o", null)
       use stream =
-        Assembly.GetExecutingAssembly().GetManifestResourceStream(self.resource2)
+        Assembly.GetExecutingAssembly().GetManifestResourceStream(resource2)
       let after = XmlDocument()
       after.Load stream
       after.DocumentElement.SelectNodes("//Summary")
@@ -2030,8 +2356,12 @@ or
       Runner.PostProcess empty Base.ReportFormat.OpenCover after
       Assert.That(after.OuterXml, Is.EqualTo before, after.OuterXml)
 
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.JunkTokenShouldDefaultZero() =
+#endif
+    let JunkTokenShouldDefaultZero() =
+      Runner.init()
       let visits = Dictionary<int, PointVisit>()
       let key = " "
       let result = Runner.LookUpVisitsByToken key visits
@@ -2039,8 +2369,12 @@ or
       | (0L, []) -> ()
       | _ -> Assert.Fail(sprintf "%A" result)
 
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.EmptyNCoverGeneratesExpectedSummary() =
+#endif
+    let EmptyNCoverGeneratesExpectedSummary() =
+      Runner.init()
       let report = XDocument()
       let builder = System.Text.StringBuilder()
       Runner.Summary.Clear() |> ignore
@@ -2061,8 +2395,12 @@ or
       finally
         Output.Info <- ignore
 
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.EmptyNCoverGeneratesExpectedTCSummary() =
+#endif
+    let EmptyNCoverGeneratesExpectedTCSummary() =
+      Runner.init()
       let report = XDocument()
       let builder = System.Text.StringBuilder()
       Runner.Summary.Clear() |> ignore
@@ -2085,8 +2423,12 @@ or
       finally
         Output.Info <- ignore
 
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.EmptyNCoverGeneratesExpectedSummaries() =
+#endif
+    let EmptyNCoverGeneratesExpectedSummaries() =
+      Runner.init()
       let report = XDocument()
       let builder = System.Text.StringBuilder()
       Runner.Summary.Clear() |> ignore
@@ -2109,8 +2451,12 @@ or
       finally
         Output.Info <- ignore
 
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.NCoverShouldGeneratePlausibleSummary() =
+#endif
+    let NCoverShouldGeneratePlausibleSummary() =
+      Runner.init()
       let resource =
         Assembly.GetExecutingAssembly().GetManifestResourceNames()
         |> Seq.find (fun n -> n.EndsWith("SimpleCoverage.xml", StringComparison.Ordinal))
@@ -2138,8 +2484,12 @@ or
       finally
         Output.Info <- ignore
 
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.EmptyOpenCoverGeneratesExpectedSummary() =
+#endif
+    let EmptyOpenCoverGeneratesExpectedSummary() =
+      Runner.init()
       let report = XDocument.Load(new System.IO.StringReader("""<CoverageSession>
   <Summary numSequencePoints="0" visitedSequencePoints="0" numBranchPoints="0" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="0" minCyclomaticComplexity="1" visitedClasses="0" numClasses="0" visitedMethods="0" numMethods="0" />
 </CoverageSession>"""))
@@ -2160,8 +2510,12 @@ or
       finally
         Output.Info <- ignore
 
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.EmptyOpenCoverGeneratesExpectedTCSummary() =
+#endif
+    let EmptyOpenCoverGeneratesExpectedTCSummary() =
+      Runner.init()
       let report = XDocument.Load(new System.IO.StringReader("""<CoverageSession>
   <Summary numSequencePoints="0" visitedSequencePoints="0" numBranchPoints="0" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="0" minCyclomaticComplexity="1" visitedClasses="0" numClasses="0" visitedMethods="0" numMethods="0" />
 </CoverageSession>"""))
@@ -2186,8 +2540,12 @@ or
       finally
         Output.Info <- ignore
 
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.EmptyOpenCoverGeneratesExpectedSummaries() =
+#endif
+    let EmptyOpenCoverGeneratesExpectedSummaries() =
+      Runner.init()
       let report = XDocument.Load(new System.IO.StringReader("""<CoverageSession>
   <Summary numSequencePoints="0" visitedSequencePoints="0" numBranchPoints="0" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="0" minCyclomaticComplexity="1" visitedClasses="0" numClasses="0" visitedMethods="0" numMethods="0" />
 </CoverageSession>"""))
@@ -2216,8 +2574,12 @@ or
       finally
         Output.Info <- ignore
 
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.OpenCoverShouldGeneratePlausibleSummary() =
+#endif
+    let OpenCoverShouldGeneratePlausibleSummary() =
+      Runner.init()
       let resource =
         Assembly.GetExecutingAssembly().GetManifestResourceNames()
         |> Seq.find
@@ -2250,8 +2612,12 @@ or
       finally
         Output.Info <- ignore
 
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.OpenCoverShouldGeneratePlausibleLcov() =
+#endif
+    let OpenCoverShouldGeneratePlausibleLcov() =
+      Runner.init()
       let resource =
         Assembly.GetExecutingAssembly().GetManifestResourceNames()
         |> Seq.find
@@ -2282,8 +2648,12 @@ or
       finally
         LCov.path := None
 
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.NCoverShouldGeneratePlausibleLcov() =
+#endif
+    let NCoverShouldGeneratePlausibleLcov() =
+      Runner.init()
       let resource =
         Assembly.GetExecutingAssembly().GetManifestResourceNames()
         |> Seq.find (fun n -> n.EndsWith("SimpleCoverage.xml", StringComparison.Ordinal))
@@ -2313,8 +2683,12 @@ or
       finally
         LCov.path := None
 
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.NCoverShouldGeneratePlausibleLcovWithMissingFullName() =
+#endif
+    let NCoverShouldGeneratePlausibleLcovWithMissingFullName() =
+      Runner.init()
       let resource =
         Assembly.GetExecutingAssembly().GetManifestResourceNames()
         |> Seq.find
@@ -2349,8 +2723,12 @@ or
       finally
         LCov.path := None
 
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.MultiSortDoesItsThing() =
+#endif
+    let MultiSortDoesItsThing() =
+      Runner.init()
       let load f =
         use r = new System.IO.StringReader(f)
         XDocument.Load r
@@ -2396,7 +2774,9 @@ or
                      """<x><seqpnt line="5" /></x>""" ]) ])
 
     [<SuppressMessage("Microsoft.Usage", "CA2202", Justification = "Observably safe")>]
-    member private self.LoadSchema() =
+    // Approved way is ugly -- https://docs.microsoft.com/en-us/visualstudio/code-quality/ca2202?view=vs-2019
+    // Also, this rule is deprecated
+    let private LoadSchema() =
       let schemas = new XmlSchemaSet()
 
       use stream =
@@ -2411,15 +2791,19 @@ or
       schemas.Add(String.Empty, xreader) |> ignore
       schemas
 
-    member private self.Validate result =
-        let schema = self.LoadSchema ()
+    let private Validate result =
+        let schema = LoadSchema ()
         let xmlDocument = XmlDocument()
         xmlDocument.LoadXml(result)
         xmlDocument.Schemas <- schema
         xmlDocument.Validate(null)
 
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.NCoverShouldGeneratePlausibleCobertura() =
+#endif
+    let NCoverShouldGeneratePlausibleCobertura() =
+      Runner.init()
       let resource =
         Assembly.GetExecutingAssembly().GetManifestResourceNames()
         |> Seq.find (fun n -> n.EndsWith("SimpleCoverage.xml", StringComparison.Ordinal))
@@ -2451,12 +2835,16 @@ or
                          "version=\""
                          + typeof<TeamCityFormat>.Assembly.GetName().Version.ToString())
         Assert.That(result.Replace("\r", String.Empty), Is.EqualTo expected, result)
-        self.Validate result
+        Validate result
       finally
         Cobertura.path := None
 
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.NCoverShouldGeneratePlausibleCoberturaWithMissingFullName() =
+#endif
+    let NCoverShouldGeneratePlausibleCoberturaWithMissingFullName() =
+      Runner.init()
       let resource =
         Assembly.GetExecutingAssembly().GetManifestResourceNames()
         |> Seq.find
@@ -2494,12 +2882,16 @@ or
                          "version=\""
                          + typeof<TeamCityFormat>.Assembly.GetName().Version.ToString())
         Assert.That(result.Replace("\r", String.Empty), Is.EqualTo expected, result)
-        self.Validate result
+        Validate result
       finally
         Cobertura.path := None
 
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.OpenCoverShouldGeneratePlausibleCobertura() =
+#endif
+    let OpenCoverShouldGeneratePlausibleCobertura() =
+      Runner.init()
       let resource =
         Assembly.GetExecutingAssembly().GetManifestResourceNames()
         |> Seq.find
@@ -2535,12 +2927,16 @@ or
         Assert.That
           (result.Replace("\r", String.Empty).Replace("\\", "/"), Is.EqualTo expected,
            result)
-        self.Validate result
+        Validate result
       finally
         Cobertura.path := None
 
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.ThresholdViolationShouldBeReported() =
+#endif
+    let ThresholdViolationShouldBeReported() =
+      Runner.init()
       let saveErr = Output.Error
       let saveSummaries = Runner.Summaries
       let builder = System.Text.StringBuilder()
@@ -2559,8 +2955,11 @@ or
         Runner.Summaries <- saveSummaries
         Runner.threshold <- saved
 
+#if NETCOREAPP2_0
+#else
     [<Test>]
-    member self.TryGetValueHandlesNull() =
+#endif
+    let TryGetValueHandlesNull() =
+      Runner.init()
       let dict : Dictionary<int, int> = null
       Assert.That(Runner.TryGetValue dict 0 |> fst, Is.False)
-  end

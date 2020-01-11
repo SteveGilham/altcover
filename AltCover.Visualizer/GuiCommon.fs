@@ -5,7 +5,7 @@ open System.IO
 open System.Xml.XPath
 open System.Net
 
-module GuiCommon =
+module internal GuiCommon =
   // Binds class name and XML
   [<NoComparison>]
   type internal MethodKey =
@@ -22,63 +22,69 @@ module GuiCommon =
       endline : int
       endcolumn : int }
 
-  // -------------------------- Method Name Handling ---------------------------
-  let internal MethodNameCompare (leftKey : MethodKey) (rightKey : MethodKey) =
-    let HandleSpecialName(name : string) =
-      if name.StartsWith("get_", StringComparison.Ordinal)
-         || name.StartsWith("set_", StringComparison.Ordinal) then
-        (name.Substring(4), true)
-      else (name, false)
+  type internal MethodType =
+    | Normal = 0
+    | Property = -1
+    | Event = -2
 
-    let x = leftKey.name
-    let y = rightKey.name
-    let (left, specialLeft) = HandleSpecialName x
-    let (right, specialRight) = HandleSpecialName y
-    let sort = String.CompareOrdinal(left, right)
-    let specialCase = (0 = sort) && specialLeft && specialRight
-    if 0 = sort then
-      if specialCase then String.CompareOrdinal(x, y)
-      else
-        let l1 = leftKey.m.GetAttribute("fullname", String.Empty)
-        let r1 = rightKey.m.GetAttribute("fullname", String.Empty)
-        String.CompareOrdinal(l1, r1)
-    else sort
+  // -------------------------- Method Name Handling ---------------------------
+  let DisplayName(name : string) =
+    let offset =
+      match name.LastIndexOf("::", StringComparison.Ordinal) with
+      | -1 -> 0
+      | o -> o + 2
+
+    name.Substring(offset).Split('(') |> Seq.head
+
+  let HandleSpecialName(name : string) =
+    if name.StartsWith("get_", StringComparison.Ordinal)
+       || name.StartsWith("set_", StringComparison.Ordinal) then
+      (name.Substring(4), MethodType.Property)
+    else if name.StartsWith("add_", StringComparison.Ordinal) then
+      (name.Substring(4), MethodType.Event)
+    else if name.StartsWith("remove_", StringComparison.Ordinal) then
+      (name.Substring(7), MethodType.Event)
+    else
+      (name, MethodType.Normal)
 
   // -------------------------- Source file Handling ---------------------------
   [<NoComparison>]
   type internal Source =
     | File of FileInfo
     | Url of Uri
-    member self.Exists
-      with get() =
-        match self with
-        | File info -> info.Exists
-        | Url u -> let request = WebRequest.CreateHttp(u)
-                   request.Method <- "HEAD"
-                   try
-                     use response = request.GetResponse()
-                     response.ContentLength > 0L &&
-                     (response :?> HttpWebResponse).StatusCode |> int < 400
-                   with
-                   | :? WebException -> false
 
-    member self.FullName
-      with get() =
-        match self with
-        | File info -> info.FullName
-        | Url u -> u.AbsoluteUri
+    member self.Exists =
+      match self with
+      | File info -> info.Exists
+      | Url u ->
+          let request = WebRequest.CreateHttp(u)
+          request.Method <- "HEAD"
+          try
+            use response = request.GetResponse()
+            response.ContentLength > 0L && (response :?> HttpWebResponse).StatusCode
+                                           |> int < 400
+          with :? WebException -> false
+
+    member self.FullName =
+      match self with
+      | File info -> info.FullName
+      | Url u -> u.AbsoluteUri
+
     member self.Outdated epoch =
       match self with
       | File info -> (info.LastWriteTimeUtc > epoch)
       | _ -> false // Sensible SourceLink assumed
-    member self.ReadAllText () =
+
+    member self.ReadAllText() =
       match self with
       | File info -> info.FullName |> File.ReadAllText
-      | Url u -> use client = new System.Net.WebClient()
-                 client.DownloadString(u)
+      | Url u ->
+          use client = new System.Net.WebClient()
+          client.DownloadString(u)
 
-  let internal GetSource (document : string) =
-    if document.StartsWith("http://", StringComparison.Ordinal) ||
-       document.StartsWith("https://", StringComparison.Ordinal)
-    then System.Uri(document) |> Url
-    else FileInfo(document) |> File
+  let internal GetSource(document : string) =
+    if document.StartsWith("http://", StringComparison.Ordinal)
+       || document.StartsWith("https://", StringComparison.Ordinal) then
+      System.Uri(document) |> Url
+    else
+      FileInfo(document) |> File

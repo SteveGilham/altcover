@@ -53,13 +53,15 @@
           .module { color: navy; font-size: 12px; }
           .method {cursor: pointer; color: #444444; font-size: 10px; font-weight: bold; }
           .subtitle { color: black; font-size: 10px; font-weight: bold; }
-          th  {font-size:9px; background-color: #powderblue; }
+          th  {font-size:9px; background-color: powderblue; }
           .datacell tbody {font-size:9px; text-align: right; }
           .datacell td {background-color: lightyellow;}
-          .branchcell td {background-color: aquamarine;}
+          .branchcell td {background-color: whitesmoke;}
+          .branchcell td span {font-size: 200%; line-height: 50%;}
           .datacell td:last-child, .datacell th:last-child { width:100%; text-align: left; }
+          .branchcell td.datacell { background-color: aquamarine; }
           td.hldatacell {background-color: pink; }
-          td.exdatacell {background-color: #powderblue; }
+          td.exdatacell {background-color: powderblue; }
           .detailPercent {  font-size: 9px; font-weight: bold; padding-top: 1px; padding-bottom: 1px; padding-left: 3px; padding-right: 3px;}
         </style>
     <script language="JavaScript">//<![CDATA[
@@ -104,24 +106,24 @@
     <table width="30%">
       <tbody>
         <tr>
-          <td width="50%">Uncovered code</td>
-          <td width="50%" class="notVisited" />
+          <td width="70%">Uncovered code</td>
+          <td width="30%" class="notVisited" />
         </tr>
         <tr>
-          <td width="50%">User exempted</td>
-          <td width="50%" class="declared" />
+          <td width="70%">Generated code</td>
+          <td width="30%" class="automatic" />
         </tr>
         <tr>
-          <td width="50%">Generated code</td>
-          <td width="50%" class="automatic" />
+          <td width="70%">Statically analyzed</td>
+          <td width="30%" class="static" />
         </tr>
         <tr>
-          <td width="50%">Statically analyzed</td>
-          <td width="50%" class="static" />
+          <td width="70%">Empty/Otherwise excluded</td>
+          <td width="30%" class="excluded" />
         </tr>
         <tr>
-          <td width="50%">Covered code</td>
-          <td width="50%" class="visited" />
+          <td width="70%">Covered code</td>
+          <td width="30%" class="visited" />
         </tr>
       </tbody>
     </table>
@@ -421,10 +423,6 @@
     </table>
     <hr size="1" width="90%" align="left" style=" border-bottom: 1px dotted #999;" />
     <hr />
-    <h2>
-      <a name="justifications">Coverage exemptions in the code</a>
-    </h2>
-    <dl />
     <hr size="1" />
     <a class="detailPercent" href="#">Top</a>
     <script language="JavaScript">//<![CDATA[

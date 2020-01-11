@@ -15,20 +15,20 @@ Describe "Invoke-Altcover" {
         $x | Should -Exist
         $xm = [xml](Get-Content $x)
         [string]::Join(" ", $xm.coverage.module.method.name) | Should -Be "main returnFoo returnBar testMakeUnion as_bar get_MyBar Invoke .ctor makeThing testMakeThing bytes"
-        [string]::Join(" ", $xm.coverage.module.method.seqpnt.visitcount) | Should -Be "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"
+        [string]::Join(" ", $xm.coverage.module.method.seqpnt.visitcount) | Should -Be  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"
 
         $w = ""
         Invoke-AltCover -Runner -RecorderDirectory $o -WarningVariable w
         $xm = [xml](Get-Content $x)
         [string]::Join(" ", $xm.coverage.module.method.name) | Should -Be "main returnFoo returnBar testMakeUnion as_bar get_MyBar Invoke .ctor makeThing testMakeThing bytes"
-        [string]::Join(" ", $xm.coverage.module.method.seqpnt.visitcount) | Should -Be "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"
+        [string]::Join(" ", $xm.coverage.module.method.seqpnt.visitcount) | Should -Be  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"
         $w | Should -Be "A total of 0 visits recorded"
 
         $summary = Invoke-AltCover  -InformationAction Continue -Runner -RecorderDirectory $o -WorkingDirectory "./Sample2" -Executable "dotnet" -CommandLine @("test", "--no-build", "--configuration", "Debug",  "sample2.core.fsproj")
         $xm2 = [xml](Get-Content $x)
         Remove-Item -Force -Recurse $o
-        [string]::Join(" ", $xm2.coverage.module.method.seqpnt.visitcount) | Should -Be "0 1 1 1 1 1 1 0 0 0 0 0 0 0 2 1 1 1"
-        $summary.Replace("`r", [String]::Empty).Replace("`n", "|") | Should -Be "Visited Classes 4 of 7 (57.14)|Visited Methods 7 of 11 (63.64)|Visited Points 10 of 18 (55.56)|"
+        [string]::Join(" ", $xm2.coverage.module.method.seqpnt.visitcount) | Should -Be "0 1 1 1 0 1 0 1 0 1 0 0 0 0 0 0 0 2 1 0 1 0 1"
+        $summary.Replace("`r", [String]::Empty).Replace("`n", "|") | Should -Be "Visited Classes 4 of 7 (57.14)|Visited Methods 7 of 11 (63.64)|Visited Points 10 of 23 (43.48)|"
     }
 
     It "Fails on garbage" {
@@ -56,6 +56,29 @@ Describe "Invoke-Altcover" {
     It "Reports the version" {        
         $version = Invoke-AltCover -Version -InformationAction Continue 6>&1
         $version.ToString().Trim() | Should -Be ("AltCover version " + $ACV)
+    }
+
+    It "Shows WhatIf" {
+        $m = [AltCover.Commands.ShowHidden]::Reveal
+        Start-Transcript -Path "./_Packaging/WhatIf.txt"
+        Invoke-AltCover -WhatIf -ShowStatic "junk"
+        Invoke-AltCover -WhatIf -ShowStatic "mark"
+        Invoke-AltCover -WhatIf -ShowStatic "++"
+        Invoke-AltCover -WhatIf -ShowStatic "+"
+        Invoke-AltCover -WhatIf -ShowStatic $m
+        Invoke-AltCover -Runner -RecorderDirectory "./Sample2" -WhatIf
+        Stop-Transcript
+        $expected = [string]::Join([System.Environment]::NewLine, 
+                    ('What if: Performing the operation "Invoke-AltCover" on target "Command Line : altcover".',
+                     'What if: Performing the operation "Invoke-AltCover" on target "Command Line : altcover --showstatic:+".',
+                     'What if: Performing the operation "Invoke-AltCover" on target "Command Line : altcover --showstatic:++ ".',
+                     'What if: Performing the operation "Invoke-AltCover" on target "Command Line : altcover --showstatic:+".',
+                     'What if: Performing the operation "Invoke-AltCover" on target "Command Line : altcover --showstatic:++ ".',
+                     'What if: Performing the operation "Invoke-AltCover" on target "Command Line : altcover Runner -r ./Sample2 --collect".'))
+
+        $lines = Get-Content "./_Packaging/WhatIf.txt"
+        $ll = $lines | ? { $_ -like "What if: *" }
+        [string]::Join([System.Environment]::NewLine, $ll) | Should -Be $expected
     }
 }
 
@@ -163,16 +186,16 @@ Describe "ConvertTo-Cobertura" {
     $expected = @"
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
 <!DOCTYPE coverage SYSTEM "http://cobertura.sourceforge.net/xml/coverage-04.dtd">
-<coverage line-rate="0.7142857142857143" branch-rate="0.66666666666666663" lines-covered="10" lines-valid="14" branches-covered="2" branches-valid="3" complexity="2" version="$v" timestamp="$t">
+<coverage line-rate="0.71" branch-rate="0.67" lines-covered="10" lines-valid="14" branches-covered="2" branches-valid="3" complexity="2" version="$v" timestamp="$t">
   <sources>
     <source>altcover\Sample1</source>
   </sources>
   <packages>
-    <package name="Sample1" line-rate="0.7142857142857143" branch-rate="0.66666666666666663" complexity="2">
+    <package name="Sample1" line-rate="0.71" branch-rate="0.67" complexity="2">
       <classes>
-        <class name="TouchTest.Program" filename="altcover/Sample1/Program.cs" line-rate="0.7142857142857143" branch-rate="0.66666666666666663" complexity="2">
+        <class name="TouchTest.Program" filename="altcover/Sample1/Program.cs" line-rate="0.71" branch-rate="0.67" complexity="2">
           <methods>
-            <method name="Main" signature="System.Void System.String[])" line-rate="0.7142857142857143" branch-rate="0.66666666666666663" complexity="2">
+            <method name="Main" signature="System.Void System.String[])" line-rate="0.71" branch-rate="0.67" complexity="2">
               <lines>
                 <line number="11" hits="1" branch="false" />
                 <line number="12" hits="1" branch="false" />
@@ -457,7 +480,7 @@ Describe "ConvertTo-BarChart" {
   }
 
   It "converts NCover through the pipeline" {
-    $xml = [xml](Get-Content "./Tests/GenuineNCover158.Xml" ) | ConvertTo-BarChart
+    $xml = [xml](Get-Content "./Tests/HandRolledVisualized.xml" ) | ConvertTo-BarChart ## -OutputFile "./_Packaging/HandRolledVisualized.html"
     $xml | Should -BeOfType "System.Xml.XmlDocument"
 
     $sw = new-object System.IO.StringWriter @()
@@ -467,7 +490,7 @@ Describe "ConvertTo-BarChart" {
     $xw = [System.Xml.XmlWriter]::Create($sw, $settings)
     $xml.WriteTo($xw)
     $xw.Close()
-    $expected = [System.IO.File]::ReadAllText("./Tests/GenuineNCover158Chart.html")
+    $expected = [System.IO.File]::ReadAllText("./Tests/HandRolledVisualized.html")
 
     # swap out unique identifiers
     $result = $sw.ToString().Replace("`r", "").Replace("html >", "html>")
@@ -503,8 +526,8 @@ Describe "ConvertTo-BarChart" {
     $expected = [System.IO.File]::ReadAllText("./Tests/HandRolledMonoCoverage.html")
 
     $result = $sw.ToString().Replace("`r", "").Replace("html >", "html>") 
-    $result | Should -Be $expected.Replace("`r", "")
-    $result | Should -Be $written.Replace("`r", "")
+    $result | Should -Be $expected.Replace("`r", "").Replace("&#x2442;", ([char]0x2442).ToString())
+    $result | Should -Be $written.Replace("`r", "").Replace("&#x2442;", ([char]0x2442).ToString())
   }
 }
 

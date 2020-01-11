@@ -1,4 +1,4 @@
-﻿#if RUNNER
+#if RUNNER
 [<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage; RequireQualifiedAccess>] // work around coverlet attribute bug
 module AltCover.TypeSafe
 #else
@@ -15,6 +15,7 @@ open System.Text.RegularExpressions
 // No more primitive obsession!
 [<ExcludeFromCodeCoverage; NoComparison>]
 type FilePath =
+  | Tool of String
   | FilePath of String
   | FInfo of FileInfo
   | NoFile
@@ -22,7 +23,8 @@ type FilePath =
     match self with
     | NoFile -> String.Empty
     | FInfo i -> i.FullName
-    | FilePath s -> s
+    | FilePath s -> Path.GetFullPath s
+    | Tool t -> t
 
 [<ExcludeFromCodeCoverage; NoComparison>]
 type DirectoryPath =
@@ -79,9 +81,9 @@ type FilePaths =
     match self with
     | NoPaths -> List.empty<String>
     | FilePaths c ->
-      c
-      |> Seq.map (fun a -> a.AsString())
-      |> Seq.toList
+        c
+        |> Seq.map (fun a -> a.AsString())
+        |> Seq.toList
 
 [<ExcludeFromCodeCoverage; NoComparison>]
 type DirectoryPaths =
@@ -91,17 +93,19 @@ type DirectoryPaths =
     match self with
     | NoDirectories -> List.empty<String>
     | DirectoryPaths c ->
-      c
-      |> Seq.map (fun a -> a.AsString())
-      |> Seq.toList
+        c
+        |> Seq.map (fun a -> a.AsString())
+        |> Seq.toList
 
 [<ExcludeFromCodeCoverage; NoComparison>]
 type FilterItem =
   | FilterItem of Regex
+  | IncludeItem of Regex
   | Raw of String
   member self.AsString() =
     match self with
     | FilterItem r -> r.ToString()
+    | IncludeItem r -> "?" + r.ToString()
     | Raw r -> r
 
 [<ExcludeFromCodeCoverage; NoComparison>]
@@ -112,9 +116,9 @@ type Filters =
     match self with
     | Unfiltered -> List.empty<String>
     | Filters c ->
-      c
-      |> Seq.map (fun a -> a.AsString())
-      |> Seq.toList
+        c
+        |> Seq.map (fun a -> a.AsString())
+        |> Seq.toList
 
 [<ExcludeFromCodeCoverage; NoComparison>]
 type ContextItem =
@@ -133,9 +137,9 @@ type Context =
     match self with
     | NoContext -> List.empty<String>
     | Context c ->
-      c
-      |> Seq.map (fun a -> a.AsString())
-      |> Seq.toList
+        c
+        |> Seq.map (fun a -> a.AsString())
+        |> Seq.toList
 
 [<ExcludeFromCodeCoverage; NoComparison>]
 type SummaryFormat =
@@ -144,13 +148,24 @@ type SummaryFormat =
   | B
   | RPlus
   | BPlus
-  member self.AsString () =
+  member self.AsString() =
     match self with
     | Default -> String.Empty
     | B -> "B"
     | R -> "R"
     | BPlus -> "+B"
     | RPlus -> "+R"
+
+[<ExcludeFromCodeCoverage; NoComparison>]
+type StaticFormat =
+  | Default
+  | Show
+  | ShowZero
+  member self.AsString() =
+    match self with
+    | Default -> "-"
+    | Show -> "+"
+    | ShowZero -> "++"
 
 [<ExcludeFromCodeCoverage; NoComparison>]
 type CollectParams =
@@ -163,8 +178,7 @@ type CollectParams =
     OutputFile : FilePath
     CommandLine : Command
     ExposeReturnCode : Flag
-    SummaryFormat : SummaryFormat
-  }
+    SummaryFormat : SummaryFormat }
   static member Create() =
     { RecorderDirectory = NoDirectory
       WorkingDirectory = NoDirectory
@@ -175,8 +189,7 @@ type CollectParams =
       OutputFile = NoFile
       CommandLine = NoCommand
       ExposeReturnCode = Set
-      SummaryFormat = Default
-    }
+      SummaryFormat = SummaryFormat.Default }
 
 [<ExcludeFromCodeCoverage; NoComparison>]
 type PrepareParams =
@@ -207,7 +220,8 @@ type PrepareParams =
     Defer : Flag
     LocalSource : Flag
     VisibleBranches : Flag
-  }
+    ShowStatic : StaticFormat
+    ShowGenerated : Flag }
   static member Create() =
     { InputDirectories = NoDirectories
       OutputDirectories = NoDirectories
@@ -236,4 +250,5 @@ type PrepareParams =
       Defer = Clear
       LocalSource = Clear
       VisibleBranches = Clear
-    }
+      ShowStatic = StaticFormat.Default
+      ShowGenerated = Clear }
