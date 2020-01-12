@@ -2552,6 +2552,10 @@ or
     let EmptyInstrumentIsJustTheDefaults() =
       Main.init()
       let subject = Prepare()
+
+      subject.GetType().GetProperties()
+      |> Seq.iter (fun p -> let v = p.GetValue(subject)
+                            if p.CanWrite then p.SetValue(subject, v))
       let save = Main.EffectiveMain
       let mutable args = [| "some junk " |]
       let saved = (Output.Info, Output.Error)
@@ -2627,6 +2631,10 @@ or
     let EmptyCollectIsJustTheDefaults() =
       Main.init()
       let subject = Collect()
+
+      subject.GetType().GetProperties()
+      |> Seq.iter (fun p -> let v = p.GetValue(subject)
+                            if p.CanWrite then p.SetValue(subject, v))
       let save = Main.EffectiveMain
       let mutable args = [| "some junk " |]
       let saved = (Output.Info, Output.Error)

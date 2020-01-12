@@ -5,10 +5,9 @@
       <DataCollector friendlyName="XPlat code coverage">
         <Configuration>
           <Format>opencover</Format>          
-          <Exclude>[[*.Tests"]*,[*.XTests]*,[xunit*]*,[Sample*]*,[AltCover.Record*]M*,[NUnit*]*</Exclude> <!-- [Assembly-Filter]Type-Filter -->
+          <Exclude>[[*.Tests"]*,[*.XTests]*,[xunit*]*,[Sample*]*,[AltCover.Record*]M*,[NUnit*]*,[AltCover.Record*]*AddVisit@23*,[AltCover.Record*]*StartWatcher@31*,[AltCover.Record*]*clo@31*</Exclude>
           <Include />
-          <ExcludeByAttribute />
-          <ExcludeByFile />
+          <ExcludeByAttribute>Obsolete,GeneratedCodeAttribute,CompilerGeneratedAttribute</ExcludeByAttribute>          <ExcludeByFile />
           <IncludeDirectory />
           <SingleHit>false</SingleHit>
           <UseSourceLink>false</UseSourceLink>

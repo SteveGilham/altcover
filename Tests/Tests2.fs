@@ -1789,6 +1789,7 @@ module AltCoverTests2 =
       let sink = StringSink(ignore)
       Output.SetInfo sink
       Output.SetError sink
+      Output.SetWarn sink
       Output.Echo <- ignore
       Output.Usage <- ignore
       Assert.That(Output.Usage, Is.Not.Null)
