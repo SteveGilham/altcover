@@ -208,6 +208,37 @@ let coverletTestOptions (o : DotNet.TestOptions) =
                                     Settings = Some "./Build/coverletArgs.runsettings"}
   |> withCLIArgs
 
+let misses = ref 0
+
+let uncovered (path:string) =
+    misses := 0
+    !! path
+    |> Seq.collect (fun f ->
+         let xml = XDocument.Load f
+         xml.Descendants(XName.Get("Uncoveredlines"))
+         |> Seq.filter (fun x ->
+              match String.IsNullOrWhiteSpace x.Value with
+              | false -> true
+              | _ ->
+                sprintf "No coverage from '%s'" f |> Trace.traceImportant
+                misses := 1 + !misses
+                false)
+         |> Seq.map (fun e ->
+              let coverage = e.Value
+              match Int32.TryParse coverage with
+              | (false, _) ->
+                printfn "%A" xml
+                Assert.Fail("Could not parse uncovered line value '" + coverage + "'")
+                0
+              | (_, numeric) ->
+                printfn "%s : %A"
+                  (f
+                   |> Path.GetDirectoryName
+                   |> Path.GetFileName) numeric
+                numeric))
+    |> Seq.toList
+
+
 let _Target s f =
   Target.description s
   Target.create s f
@@ -689,6 +720,9 @@ _Target "UnitTestDotNetWithCoverlet" (fun _ ->
           ReportTypes =
             [ ReportGenerator.ReportType.Html; ReportGenerator.ReportType.XmlSummary ]
           TargetDir = "_Reports/_UnitTestWithCoverlet" }) xml
+
+    uncovered @"_Reports/_UnitTestWithCoverl*/Summary.xml"
+    |> printfn "%A uncovered lines"         
   with x ->
     printfn "%A" x
     reraise())
@@ -766,7 +800,10 @@ _Target "UnitTestWithOpenCover"
         ReportTypes =
           [ ReportGenerator.ReportType.Html; ReportGenerator.ReportType.XmlSummary ]
         TargetDir = "_Reports/_UnitTestWithOpenCover" })
-    [ coverage; scoverage; s4coverage ])
+    [ coverage; scoverage; s4coverage ]
+
+  uncovered @"_Reports/_UnitTestWithOpenCove*/Summary.xml"
+  |> printfn "%A uncovered lines" )
 
 // Hybrid (Self) Tests
 
@@ -866,6 +903,9 @@ _Target "UnitTestWithAltCover" (fun _ ->
             [ ReportGenerator.ReportType.Html; ReportGenerator.ReportType.XmlSummary ]
           TargetDir = "_Reports/_UnitTestWithAltCover" })
       [ altReport; RecorderReport ]
+
+    uncovered @"_Reports/_UnitTestWithAltCover/Summary.xml"
+    |> printfn "%A uncovered lines"         
 
   else
     printfn "Symbols not present; skipping")
@@ -1113,6 +1153,9 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
           TargetDir = "_Reports/_UnitTestWithAltCoverRunner" })
       [ altReport; RecorderReport; Recorder2Report; weakReport; pester ]
 
+    uncovered @"_Reports/_UnitTestWithAltCoverRunner/Summary.xml"
+    |> printfn "%A uncovered lines"         
+
     let cover1 =
       altReport
       |> File.ReadAllLines
@@ -1232,7 +1275,10 @@ _Target "UnitTestWithAltCoverCore" // Obsolete
         ReportTypes =
           [ ReportGenerator.ReportType.Html; ReportGenerator.ReportType.XmlSummary ]
         TargetDir = "_Reports/_UnitTestWithAltCoverCore" })
-    [ altReport; RecorderReport ])
+    [ altReport; RecorderReport ]
+
+  uncovered @"_Reports/_UnitTestWithAltCoverCore/Summary.xml"
+  |> printfn "%A uncovered lines"  )
 
 _Target "UnitTestWithAltCoverCoreRunner"
   (fun _ ->
@@ -1344,7 +1390,10 @@ _Target "UnitTestWithAltCoverCoreRunner"
         ReportTypes =
           [ ReportGenerator.ReportType.Html; ReportGenerator.ReportType.XmlSummary ]
         TargetDir = "_Reports/_UnitTestWithAltCoverCoreRunner" })
-    [ altReport; RecorderReport ])
+    [ altReport; RecorderReport ]
+
+  uncovered @"_Reports/_UnitTestWithAltCoverCoreRunner/Summary.xml"
+  |> printfn "%A uncovered lines" )
 
 // Pure OperationalTests
 
@@ -3891,34 +3940,7 @@ _Target "BulkReport" (fun _ ->
            ReportTypes = [ ReportGenerator.ReportType.Html ]
            TargetDir = "_Reports/_BulkReport" })
 
-  let misses = ref 0
-
-  let numbers =
-    !!(@"_Reports/_Unit*/Summary.xml")
-    |> Seq.collect (fun f ->
-         let xml = XDocument.Load f
-         xml.Descendants(XName.Get("Uncoveredlines"))
-         |> Seq.filter (fun x ->
-              match String.IsNullOrWhiteSpace x.Value with
-              | false -> true
-              | _ ->
-                sprintf "No coverage from '%s'" f |> Trace.traceImportant
-                misses := 1 + !misses
-                false)
-         |> Seq.map (fun e ->
-              let coverage = e.Value
-              match Int32.TryParse coverage with
-              | (false, _) ->
-                printfn "%A" xml
-                Assert.Fail("Could not parse uncovered line value '" + coverage + "'")
-                0
-              | (_, numeric) ->
-                printfn "%s : %A"
-                  (f
-                   |> Path.GetDirectoryName
-                   |> Path.GetFileName) numeric
-                numeric))
-    |> Seq.toList
+  let numbers = uncovered @"_Reports/_Unit*/Summary.xml"
   if numbers
      |> List.tryFind (fun n -> n > 0)
      |> Option.isSome
