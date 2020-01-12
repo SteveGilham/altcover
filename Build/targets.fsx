@@ -198,21 +198,15 @@ let defaultDotNetTestCommandLine project =
 let defaultDotNetTestCommandLine86 project =
   AltCover.buildDotNetTestCommandLine (defaultTestOptions dotnetOptions86) project
 
-let coverletOptions (o : Coverlet.CoverletParams) = 
-  { o with OutputFormat = Coverlet.OutputFormat.OpenCover
-           Exclude = [ ("*.Tests", "*")
-                       ("*.XTests", "*")
-                       ("xunit*", "*")
-                       ("Sample*", "*")
-                       ("AltCover.Record*", "M*")
-                       ("NUnit*", "*")] }
+let coverletOptions (o : DotNet.Options) =
+  { dotnetOptions o with CustomParams = Some "--collect:\"XPlat Code Coverage\"" }
 
 let coverletTestOptions (o : DotNet.TestOptions) =
   { o.WithCommon dotnetOptions with Configuration = DotNet.BuildConfiguration.Debug
                                     NoBuild = true
-                                    Framework = Some "netcoreapp3.0" }
+                                    Framework = Some "netcoreapp3.0"
+                                    Settings = Some "./Build/coverletArgs.runsettings"}
   |> withCLIArgs
-  |> Coverlet.withDotNetTestOptions coverletOptions
 
 let _Target s f =
   Target.description s
@@ -680,11 +674,14 @@ _Target "UnitTestDotNetWithCoverlet" (fun _ ->
     let xml =
       !!(@"./*Tests/*.tests.core.fsproj")
       |> Seq.fold (fun l f ->
+           let here = Path.GetDirectoryName f
+           let tr = here @@ "TestResults"
+           Directory.ensure tr
+           Shell.cleanDir tr
            try
              f |> DotNet.test coverletTestOptions
            with x -> eprintf "%A" x
-           let here = Path.GetDirectoryName f
-           (here @@ "coverage.opencover.xml") :: l) []
+           (!!(tr @@ "*/coverage.opencover.xml") |> Seq.head) :: l) []
 
     ReportGenerator.generateReports (fun p ->
       { p with
