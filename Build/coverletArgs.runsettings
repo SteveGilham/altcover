@@ -7,7 +7,7 @@
           <Format>opencover</Format>          
           <Exclude>[*]*Uncoverlet,[*.Tests]*,[*.XTests]*,[xunit*]*,[Sample*]*,[AltCover.Record*]M*,[NUnit*]*</Exclude>
           <Include />
-          <ExcludeByAttribute />
+          <ExcludeByAttribute>CompilerGenerated</ExcludeByAttribute>
           <ExcludeByFile />
           <IncludeDirectory />
           <SingleHit>false</SingleHit>
