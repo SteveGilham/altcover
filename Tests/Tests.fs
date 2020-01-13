@@ -790,9 +790,9 @@ module AltCoverTests =
       let save = Visitor.single
       try
         Visitor.single <- true
-        test <@ Visitor.Sampling() = (Base.Sampling.Single |> int) @>
+        test <@ Visitor.Sampling() = 1 @>
         Visitor.single <- false
-        test <@ Visitor.Sampling() = (Base.Sampling.All |> int)@>
+        test <@ Visitor.Sampling() = 0 @>
       finally
         Visitor.single <- save
 

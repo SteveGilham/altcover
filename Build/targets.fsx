@@ -4027,7 +4027,7 @@ Target.activateFinal "ResetConsoleColours"
 ==> "UnitTestWithAltCoverCoreRunner"
 ==> "UnitTest"
 
-"UnitTestWithAltCoverRunner"
+"Compilation"
 ==> "BuildForCoverlet"
 ==> "UnitTestDotNetWithCoverlet"
 =?> ("UnitTest", Environment.isWindows)
