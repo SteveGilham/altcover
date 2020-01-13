@@ -269,6 +269,44 @@ module AltCoverTests =
     Assert.That(pair |> Seq.last, Is.False)
     Assert.That(exn.Message, Is.EqualTo unique)
 
+#if NETCOREAPP2_0
+  [<Test>]
+  let NullRefShouldBeHandled() =
+    GetMyMethodName "=>"
+    let handle = Instance.Visits
+    lock handle (fun () ->
+      try
+        Instance.Visits <- null
+        let key = " "
+        let path = Instance.ReportFile |> Path.GetFullPath
+        let where = path |> Path.GetDirectoryName
+        let before = Directory.GetFiles(where, "*.exn")
+        Instance.VisitImpl(key, 23, (Adapter.Null()))
+        let after = Directory.GetFiles(where, "*.exn")
+        Assert.That(after.Length, Is.GreaterThan before.Length)
+        let all = HashSet<String>(after)
+        before
+        |> Seq.iter (fun x ->
+             Assert.That(all.Contains x)
+             all.Remove x |> ignore)
+        Assert.That(all.Count, Is.EqualTo 1)
+        let file = all |> Seq.head
+        let lines = file |> File.ReadAllLines
+        File.Delete file
+        Assert.That(lines.Length, Is.GreaterThan 4)
+        lines
+        |> Seq.take 4
+        |> Seq.zip
+             [ "ModuleId = \" \""; "hitPointId = 23"; "context = Null"; "exception = System.NullReferenceException: Object reference not set to an instance of an object." ]
+        |> Seq.iter (fun (a, b) -> test <@ a = b @> )
+        let third = Directory.GetFiles(where, "*.exn")
+        Assert.That(third.Length, Is.EqualTo before.Length)
+      finally
+        Instance.Visits <- handle
+        Instance.Visits.Clear())
+    GetMyMethodName "<="
+#endif
+
   [<Test>]
   let DistinctIdShouldBeDistinct() =
     GetMyMethodName "=>"
