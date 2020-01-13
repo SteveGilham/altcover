@@ -34,6 +34,15 @@ module AltCoverRunnerTests =
     // Base.fs
 
     [<Test>]
+    let MinMaxTime () =
+      let now = DateTime.Now
+      let ago = now - TimeSpan(1,0,0,0)
+      test <@ (Base.Counter.MaxTime now ago) = now @>
+      test <@ (Base.Counter.MinTime ago now) = ago @>
+      test <@ (Base.Counter.MinTime now ago) = ago @>
+      test <@ (Base.Counter.MaxTime ago now) = now @>
+
+    [<Test>]
     let SafeDisposalProtects() =
       Runner.init()
       let obj1 =

@@ -786,6 +786,17 @@ module AltCoverTests =
 
     // Visitor.fs
     [<Test>]
+    let CanSwitchSampling() =
+      let save = Visitor.single
+      try
+        Visitor.single <- true
+        test <@ Visitor.Sampling() = (Base.Sampling.Single |> int) @>
+        Visitor.single <- false
+        test <@ Visitor.Sampling() = (Base.Sampling.All |> int)@>
+      finally
+        Visitor.single <- save
+
+    [<Test>]
     let FixEnding() =
       let a = Visitor.EnsureEndsWith "a" "banana"
       Assert.That (a, Is.EqualTo "banana")

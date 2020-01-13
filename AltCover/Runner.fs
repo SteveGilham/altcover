@@ -309,6 +309,13 @@ module internal Runner =
            "--threshold", x) :: CommandLine.error
     (ok, n)
 
+  // local function pointers not going to be invoked
+  module private Uncoverlet =
+    let AddLCovSummary() =
+      Summaries <- LCov.Summary :: Summaries
+    let AddCoberturaSummary() =
+      Summaries <- Cobertura.Summary :: Summaries
+
   let internal DeclareOptions() =
     Summaries <- []
     Summaries <- StandardSummary :: Summaries
@@ -359,7 +366,7 @@ module internal Runner =
              LCov.path := x
                           |> Path.GetFullPath
                           |> Some
-             Summaries <- LCov.Summary :: Summaries))
+             Uncoverlet.AddLCovSummary()))
       ("t|threshold=",
        (fun x ->
          let ok, n = ValidateThreshold x
@@ -385,7 +392,7 @@ module internal Runner =
              Cobertura.path := x
                                |> Path.GetFullPath
                                |> Some
-             Summaries <- Cobertura.Summary :: Summaries))
+             Uncoverlet.AddCoberturaSummary()))
       ("o|outputFile=",
        (fun x ->
          if CommandLine.ValidatePath "--outputFile" x then

@@ -236,8 +236,11 @@ module internal Visitor =
   let mutable internal single = false // more complicated
 
   let Sampling() =
-    (if single then Base.Sampling.Single else Base.Sampling.All)
-    |> int
+    let sampling () =
+      if single
+      then Base.Sampling.Single
+      else Base.Sampling.All
+    () |> sampling |> int
 
   let internal sourcelink = ref false // ddFlag
   let internal defer = ref (Some false)
