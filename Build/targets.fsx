@@ -1318,6 +1318,7 @@ _Target "UnitTestWithAltCoverCoreRunner"
            XmlReport = altReport
            OutputDirectories = [| output |]
            VisibleBranches = true
+           StrongNameKey = Path.getFullName "Build/SelfTest.snk"
            Single = true
            InPlace = false
            Save = false }

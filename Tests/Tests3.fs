@@ -2773,7 +2773,7 @@ or
 <RunSettings>
 {1}  <InProcDataCollectionRunSettings>
     <InProcDataCollectors>
-      <InProcDataCollector friendlyName="AltCover" uri="InProcDataCollector://AltCover/Recorder/1.0.0.0" assemblyQualifiedName="AltCover.DataCollector, AltCover.Tests, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" codebase="{0}">
+      <InProcDataCollector friendlyName="AltCover" uri="InProcDataCollector://AltCover/Recorder/1.0.0.0" assemblyQualifiedName="AltCover.DataCollector, {2}" codebase="{0}">
         <Configuration>
           <Offload>true</Offload>
         </Configuration>
@@ -2794,7 +2794,8 @@ or
       Assert.That (result.Replace("\r", String.Empty),
                     Is.EqualTo ((String.Format(template,
                                                Assembly.GetExecutingAssembly().Location,
-                                               String.Empty)).Replace("\r", String.Empty)))
+                                               String.Empty,
+                                               Assembly.GetExecutingAssembly().FullName)).Replace("\r", String.Empty)))
 
     [<Test>]
     let RunSettingsExtendsOK() =
@@ -2811,7 +2812,8 @@ or
       Assert.That (result.Replace("\r", String.Empty),
                     Is.EqualTo ((String.Format(template,
                                                Assembly.GetExecutingAssembly().Location,
-                                               "  <stuff />\r\n")).Replace("\r", String.Empty)))
+                                               "  <stuff />\r\n",
+                                               Assembly.GetExecutingAssembly().FullName)).Replace("\r", String.Empty)))
 
     [<Test>]
     let RunSettingsRecoversOK() =
@@ -2828,6 +2830,7 @@ or
       Assert.That (result.Replace("\r", String.Empty),
                     Is.EqualTo ((String.Format(template,
                                                Assembly.GetExecutingAssembly().Location,
-                                               String.Empty)).Replace("\r", String.Empty)))
+                                               String.Empty,
+                                               Assembly.GetExecutingAssembly().FullName)).Replace("\r", String.Empty)))
 #endif
   // Recorder.fs => Recorder.Tests

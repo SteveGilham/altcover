@@ -394,10 +394,42 @@ module internal Instrument =
   /// set that there is no strongname.
   /// </summary>
   /// <param name="assembly">The assembly object being operated upon</param>
-  let internal UpdateStrongReferences (assembly : AssemblyDefinition) =
+  let internal UpdateStrongReferences (assembly : AssemblyDefinition)
+      (assemblies : string list) =
     let effectiveKey =
       if assembly.Name.HasPublicKey then Visitor.defaultStrongNameKey else None
     UpdateStrongNaming assembly effectiveKey
+    let interestingReferences =
+      assembly.MainModule.AssemblyReferences
+      |> Seq.cast<AssemblyNameReference>
+      |> Seq.filter (fun x -> assemblies |> List.exists (fun y -> y.Equals(x.Name)))
+      |> Seq.toList
+
+    // The return value is for unit testing purposes, only
+    // The side-effects are what is important.
+    let assemblyReferenceSubstitutions = new Dictionary<String, String>()
+    interestingReferences
+    |> Seq.iter (fun r ->
+         let original = r.ToString()
+         let token = KnownToken r
+
+         let effectiveKey =
+           match token with
+           | None -> Visitor.defaultStrongNameKey |> Option.map KeyStore.KeyToRecord
+           | Some _ -> token
+         match effectiveKey with
+         | None ->
+             r.HasPublicKey <- false
+             r.PublicKeyToken <- null
+             r.PublicKey <- null
+         | Some key ->
+             r.HasPublicKey <- true
+             r.PublicKey <- key.Pair.PublicKey // implicitly sets token
+
+         let updated = r.ToString()
+         if not <| updated.Equals(original, StringComparison.Ordinal) then
+           assemblyReferenceSubstitutions.[original] <- updated)
+    assemblyReferenceSubstitutions
 
   let internal injectJSON json =
     let o = JObject.Parse json
@@ -687,7 +719,7 @@ module internal Instrument =
     match node with
     | Start _ -> VisitStart state
     | Assembly(assembly, included, _) ->
-        UpdateStrongReferences assembly
+        UpdateStrongReferences assembly state.InstrumentedAssemblies |> ignore
         if included <> Inspect.Ignore then
           assembly.MainModule.AssemblyReferences.Add(state.RecordingAssembly.Name)
         state
