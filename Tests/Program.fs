@@ -18,6 +18,10 @@ module TestMain =
   let tests =
     testList "AltCoverTests"
     <| (([
+          Tests.AltCoverRunnerTests.MaxTimeFirst, "Runner.MaxTimeFirst"
+          Tests.AltCoverRunnerTests.MaxTimeLast, "Runner.MaxTimeLast"
+          Tests.AltCoverRunnerTests.MinTimeFirst, "Runner.MinTimeFirst"
+          Tests.AltCoverRunnerTests.MinTimeLast, "Runner.MinTimeLast"
           Tests.AltCoverRunnerTests.SafeDisposalProtects, "Runner.SafeDisposalProtects"
           Tests.AltCoverRunnerTests.JunkUspidGivesNegativeIndex, "Runner.JunkUspidGivesNegativeIndex"
           Tests.AltCoverRunnerTests.RealIdShouldIncrementCount, "Runner.RealIdShouldIncrementCount"
@@ -113,6 +117,7 @@ module TestMain =
           Tests.AltCoverRunnerTests.OpenCoverShouldGeneratePlausibleCobertura, "Runner.OpenCoverShouldGeneratePlausibleCobertura"
           Tests.AltCoverRunnerTests.ThresholdViolationShouldBeReported, "Runner.ThresholdViolationShouldBeReported"
           Tests.AltCoverRunnerTests.TryGetValueHandlesNull, "Runner.TryGetValueHandlesNull"
+          Tests.AltCoverTests.CanSwitchSampling, "Tests.CanSwitchSampling"
           Tests.AltCoverTests.AugmentNullableDetectNulls, "Tests.AugmentNullableDetectNulls"
           Tests.AltCoverTests.AugmentGetOrElseFillsInNone, "Tests.AugmentGetOrElseFillsInNone"
           Tests.AltCoverTests.ShouldGetPdbFromImage, "Tests.ShouldGetPdbFromImage"
