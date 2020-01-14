@@ -2419,7 +2419,7 @@ module AltCoverTests =
         let branch = branches |> Seq.head
         Assert.That(branch.Target.Length, Is.EqualTo 2)
         let xbranch = XElement(XName.Get "test")
-        OpenCover.setChain xbranch (branch.Target.Tail|> List.map (fun i -> i.Offset))
+        OpenCover.setChain xbranch branch
         Assert.That(xbranch.ToString(), Is.EqualTo """<test offsetchain="29" />""")
       finally
         Visitor.NameFilters.Clear()

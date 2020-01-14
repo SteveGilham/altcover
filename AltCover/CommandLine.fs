@@ -289,9 +289,9 @@ module internal CommandLine =
 
   let internal ValidateFileSystemEntity exists message key x =
     doPathOperation (fun () ->
-      if not (String.IsNullOrWhiteSpace x) && x
-                                              |> Path.GetFullPath
-                                              |> exists then
+      if (not (String.IsNullOrWhiteSpace x)) && x
+                                                |> Path.GetFullPath
+                                                |> exists then
         true
       else
         error <-

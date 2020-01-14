@@ -277,6 +277,7 @@ module TestMain =
           Tests.AltCoverTests2.ExcludedAfterMethodShouldNotChangeState, "Tests2.ExcludedAfterMethodShouldNotChangeState"
           Tests.AltCoverTests2.IncludedAfterMethodShouldRewriteMethod, "Tests2.IncludedAfterMethodShouldRewriteMethod"
           Tests.AltCoverTests2.UpdateStrongReferencesShouldChangeSigningKeyWherePossible, "Tests2.UpdateStrongReferencesShouldChangeSigningKeyWherePossible"
+          Tests.AltCoverTests2.UpdateStrongReferencesShouldChangeSigningKeyWherePossible2, "Tests2.UpdateStrongReferencesShouldChangeSigningKeyWherePossible2"
           Tests.AltCoverTests2.UpdateStrongReferencesShouldRemoveSigningKeyIfRequired, "Tests2.UpdateStrongReferencesShouldRemoveSigningKeyIfRequired"
           Tests.AltCoverTests2.UpdateStrongReferencesShouldNotAddASigningKey, "Tests2.UpdateStrongReferencesShouldNotAddASigningKey"
           Tests.AltCoverTests2.UpdateStrongReferencesShouldTrackReferences, "Tests2.UpdateStrongReferencesShouldTrackReferences"

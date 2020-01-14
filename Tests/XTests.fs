@@ -176,9 +176,11 @@ module AltCoverXTests =
 
   [<Test>]
   let TypeSafeCollectParamsCanBeValidated() =
+    let here = Assembly.GetExecutingAssembly().Location
     let subject =
       { TypeSafe.CollectParams.Create() with Threshold = TypeSafe.Threshold 23uy
-                                             SummaryFormat = TypeSafe.BPlus }
+                                             SummaryFormat = TypeSafe.BPlus
+                                             Executable = TypeSafe.Tool "dotnet" }
 
     let instance = FSApi.CollectParams.TypeSafe subject
     test <@ instance.GetHashCode() :> obj |> isNull |> not @> // gratuitous coverage for coverlet
@@ -187,10 +189,10 @@ module AltCoverXTests =
     test <@ scan.Length = 0 @>
     test
       <@ instance
-         |> FSApi.Args.Collect = [ "Runner"; "-t"; "23"; "--collect"; "--teamcity:+B" ] @>
+         |> FSApi.Args.Collect = [ "Runner"; "-x"; "dotnet"; "-t"; "23"; "--teamcity:+B" ] @>
     let validate = instance.WhatIf(false)
     test <@ validate.GetHashCode() :> obj |> isNull |> not @> // gratuitous coverage for coverlet
-    test <@ validate.ToString() = "altcover Runner -t 23 --collect --teamcity:+B" @>
+    test <@ validate.ToString() = "altcover Runner -x dotnet -t 23 --teamcity:+B" @>
 
   [<Test>]
   let TypeSafeCollectSummaryCanBeValidated() =

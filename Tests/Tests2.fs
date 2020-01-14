@@ -1333,6 +1333,35 @@ module AltCoverTests2 =
       Assert.That(result, Is.Empty)
 
     [<Test>]
+    let UpdateStrongReferencesShouldChangeSigningKeyWherePossible2() =
+      let path = Assembly.GetExecutingAssembly().Location
+      let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+      ProgramDatabase.ReadSymbols def
+      let token0 = def.Name.PublicKeyToken
+      use stream = typeof<AltCover.Node>.Assembly.GetManifestResourceStream(recorderSnk)
+      use buffer = new MemoryStream()
+      stream.CopyTo(buffer)
+      Visitor.defaultStrongNameKey <- Some(StrongNameKeyData.Make(buffer.ToArray()))
+
+      use stream2 = Assembly.GetExecutingAssembly().GetManifestResourceStream(infrastructureSnk)
+      use buffer2 = new MemoryStream()
+      stream2.CopyTo(buffer2)
+
+      try
+        Visitor.Add <| StrongNameKeyData.Make(buffer2.ToArray())
+        let result = Instrument.UpdateStrongReferences def ["Sample2"]
+        let token1 = def.Name.PublicKeyToken
+        Assert.That (token1, Is.Not.Null)
+        Assert.That (token1, Is.Not.EquivalentTo(token0))
+
+        let token' =
+          String.Join(String.Empty, token1 |> Seq.map (fun x -> x.ToString("x2")))
+        Assert.That (token', Is.EqualTo "4ebffcaabf10ce6a" )
+        Assert.That(result, Is.Empty)
+      finally
+       Visitor.keys.Clear()
+
+    [<Test>]
     let UpdateStrongReferencesShouldRemoveSigningKeyIfRequired() =
       let where = Assembly.GetExecutingAssembly().Location
       let path =
