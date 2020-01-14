@@ -253,10 +253,10 @@ module TestMain =
 #if NETCOREAPP2_0
 #else
           Tests.AltCoverTests2.ShouldSymbolWriterOnWindowsOnly, "Tests2.ShouldSymbolWriterOnWindowsOnly"
+#endif
           Tests.AltCoverTests2.ShouldGetNewFilePathFromPreparedAssembly, "Tests2.ShouldGetNewFilePathFromPreparedAssembly"
           Tests.AltCoverTests2.ShouldWriteMonoAssemblyOK, "Tests2.ShouldWriteMonoAssemblyOK"
           Tests.AltCoverTests2.ShouldGetVisitFromWrittenAssembly, "Tests2.ShouldGetVisitFromWrittenAssembly"
-#endif
           //Tests.AltCoverTests2.ShouldUpdateHandlerOK([<Range(0, 31)>] selection)
           Tests.AltCoverTests2.ShouldSubstituteInstructionOperand, "Tests2.ShouldSubstituteInstructionOperand"
           Tests.AltCoverTests2.ShouldNotSubstituteDifferentInstructionOperand, "Tests2.ShouldNotSubstituteDifferentInstructionOperand"

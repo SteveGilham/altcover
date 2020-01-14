@@ -421,8 +421,8 @@ module AltCoverTests2 =
         Visitor.reportFormat <- save2
         Visitor.interval <- save3
       Visitor.TrackingNames.Clear()
+
 #if NETCOREAPP2_0
-    // TODO
 #else
     [<Test>]
     let ShouldSymbolWriterOnWindowsOnly () =
@@ -438,14 +438,15 @@ module AltCoverTests2 =
       match Instrument.CreateSymbolWriter ".exe" true false with
       | :? Mono.Cecil.Mdb.MdbWriterProvider -> ()
       | x -> Assert.Fail("Mono.Cecil.Mdb.MdbWriterProvider expected but got " + x.GetType().FullName)
+#endif
 
     [<Test>]
     let ShouldGetNewFilePathFromPreparedAssembly () =
       try
         Visitor.keys.Clear()
         Main.init()
-        let where = Assembly.GetExecutingAssembly().Location
-        let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample3.dll")
+        let here = Assembly.GetExecutingAssembly().Location
+        let path = Path.Combine(Path.GetDirectoryName(here) + AltCoverTests.Hack(), "Sample3.dll")
         let unique = Guid.NewGuid().ToString()
         let output = Path.GetTempFileName()
         let outputdll = output + ".dll"
@@ -486,6 +487,8 @@ module AltCoverTests2 =
           // Assert.That (Option.isSome <| Instrument.KnownKey raw.Name) <- not needed
           let token' = String.Join(String.Empty, raw.Name.PublicKeyToken|> Seq.map (fun x -> x.ToString("x2")))
           Assert.That (token', Is.EqualTo("4ebffcaabf10ce6a"))
+#if NETCOREAPP2_0
+#else
           let setup = AppDomainSetup()
           setup.ApplicationBase <- Path.GetDirectoryName(where)
           let ad = AppDomain.CreateDomain("ShouldGetNewFilePathFromPreparedAssembly", null, setup)
@@ -502,6 +505,7 @@ module AltCoverTests2 =
             Assert.That (report4, AltCover.Base.Sampling.Single |> int |> Is.EqualTo)
           finally
             AppDomain.Unload(ad)
+#endif
         finally
           Visitor.single <- false
           Visitor.reportPath <- save
@@ -551,6 +555,8 @@ module AltCoverTests2 =
           // Assert.That (Option.isSome <| Instrument.KnownKey raw.Name) <- not needed
           let token' = String.Join(String.Empty, raw.Name.PublicKeyToken|> Seq.map (fun x -> x.ToString("x2")))
           Assert.That (token', Is.EqualTo("4ebffcaabf10ce6a"))
+#if NETCOREAPP2_0
+#else
           let setup = AppDomainSetup()
           setup.ApplicationBase <- Path.GetDirectoryName(where)
           let ad = AppDomain.CreateDomain("ShouldGetNewFilePathFromPreparedAssembly", null, setup)
@@ -561,6 +567,7 @@ module AltCoverTests2 =
             Assert.That (report, Is.EqualTo (Path.GetFullPath unique))
           finally
             AppDomain.Unload(ad)
+#endif
         finally
           Visitor.reportPath <- save
           Directory.EnumerateFiles(Path.GetDirectoryName output,
@@ -577,7 +584,6 @@ module AltCoverTests2 =
       try
         Visitor.keys.Clear()
         let where = Assembly.GetExecutingAssembly().Location
-        let pdb = Path.ChangeExtension(where, ".pdb")
         let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample3.dll")
         let unique = Guid.NewGuid().ToString()
         let output = Path.GetTempFileName()
@@ -607,7 +613,9 @@ module AltCoverTests2 =
           // Assert.That (Option.isSome <| Instrument.KnownKey raw.Name) <- not needed
           let token' = String.Join(String.Empty, raw.Name.PublicKeyToken|> Seq.map (fun x -> x.ToString("x2")))
           Assert.That (token', Is.EqualTo("c02b1a9f5b7cade8"))
-          if File.Exists(pdb) then
+#if NETCOREAPP2_0
+#else
+           if File.Exists(pdb) then
             // doesnt' seem to work on Mono
             let setup = AppDomainSetup()
             setup.ApplicationBase <- Path.GetDirectoryName(where)
@@ -632,6 +640,7 @@ module AltCoverTests2 =
                 Assert.That (log, Is.EquivalentTo[(unique, 42)])
             finally
               AppDomain.Unload(ad)
+#endif
         finally
           Visitor.reportPath <- save
           Directory.EnumerateFiles(Path.GetDirectoryName output,
@@ -642,7 +651,6 @@ module AltCoverTests2 =
                                 | :? IOException -> ())
       finally
         Visitor.keys.Clear()
-  #endif
 
     [<Test>]
     let ShouldUpdateHandlerOK([<NUnit.Framework.Range(0, 31)>] selection) =
