@@ -1310,6 +1310,40 @@ module AltCoverTests2 =
       let paired' = Seq.zip opcodes input.MethodBody.Instructions
       Assert.That(paired' |> Seq.forall (fun (i, j) -> i = j.OpCode))
 
+    let UpdateStrongReferences (assembly : AssemblyDefinition)
+      (assemblies : string list) =
+      Instrument.UpdateStrongReferences assembly
+      let interestingReferences =
+        assembly.MainModule.AssemblyReferences
+        |> Seq.cast<AssemblyNameReference>
+        |> Seq.filter (fun x -> assemblies |> List.exists (fun y -> y.Equals(x.Name)))
+        |> Seq.toList
+
+      // For unit testing purposes, only
+      let assemblyReferenceSubstitutions = new System.Collections.Generic.Dictionary<String, String>()
+      interestingReferences
+      |> Seq.iter (fun r ->
+           let original = r.ToString()
+           let token = Instrument.KnownToken r
+
+           let effectiveKey =
+             match token with
+             | None -> Visitor.defaultStrongNameKey |> Option.map KeyStore.KeyToRecord
+             | Some _ -> token
+           match effectiveKey with
+           | None ->
+               r.HasPublicKey <- false
+               r.PublicKeyToken <- null
+               r.PublicKey <- null
+           | Some key ->
+               r.HasPublicKey <- true
+               r.PublicKey <- key.Pair.PublicKey // implicitly sets token
+
+           let updated = r.ToString()
+           if not <| updated.Equals(original, StringComparison.Ordinal) then
+             assemblyReferenceSubstitutions.[original] <- updated)
+      assemblyReferenceSubstitutions
+
     [<Test>]
     let UpdateStrongReferencesShouldChangeSigningKeyWherePossible() =
       let where = Assembly.GetExecutingAssembly().Location
@@ -1322,7 +1356,7 @@ module AltCoverTests2 =
       use buffer = new MemoryStream()
       stream.CopyTo(buffer)
       Visitor.defaultStrongNameKey <- Some(StrongNameKeyData.Make(buffer.ToArray()))
-      let result = Instrument.UpdateStrongReferences def []
+      let result = UpdateStrongReferences def []
       let token1 = def.Name.PublicKeyToken
       Assert.That (token1, Is.Not.Null)
       Assert.That (token1, Is.Not.EquivalentTo(token0))
@@ -1349,7 +1383,7 @@ module AltCoverTests2 =
 
       try
         Visitor.Add <| StrongNameKeyData.Make(buffer2.ToArray())
-        let result = Instrument.UpdateStrongReferences def ["Sample2"]
+        let result = UpdateStrongReferences def ["Sample2"]
         let token1 = def.Name.PublicKeyToken
         Assert.That (token1, Is.Not.Null)
         Assert.That (token1, Is.Not.EquivalentTo(token0))
@@ -1370,7 +1404,7 @@ module AltCoverTests2 =
       ProgramDatabase.ReadSymbols def
       let token0 = def.Name.PublicKeyToken
       Visitor.defaultStrongNameKey <- None
-      let result = Instrument.UpdateStrongReferences def [ "nunit.framework" ]
+      let result = UpdateStrongReferences def [ "nunit.framework" ]
       let token1 = def.Name.PublicKeyToken
       Assert.That(token1, Is.Empty)
       Assert.That(token1, Is.Not.EquivalentTo(token0))
@@ -1411,7 +1445,7 @@ module AltCoverTests2 =
       use buffer = new MemoryStream()
       stream.CopyTo(buffer)
       Visitor.defaultStrongNameKey <- Some(StrongNameKeyData.Make(buffer.ToArray()))
-      let result = Instrument.UpdateStrongReferences def []
+      let result = UpdateStrongReferences def []
       let token1 = def.Name.PublicKeyToken
       Assert.That(token1, Is.Empty)
       Assert.That(result, Is.Empty)
@@ -1428,7 +1462,7 @@ module AltCoverTests2 =
       use buffer = new MemoryStream()
       stream.CopyTo(buffer)
       Visitor.defaultStrongNameKey <- Some(StrongNameKeyData.Make(buffer.ToArray()))
-      let result = Instrument.UpdateStrongReferences def [ "nunit.framework"; "nonesuch" ]
+      let result = UpdateStrongReferences def [ "nunit.framework"; "nonesuch" ]
       Assert.That(result.Count, Is.EqualTo 1)
 
       Assert.That (result.Values |> Seq.head, Does.EndWith "PublicKeyToken=4ebffcaabf10ce6a")
@@ -1456,8 +1490,7 @@ module AltCoverTests2 =
         Visitor.keys.Add(key,
                          { Pair = ourKeyPair
                            Token = [] })
-        let result =
-          Instrument.UpdateStrongReferences def [ "nunit.framework"; "nonesuch" ]
+        let result = UpdateStrongReferences def [ "nunit.framework"; "nonesuch" ]
         Assert.That(result.Count, Is.EqualTo 1)
         Assert.That (result.Values |> Seq.head, Does.EndWith "PublicKeyToken=4ebffcaabf10ce6a")
         let key = result.Keys |> Seq.head
