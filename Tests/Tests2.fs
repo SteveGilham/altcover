@@ -1344,7 +1344,9 @@ module AltCoverTests2 =
 
     [<Test>]
     let UpdateStrongReferencesShouldChangeSigningKeyWherePossible2() =
-      let path = Assembly.GetExecutingAssembly().Location
+      let here = Assembly.GetExecutingAssembly().Location
+      let path = Path.Combine(Path.GetDirectoryName(here) + AltCoverTests.Hack(),
+                              Path.GetFileName(here))
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
       ProgramDatabase.ReadSymbols def
       let token0 = def.Name.PublicKeyToken
