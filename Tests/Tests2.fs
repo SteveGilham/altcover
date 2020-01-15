@@ -422,10 +422,11 @@ module AltCoverTests2 =
         Visitor.interval <- save3
       Visitor.TrackingNames.Clear()
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
     let ShouldSymbolWriterOnWindowsOnly () =
+#if NETCOREAPP2_0
+      ()
+#else
       match Instrument.CreateSymbolWriter ".pdb" true true with
       | :? Mono.Cecil.Mdb.MdbWriterProvider -> ()
       | x -> Assert.Fail("Mono.Cecil.Mdb.MdbWriterProvider expected but got " + x.GetType().FullName)
@@ -475,7 +476,7 @@ module AltCoverTests2 =
           let expectedSymbols = if "Mono.Runtime" |> Type.GetType |> isNull |> not then ".dll.mdb" else ".pdb"
           let isWindows =
 #if NETCOREAPP2_0
-                          true
+                          false // recorder symbols not read here
 #else
                           System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
 #endif
@@ -534,7 +535,7 @@ module AltCoverTests2 =
         Visitor.keys.Clear()
         Main.init()
         let where = Assembly.GetExecutingAssembly().Location
-        let path = Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "_Mono/Sample3/Sample3.dll")
+        let path = Path.Combine(SolutionRoot.location, "_Mono/Sample3/Sample3.dll")
         let unique = Guid.NewGuid().ToString()
         let output = Path.GetTempFileName()
         let outputdll = output + ".dll"
@@ -615,7 +616,8 @@ module AltCoverTests2 =
           Assert.That (token', Is.EqualTo("c02b1a9f5b7cade8"))
 #if NETCOREAPP2_0
 #else
-           if File.Exists(pdb) then
+          let pdb = Path.ChangeExtension(outputdll, ".pdb")
+          if File.Exists(pdb) then
             // doesnt' seem to work on Mono
             let setup = AppDomainSetup()
             setup.ApplicationBase <- Path.GetDirectoryName(where)
