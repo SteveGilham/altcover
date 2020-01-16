@@ -825,7 +825,7 @@ module AltCoverTests =
           |> Seq.iter (fun i ->
                Adapter.VisitsAdd
                  ("f6e3edb3-fb20-44b3-817d-f69d1a22fc2f", i, (int64 (i + 1))))
-          Instance.FlushCounter(Adapter.ProcessExit(), ())
+          Adapter.DoExit ()
           let head = "Coverage statistics flushing took "
           let tail = " seconds\n"
           let recorded = stdout.ToString().Replace("\r\n", "\n")
@@ -885,7 +885,7 @@ module AltCoverTests =
           |> Seq.iter (fun i ->
                Adapter.VisitsAdd
                  ("f6e3edb3-fb20-44b3-817d-f69d1a22fc2f", i, (int64 (i + 1))))
-          Instance.FlushCounter(Adapter.ProcessExit(), ())
+          Adapter.DoUnload ()
           let head = "Coverage statistics flushing took "
           let tail = " seconds\n"
           let recorded = stdout.ToString().Replace("\r\n", "\n")

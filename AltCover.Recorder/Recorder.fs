@@ -304,6 +304,8 @@ module Instance =
   // Register event handling
   let DoPause = FlushCounter Pause
   let DoResume = FlushCounter Resume
+  let DoUnload = FlushCounter DomainUnload
+  let DoExit = FlushCounter ProcessExit
 
   // Events that are impossible or not cost-effective to fire
   // but coverlet from Jan '20 end up counting the unfiring as uncovered
@@ -313,8 +315,8 @@ module Instance =
       Watcher.Deleted.Add DoPause
 
     let AddDomainHandlers() =
-      AppDomain.CurrentDomain.DomainUnload.Add(FlushCounter DomainUnload)
-      AppDomain.CurrentDomain.ProcessExit.Add(FlushCounter ProcessExit)
+      AppDomain.CurrentDomain.DomainUnload.Add DoUnload
+      AppDomain.CurrentDomain.ProcessExit.Add DoExit
 
   let internal StartWatcher() =
     Watcher.Path <- Path.GetDirectoryName <| SignalFile()

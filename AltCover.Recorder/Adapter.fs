@@ -6,6 +6,8 @@ open System.Collections.Generic
 module Adapter =
   let DoPause() = Instance.DoPause null
   let DoResume() = Instance.DoResume null
+  let DoUnload() = Instance.DoUnload null
+  let DoExit() = Instance.DoExit null
   let VisitsClear() = Instance.Clear()
   let SamplesClear() = Instance.Samples.Clear()
   let FlushAll() = Instance.FlushFinish()
@@ -100,8 +102,6 @@ module Adapter =
   let internal PayloadControl x y = Instance.PayloadControl (fun _ -> x) (fun _ -> y)
   let internal PayloadSelection x y z =
     Instance.PayloadSelection (fun _ -> x) (fun _ -> y) (fun _ -> z)
-
-  let internal ProcessExit() = ProcessExit
 
   let internal MakeNullTrace name =
     { Tracer = name
