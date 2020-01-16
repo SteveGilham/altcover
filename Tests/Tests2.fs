@@ -441,6 +441,13 @@ module AltCoverTests2 =
       | x -> Assert.Fail("Mono.Cecil.Mdb.MdbWriterProvider expected but got " + x.GetType().FullName)
 #endif
 
+#if NETCOREAPP2_0
+    type TestAssemblyLoadContext () =
+      inherit System.Runtime.Loader.AssemblyLoadContext(true)
+      override self.Load(name : AssemblyName) =
+        null
+#endif
+
     [<Test>]
     let ShouldGetNewFilePathFromPreparedAssembly () =
       try
@@ -489,12 +496,19 @@ module AltCoverTests2 =
           let token' = String.Join(String.Empty, raw.Name.PublicKeyToken|> Seq.map (fun x -> x.ToString("x2")))
           Assert.That (token', Is.EqualTo("4ebffcaabf10ce6a"))
 #if NETCOREAPP2_0
+          let alc = new TestAssemblyLoadContext()
 #else
           let setup = AppDomainSetup()
           setup.ApplicationBase <- Path.GetDirectoryName(where)
           let ad = AppDomain.CreateDomain("ShouldGetNewFilePathFromPreparedAssembly", null, setup)
+#endif
           try
+#if NETCOREAPP2_0
+            let proxyObject = ProxyObject()
+            proxyObject.Context <- alc
+#else
             let proxyObject = ad.CreateInstanceFromAndUnwrap(typeof<ProxyObject>.Assembly.Location,"Tests.ProxyObject") :?> ProxyObject
+#endif
             proxyObject.InstantiateObject(outputdll,"Sample3.Class3+Class4",[||])
             let report = proxyObject.InvokeMethod("get_ReportFile",[||]).ToString()
             Assert.That (report, Is.EqualTo (Path.GetFullPath unique))
@@ -505,6 +519,9 @@ module AltCoverTests2 =
             let report4 = proxyObject.InvokeMethod("get_Sample",[||]) :?> System.Int32
             Assert.That (report4, AltCover.Base.Sampling.Single |> int |> Is.EqualTo)
           finally
+#if NETCOREAPP2_0
+            alc.Unload()
+#else
             AppDomain.Unload(ad)
 #endif
         finally
@@ -557,16 +574,26 @@ module AltCoverTests2 =
           let token' = String.Join(String.Empty, raw.Name.PublicKeyToken|> Seq.map (fun x -> x.ToString("x2")))
           Assert.That (token', Is.EqualTo("4ebffcaabf10ce6a"))
 #if NETCOREAPP2_0
+          let alc = new TestAssemblyLoadContext()
 #else
           let setup = AppDomainSetup()
           setup.ApplicationBase <- Path.GetDirectoryName(where)
           let ad = AppDomain.CreateDomain("ShouldGetNewFilePathFromPreparedAssembly", null, setup)
+#endif
           try
+#if NETCOREAPP2_0
+            let proxyObject = ProxyObject()
+            proxyObject.Context <- alc
+#else
             let proxyObject = ad.CreateInstanceFromAndUnwrap(typeof<ProxyObject>.Assembly.Location,"Tests.ProxyObject") :?> ProxyObject
+#endif
             proxyObject.InstantiateObject(outputdll,"Sample3.Class3+Class4",[||])
             let report = proxyObject.InvokeMethod("get_ReportFile",[||]).ToString()
             Assert.That (report, Is.EqualTo (Path.GetFullPath unique))
           finally
+#if NETCOREAPP2_0
+            alc.Unload()
+#else
             AppDomain.Unload(ad)
 #endif
         finally
@@ -615,6 +642,8 @@ module AltCoverTests2 =
           let token' = String.Join(String.Empty, raw.Name.PublicKeyToken|> Seq.map (fun x -> x.ToString("x2")))
           Assert.That (token', Is.EqualTo("c02b1a9f5b7cade8"))
 #if NETCOREAPP2_0
+          let alc = new TestAssemblyLoadContext()
+          try
 #else
           let pdb = Path.ChangeExtension(outputdll, ".pdb")
           if File.Exists(pdb) then
@@ -623,7 +652,13 @@ module AltCoverTests2 =
             setup.ApplicationBase <- Path.GetDirectoryName(where)
             let ad = AppDomain.CreateDomain("ShouldGetNewFilePathFromPreparedAssembly", null, setup)
             try
+#endif
+#if NETCOREAPP2_0
+              let proxyObject = ProxyObject()
+              proxyObject.Context <- alc
+#else
               let proxyObject = ad.CreateInstanceFromAndUnwrap(typeof<ProxyObject>.Assembly.Location,"Tests.ProxyObject") :?> ProxyObject
+#endif
               proxyObject.InstantiateObject(outputdll,"Sample3.Class1",[||])
               let setting = proxyObject.InvokeMethod("set_Property",[| 17 |])
               Assert.That (setting, Is.Null)
@@ -632,15 +667,20 @@ module AltCoverTests2 =
               let isWindows =
 #if NETCOREAPP2_0
                               true
+              let proxyObject' = ProxyObject()
+              proxyObject'.Context <- alc
 #else
                               System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
-#endif
               let proxyObject' = ad.CreateInstanceFromAndUnwrap(typeof<ProxyObject>.Assembly.Location,"Tests.ProxyObject") :?> ProxyObject
+#endif
               proxyObject'.InstantiateObject(outputdll,"Sample3.Class3",[||])
               let log = proxyObject'.InvokeMethod("get_Visits",[||]) :?> seq<Tuple<string, int>>
               if isWindows then // HACK HACK HACK
                 Assert.That (log, Is.EquivalentTo[(unique, 42)])
             finally
+#if NETCOREAPP2_0
+              alc.Unload()
+#else
               AppDomain.Unload(ad)
 #endif
         finally
