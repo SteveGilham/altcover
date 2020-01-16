@@ -302,32 +302,23 @@ module Instance =
         if Supervision |> not then FlushAll finish
 
   // Register event handling
-  let DoPause = FlushCounter Pause
-  let DoResume = FlushCounter Resume
-  let DoUnload = FlushCounter DomainUnload
-  let DoExit = FlushCounter ProcessExit
-
-  // Events that are impossible or not cost-effective to fire
-  // but coverlet from Jan '20 end up counting the unfiring as uncovered
-  module private Uncoverlet =
-    let AddFileWatchHandlers () =
-      Watcher.Created.Add DoResume
-      Watcher.Deleted.Add DoPause
-
-    let AddDomainHandlers() =
-      AppDomain.CurrentDomain.DomainUnload.Add DoUnload
-      AppDomain.CurrentDomain.ProcessExit.Add DoExit
+  let DoPause = FileSystemEventHandler (fun _ a -> FlushCounter Pause a)
+  let DoResume = FileSystemEventHandler (fun _ a -> FlushCounter Resume a)
+  let DoUnload = EventHandler (fun _ a -> FlushCounter DomainUnload a)
+  let DoExit = EventHandler (fun _ a -> FlushCounter ProcessExit a)
 
   let internal StartWatcher() =
     Watcher.Path <- Path.GetDirectoryName <| SignalFile()
     Watcher.Filter <- Path.GetFileName <| SignalFile()
-    Uncoverlet.AddFileWatchHandlers ()
+    Watcher.add_Created DoResume
+    Watcher.add_Deleted DoPause
     Watcher.EnableRaisingEvents <-
       Watcher.Path
       |> String.IsNullOrEmpty
       |> not
 
-  do Uncoverlet.AddDomainHandlers()
+  do AppDomain.CurrentDomain.add_DomainUnload DoUnload
+     AppDomain.CurrentDomain.add_ProcessExit DoExit
      StartWatcher()
      SignalFile()
      |> Tracer.Create

@@ -4,10 +4,10 @@ open System.Collections.Generic
 
 #if DEBUG
 module Adapter =
-  let DoPause() = Instance.DoPause null
-  let DoResume() = Instance.DoResume null
-  let DoUnload() = Instance.DoUnload null
-  let DoExit() = Instance.DoExit null
+  let DoPause() = Instance.DoPause
+  let DoResume() = Instance.DoResume
+  let DoUnload() = Instance.DoUnload
+  let DoExit() = Instance.DoExit
   let VisitsClear() = Instance.Clear()
   let SamplesClear() = Instance.Samples.Clear()
   let FlushAll() = Instance.FlushFinish()

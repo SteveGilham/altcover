@@ -704,7 +704,7 @@ module AltCoverTests =
           |> Seq.iter (fun i ->
                Adapter.VisitsAdd
                  ("f6e3edb3-fb20-44b3-817d-f69d1a22fc2f", i, (int64 (i + 1))))
-          Adapter.DoPause()
+          Adapter.DoPause().Invoke(null, null)
           Assert.That(Adapter.VisitsSeq(), Is.Empty)
           let recorded = stdout.ToString().Trim()
           Assert.That(recorded, Is.EqualTo "Pausing...")
@@ -765,7 +765,7 @@ module AltCoverTests =
           |> Seq.iter (fun i ->
                Adapter.VisitsAdd
                  ("f6e3edb3-fb20-44b3-817d-f69d1a22fc2f", i, (int64 (i + 1))))
-          Adapter.DoResume()
+          Adapter.DoResume().Invoke(null, null)
           Assert.That(Adapter.VisitsSeq(), Is.Empty, "Visits should be cleared")
           Assert.That
             (Object.ReferenceEquals(Instance.trace, save), Is.False,
@@ -825,7 +825,7 @@ module AltCoverTests =
           |> Seq.iter (fun i ->
                Adapter.VisitsAdd
                  ("f6e3edb3-fb20-44b3-817d-f69d1a22fc2f", i, (int64 (i + 1))))
-          Adapter.DoExit ()
+          Adapter.DoExit().Invoke(null, null)
           let head = "Coverage statistics flushing took "
           let tail = " seconds\n"
           let recorded = stdout.ToString().Replace("\r\n", "\n")
@@ -885,7 +885,7 @@ module AltCoverTests =
           |> Seq.iter (fun i ->
                Adapter.VisitsAdd
                  ("f6e3edb3-fb20-44b3-817d-f69d1a22fc2f", i, (int64 (i + 1))))
-          Adapter.DoUnload ()
+          Adapter.DoUnload().Invoke(null, null)
           let head = "Coverage statistics flushing took "
           let tail = " seconds\n"
           let recorded = stdout.ToString().Replace("\r\n", "\n")
