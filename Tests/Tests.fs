@@ -23,8 +23,16 @@ type ProxyObject() =
   member val Type : Type option = None with get, set
   member val Object = null with get, set
 
+#if NETCOREAPP2_0
+  member val Context : System.Runtime.Loader.AssemblyLoadContext = null with get, set
+#endif
+
   member this.InstantiateObject(assemblyPath : string, typeName : string, args : obj []) =
+#if NETCOREAPP2_0
+    let assembly = this.Context.LoadFromAssemblyPath(assemblyPath) //LoadFrom loads dependent DLLs (assuming they are in the app domain's base directory
+#else
     let assembly = Assembly.LoadFrom(assemblyPath) //LoadFrom loads dependent DLLs (assuming they are in the app domain's base directory
+#endif
     let t = assembly.ExportedTypes |> Seq.filter (fun t -> t.FullName = typeName)
     this.Type <- Seq.tryHead t
     match this.Type with
@@ -785,6 +793,17 @@ module AltCoverTests =
       Assert.That(pass, Is.EquivalentTo(expected), sprintf "Got sequence %A" pass)
 
     // Visitor.fs
+    [<Test>]
+    let CanSwitchSampling() =
+      let save = Visitor.single
+      try
+        Visitor.single <- true
+        test <@ Visitor.Sampling() = 1 @>
+        Visitor.single <- false
+        test <@ Visitor.Sampling() = 0 @>
+      finally
+        Visitor.single <- save
+
     [<Test>]
     let FixEnding() =
       let a = Visitor.EnsureEndsWith "a" "banana"
@@ -2408,7 +2427,7 @@ module AltCoverTests =
         let branch = branches |> Seq.head
         Assert.That(branch.Target.Length, Is.EqualTo 2)
         let xbranch = XElement(XName.Get "test")
-        OpenCover.setChain xbranch (branch.Target.Tail|> List.map (fun i -> i.Offset))
+        OpenCover.setChain xbranch branch
         Assert.That(xbranch.ToString(), Is.EqualTo """<test offsetchain="29" />""")
       finally
         Visitor.NameFilters.Clear()

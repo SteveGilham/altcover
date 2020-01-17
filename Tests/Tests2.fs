@@ -421,11 +421,12 @@ module AltCoverTests2 =
         Visitor.reportFormat <- save2
         Visitor.interval <- save3
       Visitor.TrackingNames.Clear()
-#if NETCOREAPP2_0
-    // TODO
-#else
+
     [<Test>]
     let ShouldSymbolWriterOnWindowsOnly () =
+#if NETCOREAPP2_0
+      ()
+#else
       match Instrument.CreateSymbolWriter ".pdb" true true with
       | :? Mono.Cecil.Mdb.MdbWriterProvider -> ()
       | x -> Assert.Fail("Mono.Cecil.Mdb.MdbWriterProvider expected but got " + x.GetType().FullName)
@@ -438,14 +439,22 @@ module AltCoverTests2 =
       match Instrument.CreateSymbolWriter ".exe" true false with
       | :? Mono.Cecil.Mdb.MdbWriterProvider -> ()
       | x -> Assert.Fail("Mono.Cecil.Mdb.MdbWriterProvider expected but got " + x.GetType().FullName)
+#endif
+
+#if NETCOREAPP2_0
+    type TestAssemblyLoadContext () =
+      inherit System.Runtime.Loader.AssemblyLoadContext(true)
+      override self.Load(name : AssemblyName) =
+        null
+#endif
 
     [<Test>]
     let ShouldGetNewFilePathFromPreparedAssembly () =
       try
         Visitor.keys.Clear()
         Main.init()
-        let where = Assembly.GetExecutingAssembly().Location
-        let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample3.dll")
+        let here = Assembly.GetExecutingAssembly().Location
+        let path = Path.Combine(Path.GetDirectoryName(here) + AltCoverTests.Hack(), "Sample3.dll")
         let unique = Guid.NewGuid().ToString()
         let output = Path.GetTempFileName()
         let outputdll = output + ".dll"
@@ -474,7 +483,7 @@ module AltCoverTests2 =
           let expectedSymbols = if "Mono.Runtime" |> Type.GetType |> isNull |> not then ".dll.mdb" else ".pdb"
           let isWindows =
 #if NETCOREAPP2_0
-                          true
+                          false // recorder symbols not read here
 #else
                           System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
 #endif
@@ -486,11 +495,20 @@ module AltCoverTests2 =
           // Assert.That (Option.isSome <| Instrument.KnownKey raw.Name) <- not needed
           let token' = String.Join(String.Empty, raw.Name.PublicKeyToken|> Seq.map (fun x -> x.ToString("x2")))
           Assert.That (token', Is.EqualTo("4ebffcaabf10ce6a"))
+#if NETCOREAPP2_0
+          let alc = new TestAssemblyLoadContext()
+#else
           let setup = AppDomainSetup()
           setup.ApplicationBase <- Path.GetDirectoryName(where)
           let ad = AppDomain.CreateDomain("ShouldGetNewFilePathFromPreparedAssembly", null, setup)
+#endif
           try
+#if NETCOREAPP2_0
+            let proxyObject = ProxyObject()
+            proxyObject.Context <- alc
+#else
             let proxyObject = ad.CreateInstanceFromAndUnwrap(typeof<ProxyObject>.Assembly.Location,"Tests.ProxyObject") :?> ProxyObject
+#endif
             proxyObject.InstantiateObject(outputdll,"Sample3.Class3+Class4",[||])
             let report = proxyObject.InvokeMethod("get_ReportFile",[||]).ToString()
             Assert.That (report, Is.EqualTo (Path.GetFullPath unique))
@@ -501,7 +519,11 @@ module AltCoverTests2 =
             let report4 = proxyObject.InvokeMethod("get_Sample",[||]) :?> System.Int32
             Assert.That (report4, AltCover.Base.Sampling.Single |> int |> Is.EqualTo)
           finally
+#if NETCOREAPP2_0
+            alc.Unload()
+#else
             AppDomain.Unload(ad)
+#endif
         finally
           Visitor.single <- false
           Visitor.reportPath <- save
@@ -530,7 +552,7 @@ module AltCoverTests2 =
         Visitor.keys.Clear()
         Main.init()
         let where = Assembly.GetExecutingAssembly().Location
-        let path = Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "_Mono/Sample3/Sample3.dll")
+        let path = Path.Combine(SolutionRoot.location, "_Mono/Sample3/Sample3.dll")
         let unique = Guid.NewGuid().ToString()
         let output = Path.GetTempFileName()
         let outputdll = output + ".dll"
@@ -551,16 +573,29 @@ module AltCoverTests2 =
           // Assert.That (Option.isSome <| Instrument.KnownKey raw.Name) <- not needed
           let token' = String.Join(String.Empty, raw.Name.PublicKeyToken|> Seq.map (fun x -> x.ToString("x2")))
           Assert.That (token', Is.EqualTo("4ebffcaabf10ce6a"))
+#if NETCOREAPP2_0
+          let alc = new TestAssemblyLoadContext()
+#else
           let setup = AppDomainSetup()
           setup.ApplicationBase <- Path.GetDirectoryName(where)
           let ad = AppDomain.CreateDomain("ShouldGetNewFilePathFromPreparedAssembly", null, setup)
+#endif
           try
+#if NETCOREAPP2_0
+            let proxyObject = ProxyObject()
+            proxyObject.Context <- alc
+#else
             let proxyObject = ad.CreateInstanceFromAndUnwrap(typeof<ProxyObject>.Assembly.Location,"Tests.ProxyObject") :?> ProxyObject
+#endif
             proxyObject.InstantiateObject(outputdll,"Sample3.Class3+Class4",[||])
             let report = proxyObject.InvokeMethod("get_ReportFile",[||]).ToString()
             Assert.That (report, Is.EqualTo (Path.GetFullPath unique))
           finally
+#if NETCOREAPP2_0
+            alc.Unload()
+#else
             AppDomain.Unload(ad)
+#endif
         finally
           Visitor.reportPath <- save
           Directory.EnumerateFiles(Path.GetDirectoryName output,
@@ -577,7 +612,6 @@ module AltCoverTests2 =
       try
         Visitor.keys.Clear()
         let where = Assembly.GetExecutingAssembly().Location
-        let pdb = Path.ChangeExtension(where, ".pdb")
         let path = Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample3.dll")
         let unique = Guid.NewGuid().ToString()
         let output = Path.GetTempFileName()
@@ -607,13 +641,24 @@ module AltCoverTests2 =
           // Assert.That (Option.isSome <| Instrument.KnownKey raw.Name) <- not needed
           let token' = String.Join(String.Empty, raw.Name.PublicKeyToken|> Seq.map (fun x -> x.ToString("x2")))
           Assert.That (token', Is.EqualTo("c02b1a9f5b7cade8"))
+#if NETCOREAPP2_0
+          let alc = new TestAssemblyLoadContext()
+          try
+#else
+          let pdb = Path.ChangeExtension(outputdll, ".pdb")
           if File.Exists(pdb) then
             // doesnt' seem to work on Mono
             let setup = AppDomainSetup()
             setup.ApplicationBase <- Path.GetDirectoryName(where)
             let ad = AppDomain.CreateDomain("ShouldGetNewFilePathFromPreparedAssembly", null, setup)
             try
+#endif
+#if NETCOREAPP2_0
+              let proxyObject = ProxyObject()
+              proxyObject.Context <- alc
+#else
               let proxyObject = ad.CreateInstanceFromAndUnwrap(typeof<ProxyObject>.Assembly.Location,"Tests.ProxyObject") :?> ProxyObject
+#endif
               proxyObject.InstantiateObject(outputdll,"Sample3.Class1",[||])
               let setting = proxyObject.InvokeMethod("set_Property",[| 17 |])
               Assert.That (setting, Is.Null)
@@ -622,16 +667,22 @@ module AltCoverTests2 =
               let isWindows =
 #if NETCOREAPP2_0
                               true
+              let proxyObject' = ProxyObject()
+              proxyObject'.Context <- alc
 #else
                               System.Environment.GetEnvironmentVariable("OS") = "Windows_NT"
-#endif
               let proxyObject' = ad.CreateInstanceFromAndUnwrap(typeof<ProxyObject>.Assembly.Location,"Tests.ProxyObject") :?> ProxyObject
+#endif
               proxyObject'.InstantiateObject(outputdll,"Sample3.Class3",[||])
               let log = proxyObject'.InvokeMethod("get_Visits",[||]) :?> seq<Tuple<string, int>>
               if isWindows then // HACK HACK HACK
                 Assert.That (log, Is.EquivalentTo[(unique, 42)])
             finally
+#if NETCOREAPP2_0
+              alc.Unload()
+#else
               AppDomain.Unload(ad)
+#endif
         finally
           Visitor.reportPath <- save
           Directory.EnumerateFiles(Path.GetDirectoryName output,
@@ -642,7 +693,6 @@ module AltCoverTests2 =
                                 | :? IOException -> ())
       finally
         Visitor.keys.Clear()
-  #endif
 
     [<Test>]
     let ShouldUpdateHandlerOK([<NUnit.Framework.Range(0, 31)>] selection) =
@@ -1333,6 +1383,41 @@ module AltCoverTests2 =
       Assert.That(result, Is.Empty)
 
     [<Test>]
+    let UpdateStrongReferencesShouldChangeSigningKeyWherePossible2() =
+      let here = Assembly.GetExecutingAssembly().Location
+      let path = Path.Combine(Path.GetDirectoryName(here) + AltCoverTests.Hack(),
+                              Path.GetFileName(here))
+      let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
+      ProgramDatabase.ReadSymbols def
+      let token0 = def.Name.PublicKeyToken
+      use stream = typeof<AltCover.Node>.Assembly.GetManifestResourceStream(recorderSnk)
+      use buffer = new MemoryStream()
+      stream.CopyTo(buffer)
+      Visitor.defaultStrongNameKey <- Some(StrongNameKeyData.Make(buffer.ToArray()))
+
+      use stream2 = Assembly.GetExecutingAssembly().GetManifestResourceStream(infrastructureSnk)
+      use buffer2 = new MemoryStream()
+      stream2.CopyTo(buffer2)
+
+      try
+        Visitor.Add <| StrongNameKeyData.Make(buffer2.ToArray())
+        let result = Instrument.UpdateStrongReferences def ["Sample2"]
+        let token1 = def.Name.PublicKeyToken
+        Assert.That (token1, Is.Not.Null)
+
+        // If the current assembly is un-strongnamed at any time,
+        // then empty token0 -> empty token1.
+        // Fortunately, coverlet doesn't mess with this assembly
+        Assert.That (token1, Is.Not.EquivalentTo(token0))
+
+        let token' =
+          String.Join(String.Empty, token1 |> Seq.map (fun x -> x.ToString("x2")))
+        Assert.That (token', Is.EqualTo "4ebffcaabf10ce6a" )
+        Assert.That(result, Is.Empty)
+      finally
+       Visitor.keys.Clear()
+
+    [<Test>]
     let UpdateStrongReferencesShouldRemoveSigningKeyIfRequired() =
       let where = Assembly.GetExecutingAssembly().Location
       let path =
@@ -1789,6 +1874,7 @@ module AltCoverTests2 =
       let sink = StringSink(ignore)
       Output.SetInfo sink
       Output.SetError sink
+      Output.SetWarn sink
       Output.Echo <- ignore
       Output.Usage <- ignore
       Assert.That(Output.Usage, Is.Not.Null)

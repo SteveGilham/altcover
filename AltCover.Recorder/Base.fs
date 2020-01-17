@@ -153,6 +153,16 @@ module internal Counter =
     | ReportFormat.OpenCover -> OpenCoverXml
     | _ -> NCoverXml
 
+  let internal MinTime (t1:DateTime) (t2:DateTime) =
+    if t1 < t2
+    then t1
+    else t2
+
+  let internal MaxTime (t1:DateTime) (t2:DateTime) =
+    if t1 > t2
+    then t1
+    else t2
+
   /// <summary>
   /// Save sequence point hit counts to xml report file
   /// </summary>
@@ -171,10 +181,10 @@ module internal Counter =
       let measureTimeAttr = root.GetAttribute("measureTime")
       let oldStartTime = DateTime.ParseExact(startTimeAttr, "o", null)
       let oldMeasureTime = DateTime.ParseExact(measureTimeAttr, "o", null)
-      startTime <- (if startTime < oldStartTime then startTime
-                    else oldStartTime).ToUniversalTime() // Min
-      measureTime <- (if measureTime > oldMeasureTime then measureTime
-                      else oldMeasureTime).ToUniversalTime() // Max
+      let st = MinTime startTime oldStartTime
+      startTime <- st.ToUniversalTime() // Min
+      let mt = MaxTime measureTime  oldMeasureTime
+      measureTime <- mt.ToUniversalTime() // Max
       root.SetAttribute
         ("startTime",
          startTime.ToString("o", System.Globalization.CultureInfo.InvariantCulture))
