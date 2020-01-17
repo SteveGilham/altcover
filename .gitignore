@@ -63,3 +63,5 @@ RegressionTesting/issue20/xunit-tests/coverage.xml
 RegressionTesting/issue20/xunit-tests/xunit-tests.csproj
 scratch/
 Demo/MultiTest/**/coverage.xml
+Recorder.Tests/TestResults/
+Tests/TestResults/

@@ -34,6 +34,30 @@ module AltCoverRunnerTests =
     // Base.fs
 
     [<Test>]
+    let MaxTimeFirst () =
+      let now = DateTime.Now
+      let ago = now - TimeSpan(1,0,0,0)
+      test <@ (Base.Counter.MaxTime now ago) = now @>
+
+    [<Test>]
+    let MaxTimeLast () =
+      let now = DateTime.Now
+      let ago = now - TimeSpan(1,0,0,0)
+      test <@ (Base.Counter.MaxTime ago now) = now @>
+
+    [<Test>]
+    let MinTimeFirst () =
+      let now = DateTime.Now
+      let ago = now - TimeSpan(1,0,0,0)
+      test <@ (Base.Counter.MinTime ago now) = ago @>
+
+    [<Test>]
+    let MinTimeLast () =
+      let now = DateTime.Now
+      let ago = now - TimeSpan(1,0,0,0)
+      test <@ (Base.Counter.MinTime now ago) = ago @>
+
+    [<Test>]
     let SafeDisposalProtects() =
       Runner.init()
       let obj1 =
@@ -2634,7 +2658,9 @@ or
       |> Directory.CreateDirectory
       |> ignore
       try
-        let r = LCov.Summary baseline Base.ReportFormat.OpenCover 0
+        Runner.AddLCovSummary()
+        let summarize = Runner.Summaries |> Seq.head
+        let r = summarize baseline Base.ReportFormat.OpenCover 0
         Assert.That(r, Is.EqualTo 0)
         let result = File.ReadAllText unique
         let resource2 =
@@ -2819,7 +2845,9 @@ or
       |> Directory.CreateDirectory
       |> ignore
       try
-        let r = Cobertura.Summary baseline Base.ReportFormat.NCover 0
+        Runner.AddCoberturaSummary()
+        let summarize = Runner.Summaries |> Seq.head
+        let r = summarize baseline Base.ReportFormat.NCover 0
         Assert.That(r, Is.EqualTo 0)
         let result =
           Regex.Replace(File.ReadAllText unique, """timestamp=\"\d*\">""",

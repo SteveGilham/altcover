@@ -405,7 +405,8 @@ module internal Instrument =
       |> Seq.filter (fun x -> assemblies |> List.exists (fun y -> y.Equals(x.Name)))
       |> Seq.toList
 
-    // For unit testing purposes, only
+    // The return value is for unit testing purposes, only
+    // The side-effects are what is important.
     let assemblyReferenceSubstitutions = new Dictionary<String, String>()
     interestingReferences
     |> Seq.iter (fun r ->

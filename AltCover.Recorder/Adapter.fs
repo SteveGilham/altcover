@@ -4,8 +4,10 @@ open System.Collections.Generic
 
 #if DEBUG
 module Adapter =
-  let DoPause() = Instance.DoPause null
-  let DoResume() = Instance.DoResume null
+  let DoPause() = Instance.DoPause
+  let DoResume() = Instance.DoResume
+  let DoUnload() = Instance.DoUnload
+  let DoExit() = Instance.DoExit
   let VisitsClear() = Instance.Clear()
   let SamplesClear() = Instance.Samples.Clear()
   let FlushAll() = Instance.FlushFinish()
@@ -100,8 +102,6 @@ module Adapter =
   let internal PayloadControl x y = Instance.PayloadControl (fun _ -> x) (fun _ -> y)
   let internal PayloadSelection x y z =
     Instance.PayloadSelection (fun _ -> x) (fun _ -> y) (fun _ -> z)
-
-  let internal ProcessExit() = ProcessExit
 
   let internal MakeNullTrace name =
     { Tracer = name

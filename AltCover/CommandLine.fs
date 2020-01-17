@@ -151,6 +151,11 @@ module internal CommandLine =
        |> not
     then f line
 
+  module private Uncoverlet = // more event handlers
+    let AddHandlers (proc : Process) =
+      proc.ErrorDataReceived.Add(fun e -> Output.Error |> Filter e.Data)
+      proc.OutputDataReceived.Add(fun e -> Output.Info |> Filter e.Data)
+
   let internal Launch (cmd : string) args toDirectory =
     Directory.SetCurrentDirectory(toDirectory)
     let quote =
@@ -172,8 +177,7 @@ module internal CommandLine =
     use proc = new Process()
     proc.StartInfo <- psi
 
-    proc.ErrorDataReceived.Add(fun e -> Output.Error |> Filter e.Data)
-    proc.OutputDataReceived.Add(fun e -> Output.Info |> Filter e.Data)
+    Uncoverlet.AddHandlers proc
     proc.Start() |> ignore
     proc.BeginErrorReadLine()
     proc.BeginOutputReadLine()
@@ -285,9 +289,9 @@ module internal CommandLine =
 
   let internal ValidateFileSystemEntity exists message key x =
     doPathOperation (fun () ->
-      if not (String.IsNullOrWhiteSpace x) && x
-                                              |> Path.GetFullPath
-                                              |> exists then
+      if (not (String.IsNullOrWhiteSpace x)) && x
+                                                |> Path.GetFullPath
+                                                |> exists then
         true
       else
         error <-

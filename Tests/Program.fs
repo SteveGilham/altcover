@@ -4,9 +4,12 @@ open Expecto
 
 module TestMain =
   let sync = System.Object()
-  let specials = {0 .. 31}
-                 |> Seq.map (fun i -> testCase (sprintf "Tests2.ShouldUpdateHandlerOK(%d)" i) <|
-                                       (fun () -> lock sync (fun () ->
+
+  let specials =
+    { 0 .. 31 }
+    |> Seq.map (fun i ->
+         testCase (sprintf "Tests2.ShouldUpdateHandlerOK(%d)" i) <| (fun () ->
+         lock sync (fun () ->
                                                   AltCover.Main.init()
                                                   Tests.AltCoverTests2.ShouldUpdateHandlerOK i)))
                  |> Seq.toList
@@ -15,6 +18,10 @@ module TestMain =
   let tests =
     testList "AltCoverTests"
     <| (([
+          Tests.AltCoverRunnerTests.MaxTimeFirst, "Runner.MaxTimeFirst"
+          Tests.AltCoverRunnerTests.MaxTimeLast, "Runner.MaxTimeLast"
+          Tests.AltCoverRunnerTests.MinTimeFirst, "Runner.MinTimeFirst"
+          Tests.AltCoverRunnerTests.MinTimeLast, "Runner.MinTimeLast"
           Tests.AltCoverRunnerTests.SafeDisposalProtects, "Runner.SafeDisposalProtects"
           Tests.AltCoverRunnerTests.JunkUspidGivesNegativeIndex, "Runner.JunkUspidGivesNegativeIndex"
           Tests.AltCoverRunnerTests.RealIdShouldIncrementCount, "Runner.RealIdShouldIncrementCount"
@@ -113,6 +120,7 @@ module TestMain =
           Tests.AltCoverTests.ZeroIsNotVisited, "Tests.ZeroIsNotVisited"
           Tests.AltCoverTests.PositiveIsVisited, "Tests.PositiveIsVisited"
           Tests.AltCoverTests.NegativesSpray, "Tests.NegativesSpray"
+          Tests.AltCoverTests.CanSwitchSampling, "Tests.CanSwitchSampling"
           Tests.AltCoverTests.AugmentNullableDetectNulls, "Tests.AugmentNullableDetectNulls"
           Tests.AltCoverTests.AugmentGetOrElseFillsInNone, "Tests.AugmentGetOrElseFillsInNone"
           Tests.AltCoverTests.ShouldGetPdbFromImage, "Tests.ShouldGetPdbFromImage"
@@ -245,13 +253,10 @@ module TestMain =
           Tests.AltCoverTests2.ShouldBeAbleToLocateAReference, "Tests2.ShouldBeAbleToLocateAReference"
           Tests.AltCoverTests2.ShouldBeAbleToPrepareTheAssembly, "Tests2.ShouldBeAbleToPrepareTheAssembly"
           Tests.AltCoverTests2.ShouldGetTrackingStyleIfSet, "Tests2.ShouldGetTrackingStyleIfSet"
-#if NETCOREAPP2_0
-#else
           Tests.AltCoverTests2.ShouldSymbolWriterOnWindowsOnly, "Tests2.ShouldSymbolWriterOnWindowsOnly"
           Tests.AltCoverTests2.ShouldGetNewFilePathFromPreparedAssembly, "Tests2.ShouldGetNewFilePathFromPreparedAssembly"
           Tests.AltCoverTests2.ShouldWriteMonoAssemblyOK, "Tests2.ShouldWriteMonoAssemblyOK"
           Tests.AltCoverTests2.ShouldGetVisitFromWrittenAssembly, "Tests2.ShouldGetVisitFromWrittenAssembly"
-#endif
           //Tests.AltCoverTests2.ShouldUpdateHandlerOK([<Range(0, 31)>] selection)
           Tests.AltCoverTests2.ShouldSubstituteInstructionOperand, "Tests2.ShouldSubstituteInstructionOperand"
           Tests.AltCoverTests2.ShouldNotSubstituteDifferentInstructionOperand, "Tests2.ShouldNotSubstituteDifferentInstructionOperand"
@@ -272,6 +277,7 @@ module TestMain =
           Tests.AltCoverTests2.ExcludedAfterMethodShouldNotChangeState, "Tests2.ExcludedAfterMethodShouldNotChangeState"
           Tests.AltCoverTests2.IncludedAfterMethodShouldRewriteMethod, "Tests2.IncludedAfterMethodShouldRewriteMethod"
           Tests.AltCoverTests2.UpdateStrongReferencesShouldChangeSigningKeyWherePossible, "Tests2.UpdateStrongReferencesShouldChangeSigningKeyWherePossible"
+          Tests.AltCoverTests2.UpdateStrongReferencesShouldChangeSigningKeyWherePossible2, "Tests2.UpdateStrongReferencesShouldChangeSigningKeyWherePossible2"
           Tests.AltCoverTests2.UpdateStrongReferencesShouldRemoveSigningKeyIfRequired, "Tests2.UpdateStrongReferencesShouldRemoveSigningKeyIfRequired"
           Tests.AltCoverTests2.UpdateStrongReferencesShouldNotAddASigningKey, "Tests2.UpdateStrongReferencesShouldNotAddASigningKey"
           Tests.AltCoverTests2.UpdateStrongReferencesShouldTrackReferences, "Tests2.UpdateStrongReferencesShouldTrackReferences"
