@@ -1,23 +1,15 @@
 namespace AltCover.Expecto.Tests
 
 open Expecto
+open Mono.Cecil
+open Mono.Cecil.Cil
+open Mono.Cecil.Rocks
+open Swensen.Unquote
 
 module TestMain =
   let sync = System.Object()
 
-  let specials =
-    { 0 .. 31 }
-    |> Seq.map (fun i ->
-         testCase (sprintf "Tests2.ShouldUpdateHandlerOK(%d)" i) <| (fun () ->
-         lock sync (fun () ->
-           AltCover.Main.init()
-           Tests.AltCoverTests2.ShouldUpdateHandlerOK i)))
-    |> Seq.toList
-
-  [<Tests>]
-  let tests =
-    testList "AltCoverTests"
-    <| (([
+  let regular = [
           Tests.AltCoverRunnerTests.MaxTimeFirst, "Runner.MaxTimeFirst"
           Tests.AltCoverRunnerTests.MaxTimeLast, "Runner.MaxTimeLast"
           Tests.AltCoverRunnerTests.MinTimeFirst, "Runner.MinTimeFirst"
@@ -453,6 +445,51 @@ module TestMain =
           Tests.AltCoverXTests.ShouldGenerateExpectedXmlReportFromMono, "XTests.ShouldGenerateExpectedXmlReportFromMono"
           Tests.AltCoverXTests.ShouldGenerateExpectedXmlReportFromMonoOpenCoverStyle, "XTests.ShouldGenerateExpectedXmlReportFromMonoOpenCoverStyle"
         ]
+
+  let specials =
+    { 0 .. 31 }
+    |> Seq.map (fun i ->
+         testCase (sprintf "Tests2.ShouldUpdateHandlerOK(%d)" i) <| (fun () ->
+         lock sync (fun () ->
+           AltCover.Main.init()
+           Tests.AltCoverTests2.ShouldUpdateHandlerOK i)))
+    |> Seq.toList
+
+  let consistencyCheck() =
+    let here = System.Reflection.Assembly.GetExecutingAssembly().Location
+    let def = Mono.Cecil.AssemblyDefinition.ReadAssembly(here)
+
+    let testMethods = def.MainModule.GetTypes()
+                      |> Seq.collect (fun t -> t.Methods)
+                      |> Seq.filter (fun m -> m.CustomAttributes |> isNull |> not)
+                      |> Seq.filter (fun m -> m.CustomAttributes |> Seq.exists (fun a -> a.AttributeType.Name = "TestAttribute"))
+                      |> Seq.map (fun m -> m.DeclaringType.FullName + "::" + m.Name)
+
+    let lookup = def.MainModule.GetAllTypes()
+                 |> Seq.filter (fun t -> t.Methods |> Seq.exists(fun m -> m.Name = "Invoke"))
+                 |> Seq.map (fun t -> (t.FullName.Replace("/","+"), t.Methods |> Seq.find(fun m -> m.Name = "Invoke")))
+                 |> Map.ofSeq
+
+    let calls = regular
+                |> List.map (fst
+                            >> (fun f -> f.GetType().FullName.Replace("/","+"))
+                            >> (fun f -> Map.find f lookup)
+                            >> (fun f -> f.Body.Instructions |> Seq.find (fun i -> i.OpCode = OpCodes.Call))
+                            >> (fun i -> let m = (i.Operand :?> MethodDefinition)
+                                         m.DeclaringType.FullName + "::" + m.Name))
+                |> Set.ofList
+
+    let omitted = testMethods
+                  |> Seq.filter (fun t -> (Set.contains t calls) |> not)
+                  |> Seq.toList
+
+    // cover all but the special cases
+    test <@ omitted = ["Tests.AltCoverTests2::ShouldUpdateHandlerOK"] @>
+
+  [<Tests>]
+  let tests =
+    testList "AltCoverTests"
+    <| (((consistencyCheck, "ConsistencyCheck") :: regular
         |> List.map (fun (f,name) -> testCase name (fun () -> lock sync (fun () ->
                                                               AltCover.Main.init()
                                                               AltCover.Runner.init()
