@@ -1,7 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">netstandard2.0;net35</TargetFrameworks>
+    <TargetFrameworks Condition="'$(OS)' != 'Windows_NT'">netstandard2.0</TargetFrameworks>
     <AssemblyName>AltCover.Recorder</AssemblyName>
     <RootNamespace>AltCover.Recorder</RootNamespace>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
@@ -12,9 +13,15 @@
     <OutputPath>$(SolutionDir)_Binaries/$(AssemblyName)/$(Configuration)+$(Platform)/</OutputPath>
     <IntermediateOutputPath>$(SolutionDir)_Intermediate/$(AssemblyName)/$(Configuration)+$(Platform)/</IntermediateOutputPath>
     <OtherFlags>--keyfile:$(SolutionDir)Build\Infrastructure.snk --standalone</OtherFlags>
+    <ExtraDefines Condition="'$(TargetFramework)' == 'net35'">NET2</ExtraDefines>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <DefineConstants>TRACE;$(ExtraDefines)</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
+    <DefineConstants>TRACE;DEBUG;CODE_ANALYSIS;$(ExtraDefines)</DefineConstants>
     <WarningLevel>4</WarningLevel>
     <NoWarn>52</NoWarn>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
@@ -22,6 +29,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <_FullFrameworkReferenceAssemblyPaths  Condition="'$(TargetFramework)' == 'net35'" Include="$(ProgramFiles(x86))\Reference Assemblies\Microsoft\Framework\v3.5" />
     <Compile Include="..\_Generated\AssemblyVersion.fs" Link="AssemblyVersion.fs" />
     <Compile Include="..\_Generated\VisibleToTest.fs" Link="VisibleToTest.fs" />
     <Compile Include="AssemblyInfo.fs" />
@@ -39,6 +47,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Update="FSharp.Core" Version="4.7.0" />
+    <PackageReference Update="FSharp.Core" Version="4.7.0" Condition="'$(TargetFramework)' == 'netstandard2.0'" />
+    <PackageReference Update="FSharp.Core" Version="3.0.2" Condition="'$(TargetFramework)' != 'netstandard2.0'" />
   </ItemGroup>
 </Project>
