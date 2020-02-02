@@ -1,7 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework Condition="'$(OS)' != 'Windows_NT'">netstandard2.0</TargetFramework>
+    <TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">netstandard2.0;net47</TargetFrameworks>
     <RootNamespace>AltCover.PowerShell</RootNamespace>
     <AssemblyName>AltCover.PowerShell</AssemblyName>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
@@ -14,7 +15,7 @@
     <DefineConstants>$(GlobalDefineConstants)</DefineConstants>
     <OutputPath>$(SolutionDir)_Binaries/$(AssemblyName)/$(Configuration)+$(Platform)/</OutputPath>
     <IntermediateOutputPath>$(SolutionDir)_Intermediate/$(AssemblyName)/$(Configuration)+$(Platform)/</IntermediateOutputPath>
-    <OtherFlags>--tailcalls+</OtherFlags>
+    <OtherFlags>--tailcalls+ --keyfile:$(SolutionDir)Build\Infrastructure.snk</OtherFlags>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
     <DefineConstants>$(GlobalDefineConstants)</DefineConstants>
@@ -53,6 +54,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Update="FSharp.Core" Version="4.3.4" />
+    <PackageReference Update="FSharp.Core" Version="4.3.4" Condition="'$(TargetFramework)' != 'net47'"/>
+    <PackageReference Update="FSharp.Core" Version="4.5.2" Condition="'$(TargetFramework)' == 'net47'"/>
   </ItemGroup>
 </Project>

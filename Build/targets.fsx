@@ -298,18 +298,25 @@ _Target "Compilation" ignore
 
 _Target "BuildRelease" (fun _ ->
   try
-    "AltCover.sln"
-    |> MSBuild.build (fun p ->
-         { p with
-             Verbosity = Some MSBuildVerbosity.Normal
-             ConsoleLogParameters = []
-             DistributedLoggers = None
-             DisableInternalBinLog = true
-             Properties =
-               [ "Configuration", "Release"
-                 "DebugSymbols", "True" ] })
+    if Environment.isWindows
+    then 
+      DotNet.restore (fun o -> o.WithCommon(withWorkingDirectoryVM "AltCover.Recorder")) "altcover.recorder.core.fsproj"
+      DotNet.restore (fun o -> o.WithCommon(withWorkingDirectoryVM "Recorder.Tests")) ""
 
-    [ "./altcover.recorder.core.sln"; "./altcover.core.sln" ]
+      "./altcover.recorder.core.sln"
+      |> MSBuild.build (fun p ->
+           { p with
+               Verbosity = Some MSBuildVerbosity.Normal
+               ConsoleLogParameters = []
+               DistributedLoggers = None
+               DisableInternalBinLog = true
+               Properties =
+                 [ "Configuration", "Release"
+                   "DebugSymbols", "True" ] })
+
+    (if Environment.isWindows
+     then [ "./altcover.core.sln" ]
+     else [ "./altcover.recorder.core.sln"; "./altcover.core.sln" ])
     |> Seq.iter
          (fun s ->
          s
@@ -322,16 +329,21 @@ _Target "BuildRelease" (fun _ ->
     reraise())
 
 _Target "BuildDebug" (fun _ ->
-  "AltCover.sln"
-  |> MSBuild.build (fun p ->
-       { p with
-           Verbosity = Some MSBuildVerbosity.Normal
-           ConsoleLogParameters = []
-           DistributedLoggers = None
-           DisableInternalBinLog = true
-           Properties =
-             [ "Configuration", "Debug"
-               "DebugSymbols", "True" ] })
+  if Environment.isWindows
+  then 
+    DotNet.restore (fun o -> o.WithCommon(withWorkingDirectoryVM "AltCover.Recorder")) "altcover.recorder.core.fsproj"
+    DotNet.restore (fun o -> o.WithCommon(withWorkingDirectoryVM "Recorder.Tests")) ""
+
+    "./altcover.recorder.core.sln"
+    |> MSBuild.build (fun p ->
+         { p with
+             Verbosity = Some MSBuildVerbosity.Normal
+             ConsoleLogParameters = []
+             DistributedLoggers = None
+             DisableInternalBinLog = true
+             Properties =
+               [ "Configuration", "Debug"
+                 "DebugSymbols", "True" ] })
 
   Directory.ensure "./_SourceLink"
   Shell.copyFile "./_SourceLink/Class2.cs" "./Sample14/Sample14/Class2.txt"
@@ -344,7 +356,9 @@ _Target "BuildDebug" (fun _ ->
     Shell.copyFile "/tmp/.AltCover_SourceLink/Sample14.SourceLink.Class3.cs"
       "./Sample14/Sample14/Class3.txt"
 
-  [ "./altcover.recorder.core.sln"; "./altcover.core.sln"; "./Sample14/Sample14.sln" ]
+  (if Environment.isWindows
+   then [ "./altcover.core.sln"; "./Sample14/Sample14.sln"]
+   else [ "./altcover.recorder.core.sln"; "./altcover.core.sln"; "./Sample14/Sample14.sln" ])
   |> Seq.iter
        (fun s ->
        s

@@ -2,11 +2,13 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>netcoreapp2.0;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">netcoreapp2.0;netstandard2.0;net47</TargetFrameworks>
+    <TargetFrameworks Condition="'$(OS)' != 'Windows_NT'">netcoreapp2.0;netstandard2.0</TargetFrameworks>
     <RootNamespace>AltCover</RootNamespace>
     <AssemblyName>AltCover</AssemblyName>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <GlobalDefineConstants>RUNNER;NETCOREAPP2_0</GlobalDefineConstants>
+    <GlobalDefineConstants Condition="'$(TargetFramework)' != 'net47'">RUNNER;NETCOREAPP2_0</GlobalDefineConstants>
+    <GlobalDefineConstants Condition="'$(TargetFramework)' == 'net47'">RUNNER</GlobalDefineConstants>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <ContinuousIntegrationBuild Condition="'$(APPVEYOR)'=='True'">true</ContinuousIntegrationBuild>
     <DeterministicSourcePaths Condition="'$(APPVEYOR)'=='True'">true</DeterministicSourcePaths>
@@ -18,7 +20,7 @@
     <DefineConstants>$(GlobalDefineConstants)</DefineConstants>
     <OutputPath>$(SolutionDir)_Binaries/$(AssemblyName)/$(Configuration)+$(Platform)/</OutputPath>
     <IntermediateOutputPath>$(SolutionDir)_Intermediate/$(AssemblyName)/$(Configuration)+$(Platform)/</IntermediateOutputPath>
-    <OtherFlags>--tailcalls+</OtherFlags>
+    <OtherFlags>--tailcalls+ --keyfile:$(SolutionDir)Build\Infrastructure.snk</OtherFlags>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
     <SolutionDir Condition="'$(SolutionDir)' == '$(ProjectDir)'">$(ProjectDir)../</SolutionDir>
@@ -27,7 +29,7 @@
     <IntermediateOutputPath>$(SolutionDir)_Intermediate/$(AssemblyName)/$(Configuration)+$(Platform)/</IntermediateOutputPath>
     <OtherFlags>--keyfile:$(SolutionDir)Build\Infrastructure.snk --staticlink:Newtonsoft.Json</OtherFlags>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netcoreapp2.0|AnyCPU'">
+  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
     <WarningLevel>4</WarningLevel>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <WarningsAsErrors />
@@ -71,24 +73,32 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="BlackFox.CommandLine" Version="1.0.0" />
+    <PackageReference Include="BlackFox.CommandLine" Version="1.0.0" Condition="'$(TargetFramework)' != 'net47'"/>
     <PackageReference Include="Microsoft.Build.Utilities.Core" Version="16.0.461" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Mono.Cecil" Version="0.11.1" />
-    <PackageReference Include="Mono.Options" Version="6.6.0.161" />
+    <PackageReference Include="Mono.Options" Version="6.6.0.161"  Condition="'$(TargetFramework)' != 'net47'"/>
+    <PackageReference Include="Mono.Options.Signed" Version="0.2.3"  Condition="'$(TargetFramework)' == 'net47'"/>
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="AltCover.Recorder">
+    <Reference Include="AltCover.Recorder" Condition="'$(TargetFramework)' != 'net47'">
       <HintPath>$(SolutionDir)_Binaries\AltCover.Recorder\$(Configuration)+$(Platform)\netstandard2.0\AltCover.Recorder.dll</HintPath>
+    </Reference>
+    <Reference Include="AltCover.Recorder" Condition="'$(TargetFramework)' == 'net47'">
+      <HintPath>$(SolutionDir)_Binaries\AltCover.Recorder\$(Configuration)+$(Platform)\net35\AltCover.Recorder.dll</HintPath>
+    </Reference>
+    <Reference Include="BlackFox.CommandLine" Condition="'$(TargetFramework)' == 'net47'">
+      <HintPath>..\ThirdParty\BlackFox.CommandLine.dll</HintPath>
     </Reference>
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Update="FSharp.Core" Version="4.3.4" />
+    <PackageReference Update="FSharp.Core" Version="4.3.4" Condition="'$(TargetFramework)' != 'net47'"/>
+    <PackageReference Update="FSharp.Core" Version="4.5.2" Condition="'$(TargetFramework)' == 'net47'"/>
   </ItemGroup>
 </Project>
