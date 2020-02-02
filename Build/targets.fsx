@@ -506,17 +506,17 @@ _Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standa
 
   [ (rules,
      [ "_Binaries/AltCover/Debug+AnyCPU/net45/AltCover.exe"
-       "_Binaries/AltCover.Shadow/Debug+AnyCPU/AltCover.Shadow.dll" ])
+       "_Binaries/AltCover.Shadow/Debug+AnyCPU/net35/AltCover.Shadow.dll" ])
 
     ("./Build/rules-posh.xml",
-     [ "_Binaries/AltCover.PowerShell/Debug+AnyCPU/AltCover.PowerShell.dll"
-       "_Binaries/AltCover.FSApi/Debug+AnyCPU/AltCover.FSApi.dll" ])
+     [ "_Binaries/AltCover.PowerShell/Debug+AnyCPU/net47/AltCover.PowerShell.dll"
+       "_Binaries/AltCover.FSApi/Debug+AnyCPU/net45/AltCover.FSApi.dll" ])
 
     ("./Build/rules-gtk.xml",
-     [ "_Binaries/AltCover.Visualizer/Debug+AnyCPU/AltCover.Visualizer.exe" ])
+     [ "_Binaries/AltCover.Visualizer/Debug+AnyCPU/net45/AltCover.Visualizer.exe" ])
 
     (fakerules,
-     [ "_Binaries/AltCover.Fake.DotNet.Testing.AltCover/Debug+AnyCPU/AltCover.Fake.DotNet.Testing.AltCover.dll" ]) ]
+     [ "_Binaries/AltCover.Fake.DotNet.Testing.AltCover/Debug+AnyCPU/net462/AltCover.Fake.DotNet.Testing.AltCover.dll" ]) ]
   |> Seq.iter (fun (ruleset, files) ->
        Gendarme.run
          { Gendarme.Params.Create() with
@@ -572,13 +572,13 @@ _Target "FxCop" (fun _ ->
        "AltCover.Report"
        "AltCover.Runner"
        "AltCover.Visitor" ], rules)
-    ([ "_Binaries/AltCover.Shadow/Debug+AnyCPU/AltCover.Shadow.dll" ],
+    ([ "_Binaries/AltCover.Shadow/Debug+AnyCPU/net35/AltCover.Shadow.dll" ],
      [ "AltCover.Recorder.Assist"
        "AltCover.Recorder.Counter"
        "AltCover.Recorder.Assist"
        "AltCover.Recorder.Tracer"
        "AltCover.Recorder.Instance" ], rules)
-    ([ "_Binaries/AltCover.PowerShell/Debug+AnyCPU/AltCover.PowerShell.dll" ], [],
+    ([ "_Binaries/AltCover.PowerShell/Debug+AnyCPU/net47/AltCover.PowerShell.dll" ], [],
      [ "-Microsoft.Design#CA1059"
        "-Microsoft.Usage#CA2235"
        "-Microsoft.Performance#CA1819"
@@ -592,7 +592,7 @@ _Target "FxCop" (fun _ ->
        "-Microsoft.Naming#CA1707"
        "-Microsoft.Naming#CA1709"
        "-Microsoft.Naming#CA1715" ])
-    ([ "_Binaries/AltCover.FSApi/Debug+AnyCPU/AltCover.FSApi.dll" ], [],
+    ([ "_Binaries/AltCover.FSApi/Debug+AnyCPU/net45/AltCover.FSApi.dll" ], [],
      [ "-Microsoft.Usage#CA2235"
        "-Microsoft.Performance#CA1819"
        "-Microsoft.Design#CA1020"
@@ -606,7 +606,7 @@ _Target "FxCop" (fun _ ->
        "-Microsoft.Naming#CA1707"
        "-Microsoft.Naming#CA1709"
        "-Microsoft.Naming#CA1715" ])
-    ([ "_Binaries/AltCover.Visualizer/Debug+AnyCPU/AltCover.Visualizer.exe" ],
+    ([ "_Binaries/AltCover.Visualizer/Debug+AnyCPU/net45/AltCover.Visualizer.exe" ],
      [ "AltCover.Augment"
        "AltCover.Visualizer.Transformer"
        "AltCover.Visualizer.CoverageFile"
@@ -621,7 +621,7 @@ _Target "FxCop" (fun _ ->
        "-Microsoft.Naming#CA1715"
        "-Microsoft.Naming#CA1704"
        "-Microsoft.Naming#CA1709" ])
-    ([ "_Binaries/AltCover.Fake.DotNet.Testing.AltCover/Debug+AnyCPU/AltCover.Fake.DotNet.Testing.AltCover.dll" ],
+    ([ "_Binaries/AltCover.Fake.DotNet.Testing.AltCover/Debug+AnyCPU/net462/AltCover.Fake.DotNet.Testing.AltCover.dll" ],
      [ "AltCover_Fake.DotNet.Testing.AltCover.CollectParams"
        "AltCover_Fake.DotNet.Testing.AltCover.PrepareParams"
        "AltCover_Fake.DotNet.Testing.AltCover.Args"
@@ -655,7 +655,7 @@ _Target "FxCop" (fun _ ->
                 FailOnError = FxCop.ErrorLevel.Warning
                 IgnoreGeneratedCode = true })
 
-  [ "_Binaries/AltCover.PowerShell/Debug+AnyCPU/AltCover.PowerShell.dll" ]
+  [ "_Binaries/AltCover.PowerShell/Debug+AnyCPU/net47/AltCover.PowerShell.dll" ]
   |> FxCop.run
        { FxCop.Params.Create() with
            WorkingDirectory = "."
@@ -4027,9 +4027,9 @@ Target.activateFinal "ResetConsoleColours"
 ==> "FxCop"
 =?> ("Analysis", Environment.isWindows && fxcop |> Option.isSome) // not supported
 
-"Compilation"
-==> "Gendarme"
-=?> ("Analysis", Environment.isWindows) // different behaviour
+//"Compilation"
+//==> "Gendarme"
+//?=> "Analysis"
 
 "Compilation"
 ?=> "UnitTest"

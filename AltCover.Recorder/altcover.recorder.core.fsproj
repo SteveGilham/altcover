@@ -9,10 +9,9 @@
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <ContinuousIntegrationBuild Condition="'$(APPVEYOR)'=='True'">true</ContinuousIntegrationBuild>
     <DeterministicSourcePaths Condition="'$(APPVEYOR)'=='True'">true</DeterministicSourcePaths>
-    <SolutionDir Condition="'$(SolutionDir)' == '$(ProjectDir)'">$(ProjectDir)../</SolutionDir>
     <OutputPath>$(SolutionDir)_Binaries/$(AssemblyName)/$(Configuration)+$(Platform)/</OutputPath>
     <IntermediateOutputPath>$(SolutionDir)_Intermediate/$(AssemblyName)/$(Configuration)+$(Platform)/</IntermediateOutputPath>
-    <OtherFlags>--keyfile:$(SolutionDir)Build\Infrastructure.snk --standalone</OtherFlags>
+    <OtherFlags>--keyfile:$(ProjectDir)..\Build\Infrastructure.snk --standalone</OtherFlags>
     <ExtraDefines Condition="'$(TargetFramework)' == 'net35'">NET2</ExtraDefines>
   </PropertyGroup>
 
@@ -29,7 +28,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <_FullFrameworkReferenceAssemblyPaths  Condition="'$(TargetFramework)' == 'net35'" Include="$(ProgramFiles(x86))\Reference Assemblies\Microsoft\Framework\v3.5" />
     <Compile Include="..\_Generated\AssemblyVersion.fs" Link="AssemblyVersion.fs" />
     <Compile Include="..\_Generated\VisibleToTest.fs" Link="VisibleToTest.fs" />
     <Compile Include="AssemblyInfo.fs" />
