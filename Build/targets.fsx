@@ -300,51 +300,39 @@ _Target "BuildRelease" (fun _ ->
   try
     if Environment.isWindows
     then 
-      DotNet.restore (fun o -> o.WithCommon(withWorkingDirectoryVM "AltCover.Recorder")) "altcover.recorder.core.fsproj"
-      DotNet.restore (fun o -> o.WithCommon(withWorkingDirectoryVM "Recorder.Tests")) ""
+      !!"**/*.core.*proj"
+      |> Seq.iter (fun f -> 
+                   let dir = Path.GetDirectoryName f
+                   let proj = Path.GetFileName f
+                   DotNet.restore (fun o -> o.WithCommon(withWorkingDirectoryVM dir)) proj)
 
-      "./altcover.recorder.core.sln"
-      |> MSBuild.build (fun p ->
-           { p with
-               Verbosity = Some MSBuildVerbosity.Normal
-               ConsoleLogParameters = []
-               DistributedLoggers = None
-               DisableInternalBinLog = true
-               Properties =
-                 [ "Configuration", "Release"
-                   "DebugSymbols", "True" ] })
-
-    (if Environment.isWindows
-     then [ "./altcover.core.sln" ]
-     else [ "./altcover.recorder.core.sln"; "./altcover.core.sln" ])
-    |> Seq.iter
-         (fun s ->
-         s
-         |> DotNet.build
-              (fun p ->
-              { p.WithCommon dotnetOptions with
-                  Configuration = DotNet.BuildConfiguration.Release } |> withMSBuildParams))
+      [ "./altcover.recorder.core.sln"; "./altcover.core.sln" ]
+      |> Seq.iter
+           (fun s ->
+           s
+        |> MSBuild.build (fun p ->
+             { p with
+                 Verbosity = Some MSBuildVerbosity.Normal
+                 ConsoleLogParameters = []
+                 DistributedLoggers = None
+                 DisableInternalBinLog = true
+                 Properties =
+                   [ "Configuration", "Release"
+                     "DebugSymbols", "True" ] }))
+    else 
+      [ "./altcover.recorder.core.sln"; "./altcover.core.sln" ]
+      |> Seq.iter
+           (fun s ->
+           s
+           |> DotNet.build
+                (fun p ->
+                { p.WithCommon dotnetOptions with
+                    Configuration = DotNet.BuildConfiguration.Release } |> withMSBuildParams))
   with x ->
     printfn "%A" x
     reraise())
 
 _Target "BuildDebug" (fun _ ->
-  if Environment.isWindows
-  then 
-    DotNet.restore (fun o -> o.WithCommon(withWorkingDirectoryVM "AltCover.Recorder")) "altcover.recorder.core.fsproj"
-    DotNet.restore (fun o -> o.WithCommon(withWorkingDirectoryVM "Recorder.Tests")) ""
-
-    "./altcover.recorder.core.sln"
-    |> MSBuild.build (fun p ->
-         { p with
-             Verbosity = Some MSBuildVerbosity.Normal
-             ConsoleLogParameters = []
-             DistributedLoggers = None
-             DisableInternalBinLog = true
-             Properties =
-               [ "Configuration", "Debug"
-                 "DebugSymbols", "True" ] })
-
   Directory.ensure "./_SourceLink"
   Shell.copyFile "./_SourceLink/Class2.cs" "./Sample14/Sample14/Class2.txt"
   if Environment.isWindows then
@@ -356,8 +344,30 @@ _Target "BuildDebug" (fun _ ->
     Shell.copyFile "/tmp/.AltCover_SourceLink/Sample14.SourceLink.Class3.cs"
       "./Sample14/Sample14/Class3.txt"
 
+  if Environment.isWindows
+  then 
+    !!"**/*.core.*proj"
+    |> Seq.iter (fun f -> 
+                 let dir = Path.GetDirectoryName f
+                 let proj = Path.GetFileName f
+                 DotNet.restore (fun o -> o.WithCommon(withWorkingDirectoryVM dir)) proj)
+
+    [ "./altcover.recorder.core.sln"; "./altcover.core.sln" ]
+    |> Seq.iter
+         (fun s ->
+         s
+         |>  MSBuild.build (fun p ->
+         { p with
+             Verbosity = Some MSBuildVerbosity.Normal
+             ConsoleLogParameters = []
+             DistributedLoggers = None
+             DisableInternalBinLog = true
+             Properties =
+               [ "Configuration", "Debug"
+                 "DebugSymbols", "True" ] }))
+
   (if Environment.isWindows
-   then [ "./altcover.core.sln"; "./Sample14/Sample14.sln"]
+   then [ "./Sample14/Sample14.sln"]
    else [ "./altcover.recorder.core.sln"; "./altcover.core.sln"; "./Sample14/Sample14.sln" ])
   |> Seq.iter
        (fun s ->
@@ -399,6 +409,17 @@ _Target "AvaloniaRelease" (fun _ ->
                "DebugSymbols", "True" ] }))
 
 _Target "BuildMonoSamples" (fun _ ->
+  "MCS.sln"
+  |> MSBuild.build (fun p ->
+       { p with
+           Verbosity = Some MSBuildVerbosity.Normal
+           ConsoleLogParameters = []
+           DistributedLoggers = None
+           DisableInternalBinLog = true
+           Properties =
+             [ "Configuration", "Release"
+               "DebugSymbols", "True" ] })
+
   let mcs = "_Binaries/MCS/Release+AnyCPU/MCS.exe"
   [ ("./_Mono/Sample1",
      [ "-debug"; "-out:./_Mono/Sample1/Sample1.exe"; "./Sample1/Program.cs" ])
