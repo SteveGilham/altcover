@@ -18,6 +18,6 @@
     <PackageReference Include="NUnit.ConsoleRunner" version="3.10.0" />
     <PackageReference Include="OpenCover" version="4.7.922" />
     <PackageReference Include="xunit.runner.console" version="2.4.1" />
-    <PackageReference Include="Pester" version="4.9.0" />
+    <PackageReference Include="Pester" version="4.10.0" />
   </ItemGroup>
 </Project>
