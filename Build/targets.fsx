@@ -505,7 +505,7 @@ _Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standa
       fixup
 
   [ (rules,
-     [ "_Binaries/AltCover/Debug+AnyCPU/AltCover.exe"
+     [ "_Binaries/AltCover/Debug+AnyCPU/net45/AltCover.exe"
        "_Binaries/AltCover.Shadow/Debug+AnyCPU/AltCover.Shadow.dll" ])
 
     ("./Build/rules-posh.xml",
@@ -546,7 +546,7 @@ _Target "FxCop" (fun _ ->
       "-Microsoft.Naming#CA1715"
       "-Microsoft.Usage#CA2208" ]
 
-  [ ([ "_Binaries/AltCover/Debug+AnyCPU/AltCover.exe" ],
+  [ ([ "_Binaries/AltCover/Debug+AnyCPU/net45/AltCover.exe" ],
      [ "AltCover.AltCover"
        "AltCover.Api"
        "AltCover.Args"
@@ -847,7 +847,7 @@ _Target "UnitTestWithAltCover" (fun _ ->
   let keyfile = Path.getFullName "Build/SelfTest.snk"
   let shadowkeyfile = Path.getFullName "Build/Infrastructure.snk"
   let reports = Path.getFullName "./_Reports"
-  let altcover = "./_Binaries/AltCover/Debug+AnyCPU/AltCover.exe"
+  let altcover = "./_Binaries/AltCover/Debug+AnyCPU/net45/AltCover.exe"
 
   let testDirectory = Path.getFullName "_Binaries/AltCover.Tests/Debug+AnyCPU"
 
@@ -950,7 +950,7 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
   let keyfile = Path.getFullName "Build/SelfTest.snk"
   let shadowkeyfile = Path.getFullName "Build/Infrastructure.snk"
   let reports = Path.getFullName "./_Reports"
-  let altcover = "./_Binaries/AltCover/Debug+AnyCPU/AltCover.exe" |> Path.getFullName
+  let altcover = "./_Binaries/AltCover/Debug+AnyCPU/net45/AltCover.exe" |> Path.getFullName
 
   let testDirectory = Path.getFullName "_Binaries/AltCover.Tests/Debug+AnyCPU"
   if !!(testDirectory @@ "AltCov*.pdb")
@@ -1238,7 +1238,7 @@ _Target "UnitTestWithAltCoverCore" // Obsolete
   Directory.ensure "./_Reports/_UnitTestWithAltCover"
   let keyfile = Path.getFullName "Build/SelfTest.snk"
   let reports = Path.getFullName "./_Reports"
-  let altcover = "./_Binaries/AltCover/Debug+AnyCPU/AltCover.exe"
+  let altcover = "./_Binaries/AltCover/Debug+AnyCPU/net45/AltCover.exe"
   let testDirectory =
     Path.getFullName "_Binaries/AltCover.Tests/Debug+AnyCPU/netcoreapp3.0"
   let output =
@@ -1438,7 +1438,7 @@ _Target "OperationalTest" ignore
 _Target "FSharpTypes" (fun _ ->
   Directory.ensure "./_Reports"
   let simpleReport = (Path.getFullName "./_Reports") @@ ("AltCoverFSharpTypes.xml")
-  let binRoot = Path.getFullName "_Binaries/AltCover/Release+AnyCPU"
+  let binRoot = Path.getFullName "_Binaries/AltCover/Release+AnyCPU/net45"
   let sampleRoot = Path.getFullName "_Binaries/Sample2/Debug+AnyCPU"
   let instrumented = "__FSharpTypes"
   if sampleRoot @@ "Sample2.pdb" |> File.Exists then
@@ -1732,7 +1732,7 @@ _Target "CSharpDotNetWithDotNet"
 _Target "CSharpDotNetWithFramework" (fun _ ->
   Directory.ensure "./_Reports"
   let simpleReport = (Path.getFullName "./_Reports") @@ ("CSharpDotNetWithFramework.xml")
-  let binRoot = Path.getFullName "_Binaries/AltCover/Release+AnyCPU"
+  let binRoot = Path.getFullName "_Binaries/AltCover/Release+AnyCPU/net45"
   let sampleRoot = Path.getFullName "_Binaries/Sample1/Debug+AnyCPU/netcoreapp2.0"
   let instrumented =
     Path.getFullName "_Binaries/Sample1/__Instrumented.CSharpDotNetWithFramework"
@@ -1787,7 +1787,7 @@ _Target "SelfTest" (fun _ ->
     { p with
         WorkingDir = targetDir
         ExePath = openCoverConsole
-        TestRunnerExePath = "./_Binaries/AltCover/Debug+AnyCPU/AltCover.exe"
+        TestRunnerExePath = "./_Binaries/AltCover/Debug+AnyCPU/net45/AltCover.exe"
         Filter = OpenCoverFilter
         MergeByHash = true
         OptionalArguments =
@@ -1828,7 +1828,7 @@ _Target "SelfTest" (fun _ ->
 _Target "RecordResumeTest" (fun _ ->
   Directory.ensure "./_Reports"
   let simpleReport = (Path.getFullName "./_Reports") @@ ("RecordResumeTest.xml")
-  let binRoot = Path.getFullName "_Binaries/AltCover/Release+AnyCPU"
+  let binRoot = Path.getFullName "_Binaries/AltCover/Release+AnyCPU/net45"
   let sampleRoot = Path.getFullName "_Binaries/Sample8/Debug+AnyCPU"
   let instrumented = "__RecordResumeTest"
 
@@ -2043,7 +2043,7 @@ _Target "RecordResumeTestUnderMono" // Fails : System.EntryPointNotFoundExceptio
   (fun _ ->
   Directory.ensure "./_Reports"
   let simpleReport = (Path.getFullName "./_Reports") @@ ("RecordResumeTestUnderMono.xml")
-  let binRoot = Path.getFullName "_Binaries/AltCover/Release+AnyCPU"
+  let binRoot = Path.getFullName "_Binaries/AltCover/Release+AnyCPU/net45"
   let sampleRoot = Path.getFullName "_Binaries/Sample8/Debug+AnyCPU"
   let instrumented = "__RecordResumeTestUnderMono"
 
@@ -2121,35 +2121,35 @@ _Target "RecordResumeTestUnderMono" // Fails : System.EntryPointNotFoundExceptio
 // Packaging
 
 _Target "Packaging" (fun _ ->
-  let AltCover = Path.getFullName "_Binaries/AltCover/Release+AnyCPU/AltCover.exe"
+  let AltCover = Path.getFullName "_Binaries/AltCover/Release+AnyCPU/net45/AltCover.exe"
   let config = AltCover + ".config"
   Assert.That(Environment.isWindows && config |> File.Exists, Is.False, config)
-  let fox = Path.getFullName "_Binaries/AltCover/Release+AnyCPU/BlackFox.CommandLine.dll"
-  let fscore = Path.getFullName "_Binaries/AltCover/Release+AnyCPU/FSharp.Core.dll"
-  let options = Path.getFullName "_Binaries/AltCover/Release+AnyCPU/Mono.Options.dll"
+  let fox = Path.getFullName "_Binaries/AltCover/Release+AnyCPU/net45/BlackFox.CommandLine.dll"
+  let fscore = Path.getFullName "_Binaries/AltCover/Release+AnyCPU/net45/FSharp.Core.dll"
+  let options = Path.getFullName "_Binaries/AltCover/Release+AnyCPU/net45/Mono.Options.dll"
   let recorder =
-    Path.getFullName "_Binaries/AltCover/Release+AnyCPU/AltCover.Recorder.dll"
+    Path.getFullName "_Binaries/AltCover/Release+AnyCPU/net45/AltCover.Recorder.dll"
   let posh =
     Path.getFullName
-      "_Binaries/AltCover.PowerShell/Release+AnyCPU/AltCover.PowerShell.dll"
+      "_Binaries/AltCover.PowerShell/Release+AnyCPU/net47/AltCover.PowerShell.dll"
   let csapi =
-    Path.getFullName "_Binaries/AltCover.CSApi/Release+AnyCPU/AltCover.CSApi.dll"
+    Path.getFullName "_Binaries/AltCover.CSApi/Release+AnyCPU/net45/AltCover.CSApi.dll"
   let fsapi =
-    Path.getFullName "_Binaries/AltCover.FSApi/Release+AnyCPU/AltCover.FSApi.dll"
-  let cake = Path.getFullName "_Binaries/AltCover.Cake/Release+AnyCPU/AltCover.Cake.dll"
-  let fake = Path.getFullName "_Binaries/AltCover.Fake/Release+AnyCPU/AltCover.Fake.dll"
+    Path.getFullName "_Binaries/AltCover.FSApi/Release+AnyCPU/net45/AltCover.FSApi.dll"
+  let cake = Path.getFullName "_Binaries/AltCover.Cake/Release+AnyCPU/net46/AltCover.Cake.dll"
+  let fake = Path.getFullName "_Binaries/AltCover.Fake/Release+AnyCPU/net46/AltCover.Fake.dll"
   let fake2 =
     Path.getFullName
-      "_Binaries/AltCover.Fake.DotNet.Testing.AltCover/Release+AnyCPU/AltCover.Fake.DotNet.Testing.AltCover.dll"
+      "_Binaries/AltCover.Fake.DotNet.Testing.AltCover/Release+AnyCPU/net462/AltCover.Fake.DotNet.Testing.AltCover.dll"
   let vis =
     Path.getFullName
-      "_Binaries/AltCover.Visualizer/Release+AnyCPU/AltCover.Visualizer.exe"
+      "_Binaries/AltCover.Visualizer/Release+AnyCPU/net45/AltCover.Visualizer.exe"
   let packable = Path.getFullName "./_Binaries/README.html"
 
   let libFiles path =
     Seq.concat
-      [ !!"./_Binaries/AltCover/Release+AnyCPU/Mono.C*.dll"
-        !!"./_Binaries/AltCover/Release+AnyCPU/Newton*.dll" ]
+      [ !!"./_Binaries/AltCover/Release+AnyCPU/net45/Mono.C*.dll"
+        !!"./_Binaries/AltCover/Release+AnyCPU/net45/Newton*.dll" ]
     |> Seq.map (fun f -> (f |> Path.getFullName, Some path, None))
     |> Seq.toList
 
@@ -2178,7 +2178,7 @@ _Target "Packaging" (fun _ ->
       (packable, Some "", None) ]
 
   let resourceFiles path =
-    [ "_Binaries/AltCover/Release+AnyCPU"; "_Binaries/AltCover.Visualizer/Release+AnyCPU" ]
+    [ "_Binaries/AltCover/Release+AnyCPU/net45"; "_Binaries/AltCover.Visualizer/Release+AnyCPU/net45" ]
     |> List.map (fun f ->
          Directory.GetDirectories(Path.getFullName f)
          |> Seq.map (fun d -> Directory.GetFiles(d, "*.resources.dll"))
@@ -2513,7 +2513,7 @@ _Target "Pester" (fun _ ->
   let report = Path.getFullName "_Reports/Pester.xml"
   let i = ``module`` @@ "tools/netcoreapp2.0"
   let v = (!Version).Split([| '-' |]).[0]
-  let retro = Path.getFullName "_Binaries/AltCover/Release+AnyCPU/AltCover.exe"
+  let retro = Path.getFullName "_Binaries/AltCover/Release+AnyCPU/net45/AltCover.exe"
   let key = Path.getFullName "Build/Infrastructure.snk"
 
   let prep =

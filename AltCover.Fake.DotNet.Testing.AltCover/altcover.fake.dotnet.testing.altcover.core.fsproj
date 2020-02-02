@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework Condition="'$(OS)' != 'Windows_NT'">netstandard2.0</TargetFramework>
-    <TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">netstandard2.0;net472</TargetFrameworks>
+    <TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">netstandard2.0;net462</TargetFrameworks>
     <RootNamespace>AltCover.Fake.DotNet.Testing.AltCover</RootNamespace>
     <AssemblyName>AltCover.Fake.DotNet.Testing.AltCover</AssemblyName>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
@@ -49,7 +49,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="System.Collections.Immutable" Version="1.6.0"  Condition="'$(TargetFramework)' == 'net472'"/>
+    <PackageReference Include="System.Collections.Immutable" Version="1.6.0"  Condition="'$(TargetFramework)' == 'net462'"/>
   </ItemGroup>
 
   <ItemGroup>
