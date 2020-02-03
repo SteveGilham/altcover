@@ -163,6 +163,8 @@ let withCLIArgs (o: Fake.DotNet.DotNet.TestOptions) =
 let withMSBuildParams (o: Fake.DotNet.DotNet.BuildOptions) =
   { o with MSBuildParams = cliArguments }
 
+let GendarmePath = "./ThirdParty/gendarme/gendarme.exe"
+
 let NuGetAltCover =
   toolPackages
   |> Seq.filter (fun kv -> kv.Key = "altcover")
@@ -480,7 +482,7 @@ _Target "Lint" (fun _ ->
 _Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standalone which contaminates everything
   Directory.ensure "./_Reports"
 
-  let toolPath = "./packages/" + (packageVersion "Mono.Gendarme") + "/tools/gendarme.exe"
+  let toolPath = GendarmePath // "./packages/" + (packageVersion "Mono.Gendarme") + "/tools/gendarme.exe"
 
   let rules = "./Build/rules.xml"
 
@@ -4027,9 +4029,9 @@ Target.activateFinal "ResetConsoleColours"
 ==> "FxCop"
 =?> ("Analysis", Environment.isWindows && fxcop |> Option.isSome) // not supported
 
-//"Compilation"
-//==> "Gendarme"
-//?=> "Analysis"
+"Compilation"
+==> "Gendarme"
+=?> ("Analysis", Environment.isWindows && (File.Exists GendarmePath)) // different behaviour
 
 "Compilation"
 ?=> "UnitTest"

@@ -65,3 +65,5 @@ scratch/
 Demo/MultiTest/**/coverage.xml
 Recorder.Tests/TestResults/
 Tests/TestResults/
+ThirdParty/gendarme.zip
+ThirdParty/gendarme/
