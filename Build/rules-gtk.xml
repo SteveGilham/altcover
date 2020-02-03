@@ -42,7 +42,6 @@
                from="Gendarme.Rules.Maintainability.dll" />
 		<rules include="*" 
 		       from="Gendarme.Rules.Gendarme.dll" />
-        <!-- Assembly not in nugget -->
-		<!-- rules include="*" from="Gendarme.Rules.Globalization.dll"/ -->
+		<rules include="*" from="Gendarme.Rules.Globalization.dll"/>
 	</ruleset>
 </gendarme>
