@@ -11,6 +11,7 @@
     <DeterministicSourcePaths Condition="'$(APPVEYOR)'=='True'">true</DeterministicSourcePaths>
     <GlobalDefineConstants></GlobalDefineConstants>
     <AssemblySearchPaths Condition="'$(OS)' == 'Windows_NT'">$(AssemblySearchPaths);{GAC}</AssemblySearchPaths>
+    <SolutionDir Condition="'$(SolutionDir)' == '$(ProjectDir)' AND '$(AltCoverGendarme)' == 'true'">$(ProjectDir)../</SolutionDir>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
