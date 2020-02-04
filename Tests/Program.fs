@@ -1,5 +1,6 @@
 namespace AltCover.Expecto.Tests
 
+#if NETCOREAPP3_0
 open Expecto
 open Mono.Cecil
 open Mono.Cecil.Cil
@@ -501,3 +502,4 @@ module Program =
     let writeResults = TestResults.writeNUnitSummary ("AltCover.TestResults.xml", "AltCover.Tests")
     let config = defaultConfig.appendSummaryHandler writeResults
     runTestsWithArgs config argv TestMain.tests
+#endif

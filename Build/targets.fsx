@@ -299,6 +299,17 @@ module SolutionRoot =
 _Target "Compilation" ignore
 
 _Target "BuildRelease" (fun _ ->
+  "MCS.sln"
+  |> MSBuild.build (fun p ->
+       { p with
+           Verbosity = Some MSBuildVerbosity.Normal
+           ConsoleLogParameters = []
+           DistributedLoggers = None
+           DisableInternalBinLog = true
+           Properties =
+             [ "Configuration", "Release"
+               "DebugSymbols", "True" ] })
+
   try
     if Environment.isWindows
     then 
@@ -345,6 +356,17 @@ _Target "BuildDebug" (fun _ ->
     Directory.ensure "/tmp/.AltCover_SourceLink"
     Shell.copyFile "/tmp/.AltCover_SourceLink/Sample14.SourceLink.Class3.cs"
       "./Sample14/Sample14/Class3.txt"
+
+  "MCS.sln"
+  |> MSBuild.build (fun p ->
+       { p with
+           Verbosity = Some MSBuildVerbosity.Normal
+           ConsoleLogParameters = []
+           DistributedLoggers = None
+           DisableInternalBinLog = true
+           Properties =
+             [ "Configuration", "Debug"
+               "DebugSymbols", "True" ] })
 
   if Environment.isWindows
   then 
@@ -411,17 +433,6 @@ _Target "AvaloniaRelease" (fun _ ->
                "DebugSymbols", "True" ] }))
 
 _Target "BuildMonoSamples" (fun _ ->
-  "MCS.sln"
-  |> MSBuild.build (fun p ->
-       { p with
-           Verbosity = Some MSBuildVerbosity.Normal
-           ConsoleLogParameters = []
-           DistributedLoggers = None
-           DisableInternalBinLog = true
-           Properties =
-             [ "Configuration", "Release"
-               "DebugSymbols", "True" ] })
-
   let mcs = "_Binaries/MCS/Release+AnyCPU/MCS.exe"
   [ ("./_Mono/Sample1",
      [ "-debug"; "-out:./_Mono/Sample1/Sample1.exe"; "./Sample1/Program.cs" ])
