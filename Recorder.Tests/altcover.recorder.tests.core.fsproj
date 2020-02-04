@@ -39,7 +39,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Unquote" Version="5.0.0" Condition="'$(TargetFramework)' == 'netcoreapp3.0'" />
     <PackageReference Include="coverlet.collector" Version="1.2.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
@@ -54,19 +53,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\AltCover.Recorder\altcover.recorder.core.fsproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="Unquote" Condition="'$(TargetFramework)' == 'net47'">
-      <HintPath>..\ThirdParty\Unquote.dll</HintPath>
-    </Reference>
-    <Reference Include="Unquote" Condition="'$(TargetFramework)' == 'net35'">
-      <HintPath>..\ThirdParty\Unquote2.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="FSPowerPack.Community" Version="2.0.0" Condition="'$(TargetFramework)' == 'net35'" />
   </ItemGroup>
 
   <ItemGroup>
