@@ -5,6 +5,9 @@
     <TargetFramework Condition="'$(OS)' != 'Windows_NT'">netcoreapp2.0</TargetFramework>
     <IsPackable>false</IsPackable>
     <GenerateProgramFile>false</GenerateProgramFile>
+    <AssemblyName>AltCover.WeakName.Tests</AssemblyName>
+    <OutputPath>$(SolutionDir)_Binaries/$(AssemblyName)/$(Configuration)+$(Platform)/</OutputPath>
+    <IntermediateOutputPath>$(SolutionDir)_Intermediate/$(AssemblyName)/$(Configuration)+$(Platform)/</IntermediateOutputPath>
   </PropertyGroup>
 
   <ItemGroup>
@@ -25,9 +28,6 @@
     </Reference>
     <Reference Include="Mono.Cecil.Pdb" Condition="'$(TargetFramework)' == 'net47'">
       <HintPath>..\packages\mono.gendarme\2.11.0.20121120\tools\Mono.Cecil.Pdb.dll</HintPath>
-    </Reference>
-    <Reference Include="Mono.Options" Condition="'$(TargetFramework)' == 'net47'">
-      <HintPath>..\packages\Mono.Options.Signed.0.2.3\lib\net45\Mono.Options.dll</HintPath>
     </Reference>
     <Reference Include="Unquote" Condition="'$(TargetFramework)' == 'net47'">
       <HintPath>..\ThirdParty\Unquote.dll</HintPath>

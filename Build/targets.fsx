@@ -292,7 +292,15 @@ module SolutionRoot =
   let old =
     if File.Exists(path) then File.ReadAllText(path)
     else String.Empty
-  if not (old.Equals(hack)) then File.WriteAllText(path, hack))
+  if not (old.Equals(hack)) then File.WriteAllText(path, hack)
+
+  if Environment.isWindows
+  then 
+    !!"**/*.core.*proj"
+    |> Seq.iter (fun f -> 
+                 let dir = Path.GetDirectoryName f
+                 let proj = Path.GetFileName f
+                 DotNet.restore (fun o -> o.WithCommon(withWorkingDirectoryVM dir)) proj))
 
 // Basic compilation
 
@@ -313,12 +321,6 @@ _Target "BuildRelease" (fun _ ->
   try
     if Environment.isWindows
     then 
-      !!"**/*.core.*proj"
-      |> Seq.iter (fun f -> 
-                   let dir = Path.GetDirectoryName f
-                   let proj = Path.GetFileName f
-                   DotNet.restore (fun o -> o.WithCommon(withWorkingDirectoryVM dir)) proj)
-
       [ "./altcover.recorder.core.sln"; "./altcover.core.sln" ]
       |> Seq.iter
            (fun s ->
@@ -370,12 +372,6 @@ _Target "BuildDebug" (fun _ ->
 
   if Environment.isWindows
   then 
-    !!"**/*.core.*proj"
-    |> Seq.iter (fun f -> 
-                 let dir = Path.GetDirectoryName f
-                 let proj = Path.GetFileName f
-                 DotNet.restore (fun o -> o.WithCommon(withWorkingDirectoryVM dir)) proj)
-
     [ "./altcover.recorder.core.sln"; "./altcover.core.sln" ]
     |> Seq.iter
          (fun s ->
@@ -705,7 +701,7 @@ _Target "UnitTest" ignore
 _Target "JustUnitTest" (fun _ ->
   Directory.ensure "./_Reports"
   try
-    !!(@"_Binaries/*Test*/Debug+AnyCPU/*Test*.dll")
+    !!(@"_Binaries/*Test*/Debug+AnyCPU/net4*/*Test*.dll")
     |> Seq.filter
          (fun f -> Path.GetFileName(f) <> "AltCover.Recorder.Tests.dll" &&
                    Path.GetFileName(f).Contains("Tests."))
@@ -715,14 +711,14 @@ _Target "JustUnitTest" (fun _ ->
              WorkingDir = "."
              ResultSpecs = [ "./_Reports/JustUnitTestReport.xml" ] })
 
-    !!(@"_Binaries/*Tests/Debug+AnyCPU/AltCover.Recorder.Tests.dll")
+    !!(@"_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net47/AltCover.Recorder.Tests.dll")
     |> NUnit3.run (fun p ->
          { p with
              ToolPath = nunitConsole
              WorkingDir = "."
              ResultSpecs = [ "./_Reports/RecorderUnitTestReport.xml" ] })
 
-    !!(@"_Binaries/*Tests2/Debug+AnyCPU/*Test*.dll")
+    !!(@"_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net35/AltCover.Recorder.Tests.dll")
     |> NUnit3.run (fun p ->
          { p with
              ToolPath = nunitConsole
@@ -735,20 +731,24 @@ _Target "JustUnitTest" (fun _ ->
 _Target "BuildForUnitTestDotNet"
   (fun _ ->
   !!(@"./*Tests/*.tests.core.fsproj")
+  |> Seq.filter (fun s -> s.Contains("visualizer") |> not)
   |> Seq.iter
        (DotNet.build
          (fun p ->
-         { p.WithCommon dotnetOptions with Configuration = DotNet.BuildConfiguration.Debug }
+         { p.WithCommon dotnetOptions with Configuration = DotNet.BuildConfiguration.Debug
+                                           Framework = Some "netcoreapp3.0" }
          |> withMSBuildParams)))
 
 _Target "UnitTestDotNet" (fun _ ->
   Directory.ensure "./_Reports"
   try
     !!(@"./*Tests/*.tests.core.fsproj")
+  |> Seq.filter (fun s -> s.Contains("visualizer") |> not)
     |> Seq.iter
          (DotNet.test (fun p ->
            { p.WithCommon dotnetOptions with
                Configuration = DotNet.BuildConfiguration.Debug
+               Framework = Some "netcoreapp3.0"
                NoBuild = true }
            |> withCLIArgs))
   with x ->
@@ -758,10 +758,12 @@ _Target "UnitTestDotNet" (fun _ ->
 _Target "BuildForCoverlet"
   (fun _ ->
   !!(@"./*Tests/*.tests.core.fsproj")
+  |> Seq.filter (fun s -> s.Contains("visualizer") |> not)
   |> Seq.iter
        (DotNet.build
          (fun p ->
-         { p.WithCommon dotnetOptions with Configuration = DotNet.BuildConfiguration.Debug }
+         { p.WithCommon dotnetOptions with Configuration = DotNet.BuildConfiguration.Debug
+                                           Framework = Some "netcoreapp3.0" }
          |> withMSBuildParams)))
 
 _Target "UnitTestDotNetWithCoverlet" (fun _ ->
@@ -796,12 +798,12 @@ _Target "UnitTestWithOpenCover"
   (fun _ ->
   Directory.ensure "./_Reports/_UnitTestWithOpenCover"
   let testFiles =
-    !!(@"_Binaries/*Tests/Debug+AnyCPU/*Tests.dll")
+    !!(@"_Binaries/*Tests/Debug+AnyCPU/net4*/*Tests.dll")
     |> Seq.filter
          (fun f -> Path.GetFileName(f) <> "AltCover.Recorder.Tests.dll")
-  let Recorder4Files = !!(@"_Binaries/*Tests/Debug+AnyCPU/*Recorder.Tests.dll")
+  let Recorder4Files = !!(@"_Binaries/*Tests/Debug+AnyCPU/net47/*Recorder.Tests.dll")
 
-  let RecorderFiles = !!(@"_Binaries/*Tests2/Debug+AnyCPU/*Test*.dll")
+  let RecorderFiles = !!(@"_Binaries/*Tests/Debug+AnyCPU/net35/*Test*.dll")
   let coverage = Path.getFullName "_Reports/UnitTestWithOpenCover.xml"
   let scoverage = Path.getFullName "_Reports/RecorderTestWithOpenCover.xml"
   let s4coverage = Path.getFullName "_Reports/Recorder4TestWithOpenCover.xml"
@@ -813,7 +815,7 @@ _Target "UnitTestWithOpenCover"
           ExePath = openCoverConsole
           TestRunnerExePath = nunitConsole
           Filter =
-            "+[AltCover]* +[AltCover.Recorder]* +[AltCover.Runner]* +[AltCover.WeakNameTests]Alt* -[*]Microsoft.* -[*]System.* -[Sample*]*"
+            "+[AltCover]* +[AltCover.Recorder]* +[AltCover.Runner]* +[AltCover.WeakName.Tests]Alt* -[*]Microsoft.* -[*]System.* -[Sample*]*"
           MergeByHash = true
           ReturnTargetCode = Fake.DotNet.Testing.OpenCover.ReturnTargetCodeType.Yes
           OptionalArguments =
@@ -829,7 +831,7 @@ _Target "UnitTestWithOpenCover"
           ExePath = openCoverConsole
           TestRunnerExePath = nunitConsole
           Filter =
-            "+[AltCover]* +[AltCover.Recorder]* +[AltCover.Runner]* +[AltCover.WeakNameTests]Alt* -[*]Microsoft.* -[*]System.* -[Sample*]*"
+            "+[AltCover]* +[AltCover.Recorder]* +[AltCover.Runner]* +[AltCover.WeakName.Tests]Alt* -[*]Microsoft.* -[*]System.* -[Sample*]*"
           MergeByHash = true
           ReturnTargetCode = Fake.DotNet.Testing.OpenCover.ReturnTargetCodeType.Yes
           OptionalArguments =
@@ -845,7 +847,7 @@ _Target "UnitTestWithOpenCover"
           ExePath = openCoverConsole
           TestRunnerExePath = nunitConsole
           Filter =
-            "+[AltCover]* +[AltCover.Recorder]* +[AltCover.Runner]* +[AltCover.WeakNameTests]Alt* -[*]Microsoft.* -[*]System.* -[Sample*]*"
+            "+[AltCover]* +[AltCover.Recorder]* +[AltCover.Runner]* +[AltCover.WeakName.Tests]Alt* -[*]Microsoft.* -[*]System.* -[Sample*]*"
           MergeByHash = true
           ReturnTargetCode = Fake.DotNet.Testing.OpenCover.ReturnTargetCodeType.Yes
           OptionalArguments =
@@ -879,15 +881,15 @@ _Target "UnitTestWithAltCover" (fun _ ->
   let reports = Path.getFullName "./_Reports"
   let altcover = "./_Binaries/AltCover/Debug+AnyCPU/net45/AltCover.exe"
 
-  let testDirectory = Path.getFullName "_Binaries/AltCover.Tests/Debug+AnyCPU"
+  let testDirectory = Path.getFullName "_Binaries/AltCover.Tests/Debug+AnyCPU/net47"
 
   if !!(testDirectory @@ "AltCov*.pdb")
      |> Seq.length > 0 then
     printfn "Instrumented the code"
 
     let altReport = reports @@ "UnitTestWithAltCover.xml"
-    let weakDir = Path.getFullName "_Binaries/AltCover.WeakNameTests/Debug+AnyCPU"
-    let Recorder4Dir = Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU"
+    let weakDir = Path.getFullName "_Binaries/AltCover.WeakName.Tests/Debug+AnyCPU/net47"
+    let Recorder4Dir = Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net47"
     printfn "Instrumented the code"
     let prep =
       AltCover.PrepareParams.Primitive
@@ -918,10 +920,10 @@ _Target "UnitTestWithAltCover" (fun _ ->
 
     printfn "Unit test the instrumented code"
     try
-      [ !!"_Binaries/AltCover.Tests/Debug+AnyCPU/__UnitTestWithAltCover/*.Tests.dll"
-        !!"_Binaries/AltCover.WeakNameTests/Debug+AnyCPU/__WeakNameTestWithAltCover/Alt*Test*.dll"
-        !!"_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/_RecorderTestWithAltCover/Alt*Test*.dll"
-        !!"_Binaries/AltCover.Tests/Debug+AnyCPU/__UnitTestWithAltCover/*ple2.dll" ]
+      [ !!"_Binaries/AltCover.Tests/Debug+AnyCPU/net47/__UnitTestWithAltCover/*.Tests.dll"
+        !!"_Binaries/AltCover.WeakName.Tests/Debug+AnyCPU/net47/__WeakNameTestWithAltCover/Alt*Test*.dll"
+        !!"_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net47/__RecorderTestWithAltCover/Alt*Test*.dll"
+        !!"_Binaries/AltCover.Tests/Debug+AnyCPU/net461/__UnitTestWithAltCover/*ple2.dll" ]
       |> Seq.concat
       |> Seq.distinct
       |> NUnit3.run (fun p ->
@@ -934,7 +936,7 @@ _Target "UnitTestWithAltCover" (fun _ ->
       reraise()
 
     printfn "Instrument the Recorder tests"
-    let RecorderDir = Path.getFullName "_Binaries/AltCover.Recorder.Tests2/Debug+AnyCPU"
+    let RecorderDir = Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net35"
     let RecorderReport = reports @@ "RecorderTestWithAltCover.xml"
 
     let prep =
@@ -954,7 +956,7 @@ _Target "UnitTestWithAltCover" (fun _ ->
     |> AltCover.run
 
     printfn "Execute the Recorder2 tests"
-    !!("_Binaries/AltCover.Recorder.Tests2/Debug+AnyCPU/__RecorderTestWithAltCover/Alt*.Test*.dll")
+    !!("_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net35/__RecorderTestWithAltCover/Alt*.Test*.dll")
     |> NUnit3.run (fun p ->
          { p with
              ToolPath = nunitConsole
@@ -1035,7 +1037,7 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
       reraise()
 
     printfn "Instrument the weakname tests"
-    let weakDir = Path.getFullName "_Binaries/AltCover.WeakNameTests/Debug+AnyCPU"
+    let weakDir = Path.getFullName "_Binaries/AltCover.WeakName.Tests/Debug+AnyCPU/net47"
     let weakReport = reports @@ "WeakNameTestWithAltCoverRunner.xml"
 
     let prep =
@@ -1065,7 +1067,7 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
     let nunitcmd =
       NUnit3.buildArgs nunitparams
         [ Path.getFullName
-            "_Binaries/AltCover.WeakNameTests/Debug+AnyCPU/__WeakNameTestWithAltCoverRunner/AltCover.WeakNameTests.dll" ]
+            "_Binaries/AltCover.WeakName.Tests/Debug+AnyCPU/__WeakNameTestWithAltCoverRunner/AltCover.WeakName.Tests.dll" ]
 
     let collect =
       AltCover.CollectParams.Primitive
@@ -1927,7 +1929,7 @@ _Target "RecordResumeTest" (fun _ ->
 _Target "RecordResumeTrackingTest" (fun _ ->
   Directory.ensure "./_Reports"
   let simpleReport = (Path.getFullName "./_Reports") @@ ("RecordResumeTrackingTest.xml")
-  let binRoot = Path.getFullName "_Binaries/AltCover/Release+AnyCPU"
+  let binRoot = Path.getFullName "_Binaries/AltCover/Release+AnyCPU/net45"
   let sampleRoot = Path.getFullName "_Binaries/Sample8/Debug+AnyCPU"
   let instrumented = "__RecordResumeTrackingTest"
 
