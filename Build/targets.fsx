@@ -2157,7 +2157,6 @@ _Target "RecordResumeTestUnderMono" // Fails : System.EntryPointNotFoundExceptio
 _Target "Packaging" (fun _ ->
   let AltCover = Path.getFullName "_Binaries/AltCover/Release+AnyCPU/net45/AltCover.exe"
   let config = AltCover + ".config"
-  Assert.That(Environment.isWindows && config |> File.Exists, Is.False, config)
   let fox = Path.getFullName "_Binaries/AltCover/Release+AnyCPU/net45/BlackFox.CommandLine.dll"
   let fscore = Path.getFullName "_Binaries/AltCover/Release+AnyCPU/net45/FSharp.Core.dll"
   let options = Path.getFullName "_Binaries/AltCover/Release+AnyCPU/net45/Mono.Options.dll"
@@ -2189,6 +2188,7 @@ _Target "Packaging" (fun _ ->
 
   let applicationFiles =
     [ (AltCover, Some "tools/net45", None)
+      (config, Some "tools/net45", None)
       (recorder, Some "tools/net45", None)
       (posh, Some "tools/net45", None)
       (fsapi, Some "tools/net45", None)
