@@ -8,7 +8,7 @@
            exclude="BadRecursiveInvocationRule | CheckParametersNullityInVisibleMethodsRule | EnsureLocalDisposalRule"
            from="Gendarme.Rules.Correctness.dll" />
     <rules include="*"
-           exclude="AvoidMultidimensionalIndexerRule | AvoidVisibleNestedTypesRule | AvoidSmallNamespaceRule | PreferXmlAbstractionsRule"
+           exclude="AvoidMultidimensionalIndexerRule | AvoidVisibleNestedTypesRule"
            from="Gendarme.Rules.Design.dll" />
     <rules include="*"
            from="Gendarme.Rules.Design.Generic.dll" />
