@@ -56,12 +56,15 @@
     <EmbeddedResource Include="Sample2.deps.json" />
     <EmbeddedResource Include="Sample2.deps.after.json" />
     <EmbeddedResource Include="..\Build\Infrastructure.snk" Link="Infrastructure.snk" />
+    <EmbeddedResource Include="..\Build\Recorder.snk" Link="Recorder.snk" />
     <EmbeddedResource Include="TailCallSample.dl_" />
     <EmbeddedResource Include="SwitchSample.dl_" />
     <EmbeddedResource Include="SwitchSample.pd_" />
     <EmbeddedResource Include="issue37.dl_" />
     <EmbeddedResource Include="issue37.pd_" />
   </ItemGroup>
+
+  <ItemGroup />
 
   <ItemGroup>
     <PackageReference Include="Expecto" Version="8.13.1" Condition="'$(TargetFramework)' != 'net47'" />
@@ -80,7 +83,7 @@
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.4.0" />
     <PackageReference Include="Mono.Cecil" Version="0.11.1" />
     <PackageReference Include="Mono.Options" Version="6.6.0.161" Condition="'$(TargetFramework)' != 'net47'" />
-    <PackageReference Include="Mono.Options.Signed" Version="0.2.3"  Condition="'$(TargetFramework)' == 'net47'"/>
+    <PackageReference Include="Mono.Options.Signed" Version="0.2.3" Condition="'$(TargetFramework)' == 'net47'" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     <PackageReference Include="NUnit" Version="3.12.0" />
     <PackageReference Include="YoloDev.Expecto.TestSdk" Version="0.8.0" Condition="'$(TargetFramework)' != 'net47'" />

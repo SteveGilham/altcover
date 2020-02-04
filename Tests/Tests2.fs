@@ -697,8 +697,7 @@ module AltCoverTests2 =
     [<Test>]
     let ShouldUpdateHandlerOK([<NUnit.Framework.Range(0, 31)>] selection) =
       let where = Assembly.GetExecutingAssembly().Location
-      let path =
-        Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), sample1)
+      let path = AltCoverTests.sample1path
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
       ProgramDatabase.ReadSymbols def
       let program = def.MainModule.GetType("TouchTest.Program")
@@ -899,7 +898,7 @@ module AltCoverTests2 =
 #if NETCOREAPP2_0
       let shift = String.Empty
 #else
-      let shift = "/netcoreapp3.0"
+      let shift = "/../netcoreapp3.0"
 #endif
       let path =
         Path.Combine
@@ -935,7 +934,7 @@ module AltCoverTests2 =
 #if NETCOREAPP2_0
       let shift = String.Empty
 #else
-      let shift = "/netcoreapp3.0"
+      let shift = "/../netcoreapp3.0"
 #endif
       let rpath =
         Path.Combine
@@ -980,7 +979,7 @@ module AltCoverTests2 =
 #if NETCOREAPP2_0
       let shift = String.Empty
 #else
-      let shift = "/netcoreapp3.0"
+      let shift = "/../netcoreapp3.0"
 #endif
       let rpath =
         Path.Combine
@@ -1198,13 +1197,7 @@ module AltCoverTests2 =
     [<Test>]
     let SimpleBranchShouldInstrumentByPushingDown() =
       let where = Assembly.GetExecutingAssembly().Location
-      let path = Path.Combine(Path.GetDirectoryName(where),
-#if NETCOREAPP2_0
-                    "Sample1.dll")
-#else
-                    "Sample1.exe")
-#endif
-
+      let path = AltCoverTests.sample1path
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
       ProgramDatabase.ReadSymbols def
       let method =

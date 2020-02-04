@@ -2807,11 +2807,7 @@ or
 
       use stream =
           Assembly.GetExecutingAssembly()
-#if NETCOREAPP2_0
                   .GetManifestResourceStream("altcover.tests.core.coverage-04.xsd")
-#else
-                  .GetManifestResourceStream("coverage-04.xsd")
-#endif
       use reader = new StreamReader(stream)
       use xreader = XmlReader.Create(reader)
       schemas.Add(String.Empty, xreader) |> ignore
