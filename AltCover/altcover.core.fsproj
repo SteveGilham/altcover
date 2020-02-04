@@ -75,15 +75,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="BlackFox.CommandLine" Version="1.0.0" Condition="'$(TargetFramework)' != 'net45'"/>
-    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="16.0.461" Condition="'$(TargetFramework)' != 'net45'"/>
+    <PackageReference Include="BlackFox.CommandLine" Version="1.0.0" Condition="'$(TargetFramework)' != 'net45'" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="16.0.461" Condition="'$(TargetFramework)' != 'net45'" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Mono.Cecil" Version="0.11.1" />
-    <PackageReference Include="Mono.Options" Version="6.6.0.161" Condition="'$(TargetFramework)' != 'net45'"/>
-    <PackageReference Include="Mono.Options.Signed" Version="0.2.3" Condition="'$(TargetFramework)' == 'net45'"/>
+    <PackageReference Include="Mono.Options" Version="6.6.0.161" Condition="'$(TargetFramework)' != 'net45'" />
+    <PackageReference Include="Mono.Options.Signed" Version="0.2.3" Condition="'$(TargetFramework)' == 'net45'" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
   </ItemGroup>
 
@@ -102,7 +102,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Update="FSharp.Core" Version="4.3.4" Condition="'$(TargetFramework)' != 'net45'"/>
-    <PackageReference Update="FSharp.Core" Version="4.5.2" Condition="'$(TargetFramework)' == 'net45'"/>
+    <PackageReference Update="FSharp.Core" Version="4.3.4" Condition="'$(TargetFramework)' != 'net45'" />
+    <PackageReference Update="FSharp.Core" Version="4.5.2" Condition="'$(TargetFramework)' == 'net45'" />
   </ItemGroup>
 </Project>
