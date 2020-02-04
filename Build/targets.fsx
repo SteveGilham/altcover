@@ -44,6 +44,7 @@ let AltCoverFilter(p: Primitive.PrepareParams) =
 let AltCoverFilterX(p: Primitive.PrepareParams) =
   { p with
       MethodFilter = "WaitForExitCustom" :: (p.MethodFilter |> Seq.toList)
+      AssemblyExcludeFilter = "Tests" :: (p.AssemblyExcludeFilter |> Seq.toList)
       AssemblyFilter = [ @"\.DataCollector"; "Sample" ] @ (p.AssemblyFilter |> Seq.toList)
       LocalSource = true
       TypeFilter =
@@ -803,7 +804,7 @@ _Target "UnitTestWithOpenCover"
          (fun f -> Path.GetFileName(f) <> "AltCover.Recorder.Tests.dll")
   let Recorder4Files = !!(@"_Binaries/*Tests/Debug+AnyCPU/net47/*Recorder.Tests.dll")
 
-  let RecorderFiles = !!(@"_Binaries/*Tests/Debug+AnyCPU/net35/*Test*.dll")
+  let RecorderFiles = !!(@"_Binaries/*Tests/Debug+AnyCPU/net35/AltCover*Test*.dll")
   let coverage = Path.getFullName "_Reports/UnitTestWithOpenCover.xml"
   let scoverage = Path.getFullName "_Reports/RecorderTestWithOpenCover.xml"
   let s4coverage = Path.getFullName "_Reports/Recorder4TestWithOpenCover.xml"
