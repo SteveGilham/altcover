@@ -41,10 +41,10 @@
     <Compile Include="..\_Generated\AssemblyVersion.fs">
       <Link>AssemblyVersion.fs</Link>
     </Compile>
-    <Compile Include="..\AltCover\Augment.fs">
+    <Compile Include="..\AltCover\Augment.fs" Condition="'$(TargetFramework)' == 'net47'">
       <Link>Augment.fs</Link>
     </Compile>
-    <Compile Include="..\AltCover\Gendarme.fs">
+    <Compile Include="..\AltCover\Gendarme.fs" Condition="'$(TargetFramework)' == 'net47'">
       <Link>Gendarme.fs</Link>
     </Compile>
     <Compile Include="Tests.fs" Condition="'$(TargetFramework)' == 'net47'" />
