@@ -189,17 +189,18 @@ let dotnet_altcover86 =
   Fake.DotNet.ToolType.CreateFrameworkDependentDeployment dotnetOptions86
 let framework_altcover = Fake.DotNet.ToolType.CreateFullFramework()
 
-let defaultTestOptions common (o: DotNet.TestOptions) =
+let defaultTestOptions fwk common (o: DotNet.TestOptions) =
   { o.WithCommon
       ((fun o2 -> { o2 with Verbosity = Some DotNet.Verbosity.Normal }) >> common) with
       NoBuild = true
+      Framework = fwk // Some "netcoreapp3.0"
       Configuration = DotNet.BuildConfiguration.Debug }
 
-let defaultDotNetTestCommandLine project =
-  AltCover.buildDotNetTestCommandLine (defaultTestOptions dotnetOptions) project
+let defaultDotNetTestCommandLine fwk project =
+  AltCover.buildDotNetTestCommandLine (defaultTestOptions fwk dotnetOptions) project
 
-let defaultDotNetTestCommandLine86 project =
-  AltCover.buildDotNetTestCommandLine (defaultTestOptions dotnetOptions86) project
+let defaultDotNetTestCommandLine86 fwk project =
+  AltCover.buildDotNetTestCommandLine (defaultTestOptions fwk dotnetOptions86) project
 
 let coverletOptions (o : DotNet.Options) =
   { dotnetOptions o with CustomParams = Some "--collect:\"XPlat Code Coverage\"" }
@@ -1301,6 +1302,7 @@ _Target "UnitTestWithAltCoverCore" // Obsolete
     |> DotNet.test (fun p ->
          { p.WithCommon(withWorkingDirectoryVM "Tests") with
              Configuration = DotNet.BuildConfiguration.Debug
+             Framework = Some "netcoreapp3.0"
              NoBuild = true }
          |> withCLIArgs)
   with x ->
@@ -1335,6 +1337,7 @@ _Target "UnitTestWithAltCoverCore" // Obsolete
   |> DotNet.test (fun p ->
        { p.WithCommon(withWorkingDirectoryVM "Recorder.Tests") with
            Configuration = DotNet.BuildConfiguration.Debug
+           Framework = Some "netcoreapp3.0"
            NoBuild = true }
        |> withCLIArgs)
 
@@ -1400,7 +1403,7 @@ _Target "UnitTestWithAltCoverCoreRunner"
   printfn "Unit test the instrumented code"
 
   let testproject = Path.getFullName "./Tests/altcover.tests.core.fsproj"
-  let (dotnetexe, args) = defaultDotNetTestCommandLine testproject
+  let (dotnetexe, args) = defaultDotNetTestCommandLine (Some "netcoreapp3.0") testproject
 
   let collect =
     AltCover.CollectParams.Primitive
@@ -1440,7 +1443,7 @@ _Target "UnitTestWithAltCoverCoreRunner"
   let RecorderProject =
     Path.getFullName "./Recorder.Tests/altcover.recorder.tests.core.fsproj"
 
-  let (dotnetexe, args) = defaultDotNetTestCommandLine RecorderProject
+  let (dotnetexe, args) = defaultDotNetTestCommandLine (Some "netcoreapp3.0") RecorderProject
 
   let collect =
     AltCover.CollectParams.Primitive
@@ -1574,7 +1577,7 @@ _Target "FSharpTests" (fun _ ->
   printfn "Execute the instrumented tests"
 
   let sample7 = Path.getFullName "./Sample7/sample7.core.fsproj"
-  let (dotnetexe, args) = defaultDotNetTestCommandLine sample7
+  let (dotnetexe, args) = defaultDotNetTestCommandLine None sample7
 
   let collect =
     AltCover.CollectParams.Primitive
@@ -1619,7 +1622,7 @@ _Target "FSharpTypesDotNetRunner" (fun _ ->
 
   printfn "Execute the instrumented tests"
   let sample2 = Path.getFullName "./Sample2/sample2.core.fsproj"
-  let (dotnetexe, args) = defaultDotNetTestCommandLine sample2
+  let (dotnetexe, args) = defaultDotNetTestCommandLine (Some "netcoreapp2.1") sample2
 
   let collect =
     AltCover.CollectParams.Primitive
@@ -2200,6 +2203,7 @@ _Target "Packaging" (fun _ ->
 
   let apiFiles =
     [ (AltCover, Some "lib/net45", None)
+      (config, Some "lib/net45", None)
       (recorder, Some "lib/net45", None)
       (posh, Some "lib/net45", None)
       (fsapi, Some "lib/net45", None)
@@ -2733,7 +2737,7 @@ _Target "ReleaseFSharpTypesDotNetRunner" (fun _ ->
   printfn "Execute the instrumented tests"
   let sample2 = Path.getFullName "./Sample2/sample2.core.fsproj"
   let runner = Path.getFullName "_Packaging/Unpack/tools/netcoreapp2.0/AltCover.dll"
-  let (dotnetexe, args) = defaultDotNetTestCommandLine sample2
+  let (dotnetexe, args) = defaultDotNetTestCommandLine (Some "netcoreapp2.1") sample2
 
   // Run
   let collect =
@@ -2803,7 +2807,7 @@ _Target "ReleaseFSharpTypesX86DotNetRunner" (fun _ ->
       let sample2 = Path.getFullName "./Sample2/sample2.core.fsproj"
 
       // Run
-      let (dotnetexe, args) = defaultDotNetTestCommandLine86 sample2
+      let (dotnetexe, args) = defaultDotNetTestCommandLine86 (Some "netcoreapp2.1") sample2
       let collect =
         AltCover.CollectParams.Primitive
           { Primitive.CollectParams.Create() with
@@ -2891,7 +2895,7 @@ _Target "ReleaseXUnitFSharpTypesDotNetRunner" (fun _ ->
   printfn "Execute the instrumented tests"
   let sample4 = Path.getFullName "./Sample4/sample4.core.fsproj"
   let runner = Path.getFullName "_Packaging/Unpack/tools/netcoreapp2.0/AltCover.dll"
-  let (dotnetexe, args) = defaultDotNetTestCommandLine sample4
+  let (dotnetexe, args) = defaultDotNetTestCommandLine (Some "netcoreapp2.1") sample4
 
   // Run
   let collect =
@@ -3033,7 +3037,7 @@ _Target "ReleaseXUnitFSharpTypesShowVisualized" (fun _ ->
   printfn "Execute the instrumented tests"
   let sample4 = Path.getFullName "./Sample4/sample4.core.fsproj"
   let runner = Path.getFullName "_Packaging/Unpack/tools/netcoreapp2.0/AltCover.dll"
-  let (dotnetexe, args) = defaultDotNetTestCommandLine sample4
+  let (dotnetexe, args) = defaultDotNetTestCommandLine (Some "netcoreapp2.1") sample4
 
   // Run
   let collect =
@@ -3092,7 +3096,7 @@ _Target "ReleaseXUnitFSharpTypesDotNetFullRunner" (fun _ ->
   printfn "Execute the instrumented tests"
   let sample4 = Path.getFullName "./Sample4/sample4.core.fsproj"
   let runner = Path.getFullName "_Packaging/Unpack/tools/netcoreapp2.0/AltCover.dll"
-  let (dotnetexe, args) = defaultDotNetTestCommandLine sample4
+  let (dotnetexe, args) = defaultDotNetTestCommandLine (Some "netcoreapp2.1") sample4
 
   // Run
   let collect =
@@ -3855,7 +3859,7 @@ _Target "DotnetCLIIntegration" (fun _ ->
     Actions.CheckSample4Content x
 
     printfn "Execute the instrumented tests"
-    let (dotnetexe, args) = defaultDotNetTestCommandLine String.Empty
+    let (dotnetexe, args) = defaultDotNetTestCommandLine (Some "netcoreapp2.1") String.Empty
 
     let collect =
       AltCover.CollectParams.Primitive
@@ -3955,7 +3959,7 @@ _Target "DotnetGlobalIntegration" (fun _ ->
     Actions.CheckSample4Content x
 
     printfn "Execute the instrumented tests"
-    let (dotnetexe, args) = defaultDotNetTestCommandLine String.Empty
+    let (dotnetexe, args) = defaultDotNetTestCommandLine (Some "netcoreapp2.1") String.Empty
 
     let collect =
       AltCover.CollectParams.Primitive
@@ -4070,7 +4074,7 @@ Target.activateFinal "ResetConsoleColours"
 
 "Compilation"
 ==> "JustUnitTest"
-==> "UnitTest"
+=?> ("UnitTest", Environment.isWindows)
 
 "Compilation"
 ==> "BuildForUnitTestDotNet"
@@ -4087,19 +4091,22 @@ Target.activateFinal "ResetConsoleColours"
 
 "Compilation"
 ==> "UnitTestWithAltCoverRunner"
-==> "UnitTest"
+=?> ("UnitTest", Environment.isWindows)
 
 "UnitTestDotNet"
 ==> "UnitTestWithAltCoverCore"
-// ==> "UnitTest"
+=?> ("OperationalTest", Environment.isWindows |> not)
 
 "UnitTestDotNet"
 ==> "UnitTestWithAltCoverCoreRunner"
 ==> "UnitTest"
 
-"UnitTestWithAltCoverRunner"
+"Compilation"
 ==> "BuildForCoverlet"
 ==> "UnitTestDotNetWithCoverlet"
+==> "UnitTest"
+
+"UnitTestWithAltCoverRunner"
 =?> ("UnitTest", Environment.isWindows)
 
 "Compilation"
@@ -4115,11 +4122,11 @@ Target.activateFinal "ResetConsoleColours"
 
 "Compilation"
 ==> "FSharpTypesDotNet"
-// ==> "OperationalTest"
+=?> ("OperationalTest", Environment.isWindows)
 
 "Compilation"
 ==> "FSharpTypesDotNetRunner"
-// ==> "OperationalTest" // test is duplicated in the Pester testing
+=?> ("OperationalTest", Environment.isWindows)
 
 "Compilation"
 ==> "FSharpTypesDotNetCollecter"
@@ -4178,7 +4185,7 @@ Target.activateFinal "ResetConsoleColours"
 
 "Compilation"
 ==> "PrepareFrameworkBuild"
-=?> ("Packaging", Environment.isWindows)  // can't ILMerge
+==> "Packaging"
 
 "Compilation"
 ==> "PrepareDotNetBuild"
@@ -4196,7 +4203,7 @@ Target.activateFinal "ResetConsoleColours"
 
 "Unpack"
 ==> "Pester"
-==> "UnitTestWithAltCoverRunner"
+=?> ("UnitTestWithAltCoverRunner", Environment.isWindows)
 
 "WindowsPowerShell"
 =?> ("Pester", Environment.isWindows)
@@ -4208,8 +4215,10 @@ Target.activateFinal "ResetConsoleColours"
 "ReleaseXUnitFSharpTypesDotNetRunner"
 =?> ("WindowsPowerShell", Environment.isWindows)
 
-"ReleaseXUnitFSharpTypesDotNetRunner"
+"Unpack"
+==> "ReleaseXUnitFSharpTypesDotNetRunner"
 ==> "Pester"
+==> "Deployment"
 
 "Unpack"
 ==> "SimpleReleaseTest"
@@ -4225,7 +4234,7 @@ Target.activateFinal "ResetConsoleColours"
 
 "Unpack"
 ==> "ReleaseDotNetWithDotNet"
-//==> "Deployment"
+==> "Deployment"
 
 "Unpack"
 ==> "ReleaseDotNetWithFramework"
@@ -4233,7 +4242,7 @@ Target.activateFinal "ResetConsoleColours"
 
 "Unpack"
 ==> "ReleaseFSharpTypesDotNetRunner"
-// ==> "Deployment" // test is duplicated in the Pester testing
+==> "Deployment" // test is duplicated in the Pester testing
 
 "Unpack"
 ==> "ReleaseFSharpTypesX86DotNetRunner"
@@ -4241,12 +4250,11 @@ Target.activateFinal "ResetConsoleColours"
 
 "Unpack"
 ==> "ReleaseXUnitFSharpTypesDotNet"
-//==> "Deployment"
+==> "Deployment"
 
 "Unpack"
 ==> "ReleaseXUnitFSharpTypesShowVisualized"
 ==> "Deployment"
-
 
 "Unpack"
 ==> "MSBuildTest"
@@ -4275,7 +4283,7 @@ Target.activateFinal "ResetConsoleColours"
 "Unpack"
 ==> "Issue20"
 ==> "Deployment"
-//=?> ("Deployment", Environment.isWindows)
+=?> ("Deployment", Environment.isWindows)
 
 "Unpack"
 ==> "DotnetCLIIntegration"
@@ -4284,10 +4292,6 @@ Target.activateFinal "ResetConsoleColours"
 "Unpack"
 ==> "DotnetGlobalIntegration"
 ==> "Deployment"
-
-"Unpack"
-==> "ReleaseXUnitFSharpTypesDotNetRunner"
-=?> ("Deployment", Environment.isWindows)
 
 "Unpack"
 ==> "ReleaseXUnitFSharpTypesDotNetFullRunner"
