@@ -1476,7 +1476,7 @@ _Target "FSharpTypes" (fun _ ->
   Directory.ensure "./_Reports"
   let simpleReport = (Path.getFullName "./_Reports") @@ ("AltCoverFSharpTypes.xml")
   let binRoot = Path.getFullName "_Binaries/AltCover/Release+AnyCPU/net45"
-  let sampleRoot = Path.getFullName "_Binaries/Sample2/Debug+AnyCPU"
+  let sampleRoot = Path.getFullName "_Binaries/Sample2/Debug+AnyCPU/net461"
   let instrumented = "__FSharpTypes"
   if sampleRoot @@ "Sample2.pdb" |> File.Exists then
     let prep =
@@ -1500,8 +1500,6 @@ _Target "FSharpTypes" (fun _ ->
 
 _Target "FSharpTypesDotNet" (fun _ -> // obsolete
   Directory.ensure "./_Reports"
-  let altcover =
-    Path.getFullName "./_Binaries/AltCover/Release+AnyCPU/netcoreapp2.0/AltCover.dll"
   let simpleReport = (Path.getFullName "./_Reports") @@ ("AltCoverFSharpTypesDotNet.xml")
   let sampleRoot =
     Path.getFullName "Sample2/_Binaries/Sample2/Debug+AnyCPU/netcoreapp2.1"
@@ -1512,7 +1510,8 @@ _Target "FSharpTypesDotNet" (fun _ -> // obsolete
   |> DotNet.test
        (fun o ->
        { o.WithCommon(withWorkingDirectoryVM "Sample2") with
-           Configuration = DotNet.BuildConfiguration.Debug } |> withCLIArgs)
+           Configuration = DotNet.BuildConfiguration.Debug
+           Framework = Some "netcoreapp2.1" } |> withCLIArgs)
 
   let prep =
     AltCover.PrepareParams.Primitive
@@ -1525,7 +1524,7 @@ _Target "FSharpTypesDotNet" (fun _ -> // obsolete
            Save = false })
     |> AltCover.Prepare
   { AltCover.Params.Create prep with
-      ToolPath = altcover
+      ToolPath = (Path.getFullName "./_Binaries/AltCover/Release+AnyCPU/netcoreapp2.0/AltCover.dll")
       WorkingDirectory = sampleRoot }.WithToolType dotnet_altcover
   |> AltCover.run
 
@@ -1537,6 +1536,7 @@ _Target "FSharpTypesDotNet" (fun _ -> // obsolete
   |> DotNet.test (fun o ->
        { o.WithCommon(withWorkingDirectoryVM "Sample2") with
            Configuration = DotNet.BuildConfiguration.Debug
+           Framework = Some "netcoreapp2.1"
            NoBuild = true }
        |> withCLIArgs)
   Actions.ValidateFSharpTypesCoverage simpleReport)
@@ -1694,24 +1694,24 @@ _Target "FSharpTypesDotNetCollecter" (fun _ ->
 _Target "BasicCSharp"
   (fun _ ->
   Actions.SimpleInstrumentingRun "_Binaries/Sample1/Debug+AnyCPU"
-    "_Binaries/AltCover/Debug+AnyCPU" "BasicCSharp")
+    "_Binaries/AltCover/Debug+AnyCPU/net45" "BasicCSharp")
 
 _Target "BasicCSharpMono"
   (fun _ ->
-  Actions.SimpleInstrumentingRun "_Mono/Sample1" "_Binaries/AltCover/Debug+AnyCPU"
+  Actions.SimpleInstrumentingRun "_Mono/Sample1" "_Binaries/AltCover/Debug+AnyCPU/net45"
     "BasicCSharpMono")
 
 _Target "BasicCSharpUnderMono"
   (fun _ ->
   monoOnWindows
   |> Actions.SimpleInstrumentingRunUnderMono "_Binaries/Sample1/Debug+AnyCPU"
-       "_Binaries/AltCover/Debug+AnyCPU" "BasicCSharpUnderMono")
+       "_Binaries/AltCover/Debug+AnyCPU/net45" "BasicCSharpUnderMono")
 
 _Target "BasicCSharpMonoUnderMono"
   (fun _ ->
   monoOnWindows
   |> Actions.SimpleInstrumentingRunUnderMono "_Mono/Sample1"
-       "_Binaries/AltCover/Debug+AnyCPU" "BasicCSharpMono")
+       "_Binaries/AltCover/Debug+AnyCPU/net45" "BasicCSharpMono")
 
 _Target "CSharpMonoWithDotNet" (fun _ ->
   Directory.ensure "./_Reports"
@@ -2190,42 +2190,51 @@ _Target "Packaging" (fun _ ->
     |> Seq.toList
 
   let applicationFiles =
-    [ (AltCover, Some "tools/net45", None)
-      (config, Some "tools/net45", None)
-      (recorder, Some "tools/net45", None)
-      (posh, Some "tools/net45", None)
-      (fsapi, Some "tools/net45", None)
-      (vis, Some "tools/net45", None)
-      (fscore, Some "tools/net45", None)
-      (fox, Some "tools/net45", None)
-      (options, Some "tools/net45", None)
-      (packable, Some "", None) ]
+    if File.Exists AltCover
+    then  
+      [ (AltCover, Some "tools/net45", None)
+        (config, Some "tools/net45", None)
+        (recorder, Some "tools/net45", None)
+        (posh, Some "tools/net45", None)
+        (fsapi, Some "tools/net45", None)
+        (vis, Some "tools/net45", None)
+        (fscore, Some "tools/net45", None)
+        (fox, Some "tools/net45", None)
+        (options, Some "tools/net45", None)
+        (packable, Some "", None) ]
+    else []
 
   let apiFiles =
-    [ (AltCover, Some "lib/net45", None)
-      (config, Some "lib/net45", None)
-      (recorder, Some "lib/net45", None)
-      (posh, Some "lib/net45", None)
-      (fsapi, Some "lib/net45", None)
-      (csapi, Some "lib/net45", None)
-      (cake, Some "lib/net45", None)
-      (fake, Some "lib/net45", None)
-      (fscore, Some "lib/net45", None)
-      (fox, Some "lib/net45", None)
-      (options, Some "lib/net45", None)
-      (packable, Some "", None) ]
+    if File.Exists AltCover
+    then  
+      [ (AltCover, Some "lib/net45", None)
+        (config, Some "lib/net45", None)
+        (recorder, Some "lib/net45", None)
+        (posh, Some "lib/net45", None)
+        (fsapi, Some "lib/net45", None)
+        (csapi, Some "lib/net45", None)
+        (cake, Some "lib/net45", None)
+        (fake, Some "lib/net45", None)
+        (fscore, Some "lib/net45", None)
+        (fox, Some "lib/net45", None)
+        (options, Some "lib/net45", None)
+        (packable, Some "", None) ]
+    else []
 
   let resourceFiles path =
-    [ "_Binaries/AltCover/Release+AnyCPU/net45"; "_Binaries/AltCover.Visualizer/Release+AnyCPU/net45" ]
-    |> List.map (fun f ->
-         Directory.GetDirectories(Path.getFullName f)
-         |> Seq.map (fun d -> Directory.GetFiles(d, "*.resources.dll"))
-         |> Seq.concat)
-    |> Seq.concat
-    |> Seq.map
-         (fun x -> (x, Some(path + Path.GetFileName(Path.GetDirectoryName(x))), None))
-    |> Seq.distinctBy (fun (x, y, _) -> (Option.get y) + "/" + (Path.GetFileName x))
-    |> Seq.toList
+    if File.Exists AltCover
+    then  
+      [ "_Binaries/AltCover/Release+AnyCPU/net45"; "_Binaries/AltCover.Visualizer/Release+AnyCPU/net45" ]
+      |> List.map (fun f ->
+           Directory.GetDirectories(Path.getFullName f)
+           |> Seq.map (fun d -> Directory.GetFiles(d, "*.resources.dll"))
+           |> Seq.concat)
+      |> Seq.concat
+      |> Seq.map
+           (fun x -> (x, Some(path + Path.GetFileName(Path.GetDirectoryName(x))), None))
+      |> Seq.distinctBy (fun (x, y, _) -> (Option.get y) + "/" + (Path.GetFileName x))
+      |> Seq.toList
+    else []
 
   let nupkg = (Path.getFullName "./nupkg").Length
 
@@ -2606,8 +2615,10 @@ _Target "SimpleReleaseTest"
       Path.GetDirectoryName test
     | _ -> Path.getFullName "_Packaging/Unpack/tools/net45"
 
-  Actions.SimpleInstrumentingRun "_Binaries/Sample1/Debug+AnyCPU" unpack
-    "SimpleReleaseTest")
+  if File.Exists  (Path.Combine (unpack, "AltCover.exe"))
+  then Actions.SimpleInstrumentingRun "_Binaries/Sample1/Debug+AnyCPU" unpack
+         "SimpleReleaseTest"
+  else Trace.traceImportant "Skipping -- AltCover.exe not packaged")
 
 _Target "SimpleMonoReleaseTest" (fun _ ->
   let unpack =
@@ -2617,7 +2628,9 @@ _Target "SimpleMonoReleaseTest" (fun _ ->
       Path.GetDirectoryName test
     | _ -> Path.getFullName "_Packaging/Unpack/tools/net45"
 
-  Actions.SimpleInstrumentingRun "_Mono/Sample1" unpack "SimpleMonoReleaseTest")
+  if File.Exists  (Path.Combine (unpack, "AltCover.exe"))
+  then Actions.SimpleInstrumentingRun "_Mono/Sample1" unpack "SimpleMonoReleaseTest"
+  else Trace.traceImportant "Skipping -- AltCover.exe not packaged")
 
 _Target "ReleaseDotNetWithFramework"
   (fun _ ->
@@ -2629,31 +2642,34 @@ _Target "ReleaseDotNetWithFramework"
       Path.GetDirectoryName test
     | _ -> Path.getFullName "_Packaging/Unpack/tools/net45"
 
-  let simpleReport =
-    (Path.getFullName "./_Reports") @@ ("ReleaseDotNetWithFramework.xml")
-  let sampleRoot = Path.getFullName "./_Binaries/Sample1/Debug+AnyCPU/netcoreapp2.0"
-  let instrumented = sampleRoot @@ "__Instrumented.ReleaseDotNetWithFramework"
+  if File.Exists  (Path.Combine (unpack, "AltCover.exe"))
+  then 
+    let simpleReport =
+      (Path.getFullName "./_Reports") @@ ("ReleaseDotNetWithFramework.xml")
+    let sampleRoot = Path.getFullName "./_Binaries/Sample1/Debug+AnyCPU/netcoreapp2.0"
+    let instrumented = sampleRoot @@ "__Instrumented.ReleaseDotNetWithFramework"
 
-  let prep =
-    AltCover.PrepareParams.Primitive
-      ({ Primitive.PrepareParams.Create() with
-           XmlReport = simpleReport
-           OutputDirectories = [ instrumented ]
-           TypeFilter = [ "System\\."; "Microsoft\\." ]
-           InPlace = false
-           OpenCover = false
-           Save = false })
-    |> AltCover.Prepare
-  { AltCover.Params.Create prep with
-      ToolPath = (unpack @@ "AltCover.exe")
-      WorkingDirectory = sampleRoot }.WithToolType framework_altcover
-  |> AltCover.run
+    let prep =
+      AltCover.PrepareParams.Primitive
+        ({ Primitive.PrepareParams.Create() with
+             XmlReport = simpleReport
+             OutputDirectories = [ instrumented ]
+             TypeFilter = [ "System\\."; "Microsoft\\." ]
+             InPlace = false
+             OpenCover = false
+             Save = false })
+      |> AltCover.Prepare
+    { AltCover.Params.Create prep with
+        ToolPath = (unpack @@ "AltCover.exe")
+        WorkingDirectory = sampleRoot }.WithToolType framework_altcover
+    |> AltCover.run
 
-  Actions.RunDotnet (fun o -> { dotnetOptions o with WorkingDirectory = instrumented })
-    "" "Sample1.dll" "ReleaseDotNetWithFramework test"
+    Actions.RunDotnet (fun o -> { dotnetOptions o with WorkingDirectory = instrumented })
+      "" "Sample1.dll" "ReleaseDotNetWithFramework test"
 
-  Actions.ValidateSample1 "./_Reports/ReleaseDotNetWithFramework.xml"
-    "ReleaseDotNetWithFramework")
+    Actions.ValidateSample1 "./_Reports/ReleaseDotNetWithFramework.xml"
+      "ReleaseDotNetWithFramework"
+  else Trace.traceImportant "Skipping -- AltCover.exe not packaged")
 
 _Target "ReleaseMonoWithDotNet" (fun _ ->
   Directory.ensure "./_Reports"
@@ -2860,6 +2876,7 @@ _Target "ReleaseXUnitFSharpTypesDotNet" (fun _ ->
   |> DotNet.test (fun o ->
        { o.WithCommon(withWorkingDirectoryVM "Sample4") with
            Configuration = DotNet.BuildConfiguration.Debug
+           Framework = Some "netcoreapp2.1"
            NoBuild = true }
        |> withCLIArgs)
   Actions.ValidateFSharpTypesCoverage x)
@@ -3135,14 +3152,17 @@ _Target "MSBuildTest" (fun _ ->
       Path.GetDirectoryName test
     | _ -> Path.getFullName "_Packaging/Unpack/tools/net45"
 
-  MSBuild.build (fun p ->
-    { p with
-        Verbosity = Some MSBuildVerbosity.Minimal
-        Properties =
-          [ "Configuration", "Debug"
-            "MSBuildTest", "true"
-            "AltCoverPath", unpack.Replace('\\', '/')
-            "DebugSymbols", "True" ] }) "./Sample4/Sample4.fsproj")
+  if File.Exists  (Path.Combine (unpack, "AltCover.exe"))
+  then
+    MSBuild.build (fun p ->
+      { p with
+          Verbosity = Some MSBuildVerbosity.Minimal
+          Properties =
+            [ "Configuration", "Debug"
+              "MSBuildTest", "true"
+              "AltCoverPath", unpack.Replace('\\', '/')
+              "DebugSymbols", "True" ] }) "./Sample4/Sample4.fsproj"
+  else Trace.traceImportant "Skipping -- AltCover.exe not packaged")
 
 _Target "ApiUse" (fun _ ->
   try
@@ -3166,6 +3186,10 @@ _Target "ApiUse" (fun _ ->
     config.Save "./_ApiUse/_DotnetTest/NuGet.config"
 
     let fsproj = XDocument.Load "./Sample4/sample4.core.fsproj"
+    let target = fsproj.Descendants(XName.Get("TargetFramework")) |> Seq.head
+    target.RemoveAttributes()
+    let targets = fsproj.Descendants(XName.Get("TargetFrameworks")) |> Seq.head
+    targets.Remove()
     let pack = fsproj.Descendants(XName.Get("PackageReference")) |> Seq.head
     let inject =
       XElement
@@ -3335,6 +3359,10 @@ _Target "DotnetTestIntegration" (fun _ ->
     config.Save "./_DotnetTestFail/NuGet.config"
 
     let fsproj = XDocument.Load "./Sample4/sample4.core.fsproj"
+    let target = fsproj.Descendants(XName.Get("TargetFramework")) |> Seq.head
+    target.RemoveAttributes()
+    let targets = fsproj.Descendants(XName.Get("TargetFrameworks")) |> Seq.head
+    targets.Remove()
     let pack = fsproj.Descendants(XName.Get("PackageReference")) |> Seq.head
     let inject =
       XElement
@@ -3811,6 +3839,10 @@ _Target "DotnetCLIIntegration" (fun _ ->
     config.Save "./_DotnetCLITest/NuGet.config"
 
     let fsproj = XDocument.Load "./Sample4/sample4.core.fsproj"
+    let target = fsproj.Descendants(XName.Get("TargetFramework")) |> Seq.head
+    target.RemoveAttributes()
+    let targets = fsproj.Descendants(XName.Get("TargetFrameworks")) |> Seq.head
+    targets.Remove()
     let pack = fsproj.Descendants(XName.Get("PackageReference")) |> Seq.head
     let inject =
       XElement
@@ -3920,6 +3952,10 @@ _Target "DotnetGlobalIntegration" (fun _ ->
     Shell.cleanDir working
 
     let fsproj = XDocument.Load "./Sample4/sample4.core.fsproj"
+    let target = fsproj.Descendants(XName.Get("TargetFramework")) |> Seq.head
+    target.RemoveAttributes()
+    let targets = fsproj.Descendants(XName.Get("TargetFrameworks")) |> Seq.head
+    targets.Remove()
     fsproj.Save "./_DotnetGlobalTest/dotnetglobal.fsproj"
     Shell.copy "./_DotnetGlobalTest" (!!"./Sample4/*.fs")
     Shell.copy "./_DotnetGlobalTest" (!!"./Sample4/*.json")
@@ -4095,7 +4131,7 @@ Target.activateFinal "ResetConsoleColours"
 
 "UnitTestDotNet"
 ==> "UnitTestWithAltCoverCore"
-=?> ("OperationalTest", Environment.isWindows |> not)
+=?> ("UnitTest", Environment.isWindows |> not)
 
 "UnitTestDotNet"
 ==> "UnitTestWithAltCoverCoreRunner"
@@ -4120,9 +4156,9 @@ Target.activateFinal "ResetConsoleColours"
 ==> "FSharpTests"
 =?> ("OperationalTest", Environment.isWindows)
 
-"Compilation"
-==> "FSharpTypesDotNet"
-=?> ("OperationalTest", Environment.isWindows)
+//"Compilation"
+//==> "FSharpTypesDotNet"
+//=?> ("OperationalTest", Environment.isWindows) -- timing window hits
 
 "Compilation"
 ==> "FSharpTypesDotNetRunner"
@@ -4283,7 +4319,6 @@ Target.activateFinal "ResetConsoleColours"
 "Unpack"
 ==> "Issue20"
 ==> "Deployment"
-=?> ("Deployment", Environment.isWindows)
 
 "Unpack"
 ==> "DotnetCLIIntegration"

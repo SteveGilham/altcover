@@ -592,7 +592,7 @@ Describe "ConvertFrom-NCover" {
     $expected = $expected.Replace("Sample4|Tests.fs", (Join-Path $fullpath "Tests.fs"))
 
     $result = $sw.ToString().Replace("`r", "").Replace("utf-16", "utf-8") 
-    $result | Should -Be $expected.Replace("`r", "") ###.Substring(0,11680)
+    $result | Should -Be $expected.Replace("`r", "")
   }
 }
 

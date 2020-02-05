@@ -414,7 +414,7 @@ a:hover {color: #ecc;}
     let recorded =
       coverageDocument.Descendants(XName.Get("Method"))
       |> Seq.collect (fun x -> x.Descendants(XName.Get("Name")))
-      |> Seq.map (fun x -> x.Value)
+      |> Seq.map (fun x -> x.Value.Replace("Tests.Program", "Program/Program"))
       |> Seq.sort
       |> Seq.toList
 
