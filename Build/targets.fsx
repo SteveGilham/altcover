@@ -4170,7 +4170,7 @@ Target.activateFinal "ResetConsoleColours"
 
 "Compilation"
 ==> "BasicCSharp"
-==> "OperationalTest"
+=?> ("OperationalTest", Environment.isWindows) // AltCover.exe
 
 "Compilation"
 ==> "BasicCSharpMono"
@@ -4198,11 +4198,11 @@ Target.activateFinal "ResetConsoleColours"
 
 "Compilation"
 ==> "RecordResumeTest"
-=?> ("OperationalTest", Environment.isWindows)
+=?> ("OperationalTest", Environment.isWindows) // AltCover.exe
 
 "Compilation"
 ==> "RecordResumeTrackingTest"
-=?> ("OperationalTest", Environment.isWindows)
+=?> ("OperationalTest", Environment.isWindows) // AltCover.exe
 
 //"Compilation"
 //==> "RecordResumeTestUnderMono"
