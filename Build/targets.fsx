@@ -4198,7 +4198,7 @@ Target.activateFinal "ResetConsoleColours"
 
 "Compilation"
 ==> "RecordResumeTest"
-==> "OperationalTest"
+=?> ("OperationalTest", Environment.isWindows)
 
 "Compilation"
 ==> "RecordResumeTrackingTest"
