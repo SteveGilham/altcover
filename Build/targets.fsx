@@ -1807,6 +1807,7 @@ _Target "SelfTest" (fun _ ->
       ({ Primitive.PrepareParams.Create() with
            XmlReport = altReport
            OutputDirectories = [| "__SelfTest" |]
+           AssemblyExcludeFilter = [ "xunit" ; "NUnit" ]
            StrongNameKey = keyfile
            OpenCover = false
            InPlace = false
@@ -1828,8 +1829,8 @@ _Target "SelfTest" (fun _ ->
         Filter = OpenCoverFilter
         MergeByHash = true
         OptionalArguments =
-          "-excludebyattribute:*ExcludeFromCodeCoverageAttribute;*ProgIdAttribute -register:Path64"
-        //Register = OpenCover.RegisterType.RegisterUser
+          "-excludebyattribute:*ExcludeFromCodeCoverageAttribute;*ProgIdAttribute"
+        Register = OpenCover.RegisterType.Path64
         Output = report }) args
 
   ReportGenerator.generateReports (fun p ->
