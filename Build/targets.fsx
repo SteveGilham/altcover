@@ -3256,9 +3256,9 @@ let _Target s f =
 
 _Target "DoIt"
   (fun _ ->
-  AltCover.Api.Version() |> printfn "Returned %A"
+  AltCover.Api.Version() |> printfn "AltCover.Api.Version - Returned %A"
   AltCover.Fake.Api.Version() |> Trace.trace
-  AltCover.CSApi.Version() |> printfn "Returned %A"
+  AltCover.CSApi.Version() |> printfn " - Returned %A"
 
   let collect =
     FSApi.CollectParams.Primitive
@@ -3267,10 +3267,10 @@ _Target "DoIt"
     FSApi.PrepareParams.Primitive
       { AltCover.Primitive.PrepareParams.Create() with TypeFilter = [| "a"; "b" |] }
   let ForceTrue = DotNet.CLIArgs.Force true
-  printfn "%s" (DotNet.ToTestArguments prepare collect ForceTrue)
+  printfn "Test arguments : '%s'" (DotNet.ToTestArguments prepare collect ForceTrue)
 
   let t = DotNet.TestOptions.Create().WithAltCoverParameters prepare collect ForceTrue
-  printfn "returned '%A'" t.Common.CustomParams
+  printfn "WithAltCoverParameters returned '%A'" t.Common.CustomParams
 
   let p2 =
     { Primitive.PrepareParams.Create() with
@@ -3309,12 +3309,22 @@ _Target "DoIt"
   let frameworkPath = AltCover.Fake.Api.toolPath AltCover.Fake.Implementation.Framework
   printfn "frameworkPath = %A" frameworkPath
 
-  let framework = Fake.DotNet.ToolType.CreateFullFramework()
+  if frameworkPath |> String.IsNullOrEmpty |> not
+  then
+    let framework = Fake.DotNet.ToolType.CreateFullFramework()
+
+    { AltCover_Fake.DotNet.Testing.AltCover.Params.Create
+        AltCover_Fake.DotNet.Testing.AltCover.ArgType.GetVersion
+          with
+            ToolPath = frameworkPath }.WithToolType framework
+    |> AltCover_Fake.DotNet.Testing.AltCover.run
+
+  let core = Fake.DotNet.ToolType.CreateFrameworkDependentDeployment id
 
   { AltCover_Fake.DotNet.Testing.AltCover.Params.Create
       AltCover_Fake.DotNet.Testing.AltCover.ArgType.GetVersion
         with
-          ToolPath = frameworkPath }.WithToolType framework
+          ToolPath = corePath }.WithToolType core
   |> AltCover_Fake.DotNet.Testing.AltCover.run
 
   let pwsh =
