@@ -2403,6 +2403,7 @@ _Target "Packaging" (fun _ ->
       [ apiFiles
         resourceFiles "lib/net45/"
         libFiles "lib/net45/"
+        netcoreFiles "tools/netcoreapp2.0/"
         netstdFiles "lib/netstandard2.0"
         cakeFiles "lib/netstandard2.0/"
         dataFiles "lib/netstandard2.0/"
