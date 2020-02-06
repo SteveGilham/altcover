@@ -2583,7 +2583,6 @@ _Target "Pester" (fun _ ->
   let report = Path.getFullName "_Reports/Pester.xml"
   let i = ``module`` @@ "tools/netcoreapp2.0"
   let v = (!Version).Split([| '-' |]).[0]
-  let retro = Path.getFullName "_Binaries/AltCover/Release+AnyCPU/net45/AltCover.exe"
   let key = Path.getFullName "Build/Infrastructure.snk"
 
   let prep =
@@ -2600,8 +2599,8 @@ _Target "Pester" (fun _ ->
            VisibleBranches = true })
     |> AltCover.Prepare
   { AltCover.Params.Create prep with
-      ToolPath = retro
-      WorkingDirectory = unpack }.WithToolType framework_altcover
+      ToolPath = "AltCover.dll"
+      WorkingDirectory = unpack }.WithToolType dotnet_altcover
   |> AltCover.run
 
   printfn "Execute the instrumented tests"
@@ -4317,9 +4316,9 @@ Target.activateFinal "ResetConsoleColours"
 ==> "ReleaseFSharpTypesX86DotNetRunner"
 =?> ("Deployment", Option.isSome dotnetPath86)
 
-"Unpack"
-==> "ReleaseXUnitFSharpTypesDotNet"
-==> "Deployment"
+//"Unpack"
+//==> "ReleaseXUnitFSharpTypesDotNet"
+//==> "Deployment"  -- timing window hits
 
 "Unpack"
 ==> "ReleaseXUnitFSharpTypesShowVisualized"
