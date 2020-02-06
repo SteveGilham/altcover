@@ -1268,12 +1268,12 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
   else
     printfn "Symbols not present; skipping")
 
-_Target "UnitTestWithAltCoverCore" // Obsolete
+_Target "UnitTestWithAltCoverCore"
   (fun _ ->
   Directory.ensure "./_Reports/_UnitTestWithAltCover"
   let keyfile = Path.getFullName "Build/SelfTest.snk"
   let reports = Path.getFullName "./_Reports"
-  let altcover = "./_Binaries/AltCover/Debug+AnyCPU/net45/AltCover.exe"
+  let altcover = "./_Binaries/AltCover/Debug+AnyCPU/netcoreapp2.0/AltCover.dll"
   let testDirectory =
     Path.getFullName "_Binaries/AltCover.Tests/Debug+AnyCPU/netcoreapp3.0"
   let output =
@@ -1293,7 +1293,7 @@ _Target "UnitTestWithAltCoverCore" // Obsolete
     |> AltCover.Prepare
   { AltCover.Params.Create prep with
       ToolPath = altcover
-      WorkingDirectory = testDirectory }.WithToolType framework_altcover
+      WorkingDirectory = testDirectory }.WithToolType dotnet_altcover
   |> AltCover.run
 
   printfn "Unit test the instrumented code"
@@ -1329,7 +1329,7 @@ _Target "UnitTestWithAltCoverCore" // Obsolete
     |> AltCover.Prepare
   { AltCover.Params.Create prep with
       ToolPath = altcover
-      WorkingDirectory = RecorderDir }.WithToolType framework_altcover
+      WorkingDirectory = RecorderDir }.WithToolType dotnet_altcover
   |> AltCover.run
 
   printfn "Execute the Recorder tests"
@@ -1795,7 +1795,7 @@ _Target "CSharpDotNetWithFramework" (fun _ ->
 
 _Target "SelfTest" (fun _ ->
   Directory.ensure "./_Reports/_Instrumented"
-  let targetDir = "_Binaries/AltCover.Tests/Debug+AnyCPU"
+  let targetDir = "_Binaries/AltCover.Tests/Debug+AnyCPU/net47"
   let reports = Path.getFullName "./_Reports"
   let report = reports @@ "OpenCoverSelfTest.xml"
   let altReport = reports @@ "AltCoverSelfTest.xml"
@@ -1852,8 +1852,8 @@ _Target "SelfTest" (fun _ ->
        |> AltCoverFilter)
     |> AltCover.Prepare
   { AltCover.Params.Create prep with
-      ToolPath = "_Binaries/AltCover.Tests/Debug+AnyCPU/__SelfTest/AltCover.exe"
-      WorkingDirectory = "_Binaries/AltCover.Tests/Debug+AnyCPU" }
+      ToolPath = "_Binaries/AltCover.Tests/Debug+AnyCPU/net45/__SelfTest/AltCover.exe"
+      WorkingDirectory = "_Binaries/AltCover.Tests/Debug+AnyCPU/net47" }
     .WithToolType framework_altcover
   |> AltCover.run
 
