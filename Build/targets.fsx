@@ -839,7 +839,7 @@ _Target "UnitTestWithOpenCover"
           ReturnTargetCode = Fake.DotNet.Testing.OpenCover.ReturnTargetCodeType.Yes
           OptionalArguments =
             "-excludebyattribute:*ExcludeFromCodeCoverageAttribute;*ProgIdAttribute"
-          Register = OpenCover.RegisterType.RegisterUser // TODO
+          Register = OpenCover.RegisterType.Path64
           Output = scoverage })
       (String.Join(" ", RecorderFiles)
        + " --result=./_Reports/RecorderTestWithOpenCoverReport.xml")
