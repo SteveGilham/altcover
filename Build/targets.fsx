@@ -1273,7 +1273,7 @@ _Target "UnitTestWithAltCoverCore"
   Directory.ensure "./_Reports/_UnitTestWithAltCover"
   let keyfile = Path.getFullName "Build/SelfTest.snk"
   let reports = Path.getFullName "./_Reports"
-  let altcover = "./_Binaries/AltCover/Debug+AnyCPU/netcoreapp2.0/AltCover.dll"
+  let altcover = Path.getFullName "./_Binaries/AltCover/Debug+AnyCPU/netcoreapp2.0/AltCover.dll"
   let testDirectory =
     Path.getFullName "_Binaries/AltCover.Tests/Debug+AnyCPU/netcoreapp3.0"
   let output =
@@ -1852,7 +1852,7 @@ _Target "SelfTest" (fun _ ->
        |> AltCoverFilter)
     |> AltCover.Prepare
   { AltCover.Params.Create prep with
-      ToolPath = "_Binaries/AltCover.Tests/Debug+AnyCPU/net45/__SelfTest/AltCover.exe"
+      ToolPath = "_Binaries/AltCover.Tests/Debug+AnyCPU/net47/__SelfTest/AltCover.exe"
       WorkingDirectory = "_Binaries/AltCover.Tests/Debug+AnyCPU/net47" }
     .WithToolType framework_altcover
   |> AltCover.run
@@ -1882,7 +1882,7 @@ _Target "RecordResumeTest" (fun _ ->
              XmlReport = simpleReport
              OutputDirectories = [ instrumented ]
              TypeFilter = [ "System\\."; "Microsoft\\." ]
-             AssemblyFilter = [ "Adapter"; "nunit" ]
+             AssemblyFilter = [ "Adapter"; "nunit"; "xunit" ]
              InPlace = false
              OpenCover = false
              Save = false })
@@ -2127,7 +2127,7 @@ _Target "RecordResumeTestUnderMono" // Fails : System.EntryPointNotFoundExceptio
       |> CreateProcess.withWorkingDirectory sampleRoot
       |> Proc.run
     Assert.That(r.ExitCode, Is.EqualTo 0, "RecordResumeTestUnderMono 2")
-  | None -> ()
+  | None -> Trace.traceError "No mono found!!"
 
   do use coverageFile =
        new FileStream(simpleReport, FileMode.Open, FileAccess.Read, FileShare.None, 4096,
@@ -4225,9 +4225,9 @@ Target.activateFinal "ResetConsoleColours"
 ==> "RecordResumeTrackingTest"
 ==> "OperationalTest" // AltCover.exe conditional
 
-//"Compilation"
-//==> "RecordResumeTestUnderMono"
-//=?> ("OperationalTest", Option.isSome monoOnWindows) // System.EntryPointNotFoundException: CreateZStream
+"Compilation"
+==> "RecordResumeTestUnderMono"
+//=?> ("OperationalTest", Option.isSome monoOnWindows) // Still fails, but not because entrypoint
 
 "Compilation"
 ==> "RecordResumeTestDotNet"
