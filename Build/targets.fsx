@@ -1865,144 +1865,160 @@ _Target "SelfTest" (fun _ ->
 _Target "RecordResumeTest" (fun _ ->
   Directory.ensure "./_Reports"
   let simpleReport = (Path.getFullName "./_Reports") @@ ("RecordResumeTest.xml")
-  let binRoot = Path.getFullName "_Binaries/AltCover/Release+AnyCPU/net45"
   let sampleRoot = Path.getFullName "_Binaries/Sample8/Debug+AnyCPU"
   let instrumented = "__RecordResumeTest"
 
-  let prep =
-    AltCover.PrepareParams.Primitive
-      ({ Primitive.PrepareParams.Create() with
-           XmlReport = simpleReport
-           OutputDirectories = [ instrumented ]
-           TypeFilter = [ "System\\."; "Microsoft\\." ]
-           AssemblyFilter = [ "Adapter"; "nunit" ]
-           InPlace = false
-           OpenCover = false
-           Save = false })
-    |> AltCover.Prepare
-  { AltCover.Params.Create prep with
-      ToolPath = binRoot @@ "AltCover.exe"
-      WorkingDirectory = sampleRoot }.WithToolType framework_altcover
-  |> AltCover.run
-  let testing = (sampleRoot @@ instrumented) @@ "Sample8.exe"
-  Actions.Run (testing, sampleRoot, [ simpleReport + ".acv" ]) "RecordResumeTest 2"
-  do use coverageFile =
-       new FileStream(simpleReport, FileMode.Open, FileAccess.Read, FileShare.None, 4096,
-                      FileOptions.SequentialScan)
-     let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
+  let toolPath =
+    match NuGetAltCover with
+    | Some test ->
+      Trace.traceImportant "Using the NuGet package"
+      test
+    | _ -> Path.getFullName "_Binaries/AltCover/Release+AnyCPU/net45/AltCover.exe"
+  if File.Exists toolPath 
+  then
+    let prep =
+      AltCover.PrepareParams.Primitive
+        ({ Primitive.PrepareParams.Create() with
+             XmlReport = simpleReport
+             OutputDirectories = [ instrumented ]
+             TypeFilter = [ "System\\."; "Microsoft\\." ]
+             AssemblyFilter = [ "Adapter"; "nunit" ]
+             InPlace = false
+             OpenCover = false
+             Save = false })
+      |> AltCover.Prepare
+    { AltCover.Params.Create prep with
+        ToolPath = toolPath
+        WorkingDirectory = sampleRoot }.WithToolType framework_altcover
+    |> AltCover.run
+    let testing = (sampleRoot @@ instrumented) @@ "Sample8.exe"
+    Actions.Run (testing, sampleRoot, [ simpleReport + ".acv" ]) "RecordResumeTest 2"
+    do use coverageFile =
+         new FileStream(simpleReport, FileMode.Open, FileAccess.Read, FileShare.None, 4096,
+                        FileOptions.SequentialScan)
+       let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
 
-     let recorded =
-       coverageDocument.Descendants(XName.Get("seqpnt"))
-       |> Seq.map (fun x -> x.Attribute(XName.Get("visitcount")).Value)
-       |> Seq.toList
+       let recorded =
+         coverageDocument.Descendants(XName.Get("seqpnt"))
+         |> Seq.map (fun x -> x.Attribute(XName.Get("visitcount")).Value)
+         |> Seq.toList
 
-     let expected = Array.create 20 "0"
-     Assert.That
-       (recorded, expected |> Is.EquivalentTo,
-        sprintf "Bad visit list %A -- should be empty now" recorded)
+       let expected = Array.create 20 "0"
+       Assert.That
+         (recorded, expected |> Is.EquivalentTo,
+          sprintf "Bad visit list %A -- should be empty now" recorded)
 
-  let collect =
-    AltCover.CollectParams.Primitive
-      { Primitive.CollectParams.Create() with RecorderDirectory = instrumented }
-    |> AltCover.Collect
-  { AltCover.Params.Create collect with
-      ToolPath = binRoot @@ "AltCover.exe"
-      WorkingDirectory = sampleRoot }.WithToolType framework_altcover
-  |> AltCover.run
+    let collect =
+      AltCover.CollectParams.Primitive
+        { Primitive.CollectParams.Create() with RecorderDirectory = instrumented }
+      |> AltCover.Collect
+    { AltCover.Params.Create collect with
+        ToolPath = toolPath
+        WorkingDirectory = sampleRoot }.WithToolType framework_altcover
+    |> AltCover.run
 
-  do use coverageFile =
-       new FileStream(simpleReport, FileMode.Open, FileAccess.Read, FileShare.None, 4096,
-                      FileOptions.SequentialScan)
-     let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
+    do use coverageFile =
+         new FileStream(simpleReport, FileMode.Open, FileAccess.Read, FileShare.None, 4096,
+                        FileOptions.SequentialScan)
+       let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
 
-     let recorded =
-       coverageDocument.Descendants(XName.Get("seqpnt"))
-       |> Seq.map (fun x -> x.Attribute(XName.Get("visitcount")).Value)
-       |> Seq.toList
+       let recorded =
+         coverageDocument.Descendants(XName.Get("seqpnt"))
+         |> Seq.map (fun x -> x.Attribute(XName.Get("visitcount")).Value)
+         |> Seq.toList
 
-     Assert.That
-       (recorded |> Seq.length, Is.EqualTo 20,
-        sprintf "Bad visit list %A -- bad length" recorded)
+       Assert.That
+         (recorded |> Seq.length, Is.EqualTo 20,
+          sprintf "Bad visit list %A -- bad length" recorded)
 
-     let hits =
-       recorded
-       |> Seq.filter (fun i -> i = "1")
-       |> Seq.length
-     Assert.That(hits, Is.GreaterThanOrEqualTo 6)
-     Assert.That(hits, Is.LessThanOrEqualTo 8))
+       let hits =
+         recorded
+         |> Seq.filter (fun i -> i = "1")
+         |> Seq.length
+       Assert.That(hits, Is.GreaterThanOrEqualTo 6)
+       Assert.That(hits, Is.LessThanOrEqualTo 8)
+  else Trace.traceImportant "Skipping -- AltCover.exe not built")
 
 _Target "RecordResumeTrackingTest" (fun _ ->
   Directory.ensure "./_Reports"
   let simpleReport = (Path.getFullName "./_Reports") @@ ("RecordResumeTrackingTest.xml")
-  let binRoot = Path.getFullName "_Binaries/AltCover/Release+AnyCPU/net45"
   let sampleRoot = Path.getFullName "_Binaries/Sample8/Debug+AnyCPU"
   let instrumented = "__RecordResumeTrackingTest"
 
-  let prep =
-    AltCover.PrepareParams.Primitive
-      ({ Primitive.PrepareParams.Create() with
-           XmlReport = simpleReport
-           OutputDirectories = [ instrumented ]
-           CallContext = [ "Main" ]
-           TypeFilter = [ "System\\."; "Microsoft\\." ]
-           AssemblyFilter = [ "Adapter"; "nunit" ]
-           InPlace = false
-           OpenCover = true
-           Save = false })
-    |> AltCover.Prepare
-  { AltCover.Params.Create prep with
-      ToolPath = binRoot @@ "AltCover.exe"
-      WorkingDirectory = sampleRoot }.WithToolType framework_altcover
-  |> AltCover.run
-  let testing = (sampleRoot @@ instrumented) @@ "Sample8.exe"
-  Actions.Run (testing, sampleRoot, [ simpleReport + ".acv" ])
-    "RecordResumeTrackingTest 2"
-  do use coverageFile =
-       new FileStream(simpleReport, FileMode.Open, FileAccess.Read, FileShare.None, 4096,
-                      FileOptions.SequentialScan)
-     let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
+  let toolPath =
+    match NuGetAltCover with
+    | Some test ->
+      Trace.traceImportant "Using the NuGet package"
+      test
+    | _ -> Path.getFullName "_Binaries/AltCover/Release+AnyCPU/net45/AltCover.exe"
+  if File.Exists toolPath 
+  then
+    let prep =
+      AltCover.PrepareParams.Primitive
+        ({ Primitive.PrepareParams.Create() with
+             XmlReport = simpleReport
+             OutputDirectories = [ instrumented ]
+             CallContext = [ "Main" ]
+             TypeFilter = [ "System\\."; "Microsoft\\." ]
+             AssemblyFilter = [ "Adapter"; "nunit" ]
+             InPlace = false
+             OpenCover = true
+             Save = false })
+      |> AltCover.Prepare
+    { AltCover.Params.Create prep with
+        ToolPath = toolPath
+        WorkingDirectory = sampleRoot }.WithToolType framework_altcover
+    |> AltCover.run
+    let testing = (sampleRoot @@ instrumented) @@ "Sample8.exe"
+    Actions.Run (testing, sampleRoot, [ simpleReport + ".acv" ])
+      "RecordResumeTrackingTest 2"
+    do use coverageFile =
+         new FileStream(simpleReport, FileMode.Open, FileAccess.Read, FileShare.None, 4096,
+                        FileOptions.SequentialScan)
+       let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
 
-     let recorded =
-       coverageDocument.Descendants(XName.Get("SequencePoint"))
-       |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value)
-       |> Seq.toList
+       let recorded =
+         coverageDocument.Descendants(XName.Get("SequencePoint"))
+         |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value)
+         |> Seq.toList
 
-     let expected = Array.create 20 "0"
-     Assert.That
-       (recorded, expected |> Is.EquivalentTo,
-        sprintf "Bad visit list %A -- should be empty now" recorded)
+       let expected = Array.create 20 "0"
+       Assert.That
+         (recorded, expected |> Is.EquivalentTo,
+          sprintf "Bad visit list %A -- should be empty now" recorded)
 
-  let collect =
-    AltCover.CollectParams.Primitive
-      { Primitive.CollectParams.Create() with RecorderDirectory = instrumented }
-    |> AltCover.Collect
-  { AltCover.Params.Create collect with
-      ToolPath = binRoot @@ "AltCover.exe"
-      WorkingDirectory = sampleRoot }.WithToolType framework_altcover
-  |> AltCover.run
+    let collect =
+      AltCover.CollectParams.Primitive
+        { Primitive.CollectParams.Create() with RecorderDirectory = instrumented }
+      |> AltCover.Collect
+    { AltCover.Params.Create collect with
+        ToolPath = toolPath
+        WorkingDirectory = sampleRoot }.WithToolType framework_altcover
+    |> AltCover.run
 
-  do use coverageFile =
-       new FileStream(simpleReport, FileMode.Open, FileAccess.Read, FileShare.None, 4096,
-                      FileOptions.SequentialScan)
-     let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
+    do use coverageFile =
+         new FileStream(simpleReport, FileMode.Open, FileAccess.Read, FileShare.None, 4096,
+                        FileOptions.SequentialScan)
+       let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
 
-     let recorded =
-       coverageDocument.Descendants(XName.Get("SequencePoint"))
-       |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value)
-       |> Seq.toList
-     Assert.That
-       (recorded |> Seq.length, Is.EqualTo 20,
-        sprintf "Bad visit list %A -- bad length" recorded)
+       let recorded =
+         coverageDocument.Descendants(XName.Get("SequencePoint"))
+         |> Seq.map (fun x -> x.Attribute(XName.Get("vc")).Value)
+         |> Seq.toList
+       Assert.That
+         (recorded |> Seq.length, Is.EqualTo 20,
+          sprintf "Bad visit list %A -- bad length" recorded)
 
-     let hits =
-       recorded
-       |> Seq.filter (fun i -> i = "1")
-       |> Seq.length
-     Assert.That(hits, Is.GreaterThanOrEqualTo 6)
-     Assert.That(hits, Is.LessThanOrEqualTo 8)
-     let tracked =
-       coverageDocument.Descendants(XName.Get("TrackedMethodRef")) |> Seq.toList
-     Assert.That(tracked, Is.Not.Empty))
+       let hits =
+         recorded
+         |> Seq.filter (fun i -> i = "1")
+         |> Seq.length
+       Assert.That(hits, Is.GreaterThanOrEqualTo 6)
+       Assert.That(hits, Is.LessThanOrEqualTo 8)
+       let tracked =
+         coverageDocument.Descendants(XName.Get("TrackedMethodRef")) |> Seq.toList
+       Assert.That(tracked, Is.Not.Empty)
+  else Trace.traceImportant "Skipping -- AltCover.exe not built")
 
 _Target "RecordResumeTestDotNet" (fun _ ->
   Directory.ensure "./_Reports"
@@ -2424,12 +2440,17 @@ _Target "Packaging" (fun _ ->
         auxVFiles ], [], "_Packaging.visualizer", "./_Generated/altcover.visualizer.nuspec",
      "altcover.visualizer")
 
+    let frameworkFake2Files = 
+      if File.Exists fake2
+      then [ (fake2, Some "lib/net45", None)
+             (fox, Some "lib/net45", None) ]
+      else []
+
     (List.concat
       [ fake2Files "lib/netstandard2.0/"
         fox2Files "lib/netstandard2.0/"
         [ (packable, Some "", None) ]
-        [ (fake2, Some "lib/net45", None)
-          (fox, Some "lib/net45", None) ] ],
+        frameworkFake2Files ],
       [ // make these explicit, as this package implies an opt-in
         ("Fake.Core.Environment", "5.18.1")
         ("Fake.DotNet.Cli", "5.18.1")
@@ -4198,11 +4219,11 @@ Target.activateFinal "ResetConsoleColours"
 
 "Compilation"
 ==> "RecordResumeTest"
-=?> ("OperationalTest", Environment.isWindows) // AltCover.exe
+==> "OperationalTest" // AltCover.exe conditional
 
 "Compilation"
 ==> "RecordResumeTrackingTest"
-=?> ("OperationalTest", Environment.isWindows) // AltCover.exe
+==> "OperationalTest" // AltCover.exe conditional
 
 //"Compilation"
 //==> "RecordResumeTestUnderMono"
