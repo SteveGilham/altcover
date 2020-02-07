@@ -2361,9 +2361,9 @@ _Target "Packaging" (fun _ ->
           None))
     |> Seq.toList
 
-  let dotnetFiles =
+  let dotnetFiles where =
     (!!"./_Binaries/dotnet-altcover/Release+AnyCPU/netcoreapp2.0/dotnet-altcover.*")
-    |> Seq.map (fun x -> (x, Some("lib/netcoreapp2.0/" + Path.GetFileName x), None))
+    |> Seq.map (fun x -> (x, Some(where + Path.GetFileName x), None))
     |> Seq.toList
 
   let globalFiles =
@@ -2406,7 +2406,7 @@ _Target "Packaging" (fun _ ->
       [ apiFiles
         resourceFiles "lib/net45/"
         libFiles "lib/net45/"
-        netcoreFiles "tools/netcoreapp2.0/"
+        dotnetFiles "lib/netstandard2.0/"
         netstdFiles "lib/netstandard2.0"
         cakeFiles "lib/netstandard2.0/"
         dataFiles "lib/netstandard2.0/"
@@ -2426,7 +2426,7 @@ _Target "Packaging" (fun _ ->
         poshFiles "lib/netcoreapp2.0/"
         dataFiles "lib/netcoreapp2.0/"
         [ (packable, Some "", None) ]
-        dotnetFiles
+        dotnetFiles "lib/netcoreapp2.0/"
         otherFilesDotnet ], [], "_Packaging.dotnet", "./_Generated/altcover.dotnet.nuspec", "altcover.dotnet")
 
     (List.concat
