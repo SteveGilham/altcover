@@ -4083,15 +4083,7 @@ _Target "BulkReport" (fun _ ->
        { p with
            ToolType = ToolType.CreateLocalTool()
            ReportTypes = [ ReportGenerator.ReportType.Html ]
-           TargetDir = "_Reports/_BulkReport" })
-
-  let openCoverFiles = List.concat 
-                       [
-                         (!! "./_Reports/*.coverlet.xml") |> Seq.toList
-                         [
-
-                         ]
-                       ]          
+           TargetDir = "_Reports/_BulkReport" })      
 
   let report = Path.getFullName "./_Reports"
   let NCoverFiles = 
