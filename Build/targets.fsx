@@ -4111,10 +4111,16 @@ _Target "BulkReport" (fun _ ->
 *)
 
   printfn "-----------------------"
-  let report = Path.getFullName "./_Reports/_UnitTestWithCoverlet/index.htm"
-  File.ReadAllLines report
-  |> Seq.iter (printfn "%s")
-  printfn "-----------------------"  
+  [
+    "index.htm"
+    "AltCover_CommandLine.htm"
+    "AltCover_Instrument.htm"
+  ]
+  |> List.iter (fun f -> let report = Path.getFullName ("./_Reports/_UnitTestWithCoverlet/" + f)
+                         File.ReadAllLines report
+                         |> Seq.iter (printfn "%s")
+                         printfn "-----------------------" )
+
 
   let numbers = uncovered @"_Reports/_Unit*/Summary.xml"
   if numbers
