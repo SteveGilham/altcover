@@ -990,7 +990,7 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
   let reports = Path.getFullName "./_Reports"
   let altcover = "./_Binaries/AltCover/Debug+AnyCPU/net45/AltCover.exe" |> Path.getFullName
 
-  let testDirectory = Path.getFullName "_Binaries/AltCover.Tests/Debug+AnyCPU"
+  let testDirectory = Path.getFullName "_Binaries/AltCover.Tests/Debug+AnyCPU/net47"
   if !!(testDirectory @@ "AltCov*.pdb")
      |> Seq.length > 0 then
 
@@ -1022,9 +1022,9 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
     let nunitcmd =
       NUnit3.buildArgs nunitparams
         [ Path.getFullName
-            "_Binaries/AltCover.Tests/Debug+AnyCPU/__UnitTestWithAltCoverRunner/AltCover.Tests.dll"
+            "_Binaries/AltCover.Tests/Debug+AnyCPU/net47/__UnitTestWithAltCoverRunner/AltCover.Tests.dll"
           Path.getFullName
-            "_Binaries/AltCover.Tests/Debug+AnyCPU/__UnitTestWithAltCoverRunner/Sample2.dll" ]
+            "_Binaries/AltCover.Tests/Debug+AnyCPU/net47/__UnitTestWithAltCoverRunner/Sample2.dll" ]
 
     try
       let collect =
@@ -1073,7 +1073,7 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
     let nunitcmd =
       NUnit3.buildArgs nunitparams
         [ Path.getFullName
-            "_Binaries/AltCover.WeakName.Tests/Debug+AnyCPU/__WeakNameTestWithAltCoverRunner/AltCover.WeakName.Tests.dll" ]
+            "_Binaries/AltCover.WeakName.Tests/Debug+AnyCPU/net47/__WeakNameTestWithAltCoverRunner/AltCover.WeakName.Tests.dll" ]
 
     let collect =
       AltCover.CollectParams.Primitive
@@ -1088,7 +1088,7 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
     |> AltCover.run
 
     printfn "Instrument the Recorder tests"
-    let RecorderDir = Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU"
+    let RecorderDir = Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net47"
     let RecorderReport = reports @@ "RecorderTestWithAltCoverRunner.xml"
 
     let prep =
@@ -1115,7 +1115,7 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
     let nunitcmd =
       NUnit3.buildArgs nunitparams
         [ Path.getFullName
-            "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/__RecorderTestWithAltCoverRunner/AltCover.Recorder.Tests.dll" ]
+            "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net47/__RecorderTestWithAltCoverRunner/AltCover.Recorder.Tests.dll" ]
 
     let collect =
       AltCover.CollectParams.Primitive
@@ -1130,7 +1130,7 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
     |> AltCover.run
 
     printfn "Instrument the Recorder2 tests"
-    let Recorder2Dir = Path.getFullName "_Binaries/AltCover.Recorder.Tests2/Debug+AnyCPU"
+    let Recorder2Dir = Path.getFullName "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net35"
     let Recorder2Report = reports @@ "RecorderTest2WithAltCoverRunner.xml"
 
     let prep =
@@ -1157,7 +1157,7 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
     let nunitcmd =
       NUnit3.buildArgs nunitparams
         [ Path.getFullName
-            "_Binaries/AltCover.Recorder.Tests2/Debug+AnyCPU/__RecorderTest2WithAltCoverRunner/AltCover.Recorder.Tests2.dll" ]
+            "_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/net35/__RecorderTest2WithAltCoverRunner/AltCover.Recorder.Tests.dll" ]
 
     let collect =
       AltCover.CollectParams.Primitive
@@ -1172,7 +1172,7 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
     |> AltCover.run
 
     printfn "Instrument the GTK# visualizer tests"
-    let gtkDir = Path.getFullName "_Binaries/AltCover.Tests.Visualizer/Debug+AnyCPU"
+    let gtkDir = Path.getFullName "_Binaries/AltCover.Tests.Visualizer/Debug+AnyCPU/net471"
     let gtkReport = reports @@ "GTKVTestWithAltCoverRunner.xml"
 
     let prep =
@@ -1202,7 +1202,7 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
     let nunitcmd =
       NUnit3.buildArgs nunitparams
         [ Path.getFullName
-            "_Binaries/AltCover.Tests.Visualizer/Debug+AnyCPU/__GTKVTestWithAltCoverRunner/AltCover.Tests.Visualizer.dll" ]
+            "_Binaries/AltCover.Tests.Visualizer/Debug+AnyCPU/net471/__GTKVTestWithAltCoverRunner/AltCover.Tests.Visualizer.dll" ]
 
     let collect =
       AltCover.CollectParams.Primitive
