@@ -4083,44 +4083,7 @@ _Target "BulkReport" (fun _ ->
        { p with
            ToolType = ToolType.CreateLocalTool()
            ReportTypes = [ ReportGenerator.ReportType.Html ]
-           TargetDir = "_Reports/_BulkReport" })      
-
-(*
-  let report = Path.getFullName "./_Reports"
-  let NCoverFiles = 
-    [
-      "UnitTestWithAltCoverCore.xml"
-      "RecorderTestWithAltCoverCore.xml"
-      "RecorderTestWithAltCover.xml"
-      "UnitTestWithAltCover.xml"  ]
-    |> List.map (fun x -> Path.Combine(report, x))
-    |> List.filter File.Exists
-
-  let OpenCoverFiles = 
-    [
-      "altcover.recorder.tests.core.coverlet.xml"
-      "altcover.tests.core.coverlet.xml"
-      "Pester.xml"
-      "Recorder4TestWithOpenCover.xml"
-      "RecorderTestWithAltCoverCoreRunner.xml"
-      "RecorderTestWithOpenCover.xml"
-      "UnitTestWithAltCoverCoreRunner.xml"
-      "UnitTestWithOpenCover.xml"  ]
-    |> List.map (fun x -> Path.Combine(report, x))
-    |> List.filter File.Exists
-*)
-
-  printfn "-----------------------"
-  [
-    "index.htm"
-    "AltCover_CommandLine.htm"
-    "AltCover_Instrument.htm"
-  ]
-  |> List.iter (fun f -> let report = Path.getFullName ("./_Reports/_UnitTestWithCoverlet/" + f)
-                         File.ReadAllLines report
-                         |> Seq.iter (printfn "%s")
-                         printfn "-----------------------" )
-
+           TargetDir = "_Reports/_BulkReport" })
 
   let numbers = uncovered @"_Reports/_Unit*/Summary.xml"
   if numbers
