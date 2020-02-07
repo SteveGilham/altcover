@@ -305,7 +305,9 @@ module internal Instrument =
     pkey.SymbolWriterProvider <-
       match (pdb, pkey.WriteSymbols) with
       | (".pdb", true) -> Mono.Cecil.Pdb.PdbWriterProvider() :> ISymbolWriterProvider
+#if BUILT_ON_WINDOWS      
       | (_, true) -> Mono.Cecil.Mdb.MdbWriterProvider() :> ISymbolWriterProvider
+#endif      
       | _ -> null
 #else
     // Assembly with pdb writing fails on mono on Windows when writing with

@@ -340,10 +340,16 @@ module internal CommandLine =
         // Available in .netstandard 2.0
         try
           (blob |> StrongNameKeyData.Make, true)
+#if BUILT_ON_WINDOWS      
         with :? CryptographicException as c ->
           (c.Message, c)
           |> SecurityException
-          |> raise) (StrongNameKeyData.Empty(), false) false
+          |> raise
+#else
+        finally
+          ()
+#endif             
+          ) (StrongNameKeyData.Empty(), false) false
     else
       (StrongNameKeyData.Empty(), false)
 
