@@ -4085,6 +4085,7 @@ _Target "BulkReport" (fun _ ->
            ReportTypes = [ ReportGenerator.ReportType.Html ]
            TargetDir = "_Reports/_BulkReport" })      
 
+(*
   let report = Path.getFullName "./_Reports"
   let NCoverFiles = 
     [
@@ -4107,32 +4108,20 @@ _Target "BulkReport" (fun _ ->
       "UnitTestWithOpenCover.xml"  ]
     |> List.map (fun x -> Path.Combine(report, x))
     |> List.filter File.Exists
+*)
+
+  printfn "-----------------------"
+  let report = Path.getFullName "./_Reports/_UnitTestWithCoverlet/index.htm"
+  File.ReadAllLines report
+  |> Seq.iter (printfn "%s")
+  printfn "-----------------------"  
 
   let numbers = uncovered @"_Reports/_Unit*/Summary.xml"
   if numbers
      |> List.tryFind (fun n -> n > 0)
      |> Option.isSome
      || !misses > 1
-  then 
-    NCoverFiles
-    |> List.iter ( fun f -> let xml = XDocument.Load f
-                            xml.Descendants(XName.Get("seqpnt"))
-                            |> Seq.filter (fun x -> x.Attribute(XName.Get "visitcount").Value = "0")
-                            |> Seq.iter (fun x -> printfn "%A" f
-                                                  printfn "  %A" x
-                                                  printfn "    %A" <| x.Parent.Attribute(XName.Get "fullname").Value)
-                     )
-
-    OpenCoverFiles
-    |> List.iter ( fun f -> let xml = XDocument.Load f
-                            xml.Descendants(XName.Get("SequencePoint"))
-                            |> Seq.filter (fun x -> x.Attribute(XName.Get "vc").Value = "0")
-                            |> Seq.iter (fun x -> printfn "%A" f
-                                                  printfn "  %A" x
-                                                  let name = x.Parent.Parent.Descendants(XName.Get("Name")) |> Seq.head
-                                                  printfn "    %A" name)
-                     )
-    Assert.Fail("Coverage is too low")
+  then Assert.Fail("Coverage is too low")
 
   let issue71 = !!(@"./**/*.exn") |> Seq.toList
   match issue71 with
