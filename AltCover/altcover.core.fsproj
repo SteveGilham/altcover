@@ -9,7 +9,6 @@
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <GlobalDefineConstants Condition="'$(TargetFramework)' != 'net45'">RUNNER;NETCOREAPP2_0</GlobalDefineConstants>
     <GlobalDefineConstants Condition="'$(TargetFramework)' == 'net45'">RUNNER</GlobalDefineConstants>
-    <GlobalDefineConstants Condition="'$(OS)' == 'Windows_NT'">$(GlobalDefineConstants);BUILT_ON_WINDOWS</GlobalDefineConstants>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <ContinuousIntegrationBuild Condition="'$(APPVEYOR)'=='True'">true</ContinuousIntegrationBuild>
     <DeterministicSourcePaths Condition="'$(APPVEYOR)'=='True'">true</DeterministicSourcePaths>
