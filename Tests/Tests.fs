@@ -47,17 +47,19 @@ type ProxyObject() =
       methodinfo.Invoke(this.Object, args)
 
 module AltCoverTests =
-#if NETCOREAPP2_0
-    let sample1 = "Sample1.dll"
-    let monoSample1 = "../_Mono/Sample1"
-#else
-    let sample1 = "Sample1.exe"
-    let recorderSnk = typeof<AltCover.Node>.Assembly.GetManifestResourceNames()
-                      |> Seq.find (fun n -> n.EndsWith(".Recorder.snk", StringComparison.Ordinal))
-#endif
-
     let SolutionDir() =
       SolutionRoot.location
+
+    let monoSample1path = Path.Combine(SolutionDir(), "_Mono/Sample1/Sample1.exe")
+#if NETCOREAPP2_0
+    let sample1path = Path.Combine(SolutionDir(), "_Binaries/Sample1/Debug+AnyCPU/netcoreapp2.0/Sample1.dll")
+    let sample8path = Path.Combine(SolutionDir(), "_Binaries/Sample8/Debug+AnyCPU/netcoreapp2.0/Sample8.dll")
+#else
+    let sample1path = Path.Combine(SolutionDir(), "_Binaries/Sample1/Debug+AnyCPU/Sample1.exe")
+    let sample8path = Path.Combine(SolutionDir(), "_Binaries/Sample8/Debug+AnyCPU/Sample8.exe")
+#endif
+    let recorderSnk = typeof<AltCover.Node>.Assembly.GetManifestResourceNames()
+                      |> Seq.find (fun n -> n.EndsWith(".Recorder.snk", StringComparison.Ordinal))
 
     let infrastructureSnk =
       Assembly.GetExecutingAssembly().GetManifestResourceNames()
@@ -140,8 +142,8 @@ module AltCoverTests =
                not
                <| (snd x).FullName.StartsWith("Mono.", StringComparison.OrdinalIgnoreCase))
           |> Seq.filter
-               (fun x ->
-               not
+                (fun x ->
+                not
                 <| (snd x).FullName.StartsWith("BlackFox.", StringComparison.OrdinalIgnoreCase))
           |> Seq.filter
                 (fun x ->
@@ -176,8 +178,8 @@ module AltCoverTests =
                <| (snd x)
                  .FullName.StartsWith("AltCover,", StringComparison.OrdinalIgnoreCase))
           |> Seq.filter
-               (fun x ->
-               not
+                (fun x ->
+                not
                 <| (snd x).FullName.StartsWith("System.", StringComparison.OrdinalIgnoreCase))
           |> Seq.filter
                 (fun x ->
@@ -216,13 +218,7 @@ module AltCoverTests =
 #else
     [<Test>]
     let ShouldGetEmbeddedPdbFromImage() =
-      let where = Assembly.GetExecutingAssembly().Location
-      let here = where |> Path.GetDirectoryName
-#if NETCOREAPP2_0
-      let target = Path.Combine (here, "Sample8.dll")
-#else
-      let target = Path.Combine (here, "Sample8.exe")
-#endif
+      let target = sample8path
       let image = Mono.Cecil.AssemblyDefinition.ReadAssembly target
       let pdb = AltCover.ProgramDatabase.GetPdbFromImage image
       match pdb with
@@ -237,17 +233,9 @@ module AltCoverTests =
     let ShouldGetNoMdbFromMonoImage() =
       // Hack for running while instrumented
       let where = Assembly.GetExecutingAssembly().Location
-      let path =
-        Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "_Mono/Sample1")
-#if NETCOREAPP2_0
-      let path' =
-        if Directory.Exists path then path
-        else Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), monoSample1)
-#else
-      let path' = path
-#endif
+      let path = Path.GetDirectoryName monoSample1path
       let files =
-        Directory.GetFiles(path')
+        Directory.GetFiles(path)
         |> Seq.filter
              (fun x ->
              x.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)
@@ -371,16 +359,8 @@ module AltCoverTests =
     let ShouldGetMdbWithFallback() =
       // Hack for running while instrumented
       let where = Assembly.GetExecutingAssembly().Location
-      let path =
-        Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "_Mono/Sample1")
-#if NETCOREAPP2_0
-      let path' =
-        if Directory.Exists path then path
-        else Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), monoSample1)
-#else
-      let path' = path
-#endif
-      let files = Directory.GetFiles(path')
+      let path = Path.GetDirectoryName monoSample1path
+      let files = Directory.GetFiles(path)
       files
       |> Seq.filter
            (fun x ->
@@ -442,11 +422,7 @@ module AltCoverTests =
     let ShouldGetSymbolsFromEmbeddedPdb() =
       let where = Assembly.GetExecutingAssembly().Location
       let here = where |> Path.GetDirectoryName
-#if NETCOREAPP2_0
-      let target = Path.Combine (here, "Sample8.dll")
-#else
-      let target = Path.Combine (here, "Sample8.exe")
-#endif
+      let target = sample8path
       let image = Mono.Cecil.AssemblyDefinition.ReadAssembly target
       AltCover.ProgramDatabase.ReadSymbols image
       Assert.That(image.MainModule.HasSymbols, image.MainModule.FileName)
@@ -478,17 +454,9 @@ module AltCoverTests =
     let ShouldGetSymbolsFromMdb() =
       let where = Assembly.GetExecutingAssembly().Location
       let pdb = Path.ChangeExtension(where, ".pdb")
-      // Hack for running while instrumented
-      let path =
-        Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "_Mono/Sample1")
-#if NETCOREAPP2_0
-      let path' =
-        if Directory.Exists path then path
-        else Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), monoSample1)
-#else
-      let path' = path
-#endif
-      let files = Directory.GetFiles(path')
+      let path = Path.GetDirectoryName monoSample1path
+
+      let files = Directory.GetFiles(path)
       files
       |> Seq.filter
            (fun x ->
@@ -880,7 +848,7 @@ module AltCoverTests =
 
       let libPackages =
         let xml =
-          Path.Combine(SolutionRoot.location, "./AltCover/packages.config")
+          Path.Combine(SolutionRoot.location, "./MCS/packages.config")
           |> Path.GetFullPath
           |> XDocument.Load
         xml.Descendants(XName.Get("package"))
@@ -891,7 +859,7 @@ module AltCoverTests =
 
       Visitor.local := false
       Visitor.NameFilters.Clear()
-      let fscore = Path.Combine(SolutionRoot.location, "packages/FSharp.Core.3.0.2/lib/net35") // stable retro version
+      let fscore = Path.Combine(SolutionRoot.location, "packages/FSharp.Core.4.5.2/lib/net45") // stable retro version
       let mono = Path.Combine(SolutionRoot.location, "packages/Mono.Cecil." +
                                                       (libPackages.Item "mono.cecil") +
                                                       "/lib/net40")
@@ -1235,20 +1203,7 @@ module AltCoverTests =
           Some "FI@11::Specialize" //System.Int32 Sample6.Module/FI@10T::Invoke(Microsoft.FSharp.Collections.FSharpList`1<a>)
           Some "Module::F1" //System.Void Sample6.Module/F1@18::.ctor()
           Some "Module::F1" //System.Int32 Sample6.Module/F1@18::Invoke(System.Object)
-#if NETCOREAPP2_0
-          Some "fetchUrlAsync@25-4::Invoke" //System.Void Sample6.Module/fetchUrlAsync@26-5::.ctor(System.String,Microsoft.FSharp.Control.FSharpAsyncBuilder)
-          Some "fetchUrlAsync@25-4::Invoke" //Microsoft.FSharp.Control.FSharpAsync`1<Microsoft.FSharp.Core.Unit> Sample6.Module/fetchUrlAsync@26-5::Invoke(System.IO.StreamReader)
-          Some "fetchUrlAsync@23-3::Invoke" //System.Void Sample6.Module/fetchUrlAsync@25-4::.ctor(System.String,Microsoft.FSharp.Control.FSharpAsyncBuilder)
-          Some "fetchUrlAsync@23-3::Invoke" //Microsoft.FSharp.Control.FSharpAsync`1<Microsoft.FSharp.Core.Unit> Sample6.Module/fetchUrlAsync@25-4::Invoke(System.IO.Stream)
-          Some "fetchUrlAsync@23-2::Invoke" //System.Void Sample6.Module/fetchUrlAsync@23-3::.ctor(System.String,Microsoft.FSharp.Control.FSharpAsyncBuilder)
-          Some "fetchUrlAsync@23-2::Invoke" //Microsoft.FSharp.Control.FSharpAsync`1<Microsoft.FSharp.Core.Unit> Sample6.Module/fetchUrlAsync@23-3::Invoke(System.Net.WebResponse)
-          Some "fetchUrlAsync@22-1::Invoke" //System.Void Sample6.Module/fetchUrlAsync@23-2::.ctor(System.String,Microsoft.FSharp.Control.FSharpAsyncBuilder)
-          Some "fetchUrlAsync@22-1::Invoke" //Microsoft.FSharp.Control.FSharpAsync`1<Microsoft.FSharp.Core.Unit> Sample6.Module/fetchUrlAsync@23-2::Invoke(System.Net.WebResponse)
-          Some "fetchUrlAsync@21::Invoke" //System.Void Sample6.Module/fetchUrlAsync@22-1::.ctor(System.String,Microsoft.FSharp.Control.FSharpAsyncBuilder)
-          Some "fetchUrlAsync@21::Invoke" //Microsoft.FSharp.Control.FSharpAsync`1<Microsoft.FSharp.Core.Unit> Sample6.Module/fetchUrlAsync@22-1::Invoke(Microsoft.FSharp.Core.Unit)
-          Some "Module::F2" //System.Void Sample6.Module/fetchUrlAsync@21::.ctor()
-          Some "Module::F2" //Microsoft.FSharp.Control.FSharpAsync`1<Microsoft.FSharp.Core.Unit> Sample6.Module/fetchUrlAsync@21::Invoke(System.String)
-#else
+#if LEGACY
 // F# 4.5.1
           Some "fetchUrlAsync@25-4::Invoke" //"System.Void Sample6.Module/fetchUrlAsync@27-5::.ctor(System.String,Microsoft.FSharp.Control.FSharpAsyncBuilder)"
           Some "fetchUrlAsync@25-4::Invoke" //"Microsoft.FSharp.Control.FSharpAsync`1<Microsoft.FSharp.Core.Unit> Sample6.Module/fetchUrlAsync@27-5::Invoke(System.IO.StreamReader)"
@@ -1264,6 +1219,20 @@ module AltCoverTests =
           Some "fetchUrlAsync@21::Invoke" //"Microsoft.FSharp.Control.FSharpAsync`1<Microsoft.FSharp.Core.Unit> Sample6.Module/fetchUrlAsync@23-1::Invoke(Microsoft.FSharp.Core.Unit)"
           Some "Module::F2" //"System.Void Sample6.Module/fetchUrlAsync@22::.ctor()"
           Some "Module::F2" //"Microsoft.FSharp.Control.FSharpAsync`1<Microsoft.FSharp.Core.Unit> Sample6.Module/fetchUrlAsync@22::Invoke(System.String)"
+#else
+// F# > 4.5.1
+          Some "fetchUrlAsync@25-4::Invoke" //System.Void Sample6.Module/fetchUrlAsync@26-5::.ctor(System.String,Microsoft.FSharp.Control.FSharpAsyncBuilder)
+          Some "fetchUrlAsync@25-4::Invoke" //Microsoft.FSharp.Control.FSharpAsync`1<Microsoft.FSharp.Core.Unit> Sample6.Module/fetchUrlAsync@26-5::Invoke(System.IO.StreamReader)
+          Some "fetchUrlAsync@23-3::Invoke" //System.Void Sample6.Module/fetchUrlAsync@25-4::.ctor(System.String,Microsoft.FSharp.Control.FSharpAsyncBuilder)
+          Some "fetchUrlAsync@23-3::Invoke" //Microsoft.FSharp.Control.FSharpAsync`1<Microsoft.FSharp.Core.Unit> Sample6.Module/fetchUrlAsync@25-4::Invoke(System.IO.Stream)
+          Some "fetchUrlAsync@23-2::Invoke" //System.Void Sample6.Module/fetchUrlAsync@23-3::.ctor(System.String,Microsoft.FSharp.Control.FSharpAsyncBuilder)
+          Some "fetchUrlAsync@23-2::Invoke" //Microsoft.FSharp.Control.FSharpAsync`1<Microsoft.FSharp.Core.Unit> Sample6.Module/fetchUrlAsync@23-3::Invoke(System.Net.WebResponse)
+          Some "fetchUrlAsync@22-1::Invoke" //System.Void Sample6.Module/fetchUrlAsync@23-2::.ctor(System.String,Microsoft.FSharp.Control.FSharpAsyncBuilder)
+          Some "fetchUrlAsync@22-1::Invoke" //Microsoft.FSharp.Control.FSharpAsync`1<Microsoft.FSharp.Core.Unit> Sample6.Module/fetchUrlAsync@23-2::Invoke(System.Net.WebResponse)
+          Some "fetchUrlAsync@21::Invoke" //System.Void Sample6.Module/fetchUrlAsync@22-1::.ctor(System.String,Microsoft.FSharp.Control.FSharpAsyncBuilder)
+          Some "fetchUrlAsync@21::Invoke" //Microsoft.FSharp.Control.FSharpAsync`1<Microsoft.FSharp.Core.Unit> Sample6.Module/fetchUrlAsync@22-1::Invoke(Microsoft.FSharp.Core.Unit)
+          Some "Module::F2" //System.Void Sample6.Module/fetchUrlAsync@21::.ctor()
+          Some "Module::F2" //Microsoft.FSharp.Control.FSharpAsync`1<Microsoft.FSharp.Core.Unit> Sample6.Module/fetchUrlAsync@21::Invoke(System.String)
 #endif
       ]
 
@@ -1483,8 +1452,7 @@ module AltCoverTests =
     [<Test>]
     let MethodPointsAreDeeperThanMethods() =
       let where = Assembly.GetExecutingAssembly().Location
-      let path =
-        Path.Combine(Path.GetDirectoryName(where) + Hack(), sample1)
+      let path = sample1path
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
       ProgramDatabase.ReadSymbols def
       let method =
@@ -1525,8 +1493,7 @@ module AltCoverTests =
     let BranchPointsAreComputedForSwitch() =
       let where = Assembly.GetExecutingAssembly().Location
       let path =
-        Path.Combine(Path.GetDirectoryName(where) + Hack(), sample1).
-         Replace("Sample1", "Sample16").Replace(".exe", ".dll")
+        Path.Combine(Path.GetDirectoryName(where) + Hack(), "Sample16.dll")
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
       ProgramDatabase.ReadSymbols def
       let method =
@@ -1587,8 +1554,7 @@ module AltCoverTests =
     let BranchPointsAreComputedForMatch() =
       let where = Assembly.GetExecutingAssembly().Location
       let path =
-        Path.Combine(Path.GetDirectoryName(where) + Hack(), sample1).
-         Replace("Sample1", "Sample17").Replace(".exe", ".dll")
+        Path.Combine(Path.GetDirectoryName(where) + Hack(), "Sample17.dll")
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
       ProgramDatabase.ReadSymbols def
       let method =
@@ -1634,8 +1600,7 @@ module AltCoverTests =
     [<Test>]
     let MethodsAreDeeperThanTypes() =
       let where = Assembly.GetExecutingAssembly().Location
-      let path =
-        Path.Combine(Path.GetDirectoryName(where) + Hack(), sample1)
+      let path = sample1path
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
       ProgramDatabase.ReadSymbols def
       let type' =
@@ -1673,8 +1638,7 @@ module AltCoverTests =
     [<Test>]
     let TypesAreDeeperThanModules() =
       let where = Assembly.GetExecutingAssembly().Location
-      let path =
-        Path.Combine(Path.GetDirectoryName(where) + Hack(), sample1)
+      let path = sample1path
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
       ProgramDatabase.ReadSymbols def
       let module' = def.MainModule
@@ -1708,8 +1672,7 @@ module AltCoverTests =
     [<Test>]
     let ModulesAreDeeperThanAssemblies() =
       let where = Assembly.GetExecutingAssembly().Location
-      let path =
-        Path.Combine(Path.GetDirectoryName(where) + Hack(), sample1)
+      let path = sample1path
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
       ProgramDatabase.ReadSymbols def
       Visitor.Visit [] [] // cheat reset
@@ -1731,8 +1694,7 @@ module AltCoverTests =
       try
         Visitor.staticFilter <- Some StaticFilter.AsCovered
         let where = Assembly.GetExecutingAssembly().Location
-        let path =
-          Path.Combine(Path.GetDirectoryName(where) + Hack(), sample1)
+        let path = sample1path
         let deeper = Visitor.Deeper <| Node.Start [ path, [] ] |> Seq.toList
 
         // assembly definitions care about being separate references in equality tests
@@ -1757,8 +1719,7 @@ module AltCoverTests =
     [<Test>]
     let FilteredAssembliesDoNotHaveSequencePoints() =
       let where = Assembly.GetExecutingAssembly().Location
-      let path =
-        Path.Combine(Path.GetDirectoryName(where) + Hack(), sample1)
+      let path = sample1path
       try
         Assert.That(Visitor.ReportFormat(), Is.EqualTo Base.ReportFormat.NCover)
         "Sample"
@@ -1826,8 +1787,7 @@ module AltCoverTests =
       try
         Visitor.showGenerated := true
         let where = Assembly.GetExecutingAssembly().Location
-        let path =
-          Path.Combine(Path.GetDirectoryName(where) + Hack(), sample1)
+        let path = sample1path
         let accumulator = System.Collections.Generic.List<Node>()
 
         let fix =
@@ -2177,8 +2137,7 @@ module AltCoverTests =
       let visitor, document = Report.ReportGenerator()
       // Hack for running while instrumented
       let where = Assembly.GetExecutingAssembly().Location
-      let path =
-        Path.Combine(Path.GetDirectoryName(where) + Hack(), sample1)
+      let path = sample1path
       try
         "Main"
         |> (Regex
@@ -2191,7 +2150,7 @@ module AltCoverTests =
         let xml = TTBaseline
         let xml' =
           xml.Replace("Version=1.0.0.0", "Version=" + def.Name.Version.ToString())
-        let xml'' = xml'.Replace("name=\"Sample1.exe\"", "name=\"" + path + "\"")
+        let xml'' = xml'.Replace("name=\"Sample1.exe\"", "name=\"" + Path.GetFileName(sample1path) + "\"")
         let baseline = XDocument.Load(new System.IO.StringReader(xml''))
         let result = document.Elements()
         let expected = baseline.Elements()
@@ -2249,8 +2208,7 @@ module AltCoverTests =
       let visitor, document = Report.ReportGenerator()
       // Hack for running while instrumented
       let where = Assembly.GetExecutingAssembly().Location
-      let path =
-        Path.Combine(Path.GetDirectoryName(where) + Hack(), sample1)
+      let path = sample1path
       try
         "Program"
         |> (Regex
@@ -2264,7 +2222,7 @@ module AltCoverTests =
           xml.Replace("Version=1.0.0.0", "Version=" + def.Name.Version.ToString())
              .Replace("excluded=\"true\" instrumented=\"false\"",
                       "excluded=\"false\" instrumented=\"true\"")
-        let xml'' = xml'.Replace("name=\"Sample1.exe\"", "name=\"" + path + "\"")
+        let xml'' = xml'.Replace("name=\"Sample1.exe\"", "name=\"" + Path.GetFileName(sample1path) + "\"")
         let baseline = XDocument.Load(new System.IO.StringReader(xml''))
         let result = document.Elements()
         let expected = baseline.Elements()
@@ -2277,8 +2235,7 @@ module AltCoverTests =
       let visitor, document = Report.ReportGenerator()
       // Hack for running while instrumented
       let where = Assembly.GetExecutingAssembly().Location
-      let path =
-        Path.Combine(Path.GetDirectoryName(where) + Hack(), sample1)
+      let path = sample1path
       try
         "Sample"
         |> (Regex
@@ -2294,7 +2251,7 @@ module AltCoverTests =
 </coverage>"
         let xml' =
           xml.Replace("Version=1.0.0.0", "Version=" + def.Name.Version.ToString())
-        let xml'' = xml'.Replace("name=\"Sample1.exe\"", "name=\"" + path + "\"")
+        let xml'' = xml'.Replace("name=\"Sample1.exe\"", "name=\"" + Path.GetFileName(sample1path) + "\"")
         let baseline = XDocument.Load(new System.IO.StringReader(xml''))
         let result = document.Elements()
         let expected = baseline.Elements()
@@ -2307,8 +2264,7 @@ module AltCoverTests =
       let visitor, document = Report.ReportGenerator()
       // Hack for running while instrumented
       let where = Assembly.GetExecutingAssembly().Location
-      let path =
-        Path.Combine(Path.GetDirectoryName(where) + Hack(), sample1)
+      let path = sample1path
       try
         "Sample"
         |> (Regex
@@ -2325,7 +2281,7 @@ module AltCoverTests =
 </coverage>"
         let xml' =
           xml.Replace("Version=1.0.0.0", "Version=" + def.Name.Version.ToString())
-        let xml'' = xml'.Replace("name=\"Sample1.exe\"", "name=\"" + path + "\"")
+        let xml'' = xml'.Replace("name=\"Sample1.exe\"", "name=\"" + Path.GetFileName(sample1path) + "\"")
         let baseline = XDocument.Load(new System.IO.StringReader(xml''))
         let result = document.Elements()
         let expected = baseline.Elements()
@@ -2498,8 +2454,8 @@ module AltCoverTests =
                   ()
                 | "fullPath" ->
                   Assert.That
-                    (a1.Value.Replace("\\", "/"),
-                     Does.EndWith(a2.Value.Replace("\\", "/")),
+                    (a1.Value.Replace("\\", "/").Replace("altcover", "AltCover"),
+                     Does.EndWith(a2.Value.Replace("\\", "/").Replace("altcover", "AltCover")),
                      a1.Name.ToString() + " : " + r.ToString() + " -> document")
                 | "vc" ->
                   let expected =
@@ -2559,8 +2515,7 @@ module AltCoverTests =
       let visitor, document = OpenCover.ReportGenerator()
       // Hack for running while instrumented
       let where = Assembly.GetExecutingAssembly().Location
-      let path =
-        Path.Combine(Path.GetDirectoryName(where) + Hack(), sample1)
+      let path = sample1path
       try
         Visitor.NameFilters.Clear()
         Visitor.reportFormat <- Some Base.ReportFormat.OpenCover
@@ -2583,8 +2538,7 @@ module AltCoverTests =
       let visitor, document = OpenCover.ReportGenerator()
       // Hack for running while instrumented
       let where = Assembly.GetExecutingAssembly().Location
-      let path =
-        Path.Combine(Path.GetDirectoryName(where) + Hack(), sample1)
+      let path = sample1path
       let X name = XName.Get(name)
       try
         Visitor.NameFilters.Clear()
@@ -2621,8 +2575,7 @@ module AltCoverTests =
       let visitor, document = OpenCover.ReportGenerator()
       // Hack for running while instrumented
       let where = Assembly.GetExecutingAssembly().Location
-      let path =
-        Path.Combine(Path.GetDirectoryName(where) + Hack(), sample1)
+      let path = sample1path
       let X name = XName.Get(name)
       try
         Visitor.NameFilters.Clear()
@@ -2673,8 +2626,7 @@ module AltCoverTests =
       let visitor, document = OpenCover.ReportGenerator()
       // Hack for running while instrumented
       let where = Assembly.GetExecutingAssembly().Location
-      let path =
-        Path.Combine(Path.GetDirectoryName(where) + Hack(), sample1)
+      let path = sample1path
       try
         Visitor.NameFilters.Clear()
         Visitor.TrackingNames.Clear()
@@ -2695,8 +2647,7 @@ module AltCoverTests =
       let visitor, document = OpenCover.ReportGenerator()
       // Hack for running while instrumented
       let where = Assembly.GetExecutingAssembly().Location
-      let path =
-        Path.Combine(Path.GetDirectoryName(where) + Hack(), sample1)
+      let path = sample1path
       try
         "Sample"
         |> (Regex
@@ -2727,8 +2678,7 @@ module AltCoverTests =
       let visitor, document = OpenCover.ReportGenerator()
       // Hack for running while instrumented
       let where = Assembly.GetExecutingAssembly().Location
-      let path =
-        Path.Combine(Path.GetDirectoryName(where) + Hack(), sample1)
+      let path = sample1path
       try
         Visitor.TrackingNames.Clear()
         Visitor.TrackingNames.Add("Main")
@@ -2768,8 +2718,7 @@ module AltCoverTests =
       Visitor.reportFormat <- Some Base.ReportFormat.OpenCover
       // Hack for running while instrumented
       let where = Assembly.GetExecutingAssembly().Location
-      let path =
-        Path.Combine(Path.GetDirectoryName(where) + Hack(), sample1)
+      let path = sample1path
       try
         Assert.That(Visitor.ReportFormat(), Is.EqualTo Base.ReportFormat.OpenCover)
         "Program"
@@ -2797,8 +2746,7 @@ module AltCoverTests =
       Visitor.reportFormat <- Some Base.ReportFormat.OpenCover
       // Hack for running while instrumented
       let where = Assembly.GetExecutingAssembly().Location
-      let path =
-        Path.Combine(Path.GetDirectoryName(where) + Hack(), sample1)
+      let path = sample1path
       try
         Visitor.TrackingNames.Clear()
         Visitor.TrackingNames.Add("Main")
@@ -2824,8 +2772,7 @@ module AltCoverTests =
       let visitor, document = OpenCover.ReportGenerator()
       // Hack for running while instrumented
       let where = Assembly.GetExecutingAssembly().Location
-      let path =
-        Path.Combine(Path.GetDirectoryName(where) + Hack(), sample1)
+      let path = sample1path
       try
         "Main"
         |> (Regex
@@ -2851,8 +2798,7 @@ module AltCoverTests =
       let visitor, document = OpenCover.ReportGenerator()
       // Hack for running while instrumented
       let where = Assembly.GetExecutingAssembly().Location
-      let path =
-        Path.Combine(Path.GetDirectoryName(where) + Hack(), sample1)
+      let path = sample1path
       try
         "Program"
         |> (Regex
@@ -2888,8 +2834,7 @@ module AltCoverTests =
       Visitor.reportFormat <- Some Base.ReportFormat.OpenCover
       // Hack for running while instrumented
       let where = Assembly.GetExecutingAssembly().Location
-      let path =
-        Path.Combine(Path.GetDirectoryName(where) + Hack(), sample1)
+      let path = sample1path
       try
         Visitor.TrackingNames.Clear()
         Visitor.TrackingNames.Add("Main")

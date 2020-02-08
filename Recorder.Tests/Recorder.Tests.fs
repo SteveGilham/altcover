@@ -24,20 +24,8 @@ open System.Xml
 
 open AltCover.Recorder
 open NUnit.Framework
-open Swensen.Unquote
 
 module AltCoverTests =
-
-  let test' x message =
-    try
-      test x
-    with fail ->
-      let extended = message + Environment.NewLine + fail.Message
-#if NET2
-      Assert.Fail(extended)
-#else
-      AssertionFailedException(extended, fail) |> raise
-#endif
 
   [<MethodImpl(MethodImplOptions.NoInlining)>]
   let private GetMyMethodName tag = ignore tag
@@ -66,7 +54,7 @@ module AltCoverTests =
 
   [<Test>]
   let ShouldBeAbleToGetTheDefaultReportFileName() =
-    test <@ Instance.ReportFile = "Coverage.Default.xml" @>
+    Assert.True( Instance.ReportFile = "Coverage.Default.xml" )
 
   [<Test>]
   let SafeDisposalProtects() =
@@ -74,23 +62,23 @@ module AltCoverTests =
       { new System.IDisposable with
           member x.Dispose() = ObjectDisposedException("Bang!") |> raise }
     Assist.SafeDispose obj1
-    test <@ true @>
+    Assert.True( true )
 
   [<Test>]
   let DefaultAccessorsBehaveAsExpected() =
     let v1 = DateTime.UtcNow.Ticks
     let probe = Instance.Clock()
     let v2 = DateTime.UtcNow.Ticks
-    test <@ Instance.Granularity() = 0L @>
-    test <@ probe >= v1 @>
-    test <@ probe <= v2 @>
+    Assert.True( Instance.Granularity() = 0L )
+    Assert.True( probe >= v1 )
+    Assert.True( probe <= v2 )
 
   [<Test>]
   let ShouldBeLinkingTheCorrectCopyOfThisCode() =
     GetMyMethodName "=>"
     let tracer = Adapter.MakeNullTrace String.Empty
 
-    test <@ tracer.GetType().Assembly.GetName().Name = "AltCover.Recorder" @>
+    Assert.True( tracer.GetType().Assembly.GetName().Name = "AltCover.Recorder" )
     GetMyMethodName "<="
 
   [<Test>]
@@ -99,11 +87,11 @@ module AltCoverTests =
     lock Adapter.Lock (fun () ->
       try
         Adapter.SamplesClear()
-        test <@ Adapter.AddSample("module", 23) @>
-        test <@ Adapter.AddSample("module", 24) @>
-        test <@ Adapter.AddSample("newmodule", 23) @>
-        test <@ Adapter.AddSample("module", 23) |> not @>
-        test <@ Adapter.AddSampleUnconditional("module", 23) @>
+        Assert.True( Adapter.AddSample("module", 23) )
+        Assert.True( Adapter.AddSample("module", 24) )
+        Assert.True( Adapter.AddSample("newmodule", 23) )
+        Assert.True( Adapter.AddSample("module", 23) |> not )
+        Assert.True( Adapter.AddSampleUnconditional("module", 23) )
       finally
         Adapter.SamplesClear())
     GetMyMethodName "<="
@@ -124,13 +112,11 @@ module AltCoverTests =
         Instance.Visit(key, 23)
         Instance.CoverageFormat <- ReportFormat.OpenCoverWithTracking
         Instance.Visit(key, 23)
-        test
-          <@ Adapter.VisitsSeq()
-             |> Seq.length = 1 @>
-        test
-          <@ Adapter.VisitsEntrySeq key
-             |> Seq.length = 1 @>
-        test <@ Adapter.VisitCount(key, 23) = 2L @>
+        Assert.True( Adapter.VisitsSeq()
+                     |> Seq.length = 1 )
+        Assert.True( Adapter.VisitsEntrySeq key
+                     |> Seq.length = 1 )
+        Assert.True( Adapter.VisitCount(key, 23) = 2L )
       finally
         Instance.CoverageFormat <- ReportFormat.NCover
         Instance.Recording <- true
@@ -142,47 +128,47 @@ module AltCoverTests =
   let JunkUspidGivesNegativeIndex() =
     let key = " "
     let index = Counter.FindIndexFromUspid(0, key)
-    test <@ index < 0 @>
+    Assert.True( index < 0 )
 
   [<Test>]
   let PayloadGeneratedIsAsExpected() =
     try
-      test <@ Instance.CallerId() = 0 @>
-      test <@ Adapter.PayloadSelector false = Adapter.Null() @>
-      test <@ Adapter.PayloadSelector true = Adapter.Null() @>
+      Assert.True( Instance.CallerId() = 0 )
+      Assert.True( Adapter.PayloadSelector false = Adapter.Null() )
+      Assert.True( Adapter.PayloadSelector true = Adapter.Null() )
       Instance.Push 4321
-      test <@ Adapter.PayloadSelector false = Adapter.Null() @>
-      test <@ Adapter.PayloadSelector true = (Adapter.Call 4321) @>
+      Assert.True( Adapter.PayloadSelector false = Adapter.Null() )
+      Assert.True( Adapter.PayloadSelector true = (Adapter.Call 4321) )
       try
         Instance.Push 6789
         // 0x1234123412341234 == 1311693406324658740
-        test
-          <@ Adapter.PayloadSelection(1311693406324658740L, 1000L, true) =
-               (Adapter.NewBoth(1311693406324658000L, 6789)) @>
+        let result = Adapter.PayloadSelection(1311693406324658740L, 1000L, true)
+        let expected = Adapter.NewBoth(1311693406324658000L, 6789)
+        Assert.True(( result = expected ))
       finally
         Instance.Pop()
-      test <@ Adapter.PayloadSelector true = (Adapter.Call 4321) @>
+      Assert.True(( Adapter.PayloadSelector true = (Adapter.Call 4321) ))
     finally
       Instance.Pop()
-    test
-      <@ Adapter.PayloadSelection(1311693406324658740L, 1000L, true) =
-           (Adapter.Time 1311693406324658000L) @>
+
+    let result2 = Adapter.PayloadSelection(1311693406324658740L, 1000L, true)
+    let expected2 = Adapter.Time 1311693406324658000L
+    Assert.True(( result2 = expected2 ))
     let v1 = DateTime.UtcNow.Ticks
     let probed = Adapter.PayloadControl(1000L, true)
     let v2 = DateTime.UtcNow.Ticks
-    test
-      <@ Adapter.Null()
-         |> Adapter.untime
-         |> Seq.isEmpty @>
+    Assert.True( Adapter.Null()
+                 |> Adapter.untime
+                 |> Seq.isEmpty )
     match Adapter.untime probed |> Seq.toList with
     | [ probe ] ->
-        test <@ probe % 1000L = 0L @>
-        test <@ probe <= v2 @>
-        test <@ probe >= (1000L * (v1 / 1000L)) @>
-    | _ -> test <@ false @>
-    test <@ Instance.CallerId() = 0 @>
+        Assert.True( probe % 1000L = 0L )
+        Assert.True( probe <= v2 )
+        Assert.True( probe >= (1000L * (v1 / 1000L)) )
+    | _ -> Assert.True( false )
+    Assert.True( Instance.CallerId() = 0 )
     Instance.Pop()
-    test <@ Instance.CallerId() = 0 @>
+    Assert.True( Instance.CallerId() = 0 )
 
   [<Test>]
   let RealIdShouldIncrementCountSynchronously() =
@@ -298,7 +284,7 @@ module AltCoverTests =
         |> Seq.take 4
         |> Seq.zip
              [ "ModuleId = \" \""; "hitPointId = 23"; "context = Null"; "exception = System.NullReferenceException: Object reference not set to an instance of an object." ]
-        |> Seq.iter (fun (a, b) -> test <@ a = b @> )
+        |> Seq.iter (fun (a, b) -> Assert.True(( a = b )) )
         let third = Directory.GetFiles(where, "*.exn")
         Assert.That(third.Length, Is.EqualTo before.Length)
       finally

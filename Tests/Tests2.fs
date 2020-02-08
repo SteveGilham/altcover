@@ -3,6 +3,8 @@ namespace Tests
 open System
 open System.IO
 open System.Reflection
+open System.Security
+open System.Security.Cryptography
 
 open AltCover
 open Mono.Cecil
@@ -234,6 +236,13 @@ module AltCoverTests2 =
         Assert.That(Option.isSome (Instrument.KnownToken def.Name))
       finally
         Visitor.keys.Clear()
+
+#if NETCOREAPP2_0
+    [<Test>]
+    let MonoCombinationCanBeExercisedOnNetCore() =
+      let provider = Instrument.FindProvider "thing.mdb" true
+      Assert.That (provider, Is.InstanceOf<Mono.Cecil.Mdb.MdbWriterProvider>())
+#endif
 
     [<Test>]
     let GuardShouldDisposeRecordingAssemblyOnException() =
@@ -697,8 +706,7 @@ module AltCoverTests2 =
     [<Test>]
     let ShouldUpdateHandlerOK([<NUnit.Framework.Range(0, 31)>] selection) =
       let where = Assembly.GetExecutingAssembly().Location
-      let path =
-        Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), sample1)
+      let path = AltCoverTests.sample1path
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
       ProgramDatabase.ReadSymbols def
       let program = def.MainModule.GetType("TouchTest.Program")
@@ -899,7 +907,7 @@ module AltCoverTests2 =
 #if NETCOREAPP2_0
       let shift = String.Empty
 #else
-      let shift = "/netcoreapp3.0"
+      let shift = "/../netcoreapp3.0"
 #endif
       let path =
         Path.Combine
@@ -935,7 +943,7 @@ module AltCoverTests2 =
 #if NETCOREAPP2_0
       let shift = String.Empty
 #else
-      let shift = "/netcoreapp3.0"
+      let shift = "/../netcoreapp3.0"
 #endif
       let rpath =
         Path.Combine
@@ -980,7 +988,7 @@ module AltCoverTests2 =
 #if NETCOREAPP2_0
       let shift = String.Empty
 #else
-      let shift = "/netcoreapp3.0"
+      let shift = "/../netcoreapp3.0"
 #endif
       let rpath =
         Path.Combine
@@ -1198,13 +1206,7 @@ module AltCoverTests2 =
     [<Test>]
     let SimpleBranchShouldInstrumentByPushingDown() =
       let where = Assembly.GetExecutingAssembly().Location
-      let path = Path.Combine(Path.GetDirectoryName(where),
-#if NETCOREAPP2_0
-                    "Sample1.dll")
-#else
-                    "Sample1.exe")
-#endif
-
+      let path = AltCoverTests.sample1path
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
       ProgramDatabase.ReadSymbols def
       let method =
@@ -1868,6 +1870,18 @@ module AltCoverTests2 =
       Assert.That
         (CommandLine.ValidateStrongNameKey "key"
          <| Assembly.GetExecutingAssembly().Location, Is.EqualTo(StrongNameKeyData.Empty(), false))
+
+    [<Test>]
+    let CryptographicExceptionIsTransformed() =
+      let unique = Guid.NewGuid().ToString()
+      let raiser = fun x -> if x
+                            then unique |> CryptographicException |> raise
+                            else ()
+      let arg = fun () -> raiser true
+      let arranged = fun () -> CommandLine.TransformCryptographicException arg
+      let ex = Assert.Throws<SecurityException>(fun () -> arranged ())
+      Assert.That(ex.Message, Is.EqualTo unique)
+      Assert.That(ex.InnerException, Is.InstanceOf<CryptographicException>())
 
     [<Test>]
     let OutputCanBeExercised() =

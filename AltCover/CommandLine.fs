@@ -333,17 +333,20 @@ module internal CommandLine =
     else
       (String.Empty, false)
 
+  let internal TransformCryptographicException f =
+    try
+      f()
+    with :? CryptographicException as c ->
+      (c.Message, c)
+      |> SecurityException
+      |> raise
+
   let internal ValidateStrongNameKey key x =
     if ValidateFile key x then
       doPathOperation (fun () ->
         let blob = File.ReadAllBytes x
-        // Available in .netstandard 2.0
-        try
-          (blob |> StrongNameKeyData.Make, true)
-        with :? CryptographicException as c ->
-          (c.Message, c)
-          |> SecurityException
-          |> raise) (StrongNameKeyData.Empty(), false) false
+        TransformCryptographicException (fun () -> (blob |> StrongNameKeyData.Make, true)))
+        (StrongNameKeyData.Empty(), false) false
     else
       (StrongNameKeyData.Empty(), false)
 

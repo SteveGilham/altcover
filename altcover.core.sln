@@ -8,9 +8,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "altcover.csapi.core", "AltC
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.powershell.core", "AltCover.PowerShell\altcover.powershell.core.fsproj", "{208B8925-5626-4E5D-A00B-6A993D850524}"
 EndProject
-Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "dotnet-altcover", "AltCover.Tool\dotnet-altcover.fsproj", "{B797FCB8-5D00-48EA-916E-587E8751B8A4}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "dotnet-altcover.core", "AltCover.Tool\dotnet-altcover.core.fsproj", "{B797FCB8-5D00-48EA-916E-587E8751B8A4}"
 EndProject
-Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "global-altcover", "AltCover.GlobalTool\global-altcover.fsproj", "{C6408656-6016-4F72-8897-63AA3FF4F3C0}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "global-altcover.core", "AltCover.GlobalTool\global-altcover.core.fsproj", "{C6408656-6016-4F72-8897-63AA3FF4F3C0}"
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.fsapi.core", "AltCover.FSApi\altcover.fsapi.core.fsproj", "{62218EAC-A2E9-462B-9DF6-96C79629CE63}"
 EndProject
@@ -84,13 +84,17 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "sample12.core", "Sample12\s
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "sample13.core", "Sample13\sample13.core.fsproj", "{D588F8AA-50D3-455D-A070-04EAA48A2E93}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "altcover.datacollector", "altcover.datacollector\altcover.datacollector.csproj", "{4AB7CAB3-2463-4289-9E34-B783070477AD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "altcover.datacollector.core", "altcover.datacollector\altcover.datacollector.core.csproj", "{4AB7CAB3-2463-4289-9E34-B783070477AD}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "sample16.core", "Sample16\sample16.core.csproj", "{792FD866-D256-4695-8C76-C14C49BB0207}"
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "sample17.core", "Sample17\sample17.core.fsproj", "{5DB22786-389D-4193-AFDE-144FD59CF586}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnet-cli", "Build\dotnet-cli.csproj", "{AEFA8F43-5D00-4068-BC15-978041B17A00}"
+EndProject
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.visualizer.tests.core", "Tests.Visualizer\altcover.visualizer.tests.core.fsproj", "{8D6A3745-6CCA-4D64-99A8-31908FE56679}"
+EndProject
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.weaknametests.core", "WeakNameTests\altcover.weaknametests.core.fsproj", "{3D639272-2787-47AA-9B83-1FE1686323D1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -248,6 +252,20 @@ Global
 		{AEFA8F43-5D00-4068-BC15-978041B17A00}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{AEFA8F43-5D00-4068-BC15-978041B17A00}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AEFA8F43-5D00-4068-BC15-978041B17A00}.Release|x86.ActiveCfg = Release|Any CPU
+		{8D6A3745-6CCA-4D64-99A8-31908FE56679}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8D6A3745-6CCA-4D64-99A8-31908FE56679}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8D6A3745-6CCA-4D64-99A8-31908FE56679}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{8D6A3745-6CCA-4D64-99A8-31908FE56679}.Debug|x86.Build.0 = Debug|Any CPU
+		{8D6A3745-6CCA-4D64-99A8-31908FE56679}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8D6A3745-6CCA-4D64-99A8-31908FE56679}.Release|x86.ActiveCfg = Release|Any CPU
+		{8D6A3745-6CCA-4D64-99A8-31908FE56679}.Release|x86.Build.0 = Release|Any CPU
+		{3D639272-2787-47AA-9B83-1FE1686323D1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3D639272-2787-47AA-9B83-1FE1686323D1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3D639272-2787-47AA-9B83-1FE1686323D1}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{3D639272-2787-47AA-9B83-1FE1686323D1}.Debug|x86.Build.0 = Debug|Any CPU
+		{3D639272-2787-47AA-9B83-1FE1686323D1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3D639272-2787-47AA-9B83-1FE1686323D1}.Release|x86.ActiveCfg = Release|Any CPU
+		{3D639272-2787-47AA-9B83-1FE1686323D1}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
