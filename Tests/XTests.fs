@@ -148,7 +148,8 @@ module AltCoverXTests =
               | "hash" -> ()
               | "fullPath" ->
                 test'
-                  <@ a1.Value.Replace("\\", "/").EndsWith(a2.Value.Replace("\\", "/")) @>
+                  <@ a1.Value.Replace("\\", "/").Replace("altcover", "AltCover").
+                              EndsWith(a2.Value.Replace("\\", "/").Replace("altcover", "AltCover")) @>
                   (a1.Name.ToString() + " : " + r.ToString() + " -> document")
               | "vc" ->
                 let expected =
@@ -941,21 +942,11 @@ module AltCoverXTests =
     // Hack for running while instrumented
     let here = SolutionDir()
     let path = Path.Combine(here, "_Mono/Sample1/Sample1.exe")
-#if NETCOREAPP2_1
-    let where = Assembly.GetExecutingAssembly().Location
 
-    let path' =
-      if File.Exists path then path
-      else
-        Path.Combine
-          (where.Substring(0, where.IndexOf("_Binaries")) + monoSample1, "Sample1.exe")
-#else
-    let path' = path
-#endif
     try
       Visitor.NameFilters.Clear()
       Visitor.reportFormat <- Some Base.ReportFormat.OpenCover
-      Visitor.Visit [ visitor ] (Visitor.ToSeq (path',[]))
+      Visitor.Visit [ visitor ] (Visitor.ToSeq (path, []))
       let resource =
         Assembly.GetExecutingAssembly().GetManifestResourceNames()
         |> Seq.find

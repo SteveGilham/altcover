@@ -736,7 +736,7 @@ _Target "JustLegacyUnitTest" (fun _ ->
              WorkingDir = "."
              ResultSpecs = [ "./_Reports/LegacyRecorderUnitTestReport.xml" ] })
 
-    !!(@"_Binaries/AltCover.Recorder.Tests2/Debug+AnyCPU/legacy/AltCover.Recorder.Tests.dll")
+    !!(@"_Binaries/AltCover.Recorder.Tests2/Debug+AnyCPU/legacy/AltCover.Recorder.Tests2.dll")
     |> NUnit3.run (fun p ->
          { p with
              ToolPath = nunitConsole
@@ -4116,6 +4116,7 @@ _Target "BulkReport" (fun _ ->
 
 _Target "All" ignore
 
+_Target "AllUnitTest" ignore
 _Target "Legacy" ignore
 
 let resetColours _ =
@@ -4166,6 +4167,14 @@ Target.activateFinal "ResetConsoleColours"
 "Compilation"
 ?=> "UnitTest"
 
+"UnitTest"
+==> "AllUnitTest"
+
+"Compilation"
+==> "JustLegacyUnitTest"
+==> "AllUnitTest"
+==> "Legacy"
+
 "Compilation"
 ==> "JustUnitTest"
 ==> "UnitTest"
@@ -4181,15 +4190,15 @@ Target.activateFinal "ResetConsoleColours"
 
 "Compilation"
 ==> "UnitTestWithAltCover"
-=?> ("UnitTest", Environment.isWindows)
+==> "UnitTest"
 
 "Compilation"
 ==> "UnitTestWithAltCoverRunner"
-=?> ("UnitTest", Environment.isWindows)
+==> "UnitTest"
 
 "UnitTestDotNet"
 ==> "UnitTestWithAltCoverCore"
-=?> ("UnitTest", Environment.isWindows |> not)
+=?> ("UnitTest", Environment.isWindows |> not)  // otherwise redundant
 
 "UnitTestDotNet"
 ==> "UnitTestWithAltCoverCoreRunner"
@@ -4201,18 +4210,18 @@ Target.activateFinal "ResetConsoleColours"
 ==> "UnitTest"
 
 "UnitTestWithAltCoverRunner"
-=?> ("UnitTest", Environment.isWindows)
+==> "UnitTest"
 
 "Compilation"
 ?=> "OperationalTest"
 
 "Compilation"
 ==> "FSharpTypes"
-=?> ("OperationalTest", Environment.isWindows)
+==> "OperationalTest"
 
 "Compilation"
 ==> "FSharpTests"
-=?> ("OperationalTest", Environment.isWindows)
+==> "OperationalTest"
 
 //"Compilation"
 //==> "FSharpTypesDotNet"
@@ -4220,19 +4229,19 @@ Target.activateFinal "ResetConsoleColours"
 
 "Compilation"
 ==> "FSharpTypesDotNetRunner"
-=?> ("OperationalTest", Environment.isWindows)
+==> "OperationalTest"
 
 "Compilation"
 ==> "FSharpTypesDotNetCollecter"
-=?> ("OperationalTest", Environment.isWindows)
+==> "OperationalTest"
 
 "Compilation"
 ==> "BasicCSharp"
-=?> ("OperationalTest", Environment.isWindows) // AltCover.exe
+==> "OperationalTest"
 
 "Compilation"
 ==> "BasicCSharpMono"
-=?> ("OperationalTest", Environment.isWindows)
+=?> ("OperationalTest", Environment.isWindows) // redundant on mono
 
 "Compilation"
 ==> "BasicCSharpUnderMono"
@@ -4252,7 +4261,7 @@ Target.activateFinal "ResetConsoleColours"
 
 "Compilation"
 ==> "CSharpDotNetWithFramework"
-=?> ("OperationalTest", Environment.isWindows)
+==> "OperationalTest"
 
 "Compilation"
 ==> "RecordResumeTest"
@@ -4297,7 +4306,7 @@ Target.activateFinal "ResetConsoleColours"
 
 "Unpack"
 ==> "Pester"
-=?> ("UnitTestWithAltCoverRunner", Environment.isWindows)
+==> "UnitTestWithAltCoverRunner"
 
 "WindowsPowerShell"
 =?> ("Pester", Environment.isWindows)
@@ -4388,7 +4397,7 @@ Target.activateFinal "ResetConsoleColours"
 
 "Unpack"
 ==> "ReleaseXUnitFSharpTypesDotNetFullRunner"
-=?> ("Deployment", Environment.isWindows)
+==> "Deployment"
 
 "Analysis"
 ==> "All"
