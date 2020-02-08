@@ -7,6 +7,8 @@ Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.recorder.core", "A
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.recorder.tests.core", "Recorder.Tests\altcover.recorder.tests.core.fsproj", "{7F197884-A015-4D01-9543-AF0837A4BE33}"
 EndProject
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.shadow.core", "AltCover.Shadow\altcover.shadow.core.fsproj", "{6B75CB41-5A32-4689-9659-6ACC264EA0EF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -20,6 +22,10 @@ Global
 		{7F197884-A015-4D01-9543-AF0837A4BE33}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{7F197884-A015-4D01-9543-AF0837A4BE33}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7F197884-A015-4D01-9543-AF0837A4BE33}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6B75CB41-5A32-4689-9659-6ACC264EA0EF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6B75CB41-5A32-4689-9659-6ACC264EA0EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6B75CB41-5A32-4689-9659-6ACC264EA0EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6B75CB41-5A32-4689-9659-6ACC264EA0EF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

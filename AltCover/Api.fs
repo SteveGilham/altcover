@@ -522,6 +522,7 @@ module internal Args =
 
 #if RUNNER
 
+[<ExcludeFromCodeCoverage; NoComparison>]
 type ValidatedCommandLine =
   { Command : string list
     Errors : string array }

@@ -9,21 +9,24 @@
     <ProjectGuid>d6ed39d2-ea21-4141-96d7-2b5f234fcd3e</ProjectGuid>
     <OutputType>Library</OutputType>
     <RootNamespace>Recorder.Tests2</RootNamespace>
-    <AssemblyName>AltCover.Recorder.Tests2</AssemblyName>
+    <AssemblyName Condition="'$(OS)' == 'Windows_NT'">AltCover.Recorder.Tests2</AssemblyName>
+    <AssemblyName Condition="'$(OS)' != 'Windows_NT'">AltCover.Recorder.Tests</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
-    <ExtraDefines>NET2</ExtraDefines>
+    <ExtraDefines>NET2;LEGACY</ExtraDefines>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Name>Recorder.Tests2</Name>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
+    <PathTerminal Condition="'$(OS)' == 'Windows_NT'">legacy\</PathTerminal>
+    <PathTerminal Condition="'$(OS)' != 'Windows_NT'">net35\</PathTerminal>
+    <OutputPath>$(SolutionDir)_Binaries\$(AssemblyName)\$(Configuration)+$(Platform)\$(PathTerminal)</OutputPath>
+    <IntermediateOutputPath>$(SolutionDir)_Intermediate\$(AssemblyName)\$(Configuration)+$(Platform)\$(PathTerminal)</IntermediateOutputPath>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <Tailcalls>false</Tailcalls>
-    <OutputPath>$(SolutionDir)_Binaries\$(AssemblyName)\$(Configuration)+$(Platform)\</OutputPath>
-    <IntermediateOutputPath>$(SolutionDir)_Intermediate\$(AssemblyName)\$(Configuration)+$(Platform)\</IntermediateOutputPath>
     <OtherFlags>--keyfile:$(SolutionDir)Build\Infrastructure.snk</OtherFlags>
     <DefineConstants>DEBUG;TRACE;$(ExtraDefines)</DefineConstants>
     <WarningLevel>3</WarningLevel>
@@ -32,8 +35,6 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <Tailcalls>true</Tailcalls>
-    <OutputPath>$(SolutionDir)_Binaries\$(AssemblyName)\$(Configuration)+$(Platform)\</OutputPath>
-    <IntermediateOutputPath>$(SolutionDir)_Intermediate\$(AssemblyName)\$(Configuration)+$(Platform)\</IntermediateOutputPath>
     <OtherFlags>--keyfile:$(SolutionDir)Build\Infrastructure.snk</OtherFlags>
     <DefineConstants>TRACE;$(ExtraDefines)</DefineConstants>
     <WarningLevel>3</WarningLevel>

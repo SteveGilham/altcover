@@ -65,7 +65,8 @@ type internal OpenCoverContext =
 module internal OpenCover =
   let internal X name = XName.Get name
 
-  let internal setChain (xbranch : XElement) (chain : int list) =
+  let internal setChain (xbranch : XElement) branch =
+    let chain = branch.Target.Tail |> List.map (fun i -> i.Offset)
     xbranch.SetAttributeValue
       (X "offsetchain",
        match chain with
@@ -264,7 +265,7 @@ module internal OpenCover =
          && branch.Representative = Reporting.Representative then
         let branches = s.Stack.Head.Parent.Descendants(X "BranchPoints") |> Seq.head
         let (xbranch, fileset, ref) = VisitGoTo s branch
-        setChain xbranch (branch.Target.Tail |> List.map (fun i -> i.Offset))
+        setChain xbranch branch
         if branches.IsEmpty then
           branches.Add(xbranch)
         else
