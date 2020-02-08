@@ -2,33 +2,34 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TargetFramework Condition="'$(OS)' != 'Windows_NT'">netcoreapp2.1</TargetFramework>
+    <TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">netcoreapp2.1;net45</TargetFrameworks>
     <RootNamespace>AltCover.Visualizer</RootNamespace>
     <AssemblyName>AltCover.Visualizer</AssemblyName>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <GlobalDefineConstants>NETCOREAPP2_0</GlobalDefineConstants>
     <PackAsTool>True</PackAsTool>
     <ToolCommandName>altcover.visualizer</ToolCommandName>
     <Name>AltCover.Visualizer</Name>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <ContinuousIntegrationBuild Condition="'$(APPVEYOR)'=='True'">true</ContinuousIntegrationBuild>
     <DeterministicSourcePaths Condition="'$(APPVEYOR)'=='True'">true</DeterministicSourcePaths>
+    <!-- https://github.com/dotnet/sdk/issues/987 -->
+    <AssemblySearchPaths Condition="'$(TargetFramework)' == 'net45'">$(AssemblySearchPaths);{GAC}</AssemblySearchPaths>
+    <!-- GlobalDefineConstants Condition="'$(TargetFramework)' != 'net45'">NETCOREAPP2_1</GlobalDefineConstants -->
+    <SolutionDir Condition="'$(SolutionDir)' == '$(ProjectDir)' AND '$(AltCoverGendarme)' == 'true'">$(ProjectDir)../</SolutionDir>
+    <OutputPath>$(SolutionDir)_Binaries/$(AssemblyName)/$(Configuration)+$(Platform)/</OutputPath>
+    <IntermediateOutputPath>$(SolutionDir)_Intermediate/$(AssemblyName)/$(Configuration)+$(Platform)/</IntermediateOutputPath>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
-    <DefineConstants>$(DefineConstants);$(GlobalDefineConstants)</DefineConstants>
-    <OutputPath>$(SolutionDir)_Binaries/$(AssemblyName)/$(Configuration)+$(Platform)/</OutputPath>
-    <IntermediateOutputPath>$(SolutionDir)_Intermediate/$(AssemblyName)/$(Configuration)+$(Platform)/</IntermediateOutputPath>
-    <OtherFlags>--tailcalls+</OtherFlags>
+    <DefineConstants>TRACE;DEBUG;CODE_ANALYSIS;$(GlobalDefineConstants)</DefineConstants>
+    <OtherFlags>--tailcalls+ --keyfile:$(ProjectDir)..\Build\Infrastructure.snk</OtherFlags>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
-    <DefineConstants>$(DefineConstants);$(GlobalDefineConstants)</DefineConstants>
-    <SolutionDir Condition="'$(SolutionDir)' == '$(ProjectDir)'">$(ProjectDir)../</SolutionDir>
-    <OutputPath>$(SolutionDir)_Binaries/$(AssemblyName)/$(Configuration)+$(Platform)/</OutputPath>
-    <IntermediateOutputPath>$(SolutionDir)_Intermediate/$(AssemblyName)/$(Configuration)+$(Platform)/</IntermediateOutputPath>
-    <OtherFlags Condition="Exists('$(SolutionDir)Build\Infrastructure.snk')">--keyfile:$(SolutionDir)Build\Infrastructure.snk</OtherFlags>
+    <DefineConstants>TRACE;$(GlobalDefineConstants)</DefineConstants>
+    <OtherFlags>--keyfile:$(ProjectDir)..\Build\Infrastructure.snk</OtherFlags>
 </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
     <WarningLevel>4</WarningLevel>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <WarningsAsErrors />
@@ -77,16 +78,37 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="GtkSharp" Version="3.22.25.56" />
+    <PackageReference Include="GtkSharp" Version="3.22.25.56" Condition="'$(TargetFramework)' != 'net45'"/>
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Mono.Options" Version="6.6.0.161" />
+    <PackageReference Include="Mono.Options" Version="6.6.0.161" Condition="'$(TargetFramework)' != 'net45'"/>
+    <PackageReference Include="Mono.Options.Signed" Version="0.2.3" Condition="'$(TargetFramework)' == 'net45'"/>
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net45'">
+    <Reference Include="gdk-sharp">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="glade-sharp">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="glib-sharp">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="gtk-sharp">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="pango-sharp">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System.Windows.Forms" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Update="FSharp.Core" Version="4.7.0" />
+    <PackageReference Update="FSharp.Core" Version="4.7.0" Condition="'$(TargetFramework)' != 'net45'"/>
+    <PackageReference Update="FSharp.Core" Version="4.5.2" Condition="'$(TargetFramework)' == 'net45'"/>
   </ItemGroup>
 
   <Target Name="PreBuild" BeforeTargets="PreBuildEvent">

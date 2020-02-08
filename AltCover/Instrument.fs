@@ -277,6 +277,14 @@ module internal Instrument =
       let hook = resolver.GetType().GetMethod("add_ResolveFailure")
       hook.Invoke(resolver, [| HookResolveHandler :> obj |]) |> ignore
 
+#if NETCOREAPP2_0
+  let internal FindProvider pdb write =
+    match (pdb, write) with
+    | (".pdb", true) -> Mono.Cecil.Pdb.PdbWriterProvider() :> ISymbolWriterProvider
+    | (_, true) -> Mono.Cecil.Mdb.MdbWriterProvider() :> ISymbolWriterProvider
+    | _ -> null
+#endif
+
   /// <summary>
   /// Commit an instrumented assembly to disk
   /// </summary>
@@ -303,10 +311,7 @@ module internal Instrument =
     // or for assemblies with embedded .pdb information (on *nix)
     pkey.WriteSymbols <- (isWindows || separatePdb) && assembly.MainModule.HasSymbols
     pkey.SymbolWriterProvider <-
-      match (pdb, pkey.WriteSymbols) with
-      | (".pdb", true) -> Mono.Cecil.Pdb.PdbWriterProvider() :> ISymbolWriterProvider
-      | (_, true) -> Mono.Cecil.Mdb.MdbWriterProvider() :> ISymbolWriterProvider
-      | _ -> null
+      FindProvider pdb pkey.WriteSymbols
 #else
     // Assembly with pdb writing fails on mono on Windows when writing with
     // System.NullReferenceException : Object reference not set to an instance of an object.

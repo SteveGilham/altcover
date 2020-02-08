@@ -1,7 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework Condition="'$(OS)' != 'Windows_NT'">netstandard2.0</TargetFramework>
+    <TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">netstandard2.0;net46</TargetFrameworks>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <RootNamespace>AltCover.Cake</RootNamespace>
     <AssemblyName>AltCover.Cake</AssemblyName>
@@ -14,13 +15,11 @@
     <DefineConstants>$(GlobalDefineConstants)</DefineConstants>
     <OutputPath>$(SolutionDir)_Binaries/$(AssemblyName)/$(Configuration)+$(Platform)/</OutputPath>
     <IntermediateOutputPath>$(SolutionDir)_Intermediate/$(AssemblyName)/$(Configuration)+$(Platform)/</IntermediateOutputPath>
-    <OtherFlags>--tailcalls+</OtherFlags>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
     <DefineConstants>$(GlobalDefineConstants)</DefineConstants>
     <OutputPath>$(SolutionDir)_Binaries/$(AssemblyName)/$(Configuration)+$(Platform)/</OutputPath>
     <IntermediateOutputPath>$(SolutionDir)_Intermediate/$(AssemblyName)/$(Configuration)+$(Platform)/</IntermediateOutputPath>
-    <OtherFlags>--keyfile:$(SolutionDir)Build\Infrastructure.snk</OtherFlags>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>

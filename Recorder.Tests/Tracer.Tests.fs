@@ -19,21 +19,9 @@ open System.IO.Compression
 open System.Reflection
 open AltCover.Recorder
 open NUnit.Framework
-open Swensen.Unquote
 
 //[<TestFixture>]
 module AltCoverCoreTests =
-
-  let test' x message =
-    try
-      test x
-    with fail ->
-      let extended = message + Environment.NewLine + fail.Message
-#if NET2
-      Assert.Fail(extended)
-#else
-      AssertionFailedException(extended, fail) |> raise
-#endif
 
   [<Test>]
   let WillNotConnectSpontaneously() =
@@ -42,7 +30,7 @@ module AltCoverCoreTests =
     let mutable client = Tracer.Create unique
     try
       client <- client.OnStart()
-      test <@ client.IsConnected() |> not @>
+      Assert.True(client.IsConnected() |> not)
     with _ ->
       client.Close()
       reraise()
@@ -56,7 +44,7 @@ module AltCoverCoreTests =
     let mutable client = Tracer.Create unique
     try
       client <- client.OnStart()
-      test <@ client.IsConnected() @>
+      Assert.True(client.IsConnected())
     finally
       client.Close()
 
@@ -75,8 +63,8 @@ module AltCoverCoreTests =
          | Tag.Call -> Adapter.Call <| formatter.ReadInt32()
          | Tag.Both -> Adapter.NewBoth((formatter.ReadInt64()), (formatter.ReadInt32()))
          | Tag.Table ->
-             test <@ id = String.Empty @>
-             test <@ strike = 0 @>
+             Assert.True(( id = String.Empty ))
+             Assert.True(( strike = 0 ))
              let t = Dictionary<string, Dictionary<int, PointVisit>>()
 
              let rec ``module``() =
@@ -107,7 +95,7 @@ module AltCoverCoreTests =
                              (Adapter.NewBoth
                                ((formatter.ReadInt64()), (formatter.ReadInt32())))
                            tracking()
-                       | Tag.Table -> test' <@ false @> "No nested tables!!"
+                       | Tag.Table -> Assert.True( false, "No nested tables!!")
                        | _ -> sequencePoint (pts - 1)
                      tracking()
                    else
@@ -137,7 +125,7 @@ module AltCoverCoreTests =
       try
         Adapter.VisitsClear()
         Instance.trace <- client.OnStart()
-        test' <@ Instance.trace.IsConnected() @> "connection failed"
+        Assert.True( Instance.trace.IsConnected(), "connection failed")
         Instance.IsRunner <- true
         Adapter.VisitImplNone("name", 23)
       finally
@@ -148,8 +136,8 @@ module AltCoverCoreTests =
       use stream =
         new DeflateStream(File.OpenRead(unique + ".0.acv"), CompressionMode.Decompress)
       let results = ReadResults stream |> Seq.toList
-      test' <@ Adapter.VisitsSeq() |> Seq.isEmpty @> "unexpected local write"
-      test' <@ results = expected @> "unexpected result"
+      Assert.True( Adapter.VisitsSeq() |> Seq.isEmpty, "unexpected local write")
+      Assert.True((results = expected), "unexpected result")
     finally
       Adapter.Reset()
 
@@ -181,7 +169,7 @@ module AltCoverCoreTests =
       let mutable client = Tracer.Create tag
       try
         Instance.trace <- client.OnStart()
-        test' <@ Instance.trace.IsConnected() @> "connection failed"
+        Assert.True( Instance.trace.IsConnected(), "connection failed")
         Instance.IsRunner <- true
 
         Adapter.VisitsClear()
@@ -194,19 +182,17 @@ module AltCoverCoreTests =
       use stream =
         new DeflateStream(File.OpenRead(unique + ".0.acv"), CompressionMode.Decompress)
       let results = ReadResults stream
-      test
-        <@ ("no", 0, Adapter.Null())
-           |> Adapter.untable
-           |> Seq.isEmpty @>
-      test' <@ Adapter.VisitsSeq() |> Seq.isEmpty @> "unexpected local write"
-      test <@ results.Count = 2 @>
-      test'
-        <@ (results
-            |> Seq.skip 1
-            |> Seq.head) =
-             (expected
-              |> Seq.skip 1
-              |> Seq.head) @> "unexpected result"
+      Assert.True( ("no", 0, Adapter.Null())
+                   |> Adapter.untable
+                   |> Seq.isEmpty)
+      Assert.True( Adapter.VisitsSeq() |> Seq.isEmpty, "unexpected local write")
+      Assert.True( results.Count = 2 )
+      Assert.True( (results
+                    |> Seq.skip 1
+                    |> Seq.head) =
+                     (expected
+                      |> Seq.skip 1
+                      |> Seq.head), "unexpected result")
       match results
             |> Seq.head
             |> Adapter.untable
@@ -215,18 +201,17 @@ module AltCoverCoreTests =
           let n = n' :?> String
           let p = p' :?> int
           let d = d' :?> Dictionary<string, Dictionary<int, PointVisit>>
-          test <@ n |> Seq.isEmpty @>
-          test <@ p = 0 @>
-          test <@ d.Count = 1 @>
-          test
-            <@ d.["name"]
-               |> Seq.sortBy (fun kv -> kv.Key)
-               |> Seq.map (fun kv -> kv.Key)
-               |> Seq.toList =
-                 (t.["name"]
-                  |> Seq.sortBy (fun kv -> kv.Key)
-                  |> Seq.map (fun kv -> kv.Key)
-                  |> Seq.toList) @>
+          Assert.True( n |> Seq.isEmpty )
+          Assert.True(( p = 0 ))
+          Assert.True(( d.Count = 1 ))
+          Assert.True( d.["name"]
+                       |> Seq.sortBy (fun kv -> kv.Key)
+                       |> Seq.map (fun kv -> kv.Key)
+                       |> Seq.toList =
+                         (t.["name"]
+                          |> Seq.sortBy (fun kv -> kv.Key)
+                          |> Seq.map (fun kv -> kv.Key)
+                          |> Seq.toList) )
           let left =
             d.["name"]
             |> Seq.sortBy (fun kv -> kv.Key)
@@ -239,7 +224,7 @@ module AltCoverCoreTests =
             |> Seq.map (fun kv -> kv.Value.Count)
             |> Seq.toList
 
-          test <@ left = right @>
+          Assert.True(( left = right ))
           let left2 =
             d.["name"]
             |> Seq.sortBy (fun kv -> kv.Key)
@@ -252,8 +237,8 @@ module AltCoverCoreTests =
             |> Seq.map (fun kv -> kv.Value.Tracks |> Seq.toList)
             |> Seq.toList
 
-          test <@ left2 = right2 @>
-      | _ -> test <@ false @>
+          Assert.True(( left2 = right2 ))
+      | _ -> Assert.True( false )
     finally
       Adapter.VisitsClear()
 
@@ -273,7 +258,7 @@ module AltCoverCoreTests =
         Instance.trace <- client.OnStart()
         Assert.That(Instance.trace.Equals client, Is.False)
         Assert.That(Instance.trace.Equals expected, Is.False)
-        Assert.That(Instance.trace.IsConnected(), "connection failed")
+        Assert.True(Instance.trace.IsConnected(), "connection failed")
         let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
         let (a, b, c) = expected |> Seq.head
         Instance.trace.Push(a, b, c)
@@ -289,7 +274,7 @@ module AltCoverCoreTests =
         stream
         |> ReadResults
         |> Seq.toList
-      test' <@ Adapter.VisitsSeq() |> Seq.isEmpty @> "unexpected local write"
-      test' <@ results = expected @> "unexpected result"
+      Assert.True(Adapter.VisitsSeq() |> Seq.isEmpty, "unexpected local write")
+      Assert.True((results = expected), "unexpected result")
     finally
       Adapter.VisitsClear()

@@ -32,9 +32,11 @@ build_script:
 test:
   assemblies:
     only:
-    - _Binaries\AltCover.Tests\Debug+AnyCPU\*.Tests.dll
-    - _Binaries\AltCover.Shadow.Tests\Debug+AnyCPU\*.Tests.dll
-    - _Binaries\AltCover.WeakNameTests\Debug+AnyCPU\*Tests.dll
+    - _Binaries\AltCover.Recorder.Tests\Debug+AnyCPU\net35\AltCover.Recorder.Tests.dll
+    - _Binaries\AltCover.Recorder.Tests\Debug+AnyCPU\net47\AltCover.Recorder.Tests.dll
+    - _Binaries\AltCover.Tests\Debug+AnyCPU\net47\AltCover.Tests.dll
+    - _Binaries\AltCover.Tests.Visualizer\Debug+AnyCPU\net471\AltCover.Tests.Visualizer.dll
+    - _Binaries\AltCover.WeakName.Tests\Debug+AnyCPU\net47\AltCover.WeakName.Tests.dll
 artifacts:
 - path: _Packagin*\*.nupkg
   name: NuGet

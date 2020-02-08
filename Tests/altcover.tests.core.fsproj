@@ -1,19 +1,23 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework Condition="'$(OS)' != 'Windows_NT'">netcoreapp3.0</TargetFramework>
+    <TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">netcoreapp3.0;net47</TargetFrameworks>
     <IsPackable>false</IsPackable>
     <AssemblyName>AltCover.Tests</AssemblyName>
     <AssetTargetFallback>$(AssetTargetFallback);netcoreapp1.0;</AssetTargetFallback>
     <GenerateProgramFile>false</GenerateProgramFile>
-    <OutputType>Exe</OutputType>
+    <OutputType Condition="'$(TargetFramework)' != 'net47'">Exe</OutputType>
+    <OutputType Condition="'$(TargetFramework)' == 'net47'">Library</OutputType>
     <!-- NO!! SolutionDir Condition="'$(SolutionDir)' == '$(ProjectDir)'">$(ProjectDir)../</SolutionDir -->
+    <AssemblySearchPaths Condition="'$(TargetFramework)' == 'net47'">$(AssemblySearchPaths);{GAC}</AssemblySearchPaths>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <OutputPath>$(SolutionDir)_Binaries/$(AssemblyName)/$(Configuration)+$(Platform)/</OutputPath>
     <IntermediateOutputPath>$(SolutionDir)_Intermediate/$(AssemblyName)/$(Configuration)+$(Platform)/</IntermediateOutputPath>
-    <DefineConstants>TRACE;NETCOREAPP2_0;NETCOREAPP2_1;</DefineConstants>
+    <DefineConstants Condition="'$(TargetFramework)' != 'net47'">TRACE;NETCOREAPP2_0;NETCOREAPP2_1;</DefineConstants>
+    <DefineConstants Condition="'$(TargetFramework)' == 'net47'">TRACE</DefineConstants>
     <OtherFlags>--keyfile:$(ProjectDir)..\Build\Infrastructure.snk</OtherFlags>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
@@ -52,6 +56,7 @@
     <EmbeddedResource Include="Sample2.deps.json" />
     <EmbeddedResource Include="Sample2.deps.after.json" />
     <EmbeddedResource Include="..\Build\Infrastructure.snk" Link="Infrastructure.snk" />
+    <EmbeddedResource Include="..\Build\Recorder.snk" Link="Recorder.snk" />
     <EmbeddedResource Include="TailCallSample.dl_" />
     <EmbeddedResource Include="SwitchSample.dl_" />
     <EmbeddedResource Include="SwitchSample.pd_" />
@@ -59,21 +64,29 @@
     <EmbeddedResource Include="issue37.pd_" />
   </ItemGroup>
 
+  <ItemGroup />
+
   <ItemGroup>
-    <PackageReference Include="Expecto" Version="8.13.1" />
-    <PackageReference Include="Expecto.TestResults" Version="8.13.1" />
-    <PackageReference Include="Unquote" Version="5.0.0" />
+    <PackageReference Include="Expecto" Version="8.13.1" Condition="'$(TargetFramework)' != 'net47'" />
+    <PackageReference Include="Expecto.TestResults" Version="8.13.1" Condition="'$(TargetFramework)' != 'net47'" />
+    <PackageReference Include="Unquote" Version="5.0.0" Condition="'$(TargetFramework)' != 'net47'" />
+    <Reference Include="Unquote" Condition="'$(TargetFramework)' == 'net47'">
+      <HintPath>..\ThirdParty\Unquote.dll</HintPath>
+    </Reference>
     <PackageReference Include="coverlet.collector" Version="1.2.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="16.0.461" />
+    <Reference Include="Microsoft.Build.Framework" Condition="'$(TargetFramework)' == 'net47'" />
+    <Reference Include="Microsoft.Build.Utilities.v4.0" Condition="'$(TargetFramework)' == 'net47'" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="16.0.461" Condition="'$(TargetFramework)' != 'net47'" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.4.0" />
     <PackageReference Include="Mono.Cecil" Version="0.11.1" />
-    <PackageReference Include="Mono.Options" Version="6.6.0.161" />
+    <PackageReference Include="Mono.Options" Version="6.6.0.161" Condition="'$(TargetFramework)' != 'net47'" />
+    <PackageReference Include="Mono.Options.Signed" Version="0.2.3" Condition="'$(TargetFramework)' == 'net47'" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     <PackageReference Include="NUnit" Version="3.12.0" />
-    <PackageReference Include="YoloDev.Expecto.TestSdk" Version="0.8.0" />
+    <PackageReference Include="YoloDev.Expecto.TestSdk" Version="0.8.0" Condition="'$(TargetFramework)' != 'net47'" />
   </ItemGroup>
 
   <ItemGroup>
@@ -81,18 +94,19 @@
     <ProjectReference Include="..\Sample11\sample11.core.csproj" />
     <ProjectReference Include="..\Sample16\sample16.core.csproj" />
     <ProjectReference Include="..\Sample17\sample17.core.fsproj" />
-    <ProjectReference Include="..\Sample1\sample1.core.csproj" />
+    <ProjectReference Include="..\Sample1\sample1.core.csproj" Condition="'$(TargetFramework)' != 'net47'" />
     <ProjectReference Include="..\Sample2\sample2.core.fsproj" />
     <ProjectReference Include="..\Sample3\sample3.core.csproj" />
     <ProjectReference Include="..\Sample4\sample4.core.fsproj" />
     <ProjectReference Include="..\Sample5\sample5.core.csproj" />
     <ProjectReference Include="..\Sample6\sample6.core.fsproj" />
-    <ProjectReference Include="..\Sample8\sample8.core.csproj" />
+    <ProjectReference Include="..\Sample8\sample8.core.csproj" Condition="'$(TargetFramework)' != 'net47'" />
     <ProjectReference Include="..\Sample12\sample12.core.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Update="FSharp.Core" Version="4.7.0" />
+    <PackageReference Update="FSharp.Core" Version="4.7.0" Condition="'$(TargetFramework)' != 'net47'" />
+    <PackageReference Update="FSharp.Core" Version="4.5.2" Condition="'$(TargetFramework)' == 'net47'" />
     <PackageReference Include="System.Security.Permissions" Version="4.7.0" />
   </ItemGroup>
 </Project>

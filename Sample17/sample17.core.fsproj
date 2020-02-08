@@ -1,7 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <TargetFramework Condition="'$(OS)' != 'Windows_NT'">netcoreapp2.0</TargetFramework>
+    <TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">netcoreapp2.0;net46</TargetFrameworks>
     <AssemblyName>Sample17</AssemblyName>
     <AssetTargetFallback>$(AssetTargetFallback);netcoreapp1.0;</AssetTargetFallback>
   </PropertyGroup>
@@ -21,6 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Update="FSharp.Core" Version="4.3.4" />
+    <PackageReference Update="FSharp.Core" Version="4.3.4" Condition="'$(TargetFramework)' != 'net46'" />
+    <PackageReference Update="FSharp.Core" Version="4.5.2" Condition="'$(TargetFramework)' == 'net46'" />
   </ItemGroup>
 </Project>

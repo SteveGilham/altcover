@@ -42,14 +42,8 @@ type Api =
     let target =
       match toolType with
       | Framework _ -> "AltCover.exe"
-      | _ -> "AltCover.dll"
+      | _ -> "dotnet-altcover.dll"
     match Directory.GetFiles(root, target, SearchOption.AllDirectories)
-          |> Seq.filter (fun f ->
-               let coretype =
-                 f
-                 |> Path.GetDirectoryName
-                 |> Path.GetFileName
-               coretype.StartsWith("netstandard", StringComparison.Ordinal) |> not)
           |> Seq.tryHead with
     | Some path -> path
     | None -> String.Empty

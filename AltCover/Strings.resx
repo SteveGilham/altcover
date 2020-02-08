@@ -398,7 +398,7 @@ If this problem was detected in the pre-test instrumentation stage of `dotnet te
     <value>Hide complex internal IL branching implementation details in switch/match constructs, and just show what the source level logic implies.</value>
   </data>
   <data name="showstatic:" xml:space="preserve">
-    <value>Optional: Instrument and show code that is by default skipped as trivial.  --showstatic:- is equivalent to omitting the parameter; --showstatic or --showstatic:+ sets the unvisited count to a negative value interpreted by the visualizer (but treated as zero by ReportGenerator) ; --showstatic:++ sets the unvisited count to zero. </value>
+    <value>Optional: Instrument and show code that is by default skipped as trivial.  --showstatic:- is equivalent to omitting the parameter; --showstatic or --showstatic:+ sets the unvisited count to a negative value interpreted by the visualizer (but treated as zero by ReportGenerator) ; --showstatic:++ sets the unvisited count to zero.</value>
   </data>
   <data name="showGenerated" xml:space="preserve">
     <value>Mark generated code with a visit count of -2 (Automatic) for the Visualizer if unvisited</value>
