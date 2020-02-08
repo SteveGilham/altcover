@@ -162,7 +162,8 @@ aŭ
 AltCover ipmo
 aŭ
 AltCover version
-Vidu https://github.com/SteveGilham/altcover/wiki/Usage por plenaj detaloj.</value>
+Vidu https://github.com/SteveGilham/altcover/wiki/Usage por plenaj detaloj.
+</value>
   </data>
   <data name="NotInPlace" xml:space="preserve">
     <value>De kaj al adresaroj {0} estas identaj</value>
@@ -324,7 +325,7 @@ Se ĉi tiu problemo estis detektita en la antaŭprova instrumenta stadio de `dot
                 &lt;=  {0}</value>
   </data>
   <data name="t|threshold=" xml:space="preserve">
-    <value> Laŭvola: minimuma akceptebla kovra procento (entjero, 0 ĝis 100). Se la rezulto de kovraĵo estas sub sojlo, la rondkodo de la procezo estas (sojlo - reala) rondigita ĝis la plej proksima entjero.</value>
+    <value>Laŭvola: minimuma akceptebla kovra procento (entjero, 0 ĝis 100). Se la rezulto de kovraĵo estas sub sojlo, la rondkodo de la procezo estas (sojlo - reala) rondigita ĝis la plej proksima entjero.</value>
   </data>
   <data name="c|cobertura=" xml:space="preserve">
     <value>Laŭvola: Dosiero por la versio de formato Cobertura de la datumoj kolektitaj</value>

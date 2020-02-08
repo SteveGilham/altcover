@@ -32,22 +32,9 @@ module AltCoverXTests =
     | _ -> String.Empty
 
   let SolutionDir() =
-#if NETCOREAPP2_1
-    let where = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
-    where.Substring(0, where.IndexOf("_Binaries"))
-#else
     SolutionRoot.location
-#endif
 
-#if NETCOREAPP2_1
-  let sample1 = "Sample1.dll"
-  let monoSample1 = "../_Mono/Sample1"
-#else
-  let sample1 = "Sample1.exe"
-  let monoSample1 = "_Mono/Sample1"
-  let recorderSnk = typeof<AltCover.Node>.Assembly.GetManifestResourceNames()
-                    |> Seq.find (fun n -> n.EndsWith(".Recorder.snk", StringComparison.Ordinal))
-#endif
+  let monoSample1path = Path.Combine(SolutionDir(), "_Mono/Sample1/Sample1.exe")
 
   let MonoBaseline = "<?xml-stylesheet type='text/xsl' href='coverage.xsl'?>
 <coverage profilerVersion=\"0\" driverVersion=\"0\" startTime=\"\" measureTime=\"\">
@@ -148,7 +135,8 @@ module AltCoverXTests =
               | "hash" -> ()
               | "fullPath" ->
                 test'
-                  <@ a1.Value.Replace("\\", "/").EndsWith(a2.Value.Replace("\\", "/")) @>
+                  <@ a1.Value.Replace("\\", "/").Replace("altcover", "AltCover").
+                              EndsWith(a2.Value.Replace("\\", "/").Replace("altcover", "AltCover")) @>
                   (a1.Name.ToString() + " : " + r.ToString() + " -> document")
               | "vc" ->
                 let expected =
@@ -170,23 +158,29 @@ module AltCoverXTests =
     let instance = FSApi.CollectParams.Primitive subject
     let scan = instance.Validate(false)
     test <@ scan.Length = 0 @>
-    instance.GetHashCode() |> ignore
+    test <@ instance.GetHashCode() :> obj |> isNull |> not @> // gratuitous coverage for coverlet
     test <@ (FSApi.CollectParams.Primitive subject)
             |> FSApi.Args.Collect = [ "Runner"; "-t"; "23"; "--collect" ] @>
 
   [<Test>]
   let TypeSafeCollectParamsCanBeValidated() =
+    let here = Assembly.GetExecutingAssembly().Location
     let subject =
       { TypeSafe.CollectParams.Create() with Threshold = TypeSafe.Threshold 23uy
-                                             SummaryFormat = TypeSafe.BPlus }
+                                             SummaryFormat = TypeSafe.BPlus
+                                             Executable = TypeSafe.Tool "dotnet" }
 
-    let scan = (FSApi.CollectParams.TypeSafe subject).Validate(false)
+    let instance = FSApi.CollectParams.TypeSafe subject
+    test <@ instance.GetHashCode() :> obj |> isNull |> not @> // gratuitous coverage for coverlet
+
+    let scan = instance.Validate(false)
     test <@ scan.Length = 0 @>
     test
-      <@ (FSApi.CollectParams.TypeSafe subject)
-         |> FSApi.Args.Collect = [ "Runner"; "-t"; "23"; "--collect"; "--teamcity:+B" ] @>
-    let validate = (FSApi.CollectParams.TypeSafe subject).WhatIf(false).ToString()
-    test <@ validate = "altcover Runner -t 23 --collect --teamcity:+B" @>
+      <@ instance
+         |> FSApi.Args.Collect = [ "Runner"; "-x"; "dotnet"; "-t"; "23"; "--teamcity:+B" ] @>
+    let validate = instance.WhatIf(false)
+    test <@ validate.GetHashCode() :> obj |> isNull |> not @> // gratuitous coverage for coverlet
+    test <@ validate.ToString() = "altcover Runner -x dotnet -t 23 --teamcity:+B" @>
 
   [<Test>]
   let TypeSafeCollectSummaryCanBeValidated() =
@@ -243,7 +237,7 @@ module AltCoverXTests =
     let instance = FSApi.PrepareParams.Primitive subject
     let scan = instance.Validate()
     test <@ scan.Length = 0 @>
-    instance.GetHashCode() |> ignore
+    test <@ instance.GetHashCode() :> obj |> isNull |> not @> // gratuitous coverage for coverlet
     let rendered = (FSApi.PrepareParams.Primitive subject) |> FSApi.Args.Prepare
     let location = Assembly.GetExecutingAssembly().Location
     test
@@ -278,11 +272,14 @@ module AltCoverXTests =
                                              PathFilter =
                                                TypeSafe.Filters [| TypeSafe.Raw "ok" |] }
 
-    let scan = (FSApi.PrepareParams.TypeSafe subject).Validate()
+    let instance = FSApi.PrepareParams.TypeSafe subject
+    test <@ instance.GetHashCode() :> obj |> isNull |> not @> // gratuitous coverage for coverlet
+
+    let scan = instance.Validate()
     test <@ scan.Length = 0 @>
     let location = Assembly.GetExecutingAssembly().Location
     test
-      <@ (FSApi.PrepareParams.TypeSafe subject)
+      <@ instance
          |> FSApi.Args.Prepare = [ "-i"; here; "-o"; here; "-y"; here; "-d"; location;
                                    "-p"; "ok"; "-c"; "[Fact]"; "--opencover"; "--inplace";
                                    "--save" ] @>
@@ -599,23 +596,8 @@ module AltCoverXTests =
   [<Test>]
   let ADryRunLooksAsExpected() =
     let where = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
-    let here = SolutionDir()
-    let path = Path.Combine(here, "_Mono/Sample1")
-    let key0 = Path.Combine(here, "Build/SelfTest.snk")
-#if NETCOREAPP2_1
-    let input =
-      if Directory.Exists path then path
-      else Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), monoSample1)
-
-    let key =
-      if File.Exists key0 then key0
-      else
-        Path.Combine
-          (where.Substring(0, where.IndexOf("_Binaries")), "../Build/SelfTest.snk")
-#else
-    let input = path
-    let key = key0
-#endif
+    let path = monoSample1path |> Path.GetDirectoryName
+    let key = Path.Combine(SolutionDir(), "Build/SelfTest.snk")
     let unique = Guid.NewGuid().ToString()
     let unique' = Path.Combine(where, Guid.NewGuid().ToString())
     Directory.CreateDirectory unique' |> ignore
@@ -635,7 +617,7 @@ module AltCoverXTests =
       use stderr = new StringWriter()
       Console.SetOut stdout
       Console.SetError stderr
-      let args = [| "-i"; input; "-o"; output; "-x"; report
+      let args = [| "-i"; path; "-o"; output; "-x"; report
                     "-sn"; key
                  |]
       let result = Main.DoInstrumentation args
@@ -643,15 +625,15 @@ module AltCoverXTests =
       test <@ stderr.ToString() |> Seq.isEmpty @>
       let expected =
         "Creating folder " + output + "\nInstrumenting files from "
-        + (Path.GetFullPath input) + "\nWriting files to " + output + "\n   => "
-        + Path.Combine(Path.GetFullPath input, "Sample1.exe") + "\n\nCoverage Report: "
+        + (Path.GetFullPath path) + "\nWriting files to " + output + "\n   => "
+        + Path.Combine(Path.GetFullPath path, "Sample1.exe") + "\n\nCoverage Report: "
         + report + "\n\n\n    " + Path.Combine(Path.GetFullPath output, "Sample1.exe")
         + "\n                <=  Sample1, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null\n"
       let console = stdout.ToString()
       test <@ console.Replace("\r\n", "\n").Replace("\\", "/") = (expected.Replace("\\", "/")) @>
       test <@  Visitor.OutputDirectories() |> Seq.head = output @>
       test <@ (Visitor.InputDirectories() |> Seq.head).Replace("\\", "/") =
-               ((Path.GetFullPath input).Replace("\\", "/")) @>
+               ((Path.GetFullPath path).Replace("\\", "/")) @>
       test <@ Visitor.ReportPath() = report @>
       use stream = new FileStream(key, FileMode.Open)
       use buffer = new MemoryStream()
@@ -764,20 +746,8 @@ module AltCoverXTests =
   let AfterAssemblyCommitsThatAssemblyForMono() =
     // Hack for running while instrumented
     let where = Assembly.GetExecutingAssembly().Location
-    let here = SolutionDir()
-    let path = Path.Combine(here, "_Mono/Sample1/Sample1.exe")
-#if NETCOREAPP2_1
-
-    let path' =
-      if File.Exists path then path
-      else
-        Path.Combine
-          (where.Substring(0, where.IndexOf("_Binaries")) + monoSample1, "Sample1.exe")
-#else
-    let path' = path
-#endif
-
-    let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path'
+    let path = monoSample1path
+    let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
     ProgramDatabase.ReadSymbols def
     let unique = Guid.NewGuid().ToString()
     let output = Path.Combine(Path.GetDirectoryName(where), unique)
@@ -909,18 +879,8 @@ module AltCoverXTests =
     let visitor, document = Report.ReportGenerator()
     // Hack for running while instrumented
     let where = Assembly.GetExecutingAssembly().Location
-    let here = SolutionDir()
-    let path = Path.Combine(here, "_Mono/Sample1/Sample1.exe")
-#if NETCOREAPP2_1
-    let path' =
-      if File.Exists path then path
-      else
-        Path.Combine
-          (where.Substring(0, where.IndexOf("_Binaries")) + monoSample1, "Sample1.exe")
-#else
-    let path' = path
-#endif
-    Visitor.Visit [ visitor ] (Visitor.ToSeq (path',[]))
+    let path = monoSample1path
+    Visitor.Visit [ visitor ] (Visitor.ToSeq (path,[]))
     let baseline = XDocument.Load(new System.IO.StringReader(MonoBaseline))
     let result = document.Elements()
     let expected = baseline.Elements()
@@ -929,24 +889,12 @@ module AltCoverXTests =
   [<Test>]
   let ShouldGenerateExpectedXmlReportFromMonoOpenCoverStyle() =
     let visitor, document = OpenCover.ReportGenerator()
-    // Hack for running while instrumented
-    let here = SolutionDir()
-    let path = Path.Combine(here, "_Mono/Sample1/Sample1.exe")
-#if NETCOREAPP2_1
-    let where = Assembly.GetExecutingAssembly().Location
+    let path = monoSample1path
 
-    let path' =
-      if File.Exists path then path
-      else
-        Path.Combine
-          (where.Substring(0, where.IndexOf("_Binaries")) + monoSample1, "Sample1.exe")
-#else
-    let path' = path
-#endif
     try
       Visitor.NameFilters.Clear()
       Visitor.reportFormat <- Some Base.ReportFormat.OpenCover
-      Visitor.Visit [ visitor ] (Visitor.ToSeq (path',[]))
+      Visitor.Visit [ visitor ] (Visitor.ToSeq (path, []))
       let resource =
         Assembly.GetExecutingAssembly().GetManifestResourceNames()
         |> Seq.find

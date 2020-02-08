@@ -151,6 +151,11 @@ module internal CommandLine =
        |> not
     then f line
 
+  module private Uncoverlet = // more event handlers
+    let AddHandlers (proc : Process) =
+      proc.ErrorDataReceived.Add(fun e -> Output.Error |> Filter e.Data)
+      proc.OutputDataReceived.Add(fun e -> Output.Info |> Filter e.Data)
+
   let internal Launch (cmd : string) args toDirectory =
     Directory.SetCurrentDirectory(toDirectory)
     let quote =
@@ -172,8 +177,7 @@ module internal CommandLine =
     use proc = new Process()
     proc.StartInfo <- psi
 
-    proc.ErrorDataReceived.Add(fun e -> Output.Error |> Filter e.Data)
-    proc.OutputDataReceived.Add(fun e -> Output.Info |> Filter e.Data)
+    Uncoverlet.AddHandlers proc
     proc.Start() |> ignore
     proc.BeginErrorReadLine()
     proc.BeginOutputReadLine()
@@ -285,9 +289,9 @@ module internal CommandLine =
 
   let internal ValidateFileSystemEntity exists message key x =
     doPathOperation (fun () ->
-      if not (String.IsNullOrWhiteSpace x) && x
-                                              |> Path.GetFullPath
-                                              |> exists then
+      if (not (String.IsNullOrWhiteSpace x)) && x
+                                                |> Path.GetFullPath
+                                                |> exists then
         true
       else
         error <-
@@ -329,17 +333,20 @@ module internal CommandLine =
     else
       (String.Empty, false)
 
+  let internal TransformCryptographicException f =
+    try
+      f()
+    with :? CryptographicException as c ->
+      (c.Message, c)
+      |> SecurityException
+      |> raise
+
   let internal ValidateStrongNameKey key x =
     if ValidateFile key x then
       doPathOperation (fun () ->
         let blob = File.ReadAllBytes x
-        // Available in .netstandard 2.0
-        try
-          (blob |> StrongNameKeyData.Make, true)
-        with :? CryptographicException as c ->
-          (c.Message, c)
-          |> SecurityException
-          |> raise) (StrongNameKeyData.Empty(), false) false
+        TransformCryptographicException (fun () -> (blob |> StrongNameKeyData.Make, true)))
+        (StrongNameKeyData.Empty(), false) false
     else
       (StrongNameKeyData.Empty(), false)
 

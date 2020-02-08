@@ -34,6 +34,30 @@ module AltCoverRunnerTests =
     // Base.fs
 
     [<Test>]
+    let MaxTimeFirst () =
+      let now = DateTime.Now
+      let ago = now - TimeSpan(1,0,0,0)
+      test <@ (Base.Counter.MaxTime now ago) = now @>
+
+    [<Test>]
+    let MaxTimeLast () =
+      let now = DateTime.Now
+      let ago = now - TimeSpan(1,0,0,0)
+      test <@ (Base.Counter.MaxTime ago now) = now @>
+
+    [<Test>]
+    let MinTimeFirst () =
+      let now = DateTime.Now
+      let ago = now - TimeSpan(1,0,0,0)
+      test <@ (Base.Counter.MinTime ago now) = ago @>
+
+    [<Test>]
+    let MinTimeLast () =
+      let now = DateTime.Now
+      let ago = now - TimeSpan(1,0,0,0)
+      test <@ (Base.Counter.MinTime now ago) = ago @>
+
+    [<Test>]
     let SafeDisposalProtects() =
       Runner.init()
       let obj1 =
@@ -338,25 +362,11 @@ module AltCoverRunnerTests =
       finally
         Console.SetError saved
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let ShouldLaunchWithExpectedOutput() =
       Runner.init()
-      // Hack for running while instrumented
-      let where = Assembly.GetExecutingAssembly().Location
-      let path =
-        Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "_Mono/Sample1")
-#if NETCOREAPP2_0
-      let path' =
-        if Directory.Exists path then path
-        else
-          Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "../_Mono/Sample1")
-#else
-      let path' = path
-#endif
-      let files = Directory.GetFiles(path')
+      let path = Path.Combine(SolutionRoot.location, "_Mono/Sample1")
+      let files = Directory.GetFiles(path)
 
       let program =
         files
@@ -1500,25 +1510,11 @@ module AltCoverRunnerTests =
       finally
         CommandLine.dropReturnCode := false
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let ShouldProcessTrailingArguments() =
       Runner.init()
-      // Hack for running while instrumented
-      let where = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
-      let path =
-        Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "_Mono/Sample1")
-#if NETCOREAPP2_0
-      let path' =
-        if Directory.Exists path then path
-        else
-          Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "../_Mono/Sample1")
-#else
-      let path' = path
-#endif
-      let files = Directory.GetFiles(path')
+      let path = Path.Combine(SolutionRoot.location, "_Mono/Sample1")
+      let files = Directory.GetFiles(path)
 
       let program =
         files
@@ -1548,7 +1544,7 @@ module AltCoverRunnerTests =
           if nonWindows then "mono" :: baseArgs
           else baseArgs
 
-        let r = CommandLine.ProcessTrailingArguments args <| DirectoryInfo(where)
+        let r = CommandLine.ProcessTrailingArguments args <| DirectoryInfo(path)
         Assert.That(r, Is.EqualTo 0)
         Assert.That(stderr.ToString(), Is.Empty)
         stdout.Flush()
@@ -1752,25 +1748,11 @@ or
           Runner.recordingDirectory <- None
           Runner.RecorderName <- save)
 
-#if NETCOREAPP2_0
-#else
     [<Test>]
-#endif
     let ShouldProcessPayload() =
       Runner.init()
-      // Hack for running while instrumented
-      let where = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
-      let path =
-        Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "_Mono/Sample1")
-#if NETCOREAPP2_0
-      let path' =
-        if Directory.Exists path then path
-        else
-          Path.Combine(where.Substring(0, where.IndexOf("_Binaries")), "../_Mono/Sample1")
-#else
-      let path' = path
-#endif
-      let files = Directory.GetFiles(path')
+      let path = Path.Combine(SolutionRoot.location, "_Mono/Sample1")
+      let files = Directory.GetFiles(path)
 
       let program =
         files
@@ -1778,7 +1760,7 @@ or
         |> Seq.head
       AltCover.ToConsole()
       let saved = (Console.Out, Console.Error)
-      Runner.workingDirectory <- Some where
+      Runner.workingDirectory <- Some path
       let e0 = Console.Out.Encoding
       let e1 = Console.Error.Encoding
       try
@@ -2634,7 +2616,9 @@ or
       |> Directory.CreateDirectory
       |> ignore
       try
-        let r = LCov.Summary baseline Base.ReportFormat.OpenCover 0
+        Runner.AddLCovSummary()
+        let summarize = Runner.Summaries |> Seq.head
+        let r = summarize baseline Base.ReportFormat.OpenCover 0
         Assert.That(r, Is.EqualTo 0)
         let result = File.ReadAllText unique
         let resource2 =
@@ -2781,10 +2765,10 @@ or
 
       use stream =
           Assembly.GetExecutingAssembly()
-#if NETCOREAPP2_0
-                  .GetManifestResourceStream("altcover.tests.core.coverage-04.xsd")
-#else
+#if LEGACY
                   .GetManifestResourceStream("coverage-04.xsd")
+#else
+                  .GetManifestResourceStream("altcover.tests.core.coverage-04.xsd")
 #endif
       use reader = new StreamReader(stream)
       use xreader = XmlReader.Create(reader)
@@ -2819,7 +2803,9 @@ or
       |> Directory.CreateDirectory
       |> ignore
       try
-        let r = Cobertura.Summary baseline Base.ReportFormat.NCover 0
+        Runner.AddCoberturaSummary()
+        let summarize = Runner.Summaries |> Seq.head
+        let r = summarize baseline Base.ReportFormat.NCover 0
         Assert.That(r, Is.EqualTo 0)
         let result =
           Regex.Replace(File.ReadAllText unique, """timestamp=\"\d*\">""",

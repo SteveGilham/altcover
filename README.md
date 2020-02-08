@@ -83,9 +83,13 @@ You will need Visual Studio VS2019 (Community Edition) v16.4.x or later with F# 
 
 For GTK# support, the GTK# latest 2.12 install is expected -- try https://www.mono-project.com/download/stable/#download-win -- while the latest releases of the GTK#3 libraries will download the native support if the expected version is not detected.
 
+In preparation for the .net 5 unification, on Windows, the default full build uses new-style projects under `altcover.core.sln` with a few test/helper old-style projects built from `MCS.sln`; and the build for release only needs these.  Targets with `Legacy` in the name build and test the old-style projects under `AltCover.Legacy.sln`.
+
 #### *nix
 
 It is assumed that `mono` (version 6.6.x) and `dotnet` are on the `PATH` already, and everything is built from the command line, with your favourite editor used for coding.
+
+On non-Windows, the default full build uses the old-style projects under the renamed `AltCover.Legacy.sln` for the framework/Mono support; and `altcover.core.sln` for the .net core support.
 
 ### Bootstrapping
 

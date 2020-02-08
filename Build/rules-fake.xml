@@ -11,7 +11,7 @@
       exclude="AvoidSmallNamespaceRule | ConsiderConvertingMethodToPropertyRule | AvoidVisibleNestedTypesRule | AvoidMultidimensionalIndexerRule"
       from="Gendarme.Rules.Design.dll" />
     <rules include="*"
-      exclude="AvoidMethodWithUnusedGenericTypeRule | DoNotExposeNestedGenericSignaturesRule"
+      exclude="DoNotExposeNestedGenericSignaturesRule"
       from="Gendarme.Rules.Design.Generic.dll" />
     <rules include="*"
       from="Gendarme.Rules.Design.Linq.dll" />
@@ -21,10 +21,10 @@
     <rules include="*" from="Gendarme.Rules.Interoperability.dll" />
     <rules include="*" from="Gendarme.Rules.Interoperability.Com.dll" />
     <rules include="*"
-      exclude="UseCorrectCasingRule | AvoidNonAlphanumericIdentifierRule | UseCorrectPrefixRule | ParameterNamesShouldMatchOverriddenMethodRule | AvoidDeepNamespaceHierarchyRule"
+      exclude="UseCorrectCasingRule | AvoidNonAlphanumericIdentifierRule | UseCorrectPrefixRule | ParameterNamesShouldMatchOverriddenMethodRule"
       from="Gendarme.Rules.Naming.dll" />
     <rules include="*"
-      exclude="AvoidUnneededUnboxingRule | AvoidRepetitiveCastsRule | AvoidUnsealedUninheritedInternalTypeRule"
+      exclude="AvoidUnsealedUninheritedInternalTypeRule"
       from="Gendarme.Rules.Performance.dll" />
     <rules include="*"
       from="Gendarme.Rules.Portability.dll" />
@@ -44,7 +44,6 @@
       from="Gendarme.Rules.Maintainability.dll" />
     <rules include="*" 
       from="Gendarme.Rules.Gendarme.dll" />
-   <!-- Assembly not in nugget -->
-    <!-- rules include="*" from="Gendarme.Rules.Globalization.dll"/ -->
+    <rules include="*" from="Gendarme.Rules.Globalization.dll" />
   </ruleset>
 </gendarme>

@@ -174,10 +174,10 @@ module Persistence =
           schemas.Add(String.Empty, XmlReader.Create xsd) |> ignore
           doc.Validate(schemas, null)
           (file, doc)
-        with xx ->
-          printfn "%A\r\n\r\n%A" xx doc
+        with xx ->  // DoNotSwallowErrorsCatchingNonSpecificExceptionsRule
+          printfn "%A%s%s%A" xx Environment.NewLine Environment.NewLine doc
           (file, DefaultDocument())
-      with x ->
+      with x -> // DoNotSwallowErrorsCatchingNonSpecificExceptionsRule
         printfn "%A" x
         (file, DefaultDocument())
 
@@ -979,20 +979,22 @@ module Gui =
   let private TagByCoverage (buff : TextBuffer) (n : CodeTag) =
     // bound by current line length in case we're looking from stale coverage
     let line = buff.GetIterAtLine(n.line - 1)
+    let chars = line.CharsInLine
 
     let from =
-      if line.CharsInLine = 0
+      if chars = 0
       then line
-      else buff.GetIterAtLineOffset(n.line - 1, Math.Min(n.column, line.CharsInLine) - 1)
+      else buff.GetIterAtLineOffset(n.line - 1, Math.Min(n.column, chars) - 1)
 
     let endline = buff.GetIterAtLine(n.endline - 1)
+    let endchars = endline.CharsInLine
 
     let until =
-      if endline.CharsInLine = 0 then
+      if endchars = 0 then
         endline
       else
         buff.GetIterAtLineOffset
-          (n.endline - 1, Math.Min(n.endcolumn, endline.CharsInLine) - 1)
+          (n.endline - 1, Math.Min(n.endcolumn, endchars) - 1)
 
     let tag =
       match enum n.visitcount with
@@ -1126,11 +1128,11 @@ module Gui =
 #if NETCOREAPP2_1
     h.toolbar1.ToolbarStyle <- ToolbarStyle.Both
     let prov = new CssProvider()
-    let style = """
-* {
-    background-color: white;
-}
-"""
+    let style = Environment.NewLine +
+                "* {" + Environment.NewLine +
+                "     background-color: white;" + Environment.NewLine +
+                "  }" + Environment.NewLine
+
     prov.LoadFromData(style) |> ignore
     h.toolbar1.StyleContext.AddProvider(prov, UInt32.MaxValue)
 #endif

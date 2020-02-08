@@ -213,10 +213,12 @@ module Instance =
     use writer = new StreamWriter(file)
     text |> Seq.iter (fun line -> writer.WriteLine("{0}", line))
 
+  let
 #if DEBUG
 #else
+      inline
 #endif
-  let inline internal Issue71Wrapper visits moduleId hitPointId context handler add =
+             internal Issue71Wrapper visits moduleId hitPointId context handler add =
     try
       add visits moduleId hitPointId context
     with x ->
@@ -300,21 +302,23 @@ module Instance =
         if Supervision |> not then FlushAll finish
 
   // Register event handling
-  let DoPause = FlushCounter Pause
-  let DoResume = FlushCounter Resume
+  let DoPause = FileSystemEventHandler (fun _ a -> FlushCounter Pause a)
+  let DoResume = FileSystemEventHandler (fun _ a -> FlushCounter Resume a)
+  let DoUnload = EventHandler (fun _ a -> FlushCounter DomainUnload a)
+  let DoExit = EventHandler (fun _ a -> FlushCounter ProcessExit a)
 
   let internal StartWatcher() =
     Watcher.Path <- Path.GetDirectoryName <| SignalFile()
     Watcher.Filter <- Path.GetFileName <| SignalFile()
-    Watcher.Created.Add DoResume
-    Watcher.Deleted.Add DoPause
+    Watcher.add_Created DoResume
+    Watcher.add_Deleted DoPause
     Watcher.EnableRaisingEvents <-
       Watcher.Path
       |> String.IsNullOrEmpty
       |> not
 
-  do AppDomain.CurrentDomain.DomainUnload.Add(FlushCounter DomainUnload)
-     AppDomain.CurrentDomain.ProcessExit.Add(FlushCounter ProcessExit)
+  do AppDomain.CurrentDomain.add_DomainUnload DoUnload
+     AppDomain.CurrentDomain.add_ProcessExit DoExit
      StartWatcher()
      SignalFile()
      |> Tracer.Create

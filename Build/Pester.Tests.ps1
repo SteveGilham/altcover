@@ -24,7 +24,7 @@ Describe "Invoke-Altcover" {
         [string]::Join(" ", $xm.coverage.module.method.seqpnt.visitcount) | Should -Be  "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"
         $w | Should -Be "A total of 0 visits recorded"
 
-        $summary = Invoke-AltCover  -InformationAction Continue -Runner -RecorderDirectory $o -WorkingDirectory "./Sample2" -Executable "dotnet" -CommandLine @("test", "--no-build", "--configuration", "Debug",  "sample2.core.fsproj")
+        $summary = Invoke-AltCover  -InformationAction Continue -Runner -RecorderDirectory $o -WorkingDirectory "./Sample2" -Executable "dotnet" -CommandLine @("test", "--no-build", "--configuration", "Debug", "--framework", "netcoreapp2.1", "sample2.core.fsproj")
         $xm2 = [xml](Get-Content $x)
         Remove-Item -Force -Recurse $o
         [string]::Join(" ", $xm2.coverage.module.method.seqpnt.visitcount) | Should -Be "0 1 1 1 0 1 0 1 0 1 0 0 0 0 0 0 0 2 1 0 1 0 1"
@@ -592,7 +592,7 @@ Describe "ConvertFrom-NCover" {
     $expected = $expected.Replace("Sample4|Tests.fs", (Join-Path $fullpath "Tests.fs"))
 
     $result = $sw.ToString().Replace("`r", "").Replace("utf-16", "utf-8") 
-    $result | Should -Be $expected.Replace("`r", "") ###.Substring(0,11680)
+    $result | Should -Be $expected.Replace("`r", "")
   }
 }
 

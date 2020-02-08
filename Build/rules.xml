@@ -11,10 +11,9 @@
            exclude="AvoidMultidimensionalIndexerRule | AvoidVisibleNestedTypesRule | AbstractTypesShouldNotHavePublicConstructorsRule | ImplementIComparableCorrectlyRule | ConsiderConvertingMethodToPropertyRule | AvoidSmallNamespaceRule | FlagsShouldNotDefineAZeroValueRule"
            from="Gendarme.Rules.Design.dll" />
     <rules include="*"
-           exclude="AvoidMethodWithUnusedGenericTypeRule | AvoidDeclaringCustomDelegatesRule | DoNotExposeNestedGenericSignaturesRule"
+           exclude="AvoidDeclaringCustomDelegatesRule | AvoidMethodWithUnusedGenericTypeRule"
            from="Gendarme.Rules.Design.Generic.dll" />
     <rules include="*"
-           exclude="AvoidMethodWithUnusedGenericTypeRule"
            from="Gendarme.Rules.Design.Linq.dll" />
     <rules include="*"
            exclude="InstantiateArgumentExceptionCorrectlyRule"
@@ -22,10 +21,10 @@
     <rules include="*" from="Gendarme.Rules.Interoperability.dll" />
     <rules include="*" from="Gendarme.Rules.Interoperability.Com.dll" />
     <rules include="*"
-           exclude="UseCorrectSuffixRule | AvoidNonAlphanumericIdentifierRule | ParameterNamesShouldMatchOverriddenMethodRule | UseCorrectCasingRule | UseCorrectPrefixRule | AvoidDeepNamespaceHierarchyRule  | UsePluralNameInEnumFlagsRule"
+           exclude="UseCorrectSuffixRule | AvoidNonAlphanumericIdentifierRule | ParameterNamesShouldMatchOverriddenMethodRule | UseCorrectCasingRule | UseCorrectPrefixRule | UsePluralNameInEnumFlagsRule"
            from="Gendarme.Rules.Naming.dll" />
     <rules include="*"
-           exclude="AvoidUnneededFieldInitializationRule | AvoidReturningArraysOnPropertiesRule | AvoidRepetitiveCastsRule | AvoidUnneededUnboxingRule | AvoidUnsealedUninheritedInternalTypeRule | AvoidUncalledPrivateCodeRule"
+           exclude="AvoidUnneededFieldInitializationRule | AvoidReturningArraysOnPropertiesRule | AvoidUnneededUnboxingRule | AvoidUnsealedUninheritedInternalTypeRule | AvoidUncalledPrivateCodeRule"
            from="Gendarme.Rules.Performance.dll" />
     <rules include="*"
       exclude="ExitCodeIsLimitedOnUnixRule"
@@ -43,7 +42,6 @@
            exclude="AvoidUnnecessarySpecializationRule | VariableNamesShouldNotMatchFieldNamesRule"
            from="Gendarme.Rules.Maintainability.dll" />
     <rules include="*" from="Gendarme.Rules.Gendarme.dll" />
-    <!-- Assembly not in nugget -->
-    <!-- rules include="*" from="Gendarme.Rules.Globalization.dll"/ -->
+    <rules include="*" from="Gendarme.Rules.Globalization.dll"/>
   </ruleset>
 </gendarme>

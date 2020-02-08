@@ -24,6 +24,5 @@ type AltCoverTests() =
     member self.AugmentGetOrElseFillsInNone() =
       let input = [ "string"; null; "another string" ]
       let strings = input |> List.map (Option.nullable >> (Option.getOrElse "fallback"))
-      test <@ strings =[ "string"; "fallback"; "another string" ] @>
-
+      test <@ strings = [ "string"; "fallback"; "another string" ] @>
   end
