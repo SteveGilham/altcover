@@ -242,6 +242,39 @@ let uncovered (path:string) =
                 numeric))
     |> Seq.toList
 
+let msbuildRelease proj =
+  MSBuild.build (fun p ->
+               { p with
+                   Verbosity = Some MSBuildVerbosity.Normal
+                   ConsoleLogParameters = []
+                   DistributedLoggers = None
+                   DisableInternalBinLog = true
+                   Properties =
+                     [ "Configuration", "Release"
+                       "DebugSymbols", "True" ] }) proj
+
+let msbuildDebug proj =
+  MSBuild.build (fun p ->
+           { p with
+               Verbosity = Some MSBuildVerbosity.Normal
+               ConsoleLogParameters = []
+               DistributedLoggers = None
+               DisableInternalBinLog = true
+               Properties =
+                 [ "Configuration", "Debug"
+                   "DebugSymbols", "True" ] }) proj
+
+let dotnetBuildRelease proj =
+  DotNet.build (fun p ->
+                { p.WithCommon dotnetOptions with
+                    Configuration = DotNet.BuildConfiguration.Release } |> withMSBuildParams) proj
+
+let dotnetBuildDebug proj =
+  DotNet.build (fun p ->
+                { p.WithCommon dotnetOptions with
+                    Configuration = DotNet.BuildConfiguration.Debug } |> withMSBuildParams) proj
+
+//----------------------------------------------------------------                   
 
 let _Target s f =
   Target.description s
@@ -309,42 +342,16 @@ module SolutionRoot =
 _Target "Compilation" ignore
 
 _Target "BuildRelease" (fun _ ->
-  "MCS.sln"
-  |> MSBuild.build (fun p ->
-       { p with
-           Verbosity = Some MSBuildVerbosity.Normal
-           ConsoleLogParameters = []
-           DistributedLoggers = None
-           DisableInternalBinLog = true
-           Properties =
-             [ "Configuration", "Release"
-               "DebugSymbols", "True" ] })
-
   try
-    if Environment.isWindows
-    then 
-      [ "./altcover.recorder.core.sln"; "./altcover.core.sln" ]
-      |> Seq.iter
-           (fun s ->
-           s
-        |> MSBuild.build (fun p ->
-             { p with
-                 Verbosity = Some MSBuildVerbosity.Normal
-                 ConsoleLogParameters = []
-                 DistributedLoggers = None
-                 DisableInternalBinLog = true
-                 Properties =
-                   [ "Configuration", "Release"
-                     "DebugSymbols", "True" ] }))
-    else 
-      [ "./altcover.recorder.core.sln"; "./altcover.core.sln" ]
-      |> Seq.iter
-           (fun s ->
-           s
-           |> DotNet.build
-                (fun p ->
-                { p.WithCommon dotnetOptions with
-                    Configuration = DotNet.BuildConfiguration.Release } |> withMSBuildParams))
+    (if Environment.isWindows
+     then [ "./altcover.recorder.core.sln"; "./altcover.core.sln"; "MCS.sln" ]
+     else [ "./AltCover.Legacy.sln"])
+    |> Seq.iter msbuildRelease
+
+    (if Environment.isWindows
+     then []
+     else [ "./altcover.recorder.core.sln"; "./altcover.core.sln" ])
+    |> Seq.iter dotnetBuildRelease
   with x ->
     printfn "%A" x
     reraise())
@@ -361,44 +368,15 @@ _Target "BuildDebug" (fun _ ->
     Shell.copyFile "/tmp/.AltCover_SourceLink/Sample14.SourceLink.Class3.cs"
       "./Sample14/Sample14/Class3.txt"
 
-  "MCS.sln"
-  |> MSBuild.build (fun p ->
-       { p with
-           Verbosity = Some MSBuildVerbosity.Normal
-           ConsoleLogParameters = []
-           DistributedLoggers = None
-           DisableInternalBinLog = true
-           Properties =
-             [ "Configuration", "Debug"
-               "DebugSymbols", "True" ] })
-
-  if Environment.isWindows
-  then 
-    [ "./altcover.recorder.core.sln"; "./altcover.core.sln" ]
-    |> Seq.iter
-         (fun s ->
-         s
-         |>  MSBuild.build (fun p ->
-         { p with
-             Verbosity = Some MSBuildVerbosity.Normal
-             ConsoleLogParameters = []
-             DistributedLoggers = None
-             DisableInternalBinLog = true
-             Properties =
-               [ "Configuration", "Debug"
-                 "DebugSymbols", "True" ] }))
+  (if Environment.isWindows
+   then [ "./altcover.recorder.core.sln"; "./altcover.core.sln"; "MCS.sln" ]
+   else [ "./AltCover.Legacy.sln"])
+    |> Seq.iter msbuildDebug
 
   (if Environment.isWindows
    then [ "./Sample14/Sample14.sln"]
    else [ "./altcover.recorder.core.sln"; "./altcover.core.sln"; "./Sample14/Sample14.sln" ])
-  |> Seq.iter
-       (fun s ->
-       s
-       |> DotNet.build
-            (fun p ->
-            { p.WithCommon dotnetOptions with
-                Configuration =
-                  DotNet.BuildConfiguration.Debug } |> withMSBuildParams))
+  |> Seq.iter dotnetBuildDebug
 
   Shell.copy "./_SourceLink" (!!"./Sample14/Sample14/bin/Debug/netcoreapp2.1/*"))
 
@@ -429,6 +407,14 @@ _Target "AvaloniaRelease" (fun _ ->
            Properties =
              [ "Configuration", "Release"
                "DebugSymbols", "True" ] }))
+
+_Target "BuildLegacy" (fun _ ->
+  try
+    msbuildRelease "AltCover.Legacy.sln"
+    msbuildDebug "AltCover.Legacy.sln"
+  with x ->
+    printfn "%A" x
+    reraise())
 
 _Target "BuildMonoSamples" (fun _ ->
   let mcs = "_Binaries/MCS/Release+AnyCPU/MCS.exe"
@@ -726,6 +712,36 @@ _Target "JustUnitTest" (fun _ ->
              ToolPath = nunitConsole
              WorkingDir = "."
              ResultSpecs = [ "./_Reports/Recorder2UnitTestReport.xml" ] })
+  with x ->
+    printfn "%A" x
+    reraise())
+
+_Target "JustLegacyUnitTest" (fun _ ->
+  Directory.ensure "./_Reports"
+  try
+    !!(@"_Binaries/*Test*/Debug+AnyCPU/legacy/*Test*.dll")
+    |> Seq.filter
+         (fun f -> Path.GetFileName(f) <> "AltCover.Recorder.Tests.dll" &&
+                   Path.GetFileName(f).Contains("Tests."))
+    |> NUnit3.run (fun p ->
+         { p with
+             ToolPath = nunitConsole
+             WorkingDir = "."
+             ResultSpecs = [ "./_Reports/JustLegacyUnitTestReport.xml" ] })
+
+    !!(@"_Binaries/AltCover.Recorder.Tests/Debug+AnyCPU/legacy/AltCover.Recorder.Tests.dll")
+    |> NUnit3.run (fun p ->
+         { p with
+             ToolPath = nunitConsole
+             WorkingDir = "."
+             ResultSpecs = [ "./_Reports/LegacyRecorderUnitTestReport.xml" ] })
+
+    !!(@"_Binaries/AltCover.Recorder.Tests2/Debug+AnyCPU/legacy/AltCover.Recorder.Tests.dll")
+    |> NUnit3.run (fun p ->
+         { p with
+             ToolPath = nunitConsole
+             WorkingDir = "."
+             ResultSpecs = [ "./_Reports/LegacyRecorder2UnitTestReport.xml" ] })
   with x ->
     printfn "%A" x
     reraise())
@@ -4100,6 +4116,8 @@ _Target "BulkReport" (fun _ ->
 
 _Target "All" ignore
 
+_Target "Legacy" ignore
+
 let resetColours _ =
   Console.ForegroundColor <- consoleBefore |> fst
   Console.BackgroundColor <- consoleBefore |> snd
@@ -4116,6 +4134,11 @@ Target.activateFinal "ResetConsoleColours"
 
 "Preparation"
 ==> "BuildDebug"
+
+"Preparation"
+==> "BuildLegacy"
+==> "JustLegacyUnitTest"
+==> "Legacy"
 
 "BuildDebug"
 ==> "BuildRelease"
@@ -4145,7 +4168,7 @@ Target.activateFinal "ResetConsoleColours"
 
 "Compilation"
 ==> "JustUnitTest"
-=?> ("UnitTest", Environment.isWindows)
+==> "UnitTest"
 
 "Compilation"
 ==> "BuildForUnitTestDotNet"
@@ -4380,6 +4403,9 @@ Target.activateFinal "ResetConsoleColours"
 "Deployment"
 ==> "BulkReport"
 ==> "All"
+
+"All"
+==> "Legacy"
 
 let defaultTarget() =
   resetColours()
