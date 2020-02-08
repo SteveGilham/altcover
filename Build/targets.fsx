@@ -901,7 +901,7 @@ _Target "UnitTestWithAltCover" (fun _ ->
   let keyfile = Path.getFullName "Build/SelfTest.snk"
   let shadowkeyfile = Path.getFullName "Build/Infrastructure.snk"
   let reports = Path.getFullName "./_Reports"
-  let altcover = "./_Binaries/AltCover/Debug+AnyCPU/net45/AltCover.exe"
+  let altcover = Path.getFullName "./_Binaries/AltCover/Debug+AnyCPU/net45/AltCover.exe"
 
   let testDirectory = Path.getFullName "_Binaries/AltCover.Tests/Debug+AnyCPU/net47"
 
