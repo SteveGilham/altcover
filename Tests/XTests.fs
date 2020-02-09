@@ -594,7 +594,7 @@ module AltCoverXTests =
   [<Test>]
   let ADryRunLooksAsExpected() =
     let where = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
-    let path = monoSample1path |> Path.GetDirectoryName
+    let path = monoSample1path |> Path.GetFullPath |> Path.GetDirectoryName
     let key = Path.Combine(SolutionDir(), "Build/SelfTest.snk")
     let unique = Guid.NewGuid().ToString()
     let unique' = Path.Combine(where, Guid.NewGuid().ToString())
@@ -621,10 +621,10 @@ module AltCoverXTests =
       let result = Main.DoInstrumentation args
       test <@ result = 0 @>
       test <@ stderr.ToString() |> Seq.isEmpty @>
-      let subjectAssembly = Path.Combine(Path.GetFullPath input, "Sample1.exe")
+      let subjectAssembly = Path.Combine(path, "Sample1.exe")
       let expected =
         "Creating folder " + output + "\nInstrumenting files from "
-        + (Path.GetFullPath input) + "\nWriting files to " + output + "\n   => "
+        + path + "\nWriting files to " + output + "\n   => "
         + subjectAssembly + "\n\nCoverage Report: "
         + report + "\n\n\n    " + Path.Combine(Path.GetFullPath output, "Sample1.exe")
         + "\n                <=  Sample1, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null\n"
@@ -877,11 +877,9 @@ module AltCoverXTests =
   [<Test>]
   let ShouldGenerateExpectedXmlReportFromMono() =
     let visitor, document = Report.ReportGenerator()
-    // Hack for running while instrumented
-    let where = Assembly.GetExecutingAssembly().Location
     let path = monoSample1path
     Visitor.Visit [ visitor ] (Visitor.ToSeq (path,[]))
-    let expectedText = MonoBaseline.Replace("name=\"Sample1.exe\"", "name=\"" + (path' |> Path.GetFullPath) + "\"")
+    let expectedText = MonoBaseline.Replace("name=\"Sample1.exe\"", "name=\"" + (path |> Path.GetFullPath) + "\"")
     let baseline = XDocument.Load(new System.IO.StringReader(expectedText))
     let result = document.Elements()
     let expected = baseline.Elements()
@@ -905,7 +903,7 @@ module AltCoverXTests =
       ("ModulePath"
        |> XName.Get
        |> baseline.Descendants
-       |> Seq.head).SetValue path'
+       |> Seq.head).SetValue path
 
       let result = document.Elements()
       let expected = baseline.Elements()
