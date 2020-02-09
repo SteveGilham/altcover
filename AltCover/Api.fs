@@ -589,8 +589,8 @@ type ArgType =
 
 [<NoComparison; Obsolete("Use Fake.DotNet.ToolType instead")>]
 type ToolType =
-  | DotNet of string option
-  | Mono of string option
+  | DotNet of string option // can't attribute this type and constructor for Gendarme
+  | Mono of string option // can't attribute this type and constructor for Gendarme
   | Global
   | Framework
 
@@ -641,11 +641,11 @@ let internal createArgs parameters =
   | GetVersion -> [ "version" ]
 
 let internal createProcess parameters args =
-  let doFakeTool (tool : Fake.DotNet.ToolType) =
+  let fakeTool (tool : Fake.DotNet.ToolType) =
     CreateProcess.fromCommand (RawCommand(parameters.ToolPath, args |> Arguments.OfArgs))
     |> CreateProcess.withToolType (tool.WithDefaultToolCommandName "altcover")
 
-  let doAltCoverTool() =
+  let altCoverTool() =
     let baseline() = CreateProcess.fromRawCommand parameters.ToolPath args
     match parameters.ToolType with
     | Framework -> baseline() |> CreateProcess.withFramework
@@ -665,17 +665,17 @@ let internal createProcess parameters args =
 
   let doTool() =
     match parameters.FakeToolType with
-    | Some tool -> doFakeTool tool
-    | None -> doAltCoverTool()
+    | Some tool -> fakeTool tool
+    | None -> altCoverTool()
 
-  let doWorkingDirectory c =
+  let withWorkingDirectory c =
     c
     |> if String.IsNullOrWhiteSpace parameters.WorkingDirectory
        then id
        else CreateProcess.withWorkingDirectory parameters.WorkingDirectory
 
   doTool()
-  |> doWorkingDirectory
+  |> withWorkingDirectory
   |> CreateProcess.ensureExitCode
   |> fun command ->
     Trace.trace command.CommandLine
@@ -688,6 +688,9 @@ let composeCommandLine parameters =
 [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1715",
                                                   Justification =
                                                     "Generic types are implicit")>]
+[<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Correctness",
+       "EnsureLocalDisposalRule",
+       Justification="is the 'use' clause confusing Gendarme?")>]
 let runCore parameters modifyCommand =
   use __ = Trace.traceTask "AltCover" String.Empty
   let command = (composeCommandLine parameters) |> modifyCommand

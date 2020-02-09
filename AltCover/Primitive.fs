@@ -10,6 +10,7 @@ open System
 open System.Diagnostics.CodeAnalysis
 
 [<ExcludeFromCodeCoverage; NoComparison>]
+[<SuppressMessage("Gendarme.Rules.Smells", "AvoidLongParameterListsRule")>]
 type CollectParams =
   { RecorderDirectory : String
     WorkingDirectory : String
@@ -34,6 +35,8 @@ type CollectParams =
       SummaryFormat = String.Empty }
 
 [<ExcludeFromCodeCoverage; NoComparison>]
+[<SuppressMessage("Gendarme.Rules.Smells", "AvoidLargeClassesRule")>]
+[<SuppressMessage("Gendarme.Rules.Smells", "AvoidLongParameterListsRule")>]
 type PrepareParams =
   { InputDirectories : String seq
     OutputDirectories : String seq

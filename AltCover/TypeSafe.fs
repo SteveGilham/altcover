@@ -168,6 +168,7 @@ type StaticFormat =
     | ShowZero -> "++"
 
 [<ExcludeFromCodeCoverage; NoComparison>]
+[<SuppressMessage("Gendarme.Rules.Smells", "AvoidLongParameterListsRule")>]
 type CollectParams =
   { RecorderDirectory : DirectoryPath
     WorkingDirectory : DirectoryPath
@@ -192,6 +193,8 @@ type CollectParams =
       SummaryFormat = SummaryFormat.Default }
 
 [<ExcludeFromCodeCoverage; NoComparison>]
+[<SuppressMessage("Gendarme.Rules.Smells", "AvoidLargeClassesRule")>]
+[<SuppressMessage("Gendarme.Rules.Smells", "AvoidLongParameterListsRule")>]
 type PrepareParams =
   { InputDirectories : DirectoryPaths
     OutputDirectories : DirectoryPaths

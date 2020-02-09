@@ -55,6 +55,9 @@ open System.Reflection
 open AltCover_Fake.DotNet
 #endif
 
+[<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Smells",
+  "AvoidSpeculativeGeneralityRule",
+  Justification="Until we remove the [Obsolete] methods")>]
 module DotNet =
   open Fake.DotNet
 
