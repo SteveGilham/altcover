@@ -88,7 +88,7 @@ module AltCoverXTests =
                   else a2.Value
                 test' <@ expected = a1.Value @> (r.ToString() + " -> visitcount")
               | _ ->
-                test' <@ a1.Value = a2.Value @>
+                test' <@ a1.Value.Replace("\\", "/") = a2.Value.Replace("\\", "/") @>
                   (r.ToString() + " -> " + a1.Name.ToString()))
          RecursiveValidate (r.Elements()) (e.Elements()) (depth + 1) zero)
 

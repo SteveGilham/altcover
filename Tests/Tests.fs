@@ -2128,7 +2128,7 @@ module AltCoverTests =
                     (a1.Value, Is.EqualTo(expected), r.ToString() + " -> visitcount")
                 | _ ->
                   Assert.That
-                    (a1.Value, Is.EqualTo(a2.Value),
+                    (a1.Value.Replace("\\", "/"), Is.EqualTo(a2.Value.Replace("\\", "/")),
                      r.ToString() + " -> " + a1.Name.ToString()))
            RecursiveValidate (r.Elements()) (e.Elements()) (depth + 1) zero)
 
@@ -2150,7 +2150,7 @@ module AltCoverTests =
         let xml = TTBaseline
         let xml' =
           xml.Replace("Version=1.0.0.0", "Version=" + def.Name.Version.ToString())
-        let xml'' = xml'.Replace("name=\"Sample1.exe\"", "name=\"" + Path.GetFileName(sample1path) + "\"")
+        let xml'' = xml'.Replace("name=\"Sample1.exe\"", "name=\"" + path + "\"")
         let baseline = XDocument.Load(new System.IO.StringReader(xml''))
         let result = document.Elements()
         let expected = baseline.Elements()
@@ -2222,7 +2222,7 @@ module AltCoverTests =
           xml.Replace("Version=1.0.0.0", "Version=" + def.Name.Version.ToString())
              .Replace("excluded=\"true\" instrumented=\"false\"",
                       "excluded=\"false\" instrumented=\"true\"")
-        let xml'' = xml'.Replace("name=\"Sample1.exe\"", "name=\"" + Path.GetFileName(sample1path) + "\"")
+        let xml'' = xml'.Replace("name=\"Sample1.exe\"", "name=\"" + path + "\"")
         let baseline = XDocument.Load(new System.IO.StringReader(xml''))
         let result = document.Elements()
         let expected = baseline.Elements()
@@ -2251,7 +2251,7 @@ module AltCoverTests =
 </coverage>"
         let xml' =
           xml.Replace("Version=1.0.0.0", "Version=" + def.Name.Version.ToString())
-        let xml'' = xml'.Replace("name=\"Sample1.exe\"", "name=\"" + Path.GetFileName(sample1path) + "\"")
+        let xml'' = xml'.Replace("name=\"Sample1.exe\"", "name=\"" + path + "\"")
         let baseline = XDocument.Load(new System.IO.StringReader(xml''))
         let result = document.Elements()
         let expected = baseline.Elements()
@@ -2281,7 +2281,7 @@ module AltCoverTests =
 </coverage>"
         let xml' =
           xml.Replace("Version=1.0.0.0", "Version=" + def.Name.Version.ToString())
-        let xml'' = xml'.Replace("name=\"Sample1.exe\"", "name=\"" + Path.GetFileName(sample1path) + "\"")
+        let xml'' = xml'.Replace("name=\"Sample1.exe\"", "name=\"" + path + "\"")
         let baseline = XDocument.Load(new System.IO.StringReader(xml''))
         let result = document.Elements()
         let expected = baseline.Elements()

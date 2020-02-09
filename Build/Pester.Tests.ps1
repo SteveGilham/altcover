@@ -673,10 +673,10 @@ Describe "ConvertTo-SourceMap" {
   It "finds files from NCover" {
     $result = "./_Reports/ReleaseXUnitFSharpTypesDotNetRunner.xml" | ConvertTo-SourceMap -OutputFolder "./_Packaging/NCoverSourceMap"
 
-    $result.Count | Should -Be 2
-    $result.Keys | Should -Be @('Program.fs', 'Tests.fs')
+    $result.Count | Should -Be 1
+    $result.Keys | Should -Be @('Tests.fs')
 
-    dir "./_Packaging/NCoverSourceMap" | % { $_.Name }  | Should -Be @('Program.fs.html', 'Tests.fs.html')
+    dir "./_Packaging/NCoverSourceMap" | % { $_.Name }  | Should -Be @('Tests.fs.html')
   }
 
   It "finds files from OpenCover" {
