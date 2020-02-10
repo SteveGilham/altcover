@@ -34,8 +34,9 @@
     <rules include="*"
            exclude="MarkAllNonSerializableFieldsRule"
            from="Gendarme.Rules.Serialization.dll" />
+    <!-- System.Boolean AltCover.RunSettings::Execute() Method IL Size: 209. Maximum Size: 165 -->
     <rules include="*"
-           exclude="AvoidCodeDuplicatedInSameClassRule | AvoidLongParameterListsRule | AvoidSwitchStatementsRule | AvoidSpeculativeGeneralityRule"
+           exclude="AvoidLongMethodsRule | AvoidCodeDuplicatedInSameClassRule | AvoidLongParameterListsRule | AvoidSwitchStatementsRule | AvoidSpeculativeGeneralityRule"
            from="Gendarme.Rules.Smells.dll" />
     <rules include="*" from="Gendarme.Rules.Ui.dll" />
     <rules include="*"
