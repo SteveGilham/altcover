@@ -311,7 +311,8 @@ do ()"""
     let parameters =
       { AltCover.Params.Create prep with
           ToolPath = binRoot @@ "AltCover.exe"
-          WorkingDirectory = sampleRoot }.WithToolType framework
+          ToolType = framework
+          WorkingDirectory = sampleRoot }
 
     AltCover.run parameters
     System.Threading.Thread.Sleep(1000)
@@ -350,7 +351,8 @@ do ()"""
         let parameters =
           { AltCover.Params.Create prep with
               ToolPath = binRoot @@ "AltCover.exe"
-              WorkingDirectory = sampleRoot }.WithToolType framework
+              ToolType = framework
+              WorkingDirectory = sampleRoot }
 
         AltCover.runWithMono monoOnWindows parameters
 

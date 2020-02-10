@@ -587,21 +587,12 @@ type ArgType =
 
 #nowarn "44"
 
-[<NoComparison; Obsolete("Use Fake.DotNet.ToolType instead")>]
-type ToolType =
-  | DotNet of string option
-  | Mono of string option
-  | Global
-  | Framework
-
 [<NoComparison; NoEquality>]
 type Params =
   { /// Path to the Altcover executable.
     ToolPath : string
-    /// Which version of the tool
+    /// Which version of the tool (FAKE 5.18 ToolType)
     ToolType : ToolType
-    /// Define the tool through FAKE 5.18 ToolType -- if set, overrides
-    FakeToolType : Fake.DotNet.ToolType option
     /// Working directory for relative file paths.  Default is the current working directory
     WorkingDirectory : string
     /// Command arguments
@@ -609,8 +600,7 @@ type Params =
 
   static member Create(a : ArgType) =
     { ToolPath = "altcover"
-      ToolType = Global
-      FakeToolType = None
+      ToolType = ToolType.CreateGlobalTool()
       WorkingDirectory = String.Empty
       Args = a }
 
@@ -630,9 +620,6 @@ type Params =
         | GetVersion -> this
     | _ -> this
 
-  member this.WithToolType(tool : Fake.DotNet.ToolType) =
-    { this with FakeToolType = Some tool }
-
 let internal createArgs parameters =
   match parameters.Args with
   | Collect c -> Args.Collect c
@@ -641,32 +628,9 @@ let internal createArgs parameters =
   | GetVersion -> [ "version" ]
 
 let internal createProcess parameters args =
-  let doFakeTool (tool : Fake.DotNet.ToolType) =
+  let doTool (tool : Fake.DotNet.ToolType) =
     CreateProcess.fromCommand (RawCommand(parameters.ToolPath, args |> Arguments.OfArgs))
     |> CreateProcess.withToolType (tool.WithDefaultToolCommandName "altcover")
-
-  let doAltCoverTool() =
-    let baseline() = CreateProcess.fromRawCommand parameters.ToolPath args
-    match parameters.ToolType with
-    | Framework -> baseline() |> CreateProcess.withFramework
-    | Global -> baseline()
-    | DotNet dotnetPath ->
-        let path =
-          match dotnetPath with
-          | None -> "dotnet"
-          | Some p -> p
-        CreateProcess.fromRawCommand path (parameters.ToolPath :: args)
-    | Mono monoPath ->
-        let path =
-          match monoPath with
-          | None -> "mono"
-          | Some p -> p
-        CreateProcess.fromRawCommand path ("--debug" :: parameters.ToolPath :: args)
-
-  let doTool() =
-    match parameters.FakeToolType with
-    | Some tool -> doFakeTool tool
-    | None -> doAltCoverTool()
 
   let doWorkingDirectory c =
     c
@@ -674,7 +638,7 @@ let internal createProcess parameters args =
        then id
        else CreateProcess.withWorkingDirectory parameters.WorkingDirectory
 
-  doTool()
+  doTool parameters.ToolType
   |> doWorkingDirectory
   |> CreateProcess.ensureExitCode
   |> fun command ->
@@ -699,25 +663,22 @@ let run parameters = runCore parameters id
 
 let runWithMono monoPath parameters =
   let withMono (command : CreateProcess<_>) =
-    match parameters.FakeToolType with
-    | Some tool ->
-        if tool.GetType().FullName = "Fake.DotNet.ToolType+FullFramework"
-           && Fake.Core.Environment.isWindows then
-          match command.Command with
-          | RawCommand(tool, args) ->
-              let newArgs = tool :: "--debug" :: (Arguments.toList args)
+    if parameters.ToolType.GetType().FullName = "Fake.DotNet.ToolType+FullFramework"
+        && Fake.Core.Environment.isWindows then
+      match command.Command with
+      | RawCommand(tool, args) ->
+          let newArgs = tool :: "--debug" :: (Arguments.toList args)
 
-              let newRaw =
-                RawCommand
-                  ((match monoPath with
-                    | Some x -> x
-                    | _ -> "mono"), Arguments.OfArgs newArgs)
-              command |> CreateProcess.withCommand newRaw
+          let newRaw =
+            RawCommand
+              ((match monoPath with
+                | Some x -> x
+                | _ -> "mono"), Arguments.OfArgs newArgs)
+          command |> CreateProcess.withCommand newRaw
 
-          | _ -> command
-        else
-          command
-    | None -> command
+      | _ -> command
+    else
+      command
 
   runCore parameters withMono
 #endif
