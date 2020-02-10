@@ -144,7 +144,10 @@ let openCoverConsole =
 let nunitConsole =
   ("./packages/" + (packageVersion "NUnit.ConsoleRunner") + "/tools/nunit3-console.exe")
   |> Path.getFullName
-
+let GendarmePath = 
+  ("./packages/" + (packageVersion "altcode.gendarme") + "/tools/gendarme.exe")
+  |> Path.getFullName
+  
 let cliArguments =
   { MSBuild.CliArguments.Create() with
       ConsoleLogParameters = []
@@ -163,8 +166,6 @@ let withCLIArgs (o: Fake.DotNet.DotNet.TestOptions) =
   { o with MSBuildParams = cliArguments }
 let withMSBuildParams (o: Fake.DotNet.DotNet.BuildOptions) =
   { o with MSBuildParams = cliArguments }
-
-let GendarmePath = "./ThirdParty/gendarme/gendarme.exe"
 
 let NuGetAltCover =
   toolPackages
@@ -479,11 +480,13 @@ _Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standa
 
   let toolPath = GendarmePath // "./packages/" + (packageVersion "Mono.Gendarme") + "/tools/gendarme.exe"
 
-  let rules = "./Build/rules.xml"
-
+  let rules =
+    if Environment.isWindows then "./Build/rules.xml"
+    else "./Build/rules-mono.xml"
+    
   let baseRules = Path.getFullName "./Build/rules-fake.xml"
-
-  let fakerules =
+  let fakerules = baseRules
+(*  let fakerules =
     if Environment.isWindows then
       baseRules
     else
@@ -499,7 +502,7 @@ _Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standa
 
       let fixup = Path.getFullName "./_Generated/rules-fake.xml"
       File.WriteAllLines(fixup, lines)
-      fixup
+      fixup *)
 
   [
    ("_Binaries/AltCover/Debug+AnyCPU/netcoreapp2.0/publish", "netcoreapp2.0", "./AltCover/altcover.core.fsproj")
@@ -4162,7 +4165,8 @@ Target.activateFinal "ResetConsoleColours"
 
 "Compilation"
 ==> "Gendarme"
-=?> ("Analysis", Environment.isWindows && (File.Exists GendarmePath)) // different behaviour
+==> "Analysis"
+//=?> ("Analysis", Environment.isWindows && (File.Exists GendarmePath)) // different behaviour
 
 "Compilation"
 ?=> "UnitTest"
