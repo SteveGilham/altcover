@@ -42,10 +42,10 @@ type Api =
     let target =
       match toolType with
       | Framework _ -> "AltCover.exe"
-      | _ -> "dotnet-altcover.dll"
+      | _ -> "altcover.netcoreapp.dll"
     match Directory.GetFiles(root, target, SearchOption.AllDirectories)
           |> Seq.tryHead with
-    | Some path -> path
+    | Some path -> path |> Path.GetFullPath
     | None -> String.Empty
 #else
 namespace AltCover_Fake.DotNet

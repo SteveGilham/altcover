@@ -95,6 +95,8 @@ Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.visualizer.tests.c
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.weaknametests.core", "WeakNameTests\altcover.weaknametests.core.fsproj", "{3D639272-2787-47AA-9B83-1FE1686323D1}"
 EndProject
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.netcoreapp.core", "AltCover.NetCoreApp\altcover.netcoreapp.core.fsproj", "{778014AA-1077-4C6F-B177-BEAAA2030B0B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -254,13 +256,17 @@ Global
 		{8D6A3745-6CCA-4D64-99A8-31908FE56679}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{8D6A3745-6CCA-4D64-99A8-31908FE56679}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8D6A3745-6CCA-4D64-99A8-31908FE56679}.Release|x86.ActiveCfg = Release|Any CPU
-		{8D6A3745-6CCA-4D64-99A8-31908FE56679}.Release|x86.Build.0 = Release|Any CPU
 		{3D639272-2787-47AA-9B83-1FE1686323D1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{3D639272-2787-47AA-9B83-1FE1686323D1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3D639272-2787-47AA-9B83-1FE1686323D1}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{3D639272-2787-47AA-9B83-1FE1686323D1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3D639272-2787-47AA-9B83-1FE1686323D1}.Release|x86.ActiveCfg = Release|Any CPU
-		{3D639272-2787-47AA-9B83-1FE1686323D1}.Release|x86.Build.0 = Release|Any CPU
+		{778014AA-1077-4C6F-B177-BEAAA2030B0B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{778014AA-1077-4C6F-B177-BEAAA2030B0B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{778014AA-1077-4C6F-B177-BEAAA2030B0B}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{778014AA-1077-4C6F-B177-BEAAA2030B0B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{778014AA-1077-4C6F-B177-BEAAA2030B0B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{778014AA-1077-4C6F-B177-BEAAA2030B0B}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

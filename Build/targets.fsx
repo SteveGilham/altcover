@@ -2389,6 +2389,11 @@ _Target "Packaging" (fun _ ->
     |> Seq.map (fun x -> (x, Some(where + Path.GetFileName x), None))
     |> Seq.toList
 
+  let apiNetcoreAppFiles where =
+    (!!"./_Binaries/altcover.netcoreapp/Release+AnyCPU/netcoreapp2.0/altcover.netcoreapp.*")
+    |> Seq.map (fun x -> (x, Some(where + Path.GetFileName x), None))
+    |> Seq.toList
+
   let globalFiles =
     (!!"./_Binaries/global-altcover/Release+AnyCPU/netcoreapp2.1/global-altcover.*")
     |> Seq.map (fun x -> (x, Some("tools/netcoreapp2.1/any/" + Path.GetFileName x), None))
@@ -2429,7 +2434,7 @@ _Target "Packaging" (fun _ ->
       [ apiFiles
         resourceFiles "lib/net45/"
         libFiles "lib/net45/"
-        dotnetFiles "lib/netstandard2.0/"
+        apiNetcoreAppFiles "lib/netstandard2.0/"
         netstdFiles "lib/netstandard2.0"
         cakeFiles "lib/netstandard2.0/"
         dataFiles "lib/netstandard2.0/"
