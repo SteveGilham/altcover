@@ -471,9 +471,13 @@ _Target "Lint" (fun _ ->
          printfn "Info: %A\r\n Range: %A\r\n Fix: %A\r\n====" x.Info x.Range x.Fix
          true) false
     |> failOnIssuesFound
-  with ex ->
+  with 
+  | :? System.MissingMethodException ->
+    printfn "MissingMethodException raised"
+  | ex ->
     printfn "%A" ex
-    reraise())
+    reraise()
+    )
 
 _Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standalone which contaminates everything
   Directory.ensure "./_Reports"
@@ -3370,8 +3374,8 @@ Target.runOrDefault "DoIt"
 group NetcoreBuild
   source https://api.nuget.org/v3/index.json
   nuget Fake.Core >= 5.16.0
-  nuget Fake.Core.Target >= 5.19
-  nuget Fake.DotNet.Cli >= 5.19
+  nuget Fake.Core.Target >= 5.19.1
+  nuget Fake.DotNet.Cli >= 5.19.1
   nuget FSharp.Core >= 4.7
   source {0}
   nuget AltCover.Api {1}
