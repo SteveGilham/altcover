@@ -1979,23 +1979,23 @@ _Target "RecordResumeTest" (fun _ ->
       use coverageFile =
          new FileStream(simpleReport, FileMode.Open, FileAccess.Read, FileShare.None, 4096,
                         FileOptions.SequentialScan)
-       let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
+      let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
 
-       let recorded =
-         coverageDocument.Descendants(XName.Get("seqpnt"))
-         |> Seq.map (fun x -> x.Attribute(XName.Get("visitcount")).Value)
-         |> Seq.toList
+      let recorded =
+        coverageDocument.Descendants(XName.Get("seqpnt"))
+        |> Seq.map (fun x -> x.Attribute(XName.Get("visitcount")).Value)
+        |> Seq.toList
 
-       Assert.That
-         (recorded |> Seq.length, Is.EqualTo 20,
-          sprintf "Bad visit list %A -- bad length" recorded)
+      Assert.That
+        (recorded |> Seq.length, Is.EqualTo 20,
+         sprintf "Bad visit list %A -- bad length" recorded)
 
-       let hits =
-         recorded
-         |> Seq.filter (fun i -> i = "1")
-         |> Seq.length
-       Assert.That(hits, Is.GreaterThanOrEqualTo 6)
-       Assert.That(hits, Is.LessThanOrEqualTo 8)
+      let hits =
+        recorded
+        |> Seq.filter (fun i -> i = "1")
+        |> Seq.length
+      Assert.That(hits, Is.GreaterThanOrEqualTo 6)
+      Assert.That(hits, Is.LessThanOrEqualTo 8)
   else Trace.traceImportant "Skipping -- AltCover.exe not built")
 
 _Target "RecordResumeTrackingTest" (fun _ ->
@@ -2326,18 +2326,6 @@ _Target "Packaging" (fun _ ->
          (x, Some(Path.GetDirectoryName(x).Substring(nupkg).Replace("\\", "/")), None))
     |> Seq.toList
 
-  Directory.ensure "./_Intermediate/dotnet"
-  let otherFilesDotnet =
-    otherFiles
-    |> List.map (fun (a, b, c) ->
-         let text =
-           File.ReadAllText(a).Replace("tools/netcoreapp2.0", "lib/netcoreapp2.0")
-         let name =
-           (Path.getFullName "./_Intermediate/dotnet")
-           @@ ("altcover.dotnet" + Path.GetExtension a)
-         File.WriteAllText(name, text)
-         (name, b, c))
-
   Directory.ensure "./_Intermediate/global"
   let otherFilesGlobal =
     otherFiles
@@ -2422,11 +2410,6 @@ _Target "Packaging" (fun _ ->
           None))
     |> Seq.toList
 
-  let dotnetFiles where =
-    (!!"./_Binaries/dotnet-altcover/Release+AnyCPU/netcoreapp2.0/dotnet-altcover.*")
-    |> Seq.map (fun x -> (x, Some(where + Path.GetFileName x), None))
-    |> Seq.toList
-
   let apiNetcoreAppFiles where =
     (!!"./_Binaries/altcover.netcoreapp/Release+AnyCPU/netcoreapp2.0/altcover.netcoreapp.*")
     |> Seq.map (fun x -> (x, Some(where + Path.GetFileName x), None))
@@ -2486,14 +2469,6 @@ _Target "Packaging" (fun _ ->
 //        ("Fake.Core.Trace", "5.0.0")
 //        ("Fake.DotNet.Cli", "5.0.0")
         ], "_Packaging.api", "./_Generated/altcover.api.nuspec", "altcover.api")
-
-    (List.concat
-      [ netcoreFiles "lib/netcoreapp2.0"
-        poshFiles "lib/netcoreapp2.0/"
-        dataFiles "lib/netcoreapp2.0/"
-        [ (packable, Some "", None) ]
-        dotnetFiles "lib/netcoreapp2.0/"
-        otherFilesDotnet ], [], "_Packaging.dotnet", "./_Generated/altcover.dotnet.nuspec", "altcover.dotnet")
 
     (List.concat
       [ globalFiles
@@ -2580,10 +2555,7 @@ _Target "PrepareDotNetBuild" (fun _ ->
     (Path.getFullName "./AltCover.Visualizer/altcover.visualizer.core.fsproj")
 
   // dotnet tooling mods
-  [ ("DotnetCliTool", "./_Generated/altcover.dotnet.nuspec",
-     "AltCover (dotnet CLI tool install)", None, None)
-
-    ("DotnetTool", "./_Generated/altcover.global.nuspec",
+  [ ("DotnetTool", "./_Generated/altcover.global.nuspec",
      "AltCover (dotnet global tool install)", None, None)
 
     ("DotnetTool", "./_Generated/altcover.visualizer.nuspec",
@@ -3951,125 +3923,6 @@ _Target "Issue72" (fun _ ->
     Shell.mkdir folder
     Shell.deleteDir folder)
 
-_Target "DotnetCLIIntegration" (fun _ ->
-  try
-    Directory.ensure "./_DotnetCLITest"
-    Shell.cleanDir ("./_DotnetCLITest")
-    let config = XDocument.Load "./Build/NuGet.config.dotnettest"
-    let repo = config.Descendants(XName.Get("add")) |> Seq.head
-    repo.SetAttributeValue(XName.Get "value", Path.getFullName "./_Packaging.dotnet")
-    config.Save "./_DotnetCLITest/NuGet.config"
-
-    let fsproj = XDocument.Load "./Sample4/sample4.core.fsproj"
-    let target = fsproj.Descendants(XName.Get("TargetFramework")) |> Seq.head
-    target.RemoveAttributes()
-    let targets = fsproj.Descendants(XName.Get("TargetFrameworks")) |> Seq.head
-    targets.Remove()
-    let pack = fsproj.Descendants(XName.Get("PackageReference")) |> Seq.head
-    let inject =
-      XElement
-        (XName.Get "DotNetCliToolReference",
-         XAttribute(XName.Get "Include", "altcover.dotnet"),
-         XAttribute(XName.Get "Version", !Version))
-    pack.AddBeforeSelf inject
-    fsproj.Save "./_DotnetCLITest/dotnetcli.fsproj"
-    Shell.copy "./_DotnetCLITest" (!!"./Sample4/*.fs")
-    Shell.copy "./_DotnetCLITest" (!!"./Sample4/*.json")
-
-    let working = Path.getFullName "./_DotnetCLITest"
-    ""
-    |> DotNet.build (fun p ->
-         { p with
-             Configuration = DotNet.BuildConfiguration.Debug
-             Common = { dotnetOptions p.Common with WorkingDirectory = working }
-             MSBuildParams = cliArguments })
-
-    let x = Path.getFullName "./_Reports/DotnetCLIIntegration.xml"
-    let o =
-      Path.getFullName "./_DotnetCLITest/_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1"
-
-    { AltCover.Params.Create AltCover.ArgType.ImportModule with
-        ToolPath = "altcover"
-        ToolType = dotnet_altcover
-        WorkingDirectory = working }
-    |> AltCover.run
-    { AltCover.Params.Create AltCover.ArgType.GetVersion with
-        ToolPath = "altcover"
-        ToolType = dotnet_altcover
-        WorkingDirectory = working }
-    |> AltCover.run
-    let prep =
-      AltCover.PrepareParams.Primitive
-        ({ Primitive.PrepareParams.Create() with
-             XmlReport = x
-             InputDirectories = [ o ]
-             CallContext = [ "0"; "[Fact]" ]
-             AssemblyFilter = [| "xunit" |]
-             Save = false })
-      |> AltCover.Prepare
-    { AltCover.Params.Create prep with
-        ToolPath = "altcover"
-        ToolType = dotnet_altcover
-        WorkingDirectory = working }
-    |> AltCover.run
-
-    Actions.CheckSample4Content x
-
-    printfn "Execute the instrumented tests"
-    let (dotnetexe, args) = defaultDotNetTestCommandLine (Some "netcoreapp2.1") String.Empty
-
-    let collect =
-      AltCover.CollectParams.Primitive
-        { Primitive.CollectParams.Create() with
-            Executable = dotnetexe
-            RecorderDirectory = o
-            CommandLine = args }
-      |> AltCover.Collect
-    { AltCover.Params.Create collect with
-        ToolPath = "altcover"
-        ToolType = dotnet_altcover
-        WorkingDirectory = working }
-    |> AltCover.run
-
-    Actions.CheckSample4Visits x
-
-    let command =
-      """$ipmo = (dotnet altcover ipmo | Out-String).Trim().Split()[1].Trim(@([char]34)); Import-Module $ipmo; ConvertTo-BarChart -?"""
-    CreateProcess.fromRawCommand pwsh [ "-NoProfile"; "-Command"; command ]
-    |> CreateProcess.withWorkingDirectory working
-    |> Proc.run
-    |> (Actions.AssertResult "pwsh")
-
-    Actions.RunDotnet
-      (fun o' ->
-      { dotnetOptions o' with WorkingDirectory = Path.getFullName "_DotnetCLITest" })
-      "add" ("package altcover.dotnet --version " + !Version)
-      "sample test returned with a non-zero exit code"
-
-    // Shell.cleanDir ("./_DotnetCLITest/_Binaries")
-    let p0 = { Primitive.PrepareParams.Create() with AssemblyFilter = [| "xunit" |] }
-    let pp0 = AltCover.PrepareParams.Primitive p0
-    let c0 = Primitive.CollectParams.Create()
-    let cc0 = AltCover.CollectParams.Primitive c0
-    DotNet.test (fun to' ->
-      { to'.WithCommon(withWorkingDirectoryVM "_DotnetCLITest").WithAltCoverParameters pp0 cc0
-          ForceTrue with
-          Configuration = DotNet.BuildConfiguration.Debug
-          NoBuild = false }
-      |> withCLIArgs) ""
-
-    "./_DotnetCLITest/coverage.xml"
-    |> Path.getFullName
-    |> File.Exists
-    |> Assert.That
-  finally
-    let folder = (nugetCache @@ "altcover.dotnet") @@ !Version
-    Shell.mkdir folder
-    Shell.deleteDir folder
-    let folder2 = ((nugetCache @@ ".tools") @@ "altcover.dotnet") @@ !Version
-    Shell.mkdir folder2
-    Shell.deleteDir folder2)
-
 _Target "DotnetGlobalIntegration" (fun _ ->
   let working = Path.getFullName "./_DotnetGlobalTest"
   let mutable set = false
@@ -4139,18 +3992,6 @@ _Target "DotnetGlobalIntegration" (fun _ ->
     |> CreateProcess.withWorkingDirectory working
     |> Proc.run
     |> (Actions.AssertResult "pwsh")
-
-  // Would be nice to do this, but we can't `dotnet add` a global tool
-  // Actually we would crib the modernized versions from "DotnetCLIIntegration"
-  // (fsproj.Descendants(XName.Get("TargetFramework")) |> Seq.head).Value <- "netcoreapp2.1"
-  // fsproj.Save "./_DotnetGlobalTest/dotnetglobal.fsproj"
-  // Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = Path.getFullName "_DotnetGlobalTest"}) "add"
-  //                   ("package altcover.global")
-  //                   "sample test returned with a non-zero exit code"
-  // Actions.RunDotnet (fun o' -> {dotnetOptions o' with WorkingDirectory = Path.getFullName "_DotnetGlobalTest"}) "test"
-  //                   ("-v m /p:AltCover=true")
-  //                   "sample test returned with a non-zero exit code"
-  // "./_DotnetGlobalTest/coverage.xml" |> Path.getFullName |> File.Exists |> Assert.That
 
   finally
     if set then
@@ -4461,10 +4302,6 @@ Target.activateFinal "ResetConsoleColours"
 
 "Unpack"
 ==> "Issue20"
-==> "Deployment"
-
-"Unpack"
-==> "DotnetCLIIntegration"
 ==> "Deployment"
 
 "Unpack"
