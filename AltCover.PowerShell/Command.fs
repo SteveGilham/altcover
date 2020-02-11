@@ -17,9 +17,19 @@ type ShowHidden =
   | Mark = 1
   | Reveal = 2
 
+#if NOT_WINDOWS
+[<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Naming",
+  "UseCorrectSuffixRule",
+  Justification="System.Management.Automation stub is not published")>]
+#endif
 [<Sealed; AttributeUsage(AttributeTargets.Property)>]
 type ShowStaticTransformationAttribute() =
   inherit ArgumentTransformationAttribute()
+#if NOT_WINDOWS
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Design",
+    "DoNotDeclareVirtualMethodsInSealedTypeRule",
+    Justification="System.Management.Automation stub is not published")>]
+#endif
   override self.Transform(engineIntrinsics : EngineIntrinsics, inputData : Object) =
     if inputData.GetType() = typeof<ShowHidden> then
       inputData

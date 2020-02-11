@@ -10,6 +10,4 @@ module DotNetAltCover =
   [<EntryPoint>]
   let private Main arguments =
     ToConsole()
-    Output.Error "DotNetCliToolReference Tools are deprecated at .net core 3+"
-    Output.Error "This tool will be removed in AltCover version 7+ releases"
     AltCover.Main.EffectiveMain arguments

@@ -471,9 +471,13 @@ _Target "Lint" (fun _ ->
          printfn "Info: %A\r\n Range: %A\r\n Fix: %A\r\n====" x.Info x.Range x.Fix
          true) false
     |> failOnIssuesFound
-  with ex ->
+  with 
+  | :? System.MissingMethodException ->
+    printfn "MissingMethodException raised"
+  | ex ->
     printfn "%A" ex
-    reraise())
+    reraise()
+    )
 
 _Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standalone which contaminates everything
   Directory.ensure "./_Reports"
@@ -2385,6 +2389,11 @@ _Target "Packaging" (fun _ ->
     |> Seq.map (fun x -> (x, Some(where + Path.GetFileName x), None))
     |> Seq.toList
 
+  let apiNetcoreAppFiles where =
+    (!!"./_Binaries/altcover.netcoreapp/Release+AnyCPU/netcoreapp2.0/altcover.netcoreapp.*")
+    |> Seq.map (fun x -> (x, Some(where + Path.GetFileName x), None))
+    |> Seq.toList
+
   let globalFiles =
     (!!"./_Binaries/global-altcover/Release+AnyCPU/netcoreapp2.1/global-altcover.*")
     |> Seq.map (fun x -> (x, Some("tools/netcoreapp2.1/any/" + Path.GetFileName x), None))
@@ -2425,7 +2434,7 @@ _Target "Packaging" (fun _ ->
       [ apiFiles
         resourceFiles "lib/net45/"
         libFiles "lib/net45/"
-        dotnetFiles "lib/netstandard2.0/"
+        apiNetcoreAppFiles "lib/netstandard2.0/"
         netstdFiles "lib/netstandard2.0"
         cakeFiles "lib/netstandard2.0/"
         dataFiles "lib/netstandard2.0/"
@@ -3370,8 +3379,8 @@ Target.runOrDefault "DoIt"
 group NetcoreBuild
   source https://api.nuget.org/v3/index.json
   nuget Fake.Core >= 5.16.0
-  nuget Fake.Core.Target >= 5.19
-  nuget Fake.DotNet.Cli >= 5.19
+  nuget Fake.Core.Target >= 5.19.1
+  nuget Fake.DotNet.Cli >= 5.19.1
   nuget FSharp.Core >= 4.7
   source {0}
   nuget AltCover.Api {1}
