@@ -175,7 +175,8 @@ module Persistence =
           doc.Validate(schemas, null)
           (file, doc)
         with xx ->  // DoNotSwallowErrorsCatchingNonSpecificExceptionsRule
-          printfn "%A%s%s%A" xx Environment.NewLine Environment.NewLine doc
+          let nl = Environment.NewLine
+          printfn "%A%s%s%A" xx nl nl doc
           (file, DefaultDocument())
       with x -> // DoNotSwallowErrorsCatchingNonSpecificExceptionsRule
         printfn "%A" x
@@ -1128,10 +1129,11 @@ module Gui =
 #if NETCOREAPP2_1
     h.toolbar1.ToolbarStyle <- ToolbarStyle.Both
     let prov = new CssProvider()
-    let style = Environment.NewLine +
-                "* {" + Environment.NewLine +
-                "     background-color: white;" + Environment.NewLine +
-                "  }" + Environment.NewLine
+    let nl = Environment.NewLine
+    let style = nl +
+                "* {" + nl +
+                "     background-color: white;" + nl +
+                "  }" + nl
 
     prov.LoadFromData(style) |> ignore
     h.toolbar1.StyleContext.AddProvider(prov, UInt32.MaxValue)
