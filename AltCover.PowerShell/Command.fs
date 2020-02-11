@@ -250,29 +250,29 @@ type InvokeAltCoverCommand(runner : bool) =
 
   member private self.Dispatch() =
     let log = self.Log()
-    let zero _ = 0
+      let zero _ = 0
 
-    (match (self.Version.IsPresent, self.Runner.IsPresent) with
-     | (true, _) ->
-         (fun _ ->
-           Api.Version() |> log.Info
-           0)
-     | (_, true) ->
-         let task = self.Collect()
-         // unset is error, but if set the recorder may not exist yet
-         let recording =
-           self.RecorderDirectory
-           |> String.IsNullOrWhiteSpace
-           || Path.Combine(self.RecorderDirectory, "AltCover.Recorder.g.dll")
-              |> File.Exists
+        (match (self.Version.IsPresent, self.Runner.IsPresent) with
+         | (true, _) ->
+             (fun _ ->
+               Api.Version() |> log.Info
+               0)
+         | (_, true) ->
+             let task = self.Collect()
+             // unset is error, but if set the recorder may not exist yet
+             let recording =
+               self.RecorderDirectory
+               |> String.IsNullOrWhiteSpace
+               || Path.Combine(self.RecorderDirectory, "AltCover.Recorder.g.dll")
+                  |> File.Exists
          if (self.ShouldProcess("Command Line : " + task.WhatIf(recording).ToString()))
          then Api.Collect task
          else zero
-     | _ ->
-         let task = self.Prepare()
-         if (self.ShouldProcess("Command Line : " + task.WhatIf().ToString()))
-         then Api.Prepare task
-         else zero) log
+         | _ ->
+             let task = self.Prepare()
+             if (self.ShouldProcess("Command Line : " + task.WhatIf().ToString()))
+             then Api.Prepare task
+             else zero) log
 
   override self.ProcessRecord() =
     let here = Directory.GetCurrentDirectory()

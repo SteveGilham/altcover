@@ -632,14 +632,14 @@ let internal createProcess parameters args =
     CreateProcess.fromCommand (RawCommand(parameters.ToolPath, args |> Arguments.OfArgs))
     |> CreateProcess.withToolType (tool.WithDefaultToolCommandName "altcover")
 
-  let doWorkingDirectory c =
+  let withWorkingDirectory c =
     c
     |> if String.IsNullOrWhiteSpace parameters.WorkingDirectory
        then id
        else CreateProcess.withWorkingDirectory parameters.WorkingDirectory
 
   doTool parameters.ToolType
-  |> doWorkingDirectory
+  |> withWorkingDirectory
   |> CreateProcess.ensureExitCode
   |> fun command ->
     Trace.trace command.CommandLine
@@ -652,6 +652,9 @@ let composeCommandLine parameters =
 [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1715",
                                                   Justification =
                                                     "Generic types are implicit")>]
+[<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Correctness",
+       "EnsureLocalDisposalRule",
+       Justification="is the 'use' clause confusing Gendarme?")>]
 let runCore parameters modifyCommand =
   use __ = Trace.traceTask "AltCover" String.Empty
   let command = (composeCommandLine parameters) |> modifyCommand
@@ -664,21 +667,21 @@ let run parameters = runCore parameters id
 let runWithMono monoPath parameters =
   let withMono (command : CreateProcess<_>) =
     if parameters.ToolType.GetType().FullName = "Fake.DotNet.ToolType+FullFramework"
-        && Fake.Core.Environment.isWindows then
-      match command.Command with
-      | RawCommand(tool, args) ->
-          let newArgs = tool :: "--debug" :: (Arguments.toList args)
+           && Fake.Core.Environment.isWindows then
+          match command.Command with
+          | RawCommand(tool, args) ->
+              let newArgs = tool :: "--debug" :: (Arguments.toList args)
 
-          let newRaw =
-            RawCommand
-              ((match monoPath with
-                | Some x -> x
-                | _ -> "mono"), Arguments.OfArgs newArgs)
-          command |> CreateProcess.withCommand newRaw
+              let newRaw =
+                RawCommand
+                  ((match monoPath with
+                    | Some x -> x
+                    | _ -> "mono"), Arguments.OfArgs newArgs)
+              command |> CreateProcess.withCommand newRaw
 
-      | _ -> command
-    else
-      command
+          | _ -> command
+        else
+          command
 
   runCore parameters withMono
 #endif

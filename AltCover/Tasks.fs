@@ -49,6 +49,7 @@ module Api =
     let ok, colour = Enum.TryParse<ConsoleColor>(name, true)
     if ok then Console.ForegroundColor <- colour
 
+[<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Smells", "AvoidLargeClassesRule")>]
 type Prepare() =
   inherit Task(null)
   member val internal ACLog : FSApi.Logging option = None with get, set
