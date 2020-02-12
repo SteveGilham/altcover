@@ -15,7 +15,10 @@ do ()
 [<RequireQualifiedAccess>]
 module DotNet =
   [<NoComparison; SuppressMessage("Microsoft.Design", "CA1034",
-                                  Justification = "Idiomatic F#")>]
+                                  Justification = "Idiomatic F#");
+                  SuppressMessage("Gendarme.Rules.Smells",
+                                  "AvoidCodeDuplicatedInSameClassRule",
+                                  Justification = "Idiomatic F#") >]
   type CLIArgs =
     | Force of bool
     | FailFast of bool

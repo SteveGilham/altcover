@@ -16,7 +16,6 @@
     <rules include="*"
       from="Gendarme.Rules.Design.Linq.dll" />
     <rules include="*"
-      exclude="InstantiateArgumentExceptionCorrectlyRule"
       from="Gendarme.Rules.Exceptions.dll" />
     <rules include="*" from="Gendarme.Rules.Interoperability.dll" />
     <rules include="*" from="Gendarme.Rules.Interoperability.Com.dll" />
@@ -34,7 +33,7 @@
       exclude="MarkAllNonSerializableFieldsRule"
      from="Gendarme.Rules.Serialization.dll" />
     <rules include="*"
-      exclude="AvoidCodeDuplicatedInSameClassRule | AvoidSwitchStatementsRule"
+      exclude="AvoidSwitchStatementsRule"
       from="Gendarme.Rules.Smells.dll" />
     <rules include="*" from="Gendarme.Rules.Ui.dll" />
     <!--  exclude RemoveDependenceOnObsoleteCodeRule only until we pull AltCover.ToolType-->
