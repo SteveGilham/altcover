@@ -19,7 +19,10 @@ open Fake.Core
 open Fake.DotNet
 #endif
 
-[<ExcludeFromCodeCoverage; NoComparison>]
+[<ExcludeFromCodeCoverage; NoComparison;
+                  SuppressMessage("Gendarme.Rules.Smells",
+                                  "AvoidCodeDuplicatedInSameClassRule",
+                                  Justification = "Idiomatic F#")>]
 type CollectParams =
   | Primitive of Primitive.CollectParams
   | TypeSafe of TypeSafe.CollectParams
@@ -108,7 +111,7 @@ type CollectParams =
 #if RUNNER
   member self.Validate afterPreparation =
     let saved = CommandLine.error
-
+    7
     let validate f x =
       if x
          |> String.IsNullOrWhiteSpace
@@ -137,7 +140,10 @@ type CollectParams =
 #else
 #endif
 
-[<ExcludeFromCodeCoverage; NoComparison>]
+[<ExcludeFromCodeCoverage; NoComparison;
+                  SuppressMessage("Gendarme.Rules.Smells",
+                                  "AvoidCodeDuplicatedInSameClassRule",
+                                  Justification = "Idiomatic F#")>]
 type PrepareParams =
   | Primitive of Primitive.PrepareParams
   | TypeSafe of TypeSafe.PrepareParams
@@ -423,12 +429,14 @@ type Logging =
     Output.Echo <- self.Echo
 #else
 #endif
-
-module internal Args =
-  let private Item a x =
+[<SuppressMessage("Gendarme.Rules.Smells",
+                                  "AvoidCodeDuplicatedInSameClassRule",
+                                  Justification = "Not worth trying to unify these functions")>]
+module private ArgsHelper =
+  let Item a x =
     if x |> String.IsNullOrWhiteSpace then [] else [ a; x ]
 
-  let private OptItem a x l =
+  let OptItem a x l =
     if x
        |> String.IsNullOrWhiteSpace
        || l |> List.exists (fun i -> i = x) then
@@ -436,6 +444,7 @@ module internal Args =
     else
       [ a + ":" + x ]
 
+module internal Args =
   let internal ItemList a x =
     if x |> isNull then
       []
@@ -466,11 +475,11 @@ module internal Args =
   let internal Items(args : PrepareParams) =
     [ ("--sn", args.StrongNameKey)
       ("-x", args.XmlReport) ]
-    |> List.collect (fun (a, b) -> Item a b)
+    |> List.collect (fun (a, b) -> ArgsHelper.Item a b)
 
   let internal OptItems(args : PrepareParams) =
     [ ("--showstatic", args.ShowStatic, [ "-" ]) ]
-    |> List.collect (fun (a, b, c) -> OptItem a b c)
+    |> List.collect (fun (a, b, c) -> ArgsHelper.OptItem a b c)
 
   let internal Flags(args : PrepareParams) =
     [ ("--opencover", args.OpenCover)
@@ -507,16 +516,16 @@ module internal Args =
     let exe = args.Executable
 
     [ [ "Runner" ]
-      Item "-r" args.RecorderDirectory
-      Item "-w" args.WorkingDirectory
-      Item "-x" exe
-      Item "-l" args.LcovReport
-      Item "-t" args.Threshold
-      Item "-c" args.Cobertura
-      Item "-o" args.OutputFile
+      ArgsHelper.Item "-r" args.RecorderDirectory
+      ArgsHelper.Item "-w" args.WorkingDirectory
+      ArgsHelper.Item "-x" exe
+      ArgsHelper.Item "-l" args.LcovReport
+      ArgsHelper.Item "-t" args.Threshold
+      ArgsHelper.Item "-c" args.Cobertura
+      ArgsHelper.Item "-o" args.OutputFile
       Flag "--collect" (exe |> String.IsNullOrWhiteSpace)
       Flag "--dropReturnCode" (args.ExposeReturnCode |> not)
-      OptItem "--teamcity" args.SummaryFormat []
+      ArgsHelper.OptItem "--teamcity" args.SummaryFormat []
       trailing ]
     |> List.concat
 
