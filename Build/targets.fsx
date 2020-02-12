@@ -1944,8 +1944,7 @@ _Target "RecordResumeTest" (fun _ ->
         WorkingDirectory = sampleRoot }
     |> AltCover.run
 
-    do
-      use coverageFile =
+    do use coverageFile =
          new FileStream(simpleReport, FileMode.Open, FileAccess.Read, FileShare.None, 4096,
                         FileOptions.SequentialScan)
        let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
