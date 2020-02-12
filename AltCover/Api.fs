@@ -3,7 +3,7 @@
 module AltCover.FSApi
 #else
 [<RequireQualifiedAccess>]
-module AltCover_Fake.DotNet.Testing.AltCover
+module AltCoverFake.DotNet.Testing.AltCover
 #endif
 
 open System
@@ -14,7 +14,7 @@ open AltCover
 open AltCover.Augment
 #else
 open System.Reflection
-open AltCover_Fake.DotNet.Testing
+open AltCoverFake.DotNet.Testing
 open Fake.Core
 open Fake.DotNet
 #endif

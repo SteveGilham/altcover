@@ -3,7 +3,7 @@
 module AltCover.Primitive
 #else
 [<RequireQualifiedAccess>]
-module AltCover_Fake.DotNet.Testing.Primitive
+module AltCoverFake.DotNet.Testing.Primitive
 #endif
 
 open System

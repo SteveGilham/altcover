@@ -48,11 +48,11 @@ type Api =
     | Some path -> path |> Path.GetFullPath
     | None -> String.Empty
 #else
-namespace AltCover_Fake.DotNet
+namespace AltCoverFake.DotNet
 
 open System
 open System.Reflection
-open AltCover_Fake.DotNet
+open AltCoverFake.DotNet
 #endif
 
 [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Smells",
@@ -112,10 +112,10 @@ module DotNet =
            (collect : FSApi.CollectParams) (force : DotNet.CLIArgs) =
       DotNet.ToTestArguments
 #else
-    member self.WithAltCoverParameters (prepare : AltCover_Fake.DotNet.Testing.AltCover.PrepareParams)
-           (collect : AltCover_Fake.DotNet.Testing.AltCover.CollectParams)
-           (force : AltCover_Fake.DotNet.Testing.DotNet.CLIArgs) =
-      AltCover_Fake.DotNet.Testing.Internals.ToTestArguments
+    member self.WithAltCoverParameters (prepare : AltCoverFake.DotNet.Testing.AltCover.PrepareParams)
+           (collect : AltCoverFake.DotNet.Testing.AltCover.CollectParams)
+           (force : AltCoverFake.DotNet.Testing.DotNet.CLIArgs) =
+      AltCoverFake.DotNet.Testing.Internals.ToTestArguments
 #endif
         prepare collect force |> self.ExtendCustomParams
     member self.WithAltCoverImportModule() =

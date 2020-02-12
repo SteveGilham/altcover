@@ -3,7 +3,7 @@
 module AltCover.TypeSafe
 #else
 [<RequireQualifiedAccess>]
-module AltCover_Fake.DotNet.Testing.TypeSafe
+module AltCoverFake.DotNet.Testing.TypeSafe
 #endif
 
 open System

@@ -14,7 +14,7 @@ open HeyRed.MarkdownSharp
 open NUnit.Framework
 open YamlDotNet.RepresentationModel
 
-open AltCover_Fake.DotNet.Testing
+open AltCoverFake.DotNet.Testing
 
 module Actions =
   let Clean() =

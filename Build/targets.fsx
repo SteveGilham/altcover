@@ -7,8 +7,8 @@ open System.Xml.Linq
 
 open Actions
 open AltCode.Fake.DotNet
-open AltCover_Fake.DotNet.DotNet
-open AltCover_Fake.DotNet.Testing
+open AltCoverFake.DotNet.DotNet
+open AltCoverFake.DotNet.Testing
 
 open Fake.Core
 open Fake.Core.TargetOperators
@@ -144,7 +144,7 @@ let openCoverConsole =
 let nunitConsole =
   ("./packages/" + (packageVersion "NUnit.ConsoleRunner") + "/tools/nunit3-console.exe")
   |> Path.getFullName
-let GendarmePath = 
+let GendarmePath =
   ("./packages/" + (packageVersion "altcode.gendarme") + "/tools/gendarme.exe")
   |> Path.getFullName
 
@@ -275,7 +275,7 @@ let dotnetBuildDebug proj =
                 { p.WithCommon dotnetOptions with
                     Configuration = DotNet.BuildConfiguration.Debug } |> withMSBuildParams) proj
 
-//----------------------------------------------------------------                   
+//----------------------------------------------------------------
 
 let _Target s f =
   Target.description s
@@ -331,9 +331,9 @@ module SolutionRoot =
   if not (old.Equals(hack)) then File.WriteAllText(path, hack)
 
   if Environment.isWindows
-  then 
+  then
     !!"**/*.core.*proj"
-    |> Seq.iter (fun f -> 
+    |> Seq.iter (fun f ->
                  let dir = Path.GetDirectoryName f
                  let proj = Path.GetFileName f
                  DotNet.restore (fun o -> o.WithCommon(withWorkingDirectoryVM dir)) proj))
@@ -460,19 +460,14 @@ _Target "Lint" (fun _ ->
     |> Seq.map (fun f ->
          match Lint.lintFile options f with
          | Lint.LintResult.Failure x -> failwithf "%A" x
-         | Lint.LintResult.Success w ->
-           w
-           |> Seq.filter (fun x ->
-                match x.Fix with
-                | None -> false
-                | Some fix -> fix.FromText <> "AltCover_Fake")) // special case
+         | Lint.LintResult.Success w -> w)
     |> Seq.concat
     |> Seq.fold (fun _ x ->
          printfn "Info: %A\r\n Range: %A\r\n Fix: %A\r\n====" x.Info x.Range x.Fix
          true) false
     |> failOnIssuesFound
-  with 
-  | :? System.MissingMethodException ->
+  with
+  | :? System.MissingMethodException -> // TODO
     printfn "MissingMethodException raised"
   | ex ->
     printfn "%A" ex
@@ -521,7 +516,7 @@ _Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standa
                                         OutputPath = Some pub
                                         Configuration = DotNet.BuildConfiguration.Debug
                                         NoBuild = true
-                                        MSBuildParams = { MSBuild.CliArguments.Create() with 
+                                        MSBuildParams = { MSBuild.CliArguments.Create() with
                                                            Properties = [("AltCoverGendarme", "true")] }
                                         Framework = Some rt }) proj)
 
@@ -643,16 +638,16 @@ _Target "FxCop" (fun _ ->
        "-Microsoft.Naming#CA1704"
        "-Microsoft.Naming#CA1709" ])
     ([ "_Binaries/AltCover.Fake.DotNet.Testing.AltCover/Debug+AnyCPU/net462/AltCover.Fake.DotNet.Testing.AltCover.dll" ],
-     [ "AltCover_Fake.DotNet.Testing.AltCover.CollectParams"
-       "AltCover_Fake.DotNet.Testing.AltCover.PrepareParams"
-       "AltCover_Fake.DotNet.Testing.AltCover.Args"
-       "AltCover_Fake.DotNet.Testing.AltCover.ArgType"
-       "AltCover_Fake.DotNet.Testing.AltCover.ToolType"
-       "AltCover_Fake.DotNet.Testing.AltCover.Params"
-       "AltCover_Fake.DotNet.Testing.AltCover.PrepareParams"
-       "AltCover_Fake.DotNet.Testing.AltCover"
+     [ "AltCoverFake.DotNet.Testing.AltCover.CollectParams"
+       "AltCoverFake.DotNet.Testing.AltCover.PrepareParams"
+       "AltCoverFake.DotNet.Testing.AltCover.Args"
+       "AltCoverFake.DotNet.Testing.AltCover.ArgType"
+       "AltCoverFake.DotNet.Testing.AltCover.ToolType"
+       "AltCoverFake.DotNet.Testing.AltCover.Params"
+       "AltCoverFake.DotNet.Testing.AltCover.PrepareParams"
+       "AltCoverFake.DotNet.Testing.AltCover"
        "AltCover.Internals.DotNet"
-       "AltCover_Fake.DotNet.DotNet" ],
+       "AltCoverFake.DotNet.DotNet" ],
      [ "-Microsoft.Design#CA1006"
        "-Microsoft.Design#CA1011"
        "-Microsoft.Design#CA1020"
@@ -818,7 +813,7 @@ _Target "UnitTestDotNetWithCoverlet" (fun _ ->
           TargetDir = "_Reports/_UnitTestWithCoverlet" }) xml
 
     uncovered @"_Reports/_UnitTestWithCoverl*/Summary.xml"
-    |> printfn "%A uncovered lines"         
+    |> printfn "%A uncovered lines"
   with x ->
     printfn "%A" x
     reraise())
@@ -1003,7 +998,7 @@ _Target "UnitTestWithAltCover" (fun _ ->
       [ altReport; RecorderReport ]
 
     uncovered @"_Reports/_UnitTestWithAltCover/Summary.xml"
-    |> printfn "%A uncovered lines"         
+    |> printfn "%A uncovered lines"
 
   else
     printfn "Symbols not present; skipping")
@@ -1262,7 +1257,7 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
       [ altReport; RecorderReport; Recorder2Report; weakReport; pester ]
 
     uncovered @"_Reports/_UnitTestWithAltCoverRunner/Summary.xml"
-    |> printfn "%A uncovered lines"         
+    |> printfn "%A uncovered lines"
 
     let cover1 =
       altReport
@@ -1844,7 +1839,7 @@ _Target "CSharpDotNetWithFramework" (fun _ ->
       WorkingDirectory = sampleRoot }
   |> AltCover.run
 
-  Actions.RunDotnet dotnetOptions "" (instrumented @@ "Sample1.dll") 
+  Actions.RunDotnet dotnetOptions "" (instrumented @@ "Sample1.dll")
     "CSharpDotNetWithFramework test"
   Actions.ValidateSample1 simpleReport "CSharpDotNetWithFramework")
 
@@ -1930,7 +1925,7 @@ _Target "RecordResumeTest" (fun _ ->
       Trace.traceImportant "Using the NuGet package"
       test
     | _ -> Path.getFullName "_Binaries/AltCover/Release+AnyCPU/net45/AltCover.exe"
-  if File.Exists toolPath 
+  if File.Exists toolPath
   then
     let prep =
       AltCover.PrepareParams.Primitive
@@ -1975,7 +1970,7 @@ _Target "RecordResumeTest" (fun _ ->
         WorkingDirectory = sampleRoot }
     |> AltCover.run
 
-    do 
+    do
       use coverageFile =
          new FileStream(simpleReport, FileMode.Open, FileAccess.Read, FileShare.None, 4096,
                         FileOptions.SequentialScan)
@@ -2010,7 +2005,7 @@ _Target "RecordResumeTrackingTest" (fun _ ->
       Trace.traceImportant "Using the NuGet package"
       test
     | _ -> Path.getFullName "_Binaries/AltCover/Release+AnyCPU/net45/AltCover.exe"
-  if File.Exists toolPath 
+  if File.Exists toolPath
   then
     let prep =
       AltCover.PrepareParams.Primitive
@@ -2272,7 +2267,7 @@ _Target "Packaging" (fun _ ->
 
   let applicationFiles =
     if File.Exists AltCover
-    then  
+    then
       [ (AltCover, Some "tools/net45", None)
         (config, Some "tools/net45", None)
         (recorder, Some "tools/net45", None)
@@ -2287,7 +2282,7 @@ _Target "Packaging" (fun _ ->
 
   let apiFiles =
     if File.Exists AltCover
-    then  
+    then
       [ (AltCover, Some "lib/net45", None)
         (config, Some "lib/net45", None)
         (recorder, Some "lib/net45", None)
@@ -2304,7 +2299,7 @@ _Target "Packaging" (fun _ ->
 
   let resourceFiles path =
     if File.Exists AltCover
-    then  
+    then
       [ "_Binaries/AltCover/Release+AnyCPU/net45"; "_Binaries/AltCover.Visualizer/Release+AnyCPU/net45" ]
       |> List.map (fun f ->
            Directory.GetDirectories(Path.getFullName f)
@@ -2486,7 +2481,7 @@ _Target "Packaging" (fun _ ->
         auxVFiles ], [], "_Packaging.visualizer", "./_Generated/altcover.visualizer.nuspec",
      "altcover.visualizer")
 
-    let frameworkFake2Files = 
+    let frameworkFake2Files =
       if File.Exists fake2
       then [ (fake2, Some "lib/net45", None)
              (fox, Some "lib/net45", None) ]
@@ -2708,7 +2703,7 @@ _Target "ReleaseDotNetWithFramework"
     | _ -> Path.getFullName "_Packaging/Unpack/tools/net45"
 
   if File.Exists  (Path.Combine (unpack, "AltCover.exe"))
-  then 
+  then
     let simpleReport =
       (Path.getFullName "./_Reports") @@ ("ReleaseDotNetWithFramework.xml")
     let sampleRoot = Path.getFullName "./_Binaries/Sample1/Debug+AnyCPU/netcoreapp2.0"
@@ -3046,7 +3041,7 @@ _Target "ReleaseXUnitFSharpTypesShowVisualized" (fun _ ->
               |> Seq.sortBy fst
               |> Seq.toList
     Assert.That (vcs |> List.map fst, Is.EqualTo [ -3; 0])
-    Assert.That (vcs |> List.map (snd >> Seq.length), Is.EqualTo [10 ; 23])    
+    Assert.That (vcs |> List.map (snd >> Seq.length), Is.EqualTo [10 ; 23])
 
   let prep =
     AltCover.PrepareParams.Primitive
@@ -3078,7 +3073,7 @@ _Target "ReleaseXUnitFSharpTypesShowVisualized" (fun _ ->
               |> Seq.sortBy fst
               |> Seq.toList
     Assert.That (vcs |> List.map fst, Is.EqualTo [ 0])
-    Assert.That (vcs |> List.map (snd >> Seq.length), Is.EqualTo [33])    
+    Assert.That (vcs |> List.map (snd >> Seq.length), Is.EqualTo [33])
 
   let prep =
     AltCover.PrepareParams.Primitive
@@ -3110,7 +3105,7 @@ _Target "ReleaseXUnitFSharpTypesShowVisualized" (fun _ ->
               |> Seq.sortBy fst
               |> Seq.toList
     Assert.That (vcs |> List.map fst, Is.EqualTo [ -2; 0])
-    Assert.That (vcs |> List.map (snd >> Seq.length), Is.EqualTo [6 ; 17])    
+    Assert.That (vcs |> List.map (snd >> Seq.length), Is.EqualTo [6 ; 17])
 
   let prep =
     AltCover.PrepareParams.Primitive
@@ -3373,21 +3368,21 @@ _Target "DoIt"
   then
     let framework = Fake.DotNet.ToolType.CreateFullFramework()
 
-    { AltCover_Fake.DotNet.Testing.AltCover.Params.Create
-        AltCover_Fake.DotNet.Testing.AltCover.ArgType.GetVersion
+    { AltCoverFake.DotNet.Testing.AltCover.Params.Create
+        AltCoverFake.DotNet.Testing.AltCover.ArgType.GetVersion
           with
             ToolType = framework
             ToolPath = frameworkPath }
-    |> AltCover_Fake.DotNet.Testing.AltCover.run
+    |> AltCoverFake.DotNet.Testing.AltCover.run
 
   let core = Fake.DotNet.ToolType.CreateFrameworkDependentDeployment id
 
-  { AltCover_Fake.DotNet.Testing.AltCover.Params.Create
-      AltCover_Fake.DotNet.Testing.AltCover.ArgType.GetVersion
+  { AltCoverFake.DotNet.Testing.AltCover.Params.Create
+      AltCoverFake.DotNet.Testing.AltCover.ArgType.GetVersion
         with
           ToolType = core
           ToolPath = corePath }
-  |> AltCover_Fake.DotNet.Testing.AltCover.run
+  |> AltCoverFake.DotNet.Testing.AltCover.run
 
   let pwsh =
     if Environment.isWindows then
