@@ -58,6 +58,9 @@ open AltCover_Fake.DotNet
 [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Smells",
   "AvoidSpeculativeGeneralityRule",
   Justification="Until we remove the [Obsolete] methods")>]
+[<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Exceptions",
+  "InstantiateArgumentExceptionCorrectlyRule",
+  Justification="Inlines Array functions")>]
 module DotNet =
   open Fake.DotNet
 
