@@ -111,7 +111,7 @@ type CollectParams =
 #if RUNNER
   member self.Validate afterPreparation =
     let saved = CommandLine.error
-    7
+
     let validate f x =
       if x
          |> String.IsNullOrWhiteSpace

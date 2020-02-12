@@ -9,7 +9,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="altcode.gendarme" version="2020.2.11.15383-pre-release" />
+    <PackageReference Include="altcode.gendarme" version="2020.2.12.16271-pre-release" />
     <PackageReference Include="NuGet.CommandLine" version="5.4.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
