@@ -213,6 +213,10 @@ let coverletTestOptions (o : DotNet.TestOptions) =
                                     Settings = Some "./Build/coverletArgs.runsettings"}
   |> withCLIArgs
 
+let coverletTestOptionsSample4 (o : DotNet.TestOptions) =  
+  { coverletTestOptions o with Framework = Some "netcoreapp2.1"
+                               Settings = Some "./Build/coverletArgs.sample4.runsettings" }
+
 let misses = ref 0
 
 let uncovered (path:string) =
@@ -2955,6 +2959,66 @@ _Target "ReleaseXUnitFSharpTypesDotNetRunner" (fun _ ->
   |> AltCover.run
   Actions.ValidateFSharpTypesCoverage x)
 
+_Target "OpenCoverForPester" (fun _ ->
+  Directory.ensure "./_Reports"
+  let unpack = Path.getFullName "_Packaging/Unpack/tools/netcoreapp2.0"
+  let x = Path.getFullName "./_Reports/OpenCoverForPester.xml"
+  let o = Path.getFullName "Sample4/_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1"
+  let i = Path.getFullName "_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1"
+
+  Shell.cleanDir o
+
+  // Instrument the code
+  let prep =
+    AltCover.PrepareParams.Primitive
+      ({ Primitive.PrepareParams.Create() with
+           XmlReport = x
+           OutputDirectories = [ o ]
+           InputDirectories = [ i ]
+           AssemblyFilter = [ "xunit" ]
+           InPlace = false
+           OpenCover = true
+           Save = false })
+    |> AltCover.Prepare
+  { AltCover.Params.Create prep with
+      ToolPath = "AltCover.dll"
+      WorkingDirectory = unpack }.WithToolType dotnet_altcover
+  |> AltCover.run
+
+  printfn "Execute the instrumented tests"
+  let sample4 = Path.getFullName "./Sample4/sample4.core.fsproj"
+  let runner = Path.getFullName "_Packaging/Unpack/tools/netcoreapp2.0/AltCover.dll"
+  let (dotnetexe, args) = defaultDotNetTestCommandLine (Some "netcoreapp2.1") sample4
+
+  // Run
+  let collect =
+    AltCover.CollectParams.Primitive
+      { Primitive.CollectParams.Create() with
+          Executable = dotnetexe
+          RecorderDirectory = o
+          CommandLine = args }
+    |> AltCover.Collect
+  { AltCover.Params.Create collect with
+      ToolPath = runner
+      WorkingDirectory = o }.WithToolType dotnet_altcover
+  |> AltCover.run
+
+  // now do it for coverlet
+  let here = Path.GetDirectoryName sample4
+  let tr = here @@ "TestResults"
+  Directory.ensure tr
+  Shell.cleanDir tr
+  try
+    DotNet.build
+         (fun p ->
+         { p.WithCommon dotnetOptions with Configuration = DotNet.BuildConfiguration.Debug }
+         |> withMSBuildParams) sample4
+    DotNet.test coverletTestOptionsSample4 sample4
+  with x -> eprintf "%A" x
+  let covxml = (!!(tr @@ "*/coverage.opencover.xml") |> Seq.head) |> Path.getFullName
+  let target = (Path.getFullName "./_Reports") @@ "OpenCoverForPester.coverlet.xml"
+  Shell.copyFile target covxml)
+
 _Target "ReleaseXUnitFSharpTypesShowVisualized" (fun _ ->
   Directory.ensure "./_Reports"
   let unpack = Path.getFullName "_Packaging/Unpack/tools/netcoreapp2.0"
@@ -4306,9 +4370,17 @@ Target.activateFinal "ResetConsoleColours"
 =?> ("WindowsPowerShell", Environment.isWindows)
 
 "Unpack"
+==> "OpenCoverForPester"
+=?> ("WindowsPowerShell", Environment.isWindows)
+
+"Unpack"
 ==> "ReleaseXUnitFSharpTypesDotNetRunner"
 ==> "Pester"
 ==> "Deployment"
+
+"Unpack"
+==> "OpenCoverForPester"
+==> "Pester"
 
 "Unpack"
 ==> "SimpleReleaseTest"
