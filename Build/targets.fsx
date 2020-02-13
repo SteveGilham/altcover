@@ -477,32 +477,6 @@ _Target "Lint" (fun _ ->
 _Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standalone which contaminates everything
   Directory.ensure "./_Reports"
 
-  let toolPath = GendarmePath // "./packages/" + (packageVersion "Mono.Gendarme") + "/tools/gendarme.exe"
-
-  let rules =
-    if Environment.isWindows then "./Build/rules.xml"
-    else "./Build/rules-mono.xml"
-
-  let baseRules = Path.getFullName "./Build/rules-fake.xml"
-  let fakerules = baseRules
-(*  let fakerules =
-    if Environment.isWindows then
-      baseRules
-    else
-      // Gendarme mono doesn't into .pdb files
-      let lines =
-        baseRules
-        |> File.ReadAllLines
-        |> Seq.map
-             (fun l ->
-             l.Replace
-               ("AvoidSwitchStatementsRule",
-                "AvoidSwitchStatementsRule | AvoidLongMethodsRule"))
-
-      let fixup = Path.getFullName "./_Generated/rules-fake.xml"
-      File.WriteAllLines(fixup, lines)
-      fixup *)
-
   [
    ("_Binaries/AltCover/Debug+AnyCPU/netcoreapp2.0/publish", "netcoreapp2.0", "./AltCover/altcover.core.fsproj")
    ("_Binaries/AltCover.Shadow/Debug+AnyCPU/netstandard2.0/publish", "netstandard2.0", "./AltCover.Shadow/altcover.shadow.core.fsproj")
@@ -520,7 +494,7 @@ _Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standa
                                                            Properties = [("AltCoverGendarme", "true")] }
                                         Framework = Some rt }) proj)
 
-  [ (rules,
+  [ ("./Build/rules.xml",
      [ "_Binaries/AltCover/Debug+AnyCPU/netcoreapp2.0/publish/AltCover.dll"
        "_Binaries/AltCover.Shadow/Debug+AnyCPU/netstandard2.0/publish/AltCover.Shadow.dll" ])
 
@@ -531,7 +505,7 @@ _Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standa
     ("./Build/rules-gtk.xml",
      [ "_Binaries/AltCover.Visualizer/Debug+AnyCPU/netcoreapp2.1/publish/AltCover.Visualizer.dll" ])
 
-    (fakerules,
+    ("./Build/rules-fake.xml",
      [ "_Binaries/AltCover.Fake.DotNet.Testing.AltCover/Debug+AnyCPU/netstandard2.0/publish/AltCover.Fake.DotNet.Testing.AltCover.dll" ]) ]
   |> Seq.iter (fun (ruleset, files) ->
        Gendarme.run
@@ -544,7 +518,7 @@ _Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standa
              Log = "./_Reports/gendarme.html"
              LogKind = Gendarme.LogKind.Html
              Targets = files
-             ToolPath = toolPath
+             ToolPath = GendarmePath
              FailBuildOnDefect = true }))
 
 _Target "FxCop" (fun _ ->
@@ -860,7 +834,7 @@ _Target "UnitTestWithOpenCover"
           ReturnTargetCode = Fake.DotNet.Testing.OpenCover.ReturnTargetCodeType.Yes
           OptionalArguments =
             "-excludebyattribute:*ExcludeFromCodeCoverageAttribute;*ProgIdAttribute"
-          Register = OpenCover.RegisterType.Path64
+          Register = OpenCover.RegisterType.RegisterUser // Path64 doesn't work on my machine
           Output = scoverage })
       (String.Join(" ", RecorderFiles)
        + " --result=./_Reports/RecorderTestWithOpenCoverReport.xml")
@@ -1970,27 +1944,26 @@ _Target "RecordResumeTest" (fun _ ->
         WorkingDirectory = sampleRoot }
     |> AltCover.run
 
-    do
-      use coverageFile =
+    do use coverageFile =
          new FileStream(simpleReport, FileMode.Open, FileAccess.Read, FileShare.None, 4096,
                         FileOptions.SequentialScan)
-      let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
+       let coverageDocument = XDocument.Load(XmlReader.Create(coverageFile))
 
-      let recorded =
-        coverageDocument.Descendants(XName.Get("seqpnt"))
-        |> Seq.map (fun x -> x.Attribute(XName.Get("visitcount")).Value)
-        |> Seq.toList
+       let recorded =
+         coverageDocument.Descendants(XName.Get("seqpnt"))
+         |> Seq.map (fun x -> x.Attribute(XName.Get("visitcount")).Value)
+         |> Seq.toList
 
-      Assert.That
-        (recorded |> Seq.length, Is.EqualTo 20,
-         sprintf "Bad visit list %A -- bad length" recorded)
+       Assert.That
+         (recorded |> Seq.length, Is.EqualTo 20,
+          sprintf "Bad visit list %A -- bad length" recorded)
 
-      let hits =
-        recorded
-        |> Seq.filter (fun i -> i = "1")
-        |> Seq.length
-      Assert.That(hits, Is.GreaterThanOrEqualTo 6)
-      Assert.That(hits, Is.LessThanOrEqualTo 8)
+       let hits =
+         recorded
+         |> Seq.filter (fun i -> i = "1")
+         |> Seq.length
+       Assert.That(hits, Is.GreaterThanOrEqualTo 6)
+       Assert.That(hits, Is.LessThanOrEqualTo 8)
   else Trace.traceImportant "Skipping -- AltCover.exe not built")
 
 _Target "RecordResumeTrackingTest" (fun _ ->
