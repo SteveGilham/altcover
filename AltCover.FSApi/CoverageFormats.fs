@@ -149,7 +149,7 @@ module CoverageFormats =
       System.Threading.Thread.CurrentThread.CurrentCulture <- culture
     rewrite
 
-  let internal X s = XName.Get s
+  let internal X = OpenCover.X
 
   let internal Summary() =
     XElement
