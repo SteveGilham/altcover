@@ -2964,7 +2964,7 @@ _Target "OpenCoverForPester" (fun _ ->
   let reportDir = Path.getFullName "./_Reports/OpenCoverForPester"
   Directory.ensure reportDir
   let unpack = Path.getFullName "_Packaging/Unpack/tools/netcoreapp2.0"
-  let x = Path.getFullName "./_Reports/OpenCoverForPester.xml"
+  let x = Path.getFullName "./_Reports/OpenCoverForPester/OpenCoverForPester.xml"
   let o = Path.getFullName "Sample4/_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1"
   let i = Path.getFullName "_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1"
 
@@ -3023,7 +3023,10 @@ _Target "OpenCoverForPester" (fun _ ->
   Shell.copyFile target covxml
   let binary = here @@ "_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1/Sample4.dll"
   let binaryTarget = reportDir @@ "Sample4.dll"
-  Shell.copyFile binaryTarget binary)
+  Shell.copyFile binaryTarget binary
+  let binary2 = here @@ "_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1/Sample4.pdb"
+  let binary2Target = reportDir @@ "Sample4.pdb"
+  Shell.copyFile binary2Target binary2)
 
 _Target "ReleaseXUnitFSharpTypesShowVisualized" (fun _ ->
   Directory.ensure "./_Reports"
