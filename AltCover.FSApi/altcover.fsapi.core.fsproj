@@ -41,6 +41,7 @@
     <Content Include="packages.config" />
     <EmbeddedResource Include="xsd\NCover.xsd" />
     <EmbeddedResource Include="xsd\OpenCover.xsd" />
+    <EmbeddedResource Include="xsd\OpenCoverStrict.xsd" />
     <EmbeddedResource Include="xsl\OpenCoverToNCover.xsl" />
     <EmbeddedResource Include="xsl\OpenCoverToNCoverEx.xsl" />
     <EmbeddedResource Include="xsl\NCoverToBarChart.xsl" />

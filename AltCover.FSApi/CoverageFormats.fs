@@ -162,6 +162,63 @@ module CoverageFormats =
         XAttribute(X "numMethods", 0), XAttribute(X "minCrapScore", 0),
         XAttribute(X "maxCrapScore", 0))
 
+  let UpdateMethod (m:XElement) (file:AssemblyDefinition) =
+    // visited attribute <Method visited="false" cyclomaticComplexity="1" nPathComplexity="0" sequenceCoverage="0" branchCoverage="0" isConstructor="false" isStatic="true" isGetter="false" isSetter="false" crapScore="0">
+    let a = m.Attributes() |> Seq.toList
+    m.RemoveAttributes()
+    let filterVisted = fun (x:XElement) -> x.Attribute(X "vc").Value <> "0"
+    let visited = Seq.concat [ m.Descendants(X "SequencePoint")
+                               m.Descendants(X "MethodPoint")
+                               m.Descendants(X "BranchPoint") ]
+                  |> Seq.exists filterVisted
+    let v = XAttribute(X "visited", visited.ToString(CultureInfo.InvariantCulture).ToLowerInvariant())
+    m.Add((v::a) |> List.toArray)
+    let declaringTypeName = (m.AncestorsAndSelf(X "Class") |> Seq.head).Descendants(X "FullName")
+                            |> Seq.head
+    let declaringType = declaringTypeName.Value |> file.MainModule.GetType
+
+    // value in method <MetadataToken>100663297</MetadataToken>
+    let methodFullName = (m.Descendants(X "Name") |> Seq.head).Value
+    let methodDef = declaringType.Methods
+                    |> Seq.tryFind(fun n -> n.FullName = methodFullName)
+    methodDef
+    |> Option.iter(fun x -> let token = m.Descendants(X "MetadataToken") |> Seq.head
+                            token.Value <- x.MetadataToken.ToUInt32().
+                                             ToString(CultureInfo.InvariantCulture))
+    // xsi:type in <MethodPoint xsi:type="SequencePoint" vc="0" uspid="0" ordinal="0" offset="2" sl="59" sc="16" el="59" ec="17" bec="0" bev="0" fileid="1" />
+    //  instead of xmlns:p8="xsi" <MethodPoint vc="0" uspid="0" p8:type="SequencePoint" ordinal="0" offset="0" sc="0" sl="59" ec="1" el="59" bec="0" bev="0" fileid="1" xmlns:p8="xsi" />
+    m.Descendants(X "MethodPoint")
+    |> Seq.tryHead
+    |> Option.iter (fun x -> let a = x.Attributes()
+                                     |> Seq.filter (fun s -> s.Name.ToString().Contains("{") |> not)
+                                     |> Seq.cast<obj>
+                                     |> Seq.toArray
+                             x.RemoveAttributes()
+                             x.Add(XAttribute(XName.Get("type",
+                                                        "http://www.w3.org/2001/XMLSchema-instance"),
+                                                        "SequencePoint"))
+                             x.Add a)
+
+  let UpdateModule (m:XElement) (files:string array) =
+    // supply empty module level  <Summary numSequencePoints="0" visitedSequencePoints="0" numBranchPoints="0" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="0" minCyclomaticComplexity="0" visitedClasses="0" numClasses="0" visitedMethods="0" numMethods="0" minCrapScore="0" maxCrapScore="0" />
+    (m.Elements() |> Seq.head).AddBeforeSelf(Summary())
+    let modulePath = m.Element(X "ModulePath")
+    let assemblyFileName = modulePath.Value
+    let assemblyPath = files |> Seq.tryFind (fun f -> assemblyFileName = Path.GetFileName f)
+
+    assemblyPath
+    |> Option.filter File.Exists
+    // fill in path  <ModulePath>...\Sample4.dll</ModulePath>
+    // fix hash in <Module hash="42-08-CA-1A-A6-25-CE-DA-DD-18-DC-D5-9A-BF-1B-BF-00-1D-E5-9B">
+    // visited attribute <Method visited="false" cyclomaticComplexity="1" nPathComplexity="0" sequenceCoverage="0" branchCoverage="0" isConstructor="false" isStatic="true" isGetter="false" isSetter="false" crapScore="0">
+    // value in method <MetadataToken>100663297</MetadataToken>
+    // xsi:type in <MethodPoint xsi:type="SequencePoint" vc="0" uspid="0" ordinal="0" offset="2" sl="59" sc="16" el="59" ec="17" bec="0" bev="0" fileid="1" />
+    //  instead of xmlns:p8="xsi" <MethodPoint vc="0" uspid="0" p8:type="SequencePoint" ordinal="0" offset="0" sc="0" sl="59" ec="1" el="59" bec="0" bev="0" fileid="1" xmlns:p8="xsi" />
+    |> Option.iter(fun path -> modulePath.Value <- (Path.GetFullPath path)
+                               m.Attribute(X "hash").Value <- KeyStore.HashFile path
+                               m.Descendants(X "Method")
+                               |> Seq.iter (fun m2 -> UpdateMethod m2 (AssemblyDefinition.ReadAssembly path)))
+
   let FormatFromCoverlet (report:XDocument) (files:string array) =
     let rewrite = XDocument(report)
     // attributes in <CoverageSession xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
@@ -174,19 +231,21 @@ module CoverageFormats =
                                             "http://www.w3.org/2001/XMLSchema-instance")))
 
     // supply empty module level  <Summary numSequencePoints="0" visitedSequencePoints="0" numBranchPoints="0" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="0" minCyclomaticComplexity="0" visitedClasses="0" numClasses="0" visitedMethods="0" numMethods="0" minCrapScore="0" maxCrapScore="0" />
-    rewrite.Descendants(X "Module")
-    |> Seq.iter (fun m -> (m.Elements() |> Seq.head).AddBeforeSelf(Summary()))
-
-    // TODO list
-    // fix hash in <Module hash="42-08-CA-1A-A6-25-CE-DA-DD-18-DC-D5-9A-BF-1B-BF-00-1D-E5-9B">
-    // complete module level  <Summary numSequencePoints="23" visitedSequencePoints="10" numBranchPoints="21" visitedBranchPoints="7" sequenceCoverage="43.48" branchCoverage="33.33" maxCyclomaticComplexity="11" minCyclomaticComplexity="1" visitedClasses="4" numClasses="7" visitedMethods="7" numMethods="11" minCrapScore="1" maxCrapScore="62.05" />
     // fill in path  <ModulePath>...\Sample4.dll</ModulePath>
     // visited attribute <Method visited="false" cyclomaticComplexity="1" nPathComplexity="0" sequenceCoverage="0" branchCoverage="0" isConstructor="false" isStatic="true" isGetter="false" isSetter="false" crapScore="0">
     // value in method <MetadataToken>100663297</MetadataToken>
     // xsi:type in <MethodPoint xsi:type="SequencePoint" vc="0" uspid="0" ordinal="0" offset="2" sl="59" sc="16" el="59" ec="17" bec="0" bev="0" fileid="1" />
     //  instead of xmlns:p8="xsi" <MethodPoint vc="0" uspid="0" p8:type="SequencePoint" ordinal="0" offset="0" sc="0" sl="59" ec="1" el="59" bec="0" bev="0" fileid="1" xmlns:p8="xsi" />
-    // Fix sc, ec in <MethodPoint />
-    // offset, sc, ec in  <SequencePoint vc="1" uspid="1" ordinal="0" offset="0" sl="47" sc="21" el="47" ec="26" bec="0" bev="0" fileid="1" />
+    rewrite.Descendants(X "Module")
+    |> Seq.iter (fun m -> UpdateModule m files)
+
+    // TODO list
+    // Fix offset, sc, ec in <SequencePoint vc="1" uspid="1" ordinal="0" offset="0" sl="47" sc="21" el="47" ec="26" bec="0" bev="0" fileid="1" />
+    // Fix offset, sc, ec in <MethodPoint />
+
+    // TODO - wants the tidy-up API https://github.com/SteveGilham/altcover/projects/8#card-28301506
+    // complete module level  <Summary numSequencePoints="23" visitedSequencePoints="10" numBranchPoints="21" visitedBranchPoints="7" sequenceCoverage="43.48" branchCoverage="33.33" maxCyclomaticComplexity="11" minCyclomaticComplexity="1" visitedClasses="4" numClasses="7" visitedMethods="7" numMethods="11" minCrapScore="1" maxCrapScore="62.05" />
     // compute bec and bev values
+    // compute crap score values
 
     rewrite
