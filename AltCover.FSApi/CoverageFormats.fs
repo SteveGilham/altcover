@@ -10,6 +10,8 @@ open System.Xml
 open System.Xml.Linq
 open System.Xml.XPath
 
+open Mono.Cecil
+
 [<RequireQualifiedAccess>]
 module CoverageFormats =
 
@@ -145,4 +147,8 @@ module CoverageFormats =
            c.SetAttribute("measureTime", now))
     finally
       System.Threading.Thread.CurrentThread.CurrentCulture <- culture
+    rewrite
+
+  let FormatFromCoverlet (report:XDocument) (files:string array) =
+    let rewrite = XDocument(report)
     rewrite

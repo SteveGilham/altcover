@@ -599,7 +599,7 @@ Describe "ConvertFrom-NCover" {
 Describe "Compress-Branching" {
   It "Removes interior branches" {
     $xml = Compress-Branching -WithinSequencePoint -InputFile "./Tests/Compressible.xml" -OutputFile "./_Packaging/CompressInterior.xml"
-	$xml | Should -BeOfType "System.Xml.XmlDocument"
+	  $xml | Should -BeOfType "System.Xml.XmlDocument"
 
     $sw = new-object System.IO.StringWriter @()
     $settings = new-object System.Xml.XmlWriterSettings @()
@@ -617,7 +617,7 @@ Describe "Compress-Branching" {
   }
   It "Unifies equivalent branches" {
     $xml = Compress-Branching -SameSpan -InputFile "./Tests/Compressible.xml" -OutputFile "./_Packaging/SameSpan.xml"
-	$xml | Should -BeOfType "System.Xml.XmlDocument"
+  	$xml | Should -BeOfType "System.Xml.XmlDocument"
 
     $sw = new-object System.IO.StringWriter @()
     $settings = new-object System.Xml.XmlWriterSettings @()
@@ -635,7 +635,7 @@ Describe "Compress-Branching" {
   }
   It "DoesBoth" {
     $xml = [xml](Get-Content  "./Tests/Compressible.xml") | Compress-Branching -SameSpan -WithinSequencePoint -OutputFile "./_Packaging/CompressBoth.xml"
-	$xml | Should -BeOfType "System.Xml.XmlDocument"
+	  $xml | Should -BeOfType "System.Xml.XmlDocument"
 
     $sw = new-object System.IO.StringWriter @()
     $settings = new-object System.Xml.XmlWriterSettings @()
@@ -662,5 +662,14 @@ Describe "Compress-Branching" {
 	}
 
 	$fail | Should -BeFalse
+  }
+}
+
+Describe "Format-FromCoverletOpenCover" {
+  It "Outputs a document from a file" {
+    $assemblies = @()
+    $assemblies += "./_Reports/OpenCoverForPester/Sample4.dll"
+    $xml = Format-FromCoverletOpenCover -InputFile "./_Reports/OpenCoverForPester/OpenCoverForPester.coverlet.xml" -Assembly $Assemblies -OutputFile "./_Packaging/OpenCoverForPester.coverlet.xml"
+    $xml | Should -BeOfType "System.Xml.Linq.XDocument"
   }
 }

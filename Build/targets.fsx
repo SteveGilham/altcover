@@ -2961,6 +2961,8 @@ _Target "ReleaseXUnitFSharpTypesDotNetRunner" (fun _ ->
 
 _Target "OpenCoverForPester" (fun _ ->
   Directory.ensure "./_Reports"
+  let reportDir = Path.getFullName "./_Reports/OpenCoverForPester"
+  Directory.ensure reportDir
   let unpack = Path.getFullName "_Packaging/Unpack/tools/netcoreapp2.0"
   let x = Path.getFullName "./_Reports/OpenCoverForPester.xml"
   let o = Path.getFullName "Sample4/_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1"
@@ -3007,6 +3009,7 @@ _Target "OpenCoverForPester" (fun _ ->
   let here = Path.GetDirectoryName sample4
   let tr = here @@ "TestResults"
   Directory.ensure tr
+  Directory.ensure tr
   Shell.cleanDir tr
   try
     DotNet.build
@@ -3016,8 +3019,11 @@ _Target "OpenCoverForPester" (fun _ ->
     DotNet.test coverletTestOptionsSample4 sample4
   with x -> eprintf "%A" x
   let covxml = (!!(tr @@ "*/coverage.opencover.xml") |> Seq.head) |> Path.getFullName
-  let target = (Path.getFullName "./_Reports") @@ "OpenCoverForPester.coverlet.xml"
-  Shell.copyFile target covxml)
+  let target = reportDir @@ "OpenCoverForPester.coverlet.xml"
+  Shell.copyFile target covxml
+  let binary = here @@ "_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1/Sample4.dll"
+  let binaryTarget = reportDir @@ "Sample4.dll"
+  Shell.copyFile binaryTarget binary)
 
 _Target "ReleaseXUnitFSharpTypesShowVisualized" (fun _ ->
   Directory.ensure "./_Reports"
