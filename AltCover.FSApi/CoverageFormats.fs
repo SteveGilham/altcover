@@ -171,7 +171,7 @@ module CoverageFormats =
                                m.Descendants(X "MethodPoint")
                                m.Descendants(X "BranchPoint") ]
                   |> Seq.exists filterVisted
-    let v = XAttribute(X "visited", visited.ToString(CultureInfo.InvariantCulture).ToLowerInvariant())
+    let v = XAttribute(X "visited", OpenCover.boolString visited)
     m.Add((v::a) |> List.toArray)
     let declaringTypeName = (m.AncestorsAndSelf(X "Class") |> Seq.head).Descendants(X "FullName")
                             |> Seq.head

@@ -65,6 +65,9 @@ type internal OpenCoverContext =
 module internal OpenCover =
   let internal X name = XName.Get name
 
+  let internal boolString b =
+    if b then "true" else "false"
+
   let internal setChain (xbranch : XElement) branch =
     let chain = branch.Target.Tail |> List.map (fun i -> i.Offset)
     xbranch.SetAttributeValue
@@ -155,9 +158,6 @@ module internal OpenCover =
           ClassSeq = 0
           ClassBr = 0
           MethodCC = [] }
-
-    let boolString b =
-      if b then "true" else "false"
 
     let methodElement (methodDef : MethodDefinition) =
       let cc = Gendarme.CyclomaticComplexity methodDef
