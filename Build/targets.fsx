@@ -144,10 +144,10 @@ let openCoverConsole =
 let nunitConsole =
   ("./packages/" + (packageVersion "NUnit.ConsoleRunner") + "/tools/nunit3-console.exe")
   |> Path.getFullName
-let GendarmePath =
+let GendarmePath = 
   ("./packages/" + (packageVersion "altcode.gendarme") + "/tools/gendarme.exe")
   |> Path.getFullName
-
+  
 let cliArguments =
   { MSBuild.CliArguments.Create() with
       ConsoleLogParameters = []
@@ -275,7 +275,7 @@ let dotnetBuildDebug proj =
                 { p.WithCommon dotnetOptions with
                     Configuration = DotNet.BuildConfiguration.Debug } |> withMSBuildParams) proj
 
-//----------------------------------------------------------------
+//----------------------------------------------------------------                   
 
 let _Target s f =
   Target.description s
@@ -331,9 +331,9 @@ module SolutionRoot =
   if not (old.Equals(hack)) then File.WriteAllText(path, hack)
 
   if Environment.isWindows
-  then
+  then 
     !!"**/*.core.*proj"
-    |> Seq.iter (fun f ->
+    |> Seq.iter (fun f -> 
                  let dir = Path.GetDirectoryName f
                  let proj = Path.GetFileName f
                  DotNet.restore (fun o -> o.WithCommon(withWorkingDirectoryVM dir)) proj))
@@ -466,7 +466,7 @@ _Target "Lint" (fun _ ->
          printfn "Info: %A\r\n Range: %A\r\n Fix: %A\r\n====" x.Info x.Range x.Fix
          true) false
     |> failOnIssuesFound
-  with
+  with 
   | :? System.MissingMethodException -> // TODO
     printfn "MissingMethodException raised"
   | ex ->
@@ -490,7 +490,7 @@ _Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standa
                                         OutputPath = Some pub
                                         Configuration = DotNet.BuildConfiguration.Debug
                                         NoBuild = true
-                                        MSBuildParams = { MSBuild.CliArguments.Create() with
+                                        MSBuildParams = { MSBuild.CliArguments.Create() with 
                                                            Properties = [("AltCoverGendarme", "true")] }
                                         Framework = Some rt }) proj)
 
@@ -787,7 +787,7 @@ _Target "UnitTestDotNetWithCoverlet" (fun _ ->
           TargetDir = "_Reports/_UnitTestWithCoverlet" }) xml
 
     uncovered @"_Reports/_UnitTestWithCoverl*/Summary.xml"
-    |> printfn "%A uncovered lines"
+    |> printfn "%A uncovered lines"         
   with x ->
     printfn "%A" x
     reraise())
@@ -972,7 +972,7 @@ _Target "UnitTestWithAltCover" (fun _ ->
       [ altReport; RecorderReport ]
 
     uncovered @"_Reports/_UnitTestWithAltCover/Summary.xml"
-    |> printfn "%A uncovered lines"
+    |> printfn "%A uncovered lines"         
 
   else
     printfn "Symbols not present; skipping")
@@ -1231,7 +1231,7 @@ _Target "UnitTestWithAltCoverRunner" (fun _ ->
       [ altReport; RecorderReport; Recorder2Report; weakReport; pester ]
 
     uncovered @"_Reports/_UnitTestWithAltCoverRunner/Summary.xml"
-    |> printfn "%A uncovered lines"
+    |> printfn "%A uncovered lines"         
 
     let cover1 =
       altReport
@@ -1813,7 +1813,7 @@ _Target "CSharpDotNetWithFramework" (fun _ ->
       WorkingDirectory = sampleRoot }
   |> AltCover.run
 
-  Actions.RunDotnet dotnetOptions "" (instrumented @@ "Sample1.dll")
+  Actions.RunDotnet dotnetOptions "" (instrumented @@ "Sample1.dll") 
     "CSharpDotNetWithFramework test"
   Actions.ValidateSample1 simpleReport "CSharpDotNetWithFramework")
 
@@ -1899,7 +1899,7 @@ _Target "RecordResumeTest" (fun _ ->
       Trace.traceImportant "Using the NuGet package"
       test
     | _ -> Path.getFullName "_Binaries/AltCover/Release+AnyCPU/net45/AltCover.exe"
-  if File.Exists toolPath
+  if File.Exists toolPath 
   then
     let prep =
       AltCover.PrepareParams.Primitive
@@ -1978,7 +1978,7 @@ _Target "RecordResumeTrackingTest" (fun _ ->
       Trace.traceImportant "Using the NuGet package"
       test
     | _ -> Path.getFullName "_Binaries/AltCover/Release+AnyCPU/net45/AltCover.exe"
-  if File.Exists toolPath
+  if File.Exists toolPath 
   then
     let prep =
       AltCover.PrepareParams.Primitive
@@ -2238,9 +2238,17 @@ _Target "Packaging" (fun _ ->
     |> Seq.map (fun f -> (f |> Path.getFullName, Some path, None))
     |> Seq.toList
 
+  let housekeeping = 
+      [ (Path.getFullName "./LICENS*", Some "", None)
+        (Path.getFullName "./Build/AltCover_128.*", Some "", None) ]
+
+  let housekeepingVis = 
+      [ (Path.getFullName "./LICENS*", Some "", None)
+        (Path.getFullName "./AltCover.Visualizer/logo.*", Some "", None) ]
+
   let applicationFiles =
     if File.Exists AltCover
-    then
+    then  
       [ (AltCover, Some "tools/net45", None)
         (config, Some "tools/net45", None)
         (recorder, Some "tools/net45", None)
@@ -2255,7 +2263,7 @@ _Target "Packaging" (fun _ ->
 
   let apiFiles =
     if File.Exists AltCover
-    then
+    then  
       [ (AltCover, Some "lib/net45", None)
         (config, Some "lib/net45", None)
         (recorder, Some "lib/net45", None)
@@ -2272,7 +2280,7 @@ _Target "Packaging" (fun _ ->
 
   let resourceFiles path =
     if File.Exists AltCover
-    then
+    then  
       [ "_Binaries/AltCover/Release+AnyCPU/net45"; "_Binaries/AltCover.Visualizer/Release+AnyCPU/net45" ]
       |> List.map (fun f ->
            Directory.GetDirectories(Path.getFullName f)
@@ -2417,7 +2425,9 @@ _Target "Packaging" (fun _ ->
          poshFiles "tools/netcoreapp2.0/"
          vizFiles "tools/netcoreapp2.1"
          dataFiles "tools/netcoreapp2.0/"
-         otherFiles ], [], "_Packaging", "./Build/AltCover.nuspec", "altcover")
+         otherFiles
+         housekeeping
+          ], [], "_Packaging", "./Build/AltCover.nuspec", "altcover")
 
     (List.concat
       [ apiFiles
@@ -2430,7 +2440,9 @@ _Target "Packaging" (fun _ ->
         fakeFiles "lib/netstandard2.0/"
         poshFiles "lib/netstandard2.0/"
         vizFiles "tools/netcoreapp2.1"
-        otherFilesApi ],
+        otherFilesApi
+        housekeeping
+         ],
       [ // these are and should be opt-in, depnding which if any you want
 //        ("Cake.Common", "0.28")
 //        ("Cake.Core", "0.28" )
@@ -2445,16 +2457,18 @@ _Target "Packaging" (fun _ ->
         dataFiles "tools/netcoreapp2.1/any/"
         [ (packable, Some "", None) ]
         auxFiles
-        otherFilesGlobal ], [],  "_Packaging.global", "./_Generated/altcover.global.nuspec",
+        otherFilesGlobal
+        housekeeping ], [],  "_Packaging.global", "./_Generated/altcover.global.nuspec",
      "altcover.global")
 
     (List.concat
       [ vizFiles "tools/netcoreapp2.1/any"
         [ (packable, Some "", None) ]
-        auxVFiles ], [], "_Packaging.visualizer", "./_Generated/altcover.visualizer.nuspec",
+        auxVFiles
+        housekeepingVis ], [], "_Packaging.visualizer", "./_Generated/altcover.visualizer.nuspec",
      "altcover.visualizer")
 
-    let frameworkFake2Files =
+    let frameworkFake2Files = 
       if File.Exists fake2
       then [ (fake2, Some "lib/net45", None)
              (fox, Some "lib/net45", None) ]
@@ -2464,7 +2478,8 @@ _Target "Packaging" (fun _ ->
       [ fake2Files "lib/netstandard2.0/"
         fox2Files "lib/netstandard2.0/"
         [ (packable, Some "", None) ]
-        frameworkFake2Files ],
+        frameworkFake2Files
+        housekeeping ],
       [ // make these explicit, as this package implies an opt-in
         ("Fake.Core.Environment", "5.18.1")
         ("Fake.DotNet.Cli", "5.18.1")
@@ -2552,8 +2567,9 @@ _Target "PrepareDotNetBuild" (fun _ ->
        | None -> ()
        | Some logo ->
          let tag = dotnetNupkg.Descendants(x "iconUrl") |> Seq.head
-         let text = String.Concat(tag.Nodes()).Replace("Build/AltCover_128.png", logo)
-         tag.Value <- text
+         tag.Value <- tag.Value.Replace("Build/AltCover_128.png", logo)
+         let tag2 = dotnetNupkg.Descendants(x "icon") |> Seq.head
+         tag2.Value <- tag2.Value.Replace("AltCover_128.png", Path.GetFileName logo)
        match tags with
        | None -> ()
        | Some line ->
@@ -2676,7 +2692,7 @@ _Target "ReleaseDotNetWithFramework"
     | _ -> Path.getFullName "_Packaging/Unpack/tools/net45"
 
   if File.Exists  (Path.Combine (unpack, "AltCover.exe"))
-  then
+  then 
     let simpleReport =
       (Path.getFullName "./_Reports") @@ ("ReleaseDotNetWithFramework.xml")
     let sampleRoot = Path.getFullName "./_Binaries/Sample1/Debug+AnyCPU/netcoreapp2.0"
@@ -3014,7 +3030,7 @@ _Target "ReleaseXUnitFSharpTypesShowVisualized" (fun _ ->
               |> Seq.sortBy fst
               |> Seq.toList
     Assert.That (vcs |> List.map fst, Is.EqualTo [ -3; 0])
-    Assert.That (vcs |> List.map (snd >> Seq.length), Is.EqualTo [10 ; 23])
+    Assert.That (vcs |> List.map (snd >> Seq.length), Is.EqualTo [10 ; 23])    
 
   let prep =
     AltCover.PrepareParams.Primitive
@@ -3046,7 +3062,7 @@ _Target "ReleaseXUnitFSharpTypesShowVisualized" (fun _ ->
               |> Seq.sortBy fst
               |> Seq.toList
     Assert.That (vcs |> List.map fst, Is.EqualTo [ 0])
-    Assert.That (vcs |> List.map (snd >> Seq.length), Is.EqualTo [33])
+    Assert.That (vcs |> List.map (snd >> Seq.length), Is.EqualTo [33])    
 
   let prep =
     AltCover.PrepareParams.Primitive
@@ -3078,7 +3094,7 @@ _Target "ReleaseXUnitFSharpTypesShowVisualized" (fun _ ->
               |> Seq.sortBy fst
               |> Seq.toList
     Assert.That (vcs |> List.map fst, Is.EqualTo [ -2; 0])
-    Assert.That (vcs |> List.map (snd >> Seq.length), Is.EqualTo [6 ; 17])
+    Assert.That (vcs |> List.map (snd >> Seq.length), Is.EqualTo [6 ; 17])    
 
   let prep =
     AltCover.PrepareParams.Primitive
