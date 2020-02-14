@@ -149,9 +149,8 @@ module CoverageFormats =
       System.Threading.Thread.CurrentThread.CurrentCulture <- culture
     rewrite
 
-  let internal X = OpenCover.X
-
   let internal Summary() =
+    let X = OpenCover.X
     XElement
       (X "Summary", XAttribute(X "numSequencePoints", 0),
         XAttribute(X "visitedSequencePoints", 0), XAttribute(X "numBranchPoints", 0),
@@ -163,6 +162,7 @@ module CoverageFormats =
         XAttribute(X "maxCrapScore", 0))
 
   let UpdateMethod (m:XElement) (file:AssemblyDefinition) =
+    let X = OpenCover.X
     // visited attribute <Method visited="false" cyclomaticComplexity="1" nPathComplexity="0" sequenceCoverage="0" branchCoverage="0" isConstructor="false" isStatic="true" isGetter="false" isSetter="false" crapScore="0">
     let a = m.Attributes() |> Seq.toList
     m.RemoveAttributes()
@@ -187,6 +187,7 @@ module CoverageFormats =
                                              ToString(CultureInfo.InvariantCulture))
     // xsi:type in <MethodPoint xsi:type="SequencePoint" vc="0" uspid="0" ordinal="0" offset="2" sl="59" sc="16" el="59" ec="17" bec="0" bev="0" fileid="1" />
     //  instead of xmlns:p8="xsi" <MethodPoint vc="0" uspid="0" p8:type="SequencePoint" ordinal="0" offset="0" sc="0" sl="59" ec="1" el="59" bec="0" bev="0" fileid="1" xmlns:p8="xsi" />
+    // Fix offset, sc, ec in <MethodPoint />
     m.Descendants(X "MethodPoint")
     |> Seq.tryHead
     |> Option.iter (fun x -> let a = x.Attributes()
@@ -197,9 +198,20 @@ module CoverageFormats =
                              x.Add(XAttribute(XName.Get("type",
                                                         "http://www.w3.org/2001/XMLSchema-instance"),
                                                         "SequencePoint"))
-                             x.Add a)
+                             x.Add a
+                             methodDef
+                             |> Option.map (fun md -> md.DebugInformation)
+                             |> Option.filter (fun dbg -> dbg |> isNull |> not)
+                             |> Option.iter (fun dbg ->
+                                               dbg.SequencePoints
+                                               |> Seq.filter (fun s -> s.IsHidden |> not)
+                                               |> Seq.tryHead
+                                               |> Option.iter (fun s -> x.Attribute(X "sc").Value <- s.StartColumn.ToString(CultureInfo.InvariantCulture)
+                                                                        x.Attribute(X "ec").Value <- s.EndColumn.ToString(CultureInfo.InvariantCulture)
+                                                                        x.Attribute(X "offset").Value <- s.Offset.ToString(CultureInfo.InvariantCulture))))
 
   let UpdateModule (m:XElement) (files:string array) =
+    let X = OpenCover.X
     // supply empty module level  <Summary numSequencePoints="0" visitedSequencePoints="0" numBranchPoints="0" visitedBranchPoints="0" sequenceCoverage="0" branchCoverage="0" maxCyclomaticComplexity="0" minCyclomaticComplexity="0" visitedClasses="0" numClasses="0" visitedMethods="0" numMethods="0" minCrapScore="0" maxCrapScore="0" />
     (m.Elements() |> Seq.head).AddBeforeSelf(Summary())
     let modulePath = m.Element(X "ModulePath")
@@ -214,12 +226,16 @@ module CoverageFormats =
     // value in method <MetadataToken>100663297</MetadataToken>
     // xsi:type in <MethodPoint xsi:type="SequencePoint" vc="0" uspid="0" ordinal="0" offset="2" sl="59" sc="16" el="59" ec="17" bec="0" bev="0" fileid="1" />
     //  instead of xmlns:p8="xsi" <MethodPoint vc="0" uspid="0" p8:type="SequencePoint" ordinal="0" offset="0" sc="0" sl="59" ec="1" el="59" bec="0" bev="0" fileid="1" xmlns:p8="xsi" />
+    // Fix offset, sc, ec in <MethodPoint />
     |> Option.iter(fun path -> modulePath.Value <- (Path.GetFullPath path)
                                m.Attribute(X "hash").Value <- KeyStore.HashFile path
+                               let def = AssemblyDefinition.ReadAssembly path
+                               def.MainModule.ReadSymbols()
                                m.Descendants(X "Method")
-                               |> Seq.iter (fun m2 -> UpdateMethod m2 (AssemblyDefinition.ReadAssembly path)))
+                               |> Seq.iter (fun m2 -> UpdateMethod m2 def))
 
   let FormatFromCoverlet (report:XDocument) (files:string array) =
+    let X = OpenCover.X
     let rewrite = XDocument(report)
     // attributes in <CoverageSession xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
@@ -236,12 +252,12 @@ module CoverageFormats =
     // value in method <MetadataToken>100663297</MetadataToken>
     // xsi:type in <MethodPoint xsi:type="SequencePoint" vc="0" uspid="0" ordinal="0" offset="2" sl="59" sc="16" el="59" ec="17" bec="0" bev="0" fileid="1" />
     //  instead of xmlns:p8="xsi" <MethodPoint vc="0" uspid="0" p8:type="SequencePoint" ordinal="0" offset="0" sc="0" sl="59" ec="1" el="59" bec="0" bev="0" fileid="1" xmlns:p8="xsi" />
+    // Fix offset, sc, ec in <MethodPoint />
     rewrite.Descendants(X "Module")
     |> Seq.iter (fun m -> UpdateModule m files)
 
     // TODO list
     // Fix offset, sc, ec in <SequencePoint vc="1" uspid="1" ordinal="0" offset="0" sl="47" sc="21" el="47" ec="26" bec="0" bev="0" fileid="1" />
-    // Fix offset, sc, ec in <MethodPoint />
 
     // TODO - wants the tidy-up API https://github.com/SteveGilham/altcover/projects/8#card-28301506
     // complete module level  <Summary numSequencePoints="23" visitedSequencePoints="10" numBranchPoints="21" visitedBranchPoints="7" sequenceCoverage="43.48" branchCoverage="33.33" maxCyclomaticComplexity="11" minCyclomaticComplexity="1" visitedClasses="4" numClasses="7" visitedMethods="7" numMethods="11" minCrapScore="1" maxCrapScore="62.05" />
