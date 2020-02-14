@@ -11,6 +11,8 @@ A. Start with the Quick Start guide : https://github.com/SteveGilham/altcover/wi
     * removing the `FakeToolType` field (effectively, this and the above mean a rename/move of the `Fake` over the obsoleted `AltCover` type)
     * removing the `WithToolType` method (assign the value directly to the `ToolType` now)
 * Rename the `AltCover_Fake` namespace to `AltCoverFake`, because it's simpler that way
+* Merge `AltCover.Parameters.ICLIArg2` and `AltCover.Parameters.ICLIArg3` into `AltCover.Parameters.ICLIArg`
+* Rename `AltCover.Cake.AltCoverSettings.Force` to `AltCover.Cake.AltCoverSettings.Control`
 * Remove the deprecated `altcover.dotnet` package with the old-style DotNetCliToolReference Tool
 
 # 6.7.xxx  (Fukurou series release 13)

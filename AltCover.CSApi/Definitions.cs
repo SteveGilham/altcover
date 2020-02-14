@@ -77,15 +77,7 @@ namespace AltCover.Parameters
   public interface ICLIArg
   {
     bool Force { get; }
-  }
-
-  public interface ICLIArg2 : ICLIArg
-  {
     bool FailFast { get; }
-  }
-
-  public interface ICLIArg3 : ICLIArg2
-  {
     string ShowSummary { get; }
   }
 }
@@ -295,7 +287,7 @@ namespace AltCover.Parameters.Primitive
     }
   }
 
-  public class CLIArgs : ICLIArg3
+  public class CLIArgs : ICLIArg
   {
     public bool Force { get; set; }
     public bool FailFast { get; set; }
@@ -332,19 +324,9 @@ namespace AltCover
     private static DotNet.CLIArgs ToCLIArgs(ICLIArg args)
     {
       var force = DotNet.CLIArgs.NewForce(args.Force);
-      switch (args)
-      {
-        case ICLIArg3 args3:
-          var failfast3 = DotNet.CLIArgs.NewFailFast(args3.FailFast);
-          var showsummary = DotNet.CLIArgs.NewShowSummary(args3.ShowSummary);
-          return DotNet.CLIArgs.NewMany(new[] { force, failfast3, showsummary });
-
-        case ICLIArg2 args2:
-          var failfast = DotNet.CLIArgs.NewFailFast(args2.FailFast);
-          return DotNet.CLIArgs.NewMany(new[] { force, failfast });
-
-        default: return force;
-      }
+      var failfast = DotNet.CLIArgs.NewFailFast(args.FailFast);
+      var showsummary = DotNet.CLIArgs.NewShowSummary(args.ShowSummary);
+      return DotNet.CLIArgs.NewMany(new[] { force, failfast, showsummary });
     }
 
     public static string ToTestArguments(IPrepareArgs p,
