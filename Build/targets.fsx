@@ -2210,6 +2210,14 @@ _Target "Packaging" (fun _ ->
     |> Seq.map (fun f -> (f |> Path.getFullName, Some path, None))
     |> Seq.toList
 
+  let housekeeping = 
+      [ (Path.getFullName "./LICENS*", Some "", None)
+        (Path.getFullName "./Build/AltCover_128.*", Some "", None) ]
+
+  let housekeepingVis = 
+      [ (Path.getFullName "./LICENS*", Some "", None)
+        (Path.getFullName "./AltCover.Visualizer/logo.*", Some "", None) ]
+
   let applicationFiles =
     if File.Exists AltCover
     then  
@@ -2406,7 +2414,9 @@ _Target "Packaging" (fun _ ->
          poshFiles "tools/netcoreapp2.0/"
          vizFiles "tools/netcoreapp2.1"
          dataFiles "tools/netcoreapp2.0/"
-         otherFiles ], [], "_Packaging", "./Build/AltCover.nuspec", "altcover")
+         otherFiles
+         housekeeping
+          ], [], "_Packaging", "./Build/AltCover.nuspec", "altcover")
 
     (List.concat
       [ apiFiles
@@ -2419,7 +2429,9 @@ _Target "Packaging" (fun _ ->
         fakeFiles "lib/netstandard2.0/"
         poshFiles "lib/netstandard2.0/"
         vizFiles "tools/netcoreapp2.1"
-        otherFilesApi ],
+        otherFilesApi
+        housekeeping
+         ],
       [ // these are and should be opt-in, depnding which if any you want
 //        ("Cake.Common", "0.28")
 //        ("Cake.Core", "0.28" )
@@ -2433,7 +2445,9 @@ _Target "Packaging" (fun _ ->
         dataFiles "lib/netcoreapp2.0/"
         [ (packable, Some "", None) ]
         dotnetFiles "lib/netcoreapp2.0/"
-        otherFilesDotnet ], [], "_Packaging.dotnet", "./_Generated/altcover.dotnet.nuspec", "altcover.dotnet")
+        otherFilesDotnet
+        housekeeping
+         ], [], "_Packaging.dotnet", "./_Generated/altcover.dotnet.nuspec", "altcover.dotnet")
 
     (List.concat
       [ globalFiles
@@ -2442,13 +2456,15 @@ _Target "Packaging" (fun _ ->
         dataFiles "tools/netcoreapp2.1/any/"
         [ (packable, Some "", None) ]
         auxFiles
-        otherFilesGlobal ], [],  "_Packaging.global", "./_Generated/altcover.global.nuspec",
+        otherFilesGlobal
+        housekeeping ], [],  "_Packaging.global", "./_Generated/altcover.global.nuspec",
      "altcover.global")
 
     (List.concat
       [ vizFiles "tools/netcoreapp2.1/any"
         [ (packable, Some "", None) ]
-        auxVFiles ], [], "_Packaging.visualizer", "./_Generated/altcover.visualizer.nuspec",
+        auxVFiles
+        housekeepingVis ], [], "_Packaging.visualizer", "./_Generated/altcover.visualizer.nuspec",
      "altcover.visualizer")
 
     let frameworkFake2Files = 
@@ -2461,7 +2477,8 @@ _Target "Packaging" (fun _ ->
       [ fake2Files "lib/netstandard2.0/"
         fox2Files "lib/netstandard2.0/"
         [ (packable, Some "", None) ]
-        frameworkFake2Files ],
+        frameworkFake2Files
+        housekeeping ],
       [ // make these explicit, as this package implies an opt-in
         ("Fake.Core.Environment", "5.18.1")
         ("Fake.DotNet.Cli", "5.18.1")
@@ -2552,8 +2569,9 @@ _Target "PrepareDotNetBuild" (fun _ ->
        | None -> ()
        | Some logo ->
          let tag = dotnetNupkg.Descendants(x "iconUrl") |> Seq.head
-         let text = String.Concat(tag.Nodes()).Replace("Build/AltCover_128.png", logo)
-         tag.Value <- text
+         tag.Value <- tag.Value.Replace("Build/AltCover_128.png", logo)
+         let tag2 = dotnetNupkg.Descendants(x "icon") |> Seq.head
+         tag2.Value <- tag2.Value.Replace("AltCover_128.png", Path.GetFileName logo)
        match tags with
        | None -> ()
        | Some line ->
