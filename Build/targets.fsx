@@ -213,9 +213,8 @@ let coverletTestOptions (o : DotNet.TestOptions) =
                                     Settings = Some "./Build/coverletArgs.runsettings"}
   |> withCLIArgs
 
-let coverletTestOptionsSample4 (o : DotNet.TestOptions) =  
-  { coverletTestOptions o with Framework = Some "netcoreapp2.1"
-                               Settings = Some "./Build/coverletArgs.sample4.runsettings" }
+let coverletTestOptionsSample (o : DotNet.TestOptions) =  
+  { coverletTestOptions o with Settings = Some "./Build/coverletArgs.sample.runsettings" }
 
 let misses = ref 0
 
@@ -2983,8 +2982,8 @@ _Target "OpenCoverForPester" (fun _ ->
   Directory.ensure reportDir
   let unpack = Path.getFullName "_Packaging/Unpack/tools/netcoreapp2.0"
   let x = Path.getFullName "./_Reports/OpenCoverForPester/OpenCoverForPester.xml"
-  let o = Path.getFullName "Sample4/_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1"
-  let i = Path.getFullName "_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1"
+  let o = Path.getFullName "Sample18/_Binaries/Sample18/Debug+AnyCPU/netcoreapp3.0"
+  let i = Path.getFullName "_Binaries/Sample18/Debug+AnyCPU/netcoreapp3.0"
 
   Shell.cleanDir o
 
@@ -2995,7 +2994,7 @@ _Target "OpenCoverForPester" (fun _ ->
            XmlReport = x
            OutputDirectories = [ o ]
            InputDirectories = [ i ]
-           AssemblyFilter = [ "xunit" ]
+           AssemblyFilter = [ "xunit" ; "FSharp" ]
            InPlace = false
            OpenCover = true
            Save = false })
@@ -3006,9 +3005,9 @@ _Target "OpenCoverForPester" (fun _ ->
   |> AltCover.run
 
   printfn "Execute the instrumented tests"
-  let sample4 = Path.getFullName "./Sample4/sample4.core.fsproj"
+  let sample = Path.getFullName "./Sample18/sample18.core.fsproj"
   let runner = Path.getFullName "_Packaging/Unpack/tools/netcoreapp2.0/AltCover.dll"
-  let (dotnetexe, args) = defaultDotNetTestCommandLine (Some "netcoreapp2.1") sample4
+  let (dotnetexe, args) = defaultDotNetTestCommandLine (Some "netcoreapp3.0") sample
 
   // Run
   let collect =
@@ -3024,7 +3023,7 @@ _Target "OpenCoverForPester" (fun _ ->
   |> AltCover.run
 
   // now do it for coverlet
-  let here = Path.GetDirectoryName sample4
+  let here = Path.GetDirectoryName sample
   let tr = here @@ "TestResults"
   Directory.ensure tr
   Directory.ensure tr
@@ -3033,17 +3032,17 @@ _Target "OpenCoverForPester" (fun _ ->
     DotNet.build
          (fun p ->
          { p.WithCommon dotnetOptions with Configuration = DotNet.BuildConfiguration.Debug }
-         |> withMSBuildParams) sample4
-    DotNet.test coverletTestOptionsSample4 sample4
+         |> withMSBuildParams) sample
+    DotNet.test coverletTestOptionsSample sample
   with x -> eprintf "%A" x
   let covxml = (!!(tr @@ "*/coverage.opencover.xml") |> Seq.head) |> Path.getFullName
   let target = reportDir @@ "OpenCoverForPester.coverlet.xml"
   Shell.copyFile target covxml
-  let binary = here @@ "_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1/Sample4.dll"
-  let binaryTarget = reportDir @@ "Sample4.dll"
+  let binary = here @@ "_Binaries/Sample18/Debug+AnyCPU/netcoreapp3.0/Sample18.dll"
+  let binaryTarget = reportDir @@ "Sample18.dll"
   Shell.copyFile binaryTarget binary
-  let binary2 = here @@ "_Binaries/Sample4/Debug+AnyCPU/netcoreapp2.1/Sample4.pdb"
-  let binary2Target = reportDir @@ "Sample4.pdb"
+  let binary2 = here @@ "_Binaries/Sample18/Debug+AnyCPU/netcoreapp3.0/Sample18.pdb"
+  let binary2Target = reportDir @@ "Sample18.pdb"
   Shell.copyFile binary2Target binary2)
 
 _Target "ReleaseXUnitFSharpTypesShowVisualized" (fun _ ->

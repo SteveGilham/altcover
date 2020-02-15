@@ -668,8 +668,18 @@ Describe "Compress-Branching" {
 Describe "Format-FromCoverletOpenCover" {
   It "Outputs a document from a file" {
     $assemblies = @()
-    $assemblies += "./_Reports/OpenCoverForPester/Sample4.dll"
+    $assemblies += "./_Reports/OpenCoverForPester/Sample18.dll"
     $xml = Format-FromCoverletOpenCover -InputFile "./_Reports/OpenCoverForPester/OpenCoverForPester.coverlet.xml" -Assembly $Assemblies -OutputFile "./_Packaging/OpenCoverForPester.coverlet.xml"
     $xml | Should -BeOfType "System.Xml.Linq.XDocument"
+
+    $doc = [xml](Get-Content "./_Packaging/OpenCoverForPester.coverlet.xml")
+    $h1 = $doc.CoverageSession.Modules.Module.hash
+#    [System.Console]::WriteLine($h1)
+
+    $hash = Get-FileHash -Algorithm SHA1 "./_Reports/OpenCoverForPester/Sample18.dll"
+    $h2 = (0..19 | % { $hash.hash.Substring( 2 * $_, 2) }) -join "-"
+#    [System.Console]::WriteLine($h2)
+
+    $h1 | Should -BeExactly $h2
   }
 }
