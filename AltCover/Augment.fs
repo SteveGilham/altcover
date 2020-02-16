@@ -6,6 +6,9 @@ module Augment =
 #else
 module internal Augment =
 #endif
+  type System.Object with
+    member self.IsNotNull with get() =
+      self |> isNull |> not
 
   type Microsoft.FSharp.Core.Option<'T> with
     static member getOrElse (fallback : 'T) (x : option<'T>) = defaultArg x fallback

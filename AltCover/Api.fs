@@ -395,7 +395,10 @@ type PrepareParams =
     finally
       CommandLine.error <- saved
 
-[<ExcludeFromCodeCoverage; NoComparison; NoEquality>]
+[<ExcludeFromCodeCoverage; NoComparison; NoEquality;
+                  SuppressMessage("Gendarme.Rules.Smells",
+                                  "AvoidCodeDuplicatedInSameClassRule",
+                                  Justification = "Idiomatic F#")>]
 type Logging =
   | Primitive of Primitive.Logging
 
@@ -608,6 +611,8 @@ type Params =
   { /// Path to the Altcover executable.
     ToolPath : string
     /// Which version of the tool
+    [<SuppressMessage("Gendarme.Rules.Maintainability",
+      "RemoveDependenceOnObsoleteCodeRule",Justification="Goes at Genbu")>]
     ToolType : ToolType
     /// Define the tool through FAKE 5.18 ToolType -- if set, overrides
     FakeToolType : Fake.DotNet.ToolType option
@@ -616,6 +621,8 @@ type Params =
     /// Command arguments
     Args : ArgType }
 
+  [<SuppressMessage("Gendarme.Rules.Maintainability",
+      "RemoveDependenceOnObsoleteCodeRule",Justification="Goes at Genbu")>]
   static member Create(a : ArgType) =
     { ToolPath = "altcover"
       ToolType = Global

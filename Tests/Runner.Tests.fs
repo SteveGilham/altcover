@@ -2681,7 +2681,7 @@ or
       let baseline = XDocument.Load(stream)
       let excluded = XName.Get "excluded"
       baseline.Descendants()
-      |> Seq.iter (fun x -> if x.Attribute(excluded) |> isNull |> not then
+      |> Seq.iter (fun x -> if x.Attribute(excluded).IsNotNull then
                                x.SetAttributeValue(excluded, "false"))
       let unique =
         Path.Combine
@@ -2839,7 +2839,7 @@ or
       let baseline = XDocument.Load(stream)
       let excluded = XName.Get "excluded"
       baseline.Descendants()
-      |> Seq.iter (fun x -> if x.Attribute(excluded) |> isNull |> not then
+      |> Seq.iter (fun x -> if x.Attribute(excluded) .IsNotNull then
                                x.SetAttributeValue(excluded, "false"))
       let unique =
         Path.Combine

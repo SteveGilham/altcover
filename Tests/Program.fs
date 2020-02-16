@@ -1,6 +1,7 @@
 namespace AltCover.Expecto.Tests
 
 #if NETCOREAPP3_0
+open AltCover.Augment
 open Expecto
 open Mono.Cecil
 open Mono.Cecil.Cil
@@ -464,7 +465,7 @@ module TestMain =
 
     let testMethods = def.MainModule.GetTypes()
                       |> Seq.collect (fun t -> t.Methods)
-                      |> Seq.filter (fun m -> m.CustomAttributes |> isNull |> not)
+                      |> Seq.filter (fun m -> m.CustomAttributes.IsNotNull)
                       |> Seq.filter (fun m -> m.CustomAttributes |> Seq.exists (fun a -> a.AttributeType.Name = "TestAttribute"))
                       |> Seq.map (fun m -> m.DeclaringType.FullName + "::" + m.Name)
 

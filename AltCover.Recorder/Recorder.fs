@@ -6,6 +6,7 @@ namespace AltCover.Recorder
 open System
 open System.Collections.Generic
 open System.Diagnostics
+open System.Diagnostics.CodeAnalysis
 open System.IO
 open System.Reflection
 
@@ -86,6 +87,8 @@ module Instance =
   /// <summary>
   /// Gets or sets the current test method
   /// </summary>
+  [<SuppressMessage("Gendarme.Rules.Naming",
+    "UseCorrectSuffixRule", Justification="It's the program call stack")>]
   type private CallStack =
     [<ThreadStatic; DefaultValue>]
     static val mutable private instance : Option<CallStack>

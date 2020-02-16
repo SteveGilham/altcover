@@ -302,7 +302,7 @@ module internal Main =
                 CommandLine.resources.GetString "MultiplesNotAllowed", "--showstatic")
              :: CommandLine.error))
       (CommandLine.ddFlag "showGenerated" Visitor.showGenerated)
-      ("?|help|h", (fun x -> CommandLine.help <- not (isNull x)))
+      ("?|help|h", (fun x -> CommandLine.help <- x.IsNotNull))
 
       ("<>",
        (fun x ->

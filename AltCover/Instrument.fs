@@ -57,10 +57,8 @@ module internal Instrument =
   let version = typeof<AltCover.Recorder.Tracer>.Assembly.GetName().Version.ToString()
 
   let monoRuntime =
-    "Mono.Runtime"
-    |> Type.GetType
-    |> isNull
-    |> not
+    ("Mono.Runtime"
+    |> Type.GetType).IsNotNull
 
   let dependencies =
     (resources.GetString "frameworkDependencies").Replace("version", version)
@@ -270,9 +268,7 @@ module internal Instrument =
   let internal HookResolveHandler = new AssemblyResolveEventHandler(ResolveFromNugetCache)
 
   let internal HookResolver(resolver : IAssemblyResolver) =
-    if resolver
-       |> isNull
-       |> not
+    if resolver.IsNotNull
     then
       let hook = resolver.GetType().GetMethod("add_ResolveFailure")
       hook.Invoke(resolver, [| HookResolveHandler :> obj |]) |> ignore
@@ -494,7 +490,7 @@ module internal Instrument =
 
   let private VisitModule (state : InstrumentContext) (m : ModuleDefinition) included =
     let restate =
-      match included <> Inspect.Ignore with
+      match included <> Inspections.Ignore with
       | true ->
           let recordingMethod =
             match state.RecordingMethod with
@@ -539,9 +535,7 @@ module internal Instrument =
     state
 
   let internal VisitBranchPoint (state : InstrumentContext) branch =
-    if branch.Included && state.MethodWorker
-                          |> isNull
-                          |> not
+    if branch.Included && state.MethodWorker.IsNotNull
     then
       let point = (branch.Uid ||| Base.Counter.BranchFlag)
 
@@ -725,7 +719,7 @@ module internal Instrument =
     | Start _ -> VisitStart state
     | Assembly(assembly, included, _) ->
         UpdateStrongReferences assembly state.InstrumentedAssemblies |> ignore
-        if included <> Inspect.Ignore then
+        if included <> Inspections.Ignore then
           assembly.MainModule.AssemblyReferences.Add(state.RecordingAssembly.Name)
         state
     | Module(m, included) -> VisitModule state m included

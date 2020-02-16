@@ -1017,9 +1017,7 @@ module Gui =
 
   let internal ScrollToRow (h : Handler) _ =
     let buff = h.codeView.Buffer
-    if buff
-       |> isNull
-       |> not
+    if buff.IsNotNull
        && h.activeRow > 0
     then
       let iter = buff.GetIterAtLine(h.activeRow - 1)

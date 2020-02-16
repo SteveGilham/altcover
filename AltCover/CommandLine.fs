@@ -45,7 +45,7 @@ module internal Process =
 open Process
 #endif
 
-type internal StringSink = delegate of string -> unit
+type internal StringSink = Action<String> // delegate of string -> unit
 
 [<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage; NoComparison>]
 type internal UsageInfo =

@@ -4,6 +4,7 @@ open System
 open System.Collections.Generic
 open System.IO
 
+open Augment
 open Mono.Cecil
 open Mono.Cecil.Cil
 open Mono.Cecil.Mdb
@@ -39,9 +40,7 @@ module internal ProgramDatabase =
     |> Option.filter (fun s -> s.Length > 0)
     |> Option.filter (fun s ->
          File.Exists s || (s = (assembly.Name.Name + ".pdb") && (assembly
-                                                                 |> GetEmbeddedPortablePdbEntry
-                                                                 |> isNull
-                                                                 |> not)))
+                                                                 |> GetEmbeddedPortablePdbEntry).IsNotNull))
 
   let GetSymbolsByFolder fileName folderName =
     let name = Path.Combine(folderName, fileName)

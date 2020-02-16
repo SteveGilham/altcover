@@ -2114,10 +2114,8 @@ module AltCoverTests3 =
     let PreparingNewPlaceShouldCopyEverything() =
       Main.init()
       let monoRuntime =
-        "Mono.Runtime"
-        |> Type.GetType
-        |> isNull
-        |> not
+        ("Mono.Runtime"
+         |> Type.GetType).IsNotNull
       // because mono symbol-writing is broken, work around trying to
       // examine the instrumented files in a self-test run.
       let here = if monoRuntime
