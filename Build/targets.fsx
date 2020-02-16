@@ -499,19 +499,13 @@ _Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standa
                                                            Properties = [("AltCoverGendarme", "true")] }
                                         Framework = Some rt }) proj)
 
-  [ ("./Build/rules.xml",
+  [ ("./Build/common-rules.xml",
      [ "_Binaries/AltCover/Debug+AnyCPU/netcoreapp2.0/publish/AltCover.dll"
-       "_Binaries/AltCover.Shadow/Debug+AnyCPU/netstandard2.0/publish/AltCover.Shadow.dll" ])
-
-    ("./Build/rules-posh.xml",
-     [ "_Binaries/AltCover.PowerShell/Debug+AnyCPU/netstandard2.0/publish/AltCover.PowerShell.dll"
-       "_Binaries/AltCover.FSApi/Debug+AnyCPU/netstandard2.0/publish/AltCover.FSApi.dll" ])
-
-    ("./Build/rules-gtk.xml",
-     [ "_Binaries/AltCover.Visualizer/Debug+AnyCPU/netcoreapp2.1/publish/AltCover.Visualizer.dll" ])
-
-    ("./Build/rules-fake.xml",
-     [ "_Binaries/AltCover.Fake.DotNet.Testing.AltCover/Debug+AnyCPU/netstandard2.0/publish/AltCover.Fake.DotNet.Testing.AltCover.dll" ]) ]
+       "_Binaries/AltCover.Shadow/Debug+AnyCPU/netstandard2.0/publish/AltCover.Shadow.dll" 
+       "_Binaries/AltCover.PowerShell/Debug+AnyCPU/netstandard2.0/publish/AltCover.PowerShell.dll"
+       "_Binaries/AltCover.FSApi/Debug+AnyCPU/netstandard2.0/publish/AltCover.FSApi.dll" 
+       "_Binaries/AltCover.Visualizer/Debug+AnyCPU/netcoreapp2.1/publish/AltCover.Visualizer.dll" 
+       "_Binaries/AltCover.Fake.DotNet.Testing.AltCover/Debug+AnyCPU/netstandard2.0/publish/AltCover.Fake.DotNet.Testing.AltCover.dll" ]) ]
   |> Seq.iter (fun (ruleset, files) ->
        Gendarme.run
          { Gendarme.Params.Create() with
