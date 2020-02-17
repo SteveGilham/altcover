@@ -147,7 +147,7 @@ module Instance =
   let InitialiseTrace(t : Tracer) =
     WithMutex(fun _ ->
       trace <- t.OnStart()
-      IsRunner <- IsRunner || trace.IsConnected())
+      IsRunner <- IsRunner || trace.IsConnected)
 
   let internal Watcher = new FileSystemWatcher()
   let mutable internal Recording = true
@@ -260,7 +260,7 @@ module Instance =
   let internal VisitImpl moduleId hitPointId context =
     if (Sample = Sampling.All || TakeSample Sample moduleId hitPointId) then
       let adder =
-        if Defer || Supervision || (trace.IsConnected() |> not)
+        if Defer || Supervision || (trace.IsConnected |> not)
         then AddVisit
         else TraceVisit
       adder moduleId hitPointId context

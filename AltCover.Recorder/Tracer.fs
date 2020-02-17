@@ -32,7 +32,7 @@ type Tracer =
       Stream = null
       Formatter = null }
 
-  member this.IsConnected() =
+  member this.IsConnected with get() =
     match this.Stream with
     | null -> false
     | _ -> this.Runner
@@ -105,7 +105,7 @@ type Tracer =
     { running with Definitive = true }
 
   member this.OnConnected f g =
-    if this.IsConnected() then f() else g()
+    if this.IsConnected then f() else g()
 
   member internal this.OnFinish visits =
     this.CatchUp visits
