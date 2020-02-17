@@ -155,6 +155,11 @@ module Persistence =
     doc.Add(XElement(XName.Get "AltCover.Visualizer"))
     doc
 
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+      "Gendarme.Rules.Exceptions",
+      "DoNotSwallowErrorsCatchingNonSpecificExceptionsRule",
+      Justification = "need to exhaustively list the espected ones"
+  )>]
   let private EnsureFile() =
     let profileDir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)
     let dir = Directory.CreateDirectory(Path.Combine(profileDir, ".altcover"))

@@ -147,7 +147,9 @@ type Collect() =
   [<Output>]
   [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1822",
                                                     Justification =
-                                                      "Instance property needed")>]
+                                                      "Instance property needed");
+    System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Correctness",
+                                                      "MethodCanBeMadeStaticRule")>]
   member self.Summary = Api.Summary()
 
   member self.Message x = base.Log.LogMessage(MessageImportance.High, x)

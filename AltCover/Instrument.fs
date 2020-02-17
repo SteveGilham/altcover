@@ -341,6 +341,9 @@ module internal Instrument =
     finally
       Directory.SetCurrentDirectory(here)
 
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Maintainability",
+     "VariableNamesShouldNotMatchFieldNamesRule",
+     Justification = "Could be refactored; no obvious IL trace in the .ctor which triggers this" )>]
   type internal SubstituteInstruction(oldValue : Instruction, newValue : Instruction) =
     /// <summary>
     /// Adjust the IL for exception handling
