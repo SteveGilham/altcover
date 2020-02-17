@@ -495,7 +495,7 @@ _Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standa
                                         OutputPath = Some pub
                                         Configuration = DotNet.BuildConfiguration.Debug
                                         NoBuild = true
-                                        MSBuildParams = { MSBuild.CliArguments.Create() with 
+                                        MSBuildParams = { MSBuild.CliArguments.Create() with                                                            
                                                            Properties = [("AltCoverGendarme", "true")] }
                                         Framework = Some rt }) proj)
 
@@ -526,12 +526,12 @@ _Target "FxCop" (fun _ ->
   let rules =
     [ "-Microsoft.Design#CA1004"
       "-Microsoft.Design#CA1006"
-      "-Microsoft.Design#CA1011" // maybe sometimes
+      "-Microsoft.Design#CA1011" // reconsider @ Genbu; maybe sometimes
       "-Microsoft.Design#CA1062" // null checks,  In F#!
       "-Microsoft.Maintainability#CA1506"
-      "-Microsoft.Naming#CA1704"
-      "-Microsoft.Naming#CA1707"
-      "-Microsoft.Naming#CA1709"
+      "-Microsoft.Naming#CA1704" // reconsider @ Genbu
+      "-Microsoft.Naming#CA1707" // reconsider @ Genbu
+      "-Microsoft.Naming#CA1709" // reconsider @ Genbu
       "-Microsoft.Naming#CA1715"
       "-Microsoft.Usage#CA2208" ]
 
@@ -570,30 +570,30 @@ _Target "FxCop" (fun _ ->
     ([ "_Binaries/AltCover.PowerShell/Debug+AnyCPU/net47/AltCover.PowerShell.dll" ], [],
      [ "-Microsoft.Design#CA1059"
        "-Microsoft.Usage#CA2235"
-       "-Microsoft.Performance#CA1819"
+       "-Microsoft.Performance#CA1819" // reconsider @ genbu
        "-Microsoft.Design#CA1020"
        "-Microsoft.Design#CA1004"
        "-Microsoft.Design#CA1006"
-       "-Microsoft.Design#CA1011"
+       "-Microsoft.Design#CA1011" // reconsider @ Genbu
        "-Microsoft.Design#CA1062"
        "-Microsoft.Maintainability#CA1506"
-       "-Microsoft.Naming#CA1704"
-       "-Microsoft.Naming#CA1707"
-       "-Microsoft.Naming#CA1709"
+       "-Microsoft.Naming#CA1704" // reconsider @ Genbu
+       "-Microsoft.Naming#CA1707" // reconsider @ Genbu
+       "-Microsoft.Naming#CA1709" // reconsider @ Genbu
        "-Microsoft.Naming#CA1715" ])
     ([ "_Binaries/AltCover.FSApi/Debug+AnyCPU/net45/AltCover.FSApi.dll" ], [],
      [ "-Microsoft.Usage#CA2235"
-       "-Microsoft.Performance#CA1819"
+       "-Microsoft.Performance#CA1819" // reconsider @ genbu
        "-Microsoft.Design#CA1020"
        "-Microsoft.Design#CA1034"
        "-Microsoft.Design#CA1004"
        "-Microsoft.Design#CA1006"
-       "-Microsoft.Design#CA1011"
+       "-Microsoft.Design#CA1011" // reconsider @ Genbu
        "-Microsoft.Design#CA1062"
        "-Microsoft.Maintainability#CA1506"
-       "-Microsoft.Naming#CA1704"
-       "-Microsoft.Naming#CA1707"
-       "-Microsoft.Naming#CA1709"
+       "-Microsoft.Naming#CA1704" // reconsider @ Genbu
+       "-Microsoft.Naming#CA1707" // reconsider @ Genbu
+       "-Microsoft.Naming#CA1709" // reconsider @ Genbu
        "-Microsoft.Naming#CA1715" ])
     ([ "_Binaries/AltCover.Visualizer/Debug+AnyCPU/net45/AltCover.Visualizer.exe" ],
      [ "AltCover.Augment"
@@ -622,20 +622,38 @@ _Target "FxCop" (fun _ ->
        "AltCover.Internals.DotNet"
        "AltCover_Fake.DotNet.DotNet" ],
      [ "-Microsoft.Design#CA1006"
-       "-Microsoft.Design#CA1011"
+       "-Microsoft.Design#CA1011" // reconsider @ Genbu
        "-Microsoft.Design#CA1020"
        "-Microsoft.Design#CA1062"
-       "-Microsoft.Naming#CA1704"
-       "-Microsoft.Naming#CA1707"
-       "-Microsoft.Naming#CA1709"
+       "-Microsoft.Naming#CA1704" // reconsider @ Genbu
+       "-Microsoft.Naming#CA1707" // reconsider @ Genbu
+       "-Microsoft.Naming#CA1709" // reconsider @ Genbu
        "-Microsoft.Naming#CA1724"
        "-Microsoft.Usage#CA2208" ]) 
-    ([ "_Binaries/AltCover.Cake/Debug+AnyCPU/net46/AltCover.Cake.dll"
-       "_Binaries/AltCover.CSapi/Debug+AnyCPU/net45/AltCover.CSapi.dll"
+    ([ "_Binaries/AltCover.CSapi/Debug+AnyCPU/net45/AltCover.CSapi.dll"
        //"_Binaries/altcover.netcoreapp/Debug+AnyCPU/netcoreapp2.0/altcover.netcoreapp.dll"
        ],
      [],
-     []) ]
+     [
+       "-Microsoft.Design#CA1011" // reconsider @ Genbu
+       "-Microsoft.Design#CA1020"
+       "-Microsoft.Naming#CA1704" // reconsider @ Genbu
+       "-Microsoft.Naming#CA1709" // reconsider @ Genbu
+       "-Microsoft.Performance#CA1819" // reconsider @ genbu
+       "-Microsoft.Naming#CA1716"  // reconsider @ genbu
+     ])
+    ([ "_Binaries/AltCover.Cake/Debug+AnyCPU/net46/AltCover.Cake.dll"
+       ],
+     [],
+     [
+       "-Microsoft.Design#CA1011" // reconsider @ Genbu
+       "-Microsoft.Design#CA1020"
+       "-Microsoft.Design#CA1026" // can we suppress this one??
+       "-Microsoft.Design#CA2210" // can't strongname this as Cake isn't strongnamed 
+       "-Microsoft.Naming#CA1704" // reconsider @ Genbu
+       "-Microsoft.Naming#CA1709" // reconsider @ Genbu
+       "-Microsoft.Performance#CA1819" // reconsider @ genbu
+     ]) ]
   |> Seq.iter (fun (files, types, ruleset) ->
        files
        |> FxCop.run
@@ -649,70 +667,7 @@ _Target "FxCop" (fun _ ->
                 Rules = ruleset
                 FailOnError = FxCop.ErrorLevel.Warning
                 IgnoreGeneratedCode = true })
-
-(* TODO -- fix, suppress or defer these 62 messages
-[Location not stored in Pdb] : warning  : CA1020 : Microsoft.Design : Consider merging the types defined in 'AltCover' with another namespace.
-[Location not stored in Pdb] : warning  : CA1020 : Microsoft.Design : Consider merging the types defined in 'AltCover.Parameters.Primitive' with another namespace.
-[Location not stored in Pdb] : warning  : CA2210 : Microsoft.Design : Sign 'AltCover.Cake.dll' with a strong name key.  [Location not stored in Pdb] : warning  : CA1014 : Microsoft.Design : Mark 'AltCover.Cake.dll' with CLSCompliant(true) because it exposes externally visible types.
-[Location not stored in Pdb] : warning  : CA1704 : Microsoft.Naming : Correct the spelling of 'Api' in type name 'Api'. [Location not stored in Pdb] : warning  : CA1026 : Microsoft.Design : Replace method 'Api.Collect(this ICakeContext, ICollectArgs, ILogArgs)' with an overload that supplies all default arguments.
-[Location not stored in Pdb] : warning  : CA1704 : Microsoft.Naming : In method 'Api.Collect(this ICakeContext, ICollectArgs, ILogArgs)', consider providing a more meaningful name than parameter name 'c'.
-[Location not stored in Pdb] : warning  : CA1704 : Microsoft.Naming : In method 'Api.Collect(this ICakeContext, ICollectArgs, ILogArgs)', consider providing a more meaningful name than parameter name 'l'.
-[Location not stored in Pdb] : warning  : CA1704 : Microsoft.Naming : Correct the spelling of 'Ipmo' in member name 'Api.Ipmo(this ICakeContext)' or remove it entirely if it represents any sort of Hungarian notation.
-[Location not stored in Pdb] : warning  : CA1801 : Microsoft.Usage : Parameter 'context' of 'Api.Ipmo(this ICakeContext)' is never used. Remove the parameter or use it in the method body.
-[Location not stored in Pdb] : warning  : CA1026 : Microsoft.Design : Replace method 'Api.Prepare(this ICakeContext, IPrepareArgs, ILogArgs)' with an overload that supplies all default arguments.
-[Location not stored in Pdb] : warning  : CA1704 : Microsoft.Naming : In method 'Api.Prepare(this ICakeContext, IPrepareArgs, ILogArgs)', consider providing a more meaningful name than parameter name 'l'.
-[Location not stored in Pdb] : warning  : CA1704 : Microsoft.Naming : In method 'Api.Prepare(this ICakeContext, IPrepareArgs, ILogArgs)', consider providing a more meaningful name than parameter name 'p'.
-[Location not stored in Pdb] : warning  : CA1801 : Microsoft.Usage : Parameter 'context' of 'Api.Version(this ICakeContext)' is never used. Remove the parameter or use it in the method body.
-[Location not stored in Pdb] : warning  : CA1011 : Microsoft.Design : Consider changing the type of parameter 'project' in 'DotNet.DotNetCoreTest(this ICakeContext, FilePath, DotNetCoreTestSettings, AltCoverSettings)' from 'FilePath' to its base type 'Path'. This method appears to only require base class members in its implementation. Suppress this violation if there is a compelling reason to require the more derived type in the method signature.
-[Location not stored in Pdb] : warning  : CA1704 : Microsoft.Naming : In method 'DotNet.DotNetCoreTest(this ICakeContext, FilePath, DotNetCoreTestSettings, AltCoverSettings)', correct the spelling of 'altcover' in parameter name 'altcover' or remove it entirely if it represents any sort of Hungarian notation.
-C:\Users\steve\Documents\GitHub\altcover\AltCover.Cake\DotNet.cs(64,1) : warning  : CA1062 : Microsoft.Design : In externally visible method 'DotNet.DotNetCoreTest(this ICakeContext, FilePath, DotNetCoreTestSettings, AltCoverSettings)', validate parameter 'project' before using it.
-C:\Users\steve\Documents\GitHub\altcover\AltCover.Cake\DotNet.cs(63,1) : warning  : CA1062 : Microsoft.Design : In externally visible method 'DotNet.DotNetCoreTest(this ICakeContext, FilePath, DotNetCoreTestSettings, AltCoverSettings)', validate parameter 'settings' before using it.
-C:\Users\steve\Documents\GitHub\altcover\AltCover.Cake\DotNet.cs(63,1) : warning  : CA1062 : Microsoft.Design : In externally visible method 'DotNet.DotNetCoreTest(this ICakeContext, FilePath, DotNetCoreTestSettings, AltCoverSettings)', validate parameter 'altcover' before using it.
-[Location not stored in Pdb] : warning  : CA1704 : Microsoft.Naming : Correct the spelling of 'Api' in assembly name 'AltCover.CSApi.dll'.
-[Location not stored in Pdb] : warning  : CA1014 : Microsoft.Design : Mark 'AltCover.CSApi.dll' with CLSCompliant(true) because it exposes externally visible types.
-[Location not stored in Pdb] : warning  : CA1704 : Microsoft.Naming : Correct the spelling of 'Api' in type name 'CSApi'.
-[Location not stored in Pdb] : warning  : CA1704 : Microsoft.Naming : In method 'CSApi.Collect(ICollectArgs, ILogArgs)', consider providing a more meaningful name than parameter name 'c'.
-[Location not stored in Pdb] : warning  : CA1704 : Microsoft.Naming : In method 'CSApi.Collect(ICollectArgs, ILogArgs)', consider providing a more meaningful name than parameter name 'l'.
-C:\Users\steve\Documents\GitHub\altcover\AltCover.CSApi\Definitions.cs(319,1) : warning  : CA1062 : Microsoft.Design : In externally visible method 'CSApi.Collect(ICollectArgs, ILogArgs)', validate parameter 'c' before using it.
-C:\Users\steve\Documents\GitHub\altcover\AltCover.CSApi\Definitions.cs(319,1) : warning  : CA1062 : Microsoft.Design : In externally visible method 'CSApi.Collect(ICollectArgs, ILogArgs)', validate parameter 'l' before using it.
-[Location not stored in Pdb] : warning  : CA1704 : Microsoft.Naming : Correct the spelling of 'Ipmo' in member name 'CSApi.Ipmo()' or remove it entirely if it represents any sort of Hungarian notation.
-[Location not stored in Pdb] : warning  : CA1704 : Microsoft.Naming : In method 'CSApi.Prepare(IPrepareArgs, ILogArgs)', consider providing a more meaningful name than parameter name 'l'.
-[Location not stored in Pdb] : warning  : CA1704 : Microsoft.Naming : In method 'CSApi.Prepare(IPrepareArgs, ILogArgs)', consider providing a more meaningful name than parameter name 'p'.
-C:\Users\steve\Documents\GitHub\altcover\AltCover.CSApi\Definitions.cs(314,1) : warning  : CA1062 : Microsoft.Design : In externally visible method 'CSApi.Prepare(IPrepareArgs, ILogArgs)', validate parameter 'p' before using it.
-C:\Users\steve\Documents\GitHub\altcover\AltCover.CSApi\Definitions.cs(314,1) : warning  : CA1062 : Microsoft.Design : In externally visible method 'CSApi.Prepare(IPrepareArgs, ILogArgs)', validate parameter 'l' before using it.
-[Location not stored in Pdb] : warning  : CA1704 : Microsoft.Naming : In method 'CSApi.ToTestArgumentList(IPrepareArgs, ICollectArgs, ICLIArg)', consider providing a more meaningful name than parameter name 'c'.
-[Location not stored in Pdb] : warning  : CA1704 : Microsoft.Naming : In method 'CSApi.ToTestArgumentList(IPrepareArgs, ICollectArgs, ICLIArg)', consider providing a more meaningful name than parameter name 'p'.
-C:\Users\steve\Documents\GitHub\altcover\AltCover.CSApi\Definitions.cs(363,1) : warning  : CA1062 : Microsoft.Design : In externally visible method 'CSApi.ToTestArgumentList(IPrepareArgs, ICollectArgs, ICLIArg)', validate parameter 'p' before using it.
-C:\Users\steve\Documents\GitHub\altcover\AltCover.CSApi\Definitions.cs(363,1) : warning  : CA1062 : Microsoft.Design : In externally visible method 'CSApi.ToTestArgumentList(IPrepareArgs, ICollectArgs, ICLIArg)', validate parameter 'c' before using it.
-[Location not stored in Pdb] : warning  : CA1704 : Microsoft.Naming : In method 'CSApi.ToTestArguments(IPrepareArgs, ICollectArgs, ICLIArg)', consider providing a more meaningful name than parameter name 'c'.
-[Location not stored in Pdb] : warning  : CA1704 : Microsoft.Naming : In method 'CSApi.ToTestArguments(IPrepareArgs, ICollectArgs, ICLIArg)', consider providing a more meaningful name than parameter name 'p'.
-C:\Users\steve\Documents\GitHub\altcover\AltCover.CSApi\Definitions.cs(354,1) : warning  : CA1062 : Microsoft.Design : In externally visible method 'CSApi.ToTestArguments(IPrepareArgs, ICollectArgs, ICLIArg)', validate parameter 'p' before using it.
-C:\Users\steve\Documents\GitHub\altcover\AltCover.CSApi\Definitions.cs(354,1) : warning  : CA1062 : Microsoft.Design : In externally visible method 'CSApi.ToTestArguments(IPrepareArgs, ICollectArgs, ICLIArg)', validate parameter 'c' before using it.
-[Location not stored in Pdb] : warning  : CA1709 : Microsoft.Naming : Correct the casing of 'CLI' in type name 'ICLIArg' by changing it to 'Cli'.
-[Location not stored in Pdb] : warning  : CA1709 : Microsoft.Naming : Correct the casing of 'CLI' in type name 'ICLIArg2' by changing it to 'Cli'.
-[Location not stored in Pdb] : warning  : CA1709 : Microsoft.Naming : Correct the casing of 'CLI' in type name 'ICLIArg3' by changing it to 'Cli'.
-[Location not stored in Pdb] : warning  : CA1704 : Microsoft.Naming : Correct the spelling of 'Cobertura' in member name 'ICollectArgs.Cobertura' or remove it entirely if it represents any sort of Hungarian notation.
-[Location not stored in Pdb] : warning  : CA1819 : Microsoft.Performance : Change 'ICollectArgs.CommandLine' to return a collection or make it a method.
-[Location not stored in Pdb] : warning  : CA1704 : Microsoft.Naming : Correct the spelling of 'Lcov' in member name 'ICollectArgs.LcovReport' or remove it entirely if it represents any sort of Hungarian notation.
-[Location not stored in Pdb] : warning  : CA1716 : Microsoft.Naming : Rename virtual/interface member 'ILogArgs.Error' so that it no longer conflicts with the reserved language keyword 'Error'. Using a reserved keyword as the name of a virtual/interface member makes it harder for consumers in other languages to override/implement the member.
-[Location not stored in Pdb] : warning  : CA1819 : Microsoft.Performance : Change 'IPrepareArgs.AssemblyExcludeFilter' to return a collection or make it a method.
-[Location not stored in Pdb] : warning  : CA1819 : Microsoft.Performance : Change 'IPrepareArgs.AssemblyFilter' to return a collection or make it a method.
-[Location not stored in Pdb] : warning  : CA1819 : Microsoft.Performance : Change 'IPrepareArgs.AttributeFilter' to return a collection or make it a method.
-[Location not stored in Pdb] : warning  : CA1819 : Microsoft.Performance : Change 'IPrepareArgs.CallContext' to return a collection or make it a method.
-[Location not stored in Pdb] : warning  : CA1819 : Microsoft.Performance : Change 'IPrepareArgs.CommandLine' to return a collection or make it a method.
-[Location not stored in Pdb] : warning  : CA1819 : Microsoft.Performance : Change 'IPrepareArgs.Dependencies' to return a collection or make it a method.
-[Location not stored in Pdb] : warning  : CA1819 : Microsoft.Performance : Change 'IPrepareArgs.FileFilter' to return a collection or make it a method.
-[Location not stored in Pdb] : warning  : CA1819 : Microsoft.Performance : Change 'IPrepareArgs.InputDirectories' to return a collection or make it a method.
-[Location not stored in Pdb] : warning  : CA1819 : Microsoft.Performance : Change 'IPrepareArgs.Keys' to return a collection or make it a method.
-[Location not stored in Pdb] : warning  : CA1819 : Microsoft.Performance : Change 'IPrepareArgs.MethodFilter' to return a collection or make it a method.
-[Location not stored in Pdb] : warning  : CA1819 : Microsoft.Performance : Change 'IPrepareArgs.OutputDirectories' to return a collection or make it a method.
-[Location not stored in Pdb] : warning  : CA1819 : Microsoft.Performance : Change 'IPrepareArgs.PathFilter' to return a collection or make it a method.
-[Location not stored in Pdb] : warning  : CA1716 : Microsoft.Naming : Rename virtual/interface member 'IPrepareArgs.Single' so that it no longer conflicts with the reserved language keyword 'Single'. Using a reserved keyword as the name of a virtual/interface member makes it harder for consumers in other languages to override/implement the member.
-[Location not stored in Pdb] : warning  : CA1819 : Microsoft.Performance : Change 'IPrepareArgs.SymbolDirectories' to return a collection or make it a method.
-[Location not stored in Pdb] : warning  : CA1819 : Microsoft.Performance : Change 'IPrepareArgs.TypeFilter' to return a collection or make it a method.
-[Location not stored in Pdb] : warning  : CA1709 : Microsoft.Naming : Correct the casing of 'CLI' in type name 'CLIArgs' by changing it to 'Cli'.
-*)            
-
+                
   [ "_Binaries/AltCover.PowerShell/Debug+AnyCPU/net47/AltCover.PowerShell.dll" ]
   |> FxCop.run
        { FxCop.Params.Create() with

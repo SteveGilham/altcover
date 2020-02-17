@@ -309,14 +309,18 @@ namespace AltCover
 
   public static class CSApi
   {
-    public static int Prepare(IPrepareArgs p, ILogArgs l)
+    public static int Prepare(IPrepareArgs prepareArgs, ILogArgs log)
     {
-      return Api.Prepare(p.ToParameters(), l.ToParameters());
+      if (prepareArgs == null) throw new ArgumentNullException(nameof(prepareArgs));
+      if (log == null) throw new ArgumentNullException(nameof(log));
+      return Api.Prepare(prepareArgs.ToParameters(), log.ToParameters());
     }
 
-    public static int Collect(ICollectArgs c, ILogArgs l)
+    public static int Collect(ICollectArgs collectArgs, ILogArgs log)
     {
-      return Api.Collect(c.ToParameters(), l.ToParameters());
+      if (collectArgs == null) throw new ArgumentNullException(nameof(collectArgs));
+      if (log == null) throw new ArgumentNullException(nameof(log));
+      return Api.Collect(collectArgs.ToParameters(), log.ToParameters());
     }
 
     public static string Ipmo()
@@ -347,22 +351,26 @@ namespace AltCover
       }
     }
 
-    public static string ToTestArguments(IPrepareArgs p,
-                                         ICollectArgs c,
-                                         ICLIArg force)
+    public static string ToTestArguments(IPrepareArgs prepareArgs,
+                                         ICollectArgs collectArgs,
+                                         ICLIArg control)
     {
-      return DotNet.ToTestArguments(p.ToParameters(),
-                                    c.ToParameters(),
-                                    ToCLIArgs(force));
+      if (prepareArgs == null) throw new ArgumentNullException(nameof(prepareArgs));
+      if (collectArgs == null) throw new ArgumentNullException(nameof(collectArgs));
+      return DotNet.ToTestArguments(prepareArgs.ToParameters(),
+                                    collectArgs.ToParameters(),
+                                    ToCLIArgs(control));
     }
 
-    public static string[] ToTestArgumentList(IPrepareArgs p,
-                                              ICollectArgs c,
-                                              ICLIArg force)
+    public static string[] ToTestArgumentList(IPrepareArgs prepareArgs,
+                                              ICollectArgs collectArgs,
+                                              ICLIArg control)
     {
-      return DotNet.ToTestArgumentList(p.ToParameters(),
-                                       c.ToParameters(),
-                                       ToCLIArgs(force)).
+      if (prepareArgs == null) throw new ArgumentNullException(nameof(prepareArgs));
+      if (collectArgs == null) throw new ArgumentNullException(nameof(collectArgs));
+      return DotNet.ToTestArgumentList(prepareArgs.ToParameters(),
+                                       collectArgs.ToParameters(),
+                                       ToCLIArgs(control)).
       ToArray();
     }
   }
