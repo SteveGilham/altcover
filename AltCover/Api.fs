@@ -656,12 +656,9 @@ let internal createArgs parameters =
   | ImportModule -> [ "ipmo" ]
   | GetVersion -> [ "version" ]
 
-let internal createProcess parameters args =
-  let fakeTool (tool : Fake.DotNet.ToolType) =
-    CreateProcess.fromCommand (RawCommand(parameters.ToolPath, args |> Arguments.OfArgs))
-    |> CreateProcess.withToolType (tool.WithDefaultToolCommandName "altcover")
-
-  let altCoverTool() =
+[<SuppressMessage("Gendarme.Rules.Maintainability",
+      "RemoveDependenceOnObsoleteCodeRule",Justification="Goes at Genbu")>]
+let private altCoverTool parameters args =
     let baseline() = CreateProcess.fromRawCommand parameters.ToolPath args
     match parameters.ToolType with
     | Framework -> baseline() |> CreateProcess.withFramework
@@ -679,10 +676,15 @@ let internal createProcess parameters args =
           | Some p -> p
         CreateProcess.fromRawCommand path ("--debug" :: parameters.ToolPath :: args)
 
+let internal createProcess parameters args =
+  let fakeTool (tool : Fake.DotNet.ToolType) =
+    CreateProcess.fromCommand (RawCommand(parameters.ToolPath, args |> Arguments.OfArgs))
+    |> CreateProcess.withToolType (tool.WithDefaultToolCommandName "altcover")
+
   let doTool() =
     match parameters.FakeToolType with
     | Some tool -> fakeTool tool
-    | None -> altCoverTool()
+    | None -> altCoverTool parameters args
 
   let withWorkingDirectory c =
     c

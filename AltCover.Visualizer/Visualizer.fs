@@ -26,6 +26,7 @@ open Microsoft.Win32
 
 open Mono.Options
 
+[<Sealed>]
 type internal Handler() =
   class
 #if NETCOREAPP2_1

@@ -88,7 +88,8 @@ module Instance =
   /// Gets or sets the current test method
   /// </summary>
   [<SuppressMessage("Gendarme.Rules.Naming",
-    "UseCorrectSuffixRule", Justification="It's the program call stack")>]
+    "UseCorrectSuffixRule", Justification="It's the program call stack");
+    Sealed>]
   type private CallStack =
     [<ThreadStatic; DefaultValue>]
     static val mutable private instance : Option<CallStack>
