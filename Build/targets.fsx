@@ -489,6 +489,8 @@ _Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standa
    ("_Binaries/AltCover.FSApi/Debug+AnyCPU/netstandard2.0/publish", "netstandard2.0", "./AltCover.FSApi/altcover.fsapi.core.fsproj")
    ("_Binaries/AltCover.Visualizer/Debug+AnyCPU/netcoreapp2.1/publish", "netcoreapp2.1", "./AltCover.Visualizer/altcover.visualizer.core.fsproj")
    ("_Binaries/AltCover.Fake.DotNet.Testing.AltCover/Debug+AnyCPU/netstandard2.0/publish", "netstandard2.0", "./AltCover.Fake.DotNet.Testing.AltCover/altcover.fake.dotnet.testing.altcover.core.fsproj")
+   ("_Binaries/AltCover.Cake/Debug+AnyCPU/netstandard2.0/publish", "netstandard2.0", "./AltCover.Cake/altcover.cake.core.csproj")
+   ("_Binaries/altcover.netcoreapp/Debug+AnyCPU/netcoreapp2.0/publish", "netcoreapp2.0", "./AltCover.NetCoreApp/altcover.netcoreapp.core.fsproj")
   ]
   |> Seq.iter (fun (pub, rt, proj) -> DotNet.publish (fun options ->
                                     { options with
@@ -496,6 +498,7 @@ _Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standa
                                         Configuration = DotNet.BuildConfiguration.Debug
                                         NoBuild = true
                                         MSBuildParams = { MSBuild.CliArguments.Create() with                                                            
+                                                           DisableInternalBinLog = true
                                                            Properties = [("AltCoverGendarme", "true")] }
                                         Framework = Some rt }) proj)
 
@@ -505,7 +508,11 @@ _Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standa
        "_Binaries/AltCover.PowerShell/Debug+AnyCPU/netstandard2.0/publish/AltCover.PowerShell.dll"
        "_Binaries/AltCover.FSApi/Debug+AnyCPU/netstandard2.0/publish/AltCover.FSApi.dll" 
        "_Binaries/AltCover.Visualizer/Debug+AnyCPU/netcoreapp2.1/publish/AltCover.Visualizer.dll" 
-       "_Binaries/AltCover.Fake.DotNet.Testing.AltCover/Debug+AnyCPU/netstandard2.0/publish/AltCover.Fake.DotNet.Testing.AltCover.dll" ]) ]
+       "_Binaries/AltCover.Fake.DotNet.Testing.AltCover/Debug+AnyCPU/netstandard2.0/publish/AltCover.Fake.DotNet.Testing.AltCover.dll"
+       "_Binaries/AltCover.Cake/Debug+AnyCPU/netstandard2.0/publish/AltCover.Cake.dll"
+       "_Binaries/AltCover.Cake/Debug+AnyCPU/netstandard2.0/publish/AltCover.CSapi.dll"
+       "_Binaries/altcover.netcoreapp/Debug+AnyCPU/netcoreapp2.0/publish/altcover.netcoreapp.dll"
+        ]) ]
   |> Seq.iter (fun (ruleset, files) ->
        Gendarme.run
          { Gendarme.Params.Create() with
@@ -667,7 +674,7 @@ _Target "FxCop" (fun _ ->
                 Rules = ruleset
                 FailOnError = FxCop.ErrorLevel.Warning
                 IgnoreGeneratedCode = true })
-                
+
   [ "_Binaries/AltCover.PowerShell/Debug+AnyCPU/net47/AltCover.PowerShell.dll" ]
   |> FxCop.run
        { FxCop.Params.Create() with
