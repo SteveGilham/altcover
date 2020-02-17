@@ -12,7 +12,10 @@
     <rules include="*"
            exclude="AvoidSmallNamespaceRule | AvoidVisibleNestedTypesRule"
            from="Gendarme.Rules.Design.dll" />
+    <!-- DoNotExposeNestedGenericSignaturesRule is a rule for morts at best and 
+         doesn't really make any problems for F# -->
     <rules include="*"
+           exclude="DoNotExposeNestedGenericSignaturesRule"
            from="Gendarme.Rules.Design.Generic.dll" />
     <rules include="*"
            from="Gendarme.Rules.Design.Linq.dll" />
