@@ -8,8 +8,6 @@ using AltCover.Parameters.Primitive;
 
 namespace AltCover.Cake
 {
-  [SuppressMessage("Microsoft.Design", "CA1026",
-                   Justification = "Can't sensibly default any more arguments on Collect & Prepare")]
   public static class Api
   {
     private static ILogArgs MakeLog(ICakeContext context, ILogArgs log)
