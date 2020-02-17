@@ -711,7 +711,7 @@ C:\Users\steve\Documents\GitHub\altcover\AltCover.CSApi\Definitions.cs(354,1) : 
 [Location not stored in Pdb] : warning  : CA1819 : Microsoft.Performance : Change 'IPrepareArgs.SymbolDirectories' to return a collection or make it a method.
 [Location not stored in Pdb] : warning  : CA1819 : Microsoft.Performance : Change 'IPrepareArgs.TypeFilter' to return a collection or make it a method.
 [Location not stored in Pdb] : warning  : CA1709 : Microsoft.Naming : Correct the casing of 'CLI' in type name 'CLIArgs' by changing it to 'Cli'.
-*))                
+*)            
 
   [ "_Binaries/AltCover.PowerShell/Debug+AnyCPU/net47/AltCover.PowerShell.dll" ]
   |> FxCop.run
