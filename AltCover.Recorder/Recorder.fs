@@ -217,6 +217,8 @@ module Instance =
     use writer = new StreamWriter(file)
     text |> Seq.iter (fun line -> writer.WriteLine("{0}", line))
 
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Smells",
+   "AvoidLongParameterListsRule")>]
   let
 #if DEBUG
 #else
