@@ -467,7 +467,7 @@ module internal Visitor =
              >> makeInspection
              >> buildSequence))
 
-  let private VisitAssembly (a : AssemblyDefinition) included buildSequence =
+  let private VisitAssembly (a : AssemblyDefinition) included (buildSequence : Node -> seq<Node>) =
     a.Modules
     |> Seq.cast
     |> Seq.collect
@@ -488,7 +488,7 @@ module internal Visitor =
     then Exemption.Automatic
     else exemption
 
-  let private VisitModule (x : ModuleDefinition) included buildSequence =
+  let private VisitModule (x : ModuleDefinition) included (buildSequence : Node -> seq<Node>) =
     ZeroPoints()
     SourceLinkDocuments <-
       Some x
@@ -695,7 +695,7 @@ module internal Visitor =
     else if !showGenerated then SelectAutomatic items exemption
     else exemption
 
-  let private VisitType (t : TypeDefinition) included basevc buildSequence =
+  let private VisitType (t : TypeDefinition) included basevc (buildSequence : Node -> seq<Node>) =
     t.Methods
     |> Seq.cast
     |> Seq.filter (fun (m : MethodDefinition) ->

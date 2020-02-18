@@ -350,7 +350,7 @@ module internal CommandLine =
     else
       (StrongNameKeyData.Empty(), false)
 
-  let internal ValidateRegexes(x : String) =
+  let private stripNulls (x : String) =
     let descape (s : string) = s.Replace(char 0, ';')
 
     let qRegex (s : String) =
@@ -361,13 +361,15 @@ module internal CommandLine =
         { Regex = Regex s
           Sense = Exclude }
 
-    doPathOperation (fun () ->
-      x.Replace(";;", "\u0000").Split([| ";" |], StringSplitOptions.RemoveEmptyEntries)
-      |> Array.map (descape >> qRegex)) [||] false
+    x.Replace(";;", "\u0000").Split([| ";" |], StringSplitOptions.RemoveEmptyEntries)
+      |> Array.map (descape >> qRegex)
+
+  let internal ValidateRegexes(x : String) =
+    doPathOperation (fun () -> stripNulls x) [||] false
 
   let internal ddFlag (name : string) flag =
     (name,
-     (fun _ ->
+     (fun (_:string) ->
        if !flag then
          error <-
            String.Format

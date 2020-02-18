@@ -83,6 +83,9 @@ and [<NoComparison>]
     member self.Track something = lock self.Tracks (fun () -> self.Tracks.Add something)
     member self.Total() = self.Count + int64 self.Tracks.Count
 
+[<System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Gendarme.Rules.Smells", "AvoidSpeculativeGeneralityRule",
+    Justification = "The whole point is safe delegation")>]
 module internal Assist =
   let internal SafeDispose x =
     try

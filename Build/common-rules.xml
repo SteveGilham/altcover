@@ -23,11 +23,14 @@
            from="Gendarme.Rules.Exceptions.dll" />
     <rules include="*" from="Gendarme.Rules.Interoperability.dll" />
     <rules include="*" from="Gendarme.Rules.Interoperability.Com.dll" />
-    <!-- AltCover has too much history.  Maybe for Genbu? -->
+    <!-- AltCover has too much history.  AvoidNonAlphanumericIdentifierRule definitely at Genbu
+         UseCorrectCasingRule maybe for Genbu? See if F#-lint will do the job -->
     <rules include="*"
-           exclude="UseCorrectCasingRule"
+           exclude="UseCorrectCasingRule | AvoidNonAlphanumericIdentifierRule"
            from="Gendarme.Rules.Naming.dll" />
+    <!-- Do for Genbu -->
     <rules include="*"
+           exclude="AvoidReturningArraysOnPropertiesRule"
            from="Gendarme.Rules.Performance.dll" />
     <!-- AltCover is operationally tested on Mono; System.Xml.Schema.Extensions::Validate seems to be there now -->
     <rules include="*"
