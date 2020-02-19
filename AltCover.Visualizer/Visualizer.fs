@@ -252,7 +252,7 @@ module Persistence =
     | [] -> System.IO.Directory.GetCurrentDirectory()
     | x :: _ -> x.FirstNode.ToString()
 
-  let internal saveCoverageFiles (coverageFiles : string list) =
+  let internal saveCoverageFiles (coverageFiles : string seq) =
     let file, config = EnsureFile()
     config.XPathSelectElements("//RecentlyOpened")
     |> Seq.toList
@@ -661,18 +661,27 @@ module Gui =
          x.Fault.Message)
     ShowMessageOnGuiThread parent MessageType.Error message
 
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
+    Justification = "AvoidSpeculativeGenerality too")>]
   let private OutdatedCoverageFileMessage (parent : Window) (x : FileInfo) =
     let format = GetResourceString("CoverageOutOfDate")
     let message =
       String.Format(System.Globalization.CultureInfo.CurrentCulture, format, x.FullName)
     ShowMessageOnGuiThread parent MessageType.Warning message
 
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
+    Justification = "AvoidSpeculativeGenerality too")>]
   let private MissingSourceFileMessage (parent : Window) (x : FileInfo) =
     let format = GetResourceString("MissingSourceFile")
     let message =
       String.Format(System.Globalization.CultureInfo.CurrentCulture, format, x.FullName)
     ShowMessageOnGuiThread parent MessageType.Warning message
 
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
+    Justification = "AvoidSpeculativeGenerality too")>]
   let private OutdatedCoverageThisFileMessage (parent : Window) (c : FileInfo)
       (s : Source) =
     let format = GetResourceString("CoverageOutOfDateThisFile")
@@ -681,6 +690,9 @@ module Gui =
         (System.Globalization.CultureInfo.CurrentCulture, format, c.FullName, s.FullName)
     ShowMessageOnGuiThread parent MessageType.Warning message
 
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
+    Justification = "AvoidSpeculativeGenerality too")>]
   let private MissingSourceThisFileMessage (parent : Window) (c : FileInfo) (s : Source) =
     let format = GetResourceString("MissingSourceThisFile")
     let message =

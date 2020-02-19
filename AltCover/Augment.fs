@@ -10,20 +10,22 @@ module internal Augment =
     member self.IsNotNull with get() =
       self |> isNull |> not
 
+#if GUI
+#else
   type Microsoft.FSharp.Core.Option<'T> with
     static member getOrElse (fallback : 'T) (x : option<'T>) = defaultArg x fallback
     static member nullable (x : 'T) : option<'T> =
       if isNull (x :> obj) then None else Some x
-
+#endif
   type Either<'a, 'b> = Choice<'b, 'a>
 
   [<System.Diagnostics.CodeAnalysis.SuppressMessage(
     "Gendarme.Rules.Design.Generic", "AvoidMethodWithUnusedGenericTypeRule",
-    Justification = "Context in F# has tp be sufficient")>]
+    Justification = "Context in F# has to be sufficient")>]
   let Right x : Either<'a, 'b> = Choice1Of2 x
   [<System.Diagnostics.CodeAnalysis.SuppressMessage(
     "Gendarme.Rules.Design.Generic", "AvoidMethodWithUnusedGenericTypeRule",
-    Justification = "Context in F# has tp be sufficient")>]
+    Justification = "Context in F# has to be sufficient")>]
   let Left x : Either<'a, 'b> = Choice2Of2 x
 
   let (|Right|Left|) =

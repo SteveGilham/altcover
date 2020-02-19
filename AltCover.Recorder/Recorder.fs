@@ -68,6 +68,9 @@ module Instance =
   /// This property's IL code is modified to store the user chosen override if applicable
   /// </summary>
   [<MethodImplAttribute(MethodImplOptions.NoInlining)>]
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+      "Gendarme.Rules.Performance", "AvoidUncalledPrivateCodeRule",
+      Justification = "Unit test accessor")>]
   let mutable internal CoverageFormat = ReportFormat.NCover
 
   /// <summary>
@@ -96,6 +99,9 @@ module Instance =
     val mutable private caller : int list
     private new(x : int) = { caller = [ x ] }
 
+    [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+        "Gendarme.Rules.Performance", "AvoidUncalledPrivateCodeRule",
+        Justification = "TODO -- fix this Gendarme bug")>]
     static member Instance =
       match CallStack.instance with
       | None -> CallStack.instance <- Some(CallStack(0))

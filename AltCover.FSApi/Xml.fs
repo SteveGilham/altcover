@@ -33,6 +33,9 @@ module XmlUtilities =
 
   [<SuppressMessage("Microsoft.Design", "CA1059",
                     Justification = "converts concrete types")>]
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
+    Justification = "AvoidSpeculativeGenerality too")>]
   let ToXDocument(xmlDocument : XmlDocument) =
     use nodeReader = new XmlNodeReader(xmlDocument)
     nodeReader.MoveToContent() |> ignore // skips leading comments

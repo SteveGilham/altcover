@@ -614,6 +614,9 @@ module internal Visitor =
          let tn = (i.Operand :?> MethodReference).DeclaringType
          SameType t tn)
 
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
+    Justification = "AvoidSpeculativeGenerality too")>]
   let private FSharpContainingMethod (t : TypeDefinition) (tx : TypeReference) =
     let candidates =
       t.DeclaringType.Methods.Concat

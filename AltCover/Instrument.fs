@@ -56,9 +56,12 @@ module internal Instrument =
     ResourceManager("AltCover.JSONFragments", Assembly.GetExecutingAssembly())
   let version = typeof<AltCover.Recorder.Tracer>.Assembly.GetName().Version.ToString()
 
+#if NETCOREAPP2_0
+#else
   let monoRuntime =
     ("Mono.Runtime"
     |> Type.GetType).IsNotNull
+#endif
 
   let dependencies =
     (resources.GetString "frameworkDependencies").Replace("version", version)
@@ -109,6 +112,9 @@ module internal Instrument =
   /// </summary>
   /// <param name="name">The name of the assembly</param>
   /// <returns>A key, if we have a match.</returns>
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
+    Justification = "AvoidSpeculativeGenerality too")>]
   let internal KnownKey(name : AssemblyNameDefinition) =
     if not name.HasPublicKey then
       None
@@ -136,6 +142,9 @@ module internal Instrument =
   // This trivial extraction appeases Gendarme
   let private extractName (assembly : AssemblyDefinition) = assembly.Name.Name
 
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
+    Justification = "AvoidSpeculativeGenerality too")>]
   let Guard (assembly : AssemblyDefinition) (f : unit -> unit) =
     try
       f()
@@ -701,6 +710,9 @@ module internal Instrument =
     Track state m included track
     state
 
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
+    Justification = "AvoidSpeculativeGenerality too")>]
   let private VisitAfterAssembly state (assembly : AssemblyDefinition)
       (paths : string list) =
     let originalFileName = Path.GetFileName assembly.MainModule.FileName

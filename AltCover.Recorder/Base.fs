@@ -76,21 +76,9 @@ and [<NoComparison>]
     }
     with
     static member Create () = { Count = 0L; Tracks = List<Track>() }
-    static member Init n l = let tmp = { PointVisit.Create() with Count = n }
-                             tmp.Tracks.AddRange l
-                             tmp
     member self.Step() = System.Threading.Interlocked.Increment(&self.Count) |> ignore
     member self.Track something = lock self.Tracks (fun () -> self.Tracks.Add something)
     member self.Total() = self.Count + int64 self.Tracks.Count
-
-[<System.Diagnostics.CodeAnalysis.SuppressMessage(
-    "Gendarme.Rules.Smells", "AvoidSpeculativeGeneralityRule",
-    Justification = "The whole point is safe delegation")>]
-module internal Assist =
-  let internal SafeDispose x =
-    try
-      (x :> IDisposable).Dispose()
-    with :? ObjectDisposedException -> ()
 
 module internal Counter =
   /// <summary>
@@ -291,6 +279,7 @@ module internal Counter =
       if not (counts.ContainsKey hitPointId)
       then counts.Add(hitPointId, PointVisit.Create()))
 
+#if RUNNER
   let internal AddTable (counts : Dictionary<string, Dictionary<int, PointVisit>>)
                         (t : Dictionary<string, Dictionary<int, PointVisit>>) =
     let mutable hitcount = 0L
@@ -307,6 +296,7 @@ module internal Counter =
                                                                v.Tracks.AddRange(add.Tracks)
                           )))
     hitcount
+ #endif
 
   let internal AddSingleVisit  (counts : Dictionary<string, Dictionary<int, PointVisit>>)
       moduleId hitPointId context =

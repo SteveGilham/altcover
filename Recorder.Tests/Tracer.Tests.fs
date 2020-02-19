@@ -79,7 +79,7 @@ module AltCoverCoreTests =
                    if pts > 0 then
                      let p = formatter.ReadInt32()
                      let n = formatter.ReadInt64()
-                     let pv = PointVisit.Init(n, [])
+                     let pv = Adapter.Init(n, [])
                      t.[m].Add(p, pv)
                      let rec tracking() =
                        let track = formatter.ReadByte() |> int
@@ -157,8 +157,8 @@ module AltCoverCoreTests =
       [ Adapter.Time 17L
         Adapter.NewBoth(42L, 23) ]
 
-    t.["name"].[23] <- PointVisit.Init(1L, expect23)
-    t.["name"].[24] <- PointVisit.Init(2L, expect24)
+    t.["name"].[23] <- Adapter.Init(1L, expect23)
+    t.["name"].[24] <- Adapter.Init(2L, expect24)
 
     let expected =
       [ (String.Empty, 0, Adapter.Table t)

@@ -585,4 +585,7 @@ module internal Main =
     | _ -> DoInstrumentation arguments
 
   // mocking point
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+      "Gendarme.Rules.Performance", "AvoidUncalledPrivateCodeRule",
+      Justification = "Unit test accessor")>]
   let mutable internal EffectiveMain = Main

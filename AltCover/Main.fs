@@ -3,7 +3,7 @@ namespace AltCover
 module internal AltCover =
   let internal ToConsole() =
     Output.Error <- CommandLine.WriteErr
-    Output.Usage <- CommandLine.Usage
+    Output.Usage <- CommandLine.UsageBase
     Output.Echo <- CommandLine.WriteErr
     Output.Info <- CommandLine.WriteOut
     Output.Warn <- CommandLine.WriteOut

@@ -16,7 +16,6 @@ module TestMain =
           Tests.AltCoverRunnerTests.MaxTimeLast, "Runner.MaxTimeLast"
           Tests.AltCoverRunnerTests.MinTimeFirst, "Runner.MinTimeFirst"
           Tests.AltCoverRunnerTests.MinTimeLast, "Runner.MinTimeLast"
-          Tests.AltCoverRunnerTests.SafeDisposalProtects, "Runner.SafeDisposalProtects"
           Tests.AltCoverRunnerTests.JunkUspidGivesNegativeIndex, "Runner.JunkUspidGivesNegativeIndex"
           Tests.AltCoverRunnerTests.RealIdShouldIncrementCount, "Runner.RealIdShouldIncrementCount"
           Tests.AltCoverRunnerTests.RealIdShouldIncrementList, "Runner.RealIdShouldIncrementList"

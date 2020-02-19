@@ -52,6 +52,9 @@ module Api =
 [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Smells", "AvoidLargeClassesRule")>]
 type Prepare() =
   inherit Task(null)
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+      "Gendarme.Rules.Performance", "AvoidUncalledPrivateCodeRule",
+      Justification = "Unit test accessor")>]
   member val internal ACLog : FSApi.Logging option = None with get, set
 
   member val InputDirectories : string array = [||] with get, set
@@ -130,6 +133,9 @@ type Prepare() =
 type Collect() =
   inherit Task(null)
 
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+      "Gendarme.Rules.Performance", "AvoidUncalledPrivateCodeRule",
+      Justification = "Unit test accessor")>]
   member val internal ACLog : FSApi.Logging option = None with get, set
 
   [<Required>]
@@ -180,6 +186,9 @@ type Collect() =
 type PowerShell() =
   inherit Task(null)
 
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+      "Gendarme.Rules.Performance", "AvoidUncalledPrivateCodeRule",
+      Justification = "Unit test accessor")>]
   member val internal IO = FSApi.Logging.Primitive
                              { Primitive.Logging.Create() with
                                  Error = base.Log.LogError
@@ -194,6 +203,9 @@ type PowerShell() =
 type GetVersion() =
   inherit Task(null)
 
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+      "Gendarme.Rules.Performance", "AvoidUncalledPrivateCodeRule",
+      Justification = "Unit test accessor")>]
   member val internal IO = FSApi.Logging.Primitive
                              { Primitive.Logging.Create() with
                                  Error = base.Log.LogError
@@ -235,6 +247,9 @@ type RunSettings() =
   [<Output>]
   member val Extended = String.Empty with get, set
 
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+      "Gendarme.Rules.Performance", "AvoidUncalledPrivateCodeRule",
+      Justification = "Unit test accessor")>]
   member val internal DataCollector = "AltCover.DataCollector.dll" with get, set
 
   override self.Execute() =

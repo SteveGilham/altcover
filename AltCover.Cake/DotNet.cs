@@ -17,7 +17,8 @@ namespace AltCover.Cake
 
     public Func<ProcessArgumentBuilder, ProcessArgumentBuilder> Customize()
     {
-            return pabIn => {
+      return pabIn =>
+      {
         var pabOut = new ProcessArgumentBuilder();
         if (pabIn != null)
         {
@@ -54,6 +55,9 @@ namespace AltCover.Cake
   {
     [CakeMethodAlias]
     [CakeAliasCategory("Test")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
+    Justification = "AvoidSpeculativeGenerality too")]
     public static void DotNetCoreTest(
                 this ICakeContext context,
                 FilePath project,

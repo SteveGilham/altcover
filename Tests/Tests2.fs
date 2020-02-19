@@ -1887,9 +1887,13 @@ module AltCoverTests2 =
     [<Test>]
     let OutputCanBeExercised() =
       let sink = StringSink(ignore)
-      Output.SetInfo sink
-      Output.SetError sink
-      Output.SetWarn sink
+      let SetInfo(x : StringSink) = Output.Info <- x.Invoke
+      let SetError(x : StringSink) = Output.Error <- x.Invoke
+      let SetWarn(x : StringSink) = Output.Warn <- x.Invoke
+
+      SetInfo sink
+      SetError sink
+      SetWarn sink
       Output.Echo <- ignore
       Output.Usage <- ignore
       Assert.That(Output.Usage, Is.Not.Null)
@@ -1899,8 +1903,7 @@ module AltCoverTests2 =
       |> Seq.collect (fun t -> t.GetNestedTypes(BindingFlags.NonPublic))
       |> Seq.filter (fun t ->
            let tokens =
-             [ "Info"; "Echo"; "Error"; "Usage"; "Warn"; "ToConsole"; "SetInfo";
-               "SetError"; "SetWarn" ]
+             [ "Info"; "Echo"; "Error"; "Usage"; "Warn"; "ToConsole" ]
            let name = t.Name
            tokens |> List.exists name.StartsWith)
       |> Seq.iter (fun t ->
