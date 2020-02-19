@@ -146,7 +146,7 @@ type internal Handler() =
     val mutable activeRow : int
   end
 
-module Persistence =
+module internal Persistence =
   let mutable internal save = true
 
 #if NETCOREAPP2_1
@@ -500,8 +500,8 @@ module Gui =
                 (if special = MethodType.Property then PropertyIcon else EventIcon)
                   .Force() :> obj |])
         keys
-        |> Seq.sortBy (fun key -> key.name |> DisplayName)
-        |> Seq.iter (ApplyMethod theModel newrow)
+          |> Seq.sortBy (fun key -> key.name |> DisplayName)
+          |> Seq.iter (ApplyMethod theModel newrow)
       else
         ApplyMethod theModel theRow (keys |> Seq.head)
 
@@ -513,16 +513,22 @@ module Gui =
            |> HandleSpecialName)
       |> Seq.toArray
 
-    methods
-    |> Array.sortInPlaceWith (fun ((l, lb), _) ((r, rb), _) ->
-         let sort1 = String.Compare(l, r, StringComparison.OrdinalIgnoreCase)
+    let orderMethods array =
+      array
+      |> Array.sortInPlaceWith (fun ((l, (lb : MethodType)), _) ((r, rb), _) ->
+           let sort1 = String.Compare(l, r, StringComparison.OrdinalIgnoreCase)
 
-         let sort2 =
-           if sort1 = 0
-           then String.Compare(l, r, StringComparison.Ordinal)
-           else sort1
-         if sort2 = 0 then lb.CompareTo rb else sort2)
-    methods |> Array.iter (ApplyToModel model row)
+           let sort2 =
+             if sort1 = 0
+             then String.Compare(l, r, StringComparison.Ordinal)
+             else sort1
+           if sort2 = 0 then lb.CompareTo rb else sort2)
+
+    let applyMethods array =
+      array |> Array.iter (ApplyToModel model row)
+
+    methods |> orderMethods
+    methods |> applyMethods
 
   let private PopulateNamespaceNode (model : TreeStore) (row : TreeIter)
       (nodes : seq<MethodKey>) =

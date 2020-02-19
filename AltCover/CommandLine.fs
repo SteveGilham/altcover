@@ -361,8 +361,12 @@ module internal CommandLine =
         { Regex = Regex s
           Sense = Exclude }
 
-    x.Replace(";;", "\u0000").Split([| ";" |], StringSplitOptions.RemoveEmptyEntries)
+    let transform array =
+      array
       |> Array.map (descape >> qRegex)
+
+    x.Replace(";;", "\u0000").Split([| ";" |], StringSplitOptions.RemoveEmptyEntries)
+      |> transform
 
   let internal ValidateRegexes(x : String) =
     doPathOperation (fun () -> stripNulls x) [||] false

@@ -241,7 +241,7 @@ module internal Instrument =
       let share = "|usr|share".Replace('|', Path.DirectorySeparatorChar)
       let shared = "dotnet|shared".Replace('|', Path.DirectorySeparatorChar)
 
-      let candidate =
+      let sources =
         [ Environment.GetEnvironmentVariable "NUGET_PACKAGES"
           Path.Combine
             (Environment.GetEnvironmentVariable "ProgramFiles"
@@ -249,6 +249,9 @@ module internal Instrument =
              |> (Option.getOrElse share), shared)
           Path.Combine(share, shared)
           nugetCache ]
+
+      let candidate source =
+        source
         |> List.filter (String.IsNullOrWhiteSpace >> not)
         |> List.filter Directory.Exists
         |> Seq.distinct
@@ -263,7 +266,7 @@ module internal Instrument =
         |> Seq.filter (fun f ->
              y.ToString().Equals(CommandLine.FindAssemblyName f, StringComparison.Ordinal))
         |> Seq.tryHead
-      match candidate with
+      match candidate sources with
       | None -> null
       | Some x ->
           String.Format

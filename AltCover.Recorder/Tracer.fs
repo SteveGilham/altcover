@@ -25,19 +25,19 @@ type Tracer =
     Stream : System.IO.Stream
     Formatter : System.IO.BinaryWriter }
 
-  static member Create(name : string) =
+  static member internal Create(name : string) =
     { Tracer = name
       Runner = false
       Definitive = false
       Stream = null
       Formatter = null }
 
-  member this.IsConnected with get() =
+  member internal this.IsConnected with get() =
     match this.Stream with
     | null -> false
     | _ -> this.Runner
 
-  member this.Connect() =
+  member internal this.Connect() =
     if File.Exists this.Tracer then
       Seq.initInfinite (fun i -> Path.ChangeExtension(this.Tracer, sprintf ".%d.acv" i))
       |> Seq.filter (File.Exists >> not)
@@ -52,7 +52,7 @@ type Tracer =
     else
       this
 
-  member this.Close() =
+  member internal this.Close() =
     try
       this.Stream.Flush()
       this.Formatter.Close()
@@ -97,14 +97,14 @@ type Tracer =
       |> Table
       |> this.Push String.Empty 0
 
-  member this.OnStart() =
+  member internal this.OnStart() =
     let running =
       if this.Tracer <> "Coverage.Default.xml.acv"
       then this.Connect()
       else this
     { running with Definitive = true }
 
-  member this.OnConnected f g =
+  member internal  this.OnConnected f g =
     if this.IsConnected then f() else g()
 
   member internal this.OnFinish visits =

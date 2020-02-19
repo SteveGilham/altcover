@@ -69,7 +69,7 @@ namespace AltCover.Cake
       if (altcover == null) throw new ArgumentNullException(nameof(altcover));
 
       settings.ArgumentCustomization = altcover.Concatenate(settings.ArgumentCustomization);
-      context.DotNetCoreTest(project.FullPath, settings);
+      context.DotNetCoreTest(project.GetFilename().FullPath, settings);
     }
   }
 }

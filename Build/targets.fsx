@@ -509,9 +509,11 @@ _Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standa
        "_Binaries/AltCover.FSApi/Debug+AnyCPU/netstandard2.0/publish/AltCover.FSApi.dll" 
        "_Binaries/AltCover.Visualizer/Debug+AnyCPU/netcoreapp2.1/publish/AltCover.Visualizer.dll" 
        "_Binaries/AltCover.Fake.DotNet.Testing.AltCover/Debug+AnyCPU/netstandard2.0/publish/AltCover.Fake.DotNet.Testing.AltCover.dll"
-       "_Binaries/AltCover.Cake/Debug+AnyCPU/netstandard2.0/publish/AltCover.Cake.dll"
-       "_Binaries/AltCover.Cake/Debug+AnyCPU/netstandard2.0/publish/AltCover.CSapi.dll"
        "_Binaries/altcover.netcoreapp/Debug+AnyCPU/netcoreapp2.0/publish/altcover.netcoreapp.dll"
+        ])
+    ("./Build/csharp-rules.xml",
+     [ "_Binaries/AltCover.Cake/Debug+AnyCPU/netstandard2.0/publish/AltCover.Cake.dll"
+       "_Binaries/AltCover.Cake/Debug+AnyCPU/netstandard2.0/publish/AltCover.CSapi.dll"
         ]) ]
   |> Seq.iter (fun (ruleset, files) ->
        Gendarme.run

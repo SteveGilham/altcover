@@ -709,7 +709,7 @@ let composeCommandLine parameters =
 [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Correctness",
        "EnsureLocalDisposalRule",
        Justification="is the 'use' clause confusing Gendarme?")>]
-let runCore parameters modifyCommand =
+let internal runCore parameters modifyCommand =
   use __ = Trace.traceTask "AltCover" String.Empty
   let command = (composeCommandLine parameters) |> modifyCommand
   let run = command |> Proc.run
