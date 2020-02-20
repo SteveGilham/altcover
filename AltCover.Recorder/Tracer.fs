@@ -40,6 +40,9 @@ type Tracer =
   [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Correctness",
          "EnsureLocalDisposalRule",
          Justification="Record return confusing Gendarme -- TODO")>]
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability",
+                                                    "CA2000:DisposeObjectsBeforeLosingScope",
+                                                    Justification = "'fs' is subsumed")>]
   member private this.MakeConnection f =
     let fs = File.OpenWrite f
     let s = new DeflateStream(fs, CompressionMode.Compress)
