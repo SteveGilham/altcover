@@ -463,12 +463,14 @@ _Target "Lint" (fun _ ->
          | Lint.LintResult.Success w ->
            w
            |> Seq.filter (fun x ->
-                match x.Fix with
-                | None -> false
-                | Some fix -> fix.FromText <> "AltCover_Fake")) // special case
+                match x.Details.SuggestedFix with
+                | Some l -> match l.Force() with
+                            | Some fix -> fix.FromText <> "AltCover_Fake" // special case
+                            | _ -> false
+                | _ -> false))
     |> Seq.concat
     |> Seq.fold (fun _ x ->
-         printfn "Info: %A\r\n Range: %A\r\n Fix: %A\r\n====" x.Info x.Range x.Fix
+         printfn "Info: %A\r\n Range: %A\r\n Fix: %A\r\n====" x.Details.Message x.Details.Range x.Details.SuggestedFix
          true) false
     |> failOnIssuesFound
   with 
