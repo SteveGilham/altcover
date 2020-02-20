@@ -21,7 +21,7 @@ open Fake.DotNet
 
 [<ExcludeFromCodeCoverage; NoComparison;
                   SuppressMessage("Gendarme.Rules.Smells",
-                                  "AvoidCodeDuplicatedInSameClassRule",
+                                  "RelaxedAvoidCodeDuplicatedInSameClassRule",
                                   Justification = "Idiomatic F#")>]
 type CollectParams =
   | Primitive of Primitive.CollectParams
@@ -142,7 +142,7 @@ type CollectParams =
 
 [<ExcludeFromCodeCoverage; NoComparison;
                   SuppressMessage("Gendarme.Rules.Smells",
-                                  "AvoidCodeDuplicatedInSameClassRule",
+                                  "RelaxedAvoidCodeDuplicatedInSameClassRule",
                                   Justification = "Idiomatic F#")>]
 type PrepareParams =
   | Primitive of Primitive.PrepareParams
@@ -397,7 +397,7 @@ type PrepareParams =
 
 [<ExcludeFromCodeCoverage; NoComparison; NoEquality;
                   SuppressMessage("Gendarme.Rules.Smells",
-                                  "AvoidCodeDuplicatedInSameClassRule",
+                                  "RelaxedAvoidCodeDuplicatedInSameClassRule",
                                   Justification = "Idiomatic F#")>]
 type Logging =
   | Primitive of Primitive.Logging
@@ -433,7 +433,7 @@ type Logging =
 #else
 #endif
 [<SuppressMessage("Gendarme.Rules.Smells",
-                                  "AvoidCodeDuplicatedInSameClassRule",
+                                  "RelaxedAvoidCodeDuplicatedInSameClassRule",
                                   Justification = "Not worth trying to unify these functions")>]
 module private ArgsHelper =
   let Item a x =

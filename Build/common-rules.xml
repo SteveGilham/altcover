@@ -44,7 +44,9 @@
     <rules include="*"
            exclude="MarkAllNonSerializableFieldsRule"
            from="Gendarme.Rules.Serialization.dll" />
+    <!-- Use the relaxed variant -->
     <rules include="*"
+       exclude="AvoidCodeDuplicatedInSameClassRule"
            from="Gendarme.Rules.Smells.dll" />
     <rules include="*" from="Gendarme.Rules.Ui.dll" />
     <rules include="*"
