@@ -674,41 +674,27 @@ module Gui =
   [<System.Diagnostics.CodeAnalysis.SuppressMessage(
     "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
     Justification = "AvoidSpeculativeGenerality too")>]
+  let private showMessageResourceFileWarning rn (parent : Window) (x : FileInfo)
+      (s : Source) =
+    let format = GetResourceString(rn)
+    let message = // rely of the format to drop the source file if not needed
+      String.Format(System.Globalization.CultureInfo.CurrentCulture, format, x.FullName, s.FullName)
+    ShowMessageOnGuiThread parent MessageType.Warning message
+
   let private OutdatedCoverageFileMessage (parent : Window) (x : FileInfo) =
-    let format = GetResourceString("CoverageOutOfDate")
-    let message =
-      String.Format(System.Globalization.CultureInfo.CurrentCulture, format, x.FullName)
-    ShowMessageOnGuiThread parent MessageType.Warning message
+    showMessageResourceFileWarning "CoverageOutOfDate" parent x
+      (Source.File null)
 
-  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
-    "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
-    Justification = "AvoidSpeculativeGenerality too")>]
   let private MissingSourceFileMessage (parent : Window) (x : FileInfo) =
-    let format = GetResourceString("MissingSourceFile")
-    let message =
-      String.Format(System.Globalization.CultureInfo.CurrentCulture, format, x.FullName)
-    ShowMessageOnGuiThread parent MessageType.Warning message
+    showMessageResourceFileWarning "MissingSourceFile" parent x
+      (Source.File null)
 
-  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
-    "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
-    Justification = "AvoidSpeculativeGenerality too")>]
   let private OutdatedCoverageThisFileMessage (parent : Window) (c : FileInfo)
       (s : Source) =
-    let format = GetResourceString("CoverageOutOfDateThisFile")
-    let message =
-      String.Format
-        (System.Globalization.CultureInfo.CurrentCulture, format, c.FullName, s.FullName)
-    ShowMessageOnGuiThread parent MessageType.Warning message
+    showMessageResourceFileWarning "CoverageOutOfDateThisFile" parent c s
 
-  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
-    "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
-    Justification = "AvoidSpeculativeGenerality too")>]
   let private MissingSourceThisFileMessage (parent : Window) (c : FileInfo) (s : Source) =
-    let format = GetResourceString("MissingSourceThisFile")
-    let message =
-      String.Format
-        (System.Globalization.CultureInfo.CurrentCulture, format, c.FullName, s.FullName)
-    ShowMessageOnGuiThread parent MessageType.Warning message
+    showMessageResourceFileWarning "MissingSourceThisFile" parent c s
 
   // -------------------------- UI set-up  ---------------------------
   let private InitializeHandler() =
