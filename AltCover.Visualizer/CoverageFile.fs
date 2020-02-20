@@ -37,7 +37,8 @@ module Transformer =
     // transform the document:
     xmlTransform.Transform(document.CreateReader(), null, sw)
     buffer.Position <- 0L
-    XDocument.Load(XmlReader.Create(buffer))
+    use reader = XmlReader.Create(buffer)
+    XDocument.Load(reader)
 
   let internal TransformFromOpenCover(document : XNode) =
     let report =
@@ -48,14 +49,15 @@ module Transformer =
   let internal ConvertFile (helper : CoverageTool -> XDocument -> XDocument -> XDocument)
       (document : XDocument) =
     let schemas = new XmlSchemaSet()
+    use ocreader = XmlReader.Create(new StreamReader(Assembly.GetExecutingAssembly()
+                                         .GetManifestResourceStream("AltCover.Visualizer.OpenCover.xsd")))
+    use ncreader = XmlReader.Create(new StreamReader(Assembly.GetExecutingAssembly()
+                                         .GetManifestResourceStream("AltCover.Visualizer.NCover.xsd")))
     try
       match document.XPathSelectElements("/CoverageSession").Count() with
       | 1 ->
           schemas.Add
-            (String.Empty,
-             XmlReader.Create
-               (new StreamReader(Assembly.GetExecutingAssembly()
-                                         .GetManifestResourceStream("AltCover.Visualizer.OpenCover.xsd"))))
+            (String.Empty, ocreader)
           |> ignore
           document.Validate(schemas, null)
           let report = TransformFromOpenCover document
@@ -63,19 +65,13 @@ module Transformer =
           // Consistency check our XSLT
           let schemas2 = new XmlSchemaSet()
           schemas2.Add
-            (String.Empty,
-             XmlReader.Create
-               (new StreamReader(Assembly.GetExecutingAssembly()
-                                         .GetManifestResourceStream("AltCover.Visualizer.NCover.xsd"))))
+            (String.Empty, ncreader)
           |> ignore
           fixedup.Validate(schemas2, null)
           Right fixedup
       | _ ->
           schemas.Add
-            (String.Empty,
-             XmlReader.Create
-               (new StreamReader(Assembly.GetExecutingAssembly()
-                                         .GetManifestResourceStream("AltCover.Visualizer.NCover.xsd"))))
+            (String.Empty, ncreader)
           |> ignore
           document.Validate(schemas, null)
           Right document

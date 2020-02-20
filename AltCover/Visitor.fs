@@ -25,7 +25,7 @@ open System.Net
 [<System.Diagnostics.CodeAnalysis.SuppressMessage(
       "Gendarme.Rules.Design",
       "FlagsShouldNotDefineAZeroValueRule",
-      Justification="Gived the unset state a name")>]
+      Justification="Gives the unset state a name")>]
 type internal Inspections =
   | Ignore = 0
   | Instrument = 1

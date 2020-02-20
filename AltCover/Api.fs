@@ -706,9 +706,7 @@ let composeCommandLine parameters =
 [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1715",
                                                   Justification =
                                                     "Generic types are implicit")>]
-[<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Correctness",
-       "EnsureLocalDisposalRule",
-       Justification="is the 'use' clause confusing Gendarme?")>]
+
 let internal runCore parameters modifyCommand =
   use __ = Trace.traceTask "AltCover" String.Empty
   let command = (composeCommandLine parameters) |> modifyCommand

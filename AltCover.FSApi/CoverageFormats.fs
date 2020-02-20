@@ -117,7 +117,8 @@ module CoverageFormats =
        transform.Transform(navigable, output)
     XmlUtilities.PrependDeclaration rewrite
 
-    rewrite.SelectNodes("//method").OfType<XmlElement>()
+    use methods = rewrite.SelectNodes("//method")
+    methods.OfType<XmlElement>()
     |> Seq.iter (fun m ->
          let c = m.GetAttribute("class")
          m.SetAttribute("class", c.Replace('/', '+'))
@@ -125,7 +126,8 @@ module CoverageFormats =
          let lead = name.Substring(name.LastIndexOf("::", StringComparison.Ordinal) + 2)
          m.SetAttribute("name", lead.Substring(0, lead.IndexOf('('))))
 
-    rewrite.SelectNodes("//module").OfType<XmlElement>()
+    use modules = rewrite.SelectNodes("//module")
+    modules.OfType<XmlElement>()
     |> Seq.iter (fun m ->
          let path = m.GetAttribute("name")
          let info = System.IO.FileInfo path
@@ -137,7 +139,8 @@ module CoverageFormats =
     let culture = System.Threading.Thread.CurrentThread.CurrentCulture
     try
       System.Threading.Thread.CurrentThread.CurrentCulture <- CultureInfo.InvariantCulture
-      rewrite.SelectNodes("//coverage").OfType<XmlElement>()
+      use coverage = rewrite.SelectNodes("//coverage")
+      coverage.OfType<XmlElement>()
       |> Seq.iter (fun c ->
            let now =
              DateTime.UtcNow.ToLongDateString() + ":" + DateTime.UtcNow.ToLongTimeString()

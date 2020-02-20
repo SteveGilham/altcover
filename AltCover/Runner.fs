@@ -494,6 +494,9 @@ module internal Runner =
       Justification = "Unit test accessor")>]
   let mutable internal RecorderName = "AltCover.Recorder.g.dll"
 
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Correctness",
+         "EnsureLocalDisposalRule",
+         Justification="Tuple return confusing Gendarme -- TODO")>]
   let RecorderInstance() =
     let recorderPath = Path.Combine(Option.get recordingDirectory, RecorderName)
     let definition = AssemblyDefinition.ReadAssembly recorderPath

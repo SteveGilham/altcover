@@ -124,6 +124,9 @@ type internal Handler() =
     DefaultValue(true)>]
     val mutable classStructureTree : TreeView
 
+    [<DefaultValue(true)>]
+    val mutable auxModel : TreeStore
+
     [<
 #if NETCOREAPP2_1
       Builder.Object;
@@ -177,7 +180,8 @@ module internal Persistence =
           use xsd =
             new StreamReader(Assembly.GetExecutingAssembly()
                                      .GetManifestResourceStream("AltCover.Visualizer.config.xsd"))
-          schemas.Add(String.Empty, XmlReader.Create xsd) |> ignore
+                                     |> XmlReader.Create
+          schemas.Add(String.Empty,  xsd) |> ignore
           doc.Validate(schemas, null)
           (file, doc)
         with xx ->  // DoNotSwallowErrorsCatchingNonSpecificExceptionsRule
@@ -746,7 +750,8 @@ module Gui =
   let private PrepareAboutDialog(handler : Handler) =
     let ShowUrl(link : string) =
       match System.Environment.GetEnvironmentVariable("OS") with
-      | "Windows_NT" -> System.Diagnostics.Process.Start(link) |> ignore
+      | "Windows_NT" -> use browser = System.Diagnostics.Process.Start(link)
+                        ()
       // TODO -- other OS types
       | _ -> ShowMessage handler.aboutVisualizer link MessageType.Info
     // The first gets the display right, the second the browser launch
@@ -794,6 +799,16 @@ module Gui =
          handler.classStructureTree.AppendColumn(column) |> ignore
          column.AddAttribute(cell, "text", 2 * i)
          column.AddAttribute(icon, "pixbuf", 1 + (2 * i)))
+    handler.classStructureTree.Model <-
+            new TreeStore(typeof<string>, typeof<Gdk.Pixbuf>, typeof<string>,
+                          typeof<Gdk.Pixbuf>, typeof<string>, typeof<Gdk.Pixbuf>,
+                          typeof<string>, typeof<Gdk.Pixbuf>, typeof<string>,
+                          typeof<Gdk.Pixbuf>)
+    handler.auxModel <-
+            new TreeStore(typeof<string>, typeof<Gdk.Pixbuf>, typeof<string>,
+                          typeof<Gdk.Pixbuf>, typeof<string>, typeof<Gdk.Pixbuf>,
+                          typeof<string>, typeof<Gdk.Pixbuf>, typeof<string>,
+                          typeof<Gdk.Pixbuf>)
 
 #if NETCOREAPP2_1
   let private PrepareOpenFileDialog(handler : Handler) =
@@ -1316,11 +1331,8 @@ module Gui =
                // warn if not
                if not (Seq.isEmpty newer) then
                  OutdatedCoverageFileMessage h.mainWindow current
-               let model =
-                 new TreeStore(typeof<string>, typeof<Gdk.Pixbuf>, typeof<string>,
-                               typeof<Gdk.Pixbuf>, typeof<string>, typeof<Gdk.Pixbuf>,
-                               typeof<string>, typeof<Gdk.Pixbuf>, typeof<string>,
-                               typeof<Gdk.Pixbuf>)
+               let model = handler.auxModel
+               model.Clear()
                Mappings.Clear()
                let toprow = model.AppendValues(current.Name, XmlIcon.Force())
 
@@ -1356,12 +1368,13 @@ module Gui =
                  // File is good so enable the refresh button
                  h.refreshButton.Sensitive <- true
                  // Do real UI work here
+                 h.auxModel <- h.classStructureTree.Model :?> TreeStore
                  h.classStructureTree.Model <- theModel
                  h.codeView.Buffer.Clear()
                  h.mainWindow.Title <- "AltCover.Visualizer"
                  updateMRU h info.FullName true
                ////ShowMessage h.mainWindow (sprintf "%s\r\n>%A" info.FullName h.coverageFiles) MessageType.Info
-               InvokeOnGuiThread(UpdateUI model current)
+               InvokeOnGuiThread(UpdateUI h.auxModel current)
          }
          |> Async.Start)
     handler.fontButton.Clicked

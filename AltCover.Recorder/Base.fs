@@ -192,7 +192,13 @@ module internal Counter =
 
     let (m, i, m', s, v) = XmlByFormat format
 
-    coverageDocument.SelectNodes(m)
+#if NET2
+    let
+#else
+    use
+#endif
+       moduleNodes = coverageDocument.SelectNodes(m)
+    moduleNodes
     |> Seq.cast<XmlElement>
     |> Seq.map (fun el -> el.GetAttribute(i), el)
     |> Seq.filter (fun (k, _) -> counts.ContainsKey k)
@@ -202,13 +208,24 @@ module internal Counter =
          // affectedModule.Descendants(XName.Get("seqpnt"))
          // Get the methods, then flip their
          // contents before concatenating
-         let nn = affectedModule.SelectNodes(m')
+#if NET2
+         let
+#else
+         use
+#endif
+             nn = affectedModule.SelectNodes(m')
          nn
          |> Seq.cast<XmlElement>
          |> Seq.collect (fun (method : XmlElement) ->
               s
               |> Seq.collect (fun (name, flag) ->
-                   method.SelectNodes(name)
+#if NET2
+                   let
+#else
+                   use
+#endif
+                       nodes = method.SelectNodes(name)
+                   nodes
                    |> Seq.cast<XmlElement>
                    |> Seq.map (fun x -> (x, flag))
                    |> Seq.toList

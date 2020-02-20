@@ -157,6 +157,9 @@ module internal Instrument =
   /// Create the new assembly that will record visits, based on the prototype.
   /// </summary>
   /// <returns>A representation of the assembly used to record all coverage visits.</returns>
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Correctness",
+         "EnsureLocalDisposalRule",
+         Justification="Return confusing Gendarme -- TODO")>]
   let internal PrepareAssembly(location : string) =
     let definition = AssemblyDefinition.ReadAssembly(location)
     Guard definition (fun () ->  // set the timer interval in ticks
@@ -722,6 +725,9 @@ module internal Instrument =
     WriteAssemblies assembly originalFileName paths Output.Info
     state
 
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Correctness",
+         "EnsureLocalDisposalRule",
+         Justification="Record return confusing Gendarme -- TODO")>]
   let private VisitStart state =
     let recorder = typeof<AltCover.Recorder.Tracer>
     let recordingAssembly = PrepareAssembly(recorder.Assembly.Location)

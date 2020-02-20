@@ -37,17 +37,22 @@ type Tracer =
     | null -> false
     | _ -> this.Runner
 
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Correctness",
+         "EnsureLocalDisposalRule",
+         Justification="Record return confusing Gendarme -- TODO")>]
+  member private this.MakeConnection f =
+    let fs = File.OpenWrite f
+    let s = new DeflateStream(fs, CompressionMode.Compress)
+    { this with
+        Stream = s
+        Formatter = new BinaryWriter(s)
+        Runner = true }
+
   member internal this.Connect() =
     if File.Exists this.Tracer then
       Seq.initInfinite (fun i -> Path.ChangeExtension(this.Tracer, sprintf ".%d.acv" i))
       |> Seq.filter (File.Exists >> not)
-      |> Seq.map (fun f ->
-           let fs = File.OpenWrite f
-           let s = new DeflateStream(fs, CompressionMode.Compress)
-           { this with
-               Stream = s
-               Formatter = new BinaryWriter(s)
-               Runner = true })
+      |> Seq.map this.MakeConnection
       |> Seq.head
     else
       this
