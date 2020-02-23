@@ -173,7 +173,7 @@ NUGET
       FSharp.Core (>= 4.2.3)
       System.Reactive (>= 4.0)
     FSharp.Core (4.7)
-    FSharpLint.Core (0.13)
+    FSharpLint.Core (0.13.1)
       Dotnet.ProjInfo (>= 0.31)
       FParsec (>= 1.0.3)
       FSharp.Compiler.Service (>= 33.0)
