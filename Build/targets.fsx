@@ -444,15 +444,10 @@ _Target "Lint" (fun _ ->
   let failOnIssuesFound (issuesFound: bool) =
     Assert.That(issuesFound, Is.False, "Lint issues were found")
   try
-    let settings =
-      Configuration.SettingsFileName
-      |> Path.getFullName
-      |> File.ReadAllText
-
-    let lintConfig =
-      FSharpLint.Application.ConfigurationManagement.loadConfigurationFile settings
     let options =
-      { Lint.OptionalLintParameters.Default with Configuration = Some lintConfig }
+      { Lint.OptionalLintParameters.Default with Configuration = FromFile (Path.getFullName "./fsharplint.json")
+      //Configuration.SettingsFileName 
+      }
 
     !!"**/*.fsproj"
     |> Seq.collect (fun n -> !!(Path.GetDirectoryName n @@ "*.fs"))
@@ -476,6 +471,8 @@ _Target "Lint" (fun _ ->
   with 
   | :? System.MissingMethodException ->
     printfn "MissingMethodException raised"
+  | :? System.ArgumentOutOfRangeException ->
+    printfn "ArgumentOutOfRangeException raised"
   | ex ->
     printfn "%A" ex
     reraise()
