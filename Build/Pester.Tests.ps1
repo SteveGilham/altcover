@@ -40,10 +40,11 @@ Describe "Invoke-Altcover" {
           $ev = ""
           Invoke-AltCover -XmlReport $x -OutputDirectory  $o -InputDirectory "./NoneSuch/xunit-dotnet/bin/Debug/netcoreapp2.0" -InPlace -ErrorVariable ev -ErrorAction SilentlyContinue
         }
-		catch {
+        catch 
+        {
           $ev | Should -BeTrue
           $stderr.ToString()  | Should -BeTrue	      	
-		}
+		    }
         finally
         {
             [System.Console]::SetError($saved)     
