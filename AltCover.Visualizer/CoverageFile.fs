@@ -30,10 +30,12 @@ module Transformer =
     xmlTransform.Load(stylesheet, new XsltSettings(false, true), null)
     xmlTransform
 
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202",
+                                 Justification = "Multiple Close() should be safe")>]
   let internal TransformFromOtherCover (document : XNode) (path : string) =
     let xmlTransform = LoadTransform path
     use buffer = new MemoryStream()
-    let sw = new StreamWriter(buffer)
+    use sw = new StreamWriter(buffer)
     // transform the document:
     xmlTransform.Transform(document.CreateReader(), null, sw)
     buffer.Position <- 0L
