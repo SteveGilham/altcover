@@ -285,7 +285,7 @@ type InvokeAltCoverCommand(runner : bool) =
       let where = self.SessionState.Path.CurrentLocation.Path
       Directory.SetCurrentDirectory where
       let makeError s =
-        ErrorRecord(InvalidOperationException(), s, ErrorCategory.InvalidOperation, self)
+        ErrorRecord(InvalidOperationException(s), s, ErrorCategory.InvalidOperation, self)
         |> self.WriteError
 
       let zero _ = 0
