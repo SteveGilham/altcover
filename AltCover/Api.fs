@@ -126,12 +126,12 @@ type CollectParams =
       let recorder = self.RecorderDirectory
       [ ("--recorderDirectory", recorder)
         ("--workingDirectory", self.WorkingDirectory) ]
-      |> List.iter (fun (n, x) -> validateOptional CommandLine.ValidateDirectory n x)
+      |> List.iter (fun (n, x) -> validateOptional CommandLine.validateDirectory n x)
       [ ("--executable", self.Executable)
         ("--lcovReport", self.LcovReport)
         ("--cobertura", self.Cobertura)
         ("--outputFile", self.OutputFile) ]
-      |> List.iter (fun (n, x) -> validateOptional CommandLine.ValidatePath n x)
+      |> List.iter (fun (n, x) -> validateOptional CommandLine.validatePath n x)
       validate Runner.ValidateThreshold self.Threshold
       if afterPreparation then Runner.RequireRecorderTest (recorder |> toOption) () ()
       CommandLine.error |> List.toArray
@@ -366,19 +366,19 @@ type PrepareParams =
 
     try
       CommandLine.error <- []
-      PrepareParams.validateArray self.InputDirectories CommandLine.ValidateDirectory
+      PrepareParams.validateArray self.InputDirectories CommandLine.validateDirectory
         "--inputDirectory"
-      PrepareParams.validateArray self.OutputDirectories CommandLine.ValidatePath
+      PrepareParams.validateArray self.OutputDirectories CommandLine.validatePath
         "--outputDirectory"
-      PrepareParams.validateOptional CommandLine.ValidateStrongNameKey "--strongNameKey"
+      PrepareParams.validateOptional CommandLine.validateStrongNameKey "--strongNameKey"
         self.StrongNameKey
-      PrepareParams.validateOptional CommandLine.ValidatePath "--xmlReport"
+      PrepareParams.validateOptional CommandLine.validatePath "--xmlReport"
         self.XmlReport
-      PrepareParams.validateArray self.SymbolDirectories CommandLine.ValidateDirectory
+      PrepareParams.validateArray self.SymbolDirectories CommandLine.validateDirectory
         "--symbolDirectory"
-      PrepareParams.validateArray self.Dependencies CommandLine.ValidateAssembly
+      PrepareParams.validateArray self.Dependencies CommandLine.validateAssembly
         "--dependency"
-      PrepareParams.validateArray self.Keys CommandLine.ValidateStrongNameKey "--key"
+      PrepareParams.validateArray self.Keys CommandLine.validateStrongNameKey "--key"
       [ self.FileFilter
         self.AssemblyFilter
         self.AssemblyExcludeFilter
@@ -387,7 +387,7 @@ type PrepareParams =
         self.AttributeFilter
         self.PathFilter ]
       |> Seq.iter
-           (fun a -> PrepareParams.validateArraySimple a CommandLine.ValidateRegexes)
+           (fun a -> PrepareParams.validateArraySimple a CommandLine.validateRegexes)
       self.consistent()
       self.consistent'()
       validateContext self.CallContext
@@ -426,10 +426,10 @@ type Logging =
     | Primitive p -> p.Info
 
   member internal self.Apply() =
-    Output.Error <- self.Error
-    Output.Warn <- self.Warn
-    Output.Info <- self.Info
-    Output.Echo <- self.Echo
+    Output.error <- self.Error
+    Output.warn <- self.Warn
+    Output.info <- self.Info
+    Output.echo <- self.Echo
 #else
 #endif
 [<SuppressMessage("Gendarme.Rules.Smells",

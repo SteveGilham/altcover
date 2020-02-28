@@ -54,14 +54,14 @@ type internal UsageInfo =
     Options2 : OptionSet }
 
 module internal Output =
-  let mutable internal Info : String -> unit = ignore
-  let mutable internal Warn : String -> unit = ignore
-  let mutable internal Echo : String -> unit = ignore
-  let mutable internal Error : String -> unit = ignore
-  let mutable internal Usage : UsageInfo -> unit = ignore
+  let mutable internal info : String -> unit = ignore
+  let mutable internal warn : String -> unit = ignore
+  let mutable internal echo : String -> unit = ignore
+  let mutable internal error : String -> unit = ignore
+  let mutable internal usage : UsageInfo -> unit = ignore
 
-  let internal WarnOn x =
-    if x then Warn else Info
+  let internal warnOn x =
+    if x then warn else info
 
   [<CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202",
                                  Justification = "Multiple Close() should be safe")>]
@@ -105,12 +105,12 @@ module internal CommandLine =
       directory
       |> Directory.Exists
       |> not) (fun () ->
-      Output.Info
+      Output.info
       <| String.Format
            (CultureInfo.CurrentCulture, (resources.GetString "CreateFolder"), directory)
       Directory.CreateDirectory(directory) |> ignore)
 
-  let internal WriteColoured (writer : TextWriter) colour operation =
+  let internal writeColoured (writer : TextWriter) colour operation =
     let original = Console.ForegroundColor
     try
       Console.ForegroundColor <- colour
@@ -120,8 +120,8 @@ module internal CommandLine =
 
   let enquotes = Map.empty |> Map.add "Windows_NT" "\""
 
-  let internal UsageBase u =
-    WriteColoured Console.Error ConsoleColor.Yellow (fun w ->
+  let internal usageBase u =
+    writeColoured Console.Error ConsoleColor.Yellow (fun w ->
       if u.Options.Any() || u.Options2.Any() then w.WriteLine(resources.GetString u.Intro)
       if u.Options.Any() then u.Options.WriteOptionDescriptions(w)
       if u.Options.Any() && u.Options2.Any() then
@@ -135,14 +135,14 @@ module internal CommandLine =
         w.WriteLine(resources.GetString "version")
       )
 
-  let internal Write (writer : TextWriter) colour data =
+  let internal write (writer : TextWriter) colour data =
     if not (String.IsNullOrEmpty(data)) then
-      WriteColoured writer colour (fun w -> w.WriteLine(data))
+      writeColoured writer colour (fun w -> w.WriteLine(data))
 
-  let internal WriteErr line = Write Console.Error ConsoleColor.Yellow line
-  let internal WriteOut line = Write Console.Out Console.ForegroundColor line
+  let internal writeErr line = write Console.Error ConsoleColor.Yellow line
+  let internal writeOut line = write Console.Out Console.ForegroundColor line
 
-  let internal Filter line f =
+  let internal filter line f =
     if line
        |> String.IsNullOrEmpty
        |> not
@@ -150,10 +150,10 @@ module internal CommandLine =
 
   module private Uncoverlet = // more event handlers
     let AddHandlers (proc : Process) =
-      proc.ErrorDataReceived.Add(fun e -> Output.Error |> Filter e.Data)
-      proc.OutputDataReceived.Add(fun e -> Output.Info |> Filter e.Data)
+      proc.ErrorDataReceived.Add(fun e -> Output.error |> filter e.Data)
+      proc.OutputDataReceived.Add(fun e -> Output.info |> filter e.Data)
 
-  let internal Launch (cmd : string) args toDirectory =
+  let internal launch (cmd : string) args toDirectory =
     Directory.SetCurrentDirectory(toDirectory)
     let quote =
       enquotes
@@ -163,7 +163,7 @@ module internal CommandLine =
     let enquoted = quote + cmd.Trim([| '"'; ''' |]) + quote
     String.Format
       (CultureInfo.CurrentCulture, resources.GetString "CommandLine", enquoted, args)
-    |> Output.Info
+    |> Output.info
 
     let psi = ProcessStartInfo(enquoted, args)
     psi.WorkingDirectory <- toDirectory
@@ -202,7 +202,7 @@ module internal CommandLine =
     | :? System.Security.SecurityException as s -> s :> Exception |> (logException store)
     result
 
-  let internal ParseCommandLine (arguments : string array) (options : OptionSet) =
+  let internal parseCommandLine (arguments : string array) (options : OptionSet) =
     help <- false
     error <- []
     try
@@ -224,7 +224,7 @@ module internal CommandLine =
         Right(after, options)
     with :? OptionException -> Left("UsageError", options)
 
-  let internal ProcessHelpOption(parse : Either<string * OptionSet, string list * OptionSet>) =
+  let internal processHelpOption(parse : Either<string * OptionSet, string list * OptionSet>) =
     match parse with
     | Right(_, options) ->
         if help then Left("HelpText", options) else parse
@@ -233,7 +233,7 @@ module internal CommandLine =
   [<System.Diagnostics.CodeAnalysis.SuppressMessage(
     "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
     Justification = "AvoidSpeculativeGenerality too")>]
-  let internal ProcessTrailingArguments (rest : string list) (toInfo : DirectoryInfo) =
+  let internal processTrailingArguments (rest : string list) (toInfo : DirectoryInfo) =
     // If we have some arguments in rest execute that command line
     match rest |> Seq.toList with
     | [] -> 0
@@ -248,7 +248,7 @@ module internal CommandLine =
           |> CmdLine.fromSeq
           |> CmdLine.toString
 
-        Launch cmd' args toInfo.FullName // Spawn process, echoing asynchronously
+        launch cmd' args toInfo.FullName // Spawn process, echoing asynchronously
 
   let logExceptionsToFile name extend =
     let path = Path.Combine(Visitor.OutputDirectories() |> Seq.head, name)
@@ -261,7 +261,7 @@ module internal CommandLine =
       let resource =
         if extend then "WrittenToEx" else "WrittenTo"
       String.Format(CultureInfo.CurrentCulture, resources.GetString resource, path, path')
-      |> Output.Error
+      |> Output.error
 
   let ReportErrors (tag : string) extend =
     conditionalOutput (fun () ->
@@ -273,8 +273,8 @@ module internal CommandLine =
          |> not) (fun () ->
       tag
       |> resources.GetString
-      |> Output.Error)
-    error |> List.iter Output.Error
+      |> Output.error)
+    error |> List.iter Output.error
     let name =
       "AltCover-"
       + DateTime.Now.ToString("yyyy-MM-dd--HH-mm-ss", CultureInfo.InvariantCulture)
@@ -282,12 +282,12 @@ module internal CommandLine =
     logExceptionsToFile name extend
 
   let HandleBadArguments extend arguments info =
-    String.Join(" ", arguments |> Seq.map (sprintf "%A")) |> Output.Echo
-    Output.Echo String.Empty
+    String.Join(" ", arguments |> Seq.map (sprintf "%A")) |> Output.echo
+    Output.echo String.Empty
     ReportErrors String.Empty extend
-    Output.Usage info
+    Output.usage info
 
-  let internal ValidateFileSystemEntity exists message key x =
+  let internal validateFileSystemEntity exists message key x =
     doPathOperation (fun () ->
       if (not (String.IsNullOrWhiteSpace x)) && x
                                                 |> Path.GetFullPath
@@ -303,13 +303,13 @@ module internal CommandLine =
   let internal fnf = "FileNotFound"
   let internal iv = "InvalidValue"
 
-  let internal ValidateDirectory dir x =
-    ValidateFileSystemEntity Directory.Exists dnf dir x
-  let internal ValidateFile file x = ValidateFileSystemEntity File.Exists fnf file x
-  let internal ValidatePath path x =
-    ValidateFileSystemEntity (fun _ -> true) iv path x
+  let internal validateDirectory dir x =
+    validateFileSystemEntity Directory.Exists dnf dir x
+  let internal validateFile file x = validateFileSystemEntity File.Exists fnf file x
+  let internal validatePath path x =
+    validateFileSystemEntity (fun _ -> true) iv path x
 
-  let internal FindAssemblyName f =
+  let internal findAssemblyName f =
     try
       (AssemblyName.GetAssemblyName f).ToString()
     with
@@ -319,9 +319,9 @@ module internal CommandLine =
     | :? BadImageFormatException
     | :? FileLoadException -> String.Empty
 
-  let internal ValidateAssembly assembly x =
-    if ValidateFile assembly x then
-      let name = FindAssemblyName x
+  let internal validateAssembly assembly x =
+    if validateFile assembly x then
+      let name = findAssemblyName x
       if String.IsNullOrWhiteSpace name then
         error <-
           String.Format
@@ -333,7 +333,7 @@ module internal CommandLine =
     else
       (String.Empty, false)
 
-  let internal TransformCryptographicException f =
+  let internal transformCryptographicException f =
     try
       f()
     with :? CryptographicException as c ->
@@ -341,11 +341,11 @@ module internal CommandLine =
       |> SecurityException
       |> raise
 
-  let internal ValidateStrongNameKey key x =
-    if ValidateFile key x then
+  let internal validateStrongNameKey key x =
+    if validateFile key x then
       doPathOperation (fun () ->
         let blob = File.ReadAllBytes x
-        TransformCryptographicException (fun () -> (blob |> StrongNameKeyData.Make, true)))
+        transformCryptographicException (fun () -> (blob |> StrongNameKeyData.Make, true)))
         (StrongNameKeyData.Empty(), false) false
     else
       (StrongNameKeyData.Empty(), false)
@@ -368,7 +368,7 @@ module internal CommandLine =
     x.Replace(";;", "\u0000").Split([| ";" |], StringSplitOptions.RemoveEmptyEntries)
       |> transform
 
-  let internal ValidateRegexes(x : String) =
+  let internal validateRegexes(x : String) =
     doPathOperation (fun () -> stripNulls x) [||] false
 
   let internal ddFlag (name : string) flag =

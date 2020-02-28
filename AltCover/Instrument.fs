@@ -267,7 +267,7 @@ module internal Instrument =
              x.Equals(".exe", StringComparison.OrdinalIgnoreCase)
              || x.Equals(".dll", StringComparison.OrdinalIgnoreCase))
         |> Seq.filter (fun f ->
-             y.ToString().Equals(CommandLine.FindAssemblyName f, StringComparison.Ordinal))
+             y.ToString().Equals(CommandLine.findAssemblyName f, StringComparison.Ordinal))
         |> Seq.tryHead
       match candidate sources with
       | None -> null
@@ -275,7 +275,7 @@ module internal Instrument =
           String.Format
             (System.Globalization.CultureInfo.CurrentCulture,
              CommandLine.resources.GetString "resolved", y.ToString(), x)
-          |> (Output.WarnOn true)
+          |> (Output.warnOn true)
           let a = AssemblyDefinition.ReadAssembly x
           ResolutionTable.[name] <- a
           a
@@ -722,7 +722,7 @@ module internal Instrument =
   let private VisitAfterAssembly state (assembly : AssemblyDefinition)
       (paths : string list) =
     let originalFileName = Path.GetFileName assembly.MainModule.FileName
-    WriteAssemblies assembly originalFileName paths Output.Info
+    WriteAssemblies assembly originalFileName paths Output.info
     state
 
   [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Correctness",

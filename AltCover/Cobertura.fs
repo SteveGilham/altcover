@@ -29,8 +29,8 @@ module internal Cobertura =
          target.Descendants(X "sources")
          |> Seq.iter (fun s -> s.Add(XElement(X "source", XText(f)))))
 
-  let internal NCover (report : XDocument) (packages : XElement) =
-    let ProcessSeqPnts (method : XElement) (lines : XElement) =
+  let internal nCover (report : XDocument) (packages : XElement) =
+    let processSeqPnts (method : XElement) (lines : XElement) =
       method.Descendants(X "seqpnt")
       |> Seq.filter (fun s -> s.Attribute(X "excluded").Value <> "true")
       |> Seq.fold (fun (h, t) s ->
@@ -46,20 +46,20 @@ module internal Cobertura =
            lines.Add line
            (h + (if vx = "0" then 0 else 1), t + 1)) (0, 0)
 
-    let ProcessMethod (methods : XElement) (hits, total) (key, (signature, method)) =
+    let processMethod (methods : XElement) (hits, total) (key, (signature, method)) =
       let mtx =
         XElement
           (X "method", XAttribute(X "name", key), XAttribute(X "signature", signature))
       methods.Add(mtx)
       let lines = XElement(X "lines")
       mtx.Add(lines)
-      let (mHits, mTotal) = ProcessSeqPnts method lines
+      let (mHits, mTotal) = processSeqPnts method lines
       SetRate mHits mTotal "line-rate" mtx
       SetRate 1 1 "branch-rate" mtx
       SetRate 1 1 "complexity" mtx
       (hits + mHits, total + mTotal)
 
-    let SortMethod (n : String) (methods : XElement) (method : XElement seq) =
+    let sortMethod (n : String) (methods : XElement) (method : XElement seq) =
       method
       |> Seq.map (fun m ->
            let key, signature =
@@ -72,22 +72,22 @@ module internal Cobertura =
                (fn.[1].Substring(n.Length + 1), fn.[0] + " " + fn.[2])
            (key, (signature, m)))
       |> LCov.SortByFirst
-      |> Seq.fold (ProcessMethod methods) (0, 0)
+      |> Seq.fold (processMethod methods) (0, 0)
 
-    let ProcessClass (classes : XElement) (hits, total) ((name, signature), method) =
+    let processClass (classes : XElement) (hits, total) ((name, signature), method) =
       let ``class`` =
         XElement
           (X "class", XAttribute(X "name", name), XAttribute(X "filename", signature))
       classes.Add(``class``)
       let methods = XElement(X "methods")
       ``class``.Add(methods)
-      let (mHits, mTotal) = SortMethod name methods method
+      let (mHits, mTotal) = sortMethod name methods method
       SetRate mHits mTotal "line-rate" ``class``
       SetRate 1 1 "branch-rate" ``class``
       SetRate 1 1 "complexity" ``class``
       (hits + mHits, total + mTotal)
 
-    let ExtractClasses (``module`` : XElement) classes =
+    let extractClasses (``module`` : XElement) classes =
       ``module``.Descendants(X "method")
       |> Seq.filter (fun m -> m.Attribute(X "excluded").Value <> "true")
       |> Seq.groupBy (fun method ->
@@ -96,21 +96,21 @@ module internal Cobertura =
             |> Seq.map (fun s -> s.Attribute(X "document").Value)
             |> Seq.head))
       |> LCov.SortByFirst
-      |> Seq.fold (ProcessClass classes) (0, 0)
+      |> Seq.fold (processClass classes) (0, 0)
 
-    let ProcessModule (hits, total) (``module`` : XElement) =
+    let processModule (hits, total) (``module`` : XElement) =
       let package =
         XElement(X "package", XAttribute(X "name", ``module``.Attribute(X "name").Value))
       packages.Add(package)
       let classes = XElement(X "classes")
       package.Add(classes)
-      let (cHits, cTotal) = ExtractClasses ``module`` classes
+      let (cHits, cTotal) = extractClasses ``module`` classes
       SetRate cHits cTotal "line-rate" package
       SetRate 1 1 "branch-rate" package
       SetRate 1 1 "complexity" package
       (hits + cHits, total + cTotal)
 
-    let (hits, total) = report.Descendants(X "module") |> Seq.fold ProcessModule (0, 0)
+    let (hits, total) = report.Descendants(X "module") |> Seq.fold processModule (0, 0)
     let p = packages.Parent
     SetRate hits total "line-rate" p
     SetRate 1 1 "branch-rate" p
@@ -119,7 +119,7 @@ module internal Cobertura =
 
     AddSources report packages.Parent "seqpnt" "document"
 
-  let internal OpenCover (report : XDocument) (packages : XElement) =
+  let internal openCover (report : XDocument) (packages : XElement) =
     let extract (owner : XElement) (target : XElement) =
       let summary = owner.Descendants(X "Summary") |> Seq.head
 
@@ -158,7 +158,7 @@ module internal Cobertura =
            XAttribute(X "coverage", sprintf "%d%%" pc))
       cc.Add co
 
-    let ProcessSeqPnt (lines : XElement) (s : XElement) =
+    let processSeqPnt (lines : XElement) (s : XElement) =
       let vc = s.Attribute(X "vc")
 
       let vx =
@@ -189,7 +189,7 @@ module internal Cobertura =
         doBranch bec bev uspid line
       lines.Add line
 
-    let AddMethod (methods : XElement) (key, signature) =
+    let addMethod (methods : XElement) (key, signature) =
       let mtx =
         XElement
           (X "method", XAttribute(X "name", key), XAttribute(X "signature", signature))
@@ -198,25 +198,25 @@ module internal Cobertura =
       mtx.Add(lines)
       (mtx, lines)
 
-    let AddAttributeValue (element : XElement) name v =
+    let addAttributeValue (element : XElement) name v =
       v + (element.Attribute(X name).Value
            |> Int32.TryParse
            |> snd)
 
-    let ProcessMethod (methods : XElement) (b, bv, s, sv, c, cv)
+    let processMethod (methods : XElement) (b, bv, s, sv, c, cv)
         (key, (signature, method)) =
-      let ccplex = 0 |> AddAttributeValue method "cyclomaticComplexity"
-      let mtx, lines = AddMethod (methods : XElement) (key, signature)
+      let ccplex = 0 |> addAttributeValue method "cyclomaticComplexity"
+      let mtx, lines = addMethod (methods : XElement) (key, signature)
       extract method mtx
       mtx.Add(XAttribute(X "complexity", ccplex))
-      method.Descendants(X "SequencePoint") |> Seq.iter (ProcessSeqPnt lines)
+      method.Descendants(X "SequencePoint") |> Seq.iter (processSeqPnt lines)
       let summary = method.Descendants(X "Summary") |> Seq.head
-      (b |> AddAttributeValue summary "numBranchPoints",
-       bv |> AddAttributeValue summary "visitedBranchPoints",
-       s |> AddAttributeValue summary "numSequencePoints",
-       sv |> AddAttributeValue summary "visitedSequencePoints", c + 1, cv + ccplex)
+      (b |> addAttributeValue summary "numBranchPoints",
+       bv |> addAttributeValue summary "visitedBranchPoints",
+       s |> addAttributeValue summary "numSequencePoints",
+       sv |> addAttributeValue summary "visitedSequencePoints", c + 1, cv + ccplex)
 
-    let ArrangeMethods (name : String) (methods : XElement) (methodSet : XElement seq) =
+    let arrangeMethods (name : String) (methods : XElement) (methodSet : XElement seq) =
       methodSet
       |> Seq.map (fun method ->
            let fn =
@@ -230,21 +230,21 @@ module internal Cobertura =
            mt.Descendants(X "SequencePoint")
            |> Seq.isEmpty
            |> not)
-      |> Seq.fold (ProcessMethod methods) (0, 0, 0, 0, 0, 0)
+      |> Seq.fold (processMethod methods) (0, 0, 0, 0, 0, 0)
 
-    let ProcessClass (classes : XElement) (cvcum, ccum) ((name, source), methodSet) =
+    let processClass (classes : XElement) (cvcum, ccum) ((name, source), methodSet) =
       let ``class`` =
         XElement(X "class", XAttribute(X "name", name), XAttribute(X "filename", source))
       classes.Add(``class``)
       let methods = XElement(X "methods")
       ``class``.Add(methods)
-      let (b, bv, s, sv, c, cv) = ArrangeMethods name methods methodSet
+      let (b, bv, s, sv, c, cv) = arrangeMethods name methods methodSet
       SetRate sv s "line-rate" ``class``
       SetRate bv b "branch-rate" ``class``
       SetRate cv c "complexity" ``class``
       (cv + cvcum, c + ccum)
 
-    let ProcessModule files classes (``module`` : XElement) =
+    let processModule files classes (``module`` : XElement) =
       ``module``.Descendants(X "Method")
       |> Seq.filter (fun m ->
            m.Descendants(X "FileRef")
@@ -256,7 +256,7 @@ module internal Cobertura =
             |> Seq.map (fun s -> files |> Map.find (s.Attribute(X "uid").Value))
             |> Seq.head))
       |> LCov.SortByFirst
-      |> Seq.fold (ProcessClass classes) (0, 0)
+      |> Seq.fold (processClass classes) (0, 0)
 
     let lookUpFiles (``module`` : XElement) =
       ``module``.Descendants(X "File")
@@ -280,7 +280,7 @@ module internal Cobertura =
          let classes = XElement(X "classes")
          package.Add(classes)
          extract ``module`` package
-         let (cv, c) = ProcessModule files classes ``module``
+         let (cv, c) = processModule files classes ``module``
          SetRate cv c "complexity" package)
     extract (report.Descendants(X "CoverageSession") |> Seq.head) packages.Parent
     AddSources report packages.Parent "File" "fullPath"
@@ -308,8 +308,8 @@ module internal Cobertura =
     element.Add(packages)
 
     match format with
-    | Base.ReportFormat.NCover -> NCover report packages
-    | _ -> OpenCover report packages
+    | Base.ReportFormat.NCover -> nCover report packages
+    | _ -> openCover report packages
 
     // lines reprise
     packages.Descendants(X "class")
@@ -329,7 +329,7 @@ module internal Cobertura =
               reprise.Add copy))
     rewrite
 
-  let internal Summary (report : XDocument) (format : Base.ReportFormat) result =
+  let internal summary (report : XDocument) (format : Base.ReportFormat) result =
     let rewrite = ConvertReport report format
     rewrite.Save(!path |> Option.get)
     result

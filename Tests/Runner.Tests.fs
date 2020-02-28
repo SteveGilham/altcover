@@ -321,7 +321,7 @@ module AltCoverRunnerTests =
         use stderr = new StringWriter()
         Console.SetError stderr
         let empty = OptionSet()
-        CommandLine.UsageBase { Intro = "UsageError"; Options = empty; Options2 = options}
+        CommandLine.usageBase { Intro = "UsageError"; Options = empty; Options2 = options}
         let result = stderr.ToString().Replace("\r\n", "\n")
         let expected = """Error - usage is:
   -r, --recorderDirectory=VALUE
@@ -389,7 +389,7 @@ module AltCoverRunnerTests =
           else (program, String.Empty)
 
         let r =
-          CommandLine.Launch exe args
+          CommandLine.launch exe args
             (Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location))
         Assert.That(r, Is.EqualTo 0)
         Assert.That(stderr.ToString(), Is.Empty)
@@ -430,7 +430,7 @@ module AltCoverRunnerTests =
     let ParsingJunkIsAnError() =
       Runner.init()
       let options = Runner.DeclareOptions()
-      let parse = CommandLine.ParseCommandLine [| "/@thisIsNotAnOption" |] options
+      let parse = CommandLine.parseCommandLine [| "/@thisIsNotAnOption" |] options
       match parse with
       | Right _ -> Assert.Fail()
       | Left(x, y) ->
@@ -445,7 +445,7 @@ module AltCoverRunnerTests =
       Runner.init()
       let options = Runner.DeclareOptions()
       let input = [| "--"; "/@thisIsNotAnOption"; "this should be OK" |]
-      let parse = CommandLine.ParseCommandLine input options
+      let parse = CommandLine.parseCommandLine input options
       match parse with
       | Left _ -> Assert.Fail()
       | Right(x, y) ->
@@ -460,11 +460,11 @@ module AltCoverRunnerTests =
       Runner.init()
       let options = Runner.DeclareOptions()
       let input = [| "--?" |]
-      let parse = CommandLine.ParseCommandLine input options
+      let parse = CommandLine.parseCommandLine input options
       match parse with
       | Left _ -> Assert.Fail()
       | Right(x, y) -> Assert.That(y, Is.SameAs options)
-      match CommandLine.ProcessHelpOption parse with
+      match CommandLine.processHelpOption parse with
       | Right _ -> Assert.Fail()
       | Left(x, y) ->
         Assert.That(x, Is.EqualTo "HelpText")
@@ -472,8 +472,8 @@ module AltCoverRunnerTests =
       // a "not sticky" test
       lock Runner.executable (fun () ->
         Runner.executable := None
-        match CommandLine.ParseCommandLine [| "/x"; "x" |] options
-              |> CommandLine.ProcessHelpOption with
+        match CommandLine.parseCommandLine [| "/x"; "x" |] options
+              |> CommandLine.processHelpOption with
         | Left _ -> Assert.Fail()
         | Right(x, y) ->
           Assert.That(y, Is.SameAs options)
@@ -491,13 +491,13 @@ module AltCoverRunnerTests =
         [| "--zzz"
            Path.GetInvalidPathChars() |> String |]
 
-      let parse = CommandLine.ParseCommandLine input options
+      let parse = CommandLine.parseCommandLine input options
       match parse with
       | Right _ -> Assert.Fail()
       | Left(x, y) ->
         Assert.That(x, Is.EqualTo "UsageError")
         Assert.That(y, Is.SameAs options)
-      match CommandLine.ProcessHelpOption parse with
+      match CommandLine.processHelpOption parse with
       | Right _ -> Assert.Fail()
       | Left(x, y) ->
         Assert.That(x, Is.EqualTo "UsageError")
@@ -505,8 +505,8 @@ module AltCoverRunnerTests =
       // a "not sticky" test
       lock Runner.executable (fun () ->
         Runner.executable := None
-        match CommandLine.ParseCommandLine [| "/x"; "x" |] options
-              |> CommandLine.ProcessHelpOption with
+        match CommandLine.parseCommandLine [| "/x"; "x" |] options
+              |> CommandLine.processHelpOption with
         | Left _ -> Assert.Fail()
         | Right(x, y) ->
           Assert.That(y, Is.SameAs options)
@@ -524,7 +524,7 @@ module AltCoverRunnerTests =
           let options = Runner.DeclareOptions()
           let unique = "some exe"
           let input = [| "-x"; unique |]
-          let parse = CommandLine.ParseCommandLine input options
+          let parse = CommandLine.parseCommandLine input options
           match parse with
           | Left _ -> Assert.Fail()
           | Right(x, y) ->
@@ -554,7 +554,7 @@ module AltCoverRunnerTests =
                "/x"
                unique.Replace("-", "+") |]
 
-          let parse = CommandLine.ParseCommandLine input options
+          let parse = CommandLine.parseCommandLine input options
           match parse with
           | Right _ -> Assert.Fail()
           | Left(x, y) ->
@@ -576,7 +576,7 @@ module AltCoverRunnerTests =
           let options = Runner.DeclareOptions()
           let blank = " "
           let input = [| "-x"; blank |]
-          let parse = CommandLine.ParseCommandLine input options
+          let parse = CommandLine.parseCommandLine input options
           match parse with
           | Right _ -> Assert.Fail()
           | Left(x, y) ->
@@ -596,7 +596,7 @@ module AltCoverRunnerTests =
         let options = Runner.DeclareOptions()
         let unique = Path.GetFullPath(".")
         let input = [| "-w"; unique |]
-        let parse = CommandLine.ParseCommandLine input options
+        let parse = CommandLine.parseCommandLine input options
         match parse with
         | Left _ -> Assert.Fail()
         | Right(x, y) ->
@@ -624,7 +624,7 @@ module AltCoverRunnerTests =
              "/w"
              Path.GetFullPath("..") |]
 
-        let parse = CommandLine.ParseCommandLine input options
+        let parse = CommandLine.parseCommandLine input options
         match parse with
         | Right _ -> Assert.Fail()
         | Left(x, y) ->
@@ -645,7 +645,7 @@ module AltCoverRunnerTests =
         let options = Runner.DeclareOptions()
         let unique = Guid.NewGuid().ToString().Replace("-", "*")
         let input = [| "-w"; unique |]
-        let parse = CommandLine.ParseCommandLine input options
+        let parse = CommandLine.parseCommandLine input options
         match parse with
         | Right _ -> Assert.Fail()
         | Left(x, y) ->
@@ -664,7 +664,7 @@ module AltCoverRunnerTests =
         Runner.workingDirectory <- None
         let options = Runner.DeclareOptions()
         let input = [| "-w" |]
-        let parse = CommandLine.ParseCommandLine input options
+        let parse = CommandLine.parseCommandLine input options
         match parse with
         | Right _ -> Assert.Fail()
         | Left(x, y) ->
@@ -684,7 +684,7 @@ module AltCoverRunnerTests =
         let options = Runner.DeclareOptions()
         let unique = Path.GetFullPath(".")
         let input = [| "-r"; unique |]
-        let parse = CommandLine.ParseCommandLine input options
+        let parse = CommandLine.parseCommandLine input options
         match parse with
         | Left _ -> Assert.Fail()
         | Right(x, y) ->
@@ -712,7 +712,7 @@ module AltCoverRunnerTests =
              "/r"
              Path.GetFullPath("..") |]
 
-        let parse = CommandLine.ParseCommandLine input options
+        let parse = CommandLine.parseCommandLine input options
         match parse with
         | Right _ -> Assert.Fail()
         | Left(x, y) ->
@@ -733,7 +733,7 @@ module AltCoverRunnerTests =
         let options = Runner.DeclareOptions()
         let unique = Guid.NewGuid().ToString().Replace("-", "*")
         let input = [| "-r"; unique |]
-        let parse = CommandLine.ParseCommandLine input options
+        let parse = CommandLine.parseCommandLine input options
         match parse with
         | Right _ -> Assert.Fail()
         | Left(x, y) ->
@@ -752,7 +752,7 @@ module AltCoverRunnerTests =
         Runner.recordingDirectory <- None
         let options = Runner.DeclareOptions()
         let input = [| "-r" |]
-        let parse = CommandLine.ParseCommandLine input options
+        let parse = CommandLine.parseCommandLine input options
         match parse with
         | Right _ -> Assert.Fail()
         | Left(x, y) ->
@@ -771,7 +771,7 @@ module AltCoverRunnerTests =
         Runner.collect := false
         let options = Runner.DeclareOptions()
         let input = [| "--collect" |]
-        let parse = CommandLine.ParseCommandLine input options
+        let parse = CommandLine.parseCommandLine input options
         match parse with
         | Left _ -> Assert.Fail()
         | Right(x, y) ->
@@ -791,7 +791,7 @@ module AltCoverRunnerTests =
         Runner.collect := false
         let options = Runner.DeclareOptions()
         let input = [| "--collect"; "--collect" |]
-        let parse = CommandLine.ParseCommandLine input options
+        let parse = CommandLine.parseCommandLine input options
         match parse with
         | Right _ -> Assert.Fail()
         | Left(x, y) ->
@@ -814,7 +814,7 @@ module AltCoverRunnerTests =
           let options = Runner.DeclareOptions()
           let unique = "some exe"
           let input = [| "-l"; unique |]
-          let parse = CommandLine.ParseCommandLine input options
+          let parse = CommandLine.parseCommandLine input options
           match parse with
           | Left _ -> Assert.Fail()
           | Right(x, y) ->
@@ -847,7 +847,7 @@ module AltCoverRunnerTests =
                "/l"
                unique.Replace("-", "+") |]
 
-          let parse = CommandLine.ParseCommandLine input options
+          let parse = CommandLine.parseCommandLine input options
           match parse with
           | Right _ -> Assert.Fail()
           | Left(x, y) ->
@@ -871,7 +871,7 @@ module AltCoverRunnerTests =
           let options = Runner.DeclareOptions()
           let blank = " "
           let input = [| "-l"; blank |]
-          let parse = CommandLine.ParseCommandLine input options
+          let parse = CommandLine.parseCommandLine input options
           match parse with
           | Right _ -> Assert.Fail()
           | Left(x, y) ->
@@ -891,7 +891,7 @@ module AltCoverRunnerTests =
         Runner.threshold <- None
         let options = Runner.DeclareOptions()
         let input = [| "-t"; "57" |]
-        let parse = CommandLine.ParseCommandLine input options
+        let parse = CommandLine.parseCommandLine input options
         match parse with
         | Left _ -> Assert.Fail()
         | Right(x, y) ->
@@ -913,7 +913,7 @@ module AltCoverRunnerTests =
         Runner.threshold <- None
         let options = Runner.DeclareOptions()
         let input = [| "-t"; "23"; "/t"; "42" |]
-        let parse = CommandLine.ParseCommandLine input options
+        let parse = CommandLine.parseCommandLine input options
         match parse with
         | Right _ -> Assert.Fail()
         | Left(x, y) ->
@@ -933,7 +933,7 @@ module AltCoverRunnerTests =
         Runner.threshold <- None
         let options = Runner.DeclareOptions()
         let input = [| "-t"; "-111" |]
-        let parse = CommandLine.ParseCommandLine input options
+        let parse = CommandLine.parseCommandLine input options
         match parse with
         | Right _ -> Assert.Fail()
         | Left(x, y) ->
@@ -952,7 +952,7 @@ module AltCoverRunnerTests =
         Runner.threshold <- None
         let options = Runner.DeclareOptions()
         let input = [| "-t"; "  " |]
-        let parse = CommandLine.ParseCommandLine input options
+        let parse = CommandLine.parseCommandLine input options
         match parse with
         | Right _ -> Assert.Fail()
         | Left(x, y) ->
@@ -971,7 +971,7 @@ module AltCoverRunnerTests =
         Runner.threshold <- None
         let options = Runner.DeclareOptions()
         let input = [| "-t" |]
-        let parse = CommandLine.ParseCommandLine input options
+        let parse = CommandLine.parseCommandLine input options
         match parse with
         | Right _ -> Assert.Fail()
         | Left(x, y) ->
@@ -993,7 +993,7 @@ module AltCoverRunnerTests =
           let options = Runner.DeclareOptions()
           let unique = "some exe"
           let input = [| "-c"; unique |]
-          let parse = CommandLine.ParseCommandLine input options
+          let parse = CommandLine.parseCommandLine input options
           match parse with
           | Left _ -> Assert.Fail()
           | Right(x, y) ->
@@ -1026,7 +1026,7 @@ module AltCoverRunnerTests =
                "/c"
                unique.Replace("-", "+") |]
 
-          let parse = CommandLine.ParseCommandLine input options
+          let parse = CommandLine.parseCommandLine input options
           match parse with
           | Right _ -> Assert.Fail()
           | Left(x, y) ->
@@ -1050,7 +1050,7 @@ module AltCoverRunnerTests =
           let options = Runner.DeclareOptions()
           let blank = " "
           let input = [| "-c"; blank |]
-          let parse = CommandLine.ParseCommandLine input options
+          let parse = CommandLine.parseCommandLine input options
           match parse with
           | Right _ -> Assert.Fail()
           | Left(x, y) ->
@@ -1071,7 +1071,7 @@ module AltCoverRunnerTests =
         let options = Runner.DeclareOptions()
         let unique = Guid.NewGuid().ToString()
         let input = [| "-o"; unique |]
-        let parse = CommandLine.ParseCommandLine input options
+        let parse = CommandLine.parseCommandLine input options
         match parse with
         | Left _ -> Assert.Fail()
         | Right(x, y) ->
@@ -1101,7 +1101,7 @@ module AltCoverRunnerTests =
              "/o"
              unique.Replace("-", "+") |]
 
-        let parse = CommandLine.ParseCommandLine input options
+        let parse = CommandLine.parseCommandLine input options
         match parse with
         | Right _ -> Assert.Fail()
         | Left(x, y) ->
@@ -1122,7 +1122,7 @@ module AltCoverRunnerTests =
         let options = Runner.DeclareOptions()
         let blank = " "
         let input = [| "-o"; blank |]
-        let parse = CommandLine.ParseCommandLine input options
+        let parse = CommandLine.parseCommandLine input options
         match parse with
         | Right _ -> Assert.Fail()
         | Left(x, y) ->
@@ -1141,7 +1141,7 @@ module AltCoverRunnerTests =
         CommandLine.dropReturnCode := false
         let options = Runner.DeclareOptions()
         let input = [| "--dropReturnCode" |]
-        let parse = CommandLine.ParseCommandLine input options
+        let parse = CommandLine.parseCommandLine input options
         match parse with
         | Left _ -> Assert.Fail()
         | Right(x, y) ->
@@ -1161,7 +1161,7 @@ module AltCoverRunnerTests =
         CommandLine.dropReturnCode := false
         let options = Runner.DeclareOptions()
         let input = [| "--dropReturnCode"; "--dropReturnCode" |]
-        let parse = CommandLine.ParseCommandLine input options
+        let parse = CommandLine.parseCommandLine input options
         match parse with
         | Right _ -> Assert.Fail()
         | Left(x, y) ->
@@ -1224,7 +1224,7 @@ module AltCoverRunnerTests =
           Runner.SummaryFormat <- Default
           let options = Runner.DeclareOptions()
           let input = [| "--teamcity" + a |]
-          let parse = CommandLine.ParseCommandLine input options
+          let parse = CommandLine.parseCommandLine input options
           match parse with
           | Left _ -> Assert.Fail()
           | Right(x, y) ->
@@ -1249,7 +1249,7 @@ module AltCoverRunnerTests =
         Runner.SummaryFormat <- Default
         let options = Runner.DeclareOptions()
         let input = [| "--teamcity"; "--teamcity" |]
-        let parse = CommandLine.ParseCommandLine input options
+        let parse = CommandLine.parseCommandLine input options
         match parse with
         | Right _ -> Assert.Fail()
         | Left(x, y) ->
@@ -1268,7 +1268,7 @@ module AltCoverRunnerTests =
         let options = Runner.DeclareOptions()
         let blank = " "
         let input = [| "--teamcity:junk" |]
-        let parse = CommandLine.ParseCommandLine input options
+        let parse = CommandLine.parseCommandLine input options
         match parse with
         | Right _ -> Assert.Fail()
         | Left(x, y) ->
@@ -1492,15 +1492,15 @@ module AltCoverRunnerTests =
           else [ path ]
 #endif
 
-      let r = CommandLine.ProcessTrailingArguments args <| DirectoryInfo(where)
+      let r = CommandLine.processTrailingArguments args <| DirectoryInfo(where)
       Assert.That(r, Is.EqualTo 0)
 
-      let r2 = CommandLine.ProcessTrailingArguments (args @ [ "1"; "2" ]) <| DirectoryInfo(where)
+      let r2 = CommandLine.processTrailingArguments (args @ [ "1"; "2" ]) <| DirectoryInfo(where)
       Assert.That(r2, Is.EqualTo 2)
 
       try
         CommandLine.dropReturnCode := true
-        let r0 = CommandLine.ProcessTrailingArguments (args @ [ "1"; "2" ]) <| DirectoryInfo(where)
+        let r0 = CommandLine.processTrailingArguments (args @ [ "1"; "2" ]) <| DirectoryInfo(where)
         Assert.That(r0, Is.EqualTo 0)
       finally
         CommandLine.dropReturnCode := false
@@ -1539,7 +1539,7 @@ module AltCoverRunnerTests =
           if nonWindows then "mono" :: baseArgs
           else baseArgs
 
-        let r = CommandLine.ProcessTrailingArguments args <| DirectoryInfo(path)
+        let r = CommandLine.processTrailingArguments args <| DirectoryInfo(path)
         Assert.That(r, Is.EqualTo 0)
         Assert.That(stderr.ToString(), Is.Empty)
         stdout.Flush()
@@ -1565,7 +1565,7 @@ module AltCoverRunnerTests =
     let ShouldNoOp() =
       Runner.init()
       let where = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
-      let r = CommandLine.ProcessTrailingArguments [] <| DirectoryInfo(where)
+      let r = CommandLine.processTrailingArguments [] <| DirectoryInfo(where)
       Assert.That(r, Is.EqualTo 0)
 
 #if NETCOREAPP2_0
@@ -2359,7 +2359,7 @@ or
         lock Runner.SummaryFormat (fun () ->
           Runner.SummaryFormat <- Default
           let task = Collect()
-          Output.Info <- (fun s -> builder.Append(s).Append("|") |> ignore)
+          Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
           let r = Runner.StandardSummary report Base.ReportFormat.NCover 0
           Assert.That(r, Is.EqualTo 0)
           let expected = "Visited Classes 0 of 0 (n/a)|Visited Methods 0 of 0 (n/a)|Visited Points 0 of 0 (n/a)|"
@@ -2370,7 +2370,7 @@ or
           let collected = task.Summary.Replace("\r",String.Empty).Replace("\n", "|")
           Assert.That(collected, Is.EqualTo expected))
       finally
-        Output.Info <- ignore
+        Output.info <- ignore
 
 #if NETCOREAPP2_0
 #else
@@ -2385,7 +2385,7 @@ or
         lock Runner.SummaryFormat (fun () ->
           Runner.SummaryFormat <- B
           let task = Collect()
-          Output.Info <- (fun s -> builder.Append(s).Append("|") |> ignore)
+          Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
           let r = Runner.StandardSummary report Base.ReportFormat.NCover 0
           Assert.That(r, Is.EqualTo 0)
           let expected = "##teamcity[buildStatisticValue key='CodeCoverageAbsCTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsCCovered' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsMTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsMCovered' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsSTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsSCovered' value='0']|"
@@ -2398,7 +2398,7 @@ or
           let collected = task.Summary.Replace("\r",String.Empty).Replace("\n", "|")
           Assert.That(collected, Is.EqualTo expected, collected))
       finally
-        Output.Info <- ignore
+        Output.info <- ignore
 
 #if NETCOREAPP2_0
 #else
@@ -2413,7 +2413,7 @@ or
         lock Runner.SummaryFormat (fun () ->
           Runner.SummaryFormat <- BPlus
           let task = Collect()
-          Output.Info <- (fun s -> builder.Append(s).Append("|") |> ignore)
+          Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
           let r = Runner.StandardSummary report Base.ReportFormat.NCover 0
           Assert.That(r, Is.EqualTo 0)
           let expected = "Visited Classes 0 of 0 (n/a)|Visited Methods 0 of 0 (n/a)|Visited Points 0 of 0 (n/a)|##teamcity[buildStatisticValue key='CodeCoverageAbsCTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsCCovered' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsMTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsMCovered' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsSTotal' value='0']|##teamcity[buildStatisticValue key='CodeCoverageAbsSCovered' value='0']|"
@@ -2426,7 +2426,7 @@ or
           let collected = task.Summary.Replace("\r",String.Empty).Replace("\n", "|")
           Assert.That(collected, Is.EqualTo expected, collected))
       finally
-        Output.Info <- ignore
+        Output.info <- ignore
 
 #if NETCOREAPP2_0
 #else
@@ -2443,7 +2443,7 @@ or
       try
         lock Runner.SummaryFormat (fun () ->
           Runner.SummaryFormat <- RPlus
-          Output.Info <- (fun s -> builder.Append(s).Append("|") |> ignore)
+          Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
           let r =
             try
               Runner.threshold <- Some 25
@@ -2459,7 +2459,7 @@ or
                 "##teamcity[buildStatisticValue key='CodeCoverageAbsCTotal' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsCCovered' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsMTotal' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsMCovered' value='1']|##teamcity[buildStatisticValue key='CodeCoverageAbsSTotal' value='10']|##teamcity[buildStatisticValue key='CodeCoverageAbsSCovered' value='8']|")
             ))
       finally
-        Output.Info <- ignore
+        Output.info <- ignore
 
 #if NETCOREAPP2_0
 #else
@@ -2474,7 +2474,7 @@ or
       try
         lock Runner.SummaryFormat (fun () ->
           Runner.SummaryFormat <- Default
-          Output.Info <- (fun s -> builder.Append(s).Append("|") |> ignore)
+          Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
           let r = Runner.StandardSummary report Base.ReportFormat.OpenCover 0
           Assert.That(r, Is.EqualTo 0)
           Assert.That
@@ -2485,7 +2485,7 @@ or
                 + "==== Alternative Results (includes all methods including those without corresponding source) ====|"
                 + "Alternative Visited Classes 0 of 0 (n/a)|Alternative Visited Methods 0 of 0 (n/a)|")))
       finally
-        Output.Info <- ignore
+        Output.info <- ignore
 
 #if NETCOREAPP2_0
 #else
@@ -2500,7 +2500,7 @@ or
       try
         lock Runner.SummaryFormat (fun () ->
           Runner.SummaryFormat <- B
-          Output.Info <- (fun s -> builder.Append(s).Append("|") |> ignore)
+          Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
           let r = Runner.StandardSummary report Base.ReportFormat.OpenCover 0
           Assert.That(r, Is.EqualTo 0)
           Assert.That
@@ -2515,7 +2515,7 @@ or
                 "##teamcity[buildStatisticValue key='CodeCoverageAbsBTotal' value='0']|" +
                 "##teamcity[buildStatisticValue key='CodeCoverageAbsBCovered' value='0']|")))
       finally
-        Output.Info <- ignore
+        Output.info <- ignore
 
 #if NETCOREAPP2_0
 #else
@@ -2530,7 +2530,7 @@ or
       try
         lock Runner.SummaryFormat (fun () ->
           Runner.SummaryFormat <- RPlus
-          Output.Info <- (fun s -> builder.Append(s).Append("|") |> ignore)
+          Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
           let r = Runner.StandardSummary report Base.ReportFormat.OpenCover 0
           Assert.That(r, Is.EqualTo 0)
           Assert.That
@@ -2549,7 +2549,7 @@ or
                 "##teamcity[buildStatisticValue key='CodeCoverageAbsRTotal' value='0']|" +
                 "##teamcity[buildStatisticValue key='CodeCoverageAbsRCovered' value='0']|")))
       finally
-        Output.Info <- ignore
+        Output.info <- ignore
 
 #if NETCOREAPP2_0
 #else
@@ -2567,7 +2567,7 @@ or
       try
         lock Runner.SummaryFormat (fun () ->
           Runner.SummaryFormat <- BPlus
-          Output.Info <- (fun s -> builder.Append(s).Append("|") |> ignore)
+          Output.info <- (fun s -> builder.Append(s).Append("|") |> ignore)
           let r =
             try
               Runner.threshold <- Some 75
@@ -2587,7 +2587,7 @@ or
                 + "##teamcity[buildStatisticValue key='CodeCoverageAbsBTotal' value='3']|##teamcity[buildStatisticValue key='CodeCoverageAbsBCovered' value='2']|")
                ))
       finally
-        Output.Info <- ignore
+        Output.info <- ignore
 
 #if NETCOREAPP2_0
 #else
@@ -2846,7 +2846,7 @@ or
       |> Directory.CreateDirectory
       |> ignore
       try
-        let r = Cobertura.Summary baseline Base.ReportFormat.NCover 0
+        let r = Cobertura.summary baseline Base.ReportFormat.NCover 0
         Assert.That(r, Is.EqualTo 0)
         let result =
           Regex.Replace(File.ReadAllText unique, """timestamp=\"\d*\">""",
@@ -2889,7 +2889,7 @@ or
       |> Directory.CreateDirectory
       |> ignore
       try
-        let r = Cobertura.Summary baseline Base.ReportFormat.OpenCover 0
+        let r = Cobertura.summary baseline Base.ReportFormat.OpenCover 0
         Assert.That(r, Is.EqualTo 0)
         let result =
           Regex.Replace
@@ -2918,13 +2918,13 @@ or
 #endif
     let ThresholdViolationShouldBeReported() =
       Runner.init()
-      let saveErr = Output.Error
+      let saveErr = Output.error
       let saveSummaries = Runner.Summaries
       let builder = System.Text.StringBuilder()
       let saved = Runner.threshold
       try
         Runner.Summaries <- [ (fun _ _ _ -> 23) ]
-        Output.Error <- (fun s -> builder.Append(s).Append("|") |> ignore)
+        Output.error <- (fun s -> builder.Append(s).Append("|") |> ignore)
         Runner.threshold <- Some 42
         let delta = Runner.DoSummaries (XDocument()) Base.ReportFormat.NCover 0
         Assert.That(delta, Is.EqualTo 23)
@@ -2932,7 +2932,7 @@ or
           (builder.ToString(),
            Is.EqualTo "Coverage percentage achieved is 23% below the threshold of 42%.|")
       finally
-        Output.Error <- saveErr
+        Output.error <- saveErr
         Runner.Summaries <- saveSummaries
         Runner.threshold <- saved
 

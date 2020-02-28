@@ -197,7 +197,7 @@ type PowerShell() =
   override self.Execute() =
     let r = Api.Ipmo()
     self.IO.Apply()
-    r |> Output.Warn
+    r |> Output.warn
     true
 
 type GetVersion() =
@@ -214,7 +214,7 @@ type GetVersion() =
   override self.Execute() =
     let r = Api.Version()
     self.IO.Apply()
-    r |> Output.Warn
+    r |> Output.warn
     true
 
 type Echo() =

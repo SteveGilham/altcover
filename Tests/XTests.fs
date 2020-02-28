@@ -410,7 +410,7 @@ module AltCoverXTests =
 
   [<Test>]
   let NullListsAreEmpty() =
-    let subject = FSApi.Args.ItemList String.Empty null
+    let subject = FSApi.Args.itemList String.Empty null
     test <@ subject |> List.isEmpty @>
 
   [<Test>]
@@ -447,10 +447,10 @@ module AltCoverXTests =
     let keySaved = Visitor.defaultStrongNameKey
     let saved = (Console.Out, Console.Error)
     Main.init()
-    let save2 = (Output.Info, Output.Error)
+    let save2 = (Output.info, Output.error)
     try
-      Output.Error <- CommandLine.WriteErr
-      Output.Info <- CommandLine.WriteOut
+      Output.error <- CommandLine.writeErr
+      Output.info <- CommandLine.writeOut
       use stdout = new StringWriter()
       use stderr = new StringWriter()
       Console.SetOut stdout
@@ -460,7 +460,7 @@ module AltCoverXTests =
            "--sn"; key
            "-s=Adapter"; "-s=xunit"
            "-s=nunit"; "-e=Sample"; "-c=[Test]"; "--save" |]
-      let result = Main.DoInstrumentation args
+      let result = Main.doInstrumentation args
       test <@ result = 0 @>
       test <@ stderr.ToString() |> Seq.isEmpty @>
       let expected =
@@ -538,7 +538,7 @@ module AltCoverXTests =
 
       test <@ String.Join("; ", actualFiles) = String.Join("; ", theFiles) @>
     finally
-      Output.Usage { Intro ="dummy"; Options = OptionSet(); Options2 = OptionSet()}
+      Output.usage { Intro ="dummy"; Options = OptionSet(); Options2 = OptionSet()}
       Visitor.TrackingNames.Clear()
       Visitor.reportFormat <- None
       Visitor.outputDirectories.Clear()
@@ -551,8 +551,8 @@ module AltCoverXTests =
       Console.SetError(snd saved)
       Visitor.keys.Clear()
       Visitor.NameFilters.Clear()
-      Output.Error <- snd save2
-      Output.Info <- fst save2
+      Output.error <- snd save2
+      Output.info <- fst save2
     let before = File.ReadAllText(Path.Combine(input, "Sample4.deps.json"))
     test <@ before.IndexOf("AltCover.Recorder.g") =  -1 @>
     let o = JObject.Parse(File.ReadAllText(Path.Combine(output, "Sample4.deps.json")))
@@ -609,11 +609,11 @@ module AltCoverXTests =
     let reportSaved = Visitor.reportPath
     let keySaved = Visitor.defaultStrongNameKey
     let saved = (Console.Out, Console.Error)
-    let save2 = (Output.Info, Output.Error)
+    let save2 = (Output.info, Output.error)
     Main.init()
     try
-      Output.Error <- CommandLine.WriteErr
-      Output.Info <- CommandLine.WriteOut
+      Output.error <- CommandLine.writeErr
+      Output.info <- CommandLine.writeOut
       use stdout = new StringWriter()
       use stderr = new StringWriter()
       Console.SetOut stdout
@@ -621,7 +621,7 @@ module AltCoverXTests =
       let args = [| "-i"; path; "-o"; output; "-x"; report
                     "-sn"; key
                  |]
-      let result = Main.DoInstrumentation args
+      let result = Main.doInstrumentation args
       test <@ result = 0 @>
       test <@ stderr.ToString() |> Seq.isEmpty @>
       let expected =
@@ -699,8 +699,8 @@ module AltCoverXTests =
       Console.SetOut(fst saved)
       Console.SetError(snd saved)
       Visitor.keys.Clear()
-      Output.Error <- snd save2
-      Output.Info <- fst save2
+      Output.error <- snd save2
+      Output.info <- fst save2
 
   [<Test>]
   let AfterAssemblyCommitsThatAssembly() =

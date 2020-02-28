@@ -57,7 +57,7 @@ type internal FilterClass =
 
 module internal Filter =
 
-  let rec private MatchAttribute (name : Regex) f (nameProvider : Object) =
+  let rec private matchAttribute (name : Regex) f (nameProvider : Object) =
     (match nameProvider with
      | :? MethodDefinition as m ->
          if m.IsGetter || m.IsSetter then
@@ -65,7 +65,7 @@ module internal Filter =
              m.DeclaringType.Properties
              |> Seq.filter (fun x -> x.GetMethod = m || x.SetMethod = m)
              |> Seq.head
-           MatchAttribute name f owner
+           matchAttribute name f owner
          else
            false
      | _ -> false)
@@ -89,7 +89,7 @@ module internal Filter =
         |> f
     | _ -> false
 
-  let internal Match (nameProvider : Object) (filter : FilterClass) =
+  let internal ``match`` (nameProvider : Object) (filter : FilterClass) =
     let f = filter.Apply
     match filter.Scope with
     | File -> MatchItem<string> filter.Regex f nameProvider Path.GetFileName
@@ -105,17 +105,17 @@ module internal Filter =
     | Method ->
         MatchItem<MethodDefinition> filter.Regex f nameProvider
           (fun methodDef -> methodDef.Name)
-    | Attribute -> MatchAttribute filter.Regex f nameProvider
+    | Attribute -> matchAttribute filter.Regex f nameProvider
     | Path -> MatchItem<string> filter.Regex f nameProvider Path.GetFullPath
 
-  let internal IsCSharpAutoProperty(m : MethodDefinition) =
+  let internal isCSharpAutoProperty(m : MethodDefinition) =
     (m.IsSetter || m.IsGetter) && m.HasCustomAttributes
     && m.CustomAttributes
        |> Seq.exists
             (fun x ->
               x.AttributeType.FullName = typeof<CompilerGeneratedAttribute>.FullName)
 
-  let internal IsFSharpInternalAlgebraic(m : MethodDefinition) =
+  let internal isFSharpInternalAlgebraic(m : MethodDefinition) =
     // Discriminated Union/Sum/Algebraic data types are implemented as
     // subtypes nested in the base type
     // Algebraic types have debug proxies nested in the base type which are not attributed at the type level
@@ -188,7 +188,7 @@ module internal Filter =
                     || fullName = typeof<DebuggerNonUserCodeAttribute>.FullName
                     || fullName = typeof<CompilationMappingAttribute>.FullName)))
 
-  let internal IsFSharpAutoProperty(m : MethodDefinition) =
+  let internal isFSharpAutoProperty(m : MethodDefinition) =
     let body = m.Body.Instructions
     if m.IsSetter then
       body
@@ -209,5 +209,5 @@ module internal Filter =
     else
       false
 
-  let internal IsFSharpInternal(m : MethodDefinition) =
-    IsFSharpAutoProperty m || IsFSharpInternalAlgebraic m
+  let internal isFSharpInternal(m : MethodDefinition) =
+    isFSharpAutoProperty m || isFSharpInternalAlgebraic m

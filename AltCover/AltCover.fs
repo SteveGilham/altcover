@@ -90,12 +90,12 @@ module internal Main =
   let internal declareOptions() =
     let makeFilter filterscope (x : String) =
       x.Replace(char 0, '\\').Replace(char 1, '|')
-      |> CommandLine.ValidateRegexes
+      |> CommandLine.validateRegexes
       |> Seq.iter (FilterClass.Build filterscope >> Visitor.NameFilters.Add)
 
     [ ("i|inputDirectory=",
        (fun x ->
-         if CommandLine.ValidateDirectory "--inputDirectory" x then
+         if CommandLine.validateDirectory "--inputDirectory" x then
            let arg = Path.GetFullPath x
            if Visitor.inputDirectories.Contains arg then
              CommandLine.error <-
@@ -108,7 +108,7 @@ module internal Main =
 
       ("o|outputDirectory=",
        (fun x ->
-         if CommandLine.ValidatePath "--outputDirectory" x then
+         if CommandLine.validatePath "--outputDirectory" x then
            let arg = Path.GetFullPath x
            if Visitor.outputDirectories.Contains arg then
              CommandLine.error <-
@@ -122,7 +122,7 @@ module internal Main =
 
       ("y|symbolDirectory=",
        (fun x ->
-         if CommandLine.ValidateDirectory "--symbolDirectory" x then
+         if CommandLine.validateDirectory "--symbolDirectory" x then
            ProgramDatabase.SymbolFolders.Add x))
       ("d|dependency=",
        (fun x ->
@@ -132,18 +132,18 @@ module internal Main =
              |> Environment.ExpandEnvironmentVariables
              |> Path.GetFullPath
 
-           let name, ok = CommandLine.ValidateAssembly "--dependency" path
+           let name, ok = CommandLine.validateAssembly "--dependency" path
            if ok then
              Instrument.ResolutionTable.[name] <- AssemblyDefinition.ReadAssembly path)
            () false))
 
       ("k|key=",
        (fun x ->
-         let (pair, ok) = CommandLine.ValidateStrongNameKey "--key" x
+         let (pair, ok) = CommandLine.validateStrongNameKey "--key" x
          if ok then Visitor.Add pair))
       ("sn|strongNameKey=",
        (fun x ->
-         let (pair, ok) = CommandLine.ValidateStrongNameKey "--strongNameKey" x
+         let (pair, ok) = CommandLine.validateStrongNameKey "--strongNameKey" x
          if ok then
            if Option.isSome Visitor.defaultStrongNameKey then
              CommandLine.error <-
@@ -157,7 +157,7 @@ module internal Main =
 
       ("x|xmlReport=",
        (fun x ->
-         if CommandLine.ValidatePath "--xmlReport" x then
+         if CommandLine.validatePath "--xmlReport" x then
            if Option.isSome Visitor.reportPath then
              CommandLine.error <-
                String.Format
@@ -350,21 +350,21 @@ module internal Main =
           Seq.zip toDirectories fromDirectories
           |> Seq.iter (fun (toDirectory, fromDirectory) ->
                if !Visitor.inplace then
-                 Output.Info
+                 Output.info
                  <| String.Format
                       (CultureInfo.CurrentCulture,
                        (CommandLine.resources.GetString "savingto"), toDirectory)
-                 Output.Info
+                 Output.info
                  <| String.Format
                       (CultureInfo.CurrentCulture,
                        (CommandLine.resources.GetString "instrumentingin"), fromDirectory)
                else
-                 Output.Info
+                 Output.info
                  <| String.Format
                       (CultureInfo.CurrentCulture,
                        (CommandLine.resources.GetString "instrumentingfrom"),
                        fromDirectory)
-                 Output.Info
+                 Output.info
                  <| String.Format
                       (CultureInfo.CurrentCulture,
                        (CommandLine.resources.GetString "instrumentingto"), toDirectory))
@@ -423,7 +423,7 @@ module internal Main =
                     String.Format
                       (CultureInfo.CurrentCulture,
                        (CommandLine.resources.GetString "instrumenting"), fullName)
-                    |> Output.Info
+                    |> Output.info
                     { Path = [ fullName ]
                       Name = def.Name.Name
                       Refs =
@@ -506,8 +506,8 @@ module internal Main =
 #endif
     let check1 =
       declareOptions()
-      |> CommandLine.ParseCommandLine arguments
-      |> CommandLine.ProcessHelpOption
+      |> CommandLine.parseCommandLine arguments
+      |> CommandLine.processHelpOption
       |> processOutputLocation
     match check1 with
     | Left(intro, options) ->
@@ -527,7 +527,7 @@ module internal Main =
             let (assemblies, assemblyNames) =
               prepareTargetFiles fromInfo toInfo targetInfo
                 (Visitor.InstrumentDirectories())
-            Output.Info
+            Output.info
             <| String.Format
                  (CultureInfo.CurrentCulture,
                   (CommandLine.resources.GetString "reportingto"), report)
@@ -547,7 +547,7 @@ module internal Main =
             |> ignore
             document.Save(report)
             if !Visitor.collect then Runner.SetRecordToFile report
-            CommandLine.ProcessTrailingArguments rest (toInfo |> Seq.head)) 255 true
+            CommandLine.processTrailingArguments rest (toInfo |> Seq.head)) 255 true
         CommandLine.ReportErrors "Instrumentation" (dotnetBuild && !Visitor.inplace)
         result
 
@@ -576,7 +576,7 @@ module internal Main =
            "AltCover.PowerShell.dll")
         |> Path.GetFullPath
         |> sprintf "Import-Module %A"
-        |> (Output.Info)
+        |> (Output.info)
         0
     | Select "version" _ ->
         Runner.WriteResourceWithFormatItems "AltCover.Version"

@@ -72,7 +72,7 @@ module internal Runner =
 
   let Write line =
     [ Summary.AppendLine >> ignore
-      Output.Info ]
+      Output.info ]
     |> Seq.iter (fun f -> f line)
 
   let WriteSummary key vc nc pc =
@@ -318,14 +318,14 @@ module internal Runner =
   let AddLCovSummary() =
     Summaries <- LCov.Summary :: Summaries
   let AddCoberturaSummary() =
-    Summaries <- Cobertura.Summary :: Summaries
+    Summaries <- Cobertura.summary :: Summaries
 
   let internal DeclareOptions() =
     Summaries <- []
     Summaries <- StandardSummary :: Summaries
     [ ("r|recorderDirectory=",
        (fun x ->
-         if CommandLine.ValidateDirectory "--recorderDirectory" x then
+         if CommandLine.validateDirectory "--recorderDirectory" x then
            if Option.isSome recordingDirectory then
              CommandLine.error <-
                String.Format
@@ -336,7 +336,7 @@ module internal Runner =
              recordingDirectory <- Some(Path.GetFullPath x)))
       ("w|workingDirectory=",
        (fun x ->
-         if CommandLine.ValidateDirectory "--workingDirectory" x then
+         if CommandLine.validateDirectory "--workingDirectory" x then
            if Option.isSome workingDirectory then
              CommandLine.error <-
                String.Format
@@ -347,7 +347,7 @@ module internal Runner =
              workingDirectory <- Some(Path.GetFullPath x)))
       ("x|executable=",
        (fun x ->
-         if CommandLine.ValidatePath "--executable" x then
+         if CommandLine.validatePath "--executable" x then
            if Option.isSome !executable then
              CommandLine.error <-
                String.Format
@@ -359,7 +359,7 @@ module internal Runner =
       (CommandLine.ddFlag "collect" collect)
       ("l|lcovReport=",
        (fun x ->
-         if CommandLine.ValidatePath "--lcovReport" x then
+         if CommandLine.validatePath "--lcovReport" x then
            if Option.isSome !LCov.path then
              CommandLine.error <-
                String.Format
@@ -385,7 +385,7 @@ module internal Runner =
              threshold <- Some n))
       ("c|cobertura=",
        (fun x ->
-         if CommandLine.ValidatePath "--cobertura" x then
+         if CommandLine.validatePath "--cobertura" x then
            if Option.isSome !Cobertura.path then
              CommandLine.error <-
                String.Format
@@ -399,7 +399,7 @@ module internal Runner =
              AddCoberturaSummary()))
       ("o|outputFile=",
        (fun x ->
-         if CommandLine.ValidatePath "--outputFile" x then
+         if CommandLine.validatePath "--outputFile" x then
            if Option.isSome output then
              CommandLine.error <-
                String.Format
@@ -522,15 +522,15 @@ module internal Runner =
   let PayloadBase(rest : string list) =
     CommandLine.doPathOperation
       (fun () ->
-        CommandLine.ProcessTrailingArguments rest
+        CommandLine.processTrailingArguments rest
           (DirectoryInfo(Option.get workingDirectory))) 255 true
-  let WriteResource = CommandLine.resources.GetString >> Output.Info
+  let WriteResource = CommandLine.resources.GetString >> Output.info
   let WriteResourceWithFormatItems s x warn =
     String.Format(CultureInfo.CurrentCulture, s |> CommandLine.resources.GetString, x)
-    |> (Output.WarnOn warn)
+    |> (Output.warnOn warn)
   let WriteErrorResourceWithFormatItems s x =
     String.Format(CultureInfo.CurrentCulture, s |> CommandLine.resources.GetString, x)
-    |> Output.Error
+    |> Output.error
 
   let internal SetRecordToFile report =
     LCov.DoWith (fun () ->
@@ -554,7 +554,7 @@ module internal Runner =
       |> Seq.fold (fun before f ->
            timer.Restart()
            let length = FileInfo(f).Length.ToString("#,#", CultureInfo.CurrentUICulture)
-           sprintf "... %s (%sb)" f length |> Output.Info
+           sprintf "... %s (%sb)" f length |> Output.info
            use results = new DeflateStream(File.OpenRead f, CompressionMode.Decompress)
            use formatter = new System.IO.BinaryReader(results)
 
@@ -956,8 +956,8 @@ module internal Runner =
   let DoCoverage arguments options1 =
     let check1 =
       DeclareOptions()
-      |> CommandLine.ParseCommandLine(arguments |> Array.skip 1)
-      |> CommandLine.ProcessHelpOption
+      |> CommandLine.parseCommandLine(arguments |> Array.skip 1)
+      |> CommandLine.processHelpOption
       |> RequireExe
       |> RequireRecorder
       |> RequireWorker

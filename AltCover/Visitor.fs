@@ -338,7 +338,7 @@ module internal Visitor =
     | _ -> false
 
   let IsIncluded(nameProvider : Object) =
-    if (NameFilters |> Seq.exists (Filter.Match nameProvider))
+    if (NameFilters |> Seq.exists (Filter.``match`` nameProvider))
        || localFilter nameProvider then
       Inspections.Ignore
     else
@@ -415,9 +415,9 @@ module internal Visitor =
         | _ -> LocateMatch file dict
 
   let significant (m : MethodDefinition) =
-    [ Filter.IsFSharpInternal
-      Filter.IsCSharpAutoProperty
-      (fun m -> specialCaseFilters |> Seq.exists (Filter.Match m))
+    [ Filter.isFSharpInternal
+      Filter.isCSharpAutoProperty
+      (fun m -> specialCaseFilters |> Seq.exists (Filter.``match`` m))
 
       // Constructors of compiler generated types otherwise pollute F# coverage
       (fun m ->
@@ -484,7 +484,7 @@ module internal Visitor =
     SourceLinkDocuments <- None
 
   let internal SelectAutomatic items exemption =
-    if items |> Seq.exists (fun t' -> (generationFilter |> Seq.exists (Filter.Match t')))
+    if items |> Seq.exists (fun t' -> (generationFilter |> Seq.exists (Filter.``match`` t')))
     then Exemption.Automatic
     else exemption
 
