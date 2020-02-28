@@ -723,7 +723,7 @@ module AltCoverXTests =
       Visitor.outputDirectories.Add output
       let visited = Node.AfterAssembly (def, Visitor.OutputDirectories())
       let input = InstrumentContext.Build []
-      let result = Instrument.InstrumentationVisitor input visited
+      let result = Instrument.instrumentationVisitor input visited
       test' <@ Object.ReferenceEquals(result, input) @> "result differs"
       let created = Path.Combine(output, "Sample4.dll")
       test' <@ File.Exists created@> (created + " not found")
@@ -759,7 +759,7 @@ module AltCoverXTests =
       Visitor.outputDirectories.AddRange [ output ]
       let visited = Node.AfterAssembly (def, Visitor.OutputDirectories())
       let input = InstrumentContext.Build []
-      let result = Instrument.InstrumentationVisitor input visited
+      let result = Instrument.instrumentationVisitor input visited
       test' <@ Object.ReferenceEquals(result, input) @> "result differs"
       let created = Path.Combine(output, "Sample1.exe")
       test' <@ File.Exists created @> (created + " not found")
@@ -790,7 +790,7 @@ module AltCoverXTests =
       Visitor.outputDirectories.Clear()
       Visitor.outputDirectories.Add output
       let input = { InstrumentContext.Build [] with RecordingAssembly = def }
-      let result = Instrument.InstrumentationVisitor input Finish
+      let result = Instrument.instrumentationVisitor input Finish
       test <@ result.RecordingAssembly |> isNull @>
       let created = Path.Combine(output, "Sample4.dll")
       test' <@ File.Exists created @> (created + " not found")
@@ -827,8 +827,8 @@ module AltCoverXTests =
        |> not
     then
       do let from = Path.Combine(here, "AltCover.Recorder.dll")
-         let updated = Instrument.PrepareAssembly from
-         Instrument.WriteAssembly updated create
+         let updated = Instrument.prepareAssembly from
+         Instrument.writeAssembly updated create
     let save = Runner.RecorderName
     let save1 = Runner.GetPayload
     let save2 = Runner.GetMonitor

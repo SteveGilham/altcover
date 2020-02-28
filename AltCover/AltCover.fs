@@ -538,7 +538,7 @@ module internal Main =
 
             let visitors =
               [ reporter
-                Instrument.InstrumentGenerator assemblyNames ]
+                Instrument.instrumentGenerator assemblyNames ]
 
             Visitor.Visit visitors (assemblies)
             report
