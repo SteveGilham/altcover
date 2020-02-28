@@ -42,7 +42,7 @@ module AltCoverTests3 =
       let saved = (Console.Out, Console.Error)
       let e0 = Console.Out.Encoding
       let e1 = Console.Error.Encoding
-      AltCover.ToConsole()
+      AltCover.toConsole()
       try
         use stdout =
           { new StringWriter() with
@@ -1915,7 +1915,7 @@ module AltCoverTests3 =
       Main.init()
       let options = Main.declareOptions()
       let saved = (Console.Out, Console.Error)
-      AltCover.ToConsole()
+      AltCover.toConsole()
       CommandLine.error <- []
       try
         use stdout = new StringWriter()
@@ -1953,7 +1953,7 @@ module AltCoverTests3 =
     let OutputToReallyNewPlaceIsOK() =
       Main.init()
       let options = Main.declareOptions()
-      AltCover.ToConsole()
+      AltCover.toConsole()
       let saved = (Console.Out, Console.Error)
       CommandLine.error <- []
       try
@@ -2186,7 +2186,7 @@ module AltCoverTests3 =
       let saved = (Console.Out, Console.Error)
       let e0 = Console.Out.Encoding
       let e1 = Console.Error.Encoding
-      AltCover.ToConsole()
+      AltCover.toConsole()
       try
         use stdout =
           { new StringWriter() with
@@ -2235,7 +2235,7 @@ module AltCoverTests3 =
     [<Test>]
     let IpmoIsAsExpected() =
       Main.init()
-      AltCover.ToConsole()
+      AltCover.toConsole()
       let saved = Console.Out
       try
         use stdout = new StringWriter()
@@ -2256,7 +2256,7 @@ module AltCoverTests3 =
     [<Test>]
     let VersionIsAsExpected() =
       Main.init()
-      AltCover.ToConsole()
+      AltCover.toConsole()
       let saved = Console.Out
       try
         use stdout = new StringWriter()

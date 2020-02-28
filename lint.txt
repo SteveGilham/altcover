@@ -2,46 +2,6 @@
 // fsharplint:disable-next-line
 // fsharplint:disable-next-line MemberNames NonPublicValuesNames RedundantNewKeyword
 
-Info: "Consider changing `Branch` to camelCase."
- Range: C:\Users\steve\Documents\GitHub\altcover\AltCover\LCov.fs (218,19--218,25) IsSynthetic=false
- Fix: Some
-  Some({ FromText = "Branch"
-  FromRange =
-             C:\Users\steve\Documents\GitHub\altcover\AltCover\LCov.fs (218,19--218,25) IsSynthetic=false
-  ToText = "branch" })
-====
-Info: "Consider changing `FNDA` to camelCase."
- Range: C:\Users\steve\Documents\GitHub\altcover\AltCover\LCov.fs (184,19--184,23) IsSynthetic=false
- Fix: Some
-  Some({ FromText = "FNDA"
-  FromRange =
-             C:\Users\steve\Documents\GitHub\altcover\AltCover\LCov.fs (184,19--184,23) IsSynthetic=false
-  ToText = "fNDA" })
-====
-Info: "Consider changing `FN` to camelCase."
- Range: C:\Users\steve\Documents\GitHub\altcover\AltCover\LCov.fs (165,19--165,21) IsSynthetic=false
- Fix: Some
-  Some({ FromText = "FN"
-  FromRange =
-             C:\Users\steve\Documents\GitHub\altcover\AltCover\LCov.fs (165,19--165,21) IsSynthetic=false
-  ToText = "fN" })
-====
-Info: "Consider changing `Main` to camelCase."
- Range: C:\Users\steve\Documents\GitHub\altcover\AltCover\Main.fs (16,14--16,18) IsSynthetic=false
- Fix: Some
-  Some({ FromText = "Main"
-  FromRange =
-             C:\Users\steve\Documents\GitHub\altcover\AltCover\Main.fs (16,14--16,18) IsSynthetic=false
-  ToText = "main" })
-====
-Info: "Consider changing `ToConsole` to camelCase."
- Range: C:\Users\steve\Documents\GitHub\altcover\AltCover\Main.fs (4,15--4,24) IsSynthetic=false
- Fix: Some
-  Some({ FromText = "ToConsole"
-  FromRange =
-             C:\Users\steve\Documents\GitHub\altcover\AltCover\Main.fs (4,15--4,24) IsSynthetic=false
-  ToText = "toConsole" })
-====
 Info: "Consider changing `ReportVisitor` to camelCase."
  Range: C:\Users\steve\Documents\GitHub\altcover\AltCover\OpenCover.fs (489,8--489,21) IsSynthetic=false
  Fix: Some

@@ -18,7 +18,7 @@ module CoverageFormats =
   let ConvertToLcov xmlDocument stream =
     let format = XmlUtilities.DiscoverFormat xmlDocument
     let xdoc = XmlUtilities.ToXDocument xmlDocument
-    AltCover.LCov.ConvertReport xdoc format stream
+    AltCover.LCov.convertReport xdoc format stream
 
   [<SuppressMessage("Microsoft.Design", "CA1059",
                     Justification = "converts concrete types")>]

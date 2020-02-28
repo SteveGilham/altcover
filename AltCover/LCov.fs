@@ -8,21 +8,21 @@ open System.Xml.Linq
 module internal LCov =
   let internal path : Option<string> ref = ref None
 
-  let DoWith (create : unit -> 'a) (action : 'a -> unit) =
+  let internal doWith (create : unit -> 'a) (action : 'a -> unit) =
     use stream = create()
     action stream
 
-  let X = OpenCover.X
+  let internal x = OpenCover.X
 
   [<System.Diagnostics.CodeAnalysis.SuppressMessage(
     "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
     Justification = "AvoidSpeculativeGenerality too")>]
   let lineOfMethod (m : XElement) =
-    (m.Descendants(X "seqpnt") |> Seq.head).Attribute(X "line").Value
+    (m.Descendants(x "seqpnt") |> Seq.head).Attribute(x "line").Value
     |> Int32.TryParse
     |> snd
 
-  let SortByFirst s = s |> Seq.sortBy fst
+  let sortByFirst s = s |> Seq.sortBy fst
 
   let multiSort (by : 'a -> int) (l : (string * 'a seq) seq) =
     l
@@ -31,13 +31,13 @@ module internal LCov =
           ms
           |> Seq.sortBy by
           |> Seq.toList))
-    |> SortByFirst
+    |> sortByFirst
 
   let multiSortByNameAndStartLine (l : (string * XElement seq) seq) =
     multiSort lineOfMethod l
 
-  let ConvertReport (report : XDocument) (format : Base.ReportFormat) (stream : Stream) =
-    DoWith (fun () -> new StreamWriter(stream)) (fun writer ->
+  let internal convertReport (report : XDocument) (format : Base.ReportFormat) (stream : Stream) =
+    doWith (fun () -> new StreamWriter(stream)) (fun writer ->
       //If available, a tracefile begins with the testname which
       //   is stored in the following format:
       //
@@ -45,13 +45,13 @@ module internal LCov =
       writer.WriteLine "TN:"
       match format with
       | Base.ReportFormat.NCover ->
-          report.Descendants(X "method")
+          report.Descendants(x "method")
           |> Seq.filter (fun m ->
-               m.Attribute(X "excluded").Value <> "true"
-               && m.Descendants(X "seqpnt")
-                  |> Seq.exists (fun s -> s.Attribute(X "excluded").Value <> "true"))
+               m.Attribute(x "excluded").Value <> "true"
+               && m.Descendants(x "seqpnt")
+                  |> Seq.exists (fun s -> s.Attribute(x "excluded").Value <> "true"))
           |> Seq.groupBy (fun m ->
-               (m.Descendants(X "seqpnt") |> Seq.head).Attribute(X "document").Value)
+               (m.Descendants(x "seqpnt") |> Seq.head).Attribute(x "document").Value)
           |> multiSortByNameAndStartLine
           |> Seq.iter (fun (f, methods) ->
                // For each source file referenced in the .da file,  there  is  a  section
@@ -60,9 +60,9 @@ module internal LCov =
                //  SF:<absolute path to the source file>
                writer.WriteLine("SF:" + f)
                let fullname (m : XElement) =
-                 let fna = m.Attribute(X "fullname")
+                 let fna = m.Attribute(x "fullname")
                  if fna |> isNull
-                 then m.Attribute(X "class").Value + "." + m.Attribute(X "name").Value
+                 then m.Attribute(x "class").Value + "." + m.Attribute(x "name").Value
                  else fna.Value
                // Following is a list of line numbers for each function name found in the
                // source file:
@@ -80,7 +80,7 @@ module internal LCov =
                  methods
                  |> Seq.fold (fun n m ->
                       let v =
-                        (m.Descendants(X "seqpnt") |> Seq.head).Attribute(X "visitcount").Value
+                        (m.Descendants(x "seqpnt") |> Seq.head).Attribute(x "visitcount").Value
                       let name = fullname m
                       writer.WriteLine("FNDA:" + v + "," + name)
                       n + (Augment.Increment(v <> "0"))) 0
@@ -115,14 +115,14 @@ module internal LCov =
                // checksumming algorithm.
                let (lf, lh) =
                  methods
-                 |> Seq.collect (fun m -> m.Descendants(X "seqpnt"))
+                 |> Seq.collect (fun m -> m.Descendants(x "seqpnt"))
                  |> Seq.filter (fun b ->
-                      b.Attribute(X "line").Value
+                      b.Attribute(x "line").Value
                       |> String.IsNullOrWhiteSpace
                       |> not)
                  |> Seq.fold (fun (f, h) b ->
-                      let sl = b.Attribute(X "line").Value
-                      let v = b.Attribute(X "visitcount")
+                      let sl = b.Attribute(x "line").Value
+                      let v = b.Attribute(x "visitcount")
 
                       let vc =
                         if v |> isNull then "0" else v.Value
@@ -145,10 +145,10 @@ module internal LCov =
           // containing filename and coverage data:
           //
           //  SF:<absolute path to the source file>
-          report.Descendants(X "File")
+          report.Descendants(x "File")
           |> Seq.iter (fun f ->
-               writer.WriteLine("SF:" + f.Attribute(X "fullPath").Value)
-               let uid = f.Attribute(X "uid").Value
+               writer.WriteLine("SF:" + f.Attribute(x "fullPath").Value)
+               let uid = f.Attribute(x "uid").Value
                let p = f.Parent.Parent
 
                // Following is a list of line numbers for each function name found in the
@@ -156,26 +156,26 @@ module internal LCov =
                //
                // FN:<line number of function start>,<function name>
                let methods =
-                 p.Descendants(X "Method")
+                 p.Descendants(x "Method")
                  |> Seq.filter (fun m ->
-                      m.Descendants(X "FileRef")
-                      |> Seq.exists (fun r -> r.Attribute(X "uid").Value = uid))
+                      m.Descendants(x "FileRef")
+                      |> Seq.exists (fun r -> r.Attribute(x "uid").Value = uid))
                  |> Seq.toList
 
                let FN(ms : XElement list) =
                  ms
                  |> Seq.iter (fun m ->
-                      m.Descendants(X "SequencePoint")
+                      m.Descendants(x "SequencePoint")
                       |> Seq.tryHead
                       |> Option.iter (fun s ->
-                           let n = (m.Descendants(X "Name") |> Seq.head).Value
-                           let mp = m.Descendants(X "MethodPoint") |> Seq.head
-                           let sl = s.Attribute(X "sl").Value
+                           let n = (m.Descendants(x "Name") |> Seq.head).Value
+                           let mp = m.Descendants(x "MethodPoint") |> Seq.head
+                           let sl = s.Attribute(x "sl").Value
                            if sl
                               |> String.IsNullOrWhiteSpace
                               |> not
                            then
-                             writer.WriteLine("FN:" + s.Attribute(X "sl").Value + "," + n)))
+                             writer.WriteLine("FN:" + s.Attribute(x "sl").Value + "," + n)))
 
                FN methods
                // Next, there is a list of execution counts for each  instrumented  function:
@@ -184,18 +184,18 @@ module internal LCov =
                let FNDA(ms : XElement list) =
                  ms
                  |> Seq.iter (fun m ->
-                      m.Descendants(X "SequencePoint")
+                      m.Descendants(x "SequencePoint")
                       |> Seq.tryHead
                       |> Option.iter (fun s ->
-                           let n = (m.Descendants(X "Name") |> Seq.head).Value
-                           let mp = m.Descendants(X "MethodPoint") |> Seq.head
-                           let sl = s.Attribute(X "sl").Value
+                           let n = (m.Descendants(x "Name") |> Seq.head).Value
+                           let mp = m.Descendants(x "MethodPoint") |> Seq.head
+                           let sl = s.Attribute(x "sl").Value
                            if sl
                               |> String.IsNullOrWhiteSpace
                               |> not
                            then
                              writer.WriteLine
-                               ("FNDA:" + mp.Attribute(X "vc").Value + "," + n)))
+                               ("FNDA:" + mp.Attribute(x "vc").Value + "," + n)))
                FNDA methods
                // This  list  is followed by two lines containing the number of functions
                // found and hit:
@@ -205,7 +205,7 @@ module internal LCov =
                writer.WriteLine
                  ("FNF:" + methods.Length.ToString(CultureInfo.InvariantCulture))
                let hit =
-                 methods |> List.filter (fun m -> m.Attribute(X "visited").Value = "true")
+                 methods |> List.filter (fun m -> m.Attribute(x "visited").Value = "true")
                writer.WriteLine
                  ("FNH:" + hit.Length.ToString(CultureInfo.InvariantCulture))
                // Branch coverage information is stored which one line per branch:
@@ -218,17 +218,17 @@ module internal LCov =
                let Branch(ms : XElement list) =
                  let (brf, brh, _) =
                    ms
-                   |> Seq.collect (fun m -> m.Descendants(X "BranchPoint"))
+                   |> Seq.collect (fun m -> m.Descendants(x "BranchPoint"))
                    |> Seq.filter (fun b ->
-                        b.Attribute(X "sl").Value
+                        b.Attribute(x "sl").Value
                         |> String.IsNullOrWhiteSpace
                         |> not)
                    |> Seq.fold (fun (f, h, (o, u)) b ->
-                        let sl = b.Attribute(X "sl").Value
-                        let off = b.Attribute(X "offset").Value
-                        let usp = b.Attribute(X "uspid").Value
-                        let path = b.Attribute(X "path").Value
-                        let vc = b.Attribute(X "vc").Value
+                        let sl = b.Attribute(x "sl").Value
+                        let off = b.Attribute(x "offset").Value
+                        let usp = b.Attribute(x "uspid").Value
+                        let path = b.Attribute(x "path").Value
+                        let vc = b.Attribute(x "vc").Value
                         writer.WriteLine
                           ("BRDA:" + sl + "," + (if o = off then u else usp) + "," + path
                            + "," + (if vc = "0" then "-" else vc))
@@ -252,14 +252,14 @@ module internal LCov =
                // checksumming algorithm.
                let (lf, lh) =
                  methods
-                 |> Seq.collect (fun m -> m.Descendants(X "SequencePoint"))
+                 |> Seq.collect (fun m -> m.Descendants(x "SequencePoint"))
                  |> Seq.filter (fun b ->
-                      b.Attribute(X "sl").Value
+                      b.Attribute(x "sl").Value
                       |> String.IsNullOrWhiteSpace
                       |> not)
                  |> Seq.fold (fun (f, h) b ->
-                      let sl = b.Attribute(X "sl").Value
-                      let vc = b.Attribute(X "vc").Value
+                      let sl = b.Attribute(x "sl").Value
+                      let vc = b.Attribute(x "vc").Value
                       writer.WriteLine("DA:" + sl + "," + vc)
                       (f + 1,
                        h + if vc = "0" then 0 else 1)) (0, 0)
@@ -275,7 +275,7 @@ module internal LCov =
                // end_of_record
                writer.WriteLine "end_of_record"))
 
-  let Summary (report : XDocument) (format : Base.ReportFormat) result =
-    DoWith (fun () -> File.OpenWrite(!path |> Option.get))
-      (ConvertReport report format)
+  let internal summary (report : XDocument) (format : Base.ReportFormat) result =
+    doWith (fun () -> File.OpenWrite(!path |> Option.get))
+      (convertReport report format)
     result

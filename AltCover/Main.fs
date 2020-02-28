@@ -1,7 +1,7 @@
 namespace AltCover
 
 module internal AltCover =
-  let internal ToConsole() =
+  let internal toConsole() =
     Output.error <- CommandLine.writeErr
     Output.usage <- CommandLine.usageBase
     Output.echo <- CommandLine.writeErr
@@ -13,6 +13,6 @@ module internal AltCover =
       "Gendarme.Rules.Portability",
       "ExitCodeIsLimitedOnUnixRule",
       Justification="limited 0-255 elsewhere")>]
-  let private Main arguments =
-    ToConsole()
+  let private main arguments =
+    toConsole()
     AltCover.Main.effectiveMain arguments

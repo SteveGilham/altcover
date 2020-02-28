@@ -367,7 +367,7 @@ module AltCoverRunnerTests =
         files
         |> Seq.filter (fun x -> x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
         |> Seq.head
-      AltCover.ToConsole()
+      AltCover.toConsole()
       let saved = (Console.Out, Console.Error)
       let e0 = Console.Out.Encoding
       let e1 = Console.Error.Encoding
@@ -1515,7 +1515,7 @@ module AltCoverRunnerTests =
         files
         |> Seq.filter (fun x -> x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
         |> Seq.head
-      AltCover.ToConsole()
+      AltCover.toConsole()
       let saved = (Console.Out, Console.Error)
       let e0 = Console.Out.Encoding
       let e1 = Console.Error.Encoding
@@ -1753,7 +1753,7 @@ or
         files
         |> Seq.filter (fun x -> x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
         |> Seq.head
-      AltCover.ToConsole()
+      AltCover.toConsole()
       let saved = (Console.Out, Console.Error)
       Runner.workingDirectory <- Some path
       let e0 = Console.Out.Encoding
@@ -2648,7 +2648,7 @@ or
       |> Directory.CreateDirectory
       |> ignore
       try
-        let r = LCov.Summary baseline Base.ReportFormat.NCover 0
+        let r = LCov.summary baseline Base.ReportFormat.NCover 0
         Assert.That(r, Is.EqualTo 0)
         let result = File.ReadAllText unique
         let resource2 =
@@ -2688,7 +2688,7 @@ or
       |> Directory.CreateDirectory
       |> ignore
       try
-        let r = LCov.Summary baseline Base.ReportFormat.NCover 0
+        let r = LCov.summary baseline Base.ReportFormat.NCover 0
         Assert.That(r, Is.EqualTo 0)
         let result = File.ReadAllText unique
         let resource2 =

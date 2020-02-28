@@ -316,7 +316,7 @@ module internal Runner =
     (ok, n)
 
   let AddLCovSummary() =
-    Summaries <- LCov.Summary :: Summaries
+    Summaries <- LCov.summary :: Summaries
   let AddCoberturaSummary() =
     Summaries <- Cobertura.summary :: Summaries
 
@@ -533,7 +533,7 @@ module internal Runner =
     |> Output.error
 
   let internal SetRecordToFile report =
-    LCov.DoWith (fun () ->
+    LCov.doWith (fun () ->
       let binpath = report + ".acv"
       File.Create(binpath)) ignore
 

@@ -71,7 +71,7 @@ module internal Cobertura =
                let fn = fna.Value.Split([| ' '; '(' |]) |> Array.toList
                (fn.[1].Substring(n.Length + 1), fn.[0] + " " + fn.[2])
            (key, (signature, m)))
-      |> LCov.SortByFirst
+      |> LCov.sortByFirst
       |> Seq.fold (processMethod methods) (0, 0)
 
     let processClass (classes : XElement) (hits, total) ((name, signature), method) =
@@ -95,7 +95,7 @@ module internal Cobertura =
             method.Descendants(X "seqpnt")
             |> Seq.map (fun s -> s.Attribute(X "document").Value)
             |> Seq.head))
-      |> LCov.SortByFirst
+      |> LCov.sortByFirst
       |> Seq.fold (processClass classes) (0, 0)
 
     let processModule (hits, total) (``module`` : XElement) =
@@ -225,7 +225,7 @@ module internal Cobertura =
            let key = fn.[1].Substring(name.Length + 2)
            let signature = fn.[0] + " " + fn.[2]
            (key, (signature, method)))
-      |> LCov.SortByFirst
+      |> LCov.sortByFirst
       |> Seq.filter (fun (_, (_, mt)) ->
            mt.Descendants(X "SequencePoint")
            |> Seq.isEmpty
@@ -255,7 +255,7 @@ module internal Cobertura =
             method.Descendants(X "FileRef")
             |> Seq.map (fun s -> files |> Map.find (s.Attribute(X "uid").Value))
             |> Seq.head))
-      |> LCov.SortByFirst
+      |> LCov.sortByFirst
       |> Seq.fold (processClass classes) (0, 0)
 
     let lookUpFiles (``module`` : XElement) =
