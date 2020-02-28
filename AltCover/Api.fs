@@ -21,7 +21,7 @@ open Fake.DotNet
 
 [<ExcludeFromCodeCoverage; NoComparison;
                   SuppressMessage("Gendarme.Rules.Smells",
-                                  "AvoidCodeDuplicatedInSameClassRule",
+                                  "RelaxedAvoidCodeDuplicatedInSameClassRule",
                                   Justification = "Idiomatic F#")>]
 type CollectParams =
   | Primitive of Primitive.CollectParams
@@ -142,7 +142,7 @@ type CollectParams =
 
 [<ExcludeFromCodeCoverage; NoComparison;
                   SuppressMessage("Gendarme.Rules.Smells",
-                                  "AvoidCodeDuplicatedInSameClassRule",
+                                  "RelaxedAvoidCodeDuplicatedInSameClassRule",
                                   Justification = "Idiomatic F#")>]
 type PrepareParams =
   | Primitive of Primitive.PrepareParams
@@ -395,7 +395,10 @@ type PrepareParams =
     finally
       CommandLine.error <- saved
 
-[<ExcludeFromCodeCoverage; NoComparison; NoEquality>]
+[<ExcludeFromCodeCoverage; NoComparison; NoEquality;
+                  SuppressMessage("Gendarme.Rules.Smells",
+                                  "RelaxedAvoidCodeDuplicatedInSameClassRule",
+                                  Justification = "Idiomatic F#")>]
 type Logging =
   | Primitive of Primitive.Logging
 
@@ -430,7 +433,7 @@ type Logging =
 #else
 #endif
 [<SuppressMessage("Gendarme.Rules.Smells",
-                                  "AvoidCodeDuplicatedInSameClassRule",
+                                  "RelaxedAvoidCodeDuplicatedInSameClassRule",
                                   Justification = "Not worth trying to unify these functions")>]
 module private ArgsHelper =
   let Item a x =
@@ -608,6 +611,8 @@ type Params =
   { /// Path to the Altcover executable.
     ToolPath : string
     /// Which version of the tool
+    [<SuppressMessage("Gendarme.Rules.Maintainability",
+      "RemoveDependenceOnObsoleteCodeRule",Justification="Goes at Genbu")>]
     ToolType : ToolType
     /// Define the tool through FAKE 5.18 ToolType -- if set, overrides
     FakeToolType : Fake.DotNet.ToolType option
@@ -616,6 +621,8 @@ type Params =
     /// Command arguments
     Args : ArgType }
 
+  [<SuppressMessage("Gendarme.Rules.Maintainability",
+      "RemoveDependenceOnObsoleteCodeRule",Justification="Goes at Genbu")>]
   static member Create(a : ArgType) =
     { ToolPath = "altcover"
       ToolType = Global
@@ -649,12 +656,9 @@ let internal createArgs parameters =
   | ImportModule -> [ "ipmo" ]
   | GetVersion -> [ "version" ]
 
-let internal createProcess parameters args =
-  let fakeTool (tool : Fake.DotNet.ToolType) =
-    CreateProcess.fromCommand (RawCommand(parameters.ToolPath, args |> Arguments.OfArgs))
-    |> CreateProcess.withToolType (tool.WithDefaultToolCommandName "altcover")
-
-  let altCoverTool() =
+[<SuppressMessage("Gendarme.Rules.Maintainability",
+      "RemoveDependenceOnObsoleteCodeRule",Justification="Goes at Genbu")>]
+let private altCoverTool parameters args =
     let baseline() = CreateProcess.fromRawCommand parameters.ToolPath args
     match parameters.ToolType with
     | Framework -> baseline() |> CreateProcess.withFramework
@@ -672,10 +676,15 @@ let internal createProcess parameters args =
           | Some p -> p
         CreateProcess.fromRawCommand path ("--debug" :: parameters.ToolPath :: args)
 
+let internal createProcess parameters args =
+  let fakeTool (tool : Fake.DotNet.ToolType) =
+    CreateProcess.fromCommand (RawCommand(parameters.ToolPath, args |> Arguments.OfArgs))
+    |> CreateProcess.withToolType (tool.WithDefaultToolCommandName "altcover")
+
   let doTool() =
     match parameters.FakeToolType with
     | Some tool -> fakeTool tool
-    | None -> altCoverTool()
+    | None -> altCoverTool parameters args
 
   let withWorkingDirectory c =
     c
@@ -697,10 +706,8 @@ let composeCommandLine parameters =
 [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1715",
                                                   Justification =
                                                     "Generic types are implicit")>]
-[<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Correctness",
-       "EnsureLocalDisposalRule",
-       Justification="is the 'use' clause confusing Gendarme?")>]
-let runCore parameters modifyCommand =
+
+let internal runCore parameters modifyCommand =
   use __ = Trace.traceTask "AltCover" String.Empty
   let command = (composeCommandLine parameters) |> modifyCommand
   let run = command |> Proc.run

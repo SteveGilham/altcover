@@ -13,7 +13,13 @@ module internal Naming =
   let suffixIfNotIsNullOrWhiteSpace name suffix =
     if String.IsNullOrWhiteSpace name then String.Empty else (name + suffix)
 
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
+    Justification = "AvoidSpeculativeGenerality too")>]
   let TypeName(def : TypeDefinition) = emptyIfIsNullOrWhiteSpace def.Name
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
+    Justification = "AvoidSpeculativeGenerality too")>]
   let TypeRefName(def : TypeReference) = emptyIfIsNullOrWhiteSpace def.Name
 
   let rec FullTypeName(def : TypeDefinition) =

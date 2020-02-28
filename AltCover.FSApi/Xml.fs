@@ -10,6 +10,8 @@ open System.Xml.Linq
 open System.Xml.Schema
 open System.Xml.Xsl
 
+open Augment
+
 [<RequireQualifiedAccess>]
 module XmlUtilities =
   [<SuppressMessage("Microsoft.Design", "CA1059",
@@ -20,9 +22,7 @@ module XmlUtilities =
     xmlDocument.Load(xmlReader)
 
     let xDeclaration = xDocument.Declaration
-    if xDeclaration
-       |> isNull
-       |> not
+    if xDeclaration.IsNotNull
     then
       let xmlDeclaration =
         xmlDocument.CreateXmlDeclaration
@@ -33,6 +33,9 @@ module XmlUtilities =
 
   [<SuppressMessage("Microsoft.Design", "CA1059",
                     Justification = "converts concrete types")>]
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
+    Justification = "AvoidSpeculativeGenerality too")>]
   let ToXDocument(xmlDocument : XmlDocument) =
     use nodeReader = new XmlNodeReader(xmlDocument)
     nodeReader.MoveToContent() |> ignore // skips leading comments
@@ -101,6 +104,6 @@ module XmlUtilities =
     | :? FileLoadException -> fallback
 
   [<SuppressMessage("Microsoft.Design", "CA1059", Justification = "Implies concrete type")>]
-  let PrependDeclaration(x : XmlDocument) =
+  let internal PrependDeclaration(x : XmlDocument) =
     let xmlDeclaration = x.CreateXmlDeclaration("1.0", "utf-8", null)
     x.InsertBefore(xmlDeclaration, x.FirstChild) |> ignore

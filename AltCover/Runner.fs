@@ -90,6 +90,9 @@ module internal Runner =
     let line = String.Format(CultureInfo.InvariantCulture, template, what, value)
     Write line
 
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
+    Justification = "AvoidSpeculativeGenerality too")>]
   let NCoverSummary(report : XDocument) =
     let makepc v n =
       if n = 0 then
@@ -158,6 +161,9 @@ module internal Runner =
 
     makepc vpoints points.Length
 
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
+    Justification = "AvoidSpeculativeGenerality too")>]
   let AltSummary(report : XDocument) =
     "Alternative"
     |> CommandLine.resources.GetString
@@ -483,8 +489,14 @@ module internal Runner =
     | fail -> fail
 
   // mocking point
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+      "Gendarme.Rules.Performance", "AvoidUncalledPrivateCodeRule",
+      Justification = "Unit test accessor")>]
   let mutable internal RecorderName = "AltCover.Recorder.g.dll"
 
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Correctness",
+         "EnsureLocalDisposalRule",
+         Justification="Tuple return confusing Gendarme -- TODO")>]
   let RecorderInstance() =
     let recorderPath = Path.Combine(Option.get recordingDirectory, RecorderName)
     let definition = AssemblyDefinition.ReadAssembly recorderPath
@@ -663,6 +675,9 @@ module internal Runner =
          |> Seq.collect (fun p -> p.Attributes |> Seq.cast<XmlAttribute>)
          |> Seq.iter (fun a -> m.SetAttribute(a.Name, a.Value)))
 
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
+    Justification = "AvoidSpeculativeGenerality too")>]
   let internal LookUpVisitsByToken token (dict : Dictionary<int, Base.PointVisit>) =
     let (ok, index) =
       Int32.TryParse
@@ -698,6 +713,9 @@ module internal Runner =
          <> 0L)
     |> Seq.length
 
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
+    Justification = "AvoidSpeculativeGenerality too")>]
   let internal TryGetValue (d : Dictionary<'a, 'b>) (key : 'a) =
     match d with
     | null -> (false, Unchecked.defaultof<'b>)
@@ -910,8 +928,17 @@ module internal Runner =
       report =
     AltCover.Base.Counter.DoFlush (PostProcess hits report) PointProcess true hits report
   // mocking points
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+      "Gendarme.Rules.Performance", "AvoidUncalledPrivateCodeRule",
+      Justification = "Unit test accessor")>]
   let mutable internal GetPayload = PayloadBase
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+      "Gendarme.Rules.Performance", "AvoidUncalledPrivateCodeRule",
+      Justification = "Unit test accessor")>]
   let mutable internal GetMonitor = MonitorBase
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+      "Gendarme.Rules.Performance", "AvoidUncalledPrivateCodeRule",
+      Justification = "Unit test accessor")>]
   let mutable internal DoReport = WriteReportBase
 
   let DoSummaries (document : XDocument) (format : Base.ReportFormat) result =

@@ -447,15 +447,10 @@ _Target "Lint" (fun _ ->
   let failOnIssuesFound (issuesFound: bool) =
     Assert.That(issuesFound, Is.False, "Lint issues were found")
   try
-    let settings =
-      Configuration.SettingsFileName
-      |> Path.getFullName
-      |> File.ReadAllText
-
-    let lintConfig =
-      FSharpLint.Application.ConfigurationManagement.loadConfigurationFile settings
     let options =
-      { Lint.OptionalLintParameters.Default with Configuration = Some lintConfig }
+      { Lint.OptionalLintParameters.Default with Configuration = FromFile (Path.getFullName "./fsharplint.json")
+      //Configuration.SettingsFileName 
+      }
 
     !!"**/*.fsproj"
     |> Seq.collect (fun n -> !!(Path.GetDirectoryName n @@ "*.fs"))
@@ -466,17 +461,21 @@ _Target "Lint" (fun _ ->
          | Lint.LintResult.Success w ->
            w
            |> Seq.filter (fun x ->
-                match x.Fix with
-                | None -> false
-                | Some fix -> fix.FromText <> "AltCover_Fake")) // special case
+                match x.Details.SuggestedFix with
+                | Some l -> match l.Force() with
+                            | Some fix -> fix.FromText <> "AltCover_Fake" // special case
+                            | _ -> false
+                | _ -> false))
     |> Seq.concat
     |> Seq.fold (fun _ x ->
-         printfn "Info: %A\r\n Range: %A\r\n Fix: %A\r\n====" x.Info x.Range x.Fix
+         printfn "Info: %A\r\n Range: %A\r\n Fix: %A\r\n====" x.Details.Message x.Details.Range x.Details.SuggestedFix
          true) false
     |> failOnIssuesFound
   with 
   | :? System.MissingMethodException ->
     printfn "MissingMethodException raised"
+  | :? System.ArgumentOutOfRangeException ->
+    printfn "ArgumentOutOfRangeException raised"
   | ex ->
     printfn "%A" ex
     reraise()
@@ -492,29 +491,32 @@ _Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standa
    ("_Binaries/AltCover.FSApi/Debug+AnyCPU/netstandard2.0/publish", "netstandard2.0", "./AltCover.FSApi/altcover.fsapi.core.fsproj")
    ("_Binaries/AltCover.Visualizer/Debug+AnyCPU/netcoreapp2.1/publish", "netcoreapp2.1", "./AltCover.Visualizer/altcover.visualizer.core.fsproj")
    ("_Binaries/AltCover.Fake.DotNet.Testing.AltCover/Debug+AnyCPU/netstandard2.0/publish", "netstandard2.0", "./AltCover.Fake.DotNet.Testing.AltCover/altcover.fake.dotnet.testing.altcover.core.fsproj")
+   ("_Binaries/AltCover.Cake/Debug+AnyCPU/netstandard2.0/publish", "netstandard2.0", "./AltCover.Cake/altcover.cake.core.csproj")
+   ("_Binaries/altcover.netcoreapp/Debug+AnyCPU/netcoreapp2.0/publish", "netcoreapp2.0", "./AltCover.NetCoreApp/altcover.netcoreapp.core.fsproj")
   ]
   |> Seq.iter (fun (pub, rt, proj) -> DotNet.publish (fun options ->
                                     { options with
                                         OutputPath = Some pub
                                         Configuration = DotNet.BuildConfiguration.Debug
                                         NoBuild = true
-                                        MSBuildParams = { MSBuild.CliArguments.Create() with 
+                                        MSBuildParams = { MSBuild.CliArguments.Create() with                                                            
+                                                           DisableInternalBinLog = true
                                                            Properties = [("AltCoverGendarme", "true")] }
                                         Framework = Some rt }) proj)
 
-  [ ("./Build/rules.xml",
+  [ ("./Build/common-rules.xml",
      [ "_Binaries/AltCover/Debug+AnyCPU/netcoreapp2.0/publish/AltCover.dll"
-       "_Binaries/AltCover.Shadow/Debug+AnyCPU/netstandard2.0/publish/AltCover.Shadow.dll" ])
-
-    ("./Build/rules-posh.xml",
-     [ "_Binaries/AltCover.PowerShell/Debug+AnyCPU/netstandard2.0/publish/AltCover.PowerShell.dll"
-       "_Binaries/AltCover.FSApi/Debug+AnyCPU/netstandard2.0/publish/AltCover.FSApi.dll" ])
-
-    ("./Build/rules-gtk.xml",
-     [ "_Binaries/AltCover.Visualizer/Debug+AnyCPU/netcoreapp2.1/publish/AltCover.Visualizer.dll" ])
-
-    ("./Build/rules-fake.xml",
-     [ "_Binaries/AltCover.Fake.DotNet.Testing.AltCover/Debug+AnyCPU/netstandard2.0/publish/AltCover.Fake.DotNet.Testing.AltCover.dll" ]) ]
+       "_Binaries/AltCover.Shadow/Debug+AnyCPU/netstandard2.0/publish/AltCover.Shadow.dll" 
+       "_Binaries/AltCover.PowerShell/Debug+AnyCPU/netstandard2.0/publish/AltCover.PowerShell.dll"
+       "_Binaries/AltCover.FSApi/Debug+AnyCPU/netstandard2.0/publish/AltCover.FSApi.dll" 
+       "_Binaries/AltCover.Visualizer/Debug+AnyCPU/netcoreapp2.1/publish/AltCover.Visualizer.dll" 
+       "_Binaries/AltCover.Fake.DotNet.Testing.AltCover/Debug+AnyCPU/netstandard2.0/publish/AltCover.Fake.DotNet.Testing.AltCover.dll"
+       "_Binaries/altcover.netcoreapp/Debug+AnyCPU/netcoreapp2.0/publish/altcover.netcoreapp.dll"
+        ])
+    ("./Build/csharp-rules.xml",
+     [ "_Binaries/AltCover.Cake/Debug+AnyCPU/netstandard2.0/publish/AltCover.Cake.dll"
+       "_Binaries/AltCover.Cake/Debug+AnyCPU/netstandard2.0/publish/AltCover.CSapi.dll"
+        ]) ]
   |> Seq.iter (fun (ruleset, files) ->
        Gendarme.run
          { Gendarme.Params.Create() with
@@ -535,12 +537,12 @@ _Target "FxCop" (fun _ ->
   let rules =
     [ "-Microsoft.Design#CA1004"
       "-Microsoft.Design#CA1006"
-      "-Microsoft.Design#CA1011" // maybe sometimes
+      "-Microsoft.Design#CA1011" // reconsider @ Genbu; maybe sometimes
       "-Microsoft.Design#CA1062" // null checks,  In F#!
       "-Microsoft.Maintainability#CA1506"
-      "-Microsoft.Naming#CA1704"
-      "-Microsoft.Naming#CA1707"
-      "-Microsoft.Naming#CA1709"
+      "-Microsoft.Naming#CA1704" // reconsider @ Genbu
+      "-Microsoft.Naming#CA1707" // reconsider @ Genbu
+      "-Microsoft.Naming#CA1709" // reconsider @ Genbu
       "-Microsoft.Naming#CA1715"
       "-Microsoft.Usage#CA2208" ]
 
@@ -579,30 +581,30 @@ _Target "FxCop" (fun _ ->
     ([ "_Binaries/AltCover.PowerShell/Debug+AnyCPU/net47/AltCover.PowerShell.dll" ], [],
      [ "-Microsoft.Design#CA1059"
        "-Microsoft.Usage#CA2235"
-       "-Microsoft.Performance#CA1819"
+       "-Microsoft.Performance#CA1819" // reconsider @ genbu
        "-Microsoft.Design#CA1020"
        "-Microsoft.Design#CA1004"
        "-Microsoft.Design#CA1006"
-       "-Microsoft.Design#CA1011"
+       "-Microsoft.Design#CA1011" // reconsider @ Genbu
        "-Microsoft.Design#CA1062"
        "-Microsoft.Maintainability#CA1506"
-       "-Microsoft.Naming#CA1704"
-       "-Microsoft.Naming#CA1707"
-       "-Microsoft.Naming#CA1709"
+       "-Microsoft.Naming#CA1704" // reconsider @ Genbu
+       "-Microsoft.Naming#CA1707" // reconsider @ Genbu
+       "-Microsoft.Naming#CA1709" // reconsider @ Genbu
        "-Microsoft.Naming#CA1715" ])
     ([ "_Binaries/AltCover.FSApi/Debug+AnyCPU/net45/AltCover.FSApi.dll" ], [],
      [ "-Microsoft.Usage#CA2235"
-       "-Microsoft.Performance#CA1819"
+       "-Microsoft.Performance#CA1819" // reconsider @ genbu
        "-Microsoft.Design#CA1020"
        "-Microsoft.Design#CA1034"
        "-Microsoft.Design#CA1004"
        "-Microsoft.Design#CA1006"
-       "-Microsoft.Design#CA1011"
+       "-Microsoft.Design#CA1011" // reconsider @ Genbu
        "-Microsoft.Design#CA1062"
        "-Microsoft.Maintainability#CA1506"
-       "-Microsoft.Naming#CA1704"
-       "-Microsoft.Naming#CA1707"
-       "-Microsoft.Naming#CA1709"
+       "-Microsoft.Naming#CA1704" // reconsider @ Genbu
+       "-Microsoft.Naming#CA1707" // reconsider @ Genbu
+       "-Microsoft.Naming#CA1709" // reconsider @ Genbu
        "-Microsoft.Naming#CA1715" ])
     ([ "_Binaries/AltCover.Visualizer/Debug+AnyCPU/net45/AltCover.Visualizer.exe" ],
      [ "AltCover.Augment"
@@ -631,14 +633,38 @@ _Target "FxCop" (fun _ ->
        "AltCover.Internals.DotNet"
        "AltCover_Fake.DotNet.DotNet" ],
      [ "-Microsoft.Design#CA1006"
-       "-Microsoft.Design#CA1011"
+       "-Microsoft.Design#CA1011" // reconsider @ Genbu
        "-Microsoft.Design#CA1020"
        "-Microsoft.Design#CA1062"
-       "-Microsoft.Naming#CA1704"
-       "-Microsoft.Naming#CA1707"
-       "-Microsoft.Naming#CA1709"
+       "-Microsoft.Naming#CA1704" // reconsider @ Genbu
+       "-Microsoft.Naming#CA1707" // reconsider @ Genbu
+       "-Microsoft.Naming#CA1709" // reconsider @ Genbu
        "-Microsoft.Naming#CA1724"
-       "-Microsoft.Usage#CA2208" ]) ]
+       "-Microsoft.Usage#CA2208" ]) 
+    ([ "_Binaries/AltCover.CSapi/Debug+AnyCPU/net45/AltCover.CSapi.dll"
+       //"_Binaries/altcover.netcoreapp/Debug+AnyCPU/netcoreapp2.0/altcover.netcoreapp.dll"
+       ],
+     [],
+     [
+       "-Microsoft.Design#CA1011" // reconsider @ Genbu
+       "-Microsoft.Design#CA1020"
+       "-Microsoft.Naming#CA1704" // reconsider @ Genbu
+       "-Microsoft.Naming#CA1709" // reconsider @ Genbu
+       "-Microsoft.Performance#CA1819" // reconsider @ genbu
+       "-Microsoft.Naming#CA1716"  // reconsider @ genbu
+     ])
+    ([ "_Binaries/AltCover.Cake/Debug+AnyCPU/net46/AltCover.Cake.dll"
+       ],
+     [],
+     [
+       "-Microsoft.Design#CA1011" // reconsider @ Genbu
+       "-Microsoft.Design#CA1020"
+       "-Microsoft.Design#CA1026" // can we suppress this one??
+       "-Microsoft.Design#CA2210" // can't strongname this as Cake isn't strongnamed 
+       "-Microsoft.Naming#CA1704" // reconsider @ Genbu
+       "-Microsoft.Naming#CA1709" // reconsider @ Genbu
+       "-Microsoft.Performance#CA1819" // reconsider @ genbu
+     ]) ]
   |> Seq.iter (fun (files, types, ruleset) ->
        files
        |> FxCop.run

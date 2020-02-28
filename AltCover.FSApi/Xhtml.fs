@@ -33,7 +33,8 @@ module Xhtml =
     do use output = rewrite.CreateNavigator().AppendChild()
        transform.Transform(intermediate, output)
 
-    rewrite.DocumentElement.SelectNodes("//script[@language='JavaScript']").OfType<XmlNode>
+    use scripts = rewrite.DocumentElement.SelectNodes("//script[@language='JavaScript']")
+    scripts.OfType<XmlNode>
       ()
     |> Seq.iter (fun n ->
          let text = n.InnerText

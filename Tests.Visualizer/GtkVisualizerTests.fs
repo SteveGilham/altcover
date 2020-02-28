@@ -17,12 +17,11 @@ type AltCoverTests() =
     [<Test>]
     member self.AugmentNullableDetectNulls() =
       let input = [ "string"; null; "another string" ]
-      let nulls = input |> List.map (Option.nullable >> Option.isNone)
+      let nulls = input |> List.map (fun x -> x.IsNotNull |> not)
       test <@ nulls = [ false; true; false ] @>
 
     [<Test>]
-    member self.AugmentGetOrElseFillsInNone() =
-      let input = [ "string"; null; "another string" ]
-      let strings = input |> List.map (Option.nullable >> (Option.getOrElse "fallback"))
-      test <@ strings = [ "string"; "fallback"; "another string" ] @>
+    member self.AugmentNonNullableDetectNoNulls() =
+      let input = [ 1; 2 ;3 ]
+      test <@ input |> List.forall (fun x -> x.IsNotNull) @>
   end

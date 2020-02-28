@@ -11,6 +11,7 @@
     <DeterministicSourcePaths Condition="'$(APPVEYOR)'=='True'">true</DeterministicSourcePaths>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>$(ProjectDir)..\Build\Infrastructure.snk</AssemblyOriginatorKeyFile>
+    <SolutionDir Condition="'$(AltCoverGendarme)' == 'true'">$(ProjectDir)../</SolutionDir>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
