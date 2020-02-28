@@ -164,11 +164,6 @@ module internal Persistence =
       "DoNotSwallowErrorsCatchingNonSpecificExceptionsRule",
       Justification = "need to exhaustively list the espected ones"
   )>]
-  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
-      "Gendarme.Rules.Correctness",
-      "EnsureLocalDisposalRule",
-      Justification = "Fails on travis -- FIXME"
-  )>]
   let private EnsureFile() =
     let profileDir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)
     let dir = Directory.CreateDirectory(Path.Combine(profileDir, ".altcover"))
@@ -182,10 +177,11 @@ module internal Persistence =
         let doc = XDocument.Load(file)
         try
           let schemas = new XmlSchemaSet()
-          use xsd =
-            new StreamReader(Assembly.GetExecutingAssembly()
-                                     .GetManifestResourceStream("AltCover.Visualizer.config.xsd"))
-                                     |> XmlReader.Create
+          use str = Assembly.GetExecutingAssembly()
+                                     .GetManifestResourceStream("AltCover.Visualizer.config.xsd")
+          use xr = new StreamReader(str)
+          use xsd = xr |> XmlReader.Create
+
           schemas.Add(String.Empty,  xsd) |> ignore
           doc.Validate(schemas, null)
           (file, doc)

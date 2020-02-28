@@ -23,14 +23,12 @@ type InvalidFile =
 module Transformer =
   let internal DefaultHelper (_ : XDocument) (document : XDocument) = document
 
-  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
-      "Gendarme.Rules.Correctness",
-      "EnsureLocalDisposalRule",
-      Justification = "Fails on travis -- FIXME"
-  )>]
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202",
+                                 Justification = "Multiple Close() should be safe")>]
   let internal LoadTransform(path : string) =
-    let stylesheet =
-      XmlReader.Create(Assembly.GetExecutingAssembly().GetManifestResourceStream(path))
+    use str = Assembly.GetExecutingAssembly().GetManifestResourceStream(path)
+    use stylesheet =
+      XmlReader.Create(str)
     let xmlTransform = new XslCompiledTransform()
     xmlTransform.Load(stylesheet, new XsltSettings(false, true), null)
     xmlTransform
@@ -52,6 +50,8 @@ module Transformer =
       TransformFromOtherCover document "AltCover.Visualizer.OpenCoverToNCoverEx.xsl"
     report
 
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202",
+                                 Justification = "Multiple Close() should be safe")>]
   // PartCover to NCover style sheet
   let internal ConvertFile (helper : CoverageTool -> XDocument -> XDocument -> XDocument)
       (document : XDocument) =
