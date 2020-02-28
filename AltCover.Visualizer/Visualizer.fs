@@ -177,10 +177,11 @@ module internal Persistence =
         let doc = XDocument.Load(file)
         try
           let schemas = new XmlSchemaSet()
-          use xsd =
-            new StreamReader(Assembly.GetExecutingAssembly()
-                                     .GetManifestResourceStream("AltCover.Visualizer.config.xsd"))
-                                     |> XmlReader.Create
+          use str = Assembly.GetExecutingAssembly()
+                                     .GetManifestResourceStream("AltCover.Visualizer.config.xsd")
+          use xr = new StreamReader(str)
+          use xsd = xr |> XmlReader.Create
+
           schemas.Add(String.Empty,  xsd) |> ignore
           doc.Validate(schemas, null)
           (file, doc)
