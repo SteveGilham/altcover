@@ -9,60 +9,67 @@ using AltCover.Parameters;
 
 namespace AltCover.Cake
 {
-  public class AltCoverSettings
-  {
-    public IPrepareArgs PreparationPhase { get; set; }
-    public ICollectArgs CollectionPhase { get; set; }
+    public class AltCoverSettings
+    {
+        public IPrepareArgs PreparationPhase { get; set; }
+        public ICollectArgs CollectionPhase { get; set; }
     public ICLIArg Control { get; set; }
 
-    public Func<ProcessArgumentBuilder, ProcessArgumentBuilder> Customize()
-    {
+        public Func<ProcessArgumentBuilder, ProcessArgumentBuilder> Customize()
+        {
       return pabIn =>
       {
-        var pabOut = new ProcessArgumentBuilder();
-        if (pabIn != null)
-        {
-          pabIn.CopyTo(pabOut);
-        }
-        var args = CSApi.ToTestArgumentList(
-                    this.PreparationPhase,
-                    this.CollectionPhase,
+                var pabOut = new ProcessArgumentBuilder();
+                if (pabIn != null) 
+                {
+                    pabIn.CopyTo(pabOut);
+                }
+                var args = CSApi.ToTestArgumentList(
+                            this.PreparationPhase,
+                            this.CollectionPhase,
                     this.Control);
-        Array.Reverse(args);
-        Array.ForEach(
-            args,
-            t => pabOut.Prepend(t));
-        return pabOut;
-      };
+                Array.Reverse(args);
+                Array.ForEach(
+                    args,
+                    t => pabOut.Prepend(t));
+                return pabOut;
+            };
+        }
+
+        public Func<ProcessArgumentBuilder, ProcessArgumentBuilder> Concatenate(Func<ProcessArgumentBuilder, ProcessArgumentBuilder> customIn)
+        {
+            var altcover = Customize();
+            if (customIn == null)
+            {
+                return altcover;
+            }
+            else 
+            {
+                return args => altcover(customIn(args));
+            }
+        }
     }
 
-    public Func<ProcessArgumentBuilder, ProcessArgumentBuilder> Concatenate(Func<ProcessArgumentBuilder, ProcessArgumentBuilder> customIn)
+    [CakeAliasCategory("DotNetCore")]
+    public static class DotNet
     {
-      var altcover = Customize();
-      if (customIn == null)
-      {
-        return altcover;
-      }
-      else
-      {
-        return args => altcover(customIn(args));
-      }
-    }
-  }
+        [CakeMethodAlias]
+        [CakeAliasCategory("Test")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
+    Justification = "AvoidSpeculativeGenerality too")]
+        public static void DotNetCoreTest(
+                    this ICakeContext context,
+                    FilePath project,
+                    DotNetCoreTestSettings settings,
+                    AltCoverSettings altcover)
+        {
+      if (project == null) throw new ArgumentNullException(nameof(project));
+      if (settings == null) throw new ArgumentNullException(nameof(settings));
+      if (altcover == null) throw new ArgumentNullException(nameof(altcover));
 
-  [CakeAliasCategory("DotNetCore")]
-  public static class DotNet
-  {
-    [CakeMethodAlias]
-    [CakeAliasCategory("Test")]
-    public static void DotNetCoreTest(
-                this ICakeContext context,
-                FilePath project,
-                DotNetCoreTestSettings settings,
-                AltCoverSettings altcover)
-    {
-      settings.ArgumentCustomization = altcover.Concatenate(settings.ArgumentCustomization);
-      context.DotNetCoreTest(project.FullPath, settings);
+            settings.ArgumentCustomization = altcover.Concatenate(settings.ArgumentCustomization);
+      context.DotNetCoreTest(project.GetFilename().FullPath, settings);
+        }
     }
-  }
 }

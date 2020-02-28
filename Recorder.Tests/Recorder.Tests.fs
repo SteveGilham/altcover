@@ -44,7 +44,7 @@ module AltCoverTests =
   let private UpdateReport a b =
     Adapter.UpdateReport(a, ReportFormat.NCover, b, b) |> ignore
 
-  let private PointVisitInit a b = PointVisit.Init(a, b)
+  let private PointVisitInit a b = Adapter.Init(a, b)
 
   let resource2 =
     Assembly.GetExecutingAssembly().GetManifestResourceNames()
@@ -55,14 +55,6 @@ module AltCoverTests =
   [<Test>]
   let ShouldBeAbleToGetTheDefaultReportFileName() =
     Assert.True( Instance.ReportFile = "Coverage.Default.xml" )
-
-  [<Test>]
-  let SafeDisposalProtects() =
-    let obj1 =
-      { new System.IDisposable with
-          member x.Dispose() = ObjectDisposedException("Bang!") |> raise }
-    Assist.SafeDispose obj1
-    Assert.True( true )
 
   [<Test>]
   let DefaultAccessorsBehaveAsExpected() =
@@ -355,31 +347,31 @@ module AltCoverTests =
         Instance.Visits.Clear())
     GetMyMethodName "<="
 
-  [<Test>]
-  let TabledVisitsShouldIncrementCount() =
-    GetMyMethodName "=>"
-    lock Instance.Visits (fun () ->
-      Adapter.Reset()
-      try
-        Instance.Visits.Clear()
-        let key = " "
-        Instance.VisitImpl(key, 23, (Adapter.Null()))
-        let table = Dictionary<string, Dictionary<int, PointVisit>>()
-        table.Add(key, Dictionary<int, PointVisit>())
-        let payloads =
-          [ Adapter.Call 17
-            Adapter.Time 23L
-            Adapter.NewBoth(5L, 42) ]
+  //[<Test>]
+  //let TabledVisitsShouldIncrementCount() =
+  //  GetMyMethodName "=>"
+  //  lock Instance.Visits (fun () ->
+  //    Adapter.Reset()
+  //    try
+  //      Instance.Visits.Clear()
+  //      let key = " "
+  //      Instance.VisitImpl(key, 23, (Adapter.Null()))
+  //      let table = Dictionary<string, Dictionary<int, PointVisit>>()
+  //      table.Add(key, Dictionary<int, PointVisit>())
+  //      let payloads =
+  //        [ Adapter.Call 17
+  //          Adapter.Time 23L
+  //          Adapter.NewBoth(5L, 42) ]
 
-        let pv = PointVisitInit 42L payloads
-        table.[key].Add(23, pv)
-        let n = Counter.AddTable(Instance.Visits, table)
-        Assert.That(n, Is.EqualTo 45)
-        Assert.That(Instance.Visits.[key].[23].Count, Is.EqualTo 43)
-        Assert.That(Instance.Visits.[key].[23].Tracks, Is.EquivalentTo payloads)
-      finally
-        Instance.Visits.Clear())
-    GetMyMethodName "<="
+  //      let pv = PointVisitInit 42L payloads
+  //      table.[key].Add(23, pv)
+  //      let n = Counter.AddTable(Instance.Visits, table)
+  //      Assert.That(n, Is.EqualTo 45)
+  //      Assert.That(Instance.Visits.[key].[23].Count, Is.EqualTo 43)
+  //      Assert.That(Instance.Visits.[key].[23].Tracks, Is.EquivalentTo payloads)
+  //    finally
+  //      Instance.Visits.Clear())
+  //  GetMyMethodName "<="
 
   [<Test>]
   let OldDocumentStartIsNotUpdated() =

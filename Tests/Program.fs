@@ -1,6 +1,7 @@
 namespace AltCover.Expecto.Tests
 
 #if NETCOREAPP3_0
+open AltCover.Augment
 open Expecto
 open Mono.Cecil
 open Mono.Cecil.Cil
@@ -15,7 +16,6 @@ module TestMain =
           Tests.AltCoverRunnerTests.MaxTimeLast, "Runner.MaxTimeLast"
           Tests.AltCoverRunnerTests.MinTimeFirst, "Runner.MinTimeFirst"
           Tests.AltCoverRunnerTests.MinTimeLast, "Runner.MinTimeLast"
-          Tests.AltCoverRunnerTests.SafeDisposalProtects, "Runner.SafeDisposalProtects"
           Tests.AltCoverRunnerTests.JunkUspidGivesNegativeIndex, "Runner.JunkUspidGivesNegativeIndex"
           Tests.AltCoverRunnerTests.RealIdShouldIncrementCount, "Runner.RealIdShouldIncrementCount"
           Tests.AltCoverRunnerTests.RealIdShouldIncrementList, "Runner.RealIdShouldIncrementList"
@@ -464,7 +464,7 @@ module TestMain =
 
     let testMethods = def.MainModule.GetTypes()
                       |> Seq.collect (fun t -> t.Methods)
-                      |> Seq.filter (fun m -> m.CustomAttributes |> isNull |> not)
+                      |> Seq.filter (fun m -> m.CustomAttributes.IsNotNull)
                       |> Seq.filter (fun m -> m.CustomAttributes |> Seq.exists (fun a -> a.AttributeType.Name = "TestAttribute"))
                       |> Seq.map (fun m -> m.DeclaringType.FullName + "::" + m.Name)
 

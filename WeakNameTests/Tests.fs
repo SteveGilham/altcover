@@ -129,6 +129,7 @@ type AltCoverTests() =
     member self.GratuitousCoverage() =
       let l = Left 23
       let r = Right true
+      test <@ (23).IsNotNull @>
 
       let output =
         [ r; l ]

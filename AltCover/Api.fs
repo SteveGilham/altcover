@@ -21,7 +21,7 @@ open Fake.DotNet
 
 [<ExcludeFromCodeCoverage; NoComparison;
                   SuppressMessage("Gendarme.Rules.Smells",
-                                  "AvoidCodeDuplicatedInSameClassRule",
+                                  "RelaxedAvoidCodeDuplicatedInSameClassRule",
                                   Justification = "Idiomatic F#")>]
 type CollectParams =
   | Primitive of Primitive.CollectParams
@@ -142,7 +142,7 @@ type CollectParams =
 
 [<ExcludeFromCodeCoverage; NoComparison;
                   SuppressMessage("Gendarme.Rules.Smells",
-                                  "AvoidCodeDuplicatedInSameClassRule",
+                                  "RelaxedAvoidCodeDuplicatedInSameClassRule",
                                   Justification = "Idiomatic F#")>]
 type PrepareParams =
   | Primitive of Primitive.PrepareParams
@@ -395,7 +395,10 @@ type PrepareParams =
     finally
       CommandLine.error <- saved
 
-[<ExcludeFromCodeCoverage; NoComparison; NoEquality>]
+[<ExcludeFromCodeCoverage; NoComparison; NoEquality;
+                  SuppressMessage("Gendarme.Rules.Smells",
+                                  "RelaxedAvoidCodeDuplicatedInSameClassRule",
+                                  Justification = "Idiomatic F#")>]
 type Logging =
   | Primitive of Primitive.Logging
 
@@ -430,7 +433,7 @@ type Logging =
 #else
 #endif
 [<SuppressMessage("Gendarme.Rules.Smells",
-                                  "AvoidCodeDuplicatedInSameClassRule",
+                                  "RelaxedAvoidCodeDuplicatedInSameClassRule",
                                   Justification = "Not worth trying to unify these functions")>]
 module private ArgsHelper =
   let Item a x =
@@ -607,6 +610,8 @@ type Params =
     /// Command arguments
     Args : ArgType }
 
+  [<SuppressMessage("Gendarme.Rules.Maintainability",
+      "RemoveDependenceOnObsoleteCodeRule",Justification="Goes at Genbu")>]
   static member Create(a : ArgType) =
     { ToolPath = "altcover"
       ToolType = ToolType.CreateGlobalTool()
@@ -661,10 +666,8 @@ let composeCommandLine parameters =
 [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1715",
                                                   Justification =
                                                     "Generic types are implicit")>]
-[<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Correctness",
-       "EnsureLocalDisposalRule",
-       Justification="is the 'use' clause confusing Gendarme?")>]
-let runCore parameters modifyCommand =
+
+let internal runCore parameters modifyCommand =
   use __ = Trace.traceTask "AltCover" String.Empty
   let command = (composeCommandLine parameters) |> modifyCommand
   let run = command |> Proc.run

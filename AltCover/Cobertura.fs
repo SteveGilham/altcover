@@ -17,6 +17,9 @@ module internal Cobertura =
       let ratio = (float hits) / (float total)
       target.SetAttributeValue(X rate, String.Format("{0:0.##}", ratio))
 
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
+    Justification = "AvoidSpeculativeGenerality too")>]
   let AddSources (report : XDocument) (target : XElement) tag attribute =
     report.Descendants(X tag)
     |> Seq.map (fun s -> s.Attribute(X attribute).Value |> Path.GetDirectoryName)
