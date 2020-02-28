@@ -141,6 +141,6 @@ type AltCoverTests() =
                    (i.ToString()
                     |> Seq.rev
                     |> Seq.toArray))
-        |> Split
+        |> split
       test <@ output = ("TRUE", [ "32" ]) @>
   end

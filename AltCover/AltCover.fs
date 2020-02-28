@@ -87,7 +87,7 @@ module internal Main =
            "--callContext", x) :: CommandLine.error
       (false, Left None)
 
-  let internal DeclareOptions() =
+  let internal declareOptions() =
     let makeFilter filterscope (x : String) =
       x.Replace(char 0, '\\').Replace(char 1, '|')
       |> CommandLine.ValidateRegexes
@@ -315,7 +315,7 @@ module internal Main =
            o.Add(p, CommandLine.resources.GetString(p), new System.Action<string>(a)))
          (OptionSet())
 
-  let internal ProcessOutputLocation(action : Either<string * OptionSet, string list * OptionSet>) =
+  let internal processOutputLocation(action : Either<string * OptionSet, string list * OptionSet>) =
     match action with
     | Right(rest, options) ->
         // Check that the directories are distinct
@@ -374,7 +374,7 @@ module internal Main =
              Visitor.SourceDirectories() |> Seq.map DirectoryInfo)
     | Left intro -> Left intro
 
-  let internal ImageLoadResilient (f : unit -> 'a) (tidy : unit -> 'a) =
+  let internal imageLoadResilient (f : unit -> 'a) (tidy : unit -> 'a) =
     try
       f()
     with
@@ -383,7 +383,7 @@ module internal Main =
     | :? ArgumentException
     | :? IOException -> tidy()
 
-  let internal PrepareTargetFiles (fromInfos : DirectoryInfo seq)
+  let internal prepareTargetFiles (fromInfos : DirectoryInfo seq)
       (toInfos : DirectoryInfo seq) (sourceInfos : DirectoryInfo seq)
       (targets : string seq) =
     // Copy all the files into the target directory
@@ -411,7 +411,7 @@ module internal Main =
            sourceInfo.GetFiles()
            |> Seq.fold (fun (accumulator : AssemblyInfo list) info ->
                 let fullName = info.FullName
-                ImageLoadResilient (fun () ->
+                imageLoadResilient (fun () ->
                   use stream = File.OpenRead(fullName)
                   use def = AssemblyDefinition.ReadAssembly(stream)
                   ProgramDatabase.ReadSymbols def
@@ -492,7 +492,7 @@ module internal Main =
 
     List.unzip sorted
 
-  let internal DoInstrumentation arguments =
+  let internal doInstrumentation arguments =
 #if NETCOREAPP2_0
     let dotnetBuild =
       Assembly.GetEntryAssembly() // is null for unit tests
@@ -505,10 +505,10 @@ module internal Main =
 
 #endif
     let check1 =
-      DeclareOptions()
+      declareOptions()
       |> CommandLine.ParseCommandLine arguments
       |> CommandLine.ProcessHelpOption
-      |> ProcessOutputLocation
+      |> processOutputLocation
     match check1 with
     | Left(intro, options) ->
         CommandLine.HandleBadArguments dotnetBuild arguments
@@ -525,7 +525,7 @@ module internal Main =
             |> Path.GetDirectoryName
             |> CommandLine.ensureDirectory
             let (assemblies, assemblyNames) =
-              PrepareTargetFiles fromInfo toInfo targetInfo
+              prepareTargetFiles fromInfo toInfo targetInfo
                 (Visitor.InstrumentDirectories())
             Output.Info
             <| String.Format
@@ -560,7 +560,7 @@ module internal Main =
     else
       None
 
-  let internal Main arguments =
+  let internal main arguments =
     let first =
       arguments
       |> Seq.tryHead
@@ -569,7 +569,7 @@ module internal Main =
     match first with
     | Select "Runner" _ ->
         Runner.init()
-        Runner.DoCoverage arguments (DeclareOptions())
+        Runner.DoCoverage arguments (declareOptions())
     | Select "ipmo" _ ->
         Path.Combine
           (Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName,
@@ -582,10 +582,10 @@ module internal Main =
         Runner.WriteResourceWithFormatItems "AltCover.Version"
           [| AssemblyVersionInformation.AssemblyFileVersion |] false
         0
-    | _ -> DoInstrumentation arguments
+    | _ -> doInstrumentation arguments
 
   // mocking point
   [<System.Diagnostics.CodeAnalysis.SuppressMessage(
       "Gendarme.Rules.Performance", "AvoidUncalledPrivateCodeRule",
       Justification = "Unit test accessor")>]
-  let mutable internal EffectiveMain = Main
+  let mutable internal effectiveMain = main

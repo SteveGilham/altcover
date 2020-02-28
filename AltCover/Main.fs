@@ -15,4 +15,4 @@ module internal AltCover =
       Justification="limited 0-255 elsewhere")>]
   let private Main arguments =
     ToConsole()
-    AltCover.Main.EffectiveMain arguments
+    AltCover.Main.effectiveMain arguments

@@ -14,7 +14,9 @@ module internal Augment =
 #if GUI
 #else
   type Microsoft.FSharp.Core.Option<'T> with
+    // fsharplint:disable-next-line MemberNames
     static member getOrElse (fallback : 'T) (x : option<'T>) = defaultArg x fallback
+    // fsharplint:disable-next-line MemberNames
     static member nullable (x : 'T) : option<'T> =
       if isNull (x :> obj) then None else Some x
 #endif
@@ -38,6 +40,6 @@ module internal Augment =
   let Increment b =
     if b then 1 else 0
 
-  let internal Split(l : 'a list) =
+  let internal split(l : 'a list) =
     (l.Head, l.Tail) // since Gendarme thinks the concatenation operator is a hardcoded path!
 #endif

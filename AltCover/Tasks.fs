@@ -19,13 +19,13 @@ module Api =
     args
     |> FSApi.Args.Prepare
     |> List.toArray
-    |> Main.EffectiveMain
+    |> Main.effectiveMain
 
   let Collect (args : FSApi.CollectParams) (log : FSApi.Logging) =
     log.Apply()
     FSApi.Args.Collect args
     |> List.toArray
-    |> Main.EffectiveMain
+    |> Main.effectiveMain
 
   let Summary() = Runner.Summary.ToString()
 
@@ -38,7 +38,7 @@ module Api =
     writeToStore String.Empty
     LogToStore.Apply()
     [| s |]
-    |> Main.EffectiveMain
+    |> Main.effectiveMain
     |> ignore
     store
 

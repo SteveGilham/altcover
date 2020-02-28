@@ -448,7 +448,7 @@ module private ArgsHelper =
       [ a + ":" + x ]
 
 module internal Args =
-  let internal ItemList a x =
+  let internal itemList a x =
     if x |> isNull then
       []
     else
@@ -456,10 +456,10 @@ module internal Args =
       |> Seq.collect (fun i -> [ a; i ])
       |> Seq.toList
 
-  let private Flag a x =
+  let private flag a x =
     if x then [ a ] else []
 
-  let internal ItemLists(args : PrepareParams) =
+  let internal itemLists(args : PrepareParams) =
     [ ("-i", args.InputDirectories)
       ("-o", args.OutputDirectories)
       ("-y", args.SymbolDirectories)
@@ -473,18 +473,18 @@ module internal Args =
       ("-a", args.AttributeFilter)
       ("-p", args.PathFilter)
       ("-c", args.CallContext) ]
-    |> List.collect (fun (a, b) -> ItemList a b)
+    |> List.collect (fun (a, b) -> itemList a b)
 
-  let internal Items(args : PrepareParams) =
+  let internal items(args : PrepareParams) =
     [ ("--sn", args.StrongNameKey)
       ("-x", args.XmlReport) ]
     |> List.collect (fun (a, b) -> ArgsHelper.Item a b)
 
-  let internal OptItems(args : PrepareParams) =
+  let internal optItems(args : PrepareParams) =
     [ ("--showstatic", args.ShowStatic, [ "-" ]) ]
     |> List.collect (fun (a, b, c) -> ArgsHelper.OptItem a b c)
 
-  let internal Flags(args : PrepareParams) =
+  let internal flags(args : PrepareParams) =
     [ ("--opencover", args.OpenCover)
       ("--inplace", args.InPlace)
       ("--save", args.Save)
@@ -497,7 +497,7 @@ module internal Args =
       ("--localSource", args.LocalSource)
       ("--visibleBranches", args.VisibleBranches)
       ("--showGenerated", args.ShowGenerated) ]
-    |> List.collect (fun (a, b) -> Flag a b)
+    |> List.collect (fun (a, b) -> flag a b)
 
   let Prepare(args : PrepareParams) =
     let argsList = args.CommandLine |> Seq.toList
@@ -506,7 +506,7 @@ module internal Args =
       if List.isEmpty argsList then [] else "--" :: argsList
 
     let parameters =
-      [ ItemLists; Items; OptItems; Flags ] |> List.collect (fun f -> f args)
+      [ itemLists; items; optItems; flags ] |> List.collect (fun f -> f args)
 
     [ parameters; trailing ] |> List.concat
 
@@ -526,8 +526,8 @@ module internal Args =
       ArgsHelper.Item "-t" args.Threshold
       ArgsHelper.Item "-c" args.Cobertura
       ArgsHelper.Item "-o" args.OutputFile
-      Flag "--collect" (exe |> String.IsNullOrWhiteSpace)
-      Flag "--dropReturnCode" (args.ExposeReturnCode |> not)
+      flag "--collect" (exe |> String.IsNullOrWhiteSpace)
+      flag "--dropReturnCode" (args.ExposeReturnCode |> not)
       ArgsHelper.OptItem "--teamcity" args.SummaryFormat []
       trailing ]
     |> List.concat
