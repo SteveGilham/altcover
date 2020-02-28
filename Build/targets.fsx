@@ -469,10 +469,6 @@ _Target "Lint" (fun _ ->
          true) false
     |> failOnIssuesFound
   with 
-  | :? System.MissingMethodException ->
-    printfn "MissingMethodException raised"
-  | :? System.ArgumentOutOfRangeException ->
-    printfn "ArgumentOutOfRangeException raised"
   | ex ->
     printfn "%A" ex
     reraise()
