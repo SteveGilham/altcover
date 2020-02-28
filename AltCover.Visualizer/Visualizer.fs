@@ -26,6 +26,7 @@ open Microsoft.Win32
 
 open Mono.Options
 
+[<Sealed>]
 type internal Handler() =
   class
 #if NETCOREAPP2_1
@@ -123,6 +124,9 @@ type internal Handler() =
     DefaultValue(true)>]
     val mutable classStructureTree : TreeView
 
+    [<DefaultValue(true)>]
+    val mutable auxModel : TreeStore
+
     [<
 #if NETCOREAPP2_1
       Builder.Object;
@@ -145,7 +149,7 @@ type internal Handler() =
     val mutable activeRow : int
   end
 
-module Persistence =
+module internal Persistence =
   let mutable internal save = true
 
 #if NETCOREAPP2_1
@@ -155,6 +159,11 @@ module Persistence =
     doc.Add(XElement(XName.Get "AltCover.Visualizer"))
     doc
 
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+      "Gendarme.Rules.Exceptions",
+      "DoNotSwallowErrorsCatchingNonSpecificExceptionsRule",
+      Justification = "need to exhaustively list the espected ones"
+  )>]
   let private EnsureFile() =
     let profileDir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)
     let dir = Directory.CreateDirectory(Path.Combine(profileDir, ".altcover"))
@@ -171,11 +180,13 @@ module Persistence =
           use xsd =
             new StreamReader(Assembly.GetExecutingAssembly()
                                      .GetManifestResourceStream("AltCover.Visualizer.config.xsd"))
-          schemas.Add(String.Empty, XmlReader.Create xsd) |> ignore
+                                     |> XmlReader.Create
+          schemas.Add(String.Empty,  xsd) |> ignore
           doc.Validate(schemas, null)
           (file, doc)
         with xx ->  // DoNotSwallowErrorsCatchingNonSpecificExceptionsRule
-          printfn "%A%s%s%A" xx Environment.NewLine Environment.NewLine doc
+          let nl = Environment.NewLine
+          printfn "%A%s%s%A" xx nl nl doc
           (file, DefaultDocument())
       with x -> // DoNotSwallowErrorsCatchingNonSpecificExceptionsRule
         printfn "%A" x
@@ -245,7 +256,7 @@ module Persistence =
     | [] -> System.IO.Directory.GetCurrentDirectory()
     | x :: _ -> x.FirstNode.ToString()
 
-  let internal saveCoverageFiles (coverageFiles : string list) =
+  let internal saveCoverageFiles (coverageFiles : string seq) =
     let file, config = EnsureFile()
     config.XPathSelectElements("//RecentlyOpened")
     |> Seq.toList
@@ -493,8 +504,8 @@ module Gui =
                 (if special = MethodType.Property then PropertyIcon else EventIcon)
                   .Force() :> obj |])
         keys
-        |> Seq.sortBy (fun key -> key.name |> DisplayName)
-        |> Seq.iter (ApplyMethod theModel newrow)
+          |> Seq.sortBy (fun key -> key.name |> DisplayName)
+          |> Seq.iter (ApplyMethod theModel newrow)
       else
         ApplyMethod theModel theRow (keys |> Seq.head)
 
@@ -506,16 +517,22 @@ module Gui =
            |> HandleSpecialName)
       |> Seq.toArray
 
-    methods
-    |> Array.sortInPlaceWith (fun ((l, lb), _) ((r, rb), _) ->
-         let sort1 = String.Compare(l, r, StringComparison.OrdinalIgnoreCase)
+    let orderMethods array =
+      array
+      |> Array.sortInPlaceWith (fun ((l, (lb : MethodType)), _) ((r, rb), _) ->
+           let sort1 = String.Compare(l, r, StringComparison.OrdinalIgnoreCase)
 
-         let sort2 =
-           if sort1 = 0
-           then String.Compare(l, r, StringComparison.Ordinal)
-           else sort1
-         if sort2 = 0 then lb.CompareTo rb else sort2)
-    methods |> Array.iter (ApplyToModel model row)
+           let sort2 =
+             if sort1 = 0
+             then String.Compare(l, r, StringComparison.Ordinal)
+             else sort1
+           if sort2 = 0 then lb.CompareTo rb else sort2)
+
+    let applyMethods array =
+      array |> Array.iter (ApplyToModel model row)
+
+    methods |> orderMethods
+    methods |> applyMethods
 
   let private PopulateNamespaceNode (model : TreeStore) (row : TreeIter)
       (nodes : seq<MethodKey>) =
@@ -654,32 +671,30 @@ module Gui =
          x.Fault.Message)
     ShowMessageOnGuiThread parent MessageType.Error message
 
-  let private OutdatedCoverageFileMessage (parent : Window) (x : FileInfo) =
-    let format = GetResourceString("CoverageOutOfDate")
-    let message =
-      String.Format(System.Globalization.CultureInfo.CurrentCulture, format, x.FullName)
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
+    Justification = "AvoidSpeculativeGenerality too")>]
+  let private showMessageResourceFileWarning rn (parent : Window) (x : FileInfo)
+      (s : Source) =
+    let format = GetResourceString(rn)
+    let message = // rely of the format to drop the source file if not needed
+      String.Format(System.Globalization.CultureInfo.CurrentCulture, format, x.FullName, s.FullName)
     ShowMessageOnGuiThread parent MessageType.Warning message
 
+  let private OutdatedCoverageFileMessage (parent : Window) (x : FileInfo) =
+    showMessageResourceFileWarning "CoverageOutOfDate" parent x
+      (Source.File null)
+
   let private MissingSourceFileMessage (parent : Window) (x : FileInfo) =
-    let format = GetResourceString("MissingSourceFile")
-    let message =
-      String.Format(System.Globalization.CultureInfo.CurrentCulture, format, x.FullName)
-    ShowMessageOnGuiThread parent MessageType.Warning message
+    showMessageResourceFileWarning "MissingSourceFile" parent x
+      (Source.File null)
 
   let private OutdatedCoverageThisFileMessage (parent : Window) (c : FileInfo)
       (s : Source) =
-    let format = GetResourceString("CoverageOutOfDateThisFile")
-    let message =
-      String.Format
-        (System.Globalization.CultureInfo.CurrentCulture, format, c.FullName, s.FullName)
-    ShowMessageOnGuiThread parent MessageType.Warning message
+    showMessageResourceFileWarning "CoverageOutOfDateThisFile" parent c s
 
   let private MissingSourceThisFileMessage (parent : Window) (c : FileInfo) (s : Source) =
-    let format = GetResourceString("MissingSourceThisFile")
-    let message =
-      String.Format
-        (System.Globalization.CultureInfo.CurrentCulture, format, c.FullName, s.FullName)
-    ShowMessageOnGuiThread parent MessageType.Warning message
+    showMessageResourceFileWarning "MissingSourceThisFile" parent c s
 
   // -------------------------- UI set-up  ---------------------------
   let private InitializeHandler() =
@@ -721,7 +736,8 @@ module Gui =
   let private PrepareAboutDialog(handler : Handler) =
     let ShowUrl(link : string) =
       match System.Environment.GetEnvironmentVariable("OS") with
-      | "Windows_NT" -> System.Diagnostics.Process.Start(link) |> ignore
+      | "Windows_NT" -> use browser = System.Diagnostics.Process.Start(link)
+                        ()
       // TODO -- other OS types
       | _ -> ShowMessage handler.aboutVisualizer link MessageType.Info
     // The first gets the display right, the second the browser launch
@@ -769,6 +785,16 @@ module Gui =
          handler.classStructureTree.AppendColumn(column) |> ignore
          column.AddAttribute(cell, "text", 2 * i)
          column.AddAttribute(icon, "pixbuf", 1 + (2 * i)))
+    handler.classStructureTree.Model <-
+            new TreeStore(typeof<string>, typeof<Gdk.Pixbuf>, typeof<string>,
+                          typeof<Gdk.Pixbuf>, typeof<string>, typeof<Gdk.Pixbuf>,
+                          typeof<string>, typeof<Gdk.Pixbuf>, typeof<string>,
+                          typeof<Gdk.Pixbuf>)
+    handler.auxModel <-
+            new TreeStore(typeof<string>, typeof<Gdk.Pixbuf>, typeof<string>,
+                          typeof<Gdk.Pixbuf>, typeof<string>, typeof<Gdk.Pixbuf>,
+                          typeof<string>, typeof<Gdk.Pixbuf>, typeof<string>,
+                          typeof<Gdk.Pixbuf>)
 
 #if NETCOREAPP2_1
   let private PrepareOpenFileDialog(handler : Handler) =
@@ -1016,9 +1042,7 @@ module Gui =
 
   let internal ScrollToRow (h : Handler) _ =
     let buff = h.codeView.Buffer
-    if buff
-       |> isNull
-       |> not
+    if buff.IsNotNull
        && h.activeRow > 0
     then
       let iter = buff.GetIterAtLine(h.activeRow - 1)
@@ -1128,10 +1152,11 @@ module Gui =
 #if NETCOREAPP2_1
     h.toolbar1.ToolbarStyle <- ToolbarStyle.Both
     let prov = new CssProvider()
-    let style = Environment.NewLine +
-                "* {" + Environment.NewLine +
-                "     background-color: white;" + Environment.NewLine +
-                "  }" + Environment.NewLine
+    let nl = Environment.NewLine
+    let style = nl +
+                "* {" + nl +
+                "     background-color: white;" + nl +
+                "  }" + nl
 
     prov.LoadFromData(style) |> ignore
     h.toolbar1.StyleContext.AddProvider(prov, UInt32.MaxValue)
@@ -1292,11 +1317,8 @@ module Gui =
                // warn if not
                if not (Seq.isEmpty newer) then
                  OutdatedCoverageFileMessage h.mainWindow current
-               let model =
-                 new TreeStore(typeof<string>, typeof<Gdk.Pixbuf>, typeof<string>,
-                               typeof<Gdk.Pixbuf>, typeof<string>, typeof<Gdk.Pixbuf>,
-                               typeof<string>, typeof<Gdk.Pixbuf>, typeof<string>,
-                               typeof<Gdk.Pixbuf>)
+               let model = handler.auxModel
+               model.Clear()
                Mappings.Clear()
                let toprow = model.AppendValues(current.Name, XmlIcon.Force())
 
@@ -1332,12 +1354,13 @@ module Gui =
                  // File is good so enable the refresh button
                  h.refreshButton.Sensitive <- true
                  // Do real UI work here
+                 h.auxModel <- h.classStructureTree.Model :?> TreeStore
                  h.classStructureTree.Model <- theModel
                  h.codeView.Buffer.Clear()
                  h.mainWindow.Title <- "AltCover.Visualizer"
                  updateMRU h info.FullName true
                ////ShowMessage h.mainWindow (sprintf "%s\r\n>%A" info.FullName h.coverageFiles) MessageType.Info
-               InvokeOnGuiThread(UpdateUI model current)
+               InvokeOnGuiThread(UpdateUI h.auxModel current)
          }
          |> Async.Start)
     handler.fontButton.Clicked

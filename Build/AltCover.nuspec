@@ -7,10 +7,11 @@
     <authors>@authors@</authors>
     <owners>@authors@</owners>
     <summary>@summary@</summary>
-    <licenseUrl>https://cdn.jsdelivr.net/gh/SteveGilham/altcover/LICENSE</licenseUrl>
+    <license type="file">LICENSE</license>
     <projectUrl>https://github.com/SteveGilham/altcover/wiki</projectUrl>
     <repository type="git" url="https://github.com/SteveGilham/altcover" />
     <iconUrl>https://cdn.jsdelivr.net/gh/SteveGilham/altcover/Build/AltCover_128.png</iconUrl>
+    <icon>AltCover_128.png</icon>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>@description@</description>
     <releaseNotes>@releaseNotes@</releaseNotes>

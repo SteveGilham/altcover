@@ -7,6 +7,7 @@ open System.Security
 open System.Security.Cryptography
 
 open AltCover
+open AltCover.Augment
 open Mono.Cecil
 open Mono.Cecil.Cil
 open Mono.Cecil.Rocks
@@ -334,7 +335,7 @@ module AltCoverTests2 =
              (fun f -> f.Name.IndexOf("Mono.Cecil", StringComparison.Ordinal) >= 0)
         |> Seq.iter (fun f ->
              let resolved = Instrument.HookResolveHandler.Invoke(null, f)
-             test' <@ resolved |> isNull |> not @> <| f.ToString())
+             test' <@ resolved.IsNotNull @> <| f.ToString())
         raw.MainModule.AssemblyReferences
         |> Seq.filter
              (fun f -> f.Name.IndexOf("Mono.Cecil", StringComparison.Ordinal) >= 0)
@@ -355,7 +356,7 @@ module AltCoverTests2 =
         |> Seq.iter (fun f ->
              f.Version <- System.Version("666.666.666.666")
              let resolved = Instrument.HookResolveHandler.Invoke(null, f)
-             test' <@ resolved |> isNull |> not @> <| f.ToString())
+             test' <@ resolved .IsNotNull @> <| f.ToString())
       finally
         Instrument.ResolutionTable.Clear()
 
@@ -489,7 +490,7 @@ module AltCoverTests2 =
             "    " + alter + "                <=  Sample3.g, Version=0.0.0.0, Culture=neutral, PublicKeyToken=4ebffcaabf10ce6a"
           ]
           Assert.That(traces, Is.EquivalentTo expectedTraces)
-          let expectedSymbols = if "Mono.Runtime" |> Type.GetType |> isNull |> not then ".dll.mdb" else ".pdb"
+          let expectedSymbols = if ("Mono.Runtime" |> Type.GetType).IsNotNull then ".dll.mdb" else ".pdb"
           let isWindows =
 #if NETCOREAPP2_0
                           false // recorder symbols not read here
@@ -931,7 +932,7 @@ module AltCoverTests2 =
         |> Seq.length
 
       let handlersBefore = recorder.Head.Body.ExceptionHandlers.Count
-      AltCover.Instrument.Track state recorder.Head Inspect.Track <| Some(42, "hello")
+      AltCover.Instrument.Track state recorder.Head Inspections.Track <| Some(42, "hello")
       Assert.That
         (recorder.Head.Body.Instructions.Count, Is.EqualTo(countBefore + 5 - tailsBefore))
       Assert.That
@@ -977,7 +978,7 @@ module AltCoverTests2 =
         |> Seq.length
 
       let handlersBefore = target.Body.ExceptionHandlers.Count
-      AltCover.Instrument.Track state target Inspect.Track <| Some(42, "hello")
+      AltCover.Instrument.Track state target Inspections.Track <| Some(42, "hello")
       Assert.That
         (target.Body.Instructions.Count, Is.EqualTo(countBefore + 5 - tailsBefore))
       Assert.That(target.Body.ExceptionHandlers.Count, Is.EqualTo(handlersBefore + 1))
@@ -1030,7 +1031,7 @@ module AltCoverTests2 =
                     |> Array.map (fun i -> i.Offset)
       Assert.That (targets, Is.EquivalentTo [ 31; 33; 31; 33; 31 ])
 
-      let m = Node.Method (target, Inspect.Instrument, None, Exemption.None)
+      let m = Node.Method (target, Inspections.Instrument, None, Exemption.None)
       let steps = Visitor.BuildSequence m
 
       Assert.That(steps, Is.Not.Empty)
@@ -1082,7 +1083,7 @@ module AltCoverTests2 =
       let state = AltCover.InstrumentContext.Build([])
       let countBefore = recorder.Head.Body.Instructions.Count
       let handlersBefore = recorder.Head.Body.ExceptionHandlers.Count
-      AltCover.Instrument.Track state recorder.Head Inspect.Track None
+      AltCover.Instrument.Track state recorder.Head Inspections.Track None
       Assert.That(recorder.Head.Body.Instructions.Count, Is.EqualTo countBefore)
       Assert.That(recorder.Head.Body.ExceptionHandlers.Count, Is.EqualTo handlersBefore)
 
@@ -1100,7 +1101,7 @@ module AltCoverTests2 =
       try
         Visitor.reportFormat <- Some Base.ReportFormat.OpenCover
         let branches =
-          Visitor.Deeper <| Node.Method(method, Inspect.Instrument, None, Exemption.None)
+          Visitor.Deeper <| Node.Method(method, Inspections.Instrument, None, Exemption.None)
           |> Seq.map (fun n ->
                match n with
                | BranchPoint b -> Some b
@@ -1159,7 +1160,7 @@ module AltCoverTests2 =
       try
         Visitor.reportFormat <- Some Base.ReportFormat.OpenCover
         let branches =
-          Visitor.Deeper <| Node.Method(method, Inspect.Instrument, None, Exemption.None)
+          Visitor.Deeper <| Node.Method(method, Inspections.Instrument, None, Exemption.None)
           |> Seq.map (fun n ->
                match n with
                | BranchPoint b -> Some b
@@ -1217,7 +1218,7 @@ module AltCoverTests2 =
       try
         Visitor.reportFormat <- Some Base.ReportFormat.OpenCover
         let branches =
-          Visitor.Deeper <| Node.Method(method, Inspect.Instrument, None, Exemption.None)
+          Visitor.Deeper <| Node.Method(method, Inspections.Instrument, None, Exemption.None)
           |> Seq.map (fun n ->
                match n with
                | BranchPoint b -> Some b
@@ -1266,14 +1267,14 @@ module AltCoverTests2 =
     let TypeShouldNotChangeState() =
       let input = InstrumentContext.Build []
       let output =
-        Instrument.InstrumentationVisitor input (Node.Type(null, Inspect.Ignore, Exemption.None))
+        Instrument.InstrumentationVisitor input (Node.Type(null, Inspections.Ignore, Exemption.None))
       Assert.That(output, Is.SameAs input)
 
     [<Test>]
     let ExcludedMethodShouldNotChangeState() =
       let input = InstrumentContext.Build []
       let output =
-        Instrument.InstrumentationVisitor input (Node.Method(null, Inspect.Ignore, None, Exemption.None))
+        Instrument.InstrumentationVisitor input (Node.Method(null, Inspections.Ignore, None, Exemption.None))
       Assert.That(output, Is.SameAs input)
 
     [<Test>]
@@ -1294,7 +1295,7 @@ module AltCoverTests2 =
       let input = InstrumentContext.Build []
       let output =
         Instrument.InstrumentationVisitor input
-          (Node.Method(func, Inspect.Instrument, None, Exemption.None))
+          (Node.Method(func, Inspections.Instrument, None, Exemption.None))
       Assert.That(output.MethodBody, Is.SameAs func.Body)
 
     [<Test>]
@@ -1325,7 +1326,7 @@ module AltCoverTests2 =
       let diff = paired |> List.map (fun (i, j) -> (i, i = j.OpCode))
       let output =
         Instrument.InstrumentationVisitor input
-          (Node.AfterMethod(func, Inspect.Ignore, None))
+          (Node.AfterMethod(func, Inspections.Ignore, None))
       Assert.That(output, Is.SameAs input)
       let paired' = Seq.zip diff input.MethodBody.Instructions
       Assert.That(paired' |> Seq.forall (fun ((i, x), j) -> x = (i = j.OpCode)))
@@ -1357,7 +1358,7 @@ module AltCoverTests2 =
       Assert.That(paired |> Seq.exists (fun (i, j) -> i <> j.OpCode))
       let output =
         Instrument.InstrumentationVisitor input
-          (Node.AfterMethod(func, Inspect.Instrument, None))
+          (Node.AfterMethod(func, Inspections.Instrument, None))
       Assert.That(output, Is.SameAs input)
       let paired' = Seq.zip opcodes input.MethodBody.Instructions
       Assert.That(paired' |> Seq.forall (fun (i, j) -> i = j.OpCode))
@@ -1545,7 +1546,7 @@ module AltCoverTests2 =
         Mono.Cecil.AssemblyDefinition.ReadAssembly
           (Assembly.GetExecutingAssembly().Location)
       let state = InstrumentContext.Build [ "nunit.framework"; "nonesuch" ]
-      let visited = Node.Assembly(def, Inspect.Ignore, [])
+      let visited = Node.Assembly(def, Inspections.Ignore, [])
       let result =
         Instrument.InstrumentationVisitor { state with RecordingAssembly = fake } visited
       Assert.That(def.MainModule.AssemblyReferences, Is.EquivalentTo refs)
@@ -1571,7 +1572,7 @@ module AltCoverTests2 =
         Mono.Cecil.AssemblyDefinition.ReadAssembly
           (Assembly.GetExecutingAssembly().Location)
       let state = InstrumentContext.Build [ "nunit.framework"; "nonesuch" ]
-      let visited = Node.Assembly(def, Inspect.Instrument, [])
+      let visited = Node.Assembly(def, Inspections.Instrument, [])
       let result =
         Instrument.InstrumentationVisitor { state with RecordingAssembly = fake } visited
       Assert.That
@@ -1584,7 +1585,7 @@ module AltCoverTests2 =
         Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
       ProgramDatabase.ReadSymbols def
-      let visited = Node.Module(def.MainModule, Inspect.Ignore)
+      let visited = Node.Module(def.MainModule, Inspections.Ignore)
       let state = InstrumentContext.Build [ "nunit.framework"; "nonesuch" ]
       let result = Instrument.InstrumentationVisitor state visited
       Assert.That
@@ -1597,7 +1598,7 @@ module AltCoverTests2 =
         Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
       ProgramDatabase.ReadSymbols def
-      let visited = Node.Module(def.MainModule, Inspect.Instrument)
+      let visited = Node.Module(def.MainModule, Inspections.Instrument)
       let state = InstrumentContext.Build [ "nunit.framework"; "nonesuch" ]
       let path' =
         Path.Combine
@@ -1703,7 +1704,7 @@ module AltCoverTests2 =
         Path.Combine(Path.GetDirectoryName(where) + AltCoverTests.Hack(), "Sample2.dll")
       let def = Mono.Cecil.AssemblyDefinition.ReadAssembly path
       ProgramDatabase.ReadSymbols def
-      let visited = Node.Module(def.MainModule, Inspect.Instrument)
+      let visited = Node.Module(def.MainModule, Inspections.Instrument)
       let state = InstrumentContext.Build [ "nunit.framework"; "nonesuch" ]
       let path' =
         Path.Combine
@@ -1886,9 +1887,13 @@ module AltCoverTests2 =
     [<Test>]
     let OutputCanBeExercised() =
       let sink = StringSink(ignore)
-      Output.SetInfo sink
-      Output.SetError sink
-      Output.SetWarn sink
+      let SetInfo(x : StringSink) = Output.Info <- x.Invoke
+      let SetError(x : StringSink) = Output.Error <- x.Invoke
+      let SetWarn(x : StringSink) = Output.Warn <- x.Invoke
+
+      SetInfo sink
+      SetError sink
+      SetWarn sink
       Output.Echo <- ignore
       Output.Usage <- ignore
       Assert.That(Output.Usage, Is.Not.Null)
@@ -1898,8 +1903,7 @@ module AltCoverTests2 =
       |> Seq.collect (fun t -> t.GetNestedTypes(BindingFlags.NonPublic))
       |> Seq.filter (fun t ->
            let tokens =
-             [ "Info"; "Echo"; "Error"; "Usage"; "Warn"; "ToConsole"; "SetInfo";
-               "SetError"; "SetWarn" ]
+             [ "Info"; "Echo"; "Error"; "Usage"; "Warn"; "ToConsole" ]
            let name = t.Name
            tokens |> List.exists name.StartsWith)
       |> Seq.iter (fun t ->

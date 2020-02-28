@@ -139,7 +139,7 @@ module internal OpenCover =
     let VisitType (s : OpenCoverContext) (typeDef : TypeDefinition) included =
       let instrumented = Visitor.IsInstrumented included
       let methods = XElement(X "Methods")
-      if included <> Inspect.TrackOnly then
+      if included <> Inspections.TrackOnly then
         let element = XElement(X "Class")
         if not instrumented then element.SetAttributeValue(X "skippedDueTo", "Filter")
         let head = s.Stack |> Seq.head
@@ -186,7 +186,7 @@ module internal OpenCover =
       seqpnts
 
     let VisitMethod (s : OpenCoverContext) (methodDef : MethodDefinition) included =
-      if s.Excluded = Nothing && included <> Inspect.TrackOnly then
+      if s.Excluded = Nothing && included <> Inspections.TrackOnly then
         let instrumented = Visitor.IsInstrumented included
         let cc, element = methodElement methodDef
         if instrumented then element.SetAttributeValue(X "skippedDueTo", "File")
@@ -381,7 +381,7 @@ module internal OpenCover =
 
     let VisitAfterMethod (s : OpenCoverContext) methodDef track included =
       AddTracking s methodDef track
-      if s.Excluded = Nothing && included <> Inspect.TrackOnly then
+      if s.Excluded = Nothing && included <> Inspections.TrackOnly then
         let tail, skipped = VisitAfterMethodIncluded s
         if skipped |> not then
           UpdateClassCountsByMethod s tail

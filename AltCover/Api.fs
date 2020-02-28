@@ -19,7 +19,10 @@ open Fake.Core
 open Fake.DotNet
 #endif
 
-[<ExcludeFromCodeCoverage; NoComparison>]
+[<ExcludeFromCodeCoverage; NoComparison;
+                  SuppressMessage("Gendarme.Rules.Smells",
+                                  "RelaxedAvoidCodeDuplicatedInSameClassRule",
+                                  Justification = "Idiomatic F#")>]
 type CollectParams =
   | Primitive of Primitive.CollectParams
   | TypeSafe of TypeSafe.CollectParams
@@ -137,7 +140,10 @@ type CollectParams =
 #else
 #endif
 
-[<ExcludeFromCodeCoverage; NoComparison>]
+[<ExcludeFromCodeCoverage; NoComparison;
+                  SuppressMessage("Gendarme.Rules.Smells",
+                                  "RelaxedAvoidCodeDuplicatedInSameClassRule",
+                                  Justification = "Idiomatic F#")>]
 type PrepareParams =
   | Primitive of Primitive.PrepareParams
   | TypeSafe of TypeSafe.PrepareParams
@@ -389,7 +395,10 @@ type PrepareParams =
     finally
       CommandLine.error <- saved
 
-[<ExcludeFromCodeCoverage; NoComparison; NoEquality>]
+[<ExcludeFromCodeCoverage; NoComparison; NoEquality;
+                  SuppressMessage("Gendarme.Rules.Smells",
+                                  "RelaxedAvoidCodeDuplicatedInSameClassRule",
+                                  Justification = "Idiomatic F#")>]
 type Logging =
   | Primitive of Primitive.Logging
 
@@ -423,12 +432,14 @@ type Logging =
     Output.Echo <- self.Echo
 #else
 #endif
-
-module internal Args =
-  let private Item a x =
+[<SuppressMessage("Gendarme.Rules.Smells",
+                                  "RelaxedAvoidCodeDuplicatedInSameClassRule",
+                                  Justification = "Not worth trying to unify these functions")>]
+module private ArgsHelper =
+  let Item a x =
     if x |> String.IsNullOrWhiteSpace then [] else [ a; x ]
 
-  let private OptItem a x l =
+  let OptItem a x l =
     if x
        |> String.IsNullOrWhiteSpace
        || l |> List.exists (fun i -> i = x) then
@@ -436,6 +447,7 @@ module internal Args =
     else
       [ a + ":" + x ]
 
+module internal Args =
   let internal ItemList a x =
     if x |> isNull then
       []
@@ -466,11 +478,11 @@ module internal Args =
   let internal Items(args : PrepareParams) =
     [ ("--sn", args.StrongNameKey)
       ("-x", args.XmlReport) ]
-    |> List.collect (fun (a, b) -> Item a b)
+    |> List.collect (fun (a, b) -> ArgsHelper.Item a b)
 
   let internal OptItems(args : PrepareParams) =
     [ ("--showstatic", args.ShowStatic, [ "-" ]) ]
-    |> List.collect (fun (a, b, c) -> OptItem a b c)
+    |> List.collect (fun (a, b, c) -> ArgsHelper.OptItem a b c)
 
   let internal Flags(args : PrepareParams) =
     [ ("--opencover", args.OpenCover)
@@ -507,16 +519,16 @@ module internal Args =
     let exe = args.Executable
 
     [ [ "Runner" ]
-      Item "-r" args.RecorderDirectory
-      Item "-w" args.WorkingDirectory
-      Item "-x" exe
-      Item "-l" args.LcovReport
-      Item "-t" args.Threshold
-      Item "-c" args.Cobertura
-      Item "-o" args.OutputFile
+      ArgsHelper.Item "-r" args.RecorderDirectory
+      ArgsHelper.Item "-w" args.WorkingDirectory
+      ArgsHelper.Item "-x" exe
+      ArgsHelper.Item "-l" args.LcovReport
+      ArgsHelper.Item "-t" args.Threshold
+      ArgsHelper.Item "-c" args.Cobertura
+      ArgsHelper.Item "-o" args.OutputFile
       Flag "--collect" (exe |> String.IsNullOrWhiteSpace)
       Flag "--dropReturnCode" (args.ExposeReturnCode |> not)
-      OptItem "--teamcity" args.SummaryFormat []
+      ArgsHelper.OptItem "--teamcity" args.SummaryFormat []
       trailing ]
     |> List.concat
 
@@ -589,8 +601,8 @@ type ArgType =
 
 [<NoComparison; Obsolete("Use Fake.DotNet.ToolType instead")>]
 type ToolType =
-  | DotNet of string option
-  | Mono of string option
+  | DotNet of string option // can't attribute this type and constructor for Gendarme
+  | Mono of string option // can't attribute this type and constructor for Gendarme
   | Global
   | Framework
 
@@ -599,6 +611,8 @@ type Params =
   { /// Path to the Altcover executable.
     ToolPath : string
     /// Which version of the tool
+    [<SuppressMessage("Gendarme.Rules.Maintainability",
+      "RemoveDependenceOnObsoleteCodeRule",Justification="Goes at Genbu")>]
     ToolType : ToolType
     /// Define the tool through FAKE 5.18 ToolType -- if set, overrides
     FakeToolType : Fake.DotNet.ToolType option
@@ -607,6 +621,8 @@ type Params =
     /// Command arguments
     Args : ArgType }
 
+  [<SuppressMessage("Gendarme.Rules.Maintainability",
+      "RemoveDependenceOnObsoleteCodeRule",Justification="Goes at Genbu")>]
   static member Create(a : ArgType) =
     { ToolPath = "altcover"
       ToolType = Global
@@ -640,12 +656,9 @@ let internal createArgs parameters =
   | ImportModule -> [ "ipmo" ]
   | GetVersion -> [ "version" ]
 
-let internal createProcess parameters args =
-  let doFakeTool (tool : Fake.DotNet.ToolType) =
-    CreateProcess.fromCommand (RawCommand(parameters.ToolPath, args |> Arguments.OfArgs))
-    |> CreateProcess.withToolType (tool.WithDefaultToolCommandName "altcover")
-
-  let doAltCoverTool() =
+[<SuppressMessage("Gendarme.Rules.Maintainability",
+      "RemoveDependenceOnObsoleteCodeRule",Justification="Goes at Genbu")>]
+let private altCoverTool parameters args =
     let baseline() = CreateProcess.fromRawCommand parameters.ToolPath args
     match parameters.ToolType with
     | Framework -> baseline() |> CreateProcess.withFramework
@@ -663,19 +676,24 @@ let internal createProcess parameters args =
           | Some p -> p
         CreateProcess.fromRawCommand path ("--debug" :: parameters.ToolPath :: args)
 
+let internal createProcess parameters args =
+  let fakeTool (tool : Fake.DotNet.ToolType) =
+    CreateProcess.fromCommand (RawCommand(parameters.ToolPath, args |> Arguments.OfArgs))
+    |> CreateProcess.withToolType (tool.WithDefaultToolCommandName "altcover")
+
   let doTool() =
     match parameters.FakeToolType with
-    | Some tool -> doFakeTool tool
-    | None -> doAltCoverTool()
+    | Some tool -> fakeTool tool
+    | None -> altCoverTool parameters args
 
-  let doWorkingDirectory c =
+  let withWorkingDirectory c =
     c
     |> if String.IsNullOrWhiteSpace parameters.WorkingDirectory
        then id
        else CreateProcess.withWorkingDirectory parameters.WorkingDirectory
 
   doTool()
-  |> doWorkingDirectory
+  |> withWorkingDirectory
   |> CreateProcess.ensureExitCode
   |> fun command ->
     Trace.trace command.CommandLine
@@ -688,7 +706,8 @@ let composeCommandLine parameters =
 [<System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1715",
                                                   Justification =
                                                     "Generic types are implicit")>]
-let runCore parameters modifyCommand =
+
+let internal runCore parameters modifyCommand =
   use __ = Trace.traceTask "AltCover" String.Empty
   let command = (composeCommandLine parameters) |> modifyCommand
   let run = command |> Proc.run

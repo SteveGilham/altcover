@@ -42,10 +42,10 @@ type Api =
     let target =
       match toolType with
       | Framework _ -> "AltCover.exe"
-      | _ -> "dotnet-altcover.dll"
+      | _ -> "altcover.netcoreapp.dll"
     match Directory.GetFiles(root, target, SearchOption.AllDirectories)
           |> Seq.tryHead with
-    | Some path -> path
+    | Some path -> path |> Path.GetFullPath
     | None -> String.Empty
 #else
 namespace AltCover_Fake.DotNet
@@ -55,6 +55,12 @@ open System.Reflection
 open AltCover_Fake.DotNet
 #endif
 
+[<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Smells",
+  "AvoidSpeculativeGeneralityRule",
+  Justification="Until we remove the [Obsolete] methods")>]
+[<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Exceptions",
+  "InstantiateArgumentExceptionCorrectlyRule",
+  Justification="Inlines Array functions")>]
 module DotNet =
   open Fake.DotNet
 

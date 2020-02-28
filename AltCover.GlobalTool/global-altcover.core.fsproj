@@ -34,7 +34,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <Compile Include="..\_Generated\AssemblyVersion.fs" Link="AssemblyVersion.fs" />
-    <Compile Include="..\AltCover.Tool\Program.fs" />
+    <Compile Include="..\AltCover.NetCoreApp\Program.fs" />
   </ItemGroup>
 
   <ItemGroup>

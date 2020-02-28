@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net47</TargetFramework>
@@ -9,15 +9,15 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="altcode.gendarme" version="2020.2.20.18134-pre-release" />
     <PackageReference Include="NuGet.CommandLine" version="5.4.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
     <PackageReference Include="coveralls.io" version="1.4.2" />
-    <PackageReference Include="Mono.Gendarme" version="2.11.0.20121120" />
-    <PackageReference Include="NUnit.ConsoleRunner" version="3.10.0" />
+    <PackageReference Include="NUnit.ConsoleRunner" version="3.11.1" />
     <PackageReference Include="OpenCover" version="4.7.922" />
     <PackageReference Include="xunit.runner.console" version="2.4.1" />
-    <PackageReference Include="Pester" version="4.10.0" />
+    <PackageReference Include="Pester" version="4.10.1" />
   </ItemGroup>
 </Project>
