@@ -1,5 +1,12 @@
 namespace AltCover
 
+open System
+open System.Runtime.InteropServices
+
+[<assembly:CLSCompliant(true)>]
+[<assembly:ComVisible(false)>]
+()
+
 module DotNetAltCover =
   let internal ToConsole() =
     Output.Error <- CommandLine.WriteErr
@@ -8,8 +15,10 @@ module DotNetAltCover =
     Output.Info <- CommandLine.WriteOut
 
   [<EntryPoint>]
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+      "Gendarme.Rules.Portability",
+      "ExitCodeIsLimitedOnUnixRule",
+      Justification="limited 0-255 elsewhere")>]
   let private Main arguments =
     ToConsole()
-    Output.Error "DotNetCliToolReference Tools are deprecated at .net core 3+"
-    Output.Error "This tool will be removed in AltCover version 7+ releases"
     AltCover.Main.EffectiveMain arguments

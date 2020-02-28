@@ -15,7 +15,10 @@ do ()
 [<RequireQualifiedAccess>]
 module DotNet =
   [<NoComparison; SuppressMessage("Microsoft.Design", "CA1034",
-                                  Justification = "Idiomatic F#")>]
+                                  Justification = "Idiomatic F#");
+                  SuppressMessage("Gendarme.Rules.Smells",
+                                  "RelaxedAvoidCodeDuplicatedInSameClassRule",
+                                  Justification = "Idiomatic F#") >]
   type CLIArgs =
     | Force of bool
     | FailFast of bool
@@ -65,7 +68,7 @@ module internal Internals =
 
   let private FromList name (s : String seq) = (ListArg name s, s.Any())
   let private FromArg name s = (Arg name s, IsSet s)
-  let private Join(l : string list) = String.Join(" ", l)
+  let private Join(l : string seq) = String.Join(" ", l)
 
 #if RUNNER
   let ToTestArgumentList (prepare : AltCover.FSApi.PrepareParams)

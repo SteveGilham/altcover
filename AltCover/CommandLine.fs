@@ -45,7 +45,7 @@ module internal Process =
 open Process
 #endif
 
-type internal StringSink = delegate of string -> unit
+type internal StringSink = Action<String> // delegate of string -> unit
 
 [<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage; NoComparison>]
 type internal UsageInfo =
@@ -59,9 +59,6 @@ module internal Output =
   let mutable internal Echo : String -> unit = ignore
   let mutable internal Error : String -> unit = ignore
   let mutable internal Usage : UsageInfo -> unit = ignore
-  let internal SetInfo(x : StringSink) = Info <- x.Invoke
-  let internal SetError(x : StringSink) = Error <- x.Invoke
-  let internal SetWarn(x : StringSink) = Warn <- x.Invoke
 
   let internal WarnOn x =
     if x then Warn else Info
@@ -123,7 +120,7 @@ module internal CommandLine =
 
   let enquotes = Map.empty |> Map.add "Windows_NT" "\""
 
-  let internal Usage u =
+  let internal UsageBase u =
     WriteColoured Console.Error ConsoleColor.Yellow (fun w ->
       if u.Options.Any() || u.Options2.Any() then w.WriteLine(resources.GetString u.Intro)
       if u.Options.Any() then u.Options.WriteOptionDescriptions(w)
@@ -233,6 +230,9 @@ module internal CommandLine =
         if help then Left("HelpText", options) else parse
     | fail -> fail
 
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
+    Justification = "AvoidSpeculativeGenerality too")>]
   let internal ProcessTrailingArguments (rest : string list) (toInfo : DirectoryInfo) =
     // If we have some arguments in rest execute that command line
     match rest |> Seq.toList with
@@ -285,7 +285,7 @@ module internal CommandLine =
     String.Join(" ", arguments |> Seq.map (sprintf "%A")) |> Output.Echo
     Output.Echo String.Empty
     ReportErrors String.Empty extend
-    Usage info
+    Output.Usage info
 
   let internal ValidateFileSystemEntity exists message key x =
     doPathOperation (fun () ->
@@ -350,7 +350,7 @@ module internal CommandLine =
     else
       (StrongNameKeyData.Empty(), false)
 
-  let internal ValidateRegexes(x : String) =
+  let private stripNulls (x : String) =
     let descape (s : string) = s.Replace(char 0, ';')
 
     let qRegex (s : String) =
@@ -361,13 +361,19 @@ module internal CommandLine =
         { Regex = Regex s
           Sense = Exclude }
 
-    doPathOperation (fun () ->
-      x.Replace(";;", "\u0000").Split([| ";" |], StringSplitOptions.RemoveEmptyEntries)
-      |> Array.map (descape >> qRegex)) [||] false
+    let transform array =
+      array
+      |> Array.map (descape >> qRegex)
+
+    x.Replace(";;", "\u0000").Split([| ";" |], StringSplitOptions.RemoveEmptyEntries)
+      |> transform
+
+  let internal ValidateRegexes(x : String) =
+    doPathOperation (fun () -> stripNulls x) [||] false
 
   let internal ddFlag (name : string) flag =
     (name,
-     (fun _ ->
+     (fun (_:string) ->
        if !flag then
          error <-
            String.Format

@@ -14,6 +14,9 @@ module internal LCov =
 
   let X = OpenCover.X
 
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
+    Justification = "AvoidSpeculativeGenerality too")>]
   let lineOfMethod (m : XElement) =
     (m.Descendants(X "seqpnt") |> Seq.head).Attribute(X "line").Value
     |> Int32.TryParse

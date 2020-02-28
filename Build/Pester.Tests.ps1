@@ -32,25 +32,16 @@ Describe "Invoke-Altcover" {
     }
 
     It "Fails on garbage" {
-        $saved = [System.Console]::Error
-        $stderr = new-object System.IO.StringWriter @()
-        [System.Console]::SetError($stderr)
         try 
         {
           $ev = ""
           Invoke-AltCover -XmlReport $x -OutputDirectory  $o -InputDirectory "./NoneSuch/xunit-dotnet/bin/Debug/netcoreapp2.0" -InPlace -ErrorVariable ev -ErrorAction SilentlyContinue
         }
-		catch {
-          $ev | Should -BeTrue
-          $stderr.ToString()  | Should -BeTrue	      	
-		}
         finally
         {
-            [System.Console]::SetError($saved)     
-        }
-
-        $ev | Should -BeTrue
-        $stderr.ToString()  | Should -BeTrue
+          $ev | Should -Be ("--inputDirectory : Directory ./NoneSuch/xunit-dotnet/bin/Debug/netcoreapp2.0 not found" +
+                            [Environment]::NewLine +"255")
+		    }
     }
 
     It "Reports the version" {        

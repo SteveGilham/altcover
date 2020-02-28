@@ -30,7 +30,7 @@ module AltCoverCoreTests =
     let mutable client = Tracer.Create unique
     try
       client <- client.OnStart()
-      Assert.True(client.IsConnected() |> not)
+      Assert.True(client.IsConnected |> not)
     with _ ->
       client.Close()
       reraise()
@@ -44,7 +44,7 @@ module AltCoverCoreTests =
     let mutable client = Tracer.Create unique
     try
       client <- client.OnStart()
-      Assert.True(client.IsConnected())
+      Assert.True(client.IsConnected)
     finally
       client.Close()
 
@@ -79,7 +79,7 @@ module AltCoverCoreTests =
                    if pts > 0 then
                      let p = formatter.ReadInt32()
                      let n = formatter.ReadInt64()
-                     let pv = PointVisit.Init(n, [])
+                     let pv = Adapter.Init(n, [])
                      t.[m].Add(p, pv)
                      let rec tracking() =
                        let track = formatter.ReadByte() |> int
@@ -125,7 +125,7 @@ module AltCoverCoreTests =
       try
         Adapter.VisitsClear()
         Instance.trace <- client.OnStart()
-        Assert.True( Instance.trace.IsConnected(), "connection failed")
+        Assert.True( Instance.trace.IsConnected, "connection failed")
         Instance.IsRunner <- true
         Adapter.VisitImplNone("name", 23)
       finally
@@ -157,8 +157,8 @@ module AltCoverCoreTests =
       [ Adapter.Time 17L
         Adapter.NewBoth(42L, 23) ]
 
-    t.["name"].[23] <- PointVisit.Init(1L, expect23)
-    t.["name"].[24] <- PointVisit.Init(2L, expect24)
+    t.["name"].[23] <- Adapter.Init(1L, expect23)
+    t.["name"].[24] <- Adapter.Init(2L, expect24)
 
     let expected =
       [ (String.Empty, 0, Adapter.Table t)
@@ -169,7 +169,7 @@ module AltCoverCoreTests =
       let mutable client = Tracer.Create tag
       try
         Instance.trace <- client.OnStart()
-        Assert.True( Instance.trace.IsConnected(), "connection failed")
+        Assert.True( Instance.trace.IsConnected, "connection failed")
         Instance.IsRunner <- true
 
         Adapter.VisitsClear()
@@ -258,7 +258,7 @@ module AltCoverCoreTests =
         Instance.trace <- client.OnStart()
         Assert.That(Instance.trace.Equals client, Is.False)
         Assert.That(Instance.trace.Equals expected, Is.False)
-        Assert.True(Instance.trace.IsConnected(), "connection failed")
+        Assert.True(Instance.trace.IsConnected, "connection failed")
         let formatter = System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
         let (a, b, c) = expected |> Seq.head
         Instance.trace.Push(a, b, c)

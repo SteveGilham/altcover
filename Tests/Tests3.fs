@@ -2114,10 +2114,8 @@ module AltCoverTests3 =
     let PreparingNewPlaceShouldCopyEverything() =
       Main.init()
       let monoRuntime =
-        "Mono.Runtime"
-        |> Type.GetType
-        |> isNull
-        |> not
+        ("Mono.Runtime"
+         |> Type.GetType).IsNotNull
       // because mono symbol-writing is broken, work around trying to
       // examine the instrumented files in a self-test run.
       let here = if monoRuntime
@@ -2283,7 +2281,7 @@ module AltCoverTests3 =
         use stderr = new StringWriter()
         Console.SetError stderr
         let empty = OptionSet()
-        CommandLine.Usage { Intro = "UsageError"; Options = options; Options2 = empty }
+        CommandLine.UsageBase { Intro = "UsageError"; Options = options; Options2 = empty }
         let result = stderr.ToString().Replace("\r\n", "\n")
         let expected = """Error - usage is:
   -i, --inputDirectory=VALUE Optional, multiple: A folder containing assemblies

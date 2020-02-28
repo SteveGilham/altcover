@@ -25,21 +25,25 @@ module Adapter =
       let entry = Dictionary<int, PointVisit>()
       Instance.Visits.Add(name, entry)
 
+  let internal Init n l = let tmp = { PointVisit.Create() with Count = n }
+                          tmp.Tracks.AddRange l
+                          tmp
+
   let VisitsAdd name line number =
     prepareName name
-    let v = PointVisit.Init number []
+    let v = Init number []
     Instance.Visits.[name].Add(line, v)
 
   let VisitsAddTrack name line number =
     prepareName name
     let v1 =
-      PointVisit.Init number
+      Init number
         [ Call 17
           Call 42 ]
     Instance.Visits.[name].Add(line, v1)
 
     let v2 =
-      PointVisit.Init (number + 1L)
+      Init (number + 1L)
         [ Time 17L
           Both
             { Time = 42L

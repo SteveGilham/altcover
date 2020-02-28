@@ -56,11 +56,12 @@ module internal Instrument =
     ResourceManager("AltCover.JSONFragments", Assembly.GetExecutingAssembly())
   let version = typeof<AltCover.Recorder.Tracer>.Assembly.GetName().Version.ToString()
 
+#if NETCOREAPP2_0
+#else
   let monoRuntime =
-    "Mono.Runtime"
-    |> Type.GetType
-    |> isNull
-    |> not
+    ("Mono.Runtime"
+    |> Type.GetType).IsNotNull
+#endif
 
   let dependencies =
     (resources.GetString "frameworkDependencies").Replace("version", version)
@@ -111,6 +112,9 @@ module internal Instrument =
   /// </summary>
   /// <param name="name">The name of the assembly</param>
   /// <returns>A key, if we have a match.</returns>
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
+    Justification = "AvoidSpeculativeGenerality too")>]
   let internal KnownKey(name : AssemblyNameDefinition) =
     if not name.HasPublicKey then
       None
@@ -138,6 +142,9 @@ module internal Instrument =
   // This trivial extraction appeases Gendarme
   let private extractName (assembly : AssemblyDefinition) = assembly.Name.Name
 
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
+    Justification = "AvoidSpeculativeGenerality too")>]
   let Guard (assembly : AssemblyDefinition) (f : unit -> unit) =
     try
       f()
@@ -150,6 +157,9 @@ module internal Instrument =
   /// Create the new assembly that will record visits, based on the prototype.
   /// </summary>
   /// <returns>A representation of the assembly used to record all coverage visits.</returns>
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Correctness",
+         "EnsureLocalDisposalRule",
+         Justification="Return confusing Gendarme -- TODO")>]
   let internal PrepareAssembly(location : string) =
     let definition = AssemblyDefinition.ReadAssembly(location)
     Guard definition (fun () ->  // set the timer interval in ticks
@@ -234,7 +244,7 @@ module internal Instrument =
       let share = "|usr|share".Replace('|', Path.DirectorySeparatorChar)
       let shared = "dotnet|shared".Replace('|', Path.DirectorySeparatorChar)
 
-      let candidate =
+      let sources =
         [ Environment.GetEnvironmentVariable "NUGET_PACKAGES"
           Path.Combine
             (Environment.GetEnvironmentVariable "ProgramFiles"
@@ -242,6 +252,9 @@ module internal Instrument =
              |> (Option.getOrElse share), shared)
           Path.Combine(share, shared)
           nugetCache ]
+
+      let candidate source =
+        source
         |> List.filter (String.IsNullOrWhiteSpace >> not)
         |> List.filter Directory.Exists
         |> Seq.distinct
@@ -256,7 +269,7 @@ module internal Instrument =
         |> Seq.filter (fun f ->
              y.ToString().Equals(CommandLine.FindAssemblyName f, StringComparison.Ordinal))
         |> Seq.tryHead
-      match candidate with
+      match candidate sources with
       | None -> null
       | Some x ->
           String.Format
@@ -270,9 +283,7 @@ module internal Instrument =
   let internal HookResolveHandler = new AssemblyResolveEventHandler(ResolveFromNugetCache)
 
   let internal HookResolver(resolver : IAssemblyResolver) =
-    if resolver
-       |> isNull
-       |> not
+    if resolver.IsNotNull
     then
       let hook = resolver.GetType().GetMethod("add_ResolveFailure")
       hook.Invoke(resolver, [| HookResolveHandler :> obj |]) |> ignore
@@ -345,6 +356,10 @@ module internal Instrument =
     finally
       Directory.SetCurrentDirectory(here)
 
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Maintainability",
+     "VariableNamesShouldNotMatchFieldNamesRule",
+     Justification = "Could be refactored; no obvious IL trace in the .ctor which triggers this" );
+    Sealed>]
   type internal SubstituteInstruction(oldValue : Instruction, newValue : Instruction) =
     /// <summary>
     /// Adjust the IL for exception handling
@@ -494,7 +509,7 @@ module internal Instrument =
 
   let private VisitModule (state : InstrumentContext) (m : ModuleDefinition) included =
     let restate =
-      match included <> Inspect.Ignore with
+      match included <> Inspections.Ignore with
       | true ->
           let recordingMethod =
             match state.RecordingMethod with
@@ -539,9 +554,7 @@ module internal Instrument =
     state
 
   let internal VisitBranchPoint (state : InstrumentContext) branch =
-    if branch.Included && state.MethodWorker
-                          |> isNull
-                          |> not
+    if branch.Included && state.MethodWorker.IsNotNull
     then
       let point = (branch.Uid ||| Base.Counter.BranchFlag)
 
@@ -703,12 +716,18 @@ module internal Instrument =
     Track state m included track
     state
 
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
+    Justification = "AvoidSpeculativeGenerality too")>]
   let private VisitAfterAssembly state (assembly : AssemblyDefinition)
       (paths : string list) =
     let originalFileName = Path.GetFileName assembly.MainModule.FileName
     WriteAssemblies assembly originalFileName paths Output.Info
     state
 
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Correctness",
+         "EnsureLocalDisposalRule",
+         Justification="Record return confusing Gendarme -- TODO")>]
   let private VisitStart state =
     let recorder = typeof<AltCover.Recorder.Tracer>
     let recordingAssembly = PrepareAssembly(recorder.Assembly.Location)
@@ -725,7 +744,7 @@ module internal Instrument =
     | Start _ -> VisitStart state
     | Assembly(assembly, included, _) ->
         UpdateStrongReferences assembly state.InstrumentedAssemblies |> ignore
-        if included <> Inspect.Ignore then
+        if included <> Inspections.Ignore then
           assembly.MainModule.AssemblyReferences.Add(state.RecordingAssembly.Name)
         state
     | Module(m, included) -> VisitModule state m included

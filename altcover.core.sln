@@ -52,6 +52,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build Items", "Build Items"
 		Build\Apply-Xslt.ps1 = Build\Apply-Xslt.ps1
 		appveyor.yml = appveyor.yml
 		Build\build.fsx = Build\build.fsx
+		Build\common-rules.xml = Build\common-rules.xml
 		Build\get-token.fsx = Build\get-token.fsx
 		global.json = global.json
 		Build\Infrastructure.snk = Build\Infrastructure.snk
@@ -61,10 +62,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build Items", "Build Items"
 		Build\powershell.ps1 = Build\powershell.ps1
 		Build\Recorder.snk = Build\Recorder.snk
 		ReleaseNotes.md = ReleaseNotes.md
-		Build\rules-fake.xml = Build\rules-fake.xml
-		Build\rules-mono.xml = Build\rules-mono.xml
-		Build\rules-posh.xml = Build\rules-posh.xml
-		Build\rules.xml = Build\rules.xml
 		Build\SelfTest.snk = Build\SelfTest.snk
 		Build\setup.fsx = Build\setup.fsx
 		Build\targets.fsx = Build\targets.fsx
@@ -95,6 +92,8 @@ EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.visualizer.tests.core", "Tests.Visualizer\altcover.visualizer.tests.core.fsproj", "{8D6A3745-6CCA-4D64-99A8-31908FE56679}"
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.weaknametests.core", "WeakNameTests\altcover.weaknametests.core.fsproj", "{3D639272-2787-47AA-9B83-1FE1686323D1}"
+EndProject
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "altcover.netcoreapp.core", "AltCover.NetCoreApp\altcover.netcoreapp.core.fsproj", "{778014AA-1077-4C6F-B177-BEAAA2030B0B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -239,13 +238,11 @@ Global
 		{792FD866-D256-4695-8C76-C14C49BB0207}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{792FD866-D256-4695-8C76-C14C49BB0207}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{792FD866-D256-4695-8C76-C14C49BB0207}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{792FD866-D256-4695-8C76-C14C49BB0207}.Debug|x86.Build.0 = Debug|Any CPU
 		{792FD866-D256-4695-8C76-C14C49BB0207}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{792FD866-D256-4695-8C76-C14C49BB0207}.Release|x86.ActiveCfg = Release|Any CPU
 		{5DB22786-389D-4193-AFDE-144FD59CF586}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{5DB22786-389D-4193-AFDE-144FD59CF586}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5DB22786-389D-4193-AFDE-144FD59CF586}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{5DB22786-389D-4193-AFDE-144FD59CF586}.Debug|x86.Build.0 = Debug|Any CPU
 		{5DB22786-389D-4193-AFDE-144FD59CF586}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5DB22786-389D-4193-AFDE-144FD59CF586}.Release|x86.ActiveCfg = Release|Any CPU
 		{AEFA8F43-5D00-4068-BC15-978041B17A00}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -255,17 +252,19 @@ Global
 		{8D6A3745-6CCA-4D64-99A8-31908FE56679}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{8D6A3745-6CCA-4D64-99A8-31908FE56679}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8D6A3745-6CCA-4D64-99A8-31908FE56679}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{8D6A3745-6CCA-4D64-99A8-31908FE56679}.Debug|x86.Build.0 = Debug|Any CPU
 		{8D6A3745-6CCA-4D64-99A8-31908FE56679}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8D6A3745-6CCA-4D64-99A8-31908FE56679}.Release|x86.ActiveCfg = Release|Any CPU
-		{8D6A3745-6CCA-4D64-99A8-31908FE56679}.Release|x86.Build.0 = Release|Any CPU
 		{3D639272-2787-47AA-9B83-1FE1686323D1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{3D639272-2787-47AA-9B83-1FE1686323D1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3D639272-2787-47AA-9B83-1FE1686323D1}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{3D639272-2787-47AA-9B83-1FE1686323D1}.Debug|x86.Build.0 = Debug|Any CPU
 		{3D639272-2787-47AA-9B83-1FE1686323D1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3D639272-2787-47AA-9B83-1FE1686323D1}.Release|x86.ActiveCfg = Release|Any CPU
-		{3D639272-2787-47AA-9B83-1FE1686323D1}.Release|x86.Build.0 = Release|Any CPU
+		{778014AA-1077-4C6F-B177-BEAAA2030B0B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{778014AA-1077-4C6F-B177-BEAAA2030B0B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{778014AA-1077-4C6F-B177-BEAAA2030B0B}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{778014AA-1077-4C6F-B177-BEAAA2030B0B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{778014AA-1077-4C6F-B177-BEAAA2030B0B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{778014AA-1077-4C6F-B177-BEAAA2030B0B}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
