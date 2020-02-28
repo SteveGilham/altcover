@@ -16,6 +16,7 @@
     <!-- https://github.com/dotnet/sdk/issues/987 -->
     <AssemblySearchPaths Condition="'$(TargetFramework)' == 'net45'">$(AssemblySearchPaths);{GAC}</AssemblySearchPaths>
     <!-- GlobalDefineConstants Condition="'$(TargetFramework)' != 'net45'">NETCOREAPP2_1</GlobalDefineConstants -->
+    <GlobalDefineConstants>GUI</GlobalDefineConstants>
     <SolutionDir Condition="'$(SolutionDir)' == '$(ProjectDir)' AND '$(AltCoverGendarme)' == 'true'">$(ProjectDir)../</SolutionDir>
     <OutputPath>$(SolutionDir)_Binaries/$(AssemblyName)/$(Configuration)+$(Platform)/</OutputPath>
     <IntermediateOutputPath>$(SolutionDir)_Intermediate/$(AssemblyName)/$(Configuration)+$(Platform)/</IntermediateOutputPath>

@@ -22,7 +22,11 @@ open Newtonsoft.Json.Linq
 open System.Net
 
 [<Flags>]
-type internal Inspect =
+[<System.Diagnostics.CodeAnalysis.SuppressMessage(
+      "Gendarme.Rules.Design",
+      "FlagsShouldNotDefineAZeroValueRule",
+      Justification="Gives the unset state a name")>]
+type internal Inspections =
   | Ignore = 0
   | Instrument = 1
   | Track = 2
@@ -76,13 +80,13 @@ type internal GoTo =
 [<ExcludeFromCodeCoverage; NoComparison>]
 type internal Node =
   | Start of seq<string * string list>
-  | Assembly of AssemblyDefinition * Inspect * string list
-  | Module of ModuleDefinition * Inspect
-  | Type of TypeDefinition * Inspect * Exemption
-  | Method of MethodDefinition * Inspect * (int * string) option * Exemption
+  | Assembly of AssemblyDefinition * Inspections * string list
+  | Module of ModuleDefinition * Inspections
+  | Type of TypeDefinition * Inspections * Exemption
+  | Method of MethodDefinition * Inspections * (int * string) option * Exemption
   | MethodPoint of Instruction * SeqPnt option * int * bool * Exemption
   | BranchPoint of GoTo
-  | AfterMethod of MethodDefinition * Inspect * (int * string) option
+  | AfterMethod of MethodDefinition * Inspections * (int * string) option
   | AfterType
   | AfterModule
   | AfterAssembly of AssemblyDefinition * string list
@@ -204,7 +208,9 @@ module internal KeyStore =
     |> hash.ComputeHash
     |> BitConverter.ToString
 
-[<ExcludeFromCodeCoverage>]
+[<ExcludeFromCodeCoverage; SuppressMessage("Gendarme.Rules.Design.Generic",
+   "AvoidDeclaringCustomDelegatesRule",
+    Justification="Recursive type definition can't be done with Fix<'T> = Func<'T, Fix<'T>>")>]
 type Fix<'T> = delegate of 'T -> Fix<'T>
 
 module internal Visitor =
@@ -334,15 +340,15 @@ module internal Visitor =
   let IsIncluded(nameProvider : Object) =
     if (NameFilters |> Seq.exists (Filter.Match nameProvider))
        || localFilter nameProvider then
-      Inspect.Ignore
+      Inspections.Ignore
     else
-      Inspect.Instrument
+      Inspections.Instrument
 
-  let Mask = ~~~Inspect.Instrument
+  let Mask = ~~~Inspections.Instrument
 
   let UpdateInspection before x =
-    (before &&& Mask) ||| (before &&& Inspect.Instrument &&& IsIncluded x)
-  let IsInstrumented x = (x &&& Inspect.Instrument) = Inspect.Instrument
+    (before &&& Mask) ||| (before &&& Inspections.Instrument &&& IsIncluded x)
+  let IsInstrumented x = (x &&& Inspections.Instrument) = Inspections.Instrument
   let ToSeq node = List.toSeq [ node ]
 
   let mutable private PointNumber : int = 0
@@ -449,11 +455,11 @@ module internal Visitor =
            let inspection = IsIncluded x
 
            let included =
-             inspection ||| if inspection = Inspect.Instrument
+             inspection ||| if inspection = Inspections.Instrument
                                && ReportFormat() = Base.ReportFormat.OpenCoverWithTracking then
-                              Inspect.Track
+                              Inspections.Track
                             else
-                              Inspect.Ignore
+                              Inspections.Ignore
            Assembly(x, included, targets)
 
          path
@@ -461,7 +467,7 @@ module internal Visitor =
              >> makeInspection
              >> buildSequence))
 
-  let private VisitAssembly (a : AssemblyDefinition) included buildSequence =
+  let private VisitAssembly (a : AssemblyDefinition) included (buildSequence : Node -> seq<Node>) =
     a.Modules
     |> Seq.cast
     |> Seq.collect
@@ -469,7 +475,7 @@ module internal Visitor =
            let interim = UpdateInspection included x
            Module
              (x,
-              (if interim = Inspect.Track then Inspect.TrackOnly else interim)))
+              (if interim = Inspections.Track then Inspections.TrackOnly else interim)))
           >> buildSequence)
 
   let private ZeroPoints() =
@@ -482,7 +488,7 @@ module internal Visitor =
     then Exemption.Automatic
     else exemption
 
-  let private VisitModule (x : ModuleDefinition) included buildSequence =
+  let private VisitModule (x : ModuleDefinition) included (buildSequence : Node -> seq<Node>) =
     ZeroPoints()
     SourceLinkDocuments <-
       Some x
@@ -497,7 +503,7 @@ module internal Visitor =
            JsonConvert.DeserializeObject<Dictionary<string, string>>(j.ToString()))
 
     [ x ]
-    |> Seq.takeWhile (fun _ -> included <> Inspect.Ignore)
+    |> Seq.takeWhile (fun _ -> included <> Inspections.Ignore)
     |> Seq.collect (fun x -> x.GetAllTypes() |> Seq.cast)
     |> Seq.collect
          ((fun t ->
@@ -608,6 +614,9 @@ module internal Visitor =
          let tn = (i.Operand :?> MethodReference).DeclaringType
          SameType t tn)
 
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Gendarme.Rules.Maintainability", "AvoidUnnecessarySpecializationRule",
+    Justification = "AvoidSpeculativeGenerality too")>]
   let private FSharpContainingMethod (t : TypeDefinition) (tx : TypeReference) =
     let candidates =
       t.DeclaringType.Methods.Concat
@@ -689,7 +698,7 @@ module internal Visitor =
     else if !showGenerated then SelectAutomatic items exemption
     else exemption
 
-  let private VisitType (t : TypeDefinition) included basevc buildSequence =
+  let private VisitType (t : TypeDefinition) included basevc (buildSequence : Node -> seq<Node>) =
     t.Methods
     |> Seq.cast
     |> Seq.filter (fun (m : MethodDefinition) ->
@@ -720,17 +729,13 @@ module internal Visitor =
           >> buildSequence)
 
   let IsSequencePoint(s : SequencePoint) =
-    (s
-     |> isNull
-     |> not)
+    s.IsNotNull
     && s.IsHidden |> not
 
   let fakeSequencePoint genuine (seq : SequencePoint) (instruction : Instruction) =
     match seq with
     | null ->
-        if genuine = FakeAfterReturn && instruction
-                                        |> isNull
-                                        |> not
+        if genuine = FakeAfterReturn && instruction.IsNotNull
            && instruction.OpCode = OpCodes.Ret then
           SequencePoint(instruction, Document(null))
         else
@@ -913,9 +918,7 @@ module internal Visitor =
        |> indexList))
        ([ rawInstructions |> Seq.cast ]
         |> Seq.filter (fun _ ->
-             dbg
-             |> isNull
-             |> not)
+             dbg.IsNotNull)
         |> Seq.concat
         |> Seq.filter
              (fun (i : Instruction) -> i.OpCode.FlowControl = FlowControl.Cond_Branch)
@@ -950,16 +953,14 @@ module internal Visitor =
     |> Seq.map BranchPoint
     |> Seq.toList
 
-  let private VisitMethod (m : MethodDefinition) (included : Inspect) vc =
+  let private VisitMethod (m : MethodDefinition) (included : Inspections) vc =
     let rawInstructions = m.Body.Instructions
     let dbg = m.DebugInformation
 
     let instructions =
       [ rawInstructions |> Seq.cast ]
       |> Seq.filter (fun _ ->
-           dbg
-           |> isNull
-           |> not)
+           dbg.IsNotNull)
       |> Seq.concat
       |> Seq.filter (fun (x : Instruction) ->
            if dbg.HasSequencePoints then
@@ -1052,7 +1053,7 @@ module internal Visitor =
       accumulator |> Seq.iter (fun a -> (a :> IDisposable).Dispose())
       accumulator.Clear()
 
-  let EncloseState (visitor : 'State -> 'T -> 'State) (current : 'State) =
+  let EncloseState (visitor : 'TState -> 'T -> 'TState) (current : 'TState) =
     let rec stateful l =
       new Fix<'T>(fun (node : 'T) ->
       let next = visitor l node

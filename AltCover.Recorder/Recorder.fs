@@ -6,6 +6,7 @@ namespace AltCover.Recorder
 open System
 open System.Collections.Generic
 open System.Diagnostics
+open System.Diagnostics.CodeAnalysis
 open System.IO
 open System.Reflection
 
@@ -67,6 +68,9 @@ module Instance =
   /// This property's IL code is modified to store the user chosen override if applicable
   /// </summary>
   [<MethodImplAttribute(MethodImplOptions.NoInlining)>]
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+      "Gendarme.Rules.Performance", "AvoidUncalledPrivateCodeRule",
+      Justification = "Unit test accessor")>]
   let mutable internal CoverageFormat = ReportFormat.NCover
 
   /// <summary>
@@ -86,12 +90,18 @@ module Instance =
   /// <summary>
   /// Gets or sets the current test method
   /// </summary>
+  [<SuppressMessage("Gendarme.Rules.Naming",
+    "UseCorrectSuffixRule", Justification="It's the program call stack");
+    Sealed>]
   type private CallStack =
     [<ThreadStatic; DefaultValue>]
     static val mutable private instance : Option<CallStack>
     val mutable private caller : int list
     private new(x : int) = { caller = [ x ] }
 
+    [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+        "Gendarme.Rules.Performance", "AvoidUncalledPrivateCodeRule",
+        Justification = "TODO -- fix this Gendarme bug")>]
     static member Instance =
       match CallStack.instance with
       | None -> CallStack.instance <- Some(CallStack(0))
@@ -144,7 +154,7 @@ module Instance =
   let InitialiseTrace(t : Tracer) =
     WithMutex(fun _ ->
       trace <- t.OnStart()
-      IsRunner <- IsRunner || trace.IsConnected())
+      IsRunner <- IsRunner || trace.IsConnected)
 
   let internal Watcher = new FileSystemWatcher()
   let mutable internal Recording = true
@@ -213,6 +223,8 @@ module Instance =
     use writer = new StreamWriter(file)
     text |> Seq.iter (fun line -> writer.WriteLine("{0}", line))
 
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage("Gendarme.Rules.Smells",
+   "AvoidLongParameterListsRule")>]
   let
 #if DEBUG
 #else
@@ -257,7 +269,7 @@ module Instance =
   let internal VisitImpl moduleId hitPointId context =
     if (Sample = Sampling.All || TakeSample Sample moduleId hitPointId) then
       let adder =
-        if Defer || Supervision || (trace.IsConnected() |> not)
+        if Defer || Supervision || (trace.IsConnected |> not)
         then AddVisit
         else TraceVisit
       adder moduleId hitPointId context

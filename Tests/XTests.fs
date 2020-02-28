@@ -8,6 +8,7 @@ open System.Text.RegularExpressions
 open System.Xml.Linq
 
 open AltCover
+open AltCover.Augment
 open Mono.Options
 open Newtonsoft.Json.Linq
 open Swensen.Unquote
@@ -158,7 +159,7 @@ module AltCoverXTests =
     let instance = FSApi.CollectParams.Primitive subject
     let scan = instance.Validate(false)
     test <@ scan.Length = 0 @>
-    test <@ instance.GetHashCode() :> obj |> isNull |> not @> // gratuitous coverage for coverlet
+    test <@ (instance.GetHashCode() :> obj).IsNotNull @> // gratuitous coverage for coverlet
     test <@ (FSApi.CollectParams.Primitive subject)
             |> FSApi.Args.Collect = [ "Runner"; "-t"; "23"; "--collect" ] @>
 
@@ -171,7 +172,7 @@ module AltCoverXTests =
                                              Executable = TypeSafe.Tool "dotnet" }
 
     let instance = FSApi.CollectParams.TypeSafe subject
-    test <@ instance.GetHashCode() :> obj |> isNull |> not @> // gratuitous coverage for coverlet
+    test <@ (instance.GetHashCode() :> obj).IsNotNull @> // gratuitous coverage for coverlet
 
     let scan = instance.Validate(false)
     test <@ scan.Length = 0 @>
@@ -179,7 +180,7 @@ module AltCoverXTests =
       <@ instance
          |> FSApi.Args.Collect = [ "Runner"; "-x"; "dotnet"; "-t"; "23"; "--teamcity:+B" ] @>
     let validate = instance.WhatIf(false)
-    test <@ validate.GetHashCode() :> obj |> isNull |> not @> // gratuitous coverage for coverlet
+    test <@ (validate.GetHashCode() :> obj).IsNotNull @> // gratuitous coverage for coverlet
     test <@ validate.ToString() = "altcover Runner -x dotnet -t 23 --teamcity:+B" @>
 
   [<Test>]
@@ -237,7 +238,7 @@ module AltCoverXTests =
     let instance = FSApi.PrepareParams.Primitive subject
     let scan = instance.Validate()
     test <@ scan.Length = 0 @>
-    test <@ instance.GetHashCode() :> obj |> isNull |> not @> // gratuitous coverage for coverlet
+    test <@ (instance.GetHashCode() :> obj).IsNotNull @> // gratuitous coverage for coverlet
     let rendered = (FSApi.PrepareParams.Primitive subject) |> FSApi.Args.Prepare
     let location = Assembly.GetExecutingAssembly().Location
     test
@@ -273,7 +274,7 @@ module AltCoverXTests =
                                                TypeSafe.Filters [| TypeSafe.Raw "ok" |] }
 
     let instance = FSApi.PrepareParams.TypeSafe subject
-    test <@ instance.GetHashCode() :> obj |> isNull |> not @> // gratuitous coverage for coverlet
+    test <@ (instance.GetHashCode() :> obj).IsNotNull @> // gratuitous coverage for coverlet
 
     let scan = instance.Validate()
     test <@ scan.Length = 0 @>

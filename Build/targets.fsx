@@ -144,7 +144,10 @@ let openCoverConsole =
 let nunitConsole =
   ("./packages/" + (packageVersion "NUnit.ConsoleRunner") + "/tools/nunit3-console.exe")
   |> Path.getFullName
-
+let GendarmePath = 
+  ("./packages/" + (packageVersion "altcode.gendarme") + "/tools/gendarme.exe")
+  |> Path.getFullName
+  
 let cliArguments =
   { MSBuild.CliArguments.Create() with
       ConsoleLogParameters = []
@@ -163,8 +166,6 @@ let withCLIArgs (o: Fake.DotNet.DotNet.TestOptions) =
   { o with MSBuildParams = cliArguments }
 let withMSBuildParams (o: Fake.DotNet.DotNet.BuildOptions) =
   { o with MSBuildParams = cliArguments }
-
-let GendarmePath = "./ThirdParty/gendarme/gendarme.exe"
 
 let NuGetAltCover =
   toolPackages
@@ -443,15 +444,10 @@ _Target "Lint" (fun _ ->
   let failOnIssuesFound (issuesFound: bool) =
     Assert.That(issuesFound, Is.False, "Lint issues were found")
   try
-    let settings =
-      Configuration.SettingsFileName
-      |> Path.getFullName
-      |> File.ReadAllText
-
-    let lintConfig =
-      FSharpLint.Application.ConfigurationManagement.loadConfigurationFile settings
     let options =
-      { Lint.OptionalLintParameters.Default with Configuration = Some lintConfig }
+      { Lint.OptionalLintParameters.Default with Configuration = FromFile (Path.getFullName "./fsharplint.json")
+      //Configuration.SettingsFileName 
+      }
 
     !!"**/*.fsproj"
     |> Seq.collect (fun n -> !!(Path.GetDirectoryName n @@ "*.fs"))
@@ -462,44 +458,28 @@ _Target "Lint" (fun _ ->
          | Lint.LintResult.Success w ->
            w
            |> Seq.filter (fun x ->
-                match x.Fix with
-                | None -> false
-                | Some fix -> fix.FromText <> "AltCover_Fake")) // special case
+                match x.Details.SuggestedFix with
+                | Some l -> match l.Force() with
+                            | Some fix -> fix.FromText <> "AltCover_Fake" // special case
+                            | _ -> false
+                | _ -> false))
     |> Seq.concat
     |> Seq.fold (fun _ x ->
-         printfn "Info: %A\r\n Range: %A\r\n Fix: %A\r\n====" x.Info x.Range x.Fix
+         printfn "Info: %A\r\n Range: %A\r\n Fix: %A\r\n====" x.Details.Message x.Details.Range x.Details.SuggestedFix
          true) false
     |> failOnIssuesFound
-  with ex ->
+  with 
+  | :? System.MissingMethodException ->
+    printfn "MissingMethodException raised"
+  | :? System.ArgumentOutOfRangeException ->
+    printfn "ArgumentOutOfRangeException raised"
+  | ex ->
     printfn "%A" ex
-    reraise())
+    reraise()
+    )
 
 _Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standalone which contaminates everything
   Directory.ensure "./_Reports"
-
-  let toolPath = GendarmePath // "./packages/" + (packageVersion "Mono.Gendarme") + "/tools/gendarme.exe"
-
-  let rules = "./Build/rules.xml"
-
-  let baseRules = Path.getFullName "./Build/rules-fake.xml"
-
-  let fakerules =
-    if Environment.isWindows then
-      baseRules
-    else
-      // Gendarme mono doesn't into .pdb files
-      let lines =
-        baseRules
-        |> File.ReadAllLines
-        |> Seq.map
-             (fun l ->
-             l.Replace
-               ("AvoidSwitchStatementsRule",
-                "AvoidSwitchStatementsRule | AvoidLongMethodsRule"))
-
-      let fixup = Path.getFullName "./_Generated/rules-fake.xml"
-      File.WriteAllLines(fixup, lines)
-      fixup
 
   [
    ("_Binaries/AltCover/Debug+AnyCPU/netcoreapp2.0/publish", "netcoreapp2.0", "./AltCover/altcover.core.fsproj")
@@ -508,29 +488,32 @@ _Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standa
    ("_Binaries/AltCover.FSApi/Debug+AnyCPU/netstandard2.0/publish", "netstandard2.0", "./AltCover.FSApi/altcover.fsapi.core.fsproj")
    ("_Binaries/AltCover.Visualizer/Debug+AnyCPU/netcoreapp2.1/publish", "netcoreapp2.1", "./AltCover.Visualizer/altcover.visualizer.core.fsproj")
    ("_Binaries/AltCover.Fake.DotNet.Testing.AltCover/Debug+AnyCPU/netstandard2.0/publish", "netstandard2.0", "./AltCover.Fake.DotNet.Testing.AltCover/altcover.fake.dotnet.testing.altcover.core.fsproj")
+   ("_Binaries/AltCover.Cake/Debug+AnyCPU/netstandard2.0/publish", "netstandard2.0", "./AltCover.Cake/altcover.cake.core.csproj")
+   ("_Binaries/altcover.netcoreapp/Debug+AnyCPU/netcoreapp2.0/publish", "netcoreapp2.0", "./AltCover.NetCoreApp/altcover.netcoreapp.core.fsproj")
   ]
   |> Seq.iter (fun (pub, rt, proj) -> DotNet.publish (fun options ->
                                     { options with
                                         OutputPath = Some pub
                                         Configuration = DotNet.BuildConfiguration.Debug
                                         NoBuild = true
-                                        MSBuildParams = { MSBuild.CliArguments.Create() with 
+                                        MSBuildParams = { MSBuild.CliArguments.Create() with                                                            
+                                                           DisableInternalBinLog = true
                                                            Properties = [("AltCoverGendarme", "true")] }
                                         Framework = Some rt }) proj)
 
-  [ (rules,
+  [ ("./Build/common-rules.xml",
      [ "_Binaries/AltCover/Debug+AnyCPU/netcoreapp2.0/publish/AltCover.dll"
-       "_Binaries/AltCover.Shadow/Debug+AnyCPU/netstandard2.0/publish/AltCover.Shadow.dll" ])
-
-    ("./Build/rules-posh.xml",
-     [ "_Binaries/AltCover.PowerShell/Debug+AnyCPU/netstandard2.0/publish/AltCover.PowerShell.dll"
-       "_Binaries/AltCover.FSApi/Debug+AnyCPU/netstandard2.0/publish/AltCover.FSApi.dll" ])
-
-    ("./Build/rules-gtk.xml",
-     [ "_Binaries/AltCover.Visualizer/Debug+AnyCPU/netcoreapp2.1/publish/AltCover.Visualizer.dll" ])
-
-    (fakerules,
-     [ "_Binaries/AltCover.Fake.DotNet.Testing.AltCover/Debug+AnyCPU/netstandard2.0/publish/AltCover.Fake.DotNet.Testing.AltCover.dll" ]) ]
+       "_Binaries/AltCover.Shadow/Debug+AnyCPU/netstandard2.0/publish/AltCover.Shadow.dll" 
+       "_Binaries/AltCover.PowerShell/Debug+AnyCPU/netstandard2.0/publish/AltCover.PowerShell.dll"
+       "_Binaries/AltCover.FSApi/Debug+AnyCPU/netstandard2.0/publish/AltCover.FSApi.dll" 
+       "_Binaries/AltCover.Visualizer/Debug+AnyCPU/netcoreapp2.1/publish/AltCover.Visualizer.dll" 
+       "_Binaries/AltCover.Fake.DotNet.Testing.AltCover/Debug+AnyCPU/netstandard2.0/publish/AltCover.Fake.DotNet.Testing.AltCover.dll"
+       "_Binaries/altcover.netcoreapp/Debug+AnyCPU/netcoreapp2.0/publish/altcover.netcoreapp.dll"
+        ])
+    ("./Build/csharp-rules.xml",
+     [ "_Binaries/AltCover.Cake/Debug+AnyCPU/netstandard2.0/publish/AltCover.Cake.dll"
+       "_Binaries/AltCover.Cake/Debug+AnyCPU/netstandard2.0/publish/AltCover.CSapi.dll"
+        ]) ]
   |> Seq.iter (fun (ruleset, files) ->
        Gendarme.run
          { Gendarme.Params.Create() with
@@ -542,7 +525,7 @@ _Target "Gendarme" (fun _ -> // Needs debug because release is compiled --standa
              Log = "./_Reports/gendarme.html"
              LogKind = Gendarme.LogKind.Html
              Targets = files
-             ToolPath = toolPath
+             ToolPath = GendarmePath
              FailBuildOnDefect = true }))
 
 _Target "FxCop" (fun _ ->
@@ -551,12 +534,12 @@ _Target "FxCop" (fun _ ->
   let rules =
     [ "-Microsoft.Design#CA1004"
       "-Microsoft.Design#CA1006"
-      "-Microsoft.Design#CA1011" // maybe sometimes
+      "-Microsoft.Design#CA1011" // reconsider @ Genbu; maybe sometimes
       "-Microsoft.Design#CA1062" // null checks,  In F#!
       "-Microsoft.Maintainability#CA1506"
-      "-Microsoft.Naming#CA1704"
-      "-Microsoft.Naming#CA1707"
-      "-Microsoft.Naming#CA1709"
+      "-Microsoft.Naming#CA1704" // reconsider @ Genbu
+      "-Microsoft.Naming#CA1707" // reconsider @ Genbu
+      "-Microsoft.Naming#CA1709" // reconsider @ Genbu
       "-Microsoft.Naming#CA1715"
       "-Microsoft.Usage#CA2208" ]
 
@@ -595,30 +578,30 @@ _Target "FxCop" (fun _ ->
     ([ "_Binaries/AltCover.PowerShell/Debug+AnyCPU/net47/AltCover.PowerShell.dll" ], [],
      [ "-Microsoft.Design#CA1059"
        "-Microsoft.Usage#CA2235"
-       "-Microsoft.Performance#CA1819"
+       "-Microsoft.Performance#CA1819" // reconsider @ genbu
        "-Microsoft.Design#CA1020"
        "-Microsoft.Design#CA1004"
        "-Microsoft.Design#CA1006"
-       "-Microsoft.Design#CA1011"
+       "-Microsoft.Design#CA1011" // reconsider @ Genbu
        "-Microsoft.Design#CA1062"
        "-Microsoft.Maintainability#CA1506"
-       "-Microsoft.Naming#CA1704"
-       "-Microsoft.Naming#CA1707"
-       "-Microsoft.Naming#CA1709"
+       "-Microsoft.Naming#CA1704" // reconsider @ Genbu
+       "-Microsoft.Naming#CA1707" // reconsider @ Genbu
+       "-Microsoft.Naming#CA1709" // reconsider @ Genbu
        "-Microsoft.Naming#CA1715" ])
     ([ "_Binaries/AltCover.FSApi/Debug+AnyCPU/net45/AltCover.FSApi.dll" ], [],
      [ "-Microsoft.Usage#CA2235"
-       "-Microsoft.Performance#CA1819"
+       "-Microsoft.Performance#CA1819" // reconsider @ genbu
        "-Microsoft.Design#CA1020"
        "-Microsoft.Design#CA1034"
        "-Microsoft.Design#CA1004"
        "-Microsoft.Design#CA1006"
-       "-Microsoft.Design#CA1011"
+       "-Microsoft.Design#CA1011" // reconsider @ Genbu
        "-Microsoft.Design#CA1062"
        "-Microsoft.Maintainability#CA1506"
-       "-Microsoft.Naming#CA1704"
-       "-Microsoft.Naming#CA1707"
-       "-Microsoft.Naming#CA1709"
+       "-Microsoft.Naming#CA1704" // reconsider @ Genbu
+       "-Microsoft.Naming#CA1707" // reconsider @ Genbu
+       "-Microsoft.Naming#CA1709" // reconsider @ Genbu
        "-Microsoft.Naming#CA1715" ])
     ([ "_Binaries/AltCover.Visualizer/Debug+AnyCPU/net45/AltCover.Visualizer.exe" ],
      [ "AltCover.Augment"
@@ -647,14 +630,38 @@ _Target "FxCop" (fun _ ->
        "AltCover.Internals.DotNet"
        "AltCover_Fake.DotNet.DotNet" ],
      [ "-Microsoft.Design#CA1006"
-       "-Microsoft.Design#CA1011"
+       "-Microsoft.Design#CA1011" // reconsider @ Genbu
        "-Microsoft.Design#CA1020"
        "-Microsoft.Design#CA1062"
-       "-Microsoft.Naming#CA1704"
-       "-Microsoft.Naming#CA1707"
-       "-Microsoft.Naming#CA1709"
+       "-Microsoft.Naming#CA1704" // reconsider @ Genbu
+       "-Microsoft.Naming#CA1707" // reconsider @ Genbu
+       "-Microsoft.Naming#CA1709" // reconsider @ Genbu
        "-Microsoft.Naming#CA1724"
-       "-Microsoft.Usage#CA2208" ]) ]
+       "-Microsoft.Usage#CA2208" ]) 
+    ([ "_Binaries/AltCover.CSapi/Debug+AnyCPU/net45/AltCover.CSapi.dll"
+       //"_Binaries/altcover.netcoreapp/Debug+AnyCPU/netcoreapp2.0/altcover.netcoreapp.dll"
+       ],
+     [],
+     [
+       "-Microsoft.Design#CA1011" // reconsider @ Genbu
+       "-Microsoft.Design#CA1020"
+       "-Microsoft.Naming#CA1704" // reconsider @ Genbu
+       "-Microsoft.Naming#CA1709" // reconsider @ Genbu
+       "-Microsoft.Performance#CA1819" // reconsider @ genbu
+       "-Microsoft.Naming#CA1716"  // reconsider @ genbu
+     ])
+    ([ "_Binaries/AltCover.Cake/Debug+AnyCPU/net46/AltCover.Cake.dll"
+       ],
+     [],
+     [
+       "-Microsoft.Design#CA1011" // reconsider @ Genbu
+       "-Microsoft.Design#CA1020"
+       "-Microsoft.Design#CA1026" // can we suppress this one??
+       "-Microsoft.Design#CA2210" // can't strongname this as Cake isn't strongnamed 
+       "-Microsoft.Naming#CA1704" // reconsider @ Genbu
+       "-Microsoft.Naming#CA1709" // reconsider @ Genbu
+       "-Microsoft.Performance#CA1819" // reconsider @ genbu
+     ]) ]
   |> Seq.iter (fun (files, types, ruleset) ->
        files
        |> FxCop.run
@@ -858,7 +865,7 @@ _Target "UnitTestWithOpenCover"
           ReturnTargetCode = Fake.DotNet.Testing.OpenCover.ReturnTargetCodeType.Yes
           OptionalArguments =
             "-excludebyattribute:*ExcludeFromCodeCoverageAttribute;*ProgIdAttribute"
-          Register = OpenCover.RegisterType.Path64
+          Register = OpenCover.RegisterType.RegisterUser // Path64 doesn't work on my machine
           Output = scoverage })
       (String.Join(" ", RecorderFiles)
        + " --result=./_Reports/RecorderTestWithOpenCoverReport.xml")
@@ -2225,6 +2232,14 @@ _Target "Packaging" (fun _ ->
     |> Seq.map (fun f -> (f |> Path.getFullName, Some path, None))
     |> Seq.toList
 
+  let housekeeping = 
+      [ (Path.getFullName "./LICENS*", Some "", None)
+        (Path.getFullName "./Build/AltCover_128.*", Some "", None) ]
+
+  let housekeepingVis = 
+      [ (Path.getFullName "./LICENS*", Some "", None)
+        (Path.getFullName "./AltCover.Visualizer/logo.*", Some "", None) ]
+
   let applicationFiles =
     if File.Exists AltCover
     then  
@@ -2382,6 +2397,11 @@ _Target "Packaging" (fun _ ->
     |> Seq.map (fun x -> (x, Some(where + Path.GetFileName x), None))
     |> Seq.toList
 
+  let apiNetcoreAppFiles where =
+    (!!"./_Binaries/altcover.netcoreapp/Release+AnyCPU/netcoreapp2.0/altcover.netcoreapp.*")
+    |> Seq.map (fun x -> (x, Some(where + Path.GetFileName x), None))
+    |> Seq.toList
+
   let globalFiles =
     (!!"./_Binaries/global-altcover/Release+AnyCPU/netcoreapp2.1/global-altcover.*")
     |> Seq.map (fun x -> (x, Some("tools/netcoreapp2.1/any/" + Path.GetFileName x), None))
@@ -2416,20 +2436,24 @@ _Target "Packaging" (fun _ ->
          poshFiles "tools/netcoreapp2.0/"
          vizFiles "tools/netcoreapp2.1"
          dataFiles "tools/netcoreapp2.0/"
-         otherFiles ], [], "_Packaging", "./Build/AltCover.nuspec", "altcover")
+         otherFiles
+         housekeeping
+          ], [], "_Packaging", "./Build/AltCover.nuspec", "altcover")
 
     (List.concat
       [ apiFiles
         resourceFiles "lib/net45/"
         libFiles "lib/net45/"
-        dotnetFiles "lib/netstandard2.0/"
+        apiNetcoreAppFiles "lib/netstandard2.0/"
         netstdFiles "lib/netstandard2.0"
         cakeFiles "lib/netstandard2.0/"
         dataFiles "lib/netstandard2.0/"
         fakeFiles "lib/netstandard2.0/"
         poshFiles "lib/netstandard2.0/"
         vizFiles "tools/netcoreapp2.1"
-        otherFilesApi ],
+        otherFilesApi
+        housekeeping
+         ],
       [ // these are and should be opt-in, depnding which if any you want
 //        ("Cake.Common", "0.28")
 //        ("Cake.Core", "0.28" )
@@ -2443,7 +2467,9 @@ _Target "Packaging" (fun _ ->
         dataFiles "lib/netcoreapp2.0/"
         [ (packable, Some "", None) ]
         dotnetFiles "lib/netcoreapp2.0/"
-        otherFilesDotnet ], [], "_Packaging.dotnet", "./_Generated/altcover.dotnet.nuspec", "altcover.dotnet")
+        otherFilesDotnet
+        housekeeping
+         ], [], "_Packaging.dotnet", "./_Generated/altcover.dotnet.nuspec", "altcover.dotnet")
 
     (List.concat
       [ globalFiles
@@ -2452,13 +2478,15 @@ _Target "Packaging" (fun _ ->
         dataFiles "tools/netcoreapp2.1/any/"
         [ (packable, Some "", None) ]
         auxFiles
-        otherFilesGlobal ], [],  "_Packaging.global", "./_Generated/altcover.global.nuspec",
+        otherFilesGlobal
+        housekeeping ], [],  "_Packaging.global", "./_Generated/altcover.global.nuspec",
      "altcover.global")
 
     (List.concat
       [ vizFiles "tools/netcoreapp2.1/any"
         [ (packable, Some "", None) ]
-        auxVFiles ], [], "_Packaging.visualizer", "./_Generated/altcover.visualizer.nuspec",
+        auxVFiles
+        housekeepingVis ], [], "_Packaging.visualizer", "./_Generated/altcover.visualizer.nuspec",
      "altcover.visualizer")
 
     let frameworkFake2Files = 
@@ -2471,7 +2499,8 @@ _Target "Packaging" (fun _ ->
       [ fake2Files "lib/netstandard2.0/"
         fox2Files "lib/netstandard2.0/"
         [ (packable, Some "", None) ]
-        frameworkFake2Files ],
+        frameworkFake2Files
+        housekeeping ],
       [ // make these explicit, as this package implies an opt-in
         ("Fake.Core.Environment", "5.18.1")
         ("Fake.DotNet.Cli", "5.18.1")
@@ -2562,8 +2591,9 @@ _Target "PrepareDotNetBuild" (fun _ ->
        | None -> ()
        | Some logo ->
          let tag = dotnetNupkg.Descendants(x "iconUrl") |> Seq.head
-         let text = String.Concat(tag.Nodes()).Replace("Build/AltCover_128.png", logo)
-         tag.Value <- text
+         tag.Value <- tag.Value.Replace("Build/AltCover_128.png", logo)
+         let tag2 = dotnetNupkg.Descendants(x "icon") |> Seq.head
+         tag2.Value <- tag2.Value.Replace("AltCover_128.png", Path.GetFileName logo)
        match tags with
        | None -> ()
        | Some line ->
@@ -3367,8 +3397,8 @@ Target.runOrDefault "DoIt"
 group NetcoreBuild
   source https://api.nuget.org/v3/index.json
   nuget Fake.Core >= 5.16.0
-  nuget Fake.Core.Target >= 5.19
-  nuget Fake.DotNet.Cli >= 5.19
+  nuget Fake.Core.Target >= 5.19.1
+  nuget Fake.DotNet.Cli >= 5.19.1
   nuget FSharp.Core >= 4.7
   source {0}
   nuget AltCover.Api {1}
@@ -4162,7 +4192,8 @@ Target.activateFinal "ResetConsoleColours"
 
 "Compilation"
 ==> "Gendarme"
-=?> ("Analysis", Environment.isWindows && (File.Exists GendarmePath)) // different behaviour
+==> "Analysis"
+//=?> ("Analysis", Environment.isWindows && (File.Exists GendarmePath)) // different behaviour
 
 "Compilation"
 ?=> "UnitTest"

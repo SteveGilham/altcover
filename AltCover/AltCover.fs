@@ -302,7 +302,7 @@ module internal Main =
                 CommandLine.resources.GetString "MultiplesNotAllowed", "--showstatic")
              :: CommandLine.error))
       (CommandLine.ddFlag "showGenerated" Visitor.showGenerated)
-      ("?|help|h", (fun x -> CommandLine.help <- not (isNull x)))
+      ("?|help|h", (fun x -> CommandLine.help <- x.IsNotNull))
 
       ("<>",
        (fun x ->
@@ -585,4 +585,7 @@ module internal Main =
     | _ -> DoInstrumentation arguments
 
   // mocking point
+  [<System.Diagnostics.CodeAnalysis.SuppressMessage(
+      "Gendarme.Rules.Performance", "AvoidUncalledPrivateCodeRule",
+      Justification = "Unit test accessor")>]
   let mutable internal EffectiveMain = Main
